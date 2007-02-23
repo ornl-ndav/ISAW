@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.55  2007/02/23 20:27:40  dennis
+ *  Made a few small fixes and improvements to the javadocs.
+ *
  *  Revision 1.54  2006/06/14 15:56:49  rmikk
  *  Set up the data grids in the XMLread for xml input for data sets
  *
@@ -210,7 +213,7 @@ import DataSetTools.operator.DataSet.*;
 import DataSetTools.instruments.*;
 
 /**
- * The concrete root class for a set of Data objects.  A DataSet object
+ * The concrete base class for a set of Data objects.  A DataSet object
  * bundles together a vector of Data objects with associated units, labels,
  * title, attributes and log information.  Data objects can be added to or 
  * removed from the DataSet using the methods of this class.  Also, the
@@ -707,8 +710,9 @@ public class DataSet implements IAttributeList,
 
 
   /**
-   *  Toggle the selected flag of the specified Data object to the specified 
-   *  value.  If the index is not valid, there is no effect.
+   *  Toggle the selected flag of the specified Data object.  If the slected 
+   *  flag is initially "true", it will be set "false", and visa-versa.
+   *  If the index is not valid, there is no effect.
    *
    *  @param  index     The position of the Data object in this DataSet whose
    *                    selection flag is to be toggled.
@@ -1126,13 +1130,19 @@ public class DataSet implements IAttributeList,
 
 
   /**
-   * Returns the log information for the DataSet 
+   * Get the log information for the DataSet.
+   *
+   * @return a reference to the operations log of this DataSet.
    */
   public OperationLog getOp_log() { return op_log; }
 
 
   /**
-   * Set the entire operation log for the DataSet 
+   * Set the entire operations log for this DataSet, by copying the contents
+   * of the specified operations log.
+   *
+   * @param op_log  The new operations log to copy and use for this
+   *                DataSet. 
    */
   public void setOp_log( OperationLog op_log ) 
   { 
@@ -1147,7 +1157,10 @@ public class DataSet implements IAttributeList,
 
 
   /**
-   * Copy the operation log from the specified the DataSet 
+   * Set the entire operations log for this DataSet by copying the operations
+   * log from the specified the DataSet 
+   *
+   * @param data_set  The DataSet whose operations log is copied.
    */
   public void copyOp_log( DataSet data_set )
   { 
@@ -1180,18 +1193,23 @@ public class DataSet implements IAttributeList,
 
 
   /**
-   * Returns the number of Data objects in the DataSet 
+   * Get the number of Data objects in the DataSet.
+   *
+   * @returns an int giving the number of Data objects in this DataSet.
    */
   public int getNum_entries() { return data.size(); }
 
 
   /**
-   * Returns a reference to the first data object in this DataSet with the 
-   * specified group ID.  If there is no data object with the correct ID, this
-   * returns null.
+   * Get a reference to the first data object in this DataSet with the 
+   * specified group ID.  
    *
    * @param  group_id      The group id of the requested Data object in the 
    *                       list of Data objects in this DataSet.
+   *
+   * @return A reference to the first Data object in this DataSet with the 
+   * specified group ID.  If there is no data object with the correct ID, 
+   * this will return null.
    */
   public Data getData_entry_with_id( int group_id )
   {
@@ -1204,11 +1222,14 @@ public class DataSet implements IAttributeList,
 
 
   /**
-   * Returns a reference to the Data object from the specified 
-   * position in the DataSet if the index is valid, otherwise return null.
+   * Get a reference to the Data object in the specified position in the 
+   * DataSet.
    *
    * @param  index   The index of the requested Data object in the list of
    *                 Data objects in this DataSet. 
+   *
+   * @return A reference to the Data object at the specified index in this 
+   * DataSet if the index is valid, otherwise return null.
    */
   public Data getData_entry( int index ) 
   {
@@ -1226,7 +1247,6 @@ public class DataSet implements IAttributeList,
    *
    * @return The index at which the Data block occurs in the DataSet, if
    *         it is present in the DataSet, returns -1 otherwise.
-   *       
    */
   public int getIndex_of_data( Data d )
   {
@@ -1957,6 +1977,8 @@ public class DataSet implements IAttributeList,
    * attributes. If the index is invalid, this returns null.
    * 
    * @param  index  The position of the attribute in the list of attributes.
+   *
+   * @return  A reference to the Attribute object at the specified index.
    */
   public Attribute getAttribute( int index )
   {
@@ -1970,6 +1992,8 @@ public class DataSet implements IAttributeList,
    * returns null.
    * 
    * @param  name  The name of the attribute value to get.
+   *
+   * @return  A reference to the Attribute object with the specified name.
    */
   public Attribute getAttribute( String name )
   { 
@@ -1982,6 +2006,9 @@ public class DataSet implements IAttributeList,
    * attributes. If the index is invalid, this returns null.
    *
    * @param  index  The position of the attribute in the list of attributes.
+   *
+   * @return  A reference to the Object that is the value of the 
+   *          Attribute at the specified index.
    */
   public Object  getAttributeValue( int index )
   {
@@ -1994,6 +2021,9 @@ public class DataSet implements IAttributeList,
    * attributes.  If the named attribute is not in the list, this returns null.
    *
    * @param  name  The name of the attribute value to get.
+   *
+   * @return  A reference to the Object that is the value of the 
+   *          Attribute with the specified name.
    */
   public Object getAttributeValue( String name )
   {
@@ -2238,6 +2268,8 @@ public class DataSet implements IAttributeList,
   /**
    * Clone the current DataSet, including the operation log, the list of
    * operators and the list of individual Data objects.
+   *
+   * @return A new DataSet that is a clone of the current DataSet.
    */
   public Object clone()
   {
@@ -2267,6 +2299,9 @@ public class DataSet implements IAttributeList,
   /**
    * Clone an EMPTY DataSet with the same title, units, label, operation log,
    * and operators as the original DataSet.
+   *
+   * @return A new DataSet that is a clone of the current DataSet, except
+   *         for the Data blocks, and the observers.
    */
   public DataSet empty_clone()
   {
@@ -2513,13 +2548,13 @@ public class DataSet implements IAttributeList,
     Vector grids = new Vector();
     for( int i = 0 ; i < this.getNum_entries() ; i++ ){
     	Data db = this.getData_entry( i );
-    	PixelInfoList pixInfo = (PixelInfoList) db.getAttributeValue( Attribute.PIXEL_INFO_LIST );
+    	PixelInfoList pixInfo = 
+             (PixelInfoList) db.getAttributeValue( Attribute.PIXEL_INFO_LIST );
     	if( ( pixInfo != null ) && ( pixInfo.num_pixels() > 0 )){
     		IDataGrid grid = pixInfo.pixel(0).DataGrid();
     		if( !grids.contains( grid ) )
     			grids.addElement( grid );	
     	}
-    		
     }
     
     for( int i = 0 ; i < grids.size() ; i++ )
@@ -2529,7 +2564,10 @@ public class DataSet implements IAttributeList,
 
 
   /**
-   *  Provide an identifier string for this DataSet
+   *  Provide an identifier string for this DataSet.
+   *
+   *  @return A String consisting of the DataSet's tag followed by its
+   *          title.
    */
   public String toString()
   {
@@ -2539,7 +2577,7 @@ public class DataSet implements IAttributeList,
 
 /* -----------------------------------------------------------------------
  *
- *  PRIVATE METHODS
+ *  PROTECTED METHODS
  *
  */
 
@@ -2570,6 +2608,8 @@ public class DataSet implements IAttributeList,
  *  readObject() method MUST include code to fill out any transient fields 
  *  and new fields that are required in the current version but are not 
  *  present in the serialized version being read.
+ *
+ *  @param s  The ObjectInputStream from which the DataSet is read.
  */
   private void readObject( ObjectInputStream s ) throws IOException, 
                                                         ClassNotFoundException 
