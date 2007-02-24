@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2007/02/24 13:23:49  rmikk
+ * Will now load data sets over the net if the file name starts with http:(untested)
+ *
  * Revision 1.5  2004/03/15 06:10:36  dennis
  * Removed unused import statements.
  *
@@ -114,10 +117,17 @@ public final class DataSet_IO implements Serializable
   public static DataSet LoadDataSet( String file_name )
   {
     DataSet ds = null;
+    InputStream gin = null;
     try
     {
-      FileInputStream fis   = new FileInputStream( file_name );
-      GZIPInputStream gin   = new GZIPInputStream( fis );
+        if( file_name.toUpperCase().startsWith("HTTP:")){
+           gin = (new java.net.URL( file_name)).openStream();
+        }else{
+          FileInputStream fis   = new FileInputStream( file_name );
+          gin   = new GZIPInputStream( fis );
+        }
+      
+      
       ObjectInputStream ois = new ObjectInputStream( gin );
 
       ds = (DataSet)ois.readObject();
