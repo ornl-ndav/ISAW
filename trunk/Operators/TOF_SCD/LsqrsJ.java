@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.37  2007/02/25 20:24:40  rmikk
+ * Fixed to use the error matrix from BestFitMatrix for the constrained least
+ *    squares.
+ *
  * Revision 1.36  2006/07/10 16:26:12  dennis
  * Change to new Parameter GUIs in gov.anl.ipns.Parameters
  *
@@ -363,7 +367,7 @@ public class LsqrsJ extends GenericTOF_SCD {
     float[][] matrix = null;
     int lowerLimit;
     int upperLimit;
-
+    double[] sig_abc = new double[7];
     if( keepRange != null ) {
       lowerLimit   = keepRange[0];  //lower limit of range
 
@@ -602,11 +606,15 @@ public class LsqrsJ extends GenericTOF_SCD {
           Tq[i][j]     = q[i][j];
         }
       }
-
-      if ( cellType.startsWith( "Tri" ) )
+      // determine uncertainties
+     
+      if ( cellType.startsWith( "Tri" ) ){
         chisq = LinearAlgebra.BestFitMatrix( UB, Thkl, Tq );
-      else
-        chisq = SCD_util.BestFitMatrix( cellType, UB, Thkl, Tq );
+        sig_abc=null;
+      }else{
+        chisq = SCD_util.BestFitMatrix( cellType, UB, Thkl, Tq, sig_abc );
+        
+      }
 
       if ( Double.isNaN( chisq ) )
         return new ErrorString( "ERROR in LsqrsJ: " + 
@@ -745,10 +753,10 @@ public class LsqrsJ extends GenericTOF_SCD {
     // calculate lattice parameters and cell volume
     double[] abc = Util.abc( UB );
 
-    // determine uncertainties
-    double[] sig_abc = new double[7];
-
+ 
+   if( sig_abc ==null)
     {
+      sig_abc = new double[7];
       double numFreedom      = 3. * ( peaks.size(  ) - 3. );
       double[] temp_abc      = null;
       double[][] derivatives = new double[3][7];
