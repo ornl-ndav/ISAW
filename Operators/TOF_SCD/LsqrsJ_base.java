@@ -31,6 +31,12 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.13  2007/02/25 20:47:25  rmikk
+ * Fixed to use the error matrix from BestFitMatrix for the constrained least
+ *    squares.
+ *
+ * Extracted out a public static method that can easily be called from Java.
+ *
  * Revision 1.12  2006/07/10 22:10:21  dennis
  * Removed unused imports after refactoring to use new Parameter GUIs
  * in gov.anl.ipns.Parameters.
@@ -223,7 +229,8 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
     sb.append( "updated." );
 
     // parameters
-    sb.append( "@param peaks  Vector of peaks" );
+    sb.append( "@param peaks  Vector of peaks. A copy is made and used. ");
+    sb.append(  "This input parameter is NOT changed" );
     sb.append( "@param  Runs The run numbers to use " );
     sb.append( "@param restrictSeq The sequence numbers to use. " );
     sb.append( "@param xFormMat The transformation matrix to use. " );
@@ -254,25 +261,75 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
     try{
     
      Vector peaksPar = (Vector)(getParameter( 0 ).getValue(  ));
-     Vector peaks =new Vector();
-     for( int i=0; i< peaksPar.size(); i++){
-         peaks.addElement(((Peak_new)peaksPar.elementAt(i)).clone());
-     }                   
      int[] run_nums   = ( ( IntArrayPG )getParameter( 1 ) ).getArrayValue(  );
      int[] seq_nums   = ( ( IntArrayPG )getParameter( 2 ) ).getArrayValue(  );
-     if ( run_nums != null && run_nums.length < 1 )
-       run_nums = null;
-     if ( seq_nums != null && seq_nums.length < 1 )
-       seq_nums = null;
+     
        
      int threshold    = ( ( IntegerPG )getParameter( 5 ) ).getintValue(  );
      int[] keepRange  = ( ( IntArrayPG )getParameter( 6 ) ).getArrayValue(  );
      String cellType  = ((ChoiceListPG)getParameter( 7 )).getValue().toString();
 
      float[][] matrix = null;
+     IParameter iparm = getParameter( 3 );
+     if( iparm.getValue(  ) == null ) {
+        matrix = null;
+      } else {
+        try {
+          matrix = stringTo2dArray( iparm.getValue(  ).toString(  ) );
+        } catch( NumberFormatException e ) {
+          return new ErrorString( "Improper format in matrix" );
+        }
+      }
+     String matfile = getParameter( 4 )
+                               .getValue(  )
+                              .toString(  );
+     Object Res = LsqrsJ1( peaksPar, run_nums,seq_nums,matrix,matfile, threshold, 
+                 keepRange, cellType);
+     return Res;
+    }catch( Exception xx){
+       xx.printStackTrace();
+       return new ErrorString(xx);
+    }
+  }
+  
+    /**
+     * Public static method for the base Least Squares operators and forms.
+     * Finds the least square matrix mapping the hkl values to the qx,qy,qz
+     * values
+     * 
+     * @param peaksPar  The Vector of Peaks( will not be changed)
+     * @param  Runs The run numbers to use 
+     * @param seq_nums The sequence numbers to use. 
+     * @param matrix The transformation matrix to use. 
+     * @param matFile The matrix to write to. 
+     * @param threshold The minimum peak intensity threshold to 
+     *          use.
+     * @param keepRange The detector pixel range to keep.
+     * @param cellType  The type of cell to be used if the 
+     *              least squares optimization is to be constrained
+     *             to a particular unit cel l type
+    
+     * @return null and the the  matrix file has the orientation matrix or an
+     *              errormessage.
+     */
+    public static Object LsqrsJ1( Vector peaksPar, int[] run_nums, int[] seq_nums,
+                   float[][] matrix, String matfile, int threshold, int[] keepRange,
+                   String cellType){
+
+     Vector peaks =new Vector();
+     for( int i=0; i< peaksPar.size(); i++){
+         peaks.addElement(((Peak_new)peaksPar.elementAt(i)).clone());
+     }  
+     
+     if ( run_nums != null && run_nums.length < 1 )
+        run_nums = null;
+      if ( seq_nums != null && seq_nums.length < 1 )
+        seq_nums = null;
+      
+     
      int lowerLimit;
      int upperLimit;
-    
+     double[] sig_abc = null;
      if( keepRange != null ) {
        lowerLimit   = keepRange[0];  //lower limit of range
 
@@ -286,22 +343,12 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
      String logfile;
 
      
-       IParameter iparm = getParameter( 3 );
-
-       if( iparm.getValue(  ) == null ) {
-         matrix = null;
-       } else {
-         try {
-           matrix = stringTo2dArray( iparm.getValue(  ).toString(  ) );
-         } catch( NumberFormatException e ) {
-           return new ErrorString( "Improper format in matrix" );
-         }
-       }
      
 
-     String matfile = getParameter( 4 )
-                        .getValue(  )
-                        .toString(  );
+  
+     
+
+    
 
     matfile = FilenameUtil.setForwardSlash( matfile );
 
@@ -513,8 +560,10 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
       System.out.println("CellType is "+cellType);
       if ( cellType.startsWith( "Tri" ) )
         chisq = LinearAlgebra.BestFitMatrix( UB, Thkl, Tq );
-      else
-        chisq = SCD_util.BestFitMatrix( cellType, UB, Thkl, Tq );
+      else{
+         sig_abc= new double[7];
+        chisq = SCD_util.BestFitMatrix( cellType, UB, Thkl, Tq ,sig_abc);
+      }
 
 
 
@@ -614,8 +663,10 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
     double[] abc = Util.abc( UB );
 
     // determine uncertainties
-    double[] sig_abc = new double[7];
+   
 
+    if(sig_abc == null){
+       sig_abc = new double[7];
     
       double numFreedom      = 3. * ( nargs - 3. );
       double[] temp_abc      = null;
@@ -650,7 +701,7 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
       for( int i = 0; i < sig_abc.length; i++ ) {
         sig_abc[i] = Math.sqrt( delta * sig_abc[i] );
       }
-    
+    }
 
     // finish up the log buffer
     logBuffer.append( "\nOrientation matrix:\n" );
@@ -723,10 +774,7 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
       float[][] F_UB=LinearAlgebra.double2float( UB );
       return F_UB;
     }
-    }catch(Exception xx){
-       xx.printStackTrace();
-       return new ErrorString(xx);
-    }
+   
     return null;
   }
   
