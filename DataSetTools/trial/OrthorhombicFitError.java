@@ -27,6 +27,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2007/02/25 20:20:43  rmikk
+ *  Added the method to expand the parameter error array
+ *
  *  Revision 1.2  2006/01/06 03:01:53  dennis
  *  Minor fixes to javadocs.
  *  Fixed bug in assignement of initial values.
@@ -115,7 +118,29 @@ public class OrthorhombicFitError extends SCD_ConstrainedLsqrsError
     U1_Bc = LinearAlgebra.mult( U1, Bc );
   }
 
-
+  /**
+   *  Expands the errors in the changing parameteers to the errors in all 7
+   *    lattice constants.  Some constraints vary fewer than 6 of the
+   *    lattice parameters.
+   *    
+   * @param ParamErrors  The errors in the basic lattice parameters that
+   *                      vary for the given constraint
+   * @return   a float[7] containing the errors in the corresponding
+   *            lattice constants
+   */
+ public  double[] ExpandErrors( double[] ParamErrors ){
+    double[] Res = new double[7];
+    Res[0]= ParamErrors[0];  
+    Res[1]= ParamErrors[1];  
+    Res[2]= ParamErrors[2];  
+    Res[3]=0;  
+    Res[4]= 0;  
+    Res[5]= 0;
+    Res[6]= super.calcVolumeError( Res );
+    return Res;
+    
+    
+ }
  /* -------------------------------------------------------------------------
   *
   * MAIN  ( Basic main program for testing purposes only. )
