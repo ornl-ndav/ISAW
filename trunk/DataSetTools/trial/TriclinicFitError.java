@@ -27,6 +27,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2007/02/25 20:21:48  rmikk
+ *  Added the method to expand the parameter error array
+ *
  *  Revision 1.1  2006/01/06 04:01:19  dennis
  *  Error function for Triclinic cell.  While this is not needed
  *  since the Triclinic case can be handled with un-constrained
@@ -113,6 +116,31 @@ public class TriclinicFitError extends SCD_ConstrainedLsqrsError
     U1_Bc = LinearAlgebra.mult( U1, Bc );
   }
 
+  
+  
+  /**
+   *  Expands the errors in the changing parameteers to the errors in all 7
+   *    lattice constants.  Some constraints vary fewer than 6 of the
+   *    lattice parameters.
+   *    
+   * @param ParamErrors  The errors in the basic lattice parameters that
+   *                      vary for the given constraint
+   * @return   a float[7] containing the errors in the corresponding
+   *            lattice constants
+   */
+ public  double[] ExpandErrors( double[] ParamErrors ){
+    double[] Res = new double[7];
+    Res[0]= ParamErrors[0];  
+    Res[1]= ParamErrors[1];  
+    Res[2]= ParamErrors[2];  
+    Res[3]=ParamErrors[3];  
+    Res[4]= ParamErrors[4];  
+    Res[5]= ParamErrors[5];
+    Res[6]= super.calcVolumeError( Res );
+    return Res;
+    
+    
+ }
 
  /* -------------------------------------------------------------------------
   *
