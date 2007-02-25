@@ -26,6 +26,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2007/02/25 20:22:49  rmikk
+ * Added a parameter to the BestFitMatrix method to return the errors in the
+ *   parameters
+ *
  * Revision 1.7  2006/11/12 05:35:13  dennis
  * Replaced call to vector.getCopy() with call to vector.get(), since
  * with the new version of Vector3D that has the values in separate
@@ -282,12 +286,15 @@ public class SCD_util
    *  @param  q_vals      An Nx3 array of doubles containing the list of
    *                      corresponding q values
    *
+   * @param  latticeErrors   Output for the errors in the lattice parameters
+   *                        should be double[7]
    *  @return  The sum squared error after fitting.
    */
   public static double BestFitMatrix( String cell_type, 
                                       double UB[][],
                                       double hkl_vals[][],
-                                      double q_vals[][]   )
+                                      double q_vals[][] ,
+                                      double latticeErrors[])
   {
     SCD_ConstrainedLsqrsError f = null;
 
@@ -346,7 +353,18 @@ public class SCD_util
  
     double ApproximateUB[][] = f.getU1_Bc();
     LinearAlgebra.copy( ApproximateUB, UB );
-
+    double sigs[] = fitter.getParameterSigmas_2();
+    double sig = fitter.getChiSqr()/hkl_vals.length;
+    sig = Math.sqrt( sig);
+    for( int i=0; i<sigs.length; i++)
+       sigs[i]=sig*sigs[i];
+    
+    double[] errs = f.ExpandErrors( sigs );
+    
+    if( errs != null) if( latticeErrors != null)
+       for( int i=0; i < Math.min( errs.length,latticeErrors.length); i++)
+          latticeErrors[i]= errs[i];
+    
     return f.TotalError();
   }
 
@@ -591,7 +609,7 @@ public class SCD_util
     for ( int i = 0; i < cell_type.length; i++ )
     {
        System.out.println("\nCell Type : " + cell_type[i] + " ......" );
-       err = BestFitMatrix( cell_type[i], UB, hkl_vals, q_vals );
+       err = BestFitMatrix( cell_type[i], UB, hkl_vals, q_vals, null );
        System.out.println( "err = " + err );
 //       System.out.println( "UB = " );
 //       LinearAlgebra.print( UB );
