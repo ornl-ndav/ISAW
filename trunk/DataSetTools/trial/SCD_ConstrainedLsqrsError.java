@@ -27,6 +27,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2007/02/25 20:21:35  rmikk
+ *  Added the abstract method to expand the parameter error array and a routine
+ *  to calculate the error in the volume.
+ *
  *  Revision 1.3  2006/01/06 06:48:34  dennis
  *  Now returns the error rather than the error squared.
  *  (The iteration did not converge in some cases, such as
@@ -257,6 +261,103 @@ abstract public class   SCD_ConstrainedLsqrsError
 
     return sum;
   }
-
+  
+  
+  private double calcVolume( double a, double b, double c, double alpha,
+             double beta, double gamma){
+     double x1= Math.sin( beta/180.*Math.PI);
+     double x2=Math.cos(gamma/180*Math.PI)-Math.cos(alpha/180*Math.PI)*
+                                         Math.cos(beta/180*Math.PI);
+     x2 = x2/Math.sin( alpha/180*Math.PI);
+     //return a*b*c*Math.sin(alpha/180.*Math.PI)*Math.sqrt(
+     //      x1*x1-x2*x2  );
+     double xA=Math.cos(alpha/180.*Math.PI);
+     double xB=Math.cos(beta/180.*Math.PI);
+     double xC=Math.cos(gamma/180.*Math.PI);
+     return a*b*c*Math.sqrt(1-xA*xA-xB*xB-xC*xC+2*xA*xB*xC);
+              
+     
+    
+  }
+   public double  calcVolumeError( double[] lattice_errors){
+      
+      double xA=Math.cos(lattice_parameters[3]/180.*Math.PI);
+      double xB=Math.cos(lattice_parameters[4]/180.*Math.PI);
+      double xC=Math.cos(lattice_parameters[5]/180.*Math.PI);
+      double Volume = calcVolume( lattice_parameters[0], lattice_parameters[1], lattice_parameters[2],
+               lattice_parameters[3], lattice_parameters[4], lattice_parameters[5]);
+      double[] V2 = DataSetTools.operator.Generic.TOF_SCD.Util.abc(U1_Bc) ; 
+      if( Math.abs(V2[6]-Volume)>.000001)
+         System.out.println("********************error*************************");
+      double dV =0;
+      for( int i=0;i<3;i++)
+         dV+=sqr( Volume/lattice_parameters[i]*lattice_errors[i]);
+      Volume = Volume/2.0/(1-xA*xA-xB*xB-xC*xC+2*xA*xB*xC);
+      dV += sqr(lattice_errors[3])*sqr(Math.sin(2*lattice_parameters[3]/180.*Math.PI)-
+                Math.sin(lattice_parameters[3]/180.*Math.PI)*Math.cos(lattice_parameters[4]/180*Math.PI)*
+                Math.cos(lattice_parameters[5]/180*Math.PI));
+      dV += sqr(lattice_errors[4])*sqr(Math.sin(2*lattice_parameters[4]/180.*Math.PI)-
+               Math.sin(lattice_parameters[4]/180.*Math.PI)*Math.cos(lattice_parameters[3]/180*Math.PI)*
+               Math.cos(lattice_parameters[5]/180*Math.PI));
+      dV += sqr(lattice_errors[5])*sqr(Math.sin(2*lattice_parameters[5]/180.*Math.PI)-
+               Math.sin(lattice_parameters[5]/180.*Math.PI)*Math.cos(lattice_parameters[4]/180*Math.PI)*
+               Math.cos(lattice_parameters[3]/180*Math.PI));
+      dV = Math.sqrt(dV);
+      double MinAlpha,MinBeta,MinGamma,MaxAlpha,MaxBeta,MaxGamma;
+      MinAlpha = findMin( lattice_parameters[3],lattice_parameters[4],lattice_parameters[5],lattice_errors[3]);
+      MinBeta = findMin( lattice_parameters[4],lattice_parameters[3],lattice_parameters[5],lattice_errors[4]);
+      MinGamma = findMin( lattice_parameters[5],lattice_parameters[4],lattice_parameters[3],lattice_errors[5]);
+      MaxAlpha = findMax( lattice_parameters[3],lattice_parameters[4],lattice_parameters[5],lattice_errors[3]);
+      MaxBeta = findMax( lattice_parameters[4],lattice_parameters[3],lattice_parameters[5],lattice_errors[4]);
+      MaxGamma = findMax( lattice_parameters[5],lattice_parameters[4],lattice_parameters[3],lattice_errors[5]);
+      
+      
+    /*  System.out.println("********Error="+(calcVolume(lattice_parameters[0]+lattice_errors[0],
+               lattice_parameters[1]+lattice_errors[1],lattice_parameters[2]+lattice_errors[2],
+               MaxAlpha,MaxBeta,MaxGamma)-
+               calcVolume(lattice_parameters[0]-lattice_errors[0],
+               lattice_parameters[1]-lattice_errors[1],lattice_parameters[2]-lattice_errors[2],
+               MinAlpha,MinBeta,MinGamma))+"********"+(2*dV));
+      
+      
+      */
+    
+      return dV;
+   }
+   private double sqr( double x){
+      return x*x;
+   }
+   
+   
+   private double findMin( double A1, double A2, double A3, double delta){
+      
+      if( A1-delta >90)
+         return A1-delta;
+     if( A1-delta< 90) if( A1+delta <90)
+        return A1+delta;
+     return 90-Math.min(90-A1+delta,A1+delta-90);
+   }  
+   
+   
+   private double findMax( double A1, double A2, double A3, double delta){
+      if( A1-delta >90)
+         return A1+delta;
+      if( A1-delta< 90) if( A1+delta <90)
+         return A1-delta;
+      return 90;
+   }
+   
+   
+   /**
+    *  Expands the errors in the changing parameteers to the errors in all 7
+    *    lattice constants.  Some constraints vary fewer than 6 of the
+    *    lattice parameters.
+    *    
+    * @param ParamErrors  The errors in the basic lattice parameters that
+    *                      vary for the given constraint
+    * @return   a float[7] containing the errors in the corresponding
+    *            lattice constants
+    */
+  public abstract double[] ExpandErrors( double[] ParamErrors );
 
 }
