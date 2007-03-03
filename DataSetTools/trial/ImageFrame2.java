@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.15  2007/03/03 23:47:55  dennis
+ * Minor change to test image: now adds random noise so individual
+ * pixels can be seen better.  Also reduced array dimensions.
+ *
  * Revision 1.14  2005/06/02 22:34:20  dennis
  * Modified to just use IVirtualArray2D methods on a
  * VirtualArray2D object.
@@ -126,6 +130,8 @@ import gov.anl.ipns.ViewTools.UI.SplitPaneWithState;
 
 import javax.swing.*;
 import java.awt.Dimension;
+
+import java.util.*;
 
 /**
  * Simple class to display an image, specified by an IVirtualArray2D or a 
@@ -280,14 +286,18 @@ public class ImageFrame2 extends JFrame
   */
   public static void main( String args[] )
   {
-    float test_array[][] = new float[500][500];
-    for ( int i = 0; i < 500; i++ )
-      for ( int j = 0; j < 500; j++ )
-        test_array[i][j] = i + j;
+    final int NUM_ROWS = 100;
+    final int NUM_COLS = 200;
+    Random generator = new Random();
+
+    float test_array[][] = new float[NUM_ROWS][NUM_COLS];
+    for ( int i = 0; i < NUM_ROWS; i++ )
+      for ( int j = 0; j < NUM_COLS; j++ )
+        test_array[i][j] = i + j + (NUM_ROWS+NUM_COLS)*generator.nextFloat();
     IVirtualArray2D va2D = new VirtualArray2D( test_array );
     va2D.setAxisInfo( AxisInfo.X_AXIS, 0f, 10000f, 
     		        "TestX","TestUnits", AxisInfo.LINEAR );
-    va2D.setAxisInfo( AxisInfo.Y_AXIS, 0f, 1500f, 
+    va2D.setAxisInfo( AxisInfo.Y_AXIS, 0f, 2000f, 
     			"TestY","TestYUnits", AxisInfo.LINEAR );
     va2D.setTitle("ImageFrame Test");
     new ImageFrame2( va2D );
