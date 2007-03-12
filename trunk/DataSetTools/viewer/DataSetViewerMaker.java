@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.28  2007/03/12 15:20:13  amoe
+ *  -Updated redraw():  when the POINTED_AT_CHANGED event occurs, the view component will only get updated when it is not focused or when the dataset needs to be updated.
+ *  -Added inner class PointedAtListener to listen for cursor updates on the view component, and update the observers.
+ *
  *  Revision 1.27  2007/01/12 14:48:46  dennis
  *  Removed unused imports.
  *
@@ -134,9 +138,9 @@ import javax.swing.event.*;
 import DataSetTools.dataset.*;
 import DataSetTools.components.View.*;
 import java.awt.*;
-//import gov.anl.ipns.Util.Messaging.*;
+import gov.anl.ipns.Util.Messaging.*;
 
-//import java.awt.event.*;
+import java.awt.event.*;
 
 import gov.anl.ipns.ViewTools.Components.OneD.VirtualArrayList1D;
 
@@ -147,6 +151,9 @@ public class DataSetViewerMaker  extends DataSetViewer
    ViewerState state;
    VirtualArrayList1D viewArray;
    FunctionViewComponent viewComp;
+   DataSetViewerMaker dsvm;
+   
+   boolean isDsvmViewerFocused = false;
 
 
    public DataSetViewerMaker( DataSet               ds, 
@@ -159,6 +166,7 @@ public class DataSetViewerMaker  extends DataSetViewer
       this.viewComp = viewComp;
       this.ds = ds;
       this.state = state;
+      this.dsvm = this;
       //viewComp.setData( viewArray);
       //JPanel East = new JPanel( new GridLayout( 1,1));
       
@@ -189,7 +197,7 @@ public class DataSetViewerMaker  extends DataSetViewer
       the_pane.addAncestorListener( new ancestor_listener());
       
       //adding listener update cursor for all displayed graphs
-      //viewComp.addActionListener(new PointedAtListener());
+      viewComp.addActionListener(new PointedAtListener());
       
       add(the_pane);
       invalidate();
@@ -214,17 +222,27 @@ public class DataSetViewerMaker  extends DataSetViewer
       {
         viewArray = DataSetData.convertToVirtualArray(getDataSet());
         viewComp.dataChanged(viewArray);
-        //viewComp.getGraphJPanel().repaint();
+        
       }
       else if( reason.equals( "POINTED AT CHANGED" ))
-      {     	  
-        viewArray.setPointedAtGraph( getDataSet().getPointedAtIndex() );
-        viewComp.dataChanged();
-        
-        floatPoint2D fpt = new floatPoint2D();
-        fpt.x = getDataSet().getPointedAtX();
-        fpt.y = 0;
-        viewComp.setPointedAt(fpt);
+      {
+          if( viewComp.isDrawingPointedAtGraph() && (ds.getPointedAtIndex() != viewArray.getPointedAtGraph()) )
+          {
+        	  viewArray.setPointedAtGraph( ds.getPointedAtIndex() );       
+        	  viewComp.dataChanged();
+        	  
+          }
+          
+          // this is true when the DataSetViewMaker's frame is focused.          
+          isDsvmViewerFocused = ((JFrame)dsvm.getRootPane().getParent()).isFocused();
+          
+          if( !isDsvmViewerFocused )
+          {
+	          floatPoint2D fpt = new floatPoint2D();
+	          fpt.x = ds.getPointedAtX();
+	          viewComp.setPointedAt(fpt);
+          }
+
       }
     }
     /**
@@ -268,7 +286,6 @@ public class DataSetViewerMaker  extends DataSetViewer
          return state;
        
      }
-   
 
   private class ancestor_listener implements AncestorListener {
     //methods
@@ -283,49 +300,30 @@ public class DataSetViewerMaker  extends DataSetViewer
   }
   
   /*
+   * PointedAtListener listens for the current cursor position in the 
+   * view component, and updates the dataset.  This is so the other dataset
+   * viewers can be updated with a pointed at position.
+   */
   private class PointedAtListener implements ActionListener
-  {
-	  boolean ignore_pointed_at = false;
-	  boolean isDoingZoomBox;
-	  int i = 0;
+  {	  
+	  String message;
+	  float new_x;
 	  
 	  public void actionPerformed(ActionEvent ae)
-	  {
+	  {		  
+		  // this is true when the DataSetViewMaker's frame is focused.
+		  isDsvmViewerFocused = ((JFrame)dsvm.getRootPane().getParent()).isFocused();
 		  
-		  String message = ae.getActionCommand();
+		  message = ae.getActionCommand();		  
+		  new_x  = viewComp.getPointedAt().x;		  	  
 		  
-		  //will have to work around the getDataPanel()
-		  //because it no longer exists
-		  isDoingZoomBox = ((GraphJPanel)viewComp.getDataPanel()).isDoingBox();
-		  
-		  //System.out.println("*DataSetViewerMaker.actionPerformed()\n\tmessage: "+
-			//message+"\n\td_box = "+isDoingZoomBox);	  
-		  
-		  
-		  float last_x = ds.getPointedAtX();
-		  float new_x = viewComp.getPointedAt().x;
-		  
-		  if( (message==GraphJPanel.CURSOR_MOVED) && 
-				  (ignore_pointed_at==false) &&
-				  (last_x!=new_x) &&
-				  (isDoingZoomBox == false) )
-		  {
-			  ignore_pointed_at = true;
-			  
-			  ds.setPointedAtIndex( viewComp.getArray().getPointedAtGraph() );
+		  // if the pointed at changed flag is recieved and the viewcomponent is focused
+		  if( message.equals(IViewComponent.POINTED_AT_CHANGED) && (isDsvmViewerFocused) )
+		  {			 			  
 			  ds.setPointedAtX( new_x );
-			  ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );
-			  ignore_pointed_at=false;
-		  }
-		  //else if(ignore_pointed_at==true)
-		  //{
-			//  ignore_pointed_at=false;
-		  //}
-		  
-		  //System.out.println("DataSetViewerMaker$PointedAtListener: "+message+" "+i+
-			//	  "\n\t*ActionEvent: "+ae.toString());
-		  i++;
+			  ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );			  
+		  }		  
 	  }
-  }*/
+  }
 
   }//DataSetViewerMaker
