@@ -5,8 +5,8 @@
 # First specify any parameters to the script, giving the variable name,
 # data type and prompt string.  A dialog box will prompt the user for values
 # for these parameters
-
-$ CATEGORY = operator,Instrument Type, TOF_NSCD
+$category=HiddenOperator
+#$ CATEGORY = operator,Instrument Type, TOF_NSCD
 $ datadir             DataDirectoryString       Output Path
 $ expname             String                 Experiment name
 $ calibfile           LoadFileString         SCD Calibration File

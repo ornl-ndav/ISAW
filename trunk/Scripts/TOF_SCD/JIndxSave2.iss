@@ -27,7 +27,8 @@ $RestrRuns   IntList          Restrict Runs
 $peakfilename    SaveFileString("NONE")   Filename to save peak to
 $logfile    Boolean(true)   Show log info 
 $expName    String          Experiment name
-$ CATEGORY = operator,Instrument Type, TOF_NSCD
+$category=HiddenOperator
+#$ CATEGORY = operator,Instrument Type, TOF_NSCD
 $ Title = Index/Write Peaks
 
 if Not UseLsqMats 
