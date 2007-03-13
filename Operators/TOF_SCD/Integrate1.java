@@ -30,6 +30,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.12  2007/03/13 22:05:45  rmikk
+ * Made to implement HiddenOperator so it will not show up in the
+ *    macros menu
+ *
  * Revision 1.11  2007/01/12 14:48:47  dennis
  * Removed unused imports.
  *
@@ -244,7 +248,7 @@ import DataSetTools.operator.DataSet.Conversion.XAxis.*;
 /** 
  * This is a ported version of A.J.Schultz's INTEGRATE program. 
  */
-public class Integrate1 extends GenericTOF_SCD{
+public class Integrate1 extends GenericTOF_SCD implements HiddenOperator{
   private static final String       TITLE       = "Integrate1";
   private static       boolean      DEBUG       = false;
   private static       Vector       choices     = null;

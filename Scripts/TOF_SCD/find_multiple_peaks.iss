@@ -11,8 +11,8 @@
 #  - The run number requires a '0' before it
 #  - if the calibration file is not specified then the real space
 #  conversion is not performed
-
-$ CATEGORY = operator,Instrument Type, TOF_NSCD
+$category=HiddenOperator
+#$ CATEGORY = operator,Instrument Type, TOF_NSCD
 $ path                DataDirectoryString    Raw Data Path
 $ outpath             DataDirectoryString    Output Data Path
 $ run_numbers         Array                  Run Number
