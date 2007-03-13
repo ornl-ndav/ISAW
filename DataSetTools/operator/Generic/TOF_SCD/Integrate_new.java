@@ -30,6 +30,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.11  2007/03/13 22:04:11  rmikk
+ * Made these implement HiddenOperator so they will not show up in the
+ *    macros menu
+ *
  * Revision 1.10  2006/12/19 05:19:03  dennis
  * Factored out basic integration methods and logging methods into
  * the classes
@@ -283,7 +287,7 @@ import Operators.TOF_SCD.*;
 /** 
  * This is a ported version of A.J.Schultz's INTEGRATE program. 
  */
-public class Integrate_new extends GenericTOF_SCD{
+public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
   private static final String       TITLE       = "Integrate_new";
   private static       boolean      DEBUG       = false;
   private static       Vector       choices     = null;

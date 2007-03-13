@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.9  2007/03/13 22:04:11  rmikk
+ * Made these implement HiddenOperator so they will not show up in the
+ *    macros menu
+ *
  * Revision 1.8  2006/07/10 21:48:01  dennis
  * Removed unused imports after refactoring to use New Parameter
  * GUIs in gov.anl.ipns.Parameters
@@ -73,7 +77,7 @@ import java.util.*;
  * This operator reads in an ASCII file and converts its contents into
  * a vector of Peak objects.
  */
-public class ReadPeaks extends GenericTOF_SCD{
+public class ReadPeaks extends GenericTOF_SCD implements HiddenOperator{
   private static final String TITLE       = "Read Peaks";
   
   /* ------------------------ Default constructor ------------------------- */ 

@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.9  2007/03/13 22:04:11  rmikk
+ * Made these implement HiddenOperator so they will not show up in the
+ *    macros menu
+ *
  * Revision 1.8  2007/01/12 14:48:46  dennis
  * Removed unused imports.
  *
@@ -228,7 +232,7 @@ import java.util.Vector;
 /** 
  * This is a ported version of A.J.Schultz's INTEGRATE program. 
  */
-public class IntegratePeakFile extends GenericTOF_SCD{
+public class IntegratePeakFile extends GenericTOF_SCD  implements HiddenOperator{
   private static final String       TITLE       = "IntegratePeakFile";
   private static       boolean      DEBUG       = false;
   private              StringBuffer logBuffer   = null;
