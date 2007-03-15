@@ -30,6 +30,10 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.20  2007/03/15 21:34:40  dennis
+ *  Added method getWorldToArrayTransform().  For this class the
+ *  method just returns the identity transformation.
+ *
  *  Revision 1.19  2006/07/27 00:32:38  dennis
  *  Moved ExcelAdapter to package ExtTools
  *
@@ -87,6 +91,7 @@ import gov.anl.ipns.ViewTools.Components.Region.*;
 import gov.anl.ipns.ViewTools.UI.*;
 import gov.anl.ipns.ViewTools.Components.ViewControls.ViewControl;
 import gov.anl.ipns.ViewTools.Components.ViewControls.ViewControlMaker;
+import gov.anl.ipns.ViewTools.Panels.Transforms.CoordTransform;
 
 import javax.swing.*;
 import java.awt.*;
@@ -490,9 +495,6 @@ public class LargeJTableViewComponent  extends JPanel implements IViewComponent2
            
            int row = (int)(Array.getNumRows()*(fpt.y - YAxis.getMax())/(YAxis.getMin()-YAxis.getMax()));
            setPointedAt( new SelectedData2D( row, col, 0f));
-
-
-             
 	}
  
 	 /**
@@ -512,9 +514,6 @@ public class LargeJTableViewComponent  extends JPanel implements IViewComponent2
                     float x =  XAxis.getMin()+(XAxis.getMax()-XAxis.getMin())*(col+.5f)/Array.getNumColumns();
                     float y =  YAxis.getMax()+(YAxis.getMin()-YAxis.getMax())*(row+.5f)/Array.getNumRows();
                     return new floatPoint2D( x,y);
-
-
-
 		}
 
 	 /**
@@ -533,6 +532,18 @@ public class LargeJTableViewComponent  extends JPanel implements IViewComponent2
 		public Region[] getSelectedRegions(){
 		return null;
 		}
+		
+    /**
+	 * For this class, there is no concept of world coordinates, so
+	 * this method just returns the identity transformation.  
+	 *
+	 * @return the identity transform
+	 */
+	  public CoordTransform getWorldToArrayTransform()
+	  {
+	    return new CoordTransform();
+	  }
+
   
 	 /**
 		* This method is invoked to notify the view component when the IVirtualArray
