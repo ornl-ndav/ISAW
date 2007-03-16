@@ -33,6 +33,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.53  2007/03/16 18:49:35  dennis
+ * Minor changes to work with new Region classes.  Now passes world to
+ * array transform in where needed by new Region classes.  Also, now
+ * converts defining points to IMAGE coordinates, since the corresponding
+ * method was removed from the region class.
+ *
  * Revision 1.52  2007/02/05 04:37:36  dennis
  * Removed small adjustment by 0.001 to World Coordinate bounds, which
  * was not necessary and caused problems with selections containing
@@ -1285,7 +1291,17 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
     {
       return;
     }
-    floatPoint2D[] def_pts = region.getDefiningPoints(Region.IMAGE);
+
+    floatPoint2D[] def_pts = region.getDefiningPoints();
+
+    int n_to_convert = def_pts.length;
+
+    if ( region instanceof WedgeRegion )     // last "point" has angles for 
+      n_to_convert--;                        // wedge region, so don't convert
+
+    for ( int i = 0; i < n_to_convert; i++ )
+      def_pts[i] = image_to_world_tran.MapFrom( def_pts[i] );
+
     if( region instanceof WedgeRegion )
     {
      /* def_pts[0]   = center pt of circle that arc is taken from
@@ -1484,7 +1500,8 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
     float err_vals[] = new float[n_xvals-1];
     float err;
     float x_vals[] = x_scale.getXs();
-    Point[] selected_pts = region.getSelectedPoints();
+    CoordTransform world_to_array = ivc.getWorldToArrayTransform();
+    Point[] selected_pts = region.getSelectedPoints( world_to_array );
     // Map world coord origin to image origin for magnitude calculation
     floatPoint2D image_origin = 
                         image_to_world_tran.MapFrom( new floatPoint2D(0,0) );
