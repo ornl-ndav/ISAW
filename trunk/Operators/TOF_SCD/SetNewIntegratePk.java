@@ -30,6 +30,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.6  2007/03/18 21:19:25  rmikk
+ * Changed the operator to a Hidden operator so it will not show up in the menus
+ *
  * Revision 1.5  2006/03/14 22:28:10  dennis
  * Converted from DOS to UNIX text.
  * Added some missing line breaks.
@@ -68,7 +71,7 @@ import DataSetTools.operator.DataSet.Conversion.XAxis.*;
  * @author MikkelsonR
  *
  */
-public class SetNewIntegratePk implements IWrappableWithCategoryList {
+public class SetNewIntegratePk implements HiddenOperator{
  
   public DataSet DS;  // The Data Set to add the IntegratePk operator to
   public LoadFileString filename; //The filename(java or class) with the Wrappable
