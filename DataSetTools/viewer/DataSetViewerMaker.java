@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.29  2007/03/30 19:12:01  amoe
+ *  In the PointedAtListener, the actionPerformed() only does something
+ *  if the DataSetViewerMaker's root pane is not null.
+ *
  *  Revision 1.28  2007/03/12 15:20:13  amoe
  *  -Updated redraw():  when the POINTED_AT_CHANGED event occurs, the view component will only get updated when it is not focused or when the dataset needs to be updated.
  *  -Added inner class PointedAtListener to listen for cursor updates on the view component, and update the observers.
@@ -310,19 +314,22 @@ public class DataSetViewerMaker  extends DataSetViewer
 	  float new_x;
 	  
 	  public void actionPerformed(ActionEvent ae)
-	  {		  
-		  // this is true when the DataSetViewMaker's frame is focused.
-		  isDsvmViewerFocused = ((JFrame)dsvm.getRootPane().getParent()).isFocused();
-		  
-		  message = ae.getActionCommand();		  
-		  new_x  = viewComp.getPointedAt().x;		  	  
-		  
-		  // if the pointed at changed flag is recieved and the viewcomponent is focused
-		  if( message.equals(IViewComponent.POINTED_AT_CHANGED) && (isDsvmViewerFocused) )
-		  {			 			  
-			  ds.setPointedAtX( new_x );
-			  ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );			  
-		  }		  
+	  {		   
+		  if(dsvm.getRootPane() != null)
+		  {
+			  // this is true when the DataSetViewMaker's frame is focused.
+			  isDsvmViewerFocused = ((JFrame)dsvm.getRootPane().getParent()).isFocused();
+			  
+			  message = ae.getActionCommand();		  
+			  new_x  = viewComp.getPointedAt().x;		  	  
+			  
+			  // if the pointed at changed flag is recieved and the viewcomponent is focused
+			  if( message.equals(IViewComponent.POINTED_AT_CHANGED) && (isDsvmViewerFocused) )
+			  {			 			  
+				  ds.setPointedAtX( new_x );
+				  ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );			  
+			  }
+		  }
 	  }
   }
 
