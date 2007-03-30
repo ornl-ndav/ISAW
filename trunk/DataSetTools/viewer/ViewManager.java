@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.81  2007/03/30 19:24:36  amoe
+ *  - Added to setView(..): If the viewer is a DataSetViewerMaker, then attempt to zoom in on the graph based on preset axis min/max
+ *  variables in the IsawProps.dat file.
+ *
  *  Revision 1.80  2007/01/12 14:41:39  dennis
  *  Added constructor that takes a third boolean parameter, show_now,
  *  that controls whether or not the ViewManager is immediately
@@ -304,6 +308,8 @@ import java.awt.event.*;
 import java.io.*;
 import javax.swing.*;
 //import javax.swing.event.*;
+import java.util.*;
+import DataSetTools.util.PropertiesLoader;
 
 /**
  *  A ViewManager object manages viewers for a DataSet in an external 
@@ -525,13 +531,60 @@ public class ViewManager extends    JFrame
 
       if( viewer instanceof IPreserveState){
          ObjectState st = (ObjectState)Ostate.get(viewType);
+         
          if( st == null){
              st = ((IPreserveState)viewer).getObjectState( true);
              Ostate.insert( viewType, st);
          }
-         ((IPreserveState)viewer).setObjectState( st);
+         
+         if(viewer instanceof DataSetViewerMaker)
+         {
+        	 ObjectState graphRange_objSt = ((ObjectState)((ObjectState)((ObjectState)st.get("View")).get("FunctionControls")).get("Graph Range"));
+        	 ObjectState functContr_objSt = ((ObjectState)((ObjectState)st.get("View")).get("FunctionControls"));
+        	 ObjectState view_objSt = (ObjectState)st.get("View");
+        	         	 
+        	 PropertiesLoader propLoad = new PropertiesLoader("IsawProps.dat");
+        	 
+        	 String script_xmin = propLoad.get("XRange_"+dataSet.getX_units()+"_min");
+        	 String script_xmax = propLoad.get("XRange_"+dataSet.getX_units()+"_max");
+        	 String script_ymin = propLoad.get("YRange_"+dataSet.getY_units()+"_min");
+        	 String script_ymax = propLoad.get("YRange_"+dataSet.getY_units()+"_max");
+        	         	 
+        	 //System.out.println("xmin: "+script_xmin);
+        	 //System.out.println("xmax: "+script_xmax);
+        	 //System.out.println("ymin: "+script_ymin);
+        	 //System.out.println("ymax: "+script_ymax);
+        	 
+        	 if(script_xmin != null)
+        	 {
+        		 float xRange_time_min = Float.parseFloat(script_xmin);
+    	         graphRange_objSt.reset("Min Range0",xRange_time_min);
+        	 }        	 
+        	 if(script_xmax != null)
+        	 {
+        		 float xRange_time_max = Float.parseFloat(script_xmax);
+        		 graphRange_objSt.reset("Max Range0",xRange_time_max);
+        	 }
+        	 if(script_ymin != null)
+        	 {
+        		 float yRange_counts_min = Float.parseFloat(script_ymin);
+    	         graphRange_objSt.reset("Min Range1",yRange_counts_min);
+        	 }
+        	 if(script_ymax != null)
+        	 {
+        		 float yRange_counts_max = Float.parseFloat(script_ymax);
+        		 graphRange_objSt.reset("Max Range1",yRange_counts_max);
+        	 }        	 
+	         
+	         functContr_objSt.reset("Graph Range",graphRange_objSt);
+	         view_objSt.reset("FunctionControls",functContr_objSt);
+	         st.reset("View",view_objSt);	         
+         }
+         
+         ((IPreserveState)viewer).setObjectState(st);
+         
       }
-
+      
       getContentPane().add(viewer);
       getContentPane().setVisible(true);
 
@@ -596,7 +649,7 @@ public class ViewManager extends    JFrame
         	FunctionViewComponent viewComp = new DifferenceViewComponent(varray);
         	viewer = new DataSetViewerMaker(tempDataSet, state, varray, viewComp);
         }
-        else if ( view_type.equals( TABLE)) //TABLE ) )
+        else if ( view_type.equals( TABLE))
            viewer = new TabView( tempDataSet, state ); 
         else if ( view_type.equals( CONTOUR ) )
           viewer = new ContourView( tempDataSet, state ); 
