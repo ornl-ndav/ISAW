@@ -31,6 +31,13 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.34  2007/03/30 19:01:34  amoe
+ *  Appended to defaultString()
+ *       "#XRange_Time(us)_min"
+ *       "#XRange_Time(us)_max"
+ *       "#YRange_Counts_min"
+ *       "#YRange_Counts_max"
+ *
  *  Revision 1.33  2005/08/13 18:01:55  rmikk
  *  Added Default_Ext to the IsawProps.dat for documentation
  *  Removed newer DATA_FILE_EXTENSION(not used)
@@ -387,6 +394,10 @@ public class DefaultProperties{
             .append("#ViewDistance=4.5").append(eol)
             .append("#Brightness=40").append(eol)
             .append("#Auto-Scale=0.0").append(eol)
+            .append("#XRange_Time(us)_min=0.0").append(eol)
+            .append("#XRange_Time(us)_max=0.0").append(eol)
+            .append("#YRange_Counts_min=0.0").append(eol)
+            .append("#YRange_Counts_max=0.0").append(eol)
             .append(eol)
             .append("#").append(eol)
             .append("# Wizard Options").append(eol)
