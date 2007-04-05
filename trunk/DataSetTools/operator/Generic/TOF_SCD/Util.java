@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.21  2007/04/05 18:47:14  rmikk
+ * Added a static method to write an orientation matrix given just an orientation
+ *   matrix
+ *
  * Revision 1.20  2005/01/10 15:30:45  dennis
  * Removed empty statement.
  *
@@ -473,6 +477,33 @@ public class Util{
     return peak;
   }
 
+  /**
+   * Write out the orientation matrix and lattice parameters to the
+   * matrix file.
+   *
+   * @param filename name of file to write to
+   * @param UB the orientation matrix. What is actually written is the
+   * transpose of what is used in memory.
+   *
+   * @return A descriptive ErrorString if anything goes wrong or null
+   * if all is well
+   */
+  public static ErrorString WriteMatrix( String filename, float[][]UB){
+    if( UB== null)
+       return new ErrorString("Orientation Matrix is null");
+    double[][] dUB= new double[3][3];
+    for( int i=0; i<3;i++)
+       for( int j=0;j<3;j++)
+          dUB[i][j]=UB[i][j];
+    double[] ABC = abc(dUB); 
+    if(ABC == null)
+       return new ErrorString(" Orientation Matrix is Singular");
+    float[]Abc = new float[ABC.length];
+    for( int i=0; i< ABC.length; i++)
+       Abc[i]=(float)ABC[i];
+    return writeMatrix( filename, UB, Abc, new float[7]);
+    
+  }
   /**
    * Write out the orientation matrix and lattice parameters to the
    * matrix file.
