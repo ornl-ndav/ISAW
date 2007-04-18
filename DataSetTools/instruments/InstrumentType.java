@@ -30,6 +30,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.18  2007/04/18 21:10:33  dennis
+ *  Added method, getTypeCodeFromName() that accepts one of the names:
+ *  TOF_NPD, TOF_NGLAD, TOF_NSCD, TOF_NSAS, TOF_NDGS, TOF_NIGS, TOF_NREFL,
+ *  and returns the corresponding integer type code defined in the
+ *  IPNS package.
+ *
  *  Revision 1.17  2004/06/02 20:30:48  dennis
  *  formIPNSFilename() now pads instrument name SAD with "1" and all
  *  other three character instrument names with "0".  Also, the file
@@ -85,6 +91,20 @@ import java.io.*;
 
 public class InstrumentType implements Serializable
 {
+  public static final String TOF_NPD   = "TOF_NPD";
+
+  public static final String TOF_NGLAD = "TOF_NGLAD";
+
+  public static final String TOF_NSCD  = "TOF_NSCD";
+
+  public static final String TOF_NSAS  = "TOF_NSAS";
+
+  public static final String TOF_NDGS  = "TOF_NDGS";
+
+  public static final String TOF_NIGS  = "TOF_NIGS";
+
+  public static final String TOF_NREFL = "TOF_NREFL";
+
   public static final int UNKNOWN                   = 
                           IPNS.Runfile.InstrumentType.UNKNOWN;
 
@@ -281,6 +301,43 @@ public class InstrumentType implements Serializable
 
     else
       return UNKNOWN;
+  }
+
+
+ /**
+  *  Get the integer instrument type code from a String specifying the
+  *  name of the instrument type.  The String must be one of:
+  *  TOF_NPD, TOF_NGLAD, TOF_NSCD, TOF_NSAS, TOF_NDGS, TOF_NIGS, TOF_NREFL.
+  *
+  *  @param  type   A String giving the name of the instrument type.
+  *  
+  *  @return An integer code for the instrument types as used in the IPNS
+  *          runfile package.
+  */
+  public static int getTypeCodeFromName( String type )
+  {
+    int type_code = -1;
+
+    if ( type.equalsIgnoreCase( TOF_NPD )  ||
+         type.equalsIgnoreCase( TOF_NGLAD ) )
+      type_code = TOF_DIFFRACTOMETER;
+
+    else if ( type.equalsIgnoreCase( TOF_NSCD ) )
+      type_code = TOF_SCD;
+
+    else if ( type.equalsIgnoreCase( TOF_NSAS ) )
+      type_code = TOF_SAD;
+
+    else if ( type.equalsIgnoreCase( TOF_NDGS ) )
+      type_code = TOF_DG_SPECTROMETER;
+
+    else if ( type.equalsIgnoreCase( TOF_NIGS ) )
+      type_code = TOF_IDG_SPECTROMETER;
+
+    else if ( type.equalsIgnoreCase( TOF_NREFL ) )
+      type_code = TOF_REFLECTOMETER;
+
+    return type_code;
   }
 
 
