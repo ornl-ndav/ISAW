@@ -30,6 +30,10 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.3  2007/04/26 21:41:41  dennis
+ * Now throws an IllegalArgumentException when the DataSet to modify
+ * is the immutable EMPTY_DATA_SET.
+ *
  * Revision 1.2  2007/04/26 20:46:56  dennis
  * The setInstrumentType() method now throws an IllegalArgumentException
  * if an input parameter is null, or if the specified instrument type
@@ -93,7 +97,8 @@ public class SetInstrumentType
    *          successfully.
    *
    *  @throws IllegalArgumentException if the input parameters are null,
-   *          or the instrument type is not supported.
+   *          or the instrument type is not supported, or the DataSet is
+   *          the immutable EMPTY_DATA_SET.
    */
   public static Object setInstrumentType( DataSet ds, String type )
   {
@@ -103,6 +108,9 @@ public class SetInstrumentType
 
     if ( ds == null )
       throw new IllegalArgumentException( "DataSet is null" );
+
+    if ( ds == DataSetTools.dataset.DataSet.EMPTY_DATA_SET )
+      throw new IllegalArgumentException( "DataSet is special EMPTY_DATA_SET, which can't be changed" );
 
     if ( type == null )
       throw new IllegalArgumentException( "String specifying 'type' is null" );
