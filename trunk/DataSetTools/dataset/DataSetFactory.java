@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.54  2007/04/26 20:36:18  dennis
+ *  The addOperators() method now throws an IllegalArgumentException
+ *  if the requested instrument type is not supported.
+ *
  *  Revision 1.53  2006/07/11 17:00:45  dennis
  *  Now adds ToQ2E operator, as well as the ToQE operator.
  *
@@ -456,7 +460,7 @@ public class DataSetFactory implements Serializable
    *
    * @param  instrument_type  Code for the type of instrument for which
    *                          the DataSet is to be configured.  The codes
-   *                          are in DataSetTools/instrument/InstrumentType.java   
+   *                         are in DataSetTools/instrument/InstrumentType.java 
    *                          InstrumentType.TOF_DIFFRACTOMETER
    *                          InstrumentType.TOF_SCD
    *                          InstrumentType.TOF_SAD
@@ -464,7 +468,8 @@ public class DataSetFactory implements Serializable
    *                          InstrumentType.TOF_IDG_SPECTROMETER
    *                          InstrumentType.TOF_REFLECTOMETER
    */
-  static public void addOperators( DataSet ds, int instrument_type )
+  static public void addOperators( DataSet ds, int instrument_type ) 
+                     throws IllegalArgumentException
   {
     if ( instrument_type == InstrumentType.TOF_DIFFRACTOMETER )
     {
@@ -533,6 +538,7 @@ public class DataSetFactory implements Serializable
         "WARNING: Unsupported instrument type in DataSetFactory.addOperators");
         DataSetTools.util.SharedData.addmsg( 
         "Requested type " + instrument_type );
+        throw new IllegalArgumentException(instrument_type + " NOT SUPPORTED");
     }
   }
 
