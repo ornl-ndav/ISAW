@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.82  2007/04/26 20:33:34  dennis
+ *  Small improvement to the error handling in the getDataSetView() method.
+ *
  *  Revision 1.81  2007/03/30 19:24:36  amoe
  *  - Added to setView(..): If the viewer is a DataSetViewerMaker, then attempt to zoom in on the graph based on preset axis min/max
  *  variables in the IsawProps.dat file.
@@ -670,10 +673,13 @@ public class ViewManager extends    JFrame
          System.out.println( "ERROR: Creating View:" +ss);
          
          System.out.println( "      " + view_type );
-        
+ 
          String[] SS= Command.ScriptUtil.GetExceptionStackInfo(ss, true,1);
          if( SS !=null)if(SS.length>1)
-         System.out.println(" line No and class are "+SS[0]);
+           System.out.println(" line No and class are "+SS[0]);
+         else
+           ss.printStackTrace();
+
          System.out.println( "using " + IMAGE + " by default" );
          viewer = new ImageView( tempDataSet, state );
       }
