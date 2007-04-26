@@ -30,19 +30,24 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.2  2007/04/26 20:46:56  dennis
+ * The setInstrumentType() method now throws an IllegalArgumentException
+ * if an input parameter is null, or if the specified instrument type
+ * is not supported.
+ *
  * Revision 1.1  2007/04/18 21:14:29  dennis
  * This class has a static method to set approppriate operators
  * and the INST_TYPE attribute, for a specified instrument type.
  * The instrument type is specified by one of the Strings:
  * TOF_NPD, TOF_NGLAD, TOF_NSCD, TOF_NSAS, TOF_NDGS, TOF_NIGS, TOF_NREFL.
  * Not all of the specified types are fully supported at this time.
- *
- *
  */
 package Operators.Special;
 
 import DataSetTools.dataset.*;
 import DataSetTools.instruments.*;
+import DataSetTools.retriever.*;
+import DataSetTools.viewer.*;
 
 /**
  *  This class contains a static method to reconfigure a DataSet to 
@@ -84,13 +89,23 @@ public class SetInstrumentType
    *  @param  type  String specifying the instrument type.
    *  @param  ds    The DataSet to modify
    *
-   *  @return 
+   *  @return A string indicating that the operation was completed
+   *          successfully.
+   *
+   *  @throws IllegalArgumentException if the input parameters are null,
+   *          or the instrument type is not supported.
    */
   public static Object setInstrumentType( DataSet ds, String type )
   {
                                 // clear out all existing operators and 
                                 // reconfigure with general operators and
                                 // those specific to the specified instrument
+
+    if ( ds == null )
+      throw new IllegalArgumentException( "DataSet is null" );
+
+    if ( type == null )
+      throw new IllegalArgumentException( "String specifying 'type' is null" );
 
     int type_code = InstrumentType.getTypeCodeFromName( type );
     ds.removeAllOperators();
@@ -100,6 +115,31 @@ public class SetInstrumentType
     ds.setAttribute( new IntAttribute( Attribute.INST_TYPE, type_code ) );
 
     return new String("Operators & INST_TYPE set to " + type );
+  }
+
+
+  /**
+   *  This is a crude main program to check the basic functionality of
+   *  the setInstrumentType() method.
+   */
+  public static void main( String args[] )
+  {
+     String directory = "/usr2/ARGONNE_DATA/";
+     String file_name = "gppd12358.run";
+     RunfileRetriever rr = new RunfileRetriever( directory + file_name );
+     DataSet ds = rr.getDataSet( 1 );
+
+     setInstrumentType( ds, "TOF_NDGS" );
+     setInstrumentType( ds, "TOF_NPD" );
+     new ViewManager( ds, IViewManager.IMAGE );
+
+     file_name = "hrcs2447.run";
+     rr = new RunfileRetriever( directory + file_name );
+     DataSet ds_2 = rr.getDataSet( 1 );
+
+  //   setInstrumentType( ds_2, "TOF_NPD" );
+  //   setInstrumentType( ds_2, "TOF_NDGS" );
+     new ViewManager( ds_2, IViewManager.IMAGE );
   }
 
 }
