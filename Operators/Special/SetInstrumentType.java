@@ -30,6 +30,10 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.4  2007/04/26 21:48:07  dennis
+ * Now adds a log message to the DataSet log, indicating that the
+ * operators and instrument type attribute have been changed.
+ *
  * Revision 1.3  2007/04/26 21:41:41  dennis
  * Now throws an IllegalArgumentException when the DataSet to modify
  * is the immutable EMPTY_DATA_SET.
@@ -121,8 +125,9 @@ public class SetInstrumentType
     DataSetFactory.addOperators( ds, type_code );
 
     ds.setAttribute( new IntAttribute( Attribute.INST_TYPE, type_code ) );
-
-    return new String("Operators & INST_TYPE set to " + type );
+    String message = "Operators and INST_TYPE attribute set to " + type;
+    ds.addLog_entry( message );
+    return new String(message );
   }
 
 
