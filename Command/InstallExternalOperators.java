@@ -31,6 +31,9 @@
  * * Modified:
  *
  * $Log$
+ * Revision 1.2  2007/04/27 12:48:24  rmikk
+ * Fixed javadoc errors
+ *
  * Revision 1.1  2007/02/21 20:23:16  rmikk
  * A "singleton" class to handle the list of external operator handlers.  The
  * String name of an INewOperatorHandler class has to be added to a static
@@ -128,8 +131,7 @@ public class InstallExternalOperators {
    
    /**
     * Use this form to add a new operator to the installed operator list
-    * @param op  A generic operator that is to be added to the operator list or
-    *      null if there is no new operator
+    * @return the next Operator or null if there is none
     */
    public GenericOperator  getNextOperator(){
       if( newOpHandlerIndex< 0)
