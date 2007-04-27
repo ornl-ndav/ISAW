@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.267  2007/04/27 00:29:08  dennis
+ *  Set version number to 181_a4.
+ *
  *  Revision 1.266  2007/04/27 00:26:06  rmikk
  *  Introduced a busy cursor when the search data base is being constructed
  *
@@ -961,7 +964,7 @@ public class Isaw
         String val="";
 
         if(SharedData.VERSION.equals("Unknown_Version"))
-          version="1.8.1_a3";
+          version="1.8.1_a4";
         else
           version=SharedData.VERSION;
 
