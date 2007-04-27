@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2007/04/27 12:58:00  rmikk
+ * Fixed javadoc errors
+ *
  * Revision 1.8  2007/02/22 16:28:54  rmikk
  * Now uses the  IGrid3D structure instead of the IDataGrid structure
  *
@@ -83,8 +86,7 @@ public class GetPeak {
      * @param row    A row inside the peak
      * @param col    a col inside the peak
      * @param timeChan  a time channel inside the peak
-     * @param DetID   The detector number associated with the row/col
-     * @param DS         the data set with the peak in it
+     * @param  grid   The grid for the detector in a data set
      * @param backIntensity  The cutoff value to determine when a cell is added
      *                  to the peak. The average cell intensity of the cell and
      *                  its nearest neighbbor must exceed this cutoff to be 

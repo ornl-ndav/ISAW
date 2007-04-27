@@ -1,7 +1,42 @@
-/**
- * 
+/*
+ * File: GetUB.java 
+ *             
+ * Copyright (C) 2005, Ruth Mikkelson
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * Contact : Ruth Mikkelson <mikkelsonr@uwstout.edu>
+ *           Department of Mathematics, Statistics and Computer Science
+ *           University of Wisconsin-Stout
+ *           Menomonie, WI 54751, USA
+ *
+ * This work was supported by the Intense Pulsed Neutron Source Division
+ * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
+ * This work was supported by the National Science Foundation under
+ * grant number DMR-0218882
+ *
+ * For further information, see <http://www.pns.anl.gov/ISAW/>
+ *
+ *
+ * Modified:
+ *
+ * $Log$
+ * Revision 1.2  2007/04/27 12:58:00  rmikk
+ * Fixed javadoc errors
+ *
  */
-
 package DataSetTools.operator.Generic.TOF_SCD;
 
 import gov.anl.ipns.MathTools.LinearAlgebra;
@@ -157,8 +192,8 @@ public class GetUB {
     * 
     * @param binnedData
     *           A bunch of histogram info
-    * @param binlength
-    *           The length of each bin
+    * @param minIndex   The start index of binnedData to be considered
+    * @param maxIndex   the last index of the binnedData to be considered
     * @return a 7 tuple where first pair is correlation of leading direction
     *         then fraction that map to planes withih .2 for this direction. The
     *         next two are the analogous information for the second leading
@@ -381,7 +416,8 @@ public class GetUB {
     *           parameters to tweak code[0]=# of directions to choose from
     *           code[0] = Min corr for the directions chosen code[0]=2- two of
     *           the resultant vectors are close( lower newDir or up gridLength)
-    * @return
+    * @return  at most 3 float[3] values  each representing a direction of a normal
+    *          and whose length is the distance between successive planes
     */
    public static float[][] getPlaneVectors( Vector Peaks , boolean[] omit ,
             float gridLength , float NewDir , float[] code ,
@@ -532,7 +568,14 @@ public class GetUB {
                if( P < .47f ) {
                   if( omit == null )
                      omit = new boolean[ Peaks.size() ];
-                  Nomitted += OmitPeaks( Peaks , Dirs[ i ] , omit , P );
+                     boolean[] omit_copy= new boolean[ Peaks.size() ];
+                     System.arraycopy( omit, 0,omit_copy,0,omit.length);
+                     
+                  int N = OmitPeaks( Peaks , Dirs[ i ] , omit_copy , P );
+                  
+                  omit= omit_copy;
+                  Nomitted +=N;
+                    
                }
             }
          }
@@ -891,7 +934,7 @@ public class GetUB {
             }
          }
          else if( L.startsWith( "w" ) ) {
-            UB = GetUB.GetUBMatrix( Peaks , 12f , .2f );
+            UB = GetUB.GetUBMatrix( Peaks , 20f , .3f );
             ScriptUtil.display( UB );
          }
          else if( L.startsWith( "r" ) ) {

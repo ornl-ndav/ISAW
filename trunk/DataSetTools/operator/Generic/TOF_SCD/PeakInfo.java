@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2007/04/27 12:58:00  rmikk
+ * Fixed javadoc errors
+ *
  * Revision 1.10  2007/02/22 16:24:55  rmikk
  * Replaced IDataGrid by IGrid3D so this can be used by other detector
  *    type information(i.e. arrays)
@@ -169,7 +172,7 @@ public class PeakInfo {
     /**
      * Sets the maximum change from the starting coordinate of a peak
      * or -1 if this is not to be used. 
-     * @param maxExtent
+     * @param maxDelta  The maximum extent of a peak from the starting point.
      */
     public void setMaxExtent( int maxDelta){
        MaxExtent = maxDelta;
