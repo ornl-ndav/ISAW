@@ -31,6 +31,9 @@
  * * Modified:
  *
  * $Log$
+ * Revision 1.2  2007/04/27 12:48:24  rmikk
+ * Fixed javadoc errors
+ *
  * Revision 1.1  2007/02/21 20:19:08  rmikk
  * New class that Handle  the external operators.  There are methods to get the
  *    operators(saved or new), save and restore the operators.
@@ -58,8 +61,6 @@ public interface INewOperatorHandler {
     * operators that were not in the retored operators.  These operators are
     * added to the list of installed operators
     * 
-    * @param op  A generic operator that is to be added to the operator list
-    *            or null if there is no other operators to be added.
     *   
     */
    public GenericOperator  getNextOperator();
