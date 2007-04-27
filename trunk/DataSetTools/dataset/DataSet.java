@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.56  2007/04/27 03:19:34  dennis
+ *  Fixed spelling error in javadoc.
+ *
  *  Revision 1.55  2007/02/23 20:27:40  dennis
  *  Made a few small fixes and improvements to the javadocs.
  *
@@ -1195,7 +1198,7 @@ public class DataSet implements IAttributeList,
   /**
    * Get the number of Data objects in the DataSet.
    *
-   * @returns an int giving the number of Data objects in this DataSet.
+   * @return an int giving the number of Data objects in this DataSet.
    */
   public int getNum_entries() { return data.size(); }
 
