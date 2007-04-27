@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.266  2007/04/27 00:26:06  rmikk
+ *  Introduced a busy cursor when the search data base is being constructed
+ *
  *  Revision 1.265  2007/01/12 14:46:21  dennis
  *  Set version number to 181_a1.
  *
@@ -1895,6 +1898,9 @@ public class Isaw
                   "Continue?",
                      JOptionPane.YES_NO_OPTION)==JOptionPane.NO_OPTION)
                      return;
+         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+         
+        
          try {
             new devTools.MakeSearchData();
          } catch( Exception s3 ) {
@@ -1902,6 +1908,7 @@ public class Isaw
             return;
          }
          JOptionPane.showMessageDialog( null,"Done updating the Search Data Base for operators");
+         setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
          return;
       }
                 
