@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.37  2007/04/29 18:27:58  dennis
+ * Minor formatting fix.
+ * Added one explanatory comment.
+ *
  * Revision 1.36  2004/07/16 18:48:06  dennis
  * Fixed improper comparison with Float.NaN
  *
@@ -122,8 +126,9 @@ import javax.swing.border.*;
 import javax.swing.event.*;
 
 /**
- * Provides a mechanism for selecting and viewing portions of a Data Set using 
- * stacked or overplotted graphs.
+ * Provides a mechanism for selecting and viewing portions of a Data Set whose 
+ * Data blocks have "Detector Position" attributes, and/or PixelInfoList 
+ * (i.e. DataGrid) attributes.
  *
  * @see DataSetTools.dataset.DataSet
  * @see DataSetTools.viewer.DataSetViewer
@@ -251,7 +256,7 @@ public void redraw( String reason )
       }
 
       int index = ds.getPointedAtIndex();
-      if ( index != DataSet.INVALID_INDEX && ! Float.isNaN( last_pointed_at_x ) ) 
+      if (index != DataSet.INVALID_INDEX && ! Float.isNaN( last_pointed_at_x )) 
       {
         XScale x_scale = getXConversionScale();
         conv_table.showConversions( last_pointed_at_x, index, x_scale );
@@ -607,7 +612,9 @@ private void MakeColorList()
   for ( int i = 0; i < y_vals.length; i++ )
    for ( int j = 0; j < num_frames; j++ )
     {
-      val = y_vals[i][j] * scale_factor;
+      val = y_vals[i][j] * scale_factor;  // here we are incorrectly assuming
+                                          // that there is only one x-scale for
+                                          // all of the Data blocks.
       if ( val >= 0 )
         index = (int)( ZERO_COLOR_INDEX + log_scale[(int)val] );
       else
