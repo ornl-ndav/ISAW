@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.59  2007/04/30 00:20:36  dennis
+ *  Adjusted bounds in y-direction to [0,n_rows] to match convention
+ *  used in the underlying ImageJPanel2.
+ *
  *  Revision 1.58  2006/08/10 17:05:13  dennis
  *  In redraw() method, only redraw horizontal graph in case the
  *  request to redraw came from outside of the ImageView.
@@ -740,15 +744,15 @@ private void MakeImage( boolean redraw_flag )
                                           // system for functions and histograms
   CoordBounds bounds;
   if ( image_data[0].length < num_cols )                 // histogram
-    bounds = new CoordBounds( x_min, 0, x_max, num_rows-1 );
+    bounds = new CoordBounds( x_min, 0, x_max, num_rows );
   else                  
   {                                                      // function
     float delta_x;
     if ( num_cols > 1 )
-      delta_x = (x_max - x_min) / (num_cols -1);
+      delta_x = (x_max - x_min) / (num_cols - 1);
     else
       delta_x = 0;
-    bounds = new CoordBounds(x_min-delta_x/2, 0, x_max+delta_x/2, num_rows-1);
+    bounds = new CoordBounds(x_min-delta_x/2, 0, x_max+delta_x/2, num_rows);
   }
   image_Jpanel.initializeWorldCoords( bounds );
   
