@@ -31,6 +31,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.14  2007/05/03 14:42:19  rmikk
+ * Fixed JavaDoc errors
+ *
  * Revision 1.13  2007/02/25 20:47:25  rmikk
  * Fixed to use the error matrix from BestFitMatrix for the constrained least
  *    squares.
@@ -298,10 +301,10 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
      * values
      * 
      * @param peaksPar  The Vector of Peaks( will not be changed)
-     * @param  Runs The run numbers to use 
+     * @param  run_nums The run numbers to use 
      * @param seq_nums The sequence numbers to use. 
      * @param matrix The transformation matrix to use. 
-     * @param matFile The matrix to write to. 
+     * @param matfile The matrix to write to. 
      * @param threshold The minimum peak intensity threshold to 
      *          use.
      * @param keepRange The detector pixel range to keep.
