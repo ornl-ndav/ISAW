@@ -451,7 +451,7 @@ public class Util {
      * @param  dataState  the stateInfo for the NXdata. Gives dimensions and 
      *                    translations
      *                    
-     * @param  time The position in the multi dimension array corresponding to 
+     * @param  timeDim The position in the multi dimension array corresponding to 
      *        NXdata.data that represents time. The fastest changing dimension 
      *       has position 0.
      * 
