@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.75  2007/05/03 14:26:03  rmikk
+ * Incorporated scripts that can be handled by the new  IntrinsicJavaScript
+ *    operators
+ *
  * Revision 1.74  2005/05/25 18:01:10  dennis
  * Replaced direct call to .show() method for window,
  * since .show() is deprecated in java 1.5.
@@ -521,8 +525,21 @@ public class CommandPane extends JPanel implements PropertyChangeListener,
       CommandSP.setBorder( new TitledBorder( "Prgm Editor:" + filename ) );
       PC.firePropertyChange( "filename", null, filename );
 
-      IScriptProcessor sp = ScriptInterpretFetch.getScriptProcessor( 
-          filename, Commands.getDocument(  ) );
+      
+      IScriptProcessor sp = null;
+      try{
+         
+         sp = DataSetTools.operator.IntrinsicJavaScript.
+                                           ScriptHandlerFromFile( filename ); 
+         Language.setSelectedItem(((DataSetTools.operator.IntrinsicJavaScript)sp).ScriptLang);
+      }catch( Exception ss){
+         
+         sp = null;
+      }
+      
+      if( sp == null)
+         sp = ScriptInterpretFetch.getScriptProcessor( 
+                                        filename, Commands.getDocument(  ) );
 
       if( sp == null ) {
         sp = new ScriptOperator( Commands.getDocument(  ) );
@@ -537,7 +554,7 @@ public class CommandPane extends JPanel implements PropertyChangeListener,
       if( Language != null ) {
         if( SP instanceof DataSetTools.operator.PyScriptOperator ) {
           Language.setSelectedIndex( 1 );
-        } else {
+        } else if( SP instanceof ScriptOperator){
           Language.setSelectedIndex( 0 );
         }
       }
@@ -631,7 +648,8 @@ public class CommandPane extends JPanel implements PropertyChangeListener,
     Help                     = new JButton( "Help" );
     Clear                    = new JButton( "Reset" );
 
-    String[] LanguageChoices = new String[2];
+    String[] othLang = DataSetTools.operator.IntrinsicJavaScript.getScriptLanguages();
+    String[] LanguageChoices = new String[2+othLang.length];
     LanguageChoices[0]       = ISAWscript;
 
     {
@@ -639,11 +657,13 @@ public class CommandPane extends JPanel implements PropertyChangeListener,
           "mine.py", null );
 
       if( sp == null ) {
-        LanguageChoices      = new String[1];
+        LanguageChoices      = new String[1+othLang.length];
         LanguageChoices[0]   = ISAWscript;
       } else {
         LanguageChoices[1] = "Jython Script";
       }
+      for( int i=0; i< othLang.length;i++)
+         LanguageChoices[ LanguageChoices.length -1-othLang.length+1-i] = othLang[i];
       sp = null;
     }
 
@@ -983,7 +1003,7 @@ public class CommandPane extends JPanel implements PropertyChangeListener,
           return;
         }
         
-        if( ( indx != 0 ) && !( SP instanceof IScriptProcessor ) ) {
+        if( ( indx ==1 ) && !( SP instanceof DataSetTools.operator.PyScriptOperator ) ) {
           return;
         }
         
@@ -992,9 +1012,23 @@ public class CommandPane extends JPanel implements PropertyChangeListener,
         if( indx != 0 ) {
           Fname = "*.py";
         }
-       
-        IScriptProcessor sp = ScriptInterpretFetch.getScriptProcessor( 
-            Fname, Commands.getDocument(  ) );
+        
+        IScriptProcessor sp = null;
+        
+        if( indx >0)
+           try{
+              
+              sp =new DataSetTools.operator.IntrinsicJavaScript( 
+                                     Language.getSelectedItem().toString().trim());
+              
+           }catch( Exception ss){
+              
+              sp = null;
+           }
+           
+        if( sp == null)
+           sp = ScriptInterpretFetch.getScriptProcessor( 
+                  Fname, Commands.getDocument(  ) );
        
         if( sp == null ) {
           //if the IScriptProcessor comes back null, there was some kind of problem with the script.
