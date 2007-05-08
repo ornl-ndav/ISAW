@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.54  2007/05/08 13:40:15  rmikk
+ * Now extends a subclass of JFrame which finalizes the JFrame when disposed
+ *
  * Revision 1.53  2007/03/16 18:49:35  dennis
  * Minor changes to work with new Region classes.  Now passes world to
  * array transform in where needed by new Region classes.  Also, now
@@ -382,7 +385,7 @@ import DataSetTools.dataset.Float1DAttribute;
  * 2D array of floats, in a frame. This class adds further implementation to
  * the ImageFrame2.java class for thorough testing of the ImageViewComponent.
  */
-public class SANDWedgeViewer extends JFrame implements IPreserveState,
+public class SANDWedgeViewer extends gov.anl.ipns.Util.Sys.FinishJFrame implements IPreserveState,
                                                        Serializable
 {
  /**
@@ -445,6 +448,7 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
   */
   public SANDWedgeViewer()
   {
+    super();
     init(null);
   }
 
@@ -455,6 +459,7 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
   */
   public SANDWedgeViewer( IVirtualArray2D iva )
   {
+    super();
     init(iva);
   }
 
@@ -472,6 +477,7 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
 		          AxisInfo yinfo,
 		          String title )
   {
+    super();
     VirtualArray2D temp = new VirtualArray2D( array, err_array );
     temp.setAxisInfo( AxisInfo.X_AXIS, xinfo.copy() );
     temp.setAxisInfo( AxisInfo.Y_AXIS, yinfo.copy() );
