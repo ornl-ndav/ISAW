@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.76  2007/05/08 17:01:42  rmikk
+ * Displays result in the status pane if no ParameterDialog box appears
+ *
  * Revision 1.75  2007/05/03 14:26:03  rmikk
  * Incorporated scripts that can be handled by the new  IntrinsicJavaScript
  *    operators
@@ -937,7 +940,8 @@ public class CommandPane extends JPanel implements PropertyChangeListener,
           return;
         } else {
           CP.SP.addIObserver( CP );
-          CP.SP.getResult(  );
+          Object Result = CP.SP.getResult(  );
+          ScriptUtil.display( Result);
           CP.SP.deleteIObservers(  );
         }
 
