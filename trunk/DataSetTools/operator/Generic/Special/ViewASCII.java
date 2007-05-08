@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.14  2007/05/08 13:42:05  rmikk
+ *  Now extends a subclass of JFrame which finalizes the JFrame when disposed
+ *
  *  Revision 1.13  2005/12/10 16:11:28  rmikk
  *  Change printcomponent to the JTextArea instead of the JFrame so
  *    that pages can be printed
@@ -135,7 +138,7 @@ public class ViewASCII extends    GenericSpecial
     private static int    MAX_WIDTH  = 0;
     private static int    MAX_HEIGHT = 0;
 
-    private JFrame    mw;
+    private gov.anl.ipns.Util.Sys.FinishJFrame    mw;
     private JTextPane textarea;
     private String    filename;
 
@@ -261,7 +264,7 @@ public class ViewASCII extends    GenericSpecial
                MAX_WIDTH=(int)(screenSize.height*4f/(3f*fontwidth))-2;
                MAX_HEIGHT=(int)(screenSize.height/fontheight)-5;
             }
-            mw=new JFrame(filename);
+            mw=new gov.anl.ipns.Util.Sys.FinishJFrame(filename);
                       mw.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
            try{   
             StyledEditorKit edKit= new StyledEditorKit();
@@ -550,7 +553,7 @@ public class ViewASCII extends    GenericSpecial
         //String filename="testASCII.txt";
 
         ViewASCII op;
-        op=new ViewASCII(filename);
+        op=new ViewASCII(args[0]);
         System.out.println("RESULT: "+op.getResult());
 
         /** ------------ added by Chris Bouzek -------------- */
