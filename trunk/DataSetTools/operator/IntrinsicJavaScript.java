@@ -33,6 +33,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2007/05/08 17:04:25  rmikk
+ * Now works without a setDefaultParameters and getResult method.
+ * Gives meaningful error messages if these methods are not on line 1.
+ * Creates a new scriptEngine each time the setDocument method is invoked.
+ *
  * Revision 1.1  2007/05/03 14:23:44  rmikk
  * Initial checkin for a class to make operators out of  scripting languages
  *   found by the javax.script package
@@ -73,7 +78,10 @@ import gov.anl.ipns.Util.SpecialStrings.*;
  * 
  */
 public class IntrinsicJavaScript extends GenericOperator implements
-         IScriptProcessor , IObserver , IObservable , IDataSetListHandler {
+         IScriptProcessor , 
+         IObserver , 
+         IObservable , 
+         IDataSetListHandler {
 
    Document              log;
 
@@ -103,7 +111,7 @@ public class IntrinsicJavaScript extends GenericOperator implements
 
    String                filename;
 
-   ScriptEngine          eng;
+   public ScriptEngine   eng;
 
    boolean               ScriptLoaded;
 
@@ -115,7 +123,13 @@ public class IntrinsicJavaScript extends GenericOperator implements
 
    boolean               hasGetResult;
 
+   String                errorMessageSetDef;
 
+   int                   errLineSetDef;
+
+   int                   errPosSetDef;
+
+   ScriptContext               Cont;
    /**
     * Constructor with no script
     * 
@@ -171,6 +185,8 @@ public class IntrinsicJavaScript extends GenericOperator implements
    private void setIsaw() {
 
       eng.put( "IOBS" , this.IobsList );
+      Cont = eng.getContext();
+      
    }
 
 
@@ -200,10 +216,11 @@ public class IntrinsicJavaScript extends GenericOperator implements
       Command.Script scr = new Script( filename );
       ScriptLang = eng.getFactory().getLanguageName();
       
-      text = scr.toString();
+      text = scr.toString();    
+      setIsaw();
       setDefaultParameters();
       
-      setIsaw();
+  
       
 
    }
@@ -350,12 +367,40 @@ public class IntrinsicJavaScript extends GenericOperator implements
       text = ScriptHandler.toString();
       
       ScriptLoaded = false;
+      resetError();
+      hasSetDefaultParams = true;
+      hasGetResult = true;
+      Result = null;
+      NumParams =0;
+      Command = null;
+      title = null;
+      
+      eng = ( new ScriptEngineManager() ).getEngineByName( ScriptLang ); 
       
       setDefaultParameters();
-      
+    
       filename = null;
    }
 
+   private void showBIndings(){
+     Bindings B = eng.getBindings(ScriptContext.ENGINE_SCOPE) ;
+     Set<String> K =B.keySet();
+     Iterator<String> It =K.iterator();
+     System.out.println("------------- Engine Scopr------------");
+     if( It.hasNext())
+     for( String S =It.next(); It.hasNext(); S = It.next()){
+        System.out.println( S+ "-------"+ B.get(S));
+     }
+     
+     B = eng.getBindings(ScriptContext.GLOBAL_SCOPE) ;
+      K =B.keySet();
+     It =K.iterator();
+     System.out.println("------------- Engine Scopr------------");
+     if( It.hasNext())
+     for( String S =It.next(); It.hasNext(); S = It.next()){
+        System.out.println( S+ "-------"+ B.get(S));
+     }
+   }
 
    /**
     * Executes the getResult method of the script if any.
@@ -379,7 +424,15 @@ public class IntrinsicJavaScript extends GenericOperator implements
             return Result;
             
          }
-         catch( Exception s ) {
+         catch( ScriptException s1){
+            if( s1.getLineNumber() !=1){
+               errPos = s1.getColumnNumber();
+               errLine = s1.getLineNumber();
+               return new ErrorString( s1.getMessage());
+            }else{
+               hasGetResult = false;
+            }
+         }catch( Exception s ) {
             
             hasGetResult = false;
          }
@@ -429,7 +482,9 @@ public class IntrinsicJavaScript extends GenericOperator implements
     */
    public int getErrorCharPos() {
 
-
+      if( errPos < 0)
+         if( errLine >=0)
+            errPos =0;
       return errPos;
    }
 
@@ -511,11 +566,20 @@ public class IntrinsicJavaScript extends GenericOperator implements
       if( ! LoadScript() )
          return;
       
-      if( hasSetDefaultParams )
+      if( hasSetDefaultParams ){
          try {
 
             eng.eval( "setDefaultParameters()" );
-            NumParams = ( (Number) eng.get( "NumParameters" ) ).intValue();
+            Object O = eng.get( "NumParameters" );
+            if( (O == null) || !(O instanceof Number)){
+               NumParams = 0;
+               hasSetDefaultParams = false;
+               errPosSetDef =-1;
+               errLineSetDef = -1;
+               errorMessageSetDef =  "";
+               return;
+            }
+            NumParams = ( (Number)O ).intValue();
             hasSetDefaultParams = true;
 
          }
@@ -526,7 +590,14 @@ public class IntrinsicJavaScript extends GenericOperator implements
             errorMessage = s.getMessage();
             NumParams = 0;
             hasSetDefaultParams = false;
-           
+            if( errLine ==1){//Could not find setDefaultParameters
+               errPos = -1;
+               errLine = -1;
+               errorMessage = "";
+            }
+            errPosSetDef =errPos;
+            errLineSetDef = errLine;
+            errorMessageSetDef =  errorMessage;
             return;
             
          }
@@ -538,6 +609,12 @@ public class IntrinsicJavaScript extends GenericOperator implements
             hasSetDefaultParams = false;
             
          }
+      } else{
+         errPos =errPosSetDef;
+         errLine = errLineSetDef;
+         errorMessage =  errorMessageSetDef;
+      }
+            
 
 
    }
@@ -865,7 +942,7 @@ public class IntrinsicJavaScript extends GenericOperator implements
 
       IntrinsicJavaScript jsc = IntrinsicJavaScript
                .ScriptHandlerFromFile( args[ 0 ] );
-
+    
       new DataSetTools.components.ParametersGUI.JParametersDialog( jsc , null ,
                null , jsc );
 
