@@ -30,13 +30,14 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2007/05/14 01:58:50  dennis
+ * Converted from DOS to UNIX text format.
+ *
  * Revision 1.1  2007/04/26 21:50:16  dennis
  * Operator to change the INST_TYPE attribute and configure the
  * DataSet's operators for a new instrument type.  This should be
  * useful to re-configure the DataSet with the QENS diffraction
  * data as a TOF_NPD instrument, instead of a TOF_NDGS instrument.
- *
- *
  */
 
 package Operators.Special;
