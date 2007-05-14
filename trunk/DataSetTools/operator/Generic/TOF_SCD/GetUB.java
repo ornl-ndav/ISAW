@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2007/05/14 22:02:28  rmikk
+ * Added public methods and variables so an external program can be used for
+ *    testing and viewing the results of subprocesses
+ *
  * Revision 1.2  2007/04/27 12:58:00  rmikk
  * Fixed javadoc errors
  *
@@ -42,6 +46,8 @@ package DataSetTools.operator.Generic.TOF_SCD;
 import gov.anl.ipns.MathTools.LinearAlgebra;
 
 import java.lang.reflect.Array;
+import java.text.FieldPosition;
+import java.text.NumberFormat;
 import java.util.*;
 
 import Command.ScriptUtil;
@@ -69,10 +75,15 @@ public class GetUB {
 
    public static int FIT1           = 0; // crude approx for fraction of
                                           // intensity that
+   public static float[][] List     = null;
+   
+   public static int Nelements      =0;
+   
+   public static boolean debug      = false;
 
    // lie within .3q of a plane.
 
-   static float[]    xixj;
+   public static float[]    xixj     = null;
 
 
    /**
@@ -81,6 +92,9 @@ public class GetUB {
    public GetUB() {
 
       super();
+      List = null;
+      Nelements =0;
+      xixj = null;
       // TODO Auto-generated constructor stub
    }
 
@@ -114,6 +128,7 @@ public class GetUB {
             throws IllegalArgumentException {
 
       float[] Res = new float[ 21 ];
+      Arrays.fill( Res,0f);
       float delta = 1 / MaxXtallengthReal / 4f / 12f;
       if( Peaks == null )
          throw new IllegalArgumentException( "null Peaks Vector" );
@@ -141,6 +156,7 @@ public class GetUB {
             int index = (int) ( p / delta + .5 );
             if( Math.abs( index ) >= Res.length / 2 ) {
                float[] Res1 = new float[ 2 * Math.abs( index ) + 1 + 10 ];
+               Arrays.fill(Res1,0f);
                System.arraycopy( Res , 0 , Res1 ,
                         ( Res1.length - Res.length ) / 2 , Res.length );
                Res = Res1;
@@ -148,6 +164,7 @@ public class GetUB {
             }
             Res[ center + index ] += pk.ipkobs();
          }
+      
       return Res;
    }
 
@@ -186,6 +203,23 @@ public class GetUB {
       System.out.println( "----------------------------------------" );
    }
 
+   public static void showDirs( float[][] Dirs){
+      java.text.DecimalFormat dform3 =new java.text.DecimalFormat(" 0000.0000 ;-0000.0000");
+      StringBuffer sb = new StringBuffer(35);
+      if( Dirs == null){
+         System.out.println("Directions of plane normals is null");
+         return;
+      }
+      for( int i=0; i< Dirs.length; i++){
+         double L =Math.sqrt(Dirs[i][0]*Dirs[i][0]+Dirs[i][1]*Dirs[i][1]+
+                                                        Dirs[i][2]*Dirs[i][2]);
+         for( int j=0; j< 3; j++)
+           sb= dform3.format((double)Dirs[i][j]/L,sb, new FieldPosition( NumberFormat.FRACTION_FIELD));
+         System.out.println( sb.append(":length="+L) );
+         sb.setLength( 0 );
+      }
+      
+ }
 
    /**
     * Finds best autocorrelation value, a several goodness of fits for planes
@@ -393,6 +427,104 @@ public class GetUB {
       return Res;
    }
 
+   public static void getCandidateDirections( Vector Peaks , boolean[] omit ,
+            float gridLength , float MaxXtalLengthReal ){
+      List = new float[ 50 ][ 7 ];
+      Nelements = 0;
+      float[] Res = doOneDirection( Peaks , 0f , 0f , omit , MaxXtalLengthReal );
+      if( Res != null ) {
+         List = InsertInList( List , Nelements , Res );
+         Nelements++ ;
+      }
+      Res = doOneDirection( Peaks , 1f , 0f , omit , MaxXtalLengthReal );
+      if( Res != null ) {
+         List = InsertInList( List , Nelements , Res );
+         Nelements++ ;
+      }
+      Res = doOneDirection( Peaks , 0f , 1f , omit , MaxXtalLengthReal );
+      if( Res != null ) {
+         List = InsertInList( List , Nelements , Res );
+         Nelements++ ;
+      }
+
+      for( float x = - 1 + gridLength ; x < 1 - gridLength ; x += gridLength )
+         for( float y = - (float) Math.sqrt( 1 - x * x ) ; y <= (float) Math
+                  .sqrt( 1 - x * x ) ; y += .1f ) {
+            if( 1 - x * x - y * y >= 0 )
+               Res = doOneDirection( Peaks , x , y , omit , MaxXtalLengthReal );
+            else
+               Res = null;
+            if( Res != null ) {
+               List = InsertInList( List , Nelements , Res );
+               Nelements++ ;
+            }
+         }
+     
+   }
+   
+   public static float[][] getDirs( float gridLength,float NewDir, float[] code ){
+
+      code[ 0 ] = 0;
+      if( Nelements <= 0 )
+         return null;
+      float[] q1 , q2 , q3;
+      q1 = new float[ 3 ];
+      Arrays.fill( code , - 1f );
+      code[ 6 ] = Nelements;
+      float[] listEntry = List[ Nelements - 1 ];
+      code[ 0 ] = listEntry[ CORR ];
+      code[ 1 ] = listEntry[ FIT1 ] / 2f;
+      float x = listEntry[ X ] , y = listEntry[ Y ] , scale = listEntry[ LEN ];
+      q1[ 0 ] = x * scale;
+      q1[ 1 ] = y * scale;
+      q1[ 2 ] = (float) Math.sqrt( 1 - x * x - y * y ) * scale;
+
+      listEntry = FindNextTop( List , Nelements , x , y , - 10 , - 10 , NewDir ,
+               gridLength );
+      if( listEntry == null ) {
+         float[][] Res1 = new float[ 1 ][ 3 ];
+         Res1[ 0 ] = q1;
+         //show( Res1 );
+         return Res1;
+      }
+      code[ 2 ] = listEntry[ CORR ];
+      code[ 3 ] = listEntry[ FIT1 ] / 2f;
+      q2 = new float[ 3 ];
+      float x1 = listEntry[ X ] , y1 = listEntry[ Y ];
+      scale = listEntry[ LEN ];
+      q2[ 0 ] = x1 * scale;
+      q2[ 1 ] = y1 * scale;
+      q2[ 2 ] = (float) Math.sqrt( 1 - x1 * x1 - y1 * y1 ) * scale;
+
+      listEntry = FindNextTop( List , Nelements , x , y , x1 , y1 , NewDir ,
+               gridLength );
+      if( listEntry == null ) {
+         float[][] Res1 = new float[ 2 ][ 3 ];
+
+         Res1[ 0 ] = q1;
+         Res1[ 1 ] = q2;
+         //show( Res1 );
+         return Res1;
+      }
+      code[ 4 ] = listEntry[ CORR ];
+      code[ 5 ] = listEntry[ FIT1 ] / 2f;
+      q3 = new float[ 3 ];
+      x = listEntry[ X ];
+      y = listEntry[ Y ];
+      scale = listEntry[ LEN ];
+      q3[ 0 ] = x * scale;
+      q3[ 1 ] = y * scale;
+      q3[ 2 ] = (float) Math.sqrt( 1 - x * x - y * y ) * scale;
+      float[][] Res1 = new float[ 3 ][ 3 ];
+      Res1[ 0 ] = q1;
+      Res1[ 1 ] = q2;
+      Res1[ 2 ] = q3;
+      //show( Res1 );
+
+
+      return Res1;
+
+   }
 
    /**
     * Attempts to automatically create a vector of normals to 3 planes whose
@@ -423,8 +555,8 @@ public class GetUB {
             float gridLength , float NewDir , float[] code ,
             float MaxXtalLengthReal ) {
 
-      float[][] List = new float[ 50 ][ 7 ];
-      int Nelements = 0;
+      List = new float[ 50 ][ 7 ];
+      Nelements = 0;
       code[ 0 ] = 0;
       float[] Res = doOneDirection( Peaks , 0f , 0f , omit , MaxXtalLengthReal );
       if( Res != null ) {
@@ -554,8 +686,17 @@ public class GetUB {
 
          code[ 6 ] = 0;
          while( ( code[ 6 ] < 100 ) && ( gridLength > .00000001 ) ) {
+            
             Dirs = getPlaneVectors( Peaks , omit , gridLength , DDir , code ,
                      MaxLength );
+            if( debug){
+               System.out.println("------------------ Direcions ------------");
+               System.out.println("grid delta=" +gridLength+":: Max unit cell "+
+                        MaxLength);
+               GetUB.showDirs( Dirs );
+               
+            }
+            System.out.println("-------------------------------------------");
             if( code[ 6 ] < 100 )
                gridLength = gridLength / 2f;
          }
@@ -571,8 +712,10 @@ public class GetUB {
                      boolean[] omit_copy= new boolean[ Peaks.size() ];
                      System.arraycopy( omit, 0,omit_copy,0,omit.length);
                      
-                  int N = OmitPeaks( Peaks , Dirs[ i ] , omit_copy , P );
-                  
+                  int N = OmitPeaks( Peaks , Dirs[ i ] , omit_copy , P, false );
+                  if( debug)
+                     System.out.println("omitted "+N+" peaks for direction "+ i +
+                              " at level "+ P);
                   omit= omit_copy;
                   Nomitted +=N;
                     
@@ -614,12 +757,13 @@ public class GetUB {
          throw new IllegalArgumentException( " No directions found" );
       if( Dirs.length < 3 )
          throw new IllegalArgumentException( " Not enough directions found" );
+      
       return UBMatrixFrPlanes( Dirs , Peaks , omit );
 
    }
 
 
-   private static float[][] UBMatrixFrPlanes( float[][] PlaneDirs ,
+   public static float[][] UBMatrixFrPlanes( float[][] PlaneDirs ,
             Vector Peaks , boolean[] omit ) {
 
       if( PlaneDirs == null )
@@ -669,7 +813,8 @@ public class GetUB {
       System.arraycopy( q , 0 , q1 , 0 , k );
       System.arraycopy( hkl , 0 , hkl1 , 0 , k );
       double std_dev = LinearAlgebra.BestFitMatrix( M , hkl1 , q1 );
-
+      if( debug)
+         System.out.println(" Best fit UB has an error of "+ std_dev);
       float[][] UB = new float[ 3 ][ 3 ];
       for( int i = 0 ; i < 3 ; i++ )
          for( int j = 0 ; j < 3 ; j++ )
@@ -761,7 +906,7 @@ public class GetUB {
 
 
    public static int OmitPeaks( Vector Peaks , float[] qNormal ,
-            boolean[] omit , float level ) {
+            boolean[] omit , float level, boolean count ) {
 
       int Res = 0;
       if( omit == null )
@@ -784,7 +929,7 @@ public class GetUB {
                      + qvec[ 2 ] * qNormal[ 2 ];
             x = x / Lsq;
             if( Math.abs( x - (int) ( x + .5 ) ) > level ) {
-               omit[ i ] = true;
+               if( !count) omit[ i ] = true;
                c++ ;
                Res++ ;
             }
@@ -910,7 +1055,7 @@ public class GetUB {
             else {
                if( omit == null )
                   omit = new boolean[ Peaks.size() ];
-               GetUB.OmitPeaks( Peaks , Dirs[ 0 ] , omit , range );
+               GetUB.OmitPeaks( Peaks , Dirs[ 0 ] , omit , range,false );
             }
 
          }
@@ -920,7 +1065,7 @@ public class GetUB {
             else {
                if( omit == null )
                   omit = new boolean[ Peaks.size() ];
-               GetUB.OmitPeaks( Peaks , Dirs[ 1 ] , omit , range );
+               GetUB.OmitPeaks( Peaks , Dirs[ 1 ] , omit , range,false );
             }
 
          }
@@ -930,7 +1075,7 @@ public class GetUB {
             else {
                if( omit == null )
                   omit = new boolean[ Peaks.size() ];
-               GetUB.OmitPeaks( Peaks , Dirs[ 2 ] , omit , range );
+               GetUB.OmitPeaks( Peaks , Dirs[ 2 ] , omit , range, false );
             }
          }
          else if( L.startsWith( "w" ) ) {
