@@ -30,6 +30,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.20  2007/06/05 20:22:21  rmikk
+ * Filled out the axisInfo method so this could be used with the new View
+ *    components
+ * Added a ReverseY directions.  Must be set to use the new view components
+ * Added the slice integration routines here
+ *
  * Revision 1.19  2005/11/11 21:11:15  rmikk
  * Fixed the array out of bounds error
  *
@@ -113,10 +119,13 @@ import gov.anl.ipns.Util.Sys.*;
 import gov.anl.ipns.ViewTools.Components.*;
 import gov.anl.ipns.ViewTools.Components.Menu.*;
 import gov.anl.ipns.ViewTools.UI.*;
+import gov.anl.ipns.ViewTools.Components.Region.*;
+import gov.anl.ipns.ViewTools.Panels.Transforms.*;
 
 import java.util.*;
 import java.awt.event.*;
 import javax.swing.*;
+
 import DataSetTools.dataset.*;
 import java.io.*;
 import DataSetTools.util.*;
@@ -143,7 +152,8 @@ public class RowColTimeVirtualArray extends
   public int TimeIndex = -1;
   public JPanel JRowColPanel= null;
   public XScale x_scale= null;
-  ViewerState state;
+  public ViewerState state;
+  public boolean ReverseY;
 
   /**
   *    Constructor for this Virtual Array
@@ -193,6 +203,24 @@ public class RowColTimeVirtualArray extends
    */
   public AxisInfo getAxisInfo( int axis )
     {
+     if( axis == AxisInfo.X_AXIS){
+        return new AxisInfo( (float)state.get_int(ViewerState.TABLE_TS_COLMIN )-.5f , 
+                 (float)state.get_int( ViewerState.TABLE_TS_COLMAX )+.5f ,
+                          "Column", "",AxisInfo.LINEAR);
+     }else if( axis == AxisInfo.Y_AXIS){
+        if( !ReverseY )
+           return new AxisInfo( (float)state.get_int(ViewerState.TABLE_TS_ROWMIN )-.5f , 
+                    (float)state.get_int( ViewerState.TABLE_TS_ROWMAX )+.5f,
+                             "Row", "",AxisInfo.LINEAR);
+        
+
+        return new AxisInfo( (float)state.get_int(ViewerState.TABLE_TS_ROWMAX )+.5f , 
+                 (float)state.get_int( ViewerState.TABLE_TS_ROWMIN )-.5f,
+                          "Row", "",AxisInfo.LINEAR);
+     }else if( axis == AxisInfo.Z_AXIS){
+        return new AxisInfo( 0f, DS.getYRange().getEnd_x(),"Intensities", "Counts",
+                   AxisInfo.LINEAR);
+     }
      return null;
     }
    
@@ -334,6 +362,11 @@ public class RowColTimeVirtualArray extends
         return Float.NaN;
      if( column_number >= getNumColumns()) 
         return Float.NaN;
+     
+     if( ReverseY ){
+        int r = tMaxrow - row_number; 
+        row_number = r - tMinrow;
+     }
      try{
         return (new Float( getValueAt(row_number, column_number ).toString()))
                   .floatValue();
@@ -523,8 +556,7 @@ public class RowColTimeVirtualArray extends
     {
      ViewMenuItem[] Res;
      Res = new ViewMenuItem[4];
-     //if(  JMenuName.equals( "Options"))
-       {
+    
         
         jmErr = new JCheckBoxMenuItem("Show Errors");
         jmErr.addActionListener( new CheckBoxListener());
@@ -532,25 +564,20 @@ public class RowColTimeVirtualArray extends
         jmInd = new JCheckBoxMenuItem("Show Indices");
         jmInd.addActionListener( new CheckBoxListener());
         jmInd.setSelected( state.get_boolean(ViewerState.TABLE_TS_IND));
-        Res[0] = new ViewMenuItem(jmErr);
-        Res[1] = new ViewMenuItem(jmInd);
+        Res[0] = new ViewMenuItem(ViewMenuItem.PUT_IN_EDIT, jmErr );
+        Res[1] = new ViewMenuItem( ViewMenuItem.PUT_IN_EDIT, jmInd);
         
-       }
-     //if( JMenuName.equals( "File"))
-       {
+     
         
         JMenuItem item = new JMenuItem( "Save DataSet to File");
         SaveDataSetActionListener DSActList =new SaveDataSetActionListener( DS);
         item.addActionListener(DSActList);
-        Res[2] = new ViewMenuItem( item);
+        Res[2] = new ViewMenuItem(ViewMenuItem.PUT_IN_FILE, item);
         JMenuItem sv= new JMenuItem( "Save Table to a File");
         sv.addActionListener( new MyActionListener());
-        Res[3] =new ViewMenuItem(sv);
+        Res[3] =new ViewMenuItem(ViewMenuItem.PUT_IN_FILE, sv);
         return Res;
-       }
-
-
-     
+      
     }
    
 
@@ -615,7 +642,14 @@ public class RowColTimeVirtualArray extends
 
     }
 
-
+   /**
+    * Gives the total number of rows in the whole detector
+    * @return the total number of rows in the whole detector
+    */
+  public int getTotalNumRows(){
+     return num_rows;
+  }
+  
   public IVirtualArray getArray(){
       return (IVirtualArray2D)this;
   } 
@@ -630,7 +664,15 @@ public class RowColTimeVirtualArray extends
      if( Info instanceof SelectedData2D)
        {
         SelectedData2D Info2D =(SelectedData2D)Info;
-        int Gr = super.getGroup( Info2D.getRow(), Info2D.getCol());
+        int row = Info2D.getRow()-tMinrow;
+        if( ReverseY){
+           row= tMaxrow -Info2D.getRow();
+        }
+        int col = Info2D.getCol()-tMincol;
+       
+        
+        int Gr = super.getGroup( row,col);
+       
         return Gr;
 
        }
@@ -673,6 +715,140 @@ public class RowColTimeVirtualArray extends
         DS.notifyIObservers( IObserver.SELECTION_CHANGED);
      }
   }
+  
+  
+  /**
+   *  This methods shows the result of integrating the last selected Box 
+   *  region.  The result displayed gives the sum of the cells - background
+   *  and the error assuming a Poisson disribution in the cells. The 
+   *  background is the shell just outside of the Box region in question
+   *   
+   * @param viewArray   The 2D virtual array with the intensities to be used 
+   * 
+   * @param SelectedRegions An array of selected regions.  Only the last
+   *                 Box region that was selected will be integrated
+   *                 
+   * @param Region2Array  Converts the coordinates of Region to array
+   *                coordinates.
+   */
+  public static void ShowIntegrateStats( IVirtualArray2D viewArray, 
+                                         Region[]        SelectedRegions,
+                                         CoordTransform   Region2Array){
+     if( viewArray == null){
+        JOptionPane.showMessageDialog( null, "No array of values to integrate");
+        return;
+     }
+     
+     if( SelectedRegions == null || SelectedRegions.length < 1 ){
+        JOptionPane.showMessageDialog( null, "No regions to integrate");
+        return;
+     }
+     
+     if( Region2Array == null){
+        JOptionPane.showMessageDialog( null, "Cannot find region in the array to integrate");
+        return;
+     }
+     
+     
+     Region Box = null;
+     for( int i= SelectedRegions.length -1; i >= 0  && Box == null ; i--){
+        if( (SelectedRegions[i] instanceof BoxRegion) || 
+                 (SelectedRegions[i] instanceof TableRegion))
+           Box = SelectedRegions[i];
+     }
+     
+     if( Box == null){
+        JOptionPane.showMessageDialog( null, "No Box region selected");
+        return;
+     }
+     float[] Results = new float[2];
+     CoordBounds BoxLimits = Box.getRegionBounds( Region2Array );
+     if( Box instanceof TableRegion){
+        BoxLimits.setBounds( BoxLimits.getX1()+1, BoxLimits.getY1()+1,
+                 BoxLimits.getX2(), BoxLimits.getY2() );
+     }
+     Results = GetIntegrateStats( viewArray,(int)BoxLimits.getX1(), 
+                                 (int)BoxLimits.getX2(), (int)BoxLimits.getY1(),
+                                 (int)BoxLimits.getY2());
+     String S="Intensity=" + Results[0] +"\n";
+     
+     S+= "(Poisson)Error = " + Results[1];
+     S+="\n Intensity/error="+( Results[0] / Results[1] );
+     JOptionPane.showMessageDialog( null, S);
+  }
+  
+  
+  /**
+   * Calculates the sum of the intensities - background for the array elements
+   * from row1,col1 to row2,col2.  The background is calculated from the
+   * shell just outside of the given box.
+   * 
+   * @param viewArray  The array of intensities
+   * @param col1       The first column n the region of interest
+   * @param col2       The last column(incl) n the region of interest
+   * @param row1       The first row n the region of interest
+   * @param row2       The last row(incl) in the region of interest
+   * @return      An array with 2 elements.  The first is the intensities(-
+   *              background) and the second is the error(assuming Poisson)
+   */
+  public static float[] GetIntegrateStats( IVirtualArray2D viewArray, int col1,
+               int col2, int row1, int row2){
+     int Col1 = Math.min( col1, col2);
+     int Col2 = Math.max( col1, col2);
+     int Row1= Math.min( row1 , row2);
+     int Row2= Math.max( row1 , row2);
+     float SumSel = 0;
+     float SumBorder =0;
+     int nSel =0;
+     int nBorder = 0;
+     
+     // Find sum of selected region
+     for( int row = Row1; row <= Row2; row++)
+        for( int col = Col1; col <= Col2; col++ ){
+           if( row >=0  && row < viewArray.getNumRows())
+              if( col >=0  && col < viewArray.getNumColumns()){
+                 SumSel += viewArray.getDataValue( row, col);
+                 nSel++;
+              }
+                 
+        }
+     
+     //Find sum of top and bottom borders
+     for( int col= Col1-1; col <= Col2+1; col++){
+        if( Row1-1 >=0)
+           if( col >=0 && col < viewArray.getNumColumns()){
+           SumBorder += viewArray.getDataValue( Row1-1, col);
+           nBorder ++;
+        }
+        if( Row2 + 1 < viewArray.getNumRows()) 
+           if( col >=0 && col < viewArray.getNumColumns()){
+              SumBorder += viewArray.getDataValue( Row2 + 1, col);
+              nBorder ++;
+        }
+     }
+     
+     //Now find the sum on left and right
+     for( int row = Row1 ; row <= Row2 ; row++ ) {
+         if( Col1 - 1 >= 0 ) {
+            SumBorder += viewArray.getDataValue( row , Col1 - 1 );
+            nBorder++ ;
+         }
+
+         if( Col2 + 1 < viewArray.getNumColumns() ) {
+            SumBorder += viewArray.getDataValue( row , Col2 + 1 );
+            nBorder++ ;
+         }
+      }
+     float[] Result = new float[2];
+     Result[0] =(SumSel - (nSel * SumBorder/nBorder));
+     
+     double p_over_b = (0.0 + nSel)/nBorder;
+     Result[1] =(float)java.lang.Math.sqrt( SumSel + p_over_b*p_over_b*SumBorder);
+    
+     return Result;
+  }
+  
+  
   /**
    *  This method sets the time, notifies listeners and advances the animation
    *  control
@@ -1101,8 +1277,8 @@ public class RowColTimeVirtualArray extends
        {
         xvals1 = ( calcXvals());
        }
-     //x_scale = new VariableXScale( xvals1);
-     //setXScale( x_scale);
+     x_scale = new VariableXScale( xvals1);
+     setXScale( x_scale);
      
      setErrInd(state.get_boolean( ViewerState.TABLE_TS_ERR),
                 state.get_boolean( ViewerState.TABLE_TS_IND));
@@ -1117,6 +1293,7 @@ public class RowColTimeVirtualArray extends
      TimeIndex = state.get_int( ViewerState.TABLE_TS_CHAN);
      if( TimeIndex < 0)
         TimeIndex = 0;
+   
      else if( TimeIndex >= x_scale.getNum_x())
         TimeIndex = x_scale.getNum_x()-1;
      SetTime( x_scale.getX( TimeIndex));
@@ -1143,7 +1320,6 @@ public class RowColTimeVirtualArray extends
         int min,max;
         min = (int)( tri.getMin());
         max = (int)( tri.getMax());
-        
         //int n2 = getColumnCount();
         if(ID==1)
           {
