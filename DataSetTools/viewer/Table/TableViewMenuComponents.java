@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.26  2007/06/05 22:03:44  rmikk
+ *  Connect the new TwoD Viewer to the main IsawGUI
+ *
  *  Revision 1.25  2004/09/06 17:55:23  dennis
  *  Fixed copyright information.
  *
@@ -138,6 +141,8 @@ public class TableViewMenuComponents
     public static final String GRX_Y="Serial y(x)";//"Group x vs y"old
     public static final String X_GrY ="Parallel y(x)"; // old: x vs Group y
     public static final String xR_Cy="Counts(x,y)"; //old:x,Row vs Col y
+    public static final String TWOD = "2D Viewer"; //old:x,Row vs Col y
+    
    public TableViewMenuComponents( )
      {error = false;
       index = false;
@@ -162,7 +167,7 @@ public class TableViewMenuComponents
   */
   public static int getNMenuItems()
     {
-      return 8;
+      return 9;
     }
 
   /** Returns the menu Name associated with the menu items
@@ -176,15 +181,17 @@ public class TableViewMenuComponents
          return "Parallel y(x)";
       if( i == 2 )
          return "Counts(x,y)";
-      if( i == 3)
+      if( i == 3 )
+         return TWOD;
+      if( i == 4)
          return "Slice Viewer";
-      if( i==4)
+      if( i==5)
          return TOMS_VIEW;
-      if( i == 6)
+      if( i == 7)
          return "Contour:Qx,Qy vs Qz";
-      if( i == 5)
+      if( i == 6)
          return "Contour:Qy,Qz vs Qx";
-      if( i == 7 )
+      if( i == 8 )
          return "Contour:Qxyz slices";
       else return null;
     }
@@ -236,6 +243,9 @@ public class TableViewMenuComponents
          
          dsv.ImagePortion = .90f;
          return dsv;
+    }
+    if( view_type == TWOD){
+       return new TwoDViewers( DS, state );
     }
        //return (DataSetViewer)(new TimeSliceView( DS, state));
     if( DS.getSelectedIndices().length<1)
