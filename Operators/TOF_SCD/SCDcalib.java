@@ -30,6 +30,18 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.16  2007/06/07 20:19:16  dennis
+ *  Added parameter to specify the directory where the .log and .results
+ *  files are to be written.  This fixes a problem with users not having
+ *  write permission to the default output directory that was used
+ *  previously.  The default directory for the .log and .results files
+ *  is now the user's home directory.  If the specified directory is not
+ *  writeable, warning messages are printed and the info is just written
+ *  to the console.
+ *  Switched the parameter that controls whether or not intial values are
+ *  to be read from a file, from a boolean to a BooleanEnablePG.  Did
+ *  some other minor clean up and testing for a null destination file.
+ *
  *  Revision 1.15  2006/07/10 22:28:39  dennis
  *  Removed unused imports after refactoring to use new Parameter GUIs
  *  in gov.anl.ipns.Parameters.
@@ -114,6 +126,8 @@ import DataSetTools.retriever.*;
 import gov.anl.ipns.MathTools.*;
 import gov.anl.ipns.MathTools.Functions.*;
 import gov.anl.ipns.Parameters.LoadFilePG;
+import gov.anl.ipns.Parameters.BooleanEnablePG;
+import gov.anl.ipns.Parameters.DataDirPG;
 import gov.anl.ipns.Util.Numeric.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 import gov.anl.ipns.Util.Sys.*;
@@ -145,7 +159,7 @@ import IPNS.Runfile.*;
 public class SCDcalib extends GenericTOF_SCD 
 {
   private static final String  TITLE = "SCD Calibration";
-  public  static final String  DEFAULT_PARAMETERS_FILE = "SCDcalib.results";
+  public  static final String  RESULTS_FILE_NAME = "/SCDcalib.results";
 
   /* ------------------------ Default constructor ------------------------- */
   /**
@@ -280,9 +294,12 @@ public class SCDcalib extends GenericTOF_SCD
     addParameter( new Parameter("Refine det distance", new Boolean(use_dist)) );
     addParameter( new Parameter("Refine det rotation", new Boolean(use_rot)) );
 
-    addParameter( new Parameter("LOAD INITIAL VALUES FROM FILE", 
-                  new Boolean( read_params ) ));
-    addParameter( new LoadFilePG("ALL PARAMETERS FILE", param_file) );
+    addParameter( make_initial_file_pg(false) );
+
+    addParameter( new LoadFilePG("Initial Values File", param_file) );
+
+    addParameter( new DataDirPG( "Output Dir for SCDcalib.results & .log",
+                                  System.getProperty("user.home")) ); 
   }
 
 
@@ -491,10 +508,32 @@ public class SCDcalib extends GenericTOF_SCD
     addParameter( new Parameter("Refine det distance", new Boolean(false)) ); 
     addParameter( new Parameter("Refine det rotation", new Boolean(false)) ); 
 
-    addParameter( new Parameter("LOAD INITIAL VALUES FROM FILE", 
-                  new Boolean(false) ));
-    addParameter( new LoadFilePG("ALL PARAMETERS FILE",
-                                  DEFAULT_PARAMETERS_FILE) ); 
+    String home_dir = System.getProperty( "user.home" );
+    addParameter( make_initial_file_pg(false) );
+    addParameter( new LoadFilePG("Initial Values File",
+                                  home_dir + RESULTS_FILE_NAME) ); 
+
+    addParameter( new DataDirPG( "Output Dir for SCDcalib.results & .log",
+                                  home_dir )); 
+  }
+
+  /**
+   *  Make the BooleanEnablePG parameter GUI that controls whether or not
+   *  initial values are read from a file.
+   *
+   *  @param  state   boolean indicating whether or not the PG should be
+   *                  initialized to true.
+   *
+   *  @return  A BooleanEnablePG to control whether or not initial values
+   *           are read from a file.
+   */
+  private BooleanEnablePG make_initial_file_pg( boolean state )
+  {
+    Vector vals = new Vector();
+    vals.add( new Boolean(false) );
+    vals.add( new Integer(1) );
+    vals.add( new Integer(0) );
+    return new BooleanEnablePG( "Load Initial Values From File", vals );
   }
 
  
@@ -584,6 +623,9 @@ public class SCDcalib extends GenericTOF_SCD
                                  double      values[],
                                  boolean     is_used[]  )
   {
+    if ( out == null )
+      return;
+
     out.println("------------- Initial Parameter Values ---------------");
     for ( int i = 0; i < values.length; i++ )
     {
@@ -612,7 +654,7 @@ public class SCDcalib extends GenericTOF_SCD
   {
     if ( out == null )
     {
-      SharedMessages.addmsg("WARNING: Results file doesn't exist" );
+      SharedMessages.addmsg("WARNING: Can't write to .log or .results file!" );
       return;
     }
 
@@ -779,18 +821,21 @@ public class SCDcalib extends GenericTOF_SCD
     boolean read_params = 
                        ((Boolean)(getParameter(20).getValue())).booleanValue();
     String  param_file  = getParameter(21).getValue().toString(); 
+    String  output_dir  = getParameter(22).getValue().toString(); 
 
                                                       // open the log file
     PrintStream log_print = null;
     try
     {
-      File log_file       = new File( logname );
+      File log_file       = new File( output_dir.trim() + "/" + logname );
       OutputStream log_os = new FileOutputStream( log_file );
       log_print = new PrintStream( log_os );
     }
     catch ( Exception e )
     {
-      SharedMessages.addmsg("WARNING: Couldn't open log file: " + logname );
+      SharedMessages.addmsg("WARNING: Couldn't open log file in " + output_dir);
+      SharedMessages.addmsg("         Only writing log to console terminal...");
+      log_print = null;
     }
 
     double lattice_params[] = new double[6];
@@ -980,10 +1025,9 @@ public class SCDcalib extends GenericTOF_SCD
     ShowInitalValues( System.out, parameter_names, parameters, is_used );
     ShowInitalValues( log_print, parameter_names, parameters, is_used );
 
-    System.out.println("Before fit... params are");
-    log_print.println("Before fit... params are");
-    error_f.ShowProgress( System.out );
-    error_f.ShowProgress( log_print  );
+    String message = "Before fit... params are";
+    error_f.ShowProgress( message, System.out );
+    error_f.ShowProgress( message, log_print  );
                                                 // build the arrays of x values
                                                 // target function values
                                                 // (z_vals) and "fake"
@@ -1005,10 +1049,13 @@ public class SCDcalib extends GenericTOF_SCD
                                  x_index, z_vals, sigmas, 
                                  tolerance, max_steps);
 
-    log_print.println( "==================================================");
-    log_print.println( "RESULT OF FIT:");
-    log_print.println( fitter.getResultsString() );
-    log_print.println( "==================================================");
+    if ( log_print != null )
+    {
+      log_print.println( "==================================================");
+      log_print.println( "RESULT OF FIT:");
+      log_print.println( fitter.getResultsString() );
+      log_print.println( "==================================================");
+    }
     System.out.println( "==================================================");
     System.out.println( "RESULT OF FIT:");
     System.out.println( fitter.getResultsString() );
@@ -1032,9 +1079,9 @@ public class SCDcalib extends GenericTOF_SCD
     UB = LinearAlgebra.getTranspose( UB );
     LinearAlgebra.print( UB );
 
-    System.out.println();
-    error_f.ShowProgress( System.out );
-    error_f.ShowProgress( log_print  );
+    message = "After fit... params are";
+    error_f.ShowProgress( message, System.out );
+    error_f.ShowProgress( message, log_print  );
 
     error_f.ShowOldCalibrationInfo( System.out );
     error_f.ShowOldCalibrationInfo( log_print  );
@@ -1052,26 +1099,31 @@ public class SCDcalib extends GenericTOF_SCD
       floatPoint2D col_pairs[] = getPairs( 1, theo_pos, meas_pos );
       floatPoint2D tof_pairs[] = getPairs( 2, theo_pos, meas_pos );
 
-      log_print.println("Detector Row Number Comparison, ID " + det_id );
-      log_print.println("Theoetical     Measured");
-      for ( int i = 0; i < row_pairs.length; i++ )
-        log_print.println( Format.real( row_pairs[i].x, 10, 5 ) + "   " +
-                           Format.real( row_pairs[i].y, 13, 5 )    );
+      if ( log_print != null )
+      {
+        log_print.println("");
+        log_print.println("=================================================");
+        log_print.println("Detector Row Number Comparison, ID " + det_id );
+        log_print.println("=================================================");
+        log_print.println("Theoetical     Measured");
+        for ( int i = 0; i < row_pairs.length; i++ )
+          log_print.println( Format.real( row_pairs[i].x, 10, 5 ) + "   " +
+                             Format.real( row_pairs[i].y, 13, 5 )    );
 
-      log_print.println("Detector Column Number Comparison, ID " + det_id );
-      log_print.println("Theoetical     Measured");
-      for ( int i = 0; i < col_pairs.length; i++ )
-        log_print.println( Format.real( col_pairs[i].x, 10, 5 ) + "   " +
-                           Format.real( col_pairs[i].y, 13, 5 )    );
+        log_print.println("Detector Column Number Comparison, ID " + det_id );
+        log_print.println("Theoetical     Measured");
+        for ( int i = 0; i < col_pairs.length; i++ )
+          log_print.println( Format.real( col_pairs[i].x, 10, 5 ) + "   " +
+                             Format.real( col_pairs[i].y, 13, 5 )    );
 
-      log_print.println("Detector Time-of-flight Comparison, ID " + det_id );
-      log_print.print("NOTE: The calculated T0 shift should be added to the ");
-      log_print.println("measured value ");
-      log_print.println("Theoetical     Measured");
-      for ( int i = 0; i < tof_pairs.length; i++ )
-        log_print.println( Format.real( tof_pairs[i].x, 10, 3 ) + "   " +
-                           Format.real( tof_pairs[i].y, 13, 3 )    );
-
+        log_print.println("Detector Time-of-flight Comparison, ID " + det_id );
+        log_print.print("NOTE: The calculated T0 shift should be added to ");
+        log_print.println("the measured value ");
+        log_print.println("Theoetical     Measured");
+        for ( int i = 0; i < tof_pairs.length; i++ )
+          log_print.println( Format.real( tof_pairs[i].x, 10, 3 ) + "   " +
+                             Format.real( tof_pairs[i].y, 13, 3 )    );
+      }
 
       MakeDisplay( "Theoretical vs Measured Row, ID " + det_id, 
                    "Row", "Number", row_pairs );
@@ -1081,28 +1133,37 @@ public class SCDcalib extends GenericTOF_SCD
                    "Time", "us", tof_pairs );
     }
                                                    // record the results file
-    String resultname = DEFAULT_PARAMETERS_FILE;
+    String resultname = RESULTS_FILE_NAME;
     PrintStream result_print = null;
     try
     {
-      File result_file       = new File( resultname );
+      File result_file       = new File( output_dir + resultname );
       OutputStream result_os = new FileOutputStream( result_file );
       result_print = new PrintStream( result_os );
     }
     catch ( Exception results_exeception )
     {
-      SharedMessages.addmsg("WARNING: Couldn't open results file: "
-                            + resultname );
+      SharedMessages.addmsg("WARNING: Couldn't write results file: " +
+                             output_dir + resultname );
+      result_print = null;
     }
 
     UniformGrid_d grid_arr[] = error_f.getAllGrids();
     double s_dev = error_f.getStandardDeviationInQ();
-    WriteAllParams( log_print, parameter_names, parameters, s_dev, grid_arr );
-    WriteAllParams( result_print, parameter_names, parameters, s_dev, grid_arr);
+
     WriteAllParams( System.out, parameter_names, parameters, s_dev, grid_arr );
-    error_f.ShowOldCalibrationInfo( result_print  );
-    result_print.close();
-    log_print.close();
+    if ( result_print != null )
+    {
+      WriteAllParams(result_print,parameter_names, parameters, s_dev, grid_arr);
+      error_f.ShowOldCalibrationInfo( result_print  );
+      result_print.close();
+    }
+
+    if ( log_print != null )
+    {
+      WriteAllParams( log_print, parameter_names, parameters, s_dev, grid_arr );
+      log_print.close();
+    }
 
     float results[] = new float[ parameters.length ];
     for ( int i = 0; i < parameters.length; i++ )
