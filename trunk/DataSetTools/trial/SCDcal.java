@@ -31,6 +31,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.19  2007/06/07 20:24:03  dennis
+ *  The ShowProgress method now has an extra parameter that provides a
+ *  String message that is printed before the progress info.
+ *  Added check for null stream before printing in ShowOldCalibraionInfo
+ *  method.
+ *
  *  Revision 1.18  2006/01/16 04:23:05  dennis
  *  Added parameter to constructor so that the calibration process
  *  can apply to both the LANSCE and IPNS SCD.
@@ -477,8 +483,9 @@ public class SCDcal   extends    OneVarParameterizedFunction
     eval_count++;
     if ( eval_count % 500 == 0 )
     {
-      ShowProgress( System.out );
-      ShowProgress( log_file );
+      String message = "After " + eval_count + " steps... params are";
+      ShowProgress( message, System.out );
+      ShowProgress( message, log_file );
     }
   } 
 
@@ -715,7 +722,7 @@ public class SCDcal   extends    OneVarParameterizedFunction
    */
   public void ShowProgress()
   {
-    ShowProgress( System.out );
+    ShowProgress( "", System.out );
   }
  
 
@@ -724,13 +731,19 @@ public class SCDcal   extends    OneVarParameterizedFunction
    *  observed lattice parameters, standard deviation in the current 
    *  function values (i.e. differences between Q theoretical and
    *  Q observed) and the current parameter estimates.
+   *
+   *  @param message  A message String to print before the progress info
+   *  @param out      The PrintStream to which the message and info is
+   *                  to be sent.
    */
-  public void ShowProgress( PrintStream out )
+  public void ShowProgress( String message, PrintStream out )
   {                           
     if ( out == null )
       return;
 
     out.println();
+    out.println("==================================================");
+    out.println(message);
     out.println("==================================================");
     out.println( "Number of evaluations = " + eval_count );
 
@@ -804,6 +817,9 @@ public class SCDcal   extends    OneVarParameterizedFunction
    */
   public void ShowOldCalibrationInfo( PrintStream out )
   {
+    if ( out == null )
+      return;
+
     out.println();
     out.println("===========================================================");
     out.println("BASIC Calibrated Values " );
@@ -993,9 +1009,9 @@ public class SCDcal   extends    OneVarParameterizedFunction
           System.out.print("* ");
         System.out.println( parameter_names[i] +" = " + parameters[i] ); 
       }
-      System.out.println("Before fit... params are");
-      error_f.ShowProgress( System.out );
-      error_f.ShowProgress( error_f.log_file );
+      String message = "Before fit... params are";
+      error_f.ShowProgress( message, System.out );
+      error_f.ShowProgress( message, error_f.log_file );
                                                 // build the arrays of x values
                                                 // target function values 
                                                 // (z_vals) and "fake"
@@ -1034,9 +1050,9 @@ public class SCDcal   extends    OneVarParameterizedFunction
       UB = LinearAlgebra.getTranspose( UB );
       LinearAlgebra.print( UB );
 
-      System.out.println();
-      error_f.ShowProgress( System.out );
-      error_f.ShowProgress( error_f.log_file );
+      message = "After fit... params are";
+      error_f.ShowProgress( message, System.out );
+      error_f.ShowProgress( message, error_f.log_file );
 
       error_f.ShowOldCalibrationInfo();
     }
