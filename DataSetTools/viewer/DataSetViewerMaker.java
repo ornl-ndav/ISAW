@@ -30,6 +30,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.31  2007/06/08 19:38:27  dennis
+ *  Now redraws for DATA_CHANGED, DATA_DELETED, DATA_REORDERED and
+ *  HIDDEN_CHANGED messages as well as for SELECTION_CHANGED.
+ *  Removed debug print.
+ *
  *  Revision 1.30  2007/06/08 19:25:32  dennis
  *  Removed local variable holding reference to DataSet ds.  Now
  *  uses getDataSet() method to get the reference from the base
@@ -275,7 +280,6 @@ public class DataSetViewerMaker  extends DataSetViewer
      */
     public void setDataSet( DataSet ds )
     {
-      System.out.println("ViewerMaker.setDataSet() called ");
       super.setDataSet(ds);
       viewArray = DataSetData.convertToVirtualArray(ds);
       viewComp.dataChanged(viewArray);
