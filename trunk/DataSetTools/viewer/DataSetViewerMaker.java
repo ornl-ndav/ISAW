@@ -30,13 +30,22 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.30  2007/06/08 19:25:32  dennis
+ *  Removed local variable holding reference to DataSet ds.  Now
+ *  uses getDataSet() method to get the reference from the base
+ *  class.
+ *  Minor reformatting for readability.
+ *
  *  Revision 1.29  2007/03/30 19:12:01  amoe
  *  In the PointedAtListener, the actionPerformed() only does something
  *  if the DataSetViewerMaker's root pane is not null.
  *
  *  Revision 1.28  2007/03/12 15:20:13  amoe
- *  -Updated redraw():  when the POINTED_AT_CHANGED event occurs, the view component will only get updated when it is not focused or when the dataset needs to be updated.
- *  -Added inner class PointedAtListener to listen for cursor updates on the view component, and update the observers.
+ *  -Updated redraw():  when the POINTED_AT_CHANGED event occurs, the view 
+ *   component will only get updated when it is not focused or when the 
+ *   dataset needs to be updated.
+ *  -Added inner class PointedAtListener to listen for cursor updates on 
+ *   the view component, and update the observers.
  *
  *  Revision 1.27  2007/01/12 14:48:46  dennis
  *  Removed unused imports.
@@ -151,7 +160,6 @@ import gov.anl.ipns.ViewTools.Components.OneD.VirtualArrayList1D;
 public class DataSetViewerMaker  extends DataSetViewer
                                  implements IPreserveState
   {
-   DataSet ds;
    ViewerState state;
    VirtualArrayList1D viewArray;
    FunctionViewComponent viewComp;
@@ -168,7 +176,6 @@ public class DataSetViewerMaker  extends DataSetViewer
       super( ds, state);
       this.viewArray = viewArray;
       this.viewComp = viewComp;
-      this.ds = ds;
       this.state = state;
       this.dsvm = this;
       //viewComp.setData( viewArray);
@@ -222,33 +229,43 @@ public class DataSetViewerMaker  extends DataSetViewer
     {
       if ( !validDataSet() )
         return;
-      if( reason.equals( "SELECTION CHANGED" ) )
+
+      System.out.println("DataSetViewerMaker redraw called " + reason );
+
+      if( reason.equals( IObserver.SELECTION_CHANGED ) ||
+          reason.equals( IObserver.DATA_CHANGED )      ||
+          reason.equals( IObserver.DATA_DELETED )      ||
+          reason.equals( IObserver.DATA_REORDERED )    ||
+          reason.equals( IObserver.HIDDEN_CHANGED )      )
       {
         viewArray = DataSetData.convertToVirtualArray(getDataSet());
         viewComp.dataChanged(viewArray);
-        
       }
+
       else if( reason.equals( "POINTED AT CHANGED" ))
       {
-          if( viewComp.isDrawingPointedAtGraph() && (ds.getPointedAtIndex() != viewArray.getPointedAtGraph()) )
+          if( viewComp.isDrawingPointedAtGraph() && 
+              (getDataSet().getPointedAtIndex() != 
+                                              viewArray.getPointedAtGraph()) )
           {
-        	  viewArray.setPointedAtGraph( ds.getPointedAtIndex() );       
-        	  viewComp.dataChanged();
-        	  
+            viewArray.setPointedAtGraph( getDataSet().getPointedAtIndex() ); 
+            viewComp.dataChanged();
           }
           
           // this is true when the DataSetViewMaker's frame is focused.          
-          isDsvmViewerFocused = ((JFrame)dsvm.getRootPane().getParent()).isFocused();
+          isDsvmViewerFocused =
+                         ((JFrame)dsvm.getRootPane().getParent()).isFocused();
           
           if( !isDsvmViewerFocused )
           {
-	          floatPoint2D fpt = new floatPoint2D();
-	          fpt.x = ds.getPointedAtX();
-	          viewComp.setPointedAt(fpt);
+            floatPoint2D fpt = new floatPoint2D();
+            fpt.x = getDataSet().getPointedAtX();
+            viewComp.setPointedAt(fpt);
           }
-
       }
     }
+
+
     /**
      *  Change the DataSet being viewed to the specified DataSet.  Derived
      *  classes should override this and take what additional steps are needed
@@ -258,12 +275,17 @@ public class DataSetViewerMaker  extends DataSetViewer
      */
     public void setDataSet( DataSet ds )
     {
+      System.out.println("ViewerMaker.setDataSet() called ");
       super.setDataSet(ds);
       viewArray = DataSetData.convertToVirtualArray(ds);
       viewComp.dataChanged(viewArray);
       repaint();
     }
+
+
+
     //-------------------- IPreserveState Methods & Variables-----------------
+
     ObjectState Ostate= null;
    
      public void setObjectState( ObjectState new_state){
@@ -288,8 +310,9 @@ public class DataSetViewerMaker  extends DataSetViewer
              state.insert("View",((IPreserveState)viewComp).getObjectState 
                      (is_default));
          return state;
-       
      }
+
+
 
   private class ancestor_listener implements AncestorListener {
     //methods
@@ -310,27 +333,30 @@ public class DataSetViewerMaker  extends DataSetViewer
    */
   private class PointedAtListener implements ActionListener
   {	  
-	  String message;
-	  float new_x;
+    String message;
+    float new_x;
 	  
-	  public void actionPerformed(ActionEvent ae)
-	  {		   
-		  if(dsvm.getRootPane() != null)
-		  {
-			  // this is true when the DataSetViewMaker's frame is focused.
-			  isDsvmViewerFocused = ((JFrame)dsvm.getRootPane().getParent()).isFocused();
+    public void actionPerformed(ActionEvent ae)
+    {		   
+      if(dsvm.getRootPane() != null)
+      {
+       // this is true when the DataSetViewMaker's frame is focused.
+       isDsvmViewerFocused = 
+                          ((JFrame)dsvm.getRootPane().getParent()).isFocused();
 			  
-			  message = ae.getActionCommand();		  
-			  new_x  = viewComp.getPointedAt().x;		  	  
+       message = ae.getActionCommand();		  
+       new_x  = viewComp.getPointedAt().x;		  	  
 			  
-			  // if the pointed at changed flag is recieved and the viewcomponent is focused
-			  if( message.equals(IViewComponent.POINTED_AT_CHANGED) && (isDsvmViewerFocused) )
-			  {			 			  
-				  ds.setPointedAtX( new_x );
-				  ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );			  
-			  }
-		  }
-	  }
+       // if the pointed at changed flag is recieved and the viewcomponent 
+       // is focused
+      if( message.equals(IViewComponent.POINTED_AT_CHANGED) && 
+          (isDsvmViewerFocused) )
+      {			 			  
+        getDataSet().setPointedAtX( new_x );
+        getDataSet().notifyIObservers( IObserver.POINTED_AT_CHANGED );
+      }
+    }
+    }
   }
 
   }//DataSetViewerMaker
