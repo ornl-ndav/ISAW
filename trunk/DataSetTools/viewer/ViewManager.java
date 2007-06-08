@@ -30,12 +30,16 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.83  2007/06/08 19:45:16  dennis
+ *  Minor reformatting for readability.
+ *
  *  Revision 1.82  2007/04/26 20:33:34  dennis
  *  Small improvement to the error handling in the getDataSetView() method.
  *
  *  Revision 1.81  2007/03/30 19:24:36  amoe
- *  - Added to setView(..): If the viewer is a DataSetViewerMaker, then attempt to zoom in on the graph based on preset axis min/max
- *  variables in the IsawProps.dat file.
+ *  - Added to setView(..): If the viewer is a DataSetViewerMaker, then 
+ *    attempt to zoom in on the graph based on preset axis min/max
+ *    variables in the IsawProps.dat file.
  *
  *  Revision 1.80  2007/01/12 14:41:39  dennis
  *  Added constructor that takes a third boolean parameter, show_now,
@@ -503,6 +507,7 @@ public class ViewManager extends    JFrame
      return dataSet;
    }
 
+
    /**
     *  Set a new viewer type for this ViewManager.  The available view 
     *  types are specified in the interface IViewManager.  Currently, the 
@@ -515,7 +520,6 @@ public class ViewManager extends    JFrame
     */
    public void setView( String view_type )
    {
-
      
      getContentPane().setVisible(false);
      getContentPane().removeAll();
@@ -542,50 +546,59 @@ public class ViewManager extends    JFrame
          
          if(viewer instanceof DataSetViewerMaker)
          {
-        	 ObjectState graphRange_objSt = ((ObjectState)((ObjectState)((ObjectState)st.get("View")).get("FunctionControls")).get("Graph Range"));
-        	 ObjectState functContr_objSt = ((ObjectState)((ObjectState)st.get("View")).get("FunctionControls"));
-        	 ObjectState view_objSt = (ObjectState)st.get("View");
-        	         	 
-        	 PropertiesLoader propLoad = new PropertiesLoader("IsawProps.dat");
+           ObjectState graphRange_objSt =
+                 ((ObjectState)((ObjectState)((ObjectState)
+                 st.get("View")).get("FunctionControls")).get("Graph Range"));
+
+           ObjectState functContr_objSt = 
+                 ((ObjectState)((ObjectState)
+                 st.get("View")).get("FunctionControls"));
+
+           ObjectState view_objSt = (ObjectState)st.get("View");
+       	         	 
+           PropertiesLoader propLoad = new PropertiesLoader("IsawProps.dat");
         	 
-        	 String script_xmin = propLoad.get("XRange_"+dataSet.getX_units()+"_min");
-        	 String script_xmax = propLoad.get("XRange_"+dataSet.getX_units()+"_max");
-        	 String script_ymin = propLoad.get("YRange_"+dataSet.getY_units()+"_min");
-        	 String script_ymax = propLoad.get("YRange_"+dataSet.getY_units()+"_max");
+           String script_xmin = 
+                            propLoad.get("XRange_"+dataSet.getX_units()+"_min");
+           String script_xmax = 
+                            propLoad.get("XRange_"+dataSet.getX_units()+"_max");
+           String script_ymin = 
+                            propLoad.get("YRange_"+dataSet.getY_units()+"_min");
+           String script_ymax = 
+                            propLoad.get("YRange_"+dataSet.getY_units()+"_max");
         	         	 
-        	 //System.out.println("xmin: "+script_xmin);
-        	 //System.out.println("xmax: "+script_xmax);
-        	 //System.out.println("ymin: "+script_ymin);
-        	 //System.out.println("ymax: "+script_ymax);
+         //System.out.println("xmin: "+script_xmin);
+         //System.out.println("xmax: "+script_xmax);
+         //System.out.println("ymin: "+script_ymin);
+         //System.out.println("ymax: "+script_ymax);
         	 
-        	 if(script_xmin != null)
-        	 {
-        		 float xRange_time_min = Float.parseFloat(script_xmin);
-    	         graphRange_objSt.reset("Min Range0",xRange_time_min);
-        	 }        	 
-        	 if(script_xmax != null)
-        	 {
-        		 float xRange_time_max = Float.parseFloat(script_xmax);
-        		 graphRange_objSt.reset("Max Range0",xRange_time_max);
-        	 }
-        	 if(script_ymin != null)
-        	 {
-        		 float yRange_counts_min = Float.parseFloat(script_ymin);
-    	         graphRange_objSt.reset("Min Range1",yRange_counts_min);
-        	 }
-        	 if(script_ymax != null)
-        	 {
-        		 float yRange_counts_max = Float.parseFloat(script_ymax);
-        		 graphRange_objSt.reset("Max Range1",yRange_counts_max);
-        	 }        	 
+           if(script_xmin != null)
+           {
+             float xRange_time_min = Float.parseFloat(script_xmin);
+             graphRange_objSt.reset("Min Range0",xRange_time_min);
+           }        	 
+           if(script_xmax != null)
+           {
+             float xRange_time_max = Float.parseFloat(script_xmax);
+             graphRange_objSt.reset("Max Range0",xRange_time_max);
+           }
+           if(script_ymin != null)
+           {
+             float yRange_counts_min = Float.parseFloat(script_ymin);
+             graphRange_objSt.reset("Min Range1",yRange_counts_min);
+           }
+           if(script_ymax != null)
+           {
+             float yRange_counts_max = Float.parseFloat(script_ymax);
+             graphRange_objSt.reset("Max Range1",yRange_counts_max);
+           }        	 
 	         
-	         functContr_objSt.reset("Graph Range",graphRange_objSt);
-	         view_objSt.reset("FunctionControls",functContr_objSt);
-	         st.reset("View",view_objSt);	         
+           functContr_objSt.reset("Graph Range",graphRange_objSt);
+           view_objSt.reset("FunctionControls",functContr_objSt);
+           st.reset("View",view_objSt);	         
          }
          
          ((IPreserveState)viewer).setObjectState(st);
-         
       }
       
       getContentPane().add(viewer);
@@ -601,6 +614,7 @@ public class ViewManager extends    JFrame
       System.gc();
    }
    
+
    /**
     * Get the view type for this view manager. The view type Strings are
     * listed in the IViewManager interface. Use getDataSetView() to actually
@@ -647,10 +661,11 @@ public class ViewManager extends    JFrame
         }
         else if ( view_type.equals( DIFFERENCE_GRAPH ))
         {
-        	VirtualArrayList1D varray = DataSetData.convertToVirtualArray(
-                    tempDataSet );
-        	FunctionViewComponent viewComp = new DifferenceViewComponent(varray);
-        	viewer = new DataSetViewerMaker(tempDataSet, state, varray, viewComp);
+           VirtualArrayList1D varray = DataSetData.convertToVirtualArray(
+                                       tempDataSet );
+
+           FunctionViewComponent viewComp = new DifferenceViewComponent(varray);
+           viewer= new DataSetViewerMaker(tempDataSet, state, varray, viewComp);
         }
         else if ( view_type.equals( TABLE))
            viewer = new TabView( tempDataSet, state ); 
@@ -686,6 +701,7 @@ public class ViewManager extends    JFrame
 
       return viewer;
    }
+
 
   /**
    *  Send WINDOW_CLOSING event to shutdown the ViewManager cleanly and
@@ -835,11 +851,11 @@ public class ViewManager extends    JFrame
                             "in ViewManager.update()");
      }
 
-
      else
      {
        System.out.println("ERROR: bad DataSet in ViewManager.update()" );
      }
+
    }
 
   /**
