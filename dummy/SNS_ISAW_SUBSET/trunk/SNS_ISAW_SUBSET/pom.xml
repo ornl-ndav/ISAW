@@ -7,11 +7,11 @@
   <parent>
     <groupId>gov.ornl.sns</groupId>
     <artifactId>sns-asg-pom</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.1</version>
   </parent>
   <groupId>ISAW</groupId>
   <artifactId>sns-isaw-subset</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>1.0</version>
   <name>SNS ISAW</name>
   <description>SNS ISAW Viewers Subset</description>
   <dependencies>
@@ -23,18 +23,18 @@
     <!-- dependency>
       <groupId>ISAW</groupId>
       <artifactId>isaw-core</artifactId>
-      <version>1.0-SNAPSHOT</version>
+      <version>1.0</version>
 	  <scope>provided</scope>
     </dependency -->
     <!-- dependency>
       <groupId>ISAW</groupId>
       <artifactId>SSG_Tools</artifactId>
-      <version>1.0-SNAPSHOT</version>
+      <version>1.0</version>
     </dependency -->
     <dependency>
       <groupId>ISAW</groupId>
       <artifactId>jogl</artifactId>
-      <version>1.0-SNAPSHOT</version>
+      <version>1.0</version>
 	  <scope>provided</scope>
     </dependency>
   </dependencies>
