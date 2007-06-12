@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.84  2007/06/12 19:21:32  dennis
+ *  Now explicitly refers to message String constants using the
+ *  package name IObserver, that currently has the strings defined.
+ *
  *  Revision 1.83  2007/06/08 19:45:16  dennis
  *  Minor reformatting for readability.
  *
@@ -740,29 +744,29 @@ public class ViewManager extends    JFrame
      if ( !( reason instanceof String) )   // we only deal with Strings
        return;
 
-     String r_string = (String)reason;
+     String r_string = ((String)reason).trim();
   
      if ( debug_view_manager )
        System.out.println("ViewManager UPDATE : " + r_string );
 
      if ( observed == dataSet )             // message about original dataSet
      {
-       if ( r_string.equals( DESTROY ))
+       if ( r_string.equals( IObserver.DESTROY ))
          destroy();
-       else if ( r_string.equals( CLOSE_VIEWERS ))
+       else if ( r_string.equals( IObserver.CLOSE_VIEWERS ))
          destroy();
 
-       else if (  r_string.equals( DATA_DELETED )   ||
-                  r_string.equals( DATA_REORDERED ) ||
-                  r_string.equals( DATA_CHANGED )   ||
-                  r_string.equals( HIDDEN_CHANGED )  )
+       else if (  r_string.equals( IObserver.DATA_DELETED   ) ||
+                  r_string.equals( IObserver.DATA_REORDERED ) ||
+                  r_string.equals( IObserver.DATA_CHANGED   ) ||
+                  r_string.equals( IObserver.HIDDEN_CHANGED )  )
        {
          makeTempDataSet( false );
          viewer.setDataSet( tempDataSet );
          setTitle( dataSet.toString() );
          System.gc();
        }
-       else if ( r_string.equals( POINTED_AT_CHANGED )  )
+       else if ( r_string.equals( IObserver.POINTED_AT_CHANGED )  )
        {
          if ( !link_viewers_button.getState() )      // nothing to do
            return;
@@ -786,25 +790,25 @@ public class ViewManager extends    JFrame
                    new_x = conversion_operator.convert_X_Value( new_x, index );
                }
                tempDataSet.setPointedAtX( new_x );
-               viewer.redraw( (String)reason );
+               viewer.redraw( r_string );
              }  
        }
-       else if ( r_string.equals( GROUPS_CHANGED )    ||
-                 r_string.equals( SELECTION_CHANGED ) ||
-                 r_string.equals( FIELD_CHANGED )     ||
-                 r_string.equals( ATTRIBUTE_CHANGED )  ) 
+       else if ( r_string.equals( IObserver.GROUPS_CHANGED )    ||
+                 r_string.equals( IObserver.SELECTION_CHANGED ) ||
+                 r_string.equals( IObserver.FIELD_CHANGED )     ||
+                 r_string.equals( IObserver.ATTRIBUTE_CHANGED )  ) 
        {
-         viewer.redraw( (String)reason );
+         viewer.redraw( r_string );
        }
        else
-         System.out.println("Message " + reason + " not handled for dataSet "+
+         System.out.println("Message " + r_string + " not handled for dataSet "+
                             "in ViewManager.update()");
      }     
 
      else if ( observed == tempDataSet )    // message about temporary dataSet
      {                                      // translate to original dataSet
                                             // and notify it's observers
-       if ( r_string.equals( POINTED_AT_CHANGED )) 
+       if ( r_string.equals( IObserver.POINTED_AT_CHANGED )) 
        {
          if ( !link_viewers_button.getState() )      // call redraw for tempDS 
          {
@@ -821,24 +825,24 @@ public class ViewManager extends    JFrame
          if ( conversion_operator != null && !Float.isNaN(new_x) )
            orig_x = solve( new_x );
          dataSet.setPointedAtX( orig_x ); 
-         dataSet.notifyIObservers( POINTED_AT_CHANGED );
+         dataSet.notifyIObservers( IObserver.POINTED_AT_CHANGED );
        }
 
-       else if ( r_string.equals( SELECTION_CHANGED )) 
+       else if ( r_string.equals( IObserver.SELECTION_CHANGED )) 
                                                   // synchonize selections and
        {                                          // notify dataSet's observers 
          for ( int i = 0; i < tempDataSet.getNum_entries(); i++ )
            dataSet.setSelectFlag(original_index[i], 
                                  tempDataSet.getData_entry(i) ); 
 
-         dataSet.notifyIObservers( reason );
+         dataSet.notifyIObservers( r_string );
        }
 
        else if ( r_string.equals( XScaleChooserUI.N_STEPS_CHANGED ) ||
                  r_string.equals( XScaleChooserUI.X_RANGE_CHANGED )  )
        {
          if ( conversion_operator == null )
-           viewer.redraw( (String)reason );
+           viewer.redraw( r_string );
          else
          {
            makeTempDataSet( false );
@@ -847,7 +851,7 @@ public class ViewManager extends    JFrame
        }
 
        else
-         System.out.println("Message "+reason+" not handled for tempDataSet "+
+         System.out.println("Message "+r_string+" not handled for tempDataSet "+
                             "in ViewManager.update()");
      }
 
