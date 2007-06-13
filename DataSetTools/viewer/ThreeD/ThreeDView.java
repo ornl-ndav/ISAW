@@ -30,6 +30,16 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.38  2007/06/13 17:00:00  dennis
+ * No longer precomputes all colors for all data in advance.  This trade
+ * off of space for time is no longer needed since cpu speeds have
+ * increased since this was first designed.  This change saves the space
+ * that was allocated to the precomputed color table, and will make the
+ * change to displaying attribute informaton easier.
+ * Now uses Integer objects instead of String objects to identify different
+ * 3D objects that are displayed.
+ *
+ *
  * Revision 1.37  2007/04/29 18:27:58  dennis
  * Minor formatting fix.
  * Added one explanatory comment.
@@ -126,9 +136,9 @@ import javax.swing.border.*;
 import javax.swing.event.*;
 
 /**
- * Provides a mechanism for selecting and viewing portions of a Data Set whose 
- * Data blocks have "Detector Position" attributes, and/or PixelInfoList 
- * (i.e. DataGrid) attributes.
+ * This class provides a view of the data mapped onto the detector positions
+ * in 3D.  The Data Blocks in the DataSet must have "Detector Position"
+ * and/or PixelInfoList attributes for this viewer to work.
  *
  * @see DataSetTools.dataset.DataSet
  * @see DataSetTools.viewer.DataSetViewer
@@ -170,16 +180,18 @@ public class ThreeDView extends DataSetViewer
   private AltAzController          view_control      = null;
   private AnimationController      frame_control     = null;
   private SplitPaneWithState       split_pane        = null;
-  private byte                     color_index[][]   = null;
   private volatile Color           color_table[]     = null;
   private float                    log_scale[]       = null;
   private DataSetXConversionsTable conv_table        = null;
+  private float                    max_data          =  100;
+  private float                    min_data          =    0;
+  private float                    scale_factor      =    1;
 
-  private final String  GROUP_PREFIX    = "";
-  private final String  DETECTOR_PREFIX = "D";
-  private final String  AXES            = "Axes";
-  private final String  BEAM            = "Beam";
-  private final String  INSTRUMENT      = "Inst";
+  private final Integer  GROUP_PREFIX    = 0;
+  private final Integer  DETECTOR_PREFIX = 100000000;
+  private final Integer  AXES            = 200000000;
+  private final Integer  BEAM            = 300000000;
+  private final Integer  INSTRUMENT      = 400000000;
 
   private boolean debug = false;
 
@@ -256,7 +268,7 @@ public void redraw( String reason )
       }
 
       int index = ds.getPointedAtIndex();
-      if (index != DataSet.INVALID_INDEX && ! Float.isNaN( last_pointed_at_x )) 
+      if (index != DataSet.INVALID_INDEX && ! Float.isNaN( last_pointed_at_x ))
       {
         XScale x_scale = getXConversionScale();
         conv_table.showConversions( last_pointed_at_x, index, x_scale );
@@ -512,16 +524,24 @@ private void MakeThreeD_Scene()
 
 private void set_colors( int frame )
 {
-  if ( color_index == null || color_index[0] == null )   // invalid color_index
-    return;
-
-  if ( frame < 0 || frame >= color_index[0].length )     // invalid frame num
-    frame = 0;                                           // so just use 0
+  DataSet ds = getDataSet();
+  int   num_data = ds.getNum_entries();
 
   int   index;
-  for ( int i = 0; i < color_index.length; i++ )
+  Data  data_block;
+  float y_val;
+  float val;
+  float x_val = frame_control.getFrameValue();
+  for ( int i = 0; i < num_data; i++ )
   {
-    index = color_index[i][frame];
+    data_block = ds.getData_entry(i);
+    y_val = data_block.getY_value( x_val, IData.SMOOTH_NONE ); 
+    val = y_val * scale_factor;
+    if ( val >= 0 )
+      index = (int)( ZERO_COLOR_INDEX + log_scale[(int)val] );
+    else
+      index = (int)( ZERO_COLOR_INDEX - log_scale[(int)(-val)] );
+
     if ( index < 0 )
       index += 256;
 
@@ -536,11 +556,11 @@ private void set_colors( int frame )
 }
 
 
-
 /* ----------------------------- MakeColorList --------------------------- */
 
 private void MakeColorList()
 {
+  Long base_time = System.nanoTime();
   if ( !validDataSet() )
     return;
 
@@ -559,8 +579,6 @@ private void MakeColorList()
     num_frames = 1;                         // sampling.
   else
     num_frames = num_x - 1;
-
-  color_index = new byte[ num_rows ][ num_frames ];
 
   y_vals = new float[num_rows][];
   Data  data_block;
@@ -583,8 +601,8 @@ private void MakeColorList()
  
   frame_control.setFrame_values( frame_vals );
 
-  float max_data = Float.NEGATIVE_INFINITY;
-  float min_data = Float.POSITIVE_INFINITY;
+  max_data = Float.NEGATIVE_INFINITY;
+  min_data = Float.POSITIVE_INFINITY;
   float val;
   for ( int i = 0; i < y_vals.length; i++ )
    for ( int j = 0; j < num_frames; j++ )
@@ -602,26 +620,10 @@ private void MakeColorList()
   else
     max_abs = Math.abs( min_data );
 
-  float scale_factor;
   if ( max_abs > 0 )
     scale_factor = (LOG_TABLE_SIZE - 1) / max_abs;
   else
     scale_factor = 0;
-
-  int index;
-  for ( int i = 0; i < y_vals.length; i++ )
-   for ( int j = 0; j < num_frames; j++ )
-    {
-      val = y_vals[i][j] * scale_factor;  // here we are incorrectly assuming
-                                          // that there is only one x-scale for
-                                          // all of the Data blocks.
-      if ( val >= 0 )
-        index = (int)( ZERO_COLOR_INDEX + log_scale[(int)val] );
-      else
-        index = (int)( ZERO_COLOR_INDEX - log_scale[(int)(-val)] );
-
-      color_index[i][j] = (byte)index;
-    }
 }
 
 
