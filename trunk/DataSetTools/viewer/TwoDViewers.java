@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2007/06/13 16:30:49  rmikk
+ *  Add the component listener to the JFrame sooner so the tag frames follow the
+ *     JFrame when the JFrame moves.
+ *
  *  Revision 1.2  2007/06/12 22:02:35  rmikk
  *  Incorporated the GraphTagFrame to view slices of the data
  *
@@ -952,7 +956,26 @@ public class TwoDViewers extends DataSetViewer {
       }
    }
    
+  
    
+   boolean JFrameCompListSet = false;
+   private void setJFrameCompListener(){
+      if( JFrameCompListSet )
+         return;
+      
+      JFrame jf = GetJFrame( this );
+      
+      if( jf != null ) {
+         
+         DisplayChangedListener dispList = new DisplayChangedListener(
+                                                              null );
+         
+         jf.addComponentListener( dispList );
+         JFrameCompListSet = true;
+      
+      }
+      
+   }
    
    
    /**
@@ -971,9 +994,12 @@ public class TwoDViewers extends DataSetViewer {
          D2 = DSView;
       }
 
-
+  
+      
       public void actionPerformed( ActionEvent evt ) {
-
+         
+         
+         
          String button = evt.getActionCommand();
          
          if( button.equals( "Image" ) ) {
@@ -995,6 +1021,7 @@ public class TwoDViewers extends DataSetViewer {
                TagFrame = null;
             }else
                action();
+            setJFrameCompListener();
             return;
          }
          
@@ -1244,18 +1271,15 @@ public class TwoDViewers extends DataSetViewer {
     * @author Ruth
     *
     */
-   class DisplayChangedListener implements ActionListener , ComponentListener {
+   class DisplayChangedListener extends ComponentAdapter implements ActionListener {
 
-      public boolean jframeListening;
+      
       TwoDViewers    d2View;
 
 
       public DisplayChangedListener( TwoDViewers d2View ) {
 
-         if( d2View != null )
-            jframeListening = false;
-         else
-            jframeListening = true;
+         
          this.d2View = d2View;
       }
 
@@ -1270,6 +1294,8 @@ public class TwoDViewers extends DataSetViewer {
          if( evt.getActionCommand().equals( IObserver.POINTED_AT_CHANGED )
                   || evt.getActionCommand().equals( CoordJPanel.CURSOR_MOVED ) ) {
             
+
+                        
             Vector V = getPointedAtRowColDet( ds );
             int col = ( (Integer) ( V.firstElement() ) ).intValue();
             int row = ( (Integer) ( V.elementAt( 1 ) ) ).intValue();
@@ -1327,21 +1353,7 @@ public class TwoDViewers extends DataSetViewer {
             return;
             
          }
-         if( ! jframeListening ) {
-
-            JFrame jf = GetJFrame( d2View );
-            
-            if( jf != null ) {
-               
-               DisplayChangedListener dispList = new DisplayChangedListener(
-                                                                    null );
-               
-               jf.addComponentListener( dispList );
-               
-            }
-         }
-         
-         jframeListening = true;
+      
          if( e.getSource() instanceof ActiveJPanel ) {
             
             CoordBounds RC = new CoordBounds();
@@ -1373,58 +1385,9 @@ public class TwoDViewers extends DataSetViewer {
             return;
             
          }
-         if( ! jframeListening ) {
-
-            JFrame jf = GetJFrame( d2View );
-            if( jf != null ) {
-               
-               DisplayChangedListener dispList = new DisplayChangedListener(
-                        null );
-               jf.addComponentListener( dispList );
-               
-            }
-         }
-         jframeListening = true;
+ 
          if( ! ( e.getSource() instanceof JFrame ) ) return;
          TagFrame.SetTag2FrameChanged( (JFrame) ( e.getSource() ) );
-
-      }
-
-
-      public void componentShown( ComponentEvent e ) {
-
-         if( ! jframeListening ) {
-
-            JFrame jf = GetJFrame( d2View );
-            if( jf != null ) {
-               
-               DisplayChangedListener dispList = new DisplayChangedListener(
-                        null );
-               
-               jf.addComponentListener( dispList );
-               
-            }
-         }
-         jframeListening = true;
-
-
-      }
-
-
-      public void componentHidden( ComponentEvent e ) {
-
-         if( ! jframeListening ) {
-
-            JFrame jf = GetJFrame( d2View );
-            if( jf != null ) {
-               
-               DisplayChangedListener dispList = new DisplayChangedListener(
-                        null );
-               jf.addComponentListener( dispList );
-               
-            }
-         }
-         jframeListening = true;
 
       }
 
