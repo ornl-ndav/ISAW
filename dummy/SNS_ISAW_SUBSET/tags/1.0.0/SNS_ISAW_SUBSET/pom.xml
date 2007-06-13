@@ -11,7 +11,7 @@
   </parent>
   <groupId>ISAW</groupId>
   <artifactId>sns-isaw-subset</artifactId>
-  <version>1.0</version>
+  <version>1.0.0</version>
   <name>SNS ISAW</name>
   <description>SNS ISAW Viewers Subset</description>
   <dependencies>
