@@ -30,6 +30,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.21  2007/06/14 22:06:23  rmikk
+ * Eliminated duplicate entries in the action listeners
+ * Do not notify that data has changed if the new time is not in a different bin
+ *  than the previous time
+ *
  * Revision 1.20  2007/06/05 20:22:21  rmikk
  * Filled out the axisInfo method so this could be used with the new View
  *    components
@@ -609,7 +614,8 @@ public class RowColTimeVirtualArray extends
    */
   public void addActionListener( ActionListener act_listener )
     {
-     Listeners.addElement( act_listener);
+     if(! Listeners.contains(act_listener))
+           Listeners.addElement( act_listener);
     }
    
 
@@ -856,6 +862,13 @@ public class RowColTimeVirtualArray extends
    * NOTE: This is currently called only when a pointed at event occurs
    */
   public void setTime( float time){
+   float Time = super.getTime( 1,1) ;
+   if( Float.isNaN( time ) ||  Float.isNaN( Time ))
+      return;
+   if( x_scale == null)
+      return;
+   if( x_scale.getI( time ) == x_scale.getI( Time ))
+      return;
   	super.setTime(time);
   	acontrol.setFrameValue( time);
 	notifyActionListeners( IArrayMaker.DATA_CHANGED);
