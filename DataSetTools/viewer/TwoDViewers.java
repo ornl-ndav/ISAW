@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2007/06/14 22:02:59  rmikk
+ *  Eliminated some unnecessayr layouts
+ *  Add the PanView to the Table view
+ *
  *  Revision 1.3  2007/06/13 16:30:49  rmikk
  *  Add the component listener to the JFrame sooner so the tag frames follow the
  *     JFrame when the JFrame moves.
@@ -353,7 +357,7 @@ public class TwoDViewers extends DataSetViewer {
 
       
       East.add( jtab );
-      if( PanView != null && ! currentViewType.equals( "Table" ) )
+      if( PanView != null  )//&& ! currentViewType.equals( "Table" )
          East.add( PanView );
 
 
@@ -768,7 +772,8 @@ public class TwoDViewers extends DataSetViewer {
          float time = ds.getPointedAtX();
          if( ! eliminate( Group , time , InternalPointedAts ) ) {
             
-            if( ! Float.isNaN( time ) ) viewArray.setTime( time );
+            if( ! Float.isNaN( time ) ) 
+                   viewArray.setTime( time );
             
             SelectedData2D X = (SelectedData2D) ( (RowColTimeVirtualArray) viewArray )
                      .getSelectedData( Group , time );
@@ -827,22 +832,22 @@ public class TwoDViewers extends DataSetViewer {
          
          viewComp.dataChanged( (IVirtualArray2D) ( viewArray.getArray() ) );
          
-         ViewHolder.removeAll();
+         //ViewHolder.removeAll();
          
          if( TagFrame != null )
             TagFrame.setNewData( (IVirtualArray2D) ( viewArray.getArray() ) ,
                      (CoordBounds) null );
          
-         ViewHolder.add( viewComp.getDisplayPanel() );
+         //ViewHolder.add( viewComp.getDisplayPanel() );
          
-         invalidate();
+         /*invalidate();
          repaint();
          doLayout();
          validate();
          invalidate();
          repaint();
          
-         Repaint();
+         Repaint();*/
       }
    }
 
