@@ -76,9 +76,9 @@
     </developer>
   </developers>
   <scm>
-    <connection>${scmConnectionBaseUrl}/ISAW/dummy/SNS_ISAW_SUBSET/trunk/SNS_ISAW_SUBSET</connection>
-    <developerConnection>scm:svn:https://flathead.ornl.gov/repos/ISAW/dummy/SNS_ISAW_SUBSET/trunk/SNS_ISAW_SUBSET</developerConnection>
-    <url>https://flathead.ornl.gov/trac/ISAW/browser/dummy/SNS_ISAW_SUBSET/trunk/SNS_ISAW_SUBSET</url>
+    <connection>${scmConnectionBaseUrl}/ISAW/dummy/SNS_ISAW_SUBSET/tags/1.0.0/SNS_ISAW_SUBSET</connection>
+    <developerConnection>scm:svn:https://flathead.ornl.gov/repos/ISAW/dummy/SNS_ISAW_SUBSET/tags/1.0.0/SNS_ISAW_SUBSET</developerConnection>
+    <url>https://flathead.ornl.gov/trac/ISAW/browser/dummy/SNS_ISAW_SUBSET/tags/1.0.0/SNS_ISAW_SUBSET</url>
   </scm>
   <ciManagement>
     <system>continuum</system>
