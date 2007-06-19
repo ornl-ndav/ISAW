@@ -30,6 +30,13 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2007/06/19 15:24:36  rmikk
+ *  -Used dataChanged(){no args} when time changes. This retains zooms but
+ *         not the position of the table.
+ *  -Introduced methods to update object states, etc., in one place
+ *  -Added code to position the table. On animation the user MUST select the
+ *     point in the upper left point in the table
+ *
  *  Revision 1.4  2007/06/14 22:02:59  rmikk
  *  Eliminated some unnecessayr layouts
  *  Add the PanView to the Table view
@@ -74,6 +81,7 @@ import gov.anl.ipns.Util.Numeric.*;
 // import gov.anl.ipns.ViewTools.Components.Region.*;
 import gov.anl.ipns.ViewTools.Panels.Transforms.*;
 import gov.anl.ipns.ViewTools.Components.Transparency.*;
+import gov.anl.ipns.ViewTools.Panels.Table.*;
 
 // import gov.anl.ipns.ViewTools.Panels.Table.*;
 
@@ -108,7 +116,10 @@ public class TwoDViewers extends DataSetViewer {
 
    JCheckBoxMenuItem           ShowTag;
    boolean                     showtag;
+   
    private static final String SHOW_TAG     = "Show tag info";
+   JPanel DisplayPanel;
+   Point TableTopLeft;
 
 
    /**
@@ -139,10 +150,11 @@ public class TwoDViewers extends DataSetViewer {
 
       if( state == null ) {
          ( (RowColTimeVirtualArray) viewArray ).initState();
-         ;
+         
          state = ( (RowColTimeVirtualArray) viewArray ).state;
       }
 
+    
       this.viewComp = new ImageViewComponent( (IVirtualArray2D) viewArray
                .getArray() );
       this.ds = ds;
@@ -152,6 +164,13 @@ public class TwoDViewers extends DataSetViewer {
       Ostate.insert( "Data" , state );
       Ostate.insert( "ViewType" , "Image" );
       currentViewType = "Image";
+      TableTopLeft = new Point( 1,1);
+      
+      Ostate.insert("ViewImage", viewComp.getObjectState( true ));
+      
+      
+      
+     
 
       try {
          viewComp.dataChanged( (IVirtualArray2D) viewArray.getArray() );
@@ -193,7 +212,7 @@ public class TwoDViewers extends DataSetViewer {
 
       add( new SplitPaneWithState( JSplitPane.HORIZONTAL_SPLIT , ViewHolder ,
                ControlHolder , ImagePortion ) );
-
+     
       SetUpViewChoices();
       invalidate();
       doLayout();
@@ -374,10 +393,10 @@ public class TwoDViewers extends DataSetViewer {
                             IArrayMaker_DataSet viewArray ,
                             IViewComponent2D    viewComp ) {
 
-      JPanel jp = viewComp.getDisplayPanel();
-      ViewHolder.add( jp );
+      DisplayPanel = viewComp.getDisplayPanel();
+      ViewHolder.add( DisplayPanel );
      
-      ActiveJPanel JoverlayPanel = MarkOverLayJPanels( jp );
+      ActiveJPanel JoverlayPanel = MarkOverLayJPanels( DisplayPanel );
       if( JoverlayPanel == null ) {
 
            return;
@@ -575,12 +594,9 @@ public class TwoDViewers extends DataSetViewer {
 
       if( viewComp != null ) {
          
-         if( ! Ostate.reset( "View" + currentViewType , viewComp
-                  .getObjectState( false ) ) )
-            
-            Ostate.insert( "View" + currentViewType , viewComp
-                     .getObjectState( false ) );
-         viewComp.kill();
+        Update2DObjectState();
+        UpdateViewObjectState();
+        viewComp.kill();
          
       }
 
@@ -590,11 +606,7 @@ public class TwoDViewers extends DataSetViewer {
          viewComp = new ImageViewComponent( (IVirtualArray2D) viewArray
                   .getArray() );
          
-         if( Ostate.get( "View" + "Image" ) != null
-                  && ! ( Ostate.get( "ViewTable" ) instanceof String ) )
-            viewComp.setObjectState( (ObjectState) Ostate
-                     .get( "View" + "Image" ) );
-         
+                 
          ImageView.setSelected( true );
          currentViewType = "Image";
          
@@ -604,11 +616,7 @@ public class TwoDViewers extends DataSetViewer {
          viewComp = new TableViewComponent( (IVirtualArray2D) viewArray
                   .getArray() );
          
-         if( ( Ostate.get( "View" + "Table" ) != null )
-                  && ! ( Ostate.get( "ViewTable" ) instanceof String ) )
-            viewComp.setObjectState( (ObjectState) Ostate
-                     .get( "View" + "Table" ) );
-         
+                 
          TableView.setSelected( true );
          currentViewType = "Table";
          
@@ -617,20 +625,17 @@ public class TwoDViewers extends DataSetViewer {
          
          viewComp = new ContourViewComponent( (IVirtualArray2D) viewArray
                   .getArray() );
-         
-         if( Ostate.get( "View" + "Contour" ) != null
-                  && ! ( Ostate.get( "ViewTable" ) instanceof String ) )
-            viewComp.setObjectState( (ObjectState) Ostate.get( "View"
-                     + "Contour" ) );
-         
+       
          ContourView.setSelected( true );
          currentViewType = "Contour";
          
       }
       else
          return;
-      
-      
+      Ostate.reset("ViewType", currentViewType );
+      DisplayPanel = viewComp.getDisplayPanel();
+      Set2DObjectState();
+      SetViewObjectState();
       viewComp.addActionListener( new CompActionListener() );
       
       ControlHolder.removeAll();
@@ -829,25 +834,16 @@ public class TwoDViewers extends DataSetViewer {
 
       public void actionPerformed( ActionEvent evt ) {
 
-         
-         viewComp.dataChanged( (IVirtualArray2D) ( viewArray.getArray() ) );
-         
-         //ViewHolder.removeAll();
-         
+         Update2DObjectState();
+         viewComp.dataChanged(  );//(IVirtualArray2D) (viewArray.getArray() ) );
+         Set2DObjectState();//Sets position of the JTable
+       
          if( TagFrame != null )
             TagFrame.setNewData( (IVirtualArray2D) ( viewArray.getArray() ) ,
                      (CoordBounds) null );
+         DisplayPanel = viewComp.getDisplayPanel(); 
+         DisplayPanel.repaint();
          
-         //ViewHolder.add( viewComp.getDisplayPanel() );
-         
-         /*invalidate();
-         repaint();
-         doLayout();
-         validate();
-         invalidate();
-         repaint();
-         
-         Repaint();*/
       }
    }
 
@@ -1445,13 +1441,13 @@ public class TwoDViewers extends DataSetViewer {
 
       Ostate = new_state;
 
-
-      state = (ViewerState) Ostate.get( "Data" );
-
-      viewComp.setObjectState( (ObjectState) Ostate.get( "View"
-               + currentViewType ) );
+      String newState = (String)new_state.get("ViewType");
+      if( newState .equals( currentViewType))
+         viewComp.setObjectState( (ObjectState)Ostate.get("View"+currentViewType));
+      reInit( viewComp, newState);
       
       currentViewType = Ostate.get( "ViewType" ).toString();
+      
 
 
    }
@@ -1459,33 +1455,127 @@ public class TwoDViewers extends DataSetViewer {
 
    public ObjectState getObjectState( boolean is_default ) {
 
-      if( Ostate == null ) Ostate = new ObjectState();
+      if( Ostate == null ) 
+         Ostate = new ObjectState();
 
       ObjectState state = new ObjectState();
       
-      if( ! is_default ) state = Ostate;
+      if( ! is_default ) 
+         state = Ostate;
 
       ViewerState st = new ViewerState();
       
-      if( ! is_default ) st = this.state;
+      if( ! is_default ) 
+         st = this.state;
 
-      state.insert( "Data" , st );
+      state.reset( "Data" , st );
 
-
-      state.insert( "View" + currentViewType , viewComp
-               .getObjectState( is_default ) );
+      state.reset("ViewType", currentViewType);
       
-      if( ! is_default )
-         
-         
-         state.insert( "ViewType" , currentViewType );
+      if(!state.reset( "View" + currentViewType , viewComp
+               .getObjectState( is_default ) ))
+          state.insert( "View" + currentViewType , viewComp
+                  .getObjectState(true ));
       
-      else
+      ActiveJPanel jp = MarkOverLayJPanels( DisplayPanel );
+      
+      if( jp == null)
+         return  state;
+    
+      if( ! is_default ){         
+         
+         state.reset( "ViewType" , currentViewType );                
+      
+      } else{
          
          state.insert( "ViewType" , "Image" );
-      
+         
+      }
       return state;
 
    }
+   
+  private void Update2DObjectState(){
+    Ostate.reset("ViewType" , currentViewType);
+    ActiveJPanel jp = MarkOverLayJPanels( DisplayPanel );
+    if( !(jp instanceof TableJPanel ))
+       return;
+    ObjectState O= ((IPreserveState)jp).getObjectState( false);
+    Object Or = O.get( "TableJPanel.Viewport_Position");
+    if( Or instanceof String)
+       TableTopLeft = null;
+    else
+       TableTopLeft = (Point)Or;
+    Rectangle R  = ((TableJPanel)jp).getVisibleRectangle();
+    TableTopLeft = new Point( R.x, R.y);
+    
+  }
+  
+  
+  private void UpdateDataObjectState(){
+     if( state == null)
+        state = new ViewerState();
+     
+     Ostate.reset( "Data" , state);
 
-}//DataSetViewerMaker1
+    
+     
+  }
+  
+  private void UpdateViewObjectState(){
+     if( viewComp instanceof IPreserveState)
+        
+     if(!Ostate.reset( "View"+currentViewType, 
+                 ((IPreserveState)viewComp).getObjectState( false )))
+        
+        Ostate.insert( "View"+currentViewType, 
+                 ((IPreserveState)viewComp).getObjectState( true ));
+     
+  }
+  
+  
+ 
+  
+  private void SetDataObjectState(){
+     
+     state = (ViewerState)Ostate.get("Data");
+     currentViewType = (String)Ostate.get( "ViewType");
+     
+     
+  }
+  
+  private void SetViewObjectState(){
+
+     if( viewComp instanceof IPreserveState){
+          ObjectState O = (ObjectState)Ostate.get( "View"+currentViewType  ); 
+          if( O != null)
+             viewComp.setObjectState(O );
+     }
+  }
+  
+  private void Set2DObjectState(){
+     currentViewType = (String)Ostate.get("ViewType" );
+     if( TableTopLeft == null)
+        return;
+     if( !currentViewType.equals( "Table"))
+        return;
+     
+     ActiveJPanel jp = MarkOverLayJPanels( DisplayPanel );
+
+    
+     if( !(jp instanceof TableJPanel ))
+        return;
+     
+     ObjectState O= ((IPreserveState)jp).getObjectState( false);
+     if( O == null)
+        return;
+     
+     if( !O.reset( "TableJPanel.Viewport_Position", TableTopLeft))
+        O.insert( "TableJPanel.Viewport_Position", TableTopLeft);
+     
+     ((IPreserveState)jp).setObjectState(  O );
+     ((TableJPanel)jp).setVisibleLocation( TableTopLeft );
+     
+   }
+}
+
