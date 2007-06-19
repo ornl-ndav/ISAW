@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.32  2007/06/19 20:47:06  dennis
+ *  Removed debug print.
+ *
  *  Revision 1.31  2007/06/08 19:38:27  dennis
  *  Now redraws for DATA_CHANGED, DATA_DELETED, DATA_REORDERED and
  *  HIDDEN_CHANGED messages as well as for SELECTION_CHANGED.
@@ -234,8 +237,6 @@ public class DataSetViewerMaker  extends DataSetViewer
     {
       if ( !validDataSet() )
         return;
-
-      System.out.println("DataSetViewerMaker redraw called " + reason );
 
       if( reason.equals( IObserver.SELECTION_CHANGED ) ||
           reason.equals( IObserver.DATA_CHANGED )      ||
