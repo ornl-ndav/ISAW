@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2007/06/20 16:50:20  rmikk
+ *  The color no longer autoscales and the aspect ratio is set in the ImageView
+ *
  *  Revision 1.5  2007/06/19 15:24:36  rmikk
  *  -Used dataChanged(){no args} when time changes. This retains zooms but
  *         not the position of the table.
@@ -59,9 +62,10 @@ import gov.anl.ipns.Util.Messaging.*;
 import gov.anl.ipns.Util.Sys.*;
 import gov.anl.ipns.ViewTools.Components.*;
 import gov.anl.ipns.ViewTools.Components.TwoD.*;
+import gov.anl.ipns.ViewTools.Panels.Image.*;
 import gov.anl.ipns.ViewTools.Components.TwoD.Contour.*;
 import gov.anl.ipns.ViewTools.Components.Menu.*;
-import gov.anl.ipns.ViewTools.Components.ViewControls.ViewControl;
+import gov.anl.ipns.ViewTools.Components.ViewControls.*;
 import gov.anl.ipns.ViewTools.UI.*;
 import gov.anl.ipns.ViewTools.Panels.*;
 import javax.swing.*;
@@ -120,6 +124,8 @@ public class TwoDViewers extends DataSetViewer {
    private static final String SHOW_TAG     = "Show tag info";
    JPanel DisplayPanel;
    Point TableTopLeft;
+   
+   ClosedInterval YRange;
 
 
    /**
@@ -154,6 +160,7 @@ public class TwoDViewers extends DataSetViewer {
          state = ( (RowColTimeVirtualArray) viewArray ).state;
       }
 
+      YRange = ds.getYRange();
     
       this.viewComp = new ImageViewComponent( (IVirtualArray2D) viewArray
                .getArray() );
@@ -165,7 +172,14 @@ public class TwoDViewers extends DataSetViewer {
       Ostate.insert( "ViewType" , "Image" );
       currentViewType = "Image";
       TableTopLeft = new Point( 1,1);
-      
+      ObjectState ViewState = (ObjectState)viewComp.getObjectState( true );
+      floatPoint2D Range = (floatPoint2D)ViewState.get( ImageViewComponent.LOG_SCALE_SLIDER+
+                     "."+ControlSlider.RANGE);
+      if( Range != null)
+         
+          ViewState.reset( ImageViewComponent.LOG_SCALE_SLIDER+"."+
+                       ControlSlider.SLIDER_VALUE, (Range.x + Range.y)/2f);
+      viewComp.setObjectState( ViewState );
       Ostate.insert("ViewImage", viewComp.getObjectState( true ));
       
       
@@ -394,6 +408,7 @@ public class TwoDViewers extends DataSetViewer {
                             IViewComponent2D    viewComp ) {
 
       DisplayPanel = viewComp.getDisplayPanel();
+      Set2DObjectState();
       ViewHolder.add( DisplayPanel );
      
       ActiveJPanel JoverlayPanel = MarkOverLayJPanels( DisplayPanel );
@@ -796,6 +811,9 @@ public class TwoDViewers extends DataSetViewer {
          
          Conversions.showConversions( time , Group );
 
+      }else if( reason.equals( IObserver.DATA_CHANGED)){
+         YRange = ds.getYRange();
+         Set2DObjectState();
       }
    }
 
@@ -1555,12 +1573,17 @@ public class TwoDViewers extends DataSetViewer {
   
   private void Set2DObjectState(){
      currentViewType = (String)Ostate.get("ViewType" );
+     
+
+     ActiveJPanel jp = MarkOverLayJPanels( DisplayPanel );
+     if( jp == null)
+        return;
+     if( jp instanceof TableJPanel){
      if( TableTopLeft == null)
         return;
      if( !currentViewType.equals( "Table"))
         return;
      
-     ActiveJPanel jp = MarkOverLayJPanels( DisplayPanel );
 
     
      if( !(jp instanceof TableJPanel ))
@@ -1575,6 +1598,12 @@ public class TwoDViewers extends DataSetViewer {
      
      ((IPreserveState)jp).setObjectState(  O );
      ((TableJPanel)jp).setVisibleLocation( TableTopLeft );
+     }else if( jp instanceof ImageJPanel2){
+        ImageJPanel2 IPanel = (ImageJPanel2)jp;
+        ((ImageViewComponent)viewComp).preserveAspectRatio( true );
+        IPanel.enableAutoDataRange( false );
+        IPanel.setDataRange( YRange.getStart_x(), YRange.getEnd_x());
+     }
      
    }
 }
