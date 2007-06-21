@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.13  2007/06/21 20:52:26  rmikk
+ *  Fixed the getDocumentation to reflect the addition of an imput file to the
+ *    command.
+ *
  *  Revision 1.12  2007/06/21 20:36:05  rmikk
  *  Used the exec command with an array of commands so filenames with
  *    spaces do not cause problems in windows(XP) and Dennis' Linux
@@ -168,16 +172,17 @@ public class Exec extends    GenericSpecial {
     {
       StringBuffer s = new StringBuffer("");
       s.append("@overview This operator makes system calls.\n"); 
-      s.append("@assumptions The command called is assumed to be run without ");
-      s.append("interaction.\n");
-      s.append("@algorithm This operator calls the specified command.  It ");
+      s.append("@assumptions The command  output and errors appear in the terminal \n");
+      s.append("@algorithm This operator calls the specified command with th given" +
+            " input file(if there is one).  It ");
       s.append("also grabs the process's STDOUT stream (if available) and ");
       s.append("prints it to the screen.\n");
       s.append("@param command  The command to be executed.\n");
+      s.append("@param CommandInputs  The inputs to the command to be executed.\n");
       s.append("@return Integer object which represents the exit value of the ");
       s.append("command.\n");
-      s.append("@error If the command called requires interaction, ISAW will ");
-      s.append("hang.\n");
+      s.append("@error If the command may hang.  Use op system kill command to" +
+            "   terminate and return to ISAW.(Windows task Manager can kill jobs)");
       s.append("@error Returns an error if the process is interrupted.\n");
       s.append("@error Returns an error message if any input/output errors ");
       s.append("occur.\n");
