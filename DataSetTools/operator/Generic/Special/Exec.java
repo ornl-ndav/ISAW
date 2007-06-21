@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2007/06/21 20:36:05  rmikk
+ *  Used the exec command with an array of commands so filenames with
+ *    spaces do not cause problems in windows(XP) and Dennis' Linux
+ *
  *  Revision 1.11  2007/06/21 16:47:54  rmikk
  *  Added an input file parameter and used the new Exec in ExtTools.monq.stuff
  *    to execute the external program.  This Exec used threads an asynchronous
@@ -78,10 +82,11 @@ import java.io.*;
 import java.util.Vector;
 
 import DataSetTools.operator.*;
+import DataSetTools.util.FilenameUtil;
 import DataSetTools.util.SharedData;
 import DataSetTools.util.SysUtil;
 import gov.anl.ipns.Parameters.*;
-import ExtTools.monq.stuff.*;
+//import ExtTools.monq.stuff.*;
 
 /**
  * This operator makes system calls. It does grab the process's STDOUT
@@ -199,9 +204,14 @@ public class Exec extends    GenericSpecial {
         String output=null;
         String error=null;
         String input = null;
+ 
+        
+        // Put in an array so command name does not have to parse a command
+        //  line
+        String[] cmd ={command};
         try 
         {
-         process = SysUtil.startProcess( command , null );
+         process = Runtime.getRuntime().exec( cmd, null );
          FileInputStream fin = null;
          if( InputFile != null ) {
             fin = new FileInputStream( InputFile );
@@ -225,8 +235,10 @@ public class Exec extends    GenericSpecial {
       }
       catch( IOException e ) {
             SharedData.addmsg("IOException reported: "+e.getMessage());
-            return new gov.anl.ipns.Util.SpecialStrings.ErrorString("IOException reported: "+e.getMessage());
+            return new gov.anl.ipns.Util.SpecialStrings.ErrorString(
+                                          "IOException reported: "+e.getMessage());
         }
-    }  
-
+    }
+    
+  
 }
