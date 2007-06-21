@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.14  2007/06/21 21:16:03  dennis
+ *  Now passes System.in to the lower level Exec() object constructor.
+ *  This fixes null pointer problem if an input file was not passed
+ *  in to this Operator.
+ *
  *  Revision 1.13  2007/06/21 20:52:26  rmikk
  *  Fixed the getDocumentation to reflect the addition of an imput file to the
  *    command.
@@ -200,6 +205,7 @@ public class Exec extends    GenericSpecial {
      */
     public Object getResult(){
         String command=(String)(getParameter(0).getValue());
+
         String InputFile = getParameter(1).getValue().toString();
         if( InputFile == null || InputFile.length() < 1)
            InputFile = null;
@@ -217,10 +223,12 @@ public class Exec extends    GenericSpecial {
         try 
         {
          process = Runtime.getRuntime().exec( cmd, null );
-         FileInputStream fin = null;
+         InputStream fin = null;
          if( InputFile != null ) {
-            fin = new FileInputStream( InputFile );
+           fin = new FileInputStream( InputFile );
          }
+         else
+           fin = System.in;
        
          ExtTools.monq.stuff.Exec ex = null;
          ex = new ExtTools.monq.stuff.Exec(process, fin, System.out, System.err);
