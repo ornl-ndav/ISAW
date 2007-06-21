@@ -31,6 +31,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2007/06/21 16:47:54  rmikk
+ *  Added an input file parameter and used the new Exec in ExtTools.monq.stuff
+ *    to execute the external program.  This Exec used threads an asynchronous
+ *    input and output.  A hung application must be terminated by an outside
+ *    source to continue
+ *
  *  Revision 1.10  2005/01/10 15:18:17  dennis
  *  Added getCategoryList method to put operator in new position in
  *  menus.
@@ -68,13 +74,14 @@
 
 package DataSetTools.operator.Generic.Special;
 
-import java.io.BufferedReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.Vector;
 
 import DataSetTools.operator.*;
 import DataSetTools.util.SharedData;
 import DataSetTools.util.SysUtil;
+import gov.anl.ipns.Parameters.*;
+import ExtTools.monq.stuff.*;
 
 /**
  * This operator makes system calls. It does grab the process's STDOUT
@@ -118,6 +125,7 @@ public class Exec extends    GenericSpecial {
 
         parameters=new Vector();
         addParameter( new Parameter("Command",""));
+        addParameter( new StringPG( "InputFileName", ""));
     }
 
 
@@ -182,69 +190,43 @@ public class Exec extends    GenericSpecial {
      */
     public Object getResult(){
         String command=(String)(getParameter(0).getValue());
+        String InputFile = getParameter(1).getValue().toString();
+        if( InputFile == null || InputFile.length() < 1)
+           InputFile = null;
+        else if( !(new java.io.File( InputFile)).exists())
+           InputFile = null;
         Process process=null;
         String output=null;
         String error=null;
-
-        try{
-            process=SysUtil.startProcess(command,null);
-            BufferedReader in  = SysUtil.getSTDINreader(process);
-            BufferedReader err = SysUtil.getSTDERRreader(process);
-            while(true){
-                output=in.readLine();
-                error=err.readLine();
-                if(error!=null)
-                    System.err.println(error);
-                if(output!=null)
-                    System.out.println(output);
-                if( output==null && error==null ) break;
-            }
-            process.waitFor();
-        }catch(IOException e){
+        String input = null;
+        try 
+        {
+         process = SysUtil.startProcess( command , null );
+         FileInputStream fin = null;
+         if( InputFile != null ) {
+            fin = new FileInputStream( InputFile );
+         }
+       
+         ExtTools.monq.stuff.Exec ex = null;
+         ex = new ExtTools.monq.stuff.Exec(process, fin, System.out, System.err);
+         
+         while(!ex.done()){
+            
+         }
+         if( ex.ok())
+            return "Finished OK";
+         if( !ex.finished())
+            return "Application did not finish";
+         Exception except = ex.getException();
+         if( except == null)
+            return "Application terminated with a non-zero exit status";
+         return new gov.anl.ipns.Util.SpecialStrings.ErrorString( ex.getErrorText());
+         
+      }
+      catch( IOException e ) {
             SharedData.addmsg("IOException reported: "+e.getMessage());
-        }catch(InterruptedException e){
-            SharedData.addmsg("InterruptedException reported: "+e.getMessage());
-        }finally{
-            if(process!=null){
-                return new Integer(process.exitValue());
-            }else{
-                return "Could not start process";
-            }
+            return new gov.anl.ipns.Util.SpecialStrings.ErrorString("IOException reported: "+e.getMessage());
         }
     }  
 
-
-    /* ------------------------------ clone ------------------------------- */
-    /**
-     * Get a copy of the current SpectrometerEvaluator Operator.  The
-     * list of parameters is also copied.
-     */
-
-    public Object clone(){
-        Exec new_op = 
-            new Exec( );
-        
-        new_op.CopyParametersFrom( this );
-        
-        return new_op;
-    }
-
-    /* ------------------------------ main ------------------------------- */
-    /**
-     * Main method for testing purposes.
-     */
-    public static void main(String[] args){
-        String command="echo hi there";
-        if(args.length==1) command=args[0];
-        
-        Exec op;
-
-        op=new Exec(command);
-        System.out.println("RESULT: "+op.getResult());
-        op=new Exec("ls");
-        System.out.println("RESULT: "+op.getResult());
-	
-        /* ----------- added by Chris Bouzek ------------ */
-        System.out.println("Documentation: " + op.getDocumentation());
-    }
 }
