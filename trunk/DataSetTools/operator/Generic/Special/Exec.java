@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.16  2007/06/22 15:29:12  rmikk
+ *  Eliminated System.out and Sytem.err in arguments to monq.stuff.Exec so
+ *    these streams will not be closed. Used their defaults when null is passed in.
+ *
  *  Revision 1.15  2007/06/22 14:13:27  rmikk
  *  Replaced the System.in for input to the exec by a closed ByteArrayInputStream to prevent hanging in this case
  *
@@ -238,10 +242,17 @@ public class Exec extends    GenericSpecial {
          }
        
          ExtTools.monq.stuff.Exec ex = null;
-         ex = new ExtTools.monq.stuff.Exec(process, fin, System.out, System.err);
+         ex = new ExtTools.monq.stuff.Exec(process, fin, null, null);
          
          if(!ex.done()){
             
+         }
+         System.out.println( ex.getOutputText());
+         String ErrText = ex.getErrorText();
+         if( ErrText != null  && ErrText.trim().length()> 0){
+            System.out.println("------------- Error Text---------------");
+            System.out.println( ErrText );
+            System.out.println("------------- End Error Text---------------");
          }
          if( ex.ok())
             return "Finished OK";
@@ -250,7 +261,8 @@ public class Exec extends    GenericSpecial {
          Exception except = ex.getException();
          if( except == null)
             return "Application terminated with a non-zero exit status";
-         return new gov.anl.ipns.Util.SpecialStrings.ErrorString( ex.getErrorText());
+         return new gov.anl.ipns.Util.SpecialStrings.ErrorString( "Exception "+
+                  ex.getClass()+" occured:"+ex.getErrorText());
          
       }
       catch( IOException e ) {
