@@ -39,7 +39,7 @@ public class ImageFrame3 extends JFrame
     menu_bar.add(new JMenu("Options"));
     
     setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
-    setBounds(0,0,700,540);
+    setBounds(0,0,700,800);
     
     setData(iva);
     setVisible(true);
