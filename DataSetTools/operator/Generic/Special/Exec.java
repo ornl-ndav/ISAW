@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.18  2007/06/22 16:03:26  rmikk
+ *  For cases with no input to the process, created a ByteArrayInputStream with
+ *    a 0 byte length buffer and did not close.  This prevented an exception in
+ *    unix
+ *
  *  Revision 1.17  2007/06/22 15:49:14  rmikk
  *  Fixed the reporting of exceptions
  *
@@ -240,8 +245,8 @@ public class Exec extends    GenericSpecial {
          if( InputFile != null ) {
             fin = new FileInputStream( InputFile );
          }else{
-            fin = new ByteArrayInputStream( new byte[5]);
-            fin.close();
+            fin = new ByteArrayInputStream( new byte[0]);
+            //fin.close();
             
          }
        
