@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.17  2007/06/22 15:49:14  rmikk
+ *  Fixed the reporting of exceptions
+ *
  *  Revision 1.16  2007/06/22 15:29:12  rmikk
  *  Eliminated System.out and Sytem.err in arguments to monq.stuff.Exec so
  *    these streams will not be closed. Used their defaults when null is passed in.
@@ -99,6 +102,7 @@ package DataSetTools.operator.Generic.Special;
 import java.io.*;
 import java.util.Vector;
 
+import Command.ScriptUtil;
 import DataSetTools.operator.*;
 import DataSetTools.util.FilenameUtil;
 import DataSetTools.util.SharedData;
@@ -258,11 +262,21 @@ public class Exec extends    GenericSpecial {
             return "Finished OK";
          if( !ex.finished())
             return "Application did not finish";
+         
+         
          Exception except = ex.getException();
          if( except == null)
             return "Application terminated with a non-zero exit status";
-         return new gov.anl.ipns.Util.SpecialStrings.ErrorString( "Exception "+
-                  ex.getClass()+" occured:"+ex.getErrorText());
+         
+         
+         String[] trace = ScriptUtil.GetExceptionStackInfo( except, true, 3);
+         String errString ="Error of "+except.getClass()+"type  ocurred:"+
+                                                         except.getMessage()+"\n";
+         if(trace != null)
+            for( int i=0; i < trace.length; i++)
+               errString +="    "+ trace[i]+"\n";
+        
+         return new gov.anl.ipns.Util.SpecialStrings.ErrorString(  errString );
          
       }
       catch( IOException e ) {
