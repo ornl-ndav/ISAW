@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.15  2007/06/22 14:13:27  rmikk
+ *  Replaced the System.in for input to the exec by a closed ByteArrayInputStream to prevent hanging in this case
+ *
+ *  Replaced a while by an if
+ *
  *  Revision 1.14  2007/06/21 21:16:03  dennis
  *  Now passes System.in to the lower level Exec() object constructor.
  *  This fixes null pointer problem if an input file was not passed
@@ -225,15 +230,17 @@ public class Exec extends    GenericSpecial {
          process = Runtime.getRuntime().exec( cmd, null );
          InputStream fin = null;
          if( InputFile != null ) {
-           fin = new FileInputStream( InputFile );
+            fin = new FileInputStream( InputFile );
+         }else{
+            fin = new ByteArrayInputStream( new byte[5]);
+            fin.close();
+            
          }
-         else
-           fin = System.in;
        
          ExtTools.monq.stuff.Exec ex = null;
          ex = new ExtTools.monq.stuff.Exec(process, fin, System.out, System.err);
          
-         while(!ex.done()){
+         if(!ex.done()){
             
          }
          if( ex.ok())
