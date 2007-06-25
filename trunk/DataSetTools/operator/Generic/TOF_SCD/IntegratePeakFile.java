@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.10  2007/06/25 21:33:03  rmikk
+ * Fixed the clone method to return a copy of this operator not the Integrate operator.
+ *
  * Revision 1.9  2007/03/13 22:04:11  rmikk
  * Made these implement HiddenOperator so they will not show up in the
  *    macros menu
@@ -848,7 +851,7 @@ public class IntegratePeakFile extends GenericTOF_SCD  implements HiddenOperator
    *  Creates a clone of this operator.
    */
   public Object clone(){
-    Operator op = new Integrate();
+    Operator op = new IntegratePeakFile();
     op.CopyParametersFrom( this );
     return op;
   }
