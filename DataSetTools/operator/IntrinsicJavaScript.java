@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2007/06/28 17:38:25  rmikk
+ * The main program now ONLY show the available scripting languages and their
+ *    associated extensions
+ *
  * Revision 1.2  2007/05/08 17:04:25  rmikk
  * Now works without a setDefaultParameters and getResult method.
  * Gives meaningful error messages if these methods are not on line 1.
@@ -940,11 +944,12 @@ public class IntrinsicJavaScript extends GenericOperator implements
          
       }
 
-      IntrinsicJavaScript jsc = IntrinsicJavaScript
+     /*IntrinsicJavaScript jsc = IntrinsicJavaScript
                .ScriptHandlerFromFile( args[ 0 ] );
     
       new DataSetTools.components.ParametersGUI.JParametersDialog( jsc , null ,
                null , jsc );
+     */
 
    }
 }
