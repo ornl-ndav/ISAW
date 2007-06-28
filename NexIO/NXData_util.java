@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.30  2007/06/28 15:28:35  rmikk
+ * For monitors, detector_number and id are now used to set the GroupID's
+ *
  * Revision 1.29  2005/12/29 23:19:23  rmikk
  * Removed useless == comparisons with Float.NaN
  *
@@ -442,9 +445,12 @@ public class NXData_util{
         Time_Field =(int[])X;
     */
     nx = detNode.getChildNode( "id" );
+    if( nx == null)
+       if( detNode.getNodeClass().equals("NXmonitor"))
+           nx = detNode.getChildNode( "detector_number" );
     if( nx != null )if( nx.getNodeValue() != null ){
-      if( nx.getNodeValue()  instanceof int[] )
-        Group_ID = ( int[] )( nx.getNodeValue() );
+     
+        Group_ID = NexIO.Util.ConvertDataTypes.intArrayValue( nx.getNodeValue() );
     }
 
     nx = detNode.getChildNode( "efficiency" );
