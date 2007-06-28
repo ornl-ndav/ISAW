@@ -30,7 +30,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2007/06/28 15:24:19  rmikk
+ * Eliminated tests for the NXlog s
+ *
  * Revision 1.7  2005/02/03 07:22:09  kramer
+ *
  * Now when the processDS(....) method is invoked on a NxWriteLog object,
  * (new DataSet()) is passed to the method instead of 'null' (for the
  * DataSet parameter).
@@ -102,10 +106,10 @@ public class NxWriteSample{
                      NexIO.Types.Char,ranks);
        }
     }
-    NxWriteNode NxLognode = NxSampNode.newChildNode("Log_7","NXlog");
+   /* NxWriteNode NxLognode = NxSampNode.newChildNode("Log_7","NXlog");
     NxWriteLog writelog = new NxWriteLog( 5);
     writelog.processDS( NxLognode, new DataSet(), 7);
-
+*/
     
     NxWriteBeam writeBeam = new NxWriteBeam(instrType);
     NxWriteNode beamNode = NxSampNode.newChildNode("Beam", "NXbeam");

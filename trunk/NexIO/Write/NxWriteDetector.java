@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.16  2007/06/28 15:24:19  rmikk
+ * Eliminated tests for the NXlog s
+ *
  * Revision 1.15  2005/12/29 23:17:02  rmikk
  * Removed useless == comparisons with Float.NaN
  *
@@ -417,9 +420,10 @@ public class NxWriteDetector{
       
     }
 
-    NxWriteNode NxLognode = node.newChildNode("Log_1","NXlog");
+   /*NxWriteNode NxLognode = node.newChildNode("Log_1","NXlog");
     NxWriteLog writelog = new NxWriteLog( 5);
     writelog.processDS( NxLognode, new DataSet(), 1);
+    */
  
   }
   //obsolete
