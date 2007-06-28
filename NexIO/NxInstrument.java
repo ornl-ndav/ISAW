@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.15  2007/06/28 15:29:09  rmikk
+ * Did not trip an error messae if there is no node and no fixit file.
+ *
  * Revision 1.14  2007/01/12 14:48:46  dennis
  * Removed unused imports.
  *
@@ -321,8 +324,10 @@ public class NxInstrument{
     Node xmlDoc = null;
     if( fileStateInfo != null)
        xmlDoc = fileStateInfo.xmlDoc;
-    if( (node == null) && (xmlDoc == null) )
-      return true;
+    if( (node == null) && (xmlDoc == null) ){
+      errormessage ="";
+      return false;
+    }
     
     if( DS == null )
        return true;
