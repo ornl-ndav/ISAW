@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.14  2007/06/28 15:24:19  rmikk
+ * Eliminated tests for the NXlog s
+ *
  * Revision 1.13  2005/05/14 02:23:28  dennis
  * Fixed empty flow of control statement bug.  Error message would not
  * be formed completely.
@@ -235,11 +238,11 @@ public class NxWriteEntry{
          Inst_Type.makeRankArray(user.length()+1,-1,-1,-1,-1)); 
    }
       
-    NxWriteLog writelog1 = new NxWriteLog( 6);
+  /*  NxWriteLog writelog1 = new NxWriteLog( 6);
     NxWriteNode logNode = node.newChildNode( "log_6","NXlog");
     if( writelog1.processDS( logNode, new DataSet(), 6))
         errormessage += writelog1.getErrorMessage();
-
+*/
 
     if( errormessage.length() <1)
        return false;
