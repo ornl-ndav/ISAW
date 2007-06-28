@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.13  2007/06/28 15:25:00  rmikk
+ * Eliminated a debug print
+ *
  * Revision 1.12  2006/11/14 16:26:22  rmikk
  * Added a routine to parse a date that is in the full ISO format
  *
@@ -569,7 +572,7 @@ public class ConvertDataTypes{
          }
         }
      }
-     System.out.println( year+":"+month+":"+day+":"+hour+":"+minute+":"+second+":"+frac_second);
+     //System.out.println( year+":"+month+":"+day+":"+hour+":"+minute+":"+second+":"+frac_second);
      GregorianCalendar GCal = new GregorianCalendar(year, month,day, hour, minute, second);
      GCal.set( Calendar.MILLISECOND, (int)(frac_second*1000));
     return GCal.getTimeInMillis();
