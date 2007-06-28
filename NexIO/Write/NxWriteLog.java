@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2007/06/28 15:24:37  rmikk
+ * Fixed documentation error
+ *
  * Revision 1.8  2005/05/27 03:12:51  dennis
  * Changed to use get attribute method from AttrUtil, rather than
  * the old get attribute method from DataSet and Data
@@ -91,7 +94,7 @@ public class NxWriteLog
     * 
     * @param  nxLognode    A node whose class is NXlog
     * @param  ds           The data set whose information is to be written.  
-    *                      It cannot be <cod>null</code>.
+    *                      It cannot be <code>null</code>.
     * @return true if an error occurred otherwise false
     */
    public boolean processDS( NxWriteNode nxLognode, DataSet ds, int k )
