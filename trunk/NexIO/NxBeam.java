@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2007/06/28 15:27:11  rmikk
+ * Did not trip an error messae if there is no node and no fixit file.
+ *
  * Revision 1.8  2007/01/12 14:48:46  dennis
  * Removed unused imports.
  *
@@ -77,8 +80,10 @@ public class NxBeam{
     Node xmlDoc =null;
     if( State != null)
        xmlDoc = State.xmlDoc;
-    if( (node == null) && (xmlDoc == null))
-      return true;
+    if( (node == null) && (xmlDoc == null)){//no input via nexus file or fixit file
+       errormessage ="";
+      return false;
+    }
     if( DS == null)
       return true;
     errormessage ="";
