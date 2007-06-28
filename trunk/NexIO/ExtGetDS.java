@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.33  2007/06/28 15:26:24  rmikk
+ * added the general operators to all data sets
+ *
  * Revision 1.32  2006/11/14 16:53:56  rmikk
  * Used routine to parse an ISO time
  * Checked if new xml Fixit file is present  before trying the old fix file
@@ -242,7 +245,7 @@ public class ExtGetDS{
      
      DataSetTools.util.SharedData.addmsg("invalid data set number "
                                          +data_set_num);
-     System.out.println("  Leaving getDataSet()");
+     //System.out.println("  Leaving getDataSet()");
      return  null;
 
    }
@@ -274,6 +277,7 @@ public class ExtGetDS{
       DataSetFactory DSF = new DataSetFactory( "" ) ;
       DS = DSF.getTofDataSet(instrType) ; 
       DS.setAttributeList( AL ) ;
+      DataSetFactory.addOperators( DS );
       if( instrType >=0)
          DataSetFactory.addOperators( DS,instrType );
       DS.setAttribute( new IntAttribute( Attribute.INST_TYPE, instrType)); 
@@ -283,7 +287,10 @@ public class ExtGetDS{
    }else{
       DS = new DataSet();
       DS.setAttributeList( AL ) ;
-      DataSetFactory.addMonitorOperators( DS, instrType);
+
+      DataSetFactory.addOperators( DS );
+      if( instrType >= 0)
+          DataSetFactory.addMonitorOperators( DS, instrType);
       DS.setAttribute( new IntAttribute( Attribute.INST_TYPE, instrType)); 
       DS.setAttribute( new StringAttribute( Attribute.DS_TYPE,Attribute.MONITOR_DATA));
    }
