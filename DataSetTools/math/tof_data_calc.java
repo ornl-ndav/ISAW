@@ -30,6 +30,16 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.25  2007/07/03 17:24:23  dennis
+ *  The SubtractDelayedNeutrons() method now will save and restore the
+ *  original error estimates.  This amounts to assuming there is no error
+ *  in the delayed neutron value that is subtracted off from each bin.
+ *  Previously, when the errors were implicitly calculated as the sqrt of
+ *  the number of counts, changing the y-values by subtracting the delayed
+ *  neutrons effectively also changed the errors.  This fixes a discrepancy
+ *  in the behavior of the TOF_SAD reduction when used with IPNS runfiles
+ *  and NeXus files.
+ *
  *  Revision 1.24  2004/03/15 06:10:41  dennis
  *  Removed unused import statements.
  *
@@ -558,7 +568,6 @@ public static XScale DiffractometerFocus(XScale scale,
 }
 
 
-
 /* -------------------- SubtractDelayedNeutrons ---------------------- */
 /**
  *  Subtract delayed neutrons from a time-of-flight Data block.  This
@@ -571,8 +580,10 @@ public static XScale DiffractometerFocus(XScale scale,
  *  pulses, and width_i is the with of the ith time bin (if the Data block
  *  is a histogram).  If the Data block is a function, then width_i will be
  *  the distance between the midpoints of the intervals on either side of
- *  sample point i.  NOTE: This may not be correct, depending on how the
- *  Data was converted from a histogram to a function.
+ *  sample point i.  NOTE_1: This may not be correct, depending on how the
+ *  Data was converted from a histogram to a function.  
+ *  NOTE_2: The values of the original error estimates are NOT changed by 
+ *  this method.
  *
  *  @param  d            The Data block; this should be a HistogramTable, with
  *                       x-axis representing time bin boundaries, in
@@ -613,7 +624,25 @@ public static boolean SubtractDelayedNeutrons( TabulatedData d,
     return false;
   }
 
-  float y[] = d.getY_values();
+  if ( !(d instanceof TabulatedData) )
+  {
+    System.out.println("ERROR: SubtractDelayedNeutron() requires "+
+                       "TabulatedData Data object!" );
+    return false;
+  }
+
+                // Force the errors to be whatever they were previously.  If 
+                // they were the sqrt of counts, this will get  the array of
+                // error estimates and explicityly set them as the errors.
+                // This will turn of the calculation of errors as sqrt(counts).
+                // If they had been previously set, this will have no effect,
+                // but will leave the errors unchanged.  This amounts to 
+                // assuming zero error in calculated delayed neutron value 
+                // that is subtracted from each bin.
+  float errors[] = d.getErrors();
+  d.setErrors( errors );
+
+  float y[] = d.getY_values();           // This gets a reference to the array
   float x[] = d.getX_scale().getXs();
   float total_time = (float)1.0e6/frequency;
 
@@ -654,9 +683,8 @@ public static boolean SubtractDelayedNeutrons( TabulatedData d,
 
     return true;
   }
-
-
 }
+
 
 /* -------------------------------------------------------------------------
  *
