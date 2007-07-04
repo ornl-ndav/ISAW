@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2007/07/04 17:54:31  rmikk
+ * Null DataSet inputs to processDS no longer causes an error condition
+ *
  * Revision 1.7  2004/05/14 15:03:52  rmikk
  * Removed unused variables
  *
@@ -111,7 +114,7 @@ public class NxWriteInstrument{
       return true;
      
     if( DS == null ) 
-      return true;
+      return false;
      
     NxData_Gen ne = new NxData_Gen ();
     errormessage = "";
@@ -182,4 +185,6 @@ public class NxWriteInstrument{
     }
     return false;
   }
+  
+  
 }
