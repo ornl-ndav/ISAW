@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2007/07/04 20:29:17  dennis
+ *  Removed unused import.
+ *
  *  Revision 1.7  2007/07/04 20:21:03  dennis
  *  Added missing import.
  *
@@ -62,7 +65,6 @@ package DataSetTools.operator.Generic.Special;
 
 import java.util.Vector;
 
-import DataSetTools.dataset.Attribute;
 import DataSetTools.dataset.Data;
 import DataSetTools.dataset.DataSet;
 import DataSetTools.dataset.AttrUtil;
