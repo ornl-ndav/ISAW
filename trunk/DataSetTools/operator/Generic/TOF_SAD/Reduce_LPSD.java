@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2007/07/04 19:13:58  dennis
+ * Minor formatting improvements.
+ *
  * Revision 1.6  2007/07/04 17:10:36  rmikk
  * changed setMonitorInd to getMonitorInd
  *
@@ -38,7 +41,9 @@
  *
  * Revision 1.4  2005/11/23 17:22:41  hammonds
  * Make small changes to take out edit only differences between Reduce_KCL and Reduce_LPSD.
- * The only variation from this is to change the variable tofs in Reduce_LPSD to xvals in order to more closely match the syntax in Reduce_KCL therby reducing differences in the files.
+ * The only variation from this is to change the variable tofs in Reduce_LPSD 
+ * to xvals in order to more closely match the syntax in Reduce_KCL therby 
+ * reducing differences in the files.
  *
  * Revision 1.3  2004/06/02 15:41:22  rmikk
  * Added parameter(s) to specify monitor ID(s)
