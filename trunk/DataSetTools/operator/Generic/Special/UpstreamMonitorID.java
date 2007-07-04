@@ -31,6 +31,14 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2007/07/04 20:16:50  dennis
+ *  Now will use the DetectorPosition attribute to determine the angle
+ *  from the beam to the detector, if the RAW_ANGLE attribute is not
+ *  present.  Also, a tolerance of about 2.5 degrees off from the beam
+ *  direction is allowed for the monitor position, before it is discarded
+ *  as not being a beam monitor.
+ *  Made some improvments to the javadocs.
+ *
  *  Revision 1.5  2005/08/24 20:29:22  dennis
  *  Added/Moved to menu DATA_SET_INFO_MACROS
  *
@@ -57,6 +65,7 @@ import DataSetTools.dataset.DataSet;
 import DataSetTools.operator.Operator;
 import DataSetTools.operator.Parameter;
 import DataSetTools.retriever.RunfileRetriever;
+import  gov.anl.ipns.MathTools.Geometry.DetectorPosition;
 
 /**
  * This operator determines what the group ID of the upstream monitor
@@ -131,54 +140,83 @@ public class UpstreamMonitorID extends    GenericSpecial {
     public String getDocumentation()
     {
       StringBuffer s = new StringBuffer("");
-      s.append("@overview This operator determines what the group ID of ");
-      s.append("the histogram of the upstream monitor is for a given ");
-      s.append("monitor dataset.\n");
-      s.append("@assumptions At least one upstream monitor exists in ");
-      s.append("the monitor DataSet.\n");
+      s.append("@overview  This operator sarches through the specified ");
+      s.append("DataSet for the upstream monitor data entry with ");
+      s.append("the highest total count.  The DataSet should contain only ");
+      s.append("monitor Data, and the corresponding detector positions ");
+      s.append("must be along the beam.  Specifically, any group that is ");
+      s.append("more than about 2.5 degrees away from the beam, when ");
+      s.append("viewed from the sample position will NOT be considered ");
+      s.append("to be a monitor.  An upstream monitor is assumed ");
+      s.append("to be before the sample, so its position is ");
+      s.append("essentially at 180 degrees from the beam direction. /n");
+
+      s.append("@assumptions The DataSet contains only monitor Data and ");
+      s.append("at least one upstream monitor exists in the DataSet. ");
+
       s.append("@algorithm Searches through the specified DataSet ds for ");
       s.append("the histogram of the upstream monitor with the highest ");
       s.append("total count.\n");
       s.append("It then determines the group ID for that data entry.\n");
+
       s.append("@param ds The monitor DataSet to be used for the ");
       s.append("operator.\n");
+
       s.append("@return Integer representing the group ID of the histogram ");
       s.append("of the upstream monitor with the largest total count ");
       s.append("attribute.\n");
+
       s.append("@error Returns -1 if no upstream monitor is found.\n");
       return s.toString();
     }
 
     /* --------------------------- getResult ------------------------------- */
     /*
-     * Searches through the specified DataSet for the upstream monitor 
-     * data entry with the highest total count.
+     * This operator sarches through the specified DataSet for the upstream 
+     * monitor data entry with the highest total count.  The DataSet should
+     * contain only monitor Data, and the corresponding detector positions must
+     * be along the beam.  Specifically, any group that is more than about
+     * 2.5 degrees away from the beam, when viewed from the sample position
+     * will NOT be considered to be a monitor.  An upstream monitor is assumed
+     * to be before the sample, so its position is essentially 180 degrees
+     * from the beam direction.
      *
-     * @return Integer Object representing the Group ID of the histogram of the 
+     * @return Integer Object with the Group ID of the histogram of the 
      * upstream monitor with the largest TOTAL_COUNT attribute. If no 
      * upstream monitor is found it will return -1.
      */
     public Object getResult()
     {
         DataSet mon      = (DataSet)(getParameter(0).getValue());
-        Integer     mon_id   = new Integer(-1);
+        Integer mon_id   = new Integer(-1);
         float   monCount = -1f;
 
-        for( int i=0 ; i<mon.getNum_entries() ; i++ )
-        {
-         Data monD = mon.getData_entry(i);
-         Float ang = (Float)monD.getAttributeValue(Attribute.RAW_ANGLE);
-         if( Math.abs(Math.abs(ang.floatValue())-180.0f)==0 )
-         {
-          Float count = (Float)monD.getAttributeValue(Attribute.TOTAL_COUNT);
-          if(count.floatValue()>monCount)
-          {
-            monCount=count.floatValue();
+        for( int i = 0; i < mon.getNum_entries(); i++ ){
 
-            mon_id=(Integer)monD.getAttributeValue(Attribute.GROUP_ID);
-          }
-         }
-       }
+            Data monD = mon.getData_entry(i);
+                                            // try to use RAW ANGLE in radians
+                                            // and if not present try Detector 
+                                            // Position
+            float ang = AttrUtil.getRawAngle( monD );
+            ang = (float)(ang * Math.PI/180.0);
+            if ( Float.isNaN( ang ) )
+            {
+              DetectorPosition det_pos = AttrUtil.getDetectorPosition( monD );
+              if ( det_pos == null )
+                return -1;
+              else
+                ang = det_pos.getScatteringAngle();
+            }
+                                         // NOTE: cos(ang) < -0.999 iff
+                                         // ang is within 2.562 degrees of 180 
+            if( Math.cos(ang) < -0.999f ){
+                float count = AttrUtil.getTotalCount( monD );
+                if( count > monCount ){
+                    monCount = count;
+                    mon_id = monD.getGroup_ID();
+                }
+            }
+        }
 
         return mon_id;
     }
@@ -186,18 +224,16 @@ public class UpstreamMonitorID extends    GenericSpecial {
 
     /* ------------------------------ clone ------------------------------- */
     /**
-     * Get a copy of the current SpectrometerEvaluator Operator.  The
+     * Get a copy of this UpstreamMonitorID Operator.  The
      * list of parameters is also copied.
      */
-
     public Object clone(){
-        UpstreamMonitorID new_op =
-            new UpstreamMonitorID( );
 
+        UpstreamMonitorID new_op = new UpstreamMonitorID( );
         new_op.CopyParametersFrom( this );
-
         return new_op;
     }
+
 
     /* ------------------------------ main ------------------------------- */
     /**
