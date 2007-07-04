@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.47  2007/07/04 19:04:54  rmikk
+ *  Changed the documentation for Attributes, ORIENT_MATRIX and SCD_CALIB
+ *
  *  Revision 1.46  2005/06/17 13:17:59  dennis
  *  Removed method setName(), which is not used, and should not be
  *  present, since Attributes should be immutable.
@@ -531,14 +534,14 @@ abstract public class Attribute implements Serializable,
   
   /**
    * SAMPLE_ORIENTATION = "Sample Orientation" is the name of an Attribute
-   * specifying the orientation of teh sample as a SampleOrientation object.
+   * whose value is an SampleOrientation object.
    *
    * @see DataSetTools.instruments.SampleOrientation
    */   
   public static final String  SAMPLE_ORIENTATION = "Sample Orientation";
   
   /**
-   * SAMPLE_NAME = "Sample Name" is the name of a String Attribute giving the
+   * SAMPLE_NAME = "Sample Name" is the name of a  Attribute giving the
    * Sample Name.
    */    
   public static final String  SAMPLE_NAME       = "Sample Name";
@@ -603,7 +606,7 @@ abstract public class Attribute implements Serializable,
   public static final String LATTICE_PARAM      = "Lattice Parameters";
   
   /**
-   * ORIENT_MATRIX = "Orientation Matrix" is the name of a String Attribute 
+   * ORIENT_MATRIX = "Orientation Matrix" is the name of a Float2DAttribute 
    * giving the Orientation Matrix.
    */   
   public static final String ORIENT_MATRIX      = "Orientation Matrix";
@@ -621,8 +624,8 @@ abstract public class Attribute implements Serializable,
   public static final String CELL_VOLUME        = "Unit Cell Volume";
   
   /**
-   * SCD_CALIB = "SCD Calibration" is the name of a String Attribute giving
-   * the name of the SCD Calibration file.
+   * SCD_CALIB = "SCD Calibration" is the name of a Float1DAttribute giving
+   * the name of the calibration data from LoadSCDCalib.
    */   
   public static final String SCD_CALIB          = "SCD Calibration";
   
