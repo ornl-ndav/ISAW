@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.19  2007/07/04 20:28:47  dennis
+ *  Removed some unused variables, and did some minor format fixes.
+ *
  *  Revision 1.18  2007/06/22 16:03:26  rmikk
  *  For cases with no input to the process, created a ByteArrayInputStream with
  *    a 0 byte length buffer and did not close.  This prevented an exception in
@@ -109,9 +112,7 @@ import java.util.Vector;
 
 import Command.ScriptUtil;
 import DataSetTools.operator.*;
-import DataSetTools.util.FilenameUtil;
 import DataSetTools.util.SharedData;
-import DataSetTools.util.SysUtil;
 import gov.anl.ipns.Parameters.*;
 //import ExtTools.monq.stuff.*;
 
@@ -230,11 +231,7 @@ public class Exec extends    GenericSpecial {
         else if( !(new java.io.File( InputFile)).exists())
            InputFile = null;
         Process process=null;
-        String output=null;
-        String error=null;
-        String input = null;
- 
-        
+    
         // Put in an array so command name does not have to parse a command
         //  line
         String[] cmd ={command};
@@ -246,16 +243,15 @@ public class Exec extends    GenericSpecial {
             fin = new FileInputStream( InputFile );
          }else{
             fin = new ByteArrayInputStream( new byte[0]);
-            //fin.close();
-            
+            //fin.close();        
          }
        
          ExtTools.monq.stuff.Exec ex = null;
          ex = new ExtTools.monq.stuff.Exec(process, fin, null, null);
          
          if(!ex.done()){
-            
          }
+         
          System.out.println( ex.getOutputText());
          String ErrText = ex.getErrorText();
          if( ErrText != null  && ErrText.trim().length()> 0){
@@ -263,11 +259,12 @@ public class Exec extends    GenericSpecial {
             System.out.println( ErrText );
             System.out.println("------------- End Error Text---------------");
          }
+         
          if( ex.ok())
             return "Finished OK";
+
          if( !ex.finished())
             return "Application did not finish";
-         
          
          Exception except = ex.getException();
          if( except == null)
@@ -282,7 +279,6 @@ public class Exec extends    GenericSpecial {
                errString +="    "+ trace[i]+"\n";
         
          return new gov.anl.ipns.Util.SpecialStrings.ErrorString(  errString );
-         
       }
       catch( IOException e ) {
             SharedData.addmsg("IOException reported: "+e.getMessage());
@@ -291,5 +287,4 @@ public class Exec extends    GenericSpecial {
         }
     }
     
-  
 }
