@@ -1,5 +1,4 @@
 /*
- * File:  CalcTransmission.java 
  *             
  * Copyright (C) 2003, Ruth Mikkelson
  *
@@ -31,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.19  2007/07/04 18:08:01  rmikk
+ * Eliminated the use of Monitor index constants by using operators to
+ *   get the upstream and down stream monitors
+ *
  * Revision 1.18  2006/07/13 20:05:26  dennis
  * Replaced code using old style tagging subclasses SampleDataSet
  * and MonitorDataSet.
@@ -100,6 +103,7 @@
  *
  */
 package DataSetTools.operator.Generic.TOF_SAD;
+import Command.ScriptUtil;
 import DataSetTools.dataset.*;
 import gov.anl.ipns.MathTools.Geometry.*;
 import gov.anl.ipns.Parameters.BooleanPG;
@@ -122,7 +126,7 @@ import DataSetTools.operator.DataSet.Conversion.XAxis.*;
 */
 public class CalcTransmission extends GenericTOF_SAD {
   StringBuffer log = new StringBuffer();
-
+  Boolean debug  = false;
 
   /**
   *    Constructor for this class
@@ -132,7 +136,7 @@ public class CalcTransmission extends GenericTOF_SAD {
   }
   
   /**
-  *     Constructor for this class
+  *  Constructor for this class
   *    @param Sample   The monitor data set for the sample run
   *    @param Empty   The monitor data set for the Empty run
   *    @param Cadmium   The monitor data set for the Cadmium run
@@ -215,72 +219,94 @@ public class CalcTransmission extends GenericTOF_SAD {
      ((DataSetPG)getParameter(3)).clear();
 
      boolean useCadmium = ((Boolean)(getParameter(4).getValue())).booleanValue();
-     float NeutronDelay =((FloatPG)getParameter(5)).getfloatValue();
-     int polyfitIndx1=((IntegerPG)getParameter(6)).getintValue();
-     int polyfitIndx2=((IntegerPG)getParameter(7)).getintValue();
-     int degree=((IntegerPG)getParameter(8)).getintValue();
-     boolean weight = ((Boolean)(getParameter(9).getValue())).booleanValue();
+     float NeutronDelay = ((FloatPG)getParameter(5)).getfloatValue();
+     int polyfitIndx1= ((IntegerPG)getParameter(6)).getintValue();
+     int polyfitIndx2= ((IntegerPG)getParameter(7)).getintValue();
+     int degree      = ((IntegerPG)getParameter(8)).getintValue();
+     boolean weight  = ((Boolean)(getParameter(9).getValue())).booleanValue();
+     int upStreamID  = ((IntegerPG)getParameter(10)).getintValue();
+     int downStreamID= ((IntegerPG)getParameter(11)).getintValue();
 
-    int upStreamID=((IntegerPG)getParameter(10)).getintValue();
-
-    int downStreamID=((IntegerPG)getParameter(11)).getintValue();
      int Monitor0 = 0;
-     int Monitor1 = 2;
+     int Monitor1 = 1;
      int SampMonitor0GroupID = upStreamID;
-     int CadMonitor0GroupID = upStreamID;
-     int EmpMonitor0GroupID = upStreamID;
-     //int SampMonitor1GroupID = downStreamID;
-     int CadMonitor1GroupID = downStreamID;
-     int EmpMonitor1GroupID = downStreamID;
-     if( upStreamID >=0){
- 
-         Monitor0= Sample.getIndex_of_data(Sample.getData_entry_with_id(upStreamID));
-         Monitor1= Sample.getIndex_of_data(Sample.getData_entry_with_id(downStreamID));
-         if(Monitor0 < 0)
-            Monitor0=0;
-         if(Monitor1 < 0)
-            Monitor1=1;
-       
+     int CadMonitor0GroupID  = upStreamID;
+     int EmpMonitor0GroupID  = upStreamID;
+
+   //int SampMonitor1GroupID = downStreamID;
+     int CadMonitor1GroupID  = downStreamID;
+     int EmpMonitor1GroupID  = downStreamID;
+
+     if( upStreamID >= 0 ) {    // this must have been specified in input
+                                // parameters, so find it in the DataSet
+         Monitor0 = Sample.getIndex_of_data(Sample.getData_entry_with_id(upStreamID));
+
+         if ( Monitor0 < 0 )
+         {
+           upStreamID = -1;     // This must have been specified wrong
+           Monitor0 = 0;
+         }
      }
-     if( (upStreamID <0) ||(downStreamID<0)){
-    	 
-    	 int[] MonIndx = setMonitorInd( Sample);
-    	 if( MonIndx == null)
-    		 return new ErrorString("Could not find matching upStream and downStream monitors");
-    	 Monitor0 = MonIndx[0];
-    	 Monitor1 = MonIndx[1];
-    	 
+
+     if( downStreamID >= 0 ){    // this must have been specified in input
+                                 // parameters, so find it in the DataSet
+         Monitor1 = Sample.getIndex_of_data(Sample.getData_entry_with_id(downStreamID));
+
+         if ( Monitor1 < 0 )
+         {
+           downStreamID = -1;    // This must have been specified wrong
+           Monitor1 = 1;
+         }
+     }
+
+     if( (upStreamID < 0) || (downStreamID < 0) ) {   // at least one of these was not
+    	                                              // specified correctly
+    	 int[] MonIndx = getMonitorInd( Sample );
+    	 if( MonIndx == null )
+           return new ErrorString("Could not find matching upStream and downStream monitors");
+
+         if ( upStreamID < 0 )       // improperly specified, so try 
+           Monitor0 = MonIndx[0];    // result from getMonitorInd()
+
+         if ( downStreamID < 0 )     // improperly specified, so try 
+           Monitor1 = MonIndx[1];    // result from getMonitorInd()
+    
+     
     	 SampMonitor0GroupID = Sample.getData_entry(Monitor0).getGroup_ID();
-    	 // SampMonitor1GroupID = Sample.getData_entry(Monitor1).getGroup_ID();
+      // SampMonitor1GroupID = Sample.getData_entry(Monitor1).getGroup_ID();
     	 EmpMonitor0GroupID = Empty.getData_entry(Monitor0).getGroup_ID();
     	 EmpMonitor1GroupID = Empty.getData_entry(Monitor1).getGroup_ID();
-    	 
-    	 if( useCadmium) {
-    		 CadMonitor0GroupID = Cadmium.getData_entry(Monitor0).getGroup_ID();
-    		 CadMonitor1GroupID = Cadmium.getData_entry(Monitor1).getGroup_ID();
+     }
+     
+         if( useCadmium) {
+           CadMonitor0GroupID = Cadmium.getData_entry(Monitor0).getGroup_ID();
+           CadMonitor1GroupID = Cadmium.getData_entry(Monitor1).getGroup_ID();
     	 }
     	 else {
     		 Cadmium = null;
     	 }
-    	 // System.out.println("FF"+Monitor0+","+Monitor1+","+SampMonitor0GroupID+","+
-    	 // CadMonitor0GroupID+","+EmpMonitor0GroupID+","+SampMonitor1GroupID+","+
-    	 // CadMonitor1GroupID+","+EmpMonitor1GroupID);
-     }
+ 
+     
+
      log.append("number of monitor detectors :");
      log.append(Format.integer((double)( Sample.getNum_entries()),4)+"\n");
      //--------------- Neutron Delay
      Sample = (DataSet)(Sample.clone());
      Empty = (DataSet)(Empty.clone());
      if( Cadmium != null) Cadmium = (DataSet)(Cadmium.clone());
-     setErrors( Sample);
-     setErrors( Empty);
-     if( Cadmium != null)setErrors( Cadmium);
+   
+     setErrors( Sample );
+     setErrors( Empty );
+
+     if( Cadmium != null)
+       setErrors( Cadmium );
+   
      if( NeutronDelay > 0){
-       applyNeutronDelay( Sample, NeutronDelay );
-       applyNeutronDelay( Empty, NeutronDelay );
-       if( Cadmium != null)applyNeutronDelay( Cadmium, NeutronDelay );
+       applyNeutronDelay( Sample, NeutronDelay, Monitor0, Monitor1 );
+       applyNeutronDelay( Empty, NeutronDelay, Monitor0, Monitor1 );
+       if( Cadmium != null)
+         applyNeutronDelay( Cadmium, NeutronDelay, Monitor0, Monitor1 );
      }
- 
      //------------Convert to llambda------------------
      try {
     	 Sample = ConvertDSToWL( Sample, "Sample");
@@ -290,7 +316,7 @@ public class CalcTransmission extends GenericTOF_SAD {
      catch (Exception ex){
     	 return new ErrorString(ex.toString());
      }
-      
+     
   // Resample the monitor's time channels to agree with the SampleDs's XScale
     //----------Convert SampleDs's to wavelength ---------------------
      DataSet OneSampleDs = SampleDs.empty_clone();     
@@ -300,16 +326,18 @@ public class CalcTransmission extends GenericTOF_SAD {
      OneSampleDs.addData_entry( data_block );
      Operator to_wl = new DiffractometerTofToWavelength( OneSampleDs, -1, -1, 0 );
      Object Result = to_wl.getResult();
+     
      if( (Result  instanceof ErrorString)  )
        return Result ;
      if( Result  == null)
        return new ErrorString( "Could not Convert Sample to Llamda");
+     
      SampleDs = (DataSet) Result;
      SampleDs.setTitle("SampleDs-lambda and scaled");  
  
      //----------- resample Monitors----------------
      XScale xscl = SampleDs.getData_entry(0).getX_scale();
-
+ 
      Sample.getData_entry(Monitor0).resample(xscl,IData.SMOOTH_NONE );
      Sample.getData_entry(Monitor1).resample(xscl,IData.SMOOTH_NONE);
      ReportToLog1( Sample,Monitor0,Monitor1);
@@ -322,7 +350,8 @@ public class CalcTransmission extends GenericTOF_SAD {
         Cadmium.getData_entry(Monitor1).resample(xscl,IData.SMOOTH_NONE);
         ReportToLog2( Cadmium,Monitor0,Monitor1);
      } 
-   
+
+ 
      ReportToLog3( Sample, Empty, Cadmium,Monitor0,Monitor1);
     
      //------------ Calculate downstream monitor Relative monitors-------
@@ -374,7 +403,7 @@ public class CalcTransmission extends GenericTOF_SAD {
        RelEmpty =(DataSet)Res;
      }
 
-   
+ 
      //----------------  Divide adjusted sample by ajusted empty------------
      Res = (new DataSetDivide_1( RelSamp, RelEmpty, EmpMonitor1GroupID,true)).getResult();
      if( Res instanceof ErrorString)
@@ -383,7 +412,7 @@ public class CalcTransmission extends GenericTOF_SAD {
           return new ErrorString( (String)Res);
      DataSet Result_t = (DataSet) Res;
      Result_t.setTitle("tr_whole");
-    
+   
      Result_t.setSelectFlag(  Monitor1, true);
     
      ExtractCurrentlySelected  opx = new ExtractCurrentlySelected(
@@ -451,6 +480,7 @@ public class CalcTransmission extends GenericTOF_SAD {
     }
     System.out.println( log.toString());
     return tr;
+     
   }
 
  //  Returns the Largest Run Number
@@ -470,15 +500,44 @@ public class CalcTransmission extends GenericTOF_SAD {
      return -1;
    return list[list.length -1];
  }
- // only works for monitor data sets
-  private void applyNeutronDelay( DataSet Sample, float delay){
+ 
+  /**
+   * Clones the data set and adds the extra string to its title so it can be
+   * shown using the ScriptUtil.display method
+   * 
+   * @param DS       The data set to be viewed
+   * @param TitleAdd  The inforation appended to the clone's title
+   * @return          The cloned data set with the proper title
+   */
+  public static DataSet FixUpforDisplay( DataSet DS, String TitleAdd){
+     DataSet DS1 = (DataSet)DS.clone();
+     String title = DS1.getTitle();
+     DS1.setTitle( title+"**"+TitleAdd);
+     return DS1;
+  }
+
+ /**
+  * Subtract an estimate of the delayed neutrons from the upstream
+  * and downstream monitors in the specified monitor DataSet.
+  *
+  * @param  Monitor_ds  The DataSet from which and estimate of the
+  *                     delayed neutrons is subtracted.
+  * @param  delay       The neutron delay factor that was passed in.
+  * @param  Mon_0       The INDEX of the upstream monitor
+  * @param  Mon_1       The INDEX of the downstream monitor
+  */
+  private void applyNeutronDelay( DataSet Monitor_ds, 
+                                  float   delay, 
+                                  int     Mon_0,
+                                  int     Mon_1 ){
    
     tof_data_calc.SubtractDelayedNeutrons(
-           (TabulatedData) Sample.getData_entry(0),30f, delay);
+           (TabulatedData) Monitor_ds.getData_entry(Mon_0),30f, delay);
     
     tof_data_calc.SubtractDelayedNeutrons(
-            (TabulatedData) Sample.getData_entry(2),30f, delay);
+            (TabulatedData) Monitor_ds.getData_entry(Mon_1),30f, delay);
   }
+
 
   private void setErrors( DataSet D){
     if( D == null)
@@ -489,6 +548,7 @@ public class CalcTransmission extends GenericTOF_SAD {
          db.setSqrtErrors( true );
     }
   }
+
 
   public String getDocumentation(){
       StringBuffer Res = new StringBuffer();
@@ -546,10 +606,12 @@ public class CalcTransmission extends GenericTOF_SAD {
 
      float initialPath2 = ((FloatAttribute)(ds.getData_entry(Mon1).
                         getAttribute( Attribute.INITIAL_PATH))).getFloatValue();
-     float[] lvals = ds.getData_entry(0).getX_scale().getXs();
-     float[] xvals=cvrtToTime( lvals, initialPath1,ds.getData_entry(Mon0));
-     float[] lvals1=ds.getData_entry(2).getX_scale().getXs();
-     float[] xvals1 =cvrtToTime( lvals1, initialPath2,ds.getData_entry(Mon1));
+
+     float[] lvals = ds.getData_entry(Mon0).getX_scale().getXs();
+     float[] xvals = cvrtToTime( lvals, initialPath1,ds.getData_entry(Mon0));
+
+     float[] lvals1 = ds.getData_entry(Mon1).getX_scale().getXs();
+     float[] xvals1 = cvrtToTime( lvals1, initialPath2,ds.getData_entry(Mon1));
      
      for( int i=0; i+1< xvals.length; i++){
         log.append(Format.integer( i+1.0,5));
@@ -568,9 +630,9 @@ public class CalcTransmission extends GenericTOF_SAD {
     log.append(" LAMBDA    M1-pancake-sample   M2trans-BSMon-sample\n");
     
      float[] lvals = ds.getData_entry(Mon0).getX_scale().getXs();
-     //float[] xvals=cvrtToTime( lvals, initialPath,ds.getData_entry(0));
+     //float[] xvals=cvrtToTime( lvals, initialPath,ds.getData_entry(Mon0));
      //float[] lvals1=ds.getData_entry(Mon1).getX_scale().getXs();
-     //float[] xvals1 =cvrtToTime( lvals1, initialPath,ds.getData_entry(2));
+     //float[] xvals1 =cvrtToTime( lvals1, initialPath,ds.getData_entry(Mon1));
      float[] yvals1= ds.getData_entry(Mon0).getY_values();
      float[] yvals2 = ds.getData_entry(Mon1).getY_values();
      for( int i=0;i+1< lvals.length; i++){
@@ -590,29 +652,52 @@ public class CalcTransmission extends GenericTOF_SAD {
 
   private void ReportToLog3(DataSet Sample,DataSet Empty, DataSet Cadmium,
               int Mon0, int Mon1){
-      int Mon3 =0;
-      if( Mon0 ==0)Mon3 = 1;
-      if( Mon1 ==0)Mon3 = 1;
-      if( Mon0 ==1)if(Mon3==1)Mon3 = 2;
-      if( Mon1 ==1)if(Mon3==1)Mon3 = 2;
-      if( Mon0 ==2)if(Mon3==2)Mon3 = 3;
-      if( Mon1 ==2)if(Mon3==2)Mon3 = 3;
-      if( Mon0 ==3)if(Mon3==3)Mon3 = 4;
-      if( Mon1 ==3)if(Mon3==3)Mon3 = 4;
+      int Mon3 = 0;
+      if( Mon0 == 0 )
+        Mon3 = 1;
+      if( Mon1 ==0 )
+        Mon3 = 1;
+      if( Mon0 == 1 )
+        if( Mon3== 1 )
+          Mon3 = 2;
+      if( Mon1 == 1 )
+        if( Mon3 == 1 )
+          Mon3 = 2;
+      if( Mon0 == 2 )
+        if( Mon3 == 2 )
+          Mon3 = 3;
+      if( Mon1 == 2 )
+        if( Mon3 == 2 )
+          Mon3 = 3;
+      if( Mon0 == 3 )
+        if( Mon3 == 3 )
+          Mon3 = 4;
+      if( Mon1 == 3 )
+        if( Mon3 == 3 )
+          Mon3 = 4;
+
       int Monx = -1;
+
       if( Sample.getData_entry(Mon3).getX_scale().getNum_x() == 
-               Sample.getData_entry(Mon1).getX_scale().getNum_x())
-          Monx =Mon3;
-       if( Monx ==Mon3){
-          if( Mon3==Monx)Mon3++;
-          if( Mon0 == Mon3) Mon3++;
-          if( Mon3==Monx)Mon3++;
-          if( Mon1 == Mon3) Mon3++;
-          if( Mon3==Monx)Mon3++;
-          if( Mon0 == Mon3) Mon3++;
-          
-          if( Mon1 == Mon3) Mon3++;
-       }
+          Sample.getData_entry(Mon1).getX_scale().getNum_x())
+          Monx = Mon3;
+
+      if( Monx == Mon3 ){
+        if( Mon3 == Monx )
+          Mon3++;
+        if( Mon0 == Mon3 ) 
+          Mon3++;
+        if( Mon3==Monx )
+          Mon3++;
+        if( Mon1 == Mon3 ) 
+          Mon3++;
+        if( Mon3==Monx ) 
+          Mon3++;
+        if( Mon0 == Mon3 ) 
+          Mon3++;
+        if( Mon1 == Mon3 ) 
+          Mon3++;
+      }
       log.append("         UPSTREAM MON      Beamstop MON             PROTONS\n");
       log.append(" SAMPLE  = "+Format.integer(getTotCount(Sample.getData_entry(Mon0)),10));
       log.append( Format.integer(getTotCount(Sample.getData_entry(Mon1)),20));
@@ -642,25 +727,66 @@ public class CalcTransmission extends GenericTOF_SAD {
     return xvals;
   }
 
- public static int[] setMonitorInd( DataSet ds){
-    int[] Res = new int[2];
-    Res[0] = 0;
-    Data D;
-    int nchannels = ds.getData_entry(0).getX_scale().getNum_x();
-    for( int i= 0; i< ds.getNum_entries(); i++)
-      if( i != Res[0]){
-        D = ds.getData_entry( i );
-        if( D.getX_scale().getNum_x() == nchannels)
-          if(((Number)( D.getAttributeValue( Attribute.TOTAL_COUNT)))
-                 .floatValue() > 0){
-           Res[1] = i;
-           return Res;
-         }
-     }
-      
-    return null;
- }//setMonitorInd
  
+ /**
+  *  Try to get an array with the indexes of the up and down stream
+  *  monitor Data blocks in the specified monitor DataSet.
+  *  This method uses the getUpStreamMonitorID() and
+  *  getDownStreamMonitorID() operators to obtain the IDs and then
+  *  searches for the Data blocks with those IDs.  If the IDs aren't
+  *  found, this method will return null.
+  *
+  *  @param  ds   The DataSet containing the monitors.
+  *
+  *  @return  If the monitors could be located, this will return
+  *           an array with two integers.  The first array entry
+  *           is the index of the up stream monitor and the second
+  *           array entry is the index of the down stream monitor.
+  *           If the monitors could not be located, this returns
+  *           null.
+  */
+ public static int[] getMonitorInd( DataSet ds){
+
+    int[] res = new int[2];
+    res[0] = -1;
+    res[1] = -1;
+                                                  // first try to find the group IDs
+                                                  // for the up and down stream monitors
+    int upStreamID = -1;
+    Operator us_op = new DataSetTools.operator.Generic.Special.UpstreamMonitorID(ds);
+    Object result  = us_op.getResult();
+    if ( result instanceof Integer )
+      upStreamID = (Integer)result;
+    else 
+      return null;
+  
+    int downStreamID = -1;
+    Operator ds_op = new DataSetTools.operator.Generic.Special.DownstreamMonitorID(ds);
+    result  = ds_op.getResult();
+    if ( result instanceof Integer )
+      downStreamID = (Integer)result;
+    else 
+      return null;
+                                                  // now find the index of the
+                                                  // groups with the specified IDs
+    
+    for( int i= 0; i< ds.getNum_entries(); i++)
+    {
+      int id = ((Data)ds.getData_entry(i)).getGroup_ID(); 
+      if ( id == upStreamID )
+        res[0] = i;
+      if ( id == downStreamID )
+        res[1] = i;
+    }
+
+    if ( res[0] < 0 || res[1] < 0 )               // we failed to find one or more ID
+      return null;
+
+    return res;
+
+ }//getMonitorInd
+ 
+
  private DataSet ConvertDSToWL(DataSet ds, String specType) throws Exception{
      Operator dsOp =   ds.getOperator( "Monitor to Wavelength");
      Object Result = null;
