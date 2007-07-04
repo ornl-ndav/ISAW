@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.11  2007/07/04 19:11:47  rmikk
+ * It is no longer a hidden operator.
+ * The getDocumentation method was expanded to indicate the new parameters
+ *
  * Revision 1.10  2007/06/25 21:33:03  rmikk
  * Fixed the clone method to return a copy of this operator not the Integrate operator.
  *
@@ -235,7 +239,7 @@ import java.util.Vector;
 /** 
  * This is a ported version of A.J.Schultz's INTEGRATE program. 
  */
-public class IntegratePeakFile extends GenericTOF_SCD  implements HiddenOperator{
+public class IntegratePeakFile extends GenericTOF_SCD  {
   private static final String       TITLE       = "IntegratePeakFile";
   private static       boolean      DEBUG       = false;
   private              StringBuffer logBuffer   = null;
@@ -430,6 +434,13 @@ public class IntegratePeakFile extends GenericTOF_SCD  implements HiddenOperator
     sb.append("slice size by.\n");
     sb.append("@param logNPeak Log the \"nth\" peak.\n");
     sb.append("@param append Whether to append to the file.\n");
+
+    sb.append("@param use_shoebox Flag to specify using same-size shoebox around all peaks,");
+    sb.append("rather than trying to maximize I/sigI");
+    sb.append("@param box_x_range The range of x (delta col) values to use around the peak ");
+    sb.append("position");
+    sb.append("@param box_y_range The range of y (delta row) values to use around the peak ");
+    sb.append("position");
     // return
     sb.append("@return The name of the file that the integrated intensities ");
     sb.append("are written to.\n");
