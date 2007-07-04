@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.14  2007/07/04 17:56:31  rmikk
+ * Code was adjusted to write NeXus file for DataSets consistiing of only a Monitor data sel.
+ *
  * Revision 1.13  2006/10/10 15:29:43  rmikk
  * Fixed a null pointer exception when the monitor is null
  *
@@ -138,7 +141,12 @@ public class NxWriter{
     NxWriteNode nxentry = node.newChildNode("Entry"+kNxentries, "NXentry");
 
     NxWriteNode nxInstr= nxentry.newChildNode("Instrument","NXinstrument");
-    if( nw.processDS(nxInstr, Histogram[0])){
+    DataSet DS = null;
+    if( Histogram != null && Histogram.length > 0)
+       DS = Histogram[0];
+    else if( Monitors != null && Monitors.length > 0)
+       DS = Monitors[0];
+    if( nw.processDS(nxInstr, DS)){
       errormessage +=";"+nw.getErrorMessage();
     }
 
@@ -231,8 +239,16 @@ public class NxWriter{
     int kNxentries = getNumHistograms();
     NxWriteNode nxentry = node.newChildNode("Entry"+kNxentries, "NXentry");
 
-    NxWriteNode nxInstr= nxentry.newChildNode("Instrument","NXinstrument");
-    if( nw.processDS(nxInstr, Histogram[0])){
+    NxWriteNode nxInstr= null; 
+   
+    nxInstr = nxentry.newChildNode("Instrument","NXinstrument");
+
+    DataSet DS = null;
+    if( Histogram != null && Histogram.length > 0)
+       DS = Histogram[0];
+    else if( Monitors != null && Monitors.length > 0)
+       DS = Monitors[0];
+    if( nw.processDS(nxInstr,DS)){
       errormessage +=";"+nw.getErrorMessage();
     }
     
@@ -264,13 +280,15 @@ public class NxWriter{
         }
       }
     }//For each histogram
-
-    NxWriteEntry ne = new NxWriteEntry(instrType);  
-    if( ne.processDS( nxentry , Histogram[0] ) )
+    
+    NxWriteEntry ne = null;
+        ne = new NxWriteEntry(instrType); 
+    
+    if( ne.processDS( nxentry ,DS ))
       errormessage +=  ";" + ne.getErrorMessage();
     
     NxWriteSample ns = new NxWriteSample(instrType);
-    if( ns.processDS( nxentry , Histogram[0] ) )
+    if( ns.processDS( nxentry ,DS ) )
       errormessage +=  ";" + ns.getErrorMessage();
 
     
