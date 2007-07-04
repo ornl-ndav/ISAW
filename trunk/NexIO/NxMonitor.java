@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2007/07/04 18:04:04  rmikk
+ * Fixed reading of errors.  Also added a PixelInfo attribute to monitor data
+ *    blocks
+ *
  * Revision 1.9  2004/02/16 02:15:55  bouzekc
  * Removed unused import statements.
  *
@@ -58,6 +62,7 @@ package NexIO;
 
 import DataSetTools.dataset.*;
 import NexIO.Util.*;
+import gov.anl.ipns.MathTools.Geometry.*;
 /** 
  * This Class processes the NxMonitor Entries of a Nexus datasource
  */
@@ -116,7 +121,11 @@ public class NxMonitor{
     }
    
     Object X1 = ndata.getNodeValue();
+    
     Object X2 = ntof.getNodeValue();
+    float histOff = ConvertDataTypes.floatValue( ntof.getAttrValue( "histogram_offset"));
+    if( histOff < 0)
+       histOff = 0;
     float[] errs = null;
     if( errors != null) errs = ConvertDataTypes.floatArrayValue( errors.getNodeValue());
     if( X1 == null ) 
@@ -129,6 +138,16 @@ public class NxMonitor{
     yvals = nd.Arrayfloatconvert( X1 );
     float xvals[];
     xvals = nd.Arrayfloatconvert( X2 );
+    if( histOff > 0){
+       float[] xvals1 = new float[xvals.length + 1];
+       float xleft = xvals[0]-histOff;
+       for( int i=0; i <xvals.length; i++ ){
+          xvals1[i] = xleft;
+          xleft = 2*xvals[i]-xleft;
+       }
+       xvals1[ xvals1.length-1] = xleft;
+       xvals = xvals1;
+    }
     if( ( xvals == null ) ||(  yvals==null ) ) 
       return setErrorMessage( "Cannot convert data to float array in NxMonitor");
     
@@ -164,8 +183,54 @@ public class NxMonitor{
       if( S != null )
         DS.setY_units( S );
     } 
+    
+   
+    
     (new NXData_util()).setOtherAttributes( node  ,DS , index ,index+1) ;
     
+    //Create a PixelInfo list for this entry
+    float distance = NexUtils.getFloatFieldValue( node,"distance");
+    if( Float.isNaN( distance)){
+       return false;
+    }
+    float width = Float.NaN,
+          height = Float.NaN,
+          depth = Float.NaN;
+    NxNode Geom = node.getChildNode("goemetry");
+    if(Geom != null && Geom.getNodeClass() == "NxGeometry"){
+       NxNode shape = Geom.getChildNode("shape");
+       if( shape != null){
+          float[] size = NexUtils.getFloatArrayFieldValue( shape,"size");
+          if( size != null && size.length == 3){
+             width = size[0];
+             height = size[1];
+             depth = size[2];
+          }
+       }
+    }
+    
+    if( Float.isNaN(width))
+       width =ConvertDataTypes.floatValue( NexUtils.getFloatFieldValue( node,"width"));
+
+    if( Float.isNaN(height))
+       height =ConvertDataTypes.floatValue( NexUtils.getFloatFieldValue( node,"height"));
+
+    if( Float.isNaN(depth))
+       depth =ConvertDataTypes.floatValue( NexUtils.getFloatFieldValue( node,"depth"));
+    
+    if( Float.isNaN( height))
+       height = .05f;
+    if( Float.isNaN( width))
+       width = .05f;
+    if( Float.isNaN( depth))
+       depth = .05f;
+    Vector3D center = new Vector3D( distance,0,0);
+    Vector3D xdir = new Vector3D(1,0,0);
+    Vector3D ydir = new Vector3D( 0,1,0);
+    UniformGrid grid = new UniformGrid( index+1,"m",center, xdir ,ydir, width, height, depth,1,1);
+    int id = index+1;
+    DetectorPixelInfo detPix = new DetectorPixelInfo( id, (short)1,(short)1, grid);
+    D.setAttribute( new PixelInfoListAttribute( Attribute.PIXEL_INFO_LIST,new PixelInfoList( detPix)));
     return false;
   }
   
