@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.16  2007/07/04 18:02:44  rmikk
+ * Did not return an error condition with a null DataSet. NXinstrrument must be
+ *   able to process datasets consisting of only monitor data sets.
+ *
  * Revision 1.15  2007/06/28 15:29:09  rmikk
  * Did not trip an error messae if there is no node and no fixit file.
  *
@@ -330,7 +334,7 @@ public class NxInstrument{
     }
     
     if( DS == null )
-       return true;
+       return false;
     String name = null;
     errormessage = "";
     float distance = Float.NaN;
@@ -354,8 +358,8 @@ public class NxInstrument{
 
             if( tnode.getNodeClass().equals( "NXsource" ) ) {
                NxNode tnode1 = tnode.getChildNode( "distance" );
-               if( tnode1 == null )
-                  return false;
+               if( tnode1 != null ){
+                 
 
                Object O = tnode1.getNodeValue();
                if( O != null )
@@ -365,6 +369,7 @@ public class NxInstrument{
 
                       
                      }
+               }
             }
          }
       }
