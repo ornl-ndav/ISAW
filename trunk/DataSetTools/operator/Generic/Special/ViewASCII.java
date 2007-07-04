@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.15  2007/07/04 20:27:27  dennis
+ *  Removed some unused code in main() test program.
+ *
  *  Revision 1.14  2007/05/08 13:42:05  rmikk
  *  Now extends a subclass of JFrame which finalizes the JFrame when disposed
  *
@@ -548,10 +551,6 @@ public class ViewASCII extends    GenericSpecial
      */
     public static void main(String[] args)
     {
-        String filename="/IPNShome/pfpeterson/ISAW/Scripts/TestScripts/"
-           +"hello.iss";
-        //String filename="testASCII.txt";
-
         ViewASCII op;
         op=new ViewASCII(args[0]);
         System.out.println("RESULT: "+op.getResult());
