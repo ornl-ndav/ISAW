@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2007/07/04 17:52:38  rmikk
+ * Monitor DataSets now get the initial path attribute added.
+ *
  * Revision 1.9  2007/01/19 19:17:25  rmikk
  * Fixed an error in setting data entries.  Used incorrect grid.
  *
@@ -121,7 +124,9 @@ public class ProcessNxEntry  implements IProcessNxEntry {
         }
         
         boolean monitorDS = false;
-
+        NxNode NxInstrumentNode = null;
+        NxNode NxBeamNode = null;
+        
         if (NxDataNode == null) { // Monitor DataSet
        
             int k = 0;
@@ -136,7 +141,12 @@ public class ProcessNxEntry  implements IProcessNxEntry {
                
             for (int child = 0; child < NxEntryNode.getNChildNodes(); child++) {
           
-                NxNode Child = NxEntryNode.getChildNode(child);
+                NxNode Child = NxEntryNode.getChildNode(child);  
+                
+                if (Child.getNodeClass().equals("NXinstrument"))
+                    NxInstrumentNode = Child;
+                else if (Child.getNodeClass().equals("NXbeam"))
+                    NxBeamNode = Child;
 
                 if (Child.getNodeClass().equals("NXmonitor")) {
              
@@ -157,8 +167,8 @@ public class ProcessNxEntry  implements IProcessNxEntry {
         
             DS.setTitle(NxDataNode.getNodeName());
       
-            NxNode NxInstrumentNode = null;
-            NxNode NxBeamNode = null;
+            NxInstrumentNode = null;
+            NxBeamNode = null;
 
             for (int child = 0; (child < NxEntryNode.getNChildNodes()); child++) {
                 NxNode Child = NxEntryNode.getChildNode(child);
@@ -215,7 +225,7 @@ public class ProcessNxEntry  implements IProcessNxEntry {
             if (C.equals("NXinstrument")) {
                 NxInstrument nx = new NxInstrument();
         
-                if (!monitorDS)
+                //if (!monitorDS)
                     if (!nx.processDS(datanode, DS, States)) {// do nothing
                        checkedInstr = true;
                     } else
