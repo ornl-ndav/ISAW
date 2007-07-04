@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.38  2007/07/04 17:10:36  rmikk
+ * changed setMonitorInd to getMonitorInd
+ *
  * Revision 1.37  2006/07/10 16:26:00  dennis
  * Change to new Parameter GUIs in gov.anl.ipns.Parameters
  *
@@ -375,7 +378,7 @@ public class Reduce_KCL  extends GenericTOF_SAD{
 
         int MonitorInd[];        //set to contain the index of the upstream mon
         if( upStreamMonID <0)
-           MonitorInd = CalcTransmission.setMonitorInd( RUNSds0 );
+           MonitorInd = CalcTransmission.getMonitorInd( RUNSds0 );
         else{
            MonitorInd = new int[1];
            MonitorInd[0] = RUNSds0.getIndex_of_data(
