@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.31  2007/07/04 18:00:18  rmikk
+ * Added a Total Count Attribute in most cases
+ *
  * Revision 1.30  2007/06/28 15:28:35  rmikk
  * For monitors, detector_number and id are now used to set the GroupID's
  *
@@ -857,7 +860,10 @@ public class NXData_util{
                      group_id,(short)1,(short)1,gridd));
                   newData.setAttribute( new PixelInfoListAttribute(Attribute.PIXEL_INFO_LIST,
                        PixList));
-     
+       float TotCount =0;
+       for(int i=0; i<yvals.length; i++)
+          TotCount += yvals[i];
+       newData.setAttribute( new FloatAttribute( Attribute.TOTAL_COUNT, TotCount));
        DS.addData_entry( newData );
      }
      int endIndex = DS.getNum_entries();
