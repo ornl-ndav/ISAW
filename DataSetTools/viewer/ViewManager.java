@@ -30,6 +30,13 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.86  2007/07/04 18:57:33  dennis
+ *  Removed extra call to getResult() when using the X-Axis
+ *  conversion operator.
+ *  Added documentation to getObjectState() method.  Also,
+ *  this method now uses the parameter to control whether the
+ *  current state or default state is used.
+ *
  *  Revision 1.85  2007/06/13 20:13:45  dennis
  *  Fixed bug related to PointedAtTable view.  If the X-Axis was
  *  converted to different units with the PointedAtTable view
@@ -407,6 +414,7 @@ public class ViewManager extends    JFrame
       this( ds, view_type, null, true );
    }
 
+
    /**  
     *  Accepts a DataSet and view type and creates an instance of a 
     *  ViewManager for the data set.  
@@ -509,8 +517,12 @@ public class ViewManager extends    JFrame
      System.gc();
    }
 
+
    /**
-    *  Get the DataSet that is currently used by this ViewManager
+    *  Get a reference to the DataSet that is currently used by this 
+    *  ViewManager.
+    *
+    *  @return a reference to the DataSet that is shown by this ViewManager.
     */   
    public DataSet getDataSet()
    {
@@ -868,6 +880,7 @@ public class ViewManager extends    JFrame
 
    }
 
+
   /**
    *  Trace the finalization of objects
    */
@@ -877,6 +890,7 @@ public class ViewManager extends    JFrame
     System.out.println( "finalize ViewManager" );
   }
 */
+
 
 /* --------------------------------------------------------------------------
  *
@@ -946,7 +960,7 @@ public class ViewManager extends    JFrame
        if ( x_scale == null || use_default_conversion_range ) 
        {
          op.setDefaultParameters();
-         IParameter p = op.getParameter(2);                // 0 means use the
+         IParameter p = op.getParameter(2);               // 0 means use the
          if ( p.getName().equals( Parameter.NUM_BINS ))   // number of bins
            p.setValue( new Integer( 0 ) );                // in the DataSet
        }
@@ -968,9 +982,9 @@ public class ViewManager extends    JFrame
        }  
 
        Object result = op.getResult();
-       if ( result instanceof DataSet )
+       if ( result != null && result instanceof DataSet )
        {
-         tempDataSet = (DataSet)op.getResult();
+         tempDataSet = (DataSet)result;
          if ( tempDataSet.getNum_entries() == num_new )
                                             // we didn't lose Data blocks, so
          {
@@ -1070,7 +1084,6 @@ private void BuildEditMenu()
   button = new JMenuItem( CLEAR_SELECTED );
   button.addActionListener( edit_menu_handler );
   clear_menu.add( button );
-
                                               // Add sort options
   if ( dataSet.getNum_entries() > 1 )
   {
@@ -1086,6 +1099,7 @@ private void BuildEditMenu()
     }
   }
 }
+
 
 private void BuildViewMenu()
 {                                                   // set up view menu items
@@ -1134,6 +1148,7 @@ private void BuildViewMenu()
   view_menu.add( button );
 }
 
+
  public void BuildTableMenu( JMenu Tables )
  { 
     ViewMenuHandler view_menu_handler = new ViewMenuHandler();
@@ -1149,6 +1164,7 @@ private void BuildViewMenu()
     Tables.add( button );
    */
  }
+
 
 /*
  * Build the menu of conversion options and turn on the radio button for the 
@@ -1202,7 +1218,6 @@ private void BuildOptionMenu()
   ShowPointedAtTable = new JCheckBoxMenuItem( POINTEDAT_TABLE);
   ShowPointedAtTable.addActionListener( option_menu_handler );
   ShowPointedAtTable.setState(false);
- 	 
  
   option_menu.add( link_viewers_button );
   option_menu.add(  ShowPointedAtTable );
@@ -1213,6 +1228,7 @@ private void BuildOptionMenu()
   option_menu.add( show_all_button );
 */
 }
+
 
 private void BuildHelpMenu( String viewType){
   String view= viewType.replace(' ','_').toLowerCase();
@@ -1231,9 +1247,9 @@ private void BuildHelpMenu( String viewType){
   About.addActionListener( new HelpActionListener(view));
   HelpMenu.add( About );
   viewer.getMenuBar().add( HelpMenu);
-  
-  
 }
+
+
 private String CurrentConversionName()     // get current conversion name
 {
   String name;     
@@ -1405,11 +1421,13 @@ private float solve( float new_x ) // find what x in the original DataSet maps
     }
   }
 
+
   private void HandlePointedAtView(){
 	 
     if( this.ShowPointedAtTable.isSelected()){
        PointedAtView = new QuickTableViewer( this, tempDataSet );
-       PointedAtView.addWindowListener( new MyWindowListener());   //For when it is closed
+       PointedAtView.addWindowListener( new MyWindowListener());   
+                                           //add listener for when it is closed
     }else if( PointedAtView != null ) {
        PointedAtView.destroy();
        PointedAtView = null;
@@ -1476,11 +1494,12 @@ private float solve( float new_x ) // find what x in the original DataSet maps
 
     try{
       finalize();
-    }catch( Throwable ss){
+    }catch( Throwable ss ){
       System.out.println(" finalize error "+ss);
     }
  }
  
+
  /**
   * Sets the ObjectState and updates the ObjectState for the current 
   * DataSetViewer to the corresponding ObjectState
@@ -1490,20 +1509,34 @@ private float solve( float new_x ) // find what x in the original DataSet maps
  public void setObjectState( ObjectState ObjState ){
    
    this.Ostate = ObjState;
-   if(Ostate == null)
-       Ostate = new ObjectState();
+
+   if ( Ostate == null )
+     Ostate = new ObjectState();
+
    ObjectState st =(ObjectState) Ostate.get(viewType);
-   if( st !=null)
+
+   if( st !=null )
       viewer.setObjectState( st);
  }
 
  
- public ObjectState getObjectState( boolean is_default){
-   ObjectState st = viewer.getObjectState( false );
-   if(  st != null)
-       Ostate.reset( viewType, st);
+ /**
+  *  Get the object state for this ViewManager, updated to contain
+  *  the latest state information from the current view.
+  *
+  *  @param  is_default  Flag that controls whether current view's
+  *                      default state or actual current state is
+  *                      recorded in the ViewManager's state and
+  *                      returned. 
+  */
+ public ObjectState getObjectState( boolean is_default ){
+
+   ObjectState st = viewer.getObjectState( is_default );
+
+   if ( st != null )
+     Ostate.reset( viewType, st );
+
    return Ostate;
-   
  }
 
  
@@ -1563,15 +1596,15 @@ private float solve( float new_x ) // find what x in the original DataSet maps
      
      IsawGUI.Browser x=(new IsawGUI.Browser( url ));
     }
-   
  }
 
+
  class MyWindowListener extends WindowAdapter{
-	public void windowClosed(WindowEvent e) {
-		if( e.getSource().equals( PointedAtView)){
-			ShowPointedAtTable.setState( false );
-			
-		}
-	}
+   public void windowClosed(WindowEvent e) {
+     if ( e.getSource().equals( PointedAtView ) ){
+        ShowPointedAtTable.setState( false );
+     }
+   }
  }
+
 }
