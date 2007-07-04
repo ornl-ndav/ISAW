@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2007/07/04 20:21:03  dennis
+ *  Added missing import.
+ *
  *  Revision 1.6  2007/07/04 20:16:50  dennis
  *  Now will use the DetectorPosition attribute to determine the angle
  *  from the beam to the detector, if the RAW_ANGLE attribute is not
@@ -62,10 +65,11 @@ import java.util.Vector;
 import DataSetTools.dataset.Attribute;
 import DataSetTools.dataset.Data;
 import DataSetTools.dataset.DataSet;
+import DataSetTools.dataset.AttrUtil;
 import DataSetTools.operator.Operator;
 import DataSetTools.operator.Parameter;
 import DataSetTools.retriever.RunfileRetriever;
-import  gov.anl.ipns.MathTools.Geometry.DetectorPosition;
+import gov.anl.ipns.MathTools.Geometry.DetectorPosition;
 
 /**
  * This operator determines what the group ID of the upstream monitor
