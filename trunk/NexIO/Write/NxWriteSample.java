@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2007/07/04 17:54:31  rmikk
+ * Null DataSet inputs to processDS no longer causes an error condition
+ *
  * Revision 1.8  2007/06/28 15:24:19  rmikk
  * Eliminated tests for the NXlog s
  *
@@ -90,9 +93,9 @@ public class NxWriteSample{
    */
   public boolean processDS( NxWriteNode node , DataSet DS){
     errormessage = "";
-    
+    if( DS == null) return false;
     NxWriteNode NxSampNode = node.newChildNode( "Sample", "NXsample");
-    
+    if( DS != null){
     Object X = DS.getAttributeValue( Attribute.SAMPLE_NAME);
     if( X !=  null){
       String Samp_name = NexIO.Util.ConvertDataTypes.StringValue( X);
@@ -105,6 +108,7 @@ public class NxWriteSample{
         nameNode.setNodeValue( (Samp_name+(char)0).getBytes(),
                      NexIO.Types.Char,ranks);
        }
+    }
     }
    /* NxWriteNode NxLognode = NxSampNode.newChildNode("Log_7","NXlog");
     NxWriteLog writelog = new NxWriteLog( 5);
