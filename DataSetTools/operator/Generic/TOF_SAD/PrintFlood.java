@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2007/07/04 17:13:41  rmikk
+ * Eliminated the necessity for a grid if a transmission output is required
+ *
  * Revision 1.8  2006/07/10 16:26:00  dennis
  * Change to new Parameter GUIs in gov.anl.ipns.Parameters
  *
@@ -126,11 +129,15 @@ public class PrintFlood  extends GenericTOF_SAD{
      String FileType = ((ChoiceListPG)getParameter(2)).getValue().toString();
      int n = Efficiency.getNum_entries();
      IDataGrid EffGrid = getDataGrid( Efficiency);
-    
-     if( (EffGrid == null) )
+     int nrows =Efficiency.getNum_entries();
+     int ncols =1;
+     if( (EffGrid == null) ){
+        if( FileType.equals("Flood"))
         return new ErrorString("Grid is null");
-     int nrows = EffGrid.num_rows();
-     int ncols = EffGrid.num_cols();
+     }else{
+        nrows = EffGrid.num_rows();
+        ncols = EffGrid.num_cols();
+     }
      if( n != nrows*ncols)
         return new ErrorString( "rows and cols do not agree with size");
 
