@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.17  2007/07/04 17:48:43  rmikk
+ * Fixed major errors in copying over the errors
+ *
  * Revision 1.16  2007/01/12 14:48:47  dennis
  * Removed unused imports.
  *
@@ -1097,11 +1100,12 @@ public class NexUtils implements INexUtils {
      
         if ( errNode != null ) {
             evals = ConvertDataTypes.floatArrayValue( errNode.getNodeValue() );
-            evals = MakeHistogram( evals , errNode );
-            Xunits = ConvertDataTypes.StringValue(
+            //evals = MakeHistogram( evals , errNode );
+            /*Xunits = ConvertDataTypes.StringValue(
                         errNode.getAttrValue( "units" ) ); 
 
             ConvertDataTypes.UnitsAdjust( evals , Xunits , xUnits , 1.0f , 0.0f );
+            */
         }
      
         if ( xvals == null )
@@ -1120,9 +1124,17 @@ public class NexUtils implements INexUtils {
                 ( Arrays.binarySearch( States.Spectra , id ) >= 0 ) ) {
                
                 float[] yvals = new float[ length ];
-
+                float[] errs  = new float[length ];
+                
+                HistogramTable DB ;
                 System.arraycopy( data , i * length , yvals , 0 , length );
-                HistogramTable DB = new HistogramTable( xsc , yvals , evals , id );
+                if( evals != null){
+                    System.arraycopy( evals , i * length , errs , 0 , length );
+                    DB = new HistogramTable( xsc , yvals , errs , id );
+                }else{
+                   errs = null;
+                   DB = new HistogramTable( xsc , yvals ,  id );
+                }
 
                 DS.addData_entry( DB );
             }
