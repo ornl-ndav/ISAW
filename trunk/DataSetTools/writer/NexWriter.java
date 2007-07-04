@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2007/07/04 17:17:55  rmikk
+ *  Now writes out NeXus files that only contain monitors
+ *
  *  Revision 1.4  2004/01/24 22:49:30  bouzekc
  *  Removed unused imports.
  *
@@ -78,7 +81,7 @@ public class NexWriter extends Writer
      * the monitor DataSet for histograms H1, H2, H3 and the M2 is the monitor
      * DataSet for histograms H3 and H4.
      */
-    public void writeDataSets( DataSet ds[] )
+    public void writeDataSets( DataSet ds[] )// redo
     { if( ds == null)
 	return ;
       NexWriteNode nwr = new NexWriteNode( data_destination_name );
@@ -110,10 +113,12 @@ public class NexWriter extends Writer
              else
                 { Hist[0] = D;
                    Writer.Append( Monit, Hist);
+                   Monit[0] = null;
                 }
            }
        }
-
+      if( Monit[0] != null )//This means that there were no histograms
+         Writer.Append( Monit[0], null);
       Writer.close();
      
       
