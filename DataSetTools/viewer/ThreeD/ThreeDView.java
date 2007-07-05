@@ -30,6 +30,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.39  2007/07/05 16:20:14  dennis
+ * Split some functionality out of MakeColorList() to make new
+ * methods setDataScaleFactor() and findMaxAbsDataValue().
+ * NOTE: The selection of a new X-Scale from this viewer is
+ *       not working in this version.
+ *
  * Revision 1.38  2007/06/13 17:00:00  dennis
  * No longer precomputes all colors for all data in advance.  This trade
  * off of space for time is no longer needed since cpu speeds have
@@ -183,9 +189,8 @@ public class ThreeDView extends DataSetViewer
   private volatile Color           color_table[]     = null;
   private float                    log_scale[]       = null;
   private DataSetXConversionsTable conv_table        = null;
-  private float                    max_data          =  100;
-  private float                    min_data          =    0;
   private float                    scale_factor      =    1;
+  private float                    max_abs           =    0;
 
   private final Integer  GROUP_PREFIX    = 0;
   private final Integer  DETECTOR_PREFIX = 100000000;
@@ -300,7 +305,7 @@ public void redraw( String reason )
              reason.equals( XScaleChooserUI.X_RANGE_CHANGED )   )
    {
      MakeColorList();
-     set_colors( frame_control.getFrameNumber() );
+     set_colors( frame_control.getFrameValue() );
    }
 
    else                                       // really regenerate everything
@@ -516,22 +521,27 @@ private void MakeThreeD_Scene()
   draw_beam( radius );
   draw_instrument( radius );
 
-  set_colors( frame_control.getFrameNumber() );
+  set_colors( frame_control.getFrameValue() );
 }
 
 
 /* ------------------------------ set_colors ---------------------------- */
-
-private void set_colors( int frame )
+/**
+ * Set the color of all of the 3D group and/or detector objects to the
+ * color corresponding to the data at the specified x_val.
+ *
+ * @param x_val  The x_value at which the data is to be evaluated.
+ *
+ */
+private void set_colors( float x_val )
 {
-  DataSet ds = getDataSet();
-  int   num_data = ds.getNum_entries();
+  DataSet ds       = getDataSet();
+  int     num_data = ds.getNum_entries();
 
   int   index;
   Data  data_block;
   float y_val;
   float val;
-  float x_val = frame_control.getFrameValue();
   for ( int i = 0; i < num_data; i++ )
   {
     data_block = ds.getData_entry(i);
@@ -560,12 +570,10 @@ private void set_colors( int frame )
 
 private void MakeColorList()
 {
-  Long base_time = System.nanoTime();
   if ( !validDataSet() )
     return;
 
   DataSet ds = getDataSet();
-  float   y_vals[][];
 
   int  num_rows = ds.getNum_entries();
   if ( num_rows == 0 ) 
@@ -580,15 +588,6 @@ private void MakeColorList()
   else
     num_frames = num_x - 1;
 
-  y_vals = new float[num_rows][];
-  Data  data_block;
-
-  for ( int i = 0; i < num_rows; i++ )    // interval
-  {
-    data_block = ds.getData_entry(i);
-    y_vals[i] = data_block.getY_values( x_scale, IData.SMOOTH_NONE ); 
-  }
- 
   float x_vals[]     = x_scale.getXs();
   float frame_vals[] = new float[ num_frames ];
 
@@ -601,24 +600,66 @@ private void MakeColorList()
  
   frame_control.setFrame_values( frame_vals );
 
-  max_data = Float.NEGATIVE_INFINITY;
-  min_data = Float.POSITIVE_INFINITY;
-  float val;
-  for ( int i = 0; i < y_vals.length; i++ )
-   for ( int j = 0; j < num_frames; j++ )
-   {
-     val = y_vals[i][j];
-     if ( val > max_data )
-       max_data = y_vals[i][j];
-     else if ( val < min_data )
-       min_data = y_vals[i][j]; 
-   } 
 
-  float max_abs = 0;
+  setDataScaleFactor();
+}
+
+
+/* -------------------------- findMaxAbsDataValue ----------------------- */
+/**
+ *  Find the overall maximum absolute value of the data values in the
+ *  DataSet, and record it in the field max_abs.
+ */
+
+private void findMaxAbsDataValue()
+{
+  DataSet ds = getDataSet();
+  int  num_rows = ds.getNum_entries();
+  if ( num_rows == 0 )
+    return;
+
+  float[] y_vals;
+  Data  data_block;
+
+  float max_data = Float.NEGATIVE_INFINITY;
+  float min_data = Float.POSITIVE_INFINITY;
+  float val;
+  for ( int i = 0; i < num_rows; i++ )
+  {
+    data_block = ds.getData_entry(i);
+    y_vals = data_block.getY_values();
+    for ( int j = 0; j < y_vals.length; j++ )
+    {
+      val = y_vals[j];
+      if ( val > max_data )
+        max_data = val;
+      if ( val < min_data )
+        min_data = val;
+    }
+  }
+
   if ( Math.abs( max_data ) > Math.abs( min_data ) )
     max_abs = Math.abs( max_data );
   else
     max_abs = Math.abs( min_data );
+
+  if ( max_abs > 0 )
+    scale_factor = (LOG_TABLE_SIZE - 1) / max_abs;
+  else
+    scale_factor = 0;
+}
+
+
+/* -------------------------- setDataScaleFactor ----------------------- */
+/**
+ *  Find the overall min and max data values in the DataSet, and set
+ *  the scale factor used to map the data values to the interval
+ *  from -(LOG_TABLE_SIZE-1) to +(LOG_TABLE_SIZE-1).
+ */
+
+private void setDataScaleFactor()
+{
+  findMaxAbsDataValue();
 
   if ( max_abs > 0 )
     scale_factor = (LOG_TABLE_SIZE - 1) / max_abs;
@@ -694,8 +735,12 @@ private float draw_groups()
   return max_radius;
 }
 
-/* ------------------------------ remove_groups -------------------------- */
 
+/* ------------------------------ remove_groups -------------------------- */
+/**
+ *  Remove the 3D objects representing average detector group positions 
+ *  from the 3D display.
+ */
 private void  remove_groups()
 {
   DataSet ds     = getDataSet();
@@ -769,7 +814,10 @@ private float draw_detectors()
 
 
 /* ------------------------------ remove_detectors -------------------------- */
-
+/**
+ *  Remove the 3D objects representing detector pixel positions 
+ *  from the 3D display.
+ */
 private void  remove_detectors()
 {
   DataSet ds     = getDataSet();
@@ -778,8 +826,6 @@ private void  remove_detectors()
   for ( int i = 0; i < n_data; i++ )
     threeD_panel.removeObjects( DETECTOR_PREFIX+i );
 }
-
-
 
 
 /* ------------------------------ draw_axes ----------------------------- */
@@ -1149,7 +1195,7 @@ private class OptionMenuHandler implements ActionListener
     String action = e.getActionCommand();
     color_table = IndexColorMaker.getDualColorTable( action,
                                                      NUM_POSITIVE_COLORS );
-    set_colors( frame_control.getFrameNumber() );
+    set_colors( frame_control.getFrameValue() );
     color_scale_image.setNamedColorModel( action, true, true );
     getState().set_String( ViewerState.COLOR_SCALE, action );
   }
@@ -1174,8 +1220,7 @@ private class LogScaleEventHandler implements ChangeListener,
       int value = slider.getValue();
       setLogScale( value );
       getState().set_int( ViewerState.BRIGHTNESS, value );
-      MakeColorList();
-      set_colors( frame_control.getFrameNumber() );
+      set_colors( frame_control.getFrameValue() );
     }
   }
 }
@@ -1189,11 +1234,9 @@ private class FrameControlListener implements ActionListener
 {
   public void actionPerformed( ActionEvent e )
   {
-    String action = e.getActionCommand();
-    int    frame  = Integer.valueOf(action).intValue();
-    set_colors( frame );
-
     float frame_val = frame_control.getFrameValue();
+    set_colors( frame_val );
+
     if ( !Float.isNaN( frame_val ) && notify_ds_observers )
     {
       getDataSet().setPointedAtX( frame_val );
@@ -1229,7 +1272,7 @@ private class FrameControlListener implements ActionListener
         else
           draw_groups();
 
-        set_colors( frame_control.getFrameNumber() );
+        set_colors( frame_control.getFrameValue() );
       }
     }
   }
@@ -1256,7 +1299,7 @@ private class FrameControlListener implements ActionListener
         else
           draw_detectors();
 
-        set_colors( frame_control.getFrameNumber() );
+        set_colors( frame_control.getFrameValue() );
       }
     }
   }
@@ -1269,6 +1312,7 @@ private class FrameControlListener implements ActionListener
      public void actionPerformed(ActionEvent e)
      {
        String action  = e.getActionCommand();
+       System.out.println("XScaleListener action: " + action );
        getDataSet().notifyIObservers( action );
      }
   }
