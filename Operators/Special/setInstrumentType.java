@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2007/07/05 14:35:05  dennis
+ * Switched to use static method from SetInstrumentTypeCalc,
+ * instead of from SetInstrumentType.
+ *
  * Revision 1.2  2007/05/14 01:58:50  dennis
  * Converted from DOS to UNIX text format.
  *
@@ -144,20 +148,30 @@ public class setInstrumentType extends GenericOperator{
     */
    public Object getResult(){
       try{
-         DataSetTools.dataset.DataSet ds = (DataSetTools.dataset.DataSet)(getParameter(0).getValue());
+         DataSetTools.dataset.DataSet ds = 
+                   (DataSetTools.dataset.DataSet)(getParameter(0).getValue());
+
          java.lang.String type = getParameter(1).getValue().toString();
-         java.lang.Object Xres=Operators.Special.SetInstrumentType.setInstrumentType(ds,type );
+
+         java.lang.Object Xres = 
+           Operators.Special.SetInstrumentTypeCalc.setInstrumentType(ds,type );
 
          return Xres;
-       }catch( Throwable XXX){
-        String[]Except = ScriptUtil.
-            GetExceptionStackInfo(XXX,true,1);
+       }
+       catch( Throwable XXX){
+
+        String[]Except = ScriptUtil.GetExceptionStackInfo(XXX,true,1);
+
         String mess="";
-        if(Except == null) Except = new String[0];
+
+        if(Except == null) 
+          Except = new String[0];
+
         for( int i =0; i< Except.length; i++)
            mess += Except[i]+"\r\n            "; 
+
         return new ErrorString( XXX.toString()+":"
              +mess);
-                }
+       }
    }
 }
