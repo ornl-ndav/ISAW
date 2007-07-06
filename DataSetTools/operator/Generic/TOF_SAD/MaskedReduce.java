@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2007/07/06 16:30:35  dennis
+ * The method to subtract delayed neutrons is now only called if
+ * the specified delayed neutron fraction is more than 0.
+ *
  * Revision 1.5  2007/07/04 18:06:20  rmikk
  * changed setMonitorInd to getMonitorInd
  *
@@ -419,31 +423,33 @@ public class MaskedReduce  extends GenericTOF_SAD{
         System.out.println(" Number of X and Y edge Chans masked for AD=" + 
                              nedge );
 
-        for( int i = 0; i < 1; i++ )
-        {
-          tof_data_calc.SubtractDelayedNeutrons(
+        if ( BETADN > 0 )
+          for( int i = 0; i < 1; i++ )
+          {
+            tof_data_calc.SubtractDelayedNeutrons(
            (TabulatedData)RUNSds[0].getData_entry( MonitorInd[i]), 30f, BETADN);
           
-          tof_data_calc.SubtractDelayedNeutrons(
+            tof_data_calc.SubtractDelayedNeutrons(
            (TabulatedData)RUNBds[0].getData_entry( MonitorInd[i]), 30f, BETADN);
           
-          if ( RUNCds0 != null )
-            tof_data_calc.SubtractDelayedNeutrons(
+            if ( RUNCds0 != null )
+              tof_data_calc.SubtractDelayedNeutrons(
            (TabulatedData)RUNCds[0].getData_entry( MonitorInd[i]), 30f, BETADN);
-         }      
+          }      
 
-        for( int i = 0; i < RUNSds[1].getNum_entries(); i++ )
-        {
-          tof_data_calc.SubtractDelayedNeutrons(
+        if ( BETADN > 0 )
+          for( int i = 0; i < RUNSds[1].getNum_entries(); i++ )
+          {
+            tof_data_calc.SubtractDelayedNeutrons(
                       (TabulatedData)RUNSds[1].getData_entry(i),30f, BETADN);
           
-          tof_data_calc.SubtractDelayedNeutrons(
+            tof_data_calc.SubtractDelayedNeutrons(
                       (TabulatedData)RUNBds[1].getData_entry(i),30f, BETADN);
           
-          if ( RUNCds0 != null )
-            tof_data_calc.SubtractDelayedNeutrons(
+            if ( RUNCds0 != null )
+              tof_data_calc.SubtractDelayedNeutrons(
                       (TabulatedData) RUNCds[1].getData_entry(i),30f, BETADN);
-         }
+          }
 
         int num_data = RUNSds[1].getNum_entries();
         float[] xvals= RUNSds[1].getData_entry(num_data/2).getX_scale().getXs();
