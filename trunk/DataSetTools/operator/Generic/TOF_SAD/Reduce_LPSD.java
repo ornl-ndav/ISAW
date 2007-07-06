@@ -30,6 +30,14 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2007/07/06 21:37:34  dennis
+ * Improved error handling for code that attempts to find the
+ * upstream monitor, if none is specified.  Now uses the static
+ * method UpstreamMonitorID() from calss MonitorID_Calc, to try
+ * to identify the UpstreamMonitorID.
+ * No longer deals with array of monitor IDs, since only the
+ * Upstream monitor is needed.
+ *
  * Revision 1.8  2007/07/06 16:30:35  dennis
  * The method to subtract delayed neutrons is now only called if
  * the specified delayed neutron fraction is more than 0.
@@ -69,6 +77,7 @@ import gov.anl.ipns.Parameters.FloatPG;
 import gov.anl.ipns.Parameters.IntegerPG;
 import gov.anl.ipns.Parameters.QbinsPG;
 import gov.anl.ipns.Util.Numeric.*;
+import gov.anl.ipns.Util.SpecialStrings.*;
 
 import java.util.Vector;
 
@@ -77,6 +86,7 @@ import DataSetTools.math.*;
 import DataSetTools.parameter.*;
 import DataSetTools.operator.DataSet.Attribute.*;
 import DataSetTools.operator.DataSet.Math.DataSet.*;
+import DataSetTools.operator.Generic.Special.*;
 
 
 public class Reduce_LPSD  extends GenericTOF_SAD{
@@ -257,25 +267,28 @@ public class Reduce_LPSD  extends GenericTOF_SAD{
         for( int i = 0; i < Qu.size(); i++)
           qu[i] = ((Number)Qu.elementAt(i)).floatValue();
 
-        System.out.println("TransS info: ------------------------------------ ");
-        System.out.println(" XScale = " + TransS.getData_entry(0).getX_scale() );
+        System.out.println("TransS info: ------------------------------------");
+        System.out.println(" XScale = " + TransS.getData_entry(0).getX_scale());
         System.out.println(" Ngroup = " + TransS.getNum_entries() );
-        System.out.println("TransB info: ------------------------------------ ");
-        System.out.println(" XScale = " + TransB.getData_entry(0).getX_scale() );
+        System.out.println("TransB info: ------------------------------------");
+        System.out.println(" XScale = " + TransB.getData_entry(0).getX_scale());
         System.out.println(" Ngroup = " + TransB.getNum_entries() );
         System.out.println("Eff info: ------------------------------------ ");
         System.out.println(" XScale = " + Eff.getData_entry(0).getX_scale() );
         System.out.println(" Ngroup = " + Eff.getNum_entries() );
-        
 
-        int MonitorInd[];        //set to contain the index of the upstream mon
-        if( upStreamMonID <0)
-           MonitorInd = CalcTransmission.getMonitorInd( RUNSds0 );
-        else{
-           MonitorInd = new int[1];
-           MonitorInd[0] = RUNSds0.getIndex_of_data(
-               RUNSds0.getData_entry_with_id(upStreamMonID));
-        }
+        int mon_index;           // will contain the index of the upstream mon
+        if ( upStreamMonID < 0 )
+          upStreamMonID = MonitorID_Calc.UpstreamMonitorID( RUNSds0 );
+
+        if ( upStreamMonID < 0 )
+          return new ErrorString("upStreamMonID not specified and " +
+                                 "Could NOT find an upstream monitor" );
+
+        mon_index = RUNSds0.getIndex_of_data_with_id( upStreamMonID );
+        if ( mon_index < 0 )
+          return new ErrorString("Could NOT find upstream monitor with " +
+                                 "ID = " + upStreamMonID + " in " + RUNSds0 );
 
         DataSet ds_list[] = new DataSet[3];
         ds_list[0] = RUNSds0;
@@ -288,20 +301,20 @@ public class Reduce_LPSD  extends GenericTOF_SAD{
         System.out.println(" DELAYED NEUTRON CORRECTION IS MADE =" );
         System.out.println(" THE DELAYED NEUTRON FRACTION =" + BETADN );
         System.out.println(" MGO FILTER IS IN THE BEAM " );
+        System.out.println(" USING UPSTREAM MONITOR ID = " + upStreamMonID );
 
         if ( BETADN > 0 )
-          for( int i = 0; i < 1; i++ )
-          {
-            tof_data_calc.SubtractDelayedNeutrons(
-           (TabulatedData)RUNSds[0].getData_entry( MonitorInd[i]), 30f, BETADN);
+        {
+          tof_data_calc.SubtractDelayedNeutrons(
+           (TabulatedData)RUNSds[0].getData_entry( mon_index ), 30f, BETADN );
           
-            tof_data_calc.SubtractDelayedNeutrons(
-           (TabulatedData)RUNBds[0].getData_entry( MonitorInd[i]), 30f, BETADN);
+          tof_data_calc.SubtractDelayedNeutrons(
+           (TabulatedData)RUNBds[0].getData_entry( mon_index ), 30f, BETADN );
           
-            if ( RUNCds0 != null )
-              tof_data_calc.SubtractDelayedNeutrons(
-           (TabulatedData)RUNCds[0].getData_entry( MonitorInd[i]), 30f, BETADN);
-           }      
+          if ( RUNCds0 != null )
+            tof_data_calc.SubtractDelayedNeutrons(
+           (TabulatedData)RUNCds[0].getData_entry( mon_index ), 30f, BETADN );
+        }      
 
         if ( BETADN > 0 )
           for( int i = 0; i < RUNSds[1].getNum_entries(); i++ )
@@ -344,18 +357,18 @@ public class Reduce_LPSD  extends GenericTOF_SAD{
         TransB = SAD_Util.InterpolateDataSet( TransB, xscl );
 
         SAD_Util.CalcRatios( RUNSds, RUNCds, cadIndex, TransS, true, 
-                             Eff, Sens, sensIndex, MonitorInd, SCALE );
+                             Eff, Sens, sensIndex, mon_index, SCALE );
         SAD_Util.CalcRatios( RUNBds, RUNCds, cadIndex, TransB, useTransB, 
-                             Eff, Sens, sensIndex, MonitorInd, SCALE );
+                             Eff, Sens, sensIndex, mon_index, SCALE );
         
         DataSet SampSQ,
                 BackSQ,
                 DiffSQ;
 
         xscl = new VariableXScale(qu);
-        SampSQ = SAD_Util.SumQs_1D( RUNSds, Eff, Sens, sensIndex, MonitorInd,
+        SampSQ = SAD_Util.SumQs_1D( RUNSds, Eff, Sens, sensIndex, mon_index,
                                     xscl );
-        BackSQ = SAD_Util.SumQs_1D( RUNBds, Eff, Sens, sensIndex, MonitorInd,
+        BackSQ = SAD_Util.SumQs_1D( RUNBds, Eff, Sens, sensIndex, mon_index,
                                     xscl );
         DiffSQ = (DataSet)((new DataSetSubtract( SampSQ, BackSQ, true ))
                                                                 .getResult());
