@@ -30,6 +30,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.57  2007/07/06 20:30:27  dennis
+ *  Added convenience method: getIndex_of_data_with_id( id ), to find
+ *  the position of a Data block with the specified id in the list of
+ *  Data objects.
+ *
  *  Revision 1.56  2007/04/27 03:19:34  dennis
  *  Fixed spelling error in javadoc.
  *
@@ -1261,6 +1266,25 @@ public class DataSet implements IAttributeList,
          return index;
      
      return INVALID_INDEX;
+  }
+
+
+  /**
+   * Find the position of the first Data block in this DataSet that
+   * has the specified Group ID.
+   *
+   * @param  group_id      The group id of the requested Data object
+   *
+   * @return The index at which the Data block occurs in the DataSet, if
+   *         it is present in the DataSet, returns -1 otherwise.
+   */
+  public int getIndex_of_data_with_id( int group_id )
+  {
+     for ( int i = 0; i < data.size(); i++ )
+       if ( ((Data)data.elementAt( i )).getGroup_ID() == group_id )
+         return i;
+
+     return INVALID_INDEX;     // if we didn't find the right id
   }
 
 
