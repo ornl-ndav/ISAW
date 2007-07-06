@@ -30,6 +30,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.15  2007/07/06 21:34:07  dennis
+ * Changed methods SumQs_1D(), SumQs_2D() adn CalcRatios() to take
+ * the upstream monitor index as a parameter, instead of an array
+ * of indices, since only one monitor is used.
+ *
  * Revision 1.14  2006/07/11 21:20:17  dennis
  * Fixed xDELTAQ problem in second location.
  *
@@ -159,7 +164,7 @@ public class SAD_Util
    *  @param  Sens         DataSet containing the sensitivity of each pixel
    *  @param  sensIndex    Array containing indices into the sensitivity
    *                       DataSet, to speed up access to the sensitivity value
-   *  @param  MonitorInd   Contains the index of the upstream monitor
+   *  @param  mon_index    Contains the index of the upstream monitor
    *  @param  bounds       Bounds for the region in (Qx,Qy) that is to be
    *                       calculated.
    *  @param  NQxBins      Number of binx in the Qx direction
@@ -172,7 +177,7 @@ public class SAD_Util
                                    DataSet     Eff,
                                    DataSet     Sens,
                                    int         sensIndex[],
-                                   int         MonitorInd[],
+                                   int         mon_index,
                                    CoordBounds bounds,
                                    int         NQxBins,
                                    int         NQyBins  )
@@ -190,7 +195,7 @@ public class SAD_Util
      float SERRXY[][] = Init2DArray( NQxBins, NQyBins );
         
      float[] eff = Eff.getData_entry(0).getY_values();
-     float[] Mon = RUNSds[0].getData_entry(MonitorInd[0]).getY_values();
+     float[] Mon = RUNSds[0].getData_entry(mon_index).getY_values();
      Data Dsamp;
      DetectorPosition detPos;
      float[] Qxy,
@@ -300,7 +305,7 @@ public class SAD_Util
    *  @param  Sens         DataSet containing the sensitivity of each pixel
    *  @param  sensIndex    Array containing indices into the sensitivity
    *                       DataSet, to speed up access to the sensitivity value
-   *  @param  MonitorInd   Contains the index of the upstream monitor
+   *  @param  mon_index    Contains the index of the upstream monitor
    *  @param  bounds       Bounds for the region in (Qx,Qy) that is to be
    *                       calculated.
    *  @param  NQxBins      Number of binx in the Qx direction
@@ -315,7 +320,7 @@ public class SAD_Util
                                    DataSet     Eff,
                                    DataSet     Sens,
                                    int         sensIndex[],
-                                   int         MonitorInd[],
+                                   int         mon_index,
                                    CoordBounds bounds,
                                    int         NQxBins,
                                    int         NQyBins,
@@ -334,7 +339,7 @@ public class SAD_Util
      float SERRXY[][] = Init2DArray( NQxBins, NQyBins );
 
      float[] eff = Eff.getData_entry(0).getY_values();
-     float[] Mon = RUNSds[0].getData_entry(MonitorInd[0]).getY_values();
+     float[] Mon = RUNSds[0].getData_entry(mon_index).getY_values();
      Data Dsamp;
      DetectorPosition detPos;
      float[] Qxy,
@@ -679,7 +684,7 @@ public class SAD_Util
    *  @param  SensDs       DataSet containing the sensitivity of each pixel
    *  @param  sensIndex    Array containing indices into the sensitivity
    *                       DataSet, to speed up access to the sensitivity value
-   *  @param  MonitorInd   Contains the index of the upstream monitor
+   *  @param  mon_index    Contains the index of the upstream monitor
    *  @param  xscl         XScale giving the list of bins to use when
    *                       calculating S(Q).
    *
@@ -690,7 +695,7 @@ public class SAD_Util
                                   DataSet     EffDS,
                                   DataSet     SensDs, 
                                   int         sensIndex[],
-                                  int         MonitorInd[],
+                                  int         mon_index,
                                   XScale      xscl      )
   {
     DataSet SampMonDs = RUNSds[0];
@@ -710,7 +715,7 @@ public class SAD_Util
     Arrays.fill( Resy, 0.0f );
     Arrays.fill( ErrSq, 0.0f );
     Arrays.fill( weight, 0.0f );
-    float[] monit = SampMonDs.getData_entry( MonitorInd[0] ).getY_values();
+    float[] monit = SampMonDs.getData_entry( mon_index ).getY_values();
       
     eff  = EffDS.getData_entry(0).getY_values();
     eff2 = new float[ eff.length ];
@@ -785,7 +790,7 @@ public class SAD_Util
    *  @param  Sens         DataSet containing the sensitivity of each pixel
    *  @param  sensIndex    Array containing indices into the sensitivity
    *                       DataSet, to speed up access to the sensitivity value
-   *  @param  MonitorInd   Contains the index of the upstream monitor
+   *  @param  mon_index    Contains the index of the upstream monitor
    *  @param  xscl         XScale giving the list of bins to use when
    *                       calculating S(Q).
    *  @param  use_chan     array of boolean flags indicating which channel
@@ -798,7 +803,7 @@ public class SAD_Util
                                    DataSet     Eff,
                                    DataSet     Sens,
                                    int         sensIndex[],
-                                   int         MonitorInd[],
+                                   int         mon_index,
                                    XScale      xscl,
                                    boolean     use_chan[]  )
    {
@@ -810,7 +815,7 @@ public class SAD_Util
      Arrays.fill( Weight, 0.0f );
 
      float[] eff = Eff.getData_entry(0).getY_values();
-     float[] Mon = RUNSds[0].getData_entry(MonitorInd[0]).getY_values();
+     float[] Mon = RUNSds[0].getData_entry(mon_index).getY_values();
 
      Data Dsamp;
      DetectorPosition detPos;
@@ -905,7 +910,7 @@ public class SAD_Util
    *  @param  SensDs       DataSet containing the sensitivity of each pixel
    *  @param  sensIndex    Array containing indices into the sensitivity
    *                       DataSet, to speed up access to the sensitivity value
-   *  @param  MonitorInd   Contains the index of the upstream monitor
+   *  @param  mon_index    Contains the index of the upstream monitor
    *  @param  scale        The scale factor that is multiplied times the 
    *                       calculated ratios and errors.
    *
@@ -918,7 +923,7 @@ public class SAD_Util
                                  DataSet    Eff, 
                                  DataSet    SensDs,
                                  int        sensIndex[],
-                                 int        MonitorInd[],
+                                 int        mon_index,
                                  float      scale )
   {
      DataSet SampMon = RUNSds[0];
@@ -937,16 +942,16 @@ public class SAD_Util
      else
        Transmy = null;
 
-     float[] SampMony = SampMon.getData_entry(MonitorInd[0]).getY_values();
-     float[] CadmMony = CadMon.getData_entry(MonitorInd[0]).getY_values();
+     float[] SampMony = SampMon.getData_entry(mon_index).getY_values();
+     float[] CadmMony = CadMon.getData_entry(mon_index).getY_values();
      float[] Effy = Eff.getData_entry(0).getY_values();
 
      float[] Transmerr = null;
      if( useTransmission )
        Transmerr = Transm.getData_entry(0).getErrors();
 
-     float[] SampMonerr = SampMon.getData_entry(MonitorInd[0]).getErrors();
-     float[] CadmMonerr = CadMon.getData_entry(MonitorInd[0]).getErrors();
+     float[] SampMonerr = SampMon.getData_entry(mon_index).getErrors();
+     float[] CadmMonerr = CadMon.getData_entry(mon_index).getErrors();
      float[] Efferr     = Eff.getData_entry(0).getErrors();
 
      Data D;
@@ -1029,7 +1034,7 @@ public class SAD_Util
 
   /* ---------------------------- prodErr -------------------------------- */
   /**
-   *  Calculate the error in a produce, based on the error in the two factors 
+   *  Calculate the error in a product, based on the error in the two factors 
    *
    *  @param Fac1     The first factor
    *  @param Fac1Err  Error estimate for the first factor
@@ -1127,8 +1132,8 @@ public class SAD_Util
   }
 
   
-  /* ------------------------------ Rebin ------------------------------- */
-  /**
+ /* ------------------------------ Rebin ------------------------------- */
+ /**
   *   Return a new set of yvalues that correspond to the old set of yvalues
   *   rebinned to the new XScale
   *
@@ -1151,7 +1156,7 @@ public class SAD_Util
     //xvals are in reverse order
     for( j=0; j + 1< xx.length; j++)
     {
-       while( (i-1 >= 0) && ( xvals[i-1] < xx[j]) )
+       while( (i-1 >= 0) && (xvals[i-1] < xx[j]) )
          i--;
        if( i < 1)
           return Res;
@@ -1160,20 +1165,24 @@ public class SAD_Util
                  java.lang.Math.max( xx[j], xvals[i] )) / (xvals[i-1]-xvals[i]);
        i--;
        if( i > 0 )
-       while( (i > 0 ) && ( xvals[i] < xx[j+1] ) )
+       while( (i > 0) && (xvals[i] < xx[j+1] ) )
        {
          Res[j]+= yvals[i-1]*( java.lang.Math.min( xvals[i-1],xx[j+1])-
                  java.lang.Math.max( xx[j],xvals[i]))/(xvals[i-1]-xvals[i]);
          i--;
        }     
-       if( i < 0) return Res;
+
+       if( i < 0 ) 
+         return Res;
+
        if( xvals[i] >= xx[j+1] ) 
          i++;
-       if( i >= xvals.length) 
+
+       if( i >= xvals.length ) 
          i = xvals.length - 1;        
     }
   
-   return Res;
+    return Res;
   }
  
 
