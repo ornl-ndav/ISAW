@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2007/07/06 19:33:35  dennis
+ *  Now calls static method from MonitorID_Calc class to do the
+ *  actual work.
+ *
  *  Revision 1.6  2007/07/04 20:16:50  dennis
  *  Now will use the DetectorPosition attribute to determine the angle
  *  from the beam to the detector, if the RAW_ANGLE attribute is not
@@ -63,7 +67,6 @@ import  DataSetTools.dataset.*;
 import  DataSetTools.operator.Operator;
 import  DataSetTools.operator.Parameter;
 import  DataSetTools.retriever.RunfileRetriever;
-import  gov.anl.ipns.MathTools.Geometry.DetectorPosition;
 
 /**
  * This operator determines what the group ID of the downstream monitor
@@ -184,38 +187,8 @@ public class DownstreamMonitorID extends GenericSpecial {
      */
     public Object getResult()
     {
-        DataSet mon      = (DataSet)(getParameter(0).getValue());
-        Integer mon_id   = new Integer(-1);
-        float   monCount = -1f;
-
-        for( int i = 0; i < mon.getNum_entries(); i++ ){
-
-	    Data monD = mon.getData_entry(i);
-                                            // try to use RAW ANGLE in radians
-                                            // and if not present try Detector 
-                                            // Position
-	    float ang = AttrUtil.getRawAngle( monD );
-            ang = (float)(ang * Math.PI/180.0);
-            if ( Float.isNaN( ang ) )
-            {
-              DetectorPosition det_pos = AttrUtil.getDetectorPosition( monD );
-              if ( det_pos == null )
-                return -1;
-              else
-                ang = det_pos.getScatteringAngle(); 
-            }
-                                           // NOTE: cos(ang) > 0.999 iff
-                                           // ang is within 2.562 degrees of 0
-	    if( Math.cos(ang) > 0.999f ){
-		float count = AttrUtil.getTotalCount( monD ); 
-		if( count > monCount ){
-		    monCount = count;
-		    mon_id = monD.getGroup_ID();
-		}
-	    }
-	}
-
-        return mon_id;
+      DataSet mon = (DataSet)(getParameter(0).getValue());
+      return new Integer( MonitorID_Calc.DownstreamMonitorID( mon ) );
     }  
 
 
