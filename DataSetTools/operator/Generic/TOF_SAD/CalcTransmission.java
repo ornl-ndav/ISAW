@@ -30,6 +30,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.20  2007/07/06 20:00:30  dennis
+ * Switched getMonitorInd() method to use the static methods from
+ * the MonitorID_calc class, rather than instantiating operators to
+ * do this calculation.
+ *
  * Revision 1.19  2007/07/04 18:08:01  rmikk
  * Eliminated the use of Monitor index constants by using operators to
  *   get the upstream and down stream monitors
@@ -103,6 +108,7 @@
  *
  */
 package DataSetTools.operator.Generic.TOF_SAD;
+
 import Command.ScriptUtil;
 import DataSetTools.dataset.*;
 import gov.anl.ipns.MathTools.Geometry.*;
@@ -119,17 +125,18 @@ import DataSetTools.parameter.*;
 import DataSetTools.operator.*;
 import DataSetTools.operator.DataSet.EditList.*;
 import DataSetTools.operator.DataSet.Conversion.XAxis.*;
+import DataSetTools.operator.Generic.Special.*;
 
 /**
-*     This class creates a transmission data set in llambda and rebinned
-*     to match the corresponding histogram when it is converted to llambda
-*/
+ * This class creates a transmission data set in llambda and rebinned
+ * to match the corresponding histogram when it is converted to llambda
+ */
 public class CalcTransmission extends GenericTOF_SAD {
   StringBuffer log = new StringBuffer();
   Boolean debug  = false;
 
-  /**
-  *    Constructor for this class
+ /**
+  * Default constructor for this class
   */
   public CalcTransmission(){
      super("Calculate Transmission Run");
@@ -324,7 +331,7 @@ public class CalcTransmission extends GenericTOF_SAD {
      Data data_block = SampleDs.getData_entry( index/2 );
      data_block = (Data)data_block.clone();
      OneSampleDs.addData_entry( data_block );
-     Operator to_wl = new DiffractometerTofToWavelength( OneSampleDs, -1, -1, 0 );
+     Operator to_wl = new DiffractometerTofToWavelength(OneSampleDs, -1, -1, 0);
      Object Result = to_wl.getResult();
      
      if( (Result  instanceof ErrorString)  )
@@ -745,31 +752,23 @@ public class CalcTransmission extends GenericTOF_SAD {
   *           If the monitors could not be located, this returns
   *           null.
   */
- public static int[] getMonitorInd( DataSet ds){
-
+ public static int[] getMonitorInd( DataSet ds )
+ {
     int[] res = new int[2];
     res[0] = -1;
     res[1] = -1;
-                                                  // first try to find the group IDs
-                                                  // for the up and down stream monitors
-    int upStreamID = -1;
-    Operator us_op = new DataSetTools.operator.Generic.Special.UpstreamMonitorID(ds);
-    Object result  = us_op.getResult();
-    if ( result instanceof Integer )
-      upStreamID = (Integer)result;
-    else 
+                                         // first try to find the group IDs
+                                         // for the up and down stream monitors
+
+    int upStreamID = MonitorID_Calc.UpstreamMonitorID( ds );
+    if ( upStreamID < 0 )
       return null;
   
-    int downStreamID = -1;
-    Operator ds_op = new DataSetTools.operator.Generic.Special.DownstreamMonitorID(ds);
-    result  = ds_op.getResult();
-    if ( result instanceof Integer )
-      downStreamID = (Integer)result;
-    else 
+    int downStreamID = MonitorID_Calc.DownstreamMonitorID( ds );;
+    if ( downStreamID < 0 )
       return null;
-                                                  // now find the index of the
-                                                  // groups with the specified IDs
-    
+                                              // now find the index of the
+                                              // groups with the specified IDs
     for( int i= 0; i< ds.getNum_entries(); i++)
     {
       int id = ((Data)ds.getData_entry(i)).getGroup_ID(); 
@@ -779,8 +778,8 @@ public class CalcTransmission extends GenericTOF_SAD {
         res[1] = i;
     }
 
-    if ( res[0] < 0 || res[1] < 0 )               // we failed to find one or more ID
-      return null;
+    if ( res[0] < 0 || res[1] < 0 )         // we failed to find the index of
+      return null;                          // one or more of the IDs 
 
     return res;
 
