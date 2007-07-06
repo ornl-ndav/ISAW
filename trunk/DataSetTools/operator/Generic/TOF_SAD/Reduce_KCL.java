@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.40  2007/07/06 16:30:35  dennis
+ * The method to subtract delayed neutrons is now only called if
+ * the specified delayed neutron fraction is more than 0.
+ *
  * Revision 1.39  2007/07/04 19:13:57  dennis
  * Minor formatting improvements.
  *
@@ -40,7 +44,8 @@
  * Change to new Parameter GUIs in gov.anl.ipns.Parameters
  *
  * Revision 1.36  2005/11/23 17:22:39  hammonds
- * Make small changes to take out edit only differences between Reduce_KCL and Reduce_LPSD.
+ * Make small changes to take out edit only differences between Reduce_KCL
+ * and Reduce_LPSD.
  * The only variation from this is to change the variable tofs in Reduce_LPSD
  * to xvals in order to more closely match the syntax in Reduce_KCL therby 
  * reducing differences in the files.
@@ -405,34 +410,36 @@ public class Reduce_KCL  extends GenericTOF_SAD{
         System.out.println(" Number of X and Y edge Chans masked for AD=" + 
                              nedge );
 
-        for( int i = 0; i < 1; i++ )
-        {
-          tof_data_calc.SubtractDelayedNeutrons(
+        if ( BETADN > 0 )
+          for( int i = 0; i < 1; i++ )
+          {
+            tof_data_calc.SubtractDelayedNeutrons(
            (TabulatedData)RUNSds[0].getData_entry( MonitorInd[i]), 30f, BETADN);
           
-          tof_data_calc.SubtractDelayedNeutrons(
+            tof_data_calc.SubtractDelayedNeutrons(
            (TabulatedData)RUNBds[0].getData_entry( MonitorInd[i]), 30f, BETADN);
           
-          if ( RUNCds0 != null )
+            if ( RUNCds0 != null )
             tof_data_calc.SubtractDelayedNeutrons(
            (TabulatedData)RUNCds[0].getData_entry( MonitorInd[i]), 30f, BETADN);
-         }      
+           }      
 
-        for( int i = 0; i < RUNSds[1].getNum_entries(); i++ )
-        {
-          tof_data_calc.SubtractDelayedNeutrons(
+        if ( BETADN > 0 )
+          for( int i = 0; i < RUNSds[1].getNum_entries(); i++ )
+          {
+            tof_data_calc.SubtractDelayedNeutrons(
                       (TabulatedData)RUNSds[1].getData_entry(i),30f, BETADN);
           
-          tof_data_calc.SubtractDelayedNeutrons(
+            tof_data_calc.SubtractDelayedNeutrons(
                       (TabulatedData)RUNBds[1].getData_entry(i),30f, BETADN);
           
-          if ( RUNCds0 != null )
-            tof_data_calc.SubtractDelayedNeutrons(
+            if ( RUNCds0 != null )
+              tof_data_calc.SubtractDelayedNeutrons(
                       (TabulatedData) RUNCds[1].getData_entry(i),30f, BETADN);
-         }
+          }
 
         int num_data = RUNSds[1].getNum_entries();
-        float[] xvals = RUNSds[1].getData_entry(num_data/2).getX_scale().getXs();
+        float[] xvals= RUNSds[1].getData_entry(num_data/2).getX_scale().getXs();
         xvals = SAD_Util.ConvertXsToWL(xvals, RUNSds[1], num_data / 2, false);
 
         if( xvals[0] > xvals[1] ) 
