@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2007/07/06 19:33:36  dennis
+ *  Now calls static method from MonitorID_Calc class to do the
+ *  actual work.
+ *
  *  Revision 1.8  2007/07/04 20:29:17  dennis
  *  Removed unused import.
  *
@@ -65,13 +69,10 @@ package DataSetTools.operator.Generic.Special;
 
 import java.util.Vector;
 
-import DataSetTools.dataset.Data;
 import DataSetTools.dataset.DataSet;
-import DataSetTools.dataset.AttrUtil;
 import DataSetTools.operator.Operator;
 import DataSetTools.operator.Parameter;
 import DataSetTools.retriever.RunfileRetriever;
-import gov.anl.ipns.MathTools.Geometry.DetectorPosition;
 
 /**
  * This operator determines what the group ID of the upstream monitor
@@ -193,40 +194,9 @@ public class UpstreamMonitorID extends    GenericSpecial {
      */
     public Object getResult()
     {
-        DataSet mon      = (DataSet)(getParameter(0).getValue());
-        Integer mon_id   = new Integer(-1);
-        float   monCount = -1f;
-
-        for( int i = 0; i < mon.getNum_entries(); i++ ){
-
-            Data monD = mon.getData_entry(i);
-                                            // try to use RAW ANGLE in radians
-                                            // and if not present try Detector 
-                                            // Position
-            float ang = AttrUtil.getRawAngle( monD );
-            ang = (float)(ang * Math.PI/180.0);
-            if ( Float.isNaN( ang ) )
-            {
-              DetectorPosition det_pos = AttrUtil.getDetectorPosition( monD );
-              if ( det_pos == null )
-                return -1;
-              else
-                ang = det_pos.getScatteringAngle();
-            }
-                                         // NOTE: cos(ang) < -0.999 iff
-                                         // ang is within 2.562 degrees of 180 
-            if( Math.cos(ang) < -0.999f ){
-                float count = AttrUtil.getTotalCount( monD );
-                if( count > monCount ){
-                    monCount = count;
-                    mon_id = monD.getGroup_ID();
-                }
-            }
-        }
-
-        return mon_id;
+      DataSet mon = (DataSet)(getParameter(0).getValue());
+      return new Integer( MonitorID_Calc.UpstreamMonitorID( mon ) );
     }
-
 
     /* ------------------------------ clone ------------------------------- */
     /**
