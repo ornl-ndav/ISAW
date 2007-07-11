@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2007/07/11 18:10:38  rmikk
+ * Fixed the GroupID's after collapsing a detector in half
+ *
  * Revision 1.10  2007/07/04 17:52:38  rmikk
  * Monitor DataSets now get the initial path attribute added.
  *
@@ -114,6 +117,7 @@ public class ProcessNxEntry  implements IProcessNxEntry {
      */
     public boolean processDS(DataSet DS, NxNode NxEntryNode, 
         NxNode NxDataNode, NxfileStateInfo States, int startGroupID) {
+       
         if (NxEntryNode == null) {
             errormessage = "null Entry node in ProcessNxEntry";
             return true;
@@ -156,7 +160,7 @@ public class ProcessNxEntry  implements IProcessNxEntry {
                     k++;
               
                     boolean res = nxMon.processDS(Child, DS);
-
+                    
                     if (res) {
                         errormessage = nxMon.getErrorMessage();
                         return res;
@@ -340,31 +344,46 @@ public class ProcessNxEntry  implements IProcessNxEntry {
        int[] IDs = Grid_util.getAreaGridIDs( DS);
        if( IDs == null)
           return;
+       int groupID = DS.getData_entry(0).getGroup_ID();
+       
        for( int i=0; i < IDs.length; i++){
+          
           IDataGrid grid = Grid_util.getAreaGrid( DS, IDs[i]);
+          
           if( !grid.isData_entered())
              grid.setData_entries( DS );
+          
           UniformGrid grid1;
+          
           if( 2*(grid.num_cols()/2)!= grid.num_cols())
              return;
+          
           if( 2*(grid.num_rows()/2)!= grid.num_rows())
              return;
+          
           grid1= new UniformGrid(grid.ID(), grid.units(),grid.position(),
                     grid.x_vec(),grid.y_vec(),grid.width(),grid.height(),
                     grid.depth(),grid.num_rows()/2,grid.num_cols()/2);
           for( int row =1; row<= grid1.num_rows();row++ )
              for( int col=1; col<= grid1.num_cols();col++){
+                
                 int r = 1+(row-1)*2;
                 int c = 1+(col-1)*2;
+                
                 Data DB = grid.getData_entry( r,c);
+                
                 float[] yvalues = DB.getY_values();
+                
                 Data DB1=grid.getData_entry(r, c+1);
                 Data DB2=grid.getData_entry(r+1, c+1);
                 Data DB3=grid.getData_entry(r+1, c);
+                
                 for( int t=0; t< yvalues.length; t++){
+                   
                    yvalues[t] += DB1.getY_values()[t];
                    yvalues[t] += DB2.getY_values()[t];
                    yvalues[t] += DB3.getY_values()[t];
+                   
                 }
                 DS.removeData_entry_with_id( DB1.getGroup_ID());
                 DS.removeData_entry_with_id( DB2.getGroup_ID());
@@ -373,6 +392,7 @@ public class ProcessNxEntry  implements IProcessNxEntry {
                 DB.setAttribute( new PixelInfoListAttribute( Attribute.PIXEL_INFO_LIST,
                          new PixelInfoList( new DetectorPixelInfo( grid.ID(),
                          (short) row,(short)col, grid1))));
+                DB.setGroup_ID( groupID++ );
              }
           grid1.setData_entries( DS );
           
