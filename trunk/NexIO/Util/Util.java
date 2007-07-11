@@ -1,12 +1,15 @@
 package NexIO.Util;
 
+
 //import java.lang.reflect.Array;
-//import java.util.AbstractCollection;
+import java.util.Arrays;
 
 import javax.xml.parsers.*;
 
 import org.w3c.dom.*;
+
 import NexIO.*;
+//import NexIO.Process.Process1NxData;
 import NexIO.State.*;
 
 public class Util {
@@ -34,6 +37,14 @@ public class Util {
       if( S.length() <= 2 )
          return null;
       
+      //eliminate all dots
+      boolean  nonDotFound = false;
+      for( int i=0; i< S.length() && !nonDotFound; i++)
+         if( S.charAt(i)!='.')
+            if( S.charAt(i) !=' ')
+               nonDotFound = true;
+      if( !nonDotFound)
+         return null;
       return S;
       
    }
@@ -95,7 +106,7 @@ public class Util {
     *                        This can be null for all NeXus classnames to be listed
     * @param NXclassNameList The name of the NeXus Class. The name is in the name= attribute. This also can
     *                        be null( all will be considered) , or a set
-    * @param fieldName      The specific field name( tag or name attribute) to search for
+    * @param fieldName      The specific field name( tag or name attribute) to search for. No Dots
     * @param filename       The tag of the node must have a filename attribute corresponding to this filename 
     * @return     The top node or the value if only one simple child
     */
@@ -107,12 +118,17 @@ public class Util {
         
         NXclassPath = standardize_dot_sep_list( NXclassPath );
         NXclassNameList = standardize_dot_sep_list( NXclassNameList );
-        
+        //fieldName = standardize_dot_sep_list( fieldName);
+        if(filename != null && filename.length() < 1)
+           filename = null;
+        if( fieldName != null && fieldName.length() < 1)
+           fieldName= null;
         NodeList children = xmlDoc.getChildNodes();
         if( children.getLength() ==1)if("data".equals(children.item(0).getNodeName())){
            xmlDoc = children.item(0);
            children = xmlDoc.getChildNodes();
         }
+        
         
         if( ( NXclassPath == null ) &&( NXclassNameList == null )&&
                                   ( fieldName == null )&&( filename == null ) )
@@ -127,36 +143,40 @@ public class Util {
             if( NXclassPath != null )
                k = NXclassPath.indexOf( "." +  NN.getNodeName() + "." );
             
-            String namee = null;
-            String fname = null;
+            String ThisNodeName = null;//Non-null only if matches the match nodeName
+            String ThisNodeFileName = null;//Non-null only if matches the match match filename
             boolean ClassHasName = false;
             boolean ClassHasFile = false;
             NamedNodeMap atts = NN.getAttributes();
             if( NXclassNameList != null ) {
 
 
-            String namess = NXclassNameList.substring( 1 , NXclassNameList
-                     .indexOf( "." , 1 ) );
+              String NodeName2Match = NXclassNameList.substring( 1 , NXclassNameList
+                        .indexOf( "." , 1 ) );
+              
+              if( NodeName2Match != null)
+                 NodeName2Match= NodeName2Match.trim();
+              if( NodeName2Match.length()<1)
+                 NodeName2Match= null;
 
-            if( namess != null )
-               if( namess.trim().length() > 0 )
-                  if( atts != null ) {
+               if( NodeName2Match != null )
+                  if( NodeName2Match.trim().length() > 0 )
+                     if( atts != null ) {
 
-                     Node attNode = atts.getNamedItem( "name" );
-                     if( attNode != null )
-                        ClassHasName = true;
-                     if( attNode != null )
-                        if( namess.equals( attNode.getNodeValue() ) )
-                           namee = namess;
-                  }
-         }
+                        Node attNode = atts.getNamedItem( "name" );
+                        if( attNode != null ) ClassHasName = true;
+                        if( attNode != null )
+                          if( NodeName2Match.equals( attNode.getNodeValue() ) )
+                           ThisNodeName = NodeName2Match;
+                     }
+            }
 
          if( (filename != null) &&( atts != null) ) {
 
             Node attNode = atts.getNamedItem( "filename" );
             if( attNode != null )
                if( filename.equals( attNode.getNodeValue() ) )
-                  fname = "xxx";
+                  ThisNodeFileName = "xxx";
 
             if( attNode != null )
                ClassHasFile = true;
@@ -165,53 +185,68 @@ public class Util {
               
             
              
-             boolean OkToEnter = false;
+             boolean OkToEnter = false;// are there child nodes to search??
              if( ( NXclassPath !=null )||( NXclassNameList != null ))
                 if( filename == null ){
                    
-                   if( k == 0 )if( namee != null ) 
+                   if( k == 0 )if( ThisNodeName != null ) 
                       OkToEnter = true;
-                   if( k == 0 )if(( NXclassNameList == null ) ) 
+                   if( k == 0 )if((ThisNodeName == null)) 
                       OkToEnter = true;
+                   
                    if( k == 0 )if( !ClassHasName )  
                       OkToEnter = true;
-                   if( NXclassPath == null )if( namee != null )  
+                   
+                   if( NXclassPath == null )if( ThisNodeName != null )  
                       OkToEnter = true;
+                   
                    if( NXclassPath == null )if( !ClassHasName )  
                       OkToEnter = true;
                    
                }else{
                   
-                  if( k == 0 )if( namee != null )if( (fname != null ) ||!ClassHasFile ) 
+                  if( k == 0 )if( ThisNodeName != null )if( (ThisNodeFileName != null ) ||
+                                                      !ClassHasFile ) 
                      OkToEnter = true;
-                  if( k == 0 )if(( NXclassNameList == null ) )if( ( fname != null ) ||!ClassHasFile ) 
-                     OkToEnter = true;
-                  if( k == 0 )if( !ClassHasName )if( (fname != null ) ||!ClassHasFile ) 
-                     OkToEnter = true;
-                  if( NXclassPath == null )if( namee != null )if( ( fname != null ) ||!ClassHasFile )  
-                     OkToEnter = true;
-                  if( NXclassPath == null )if( !ClassHasName )if( ( fname != null ) ||!ClassHasFile )  
-                     OkToEnter = true;
+                  
+                  if( k == 0 )if(( NXclassNameList == null ) )
+                        if( ( ThisNodeFileName != null ) ||!ClassHasFile ) 
+                             OkToEnter = true;
+                  
+                  if( k == 0 )if( !ClassHasName )
+                     if( (ThisNodeFileName != null ) ||!ClassHasFile ) 
+                        OkToEnter = true;
+                  
+                  if( NXclassPath == null )if( ThisNodeName != null )
+                        if( ( ThisNodeFileName != null ) ||!ClassHasFile )  
+                          OkToEnter = true;
+                  
+                  if( NXclassPath == null )if( !ClassHasName )
+                     if( ( ThisNodeFileName != null ) ||!ClassHasFile )  
+                        OkToEnter = true;
                   
                }
                  
             if(  OkToEnter ){//Has child nodes to search
+                             //REDO How about adding a variable changed. if any of the other stuff changes 
+                             //     Woops go deeper cause child node and not done
                
               String Clist = null , 
                      CNameList = null;
               
               if( k >= 0 ){
                  k = NXclassPath.indexOf( '.' , k + 1 );
-                 if( k >= 0 ) Clist = NXclassPath.substring( k );
+                 if( k >= 0 ) 
+                    Clist = NXclassPath.substring( k );
               }
               
-              if( fname != null )
+              if( ThisNodeFileName != null )
                  filename = null;
               
-              if( namee != null ){
-                 k = NXclassNameList.indexOf( "." +  namee + "." );
+              if( ThisNodeName != null ){
+                 k = NXclassNameList.indexOf( "." +  ThisNodeName + "." );
                  if( k >= 0  ){
-                    k = k + 2 + namee.length();
+                    k = k + 2 + ThisNodeName.length();
                     CNameList = NXclassNameList.substring( k );
                  }
               }else 
@@ -265,7 +300,133 @@ public class Util {
       
    }
    
-   //getValue works here
+   /**
+    * Finds information in an XML document
+    * @param xmlDoc  The top node( or what is left) of a DOM document
+    * @param NXclassPath   A dot separated list of Nexus Classes. These appear
+    *                      as <NXentry  name="...in the XML file. Only those 
+    *                      parts of the xml document will be searched.
+    *                      This can be null for all NeXus classnames to be 
+    *                      searched
+    *                      
+    * @param NXclassNameList The name of the NeXus Class. The name is in the  
+    *                        name= attribute. This also can  be null( all will
+    *                         be considered) , or a dot separated set of names
+    *                         (two consecutive dots mean anything, - means no name
+    *                         ).  NOTE: the names MUST correspond to the Classes in 
+    *                          NXclassPath
+    *                          
+    * @param fieldName      NOT USED The specific field name( tag or name 
+    *                       attribute) to search for. No Dots. Include this 
+    *                       at the end of NXclassPath if a class name or at 
+    *                       the end of NXclassNameList if a name of a class.
+    *                       
+    * @param filename       The tag of the node must have a filename attribute
+    *                        corresponding to this filename 
+    *                        
+    * @return     The first node or [sub]node satisfying the parameters
+    * 
+    * NOTE: Use getLeafNodeValue to get the value of the node if it is a leaf.
+    *    
+    */
+   public static Node getNXInfo1( Node xmlDoc , String NXclassPath , String NXclassNameList , String fieldName ,
+            String filename ){
+      
+        if( xmlDoc == null )
+           return null;
+        
+        NXclassPath = standardize_dot_sep_list( NXclassPath );
+        NXclassNameList = standardize_dot_sep_list( NXclassNameList );
+        
+        if(filename != null && filename.length() < 1)
+           filename = null;
+        
+        NodeList children = xmlDoc.getChildNodes();
+        if( children.getLength() ==1)if("data".equals(children.item(0).getNodeName())){
+           xmlDoc = children.item(0);
+           children = xmlDoc.getChildNodes();
+        }
+        
+        
+        if( ( NXclassPath == null ) &&( NXclassNameList == null )&&
+                                  ( fieldName == null )&&( filename == null ) )
+                return xmlDoc;
+        
+       
+           
+        for( int ik = 0 ; ik < children.getLength() ; ik++  ){
+           
+            Node NN = children.item( ik );
+            String NextNXclassPath = NXclassPath;
+            String NextNXclassNameList = NXclassNameList;
+            String Nextfilename = filename;
+           
+            if( NXclassPath != null )
+               if( NXclassPath.startsWith(".."))
+                  
+                  NextNXclassPath = NXclassPath.substring(1);
+            
+               else if(NXclassPath.indexOf( "." +  NN.getNodeName() + "." )==0)
+                  NextNXclassPath = NXclassPath.substring( NXclassPath.indexOf(".",1));
+            
+            
+            NamedNodeMap atts = NN.getAttributes();                              
+            if( NXclassNameList != null && atts != null) 
+            if( NXclassNameList.startsWith(".."))
+                     NextNXclassNameList = NXclassNameList.substring(1);
+            else {
+
+                   Node attNode = atts.getNamedItem( "name" );
+                  if( attNode == null && NXclassNameList.startsWith(".-."))
+                     NextNXclassNameList = NXclassNameList.substring(3); 
+                  else if( attNode != null  && NXclassNameList.indexOf("."+
+                                             attNode.getNodeValue()+".")==0 )
+                         NextNXclassNameList  = NXclassNameList.substring(
+                                  NXclassNameList.indexOf(".",1));
+                   
+            }
+
+         if( (filename != null) &&( atts != null) ) {
+
+            Node attNode = atts.getNamedItem( "filename" );
+            if( attNode != null )
+               if( filename.equals( attNode.getNodeValue() ) )
+                  Nextfilename = null;
+         }
+              
+            
+           
+              Node X = null;
+
+              if( NXclassPath == null || NXclassNameList == null || (NXclassPath != NextNXclassPath &&
+                          NXclassNameList != NextNXclassNameList    ))// only pop name list
+                                                                        //if class popped       
+                     X = getNXInfo1( NN , NextNXclassPath , NextNXclassNameList , fieldName , 
+                            Nextfilename );
+              else     
+                 X = getNXInfo1( NN ,NXclassPath , NXclassNameList , fieldName , 
+                          Nextfilename );
+                 
+              
+              if( X != null )
+                 return X;
+         
+        }//for each child
+      
+      
+      
+      return null;
+      
+   }
+   
+   /**
+    * Returns the String value of the given attribue of an xml node
+    * 
+    * @param NN   The xml node in question
+    * @param AttrName  The name of the attribute
+    * @return   The string representation of the value or null if 
+    *       it is not possible to find this value
+    */
    public static String getXmlNodeAttributeValue( Node NN, String AttrName){
       if( NN == null )
          return null;
@@ -287,7 +448,18 @@ public class Util {
    }
    
    
-  
+  /**
+   * Gets the value of an xml node. This node must only have
+   * text child nodes.  The concatenation of these text nodes
+   * is returned
+   * 
+   * @param NN  The xml node in question
+   * 
+   * @return  The concatenation of all the text child nodes or
+   *          null if a child node is not a text node, or NN
+   *          is null.
+   *
+   */
     //Must have one child that is a text node
    // unions the values of all text nodes
    public static Object getLeafNodeValues( Node NN ){
@@ -734,8 +906,285 @@ public class Util {
       }
          
       }
+   /**
+    *  Same as getNXInfo except that It checks general first( NXclassNameList 
+    *  is "") then repeatedly add elements of the NXclassNameList and/or field 
+    *  name , then does the same with the runs node
+    * @param xmlDoc      The node in the xml document
+    * @param NXclassPath  The dot separated string of class names(<....<--class naem) to find
+    * @param NXclassNameList The dot separated string of name attributes for the above 
+    * @param fieldName     The dot separated string name of attribute names or field names
+    * @param filename     The filename attribute for the Runs section of the xmldoc
+    * @return
+    */
+   public static Node getNXInfoDefault( Node xmlDoc , String NXclassPath , 
+                                    String NXclassNameList , String fieldName ,
+            String filename ){
+      
+      if( NXclassPath == null ) return null;
+      if( xmlDoc == null ) return null;
+
+      NXclassNameList = standardize_dot_sep_list( NXclassNameList );
+
+      fieldName = standardize_dot_sep_list( fieldName );
+
+      Node N = getNXInfo( xmlDoc , NXclassPath , "" , fieldName , "" );
+    
+      int i=1;
+      String S= "";
+      
+      int NClassNames =0;
+      if( NXclassNameList != null)
+      for( int j= NXclassNameList.indexOf(".",i); j>=i; 
+                      ){
+         
+         NClassNames ++;
+        
+         i=j+1;
+         j= NXclassNameList.indexOf(".",i);
+      }
+      int NFieldNames =0;
+      i=1;
+      if( fieldName != null)
+         for( int j= fieldName.indexOf(".",i); j>=i; ){
+            NFieldNames ++;
+            i=j+1;
+            j=fieldName.indexOf(".",i);
+         }
+      Node N1=null;
+      boolean[] classes = new boolean[NClassNames];
+      boolean[] fields  = new boolean[NFieldNames];
+      for(  i=0;i<= NClassNames; i++){
+         Arrays.fill( classes,false);
+         if( i < NClassNames)
+             for( int k=0; k<i;k++)
+                classes[k]=true;
+         if( (i!= NClassNames)|| NClassNames ==0)
+         for( boolean done =false;!done; done = incr(classes))
+         for(int j=0; j<=NFieldNames;j++){
+            Arrays.fill( fields,false);
+            if( j < NFieldNames)
+               for( int k=0; k<NFieldNames;k++)
+                  fields[k]=true;
+            if( i!= NFieldNames || NFieldNames ==0)
+            for( boolean done1=false; !done1; done1 =incr(fields)){
+                String ClassNames =getDotString( classes, NXclassNameList);
+                String FieldNames = getDotString( fields, fieldName);
+                N1=getNXInfo( xmlDoc, NXclassPath,ClassNames,FieldNames,"");
+                if( N1 != null)
+                   N = N1;
+            }
+            
+         }
+         
+      }//
+      
+      Node Runs = getNXInfo( xmlDoc,"Runs", null,null, filename);
+      
+      N1= getNXInfoDefault( Runs, NXclassPath , NXclassNameList ,  fieldName, null);
+         
+      if( N1 != null)
+         N=N1;
+      return N;
+         
+      
+       
+   }
+   private static String getDotString( boolean[] dots,  String NamesList){
+      String Res="";
+      int i=1;
+      if( dots == null || dots.length < 1)
+         return Res;
+      if( NamesList == null)
+         return Res;
+      if( NamesList.length() <=2 )
+         return Res;
+      Res =".";
+      int dotIndex =0;
+      for( int j= NamesList.indexOf(".",i); j>0; j=NamesList.indexOf(".",i)){
+        if( dots[dotIndex])
+                 Res+= NamesList.indexOf(i,j-1)+".";
+        else
+           Res +=".";
+         i=j+1;
+      }
+      while( Res != null && Res.startsWith("."))
+         Res = Res.substring(1);
+
+      while( Res != null && Res.endsWith("."))
+         Res = Res.substring(0,Res.length()-1);
+      if( Res.trim().length() < 1)
+         Res = null;
+      return Res;
+   }
    
- 
+   private static boolean incr( boolean[] list){
+      if( list == null)
+         return true;
+      if( list.length <=1)
+         return true;
+      boolean done = false;
+      int C=0;
+      while(!done){
+         int x = -1;
+         for( int i=list.length-1; i>=0 && x<0; i--)
+            if( list[i]){
+               x=i;
+               list[i]=false;
+               C++;
+            }
+         if( x< 0)
+            return true;
+         if( x < list.length-1-C){
+            done = true;
+            for( int k=0; k<C; k++)
+               list[x+k]=true;
+         }
+         
+      }
+      return false;
+      
+   }
+   /**
+    * Will Search the xml document( or part) for the Node 
+    * 
+    * @param xmlDoc  The node that is being searched
+    * @param NXentryName  the Name of the NXentry xml node, could be null for
+    *                      any NXentry
+    * @param  FieldClass The classes(<___) of the field in the NXentry Node
+    *                     later entries are subclasses of previous FieldClass
+    *                     
+    * @param  FieldClassName  the corresponding name attributes( could be "" or
+    *                   null)
+    *                   
+    * @param filename   The filename attribute or null. Additional searches will
+    *                be done with the filename == null.
+    * 
+    * @param SearchNoNameNXentry  Does an additional search on NXentries without
+    *                             a name.
+    * @param SearchNoNamesubFields  Does additional searches on NXdata's without names
+    * 
+    * @return The node in question.  use getLeafNodeValue to get its value.
+    *            
+    * ALGORITHM: The Run fields will be searched first with the filename attribute.
+    *            then the Common fields
+    *            In each The full path with names will be searched, then entries with
+    *            nonames NXentries if searchNoNameNXentry, then NXentries with names
+    *            will be searched for fields without names if specified in 
+    *            SearchNoNamesubFields. Finally all the nonamed fields will be searched
+    */
+   public static Node getXMLNodeVal( Node xmlDoc, String NXentryName, 
+                                  String[] FieldClass, String[] FieldClassName,               
+                                  String filename, boolean SearchNoNameNXentry,
+                                  boolean[]SearchNoNamesubFields )
+                                  {
+     
+     
+      if( xmlDoc == null)
+         return null;
+      
+      if( NXentryName == null)
+         SearchNoNameNXentry = false;
+      
+      if( FieldClassName == null)
+         SearchNoNamesubFields = null;
+      
+      if( FieldClass == null)
+         FieldClassName = null;
+      
+      if( FieldClass != null && FieldClassName != null)
+         if( FieldClass.length != FieldClassName.length)
+            return null;
+         else if( SearchNoNamesubFields != null && 
+                     SearchNoNamesubFields.length !=FieldClassName.length)
+            return null;
+         else if( SearchNoNamesubFields != null){
+            boolean foundTrue = false;
+            for( int i=0; i< SearchNoNamesubFields.length  && !foundTrue; i++)
+               if( SearchNoNamesubFields[i])
+                  foundTrue = true;
+            if( !foundTrue)
+               SearchNoNamesubFields = null;
+         }
+      
+      String FileName = filename;
+      if( filename != null){
+         FileName = filename.trim();
+         FileName = FileName.replace('\\','/');
+         int k = FileName.lastIndexOf('/');
+         if( k >=0)
+            FileName = FileName.substring( k+1);
+         if( FileName.trim().length() < 1)
+            FileName = null;
+      }
+
+      String NxEntryString ="";
+      if( NXentryName != null)
+         NxEntryString = NXentryName;
+      Node Res = null;
+      if( FileName != null){
+         
+         Res = Util.getNXInfo1( xmlDoc,"Runs.Run.NXentry"+GetdottedStringFor( FieldClass,null), 
+                              "..."+NxEntryString+GetdottedStringFor(FieldClassName,null ), 
+                              null, FileName);
+         if( Res == null)
+            Res =Util.getNXInfo1( xmlDoc,"Runs.Run.NXentry"+GetdottedStringFor( FieldClass,null), 
+                     "...-"+GetdottedStringFor(FieldClassName,null ), 
+                     null, FileName);
+         if( Res == null && SearchNoNamesubFields != null)
+            Res =Util.getNXInfo1( xmlDoc,"Runs.Run.NXentry"+GetdottedStringFor( FieldClass,null), 
+                     "..."+NxEntryString+GetdottedStringFor(FieldClassName,SearchNoNamesubFields ), 
+                     null, FileName);
+         
+
+         if( Res == null && SearchNoNamesubFields != null)
+            Res =Util.getNXInfo1( xmlDoc,"Runs.Run.NXentry"+GetdottedStringFor( FieldClass,null), 
+                     "...-"+GetdottedStringFor(FieldClassName,SearchNoNamesubFields ), 
+                     null, FileName);
+         
+      }
+      if( Res == null){
+         Res = Util.getNXInfo1( xmlDoc,"Common.NXentry"+GetdottedStringFor( FieldClass,null), 
+                  ".."+NxEntryString+GetdottedStringFor(FieldClassName,null ), 
+                  null, null);
+         if( Res == null)
+            Res = Util.getNXInfo1( xmlDoc,"Common.NXentry"+GetdottedStringFor( FieldClass,null), 
+                     "..-"+GetdottedStringFor(FieldClassName,null ), 
+                     null, null);
+         if( Res == null)
+            Res = Util.getNXInfo1( xmlDoc,"Common.NXentry"+GetdottedStringFor( FieldClass,null), 
+                  ".."+NxEntryString+GetdottedStringFor(FieldClassName,SearchNoNamesubFields ), 
+                  null, null);
+
+         if( Res == null)
+            Res = Util.getNXInfo1( xmlDoc,"Common.NXentry"+GetdottedStringFor( FieldClass,null), 
+                  "..-"+GetdottedStringFor(FieldClassName,SearchNoNamesubFields ), 
+                  null, null);
+      
+         
+      }
+      return Res;
+      
+         
+   }
+   
+   
+   private static String GetdottedStringFor( String[] FieldNames, boolean[] useName){
+      String Fclass ="";
+      if( FieldNames != null)
+         for( int i=0; i < FieldNames.length; i++)
+            if( FieldNames[i] == null )
+               Fclass +=".";
+            else if( useName != null && useName[i])
+               Fclass +=".-";
+            else
+               Fclass +="."+FieldNames[i];
+      while(Fclass.length() >1 && Fclass.endsWith(".."))
+         Fclass = Fclass.substring( 0, Fclass.length() -1);
+      return Fclass;
+   }
+   
+
  }
 
 
