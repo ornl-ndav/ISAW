@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2007/07/11 18:09:08  rmikk
+ * Fixed labeled case so that the DataStateInfo corresponds to the other
+ *    NXdata's.  These may not have the same dimensions, etc.
+ *
  * Revision 1.3  2003/12/09 14:40:34  rmikk
  * Fixed javadoc warnings
  *
@@ -95,6 +99,23 @@ public class ProcessmNxData implements IProcessNxData {
   public boolean processDS( NxNode NxEntryNode, NxNode NxDataNode , 
               NxNode NxinstrumentNode, DataSet DS , NxfileStateInfo State,
               int startGroupID ){
+     
+     NxDataStateInfo dsInf = NexUtils.getDataStateInfo( State );
+     if( startGroupID <= 0 && dsInf != null)
+        startGroupID = dsInf.startGroupID;
+     
+     int NDetectors =Grid_util.getAllDataGrids( DS ).size();
+
+     NxDataStateInfo datState = null;
+     if( dsInf != null)
+        datState = new NxDataStateInfo( dsInf);
+     else
+        datState =dsInf = new NxDataStateInfo( NxDataNode, State.InstrumentNode,
+                             State, startGroupID);
+
+     NxfileStateInfo StateSav = new NxfileStateInfo(State);
+
+     StateSav.Push( datState);
      for( int i = 0; i< NxEntryNode.getNChildNodes(); i++){
         NxNode Child = NxEntryNode.getChildNode(i);
         
@@ -105,7 +126,13 @@ public class ProcessmNxData implements IProcessNxData {
                  if( label.equals( ConvertDataTypes.StringValue
                              ( datanode.getAttrValue("label")).trim())){
                     Process1NxData proc =new Process1NxData();
-                    NxfileStateInfo StateSav = new NxfileStateInfo(State);
+                    StateSav.Pop();
+                    datState = new NxDataStateInfo( Child,State.InstrumentNode,StateSav, startGroupID);
+                    datState.startGroupID = startGroupID;
+                    int NDetectors1 = Grid_util.getAllDataGrids( DS ).size();
+                    datState.startDetectorID =dsInf.startDetectorID + NDetectors1-NDetectors;
+                    NDetectors = NDetectors1;
+                    StateSav.Push( datState );
                     int N = DS.getNum_entries();
                     boolean res = proc.processDS(NxEntryNode, Child,
                             NxinstrumentNode, DS, StateSav, startGroupID);
