@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.18  2007/07/11 18:30:20  rmikk
+ * Added a lot of documentation for utility methods
+ * Now uses default detector ID's so that each ID is used only once per NXentry
+ *
  * Revision 1.17  2007/07/04 17:48:43  rmikk
  * Fixed major errors in copying over the errors
  *
@@ -424,7 +428,9 @@ public class NexUtils implements INexUtils {
             //------- Determine the number of detectors and rows and cols 
             //-----------------------for this NXdata--------x         
 
-        int startGridNum = 1 + Maxx( DS , startDSindex );
+        int startGridNum = dataState.startDetectorID;
+        if( startGridNum < 0)
+            startGridNum =  Maxx( DS , startDSindex );
         
         //if( detState.hasLayout == null){
            if ( dataState == null ) {
@@ -1100,12 +1106,7 @@ public class NexUtils implements INexUtils {
      
         if ( errNode != null ) {
             evals = ConvertDataTypes.floatArrayValue( errNode.getNodeValue() );
-            //evals = MakeHistogram( evals , errNode );
-            /*Xunits = ConvertDataTypes.StringValue(
-                        errNode.getAttrValue( "units" ) ); 
-
-            ConvertDataTypes.UnitsAdjust( evals , Xunits , xUnits , 1.0f , 0.0f );
-            */
+      
         }
      
         if ( xvals == null )
@@ -1128,10 +1129,14 @@ public class NexUtils implements INexUtils {
                 
                 HistogramTable DB ;
                 System.arraycopy( data , i * length , yvals , 0 , length );
+                
                 if( evals != null){
+                   
                     System.arraycopy( evals , i * length , errs , 0 , length );
                     DB = new HistogramTable( xsc , yvals , errs , id );
+                    
                 }else{
+                   
                    errs = null;
                    DB = new HistogramTable( xsc , yvals ,  id );
                 }
@@ -1144,24 +1149,15 @@ public class NexUtils implements INexUtils {
         return false;
     }
 
-    // returns the startGroupID + offfset entry in IDS 
-    private int getGroupsID( int[] IDS , int startGroupID , int offset ) {
-       
-        if ( IDS == null )
-            return startGroupID + offset;
-        
-        if ( IDS.length <= offset )
-            return startGroupID + offset;
-        
-        if ( offset < 0 )
-            return startGroupID + offset;
-        
-        return IDS[ offset ];
-    }
-
-    //public void setUpNX...Attributes, where ...=Beam,Sample, etc.
 
 
+    /**
+     * Gets the value of a subnode. This method handles nulls
+     * 
+     * @param parentNode  parent Node. Can be null
+     * @param subNodeName Thw subnode name
+     * @return The value of the subnode
+     */
     public static Object getSubNodeValue( NxNode parentNode , String subNodeName ){
       
         NxNode subNode = parentNode.getChildNode( subNodeName );
@@ -1171,11 +1167,14 @@ public class NexUtils implements INexUtils {
         return subNode.getNodeValue();
     }
     
+    
+    // sets error message and returns null
     private Object setErrorMessageReturnNull( String err){
        errormessage = err;
        return null;
     }
 
+    //Sets error message and returns true
     private boolean setErrorMessage( String err ) {
         errormessage = err;
         return true;
@@ -1187,9 +1186,20 @@ public class NexUtils implements INexUtils {
     public String getErrorMessage() {
         return errormessage;
     }
+    
+    
 
     /**
-     *    returns null if no Attribute Name or cannot convert to Integer
+     *    Gets the given attribute and converts it to an Integer.
+     *    This method is null passing
+     *    
+     *    @param Node  the node with the attribute( can be null)
+     *    
+     *    @param AttributeName the name of the attribute
+     *    
+     *    @return an Integer or null if the node or Attribute name is
+     *            null or the resulting attribute cannot be converted
+     *            to an Integer.
      */
     public static Integer getIntAttributeValue( NxNode Node , 
                                               String AttributeName ){
@@ -1210,7 +1220,16 @@ public class NexUtils implements INexUtils {
     }
 
     /**
-     *    returns null if no Attribute Name or cannot convert to Float
+     *    Gets the given attribute and converts it to a Float.
+     *    This method is null passing
+     *    
+     *    @param Node  the node with the attribute( can be null)
+     *    
+     *    @param AttributeName the name of the attribute
+     *    
+     *    @return a Float or null if the node or Attribute name is
+     *            null or the resulting attribute cannot be converted
+     *            to a  Float.
      */
     public static Float getFloatAttributeValue( NxNode Node , 
                                                    String AttributeName ) { 
@@ -1233,7 +1252,16 @@ public class NexUtils implements INexUtils {
     }
 
     /**
-     *    returns null if no Attribute Name or cannot convert to String
+     *    Gets the given attribute and converts it to a String.
+     *    This method is null passing
+     *    
+     *    @param Node  the node with the attribute( can be null)
+     *    
+     *    @param AttributeName the name of the attribute
+     *    
+     *    @return a String or null if the node or Attribute name is
+     *            null or the resulting attribute cannot be converted
+     *            to a String.
      */
     public static String getStringAttributeValue( NxNode Node , 
                                              String AttributeName ) {
@@ -1251,7 +1279,16 @@ public class NexUtils implements INexUtils {
     }    
   
     /**
-     *    returns null if no Field Name or cannot convert to Integer
+     *    Gets the given field value and converts it to an Integer.
+     *    This method is null passing
+     *    
+     *    @param Node  the node with the field( can be null)
+     *    
+     *    @param FieldName the name of the field
+     *    
+     *    @return an Integer or null if the node or field name is
+     *            null or the resulting field cannot be found or
+     *            converted to an Integer.
      */
     public static Integer getIntFieldValue( NxNode Node , String FieldName ) {
         if ( Node == null )
@@ -1259,6 +1296,10 @@ public class NexUtils implements INexUtils {
         
         if ( FieldName == null )
             return null;
+        
+        
+        if( Node.getNodeClass() .equals("SDS"))
+           return null;
         
         NxNode Child = Node.getChildNode( FieldName );
 
@@ -1275,7 +1316,16 @@ public class NexUtils implements INexUtils {
     }
 
     /**
-     *    returns null if no Field Name or cannot convert to Integer
+     *    Gets the given field value and converts it to an int array.
+     *    This method is null passing
+     *    
+     *    @param Node  the node with the field( can be null)
+     *    
+     *    @param FieldName the name of the field
+     *    
+     *    @return an int[] or null if the node or field name is
+     *            null or the resulting field cannot be found or
+     *            converted to an int[].
      */
     public static int[] getIntArrayFieldValue( NxNode Node , String FieldName ) {
         if ( Node == null )
@@ -1283,6 +1333,10 @@ public class NexUtils implements INexUtils {
         
         if ( FieldName == null )
             return null;
+        
+        
+        if( Node.getNodeClass() .equals("SDS"))
+           return null;
         
         NxNode Child = Node.getChildNode( FieldName );
 
@@ -1296,10 +1350,18 @@ public class NexUtils implements INexUtils {
 
 
 
-  /**
-   *    returns null if no Attribute Name or cannot convert to an int[]
-   *    
-   */
+    /**
+     *    Gets the given attribute and converts it to a int Array.
+     *    This method is null passing
+     *    
+     *    @param Node  the node with the attribute( can be null)
+     *    
+     *    @param AttributeName the name of the attribute
+     *    
+     *    @return an int[] or null if the node or Attribute name is
+     *            null or the resulting attribute cannot be converted
+     *            to a String.
+     */
   public static int[] getIntArrayAttributeValue( NxNode Node , String AttrName ) {
       if ( Node == null )
           return null;
@@ -1316,15 +1378,27 @@ public class NexUtils implements INexUtils {
 
   }
 
-    /**
-     *    returns null if no Field Name or cannot convert to Float
-     */
+  /**
+   *    Gets the given field value and converts it to a Float.
+   *    This method is null passing
+   *    
+   *    @param Node  the node with the field( can be null)
+   *    
+   *    @param FieldName the name of the field
+   *    
+   *    @return a Float or null if the node or field name is
+   *            null or the resulting field cannot be found or
+   *            converted to a Float.
+   */
     public static Float getFloatFieldValue( NxNode Node , String FieldName ) {
         if ( Node == null )
             return null;
         
         if ( FieldName == null )
             return null;
+        
+        if( Node.getNodeClass() .equals("SDS"))
+           return null;
         
         NxNode Child = Node.getChildNode( FieldName );
 
@@ -1341,7 +1415,16 @@ public class NexUtils implements INexUtils {
     }
 
     /**
-     *    returns null if no Field Name or cannot convert to Float
+     *    Gets the given field value and converts it to an float array.
+     *    This method is null passing
+     *    
+     *    @param Node  the node with the field( can be null)
+     *    
+     *    @param FieldName the name of the field
+     *    
+     *    @return an float[] or null if the node or field name is
+     *            null or the resulting field cannot be found or
+     *            converted to an float[].
      */
     public static float[] getFloatArrayFieldValue( NxNode Node  , 
                                                     String FieldName ) {
@@ -1352,6 +1435,9 @@ public class NexUtils implements INexUtils {
         if ( FieldName == null )
             return null;
         
+        
+        if( Node.getNodeClass() .equals("SDS"))
+           return null;
         NxNode Child = Node.getChildNode( FieldName );
 
         if ( Child == null )
@@ -1363,7 +1449,16 @@ public class NexUtils implements INexUtils {
 
 
     /**
-     *    returns null if no Field Name or cannot convert to String
+     *    Gets the given field value and converts it to an String.
+     *    This method is null passing
+     *    
+     *    @param Node  the node with the field( can be null)
+     *    
+     *    @param FieldName the name of the field
+     *    
+     *    @return a String or null if the node or field name is
+     *            null or the resulting field cannot be found or
+     *            converted to a String.
      */
     public static String getStringFieldValue( NxNode Node  , String FieldName ) {
     
@@ -1372,6 +1467,9 @@ public class NexUtils implements INexUtils {
         
         if ( FieldName == null )
             return null;
+        
+        if( Node.getNodeClass() .equals("SDS"))
+           return null;
         
         NxNode Child = Node.getChildNode( FieldName );
 
@@ -1411,6 +1509,12 @@ public class NexUtils implements INexUtils {
     /**
      *    Makes a histogram from function values. tofNode has an attribute
      *    histogram_offset that can be used to get the left boundary
+     *    
+     *    @param xvals  The list of xvals("times")
+     *    @param tofNode The time of flight NeXus node with the 
+     *                  histgram_offset attribute
+     *     @return a new set of xvals that are histogrammed if needed
+     *    
      */
     public static float[] MakeHistogram( float[] xvals , NxNode tofNode ) {
     
@@ -1465,6 +1569,8 @@ public class NexUtils implements INexUtils {
     /**
      *   Returns the first NxEntryStateInfo in the fileState link list of state
      *   information
+     *   
+     *   @param fileState The starting State in the linked list
      */
     public static NxEntryStateInfo getEntryStateInfo(
                                          NxfileStateInfo fileState ) {
@@ -1486,6 +1592,8 @@ public class NexUtils implements INexUtils {
     /**
      *   Returns the first NxDataStateInfo in the fileState link list of state
      *   information
+     *   
+     *   @param fileState The starting State in the linked list
      */
     public static NxDataStateInfo getDataStateInfo( NxfileStateInfo fileState ) {
       
@@ -1507,6 +1615,8 @@ public class NexUtils implements INexUtils {
     /**
      *   Returns the first NxDetectorStateInfo in the fileState link list of state
      *   information
+     *   
+     *   @param fileState The starting State in the linked list
      */
     public static NxDetectorStateInfo getDetectorStateInfo(
                                             NxfileStateInfo fileState ) {
@@ -1531,9 +1641,12 @@ public class NexUtils implements INexUtils {
      * ISAW coordinates of the direction cosines.
      * 
      * @param geomNode   a node corresponding to an NXgeometry node
+     * 
      * @param dataDescr  A description of the data to be extracted. Must be
      *      length, width, height, diameter, x_dir , or y_dir
+     *      
      * @param detState  the state info for this detector
+     * 
      * @return  the corresponding data or null if the data is not present
      */
     public static float[] getNxGeometryInfo( NxNode geomNode ,
@@ -1655,13 +1768,17 @@ public class NexUtils implements INexUtils {
      * Returns the index of the next child node with index more than or equal
      * to startIndex that has the given class name.
      * @param node   The Nexus Node
+     * 
      * @param className  The className that is being sought
+     * 
      * @param startIndex  The index in the fields of node to start with
+     * 
      * @return  the index of the next node with the given class name or -1 if 
      *           none
      */
     public static int getNextChildNode( NxNode node , String className , 
         int startIndex ) {
+       
         if ( node == null )
             return -1;
      
@@ -1675,11 +1792,15 @@ public class NexUtils implements INexUtils {
         return -1;
     }
     
+    
    /**
     *  The dimension of NXdata blocks are sometimes reversed by Fortran
     *  programmers 
+    *  
     * @param dim  The array of the dimensions as given by NeXus
+    * 
     * @param leadLength  The length of the fastest changing dimension
+    * 
     * NOTE if leadLength or leadLength-1 does not match the fist
     * or last entry of dim( it should match the last), nothing is changed
     */
