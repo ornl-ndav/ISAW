@@ -31,6 +31,13 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2007/07/11 18:21:05  rmikk
+ * Checked that value of axes made sense
+ * Included a field startDetectorID
+ * Added documentation
+ * Collapsed code by using utility methods for searching xml documents for
+ *    key words
+ *
  * Revision 1.9  2007/01/12 14:48:46  dennis
  * Removed unused imports.
  *
@@ -117,6 +124,8 @@ public class NxDataStateInfo extends StateInfo{
    *   The starting Default GroupID if there is no id or detector_number field.
    */
   public int startGroupID;
+  
+  public int startDetectorID;
 
   /**
    *   The name of the corresponding NXdetector for this NXdata node. This
@@ -149,7 +158,7 @@ public class NxDataStateInfo extends StateInfo{
      hasIntIDField = false;
      this.startGroupID = startGroupID;
      int xvals_length = -1;
-     
+     startDetectorID = -1;
      //Find axes
      for( int i = 0 ; i < NxDataNode.getNChildNodes() ; i++ ){
        
@@ -203,8 +212,8 @@ public class NxDataStateInfo extends StateInfo{
         
      } //for loop
      
-     XlateAxes = FindAxes( Params.xmlDoc );  
-     if( XlateAxes == null){
+     XlateAxes = FindAxes( Params );  
+     if( XlateAxes == null || XlateAxes.length != dimensions.length){
         XlateAxes = new int[dimensions.length];
         for( int i = 0 ; i< XlateAxes.length ; i++)
            XlateAxes[i]= i+1;
@@ -217,35 +226,19 @@ public class NxDataStateInfo extends StateInfo{
      //Check xml for link name
      if( Params.xmlDoc != null){
         NxEntryStateInfo EntryState = NexUtils.getEntryStateInfo( Params );
+        NxDataStateInfo DataState = NexUtils.getDataStateInfo( Params );
         String name = null;
         if( EntryState != null)
            name = EntryState.Name;
-        Node N = Util.getNXInfo( Params.xmlDoc,"Common.NXentry",null,null,null);
-        Node NN1[] = NexIO.Util.NexUtils_mixDims.getNxEntryNodes( N,name );
-        N = Util.getNXInfo( Params.xmlDoc,"Runs",null,null,null);
-        String filename = Params.filename;
-        Node NN2[]= new Node[2]; NN2[0]=NN2[1] = null;
-        if( filename != null){
-           filename = filename.replace('\\','/');
-           int kk= filename.lastIndexOf('/');
-           if( kk >=0)
-              filename = filename.substring(kk+1);
         
-           N = Util.getNXInfo( N,"Run",null,null,filename);
-           NN2 = NexIO.Util.NexUtils_mixDims.getNxEntryNodes( N,name );
-        }
-        Node NNN[] = new Node[4];
-        NNN[0]=NN1[0]; NNN[1]=NN1[1];NNN[2]=NN2[0]; NNN[3]=NN2[1];
-        for( int i=0; i< 4; i++){
-           if( NNN[i] != null){
-              N=Util.getNXInfo( NNN[i],"NXdata.link",Name,null,null);
-              if( N != null){
-                 String S = ConvertDataTypes.StringValue( Util.getLeafNodeValues( N));
-                 if( S != null)
-                    linkName = S;
-              }
-           }
-        }
+        Node LL =  Util.getXMLNodeVal( Params.xmlDoc,name,new String[]{"NXdata","link"},
+                 new String[]{Name,null}, Params.filename , true, new boolean[]{false,true});
+        if( LL != null){
+           String L = ConvertDataTypes.StringValue( Util.getLeafNodeValues( LL  ) );
+           if( L != null)
+              linkName = L;
+           
+        }       
      }
      //NexIO.Util.NexUtils.disFortranDimension( dimensions , xvals_length );
       
@@ -253,11 +246,19 @@ public class NxDataStateInfo extends StateInfo{
   
   
   
-   //Eliminates all but the trailing path part, unless it matches this nodes
-  // name, the return the previous path section.  Paths can be separated by
-  // ,./ or \
-  // NOTE: Version 2 requires pointing to an SDS field under a class
-   private String FixUp( String linkName , NxNode node ){
+   /**
+    * Eliminates all but the trailing path part, unless it matches this nodes
+    * name, the return the previous path section.  Paths can be separated by
+    * ,./ or \
+    * NOTE: Version 2 requires pointing to an SDS field under a class
+   *
+   * @param linkName The full link name
+   * @param node     The node that will be linked to an NXdetector
+   * @return        a link name with NO path.
+   * 
+   * NOTE: trailing crud is removed
+   */
+   public static String FixUp( String linkName , NxNode node ){
       
       if( node == null )
          return null;
@@ -304,6 +305,19 @@ public class NxDataStateInfo extends StateInfo{
 
    }
    
+   public NxDataStateInfo( NxDataStateInfo datInfo){
+      axisName = datInfo.axisName; 
+      XlateAxes = datInfo.XlateAxes;
+      dimensions = datInfo.dimensions;
+      Name  = datInfo.Name;
+      labelName = datInfo.labelName;
+      hasIntIDField = datInfo.hasIntIDField;
+      startGroupID = datInfo.startGroupID;
+      
+      startDetectorID = datInfo.startDetectorID;
+      linkName = datInfo.linkName;
+  
+   }
    
    /**
     *   Finds the axes from an XML file.  All it does is search for
@@ -313,19 +327,43 @@ public class NxDataStateInfo extends StateInfo{
     * @return   The value of the tag( if tail) returned as an int array
     * 
     */
-   public int[] FindAxes( Node xmlDoc ){
+   public int[] FindAxes(   NxfileStateInfo Params ){
       
-      Node res = Util.getNXInfo( xmlDoc , "NXdata.axes" , Name , null ,null );
+      Node xmlDoc = Params.xmlDoc;
+      String fileName = Params.filename;
+      if( fileName == null)
+         fileName ="";
+      
+      NxEntryStateInfo entInfo = NexUtils.getEntryStateInfo( Params);
+      String EntryName = null;
+      if( entInfo != null)
+         EntryName = entInfo.Name ;
+      if( EntryName == null)
+         EntryName ="";
+      String FileName = new String( fileName );
+      if( FileName != null){
+         FileName = FileName.replace('\\','/');
+         int k= FileName.lastIndexOf( '/');
+         if( k >0)
+            FileName = FileName.substring( k+1);
+      }
+      Node res = Util.getNXInfo1( xmlDoc , "Runs.Run.NXentry.NXdata.axes" ,"..."+ EntryName+"."+
+                                  Name , null ,FileName );
+      if( res == null)
+         res = Util.getNXInfo1( xmlDoc , "Runs.Run.NXentry.NXdata.axes" , "...."+
+                                  Name , null ,FileName);
+      if( res == null)
+         res = Util.getNXInfo1( xmlDoc , "NXentry.NXdata.axes" , ".EntryName."+
+                  Name , null ,null);
+      if( res == null)
+         res = Util.getNXInfo1( xmlDoc , "NXentry.NXdata.axes" , ".."+
+                  Name , null ,null);
       
       if( res == null )
          return null;
       
-      String S = ConvertDataTypes.StringValue( Util.getLeafNodeValues( res ));
-      if( S == null )
-         return null;
-      
-      return ConvertDataTypes.intArrayValue( S.split( "[ ]+" ) );
-   }
+     return  ConvertDataTypes.intArrayValue( Util.getLeafNodeValues( res ));
+   } 
   
 }
 
