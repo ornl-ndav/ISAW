@@ -30,6 +30,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.34  2007/07/11 18:00:35  rmikk
+ * Fixed "Pulse" to "PULSE" in  uppercase comparison  code
+ * Caught an exception that occurs with an undefined instrument type in the
+ *    datasetFactory constructor
+ * Used more sub calls in a  method with a lot of code
+ *
  * Revision 1.33  2007/06/28 15:26:24  rmikk
  * added the general operators to all data sets
  *
@@ -191,7 +197,7 @@ public class ExtGetDS{
     NxNode nd= (VV.NxdataNode);
     if(nd == null)
       return Retriever.MONITOR_DATA_SET ;
-    else if( nd.getNodeName().toUpperCase().indexOf("Pulse")>=0)
+    else if( nd.getNodeName().toUpperCase().indexOf("PULSE")>=0)
       return Retriever.PULSE_HEIGHT_DATA_SET;
     else
       return Retriever.HISTOGRAM_DATA_SET ;
@@ -257,7 +263,7 @@ public class ExtGetDS{
    NxfileStateInfo FileState = new NxfileStateInfo( node , filename );
    
    NxEntryStateInfo EntryState = new NxEntryStateInfo( EntryNode,FileState);
-   
+ 
    DataSet DS;
    int instrType = -1; 
    
@@ -275,10 +281,14 @@ public class ExtGetDS{
       }
   
       DataSetFactory DSF = new DataSetFactory( "" ) ;
-      DS = DSF.getTofDataSet(instrType) ; 
+      try{
+        DS = DSF.getTofDataSet(instrType) ;
+      }catch( IllegalArgumentException ss){
+         DS = new DataSet();
+      }
       DS.setAttributeList( AL ) ;
       DataSetFactory.addOperators( DS );
-      if( instrType >=0)
+      if( instrType >0)
          DataSetFactory.addOperators( DS,instrType );
       DS.setAttribute( new IntAttribute( Attribute.INST_TYPE, instrType)); 
       DS.setAttribute( new StringAttribute( Attribute.DS_TYPE,Attribute.SAMPLE_DATA));
@@ -300,7 +310,15 @@ public class ExtGetDS{
    
    IProcessNxEntry entry = QueryNxEntry.getNxEntryProcessor(FileState, 
                      dsInf.NxdataNode,  null, dsInf.startGroupID);
-                     
+   
+   if( dsInf.NxdataNode != null){
+      NxDataStateInfo DataState = new NxDataStateInfo( dsInf.NxdataNode, 
+               FileState.InstrumentNode, FileState, dsInf.startGroupID);
+      DataState.startDetectorID = dsInf.startDetectorID;
+      FileState.Push( DataState );
+      
+   }
+   
    boolean res = entry.processDS( DS, EntryNode, dsInf.NxdataNode, FileState,
            dsInf.startGroupID);
            
@@ -506,109 +524,492 @@ public class ExtGetDS{
   // Goes thru a NeXus files and finds all Data Sets.
   //  The Node, DefaultID's and NXentry are saved in a DataSetInfo Structure
   //  The DataSetInfo Structure is an internal class in this file
-  private void setUpDataSetList(){
-    setupDSs = true;
-    int startID = 1;
-    //--------------------- Get all Monitors ------------------------
-    for( int i = 0; i< node.getNChildNodes();i++){
-      
-      String labels=";";
-      NxNode nn=node.getChildNode(i);
-      if( nn.getNodeClass().equals( "NXentry" ) ){
-        // Get monitors first
-        int nmonitors = 0;
-        for( int j=0; j < nn.getNChildNodes(); j++){
-           NxNode mm = nn.getChildNode( j ) ;
-           if( mm.getNodeClass().equals( "NXmonitor" ) ){
-              nmonitors ++;
-           }
-        }
-        
-        if( nmonitors > 0)
-          EntryToDSs.addElement( new DataSetInfo( nn, null, startID,
-                         startID+nmonitors -1, null));
+  private void setUpDataSetList() {
 
-        
-        startID += nmonitors;
+      setupDSs = true;
+      // --------------------- Get all Monitors ------------------------
+      for( int i = 0 ; i < node.getNChildNodes() ; i++ ) {
 
-        // ----------  Now get all NXdata with ---------------------------
-        //------------label attributes on their data field(merged)--------------
-        
-        int start = EntryToDSs.size();
-        for( int j = 0 ; j < nn.getNChildNodes() ; j++ ){
-          
-          NxNode mm = nn.getChildNode( j ) ;
-           if( mm.getNodeClass().equals( "NXdata" ) ){
-             
-            NxNode dat=mm.getChildNode("data");
-            if( dat != null){
-              
-              Object O= dat.getAttrValue("label");
-              String S = new NxData_Gen().cnvertoString(O);
-              if( S != null){
-                
-                if(  labels.indexOf(";"+S+";") < 0){
-                  
-                   labels+=S.trim()+";";
-                   EntryToDSs.addElement( new DataSetInfo(nn,mm,-1,0, S));
-                   
-                }
-                int k =Position(labels,S.trim());
-                int[] dim= dat.getDimension();
-                
-                int nGroups = 1;
-                for( int ii=0; ii+1< dim.length;ii++) nGroups *= dim[ii];
-                DataSetInfo dsInf = (DataSetInfo)(EntryToDSs.elementAt(k+start));
-                dsInf.endGroupID +=nGroups;
-                
-              }//has label field
-            }//has data field 
-
-           }//class is NXdata
-          }//for child nodes
-        
-            // Determine ID ranges for each data set
-        for( int k = startID; k < EntryToDSs.size(); k++){
-          
-          DataSetInfo dsInf = (DataSetInfo)(EntryToDSs.elementAt(k));
-          dsInf.startGroupID = startID;
-          dsInf.endGroupID +=startID;
-          dsInf.endGroupID--;
-          startID = dsInf.endGroupID;
-          
-        }
-        
-        
-        //--------Now get DataSets that are not to be merged---------
-        for( int j = 0 ; j < nn.getNChildNodes() ; j++ ){
-          
-          NxNode mm = nn.getChildNode( j ) ;
-           if( mm.getNodeClass().equals( "NXdata" ) ){
-             
-            NxNode dat=mm.getChildNode("data");
-            if(dat != null){
          
-              Object O= dat.getAttrValue("label");
-              String S = new NxData_Gen().cnvertoString(O);
-              if( (O == null)||(S ==null)){
-                int[] dim = dat.getDimension();
-                int nGroups = 1;
-                for( int ii=0; ii+1< dim.length;ii++) nGroups *= dim[ii];
-                EntryToDSs.addElement(new DataSetInfo(nn,mm,startID,startID+nGroups -1,null));
-                startID  += nGroups;
-              }
-            }
-          }//if NXdata node
-        }//for  NxEntries children
-       }//if node Class is NXentry
-      }//if( node class == NXentry
-    
-    //------------------ now to get the NXlogs ------------------
-    int numLogDS = nxLogLocator.getNumNxLogDataSets();    
-    for (int i=0; i<numLogDS; i++)
-       EntryToDSs.add(nxLogLocator.getNxLogDataSet(i));    
-  } 
+         NxNode nn = node.getChildNode( i );
 
+         if( nn.getNodeClass().equals( "NXentry" ) ) {
+            // Get monitors first
+            NxNode InstrumentNode = AddMonitorDataSetInfos( nn, EntryToDSs);
+
+            // ---------- Now get all NXdata with ---------------------------
+            // ------------label attributes(merge common labels) on their data
+           
+            AddLabeledHistogramDataSets( nn, EntryToDSs);
+
+
+            AddUnMergedHistogramDataSets( nn, EntryToDSs);
+
+            
+            RecordGivenGroupDetIDs(nn, EntryToDSs, InstrumentNode);
+
+            // Set up Default IDS;
+            SetDefaultGroupDetIDs( nn, EntryToDSs);
+
+         }// if( node class == NXentry
+
+
+      }// for @ child node
+
+
+      // ------------------ now to get the NXlogs ------------------
+      int numLogDS = nxLogLocator.getNumNxLogDataSets();
+      for( int i = 0 ; i < numLogDS ; i++ )
+         EntryToDSs.add( nxLogLocator.getNxLogDataSet( i ) );
+ 
+   }
+  
+  
+  
+
+  // inserting ranges
+  private void Insert( Vector V, int[] element){
+     if( V == null)
+        return;
+     if( V.size() < 1){
+       V.addElement( element);
+        return;
+     }
+     for( int i=0; i< V.size(); i++){
+        int[] elt = (int[]) V.elementAt(i);
+        if( elt[0] > element[0]){
+           V.insertElementAt( element, i);
+           return;
+        } else if( elt[0] == element[0] && elt[1]> element[1]){
+              V.insertElementAt( element, i);
+              return;
+        }
+              
+        }
+        V.addElement( element);   
+     }
+
+  // negative numbers are undefined
+   private int update( int n1, int n2, boolean minimize){
+      if( n1 < 0)
+         return n2;
+      if( n2 < 0)
+         return n1;
+      if( n1 < n2 )
+         if( minimize)
+            return n1;
+         else
+            return n2;
+      else if( minimize)
+         return n2;
+      else
+         return n1;
+   }  
+      
+ 
+   // returns null if there are no fields set
+  // last element is the number of detectors
+   private int[] GetMinMaxSetGroupDetectorIDs( NxNode DataNode, NxNode InstrumentNode){
+       
+      NxNode dataNode = DataNode.getChildNode("data");
+      int[] dims = dataNode.getDimension();
+      int NGroups = 1;
+      if( dims != null)
+         for( int i=0; i< dims.length -1; i++)
+           NGroups*= dims[i];
+      else
+           NGroups = 0;
+      
+      String Link = null;
+      for(int ik =0; ik < DataNode.getNChildNodes(); ik++){
+         String S = ConvertDataTypes.StringValue(
+                 
+                          DataNode.getChildNode(ik).getAttrValue("link"));
+         if( S == null)
+            S =ConvertDataTypes.StringValue(
+                    
+                              DataNode.getChildNode(ik).getAttrValue("target")); 
+         if( S != null)
+            Link = S;
+         
+      }    
+      int[] Res= new int[5];
+      
+      Res[0]=Res[1]=Res[2] = Res[3]=Res[4]=-1;
+      if( Link == null)
+         return Res;
+     
+      NxNode detNode = NexUtils.getCorrespondingNxDetector( Link,  
+                                                    InstrumentNode);
+      if( detNode == null )
+         return Res;
+      
+      int[] ids = NexUtils.getIntArrayFieldValue( detNode,"id");
+      int[] detNums = NexUtils.getIntArrayFieldValue( detNode , "detector_number");
+      if(ids == null)
+         ids = detNums;
+      
+  
+      Res[2] = 0;
+      if( detNums != null)
+         if( detNums.length <= NGroups)
+            Res[2] = NGroups/detNums.length;
+      if( ids != null  && ids.length > 0){
+         Res[0] = ids[0];
+         Res[1] = Math.max(  Res[0]+ NGroups-1,ids[ids.length-1]);
+      }
+      if( detNums != null && detNums.length >0){
+         Res[3] = detNums[0];
+         Res[4] = Math.max( detNums[detNums.length-1], Res[3]+ Res[2]-1);
+         
+      
+      }
+      return Res;
+      
+     
+   }
+   private int updateMinValue( int previous , Integer newVal){
+      if( newVal == null)
+         return previous;
+     int nn = newVal.intValue();
+     if( nn== Integer.MIN_VALUE)
+        return previous;
+     if( nn < previous)
+        return nn;
+     return previous;
+   }
+   
+
+
+   private int updateMaxValue( int previous , Object newVal){
+      if( newVal == null)
+         return previous;
+     int nn = ConvertDataTypes.intValue( newVal);
+     if( nn== Integer.MIN_VALUE)
+        return previous;
+     if( nn > previous)
+        return nn;
+     return previous;
+   }
+   
+   /**
+    * Adds the information on monitors to the DataSet info list. This is done
+    * first If there is a detector_number field or id field, the start and/or
+    * end Group and/or detector ID's will be set.
+    * 
+    * @param nn
+    *           An NXentry node
+    * @param EntryToDSs
+    *           The vector of DataSetInfo structures
+    * 
+    * @return The Instrument Node
+    */
+   private NxNode AddMonitorDataSetInfos( NxNode nn , Vector EntryToDSs ) {
+
+      int nmonitors = 0;
+      NxNode InstrumentNode = null;
+
+      int startID = 1;
+      int minGroupID = 1;
+      int maxGroupID = 1;
+      boolean foundGroupIDs = false;
+      int minDetectorID = 1;
+      int maxDetectorID = 1;
+      boolean foundDetectorIDs = false;
+      
+      for( int j = 0 ; j < nn.getNChildNodes() ; j++ ) {
+         
+         NxNode mm = nn.getChildNode( j );
+         if( mm.getNodeClass().equals( "NXinstrument" ) )
+            
+            InstrumentNode = mm;
+         
+         else if( mm.getNodeClass().equals( "NXmonitor" ) ) {
+            
+            nmonitors++ ;
+            Integer detID = NexUtils.getIntFieldValue( mm , "detector_Number" );
+            
+            Integer grID = NexUtils.getIntFieldValue( mm , "id" );
+            
+            if( grID == null ) 
+               grID = detID;
+            
+            minGroupID = updateMinValue( minGroupID , grID );
+            minDetectorID = updateMinValue( minDetectorID , detID );
+            maxGroupID = updateMaxValue( maxGroupID , grID );
+            maxDetectorID = updateMaxValue( maxDetectorID , detID );
+            
+            if( grID != null ) 
+               foundGroupIDs = true;
+            
+            if( detID != null ) 
+               foundGroupIDs = foundDetectorIDs = true;
+
+         }
+      }
+
+      if( nmonitors > 0 ) {
+         DataSetInfo Dinf = new DataSetInfo( nn , null , 1 , nmonitors , null );
+         Dinf.nelts = nmonitors;
+         Dinf.ndetectors = nmonitors;
+         if( foundGroupIDs ) {
+            Dinf.startGroupID = minGroupID;
+            Dinf.endGroupID = maxGroupID;
+         }
+         else {
+            Dinf.startGroupID = - 1;
+            Dinf.endGroupID = - 1;
+         }
+
+         if( foundDetectorIDs ) {
+            Dinf.startDetectorID = minDetectorID;
+            Dinf.endDetectorID = maxDetectorID;
+
+         }
+         else {
+            Dinf.startDetectorID = - 1;
+            Dinf.endDetectorID = - 1;
+
+         }
+
+         EntryToDSs.addElement( Dinf );
+      }
+
+      if( foundGroupIDs )
+         startID = Math.max( startID + 1 , maxGroupID + 1 );
+      else
+         startID = nmonitors + 1;
+      return InstrumentNode;
+   }
+
+
+   /**
+    * Adds labeled( to be merged) histogram info to EntryToDSs
+    * 
+    * @param nn
+    *           NxEntry node
+    * @param EntryToDSs
+    *           Vector of DataSet Information
+    */
+   private void AddLabeledHistogramDataSets( NxNode nn , Vector EntryToDSs ) {
+
+      String labels = ";";
+      int start = EntryToDSs.size();
+      for( int j = 0 ; j < nn.getNChildNodes() ; j++ ) {
+
+         NxNode mm = nn.getChildNode( j );
+         if( mm.getNodeClass().equals( "NXdata" ) ) {
+
+            NxNode dat = mm.getChildNode( "data" );
+            if( dat != null ) {
+
+               Object O = dat.getAttrValue( "label" );
+               String S = new NxData_Gen().cnvertoString( O );
+               if( S != null ) {
+
+                  if( labels.indexOf( ";" + S + ";" ) < 0 ) {
+
+                     labels += S.trim() + ";";
+                     EntryToDSs.addElement( new DataSetInfo( nn , mm , - 1 ,
+                              - 1 , S ) );
+
+                  }
+                  int k = Position( labels , S.trim() );
+                  int[] dim = dat.getDimension();
+
+                  int nGroups = 1;
+                  for( int ii = 0 ; ii + 1 < dim.length ; ii++ )
+                     nGroups *= dim[ ii ];
+                  DataSetInfo dsInf = (DataSetInfo) ( EntryToDSs.elementAt( k
+                           + start ) );
+                  dsInf.nelts += nGroups;
+
+                  dsInf.ndetectors = - 1; // Will be done when NXdetector
+                  // is
+                  // available
+
+
+               }// has label field
+            }// has data field
+
+         }// class is NXdata
+      }// for child nodes
+
+   }
+
+
+   private void AddUnMergedHistogramDataSets( NxNode nn , Vector EntryToDSs ) {
+
+      // --------Now get DataSets that are not to be merged---------
+      for( int j = 0 ; j < nn.getNChildNodes() ; j++ ) {
+
+         NxNode mm = nn.getChildNode( j );
+         if( mm.getNodeClass().equals( "NXdata" ) ) {
+
+            NxNode dat = mm.getChildNode( "data" );
+            if( dat != null ) {
+
+               Object O = dat.getAttrValue( "label" );
+               String S = new NxData_Gen().cnvertoString( O );
+               if( ( O == null ) || ( S == null ) ) {
+                  int[] dim = dat.getDimension();
+                  int nGroups = 1;
+                  for( int ii = 0 ; ii + 1 < dim.length ; ii++ )
+                     nGroups *= dim[ ii ];
+                  DataSetInfo DatInf = new DataSetInfo( nn , mm , - 1 , - 1 ,
+                           null );
+                  DatInf.nelts = nGroups;
+                  EntryToDSs.addElement( DatInf );
+               }
+            }
+         }// if NXdata node
+      }
+
+   }
+
+
+   public void RecordGivenGroupDetIDs( NxNode nn , Vector EntryToDSs ,
+            NxNode InstrumentNode ) {
+
+      // Now get the associated NXdetector to get set ID's and Number of
+      // detectors
+      for( int kk = 0 ; kk < EntryToDSs.size() ; kk++ ) {
+         DataSetInfo DatInf = (DataSetInfo) EntryToDSs.elementAt( kk );
+         if( DatInf.NxentryNode == nn && DatInf.NxdataNode != null ) {
+            int[] dat = GetMinMaxSetGroupDetectorIDs( DatInf.NxdataNode ,
+                     InstrumentNode );
+            DatInf.startGroupID = dat[ 0 ];
+            DatInf.endGroupID = dat[ 1 ];
+            DatInf.ndetectors = dat[ 2 ];
+            DatInf.startDetectorID = dat[ 3 ];
+            DatInf.endDetectorID = dat[ 4 ];
+         }// 
+         if( DatInf.label != null ) {// Now get the other data nodes
+            String label = DatInf.label;
+            for( int ii = 0 ; ii < nn.getNChildNodes() ; ii++ ) {
+
+               if( nn.getChildNode( ii ).getNodeClass().equals( "NXdata" ) ) {
+                  NxNode mm = nn.getChildNode( ii );
+                  String L = NexUtils.getStringAttributeValue( nn
+                           .getChildNode( "data" ) , "label" );
+                  if( L != null && L.equals( label ) ) {
+                     int[] Res = GetMinMaxSetGroupDetectorIDs( mm ,
+                              InstrumentNode );
+                     DatInf.startGroupID = update( DatInf.startGroupID ,
+                              Res[ 0 ] , true );
+                     DatInf.endGroupID = update( DatInf.endGroupID , Res[ 1 ] ,
+                              false );
+                     if( DatInf.ndetectors > 0 && Res[ 2 ] > 0 )
+                        DatInf.ndetectors += Math.max( 0 , Res[ 2 ] );
+                     else
+                        DatInf.ndetectors = 1;
+                     DatInf.startDetectorID = update( DatInf.startDetectorID ,
+                              Res[ 3 ] , true );
+                     DatInf.endDetectorID = update( DatInf.endDetectorID ,
+                              Res[ 4 ] , false );
+                  }
+               }
+            }// end search for all other nodes with same label
+
+         }
+      } // Setting up defined id's
+
+   }
+
+  /**
+   *  Set defaults omitting those id's already set
+   * @param nn    An NxEntry node
+   * @param EntryToDSs  The Vector of dataSet information
+   * TODO Id's should be different no just for one NXentry but for all in dataset
+   *     omit nn
+   */
+   private void SetDefaultGroupDetIDs( NxNode nn , Vector EntryToDSs ) {
+
+      //Record the set ones
+      int[] Res = new int[ 2 ];
+      Vector SetGroupIDRanges = new Vector();
+      Vector SetDetectorIDRanges = new Vector();
+      for( int im = 0 ; im < EntryToDSs.size() ; im++ ) {
+         DataSetInfo DatInf = (DataSetInfo) EntryToDSs.elementAt( im );
+         if( DatInf.NxentryNode == nn ) {
+            if( DatInf.startGroupID >= 0 ) {
+               Res[ 0 ] = DatInf.startGroupID;
+               Res[ 1 ] = Math.max( DatInf.endGroupID , Res[ 0 ] + DatInf.nelts
+                        - 1 );
+               DatInf.endGroupID = Res[ 1 ];
+               Insert( SetGroupIDRanges , Res );
+               Res = new int[ 2 ];
+            }
+            if( DatInf.startDetectorID >= 0 ) {
+               Res[ 0 ] = DatInf.startDetectorID;
+               Res[ 1 ] = Math.max( DatInf.endDetectorID , Res[ 0 ]
+                        + DatInf.ndetectors - 1 );
+               Insert( SetDetectorIDRanges , Res );
+               DatInf.endDetectorID = Res[ 1 ];
+            }
+         }
+      }
+
+      // Now set all the others as defaults
+      int startGroupID = 1;
+      int GroupElt = 0;
+      int DetectorElt = 0;
+      int startDetectorID = 1;
+      for( int im = 0 ; im < EntryToDSs.size() ; im++ ) {
+         DataSetInfo DatInf = (DataSetInfo) EntryToDSs.elementAt( im );
+         if( DatInf.NxentryNode == nn ) {
+
+            if( DatInf.startGroupID < 0 )
+               if( GroupElt >= SetGroupIDRanges.size()
+                        || startGroupID + DatInf.nelts - 1 < ( (int[]) SetGroupIDRanges
+                                 .elementAt( GroupElt ) )[ 0 ] ) {
+                  DatInf.startGroupID = startGroupID;
+                  DatInf.endGroupID = startGroupID + DatInf.nelts - 1;
+                  startGroupID = DatInf.endGroupID + 1;
+               }
+               else {
+                  while( GroupElt < SetGroupIDRanges.size()
+                           && startGroupID + DatInf.nelts - 1 >= ( (int[]) SetGroupIDRanges
+                                    .elementAt( GroupElt ) )[ 0 ] )
+                     startGroupID = ( (int[]) SetGroupIDRanges
+                              .elementAt( GroupElt++ ) )[ 1 ] + 1;
+
+                  DatInf.startGroupID = startGroupID;
+                  DatInf.endGroupID = startGroupID + DatInf.nelts - 1;
+                  startGroupID = DatInf.endGroupID + 1;
+
+               }
+            if( DatInf.startDetectorID < 0 )
+               if( DetectorElt >= SetDetectorIDRanges.size()
+                        || startDetectorID + DatInf.ndetectors - 1 < ( (int[]) SetDetectorIDRanges
+                                 .elementAt( DetectorElt ) )[ 0 ] ) {
+                  DatInf.startDetectorID = startDetectorID;
+                  DatInf.endDetectorID = startDetectorID
+                           + Math.max( 1 , DatInf.ndetectors ) - 1;
+                  startDetectorID = DatInf.endDetectorID + 1;
+               }
+               else {
+                  while( DetectorElt < SetDetectorIDRanges.size()
+                           && startDetectorID + DatInf.ndetectors - 1 >= ( (int[]) SetDetectorIDRanges
+                                    .elementAt( DetectorElt ) )[ 0 ] )
+                     startDetectorID = ( (int[]) SetDetectorIDRanges
+                              .elementAt( DetectorElt++ ) )[ 1 ] + 1;
+
+                  DatInf.startDetectorID = startDetectorID;
+                  DatInf.endDetectorID = startDetectorID
+                           + Math.max( 1 , DatInf.ndetectors ) - 1;
+                  startDetectorID = DatInf.endDetectorID + 1;
+
+
+               }
+         }
+      }
+
+   }
+
+  
+  
+  
   /**
    * Returns any errormessage or "" if none
    */
