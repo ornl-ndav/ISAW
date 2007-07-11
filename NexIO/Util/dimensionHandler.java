@@ -5,29 +5,65 @@ package NexIO.Util;
 
 
 /**
+ * 
  * @author Ruth
  *
  */
 public class dimensionHandler {
 
    /**
-    * 
+    *   Handles multiDimensioned arrays where entries are not in the
+    *   correct sequence for automatic incrementing.  Allows for 
+    *   incrementing on one dimension, and returning the index in
+    *   a linearized multidimensioned array
     */
     
-      int[] dims;//full dimension with -1's
+      int[] dims;//full dimension with -1's for *'s
+      
       int timeIncr,
           rowIncr,
           colIncr;
-      int timeDim, rowDim, colDim, Det1Dim;
+      
+      int timeDim, 
+          rowDim, 
+          colDim, 
+          Det1Dim;
+      
       int index;
-      int[] countTuple, mult;
+      
+      int[] countTuple, 
+            mult;
+      /**
+       * Constructor
+       * 
+       * @param dims   The dimensions for the multidimensioned array
+       * 
+       * @param timeDim  The position in dims and the multidimensional array
+       *                that represents time-the should be the fastest changing
+       *                dimension.  0 is the rightmos position in dims
+       *                
+       * @param colDim  The position in dims and the multidimensional array
+       *                that represents col-the should be the 2nd fastest
+       *                 changing dimension.  0 is the rightmos position in dims
+       *                 
+       * @param rowDim   The position in dims and the multidimensional array
+       *                that represents row-the should be the 3rd fastest
+       *                 changing dimension.  0 is the rightmos position in dims
+       *                 
+       * NOTE: The other dimensions will be automatically assigned 4th, 5th fastest
+       *       etc. 
+       *                 
+       */
       public dimensionHandler( int[] dims, int timeDim, int colDim, int rowDim){
+         
          this.dims = dims;
          int multt = 1;
          timeIncr= rowIncr= colIncr =0;
+         
          this.rowDim = rowDim;
          this.colDim = colDim;
          this.timeDim = timeDim;
+         
          mult = new int[ dims.length];
        
          if( dims != null)
@@ -50,13 +86,29 @@ public class dimensionHandler {
            Det1Dim = Math.max( Math.max( timeDim,rowDim),colDim)+1;
       }
       
+      /**
+       * Returns the index of the current position in the linearlized 
+       *     multidimensional array
+       *     
+       * @return the index of the current position in the linearlized 
+       *     multidimensional array
+       */
       int getIndex(){
          if( index < 0)
             return 0;
          return index;
       }
       
+      /**
+       * Resets the index to the given tuple, updating the index
+       * 
+       * @param countTuple  The new multidimenaional tuple
+       * 
+       * @throws IllegalArgumentException if countTuple is null or
+       *                           its length is incorrect
+       */
      public void resetIndex( int[] countTuple)throws IllegalArgumentException{
+        
          if( countTuple == null)
             throw new IllegalArgumentException( " Dimension cannot be null int resetIndex ");
          if( countTuple.length != dims.length)
@@ -77,14 +129,26 @@ public class dimensionHandler {
          
       }
       
+     
+     /**
+      * Increments the Time dimension adjusting the current index and tuple to
+      * correspond to the new time.  If the time is at the maxTime, the column
+      * is automatically incremented.
+      */
       public void IncrTime(){
+         
          if( countTuple == null)
             return;
+         
          if( timeDim >=0)
+            
             if( countTuple[dims.length-1-timeDim]+1 <dims[dims.length-1-timeDim]){
+               
                countTuple[dims.length-1-timeDim]++;
                 index +=timeIncr;
+                
             }else {
+               
                index =index -(dims[dims.length-1-timeDim]-1)*timeIncr;
                countTuple[dims.length-1-timeDim]=0;
                IncrCol();
@@ -92,71 +156,128 @@ public class dimensionHandler {
          
       }
       
+      
+      /**
+       * Increments the Row dimension adjusting the current index and tuple to
+       * correspond to the new row.  If the row is at the maxRow, the 1st
+       * detector is automatically incremented.
+       */
       public void IncrRow(){
+         
          if( countTuple == null)
             return;
+         
          if( rowDim >=0)
+            
             if( countTuple[dims.length-1-rowDim]+1 <dims[dims.length-1-rowDim]){
+               
               countTuple[dims.length-1-rowDim]++;
                index +=  rowIncr;
+               
             }else{
+               
                countTuple[dims.length-1-rowDim]=0;
                index = index -(dims[dims.length-1-rowDim]-1)*rowIncr;
-               IncrPlace( Det1Dim);
+               IncrPlace( Det1Dim);               
             }
       }
+  
       
+      /**
+       * Increments the Column dimension adjusting the current index and tuple to
+       * correspond to the new column.  If the column is at the maxCol, the row
+       * is automatically incremented.
+       */
       public void IncrCol(){
+         
          if( countTuple == null)
             return;
+         
          if( colDim >=0)
+            
             if( countTuple[dims.length-1-colDim]+1 <dims[dims.length-1-colDim]){
+               
                countTuple[dims.length-1-colDim]++;
                 index +=  colIncr;
+                
              }else{
+                
                 countTuple[dims.length-1-colDim]=0;
                 index = index -(dims[dims.length-1-colDim]-1)*colIncr;
                 IncrRow();
              }
       }
       
+      
       /**
        * increments a position and carries if the position is too high
+       * 
        * @param position  the position (pos =0 right most) 
        */
       public void IncrPlace( int position){
+         
          int p = dims.length-1-position;
          if( (p < 0) ||(p >= dims.length))
             return;
+         
          if( dims[p] < 0)
             return;
+         
          if( countTuple == null)
             return;
+         
          if( countTuple[p] +1 < dims[p]){
+            
             index += mult[ p ];
             countTuple[p]++;
+            
          }else{
+            
             index -= (dims[p]-1)*mult [ p ];
             countTuple[p]=0;
             IncrPlace( position+1);
+            
          }
          
       }
       
+      
+      /**
+       * Returns the current tuple
+       * @return he current tuple
+       */
       public int[] getCounter(){
          return countTuple;
       }
       
+      
+      /**
+       * returns the original dims which gives the max values for each 
+       * entry in the tuple
+       * 
+       * @return the original dims
+       */
       public int[] getLimits(){
          return dims;
       }
+      
+      
+      /**
+       * Shows the current tuple
+       *
+       */
       public void show(){
          for( int i=0; i< countTuple.length ; i++)
          System.out.print( countTuple[i]+",");
          System.out.println("");
       }
+      
+      
    /**
-    * @param args
+    * 
+    * Test program for this module
+    * 
+    * @param args  Not used
     */
    public static void main( String[] args ) {
 

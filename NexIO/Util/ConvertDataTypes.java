@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.14  2007/07/11 18:23:17  rmikk
+ * Added a lot of documentation
+ *
  * Revision 1.13  2007/06/28 15:25:00  rmikk
  * Eliminated a debug print
  *
@@ -95,7 +98,13 @@ import java.util.regex.*;
 public class ConvertDataTypes{
 
   /**
-   *  returns a float array corresponding to the object O or null if not possible
+   *  returns a float array corresponding to the object O or null if not possible.
+   *  String values are converted if possible.
+   *  
+   *  @param O  the object to be converted or null
+   *  
+   *  @return  the float Array value corresponding to the object or null if
+   *           it cannot be converted.
    */
   public static float[] floatArrayValue( Object O){
      if( O == null)
@@ -142,7 +151,13 @@ public class ConvertDataTypes{
   }
  
   /**
-   *  returns an int array corresponding to the object O or null if not possible
+   *  returns a int array corresponding to the object O or null if not possible.
+   *  String values are converted if possible.
+   *  
+   *  @param O  the object to be converted or null
+   *  
+   *  @return  the int Array value corresponding to the object or null if
+   *           it cannot be converted.
    */
   public static int[]   intArrayValue( Object O) {
      if( O == null)
@@ -194,9 +209,14 @@ public class ConvertDataTypes{
     
    }
 
-   /**
-   *  returns a float corresponding to the object O or Float.NaN if not possible.
-   *  if O is an array, only the first element will be returned
+  /**
+   *  returns a float corresponding to the object O or null if not possible.
+   *  String values are converted if possible.
+   *  
+   *  @param O  the object to be converted or null
+   *  
+   *  @return  the float value corresponding to the object or Float.NaN if
+   *           it cannot be converted.
    */
   public static float  floatValue( Object O){
      float[] Res = floatArrayValue( O);
@@ -211,9 +231,14 @@ public class ConvertDataTypes{
 
   }
 
-   /**
-   *  returns an int corresponding to the object O or Integer.MIN_VALUE if 
-   *  not possible. If O is an array, only the first element will be returned
+  /**
+   *  returns a int corresponding to the object O or null if not possible.
+   *  String values are converted if possible.
+   *  
+   *  @param O  the object to be converted or null
+   *  
+   *  @return  the int value corresponding to the object or Integer.MIN_VALUE
+   *            if it cannot be converted.
    */
   public static int intValue( Object O){
      int[] Res = intArrayValue( O);
@@ -228,6 +253,8 @@ public class ConvertDataTypes{
 
   }
 
+  
+  
   private static char[] cnvertTochar( byte[] L){
      if( L == null)
         return null;
@@ -289,11 +316,19 @@ public class ConvertDataTypes{
   }
 
 
-   /**
-   *  returns a String Array corresponding to L or null if 
-   *  not possible.
+  /**
+   *  Converts a char array containing a concatenation of null terminated 
+   *  strings to a String array 
+   *  
+   *  @param L  the char array or null
+   *  
+   *  @return  an array of Strings corresponding to the null terminated char
+   *           sequences in L
    */
   public static String[] charArraystoStrings( char[] L){
+     
+    if( L == null)
+       return null;
     char[] two0= new char[2];
     two0[0]=0; 
     two0[1] = 0;
@@ -318,9 +353,14 @@ public class ConvertDataTypes{
    return Res;
   }
 
-   /**
-   *  returns a String Array corresponding to the Object O or null if 
-   *  not possible.
+  /**
+   *  returns a String array corresponding to the object O or null if not possible.
+   *  String values are converted if possible.
+   *  
+   *  @param O  the object to be converted or null
+   *  
+   *  @return  the String Array value corresponding to the object or null if
+   *           it cannot be converted.
    */
   public static String[] StringArrayValue( Object O){
      if( O == null)
@@ -354,8 +394,12 @@ public class ConvertDataTypes{
   }
 
   /**
-   *  returns a String corresponding to the Object O or null if 
-   *  not possible.
+   *  returns a String corresponding to the object O or null if not possible.
+   *  
+   *  @param O  the object to be converted or null
+   *  
+   *  @return  the String value corresponding to the object or null if
+   *           it cannot be converted.
    */
   public static String StringValue( Object O){
      if( O == null) 
@@ -375,14 +419,19 @@ public class ConvertDataTypes{
 
   /**
    * Gives Factor to mulitply OldUnits to get NewUnits(ISAW units)
+   * 
    * @param  OldUnits  the units that are non ISAW units
+   * 
    * @param StdUnits  the ISAW units. Must be radians, meters,Kelvin,us,grams,
    *                   Mev,or steradian
+   *                   
    * @return the factor to multiply a quantity in old units to get to the new units
    
    */
   public static float getUnitMultiplier( String OldUnits, String StdUnits){
+     
     String NewUnits = StdUnits;
+    
     if( NewUnits.equals( "radians" ) )
       return AngleConversionFactor( OldUnits.trim() );
     
@@ -408,21 +457,28 @@ public class ConvertDataTypes{
     else return 1.0f;
   }
 
+  
+  
   /**
    *   Adjusts all values in an array to the proper units
+   *   
    *   @param  d   the array to be adjusted
+   *   
    *   @param oldUnits  the units that the array is currently in
-   *   @param StdUnits  the Isaw Standard units{must be radians, meters,Kelvin,
-   *                                                    us,grams,
-   *                   Mev,or steradian}
+   *   
+   *   @param StdUnits  the Isaw Standard units{must be radians, meters,Kelvin,   *                                                    
+   *                   us,grams,Mev,or steradian}
+   *                   
    *   @param mult   should be 1 unless StdUnits are not desired. The conversion
    *                 factor to StdUnits is multiplied by mult
+   *                 
    *   @param add    should be 0 unless StdUnits are not desired. The result after
    *                 multiplying conversion factor by mult has this quantity added to
-   *                 it.
+   *                 it.(For Temperature)
    */
   public static void UnitsAdjust( float[] d,String oldUnits,String StdUnits, 
                  float mult, float add){ //y = mx+b
+     
     if( oldUnits == null )
       return ;
       
@@ -441,16 +497,27 @@ public class ConvertDataTypes{
       d[i] =mult* f * d[i]+add;
       
   } 
+  
 
   /**
-   * Nexus position to ISaw positiom
+   * Converts the Nexus position to ISaw positiom
+   * 
+   * @param distance  the distance from the sample
+   * 
+   * @ phi  The angle from the McStas z axis(bean direction) to the position 
+   *       vector
+   * 
+   * @ theta  the angle the position vector projected to the plane perpedicular
+   *         to the z axis makes with the positive x=axis in this plane
+   *         
+   * @return  the ISAW detector position corresponding to the given position 
    */
   public static DetectorPosition convertToIsaw(float distance,
                                              float phi,
                                              float theta){
                                                
      DetectorPosition dp = new DetectorPosition();
-     float[] f =Types.convertFromNexus(distance, phi, theta);
+     float[] f = Types.convertFromNexus(distance, phi, theta);
      dp.setSphericalCoords( f[0],f[2],f[1]);
      return dp;
   }
@@ -464,123 +531,171 @@ public class ConvertDataTypes{
      return NxNodeUtils.parse( DateString);
   }
   
+  
   private static String Year ="[12][0-9][0-9][0-9]";
   private static String MonthDay ="([0-1][0-9])[ \\-:/\\\\]([0-3][0-9])";
   private static String Time ="([0-5][0-9])[ \\-:]([0-5][0-9])[ \\-:]([0-5][0-9])([.][0-9]*)?";
   private static String Zone = "[+\\-]([0-2][0-9])[:]?([0-5][0-9])";
   private static String pattern = "(("+Year+")[ \\-:/\\\\]("+MonthDay+"))(([ T]"+Time+")("+Zone+")?)?";
   
+  
   private static long parse_neww( String DateString){
+     
      Matcher M = Pattern.compile( pattern).matcher( DateString );
      if( !M.find())
         return -1;
+     
      for( int i=0; i<= M.groupCount(); i++)
         System.out.println( i+"::"+M.group(i));
+     
      return 0;
+     
   }
   /**
    * parses ISO dates only. They can have fractional seconds
+   * 
    * @param DateString  The String representing the Date
+   * 
    * @return  The time in milliseconds (GMT)
    */
-  public static long parse_new( String DateString){
-     if( DateString == null)
-        return -1;
-     DateString = DateString.trim();
-     int year = -1;
-     int month = -1;
-     int day = -1;
-     int hour = 0;
-     int minute=0;
-     int second = 0;
-     float frac_second =0;
-     Pattern P1 = Pattern.compile( "[12][09][0-9][0-9][ :\\-/]");
-     Matcher M =P1.matcher( DateString);
-     if(!M.find())
-        return -1;
-     year = ( new Integer( DateString.substring(0,4))).intValue();
-     DateString = DateString.substring(5);
-     if( DateString.length() < 1)
-        return -1;
-     M =Pattern.compile("[0-1][0-9][ :\\-/]").matcher( DateString);
-     if(!M.find())
-        return -1;
-     month = (new Integer( DateString.substring(0,2))).intValue();
-     DateString = DateString.substring(3);
-     if( DateString.length() < 1)
-        return -1;
-     
+  public static long parse_new( String DateString ) {
 
-     M =Pattern.compile("[0-1][0-9][ :\\-/T]").matcher( DateString);
-     if(!M.find())
-        return -1;
-     day = (new Integer( DateString.substring(0,2))).intValue();
-     DateString = DateString.substring(3);
-     if( DateString.length() >1){
-        M =Pattern.compile("[0-2][0-9][ :\\-/]").matcher( DateString);
-        if(M.find()){
-          hour = (new Integer( DateString.substring(0,2))).intValue();
-          DateString = DateString.substring(3);
-          if( DateString.length() >1){
-             M =Pattern.compile("[0-2][0-9][ :\\-/]").matcher( DateString);
-             if( M.find(  )){
-                minute = (new Integer( DateString.substring(0,2))).intValue();
-                DateString = DateString.substring(3);
-                if( DateString.length() >1){
-                   M =Pattern.compile("[0-2][0-9]").matcher( DateString);
-                   if( M.find(  )){
-                      second = (new Integer( DateString.substring(0,2))).intValue();
-                      DateString = DateString.substring(2);
-                      if( DateString.length() >0){
-                        M=Pattern.compile("(.[0-9]+)?([+-][0-2][0-9][:-]?[0-6][0-9])?").matcher( DateString);
-                        if( M.find()){
-                           try{
-                              String S = M.group(1);
-                              if( S.length() >1){
-                                 int nn = (new Integer( S.substring(1))).intValue();
-                                 frac_second = (float)(nn/Math.pow(10f,S.length()-1)) ;
+      if( DateString == null ) return - 1;
+
+      DateString = DateString.trim();
+      int year = - 1;
+      int month = - 1;
+      int day = - 1;
+      int hour = 0;
+      int minute = 0;
+      int second = 0;
+      float frac_second = 0;
+
+      // ----- Find Year ----------
+      Pattern P1 = Pattern.compile( "[12][09][0-9][0-9][ :\\-/]" );
+      Matcher M = P1.matcher( DateString );
+
+      if( ! M.find() ) return - 1;
+
+      year = ( new Integer( DateString.substring( 0 , 4 ) ) ).intValue();
+
+
+      // ----- Find Month ----------
+      DateString = DateString.substring( 5 );
+      if( DateString.length() < 1 ) return - 1;
+
+      M = Pattern.compile( "[0-1][0-9][ :\\-/]" ).matcher( DateString );
+      if( ! M.find() ) return - 1;
+
+      month = ( new Integer( DateString.substring( 0 , 2 ) ) ).intValue();
+
+
+      // ----- Find Day ----------
+
+      DateString = DateString.substring( 3 );
+      if( DateString.length() < 1 ) return - 1;
+
+
+      M = Pattern.compile( "[0-1][0-9][ :\\-/T]" ).matcher( DateString );
+      if( ! M.find() ) return - 1;
+
+      day = ( new Integer( DateString.substring( 0 , 2 ) ) ).intValue();
+
+
+      // ----- Find Hour, minute, and second ----------
+      DateString = DateString.substring( 3 );
+      if( DateString.length() > 1 ) {
+         M = Pattern.compile( "[0-2][0-9][ :\\-/]" ).matcher( DateString );
+         if( M.find() ) {
+
+            hour = ( new Integer( DateString.substring( 0 , 2 ) ) ).intValue();
+
+            DateString = DateString.substring( 3 );
+            if( DateString.length() > 1 ) {
+
+               M = Pattern.compile( "[0-2][0-9][ :\\-/]" ).matcher( DateString );
+               if( M.find() ) {
+
+                  minute = ( new Integer( DateString.substring( 0 , 2 ) ) )
+                           .intValue();
+
+
+                  DateString = DateString.substring( 3 );
+                  if( DateString.length() > 1 ) {
+
+                     M = Pattern.compile( "[0-2][0-9]" ).matcher( DateString );
+                     if( M.find() ) {
+
+                        second = ( new Integer( DateString.substring( 0 , 2 ) ) )
+                                 .intValue();
+
+
+                        DateString = DateString.substring( 2 );
+                        if( DateString.length() > 0 ) {
+
+                           M = Pattern
+                                    .compile(
+                                             "(.[0-9]+)?([+-][0-2][0-9][:-]?[0-6][0-9])?" )
+                                    .matcher( DateString );
+                           if( M.find() ) {
+
+                              try {
+                                 String S = M.group( 1 );
+                                 if( S.length() > 1 ) {
+
+                                    int nn = ( new Integer( S.substring( 1 ) ) )
+                                             .intValue();
+
+                                    frac_second = (float) ( nn / Math.pow( 10f ,
+                                             S.length() - 1 ) );
+                                 }
+
                               }
-                                 
-                           }catch( Exception s3){
-                              frac_second = 0;
-                           }
-                           try{
-                              String S = M.group(2);
-                              if(S.length() >1){
-                                 int k= S.indexOf(":",1);
-                                 if( k < 0)  k= S.indexOf("-",1);
-                                 if( k >=0) k++;
-                                 else k=3;
-                                 int h = (new Integer( S.substring(1,3))).intValue();
-                                 int m =( new Integer( S.substring(k))).intValue();
-                                 int sgn=1;
-                                 if( S.startsWith("-"))sgn=-1;
-                                 hour +=sgn*h;
-                                 minute +=sgn*m;
-                                 //while( hour <0){hour +=24;
-                                 //while( minute < 0) minute +=60;
+                              catch( Exception s3 ) {
+                                 frac_second = 0;
                               }
-                           }catch( Exception s4){
-                              //No adjustments to get GMT
+                              // adjust for things after the :
+                              try {
+                                 String S = M.group( 2 );
+                                 if( S.length() > 1 ) {
+                                    int k = S.indexOf( ":" , 1 );
+                                    if( k < 0 ) k = S.indexOf( "-" , 1 );
+                                    if( k >= 0 )
+                                       k++ ;
+                                    else
+                                       k = 3;
+                                    int h = ( new Integer( S.substring( 1 , 3 ) ) )
+                                             .intValue();
+                                    int m = ( new Integer( S.substring( k ) ) )
+                                             .intValue();
+                                    int sgn = 1;
+                                    if( S.startsWith( "-" ) ) sgn = - 1;
+                                    hour += sgn * h;
+                                    minute += sgn * m;
+                                    // while( hour <0){hour +=24;
+                                    // while( minute < 0) minute +=60;
+                                 }
+                              }
+                              catch( Exception s4 ) {
+                                 // No adjustments to get GMT
+                              }
                            }
                         }
-                      }
-                }
-             }
+                     }
+                  }
 
+               }
             }
          }
-        }
-     }
-     //System.out.println( year+":"+month+":"+day+":"+hour+":"+minute+":"+second+":"+frac_second);
-     GregorianCalendar GCal = new GregorianCalendar(year, month,day, hour, minute, second);
-     GCal.set( Calendar.MILLISECOND, (int)(frac_second*1000));
-    return GCal.getTimeInMillis();
-     
-     
-     
-     
-  }
+      }
+      
+      GregorianCalendar GCal = new GregorianCalendar( year , month , day ,
+               hour , minute , second );
+      GCal.set( Calendar.MILLISECOND , (int) ( frac_second * 1000 ) );
+      return GCal.getTimeInMillis();
+
+
+   }
 
   /**
    *    DataSet.addAttribute but att can be null. In the case where att
@@ -597,7 +712,7 @@ public class ConvertDataTypes{
     
   /**
    *    DB.addAttribute but att can be null. In the case where att
-   *    or DS is null nothing happens.
+   *    or DB is null nothing happens.
    */
   public static void addAttribute(Data DB, Attribute att){
     
@@ -624,10 +739,21 @@ public class ConvertDataTypes{
 
   /** 
    *  Creates a FloatAttribute if possible, otherwise null is returned
+   *  
+   *  @param AttributeName  The name of the attribute or null
+   *  
+   *  @param  value  the value the attribute will have. It will be
+   *                 converted to a float
+   *                 
+   *  @return A FloatAttribute or null if value is null or cannot be converted
+   *          to a float or if the AttributeName is null.
    */
   public  static FloatAttribute CreateFloatAttribute( String AttributeName, 
                            Object value){
-                             
+       
+     if( AttributeName == null )
+        return null;
+     
      float V = floatValue(value);
      
      if( Float.isNaN( V))
@@ -650,10 +776,21 @@ public class ConvertDataTypes{
 
   /** 
    *  Creates a IntAttribute if possible, otherwise null is returned
+   *  
+   *  @param AttributeName  The name of the attribute or null
+   *  
+   *  @param  value  the value the attribute will have. It will be
+   *                 converted to a int
+   *                 
+   *  @return A IntAttribute or null if value is null or cannot be converted
+   *          to a int or if the AttributeName is null.
    */
   public  static IntAttribute CreateIntAttribute( String AttributeName, 
                   Object value){
-                    
+      
+     if( AttributeName == null)
+        return null;
+     
      int V = intValue(value);
      if( V== Integer.MIN_VALUE)
         return null;
@@ -665,14 +802,25 @@ public class ConvertDataTypes{
   
   /** 
    *  Creates a StringAttribute if possible, otherwise null is returned
+   *  
+   *  @param AttributeName  The name of the attribute or null
+   *  
+   *  @param  value  the value the attribute will have. It will be
+   *                 converted to a String
+   *                 
+   *  @return A StringAttribute or null if value is null or cannot be converted
+   *          to a String or if the AttributeName is null.
    */
   public  static StringAttribute CreateStringAttribute( String AttributeName, 
                            Object value){
-                             
+     
+     if( AttributeName == null)
+        return null;
+     
      String V = StringValue(value);
      if( V == null)
         return null;
-        
+     
      return new StringAttribute( AttributeName, V);
         
   }
@@ -700,6 +848,10 @@ public class ConvertDataTypes{
   /**
    *   Converts the NeXus InstrumentName( Description) to the corresponding
    *   Isaw Instrument Number
+   *   
+   *   @param  The InstrumentType in NeXus files
+   *   
+   *   @return the int corresponding to the InstrumentType in ISAW
    */
   public int getIsawInstrumentNumber( String NeXusAnalysisCode){
     
