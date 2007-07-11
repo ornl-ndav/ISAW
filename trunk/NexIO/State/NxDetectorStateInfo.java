@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2007/07/11 18:16:08  rmikk
+ * Streamlined the code to find start and end GroupID's.
+ *
  * Revision 1.3  2006/07/25 00:05:57  rmikk
  * Added code to update fields in a FixIt xml file in the same directory as
  * the NeXus file
@@ -64,10 +67,10 @@ public class NxDetectorStateInfo extends StateInfo{
    *  solid_angle fields of the NXdetector.  These should all be the same
    */
   public int[] distance_dimension, 
-      azimuthal_dimension, 
-      polar_dimension,
-      solidAngle_dimension,
-      NxGeometry_dimension;
+               azimuthal_dimension, 
+               polar_dimension,
+               solidAngle_dimension,
+               NxGeometry_dimension;
   /**
    *  The name of this NXdetector
    */
@@ -76,7 +79,8 @@ public class NxDetectorStateInfo extends StateInfo{
   /**
    *  starting and ending group ID if specified. Otherwise -1 until set.
    */
-  public int startGroupID, endGroupID;
+  public int startGroupID, 
+             endGroupID;
   
   /**
    *  DetectorID field name. Either id or detector_number will be used
@@ -105,11 +109,13 @@ public class NxDetectorStateInfo extends StateInfo{
      NxGeometryName = null;
      hasLayout = null;
      if( NxDetectorNode == null){
+        
         distance_dimension = azimuthal_dimension 
            = polar_dimension = solidAngle_dimension = null;
         hasIntIDs= false;
         Name = null;
         return;
+        
      }
      
      Name = NxDetectorNode.getNodeName();
@@ -126,7 +132,14 @@ public class NxDetectorStateInfo extends StateInfo{
         DetectorIDFieldName="id";
         
      hasIntIDs = false;
-     if( node != null){
+     int[] ids = ConvertDataTypes.intArrayValue( NexUtils.getSubNodeValue( NxDetectorNode, DetectorIDFieldName));
+     if( ids != null && ids.length >1){                        
+        hasIntIDs = true;
+        startGroupID =ids[0];
+        endGroupID =ids[ids.length-1];
+        
+     }
+     /*if( node != null){
        
         Object O = node.getNodeValue();
         if( O != null)
@@ -139,23 +152,29 @@ public class NxDetectorStateInfo extends StateInfo{
                  
               }
      } 
-
+   */
      distance_dimension = findDataDimension( NxDetectorNode, "distance");
      azimuthal_dimension = findDataDimension( NxDetectorNode, "azimuthal_angle");
      polar_dimension = findDataDimension( NxDetectorNode, "polar_angle");
      solidAngle_dimension = findDataDimension( NxDetectorNode, "solid_angle");
      NxGeometry_dimension =findDataDimension( NxDetectorNode, NxGeometryName);
+     
      NxGeometryNode_geometry = null;
      NxGeometryNode_origin = null;
      for( int i = 0; i< NxDetectorNode.getNChildNodes();i++){
        
         NxNode N = NxDetectorNode.getChildNode(i);
         if( N.getNodeClass().equals("NXgeometry")){
+           
            if(! N.getNodeName().equals( "origin")){
+              
                NxGeometryName = N.getNodeName();
                NxGeometryNode_geometry = N;
+               
            }else{ 
+              
               NxGeometryNode_origin = N;
+              
            }
         }else if( N.getNodeName().equals("layout"))
            hasLayout = NexUtils.getStringFieldValue( N, "layout");
@@ -166,42 +185,63 @@ public class NxDetectorStateInfo extends StateInfo{
 
    }//Constructor
 
-  // Gets the NeXus dimension of the given node
+  // Gets the NeXus dimension of the given node. Looks for dimension inside
+  // NXgeometry nodes.
   private int[] findDataDimension( NxNode NxDetectorNode, String fieldName){
+     
      if( NxDetectorNode == null)
         return null;
+     
      NxNode node = NxDetectorNode.getChildNode( fieldName);
+     
      if( node == null){
+        
         int[] Res = new int[1];
         Res[0]=0;
         return Res;
+        
      }
+     
      if( node.getClass().equals("NXgeometry")){//Get one with most dimensions inside
         int[] Res = null, 
              Res1 = null;
         for( int i=0; i< node.getNChildNodes() ; i++){
+           
            NxNode child = node.getChildNode( i );
            if( child.getClass().equals( "NXtranslate")){
+              
                Res1 =  child.getChildNode("distances").getDimension();
                int[] X= null;
                if( Res1 != null){
                    X = new int[ Res1.length -1];
                    System.arraycopy(Res1,0,X,0,Res1.length-1);
+                   
                }
                if( Res == null)
+                  
                   Res = X;
+               
                else if( X.length > Res.length)
+                  
                   Res = X;
+               
            }else if( child.getClass().equals( "NXorientation")){
+              
               Res1 =  child.getChildNode("value").getDimension();
               int[] X= null;
               if( Res1 != null){
+                 
                   X = new int[ Res1.length -1];
                   System.arraycopy(Res1,0,X,0,Res1.length-1);
+                  
               }
+              
               if( Res == null)
+                 
                  Res = X;
+              
               else if( X.length > Res.length)
+                 
                  Res = X;
               
            }
