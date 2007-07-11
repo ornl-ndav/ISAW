@@ -30,6 +30,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2007/07/11 17:56:13  rmikk
+ * Added white space.
+ * Collapses some lines using Utility routines that can chain with null values
+ * Fixed the specified ID's
+ *
  * Revision 1.10  2007/07/04 18:04:04  rmikk
  * Fixed reading of errors.  Also added a PixelInfo attribute to monitor data
  *    blocks
@@ -104,17 +109,22 @@ public class NxMonitor{
    * @return error status: true if there is an error otherwise false
    */
   public boolean processDS( NxNode node ,  DataSet DS ){
+     
     errormessage = "null inputs in NxMonitor" ;
     if( node == null ) 
       return true;
+    
     if( DS == null )
       return true;
+    
     NxNode ntof , 
-            ndata;
+           ndata;
     ntof = node.getChildNode( "time_of_flight" );
     ndata = node.getChildNode( "data" );
     NxNode errors = node.getChildNode("errors");
+    
     errormessage ="";
+    
     if( ( ntof == null )||( ndata == null ) ){
       errormessage = "Cannot find the Monitor data here in NxMonitor";
       return true;
@@ -124,21 +134,30 @@ public class NxMonitor{
     
     Object X2 = ntof.getNodeValue();
     float histOff = ConvertDataTypes.floatValue( ntof.getAttrValue( "histogram_offset"));
+    
     if( histOff < 0)
        histOff = 0;
+    
     float[] errs = null;
-    if( errors != null) errs = ConvertDataTypes.floatArrayValue( errors.getNodeValue());
+    if( errors != null) 
+       errs = ConvertDataTypes.floatArrayValue( errors.getNodeValue());
+    
     if( X1 == null ) 
       return setErrorMessage( "no values for data node in NxMonitor");
+    
     if( X2 == null ) 
       return setErrorMessage( "no values in time of flight node in NxMonitor");
+    
     NXData_util nd = new NXData_util();
     NxData_Gen nds = new NxData_Gen();
+    
     float yvals[];
     yvals = nd.Arrayfloatconvert( X1 );
+    
     float xvals[];
     xvals = nd.Arrayfloatconvert( X2 );
-    if( histOff > 0){
+    
+    if( histOff > 0){ //Calculate Histogram boundaries
        float[] xvals1 = new float[xvals.length + 1];
        float xleft = xvals[0]-histOff;
        for( int i=0; i <xvals.length; i++ ){
@@ -148,47 +167,55 @@ public class NxMonitor{
        xvals1[ xvals1.length-1] = xleft;
        xvals = xvals1;
     }
+    
     if( ( xvals == null ) ||(  yvals==null ) ) 
       return setErrorMessage( "Cannot convert data to float array in NxMonitor");
     
     Data D;
+    
     if( errs == null)
-      D = Data.getInstance(new VariableXScale(xvals),yvals, monitor_num+1);
+      D = Data.getInstance(new VariableXScale(xvals),yvals, monitor_num);
     else
-      D = Data.getInstance( new VariableXScale(xvals),yvals, errs, monitor_num+1);
+      D = Data.getInstance( new VariableXScale(xvals),yvals, errs, monitor_num);
 
     DS.addData_entry( D );
     int index=DS.getNum_entries()-1;
-    Object val = ntof.getAttrValue( "long_name" );
-    if( val != null ){
-      String S = nds.cnvertoString( val );
-      if( S != null )
-        DS.setX_label( S );
-    }
-    val = ntof.getAttrValue( "units" );
-    if( val != null ){
-      String S = nds.cnvertoString( val );
-      if( S != null )
-        DS.setX_units( S );
-    }  
-    val = ndata.getAttrValue( "long_name" );
-    if( val != null ){
-      String S = nds.cnvertoString( val );
-      if( S != null )
-        DS.setY_label( S );
-    }       
-    val = ndata.getAttrValue( "units" );
-    if( val != null ){
-      String S = nds.cnvertoString( val );
-      if( S != null )
-        DS.setY_units( S );
-    } 
     
-   
+    String Xlabel = NexUtils.getStringAttributeValue( ntof, "long_name");
+    if( Xlabel != null)
+       DS.setX_label( Xlabel );
+    
+
+    String Xunits = NexUtils.getStringAttributeValue( ntof, "units");
+    if( Xunits != null)
+       DS.setX_units( Xunits );
+    
+    String Ylabel = NexUtils.getStringAttributeValue( ndata, "long_name");
+    if( Xlabel != null)
+       DS.setY_label( Xlabel );
+    
+
+    String Yunits = NexUtils.getStringAttributeValue( ndata, "units");
+    if( Xunits != null)
+       DS.setY_units( Xunits );
+    
+    
     
     (new NXData_util()).setOtherAttributes( node  ,DS , index ,index+1) ;
+  
+    //-------- determine non-default GroupID ---------------------
+    int[] ids = ConvertDataTypes.intArrayValue( NexUtils.getSubNodeValue( node, "id"));
     
-    //Create a PixelInfo list for this entry
+    if( ids == null)
+       ids = ConvertDataTypes.intArrayValue( NexUtils.getSubNodeValue( node, "detector_number"));
+    
+    if( ids != null && ids.length > 0)
+       D.setGroup_ID( ids[0]);
+    else
+       D.setGroup_ID( monitor_num);
+    
+    
+    //-------------Create a PixelInfo list for this entry-----------------
     float distance = NexUtils.getFloatFieldValue( node,"distance");
     if( Float.isNaN( distance)){
        return false;
@@ -210,13 +237,16 @@ public class NxMonitor{
     }
     
     if( Float.isNaN(width))
-       width =ConvertDataTypes.floatValue( NexUtils.getFloatFieldValue( node,"width"));
+       width =ConvertDataTypes.floatValue( NexUtils.getFloatFieldValue( node,
+                                                                     "width"));
 
     if( Float.isNaN(height))
-       height =ConvertDataTypes.floatValue( NexUtils.getFloatFieldValue( node,"height"));
+       height =ConvertDataTypes.floatValue( NexUtils.getFloatFieldValue( node,
+                                                                    "height"));
 
     if( Float.isNaN(depth))
-       depth =ConvertDataTypes.floatValue( NexUtils.getFloatFieldValue( node,"depth"));
+       depth =ConvertDataTypes.floatValue( NexUtils.getFloatFieldValue( node,
+                                                                     "depth"));
     
     if( Float.isNaN( height))
        height = .05f;
@@ -227,10 +257,23 @@ public class NxMonitor{
     Vector3D center = new Vector3D( distance,0,0);
     Vector3D xdir = new Vector3D(1,0,0);
     Vector3D ydir = new Vector3D( 0,1,0);
-    UniformGrid grid = new UniformGrid( index+1,"m",center, xdir ,ydir, width, height, depth,1,1);
-    int id = index+1;
-    DetectorPixelInfo detPix = new DetectorPixelInfo( id, (short)1,(short)1, grid);
-    D.setAttribute( new PixelInfoListAttribute( Attribute.PIXEL_INFO_LIST,new PixelInfoList( detPix)));
+
+    int id = ConvertDataTypes.intValue( NexUtils.getFloatFieldValue( node,
+                                                           "detector_number"));
+    if( id < 0)
+       id = D.getGroup_ID();
+       
+    if( id < 0)
+       id = index+1;
+    UniformGrid grid = new UniformGrid(id,"m",center, xdir ,ydir, width, 
+                                                          height, depth,1,1);
+    
+    DetectorPixelInfo detPix = new DetectorPixelInfo( id, (short)1,(short)1, 
+                                                                     grid);
+    
+    D.setAttribute( new PixelInfoListAttribute( Attribute.PIXEL_INFO_LIST,
+                                                 new PixelInfoList( detPix)));
+    
     return false;
   }
   
