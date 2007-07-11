@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2007/07/11 17:54:12  rmikk
+ * Added spacing and collapses some lines using some Utility routines that pass
+ *   through nulls
+ *
  * Revision 1.9  2007/06/28 15:27:11  rmikk
  * Did not trip an error messae if there is no node and no fixit file.
  *
@@ -75,73 +79,41 @@ public class NxBeam{
   }
   
   public boolean processDS(  NxNode node,  DataSet DS, NxfileStateInfo State ){
+     
     errormessage = "Improper inputs to NxBeam";
+    
     NxEntryStateInfo EntryInfo = NexUtils.getEntryStateInfo( State );
+    
     Node xmlDoc =null;
     if( State != null)
        xmlDoc = State.xmlDoc;
+    
     if( (node == null) && (xmlDoc == null)){//no input via nexus file or fixit file
        errormessage ="";
       return false;
     }
+    
     if( DS == null)
       return true;
+    
     errormessage ="";
+    
     float energy_in= Float.NaN,
           energy_out= Float.NaN,
           distance = Float.NaN;
+    
     if( node != null ) {
          if( ! node.getNodeClass().equals( "NXbeam" ) )
             return true;
          errormessage = "";
-         NxData_Gen ng = new NxData_Gen();
-         NXData_util nu = new NXData_util();
-         NxNode n1 = node.getChildNode( "incident_energy" );
-         if( n1 != null ) {
-            Object O = n1.getNodeValue();
-            float x[];
-            float f;
-            x = NXData_util.Arrayfloatconvert( O );
-            if( x != null )
-               if( x.length > 0 )
-                  energy_in = x[ 0 ];
-               else
-                  energy_in = Float.NaN;
-            else
-               energy_in = Float.NaN;
         
-           
-         }
-
-         // energy out
-         n1 = node.getChildNode( "final_energy" );
-         if( n1 != null ) {
-            Object O = n1.getNodeValue();
-            float x[];
-            float f;
-            x = NXData_util.Arrayfloatconvert( O );
-            if( x != null )
-               if( x.length > 0 )
-                  energy_out = x[ 0 ];
-               else
-                  energy_out = Float.NaN;
-            else
-               energy_out = Float.NaN;
-            if( Float.isNaN( energy_out ) ) {
-               Float F = ng.cnvertoFloat( O );
-               if( F != null )
-                  energy_out = F.floatValue();
-            }
          
-         }
-       
+         energy_in = NexUtils.getFloatFieldValue( node, "incident_energy");
+         energy_out=  NexUtils.getFloatFieldValue( node, "final_energy");
       }
     
     if( xmlDoc != null){
-       Node[] NN =Util.getxmlNXentryNodes( xmlDoc, EntryInfo.Name, State.filename);
-       for( int i=0; i< 3; i++){
-          
-       }
+       //TODO Fix this up . Not used yet
     }
     if( ! Float.isNaN( energy_in ) ) {
        FloatAttribute FA = new FloatAttribute(
