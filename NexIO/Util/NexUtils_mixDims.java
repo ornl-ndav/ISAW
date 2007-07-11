@@ -32,6 +32,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2007/07/11 18:27:10  rmikk
+ * Eliminated some debug printing
+ * Added the Total Count Attribute
+ * Deleted a bunch of unused routines that were copied from NexUtils
+ *
  * Revision 1.2  2007/01/12 14:48:47  dennis
  * Removed unused imports.
  *
@@ -337,11 +342,11 @@ public class NexUtils_mixDims implements INexUtils {
           depth=(float[])(Dat[0]); depthDims =(dimensionHandler)(Dat[1]);
         Dat =getLocationData(States.xmlDoc, NxDetector,  NxDataNode,  States, "height");
           height =(float[])(Dat[0]); heightDims =(dimensionHandler)(Dat[1]);
-        System.out.println("xxxxxwidth-"+gov.anl.ipns.Util.Sys.StringUtil.toString( width));
-        System.out.println("xxxxxdepth-"+gov.anl.ipns.Util.Sys.StringUtil.toString( depth));
-        System.out.println("xxxxxheight-"+gov.anl.ipns.Util.Sys.StringUtil.toString( height));
+          
         int[] counter = new int[ dimensions.length];
+        
         Arrays.fill(counter, 0);
+        
         dimensionHandler detector= new dimensionHandler( dimensions, timeDim, coldim,rowdim);
         dimensionHandler row= new dimensionHandler( dimensions, timeDim, coldim,rowdim);
         dimensionHandler col= new dimensionHandler( dimensions, timeDim, coldim,rowdim);
@@ -356,13 +361,17 @@ public class NexUtils_mixDims implements INexUtils {
         int m = Math.max(Math.max( rowdim , coldim), timeDim)+1;
         int startGridNumIndex = Grid_util.getAllDataGrids( DS ).size();
         for ( int i = 0; i< ndetectors; i++) {
+           
            counter = detector.getCounter();
+           
            setCounter( counter, row, col, crateDims, inputDims, slotDims,solAngDims);
            setCounter( counter, azimuthDims, polarDims, distanceDims, widthDims, heightDims, solAngDims);
+           
            if( x_dirDims != null)
               x_dirDims.resetIndex( counter );
            if( idsDims != null)
                idsDims.resetIndex( counter );
+           
            DetectorPosition center = getCenter( distance,azimuth,polar, distanceDims, 
                     azimuthDims, polarDims);
             
@@ -900,27 +909,8 @@ public class NexUtils_mixDims implements INexUtils {
        
        
     }
-    /**
-     * Determines the multiplier for ipns row(2),col(1),det(3) to get
-     * to the corresponding position in a Nexus array 
-     * @param IPNSCoord   1(col),2(row) or 3(det)
-     * @param NexLength  
-     * @return  the multiplier of the row/col/or det to get to 
-     *                   Nexus position
-     */
-  /*  private int detMult( int IPNSCoord, int NexLength){
-       
-       if( IPNSCoord < 1)
-          return 0;
-       else if( IPNSCoord >= dimensions.length -1)
-          return 0;
-       if( timeDim < IPNS2NexDim[IPNSCoord])
-          return mult[IPNSCoord];
-       else
-          return mult[IPNSCoord]/dimensions[timeDim];
-       
-    }
-    */
+  
+    
     //Euler rotations , version null's orientation
     private Vector3D Rotate( float[] orientations , int grid , float x , float y ,
         float z ) {
@@ -1124,7 +1114,7 @@ public class NexUtils_mixDims implements INexUtils {
         float[] xvals = ConvertDataTypes.floatArrayValue( tofNode.
                                                      getNodeValue() );
         
-        xvals = MakeHistogram( xvals , tofNode );
+        xvals = NexUtils.MakeHistogram( xvals , tofNode );
         String Xunits = ConvertDataTypes.StringValue(
                 tofNode.getAttrValue( "units" ) ); 
 
@@ -1150,13 +1140,7 @@ public class NexUtils_mixDims implements INexUtils {
                 return setErrorMessage( "Improper length for axis 1" );
     
         XScale xsc = new VariableXScale( xvals );
-        /*int[] theirIndices = new int[ dimensions.length ];
-        Arrays.fill( theirIndices, 0);
-        int multTime= mult[0]; int  m=1;
-        int multCol=0, multRow = 0;
-        if( coldim >=0) multCol = mult[m++];
-        if( rowdim >=0) multRow = mult[m++];
-        */
+        
          int m = 0;
          for( int i=0; i< 3; i++)
             if( timeDim == m) m++;
@@ -1177,24 +1161,25 @@ public class NexUtils_mixDims implements INexUtils {
         {
             int id = startGroupID ;  //will have NXdetector change groupID
             
-               
+            float TotCount =0;  
             float[] yvals = new float[ ntimes ];
             float[] errs = new float[ntimes];
             for( int j=0;  j< ntimes; j++){
                int indx =hand.getIndex();
               
                yvals[j] = data[indx];
+               TotCount += yvals[j];
                if( evals != null)
                   errs[j]  = evals[indx];
                hand.IncrTime();
             }
                 
             HistogramTable DB = new HistogramTable( xsc , yvals , errs , id );
+            DB.setAttribute( new FloatAttribute( Attribute.TOTAL_COUNT, TotCount));
             DS.addData_entry( DB );
             
             startGroupID++;
         }  
-     
         return false;
     }
 
@@ -1209,18 +1194,7 @@ public class NexUtils_mixDims implements INexUtils {
         return IDS[ offset ];
     }
 
-    //public void setUpNX...Attributes, where ...=Beam,Sample, etc.
-
-
-    public static Object getSubNodeValue( NxNode parentNode , String subNodeName ){
-      
-        NxNode subNode = parentNode.getChildNode( subNodeName );
-
-        if ( subNode == null )
-            return null;
-        return subNode.getNodeValue();
-    }
-
+   
     private boolean setErrorMessage( String err ) {
         errormessage = err;
         return true;
@@ -1233,201 +1207,7 @@ public class NexUtils_mixDims implements INexUtils {
         return errormessage;
     }
 
-    /**
-     *    returns null if no Attribute Name or cannot convert to Integer
-     */
-    public static Integer getIntAttributeValue( NxNode Node , 
-                                              String AttributeName ){
-                                                
-        if ( Node == null )
-            return null;
-        
-        if ( AttributeName == null )
-            return null;
-        
-        Object Val = Node.getAttrValue( AttributeName );
-        int n = ConvertDataTypes.intValue( Val );
-     
-        if ( n == Integer.MIN_VALUE )
-            return null;
-        
-        return new Integer( n );
-    }
-
-    /**
-     *    returns null if no Attribute Name or cannot convert to Float
-     */
-    public static Float getFloatAttributeValue( NxNode Node , 
-                                                   String AttributeName ) { 
-                                                      
-        if ( Node == null )
-            return null;
-        
-        if ( AttributeName == null )
-            return null;
-        
-        Object Val = Node.getAttrValue( AttributeName );
-     
-        float f = ConvertDataTypes.floatValue( Val );
-
-        if ( Float.isNaN( f ) )
-            return null;
-        
-        return new Float( f );
-
-    }
-
-    /**
-     *    returns null if no Attribute Name or cannot convert to String
-     */
-    public static String getStringAttributeValue( NxNode Node , 
-                                             String AttributeName ) {
-                                               
-        if ( Node == null )
-            return null;
-        
-        if ( AttributeName == null )
-            return null;
-        
-        Object Val = Node.getAttrValue( AttributeName );
-
-        return  ConvertDataTypes.StringValue( Val );
-
-    }    
   
-    /**
-     *    returns null if no Field Name or cannot convert to Integer
-     */
-    public static Integer getIntFieldValue( NxNode Node , String FieldName ) {
-        if ( Node == null )
-            return null;
-        
-        if ( FieldName == null )
-            return null;
-        
-        NxNode Child = Node.getChildNode( FieldName );
-
-        if ( Child == null )
-            return null;
-        
-        int n = ConvertDataTypes.intValue( Child.getNodeValue(  ) );
-
-        if ( n == Integer.MIN_VALUE )
-            return null;
-        
-        return new Integer( n );
-
-    }
-
-    /**
-     *    returns null if no Field Name or cannot convert to Integer
-     */
-    public static int[] getIntArrayFieldValue( NxNode Node , String FieldName ) {
-        if ( Node == null )
-            return null;
-        
-        if ( FieldName == null )
-            return null;
-        
-        NxNode Child = Node.getChildNode( FieldName );
-
-        if ( Child == null )
-            return null;
-        
-        return ConvertDataTypes.intArrayValue( Child.getNodeValue() );
-
-    }
-
-
-
-
-  /**
-   *    returns null if no Attribute Name or cannot convert to an int[]
-   *    
-   */
-  public static int[] getIntArrayAttributeValue( NxNode Node , String AttrName ) {
-      if ( Node == null )
-          return null;
-        
-      if ( AttrName == null )
-          return null;
-        
-     Object Attr = Node.getAttrValue( AttrName );
-
-      if (Attr == null )
-          return null;
-        
-      return ConvertDataTypes.intArrayValue( Attr );
-
-  }
-
-    /**
-     *    returns null if no Field Name or cannot convert to Float
-     */
-    public static Float getFloatFieldValue( NxNode Node , String FieldName ) {
-        if ( Node == null )
-            return null;
-        
-        if ( FieldName == null )
-            return null;
-        
-        NxNode Child = Node.getChildNode( FieldName );
-
-        if ( Child == null )
-            return null;
-        
-        float f = ConvertDataTypes.floatValue( Child.getNodeValue() );
-
-        if ( Float.isNaN( f ) )
-            return null;
-        
-        return new Float( f );
-
-    }
-
-    /**
-     *    returns null if no Field Name or cannot convert to Float
-     */
-    public static float[] getFloatArrayFieldValue( NxNode Node  , 
-                                                    String FieldName ) {
-                                                      
-        if ( Node == null )
-            return null;
-        
-        if ( FieldName == null )
-            return null;
-        
-        NxNode Child = Node.getChildNode( FieldName );
-
-        if ( Child == null )
-            return null;
-        
-        return ConvertDataTypes.floatArrayValue( Child.getNodeValue() );
-    }
-
-
-
-    /**
-     *    returns null if no Field Name or cannot convert to String
-     */
-    public static String getStringFieldValue( NxNode Node  , String FieldName ) {
-    
-        if ( Node == null )
-            return null;
-        
-        if ( FieldName == null )
-            return null;
-        
-        NxNode Child = Node.getChildNode( FieldName );
-
-        if ( Child == null )
-            return null;
-        
-        return ConvertDataTypes.StringValue( Child.getNodeValue() );
-
-    }    
-
-
 
     private void setFloatAttr( Data db , String AttributeName , float[] crate ,
         int TotPos ) {
@@ -1453,43 +1233,7 @@ public class NexUtils_mixDims implements INexUtils {
     
     
 
-    /**
-     *    Makes a histogram from function values. tofNode has an attribute
-     *    histogram_offset that can be used to get the left boundary
-     */
-    public static float[] MakeHistogram( float[] xvals , NxNode tofNode ) {
-    
-        if ( xvals == null )
-            return null;
-        
-        float histOffset = ConvertDataTypes.floatValue(
-                tofNode.getAttrValue( "histogram_offset" ) );
-
-        if ( Float.isNaN( histOffset ) )
-            return xvals;
-        
-        if ( histOffset == 0 )
-            return xvals;
-
-        float[] Res = new float[ xvals.length + 1 ];
      
-        float left = xvals[ 0 ] - histOffset;
-
-        Res[ 0 ] = left;
-        for ( int i = 0; i < xvals.length ; i++ ) {
-       
-            float right = xvals[ i ] - left + xvals[ i ];
-
-            Res[ i + 1 ] = right;
-            left = right;
-        } 
-       
-        return Res;
-    }
- 
- 
- 
-  
     private int getNGroups( int[] dimension, int TimeDim ) {
     
         if ( dimension == null )
@@ -1508,243 +1252,6 @@ public class NexUtils_mixDims implements INexUtils {
 
     }
 
-    /**
-     *   Returns the first NxEntryStateInfo in the fileState link list of state
-     *   information
-     */
-    public static NxEntryStateInfo getEntryStateInfo(
-                                         NxfileStateInfo fileState ) {
-                                           
-        if ( fileState == null )
-            return null;
-     
-        for ( StateInfo inf = fileState; inf != null; inf = inf.getNext() ) {
-            if ( inf instanceof NxEntryStateInfo )
-                return (NxEntryStateInfo) inf;
-        }
+
    
-        return null;
-    }
- 
- 
- 
- 
-    /**
-     *   Returns the first NxDataStateInfo in the fileState link list of state
-     *   information
-     */
-    public static NxDataStateInfo getDataStateInfo( NxfileStateInfo fileState ) {
-      
-        if ( fileState == null )
-            return null;
-     
-        for ( StateInfo inf = fileState ; inf != null; inf = inf.getNext() ) {
-            if ( inf instanceof NxDataStateInfo )
-                return (NxDataStateInfo) inf;
-        }
-   
-        return null;
-    
-    }
-    
-    
-    
-
-    /**
-     *   Returns the first NxDetectorStateInfo in the fileState link list of state
-     *   information
-     */
-    public static NxDetectorStateInfo getDetectorStateInfo(
-                                            NxfileStateInfo fileState ) {
-                                              
-        if ( fileState == null )
-            return null;
-     
-        for ( StateInfo inf = fileState; inf != null; inf = inf.getNext() ) {
-            if (inf instanceof NxDetectorStateInfo)
-                return (NxDetectorStateInfo) inf;
-        }
-   
-        return null;
-    
-    }
- 
-    /**
-     * Gets data out of a NeXus NXgeometry node. So far it only supports shapes
-     * of nxbox, nxcylinder,and nxsphere.  The dataDescr for the shapes are length,
-     * width, height, and diameter.  The dataDescr supported by the field with
-     * the class NXorientation is x_dir and y_dir which give the components in
-     * ISAW coordinates of the direction cosines.
-     * 
-     * @param geomNode   a node corresponding to an NXgeometry node
-     * @param dataDescr  A description of the data to be extracted. Must be
-     *      length, width, height, diameter, x_dir , or y_dir
-     * @return  the corresponding data or null if the data is not present
-     */
-    public static float[] getNxGeometryInfo( NxNode geomNode ,
-                                                   String dataDescr ) {
-   
-        if ( geomNode == null )
-            return null;
-     
-        if ( dataDescr == null )
-            return null;
-     
-        if ( "length;width;height;diameter;".indexOf( dataDescr + ";" ) >= 0 ) {//data in shape
-            int p = NexUtils.getNextChildNode( geomNode , "NXshape" , 0 );
-
-            if ( p < 0 )
-                return null;
-        
-            NxNode node = geomNode.getChildNode( p );
-            String  type = NexUtils.getStringFieldValue( node , "shape" );
-
-            if ( type == null )
-                return null;
-       
-            int nparms = -1, 
-                pos_parm = -1;
-
-            if (type.equals( "nxbox" ) ) {
-       
-                nparms = 3;
-                if (dataDescr.equals( "length" ) )
-                    pos_parm = 0;
-                else if (dataDescr.equals( "width" ) )
-                    pos_parm = 1;
-                else if (dataDescr.equals( "height" ) )
-                    pos_parm = 2;
-            } else if (type.equals( "nxcylinder" ) ) {
-       
-                nparms = 2;
-                if (dataDescr.equals( "diameter" ) )
-                    pos_parm = 0;
-                else if (dataDescr.equals ("height" ) )
-                    pos_parm = 1;
-       
-            } else if (type.equals( "nxsphere" ) ) {
-       
-                nparms = 1;
-                if (dataDescr.equals( "diameter" ))
-                    pos_parm = 0;
-            }
-     
-            if (nparms < 0 )
-                return null;
-       
-            if (pos_parm < 0 )
-                return null;
-       
-            float[] dat = NexUtils.getFloatArrayFieldValue( node , "size" );
-
-            if (dat == null)
-                return null;
-        
-            float[] res = new float[ dat.length / nparms ];
-
-            for (int  i = 0; i < res.length; i++ )
-                res[ i ] = dat[ nparms*i + pos_parm ];
-       
-            return res;
-            
-        } else if ( "x_dir;y_dir;".indexOf( dataDescr + ";" ) >= 0 ) {
-                                                    //info in NXorientation 
-            int p = NexUtils.getNextChildNode(geomNode , "NXorientation" , 0);
-
-            if (p < 0)
-                return null;
-       
-            float[] orient = NexUtils.getFloatArrayFieldValue(geomNode.
-                                 getChildNode(p) , "value" );
-    
-            if (orient == null)
-                return null;
-        
-            float res[] = new float[ orient.length / 2 ];
-
-            p = -1;
-            if (dataDescr.equals( "x_dir" ))
-                p = 0;
-            else if (dataDescr.equals( "y_dir" ))
-                p = 3;
-            if (p < 0 )
-                return null;
-       
-            int j = 0;
-
-            for (int i = 0; i < orient.length; i += 6 ) {
-       
-                if (p == 0) {
-          
-                    res[ j + 0 ] = orient[ i ];
-                    res[ j + 1 ] = orient[ i + 1 ];
-                    res[ j + 2 ] = orient[ i + 2 ];
-          
-                } else {
-                    res[ j ] = orient[ i + 3 ];
-                    res[ j + 1 ] = orient[ i + 4 ];
-                    res[ j + 2 ] = orient[ i + 5 ];
-                }
-                j += 3;
-            }
-     
-            return res;  
-        }
-   
-        return null;
-    }
- 
-    /**
-     * Returns the index of the next child node with index more than or equal
-     * to startIndex that has the given class name.
-     * @param node   The Nexus Node
-     * @param className  The className that is being sought
-     * @param startIndex  The index in the fields of node to start with
-     * @return  the index of the next node with the given class name or -1 if 
-     *           none
-     */
-    public static int getNextChildNode( NxNode node , String className , 
-        int startIndex ) {
-        if ( node == null )
-            return -1;
-     
-        if ( className == null )
-            return -1;
-   
-        for ( int i = startIndex; i < node.getNChildNodes(); i++ )
-            if ( node.getChildNode(i).getNodeClass().equals( className ))
-                return i;
-         
-        return -1;
-    }
-    
-   /**
-    *  The dimension of NXdata blocks are sometimes reversed by Fortran
-    *  programmers 
-    * @param dim  The array of the dimensions as given by NeXus
-    * @param leadLength  The length of the fastest changing dimension
-    * NOTE if leadLength or leadLength-1 does not match the fist
-    * or last entry of dim( it should match the last), nothing is changed
-    */
-    public static void disFortranDimension( int[] dim, int leadLength){
-        return;/*//Was not the real problem
-        if( dim == null)
-           return;
-        if(leadLength < 0)
-           return;
-         if( dim[dim.length-1]==leadLength)
-            return;
-
-         if( dim[dim.length-1]==leadLength-1)
-           return;
-           
-         if( (dim[0]!=leadLength)&&(dim[0]!=leadLength-1))
-            return;
-         for( int i=0; i< dim.length/2; i++){
-           int x = dim[i];
-           dim[i]=dim[dim.length-1-i];
-           dim[dim.length-1-i]=x;
-         }
-        */    
-    }
-}
+  }
