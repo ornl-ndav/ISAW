@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.15  2007/07/11 17:52:37  rmikk
+ * Added documentation an more white space
+ *
  * Revision 1.14  2005/01/10 16:40:28  rmikk
  * Eliminated commented out code
  *
@@ -159,10 +162,11 @@ public class Inst_Type{
    * Link Name or null of the data
    *
    * @param num axis number num
-   * @param kk Each axisWrite handler has a different kk, So returned
-   * links have diff names
+   * 
+   * @param kk Each axisWrite handler has a different kk, So returned   * 
+   *              links have diff names
    *
-   * @return null or the link name Will expand to 3 axis and different
+   * @return null or the link name.  Will expand to 3 axis and different
    * linkages Data Sets from begin to end index have all the same time
    * field type
    */
@@ -212,16 +216,21 @@ public class Inst_Type{
       
       nphi.setNodeValue( phi, Types.Float, 
                          makeRankArray( phi.length, -1, -1, -1, -1 ) );
+      
       nphi.addAttribute( "units", ( "radians" + ( char )0 ).getBytes(),
                          Types.Char, makeRankArray( 8, -1, -1, -1, -1 ) );
+      
       nphi.addAttribute( "axis", makeRankArray( 2, -1, -1, -1, -1 ),
                          Types.Int, makeRankArray( num, -1, -1, -1, -1 ) );
+      
       nphi.addAttribute( "long_name",("Scattering Angle"+(char)0).getBytes(),
                          Types.Char,makeRankArray( 18, -1, -1, -1, -1 ) );
+      
       nphi.setLinkHandle( ( "axis" + num ) + kk );
       byte[] nodename =(nxdetector.getNodeName()+(char)0).getBytes();
       nphi.addAttribute( "link", nodename, Types.Char,
                      makeRankArray( nodename.length,-1,-1,-1,-1));
+      
       return( "axis" + num ) + kk;
       
     }
@@ -237,12 +246,16 @@ public class Inst_Type{
       
       ndId.setNodeValue( id, Types.Int, 
                          makeRankArray( id.length, -1, -1, -1, -1 ) );
+      
       ndId.addAttribute( "axis", makeRankArray( 2, -1, -1, -1, -1 ), 
                          Types.Int, makeRankArray( num, -1, -1, -1, -1 ) );
+      
       ndId.setLinkHandle( ( "axis" + num ) + kk );
       byte[] nodename =(nxdetector.getNodeName()+(char)0).getBytes();
+      
       ndId.addAttribute( "link", nodename, Types.Char,
                      makeRankArray( nodename.length,-1,-1,-1,-1));
+      
       return( "axis" + num ) + kk;
     }
     //add more axis that can be linked here
@@ -295,13 +308,17 @@ public class Inst_Type{
       
       nphi.setNodeValue( phi, Types.Float, 
                          makeRankArray( phi.length, -1, -1, -1, -1 ) );
+      
       nphi.addAttribute( "units", ( "radians" + ( char )0 ).getBytes(), 
                          Types.Char, makeRankArray( 8, -1, -1, -1, -1 ) );
+      
       nphi.addAttribute( "axis", makeRankArray( 2, -1, -1, -1, -1 ),
                          Types.Int, makeRankArray( 1, -1, -1, -1, -1 ) );
+      
       nphi.addAttribute( "long_name", 
                          ( "Scattering Angle" + ( char )0 ).getBytes(),
                          Types.Char, makeRankArray( 18, -1, -1, -1, -1 ) );
+      
       nphi.setLinkHandle( "axis2" + kk );
       nphi.setLinkHandle( "axis2" + kk );
       return "axis2" + kk;
@@ -326,8 +343,10 @@ public class Inst_Type{
       
       ndId.setNodeValue( id, Types.Float,
                          makeRankArray( id.length, -1, -1, -1, -1 ) );
+      
       ndId.addAttribute( "axis", makeRankArray( 2, -1, -1, -1, -1 ),
                          Types.Int, makeRankArray( 1, -1, -1, -1, -1 ) );
+      
       ndId.setLinkHandle( "axis2" + kk );
       return "axis2" + kk;
 
@@ -343,6 +362,7 @@ public class Inst_Type{
    */
   public static NxWriteNode makeXvalnode( DataSet DS, int beginIndex,
                                           int endIndex,NxWriteNode nxdetector){
+     
     Data D = DS.getData_entry( beginIndex );
     
     float[] xvals = D.getX_scale().getXs();
@@ -371,6 +391,7 @@ public class Inst_Type{
     ntof.addAttribute( "long_name", ( DS.getX_label() + (char)0 ).getBytes(),
                        Types.Char,
                        makeRankArray(DS.getX_label().length()+1,-1,-1,-1,-1));
+    
     float[] offs = new float[1];
     
     offs[0] = offset;
@@ -382,7 +403,9 @@ public class Inst_Type{
 
 
   /**
-   * first negative in list is end --> [n1,n2,n3..]
+   *  Utility to create int[] with up to 5 positive inteers. The first negative
+   *  integer in the parameter list determines the size of the int[]
+   *  
    */
   public static int[] makeRankArray( int n1, int n2, int n3, int n4, int n5 ){
     int n = 0;
@@ -422,12 +445,14 @@ public class Inst_Type{
    * writing and suggestion for reading
    *
    * @param instrType the instrument type
+   * 
    * @param GroupIndex The position of the Monitor in the Monitor data
    * set
    *
    * @return The string representation of the monitor name
    */
   public String getMonitorName( int instrType, int GroupIndex ){
+     
     if( instrType == getIsawInstrNum( "TOFNPD" ) ){
       if( GroupIndex == 0 )
         return "upstream";
