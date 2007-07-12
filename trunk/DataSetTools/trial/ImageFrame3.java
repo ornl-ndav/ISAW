@@ -32,17 +32,25 @@ public class ImageFrame3 extends JFrame
   */
   public ImageFrame3( IVirtualArray2D iva )
   {
+    this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
     data = new VirtualArray2D(1,1);
     menu_bar = new JMenuBar();
     setJMenuBar(menu_bar);   
     menu_bar.add(new JMenu("File")); 
     menu_bar.add(new JMenu("Options"));
     
-    setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+    //setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
     setBounds(0,0,700,800);
     
     setData(iva);
     setVisible(true);
+  }
+  
+  public void dispose()
+  {
+    super.dispose();
+    if( ivc != null)
+      ivc.closeWindows();
   }
 
  /**
