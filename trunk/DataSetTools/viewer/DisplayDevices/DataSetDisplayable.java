@@ -31,6 +31,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2007/07/12 22:14:44  dennis
+ * The getJComponent(with_controls) method now uses the with_controls
+ * parameter to determine whether the full root pane with controls
+ * is returned, or if the DataSetViewer getDisplayComponent() method
+ * is used to just the the display component without controls.
+ *
  * Revision 1.1  2007/07/12 19:28:03  dennis
  * Initial version of DataSetDisplayable.
  * Does not yet implement attribute setting, and does not
@@ -85,8 +91,17 @@ public class DataSetDisplayable extends Displayable
   */
   public JComponent getJComponent( boolean with_controls )
   {
-    JPanel panel = (JPanel)viewManager.getContentPane(); 
-    return panel;
+    JComponent component = null;
+
+    if ( with_controls )
+      component = (JComponent)viewManager.getComponent(0); 
+    else
+    {
+      DataSetViewer viewer = viewManager.getViewer();
+      component = viewer.getDisplayComponent(); 
+    }
+
+    return component;
   }
 
 
@@ -120,20 +135,39 @@ public class DataSetDisplayable extends Displayable
   }
 
 
+ /**
+  *  Main program that contains a crude test of the functionality
+  *  of this class.
+  */
   public static void main( String args[] )
   {
     String directory = "/home/dennis/WORK/ISAW/SampleRuns";
     String file_name = directory + "/GPPD12358.RUN";
+//  String file_name = directory + "/SCD06496.RUN";
     RunfileRetriever rr = new RunfileRetriever( file_name );
     DataSet ds = rr.getDataSet(1);
 
     ds.setSelectFlag(  5, true );
     ds.setSelectFlag( 10, true );
     ds.setSelectFlag( 15, true );
-//  Displayable disp = new DataSetDisplayable(ds, "Image View");
-//  Displayable disp = new DataSetDisplayable(ds, "Selected Graph View");
-    Displayable disp = new DataSetDisplayable(ds, "Difference Graph View");
+
+    Displayable disp = new DataSetDisplayable(ds, "Image View");
 //  Displayable disp = new DataSetDisplayable(ds, "3D View");
+//***** Displayable disp = new DataSetDisplayable(ds, "Contour View");
+//  Displayable disp = new DataSetDisplayable(ds, "HKL Slice View");
+//  Displayable disp = new DataSetDisplayable(ds, "Scrolled Graph View");
+//  Displayable disp = new DataSetDisplayable(ds, "Selected Graph View");
+//  Displayable disp = new DataSetDisplayable(ds, "Difference Graph View");
+//  Displayable disp = new DataSetDisplayable(ds, "GRX_Y");
+//  Displayable disp = new DataSetDisplayable(ds, "Parallel y(x)");
+//  Displayable disp = new DataSetDisplayable(ds, "Counts(x,y)");
+//  Displayable disp = new DataSetDisplayable(ds, "2D Viewer");
+//  Displayable disp = new DataSetDisplayable(ds, "Slice Viewer");
+//  Displayable disp = new DataSetDisplayable(ds, "Instrument Table");
+//*****  Displayable disp = new DataSetDisplayable(ds, "Contour:Qy,Qz vs Qx");
+//*****  Displayable disp = new DataSetDisplayable(ds, "Contour:Qx,Qy vs Qz");
+//*****  Displayable disp = new DataSetDisplayable(ds, "Contour:Qxyz slices");
+//  Displayable disp = new DataSetDisplayable(ds, "Table Generator");
     
     GraphicsDevice gd = new ScreenDevice();
     gd.setRegion( 400, 500, 600, 400 );
