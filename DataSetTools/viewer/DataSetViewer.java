@@ -30,6 +30,13 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.16  2007/07/12 22:05:14  dennis
+ *  Added method getDisplayComponent() that should return the
+ *  DataSetViewer's display component only, without any controls.
+ *  The implementation in this base class just returns the full
+ *  viewer.  Derived classes MUST override this and return only
+ *  the appropriate sub component that has the display.
+ *
  *  Revision 1.15  2004/09/30 23:36:46  millermi
  *  - Now implements IPreserveState, thus making use of ObjectState.
  *  - getObjectState() calls the getState() method, so no loss of
@@ -254,5 +261,19 @@ public abstract class DataSetViewer extends    JPanel
       return null;
     } 
 
+
+    /**
+     *  Get the JComponent that contains the displayed data, without
+     *  any associated controls or auxillary displays.
+     *  NOTE: Derived classes should overide this method, to obtain
+     *        the appropriate display component.  The base class 
+     *        implementation just returns the full viewer object.
+     *
+     *  @return a JComponent containing the display.
+     */
+    public JComponent getDisplayComponent()
+    {
+      return this;
+    }
 
 }
