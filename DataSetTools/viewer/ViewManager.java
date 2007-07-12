@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.87  2007/07/12 22:06:16  dennis
+ *  Added method getViewer() that returns the DataSetViewer
+ *  used by this ViewManager.
+ *
  *  Revision 1.86  2007/07/04 18:57:33  dennis
  *  Removed extra call to getResult() when using the X-Axis
  *  conversion operator.
@@ -99,7 +103,8 @@
  *  viewer
  *
  *  Revision 1.71  2006/03/13 20:24:11  rmikk
- *  Now implements IPreserveState so it can be used with the ObjectState operators
+ *  Now implements IPreserveState so it can be used with the ObjectState 
+ *  operators
  *
  *  Revision 1.70  2006/01/05 17:26:46  rmikk
  *  Eliminated a debug print
@@ -527,6 +532,19 @@ public class ViewManager extends    JFrame
    public DataSet getDataSet()
    {
      return dataSet;
+   }
+
+
+   /**
+    *  Get a reference to the DataSetViewer that is currently used by this 
+    *  ViewManager.
+    *
+    *  @return a reference to the DataSetViewer that is showing the DataSet
+    *          in this ViewManager.
+    */
+   public DataSetViewer getViewer()
+   {
+     return viewer;
    }
 
 
