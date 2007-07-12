@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.14  2007/07/12 19:36:56  rmikk
+ * Updated documentation to indicate that bmp and gif files can also be saved
+ *
  * Revision 1.13  2006/07/10 16:25:59  dennis
  * Change to new Parameter GUIs in gov.anl.ipns.Parameters
  *
@@ -133,7 +136,7 @@ public class SaveImage  extends GenericSave{
   *                   as one of the menu items or submenu items under the View menu option
   *                   in the IsawGUI.Isaw main window
   *   @param filename  the name of the file for saving the image. The extension converted to
-  *                lowercase determines the format of the save.  So far only jpg works
+  *                lowercase determines the format of the save.  So far only jpg,bmp,gif,png  works
   *   @param  width   The width of the picture in pixels. If negative, 500 will be used
   *   @param  height  The height of the picture in pixels.If negative, 500 will be used
   */
@@ -314,7 +317,7 @@ public class SaveImage  extends GenericSave{
     s.append(" Name Value,Name Value,.....,Name Value.  Where the name and values must be part of the ");
     s.append(" ViewState class.  The values are below");
     s.append("@param filename-  the name of the file for saving the image. The extension converted to");
-    s.append(" lowercase determines the format of the save.  So far only jpg works");
+    s.append(" lowercase determines the format of the save.  So far only jpg, png, bmp, gif works");
     s.append("@param  width-  The width of the picture in pixels. If negative, 500 will be used");
     s.append("@param  height-  The height of the picture in pixels.If negative, 500 will be used");
 	s.append("<P><P> Some DataSetViewer States are<table bofder=1>");
