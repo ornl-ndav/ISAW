@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2007/07/13 14:23:03  dennis
+ * Removed separate reference to the DataSet for this Displayable.
+ * The viewer has a reference to the DataSet, so a separate
+ * reference is not needed.
+ *
  * Revision 1.2  2007/07/12 22:14:44  dennis
  * The getJComponent(with_controls) method now uses the with_controls
  * parameter to determine whether the full root pane with controls
@@ -60,7 +65,6 @@ import gov.anl.ipns.DisplayDevices.*;
  */
 public class DataSetDisplayable extends Displayable
 {
-  private DataSet     dataSet;
   private ViewManager viewManager;
 
 
@@ -74,7 +78,6 @@ public class DataSetDisplayable extends Displayable
   public DataSetDisplayable( DataSet ds, String view_type )
   {
     viewManager = new ViewManager( ds, view_type, false );  
-    dataSet     = ds;
   }
 
 
