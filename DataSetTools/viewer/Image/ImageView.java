@@ -30,6 +30,13 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.61  2007/07/13 20:26:28  dennis
+ *  getDisplayComponent() now returns the scrolled pane that
+ *  contains the ImageJPanel2, not the ImageJPanel2 itself.
+ *  This fixes an obscure bug where the panel was not displayed
+ *  in the PreviewDevice.  The same component is part of the
+ *  ImageView and placed in a window by the ImageRenderWriter.
+ *
  *  Revision 1.60  2007/07/13 16:52:46  dennis
  *  Added getDisplayComponent() method to return just the data display
  *  panel without any controls.
@@ -466,7 +473,7 @@ public void setDataSet( DataSet ds )
   */
   public JComponent getDisplayComponent()
   {
-    return image_Jpanel;
+    return image_scroll_pane;
   }
 
 
