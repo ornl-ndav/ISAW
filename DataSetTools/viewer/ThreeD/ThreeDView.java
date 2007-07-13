@@ -30,6 +30,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.40  2007/07/13 15:51:06  dennis
+ * Finished change over to using Rebinner class.  Calculation of
+ * Data min/max is now handled by rebinner.  The rebinner also now
+ * maintains the current XScale(s).
+ *
  * Revision 1.39  2007/07/05 16:20:14  dennis
  * Split some functionality out of MakeColorList() to make new
  * methods setDataScaleFactor() and findMaxAbsDataValue().
@@ -125,6 +130,7 @@ package DataSetTools.viewer.ThreeD;
 
 import DataSetTools.dataset.*;
 import DataSetTools.viewer.*;
+import DataSetTools.viewer.util.*;
 import DataSetTools.components.ui.*;
 import DataSetTools.retriever.*;
 import gov.anl.ipns.MathTools.Geometry.*;
@@ -191,6 +197,7 @@ public class ThreeDView extends DataSetViewer
   private DataSetXConversionsTable conv_table        = null;
   private float                    scale_factor      =    1;
   private float                    max_abs           =    0;
+  private Rebinner                 rebinner;
 
   private final Integer  GROUP_PREFIX    = 0;
   private final Integer  DETECTOR_PREFIX = 100000000;
@@ -275,8 +282,8 @@ public void redraw( String reason )
       int index = ds.getPointedAtIndex();
       if (index != DataSet.INVALID_INDEX && ! Float.isNaN( last_pointed_at_x ))
       {
-        XScale x_scale = getXConversionScale();
-        conv_table.showConversions( last_pointed_at_x, index, x_scale );
+        float y_val = rebinner.getY_valueAtX( index, last_pointed_at_x );
+        conv_table.showConversions( last_pointed_at_x, y_val, index );
       }
 
       if ( !Float.isNaN( ds.getPointedAtX() )   &&
@@ -304,13 +311,16 @@ public void redraw( String reason )
    else if ( reason.equals( XScaleChooserUI.N_STEPS_CHANGED ) ||
              reason.equals( XScaleChooserUI.X_RANGE_CHANGED )   )
    {
-     MakeColorList();
+     initFrameValues();
+     findMaxAbsDataValue();
+     setDataScaleFactor();
      set_colors( frame_control.getFrameValue() );
    }
 
    else                                       // really regenerate everything
    {
-     MakeColorList();
+     initFrameValues();
+     setDataScaleFactor();
      MakeThreeD_Scene();
    }
 }
@@ -535,18 +545,14 @@ private void MakeThreeD_Scene()
  */
 private void set_colors( float x_val )
 {
-  DataSet ds       = getDataSet();
-  int     num_data = ds.getNum_entries();
+  int num_data = getDataSet().getNum_entries();
 
-  int   index;
-  Data  data_block;
-  float y_val;
+  float[] y_vals = rebinner.getY_valuesAtX( x_val );
   float val;
+  int   index;
   for ( int i = 0; i < num_data; i++ )
   {
-    data_block = ds.getData_entry(i);
-    y_val = data_block.getY_value( x_val, IData.SMOOTH_NONE ); 
-    val = y_val * scale_factor;
+    val = y_vals[i] * scale_factor;
     if ( val >= 0 )
       index = (int)( ZERO_COLOR_INDEX + log_scale[(int)val] );
     else
@@ -566,9 +572,9 @@ private void set_colors( float x_val )
 }
 
 
-/* ----------------------------- MakeColorList --------------------------- */
+/* ---------------------------- initFrameValues -------------------------- */
 
-private void MakeColorList()
+private void initFrameValues()
 {
   if ( !validDataSet() )
     return;
@@ -579,7 +585,7 @@ private void MakeColorList()
   if ( num_rows == 0 ) 
     return;
 
-  XScale x_scale = getXConversionScale();
+  XScale x_scale = rebinner.getXScale();
   int    num_x    = x_scale.getNum_x();
   int    num_frames;
 
@@ -591,7 +597,7 @@ private void MakeColorList()
   float x_vals[]     = x_scale.getXs();
   float frame_vals[] = new float[ num_frames ];
 
-  if ( x_vals.length > num_frames )
+  if ( ds.getData_entry(0).isHistogram() )
     for ( int i = 0; i < num_frames; i++ ) 
       frame_vals[i] = ( x_vals[i] + x_vals[i+1] )/ 2 ;   // bin center for hist
   else
@@ -599,9 +605,6 @@ private void MakeColorList()
       frame_vals[i] = x_vals[i];                         // point for function 
  
   frame_control.setFrame_values( frame_vals );
-
-
-  setDataScaleFactor();
 }
 
 
@@ -613,30 +616,10 @@ private void MakeColorList()
 
 private void findMaxAbsDataValue()
 {
-  DataSet ds = getDataSet();
-  int  num_rows = ds.getNum_entries();
-  if ( num_rows == 0 )
-    return;
+  float[] min_max = rebinner.getDataRange();
 
-  float[] y_vals;
-  Data  data_block;
-
-  float max_data = Float.NEGATIVE_INFINITY;
-  float min_data = Float.POSITIVE_INFINITY;
-  float val;
-  for ( int i = 0; i < num_rows; i++ )
-  {
-    data_block = ds.getData_entry(i);
-    y_vals = data_block.getY_values();
-    for ( int j = 0; j < y_vals.length; j++ )
-    {
-      val = y_vals[j];
-      if ( val > max_data )
-        max_data = val;
-      if ( val < min_data )
-        min_data = val;
-    }
-  }
+  float max_data = min_max[0];
+  float min_data = min_max[1];
 
   if ( Math.abs( max_data ) > Math.abs( min_data ) )
     max_abs = Math.abs( max_data );
@@ -1031,6 +1014,8 @@ public static void main(String[] args)
 
 private void init()
 {
+  rebinner = new Rebinner( getDataSet() );
+
   if ( threeD_panel != null )          // get rid of old components first 
   {
     threeD_panel.removeAll();
@@ -1174,8 +1159,8 @@ private class ViewMouseMotionAdapter extends MouseMotionAdapter
          float frame_val = frame_control.getFrameValue();
          if ( !Float.isNaN( frame_val ) )
          {
-           XScale x_scale = getXConversionScale();
-           conv_table.showConversions( frame_val, index, x_scale );
+           float y_val = rebinner.getY_valueAtX( index, frame_val );
+           conv_table.showConversions( frame_val, y_val, index );
          }
        }
      }
@@ -1312,7 +1297,22 @@ private class FrameControlListener implements ActionListener
      public void actionPerformed(ActionEvent e)
      {
        String action  = e.getActionCommand();
-       System.out.println("XScaleListener action: " + action );
+       XScale x_scale = x_scale_ui.getXScale();
+
+       if ( x_scale != null && x_scale.getNum_x() > 0 )
+       {
+         if ( x_scale.getNum_x() == 1 )
+         {
+           float min = x_scale.getStart_x();
+           float max = x_scale.getEnd_x();
+           x_scale = new UniformXScale( min, max, 2 );
+           System.out.println("Special XScale = " + x_scale );
+         }
+         rebinner.setXScale( x_scale );
+       }
+       else
+         rebinner.reset();
+
        getDataSet().notifyIObservers( action );
      }
   }
