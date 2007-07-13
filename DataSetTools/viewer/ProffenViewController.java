@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2007/07/13 18:15:54  dennis
+ * Added getDisplayComponent() method to return just the data display
+ * panel without any controls.
+ *
  * Revision 1.10  2005/06/18 18:26:15  rmikk
  * Omitted using default inputs when actual inputs were available
  * Added extra global variables for more versatility in later changes to the
@@ -360,6 +364,19 @@ public class ProffenViewController extends DataSetViewer implements
         }	
     }
 
+
+   /* ------------------------ getDisplayComponent ------------------------ */
+   /**
+    *  Get the JComponent that contains the image of the data, without
+    *  any associated controls or auxillary displays.
+    */
+    public JComponent getDisplayComponent()
+    {
+      if ( Viewer != null )
+        return Viewer.getDisplayPanel();
+      else
+        return this;
+    }
 
 
     //--------------------IPreserveState Methods------------------
