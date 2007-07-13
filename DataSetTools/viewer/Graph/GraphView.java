@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.27  2007/07/13 16:52:45  dennis
+ *  Added getDisplayComponent() method to return just the data display
+ *  panel without any controls.
+ *
  *  Revision 1.26  2004/03/15 06:10:55  dennis
  *  Removed unused import statements.
  *
@@ -220,6 +224,17 @@ public void setDataSet( DataSet ds )
       x_scale = getDataSet().getXRange();        // use default
 
     return x_scale;
+  }
+
+
+/* ------------------------- getDisplayComponent -------------------------- */
+ /**
+  *  Get the scrolled pane that contains the graph displays, without
+  *  any associated controls or auxillary displays.
+  */
+  public JComponent getDisplayComponent()
+  {
+    return hgraph_scroll_pane;
   }
 
 

@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.60  2007/07/13 16:52:46  dennis
+ *  Added getDisplayComponent() method to return just the data display
+ *  panel without any controls.
+ *
  *  Revision 1.59  2007/04/30 00:20:36  dennis
  *  Adjusted bounds in y-direction to [0,n_rows] to match convention
  *  used in the underlying ImageJPanel2.
@@ -452,6 +456,17 @@ public void setDataSet( DataSet ds )
       x_scale = getDataSet().getXRange();           // use default
 
     return x_scale;
+  }
+
+
+/* ------------------------- getDisplayComponent -------------------------- */
+ /**
+  *  Get the JComponent that contains the image of the data, without
+  *  any associated controls or auxillary displays.
+  */
+  public JComponent getDisplayComponent()
+  {
+    return image_Jpanel;
   }
 
 
@@ -1405,7 +1420,7 @@ private void SyncVImageScrollBar()
   System.out.println("knob_height    = " + knob_height );
   System.out.println("scroll size    = " + image_scroll_pane.getSize() );
 */  
-  vi_bar.setValue( vi_bar_value );
+  //vi_bar.setValue( vi_bar_value );
 
   getState().set_float( ViewerState.V_SCROLL_POSITION, fraction );
 }

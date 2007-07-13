@@ -30,6 +30,10 @@
 * Modified:
 *
 * $Log$
+* Revision 1.3  2007/07/13 16:52:45  dennis
+* Added getDisplayComponent() method to return just the data display
+* panel without any controls.
+*
 * Revision 1.2  2005/05/25 19:37:50  dennis
 * Replaced direct call to .show() method for window,
 * since .show() is deprecated in java 1.5.
@@ -59,6 +63,7 @@ import java.awt.*;
  */
 public class SelectedGraphDataSetViewer extends DataSetViewer{
   
+  FunctionViewComponent viewComp = null;
   
    DataSetViewerMaker viewer;
    /**
@@ -70,51 +75,76 @@ public class SelectedGraphDataSetViewer extends DataSetViewer{
      super( DS, state);
       VirtualArrayList1D varray = DataSetData.convertToVirtualArray(
             DS );
-       FunctionViewComponent viewComp = new FunctionViewComponent(varray);
+       viewComp = new FunctionViewComponent(varray);
        viewer = new DataSetViewerMaker(DS, state, varray, viewComp);
        this.setLayout( new GridLayout(1,1));
        add( viewer);
    }
+
    
    public void setDataSet(DataSet ds){
       viewer.setDataSet(ds);
    }
+
    
    public DataSet getDataSet(){
        return viewer.getDataSet();
    }
+
+
    public boolean validDataSet(){
       return viewer.validDataSet();
    }
+
+
+/* ------------------------- getDisplayComponent -------------------------- */
+ /**
+  *  Get the JComponent that contains the graph of the data, without
+  *  any associated controls or auxillary displays.
+  */
+  public JComponent getDisplayComponent()
+  {
+    if ( viewComp != null )
+      return viewComp.getDisplayPanel();
+    else
+      return this;
+  }
+
+
    public ViewerState getState(){
       return viewer.getState();
    }
+
+
    public void redraw(String reason){
       viewer.redraw(reason);
    }
+
+
    public XScale getXConversionScale(){
        return viewer.getXConversionScale();
    }
+
+
    public javax.swing.JMenuBar getMenuBar(){
       return viewer.getMenuBar();
    }
-      public static void main( String[] args){
-       DataSet[] DSS = null;
-       try{
-         DSS = Command.ScriptUtil.load( args[0]);
-       }catch( Exception ss){
-          System.exit(0);
-       }
-      DataSet DS = DSS[DSS.length-1];
-      JFrame jf = new JFrame( DS.getTitle());
-      SelectedGraphDataSetViewer view = new SelectedGraphDataSetViewer( DS, null);
-      jf.getContentPane().add( view);
-      jf.setJMenuBar( view.getMenuBar());
-      jf.setSize( 500, 400);
-      WindowShower.show(jf);
-     
-      }
-   
-   
+
+
+   public static void main( String[] args){
+    DataSet[] DSS = null;
+    try{
+      DSS = Command.ScriptUtil.load( args[0]);
+    }catch( Exception ss){
+      System.exit(0);
+    }
+    DataSet DS = DSS[DSS.length-1];
+    JFrame jf = new JFrame( DS.getTitle());
+    SelectedGraphDataSetViewer view = new SelectedGraphDataSetViewer( DS, null);
+    jf.getContentPane().add( view);
+    jf.setJMenuBar( view.getMenuBar());
+    jf.setSize( 500, 400);
+    WindowShower.show(jf);
+  }
 
 }

@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.41  2007/07/13 16:52:46  dennis
+ * Added getDisplayComponent() method to return just the data display
+ * panel without any controls.
+ *
  * Revision 1.40  2007/07/13 15:51:06  dennis
  * Finished change over to using Rebinner class.  Calculation of
  * Data min/max is now handled by rebinner.  The rebinner also now
@@ -348,6 +352,17 @@ public void setDataSet( DataSet ds )
   init();
   setVisible( true );
 }
+
+
+/* ------------------------- getDisplayComponent -------------------------- */
+ /**
+  *  Get the JComponent that contains the 3D view of the data, without
+  *  any associated controls or auxillary displays.
+  */
+  public JComponent getDisplayComponent()
+  {
+    return threeD_panel;
+  }
 
 
 /* ------------------------ getXConversionScale -------------------------- */
