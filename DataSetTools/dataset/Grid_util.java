@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2007/07/13 16:24:54  dennis
+ *  Commented out warning message.
+ *
  *  Revision 1.9  2006/02/20 23:07:24  dennis
  *  Added convenience method, getAllDataGrids( ds ), to return a
  *  Hashtable of all detector grids in the DataSet, whether they
@@ -393,8 +396,8 @@ public class Grid_util
 
     if ( !right_detector_found )
     {
-      System.out.println("Didn't find ith area detector, i = " + det_index +
-                         "in Grid_util.getAreaGridByIndex()" );
+//      System.out.println("Didn't find ith area detector, i = " + det_index +
+//                         "in Grid_util.getAreaGridByIndex()" );
       return null;
     }
 
