@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2007/07/13 18:08:58  dennis
+ *  Added getDisplayComponent() method to return just the data display
+ *  panel without any controls.
+ *
  *  Revision 1.6  2007/06/20 16:50:20  rmikk
  *  The color no longer autoscales and the aspect ratio is set in the ImageView
  *
@@ -41,7 +45,7 @@
  *     point in the upper left point in the table
  *
  *  Revision 1.4  2007/06/14 22:02:59  rmikk
- *  Eliminated some unnecessayr layouts
+ *  Eliminated some unnecessary layouts
  *  Add the PanView to the Table view
  *
  *  Revision 1.3  2007/06/13 16:30:49  rmikk
@@ -182,9 +186,6 @@ public class TwoDViewers extends DataSetViewer {
       viewComp.setObjectState( ViewState );
       Ostate.insert("ViewImage", viewComp.getObjectState( true ));
       
-      
-      
-     
 
       try {
          viewComp.dataChanged( (IVirtualArray2D) viewArray.getArray() );
@@ -294,8 +295,6 @@ public class TwoDViewers extends DataSetViewer {
       showtag = false;
       ShowTag.setSelected( false );
       jmenu.add( new JSeparator() );
-
-
    }
 
 
@@ -1448,6 +1447,20 @@ public class TwoDViewers extends DataSetViewer {
       WindowShower.show( jf );
 
       
+   }
+
+
+  /* ------------------------- getDisplayComponent -------------------------- */
+  /**
+   *  Get the JComponent that contains the image of the data, without
+   *  any associated controls or auxillary displays.
+   */
+   public JComponent getDisplayComponent()
+   {
+     if ( viewComp != null )
+       return viewComp.getDisplayPanel();
+     else
+       return this;
    }
 
    
