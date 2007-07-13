@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.33  2007/07/13 16:52:45  dennis
+ *  Added getDisplayComponent() method to return just the data display
+ *  panel without any controls.
+ *
  *  Revision 1.32  2007/06/19 20:47:06  dennis
  *  Removed debug print.
  *
@@ -287,6 +291,19 @@ public class DataSetViewerMaker  extends DataSetViewer
       repaint();
     }
 
+
+   /* ------------------------- getDisplayComponent -------------------------- */
+   /**
+    *  Get the JComponent that contains the graph of the data, without
+    *  any associated controls or auxillary displays.
+    */
+   public JComponent getDisplayComponent()
+   {
+     if ( viewComp != null )
+       return viewComp.getDisplayPanel();
+     else
+       return this;
+   }
 
 
     //-------------------- IPreserveState Methods & Variables-----------------

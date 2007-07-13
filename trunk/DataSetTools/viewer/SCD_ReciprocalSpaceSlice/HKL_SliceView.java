@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.15  2007/07/13 16:52:46  dennis
+ * Added getDisplayComponent() method to return just the data display
+ * panel without any controls.
+ *
  * Revision 1.14  2006/03/14 14:49:11  dennis
  * Removed a redundant line of code.
  *
@@ -356,6 +360,20 @@ public class HKL_SliceView extends DataSetViewer
 
     redraw( NEW_DATA_SET );
     setVisible( true );
+  }
+
+
+  /* ------------------------- getDisplayComponent -------------------------- */
+  /**
+   *  Get the JComponent that contains the image of the data, without
+   *  any associated controls or auxillary displays.
+   */
+  public JComponent getDisplayComponent()
+  {
+    if ( ivc != null )
+      return ivc.getDisplayPanel();
+    else 
+      return this;
   }
 
 
