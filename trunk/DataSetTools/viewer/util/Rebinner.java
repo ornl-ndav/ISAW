@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2007/07/13 15:48:47  dennis
+ *  Now uses getI_GLB(), rather than getI() method from XScale to
+ *  properly find the index of the largest x less than or equal to
+ *  a specified x.
+ *
  *  Revision 1.1  2007/07/11 18:43:11  dennis
  *  This is a utility class to take care of some common tasks
  *  related to rebinning of DataSets for visualization purposes.
@@ -136,7 +141,6 @@ public class Rebinner
   {
     same_x_scale = true;
     this.x_scale = x_scale;
-
     Data d;
     int n_data = ds.getNum_entries();
     for ( int i = 0; i < n_data; i++ )
@@ -195,20 +199,20 @@ public class Rebinner
     int bin_number = 0;
     XScale my_x_scale;
     if ( same_x_scale )
-      bin_number = x_scale.getI(x);
+      bin_number = x_scale.getI_GLB(x);
 
     float[] y_vals = new float[ n_data ];
     for ( int i = 0; i < n_data; i++ )
     {
       if ( !same_x_scale )
-        bin_number = x_scales[i].getI(x);
+        bin_number = x_scales[i].getI_GLB(x);
 
       if ( bin_number < 0 || bin_number >= ys[i].length )
         y_vals[i] = 0; 
       else
         y_vals[i] = ys[i][bin_number];
     }
-
+    
     return y_vals;
   }
 
