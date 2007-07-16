@@ -38,6 +38,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.52  2007/07/16 16:10:03  rmikk
+ *  Added the appropriate getDisplayComponent method
+ *
  *  Revision 1.51  2005/06/28 14:57:26  rmikk
  *  Added a check for an array out of bounds error
  *
@@ -504,6 +507,22 @@ public class ContourView extends DataSetViewer
 
   }
 
+
+  /**
+   *  Get the JComponent that contains the displayed data, without
+   *  any associated controls or auxillary displays.
+   *  NOTE: Derived classes should overide this method, to obtain
+   *        the appropriate display component.  The base class 
+   *        implementation just returns the full viewer object.
+   *
+   *  @return a JComponent containing the display.
+   */
+  public JComponent getDisplayComponent()
+  {
+    return rpl_Holder;
+  }
+  
+  
   class MyMouseMotionListener implements MouseMotionListener
   {
    public void mouseDragged(MouseEvent e)
