@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2007/07/16 14:53:39  dennis
+ * The test method, main, now uses the new form of the display method
+ * that includes the "with_controls" parameter.
+ *
  * Revision 1.3  2007/07/13 14:23:03  dennis
  * Removed separate reference to the DataSet for this Displayable.
  * The viewer has a reference to the DataSet, so a separate
@@ -150,9 +154,8 @@ public class DataSetDisplayable extends Displayable
     RunfileRetriever rr = new RunfileRetriever( file_name );
     DataSet ds = rr.getDataSet(1);
 
-    ds.setSelectFlag(  5, true );
-    ds.setSelectFlag( 10, true );
-    ds.setSelectFlag( 15, true );
+    for ( int i = 0; i < 100; i++ )
+      ds.setSelectFlag(  i, true );
 
     Displayable disp = new DataSetDisplayable(ds, "Image View");
 //  Displayable disp = new DataSetDisplayable(ds, "3D View");
@@ -172,8 +175,12 @@ public class DataSetDisplayable extends Displayable
 //*****  Displayable disp = new DataSetDisplayable(ds, "Contour:Qxyz slices");
 //  Displayable disp = new DataSetDisplayable(ds, "Table Generator");
     
-    GraphicsDevice gd = new ScreenDevice();
+//  GraphicsDevice gd = new ScreenDevice();
+//  GraphicsDevice gd = new FileDevice("/home/dennis/test.jpg");
+    GraphicsDevice gd = new PreviewDevice();
     gd.setRegion( 400, 500, 600, 400 );
-    gd.display( disp );
+    gd.display( disp, true );
+    gd.print();
+//    gd.close();
   }
 }
