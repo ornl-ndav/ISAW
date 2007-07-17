@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.57  2007/07/17 12:55:35  rmikk
+ * Checkied for null values so an exception does not occur.
+ * Did a printStackTrace in Debug mode when an exception occurs
+ *
  * Revision 1.56  2007/01/12 14:43:49  rmikk
  * Commented out reference to ParameterClassList
  *
@@ -1724,10 +1728,12 @@ public class ScriptOperator  extends  GenericOperator
     		Constructor constr = C.getConstructor( argTypes );
     		Object[] args = new Object[2];
     		args[0] =Prompt;
-    		InitValue =EliminateQuotes( InitValue);
+         if( InitValue != null )
+    		  InitValue =EliminateQuotes( InitValue);
     		Object Initt = InitValue;
     		if( StringListChoicePG.class.isAssignableFrom( C))
-    			Initt = gov.anl.ipns.Parameters.Conversions.StringToVec( InitValue);
+            if( InitValue != null)
+    			  Initt = gov.anl.ipns.Parameters.Conversions.StringToVec( InitValue);
     		args[1] = Initt;
     		IParameter param = (IParameter)constr.newInstance( args);
     		
@@ -1735,6 +1741,8 @@ public class ScriptOperator  extends  GenericOperator
     	}catch( Exception s){
     		DataSetTools.util.SharedData.addmsg( "Parameter Error="+s+
     				 " in "+ getCommand());
+         if( Debug)
+              s.printStackTrace();
     		index=line.toUpperCase().indexOf(DataType);
     	    seterror( index , "Data Type not supported " + DataType);
     	    lerror = linenum;
@@ -1841,6 +1849,7 @@ public class ScriptOperator  extends  GenericOperator
        while( S.endsWith("\\")){
            S = S.substring(0, S.length()-1);
            String R = script.getLine(start+i);
+           
            if( R == null) return S;
            R = elimNonChars( R );
            S = S+R;
