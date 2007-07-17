@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2007/07/17 16:20:19  oakgrovej
+ * setViewAttribute & setLineAttribute working along with a set of Hashtables to interpret choices.
+ *
  * Revision 1.4  2007/07/16 14:53:39  dennis
  * The test method, main, now uses the new form of the display method
  * that includes the "with_controls" parameter.
@@ -56,11 +59,20 @@
 
 package DataSetTools.viewer.DisplayDevices;
 
+import java.awt.Color;
+import java.awt.Dimension;
+import java.util.Hashtable;
+
 import javax.swing.*;
+
+import newPackage.Style;
 import DataSetTools.dataset.*;
 import DataSetTools.viewer.*;
 import DataSetTools.retriever.*;
 import gov.anl.ipns.DisplayDevices.*;
+import gov.anl.ipns.ViewTools.Components.ObjectState;
+import gov.anl.ipns.ViewTools.Components.TwoD.Contour.ContourViewComponent;
+import gov.anl.ipns.ViewTools.Panels.Graph.GraphJPanel;
 
 /**
  *  This class configures a view of a DataSet and produces a JComponent that
@@ -70,7 +82,7 @@ import gov.anl.ipns.DisplayDevices.*;
 public class DataSetDisplayable extends Displayable
 {
   private ViewManager viewManager;
-
+  private ObjectState Ostate;
 
  /**
   *  Construct an IDisplayable object to handle the specified DataSet
@@ -81,7 +93,9 @@ public class DataSetDisplayable extends Displayable
   */
   public DataSetDisplayable( DataSet ds, String view_type )
   {
-    viewManager = new ViewManager( ds, view_type, false );  
+    viewManager = new ViewManager( ds, view_type, false );
+    Ostate = viewManager.getObjectState(true);
+    System.out.println(Ostate);
   }
 
 
@@ -119,9 +133,97 @@ public class DataSetDisplayable extends Displayable
   *  @param  name     The name of the attribute being set.
   *  @param  value    The value to use for the attribute.
   */
-  public void setViewAttribute( String name, Object value )
+  public void setViewAttribute( String name , Object value) throws Exception
   {
-    // NOP for now
+    if( value instanceof String )
+    {
+      setViewAttribute( name, (String) value);
+      return;
+    }
+    if(viewManager.getView().equals(ViewManager.SCROLLED_GRAPHS))
+    {
+      
+    }
+    else if(viewManager.getView().equals(ViewManager.SELECTED_GRAPHS))
+    {
+      
+    }
+    else if(viewManager.getView().equals(ViewManager.CONTOUR))
+    {
+      
+    }
+    else if(viewManager.getView().equals(ViewManager.IMAGE))
+    {
+      
+    }
+    else if(viewManager.getView().equals(ViewManager.TABLE))
+    {
+      
+    }
+  }
+
+  public void setViewAttribute( String name , String value ) throws Exception
+  {
+    /*Object OSVal = null;
+    name = name.toLowerCase();
+    value = value.toLowerCase();
+    Ostate = viewManager.getObjectState(true); 
+    Hashtable<String, Object> values = getViewValueList();
+    Hashtable<String,String> names = getViewAttributeList();
+    
+    String OSAttribute = (String)Style.TranslateKey(names,name);
+    if( Ostate.get(OSAttribute) instanceof Dimension)
+    {
+      String checkedVal = "";
+      Boolean hasComma = false;
+      
+      //--------Test value for proper format
+      //--------Format will be forced if possible 
+      //--------Else checkedVal will = null
+      for( int i = 0; i < value.length(); i++)
+      {
+        
+        if ( Character.isDigit(value.charAt(i)) )
+        {
+          checkedVal += value.charAt(i);
+        }
+        else if( value.charAt(i) == ',' )
+        {
+          if( !hasComma && checkedVal.length()>=1 )
+          {
+            checkedVal += value.charAt(i);
+            hasComma = true;
+          }
+        }
+      }
+      if( !hasComma )
+        checkedVal = null;
+      else if( checkedVal.indexOf(",") == checkedVal.length()-1)
+        checkedVal = null;
+      
+      //System.out.println(checkedVal);
+      if( checkedVal != null )
+      {
+        int index = checkedVal.indexOf(",");
+        String xStr = checkedVal.substring(0,index);
+        String yStr = checkedVal.substring(index + 1);
+        int xVal = Integer.parseInt(xStr);
+        int yVal = Integer.parseInt(yStr);
+        OSVal = new Dimension(xVal,yVal);
+      }
+    }
+    else
+      OSVal = Style.TranslateKey(values,value);
+    
+    try
+    {
+      Ostate.reset(OSAttribute, OSVal);
+    }
+    catch(Exception e)
+    {
+      throw e;
+    }
+    viewManager.setObjectState(Ostate);*/
   }
 
 
@@ -136,9 +238,93 @@ public class DataSetDisplayable extends Displayable
   *  @param  name     The name of the attribute being set.
   *  @param  value    The value to use for the attribute.
   */
-  public void setLineAttribute( int index, String name, Object value )
+  public void setLineAttribute(int index, 
+      String Attribute, 
+      String val) throws Exception
   {
-    // NOP for now
+    Attribute = Attribute.toLowerCase();
+    val = val.toLowerCase();
+    Ostate = viewManager.getObjectState(true);
+    Hashtable<String, Object> values = null;
+    Hashtable<String,String> attributes = null;
+
+    values = getGraphValuesTable();
+    attributes = getGraphAttributeList();
+    
+    
+    String OSAttribute = (String)Style.TranslateKey(attributes,Attribute);
+    if(viewManager.getView().equals(ViewManager.SELECTED_GRAPHS))
+      OSAttribute = attributes.get("selected graph data")+index+"."+OSAttribute;
+    else if(viewManager.getView().equals(ViewManager.DIFFERENCE_GRAPH))
+      OSAttribute = attributes.get("difference graph data")+index+"."+OSAttribute;
+    else
+      OSAttribute = null;
+    
+    Object OSVal = Style.TranslateKey(values,val);
+    try
+    {
+      setLineAttribute(OSAttribute, OSVal);
+    }
+    catch(Exception e)
+    {
+      throw new Exception("Cannot put "+val+" into "+Attribute);
+    }
+  }
+
+  private void setLineAttribute(String Attribute, 
+      Object Val) throws Exception
+  {
+    try
+    {
+      Ostate.reset(Attribute, Val);
+    }
+    catch(Exception e)
+    {
+      throw e;
+    }
+    viewManager.setObjectState(Ostate);
+  }
+  
+  public static Hashtable getGraphAttributeList()
+  {    
+    Hashtable<String,String> temp = new Hashtable<String,String>();
+    temp.put("line type", "Line Type");
+    temp.put("line color", "Line Color");
+    temp.put("line width", "Line Width");
+    temp.put("mark type", "Mark Type");
+    temp.put("mark color", "Mark Color");
+    temp.put("mark size", "Mark Size");
+    temp.put("transparent", "Transparent");
+    temp.put("selected graph data", 
+             "Selected Graph View.View.Graph JPanel.Graph Data");
+    temp.put("difference graph data", 
+        "Difference Graph View.View.Graph JPanel.Graph Data");
+    return temp;
+  }
+  
+  public static Hashtable getGraphValuesTable()
+  {
+    Hashtable<String,Object> temp = new Hashtable();
+    temp.put("black", Color.black);
+    temp.put("white", Color.white);
+    temp.put("blue", Color.blue);
+    temp.put("cyan", Color.cyan);
+    temp.put("green", Color.green);
+    temp.put("orange", Color.orange);
+    temp.put("red", Color.red);
+    temp.put("yellow", Color.yellow);
+    temp.put("dotted", GraphJPanel.DOTTED);
+    temp.put("dashed", GraphJPanel.DASHED);
+    temp.put("dashdot", GraphJPanel.DASHDOT);
+    temp.put("none", 0);
+    temp.put("true", true);
+    temp.put("false", false);
+    temp.put("dot", GraphJPanel.DOT);
+    temp.put("plus", GraphJPanel.PLUS);
+    temp.put("star", GraphJPanel.STAR);
+    temp.put("bar", GraphJPanel.BAR);
+    temp.put("cross", GraphJPanel.CROSS);
+    return temp;
   }
 
 
@@ -146,20 +332,32 @@ public class DataSetDisplayable extends Displayable
   *  Main program that contains a crude test of the functionality
   *  of this class.
   */
-  public static void main( String args[] )
+  public static void main( String args[] ) throws Exception
   {
     String directory = "/home/dennis/WORK/ISAW/SampleRuns";
     String file_name = directory + "/GPPD12358.RUN";
 //  String file_name = directory + "/SCD06496.RUN";
-    RunfileRetriever rr = new RunfileRetriever( file_name );
-    DataSet ds = rr.getDataSet(1);
+    //RunfileRetriever rr = new RunfileRetriever( file_name );
+    //DataSet ds = rr.getDataSet(1);
 
-    for ( int i = 0; i < 100; i++ )
-      ds.setSelectFlag(  i, true );
+    //for ( int i = 0; i < 100; i++ )
+      //ds.setSelectFlag(  i, true );
+    
+    DataSet ds = new DataSet();    
+    float[][] testData = ContourViewComponent.getTestDataArr(41,51,3,4);
+    for (int i=0; i<testData.length; i++)
+       ds.addData_entry(
+             new FunctionTable(new UniformXScale(0, 
+                               testData[i].length-1, 
+                               testData[i].length),
+                               testData[i], 
+                               i));
+    ds.setSelectFlag(5, true);
+    ds.setSelectFlag(6, true);
 
-    Displayable disp = new DataSetDisplayable(ds, "Image View");
+//  Displayable disp = new DataSetDisplayable(ds, "Image View");
 //  Displayable disp = new DataSetDisplayable(ds, "3D View");
-//***** Displayable disp = new DataSetDisplayable(ds, "Contour View");
+//  Displayable disp = new DataSetDisplayable(ds, "Contour View");
 //  Displayable disp = new DataSetDisplayable(ds, "HKL Slice View");
 //  Displayable disp = new DataSetDisplayable(ds, "Scrolled Graph View");
 //  Displayable disp = new DataSetDisplayable(ds, "Selected Graph View");
@@ -174,6 +372,12 @@ public class DataSetDisplayable extends Displayable
 //*****  Displayable disp = new DataSetDisplayable(ds, "Contour:Qx,Qy vs Qz");
 //*****  Displayable disp = new DataSetDisplayable(ds, "Contour:Qxyz slices");
 //  Displayable disp = new DataSetDisplayable(ds, "Table Generator");
+    
+//    disp.setLineAttribute(1, "line color", "red");
+//    disp.setLineAttribute(2, "line color", "green");
+//    disp.setLineAttribute(1, "line tYpe", "doTtEd");
+//    disp.setLineAttribute(1, "Mark Type", "plus");
+//    disp.setLineAttribute(1, "Mark color", "cyan");
     
 //  GraphicsDevice gd = new ScreenDevice();
 //  GraphicsDevice gd = new FileDevice("/home/dennis/test.jpg");
