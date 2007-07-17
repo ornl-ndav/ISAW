@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2007/07/17 16:31:14  oakgrovej
+ * *** empty log message ***
+ *
  * Revision 1.5  2007/07/17 16:20:19  oakgrovej
  * setViewAttribute & setLineAttribute working along with a set of Hashtables to interpret choices.
  *
@@ -252,7 +255,7 @@ public class DataSetDisplayable extends Displayable
     attributes = getGraphAttributeList();
     
     
-    String OSAttribute = (String)Style.TranslateKey(attributes,Attribute);
+    String OSAttribute = (String)Util.TranslateKey(attributes,Attribute);
     if(viewManager.getView().equals(ViewManager.SELECTED_GRAPHS))
       OSAttribute = attributes.get("selected graph data")+index+"."+OSAttribute;
     else if(viewManager.getView().equals(ViewManager.DIFFERENCE_GRAPH))
@@ -260,7 +263,7 @@ public class DataSetDisplayable extends Displayable
     else
       OSAttribute = null;
     
-    Object OSVal = Style.TranslateKey(values,val);
+    Object OSVal = Util.TranslateKey(values,val);
     try
     {
       setLineAttribute(OSAttribute, OSVal);
@@ -357,7 +360,7 @@ public class DataSetDisplayable extends Displayable
 
 //  Displayable disp = new DataSetDisplayable(ds, "Image View");
 //  Displayable disp = new DataSetDisplayable(ds, "3D View");
-//  Displayable disp = new DataSetDisplayable(ds, "Contour View");
+  Displayable disp = new DataSetDisplayable(ds, "Contour View");
 //  Displayable disp = new DataSetDisplayable(ds, "HKL Slice View");
 //  Displayable disp = new DataSetDisplayable(ds, "Scrolled Graph View");
 //  Displayable disp = new DataSetDisplayable(ds, "Selected Graph View");
