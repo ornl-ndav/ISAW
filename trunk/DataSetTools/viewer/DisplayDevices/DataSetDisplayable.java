@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2007/07/17 16:40:53  oakgrovej
+ * deleted meaningless import
+ *
  * Revision 1.6  2007/07/17 16:31:14  oakgrovej
  * *** empty log message ***
  *
@@ -68,7 +71,6 @@ import java.util.Hashtable;
 
 import javax.swing.*;
 
-import newPackage.Style;
 import DataSetTools.dataset.*;
 import DataSetTools.viewer.*;
 import DataSetTools.retriever.*;
