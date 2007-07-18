@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2007/07/18 19:59:48  dennis
+ * Converted to Unix text format.
+ *
  * Revision 1.1  2007/07/18 14:46:00  dennis
  * Operator to get an instance of a DisplayDevice.
  *
