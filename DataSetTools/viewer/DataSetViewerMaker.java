@@ -30,6 +30,14 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.34  2007/07/18 19:52:12  dennis
+ *  Fixed problem with detecting focus.  Previously, the
+ *  parent of the dsvm was cast to a JFrame, and checked
+ *  for having focus.  Now the DisplayComponent of the
+ *  viewer is checked for having focus.  This fixes a
+ *  class cast exception when used with GraphicsDevices
+ *  and Displayables.
+ *
  *  Revision 1.33  2007/07/13 16:52:45  dennis
  *  Added getDisplayComponent() method to return just the data display
  *  panel without any controls.
@@ -262,9 +270,16 @@ public class DataSetViewerMaker  extends DataSetViewer
             viewComp.dataChanged();
           }
           
-          // this is true when the DataSetViewMaker's frame is focused.          
-          isDsvmViewerFocused =
-                         ((JFrame)dsvm.getRootPane().getParent()).isFocused();
+          // this is true when the DataSetViewMaker's frame is focused.   
+    
+          isDsvmViewerFocused = viewComp.getDisplayPanel().hasFocus();
+/*
+          if ( !isDsvmViewerFocused )
+            isDsvmViewerFocused = dsvm.hasFocus();
+
+          if ( !isDsvmViewerFocused && dsvm.getParent() != null )
+            isDsvmViewerFocused = dsvm.getParent().hasFocus();
+*/          
           
           if( !isDsvmViewerFocused )
           {
@@ -363,8 +378,15 @@ public class DataSetViewerMaker  extends DataSetViewer
       if(dsvm.getRootPane() != null)
       {
        // this is true when the DataSetViewMaker's frame is focused.
-       isDsvmViewerFocused = 
-                          ((JFrame)dsvm.getRootPane().getParent()).isFocused();
+
+          isDsvmViewerFocused = viewComp.getDisplayPanel().hasFocus();
+/*
+          if ( !isDsvmViewerFocused )
+            isDsvmViewerFocused = dsvm.hasFocus();
+
+          if ( !isDsvmViewerFocused && dsvm.getParent() != null )
+            isDsvmViewerFocused = dsvm.getParent().hasFocus();
+*/
 			  
        message = ae.getActionCommand();		  
        new_x  = viewComp.getPointedAt().x;		  	  
