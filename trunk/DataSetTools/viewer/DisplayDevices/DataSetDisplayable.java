@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2007/07/18 16:03:02  oakgrovej
+ * added setViewAttribute method and approprate getTable method.  Hashtable is empty.
+ *
  * Revision 1.7  2007/07/17 16:40:53  oakgrovej
  * deleted meaningless import
  *
@@ -100,7 +103,7 @@ public class DataSetDisplayable extends Displayable
   {
     viewManager = new ViewManager( ds, view_type, false );
     Ostate = viewManager.getObjectState(true);
-    System.out.println(Ostate);
+    //System.out.println(Ostate);
   }
 
 
@@ -169,14 +172,14 @@ public class DataSetDisplayable extends Displayable
 
   public void setViewAttribute( String name , String value ) throws Exception
   {
-    /*Object OSVal = null;
+    Object OSVal = null;
     name = name.toLowerCase();
     value = value.toLowerCase();
     Ostate = viewManager.getObjectState(true); 
     Hashtable<String, Object> values = getViewValueList();
     Hashtable<String,String> names = getViewAttributeList();
     
-    String OSAttribute = (String)Style.TranslateKey(names,name);
+    String OSAttribute = (String)Util.TranslateKey(names,name);
     if( Ostate.get(OSAttribute) instanceof Dimension)
     {
       String checkedVal = "";
@@ -218,7 +221,7 @@ public class DataSetDisplayable extends Displayable
       }
     }
     else
-      OSVal = Style.TranslateKey(values,value);
+      OSVal = Util.TranslateKey(values,value);
     
     try
     {
@@ -228,7 +231,7 @@ public class DataSetDisplayable extends Displayable
     {
       throw e;
     }
-    viewManager.setObjectState(Ostate);*/
+    viewManager.setObjectState(Ostate);
   }
 
 
@@ -307,6 +310,13 @@ public class DataSetDisplayable extends Displayable
     return temp;
   }
   
+  public static Hashtable getViewAttributeList()
+  {
+    Hashtable<String,String> temp = new Hashtable<String,String>();
+    
+    return temp;
+  }
+  
   public static Hashtable getGraphValuesTable()
   {
     Hashtable<String,Object> temp = new Hashtable();
@@ -332,6 +342,12 @@ public class DataSetDisplayable extends Displayable
     return temp;
   }
 
+  public static Hashtable getViewValueList()
+  {
+    Hashtable<String,Object> temp = new Hashtable();
+    
+    return temp;
+  }
 
  /**
   *  Main program that contains a crude test of the functionality
@@ -362,10 +378,10 @@ public class DataSetDisplayable extends Displayable
 
 //  Displayable disp = new DataSetDisplayable(ds, "Image View");
 //  Displayable disp = new DataSetDisplayable(ds, "3D View");
-  Displayable disp = new DataSetDisplayable(ds, "Contour View");
+//  Displayable disp = new DataSetDisplayable(ds, "Contour View");
 //  Displayable disp = new DataSetDisplayable(ds, "HKL Slice View");
 //  Displayable disp = new DataSetDisplayable(ds, "Scrolled Graph View");
-//  Displayable disp = new DataSetDisplayable(ds, "Selected Graph View");
+  Displayable disp = new DataSetDisplayable(ds, "Selected Graph View");
 //  Displayable disp = new DataSetDisplayable(ds, "Difference Graph View");
 //  Displayable disp = new DataSetDisplayable(ds, "GRX_Y");
 //  Displayable disp = new DataSetDisplayable(ds, "Parallel y(x)");
@@ -378,16 +394,16 @@ public class DataSetDisplayable extends Displayable
 //*****  Displayable disp = new DataSetDisplayable(ds, "Contour:Qxyz slices");
 //  Displayable disp = new DataSetDisplayable(ds, "Table Generator");
     
-//    disp.setLineAttribute(1, "line color", "red");
-//    disp.setLineAttribute(2, "line color", "green");
-//    disp.setLineAttribute(1, "line tYpe", "doTtEd");
-//    disp.setLineAttribute(1, "Mark Type", "plus");
+    disp.setLineAttribute(1, "line color", "red");
+    disp.setLineAttribute(2, "line color", "green");
+    disp.setLineAttribute(1, "line tYpe", "doTtEd");
+    disp.setLineAttribute(1, "Mark Type", "plus");
 //    disp.setLineAttribute(1, "Mark color", "cyan");
     
-//  GraphicsDevice gd = new ScreenDevice();
+    GraphicsDevice gd = new ScreenDevice();
 //  GraphicsDevice gd = new FileDevice("/home/dennis/test.jpg");
-    GraphicsDevice gd = new PreviewDevice();
-    gd.setRegion( 400, 500, 600, 400 );
+//  GraphicsDevice gd = new PreviewDevice();
+    gd.setRegion( 200, 100, 600, 400 );
     gd.display( disp, true );
     gd.print();
 //    gd.close();
