@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.19  2007/07/18 18:34:28  rmikk
+ * Fixed order or parameters in the non-default constructor
+ *
  * Revision 1.18  2006/07/10 16:25:59  dennis
  * Change to new Parameter GUIs in gov.anl.ipns.Parameters
  *
@@ -159,28 +162,30 @@ public class PrintImage extends GenericSave{
   /**
    *   Constructor for Java code
    *   @param DS  The DataSet whose view is to be printed
-   *   @param view_type The name of the view used by the ViewManager. This 
-   *                    is the String that appears in Isaw's View Menu
-   *   @param width The width of the image(will be scaled to fit the paper)
-   *   @param height The height of the image in pixels(Also scaled)
    *   @param PrintName the name of the printer. If blank, any printer 
    *                    will be considered
-   *   @param PrintLocation The location of the printer. If blank, any
-   *                        location will be considered
-   *   @param PrintOptions (not implemented yet).For options like Portrait, etc.
+   *   @param view_type The name of the view used by the ViewManager. This 
+   *                    is the String that appears in Isaw's View Menu
+   *   @param orientation   Landscape or portrait
+   *   @param copies        number of copies
+   *   @param  quality     the quality of the print
+   *   @param  stateInfo  String that is parsed to a ViewerState by 
+   *                       ViewerState.setViewerState )
+   *   @param height The height of the image in pixels(Also scaled)  
+   *   @param width The width of the image(will be scaled to fit the paper
    */
-   public PrintImage( DataSet DS, String  view_type, int width, int height, 
-                      String PrintName, String PrintLocation, String PrintOptions, 
-                      String orientation, int copies){
+   public PrintImage( DataSet DS,  String PrintName,String  view_type,  String orientation,
+                 int copies,int quality, String stateInfo, int height,int width
+                      ){
       this();
       parameters = new Vector();
       addParameter( new DataSetPG( "Select DataSet",DS));
-	  addParameter( new PrinterNamePG("select printer", null));
+	  addParameter( new PrinterNamePG("select printer", PrintName));
 	  addParameter( new StringPG( "View Name", view_type));
 	  addParameter(new BooleanPG("Landscape" , orientation));
       addParameter( new IntegerPG("copies", copies));
-      addParameter( new StringPG("State info", null));
-	  addParameter( new IntegerPG("quality", 1));
+     addParameter( new IntegerPG("quality", quality));
+      addParameter( new StringPG("State info", stateInfo));
 	  addParameter( new IntegerPG("height",height));
       addParameter( new IntegerPG("width", width));
       
