@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2007/07/25 22:27:13  oakgrovej
+ * added test for PrinterDevice in main and it works!
+ *
  * Revision 1.8  2007/07/18 16:03:02  oakgrovej
  * added setViewAttribute method and approprate getTable method.  Hashtable is empty.
  *
@@ -400,10 +403,16 @@ public class DataSetDisplayable extends Displayable
     disp.setLineAttribute(1, "Mark Type", "plus");
 //    disp.setLineAttribute(1, "Mark color", "cyan");
     
-    GraphicsDevice gd = new ScreenDevice();
+//    GraphicsDevice gd = new ScreenDevice();
 //  GraphicsDevice gd = new FileDevice("/home/dennis/test.jpg");
 //  GraphicsDevice gd = new PreviewDevice();
-    gd.setRegion( 200, 100, 600, 400 );
+  GraphicsDevice gd = new PrinterDevice("Adobe PDF");
+    
+    // -------------For PrinterDevice
+    //gd.setDeviceAttribute("orientation", "landscape");
+    //gd.setDeviceAttribute("copies", 1);
+  
+    gd.setRegion( 200, 100, 600, 800 );
     gd.display( disp, true );
     gd.print();
 //    gd.close();
