@@ -30,6 +30,13 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2007/07/26 20:19:18  rmikk
+ *  Renamed Show Tag Frame in Menu's to Pointed at Graph View to parallel the
+ *      Pointed at Table View
+ *  Fixed the menu's so fewer option are shown and all the view component
+ *       menu items are shown just once.
+ *  When tag Frame is closed, now adjust the other two parallel variables
+ *
  *  Revision 1.7  2007/07/13 18:08:58  dennis
  *  Added getDisplayComponent() method to return just the data display
  *  panel without any controls.
@@ -125,7 +132,7 @@ public class TwoDViewers extends DataSetViewer {
    JCheckBoxMenuItem           ShowTag;
    boolean                     showtag;
    
-   private static final String SHOW_TAG     = "Show tag info";
+   private static final String SHOW_TAG     = "Pointed At Graph View";
    JPanel DisplayPanel;
    Point TableTopLeft;
    
@@ -207,6 +214,7 @@ public class TwoDViewers extends DataSetViewer {
       JMenu edt = FindTopJMenu( getMenuBar() , "Edit" );
       FindTopJMenu( getMenuBar() , "View" );
       FindTopJMenu( getMenuBar() , "Options" );
+      FindTopJMenu( getMenuBar() , "Help" );
 
 
       JMenuItem integrate = new JMenuItem( "Integrate" );
@@ -461,7 +469,8 @@ public class TwoDViewers extends DataSetViewer {
    
    
    private void removeViewComponentMenus( IViewComponent2D viewComp ) {
-
+      
+   
       ViewMenuItem[] MenItem1 = viewComp.getMenuItems();
       
       if( MenItem1 == null ) return;
@@ -477,12 +486,31 @@ public class TwoDViewers extends DataSetViewer {
             
             int p0 = p1 + 1;
             p1 = path.indexOf( "." , p0 );
+            if( p1 < 0 )
+               p1 =path.length();
+            item = null;
             while( p1 >= 0 ) {
+               String MenItem = path.substring( p0,p1);
+               if( item == null){
+                  for( int j=0;j< bar.getMenuCount() && item == null ; j++)
+                     if( bar.getMenu( j ).getText().equals( MenItem))
+                        item = bar.getMenu( j );
+                     
+               }else
+                  for( int j=0; j< item.getItemCount(); j++)
+                     if( item.getItem(j) instanceof JMenu && 
+                                 item.getItem(j).getText().equals( MenItem))
+                        item = (JMenu)item.getItem(j);
                
-               item = InsertInMenu( bar , item , path.substring( p0 , p1 ) );
+                  
+               
                p0 = p1 + 1;
-               p1 = path.indexOf( "." , p0 );
-
+               if( p0 < path.length() )
+                  p1 = path.indexOf( "." , p0 );
+               else
+                  p1 = -1;
+               if(item == null)
+                  p1= -1;
             }
             
             if( item != null ) if( p0 >= 0 ) {
@@ -503,7 +531,7 @@ public class TwoDViewers extends DataSetViewer {
          JMenu jmenu = jm.getMenu( i );
          RemoveAllSingletons( jmenu );
          
-         if( ";File;Edit;View;Options;".indexOf( jmenu.getText() ) <= 0 )
+         if( ";File;Edit;View;Options;Help;".indexOf( ";"+jmenu.getText()+";" ) <= 0 )
             if( jmenu.getItemCount() < 1 ) {
                
                jm.remove( i );
@@ -610,8 +638,9 @@ public class TwoDViewers extends DataSetViewer {
          
         Update2DObjectState();
         UpdateViewObjectState();
+        removeViewComponentMenus( viewComp );
         viewComp.kill();
-         
+      
       }
 
 
@@ -657,7 +686,7 @@ public class TwoDViewers extends DataSetViewer {
       ControlHolder.setLayout( new GridLayout( 1 , 1 ) );
       ViewHolder.setLayout( new GridLayout( 1 , 1 ) );
       
-      removeViewComponentMenus( oldViewType );
+      
       setUpViewComponentMenus( viewComp );
       setUpControls( ControlHolder , viewArray , viewComp );
       setUpViews( ViewHolder , viewArray , viewComp );
@@ -683,20 +712,21 @@ public class TwoDViewers extends DataSetViewer {
 
    private void SetUpMenuBar( JMenuBar bar , ViewMenuItem[] items ,
             String[] paths ) {
+     
+      SetUpMenuBar1( bar, viewArray.getSharedMenuItems()); 
+      SetUpMenuBar1( bar, viewComp.getMenuItems());
+   }
 
+   private void SetUpMenuBar1( JMenuBar bar , ViewMenuItem[] items){
+      
       if( items == null ) return;
       if( bar == null ) return;
       
       for( int i = 0 ; i < items.length ; i++ ) {
          
          String path = null;
-         if( paths != null )
-            
-            path = paths[ i ];
          
-         else
-            
-            path = items[ i ].getPath();
+         path = items[ i ].getPath();
          
          if( path != null ) if( path.length() > 1 ) {
             
@@ -852,7 +882,7 @@ public class TwoDViewers extends DataSetViewer {
       public void actionPerformed( ActionEvent evt ) {
 
          Update2DObjectState();
-         viewComp.dataChanged(  );//(IVirtualArray2D) (viewArray.getArray() ) );
+         viewComp.dataChanged(  );
          Set2DObjectState();//Sets position of the JTable
        
          if( TagFrame != null )
@@ -957,6 +987,8 @@ public class TwoDViewers extends DataSetViewer {
             
             TagFrame.dispose();
             TagFrame = null;
+            showtag = false;
+            ShowTag.setSelected( false );
          }
 
       }
@@ -970,6 +1002,9 @@ public class TwoDViewers extends DataSetViewer {
       public void windowClosing( WindowEvent e ) {
 
          TagFrame = null;
+         showtag = false;
+         ShowTag.setSelected( false );
+         
 
       }
    }
@@ -1034,7 +1069,7 @@ public class TwoDViewers extends DataSetViewer {
          else if( button.equals( SHOW_TAG ) ) {
             showtag = ! showtag;
             ShowTag.setSelected( showtag );
-            if( ! showtag ) {
+            if( ! showtag  && TagFrame != null) {
                TagFrame.dispose();
                TagFrame = null;
             }else
