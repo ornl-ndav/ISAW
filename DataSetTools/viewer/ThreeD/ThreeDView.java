@@ -30,6 +30,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.42  2007/07/27 01:35:11  dennis
+ * Removed redundant calculation of scale_factor from method that
+ * gets the data range.
+ * Now recalculates the scale_factor, when data is rebinned.
+ *
  * Revision 1.41  2007/07/13 16:52:46  dennis
  * Added getDisplayComponent() method to return just the data display
  * panel without any controls.
@@ -640,11 +645,6 @@ private void findMaxAbsDataValue()
     max_abs = Math.abs( max_data );
   else
     max_abs = Math.abs( min_data );
-
-  if ( max_abs > 0 )
-    scale_factor = (LOG_TABLE_SIZE - 1) / max_abs;
-  else
-    scale_factor = 0;
 }
 
 
@@ -1328,6 +1328,7 @@ private class FrameControlListener implements ActionListener
        else
          rebinner.reset();
 
+       setDataScaleFactor();
        getDataSet().notifyIObservers( action );
      }
   }
