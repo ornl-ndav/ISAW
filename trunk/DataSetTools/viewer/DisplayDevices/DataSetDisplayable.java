@@ -31,11 +31,15 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2007/07/27 03:48:12  dennis
+ * Fixed name inconsistency between javadco and method.
+ *
  * Revision 1.9  2007/07/25 22:27:13  oakgrovej
  * added test for PrinterDevice in main and it works!
  *
  * Revision 1.8  2007/07/18 16:03:02  oakgrovej
- * added setViewAttribute method and approprate getTable method.  Hashtable is empty.
+ * added setViewAttribute method and approprate getTable method.  
+ * Hashtable is empty.
  *
  * Revision 1.7  2007/07/17 16:40:53  oakgrovej
  * deleted meaningless import
@@ -243,15 +247,15 @@ public class DataSetDisplayable extends Displayable
   *  to a particular portion of the display, such as one particular
   *  line. 
   *
-  *  @param  index    An index identifying the part of the display
-  *                   that the attribute applies to, such as a 
-  *                   specific line number.
-  *  @param  name     The name of the attribute being set.
-  *  @param  value    The value to use for the attribute.
+  *  @param  index      An index identifying the part of the display
+  *                     that the attribute applies to, such as a 
+  *                     specific line number.
+  *  @param  Attribute  The name of the attribute being set.
+  *  @param  val        The value to use for the attribute.
   */
-  public void setLineAttribute(int index, 
-      String Attribute, 
-      String val) throws Exception
+  public void setLineAttribute(int    index, 
+                               String Attribute, 
+                               String val        ) throws Exception
   {
     Attribute = Attribute.toLowerCase();
     val = val.toLowerCase();
@@ -281,6 +285,7 @@ public class DataSetDisplayable extends Displayable
       throw new Exception("Cannot put "+val+" into "+Attribute);
     }
   }
+
 
   private void setLineAttribute(String Attribute, 
       Object Val) throws Exception
