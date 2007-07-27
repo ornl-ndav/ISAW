@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.271  2007/07/27 01:40:31  dennis
+ *  Set version number to 181_a8
+ *
  *  Revision 1.270  2007/07/05 16:21:35  dennis
  *  Set version number to 181_a7.
  *
@@ -973,7 +976,7 @@ public class Isaw
         String val="";
 
         if(SharedData.VERSION.equals("Unknown_Version"))
-          version="1.8.1_a7";
+          version="1.8.1_a8";
         else
           version=SharedData.VERSION;
 
