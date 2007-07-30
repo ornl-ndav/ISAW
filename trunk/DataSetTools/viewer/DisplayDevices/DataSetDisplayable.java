@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2007/07/30 20:04:54  oakgrovej
+ * In the getJComponent() method I made a copy of the ViewManager and returned the component from that instead of the original.  this will allow for the displayable to be passed into muliple devices at once.
+ *
  * Revision 1.10  2007/07/27 03:48:12  dennis
  * Fixed name inconsistency between javadco and method.
  *
@@ -128,12 +131,14 @@ public class DataSetDisplayable extends Displayable
   public JComponent getJComponent( boolean with_controls )
   {
     JComponent component = null;
+    ViewManager temp = new ViewManager(viewManager.getDataSet(),viewManager.getView(),false);
+    temp.setObjectState(viewManager.getObjectState(false));
 
     if ( with_controls )
-      component = (JComponent)viewManager.getComponent(0); 
+      component = (JComponent)temp.getComponent(0);
     else
     {
-      DataSetViewer viewer = viewManager.getViewer();
+      DataSetViewer viewer = temp.getViewer();
       component = viewer.getDisplayComponent(); 
     }
 
@@ -386,40 +391,46 @@ public class DataSetDisplayable extends Displayable
 
 //  Displayable disp = new DataSetDisplayable(ds, "Image View");
 //  Displayable disp = new DataSetDisplayable(ds, "3D View");
-//  Displayable disp = new DataSetDisplayable(ds, "Contour View");
+  
+//  Displayable disp = new DataSetDisplayable(ds, "Contour View");//note dnw
 //  Displayable disp = new DataSetDisplayable(ds, "HKL Slice View");
-//  Displayable disp = new DataSetDisplayable(ds, "Scrolled Graph View");
-  Displayable disp = new DataSetDisplayable(ds, "Selected Graph View");
+  Displayable disp = new DataSetDisplayable(ds, "Scrolled Graph View");
+//  Displayable disp = new DataSetDisplayable(ds, "Selected Graph View");
 //  Displayable disp = new DataSetDisplayable(ds, "Difference Graph View");
 //  Displayable disp = new DataSetDisplayable(ds, "GRX_Y");
 //  Displayable disp = new DataSetDisplayable(ds, "Parallel y(x)");
+//  Displayable disp = new DataSetDisplayable(ds, "Instrument Table");
+//  Displayable disp = new DataSetDisplayable(ds, "Table Generator");
+    
+  //---------not in ViewManager
 //  Displayable disp = new DataSetDisplayable(ds, "Counts(x,y)");
 //  Displayable disp = new DataSetDisplayable(ds, "2D Viewer");
 //  Displayable disp = new DataSetDisplayable(ds, "Slice Viewer");
-//  Displayable disp = new DataSetDisplayable(ds, "Instrument Table");
 //*****  Displayable disp = new DataSetDisplayable(ds, "Contour:Qy,Qz vs Qx");
 //*****  Displayable disp = new DataSetDisplayable(ds, "Contour:Qx,Qy vs Qz");
 //*****  Displayable disp = new DataSetDisplayable(ds, "Contour:Qxyz slices");
-//  Displayable disp = new DataSetDisplayable(ds, "Table Generator");
     
-    disp.setLineAttribute(1, "line color", "red");
-    disp.setLineAttribute(2, "line color", "green");
-    disp.setLineAttribute(1, "line tYpe", "doTtEd");
-    disp.setLineAttribute(1, "Mark Type", "plus");
+//    disp.setLineAttribute(1, "line color", "red");
+//    disp.setLineAttribute(2, "line color", "green");
+//    disp.setLineAttribute(1, "line tYpe", "doTtEd");
+//    disp.setLineAttribute(1, "Mark Type", "plus");
 //    disp.setLineAttribute(1, "Mark color", "cyan");
     
-//    GraphicsDevice gd = new ScreenDevice();
+  GraphicsDevice gd = new ScreenDevice();
 //  GraphicsDevice gd = new FileDevice("/home/dennis/test.jpg");
-//  GraphicsDevice gd = new PreviewDevice();
-  GraphicsDevice gd = new PrinterDevice("Adobe PDF");
+  GraphicsDevice gd2 = new PreviewDevice();
+//  GraphicsDevice gd = new PrinterDevice("Adobe PDF");
     
     // -------------For PrinterDevice
     //gd.setDeviceAttribute("orientation", "landscape");
     //gd.setDeviceAttribute("copies", 1);
   
-    gd.setRegion( 200, 100, 600, 800 );
+    gd.setRegion( 0, 0, 600, 900 );
+    gd2.setRegion( 600,0, 600, 900 );
     gd.display( disp, true );
-    gd.print();
+    gd2.display( disp, true );
+    //gd.print();
+    //gd2.print();
 //    gd.close();
   }
 }
