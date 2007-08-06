@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2007/08/06 15:13:15  oakgrovej
+ *  - Combined the Values into one Hashtable
+ *  - The Hashtables are fields that are set in the constructor
+ *  - Added some more attributes and values
+ *
  * Revision 1.11  2007/07/30 20:04:54  oakgrovej
  * In the getJComponent() method I made a copy of the ViewManager and returned the component from that instead of the original.  this will allow for the displayable to be passed into muliple devices at once.
  *
@@ -99,6 +104,9 @@ import gov.anl.ipns.ViewTools.Panels.Graph.GraphJPanel;
  */
 public class DataSetDisplayable extends Displayable
 {
+  private Hashtable<String,Object> valueList;
+  private Hashtable<String,String> graphAttributes;
+  private Hashtable<String,String> viewAttributes;
   private ViewManager viewManager;
   private ObjectState Ostate;
 
@@ -113,6 +121,9 @@ public class DataSetDisplayable extends Displayable
   {
     viewManager = new ViewManager( ds, view_type, false );
     Ostate = viewManager.getObjectState(true);
+    valueList = getViewValueList();
+    graphAttributes = getGraphAttributeList();
+    viewAttributes = getViewAttributeList();
     //System.out.println(Ostate);
   }
 
@@ -188,10 +199,8 @@ public class DataSetDisplayable extends Displayable
     name = name.toLowerCase();
     value = value.toLowerCase();
     Ostate = viewManager.getObjectState(true); 
-    Hashtable<String, Object> values = getViewValueList();
-    Hashtable<String,String> names = getViewAttributeList();
     
-    String OSAttribute = (String)Util.TranslateKey(names,name);
+    String OSAttribute = (String)Util.TranslateKey(viewAttributes,name);
     if( Ostate.get(OSAttribute) instanceof Dimension)
     {
       String checkedVal = "";
@@ -233,7 +242,7 @@ public class DataSetDisplayable extends Displayable
       }
     }
     else
-      OSVal = Util.TranslateKey(values,value);
+      OSVal = Util.TranslateKey(valueList,value);
     
     try
     {
@@ -264,23 +273,17 @@ public class DataSetDisplayable extends Displayable
   {
     Attribute = Attribute.toLowerCase();
     val = val.toLowerCase();
-    Ostate = viewManager.getObjectState(true);
-    Hashtable<String, Object> values = null;
-    Hashtable<String,String> attributes = null;
-
-    values = getGraphValuesTable();
-    attributes = getGraphAttributeList();
+    Ostate = viewManager.getObjectState(true);    
     
-    
-    String OSAttribute = (String)Util.TranslateKey(attributes,Attribute);
+    String OSAttribute = (String)Util.TranslateKey(graphAttributes,Attribute);
     if(viewManager.getView().equals(ViewManager.SELECTED_GRAPHS))
-      OSAttribute = attributes.get("selected graph data")+index+"."+OSAttribute;
+      OSAttribute = graphAttributes.get("selected graph data")+index+"."+OSAttribute;
     else if(viewManager.getView().equals(ViewManager.DIFFERENCE_GRAPH))
-      OSAttribute = attributes.get("difference graph data")+index+"."+OSAttribute;
+      OSAttribute = graphAttributes.get("difference graph data")+index+"."+OSAttribute;
     else
       OSAttribute = null;
     
-    Object OSVal = Util.TranslateKey(values,val);
+    Object OSVal = Util.TranslateKey(valueList,val);
     try
     {
       setLineAttribute(OSAttribute, OSVal);
@@ -306,7 +309,7 @@ public class DataSetDisplayable extends Displayable
     viewManager.setObjectState(Ostate);
   }
   
-  public static Hashtable getGraphAttributeList()
+  public static Hashtable<String,String> getGraphAttributeList()
   {    
     Hashtable<String,String> temp = new Hashtable<String,String>();
     temp.put("line type", "Line Type");
@@ -323,16 +326,19 @@ public class DataSetDisplayable extends Displayable
     return temp;
   }
   
-  public static Hashtable getViewAttributeList()
+  public static Hashtable<String,String> getViewAttributeList()
   {
     Hashtable<String,String> temp = new Hashtable<String,String>();
-    
+    temp.put("legend", "View Component0.FunctionControls.Legend Control.Selected");
+    temp.put("grid lines x", "View Component0.AxisOverlay2D.Grid Display X");
+    temp.put("grid lines y", "View Component0.AxisOverlay2D.Grid Display Y");
+    temp.put("grid color", "View Component0.AxisOverlay2D.Grid Color");
     return temp;
   }
   
-  public static Hashtable getGraphValuesTable()
+  public static Hashtable<String,Object> getViewValueList()
   {
-    Hashtable<String,Object> temp = new Hashtable();
+    Hashtable<String,Object> temp = new Hashtable<String,Object>();
     temp.put("black", Color.black);
     temp.put("white", Color.white);
     temp.put("blue", Color.blue);
@@ -341,10 +347,14 @@ public class DataSetDisplayable extends Displayable
     temp.put("orange", Color.orange);
     temp.put("red", Color.red);
     temp.put("yellow", Color.yellow);
+    temp.put("gray", Color.gray);
+    temp.put("light gray", Color.lightGray);
     temp.put("dotted", GraphJPanel.DOTTED);
     temp.put("dashed", GraphJPanel.DASHED);
     temp.put("dashdot", GraphJPanel.DASHDOT);
     temp.put("none", 0);
+    temp.put("off", 0);
+    temp.put("on", 1);
     temp.put("true", true);
     temp.put("false", false);
     temp.put("dot", GraphJPanel.DOT);
@@ -352,13 +362,6 @@ public class DataSetDisplayable extends Displayable
     temp.put("star", GraphJPanel.STAR);
     temp.put("bar", GraphJPanel.BAR);
     temp.put("cross", GraphJPanel.CROSS);
-    return temp;
-  }
-
-  public static Hashtable getViewValueList()
-  {
-    Hashtable<String,Object> temp = new Hashtable();
-    
     return temp;
   }
 
@@ -394,8 +397,8 @@ public class DataSetDisplayable extends Displayable
   
 //  Displayable disp = new DataSetDisplayable(ds, "Contour View");//note dnw
 //  Displayable disp = new DataSetDisplayable(ds, "HKL Slice View");
-  Displayable disp = new DataSetDisplayable(ds, "Scrolled Graph View");
-//  Displayable disp = new DataSetDisplayable(ds, "Selected Graph View");
+  Displayable disp2 = new DataSetDisplayable(ds, "Scrolled Graph View");
+  Displayable disp = new DataSetDisplayable(ds, "Selected Graph View");
 //  Displayable disp = new DataSetDisplayable(ds, "Difference Graph View");
 //  Displayable disp = new DataSetDisplayable(ds, "GRX_Y");
 //  Displayable disp = new DataSetDisplayable(ds, "Parallel y(x)");
@@ -410,26 +413,29 @@ public class DataSetDisplayable extends Displayable
 //*****  Displayable disp = new DataSetDisplayable(ds, "Contour:Qx,Qy vs Qz");
 //*****  Displayable disp = new DataSetDisplayable(ds, "Contour:Qxyz slices");
     
-//    disp.setLineAttribute(1, "line color", "red");
-//    disp.setLineAttribute(2, "line color", "green");
+    disp.setLineAttribute(1, "line color", "red");
+    disp.setLineAttribute(2, "line color", "red");
+    disp.setLineAttribute(1,"transparent", "true");
 //    disp.setLineAttribute(1, "line tYpe", "doTtEd");
-//    disp.setLineAttribute(1, "Mark Type", "plus");
-//    disp.setLineAttribute(1, "Mark color", "cyan");
+    disp.setLineAttribute(1, "Mark Type", "plus");
+    disp.setLineAttribute(1, "Mark color", "cyan");
     
-  GraphicsDevice gd = new ScreenDevice();
-//  GraphicsDevice gd = new FileDevice("/home/dennis/test.jpg");
-  GraphicsDevice gd2 = new PreviewDevice();
-//  GraphicsDevice gd = new PrinterDevice("Adobe PDF");
+//  GraphicsDevice gd = new ScreenDevice();
+//  GraphicsDevice gd = new FileDevice("C:/Documents and Settings/student/My Documents/My Pictures/test.jpg");
+//  GraphicsDevice gd = new PreviewDevice();
+  GraphicsDevice gd = new PrinterDevice("HP LaserJet 4000 Series PCL");//HP LaserJet 4000 Series PCL Adobe PDF
     
     // -------------For PrinterDevice
     //gd.setDeviceAttribute("orientation", "landscape");
     //gd.setDeviceAttribute("copies", 1);
   
-    gd.setRegion( 0, 0, 600, 900 );
-    gd2.setRegion( 600,0, 600, 900 );
+    gd.setRegion(0, 0, 250, 600);
+    //gd2.setRegion( 600,0, 600, 900 );
     gd.display( disp, true );
-    gd2.display( disp, true );
-    //gd.print();
+    gd.setRegion(20, 200, 250, 250 );
+    gd.display( disp2, true );
+    //gd2.display( disp2,true);
+    gd.print();
     //gd2.print();
 //    gd.close();
   }
