@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2007/08/06 14:29:43  rmikk
+ * Changed some bounds to determine that determines when correlations go from
+ *   positive to negative and go from negative to positive
+ *
  * Revision 1.3  2007/05/14 22:02:28  rmikk
  * Added public methods and variables so an external program can be used for
  *    testing and viewing the results of subprocesses
@@ -57,6 +61,13 @@ import gov.anl.ipns.Util.SpecialStrings.*;
 
 /**
  * @author Ruth
+ * TODO:
+ *    1. Do not save those where 1/d> maxXtal length
+ *    2. Eliminate middle 30%. If that is none or r increases then include
+ *       otherwise don't include
+ *    3. Check maxCorrIndex and minCorrIndex.  
+ *     if( minCorrIndex < .3 maxCorrIndex or minCorrIndex >.7 maxCorrIndex
+ *      do not cache.
  * 
  */
 public class GetUB {
@@ -286,7 +297,7 @@ public class GetUB {
       int maxIndx = - 1;
       for( int i = 0 ; ( i < xixj.length ) && ! done ; i++ ) {
          if( faze == 0 ) {
-            if( xixj[ i ] < 0 )
+            if( xixj[ i ] < -.1 )
                faze = 1;
          }
          else if( faze == 1 ) {
@@ -295,7 +306,7 @@ public class GetUB {
             maxIndx = i;
          }
          else if( faze == 2 ) {
-            if( xixj[ i ] < 0 )
+            if( xixj[ i ] < -.1 )
                faze = 3;
             else if( xixj[ i ] > xixj[ maxIndx ] ) {
 
