@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.13  2007/08/07 16:18:02  oakgrovej
+ * Added "line" option to the Value list
+ *
  * Revision 1.12  2007/08/06 15:13:15  oakgrovej
  *  - Combined the Values into one Hashtable
  *  - The Hashtables are fields that are set in the constructor
@@ -357,6 +360,7 @@ public class DataSetDisplayable extends Displayable
     temp.put("on", 1);
     temp.put("true", true);
     temp.put("false", false);
+    temp.put("line", GraphJPanel.LINE);
     temp.put("dot", GraphJPanel.DOT);
     temp.put("plus", GraphJPanel.PLUS);
     temp.put("star", GraphJPanel.STAR);
@@ -434,6 +438,8 @@ public class DataSetDisplayable extends Displayable
     gd.display( disp, true );
     gd.setRegion(20, 200, 250, 250 );
     gd.display( disp2, true );
+    gd.setDeviceAttribute("printableareax", .5f);
+    gd.setDeviceAttribute("printableareay", .5f);
     //gd2.display( disp2,true);
     gd.print();
     //gd2.print();
