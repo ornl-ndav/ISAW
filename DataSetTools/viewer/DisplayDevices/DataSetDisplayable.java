@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.14  2007/08/07 16:41:26  oakgrovej
+ * Changed name of the value "line" to "solid".
+ *
  * Revision 1.13  2007/08/07 16:18:02  oakgrovej
  * Added "line" option to the Value list
  *
@@ -360,7 +363,7 @@ public class DataSetDisplayable extends Displayable
     temp.put("on", 1);
     temp.put("true", true);
     temp.put("false", false);
-    temp.put("line", GraphJPanel.LINE);
+    temp.put("solid", GraphJPanel.LINE);
     temp.put("dot", GraphJPanel.DOT);
     temp.put("plus", GraphJPanel.PLUS);
     temp.put("star", GraphJPanel.STAR);
