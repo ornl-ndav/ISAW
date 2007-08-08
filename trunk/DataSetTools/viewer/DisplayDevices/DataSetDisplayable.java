@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.15  2007/08/08 21:47:02  oakgrovej
+ * Commenting and cleanup
+ *
  * Revision 1.14  2007/08/07 16:41:26  oakgrovej
  * Changed name of the value "line" to "solid".
  *
@@ -97,7 +100,6 @@ import javax.swing.*;
 
 import DataSetTools.dataset.*;
 import DataSetTools.viewer.*;
-import DataSetTools.retriever.*;
 import gov.anl.ipns.DisplayDevices.*;
 import gov.anl.ipns.ViewTools.Components.ObjectState;
 import gov.anl.ipns.ViewTools.Components.TwoD.Contour.ContourViewComponent;
@@ -127,7 +129,7 @@ public class DataSetDisplayable extends Displayable
   {
     viewManager = new ViewManager( ds, view_type, false );
     Ostate = viewManager.getObjectState(true);
-    valueList = getViewValueList();
+    valueList = getValueList();
     graphAttributes = getGraphAttributeList();
     viewAttributes = getViewAttributeList();
     //System.out.println(Ostate);
@@ -199,6 +201,12 @@ public class DataSetDisplayable extends Displayable
     }
   }
 
+  /**
+   * This method sets a particular View Attribute to the Value
+   * 
+   * @param name The name of the View Attribute to be set
+   * @param value The name of the Value
+   */
   public void setViewAttribute( String name , String value ) throws Exception
   {
     Object OSVal = null;
@@ -300,7 +308,13 @@ public class DataSetDisplayable extends Displayable
     }
   }
 
-
+  /**
+   * This method is used by the other setLineAttribute methods after
+   * they have altered the Attribute name to be ObjectState specific.
+   * 
+   * @param name The ObjectState specific Attribute name
+   * @param val The Value to set the Attribute to
+   */
   private void setLineAttribute(String Attribute, 
       Object Val) throws Exception
   {
@@ -315,6 +329,12 @@ public class DataSetDisplayable extends Displayable
     viewManager.setObjectState(Ostate);
   }
   
+  /**
+   * This methods creates and returns a Hashtable containing the Graph Line
+   * Attribute names along with their ObjectState specific name
+   *  
+   * @return The Hashtable
+   */
   public static Hashtable<String,String> getGraphAttributeList()
   {    
     Hashtable<String,String> temp = new Hashtable<String,String>();
@@ -332,6 +352,12 @@ public class DataSetDisplayable extends Displayable
     return temp;
   }
   
+  /**
+   * This methods creates and returns a Hashtable containing the View Attribute
+   * names along with their ObjectState specific path
+   *  
+   * @return The Hashtable
+   */
   public static Hashtable<String,String> getViewAttributeList()
   {
     Hashtable<String,String> temp = new Hashtable<String,String>();
@@ -342,7 +368,13 @@ public class DataSetDisplayable extends Displayable
     return temp;
   }
   
-  public static Hashtable<String,Object> getViewValueList()
+  /**
+   * This methods creates and returns a Hashtable containing the Value
+   * names along with the Object they represent
+   *  
+   * @return The Hashtable
+   */
+  public static Hashtable<String,Object> getValueList()
   {
     Hashtable<String,Object> temp = new Hashtable<String,Object>();
     temp.put("black", Color.black);
@@ -378,8 +410,8 @@ public class DataSetDisplayable extends Displayable
   */
   public static void main( String args[] ) throws Exception
   {
-    String directory = "/home/dennis/WORK/ISAW/SampleRuns";
-    String file_name = directory + "/GPPD12358.RUN";
+//    String directory = "/home/dennis/WORK/ISAW/SampleRuns";
+//    String file_name = directory + "/GPPD12358.RUN";
 //  String file_name = directory + "/SCD06496.RUN";
     //RunfileRetriever rr = new RunfileRetriever( file_name );
     //DataSet ds = rr.getDataSet(1);
@@ -441,8 +473,8 @@ public class DataSetDisplayable extends Displayable
     gd.display( disp, true );
     gd.setRegion(20, 200, 250, 250 );
     gd.display( disp2, true );
-    gd.setDeviceAttribute("printableareax", .5f);
-    gd.setDeviceAttribute("printableareay", .5f);
+    //gd.setDeviceAttribute("printableareax", .5f);
+    //gd.setDeviceAttribute("printableareay", .5f);
     //gd2.display( disp2,true);
     gd.print();
     //gd2.print();
