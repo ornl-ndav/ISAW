@@ -19,10 +19,13 @@ file_dev   =DisplayDevice("File","TestFile.jpg")
 displayable=Displayable(datasets[1],"Graph")
 
 setLineAttribute( displayable, 1, "Line Color", "Blue")
+setLineAttribute( displayable, 1, "Mark type", "plus")
+setLineAttribute( displayable, 1, "Mark color", "black")
+setLineAttribute( displayable, 1, "transparent", "true")
 setLineAttribute( displayable, 2, "Line Color", "Red")
 
 DisplayGraph(screen_dev,displayable,true)
-#DisplayGraph(preview_dev,displayable,false)
+DisplayGraph(preview_dev,displayable,false)
 
-#DisplayGraph(file_dev,displayable,false)
-#print(file_dev)
+DisplayGraph(file_dev,displayable,false)
+print(file_dev)
