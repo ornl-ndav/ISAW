@@ -25,6 +25,10 @@
  * Modified:
  *
  *  $Log: Translate.java,v $
+ *  Revision 1.6  2006/11/04 20:22:39  dennis
+ *  No longer modify Vector3D object by reference, to support switch
+ *  to new non-array form of Vector3D.
+ *
  *  Revision 1.5  2006/07/20 15:23:53  dennis
  *  Updated from CVS repository at isaw.mscs.uwstout.edu.
  *  This added a method apply_to() to apply the transformation
@@ -152,11 +156,13 @@ public class Translate extends TransformGroup
                                 "null vector in Translate.apply_to()");
      out_vec.set( in_vec );
 
-     float coords[] = out_vec.get();  // get reference to array of components
-                                      // and alter their values, in place
+     float coords[] = out_vec.get();  // get copy of array of components
+                                      // and set the new value
      coords[0] += tx;
      coords[1] += ty;
      coords[2] += tz;
+     
+     out_vec.set(coords);
   }
 
 

@@ -33,6 +33,61 @@
  * Modified:
  *
  *  $Log: SelectionJPanel.java,v $
+ *  Revision 1.26  2007/07/31 16:42:24  dennis
+ *  Split ButtonListener class into two separate classes, one for
+ *  the Region type selection, on for handling commands.
+ *  Added methods ListenToFutureEvents() and IgnoreFutureEvents() to
+ *  switch listeners in and out, allowing the mouse events to fall
+ *  through to the ImageJPanel for zooming, and POINTED AT events,
+ *  when the SelectionJPanel is visible, but NOT needing the events.
+ *  Added a checkbox, "Edit Selected Regions" that must be checked to
+ *  get events for editing regions.  Pressing a region type button
+ *  will also switch on events for the SelectionJPanel, until the
+ *  region selection is finished.
+ *
+ *  Revision 1.25  2007/07/30 15:58:55  dennis
+ *  Removed duplicated code in the default constructor.  The default
+ *  constructor now just passes in default values to the constructor
+ *  that takes initial values for the regions' name, opacity and color.
+ *
+ *  Revision 1.24  2007/07/29 20:45:14  dennis
+ *  Changed local_transform and global_transform to be private
+ *  in CoordJPanel class, to keep better control over who can
+ *  change them, and how they can be changed.
+ *
+ *  Revision 1.23  2007/06/15 22:28:35  oakgrovej
+ *  Added:
+ *  Click message
+ *  clickPoint along with get method
+ *  closeEditor method
+ *
+ *  Revision 1.22  2007/04/29 20:26:07  dennis
+ *  Added button to undo the previous selection.
+ *  Now all buttons use one instance of a ButtonListener.
+ *
+ *  Revision 1.21  2007/04/29 18:26:04  dennis
+ *  Made UNION the default operation type returned by getOperation()
+ *
+ *  Revision 1.20  2007/04/28 05:58:40  dennis
+ *  Added (and now send) messages for OPACITY_CHANGED and
+ *  COLOR_CHANGED.
+ *  Added javadocs on constructor.
+ *
+ *  Revision 1.19  2007/04/28 03:26:30  dennis
+ *  Refactored and added controls to complement current selection
+ *  and choose operations to be used when combining regions.
+ *  (Joshua Oakgrove, Terry Farmer, Galina Pozharsky)
+ *
+ *  Revision 1.18  2007/03/23 20:28:57  dennis
+ *  Now checks for cursor being an instance of DoubleWedgeCursor
+ *  before checking for WedgeCursor.  This change is needed to
+ *  properly find the cursor type, now that DoubleWedgeCursor
+ *  extends WedgeCursor.
+ *
+ *  Revision 1.17  2007/03/16 18:30:49  dennis
+ *  Now handles cirlces and ellipses.
+ *  Minor code clean up.
+ *
  *  Revision 1.16  2004/03/12 01:33:23  millermi
  *  - Changed package and imports.
  *
@@ -101,9 +156,16 @@ package gov.anl.ipns.ViewTools.Components.Cursor;
 
 import java.awt.*;
 import java.awt.event.*;
+
 import javax.swing.*;
 
+import gov.anl.ipns.Util.Sys.ColorSelector;
+import gov.anl.ipns.Util.Sys.WindowShower;
 import gov.anl.ipns.ViewTools.UI.ActiveJPanel;
+
+import gov.anl.ipns.ViewTools.Components.Region.RegionOp;
+import gov.anl.ipns.ViewTools.Components.Transparency.SelectionOverlay;
+import gov.anl.ipns.ViewTools.Components.ViewControls.ControlSlider;
 import gov.anl.ipns.ViewTools.Panels.Cursors.XOR_Cursor;
 import gov.anl.ipns.ViewTools.Panels.Cursors.BoxCursor;
 
@@ -118,13 +180,13 @@ public class SelectionJPanel extends ActiveJPanel
   * "RESET_SELECTED" - This message String is sent to listeners when the
   * all of the selections are removed.
   */ 
-  public static final String RESET_SELECTED = "RESET_SELECTED";
+  public static final String RESET_SELECTED = "Clear All";
   
  /**
   * "RESET_LAST_SELECTED" - This message String is sent to listeners when the
   * last selection is removed.
   */ 
-  public static final String RESET_LAST_SELECTED = "RESET_LAST_SELECTED";
+  public static final String RESET_LAST_SELECTED = "UNDO";
   
  /**
   * "REGION_SELECTED" - This message String is sent to listeners when a
@@ -138,11 +200,18 @@ public class SelectionJPanel extends ActiveJPanel
   public static final String BOX = "Box";
  
  /**
-  * "Ellipse" - This message String is used to select/deselect the circle cursor.
-  * The region this pertains to is the EllipseRegion. Ellipse is used because
-  * scaling does not always yield an exact circle.
+  * "Ellipse" - This message String is used to select/deselect the ellipse 
+  *             cursor.  The region this pertains to is the EllipseRegion. 
+  *             Ellipse is used because scaling does not always yield an 
+  *             exact circle.
   */ 
   public static final String ELLIPSE = "Ellipse";
+
+ /**
+  * "Circle" - This message String is used to select/deselect the circle 
+  *             cursor.  
+  */
+  public static final String CIRCLE = "Circle";
  
  /**
   * "Line" - This message String is used to select/deselect the line cursor.
@@ -176,9 +245,28 @@ public class SelectionJPanel extends ActiveJPanel
   */ 
   public static final String ALL = "all";
   
+  /**
+   * "Complement Current Selection" - This message String is used to 
+   * complement the current selected array of points.
+   */
+  public static final String COMPLEMENT_CURRENT_SELECTION = "Complement";
+  
+  public static final String UNION = "Union";
+
+  public static final String INTERSECT = "Intersect";
+
+  public static final String INTERSECT_COMPLEMENT = "Intersect Complement";
+
+  public static final String COLOR_CHANGED = ColorSelector.COLOR_CHANGED;
+
+  public static final String OPACITY_CHANGED = "Opacity_Changed";
+  
+  public static final String CLICK = "Click";
+  
   private AnnularCursor ring;
   private BoxCursor box;
   private CircleCursor circle;
+  private EllipseCursor ellipse;
   private PointCursor point;
   private LineCursor line;
   private WedgeCursor wedge;
@@ -186,29 +274,58 @@ public class SelectionJPanel extends ActiveJPanel
   private boolean isAdown;   // true if A is pressed (for RESET_SELECTED)
   private boolean isBdown;   // true if B is pressed (for box selection)
   private boolean isCdown;   // true if C is pressed (for circle selection)
+  private boolean isEdown;   // true if E is pressed (for ellipse selection)
   private boolean isDdown;   // true if D is pressed (for dbl wedge selection)
   private boolean isLdown;   // true if L is pressed (for line selection)
   private boolean isPdown;   // true if P is pressed (for point selection)
   private boolean isRdown;   // true if R is pressed (for annular selection)
   private boolean isWdown;   // true if W is pressed (for wedge selection)
-  private boolean doing_box;	  // true if box selection started
+  private boolean doing_box;      // true if box selection started
   private boolean doing_circle;   // true if circle selection started
+  private boolean doing_ellipse;  // true if ellipse selection started
   private boolean doing_dblwedge; // true if wedge selection started
-  private boolean doing_line;	  // true if line selection started
+  private boolean doing_line;     // true if line selection started
   private boolean doing_point;    // true if point selection started
   private boolean doing_ring;     // true if annular selection started
   private boolean doing_wedge;    // true if wedge selection started
-  private boolean firstRun;	  // true if 3pt cursor hasn't drawn midpoint
+  private boolean firstRun;       // true if 3pt cursor hasn't drawn midpoint
   private boolean disableBox;      // initially enabled.
   private boolean disableCircle;   // initially enabled.
+  private boolean disableEllipse;  // initially enabled.
   private boolean disableDblWedge; // initially enabled.
   private boolean disableLine;     // initially enabled.
   private boolean disablePoint;    // initially enabled.
-  private boolean disableRing;      // initially enabled.
+  private boolean disableRing;     // initially enabled.
   private boolean disableWedge;    // initially enabled.
   private boolean disableAll;      // initially enabled, used to disable
-                                   // Clear All action.
+  private boolean unionOpSelected;
+  private boolean intersectOpSelected;
+  private boolean intersectComplementOpSelected;
   
+  private String    name;
+  private transient SelectionEditor editor;
+  private Point     clickPoint;
+
+  public  static final String EDITOR_BOUNDS = "Editor Bounds";
+
+//buttons for making selections, used by editor.
+  private JButton[] sjpbuttons;
+  private Rectangle editor_bounds = new Rectangle(700, 0, 430, 390);
+  private float     opacity = 1.0f; // value [0,1] where 0 is clear,
+  private Color     reg_color;
+  private String[]  ops = {UNION,INTERSECT,INTERSECT_COMPLEMENT};
+  private JComboBox opChooser;
+  private JLabel    opLabel = new JLabel("Operation");
+  private JCheckBox region_edit_cb = new JCheckBox("Edit Selected Regions");
+  
+//listeners for events that are added and removed to allow events to be passed
+//up to the ImageJPanel instead of being handled hare.  This allows for 
+//zooming in and out, while the SelectionOverlay is present.
+  private SelectMouseAdapter       select_mouse_adapter        = null;
+  private SelectMouseMotionAdapter select_mouse_motion_adapter = null;
+  private SelectKeyAdapter         select_key_adapter          = null;
+
+
  /**
   * Constructor adds listeners to this SelectionJPanel. All boolean values
   * are set to false. This JPanel is also contructed to receive keyboard
@@ -216,44 +333,82 @@ public class SelectionJPanel extends ActiveJPanel
   */ 
   public SelectionJPanel()
   { 
-    isAdown = false;
-    isBdown = false;
-    isCdown = false;
-    isDdown = false;
-    isLdown = false;
-    isPdown = false;
-    isRdown = false;
-    isWdown = false;
-    
-    doing_box = false;
-    doing_circle = false;
-    doing_line = false;
-    doing_point = false;
-    doing_wedge = false;
-    doing_dblwedge = false;
-    doing_ring = false;
-    
-    // initialize all selections to enabled.
-    String[] enable = {ALL};
-    enableCursor( enable );
-    
-    firstRun = true;
-  
-    box = new BoxCursor(this);
-    circle = new CircleCursor(this);
-    line = new LineCursor(this);
-    point = new PointCursor(this);
-    wedge = new WedgeCursor(this);
-    dblwedge = new DoubleWedgeCursor(this);
-    ring = new AnnularCursor(this);
-    
-    requestFocus();
-    
-    addMouseListener( new SelectMouseAdapter() );
-    addMouseMotionListener( new SelectMouseMotionAdapter() );
-    addKeyListener( new SelectKeyAdapter() );
+    this( SelectionOverlay.DEFAULT_REGION_NAME, Color.white, 1.0f );
   }
+  
 
+ /**
+  *  Construct a SelectionJPanel for entry of a compound selection,
+  *  with a specified name, draw color and transparency value.
+  *
+  *  @param name         The name of the list of region, operator pairs
+  *                      being constructed
+  *  @param color        The color to use when drawing the regions
+  *  @param transparency The transparency value to use when drawing the regions
+  *
+  */
+  public SelectionJPanel(String name, Color color, float transparency )
+  { 
+      this.name = name;             // first record specified parameter values
+      reg_color = color; 
+      opacity   = transparency;
+                                    // next do the generic construction steps
+      isAdown = false;
+      isBdown = false;
+      isCdown = false;
+      isDdown = false;
+      isLdown = false;
+      isPdown = false;
+      isRdown = false;
+      isWdown = false;
+      
+      doing_box      = false;
+      doing_circle   = false;
+      doing_ellipse  = false;
+      doing_line     = false;
+      doing_point    = false;
+      doing_wedge    = false;
+      doing_dblwedge = false;
+      doing_ring     = false;
+
+      unionOpSelected               = false;
+      intersectOpSelected           = false;
+      intersectComplementOpSelected = false;
+      
+      // initialize all selections to enabled.
+      String[] enable = {ALL};
+      enableCursor( enable );
+      
+      firstRun = true;
+    
+      box      = new BoxCursor(this);
+      circle   = new CircleCursor(this);
+      ellipse  = new EllipseCursor(this);
+      line     = new LineCursor(this);
+      point    = new PointCursor(this);
+      wedge    = new WedgeCursor(this);
+      dblwedge = new DoubleWedgeCursor(this);
+      ring     = new AnnularCursor(this);
+      
+      requestFocus();
+
+      select_mouse_adapter        = new SelectMouseAdapter();
+      select_mouse_motion_adapter = new SelectMouseMotionAdapter();
+      select_key_adapter          = new SelectKeyAdapter();
+
+      region_edit_cb.addItemListener( new EditEnableListener() );
+
+      addComponentListener(new NotVisibleListener());
+      sjpbuttons = getControls();
+
+      opChooser = new JComboBox(ops);
+      opChooser.addActionListener(new JComboBoxListener());
+      opChooser.setSelectedIndex(0);
+
+      editor = new SelectionEditor();
+    }
+
+  
  /* ------------------------ set_cursor ------------------------------ */
  /**
   *  Move the rubber band cursor to the specified pixel point. If the
@@ -281,14 +436,25 @@ public class SelectionJPanel extends ActiveJPanel
     else if( cursor instanceof CircleCursor )
     {
       if ( doing_circle )
-     	cursor.redraw( current );
+       cursor.redraw( current );
       else
       {
-     	cursor.start( current );
-     	cursor.redraw( current );
-     	doing_circle = true;
+       cursor.start( current );
+       cursor.redraw( current );
+       doing_circle = true;
       }
     }  
+    else if( cursor instanceof EllipseCursor )
+    {
+      if ( doing_ellipse )
+        cursor.redraw( current );
+      else
+      {
+        cursor.start( current );
+        cursor.redraw( current );
+        doing_ellipse = true;
+      }
+    }
     else if( cursor instanceof LineCursor )
     {
       if ( doing_line )
@@ -299,7 +465,7 @@ public class SelectionJPanel extends ActiveJPanel
         cursor.redraw( current );
         doing_line = true;
       }
-    }	     
+    }       
     else if( cursor instanceof PointCursor )
     {
       if ( doing_point )
@@ -312,6 +478,7 @@ public class SelectionJPanel extends ActiveJPanel
       }
     }  
   }
+
 
  /* --------------- set_cursor for XOR_Cursor3pt --------------------- */
  /**
@@ -326,40 +493,44 @@ public class SelectionJPanel extends ActiveJPanel
   */
   public void set_cursor( XOR_Cursor3pt cursor, Point current )
   {
-    if( cursor instanceof WedgeCursor )
-    {
-      if ( doing_wedge )
-	cursor.redraw( current );
-      else
-      {
-	cursor.start( current );
-	cursor.redraw( current );
-	doing_wedge = true;
-      }
-    }
-    else if( cursor instanceof DoubleWedgeCursor )
+                                            // check DoubleWedgeCursor first
+                                            // since DoubleWedgeCursor extends
+                                            // WedgeCursor
+    if( cursor instanceof DoubleWedgeCursor )
     {
       if ( doing_dblwedge )
-	cursor.redraw( current );
+        cursor.redraw( current );
       else
       {
-	cursor.start( current );
-	cursor.redraw( current );
-	doing_dblwedge = true;
+        cursor.start( current );
+        cursor.redraw( current );
+        doing_dblwedge = true;
+      }
+    }
+    else if( cursor instanceof WedgeCursor )
+    {
+      if ( doing_wedge )
+        cursor.redraw( current );
+      else
+      {
+        cursor.start( current );
+        cursor.redraw( current );
+        doing_wedge = true;
       }
     }
     else if( cursor instanceof AnnularCursor )
     {
       if ( doing_ring )
-	cursor.redraw( current );
+        cursor.redraw( current );
       else
       {
-	cursor.start( current );
-	cursor.redraw( current );
-	doing_ring = true;
+        cursor.start( current );
+        cursor.redraw( current );
+        doing_ring = true;
       }
     }
   }
+
 
  /* -------------------------- stop_cursor ---------------------------- */
  /**
@@ -368,12 +539,12 @@ public class SelectionJPanel extends ActiveJPanel
   *
   *  @param  cursor   the type of cursor being used.
   *  @param  current  the point to record as the current point,
-  *		      in pixel coordinates
+  *          in pixel coordinates
   */
   public void stop_cursor( XOR_Cursor cursor, Point current )
   {
     if( cursor instanceof BoxCursor )
-    {	
+    {  
       if ( doing_box )
       {
         cursor.redraw( current );
@@ -382,7 +553,7 @@ public class SelectionJPanel extends ActiveJPanel
       }
     }
     else if( cursor instanceof CircleCursor )
-    {	
+    {  
       if ( doing_circle )
       {
         cursor.redraw( current );
@@ -390,25 +561,35 @@ public class SelectionJPanel extends ActiveJPanel
         doing_circle = false;
       }
     }  
+    else if( cursor instanceof EllipseCursor )
+    {
+      if ( doing_ellipse )
+      {
+        cursor.redraw( current );
+        cursor.stop( current );
+        doing_ellipse = false;
+      }
+    }
     else if( cursor instanceof LineCursor )
-    {	
+    {  
       if ( doing_line )
       {
         cursor.redraw( current );
         cursor.stop( current );
         doing_line = false;
       }
-    }	     
+    }       
     else if( cursor instanceof PointCursor )
-    {	
+    {  
       if ( doing_point )
       {
-    	cursor.redraw( current );
-    	cursor.stop( current );
-    	doing_point = false;
+      cursor.redraw( current );
+      cursor.stop( current );
+      doing_point = false;
       }
-    }	   
+    }     
   }
+
 
  /* -------------------------- stop_cursor ---------------------------- */
  /**
@@ -417,63 +598,67 @@ public class SelectionJPanel extends ActiveJPanel
   *
   *  @param  cursor   the type of cursor being used.
   *  @param  current  the point to record as the current point,
-  *		      in pixel coordinates
+  *          in pixel coordinates
   */
   public void stop_cursor( XOR_Cursor3pt cursor, Point current )
   {
-    if( cursor instanceof WedgeCursor )
-    {	
-      if ( doing_wedge )
-      {
-	if( firstRun )
-        {
-          cursor.redraw( current );
-          cursor.midpoint( current );
-        }
-        else
-        {
-	  cursor.redraw( current );
-	  cursor.stop( current );
-	  doing_wedge = false;
-        }
-      }
-    } 
-    else if( cursor instanceof DoubleWedgeCursor )
-    {	
+                                            // check DoubleWedgeCursor first
+                                            // since DoubleWedgeCursor extends
+                                            // WedgeCursor
+    if( cursor instanceof DoubleWedgeCursor )
+    {  
       if ( doing_dblwedge )
       {
-	if( firstRun )
+        if( firstRun )
         {
           cursor.redraw( current );
           cursor.midpoint( current );
         }
         else
         {
-	  cursor.redraw( current );
-	  cursor.stop( current );
-	  doing_dblwedge = false;
+          cursor.redraw( current );
+          cursor.stop( current );
+          doing_dblwedge = false;
+        }
+      }
+    }
+    else if( cursor instanceof WedgeCursor )
+    {
+      if ( doing_wedge )
+      {
+        if( firstRun )
+        {
+          cursor.redraw( current );
+          cursor.midpoint( current );
+        }
+        else
+        {
+          cursor.redraw( current );
+          cursor.stop( current );
+          doing_wedge = false;
         }
       }
     }
     else if( cursor instanceof AnnularCursor )
-    {	
+    {  
       if ( doing_ring )
       {
-	if( firstRun )
+      if( firstRun )
         {
           cursor.redraw( current );
           cursor.midpoint( current );
         }
         else
         {
-	  cursor.redraw( current );
-	  cursor.stop( current );
-	  doing_ring = false;
+          cursor.redraw( current );
+          cursor.stop( current );
+          doing_ring = false;
         }
       }
-    }	
+    }  
   }
   
+
  /**
   * Since there are 4 types of xor cursors, this method gives us
   * which cursor was used.
@@ -485,13 +670,16 @@ public class SelectionJPanel extends ActiveJPanel
   {
     if( cursor.equals(BOX) )
       return box;
-    else if( cursor.equals(ELLIPSE) )
+    else if( cursor.equals(CIRCLE) )
       return circle;
+    else if( cursor.equals(ELLIPSE) )
+      return ellipse;
     else if( cursor.equals(LINE) )
       return line;     
     else //( cursor.equals(POINT) )
       return point;
   }
+
   
  /**
   * Since there are other types of cursors, this method gives us
@@ -509,68 +697,84 @@ public class SelectionJPanel extends ActiveJPanel
     else //if( cursor.equals(RING) )
       return ring;
   }
+
  
  /**
   * This method returns controls to be used as an alternative to key events
-  * when making selections. Also included is a "Clear All" button. If the
+  * when making selections. Also included is a RESET_SELECTED button. If the
   * disableCursor() method has been called, disabled buttons will be grayed-out.
   *
   *  @return array of JButtons, each button corresponding to a region.
   */ 
   public JButton[] getControls()
   {
-    JButton[] controls = new JButton[8];
+    SelectionChoiceListener choice_listener = new SelectionChoiceListener();
+    JButton[] controls = new JButton[11];
     controls[0] = new JButton(BOX);
-    controls[0].addActionListener( new ButtonListener() );
+    controls[0].addActionListener( choice_listener );
     controls[0].setToolTipText("Shortcut Key: Hold B");
     if( disableBox )
       controls[0].setEnabled(false);
     
-    controls[1] = new JButton(ELLIPSE);
-    controls[1].addActionListener( new ButtonListener() );
+    controls[1] = new JButton(CIRCLE);
+    controls[1].addActionListener( choice_listener );
     controls[1].setToolTipText("Shortcut Key: Hold C");
     if( disableCircle )
       controls[1].setEnabled(false);
+
+    controls[2] = new JButton(ELLIPSE);
+    controls[2].addActionListener( choice_listener );
+    controls[2].setToolTipText("Shortcut Key: Hold E");
+    if( disableEllipse )
+      controls[1].setEnabled(false);
     
-    controls[2] = new JButton(DOUBLE_WEDGE);
-    controls[2].addActionListener( new ButtonListener() );
-    controls[2].setToolTipText("Shortcut Key: Hold D");
+    controls[3] = new JButton(DOUBLE_WEDGE);
+    controls[3].addActionListener( choice_listener );
+    controls[3].setToolTipText("Shortcut Key: Hold D");
     if( disableDblWedge )
-      controls[2].setEnabled(false);
-    
-    controls[3] = new JButton(LINE);
-    controls[3].addActionListener( new ButtonListener() );
-    controls[3].setToolTipText("Shortcut Key: Hold L");
-    if( disableLine )
       controls[3].setEnabled(false);
     
-    controls[4] = new JButton(POINT);
-    controls[4].addActionListener( new ButtonListener() );
-    controls[4].setToolTipText("Shortcut Key: Hold P");
-    if( disablePoint )
+    controls[4] = new JButton(LINE);
+    controls[4].addActionListener( choice_listener );
+    controls[4].setToolTipText("Shortcut Key: Hold L");
+    if( disableLine )
       controls[4].setEnabled(false);
     
-    controls[5] = new JButton(RING);
-    controls[5].addActionListener( new ButtonListener() );
-    controls[5].setToolTipText("Shortcut Key: Hold R");
-    if( disableRing )
+    controls[5] = new JButton(POINT);
+    controls[5].addActionListener( choice_listener );
+    controls[5].setToolTipText("Shortcut Key: Hold P");
+    if( disablePoint )
       controls[5].setEnabled(false);
     
-    controls[6] = new JButton(WEDGE);
-    controls[6].addActionListener( new ButtonListener() );
-    controls[6].setToolTipText("Shortcut Key: Hold W");
-    if( disableWedge )
+    controls[6] = new JButton(RING);
+    controls[6].addActionListener( choice_listener );
+    controls[6].setToolTipText("Shortcut Key: Hold R");
+    if( disableRing )
       controls[6].setEnabled(false);
     
-    controls[7] = new JButton("Clear All");
-    controls[7].addActionListener( new ButtonListener() );
-    controls[7].setToolTipText("Shortcut Key: Hold A");
-    if( disableAll )
+    controls[7] = new JButton(WEDGE);
+    controls[7].addActionListener( choice_listener );
+    controls[7].setToolTipText("Shortcut Key: Hold W");
+    if( disableWedge )
       controls[7].setEnabled(false);
+    
+    CommandButtonListener command_listener = new CommandButtonListener();
+    controls[8] = new JButton(COMPLEMENT_CURRENT_SELECTION);
+    controls[8].addActionListener( command_listener );
+
+    controls[9] = new JButton(RESET_LAST_SELECTED);
+    controls[9].addActionListener( command_listener );
+    
+    controls[10] = new JButton(RESET_SELECTED);
+    controls[10].addActionListener( command_listener );
+    controls[10].setToolTipText("Shortcut Key: Hold A");
+    if( disableAll )
+      controls[10].setEnabled(false);
     
     return controls;
   }
   
+
  /**
   * This method allows users to disable cursors that were previously enabled.
   *
@@ -586,16 +790,19 @@ public class SelectionJPanel extends ActiveJPanel
         disableAll = true;
         disableBox = true;
         disableCircle = true;
+        disableEllipse = true;
         disableDblWedge = true;
         disableLine = true;
         disablePoint = true;
-	disableRing = true;
+        disableRing = true;
         disableWedge = true;
       }
       else if( cursor[c].equals(BOX) )
         disableBox = true;
-      else if( cursor[c].equals(ELLIPSE) )
+      else if( cursor[c].equals(CIRCLE) )
         disableCircle = true;
+      else if( cursor[c].equals(ELLIPSE) )
+        disableEllipse = true;
       else if( cursor[c].equals(DOUBLE_WEDGE) )
         disableDblWedge = true;
       else if( cursor[c].equals(LINE) )
@@ -608,6 +815,7 @@ public class SelectionJPanel extends ActiveJPanel
         disableWedge = true;
     }
   }
+
  
  /**
   * This method allows users to enable cursors that were previously disabled.
@@ -624,16 +832,19 @@ public class SelectionJPanel extends ActiveJPanel
         disableAll = false;
         disableBox = false;
         disableCircle = false;
+        disableEllipse = false;
         disableDblWedge = false;
         disableLine = false;
         disablePoint = false;
-	disableRing = false;
+        disableRing = false;
         disableWedge = false;
       }
       else if( cursor[c].equals(BOX) )
         disableBox = false;
-      else if( cursor[c].equals(ELLIPSE) )
+      else if( cursor[c].equals(CIRCLE) )
         disableCircle = false;
+      else if( cursor[c].equals(ELLIPSE) )
+        disableEllipse = false;
       else if( cursor[c].equals(DOUBLE_WEDGE) )
         disableDblWedge = false;
       else if( cursor[c].equals(LINE) )
@@ -647,6 +858,7 @@ public class SelectionJPanel extends ActiveJPanel
     }
   }
  
+
  /**
   * This method is used to check to see if cursors have been disabled.
   *
@@ -662,8 +874,10 @@ public class SelectionJPanel extends ActiveJPanel
       return !disableAll;
     if( cursor.equals(BOX) )
       return !disableBox;
-    if( cursor.equals(ELLIPSE) )
+    if( cursor.equals(CIRCLE) )
       return !disableCircle;
+    if( cursor.equals(ELLIPSE) )
+      return !disableEllipse;
     if( cursor.equals(DOUBLE_WEDGE) )
       return !disableDblWedge;
     if( cursor.equals(LINE) )
@@ -676,19 +890,198 @@ public class SelectionJPanel extends ActiveJPanel
       return !disableWedge;
     return false; // should never get here.
   }
+
+  
+  /**
+   * This method sets all the colors for the selected regions.
+   *
+   *  @param  color
+   */
+  public void setRegionColor(Color color) {
+    reg_color = color;
+    send_message( COLOR_CHANGED );
+  }
+
+  
+  public Color getColor()
+  {
+    return reg_color;
+  }
+  
+
+  public String getName()
+  {
+    return name;
+  }
+
+  
+  /**
+   * This method sets the opaqueness of the selection. Values will fall in the
+   * interval [0,1], with 1 being opaque, and 0 being transparent. 
+   *
+   *  @param  value - on interval [0,1]
+   */
+  public void setOpacity(float value) {
+    if (value > 1)
+      opacity = 1.0f;
+    else if (value < 0)
+      opacity = 0;
+    else
+      opacity = value;
+    send_message( OPACITY_CHANGED );
+  }
+
+  
+  public Rectangle getEditorBounds()
+  {
+    return editor_bounds;
+  }
+
+  
+  public void setEditorBounds(Rectangle bounds)
+  {
+    editor.setBounds(bounds);
+  }
+
+  
+  public float getOpacity()
+  {
+    return opacity;
+  }
+
+  
+  public RegionOp.Operation getOp()
+  {
+    if(unionOpSelected)
+      return RegionOp.Operation.UNION;
+    else if(intersectOpSelected)
+      return RegionOp.Operation.INTERSECT;
+    else if(intersectComplementOpSelected)
+      return RegionOp.Operation.INTERSECT_COMPLEMENT;
+    else
+      return RegionOp.Operation.UNION;
+  }
+  
+
+  public Point getClickPoint()
+  {
+    return new Point(clickPoint);
+  }
+  
+
+  /**
+   * This method is used to view an instance of the Selection Editor.
+   */
+  public void editSelection() {
+    if (editor.isVisible()) {
+      editor.toFront();
+      editor.requestFocus();
+    } else {
+      editor_bounds = editor.getBounds();
+      editor.dispose();
+      editor = new SelectionEditor();
+      WindowShower.show(editor);
+      editor.toFront();
+    }
+  }
+  
+  
+  /**
+   * This method will disable the selections and cursors included in the names
+   * list. Names are defined by static Strings in the SelectionJPanel class.
+   *
+   *  @param  select_names List of selection names defined by
+   *                       SelectionJPanel class.
+   *  @see gov.anl.ipns.ViewTools.Components.Cursor.SelectionJPanel
+   */
+  public void disableSelection(String[] select_names) {
+    disableCursor(select_names);
+    sjpbuttons = getControls();
+
+    if (editor.isVisible()) {
+      editor.dispose();
+      editSelection();
+    }
+  }
+
+
+  /**
+   * This method will enable the selections and cursors included in the names
+   * list. Names are defined by static Strings in the SelectionJPanel class.
+   *
+   *  @param  select_names List of selection names defined by
+   *                       SelectionJPanel class.
+   *  @see gov.anl.ipns.ViewTools.Components.Cursor.SelectionJPanel
+   */
+  public void enableSelection(String[] select_names) {
+    enableCursor(select_names);
+    sjpbuttons = getControls();
+
+    if (editor.isVisible()) {
+      editor.dispose();
+      editSelection();
+    }
+  }
+
+  
+  public void closeEditor()
+  {
+    editor.dispose();
+  }
+
+
+ /*
+  *  Add the mouse, key and mouse motion listeners to this panel, so that
+  *  such events will be interpreted as selection requests.  This should
+  *  ONLY be called by the SelectionChoiceListener, when the user presses
+  *  a button to start the selection of a region, OR when the selection
+  *  of regions to edit will be allowed.
+  */
+  private void ListenToFutureEvents()
+  {
+    IgnoreFutureEvents();     // remove any existing listeners, just in case
+                              // this method was called when the listeners
+                              // were already there.
+
+    addMouseListener( select_mouse_adapter );
+    addMouseMotionListener( select_mouse_motion_adapter );
+    addKeyListener( select_key_adapter );
+  }
+
+
+ /*
+  *  Remove the mouse, key and mouse motion listeners from this panel, so that
+  *  such events will be ignored by this SelectionJPanel and will instead 
+  *  fall through to the ImageJPanel2 object.  This allows the events to be
+  *  interpreted as requests to zoom in or out, or to change the POINTED AT
+  *  location.
+  */
+  private void IgnoreFutureEvents()
+  {
+    removeMouseListener( select_mouse_adapter );
+    removeMouseMotionListener( select_mouse_motion_adapter );
+    removeKeyListener( select_key_adapter );
+  }
+
   
  /*
   * This method is to check to see if any selections have been started
   */
   private boolean doingAny()
   {
-    if( doing_box || doing_circle || doing_line || 
-	doing_point || doing_wedge || doing_dblwedge ||
-	doing_ring )
+    if ( doing_box      || 
+         doing_circle   || 
+         doing_ellipse  || 
+         doing_line     || 
+         doing_point    || 
+         doing_wedge    || 
+         doing_dblwedge ||
+         doing_ring       )
       return true;
-    // else nothing is selecting
-    return false;
+
+    return false;       // no selection in progress 
   }
+
   
  /*
   * This method sets all of the is*down to false, thus only the newly pressed
@@ -699,12 +1092,14 @@ public class SelectionJPanel extends ActiveJPanel
     isAdown = false;
     isBdown = false;
     isCdown = false;
+    isEdown = false;
     isDdown = false;
     isLdown = false;
     isPdown = false;
     isRdown = false;
     isWdown = false;
   }
+
   
  /*
   * This method is used to restrict the point to the bounds of the 
@@ -725,6 +1120,7 @@ public class SelectionJPanel extends ActiveJPanel
     return true;
   }*/
 
+
  /*
   * Tells the SelectMouseAdapter is any keys are pressed.
   */
@@ -737,41 +1133,46 @@ public class SelectionJPanel extends ActiveJPanel
       // only make a selection if no other selections are in progress
       if( !doingAny() )
       {
-	clearButtonPressed();
-	if( code == KeyEvent.VK_A && !disableAll )
-	{
-	  isAdown = true;     
-	}
-	else if( code == KeyEvent.VK_B && !disableBox )
-	{
-	  isBdown = true;     
-	}
-	else if( code == KeyEvent.VK_C && !disableCircle )
-	{
-	  isCdown = true;    
-	}
-	else if( code == KeyEvent.VK_D && !disableDblWedge )
-	{
-	  isDdown = true;   
-	}
-	else if( code == KeyEvent.VK_L && !disableLine )
-	{
-	  isLdown = true;    
-	}
-	else if( code == KeyEvent.VK_P && !disablePoint )
-	{
-	  isPdown = true;     
-	}
-	else if( code == KeyEvent.VK_R && !disableRing )
-	{
-	  isRdown = true;     
-	}
-	else if( code == KeyEvent.VK_W && !disableWedge )
-	{
-	  isWdown = true;    
-	}
-      } 			      
+        clearButtonPressed();
+        if( code == KeyEvent.VK_A && !disableAll )
+        {
+          isAdown = true;     
+        }
+        else if ( code == KeyEvent.VK_B && !disableBox )
+        {
+          isBdown = true;     
+        }
+        else if ( code == KeyEvent.VK_C && !disableCircle )
+        {
+          isCdown = true;    
+        }
+        else if ( code == KeyEvent.VK_E && !disableEllipse )
+        {
+          isEdown = true;
+        }
+        else if ( code == KeyEvent.VK_D && !disableDblWedge )
+        {
+          isDdown = true;   
+        }
+        else if ( code == KeyEvent.VK_L && !disableLine )
+        {
+          isLdown = true;    
+        }
+        else if ( code == KeyEvent.VK_P && !disablePoint )
+        {
+          isPdown = true;     
+        }
+        else if ( code == KeyEvent.VK_R && !disableRing )
+        {
+          isRdown = true;     
+        }
+        else if ( code == KeyEvent.VK_W && !disableWedge )
+        {
+          isWdown = true;    
+        }
+      }             
     }
+
     
     public void keyReleased( KeyEvent ke )
     {
@@ -779,87 +1180,170 @@ public class SelectionJPanel extends ActiveJPanel
 
       int code = ke.getKeyCode();
 
-      if( code == KeyEvent.VK_A )
+      if ( code == KeyEvent.VK_A )
       {
-	isAdown = false;      
+        isAdown = false;      
       }    
-      else if( code == KeyEvent.VK_B )
+      else 
+      if ( code == KeyEvent.VK_B )
       {
-	isBdown = false;    
+        isBdown = false;    
       }
-      else if( code == KeyEvent.VK_C )
+      else if ( code == KeyEvent.VK_C )
       {
-	isCdown = false;     
+        isCdown = false;     
       }
-      else if( code == KeyEvent.VK_D && !doing_dblwedge )
+      else if ( code == KeyEvent.VK_E )
       {
-	isDdown = false;     
+        isEdown = false;     
       }
-      else if( code == KeyEvent.VK_L )
+      else if ( code == KeyEvent.VK_D && !doing_dblwedge )
       {
-	isLdown = false;     
+        isDdown = false;     
       }
-      else if( code == KeyEvent.VK_P )
+      else if ( code == KeyEvent.VK_L )
       {
-	isPdown = false;     
+        isLdown = false;     
+      }
+      else if ( code == KeyEvent.VK_P )
+      {
+        isPdown = false;     
       } 
-      else if( code == KeyEvent.VK_R && !doing_ring )
+      else if ( code == KeyEvent.VK_R && !doing_ring )
       {
-	isRdown = false;     
+        isRdown = false;     
       }
-      else if( code == KeyEvent.VK_W && !doing_wedge )
-	isWdown = false;
+      else if ( code == KeyEvent.VK_W && !doing_wedge )
+        isWdown = false;
     }
   }
+
+
+  private class EditEnableListener implements ItemListener
+  {
+    public void itemStateChanged( ItemEvent e )
+    {
+      if ( region_edit_cb.isSelected() )
+      {
+        ListenToFutureEvents();  
+      }
+      else
+      {
+        if ( !doingAny() )
+          IgnoreFutureEvents();
+      }
+    }
+  } 
+
   
  /*
   * This class receives button events and substitutes them for key events.
   */ 
-  private class ButtonListener implements ActionListener
+  private class SelectionChoiceListener implements ActionListener
   {
     public void actionPerformed( ActionEvent ae )
     {
       String message = ae.getActionCommand();
       
       // only make a selection if no other selections are in progress
-      if( !doingAny() )
+      if ( !doingAny() )
       {
-	clearButtonPressed();
-	if( message.equals(BOX) && !disableBox )
-	{
-	  isBdown = true;
-	}
-	else if( message.equals(ELLIPSE) && !disableCircle )
-	{
-	  isCdown = true;
-	}
-	else if( message.equals(DOUBLE_WEDGE) && !disableDblWedge )
-	{
-	  isDdown = true;
-	}
-	else if( message.equals(LINE) && !disableLine )
-	{
-	  isLdown = true;
-	}
-	else if( message.equals(POINT) && !disablePoint )
-	{
-	  isPdown = true;
-	}
-	else if( message.equals(RING) && !disableRing )
-	{
-	  isRdown = true;
-	}
-	else if( message.equals(WEDGE) && !disableWedge )
-	{
-	  isWdown = true;
-	}
-	else if( message.equals("Clear All") )
-	{
-	  send_message(RESET_SELECTED);
-	}
+        clearButtonPressed();
+        if ( message.equals(BOX) && !disableBox )
+        {
+          isBdown = true;
+        }
+        else if ( message.equals(CIRCLE) && !disableCircle )
+        {
+          isCdown = true;
+        }
+        else if ( message.equals(ELLIPSE) && !disableEllipse )
+        {
+          isEdown = true;
+        }
+        else if ( message.equals(DOUBLE_WEDGE) && !disableDblWedge )
+        {
+          isDdown = true;
+        }
+        else if ( message.equals(LINE) && !disableLine )
+        {
+          isLdown = true;
+        }
+        else if ( message.equals(POINT) && !disablePoint )
+        {
+          isPdown = true;
+        }
+        else if ( message.equals(RING) && !disableRing )
+        {
+          isRdown = true;
+        }
+        else if ( message.equals(WEDGE) && !disableWedge )
+        {
+          isWdown = true;
+        }
+    
+        ListenToFutureEvents();
+      
       } // end if !doingAny
     }
   }
+
+
+ /*
+  * This class receives button events and substitutes them for key events.
+  */
+  private class CommandButtonListener implements ActionListener
+  {
+    public void actionPerformed( ActionEvent ae )
+    {
+      String message = ae.getActionCommand();
+
+      // only send command if no selections are in progress
+      if ( !doingAny() )
+      {
+        if ( message.equals(RESET_SELECTED) )
+        {
+          send_message(RESET_SELECTED);
+        }
+        else if ( message.equals(RESET_LAST_SELECTED) )
+        {
+          send_message(RESET_LAST_SELECTED);
+        }
+        else if ( message.equals(COMPLEMENT_CURRENT_SELECTION))
+        {
+          send_message(COMPLEMENT_CURRENT_SELECTION);
+        }
+      } // end if !doingAny
+    }
+  }
+  
+
+  private class JComboBoxListener implements ActionListener
+  {
+    public void actionPerformed(ActionEvent e)
+    {
+      String message = (String)opChooser.getSelectedItem();
+      if ( message.equals(UNION) )
+      {
+        unionOpSelected = true;
+        intersectOpSelected = false;
+        intersectComplementOpSelected = false;
+      }
+      else if ( message.equals(INTERSECT) )
+      {
+        unionOpSelected = false;
+        intersectOpSelected = true;
+        intersectComplementOpSelected = false;
+      }
+      else if ( message.equals(INTERSECT_COMPLEMENT ) )
+      {
+        unionOpSelected = false;
+        intersectOpSelected = false;
+        intersectComplementOpSelected = true;
+      }
+    }
+  }
+
 
  /*
   * This class used flags set by the SelectKeyAdapter class to determine
@@ -870,29 +1354,40 @@ public class SelectionJPanel extends ActiveJPanel
     public void mouseClicked (MouseEvent e)
     {
       if ( e.getClickCount() == 2 ) 
-	 send_message(RESET_LAST_SELECTED);
+      {   
+        send_message( RESET_LAST_SELECTED );
+        //System.out.println("dclick");
+      }
+      else
+      {
+        clickPoint = new Point(e.getX(),e.getY());
+        send_message( CLICK );
+        //System.out.println("click "+clickPoint);
+      }
     }
 
-    public void mousePressed (MouseEvent e)
+    public void mousePressed ( MouseEvent e )
     {
       //System.out.println("here in mousepressed");
       // if A is pressed, delete all selections.      
-      if( isAdown )
-	send_message(RESET_SELECTED);
-      else if( isBdown )
-	set_cursor( box, e.getPoint() );
-      else if( isCdown )
-	set_cursor( circle, e.getPoint() );
-      else if( isDdown )
-	set_cursor( dblwedge, e.getPoint() );
-      else if( isLdown )
-	set_cursor( line, e.getPoint() ); 
-      else if( isPdown )
-	set_cursor( point, e.getPoint() );
-      else if( isRdown )
-	set_cursor( ring, e.getPoint() );
-      else if( isWdown )
-	set_cursor( wedge, e.getPoint() );
+      if ( isAdown )
+        send_message(RESET_SELECTED);
+      else if ( isBdown )
+        set_cursor( box, e.getPoint() );
+      else if ( isCdown )
+        set_cursor( circle, e.getPoint() );
+      else if ( isEdown )
+        set_cursor( ellipse, e.getPoint() );
+      else if ( isDdown )
+        set_cursor( dblwedge, e.getPoint() );
+      else if ( isLdown )
+        set_cursor( line, e.getPoint() ); 
+      else if ( isPdown )
+        set_cursor( point, e.getPoint() );
+      else if ( isRdown )
+        set_cursor( ring, e.getPoint() );
+      else if ( isWdown )
+        set_cursor( wedge, e.getPoint() );
     }
 
     public void mouseReleased(MouseEvent e)
@@ -903,81 +1398,87 @@ public class SelectionJPanel extends ActiveJPanel
       String message = REGION_SELECTED;
       if( doing_box )
       {
-	stop_cursor( box, current );
-	isBdown = false;
-	//if( validpoint )
-          message += ">" + BOX;
+        stop_cursor( box, current );
+        isBdown = false;
+        message += ">" + BOX;
       }
       else if( doing_circle )
       {
-	stop_cursor( circle, current );
-	isCdown = false;
-	//if( validpoint )
-          message += ">" + ELLIPSE;
+        stop_cursor( circle, current );
+        isCdown = false;
+        message += ">" + CIRCLE;
+      }
+      else if( doing_ellipse )
+      {
+        stop_cursor( ellipse, current );
+        isEdown = false;
+        message += ">" + ELLIPSE;
       }
       else if( doing_line )
       {
-	stop_cursor( line, current );
-	isLdown = false;
-	//if( validpoint )
-          message += ">" + LINE;
+        stop_cursor( line, current );
+        isLdown = false;
+        message += ">" + LINE;
       }
       else if( doing_point )
       {
-	stop_cursor( point, current ); 
-	isPdown = false;
-	//if( validpoint )
-          message += ">" + POINT; 
+        stop_cursor( point, current ); 
+        isPdown = false;
+        message += ">" + POINT; 
       } 
       else if( doing_ring )
       {
-	stop_cursor( ring, current ); 
+        stop_cursor( ring, current ); 
         if( firstRun )
         {
-	  isRdown = true;
+          isRdown = true;
         }
         else
         {
           isRdown = false;
-	  //if( validpoint )
-            message += ">" + RING;
+          message += ">" + RING;
         }
         firstRun = !firstRun; 
       }    
       else if( doing_wedge )
       {
-	stop_cursor( wedge, current ); 
+        stop_cursor( wedge, current ); 
         if( firstRun )
         {
-	  isWdown = true;
+          isWdown = true;
         }
         else
         {
           isWdown = false;
-	  //if( validpoint )
-            message += ">" + WEDGE;
+          message += ">" + WEDGE;
         }
         firstRun = !firstRun; 
       }   
       else if( doing_dblwedge )
       {
-	stop_cursor( dblwedge, current ); 
+        stop_cursor( dblwedge, current ); 
         if( firstRun )
         {
-	  isDdown = true;
+          isDdown = true;
         }
         else
         {
           isDdown = false;
-	  //if( validpoint )
-            message += ">" + DOUBLE_WEDGE;
+          message += ">" + DOUBLE_WEDGE;
         }
         firstRun = !firstRun; 
-      } 
-      send_message(message);	     
+      }
+
+      if ( !message.equals( REGION_SELECTED ) ) // selection process done since
+      {                                         // a region type was appended
+        send_message(message);       
+        if ( !region_edit_cb.isSelected() )
+          IgnoreFutureEvents();
+      }
     }
   } 
   
+
  /*
   * Redraw the specified cursor, giving the rubber band stretch effect.
   */ 
@@ -988,22 +1489,138 @@ public class SelectionJPanel extends ActiveJPanel
       //System.out.println("here in mousedragged");
 
       //System.out.println("Point: " + e.getPoint() );
-      if( doing_box )
-	set_cursor( box, e.getPoint() );
-      else if( doing_circle )
-	set_cursor( circle, e.getPoint() );
-      else if( doing_dblwedge )
-	set_cursor( dblwedge, e.getPoint() );
-      else if( doing_line )
-	set_cursor( line, e.getPoint() );
-      else if( doing_point )
-	set_cursor( point, e.getPoint() );
-      else if( doing_ring )
-	set_cursor( ring, e.getPoint() );
-      else if( doing_wedge )
-	set_cursor( wedge, e.getPoint() );
+      if ( doing_box )
+        set_cursor( box, e.getPoint() );
+      else if ( doing_circle )
+        set_cursor( circle, e.getPoint() );
+      else if ( doing_ellipse )
+        set_cursor( ellipse, e.getPoint() );
+      else if ( doing_dblwedge )
+        set_cursor( dblwedge, e.getPoint() );
+      else if ( doing_line )
+        set_cursor( line, e.getPoint() );
+      else if ( doing_point )
+        set_cursor( point, e.getPoint() );
+      else if ( doing_ring )
+        set_cursor( ring, e.getPoint() );
+      else if ( doing_wedge )
+        set_cursor( wedge, e.getPoint() );
     }
-  }    
+  }   
+  
+  
+  /*
+   * This class is the editor for the Selection Overlay. This is used to 
+   * create a selection, change opacity of a selection, and change selection
+   * color.
+   */
+  private class SelectionEditor extends JFrame {
+    
+    private JPanel pane;
+    private SelectionEditor this_editor;
+
+    public SelectionEditor() {
+      super(name+" SelectionEditor");
+      this.setBounds(editor_bounds);
+      this_editor = this;
+      pane = new JPanel();
+      new BoxLayout(pane, BoxLayout.Y_AXIS);
+
+      // Number of grid rows needed for the selection type buttons,
+      // and add one in for the JLabel.
+      int gridrows = (int) Math.ceil((double) (sjpbuttons.length + 1) / 3);
+
+      // If number of rows are specified, the number of columns doesn't matter.
+      JPanel sjpcontrols = new JPanel(new GridLayout(gridrows, 1));
+      sjpcontrols.add(new JLabel("Add Selection"));
+
+      for (int i = 0; i < sjpbuttons.length; i++)
+        sjpcontrols.add(sjpbuttons[i]);
+
+      pane.add(sjpcontrols);
+
+      JPanel opPanel = new JPanel();
+      opPanel.add(opLabel);
+      opPanel.add(opChooser);
+      pane.add(opPanel);
+
+      pane.add( region_edit_cb );
+      
+      ColorSelector color_chooser = new ColorSelector( ColorSelector.SWATCH );
+      color_chooser.addActionListener(new ControlListener());
+
+      pane.add(color_chooser);
+
+      // Slider that controls the opaqueness of the selections.
+      ControlSlider opacityscale = new ControlSlider(
+          "Selection Opacity Scale");
+      opacityscale.setStep(.01f);
+      opacityscale.setRange(0f, 1f);
+      opacityscale.setMajorTickSpace(.2f);
+      opacityscale.setMinorTickSpace(.05f);
+      opacityscale.setValue(opacity);
+      opacityscale.addActionListener(new ControlListener());
+
+      JButton closebutton = new JButton("Close");
+      closebutton.addActionListener(new ControlListener());
+      JPanel spacer = new JPanel();
+      spacer.setPreferredSize(new Dimension(editor_bounds.width / 4, 0));
+
+      JPanel slider_and_close = new JPanel(new BorderLayout());
+      slider_and_close.add(opacityscale, BorderLayout.WEST);
+      slider_and_close.add(spacer, BorderLayout.CENTER);
+      slider_and_close.add(closebutton, BorderLayout.EAST);
+
+      pane.add(slider_and_close);
+
+      this.getContentPane().add(pane);
+      this_editor.addComponentListener(new EditorListener());
+    }
+
+
+    /*
+     * Private listener for the SelectionEditor. This class listens to all
+     * of the controls on the editor.
+     */
+    class ControlListener implements ActionListener {
+
+      public void actionPerformed(ActionEvent ae) {
+
+        String message = ae.getActionCommand();
+
+        if ( message.equals( ColorSelector.COLOR_CHANGED ) ) {
+          setRegionColor( ((ColorSelector) ae.getSource() )
+              .getSelectedColor());
+        }
+
+        else if (message.equals(ControlSlider.SLIDER_CHANGED)) {
+          setOpacity(((ControlSlider) ae.getSource()).getValue());
+        } 
+
+        else if (message.equals("Close")) {
+          editor_bounds = this_editor.getBounds();
+          this_editor.dispose();
+        }
+
+        //send repaint message
+      }
+    }
+
+
+    class EditorListener extends ComponentAdapter {
+      public void componentResized(ComponentEvent we) {
+        editor_bounds = editor.getBounds();
+      }
+    }
+  }
+
+
+  private class NotVisibleListener extends ComponentAdapter {
+    public void componentHidden(ComponentEvent ce) {
+      editor.setVisible(false);
+    }
+  }
+
   
 /* -----------------------------------------------------------------------
  *

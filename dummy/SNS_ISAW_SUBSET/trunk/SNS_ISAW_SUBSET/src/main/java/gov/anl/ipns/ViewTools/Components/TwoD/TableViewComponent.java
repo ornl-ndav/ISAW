@@ -34,6 +34,26 @@
  * Modified:
  *
  *  $Log: TableViewComponent.java,v $
+ *  Revision 1.15  2007/07/20 02:54:22  dennis
+ *  Now uses the PanViewControl's generic method setControlValue()
+ *  rather than the setLocalBounds() method, which is now private.
+ *
+ *  Revision 1.14  2007/06/14 22:08:33  rmikk
+ *  Had the PanViewControl repaint itself when the data is changed.
+ *
+ *  Revision 1.13  2007/06/13 15:30:23  rmikk
+ *  The PanViewController is now notified when the data is changed
+ *
+ *  Revision 1.12  2007/06/12 20:39:42  rmikk
+ *  Set POINTED_AT_CHANGED to agree with IObserver's POINTED_AT_CHANGED
+ *
+ *  Revision 1.11  2007/06/05 20:06:41  rmikk
+ *  The row labels and column labels now correspond to the values given in the
+ *     corresponding axisInfo
+ *
+ *  Revision 1.10  2007/03/16 17:01:39  dennis
+ *  Added method getWorldToArrayTransform().
+ *
  *  Revision 1.9  2005/05/25 20:28:36  dennis
  *  Now calls convenience method WindowShower.show() to show
  *  the window, instead of instantiating a WindowShower object
@@ -377,6 +397,10 @@ public class TableViewComponent implements IViewComponent2D, IPreserveState
   public void dataChanged()
   {
     tjp.repaint();
+    if( controls != null && controls.length >=1){
+       ((PanViewControl)controls[1]).makeNewPanImage = true;
+       ((PanViewControl)controls[1]).repaint();
+    }
   }
   
  /**
@@ -389,6 +413,7 @@ public class TableViewComponent implements IViewComponent2D, IPreserveState
   {
     varray = array;
     // Make sure data is valid.
+    String[] rowNames = null;
     if( varray != null )
     {
       //Make ijp correspond to the data in f_array
@@ -400,12 +425,35 @@ public class TableViewComponent implements IViewComponent2D, IPreserveState
     						  yinfo.getMax(),      
     						  xinfo.getMax(),
     						  yinfo.getMin() ) );
+      float Delta = (yinfo.getMax()-yinfo.getMin())/varray.getNumRows();
+      rowNames = new String[ varray.getNumRows()];
+      float Val = yinfo.getMin()+Delta/2f;
+      for( int i= 0; i< rowNames.length; i++){
+         rowNames[i] = ""+Val;
+         Val += Delta;
+      }
+         
     }
     tjp = null;
-    tjp = new TableJPanel( TableModelMaker.getModel(varray) );
+    tjp = new TableJPanel( TableModelMaker.getModel(varray, getColumnNames( varray )) );
     tjp.setColumnAlignment( SwingConstants.RIGHT );
     tjp.addActionListener( new TableListener() );
+    if( rowNames != null)
+       tjp.setRowLabels( rowNames);
     dataChanged();
+  }
+  
+  private String[] getColumnNames( IVirtualArray2D varray){
+     String[] Res = new String[ varray.getNumColumns()];
+     
+     AxisInfo x_axis = varray.getAxisInfo( AxisInfo.X_AXIS );
+     float L = (x_axis.getMax() - x_axis.getMin() )/Res.length;
+     float S = x_axis.getMin() + L/2f;
+     for( int i=0; i< Res.length; i++){
+        Res[i] =""+S;
+        S+=L;
+     }
+     return Res;
   }
   
  /**
@@ -515,6 +563,20 @@ public class TableViewComponent implements IViewComponent2D, IPreserveState
     return new floatPoint2D( image_to_wc.MapXTo(col_row_pt.x),
                              image_to_wc.MapYTo(col_row_pt.y) );
   }
+
+
+ /**
+  * Get a copy of the tranformation that maps world coordinates to array
+  * (col,row) coordinates for this view component. 
+  *
+  * @return a CoordTransform object that maps from world coordinates
+  *         to array (col,row) coordinates.
+  */
+  public CoordTransform getWorldToArrayTransform()
+  {
+    return ijp.getWorldToImageTransform();
+  }
+
   
  /*
   * Tells all listeners about a new action.
@@ -574,7 +636,7 @@ public class TableViewComponent implements IViewComponent2D, IPreserveState
     ((PanViewControl)controls[1]).setTitle(PAN_NAME);
     ((PanViewControl)controls[1]).setGlobalBounds(
          new CoordBounds(0,0,varray.getNumColumns()-1,varray.getNumRows()-1) );
-    ((PanViewControl)controls[1]).setLocalBounds(
+    ((PanViewControl)controls[1]).setControlValue(
          new CoordBounds(0,0,varray.getNumColumns()-1,varray.getNumRows()-1) );
     ((PanViewControl)controls[1]).enableStretch(false);
     ((PanViewControl)controls[1]).addActionListener( new ControlListener() );
@@ -609,7 +671,7 @@ public class TableViewComponent implements IViewComponent2D, IPreserveState
       if( message.equals(TableJPanel.SELECTED_CHANGED) )
         sendMessage(SELECTED_CHANGED);
       else if( message.equals(TableJPanel.POINTED_AT_CHANGED) )
-        sendMessage(POINTED_AT_CHANGED);
+        sendMessage(TableJPanel.POINTED_AT_CHANGED);
       else if( message.equals(TableJPanel.VIEWPORT_CHANGED) )
       {
 	// If varray was null, PanViewControl was never created, so do nothing.
@@ -630,7 +692,7 @@ public class TableViewComponent implements IViewComponent2D, IPreserveState
 	  viewport.width = varray.getNumColumns() + viewport.width + 1;
 	if( viewport.height < 0 )
 	  viewport.height = varray.getNumRows() + viewport.height + 1;
-	((PanViewControl)controls[1]).setLocalBounds(
+	((PanViewControl)controls[1]).setControlValue(
 	                   new CoordBounds( viewport.x, viewport.y,
 			                    viewport.x+viewport.width,
 					    viewport.y+viewport.height ) );

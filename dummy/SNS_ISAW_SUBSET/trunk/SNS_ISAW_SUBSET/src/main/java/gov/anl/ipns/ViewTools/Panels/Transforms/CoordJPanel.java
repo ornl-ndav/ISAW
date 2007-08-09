@@ -30,6 +30,25 @@
  * Modified:
  *
  *  $Log: CoordJPanel.java,v $
+ *  Revision 1.42  2007/07/29 20:45:16  dennis
+ *  Changed local_transform and global_transform to be private
+ *  in CoordJPanel class, to keep better control over who can
+ *  change them, and how they can be changed.
+ *
+ *  Revision 1.41  2007/07/29 19:05:59  dennis
+ *  Minor adjustment to ZoomToPixelSubregion().  Uses slightly larger
+ *  region and cals setLocalWorldCoords() to clamp the region to
+ *  the global bounds.
+ *
+ *  Revision 1.40  2007/03/10 15:05:26  dennis
+ *  Coordinate transformation now maps to the full rectangle,
+ *  [0,0]x[width,height], rather than [e,e]x[width-e,height-e]
+ *  for a small "epsilon", e.  This means that the coordinate
+ *  system is considered to cover the full range of pixels,
+ *  with 0 corresponding to the left edge of the first
+ *  column of pixels ane width corresponding to the right
+ *  edge of the last column of pixels, etc.
+ *
  *  Revision 1.39  2005/08/14 05:25:31  dennis
  *  The SetTransformsToWindowSize() method will now use a default
  *  200x200 window size if the window is not yet created to get a
@@ -256,14 +275,15 @@ public class CoordJPanel extends ActiveJPanel implements Serializable,
   protected boolean         h_scroll = false;
   protected boolean         v_scroll = false;
 
-  protected boolean               CJP_handle_arrow_keys;
-  private   BoxCursor             rb_box;
-  private   CrosshairCursor       crosshair_cursor;
-  protected CoordTransform        global_transform;
-  protected CoordTransform  local_transform;
+  protected boolean          CJP_handle_arrow_keys;
+  private   BoxCursor        rb_box;
+  private   CrosshairCursor  crosshair_cursor;
+  private   CoordTransform   global_transform;
+  private   CoordTransform   local_transform;
+
   protected Point           current_point = new Point(0,0);
   protected CoordJPanel     this_panel;
-  private   boolean         isListening = true; // turns listeners on/off
+  private   boolean         isListening = true;     // turns listeners on/off
   private   boolean         mouse_on_panel = false; // true if mouse visibly
                                                     // on this panel
   
@@ -370,8 +390,8 @@ public class CoordJPanel extends ActiveJPanel implements Serializable,
     // may need changing
     if( redraw )
       repaint();
-   
   } 
+
  
   /**
    * This method will get the current values of the state variables for this
@@ -403,6 +423,7 @@ public class CoordJPanel extends ActiveJPanel implements Serializable,
     return state;
   }
   
+
   /* ------------------------- setEventListening -------------------- */
   /**
    *  Set flag to control whether or not this component responds to events
@@ -481,6 +502,7 @@ public class CoordJPanel extends ActiveJPanel implements Serializable,
     return zoom_region;
   }
   
+
   /* ----------------------- setZoom_region ----------------------------- */
   public void setZoom_region(float x1, float y1, float x2, float y2)
   {
@@ -496,6 +518,7 @@ public class CoordJPanel extends ActiveJPanel implements Serializable,
   
     send_message( ZOOM_IN );
   }
+
 
   /* ---------------------- getCurrent_pixel_point ----------------------- */
   /**
@@ -536,6 +559,7 @@ public class CoordJPanel extends ActiveJPanel implements Serializable,
   {
     current_point = new Point(p);
   }
+
 
   /* ------------------------ setCurrent_WC_point ----------------------- */
   /**
@@ -659,6 +683,7 @@ public class CoordJPanel extends ActiveJPanel implements Serializable,
     return( local_transform.getSource( ) );
   }
 
+
   /* ---------------------------- showState ------------------------------ */
   /**
    *  Print the current global and local coordinate bounds and the current
@@ -673,6 +698,7 @@ public class CoordJPanel extends ActiveJPanel implements Serializable,
     showCurrentPoint();
   }
 
+
   /* ----------------------- set_crosshair_WC --------------------------- */
   /**
    *  Draw the full size crosshair cursor at the specified world coordinate
@@ -685,6 +711,7 @@ public class CoordJPanel extends ActiveJPanel implements Serializable,
    setCurrent_WC_point( pt );
    set_crosshair( current_point );
   }
+
 
   /* ------------------------ set_crosshair ------------------------------ */
   /**
@@ -876,6 +903,14 @@ public class CoordJPanel extends ActiveJPanel implements Serializable,
  */
 
 /* ------------------------- LocalTransformChanged ------------------------ */
+/**
+ *  The responsibility of this method is to do what is necessary to regemerate
+ *  the panel on the screen, after changing the local transformation.  
+ *  Derived may need to override this method.  For example the ImageJPanel
+ *  overrides this method to regenerate a rescaled image and then call
+ *  repaint.  At the CoordinateJPanel level, this merely calls repaint(),
+ *  which is all that the GraphJPanel requires.
+ */
 
 protected void LocalTransformChanged()
 {
@@ -911,6 +946,7 @@ private void showBounds( )
   System.out.println( "Local Pix     = " + local_transform.getDestination() );
 }
 
+
 /* ---------------------------- showCurrentPoint -------------------------- */
 
 private void showCurrentPoint( )
@@ -931,31 +967,28 @@ private void SetZoomRegionToWindowSize()
   zoom_region = new Rectangle( 0, 0, total_size.width, total_size.height );
 }
 
+
 /* ----------------------- SetTransformsToWindowSize  -------------------- */
 
 public void SetTransformsToWindowSize()
 {
   if ( !isVisible() )  // not yet visible, so assume a default window size 
-  {
     global_transform.setDestination( 0, 0, 200, 200 );
-    local_transform.setDestination( global_transform.getDestination());
-    return;
+  else
+  {
+    Dimension size = this.getSize();
+    global_transform.setDestination( 0, 0, size.width, size.height );
   }
-
-  Dimension total_size = this.getSize();
-
-  int width  = total_size.width;
-  int height = total_size.height;
-
-  global_transform.setDestination( -0.1f, -0.1f, 
-                                   width-0.9f, height-0.9f );
 
   local_transform.setDestination( global_transform.getDestination()); 
 }
 
 
 /* -------------------------- ZoomToPixelSubregion ----------------------- */
- 
+/**
+ *  Adjust local coordinate zoom region to snap to a boundary if the
+ *  edge of the zoom region is close to the boundary. 
+ */ 
 private void ZoomToPixelSubregion( float x1, float y1, float x2, float y2 )
 {
 /*
@@ -995,26 +1028,26 @@ private void ZoomToPixelSubregion( float x1, float y1, float x2, float y2 )
 
 
   if ( x1 < SNAP_REGION )                 // "snap" points to border if 
-    x1 = -0.1f;                           // if the cursor position is
+    x1 = 0;                               // if the cursor position is
                                           // close to border already
 
   if ( y1 < SNAP_REGION )
-    y1 = -0.1f;
+    y1 = 0;
 
 
   if ( x2 > width - SNAP_REGION )
-    x2 = width-0.9f;
+    x2 = width;
 
   if ( y2 > height - SNAP_REGION )
-    y2 = height-0.9f;
+    y2 = height;
                                               // now transform to World Coords
   WC_x1 = local_transform.MapXFrom( x1 );
   WC_x2 = local_transform.MapXFrom( x2 );
   WC_y1 = local_transform.MapYFrom( y1 );
   WC_y2 = local_transform.MapYFrom( y2 );
-                                              // preserve the "right side up"
-                                              // coordinate system 
-  local_transform.setSource( WC_x1, WC_y1, WC_x2, WC_y2 );
+
+  CoordBounds bounds = new CoordBounds( WC_x1, WC_y1, WC_x2, WC_y2 );
+  setLocalWorldCoords( bounds );
 
   send_message( ZOOM_IN );
 
@@ -1028,8 +1061,8 @@ private void ZoomToPixelSubregion( float x1, float y1, float x2, float y2 )
   System.out.println("END OF ZoomToPixelRegion ---------------------");
   System.out.println();
 */
-
 }
+
 
 /* --------------------------- my_setPreferredSize ------------------------ */
 /**
@@ -1049,9 +1082,6 @@ public void my_setPreferredSize( Dimension preferredSize )
 {
   preferred_size = preferredSize; 
 }
-
-
-
 
 
 /* -----------------------------------------------------------------------
@@ -1076,13 +1106,11 @@ public static void main(String[] args)
   }
 
 
-
 /* -----------------------------------------------------------------------
  *
  * UTILITY CLASSES
  *
  */
-
 
 class CoordMouseAdapter extends MouseAdapter
 {

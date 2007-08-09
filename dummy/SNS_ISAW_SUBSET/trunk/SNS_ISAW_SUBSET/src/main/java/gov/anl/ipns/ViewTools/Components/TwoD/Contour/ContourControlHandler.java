@@ -33,6 +33,26 @@
  *
  * Modified:
  * $Log: ContourControlHandler.java,v $
+ * Revision 1.13  2007/07/20 02:47:36  dennis
+ * Now calls PanViewControl's "generic" setControValue() method,
+ * rather than the specific setLocalWorldCoords() method, which
+ * has been made private.
+ *
+ * Revision 1.12  2007/07/20 01:30:15  dennis
+ * Removed debug print.
+ *
+ * Revision 1.11  2007/07/19 21:06:17  dennis
+ * Now uses setGlobalBounds() to reset the zoom region only
+ * when a message to reset the zoom region is received, not
+ * when zooming in.  Also, now only calls the
+ * setLocalBounds() method when zooming in, not when
+ * resetting the zoom region.
+ *
+ * Revision 1.10  2006/11/03 19:37:29  amoe
+ * -Added method:  generateCalculateButton()
+ * -Added calculate button to view control list.
+ * (Dominic Kramer)
+ *
  * Revision 1.9  2006/07/25 20:54:47  amoe
  * Fixed javadoc.
  *
@@ -92,6 +112,7 @@ import gov.anl.ipns.Util.Messaging.Property.PropertyChangeConnector;
 import gov.anl.ipns.Util.Sys.ColorSelector;
 import gov.anl.ipns.ViewTools.Components.IVirtualArray2D;
 import gov.anl.ipns.ViewTools.Components.ObjectState;
+import gov.anl.ipns.ViewTools.Components.ViewControls.ButtonControl;
 import gov.anl.ipns.ViewTools.Components.ViewControls.ColorControl;
 import gov.anl.ipns.ViewTools.Components.ViewControls.CompositeContourControl;
 import gov.anl.ipns.ViewTools.Components.ViewControls.ControlCheckbox;
@@ -104,6 +125,7 @@ import gov.anl.ipns.ViewTools.Components.ViewControls.SpinnerControl;
 import gov.anl.ipns.ViewTools.Components.ViewControls.ViewControl;
 import gov.anl.ipns.ViewTools.Panels.Contour.ContourJPanel;
 import gov.anl.ipns.ViewTools.Panels.Contour.Contours.Contours;
+import gov.anl.ipns.ViewTools.Panels.Contour.Contours.UniformContours;
 import gov.anl.ipns.ViewTools.Panels.Image.IndexColorMaker;
 
 import java.awt.BorderLayout;
@@ -126,7 +148,7 @@ import javax.swing.SpinnerNumberModel;
  * synchronized with the other modules.
  */
 public class ContourControlHandler extends ContourChangeHandler 
-                                      implements InformationHandler
+                                   implements InformationHandler
 {
 //--------------------=[ InformationCenter keys ]=----------------------------//
    /**
@@ -563,16 +585,17 @@ public class ContourControlHandler extends ContourChangeHandler
       //now to connect to the PropertyChangeConnector
       getPropertyConnector().addHandler(this);
       
-      controls = new ViewControl[8];
+      controls = new ViewControl[9];
       controls[0] = generateIntensityControls();
       controls[1] = generateColorScaleControls(colorScale, isDoubleSided);
       controls[2] = generateContourControls(minValue, maxValue, numLevels, 
                                             levels, useManualLevels);
-      controls[3] = generateLineStyleControl(styles, stylesEnabled);
-      controls[4] = generateLabelControls(enableLabels, everyNthLineLabeled);
-      controls[5] = generateSigFigControls(enableFormatting, numSigFig);
-      controls[6] = generateBackgroundControls(backgroundColor);
-      controls[7] = generatePanViewControl();
+      controls[3] = generateCalculateButton();
+      controls[4] = generateLineStyleControl(styles, stylesEnabled);
+      controls[5] = generateLabelControls(enableLabels, everyNthLineLabeled);
+      controls[6] = generateSigFigControls(enableFormatting, numSigFig);
+      controls[7] = generateBackgroundControls(backgroundColor);
+      controls[8] = generatePanViewControl();
       
       getContourPanel().addActionListener(new PanelListener());
    }
@@ -1216,6 +1239,39 @@ public class ContourControlHandler extends ContourChangeHandler
    
    
 //--------------=[ Methods used to generate the controls ]=-------------------//
+   private ButtonControl generateCalculateButton()
+   {
+      ButtonControl calcButton = new ButtonControl("Calculate");
+      calcButton.addActionListener(new ActionListener()
+      {
+         public void actionPerformed(ActionEvent event)
+         {
+            IVirtualArray2D array = getContourPanel().getData();
+            if (array == null)
+               return;
+            
+            float min = Float.MAX_VALUE;
+            float max = Float.MIN_VALUE;
+            float cur = 0;
+            
+            for (int i=0; i<array.getNumRows(); i++)
+            {
+               for (int j=0; j<array.getNumColumns(); j++)
+               {
+                  cur = array.getDataValue(i,j);
+                  
+                  min = Math.min(cur, min);
+                  max = Math.max(cur, max);
+               }
+            }
+            
+            contourControl.setControlValue(new UniformContours(min, max, 10));
+         }
+      });
+      
+      return calcButton;
+   }
+   
    /**
     * Used to instantiate and initialize the field 
     * {@link #backgroundControl backgroundControl}.
@@ -1431,12 +1487,12 @@ public class ContourControlHandler extends ContourChangeHandler
          public void actionPerformed(ActionEvent event)
          {
             String message = event.getActionCommand();
-            if (message.equals(PanViewControl.BOUNDS_CHANGED) || 
-                  message.equals(PanViewControl.BOUNDS_MOVED) || 
-                     message.equals(PanViewControl.BOUNDS_RESIZED))
+            if ( message.equals(PanViewControl.BOUNDS_CHANGED) || 
+                 message.equals(PanViewControl.BOUNDS_MOVED)   || 
+                 message.equals(PanViewControl.BOUNDS_RESIZED  ) )
             {
                getContourPanel().
-                  setLocalWorldCoords(panControl.getLocalBounds());
+                              setLocalWorldCoords(panControl.getLocalBounds());
                displayChanged();
             }
          }
@@ -1465,13 +1521,14 @@ public class ContourControlHandler extends ContourChangeHandler
       public void actionPerformed(ActionEvent event)
       {
          String message = event.getActionCommand();
-         if (message.equals(ContourJPanel.ZOOM_IN) || 
-               message.equals(ContourJPanel.RESET_ZOOM))
+         if ( message.equals(ContourJPanel.ZOOM_IN)   || 
+              message.equals(ContourJPanel.RESET_ZOOM) )
          {
             ContourJPanel contourPanel = getContourPanel();
-            panControl.setGlobalBounds(contourPanel.getGlobalWorldCoords());
-            panControl.setLocalBounds(contourPanel.getLocalWorldCoords());
-            //panControl.repaint();
+            if ( message.equals(ContourJPanel.RESET_ZOOM) )
+              panControl.setGlobalBounds(contourPanel.getGlobalWorldCoords());
+            else
+              panControl.setControlValue(contourPanel.getLocalWorldCoords());
          }
       }
    }

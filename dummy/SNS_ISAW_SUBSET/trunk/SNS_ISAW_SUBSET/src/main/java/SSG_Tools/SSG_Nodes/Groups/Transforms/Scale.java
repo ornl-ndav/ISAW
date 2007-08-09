@@ -25,6 +25,10 @@
  * Modified:
  *
  *  $Log: Scale.java,v $
+ *  Revision 1.6  2006/11/04 20:22:39  dennis
+ *  No longer modify Vector3D object by reference, to support switch
+ *  to new non-array form of Vector3D.
+ *
  *  Revision 1.5  2006/07/20 15:23:53  dennis
  *  Updated from CVS repository at isaw.mscs.uwstout.edu.
  *  This added a method apply_to() to apply the transformation
@@ -155,11 +159,13 @@ public class Scale extends TransformGroup
 
      out_vec.set( in_vec );
 
-     float coords[] = out_vec.get();   // get reference to array of components
-                                       // and alter their values, in place
+     float coords[] = out_vec.get();   // get copy of array of components
+                                       // and scale the components
      coords[0] *= sx;
      coords[1] *= sy;
      coords[2] *= sz;
+     
+     out_vec.set( coords );
   }
 
 

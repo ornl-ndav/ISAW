@@ -34,6 +34,47 @@
  * Modified:
  *
  *  $Log: Region.java,v $
+ *  Revision 1.20  2007/07/31 14:01:59  dennis
+ *  Removed getRegionUnion() method.  This operation is now
+ *  carried out using the RegionOpList class.
+ *  Marked methods needing javadocs with "TO DO".
+ *
+ *  Revision 1.19  2007/07/30 20:27:22  oakgrovej
+ *  Commented out System.out.print()
+ *
+ *  Revision 1.18  2007/06/15 22:33:32  oakgrovej
+ *  Added getRegionInstance methods
+ *
+ *  Revision 1.17  2007/05/10 20:54:41  dennis
+ *  Added method ClampPointsToArray() that is used to restrict the selected
+ *  points returned by regions such as LineRegion and PointRegion, that are
+ *  not derived from the RegionWithInterior class.
+ *
+ *  Revision 1.16  2007/04/28 19:46:40  dennis
+ *  The getRegionBounds() method now clamps the lower bounds to be
+ *  at least zero, and the upperbounds to be no more than maximum
+ *  row or column number.
+ *  Expanded java docs.
+ *
+ *  Revision 1.15  2007/04/11 21:52:33  dennis
+ *  Simplified getRegionUnion() method by using the RegionOpList class.
+ *
+ *  Revision 1.14  2007/03/16 16:38:12  dennis
+ *  Major refactoring of Region concept.  Regions are defined in world
+ *  coordinates.  Any information about the mapping from world coordinates
+ *  to array (col,row) coordinates is no longer kept by the regions.
+ *  The world_to_array transformation is passed in as a parameter to
+ *  the methods that require it.  This avoids any problems with keeping
+ *  the mapping up to date.  Also, a region can be easily used with different
+ *  mappings, say from world to an array of data or from world to pixels
+ *  on a display, just by providing the correct mapping when calling the
+ *  methods.  All methods for getting and setting mapping information were
+ *  removed.  Also, methods specific to regions with an interior (such as box)
+ *  were placed in a subclass RegionsWithInterior.
+ *
+ *  Revision 1.13  2007/03/11 04:37:16  dennis
+ *  Added methods to setWorldToArrayTran() and getWorldToArrayTran().
+ *
  *  Revision 1.12  2005/01/18 22:59:47  millermi
  *  - Added getWorldBounds() and getImageBounds()
  *
@@ -94,8 +135,12 @@ package gov.anl.ipns.ViewTools.Components.Region;
 import java.awt.Point;
 import java.util.Vector;
 
-import gov.anl.ipns.Util.Sys.SharedMessages;
+import javax.swing.JPanel;
+
 import gov.anl.ipns.Util.Numeric.floatPoint2D;
+import gov.anl.ipns.ViewTools.Components.Cursor.*;
+import gov.anl.ipns.ViewTools.Components.Transparency.SelectionOverlay;
+import gov.anl.ipns.ViewTools.Panels.Cursors.*;
 import gov.anl.ipns.ViewTools.Panels.Transforms.CoordBounds;
 import gov.anl.ipns.ViewTools.Panels.Transforms.CoordTransform;
 
@@ -104,30 +149,14 @@ import gov.anl.ipns.ViewTools.Panels.Transforms.CoordTransform;
  * used to pass selected regions (selected using the Selection Overlay) from a
  * view component to the viewer. Given the defining points of a region,
  * subclasses of this class can return all of the points inside the selected
- * region. The defining points are saved in the world coordinate system, so
- * all subclasses must map the defining points to image values before using.
- * ALL CLASSES THAT USE THE REGION CLASS SHOULD CALL setWorldBounds() AND
- * setImageBounds() IMMEDIATELY AFTER CONSTRUCTING A REGION INSTANCE.
+ * region. The defining points are saved in the world coordinate system.
+ * Classes that use regions are responsible for constructing and maintaining
+ * a mapping from world coordinates to array or pixel coordinates, if they
+ * such a discrete coordinate system.
  */ 
 public abstract class Region implements java.io.Serializable
 {
- /**
-  * "0" - This primative integer defines the coordinate system in
-  * world coordinates.
-  */
-  public static final int WORLD = 0;
-  
- /**
-  * "1" - This primative integer defines the coordinate system in
-  * image row/column coordinates.
-  */
-  public static final int IMAGE = 1;
-  
   protected floatPoint2D[] definingpoints;  // saved in world coords.
-  protected Point[] selectedpoints;
-  protected CoordTransform world_to_image;
-  //protected boolean world_coords_set = false;  // use these flags to tell if
-  //protected boolean image_coords_set = false;  // coordtransform is complete.
   
  /**
   * Constructor - provides basic initialization for all subclasses
@@ -137,120 +166,24 @@ public abstract class Region implements java.io.Serializable
   protected Region( floatPoint2D[] dp )
   {
     definingpoints = dp;
-    selectedpoints = new Point[0];
-    world_to_image = new CoordTransform();
   }
-  
- /**
-  * Set the world coordinate system. This must be done immediately following
-  * the construction of the Region since the selected area is dependent on
-  * the image and world bounds.
-  *
-  *  @param  wb The world bounds.
-  */
-  public void setWorldBounds( CoordBounds wb )
-  {
-    world_to_image.setSource(wb);
-    //world_coords_set = true;
-  }
-  
- /**
-  * Set the image coordinate system. This must be done immediately following
-  * the construction of the Region since the selected area is dependent on
-  * the image and world bounds.
-  *
-  *  @param  ib The image bounds.
-  */
-  public void setImageBounds( CoordBounds ib )
-  {
-    world_to_image.setDestination(ib);
-    //image_coords_set = true;
-  }
-  
- /**
-  * Get the world coordinate bounds for the region.
-  */ 
-  public CoordBounds getWorldBounds()
-  {
-    return world_to_image.getSource();
-  }
-  
- /**
-  * Get the image coordinate bounds for the region.
-  */ 
-  public CoordBounds getImageBounds()
-  {
-    return world_to_image.getDestination();
-  }
-  
- /**
-  * This method converts a floatPoint2D from one coordinate system to the
-  * coordinate system specified. It is assumed that the floatPoint2D lives
-  * in either the image or world coordinate system. If image coordinates
-  * are converted to world coords, the world coordinate values at the center
-  * of the pixel are returned.
-  *
-  *  @param  fpt floatPoint2D that is going to be mapped to the other coord
-  *              system.
-  *  @param  to_coordsystem The coordinate system the point will be mapped TO.
-  *  @return the mapped floatPoint2D.
-  */
-  public floatPoint2D convertFloatPoint( floatPoint2D fpt, int to_coordsystem )
-  {
-    // convert to world coords
-    // Since image coords are whole numbers, map world coords to pixel centers.
-    if( to_coordsystem == WORLD )
-    {
-      // the transform goes from upper left-hand corner
-      floatPoint2D map_to_center = world_to_image.MapFrom(fpt);
-      floatPoint2D wcpt1 = world_to_image.MapFrom(new floatPoint2D(0,0));
-      floatPoint2D wcpt2 = world_to_image.MapFrom(new floatPoint2D(1,1));
-      float x_offset = (wcpt2.x - wcpt1.x)/2f;
-      float y_offset = (wcpt2.y - wcpt1.y)/2f;
-      // Since offset takes care of increasing vs decreasing bounds, only
-      // need to use one case.
-      // This will adjust the bounds by half a pixel in world coordinates
-      // so the coordinates are given at pixel centers.
-      map_to_center.x += x_offset;
-      map_to_center.y += y_offset;
-      return map_to_center;
-    }
-    // convert to image coords
-    if( to_coordsystem == IMAGE )
-      return world_to_image.MapTo(fpt);
-    // if invalid number
-    return null;
-  }
-  
+
+
  /**
   * Get the world coordinate points used to define the geometric shape.
   *
-  *  @param  coordsystem The coordinate system from which the defining
-  *                      points are taken from, either WORLD or IMAGE.
-  *  @return array of points that define the region.
+  * @return a reference to the array of points that define the region.
   */
-  public floatPoint2D[] getDefiningPoints( int coordsystem )
+  public floatPoint2D[] getDefiningPoints()
   {
-    // world coords
-    if( coordsystem == WORLD )
-      return definingpoints;
-    // image coords
-    if( coordsystem == IMAGE )
-    {
-      // convert image def. pts to world def. pts.
-      floatPoint2D[] imagedp = new floatPoint2D[definingpoints.length];
-      for( int i = 0; i < definingpoints.length; i++ )
-        imagedp[i] = world_to_image.MapTo(definingpoints[i]);
-      return imagedp;
-    }
-    // if invalid number
-    return null;
+    return definingpoints;
   }
+
   
  /**
   * Compare two regions. This will return true only if the two intances
-  * are of the same class, have the same world_to_image transform, and have
-  * identical defining points. Be aware that it is difficult to compare
+  * are of the same class and have identical defining points. 
+  * Be aware that it is difficult to compare
   * float values reliably, so even identical regions will return false if
   * one of the values is off by a small amount. This will reliably return true
   * if the references of the two regions match. 
@@ -258,22 +191,22 @@ public abstract class Region implements java.io.Serializable
   *  @param  reg2 The region to be compared.
   *  @return true if equal, false if not.
   */
-  public boolean equals( Region reg2 )
+  public boolean equals1( Region reg2 )
   {
     // if references are the same, the region is the same.
     if( this == reg2 )
       return true;
+
     // check if instances of the same class
     if( !this.getClass().getName().equals(reg2.getClass().getName()) )
       return false;
-    // make sure working on same coordinate systems
-    if( !world_to_image.equals(reg2.world_to_image) )
-      return false;
+
     // make sure there exist the same number of defining points
-    floatPoint2D[] thisdp = this.getDefiningPoints(WORLD);
-    floatPoint2D[] reg2dp = reg2.getDefiningPoints(WORLD);
+    floatPoint2D[] thisdp = this.definingpoints;
+    floatPoint2D[] reg2dp = reg2.definingpoints;
     if( thisdp.length != reg2dp.length )
       return false;
+
     // check each individual element, be aware that float values are hard
     // to compare reliably.
     for( int i = 0; i < thisdp.length; i++ )
@@ -281,160 +214,397 @@ public abstract class Region implements java.io.Serializable
       if( thisdp[i] != reg2dp[i] )
         return false;
     }
+
     // else, must be same region.
     return true;
   }
+
+
+ /**
+  *  Get a bounding box for the region, in World Coordinates.  The
+  *  points of the region will lie in the X-interval [X1,X2] and
+  *  in the Y-interval [Y1,Y2], where X1,X2,Y1 and Y2 are the values
+  *  returned by the CoordBounds.getX1(), getX2(), getY1(), getY2()
+  *  methods.
+  * 
+  *  @return a CoordBounds object containing the full extent of this
+  *          region.
+  */
+ abstract public CoordBounds getRegionBoundsWC();
+
   
  /**
-  * Get all of the image points inside the region. The use of
-  * Point was chosen over floatPoint2D because at this point we are dealing
-  * with row/column coordinates, so rounding is acceptable. This method assumes
-  * that the input points are in (x,y) where (x = col, y = row ) form.
+  * Get the discrete points that lie within this region, based on the
+  * specified mapping from world to array (col,row) coordinates.
   *
+  * @param world_to_array  The transformation from world coordinates to
+  *                        array coordinates.  NOTE: The destination bounds
+  *                        for this mapping MUST correspond to the array
+  *                        size.  The destination CoordBounds object is used
+  *                        to get the array size!!!
+  * 
   *  @return array of points included within the region.
   */
-  public abstract Point[] getSelectedPoints();
+  abstract public Point[] getSelectedPoints( CoordTransform world_to_array );
   
+
  /**
   * Displays the Region type and its defining points.
   */
-  public abstract String toString();
-   
+  abstract public String toString();
+
+
  /**
-  * This method returns the selected points within a region. However, duplicate
-  * points may exist in the list of points. getSelectedPoints() will call this
-  * method and the getRegionUnion() method to eliminate duplicate points.
+  *  This method gets a rectangular bounding box in array (col,row) coordinates
+  *  that contains the region, based on the bounds returned by the
+  *  getRegionBoundsWC() method.  The Math.floor and Math.ceil functions are
+  *  applied to the results of mapping the world coordinate bounds to array
+  *  coordinates, to guarantee that the integer bounds produced contain
+  *  the region.
   *
-  *  @return array of points included within the region.
-  */
-  protected abstract Point[] initializeSelectedPoints();
-  
- /**
-  * This method is defines a rectangular bounds that the region is contained in.
+  *  @param world_to_array  The transformation from world coordinates to 
+  *                         array coordinates.  NOTE: The destination bounds
+  *                         for this mapping MUST correspond to the array
+  *                         size.  The destination CoordBounds object is used
+  *                         to get the array size!!!
   *
   *  @return Rectangular bounds containing the region.
   */
-  public abstract CoordBounds getRegionBounds();
+  public CoordBounds getRegionBounds( CoordTransform world_to_array )
+  {
+    CoordBounds bounds = getRegionBoundsWC();
+
+    floatPoint2D min_point = new floatPoint2D( bounds.getX1(), bounds.getY1() );
+    floatPoint2D max_point = new floatPoint2D( bounds.getX2(), bounds.getY2() );
+
+    min_point = world_to_array.MapTo( min_point );
+    max_point = world_to_array.MapTo( max_point );
+
+                                      // Switch the "min" and "max"
+                                      // incase the ordering is reversed in
+                                      // the bounds (eg. "upside down" coords
+                                      // on the screen.)
+    if ( min_point.x > max_point.x )
+    {
+      float temp = min_point.x;
+      min_point.x = max_point.x;
+      max_point.x = temp;
+    }
+
+    if ( min_point.y > max_point.y )
+    {
+      float temp = min_point.y;
+      min_point.y = max_point.y;
+      max_point.y = temp;
+    }
+                                       // get lower and upper bounds as 
+                                       // integer values
+    min_point.x = (float)Math.floor( min_point.x );
+    min_point.y = (float)Math.floor( min_point.y );
+
+    max_point.x = (float)Math.ceil( max_point.x );
+    max_point.y = (float)Math.ceil( max_point.y );
+
+                                       // "clamp" the computed bounds to lie
+                                       // inside the array
+    CoordBounds array_size = world_to_array.getDestination();
+    int n_cols = Math.round(Math.max( array_size.getX1(), array_size.getX2()));
+    int n_rows = Math.round(Math.max( array_size.getY1(), array_size.getY2()));
+
+    max_point.x = Math.min( max_point.x, n_cols - 1 );
+    min_point.x = Math.max( min_point.x, 0 );
+
+    max_point.y = Math.min( max_point.y, n_rows - 1 );
+    min_point.y = Math.max( min_point.y, 0 );
+
+    return new CoordBounds( min_point.x, min_point.y,
+                            max_point.x, max_point.y );
+  }
+
+
+ /**
+  *  This method clamps the specified list of Points to lie in the bounding
+  *  box (in array coordinates) for this Region.  The bounding box is the 
+  *  intersection of the bounds returned by the getRegionBounds() method and
+  *  the destination region of the world_to_array transformation.  
+  *
+  *  @param world_to_array  The transformation from world coordinates to 
+  *                         array coordinates.  NOTE: The destination bounds
+  *                         for this mapping MUST correspond to the array
+  *                         size.  The destination CoordBounds object is used
+  *                         to get the array size!!!
+  *
+  *  @param points          The list of Points in array coordinates that are
+  *                         to be restricted to lie in the data array.
+  *
+  *  @return a new list of Points, containing only those points in the
+  *          original list, that lie in the data array.
+  */
+  public Point[] ClampPointsToArray( CoordTransform world_to_array,
+                                     Point[]        points )
+  {
+
+                                 // To deal with the possibility that the
+                                 // line extended of the edge of the array,
+                                 // we only keep points that are inside
+                                 // the array.
+    CoordBounds bounds = getRegionBounds( world_to_array );
+
+    int min_x = (int)bounds.getX1();
+    int max_x = (int)bounds.getX2();
+
+    int min_y = (int)bounds.getY1();
+    int max_y = (int)bounds.getY2();
+
+    Vector bounded_points = new Vector( points.length );
+    int row,
+        col;
+    for ( int i = 0; i < points.length; i++ )
+    {
+      row = points[i].y;
+      col = points[i].x;
+      if ( row >= min_y && row <= max_y && col >= min_x && col <= max_x )
+        bounded_points.add( points[i] );
+    }
+
+    points = new Point[ bounded_points.size() ];
+    for ( int i = 0; i < points.length; i++ )
+      points[i] = (Point)bounded_points.elementAt(i);
+
+    return points;
+  }
+
   
  /**
   * Since image row/column values are integers, the mapping from world to
   * image coordinates must be converted from image float values to integers.
-  * To display properly, the decimal portion of the float values must be
-  * truncated instead of rounded. Off-by-one errors will occur if image decimal
-  * is >= .5.
+  * Any float coordinates with column number in the half-open interval
+  * [col,col+1) and row number in [row,row+1) will be mapped to the point
+  * with array coordinates [col,row] by this method. 
   *
-  *  @param  imagept Float image row/column values.
-  *  @return The corresponding integer image row/column values.
+  *  @param  imagept   Floating point (possibly fractions) (col,row)
+  *                    coordinates.
+  *  @return           The corresponding integer image row/column values.
   */
-  protected Point floorImagePoint( floatPoint2D imagept )
+  public Point floorImagePoint( floatPoint2D imagept )
   {
-    float x = (float)Math.floor((double)imagept.x);
-    float y = (float)Math.floor((double)imagept.y);
-    return new Point(Math.round(x), Math.round(y));
+    int x = (int)Math.floor(imagept.x);
+    int y = (int)Math.floor(imagept.y);
+    return new Point( x, y );
   }
 
- /**
-  * This method removes duplicate points selected by multiple regions.
-  * Calling this method will combine all regions' selected points into
-  * one list of points, where each point is unique.
-  *
-  *  @param  regions The list of regions to be unionized.
-  *  @return A list of unique points for all of the regions.
-  */
-  public static Point[] getRegionUnion( Region[] regions )
+
+  /**
+   *  TO DO: Document this
+   */
+  public static Region getInstanceRegion(XOR_Cursor3pt cursor)
   {
-    // Only the TableRegion class has the concept of selected and deselected
-    // regions. This means only TableRegions can "subtract". However, the
-    // getRegionUnion() is generalized for the other regions, thus the
-    // selected and deselected concept is not implemented. If all TableRegions
-    // are selected, the TableRegion class behaves just like any other
-    // Region class.
-    if( regions instanceof TableRegion[] )
-      SharedMessages.addmsg( "Note: Using Region.getRegionUnion() with " +
-                             "TableRegions will return an incorrect list of " +
-			     "points if any of the TableRegions are " +
-			     "unselected." );
-    
-    // this transform will map image bounds to an integer grid from
-    // [0,#rows-1] x [0,#col-1]
-    CoordTransform image_to_array = new CoordTransform();
-    // if no regions are passed in, return no points.
-    if( regions.length == 0 )
-      return new Point[0];
-    // region bounds are in image coordinates.
-    CoordBounds regionbounds = regions[0].getRegionBounds();
-    float rowmin = regionbounds.getX1();
-    float rowmax = regionbounds.getX2();
-    float colmin = regionbounds.getY1();
-    float colmax = regionbounds.getY2();
-    for( int i = 1; i < regions.length; i++ )
-    {
-      if( regions[i].getRegionBounds().getX1() < rowmin )
-      {
-        rowmin = regions[i].getRegionBounds().getX1();
-      }
-      if( regions[i].getRegionBounds().getX2() > rowmax )
-      {
-        rowmax = regions[i].getRegionBounds().getX2();
-      }
-      if( regions[i].getRegionBounds().getY1() < colmin )
-      {
-        colmin = regions[i].getRegionBounds().getY1();
-      }
-      if( regions[i].getRegionBounds().getY2() > colmax )
-      {
-        colmax = regions[i].getRegionBounds().getY2();
-      }
-    }
-    // create a nice integer-like interval that will nicely map to
-    // the array.
-    rowmin = (float)Math.floor((double)rowmin);
-    colmin = (float)Math.floor((double)colmin);
-    rowmax = (float)Math.ceil((double)rowmax);
-    colmax = (float)Math.ceil((double)colmax);
-    // set image bounds
-    image_to_array.setSource( new CoordBounds(rowmin,colmin,rowmax,colmax) );
-    // build table to keep track of selected points
-    int rows = Math.abs(Math.round(rowmax - rowmin)) + 1;
-    int columns = Math.abs(Math.round(colmax - colmin)) + 1;
-    // set array bounds
-    image_to_array.setDestination( new CoordBounds(0,0,
-                                                   (float)(rows-1),
-						   (float)(columns-1) ) );
-    boolean[][] point_table = new boolean[rows][columns];
-    //System.out.println("Row/Column: " + rows + "/" + columns );
-    Vector points = new Vector();
-    Point[] sel_pts;
-    Point temp = new Point();
-    // for each region, mark its selected points
-    for( int i = 0; i < regions.length; i++ )
-    {
-      // use initializeSelectedPoints() since getSelectedPoints() may call
-      // this method, causing an endless loop.
-      sel_pts = regions[i].initializeSelectedPoints();
-      for( int pt = 0; pt < sel_pts.length; pt++ )
-      { 
-	// map image points to array points
-	temp = image_to_array.MapTo(new floatPoint2D(sel_pts[pt])).toPoint();
-        /*
-	System.out.println(image_to_array);
-	System.out.println("row min/max: " + rowmin + "/" + rowmax );
-	System.out.println("col min/max: " + colmin + "/" + colmax );
-	System.out.println("Point: " + temp );
-	*/
-	if( !(point_table[temp.x][temp.y]) )
-	{
-          //System.out.println("Point: (" + sel_pts[pt].x + "," + 
-	  //                                sel_pts[pt].y + ")");
-	  points.add( new Point( sel_pts[pt] ) );
-	  point_table[temp.x][temp.y] = true;
-	}
-      }
-    }
-    // put the vector of points into an array of points
-    Point[] unionpoints = new Point[points.size()];
-    for( int i = 0; i < points.size(); i++ )
-      unionpoints[i] = (Point)points.elementAt(i);
-    return unionpoints;
+    return null;
   }
+
+  
+  /**
+   *  TO DO: Document this
+   */
+  public static Region getInstanceRegion(XOR_Cursor cursor,CoordTransform trans)
+  {
+    Region newRegion;
+    if (cursor instanceof EllipseCursor)
+    {
+      //use transformation to change points of the cursor
+      Ellipse ellipseRegion = ((EllipseCursor)cursor).region();
+      Point p1 =ellipseRegion.getDrawPoint();
+      Point center = ellipseRegion.getCenter();
+      Point p2 =new Point(ellipseRegion.getDx()+center.x,
+                          ellipseRegion.getDy()+center.y);
+      floatPoint2D[] points = new floatPoint2D[3];
+      if (trans!=null)
+      {
+        //System.out.println("Mapping trans");
+        trans.MapTo(new floatPoint2D(p1));
+        points[1] = trans.MapTo(new floatPoint2D(p1));
+        points[2] = trans.MapTo(new floatPoint2D(p2));
+      }
+      else
+      {
+        //System.out.println("setting points\n"+p1+"\n"+p2);
+        points[1] = new floatPoint2D(p1);
+        points[2] = new floatPoint2D(p2);
+      }
+      //create a region with these new world pts
+      newRegion = new EllipseRegion(points);
+    }
+    else
+    {
+      newRegion = null;
+      //System.out.println("null region");
+    }
+    return newRegion;
+  }
+  
+
+  /**
+   *  TO DO: Document this
+   */
+  public static Region getInstanceRegion(XOR_PanCursor cursor,
+                                         CoordTransform trans)
+  {
+    Region newRegion;
+    if (cursor instanceof BoxPanCursor)
+    {
+      //use transformation to change points of the cursor
+      Point p1 =((BoxPanCursor)cursor).getP1();
+      Point p2 =((BoxPanCursor)cursor).getP2();
+      floatPoint2D[] points = new floatPoint2D[2];
+      if (trans!=null)
+      {
+        //System.out.println("Mapping trans");
+        trans.MapTo(new floatPoint2D(p1));
+        points[0] = trans.MapTo(new floatPoint2D(p1));
+        points[1] = trans.MapTo(new floatPoint2D(p2));
+      }
+      else
+      {
+        //System.out.println("setting points\n"+p1+"\n"+p2);
+        points[0] = new floatPoint2D(p1);
+        points[1] = new floatPoint2D(p2);
+      }
+      //create a region with these new world pts
+      newRegion = new BoxRegion(points);
+    }
+    else
+    {
+      newRegion = null;
+      //System.out.println("null region");
+    }
+    return newRegion;
+  }
+
+  
+  /**
+   *  TO DO: Document this
+   */ 
+  public static Region getInstanceRegion(CursorTag cursor,floatPoint2D[] points)
+  {
+    if( cursor instanceof XOR_Cursor3pt)
+      return getInstanceRegion((XOR_Cursor3pt)cursor,points);
+    else if(cursor instanceof XOR_Cursor)
+      return getInstanceRegion((XOR_Cursor)cursor,points);
+    else if(cursor instanceof BoxPanCursor)
+    {
+      return getInstanceRegion((XOR_PanCursor)cursor,points);
+    }
+    else
+      return null;
+  }
+
+  
+  /**
+   *  TO DO: Document this
+   */
+  private static Region getInstanceRegion(XOR_Cursor3pt cursor,
+                                         floatPoint2D[] points)
+  {
+    Region newRegion = null;
+        
+    if(cursor instanceof WedgeCursor)
+    {
+      JPanel drawPanel = cursor.getPanel();
+      if( drawPanel instanceof SelectionOverlay)
+      {
+        Point[] regPoints = ((WedgeCursor)cursor).region();
+        floatPoint2D[] tempwcp = new floatPoint2D[6];
+        for (int i = 0; i < regPoints.length - 1; i++) 
+        {
+          //System.out.println(regPoints[i]+"");
+          tempwcp[i] = ((SelectionOverlay) drawPanel).convertToWorldPoint(regPoints[i]);
+        }
+        tempwcp[0]=points[0];
+        //System.out.println(points[0]+"");
+        if (regPoints.length > 0) 
+        {
+          tempwcp[regPoints.length - 1] = new floatPoint2D(
+              (float) regPoints[regPoints.length - 1].x,
+              (float) regPoints[regPoints.length - 1].y);
+        }
+        if(cursor instanceof DoubleWedgeCursor)
+          newRegion = new DoubleWedgeRegion(tempwcp);
+        else
+          newRegion = new WedgeRegion(tempwcp);
+      }
+    }
+    else if(cursor instanceof AnnularCursor)
+    {
+      floatPoint2D[] regPoints = new floatPoint2D[5];
+      regPoints[0]=points[0];
+      //top left inner circle
+      float x = Math.abs( points[0].x - points[1].x );
+      float y = Math.abs( points[0].y - points[1].y );
+      float r = (float)Math.sqrt( Math.pow(x,2) + Math.pow(y,2) );
+      regPoints[1]= new floatPoint2D(points[0].x-r,points[0].y+r);
+      //bottom right inner
+      regPoints[2]=new floatPoint2D(points[0].x+r,points[0].y-r);
+      
+//    top left outer circle
+      x = Math.abs( points[0].x - points[2].x );
+      y = Math.abs( points[0].y - points[2].y );
+      r = (float)Math.sqrt( Math.pow(x,2) + Math.pow(y,2) );
+      regPoints[3]= new floatPoint2D(points[0].x-r,points[0].y+r);
+      //bottom right outer
+      regPoints[4]=new floatPoint2D(points[0].x+r,points[0].y-r);
+      
+      
+      newRegion = new AnnularRegion(regPoints);
+    }
+    return newRegion;
+  }
+
+  
+  /**
+   *  TO DO: Document this
+   */
+  private static Region getInstanceRegion(XOR_Cursor cursor,
+                                          floatPoint2D[] points)
+  {
+    Region newRegion = null;
+    //System.out.println("making XOR_Cursor region");
+    if (cursor instanceof EllipseCursor)
+    {
+      //System.out.println("making Ellipse region");
+      newRegion = new EllipseRegion(points);
+      /*for(int i=0;i<points.length;i++)
+      {
+        System.out.println("point ["+i+"] = "+points[i]);
+      }//*/
+    }
+    
+    else if(cursor instanceof PointCursor)
+    {
+      //System.out.println("making Point region");
+      points[((PointCursor)cursor).region().x] = points[points.length-1];
+      floatPoint2D[] newPoints = new floatPoint2D[points.length-1];
+      for (int i=0;i<newPoints.length;i++)
+        newPoints[i] = points[i];
+      newRegion = new PointRegion(newPoints);
+    }
+    
+    else if(cursor instanceof LineCursor)
+    {
+      //System.out.println("making line Region");
+      newRegion = new LineRegion(points);
+    }
+    return newRegion;
+  }
+  
+
+  /**
+   *  TO DO: Document this
+   */
+  private static Region getInstanceRegion(XOR_PanCursor cursor,
+                                         floatPoint2D[] points)
+  {
+    Region newRegion = new BoxRegion(points);
+    return newRegion;
+  }
+
 }

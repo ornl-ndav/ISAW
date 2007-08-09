@@ -33,6 +33,17 @@
  *
  * Modified:
  * $Log: ContourViewComponent.java,v $
+ * Revision 1.9  2007/03/15 21:08:47  dennis
+ * Added method getWorldToArrayTransform() to get the mapping from
+ * world coordinates to the array coordinates.
+ *
+ * Revision 1.8  2006/11/03 19:38:56  amoe
+ * -Added:  getRowForY()
+ *                getColumnForX()
+ *                getDataPanel()
+ * -Edited: javadocs (update)
+ * (Dominic Kramer)
+ *
  * Revision 1.7  2006/07/19 18:14:38  rmikk
  * Set the contour levels to uniform  between min and max with 10 steps
  *
@@ -169,6 +180,7 @@ import gov.anl.ipns.ViewTools.Components.TwoD.IViewComponent2D;
 import gov.anl.ipns.ViewTools.Components.ViewControls.ViewControl;
 import gov.anl.ipns.ViewTools.Layouts.ComponentViewManager;
 import gov.anl.ipns.ViewTools.Panels.Contour.ContourJPanel;
+import gov.anl.ipns.ViewTools.Panels.Transforms.CoordTransform;
 
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
@@ -419,7 +431,32 @@ public class ContourViewComponent implements IViewComponent2D, Serializable
    */
 //-------------------------=[ End constructors ]=-----------------------------//
    
+   public int getRowForY(float y)
+   {
+      return getControlHandler().getContourPanel().getRowForY(y);
+   }
    
+   public int getColumnForX(float x)
+   {
+      return getControlHandler().getContourPanel().getColumnForX(x);
+   }
+   
+   
+   /**
+    * Get a copy of the tranformation that maps world coordinates to array
+    * (col,row) coordinates for this view component. 
+    *
+    * @return a CoordTransform object that maps from world coordinates
+    *         to array (col,row) coordinates.
+    */
+    public CoordTransform getWorldToArrayTransform()
+    {
+       CoordTransform array_to_world = 
+    	   getControlHandler().getContourPanel().getRowColumnToWC();
+       return new CoordTransform( array_to_world.getDestination(),
+    		                  array_to_world.getSource() ); 
+    }
+
 //---------=[ Methods mplemented for the IViewComponent2D interface ]=--------//
    /**
     * Used to set this ViewComponent's state.
@@ -578,7 +615,8 @@ public class ContourViewComponent implements IViewComponent2D, Serializable
    }
 
    /**
-    * Used to get the panel that actaully displays this ViewComponent's data.
+    * Used to get the panel that displays this ViewComponent's data 
+    * (along with axis information).
     * 
     * @return The panel that displays this ViewComponent's data.
     */

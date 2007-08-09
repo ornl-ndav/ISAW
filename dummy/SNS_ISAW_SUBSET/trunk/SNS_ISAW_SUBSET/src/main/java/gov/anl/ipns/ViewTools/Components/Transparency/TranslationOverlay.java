@@ -34,6 +34,25 @@
  * Modified:
  *
  *  $Log: TranslationOverlay.java,v $
+ *  Revision 1.21  2007/07/23 20:52:04  dennis
+ *  Removed local list of listeners and methods that dealt with
+ *  the list of listeners, since those capbabilities are provided
+ *  by the ActionJPanel, which this class (indirectly) extends.
+ *  Removed call to setLocalBounds() in the constructor, since that
+ *  statement has no effect in the constructor.
+ *
+ *  Revision 1.20  2007/07/11 20:04:02  dennis
+ *  Removed one call to repaint() that caused an infinite loop and
+ *  another call to repaint() that was redundant.
+ *
+ *  Revision 1.19  2007/06/19 20:34:39  dennis
+ *  Added call to tjp.repaint() in paintComponent() method.  This fixes
+ *  a problem where the zoomed region did not show up on the PanViewControl
+ *  until the user clicked on the PanViewControl.
+ *
+ *  Revision 1.18  2007/06/15 16:56:19  dennis
+ *  Replaced paint() with paintComponent() and removed call to super.paint().
+ *
  *  Revision 1.17  2005/06/14 13:59:51  kramer
  *
  *  Added setXORMode(Color.gray) in the paint() method so that the pane
@@ -118,7 +137,6 @@ import javax.swing.JFrame;
 import javax.swing.JScrollPane;
 import javax.swing.JEditorPane;
 import javax.swing.text.html.HTMLEditorKit;
-import java.util.Vector; 
 
 import gov.anl.ipns.ViewTools.Components.ObjectState;
 import gov.anl.ipns.ViewTools.Components.Cursor.BoxPanCursor;
@@ -150,7 +168,6 @@ public class TranslationOverlay extends OverlayJPanel
   
   private TranslationJPanel tjp;
   private CoordBounds viewport;       // local_bounds in pixel coords
-  private Vector Listeners = null;  
 
  /**
   * Constructor - this will only initialize the local and global bounds.
@@ -163,10 +180,8 @@ public class TranslationOverlay extends OverlayJPanel
     this.setLayout( new GridLayout(1,1) );
     tjp = new TranslationJPanel();
     tjp.setOpaque(false);
-    setLocalBounds( new CoordBounds(0,0,1,1) );
     setGlobalBounds( new CoordBounds(0,0,1,1) );
     tjp.addActionListener( new TranslateListener() );
-    Listeners = new Vector();
     add(tjp);
     tjp.requestFocus();
     addComponentListener( new ResizedListener() );
@@ -230,13 +245,14 @@ public class TranslationOverlay extends OverlayJPanel
   }
  
  /**
-  * This paint will draw a rectangle over the region selected by the cursor.
+  * This paintComponent method will draw a rectangle over the region 
+  * selected by the cursor.
   *
   *  @param  g - graphics object required by the paint method.
   */ 
-  public void paint(Graphics g)
+  public void paintComponent(Graphics g)
   {
-    super.paint(g);
+    // System.out.println("TranslationOverlay paintComponent " + viewport);
     g.setXORMode(Color.gray);
     g.drawRect( (int)viewport.getX1(), (int)viewport.getY1(),
                 (int)viewport.getX2() - (int)viewport.getX1(),
@@ -262,6 +278,7 @@ public class TranslationOverlay extends OverlayJPanel
   */ 
   public void setLocalBounds( CoordBounds vp )
   {
+    // System.out.println("Calling tjp.setViewPort " + vp);
     tjp.setViewPort( vp.MakeCopy() );
   }
   
@@ -285,7 +302,6 @@ public class TranslationOverlay extends OverlayJPanel
   public void setGlobalBounds( CoordBounds global )
   {
     tjp.setGlobalPanelBounds( global.MakeCopy() );
-    repaint();
   }
  
  /**
@@ -335,37 +351,6 @@ public class TranslationOverlay extends OverlayJPanel
     return state;
   }
   
- /**
-  * Method to add a listener to this overlay.
-  *
-  *  @param act_listener
-  */
-  public void addActionListener( ActionListener act_listener )
-  {	     
-    for ( int i = 0; i < Listeners.size(); i++ )    // don't add it if it's
-      if ( Listeners.elementAt(i).equals( act_listener ) ) // already there
-        return;
-
-    Listeners.add( act_listener ); //Otherwise add act_listener
-  }
- 
- /**
-  * Method to remove a listener from this component.
-  *
-  *  @param act_listener
-  */ 
-  public void removeActionListener( ActionListener act_listener )
-  {
-    Listeners.remove( act_listener );
-  }
- 
- /**
-  * Method to remove all listeners from this component.
-  */ 
-  public void removeAllActionListeners()
-  {
-    Listeners.removeAllElements();
-  }
      
  /**
   * This method is called by to inform the overlay that it is no
@@ -378,19 +363,6 @@ public class TranslationOverlay extends OverlayJPanel
       helper.dispose();
   }
   
- /*
-  * Tells all listeners about a new action.
-  *
-  *  @param  message
-  */  
-  private void sendMessage( String message )
-  {
-    for ( int i = 0; i < Listeners.size(); i++ )
-    {
-      ActionListener listener = (ActionListener)Listeners.elementAt(i);
-      listener.actionPerformed( new ActionEvent( this, 0, message ) );
-    }
-  }
   
  /*
   * TranslateListener listens for messages being passed from the
@@ -401,6 +373,7 @@ public class TranslationOverlay extends OverlayJPanel
     public void actionPerformed( ActionEvent ae )
     {
       String message = ae.getActionCommand(); 
+      // System.out.println("TranslationOverlay ae = " + message );
       // clear all selections from the vector
       if( message.equals(TranslationJPanel.BOUNDS_CHANGED) ||
           message.equals(TranslationJPanel.BOUNDS_MOVED) ||
@@ -417,7 +390,7 @@ public class TranslationOverlay extends OverlayJPanel
 	
 	repaint();           // Without this, the newly drawn regions would
 			     // not appear.
-        sendMessage(message);
+        send_message(message);
       }
     }  // end actionPerformed()   
   } // end TranslateListener 

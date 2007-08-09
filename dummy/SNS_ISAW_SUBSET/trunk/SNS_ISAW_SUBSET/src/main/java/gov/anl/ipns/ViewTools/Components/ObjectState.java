@@ -34,6 +34,13 @@
  * Modified:
  *
  *  $Log: ObjectState.java,v $
+ *  Revision 1.17  2007/07/16 15:46:48  rmikk
+ *  Added a public static String that is a returned value of the get method when
+ *    the path was absent( this was not as advertised it should return null)
+ *
+ *  Revision 1.16  2007/07/12 19:35:05  rmikk
+ *  returned the result of a recursive call instead of false in reset
+ *
  *  Revision 1.15  2005/08/17 21:25:28  kramer
  *
  *  Added the containsKey() method.  This method was added so that it could
@@ -146,6 +153,8 @@ public class ObjectState implements java.io.Serializable
   private transient String projectsDirectory;
   private transient JFileChooser fc;
   private transient Vector listeners;
+  
+  public static String INVALID_PATH ="Invalid Path in ObjectState.java";
 
  /**
   * Constructor - Initializes the Hashtable
@@ -204,7 +213,7 @@ public class ObjectState implements java.io.Serializable
   *  @return The value referenced by the key. If GLOBAL.key is used,
   *          the returned value will be a Vector of two-element Object arrays.
   *          See method description for more detail. If key is not found,
-  *          null is returned.
+  *          a null is returned or a String INVALID_PATH
   */ 
   public Object get( Object key )
   {
@@ -249,7 +258,7 @@ public class ObjectState implements java.io.Serializable
           return ((ObjectState)nextstate).get( nextkey );
 	// if it gets to this point, the path was incorrect.
         SharedMessages.addmsg("Invalid Path in ObjectState.java"); 	
-        return "Invalid Path in ObjectState.java";  
+        return INVALID_PATH;  
       }
     }
     // if the key is not a string, no parsing or recursion is required, the
@@ -600,7 +609,7 @@ public class ObjectState implements java.io.Serializable
          Object nextstate = get( skey );
          // Get next level, Must be ObjectState, if not, something is wrong.
         if( nextstate instanceof ObjectState )
-          ((ObjectState)nextstate).editTable( nextkey, field, allow_replace );
+          return  ((ObjectState)nextstate).editTable( nextkey, field, allow_replace );
         else
           SharedMessages.addmsg("Invalid Path in ObjectState.java");
         // if it gets to here, the path was invalid

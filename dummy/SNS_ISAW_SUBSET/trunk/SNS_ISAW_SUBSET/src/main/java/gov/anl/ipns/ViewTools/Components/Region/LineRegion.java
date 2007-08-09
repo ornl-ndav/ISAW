@@ -34,6 +34,23 @@
  * Modified:
  *
  *  $Log: LineRegion.java,v $
+ *  Revision 1.13  2007/05/10 20:55:43  dennis
+ *  Now uses the Region.ClampPointsToArray() to restrict the points returned
+ *  by getSelectedPoints() to lie in the array.
+ *
+ *  Revision 1.12  2007/04/28 19:47:26  dennis
+ *  Expanded javadocs.
+ *
+ *  Revision 1.11  2007/04/07 21:23:58  dennis
+ *  Removed two unused variables.
+ *
+ *  Revision 1.10  2007/03/16 16:48:36  dennis
+ *  Major refactoring.  Now overides getSelectedPoints() to deterimine
+ *  which point(s) this region should indicate as selected.  Removed
+ *  initializeSelectedPoints() method that is no longer needed.  Removed
+ *  getRegionBounds() method, since that is now taken care of in the
+ *  base class using the world coordinate bounds.  Added getRegionBoundsWC().
+ *
  *  Revision 1.9  2004/05/20 20:48:26  millermi
  *  - Constructor now initializes world and image bounds to
  *    the bounds of the defining points.
@@ -76,10 +93,10 @@
 package gov.anl.ipns.ViewTools.Components.Region;
 
 import java.awt.Point;
-import java.util.Vector;
 
 import gov.anl.ipns.Util.Numeric.floatPoint2D;
 import gov.anl.ipns.ViewTools.Panels.Transforms.CoordBounds;
+import gov.anl.ipns.ViewTools.Panels.Transforms.CoordTransform;
 
 /**
  * This class is a specific region designated by two points. A LineRegion is
@@ -89,6 +106,11 @@ import gov.anl.ipns.ViewTools.Panels.Transforms.CoordBounds;
  */ 
 public class LineRegion extends Region
 {
+  private float min_x = 0;
+  private float max_x = 1;
+  private float min_y = 0;
+  private float max_y = 1;
+
  /**
   * Constructor - provides basic initialization for all subclasses
   *
@@ -97,77 +119,142 @@ public class LineRegion extends Region
   public LineRegion( floatPoint2D[] dp )
   {
     super(dp);
-    
-    // Give the image and world bounds meaningful values.
-    setWorldBounds( new CoordBounds( definingpoints[0].x,
-                                     definingpoints[0].y, 
-                                     definingpoints[1].x,
-			             definingpoints[1].y ) );
-    setImageBounds( new CoordBounds( definingpoints[0].x,
-                                     definingpoints[0].y, 
-                                     definingpoints[1].x,
-			             definingpoints[1].y ) );
+
+    min_x = Math.min( dp[0].x, dp[1].x );
+    max_x = Math.max( dp[0].x, dp[1].x );
+    min_y = Math.min( dp[0].y, dp[1].y );
+    max_y = Math.max( dp[0].y, dp[1].y );
   }
-  
+
+
  /**
-  * Get all of the integer points on the line. This method assumes
-  * that the input points are in (x,y) where (x = col, y = row ) form.
-  *
-  *  @return array of points on the line.
+  *  Get a bounding box for the region, in World Coordinates.  The
+  *  points of the region will lie in the X-interval [X1,X2] and
+  *  in the Y-interval [Y1,Y2], where X1,X2,Y1 and Y2 are the values
+  *  returned by the CoordBounds.getX1(), getX2(), getY1(), getY2()
+  *  methods.
+  * 
+  *  @return a CoordBounds object containing the full extent of this
+  *          region.
   */
-  public Point[] getSelectedPoints()
-  {
-    return initializeSelectedPoints();
-  }
-  
+ public CoordBounds getRegionBoundsWC()
+ {
+   return new CoordBounds( min_x, min_y, max_x, max_y ); 
+ }
+
+
  /**
-  * This method is here to factor out the setting of the selected points.
-  * By doing this, regions can make use of the getRegionUnion() method.
+  * Get the discrete points that lie within this region, based on the
+  * specified mapping from world to array (col,row) coordinates.  For
+  * a LineRegion, the selected points are determined by using a line
+  * drawing algorithm to step along the array elements starting from
+  * the array element containing the first point on the line, going
+  * to the array element containing the last point on the line.  Array
+  * elements closest to the world coordinate line are added to the 
+  * selected points.  IF the line has slope more than one in magnitude,
+  * then each row from row of the first point to the row of the last 
+  * point, will have precisely one column selected.  Similarly, IF the
+  * line has slope less than one in magnitude, then each column will 
+  * contain one selected point, between the first and last columns of
+  * the line.
   *
-  *  @return array of points included within the region.
+  * @param world_to_array  The transformation from world coordinates to
+  *                        array coordinates.  NOTE: The destination bounds
+  *                        for this mapping MUST correspond to the array
+  *                        size.  The destination CoordBounds object is used
+  *                        to get the array size!!!
+  *
+  * @return array of points included within the region.
   */
-  protected Point[] initializeSelectedPoints()
-  { 
-    Point p1 = floorImagePoint(world_to_image.MapTo(definingpoints[0]));
-    Point p2 = floorImagePoint(world_to_image.MapTo(definingpoints[1]));
-    // assume dx > dy
-    int numsegments = Math.abs( p2.x - p1.x );
-    // if dy > dx, use dy
-    if( numsegments < Math.abs( p2.y - p1.y ) )
-    {
-      numsegments = Math.abs( p2.y - p1.y );
-    }
-    // numsegments counts the interval not the points, so their are
-    // numsegments+1 points.
-    
-    // Use a vector to hold points, then build an array from this vector.
-    // This will allow removal of points not on the image.
-    Vector pts = new Vector();
-    floatPoint2D delta_p = new floatPoint2D();
-    delta_p.x = (p2.x - p1.x)/(float)numsegments;
-    delta_p.y = (p2.y - p1.y)/(float)numsegments;
-    
-    // Get all of the points, add them to the vector if the points are on
-    // the image.
-    floatPoint2D actual = new floatPoint2D( p1 );
-    Point temp = new Point();
-    CoordBounds imagebounds = world_to_image.getDestination();
-    for( int i = 0; i < numsegments + 1; i++ )
-    {
-      temp = floorImagePoint(actual);
-      // add it to the array if the point is on the image.
-      if( imagebounds.onXInterval(temp.x) && imagebounds.onYInterval(temp.y) )
-        pts.add(temp);
-      // increment to next point
-      actual.x += delta_p.x;
-      actual.y += delta_p.y;
-    }
-    // construct static list of points.
-    selectedpoints = new Point[pts.size()];
-    for( int i = 0; i < pts.size(); i++ )
-      selectedpoints[i] = (Point)pts.elementAt(i);
-    return selectedpoints;
-  }
+ public Point[] getSelectedPoints( CoordTransform world_to_array )
+ {
+   CoordBounds imagebounds = world_to_array.getDestination();
+
+   floatPoint2D cell_0 = new floatPoint2D( 0, 0 );
+   floatPoint2D cell_1 = new floatPoint2D( 1, 1 );
+   cell_0 = world_to_array.MapFrom( cell_0 );
+   cell_1 = world_to_array.MapFrom( cell_1 );
+   floatPoint2D unit_cell = new floatPoint2D( cell_1.x - cell_0.x,
+                                              cell_1.y - cell_0.y );
+
+   Point start = floorImagePoint( world_to_array.MapTo(definingpoints[0]) );
+   Point end   = floorImagePoint( world_to_array.MapTo(definingpoints[1]) );
+
+                                                    // weed out degenerate case
+                                                    // with one or 0 points
+   if ( start.x - end.x == 0 && start.y - end.y == 0 )
+   {
+     if ( imagebounds.onXInterval(start.x) && imagebounds.onYInterval(start.y))
+     {
+       Point[] result = new Point[1];
+       result[0] = start;
+       return result;
+     }
+     else
+       return new Point[0];
+   }
+
+   float dy    = definingpoints[1].y - definingpoints[0].y;
+   float dx    = definingpoints[1].x - definingpoints[0].x;
+   floatPoint2D center_1 = world_to_array.MapFrom( 
+                           new floatPoint2D( start.x + 0.5f, start.y + 0.5f ));
+
+   floatPoint2D line_pt = new floatPoint2D( definingpoints[0] );
+   Point[] result;
+
+                                                 // choose independent variable
+   if ( Math.abs( end.x - start.x ) > Math.abs( end.y - start.y ) )
+   { 
+                                                 // step a point along the line
+                                                 // starting with the WC point
+     float dy_dx = dy/dx;                        // on the line, directly above 
+     float delta_x = center_1.x - line_pt.x;     // or below the center point
+     line_pt.x += delta_x;                       // of the first cell used.
+     line_pt.y += delta_x * dy_dx;
+                                                 // adjust sign of step in x
+                                                 // to step from first to last
+                                                 // defining point. 
+     float step_in_x = unit_cell.x; 
+     if ( step_in_x * (definingpoints[1].x - definingpoints[0].x) < 0 )
+       step_in_x = -step_in_x;
+                                                 // at each step in x, use cell
+                                                 // that contains the (x,y) 
+                                                 // point along the line.
+     int n_points = Math.abs( end.x - start.x ) + 1;
+     result = new Point[n_points];
+     for ( int i = 0; i < n_points; i++ )
+     {
+       result[i] = floorImagePoint( world_to_array.MapTo(line_pt) );
+       line_pt.x += step_in_x;
+       line_pt.y += step_in_x * dy_dx;
+     }
+   }
+   else                                         // treat x as function of y
+   {
+     float dx_dy = dx/dy;
+     float delta_y = center_1.y - line_pt.y;
+
+     line_pt.y += delta_y;
+     line_pt.x += delta_y * dx_dy;
+
+     float step_in_y = unit_cell.y;
+     if ( step_in_y * (definingpoints[1].y - definingpoints[0].y) < 0 )
+       step_in_y = -step_in_y;
+
+     int n_points = Math.abs( end.y - start.y ) + 1;
+     result = new Point[n_points];
+     for ( int i = 0; i < n_points; i++ )
+     {
+       result[i] = floorImagePoint( world_to_array.MapTo(line_pt) );
+       line_pt.y += step_in_y;
+       line_pt.x += step_in_y * dx_dy;
+     }
+   }
+
+   return  ClampPointsToArray( world_to_array, result );
+ }
+
+  
   
  /**
   * Display the region type with its defining points.
@@ -178,19 +265,7 @@ public class LineRegion extends Region
   {
     return ("Region: Line\n" +
             "Start Point: " + definingpoints[0] + "\n" +
-	    "End Point: " + definingpoints[1] + "\n");
+	    "End Point:   " + definingpoints[1] + "\n");
   }
-   
- /**
-  * This method returns the rectangle containing the line.
-  *
-  *  @return The bounds of the LineRegion.
-  */
-  public CoordBounds getRegionBounds()
-  {
-    return new CoordBounds( world_to_image.MapTo(definingpoints[0]).x,
-                            world_to_image.MapTo(definingpoints[0]).y, 
-                            world_to_image.MapTo(definingpoints[1]).x,
-			    world_to_image.MapTo(definingpoints[1]).y );
-  }
+
 }

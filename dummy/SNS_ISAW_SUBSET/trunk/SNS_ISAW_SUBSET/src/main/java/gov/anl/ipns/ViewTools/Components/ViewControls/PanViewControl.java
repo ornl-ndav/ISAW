@@ -34,6 +34,46 @@
  * Modified:
  *
  *  $Log: PanViewControl.java,v $
+ *  Revision 1.29  2007/07/20 02:51:57  dennis
+ *  No longer sends two message when the region is changed, but
+ *  for now just forwards the message from the translation overlay.
+ *  This should eventually be changed so it just sends a
+ *  VALUE_CHANGED message.
+ *  Removed ignore_change flag that is no longer used.
+ *  Removed some redundant calls to setting global or local bounds.
+ *  The setLocalBounds() method is now private, since users of this
+ *  control should use the generic setControlValue() method.
+ *
+ *  Revision 1.28  2007/07/11 19:49:35  dennis
+ *  Removed some extra calls to repaint when the bounds were
+ *  adjusted from outside, since these caused extra repaints and
+ *  would redraw the thumbnail image over the pan cursor, when
+ *  the user zoomed in using the main JPanel.
+ *
+ *  Revision 1.27  2007/06/15 18:18:52  rmikk
+ *  Checked for a null thumbnail image
+ *
+ *  Revision 1.26  2007/06/15 16:55:18  dennis
+ *  Replaced paint() with paintComponent() and removed call to
+ *  super.paint();
+ *  When data is refreshed this no longer finds the uppermost parent
+ *  panel and repaints that panel.  This caused components that used
+ *  this to be redrawn too many times, and caused flickering as the
+ *  components were laid out.
+ *
+ *  Revision 1.25  2007/06/13 15:28:22  rmikk
+ *  Added a variable,  makeNewPanImage, that is used to get a new image
+ *  whenever the current image in the Pan View is out of date.
+ *
+ *  Revision 1.24  2007/02/12 04:35:00  dennis
+ *  The refreshData() method is no longer executed completely, if
+ *  the PanViewControl is not currently shown.  This breaks a cycle
+ *  of method calls that occured when the refreshData() method
+ *  proceeded to get the thumbnail image and attempt to draw it
+ *  when the control was not used.  This caused an infinite loop in
+ *  the SANDWedgeViewer and HKLSliceViewer, since those viewers did
+ *  not show the PanViewControl.
+ *
  *  Revision 1.23  2005/07/28 15:50:20  kramer
  *
  *  Modified to support ContourJPanels.  The refreshData() and
@@ -215,8 +255,11 @@ public class PanViewControl extends ViewControl
   private TranslationOverlay overlay;  // where the region outline is drawn.
   private double data_width = 0;
   private double data_height = 0;
-  private boolean ignore_change = false;
-  
+
+  /**
+   * Set to True if the data represented in the image has changed.
+   */
+  public boolean makeNewPanImage = false;
  /**
   * Constructor for creating a thumbnail of the CoordJPanel passed in.
   *
@@ -228,10 +271,7 @@ public class PanViewControl extends ViewControl
     panel = new ThumbnailJPanel();
     overlay = new TranslationOverlay();
     actual_cjp = cjp;
-    refreshData();
     overlay.addActionListener( new OverlayListener() );
-    setGlobalBounds( cjp.getGlobalWorldCoords() );
-    setLocalBounds( cjp.getLocalWorldCoords() );
     setLayout( new OverlayLayout(this) );
     setPreferredSize( new Dimension(0,150) );
     setMaximumSize( new Dimension(200,200) );
@@ -240,6 +280,8 @@ public class PanViewControl extends ViewControl
     addMouseListener( new PanMouseAdapter() );
     // this listener will preserve the aspect ratio of the control
     addComponentListener( new MaintainAspectRatio() );
+    setGlobalBounds( cjp.getGlobalWorldCoords() );
+    refreshData();
   }
  
  /**
@@ -289,9 +331,7 @@ public class PanViewControl extends ViewControl
   {
     if( value == null || !(value instanceof CoordBounds) )
       return;
-    ignore_change = true;
     setLocalBounds( (CoordBounds)value );
-    ignore_change = false;
   }
   
  /**
@@ -311,10 +351,12 @@ public class PanViewControl extends ViewControl
   */
   public ViewControl copy()
   {
-    PanViewControl clone = new PanViewControl(actual_cjp);/*
+    PanViewControl clone = new PanViewControl(actual_cjp);
+    /*
     clone.setGlobalBounds(getGlobalBounds());
     clone.setLocalBounds(getLocalBounds());
-    clone.enableStretch(isStretchEnabled());*/
+    clone.enableStretch(isStretchEnabled());
+    */
     clone.setObjectState( getObjectState(PROJECT) );
     return clone;
   }
@@ -356,7 +398,7 @@ public class PanViewControl extends ViewControl
   *
   *  @param  lb Bounds of the viewable region.
   */ 
-  public void setLocalBounds( CoordBounds lb )
+  private void setLocalBounds( CoordBounds lb )
   {
     CoordBounds global = getGlobalBounds();
     float x1 = lb.getX1();
@@ -395,7 +437,9 @@ public class PanViewControl extends ViewControl
     }
     // Set clamped local bounds, which are stored in overlay.
     overlay.setLocalBounds( new CoordBounds(x1,y1,x2,y2) );
-    repaint();
+
+//  repaint();  DON'T CALL REPAINT HERE, SINCE setLocalBounds() will cause
+//              a repaint!!!!
   }  
   
  /**
@@ -419,9 +463,12 @@ public class PanViewControl extends ViewControl
   public void setGlobalBounds( CoordBounds gb )
   {
     overlay.setGlobalBounds( gb.MakeCopy() );
-    repaint();
+
+//  repaint();  DON'T CALL REPAINT HERE, SINCE setGlobalBounds() will cause
+//              a repaint!!!!
   }
   
+
  /**
   * This will overload the repaint method. This method calls refreshData()
   */
@@ -429,7 +476,8 @@ public class PanViewControl extends ViewControl
   {
     refreshData();
   }
-  
+
+
  /*
   * Call this method to repaint the thumbnail whenever the actual image changes.
   * This method calls the repaint method, so calling refreshData() will 
@@ -437,11 +485,12 @@ public class PanViewControl extends ViewControl
   */ 
   private void refreshData()
   {
+    if ( !isShowing() )
+      return; 
+    // System.out.println("refreshData.....");
+
     setImageDimension();
     setAspectRatio();
-    
-	if ( !isShowing() )
-		return;
 
     boolean validPanel = false;
     if( actual_cjp instanceof ImageJPanel2 )
@@ -452,7 +501,9 @@ public class PanViewControl extends ViewControl
       // control affects the aspect ratio of the image. Don't need to
       // alter the image size according to the aspect ratio.
       panel_image = ((ImageJPanel2)actual_cjp).getThumbnail( panel_size.width, 
-                            panel_size.height, true );
+                            panel_size.height, makeNewPanImage );
+      if( panel_image != null) 
+        makeNewPanImage = false;
     }
     else if ( actual_cjp instanceof ContourJPanel )
     {
@@ -462,24 +513,11 @@ public class PanViewControl extends ViewControl
           ((ContourJPanel)actual_cjp).getThumbnail(panel_size.width,
                                                    panel_size.height);
     }
-    else
-       super.repaint();
     
     if( validPanel && (panel_image != null) )
     {
       panel.setImage(panel_image);
-      // have to use update so Overlay is always displayed over the image.
-      if( getGraphics() != null && isShowing() )
-        update( getGraphics() );
-      // Go up to the top-most level and repaint everything. This will
-      // draw the overlay on the image correctly.
-      Component temppainter = this;
-      while( temppainter.getParent() != null )
-        temppainter = temppainter.getParent();
-      // This prevents an infinite loop, since this method is called in the
-      // repaint() method.
-      if( temppainter != this )
-        temppainter.repaint();
+      panel.repaint();
     }
   }
   
@@ -533,12 +571,14 @@ public class PanViewControl extends ViewControl
     public void actionPerformed( ActionEvent ae )
     {
       String message = ae.getActionCommand();
-      send_message(message);
-      // Only send out VALUE_CHANGED if local bounds are affected. Do not
-      // send out message if setControlValue() is called.
-      if( !ignore_change && (message.equals(BOUNDS_CHANGED) ||
-          message.equals(BOUNDS_MOVED) || message.equals(BOUNDS_RESIZED) ) )
-        send_message(VALUE_CHANGED);
+                                            // NOTE: Eventually this should
+                                            // just send VALUE_CHANGED and 
+                                            // the receiver should get the
+                                            // new value 
+      if( message.equals(BOUNDS_CHANGED) ||
+          message.equals(BOUNDS_MOVED)   || 
+          message.equals(BOUNDS_RESIZED)  )
+        send_message(message);
     }
   }
  
@@ -564,6 +604,7 @@ public class PanViewControl extends ViewControl
       refreshData();
     }
   }
+
   
  /*
   * This private JPanel is used to hold the image of the thumbnail. A
@@ -584,9 +625,9 @@ public class PanViewControl extends ViewControl
       image = i;
     }
     
-    public void paint( Graphics g )
+    public void paintComponent( Graphics g )
     {
-      super.paint(g);
+      // System.out.println("PanViewControl paintComponent");
       if( image != null )
         g.drawImage( image, 0, 0, this );
     }

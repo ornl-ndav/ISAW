@@ -30,6 +30,26 @@
  * Modified:
  *
  * $Log: GraphJPanel.java,v $
+ * Revision 1.61  2007/07/29 20:45:15  dennis
+ * Changed local_transform and global_transform to be private
+ * in CoordJPanel class, to keep better control over who can
+ * change them, and how they can be changed.
+ *
+ * Revision 1.60  2007/06/14 15:00:26  dennis
+ * Now overrides paintComponent() instead of paint() method.
+ * paintComponent() method now creates a Graphics2D "copy" of the
+ * Graphics object it is given, and uses the copy to draw.  This
+ * avoids changing the state of the Graphics object that was
+ * passed in.
+ * Also did some minor reformatting for readability.
+ *
+ * Revision 1.59  2007/06/08 20:01:19  dennis
+ * Now forces Y_min < Y_max before making bounds that
+ * are ultimately inverted.
+ *
+ * Revision 1.58  2006/07/31 02:35:25  dennis
+ * Trap index out of bounds error in getY_value() method.
+ *
  * Revision 1.57  2006/07/10 20:32:18  amoe
  * - Added code in paint to draw a Bar symbol.
  * - Added final constant BAR.
@@ -1078,7 +1098,12 @@ public float getY_value( float x_value, int graph_number )
   int index = arrayUtil.get_index_of( x_value, gd.x_vals );
 
   if ( x_value == gd.x_vals[index] )    // if exact value is in list, return
-    return gd.y_vals[index];            // the corresponding y value.  
+  {                                     // the corresponding y value.  
+    if ( index >= 0 && index < gd.y_vals.length )
+      return gd.y_vals[index];            
+    else
+      return 0.0f;                      // we hit the last x-point of a
+  }                                     // histogram so no correponding y
 
   float x1 = gd.x_vals[index];          // x_value between two listed x_vals 
   float x2 = gd.x_vals[index + 1];            
@@ -1150,10 +1175,18 @@ public void setY_bounds( float y_min, float y_max )
 {
   CoordBounds data_bound = getGlobalWorldCoords();
 
+  if ( y_min > y_max )
+  {
+    float temp = y_min;
+    y_min = y_max;
+    y_max = temp;
+  } 
+
   data_bound.setBounds( data_bound.getX1(), y_min,     // change and "lock" the
                         data_bound.getX2(), y_max );   // new y_min, y_max
 
   data_bound.invertBounds();               // needed for "upside down" pixel
+
   initializeWorldCoords( data_bound );     // coordinates
 
   repaint();
@@ -1186,12 +1219,12 @@ public boolean is_autoY_bounds()
 }
 
 
-
-/* --------------------------------- paint ------------------------------- */
+/* -------------------------- paintComponent ----------------------------- */
 /**
- *  Draw all of the graphs.
+ *  Draw all of the graphs and/or markers.  NOTE: this method should not 
+ *  be called directly by applications.  Applications should call repaint().
  */
-  public void paint( Graphics g )
+  public void paintComponent( Graphics g )
   {
     stop_box( current_point, false );   // if the system redraws this without
 
@@ -1200,8 +1233,7 @@ public boolean is_autoY_bounds()
                                         // will be drawn rather than erased
                                         // when the user moves the cursor (due
                                         // to XOR drawing).
-    super.paint(g);
-    Graphics2D g2 = (Graphics2D)g;
+    Graphics2D g2 = (Graphics2D)g.create();
     
     SetTransformsToWindowSize();
     int x_offset = 0;
@@ -1229,6 +1261,9 @@ public boolean is_autoY_bounds()
     }
     int height = getHeight();
 
+
+    g2.setColor( getBackground() );
+    g2.fillRect( 0, 0, getWidth(), getHeight() );
 
 
     for ( int gr_index = graphs.size()-1; gr_index >= 0; gr_index-- )
@@ -1360,11 +1395,11 @@ public boolean is_autoY_bounds()
            error_bars_lower[i] = y_copy[i] - error_copy[i];
 	  }  
         }
-        local_transform.MapYListTo(error_bars_upper); // map errors from WC to
-        local_transform.MapYListTo(error_bars_lower); // pixels
+        getLocal_transform().MapYListTo(error_bars_upper); // map errors from WC to
+        getLocal_transform().MapYListTo(error_bars_lower); // pixels
       }
          
-      local_transform.MapTo( x_copy, y_copy );       // map from WC to pixels
+      getLocal_transform().MapTo( x_copy, y_copy );       // map from WC to pixels
 
 
 
@@ -1434,36 +1469,38 @@ public boolean is_autoY_bounds()
              else if ( type == PLUS )
              {
                g2.drawLine( x_int[i]-size, y_int[i],
-	  		      x_int[i]+size, y_int[i]      );      
-              g2.drawLine( x_int[i],     y_int[i]-size, 
-	  			x_int[i],      y_int[i]+size );      
+                            x_int[i]+size, y_int[i]      );      
+               g2.drawLine( x_int[i],      y_int[i]-size, 
+                            x_int[i],      y_int[i]+size );      
              }
              else if ( type == STAR )
              {
                g2.drawLine( x_int[i]-size, y_int[i],
-	  			 x_int[i]+size, y_int[i]      );      
+                            x_int[i]+size, y_int[i]      );      
                g2.drawLine( x_int[i],      y_int[i]-size,
-	  			 x_int[i],      y_int[i]+size );      
+                            x_int[i],      y_int[i]+size );      
                g2.drawLine( x_int[i]-size, y_int[i]-size,
-	  			 x_int[i]+size, y_int[i]+size );      
+                            x_int[i]+size, y_int[i]+size );      
                g2.drawLine( x_int[i]-size, y_int[i]+size,
-				 x_int[i]+size, y_int[i]-size );      
+                            x_int[i]+size, y_int[i]-size );      
              }
              else if ( type == BOX )
              {
                g2.drawLine( x_int[i]-size, (y_int[i]-size), 
-	 		x_int[i]-size, (y_int[i]+size) );      
+                            x_int[i]-size, (y_int[i]+size) );      
                g2.drawLine( x_int[i]-size, y_int[i]+size,
-			 x_int[i]+size, y_int[i]+size );      
+                            x_int[i]+size, y_int[i]+size );      
                g2.drawLine( x_int[i]+size, y_int[i]+size,
-	 		 x_int[i]+size, y_int[i]-size );      
+                            x_int[i]+size, y_int[i]-size );      
                g2.drawLine( x_int[i]+size, y_int[i]-size,
-	 		 x_int[i]-size, y_int[i]-size );     
+                            x_int[i]-size, y_int[i]-size );     
              }
              else if(type == CROSS)
              {
-            	 g2.drawLine( x_int[i]-size, y_int[i]-size, x_int[i]+size, y_int[i]+size );      
-            	 g2.drawLine( x_int[i]-size, y_int[i]+size, x_int[i]+size, y_int[i]-size );  
+               g2.drawLine( x_int[i]-size, y_int[i]-size, 
+                            x_int[i]+size, y_int[i]+size );      
+               g2.drawLine( x_int[i]-size, y_int[i]+size, 
+                            x_int[i]+size, y_int[i]-size );  
             	 
              }
              else	//BAR 
@@ -1521,10 +1558,8 @@ public boolean is_autoY_bounds()
 
           }
         }
-
-
-
       }
+
       else if ( is_histogram )  // Histogram data
       { 
        //if transparent do not draw line
@@ -1598,35 +1633,35 @@ public boolean is_autoY_bounds()
              else if ( type == STAR )
              {
                g2.drawLine( x_midpt-size, y_int[i],
-	  			 x_midpt+size, y_int[i]      );      
+                            x_midpt+size, y_int[i]      );      
                g2.drawLine( x_midpt,      y_int[i]-size,
-	  			 x_midpt,      y_int[i]+size );      
+                            x_midpt,      y_int[i]+size );      
                g2.drawLine( x_midpt-size, y_int[i]-size,
-	  			 x_midpt+size, y_int[i]+size );      
+                            x_midpt+size, y_int[i]+size );      
                g2.drawLine( x_midpt-size, y_int[i]+size,
-				 x_midpt+size, y_int[i]-size );      
+                            x_midpt+size, y_int[i]-size );      
              }
              else if ( type == BOX )
              {
                g2.drawLine( x_midpt-size, (y_int[i]-size), 
-	 		x_midpt-size, (y_int[i]+size) );      
+                            x_midpt-size, (y_int[i]+size) );      
                g2.drawLine( x_midpt-size, y_int[i]+size,
-			 x_midpt+size, y_int[i]+size );      
+                            x_midpt+size, y_int[i]+size );      
                g2.drawLine( x_midpt+size, y_int[i]+size,
-	 		 x_midpt+size, y_int[i]-size );      
+                            x_midpt+size, y_int[i]-size );      
                g2.drawLine( x_midpt+size, y_int[i]-size,
-	 		 x_midpt-size, y_int[i]-size );     
+                            x_midpt-size, y_int[i]-size );     
              }
              else if (type == CROSS)
              {
                g2.drawLine( x_midpt-size, y_int[i]-size,
-	  		 x_midpt+size, y_int[i]+size );      
+                            x_midpt+size, y_int[i]+size );      
                g2.drawLine( x_midpt-size, y_int[i]+size,
-	  		 x_midpt+size, y_int[i]-size );      
+                            x_midpt+size, y_int[i]-size );      
              }
              else		//BAR
              {
-            	 g2.drawLine(x_midpt, y_int[i]-size, x_midpt, y_int[i]+size);
+                g2.drawLine(x_midpt, y_int[i]-size, x_midpt, y_int[i]+size);
              }
 	  } 
 	}
@@ -1684,12 +1719,12 @@ public boolean is_autoY_bounds()
             }
           }   
         }
-
       }
       else 
        System.out.println("ERROR: x&y arrays don't match in GraphJPanel.paint");
     } 
 
+    g2.dispose();
   }
 
 
@@ -1783,7 +1818,6 @@ private void set_auto_data_bound()
    ymin = fixed_vals[0];
    ymax = fixed_vals[1];
 
-   // If log, make sure range is all positive.
    if( getLogScaleX() )
      xmin = getPositiveXmin();
    if( getLogScaleY() )
@@ -1800,7 +1834,7 @@ private void SetDataBounds()
     float x1, y1, x2, y2;
                                        // get both the currently set WC bounds
                                        // and the automatically scaled bounds
-    CoordBounds current_bound   = getGlobalWorldCoords();
+    CoordBounds current_bound = getGlobalWorldCoords().MakeCopy();
     current_bound.invertBounds();
 
                                       // choose new y_bounds based on flag
@@ -1827,9 +1861,17 @@ private void SetDataBounds()
       x2 = auto_data_bound.getX2();
     }
 
+    if ( y1 > y2 )
+    {
+      float temp = y1;
+      y1 = y2;
+      y2 = temp;
+    }
+
     CoordBounds data_bound =  new CoordBounds( x1, y1, x2, y2 );
     data_bound.invertBounds();               // needed for "upside down" pixel
                                              // coordinates
+  
     CoordBounds local_bounds = getLocalWorldCoords();
     // If "don't reset local bounds and local bounds are within the
     // global bounds, only reset the world coordinates.

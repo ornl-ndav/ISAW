@@ -30,6 +30,14 @@
  * Modified:
  *
  *  $Log: CoordTransform.java,v $
+ *  Revision 1.12  2007/07/30 13:56:23  dennis
+ *  The setSource() method with one signature now calls the setSource()
+ *  method with the other signature, so the actual work is only done
+ *  in one place.
+ *
+ *  Revision 1.11  2007/03/16 17:00:13  dennis
+ *  Added static method to get the inverse of a specified transform.
+ *
  *  Revision 1.10  2004/03/12 00:42:59  millermi
  *  - Changed package and fixed imports.
  *
@@ -66,6 +74,7 @@ public class CoordTransform implements Serializable
   private CoordBounds  to;
   private boolean      preserve_aspect_ratio;
 
+
   /**
    *  Construct a default transform from [0,1]x[0,1] to [0,1]x[0,1].
    */
@@ -76,6 +85,7 @@ public class CoordTransform implements Serializable
     preserve_aspect_ratio = false;
   } 
 
+
   /**
    *  Construct a transform from the specified source rectangle to the 
    *  specified destination rectangle. 
@@ -83,10 +93,11 @@ public class CoordTransform implements Serializable
   public CoordTransform( CoordBounds source_region, 
                          CoordBounds destination_region )
   {
-    from = source_region;
-    to = destination_region;
+    from = source_region.MakeCopy();
+    to   = destination_region.MakeCopy();
     preserve_aspect_ratio = false;
   } 
+
 
   /**
    *  Construct a transform that is a copy of the specified transform.
@@ -149,6 +160,7 @@ public class CoordTransform implements Serializable
     transformYList( y, from, to );
   }
 
+
   /**
    *  Transform lists of x, y values from the current destination region 
    *  back to the current source region.
@@ -162,6 +174,7 @@ public class CoordTransform implements Serializable
     transformYList( y, to, from );
   }
 
+
   /**
    *  Transform a list of x values from the current source region to the
    *  current destination region.
@@ -172,6 +185,7 @@ public class CoordTransform implements Serializable
   {
     transformXList( x, from, to );
   }
+
 
   /**
    *  Transform a list of x values from the current destination region 
@@ -185,6 +199,7 @@ public class CoordTransform implements Serializable
     transformXList( x, to, from );
   }
 
+
   /**
    *  Transform a list of y values from the current source region to the
    *  current destination region.
@@ -195,6 +210,7 @@ public class CoordTransform implements Serializable
   {
     transformYList( y, from, to );
   }
+
 
   /**
    *  Transform a list of y values from the current destination region 
@@ -207,6 +223,7 @@ public class CoordTransform implements Serializable
   {
     transformYList( y, to, from );
   }
+
 
   /**
    *  Map one point from the current source region to the current destination 
@@ -224,6 +241,7 @@ public class CoordTransform implements Serializable
     return p2;
   }
 
+
   /**
    *  Map one point from the current destiantion region to the current source 
    *  region.
@@ -239,6 +257,7 @@ public class CoordTransform implements Serializable
     p2.y = transformY( p1.y, to, from );
     return p2;
   }
+
 
   /**
    *  Map a rectangular region from the current source region to the 
@@ -258,6 +277,7 @@ public class CoordTransform implements Serializable
     float y2 = transformY( b.getY2(), from, to ); 
     return new CoordBounds( x1, y1, x2, y2 );
   }
+
  
   /**
    *  Map a rectangular region from the current destination region to the 
@@ -278,6 +298,7 @@ public class CoordTransform implements Serializable
     return new CoordBounds( x1, y1, x2, y2 );
   }
 
+
   /**
    *  Map a single x value from the current source region to the current 
    *  destination region.
@@ -290,6 +311,7 @@ public class CoordTransform implements Serializable
   {
     return( transformX( x, from, to ) );
   }
+
 
   /**
    *  Map a single x value from the current destination region back to the 
@@ -304,6 +326,7 @@ public class CoordTransform implements Serializable
     return( transformX( x, to, from ) );
   }
 
+
   /**
    *  Map a single y value from the current source region to the current 
    *  destination region.
@@ -316,6 +339,7 @@ public class CoordTransform implements Serializable
   {
     return( transformY( y, from, to ) );
   }
+
 
   /**
    *  Map a single y value from the current destination region back to the 
@@ -341,11 +365,9 @@ public class CoordTransform implements Serializable
    */
   public void setSource( CoordBounds b )
   {
-    if ( preserve_aspect_ratio )
-      b = fix_aspect_ratio( b.getX1(), b.getY1(), b.getX2(), b.getY2() );
-    
-    from.setBounds( b.getX1(), b.getY1(), b.getX2(), b.getY2() );
+    setSource( b.getX1(), b.getY1(), b.getX2(), b.getY2() );
   }
+
 
   /**
    *  The the source region that will be mapped to the destination region.
@@ -369,6 +391,7 @@ public class CoordTransform implements Serializable
       from.setBounds( x1, y1, x2, y2 );
   }
 
+
   /**
    *  The the Destination region that the source region will be mapped to.
    *  If the preserve aspect ratio flag has been set, setDestination MUST 
@@ -380,6 +403,7 @@ public class CoordTransform implements Serializable
   {
     to.setBounds( b.getX1(), b.getY1(), b.getX2(), b.getY2() );
   }
+
 
   /**
    *  The the Destination region that the source region will be mapped to. 
@@ -395,6 +419,7 @@ public class CoordTransform implements Serializable
   {
     to.setBounds( x1, y1, x2, y2 );
   }
+
 
   /**
    *  Get a copy of the current source region.
@@ -417,6 +442,7 @@ public class CoordTransform implements Serializable
     return( to.MakeCopy() );
   }
 
+
   /**
    *  Get a string form for this CoordTransform object.
    *
@@ -429,6 +455,18 @@ public class CoordTransform implements Serializable
            "Dest   Region: " + to;
   }
 
+
+  /**
+   *  Construct a new tranformation that is the inverse of the spceified
+   *  transformation.
+   *
+   *  @return a new CoordTransform that is the inverse of the specifed
+   *          CoordTransform.
+   */
+  public static CoordTransform inverse( CoordTransform tran )
+  {
+    return new CoordTransform( tran.to.MakeCopy(), tran.from.MakeCopy() );
+  }
 
 
 /* -----------------------------------------------------------------------
@@ -481,6 +519,7 @@ public class CoordTransform implements Serializable
       return( (x - A1) * ( B2 - B1 ) / ( A2 - A1 ) + B1 );
   }
 
+
   private float transformY( float y, CoordBounds A, CoordBounds B )
   {
     float A1 = A.getY1();
@@ -511,6 +550,7 @@ public class CoordTransform implements Serializable
        list[i] = slope * list[i] + intercept;
     }
   }
+
 
   private void transformYList( float list[], CoordBounds A, CoordBounds B )
   {

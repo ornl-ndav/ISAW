@@ -30,6 +30,12 @@
  * Modified:
  *
  * $Log: GraphData.java,v $
+ * Revision 1.24  2007/08/03 16:26:24  oakgrovej
+ * Added code to set the mark size in the setObjectState() method.
+ *
+ * Revision 1.23  2007/06/08 20:03:56  dennis
+ * Fixed one java doc comment, and minor reformatting.
+ *
  * Revision 1.22  2006/07/10 20:26:36  amoe
  * Set marksize to 5 because it is now the preferred default.
  *
@@ -231,14 +237,20 @@ public class GraphData implements Serializable,
     {
       markcolor = (Color)temp;
     }
+    
+    temp = new_state.get(MARK_SIZE);
+    if ( temp != null)
+    {
+      marksize = (Integer)temp;
+    }
 
-/*    temp = new_state.get(STROKE);
+/*  temp = new_state.get(STROKE);
     if ( temp != null)
     {
       Stroke = (BasicStroke)temp;
       redraw = true;
-    }*/
-
+    }
+*/
     temp = new_state.get(TRANSPARENT);
     if ( temp != null)
     {
@@ -262,10 +274,13 @@ public class GraphData implements Serializable,
    
   }
 
+
  /**
    * This method will get the current values of the state variables for this
    * object. These variables will be wrapped in an ObjectState. Keys will be
    * put in alphabetic order.
+   *
+   * @param isDefault This parameter is currently ignored
    */
   public ObjectState getObjectState(boolean isDefault)
   {
@@ -283,6 +298,8 @@ public class GraphData implements Serializable,
 
    return state;
   }   
+
+
 /*--------------------------- setErrorVals ----------------------------------*/
 /**
   *  Sets the location and the error values from the values passed in.

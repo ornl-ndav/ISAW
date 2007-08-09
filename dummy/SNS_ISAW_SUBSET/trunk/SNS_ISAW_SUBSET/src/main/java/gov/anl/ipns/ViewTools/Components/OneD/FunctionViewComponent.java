@@ -33,6 +33,24 @@
  * Modified:
  *
  *  $Log: FunctionViewComponent.java,v $
+ *  Revision 1.94  2007/06/08 20:29:48  dennis
+ *  setAxisInfo() now inverts the bounds to be consistent with
+ *  other parts of the system.
+ *  Also removed some unused code in setAxisInfo()
+ *
+ *  Revision 1.93  2007/03/12 15:00:53  amoe
+ *  Added public method isDrawingPointedAtGraph() so external
+ *  classes could determine if the FunctionViewComponent's
+ *  pointedAtGraph is on.
+ *
+ *  Revision 1.92  2006/10/20 05:33:44  amoe
+ *  - Added code to setPointedAt(), so the crosshairs would be updated.
+ *  - Removed getDataPanel().
+ *
+ *  Revision 1.91  2006/08/09 19:16:28  amoe
+ *  Added getDataPanel().  It returns the GraphJPanel gjp.
+ *  (Dominic Kramer, Andrew Moe)
+ *
  *  Revision 1.90  2006/07/25 20:43:27  amoe
  *  - Changed width from 50 to 65 on west white border pane.
  *  - Fixed javadoc.
@@ -351,6 +369,7 @@ import java.io.Serializable;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.border.*;
+import java.awt.Point;
 
 /**
  * This class allows the user to view data in the form of an image. Meaning
@@ -363,7 +382,7 @@ public class FunctionViewComponent implements IViewComponent1D,
                                               ITruLogAxisAddible,
                                               IPreserveState,
                                               Serializable,
-                                              ILegendAddible 
+                                              ILegendAddible
 {
  /**
   * "Precision" - This constant String is a key for referencing the state
@@ -711,37 +730,11 @@ public class FunctionViewComponent implements IViewComponent1D,
   /**
    * This method initializes the world coords.
    */
-  public void setAxisInfo() {/*
-  if(gjp.getLogScaleX() == true && gjp.getLogScaleY() == true ) 
-  {
-      gjp.setLocalWorldCoords( gjp.getLocalLogWorldCoords() );
-  }
-  else if (gjp.getLogScaleX() == true && gjp.getLogScaleY() == false)
-  {
-      gjp.setLocalWorldCoords( new CoordBounds(
-                               gjp.getLocalLogWorldCoords().getX1(),
-                               gjp.getLocalWorldCoords().getY1(),
-			       gjp.getLocalLogWorldCoords().getX2(),
-                               gjp.getLocalWorldCoords().getY2() ) );
-  }                                    
-  else if (gjp.getLogScaleX() == false && gjp.getLogScaleY() == true)
-  {
-      gjp.setLocalWorldCoords( new CoordBounds(
-                               gjp.getLocalWorldCoords().getX1(),
-                               gjp.getLocalLogWorldCoords().getY1(),
-			       gjp.getLocalWorldCoords().getX2(),
-                               gjp.getLocalLogWorldCoords().getY2() ) );
-  }
-  else
-  {*/
-    gjp.initializeWorldCoords( 
-        new CoordBounds( 
-          gjp.getXmin(), gjp.getYmin(),
-          gjp.getXmax(), gjp.getYmax() ) );
-  //}
- 
-   // AxisInfo xinfo = getAxisInformation( AxisInfo.X_AXIS );
-   // AxisInfo yinfo = getAxisInformation( AxisInfo.Y_AXIS );
+  public void setAxisInfo() {
+    CoordBounds bounds = new CoordBounds( gjp.getXmin(), gjp.getYmin(),
+                                          gjp.getXmax(), gjp.getYmax() );
+    bounds.invertBounds();
+    gjp.initializeWorldCoords( bounds );
 
   }
 
@@ -969,6 +962,10 @@ public class FunctionViewComponent implements IViewComponent1D,
     return 1f;
   }
 
+  public boolean isDrawingPointedAtGraph()
+  {
+	  return draw_pointed_at;
+  }
   
   /**
    * This method adjusts the crosshairs on the graphjpanel.
@@ -983,8 +980,7 @@ public class FunctionViewComponent implements IViewComponent1D,
     //System.out.println( "Y value = " + pt.getY(  ) );
     //set the cursor position on GraphJPanel
     gjp.setCurrent_WC_point( pt );
-
-    //System.out.println( "" );
+    gjp.set_crosshair_WC(new floatPoint2D(pt.x,gjp.getY_value(pt.x,0)));
   }
 
 
@@ -1006,10 +1002,14 @@ public class FunctionViewComponent implements IViewComponent1D,
    */
   public void dataChanged(  ) {
 	  
-       if(draw_pointed_at) 
-         DrawPointedAtGraph();
+       if(draw_pointed_at)
+       {
+         DrawPointedAtGraph();         
+       }
        paintComponents(big_picture.getGraphics());
-       sendMessage(POINTED_AT_CHANGED);
+       //System.out.println("FVC.datachanged().gjp.isDoingBox()");
+       sendMessage(POINTED_AT_CHANGED); 
+       //System.out.println( "FunctionViewComponent.dataChanged()" );
     }
   
 
@@ -1022,12 +1022,14 @@ public class FunctionViewComponent implements IViewComponent1D,
    */
   public void dataChanged( IVirtualArrayList1D pin_varray ) //pin == "passed in"
   {
+    // System.out.println("gjp.clearData()");
     gjp.clearData();          // since any of the graphs might have changed, we
                               // clear out all stored copies and start over.
 
                               // The 0th graph in the gjp will be used for the
                               // pointed at graph.  By default, use the 0th
                               // entry in the virtual array.
+    //System.out.println( "FunctionViewComponent.dataChanged(..)" );
     float[] x_vals = pin_varray.getXValues(0);
     float[] y_vals = pin_varray.getYValues(0);
     gjp.setData(x_vals,y_vals, 0, false);
@@ -1056,7 +1058,8 @@ public class FunctionViewComponent implements IViewComponent1D,
     //check if the Legend is on.  If it is, refresh it.
     ViewControl[] vcontrol = mainControls.getControlList();  
   	
-    if( (new Boolean(true)).equals(vcontrol[FunctionControls.VC_LEGEND_CHECKBOX].getControlValue()) )
+    if( Boolean.TRUE.equals(
+             vcontrol[FunctionControls.VC_LEGEND_CHECKBOX].getControlValue()) )
     {
       ((LegendOverlay)transparencies.elementAt(0)).setVisible(true);    	
     }
@@ -1117,7 +1120,6 @@ public class FunctionViewComponent implements IViewComponent1D,
   public void removeAllActionListeners(  ) {
     Listeners.removeAllElements(  );
   }
-
 
   public ViewControl[] getControls(  ) {
  /*  // if no 
@@ -1197,8 +1199,8 @@ public class FunctionViewComponent implements IViewComponent1D,
  public void paintComponents()
  {
    paintComponents(big_picture.getGraphics()); 
- } 
-
+ }
+ 
  protected void initTransparancies()
  {
 	 //create transparencies
@@ -1229,7 +1231,8 @@ public class FunctionViewComponent implements IViewComponent1D,
   }
 
 
-  private void paintComponents( Graphics g ) {   
+  private void paintComponents( Graphics g ) {
+	  //System.out.println("paintComponents()");
     if( g != null )
     {
       big_picture.update(g);
@@ -1464,7 +1467,7 @@ public class FunctionViewComponent implements IViewComponent1D,
     //~ Methods ****************************************************************
 
     public void componentResized( ComponentEvent e ) {
-     // System.out.println("Component Resized");
+     //System.out.println("Component Resized");
       Component center = e.getComponent(  );
      
       regioninfo = new Rectangle( center.getLocation(  ), center.getSize(  ) );
@@ -1486,25 +1489,29 @@ public class FunctionViewComponent implements IViewComponent1D,
 
     public void actionPerformed( ActionEvent ae ) {
       String message = ae.getActionCommand(  );
-
+      
+      //System.out.println("FunctionViewComponent...isDoingBox1? "+gjp.isDoingBox());
 
       //System.out.println("Graph sent message " + message );
       if( message == CoordJPanel.CURSOR_MOVED ) {
-        //System.out.println("Sending POINTED_AT_CHANGED" );
+        //System.out.println("FunctionViewComponent$ImageListener - CURSOR_MOVED" );
         sendMessage( POINTED_AT_CHANGED );
+        //sendMessage( GraphJPanel.CURSOR_MOVED );
+        
       }
 
       if( message == CoordJPanel.ZOOM_IN ) {
-        //System.out.println("Sending SELECTED_CHANGED " + regioninfo );
+        //System.out.println("FunctionViewComponent$ImageListener - ZOOM_IN" + regioninfo );
         paintComponents();
         sendMessage( SELECTED_CHANGED );
       }
 
       if( message == CoordJPanel.RESET_ZOOM ) {
-        //System.out.println("Sending SELECTED_CHANGED" );
+        //System.out.println("FunctionViewComponent$ImageListener - RESET_ZOOM" );
         paintComponents();
         sendMessage( SELECTED_CHANGED );
-      }
+      }      	
+      //System.out.println("FunctionViewComponent...isDoingBox2? "+gjp.isDoingBox());
     }
   }
 
@@ -1513,7 +1520,7 @@ public class FunctionViewComponent implements IViewComponent1D,
 
     public void actionPerformed( ActionEvent ae ) {
       String message = ae.getActionCommand(  );
-
+      
 //    System.out.println( "action command: " + message );
 //    System.out.println( "action event: " + ae );
       if( message.equals( ControlCheckbox.CHECKBOX_CHANGED ) ) {

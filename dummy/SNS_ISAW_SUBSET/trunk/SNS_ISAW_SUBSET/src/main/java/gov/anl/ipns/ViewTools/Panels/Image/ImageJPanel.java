@@ -30,6 +30,27 @@
  * Modified:
  *
  *  $Log: ImageJPanel.java,v $
+ *  Revision 1.34  2007/07/29 20:45:15  dennis
+ *  Changed local_transform and global_transform to be private
+ *  in CoordJPanel class, to keep better control over who can
+ *  change them, and how they can be changed.
+ *
+ *  Revision 1.33  2007/06/13 21:18:47  dennis
+ *  Removed un-needed update() method that called paint().
+ *  Replaced paint() by paintComponent().
+ *  Changed paintComponent() method to use a copy of the Graphics
+ *  object passed in.
+ *
+ *  Revision 1.32  2007/04/27 18:40:05  dennis
+ *  Restoring ImageJPanel, which was mistakenly removed from CVS.
+ *  NOT all instances of ImageJPanel have been replaced by
+ *  ImageJPanel2.
+ *
+ *  Revision 1.30  2007/02/05 04:32:14  dennis
+ *  Removed small adjustment by 0.001 to World Coordinate bounds, which
+ *  was not necessary and caused problems with selections containing
+ *  the 0th row or column.
+ *
  *  Revision 1.29  2004/11/12 17:26:07  millermi
  *  - Code in setLogScale() was factored out into PseudoLogScaleUtil.
  *    setLogScale() now used PseudoLogScaleUtil to do log mapping.
@@ -411,15 +432,16 @@ public class ImageJPanel extends    CoordJPanel
   */ 
   public Image getThumbnail(int width, int height)
   {
-    CoordTransform temp = new CoordTransform(local_transform);
-    local_transform = new CoordTransform(global_transform);
+    CoordTransform temp = new CoordTransform( getLocal_transform());
+    CoordTransform local_tran = new CoordTransform(getGlobal_transform());
+    setLocalWorldCoords( local_tran.getSource() );
     makeImage();
     Image thumbnail;
     if( width == 0 || height == 0 )
       thumbnail = image.getScaledInstance( 100, 100, Image.SCALE_DEFAULT );
     else
       thumbnail = image.getScaledInstance( width, height, Image.SCALE_DEFAULT );
-    local_transform = new CoordTransform(temp);
+    setLocalWorldCoords( temp.getSource() );
     makeImage();
     return thumbnail;
   } 
@@ -456,22 +478,17 @@ public class ImageJPanel extends    CoordJPanel
   }
 
 
-/* -------------------------------- update ------------------------------- */
-/**
- *  Update method that just calls paint.
- */
-  public void update( Graphics g )
-  {
-    paint(g);
-  }
-
-/* --------------------------------- paint ------------------------------- */
+/* ---------------------------- paintComponent --------------------------- */
 /**
  *  This method is invoked by swing to draw the image.  Applications must not
  *  call this directly.
+ *
+ *  @param g  The Graphics object to use for drawing the image
  */
-  public void paint( Graphics g )
+  public void paintComponent( Graphics g )
   {
+    Graphics2D g2d = (Graphics2D)g.create();
+
     stop_box( current_point, false );   // if the system redraws this without
     stop_crosshair( current_point );    // our knowlege, we've got to get rid
                                         // of the cursors, or the old position
@@ -485,9 +502,12 @@ public class ImageJPanel extends    CoordJPanel
     if ( rescaled_image != null )       // the component must still not be 
     {                                   // visible
       prepareImage( rescaled_image, this );
-      g.drawImage( rescaled_image, 0, 0, this ); 
+      g2d.drawImage( rescaled_image, 0, 0, this );
     }
+
+    g2d.dispose();
   }
+
 
 /* -------------------------- ImageRow_of_PixelRow ----------------------- */
 /**
@@ -500,7 +520,7 @@ public class ImageJPanel extends    CoordJPanel
  */
   public int ImageRow_of_PixelRow( int pix_row )
   {
-    float WC_y = local_transform.MapYFrom( pix_row );
+    float WC_y = getLocal_transform().MapYFrom( pix_row );
  
     return ImageRow_of_WC_y( WC_y );
   }
@@ -538,7 +558,7 @@ public class ImageJPanel extends    CoordJPanel
  */
   public int ImageCol_of_PixelCol( int pix_col )
   {
-    float WC_x = local_transform.MapXFrom( pix_col );
+    float WC_x = getLocal_transform().MapXFrom( pix_col );
 
     return  ImageCol_of_WC_x( WC_x );
   }
@@ -687,8 +707,7 @@ protected void LocalTransformChanged()
     CoordBounds     image_bounds;
 
     SetTransformsToWindowSize();
-    image_bounds = new CoordBounds( 0.0f, 0.0f, 
-                                    data[0].length-0.001f, data.length-0.001f );
+    image_bounds = new CoordBounds( 0, 0, data[0].length, data.length );
     world_bounds = getGlobal_transform().getSource();
     return( new CoordTransform( world_bounds, image_bounds ) );   
   }
@@ -706,7 +725,7 @@ protected void LocalTransformChanged()
 
     SetTransformsToWindowSize();
     CoordTransform world_to_image = getWorldToImageTransform(); 
-    CoordBounds    bounds         = local_transform.getSource();
+    CoordBounds    bounds         = getLocal_transform().getSource();
 
     bounds = world_to_image.MapTo( bounds );
     int start_row = Math.max( (int)(bounds.getY1() ), 0 );
@@ -715,7 +734,7 @@ protected void LocalTransformChanged()
     int end_col   = Math.min( (int)(bounds.getX2() ), data[0].length-1 );
 
     CoordBounds new_bounds = new CoordBounds( start_col, start_row,
-                                              end_col+0.999f, end_row+0.999f );
+                                              end_col+1, end_row+1 );
     new_bounds = world_to_image.MapFrom( new_bounds );
     setLocalWorldCoords( new_bounds );
 

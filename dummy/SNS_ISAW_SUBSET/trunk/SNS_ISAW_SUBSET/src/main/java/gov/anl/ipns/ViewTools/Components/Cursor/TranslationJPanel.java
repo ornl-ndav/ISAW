@@ -33,6 +33,19 @@
  * Modified:
  *
  *  $Log: TranslationJPanel.java,v $
+ *  Revision 1.16  2007/07/29 20:45:14  dennis
+ *  Changed local_transform and global_transform to be private
+ *  in CoordJPanel class, to keep better control over who can
+ *  change them, and how they can be changed.
+ *
+ *  Revision 1.15  2007/07/20 03:03:31  dennis
+ *  Simplified logic in setGlobalPanelBounds().  Setting the global
+ *  panel bounds is only needed when new data has been set, so the
+ *  local viewport is also reset.
+ *
+ *  Revision 1.14  2007/07/13 14:20:42  dennis
+ *  Added comment to clarify why a BOUNDS_CHANGED message was sent.
+ *
  *  Revision 1.13  2005/06/17 20:18:40  kramer
  *
  *  Added 'requestFocus()' at the end of each mouseEntered(), mouseMoved(), ..
@@ -266,6 +279,7 @@ public class TranslationJPanel extends CoordJPanel
   */ 
   public void setViewPort( floatPoint2D vp1, floatPoint2D vp2 )
   {
+    //System.out.println("In tjp setViewport, vp1 = " + vp1 + " vp2 = " + vp2 );
     // Check to make sure new local bounds are within the global bounds.
     // Since it is possible for x1 > x2 and/or y1 > y2, must check this.
     CoordBounds global = getGlobalWorldCoords();
@@ -342,42 +356,23 @@ public class TranslationJPanel extends CoordJPanel
     Point pixelbotright = convertToPixelPoint(wcbotright);
     
     box.init( pixeltopleft, pixelbotright );
-    send_message(BOUNDS_CHANGED);
-  }
+    send_message(BOUNDS_CHANGED);             // NOTE: This sends the box info
+                                              //       back up to the overlay
+  }                                           //       so it gets drawn
   
  /**
-  * Set the bounds for the entire image. This method must be called whenever the
-  * global bounds of the CoordJPanel are changed. Also call this method to
-  * initialize the global bounds.
+  * Set the bounds for the entire image AND reset the local bounds to the
+  * Global bounds. This method should only be called when the global bounds 
+  * of the CoordJPanel are changed, or the ZOOM region is to be reset. 
+  * Also call this method to initialize the global and local bounds.
   *
   *  @param  global CoordBounds representing the entire possible viewable area.
   */ 
   public void setGlobalPanelBounds( CoordBounds global )
   {
-    setGlobalWorldCoords( global.MakeCopy() );
-    CoordBounds local_bounds = getLocalWorldCoords();
-    // since it is possible for x1 > x2 and/or y1 > y2, must check this.
-    boolean reverse_x = false;
-    boolean reverse_y = false;
-    if( global.getX1() > global.getX2() )
-      reverse_x = true;
-    if( global.getY1() > global.getY2() )
-      reverse_y = true;
-    
-    // if local bounds are larger than new global bounds, set local to global
-    // x2 > x1
-    if( reverse_x )
-      if( global.getX1() < local_bounds.getX1() ||
-          global.getX2() > local_bounds.getX2() )
-        setViewPort(global);
-    // y2 > y1
-    else if( reverse_y )
-      if( global.getY1() < local_bounds.getY1() ||
-	  global.getX2() > local_bounds.getY1() )
-        setViewPort(global);
-    // standard x1 < x2, y1 < y2
-    else
-      setViewPort(global);
+    CoordBounds copy = global.MakeCopy();
+    setGlobalWorldCoords( copy );
+    setViewPort( copy );
   }
   
  /**
@@ -396,7 +391,7 @@ public class TranslationJPanel extends CoordJPanel
   */
   private Point convertToPixelPoint( floatPoint2D fp )
   {
-    floatPoint2D fp2d = global_transform.MapTo( fp );
+    floatPoint2D fp2d = getGlobal_transform().MapTo( fp );
     return new Point( (int)fp2d.x, (int)fp2d.y );
   }
  
@@ -405,7 +400,7 @@ public class TranslationJPanel extends CoordJPanel
   */
   private floatPoint2D convertToWorldPoint( Point p )
   {
-    return global_transform.MapFrom( new floatPoint2D((float)p.x, (float)p.y) );
+    return getGlobal_transform().MapFrom( new floatPoint2D((float)p.x, (float)p.y) );
   }
  
  /*

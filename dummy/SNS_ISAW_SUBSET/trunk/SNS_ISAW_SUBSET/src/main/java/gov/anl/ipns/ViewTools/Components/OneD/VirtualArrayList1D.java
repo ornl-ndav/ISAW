@@ -33,6 +33,15 @@
  * Modified:
  *
  *  $Log: VirtualArrayList1D.java,v $
+ *  Revision 1.12  2007/07/17 15:56:31  rmikk
+ *  Made the setGraphTitle method set the title, not return the previous title
+ *
+ *  Added a lot of error checking to this method
+ *
+ *  Revision 1.11  2007/06/08 14:34:45  dennis
+ *  setPointedAtGraph method now also checks for index < 0, when
+ *  checking for a valid index.
+ *
  *  Revision 1.10  2005/06/06 20:13:52  kramer
  *
  *  Fixed indentation problems.
@@ -251,7 +260,7 @@ public class VirtualArrayList1D implements IVirtualArrayList1D
   */
   public float[] getErrorValues( int graph_number )
   { 
-      // check for valid index
+    // check for valid index
     if( graph_number >= 0 && graph_number < graphs.size() )
       return ((DataArray1D)graphs.elementAt(graph_number)).getErrorArray();
     return null;
@@ -345,10 +354,24 @@ public class VirtualArrayList1D implements IVirtualArrayList1D
   *
   *  @param  title Title for graph specified.
   *  @param  graph_num Index of the graph.
+  *  
+  *  @return the previous title or null if unable to change
   */
   public String setGraphTitle( String title, int graph_num )
   {
-    return ((DataArray1D)graphs.elementAt(graph_num)).getTitle();
+    if( graph_num <  0)
+       return null;
+    if( graphs == null )
+       return null;
+    if( graph_num >= graphs.size())
+       return null;
+    if( title == null )
+       return null;
+    
+    String Res = ((DataArray1D)graphs.elementAt(graph_num)).getTitle();
+    ((DataArray1D)graphs.elementAt(graph_num)).setTitle( title );
+    
+    return Res;
   }
   
  /**
@@ -417,8 +440,9 @@ public class VirtualArrayList1D implements IVirtualArrayList1D
   public void setPointedAtGraph(int index)
   {
     // make sure index is valid
-    if( index >= graphs.size() )
+    if( index < 0 || index >= graphs.size() )
       return;
+
     ((DataArray1D)graphs.elementAt(pointed_at_index)).setPointedAt(false);
     
     ((DataArray1D)graphs.elementAt(index)).setPointedAt(true);

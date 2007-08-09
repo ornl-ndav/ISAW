@@ -31,6 +31,87 @@
  * Modified:
  *
  *  $Log: ImageJPanel2.java,v $
+ *  Revision 1.20  2007/08/05 20:11:35  dennis
+ *  Fixed calculation of new bounds in makeImage.  No longer assumes
+ *  that it will be called more than once, to set up new bounds that
+ *  fall on pixel boundaries.
+ *
+ *  Revision 1.19  2007/07/29 20:45:16  dennis
+ *  Changed local_transform and global_transform to be private
+ *  in CoordJPanel class, to keep better control over who can
+ *  change them, and how they can be changed.
+ *
+ *  Revision 1.18  2007/07/29 19:12:53  dennis
+ *  Removed call to repaint() from makeImage() method, so the image
+ *  can be reconstructed internally without being repainted yet.
+ *  Modified LocalTransformChanged() method to call the super class's
+ *  LocalTranformedChanged() method, after re-making the image.
+ *
+ *  Revision 1.17  2007/07/12 21:20:56  rmikk
+ *  Removed the Color Model Object State and moved the TwoSided object
+ *     state up to the ImageViewComponent, so the info was not recorded twice
+ *
+ *  Revision 1.16  2007/07/10 14:34:24  dennis
+ *  Now again tests isVisible() instead of isShowing() before drawing.
+ *
+ *  Revision 1.15  2007/06/15 16:42:00  dennis
+ *  Removed do_thumbnail parameter from makeImage(), since the thumbnail
+ *  image is now made in the method makeThumbnailImage().
+ *
+ *  Revision 1.14  2007/06/15 16:23:33  dennis
+ *  1. Making thumbnail image is now done in separate method, so that it
+ *     no longer interacts with making the displayed image.  The thumbnail
+ *     image is only made once after setting the data for the image.  The
+ *     thumbnail is made at a default size specified by THUMBNAIL_SIZE, that
+ *     is currently 256x256.
+ *  2. The image is no longer sampled to the the size of the monitor and
+ *     then resampled to smaller sizes.  The image is sampled, on demand,
+ *     to "essentially" the size of the window in which it is displayed.
+ *  3. The subSample() method now takes a requested width and height, and
+ *     returns an Image object with width and height less than or equal to
+ *     the specified width and height.
+ *  4. Removed code that set local transforms from the setData() method, since
+ *     that is done in makeImage().
+ *
+ *  Revision 1.13  2007/06/13 21:05:26  dennis
+ *  Removed un-needed update() method that called paint().
+ *  Changed paintComponent() method to use a copy of the Graphics
+ *  object passed in.
+ *
+ *  Revision 1.12  2007/06/13 15:49:25  rmikk
+ *  Replaced paint by paintComponent as preferred by the latest java
+ *
+ *  Revision 1.11  2007/06/05 20:10:53  rmikk
+ *  Eliminated an off by one error.  end_col's float value can be NumColumns
+ *
+ *  Revision 1.10  2007/04/29 18:47:44  rmikk
+ *  Fixed off by one error caused be previous fixes of such errors.  This caused
+ *  the last row and last column not to be shown
+ *
+ *  Revision 1.9  2007/04/29 18:22:54  dennis
+ *  Added boolean parameter to makeImage() method to determine
+ *  whether or not the thumbnail image is to be constructed.
+ *
+ *  Revision 1.8  2007/04/28 13:56:05  rmikk
+ *  Fixed error when there is only one row or one column of data
+ *
+ *  Revision 1.7  2007/03/23 15:34:56  rmikk
+ *  Fixed an off by one error which made it difficult for fill lines to be drawn
+ *    in the middle of blocks corresponding to array elements
+ *
+ *  Revision 1.6  2007/03/18 21:17:27  rmikk
+ *  makeImage only increases the zoom region the first time when the local
+ *    bounds do not correspond with pixel boundaries
+ *
+ *  Revision 1.5  2007/03/15 20:12:09  dennis
+ *  Made getWorldToImageTransform() method public so that it can
+ *  be used by the ImageViewComponent.
+ *
+ *  Revision 1.4  2007/02/05 04:32:14  dennis
+ *  Removed small adjustment by 0.001 to World Coordinate bounds, which
+ *  was not necessary and caused problems with selections containing
+ *  the 0th row or column.
+ *
  *  Revision 1.3  2005/08/14 05:22:11  dennis
  *  Added public method RebuildImage() to force the visibile image
  *  to be recalculated, and call repaint().  This is needed for
@@ -186,7 +267,7 @@ import gov.anl.ipns.Util.Numeric.*;
  */
 
 public class ImageJPanel2 extends    CoordJPanel 
-                         implements Serializable, IPreserveState
+                          implements Serializable, IPreserveState
 {
  // these variables preserve state for the ImageJPanel
  /**
@@ -212,13 +293,21 @@ public class ImageJPanel2 extends    CoordJPanel
   * color model.
   */
   public static final String TWO_SIDED   = "Two Sided";
+
+
+ /**
+  * This constant specifies the size at which the thumbnail image is 
+  * calculated internally.
+  */
+  public static final int THUMBNAIL_SIZE = 256;
+
   
   private final int       LOG_TABLE_SIZE      = 60000;
   private final int       NUM_POSITIVE_COLORS = 127; 
   private final byte      ZERO_COLOR_INDEX    = (byte)NUM_POSITIVE_COLORS; 
   private Image           image;
-  private Image           rescaled_image = null;
-  private Image           thumbnail_image;
+  private Image           rescaled_image  = null;
+  private Image           thumbnail_image = null;
   private IVirtualArray2D data;
   private float           min_data = 0;
   private float           max_data = 3;
@@ -227,8 +316,10 @@ public class ImageJPanel2 extends    CoordJPanel
   private String          color_model_string;
   private byte[]          log_scale;
   private boolean         isTwoSided = true;
-  private boolean         makeThumbnail = false;
   private boolean         auto_scale_data = true; // Initially allow auto scale.
+
+
+/* ------------------------- constructor ---------------------------------- */
 /**
  *  Construct an ImageJPanel with default values for the color scale, log
  *  scaling factor and array of values.  Most applications using this class
@@ -252,6 +343,8 @@ public class ImageJPanel2 extends    CoordJPanel
     addKeyListener( new ImageKeyAdapter() );
   }
 
+
+/* ------------------------- setObjectState ------------------------------- */
  /**
   * This method will set the current state variables of the object to state
   * variables wrapped in the ObjectState passed in.
@@ -263,14 +356,14 @@ public class ImageJPanel2 extends    CoordJPanel
     // since ImageJPanel extends CoordJPanel, set those state variables first.
     super.setObjectState(new_state);
     boolean redraw = false;  // if any values are changed, repaint.
-    Object temp = new_state.get(LOG_SCALE);
+     Object temp = new_state.get(LOG_SCALE);
     if( temp != null )
     {
       log_scale = (byte[])temp;
       redraw = true;  
     }  
-    
-    temp = new_state.get(TWO_SIDED);
+    /* 
+   temp = new_state.get(TWO_SIDED); //Moved to ImageViewComponent
     if( temp != null )
     {
       isTwoSided = ((Boolean)temp).booleanValue();
@@ -284,13 +377,15 @@ public class ImageJPanel2 extends    CoordJPanel
       setNamedColorModel( color_model_string, isTwoSided, true );
       redraw = true;  
     }
-    
+    */
     // may need changing
+
     if( redraw )
       repaint();
-   
   } 
+
  
+/* ------------------------- getObjectState ------------------------------- */
  /**
   * This method will get the current values of the state variables for this
   * object. These variables will be wrapped in an ObjectState.
@@ -304,12 +399,13 @@ public class ImageJPanel2 extends    CoordJPanel
   {
     //get ObjectState of CoordJPanel
     ObjectState state = super.getObjectState(isDefault);
-    state.insert( COLOR_MODEL, color_model_string );
+    //state.insert( COLOR_MODEL, color_model_string );
     state.insert( LOG_SCALE, log_scale );
-    state.insert( TWO_SIDED, new Boolean(isTwoSided) );
+   // state.insert( TWO_SIDED, new Boolean(isTwoSided) );
     
     return state;
   }
+
 
 /* ------------------------- changeLogScale -------------------------- */
 /**
@@ -332,9 +428,11 @@ public class ImageJPanel2 extends    CoordJPanel
   public void changeLogScale( double s, boolean rebuild_image )
   {                                       
     setLogScale( s );
+
     if ( rebuild_image )
-      makeImage();
+      RebuildImage();
   }
+
 
 /* -------------------------- setNamedColorModel --------------------------- */
 /**
@@ -370,11 +468,11 @@ public class ImageJPanel2 extends    CoordJPanel
       color_model = IndexColorMaker.getColorModel( color_model_string,
                                                    NUM_POSITIVE_COLORS );
     if ( rebuild_image )
-    {
-      makeImage();
-    }
+      RebuildImage();
   }
+
   
+ /* ----------------------- enableAutoDataRange --------------------------- */
  /**
   * Determine whether the minimum and maximum data values are calculated
   * by the setData() [True] or explicitly set by setDataRange() [False].
@@ -392,7 +490,9 @@ public class ImageJPanel2 extends    CoordJPanel
   {
     auto_scale_data = auto_range_on;
   }
+
   
+ /* --------------------- isAutoDataRangeEnabled ------------------------- */
  /**
   * Determine whether the minimum and maximum data values are calculated
   * by the setData() [True] or explicitly set by setDataRange() [False].
@@ -405,6 +505,8 @@ public class ImageJPanel2 extends    CoordJPanel
     return auto_scale_data;
   }
   
+
+ /* -------------------------- setDataRange ------------------------------ */
  /**
   * This method will set the data range to [data_min,data_max]. Calling this
   * method will disable auto data range calculation done when setData() is
@@ -422,15 +524,19 @@ public class ImageJPanel2 extends    CoordJPanel
       data_min = data_max;
       data_max = swap;
     }
+
     // Prevent data_min = data_max
     if( data_min == data_max )
       data_max = data_min + 1;
+
     // Set min/max_data
     min_data = data_min;
     max_data = data_max;
+
     // turn off auto data range calculation.
     enableAutoDataRange(false);
   }
+
 
 /* ------------------------------- setData -------------------------------- */
 /**
@@ -440,10 +546,10 @@ public class ImageJPanel2 extends    CoordJPanel
  *                         an image.
  *
  *  @param   rebuild_image Flag to determine whether the displayed image is
- *                         rebuilt with the new log scale factor, or if
- *                         rebuilding the displayed image should be delayed
- *                         since other changes will also be made before 
- *                         rebuilding the image.  A value of "true" will
+ *                         rebuilt now, or if rebuilding the displayed image 
+ *                         should be delayed since other changes will also 
+ *                         be made before the image must be rebuilt and 
+ *                         drawn.  A value of "true" will
  *                         cause the image to be rebuilt immediately.
  */
 
@@ -457,141 +563,67 @@ public class ImageJPanel2 extends    CoordJPanel
     }
     data = a2d;
     
-    // If auto calculate data range, do the code contained in this if statement.
     if( isAutoDataRangeEnabled() )
     {
-     /* ########################### Consider Revising #########################
-      * The code below will subsample the data in order to take advantage of
-      * the virtual array. The min and max data will be taken from this
-      * subsampled region. As a result the min/max may not be accurate. The
-      * values will then be compared with the min/max provided by the
-      * VirtualArray's data axis.
-      */
-      SetTransformsToWindowSize();
-      // Get world_to_image transform, and local world coord bounds.
-      CoordTransform world_to_image = getWorldToImageTransform();
-      CoordBounds    bounds         = local_transform.getSource();
-      // Convert local coord bounds to image row/column.
-      bounds = world_to_image.MapTo( bounds );
-      int start_row = Math.max( (int)(bounds.getY1() ), 0 );
-      int end_row   = Math.min( (int)(bounds.getY2() ), data.getNumRows()-1 );
-      int start_col = Math.max( (int)(bounds.getX1() ), 0 );
-      int end_col   = Math.min( (int)(bounds.getX2() ), data.getNumColumns()-1);
-
-      CoordBounds new_bounds = new CoordBounds(start_col,start_row,
-                                               end_col+0.999f, end_row+0.999f );
-      new_bounds = world_to_image.MapFrom( new_bounds );
-      setLocalWorldCoords( new_bounds );
-      // Subsamble data if data exceeds bounds of monitor.
-      // Get monitor dimensions.
-      Dimension monitor_dim = Toolkit.getDefaultToolkit().getScreenSize();
-    
-      int h = Math.abs(end_row - start_row) + 1;
-      int w = Math.abs(end_col - start_col) + 1;
-      // Subsample step increments. If image exceeds size
-      // of monitor screen, increase steps for subsampling. 
-      int x_step = (int)Math.floor( ((double)w)/
-                                    ((double)monitor_dim.getWidth() ) );
-      int y_step = (int)Math.floor( ((double)h)/
-                                    ((double)monitor_dim.getHeight()) );
-      // If floor makes step less than one, force step to be 1.
-      if( x_step < 1 )
-        x_step = 1;
-      if( y_step < 1 )
-        y_step = 1;
-    
       max_data = Float.NEGATIVE_INFINITY;
       min_data = Float.POSITIVE_INFINITY;
       float temp;
       int row_count = data.getNumRows();
       int col_count = data.getNumColumns();
-      for ( int row = 0; row < row_count; row+=y_step )
-        for ( int col = 0; col < col_count; col+=x_step )
+      for ( int row = 0; row < row_count; row++ )
+      {
+        for ( int col = 0; col < col_count; col++ )
         {
           temp = data.getDataValue(row,col);
           if ( temp > max_data )
             max_data = temp;
           if ( temp < min_data )
             min_data = temp;
-        }/*
-      // Now compare min/max to the min/max in the virtual array data axis.
-      AxisInfo data_axis = data.getAxisInfo(AxisInfo.Z_AXIS);
-      float axis_min = data_axis.getMin();
-      float axis_max = data_axis.getMax();
-      // Make sure neither are Float.NaN
-      if( !(Float.isNaN(axis_min) || Float.isNaN(axis_max)) )
-      {
-        // Make sure axis_min < axis_max.
-        if( axis_min > axis_max )
-        {
-          float swap = axis_min;
-          axis_min = axis_max;
-          axis_max = swap;
         }
-        // Since min/max_data are only from a sampling, there could be other
-        // values that are larger/smaller. Compare these to those supplied by
-        // the virtual array.
-        if( max_data < axis_max )
-          max_data = axis_max;
-        if( min_data > axis_min )
-          min_data = axis_min;
-      } // end if NaN*/
-      /* #######################End of Revision######################
-       * Old way
-      for ( int row = 0; row < a2d.getNumRows(); row++ )
-        for ( int col = 0; col < a2d.getNumColumns(); col++ )
-        {
-          if ( a2d.getDataValue(row,col) > max_data )
-            max_data = a2d.getDataValue(row,col); 
-          if ( a2d.getDataValue(row,col) < min_data )
-            min_data = a2d.getDataValue(row,col); 
-        }*/
+       }
+
       if ( min_data == max_data )    // avoid division by 0 when scaling data
         max_data = min_data + 1;
+
     } // End if( isAutoScaleDataEnabled() )
+
+
+    thumbnail_image = null;
+
     if ( rebuild_image )
-    {
-      makeImage();
-    }
+      RebuildImage();
+
   } // End setData()
-  
+
+
+ /* -------------------------- getThumbnail ----------------------------- */  
  /**
-  *  Get a thumbnail of the entire image shown by this ImageJPanel.
+  *  Get a thumbnail of the entire image shown by this ImageJPanel.  The
+  *  thumbnail is obtained by resampling a thumbnail image that is
+  *  precomputed at a size specified by THUMBNAIL_SIZE.
   *
-  *  @param  width The desired width of the thumbnail.
+  *  @param  width  The desired width of the thumbnail.
   *  @param  height The desired height of the thumbnail.
+  *
   *  @return A thumbnail of the Image.
   */ 
   public Image getThumbnail(int width, int height, boolean forceRedraw)
   {
-    Image thumbnail;
-    // If thumbnail_image exists, scale it down the the desired size.
-    if( thumbnail_image != null && !forceRedraw)
+    if ( thumbnail_image == null )
+      thumbnail_image = makeThumbnailImage();
+
+    Image thumbnail = null; 
+
+    if( thumbnail_image != null )
     {
       if( width == 0 || height == 0 )
         thumbnail = thumbnail_image.getScaledInstance( 100, 100,
-	                                               Image.SCALE_DEFAULT );
+                                                       Image.SCALE_DEFAULT );
       else
         thumbnail = thumbnail_image.getScaledInstance( width, height,
 	                                               Image.SCALE_DEFAULT);
-    }
-    // If not yet created, set the local bounds to global bounds. This will
-    // allow for getting the whole image. Then reset the bounds back to
-    // the original local bounds. This process is expensive because the
-    // makeImage() must be called twice.
-    else
-    {
-      CoordTransform temp = new CoordTransform(local_transform);
-      local_transform = new CoordTransform(global_transform);
-      makeImage();
-      if( width == 0 || height == 0 )
-        thumbnail = image.getScaledInstance( 100, 100, Image.SCALE_DEFAULT );
-      else
-        thumbnail = image.getScaledInstance(width, height, Image.SCALE_DEFAULT);
-      local_transform = new CoordTransform(temp);
-      makeImage();
-    }
-    return thumbnail;
+     }
+     return thumbnail;
   } 
 
 
@@ -625,24 +657,17 @@ public class ImageJPanel2 extends    CoordJPanel
   }
 
 
-/* -------------------------------- update ------------------------------- */
-/**
- *  Update method that just calls paint.
- */
-  public void update( Graphics g )
-  {
-    paint(g);
-  }
-
-/* --------------------------------- paint ------------------------------- */
+/* ---------------------------- paintComponent --------------------------- */
 /**
  *  This method is invoked by swing to draw the image.  Applications must not
  *  call this directly.
+ *
+ *  @param g  The Graphics object to use for drawing the image
  */
-  public void paint( Graphics g )
+  public void paintComponent( Graphics g )
   {
-    // Call the paint() on the extended class.
-    super.paint(g);
+    Graphics2D g2d = (Graphics2D)g.create();
+
     stop_box( current_point, false );   // if the system redraws this without
     stop_crosshair( current_point );    // our knowlege, we've got to get rid
                                         // of the cursors, or the old position
@@ -650,15 +675,15 @@ public class ImageJPanel2 extends    CoordJPanel
                                         // when the user moves the cursor (due
                                         // to XOR drawing). 
 
-    if ( rescaled_image == null )       // the component might not have been
+    if ( image == null )                // the component might not have been
       makeImage();                      // visible when makeImage was called
 
-    if ( rescaled_image != null )       // the component must still not be 
-    {                                   // visible
-      prepareImage( rescaled_image, this );
-      g.drawImage( rescaled_image, 0, 0, this ); 
-    }
+    if ( image != null )                // the component not showing
+      g2d.drawImage( image, 0, 0, this ); 
+
+    g2d.dispose();
   }
+
 
 /* -------------------------- ImageRow_of_PixelRow ----------------------- */
 /**
@@ -671,10 +696,11 @@ public class ImageJPanel2 extends    CoordJPanel
  */
   public int ImageRow_of_PixelRow( int pix_row )
   {
-    float WC_y = local_transform.MapYFrom( pix_row );
+    float WC_y = getLocal_transform().MapYFrom( pix_row );
  
     return ImageRow_of_WC_y( WC_y );
   }
+
 
 /* -------------------------- ImageRow_of_WC_y ----------------------- */
 /**
@@ -698,6 +724,7 @@ public class ImageJPanel2 extends    CoordJPanel
     return row;
   }
 
+
 /* -------------------------- ImageCol_of_PixelCol ----------------------- */
 /**
  *  Get the column number in the data array of the specified pixel col.
@@ -709,10 +736,11 @@ public class ImageJPanel2 extends    CoordJPanel
  */
   public int ImageCol_of_PixelCol( int pix_col )
   {
-    float WC_x = local_transform.MapXFrom( pix_col );
+    float WC_x = getLocal_transform().MapXFrom( pix_col );
 
     return  ImageCol_of_WC_x( WC_x );
   }
+
 
 /* -------------------------- ImageCol_of_WC_x ----------------------- */
 /**
@@ -735,6 +763,23 @@ public class ImageJPanel2 extends    CoordJPanel
       col = data.getNumColumns() - 1;
 
     return col;
+  }
+
+
+/* ----------------------- getWorldToImageTransform ---------------------- */
+
+  public CoordTransform getWorldToImageTransform()
+  {
+    CoordBounds     world_bounds;
+    CoordBounds     image_bounds;
+
+    SetTransformsToWindowSize();
+    image_bounds = new CoordBounds( 0,
+                                    0,
+                                    data.getNumColumns(),
+                                    data.getNumRows() );
+    world_bounds = getGlobal_transform().getSource();
+    return( new CoordTransform( world_bounds, image_bounds ) );
   }
 
 
@@ -826,6 +871,8 @@ public float getDataMax()
   return max_data;
 }
 
+
+/* -------------------------- getImageCoords --------------------------- */
 /**
  *  Get the image number of rows/columns wrapped in a CoordBound object to
  *  allow for mapping to another coordinate system.
@@ -849,12 +896,22 @@ public void RebuildImage()
    repaint();
 }
 
-/* ---------------------- LocalTransformChanged -------------------------- */
 
+/* ---------------------- LocalTransformChanged -------------------------- */
+/**
+ *  This method is responsible for doing what is necessary to regenerate
+ *  the display, AFTER the local transform is changed.  For an ImageJPanel2,
+ *  the extra work required is to reconstruct a new image, corresponding to
+ *  the new source region of the image.
+ */
 protected void LocalTransformChanged()
 {
-  makeImage();
+  makeImage();                          // Reconstruct the image and then
+  super.LocalTransformChanged();        // do anything that the base class
+                                        // needs to do to regenerate after a
+                                        // a change of the local transform
 }
+
 
 /* -----------------------------------------------------------------------
  *
@@ -862,103 +919,135 @@ protected void LocalTransformChanged()
  *
  */
 
-/* ----------------------- getWorldToImageTransform ---------------------- */
-
-  private CoordTransform getWorldToImageTransform()
-  {
-    CoordBounds     world_bounds;
-    CoordBounds     image_bounds;
-
-    SetTransformsToWindowSize();
-    image_bounds = new CoordBounds( 0.0f, 0.0f, 
-                                    data.getNumColumns()-0.001f,
-				    data.getNumRows()-0.001f );
-    world_bounds = getGlobal_transform().getSource();
-    return( new CoordTransform( world_bounds, image_bounds ) );   
-  }
-
 
 /* ---------------------------------- makeImage --------------------------- */
  /*
   * This method will create a visible image based on the data passed in.
   * By calling subSample(), this method can display any size array
-  * in approximately the same time frame.
+  * in approximately the same time frame.  NOTE: This method will readjust
+  * the local transformation so that it includes only whole pixels.  The
+  * fact that the local transformation is changed may cause problems.  Code
+  * that sets the local transformation should not assume that it has full
+  * control of the local transformation, but should always get it before 
+  * using it.
   */
   private void makeImage()
   {
-    if ( ! isVisible() )              // don't do it yet if it's not visible
+    if ( ! isVisible() )             // don't do it yet if not "visible" 
       return;
+    
+    // Map the currently specified local world coordinate bounds to image
+    // coordinates...
 
-    SetTransformsToWindowSize();
-    // Get world_to_image transform, and local world coord bounds.
     CoordTransform world_to_image = getWorldToImageTransform();
-    CoordBounds    bounds         = local_transform.getSource();
-    // Convert local coord bounds to image row/column.
+    CoordBounds    bounds         = getLocal_transform().getSource();
     bounds = world_to_image.MapTo( bounds );
-    int start_row = Math.max( (int)(bounds.getY1() ), 0 );
-    int end_row   = Math.min( (int)(bounds.getY2() ), data.getNumRows()-1 );
-    int start_col = Math.max( (int)(bounds.getX1() ), 0 );
-    int end_col   = Math.min( (int)(bounds.getX2() ), data.getNumColumns()-1 );
-    
-    // Convert global coord bounds to image row/column. Compare integer
-    // row/columns because it is more consistent that comparing floats.
-    CoordBounds    gbounds  = getGlobal_transform().getSource();
-    gbounds = world_to_image.MapTo( gbounds );
-    int gstart_row = Math.max((int)(gbounds.getY1() ), 0 );
-    int gend_row   = Math.min((int)(gbounds.getY2() ), data.getNumRows()-1 );
-    int gstart_col = Math.max((int)(gbounds.getX1() ), 0 );
-    int gend_col   = Math.min((int)(gbounds.getX2() ), data.getNumColumns()-1 );
-    // Make the thumbnail image if the local bounds are equal to global bounds.
-    if( gstart_row == start_row && gend_row == end_row &&
-        gstart_col == start_col && gend_col == end_col )
-      makeThumbnail = true;
-    
+
+    // Then find the range of rows and columns that are even partly included
+    // in the region.  Rows and columns in that range will be resampled and
+    // rescaled to be fully included in the displayed image. 
+
+    int start_row = (int)Math.floor( bounds.getY1() );
+    int end_row   = (int)Math.ceil( bounds.getY2() ) - 1;
+
+    int start_col = (int)Math.floor( bounds.getX1() );
+    int end_col   = (int)Math.ceil( bounds.getX2() ) - 1;
+
+    // Next, we need to bound the selected range of rows and columns so that
+    // they are actually rows and columns of the image, and the start is 
+    // before the end.
+                                                              // bound start_row
+    start_row = Math.max( start_row, 0 );
+    start_row = Math.min( start_row, data.getNumRows() - 1 );
+                                                              // bound end_row
+    end_row = Math.min( end_row, data.getNumRows() - 1 );
+    if ( end_row < start_row )
+      end_row = start_row;
+                                                             // bound start_col
+    start_col = Math.max( start_col, 0 );
+    start_col = Math.min( start_col, data.getNumColumns() - 1 );
+                                                             // bound end_col
+    end_col = Math.min( end_col, data.getNumColumns() - 1 );
+    if ( end_col < start_col )
+      end_col = start_col;
+
+    // Now that we know what range of rows and columns are in the image we
+    // can reset the local coordinate bounds.  Note: the coordinates range 
+    // the left edge of the first column to the right edge of the last
+    // column, and similarly for rows.  Consequently the end row and column
+    // values of the world coordinate bounds are one larger than the last
+    // row and column number.
+
     CoordBounds new_bounds = new CoordBounds( start_col, start_row,
-                                              end_col+0.999f, end_row+0.999f );
+                                              end_col+1, end_row+1 );
+
     new_bounds = world_to_image.MapFrom( new_bounds );
     setLocalWorldCoords( new_bounds );
-    subSample(start_row,end_row,start_col,end_col);
 
-    stop_box( current_point, false );
-    stop_crosshair( current_point );
+    // Finally, make the image object by resampling and rescaling the range
+    // of image rows and columns to match the number of pixels on the screen
+   
+    int width  = getWidth(); 
+    int height = getHeight(); 
 
-    rescaleImage();
-    repaint();
+    image = subSample( start_row, end_row,
+                       start_col, end_col,
+                       width,     height  );
+
+    if ( image != null )
+    {
+      stop_box( current_point, false );
+      stop_crosshair( current_point );
+
+      rescaleImage();
+      image = rescaled_image;
+    }
   }
  
+
+ /* ------------------------- makeThumbnailImage ------------------------ */
  /*
-  * This method will look at the monitor dimensions and determine the
-  * amount of data that can be displayed on the screen. If the array
-  * dimensions exceed the screen dimensions, the array is subsampled
-  * to make drawing faster.
-  */ 
-  private void subSample( int start_row, int end_row,
-                          int start_col, int end_col )
+  * This method will create a visible image based on the data passed in.
+  * By calling subSample(), this method can display any size array
+  * in approximately the same time frame.
+  */
+  private Image makeThumbnailImage()
   {
-    // Subsamble data if data exceeds bounds of monitor.
-    // Get monitor dimensions.
-    Dimension monitor_dim = Toolkit.getDefaultToolkit().getScreenSize();
-    
-    int h = Math.abs(end_row - start_row) + 1;
-    int w = Math.abs(end_col - start_col) + 1;
-    
-    // Subsample step increments. If image exceeds size
-    // of monitor screen, increase steps for subsampling. 
-    int x_step = (int)Math.floor( ((double)w)/
-                                  ((double)monitor_dim.getWidth() ) );
-    int y_step = (int)Math.floor( ((double)h)/
-                                  ((double)monitor_dim.getHeight()) );
-    // If floor makes step less than one, force step to be 1.
-    if( x_step < 1 )
-      x_step = 1;
-    if( y_step < 1 )
-      y_step = 1;
-    // Get number of rows and columns actually being displayed by the image.
-    int num_displayed_cols = (int)Math.ceil( ((double)w)/((double)x_step));
-    int num_displayed_rows = (int)Math.ceil( ((double)h)/((double)y_step));
-    
-    byte pix[] = new byte[num_displayed_rows*num_displayed_cols];
-    int index = 0;
+    if ( data                 == null || 
+         data.getNumRows()    == 0    || 
+         data.getNumColumns() == 0    ) 
+      return null;
+
+    int end_row = data.getNumRows() - 1;
+    int end_col = data.getNumColumns() - 1;
+
+    return subSample( 0, end_row, 0, end_col, THUMBNAIL_SIZE, THUMBNAIL_SIZE );
+  }
+
+
+ /* ---------------------------- subSample ------------------------------- */
+ /*
+  *  This method produces an Image object by sub sampling (if necessary) a 
+  *  specified sub rectangle of the array of data.  The returned image is
+  *  has size at most width X height, but may be smaller, if the number of
+  *  data rows or columns is less than the specified height or width.
+  *  
+  *  @param  start_row   The first row of data to use.
+  *  @param  end_row     The last row of data to use.
+  *  @param  start_col   The first column of data to use.
+  *  @param  end_col     The last column of data to use.
+  *  @param  width       The width of the image to produce
+  *  @param  height      The height of the image to produce
+  *
+  *  @return an image with the specified width and height, or smaller if
+  *          the data does not have enough rows or columns.
+  */ 
+  private Image subSample( int start_row, int end_row,
+                           int start_col, int end_col,
+                           int width,     int height  )
+  {
+                                     // find the scale factor and zero offset
+                                     // index based on the min/max data values
     float max_abs = 0;
     if ( Math.abs( max_data ) > Math.abs( min_data ) )
       max_abs = Math.abs( max_data );
@@ -970,13 +1059,38 @@ protected void LocalTransformChanged()
       scale_factor = (LOG_TABLE_SIZE - 1) / max_abs;
     else
       scale_factor = 0;
+
     byte zero_index = 0;
     if( isTwoSided )
       zero_index = ZERO_COLOR_INDEX;
-    float temp = 0;
-    for (int y = start_row; y <= end_row; y=y+y_step)
+
+                                     // Get the number of rows and columns to
+                                     // use for the image.  This will be
+                                     // approximately width and height
+
+    int n_data_rows = Math.abs(end_row - start_row) + 1;
+    int n_data_cols = Math.abs(end_col - start_col) + 1;
+    
+    int x_step = (int)Math.floor( n_data_cols/(double)width  );
+    int y_step = (int)Math.floor( n_data_rows/(double)height );
+
+    if( x_step < 1 )                 // If step less than one, make it 1
+      x_step = 1;
+
+    if( y_step < 1 )
+      y_step = 1;
+
+    int n_image_cols = (int)Math.ceil( n_data_cols/(double)x_step );
+    int n_image_rows = (int)Math.ceil( n_data_rows/(double)y_step );
+
+                                     // now make an array of bytes by sampling
+                                     // the array in steps of x_step and y_step
+    byte  pix[] = new byte[ n_image_rows * n_image_cols ];
+    float temp  = 0;
+    int   index = 0;
+    for (int y = start_row; y <= end_row; y = y + y_step)
     {
-      for (int x = start_col; x <= end_col; x=x+x_step)
+      for (int x = start_col; x <= end_col; x = x + x_step)
       {
         temp = data.getDataValue(y,x) * scale_factor;
 	if( temp > LOG_TABLE_SIZE - 1 )
@@ -988,23 +1102,16 @@ protected void LocalTransformChanged()
           pix[index++] = (byte)(zero_index + log_scale[(int)temp]);
         else
           pix[index++] = (byte)(zero_index - log_scale[(int)(-temp)]);
-        //System.out.println("Pix " + pix[index - 1] + " " + (index - 1) );
       }
     }
-    // If local_bounds = global_bounds, remake the thumbnail_image.
-    if( makeThumbnail )
-    {
-      thumbnail_image = createImage(new MemoryImageSource(num_displayed_cols,
-                                                          num_displayed_rows,
-					                  color_model, pix, 0,
-					                  num_displayed_cols));
-      makeThumbnail = false;
-    }
-    image = createImage(new MemoryImageSource(num_displayed_cols,
-                                              num_displayed_rows,
-					      color_model, pix, 0,
-					      num_displayed_cols));
+
+    Image new_image = createImage(new MemoryImageSource(n_image_cols,
+                                                        n_image_rows,
+                                                        color_model, pix, 0,
+                                                        n_image_cols));
+    return new_image;
   }
+
 
 /* ---------------------------- rescaleImage -------------------------- */
 
@@ -1031,7 +1138,7 @@ protected void LocalTransformChanged()
         new_width = data.getNumColumns();
 
       rescaled_image = image.getScaledInstance(new_width, new_height, 
-                                                 Image.SCALE_DEFAULT );
+                                               Image.SCALE_DEFAULT );
     }
   }
 
@@ -1150,6 +1257,7 @@ class ImageKeyAdapter extends KeyAdapter
                                  false );
       this_panel.dispatchEvent( mouse_e );
     }
+
   }
 }
 
@@ -1159,7 +1267,9 @@ class ImageKeyAdapter extends KeyAdapter
  * MAIN
  *
  */
+
  /* Basic main program for testing purposes only. */
+
   public static void main(String[] args)
   {
     int rows = 10000;

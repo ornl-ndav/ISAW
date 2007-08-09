@@ -34,6 +34,13 @@
  *  Modified:
  *
  *  $Log: ViewComponent3D.java,v $
+ *  Revision 1.10  2006/08/10 15:05:11  dennis
+ *  Set default background color to a blue-gray, instead of black.
+ *
+ *  Revision 1.9  2006/08/10 14:47:50  dennis
+ *  Switched default pixel display to a flat RECTANGLE, instead
+ *  of a 3D BOX.
+ *
  *  Revision 1.8  2006/07/25 04:29:26  dennis
  *  Added method AttachComponentSizeListener() that will cause the
  *  component to listen for size changes and then request a rebuild
@@ -199,8 +206,11 @@ public abstract class ViewComponent3D implements IViewComponent3D
   public static final String SELECTED_POINT_CHANGED = "Selected Point Changed";
   
   /* -- Data that will be used by ViewComponents -- */
+
+  protected Color DEFAULT_BACKGROUND_COLOR = new Color( 143,150,159 );
+
   protected JoglPanel joglpane;
-  protected int currentShapeType = DetectorSceneBase.BOX;
+  protected int currentShapeType = DetectorSceneBase.RECTANGLE;
   
   protected LogScaleColorModel colormodel;
   protected String colorscale;

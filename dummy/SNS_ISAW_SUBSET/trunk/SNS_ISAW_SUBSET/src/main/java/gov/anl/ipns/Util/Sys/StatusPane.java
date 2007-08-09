@@ -31,6 +31,14 @@
  * Modified:  
  *  
  * $Log: StatusPane.java,v $
+ * Revision 1.14  2006/08/25 17:03:18  rmikk
+ * Eliminated a debug print
+ *
+ * Revision 1.13  2006/08/25 15:55:51  rmikk
+ * Fixed SCD error by changing the method to position the Viewport.  It was
+ * previously positioned with the assumption that the status pane only had 5
+ * lines.
+ *
  * Revision 1.12  2006/06/18 02:40:17  rmikk
  * invoked the update scroll method again
  * Improved this method with the new modelToView and other scrolling methods
@@ -185,14 +193,15 @@ public class StatusPane extends JPanel implements PropertyChangeListener{
              Dimension ViewportExtent = X.getViewport().getExtentSize();
              Point UPLeft = X.getViewport().getViewPosition();
              int nlines = spb.getLineCount();
-             if( nlines <5) return;
+             if( nlines  < 5 ) return;
              int pos = spb.getLineStartOffset( nlines -5);
              Rectangle R = spb.modelToView( pos);
              if(R.y > UPLeft.y)
                if( R.y < UPLeft.y+ViewportExtent.height)
             	   return;
-             X.getViewport().setViewPosition( new Point( R.x,R.y));
             
+             //X.getViewport().setViewPosition( new Point( R.x,R.y));
+             X.scrollRectToVisible( R );
              }
            catch( Exception ss){
              System.out.println("StatusPane listen error ="+ss);

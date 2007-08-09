@@ -34,6 +34,119 @@
  * Modified:
  *
  *  $Log: ImageViewComponent.java,v $
+ *  Revision 1.111  2007/08/09 14:35:22  rmikk
+ *  Added methods to reflect changes initiated in SelectionOverlay in the
+ *     corresponding GUI Elements without sending out events that would cause
+ *     further changes
+ *
+ *  Revision 1.110  2007/08/08 15:08:05  rmikk
+ *  Now handles the message TURN_OVERLAY_ON and TURN_OVERLAY_OFF from
+ *  the selection overlay.
+ *
+ *  Revision 1.109  2007/08/07 21:27:17  rmikk
+ *  Removed futile attempt to remove action listeners from controls that should
+ *    not send more messages because the change did not come from these
+ *    controls.  They only needed to reflect the actual values.
+ *
+ *  Revision 1.108  2007/08/07 20:56:33  rmikk
+ *  Now extends VirtualComponent2DwSelection.
+ *  Adds the method getSelectionOverlay
+ *  Adds code to reflect the programmatic changes in the Selection Overlay in
+ *     the associated controls
+ *
+ *  Revision 1.107  2007/07/28 22:49:06  dennis
+ *  Removed variable regioninfo, a local (duplicate) copy of the
+ *  ImageJPanel2's location and size.  This is now obtained directly
+ *  from the ImageJPanel2.  Also removed listener to the ImageJPanel2
+ *  that just updated the local regioninfo variable.
+ *
+ *  Revision 1.106  2007/07/27 00:19:50  dennis
+ *  The big_picture JPanel that contains the overlays, is now
+ *  derived from a class that turns off optimized drawing.  Java's
+ *  optimized drawing did not properly render the fairly complicated
+ *  set of overlays with border border layouts containing border
+ *  layouts, etc. used in this View Component.
+ *  THIS FIXES A PROBLEM WHERE THE SELECTIONS DISAPPEARED WHEN THE
+ *  ZOOM REGION WAS MOVED.  (Thanks Ruth!)
+ *
+ *  Revision 1.105  2007/07/26 14:28:51  dennis
+ *  Fixed a few more places where border layout panels were referred to
+ *  by index, rather than by role ("center", "south", etc.).
+ *  Now remove all ijp ActionListeners before adding more.
+ *
+ *  Revision 1.104  2007/07/26 01:54:52  dennis
+ *  Improved naming for overlay components.
+ *  Now accesses background border layout elements via names "Center"
+ *  "South", etc. rather than by index to all flexibility in the order
+ *  they are added.
+ *  paintComponents() method now triggers repainting by requestion
+ *  the big_picture object be repainted.
+ *
+ *  Revision 1.103  2007/07/20 16:29:53  dennis
+ *  Made separate listener for the PanViewControl.
+ *  Removed call to paintComponents() at the end of the
+ *  buildAspectImage() method, to allow for finer control
+ *  of the repaints.
+ *
+ *  Revision 1.102  2007/07/20 02:58:17  dennis
+ *  Now calls the PanViewControl's generic setControlValue()
+ *  method, rather than the setLocalBounds() method which is
+ *  now private.
+ *  Removed some redundant calls to set bounds.
+ *  Moved call to ijp.changeLogScale() in the reInit() method
+ *  to a point after the ijp has been reset.  This fixed a
+ *  problem with array index out of bounds when the Display2D
+ *  method was switched between contour and image displays
+ *  and the PanViewControl had been used.
+ *
+ *  Revision 1.101  2007/07/17 17:38:08  dennis
+ *  Added call to buildAspectImage() when axes are made visible again.
+ *  This fixes a bug where the axes did not reappear properly when
+ *  they were turned of and then on again.
+ *
+ *  Revision 1.100  2007/07/16 14:50:26  rmikk
+ *  Removed the color model and two sided status object state entries from
+ *     the ImageJPanel2 and put them in the ImageViewComponent
+ *
+ *  Revision 1.99  2007/07/12 16:49:28  oakgrovej
+ *  Added closeWindows() method
+ *
+ *  Revision 1.98  2007/06/15 22:53:05  oakgrovej
+ *  Added controls for making and selecting new selectors
+ *
+ *  Revision 1.97  2007/06/15 16:57:16  dennis
+ *  Commented out some extra calls to validate().
+ *
+ *  Revision 1.96  2007/06/13 15:29:32  rmikk
+ *  The PanViewController is now notified when the data is changed
+ *
+ *  Revision 1.95  2007/05/28 20:47:11  dennis
+ *  Added method showSelector that will show (or hide) an editor panel for
+ *  a specified compound region selection. (Jonathan Morck)
+ *  Added java docs for this method. (dennis)
+ *
+ *  Revision 1.94  2007/03/16 18:45:43  dennis
+ *  Added method getWorldToArrayTransform, needed to use the new Region
+ *  classes.
+ *  Removed setRegionTransform() method that is no longer needed.
+ *
+ *  Revision 1.93  2007/03/11 04:35:46  dennis
+ *  Added method setRegionTransforms(), that is used by the
+ *  SelectionOverlay, to set up the appropriate mapping between
+ *  world coordinates and array coordinates.
+ *
+ *  Revision 1.92  2007/03/09 18:58:59  dennis
+ *  The dataChanged(array) now sets the data for the underlying
+ *  ImageJPanel, so that the coordinate mappings are initialized
+ *  before the overlays are created.  This fixes a bug where the
+ *  getColumnRowAtWorldCoordinate() did not work properly, when
+ *  needed by the SelectionOverlay class.
+ *
+ *  Revision 1.91  2007/02/05 04:33:12  dennis
+ *  Removed small adjustment by 0.001 to World Coordinate bounds, which
+ *  was not necessary and caused problems with selections containing
+ *  the 0th row or column.
+ *
  *  Revision 1.90  2006/03/30 23:57:57  dennis
  *  Modified to not require the use of mutator methods for the
  *  virtual arrays.  These changes were required since the concept
@@ -531,8 +644,8 @@ import gov.anl.ipns.ViewTools.Components.Region.*;
  * which is the range of x-axis and y-axis values that can be found in
  * the AxisInfo class of each axis. 
  */
-public class ImageViewComponent implements IViewComponent2D, 
-           /*for Axis/Colorscale*/         IColorScaleAddible,
+public class ImageViewComponent extends ViewComponent2DwSelection
+           /*for Axis/Colorscale*/      implements    IColorScaleAddible,
            /*for Selection/Annotation*/    IZoomTextAddible,
 	                                   IMarkerAddible,
 	                                   IPreserveState,
@@ -589,7 +702,8 @@ public class ImageViewComponent implements IViewComponent2D,
   * for displaying the pointed-at cursor readouts.
   */
   public static final String CURSOR_READOUT_NAME = "Pointed At";
-  // these variables preserve the state of the ImageViewComponent
+
+ // these variables preserve the state of the ImageViewComponent
  /**
   * "Precision" - This constant String is a key for referencing the state
   * information about the precision this view component will have. Precision
@@ -724,13 +838,16 @@ public class ImageViewComponent implements IViewComponent2D,
   */
   public static final String PRESERVE_ASPECT_RATIO   = "Preserve Aspect Ratio";
   
+  public static final String SELECTOR_NAMES = "Selectors";
+  
+  public static final String ADD_SELECTION = "Add Selector";
+  
   //An object containing our array of data
   private transient IVirtualArray2D Varray2D;  
   private transient Vector Listeners = null;   
-  private transient JPanel big_picture = new JPanel();  
+  private transient JPanel big_picture = new BigPictureClass();  
   private transient JPanel background = new JPanel(new BorderLayout());  
   private transient ImageJPanel2 ijp;
-  private transient Rectangle regioninfo;
   private transient Vector transparencies = new Vector();
   private int precision;
   private Font font;
@@ -760,8 +877,10 @@ public class ImageViewComponent implements IViewComponent2D,
     font = FontUtil.LABEL_FONT2;
     ijp = new ImageJPanel2();
     colorscale = IndexColorMaker.HEATED_OBJECT_SCALE_2;
+    ijp.setNamedColorModel( colorscale, isTwoSided, false);
     setPrecision(4);
     null_data = true;
+
     if( varr == null )
     {
       Varray2D = new VirtualArray2D(1,1);
@@ -806,6 +925,15 @@ public class ImageViewComponent implements IViewComponent2D,
       redraw = true;  
     }  
     
+    
+    temp = new_state.get(ImageJPanel2.TWO_SIDED);
+    if( temp != null )
+    {
+      isTwoSided = ((Boolean)temp).booleanValue();
+
+      ijp.setNamedColorModel( colorscale, isTwoSided, false);
+      redraw = true;  
+    }
     temp = new_state.get(PRECISION);
     if( temp != null )
     {
@@ -817,9 +945,11 @@ public class ImageViewComponent implements IViewComponent2D,
     if( temp != null )
     {
       colorscale = (String)temp; 
+      ijp.setNamedColorModel( colorscale, isTwoSided, false);
       redraw = true;  
     } 
     
+   
     temp = new_state.get(COLOR_CONTROL);
     if( temp != null )
     {
@@ -931,6 +1061,7 @@ public class ImageViewComponent implements IViewComponent2D,
       reInit();
   }
  
+
  /**
   * This method will get the current values of the state variables for this
   * object. These variables will be wrapped in an ObjectState.
@@ -957,6 +1088,7 @@ public class ImageViewComponent implements IViewComponent2D,
     state.insert( COLOR_CONTROL, new Boolean(addColorControl) );
     state.insert( COLOR_CONTROL_EAST, new Boolean(addColorControlEast) );
     state.insert( COLOR_CONTROL_SOUTH, new Boolean(addColorControlSouth) );
+    state.insert( ImageJPanel2.TWO_SIDED, new Boolean( isTwoSided));
     state.insert( COLOR_SCALE, new String(colorscale) );
     state.insert( FONT, font );
     state.insert( IMAGEJPANEL, ijp.getObjectState(isDefault) );
@@ -976,6 +1108,7 @@ public class ImageViewComponent implements IViewComponent2D,
     return state;
   }
 
+
  // ------ add/removeMarker() methods satifsy IMarkerAddible interface ------ 
  /**
   * Add a marker to be displayed on the image. The marker is best used for
@@ -993,6 +1126,7 @@ public class ImageViewComponent implements IViewComponent2D,
       return;
     ((MarkerOverlay)(transparencies.elementAt(3))).addMarker(mark);
   }
+
   
  /**
   * Remove mark from the list of markers, causing it to no longer
@@ -1008,6 +1142,7 @@ public class ImageViewComponent implements IViewComponent2D,
       return;
     ((MarkerOverlay)(transparencies.elementAt(3))).removeMarker(mark);
   }
+
   
  /**
   * Remove all markers from the MarkerOverlay, causing no markers to appear
@@ -1021,6 +1156,7 @@ public class ImageViewComponent implements IViewComponent2D,
       return;
     ((MarkerOverlay)(transparencies.elementAt(3))).clearMarkers();
   }
+
   
  /**
   * Call this method to prevent the center image from being distorted. If true,
@@ -1065,8 +1201,10 @@ public class ImageViewComponent implements IViewComponent2D,
     if( getDisplayPanel().isVisible() )
     {
       buildAspectImage();
+      paintComponents();
     }
   }
+
       
  /**
   * This method will disable the selections included in the names
@@ -1082,6 +1220,7 @@ public class ImageViewComponent implements IViewComponent2D,
       return;
     ((SelectionOverlay)(transparencies.elementAt(1))).disableSelection( names );
   }
+
      
  /**
   * This method will enable the selections included in the names
@@ -1097,6 +1236,7 @@ public class ImageViewComponent implements IViewComponent2D,
       return;
     ((SelectionOverlay)(transparencies.elementAt(1))).enableSelection( names );
   } 
+
   
  // These method are required because this component implements 
  // IColorScaleAddible
@@ -1109,6 +1249,7 @@ public class ImageViewComponent implements IViewComponent2D,
   {
     return colorscale;
   }
+
   
  /**
   *
@@ -1131,10 +1272,11 @@ public class ImageViewComponent implements IViewComponent2D,
     ijp.setNamedColorModel( colorscale, isTwoSided, true );
     ((ControlColorScale)controls[1]).setColorScale( colorscale, 
     						    isTwoSided );	 
-    ((PanViewControl)controls[7]).repaint();
+    ((PanViewControl)controls[9]).repaint();
     sendMessage(COLORSCALE_CHANGED);
     paintComponents();
   }
+
   
  /**
   * This method will get the AxisInfo for the value axis. Use this for
@@ -1149,6 +1291,7 @@ public class ImageViewComponent implements IViewComponent2D,
       return new AxisInfo( 0, 1, "", "", AxisInfo.LINEAR );
     return getAxisInformation( AxisInfo.Z_AXIS );
   }
+
   
  // The following methods are required by IAxisAddible and ILogAxisAddible
  // and must be implemented because this component implements 
@@ -1194,20 +1337,22 @@ public class ImageViewComponent implements IViewComponent2D,
         		 Varray2D.getAxisInfo(AxisInfo.Z_AXIS).getUnits(),
         		 AxisInfo.LINEAR );
   }
+
   
  /**
   * This method returns a rectangle containing the location and size
   * of the imagejpanel.
   *
-  *  @return The region info about the imagejpanel
+  *  @return The bounds of the ImageJPanel2 object.
   */ 
   public Rectangle getRegionInfo()
   {
-    // If the original data passed in was null, do nothing.
-    if( null_data )
+    if( ijp == null )
       return new Rectangle();
-    return regioninfo;
+
+    return ijp.getBounds();
   }    
+
  
  /**
   * This method will return the title given to the image as specified by
@@ -1222,6 +1367,7 @@ public class ImageViewComponent implements IViewComponent2D,
       return "";
     return Varray2D.getTitle();
   }
+
   
  /**
   * This method will return the precision specified by the user. Precision
@@ -1234,6 +1380,7 @@ public class ImageViewComponent implements IViewComponent2D,
   {
     return precision;
   }
+
   
  /**
   * This method will set the precision of numbers displayed by the
@@ -1248,6 +1395,7 @@ public class ImageViewComponent implements IViewComponent2D,
       return;
     this.precision = precision;
   }
+
   
  /**
   * This method will return the font used on by the overlays. The axis overlay
@@ -1259,6 +1407,7 @@ public class ImageViewComponent implements IViewComponent2D,
   {
     return font;
   }
+
   
  /**
   * This method will return the local coordinate bounds of the center
@@ -1270,6 +1419,7 @@ public class ImageViewComponent implements IViewComponent2D,
   {
     return ijp.getLocalWorldCoords().MakeCopy();
   }
+
      
  /**
   * This method will return the global coordinate bounds of the center
@@ -1281,6 +1431,20 @@ public class ImageViewComponent implements IViewComponent2D,
   {
     return ijp.getGlobalWorldCoords().MakeCopy();
   }  
+
+
+ /**
+  * Get a copy of the tranformation that maps world coordinates to array
+  * (col,row) coordinates for this view component. 
+  *
+  * @return a CoordTransform object that maps from world coordinates
+  *         to array (col,row) coordinates.
+  */
+  public CoordTransform getWorldToArrayTransform()
+  {
+    return ijp.getWorldToImageTransform();
+  }
+
   
  /**
   * This method will get the current log scale value for the imagejpanel.
@@ -1292,6 +1456,7 @@ public class ImageViewComponent implements IViewComponent2D,
   {
     return logscale;
   }
+
   
  //****************************************************************************
 
@@ -1317,6 +1482,7 @@ public class ImageViewComponent implements IViewComponent2D,
     //ijp.setCurrent_WC_point(fpt);
   }
 
+
  /**
   * This method gets the current pointed-at position in world coordinates. The
   * current pointed-at position is point on the image where the crosshairs
@@ -1332,6 +1498,7 @@ public class ImageViewComponent implements IViewComponent2D,
       return new floatPoint2D();
     return new floatPoint2D(ijp.getCurrent_WC_point());
   }
+
   
  /**
   * This method allows users to add a selection without removing previous
@@ -1364,6 +1531,7 @@ public class ImageViewComponent implements IViewComponent2D,
     returnFocus();
     // SelectedRegionListener will send out SELECTED_CHANGED message.
   }
+
  
  /**
   * This method creates a selected region to be displayed over the imagejpanel
@@ -1401,6 +1569,7 @@ public class ImageViewComponent implements IViewComponent2D,
     }
     // SelectedRegionListener will send out SELECTED_CHANGED message.
   }
+
  
  /**
   * Get geometric regions created using the selection overlay.
@@ -1419,17 +1588,21 @@ public class ImageViewComponent implements IViewComponent2D,
     // ImageViewComponent knows these bounds, it must set them.
     for( int i = 0; i < selectedregions.length; i++ )
     {
+    	/*
       ((Region)regions.elementAt(i)).setWorldBounds(ijp.getGlobalWorldCoords());
       // Image bounds are consistent with those set in ImageJPanel.
       ((Region)regions.elementAt(i)).setImageBounds( new CoordBounds( 
-                                     0.0f, 0.0f,
-                                     Varray2D.getNumColumns()-0.001f,
-				     Varray2D.getNumRows()-0.001f ) );
+                                     0,
+                                     0,
+                                     Varray2D.getNumColumns(),
+                                     Varray2D.getNumRows() ) );
+        */
       selectedregions[i] = (Region)regions.elementAt(i);
     }
     return selectedregions;
   } 
- 
+
+
  /**
   * This method will be called to notify this component of a change in data.
   */
@@ -1444,12 +1617,14 @@ public class ImageViewComponent implements IViewComponent2D,
     if( addColorControlEast || addColorControlSouth )
       buildViewComponent();
     // This is required since the PanViewControl holds its own bounds.
-    ((PanViewControl)controls[7]).setGlobalBounds(getGlobalCoordBounds());
-    ((PanViewControl)controls[7]).setLocalBounds(getLocalCoordBounds());
-    ((PanViewControl)controls[7]).validate();  // Need this to resize control.
-    ((PanViewControl)controls[7]).repaint();
+    ((PanViewControl)controls[9]).setGlobalBounds(getGlobalCoordBounds());
+ // ((PanViewControl)controls[9]).setControlValue(getLocalCoordBounds());
+ // ((PanViewControl)controls[9]).validate();  // Need this to resize control.
+    ((PanViewControl)controls[9]).makeNewPanImage = true ;
+    ((PanViewControl)controls[9]).repaint();
     paintComponents();
   }
+
  
  /**
   * This method will be called to notify this component of a change in data 
@@ -1481,14 +1656,10 @@ public class ImageViewComponent implements IViewComponent2D,
       if( null_data )
       {
         big_picture.removeAll();
+        ijp.removeAllActionListeners();
         ImageListener ijp_listener = new ImageListener();
         ijp.addActionListener( ijp_listener );
         	    
-        ComponentAltered comp_listener = new ComponentAltered();   
-        ijp.addComponentListener( comp_listener );
-        
-        regioninfo = new Rectangle( ijp.getBounds() );
-        
         AxisInfo xinfo = Varray2D.getAxisInfo(AxisInfo.X_AXIS);
         AxisInfo yinfo = Varray2D.getAxisInfo(AxisInfo.Y_AXIS);
         
@@ -1496,7 +1667,12 @@ public class ImageViewComponent implements IViewComponent2D,
         					    yinfo.getMax(),	 
         					    xinfo.getMax(),
         					    yinfo.getMin() ) ); 
-        
+
+	null_data = false;
+        ijp.setData(Varray2D, false);  // this is needed to setup coord trans
+                                       // before overlays are made.  Also
+                                       // ijp needs data before checking for
+                                       // two-sided model below:
         // two-sided model
         if( ijp.getDataMin() < 0 )
            isTwoSided = true;
@@ -1506,21 +1682,23 @@ public class ImageViewComponent implements IViewComponent2D,
         ijp.setNamedColorModel(colorscale, isTwoSided, false); 
         
         //create transparencies
-        AnnotationOverlay top = new AnnotationOverlay(this);
-        top.setVisible(false);      // initialize this overlay to off.
-        SelectionOverlay nextup = new SelectionOverlay(this);
-        nextup.setVisible(false);   // initialize this overlay to off.
-        nextup.setRegionColor(Color.magenta);
-        nextup.addActionListener( new SelectedRegionListener() );
-        AxisOverlay2D bottom_overlay = new AxisOverlay2D(this);
+        AnnotationOverlay annote_overlay = new AnnotationOverlay(this);
+        annote_overlay.setVisible(false);    // initialize this overlay to off.
+
+        SelectionOverlay select_overlay = new SelectionOverlay(this);
+        select_overlay.setVisible(false);   // initialize this overlay to off.
+        select_overlay.setRegionColor(Color.magenta);
+        select_overlay.addActionListener( new SelectedRegionListener() );
+
+        AxisOverlay2D axis_overlay   = new AxisOverlay2D(this);
         MarkerOverlay marker_overlay = new MarkerOverlay(this);
         
         // add the transparencies to the transparencies vector
         transparencies.clear();
-        transparencies.add(top);
-        transparencies.add(nextup);
-        transparencies.add(bottom_overlay);
-        transparencies.add(marker_overlay); 
+        transparencies.add( annote_overlay );
+        transparencies.add( select_overlay );
+        transparencies.add( axis_overlay );
+        transparencies.add( marker_overlay ); 
         
         OverlayLayout overlay = new OverlayLayout(big_picture);
         big_picture.setLayout(overlay);
@@ -1533,11 +1711,6 @@ public class ImageViewComponent implements IViewComponent2D,
         			 // the background and transparencies
         buildViewControls(); 
         buildViewMenuItems();
-	null_data = false;
-	// Redraw the new image.
-	big_picture.validate();
-	big_picture.repaint();
-	//paintComponents();
       }
       else
       {
@@ -1724,9 +1897,12 @@ public class ImageViewComponent implements IViewComponent2D,
     // If the original data passed in was null, return dummy values.
     if( null_data )
       return new Point();
+
     return new Point( ijp.ImageCol_of_WC_x(wc_pt.x),
                       ijp.ImageRow_of_WC_y(wc_pt.y) );
   }
+
+
  /**
   * Get the (x-axis, y-axis) "world coordinate" point of the image at
   * the "pixel coordinate" point given. This method will map pixel values
@@ -1740,8 +1916,10 @@ public class ImageViewComponent implements IViewComponent2D,
     // If the original data passed in was null, return dummy values.
     if( null_data )
       return new floatPoint2D();
+
     return getWorldCoordsAtColumnRow( getColumnRowAtPixel(pixel_pt) );
   }
+
    
  /**
   * Get the (x-axis,y-axis) "world coordinate" value of the
@@ -1764,6 +1942,29 @@ public class ImageViewComponent implements IViewComponent2D,
                              image_to_wc.MapYTo(col_row_pt.y) );
   }
   
+
+  /**
+   *  This method will show (or hide) the selection editor for the specified
+   *  compound selection.  
+   *
+   *  @param  name       The name of the compound selection for which the 
+   *                     editor should be shown, or hidden.
+   *
+   *  @param  show_hide  flag indicating whether to show (true) or hide (false)
+   *                     the editor for the specified compound selection.
+   */
+  public void showSelector(String name, boolean show_hide)
+  {
+     ((SelectionOverlay)(transparencies.elementAt(1))).
+                                                   showEditor(name, show_hide);
+  }
+
+  public void closeWindows()
+  {
+    if(transparencies.elementAt(1) != null)
+      ((SelectionOverlay)transparencies.elementAt(1)).closeWindows();
+  }
+
  /*
   * Tells all listeners about a new action.
   *
@@ -1783,11 +1984,15 @@ public class ImageViewComponent implements IViewComponent2D,
   */ 
   private void paintComponents()
   {
+//    System.out.println("IVC paintComponents()");
     // Get the top-most parent and call it's repaint().
+/*
     Component temppainter = big_picture;
     while( temppainter.getParent() != null )
       temppainter = temppainter.getParent();
     temppainter.repaint();
+*/
+    big_picture.repaint();
   }
  
  /**
@@ -1820,10 +2025,9 @@ public class ImageViewComponent implements IViewComponent2D,
   private void reInit()  
   {
     ijp.setNamedColorModel(colorscale, isTwoSided, false);
-    
+    ijp.repaint();
     // make sure logscale and two-sided are consistent
     ((AxisOverlay2D)transparencies.elementAt(2)).setTwoSided(isTwoSided);
-    ijp.changeLogScale(logscale,true);
     // since flags have already been set, this will put the color scales
     // where they need to be.
     buildViewComponent();    // builds the background jpanel containing
@@ -1840,9 +2044,10 @@ public class ImageViewComponent implements IViewComponent2D,
     // give focus to the top overlay
     returnFocus();
     
-    ((PanViewControl)controls[7]).setGlobalBounds(getGlobalCoordBounds());
-    ((PanViewControl)controls[7]).setLocalBounds(getLocalCoordBounds());
-    ((PanViewControl)controls[7]).repaint();
+    ((PanViewControl)controls[9]).setGlobalBounds(getGlobalCoordBounds());
+    ((PanViewControl)controls[9]).setControlValue(getLocalCoordBounds());
+    ((PanViewControl)controls[9]).repaint();
+    ijp.changeLogScale(logscale,true);
   } 
   
  /*
@@ -1912,8 +2117,82 @@ public class ImageViewComponent implements IViewComponent2D,
     background.add(south, "South");
     background.add(east, "East" );
     buildAspectImage();
+    paintComponents();
+  }
+ 
+  //---------------------- ViewComponent2DwSelection  Methods -------------------
+  /**
+   * Returns a reference to the selection overlay
+   * 
+   * @return a reference to the selection overlay
+   */
+  protected SelectionOverlay getSelectionOverlay(){
+     
+     if( transparencies != null && transparencies.size() >1)
+        return (SelectionOverlay)transparencies.elementAt(1);
+     
+     else
+        return null;
+     
   }
   
+  /**
+   * Makes the GUI element that indicates that the SelectionOverlay is
+   * on or off is showing the given state. It must NOT send messages
+   * that the state has changed.  This is used when the state has changed
+   * and the GUI element only has to reflect that change correctly,
+   * 
+   * @param on_off  if true the GUI system should indicate that the
+   *                SelectionOverlay is on, otherwise it is off
+   */
+   protected void GUIshowOnlySelectionOverlayOn( boolean on_off){
+      
+      controls[5].send_out_messages( false );
+      
+   ((ControlCheckboxButton)controls[5]).setSelected( on_off );
+   
+      controls[5].send_out_messages( true );    
+
+   }
+  
+   /**
+    * Makes the GUI element that indicates the name list for the
+    * named selections in the SelectionOverlay reflect a change in state. 
+    * This is used when the state has changed and the GUI element only
+    * has to reflect that change correctly,
+    * 
+    * @param newName  A new name may be added. Change the selection in
+    *                 the combo box
+    * 
+    * @see getSelectionNames
+    * @see getCurrentName
+    */
+  protected void GUIshowOnlySelectionNames( boolean newName){
+     
+    
+     String[] names = ((SelectionOverlay)transparencies.elementAt(1)).getAllNames();
+     if( names == null || names.length < 1){
+       
+        return;
+     } 
+     
+     controls[7].send_out_messages( false );
+     
+     if( newName)
+         ((LabelCombobox)controls[7]).setItemList(names );
+     
+     
+      String name = getCurrentName();
+      int i;
+      for( i=0; i < names.length && !names[i].equals( name );i++)
+      {}
+      if( i < names.length)
+         ((LabelCombobox)controls[7]).setSelectedIndex( i );
+      
+      controls[7].send_out_messages( true );
+   
+     
+  }
  /*
   * This method constructs the controls required by the ImageViewComponent
   */
@@ -1924,7 +2203,7 @@ public class ImageViewComponent implements IViewComponent2D,
     // IT IS RECOMMENDED THAT THE PANVIEWCONTROL REMAIN THE LAST CONTROL,
     // Adding a spacer panel to "crunch" controls may result in the
     // PanViewControl getting drawn over any latter controls.
-    controls = new ViewControl[8];
+    controls = new ViewControl[10];
     // Control that adjusts the image intensity
     controls[0] = new ControlSlider();
     controls[0].setTitle(INTENSITY_SLIDER_NAME);
@@ -1953,10 +2232,17 @@ public class ImageViewComponent implements IViewComponent2D,
     controls[6] = new ControlCheckboxButton();  // initially unchecked
     controls[6].setTitle(ANNOTATION_OVERLAY_NAME);
     controls[6].addActionListener( new ControlListener() );
-    // Control that displays a thumbnail of the image
-    controls[7] = new PanViewControl(ijp);
-    controls[7].setTitle(PAN_NAME);
+    //  Control that selects a certain selector
+    controls[7] = new LabelCombobox(SELECTOR_NAMES,
+      ((SelectionOverlay)transparencies.elementAt(1)).getAllNames());
     controls[7].addActionListener( new ControlListener() );
+    //  Control that adds a new selector
+    controls[8] = new ButtonControl(ADD_SELECTION);
+    controls[8].addActionListener( new ControlListener() );
+    // Control that displays a thumbnail of the image
+    controls[9] = new PanViewControl(ijp);
+    controls[9].setTitle(PAN_NAME);
+    controls[9].addActionListener( new PanViewListener() ); 
   }
   
  /*
@@ -2081,53 +2367,46 @@ public class ImageViewComponent implements IViewComponent2D,
       s_h += fill_height/2;  // add integer value of half to f_h
       w_w += fill_width/2;   // add integer value of half to f_w 
     }
-    // north
-    ((JPanel)background.getComponent(1)).setPreferredSize( 
-    				new Dimension( 0, n_h ) );    
-    // west
-    ((JPanel)background.getComponent(2)).setPreferredSize(
-    				new Dimension( w_w, 0 ) );
-    // south
-    ((JPanel)background.getComponent(3)).setPreferredSize(
-    				new Dimension( 0, s_h ) );
-    // east
-    ((JPanel)background.getComponent(4)).setPreferredSize(
-    				new Dimension( e_w, 0 ) );
+     BorderLayout blayout = (BorderLayout)background.getLayout();
+     blayout.getLayoutComponent("North").setPreferredSize(new Dimension(0,n_h));
+     blayout.getLayoutComponent("West").setPreferredSize(new Dimension(w_w,0));
+     blayout.getLayoutComponent("South").setPreferredSize(new Dimension(0,s_h));
+     blayout.getLayoutComponent("East").setPreferredSize(new Dimension(e_w,0));
     
     //System.out.println("Dim: [" + center_width + "," + center_height + "]");
     background.invalidate();
     background.validate();
-    // reset the center bounds and update the overlays.
-    regioninfo = new Rectangle( ijp.getLocation(), ijp.getSize() );
-    // this is needed to properly draw the axes.
-    paintComponents();
+
+    // NOTE: A call to paintComponents may still need to be made after
+    //       calling buildAspectImage(), since the call to paintComponents
+    //       was removed from here.
   }
   
+
  //***************************Assistance Classes******************************
- /*
-  * ComponentAltered monitors if the imagejpanel has been resized. If so,
-  * the regioninfo is updated.
-  */
-  private class ComponentAltered extends ComponentAdapter
+
+  /**
+   *  This class is needed as the container class for the overlays.
+   *  It's only role is to turn off optimized drawing, since the fairly
+   *  complicated set of overlays containg border layouts which contain
+   *  border layouts, etc. DOES NOT DRAW PROPERLY WITH JAVA's CURRENT
+   *  OPTIMIZED DRAWING.  (jkd 6, update 2)
+   */
+  private class BigPictureClass extends JPanel
   {
-    public void componentResized( ComponentEvent e )
+    /**
+     *  This class turns off optimized drawing by overriding this 
+     *  method and returning false.
+     */
+    public boolean isOptimizedDrawingEnabled()
     {
-      // If the original data passed in was null, do nothing.
-      if( null_data )
-        return;
-      //System.out.println("Component Resized");
-      Component center = e.getComponent();
-      regioninfo = new Rectangle( center.getLocation(), center.getSize() );
-      /*
-      System.out.println("Location = " + center.getLocation() );
-      System.out.println("Size = " + center.getSize() );
-      System.out.println("class is " + center.getClass() );  
-      */
+      return false;
     }
   }
 
+
  /*
-  * ImageListener monitors if the imagejpanel has sent any messages.
+  * ImageListener monitors if the image jpanel has sent any messages.
   * If so, process the message and relay it to the viewer.
   */
   private class ImageListener implements ActionListener
@@ -2145,14 +2424,16 @@ public class ImageViewComponent implements IViewComponent2D,
 	// current point to be traced by those color scales.
         if( addColorControlSouth )
 	{
-	  JPanel south = (JPanel)background.getComponent(3);
+          BorderLayout blayout = (BorderLayout)background.getLayout();
+	  JPanel south = (JPanel)blayout.getLayoutComponent("South");
 	  ControlColorScale cs = (ControlColorScale)south.getComponent(1);
 	  cs.setMarker( ijp.ImageValue_at_Cursor() );
 	}
         if( addColorControlEast )
 	{
+          BorderLayout blayout = (BorderLayout)background.getLayout();
 	  ControlColorScale east = 
-	           (ControlColorScale)background.getComponent(4);
+	           (ControlColorScale)blayout.getLayoutComponent("East");
 	  east.setMarker( ijp.ImageValue_at_Cursor() );
 	}
 	// update cursor readout when pointed-at is changed.
@@ -2164,25 +2445,21 @@ public class ImageViewComponent implements IViewComponent2D,
       }
       else if (message == CoordJPanel.ZOOM_IN)
       {
-	ImageJPanel2 center = (ImageJPanel2)ae.getSource();
-	((PanViewControl)controls[7]).setGlobalBounds(getGlobalCoordBounds());
-	((PanViewControl)controls[7]).setLocalBounds(getLocalCoordBounds());
+      ((PanViewControl)controls[9]).setControlValue(getLocalCoordBounds());
         buildAspectImage();
-	paintComponents();
+        paintComponents();
       }
       else if (message == CoordJPanel.RESET_ZOOM)
       {
-	ImageJPanel2 center = (ImageJPanel2)ae.getSource();
-	((PanViewControl)controls[7]).setGlobalBounds(getGlobalCoordBounds());
-	((PanViewControl)controls[7]).setLocalBounds(getLocalCoordBounds());
+       ((PanViewControl)controls[9]).setGlobalBounds(getGlobalCoordBounds());
         buildAspectImage();
-	paintComponents();
+        paintComponents();
       }	 
     } 
   }
   
  /*
-  * ControlListener moniters activities of all controls 
+  * ControlListener monitors activities of all controls 
   * of the ImageViewComponent.
   */
   private class ControlListener implements ActionListener
@@ -2199,7 +2476,7 @@ public class ImageViewComponent implements IViewComponent2D,
         ControlSlider control = (ControlSlider)ae.getSource();
         logscale = control.getValue();
         ijp.changeLogScale( logscale, true );
-	((PanViewControl)controls[7]).repaint();
+	((PanViewControl)controls[9]).repaint();
 	// Causes any calibrated ControlColorScale to be updated
 	// with slider movements.
 	sendMessage(COLORSCALE_CHANGED);
@@ -2227,24 +2504,29 @@ public class ImageViewComponent implements IViewComponent2D,
           // if this control turns on/off the axis overlay...
           else if( control.getTitle().equals(AXIS_OVERLAY_NAME) )
           {	
-            JPanel back = (JPanel)big_picture.getComponent( bpsize - 1 );
             if( !control.isSelected() )
             {						     // axis overlay
+              BorderLayout blayout = (BorderLayout)background.getLayout();
+              blayout.getLayoutComponent("North").setVisible(false);
+              blayout.getLayoutComponent("West").setVisible(false);
+              blayout.getLayoutComponent("South").setVisible(false);
+              blayout.getLayoutComponent("East").setVisible(false);
               ((AxisOverlay2D)transparencies.elementAt(2)).setVisible(false);
-              back.getComponent(1).setVisible(false);	     // north
-              back.getComponent(2).setVisible(false);	     // west
-              back.getComponent(3).setVisible(false);	     // south
-              back.getComponent(4).setVisible(false);	     // east
-              //System.out.println("visible..." + 
-               //((AxisOverlay2D)transparencies.elementAt(2)).isVisible() );
+              // TO DO: The image is not being resized to fill the whole
+              //        frame when the axes are turned off!
+              buildAspectImage(); 
+              paintComponents();
             }
             else
             {		   
-              back.getComponent(1).setVisible(true);
-              back.getComponent(2).setVisible(true);
-              back.getComponent(3).setVisible(true);
-              back.getComponent(4).setVisible(true);
+              BorderLayout blayout = (BorderLayout)background.getLayout();
+              blayout.getLayoutComponent("North").setVisible(true);
+              blayout.getLayoutComponent("West").setVisible(true);
+              blayout.getLayoutComponent("South").setVisible(true);
+              blayout.getLayoutComponent("East").setVisible(true);
               ((AxisOverlay2D)transparencies.elementAt(2)).setVisible(true);
+              buildAspectImage();
+              paintComponents();
             }
           }// end of if( axis overlay control ) 
           else if( control.getTitle().equals(ANNOTATION_OVERLAY_NAME) )
@@ -2310,28 +2592,51 @@ public class ImageViewComponent implements IViewComponent2D,
           }
         }	
       }
-      // This message is sent by the pan view control when the viewable
-      // subregion changes.
-      else if( message.equals( PanViewControl.BOUNDS_CHANGED ) ||
-               message.equals( PanViewControl.BOUNDS_MOVED ) ||
-	       message.equals( PanViewControl.BOUNDS_RESIZED ) )
+      //Message from the list of selectors
+      else if( message.equals( LabelCombobox.COMBOBOX_CHANGED ) )
       {
-        if( ae.getSource() instanceof PanViewControl )
-        {
-          PanViewControl pvc = (PanViewControl)ae.getSource();
-          // since the pan view control has a CoordJPanel in it with the
-          // same bounds, set its local bounds to the image local bounds.
-          ijp.setLocalWorldCoords( pvc.getLocalBounds() );
-          // this method is only here to repaint the image
-          ijp.changeLogScale( logscale, true );
-	  buildAspectImage();
-        }
+        ((SelectionOverlay)transparencies.elementAt(1)).showEditor(
+            (String)((LabelCombobox)ae.getSource()).getSelectedItem(), true);
       }
+      //Message from the add new selector button.
+      else if( message.equals( ButtonControl.BUTTON_PRESSED ) )
+      {
+//      popup to ask for name of selector. 
+        String selName = JOptionPane.showInputDialog( 
+            "Enter name of selector");
+        if (selName != null)
+        {
+          int itemIndex = ((LabelCombobox)controls[7]).addItem(selName);
+          ((LabelCombobox)controls[7]).setSelectedIndex(itemIndex);
+          
+        }
+      }/*else if( ae.getSource() instanceof SelectionOverlay &&
+               message.equals( ButtonControl.COMBOBOX_CHANGED )){
+         ((LabelCombobox)controls[7]).setItemList(
+                  ((SelectionOverlay)transparencies.elementAt(1)).getAllNames());
+     }*/
       //repaints overlays accurately
       returnFocus();
       paintComponents(); 
     }
   } 
+
+
+ /*
+  *  This class handles messages from the PanViewControl.
+  */
+  private class PanViewListener implements ActionListener
+  {
+     public void actionPerformed( ActionEvent ae )
+     {
+        PanViewControl pvc = (PanViewControl)ae.getSource();
+        ijp.setLocalWorldCoords( pvc.getLocalBounds() );
+        buildAspectImage();
+        ijp.RebuildImage();
+        paintComponents();
+    }
+  }
+
 
  /*
   * This class relays the message sent out by the ColorScaleMenu
@@ -2400,9 +2705,10 @@ public class ImageViewComponent implements IViewComponent2D,
       else
       {
 	setColorScale(message);
+        ijp.setNamedColorModel( colorscale, isTwoSided, false);
 	return;
       }
-      background.validate();
+  //###    background.validate();
       paintComponents();
     }
   }
@@ -2449,7 +2755,40 @@ public class ImageViewComponent implements IViewComponent2D,
       // If the original data passed in was null, do nothing.
       if( null_data )
         return;
-      sendMessage( SELECTED_CHANGED );
+      String message = ae.getActionCommand();
+      if(  message.equals( ButtonControl.COMBOBOX_CHANGED )){// SelectionOverlay
+                            //programmed changes to the named regions, either
+                            //adding a new one or selecting a new name.
+         
+         String[] names = ((SelectionOverlay)transparencies.elementAt(1)).getAllNames();
+         if( names == null || names.length < 1)
+            return;
+         
+           
+         
+          //--------- disable notification--- SelectOverLay already knows------
+          ((LabelCombobox)controls[7]).setItemList(names );
+         
+          
+          int index;
+          String CurrName = ((SelectionOverlay)transparencies.elementAt(1)).getCurrentName();
+          for( index =0; index < names.length && !names[index].equals( CurrName );index++)
+          {}
+          if( index < names.length)
+            ((LabelCombobox)controls[7]).setSelectedIndex( index );
+       
+          
+        //--------- enable notification-------
+          
+      }else if( message.equals( SelectionOverlay.TURN_OFF_OVERLAY)){
+         
+         ((ControlCheckboxButton)controls[5]).setSelected( false );
+      }else if( message.equals( SelectionOverlay.TURN_ON_OVERLAY)){
+         
+         ((ControlCheckboxButton)controls[5]).setSelected( true );
+      }
+         
+      //sendMessage( SELECTED_CHANGED );
     }
   }
 
@@ -2478,6 +2817,7 @@ public class ImageViewComponent implements IViewComponent2D,
       if( null_data )
         return;
       buildAspectImage();
+      paintComponents();
     }
   }
      

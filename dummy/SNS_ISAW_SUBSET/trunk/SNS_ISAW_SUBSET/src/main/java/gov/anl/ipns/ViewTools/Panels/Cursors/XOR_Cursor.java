@@ -32,6 +32,14 @@
  *   Prentice Hall, 1997 )
  *
  *  $Log: XOR_Cursor.java,v $
+ *  Revision 1.5  2007/06/15 22:37:12  oakgrovej
+ *  Added cursor tag
+ *
+ *  Revision 1.4  2006/07/31 01:59:18  dennis
+ *  Fixed bug in start() method.  The y-coordinates were
+ *  improperly set.  This is a partial fix to problems with
+ *  cursors being drawn erratically.
+ *
  *  Revision 1.3  2004/03/12 00:14:09  rmikk
  *  Fixed Package names
  *
@@ -41,6 +49,8 @@
  */
 
 package gov.anl.ipns.ViewTools.Panels.Cursors;
+
+import gov.anl.ipns.ViewTools.Components.Cursor.CursorTag;
 
 import java.awt.*;
 import java.io.*;
@@ -55,7 +65,7 @@ import javax.swing.*;
  */
 
 
-abstract public class XOR_Cursor implements Serializable
+abstract public class XOR_Cursor implements Serializable, CursorTag
 {
     protected JPanel    panel;
     protected Point     first_pt     = new Point(0,0); 
@@ -115,8 +125,8 @@ abstract public class XOR_Cursor implements Serializable
       firstStretch = true;
 
       first_pt.y   = p.y;
-      current_pt.y = p.x;
-      last_pt.y    = p.x;
+      current_pt.y = p.y;
+      last_pt.y    = p.y;
 
       first_pt.x   = p.x;
       current_pt.x = p.x;
