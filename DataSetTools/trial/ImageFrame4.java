@@ -33,9 +33,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2007/08/09 21:37:53  dennis
+ * Now prints out number of points selected and first and
+ * last point, for debugging purposes.
+ *
  * Revision 1.1  2007/08/09 14:45:06  rmikk
  * New form with testing code
- *
  *
  */
 
@@ -47,6 +50,7 @@ import gov.anl.ipns.ViewTools.Panels.Transforms.*;
 import gov.anl.ipns.ViewTools.Components.*;
 import gov.anl.ipns.ViewTools.Components.Region.*;
 import gov.anl.ipns.ViewTools.Components.TwoD.*;
+import gov.anl.ipns.ViewTools.Components.Transparency.*;
 import gov.anl.ipns.ViewTools.Components.ViewControls.ViewControl;
 import gov.anl.ipns.ViewTools.UI.SplitPaneWithState;
 
@@ -234,13 +238,23 @@ public class ImageFrame4 extends JFrame
       }
       else if( command.equals( IViewComponent.SELECTED_CHANGED ) )
       {
-        Region[] regions = ivc.getSelectedRegions();
+        String name = SelectionOverlay.DEFAULT_REGION_NAME;
+        RegionOpList reg_list = ivc.getSelectedRegions(name);
         System.out.println("Selected Regions = " );
-        for ( int i = 0; i < regions.length; i++ )
-          System.out.println( regions[i] ); 
+        System.out.println( reg_list );
+
+        Point points[] = ivc.getSelectedPoints(name);
+        int last_point = points.length - 1;
+        System.out.println( "Number selected " + points.length );
+        if ( last_point >= 0 )
+        {
+          System.out.println( "First Point = " + points[0] );
+          System.out.println( "Last Point  = " + points[last_point] );
+        }
       }
     }
   }
+
 
  /*
   * Testing purposes only
@@ -290,8 +304,6 @@ public class ImageFrame4 extends JFrame
      System.out.println("  SC: show color");
      System.out.println("  do: disableOverlay");
      System.out.println("  eo: enableOverlay");
-     
-     
      
      S = Command.Script_Class_List_Handler.getString();
 
@@ -380,11 +392,6 @@ public class ImageFrame4 extends JFrame
         ivc.disableOverlay( true );
      else if( S.equals( "eo" ))
         ivc.disableOverlay( false );
-     
-     
-     
-     
-     
      
      
   }
