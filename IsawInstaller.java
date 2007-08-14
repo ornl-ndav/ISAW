@@ -32,6 +32,10 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.32  2007/08/14 16:50:27  dennis
+ * Removed reference to separate MessageTools.jar file, since
+ * the MessageTools package is inside the Isaw.jar file.
+ *
  * Revision 1.31  2007/08/14 15:47:28  dennis
  * Updated to include gluegen-rt.jar and MessageTools.jar after
  * upgrading jogl to the JSR231 version.
@@ -637,13 +641,13 @@ public class IsawInstaller extends JFrame
 		+"cd "+isaw_home+newline
 		+"path %PATH%;./lib"+newline
 		+"java -mx256m -cp \""+fixSeparator(isaw_home)
-                +";Isaw.jar;sgt_v2.jar;gov.jar;IPNS.jar;ISIS.jar;jnexus.jar;sdds.jar;SSG_Tools.jar;MessageTools.jar;gluegen-rt.jar;jogl.jar;"
+                +";Isaw.jar;sgt_v2.jar;gov.jar;IPNS.jar;ISIS.jar;jnexus.jar;sdds.jar;SSG_Tools.jar;gluegen-rt.jar;jogl.jar;"
                 +"jhall.jar;jython.jar;.\" IsawGUI.Isaw"+newline
 		+"rem --"+newline
  		+"rem The following command is used to run from Isaw folder"
 		+ newline
 		+"rem --"+newline
-		+"rem java -mx256m -cp Isaw.jar;sgt_v2.jar;gov.jar;IPNS.jar;ISIS.jar;jnexus.jar;sdds.jar;SSG_Tools.jar;MessageTools.jar;gluegen-rt.jar;jogl.jar;"
+		+"rem java -mx256m -cp Isaw.jar;sgt_v2.jar;gov.jar;IPNS.jar;ISIS.jar;jnexus.jar;sdds.jar;SSG_Tools.jar;gluegen-rt.jar;jogl.jar;"
 		+"jhall.jar;jython.jar;.\" IsawGUI.Isaw"+newline;
 	}else if(operating_system.equals(LIN_ID)){
 	    content="#!/bin/sh"+newline
@@ -652,7 +656,7 @@ public class IsawInstaller extends JFrame
 		+"export LD_LIBRARY_PATH="+lib_home+newline
 		+"cd $ISAW"+newline
 		+"$JAVA -mx256m -server -cp $ISAW:$ISAW/Isaw.jar:$ISAW/gov.jar:$ISAW/IPNS.jar:$ISAW/ISIS.jar:"+
-		"$ISAW/jnexus.jar:$ISAW/sgt_v2.jar:$ISAW/sdds.jar:$ISAW/SSG_Tools.jar:$ISAW/MessageTools.jar:$ISAW/gluegen-rt.jar:$ISAW/jogl.jar"
+		"$ISAW/jnexus.jar:$ISAW/sgt_v2.jar:$ISAW/sdds.jar:$ISAW/SSG_Tools.jar:$ISAW/gluegen-rt.jar:$ISAW/jogl.jar"
 		+":$ISAW/jhall.jar:$ISAW/jython.jar:. IsawGUI.Isaw"+newline;
 	}else if(operating_system.equals(SUN_ID)){
 	    content="#!/bin/sh"+newline
@@ -661,7 +665,7 @@ public class IsawInstaller extends JFrame
 		+"LD_LIBRARY_PATH="+lib_home+newline
 		+"cd $ISAW"+newline
 		+"$JAVA -mx256m -cp $ISAW:$ISAW/Isaw.jar:$ISAW/gov.jar:$ISAW/IPNS.jar:$ISAW/ISIS.jar:"+
-		"$ISAW/jnexus.jar:$ISAW/sgt_v2.jar:$ISAW/sdds.jar:$ISAW/SSG_Tools.jar:$ISAW/MessageTools.jar:$ISAW/gluegen-rt.jar:$ISAW/jogl.jar"
+		"$ISAW/jnexus.jar:$ISAW/sgt_v2.jar:$ISAW/sdds.jar:$ISAW/SSG_Tools.jar:$ISAW/gluegen-rt.jar:$ISAW/jogl.jar"
 		+":$ISAW/jhall.jar:$ISAW/jython.jar:. IsawGUI.Isaw"+newline;
         }else if(operating_system.equals(MAC_ID)){
             content="tell application \"Terminal\""+newline
@@ -675,7 +679,6 @@ public class IsawInstaller extends JFrame
                 +isaw_home+"/jnexus.jar:"
                 +isaw_home+"/sdds.jar:"
                 +isaw_home+"/SSG_Tools.jar:"
-                +isaw_home+"/MessageTools.jar:"
                 +isaw_home+"/gluegen-rt.jar:"
                 +isaw_home+"/jogl.jar:"
                 +isaw_home+"/jython.jar:"
