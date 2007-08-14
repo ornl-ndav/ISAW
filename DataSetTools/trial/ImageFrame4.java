@@ -33,13 +33,16 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2007/08/14 02:03:32  dennis
+ * Now steps through all named selections and prints the info
+ * on the selection.
+ *
  * Revision 1.2  2007/08/09 21:37:53  dennis
  * Now prints out number of points selected and first and
  * last point, for debugging purposes.
  *
  * Revision 1.1  2007/08/09 14:45:06  rmikk
  * New form with testing code
- *
  */
 
 package DataSetTools.trial;
@@ -238,23 +241,28 @@ public class ImageFrame4 extends JFrame
       }
       else if( command.equals( IViewComponent.SELECTED_CHANGED ) )
       {
-        String name = SelectionOverlay.DEFAULT_REGION_NAME;
-        RegionOpList reg_list = ivc.getSelectedRegions(name);
-        System.out.println("Selected Regions = " );
-        System.out.println( reg_list );
-
-        Point points[] = ivc.getSelectedPoints(name);
-        int last_point = points.length - 1;
-        System.out.println( "Number selected " + points.length );
-        if ( last_point >= 0 )
+        System.out.println("================================================");
+        System.out.println("SELECTED CHANGED");
+        System.out.println("================================================");
+        String names[] = ivc.getSelectionNames();
+        for ( int i = 0; i < names.length; i++ )
         {
-          System.out.println( "First Point = " + points[0] );
-          System.out.println( "Last Point  = " + points[last_point] );
+          System.out.println("REGION NAME: " + names[i] + "-----------------");
+          RegionOpList reg_list = ivc.getSelectedRegions(names[i]);
+          System.out.println("Selected Regions = " + reg_list ); 
+        
+          Point points[] = ivc.getSelectedPoints(names[i]);
+          int last_point = points.length - 1;
+          System.out.println( "Number selected " + points.length );
+          if ( last_point >= 0 )
+          {
+            System.out.println( "First Point = " + points[0] );
+            System.out.println( "Last Point  = " + points[last_point] );
+          }
         }
       }
     }
   }
-
 
  /*
   * Testing purposes only
@@ -392,8 +400,7 @@ public class ImageFrame4 extends JFrame
         ivc.disableOverlay( true );
      else if( S.equals( "eo" ))
         ivc.disableOverlay( false );
-     
-     
   }
-}
+ 
+ }
 }
