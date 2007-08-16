@@ -1,3 +1,42 @@
+
+/* 
+ * File: Util.java 
+ *  
+ * Copyright (C) 2007     Ruth Mikkelson
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * Contact :  Dennis Mikkelson<mikkelsond@uwstout.edu>
+ *            MSCS Department
+ *            HH237H
+ *            Menomonie, WI. 54751
+ *            (715)-232-2291
+ *
+ * This work was supported by the National Science Foundation under grant
+ * number DMR-0426797, and by the Intense Pulsed Neutron Source Division
+ * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
+ *
+ *
+ * Modified:
+ * $Log$
+ * Revision 1.7  2007/08/16 17:46:14  rmikk
+ * Added GPL
+ * Fixed calculations in working with non trailing *'s in position fields of a NeXus
+ *   file
+ *
+ */
 package NexIO.Util;
 
 
@@ -16,7 +55,7 @@ public class Util {
 
    public Util() {
       super();
-      // TODO Auto-generated constructor stub
+      
    }
 
    private static String standardize_dot_sep_list( String S ){
@@ -533,7 +572,7 @@ public class Util {
          int[] axes = null;
          int ax = ConvertDataTypes.intValue( node.getAttrValue( "axis" )  );
          
-         if( ax != Integer.MIN_VALUE ){
+         if( ax != Integer.MIN_VALUE && dim1.length == 1 ){
             
             axes = new int[ 1 ];
             if( dataState.XlateAxes != null )
@@ -599,16 +638,20 @@ public class Util {
          if( timeDim + 1 == minAx )
             minAx++;
          
-         int[] ResDim = new int[ dataState.dimensions.length];//new int[ dataState.dimensions.length - minAx + 1 ];
+         int[] ResDim = new int[ dataState.dimensions.length - minAx + 1 ];
          java.util.Arrays.fill( ResDim , -1 );
          
          int L = ResDim.length-1 ;
          
-         for( int i = 0 ; i < dim.length ;  i++ )
-            ResDim[ L - axes[ i ] +1 ] = dim[ i ];
+//         for( int i = 0 ; i < dim.length ;  i++ )
+//            ResDim[ L - axes[ i ] +1 ] = dim[ i ];
          
-         if( timeDim + 1 >= minAx )
-            ResDim[ L - timeDim ] = -2;
+         for( int i=0; i< axes.length ; i++)
+            if( axes[i] >= 1 && dim.length -axes[i] < ResDim.length )
+            ResDim[ dim.length - axes[i] ] = dim[ dim.length - axes[i]];
+         
+         if( dim.length - timeDim -1 < ResDim.length )
+            ResDim[ dim.length - timeDim -1] = -2;
        
        return new dimensionHandler( ResDim, timeDim, colDim,rowDim);
     }
@@ -692,7 +735,8 @@ public class Util {
                         axes = null;
                      }
                   
-                  if( axes != null ) axes[ i ] = indx + 1;                 
+                  if( axes != null ) 
+                         axes[ i ] = indx + 1;                 
                }
             }
          }
@@ -722,12 +766,15 @@ public class Util {
          java.util.Arrays.fill( ResDim , -1 );
          
          int L = ResDim.length - 1;
+         dim = dataState.dimensions;
+         //for( int i = 0 ; i < dim.length ;  i++ )
+         //   ResDim[ L - axes[ i ] + minAx ] = dim[ i ];
+         for( int i=0; i< axes.length; i++)
+            if( axes[i] >=1  && dim.length  - axes[i] < ResDim.length)
+            ResDim[ dim.length  - axes[i] ]= dim[ dim.length  - axes[i] ];
          
-         for( int i = 0 ; i < dim.length ;  i++ )
-            ResDim[ L - axes[ i ] + minAx ] = dim[ i ];
-         
-         if( timeDim + 1 >= minAx )
-            ResDim[ timeDim + 1 - minAx ] = -2;
+         if( dim.length -timeDim-1 < ResDim.length )
+            ResDim[ dim.length -timeDim-1 ] = -2;
        
        return ResDim;
     }
@@ -915,7 +962,7 @@ public class Util {
     * @param NXclassNameList The dot separated string of name attributes for the above 
     * @param fieldName     The dot separated string name of attribute names or field names
     * @param filename     The filename attribute for the Runs section of the xmldoc
-    * @return
+    * @return the first Node that matches the criteria or null if none can be found
     */
    public static Node getNXInfoDefault( Node xmlDoc , String NXclassPath , 
                                     String NXclassNameList , String fieldName ,
@@ -1055,7 +1102,7 @@ public class Util {
     *                     later entries are subclasses of previous FieldClass
     *                     
     * @param  FieldClassName  the corresponding name attributes( could be "" or
-    *                   null)
+    *                   null,or - for no named)
     *                   
     * @param filename   The filename attribute or null. Additional searches will
     *                be done with the filename == null.
