@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2007/08/16 17:34:38  rmikk
+ * Added More documentation and reformatting
+ * Flipped axis names for version2 or higUsed her
+ * Used Searched noNamed feature in xml fixit files
+ *
  * Revision 1.10  2007/07/11 18:21:05  rmikk
  * Checked that value of axes made sense
  * Included a field startDetectorID
@@ -91,14 +96,23 @@ public class NxDataStateInfo extends StateInfo{
    *   This field is initialized to an array of 4 null strings
   */
   public String[] axisName; 
-  public int[] XlateAxes; //if used incorrect conventions this translates
-                         //from bad name to correct name
+  
+  /**
+   * axis=1,2,3, etc. should have axis=1 being the fastest changing dimension
+   *    axis=2 the second fastest changing dimension.
+   *  axis[0] is the incorrect name for fastest changing dimension(
+   *           should have been axis =1)
+   *  axis[1] is the incorrect name for the 2nd fastest changing dimension
+   *           ( should have been labeled axis = 1)
+   *  etc.
+   */
+  public int[] XlateAxes; 
 
   /**
    *   The dimensions of the data entry as given by the NeXus file.
    *   The first element of the array is the number of values associated 
    *   with the slowest changing attribute.  The last item is the number
-   *   of time_of_flight data( +1 if it is a histogram)
+   *   of time_of_flight data( if up by one it is a histogram)
    */
   public int[] dimensions;
 
@@ -214,14 +228,32 @@ public class NxDataStateInfo extends StateInfo{
      
      XlateAxes = FindAxes( Params );  
      if( XlateAxes == null || XlateAxes.length != dimensions.length){
+        
         XlateAxes = new int[dimensions.length];
-        for( int i = 0 ; i< XlateAxes.length ; i++)
-           XlateAxes[i]= i+1;
+        NxEntryStateInfo entryInfo = NexUtils.getEntryStateInfo( Params );
+        String version =null;
+        
+        if( entryInfo != null)
+           version = entryInfo.version;
+        
+        if( version== null || version.compareTo("2") < 0 )
+           
+            for( int i = 0 ; i< XlateAxes.length ; i++)
+                XlateAxes[i]= i+1;
+        
+        else 
+           
+           for( int i = 0 ; i< XlateAxes.length ; i++)
+              XlateAxes[i]= XlateAxes.length - i;
+           
      }
+     
      if( axisName.length > dimensions.length){
+        
         String[] A = new String[ dimensions.length];
         System.arraycopy( axisName,0,A,0,A.length);
         axisName = A;
+        
      }
      //Check xml for link name
      if( Params.xmlDoc != null){
@@ -305,6 +337,11 @@ public class NxDataStateInfo extends StateInfo{
 
    }
    
+   /**
+    * Copy Constructor
+    * 
+    * @param datInfo  The NxDataStateInfo to copy
+    */
    public NxDataStateInfo( NxDataStateInfo datInfo){
       axisName = datInfo.axisName; 
       XlateAxes = datInfo.XlateAxes;
@@ -358,6 +395,9 @@ public class NxDataStateInfo extends StateInfo{
       if( res == null)
          res = Util.getNXInfo1( xmlDoc , "NXentry.NXdata.axes" , ".."+
                   Name , null ,null);
+      if( res == null)
+         res = Util.getNXInfo1( xmlDoc , "NXentry.NXdata.axes" , "..-."
+                  , null ,null);
       
       if( res == null )
          return null;
