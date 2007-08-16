@@ -1,0 +1,235 @@
+<html><body>
+<H1> NeXus FixIt Files</H1>
+
+The NeXus FixIt files are used to modify the metadata in NeXus file that do not conform to the NeXus "standard".<P>
+
+<UL>Some properties of the FixIt files are<P>
+   <LI> There is only one FixIt file per directory<P>
+   <LI> The name of the file is of the form *FixIt.*<P>
+
+   <LI> The FixIt file format is an xml file that is very version 1 NeXus-like <P> 
+   <LI> The values in the FixIt file over-ride the data in the NeXus file<Br>
+   <LI> <UL>There is a Common section and a Runs section.<Br> 
+         <LI> The Common Section "factors out" common values in MOST per run section<P>
+         <LI> The values in the per run section over-ride the values in the common section<P>
+         <LI> The values in xml section with a name attribute over-ride the corresponding<P>
+              sections without the name tag
+         </ul>
+
+   <LI> The xml "code" form in a Run is the same as the xml "code" form in the Common Section.
+   
+</ul>
+
+
+<P><P>
+ Before giving an example, some conventions will be enumerated
+
+ <UL> Conventions<P>
+
+    <LI> <a name="axesNums">Axes labels</a>: Suppose NXdata.data has dimensions [20,25,30,35]( C format- 35 corresponds to the fastest changing dimension) then<P>
+        <table><tr><td> NXdata.data[</td><td>20,</td><td>25,</td><td>30,</td><td>35]</td></tr>
+               <tr> <td>Axis num</td><td>4</td><td>3</td><td>2</td><td>1</td></tr></table><P>
+
+    <LI>Axes "data types"( can be overridden by Fixit fields time_dimension,row_dimension, col_dimension).<P> 
+<Br>
+             <table><tr><td> NXdata.data[</td><td>20,</td><td>25,</td><td>30,</td><td>35]</td></tr>
+                  <tr> <td>data type</td><td>det?</td><td>row</td><td>col</td><td>time</td></tr></table><P>
+          Higher dimensions can be pressure, temperature, etc.  These are considered as different detectors when retrieved into ISAW.<P>
+
+     <LI> <link> field in an NXdata section is used to specify the NXdetector field that corresponds to this NXdata in the NeXus file.
+          In the FixIt file, the NXdetector Name <B><U>MUST</U></B> match the name of the NXdata in either the FixIt file or the
+           NeXus file<P>
+
+      <LI> The xml "code" form parallels the NeXus standard for most entries, except &lt;link&gt;,&lt;time_dimension&gt;,&lt;row_dimension&gt;,and 
+             &lt;col_dimension&gt;
+
+  </ul>
+
+
+<H2>Example</H2><P>
+
+&lt;?xml version = "1.0" encoding="ISO-8859-1" standalone = "yes" ?&gt; <BR>
+
+&lt;data&gt; <BR><BR>
+
+
+<a href="#Common">&lt;Common&gt; </a><BR>
+<P>&lt;--   Example of an Unnamed NXentry     --&gt;<P>
+&lt;NXentry&gt; <BR>
+&nbsp; &nbsp; &lt;definition  version= "1"&gt; &lt;/definition&gt; <BR>
+&nbsp; &nbsp; &lt;NXdata  name= "tof_detector_1"&gt; <BR>
+&nbsp; &nbsp;  &nbsp; &nbsp; &lt;<a href="#axes">axes</a> &gt; 2  3   1&lt;/axes&gt; <BR>
+&nbsp; &nbsp;  &nbsp; &nbsp; &lt;<a href="#timeDim">time_dimension</a>&gt;   2&lt;/time_dimension&gt; <BR>
+&nbsp; &nbsp;  &nbsp; &nbsp; &lt;<a href="#rowDim">row_dimension</a>&gt;  1 &lt;/row_dimension&gt; <BR>
+&nbsp; &nbsp;  &nbsp; &nbsp; &lt;<a href="#colDim">col_dimension</a>&gt;  0&lt;/col_dimension&gt; <BR>
+&nbsp; &nbsp; &lt;/NXdata&gt; <BR><BR>
+
+&lt;-- Should have been an NXmonitor instead of an NXdata. Do not fix this yet --&gt;<BR>
+&nbsp; &nbsp; &lt;NXdata  name= "sed_monitor_1_ph"&gt; <BR>
+&nbsp; &nbsp;  &nbsp; &nbsp; &lt;<a href="#timeDim">time_dimension</a>&gt;   0&lt;/time_dimension&gt; <BR>
+&nbsp; &nbsp;  &nbsp; &nbsp; &lt;<a href="#rowDim">row_dimension</a>&gt;  -1 &lt;/row_dimension&gt; <BR>
+&nbsp; &nbsp;  &nbsp; &nbsp; &lt;<a href="#colDim">col_dimension</a>&gt;  -1&lt;/col_dimension&gt; <BR>
+&nbsp; &nbsp; &lt;/NXdata&gt; <BR><BR>
+
+&lt;-- Should have been an NXmonitor instead of an NXdata. Do not fix this yet --&gt;<BR>
+&nbsp; &nbsp; &lt;NXdata  name= "sed_monitor_1_tof"&gt; <BR>
+&nbsp; &nbsp;  &nbsp; &nbsp; &lt;link&gt; sed_monitor_1_tof&lt;/link&gt;   <BR>
+&nbsp; &nbsp;  &nbsp; &nbsp; &lt;<a href="#timeDim">time_dimension</a>&gt;   0&lt;/time_dimension&gt; <BR>
+&nbsp; &nbsp;  &nbsp; &nbsp; &lt;<a href="#rowDim">row_dimension</a>&gt;  -1 &lt;/row_dimension&gt; <BR>
+&nbsp; &nbsp;  &nbsp; &nbsp; &lt;<a href="#colDim">col_dimension</a>&gt;  -1&lt;/col_dimension&gt; <BR>
+&nbsp; &nbsp; &lt;/NXdata&gt; <BR><BR>
+
+
+&nbsp; &nbsp; &lt;NXdata &gt; <BR> 
+&nbsp; &nbsp;&nbsp; &nbsp;&lt;-- An Example of an Unnamed NXdata --&gt;  <BR>
+&nbsp; &nbsp;&nbsp; &nbsp;&lt;-- Here the NXmonitors were labeled NXdata so.. --&gt;  <BR>
+&nbsp; &nbsp; &lt;/NXdata&gt; <BR><BR>
+
+  
+&nbsp; &nbsp; &lt;NXinstrument&gt; <BR>
+&nbsp; &nbsp;  &nbsp; &nbsp; &lt;NXdetector  name="tof_detector_1"&gt; <BR>
+&nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp; &lt;distance units="m"  dimension=<a href="#dims">"-1 -1 -1"</a>&gt;  .2518 &lt;/distance&gt; <BR>
+&nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp; &lt;azimuthal_angle units="radians" dimension=<a href="#dims">"-1 -1 -1"</a>&gt;  2.3627472 &lt;/azimuthal_angle&gt; <BR>
+&nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp; &lt;polar_angle units="radians" dimension=<a href="#dims">"-1 -1 -1"</a>&gt;  1.574711 &lt;/polar_angle&gt; <BR>
+&nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp; &lt;NXgeometry name="geometry"&gt; <BR>
+&nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp; &lt;NXshape&gt; <BR>
+&nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp; &lt;shape&gt; nxbox&lt;/shape&gt; <BR>
+&nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp; &lt;size units="m" dimension = <a href="#dims">"-1 -1 -1 3</a>"&gt;  .1986  ,  .0019    .2026   &lt;/size&gt; <BR>
+&nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &lt;/NXshape&gt; <BR>
+&nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp; &lt;NXorientation&gt; <BR>
+&nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp; &lt;value  dimension = <a href="#dims">"-1 -1 -1 6</a>"&gt;  0 0 -1 .7071068 .707108 0 &lt;/value&gt; <BR>
+&nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp; &lt;/NXorientation&gt; <BR>
+&nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp; &lt;/NXgeometry  &gt; <BR>
+&nbsp; &nbsp;  &nbsp; &nbsp; &lt;/NXdetector&gt; <BR>
+&nbsp; &nbsp;  &nbsp; &nbsp; &lt;NXsource name = "source"&gt; <BR>
+&nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp; &lt;distance &gt; 7.55&lt;/distance&gt; <BR>
+
+&nbsp; &nbsp;  &nbsp; &nbsp; &lt;/NXsource&gt; <BR><BR>
+   
+&nbsp; &nbsp; &lt;/NXinstrument&gt; <BR>
+&lt;/NXentry&gt; <BR><BR>
+<P>&lt;--   Example of a Named NXentry     --&gt;<P>
+&lt;NXentry   name="abc" &gt; <BR>
+&lt;--  If you have several NXentries that are different --&gt;<BR>
+&lt;/NXentry&gt;<BR><BR>
+&lt;/Common&gt; <BR><BR>
+&lt;<a href="#Runs">Runs</a>&gt; <BR><BR>
+
+
+&nbsp; &nbsp; &lt;<a href="#Run">Run</a> filename = "SCD_E000005_R000082.nx.hdf"&gt; <BR>
+&nbsp; &nbsp;  &nbsp; &nbsp; &lt;NXentry&gt; <BR>
+&nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp; &lt;NXsample&gt; <BR>
+&nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp; &lt;sample_orientation units="degree"&gt; <BR>
+&nbsp; &nbsp; &nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp; 290<BR>
+&nbsp; &nbsp; &nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp; 120<BR>
+&nbsp; &nbsp; &nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  90<BR>
+&nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp; &lt;/sample_orientation&gt; <BR>
+&nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &lt;temperature units = "K"&gt; 300&lt;/temperature&gt; <BR>
+&nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &lt;/NXsample&gt; <BR>
+&nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &lt;NXinstrument&gt; <BR>
+&nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &lt;NXdetector name="tof_detector_1"&gt; <BR>
+&nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &lt;distance units="m" dimension=<a href="#dims">"-1 -1 -1"</a>&gt; .2518&lt;/distance&gt; <BR>
+&nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &lt;/NXdetector&gt; <BR>
+&nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &lt;/NXinstrument&gt; <BR><BR>
+
+&nbsp; &nbsp;  &nbsp; &nbsp; &lt;/NXentry&gt; <BR><BR>
+&nbsp; &nbsp;  &lt;/Run&gt; <BR><BR>
+
+
+&nbsp; &nbsp;  &lt;<a href="#Run">Run</a> filename = "SCD_E000005_R000083.nx.hdf"&gt; <BR>
+&nbsp; &nbsp;  &nbsp; &nbsp;  &lt;NXentry&gt; <BR>
+&nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &lt;NXsample&gt; <BR>
+&nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &lt;sample_orientation units="degree"&gt; <BR>
+&nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  245<BR>
+&nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  120<BR>
+&nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  90<BR>
+&nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &lt;/sample_orientation&gt; <BR>
+&nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &lt;temperature units = "K"&gt; 300&lt;/temperature&gt; <BR>
+&nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &lt;/NXsample&gt; <BR><BR>
+
+&nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &lt;NXinstrument&gt; <BR>
+&nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &lt;NXdetector name="tof_detector_1"&gt; <BR>
+&nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &lt;distance units="m" dimension=<a href="#dims">"-1 -1 -1"</a>&gt; .2518&lt;/distance&gt; <BR>
+&nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &lt;/NXdetector&gt; <BR>
+&nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &lt;/NXinstrument&gt; <BR>
+&nbsp; &nbsp;  &nbsp; &nbsp;  &lt;/NXentry&gt; <BR>
+&nbsp; &nbsp;  &lt;/Run&gt; <BR><BR>
+
+
+&nbsp; &nbsp;  &lt;<a href="#Run">Run</a> filename = "SCD_E000005_R000084.nx.hdf"&gt; <BR>
+&nbsp; &nbsp;  &nbsp; &nbsp;  &lt;NXentry&gt; <BR>
+&nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &lt;NXsample&gt; <BR>
+&nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &lt;sample_orientation units="degree"&gt; <BR>
+&nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  245<BR> 
+&nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  120<BR>
+&nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  90<BR>
+&nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &lt;/sample_orientation&gt; <BR>
+&nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &lt;temperature units = "K"&gt; 300&lt;/temperature&gt; <BR>
+&nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &lt;/NXsample&gt; <BR>
+
+&nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &lt;NXinstrument&gt; <BR>
+&nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &lt;NXdetector name="tof_detector_1"&gt; <BR>
+&nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &lt;distance units="m" dimension=<a href="#dims">"-1 -1 -1</a>"&gt; .2518&lt;/distance&gt; <BR>
+&nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &lt;/NXdetector&gt; <BR>
+&nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &lt;/NXinstrument&gt; <BR>
+&nbsp; &nbsp;  &nbsp; &nbsp;  &lt;/NXentry&gt; <BR>
+&nbsp; &nbsp;  &lt;/Run&gt; <BR><BR>
+
+
+  
+&lt;/Runs&gt; <BR>
+&lt;/data&gt; <BR>
+<P><P><P><HR><P>
+<a name="Common"> <B><U>Common Section</U></B></a><P>
+   This section factors out entries that would be common to most of the runs.  This reduces the number of entries in the file.  <P>
+
+   The values in the Runs section will over-ride any values in this section. 
+
+   The form of the xml "code" for this section parallels the NeXus standard except for &lt;link&gt;,&lt;time_dimension&gt;,
+    &lt;row_dimension&gt;,and  &lt;col_dimension&gt;.  This means you will start with NXentry tags.  The NXfile tag has not been
+    implemented yet.  There may be several named NXentry tags and <B>ONE</B> unnamed NXentry tag.  The values in the named NXentry
+    tags will over-ride the values in the unnamed NXentry tag.
+
+<P><P><P><HR><P><P>
+
+<a name ="Runs"><B><U> Per Runs Section</U></B></a><P>
+  The Runs section consists of Run children.  Each should have a filename attribute.  The value of this attribute MUST be the filename 
+  without its path. <P><P><P>
+
+<P><P><P><HR><P><P>
+<a name ="Run"><B><U> One Run Section</U></B></a><P>
+  This represents one run.  If none of the values from the Common section or NeXus file match the value needed here, introduce a
+  Run child for this run.  It should have a filename attribute.  The value of this filename attribute should be the name of the file
+  without the  path.<P>
+
+  The form of the xml "code" in this section should parallel the xml "code" in the Common Section.
+<P><P><P><HR><P><P>
+<a name="timeDim"> <B><U>Time Dimension</U></B> <P>
+   Each tuple in an NXdata.data[i,j,k,l...] has a property.  For TOF neutron data, some properties a tuple can have is time, row, col,
+   detector, pressure, temperature, etc.  The time_dimension field is the <a href="#axesNums">axis number</a> corresponding to the time 
+   tuple if this is NOT axis 1.
+
+<P><P><P><HR><P><P>
+<a name="rowDim"> <B><U>Row Dimension</U></B> <P>
+   Each tuple in an NXdata.data[i,j,k,l...] has a property.  For TOF neutron data, some properties a tuple can have is time, row, col,
+   detector, pressure, temperature, etc.  The row_dimension field is the <a href="#axesNums">axis number</a> corresponding to the row 
+   tuple if this is NOT axis 3.
+
+<P><P><P><HR><P><P>
+<a name="colDim"><B><U> Column Dimension</U></B> <P>
+   Each tuple in an NXdata.data[i,j,k,l...] has a property.  For TOF neutron data, some properties a tuple can have is time, row, col,
+   detector, pressure, temperature, etc.  The col_dimension field is the <a href="#axesNums">axis number</a> corresponding to the column 
+   tuple if this is NOT axis 2.
+
+<P><P><P><HR><P><P>
+<a name="axes"><B><U>axes</U></B></a><P>
+  Use this if the name the NeXus file given to axes does not correspond to the version 1 <a href="#axesNums">NeXus standard</a>. 
+  The first entry on for this value should be the number YOU gave the fastest changing tuple( should have been axis =1). The 2nd entry
+  on for this value is the number YOU gave the 2nd fastest changing tuple( should be axis = 1). etc.  NOTE: There is no correspondence
+  to the property of the tuple.
+<P><P><P><HR><P><P>
+<a name="dims"><B><U>dimensions</U></B></a><P>
+ The -1's in a tuple position means "*".  The dimensions <B>MUST</B> be full(i.e. one less dimension,no time dimension, than the 
+  corresponding NXdata.data entries).  The example above showed how to represent area detectors.
+
+</body></html>

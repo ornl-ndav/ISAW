@@ -1,0 +1,31 @@
+<?xml version = "1.0" encoding="ISO-8859-1" standalone = "yes" ?>
+
+<data>
+<!-- Fix Up Info for the SNS  Backscattering datta 8-10-2006-->
+<!-- Read by Operators.Special.Calib.FixLansceSCDDataFiles  -->
+
+<!--  Xlate from this Nexus file axis numbers TO the correct axis numbers -->
+<!--  The correct axis scheme is axis=1 is the fastest changing , 2 next fastest etc -->
+
+<Common>
+<NXentry>
+  
+   <definition  version= "2"></definition>
+   <NXdata>
+<axes >3  2   1</axes>
+   </NXdata>
+</NXentry>
+</Common>
+<Runs>
+  <Run filename ="BSS_26.nxs">
+   <NXentry>
+     <definition version= "1"></definition>
+   </NXentry>
+  </Run>
+  <Run filename ="BSS_18.nxs">
+   <NXentry>
+     <definition version= "1"></definition>
+   </NXentry>
+  </Run>
+</Runs>
+</data>
