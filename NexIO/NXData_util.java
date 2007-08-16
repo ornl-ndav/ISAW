@@ -30,6 +30,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.32  2007/08/16 17:29:41  rmikk
+ * Added more documentation
+ * Reformatted some documentation and code
+ * ReUsed NeXIO.Util.ConvertDataTyes Routines to compact code
+ *
  * Revision 1.31  2007/07/04 18:00:18  rmikk
  * Added a Total Count Attribute in most cases
  *
@@ -137,10 +142,11 @@ package NexIO;
 import gov.anl.ipns.MathTools.Geometry.*;
 import gov.anl.ipns.Util.Sys.StringUtil;
 import DataSetTools.dataset.*;
-//import NexIO.Util.NexUtils;
+import NexIO.Util.*;
 
 /**
- * A utility package used by many NxData implementers
+ * A utility package used by many NxData implementers for NeXus files
+ * that do not have links to the nxdetector or specify axes
  */
 public class NXData_util{
   String errormessage;
@@ -168,9 +174,12 @@ public class NXData_util{
 
   /**
    * Converts an object into a float array(if possible) or null.
-   * @param X  an Object 
+   * 
+   * @param X  an Object
+   *  
    * @return  a float array(possibly with one element) corresponding to the elements
    *          in X or null if it is not possible.
+   *          
    *@see #getErrorMessage()
    */
   public static float[] Arrayfloatconvert( Object X ){
@@ -254,8 +263,11 @@ public class NXData_util{
 
   /**
    * Gets the index-th element of an array X( if possible) or 0.
+   * 
    *  @param  X  some Object
+   *  
    *  @param  index  the position in X( could be an array or Vector )
+   *  
    *  @return  the ith element of X converted to a float or Float.NaN
    */
   public static float getfloatEntry( Object X, int index ){
@@ -317,6 +329,7 @@ public class NXData_util{
 
  //Gets the name of the node that corresponds to Phi
   private String getPhiName( NxNode detNode ){
+     
     NxNode nx = detNode.getChildNode( "two_theta" );
     
     if( nx != null )
@@ -332,10 +345,13 @@ public class NXData_util{
 
   //Gets the name of the field that corresponds to theta
   private String getThetaName( NxNode detNode ){
+     
     if( getPhiName( detNode ).equals( "two_theta" ) )
       return "phi";
+    
     if( getPhiName( detNode ).equals( "polar_angle" ) )
       return "azimuthal_angle";
+    
     return "theta";
   }
 
@@ -344,16 +360,21 @@ public class NXData_util{
    * get attributes that are connected to the NXdetector node
    * corresponding to this node and assigns them to the appropriate
    * data blocks
+   * 
    * @param detNode  A NxNode corresponding to the NxDetector Node for the block
    *             of Data in DS from start_index to end_index
+   *             
    * @param  DS  The data set that is being built
+   * 
    * @param  start_index  The index of the first Data block associated with this
    *                      NxDetector Node
+   *                      
    * @param  end_index  One greater than the index of the last Data block associated 
    *                    with this NxDetector Node
    */
   public void setOtherAttributes( NxNode detNode, DataSet DS, int start_index,
                                   int end_index ){
+     
     NxData_Gen DD = new NxData_Gen();
     float solidAngle[]   = null;
     float distance[]     = null;
@@ -372,81 +393,61 @@ public class NXData_util{
     NxNode nx, ndis;
     if( detNode == null )
       return;
-    ndis = detNode.getChildNode( "distance" );
-    if( ndis == null )
-      return;
-    Object X = ( ndis.getNodeValue() );
     
-    if( X == null )
-      return;
-    if( !( X instanceof float[] ) )
-      return;
-    distance = ( float[] )X;
-    String S3 = DD.cnvertoString( ndis.getAttrValue( "units" ) );
+    distance = NexUtils.getFloatArrayFieldValue(detNode, "distance");
+    ndis = detNode.getChildNode( "distance" );
+    Object X;
+    
+    String S3 = NexUtils.getStringAttributeValue( ndis, "units" ) ;
 
     if( S3 != null )
       UnitsAdjust( distance, "m", S3 );
+    
+    
     String phin, thetn;
 
     phin = this.getPhiName( detNode );
     thetn = this.getThetaName( detNode );
     nx = detNode.getChildNode( thetn );
-    if( nx != null ){
-      X = Arrayfloatconvert( nx.getNodeValue() );
-      if( X != null ) if( X instanceof float[] ){
-        theta = ( float[] )X;
-        String S = DD.cnvertoString( nx.getAttrValue( "units" ) );
-        
-        if( S != null )
-          UnitsAdjust( theta, "radians", S );
-      }
+    theta = NexUtils.getFloatArrayFieldValue( detNode, thetn);
+    if( theta != null){
 
+       S3 =ConvertDataTypes.StringValue( nx.getAttrValue("units"));
+       if( S3 != null)
+          UnitsAdjust( theta, "radians",S3);
     }
-
+  
+    
     nx = detNode.getChildNode( phin );
-    if( nx != null ){
-      X = Arrayfloatconvert( nx.getNodeValue() );
-      if( X != null ) if( X instanceof float[] ){
-        phi = ( float[] )X;
-        String S = DD.cnvertoString( nx.getAttrValue( "units" ) );
-        
-        if( S != null )
-          UnitsAdjust( phi, "radians", S );
-      }
+    phi = NexUtils.getFloatArrayFieldValue( detNode, phin);
+    if(phi != null){
 
+       S3 =ConvertDataTypes.StringValue( nx.getAttrValue("units"));
+       if( S3 != null)
+          UnitsAdjust( theta, "radians",S3);
     }
-
     
+
     nx = ( detNode.getChildNode( "solid_angle" ) );
-    
-    if( nx != null ){
-      X = Arrayfloatconvert( nx.getNodeValue() );
+    solidAngle = NexUtils.getFloatArrayFieldValue( detNode, "solid_angle");
+    if(solidAngle != null){
 
-      if( X != null ){
-        solidAngle = ( float[] )( X );
-        String S = DD.cnvertoString( nx.getAttrValue( "units" ) );
-        
-        if( S != null )
-          UnitsAdjust( solidAngle, "radians", S.trim() );
-        
-      }
+       S3 =ConvertDataTypes.StringValue( nx.getAttrValue("units"));
+       if( S3 != null)
+          UnitsAdjust( solidAngle, "radians",S3);
     }
+   
     
     nx = ( detNode.getChildNode( "integral" ) );
-    if( nx != null ){
-      X = Arrayfloatconvert( nx.getNodeValue() );
-      if( X != null )
-        Total_Count = ( float[] )X;
+    Total_Count = NexUtils.getFloatArrayFieldValue( detNode, "integral");
+    if(Total_Count!= null){
+
+       S3 =ConvertDataTypes.StringValue( nx.getAttrValue("units"));
+       if( S3 != null)
+          UnitsAdjust( Total_Count, "radians",S3);
     }
+ 
     
-    /*  X=(ndis.getAttrValue("delta_2theta"));
-        if( X != null)if( X instanceof float[])
-        Delta_2Theta =(float[])X;
-        
-        X = ndis.getAttrValue("time_field_type");
-        if( X!= null)if( X instanceof int[])
-        Time_Field =(int[])X;
-    */
     nx = detNode.getChildNode( "id" );
     if( nx == null)
        if( detNode.getNodeClass().equals("NXmonitor"))
@@ -456,16 +457,7 @@ public class NXData_util{
         Group_ID = NexIO.Util.ConvertDataTypes.intArrayValue( nx.getNodeValue() );
     }
 
-    nx = detNode.getChildNode( "efficiency" );
-    if( nx != null ){
-      X = nx.getNodeValue();
-      //Float ff = DD.cnvertoFloat( X ); //???????????
-      
-      //if( ff != null )
-       // if( ff.floatValue() != Float.NaN )
-      //    efficiency = ff.floatValue();
-    }
-
+ 
     nx = detNode.getChildNode( "raw_angle" );
     if( nx != null ){
       X = Arrayfloatconvert( nx.getNodeValue() );
@@ -478,28 +470,12 @@ public class NXData_util{
         }
       }
     }
+    slot = NexUtils.getFloatArrayFieldValue( detNode, "slot");
+    crate = NexUtils.getFloatArrayFieldValue( detNode, "crate");
+    input = NexUtils.getFloatArrayFieldValue( detNode, "input");
     
-    nx = detNode.getChildNode( "slot" );
-    if( nx != null ){
-      X = Arrayfloatconvert( nx.getNodeValue() );
-      if( X != null )
-        slot = ( float[] )( X );
-    }
-    nx = detNode.getChildNode( "crate" );
-    if( nx != null ){
-      X = Arrayfloatconvert( nx.getNodeValue() );
-      if( X != null )
-        crate = ( float[] )( X );
-      
-    }
-    nx = detNode.getChildNode( "input" );
-    if( nx != null ){
-      X = Arrayfloatconvert( nx.getNodeValue() );
-      if( X != null )
-        input = ( float[] )( X );
-    }
-
-    //newData.setGroup_ID( index );
+  
+  
     
     for( int index = start_index; index < end_index; index++ ){
       Data DB = DS.getData_entry( index );
@@ -585,6 +561,8 @@ public class NXData_util{
     */
   }
 
+  
+  
   private float  findTotCountDB(Data DB){
     float X = 0.0f;
     float[] yVals = DB.getY_values();
@@ -594,18 +572,24 @@ public class NXData_util{
       X+= yVals[i];
     return X;
   }
-    
+  
+  
+  
   /**
    * Fills out an existing DataSet with information from the NXdata
    * section of a Nexus datasource
    *
    * @param node the current node positioned to an NXdata part of a
    * datasource
+   * 
    * @param instrNode The corresponding NXinstrument node for the
-   * NXentry
+   *                  NXentry
+   *                  
    * @param axis1 Name for axis 1
    * @param axis2 Name for axis 2
+   * 
    * @param dataname the name of the NxData's (signal=1) field.
+   * 
    * @param DS the existing DataSet that is to be filled out
    *
    * @return true if  an error ocurred during processing.
@@ -658,6 +642,7 @@ public class NXData_util{
      
      if( debug )
        System.out.println( "After get data node values" );
+     
      if( ( fdata == null ) ){
        errormessage = node.getErrorMessage() + " for field " + dataname;
        return true;
@@ -670,22 +655,32 @@ public class NXData_util{
        errormessage = "Improper Node-No dimensions";
        return true;
      }
+     
      if( ndims.length < 1 ){
        errormessage = "Improper Node-Null dimensions";
        return true;
      }
-     int nx, ny;
+     
+     int nx, 
+         ny;
 
      nx = ny = -1;
      if( ndims.length == 1 ){
+        
        nx = ndims[0];
        ny = 1;
+       
        if( java.lang.Math.abs( Ax1.length - nx ) > 1 ){
+          
          if( Ax2 != null ){
+            
            if( java.lang.Math.abs( Ax2.length - nx ) > 1 ){
+              
              errormessage = "Dimensions do not match";
              return true;
+             
            }else{
+              
              float[] sv = Ax1;
 
              Ax1 = Ax2;
@@ -694,21 +689,28 @@ public class NXData_util{
              
              Ax1nd = Ax2nd;
              Ax2nd = NN;
+             
            }
          }else{
+            
            errormessage = "Dimensions do not match";
            return true;
+           
          }
        }
      }else if( ndims.length == 2 ){
+        
        nx = ndims[1];
        ny = ndims[0];
        if( java.lang.Math.abs( Ax1.length - nx ) > 1 ){
+          
          if( Ax2 != null ){
+            
            if( java.lang.Math.abs( Ax2.length - nx ) > 1 ){
              errormessage = "Dimensions do not match";
              return true;
            }else{
+              
              float[] sv = Ax1;
              
              Ax1 = Ax2;
@@ -725,16 +727,22 @@ public class NXData_util{
        }
        
      }else if( ndims.length > 2 ){
+        
        nx = ndims[ndims.length - 1];
        ny = ndims[0];
        for( int kk = 1; kk < ndims.length - 1; kk++ )
          ny = ny * ndims[kk];
+       
        if( java.lang.Math.abs( Ax1.length - nx ) > 1 ){
+          
          if( Ax2 != null ){
+            
            if( java.lang.Math.abs( Ax2.length - nx ) > 1 ){
              errormessage = "Dimensions do not match";
              return true;
+             
            }else{
+              
              float[] sv = Ax1;
              
              Ax1 = Ax2;
@@ -745,6 +753,7 @@ public class NXData_util{
              Ax2nd = NN;
            }
          }else{
+            
            errormessage = "Dimensions do not match";
            return true;
          }
@@ -758,37 +767,26 @@ public class NXData_util{
      
      phi = Ax2;
      
-     Object X = Ax1nd.getAttrValue( "long_name" );
-     String S;
+
      NxData_Gen DD = new NxData_Gen();
      
-     if( X != null ){
-       S = DD.cnvertoString( X );
-       if( S != null )
+     String S = ConvertDataTypes.StringValue(Ax1nd.getAttrValue( "long_name" ) );     
+     if(S != null )       
          DS.setX_label( S );
-     }
+   
 
-     X = Ax1nd.getAttrValue( "units" );
-     
-     if( X != null ){
-       S = DD.cnvertoString( X );
-       if( S != null )
+     S = ConvertDataTypes.StringValue(Ax1nd.getAttrValue( "units" ));     
+     if( S != null )      
          DS.setX_units( S );
-     }
-     if( Ax2nd != null )
-       X = Ax2nd.getAttrValue( "long_name" );
-     if( X != null ){
-       S = DD.cnvertoString( X );
-       if( S != null )
+     
+     S = ConvertDataTypes.StringValue(Ax2nd.getAttrValue( "long_name" ) );
+     if( S != null)
          DS.setY_label( S );
-     }
-
-     X = datand.getAttrValue( "units" );
-     if( X != null ){
-       S = DD.cnvertoString( X );
-       if( S != null )
-         DS.setY_units( S );
-     }
+     
+     S = ConvertDataTypes.StringValue(datand.getAttrValue( "units" ) );    
+     if( S != null )
+       DS.setY_units( S );
+    
 
      if( debug )
        System.out.println( "NXdata: dimensions=" + xvals.length
