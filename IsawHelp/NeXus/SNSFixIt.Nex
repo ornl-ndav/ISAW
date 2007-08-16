@@ -1,0 +1,2015 @@
+<?xml version = "1.0" encoding="ISO-8859-1" standalone = "yes" ?>
+
+<data>
+<!-- These should be the actual positions(0 is right most) in getDimension on the data -->
+<!--       that represent the given property. NOTE: The dimension can be set incorrectly -->
+<!--       When determining these, use the correct one {a,b,c,d] d is changing the fastest -->
+<!--        and has position 0, use -1 if there is no dimension -->
+
+<!--  Xlate from this Nexus file axis numbers TO the correct axis numbers -->
+<!--  The correct axis scheme is axis=1 is the fastest changing , 2 next fastest etc -->
+
+<Common>
+<NXentry>
+    <NXdata  name= "tof_detector_1">
+       <axes >2  3   1</axes>
+       <time_dimension>  2</time_dimension>
+       <row_dimension> 1 </row_dimension>
+       <col_dimension> 0</col_dimension>
+    </NXdata>
+
+    <NXdata  name= "sed_monitor_1_ph">
+       <time_dimension>  0</time_dimension>
+       <row_dimension> -1 </row_dimension>
+       <col_dimension> -1</col_dimension>
+    </NXdata>
+
+    <NXdata  name= "sed_monitor_1_tof">
+<!--    <link>sed_monitor_1_tof</link>   to put in the linkname -->
+       <time_dimension>  0</time_dimension>
+       <row_dimension> -1 </row_dimension>
+       <col_dimension> -1</col_dimension>
+    </NXdata>
+   
+    <NXinstrument>
+    <NXdetector  name="tof_detector_1">
+       <distance units="m"  dimension="-1 -1 -1"> .2518 </distance>
+       <azimuthal_angle units="radians" dimension="-1 -1 -1"> 2.3627472 </azimuthal_angle>
+       <polar_angle units="radians" dimension="-1 -1 -1"> 1.574711 </polar_angle>
+        <NXgeometry name="geometry">
+            <NXshape>
+                <shape>nxbox</shape>
+                <size units="m" dimension = "-1 -1 -1 3"> .1986  ,  .0019    .2026   </size>
+            </NXshape>
+           <NXorientation>
+               <value  dimension = "-1 -1 -1 6"> 0 0 -1 .7071068 .707108 0 </value>
+          </NXorientation>
+     </NXgeometry  >
+   </NXdetector>
+   <NXsource name = "source">
+        <distance >7.55</distance>
+
+    </NXsource>
+   
+   </NXinstrument>
+</NXentry>
+</Common>
+<Runs>
+ <!-- sample orientation is  phi the chi then omega -->
+
+  <Run filename = "SCD_E000005_R000082.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     290
+      120
+     90</sample_orientation>
+     <temperature units = "K">300</temperature></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">.2518</distance></NXdetector></NXinstrument>
+
+    </NXentry>
+  </Run>
+
+
+  <Run filename = "SCD_E000005_R000083.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     245
+      120
+     90</sample_orientation>
+     <temperature units = "K">300</temperature></NXsample>
+
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">.2518</distance></NXdetector></NXinstrument>
+    </NXentry>
+  </Run>
+
+
+  <Run filename = "SCD_E000005_R000084.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     245
+      120
+     90</sample_orientation>
+     <temperature units = "K">300</temperature></NXsample>
+
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">.2518</distance></NXdetector></NXinstrument>
+    </NXentry>
+  </Run>
+
+
+  <Run filename = "SCD_E000005_R000085.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     245
+      120
+     90</sample_orientation>
+     <temperature units = "K">300</temperature></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">.2518</distance></NXdetector></NXinstrument>
+
+    </NXentry>
+  </Run>
+
+  <Run
+ filename = "SCD_E000005_R000086.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+    245 
+     120
+    90</sample_orientation>
+    <temperature units = "K">300</temperature></NXsample>
+   <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">.465</distance></NXdetector></NXinstrument>
+
+    </NXentry>
+  </Run>
+
+  <Run
+
+ filename = "SCD_E000005_R000087.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+    290 
+    120
+    135</sample_orientation>
+    <temperature units = "K">300</temperature></NXsample>
+   <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">.465</distance></NXdetector></NXinstrument>
+
+    </NXentry>
+  </Run>
+
+  <Run
+
+ filename = "SCD_E000005_R000088.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     290
+     120
+     90</sample_orientation>
+     <temperature units = "K">300</temperature></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">.465</distance></NXdetector></NXinstrument>
+
+    </NXentry>
+  </Run>
+
+  <Run
+
+ filename = "SCD_E000005_R000089.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+    245
+     120
+     135</sample_orientation>
+    <temperature units = "K">300</temperature></NXsample>
+   <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">.465</distance></NXdetector></NXinstrument>
+
+    </NXentry>
+  </Run>
+
+  <Run
+
+ filename = "SCD_E000005_R000090.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+    325
+    120
+    135</sample_orientation>
+    <temperature units = "K">300</temperature></NXsample>
+   <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">.465</distance></NXdetector></NXinstrument>
+
+    </NXentry>
+  </Run>
+
+  <Run filename = "SCD_E000005_R000091.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+    325
+    120
+    90</sample_orientation>
+    <temperature units = "K">300</temperature></NXsample>
+   <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">.465</distance></NXdetector></NXinstrument>
+
+    </NXentry>
+  </Run>
+
+
+  <Run  filename = "SCD_E000005_R000092.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     325
+     120
+     90</sample_orientation>
+     <temperature unit = "K">300</temperature></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+
+    </NXentry>
+  </Run>
+  
+
+  <Run  filename = "SCD_E000005_R000093.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+      325
+       120
+      90</sample_orientation>
+      <temperature unit = "K">300</temperature></NXsample>
+     <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+
+    </NXentry>
+  </Run>
+
+  
+  <Run filename = "SCD_E000005_R000094.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+      325
+      120
+       135</sample_orientation>
+      <temperature unit = "K">300</temperature></NXsample>
+     <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+
+    </NXentry>
+  </Run>
+
+  
+  <Run filename = "SCD_E000005_R000095.nx.hdf">  
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     245
+      120
+      135</sample_orientation>
+     <temperature unit = "K">300</temperature></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+
+    </NXentry>
+  </Run>
+
+  
+  <Run filename = "SCD_E000005_R000096.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     245
+     120
+     90</sample_orientation>
+     <temperature unit = "K">300</temperature></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+
+    </NXentry>
+  </Run>
+
+  
+  <Run filename = "SCD_E000005_R000097.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     290
+      120
+     90</sample_orientation>
+     <temperature unit = "K">300</temperature></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1"> 0.2518</distance></NXdetector></NXinstrument>
+
+    </NXentry>
+  </Run>
+
+  
+  <Run filename = "SCD_E000005_R000098.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+    290 
+    120
+    135</sample_orientation>
+    <temperature unit = "K">300</temperature></NXsample>
+   <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+
+    </NXentry>
+  </Run>
+
+  <Run filename = "SCD_E000005_R000099.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+    200
+    120
+     135</sample_orientation>
+    <temperature unit = "K">300</temperature></NXsample>
+   <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+
+    </NXentry>
+  </Run>
+  
+  <Run filename = "SCD_E000005_R000100.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     200
+     120
+     135</sample_orientation>
+     <temperature unit = "K">300</temperature></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">.465</distance></NXdetector></NXinstrument>
+
+    </NXentry>
+  </Run>
+  
+  <Run filename = "SCD_E000005_R000101.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     200
+     120
+     135</sample_orientation>
+     <temperature unit = "K">300</temperature></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">.465</distance></NXdetector></NXinstrument>
+
+    </NXentry>
+  </Run>
+  
+  <Run filename = "SCD_E000005_R000102.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     200
+     120
+     90</sample_orientation>
+     <temperature unit = "K">300</temperature></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">.465</distance></NXdetector></NXinstrument>
+
+    </NXentry>
+  </Run>
+
+  <Run filename = "SCD_E000005_R000103.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     200
+     120
+     90</sample_orientation>
+     <temperature unit = "K">300</temperature></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.465</distance></NXdetector></NXinstrument>
+
+    </NXentry>
+  </Run>
+  
+  <Run filename = "SCD_E000005_R000104.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     200
+     120
+     120</sample_orientation>
+     <temperature unit = "K">300</temperature></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">.465</distance></NXdetector></NXinstrument>
+
+    </NXentry>
+  </Run>
+  
+  <Run filename = "SCD_E000005_R000105.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     200
+     120
+     77</sample_orientation>
+     <temperature unit = "K">300</temperature></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">.465</distance></NXdetector></NXinstrument>
+
+    </NXentry>
+  </Run>
+  
+  <Run filename = "SCD_E000005_R000106.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     200
+     120
+     77</sample_orientation>
+     <temperature unit = "K">300</temperature></NXsample>
+
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">.465</distance></NXdetector></NXinstrument>
+    </NXentry>
+  </Run>
+  
+  <Run filename = "SCD_E000005_R000107.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     200
+     120
+     60</sample_orientation>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">.465</distance></NXdetector></NXinstrument>
+     <temperature unit = "K">300</temperature></NXsample>
+
+    </NXentry>
+  </Run>
+  
+  <Run filename = "SCD_E000005_R000108.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     200
+     120
+     150</sample_orientation>
+     <temperature unit = "K">300</temperature></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">.465</distance></NXdetector></NXinstrument>
+
+    </NXentry>
+  </Run> 
+
+  <Run filename ="SCD_E000005_R000593.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     0
+     120
+     35</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+
+    </NXentry>
+  </Run>
+
+  <Run filename ="SCD_E000005_R000594.nx.hdf">
+   <NXentry><NXsample><sample_orientation units="degree">
+     42
+     120
+    72</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+
+    </NXentry>
+  </Run>
+
+  <Run filename ="SCD_E000005_R000595.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     200
+     120
+    60</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+
+    </NXentry>
+  </Run>
+
+  <Run filename ="SCD_E000005_R000596.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     50
+     120
+    108</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+
+    </NXentry>
+  </Run>
+
+  <Run filename ="SCD_E000005_R000597.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     320
+     120
+    125</sample_orientation></NXsample>
+     <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+
+    </NXentry>
+  </Run>
+
+  <Run filename ="SCD_E000005_R000598.nx.hdf">
+   <NXentry><NXsample><sample_orientation units="degree">
+     200
+     120
+      95</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+
+    </NXentry>
+  </Run>
+
+  <Run filename ="SCD_E000005_R000599.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     220
+     120
+    130</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+
+    </NXentry>
+  </Run>
+
+  <Run filename ="SCD_E000005_R000600.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     0
+     120
+    60</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+
+    </NXentry>
+  </Run>
+
+  <Run filename ="SCD_E000005_R000601.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     300
+     120
+    100</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+
+    </NXentry>
+  </Run>
+
+  <Run filename ="SCD_E000005_R000602.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     280
+     120
+    55</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+
+    </NXentry>
+  </Run>
+
+  <Run filename ="SCD_E000005_R000603.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     10
+     120
+    85</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+
+    </NXentry>
+  </Run>
+
+  <Run filename ="SCD_E000005_R000604.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     290
+     120
+    78</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+
+    </NXentry>
+  </Run>
+
+  <Run filename ="SCD_E000005_R000605.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     335
+     120
+    90</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+
+    </NXentry>
+  </Run>
+
+  <Run filename ="SCD_E000005_R000610.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     0
+     120
+    35</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+
+    </NXentry>
+  </Run>
+
+  <Run filename ="SCD_E000005_R000611.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     42
+     120
+    72</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+
+    </NXentry>
+  </Run>
+
+  <Run filename ="SCD_E000005_R000612.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     200
+     120
+    60</sample_orientation></NXsample>
+     <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+
+    </NXentry> 
+  </Run>
+
+  <Run filename ="SCD_E000005_R000613.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     50
+     120
+    108</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+
+    </NXentry>
+  </Run>
+
+  <Run filename ="SCD_E000005_R000614.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     320
+     120
+    125</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+
+    </NXentry>
+  </Run>
+
+  <Run filename ="SCD_E000005_R000615.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     200
+     120
+    95</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+
+    </NXentry>
+  </Run>
+
+  <Run filename ="SCD_E000005_R000616.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     220
+     120
+    130</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+
+    </NXentry>
+  </Run>
+
+  <Run filename ="SCD_E000005_R000617.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     0
+     120
+    60</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+
+    </NXentry>
+  </Run>
+
+  
+  <Run filename ="SCD_E000005_R000725.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     320
+     120
+     125</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+
+    </NXentry>
+
+  </Run> 
+  <Run filename ="SCD_E000005_R000726.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     335
+     120
+    90</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+
+    </NXentry>
+  
+  </Run> 
+  
+  <Run filename ="SCD_E000005_R000727.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     0
+     120
+    60</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+
+    </NXentry>
+  
+  </Run> 
+
+  <Run filename ="SCD_E000005_R000728.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     10
+     120
+    85</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+
+    </NXentry>
+  
+  </Run> 
+  
+  <Run filename ="SCD_E000005_R000729.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     42
+     120
+    72</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+
+    </NXentry>
+  
+  </Run> 
+ 
+  <Run filename ="SCD_E000005_R000730.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     50
+     120
+    108</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+
+    </NXentry>
+  
+  </Run> 
+ 
+  <Run filename ="SCD_E000005_R000731.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     0
+     120
+    35</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+
+    </NXentry>
+  
+  </Run> 
+ 
+  <Run filename ="SCD_E000005_R000732.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     300
+     120
+    100</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+
+    </NXentry>
+  
+  </Run> 
+ 
+  <Run filename ="SCD_E000005_R000733.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     290
+     120
+    78</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+
+    </NXentry>
+  
+  </Run> 
+ 
+  <Run filename ="SCD_E000005_R000734.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     280
+     120
+    55</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+
+    </NXentry>
+  
+  </Run> 
+ 
+  <Run filename ="SCD_E000005_R000735.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     220
+     120
+    130</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+
+    </NXentry>
+  
+  </Run> 
+    
+  <Run filename ="SCD_E000005_R000736.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     200
+     120
+      95</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+
+    </NXentry>
+  
+  
+  </Run> 
+ 
+  <Run filename ="SCD_E000005_R000737.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     200
+     120
+  
+    60</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+
+    </NXentry>
+  
+  
+  </Run> 
+ 
+  <Run filename ="SCD_E000005_R000738.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     320
+     120
+    125</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+
+    </NXentry>
+  
+  
+  </Run>
+
+  <Run filename ="SCD_E000005_R000739.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     335
+     120
+    90</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+
+    </NXentry>
+  
+  
+  </Run>
+
+  <Run filename ="SCD_E000005_R000740.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     0
+     120
+    60</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+
+    </NXentry>
+  
+  
+  </Run>
+
+  <Run filename ="SCD_E000005_R000741.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     10
+     120
+    85</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+
+    </NXentry>
+  
+  
+  </Run>
+
+  <Run filename ="SCD_E000005_R000742.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     42
+     120
+    72</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+
+    </NXentry>
+  
+  </Run>
+
+  <Run filename ="SCD_E000005_R000743.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     50
+     120
+    108</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+
+    </NXentry>
+  
+  </Run>
+
+  <Run filename ="SCD_E000005_R000744.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     0
+     120
+    35</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+
+    </NXentry>
+  
+  </Run>
+
+  <Run filename ="SCD_E000005_R000745.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     300
+     120
+    100</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+
+    </NXentry>
+  
+  </Run>
+
+  <Run filename ="SCD_E000005_R000746.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     290
+     120
+    78</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+
+    </NXentry>
+  
+  </Run>
+
+  <Run filename ="SCD_E000005_R000747.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     280
+     120
+    55</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+
+    </NXentry>
+  
+  </Run>
+
+  <Run filename ="SCD_E000005_R000748.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     220
+     120
+    130</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+
+    </NXentry>
+  
+  </Run>
+
+  <Run filename ="SCD_E000005_R000749.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     200
+     120
+    95</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+
+    </NXentry>
+  
+  </Run>
+
+  <Run filename ="SCD_E000005_R000750.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     200
+     120
+    60</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+
+    </NXentry>
+  
+  </Run>  
+
+  <Run filename ="SCD_E000005_R000751.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     320
+     120
+    125</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+  
+
+    </NXentry>
+  </Run>
+
+  <Run filename ="SCD_E000005_R000752.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     335
+     120
+    90</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+
+    </NXentry>
+  
+  </Run>
+
+  <Run filename ="SCD_E000005_R000753.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     0
+     120
+    60</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+
+    </NXentry>
+  
+  </Run>
+
+  <Run filename ="SCD_E000005_R000754.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     10
+     120
+    85</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+
+    </NXentry>
+  
+  </Run>
+
+  <Run filename ="SCD_E000005_R000755.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     42
+     120
+    72</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+
+    </NXentry>
+  
+  </Run>
+
+  <Run filename ="SCD_E000005_R000756.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     50
+     120
+    108</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+
+    </NXentry>
+  
+  </Run>
+
+  <Run filename ="SCD_E000005_R000757.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     0
+     120
+    35</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+
+    </NXentry>
+  
+  </Run>
+
+  <Run filename ="SCD_E000005_R000758.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     300
+     120
+    100</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+
+    </NXentry>
+  
+  </Run>
+
+  <Run filename ="SCD_E000005_R000759.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     290
+     120
+    78</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+  
+
+    </NXentry>
+  </Run>
+
+  <Run filename ="SCD_E000005_R000760.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     280
+     120
+    55</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+
+    </NXentry>
+  
+  </Run>
+
+  <Run filename ="SCD_E000005_R000761.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     220
+     120
+    130</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+  
+
+    </NXentry>
+  </Run>
+
+  <Run filename ="SCD_E000005_R000762.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     200
+     120
+    95</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+  
+
+    </NXentry>
+  </Run>
+
+  <Run filename ="SCD_E000005_R000763.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     200
+     120
+    60</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+
+    </NXentry>
+  
+  </Run>
+
+  <Run filename ="SCD_E000005_R000766.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     320
+     120
+    125</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+
+    </NXentry>
+  
+  </Run>
+
+  <Run filename ="SCD_E000005_R000767.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     335
+     120
+    90</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+
+    </NXentry>
+  
+  </Run>
+
+  <Run filename ="SCD_E000005_R000768.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     0
+     120
+    60</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+  
+
+    </NXentry>
+  </Run>
+
+  <Run filename ="SCD_E000005_R000769.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     10
+     120
+    85</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+  
+
+    </NXentry>
+  </Run>
+
+  <Run filename ="SCD_E000005_R000770.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     42
+     120
+    72</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+  
+
+    </NXentry>
+  </Run>
+
+  <Run filename ="SCD_E000005_R000771.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     50
+     120
+    108</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+  
+
+    </NXentry>
+  </Run>
+
+  <Run filename ="SCD_E000005_R000772.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     0
+     120
+    35</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+  
+
+    </NXentry>
+  </Run>
+
+  <Run filename ="SCD_E000005_R000773.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     0
+     120
+    35</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+
+    </NXentry>
+  
+  </Run>
+
+
+  <Run filename ="SCD_E000005_R000774.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     300
+     120
+    100</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+
+    </NXentry>
+  
+  </Run>
+
+  <Run filename ="SCD_E000005_R000775.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     290
+     120
+    78</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+
+    </NXentry>
+  
+  </Run>
+
+  <Run filename ="SCD_E000005_R000776.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     280
+     120
+    55</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+
+    </NXentry>
+  
+  </Run>
+
+  <Run filename ="SCD_E000005_R000777.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     220
+     120
+    130</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+
+    </NXentry>
+  
+  </Run>
+
+  <Run filename ="SCD_E000005_R000778.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     200
+     120
+    95</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+
+    </NXentry>
+  
+  </Run>
+
+  <Run filename ="SCD_E000005_R000779.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     200
+     120
+    60</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+
+    </NXentry>
+  
+  </Run>
+
+<Run filename ="SCD_E000005_R000883.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     320
+     120
+    125</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">.2518</distance></NXdetector></NXinstrument>
+  
+
+    </NXentry>
+  </Run> 
+ 
+  <Run filename ="SCD_E000005_R000887.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     335
+     120
+    90</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">.2518</distance></NXdetector></NXinstrument>
+  
+
+    </NXentry>
+  </Run> 
+ 
+  <Run filename ="SCD_E000005_R000888.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     0
+     120
+    60</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">.2518</distance></NXdetector></NXinstrument>
+  
+
+    </NXentry>
+  </Run> 
+ 
+  <Run filename ="SCD_E000005_R000889.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     10
+     120
+    85</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">.2518</distance></NXdetector></NXinstrument>
+  
+
+    </NXentry>
+  </Run> 
+  
+  <Run filename ="SCD_E000005_R000890.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     42
+     120
+    72</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">.2518</distance></NXdetector></NXinstrument>
+  
+
+    </NXentry>
+  </Run> 
+ 
+  <Run filename ="SCD_E000005_R000891.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     50
+     120
+    108</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">.2518</distance></NXdetector></NXinstrument>
+  
+
+    </NXentry>
+  </Run> 
+   
+  <Run filename ="SCD_E000005_R000892.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     0
+     120
+    35</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">.2518</distance></NXdetector></NXinstrument>
+    </NXentry>
+  </Run> 
+ 
+  <Run filename ="SCD_E000005_R000893.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     300
+     120
+    100</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">.2518</distance></NXdetector></NXinstrument>
+  
+
+    </NXentry>
+  </Run> 
+ 
+  <Run filename ="SCD_E000005_R000894.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     290
+     120
+    78</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">.2518</distance></NXdetector></NXinstrument>
+  
+
+    </NXentry>
+  </Run> 
+ 
+  <Run filename ="SCD_E000005_R000895.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     280
+     120
+    55</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">.2518</distance></NXdetector></NXinstrument>
+  
+
+    </NXentry>
+  </Run> 
+  
+  <Run filename ="SCD_E000005_R000896.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     220
+     120
+    130</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">.2518</distance></NXdetector></NXinstrument>
+  
+
+    </NXentry>
+  </Run> 
+ 
+   <Run filename ="SCD_E000005_R000897.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     200
+     120
+    95</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">.2518</distance></NXdetector></NXinstrument>
+  
+
+    </NXentry>
+  </Run>
+
+ 
+ 
+   <Run filename ="SCD_E000005_R000898.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     200
+     120
+    60</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">.2518</distance></NXdetector></NXinstrument>
+  
+
+    </NXentry>
+  </Run> 
+
+
+  <Run filename ="SCD_E000005_R000803.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     320
+     120
+    125</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+  
+
+    </NXentry>
+  </Run>
+
+  <Run filename ="SCD_E000005_R000804.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     335
+     120
+    90</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+  
+
+    </NXentry>
+  </Run>
+
+  <Run filename ="SCD_E000005_R000805.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     0
+     120
+    60</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+  
+
+    </NXentry>
+  </Run>
+
+  <Run filename ="SCD_E000005_R000806.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     10
+     120
+    85</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+  
+
+    </NXentry>
+  </Run>
+
+  <Run filename ="SCD_E000005_R000807.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     42
+     120
+    72</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+  
+
+    </NXentry>
+  </Run>
+
+  <Run filename ="SCD_E000005_R000808.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     50
+     120
+    108</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+  
+
+    </NXentry>
+  </Run>
+
+  <Run filename ="SCD_E000005_R000810.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     320
+     120
+    125</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+
+    </NXentry>
+  
+  </Run>
+
+  <Run filename ="SCD_E000005_R000811.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     335
+     120
+    90</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+
+    </NXentry>
+  
+  </Run>
+
+  <Run filename ="SCD_E000005_R000812.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     0
+     120
+    60</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+  
+
+    </NXentry>
+  </Run>
+
+  <Run filename ="SCD_E000005_R000813.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     10
+     120
+    85</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+  
+
+    </NXentry>
+  </Run>
+
+  <Run filename ="SCD_E000005_R000814.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     42
+     120
+    72</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+  
+
+    </NXentry>
+  </Run>
+
+  <Run filename ="SCD_E000005_R000815.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     50
+     120
+    108</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+
+    </NXentry>
+  
+  </Run>
+
+  <Run filename ="SCD_E000005_R000816.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     0
+     120
+    35</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+
+    </NXentry>
+  
+  </Run>
+
+  <Run filename ="SCD_E000005_R000817.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     300
+     120
+    100</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+  
+
+    </NXentry>
+  </Run>
+
+  <Run filename ="SCD_E000005_R000818.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     290
+     120
+    78</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+
+    </NXentry>
+  
+  </Run>
+
+  <Run filename ="SCD_E000005_R000819.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     280
+     120
+    55</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+  
+
+    </NXentry>
+  </Run>
+
+  <Run filename ="SCD_E000005_R000820.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     220
+     120
+    130</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+  
+
+    </NXentry>
+  </Run>
+
+  <Run filename ="SCD_E000005_R000821.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     200
+     120
+    95</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+  
+
+    </NXentry>
+  </Run>
+
+  <Run filename ="SCD_E000005_R000822.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     320
+     120
+    125</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+
+    </NXentry>
+  
+  </Run>
+
+  <Run filename ="SCD_E000005_R000823.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     335
+     120
+    90</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+
+    </NXentry>
+  
+  </Run>
+
+  <Run filename ="SCD_E000005_R000824.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     0
+     120
+    60</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+  
+
+    </NXentry>
+  </Run>
+
+  <Run filename ="SCD_E000005_R000825.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     10
+     120
+    85</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+
+    </NXentry>
+  
+  </Run>
+
+  <Run filename ="SCD_E000005_R000826.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     42
+     120
+    72</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+  
+
+    </NXentry>
+  </Run>
+
+  <Run filename ="SCD_E000005_R000827.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     50
+     120
+    108</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+  
+
+    </NXentry>
+  </Run>
+
+  <Run filename ="SCD_E000005_R000828.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     50
+     120
+    108</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+  
+
+    </NXentry>
+  </Run>
+
+
+  <Run filename ="SCD_E000005_R000829.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     0
+     120
+    35</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+
+    </NXentry>
+  
+  </Run>
+
+  <Run filename ="SCD_E000005_R000830.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     300
+     120
+    100</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+
+    </NXentry>
+  
+  </Run>
+
+  <Run filename ="SCD_E000005_R000831.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     290
+     120
+    78</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+
+    </NXentry>
+  
+  </Run>
+
+  <Run filename ="SCD_E000005_R000832.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     280
+     120
+    55</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+
+    </NXentry>
+  
+  </Run>
+
+  <Run filename ="SCD_E000005_R000833.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     220
+     120
+    130</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+
+    </NXentry>
+  
+  </Run>
+
+  <Run filename ="SCD_E000005_R000834.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     200
+     120
+    95</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+
+    </NXentry>
+  
+  </Run>
+
+  <Run filename ="SCD_E000005_R000835.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     200
+     120
+    60</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+
+    </NXentry>
+  
+  </Run>
+
+  <Run filename ="SCD_E000005_R000836.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     320
+     120
+    125</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+  
+
+    </NXentry>
+  </Run>
+
+  <Run filename ="SCD_E000005_R000837.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     335
+     120
+    90</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+  
+
+    </NXentry>
+  </Run>
+
+  <Run filename ="SCD_E000005_R000838.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     0
+     120
+    60</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+    </NXentry>
+  </Run>
+
+  <Run filename ="SCD_E000005_R000839.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     10
+     120
+    85</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+
+    </NXentry>
+  
+  </Run>
+
+  <Run filename ="SCD_E000005_R000840.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     42
+     120
+    72</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+  
+
+    </NXentry>
+  </Run>
+
+  <Run filename ="SCD_E000005_R000841.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     50
+     120
+    108</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+  
+
+    </NXentry>
+  </Run>
+
+  <Run filename ="SCD_E000005_R000842.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     0
+     120
+    35</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+  
+
+    </NXentry>
+  </Run>
+
+  <Run filename ="SCD_E000005_R000843.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     300
+     120
+    100</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+  
+
+    </NXentry>
+  </Run>
+
+  <Run filename ="SCD_E000005_R000844.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     290
+     120
+    78</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+  
+
+    </NXentry>
+  </Run>
+
+  <Run filename ="SCD_E000005_R000845.nx.hdf">
+   <NXentry>
+     <NXsample><sample_orientation units="degree">
+     280
+     120
+    55</sample_orientation></NXsample>
+    <NXinstrument><NXdetector name="tof_detector_1"><distance units="m" dimension="-1 -1 -1">0.2518</distance></NXdetector></NXinstrument>
+  
+  
+
+    </NXentry>
+  </Run>
+                                       
+  </Runs>
+</data>
