@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.19  2007/08/16 17:42:16  rmikk
+ * Took care of the version 2 requirement that there are only trailing "*"'s in
+ *   fields like distance, azimuthal_angle, poloar_angle and several of the
+ *
  * Revision 1.18  2007/07/11 18:30:20  rmikk
  * Added a lot of documentation for utility methods
  * Now uses default detector ID's so that each ID is used only once per NXentry
@@ -214,13 +218,27 @@ public class NexUtils implements INexUtils {
             depth = NexUtils.getFloatArrayFieldValue( NxDetector , "depth" );
             
             if( width != null)
-               widthDim=  Util.GetDimension( NxDetector.getChildNode( "width" ), dataState, 0);
+               if( version == null || version.compareTo("2")< 0)
+                  widthDim =  Util.GetDimension( NxDetector.getChildNode("width"),
+                                    dataState , 0 , 1 );
+               else
+                  widthDim =  NxDetector.getChildNode( "width" ).getDimension();
             
             if( height != null)
-                heightDim = Util.GetDimension( NxDetector.getChildNode( "height" ), dataState, 0);
+               if( version == null || version.compareTo("2")< 0)
+                  heightDim =  Util.GetDimension( NxDetector.getChildNode("height"),
+                           dataState , 0 , 1 );
+                else
+                  heightDim =  NxDetector.getChildNode( "height" ).getDimension();
+              
             
             if( depth != null)
-                  depthDim = Util.GetDimension( NxDetector.getChildNode( "depth" ), dataState, 0);
+               if( version == null || version.compareTo("2")< 0)
+                  depthDim =  Util.GetDimension( NxDetector.getChildNode("depth" ),
+                           dataState , 0 , 1 );
+               else
+                  depthDim = NxDetector.getChildNode( "depth" ).getDimension();
+            
             
             diameter = null;
             NxNode orientNode = NxDetector.getChildNode( "orientation" );
@@ -229,8 +247,12 @@ public class NexUtils implements INexUtils {
                 
                 orientation = ConvertDataTypes.floatArrayValue( orientNode.
                                                            getNodeValue() );
+
                 
-                x_dirDim = Util.GetDimension( orientNode,dataState, 0,1);
+                int[] d  =  orientNode.getDimension();
+                x_dirDim = new int[d.length-1];
+                System.arraycopy( d,0,x_dirDim,0, x_dirDim.length);
+                
                 
                 
                 ConvertDataTypes.UnitsAdjust( orientation , ConvertDataTypes.
@@ -280,10 +302,10 @@ public class NexUtils implements INexUtils {
                                "shape" ).getNodeValue() );   
  
                     if( detType == null ) detType = "nxbox"; 
-                    if( width != null )
+                    if( width != null ){
                        widthDim = heightDim = depthDim = Util.GetDimension( shp
                                 .getChildNode( "size" ) , dataState , 0 , 1 );
-                    else if( height != null )
+                    }else if( height != null )
                         diameterDim = heightDim = shp.getChildNode( "size" )
                                .getDimension();
                     else
@@ -345,7 +367,12 @@ public class NexUtils implements INexUtils {
                                                    NxDataNode.getNodeName() );
                                         
         NxNode dist = NxDetector.getChildNode( "distance" );
-        int[] distDimensions = Util.GetDimension(dist,dataState,0);
+        int[] distDimensions = null;
+        if( version == null || version.compareTo("2")< 0)
+
+           distDimensions = dist.getDimension();//Util.GetDimension(dist,dataState,0);
+        else
+           distDimensions = Util.GetDimension(dist,dataState,0);
         
         NxNode az = null;
      
@@ -378,8 +405,13 @@ public class NexUtils implements INexUtils {
                                                          az.getNodeValue() );
             String Xunits = ConvertDataTypes.StringValue( 
                                                 az.getAttrValue( "units"  ) );
+             
+            if( version == null || version.compareTo( "2")<0)
+                 azimuthDim = Util.GetDimension(az,dataState,0);
+            else
+                 azimuthDim = az.getDimension();
+               
            
-            azimuthDim = Util.GetDimension(az,dataState,0);
            
             ConvertDataTypes.UnitsAdjust( azimuth , Xunits , "radians" ,
                                                                 1.0f , 0.0f );
@@ -388,7 +420,11 @@ public class NexUtils implements INexUtils {
         az = NxDetector.getChildNode( "polar_angle" );
                     
         if ( az != null ) {
-            polarDim = Util.GetDimension( az, dataState, 0) ;
+           
+           if( version == null || version.compareTo("2")< 0 )
+              polarDim = Util.GetDimension( az, dataState, 0) ;
+           else
+            polarDim = az.getDimension();//Util.GetDimension( az, dataState, 0) ;
             polar = ConvertDataTypes.floatArrayValue(
                                                          az.getNodeValue() );
             String Xunits = ConvertDataTypes.StringValue( 
@@ -1356,7 +1392,7 @@ public class NexUtils implements INexUtils {
      *    
      *    @param Node  the node with the attribute( can be null)
      *    
-     *    @param AttributeName the name of the attribute
+     *    @param AttrName the name of the attribute
      *    
      *    @return an int[] or null if the node or Attribute name is
      *            null or the resulting attribute cannot be converted
