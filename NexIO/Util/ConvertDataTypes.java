@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.15  2007/08/16 17:37:25  rmikk
+ * Fixed javadoc errors
+ *
  * Revision 1.14  2007/07/11 18:23:17  rmikk
  * Added a lot of documentation
  *
@@ -504,10 +507,10 @@ public class ConvertDataTypes{
    * 
    * @param distance  the distance from the sample
    * 
-   * @ phi  The angle from the McStas z axis(bean direction) to the position 
+   * @param phi  The angle from the McStas z axis(bean direction) to the position 
    *       vector
    * 
-   * @ theta  the angle the position vector projected to the plane perpedicular
+   * @param theta  the angle the position vector projected to the plane perpedicular
    *         to the z axis makes with the positive x=axis in this plane
    *         
    * @return  the ISAW detector position corresponding to the given position 
@@ -849,9 +852,9 @@ public class ConvertDataTypes{
    *   Converts the NeXus InstrumentName( Description) to the corresponding
    *   Isaw Instrument Number
    *   
-   *   @param  The InstrumentType in NeXus files
+   *   @param NeXusAnalysisCode The InstrumentType in NeXus files
    *   
-   *   @return the int corresponding to the InstrumentType in ISAW
+   *   @return the integer corresponding to the InstrumentType in ISAW
    */
   public int getIsawInstrumentNumber( String NeXusAnalysisCode){
     
