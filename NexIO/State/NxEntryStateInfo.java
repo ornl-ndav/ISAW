@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2007/08/16 17:36:21  rmikk
+ * Did a better job at finding version numbers
+ *
  * Revision 1.7  2007/01/12 14:48:47  dennis
  * Removed unused imports.
  *
@@ -105,19 +108,41 @@ public class NxEntryStateInfo extends StateInfo {
         if (description == null )
             description = NexUtils.getStringFieldValue(NxEntryNode, "analysis");
         
-        if (description == null )
-           description = NexUtils.getStringFieldValue(NxEntryNode, "definition");
        
-        else
-            version = NexUtils.getStringAttributeValue(           
-                        NxEntryNode.getChildNode("description"), "version");
+          
+        version = NexUtils.getStringAttributeValue(           
+                        NxEntryNode.getChildNode("definition"), "version");
         
        if( Params.xmlDoc != null ){
-          Node N = Util.getNXInfo( Params.xmlDoc , "NXentry.definition" ,
-                       Name + ".version" ,  null ,  null) ;
-          if( N != null )
-             version = N.getNodeValue();
+                    //Will assume that version must be under
+                    // the Common NXentry with no name.
+          
+          Node N = Util.getXMLNodeVal( Params.xmlDoc , Name,
+                   new String[]{"definition"} ,null,
+                       Params.filename, true, new boolean[]{true}) ;
+          if( N== null)
+             N=Util.getXMLNodeVal( Params.xmlDoc , Name,
+                      new String[]{"description"} ,null,
+                      Params.filename, true, new boolean[]{true}) ;
+          if( N== null)
+             N =Util.getXMLNodeVal( Params.xmlDoc , Name,
+                      new String[]{"definition"} ,null,
+                      null, true, new boolean[]{true}) ;
+          if( N== null)
+             N =Util.getXMLNodeVal( Params.xmlDoc , Name,
+                      new String[]{"description"} ,null,
+                      null, true, new boolean[]{true}) ;
+          
+          version = ConvertDataTypes.StringValue(
+                              NexIO.Util.Util.getXmlNodeAttributeValue( N,"version"));
+          if( version == null)
+          System.out.println("version is  null for NXentry "+Name);
+          else
+             System.out.println("version is "+ version+" for NXentry "+Name);
+             
+         
        }
+       
        InstrumentNode = null;
        for( int i =0; (i< NxEntryNode.getNChildNodes()) && (InstrumentNode == null) ; i++)
           if( NxEntryNode.getChildNode( i).getNodeClass().equals("NXinstrument"))
