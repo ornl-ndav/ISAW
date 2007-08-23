@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2007/08/23 21:05:03  dennis
+ * Removed unused imports.
+ *
  * Revision 1.1  2007/02/22 15:15:37  rmikk
  * Operator wrapper around DataSetTools.operaotr.Generic.TOF_SCD.
  *         Peaks_new.getNewPeak_xyz
@@ -38,7 +41,6 @@
  */
 
 package DataSetTools.operator.Generic.TOF_SCD;
-import DataSetTools.operator.*;
 import DataSetTools.operator.Generic.*;
 import gov.anl.ipns.Parameters.*;
 import DataSetTools.parameter.*;

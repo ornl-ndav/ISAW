@@ -30,6 +30,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.2  2007/08/23 21:05:03  dennis
+ * Removed unused imports.
+ *
  * Revision 1.1  2007/08/08 17:19:44  rmikk
  * Added more documentation
  *
@@ -38,9 +41,6 @@ package DataSetTools.dataset;
 
 import gov.anl.ipns.MathTools.Geometry.*;
 import Command.ScriptUtil;
-import NexIO.*;
-
-
 
 
 /**

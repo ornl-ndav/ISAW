@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2007/08/23 21:05:03  dennis
+ * Removed unused imports.
+ *
  * Revision 1.1  2007/02/22 15:13:17  rmikk
  * Operator wrapped around DataSetTools.operator.Generic.TOF_SCD.
  *    FindPeaks.findDetectorPeaks
@@ -38,7 +41,7 @@
  */
 
 package DataSetTools.operator.Generic.TOF_SCD;
-import DataSetTools.operator.*;
+//import DataSetTools.operator.*;
 import DataSetTools.operator.Generic.*;
 import gov.anl.ipns.Parameters.*;
 import DataSetTools.parameter.*;

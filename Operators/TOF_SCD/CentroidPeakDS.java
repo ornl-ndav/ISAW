@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2007/08/23 21:11:06  dennis
+ * Removed unused imports.
+ *
  * Revision 1.1  2007/02/22 16:37:04  rmikk
  * Operator wrapped around Operators.TOF_SCD.GetCentroidPeaks1.
  *   CentroidPeaksDS
@@ -38,7 +41,6 @@
  */
 
 package Operators.TOF_SCD;
-import DataSetTools.operator.*;
 import DataSetTools.operator.Generic.*;
 import gov.anl.ipns.Parameters.*;
 import DataSetTools.parameter.*;

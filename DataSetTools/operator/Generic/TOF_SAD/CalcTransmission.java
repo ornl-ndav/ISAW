@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.21  2007/08/23 21:05:03  dennis
+ * Removed unused imports.
+ *
  * Revision 1.20  2007/07/06 20:00:30  dennis
  * Switched getMonitorInd() method to use the static methods from
  * the MonitorID_calc class, rather than instantiating operators to
@@ -109,7 +112,6 @@
  */
 package DataSetTools.operator.Generic.TOF_SAD;
 
-import Command.ScriptUtil;
 import DataSetTools.dataset.*;
 import gov.anl.ipns.MathTools.Geometry.*;
 import gov.anl.ipns.Parameters.BooleanPG;

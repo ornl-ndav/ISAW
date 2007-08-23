@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2007/08/23 21:08:11  dennis
+ * Removed unused imports.
+ *
  * Revision 1.1  2007/07/18 19:58:10  dennis
  * Initial version of operator wrapped around the
  * static method to display a displayable object
@@ -41,10 +44,8 @@
 
 package Operators.DisplayDevices;
 
-import DataSetTools.operator.*;
 import DataSetTools.operator.Generic.*;
 import gov.anl.ipns.Parameters.*;
-import DataSetTools.parameter.*;
 
 import gov.anl.ipns.Util.SpecialStrings.*;
 
