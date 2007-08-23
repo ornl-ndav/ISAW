@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2007/08/23 21:05:03  dennis
+ * Removed unused imports.
+ *
  * Revision 1.4  2007/08/06 14:29:43  rmikk
  * Changed some bounds to determine that determines when correlations go from
  *   positive to negative and go from negative to positive
@@ -49,7 +52,6 @@ package DataSetTools.operator.Generic.TOF_SCD;
 
 import gov.anl.ipns.MathTools.LinearAlgebra;
 
-import java.lang.reflect.Array;
 import java.text.FieldPosition;
 import java.text.NumberFormat;
 import java.util.*;

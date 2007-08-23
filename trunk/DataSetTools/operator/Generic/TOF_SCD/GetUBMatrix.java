@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2007/08/23 21:05:03  dennis
+ * Removed unused imports.
+ *
  * Revision 1.1  2007/04/05 18:46:35  rmikk
  * An operator made using the static method in GetUB that calculates an
  *   orientation matrix via autocorrelations
@@ -41,7 +44,6 @@ package DataSetTools.operator.Generic.TOF_SCD;
 import DataSetTools.operator.*;
 import DataSetTools.operator.Generic.*;
 import gov.anl.ipns.Parameters.*;
-import DataSetTools.parameter.*;
 
 import gov.anl.ipns.Util.SpecialStrings.*;
 

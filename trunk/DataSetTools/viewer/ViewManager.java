@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.88  2007/08/23 21:05:04  dennis
+ *  Removed unused imports.
+ *
  *  Revision 1.87  2007/07/12 22:06:16  dennis
  *  Added method getViewer() that returns the DataSetViewer
  *  used by this ViewManager.
@@ -336,8 +339,6 @@ import gov.anl.ipns.ViewTools.Components.*;
 import java.awt.event.*;
 import java.io.*;
 import javax.swing.*;
-//import javax.swing.event.*;
-import java.util.*;
 import DataSetTools.util.PropertiesLoader;
 
 /**

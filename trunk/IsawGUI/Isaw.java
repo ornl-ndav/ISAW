@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.273  2007/08/23 21:12:03  dennis
+ *  Removed unused imports.
+ *
  *  Revision 1.272  2007/08/14 03:41:47  dennis
  *  Set version number to 181_a9
  *
@@ -779,7 +782,6 @@ import javax.swing.plaf.basic.BasicSplitPaneDivider;
 import javax.swing.text.*;
 import javax.swing.tree.*;
 
-import devTools.MakeSearchData;
 //import SDDS.java.SDDSedit.*;
  
 

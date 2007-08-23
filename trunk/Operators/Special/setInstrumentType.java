@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2007/08/23 21:11:06  dennis
+ * Removed unused imports.
+ *
  * Revision 1.3  2007/07/05 14:35:05  dennis
  * Switched to use static method from SetInstrumentTypeCalc,
  * instead of from SetInstrumentType.
@@ -45,7 +48,6 @@
  */
 
 package Operators.Special;
-import DataSetTools.operator.*;
 import DataSetTools.operator.Generic.*;
 import gov.anl.ipns.Parameters.*;
 import DataSetTools.parameter.*;

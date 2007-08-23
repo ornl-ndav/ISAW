@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2007/08/23 21:05:04  dennis
+ * Removed unused imports.
+ *
  * Revision 1.3  2007/08/14 02:03:32  dennis
  * Now steps through all named selections and prints the info
  * on the selection.
@@ -53,7 +56,6 @@ import gov.anl.ipns.ViewTools.Panels.Transforms.*;
 import gov.anl.ipns.ViewTools.Components.*;
 import gov.anl.ipns.ViewTools.Components.Region.*;
 import gov.anl.ipns.ViewTools.Components.TwoD.*;
-import gov.anl.ipns.ViewTools.Components.Transparency.*;
 import gov.anl.ipns.ViewTools.Components.ViewControls.ViewControl;
 import gov.anl.ipns.ViewTools.UI.SplitPaneWithState;
 
