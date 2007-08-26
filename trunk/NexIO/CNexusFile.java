@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2007/08/26 23:55:44  rmikk
+ * Changed package name for the NeXus package
+ *
  * Revision 1.5  2004/02/16 02:15:53  bouzekc
  * Removed unused import statements.
  *
@@ -48,7 +51,8 @@
 package NexIO;
 
 
-import  neutron.nexus.*;
+//import  neutron.nexus.*;
+import org.nexusformat.*;
 //import ncsa.hdf.hdflib.HDFArray;
 
 /** 

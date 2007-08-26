@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.16  2007/08/26 23:56:18  rmikk
+ * Changed package name for the NeXus package
+ *
  * Revision 1.15  2005/04/20 22:03:29  dennis
  * Temporarily modified canWrite(filename) method just return true.
  * Should still check to see if this method is really still needed
@@ -79,7 +82,8 @@
  
 
 package NexIO.Write.NexApi;
-import neutron.nexus.*;
+//import neutron.nexus.*;
+import org.nexusformat.*;
 import NexIO.Write.*;
 import NexIO.*;
 import gov.anl.ipns.Util.Sys.StringUtil;

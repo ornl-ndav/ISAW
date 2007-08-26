@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2007/08/26 23:57:42  rmikk
+ * Changed package name for the NeXus package
+ *
  * Revision 1.3  2002/11/27 23:16:01  pfpeterson
  * standardized header
  *
@@ -37,7 +40,8 @@
 
 package  DataSetTools.nexus;
  
-import   neutron.nexus.*;
+//import   neutron.nexus.*;
+import   org.nexusformat.*;
 import   java.util.Hashtable;
 import   java.util.Enumeration;
 import   DataSetTools.dataset.*;

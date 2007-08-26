@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.21  2007/08/26 23:55:55  rmikk
+ * Changed package name for the NeXus package
+ *
  * Revision 1.20  2005/01/25 20:43:49  rmikk
  * getNChildNodes returns 0 if the node class is SDS.
  *
@@ -84,7 +87,8 @@
  */
 package NexIO.NexApi;
 
-import neutron.nexus.*;
+//import neutron.nexus.*;
+import org.nexusformat.*;
 import NexIO.*;
 import gov.anl.ipns.Util.Sys.StringUtil;
 
@@ -227,6 +231,7 @@ public class NexNode implements NxNode{
           NF.opendata( ( String )( X.firstElement() ) );
         else
           NF.opengroup( ( String )( X.firstElement() ), ( String )( X.lastElement() ) );
+        
       }catch( NexusException s ){
         errormessage = s.getMessage();
         return false;
@@ -598,10 +603,12 @@ public class NexNode implements NxNode{
          }
            
       }
+      
       int TotLength = 1;
       int i;
       for(  i = 0; i< n; i++) 
            TotLength *= iDim[i];
+      
       Object array =  ((new NxNodeUtils()).CreateArray(args[1],
                                 TotLength));
       boolean done = false;
@@ -610,6 +617,7 @@ public class NexNode implements NxNode{
  
       for(  i=0; i< n; i++) 
          start[i]=0;
+      
       for(  i=0; i< pos; i++) 
          size[i] = 1;
       if( pos >= 0){
@@ -647,6 +655,7 @@ public class NexNode implements NxNode{
             }
             size[pos] = (int)java.lang.Math.min(step, iDim[pos] - start[pos]);
           }else{ //case where all are done
+             
            done = true;
           }
          
@@ -867,7 +876,7 @@ public class NexNode implements NxNode{
     errormessage = "";
     if( !open() )
       return null;
-    attrlist = null;
+    //attrlist = null;
     int n = getNAttributes();
     
     if( ( index < 0 ) || ( index >= n ) ){
