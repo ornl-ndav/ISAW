@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2007/08/26 23:56:34  rmikk
+ * Added white space
+ *
  * Revision 1.4  2006/11/14 16:40:38  rmikk
  * Tries the new Data parser for ISO dates
  *
@@ -94,6 +97,7 @@ public class NxfileStateInfo extends StateInfo{
      NexusVersion =NexUtils.getStringAttributeValue( NxfileNode, "NeXus_version");
      HDFVersion = NexUtils.getStringAttributeValue( NxfileNode, "HDF_version");
      String time =NexUtils.getStringAttributeValue( NxfileNode, "file_time");
+     
      long Tmill = ConvertDataTypes.parse_new( time );
      if( Tmill < 0 )
          Time = ConvertDataTypes.parse( time);
@@ -102,6 +106,7 @@ public class NxfileStateInfo extends StateInfo{
         GCal.setTimeInMillis( Tmill );
         Time = GCal.getTime();
      }
+     
      Spectra = null;
      InstrumentNode = null;
         
@@ -145,6 +150,7 @@ public class NxfileStateInfo extends StateInfo{
    *             or  NIST, if possible, otherwize a null is returned.
    */
   public static String GetFacility( NxNode  topNode, NxNode InstrNode){
+     
     int nattr = topNode.getNAttributes();
     for( int i=0; i < nattr; i++){
       NexIO.Attr attr =topNode.getAttribute( i );
