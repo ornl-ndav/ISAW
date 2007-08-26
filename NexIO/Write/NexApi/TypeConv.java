@@ -28,6 +28,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.5  2007/08/26 23:56:17  rmikk
+ * Changed package name for the NeXus package
+ *
  * Revision 1.4  2004/03/11 19:46:40  bouzekc
  * Removed java.lang import as this is included by default.
  *
@@ -36,7 +39,8 @@
  *
  */
 package NexIO.Write.NexApi;
-import neutron.nexus.*;
+//import neutron.nexus.*;
+import org.nexusformat.*;
 
 public class TypeConv{
   /**

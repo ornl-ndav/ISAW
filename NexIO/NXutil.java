@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.4  2007/08/26 23:55:44  rmikk
+ * Changed package name for the NeXus package
+ *
  * Revision 1.3  2004/05/14 15:03:26  rmikk
  * Removed unused variables
  *
@@ -45,8 +48,9 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 
 import ncsa.hdf.hdflib.HDFConstants;
-import neutron.nexus.AttributeEntry;
-import neutron.nexus.NexusException;
+//import neutron.nexus.AttributeEntry;
+import org.nexusformat.*;
+//import neutron.nexus.NexusException;
 
 /**
  * This is a class of utility functions for accessing information in a

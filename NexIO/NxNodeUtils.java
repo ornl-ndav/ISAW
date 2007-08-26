@@ -30,7 +30,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.25  2007/08/26 23:55:44  rmikk
+ * Changed package name for the NeXus package
+ *
  * Revision 1.24  2005/02/03 08:18:07  kramer
+ *
  * Fixed an error in the getISO8601String(Date date) method, the current date
  * was used instead of 'date'.
  *
@@ -112,7 +116,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
-import neutron.nexus.NexusFile;
+//import neutron.nexus.NexusFile;
+import org.nexusformat.*;
 
 
 /**
