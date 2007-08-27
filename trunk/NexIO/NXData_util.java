@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.33  2007/08/27 03:25:51  rmikk
+ * Fixed a null pointer exception
+ *
  * Revision 1.32  2007/08/16 17:29:41  rmikk
  * Added more documentation
  * Reformatted some documentation and code
@@ -778,8 +781,11 @@ public class NXData_util{
      S = ConvertDataTypes.StringValue(Ax1nd.getAttrValue( "units" ));     
      if( S != null )      
          DS.setX_units( S );
+     if( Ax2nd == null)
+        S = null;
+     else
+        S = ConvertDataTypes.StringValue(Ax2nd.getAttrValue( "long_name" ) );
      
-     S = ConvertDataTypes.StringValue(Ax2nd.getAttrValue( "long_name" ) );
      if( S != null)
          DS.setY_label( S );
      
