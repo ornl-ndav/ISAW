@@ -32,6 +32,11 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.34  2007/08/27 03:49:57  dennis
+ * Changed check for unix shared libraries (.so) to allow for
+ * version numbers liks .so.2, since the new jnexus rquires libs
+ * with particular numbered suffixs.
+ *
  * Revision 1.33  2007/08/15 16:12:20  dennis
  * Removed use of gluegen-rt.jar, to step back to JSR231
  * jogl version 1.0 instead of version 1.1
@@ -1372,7 +1377,7 @@ public class IsawInstaller extends JFrame
 		}else if( operating_system.equals(UNKNOWN_ID) ){
 		    // install file
 		}
-	    }else if( filename.endsWith("so") ){
+	    }else if( filename.startsWith("lib") && filename.contains(".so")){
 		if( operating_system.equals(WIN_ID) ){
 		    return true; // don't install file
 		}else if( operating_system.equals(LIN_ID) ){
