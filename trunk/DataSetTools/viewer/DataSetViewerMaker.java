@@ -30,6 +30,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.35  2007/09/09 23:21:31  dennis
+ *  Partial clean up of logic related to handling of POINTED_AT_CHANGED
+ *  messages.
+ *  Removed some old commented out code, not used since the function
+ *  controls were moved to their own JPanel.
+ *
  *  Revision 1.34  2007/07/18 19:52:12  dennis
  *  Fixed problem with detecting focus.  Previously, the
  *  parent of the dsvm was cast to a JFrame, and checked
@@ -185,7 +191,7 @@ public class DataSetViewerMaker  extends DataSetViewer
    FunctionViewComponent viewComp;
    DataSetViewerMaker dsvm;
    
-   boolean isDsvmViewerFocused = false;
+   boolean DSVM_sent_message = false;
 
 
    public DataSetViewerMaker( DataSet               ds, 
@@ -198,18 +204,7 @@ public class DataSetViewerMaker  extends DataSetViewer
       this.viewComp = viewComp;
       this.state = state;
       this.dsvm = this;
-      //viewComp.setData( viewArray);
-      //JPanel East = new JPanel( new GridLayout( 1,1));
-      
-      //BoxLayout blayout = new BoxLayout( East,BoxLayout.Y_AXIS);
-     
-      //East.setLayout( blayout);
 
-      /*ViewControl[] Compcontrols = viewComp.getControls();
-      if( Compcontrols != null)
-        for( int i=0; i< Compcontrols.length; i++)
-          East.add( Compcontrols[i]);   
-       */
       ViewMenuItem[] Comp_menuItems = viewComp.getMenuItems();
       if( Comp_menuItems != null)
         for( int i=0; i< Comp_menuItems.length; i++)
@@ -217,14 +212,10 @@ public class DataSetViewerMaker  extends DataSetViewer
       
       PrintComponentActionListener.setUpMenuItem( getMenuBar(), this);
       SaveImageActionListener.setUpMenuItem( getMenuBar(), this);
-      //East.add( Box.createRigidArea(new Dimension(30,500)) );
+
       setLayout( new GridLayout( 1,1));
+
       JPanel  the_pane= viewComp.getDisplayPanel() ;
-      //the_pane.add(viewComp.getDisplayPanel());
-     /* SplitPaneWithState the_pane =
-       new SplitPaneWithState(JSplitPane.HORIZONTAL_SPLIT,
-          viewComp.getDisplayPanel(), East, 1.00f);
-     */
       the_pane.addAncestorListener( new ancestor_listener());
       
       //adding listener update cursor for all displayed graphs
@@ -234,6 +225,7 @@ public class DataSetViewerMaker  extends DataSetViewer
       invalidate();
      }
  
+
    public DataSetViewerMaker( DataSet               ds,
                               ViewerState           state,
                               VirtualArrayList1D    viewArray,
@@ -262,31 +254,21 @@ public class DataSetViewerMaker  extends DataSetViewer
 
       else if( reason.equals( "POINTED AT CHANGED" ))
       {
-          if( viewComp.isDrawingPointedAtGraph() && 
-              (getDataSet().getPointedAtIndex() != 
-                                              viewArray.getPointedAtGraph()) )
-          {
-            viewArray.setPointedAtGraph( getDataSet().getPointedAtIndex() ); 
-            viewComp.dataChanged();
-          }
+        if( viewComp.isDrawingPointedAtGraph() && 
+           (getDataSet().getPointedAtIndex() != viewArray.getPointedAtGraph()))
+        {
+          viewArray.setPointedAtGraph( getDataSet().getPointedAtIndex() ); 
+          viewComp.dataChanged();
+        }
           
-          // this is true when the DataSetViewMaker's frame is focused.   
-    
-          isDsvmViewerFocused = viewComp.getDisplayPanel().hasFocus();
-/*
-          if ( !isDsvmViewerFocused )
-            isDsvmViewerFocused = dsvm.hasFocus();
-
-          if ( !isDsvmViewerFocused && dsvm.getParent() != null )
-            isDsvmViewerFocused = dsvm.getParent().hasFocus();
-*/          
-          
-          if( !isDsvmViewerFocused )
-          {
-            floatPoint2D fpt = new floatPoint2D();
-            fpt.x = getDataSet().getPointedAtX();
-            viewComp.setPointedAt(fpt);
-          }
+        if( !DSVM_sent_message )                 // ignore one message 
+        {                                        // if we sent a message
+          floatPoint2D fpt = new floatPoint2D();
+          fpt.x = getDataSet().getPointedAtX();
+          viewComp.setPointedAt(fpt);
+        }
+        else
+          DSVM_sent_message = false;
       }
     }
 
@@ -307,7 +289,7 @@ public class DataSetViewerMaker  extends DataSetViewer
     }
 
 
-   /* ------------------------- getDisplayComponent -------------------------- */
+   /* ----------------------- getDisplayComponent -------------------------- */
    /**
     *  Get the JComponent that contains the graph of the data, without
     *  any associated controls or auxillary displays.
@@ -375,32 +357,16 @@ public class DataSetViewerMaker  extends DataSetViewer
 	  
     public void actionPerformed(ActionEvent ae)
     {		   
-      if(dsvm.getRootPane() != null)
-      {
-       // this is true when the DataSetViewMaker's frame is focused.
-
-          isDsvmViewerFocused = viewComp.getDisplayPanel().hasFocus();
-/*
-          if ( !isDsvmViewerFocused )
-            isDsvmViewerFocused = dsvm.hasFocus();
-
-          if ( !isDsvmViewerFocused && dsvm.getParent() != null )
-            isDsvmViewerFocused = dsvm.getParent().hasFocus();
-*/
+      message = ae.getActionCommand();		  
+      new_x  = viewComp.getPointedAt().x;		  	  
 			  
-       message = ae.getActionCommand();		  
-       new_x  = viewComp.getPointedAt().x;		  	  
-			  
-       // if the pointed at changed flag is recieved and the viewcomponent 
-       // is focused
-      if( message.equals(IViewComponent.POINTED_AT_CHANGED) && 
-          (isDsvmViewerFocused) )
-      {			 			  
+      if ( message.equals(IViewComponent.POINTED_AT_CHANGED) )
+      {			 		
+        DSVM_sent_message = true;
         getDataSet().setPointedAtX( new_x );
         getDataSet().notifyIObservers( IObserver.POINTED_AT_CHANGED );
       }
     }
-    }
   }
 
-  }//DataSetViewerMaker
+}//DataSetViewerMaker
