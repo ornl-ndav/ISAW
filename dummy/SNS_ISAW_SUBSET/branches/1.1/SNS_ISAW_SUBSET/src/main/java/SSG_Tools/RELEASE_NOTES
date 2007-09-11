@@ -1,0 +1,270 @@
+
+                        SSG_Tools, Release Notes
+---------------------------------------------------------------------------
+Version 0.13,  12/12/05
+
+               Added a constructor for the JoglPanel class that uses a 
+               DebugGL or a TraceGL so that OpenGL errors (or all OpenGL
+               calls) will be automatically displayed.
+
+               Made some improvements to the BallWorld example.
+                 - Times are now consistently passed between methods as
+                   the time in seconds since the program started.
+                 - The transform for a ball is now automatically updated
+                   each time the ball's Update() method is called.  This 
+                   introduces some redundant updates to the ball's
+                   transform, but keeps the transform synchronized with
+                   the rest of the data.
+                 - Future collisions are tested in a different order.  That 
+                   is, we now use ball_1.collision_time( ball[i] ) rather
+                   than ball[i].collision_time( ball_1 ), since ball_1
+                   has been updated to the current simulation time, where as
+                   an arbitrary ball may not have been updated to the current
+                   time.  This avoids some redundant backdate/update work,
+                   and makes it unnecessary to update all balls to the current
+                   simulation time before checking for collisions.
+
+               Remaining unimplemented features are:
+                 - A wall should be represented using 6 planes. 
+                 - Classes/code should be added to deal with collisions 
+                   between a ball and a line, and between a ball and a point.
+                 - A wall should eventually be represented using 6 planes,
+                   12 edges and 8 corner points.
+                 - Elasticity is still not handled.
+
+---------------------------------------------------------------------------
+Version 0.12,  12/07/05
+
+               Added class SSG_Tools.MathTools.MathUtil that contains some
+               basic methods for solving equations needed for basic collision 
+               detection.
+
+               Moved the bouncing ball example from Demos directory to 
+               SSG_Examples/BallWorld/*, and did some minor code clean up.
+               NOTE: This example has two known shortcomings.  First, currently
+                     only one of the six planes that form a solid "Wall" is
+                     active for collisions.  Second, the balls must have
+                     elasticity = 1 (lossless bouncing), otherwise the list
+                     of pending collisions increases in size, without bound,
+                     as a ball bounces more and more frequently on the 
+                     "floor", losing a little energy with each bounce.
+
+---------------------------------------------------------------------------
+Version 0.11,  11/30/05
+
+               The orientation of the BezierSurface, and the generation of
+               texture coordinates on the surface, have been changed to be
+               consistent with the way texture coordinates are treated for
+               PlanarSurfaces, Spheres and Cubes.  See the javadocs for 
+               BezierSurface for an explanation of the new conventions.
+
+               Added apply_to( in_vec, out_vec ) methods to the 
+               transformation node classes to apply transformations to a 
+               specified vector.  This can be useful for calculating positions
+               and orientations of objects in 3D world coordinates, given 
+               the sequence of transformations that were applied to the 
+               objects.
+
+               Added a simple example program to demonstrate an object 
+               moving along a Hermite curve, interpolating initial and 
+               ending position and velocity vectors.  The example is
+               SSG_Examples/Motion/MovingBox.java
+
+               Added a basic message handling system to facilitate building
+               modular applications.  The message handling system is in
+               a separate package MessageTools.  Applications can create a
+               MessageCenter object to handle passing messages from controls
+               to controlled object.  At this time one control has been
+               implemented Controls/Valuators/Slider.java.  The use of the
+               message handling system is demonstrated in the files associated 
+               with the example program:
+                 SSG_Examples/ControlledRobot/RobotScene.java
+
+---------------------------------------------------------------------------
+Version 0.10,  11/1/05
+
+               Moved texture map image files to separate SSG_Data directory.
+               The SSG_Data directory is assumed to be unpacked in the users
+               home directory.  A few more texture maps are now included in
+               the SSG_Data/TextureImages/Astro/ subdirectory.  In particular
+               land_shallow_topo_2048.jpg is a full sphere earth texture map, 
+               derived from multiple NASA satellite images.  Also, moonmap.jpg
+               is a full sphere image of the moon.  These two full sphere 
+               images are ideal for mapping onto a Sphere shape, using the
+               texture coordinates defined in the Sphere class.  
+               (see: SSG_Examples/TextureMapping/TexturedSphere.java) 
+
+               Made new SSG_Examples directory, currently with examples in
+               subdirectories:
+
+                  Robot, Lights and TextureMapping
+
+               Updated texture mapping:
+                 -LoadTexture.LoadImage() now returns an image with the
+                  rows listed in reverse order.  This allows the texture
+                  coordinates (s,t) to apply in a "right side up" order,
+                  as typically described.
+                 -Shapes PlanarSurface, Sphere, Cube now all generate
+                  explict texture coordinates, ordered in a way that is
+                  compatible with the new behavior of LoadTexture.LoadImage().
+                 -Texture, Texture1D and Texture2D now have additional 
+                  documentation.  Also, some of the mutator methods have
+                  been made protected, since they are not intended to be
+                  called by classes that are not derived from Texture.  
+                  In general, texture objects should be constructed and
+                  configured, but not altered once they are put to use in
+                  a scene graph.
+
+---------------------------------------------------------------------------
+Version 0.09, 8/10/05
+
+                Added Stroke Text shape and basic Hershey fonts.
+                Added Orthographic Camera
+                Added ArcBall capability to JoglPanel
+                Added SimpleShape directory and base class for shapes that
+                don't need texture mapping or full material properties.
+                Changed Material class so that the Diffuse color is specified
+                by a glColor3f statement.  glColorMaterial() is called in
+                JoglPanel to force the Diffuse material color to track the
+                current color.
+
+--------------------------------------------------------------------------
+Version 0.08, 12/12/04
+
+                Changed Shape class so that the default texture coordinate
+                generation modes is GL_NODE instead of GL_OBJECT_LINEAR.
+
+                Bezier Surface: 
+                Now also generates texture coordinates when the surface is 
+                drawn.  The texture coordinates range from 0 to 1 in s along 
+                with the surface parameters, u, v.
+
+                BezierGlass:
+                Demo now applies texture map to surface.
+
+Version 0.07, 12/8/04
+
+  This release fixed one bug, added some methods to the Camera and JoglPanel
+classes, and added two Demos.  Specifically,
+
+Sphere.java     Fixed bug where a display list was created new each time
+                the sphere was rendered.  This caused a serious memory leak.
+
+Camera.java     Added methods to get copies of the currently set COP, VRP and 
+                VUV.
+
+JoglPanel.java  Added methods to get and set the scene that is displayed by
+                the panel.
+
+BezierGlass     This is a new Demo that forms a glass from eight Bezier
+                surfaces.
+
+BallWorld       This is a fairly extensive demo that models a collection
+                of "balls" bouncing around in a box.
+
+----------------------------------------------------------------------------
+Version 0.06, 11/22/04
+
+  This release adds two convenience transform nodes:
+
+MatrixTransform       -> specifies a model view transform using an 
+                         arbitrary matrix.
+
+OrientationTransform  -> specifies a model view transform that will orient and
+                         position an object, by specifying a "base vector",
+                         an "up vector" and a position where the center should
+                         be mapped.
+
+(Some minor clean up of documentation and javadocs was also done.)
+
+----------------------------------------------------------------------------
+Version 0.05, 11/15/04
+
+  This release adds two major new features, texture mapping and Bezier
+curves and surfaces.  
+
+
+Texture Mapping:
+
+  The texture images are stored in Texture1D or Texture2D objects, in
+the package SSG_Tools/Appearance/Textures.  Texture coordinates can be 
+generated in one of three ways:
+
+1. Texture coordinates can be specified along with the vertices as
+   a shape is drawn.  An example of this is in the Render() method
+   of the PlanarSurface class.
+
+2. Texture coordinates can be generated automatically by OpenGL, in
+   such a way that the texture appears to be projected onto the surface.
+   This is enabled by calling the setTexCoordGenMode() that a shape
+   inherits from the Shape base class, passing the mode GL.GL_OBJECT_LINEAR.
+
+3. Texture coordinates can be generated automatically by OpenGL, in
+   such a way that the texture appears to be reflections from an 
+   environment.  This is enabled by calling setTexCoordGenMode(), 
+   passing the mode GL.GL_SPHERE_MAP.
+
+To use texture mapping you must construct a Texture1D or Texture2D object,
+set it in an Appearance object, and set the Appearance object as the
+Appearance of a Shape.  In addition, texture coordinates must be generated
+using one of the methods described above.
+
+  In addition to the texture objects, and modifications to the Shape class to
+generate texture coordinates, this release also includes a utility to load
+texture images from image files in Utils/LoadTexture.java.  The array of bytes
+that is produced by the LoadTexture.LoadImage() method must be used to 
+construct a Texture2D object.  Texture mapping is demonstrated in 
+SSG_Tools/Demos/Texture/TextureDemo.  A basic collection of texture maps
+is in .../SSG_Tools/Data/TextureImages
+
+
+Bezier Curve and Surfaces:
+
+  A Bezier curve is determined by a one dimensional array of control points.  
+A Bezier surface is determined by a two dimensional array of control points.
+These are demonstrated in the main "test" programs of the shapes:
+
+SSG_Tools/SSG_Nodes/Shapes/BezierCurve
+SSG_Tools/SSG_Nodes/Shapes/BezierSurface
+
+
+----------------------------------------------------------------------------
+Version 0.04,  11/3/04
+
+  This release automates the handling of the name stack for most classes
+derived from Node.  It does this by adding methods preRender() and postRender()
+to the Node base class.  The concepts of preRender() and postRender() have
+also been applied to handle the appearance object.  
+
+  The main change to application programs compiled against previous versions 
+is that nodes derived from Shape MUST NOW call preRender() before drawing
+and postRender() after drawing.  They can no-longer call super.Render(),
+since it has been removed from the Shape class.  
+
+  The net effect of these changes is that now id's can be set on entire groups
+by setting the id on the root node for that group.  If names are set at
+multiple levels, the hit record will contain the complete name stack.
+The particular changes are:
+
+- Added methods  preRender()  and  postRender()  to the Node class, to take
+  care of pushing and popping the name stack for derived classes.
+
+- Made pick_id  private in Node class, since it doesn't need to be 
+  directly accessed by derived classes.
+
+- The Render() method of the Group base class now calls preRender() before
+   rendering its children and calls postRender() after rendering its
+   children.  This allows setting a pick_id for an entire group.
+
+- The Render() method of the Shape class has been removed.  Previously, it
+  was called by derived classes to take care of rendering the appearance
+  object.   
+
+- Added a preRender() method to the Shape class to take care of rendering
+  the appearance of the shape.  The Render() method of derived classes should
+  now  first call the Shape class's preRender() method, then do the drawing
+  and finally call postRender().
+
+- All of the currently implemented shapes ( Box, SolidBox, Sphere and 
+  PlanarSurface) have been modified to call preRender() and postRender(), 
+  instead of handling the name stack themselves.
