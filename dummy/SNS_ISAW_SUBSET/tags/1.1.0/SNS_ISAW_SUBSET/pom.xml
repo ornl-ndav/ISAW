@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
+                             http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>gov.ornl.sns</groupId>
+    <artifactId>sns-asg-pom</artifactId>
+    <version>1.0.1</version>
+  </parent>
+  <groupId>ISAW</groupId>
+  <artifactId>sns-isaw-subset</artifactId>
+  <version>1.1.0</version>
+  <name>SNS ISAW</name>
+  <description>SNS ISAW Viewers Subset</description>
+  <dependencies>
+    <dependency>
+      <groupId>ISAW</groupId>
+      <artifactId>jogl</artifactId>
+      <version>1.0</version>
+	  <scope>provided</scope>
+    </dependency>
+  </dependencies>
+  <build>
+    <plugins>
+      <!-- NOT NEEDED, defined in parent POM
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        
+        <configuration>
+          <source>1.5</source>
+          <target>1.5</target>
+        </configuration>
+      </plugin>      
+       -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifest>
+              <addClasspath>true</addClasspath>
+            </manifest>
+          </archive>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>  
+  <developers>
+    <developer>
+      <id>y8y</id>
+      <name>James A. Kohl</name>
+      <email>kohlja@ornl.gov</email>
+      <organization>ORNL</organization>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </developer>
+  </developers>
+  <scm>
+    <connection>${scmConnectionBaseUrl}/ISAW/dummy/SNS_ISAW_SUBSET/branches/1.1.0/SNS_ISAW_SUBSET</connection>
+    <developerConnection>scm:svn:https://flathead.ornl.gov/repos/ISAW/dummy/SNS_ISAW_SUBSET/branches/1.1.0/SNS_ISAW_SUBSET</developerConnection>
+    <url>https://flathead.ornl.gov/trac/ISAW/browser/dummy/SNS_ISAW_SUBSET/branches/1.1.0/SNS_ISAW_SUBSET</url>
+  </scm>
+  <ciManagement>
+    <system>continuum</system>
+    <url>https://flathead.ornl.gov/continuum/servlets/continuum</url>
+    <notifiers>
+      <notifier>
+        <type>mail</type>
+        <sendOnSuccess>true</sendOnSuccess>
+        <sendOnFailure>true</sendOnFailure>
+        <sendOnError>true</sendOnError>
+        <sendOnWarning>true</sendOnWarning>
+        <configuration>
+          <address>kohlja@ornl.gov</address>
+        </configuration>
+      </notifier>
+    </notifiers>
+  </ciManagement>
+</project>

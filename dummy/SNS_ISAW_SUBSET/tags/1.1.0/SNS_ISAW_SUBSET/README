@@ -1,0 +1,56 @@
+
+******** Readme File for SNS_ISAW_SUBSET ******************
+
+Date: 7/26/06
+
+
+  This directory contains a subset of the ISAW source tree, that "should" be
+sufficient to fully support the use of classe like Display1D, Display2D
+and Display3D.  The following are included:
+
+extract_SNS_subset.sh  Simple script to extract the needed files from an 
+                       ISAW source tree, or unpacked distribution.
+                       NOTE: This script includes useful comments on what
+                             files are copied and why.  It might be helpful
+                             to read over script.
+
+SNS_SUBSET_JARS        Contains jar files with JUST the compiled class files,
+                       no source.  The jar files are:
+                           DataSetTools.jar   11  K
+                           ExtTools.jar       2.5 K
+                           gov.jar            973 K
+                           SSG_Tools.jar      364 K
+                       for a total of 1.356 Megabytes.  This is essentially
+                       the minimum size needed to support the full 
+                       functionality of the viewers, without actually 
+                       altering any source files in ISAW to discard 
+                       functionality.
+
+SNS_SUBSET             Contains the full expanded source files for the 
+                       listed jar files.
+
+SNS_SUBSET_JAVADOC     HTML Java Docs for the SNS_SUBSET classes.
+
+README.SNS_ISAW        This readme file.
+
+
+NOTE: There are "hooks" in the system to support the full functionality of 
+the viewers, including printing, save image to file, cut and paste from tables,
+etc.  The cut and past from table views should work out of the box.  Some
+options will need to be added to support save to file and printing.
+
+
+NOTE: The basic functionality of the classes can be tested by putting the
+jar files and jogl.jar on your CLASSPATH and typing:
+
+java gov.anl.ipns.ViewTools.Displays.Display1D
+
+java gov.anl.ipns.ViewTools.Displays.Display2D
+
+java gov.anl.ipns.ViewTools.Components.ThreeD.DetectorScene
+
+
+The Display3D does not have a main test program, but some of the supporting 
+components are exercised in the "DetectorScene" test program.
+
+
