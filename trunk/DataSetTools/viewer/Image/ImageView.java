@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.62  2007/09/17 02:55:04  dennis
+ *  Updated name of GraphJPanel method setZoom_region() to the new
+ *  name setLocalWorldCoords().
+ *
  *  Revision 1.61  2007/07/13 20:26:28  dennis
  *  getDisplayComponent() now returns the scrolled pane that
  *  contains the ImageJPanel2, not the ImageJPanel2 itself.
@@ -1074,7 +1078,7 @@ private void setVerticalViewableRegion( int first_row )
   y1 += rows_offset_from_scroll_top;
   y2 = y1 + num_rows_displayed;
 
-  image_Jpanel.setZoom_region( x1, y1, x2, y2 );
+  image_Jpanel.setLocalWorldCoords( x1, y1, x2, y2 );
   image_Jpanel.RebuildImage();
    
   MakeSelectionImage( true );
@@ -1122,7 +1126,7 @@ private void ConfigureVerticalScrollBar()
         float x2 = bounds.getX2();
         float y2 = bounds.getY2();               // initially = n_rows - 1;
 
-        image_Jpanel.setZoom_region( x1, y1, x2, y2 );
+        image_Jpanel.setLocalWorldCoords( x1, y1, x2, y2 );
         image_Jpanel.RebuildImage();
 
         vert_scroll_bar.setVisible( false );
