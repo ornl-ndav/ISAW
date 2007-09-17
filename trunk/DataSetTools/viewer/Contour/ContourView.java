@@ -38,6 +38,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.53  2007/09/17 02:54:06  dennis
+ *  Updated name of GraphJPanel method from getZoom_region() to the
+ *  new name getLastZoomRegionInPixels().
+ *
  *  Revision 1.52  2007/07/16 16:10:03  rmikk
  *  Added the appropriate getDisplayComponent method
  *
@@ -641,7 +645,7 @@ public class ContourView extends DataSetViewer
                           (long)0,0,P.x,P.y,1,false));
           }
           else if( evt.getActionCommand().equals(CoordJPanel.ZOOM_IN))
-          { Rectangle R = rpl_Holder.getZoom_region();
+          { Rectangle R = rpl_Holder.getLastZoomRegionInPixels();
            
             if( R == null )
               return;
