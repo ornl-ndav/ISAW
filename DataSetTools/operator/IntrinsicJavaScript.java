@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2007/10/05 13:28:20  rmikk
+ * Fixed javadoc errors
+ *
  * Revision 1.3  2007/06/28 17:38:25  rmikk
  * The main program now ONLY show the available scripting languages and their
  *    associated extensions
@@ -331,8 +334,7 @@ public class IntrinsicJavaScript extends GenericOperator implements
    /**
     * Sets the logging documment
     * 
-    * @param the
-    *           document where the logging information goes.
+    * @param doc the document where the logging information goes.
     * 
     * No logging is included yet.
     */
@@ -668,7 +670,7 @@ public class IntrinsicJavaScript extends GenericOperator implements
     * 
     * @param observed_obj
     *           The object that has changed
-    * @peram reason the reason for the change
+    * @param reason the reason for the change
     */
    public void update( Object observed_obj , Object reason ) {
 
