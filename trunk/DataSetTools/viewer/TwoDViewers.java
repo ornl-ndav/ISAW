@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2007/10/05 13:32:28  rmikk
+ *  Fixed javadoc errors
+ *
  *  Revision 1.8  2007/07/26 20:19:18  rmikk
  *  Renamed Show Tag Frame in Menu's to Pointed at Graph View to parallel the
  *      Pointed at Table View
@@ -147,13 +150,7 @@ public class TwoDViewers extends DataSetViewer {
     *           the DataSet that is to be viewed
     * @param state
     *           The viewer State
-    * 
-    * @param viewArray
-    *           the IVirtualArray(produces array values when needed)
-    * 
-    * @param viewComp
-    *           the IVirtualComponent that displays the DataSet in the form
-    *           supplied by a compatible IVirtualArray
+    *  
     */
 
    public TwoDViewers( DataSet ds, ViewerState state ) {
@@ -1152,7 +1149,7 @@ public class TwoDViewers extends DataSetViewer {
    /**
     * Get the row, col for the Pointed At element in the data set
     * 
-    * @ds the data set
+    * @param ds the data set
     * @return A vector whose first element is the col, the second element is the
     *         row, and the last element is the detector number for the pointed
     *         at element in this data set
