@@ -38,6 +38,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.54  2007/10/08 14:37:57  rmikk
+ *  Converted to Dennis' logscale intensity calculations
+ *
  *  Revision 1.53  2007/09/17 02:54:06  dennis
  *  Updated name of GraphJPanel method from getZoom_region() to the
  *  new name getLastZoomRegionInPixels().
@@ -243,6 +246,7 @@ import gov.anl.ipns.Util.Messaging.IObserver;
 import gov.anl.ipns.Util.Numeric.ClosedInterval;
 import gov.anl.ipns.Util.Sys.StringUtil;
 import gov.anl.ipns.Util.Sys.WindowShower;
+import gov.anl.ipns.ViewTools.Components.PseudoLogScaleUtil;
 import gov.anl.ipns.ViewTools.Panels.Cursors.CrosshairCursor;
 import gov.anl.ipns.ViewTools.Panels.Image.IndexColorMaker;
 import gov.anl.ipns.ViewTools.Panels.Transforms.CoordJPanel;
@@ -1134,12 +1138,24 @@ public class ContourView extends DataSetViewer
          if( C != null )
             ColorMap = C;
       }
+    Color[] colrs =  IndexColorMaker.getColorTable( ColorMap, ncolors );
+    PseudoLogScaleUtil log_scaler = new PseudoLogScaleUtil(
+             0f, (float)100,0f, (float)(colrs.length - 1));
+    double s = (double)(state.get_int("Contour.Intensity"));
+  
 
-      IndexedColorMap cmap = new IndexedColorMap( 
-             IndexColorMaker.getColorTable( ColorMap, ncolors ) );
+    Color[] colrs1= new Color[ colrs.length ];
+    for( int i = 0; i < colrs.length ; i++ ){
+         int k = (int)(log_scaler.toDest(i,s));
+         colrs1[i]= colrs[ k];
+    }
     
-     cmap.setTransform( new logTransform( 0.0, ncolors - 1.0,
-               datar.start, datar.end ,state.get_int("Contour.Intensity")) );
+      IndexedColorMap cmap = new IndexedColorMap( 
+             colrs1 );
+    
+    // cmap.setTransform( new logTransform( 0.0, ncolors - 1.0,
+    //           datar.start, datar.end ,state.get_int("Contour.Intensity")) );
+             
       //IndexedColorMap cmap = new IndexedColorMap(IndexColorMaker.getColorTable(ColorMap, 18),clevels);
       return cmap;
    }
