@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2007/10/09 01:08:48  rmikk
+ *  Added another tab for the Contour View
+ *
  *  Revision 1.9  2007/10/05 13:32:28  rmikk
  *  Fixed javadoc errors
  *
@@ -83,7 +86,7 @@ import gov.anl.ipns.ViewTools.Components.ViewControls.*;
 import gov.anl.ipns.ViewTools.UI.*;
 import gov.anl.ipns.ViewTools.Panels.*;
 import javax.swing.*;
-
+import gov.anl.ipns.ViewTools.Components.ViewControls.*;
 import DataSetTools.dataset.*;
 import DataSetTools.components.View.*;
 import java.awt.event.*;
@@ -312,20 +315,20 @@ public class TwoDViewers extends DataSetViewer {
       BoxLayout blayout = new BoxLayout( East , BoxLayout.Y_AXIS );
 
       East.setLayout( blayout );
-      
+
       JComponent[] ArrayScontrols = viewArray.getSharedControls();
       if( ArrayScontrols != null )
          for( int i = 0 ; i < ArrayScontrols.length ; i++ )
             if( ArrayScontrols[ i ] instanceof AnimationController )
                East.add( ArrayScontrols[ i ] );
-      
+
       JTabbedPane jtab = new JTabbedPane();
       JPanel ArrayControls = null;
       JPanel OverLayControls = null;
       JPanel OthCompControls = null;
-      
+      JPanel ContourLevelControls = null;
       Conversions = new DataSetXConversionsTable( ds );
-      
+
       if( ArrayScontrols != null )
          for( int i = 0 ; i < ArrayScontrols.length ; i++ )
             if( ! ( ArrayScontrols[ i ] instanceof AnimationController ) ) {
@@ -337,17 +340,17 @@ public class TwoDViewers extends DataSetViewer {
                }
                ArrayControls.add( ArrayScontrols[ i ] );
             }
-      
+
       if( ArrayControls != null ) {
          ArrayControls.add( Box.createVerticalGlue() );
          jtab.add( "Data" , ArrayControls );
       }
-      
+
       jtab.add( "Conversions" , Conversions.getTable() );
-      
+
       JComponent[] Arraycontrols = viewComp.getControls();
-      
-      if( Arraycontrols != null ) {
+
+      if( Arraycontrols != null )
          for( int i = 0 ; i < Arraycontrols.length ; i++ )
             if( Arraycontrols[ i ] instanceof ViewControl )
                if( ( (ViewControl) Arraycontrols[ i ] ).getTitle().endsWith(
@@ -362,49 +365,161 @@ public class TwoDViewers extends DataSetViewer {
                   OverLayControls.add( Arraycontrols[ i ] );
 
                }
-         
-         if( OverLayControls != null ) {
-            OverLayControls.add( Box.createVerticalGlue() );
-            jtab.add( "Overlays" , OverLayControls );
-         }
-         
 
-         for( int i = 0 ; i < Arraycontrols.length ; i++ )
-            if( Arraycontrols[ i ] instanceof ViewControl )
-               if( ! ( (ViewControl) Arraycontrols[ i ] ).getTitle().endsWith(
-                        "Overlay" ) )
-                  if( ! ( Arraycontrols[ i ] instanceof gov.anl.ipns.ViewTools.Components.ViewControls.PanViewControl ) ) {
-                     if( OthCompControls == null ) {
-                        OthCompControls = new JPanel();
-                        BoxLayout blayout3 = new BoxLayout( OthCompControls ,
-                                 BoxLayout.Y_AXIS );
-                        OthCompControls.setLayout( blayout3 );
-                     }
-                     OthCompControls.add( Arraycontrols[ i ] );
-                  }
-                  else
-                     PanView = Arraycontrols[ i ];
+      if( OverLayControls != null ) {
+         OverLayControls.add( Box.createVerticalGlue() );
+         jtab.add( "Overlays" , OverLayControls );
       }
-      
-      
+
+      if( viewComp instanceof ContourViewComponent ) {
+         
+         JPanel ContourTab = SetUpTab( Arraycontrols ,
+                  null , 
+                  null , 
+                  
+                  Add( null ,CompositeContourControl.class ) ,
+                  
+                  Add( Add( Add( null ,
+                    "Labels" ) ,
+                    ContourControlHandler.CALCULATE_BUTTON_LABEL ) ,
+                    ContourControlHandler.SIGNIFICANT_FIGURES_LABEL ) );
+         
+         if( ContourTab != null )
+            jtab.add( "Contours" , ContourTab );
+         
+      }
+
+      OthCompControls = SetUpTab( Arraycontrols ,
+               Add( Add( null , PanViewControl.class ) ,
+                                   CompositeContourControl.class ) ,
+                                   
+               Add( Add( Add( Add( null , "Overlay" ) ,
+               "Labels" ) ,
+               ContourControlHandler.CALCULATE_BUTTON_LABEL ) ,
+               ContourControlHandler.SIGNIFICANT_FIGURES_LABEL ) ,
+               
+               (Vector) null , 
+               (Vector) null );
+
+
+     
+
       if( OthCompControls != null ) {
-         OthCompControls.add( Box.createVerticalGlue() );
+         
          jtab.add( "Other view Info" , OthCompControls );
       }
 
-      
+
+      for( int i = 0 ; i < Arraycontrols.length ; i++ )
+         if( Arraycontrols[ i ] instanceof PanViewControl )
+            PanView = Arraycontrols[ i ];
+
       East.add( jtab );
-      if( PanView != null  )//&& ! currentViewType.equals( "Table" )
+      if( PanView != null )// && ! currentViewType.equals( "Table" )
          East.add( PanView );
 
 
       East.add( Box.createVerticalGlue() );
       EastHolder.add( East );
       ControlHolder.add( EastHolder );
-
    }
 
+
+   private Vector Add( Vector V , Object O ) {
+
+      if( V == null )
+         V = new Vector();
+      V.addElement( O );
+      return V;
+   }
    
+   /**
+    * SetUp a series of controls in the tab pane
+    * 
+    * @param Arraycontrols  The list of controls
+    * 
+    * @param OmitClasses   The classes to omit. If null, none will be excluded here
+    * @param OmitTitleParts  The titles(parts of titles) to be omitted. If null none
+    *                        will be excluded
+    * @param IncludeClasses  The classes to include. If null all will be included
+    * 
+    * @param IncludeNameParts  The titles with these parts will be included.  If null
+    *                          all will be considered
+    * @return
+    */
+   private JPanel SetUpTab( JComponent[] Arraycontrols, Vector OmitClasses,
+                  Vector OmitTitleParts, Vector IncludeClasses, 
+                  Vector IncludeNameParts){
+      
+      JPanel OthCompControls = null;
+      
+      for( int i = 0 ; i < Arraycontrols.length ; i++ )
+            if( UseThisControl(Arraycontrols[i],OmitClasses,OmitTitleParts,
+                     IncludeClasses, IncludeNameParts)){
+               
+                  if( OthCompControls == null ) {
+                     
+                     OthCompControls = new JPanel();
+                     BoxLayout blayout3 = new BoxLayout( OthCompControls ,
+                              BoxLayout.Y_AXIS );
+                     OthCompControls.setLayout( blayout3 );
+                  }
+                  
+                  OthCompControls.add( Arraycontrols[ i ] );
+               }
+      
+      if( OthCompControls != null){
+         //OthCompControls.add( Box.createVerticalGlue() );
+      }
+      
+      return OthCompControls;
+              
+   }
+   
+   // Determines if a Control is to be included 
+   
+   private boolean UseThisControl( JComponent control , 
+                                  Vector OmitClasses ,
+                                  Vector OmitTitleParts ,
+                                  Vector IncludeClasses ,
+                                  Vector IncludeNameParts ) {
+
+      if( control == null )
+         return false;
+
+      if( ! ( control instanceof ViewControl ) )
+         return false;
+
+      if( OmitClasses != null )
+         for( int i = 0 ; i < OmitClasses.size() ; i++ )
+            if( control.getClass().equals( OmitClasses.elementAt( i ) ) )
+               return false;
+
+      if( OmitTitleParts != null )
+         for( int i = 0 ; i < OmitTitleParts.size() ; i++ )
+            if( ( (ViewControl) control ).getTitle().indexOf(
+                     (String) OmitTitleParts.elementAt( i ) ) >= 0 )
+               return false;
+
+
+      if( IncludeClasses != null )
+         for( int i = 0 ; i < IncludeClasses.size() ; i++ )
+            if( control.getClass().equals( IncludeClasses.elementAt( i ) ) )
+               return true;
+
+      if( IncludeNameParts != null )
+         for( int i = 0 ; i < IncludeNameParts.size() ; i++ )
+            if( ( (ViewControl) control ).getTitle().indexOf(
+                     (String) IncludeNameParts.elementAt( i ) ) >= 0 )
+               return true;
+
+      if( IncludeClasses == null && IncludeNameParts == null )
+         return true;
+
+      return false;
+
+
+   }
    
 
    private void setUpViews( JPanel              ViewHolder , 
