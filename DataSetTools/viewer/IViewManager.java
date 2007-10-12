@@ -30,6 +30,18 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.18  2007/10/12 20:22:52  amoe
+ *  Added new viewer flags:
+ *    PARALLEL_YofX
+ *    GRX_Y
+ *    INSTRUMENT_TABLE
+ *    TWO_D_VIEWER
+ *    SLICE_VIEWER
+ *    COUNTS_X_Y
+ *    CONTOUR_QY_QZ_vs_QX
+ *    CONTOUR_QX_QY_vs_QZ
+ *    CONTOUR_QXYZ_SLICES
+ *
  *  Revision 1.17  2006/06/26 16:29:26  amoe
  *  -added public static final String DIFFERENCE_GRAPH
  *
@@ -86,8 +98,8 @@ import DataSetTools.dataset.*;
 public interface IViewManager extends IObserver
 {
   public static final String ADDITIONAL_VIEW = "Additional View";
-  public static final String IMAGE           = "Image View";
-  public static final String POINTEDAT_TABLE ="Pointed At Table View";
+  public static final String IMAGE           = "Image View";  
+  public static final String POINTEDAT_TABLE = "Pointed At Table View";
   public static final String SCROLLED_GRAPHS = "Scrolled Graph View";
   public static final String SELECTED_GRAPHS = "Selected Graph View";
   public static final String DIFFERENCE_GRAPH= "Difference Graph View";
@@ -95,6 +107,16 @@ public interface IViewManager extends IObserver
   public static final String THREE_D         = "3D View";
   public static final String CONTOUR         = "Contour View";
   public static final String HKL_SLICE       = "HKL Slice View";
+  public static final String PARALLEL_YofX   = "Parallel y(x)";
+  public static final String GRX_Y           = "GRX_Y";
+  public static final String INSTRUMENT_TABLE= "Instrument Table";
+  public static final String TWO_D_VIEWER    = "2D Viewer";
+  public static final String SLICE_VIEWER    = "Slice Viewer";
+  public static final String COUNTS_X_Y      = "Counts(x,y)";
+  public static final String CONTOUR_QY_QZ_vs_QX = "Contour:Qy,Qz vs Qx";
+  public static final String CONTOUR_QX_QY_vs_QZ = "Contour:Qx,Qy vs Qz";
+  public static final String CONTOUR_QXYZ_SLICES = "Contour:Qxyz slices";
+  
   public void setDataSet( DataSet ds );
 
   public DataSet getDataSet();
