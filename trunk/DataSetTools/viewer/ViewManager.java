@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.89  2007/10/19 21:22:54  amoe
+ *  -Added getViewList()
+ *  -Changed BuildViewMenu() to implement the UnifiedViewMenu
+ *
  *  Revision 1.88  2007/08/23 21:05:04  dennis
  *  Removed unused imports.
  *
@@ -336,6 +340,7 @@ import gov.anl.ipns.Util.Sys.*;
 import gov.anl.ipns.ViewTools.Components.OneD.*;
 import gov.anl.ipns.ViewTools.Components.*;
 
+import java.awt.Component;
 import java.awt.event.*;
 import java.io.*;
 import javax.swing.*;
@@ -668,8 +673,39 @@ public class ViewManager extends    JFrame
    {
      return viewType;
    }
-
-
+   
+   /**
+    * Returns a String list of possible viewers that the ViewManager can
+    * display.  Each of these Strings can be used as a flag for setting a 
+    * view for the ViewManager.
+    * 
+    * @return - an array of Strings, where each String specifies a viewer.
+    */
+   public static String[] getViewList()
+   {
+     return new String[]{
+         IViewManager.IMAGE,
+         IViewManager.SELECTED_GRAPHS,
+         IViewManager.DIFFERENCE_GRAPH,
+         IViewManager.SCROLLED_GRAPHS,
+         IViewManager.PARALLEL_YofX,
+         IViewManager.GRX_Y,        
+         IViewManager.INSTRUMENT_TABLE,
+         IViewManager.THREE_D,
+         
+         IViewManager.CONTOUR,
+         IViewManager.TWO_D_VIEWER,
+         IViewManager.HKL_SLICE,
+         IViewManager.SLICE_VIEWER,
+         IViewManager.COUNTS_X_Y,
+         
+         IViewManager.TABLE,
+         IViewManager.CONTOUR_QY_QZ_vs_QX,
+         IViewManager.CONTOUR_QX_QY_vs_QZ,
+         IViewManager.CONTOUR_QXYZ_SLICES,        
+         };
+   }
+   
    /**
     *  Construct a DataSetViewer object for the specified type of view
     *
@@ -1121,9 +1157,36 @@ private void BuildEditMenu()
 
 
 private void BuildViewMenu()
-{                                                   // set up view menu items
+{
+  UnifiedViewMenu view_menu = new UnifiedViewMenu("View",this);
+  Component[] menu_items = view_menu.getMenuComponents();
+  JMenu host_menu = viewer.getMenuBar().getMenu(DataSetViewer.VIEW_MENU_ID);
+  
+  
+  for(int i=0;i<menu_items.length;i++)
+  {
+    try
+    {
+      host_menu.insert((JMenuItem)menu_items[i], i);
+    }
+    catch(ClassCastException cce)
+    {
+      System.err.println("Cannot add item to ViewMenu.");
+      cce.printStackTrace();
+    }
+  }
+  
+  //view_menu.getMenuComponents();
+  
+  //viewer.getMenuBar().add(view_menu);
+  
+  //viewer.getMenuBar().getMenu(DataSetViewer.VIEW_MENU_ID).insert(mi, 0)
+  
+  /*// set up view menu items
   ViewMenuHandler view_menu_handler = new ViewMenuHandler();
   JMenu view_menu = viewer.getMenuBar().getMenu(DataSetViewer.VIEW_MENU_ID);
+  
+  
 
   JMenuItem button = new JMenuItem( ADDITIONAL_VIEW );
   button.addActionListener( view_menu_handler );
@@ -1165,24 +1228,27 @@ private void BuildViewMenu()
   button = new JMenuItem( TABLE );
   button.addActionListener( view_menu_handler );
   view_menu.add( button );
+  */
+  
 }
 
 
- public void BuildTableMenu( JMenu Tables )
- { 
-    ViewMenuHandler view_menu_handler = new ViewMenuHandler();
-    if( table_MenuComp == null)
-      table_MenuComp = new TableViewMenuComponents();
-   
-    table_MenuComp.addMenuItems( Tables , view_menu_handler);
-    
-   /* Tables.addSeparator();  
-    JMenuItem button;
-    button = new JMenuItem( "Advanced Table");
-    button.addActionListener( view_menu_handler );
-    Tables.add( button );
-   */
- }
+ //TODO: OLD
+ //public void BuildTableMenu( JMenu Tables )
+ //{ 
+ //   ViewMenuHandler view_menu_handler = new ViewMenuHandler();
+ //   if( table_MenuComp == null)
+ //     table_MenuComp = new TableViewMenuComponents();
+ //  
+ //   table_MenuComp.addMenuItems( Tables , view_menu_handler);
+ //   
+ //  /* Tables.addSeparator();  
+ //   JMenuItem button;
+ //   button = new JMenuItem( "Advanced Table");
+ //   button.addActionListener( view_menu_handler );
+ //   Tables.add( button );
+ //  */
+ //}
 
 
 /*
@@ -1470,22 +1536,22 @@ private float solve( float new_x ) // find what x in the original DataSet maps
     }
   }
 
-
-  private class ViewMenuHandler implements ActionListener,
-                                           Serializable
-  {  
-     boolean errors = false, 
-              index = false;
-    
-    public void actionPerformed( ActionEvent e )
-    {
-      String action = e.getActionCommand();
-      if ( action.equals( ADDITIONAL_VIEW ) )
-        new ViewManager( dataSet, viewType );
-      else
-        setView( action ); 
-    }
-  }
+  //TODO: OLD
+  //private class ViewMenuHandler implements ActionListener,
+  //                                         Serializable
+  //{  
+  //   boolean errors = false, 
+  //            index = false;
+  //  
+  //  public void actionPerformed( ActionEvent e )
+  //  {
+  //    String action = e.getActionCommand();
+  //    if ( action.equals( ADDITIONAL_VIEW ) )
+  //      new ViewManager( dataSet, viewType );
+  //    else
+  //      setView( action ); 
+  //  }
+  //}
 
 
   private class ConversionMenuHandler implements ActionListener,
