@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.90  2007/10/23 06:52:34  amoe
+ *  -Fixed bug where a JSeparator could not be added to the view menu.
+ *
  *  Revision 1.89  2007/10/19 21:22:54  amoe
  *  -Added getViewList()
  *  -Changed BuildViewMenu() to implement the UnifiedViewMenu
@@ -1162,7 +1165,6 @@ private void BuildViewMenu()
   Component[] menu_items = view_menu.getMenuComponents();
   JMenu host_menu = viewer.getMenuBar().getMenu(DataSetViewer.VIEW_MENU_ID);
   
-  
   for(int i=0;i<menu_items.length;i++)
   {
     try
@@ -1171,8 +1173,15 @@ private void BuildViewMenu()
     }
     catch(ClassCastException cce)
     {
-      System.err.println("Cannot add item to ViewMenu.");
-      cce.printStackTrace();
+      if(menu_items[i] instanceof JSeparator)
+      {
+        host_menu.add(menu_items[i], i);
+      }
+      else
+      {
+        System.err.println("Cannot add item to ViewMenu.");
+        cce.printStackTrace();
+      }
     }
   }
   
