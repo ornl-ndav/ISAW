@@ -30,6 +30,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2007/10/23 06:50:42  amoe
+ * -Changed DataSet to Dataset[].  Single DataSets will be retrieved from this.
+ * -Made the ViewMenuListener ignore empty datasets.
+ * -Added setVisibleAddViewerItem(..) .
+ *
  * Revision 1.1  2007/10/19 21:23:10  amoe
  * Initial commit.
  *
@@ -52,6 +57,7 @@ import gov.anl.ipns.Util.Sys.WindowShower;
 
 import DataSetTools.dataset.DataSet;
 import DataSetTools.retriever.RunfileRetriever;
+import DataSetTools.viewer.IViewManager;
 import DataSetTools.viewer.ViewManager;
 
 /**
@@ -63,27 +69,54 @@ import DataSetTools.viewer.ViewManager;
 public class UnifiedViewMenu extends JMenu
 {
   private ViewManager view_manager;
-  private DataSet dataset;
+  private DataSet[] dss;
   
   private String[] viewer_flag_list;
 
+  private JMenuItem additional_viewer;
+  private JSeparator separator;
   
-  public UnifiedViewMenu(String title)
-  {        
-    this(title, null, null );
+  public UnifiedViewMenu()
+  {
+    this("X",null,null);
   }
   
-/**
- * This constructor takes a <code>DataSet</code> and creates an instance of 
- * the <code>UnifiedViewMenu</code>.  This will eventually create a new 
- * <code>ViewManager</code> that uses the specified <code>DataSet</code>.
- * 
- * @param ds - This is the <code>DataSet</code> that will be shown in a 
- * viewer, in the <code>ViewManager</code>.
- */
-  public UnifiedViewMenu(String title, DataSet ds)
+  public UnifiedViewMenu(DataSet ds)
   {        
-    this( title, ds, null );
+    this( "X", new DataSet[]{ds}, null );
+  }
+  
+  public UnifiedViewMenu(DataSet[] dss)
+  {
+    this( "X", dss, null );
+  }
+  
+  public UnifiedViewMenu(ViewManager vm)
+  {
+    this( "X", new DataSet[]{vm.getDataSet()}, vm );
+  }
+  
+  public UnifiedViewMenu(String name)
+  {        
+    this(name, null, null );
+  }
+  
+  /**
+   * This constructor takes a <code>DataSet</code> and creates an instance of 
+   * the <code>UnifiedViewMenu</code>.  This will eventually create a new 
+   * <code>ViewManager</code> that uses the specified <code>DataSet</code>.
+   * 
+   * @param ds - This is the <code>DataSet</code> that will be shown in a 
+   * viewer, in the <code>ViewManager</code>.
+   */
+  public UnifiedViewMenu(String name, DataSet ds)
+  {        
+    this( name, new DataSet[]{ds}, null );
+  }
+  
+  public UnifiedViewMenu(String name, DataSet[] dss)
+  {
+    this(name,dss,null);
   }
   
   /**
@@ -94,9 +127,9 @@ public class UnifiedViewMenu extends JMenu
    * @param vm - This is the <code>ViewManager</code> that will be used by 
    * the <code>UnifiedViewMenu</code>.
    */
-  public UnifiedViewMenu(String title, ViewManager vm)
+  public UnifiedViewMenu(String name, ViewManager vm)
   {
-    this( title, vm.getDataSet(), vm );
+    this( name, new DataSet[]{vm.getDataSet()}, vm );
   }
   
   /**
@@ -104,99 +137,58 @@ public class UnifiedViewMenu extends JMenu
    * <code>ViewManager</code> and creates an instance of 
    * <code>UnifiedViewMenu</code>.
    */
-  private UnifiedViewMenu(String title, DataSet ds, ViewManager vm)
+  private UnifiedViewMenu(String name, DataSet[] dss, ViewManager vm)
   {
-    dataset = ds;
+    this.dss = dss;
     view_manager = vm;
     
     //setting this view menu title
-    this.setText(title);
-       
+    this.setText(name);
+    
+    additional_viewer = new JMenuItem(ViewManager.ADDITIONAL_VIEW);
+    separator = new JSeparator();
+    
     //init menu
     init_view_menu(ViewManager.getViewList());
   }
   
-  public void set_dataset(DataSet ds)
+  public void setDataSet(DataSet ds)
   {
-    dataset = ds;
+    this.dss = new DataSet[]{ds};
+  }
+  
+  public void setDataSetArray(DataSet[] dss)
+  {
+    this.dss = dss;
+  }
+  
+  public void setVisibleAddViewerItem(boolean bool)
+  {
+    additional_viewer.setVisible(bool);
+    separator.setVisible(bool);
   }
   
   private void init_view_menu(String[] v_list)
   {
     viewer_flag_list = (String[])v_list.clone();
     
+    JMenuItem viewer_item;
     ViewMenuListener menu_listener = new ViewMenuListener();
     
-    JMenuItem viewer_add_view;
-    //JSeparator separator;
-    
     //adding Additional View menu item
-    viewer_add_view = new JMenuItem(ViewManager.ADDITIONAL_VIEW);
-    //separator = new JSeparator();
-    viewer_add_view.addActionListener(menu_listener);
-    
-    this.add(viewer_add_view);
-    //this.add(separator);
+    additional_viewer.addActionListener(menu_listener);    
+    this.add(additional_viewer);
+    this.add(separator);
     
     //setting up viewer lists in viewmenu
     for(int i=0;i<viewer_flag_list.length;i++)
     {
-      viewer_add_view = new JMenuItem(viewer_flag_list[i]);
-      //viewer_list_item.setVisible(SHOW_VIEWER_LIST);
-      viewer_add_view.addActionListener(menu_listener);
-      
-      this.add(viewer_add_view);
-    }
-    
-    
-  }
-  
-  /*
-  private void init_directory_list(String[] d_list)
-  {
-    directory_flag_list = (String[])d_list.clone();
-    
-    //setting up directory lists in viewmenu
-    for(int i=0;i<directory_flag_list.length;i++)
-    {
-      JMenu viewer_list_item = new JMenu(directory_flag_list[i]);
-      viewer_list_item.setVisible(SHOW_DIRECTORY_LIST);
-      viewer_list_item.addActionListener(new ViewMenuListener());
-      
-      this.add(viewer_list_item);
+      viewer_item = new JMenuItem(viewer_flag_list[i]);
+      viewer_item.addActionListener(menu_listener);      
+      this.add(viewer_item);
     }
   }
-  */
-  
-  /*
-  //This is a temporary method for specifying the available viewers.
-  private String[] temp_get_viewer_list()
-  {
-    return new String[]{
-        IViewManager.IMAGE,
-        IViewManager.SELECTED_GRAPHS,
-        IViewManager.DIFFERENCE_GRAPH,
-        IViewManager.SCROLLED_GRAPHS,
-        IViewManager.PARALLEL_YofX,
-        IViewManager.GRX_Y,        
-        IViewManager.INSTRUMENT_TABLE,
-        IViewManager.THREE_D,
-        
-        IViewManager.CONTOUR,
-        IViewManager.TWO_D_VIEWER,
-        IViewManager.HKL_SLICE,
-        IViewManager.SLICE_VIEWER,
-        IViewManager.COUNTS_X_Y,
-        
-        IViewManager.TABLE,
-        IViewManager.CONTOUR_QY_QZ_vs_QX,
-        IViewManager.CONTOUR_QX_QY_vs_QZ,
-        IViewManager.CONTOUR_QXYZ_SLICES,        
-        };
-  }
-  */
-  
-  
+
   
   /*
    * ---Listeners----------------------------------------
@@ -207,43 +199,74 @@ public class UnifiedViewMenu extends JMenu
    */
   private class ViewMenuListener implements ActionListener
   {
-    public void actionPerformed( ActionEvent e)
+    public void actionPerformed( ActionEvent e )
     {
       String viewer_flag = e.getActionCommand();
-      
-      if(dataset == null)
-      {
-        //System.err.println("Cannot open DataSetViewer, no Dataset specified.");        
-        SharedMessages.addmsg("Cannot open DataSetViewer, no Dataset specified.");
-      }
-      else
+      String err_no_data = "Cannot open DataSetViewer, no Data specified.";
+      String err_empty_dataset= "Cannot open DataSetViewer, empty DataSet";
+
+      if(dss != null)
       {
         if(view_manager == null)
         {
-          // If the flag says "Additional View", then create a ViewManager with 
-          // a default view.
+          // If the flag says "Additional View", then create a ViewManager for each
+          // dataset in dss with a default view.
           if(viewer_flag.equals(ViewManager.ADDITIONAL_VIEW))
-            view_manager = new ViewManager(dataset,ViewManager.IMAGE,true);
+          {            
+            for(DataSet dataset: dss)
+            {
+              if(dataset == DataSet.EMPTY_DATA_SET)                
+                SharedMessages.addmsg(err_empty_dataset);
+              else
+                view_manager = new ViewManager(dataset,ViewManager.IMAGE,true);
+            }
+          }
           
-          else //Create the ViewManager with the specified view.
-            view_manager = new ViewManager(dataset,viewer_flag,true);
+          //Create the ViewManager for each dataset in dss, with the specified view.
+          else 
+          {
+            for(DataSet dataset: dss)
+            {
+              if(dataset == DataSet.EMPTY_DATA_SET)                
+                SharedMessages.addmsg(err_empty_dataset);
+              else
+                view_manager = new ViewManager(dataset,viewer_flag,true);
+            }
+          }
         }
         else
         {
-          // If the flag says "Additional View", then create a ViewManager with 
-          // the current view.
+          // If the flag says "Additional View", then create a ViewManager for 
+          // each dataset with the current view.
           if(viewer_flag.equals(ViewManager.ADDITIONAL_VIEW))
-            view_manager = new ViewManager(dataset,view_manager.getView(),true);
-          
-          else  //Set the ViewManager with the specified view.
+          {
+            for(DataSet dataset: dss)
+            {
+              if(dataset == DataSet.EMPTY_DATA_SET)                
+                SharedMessages.addmsg(err_empty_dataset);
+              else
+                /*view_manager = */new ViewManager(dataset,view_manager.getView(),true);
+            }
+          }
+          else
           {
             view_manager.setView(viewer_flag);
           
             if(!view_manager.isVisible())
               WindowShower.show( view_manager );
+            
+            //if(dss != null)
+            //{
+            //  for(DataSet dataset: dss)
+            //    view_manager = new ViewManager(dataset,viewer_flag,true);
+            //}
           }        
         }
-      }      
+      }   
+      else
+      {      
+        SharedMessages.addmsg(err_no_data);
+      }
     }    
   }
   
@@ -258,32 +281,30 @@ public class UnifiedViewMenu extends JMenu
     jf.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );    
     JMenuBar jmb = new JMenuBar();
     
-    //setting up test dataset
-    /*
-     * DataSet ds = new DataSet();    
-    float[][] testData = ContourViewComponent.getTestDataArr(41,51,3,4);
-    for (int i=0; i<testData.length; i++)
-       ds.addData_entry(
-             new FunctionTable(new UniformXScale(0, 
-                               testData[i].length-1, 
-                               testData[i].length),
-                               testData[i], 
-                               i));
-    ds.setSelectFlag(5, true);
-    ds.setSelectFlag(6, true);
-    */
+    String filename1 = "/home/moea/workspace/ISAW/SampleRuns/SCD06496.RUN";
+    RunfileRetriever rr1 = new RunfileRetriever(filename1);    
+    DataSet ds1 = rr1.getDataSet(1);
+    String filename2 = "/home/moea/workspace/ISAW/SampleRuns/SCD06497.RUN";
+    RunfileRetriever rr2 = new RunfileRetriever(filename2);    
+    DataSet ds2 = rr2.getDataSet(1);
+    DataSet[] dss = new DataSet[]{ds2,ds1};
     
-    String filename = "/home/moea/workspace/ISAW/SampleRuns/SCD06496.RUN";
-    RunfileRetriever rr = new RunfileRetriever(filename);
-    DataSet ds = rr.getDataSet(1);
+    //testing all possible UVM combinations
+    //UnifiedViewMenu uvm = new UnifiedViewMenu();  //kinda-OK!!!NNN
+    UnifiedViewMenu uvm = new UnifiedViewMenu(ds1); //kinda-OK!!!NNN
+    //UnifiedViewMenu uvm = new UnifiedViewMenu(dss); //kinda-OK!!!NNN
+    //UnifiedViewMenu uvm = new UnifiedViewMenu("MyMenuName");  //kinda-OK!!!NNN
+    //UnifiedViewMenu uvm = new UnifiedViewMenu("MyMenuName",ds1); //kinda-OK!!!NNN
+    //UnifiedViewMenu uvm = new UnifiedViewMenu("MyMenuName",dss);  //kinda-OK!!!NNN
+     
+     //ViewManager vm = new ViewManager(ds1,IViewManager.THREE_D,true);
+     //UnifiedViewMenu uvm = new UnifiedViewMenu(vm);  //kinda-OK!!!
+     //UnifiedViewMenu uvm = new UnifiedViewMenu("MyMenuName",vm);  //kinda-OK!!!
     
-    //setting up menus
-    //UnifiedViewMenu uvm = new UnifiedViewMenu(ds);
-    //UnifiedViewMenu uvm = new UnifiedViewMenu(
-    //                 new ViewManager(ds,IViewManager.SCROLLED_GRAPHS,true));
-    UnifiedViewMenu uvm = new UnifiedViewMenu("MyMenu");
-    uvm.set_dataset(ds);    
+    //uvm.setDataSetArray(dss);
     
+    uvm.setVisibleAddViewerItem(false);
+     
     //display test frame   
     jmb.add(uvm);
     jf.getContentPane().add(jmb,BorderLayout.NORTH);
