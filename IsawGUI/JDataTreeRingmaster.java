@@ -30,6 +30,10 @@
  *
  *
  * $Log$
+ * Revision 1.21  2007/10/23 06:44:42  amoe
+ * Made the JDataTreeRingMaster use the UnifiedViewMenu instead of it's
+ * own view menu.
+ *
  * Revision 1.20  2006/06/26 16:34:44  amoe
  * -added if block in actionPerformed (inner class
  *  IsawViewMenuListener) so the DIFFERENCE_GRAPH
@@ -99,6 +103,7 @@ import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreePath;
 
 import DataSetTools.components.ui.OperatorMenu;
+import DataSetTools.components.ui.UnifiedViewMenu;
 import DataSetTools.components.ui.ViewMenu;
 import DataSetTools.dataset.Data;
 import DataSetTools.dataset.DataSet;
@@ -489,11 +494,13 @@ public class JDataTreeRingmaster
 
                                         //create a sub-menu to show
                                         //viewer options
-    JMenu view_popup_menu = new JMenu( ONE_DS_VIEW );
-    ViewMenu view_menu_maker = new ViewMenu();
-    view_menu_maker.build( view_popup_menu, null, new IsawViewMenuListener() );
-    view_popup_menu.setPopupMenuVisible( true );
-
+    //JMenu view_popup_menu = new JMenu(ONE_DS_VIEW);    
+    //ViewMenu view_menu_maker = new ViewMenu();
+    //view_menu_maker.build( view_popup_menu, null, new IsawViewMenuListener() );
+    //view_popup_menu.setPopupMenuVisible( true );
+    UnifiedViewMenu view_popup_menu = new UnifiedViewMenu(ONE_DS_VIEW,ds);
+    view_popup_menu.setVisibleAddViewerItem(false);
+    
     /*
      * listens to the right-click menu 
      */
@@ -608,10 +615,13 @@ public class JDataTreeRingmaster
       ((DataSetMutableTreeNode)tps[i].getLastPathComponent()).getUserObject());
 
                                    //create a view sub-menu
-    JMenu view_popup_menu = new JMenu( MULTI_DS_VIEW );
-    ViewMenu view_menu_maker = new ViewMenu();
-    view_menu_maker.build( view_popup_menu, dss, new IsawViewMenuListener() );
-    view_popup_menu.setPopupMenuVisible( true );
+    //JMenu view_popup_menu = new JMenu( MULTI_DS_VIEW );
+    //ViewMenu view_menu_maker = new ViewMenu();
+    //view_menu_maker.build( view_popup_menu, dss, new IsawViewMenuListener() );
+    //view_popup_menu.setPopupMenuVisible( true );
+    UnifiedViewMenu view_popup_menu = new UnifiedViewMenu( MULTI_DS_VIEW,dss );
+    view_popup_menu.setVisibleAddViewerItem(false);
+    
 
                                   //create a send sub-menu
     JMenu send_popup_menu = new JMenu( MULTI_DS_SEND );
