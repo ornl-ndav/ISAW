@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.35  2007/10/26 22:36:42  amoe
+ * Added getSelectedDataSets() .
+ *
  * Revision 1.34  2006/07/13 14:19:00  rmikk
  * Fixed deleteNode() method to properly notify observers when experiments
  * and full DataSets are deleted
@@ -320,6 +323,41 @@ public class JDataTree
   public int getSelectionCount()
   {
     return tree.getSelectionCount();
+  }
+  
+  
+  /**
+   * This method returns an array of selected DataSets that are in the data
+   * tree. 
+   *
+   * @return - This is the array of DataSets (DataSet[]).
+   */
+  public DataSet[] getSelectedDataSets()
+  {
+	  Vector<DataSet> vec = new Vector<DataSet>();
+	  DataSet[] dss;
+      TreePath[] tps = null;
+      tps = getSelectedNodePaths();
+ 
+      MutableTreeNode node;
+      for( int i=0;  i<tps.length;  i++ )
+      {
+        node = (MutableTreeNode)tps[i].getLastPathComponent();
+        if( node instanceof DataSetMutableTreeNode )
+        {
+          DataSetMutableTreeNode ds_node = (DataSetMutableTreeNode)node;
+          DataSet ds = ds_node.getUserObject();
+          vec.add(ds);
+        }
+      }
+      
+      dss = new DataSet[vec.size()];
+      for(int i=0; i<dss.length; i++)
+      {
+    	dss[i]=vec.elementAt(i); 
+      }
+      
+      return dss;      
   }
 
 
