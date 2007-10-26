@@ -30,6 +30,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2007/10/26 22:40:28  amoe
+ * -In the ViewMenuListener, made it so a viewer will not be shown/set if the
+ * DataSet array length is 0 or less.
+ *
+ * -Made the ViewMenuListener not keep a reference of new ViewManagers.
+ *
  * Revision 1.2  2007/10/23 06:50:42  amoe
  * -Changed DataSet to Dataset[].  Single DataSets will be retrieved from this.
  * -Made the ViewMenuListener ignore empty datasets.
@@ -205,7 +211,7 @@ public class UnifiedViewMenu extends JMenu
       String err_no_data = "Cannot open DataSetViewer, no Data specified.";
       String err_empty_dataset= "Cannot open DataSetViewer, empty DataSet";
 
-      if(dss != null)
+      if(dss != null && dss.length > 0)
       {
         if(view_manager == null)
         {
@@ -218,7 +224,7 @@ public class UnifiedViewMenu extends JMenu
               if(dataset == DataSet.EMPTY_DATA_SET)                
                 SharedMessages.addmsg(err_empty_dataset);
               else
-                view_manager = new ViewManager(dataset,ViewManager.IMAGE,true);
+                /*view_manager =*/ new ViewManager(dataset,ViewManager.IMAGE,true);
             }
           }
           
@@ -230,7 +236,7 @@ public class UnifiedViewMenu extends JMenu
               if(dataset == DataSet.EMPTY_DATA_SET)                
                 SharedMessages.addmsg(err_empty_dataset);
               else
-                view_manager = new ViewManager(dataset,viewer_flag,true);
+                /*view_manager =*/ new ViewManager(dataset,viewer_flag,true);
             }
           }
         }
@@ -249,8 +255,14 @@ public class UnifiedViewMenu extends JMenu
             }
           }
           else
-          {
+          {        	
+        	//view_manager.setDataSet(dss[0]);  
             view_manager.setView(viewer_flag);
+            
+            //DBG
+            System.out.println("Current DS: "+dss[0].getTitle());
+            System.out.println("view_manager DS: "+view_manager.getDataSet().getTitle());
+            //-DBG
           
             if(!view_manager.isVisible())
               WindowShower.show( view_manager );
