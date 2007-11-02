@@ -30,6 +30,10 @@
  *
  *
  * $Log$
+ * Revision 1.22  2007/11/02 06:31:47  amoe
+ * Made the 'View Highlighted Data block(s)' menu show a list of possible
+ * viewers to use.
+ *
  * Revision 1.21  2007/10/23 06:44:42  amoe
  * Made the JDataTreeRingMaster use the UnifiedViewMenu instead of it's
  * own view menu.
@@ -273,6 +277,21 @@ public class JDataTreeRingmaster
       }
 
       /*
+       * Return a DataSet of a Data block that is highlighted in the TreePath[]
+       */
+      public DataSet getBuiltDataSet()
+      {
+        DataMutableTreeNode node = (DataMutableTreeNode)(  
+                                             tps[0].getLastPathComponent() );
+        Data d = node.getUserObject();
+        DataSet whole_ds = tree.getDataSet( node );
+        DataSet new_ds = whole_ds.empty_clone();
+        new_ds.addData_entry( (Data)d.clone() );
+        
+        return new_ds;
+      }
+      
+      /*
        * trap mouse events for the right-click menus.
        */
       public void actionPerformed( ActionEvent item_e )
@@ -280,13 +299,13 @@ public class JDataTreeRingmaster
         String command = item_e.getActionCommand();
         if ( command.equals( ONE_DATA_VIEW ) )
         {
-          DataMutableTreeNode node = (DataMutableTreeNode)(  
-                                               tps[0].getLastPathComponent() );
-          Data d = node.getUserObject();
-          DataSet ds = tree.getDataSet( node );
-          DataSet new_ds = ds.empty_clone();
-          new_ds.addData_entry( (Data)d.clone() );
-          new ViewManager( new_ds, IViewManager.SELECTED_GRAPHS );
+          //DataMutableTreeNode node = (DataMutableTreeNode)(  
+          //                                     tps[0].getLastPathComponent() );
+          //Data d = node.getUserObject();
+          //DataSet ds = tree.getDataSet( node );
+          //DataSet new_ds = ds.empty_clone();
+          //new_ds.addData_entry( (Data)d.clone() );
+          new ViewManager( getBuiltDataSet(), IViewManager.SELECTED_GRAPHS );
         }
         else if( command.equals(ONE_DATA_DELETE) )
         {
@@ -317,8 +336,11 @@ public class JDataTreeRingmaster
     item_listener = new SingleDataBlockMenuItemListener( tps );
 
     JSeparator separator = new JSeparator();
-    JMenuItem view_item = new JMenuItem( ONE_DATA_VIEW );
-              view_item.addActionListener( item_listener );
+    //JMenuItem view_item = new JMenuItem( ONE_DATA_VIEW );
+              //view_item.addActionListener( item_listener );
+    UnifiedViewMenu view_menu = new UnifiedViewMenu( 
+                              ONE_DATA_VIEW, item_listener.getBuiltDataSet());
+              view_menu.setVisibleAddViewerItem(false);
     JMenuItem delete_item = new JMenuItem( ONE_DATA_DELETE );
               delete_item.addActionListener( item_listener );
     JMenuItem select_item = new JMenuItem( ONE_DATA_SELECT );
@@ -326,7 +348,7 @@ public class JDataTreeRingmaster
     JMenuItem clear_item = new JMenuItem( ONE_DATA_CLEAR );
               clear_item.addActionListener( item_listener );
     JPopupMenu popup_menu = new JPopupMenu( "SingleDataBlockPopupMenu" );
-               popup_menu.add( view_item );
+               popup_menu.add( view_menu );
                popup_menu.add( delete_item );
                popup_menu.add( select_item );
                popup_menu.add( separator );
@@ -351,12 +373,48 @@ public class JDataTreeRingmaster
       {
         this.tps = tps;
       }
+      
+      /*
+       * Return a DataSet of Data that is highlighted in the TreePath[]
+       */
+      public DataSet getBuiltDataSet()
+      {        
+        DataMutableTreeNode node = null;
+        Data d = null;
+        DataSet whole_ds = null;
+        DataSet new_ds = null;
+        
+        //search through tree path for a DataMutableTreeNode
+        for (int i=0; i<tps.length; i++)
+        {
+          Object node_obj = tps[i].getLastPathComponent();
+          
+          if ( node_obj instanceof DataMutableTreeNode ) //skip other nodes
+          {
+            node = (DataMutableTreeNode)(node_obj);
+            
+            //initialize DataSets
+            if(whole_ds == null || new_ds == null)
+            {
+              whole_ds = tree.getDataSet( node );
+              new_ds = whole_ds.empty_clone();
+            }
+           
+            //add data node to our new DataSet
+            d = node.getUserObject();
+            //d.setSelected( false );
+            new_ds.addData_entry(d);
+          }          
+        }
+        return new_ds;
+      }
 
       public void actionPerformed( ActionEvent item_e )
       {
         String command = item_e.getActionCommand();
         if( command.equals( MULTI_DATA_VIEW ) )
         {
+           /*
            DataMutableTreeNode node = null;
            Data    d  = null;
            DataSet ds         = null;
@@ -384,6 +442,8 @@ public class JDataTreeRingmaster
            }
            if ( new_ds != null )
              new ViewManager( new_ds, ViewManager.IMAGE );
+           */
+          new ViewManager(getBuiltDataSet(), ViewManager.IMAGE);
 
         }
         else if(  command.equals( MULTI_DATA_DELETE )  )
@@ -427,11 +487,12 @@ public class JDataTreeRingmaster
           tree.clearSelections();
       }
     } 
+     
                                        //create a view sub-menu
-    JMenu view_popup_menu = new JMenu( MULTI_DATA_VIEW );
-    ViewMenu view_menu_maker = new ViewMenu();
-    view_menu_maker.build( view_popup_menu, null, new IsawViewMenuListener() );
-    view_popup_menu.setPopupMenuVisible( true );
+
+    //ViewMenu view_menu_maker = new ViewMenu();
+    //view_menu_maker.build( view_popup_menu, null, new IsawViewMenuListener() );
+    //view_popup_menu.setPopupMenuVisible( true );
 
     // Multiple Data block Menu ...........................
 
@@ -439,8 +500,11 @@ public class JDataTreeRingmaster
     item_listener = new MultipleDataBlockMenuItemListener( tps );
 
     JSeparator separator = new JSeparator();
-    JMenuItem view_item = new JMenuItem( MULTI_DATA_VIEW );
-              view_item.addActionListener( item_listener );
+    //JMenuItem view_item = new JMenuItem( MULTI_DATA_VIEW );
+              //view_item.addActionListener( item_listener );
+    UnifiedViewMenu view_menu = new UnifiedViewMenu( 
+                            MULTI_DATA_VIEW, item_listener.getBuiltDataSet() );
+              view_menu.setVisibleAddViewerItem(false);
     JMenuItem delete_item = new JMenuItem( MULTI_DATA_DELETE );
               delete_item.addActionListener( item_listener );
     JMenuItem select_item = new JMenuItem( MULTI_DATA_SELECT );
@@ -450,7 +514,7 @@ public class JDataTreeRingmaster
     JMenuItem clear_all_item = new JMenuItem( MULTI_DATA_CLEAR_ALL );
               clear_all_item.addActionListener( item_listener );
     JPopupMenu popup_menu = new JPopupMenu( "MultipleDataBlockPopupMenu" );
-               popup_menu.add( view_item );
+               popup_menu.add( view_menu );
                popup_menu.add( delete_item );
                popup_menu.add( select_item );
                popup_menu.add( clear_item );
