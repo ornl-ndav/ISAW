@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2007/11/02 04:43:41  amoe
+ * Updated Java docs.
+ *
  * Revision 1.3  2007/10/26 22:40:28  amoe
  * -In the ViewMenuListener, made it so a viewer will not be shown/set if the
  * DataSet array length is 0 or less.
@@ -48,13 +51,13 @@
  */
 package DataSetTools.components.ui;
 
-import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+//import java.awt.BorderLayout;
 
-import javax.swing.JFrame;
 import javax.swing.JMenu;
-import javax.swing.JMenuBar;
+//import javax.swing.JFrame;
+//import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JSeparator;
 
@@ -62,18 +65,19 @@ import gov.anl.ipns.Util.Sys.SharedMessages;
 import gov.anl.ipns.Util.Sys.WindowShower;
 
 import DataSetTools.dataset.DataSet;
-import DataSetTools.retriever.RunfileRetriever;
-import DataSetTools.viewer.IViewManager;
+//import DataSetTools.retriever.RunfileRetriever;
 import DataSetTools.viewer.ViewManager;
 
 /**
  * <code>UnifiedViewMenu</code> is a universal menu for selecting a 
- * DataSetViewer and viewing it through the <code>ViewManager</code>.
+ * DataSetViewer and viewing it with the <code>ViewManager</code>.
  * 
  * @author moea
  */
 public class UnifiedViewMenu extends JMenu
 {
+  private static final long serialVersionUID = 1L;
+  
   private ViewManager view_manager;
   private DataSet[] dss;
   
@@ -82,56 +86,105 @@ public class UnifiedViewMenu extends JMenu
   private JMenuItem additional_viewer;
   private JSeparator separator;
   
+  /**
+   * This constructor takes in no parameters and creates an instance of 
+   * <code>UnifiedViewMenu</code>.  In order for <code>UnifiedViewMenu</code> 
+   * to function, <code>setDataSet(DataSet)</code> will need to be called 
+   * in order to set viewable data.
+   */
   public UnifiedViewMenu()
   {
-    this("X",null,null);
+    this("",null,null);
   }
   
+  /** 
+   * This constructor takes a <code>DataSet</code> and creates an instance of 
+   * the <code>UnifiedViewMenu</code>.
+   * 
+   * @param ds - This is the <code>DataSet</code> that will be shown in a 
+   *             viewer, in the <code>ViewManager</code>.
+   */
   public UnifiedViewMenu(DataSet ds)
   {        
-    this( "X", new DataSet[]{ds}, null );
+    this( "", new DataSet[]{ds}, null );
   }
   
+  /** 
+   * This constructor takes a <code>DataSet</code>[] and creates an instance 
+   * of <code>UnifiedViewMenu</code>.
+   * 
+   * @param dss - This is the <code>DataSet</code>[] that will be used as data 
+   *              for the <code>ViewManager</code>.
+   */
   public UnifiedViewMenu(DataSet[] dss)
   {
-    this( "X", dss, null );
+    this( "", dss, null );
   }
   
+  /** 
+   * This constructor takes a <code>ViewManager</code> and creates an instance 
+   * of <code>UnifiedViewMenu</code>.
+   * 
+   * @param vm - This is the <code>ViewManager</code> that will be used by 
+   *             the <code>UnifiedViewMenu</code>.
+   */
   public UnifiedViewMenu(ViewManager vm)
   {
-    this( "X", new DataSet[]{vm.getDataSet()}, vm );
+    this( "", new DataSet[]{vm.getDataSet()}, vm );
   }
   
+  /** 
+   * This constructor takes a <code>String</code> name and creates an instance 
+   * of <code>UnifiedViewMenu</code>.
+   * 
+   * @param name - This is the <code>String</code> that will be used as the 
+   *               menu name.
+   */
   public UnifiedViewMenu(String name)
   {        
     this(name, null, null );
   }
   
   /**
-   * This constructor takes a <code>DataSet</code> and creates an instance of 
-   * the <code>UnifiedViewMenu</code>.  This will eventually create a new 
+   * This constructor takes a <code>String</code> name, a 
+   * <code>DataSet</code>, and creates an instance of the 
+   * <code>UnifiedViewMenu</code>.  This will eventually create a new 
    * <code>ViewManager</code> that uses the specified <code>DataSet</code>.
    * 
+   * @param name - This is the <code>String</code> that will be used as the 
+   *               menu name.
    * @param ds - This is the <code>DataSet</code> that will be shown in a 
-   * viewer, in the <code>ViewManager</code>.
+   *             viewer, in the <code>ViewManager</code>.
    */
   public UnifiedViewMenu(String name, DataSet ds)
   {        
     this( name, new DataSet[]{ds}, null );
   }
   
+  /** 
+   * This constructor takes a <code>String<code> name, a 
+   * <code>DataSet</code>[], and creates an instance of 
+   * <code>UnifiedViewMenu</code>.
+   * 
+   * @param name - This is the <code>String</code> that will be used as the 
+   *               menu name.
+   * @param dss - This is the <code>DataSet</code>[] that will be used as data 
+   *              for the <code>ViewManager</code>.
+   */
   public UnifiedViewMenu(String name, DataSet[] dss)
   {
     this(name,dss,null);
   }
   
   /**
-   * This constructor takes a <code>ViewManager</code> and creates an instance 
-   * of the <code>UnifiedViewMenu</code>.  Here, the <code>DataSet</code> that 
-   * will be viewed is already contained within the <code>ViewManager</code>.
+   * This constructor takes a <code>String</code> name, a 
+   * <code>ViewManager</code>, and creates an instance of the 
+   * <code>UnifiedViewMenu</code>.
    * 
+   * @param name - This is the <code>String</code> that will be used as the 
+   *               menu name.
    * @param vm - This is the <code>ViewManager</code> that will be used by 
-   * the <code>UnifiedViewMenu</code>.
+   *             the <code>UnifiedViewMenu</code>.
    */
   public UnifiedViewMenu(String name, ViewManager vm)
   {
@@ -139,9 +192,16 @@ public class UnifiedViewMenu extends JMenu
   }
   
   /**
-   * This constructor takes a <code>DataSet</code> and a 
-   * <code>ViewManager</code> and creates an instance of 
-   * <code>UnifiedViewMenu</code>.
+   * This constructor takes a <code>String<code> name, a 
+   * <code>DataSet</code>[] and a <code>ViewManager</code> and creates an 
+   * instance of <code>UnifiedViewMenu</code>.
+   * 
+   * @param name - This is the <code>String</code> that will be used as the 
+   *               menu name.
+   * @param dss - This is the <code>DataSet</code>[] that will be used as data 
+   *              for the <code>ViewManager</code>.
+   * @param vm - This is the <code>ViewManager</code> that will be used by 
+   *             the <code>UnifiedViewMenu</code>.
    */
   private UnifiedViewMenu(String name, DataSet[] dss, ViewManager vm)
   {
@@ -158,22 +218,43 @@ public class UnifiedViewMenu extends JMenu
     init_view_menu(ViewManager.getViewList());
   }
   
+  /**
+   * This method sets the <code>DataSet</code> to be viewed.
+   * 
+   * @param ds - The viewable <code>DataSet</code>.
+   */  
   public void setDataSet(DataSet ds)
   {
     this.dss = new DataSet[]{ds};
   }
   
+  /**
+   * This method sets the <code>DataSet</code>[] to be viewed.
+   * 
+   * @param ds - The viewable <code>DataSet</code> array.
+   */  
   public void setDataSetArray(DataSet[] dss)
   {
     this.dss = dss;
   }
   
+  /**
+   * This method makes the 'Additional View' menu item visible or not 
+   * depending on whether the <code>bool</code> is true or false.
+   *  
+   * @param bool - The <code>Boolean</code> that specifies whether 
+   *               'Additional View' is visible or not.
+   */      
   public void setVisibleAddViewerItem(boolean bool)
   {
     additional_viewer.setVisible(bool);
     separator.setVisible(bool);
   }
   
+  /**
+   * This method initializes the view menu with a list of possible viewers and 
+   * also includes 'Additional View'.
+   */
   private void init_view_menu(String[] v_list)
   {
     viewer_flag_list = (String[])v_list.clone();
@@ -255,14 +336,8 @@ public class UnifiedViewMenu extends JMenu
             }
           }
           else
-          {        	
-        	//view_manager.setDataSet(dss[0]);  
+          {
             view_manager.setView(viewer_flag);
-            
-            //DBG
-            System.out.println("Current DS: "+dss[0].getTitle());
-            System.out.println("view_manager DS: "+view_manager.getDataSet().getTitle());
-            //-DBG
           
             if(!view_manager.isVisible())
               WindowShower.show( view_manager );
@@ -285,6 +360,7 @@ public class UnifiedViewMenu extends JMenu
   /*
    * ---Main Test----------------------------------------
    */
+  /*
   public static void main(String[] args)
   {
     //setting up test frame
@@ -303,7 +379,7 @@ public class UnifiedViewMenu extends JMenu
     
     //testing all possible UVM combinations
     //UnifiedViewMenu uvm = new UnifiedViewMenu();  //kinda-OK!!!NNN
-    UnifiedViewMenu uvm = new UnifiedViewMenu(ds1); //kinda-OK!!!NNN
+    UnifiedViewMenu uvm = new UnifiedViewMenu("X",ds1); //kinda-OK!!!NNN
     //UnifiedViewMenu uvm = new UnifiedViewMenu(dss); //kinda-OK!!!NNN
     //UnifiedViewMenu uvm = new UnifiedViewMenu("MyMenuName");  //kinda-OK!!!NNN
     //UnifiedViewMenu uvm = new UnifiedViewMenu("MyMenuName",ds1); //kinda-OK!!!NNN
@@ -315,12 +391,13 @@ public class UnifiedViewMenu extends JMenu
     
     //uvm.setDataSetArray(dss);
     
-    uvm.setVisibleAddViewerItem(false);
+    uvm.setVisibleAddViewerItem(true);
      
     //display test frame   
     jmb.add(uvm);
     jf.getContentPane().add(jmb,BorderLayout.NORTH);
     jf.setVisible(true);
   }
+  */
 
 }
