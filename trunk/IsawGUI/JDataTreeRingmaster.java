@@ -30,8 +30,14 @@
  *
  *
  * $Log$
+ * Revision 1.23  2007/11/09 21:12:12  amoe
+ * -Removed the view menus and menu items since it's functionality is
+ *  replaced by the UnifiedViewMenu.
+ * -Removed IsawViewMenuListener since UnifiedViewMenu handles it's own
+ *  menu events.
+ *
  * Revision 1.22  2007/11/02 06:31:47  amoe
- * Made the 'View Highlighted Data block(s)' menu show a list of possible
+ * Made the 'View Highlighted Data block(s)' menu show a list of 
  * viewers to use.
  *
  * Revision 1.21  2007/10/23 06:44:42  amoe
@@ -108,7 +114,6 @@ import javax.swing.tree.TreePath;
 
 import DataSetTools.components.ui.OperatorMenu;
 import DataSetTools.components.ui.UnifiedViewMenu;
-import DataSetTools.components.ui.ViewMenu;
 import DataSetTools.dataset.Data;
 import DataSetTools.dataset.DataSet;
 import DataSetTools.operator.Operator;
@@ -336,8 +341,7 @@ public class JDataTreeRingmaster
     item_listener = new SingleDataBlockMenuItemListener( tps );
 
     JSeparator separator = new JSeparator();
-    //JMenuItem view_item = new JMenuItem( ONE_DATA_VIEW );
-              //view_item.addActionListener( item_listener );
+
     UnifiedViewMenu view_menu = new UnifiedViewMenu( 
                               ONE_DATA_VIEW, item_listener.getBuiltDataSet());
               view_menu.setVisibleAddViewerItem(false);
@@ -490,18 +494,13 @@ public class JDataTreeRingmaster
      
                                        //create a view sub-menu
 
-    //ViewMenu view_menu_maker = new ViewMenu();
-    //view_menu_maker.build( view_popup_menu, null, new IsawViewMenuListener() );
-    //view_popup_menu.setPopupMenuVisible( true );
-
     // Multiple Data block Menu ...........................
 
     MultipleDataBlockMenuItemListener item_listener = null;
     item_listener = new MultipleDataBlockMenuItemListener( tps );
 
     JSeparator separator = new JSeparator();
-    //JMenuItem view_item = new JMenuItem( MULTI_DATA_VIEW );
-              //view_item.addActionListener( item_listener );
+
     UnifiedViewMenu view_menu = new UnifiedViewMenu( 
                             MULTI_DATA_VIEW, item_listener.getBuiltDataSet() );
               view_menu.setVisibleAddViewerItem(false);
@@ -558,10 +557,6 @@ public class JDataTreeRingmaster
 
                                         //create a sub-menu to show
                                         //viewer options
-    //JMenu view_popup_menu = new JMenu(ONE_DS_VIEW);    
-    //ViewMenu view_menu_maker = new ViewMenu();
-    //view_menu_maker.build( view_popup_menu, null, new IsawViewMenuListener() );
-    //view_popup_menu.setPopupMenuVisible( true );
     UnifiedViewMenu view_popup_menu = new UnifiedViewMenu(ONE_DS_VIEW,ds);
     view_popup_menu.setVisibleAddViewerItem(false);
     
@@ -679,10 +674,6 @@ public class JDataTreeRingmaster
       ((DataSetMutableTreeNode)tps[i].getLastPathComponent()).getUserObject());
 
                                    //create a view sub-menu
-    //JMenu view_popup_menu = new JMenu( MULTI_DS_VIEW );
-    //ViewMenu view_menu_maker = new ViewMenu();
-    //view_menu_maker.build( view_popup_menu, dss, new IsawViewMenuListener() );
-    //view_popup_menu.setPopupMenuVisible( true );
     UnifiedViewMenu view_popup_menu = new UnifiedViewMenu( MULTI_DS_VIEW,dss );
     view_popup_menu.setVisibleAddViewerItem(false);
     
@@ -803,102 +794,6 @@ public class JDataTreeRingmaster
       DataSet ds = tree.getDataSet( d_node );
       ds.setPointedAtIndex( ds.getIndex_of_data( d_node.getUserObject() ) );
       ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );
-    }
-  }
-
-
-  /**
-   * listens to the view menu in ISAW
-   */
-  class IsawViewMenuListener implements ActionListener
-  {
-    public void actionPerformed( ActionEvent e )
-    {
-      if(  e.getActionCommand().equals( ViewManager.IMAGE )  )
-      {
-        TreePath[] tps = null;
-        tps = tree.getSelectedNodePaths();
-   
-        MutableTreeNode node;
-        for( int i=0;  i<tps.length;  i++ )
-        {
-          node = (MutableTreeNode)tps[i].getLastPathComponent();
-          if( node instanceof DataSetMutableTreeNode )
-          {
-            DataSetMutableTreeNode ds_node = (DataSetMutableTreeNode)node;
-            DataSet ds = ds_node.getUserObject();
-            new ViewManager( ds, ViewManager.IMAGE );
-          }
-        }  
-      }
-      if(  e.getActionCommand().equals( ViewManager.SCROLLED_GRAPHS )  )
-      {
-        TreePath[] tps = null;
-        tps = tree.getSelectedNodePaths();
-   
-        MutableTreeNode node;
-        for( int i=0;  i<tps.length;  i++ )
-        {
-          node = (MutableTreeNode)tps[i].getLastPathComponent();
-          if( node instanceof DataSetMutableTreeNode )
-          {
-            DataSetMutableTreeNode ds_node = (DataSetMutableTreeNode)node;
-            DataSet ds = ds_node.getUserObject();
-            new ViewManager( ds, ViewManager.SCROLLED_GRAPHS );
-          }
-        }  
-      }
-      if(  e.getActionCommand().equals( ViewManager.SELECTED_GRAPHS )   )
-      {
-        TreePath[] tps = null;
-        tps = tree.getSelectedNodePaths();
-   
-        MutableTreeNode node;
-        for( int i=0;  i<tps.length;  i++ )
-        {
-          node = (MutableTreeNode)tps[i].getLastPathComponent();
-          if( node instanceof DataSetMutableTreeNode )
-          {
-            DataSetMutableTreeNode ds_node = (DataSetMutableTreeNode)node;
-            DataSet ds = ds_node.getUserObject();
-            new ViewManager( ds, ViewManager.SELECTED_GRAPHS );
-          }
-        }  
-      }
-      if( e.getActionCommand().equals(ViewManager.DIFFERENCE_GRAPH))//
-      {
-          TreePath[] tps = null;
-          tps = tree.getSelectedNodePaths();
-     
-          MutableTreeNode node;
-          for( int i=0;  i<tps.length;  i++ )
-          {
-            node = (MutableTreeNode)tps[i].getLastPathComponent();
-            if( node instanceof DataSetMutableTreeNode )
-            {
-              DataSetMutableTreeNode ds_node = (DataSetMutableTreeNode)node;
-              DataSet ds = ds_node.getUserObject();
-              new ViewManager( ds, ViewManager.DIFFERENCE_GRAPH );
-            }
-          } 
-      }
-      if(  e.getActionCommand().equals( ViewManager.THREE_D )  )
-      {
-        TreePath[] tps = null;
-        tps = tree.getSelectedNodePaths();
-   
-        MutableTreeNode node;
-        for( int i=0;  i<tps.length;  i++ )
-        {
-          node = (MutableTreeNode)tps[i].getLastPathComponent();
-          if( node instanceof DataSetMutableTreeNode )
-          {
-            DataSetMutableTreeNode ds_node = (DataSetMutableTreeNode)node;
-            DataSet ds = ds_node.getUserObject();
-            new ViewManager( ds, ViewManager.THREE_D );
-          }
-        }  
-      }
     }
   }
 
