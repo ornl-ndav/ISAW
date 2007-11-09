@@ -30,6 +30,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.91  2007/11/09 21:06:46  amoe
+ *  Removed BuildTableMenu and ViewMenuHandler .  These are no longer
+ *  needed since the new UnifiedViewMenu has all of the viewers and
+ *  handles it's own menu events.
+ *
  *  Revision 1.90  2007/10/23 06:52:34  amoe
  *  -Fixed bug where a JSeparator could not be added to the view menu.
  *
@@ -1183,81 +1188,8 @@ private void BuildViewMenu()
         cce.printStackTrace();
       }
     }
-  }
-  
-  //view_menu.getMenuComponents();
-  
-  //viewer.getMenuBar().add(view_menu);
-  
-  //viewer.getMenuBar().getMenu(DataSetViewer.VIEW_MENU_ID).insert(mi, 0)
-  
-  /*// set up view menu items
-  ViewMenuHandler view_menu_handler = new ViewMenuHandler();
-  JMenu view_menu = viewer.getMenuBar().getMenu(DataSetViewer.VIEW_MENU_ID);
-  
-  
-
-  JMenuItem button = new JMenuItem( ADDITIONAL_VIEW );
-  button.addActionListener( view_menu_handler );
-  view_menu.add( button );
-
-  button = new JMenuItem( IMAGE );
-  button.addActionListener( view_menu_handler );
-  view_menu.add( button );
-
-  button = new JMenuItem( THREE_D );
-  button.addActionListener( view_menu_handler );
-  view_menu.add( button );
-
-  button = new JMenuItem( HKL_SLICE );
-  button.addActionListener( view_menu_handler );
-  view_menu.add( button );
-  
-  button = new JMenuItem( CONTOUR );
-  button.addActionListener( view_menu_handler );
-  view_menu.add( button );
-
-  button = new JMenuItem( SCROLLED_GRAPHS );
-  button.addActionListener( view_menu_handler );
-  view_menu.add( button );
-
-  button = new JMenuItem( SELECTED_GRAPHS );
-  button.addActionListener( view_menu_handler );
-  view_menu.add( button );
-  
-  button = new JMenuItem( DIFFERENCE_GRAPH );
-  button.addActionListener( view_menu_handler );
-  view_menu.add( button );
-
-  JMenu Tables = new JMenu( "Selected Table View");
-  view_menu.add( Tables);
-  
-  BuildTableMenu( Tables);
-
-  button = new JMenuItem( TABLE );
-  button.addActionListener( view_menu_handler );
-  view_menu.add( button );
-  */
-  
+  }  
 }
-
-
- //TODO: OLD
- //public void BuildTableMenu( JMenu Tables )
- //{ 
- //   ViewMenuHandler view_menu_handler = new ViewMenuHandler();
- //   if( table_MenuComp == null)
- //     table_MenuComp = new TableViewMenuComponents();
- //  
- //   table_MenuComp.addMenuItems( Tables , view_menu_handler);
- //   
- //  /* Tables.addSeparator();  
- //   JMenuItem button;
- //   button = new JMenuItem( "Advanced Table");
- //   button.addActionListener( view_menu_handler );
- //   Tables.add( button );
- //  */
- //}
 
 
 /*
@@ -1544,24 +1476,6 @@ private float solve( float new_x ) // find what x in the original DataSet maps
       }
     }
   }
-
-  //TODO: OLD
-  //private class ViewMenuHandler implements ActionListener,
-  //                                         Serializable
-  //{  
-  //   boolean errors = false, 
-  //            index = false;
-  //  
-  //  public void actionPerformed( ActionEvent e )
-  //  {
-  //    String action = e.getActionCommand();
-  //    if ( action.equals( ADDITIONAL_VIEW ) )
-  //      new ViewManager( dataSet, viewType );
-  //    else
-  //      setView( action ); 
-  //  }
-  //}
-
 
   private class ConversionMenuHandler implements ActionListener,
                                                  Serializable
