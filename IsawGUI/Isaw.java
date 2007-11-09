@@ -31,6 +31,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.277  2007/11/09 21:15:24  amoe
+ *  -Removed the old menus and menu items that pertain to the viewers.
+ *   This is replaced by the UnifiedViewMenu.
+ *  -Removed the MenuItemHandler, since UnifiedViewMenu handles it's own
+ *   menu events.
+ *
  *  Revision 1.276  2007/10/26 22:44:26  amoe
  *  -Made ISAW use the UnifiedViewMenu instead of it's own view menu.
  *  -Added the ViewMenuDataSetUpdater listener to update the UnifiedViewMenu
@@ -1069,7 +1075,6 @@ public class Isaw
     JMenuItem fileExit = new JMenuItem( EXIT_MI );
 
 
-    //TODO:START HERE
     JMenu eMenu = new JMenu( EDIT_M );
     JMenuItem removeSelectedNode = new JMenuItem( REMOVE_NODE_MI );
     JMenuItem editAttributes = new JMenuItem( EDIT_ATTR_MI );
@@ -1077,17 +1082,7 @@ public class Isaw
     JMenuItem editSetAttribute = new JMenuItem( SET_ATTR_MI );
     JMenuItem setGroupAttributes = new JMenuItem( SET_GLOBAL_ATTR_MI );
     JMenuItem clearSelection = new JMenuItem( CLEAR_SELECTION_MI );
-    //jdt.get
-
-    //JMenu vMenu = new JMenu( VIEW_M );
-    //JMenuItem imageView   = new JMenuItem( IMAGE_VIEW_MI );
-    //JMenuItem hkl_slice_view = new JMenuItem( HKL_SLICE_VIEW_MI );
-    //JMenuItem s_graphView = new JMenuItem( SCROLL_VIEW_MI );
-    //JMenuItem graphView   = new JMenuItem( SELECTED_VIEW_MI );
-    //JMenuItem diffView	  = new JMenuItem( DIFFERENCE_VIEW_MI );
-    //JMenuItem threeDView = new JMenuItem( THREED_VIEW_MI );
-    //JMenuItem tableView = new JMenuItem( TABLE_VIEW_MI );
-    //JMenu Tables= new JMenu("Selected Table View");
+ 
     uvMenu = new UnifiedViewMenu(VIEW_M);
     uvMenu.setVisibleAddViewerItem(false);
     uvMenu.addMenuListener(new ViewMenuDataSetUpdater());
@@ -1098,25 +1093,17 @@ public class Isaw
     AttributeMenuItemHandler attr_menu_handler =new AttributeMenuItemHandler();
     LoadMenuItemHandler load_menu_handler      =new LoadMenuItemHandler();
 
-    //for( int k=0; k< TableViewMenuComponents.getNMenuItems(); k++)
-    //{
-    //  JMenuItem jmi= new JMenuItem(TableViewMenuComponents.getNameMenuItem(k));
-    //  jmi.addActionListener(menu_item_handler);
-    //  Tables.add(jmi);
+    //JMenuItem logView = new JMenuItem( LOG_VIEW_MI );
+    //JMenu instrumentInfoView = null;
+    //try{
+    //  instrumentInfoView = new InstrumentViewMenu( INSTR_VIEW_M );
+    //}catch(InstantiationException e){
+      //leave instrumentInfoView as null so it is not added to the menus
     //}
-    JMenuItem contourView = new JMenuItem( CONTOUR_VIEW_MI );
-    JMenuItem logView = new JMenuItem( LOG_VIEW_MI );
-    JMenu instrumentInfoView = null;
-    try{
-      instrumentInfoView = new InstrumentViewMenu( INSTR_VIEW_M );
-    }catch(InstantiationException e){
-      // leave instrumentInfoView as null so it is not added to the menus
-    }
 
     Script_Class_List_Handler SP = new Script_Class_List_Handler();      
     opMenu macrosMenu = new opMenu(SP, jdt, sessionLog , Isaw.this);
     macrosMenu.setOpMenuLabel( MACRO_M );
-    //macrosMenu.addStatusPane( SharedData.getStatusPane() ); //REMOVE
     
     //***************************************************create Wizard menu
     JMenu wizardMenu = new JMenu( WIZARD_M );
@@ -1202,32 +1189,18 @@ public class Isaw
       }
     }
         
-    //vMenu.add(imageView);
-    //vMenu.add(threeDView);
-    //vMenu.add(contourView);
-    //vMenu.add(hkl_slice_view);
-    //vMenu.add(s_graphView);
-    //vMenu.add(graphView);
-    //vMenu.add(diffView);
-    
-    //vMenu.add( Tables );
-    //vMenu.add( tableView );
-    //vMenu.add( logView );
-    
-    //if(instrumentInfoView!=null)
-    //  vMenu.add(instrumentInfoView);         
       
-   /* hMenu.add(helpAbout);
-    hMenu.add(helpOperations);
-    hMenu.add(helpCommandPane);
-    hMenu.add(glossary);
-    hMenu.add(apiDocs);
-    hMenu.add( new IsawHelp.SiteHelp() );
-    hMenu.addSeparator();
-    hMenu.add(homeLink);
-    hMenu.add(ftpLink);
-    hMenu.add(docLink);
-  */
+    //hMenu.add(helpAbout);
+    //hMenu.add(helpOperations);
+    //hMenu.add(helpCommandPane);
+    //hMenu.add(glossary);
+    //hMenu.add(apiDocs);
+    //hMenu.add( new IsawHelp.SiteHelp() );
+    //hMenu.addSeparator();
+    //hMenu.add(homeLink);
+    //hMenu.add(ftpLink);
+    //hMenu.add(docLink);
+  
     hMenu.add(new IsawHelp.SiteHelp());
     hMenu.add( TutLink);
     hMenu.add( IsawPropLink);
@@ -1262,16 +1235,6 @@ public class Isaw
     //fileSaveDataAs.addActionListener( menu_item_handler );
     dbload.addActionListener( menu_item_handler );
     
-    //graphView.addActionListener(menu_item_handler); 
-    //hkl_slice_view.addActionListener(menu_item_handler); 
-    //s_graphView.addActionListener(menu_item_handler);
-    //diffView.addActionListener(menu_item_handler);
-
-    //threeDView.addActionListener(menu_item_handler); 
-    //imageView.addActionListener(menu_item_handler);  
-    //tableView.addActionListener(menu_item_handler);  
-    contourView.addActionListener(menu_item_handler);  
-    logView.addActionListener(menu_item_handler);      
     
     fileLoadDataset.addActionListener(menu_item_handler);
     removeSelectedNode.addActionListener(menu_item_handler);
@@ -1681,27 +1644,19 @@ public class Isaw
  private class ViewMenuDataSetUpdater implements MenuListener
  {
    public void menuSelected(MenuEvent e)
-   {
-     //DataSet ds = getViewableData( jdt.getSelectedNodePaths() );     
-     //System.out.println("Updating UVM with: "+ds.getTitle()+" "+ds.getTag());	 
-     //uvMenu.setDataSet( getViewableData( jdt.getSelectedNodePaths() ) );
+   {	 
+     //Test  
+     DataSet[] dss = jdt.getSelectedDataSets();
 	 
-	 //Test  
-	 DataSet[] dss = jdt.getSelectedDataSets();
+     if(dss.length > 0)
+     {	 
 	 
-	 if(dss.length > 0)
-	 {	 
-		for(int i = 0;i<dss.length;i++)
-		{
-		  System.out.println("Updating UVM with DSS: "+dss[i].getTitle());
-		}
-	 
-	 	uvMenu.setDataSetArray(dss);
+       uvMenu.setDataSetArray(dss);
 	 	
-	 	return;
-	 }
+       return;
+     }
 	 
-	 uvMenu.setDataSet( getViewableData( jdt.getSelectedNodePaths() ) );     
+     uvMenu.setDataSet( getViewableData( jdt.getSelectedNodePaths() ) );     
      
    }
    
@@ -1753,13 +1708,13 @@ public class Isaw
                filename =SharedData.getProperty("user.home");
             fc.setCurrentDirectory(  new File( filename )  );
             fc.setMultiSelectionEnabled( false );
-	    fc.resetChoosableFileFilters();
+            fc.resetChoosableFileFilters();
             fc.addChoosableFileFilter( new DataSetTools.gsastools.GsasFileFilter() );
             fc.addChoosableFileFilter(  new NeutronDataFileFilter( true )  ); 
             fc.addChoosableFileFilter(  new NexIO.NexusfileFilter()  );
            // fc.addChoosableFileFilter(  new IPNS.Runfile.RunfileFilter()  );
-	    Dimension d = new Dimension(650,300);
-	    fc.setPreferredSize(d);
+            Dimension d = new Dimension(650,300);
+            fc.setPreferredSize(d);
             
             if(  (fc.showSaveDialog(null) != JFileChooser.APPROVE_OPTION ) ) 
                 return;
@@ -1873,31 +1828,6 @@ public class Isaw
 
       if( s.equals( SharedData.getProperty("Inst13_Name") )  )
         setupLiveDataServer( "Inst13_Path" );
- 
-      if( s.equals(IMAGE_VIEW_MI)      || 
-          s.equals(SELECTED_VIEW_MI)   ||
-          s.equals(DIFFERENCE_VIEW_MI) ||
-          s.equals(HKL_SLICE_VIEW_MI)  ||
-          s.equals(SCROLL_VIEW_MI)     || 
-          s.equals(THREED_VIEW_MI)     ||
-          s.equals(TABLE_VIEW_MI)      ||
-          s.equals(CONTOUR_VIEW_MI)
-          )
-      {
-        DataSet ds = getViewableData(  jdt.getSelectedNodePaths()  );
-        if(  ds != DataSet.EMPTY_DATA_SET  && ds != null){
-          new ViewManager( ds, s );
-                                         // only set pointed at if not set
-          if ( ds.getPointedAtIndex() == DataSet.INVALID_INDEX ){ 
-            ds.setPointedAtIndex( 0 );
-            ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );
-          }
-
-        }else{
-          SharedData.addmsg( "nothing is currently highlighted in the tree" );
-        }
-        return;
-      }
                  
       if( s.equals(LOG_VIEW_MI) )
       {   
