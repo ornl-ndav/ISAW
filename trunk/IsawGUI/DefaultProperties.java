@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.36  2007/11/30 22:41:17  amoe
+ *  Renamed IsawProps variable "ShowToolTip" to "ShowWCToolTip" .
+ *
  *  Revision 1.35  2007/11/30 22:28:50  amoe
  *  Added variable "ShowToolTip=true".  (# Commented out)
  *
@@ -397,7 +400,7 @@ public class DefaultProperties{
             .append("#ViewDistance=4.5").append(eol)
             .append("#Brightness=40").append(eol)
             .append("#Auto-Scale=0.0").append(eol)
-            .append("#ShowToolTip=true").append(eol)
+            .append("#ShowWCToolTip=true").append(eol)
             .append("#XRange_Time(us)_min=0.0").append(eol)
             .append("#XRange_Time(us)_max=0.0").append(eol)
             .append("#YRange_Counts_min=0.0").append(eol)
