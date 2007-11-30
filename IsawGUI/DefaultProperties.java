@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.35  2007/11/30 22:28:50  amoe
+ *  Added variable "ShowToolTip=true".  (# Commented out)
+ *
  *  Revision 1.34  2007/03/30 19:01:34  amoe
  *  Appended to defaultString()
  *       "#XRange_Time(us)_min"
@@ -394,6 +397,7 @@ public class DefaultProperties{
             .append("#ViewDistance=4.5").append(eol)
             .append("#Brightness=40").append(eol)
             .append("#Auto-Scale=0.0").append(eol)
+            .append("#ShowToolTip=true").append(eol)
             .append("#XRange_Time(us)_min=0.0").append(eol)
             .append("#XRange_Time(us)_max=0.0").append(eol)
             .append("#YRange_Counts_min=0.0").append(eol)
