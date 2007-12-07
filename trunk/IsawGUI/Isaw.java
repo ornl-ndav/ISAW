@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.278  2007/12/07 00:10:13  amoe
+ *  Made the splash screen only be displayed until the Isaw frame is visible.
+ *
  *  Revision 1.277  2007/11/09 21:15:24  amoe
  *  -Removed the old menus and menu items that pertain to the viewers.
  *   This is replaced by the UnifiedViewMenu.
@@ -2367,8 +2370,9 @@ public class Isaw
         }
       }
    
-      // show the splashscreen
-      new SplashWindowFrame();
+      // show the splash screen
+      SplashWindowFrame swe = new SplashWindowFrame();
+      swe.showSplash();
 
       System.out.println("Loading "+getVersion(true));
  
@@ -2378,12 +2382,15 @@ public class Isaw
       ((Isaw)Isaw).setBounds();
       Isaw.validate();
 
-//    Isaw.show();     // replace call to show(), with later use of the 
+      //Isaw.show();   // replace call to show(), with later use of the 
                        // WindowShower, so that the frame is only actually
                        // displayed by the event thread, after it is completely
                        // built.  Based on "Core Java Technologies Tech Tips", 
                        // December 8, 2003
       WindowShower.show( Isaw );
+      
+      //hide the splash screen
+      swe.dispose();
       
       //this has to be some of the ugliest syntax I have seen yet, but I had to do it.  I didn't know the
       //reason behind making the Isaw instance a JFrame (why not just make it of type Isaw?).
