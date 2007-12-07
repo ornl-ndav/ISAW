@@ -31,6 +31,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.23  2007/12/07 00:08:37  amoe
+ *  Added a feature that allows the Splash to turned on, then off.
+ *    -Added showSplash()
+ *    -Added disposeSplash()
+ *    -Added showTimedSplash()
+ *
  *  Revision 1.22  2005/06/08 21:19:48  dennis
  *  Removed one unused local variable.
  *  Uncommented the media tracker code, so the image appears as soon as
@@ -106,20 +112,53 @@ public class SplashWindowFrame extends    Frame
   private static final int    WIN_HEIGHT = 360;
   private static final float  TIME       = 8;    // time to display the splash
                                                  // screen, in seconds
+  
+  private SplashWindow splash;
+  
   /** 
    *  Construct the parent frame for the splash window
    */
-  SplashWindowFrame() 
+  public SplashWindowFrame() 
   {
     super();
-    new SplashWindow( this );  // make a new splash window with this Frame as
-                               // its parent.
+    splash = new SplashWindow( this );  // make a new splash window with 
+                                        // this Frame as its parent.
   }
 
   /**
-   *  This run method just sleeps for a while and then disposes of the
-   *  frame, so that the SplashImage goes away automatically after some
-   *  time has passed.
+   * Show the splash screen.
+   */
+  public void showSplash()
+  {
+    // actually show the window in
+    // the event thread, to avoid
+    // deadlock or race conditions
+    WindowShower.show( splash );
+  }
+  
+  /**
+   * Dispose of the splash screen.
+   */
+  public void disposeSplash()
+  {
+    this.dispose();
+  }
+  
+  /**
+   * Show the splash screen, wait several seconds, and then dispose it.
+   */
+  public void showTimedSplash()
+  {
+    showSplash();
+    
+    // start timer that kills the
+    // the window after some time
+    Thread splash_thread = new Thread( (Runnable)this );
+    splash_thread.start();
+  }
+  
+  /**
+   *  This run method just allows the thread to sleep for a while.
    */
   public void run()             
   {
@@ -127,8 +166,8 @@ public class SplashWindowFrame extends    Frame
     {
      Thread.sleep( (int)(1000 * TIME) );
     }
-    catch(InterruptedException ie){}
-    this.dispose();
+    catch(InterruptedException ie){}    
+    disposeSplash();
   }
 
   /**
@@ -137,14 +176,14 @@ public class SplashWindowFrame extends    Frame
    */
   private class SplashWindow extends Window 
   {
-    Image splashIm;
+    private Image splashIm;
 
     public SplashWindow( Frame parent ) 
     {
-      super(parent);
+      super(parent);      
                                                           // find and load the
                                                           // image
-      String ipath=SharedData.getProperty("IMAGE_DIR");
+      String ipath = SharedData.getProperty("IMAGE_DIR");
       if ( ipath == null ) 
          return;
       ipath    = StringUtil.setFileSeparator(ipath);
@@ -168,18 +207,8 @@ public class SplashWindowFrame extends    Frame
       Dimension screenDim = Toolkit.getDefaultToolkit().getScreenSize();
       this.setLocation( ( screenDim.width  - WIN_WIDTH  ) / 2,
                         ( screenDim.height - WIN_HEIGHT ) / 2 );
-      
-                                                 // actually show the window in
-                                                 // the event thread, to avoid
-                                                 // deadlock or race conditions
-      WindowShower.show( this );
-                                                 // start timer that kills the
-                                                 // the window after some time
-      Thread splash_thread = new Thread( (Runnable)parent );
-      splash_thread.start();
     }
-
-   
+       
     public void paint(Graphics g) 
     {
       if (splashIm != null) 
