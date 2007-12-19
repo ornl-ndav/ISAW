@@ -30,6 +30,10 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.17  2007/12/19 19:20:14  rmikk
+ *  Fixed a null pointer exception in the copy a Uniform grid constructor.
+ *  Added a clone method using the above constructor.
+ *
  *  Revision 1.16  2006/11/05 02:09:07  dennis
  *  Minor efficiency improvement in use of Vector3D.get() in
  *  SetOrientation() method.
@@ -279,9 +283,9 @@ public class UniformGrid implements IDataGrid
     data_loaded = false;
     if ( copy_data && grid.data_loaded )
     {
-      data = new Data[ data.length ][ data[0].length ];
-      for ( int i = 0; i < data.length; i++ )
-        for ( int j = 0; j < data[0].length; i++ )
+      data = new Data[ grid.data.length ][ grid.data[0].length ];
+      for ( int i = 0; i < grid.data.length; i++ )
+        for ( int j = 0; j < grid.data[0].length; i++ )
           data[i][j] = grid.data[i][j];
     }
   }
@@ -322,6 +326,9 @@ public class UniformGrid implements IDataGrid
   }
 
 
+  public IDataGrid clone(){
+     return new UniformGrid( this, true);
+  }
   /**
    *  Get the ID of the current data grid (i.e. detector).  This ID should be 
    *  unique within the set of all detectors on an instrument.
