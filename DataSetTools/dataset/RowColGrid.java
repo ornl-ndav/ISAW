@@ -30,6 +30,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.3  2007/12/19 19:20:33  rmikk
+ * Added a clone method
+ *
  * Revision 1.2  2007/08/23 21:05:03  dennis
  * Removed unused imports.
  *
@@ -108,7 +111,18 @@ public class RowColGrid implements IDataGrid {
 
 
    }
-
+ 
+   public IDataGrid clone(){
+      System.out.println("in RowColGrid Clone");
+      RowColGrid Res = new RowColGrid( nrows, ncols, ID);
+      Res.setGridDepth( depth );
+      for( int row =0; row < nrows; row++)
+         for( int col=0; col<  ncols; col++)
+            if( Grid[row][col] != null)
+               Res.setOneData( Grid[row][col] , row+1 , col+1 );
+      return Res;
+      
+   }
 
    /**
     * Set the depth of this grid in meters
@@ -119,6 +133,7 @@ public class RowColGrid implements IDataGrid {
    public void setGridDepth( float depth ) {
 
       this.depth = depth;
+      
    }
 
 
@@ -921,8 +936,8 @@ public class RowColGrid implements IDataGrid {
 
 
    /**
-    * Sets this grid as the main(1st) grid in the and then sets the data blocks
-    * into the grid's table of data blocks
+    * Sets this grid as the main(1st) grid in the DataSet and then sets the data
+    *  blocks into the grid's table of data blocks
     * 
     * @param Gr
     *           The RowColGrid with info about which data blocks are at a given
@@ -935,6 +950,15 @@ public class RowColGrid implements IDataGrid {
     */
    public static void setDataSet( RowColGrid Gr , IDataGrid grid , DataSet DS ) {
 
+      if( grid == null)
+         throw new IllegalArgumentException("new grid is null");
+      
+      if( Gr == null)
+         throw new IllegalArgumentException("new grid is null");
+      
+      if( grid.num_rows() != Gr.num_rows() || grid.num_cols() != Gr.num_cols())
+         throw new IllegalArgumentException("Grid sizes do not match");
+      
       for( int row = 0 ; row < Gr.nrows ; row++ )
          for( int col = 0 ; col < Gr.ncols ; col++ ) {
             Data D = Gr.getData_entry( row + 1 , col + 1 );
