@@ -30,6 +30,10 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.7  2007/12/19 19:18:32  rmikk
+ *  Added a clone method to interface. There are now two grid types so using a
+ *    constructor does not work generically.
+ *
  *  Revision 1.6  2005/07/11 21:00:03  dennis
  *  Removed num_points() method, since it is redundant.
  *
@@ -73,6 +77,22 @@ import java.io.*;
 
 public interface IDataGrid extends Serializable
 {
+   /**
+    * Clones an Copy of itself that can be changed without changing the
+    * current grid. Note the following two points
+    * 
+    * 1) The Data Entries that have been set into the returned grid will agree
+    *   with those set in the current grid. You may want to ClearDataEntries
+    *    
+    * 2) The returned grid has the same ID as the current grid. If this grid
+    *     is to be used except for scratch, its ID should be changed. 
+    *     SetDataEntries need not be done because of point 1.
+    *  
+    * 
+    * @return  The cloned data grid.
+    */
+   public IDataGrid clone();
+   
   /**
    *  Get the ID of the current data grid (i.e. detector).  This ID should be 
    *  unique within the set of all detectors on an instrument.
