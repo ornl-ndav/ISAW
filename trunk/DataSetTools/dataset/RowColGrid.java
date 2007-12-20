@@ -30,6 +30,11 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.4  2007/12/20 19:57:18  rmikk
+ * Eliminated a debug print and increased checking for null, especially if the
+ *    detector position is null.
+ *  Fixed an error in SetDataEntries.
+ *
  * Revision 1.3  2007/12/19 19:20:33  rmikk
  * Added a clone method
  *
@@ -113,13 +118,15 @@ public class RowColGrid implements IDataGrid {
    }
  
    public IDataGrid clone(){
-      System.out.println("in RowColGrid Clone");
+      
       RowColGrid Res = new RowColGrid( nrows, ncols, ID);
       Res.setGridDepth( depth );
+      
       for( int row =0; row < nrows; row++)
          for( int col=0; col<  ncols; col++)
             if( Grid[row][col] != null)
                Res.setOneData( Grid[row][col] , row+1 , col+1 );
+      
       return Res;
       
    }
@@ -154,7 +161,11 @@ public class RowColGrid implements IDataGrid {
          return;
 
       if( Grid[ row - 1 ][ col - 1 ] == null )
-         NSet++ ;
+      {
+         if( D != null)
+             NSet++ ;
+      }else if( D == null)
+         NSet--;
 
       Grid[ row - 1 ][ col - 1 ] = D;
 
@@ -448,8 +459,10 @@ public class RowColGrid implements IDataGrid {
       Data D = Grid[ row - 1 ][ col - 1 ];
       if( D == null )
          return null;
-      
-      return new Vector3D( AttrUtil.getDetectorPosition( D ) );
+      DetectorPosition dp =AttrUtil.getDetectorPosition( D );
+      if( dp == null)
+         return null;
+      return new Vector3D( dp );
    }
 
 
@@ -477,6 +490,7 @@ public class RowColGrid implements IDataGrid {
 
    }
 
+  
    /**
     * 
     * @param row  the row in question in this grid
@@ -490,89 +504,108 @@ public class RowColGrid implements IDataGrid {
       if( row < .5 || col < .5 || row > nrows + .5 || col > ncols + .5 )
          return null;
 
-      int rrow = Math.min( (int) row , nrows );
-      int ccol = Math.min( (int) col , ncols );
+      int rrow = Math.min( (int) row , nrows  );
+      int ccol = Math.min( (int) col , ncols  );
 
 
-      Position3D[] pos = new Position3D[ 4 ];
-      float[] weight = new float[ 4 ];
+      Vector3D pos = new Vector3D( 0f , 0f , 0f ) , pos1;
+
+      
       float rowFrac = row - rrow;
       float colFrac = col - ccol;
+      int drow = 0;
+      if( rowFrac != 0 )
+         drow = 1;
+      int dcol = 0;
+      if( colFrac != 0 )
+         dcol = 1;
 
-      for( int i = 0 ; i < 2 ; i++ )
-         // row
-         for( int j = 0 ; j < 2 ; j++ ) {// col
+      for( int i = 0 ; i < 1 + drow ; i++ )
+         for( int j = 0 ; j < 1 + dcol ; j++ ) {
+            
             Data D = getData_entry( rrow + i , ccol + j );
+            
             if( D != null ) {
-               pos[ i * 2 + j ] = 
-                       (Position3D) AttrUtil.getDetectorPosition( D );
+               pos1 = new Vector3D( AttrUtil.getDetectorPosition( D ) );
 
+               if( pos1 == null )
+                  return null;
+
+               pos1.multiply( Math.abs(1- i - rowFrac )
+                                 * Math.abs(1- j - colFrac ) );
+               pos.add( pos1 );
 
             }
+            
             else if( rrow + i <= nrows && ccol + j <= ncols && rrow + i >= 1
                      && ccol + j >= 1 )
 
                return null;// The Grid is not full
 
-            else {
-
-               int irow0 , irow1 , icol0 , icol1;
-               irow0 = rrow + i;
-               icol0 = ccol + j;
-               irow1 = irow0;
-               icol1 = icol0;
+            else {// edge or corner , reflect back and extrapolate
                
-               if( irow0 < 1 ) {
-                  
-                  irow0 = 1;
-                  irow1 = 2;
-               }
+               int rowDir = 0 , // direction to a valid cell
+               colDir = 0;
+               if( rrow + i > nrows )
+                  rowDir = - 1;
+               else if( rrow + i < 1 )
+                  rowDir = 1;
 
-               if( icol0 < 1 ) {
-                  
-                  icol0 = 1;
-                  icol1 = 2;
-               }
-               if( irow0 > nrows ) {
-                  
-                  irow0 = nrows;
-                  irow1 = nrows - 1;
-               }
-               if( icol0 > ncols ) {
-                  
-                  icol0 = ncols;
-                  icol1 = ncols - 1;
-               }
-               Vector3D P0 = getPos( irow0 , icol0 );
+               if( ccol + j > ncols )
+                  colDir = - 1;
+               else if( ccol + j < 1 )
+                  colDir = 1;
 
-               if( P0 != null ) {
-                  
-                  Vector3D P1 = getPos( irow1 , icol1 );
-                  if( P1 != null ) {
+               D = getData_entry( rrow + i+ rowDir , ccol+j + colDir );
+               if( D == null )
+                  return null;
+               DetectorPosition dp = AttrUtil.getDetectorPosition( D );
+               if( dp == null )
+                  return null;
+               Vector3D P0 = new Vector3D( dp );
+               
 
-                     P0.multiply( 2f );
-                     P0.subtract( P1 );
-                     pos[ 2 * i + j ] = new Position3D( P0 );
+               D = getData_entry( rrow + i +   2*rowDir , ccol+j +colDir );
+               if( D == null )
+                  return null;
+               dp = AttrUtil.getDetectorPosition( D );
+               if( dp == null )
+                  return null;
 
-                  }
-               }
+               Vector3D P = new Vector3D( dp );
+               Vector3D Prow = new Vector3D( P0 );
+               Prow.multiply( 2f );
+               Prow.subtract( P );
 
+
+               D = getData_entry( rrow+i+ rowDir , ccol +j+ 2 * colDir );
+               if( D == null )
+                  return null;
+               dp = AttrUtil.getDetectorPosition( D );
+               if( dp == null )
+                  return null;
+
+               P = new Vector3D( dp );
+               Vector3D Pcol = new Vector3D( P0 );
+               Pcol.multiply( 2f );
+               Pcol.subtract( P );
+
+               Prow.subtract( P0 );
+               Prow.add( Pcol );
+               Prow.multiply( Math.abs(1- i - rowFrac )
+                                 * Math.abs( 1-j - colFrac ) );
+
+               pos.add( Prow );
 
             }
-            weight[ i * 2 + j ] = Math.abs( ( 1 - i - rowFrac )
-                     * ( 1 - j - colFrac ) );
 
-            if( pos[ i * 2 + j ] == null )
-               return null;
+
          }
 
-
-      return new Vector3D( Position3D.getCenterOfMass( pos , weight ) );
-
+      return pos;
 
    }
 
-   
    /**
     * 
     * @param row  the row in question in this grid
@@ -687,6 +720,8 @@ public class RowColGrid implements IDataGrid {
          
          P1.multiply( - 1f );
       }
+      if( P1 == null)
+         return null;
       
       P1.subtract( P0 );
       P1.normalize();
@@ -768,7 +803,7 @@ public class RowColGrid implements IDataGrid {
 
       NSet = 0;
       clearData_entries();
-      for( int i = 0 ; i < ds.getNum_attributes() ; i++ ) {
+      for( int i = 0 ; i < ds.getNum_entries() ; i++ ) {
          
          PixelInfoList plist = AttrUtil
                   .getPixelInfoList( ds.getData_entry( i ) );
