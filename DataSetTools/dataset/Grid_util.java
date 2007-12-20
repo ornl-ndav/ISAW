@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2007/12/20 19:49:00  rmikk
+ *  Added an extra check for a null detector position.
+ *
  *  Revision 1.10  2007/07/13 16:24:54  dennis
  *  Commented out warning message.
  *
@@ -144,8 +147,11 @@ public class Grid_util
          d = grid.getData_entry( row, col );
          if ( d != null )
          {
-           DetectorPosition pos = new DetectorPosition(grid.position(row,col));
-           d.setAttribute( new DetPosAttribute(Attribute.DETECTOR_POS, pos) );
+           Vector3D pos1 = grid.position(row,col);
+           if( pos1 != null ){
+              DetectorPosition pos = new DetectorPosition(pos1);
+              d.setAttribute( new DetPosAttribute(Attribute.DETECTOR_POS, pos) );
+           }
          }
        }
      return true;
