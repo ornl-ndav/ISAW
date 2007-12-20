@@ -30,6 +30,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.18  2007/12/20 19:56:04  rmikk
+ *  Fixed a null pointer error in the two copy constructors.
+ *
  *  Revision 1.17  2007/12/19 19:20:14  rmikk
  *  Fixed a null pointer exception in the copy a Uniform grid constructor.
  *  Added a clone method using the above constructor.
@@ -252,6 +255,13 @@ public class UniformGrid implements IDataGrid
    */
   public UniformGrid( UniformGrid grid, boolean copy_data )
   {
+
+    if( grid == null) 
+       throw new IllegalArgumentException("grid cannot be null");
+     
+    if( grid.num_rows()<=0 || grid.num_cols() <=0 )
+       throw new IllegalArgumentException( "grid must have some data");
+     
     id = grid.id;
     units = grid.units;
     center = new float[3]; 
@@ -281,12 +291,12 @@ public class UniformGrid implements IDataGrid
 
     data = null;
     data_loaded = false;
-    if ( copy_data && grid.data_loaded )
+    if ( copy_data && grid.isData_entered() )
     {
-      data = new Data[ grid.data.length ][ grid.data[0].length ];
-      for ( int i = 0; i < grid.data.length; i++ )
-        for ( int j = 0; j < grid.data[0].length; i++ )
-          data[i][j] = grid.data[i][j];
+      data = new Data[grid.num_rows() ][ grid.num_cols() ];
+      for ( int i = 0; i < grid.num_rows(); i++ )
+        for ( int j = 0; j < grid.num_cols(); i++ )
+          data[i][j] = grid.getData_entry(i,j);
     }
   }
 
@@ -301,6 +311,12 @@ public class UniformGrid implements IDataGrid
    */
   public UniformGrid( UniformGrid_d grid, boolean copy_data )
   {
+    if( grid == null) 
+       throw new IllegalArgumentException("grid cannot be null");
+    
+    if( grid.num_rows()<=0 || grid.num_cols() <=0 )
+       throw new IllegalArgumentException( "grid must have some data");
+    
     id          = grid.ID();
     units       = grid.units();
     this.n_cols = grid.num_cols();
@@ -318,9 +334,9 @@ public class UniformGrid implements IDataGrid
     data_loaded = false;
     if ( copy_data && grid.isData_entered() )
     {
-      data = new Data[ data.length ][ data[0].length ];
-      for ( int i = 0; i < data.length; i++ )
-        for ( int j = 0; j < data[0].length; i++ )
+      data = new Data[grid.num_rows() ][ grid.num_cols() ];
+      for ( int i = 0; i < grid.num_rows(); i++ )
+        for ( int j = 0; j < grid.num_cols(); i++ )
           data[i][j] = grid.getData_entry(i,j);
     }
   }
