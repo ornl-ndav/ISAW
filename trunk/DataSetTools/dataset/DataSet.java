@@ -30,6 +30,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.58  2008/01/02 19:25:57  rmikk
+ *  Added a method that Fixes the grid to a new reference in the PixelInfoList
+ *    Attribute. The data pointers in this new grid point to data in the new data set,
+ *    and the data pointers in the old grid point to the data in the old data set
+ *
  *  Revision 1.57  2007/07/06 20:30:27  dennis
  *  Added convenience method: getIndex_of_data_with_id( id ), to find
  *  the position of a Data block with the specified id in the list of
@@ -2265,7 +2270,7 @@ public class DataSet implements IAttributeList,
     this.last_sort_attribute = ds.last_sort_attribute;
 
     this.setAttributeList( ds.getAttributeList() );
-
+    
     this.data = new Vector();
     int num_entries = ds.getNum_entries();
 
@@ -2275,6 +2280,8 @@ public class DataSet implements IAttributeList,
       this.addData_entry( (Data)(d.clone()) );
     }
 
+    CloneGridInfo( this );
+    
     this.operators = new Vector();
     int num_ops = ds.getNum_operators();
     for ( int i = 0; i < num_ops; i++ )
@@ -2283,6 +2290,7 @@ public class DataSet implements IAttributeList,
       this.addOperator( op );
     }
 
+  
     this.op_log = (OperationLog)ds.op_log.clone();
                                        // NOTE: We don't change the list of
                                        //       observers, but rather notify
@@ -2290,8 +2298,57 @@ public class DataSet implements IAttributeList,
                                        //       that it's contents changed.       
     this.notifyIObservers( IObserver.DATA_CHANGED );
   }
+  
+ //The grids in the PixelInfoAttribute are the grids with data from 
+  // another data set. Using these pointers to get and set data causes
+  // problems if one ore both data are changed.
+  // Note: PixelInfoListAttribute is immutable.
+  private void CloneGridInfo( DataSet ds){
+     
+     Hashtable ids = Grid_util.getAllDataGrids( ds );
+     if( ids == null || ids.size() < 1)
+        return;
+     Enumeration En = ids.elements();
+     if( En.hasMoreElements())
+        for( ;En.hasMoreElements(); ){
+           
+           IDataGrid grid=(IDataGrid)En.nextElement();
+           if( grid != null){
+              
+              IDataGrid grid_new = grid.clone();
+              grid_new.clearData_entries();
+              grid_new.setData_entries( ds );
+              
+              for( int row=1 ; row <= grid.num_rows() ; row++ )
+                 for( int col = 1 ; col<=grid.num_cols(); col++ ){
+                    
+                    Data D = grid_new.getData_entry( row , col );
+                    if( D != null ){
+                       
+                       PixelInfoList plist = AttrUtil.getPixelInfoList( D );
+                       if( plist != null ){
+                          
+                         DetectorPixelInfo pinf =
+                                       (DetectorPixelInfo) plist.pixel( 0 );
+                         
+                         pinf = new DetectorPixelInfo( pinf.ID(), 
+                                       (short)pinf.row(),(short)pinf.col(),
+                                       grid_new);
+                         
+                         D.setAttribute(new PixelInfoListAttribute( 
+                                   Attribute.PIXEL_INFO_LIST,
+                                   new PixelInfoList(pinf)));
+                         
+                       }
+                    }
+                 }//next col/row
+              
+             
+           }//if grid != null
+        }
+  }
 
-
+  
   /**
    * Clone the current DataSet, including the operation log, the list of
    * operators and the list of individual Data objects.
@@ -2318,7 +2375,9 @@ public class DataSet implements IAttributeList,
       else
         new_ds.addData_entry( (Data)d.clone() );
     }
-
+    
+    CloneGridInfo( new_ds);
+    
     return new_ds;
   }
 
