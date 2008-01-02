@@ -30,6 +30,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.5  2008/01/02 19:27:41  rmikk
+ * Fixed several errors/misinterpretations that gave incorrect results.
+ *
  * Revision 1.4  2007/12/20 19:57:18  rmikk
  * Eliminated a debug print and increased checking for null, especially if the
  *    detector position is null.
@@ -397,7 +400,7 @@ public class RowColGrid implements IDataGrid {
 
    /**
     * Finds the Grid element where x(row,col) is within width(row,col)/2
-    * of x and y(row,col) is within height(ow,col)/2 of y.
+    * of x and y(row,col) is within height(row,col)/2 of y.
     * 
     * @param x   The column in this grid where there is a row where
     *             x(row,col) is about x
@@ -416,7 +419,8 @@ public class RowColGrid implements IDataGrid {
       return f[ 1 ];
    }
 
-
+  //error   x(row,col)*x_vec()+y(row,col)*y_vec()+
+   //  z(row,col)*z_vec()= position(row,col)
    private float[] findRowCol( float x , float y ) {
 
       Vector3D xvec = x_vec();
@@ -437,8 +441,8 @@ public class RowColGrid implements IDataGrid {
 
                   float[] Res = new float[ 2 ];
 
-                  Res[ 0 ] = .5f + ( P.dot( yvec ) - y ) / height;
-                  Res[ 1 ] = .5f + ( P.dot( xvec ) - x ) / width;
+                  Res[ 0 ] =  row - ( P.dot( yvec ) - y ) / height;
+                  Res[ 1 ] =  col - ( P.dot( xvec ) - x ) / width;
 
                   return Res;
                }
@@ -786,7 +790,7 @@ public class RowColGrid implements IDataGrid {
          return null;
 
       V.cross( V , V1 );
-      
+      V.normalize();
       return V;
    }
 
@@ -811,7 +815,7 @@ public class RowColGrid implements IDataGrid {
          if( plist != null && plist.num_pixels() > 0 ) {
             
             IPixelInfo pinf = plist.pixel( 0 );
-            if( pinf.ID() == ID ) {
+            if( pinf.gridID() == ID ) {
                
                if( Grid[ (int) pinf.row() - 1 ][ (int) pinf.col() - 1 ] == null )
                   NSet++ ;
