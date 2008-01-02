@@ -30,6 +30,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.19  2008/01/02 19:28:42  rmikk
+ *  Fixed  an error in the name of the incremented variable in two for loops
+ *
  *  Revision 1.18  2007/12/20 19:56:04  rmikk
  *  Fixed a null pointer error in the two copy constructors.
  *
@@ -295,7 +298,7 @@ public class UniformGrid implements IDataGrid
     {
       data = new Data[grid.num_rows() ][ grid.num_cols() ];
       for ( int i = 0; i < grid.num_rows(); i++ )
-        for ( int j = 0; j < grid.num_cols(); i++ )
+        for ( int j = 0; j < grid.num_cols(); j++ )
           data[i][j] = grid.getData_entry(i,j);
     }
   }
@@ -336,7 +339,7 @@ public class UniformGrid implements IDataGrid
     {
       data = new Data[grid.num_rows() ][ grid.num_cols() ];
       for ( int i = 0; i < grid.num_rows(); i++ )
-        for ( int j = 0; j < grid.num_cols(); i++ )
+        for ( int j = 0; j < grid.num_cols(); j++ )
           data[i][j] = grid.getData_entry(i,j);
     }
   }
