@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.10  2008/01/04 17:24:24  rmikk
+ * Added the feature to read the paired xml file with more accurate detector
+ *    information
+ *
  * Revision 1.9  2007/03/13 22:04:11  rmikk
  * Made these implement HiddenOperator so they will not show up in the
  *    macros menu
@@ -65,13 +69,17 @@
 package DataSetTools.operator.Generic.TOF_SCD;
 
 import DataSetTools.operator.*;
-import gov.anl.ipns.Parameters.LoadFilePG;
+import DataSetTools.dataset.*;
+import DataSetTools.instruments.*;
+import gov.anl.ipns.Parameters.*;
 import gov.anl.ipns.Util.File.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 import gov.anl.ipns.Util.Sys.*;
-
+import gov.anl.ipns.MathTools.Geometry.*;
 import java.io.*;
 import java.util.*;
+import org.w3c.dom.*;
+import javax.xml.parsers.*;
 
 /** 
  * This operator reads in an ASCII file and converts its contents into
@@ -133,6 +141,9 @@ public class ReadPeaks extends GenericTOF_SCD implements HiddenOperator{
     // overview
     sb.append("@overview This operator reads a \".peaks\" file and creates a ");
     sb.append("vector of peak objects to be worked on using other operators.");
+    sb.append("In addition if the filename ends with .peaks.xml, the ");
+    sb.append("corresponding .peaks file will be read and also the peaks.xml ");
+    sb.append("file with more accurate information on the grids will be read");
     // assumptions
     sb.append("@assumptions Information such as calibration and orientation ");
     sb.append("matrix will be dealt with elsewhere. This only reads what is ");
@@ -161,6 +172,18 @@ public class ReadPeaks extends GenericTOF_SCD implements HiddenOperator{
   public Object getResult(){
     // get the filename
     String  filename = getParameter(0).getValue().toString();
+    boolean readXml = false;
+    Node node = null;
+   
+    if( filename.toUpperCase().endsWith( ".PEAKS.XML" )){
+       
+       readXml = true;
+       filename = filename.substring( 0, filename.length()-4 );
+       
+    }
+    
+    
+    
     if(filename!=null && filename.length()>0){
       File file=new File(filename);
       if(! file.isFile() )
@@ -170,7 +193,30 @@ public class ReadPeaks extends GenericTOF_SCD implements HiddenOperator{
     }else{
       return new ErrorString("Null or empty filename:"+filename);
     }
-
+    Document xmlDoc = null;
+    if( readXml){
+       File filexml = new File( filename+".xml");
+       if( !filexml.exists())
+         readXml = false;
+       else if(! filexml.isFile())
+          readXml = false;
+       else if( !filexml.canRead())
+          readXml = false;
+       if( readXml)
+       try{
+          DocumentBuilder dbuild = DocumentBuilderFactory.newInstance().
+                                               newDocumentBuilder();
+          xmlDoc = dbuild.parse( filexml );
+          node = xmlDoc.getDocumentElement().getFirstChild();
+          
+          
+       }catch(Exception ss){
+          xmlDoc = null;
+          node = null;
+          readXml = false;
+       }
+       
+    }
     // create some useful variables
     Vector         peaks = new Vector();
     Peak           peak  = null;
@@ -181,10 +227,11 @@ public class ReadPeaks extends GenericTOF_SCD implements HiddenOperator{
     try{
       // open the file
       tfr=new TextFileReader(filename);
-
+      
+    
       // variables for dealing with the file contents
       String       line = null;
-
+      Vector DetInfo = null;
       while( ! tfr.eof() ){
         line=tfr.read_line();
         line=line.trim();
@@ -193,13 +240,18 @@ public class ReadPeaks extends GenericTOF_SCD implements HiddenOperator{
         }else if( line.startsWith("0") ){ // skip header line
           continue;
         }else if( line.startsWith("1") ){ // change the factory for subsequent
-          pkfac=createFactory(line);      // peaks to be created
+          pkfac=createFactory(line); 
+          DetInfo = NextDetector( node);
+          // peaks to be created
         }else if( line.startsWith("2") ){ // skip column labels
           continue;
         }else if( line.startsWith("3") ){ // create a peak and add it to the
           peak=createPeak(line,pkfac);    // vector
-          if(peak!=null)
-            peaks.add(peak);
+          if(peak!=null && DetInfo!= null && DetInfo.size()==3 ){
+             Peak_new peak1 = fixUpPeak( peak, DetInfo);
+             peaks.add(peak1);
+          }else
+             peaks.add( peak );
         }else{
           // do nothing
         }
@@ -214,6 +266,8 @@ public class ReadPeaks extends GenericTOF_SCD implements HiddenOperator{
         }catch(IOException e2){
           // let it drop on the floor
         }
+       
+        
       }
     }
 
@@ -225,6 +279,163 @@ public class ReadPeaks extends GenericTOF_SCD implements HiddenOperator{
       return peaks;
   }
 
+  //Used for the reading of the parallel xml file
+  //Returns the grid as the first element and ?? as second
+  private Vector NextDetector(Node node) throws IOException{
+     if(node == null)
+        return null;
+     
+     Vector3D xdir = new Vector3D(1f,0f,0f);
+     Vector3D ydir = new Vector3D(0f,1f,0f);
+     Vector3D center = new Vector3D(1f,0f,0f);
+     float width = 1f,
+           height = 1f,
+           depth  = .1f,
+           InitialPath = 0f;
+     int nrows =20, ncols = 20;
+     float T0=0;
+     XScale xscl = new UniformXScale( 0,100,10);
+          
+     //Read next detector info
+     Node Nd = null;
+     //Skip child node to a new element
+     
+     
+     for( ;node != null && !(node instanceof Element) 
+         && !(node.getNodeName().equals( "detector" ));
+                     node = node.getNextSibling()){}
+     
+     if( node == null)
+        return null;
+     Element ENode = (Element)node;
+     node = node.getNextSibling();
+     int detectorID =0;
+     int nrun = 0;
+     NodeList children = ENode.getChildNodes();
+     for( int i=0; i< children.getLength(); i++ ){
+        Node N= children.item( i );
+        if( N instanceof Element){
+           float[] vals = GetNodeValue( N );
+           String NodeName = N.getNodeName();
+           if( NodeName.equals( "center" )){
+              center = new Vector3D(vals[0],vals[1],vals[2]);
+           }else if( NodeName.equals( "x_vec" )){ 
+              xdir = new Vector3D(vals[0],vals[1],vals[2]); 
+           }else if( NodeName.equals( "y_vec" )){
+              ydir = new Vector3D(vals[0],vals[1],vals[2]);  
+           }else if( NodeName.equals( "width" )){
+              width = vals[0];
+           }else if( NodeName.equals( "height" )){
+              height= vals[0];  
+           }else if( NodeName.equals( "depth" )){ 
+              depth = vals[0]; 
+           }else if( NodeName.equals( "nrows" )){  
+              nrows = (int)vals[0];
+           }else if( NodeName.equals( "ncols" )){  
+              ncols = (int)vals[0]; 
+           }else if( NodeName.equals( "T0" )){  
+              T0 = (int)vals[0]; 
+           }else if( NodeName.equals( "initialPath" )){  
+              InitialPath = (int)vals[0]; 
+           }else if( NodeName.equals( "detector" )){ 
+              detectorID = (int) vals[0];
+           }else if( NodeName.equals( "run" )){
+              
+           }else if( NodeName.equals( "xscale" )){
+              String type = "Uniform";//((Element)N).getAttribute( "type" );
+              if( type != null)
+                 if( type.equals("Uniform")){
+                    xscl = new UniformXScale(vals[0], vals[1], (int)vals[2]);
+                 }else if( type.equals("Log")){
+                    xscl = new GeometricProgressionXScale(vals[0], vals[1],
+                                                            vals[2]);
+                 }else if( type.equals("Variable")){
+                    xscl = new VariableXScale(vals);
+                 }
+              
+           }
+        }
+        }//for
+     
+      UniformGrid grid = new UniformGrid(detectorID, "m",center,xdir,ydir,
+                                       width, height, depth, nrows, ncols);
+      Vector V = new Vector();
+      V.addElement( grid );
+      V.addElement(  T0 );
+      V.addElement(  InitialPath );
+      V.addElement( xscl);
+      return V;
+     
+  }
+  
+  // For an element node,  The value is the union of the #text nodes
+  private float[]  GetNodeValue( Node N ){
+     
+     if( N== null)
+        return null;
+     String S="";
+     if( N.getNodeName().equals("#text"))
+        S = N.getNodeValue();
+     else{
+        NodeList children = N.getChildNodes();
+        for(int i=0; i< children.getLength(); i++){
+           Node NN = children.item(i);
+           if(NN.getNodeName().equals("#text"))
+              S +=NN.getNodeValue()+" ";
+           else if( NN.getNodeName().equals( "#cdata-section" ))
+              S += NN.getNodeValue()+" ";
+        } 
+     }
+     S = S.trim();
+     String S1 ="";
+     char c=0;
+     for( int i=0; i<S.length(); i++){
+       char c1 = S.charAt(i);
+       if(",:;".indexOf(c1)>=0)
+          c1=' ';
+       if( c1 > ' ' || c > ' '|| i==0)
+          S1 +=c1;
+       c = c1;
+     }
+     
+     String[] SS = S1.split( " " );
+     float[] Res = new float[SS.length];
+     for( int i=0; i< SS.length; i++)
+        Res[i] = (new Float(SS[i])).floatValue();
+     
+     return Res;
+  }
+  
+  //used for fixing up a peak into a new peak.
+  private Peak_new  fixUpPeak( Peak peak, Vector DetInfo){
+     
+    if( DetInfo == null)
+       return null;
+    if( peak == null)
+       return null;
+    
+    UniformGrid grid = (UniformGrid)DetInfo.firstElement();
+    float timeAdjustment = ((Float)DetInfo.elementAt( 1 )).floatValue();
+    float InitialPath =((Float)DetInfo.elementAt(2 )).floatValue();
+    XScale xscl = (XScale)DetInfo.lastElement();
+    
+    Peak_new PP = new Peak_new(peak.x(), peak.y(),peak.z(),grid,
+              new IPNS_SCD_SampleOrientation(peak.phi(), peak.chi(),peak.omega()),
+              timeAdjustment, xscl, InitialPath);
+    
+    PP.nrun( peak.nrun());
+    PP.detnum( peak.detnum() );
+    PP.inti( peak.inti() );
+    PP.ipkobs( peak.ipkobs() );
+    PP.monct( peak.monct() );
+    PP.reflag( peak.reflag() );
+    PP.seqnum( peak.seqnum() );
+    PP.sigi( peak.sigi() );
+    PP.UB( peak.UB() );
+    return PP;
+  }
+
+  
   /**
    * From a simple String creates a PeakFactory. If anything goes
    * wrong this returns null.
