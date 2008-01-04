@@ -33,6 +33,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.18  2008/01/04 17:32:51  rmikk
+ * Added T0 considerations to time values.
+ * Set the variables in the superclass to correspond to the variables in the
+ *    subclass, because they were sometimes used.(yuck)
+ *
  * Revision 1.17  2007/02/22 15:14:43  rmikk
  * Added a static utility method to create a Peak_new object from a data set,
  *    detectorID, and col,row and timechan
@@ -131,7 +136,9 @@ import DataSetTools.trial.*;
  * change.
  *   
  */
-
+//TODO Help cannot delete upper peak variables.  Sometimes they are used
+//    and sometimes they are not used.  In debug there are 2 variables with
+//    the same name.  Help Help Help
 public class Peak_new extends Peak {
   // instance variables
   private int       seqnum   = 0;
@@ -171,7 +178,7 @@ public class Peak_new extends Peak {
   private XScale    xscale     = null;
   private Vector3D  peakPt     = null;
   private boolean   needUpdate = true;
-  
+  //TODO make immutable. Ignore changes to any relevant inputs
   /* --------------------Constructor Methods-------------------- */
   /**
    *  A Peak with the null constructor.
@@ -202,7 +209,9 @@ public class Peak_new extends Peak {
       this.z = z;
       this.orient = orient;
       this.Grid( grid );                // needed to set the super class detnum
+      super.detnum( grid.ID());
       this.L1 = initialPath;
+      super.L1( initialPath);
       this.timeAdjustment = timeAdjustment;
       
       this.chi=orient.getChi();
@@ -401,7 +410,7 @@ public static Peak_new getNewPeak_hkl( DataSet DS, int GridID, float h, float k,
     float[] RC = VecQToTOF.RCofQVec( QQ, grid);
     this.y = RC[0];
     this.x = RC[1];
-    this.t = VecQToTOF.TofofQVec( QQ,grid, L1+grid.position( y,x).length());
+    this.t = timeAdjustment + VecQToTOF.TofofQVec( QQ,grid, L1+grid.position( y,x).length());
     update_xcm_ycm_wl();
     this. z= xscale.getI_GLB(t);
   }
@@ -469,8 +478,8 @@ public static Peak_new getNewPeak_hkl( DataSet DS, int GridID, float h, float k,
   // Sets T0  and T1  to the bin boudaries of the xscale with channel z.
   private void setT0T1(float z, XScale time){
     if( !Float.isNaN(z) && (time != null)){
-           float t0= time.getX((int)z);
-           float t1 =time.getX((int)z+1);
+           float t0= time.getX((int)z)+timeAdjustment;
+           float t1 =time.getX((int)z+1)+timeAdjustment;
            times(t0,t1);
            this.t= t0 +(t1-t0)*(z-(int)z);
         }
@@ -484,7 +493,7 @@ public static Peak_new getNewPeak_hkl( DataSet DS, int GridID, float h, float k,
     */
   public float timeAdjust( float dt){
     this.timeAdjustment = dt;
-    needUpdate=true;
+    setT0T1(z, xscale);
     return dt;
   }
   
@@ -505,7 +514,7 @@ public static Peak_new getNewPeak_hkl( DataSet DS, int GridID, float h, float k,
   public void Grid( IDataGrid  grid){
     needUpdate = true;
     this.grid = grid;
-    
+    super.detnum( grid.ID());
     if( grid != null ){
          Vector3D pos = grid.position();
          //pos.multiply( -1.0f);
@@ -705,11 +714,11 @@ public static Peak_new getNewPeak_hkl( DataSet DS, int GridID, float h, float k,
   
   /**
    *  Accessor method for the detector number.
-   */
+   
   public int detnum(){
     return grid.ID();
   }
-
+*/
   
   /**
    * Accessor method for the integrated monitor intensity
@@ -775,7 +784,7 @@ public static Peak_new getNewPeak_hkl( DataSet DS, int GridID, float h, float k,
    *  Accessor method for the primary flight path
    */
   public float L1(){
-    return this.L1;
+    return L1;
   }
 
 
@@ -783,8 +792,10 @@ public static Peak_new getNewPeak_hkl( DataSet DS, int GridID, float h, float k,
    *  Mutator method for the primary flight path in meters.
    */
   public void L1(float path){
-      needUpdate=true;
+      
       this.L1=path;
+      super.L1( path);
+      update_xcm_ycm_wl();
     }
 
   
@@ -906,7 +917,7 @@ public static Peak_new getNewPeak_hkl( DataSet DS, int GridID, float h, float k,
        if(Float.isNaN(L1)) return Float.NaN;
        if(peakPt==null)    return Float.NaN;
       
-       float time = timeAdjustment+(1-z+(int)z)*T0+ (z-(int)z)*T1;     
+       float time = (1-z+(int)z)*T0+ (z-(int)z)*T1;     
        float wl= tof_calc.Wavelength( peakPt.length()+L1,time );
      
        return wl;
@@ -935,7 +946,7 @@ public static Peak_new getNewPeak_hkl( DataSet DS, int GridID, float h, float k,
     if(!Float.isNaN(z)) return;
     if(!Float.isNaN(this.L1)&& !Float.isNaN(wl) ){
                                         
-      float time = tof_calc.TOFofWavelength(peakPt.length()+L1,wl);
+      float time = tof_calc.TOFofWavelength(peakPt.length()+L1,wl)+timeAdjustment;
       time = time-timeAdjustment;
       int indx=-1;
       if(xscale == null){
@@ -1183,7 +1194,28 @@ public static Peak_new getNewPeak_hkl( DataSet DS, int GridID, float h, float k,
   private Vector3D  getPeakPosition(){
     return grid.position(y,x);
   }
-    
+  
+  
+  /**
+   * Accessor method for the data grid
+   * @return the data grid
+   */
+  public IDataGrid getGrid(){
+     
+     return this.grid;
+  }
+  
+  
+  
+  /**
+   * Accessor method for the Xscale
+   * @return  the XScale
+   */
+  public XScale getXscale(){
+     
+     return this.xscale;
+     
+  }
   public static void main( String[] args){
      java.util.Vector peaks = (java.util.Vector)(new ReadPeaks( "tae70.integrate")).getResult();
      if( peaks == null){
