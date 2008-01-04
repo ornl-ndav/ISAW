@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.17  2008/01/04 17:25:33  rmikk
+ * Added the feature to create a paired xml file( if it has more info) with more
+ *    detailed information about the detector.
+ *
  * Revision 1.16  2004/03/15 03:28:39  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -61,7 +65,7 @@ package DataSetTools.operator.Generic.TOF_SCD;
 
 import gov.anl.ipns.Util.File.TextFileReader;
 import gov.anl.ipns.Util.Sys.StringUtil;
-
+import gov.anl.ipns.MathTools.Geometry.*;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -69,10 +73,18 @@ import java.io.OutputStreamWriter;
 import java.text.DecimalFormat;
 import java.util.Vector;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
 import DataSetTools.operator.HiddenOperator;
 import DataSetTools.operator.Operator;
 import DataSetTools.operator.Parameter;
-
+import DataSetTools.dataset.*;
+import org.w3c.dom.*;
+import javax.xml.parsers.*;
+import javax.xml.transform.*;
+import javax.xml.transform.dom.*;
+import javax.xml.transform.stream.*;
 /** 
  * This operator is a small building block of an ISAW version of
  * A.J.Schultz's PEAKS program. This operator writes out the
@@ -142,10 +154,15 @@ public class WritePeaks extends GenericTOF_SCD implements HiddenOperator{
       s.append("ISAW version of A.J. Schultz's PEAKS program. This ");
       s.append("operator writes out a list of x, y, and time bins and ");
       s.append("intensities to the specified file in a format specified ");
-      s.append("by Art.\n");
-      s.append("@assumptions The specified file does not already exist.\n");
-      s.append("Alternatively, if the specified file exists, it is OK to ");
-      s.append("overwrite it.\n");
+      s.append("by Art.\n If the filename ends with .peaks.xml then two");
+      s.append("files may be written. The first is the regular peaks ");
+      s.append(" file( no .xml) and the 2nd contains detailed position "); 
+      s.append("information about the data grids.");
+      s.append("@assumptions If the specified file already exists, it will\n");
+      s.append("be overwritten if append is false and appended if append"); 
+      s.append("is true.\n Furthermore if the file extension is peaks.xml a ");
+      s.append("2nd file with more accurate detector information \"may\" be written "); 
+      s.append("along with the file with the .peaks extension.\n"); 
       s.append("It is furthermore assumed that the specified peaks Vector ");
       s.append("contains valid peak information.\n");
       s.append("@algorithm This operator first determines the last sequence ");
@@ -186,6 +203,26 @@ public class WritePeaks extends GenericTOF_SCD implements HiddenOperator{
     OutputStreamWriter outStream = null;
     int     seqnum_off = 0;
     
+    boolean writeXml = false;
+  
+    Document xmlDoc = null;
+    
+    
+    if( file == null)
+       return new gov.anl.ipns.Util.SpecialStrings.ErrorString
+                                                ("Cannot save to a null file");
+    if( file.toUpperCase().endsWith(".PEAKS.XML")){
+    		writeXml = true;
+    		file = file.substring(0,file.length()-4);
+    }
+    if( peaks == null)
+       return new gov.anl.ipns.Util.SpecialStrings.ErrorString
+       ("Cannot save 0 peaks to a file");
+    if( writeXml)
+       for( int i=0; i< peaks.size() && writeXml; i++)
+          if( !(peaks.elementAt(i) instanceof Peak_new))
+                   writeXml = false;
+         
     // determine the last sequence number in the file if we are appending
     if(append) seqnum_off=lastSeqNum(file);
     seqnum_off++;
@@ -196,12 +233,18 @@ public class WritePeaks extends GenericTOF_SCD implements HiddenOperator{
 
     // temporary variable
     Peak peak = null;
-
+  
     try{
       // open and initialize a buffered file stream
       FileOutputStream op = new FileOutputStream(file,append);
+    
       outStream=new OutputStreamWriter(op);
-      
+      if( writeXml){
+         xmlDoc = InitXml( file,append);
+         if( xmlDoc == null)
+            writeXml = false;
+       
+      }
       // loop through the peaks
       for( int i=0 ; i<peaks.size() ; i++ ){
         peak=(Peak)peaks.elementAt(i);
@@ -210,6 +253,7 @@ public class WritePeaks extends GenericTOF_SCD implements HiddenOperator{
         if( (peak.nrun()!=runNum) || (peak.detnum()!=detNum) ){
           // write out the header
           writeHeader(outStream,(Peak)peaks.elementAt(i));
+          writeHeaderXml(xmlDoc,  (Peak)peaks.elementAt( i ));
           // reinit run and detector numbers
           runNum=((Peak)peaks.elementAt(i)).nrun();
           detNum=((Peak)peaks.elementAt(i)).detnum();
@@ -229,6 +273,7 @@ public class WritePeaks extends GenericTOF_SCD implements HiddenOperator{
       // flush and close the buffered file stream
       outStream.flush();
       outStream.close();
+      
     }catch(IOException e){
       //file may not be closed
       try{
@@ -244,8 +289,190 @@ public class WritePeaks extends GenericTOF_SCD implements HiddenOperator{
         //let it drop on the floor
       }
     }
-    
+    FinishXml( xmlDoc, file );
     return file;
+  }
+  
+  private Document InitXml( String file, boolean append)
+                        throws IOException{
+    File F = new File( file+".xml");
+    if( !F.exists())
+       append = false;
+    
+    Document xmlDoc = null;
+    if( append )
+       try{
+          DocumentBuilder dbuild = DocumentBuilderFactory.newInstance().
+                                               newDocumentBuilder();
+          xmlDoc = dbuild.parse( F );
+         
+          
+          
+       }catch(Exception ss){
+          xmlDoc = null;
+         
+          append = false;
+       }
+     if( !append)
+        try{
+           DocumentBuilder dbuild = DocumentBuilderFactory.newInstance().
+                                                       newDocumentBuilder(); 
+           xmlDoc = dbuild.newDocument();
+           xmlDoc.appendChild( xmlDoc.createElement("data"));
+        }catch( Exception ss){
+           
+        }
+    F=null;
+    
+    return xmlDoc;
+  }
+  
+  private void writeHeaderXml( Document xmlDoc,  Peak P)
+                                     throws IOException{
+     if( xmlDoc == null || P == null)
+        return;
+     
+     if( !(P instanceof Peak_new))
+        throw new IllegalArgumentException(" Internal error A. WritePeaks");
+     
+     Node node = xmlDoc.createElement( "detector" );
+       AddSpaceNL(xmlDoc,node,3); 
+       Node attribute = xmlDoc.createElement( "run" );
+         Text childVal=xmlDoc.createTextNode( ""+P.nrun() );
+         attribute.appendChild( childVal );
+          node.appendChild( attribute );
+
+       AddSpaceNL(xmlDoc,node,3); 
+       attribute = xmlDoc.createElement( "detector" );
+          childVal=xmlDoc.createTextNode(""+P.detnum() );
+          attribute.appendChild( childVal );
+          node.appendChild( attribute );
+
+      
+     AddSpaceNL(xmlDoc,xmlDoc.getDocumentElement(),1);     
+     xmlDoc.getDocumentElement().appendChild( node );
+     AddSpaceNL(xmlDoc,node,3);
+ 
+     IDataGrid grid = ((Peak_new)P).getGrid();
+     XScale xscl =((Peak_new)P).getXscale(); 
+     float[] center = grid.position().get();
+     Node child = xmlDoc.createElement( "center" );
+     childVal = xmlDoc.createTextNode(  center[0]+"  "+center[1]+"  "
+              +center[2]);
+         child.appendChild( childVal );
+         node.appendChild( child);
+
+     AddSpaceNL(xmlDoc,node,3);
+     child = xmlDoc.createElement( "x_vec" );
+        center= grid.x_vec().get();
+        childVal = xmlDoc.createTextNode(   center[0]+"  "+center[1]+"  "
+              +center[2]);
+        child.appendChild( childVal );
+        node.appendChild( child);
+        
+
+     AddSpaceNL(xmlDoc,node,3);
+     child = xmlDoc.createElement( "y_vec" );
+        center= grid.y_vec().get();
+        childVal = xmlDoc.createTextNode(  center[0]+"  "+center[1]+"  "
+              +center[2]);
+        child.appendChild( childVal );
+        node.appendChild( child);
+
+     AddSpaceNL(xmlDoc,node,3);
+     if( !Float.isNaN(  grid.width() )){
+        child = xmlDoc.createElement( "width" );
+        childVal = xmlDoc.createTextNode(grid.width()+"");
+        child.appendChild( childVal );
+        node.appendChild( child);
+     }                                         
+
+     if( !Float.isNaN(  grid.height() )){
+
+        AddSpaceNL(xmlDoc,node,3);
+        child = xmlDoc.createElement( "depth" );
+        childVal = xmlDoc.createTextNode(grid.height()+"");
+        child.appendChild( childVal );
+        node.appendChild( child);
+                                                
+     }
+     if( !Float.isNaN(  grid.depth() )){
+
+        AddSpaceNL(xmlDoc,node,3);
+        child = xmlDoc.createElement( "depth" );
+        childVal = xmlDoc.createTextNode(grid.depth()+"");
+        child.appendChild( childVal );
+        node.appendChild( child);
+     }
+
+     AddSpaceNL(xmlDoc,node,3);
+     child = xmlDoc.createElement( "T0" );
+       childVal = xmlDoc.createTextNode(((Peak_new)P).timeAdjust()+"");
+       child.appendChild( childVal );
+       node.appendChild( child);
+
+     AddSpaceNL(xmlDoc,node,3);  
+     child = xmlDoc.createElement( "initialPath" ); 
+        childVal = xmlDoc.createTextNode(""+((Peak_new)P).L1());
+        child.appendChild( childVal );
+        node.appendChild( child);
+
+     AddSpaceNL(xmlDoc,node,3);   
+     child = xmlDoc.createElement( "nrows");
+        childVal = xmlDoc.createTextNode(""+grid.num_rows());
+        child.appendChild( childVal );
+        node.appendChild( child);
+        
+
+     AddSpaceNL(xmlDoc,node,3);   
+     child = xmlDoc.createElement( "ncols");
+        childVal = xmlDoc.createTextNode(""+grid.num_cols());
+        child.appendChild( childVal );
+        node.appendChild( child);
+
+     AddSpaceNL(xmlDoc,node,3);   
+     child = xmlDoc.createElement( "xscale");
+          AddSpaceNL(xmlDoc,child,6);
+          attribute = xmlDoc.createElement( "type");
+          childVal = xmlDoc.createTextNode("Uniform");
+          attribute.appendChild( childVal );
+          child.appendChild( attribute );
+          AddSpaceNL(xmlDoc,child,6);
+          childVal = xmlDoc.createTextNode(""+xscl.getStart_x()+
+                "  "+xscl.getEnd_x()+"  "+xscl.getNum_x());
+          child.appendChild( childVal );
+          node.appendChild( child);
+
+     AddSpaceNL(xmlDoc,node,1);
+
+  }
+  
+  private void AddSpaceNL( Document xmlDoc, Node node, int nspaceAfter){
+     if( nspaceAfter < 0)
+        nspaceAfter = 0;
+     if( nspaceAfter > 70)
+        nspaceAfter = 70;
+     String S ="";
+     for( int i=0; i< nspaceAfter; i++)S +=' ';
+     Text tnode =xmlDoc.createTextNode( "\n"+ S);
+     node.appendChild( tnode );
+     
+  }
+  private void FinishXml( Document xmlDoc, String fileName){
+     
+     if( xmlDoc == null)
+        return;
+     if( fileName == null)
+        return;
+     try{
+       Transformer trans = TransformerFactory.newInstance().newTransformer();
+       trans.transform( new DOMSource(xmlDoc), new StreamResult( new File(fileName+".xml")));
+        
+     }catch(Exception ss){
+        javax.swing.JOptionPane.showMessageDialog( null , "Cannot Save detector info" );
+     }
+     
+     
   }
   
   /**
