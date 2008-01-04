@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2008/01/04 17:28:22  rmikk
+ *  The viewer now preserves aspect ratio and disables any way for the user
+ *    to set it
+ *
  *  Revision 1.10  2007/10/09 01:08:48  rmikk
  *  Added another tab for the Contour View
  *
@@ -190,9 +194,11 @@ public class TwoDViewers extends DataSetViewer {
          
           ViewState.reset( ImageViewComponent.LOG_SCALE_SLIDER+"."+
                        ControlSlider.SLIDER_VALUE, (Range.x + Range.y)/2f);
+      
       viewComp.setObjectState( ViewState );
       Ostate.insert("ViewImage", viewComp.getObjectState( true ));
-      
+      if( viewComp instanceof CoordJPanel)
+         ((CoordJPanel)viewComp).setPreserveAspectRatio( true );
 
       try {
          viewComp.dataChanged( (IVirtualArray2D) viewArray.getArray() );
@@ -526,6 +532,8 @@ public class TwoDViewers extends DataSetViewer {
                             IArrayMaker_DataSet viewArray ,
                             IViewComponent2D    viewComp ) {
 
+      if( viewComp instanceof CoordJPanel)
+         ((CoordJPanel)viewComp).setPreserveAspectRatio( true);
       DisplayPanel = viewComp.getDisplayPanel();
       Set2DObjectState();
       ViewHolder.add( DisplayPanel );
@@ -591,7 +599,9 @@ public class TwoDViewers extends DataSetViewer {
       JMenu item = null;
       int p1 = - 1;
       
-      for( int i = 0 ; i < MenItem1.length ; i++ ) {
+      for( int i = 0 ; i < MenItem1.length ; i++ )
+         if( MenItem1[i].getItem().getText().toUpperCase().
+                  indexOf( "ASPECT RATIO" ) < 0 ){
          
          String path = MenItem1[ i ].getPath();
          if( path != null ) {
@@ -682,7 +692,9 @@ public class TwoDViewers extends DataSetViewer {
       
       JMenuBar bar = getMenuBar();
       JMenu item = null;
-      for( int i = 0 ; i < MenItem1.length ; i++ ) {
+      for( int i = 0 ; i < MenItem1.length ; i++ )
+       if( MenItem1[i].getItem().getText().toUpperCase().
+                                 indexOf( "ASPECT RATIO" ) < 0 ){
          
          String path = MenItem1[ i ].getPath();
 
@@ -791,6 +803,8 @@ public class TwoDViewers extends DataSetViewer {
       DisplayPanel = viewComp.getDisplayPanel();
       Set2DObjectState();
       SetViewObjectState();
+      if( viewComp instanceof CoordJPanel)
+         ((CoordJPanel)viewComp).setPreserveAspectRatio( true);
       viewComp.addActionListener( new CompActionListener() );
       
       ControlHolder.removeAll();
@@ -834,7 +848,9 @@ public class TwoDViewers extends DataSetViewer {
       if( items == null ) return;
       if( bar == null ) return;
       
-      for( int i = 0 ; i < items.length ; i++ ) {
+      for( int i = 0 ; i < items.length ; i++ ) 
+        if( items[i].getItem().getText().toUpperCase().
+                                     indexOf( "ASPECT RATIO" ) < 0){
          
          String path = null;
          
@@ -997,6 +1013,9 @@ public class TwoDViewers extends DataSetViewer {
          viewComp.dataChanged(  );
          Set2DObjectState();//Sets position of the JTable
        
+         if( viewComp instanceof CoordJPanel)
+            ((CoordJPanel)viewComp).setPreserveAspectRatio( true);
+         
          if( TagFrame != null )
             TagFrame.setNewData( (IVirtualArray2D) ( viewArray.getArray() ) ,
                      (CoordBounds) null );
