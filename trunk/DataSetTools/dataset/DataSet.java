@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.59  2008/01/04 17:20:50  rmikk
+ *  Updated to work with pixel info lists that are lists of pixel info's
+ *
  *  Revision 1.58  2008/01/02 19:25:57  rmikk
  *  Added a method that Fixes the grid to a new reference in the PixelInfoList
  *    Attribute. The data pointers in this new grid point to data in the new data set,
@@ -2326,19 +2329,27 @@ public class DataSet implements IAttributeList,
                     if( D != null ){
                        
                        PixelInfoList plist = AttrUtil.getPixelInfoList( D );
+                       IPixelInfo[] pixInfo = new IPixelInfo[plist.num_pixels()];
                        if( plist != null ){
+                          for( int i=0; i< plist.num_pixels(); i++){
+                       
                           
-                         DetectorPixelInfo pinf =
-                                       (DetectorPixelInfo) plist.pixel( 0 );
+                             DetectorPixelInfo pinf =
+                                       (DetectorPixelInfo) plist.pixel( i);
+                             if( pinf.gridID() == grid_new.ID()){
+                                 pinf = new DetectorPixelInfo( pinf.ID(), 
+                                          (short)pinf.row(),(short)pinf.col(),
+                                          grid_new);
+                                 pixInfo[i] = pinf;
+                           
+                            }else
+                                pixInfo[i] = plist.pixel( i );
                          
-                         pinf = new DetectorPixelInfo( pinf.ID(), 
-                                       (short)pinf.row(),(short)pinf.col(),
-                                       grid_new);
                          
-                         D.setAttribute(new PixelInfoListAttribute( 
-                                   Attribute.PIXEL_INFO_LIST,
-                                   new PixelInfoList(pinf)));
-                         
+                          }  
+                          D.setAttribute(new PixelInfoListAttribute( 
+                                           Attribute.PIXEL_INFO_LIST,
+                                           new PixelInfoList(pixInfo)));
                        }
                     }
                  }//next col/row
