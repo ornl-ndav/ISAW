@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.27  2008/01/04 17:29:47  rmikk
+ * Replaced references to UniformGrid by IDataGrid so that the new RowColGrid
+ *   will work in the contour view
+ *
  * Revision 1.26  2005/11/06 16:30:05  rmikk
  * updated to make accessing data elements faster
  *
@@ -168,7 +172,7 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
        tMaxcol;
    int DetNum = -1;
    int[] DetNums=null;
-   UniformGrid grid = null;
+   IDataGrid grid = null;
    int[][] Groups = null;
    int num_rows,num_cols;
    XScale x_scale = null;
@@ -633,9 +637,9 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
        }
          
 
-      grid = (UniformGrid)(Grid_util.getAreaGrid( DS, DetNum));
+      grid = (IDataGrid)(Grid_util.getAreaGrid( DS, DetNum));
       //UniformGrid.setDataEntriesInAllGrids(DS);
-      grid = new UniformGrid( grid, false);
+      grid = grid.clone();
       grid.setData_entries( DS );
       SetUpGroups();
    }
@@ -691,11 +695,11 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
       //Check to see if it is there
       if( DetNum < 0)
         return;
-      grid = (UniformGrid)Grid_util.getAreaGrid( DS, DetNum);
+      grid = Grid_util.getAreaGrid( DS, DetNum);
       
       if( grid == null)
          return;
-      grid = new UniformGrid( grid, false);
+      grid = grid.clone();
       grid.setData_entries( DS );
       this.DetNum = DetNum;
       MaxRow = grid.num_rows();
@@ -719,8 +723,8 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
     }catch( Exception ss){}
     if( choice != DetNum){
       DetNum = choice;
-      grid = (UniformGrid)Grid_util.getAreaGrid( DS, DetNum);
-      grid = new UniformGrid( grid,false);
+      grid = Grid_util.getAreaGrid( DS, DetNum);
+      grid = grid.clone();
       grid.setData_entries( DS );
       //UniformGrid.setDataEntriesInAllGrids( DS );
       MaxRow = grid.num_rows();

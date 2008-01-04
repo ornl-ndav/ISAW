@@ -29,6 +29,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.37  2008/01/04 17:29:23  rmikk
+ *  Replaced references to UniformGrid by IDataGrid so that the new RowColGrid
+ *    will work in the contour view
+ *
  *  Revision 1.36  2006/08/25 20:31:09  rmikk
  *  Fixed another off by one error so that the top row now displays proper info
  *    in the conversions table when selecteed.
@@ -206,7 +210,7 @@ public class ContourData
    int mode =0;
    int DetNum = -1;
    int[] DetNums = null;
-   UniformGrid grid;
+   IDataGrid grid;
    //Data[][]Groups = null;
    int num_rows = -1, num_cols = -1;
    boolean showAllGroups = true;
@@ -648,8 +652,8 @@ public class ContourData
             if( ds.getData_entry(j).getX_scale() != x_scale)
                 ds.getData_entry(j).resample( x_scale,0);
          //UniformGrid.setDataEntriesInAllGrids(ds);
-         grid = (UniformGrid)(Grid_util.getAreaGrid( ds, DetNum)); 
-         grid = new UniformGrid( grid, false);
+         IDataGrid grid1 = (IDataGrid)(Grid_util.getAreaGrid( ds, DetNum)); 
+         grid = grid1.clone();
          grid.setData_entries(ds);
          //SetUpGroups();
         }
@@ -810,8 +814,8 @@ public class ContourData
           //UniformGrid.setDataEntriesInAllGrids(ds);
                                                    // now get the grid and assign it
                                                    // to the instance variable "grid"
-          grid = (UniformGrid)(Grid_util.getAreaGrid( ds, DetNum)); 
-          grid = new UniformGrid( grid, false);
+          IDataGrid grid1 = (IDataGrid)(Grid_util.getAreaGrid( ds, DetNum)); 
+          grid = grid1.clone();
           grid.setData_entries( ds);
           //SetUpGroups();
         }else DetNums = null;
@@ -887,17 +891,17 @@ public class ContourData
       int oldDetNum = DetNum;
       state.set_int( ViewerState.CONTOUR_DETNUM, choice);
       DetNum = choice;
-      grid = (UniformGrid)Grid_util.getAreaGrid( ds, DetNum);
-      if( grid == null){
+      IDataGrid grid1 = (IDataGrid)Grid_util.getAreaGrid( ds, DetNum);
+      if( grid1 == null){
          DetNum = oldDetNum;
          state.set_int( ViewerState.CONTOUR_DETNUM, DetNum);
-         grid = (UniformGrid)Grid_util.getAreaGrid( ds, DetNum);
-         grid = new UniformGrid( grid , false);
+         grid1 = (IDataGrid)Grid_util.getAreaGrid( ds, DetNum);
+         grid = grid1.clone();
          grid.setData_entries(ds);
          return;
       }
       //UniformGrid.setDataEntriesInAllGrids(ds);
-      grid = new UniformGrid( grid, false);
+      grid = grid.clone();
       grid.setData_entries( ds);
       num_rows = grid.num_rows();
       num_cols = grid.num_cols();
