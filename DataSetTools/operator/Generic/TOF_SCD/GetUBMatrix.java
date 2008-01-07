@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2008/01/07 20:15:08  rmikk
+ * Replace one argument(unused) by an output float[] value with stats
+ *
  * Revision 1.2  2007/08/23 21:05:03  dennis
  * Removed unused imports.
  *
@@ -81,7 +84,7 @@ public class GetUBMatrix extends GenericOperator implements HiddenOperator{
       clearParametersVector();
       addParameter( new PlaceHolderPG("Peaks Vector",new java.util.Vector()));
       addParameter( new FloatPG("Max Side crystal(Real)",20f));
-      addParameter( new FloatPG("Min Dx,Dy for new direction",.5f));
+      addParameter( new PlaceHolderPG("Stats",new float[4]));
    }
 
 
@@ -140,8 +143,9 @@ public class GetUBMatrix extends GenericOperator implements HiddenOperator{
 
          java.util.Vector Peaks = (java.util.Vector)(getParameter(0).getValue());
          float Xlength = ((FloatPG)(getParameter(1))).getfloatValue();
-         float DNewDir = ((FloatPG)(getParameter(2))).getfloatValue();
-         float[][] Xres=DataSetTools.operator.Generic.TOF_SCD.GetUB.GetUBMatrix(Peaks,Xlength,DNewDir );
+         float[] Stats = (float[])getParameter(2).getValue();
+         float[][] Xres=DataSetTools.operator.Generic.TOF_SCD.GetUB.
+                       GetUBMatrix(Peaks,Xlength,Stats );
 
          return Xres;
        }catch(java.lang.IllegalArgumentException S0){

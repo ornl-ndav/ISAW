@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2008/01/07 20:14:39  rmikk
+ * Replace one argument(unused) by an output float[] value with stats
+ *
  * Revision 1.5  2007/08/23 21:05:03  dennis
  * Removed unused imports.
  *
@@ -671,34 +674,35 @@ public class GetUB {
     * @param MaxXtalLengthReal
     *           The maximum length of crystal lattice in real space or -1 for
     *           default and adjustable
-    * @param MinDxDyNewUnitDirection
-    *           Minimum distance in x direction or y direction of the projection
-    *           of a unit direction on he xy plane for 2 directions to be
-    *           considered different
+    * @param Stats (output)
+    *           Will Contain the percent of all peaks whose index values are within
+    *           .1, .2, .3,..  of an integer 
     * @return Returns a new UB matrix or null. This matrix has been run through
     *         blind.
     */
    public static float[][] GetUBMatrix( Vector Peaks , float MaxXtalLengthReal ,
-            float MinDxDyNewUnitDirection ) throws IllegalArgumentException {
+            float[] Stats ) throws IllegalArgumentException {
 
       boolean done = false;
       float MaxLength = MaxXtalLengthReal;
-      float MinNewDir = MinDxDyNewUnitDirection;
+      float MinNewDir =.2f;
       if( MaxLength < 0 )
          MaxLength = 20;
       if( MinNewDir < 0 )
          MinNewDir = .5f;
+      if( Stats != null)
+         java.util.Arrays.fill( Stats , 0f );
       float[][] Dirs = null;
       boolean[] omit = null;
-      float gridLength = .05f;
-      float DDir = .5f;
+      float gridLength = .04f;
+      float DDir = .2f;
       int Nomitted = 0;
       boolean gridChanged = false;
       while( ! done ) {
          float[] code = new float[ 7 ];
 
          code[ 6 ] = 0;
-         while( ( code[ 6 ] < 100 ) && ( gridLength > .00000001 ) ) {
+         while( ( code[ 6 ] < 100 ) && ( gridLength > .005 ) ) {
             
             Dirs = getPlaneVectors( Peaks , omit , gridLength , DDir , code ,
                      MaxLength );
@@ -743,17 +747,13 @@ public class GetUB {
 
          if( ( NomittedOld == Nomitted ) && ! done ) {
             if( gridChanged )
-               if( (MinDxDyNewUnitDirection < 0)
-                        || (DDir / 1.5f > MinDxDyNewUnitDirection) ) {
-                  DDir /= 1.5;
+               
                   gridChanged = false;
-               }
-               else
-                  done = true;
+              
             else {
                gridLength /= 2f;
                gridChanged = true;
-               if( gridLength < .00000001f )
+               if( gridLength < .005f )
                   done = true;
             }
 
@@ -771,13 +771,13 @@ public class GetUB {
       if( Dirs.length < 3 )
          throw new IllegalArgumentException( " Not enough directions found" );
       
-      return UBMatrixFrPlanes( Dirs , Peaks , omit );
+      return UBMatrixFrPlanes( Dirs , Peaks , omit, Stats );
 
    }
 
 
    public static float[][] UBMatrixFrPlanes( float[][] PlaneDirs ,
-            Vector Peaks , boolean[] omit ) {
+            Vector Peaks , boolean[] omit, float[]Stats ) {
 
       if( PlaneDirs == null )
          return null;
@@ -840,14 +840,54 @@ public class GetUB {
          for( int i = 0 ; i < 3 ; i++ )
             for( int j = 0 ; j < 3 ; j++ )
                UB[ i ][ j ] = (float) M[ i ][ j ];
-
-         return UB;
+         
+         return UpdateStats(UB, Peaks,Stats);
       }
 
       return null;
    }
 
-
+   private static float[][] UpdateStats( float[][]UB, Vector Peaks, float[]Stats){
+      if( Stats == null || Stats.length < 1)
+         return UB;
+      float[][]UBinv = gov.anl.ipns.MathTools.LinearAlgebra.getInverse( UB );
+      if( UBinv != null)
+         return UB;
+      
+      for( int i=0; i< Peaks.size(); i++){
+         Peak P = (Peak)Peaks.elementAt( i );
+         double[] Qs = P.getUnrotQ();
+         float Max =0;
+         for(int r=0; r<3;r++){
+            
+            double MillerIndex = UBinv[r][0]*Qs[0]+ UBinv[r][1]*Qs[1]
+                                                          + UBinv[r][2]*Qs[2];
+            
+            float err = (float)Math.min( 
+                                        Math.abs( MillerIndex -(int)MillerIndex ),  
+                                        Math.abs( (int)(MillerIndex+1 )-MillerIndex));
+            
+            if( err > Max)
+               Max = err;
+         }
+         
+         int StatInd = (int)(Max/.1f);
+         if( StatInd < Stats.length)
+            Stats[StatInd]++;
+         
+      }
+      //Accumulate
+      for( int i=1;i<Stats.length;i++)
+         Stats[i] +=Stats[i-1];
+      
+      //Convert to Percent on Peaks.size()
+      int L = Peaks.size();
+      for( int i=0; i< Stats.length; i++)
+         Stats[i]=Stats[i]*100/L;
+      
+      return UB;
+      
+   }
    private static float[] FindNextTop( float[][] List , int Nelements ,
             float x1used , float y1used , float x2used , float y2used ,
             float NewDir , float gridLength ) {
@@ -1092,7 +1132,7 @@ public class GetUB {
             }
          }
          else if( L.startsWith( "w" ) ) {
-            UB = GetUB.GetUBMatrix( Peaks , 20f , .3f );
+            UB = GetUB.GetUBMatrix( Peaks , 20f , null);
             ScriptUtil.display( UB );
          }
          else if( L.startsWith( "r" ) ) {
@@ -1108,7 +1148,7 @@ public class GetUB {
 
 
             if( Dirs.length == 3 ) {
-               UB = GetUB.UBMatrixFrPlanes( Dirs , Peaks , omit );
+               UB = GetUB.UBMatrixFrPlanes( Dirs , Peaks , omit ,null);
                ScriptUtil.display( UB );
             }
             else
