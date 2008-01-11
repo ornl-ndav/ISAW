@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2008/01/11 17:43:16  rmikk
+ * Added input testing to eliminate null pointer exceptions
+ * Distinguished between grid ID and GroupID in setting up PixelInfoList Attributes
+ *
  * Revision 1.11  2007/07/11 18:10:38  rmikk
  * Fixed the GroupID's after collapsing a detector in half
  *
@@ -360,7 +364,10 @@ public class ProcessNxEntry  implements IProcessNxEntry {
           
           if( 2*(grid.num_rows()/2)!= grid.num_rows())
              return;
-          
+          if( grid.position() == null || grid.x_vec() == null)
+             return;
+          if( grid.y_vec()== null )
+             return;
           grid1= new UniformGrid(grid.ID(), grid.units(),grid.position(),
                     grid.x_vec(),grid.y_vec(),grid.width(),grid.height(),
                     grid.depth(),grid.num_rows()/2,grid.num_cols()/2);
@@ -390,7 +397,7 @@ public class ProcessNxEntry  implements IProcessNxEntry {
                 DS.removeData_entry_with_id( DB3.getGroup_ID());
                 
                 DB.setAttribute( new PixelInfoListAttribute( Attribute.PIXEL_INFO_LIST,
-                         new PixelInfoList( new DetectorPixelInfo( grid.ID(),
+                         new PixelInfoList( new DetectorPixelInfo( DB1.getGroup_ID(),
                          (short) row,(short)col, grid1))));
                 DB.setGroup_ID( groupID++ );
              }
