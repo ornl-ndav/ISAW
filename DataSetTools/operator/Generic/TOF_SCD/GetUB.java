@@ -33,6 +33,13 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2008/01/11 17:04:13  rmikk
+ * Replaced (int) by Math.floor
+ * Deleted some dead code
+ * Eliminated unused parameters and added a Stats(output) parameter
+ * Zero in searching for negative or positive numbers is now a percentage of a
+ *    maximum value
+ *
  * Revision 1.6  2008/01/07 20:14:39  rmikk
  * Replace one argument(unused) by an output float[] value with stats
  *
@@ -100,7 +107,8 @@ public class GetUB {
    // lie within .3q of a plane.
 
    public static float[]    xixj     = null;
-
+   
+   private static float[] line = new float[61];
 
    /**
     * 
@@ -143,7 +151,7 @@ public class GetUB {
             boolean[] omit , float MaxXtallengthReal )
             throws IllegalArgumentException {
 
-      float[] Res = new float[ 21 ];
+      float[] Res = line;
       Arrays.fill( Res,0f);
       float delta = 1 / MaxXtallengthReal / 4f / 12f;
       if( Peaks == null )
@@ -169,13 +177,14 @@ public class GetUB {
             Peak pk = (Peak) Peaks.elementAt( i );
             double[] Qvec = pk.getUnrotQ();
             float p = (float) ( Qvec[ 0 ] * x + Qvec[ 1 ] * y + Qvec[ 2 ] * z );
-            int index = (int) ( p / delta + .5 );
+            int index = (int)Math.floor ( p / delta + .5 );
             if( Math.abs( index ) >= Res.length / 2 ) {
                float[] Res1 = new float[ 2 * Math.abs( index ) + 1 + 10 ];
                Arrays.fill(Res1,0f);
                System.arraycopy( Res , 0 , Res1 ,
                         ( Res1.length - Res.length ) / 2 , Res.length );
                Res = Res1;
+               line = Res;
                center = Res.length / 2;
             }
             Res[ center + index ] += pk.ipkobs();
@@ -300,18 +309,29 @@ public class GetUB {
       boolean done = false;
       int faze = 0;
       int maxIndx = - 1;
+      float zero = 0f;
+      float max_xixj_start =0;
       for( int i = 0 ; ( i < xixj.length ) && ! done ; i++ ) {
-         if( faze == 0 ) {
-            if( xixj[ i ] < -.1 )
+         if( faze == 0 ) {  
+            
+            if( xixj[i] > max_xixj_start){
+               
+               max_xixj_start = xixj[i];
+               zero = max_xixj_start/10;
+            }
+            
+            if( xixj[ i ] < -zero )
                faze = 1;
+               
+            
          }
          else if( faze == 1 ) {
-            if( xixj[ i ] > .1 )
+            if( xixj[ i ] > zero )
                faze = 2;
             maxIndx = i;
          }
          else if( faze == 2 ) {
-            if( xixj[ i ] < -.1 )
+            if( xixj[ i ] < -zero )
                faze = 3;
             else if( xixj[ i ] > xixj[ maxIndx ] ) {
 
@@ -331,7 +351,7 @@ public class GetUB {
          return null;
 
       // -----Now determine goodness of fit ------------
-      int N1 = 0 , 
+ /*     int N1 = 0 , 
           N2 = 0 ,
           N3 = 0;
       float perc80 = (float) ( binnedData[ maxDatIndx ] - .2 * ( binnedData[ maxDatIndx ] - minDat ) );
@@ -374,14 +394,17 @@ public class GetUB {
       Fit += ( N1 + N2 / 2 ) / (float) ( N1 + N2 + N3 );
 
       Res[ FIT ] = Fit / 2;
+       */
       int center = binnedData.length / 2;
+     
+      Res[FIT] =0;
       float Tot = 0;
       float TotInt = 0;
       for( int i = 0 ; i < binnedData.length ; i++ )
          if( binnedData[ i ] > 0 ) {
             Tot += binnedData[ i ];
             float x = ( i - center ) / (float) ( maxIndx + 2 );
-            if( Math.abs( x - (int) ( x + .5 ) ) < .2 )
+            if( Math.abs( x - Math.floor ( x + .5 ) ) < .2 )
                TotInt += binnedData[ i ];
          }
       Res[ FIT1 ] = 2 * TotInt / (float) Tot;
@@ -392,7 +415,7 @@ public class GetUB {
    private static float[] doOneDirection( Vector Peaks , float x , float y ,
             boolean[] omit , float MaxXtallengthReal ) {
 
-      float line[] = null;
+      
       float delta = MaxXtallengthReal;
       int span = 1 , Mx = - 1 , Mn = - 1;
       float[] Res = null;
@@ -414,45 +437,18 @@ public class GetUB {
    }
 
 
-   private static float[] doOneDirection1( Vector Peaks , float x , float y ,
-            boolean[] omit , float MaxXtallengthReal ) {
-
-      float line[] = null;
-      float delta = MaxXtallengthReal / 8;
-      int span = 1 , Mx = - 1 , Mn = - 1;
-      float[] Res = null;
-      int Nbins = 1;
-      while( ( span < 35 ) && ( delta > .0000001 ) && ( Nbins * delta > .01 ) ) {
-         delta = delta * 2;
-         while( ( span < 35 ) && ( delta > .000001 ) ) {
-            delta = delta * 4;
-            line = ProjectPeakToDir( x , y , Peaks , omit , delta );
-            Mx = findMaxNonZero( line );
-            Mn = findMinNonZero( line );
-            span = Mx - Mn;
-         }
-         Res = CalcStats( line , Mn , Mx );
-         if( Res != null )
-            Nbins = (int) Res[ LEN ];
-      }
-      if( Res != null ) {
-         Res[ LEN ] *= delta;
-         Res[ X ] = x;
-         Res[ Y ] = y;
-      }
-      return Res;
-   }
-
+ 
+   //Can be deleted when Xplore disappears
    public static void getCandidateDirections( Vector Peaks , boolean[] omit ,
             float gridLength , float MaxXtalLengthReal ){
       List = new float[ 50 ][ 7 ];
       Nelements = 0;
-      float[] Res = doOneDirection( Peaks , 0f , 0f , omit , MaxXtalLengthReal );
+      /*float[] Res = doOneDirection( Peaks , 0f , 0f , omit , MaxXtalLengthReal );
       if( Res != null ) {
          List = InsertInList( List , Nelements , Res );
          Nelements++ ;
-      }
-      Res = doOneDirection( Peaks , 1f , 0f , omit , MaxXtalLengthReal );
+      }*/
+      float[]Res = doOneDirection( Peaks , 1f , 0f , omit , MaxXtalLengthReal );
       if( Res != null ) {
          List = InsertInList( List , Nelements , Res );
          Nelements++ ;
@@ -470,15 +466,16 @@ public class GetUB {
                Res = doOneDirection( Peaks , x , y , omit , MaxXtalLengthReal );
             else
                Res = null;
-            if( Res != null ) {
+            if( Res != null )
+              if( Res[ LEN ] >= 1/MaxXtalLengthReal){
                List = InsertInList( List , Nelements , Res );
                Nelements++ ;
             }
          }
      
    }
-   
-   public static float[][] getDirs( float gridLength,float NewDir, float[] code ){
+  /* //unused here and in Xplore
+   private static float[][] getDirss( float gridLength,float NewDir, float[] code ){
 
       code[ 0 ] = 0;
       if( Nelements <= 0 )
@@ -495,7 +492,7 @@ public class GetUB {
       q1[ 1 ] = y * scale;
       q1[ 2 ] = (float) Math.sqrt( 1 - x * x - y * y ) * scale;
 
-      listEntry = FindNextTop( List , Nelements , x , y , - 10 , - 10 , NewDir ,
+      listEntry = FindNextTop1( List , Nelements , x , y , - 10 , - 10 , NewDir ,
                gridLength );
       if( listEntry == null ) {
          float[][] Res1 = new float[ 1 ][ 3 ];
@@ -512,7 +509,7 @@ public class GetUB {
       q2[ 1 ] = y1 * scale;
       q2[ 2 ] = (float) Math.sqrt( 1 - x1 * x1 - y1 * y1 ) * scale;
 
-      listEntry = FindNextTop( List , Nelements , x , y , x1 , y1 , NewDir ,
+      listEntry = FindNextTop1( List , Nelements , x , y , x1 , y1 , NewDir ,
                gridLength );
       if( listEntry == null ) {
          float[][] Res1 = new float[ 2 ][ 3 ];
@@ -541,7 +538,15 @@ public class GetUB {
       return Res1;
 
    }
-
+ */
+   private static void insert( float x, float[]elimList){
+      for( int i=0; i<elimList.length; i++){
+         if( elimList[i] <-5){
+            elimList[i]=x;
+            return;
+         }
+      }
+   }
    /**
     * Attempts to automatically create a vector of normals to 3 planes whose
     * lengths correspond to the distance between the corresponding planes from a
@@ -609,16 +614,24 @@ public class GetUB {
       float[] q1 , q2 , q3;
       q1 = new float[ 3 ];
       Arrays.fill( code , - 1f );
+      float[] elimX= new float[12];
+      float[] elimY = new float[12];
+      Arrays.fill( elimX,-10 );
+      Arrays.fill( elimY,-10 );
       code[ 6 ] = Nelements;
       float[] listEntry = List[ Nelements - 1 ];
       code[ 0 ] = listEntry[ CORR ];
       code[ 1 ] = listEntry[ FIT1 ] / 2f;
-      float x = listEntry[ X ] , y = listEntry[ Y ] , scale = listEntry[ LEN ];
+      float x = listEntry[ X ] ;
+      float y = listEntry[ Y ] ;
+      float scale = listEntry[ LEN ];
+     
       q1[ 0 ] = x * scale;
       q1[ 1 ] = y * scale;
-      q1[ 2 ] = (float) Math.sqrt( 1 - x * x - y * y ) * scale;
-
-      listEntry = FindNextTop( List , Nelements , x , y , - 10 , - 10 , NewDir ,
+      q1[ 2 ] = (float) Math.sqrt( 1 - x *x - y * y ) * scale;
+      elimX[0]=x;
+      elimY[0]=y;
+      listEntry = FindNextTop( List , Nelements , elimX , elimY, NewDir ,
                gridLength );
       if( listEntry == null ) {
          float[][] Res1 = new float[ 1 ][ 3 ];
@@ -626,17 +639,36 @@ public class GetUB {
          //show( Res1 );
          return Res1;
       }
+
       code[ 2 ] = listEntry[ CORR ];
       code[ 3 ] = listEntry[ FIT1 ] / 2f;
       q2 = new float[ 3 ];
       float x1 = listEntry[ X ] , y1 = listEntry[ Y ];
+
+      elimX[1]=x1;
+      elimY[1]=y1;
       scale = listEntry[ LEN ];
       q2[ 0 ] = x1 * scale;
       q2[ 1 ] = y1 * scale;
       q2[ 2 ] = (float) Math.sqrt( 1 - x1 * x1 - y1 * y1 ) * scale;
-
-      listEntry = FindNextTop( List , Nelements , x , y , x1 , y1 , NewDir ,
+      boolean done = false;
+      while( !done){
+          listEntry = FindNextTop( List , Nelements , elimX , elimY , NewDir ,
                gridLength );
+          if( listEntry == null)
+            done = true;
+          else if(check(listEntry,q1,q2))
+             done = true;
+          else{
+             insert(listEntry[X], elimX);
+             insert(listEntry[Y], elimY);
+          }
+          if( listEntry[FIT1] < .5){
+             done = true;
+             listEntry = null;
+          }
+          
+      }
       if( listEntry == null ) {
          float[][] Res1 = new float[ 2 ][ 3 ];
 
@@ -665,7 +697,44 @@ public class GetUB {
 
 
    }
-
+   
+   //Determines if this listEntry is coplanar
+   private static boolean check( float[] listEntry, float[]q1, float[]q2){
+      float x = listEntry[ X ];
+      float y = listEntry[ Y ];
+      float scale = listEntry[ LEN ];
+      float[] q3= new float[3];
+      q3[ 0 ] = x * scale;
+      q3[ 1 ] = y * scale;
+      q3[ 2 ] = (float) Math.sqrt( 1 - x * x - y * y ) * scale;
+      float[][] M = new float[3][3];
+      M[0]=q1;
+      M[1]=q2;
+      M[2]=q3;
+      float Max = Math.max( MaxList(M[2]),Math.max( MaxList(M[0]) , MaxList(M[1]) ));
+      Max = Max*Max*Max;
+      if( Math.abs( LinearAlgebra.determinant( LinearAlgebra.float2double( M ) ))
+               <.001*Max)
+         return false;
+      return true;
+      
+      
+  
+      
+   }
+   public static float MaxList( float[] list){
+      
+      if( list == null || list.length < 1)
+         return Float.NaN;
+      
+      float Max = Math.abs( list[0]);
+      for( int i=1; i< list.length; i++)
+         if( Math.abs( list[i] )>Max)
+            Max = Math.abs( list[i] );
+      
+      return Max;
+      
+   }
 
    /**
     * 
@@ -682,10 +751,11 @@ public class GetUB {
     */
    public static float[][] GetUBMatrix( Vector Peaks , float MaxXtalLengthReal ,
             float[] Stats ) throws IllegalArgumentException {
+   
 
       boolean done = false;
       float MaxLength = MaxXtalLengthReal;
-      float MinNewDir =.2f;
+      float MinNewDir =.2f;//not used
       if( MaxLength < 0 )
          MaxLength = 20;
       if( MinNewDir < 0 )
@@ -694,7 +764,7 @@ public class GetUB {
          java.util.Arrays.fill( Stats , 0f );
       float[][] Dirs = null;
       boolean[] omit = null;
-      float gridLength = .04f;
+      float gridLength = .02f;
       float DDir = .2f;
       int Nomitted = 0;
       boolean gridChanged = false;
@@ -714,15 +784,17 @@ public class GetUB {
                
             }
             System.out.println("-------------------------------------------");
-            if( code[ 6 ] < 100 )
+            if( code[ 6 ] < 100 || Dirs== null || Dirs.length < 3){
                gridLength = gridLength / 2f;
+               gridChanged = true;
+            }
          }
          int NomittedOld = Nomitted;
          for( int i = 0 ; i < 3 ; i++ ) {
             if( ( code[ 2 * i ] > 0 ) && ( code[ 2 * i + 1 ] > 0 ) ) {
-               float P = -(code[2*i+1]-.5f)/.75f + .5f;
-               if( P < .25f )
-                  P = .25f;
+               float P = -(code[2*i+1]-.5f)*.75f + .5f;
+               if( P < .2f )
+                  P = .2f;
                if( P < .47f ) {
                   if( omit == null )
                      omit = new boolean[ Peaks.size() ];
@@ -740,44 +812,52 @@ public class GetUB {
             }
          }
          done = true;
-         for( int i = 0 ; i < 6 ; i++ )
+         for( int i = 1 ; i < 6 ; i+=2 )  //done if a lot of high correlations
             if( code[ i ] < .75 )
                done = false;
-         // add some dode to check if getting better
-
+        
+         if( code[0] >.92 && code[2] >  .92 && code[4] > .92) //done if most points
+               done = true;                                   //are on a plane
+        
+        if( (2f*Peaks.size())/Nomitted  >1.7)                 //but not if there are too
+              done = false;                                   //many omitted points
+        
          if( ( NomittedOld == Nomitted ) && ! done ) {
-            if( gridChanged )
-               
-                  gridChanged = false;
+           
               
-            else {
-               gridLength /= 2f;
-               gridChanged = true;
-               if( gridLength < .005f )
-                  done = true;
-            }
-
+            gridLength /= 2f;
+            gridChanged = true;
+               
+              
+            if( gridLength < .005f )
+                done = true;
+            else 
+               omit = null;
+           
          }
          else
             gridChanged = false;
 
-         // Check if getting better
-
       }// while !done
-      // try finer gridLength and finer distance between directions one time
-      //System.out.println("N omitted="+Nomitted);
+   
       if( Dirs == null )
          throw new IllegalArgumentException( " No directions found" );
       if( Dirs.length < 3 )
          throw new IllegalArgumentException( " Not enough directions found" );
-      
-      return UBMatrixFrPlanes( Dirs , Peaks , omit, Stats );
+      if( omit == null)
+         omit = new boolean[ Peaks.size()];
+     
+      float[][] UB = UBMatrixFrPlanes( Dirs, Peaks, omit, Stats,1);
+      IndexStat( UB,  Peaks, .3f, omit);
+      return UBMatrixFrPlanes( Dirs , Peaks , omit, Stats,0 );
 
    }
 
-
+   //stop==1 --> returns UB coresponding to the dirs
+   //stop ==2 --> returns UB after optimization
+   //otherwise it goes through blind
    public static float[][] UBMatrixFrPlanes( float[][] PlaneDirs ,
-            Vector Peaks , boolean[] omit, float[]Stats ) {
+            Vector Peaks , boolean[] omit, float[]Stats , int stop) {
 
       if( PlaneDirs == null )
          return null;
@@ -789,21 +869,26 @@ public class GetUB {
          return null;
 
 
+      float[][] UB = new float[ 3 ][ 3 ];
       float[] L = new float[ 3 ];
       float[][] unit = new float[ 3 ][ 3 ];
       for( int i = 0 ; i < 3 ; i++ ) {
          L[ i ] = (float) Math.sqrt( PlaneDirs[ i ][ 0 ] * PlaneDirs[ i ][ 0 ]
                   + PlaneDirs[ i ][ 1 ] * PlaneDirs[ i ][ 1 ]
                   + PlaneDirs[ i ][ 2 ] * PlaneDirs[ i ][ 2 ] );
-         for( int j = 0 ; j < 3 ; j++ )
+         for( int j = 0 ; j < 3 ; j++ ){
             unit[ i ][ j ] = PlaneDirs[ i ][ j ] / L[ i ];
+            UB[i][j] = PlaneDirs[i][j]/(L[i]*L[i]);
+         }
       }
+      if( stop ==1)
+         return UpdateStats(LinearAlgebra.getInverse( UB),Peaks,Stats) ;
       int k = Peaks.size();
-
       double q[][] = new double[ k ][ 3 ];
       double hkl[][] = new double[ k ][ 3 ];
       k = 0;
       int ct;
+     
       for( int i = 0 ; i < Peaks.size() ; i++ ) {
          double[] qvec = ( (Peak) Peaks.elementAt( i ) ).getUnrotQ();
          ct = 0;
@@ -813,7 +898,7 @@ public class GetUB {
             x = x / L[ j ];
             if( ( omit == null ) || ( ! omit[ i ] ) ) {
                q[ k ] = qvec;
-               hkl[ k ][ j ] = (int) ( x + .5 );
+               hkl[ k ][ j ] = Math.floor( x + .5 );
                ct++ ;
             }
          }
@@ -828,10 +913,12 @@ public class GetUB {
       double std_dev = LinearAlgebra.BestFitMatrix( M , hkl1 , q1 );
       if( debug)
          System.out.println(" Best fit UB has an error of "+ std_dev);
-      float[][] UB = new float[ 3 ][ 3 ];
+      
       for( int i = 0 ; i < 3 ; i++ )
          for( int j = 0 ; j < 3 ; j++ )
             UB[ i ][ j ] = (float) M[ i ][ j ];
+      if( stop ==2)
+         return  UpdateStats(UB,Peaks,Stats);
       blind bl = new blind();
       ErrorString S = bl.blaue( UB );
 
@@ -847,13 +934,65 @@ public class GetUB {
       return null;
    }
 
+   /**
+    * Returns the fraction of peaks indexed with the UB matrix
+    * @param UB   The UB matrix
+    * @param Peaks  The peaks
+    * @param level   The closeness a peak must be to the plane in 
+    *                miller indices units
+    * @return   the fraction of peaks indexed with the UB matrix  
+    */
+   public static float IndexStat( float[][] UB, Vector Peaks, float level,boolean[] omit){
+      if( UB== null)
+      return 0f;
+      if( Peaks == null)
+         return 0f;
+      float[][] invUB = LinearAlgebra.getInverse( UB );
+      if( invUB == null)
+         return 0f;
+      if( Peaks.size() <=0)
+         return 0;
+      if( level < 0)
+         return 0;
+      if( level > .5)
+         return Peaks.size();
+      if( omit != null && omit.length == Peaks.size())
+         java.util.Arrays.fill(  omit , false );
+      else
+         omit = null;
+      int ct = 0;
+      for( int i=0; i< Peaks.size(); i++){
+         double[] qvec = ( (Peak) Peaks.elementAt( i ) ).getUnrotQ();
+         int k=0;
+         for( int j = 0 ; j < 3 ; j++ ) {
+            double x = qvec[ 0 ] * invUB[ j ][ 0 ] + qvec[ 1 ] * invUB[ j ][ 1 ]
+                     + qvec[ 2 ] * invUB[ j ][ 2 ];
+          /*  boolean same = false;
+            double y= x;
+           if( x < 0) y=-x;
+           if( y -(int)y < level) same=true;
+           else if( 1-y+(int)y < level)same = true;
+           */ 
+            if( Math.abs( x - Math.floor ( x + .5 ) ) < level )
+               k++;
+         }
+         
+         if( k==3)
+            ct++;
+         else if( omit != null)
+            omit[i]=true;
+        
+      }
+      return ct/(float)Peaks.size();
+     
+   }
    private static float[][] UpdateStats( float[][]UB, Vector Peaks, float[]Stats){
       if( Stats == null || Stats.length < 1)
          return UB;
       float[][]UBinv = gov.anl.ipns.MathTools.LinearAlgebra.getInverse( UB );
-      if( UBinv != null)
+      if( UBinv == null)
          return UB;
-      
+      java.util.Arrays.fill( Stats , 0f );
       for( int i=0; i< Peaks.size(); i++){
          Peak P = (Peak)Peaks.elementAt( i );
          double[] Qs = P.getUnrotQ();
@@ -862,7 +1001,8 @@ public class GetUB {
             
             double MillerIndex = UBinv[r][0]*Qs[0]+ UBinv[r][1]*Qs[1]
                                                           + UBinv[r][2]*Qs[2];
-            
+            if( MillerIndex < 0)
+               MillerIndex = -MillerIndex;  //(int) is truncate
             float err = (float)Math.min( 
                                         Math.abs( MillerIndex -(int)MillerIndex ),  
                                         Math.abs( (int)(MillerIndex+1 )-MillerIndex));
@@ -883,55 +1023,51 @@ public class GetUB {
       //Convert to Percent on Peaks.size()
       int L = Peaks.size();
       for( int i=0; i< Stats.length; i++)
-         Stats[i]=Stats[i]*100/L;
+         Stats[i]=Stats[i]*100.f/L;
       
       return UB;
       
    }
+   
    private static float[] FindNextTop( float[][] List , int Nelements ,
-            float x1used , float y1used , float x2used , float y2used ,
+            float[] elimX, float[] elimY,
             float NewDir , float gridLength ) {
 
-      boolean again = false;
+    
+      
       for( int i = Nelements - 1 ; i >= 0 ; i-- ) {
          float[] listElement = List[ i ];
-         if( ( listElement[ X ] < x1used - NewDir )
-                  || ( listElement[ X ] > x1used + NewDir )
-                  || ( listElement[ Y ] < y1used - NewDir )
-                  || ( listElement[ Y ] > y1used + NewDir ) )
-            if( ( Math.abs( listElement[ X ] - x1used ) <= gridLength )
-                     && ( Math.abs( listElement[ Y ] - y1used ) <= gridLength ) )// on
-                                                                                 // boundary
-                                                                                 // try
-                                                                                 // to
-                                                                                 // increase
-                                                                                 // NewDir
-               return FindNextTop( List , Nelements , x1used , y1used , x2used ,
-                        y2used , NewDir + 2 * gridLength , gridLength );
-            else if( ( listElement[ X ] < x2used - NewDir )
-                     || ( listElement[ X ] > x2used + NewDir )
-                     || ( listElement[ Y ] < y2used - NewDir )
-                     || ( listElement[ Y ] > y2used + NewDir ) )
-               if( ( Math.abs( listElement[ X ] - x2used ) <= gridLength )
-                        && ( Math.abs( listElement[ Y ] - y2used ) <= gridLength ) )// on
+         int nelims=0,
+             nCandidates =0;
+         for( int j=0; j<elimX.length && elimX[j] >-3 && nelims == nCandidates; j++){
+            nelims++;
+            if( ( listElement[ X ] < elimX[j] - NewDir )
+                     || ( listElement[ X ] > (elimX[j] + NewDir) )
+                     || ( listElement[ Y ] < (elimY[j] - NewDir) )
+                     || ( listElement[ Y ] > (elimY[j] + NewDir) ) )
+               if( ( Math.abs( listElement[ X ] - elimX[j] ) <= gridLength )
+                        && ( Math.abs( listElement[ Y ] - elimY[j ]) <= gridLength ))// on
                                                                                     // boundary
                                                                                     // try
                                                                                     // to
                                                                                     // increase
                                                                                     // NewDir
-                  return FindNextTop( List , Nelements , x1used , y1used ,
-                           x2used , y2used , NewDir + 2 * gridLength ,
-                           gridLength );
-               else {
-                  return listElement;
-
-               }
-
+                  return FindNextTop( List , Nelements , elimX , elimY , 
+                                        NewDir + 2 * gridLength , gridLength );
+               else
+                  nCandidates++;
+              
+         }
+         if( nCandidates == nelims)
+            return listElement;
+         
       }
+      
       return null;
    }
-
-
+   
+   
+   
    private static float[][] InsertInList( float[][] List , int Nelements ,
             float[] Res ) {
 
@@ -981,7 +1117,8 @@ public class GetUB {
             double x = qvec[ 0 ] * qNormal[ 0 ] + qvec[ 1 ] * qNormal[ 1 ]
                      + qvec[ 2 ] * qNormal[ 2 ];
             x = x / Lsq;
-            if( Math.abs( x - (int) ( x + .5 ) ) > level ) {
+            
+            if( Math.abs( x - Math.floor ( x + .5 ) ) > level ) {
                if( !count) omit[ i ] = true;
                c++ ;
                Res++ ;
@@ -1001,7 +1138,7 @@ public class GetUB {
       Vector Peaks = (Vector) ( new DataSetTools.operator.Generic.TOF_SCD.ReadPeaks(
                args[ 0 ] ) ).getResult();
       float x = 0;
-      float y , z;
+      float y ;
       x = 0.037499327f;
       y = -0.89929664f;
       float near = .5f;
@@ -1148,7 +1285,7 @@ public class GetUB {
 
 
             if( Dirs.length == 3 ) {
-               UB = GetUB.UBMatrixFrPlanes( Dirs , Peaks , omit ,null);
+               UB = GetUB.UBMatrixFrPlanes( Dirs , Peaks , omit ,null,0);
                ScriptUtil.display( UB );
             }
             else
