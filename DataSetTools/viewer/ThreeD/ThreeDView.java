@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.43  2008/01/11 22:48:25  amoe
+ * The tooltip is now turned off for the ThreeDView.
+ *
  * Revision 1.42  2007/07/27 01:35:11  dennis
  * Removed redundant calculation of scale_factor from method that
  * gets the data range.
@@ -1041,6 +1044,11 @@ private void init()
 
   threeD_panel = new ThreeD_JPanel();
   threeD_panel.setBackground( new Color( 90, 90, 90 ) );
+  
+  threeD_panel.setWCToolTipVisible(false); //Set world-coordinate tooltip to 
+                                           //false.  This is because 
+                                           //CoordJPanel's world-coordinates 
+                                           //don't apply in 3D.
 
   control_panel = new Box( BoxLayout.Y_AXIS );
 
