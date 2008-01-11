@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2008/01/11 17:36:35  rmikk
+ * Included RowColGrid's if NXdata dimensions indicate such a need.
+ *
  * Revision 1.3  2007/07/11 18:27:10  rmikk
  * Eliminated some debug printing
  * Added the Total Count Attribute
@@ -72,16 +75,17 @@ public class NexUtils_mixDims implements INexUtils {
     public String angleUnits = "radian";
 
     String errormessage = "";
-    // The data in the file is stored float [a,b,c,d] where d is pos o, c is pos 1
-    //   b is pos2, and a is pos3.  If no detectors use -1. LPSD's have i column and
-    //    may have to be -1 if the dimension reported by nexus dimension does not
-    //    have the number
+    // The data in the file is stored float [a,b,c,d] where d is pos o, c is 
+    //   pos 1, b is pos2, and a is pos3.  If no detectors use -1. LPSD's have
+    //    i column and may have to be -1 if the dimension reported by nexus 
+    //    dimension does not have the number
     int timeDim = 0;
     int coldim  =1;
     int rowdim =2;
     int detDim =3;
     StateInfo states;
-    private int[] mult; //multiply our det(3),row(2),col(1),and time(0) indexe by  to get their corresp "linear position"
+    private int[] mult; //multiply our det(3),row(2),col(1),and time(0) indexes
+                        //           by  to get their corresp "linear position"
     int nrows =0;
     int ncols=0;
     int ntimes=0;
@@ -94,20 +98,29 @@ public class NexUtils_mixDims implements INexUtils {
     
     
     /**
-     * Allows for reordering of the axes. The normal order is [detector, row, col, time]==[3,2,1,0]
+     * Allows for reordering of the axes. The normal order is 
+     *                                   [detector, row, col, time]==[3,2,1,0]
      * and other state info can be taken care of.
-     * @param timeDim  The position name([3,2,1,0] C conv) that represents time in the NeXus file
-     * @param colDim   The position name([3,2,1,0] C conv) that represents the column in the NeXus file
-     * @param rowDim   The position name([3,2,1,0] C conv) that represents the row in the NeXus file
-     * @param detDim   The position name([3,2,1,0] C conv) that represents the first detector in the NeXus file
+     * @param timeDim  The position name([3,2,1,0] C conv) that represents time
+     *                                                       in the NeXus file
+     * @param colDim   The position name([3,2,1,0] C conv) that represents the 
+     *                                                column in the NeXus file
+     * @param rowDim   The position name([3,2,1,0] C conv) that represents the
+     *                                                    row in the NeXus file
+     * @param detDim   The position name([3,2,1,0] C conv) that represents the 
+     *                                        first detector in the NeXus file
      * @param axis1Num the number given to the axis that should be axis 1 (tof)
-     * @param axis2Num  the number given by the Nexus file for axis 2(col, or row if one col)
-     * @param axis3Num  The number given by the NeXus file for axis 3( row or det if 1 col
-     * @param axis4Num  The number given by the NeXus file for axis 4 if any or 01
+     * @param axis2Num  the number given by the Nexus file for axis 2(col, or
+     *                                                          row if one col)
+     * @param axis3Num  The number given by the NeXus file for axis 3( row or
+     *                                                            det if 1 col
+     * @param axis4Num  The number given by the NeXus file for axis 4 if any or 
+     *                                                                       01
      * @param states   A linked list of state information
      */
     public NexUtils_mixDims( int timeDim, int colDim, int rowDim, int detDim, 
-             int axis1Num,int axis2Num, int axis3Num, int axis4Num, StateInfo states){
+                             int axis1Num, int axis2Num, int axis3Num,  
+                             int axis4Num, StateInfo states){
        this.timeDim = timeDim;
        this.coldim  = colDim;
        this.rowdim  = rowDim;
@@ -244,7 +257,8 @@ public class NexUtils_mixDims implements INexUtils {
          
        }
       */ 
-       ndetectors = prod( dimensions,0,dimensions.length-1)/(nrows * ncols*ntimes);
+       ndetectors = prod( dimensions,0,dimensions.length-1)/
+                                                      (nrows * ncols*ntimes);
          
     }
     
@@ -315,65 +329,85 @@ public class NexUtils_mixDims implements INexUtils {
              heightDims, solAngDims, slotDims, crateDims, inputDims,
              x_dirDims, depthDims, idsDims;
            
-        Object[] Dat =getLocationData(States.xmlDoc, NxDetector,  NxDataNode,  States, "crate");
+        Object[] Dat =getLocationData(States.xmlDoc, NxDetector,  NxDataNode, 
+                                                            States, "crate");
            crate =(float[])(Dat[0]); crateDims =(dimensionHandler)(Dat[1]);   
-        Dat =getLocationData(States.xmlDoc, NxDetector,  NxDataNode,  States, "slot");
+        Dat =getLocationData(States.xmlDoc, NxDetector,  NxDataNode,  States,
+                                                                   "slot");
           slot =(float[])(Dat[0]); slotDims =(dimensionHandler)(Dat[1]);   
-        Dat =getLocationData(States.xmlDoc, NxDetector,  NxDataNode,  States, "input");
+        Dat =getLocationData(States.xmlDoc, NxDetector,  NxDataNode,  States,
+                                                                   "input");
           input =(float[])(Dat[0]); inputDims =(dimensionHandler)(Dat[1]);   
-        Dat =getLocationData(States.xmlDoc, NxDetector,  NxDataNode,  States, "solid_angle");
+        Dat =getLocationData(States.xmlDoc, NxDetector,  NxDataNode,  States, 
+                                                             "solid_angle");
           solAng =(float[])(Dat[0]); solAngDims =(dimensionHandler)(Dat[1]);   
-        Dat =getLocationData(States.xmlDoc, NxDetector,  NxDataNode,  States, "distance");
+        Dat =getLocationData(States.xmlDoc, NxDetector,  NxDataNode,  States, 
+                                                                "distance");
           distance =(float[])(Dat[0]);distanceDims =(dimensionHandler)(Dat[1]);   
-        Dat =getLocationData(States.xmlDoc, NxDetector,  NxDataNode,  States, "polar_angle");
+        Dat =getLocationData(States.xmlDoc, NxDetector,  NxDataNode,  States, 
+                                                              "polar_angle");
           polar =(float[])(Dat[0]); polarDims =(dimensionHandler)(Dat[1]);   
-        Dat =getLocationData(States.xmlDoc, NxDetector,  NxDataNode,  States, "azimuthal_angle");
+        Dat =getLocationData(States.xmlDoc, NxDetector,  NxDataNode,  States, 
+                                                          "azimuthal_angle");
           azimuth =(float[])(Dat[0]); azimuthDims =(dimensionHandler)(Dat[1]);
-        Dat =getLocationData(States.xmlDoc, NxDetector,  NxDataNode,  States, "id");
+        Dat =getLocationData(States.xmlDoc, NxDetector,  NxDataNode,  States, 
+                                                                        "id");
           ids =(int[])(Dat[0]); idsDims =(dimensionHandler)(Dat[1]);  
         
-        Dat =getLocationData(States.xmlDoc, NxDetector,  NxDataNode,  States, "x_dir");
+        Dat =getLocationData(States.xmlDoc, NxDetector,  NxDataNode,  States, 
+                                                                    "x_dir");
           x_dir =(Vector3D[])(Dat[0]); x_dirDims =(dimensionHandler)(Dat[1]);
-        Dat =getLocationData(States.xmlDoc, NxDetector,  NxDataNode,  States, "y_dir");
+        Dat =getLocationData(States.xmlDoc, NxDetector,  NxDataNode,  States, 
+                                                                    "y_dir");
           y_dir =(Vector3D[])(Dat[0]); 
-        Dat =getLocationData(States.xmlDoc, NxDetector,  NxDataNode,  States, "width");
+        Dat =getLocationData(States.xmlDoc, NxDetector,  NxDataNode,  States, 
+                                                                    "width");
           width =(float[])(Dat[0]); widthDims =(dimensionHandler)(Dat[1]);
-        Dat =getLocationData(States.xmlDoc, NxDetector,  NxDataNode,  States, "depth");
+        Dat =getLocationData(States.xmlDoc, NxDetector,  NxDataNode,  States, 
+                                                                     "depth");
           depth=(float[])(Dat[0]); depthDims =(dimensionHandler)(Dat[1]);
-        Dat =getLocationData(States.xmlDoc, NxDetector,  NxDataNode,  States, "height");
+        Dat =getLocationData(States.xmlDoc, NxDetector,  NxDataNode,  States, 
+                                                                    "height");
           height =(float[])(Dat[0]); heightDims =(dimensionHandler)(Dat[1]);
           
         int[] counter = new int[ dimensions.length];
         
         Arrays.fill(counter, 0);
         
-        dimensionHandler detector= new dimensionHandler( dimensions, timeDim, coldim,rowdim);
-        dimensionHandler row= new dimensionHandler( dimensions, timeDim, coldim,rowdim);
-        dimensionHandler col= new dimensionHandler( dimensions, timeDim, coldim,rowdim);
+        dimensionHandler detector= new dimensionHandler( dimensions, timeDim, 
+                                                                coldim,rowdim);
+        dimensionHandler row= new dimensionHandler( dimensions, timeDim, 
+                                                               coldim,rowdim);
+        dimensionHandler col= new dimensionHandler( dimensions, timeDim, 
+                                                               coldim,rowdim);
         detector.resetIndex( counter);
         row.resetIndex( counter);
         col.resetIndex( counter);
         
            
         
-        UniformGrid grid = null;
+        IDataGrid grid = null;
         int group =startDSindex;
         int m = Math.max(Math.max( rowdim , coldim), timeDim)+1;
         int startGridNumIndex = Grid_util.getAllDataGrids( DS ).size();
+        
+                         
         for ( int i = 0; i< ndetectors; i++) {
            
            counter = detector.getCounter();
            
-           setCounter( counter, row, col, crateDims, inputDims, slotDims,solAngDims);
-           setCounter( counter, azimuthDims, polarDims, distanceDims, widthDims, heightDims, solAngDims);
+           setCounter( counter, row, col, crateDims, inputDims, slotDims,
+                                                                solAngDims);
+           setCounter( counter, azimuthDims, polarDims, distanceDims, 
+                                          widthDims, heightDims, solAngDims);
            
            if( x_dirDims != null)
               x_dirDims.resetIndex( counter );
            if( idsDims != null)
                idsDims.resetIndex( counter );
            
-           DetectorPosition center = getCenter( distance,azimuth,polar, distanceDims, 
-                    azimuthDims, polarDims);
+           DetectorPosition center = getCenter( distance,azimuth,polar, 
+                                     distanceDims, azimuthDims, polarDims);
             
            if( (x_dir!=null) &&(y_dir != null)&&(center != null)&&
                     (distance != null))
@@ -382,11 +416,26 @@ public class NexUtils_mixDims implements INexUtils {
                     y_dir[x_dirDims.getIndex()] ,Aval(width,widthDims),
                     Aval( height,heightDims), Aval( depth, depthDims),
                     nrows, ncols);
-           else grid = null;
+           else if( ((rowdim>=0 && dimensions[rowdim]<=1) && (coldim >=0  &&
+                        dimensions[coldim]<=1))|| 
+                        (rowdim < 0 && coldim >=0&& dimensions[coldim]<=1) ||
+                        (coldim <0  && rowdim >=0 && dimensions[rowdim]<=1)||
+                        (rowdim <0 && coldim < 0))
+                             // best can do is a bunch of 1x1 pixels
+                 grid = new UniformGrid(startGridNumIndex +1+i, "m",
+                    new Vector3D( center ),new Vector3D(1f,0f,0f),
+                    new Vector3D(0f,1f,0f),Aval(width,widthDims),
+                    Aval( height,heightDims), Aval( depth, depthDims),
+                    1,1);
+           else
+                  grid = new RowColGrid(nrows, ncols, startGridNumIndex +1+i );
+           
            for( int r=0; r< nrows; r++){
               counter = row.getCounter();
-              setCounter( counter, col, crateDims, inputDims, slotDims,solAngDims, x_dirDims);
-              setCounter( counter, azimuthDims, polarDims, distanceDims, widthDims, heightDims, solAngDims);
+              setCounter( counter, col, crateDims, inputDims, slotDims,
+                                                        solAngDims, x_dirDims);
+              setCounter( counter, azimuthDims, polarDims, distanceDims, 
+                                            widthDims, heightDims, solAngDims);
 
               if( idsDims != null)
                    idsDims.resetIndex( counter );
@@ -401,13 +450,16 @@ public class NexUtils_mixDims implements INexUtils {
             
            
             if( crateDims != null)
-               setFloatAttr( db , Attribute.CRATE , crate , crateDims.getIndex() );
+               setFloatAttr( db , Attribute.CRATE , crate ,
+                                                       crateDims.getIndex() );
             if( inputDims != null)
-               setFloatAttr( db , Attribute.INPUT , input , inputDims.getIndex() );
+               setFloatAttr( db , Attribute.INPUT , input , 
+                                                       inputDims.getIndex() );
             if( slotDims != null)
                setFloatAttr( db , Attribute.SLOT , slot , slotDims.getIndex() );
             if( solAngDims != null)
-               setFloatAttr( db , Attribute.SOLID_ANGLE , solAng , solAngDims.getIndex() );
+               setFloatAttr( db , Attribute.SOLID_ANGLE , solAng , 
+                                                       solAngDims.getIndex() );
         
             if ( ids != null )
               if( ids.length >= DS.getNum_entries()-startDSindex){
@@ -416,13 +468,15 @@ public class NexUtils_mixDims implements INexUtils {
               }
            
            //---------------------------Set up Detectors----------------------
-            if( (x_dir != null) && (y_dir != null)&& ( grid != null)){
+           /* if( (x_dir != null) && (y_dir != null)&& ( grid != null)){
                
                
-               db.setAttribute( new PixelInfoListAttribute(  Attribute.PIXEL_INFO_LIST,
-                        new PixelInfoList( new DetectorPixelInfo( group-1,(short)(r+1),(short)(c+1),
-                                 grid))));
-            }else{
+               db.setAttribute( new PixelInfoListAttribute( 
+                        Attribute.PIXEL_INFO_LIST,
+                        new PixelInfoList( new DetectorPixelInfo
+                                           ( group-1,(short)(r+1),(short)(c+1),
+                                             grid))));
+            }else {
                db.removeAttribute( Attribute.PIXEL_INFO_LIST);
                int dpos = 0,
                    ppos = 0,
@@ -436,11 +490,20 @@ public class NexUtils_mixDims implements INexUtils {
                center = ConvertDataTypes.convertToIsaw( 
                         Aval(distance,dpos ) , Aval(polar,ppos ) ,
                         Aval(azimuth,apos ));
-               db.setAttribute( new DetPosAttribute( Attribute.DETECTOR_POS, center));
-            }
+               db.setAttribute( new DetPosAttribute( Attribute.DETECTOR_POS,
+                                                                      center));
+            }*/
+            int GroupID = db.getGroup_ID();
+            if( grid != null)
+                db.setAttribute( new PixelInfoListAttribute( 
+                                  Attribute.PIXEL_INFO_LIST,
+                                   new PixelInfoList( new DetectorPixelInfo
+                                        ( GroupID,(short)(r+1),(short)(c+1),
+                                          grid))));
 
             Incrcol( col, crateDims, inputDims, slotDims,solAngDims,x_dirDims);
-            Incrcol(  azimuthDims, polarDims, distanceDims, widthDims, heightDims, solAngDims);
+            Incrcol(  azimuthDims, polarDims, distanceDims, widthDims, 
+                                                      heightDims, solAngDims);
             if( idsDims != null)
                 idsDims.IncrCol();
            }//for col
@@ -477,13 +540,15 @@ public class NexUtils_mixDims implements INexUtils {
                      field , null );
             if( NN != null ) {
                if( ! field.equals( "id" ) )
-                  Res[ 0 ] = ConvertDataTypes.floatArrayValue( Util.getLeafNodeValues(NN) );
+                  Res[ 0 ] = ConvertDataTypes.floatArrayValue( 
+                                                Util.getLeafNodeValues(NN) );
                else
-                  Res[ 0 ] = ConvertDataTypes.intArrayValue( Util.getLeafNodeValues(NN) );
+                  Res[ 0 ] = ConvertDataTypes.intArrayValue( 
+                                                Util.getLeafNodeValues(NN) );
                int[] dims = ConvertDataTypes.intArrayValue( Util
-                        .getXmlNodeAttributeValue( NN , "dimension" ) );
+                             .getXmlNodeAttributeValue( NN , "dimension" ) );
                if( dims != null)
-                  Res[1] = new dimensionHandler( dims, timeDim, coldim, rowdim);
+                  Res[1] = new dimensionHandler( dims, timeDim, coldim,rowdim);
                else
                   Res[1] = null;
 
@@ -494,8 +559,8 @@ public class NexUtils_mixDims implements INexUtils {
          else if( ";width;height;depth;".indexOf( field ) >= 0 ) {
 
             Node NN = Util.getNXInfo( xmlDoc , XmlClasses
-                     + ".NXgeometry.NXshape.size" , XmlClassNames + ".geometry" ,
-                     null , null );
+                     + ".NXgeometry.NXshape.size" , XmlClassNames + 
+                                                    ".geometry" ,null , null );
             if( NN != null ) {
 
                int[] d = ConvertDataTypes.intArrayValue( Util
@@ -503,7 +568,7 @@ public class NexUtils_mixDims implements INexUtils {
                if( d != null ) {
                   int[] dd = new int[ d.length -1 ];
                   System.arraycopy( d , 0 , dd , 0 , dd.length );
-                  Res[ 1 ] = new dimensionHandler( dd, timeDim, coldim, rowdim);
+                  Res[ 1 ] = new dimensionHandler( dd, timeDim, coldim,rowdim);
                }
                else
                   Res[ 1 ] = null;
@@ -577,15 +642,16 @@ public class NexUtils_mixDims implements INexUtils {
        
        Node NN = Util.getNXInfo( N1, XmlClasses, XmlClassNames, null, null);
        if( NN != null){
-          int[] dim1 = ConvertDataTypes.intArrayValue( Util.getXmlNodeAttributeValue( 
-                                                                NN, "dimension"));
+          int[] dim1 = ConvertDataTypes.intArrayValue(
+                             Util.getXmlNodeAttributeValue( NN, "dimension"));
           if( dim1 != null){
              int[] dim = new int[dim1.length-1];
              System.arraycopy( dim1,0,dim,0,dim.length);
              Res[1] = new dimensionHandler(dim, timeDim, coldim , rowdim);
           }else
              return Res;
-          float[] V = ConvertDataTypes.floatArrayValue( Util.getLeafNodeValues( NN) );
+          float[] V = ConvertDataTypes.floatArrayValue( 
+                                                 Util.getLeafNodeValues( NN) );
           if( V == null){
              Res[0] = Res[1]= null;
              return Res;
@@ -656,12 +722,12 @@ public class NexUtils_mixDims implements INexUtils {
          return Res;
       
        if( (geom == null) ||((";crate;slot;input;solid_angle;distance;"+
-                   "azimuthal_angle;polar_angle;id;").indexOf(";"+field+";")>=0)){//orientation
-         
-           
+                                           "azimuthal_angle;polar_angle;id;").
+                                     indexOf(";"+field+";")>=0)){//orientation
             
            //Information is in NxGeometry. Assume rectangular detectors
-           float[] crate = NexUtils.getFloatArrayFieldValue( NxDetector ,field );  
+           float[] crate = NexUtils.getFloatArrayFieldValue( NxDetector ,
+                                                                       field );  
            dimensionHandler D = null;
            if( crate != null)
               Util.GetDimension( NxDetector.getChildNode( field), DataState ,
@@ -689,10 +755,10 @@ public class NexUtils_mixDims implements INexUtils {
        if( sizeNode == null){
           Res[0] = Res[1] = null;
        }
-       ConvertDataTypes.UnitsAdjust((float[])Res[0], ConvertDataTypes.StringValue( 
-                sizeNode.getAttrValue("units")),"m",1f,0f);
+       ConvertDataTypes.UnitsAdjust((float[])Res[0], ConvertDataTypes. 
+                       StringValue(sizeNode.getAttrValue("units")),"m",1f,0f);
        
-       Res[1] = Util.GetDimension( sizeNode ,DataState,timeDim,coldim,rowdim,1);
+       Res[1] =Util.GetDimension( sizeNode ,DataState,timeDim,coldim,rowdim,1);
        return Res;
        
             
@@ -759,9 +825,10 @@ public class NexUtils_mixDims implements INexUtils {
                orientation = ConvertDataTypes.floatArrayValue( orientNode.
                                                           getNodeValue() );
                ConvertDataTypes.UnitsAdjust( orientation , ConvertDataTypes.
-                   StringValue( orientNode.getAttrValue( "units" ) ) , "radians" ,
-                   1.0f , 0.0f ); 
-                Res[1] = Util.GetDimension( orientNode, DataState, timeDim, coldim,rowdim,1);
+                   StringValue( orientNode.getAttrValue( "units" ) ) , 
+                                                    "radians" ,1.0f , 0.0f ); 
+                Res[1] = Util.GetDimension( orientNode, DataState, timeDim, 
+                                                             coldim,rowdim,1);
              
                 
            } else
@@ -788,14 +855,19 @@ public class NexUtils_mixDims implements INexUtils {
                
                 if( p >0 ){
                    NxNode orientNode = geom.getChildNode( p);
-                   Res[1] = Util.GetDimension(  geom.getChildNode( p ),DataState,timeDim,coldim,rowdim,1);
+                   Res[1] = Util.GetDimension(  geom.getChildNode( p ),
+                                            DataState,timeDim,coldim,rowdim,1);
                 }
                 Res[0]=null;
-                NxDetectorStateInfo detState= NexUtils.getDetectorStateInfo( state );
-               float[] xx = NexUtils.getNxGeometryInfo( geom , "x_dir" , detState);
-               float[]yy = NexUtils.getNxGeometryInfo( geom , "y_dir" , detState);
+                NxDetectorStateInfo detState= NexUtils.
+                                                 getDetectorStateInfo( state );
+               float[] xx = NexUtils.getNxGeometryInfo( geom , "x_dir" , 
+                                                                     detState);
+               float[]yy = NexUtils.getNxGeometryInfo( geom , "y_dir" , 
+                                                                     detState);
          
-               if ( ( xx != null ) && ( yy != null ) && ( xx.length == yy.length ) ) { 
+               if ( ( xx != null ) && ( yy != null ) && 
+                                                ( xx.length == yy.length ) ) { 
           
                    Vector3D[] x_dir = new Vector3D[ xx.length / 3 ];
                    Vector3D[] y_dir = new Vector3D[ yy.length / 3 ];
@@ -863,9 +935,9 @@ public class NexUtils_mixDims implements INexUtils {
    }
      
     //gets the center of a Detector or returns null if no detectors(all 1 by 1) 
-    private DetectorPosition getCenter( float[] distance, float[] azimuth, float[] polar, 
-             dimensionHandler distanceDims, dimensionHandler azimuthDims,
-             dimensionHandler polarDims){
+    private DetectorPosition getCenter( float[] distance, float[] azimuth,  
+                                  float[] polar, dimensionHandler distanceDims,
+                     dimensionHandler azimuthDims ,dimensionHandler polarDims){
         if( distance == null)
              return null;
         if(distanceDims == null)
@@ -912,8 +984,8 @@ public class NexUtils_mixDims implements INexUtils {
   
     
     //Euler rotations , version null's orientation
-    private Vector3D Rotate( float[] orientations , int grid , float x , float y ,
-        float z ) {
+    private Vector3D Rotate( float[] orientations , int grid , float x , 
+                                                        float y , float z ) {
      
         if ( orientations == null )
             return new Vector3D( x , y , z );
@@ -935,13 +1007,13 @@ public class NexUtils_mixDims implements INexUtils {
         Tran3D next = new Tran3D();
 
         next.setRotation( (float) ( orientations[ p + 1 ] * 
-                           180 / java.lang.Math.PI ) ,new Vector3D( 0 , 1 , 0 ) );
+                        180 / java.lang.Math.PI ) ,new Vector3D( 0 , 1 , 0 ) );
         next.multiply_by( Matrix );
         Matrix = next;
      
         next = new Tran3D();
         next.setRotation( (float) ( orientations[ p + 2 ] *
-                            180 / java.lang.Math.PI ) , new Vector3D( 1 , 0 , 0 ) );
+                       180 / java.lang.Math.PI ) , new Vector3D( 1 , 0 , 0 ) );
         next.multiply_by( Matrix );
         Matrix = next;
     
@@ -1044,7 +1116,7 @@ public class NexUtils_mixDims implements INexUtils {
      *  @param startDSindex  the first GroupIndex to process
      *  @param States   The linked list of state information
      */
-    public boolean setUpNXmonitorAttributes( DataSet DS , NxNode NxMonitorNode , 
+    public boolean setUpNXmonitorAttributes( DataSet DS , NxNode NxMonitorNode, 
         int startDSindex , NxfileStateInfo States ) {
         
         Data DB = DS.getData_entry( startDSindex );
@@ -1105,7 +1177,8 @@ public class NexUtils_mixDims implements INexUtils {
             return setErrorMessage( "No axis 1 information in NXnode " + 
                     NxDataNode.getNodeName() );
                       
-        NxNode tofNode = NxDataNode.getChildNode( DataInf.axisName[ DataInf.XlateAxes[timeDim ]-1] );
+        NxNode tofNode = NxDataNode.getChildNode( DataInf.axisName[ 
+                                              DataInf.XlateAxes[timeDim ]-1] );
 
         if ( tofNode == null )
             return setErrorMessage( "No tof axis named " + 
@@ -1155,7 +1228,8 @@ public class NexUtils_mixDims implements INexUtils {
         }
         detDigits = new int[ dimensions.length ];
         java.util.Arrays.fill( detDigits,0);
-        dimensionHandler hand = new dimensionHandler( dimensions, timeDim, coldim, rowdim);
+        dimensionHandler hand = new dimensionHandler( dimensions, timeDim, 
+                                                               coldim, rowdim);
         hand.resetIndex( detDigits );
         for ( int i=0; i< NGroups; i++)
         {
@@ -1175,7 +1249,8 @@ public class NexUtils_mixDims implements INexUtils {
             }
                 
             HistogramTable DB = new HistogramTable( xsc , yvals , errs , id );
-            DB.setAttribute( new FloatAttribute( Attribute.TOTAL_COUNT, TotCount));
+            DB.setAttribute( new FloatAttribute( Attribute.TOTAL_COUNT, 
+                                                                   TotCount));
             DS.addData_entry( DB );
             
             startGroupID++;
@@ -1227,7 +1302,8 @@ public class NexUtils_mixDims implements INexUtils {
         if ( crate.length <= TotPos )
             return;
         
-        db.setAttribute( new FloatAttribute( AttributeName , crate[ TotPos ] ) );
+        db.setAttribute( new FloatAttribute( AttributeName , 
+                                                          crate[ TotPos ] ) );
 
     }
     
