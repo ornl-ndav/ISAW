@@ -54,6 +54,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.25  2008/01/11 16:54:59  rmikk
+ * zero for a determinant value now is a percentage of the maximum abs value
+ *     of the entries in a matrix(cubed).
+ *
  * Revision 1.24  2006/11/14 02:14:12  dennis
  * Fixed javadoc for method  blaue().
  *
@@ -182,6 +186,7 @@ public class blind {
    * 
    * @param orientMat  The orientation matrix  
    * @return  An error message if something went wrong, or null otherwise.
+   *      You must use the resultant UB variable to see the result.
    */
   public ErrorString blaue( float[][] orientMat){
      double[] Qx,Qy,Qz;
@@ -367,15 +372,23 @@ public class blind {
         }
         return;
       }
+      double max = 0;
       for( int i=0 ; i<3 ; i++ ){
         UB[i][0]=xa[i];
         UB[i][1]=ya[i];
         UB[i][2]=za[i];
+        if( Math.abs( xa[i])>max )
+           max = xa[i];
+        if( Math.abs( ya[i])>max )
+           max = ya[i];
+        if( Math.abs( za[i])>max )
+           max = za[i];
       }
 
       d=LinearAlgebra.determinant(UB);
       System.out.println("d ="+d);
-      if (Math.abs(d) >= 0.0001) break;
+      if( max ==0) break;
+      if (Math.abs(d) >= 0.0005*max*max*max) break;
 
       // d is the determinant of the basis vectors if close to zero,
       // then basis are coplanar.  Interchange the kth peak with one
@@ -421,7 +434,7 @@ public class blind {
   }
 
   /**
-   * Swap the values of array at index1 and index2 with each other.
+   * Swap the values of rray at index1 and index2 with each other.
    */
   private void swap(double[] array, int index1, int index2){
     double temp=array[index1];
