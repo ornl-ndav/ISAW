@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.57  2008/01/13 18:40:19  rmikk
+ * Validate Self now returns true if there are no parameters that vary
+ *
  * Revision 1.56  2006/07/10 21:28:26  dennis
  * Removed unused imports, after refactoring the PG concept.
  *
@@ -824,7 +827,7 @@ public abstract class Form extends Operator implements PropertyChanger {
     int[] var_indices = this.getParamType( VAR_PARAM );
 
     if( ( var_indices == null ) || ( var_indices.length <= 0 ) ) {
-      return new ErrorString( "No variable parameters to check" );
+      return Boolean.TRUE;//new ErrorString( "No variable parameters to check" );
     }
 
     boolean allValid       = true;
