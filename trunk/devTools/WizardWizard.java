@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2008/01/13 18:43:06  rmikk
+ * Now import the (new) gov.anl.ipns.Parameters directory
+ * Now calculates the constant lists
+ *
  * Revision 1.3  2008/01/13 17:35:24  rmikk
  * Added a lot of new changes to this class
  *
@@ -1716,6 +1720,7 @@ public class WizardWizard extends JFrame implements ActionListener,
 
         FSave.write("import DataSetTools.wizard.*;\n\r".getBytes());
         FSave.write("import DataSetTools.parameter.*;\r\n".getBytes());
+        FSave.write("import gov.anl.ipns.Parameters.*;\r\n".getBytes());
     }
 
     private void WriteClass(FileOutputStream FSave, String rest)
@@ -1799,20 +1804,50 @@ public class WizardWizard extends JFrame implements ActionListener,
 
         for (int i = 0; i < OpnList.size(); i++) {
             GenericOperator op = ((ListHolder) (OpnList.elementAt(i))).op;
-
+            int Nops = op.getNum_parameters();
             String ResParamGui = lp.ResultPG[i];
             if (ResParamGui == null)
-                ResParamGui = "";
+                ResParamGui = "PlaceHolder";
             if (ResParamGui.length() > 1)
                 ResParamGui = ", new " + ResParamGui + "PG(\"Result" + i
                         + "\",null)";
             String ConstList = "";
-            if ((ResParamGui.length() > 1)) {
+            int[][] tableB = lp.getLinks();
+            int k=0;
+            for( int ii=0; ii<tableB.length &&k == 0  ; ii++)
+               if( tableB[ii][i] >=0 && tableB[ii][i]<Nops )//has link 
+                 for( int j=0; j<ii ;j++)
+                    if( tableB[ii][j]>=0)
+                       k++;
+               
+                  
+           
+            if( k == 0)
+               ConstList = ",\n                    new int[0]";
+            else{
+               Vector<Integer> V = new Vector<Integer>();
+               ConstList =",\n                    new int[]{";
+               int kk=0;
+               for( int ii=0; ii<tableB.length  ; ii++)
+                  if( tableB[ii][i] >=0 && tableB[ii][i]<Nops)//has link 
+                    for( int j=0; j<ii ;j++)
+                       if( tableB[ii][j]>=0  )
+                         if(!V.contains( tableB[ii][i] ))
+                               V.addElement( tableB[ii][i] );
+               for( int ii=0; ii< V.size(); ii++){
+                  ConstList +=V.elementAt( ii );
+                  if( ii+1 < V.size())
+                     ConstList +=",";
+               }
+               ConstList+="}";
+            }
+               
+           /* if ((ResParamGui.length() > 1)) {
                 if (NConstants[i] > 0)
                     ConstList = ",ConstList[" + i + "]";
                 else
                     ConstList = ",new int[0]";
-            }
+            }*/
             if (op instanceof ScriptOperator) {
                 String filename = op.getSource().trim().replace('\\', '/');
                 String Prefix = System.getProperty("ISAW_HOME", "").replace(
