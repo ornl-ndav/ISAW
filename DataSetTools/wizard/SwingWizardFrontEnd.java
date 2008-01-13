@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.25  2008/01/13 18:41:06  rmikk
+ * enableFormParams now "works" if there are no parameters that vary
+ *
  * Revision 1.24  2006/07/10 22:28:36  dennis
  * Removed unused imports after refactoring to use new Parameter GUIs
  * in gov.anl.ipns.Parameters.
@@ -1142,6 +1145,8 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
     private void enableFormParams( boolean enable ) {
       Form  f           = wizard.getCurrentForm(  );
       int[] var_indices = f.getVarParamIndices(  );
+      if( var_indices == null)
+         return;
       Vector<BooleanEnablePG> BoolEnablePGs= new Vector<BooleanEnablePG>();
       for( int j = 0; j < var_indices.length; j++ ) {
         ( ( IParameterGUI )f.getParameter( var_indices[j] ) ).setEnabled( enable );
