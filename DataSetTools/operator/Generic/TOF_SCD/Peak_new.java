@@ -33,6 +33,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.19  2008/01/29 20:37:19  rmikk
+ * IMplements IPeak. Does not depend on the Peaks object
+ * Added methods to createPeaks, read/write peaks
+ * Attempted to make it immutable
+ *
  * Revision 1.18  2008/01/04 17:32:51  rmikk
  * Added T0 considerations to time values.
  * Set the variables in the superclass to correspond to the variables in the
@@ -110,6 +115,8 @@ package DataSetTools.operator.Generic.TOF_SCD;
 import gov.anl.ipns.MathTools.LinearAlgebra;
 import gov.anl.ipns.MathTools.Geometry.*;
 
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.text.DecimalFormat;
 
 import Command.ScriptUtil;
@@ -117,6 +124,8 @@ import DataSetTools.dataset.*;
 import DataSetTools.math.tof_calc;
 import DataSetTools.instruments.*;
 import DataSetTools.trial.*;
+import gov.anl.ipns.MathTools.Geometry.*;
+import DataSetTools.instruments.*;
 
 /**
  * This class contains variables describing a voxel(peak) in three formats:
@@ -139,7 +148,7 @@ import DataSetTools.trial.*;
 //TODO Help cannot delete upper peak variables.  Sometimes they are used
 //    and sometimes they are not used.  In debug there are 2 variables with
 //    the same name.  Help Help Help
-public class Peak_new extends Peak {
+public class Peak_new implements IPeak_IPNS_out {
   // instance variables
   private int       seqnum   = 0;
   private float     h        = 0;
@@ -178,6 +187,9 @@ public class Peak_new extends Peak {
   private XScale    xscale     = null;
   private Vector3D  peakPt     = null;
   private boolean   needUpdate = true;
+  
+  private String InstrumentName = null;
+  private String FacilityName   = null;
   //TODO make immutable. Ignore changes to any relevant inputs
   /* --------------------Constructor Methods-------------------- */
   /**
@@ -208,18 +220,17 @@ public class Peak_new extends Peak {
       this.y = y;
       this.z = z;
       this.orient = orient;
-      this.Grid( grid );                // needed to set the super class detnum
-      super.detnum( grid.ID());
-      this.L1 = initialPath;
-      super.L1( initialPath);
-      this.timeAdjustment = timeAdjustment;
+      this.grid = grid ;                // needed to set the super class detnum
       
+      this.L1 = initialPath;
+     
+      this.timeAdjustment = timeAdjustment;
+      this.orient = orient;
       this.chi=orient.getChi();
       this.phi= orient.getPhi();
       this.omega= orient.getOmega();
-      time( xscale);
-
-      needUpdate = false;
+      this.xscale = xscale;
+     
       setT0T1( z, xscale);
       if( grid != null ){
          Vector3D pos = grid.position();
@@ -366,9 +377,7 @@ public static Peak_new getNewPeak_hkl( DataSet DS, int GridID, float h, float k,
   }
   
   
-  public float detA2( float d2 ){
-    return detA2;
-  }
+ 
   
 
   public float detA2(){
@@ -392,27 +401,57 @@ public static Peak_new getNewPeak_hkl( DataSet DS, int GridID, float h, float k,
   */
   }
 
+  /**
+   * Returns the run number associated with this peak
+   * @return the run number associated with this peak
+   */
+  public int  nrun(){
+     return nrun;
+  }
+  
+  public void nrun( int runNumber){
+     this.nrun = runNumber;
+  }
   
   public void sethkl( float H, float K, float L,boolean propogate){
+    if( !Float.isNaN( x ) && !Float.isNaN( y ) && !Float.isNaN( z ) && UB !=null)
+       throw new IllegalArgumentException("h,k,l already set. Cannot reset");
     this.h=H;
     this.k=K;
     this.l=L;
-    if( (!propogate) ||( UB== null)){
-      return;
-    }
-
+    
+    hkl2xyz(h,k,l);
+  }
+  
+  //rotation-help,help
+  private void hkl2xyz(float h, float k ,float l){
+    if( UB == null)
+       return;
     float[] Q = new float[3];
+    float[][] UB1 = LinearAlgebra.mult(this.ROT,this.UB);
     for( int i=0; i<3;i++)
-       Q[i] = UB[i][0]*H+UB[i][1]*K+UB[i][2]*L;
+       Q[i] = UB1[i][0]*h+UB1[i][1]*h+UB1[i][2]*l;
     Vector3D QQ = new Vector3D( (float)(Q[0]*2*Math.PI),
                                 (float)(Q[1]*2*Math.PI),
                                 (float)(Q[2]*2*Math.PI) );
+    //get lab coordinates
     float[] RC = VecQToTOF.RCofQVec( QQ, grid);
     this.y = RC[0];
     this.x = RC[1];
-    this.t = timeAdjustment + VecQToTOF.TofofQVec( QQ,grid, L1+grid.position( y,x).length());
+    this.t = timeAdjustment + VecQToTOF.TofofQVec( QQ,grid,
+                            L1+grid.position( y,x).length());
     update_xcm_ycm_wl();
-    this. z= xscale.getI_GLB(t);
+    z=t2z( t );
+  }
+  
+  private float t2z( float t){
+     if( xscale == null){
+        return 0f;
+     }
+     int indx = xscale.getI_GLB(t);
+     T0 = xscale.getX(indx);
+     T1 = xscale.getX(indx+1);
+     return  indx + (t - T0)/(T1-T0);
   }
   
   
@@ -426,7 +465,7 @@ public static Peak_new getNewPeak_hkl( DataSet DS, int GridID, float h, float k,
    * the other representations.
    */
   public void sethkl( float H, float K, float L){
-    sethkl(K, K, L, true);
+    sethkl(H, K, L, true);
   }
   
   
@@ -438,20 +477,9 @@ public static Peak_new getNewPeak_hkl( DataSet DS, int GridID, float h, float k,
   }
   
 
-  /**
-   *  Mutator method for the pixel position
-   */
-  public void pixel(float X, float Y, float Z){
-    this.x=X;
-    this.y=Y;
-    this.z=Z;
-    setT0T1( z, xscale);
-    
-    this.pixel_to_real();
-    if(UB!=null)
-      this.real_to_hkl();
-    needUpdate=false;
-   }
+  private void time( XScale xscale){
+     
+  }
   
   
   /**
@@ -459,20 +487,15 @@ public static Peak_new getNewPeak_hkl( DataSet DS, int GridID, float h, float k,
    * between. Something must be done to pixel_to_real to recreate
    * this.
    */
-  public void times(float t0, float t1){
+  private void times(float t0, float t1){
     this.T0=t0;
     this.T1=t1;
-    needUpdate = true;
+    if( Float.isNaN(this.t) )
+       t=T0 +(z-(float)Math.floor(t))*(T1-T0);
+   
   }
 
   
-  /**
-    *  Set the xscale and T0 and T1 to correspond to the current z
-    */
-  public void time( XScale time){
-    this.xscale=time;
-    setT0T1( z, time);
-  }
   
 
   // Sets T0  and T1  to the bin boudaries of the xscale with channel z.
@@ -505,28 +528,7 @@ public static Peak_new getNewPeak_hkl( DataSet DS, int GridID, float h, float k,
   public float timeAdjust(){
     return this.timeAdjustment;
   }
-
-
-  /**
-    *  Sets the grid to be used as a conversion value
-    *  @param  grid   The new grid value
-    */
-  public void Grid( IDataGrid  grid){
-    needUpdate = true;
-    this.grid = grid;
-    super.detnum( grid.ID());
-    if( grid != null ){
-         Vector3D pos = grid.position();
-         //pos.multiply( -1.0f);
-         float[] pp = pos.get();
-         detA2=( (float)(180.0f*Math.asin( pp[2]/pos.length())/Math.PI));
-         
-         detA=(float)(180*Math.atan2(pp[1],pp[0])/Math.PI);
-         setUpRot(grid);
-         update_xcm_ycm_wl();
-      }  
-  }
-
+  
 
   /**
    *  Accessor method for the pixel row.
@@ -543,23 +545,7 @@ public static Peak_new getNewPeak_hkl( DataSet DS, int GridID, float h, float k,
     return this.z;
   }
 
-  
-  /**
-   * Sets the x,y, and z values to correspond to XCM, YCM, and WL values
-   * 
-   */
-  public void real(float XCM, float YCM, float WL){
-	this.x = grid.col(XCM/100, YCM/100);
-	this.y = grid.row(XCM/100, YCM/100);
     
-    peakPt = getPeakPosition();
-    this.wl=WL;
-    
-    this.real_to_pixel();
-    this.real_to_hkl();
-    needUpdate=false;
-  }
-  
 
   /**
     * Returns the xcm, ycm, and wl corresponding to this peak
@@ -594,18 +580,24 @@ public static Peak_new getNewPeak_hkl( DataSet DS, int GridID, float h, float k,
    
   public float h(){
      if( needUpdate)get_hkl();
+     if( Float.isNaN( h ))
+        return 0;
      return h;
    }
 
 
   public float k(){
     if( needUpdate)get_hkl();
+    if( Float.isNaN( k ))
+       return 0;
     return k;
   }  
 
 
   public float l(){
     if( needUpdate)get_hkl();
+    if( Float.isNaN( l ))
+       return 0;
     return l;
   }
 
@@ -694,31 +686,7 @@ public static Peak_new getNewPeak_hkl( DataSet DS, int GridID, float h, float k,
     return this.reflag();
   }
 
-
-  /**
-   *  Accessor method for the run number.
-   */
-  public int nrun(){
-    return this.nrun;
-  }
-
-
-  /**
-   *  Mutator method for the run number.
-   */
-  public int nrun(int NRUN){
-    this.nrun=NRUN;
-    return this.nrun();
-    }
-
-  
-  /**
-   *  Accessor method for the detector number.
-   
-  public int detnum(){
-    return grid.ID();
-  }
-*/
+ 
   
   /**
    * Accessor method for the integrated monitor intensity
@@ -794,7 +762,7 @@ public static Peak_new getNewPeak_hkl( DataSet DS, int GridID, float h, float k,
   public void L1(float path){
       
       this.L1=path;
-      super.L1( path);
+     // super.L1( path);
       update_xcm_ycm_wl();
     }
 
@@ -876,6 +844,20 @@ public static Peak_new getNewPeak_hkl( DataSet DS, int GridID, float h, float k,
     }else{
       this.invUB=LinearAlgebra.getInverse(this.UB);
     }
+    
+    if( !Float.isNaN( x )&& !Float.isNaN( y )&& !Float.isNaN( z )){
+       //update hkl
+       float[] Q = getQ();//invUB already has ROT in it
+       if( Q != null){
+          this.h= (float)(invUB[0][0]*Q[0]+invUB[0][1]*Q[1]+invUB[0][2]*Q[2]);
+          this.k= (float)(invUB[1][0]*Q[0]+invUB[1][1]*Q[1]+invUB[1][2]*Q[2]);
+          this.l= (float)(invUB[2][0]*Q[0]+invUB[2][1]*Q[1]+invUB[2][2]*Q[2]);
+          
+       }
+    }else if(!Float.isNaN( h )&& !Float.isNaN( k )&& !Float.isNaN( l )){
+       hkl2xyz(h,k,l);
+       
+    }//else not a real peak only a factory
   }
 
 
@@ -888,7 +870,7 @@ public static Peak_new getNewPeak_hkl( DataSet DS, int GridID, float h, float k,
       return;
     if( !Float.isNaN(this.x)){
    
-    peakPt = getPeakPosition();
+       peakPt = getPeakPosition();
     }
     if(!Float.isNaN(this.L1)&&!Float.isNaN(T0)&&
                                                !Float.isNaN(T1)){
@@ -947,7 +929,7 @@ public static Peak_new getNewPeak_hkl( DataSet DS, int GridID, float h, float k,
     if(!Float.isNaN(this.L1)&& !Float.isNaN(wl) ){
                                         
       float time = tof_calc.TOFofWavelength(peakPt.length()+L1,wl)+timeAdjustment;
-      time = time-timeAdjustment;
+      t=time = time-timeAdjustment;
       int indx=-1;
       if(xscale == null){
         if( !Float.isNaN(z)){
@@ -1003,7 +985,7 @@ public static Peak_new getNewPeak_hkl( DataSet DS, int GridID, float h, float k,
   /**
    * Despite its name this actually calculates 1/d (Qvec/2PI).
    */
-  private float[] getQ(){
+  public float[] getQ(){
      peakPt = this.getPeakPosition();
      
      if(peakPt== null)
@@ -1076,7 +1058,9 @@ public static Peak_new getNewPeak_hkl( DataSet DS, int GridID, float h, float k,
     else{
       peak.UB(null);
        peak.sethkl( this.h, this.k, this.l, false); 
-       }
+       return peak;
+     }
+    
     return peak;
   }
   
@@ -1216,7 +1200,420 @@ public static Peak_new getNewPeak_hkl( DataSet DS, int GridID, float h, float k,
      return this.xscale;
      
   }
-  public static void main( String[] args){
+  
+  
+  /* (non-Javadoc)
+ * @see DataSetTools.operator.Generic.TOF_SCD.IPeak#createNewPeakhkl(float, float, float, float[][])
+ */
+@Override
+public IPeak createNewPeakhkl( float h , float k , float l , float[][] UB ) {
+   
+   if( UB == null)
+      return null;
+   
+   //find Q
+   
+   float[]Q = new float[3];
+   for( int i=0; i<3;i++){
+      Q[i] = (UB[i][1]*h +UB[i][2]*k +UB[i][3]*l)*2*(float)Math.PI;
+   }
+   
+   Q = VecQToTOF.RCofQVec( new Vector3D(Q) , this.grid );
+   float x = Q[1];;
+   float y = Q[0];
+   
+   float t= VecQToTOF.TofofQVec( new Vector3D(Q) , grid ,this.L1 );
+   float z;
+   int z_lower = xscale.getI_GLB( t );
+   int z_upper =xscale.getI( t );
+   if( z_lower < 0)
+      return null;
+   if( z_upper > xscale.getNum_x())
+      return null;
+   float r = (t-xscale.getX(z_lower))/
+                        (xscale.getX(z_upper)-xscale.getX(z_lower));
+   z = z_lower*(1-r)+z_upper*(r);
+   
+   return new Peak_new(x,y,z, grid, this.orient,this.timeAdjustment,
+               this.xscale, this.L1);
+}
+/* (non-Javadoc)
+ * @see DataSetTools.operator.Generic.TOF_SCD.IPeak#createNewPeakxyz(float, 
+ *                    float, float)
+ */
+@Override
+public IPeak createNewPeakxyz( float x , float y , float z ) {
+
+   Peak_new Res = new Peak_new( x,y,z,grid, orient, timeAdjustment,xscale, L1);
+   Res.setInstrument(  this.InstrumentName );
+   Res.setFacility( this.FacilityName);
+   Res.nrun( nrun );
+   return Res;
+   
+}
+/* (non-Javadoc)
+ * @see DataSetTools.operator.Generic.TOF_SCD.IPeak#detnum()
+ */
+@Override
+public int detnum() {
+
+   
+   return grid.ID();
+}
+
+public static SampleOrientation getOrientation(
+              String Facility, String Instrument, float phi, float chi, 
+              float omega){
+   if( Facility != null && Facility.equals("LANSE"))
+      if( Instrument != null && Instrument.equals( "SCD" ) )
+         return new LANSCE_SCD_SampleOrientation( phi, chi, omega);
+   return  new IPNS_SCD_SampleOrientation( phi, chi, omega);
+}
+
+/**
+ * Returns a generic Peak of the proper class to read the rest of the information.
+ * 
+ * @param S  The header string. The first character must be 0. The next set
+ *           of characters represent a magic number dictating the kind of
+ *           peak needed to read the following information
+ * @return a generic Peak of the proper class to read the rest of the information.
+ */
+public static IPeak readHeader( String S){
+   S = S.substring( 1 ).trim();
+   IPeak res = null;
+   if( S.startsWith( "#xx1")){//Peak_new format
+      S = S.substring( 5  ).trim();
+      String FacilityName= null;
+      String InstrumentName= null;
+      if( S != null && S.length()>= 1){
+      
+         S = S.trim();
+         int indx = S.indexOf( ' ' );
+         if( indx < 0)
+            FacilityName = S.trim();
+         else{
+            FacilityName = S.substring( 0,indx );
+            if( indx< S.length())
+              InstrumentName = S.substring(  indx+1 ).trim();
+         }
+      }
+      
+      
+      Peak_new pk = new Peak_new( Float.NaN, Float.NaN, Float.NaN,
+               new UniformGrid(200,"m",new Vector3D(0f,0f,0f),
+                        new Vector3D(1f,0f,0f), new Vector3D(0f,1f,0f),
+                        10,10,1,20,20),
+              getOrientation(FacilityName, InstrumentName,0f,0f,0f),
+              0f,new UniformXScale(1f,100f,10),3);
+      pk.setFacility(  FacilityName );
+      pk.setInstrument( InstrumentName );
+      return pk;
+      
+   }else if( S.startsWith("NRUN")){//IPNS peaks
+      return new Peak();
+   }else
+      return null;
+   
+}
+
+  private Peak_new getPeakInfo( InputStream f, String line){
+     IPeak Res;
+     if( line == null || line.length()<4 || !line.startsWith("1"))
+        return null;
+     String S = Peak.getLine(  f );
+     if( S == null || S.length() < 1 || !line.startsWith("2"))
+        return null;
+     String[] SS = S.split( "[ ]+" );
+     if( SS == null || SS.length !=9)
+        return null;
+     
+     int nrun= ( new Integer( SS[1])).intValue();
+     int det =( new Integer( SS[2])).intValue();
+     float chi=( new Float( SS[3])).floatValue();
+     float phi=( new Float( SS[4])).floatValue();
+     float omega=( new Float( SS[5])).floatValue();
+     float T0=( new Float( SS[6])).floatValue();;
+     int moncount = ( new Integer( SS[7])).intValue();
+     float L1 =( new Float( SS[8])).floatValue();
+    
+        
+     S = Peak.getLine(  f );
+     if( S == null || S.length() < 1 || !line.startsWith("1"))
+        return null;  
+     
+     
+     S = Peak.getLine(  f );
+     if( S == null || S.length() < 1 || !line.startsWith("2"))
+        return null;  
+     SS = S.split( "[ ]+" );
+     if( SS == null || SS.length !=10)
+        return null;
+     
+     float width =( new Float( SS[1])).floatValue();
+     float height =( new Float( SS[2])).floatValue();
+     float depth =( new Float( SS[3])).floatValue();
+     float Cx =( new Float( SS[4])).floatValue();
+     float Cy =( new Float( SS[5])).floatValue();
+     float Cz =( new Float( SS[6])).floatValue();
+     float Xx =( new Float( SS[7])).floatValue();
+     float Xy =( new Float( SS[8])).floatValue();
+     float Xz =( new Float( SS[9])).floatValue();
+     float Yx =( new Float( SS[10])).floatValue();
+     float Yy =( new Float( SS[11])).floatValue();
+     float Yz =( new Float( SS[12])).floatValue();
+     
+     
+     S = Peak.getLine(  f );
+     if( S == null || S.length() < 1 || !line.startsWith("1"))
+        return null;  
+     
+     
+     S = Peak.getLine(  f );
+     if( S == null || S.length() < 1 || !line.startsWith("2"))
+        return null;  
+     SS = S.split( "[ ]+" );
+     if( SS == null || SS.length !=9)
+        return null;   
+     
+     String GridType = SS[1].trim();
+     int nrows = (new Integer( SS[2].trim())).intValue();
+     int ncols = (new Integer( SS[3].trim())).intValue();
+     int ID  = (new Integer( SS[4].trim())).intValue();
+     String XscaleType = SS[5].trim();
+     float startTime =( new Float( SS[6])).floatValue();
+     float endTime =( new Float( SS[7])).floatValue();
+     int nTimes = (new Integer( SS[8].trim())).intValue();
+     
+     
+     S = Peak.getLine(  f );
+     if( S == null || S.length() < 1 || !line.startsWith("1"))
+        return null;  
+     
+     //Only do Uniform Grid so far
+     UniformGrid grid = new UniformGrid( ID,"m", new Vector3D(Cx,Cy,Cz),
+              new Vector3D(Xx,Xy,Xz), new Vector3D(Yx,Yy,Yz),width, height,
+              depth, nrows, ncols);
+     
+     SampleOrientation sampOrient = getOrientation( FacilityName, 
+                                            InstrumentName,phi,chi,omega);
+     XScale xscl = new UniformXScale( startTime, endTime, nTimes);
+     
+     return new Peak_new( Float.NaN,Float.NaN, Float.NaN, grid, sampOrient,
+              T0, xscl,L1);
+    
+     
+  
+    
+  }
+/* (non-Javadoc)
+ * @see DataSetTools.operator.Generic.TOF_SCD.IPeak#readPeak(java.io.InputStream, java.lang.String, java.lang.String)
+ */
+@Override
+public IPeak readPeak( InputStream f , String Facility , String Instrument ) {
+
+   
+   String S = Peak.getLine( f );
+   IPeak pk = this;
+   boolean done = false;
+   while( !done){
+     if( S != null && S.startsWith("0 ")){
+        pk = readHeader( S );
+        return pk.readPeak(  f , Facility, Instrument);
+     }else if( S == null || S.length() <2 )
+        return null;
+     String[] SS;
+     if( !S.startsWith( "3" )){
+        pk = getPeakInfo( f, S);
+        S = Peak.getLine( f );
+     }
+     if( S == null || S.length() < 2) return null;
+     if( !S.startsWith("0"))
+        done = true;
+   }
+   if( !S.startsWith( "3" ) || pk == null) return null;
+      
+   String[] SS = S.split( "[ ]+" );
+   if( SS == null || SS.length !=18)
+      return null;
+   int seqnum = ( new Integer( SS[1])).intValue();
+   int h =( new Integer( SS[2])).intValue();
+   int k =( new Integer( SS[3])).intValue();
+   int l =( new Integer( SS[4])).intValue();
+   float x=( new Float( SS[5])).floatValue();
+   float y=( new Float( SS[6])).floatValue();
+   float z=( new Float( SS[7])).floatValue();
+   float t=( new Float( SS[8])).floatValue();
+   int pkobs=( new Integer( SS[9])).intValue();
+   float integ=( new Float( SS[10])).floatValue();
+   float sigint=( new Float( SS[11])).floatValue();
+   int ref =  (new Integer( SS[12])).intValue();
+    float Qx =( new Float( SS[15])).floatValue();
+    float Qy =( new Float( SS[16])).floatValue();
+    float Qz =( new Float( SS[17])).floatValue();
+    IPeak pk1 = pk.createNewPeakxyz( x , y , z );
+    pk1.reflag( ref );
+    pk1.inti( integ);
+    pk1.sigi( sigint);
+    pk1.sethkl( h , k , l );
+    pk1.ipkobs( pkobs );
+    return pk1;
+}
+/* (non-Javadoc)
+ * @see DataSetTools.operator.Generic.TOF_SCD.IPeak#readPeak(java.io.InputStream)
+ */
+@Override
+public IPeak readPeak( InputStream f ) {
+
+  return readPeak( f, FacilityName, InstrumentName);
+   
+}
+/* (non-Javadoc)
+ * @see DataSetTools.operator.Generic.TOF_SCD.IPeak#setFacility(java.lang.String)
+ */
+@Override
+public void setFacility( String facilityName ) {
+
+  this.FacilityName = facilityName;
+   
+}
+/* (non-Javadoc)
+ * @see DataSetTools.operator.Generic.TOF_SCD.IPeak#setInstrument(java.lang.String)
+ */
+@Override
+public void setInstrument( String instrumentName ) {
+
+   this.InstrumentName = instrumentName;
+   
+}
+/* (non-Javadoc)
+ * @see DataSetTools.operator.Generic.TOF_SCD.IPeak#time()
+ */
+@Override
+public float time() {
+
+   
+   return this.t;
+}
+
+private boolean SameHeader( IPeak prevPeak){
+   if( !(prevPeak instanceof Peak_new))
+      return false;
+   Peak_new ppeak = (Peak_new)prevPeak;
+   if( ppeak.grid == grid)
+      return false;
+   if( ppeak.chi() !=chi)
+      return false;
+   if( ppeak.phi() !=phi)
+      return false;
+   if( ppeak.omega() !=omega)
+      return false;
+   if( !ppeak.FacilityName.equals( FacilityName ))
+      return false;
+   if( !ppeak.InstrumentName.equals( InstrumentName))
+      return false;
+   if( ppeak.L1 != L1)
+      return false;
+   if(ppeak.monct !=monct)
+      return false;
+   if( ppeak.nrun !=nrun)
+      return false;
+   if( ppeak.timeAdjustment != timeAdjustment )
+      return false;
+   if( ppeak.xscale !=xscale)
+      return false;
+   
+   return true;
+      
+      
+}
+
+ private void writeHeader( OutputStream f){
+    try{
+      f.write( "0 #xx1  ".getBytes() );  //Magic number
+      if( FacilityName == null)
+         f.write( "IPNS ".getBytes() );
+      else
+         f.write( (FacilityName+" ").getBytes());
+      
+
+      if( InstrumentName == null)
+         f.write( "SCD \n".getBytes() );
+      else
+         f.write( (InstrumentName+" \n").getBytes());
+      
+      f.write( ("1  RUN   Det   Chi      Phi     Omega       T0      "+
+                " MonCt     L1\n").getBytes());
+      
+      f.write( String.format("2 i5 %i4 %8.3 %f8.3 %f8.3 %f9.3 %f10.2 %f7.4\n",
+               nrun,detnum(),chi(),phi(),omega(),timeAdjustment,monct,L1).
+               getBytes());
+      
+      f.write(( "1 Grid Width    Height     Depth    Centerx    Centery    "+
+      		" Centerz      Xx          Xy        Xz      Yx          Yy   "+
+      		"     Yz   ").getBytes());
+      
+      float[] pos = grid.position().get();
+      float[] xx = grid.x_vec().get();
+      float[] yy =grid.y_vec().get();
+      f.write( String.format("2 %f10.3 %f10.3 %f10.3 %f10.5 %f10.5 %f10.5"+
+               " %f10.5 %f10.5 %f10.5 \n", grid.width(),grid.height(), 
+               grid.depth(),pos[0],pos[1],pos[2],xx[0],xx[1],xx[2],
+                  yy[0],yy[1],yy[2]).getBytes());
+      f.write( ("1 GRID NROWS NCOLS ID  TSSCALE T[0] T[n]  ntimes\n").getBytes() );
+      
+      f.write( String.format("2 box  %i4 %i4 %i2 Uniform %f10.4 %f10.4 %i6 \n",
+               grid.num_rows(), grid.num_cols(), grid.ID(),xscale.getStart_x(),
+               xscale.getEnd_x(), xscale.getNum_x()).getBytes() );
+      
+      f.write(( "1 Seq   h   k   l    x        y       z        t       pk    int  sig ref  nrun"+
+      		     " det     qx           qy            qz \n").getBytes());
+      
+    }catch( Exception s){
+       return;
+    }
+    
+    
+ }
+/* (non-Javadoc)
+ * @see DataSetTools.operator.Generic.TOF_SCD.IPeak#writePeak(java.io.OutputStream, DataSetTools.operator.Generic.TOF_SCD.IPeak, java.lang.String, java.lang.String)
+ */
+@Override
+public void writePeak( OutputStream f , IPeak prevPeak , String Facility ,
+         String Instrument ) {
+
+   if( !SameHeader( prevPeak))
+      writeHeader( f );
+   
+   if( prevPeak == null)
+      seqnum =1;
+   else
+      seqnum = prevPeak.seqnum() + 1;
+   double[]Q = this.getUnrotQ();
+   try{
+   f.write( String.format("3 %i4 %i3 %i3 %i3 %f6.3 %f6.3 %f6.3 %f8.3 %f6.2"+
+                    " %f6.2  %f4.2 %i3 %i5 %i3  %f11.6 %f11.6 %f11.6 \n",
+                    seqnum(), h(), k(),l(),x(),y(),z(),time(),ipkobs(),inti(),
+                    sigi(),reflag(),nrun(),detnum(),Q[0],Q[1],Q[2]).getBytes() );
+   
+   }catch( Exception s){
+      if( prevPeak != null)
+         seqnum = 0;
+      else 
+         seqnum--;
+   }
+   
+   
+}
+/* (non-Javadoc)
+ * @see DataSetTools.operator.Generic.TOF_SCD.IPeak#writePeak(java.io.OutputStream, DataSetTools.operator.Generic.TOF_SCD.IPeak)
+ */
+@Override
+public void writePeak( OutputStream f , IPeak prevPeak ) {
+
+   writePeak( f, prevPeak, null, null);
+   
+}
+public static void main( String[] args){
      java.util.Vector peaks = (java.util.Vector)(new ReadPeaks( "tae70.integrate")).getResult();
      if( peaks == null){
         System.out.println("No Peaks");
@@ -1267,7 +1664,7 @@ public static Peak_new getNewPeak_hkl( DataSet DS, int GridID, float h, float k,
 
    float[] hkl = pk1.get_hkl();
    float[] f= pk1.get_real();
-   pk1.real( f[0],f[1],f[2]);
+  
    
    System.out.println("A"+pk1.x()+","+pk1.y()+","+pk1.z());
    System.out.println(pk1.toString());
@@ -1282,7 +1679,7 @@ public static Peak_new getNewPeak_hkl( DataSet DS, int GridID, float h, float k,
    f= pk1.get_real();
    System.out.println("-------------------Peak_new--------------");
    System.out.println(pk1.toString());
-   pk1.real( f[0],f[1],f[2]);
+   //pk1.real( f[0],f[1],f[2]);
    
       System.out.println("A"+pk1.x()+","+pk1.y()+","+pk1.z());
       System.out.println(pk1.toString());
