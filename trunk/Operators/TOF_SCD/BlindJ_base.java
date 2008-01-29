@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.6  2008/01/29 19:39:44  rmikk
+ * Replaced Peak by IPeak or IPeak_IPNS_out
+ *
  * Revision 1.5  2006/07/10 22:10:21  dennis
  * Removed unused imports after refactoring to use new Parameter GUIs
  * in gov.anl.ipns.Parameters.
@@ -191,7 +194,7 @@ public class BlindJ_base extends  GenericTOF_SCD implements
     Vector newPeaks = new Vector();
     int seqNumindx = 0;
     for(int i=0; (i < peaks.size()) && (seqNumindx <seq.length);i++){
-       Peak p =(Peak) peaks.elementAt(i);
+       IPeak_IPNS_out p =(IPeak_IPNS_out) peaks.elementAt(i);
        if(p.seqnum() == seq[seqNumindx]){
          newPeaks.addElement( p);
          seqNumindx ++;
@@ -272,10 +275,10 @@ public class BlindJ_base extends  GenericTOF_SCD implements
     else
       return new ErrorString("Something went wrong reading peaks file: "
                              +filename);
-    Peak peak=null;
+    IPeak peak=null;
     int seqnum_num=0;
     for( int i=0 ; i<rawpeaks.size()&&seqnum_num<seq.length ; i++ ){
-      peak=(Peak)rawpeaks.elementAt(i);
+      peak=(IPeak)rawpeaks.elementAt(i);
       if(peak.seqnum()==seq[seqnum_num]){
         peaks.add(peak);
         seqnum_num++;
