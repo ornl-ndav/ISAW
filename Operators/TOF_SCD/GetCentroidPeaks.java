@@ -34,6 +34,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2008/01/29 19:43:07  rmikk
+ * Used Peak_new methods to set up a Peak_new
+ *
  * Revision 1.6  2006/01/18 21:47:44  dennis
  * Minor fix to format of help message.
  * Switched from DOS to UNIX text.
@@ -189,15 +192,27 @@ public class GetCentroidPeaks implements Wrappable, HiddenOperator {
        //if( java.util.Arrays.binarySearch(Rows,(int)(p.y()))>=0)
        {
          
-         Peak_new pk = (Peak_new) mold.clone();
-         pk.pixel(p.x(),p.y(),p.z());
+         //Peak_new pk = (Peak_new) mold.clone();
+         //pk.pixel(p.x(),p.y(),p.z());
          int detnum =p.detnum();
          int indx = java.util.Arrays.binarySearch(GridIDs,detnum);
-         pk.Grid( Grids[indx]);
+         /*pk.Grid( Grids[indx]);
          pk.time(xscales[indx]);
          pk.timeAdjust( calibTimeAdjustments[indx]);
          pk.L1( AttrUtil.getInitialPath(Grids[indx].getData_entry(1,1)));
          pk.ipkobs(p.ipkobs());
+         */
+         Peak_new pk = new Peak_new(p.x(),p.y(),p.z(),Grids[indx],
+                  sampOrient,calibTimeAdjustments[indx],
+                  xscales[indx],
+                  AttrUtil.getInitialPath(Grids[indx].getData_entry(1,1)));
+         
+         pk.monct( p.monct() );
+         pk.inti(p.inti());
+         pk.sigi(p.sigi());
+         pk.reflag( p.reflag());
+         pk.UB(p.UB());
+         
          Res.addElement(pk);       
        }
      }
