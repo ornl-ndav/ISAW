@@ -54,6 +54,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.26  2008/01/29 20:32:30  rmikk
+ * Replaced Peak by IPeak or IPeak_IPNS_out
+ *
  * Revision 1.25  2008/01/11 16:54:59  rmikk
  * zero for a determinant value now is a percentage of the maximum abs value
  *     of the entries in a matrix(cubed).
@@ -239,7 +242,7 @@ public class blind {
     // set up the Q-vector arrays (xx,yy,zz)
     for( int i=0;i<length;i++){
         // copy information about the peak into local variables
-        Peak peak=(Peak)(peaks.elementAt(i));
+        IPeak peak=(IPeak)(peaks.elementAt(i));
         angle[i+0]= peak.xcm();
         angle[i+1*xx.length]=peak.ycm();
         angle[i+2*xx.length]=peak.wl();
@@ -1168,7 +1171,7 @@ public class blind {
         V = (Vector)(cp.getResult());
 
         for(int i=0;i<V.size();i++){
-          Peak pk=(Peak)(V.elementAt(i));
+          IPeak_IPNS_out pk=(IPeak_IPNS_out)(V.elementAt(i));
           System.out.println("Pk i,xcm,ycm,wl="+pk.xcm()+","+pk.ycm()+","
                              +pk.wl());
           System.out.println("    chi,phi,om,deta,detd="+pk.chi()+","+pk.phi()
