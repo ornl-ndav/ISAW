@@ -30,6 +30,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.12  2008/01/29 20:40:28  rmikk
+ * Replaced Peak by IPeak
+ * Used the IPeak Create methods instead of setting values in original peaks
+ *
  * Revision 1.11  2007/03/13 22:04:11  rmikk
  * Made these implement HiddenOperator so they will not show up in the
  *    macros menu
@@ -284,6 +288,8 @@ import java.io.*;
 import java.util.Vector;
 import DataSetTools.operator.DataSet.Conversion.XAxis.*;
 import Operators.TOF_SCD.*;
+import DataSetTools.operator.Generic.TOF_SCD.*;
+import DataSetTools.operator.Generic.TOF_SCD.IPeak;
 /** 
  * This is a ported version of A.J.Schultz's INTEGRATE program. 
  */
@@ -1006,12 +1012,12 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
     logBuffer.append("listing information about every "+listNthPeak+" peak\n");
 
     boolean printPeak=false; // REMOVE
-    Peak peak=null;
+    IPeak peak=null;
 
     if ( DEBUG )
     {
       System.out.println( "PeakFactory = " + pkfac );
-      System.out.println( "(1,1,1) Peak = " + pkfac.getHKLInstance(1,1,1) );
+     // System.out.println( "(1,1,1) Peak = " + pkfac.getHKLInstance(1,1,1) );
     }
 
 
@@ -1048,10 +1054,10 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
             {
               peak=new Peak_new( row_col_ch[1], row_col_ch[0], row_col_ch[2],
                                  grid, samp_or, 0, x_scale, initial_path );
-              peak.sethkl( h, k, l, false );
+              peak.sethkl( h, k, l);
               peak.seqnum(seqnum);
               if ( run_nums != null && run_nums.length > 0 )
-                peak.nrun( run_nums[0] );
+                ((Peak_new)peak).nrun( run_nums[0] );
               peak.reflag(10);                         // Mark as ok for now 
 
               peaks.add(peak);
@@ -1076,9 +1082,15 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
     }
 
     // move peaks to the most intense point nearby
-    for( int i=peaks.size()-1 ; i>=0 ; i-- ){
-      IntegrateUtils.movePeak((Peak)peaks.elementAt(i),ds,ids,dX,dY,dZ);
-      peak=(Peak)peaks.elementAt(i);
+    
+       
+    
+   for(int i=peaks.size()-1; i>=0; i--){
+      IPeak P1=(IPeak)(peaks.elementAt(i));
+      IPeak P=IntegrateUtils.maxClosePeak(P1,ds,ids,dX,dY,dZ);
+      P.sethkl( P1.h() , P1.k() , P1.l() );
+      peaks.setElementAt( P , i );
+      peak=(IPeak)peaks.elementAt(i);
       for( int j=i+1 ; j<peaks.size() ; j++ ){ // remove peak if it gets
         if( peak.equals(peaks.elementAt(j)) ){ // shifted on top of another
           peaks.remove(j);
@@ -1104,17 +1116,17 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
       if( i%listNthPeak == 0 )                   // integrate with logging
       {
         if ( PeakAlg.equals(SHOE_BOX) )
-          IntegrateUtils.integrateShoebox( (Peak)peaks.elementAt(i),
+          IntegrateUtils.integrateShoebox( (IPeak)peaks.elementAt(i),
                                             ds, ids,
                                             colXrange, rowYrange, timeZrange,
                                             logBuffer ); 
         else if( PeakAlg.equals(NEW_INTEGRATE))
-          IntegrateUtils.integratePeak( (Peak)peaks.elementAt(i),
+          IntegrateUtils.integratePeak( (IPeak)peaks.elementAt(i),
                                          ds, ids, 
                                          timeZrange, incrSlice,
                                          logBuffer) ;
        else 
-          integratePeakExp((Peak)peaks.elementAt(i),
+          integratePeakExp((IPeak)peaks.elementAt(i),
                             ds, ids,
                             timeZrange, incrSlice,
                             logBuffer);    
@@ -1122,17 +1134,17 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
       else                                      // integrate but don't log
       {
         if ( PeakAlg.equals( SHOE_BOX ) )
-          IntegrateUtils.integrateShoebox( (Peak)peaks.elementAt(i),
+          IntegrateUtils.integrateShoebox( (IPeak)peaks.elementAt(i),
                                             ds, ids,
                                             colXrange, rowYrange, timeZrange,
                                             null );
         else if(PeakAlg.equals(NEW_INTEGRATE))
-          IntegrateUtils.integratePeak( (Peak)peaks.elementAt(i),
+          IntegrateUtils.integratePeak( (IPeak)peaks.elementAt(i),
                                          ds, ids,
                                          timeZrange,incrSlice,
                                          null);
         else
-        integratePeakExp( (Peak)peaks.elementAt(i),
+        integratePeakExp( (IPeak)peaks.elementAt(i),
                            ds, ids,
                            timeZrange, incrSlice,
                            null);  
@@ -1155,7 +1167,7 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
 */
 
     for ( int i = 0; i < peaks.size(); i++ )
-      System.out.println( (Peak)(peaks.elementAt(i)) );
+      System.out.println( (IPeak)(peaks.elementAt(i)) );
 
     // things went well so return null
     return null;
@@ -1212,7 +1224,7 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
     *  using the experimental IntegratePt information operator.  The low-level
     *  code can be plugged into IntegratePt using the setIntgratePkOp() method.
     */
-   private  void integratePeakExp( Peak peak, DataSet ds, int[][] ids,
+   private  void integratePeakExp( IPeak peak, DataSet ds, int[][] ids,
                          int[] timeZrange, int increaseSlice, StringBuffer log){
 
    
