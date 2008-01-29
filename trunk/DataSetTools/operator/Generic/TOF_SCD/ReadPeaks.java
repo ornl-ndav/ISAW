@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.11  2008/01/29 19:18:42  rmikk
+ * Repllaced Peak by IPeak
+ *
  * Revision 1.10  2008/01/04 17:24:24  rmikk
  * Added the feature to read the paired xml file with more accurate detector
  *    information
@@ -407,7 +410,7 @@ public class ReadPeaks extends GenericTOF_SCD implements HiddenOperator{
   }
   
   //used for fixing up a peak into a new peak.
-  private Peak_new  fixUpPeak( Peak peak, Vector DetInfo){
+  private Peak_new  fixUpPeak( IPeak peak, Vector DetInfo){
      
     if( DetInfo == null)
        return null;
@@ -424,7 +427,7 @@ public class ReadPeaks extends GenericTOF_SCD implements HiddenOperator{
               timeAdjustment, xscl, InitialPath);
     
     PP.nrun( peak.nrun());
-    PP.detnum( peak.detnum() );
+    //PP.detnum( peak.detnum() );
     PP.inti( peak.inti() );
     PP.ipkobs( peak.ipkobs() );
     PP.monct( peak.monct() );

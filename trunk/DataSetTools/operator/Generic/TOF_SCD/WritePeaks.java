@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.18  2008/01/29 19:18:04  rmikk
+ * Repllaced Peak by IPeak
+ *
  * Revision 1.17  2008/01/04 17:25:33  rmikk
  * Added the feature to create a paired xml file( if it has more info) with more
  *    detailed information about the detector.
@@ -232,7 +235,7 @@ public class WritePeaks extends GenericTOF_SCD implements HiddenOperator{
     int detNum=-1;
 
     // temporary variable
-    Peak peak = null;
+    IPeak peak = null;
   
     try{
       // open and initialize a buffered file stream
@@ -247,16 +250,17 @@ public class WritePeaks extends GenericTOF_SCD implements HiddenOperator{
       }
       // loop through the peaks
       for( int i=0 ; i<peaks.size() ; i++ ){
-        peak=(Peak)peaks.elementAt(i);
+        peak=(IPeak)peaks.elementAt(i);
 
         // check that we are in the same section
         if( (peak.nrun()!=runNum) || (peak.detnum()!=detNum) ){
           // write out the header
-          writeHeader(outStream,(Peak)peaks.elementAt(i));
-          writeHeaderXml(xmlDoc,  (Peak)peaks.elementAt( i ));
+          writeHeader(outStream,(IPeak_IPNS_out)peaks.elementAt(i));
+          if( writeXml)
+             writeHeaderXml(xmlDoc,  (Peak_new)peaks.elementAt( i ));
           // reinit run and detector numbers
-          runNum=((Peak)peaks.elementAt(i)).nrun();
-          detNum=((Peak)peaks.elementAt(i)).detnum();
+          runNum=((IPeak)peaks.elementAt(i)).nrun();
+          detNum=((IPeak)peaks.elementAt(i)).detnum();
         }
 
         // skip peaks with reflection flag of 20
@@ -327,7 +331,7 @@ public class WritePeaks extends GenericTOF_SCD implements HiddenOperator{
     return xmlDoc;
   }
   
-  private void writeHeaderXml( Document xmlDoc,  Peak P)
+  private void writeHeaderXml( Document xmlDoc,  Peak_new P)
                                      throws IOException{
      if( xmlDoc == null || P == null)
         return;
@@ -522,7 +526,7 @@ public class WritePeaks extends GenericTOF_SCD implements HiddenOperator{
    * Write an formatted headder line to the ouput stream using the
    * supplied peak for information.
    */
-  private static void writeHeader(OutputStreamWriter outStream, Peak peak)
+  private static void writeHeader(OutputStreamWriter outStream, IPeak_IPNS_out peak)
                                                             throws IOException{
     // general information header
     outStream.write("0  NRUN DETNUM    DETA   DETA2    DETD     CHI     PHI   "

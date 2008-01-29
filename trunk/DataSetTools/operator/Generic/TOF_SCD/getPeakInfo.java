@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2008/01/29 19:15:58  rmikk
+ * Repllaced Peak by IPeak
+ *
  * Revision 1.2  2007/08/23 21:05:03  dennis
  * Removed unused imports.
  *
@@ -130,7 +133,7 @@ public class getPeakInfo extends GenericOperator{
    public Object getResult(){
      
 
-         DataSetTools.operator.Generic.TOF_SCD.Peak pk = (DataSetTools.operator.Generic.TOF_SCD.Peak)(getParameter(0).getValue());
+         IPeak pk = (IPeak)(getParameter(0).getValue());
          java.lang.String descriptor = getParameter(1).getValue().toString();
          
 
@@ -144,17 +147,26 @@ public class getPeakInfo extends GenericOperator{
                      if( descriptor.equals( "chi" ) )
                         return new Float(pk.chi() );
                      else if( descriptor.equals( "detA" ) )
-                        return new Float(pk.detA() );
+                        if( pk instanceof IPeak_IPNS_out)
+                          return new Float(((IPeak_IPNS_out)pk).detA() );
+                        else
+                           return Float.NaN;
                      else if( descriptor.equals( "detA2" ) )
-                        return new Float(pk.detA2() );
+                        if( pk instanceof IPeak_IPNS_out)
+                           return new Float(((IPeak_IPNS_out)pk).detA2() );
+                         else
+                            return Float.NaN;
                      else
-                        return new Float(Float.NaN );
-                  else if( descriptor.equals( "detD" ) )
-                     return new Float(pk.detD() );
+                        return Float.NaN ;
+                  else if( descriptor.equals( "detD" )) 
+                           if( pk instanceof IPeak_IPNS_out)
+                              return new Float(((IPeak_IPNS_out)pk).detD() );
+                            else
+                               return Float.NaN;
                   else if( descriptor.equals( "h" ) )
                      return new Float(pk.h() );
                   else
-                     return new Float(Float.NaN );
+                     return Float.NaN ;
 
                else if( descriptor.compareTo( "ipkobs" ) <= 0 )
                   if( descriptor.equals( "inti" ) )
