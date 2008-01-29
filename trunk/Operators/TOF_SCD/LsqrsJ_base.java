@@ -31,6 +31,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.15  2008/01/29 19:50:08  rmikk
+ * Replaced Peak by IPeak
+ *
  * Revision 1.14  2007/05/03 14:42:19  rmikk
  * Fixed JavaDoc errors
  *
@@ -105,6 +108,7 @@ import java.util.Vector;
 
 import DataSetTools.operator.Generic.TOF_SCD.GenericTOF_SCD;
 import DataSetTools.operator.Generic.TOF_SCD.MatrixFilter;
+import DataSetTools.operator.Generic.TOF_SCD.IPeak;
 import DataSetTools.operator.Generic.TOF_SCD.Peak;
 import DataSetTools.operator.Generic.TOF_SCD.Peak_new;
 //import DataSetTools.operator.Generic.TOF_SCD.ReadPeaks;
@@ -407,14 +411,14 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
 
     // read in the reflections from the peaks file
     
-     Peak peak = null;
+     IPeak peak = null;
     int[] keep = new int[peaks.size()];
     java.util.Arrays.fill(keep ,0);
     int nargs= peaks.size();
     // trim out the peaks that are not in the list of selected sequence numbers
     if( seq_nums != null ) {
       for( int i = peaks.size(  ) - 1; i >= 0; i-- ) {
-        peak = ( Peak )peaks.elementAt( i );
+        peak = ( IPeak )peaks.elementAt( i );
 
         if( binsearch( seq_nums, peak.seqnum(  ) ) == -1 ) {
            
@@ -426,7 +430,7 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
 
     // trim out the peaks with out hkl listed
     for( int i = peaks.size(  ) - 1; i >= 0; i-- ) {
-      peak = ( Peak )peaks.elementAt( i );
+      peak = ( IPeak )peaks.elementAt( i );
       //peak.UB(matrix);
       if(keep[i] ==0)
       if( ( peak.h(  ) == 0 ) && ( peak.k(  ) == 0 ) && ( peak.l(  ) == 0 ) ) {
@@ -439,7 +443,7 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
     // trim out the ones that are not in the selected histograms
     if( run_nums != null ) {
       for( int i = peaks.size(  ) - 1; i >= 0; i-- ) {
-        peak = ( Peak )peaks.elementAt( i );
+        peak = ( IPeak )peaks.elementAt( i );
         if(keep[i] ==0)
         if( binsearch( run_nums, peak.nrun(  ) ) == -1 ) {          
           
@@ -452,7 +456,7 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
     // trim out small peaks (defined by the threshold parameter)
     if( threshold >= 0 ) {
       for( int i = peaks.size(  ) - 1; i >= 0; i-- ) {
-        peak = ( Peak )peaks.elementAt( i );
+        peak = ( IPeak )peaks.elementAt( i );
         if(keep[i] ==0)
         if( peak.ipkobs(  ) < threshold ) {
         
@@ -464,7 +468,7 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
 
     // trim out edge peaks (defined by the "pixels to keep" parameter)
     for( int i = peaks.size(  ) - 1; i >= 0; i-- ) {
-      peak = ( Peak )peaks.elementAt( i );
+      peak = ( IPeak )peaks.elementAt( i );
 
       //see if the peak pixels are within the user defined array.  We are
       //assuming a SQUARE detector, so we'll reject it if the x or y position
@@ -497,16 +501,19 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
     int k=0;
     for( int i = 0; i < peaks.size(); i++ ) 
     if( keep[i]==0){
-      peak        = ( Peak )peaks.elementAt( i );
+      peak        = ( IPeak )peaks.elementAt( i );
       hkl[k][0]   = Math.round( peak.h(  ) );
       hkl[k][1]   = Math.round( peak.k(  ) );
       hkl[k][2]   = Math.round( peak.l(  ) );
       q[k]        = peak.getUnrotQ(  );
       k++;
     }else{
-       peak =( Peak )peaks.elementAt( i );
+       peak =( IPeak )peaks.elementAt( i );
        peak.UB(null);
-       peak.sethkl(0f,0f,0f,false);
+       if( peak instanceof Peak)
+         ((Peak)peak).sethkl(0f,0f,0f,false);
+       else
+          peak.sethkl(0f,0f,0f);
     }
 
     // apply the transformation matrix
@@ -537,10 +544,14 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
     k=0;
     for( int i = 0; i < peaks.size(); i++ )
     if(keep[i]==0) {
-      peak = ( Peak )peaks.elementAt( i );
+      peak = ( IPeak )peaks.elementAt( i );
      
       peak.UB(null);
-      peak.sethkl((float)hkl[k][0], (float)hkl[k][1], (float)hkl[k][2], false);
+      if( peak instanceof Peak)
+       ((Peak) peak).sethkl((float)hkl[k][0], (float)hkl[k][1], (float)hkl[k][2]
+                 );
+      else
+         peak.sethkl((float)hkl[k][0], (float)hkl[k][1], (float)hkl[k][2]);
       k++;
     }
 
@@ -598,7 +609,7 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
       k=0;
       for( int i = 0; i < peaks.size(  ); i++ ) 
       if(keep[i]==0){
-        peak = (Peak)peaks.elementAt(i);
+        peak = (IPeak)peaks.elementAt(i);
   
                         // The first line logged for a peak has the observered
                         // values for the peak, 'indexed' by integer hkl values.
@@ -1066,7 +1077,7 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
     }
 
     double[][] VC = new double[3][3];
-    Peak peak     = null;
+    IPeak peak     = null;
 
     double[] hkl = new double[3];
 
@@ -1074,7 +1085,7 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
    
     for( int i = 0; i < peaks.size(  ); i++ )
     if(keep[i]==0) {
-      peak     = ( Peak )peaks.elementAt( i );
+      peak     = ( IPeak )peaks.elementAt( i );
       hkl[0]   = Math.round( peak.h(  ) );
       hkl[1]   = Math.round( peak.k(  ) );
       hkl[2]   = Math.round( peak.l(  ) );

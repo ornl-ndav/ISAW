@@ -30,6 +30,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.2  2008/01/29 19:45:49  rmikk
+ * Replaced Peak by IPeak
+ *
  * Revision 1.1  2006/12/19 05:16:28  dennis
  * Collection of static methods used by the various versions of the
  * SCD integrate operators.  These particular methods were factored
@@ -86,7 +89,7 @@ public class SCD_LogUtils
                +formatInt(rng[1])+" "+formatInt(rng[3]));
   }
 
-  public static void addLogHeader( StringBuffer log, Peak peak )
+  public static void addLogHeader( StringBuffer log, IPeak peak )
   {
     // add some information to the log file (if necessary)
     if(log!=null){

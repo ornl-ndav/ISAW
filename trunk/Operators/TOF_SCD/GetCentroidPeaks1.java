@@ -34,6 +34,9 @@
  * Modified:
  
  * $Log$
+ * Revision 1.7  2008/01/29 19:43:48  rmikk
+ * Replaced Peak by IPeak
+ *
  * Revision 1.6  2007/02/22 16:35:59  rmikk
  * Incorporated IGrid3d structure instead of IDataGrid structure.
  *
@@ -154,7 +157,7 @@ public class GetCentroidPeaks1 implements Wrappable, HiddenOperator {
 				return O;
 			Vector V = (Vector) O;
 			for( int i = 0;i < V.size();i++ ){
-				Peak P =(Peak) ( V.elementAt( i ) );
+				IPeak P =(IPeak) ( V.elementAt( i ) );
             PeakInfo pk =GetPeakR( DS,P ); 
             
 				V.setElementAt( pk,i );
@@ -204,7 +207,7 @@ public class GetCentroidPeaks1 implements Wrappable, HiddenOperator {
 	
 	//Repeatedly runs DataSetTools.operator.Generic.TOF_SCD.GetPeak with 
 	//different cutoffs until done.
-	private PeakInfo GetPeakR( DataSet DS, Peak P ){
+	private PeakInfo GetPeakR( DataSet DS, IPeak P ){
 		
 		int x = (int)P.x();
 		int y = (int) P.y();
