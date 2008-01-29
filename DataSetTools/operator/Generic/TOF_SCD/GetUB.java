@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2008/01/29 19:16:46  rmikk
+ * Repllaced Peak by IPeak
+ *
  * Revision 1.7  2008/01/11 17:04:13  rmikk
  * Replaced (int) by Math.floor
  * Deleted some dead code
@@ -174,7 +177,7 @@ public class GetUB {
       int center = Res.length / 2;
       for( int i = 0 ; i < Peaks.size() ; i++ )
          if( ! omit[ i ] ) {
-            Peak pk = (Peak) Peaks.elementAt( i );
+            IPeak pk = (IPeak) Peaks.elementAt( i );
             double[] Qvec = pk.getUnrotQ();
             float p = (float) ( Qvec[ 0 ] * x + Qvec[ 1 ] * y + Qvec[ 2 ] * z );
             int index = (int)Math.floor ( p / delta + .5 );
@@ -890,7 +893,7 @@ public class GetUB {
       int ct;
      
       for( int i = 0 ; i < Peaks.size() ; i++ ) {
-         double[] qvec = ( (Peak) Peaks.elementAt( i ) ).getUnrotQ();
+         double[] qvec = ( (IPeak) Peaks.elementAt( i ) ).getUnrotQ();
          ct = 0;
          for( int j = 0 ; j < 3 ; j++ ) {
             double x = qvec[ 0 ] * unit[ j ][ 0 ] + qvec[ 1 ] * unit[ j ][ 1 ]
@@ -962,7 +965,7 @@ public class GetUB {
          omit = null;
       int ct = 0;
       for( int i=0; i< Peaks.size(); i++){
-         double[] qvec = ( (Peak) Peaks.elementAt( i ) ).getUnrotQ();
+         double[] qvec = ( (IPeak) Peaks.elementAt( i ) ).getUnrotQ();
          int k=0;
          for( int j = 0 ; j < 3 ; j++ ) {
             double x = qvec[ 0 ] * invUB[ j ][ 0 ] + qvec[ 1 ] * invUB[ j ][ 1 ]
@@ -994,7 +997,7 @@ public class GetUB {
          return UB;
       java.util.Arrays.fill( Stats , 0f );
       for( int i=0; i< Peaks.size(); i++){
-         Peak P = (Peak)Peaks.elementAt( i );
+         IPeak P = (IPeak)Peaks.elementAt( i );
          double[] Qs = P.getUnrotQ();
          float Max =0;
          for(int r=0; r<3;r++){
@@ -1113,7 +1116,7 @@ public class GetUB {
                + qNormal[ 2 ] * qNormal[ 2 ];
       for( int i = 0 ; i < Peaks.size() ; i++ )
          if( ! omit[ i ] ) {
-            double[] qvec = ( (Peak) Peaks.elementAt( i ) ).getUnrotQ();
+            double[] qvec = ( (IPeak) Peaks.elementAt( i ) ).getUnrotQ();
             double x = qvec[ 0 ] * qNormal[ 0 ] + qvec[ 1 ] * qNormal[ 1 ]
                      + qvec[ 2 ] * qNormal[ 2 ];
             x = x / Lsq;
