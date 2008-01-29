@@ -31,6 +31,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.13  2008/01/29 19:44:46  rmikk
+ * Replaced Peak by IPeak
+ *
  * Revision 1.12  2006/07/10 22:10:21  dennis
  * Removed unused imports after refactoring to use new Parameter GUIs
  * in gov.anl.ipns.Parameters.
@@ -101,6 +104,7 @@ import java.util.Vector;
 import DataSetTools.operator.DataSet.Attribute.LoadOrientation;
 import DataSetTools.operator.Generic.TOF_SCD.GenericTOF_SCD;
 import DataSetTools.operator.Generic.TOF_SCD.Peak;
+import DataSetTools.operator.Generic.TOF_SCD.IPeak;
 import DataSetTools.util.SharedData;
 import gov.anl.ipns.Util.Sys.*;
 /**
@@ -331,9 +335,9 @@ public class IndexJ_base extends    GenericTOF_SCD implements
     // read in the orientation matrix
     float[][] UB= matrix;
        // add the orientation matrix to all of the peaks with valid run numbers
-    Peak peak=null;
+    IPeak peak=null;
     for( int i=0 ; i<peaks.size() ; i++ ){
-      peak=(Peak)peaks.elementAt(i);
+      peak=(IPeak)peaks.elementAt(i);
       if(indexpeak(peak,runs,seqs))
         peak.UB(UB);
       /*else{
@@ -351,7 +355,7 @@ public class IndexJ_base extends    GenericTOF_SCD implements
     log.append("Iobs     intI    DintI flag   run det\n");
     // unindex peaks outside of the given deltas
     for( int i=0 ; i<peaks.size() ; i++ ){
-      peak=(Peak)peaks.elementAt(i);
+      peak=(IPeak)peaks.elementAt(i);
       if( ! indexpeak(peak,runs,seqs) ) continue;
 
       float hMod=Math.abs(peak.h()-Math.round(peak.h()));
@@ -362,7 +366,10 @@ public class IndexJ_base extends    GenericTOF_SCD implements
 
       if( (delta_h<=hMod) || (delta_k<=kMod) || (delta_l<=lMod) ){
         peak.UB(null);
-        peak.sethkl(0f,0f,0f,false);
+        if( peak instanceof Peak)
+          ((Peak)peak).sethkl(0f,0f,0f,false);
+        else
+           peak.sethkl(0f,0f,0f);
         peak.reflag(0);
       }else{
         peak.reflag(crystallite);
@@ -392,7 +399,7 @@ public class IndexJ_base extends    GenericTOF_SCD implements
    * Determine whether or not to update the peak by checking it
    * against the list of allowed run numbers and sequence numbers
    */
-  private static boolean indexpeak(Peak peak, int[] runs, int[] seqs){
+  private static boolean indexpeak(IPeak peak, int[] runs, int[] seqs){
     boolean good_run=(runs==null);
     boolean good_seq=(seqs==null);
 
@@ -434,11 +441,11 @@ public class IndexJ_base extends    GenericTOF_SCD implements
    * of peaks that have indices.
    */
   private static String getNumIndexed(Vector peaks,int[]runs, int[]seqs, Vector Stats){
-    Peak peak=null;
+    IPeak peak=null;
     int numIndexed=0;
     int numNotIndexed=0;
     for( int i=0 ; i<peaks.size() ; i++ ){
-      peak=(Peak)peaks.elementAt(i);
+      peak=(IPeak)peaks.elementAt(i);
       if(indexpeak(peak,runs,seqs))
          if( peak.h()!=0 || peak.k()!=0 || peak.l()!=0 )
             numIndexed++;
