@@ -29,6 +29,11 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.27  2008/01/29 19:15:06  rmikk
+ * Now extends IPeak.
+ * Implements several createPeak methods and read/writePeak methods
+ *   (untested)
+ *
  * Revision 1.26  2005/03/03 22:02:40  dennis
  * Fixed "nearedge()" method, so that any peak that is outside of the
  * specified range is flagged.
@@ -125,8 +130,10 @@
 package DataSetTools.operator.Generic.TOF_SCD;
 
 import gov.anl.ipns.MathTools.LinearAlgebra;
-import gov.anl.ipns.MathTools.Geometry.Tran3D;
+import gov.anl.ipns.MathTools.Geometry.*;
 
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.text.DecimalFormat;
 
 import DataSetTools.dataset.XScale;
@@ -137,7 +144,7 @@ import DataSetTools.math.tof_calc;
  * isotope.
  */
 
-public class Peak{
+public class Peak  implements IPeak_IPNS_out{
   // instance variables
   private int       seqnum   = 0;
   private float     h        = 0;
@@ -307,6 +314,14 @@ public class Peak{
     }
   }
   
+  public float time(){
+     if(Float.isNaN( z )||Float.isNaN( T0 )|| Float.isNaN( T1 ))
+        return Float.NaN;
+     float f = z-(float)Math.floor( z );
+     
+     return f*T0+(1-f)*T1;
+     
+  }
   public void time( XScale time){
     this.xscale=time;
   }
@@ -933,7 +948,7 @@ public class Peak{
   /**
    * Despite its name this actually calculates 1/d (Qvec/2PI).
    */
-  private float[] getQ(){
+  public float[] getQ(){
     float[] post_d = new float[3];
     float[] post_a = new float[3];
     float[] post_l = new float[3];
@@ -948,6 +963,45 @@ public class Peak{
     post_d[2]=(float)(this.ycm/(r*this.wl));
     
     // rotate the detector to where it actually is
+   
+    double deta = this.detA*Math.PI/180.;
+    double cosa=Math.cos(deta);
+    double sina=Math.sin(deta);
+    post_a[0]=(float)( post_d[0]*cosa - post_d[1]*sina);
+    post_a[1]=(float)( post_d[0]*sina + post_d[1]*cosa);
+    post_a[2]=post_d[2];
+      
+    // translate the origin
+    post_l[0]=post_a[0]-(float)(1./this.wl);
+    post_l[1]=post_a[1];
+    post_l[2]=post_a[2];
+
+    return post_l;
+  }
+  
+  /**
+   * Despite its name this actually calculates 1/d (Qvec/2PI).
+   */
+  public float[] getQ1(){//Gave slightly different results than the above
+                         // even if detA2 was 0
+    float[] post_d;
+    float[] post_a = new float[3];
+    float[] post_l = new float[3];
+    
+    // rotate center by detA2 in x-z plane. Then go xcm,ycm in -y dir an z dir
+    //  to find corresponding position of peak.
+    double deta2 = detA2/180*Math.PI;
+    Vector3D Pos= new Vector3D( (float)(detD*Math.cos( deta2 )),
+                                 -xcm,
+                                (float)(detD*Math.sin( deta2 ))+ycm);
+    
+    //Convert to length = wl. 
+    float r= Pos.length()*wl;
+    Pos.multiply( 1/r );
+    
+    post_d = Pos.get();
+    
+    //Next rotate detA about x axis
     double deta = this.detA*Math.PI/180.;
     double cosa=Math.cos(deta);
     double sina=Math.sin(deta);
@@ -1160,4 +1214,268 @@ public class Peak{
     }
     return rs;
   }
+
+/* (non-Javadoc)
+ * @see DataSetTools.operator.Generic.TOF_SCD.IPeak#createNewPeakhkl(float, float, float, float[][])
+ */
+@Override
+public IPeak createNewPeakhkl( float h , float k , float l , float[][] UB ) {
+
+   Peak p_new =(Peak)clone();
+   p_new.UB(UB);
+   p_new.sethkl( h , k , l );
+   return p_new;
+}
+
+/* (non-Javadoc)
+ * @see DataSetTools.operator.Generic.TOF_SCD.IPeak#createNewPeakxyz(float, float, float)
+ */
+@Override
+public IPeak createNewPeakxyz( float x , float y , float z ) {
+
+   // TODO Auto-generated method stub   
+   Peak p_new =(Peak)clone();
+  
+   p_new.pixel( x,y,z );
+   return p_new;
+   
+}
+
+public static String getLine( InputStream f){
+   String line = "";
+   int c;
+   try{
+    for(c= f.read(); c <32 && c>=0;c =f.read()){}
+      if( c >=32){
+         line+=(char)c;
+      }else
+         return null;//end of file
+   for( c=f.read(); c>=32;c=f.read())
+      line +=(char)c;
+   }catch(Exception ss){
+      return null;
+   }
+   return line;
+}
+
+/* (non-Javadoc)
+ * @see DataSetTools.operator.Generic.TOF_SCD.IPeak#readPeak(java.io.InputStream, java.lang.String, java.lang.String)
+ */
+@Override
+public IPeak readPeak( InputStream f , String Facility , String Instrument ) {
+
+   if( Facility != null && !Facility.equals("IPNS"))
+      return null;
+   if( Instrument != null && !Instrument.equals("SCD"))
+      return null;
+   
+   
+   String line = getLine( f);
+   String[] items = line.split( "[ ]++ " );
+   if( items == null || items.length < 1)
+      return null;
+   while( items[0].trim().equals( "0" )){
+      line = getLine( f);
+      items = line.split( "[ ]++ " );
+      if( items == null || items.length < 1)
+         return null;
+      if( !items[0].toUpperCase().equals( "NRUN" ))
+         return null;
+   }
+   Peak pk =(Peak)this.clone();;
+   while( ! items[0].trim().equals("2")){
+      if( items[0].equals( "3" ))
+      try{
+         pk = new Peak(new Integer(items[0].trim()).intValue(),
+                  Float.NaN,Float.NaN,Float.NaN,-1,
+                  new Integer(items[1].trim()).intValue(),
+                  new Integer(items[2].trim()).intValue());
+         pk.sample_orient( new Float(items[6]).floatValue() ,
+                  new Float(items[7]).floatValue()  , 
+                 new Float(items[8]).floatValue()  );
+         pk.monct( new Float(items[9]).floatValue()  );
+         pk.detA(new Float(items[3]).floatValue()  );
+         pk.detA2(new Float(items[4]).floatValue()  );
+         pk.detD(new Float(items[5]).floatValue()  );
+         
+         line = getLine(f);
+         if( line == null)
+            return null;
+         items = line.split( "[ ]++" );
+         if( items == null || items.length < 1){
+            items = new String[1];
+            items[0]="x";
+         }
+            
+         
+      }catch(Exception s){
+         return null;
+      }
+      else{
+         line = getLine(f);
+         if( line == null)
+            return null;
+         items = line.split( "[ ]++" );
+         if( items == null || items.length < 1){
+            items = new String[1];
+            items[0]="x";
+         }
+      }
+   }
+     
+   if( items.length !=17)
+      return null;
+   pk.seqnum( (new Integer(items[1].trim())).intValue());
+   pk.sethkl( (new Float(items[2].trim()).floatValue()) ,
+            (new Float(items[3].trim()).floatValue()), 
+            (new Float(items[4].trim()).floatValue()) );
+   pk.pixel((new Float(items[5].trim()).floatValue()) ,
+            (new Float(items[6].trim()).floatValue()), 
+            (new Float(items[7].trim()).floatValue()) );
+   pk.real( new Float(items[8].trim()).floatValue() ,
+            (new Float(items[9].trim()).floatValue()), 
+            (new Float(items[10].trim()).floatValue()) );
+            
+   pk.ipkobs( (new Integer(items[11].trim())).intValue() );
+   pk.inti( (new Float(items[12].trim()).floatValue()) );
+   pk.sigi( (new Float(items[13].trim()).floatValue()) );
+   pk.reflag( (new Integer(items[14].trim())).intValue() );
+   
+   
+   return pk;
+}
+
+/* (non-Javadoc)
+ * @see DataSetTools.operator.Generic.TOF_SCD.IPeak#readPeak(java.io.InputStream)
+ */
+@Override
+public IPeak readPeak( InputStream f ) {
+   
+   return readPeak( f, null, null);
+
+   // TODO Auto-generated method stub
+  
+}
+
+
+/* (non-Javadoc)
+ * @see DataSetTools.operator.Generic.TOF_SCD.IPeak#setFacility(java.lang.String)
+ */
+@Override
+public void setFacility( String facilityName ) {
+
+   if( facilityName != null && !facilityName.equals( "IPNS" ))
+      throw new IllegalArgumentException("These peaks are only for IPNS");
+   
+}
+
+/* (non-Javadoc)
+ * @see DataSetTools.operator.Generic.TOF_SCD.IPeak#setInstrument(java.lang.String)
+ */
+@Override
+public void setInstrument( String instrumentName ) {
+
+   if( instrumentName != null && !instrumentName.equals("SCD"))
+      throw new IllegalArgumentException("These peaks are only for SCD instruments at IPNS");
+      
+   
+}
+
+/* (non-Javadoc)
+ * @see DataSetTools.operator.Generic.TOF_SCD.IPeak#writePeak(java.io.OutputStream, DataSetTools.operator.Generic.TOF_SCD.IPeak, java.lang.String, java.lang.String)
+ */
+@Override
+public void writePeak( OutputStream f , IPeak prevPeak , String Facility ,
+         String Instrument ) {
+
+
+   if( Facility != null && !Facility.equals("IPNS"))
+      throw new IllegalArgumentException("These peaks are only for IPNS");
+   if( Instrument != null && !Instrument.equals("SCD"))
+      throw new IllegalArgumentException("These peaks are only for SCD instruments at IPNS");
+   
+   writePeak( f, prevPeak);
+   
+}
+
+
+private void writeCommon( OutputStream f){
+   try{ 
+      f.write( "0  NRUN DETNUM    DETA   DETA2    DETD     CHI     PHI   OMEGA   MONCNT\n".getBytes() );
+      
+
+      String format ="1 %i5 %i6 %f7.2 %f7.2 %f7.2 %f7.2 %f7.2 %f7.2 %f7.2 %i8\n";
+      String S =String.format( format ,nrun(),detnum(),detA(),detA2(),detD(), chi(),phi(),
+                     omega(),monct());
+      f.write(  S.getBytes() );
+      
+      f.write( "2  SEQN   H   K   L      X      Y      Z    XCM    YCM      WL   IPK     INTI     SIGI RFLG  NRUN DN\n".getBytes() );
+   
+   }catch(Exception ss){
+      System.out.println("Error printing header for detID ="+detnum);
+   }
+   
+}
+private boolean differ( float f1, float f2){
+   if( Float.isNaN( f1 ) && Float.isNaN( f2 ))
+      return true;
+   if( f1 !=f2)
+      return false;
+   return true;
+}
+
+private boolean differ( int n1, int n2){
+   if( n1 == n2)
+      return true;
+   return false;
+}
+private boolean needWriteHeader( Peak prevPeak){
+   if( differ(chi(),prevPeak.chi()))
+      return true;
+   if( differ(phi(),prevPeak.phi()))
+      return true;
+   if( differ(omega(),prevPeak.omega()))
+      return true;
+   if( differ(nrun(),prevPeak.nrun()))
+      return true;
+
+   if( differ(detA(),prevPeak.detA()))
+      return true;
+   if( differ(detA2(),prevPeak.detA2()))
+      return true;
+   if( differ(detD(),prevPeak.detD()))
+      return true;
+   if( differ(detnum(),prevPeak.detnum()))
+      return true;
+
+   if( differ(monct(),prevPeak.monct()))
+      return true;
+   return false;
+}
+
+private int rr( float h){
+     return (int) Math.floor( h+.5);
+}
+/* (non-Javadoc)
+ * @see DataSetTools.operator.Generic.TOF_SCD.IPeak#writePeak(java.io.OutputStream, DataSetTools.operator.Generic.TOF_SCD.IPeak)
+ */
+@Override
+public void writePeak( OutputStream f , IPeak prevPeak ) {
+    if( !(prevPeak instanceof Peak))
+       throw new IllegalArgumentException("Can only write IPNS SCD peaks with this class");
+    
+    if( needWriteHeader( (Peak)prevPeak))
+       writeCommon(f);
+    String format ="%i1 %i6 %i3 %i3 %i3 %f6.2 %f6.2 %f6.2 %f6.2 %f6.2 %f7.4 %i5"+
+        " %f8.2 %i %i5 %i2\n";
+    String S =String.format( format ,3, seqnum(), rr(h()),rr(k()),rr(l()),x(), 
+             y(),z(),xcm(),ycm(),wl(),ipkobs(),inti(),sigi(),reflag(),nrun(),
+             detnum());
+    try{
+       f.write( S.getBytes());
+    }catch(Exception ss){
+       System.out.println("Error writing peak "+ seqnum()+" . "+ ss.toString());
+    }
+   
+}
 }
