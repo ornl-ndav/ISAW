@@ -14,7 +14,7 @@ SelectByIndex(datasets[1],"55","Set Selected")
 
 screen_dev =DisplayDevice("Screen")
 preview_dev=DisplayDevice("Preview")
-file_dev   =DisplayDevice("File","c:/TestFile.jpg")
+file_dev   =DisplayDevice("File","C:/TestFile.jpg")
 Display "Screen Bounds"& getBounds(screen_dev)
 #Display "Screen Bounds"& getBounds(file_dev)
 Display "preview Bounds"& getBounds(preview_dev)
@@ -52,4 +52,4 @@ setRegion( print_dev, 0,h,w,h)
 DisplayGraph( print_dev, displayable, false)
 print( print_dev)
 
-Display "DDONE"
+Display "DONE"
