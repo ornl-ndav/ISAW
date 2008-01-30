@@ -30,6 +30,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.2  2008/01/30 16:03:44  rmikk
+ * Removed second GPL and added documentation
+ *
  * Revision 1.1  2008/01/30 15:18:04  rmikk
  * Initial checkin
  *
@@ -41,62 +44,31 @@ import javax.swing.JFileChooser;
 import Command.Script_Class_List_Handler;
 import java.text.*;
 
-/*
- * File: XplorUB.java 
- *             
- * Copyright (C) 2005, Ruth Mikkelson
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
- *
- * Contact : Ruth Mikkelson <mikkelsonr@uwstout.edu>
- *           Department of Mathematics, Statistics and Computer Science
- *           University of Wisconsin-Stout
- *           Menomonie, WI 54751, USA
- *
- * This work was supported by the Intense Pulsed Neutron Source Division
- * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
- * This work was supported by the National Science Foundation under
- * grant number DMR-0218882
- *
- * For further information, see <http://www.pns.anl.gov/ISAW/>
- *
- *
- * Modified:
- *
- * $Log$
- * Revision 1.1  2008/01/30 15:18:04  rmikk
- * Initial checkin
- *
- * 
- * */
+
 import DataSetTools.operator.Generic.TOF_SCD.*;
 /**
+ * 
+ * This class is just a front-end testing program for the class
+ * DataSetTools.operator.Generic.TOF_SCD.GetUB. The testing breaks down
+ * the steps and allows for examining intermediate results.
+ * 
  * @author Ruth
  *
  */
 public class XplorUB {
 
    /**
-    * 
+    * Constructor
     */
    public XplorUB() {
 
       super();
-      // TODO Auto-generated constructor stub
+     
    }
    
+   /**
+    * Displays the format for using this program
+    */
    public static void showUsage(){
       System.out.println(" To invoke this application either");
       System.out.println("   1. Java XplorUB  PeaksFilename");
@@ -111,6 +83,12 @@ public class XplorUB {
    
   }
    
+  /**
+   * Displays the elements in a List assuming List elements are candidates for 
+   * plane normals
+   * @param List  The list of plane normals along with other statistics
+   * @param Nelements The number of relevent elements in the lis
+   */
   public static void showList( float[][] List, int Nelements){
      System.out.println("------------Candidates for Plane Normals"+"" +
                                                   "---------------------");
@@ -150,13 +128,18 @@ public class XplorUB {
      }
   }
   
+  /**
+   * Displays the correlations for the projections of the peaks to the last set line
+   * @param correlations  A list of auto correlations starting with a lag of 2
+   * @param start   The lag
+   */
   public static void showCorrs( float[] correlations, int start){
      java.text.DecimalFormat dform3 =new java.text.DecimalFormat(" 000 ;-000 ");
      java.text.DecimalFormat dform1 =new java.text.DecimalFormat(" 0.0000 ;-0.0000 ");
      StringBuffer sb = new StringBuffer(86);
      sb.append(" 0   :");
      if( start > 0) sb.append("------- ------- ");
-     for( int i=0; i<GetUB.xixj.length;i++){
+     for( int i=0; i< GetUB.xixj.length;i++){
         sb =dform1.format((double)correlations[i],sb, new FieldPosition( NumberFormat.FRACTION_FIELD));
         if( (i+1+start)%10 ==0){
            System.out.println( sb);
@@ -170,6 +153,11 @@ public class XplorUB {
      
   }
   
+  
+  /**
+   * Displays the result of projecting the peaks onto a line in the last set direction
+   * @param line  The list of total intensities in the various bins. 
+   */
   public static void showLine( float[] line){
      java.text.DecimalFormat dform3 =new java.text.DecimalFormat(" 00000 ;-00000 ");
      java.text.DecimalFormat dform1 =new java.text.DecimalFormat(" 0000000.00 ;-0000000.00 ");
@@ -192,7 +180,10 @@ public class XplorUB {
   
 
    /**
-    * @param args
+    * This program is a front-end testing program for the class
+    * DataSetTools.operator.Generic.TOF_SCD.GetUB. The testing breaks down
+    * the steps and allows for examining intermediate results.
+    * @param args  the filename containing the information about the peaks
     */
    public static void main( String[] args ) {
       String PeaksFileName = null;
