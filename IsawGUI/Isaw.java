@@ -31,6 +31,13 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.279  2008/01/30 18:26:19  dennis
+ *  Removed named constants related to the choice of DataSet viewers,
+ *  since this is now handled in a consistent way by the class:
+ *  DataSetTools/components/ui/UnifiedViewMenu.java
+ *  Commented out the private method sizeHTMLViewer which is not
+ *  currently used.
+ *
  *  Revision 1.278  2007/12/07 00:10:13  amoe
  *  Made the splash screen only be displayed until the Isaw frame is visible.
  *
@@ -842,17 +849,7 @@ public class Isaw
   private static final String REMOVE_NODE_MI     = "Remove Highlighted Node(s)";
 
   private static final String VIEW_M             = "View";
-  private static final String IMAGE_VIEW_MI      = IViewManager.IMAGE;
-  private static final String SCROLL_VIEW_MI     = IViewManager.SCROLLED_GRAPHS;
-  private static final String HKL_SLICE_VIEW_MI  = IViewManager.HKL_SLICE;
-  private static final String SELECTED_VIEW_MI   = IViewManager.SELECTED_GRAPHS;
-  private static final String DIFFERENCE_VIEW_MI = IViewManager.DIFFERENCE_GRAPH;
-  private static final String THREED_VIEW_MI     = IViewManager.THREE_D;
-  private static final String TABLE_VIEW_MI      = IViewManager.TABLE;
-  private static final String CONTOUR_VIEW_MI    = IViewManager.CONTOUR;
   private static final String LOG_VIEW_MI        = "Log View";
-
-  private static final String INSTR_VIEW_M       = "Instrument Info";
 
   private static final String MACRO_M            = "Macros";
   
@@ -2664,6 +2661,7 @@ public class Isaw
     return pairs;
   }
 
+  /*
   private void sizeHTMLViewer( HTMLPage H, float w, float h){
       if( !H.isValid())
          return;
@@ -2679,6 +2677,7 @@ public class Isaw
           SharedData.addmsg("CANNOT FIND HELP FILE");
       }
   }
+  */
 
   /**
    * organizes a number of selections on the tree into a
