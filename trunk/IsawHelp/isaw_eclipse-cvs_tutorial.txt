@@ -1,0 +1,52 @@
+To use Eclipse for ISAW development and CVS access.
+-This document was prepared using Eclipse 3.1.1.
+
+Run Eclipse and start with a clean workspace.
+At each stage of this procedure you may have to wait for Eclipse to finish 
+trying (and failing since we are not completely set up) to build everything.
+
+- I recommend deselecting Project->Build Automatically at this point.
+- Select File->New->Project.
+- Select CVS->Checkout project from CVS.
+- Click "Next".
+- In the "Host to:" text field, input:  "gandalf.pns.anl.gov" 
+  or "arwen.pns.anl.gov"
+- (for onsite or offsite access)In "Repository Path to:", input: 
+  "/usr/local/cvsroot"
+- Fill in username and password 
+- Connection type to: "extssh" or "ext". (This choice depends on if you are 
+  using anything except for Eclipse to do CVS access. If you use only Eclipse 
+  then select extssh if you need to use other CVS tools use ext and make sure 
+  to define the environment variable CVS_RSH properly.)
+- Specify module name "ISAW".
+- Click "Next".
+- Select "Check out as project configured using the New Project Wizard".
+- Click "Next".
+- Leave the Tag field blank and click "Finish".
+- In the project wizard select "Java Project" & click "Next".
+- For the Project Name type in "ISAW" and click "Next".
+- Click "Finished".
+- Now, copy the following Jar files into one directory (one directory for 
+  convenience): sgt_v2.jar, jhall.jar, jnexus.jar, jogl.jar, jython.jar, 
+  sdds.jar, servlet.jar.
+- Right click on ISAW project & select "Build Path"->"Configure Build Path...".
+- On "Libraries" tab, select "Add External JARs.." and add the jarfiles listed 
+  above.
+- On "Order and Export" tab select all of the Jar files for sharing with other 
+  projects (i.e. check the box for each).
+- Close this box by clicking OK.
+- Select File->import.
+- Select "Checkout projects from CVS".
+- Select "Use existing repository location". Click "Next".
+- Specify module "IPNS" and click "Next"
+- Select "Check out into existing project" and click "Next"
+- Choose IPNS as the target folder and ISAW as the parent folder.
+- Click "Next"
+- Leave Tag blank and Click "Next"
+- Package will download into the specified project. Repeat this procedure for 
+  gov, SSG_Tools & ISIS.
+- Note that when asked about the repository you can now select the existing 
+  repository.
+- Make sure to recheck Projects->Build Automatically .
+- At this point, things should build and all of the errors should be gone.
+- If things do not rebuild select File->Refresh.
