@@ -38,6 +38,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.35  2003/10/15 03:56:37  bouzekc
+ *  Fixed javadoc errors.
+ *
  *  Revision 1.34  2003/09/04 15:01:38  rmikk
  *  2nd Detector now works
  *
@@ -1101,9 +1104,10 @@ public class ContourView extends DataSetViewer
                      ContourView.clevelsFrom(new ClosedInterval( min, max))) );
 
      }
-   /** Standalone to get Contour views of Qx,Qy,Qz
-   * @param  args[0]  The filename with the data set
-   * @param  args[1]  OPTIONAL, the histogram to view
+   /** 
+    * Standalone to get Contour views of Qx,Qy,Qz
+   * @param  args  args[0] = The filename with the data set
+   *               args[1] = OPTIONAL, the histogram to view
    */
   public static void main( String[] args)
    { if( args == null)
