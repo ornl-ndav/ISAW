@@ -41,7 +41,12 @@ cp $ISAW/gov/anl/ipns/ViewTools/UI/SplitPaneWithState.java     gov/anl/ipns/View
 cp $ISAW/gov/anl/ipns/ViewTools/UI/TextRangeUI.java            gov/anl/ipns/ViewTools/UI
 cp $ISAW/gov/anl/ipns/ViewTools/UI/TextValueUI.java            gov/anl/ipns/ViewTools/UI
 
+mkdir gov/anl/ipns/ViewTools/UI/ValuatorPanels/
+cp $ISAW/gov/anl/ipns/ViewTools/UI/ValuatorPanels/*.java   gov/anl/ipns/ViewTools/UI/ValuatorPanels
+
+
 cp -rf $ISAW/gov/anl/ipns/ViewTools/Components           gov/anl/ipns/ViewTools 
+rm -rf gov/anl/ipns/ViewTools/Components/ComponentView
 rm  gov/anl/ipns/ViewTools/Components/OneD/DifferenceViewComponent.java
 
 #
@@ -112,6 +117,13 @@ cp    $ISAW/gov/anl/ipns/Util/Sys/ColorSelector.java                 gov/anl/ipn
 cp    $ISAW/gov/anl/ipns/Util/Sys/DocumentIO.java                    gov/anl/ipns/Util/Sys
 cp    $ISAW/gov/anl/ipns/Util/Sys/SaveDocToFileListener.java         gov/anl/ipns/Util/Sys
 cp    $ISAW/gov/anl/ipns/Util/Sys/ClearDocListener.java              gov/anl/ipns/Util/Sys
+cp    $ISAW/gov/anl/ipns/Util/Sys/FinishWindowListener.java          gov/anl/ipns/Util/Sys
+cp    $ISAW/gov/anl/ipns/Util/Sys/FinishJFrame.java                  gov/anl/ipns/Util/Sys
+cp    $ISAW/gov/anl/ipns/Util/Sys/IFinish.java                       gov/anl/ipns/Util/Sys
+
+mkdir gov/anl/ipns/Util/SpecialStrings
+cp    $ISAW/gov/anl/ipns/Util/SpecialStrings/ErrorString.java        gov/anl/ipns/Util/SpecialStrings
+cp    $ISAW/gov/anl/ipns/Util/SpecialStrings/SpecialString.java      gov/anl/ipns/Util/SpecialStrings
 
 #
 # Character input filters used by some view controls
@@ -122,6 +134,7 @@ cp -rf $ISAW/gov/anl/ipns/Util/StringFilter                          gov/anl/ipn
 # Messaging stuff used by Contour map
 #
 mkdir gov/anl/ipns/Util/Messaging
+cp     $ISAW/gov/anl/ipns/Util/Messaging/IObs*.java              gov/anl/ipns/Util/Messaging
 cp -rf $ISAW/gov/anl/ipns/Util/Messaging/Property                gov/anl/ipns/Util/Messaging
 cp -rf $ISAW/gov/anl/ipns/Util/Messaging/Information             gov/anl/ipns/Util/Messaging
 
