@@ -1218,7 +1218,6 @@ public class Peak  implements IPeak_IPNS_out{
 /* (non-Javadoc)
  * @see DataSetTools.operator.Generic.TOF_SCD.IPeak#createNewPeakhkl(float, float, float, float[][])
  */
-@Override
 public IPeak createNewPeakhkl( float h , float k , float l , float[][] UB ) {
 
    Peak p_new =(Peak)clone();
@@ -1230,7 +1229,6 @@ public IPeak createNewPeakhkl( float h , float k , float l , float[][] UB ) {
 /* (non-Javadoc)
  * @see DataSetTools.operator.Generic.TOF_SCD.IPeak#createNewPeakxyz(float, float, float)
  */
-@Override
 public IPeak createNewPeakxyz( float x , float y , float z ) {
 
    // TODO Auto-generated method stub   
@@ -1261,7 +1259,6 @@ public static String getLine( InputStream f){
 /* (non-Javadoc)
  * @see DataSetTools.operator.Generic.TOF_SCD.IPeak#readPeak(java.io.InputStream, java.lang.String, java.lang.String)
  */
-@Override
 public IPeak readPeak( InputStream f , String Facility , String Instrument ) {
 
    if( Facility != null && !Facility.equals("IPNS"))
@@ -1348,7 +1345,6 @@ public IPeak readPeak( InputStream f , String Facility , String Instrument ) {
 /* (non-Javadoc)
  * @see DataSetTools.operator.Generic.TOF_SCD.IPeak#readPeak(java.io.InputStream)
  */
-@Override
 public IPeak readPeak( InputStream f ) {
    
    return readPeak( f, null, null);
@@ -1361,7 +1357,6 @@ public IPeak readPeak( InputStream f ) {
 /* (non-Javadoc)
  * @see DataSetTools.operator.Generic.TOF_SCD.IPeak#setFacility(java.lang.String)
  */
-@Override
 public void setFacility( String facilityName ) {
 
    if( facilityName != null && !facilityName.equals( "IPNS" ))
@@ -1372,7 +1367,6 @@ public void setFacility( String facilityName ) {
 /* (non-Javadoc)
  * @see DataSetTools.operator.Generic.TOF_SCD.IPeak#setInstrument(java.lang.String)
  */
-@Override
 public void setInstrument( String instrumentName ) {
 
    if( instrumentName != null && !instrumentName.equals("SCD"))
@@ -1384,7 +1378,6 @@ public void setInstrument( String instrumentName ) {
 /* (non-Javadoc)
  * @see DataSetTools.operator.Generic.TOF_SCD.IPeak#writePeak(java.io.OutputStream, DataSetTools.operator.Generic.TOF_SCD.IPeak, java.lang.String, java.lang.String)
  */
-@Override
 public void writePeak( OutputStream f , IPeak prevPeak , String Facility ,
          String Instrument ) {
 
@@ -1413,9 +1406,9 @@ private void writeCommon( OutputStream f){
    
    }catch(Exception ss){
       System.out.println("Error printing header for detID ="+detnum);
-   }
-   
+   }   
 }
+
 private boolean differ( float f1, float f2){
    if( Float.isNaN( f1 ) && Float.isNaN( f2 ))
       return true;
@@ -1429,6 +1422,7 @@ private boolean differ( int n1, int n2){
       return true;
    return false;
 }
+
 private boolean needWriteHeader( Peak prevPeak){
    if( differ(chi(),prevPeak.chi()))
       return true;
@@ -1456,10 +1450,10 @@ private boolean needWriteHeader( Peak prevPeak){
 private int rr( float h){
      return (int) Math.floor( h+.5);
 }
+
 /* (non-Javadoc)
  * @see DataSetTools.operator.Generic.TOF_SCD.IPeak#writePeak(java.io.OutputStream, DataSetTools.operator.Generic.TOF_SCD.IPeak)
  */
-@Override
 public void writePeak( OutputStream f , IPeak prevPeak ) {
     if( !(prevPeak instanceof Peak))
        throw new IllegalArgumentException("Can only write IPNS SCD peaks with this class");
