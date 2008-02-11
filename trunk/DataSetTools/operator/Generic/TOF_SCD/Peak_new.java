@@ -243,6 +243,7 @@ public class Peak_new implements IPeak_IPNS_out {
          update_xcm_ycm_wl();
       }
   }
+
 /**
  *  Creates a new Peaks_new object from the information below
  *  
@@ -306,6 +307,7 @@ public class Peak_new implements IPeak_IPNS_out {
    return Res;
    
  }
+ 
  /*
 public static Peak_new getNewPeak_hkl( DataSet DS, int GridID, float h, float k, float l, float[][]UB){
     
@@ -375,9 +377,6 @@ public static Peak_new getNewPeak_hkl( DataSet DS, int GridID, float h, float k,
    
     return this.seqnum();
   }
-  
-  
- 
   
 
   public float detA2(){
@@ -493,9 +492,7 @@ public static Peak_new getNewPeak_hkl( DataSet DS, int GridID, float h, float k,
     if( Float.isNaN(this.t) )
        t=T0 +(z-(float)Math.floor(t))*(T1-T0);
    
-  }
-
-  
+  }  
   
 
   // Sets T0  and T1  to the bin boudaries of the xscale with channel z.
@@ -1205,7 +1202,6 @@ public static Peak_new getNewPeak_hkl( DataSet DS, int GridID, float h, float k,
   /* (non-Javadoc)
  * @see DataSetTools.operator.Generic.TOF_SCD.IPeak#createNewPeakhkl(float, float, float, float[][])
  */
-@Override
 public IPeak createNewPeakhkl( float h , float k , float l , float[][] UB ) {
    
    if( UB == null)
@@ -1237,24 +1233,23 @@ public IPeak createNewPeakhkl( float h , float k , float l , float[][] UB ) {
    return new Peak_new(x,y,z, grid, this.orient,this.timeAdjustment,
                this.xscale, this.L1);
 }
+
 /* (non-Javadoc)
  * @see DataSetTools.operator.Generic.TOF_SCD.IPeak#createNewPeakxyz(float, 
  *                    float, float)
  */
-@Override
 public IPeak createNewPeakxyz( float x , float y , float z ) {
 
    Peak_new Res = new Peak_new( x,y,z,grid, orient, timeAdjustment,xscale, L1);
    Res.setInstrument(  this.InstrumentName );
    Res.setFacility( this.FacilityName);
    Res.nrun( nrun );
-   return Res;
-   
+   return Res;   
 }
+
 /* (non-Javadoc)
  * @see DataSetTools.operator.Generic.TOF_SCD.IPeak#detnum()
  */
-@Override
 public int detnum() {
 
    
@@ -1313,7 +1308,6 @@ public static IPeak readHeader( String S){
       return new Peak();
    }else
       return null;
-   
 }
 
   private Peak_new getPeakInfo( InputStream f, String line){
@@ -1399,16 +1393,12 @@ public static IPeak readHeader( String S){
      XScale xscl = new UniformXScale( startTime, endTime, nTimes);
      
      return new Peak_new( Float.NaN,Float.NaN, Float.NaN, grid, sampOrient,
-              T0, xscl,L1);
-    
-     
-  
-    
+              T0, xscl,L1);  
   }
-/* (non-Javadoc)
+
+  /* (non-Javadoc)
  * @see DataSetTools.operator.Generic.TOF_SCD.IPeak#readPeak(java.io.InputStream, java.lang.String, java.lang.String)
  */
-@Override
 public IPeak readPeak( InputStream f , String Facility , String Instrument ) {
 
    
@@ -1458,39 +1448,35 @@ public IPeak readPeak( InputStream f , String Facility , String Instrument ) {
     pk1.ipkobs( pkobs );
     return pk1;
 }
+
 /* (non-Javadoc)
  * @see DataSetTools.operator.Generic.TOF_SCD.IPeak#readPeak(java.io.InputStream)
  */
-@Override
 public IPeak readPeak( InputStream f ) {
 
-  return readPeak( f, FacilityName, InstrumentName);
-   
+  return readPeak( f, FacilityName, InstrumentName);   
 }
+
 /* (non-Javadoc)
  * @see DataSetTools.operator.Generic.TOF_SCD.IPeak#setFacility(java.lang.String)
  */
-@Override
 public void setFacility( String facilityName ) {
 
-  this.FacilityName = facilityName;
-   
+  this.FacilityName = facilityName;   
 }
+
 /* (non-Javadoc)
  * @see DataSetTools.operator.Generic.TOF_SCD.IPeak#setInstrument(java.lang.String)
  */
-@Override
 public void setInstrument( String instrumentName ) {
 
    this.InstrumentName = instrumentName;
-   
 }
+
 /* (non-Javadoc)
  * @see DataSetTools.operator.Generic.TOF_SCD.IPeak#time()
  */
-@Override
 public float time() {
-
    
    return this.t;
 }
@@ -1522,9 +1508,7 @@ private boolean SameHeader( IPeak prevPeak){
    if( ppeak.xscale !=xscale)
       return false;
    
-   return true;
-      
-      
+   return true; 
 }
 
  private void writeHeader( OutputStream f){
@@ -1570,14 +1554,12 @@ private boolean SameHeader( IPeak prevPeak){
       
     }catch( Exception s){
        return;
-    }
-    
-    
+    }   
  }
+ 
 /* (non-Javadoc)
  * @see DataSetTools.operator.Generic.TOF_SCD.IPeak#writePeak(java.io.OutputStream, DataSetTools.operator.Generic.TOF_SCD.IPeak, java.lang.String, java.lang.String)
  */
-@Override
 public void writePeak( OutputStream f , IPeak prevPeak , String Facility ,
          String Instrument ) {
 
@@ -1600,19 +1582,17 @@ public void writePeak( OutputStream f , IPeak prevPeak , String Facility ,
          seqnum = 0;
       else 
          seqnum--;
-   }
-   
-   
+   }  
 }
+
 /* (non-Javadoc)
  * @see DataSetTools.operator.Generic.TOF_SCD.IPeak#writePeak(java.io.OutputStream, DataSetTools.operator.Generic.TOF_SCD.IPeak)
  */
-@Override
 public void writePeak( OutputStream f , IPeak prevPeak ) {
 
    writePeak( f, prevPeak, null, null);
-   
 }
+
 public static void main( String[] args){
      java.util.Vector peaks = (java.util.Vector)(new ReadPeaks( "tae70.integrate")).getResult();
      if( peaks == null){
@@ -1638,9 +1618,9 @@ public static void main( String[] args){
         float scatAng = (float)Math.acos(v.dot( new Vector3D(1.0f,0f,0f)));
         double theta =2*180/Math.PI*Math.asin( Math.sin(scatAng/2)/2/pk.wl());
         System.out.println( scatAng+","+theta);
-     }
-     
+     }     
   }
+
   public static void main1( String[] args){
     
     DataSetTools.dataset.UniformXScale xscl= 
