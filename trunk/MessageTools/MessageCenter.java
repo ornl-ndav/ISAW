@@ -24,9 +24,25 @@
  *
  * Modified:
  *
- *  $Log$
- *  Revision 1.1  2007/08/14 00:09:01  dennis
- *  Added MessageTools files from UW-Stout repository.
+ *  $Log: MessageCenter.java,v $
+ *  Revision 1.10  2007/10/15 04:22:27  dennis
+ *    Improved efficiency in two ways.
+ *    First, the private method sendMessage() now will return false if the
+ *  list of receivers was empty.
+ *    Second, sendMessage() now checks the return value of the receive method
+ *  for the listeners, and only returns true if at least one receiver returned
+ *  true.  As a result, if no messages were actually processed by receivers,
+ *  it may not be necessary to redraw the display.
+ *
+ *  Revision 1.9  2007/10/14 17:19:22  dennis
+ *  A few small fixes to javadoc comments.
+ *
+ *  Revision 1.8  2007/08/26 20:21:46  dennis
+ *  Removed unneeded type casts.
+ *  Commented empty blocks.
+ *
+ *  Revision 1.7  2007/08/25 05:02:52  dennis
+ *  Parameterized raw types.
  *
  *  Revision 1.6  2006/11/09 02:39:43  dennis
  *  Removed one unused variable.
@@ -55,7 +71,7 @@ package MessageTools;
 import java.util.*;
 
 /**
- *    A MessageCenter object keeps lists of incomming Messages and lists 
+ *    A MessageCenter object keeps lists of incoming Messages and lists 
  *  of IReceiveMesssage objects that have "subscribed" to receive messages.
  *
  *    The incoming Messages are directed to "named" queues of messages, 
@@ -65,7 +81,7 @@ import java.util.*;
  *  normally be Strings.  
  *
  *    IReceiveMessage objects can register to receive messages from a
- *  particular named queue, using the MessageCenter.addReceive() method.
+ *  particular named queue, using the MessageCenter.addReceiver() method.
  *
  *    When a special message, MessageCenter.PROCESS_MESSAGES is passed to
  *  the MessageCenter.receive() method, all received messages currently in
@@ -97,8 +113,8 @@ public class MessageCenter implements IReceiveMessage
   private static final String DONE = "MC_Queue:SequenceOfMessagesProcessed";
 
   private String    center_name;
-  private Hashtable message_table;
-  private Hashtable receiver_table;
+  private Hashtable<Object,Vector<Message>> message_table;
+  private Hashtable<Object,Vector<IReceiveMessage>> receiver_table;
    
   private static long  tag_count = 0;
   public final static Message PROCESS_MESSAGES = 
@@ -116,8 +132,8 @@ public class MessageCenter implements IReceiveMessage
    */
   public MessageCenter( String name )
   {
-    message_table  = new Hashtable();
-    receiver_table = new Hashtable();
+    message_table  = new Hashtable<Object,Vector<Message>>();
+    receiver_table = new Hashtable<Object,Vector<IReceiveMessage>>();
     center_name = name;
   }
 
@@ -166,10 +182,10 @@ public class MessageCenter implements IReceiveMessage
       return false;
     }
 
-    Vector list = (Vector)message_table.get( name );
+    Vector<Message> list = message_table.get( name );
     if ( list == null )
     {
-      list = new Vector();
+      list = new Vector<Message>();
       message_table.put( name, list );
     }
 
@@ -190,14 +206,15 @@ public class MessageCenter implements IReceiveMessage
    *  the named queue does not already exist, it will be created.  The same
    *  receiver object cannot be added to one queue more than one time.
    *
-   *  @param  receiver  The reciever object to be removed.
-   *  @param  name      The message queue from which the receiver is to
-   *                    be removed.
+   *  @param  receiver  The receiver object to be removed.
+   *  @param  name      The message queue to which the receiver is to
+   *                    be added.
    *
    *  @return  Return true if the receiver and queue name were valid, and
    *           false otherwise.
    */
-  public boolean addReceiver( IReceiveMessage receiver, Object name )
+  public synchronized boolean addReceiver( IReceiveMessage receiver, 
+                                           Object          name )
   {
     if ( receiver == null )
     {
@@ -213,10 +230,10 @@ public class MessageCenter implements IReceiveMessage
       return false;
     }
 
-    Vector list = (Vector)receiver_table.get( name );
+    Vector<IReceiveMessage> list = receiver_table.get( name );
     if ( list == null )
     {
-      list = new Vector();
+      list = new Vector<IReceiveMessage>();
       receiver_table.put( name, list );
     }
 
@@ -245,14 +262,15 @@ public class MessageCenter implements IReceiveMessage
   /**
    *  Remove the specified receiver object from the specified message queue.
    *
-   *  @param  receiver  The reciever object to be removed.
+   *  @param  receiver  The receiver object to be removed.
    *  @param  name      The message queue from which the receiver is to
    *                    be removed.
    *
    *  @return  Return true if the receiver and queue name were valid, and
    *           false otherwise.
    */
-  public boolean removeReceiver( IReceiveMessage receiver, Object name )
+  public synchronized boolean removeReceiver( IReceiveMessage receiver, 
+                                              Object          name )
   {
     if ( receiver == null )
     {
@@ -268,7 +286,7 @@ public class MessageCenter implements IReceiveMessage
       return false;
     }
 
-    Vector list = (Vector)receiver_table.get( name );
+    Vector<IReceiveMessage> list = receiver_table.get( name );
     if ( list == null )
       return true;
 
@@ -319,11 +337,11 @@ public class MessageCenter implements IReceiveMessage
   {                                  // get all messages from the message table
                                      // in an array, and sort based on time
     int num_messages = 0;
-    Enumeration lists = message_table.elements();
-    Vector list;
+    Enumeration<Vector<Message>> lists = message_table.elements();
+    Vector<Message> list;
     while ( lists.hasMoreElements() )
     {
-      list = (Vector)lists.nextElement();
+      list = lists.nextElement();
       num_messages += list.size();
     }
 
@@ -332,10 +350,10 @@ public class MessageCenter implements IReceiveMessage
     int index = 0;
     while ( lists.hasMoreElements() )
     {
-      list = (Vector)lists.nextElement();
+      list = lists.nextElement();
       for ( int i = 0; i < list.size(); i++ )
       {
-        messages[index] = (Message)list.elementAt(i);
+        messages[index] = list.elementAt(i);
         index++;
       }
       list.clear();
@@ -369,19 +387,23 @@ public class MessageCenter implements IReceiveMessage
    *
    *  @param message  The message to send to receivers registered to get
    *                  messages with that name.
+   *
+   *  @return True if some messages were successfully processed by some
+   *          receivers of this message.
    */
   private boolean sendMessage( Message message )
   {
-    Vector listeners = (Vector)receiver_table.get( message.getName() );
-
-    if ( listeners != null )
+    Vector<IReceiveMessage> listeners = receiver_table.get( message.getName() );
+ 
+    boolean some_processed = false;
+    if ( listeners != null && listeners.size() > 0 )
     {
       for ( int j = 0; j < listeners.size(); j++ )
-        ((IReceiveMessage)(listeners.elementAt(j))).receive( message );
-      return true;
+        if ( listeners.elementAt(j).receive( message ) )
+          some_processed = true;
     }
-    else
-      return false;
+  
+    return some_processed;
   }
 
 
@@ -419,7 +441,7 @@ public class MessageCenter implements IReceiveMessage
       Thread.sleep( 3000 );
     }
     catch ( Exception e )
-    {}
+    { /* Nothing should go wrong here */}
 
 //    TestCenter.receive( PROCESS_MESSAGES );
 
@@ -446,7 +468,7 @@ public class MessageCenter implements IReceiveMessage
       Thread.sleep( 3000 );
     }
     catch ( Exception e )
-    {}
+    { /* Nothing should go wrong here */ }
 
     System.out.println("End test...");
   }
