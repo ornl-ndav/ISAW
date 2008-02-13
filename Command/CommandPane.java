@@ -30,7 +30,14 @@
  *
  * Modified:
  *
- * $Log$
+ * $Log: CommandPane.java,v $
+ * Revision 1.78  2008/02/13 18:19:50  rmikk
+ * Changed catch Exception to catch Throwable to catch more errors
+ *
+ * Revision 1.77  2008/02/13 16:41:04  rmikk
+ * Placed a try catch block around the new class that uses java 1.6's scripting
+ *   system
+ *
  * Revision 1.76  2007/05/08 17:01:42  rmikk
  * Displays result in the status pane if no ParameterDialog box appears
  *
@@ -651,7 +658,15 @@ public class CommandPane extends JPanel implements PropertyChangeListener,
     Help                     = new JButton( "Help" );
     Clear                    = new JButton( "Reset" );
 
-    String[] othLang = DataSetTools.operator.IntrinsicJavaScript.getScriptLanguages();
+    String[] othLang ;
+    try{
+       
+       othLang = DataSetTools.operator.IntrinsicJavaScript.getScriptLanguages();
+       
+    }catch(Throwable s){
+       
+       othLang = new String[0];
+    } 
     String[] LanguageChoices = new String[2+othLang.length];
     LanguageChoices[0]       = ISAWscript;
 
