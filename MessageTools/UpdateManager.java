@@ -24,9 +24,9 @@
  *
  * Modified:
  *
- *  $Log$
- *  Revision 1.1  2007/08/14 00:09:02  dennis
- *  Added MessageTools files from UW-Stout repository.
+ *  $Log: UpdateManager.java,v $
+ *  Revision 1.2  2007/08/26 20:17:43  dennis
+ *  Removed redundant "instanceof" test.
  *
  *  Revision 1.1  2006/10/30 03:09:58  dennis
  *  Generalized utility for triggering a MessageCenter to process
@@ -78,7 +78,7 @@ public class UpdateManager
     {
       updateables = new IUpdate[ objs.length ];
       for ( int i = 0; i < objs.length; i++ )
-        if ( objs[i] != null && objs[i] instanceof IUpdate )
+        if ( objs[i] != null )
           updateables[i] = objs[i];
         else
           throw 
