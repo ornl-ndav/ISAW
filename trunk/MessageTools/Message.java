@@ -24,9 +24,9 @@
  *
  * Modified:
  *
- *  $Log$
- *  Revision 1.1  2007/08/14 00:09:00  dennis
- *  Added MessageTools files from UW-Stout repository.
+ *  $Log: Message.java,v $
+ *  Revision 1.5  2007/10/25 02:10:49  dennis
+ *  Fixed a couple of minor errors in javadoc comments.
  *
  *  Revision 1.4  2006/10/31 00:36:51  dennis
  *  Fixed calculation of time stamp to be in milliseconds, after
@@ -153,7 +153,7 @@ public class Message
    *  breaker, if the time stamps are equal, when the messages are sorted
    *  for delivery to the receivers. 
    *
-   *  @return the tag value for this messsage.
+   *  @return the tag value for this message.
    */
   public long getTag()
   {
@@ -169,7 +169,7 @@ public class Message
    *  for delivery to the receivers.  NOTE: This method has package 
    *  visibility, and is not meant to be used directly in applications.
    *
-   *  return the tag value for this messsage.
+   *  @param new_tag the tag value for this message.
    */
   void setTag( long new_tag )
   {
@@ -181,6 +181,8 @@ public class Message
   /**
    *  Pack the name, value, replace_flag, time_stamp and tag for this
    *  message into one string.  
+   *  
+   *  @return A string form for this message
    */
   public String toString()
   {
