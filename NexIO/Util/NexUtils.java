@@ -132,7 +132,7 @@ public class NexUtils implements INexUtils {
     public String angleUnits = "radian";
 
     String errormessage = "";
-
+    boolean InvertRowCol = false;
     /**
      *  return the NXdetector in NxInstrument with the given Name, LinkName. 
      *  If there is no node, null is returned.
@@ -140,7 +140,7 @@ public class NexUtils implements INexUtils {
      *  @param NxInstrumentNode  An NxNode that gives access to an NXinstrumetn class
      *  
      *  @return  the NxNode whose class is NxDetector with the given LinkName
-     *             or null if nonoe
+     *             or null if none
      */
     public static NxNode getCorrespondingNxDetector( String LinkName , 
         NxNode NxInstrumentNode ) {
@@ -168,6 +168,36 @@ public class NexUtils implements INexUtils {
           }
        }
     }
+    
+    //Access to row and col taking into account their rearrangement
+    private  int Row( int row, int col){
+       if( InvertRowCol)
+          return col;
+       return row;
+    }
+    
+  //Access to row and col taking into account their rearrangement
+    private  int Col( int row, int col){
+       if( InvertRowCol)
+          return row;
+       return col;
+    }
+    
+    private  int rowIndex( int[] dims){
+       if( dims.length<3)
+          return -1;
+       if( InvertRowCol)
+          return 1;
+       return 2;
+    }
+    
+    private int colIndex( int[] dims){
+       if( dims.length<3)
+          return -1;
+       if( InvertRowCol)
+          return 2;
+       return 1;
+    }
 
     /**
      *  Currently invoked by the standard Process1Nxdata. It adds all the 
@@ -187,7 +217,10 @@ public class NexUtils implements INexUtils {
     public boolean setUpNXdetectorAttributes( DataSet DS , NxNode NxDataNode ,
             NxNode NxDetector , int startDSindex , NxfileStateInfo States ) {
 
-      NxDataStateInfo dataState = NexUtils.getDataStateInfo( States );
+      NxDataStateInfo dataState = NexUtils.getDataStateInfo( States );  
+      if( dataState == null )
+         return setErrorMessage( " No state for NXdata "
+                  + NxDataNode.getNodeName() );
       NxDetectorStateInfo detState = NexUtils.getDetectorStateInfo( States );
       NxEntryStateInfo NxEntryState = NexUtils.getEntryStateInfo( States );
       int startPixelIndex = dataState.startGroupID;
@@ -195,10 +228,10 @@ public class NexUtils implements INexUtils {
 
       if( NxEntryState != null )
          version = NxEntryState.version;
-
-      if( dataState == null )
-         return setErrorMessage( " No state for NXdata "
-                  + NxDataNode.getNodeName() );
+      
+      if( version != null && version.compareTo( "2")>=0)
+         InvertRowCol = true;
+    
 
       if( detState == null )
          return setErrorMessage( " No state for NXdetector "
@@ -221,7 +254,7 @@ public class NexUtils implements INexUtils {
 
       widthDim = heightDim = depthDim = diameterDim = x_dirDim = null;
 
-      if( ( version == null ) || ( detState.NxGeometryName == null ) ) {
+      if( ( detState.NxGeometryName == null ) || !detState.NxGeometryName.equals( "geometry" )) {
 
          width = NexUtils.getFloatArrayFieldValue( NxDetector , "width" );
          height = NexUtils.getFloatArrayFieldValue( NxDetector , "height" );
@@ -250,7 +283,7 @@ public class NexUtils implements INexUtils {
                depthDim = NxDetector.getChildNode( "depth" ).getDimension();
 
 
-         diameter = null;
+         
          NxNode orientNode = NxDetector.getChildNode( "orientation" );
 
          if( orientNode != null ) {
@@ -286,12 +319,12 @@ public class NexUtils implements INexUtils {
       else {// some or all data in in NXgeometry
 
          NxNode geom = NxDetector.getChildNode( detState.NxGeometryName );
-         if( geom == null )
-            geom = detState.NxGeometryNode_origin;
+         //if( geom == null )
+         //   geom = detState.NxGeometryNode_origin;
 
          if( geom == null ) {
 
-            width = height = depth = orientation = null;
+            //width = height = depth = orientation = null;
 
          }
          else {
@@ -352,8 +385,9 @@ public class NexUtils implements INexUtils {
          if( x_dir != null ) {
 
             int p = NexUtils.getNextChildNode( geom , "NXorientation" , 0 );
-            if( p < 0 )
+            if( p < 0  || geom == null)
                return setErrorMessage( " No NXorientation in NXdetector" );
+            
             NxNode shp = geom.getChildNode( p );
             x_dirDim = Util.GetDimension( shp.getChildNode( "value" ) ,
                      dataState , 0 , 1 );
@@ -368,11 +402,13 @@ public class NexUtils implements INexUtils {
                "y_pixel_offset" );
 
       if( x_offsets != null )
-         if( x_offsets.length != dataState.dimensions[ 1 ] )
+         if( x_offsets.length != dataState.dimensions[ 
+                           this.colIndex( dataState.dimensions) ] )
             x_offsets = null;
 
       if( y_offsets != null )
-         if( y_offsets.length != dataState.dimensions[ 2 ] )
+         if( y_offsets.length != dataState.dimensions[ 
+                            rowIndex(dataState.dimensions) ] )
             y_offsets = null;
 
       int[] ids = NexUtils.getIntArrayFieldValue( NxDetector ,
@@ -469,6 +505,7 @@ public class NexUtils implements INexUtils {
       // ------------ set up grids and pixel info list attributes ---------
       int nrows , ncols;
 
+      
       if( detState.hasLayout == null )
 
          if( distance == null )
@@ -482,22 +519,16 @@ public class NexUtils implements INexUtils {
          startGridNum = Maxx( DS , startDSindex );
 
       // if( detState.hasLayout == null){
-      if( dataState == null ) {
-
-      return setErrorMessage( "dataState is null" );
-
-      }
-
       if( distDimensions == null ) {
 
-      return setErrorMessage( "distDimensions is null" );
+         return setErrorMessage( "distDimensions is null" );
 
       }
       // }
 
 
       String layout = detState.hasLayout;
-      int[] inf = get_nRowsCols( dataState , widthDim , heightDim , depthDim ,
+      int[] inf = get_nRowsCols( dataState , widthDim , heightDim , depthDim ,//### get_n... may have problems
                diameterDim , polarDim , azimuthDim , distDimensions , x_dirDim ,
                layout , detState , NxEntryState );
       if( inf == null )
@@ -545,7 +576,6 @@ public class NexUtils implements INexUtils {
       int i;
       for( i = 0 ; ( i < dims.length - 1 ) && ( P < ngrids ) ; i++ ) {
          P *= dims[ i ];
-
       }
 
       if( P != ngrids ) {
@@ -565,13 +595,16 @@ public class NexUtils implements INexUtils {
       int NNcols = ncols;
       if( ( x_dir == null || y_dir == null ) && dims.length >= 3 ) {
          if( nrows <= 1 && ncols <= 1 ) {
-            NNrows = dims[ dims.length - 3 ];
-            NNcols = dims[ dims.length - 2 ];
+            NNrows = dims[ dims.length - 3 ];//###
+            NNcols = dims[ dims.length - 2 ];//###
          }
-         if( Grid != null)
-            Grid.setData_entries( DS );
-         Grid = new RowColGrid( NNrows , NNcols , startGridNum );
-         grid++ ;
+        // if( Grid != null)
+       //     Grid.setData_entries( DS );
+         if( nrows <=1  && ncols <=1){
+            Grid = new RowColGrid( Row(NNrows , NNcols),
+                     Col(NNrows , NNcols), startGridNum );
+            grid++ ;
+         }
 
       }
       int rrow  = row, 
@@ -579,7 +612,7 @@ public class NexUtils implements INexUtils {
       if( NNrows >1 || NNcols> 1 || dims.length >2)
          if( DS.getOperator( "Pixel Info" )== null)
             DS.addOperator(  new DataSetTools.operator.DataSet.Attribute.
-                         GetPixelInfo_op());
+                         GetPixelInfo_op());      
       for( i = startDSindex ; i < DS.getNum_entries() ; i++ ) {
 
          Data db = DS.getData_entry( i );
@@ -597,8 +630,9 @@ public class NexUtils implements INexUtils {
 
             Incr_detDig( detDig , dataState.dimensions );
 
-
-            if( Grid != null && ! ( Grid instanceof RowColGrid ) ) {
+    //nrows<=1 && ncols<=1 && dims.length >=3 <--> need RowColGrid with special
+    //                indexing
+            if( Grid != null && !(nrows<=1 && ncols<=1 && dims.length >=3) ) {
                
                Grid.setData_entries( DS );
               
@@ -638,7 +672,9 @@ public class NexUtils implements INexUtils {
                                  height , heightDim , dims , 0 , 1f ) , Val(
                                  detDig , depth , depthDim , dims , 0 , .1f ) ,
                         Val( detDig , diameter , diameterDim , dims , 0 , 0f ) ,
-                        detType , nrows , ncols , x_offsets , y_offsets );
+                        detType , Row(nrows , ncols),Col(nrows,ncols) , x_offsets , 
+                        y_offsets 
+                        );
 
             else if( nrows <= 1 && ncols <= 1 && dims.length < 3 )// Have a
                // Bunch of
@@ -652,11 +688,16 @@ public class NexUtils implements INexUtils {
                                  detDig , depth , depthDim , dims , 0 , .1f ) ,
                         1 , 1 );
 
-
-            else if( nspectra > GridNSpectraCount ) {// Can get proximity
+            else if( nrows>1 || ncols > 1)  //Other case t RowColGrid 
+               
+                Grid = new RowColGrid( Row(nrows, ncols),
+                         Col(nrows,ncols), startGridNum+ grid);
+            
+            else if( nspectra > GridNSpectraCount  ) {// Can get proximity
                if( Grid != null )
                   Grid.setData_entries( DS );
-               Grid = new RowColGrid( NNrows , NNcols , startGridNum + grid );
+               Grid = new RowColGrid( Row(NNrows , NNcols),
+                                    Col(NNrows , NNcols), startGridNum + grid );
                grid++ ;
                nspectra = 0;
                rrow=1;
@@ -666,7 +707,7 @@ public class NexUtils implements INexUtils {
          if( Grid != null ) {
             
             DetectorPixelInfo detPix = new DetectorPixelInfo(startPixelIndex++ , 
-                     (short) rrow , (short) ccol , Grid );
+                     (short) Row(rrow,ccol) , (short)Col(rrow, ccol) , Grid );
 
             DetectorPixelInfo[] piList = new DetectorPixelInfo[ 1 ];
 
@@ -734,7 +775,7 @@ public class NexUtils implements INexUtils {
        
        if( list.length == 1 )
           return list[ 0 ];
-       if( ( listDims == null ) || ( listDims.length < 1 ) )
+       if(  ( listDims.length < 1 ) )
           return list[ 0 ];
        
        if( grid == null )
@@ -754,8 +795,8 @@ public class NexUtils implements INexUtils {
        
        if( indx < list.length )
           return list[ indx ];
-       else
-          return list[ list.length  - 1 ];
+       
+        return list[ list.length  - 1 ];
     }
     
     
@@ -772,7 +813,7 @@ public class NexUtils implements INexUtils {
        if( list.length == 1 )
           return list[ 0 ];
        
-       if( ( listDims == null ) || ( listDims.length < 1 ) )
+       if( ( listDims.length < 1 ) )
           return list[ 0 ];
        
        int indx = 0;
@@ -786,13 +827,13 @@ public class NexUtils implements INexUtils {
        
        if( indx < list.length )
           return list[ indx ];
-       else
-          return list[ list.length - 1 ];
+      
+       return list[ list.length - 1 ];
     }
     
     
     //deprecated
-    private float Xval( float[] data , int grid , int ngrids , int[] dims ,
+   /* private float Xval( float[] data , int grid , int ngrids , int[] dims ,
                                                             float Default){
        
        if(  (data == null ) || ( data.length <1 ) )
@@ -855,7 +896,7 @@ public class NexUtils implements INexUtils {
        return Default;
     }
     
-    
+    */
     
     
     
@@ -880,17 +921,19 @@ public class NexUtils implements INexUtils {
               String layout ,
               NxDetectorStateInfo detState , NxEntryStateInfo EntryInfo){
         
-           boolean hasNXgeometry = (detState.NxGeometryNode_geometry != null ) ||
-                        ( detState.NxGeometryNode_origin != null );
+           boolean hasNXgeometry = (detState.NxGeometryNode_geometry != null ) ;
            int geomDimFix = 0;
            if( hasNXgeometry )
-              geomDimFix = 1;
+              geomDimFix = 1; //extra dimension in NXgeometry vs corresponding value
+                              // that would be in NXdetector
            
            int TotDims = dataState.dimensions.length - 1;
            int PolarDims = 0;
+         
            if( polar != null)
                    PolarDims = polar.length;
-           if( PolarDims == 1 )if( polar[0] == 1 )
+           if( PolarDims == 1 )
+              if(polar == null ||polar.length<1|| polar[0] == 1 )
                 PolarDims = 0;
            if( azimuth != null )
               if( azimuth.length > PolarDims )
@@ -946,6 +989,7 @@ public class NexUtils implements INexUtils {
               NN = 1;
            else if( layout.equals( "area" ) )
               NN = 2;
+           
            if( NN == 0 ){
               Res[ 2 ] = 1;
               Res[ 1 ] = 1;
@@ -981,7 +1025,25 @@ public class NexUtils implements INexUtils {
         return Res;
         
      }
-     
+     /**
+      * Returns an IDataGrid with the properties described by the arguments.
+      * Currently only deals with UniformGrids
+      * @param grid   The number associated with the new grid
+      * @param units   The units for lengths in the grid
+      * @param center  the center of the grid
+      * @param x_dir  the direction of increasing x( column) values
+      * @param y_dir  the direction of increasing y( row) values
+      * @param width  the width of the grid in x direction
+      * @param height  the height of the grid in y direction
+      * @param depth   the depth of the grid
+      * @param diameter  the diameter for circular/spherical grids
+      * @param type      the type(NeXus) of the grid(nxcylinder, sphere,)
+      * @param nrows    number of rows in the grid
+      * @param ncols    number of columns in the grid
+      * @param x_offsets  xoffsets (for sphere and cylindrical grids)
+      * @param y_offsets  yoffsets(for sphere and cylindrical grids)
+      * @return an IDataGrid with the properties described by the arguments.
+      */
      public static IDataGrid getGrid( int grid  , String units , 
               Vector3D  center , Vector3D x_dir , 
               Vector3D y_dir ,  float width  , float height  ,
@@ -1016,8 +1078,8 @@ public class NexUtils implements INexUtils {
         }
         
         return new UniformGrid( grid , units , center , x_dir , y_dir , Width, 
-                                               Height , Depth , nrows , ncols );
-        
+                                               Height , Depth ,  nrows ,ncols);
+       
       
      }
      
@@ -1088,7 +1150,7 @@ public class NexUtils implements INexUtils {
     }
 
     // returns the maximum number in an array
-    private int Maxx( int[] array ) {
+ /*   private int Maxx( int[] array ) {
         if ( array == null )
             return 0;
         int res = 0;
@@ -1100,9 +1162,9 @@ public class NexUtils implements INexUtils {
         return res;
 
     }
-
+  */
     //returns the index-th value in the array ir .01f if index is improper
-    private float Aval( float[] array , int index ) {
+  /*  private float Aval( float[] array , int index ) {
     
         if ( array == null )
      
@@ -1123,7 +1185,7 @@ public class NexUtils implements INexUtils {
         return array[ index ];
         
     }
-
+*/
     /**
      *  Currently invoked by the standard ProcessNXentry. It adds all the 
      *  data the NXmonitor class to the DataSet DS 
