@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log: CommandPane.java,v $
+ * Revision 1.79  2008/02/14 16:53:06  rmikk
+ * Changed catch Exception to catch Throwable in two places to catch more
+ *     errors  when using the IntrinsicJavaScript class
+ *
  * Revision 1.78  2008/02/13 18:19:50  rmikk
  * Changed catch Exception to catch Throwable to catch more errors
  *
@@ -542,7 +546,7 @@ public class CommandPane extends JPanel implements PropertyChangeListener,
          sp = DataSetTools.operator.IntrinsicJavaScript.
                                            ScriptHandlerFromFile( filename ); 
          Language.setSelectedItem(((DataSetTools.operator.IntrinsicJavaScript)sp).ScriptLang);
-      }catch( Exception ss){
+      }catch( Throwable ss){
          
          sp = null;
       }
@@ -1040,7 +1044,7 @@ public class CommandPane extends JPanel implements PropertyChangeListener,
               sp =new DataSetTools.operator.IntrinsicJavaScript( 
                                      Language.getSelectedItem().toString().trim());
               
-           }catch( Exception ss){
+           }catch( Throwable ss){
               
               sp = null;
            }
