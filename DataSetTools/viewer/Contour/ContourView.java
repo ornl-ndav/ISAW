@@ -37,7 +37,11 @@
  *
  * Modified:
  *
- *  $Log$
+ *  $Log: ContourView.java,v $
+ *  Revision 1.55  2008/02/18 19:20:42  dennis
+ *  Fixed error in use of PseudoLogScaleUtil that made the color
+ *  scale too compressed in some cases.
+ *
  *  Revision 1.54  2007/10/08 14:37:57  rmikk
  *  Converted to Dennis' logscale intensity calculations
  *
@@ -268,6 +272,7 @@ import gov.noaa.pmel.util.Dimension2D;
 import gov.noaa.pmel.util.Domain;
 import gov.noaa.pmel.util.Range2D;
 import gov.noaa.pmel.util.Rectangle2D;
+import gov.noaa.pmel.sgt.LinearTransform;
 
 import java.awt.AWTEvent;
 import java.awt.Color;
@@ -1007,14 +1012,14 @@ public class ContourView extends DataSetViewer
       }
 
       // use more levels if we have a large number of counts, use 
-      int n_levels = (int)(3 * Math.sqrt( max-min ));
+     int n_levels = (int)(3 * Math.sqrt( max-min ));
  
       float grid_pts[] = YRange.niceGrid(n_levels);
-  
+
       double values[] = new double[ grid_pts.length ]; 
       for ( int i = 0; i < values.length; i++ )
         values[i] = grid_pts[i];
- 
+
       return values;
     }
 
@@ -1063,6 +1068,7 @@ public class ContourView extends DataSetViewer
       //To use a variable scale determined at each time increment use the first
       //Range2D declaration, otherwise, use the second one.
       ClosedInterval cli = cd.getYRange();
+
       double[] Aclev = clevelsFrom( cli);
       nlevels = Aclev.length;
       Range2D datar = new Range2D( cli.getStart_x(), cli.getEnd_x(),
@@ -1139,20 +1145,21 @@ public class ContourView extends DataSetViewer
             ColorMap = C;
       }
     Color[] colrs =  IndexColorMaker.getColorTable( ColorMap, ncolors );
+
     PseudoLogScaleUtil log_scaler = new PseudoLogScaleUtil(
-             0f, (float)100,0f, (float)(colrs.length - 1));
+                                        0f, (float)(ncolors - 1),
+                                        0f, (float)(ncolors - 1));
     double s = (double)(state.get_int("Contour.Intensity"));
-  
+    s = s/2 + 1.01;
 
     Color[] colrs1= new Color[ colrs.length ];
     for( int i = 0; i < colrs.length ; i++ ){
          int k = (int)(log_scaler.toDest(i,s));
-         colrs1[i]= colrs[ k];
+         colrs1[i]= colrs[k];
     }
-    
-      IndexedColorMap cmap = new IndexedColorMap( 
-             colrs1 );
-    
+
+      IndexedColorMap cmap = new IndexedColorMap( colrs1 );
+
     // cmap.setTransform( new logTransform( 0.0, ncolors - 1.0,
     //           datar.start, datar.end ,state.get_int("Contour.Intensity")) );
              
