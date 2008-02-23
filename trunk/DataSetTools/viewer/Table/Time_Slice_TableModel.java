@@ -29,7 +29,10 @@
  *
  * Modified:
  *
- * $Log$
+ * $Log: Time_Slice_TableModel.java,v $
+ * Revision 1.28  2008/02/15 20:59:21  rmikk
+ * Eliminated problem when VariableXScales and Uniformare given only one value.
+ *
  * Revision 1.27  2008/01/04 17:29:47  rmikk
  * Replaced references to UniformGrid by IDataGrid so that the new RowColGrid
  *   will work in the contour view
@@ -306,8 +309,7 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
         return 0;
       if( num_rows < 0 )
          return 0;
-      else
-         return tMaxrow - tMinrow + 1;
+      return tMaxrow - tMinrow + 1;
    }
 
 
@@ -323,8 +325,8 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
 
       if( num_rows < 0 )
          return 0;
-      else
-         return( tMaxcol - tMincol + 1 ) * n;
+      
+      return( tMaxcol - tMincol + 1 ) * n;
    }
 
    /**
@@ -404,8 +406,8 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
               int r= (int)pilist.row() -1;
               if( r > tMaxrow)
                  return -1;
-              else
-                return r -tMinrow;
+              
+              return r -tMinrow;
            }
 
       }
@@ -442,7 +444,7 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
               int c =(int)pilist.col() -1;
               if( c <= tMaxcol )
                   return n*(c - tMincol);
-              else return -1;
+              return -1;
 
            }
 
@@ -541,24 +543,27 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
 
   /**
   *     Integrates with interpolation all the yvalues in the time slice of
-  *     x_scale containing the time Time. dbX_scale give the xvalues corresp
+  *     x_scale containing the time Time. dbxscl give the xvalues corresp
   *     to yvals
   */
-  public Object SumVals( XScale x_scale, XScale dbX_scale, float Time, float[] yvals){
+  public Object SumVals( XScale xscl, XScale dbX_scale, float time, float[] yvals){
       if( yvals == null)
          return "";
-      int index = Arrays.binarySearch( x_scale.getXs(), Time);
+      int index = Arrays.binarySearch( xscl.getXs(), time);
       if( index < 0) index = -index-1-1;
       if( index < 0) return "";
-      if( index +1 >= x_scale.getNum_x()) return "";
-      int index_y = Arrays.binarySearch( dbX_scale.getXs(), x_scale.getX(index));
+      if( (index +1 >= xscl.getNum_x()) &&
+          (xscl.getEnd_x()>xscl.getStart_x()) ) return "";
+      int index_y = Arrays.binarySearch( dbX_scale.getXs(), xscl.getX(index));
       if( index_y < 0) index_y = -index_y -2 ;
       if( index_y < 0) index_y = 0;
-      if( index_y  >= dbX_scale.getNum_x())
+      if( (index_y  >= dbX_scale.getNum_x()) )
           return "";
       float V = 0;
-      float a = x_scale.getX(index);
-      float b = x_scale.getX(index+1);
+      if( xscl.getNum_x() <=1)//TODO Define this 
+         return new Float(yvals[0]);
+      float a = xscl.getX(index);
+      float b = xscl.getX(index+1);
       for( int i= index_y ; (i < dbX_scale.getNum_x())&&(dbX_scale.getX(i) <= b); i++){
           float p = 1;
           if( dbX_scale.getX(i) < a)
@@ -637,7 +642,7 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
        }
          
 
-      grid = (IDataGrid)(Grid_util.getAreaGrid( DS, DetNum));
+      grid = (Grid_util.getAreaGrid( DS, DetNum));
       //UniformGrid.setDataEntriesInAllGrids(DS);
       grid = grid.clone();
       grid.setData_entries( DS );
@@ -746,20 +751,20 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
    /** Test program for this module */
    public static void main( String args[] )
    {
-      DataSet[] DSS;
+      DataSet[] DSS = null;
 
       if( args == null )
       {
          System.out.println( "Enter Filename and Time" );
          System.exit( 0 );
-      }
+      }else
       if( args.length < 1 )
       {
          System.out.println( "Enter Filename and Time" );
          System.exit( 0 );
-      }
+      }else
       DSS = ( new IsawGUI.Util() ).loadRunfile( args[0] );
-      if( DSS == null )
+      if( DSS == null && args != null)
       {
          System.out.println( "Could not load " + args[0] );
          System.exit( 0 );
@@ -770,7 +775,7 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
       if( k < 0 ) k = 0;
       float[] xvals = DSS[k].getXRange().getXs();
 
-      if( args.length > 1 )
+      if( args != null && args.length > 1 )
          Time = ( new Float( args[1] ) ).floatValue();
       else
       {
