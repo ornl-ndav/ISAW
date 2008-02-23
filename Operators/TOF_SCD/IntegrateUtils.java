@@ -29,7 +29,10 @@
  * grant number DMR-0218882
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
- * $Log$
+ * $Log: IntegrateUtils.java,v $
+ * Revision 1.4  2008/02/13 20:10:43  dennis
+ * Minor fixes to java docs.
+ *
  * Revision 1.3  2008/01/29 20:30:41  rmikk
  * Replaced Peak by IPeak
  * Added Integrate methods that replaced ids[][] by a data grid or data set and
@@ -231,28 +234,28 @@ public class IntegrateUtils
     * of the volume of data, it cannot be integrated and this method just
     * returns.
     * 
-    * @param  peak -   A peakd that is to be integrated
-    * @param  ds   -   The data set with the peak
-    * @param  minDX - min delta col from peak to use
-    * @param maxDX  - max delta  col from peak to use
-    * @param  minY - min delta row from peak to use
-    * @param maxY  - max delta row  from peak to use
-    * @param  minChan - min delta timeChan  from peak to use
-    * @param maxChan  - max delta timeChan  from peak to use 
-    * @param  log     - A buffer to save log information
+    * @param  peak     - A peakd that is to be integrated
+    * @param  ds       - The data set with the peak
+    * @param  minDX    - min delta col from peak to use
+    * @param  maxDX    - max delta  col from peak to use
+    * @param  minDY    - min delta row from peak to use
+    * @param  maxDY    - max delta row  from peak to use
+    * @param  minChan  - min delta timeChan  from peak to use
+    * @param  maxChan  - max delta timeChan  from peak to use 
+    * @param  log      - A buffer to save log information
     * 
     * NOTE: Step sizes from mins to maxs are 1.
     * 
     */
-    public static void integrateShoebox( IPeak         peak,
+    public static void integrateShoebox( IPeak        peak,
                                          DataSet      ds,
                                          int          minDX, 
                                          int          maxDX,
                                          int          minDY,
                                          int          maxDY,
                                          int          minChan,
-                                         int        maxChan,
-                                         StringBuffer log )
+                                         int          maxChan,
+                                         StringBuffer log      )
                                                 throws IllegalArgumentException
     {
       // set up where the peak is located
@@ -679,14 +682,15 @@ public class IntegrateUtils
    * each time slice to get the maximum I/dI for each time slice then
    * adds the results from each time slice to maximize the total I/dI.
    * 
-   * @param   peak  The peak to integrate
-   * @param   ds    The data set with the peak 
-   * @param   timeZrange   The time range used around the center
+   * @param   peak           The peak to integrate
+   * @param   ds             The data set with the peak 
+   * @param   minChan        min delta timeChan  from peak to use
+   * @param   maxChan        max delta timeChan  from peak to use 
    * @param   increaseSlice  The amount to increase slicesize by
-   * @param    log     A buffer for log information
+   * @param   log            A buffer for log information
    *
    */
-  public static void integratePeak( IPeak         peak, 
+  public static void integratePeak( IPeak        peak, 
                                     DataSet      ds, 
                                     int          minChan,
                                     int          maxChan,
