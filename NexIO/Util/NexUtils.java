@@ -31,7 +31,16 @@
  *
  * Modified:
  *
- * $Log$
+ * $Log: NexUtils.java,v $
+ * Revision 1.22  2008/02/23 21:32:39  rmikk
+ * Fixed an off by one error in assigning attributes to a data block
+ *
+ * Revision 1.21  2008/02/13 16:31:26  rmikk
+ * -Incorporated change in row and column positions in ntuples for versions of 2
+ *   or greater
+ * -Eliminated a lot of warnings
+ * -Created a grid for a detector for a case that currently was not covered.
+ *
  * Revision 1.20  2008/01/11 17:29:22  rmikk
  * Implemented Detector ID numbers
  * Included RowColGrid's if NXdata dimensions indicate such a need.  Also
@@ -119,7 +128,8 @@ import gov.anl.ipns.MathTools.Geometry.*;
 //import java.lang.reflect.*;
 import java.util.*;
 
-
+//TODO get InvertRowCol fix for cases where there are area detectors
+//   make sure that xvec and yvec correspond.
 /**
  *  This class contains the Generic implementations of the methods in 
  *  the interface INexUtils. Also it has other utility routines related
@@ -133,6 +143,10 @@ public class NexUtils implements INexUtils {
 
     String errormessage = "";
     boolean InvertRowCol = false;
+    // NOTE that in the code row corresponds to slowest changing position
+    //    in dimension and col corresponds to fastest changing position
+    //    This makes for 1-1 correspondence between data elements and
+    //    positions, etc.
     /**
      *  return the NXdetector in NxInstrument with the given Name, LinkName. 
      *  If there is no node, null is returned.
@@ -612,7 +626,8 @@ public class NexUtils implements INexUtils {
       if( NNrows >1 || NNcols> 1 || dims.length >2)
          if( DS.getOperator( "Pixel Info" )== null)
             DS.addOperator(  new DataSetTools.operator.DataSet.Attribute.
-                         GetPixelInfo_op());      
+                         GetPixelInfo_op()); 
+      boolean start =true;//Should not incremet detDig the first time
       for( i = startDSindex ; i < DS.getNum_entries() ; i++ ) {
 
          Data db = DS.getData_entry( i );
@@ -620,18 +635,18 @@ public class NexUtils implements INexUtils {
             rrow = row;
             ccol  = col;
          }// Other case done in specially two places below
-         
-            
             
          if( ( row == 1 ) && ( col == 1 ) ) {
             // set up new grid
             // after done with previous
 
 
-            Incr_detDig( detDig , dataState.dimensions );
-
-    //nrows<=1 && ncols<=1 && dims.length >=3 <--> need RowColGrid with special
-    //                indexing
+            if( !start){
+               Incr_detDig( detDig , dataState.dimensions );
+               
+            }else
+               start = false;
+            
             if( Grid != null && !(nrows<=1 && ncols<=1 && dims.length >=3) ) {
                
                Grid.setData_entries( DS );
@@ -700,8 +715,8 @@ public class NexUtils implements INexUtils {
                                     Col(NNrows , NNcols), startGridNum + grid );
                grid++ ;
                nspectra = 0;
-               rrow=1;
-               ccol=1;
+               //rrow=1;
+              // ccol=1;
             }
          }
          if( Grid != null ) {
@@ -716,8 +731,9 @@ public class NexUtils implements INexUtils {
             db.setAttribute( new PixelInfoListAttribute(
                      Attribute.PIXEL_INFO_LIST , new PixelInfoList( piList ) ) );
 
-            db.setAttribute( new DetPosAttribute( Attribute.DETECTOR_POS ,
-                     new DetectorPosition( Grid.position( row , col ) ) ) );
+          //  db.setAttribute( new DetPosAttribute( Attribute.DETECTOR_POS ,
+          //           new DetectorPosition( Grid.position( Row(row , col),
+          //                    Col(row,col)) ) ) );
 
          }
 
@@ -729,7 +745,10 @@ public class NexUtils implements INexUtils {
                                     Val( detDig , polar , polarDim , dims , 0 ,
                                              0f ) , Val( detDig , azimuth ,
                                              azimuthDim , dims , 0 , 0f ) ) ) );
-
+         if( distance == null || polar == null || azimuth == null)
+              db.setAttribute( new DetPosAttribute( Attribute.DETECTOR_POS ,
+                       new DetectorPosition( Grid.position( Row(row , col),
+                                Col(row,col)) ) ) );
          col++ ;
 
          if( col > ncols ) {
