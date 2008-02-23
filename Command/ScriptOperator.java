@@ -30,7 +30,10 @@
  *
  * Modified:
  *
- * $Log$
+ * $Log: ScriptOperator.java,v $
+ * Revision 1.58  2008/02/14 22:56:12  rmikk
+ * Added more information in error message when a parameter is incorrect
+ *
  * Revision 1.57  2007/07/17 12:55:35  rmikk
  * Checkied for null values so an exception does not occur.
  * Did a printStackTrace in Debug mode when an exception occurs
@@ -707,7 +710,8 @@ public class ScriptOperator  extends  GenericOperator
     for( i = 0 ; i < getNum_parameters() ; i++){
       try{
         if(getParameter( i ).getValue() == null){
-          serror = "Undefined Parameter "+i;
+          serror = "Undefined Parameter "+i+"("+getParameter(i).getName()+
+          ")";
           perror =i;
           lerror = i;
           return new ErrorString( serror +" in "+getCommand() );
@@ -748,11 +752,14 @@ public class ScriptOperator  extends  GenericOperator
         
       }catch( Exception ss){//will not assign a value
     	 if( (n1 <0)&&( n2 <0 ))
-                seterror( 0,"parameter "+ i+" is invalid");
+                seterror( 0,"parameter "+ i+"("+getParameter(i).getName()+
+                         ") is invalid:"+ss);
        else if( enabled && (n1 >= 0))
-          seterror( 0,"parameter "+ i+" is invalid");
+          seterror( 0,"parameter "+ i+"("+getParameter(i).getName()+
+                   ") is invalid:"+ss);
        else if ( !enabled && ((n2 >= 0)&&(n1 <= 0 )))
-    		seterror(0,"parameter "+ i+" is invalid");
+    		seterror(0,"parameter "+ i+"("+getParameter(i).getName()+
+    		            ") is invalid:"+ss);
     	 
     	 
       }
