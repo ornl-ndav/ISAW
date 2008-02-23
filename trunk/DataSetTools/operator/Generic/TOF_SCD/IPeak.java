@@ -31,6 +31,9 @@
  * * Modified:
  *
  * $Log$
+ * Revision 1.2  2008/02/13 20:10:43  dennis
+ * Minor fixes to java docs.
+ *
  * Revision 1.1  2008/01/29 19:12:36  rmikk
  * Initial Checkin
  * 
@@ -160,18 +163,10 @@ public interface IPeak {
    float    l();
    
    /**
-    * Returns the rounded h( Miller index) value corresponding to this peak
-    *         or zero if it cannot be determined or if it is not within the
-    *         specified level
-    *         
-    * @param level  The level(between 0 and .5) specifying the closeness the
-    *              actual value is to an integer( plane).
+    * Returns the sequence number associated with this peak.
     *              
-    * @return the rounded h( Miller index) value corresponding to this peak
-    *         or zero if it cannot be determined or if it is not within the
-    *         specified level
+    * @return the sequence number.
     */
-
    int      seqnum();
    
    /**
@@ -304,7 +299,7 @@ public interface IPeak {
    
    /**
     * Sets this peaks Integrated intensity  error
-   
+    *
     * @param sig  the error in the integrated intensity error
     * 
     * NOTE: No exceptions have to be thrown here
@@ -313,8 +308,8 @@ public interface IPeak {
    
    /**
     * Sets this peaks Integrated intensity  
-   
-    * @param sig  the error in the integrated intensity
+    *
+    * @param inti  the new integrated intensity
     * 
     * NOTE: No exceptions have to be thrown here
     */
