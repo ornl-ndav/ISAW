@@ -30,7 +30,10 @@
  *
  * Modified:
  *
- *  $Log$
+ *  $Log: Isaw.java,v $
+ *  Revision 1.280  2008/01/31 19:22:07  dennis
+ *  Changed version number to 1.8.1
+ *
  *  Revision 1.279  2008/01/30 18:26:19  dennis
  *  Removed named constants related to the choice of DataSet viewers,
  *  since this is now handled in a consistent way by the class:
@@ -1000,7 +1003,7 @@ public class Isaw
         String val="";
 
         if(SharedData.VERSION.equals("Unknown_Version"))
-          version="1.8.1_b2";
+          version="1.8.1";
         else
           version=SharedData.VERSION;
 
