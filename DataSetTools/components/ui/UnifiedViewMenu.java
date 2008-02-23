@@ -29,7 +29,10 @@
  *
  * Modified:
  *
- * $Log$
+ * $Log: UnifiedViewMenu.java,v $
+ * Revision 1.5  2008/02/13 20:10:42  dennis
+ * Minor fixes to java docs.
+ *
  * Revision 1.4  2007/11/02 04:43:41  amoe
  * Updated Java docs.
  *
@@ -231,7 +234,7 @@ public class UnifiedViewMenu extends JMenu
   /**
    * This method sets the <code>DataSet</code>[] to be viewed.
    * 
-   * @param ds - The viewable <code>DataSet</code> array.
+   * @param dss - The array of <code>DataSet</code> objects.
    */  
   public void setDataSetArray(DataSet[] dss)
   {
