@@ -30,6 +30,13 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.7  2008/02/23 06:06:25  dennis
+ * Fixed calculation of pixel width, height, base and up vectors
+ * for pixels in the last row or column of the grid.
+ *
+ * Revision 1.6  2008/02/13 20:10:42  dennis
+ * Minor fixes to java docs.
+ *
  * Revision 1.5  2008/01/02 19:27:41  rmikk
  * Fixed several errors/misinterpretations that gave incorrect results.
  *
@@ -600,14 +607,9 @@ public class RowColGrid implements IDataGrid {
                                  * Math.abs( 1-j - colFrac ) );
 
                pos.add( Prow );
-
             }
-
-
          }
-
       return pos;
-
    }
 
    /**
@@ -619,31 +621,25 @@ public class RowColGrid implements IDataGrid {
     */
    public float width( float row , float col ) {
 
+      int current_row = roundd( row, nrows );
 
-      Vector3D P0 = getPos( roundd( row , nrows ) , roundd( col , ncols ) );
+      Vector3D P0 = getPos( current_row, roundd( col, ncols ) );
+
       if( P0 == null )
          return Float.NaN;
       
       Vector3D P1;
+
       if( col < ncols )
-         
-         P1 = getPos( roundd( row , nrows ) , roundd( col + 1 , ncols ) );
-      
-      else {
-         
-         P1 = getPos( roundd( row , nrows ) , roundd( col - 1 , ncols ) );
-         if( P1 == null )
-            return Float.NaN;
-         
-         P1.multiply( - 1f );
-         
-      }
+        P1 = getPos( current_row, roundd( col + 1 , ncols ) );
+      else
+        P1 = getPos( current_row, roundd( col - 1 , ncols ) );
+
+      if ( P1 == null )
+        return Float.NaN;
       
       P1.subtract( P0 );
-
       return P1.length();
-
-
    }
 
    /**
@@ -655,29 +651,25 @@ public class RowColGrid implements IDataGrid {
     */
    public float height( float row , float col ) {
 
-      Vector3D P0 = getPos( roundd( row , nrows ) , roundd( col , ncols ) );
+      int current_col = roundd( col , ncols );
+
+      Vector3D P0 = getPos( roundd( row , nrows ), current_col );
+
       if( P0 == null )
          return Float.NaN;
       
       Vector3D P1;
-      if( col < ncols )
-         
-         P1 = getPos( roundd( row + 1 , nrows ) , roundd( col , ncols ) );
-      
-      else {
-         
-         P1 = getPos( roundd( row - 1 , nrows ) , roundd( col , ncols ) );
-         if( P1 == null )
-            return Float.NaN;
-         
-         P1.multiply( - 1f );
-         
-      }
+
+      if ( row < nrows )
+        P1 = getPos( roundd( row + 1 , nrows ), current_col );
+      else 
+        P1 = getPos( roundd( row - 1 , nrows ), current_col );
+
+      if ( P1 == null )
+        return Float.NaN;
+
       P1.subtract( P0 );
-
       return P1.length();
-
-
    }
 
    /**
@@ -704,37 +696,33 @@ public class RowColGrid implements IDataGrid {
     */
    public Vector3D x_vec( float row , float col ) {
 
-      Vector3D P0 = getPos( roundd( row , nrows ) , roundd( col , ncols ) );
-      
+      boolean negate  = false;
+      int current_row = roundd( row, nrows );
+
+      Vector3D P0 = getPos( current_row, roundd( col , ncols ) );
       if( P0 == null )
          return null;
       
       Vector3D P1;
-      
-      if( col < ncols )
-         
-         P1 = getPos( roundd( row , nrows ) , roundd( col + 1 , ncols ) );
-      
+      if ( col < ncols ) 
+        P1 = getPos( current_row, roundd( col + 1 , ncols ) );
+
       else {
-         
-         P1 = getPos( (int) roundd( row , nrows ) , 
-                                      roundd( col - 1 , ncols ) );
-         if( P1 == null )
-            return null;
-         
-         P1.multiply( - 1f );
+        P1 = getPos( current_row, roundd( col - 1 , ncols ) );
+        negate = true;
       }
+
       if( P1 == null)
          return null;
       
       P1.subtract( P0 );
       P1.normalize();
+      if ( negate )
+        P1.multiply(-1);
       
       return P1;
    }
 
-
-   
    /**
     * 
     * @param row  the row in question in this grid
@@ -746,27 +734,30 @@ public class RowColGrid implements IDataGrid {
     */
    public Vector3D y_vec( float row , float col ) {
 
-      Vector3D P0 = getPos( roundd( row , nrows ) , roundd( col , ncols ) );
+      boolean negate  = false;
+      int current_col = roundd( col, ncols );
+
+      Vector3D P0 = getPos( roundd( row , nrows ), current_col );
       if( P0 == null )
          return null;
       
       Vector3D P1;
-      if( col < ncols )
-         
-         P1 = getPos( roundd( row + 1 , nrows ) , roundd( col , ncols ) );
+      if ( row < nrows )
+        P1 = getPos( roundd( row + 1 , nrows ), current_col );
       
       else {
-         P1 = getPos( (int) roundd( row - 1 , nrows ) , 
-                                          roundd( col , ncols ) );
-         if( P1 == null )
-            return null;
-         
-         P1.multiply( - 1f );
+        P1 = getPos( roundd( row - 1 , nrows ), current_col );
+        negate = true;
       }
       
+      if ( P1 == null )
+        return null;
+
       P1.subtract( P0 );
       P1.normalize();
-      
+      if ( negate )
+        P1.multiply( - 1f );
+
       return P1;
    }
 
@@ -909,10 +900,11 @@ public class RowColGrid implements IDataGrid {
     * Attempts to find a matching UniformGrid, CyclinderGrid or Spherical grid
     * to return
     * 
-    * @param G the Grid with an array of data blocks containing position info
-    * 
-    * @tolerance  The maximum error allowed between any given position and 
-    *             its calculated  positions 
+    * @param G           the Grid with an array of data blocks containing 
+    *                    position info
+    *  
+    * @param tolerance   The maximum error allowed between any given position
+    *                    and its calculated positions 
     * 
     * @return A matching grid with more structure or this grid.
     * 
@@ -925,25 +917,25 @@ public class RowColGrid implements IDataGrid {
          return U;
       
       return G;
-
-
    }
 
 
    /**
     * Attempts to find a matching UniformGrid
     * 
-    * @param G  the Grid with an array of data blocks containing position info
-    * 
-    * @tolerance  The maximum error allowed between any given position and 
-    *             its calculated  positions
+    * @param G           the Grid with an array of data blocks containing 
+    *                    position info
+    *  
+    * @param tolerance   The maximum error allowed between any given position
+    *                    and its calculated positions 
     *              
     * @return A matching grid with more structure or null.
     * 
     * NOTE: The resultant grid must be set in the pixelInfo attribute and the
     * data blocks for this grid should be set.
     */
-   public static UniformGrid getUniformDataGrid( RowColGrid G , float tolerance ) {
+   public static UniformGrid getUniformDataGrid( RowColGrid G, 
+                                                 float tolerance ) {
 
       float width = G.width();
       float height = G.height();
