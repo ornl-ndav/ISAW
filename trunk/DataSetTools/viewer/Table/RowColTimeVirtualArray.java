@@ -29,7 +29,10 @@
  *
  * Modified:
  *
- * $Log$
+ * $Log: RowColTimeVirtualArray.java,v $
+ * Revision 1.22  2008/02/15 20:59:20  rmikk
+ * Eliminated problem when VariableXScales and Uniformare given only one value.
+ *
  * Revision 1.21  2007/06/14 22:06:23  rmikk
  * Eliminated duplicate entries in the action listeners
  * Do not notify that data has changed if the new time is not in a different bin
@@ -147,7 +150,7 @@ import java.awt.*;
 public class RowColTimeVirtualArray extends 
                           DataSetTools.viewer.Table.Time_Slice_TableModel 
                        implements IArrayMaker_DataSet, IVirtualArray2D,doesColumns{
-  DataSet DS;
+  //DataSet DS;
   String Title;
   JCheckBoxMenuItem jmErr=null; 
   JCheckBoxMenuItem jmInd=null;
@@ -156,7 +159,7 @@ public class RowColTimeVirtualArray extends
   public float[] xvals1;
   public int TimeIndex = -1;
   public JPanel JRowColPanel= null;
-  public XScale x_scale= null;
+  //public XScale x_scale= null;
   public ViewerState state;
   public boolean ReverseY;
 
@@ -209,18 +212,18 @@ public class RowColTimeVirtualArray extends
   public AxisInfo getAxisInfo( int axis )
     {
      if( axis == AxisInfo.X_AXIS){
-        return new AxisInfo( (float)state.get_int(ViewerState.TABLE_TS_COLMIN )-.5f , 
-                 (float)state.get_int( ViewerState.TABLE_TS_COLMAX )+.5f ,
+        return new AxisInfo( state.get_int(ViewerState.TABLE_TS_COLMIN )-.5f , 
+                 state.get_int( ViewerState.TABLE_TS_COLMAX )+.5f ,
                           "Column", "",AxisInfo.LINEAR);
      }else if( axis == AxisInfo.Y_AXIS){
         if( !ReverseY )
-           return new AxisInfo( (float)state.get_int(ViewerState.TABLE_TS_ROWMIN )-.5f , 
-                    (float)state.get_int( ViewerState.TABLE_TS_ROWMAX )+.5f,
+           return new AxisInfo( state.get_int(ViewerState.TABLE_TS_ROWMIN )-.5f , 
+                    state.get_int( ViewerState.TABLE_TS_ROWMAX )+.5f,
                              "Row", "",AxisInfo.LINEAR);
         
 
-        return new AxisInfo( (float)state.get_int(ViewerState.TABLE_TS_ROWMAX )+.5f , 
-                 (float)state.get_int( ViewerState.TABLE_TS_ROWMIN )-.5f,
+        return new AxisInfo( state.get_int(ViewerState.TABLE_TS_ROWMAX )+.5f , 
+                 state.get_int( ViewerState.TABLE_TS_ROWMIN )-.5f,
                           "Row", "",AxisInfo.LINEAR);
      }else if( axis == AxisInfo.Z_AXIS){
         return new AxisInfo( 0f, DS.getYRange().getEnd_x(),"Intensities", "Counts",
@@ -504,7 +507,7 @@ public class RowColTimeVirtualArray extends
      Res[1] = tr;
      
         
-     if( jcomps != null) if(jcomps.length > 0)
+     if(jcomps.length > 0)
         for( int i=0; i< jcomps.length; i++)
            Res[2+i]=( jcomps[i]);
      
@@ -657,7 +660,7 @@ public class RowColTimeVirtualArray extends
   }
   
   public IVirtualArray getArray(){
-      return (IVirtualArray2D)this;
+      return this;
   } 
    //-------------- IArrayMaker_DataSet Methods -----------------------------
 
@@ -1053,7 +1056,7 @@ public class RowColTimeVirtualArray extends
      else if( u.length < 1)
         useAll = true;
      int a = 0;
-     if( !useAll )
+     if( u != null  && !useAll )
         a = u[0];
      float[] new_xvals;
    
@@ -1112,8 +1115,8 @@ public class RowColTimeVirtualArray extends
         return xvals1.length -1;
      if( (xvals1[index] -X) <= (X-xvals1[index-1] ))
         return index;
-     else
-        return index -1;
+     
+     return index -1;
        
     }
 
@@ -1142,7 +1145,7 @@ public class RowColTimeVirtualArray extends
 
   private class MyActionListener implements ActionListener
     {
-     String filename = null;
+     String fname = null;
 
      /** 
      *  Displays a JFileChooser box to save the table and then writes header information
@@ -1151,16 +1154,16 @@ public class RowColTimeVirtualArray extends
      public void actionPerformed( ActionEvent evt )
        {
         JFileChooser jf ;
-        if( filename == null )  
+        if( fname == null )  
            jf = new JFileChooser();
         else 
-           jf = new JFileChooser( filename );
+           jf = new JFileChooser( fname );
         FileOutputStream fout = null;
         if( !( jf.showSaveDialog( null ) == JFileChooser.CANCEL_OPTION ) )
            try
              {
-              filename = jf.getSelectedFile().toString();
-              File ff = new File( filename );
+              fname = jf.getSelectedFile().toString();
+              File ff = new File( fname );
               fout = new FileOutputStream( ff );       
                
               StringBuffer S =new StringBuffer( 8192); 
@@ -1216,12 +1219,12 @@ public class RowColTimeVirtualArray extends
      float saveTime = Time;
      //int saveChan = TimeIndex;
      
-     float MaxTime = state.get_float(ViewerState.TABLE_TS_TIMEMAX);
-     float MinTime = state.get_float(ViewerState.TABLE_TS_TIMEMIN);
+     //float MaxTime = state.get_float(ViewerState.TABLE_TS_TIMEMAX);
+     //float MinTime = state.get_float(ViewerState.TABLE_TS_TIMEMIN);
      int MinRow = state.get_int(ViewerState.TABLE_TS_ROWMIN);
-     int MaxRow = state.get_int(ViewerState.TABLE_TS_ROWMAX);  
+     //int MaxRow = state.get_int(ViewerState.TABLE_TS_ROWMAX);  
      int MinCol = state.get_int(ViewerState.TABLE_TS_COLMIN);
-     int MaxCol = state.get_int(ViewerState.TABLE_TS_COLMAX); 
+     //int MaxCol = state.get_int(ViewerState.TABLE_TS_COLMAX); 
   
      try{
      for( int i = 0; i < xvals1.length; i++ ){
@@ -1290,6 +1293,14 @@ public class RowColTimeVirtualArray extends
        {
         xvals1 = ( calcXvals());
        }
+     if(xvals1 == null || xvals1.length< 1)
+        xvals1 = new float[]{0f,1f};
+     else if( xvals1.length < 2){
+        float x = xvals1[0];
+        xvals1= new float[]{x,x+1};
+     }
+        
+        
      x_scale = new VariableXScale( xvals1);
      setXScale( x_scale);
      
@@ -1311,9 +1322,9 @@ public class RowColTimeVirtualArray extends
         TimeIndex = x_scale.getNum_x()-1;
      SetTime( x_scale.getX( TimeIndex));
      
-     int DetNum = state.get_int( ViewerState.TABLE_TS_DETNUM);
-     if( DetNum >= 0)
-       setDetNum( DetNum);
+     int DetectorNum = state.get_int( ViewerState.TABLE_TS_DETNUM);
+     if( DetectorNum >= 0)
+       setDetNum( DetectorNum );
     }
 
 
