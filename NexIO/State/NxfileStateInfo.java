@@ -85,6 +85,7 @@ public class NxfileStateInfo extends StateInfo{
     public String filename;
     public String InstrumentName;
     public NxNode  InstrumentNode;
+  
     public Node xmlDoc;
 
    /**
@@ -92,7 +93,8 @@ public class NxfileStateInfo extends StateInfo{
     *     @param  NxfileNode  the NxNode containing information on the top node
     *                         of the NeXus file.
     */
-   public NxfileStateInfo( NxNode NxfileNode , String filename){
+   public NxfileStateInfo( NxNode NxfileNode , String filename, 
+                                                        NxNode InstrSourceNode){
       
      NexusVersion =NexUtils.getStringAttributeValue( NxfileNode, "NeXus_version");
      HDFVersion = NexUtils.getStringAttributeValue( NxfileNode, "HDF_version");
@@ -110,7 +112,7 @@ public class NxfileStateInfo extends StateInfo{
      Spectra = null;
      InstrumentNode = null;
         
-     facility = GetFacility( NxfileNode, InstrumentNode);
+     facility = GetFacility( NxfileNode, InstrSourceNode);
      this.filename = filename;
      //Get facility specific names.
      InstrumentName =null; 
@@ -146,10 +148,11 @@ public class NxfileStateInfo extends StateInfo{
    *  Attempts to find the name of the facility from several sources. The return
    *  will be standardized to LANL, ANL, SNS, NIST, ISIS, 
    * @param topNode
+   * @param InstrSourceNode
    * @return  The standardized name of the facility,LANL,ANL SNS, ISIS,
    *             or  NIST, if possible, otherwize a null is returned.
    */
-  public static String GetFacility( NxNode  topNode, NxNode InstrNode){
+  public static String GetFacility( NxNode  topNode, NxNode InstrSourceNode){
      
     int nattr = topNode.getNAttributes();
     for( int i=0; i < nattr; i++){
@@ -184,9 +187,9 @@ public class NxfileStateInfo extends StateInfo{
       }// look at global attribute i
     //-----------------Now look atSource for the name---------------------
     NxNode NODE = null;
-    if( InstrNode != null)
-    for( int i=0;( i< InstrNode.getNChildNodes()) &&(NODE == null); i++){
-       NxNode node= InstrNode.getChildNode(i);
+    if( InstrSourceNode != null){
+   // for( int i=0;( i< InstrNode.getNChildNodes()) &&(NODE == null); i++){
+       NxNode node= InstrSourceNode;
        if( node.getClass().equals("NXsource")){
           NODE=node;
           for( int k=0; k< Names.length; k++)
