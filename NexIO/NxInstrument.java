@@ -141,7 +141,7 @@ public class NxInstrument{
    *      position of id child in the NXdetector node,
    *      index of the id with the corresponding detector id
    */
-  public void SetUpDetectorInfo( NxNode instrNode){
+ /* public void SetUpDetectorInfo1( NxNode instrNode){
     if(DetectorInf != null)
       return;
     nNxDet=0;
@@ -212,7 +212,7 @@ public class NxInstrument{
     //System.out.println("Detector information is");
     // showwDetectorInf();
   }
-
+*/
   public void showwDetectorInf(){
     if( DetectorInf == null){
       System.out.println("null");
@@ -303,8 +303,8 @@ public class NxInstrument{
     }//for i
     if( NumNxDetectorNodes == 1)
        return lastNxDetNode;
-    else
-       return null;//nDef;
+   
+    return null;//nDef;
   }//matchNode
 
   /**
@@ -326,6 +326,8 @@ public class NxInstrument{
   public boolean processDS( NxNode node, DataSet DS, NexIO.State.NxfileStateInfo fileStateInfo){
     errormessage = "Improper inputs NxInstrument";
     Node xmlDoc = null;
+
+    NxEntryStateInfo EntryState = NexUtils.getEntryStateInfo( fileStateInfo);
     if( fileStateInfo != null)
        xmlDoc = fileStateInfo.xmlDoc;
     if( (node == null) && (xmlDoc == null) ){
@@ -353,8 +355,9 @@ public class NxInstrument{
          }
 
          // NXdetector stuff done in NXdata
-         for( int i = 0 ; i < node.getNChildNodes() ; i++ ) {
-            NxNode tnode = node.getChildNode( i );
+         //for( int i = 0 ; i < node.getNChildNodes() ; i++ ) 
+         if( EntryState != null && EntryState.InstrSourceNode!= null){
+            NxNode tnode = EntryState.InstrSourceNode;
 
             if( tnode.getNodeClass().equals( "NXsource" ) ) {
                NxNode tnode1 = tnode.getChildNode( "distance" );
@@ -374,7 +377,6 @@ public class NxInstrument{
          }
       }
     if( xmlDoc != null){
-       NxEntryStateInfo EntryState = NexUtils.getEntryStateInfo( fileStateInfo);
        Node[] NN= NexIO.Util.Util.getxmlNXentryNodes( xmlDoc,EntryState.Name, fileStateInfo.filename);
        for( int i=0; i<4;i++){
          
