@@ -130,10 +130,19 @@ public class ProcessNxEntry  implements IProcessNxEntry {
             errormessage = "No Data Set in ProcessNxEntry";
             return true;
         }
+        if( States == null)
+           return setErrorMessage("State info not set up");
         
+        NxEntryStateInfo entryState =
+                         NexIO.Util.NexUtils.getEntryStateInfo( States );
+        if( entryState == null){
+           errormessage = "Entry State information not set up";
+           return true;
+        }
         boolean monitorDS = false;
-        NxNode NxInstrumentNode = null;
-        NxNode NxBeamNode = null;
+        NxNode NxInstrumentNode = entryState.InstrumentNode;
+        NxNode NxBeamNode = entryState.BeamNode;
+        NxNode NxSampleNode = entryState.SampleNode;
         
         if (NxDataNode == null) { // Monitor DataSet
        
@@ -142,7 +151,8 @@ public class ProcessNxEntry  implements IProcessNxEntry {
             monitorDS = true;
             DS.setTitle("Mon_" + NxEntryNode.getNodeName());
         
-            Integer instType = ((Integer) DS.getAttributeValue(Attribute.INST_TYPE));
+            Integer instType = ((Integer) DS.getAttributeValue(
+                                                   Attribute.INST_TYPE));
 
             if (instType != null)
                 DataSetFactory.addMonitorOperators(DS, instType.intValue());
@@ -150,11 +160,6 @@ public class ProcessNxEntry  implements IProcessNxEntry {
             for (int child = 0; child < NxEntryNode.getNChildNodes(); child++) {
           
                 NxNode Child = NxEntryNode.getChildNode(child);  
-                
-                if (Child.getNodeClass().equals("NXinstrument"))
-                    NxInstrumentNode = Child;
-                else if (Child.getNodeClass().equals("NXbeam"))
-                    NxBeamNode = Child;
 
                 if (Child.getNodeClass().equals("NXmonitor")) {
              
@@ -175,9 +180,9 @@ public class ProcessNxEntry  implements IProcessNxEntry {
         
             DS.setTitle(NxDataNode.getNodeName());
       
-            NxInstrumentNode = null;
-            NxBeamNode = null;
-
+            //NxInstrumentNode = null;
+            //NxBeamNode = null;
+          /*//already found
             for (int child = 0; (child < NxEntryNode.getNChildNodes()); child++) {
                 NxNode Child = NxEntryNode.getChildNode(child);
 
@@ -186,7 +191,7 @@ public class ProcessNxEntry  implements IProcessNxEntry {
                 else if (Child.getNodeClass().equals("NXbeam"))
                     NxBeamNode = Child;
             }
-
+           */
             IProcessNxData proc = QueryNxData.getNxDataProcessor(States, 
                     NxDataNode, NxInstrumentNode);
             boolean res = proc.processDS(NxEntryNode, NxDataNode, NxInstrumentNode, 
@@ -222,7 +227,7 @@ public class ProcessNxEntry  implements IProcessNxEntry {
                         X.floatValue() * 30.f));
 
             //--------------Attributes from other NXentry children -----------
-        boolean checkedSample = false,
+        /*       boolean checkedSample = false,
                 checkedBeam =false,
                 checkedInstr = false;
         for (int i = 0; i < NxEntryNode.getNChildNodes(); i++) {
@@ -256,22 +261,37 @@ public class ProcessNxEntry  implements IProcessNxEntry {
             }
 
         }
+ */
+        
         // ------- In case the corresponding parts are not in the NeXus file -----
-        if(!checkedSample){
-           NxSample ns = new NxSample();
+        NxSample ns = new NxSample();
+        if( NxSampleNode != null ){
+           if (ns.processDS(NxSampleNode, DS, States)) 
+               errormessage += ";x" + ns.getErrorMessage();
+        }else{
            if( ns.processDS( null, DS, States))
-              errormessage +=";"+ns.getErrorMessage();
+              errormessage +=";y"+ns.getErrorMessage();
         }
-        if(!checkedInstr){
-           NxInstrument nx = new NxInstrument();
+        
+        // process Instrument Node for its information
+        NxInstrument nx = new NxInstrument();
+        if( NxInstrumentNode != null){
+           
+           //if (!monitorDS)
+               if (nx.processDS(NxInstrumentNode, DS, States)) 
+                   errormessage += ":a" + nx.getErrorMessage();
+        }else{
            if( nx.processDS( null, DS, States))
               errormessage +=";"+nx.getErrorMessage();
         }
-        if(!checkedBeam){
+        
+        //process NxBeam node for its information
+       
            NxBeam nb = new NxBeam();
-           if( nb.processDS( null, DS, States))
-              errormessage +=";"+nb .getErrorMessage();
-        }
+           if( !monitorDS)
+              if( nb.processDS(NxBeamNode, DS, States))
+                 errormessage +=";"+nb .getErrorMessage();
+        
         //----------------------------
        
         
@@ -295,7 +315,7 @@ public class ProcessNxEntry  implements IProcessNxEntry {
                 initial_path = ((Number) X1).floatValue();
                 initialPathSet = true;
             }
-       if( States != null){
+       {
          if( States.xmlDoc != null){
             Node NN = NexIO.Util.Util.getNXInfo( States.xmlDoc , "NXentry.NXsource.distance",
                          null , null , null );
@@ -333,7 +353,7 @@ public class ProcessNxEntry  implements IProcessNxEntry {
         if( facility == null)if( NxEntryState != null)
            facility = NxEntryState.facility;
         
-        if( States != null)if( facility != null)if( facility.equals("LANL"))
+        if( facility != null)if( facility.equals("LANL"))
            if( States.InstrumentName != null)if( States.InstrumentName.equals("SCD"))
               FixUpLANL_SCD( DS );
         
