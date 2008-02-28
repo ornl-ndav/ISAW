@@ -83,8 +83,12 @@ public class NxEntryStateInfo extends StateInfo {
   
     public String version;
     
-    NxNode InstrumentNode;
-
+    //Save Node info to reduce the number of times needed to go
+    // through all the NXentry's children
+    public NxNode InstrumentNode;
+    public NxNode SampleNode;
+    public NxNode BeamNode;
+    public NxNode InstrSourceNode;
     /**
      *   The Name of the NXentry node
      */
@@ -98,7 +102,8 @@ public class NxEntryStateInfo extends StateInfo {
      *   @param Params    a linked list of State information
      */
     public NxEntryStateInfo(NxNode NxEntryNode, 
-        NxfileStateInfo Params) {
+        NxfileStateInfo Params, NxNode InstrumentNodee,
+        NxNode SampleNodee, NxNode BeamNodee, NxNode InstrSourceNodee) {
           
         Name = NxEntryNode.getNodeName();
         version = null;
@@ -144,20 +149,32 @@ public class NxEntryStateInfo extends StateInfo {
        }
        
        InstrumentNode = null;
-       for( int i =0; (i< NxEntryNode.getNChildNodes()) && (InstrumentNode == null) ; i++)
-          if( NxEntryNode.getChildNode( i).getNodeClass().equals("NXinstrument"))
-             InstrumentNode = NxEntryNode.getChildNode( i );
-       
+       /*for( int i =0; (i< NxEntryNode.getNChildNodes()) && ((InstrumentNode == null)||
+                (SampleNode == null)|| (BeamNode == null))  ; i++)
+       {  NxNode childNode = NxEntryNode.getChildNode( i );
+          if( childNode.getNodeClass().equals("NXinstrument"))
+             InstrumentNode = childNode;
+          else if( childNode.getNodeClass().equals("NXsample"))
+             SampleNode = childNode;
+          else if(childNode.getNodeClass().equals("NXbeam"))
+             BeamNode = childNode;
+       }*/
+       this.SampleNode = SampleNodee;
+       this.BeamNode = BeamNodee;
+       this.InstrumentNode = InstrumentNodee;
+       this.InstrSourceNode =InstrSourceNodee;
        facility = getFacility( InstrumentNode);
      
     }
     
-    public String getFacility( NxNode InstrNode){
+    public String getFacility( NxNode InstrSourceNode){
        NxNode NODE = null;
-       if( InstrNode == null)
+       if( InstrSourceNode == null)
           return null;
-       for( int i=0;( i< InstrNode.getNChildNodes()) &&(NODE == null); i++){
-          NxNode node= InstrNode.getChildNode(i);
+       if( InstrSourceNode == null)
+          return null;
+       //for( int i=0;( i< InstrNode.getNChildNodes()) &&(NODE == null); i++){
+          NxNode node= InstrSourceNode;
           if( node.getNodeClass().equals("NXsource")){
              NODE=node;
              for( int k=0; k< NxfileStateInfo.Names.length; k++)
@@ -174,7 +191,7 @@ public class NxEntryStateInfo extends StateInfo {
            }
        
             
-       }
+       
           
        if( NODE != null)
           for( int i=0; i < NODE.getNChildNodes(); i++)
@@ -238,10 +255,10 @@ public class NxEntryStateInfo extends StateInfo {
           grid1.setData_entries( DS );
           XScale xscl1,xscl2;
           xscl1 = grid1.getData_entry(1,1).getX_scale();
-          int indx1,indx2;
-          indx1= DS.getIndex_of_data( grid1.getData_entry(1,1));
-          Data db1,db2;
-          db1= grid1.getData_entry(1,1);
+          int indx2;
+          //indx1= DS.getIndex_of_data( grid1.getData_entry(1,1));
+          Data db2;
+          //db1= grid1.getData_entry(1,1);
           for( int i = 0; i +1< grids.length; i++){
               grid2 =  NexIO.Write.NxWriteData.getAreaGrid( DS, grids[i+1]);
               grid2.setData_entries( DS );
@@ -259,7 +276,7 @@ public class NxEntryStateInfo extends StateInfo {
               }
               grid1=grid2;
               xscl1=xscl2;
-              indx1=indx2;
+              //indx1=indx2;
           }
           System.out.println("XXX"+C1+"::"+C2+"::"+D);
        }catch( Exception s){
