@@ -21,7 +21,13 @@ package NexIO;
     public int endDetectorID;
     public int nelts;
     public int ndetectors;
-    
+    public NxNode NxInstrumentNode;
+    public NxNode NxSampleNode;
+    public NxNode NxBeamNode;
+    public NxNode NxInstrSourceNode;
+    public String NodeNames;//semicolon separated list of monitor or merged
+                            //   NXdata names
+    //Note that getChildNode by name is fast. 
     String label;   //or field name other than time for NXlog
     /**
     *   NxdataNode is null for monitors.  All monitors are merged
@@ -39,7 +45,8 @@ package NexIO;
        this.startDetectorID =-1;
        this.endDetectorID = -1;
        this.label = label;
-       nelts = -1;
-       ndetectors = -1;
+       nelts = 0;
+       ndetectors = 0;
+       NodeNames = "";
     }
 }//DataSetInfo
