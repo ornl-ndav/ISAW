@@ -246,12 +246,12 @@ public class ExtGetDS{
  public DataSet getDataSet( int data_set_num ){
    if( !setupDSs ) 
      setUpDataSetList() ;
-     
+   
    if( (data_set_num <0) ||( data_set_num >= EntryToDSs.size())){
      
      DataSetTools.util.SharedData.addmsg("invalid data set number "
                                          +data_set_num);
-     //System.out.println("  Leaving getDataSet()");
+     
      return  null;
 
    }
@@ -260,9 +260,12 @@ public class ExtGetDS{
     
    NxNode EntryNode= dsInf.NxentryNode;
    AttributeList AL = getGlobalAttributes( EntryNode ) ;
-   NxfileStateInfo FileState = new NxfileStateInfo( node , filename );
+   NxfileStateInfo FileState = new NxfileStateInfo( node , filename,
+            dsInf.NxInstrSourceNode);
    
-   NxEntryStateInfo EntryState = new NxEntryStateInfo( EntryNode,FileState);
+   NxEntryStateInfo EntryState = new NxEntryStateInfo( EntryNode,FileState,
+               dsInf.NxInstrumentNode, dsInf.NxSampleNode, dsInf.NxBeamNode,
+               dsInf.NxInstrSourceNode);
  
    DataSet DS;
    int instrType = -1; 
@@ -349,7 +352,7 @@ public class ExtGetDS{
       return DS;
    DS.setAttribute( new IntAttribute( Attribute.INST_TYPE, 
                DataSetTools.instruments.InstrumentType.TOF_SCD));
-   if( NN != null){
+   {
        Object OprogName = NN.getNodeValue();
        if( OprogName != null){
            String progName = NexIO.Util.ConvertDataTypes.StringValue( OprogName );
@@ -456,14 +459,14 @@ public class ExtGetDS{
 
 
 
-  private String getAnalysis( NxNode node){
-    if( node == null) 
+  private String getAnalysis( NxNode nnode){
+    if( nnode == null) 
        return "";
-    if( !node.getNodeClass().equals("NXentry"))
+    if( !nnode.getNodeClass().equals("NXentry"))
       return "";
-    NxNode n1 = node.getChildNode( "analysis");
+    NxNode n1 = nnode.getChildNode( "analysis");
     if( n1 == null)
-       n1 = node.getChildNode( "description" );
+       n1 = nnode.getChildNode( "description" );
        
     if( n1 == null) 
       return "";
@@ -474,8 +477,8 @@ public class ExtGetDS{
     String S = ng.cnvertoString( O);
     if( S == null) 
       return "";
-    else 
-      return S;
+   
+    return S;
   } 
 
 
@@ -493,8 +496,8 @@ public class ExtGetDS{
     if( u >=0)
       return EntryToDSs.size();
       
-    else
-      return 0;
+   
+    return 0;
       
     
   }
@@ -524,7 +527,7 @@ public class ExtGetDS{
   // Goes thru a NeXus files and finds all Data Sets.
   //  The Node, DefaultID's and NXentry are saved in a DataSetInfo Structure
   //  The DataSetInfo Structure is an internal class in this file
-  private void setUpDataSetList() {
+  private void setUpDataSetList1() {
 
       setupDSs = true;
       // --------------------- Get all Monitors ------------------------
@@ -561,11 +564,98 @@ public class ExtGetDS{
       int numLogDS = nxLogLocator.getNumNxLogDataSets();
       for( int i = 0 ; i < numLogDS ; i++ )
          EntryToDSs.add( nxLogLocator.getNxLogDataSet( i ) );
- 
+   
    }
   
-  
-  
+  private void propogate( NxNode instrumentNode, NxNode SampleNode,
+                                            NxNode beamNode, int StartIndex ){
+     for( int i=StartIndex; i< EntryToDSs.size(); i++){
+        DataSetInfo dsInf =(DataSetInfo)(EntryToDSs.elementAt( i ));
+        if( dsInf != null){
+           upDate(dsInf, instrumentNode, SampleNode,beamNode);
+        }
+     }
+  }
+  private void upDate( DataSetInfo dsInf, NxNode instrumentNode, NxNode SampleNode,
+                                            NxNode beamNode ){
+
+     dsInf.NxInstrumentNode = instrumentNode;
+     dsInf.NxSampleNode  = SampleNode;
+     dsInf.NxBeamNode = beamNode;
+  }
+   private void setUpDataSetList(){
+      setupDSs= true;
+      for( int i = 0 ; i < node.getNChildNodes() ; i++ ) {
+         NxNode nn = node.getChildNode( i );
+         if( nn.getNodeClass().equals( "NXentry" ) ) {
+            NxNode InstrumentNode = null;
+            NxNode SampleNode = null;
+            NxNode BeamNode = null;
+            
+            int startEntryToDSsElement = EntryToDSs.size();
+            int nChildren =nn.getNChildNodes();
+            DataSetInfo MonitorDSinf = null;
+            for( int child=0; child <nChildren; child++){
+               NxNode childNode = nn.getChildNode( child );
+               if( childNode != null && childNode.getNodeClass()!= null){
+                  String nodeClass = childNode.getNodeClass();
+                  if( nodeClass.equals("NXinstrument")){
+                     InstrumentNode = childNode;
+                    
+                  }else if(nodeClass.equals("NXbeam")){
+                     BeamNode = childNode;
+                  
+                  }else if( nodeClass.equals("NXSample")){
+                     SampleNode = childNode;
+                  
+                  }else if( nodeClass.equals( "NXmonitor" )){
+                     MonitorDSinf = this.AddOneMonitor( nn, childNode, MonitorDSinf );
+                  
+                
+                  }else if( nodeClass.equals("NXdata")){
+                     AddOneLabeledHistogramDataSet( nn, childNode,startEntryToDSsElement);
+                     AddOneUnMergedHistogramDataSets( nn, childNode);
+                  }
+               }//if child node is not null
+            }//for each NXentry child
+            if( MonitorDSinf != null)
+               EntryToDSs.insertElementAt( MonitorDSinf ,startEntryToDSsElement  );
+            propogate(InstrumentNode,SampleNode ,BeamNode ,startEntryToDSsElement);
+            GetPropogateInstSource( InstrumentNode, startEntryToDSsElement);
+            SetDefaultGroupDetIDs( nn, EntryToDSs);
+         }//NXentry not null
+         }// for each NXentry
+      
+
+      // ------------------ now to get the NXlogs ------------------
+ /*     int numLogDS = nxLogLocator.getNumNxLogDataSets();
+      for( int i = 0 ; i < numLogDS ; i++ )
+         EntryToDSs.add( nxLogLocator.getNxLogDataSet( i ) );
+ */
+   }
+   
+   private void GetPropogateInstSource( NxNode InstrumentNode, 
+                                                                  int startEntryIndx){
+      if( InstrumentNode == null)
+         return;
+      NxNode InstrSource = null;
+      for( int i=0; i< InstrumentNode.getNChildNodes() &&
+                 InstrSource == null ; i++){
+         NxNode childNode = InstrumentNode.getChildNode( i );
+         if( childNode != null && childNode.getNodeClass()!=  null
+                  && childNode.getNodeClass().equals( "NXsource" ))
+            InstrSource = childNode;
+      }
+      
+      if( InstrSource == null)
+         return;
+      for( int i=0; i< EntryToDSs.size(); i++){
+         DataSetInfo dsInf =(DataSetInfo)(EntryToDSs.elementAt( i ));
+         if( dsInf != null)
+            dsInf.NxInstrSourceNode = InstrSource;
+      }
+      
+   }
 
   // inserting ranges
   private void Insert( Vector V, int[] element){
@@ -595,12 +685,12 @@ public class ExtGetDS{
          return n2;
       if( n2 < 0)
          return n1;
-      if( n1 < n2 )
+      if( n1 < n2 ){
          if( minimize)
             return n1;
-         else
-            return n2;
-      else if( minimize)
+         
+         return n2;
+      }else if( minimize)
          return n2;
       else
          return n1;
@@ -782,7 +872,56 @@ public class ExtGetDS{
       return InstrumentNode;
    }
 
-
+   
+   /**
+    * Updates this NxMonitor node into the data set Info, 
+    * @param mm The node.  It checks to determine if it is an
+    *                  NXmonitor Node;
+    * @param dsInf  the DataSetInfo so far on the monitor nodes
+    *               in this NXentry
+    * @return  The updated DataSetInfo structure or null if not
+    *          found
+    */
+   private DataSetInfo AddOneMonitor( NxNode entryNode,NxNode mm, DataSetInfo dsInf){
+      if( mm == null)
+         return dsInf;
+      if( mm.getClass() == null)
+         return dsInf;
+      if( !mm.getClass().equals("NXmonitor"))
+         return dsInf;
+      //------------Is a monitor node ---------
+     
+      Integer detID = NexUtils.getIntFieldValue( mm , "detector_Number" );
+      
+      Integer grID = NexUtils.getIntFieldValue( mm , "id" );
+      
+      if( grID == null ) 
+         grID = detID;
+      int minGroupID,minDetectorID, maxGroupID, maxDetectorID;
+      if( dsInf == null){
+         minGroupID=minDetectorID=maxGroupID=maxDetectorID=-1;
+         dsInf = new DataSetInfo( entryNode , null , 1 , 1 , null );
+         dsInf.nelts = dsInf.ndetectors = 1;
+      }else{
+         minGroupID=dsInf.startGroupID;
+         minDetectorID = dsInf.startDetectorID;
+         maxDetectorID =dsInf.endDetectorID;
+         maxGroupID = dsInf.endGroupID;
+         dsInf.nelts++;
+         dsInf.ndetectors++;
+      }
+     
+      dsInf.startGroupID = updateMinValue( minGroupID , grID );
+      dsInf.endDetectorID = updateMinValue( minDetectorID , detID );
+      dsInf.endGroupID = updateMaxValue( maxGroupID , grID );
+      dsInf.startDetectorID = updateMaxValue( maxDetectorID , detID );
+      if( dsInf.NodeNames.length() > 0)
+         dsInf.NodeNames +=";";
+      dsInf.NodeNames += mm.getNodeName();
+      return dsInf;
+     
+      
+   }
    /**
     * Adds labeled( to be merged) histogram info to EntryToDSs
     * 
@@ -836,7 +975,60 @@ public class ExtGetDS{
       }// for child nodes
 
    }
+   /**
+    * Will look at one NXdata in an NXenty and determine if it is a labeled
+    * (to be merged) data set. If so, updates EntryToDS's to add this NXdata 
+    * to the proper element of EntryToDS's
+    * 
+    * @param entryNode   The NXentry node
+    * @param mm          The node for a child of this NXentry node. Will check that
+    *                    it is a NXdata node
+    * @param StartThisNXentryElement  index into EntryToDSs where this NXentry's
+    *                                 information starts
+    */
+   private void AddOneLabeledHistogramDataSet( NxNode entryNode, NxNode mm, 
+                                                      int StartThisNXentryElement){
+      if( entryNode == null || mm == null || StartThisNXentryElement < 0 
+            || EntryToDSs== null||   StartThisNXentryElement > EntryToDSs.size()
+            || mm.getNodeClass()== null || !mm.getNodeClass().equals( "NXdata" ))
+            	return;
+      
+      NxNode dat = mm.getChildNode( "data" );
+      if( dat == null ) 
+         return;
 
+     Object O = dat.getAttrValue( "label" );
+     String S = new NxData_Gen().cnvertoString( O );
+     if( S == null || S.length()<1 ) 
+        return;
+     //There is a label now see if it is new or otherwise which entry it is in.
+     
+     int indx = -1;
+     DataSetInfo dsInf =null;
+     for( int i = StartThisNXentryElement; i < EntryToDSs.size() && indx < 0 ; i++ ){
+       dsInf = (DataSetInfo)(EntryToDSs.elementAt( i ));
+       if( dsInf.label != null&& dsInf.label.length()> 0 && dsInf.label.equals(S))
+          indx = i;
+     }
+     
+     int nGroups = 1;
+     int[] dim = mm.getDimension();
+     for( int ii = 0 ; ii + 1 < dim.length ; ii++ )
+        nGroups *= dim[ ii ];
+     
+     
+     if( indx < 0)
+        dsInf = new DataSetInfo( entryNode, mm, -1, -1, S);
+     if( dsInf == null)
+        return;
+     dsInf.nelts += nGroups;
+     if( dsInf.NodeNames.length() > 0)
+        dsInf.NodeNames +=";";
+     dsInf.NodeNames += mm.getNodeName();
+     dsInf.ndetectors = 0; // Will be done when NXdetector
+
+      
+   }
 
    private void AddUnMergedHistogramDataSets( NxNode nn , Vector EntryToDSs ) {
 
@@ -866,7 +1058,36 @@ public class ExtGetDS{
       }
 
    }
+   
+   /**
+    * Adds one DataSet to EntryToDSs corresponding to One NXdata
+    * 
+    * @param nn   The NXentry node
+    * @param mm   The NXdata node. It will be checked
+    */
+   private void AddOneUnMergedHistogramDataSets( NxNode nn , NxNode mm ){
+      if( nn== null || mm == null || EntryToDSs ==null|| 
+           mm.getNodeClass() == null || !mm.getNodeClass().equals( "NXdata" ))
+         return;
 
+      NxNode dat = mm.getChildNode( "data" );
+      if( dat != null ) {
+
+         Object O = dat.getAttrValue( "label" );
+         String S = new NxData_Gen().cnvertoString( O );
+         if( ( O == null ) || ( S == null ) ) {
+            int[] dim = dat.getDimension();
+            int nGroups = 1;
+            for( int ii = 0 ; ii + 1 < dim.length ; ii++ )
+               nGroups *= dim[ ii ];
+            DataSetInfo DatInf = new DataSetInfo( nn , mm , - 1 , - 1 ,
+                     null );
+            DatInf.nelts = nGroups;
+            EntryToDSs.addElement( DatInf );
+         }
+      }
+      
+   }
 
    public void RecordGivenGroupDetIDs( NxNode nn , Vector EntryToDSs ,
             NxNode InstrumentNode ) {
@@ -1054,10 +1275,13 @@ public class ExtGetDS{
         node = ( NxNode )( new NdsSvNode( filename , nds ) ) ;
       */
     }else if( d == 'a' ){
-      node = ( NxNode )( new NexIO.NexApi.NexNode(  filename ) ) ;
+      node = ( new NexIO.NexApi.NexNode(  filename ) ) ;
     }else
       System.exit( 0 ) ;
-    System.out.println("A");
+    if( node == null){
+       System.exit(0);
+       return;
+    }
     ExtGetDS X = null ;
     if( node.getErrorMessage() == "" )
       X = new ExtGetDS( node , filename ) ;
@@ -1068,6 +1292,8 @@ public class ExtGetDS{
       System.out.println( "Node create error =" + node.getErrorMessage() ) ;
       System.exit( 0 ) ;
     }
+    if( X == null)
+       return;
     System.out.println("B");
     System.out.println( "num data sets = " + X.numDataSets() ) ;
     // System.out.println( X.nEntries.size() + "," + 
@@ -1109,7 +1335,7 @@ public class ExtGetDS{
   /**
     * Returns the DataSet or null if a fatal error occurs Obsolete
     */
-   private DataSet getDataSet1( int data_set_num ){
+ /*  private DataSet getDataSet1( int data_set_num ){
      if( !setupDSs ) 
        setUpDataSetList() ;
 
@@ -1145,7 +1371,7 @@ public class ExtGetDS{
       DS.setAttribute( new StringAttribute(Attribute.DS_TYPE, Attribute.SAMPLE_DATA));
    
     if( !ProcessNxentryNode( nd2 ,  DS , nDS ) ){
-    
+      
       String S = nDS.getNodeName();
       DS.setTitle( S ) ;
      
@@ -1163,20 +1389,20 @@ public class ExtGetDS{
     return DS;
    }
   //  Obsolete
-   private boolean ProcessNxentryNode( NxNode node, DataSet DS, NxNode nxdata ){
+   private boolean ProcessNxentryNode( NxNode nnode, DataSet DS, NxNode nxdata ){
      int  nchildren ;
      boolean res ;
      NXentry_TOFNDGS Entry ;
      errormessage = "" ;
    
-     nchildren = node.getNChildNodes() ;
+     nchildren = nnode.getNChildNodes() ;
     
      if( nchildren < 0 ){
-       errormessage = node.getErrorMessage() ;
+       errormessage = nnode.getErrorMessage() ;
        return false ;
      }
      //System.out.println( "start Find analysis" ) ;
-     NxNode child = node.getChildNode( "analysis" ) ;
+     NxNode child = nnode.getChildNode( "analysis" ) ;
     
      Object X ;
      if( child == null )
@@ -1196,17 +1422,17 @@ public class ExtGetDS{
     
  
      if( S.equals( "TOFNDGS" ) ){
-       Entry = new NXentry_TOFNDGS( node , DS ,nxdata) ;
+       Entry = new NXentry_TOFNDGS( nnode , DS ,nxdata) ;
        Entry.setNxData( new NxData_Gen() ) ;
        //DS.setAttribute( new IntAttribute( Attribute.INST_TYPE ,
        //                  InstrumentType.TOF_DG_SPECTROMETER ) ) ;      
      }else if( S.equals( "TOFNGS")){
-       Entry = new NXentry_TOFNDGS( node , DS ,nxdata) ;
+       Entry = new NXentry_TOFNDGS( nnode , DS ,nxdata) ;
        Entry.setNxData( new NXdata_Fields("time_of_flight","phi","data"  ) ) ;
        Entry.monitorNames[0]="upstream";
        Entry.monitorNames[1]="downstream";
      }else{
-       Entry = new NXentry_TOFNDGS( node , DS ,nxdata ) ;
+       Entry = new NXentry_TOFNDGS( nnode , DS ,nxdata ) ;
        Entry.setNxData( new NxData_Gen() ) ;
      }
      if(debug)
@@ -1254,6 +1480,6 @@ public class ExtGetDS{
      //System.out.println( "Number of created DataSets = " + V.size() ) ;
      return DSS ;
    }
-
+*/
 
 }
