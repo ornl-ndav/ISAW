@@ -129,7 +129,8 @@ public class Process1NxData implements IProcessNxData {
       NxEntryStateInfo EntryState = NexIO.Util.NexUtils
                .getEntryStateInfo( States );
       if( EntryState == null ) {
-         EntryState = new NxEntryStateInfo( NxEntryNode , States );
+         EntryState = new NxEntryStateInfo( NxEntryNode , States, null, 
+                  null, null, null );
          States.Push( EntryState );
          npush++ ;
       }
@@ -145,7 +146,7 @@ public class Process1NxData implements IProcessNxData {
          else if( xmldoc != null ) {
 
             String fname = null;
-            if( States != null ) fname = States.filename;
+            fname = States.filename;
 
             int timeDim1 = getXMLIntVal( xmldoc , NxEntryNode.getNodeName() ,
                      new String[]{ "time_dimension" } , null , fname ,
@@ -212,8 +213,7 @@ public class Process1NxData implements IProcessNxData {
       }
       else if( DetState == null ) {
          DetState = new NxDetectorStateInfo( NxDetectorNode , States );
-         if( DetState != null ) 
-            States.Push( DetState );
+         States.Push( DetState );
          npush++ ;
       }
       
