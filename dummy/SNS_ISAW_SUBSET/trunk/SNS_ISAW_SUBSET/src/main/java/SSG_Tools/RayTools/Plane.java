@@ -25,6 +25,12 @@
  * Modified:
  *
  *  $Log: Plane.java,v $
+ *  Revision 1.2  2007/08/14 00:03:30  dennis
+ *  Major update to JSR231 based version from UW-Stout repository.
+ *
+ *  Revision 1.1  2005/10/14 04:13:36  dennis
+ *  Copied to local CVS repository from CVS repository at IPNS.
+ *
  *  Revision 1.1  2005/07/18 16:53:55  dennis
  *  Initial version of class describining primitive shape, with
  *  methods for finding intersections with "rays" and a reflected
@@ -149,8 +155,8 @@ public class Plane
      {
         if ( diff.dot( normal ) == 0 )            // ray is in plane, so just
           return ray.getPoint();                  // use start point of ray
-        else
-          return null;                            // ray parallel, but outside
+        
+        return null;                              // ray parallel, but outside
                                                   // of plane.
      }
                                                   // now for the "typical" case

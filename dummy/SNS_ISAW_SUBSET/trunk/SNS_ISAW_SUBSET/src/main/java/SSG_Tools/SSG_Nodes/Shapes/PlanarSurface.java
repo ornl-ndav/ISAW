@@ -25,6 +25,9 @@
  * Modified:
  *
  * $Log: PlanarSurface.java,v $
+ * Revision 1.6  2007/08/14 00:03:32  dennis
+ * Major update to JSR231 based version from UW-Stout repository.
+ *
  * Revision 1.5  2006/07/20 15:41:15  dennis
  * Updated from CVS repository at isaw.mscs.uwstout.edu
  * Added methods to get size, number of steps and max texture
@@ -64,7 +67,7 @@
  */
 package SSG_Tools.SSG_Nodes.Shapes;
 
-import net.java.games.jogl.*;
+import javax.media.opengl.*;
 import javax.swing.*;
 
 import SSG_Tools.Viewers.*;
@@ -247,7 +250,7 @@ public class PlanarSurface extends Shape
    *
    *  @param  drawable  The drawable on which the plane is to be drawn.
    */
-  public void Render( GLDrawable drawable )
+  public void Render( GLAutoDrawable drawable )
   {
     preRender( drawable );                // handle name stack and appearance
 

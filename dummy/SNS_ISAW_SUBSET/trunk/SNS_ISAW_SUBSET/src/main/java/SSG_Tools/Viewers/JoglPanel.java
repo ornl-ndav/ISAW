@@ -25,15 +25,49 @@
  * Modified:
  *
  * $Log: JoglPanel.java,v $
- * Revision 1.12  2006/07/25 01:58:18  dennis
- * Replaced call to deprecated show() method, with call to
- * setVisible(true).
+ * Revision 1.14  2007/08/26 23:23:21  dennis
+ * Updated to latest version from UW-Stout repository.
  *
- * Revision 1.11  2006/07/20 14:33:13  dennis
+ * Revision 1.15  2007/08/25 03:46:03  dennis
+ * Parameterized raw types.
+ *
+ * Revision 1.14  2006/12/10 05:13:47  dennis
+ * Now instantiates either an SSG_Canvas or an SSG_JPanel instead of
+ * a GLCanvas or GLJpanel.  The new classes SSG_Canvas and SSG_JPanel
+ * extend SSG_Canvas and SSG_JPanel, respectively.  They construct
+ * a new GLU object, when they are constructed, and have a
+ * getGLU() method to allow nodes of the scene graph to easily get
+ * access to the GLU object. That GLU object should be safe to use
+ * while they are being rendered.
+ *
+ * Revision 1.13  2006/12/09 20:29:23  dennis
+ * Added method setBackgroundColor() to change the "clear color" that
+ * OpenGL uses to clear the display before the scene is drawn.
+ *
+ * Revision 1.12  2006/10/30 03:00:30  dennis
+ * Added Update() method to implement the MessageTools.IUpdate()
+ * interface.
+ *
+ * Revision 1.11  2006/10/15 04:09:27  dennis
+ * Updated small main test program to use separate Geometry
+ * for the box.
+ *
+ * Revision 1.10  2006/08/04 02:16:21  dennis
+ * Updated to work with JSR-231, 1.0 beta 5,
+ * instead of jogl 1.1.1.
+ *
+ * Revision 1.9  2006/07/20 19:59:01  dennis
+ * Replaced deprecated method frame.show() with setVisible(true)
+ *
+ * Revision 1.8  2005/12/12 00:23:15  dennis
  * Added constructor that allows specifying debug or trace mode.
+ *
+ * Revision 1.7  2005/11/27 23:47:09  dennis
  * Added isDrawing() method to check if a redraw has been requested but
  * not finished yet.
  *
+ * Revision 1.6  2005/10/14 03:46:47  dennis
+ * Updated from current version kept in CVS at IPNS.
  *
  * Revision 1.10  2005/08/03 16:58:45  dennis
  * Commented out gl.glEnable(GL_LIGHTING), so that now lighting is
@@ -116,13 +150,16 @@
  */
 package SSG_Tools.Viewers;
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Component;
 import java.util.*;
 import javax.swing.*;
 import java.nio.*;
 
-import net.java.games.jogl.*;
-import net.java.games.jogl.util.*;
+import javax.media.opengl.*;
+import com.sun.opengl.util.*;
+
+import MessageTools.*;
 
 import SSG_Tools.*;
 import SSG_Tools.Cameras.*;
@@ -130,6 +167,8 @@ import SSG_Tools.Utils.*;
 import gov.anl.ipns.MathTools.Geometry.*;
 import SSG_Tools.SSG_Nodes.Shapes.*;
 import SSG_Tools.SSG_Nodes.Util.*;
+import SSG_Tools.Viewers.Controls.*;
+import SSG_Tools.Geometry.*;
 
 /**
  *  This class provides a GLCanvas or GLJPanel that can be used  
@@ -144,13 +183,13 @@ import SSG_Tools.SSG_Nodes.Util.*;
  *  headlight can be disabled with the method supplied.
  */
 
-public class JoglPanel 
+public class JoglPanel implements IUpdate 
 {
   public static final int NORMAL_MODE = 0;  // flag use for normal (quiet) mode 
   public static final int DEBUG_MODE  = 1;  // flag to turn on debug mode
   public static final int TRACE_MODE  = 2;  // flat to turn on trace mode
 
-  private GLDrawable     canvas;     // This will be either a  GLJPanel, 
+  private GLAutoDrawable     canvas; // This will be either a  GLJPanel, 
                                      // which is a light weight component, or 
                                      // a GLCanvas, which is a heavy weight 
                                      // component that we will draw to, using 
@@ -166,6 +205,7 @@ public class JoglPanel
   private boolean        headlight_on = true;
   private Color          ambient_color   = Color.GRAY;
   private Color          headlight_color = Color.GRAY;
+  private Color          clear_color     = Color.BLACK;
 
   private boolean        draw_requested = false; // flag set true when draw is
                                                  // requested and tripped false
@@ -180,7 +220,7 @@ public class JoglPanel
                                                  // rendered in selection mode
   private final int HIT_BUFFER_SIZE = 512;
   private int n_hits = 0;
-  private IntBuffer hit_buffer = BufferUtils.newIntBuffer( HIT_BUFFER_SIZE );
+  private IntBuffer hit_buffer = BufferUtil.newIntBuffer( HIT_BUFFER_SIZE );
 
   private int cur_x,                              // x,y pixel coords of point
               cur_y;                              // used for picking and 
@@ -204,7 +244,7 @@ public class JoglPanel
    *  @param  scene      The scene graph that this GLCanvas object will 
    *                     render.
    *
-   *  @param  is_heavy   Flag to determine which type of GLDrawable to 
+   *  @param  is_heavy   Flag to determine which type of GLAutoDrawable to 
    *                     construct.  If true a heavy-weight GLCanvas is 
    *                     constructed.  If false a light-weight GLJPanel is 
    *                     constructed.
@@ -214,11 +254,14 @@ public class JoglPanel
     try
     {
       GLCapabilities capabilities = new GLCapabilities();
-
       if ( is_heavy )
-        canvas = GLDrawableFactory.getFactory().createGLCanvas(capabilities);
+        canvas = new SSG_Canvas(capabilities);
       else
-        canvas = GLDrawableFactory.getFactory().createGLJPanel(capabilities);
+      {
+        System.out.println("Making GLJPanel: Capabilities are: " + 
+                            capabilities );
+        canvas = new SSG_JPanel(capabilities);
+      }
 
       canvas.addGLEventListener(new Renderer());
     }
@@ -255,6 +298,7 @@ public class JoglPanel
       System.out.println( "Warning: invalid number " + depth_scale_prop +
                           " in " + PIXEL_DEPTH_SCALE_PROPERTY );
     }
+
   }
 
 
@@ -284,7 +328,7 @@ public class JoglPanel
    *  @param  scene      The scene graph that this GLCanvas object will 
    *                     render.
    *
-   *  @param  is_heavy   Flag to determine which type of GLDrawable to 
+   *  @param  is_heavy   Flag to determine which type of GLAutoDrawable to 
    *                     construct.  If true a heavy-weight GLCanvas is 
    *                     constructed.  If false a light-weight GLJPanel is 
    *                     constructed.
@@ -339,6 +383,18 @@ public class JoglPanel
  public boolean isDrawing()
  {
    return draw_requested;
+ }
+
+
+/* ------------------------------- Update ------------------------------ */
+/**
+ *  Update the panel, by scheduling a redraw of the canvas.  This method
+ *  is required by the MessageTools.Update interface.
+ */
+ public boolean Update()
+ {
+   Draw();
+   return true;
  }
 
 
@@ -487,6 +543,19 @@ public class JoglPanel
  }
 
 
+/* ------------------------- setBackgroundColor --------------------------- */
+/**
+ *  Specifiy the "clear color" that OpenGL will use to clear the screen before
+ *  redrawing.
+ *
+ *  @param color New color to use for the background of the display window.
+ */
+ public void setBackgroundColor( Color color )
+ {
+   clear_color = color;
+ }
+
+
 /* --------------------------- getPickHitList ------------------------------ */
 /**
  *  Get the OpenGL selection hit list for the specified window coordinates
@@ -514,7 +583,7 @@ public HitRecord[] pickHitList( int x, int y )
   int hits[] = new int[ HIT_BUFFER_SIZE ];
   hit_buffer.get( hits );
 
-  Vector    hit_list = new Vector();
+  Vector<HitRecord>    hit_list = new Vector<HitRecord>();
   HitRecord hit_rec;
   int start = 0;
   for ( int i = 0; i < n_hits; i++ )
@@ -527,7 +596,7 @@ public HitRecord[] pickHitList( int x, int y )
 
   HitRecord hit_recs[] = new HitRecord[ hit_list.size() ];
   for ( int i = 0; i < hit_recs.length; i++ )
-    hit_recs[i] = (HitRecord)hit_list.elementAt(i);
+    hit_recs[i] = hit_list.elementAt(i);
 
   return hit_recs;
 }
@@ -566,9 +635,9 @@ public Vector3D pickedPoint( int x, int y )
     /**
      *  Called by the JOGL system when the panel is initialized. 
      *
-     *  @param drawable  The GLDrawable for this canvas.
+     *  @param drawable  The GLAutoDrawable for this canvas.
      */
-    public void init( GLDrawable drawable )
+    public void init( GLAutoDrawable drawable )
     {
       // The default GL can be used, for maximum efficiency, or to aid in
       // debugging, we can change the GL object to be a "DebugGL", which 
@@ -601,13 +670,13 @@ public Vector3D pickedPoint( int x, int y )
      *  default (identity) matrix.  This is needed to preserve the aspect
      *  ratio.
      *
-     *  @param drawable  The GLDrawable for this canvas.
+     *  @param drawable  The GLAutoDrawable for this canvas.
      *  @param x         The x position of the window (typically 0)
      *  @param y         The y position of the window (typically 0)
      *  @param width     The width of the window in pixels
      *  @param height    The height of the window in pixels
      */
-    public void reshape( GLDrawable drawable,
+    public void reshape( GLAutoDrawable drawable,
                          int x,
                          int y,
                          int width,
@@ -636,7 +705,7 @@ public Vector3D pickedPoint( int x, int y )
      *  called by the JOGL system when the panel is  moved to another 
      *  display monitor on a dual headed display.
      */
-    public void displayChanged( GLDrawable drawable,
+    public void displayChanged( GLAutoDrawable drawable,
                                 boolean modeChanged,
                                 boolean deviceChanged)
     {
@@ -652,21 +721,25 @@ public Vector3D pickedPoint( int x, int y )
      *  display, then calls any methods needed to draw and finally swaps
      *  the front and back buffers.
      *
-     *  @param drawable  The GLDrawable for this canvas.
+     *  @param drawable  The GLAutoDrawable for this canvas.
      */
-    public void display(GLDrawable drawable)
+    public void display(GLAutoDrawable drawable)
     {   
                                            // Filter out some degenerate cases
       if ( drawable == null )
         return;
 
-      Dimension size = drawable.getSize();
-      if ( size.width <= 0 || size.height <= 0 )
-        return;
-
       if ( drawable instanceof GLCanvas && !((GLCanvas)drawable).isShowing() )
         return;
 
+      if ( drawable instanceof GLJPanel && !((GLJPanel)drawable).isShowing() )
+        return;
+
+      int height = drawable.getHeight();
+      int width  = drawable.getWidth();
+
+      if ( width <= 0 || height <= 0 )
+        return;
                                               // the panel is ok, so proceed 
       GL gl = drawable.getGL();               // get the GL context to use
 
@@ -677,26 +750,26 @@ public Vector3D pickedPoint( int x, int y )
       if ( do_locate )                // projection info, unproject, and return
       {
         float depths[] = new float[1];                 // read back pixel depth
-        gl.glReadPixels( cur_x, size.height-cur_y,     // from OpenGL
+        gl.glReadPixels( cur_x, height-cur_y,          // from OpenGL
                          1, 1,
                          GL.GL_DEPTH_COMPONENT,
                          GL.GL_FLOAT,
-                         depths );
+                         FloatBuffer.wrap(depths) );
         float cur_z = depths[0];
         cur_z *= pixel_depth_scale_factor;
                                                       // get current viewport
         int    viewport[] = new int[4];               // and matrics from OpenGL
-        gl.glGetIntegerv( GL.GL_VIEWPORT, viewport );
+        gl.glGetIntegerv( GL.GL_VIEWPORT, viewport, 0 );
         double model_view_mat[] = new double[16];
         double projection_mat[] = new double[16];
-        gl.glGetDoublev( GL.GL_MODELVIEW_MATRIX, model_view_mat );
-        gl.glGetDoublev( GL.GL_PROJECTION_MATRIX, projection_mat );
+        gl.glGetDoublev( GL.GL_MODELVIEW_MATRIX, model_view_mat, 0 );
+        gl.glGetDoublev( GL.GL_PROJECTION_MATRIX, projection_mat, 0 );
 
                                                     // use gluUnProject to map
         double world_x[] = new double[1];           // back to world coordinates
         double world_y[] = new double[1];
         double world_z[] = new double[1];
-        BasicGLU.gluUnProject( cur_x, size.height-cur_y, cur_z,
+        BasicGLU.gluUnProject( cur_x, height-cur_y, cur_z,
                                model_view_mat, projection_mat, viewport,
                                world_x, world_y, world_z );
         world_coords[0] = (float)world_x[0];
@@ -710,10 +783,13 @@ public Vector3D pickedPoint( int x, int y )
       }
 
       gl.glEnable( GL.GL_DEPTH_TEST );
+      gl.glClearColor( clear_color.getRed()/255.0f, 
+                       clear_color.getGreen()/255.0f,
+                       clear_color.getBlue()/255.0f,  0f );
       if ( !do_select )
         gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT );
 		
-      reshape( drawable, 0, 0, size.width, size.height );
+      reshape( drawable, 0, 0, width, height );
 
       if ( do_select )                        // set up the hit buffer
       {
@@ -810,7 +886,7 @@ public Vector3D pickedPoint( int x, int y )
       color[1] = ambient_color.getGreen()/255f;
       color[2] = ambient_color.getBlue()/255f;
       color[3] = 1;
-      gl.glLightModelfv( GL.GL_LIGHT_MODEL_AMBIENT, color );
+      gl.glLightModelfv( GL.GL_LIGHT_MODEL_AMBIENT, color, 0 );
     }
   }
 
@@ -829,16 +905,16 @@ public Vector3D pickedPoint( int x, int y )
       gl.glLoadIdentity();
       float l0_position[] = { 0, 0, 0, 1 };
       gl.glEnable( GL.GL_LIGHT0 );
-      gl.glLightfv( GL.GL_LIGHT0, GL.GL_POSITION, l0_position );
+      gl.glLightfv( GL.GL_LIGHT0, GL.GL_POSITION, l0_position, 0 );
 
       float color[] = new float[4];
       color[0] = headlight_color.getRed()/255f;
       color[1] = headlight_color.getGreen()/255f;
       color[2] = headlight_color.getBlue()/255f;
       color[3] = 1;
-      gl.glLightfv( GL.GL_LIGHT0, GL.GL_AMBIENT, color );
-      gl.glLightfv( GL.GL_LIGHT0, GL.GL_DIFFUSE, color );
-      gl.glLightfv( GL.GL_LIGHT0, GL.GL_SPECULAR, color );
+      gl.glLightfv( GL.GL_LIGHT0, GL.GL_AMBIENT, color, 0 );
+      gl.glLightfv( GL.GL_LIGHT0, GL.GL_DIFFUSE, color, 0 );
+      gl.glLightfv( GL.GL_LIGHT0, GL.GL_SPECULAR, color, 0 );
     }
   }
 
@@ -850,7 +926,8 @@ public Vector3D pickedPoint( int x, int y )
    */
   public static void main( String args[] )
   {
-    JoglPanel demo = new JoglPanel( new SolidBox( 1, 1, 4 ) );
+    Shape box = new GenericShape( new BoxGeometry(1,1,4), null );
+    JoglPanel demo = new JoglPanel( box );
 
     // demo.enableLighting( false );
     // demo.enableHeadlight( false );
@@ -858,6 +935,8 @@ public Vector3D pickedPoint( int x, int y )
     demo.setHeadlightColor( Color.RED );
     demo.setAmbientColor( Color.BLUE );
   
+    new MouseArcBall( demo );
+
     JFrame frame = new JFrame( "JoglPanel TEST" );
     frame.setSize(500,517);
     frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );

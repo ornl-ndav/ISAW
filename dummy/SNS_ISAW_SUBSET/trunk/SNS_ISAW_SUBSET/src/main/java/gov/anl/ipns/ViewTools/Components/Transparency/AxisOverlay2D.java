@@ -34,6 +34,23 @@
  * Modified:
  *
  *  $Log: AxisOverlay2D.java,v $
+ *  Revision 1.58  2007/10/12 22:33:26  amoe
+ *  Fixed a bug that caused DifferenceViewComponent's Y Axis label to not
+ *  shift with the number labels.
+ *      -Removed longest_tick_label parameter from paintLabelsAndUnits(..)
+ *      -Made the y axis label shift be calculated regardless of whether the Y
+ *  	  axis is displayed or not.
+ *
+ *  Revision 1.57  2007/09/06 23:30:52  amoe
+ *  Remove println() used for debugging.
+ *
+ *  Revision 1.56  2007/08/24 01:06:11  amoe
+ *  Made the Y axis title shift left in accordance with the widest tick label.
+ *    -Made paintLinearY(..) and paintTruLogY(..) calculate the longest label.
+ *    -Added String longest_tick_label parameter to paintLabelsAndUnits(..) .
+ *    -Made paintLabelsAndUnits(..) shift the Y axis title leftward in accordance
+ *     with the longest tick label.
+ *
  *  Revision 1.55  2007/06/20 15:55:03  dennis
  *  Renamed paint() method to paintComponent().  Also, removed call to
  *  super.paint() in paintComponent() and modified paintComponent() to
@@ -445,6 +462,8 @@ public class AxisOverlay2D extends OverlayJPanel
   protected int ticksinoutX = 0;          // 0 = outside, 1 = inside
   protected int ticksinoutY = 0;          // 0 = outside, 1 = inside
   
+  protected int yaxis_label_shift = 0;
+  
   private transient AxisOverlay2D this_panel;
   private transient AxisEditor editor;
   private Color gridcolor = Color.black;
@@ -853,18 +872,19 @@ public class AxisOverlay2D extends OverlayJPanel
   } // end of paint()
   
  /* ***********************Private Methods************************** */
- 
+  
  /*
   * This will display the labels, units, and common exponent (if not 0).
   * if the string is specifically the AxisInfo.NO_LABEL or AxisInfo.NO_UNITS
   * strings then no strings will be displayed.
   *
   *  @param num The String number with exponent, ex: 1E3
-  *  @param axis Use axis codes above to determin axes, either X or Y
+  *  @param axis Use axis codes above to determine axes, either X or Y
   */
   private void paintLabelsAndUnits( String num, int axis, 
                                     boolean log, Graphics2D g2d )
   {
+    
     // true if "(" has been appended but not ")"
     boolean open_parenthesis = false;
     // Display will appear as such: "Label (10^x Units)"
@@ -872,87 +892,87 @@ public class AxisOverlay2D extends OverlayJPanel
     if( axis == X_AXIS )
     {
       StringBuffer xlabel = new StringBuffer("");
+      
       // if no label string, or empty label append nothing
-      if( !component.getAxisInformation(AxisInfo.X_AXIS).getLabel().equals( 
-    	  AxisInfo.NO_LABEL) &&
-	  !component.getAxisInformation(AxisInfo.X_AXIS).getLabel().equals( 
-	  "") )
-    	xlabel.append( component.getAxisInformation(AxisInfo.X_AXIS).getLabel()
-		       + "  " );
+      if( !component.getAxisInformation(AxisInfo.X_AXIS).getLabel().equals(AxisInfo.NO_LABEL) &&  
+          !component.getAxisInformation(AxisInfo.X_AXIS).getLabel().equals( "") )
+        xlabel.append( component.getAxisInformation(AxisInfo.X_AXIS).getLabel()+ "  " );
+        
       // Since log calibrations carry their own exponent, none is required
-      if( !log )
+      if(!log)
       { 
         int exp_index = num.lastIndexOf('E');       
+          
         if( Integer.parseInt( num.substring( exp_index + 1) ) != 0 )
-	{
-    	  xlabel.append( "( 10^" + num.substring( exp_index + 1 ) + " ");
-	  open_parenthesis =  true;
+        {
+          xlabel.append( "( 10^" + num.substring( exp_index + 1 ) + " ");
+          open_parenthesis =  true;
         }
       }
-      if( !component.getAxisInformation(AxisInfo.X_AXIS).getUnits().equals(
-    	  AxisInfo.NO_UNITS) &&
-	  !component.getAxisInformation(AxisInfo.X_AXIS).getUnits().equals( 
-	  "") )
+      
+      if( !component.getAxisInformation(AxisInfo.X_AXIS).getUnits().equals(AxisInfo.NO_UNITS) && 
+          !component.getAxisInformation(AxisInfo.X_AXIS).getUnits().equals("") )
       {
         if( !open_parenthesis )
-	{
-	  xlabel.append("( ");
-	  open_parenthesis = true;
-    	}
-	xlabel.append( component.getAxisInformation(AxisInfo.X_AXIS).getUnits()
-	               + " )");
+        {
+          xlabel.append("( ");
+          open_parenthesis = true;
+        }
+        xlabel.append( component.getAxisInformation(AxisInfo.X_AXIS).getUnits()+" )");
         open_parenthesis = false;
       }
+      
       // make sure there is always a last parenthesis
       if( open_parenthesis )
         xlabel.append(")");
+      
       if( !xlabel.toString().equals("") )
-    	g2d.drawString( xlabel.toString(), xstart + xaxis/2 -
-    		  fontdata.stringWidth(xlabel.toString())/2, 
-    		  yaxis + ystart + fontdata.getHeight() * 2 + 6 );
+        g2d.drawString( xlabel.toString(), 
+                        xstart + xaxis/2 - fontdata.stringWidth(xlabel.toString())/2, 
+                        yaxis + ystart + fontdata.getHeight() * 2 + 6 );
     }
     else if( axis == Y_AXIS )
-    {
+    {      
       open_parenthesis = false; // reset and use again.
       StringBuffer ylabel = new StringBuffer("");
-      if( !component.getAxisInformation(AxisInfo.Y_AXIS).getLabel().equals( 
-    	  AxisInfo.NO_LABEL) &&
-	  !component.getAxisInformation(AxisInfo.Y_AXIS).getLabel().equals( 
-	  "") )
-    	ylabel.append( component.getAxisInformation(AxisInfo.Y_AXIS).getLabel()
-		       + "  " );
+      if( !component.getAxisInformation(AxisInfo.Y_AXIS).getLabel().equals( AxisInfo.NO_LABEL) && 
+          !component.getAxisInformation(AxisInfo.Y_AXIS).getLabel().equals("") )
+        ylabel.append( component.getAxisInformation(AxisInfo.Y_AXIS).getLabel() + "  " );
+      
       // Since log calibrations carry their own exponent, none is required
       if( !log )
       { 
         int exp_index = num.lastIndexOf('E');       
         if( Integer.parseInt( num.substring( exp_index + 1) ) != 0 )
-	{
-    	  ylabel.append( "( 10^" + num.substring( exp_index + 1 ) + " ");
-	  open_parenthesis =  true;
+        {
+          ylabel.append( "( 10^" + num.substring( exp_index + 1 ) + " ");
+          open_parenthesis =  true;
         }
       }
-      if( !component.getAxisInformation(AxisInfo.Y_AXIS).getUnits().equals(
-    	  AxisInfo.NO_UNITS) &&
-	  !component.getAxisInformation(AxisInfo.Y_AXIS).getUnits().equals( 
-	  "") )
+      
+      if( !component.getAxisInformation(AxisInfo.Y_AXIS).getUnits().equals( AxisInfo.NO_UNITS) && 
+          !component.getAxisInformation(AxisInfo.Y_AXIS).getUnits().equals("") )
       {
         if( !open_parenthesis )
-	{
-	  ylabel.append("( ");
-	  open_parenthesis = true;
-    	}
-	ylabel.append( component.getAxisInformation(AxisInfo.Y_AXIS).getUnits()
-	               + " )");
+        {
+          ylabel.append("( ");
+          open_parenthesis = true;
+        }
+        
+        ylabel.append( component.getAxisInformation(AxisInfo.Y_AXIS).getUnits()+ " )");
         open_parenthesis = false;
       }
+      
       // draw the label rotated along y-axis      
       if( !ylabel.toString().equals("") )
       {
-    	g2d.rotate( -Math.PI/2, xstart, ystart + yaxis );    
-    	g2d.drawString( ylabel.toString(), xstart + yaxis/2 -
-    			fontdata.stringWidth(ylabel.toString())/2, 
-    			yaxis + ystart - xstart + fontdata.getHeight() );
-    	g2d.rotate( Math.PI/2, xstart, ystart + yaxis );
+        g2d.rotate( -Math.PI/2, xstart, ystart + yaxis );    
+        
+		g2d.drawString( ylabel.toString(), 
+            yaxis/2 + xstart - fontdata.stringWidth(ylabel.toString())/2,
+            yaxis + ystart - (int)(xstart*0.25) + fontdata.getHeight() - (yaxis_label_shift+3) );
+    	  
+        g2d.rotate( Math.PI/2, xstart, ystart + yaxis );
       }
     }
   }
@@ -1302,8 +1322,11 @@ public class AxisOverlay2D extends OverlayJPanel
     float a = 0;
     float amin = ymin - starty;
     
-    // yskip is the space between calibrations: 1 = every #, 2 = every other
-    
+    // make sure the y label shift is reset before the yaxis labels are 
+    // generated
+    yaxis_label_shift = 0;
+        
+    // yskip is the space between calibrations: 1 = every #, 2 = every other    
     int yskip = 1;
     while( (yaxis*yskip/numysteps) < fontdata.getHeight() && yskip < numysteps)
        yskip++;
@@ -1332,10 +1355,15 @@ public class AxisOverlay2D extends OverlayJPanel
       // if pixel is between top and bottom of imagejpanel, draw it  
       if( ypixel <= pmin && ypixel >= pmax )
       {
+        String temp_num = removeTrailingZeros( num.substring(0,exp_index) );
+        
+        //Checking if this tick label is the longest
+        if(fontdata.stringWidth(temp_num) > yaxis_label_shift)
+          yaxis_label_shift = fontdata.stringWidth(temp_num);        
+        
         if((displayY) && (((float)(ysteps-rem)/(float)yskip) == ((ysteps-rem)/yskip))  )
         {
           //draw labels for ticks
-          String temp_num = removeTrailingZeros( num.substring(0,exp_index) );
           g2d.drawString( temp_num, xstart - ytick_length - fontdata.stringWidth(temp_num),
         		  ypixel + fontdata.getHeight()/4 );
         }	       
@@ -1500,7 +1528,7 @@ public class AxisOverlay2D extends OverlayJPanel
     	 }
       }
      }
-    }
+    }     
     paintLabelsAndUnits( num, Y_AXIS, false, g2d );
   } // end of paintLinearY()
   
@@ -1839,7 +1867,7 @@ public class AxisOverlay2D extends OverlayJPanel
   * This method is used for pseudo-log axes.
   */	
   private void paintPseudoLogY( Graphics2D g2d )
-  {
+  {    
     // Make sure component is instance of IPseudoLogAxisAddible since
     // this interface defines the method getLogScale() which is needed by
     // this painting method.
@@ -1907,9 +1935,10 @@ public class AxisOverlay2D extends OverlayJPanel
         	  (xstart - ytick_length - fontdata.stringWidth(temp_num)));
             System.out.println("int2 = " + 
         	  (ypixel + fontdata.getHeight()/4));*/
-            g2d.drawString( temp_num,
-        	xstart - ytick_length - fontdata.stringWidth(temp_num),
-        	(ypixel + fontdata.getHeight()/4) );
+            
+            g2d.drawString( temp_num,	xstart - ytick_length - fontdata.stringWidth(temp_num),
+        	      ypixel + fontdata.getHeight()/4 );
+            
     	    last_drawn = ypixel - fontdata.getHeight()/2;
     	    if( a != 0 )
     	    //ypixel = ypixel - 2*fontdata.getHeight();
@@ -1958,6 +1987,7 @@ public class AxisOverlay2D extends OverlayJPanel
     	  {	     
     	    ytick_length += 3;
             String temp_num = removeTrailingZeros(num);
+
             g2d.drawString( temp_num,
         	xstart - ytick_length - fontdata.stringWidth(temp_num),
         	ypixel + fontdata.getHeight()/4 );
@@ -2049,6 +2079,7 @@ public class AxisOverlay2D extends OverlayJPanel
     	  {
             ytick_length += 3;
             String temp_num = removeTrailingZeros(num);
+            
             g2d.drawString( temp_num, 
         	xstart - ytick_length - fontdata.stringWidth(temp_num),
         	ypixel + fontdata.getHeight()/4 );
@@ -2066,6 +2097,7 @@ public class AxisOverlay2D extends OverlayJPanel
     	  {
     	    negtick_length += 3;
             String temp_num = removeTrailingZeros(neg_num);
+            
             g2d.drawString( temp_num,
         	xstart - ytick_length - fontdata.stringWidth(temp_num),
         	neg_ypixel + fontdata.getHeight()/4 + 2);
@@ -2173,12 +2205,14 @@ public class AxisOverlay2D extends OverlayJPanel
     	     ytick_length += 3;
     	     negtick_length += 3;
              String temp_num = removeTrailingZeros(num);
+             
              g2d.drawString( temp_num,
         	 xstart - ytick_length - fontdata.stringWidth(temp_num),
         	 ypixel + fontdata.getHeight()/4 );
     		 
              
              String temp_neg_num = removeTrailingZeros(neg_num);
+             
              g2d.drawString( temp_neg_num,
         	 xstart - negtick_length - fontdata.stringWidth(temp_neg_num),
         	 neg_ypixel + fontdata.getHeight()/4 + 2);    
@@ -2549,6 +2583,10 @@ public class AxisOverlay2D extends OverlayJPanel
     int pixel = 0;
     float glb = yUtil.greatestLowerBound();
     float lub = yUtil.leastUpperBound();
+    
+    // make sure the y label shift is reset before the yaxis labels are 
+    // generated
+    yaxis_label_shift = 0;
 
     //paint y axis using linear numbers that are scaled logrithmically
     // if they don't have enough orders of magnitude between them.
@@ -2573,9 +2611,17 @@ public class AxisOverlay2D extends OverlayJPanel
         
 		if(displayY)
 		{
-			g2d.drawString(string_num,
-					xstart - fontdata.stringWidth(string_num) - 15,
-					pixel + (fontdata.getHeight()/4) );
+		  
+			//g2d.drawString(string_num,
+			//		xstart - fontdata.stringWidth(string_num) - 15,
+			//		pixel + (fontdata.getHeight()/4) );
+			
+			g2d.drawString( string_num, xstart - 5 - fontdata.stringWidth(string_num),
+            pixel + fontdata.getHeight()/4 );
+			
+      //Checking if this tick label is the longest
+      if(fontdata.stringWidth(string_num) > yaxis_label_shift)
+        yaxis_label_shift = fontdata.stringWidth(string_num);
 		}
         
         //draw minor ticks
@@ -2642,10 +2688,18 @@ public class AxisOverlay2D extends OverlayJPanel
 	    {
 	    		if(displayY)
 	    		{
+	    		  
 	    			//draw the number for each tick
-	    			g2d.drawString(string_num,
-	    					xstart - fontdata.stringWidth(string_num) - 15,
-	    					pixel + (fontdata.getHeight()/4)) ;
+	    			//g2d.drawString(string_num,
+	    			//		xstart - fontdata.stringWidth(string_num) - 15,
+	    			//		pixel + (fontdata.getHeight()/4)) ;
+	    		  
+	    	     g2d.drawString( string_num, xstart - 5 - fontdata.stringWidth(string_num),
+	               pixel + fontdata.getHeight()/4 );
+	    	     
+	    	      //Checking if this tick label is the longest
+	    	      if(fontdata.stringWidth(string_num) > yaxis_label_shift)
+	    	        yaxis_label_shift = fontdata.stringWidth(string_num);
 	    		}
               
 	    		//draw on axis if it actually will fit on the axis.

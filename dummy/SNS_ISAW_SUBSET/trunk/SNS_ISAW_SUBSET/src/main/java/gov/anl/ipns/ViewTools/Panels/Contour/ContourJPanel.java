@@ -33,6 +33,38 @@
  *
  * Modified:
  * $Log: ContourJPanel.java,v $
+ * Revision 1.31  2008/01/29 22:13:38  dennis
+ * This commit represents more progress on fixing the update of
+ * the thumbnail for the PanViewControl.  Specifically:
+ * - Added method changeData() that calls changeData( data2D ) so
+ *   that the ContourViewComponent can notify the ContourJPanel when
+ *   values in the underlying array are changed, but the array is
+ *   NOT replaced with a new array.  The ContourViewComponent does
+ *   not keep a reference to the data, but it can call this new method
+ *   that does not accept a (possibly) new array.
+ * - When a thumbnail image is made, it's background is cleared using
+ *   g2d.clearRect() rather than using loops to set each pixel to the
+ *   background color, as was previously done.
+ *
+ * Revision 1.30  2008/01/28 22:34:34  dennis
+ * Modified the draw() routine to accept a transformation mapping
+ * world coordinates to pixels.  This allows the draw() routine to
+ * properly be applied to both draw the main contour display and
+ * draw the thumbnail image.  This fixes a bug where only part of
+ * contour region was drawn in the thumbnail image.
+ * A related bug is UNRESOLVED: When the 2d array data is changed
+ * by the 2d View Component, the pan view control does not get
+ * updated to a new thumbnail.
+ *
+ * Revision 1.29  2008/01/28 21:57:03  dennis
+ * The world coordinates are now initialized in the constructor.
+ * Removed flag wcNotInit, which had been used to track when world
+ * coordinates were initialized, since they are initialized in the
+ * constructor.
+ *
+ * Revision 1.28  2007/10/09 01:06:58  rmikk
+ * Filled the main display with the background color
+ *
  * Revision 1.27  2007/07/29 20:45:15  dennis
  * Changed local_transform and global_transform to be private
  * in CoordJPanel class, to keep better control over who can
@@ -443,23 +475,7 @@ public class ContourJPanel extends CoordJPanel implements Serializable,
     * slices be taken from the surface and drawn as contours)
     */
    private Contours levels;
-   /**
-    * Boolean flag that marks if the contour graph has had its 
-    * world coordinates initialized yet or not.  
-    * <p>
-    * Its initial value is 'true' and whenever the zoom is reset its value is 
-    * reset to 'true' otherwise it is 'false'.  The paint() method uses this 
-    * value to determine if it should set the source (call setSource()) on the 
-    * local transform (local_transform) (if 'true') or do nothing with the 
-    * locl transform (if 'false').
-    * <p>
-    * <b>
-    * Currently, this seems to be a way to get the contour graph to 
-    * support <i>both</i> zooming and have the correct world coordinates set.  
-    * However, there may be a better solution.
-    * </b>
-    */
-   private boolean wcNotInit;
+
    /**
     * Boolean flag that marks if the main contour plot has been drawn or 
     * not.  This flag is used by the {@link #getThumbnail(int, int) 
@@ -471,6 +487,7 @@ public class ContourJPanel extends CoordJPanel implements Serializable,
     * <code>ContourViewComponent</code>.
     */
    private boolean mainImageNotInit;
+
    /** 
     * Used to associate colors to contour levels.  These colors are used when 
     * drawing the contour levels.  The colors reflect the contours "height".
@@ -538,26 +555,10 @@ public class ContourJPanel extends CoordJPanel implements Serializable,
                                               0, (float)NUM_POSITIVE_COLORS);
       setLogScale(0);
       
+      initializeWorldCoords( getGlobalWCBounds() );
+
       //set that the contour image has not been initialized yet
-      this.wcNotInit = true;
       this.mainImageNotInit = true;
-      
-      //listen to changes in zooming
-      addActionListener(new ActionListener()
-      {
-         /**
-          * Called whenever an 'event' corresponding to 
-          * this panel has occured (i.e. the panel was 
-          * zoomed, the zoom was reset, etc).
-          */
-         public void actionPerformed(ActionEvent event)
-         {
-            //if the zoom was reset, act like the contour image 
-            //world coordinates have not been initialized yet
-            if (event.getActionCommand().equals(RESET_ZOOM))
-               wcNotInit = true;
-         }
-      });
       
       //invalidate the thumbnail so that when a thumbnail of the plot is 
       //requested, the thumbnail will be generated at that time instead of 
@@ -1248,53 +1249,43 @@ public class ContourJPanel extends CoordJPanel implements Serializable,
         BufferedImage image = 
            new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         
-        //If the main image hasn't been drawn yet, don't even bother 
-        //  trying to draw the thumbnail.  
-        //This improves performance because if there is not image for 
-        //  the thumbnail to reflect, time isn't spent trying to make a 
-        //  thumbnail.
-        //Also, if 'this.mainImageNotInit==true' the thumbnail isn't 
-        //  considered valid by 'isThumbnailValid()' anyway
+      //If the main image hasn't been drawn yet, don't even bother 
+      //  trying to draw the thumbnail.  
+      //This improves performance because if there is not image for 
+      //  the thumbnail to reflect, time isn't spent trying to make a 
+      //  thumbnail.
+      //Also, if 'this.mainImageNotInit==true' the thumbnail isn't 
+      //  considered valid by 'isThumbnailValid()' anyway
         if (this.mainImageNotInit)
            return image;
         
-      //TODO This forces the background color of the image to correspond to 
-      //     the background of the panel.  This is here because the draw() 
-      //     method sometimes leaves a black stripe on the right side of the 
-      //     thumbnail.  This is not very efficient and thus a better 
-      //     solution should be found
-        int rgb = getBackgroundColor().getRGB();
-        for (int x=0; x<width; x++)
-           for (int y=0; y<height; y++)
-              image.setRGB(x, y, rgb);
+      // Set the background color of the image to correspond to 
+      //   this panel's background. 
+      Graphics2D thumbnail_gc = (Graphics2D)image.createGraphics();    
+      thumbnail_gc.setBackground( getBackgroundColor() );
+      thumbnail_gc.clearRect( 0, 0, width, height );
         
-      //the following variables are effected by the painting of the 
-      //thumbnail and need to be reverted when the painting is complete
-        //when the thumbnail is painted, the variable describing if the 
-        //main image's world coordinates have been initialized 
-        //should not be affected
-          boolean firstPaintCopy = this.wcNotInit;
-        //labels are momentarily disabled in the thumbnail image
-          boolean[] labelBackup = getShowLabels();
-          setShowLabels(new boolean[] {false});
-        //the local transform is momentarily modified to reflect the 
-        //size of the thumbnail and not the entire panel
-          CoordTransform localBackup = getLocal_transform();
-          setLocalWorldCoords( getGlobalWorldCoords() );
+      //labels are momentarily disabled for the thumbnail image
+        boolean[] labelBackup = getShowLabels();
+        setShowLabels(new boolean[] {false});
 
-          //now draw the thumbnail
-        draw(image.createGraphics());
+      //Make a transformation to draw all the contours on the image
+      //  with the appropriate size for the thumbnail.
+        CoordTransform my_local_transform = new CoordTransform();
+        my_local_transform.setSource( getGlobalWorldCoords() );
+        my_local_transform.setDestination( 
+                              new CoordBounds( 0, 0, width, height) );
+        draw( thumbnail_gc, my_local_transform );
        
-      //now revert all of the saved variables back
-        setLocalWorldCoords( localBackup.getSource() );
+      //now reset the show labels flag 
         setShowLabels(labelBackup);
-        this.wcNotInit = firstPaintCopy;
          
       //cache the image made
         this.thumbnail = image;
         
       return this.thumbnail;
    }
+
 //--------------------=[ End getter/setter methods ]=-------------------------//
    
    
@@ -1309,12 +1300,23 @@ public class ContourJPanel extends CoordJPanel implements Serializable,
    public void changeData(IVirtualArray2D arr)
    {
       if (this.data2D != arr)
-      {
          data2D = arr;
-         invalidateThumbnail();
-         reRender();
-      }
+
+      invalidateThumbnail();
+      reRender();
    }
+
+
+   /**
+    * Use this method to inform this ContourJPanel that the contents of
+    * it IVirtualArray2D have been changed, so that it can invalidate
+    * it's thumbnail copy and refresh the display.
+    */
+   public void changeData()
+   {
+     changeData( data2D );
+   }
+
    
    /**
     * Used to make the cached thumbnail invalid.  As a result, when the 
@@ -1340,8 +1342,11 @@ public class ContourJPanel extends CoordJPanel implements Serializable,
    public void paintComponent(Graphics gr)
    {
       Graphics2D g2d = (Graphics2D)gr.create();
+      java.awt.Rectangle R = getBounds();
+      g2d.setColor(  this.getBackground() );
+      g2d.fillRect( R.x , R.y , R.width , R.height );
 
-      draw(g2d);
+      draw( g2d, getLocal_transform() );
       //record that the main contour plot has been initialized
       //(i.e. it has been drawn)
       this.mainImageNotInit = false;
@@ -1357,8 +1362,13 @@ public class ContourJPanel extends CoordJPanel implements Serializable,
     * @param g The graphics object that describes something that can be 
     *          drawn to.  This could, for example, correspond to a 
     *          <code>JPanel</code> or an image.
+    *
+    * @param my_local_tran  This is the transform used to map from world
+    *                       coordinates to pixel coordinates. It must be
+    *                       different for drawing the thumbnail and for
+    *                       drawing the main display.
     */
-   private void draw(Graphics2D g)
+   private void draw(Graphics2D g, CoordTransform my_local_tran )
    {
       stop_box( current_point, false );// if the system redraws this without
 
@@ -1395,18 +1405,6 @@ public class ContourJPanel extends CoordJPanel implements Serializable,
       //array of data to the world coordinates of the entire panel.
         CoordTransform rcToWC = getRowColumnToWC();
         
-      //If the panel's world coordinates have not been initialized yet, 
-      //set the local_transform to have its input region be the output 
-      //region of 'rcToWC' (i.e. the entire panel).  After the 
-      //contour image is drawn the user can zoom in and the superclass 
-      //handles setting the source (input) of local_transform to be the 
-      //correct subset of the entire panel.
-       if (wcNotInit)
-       {
-          setLocalWorldCoords(getGlobalWCBounds());
-          wcNotInit = false;
-       }
-       
       //These are the bounds of the array of data that is currently being 
       //  displayed on the screen.
       //ex.) If the user has zoomed in on some portion of the data, then 
@@ -1553,7 +1551,7 @@ public class ContourJPanel extends CoordJPanel implements Serializable,
          //pixel coordinates.  Here 'local_transform' is used because 
          //if the user zooms in on the data, 'local_transform' is modified 
          //to reflect viewing a smaller subsection of the panel.
-            CoordTransform local_tran = getLocal_transform();
+            CoordTransform local_tran = my_local_tran; 
             local_tran.MapXListTo(xrcVals);
             local_tran.MapYListTo(yrcVals);
 
@@ -1756,7 +1754,7 @@ public class ContourJPanel extends CoordJPanel implements Serializable,
    {
       //if the main image hasn't been initialized yet, 
       //the thumbnail is invalid
-      if (this.wcNotInit || this.mainImageNotInit)
+      if (this.mainImageNotInit)
          return false;
       
       //if the width or height for the newly requested thumbnail are invalid 

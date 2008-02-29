@@ -25,26 +25,32 @@
  * Modified:
  *
  * $Log: PositionedBox.java,v $
- * Revision 1.3  2006/07/25 04:38:43  dennis
- * Added mouse arc ball to main test program.
- * Now includes parameter to control wheter a lightweight or
- * heavyweight component is used.
+ * Revision 1.4  2007/08/14 00:03:33  dennis
+ * Major update to JSR231 based version from UW-Stout repository.
  *
- * Revision 1.2  2006/07/04 00:40:47  dennis
- * Replaced call to deprecated method JFrame.show(), with call
- * to setVisible(true).
+ * Revision 1.5  2006/11/26 01:43:02  dennis
+ * Changed to allow a null color.  If color is null, the last color
+ * that was set will be used.
  *
- * Revision 1.1  2005/07/25 15:46:03  dennis
- * Initial version of simple shape.
+ * Revision 1.4  2006/09/23 05:03:14  dennis
+ * Added a MouseArcBall to control the view, and revised the javadocs.
  *
+ * Revision 1.3  2006/08/04 02:16:21  dennis
+ * Updated to work with JSR-231, 1.0 beta 5,
+ * instead of jogl 1.1.1.
  *
+ * Revision 1.2  2006/07/20 19:59:01  dennis
+ * Replaced deprecated method frame.show() with setVisible(true)
+ *
+ * Revision 1.1  2005/10/14 04:04:11  dennis
+ * Copied into local CVS repository from CVS repository at IPNS.
  */
 
 package SSG_Tools.SSG_Nodes.SimpleShapes;
 
 import java.awt.*;
 import javax.swing.*;
-import net.java.games.jogl.*;
+import javax.media.opengl.*;
 
 import gov.anl.ipns.MathTools.Geometry.*;
 import SSG_Tools.Viewers.*;
@@ -54,7 +60,7 @@ import SSG_Tools.SSG_Nodes.*;
 
 /** 
  *  This class draws a solid box of the specified width, height and depth
- *  in the specified orientation at the specified point.
+ *  in a specified orientation at a specified point.
  */
 
 public class PositionedBox extends SimpleShape
@@ -66,19 +72,31 @@ public class PositionedBox extends SimpleShape
 
   /* --------------------------- constructor --------------------------- */
   /**
+   *  This SimpleShape represents a solid colored box centered at a specified
+   *  point, oriented according to the specified base and up directions. 
+   *  The size of the box is specified in the x, y and z directions by the
+   *  values stored in the extents vector.
+   *
+   *  @param  center    The center point of the box
+   *  @param  base      The base vector for the box, pointing in the
+   *                    direction of increasing width.
+   *  @param  up        The up vector for the box, pointing in the 
+   *                    direction of increasing height
+   *  @param  extents   Vector containing the width, height and depth of
+   *                    the box, in that order.
+   *  @param  new_color The Color to use when drawing the box 
    */
-  public PositionedBox( Vector3D center, Vector3D base, Vector3D up,
-                        Vector3D extents,
-                        Color    new_color)
+  public PositionedBox( Vector3D  center, 
+                        Vector3D  base, 
+                        Vector3D  up,
+                        Vector3D  extents,
+                        Color     new_color )
   {
     super( new_color );
     this.center  = center;
     this.base    = base;
     this.up      = up;
     this.extents = extents; 
-    color[0] = new_color.getRed()/255f;
-    color[1] = new_color.getGreen()/255f;
-    color[2] = new_color.getBlue()/255f;
   }
 
   /* ------------------------------ Render ----------------------------- */
@@ -87,10 +105,8 @@ public class PositionedBox extends SimpleShape
    *
    *  @param  drawable  The drawable on which the box is to be drawn.
    */
-  public void Render( GLDrawable drawable )
+  public void Render( GLAutoDrawable drawable )
   {
-    preRender( drawable );                 // handle name stack 
-
     GL gl = drawable.getGL();
  
     Vector3D v[][][] = new Vector3D[2][2][2];
@@ -143,43 +159,47 @@ public class PositionedBox extends SimpleShape
         v[col][1][page].add(dy);
       }
 
+    preRender( drawable );                            // handle name stack 
+
+    if ( color != null )
+      gl.glColor3fv( color, 0 );
+
     gl.glBegin( GL.GL_QUADS );
-      gl.glColor3fv( color );
-      gl.glNormal3fv( front_norm.get() );          // front face
-      gl.glVertex3fv( v[0][0][1].get() );
-      gl.glVertex3fv( v[1][0][1].get() );
-      gl.glVertex3fv( v[1][1][1].get() );
-      gl.glVertex3fv( v[0][1][1].get() );
+      gl.glNormal3fv( front_norm.get(), 0 );          // front face
+      gl.glVertex3fv( v[0][0][1].get(), 0 );
+      gl.glVertex3fv( v[1][0][1].get(), 0 );
+      gl.glVertex3fv( v[1][1][1].get(), 0 );
+      gl.glVertex3fv( v[0][1][1].get(), 0 );
 
-      gl.glNormal3fv( right_norm.get() );           // right face
-      gl.glVertex3fv( v[1][0][1].get() );
-      gl.glVertex3fv( v[1][0][0].get() );
-      gl.glVertex3fv( v[1][1][0].get() );
-      gl.glVertex3fv( v[1][1][1].get() );
+      gl.glNormal3fv( right_norm.get(), 0 );           // right face
+      gl.glVertex3fv( v[1][0][1].get(), 0 );
+      gl.glVertex3fv( v[1][0][0].get(), 0 );
+      gl.glVertex3fv( v[1][1][0].get(), 0 );
+      gl.glVertex3fv( v[1][1][1].get(), 0 );
 
-      gl.glNormal3fv( back_norm.get()  );           // back face
-      gl.glVertex3fv( v[0][1][0].get() );
-      gl.glVertex3fv( v[1][1][0].get() );
-      gl.glVertex3fv( v[1][0][0].get() );
-      gl.glVertex3fv( v[0][0][0].get() );
+      gl.glNormal3fv( back_norm.get(),  0 );           // back face
+      gl.glVertex3fv( v[0][1][0].get(), 0 );
+      gl.glVertex3fv( v[1][1][0].get(), 0 );
+      gl.glVertex3fv( v[1][0][0].get(), 0 );
+      gl.glVertex3fv( v[0][0][0].get(), 0 );
 
-      gl.glNormal3fv( left_norm.get()  );          // left face
-      gl.glVertex3fv( v[0][1][1].get() );
-      gl.glVertex3fv( v[0][1][0].get() );
-      gl.glVertex3fv( v[0][0][0].get() );
-      gl.glVertex3fv( v[0][0][1].get() );
+      gl.glNormal3fv( left_norm.get(),  0 );          // left face
+      gl.glVertex3fv( v[0][1][1].get(), 0 );
+      gl.glVertex3fv( v[0][1][0].get(), 0 );
+      gl.glVertex3fv( v[0][0][0].get(), 0 );
+      gl.glVertex3fv( v[0][0][1].get(), 0 );
 
-      gl.glNormal3fv( top_norm.get()   );           // top face
-      gl.glVertex3fv( v[0][1][1].get() );
-      gl.glVertex3fv( v[1][1][1].get() );
-      gl.glVertex3fv( v[1][1][0].get() );
-      gl.glVertex3fv( v[0][1][0].get() );
+      gl.glNormal3fv( top_norm.get(),   0 );           // top face
+      gl.glVertex3fv( v[0][1][1].get(), 0 );
+      gl.glVertex3fv( v[1][1][1].get(), 0 );
+      gl.glVertex3fv( v[1][1][0].get(), 0 );
+      gl.glVertex3fv( v[0][1][0].get(), 0 );
 
-      gl.glNormal3fv( bottom_norm.get());        // bottom face
-      gl.glVertex3fv( v[0][0][0].get() );
-      gl.glVertex3fv( v[1][0][0].get() );
-      gl.glVertex3fv( v[1][0][1].get() );
-      gl.glVertex3fv( v[0][0][1].get() );
+      gl.glNormal3fv( bottom_norm.get(),0 );        // bottom face
+      gl.glVertex3fv( v[0][0][0].get(), 0 );
+      gl.glVertex3fv( v[1][0][0].get(), 0 );
+      gl.glVertex3fv( v[1][0][1].get(), 0 );
+      gl.glVertex3fv( v[0][0][1].get(), 0 );
 
     gl.glEnd();
 
@@ -198,18 +218,19 @@ public class PositionedBox extends SimpleShape
     Vector3D extent = new Vector3D( 1, 2, 3 ); 
 
     Node box = new PositionedBox( center, base, up, extent, Color.BLUE ); 
+
     JoglPanel demo = new JoglPanel( box, false );
-    
-    Camera camera = demo.getCamera();
-    camera.setVRP( new Vector3D(0,0,0) );
-    camera.setCOP( new Vector3D(0,0,5) );
     new MouseArcBall( demo );
 
-    JFrame frame = new JFrame( "SolidBox Test" );
+    Camera camera = demo.getCamera();
+    camera.setVRP( new Vector3D(0,0,0) );
+    camera.setCOP( new Vector3D(3,4,5) );
+
+    JFrame frame = new JFrame( "PositionedBox Test" );
     frame.setSize(500,517);
     frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
     frame.getContentPane().add( demo.getDisplayComponent() );
-    frame.setVisible(true);
+    frame.setVisible( true );
   }
 
 }

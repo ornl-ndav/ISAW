@@ -25,12 +25,12 @@
  * Modified:
  *
  *  $Log: TransformGroup.java,v $
- *  Revision 1.3  2006/07/20 15:23:53  dennis
- *  Updated from CVS repository at isaw.mscs.uwstout.edu.
- *  This added a method apply_to() to apply the transformation
- *  to a particular vector.
- *  Also added get methods for the basic information that
- *  can be set.
+ *  Revision 1.4  2007/08/14 00:03:31  dennis
+ *  Major update to JSR231 based version from UW-Stout repository.
+ *
+ *  Revision 1.4  2006/08/04 02:16:21  dennis
+ *  Updated to work with JSR-231, 1.0 beta 5,
+ *  instead of jogl 1.1.1.
  *
  *  Revision 1.3  2005/11/23 00:16:09  dennis
  *  Added public method, apply_to(), that will apply the transformation
@@ -45,7 +45,7 @@
 
 package SSG_Tools.SSG_Nodes.Groups.Transforms;
 
-import net.java.games.jogl.*;
+import javax.media.opengl.*;
 import SSG_Tools.SSG_Nodes.*;
 import gov.anl.ipns.MathTools.Geometry.*;
 
@@ -69,7 +69,7 @@ abstract public class TransformGroup extends Group
    *  @param  drawable  The OpenGL drawable on which the transform should be
    *                    applied.
    */ 
-  public void Render( GLDrawable drawable )
+  public void Render( GLAutoDrawable drawable )
   {
     GL gl = drawable.getGL();
                              // to render a TransformGroup, we apply the 

@@ -25,6 +25,16 @@
  * Modified:
  *
  *  $Log: Group.java,v $
+ *  Revision 1.6  2007/08/26 23:23:20  dennis
+ *  Updated to latest version from UW-Stout repository.
+ *
+ *  Revision 1.6  2007/08/25 04:21:55  dennis
+ *  Parameterized raw type.
+ *
+ *  Revision 1.5  2006/08/04 02:16:21  dennis
+ *  Updated to work with JSR-231, 1.0 beta 5,
+ *  instead of jogl 1.1.1.
+ *
  *  Revision 1.4  2004/12/13 05:02:27  dennis
  *  Minor fix to documentation
  *
@@ -47,11 +57,11 @@
 package SSG_Tools.SSG_Nodes;
 
 import java.util.*;
-import net.java.games.jogl.*;
+import javax.media.opengl.*;
 
 public class Group extends Node
 {
-  private Vector children; 
+  private Vector<Node> children; 
 
   /* -------------------------- constructor ------------------------ */
   /**
@@ -59,7 +69,7 @@ public class Group extends Node
    */
   public Group()
   {
-    children = new Vector();
+    children = new Vector<Node>();
   }
 
   /* -------------------------- addChild ---------------------------- */
@@ -119,7 +129,7 @@ public class Group extends Node
   {
     if ( index >= 0 && index < children.size() )
     {
-      Node child = (Node)children.elementAt( index );
+      Node child = children.elementAt( index );
       children.remove( index );
       child.setParent( null );
     }
@@ -132,7 +142,7 @@ public class Group extends Node
   public void Clear()
   {
     for ( int i = 0; i < children.size(); i++ )
-       ((Node)children.elementAt(i)).setParent( null ); 
+       children.elementAt(i).setParent( null ); 
     children.clear();
   }
 
@@ -162,7 +172,7 @@ public class Group extends Node
     if ( index < 0 || index >= children.size() )
       return null;
     
-    return (Node)children.elementAt( index );
+    return children.elementAt( index );
   }
 
   /* ---------------------------- Render ------------------------------ */
@@ -174,12 +184,12 @@ public class Group extends Node
    *
    *  @param  drawable  The drawable on which the object is to be rendered.
    */
-  public void Render( GLDrawable drawable )
+  public void Render( GLAutoDrawable drawable )
   {
     preRender( drawable );             // take care of name stack
 
     for ( int i = 0; i < children.size(); i++ )
-      ((Node)children.elementAt(i)).Render( drawable );
+      children.elementAt(i).Render( drawable );
 
     postRender( drawable );            // clean up when done
   }

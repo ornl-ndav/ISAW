@@ -30,6 +30,12 @@
  * Modified:
  *
  * $Log: HitRecord.java,v $
+ * Revision 1.3  2007/08/26 23:23:20  dennis
+ * Updated to latest version from UW-Stout repository.
+ *
+ * Revision 1.3  2007/08/26 20:16:11  dennis
+ * Fixed order of validity checks.
+ *
  * Revision 1.2  2004/11/22 18:48:45  dennis
  * Removed redundant else clause.
  *
@@ -78,6 +84,15 @@ public class HitRecord
    */
   public HitRecord( int buffer[], int start )
   {
+    if ( buffer == null || start >= buffer.length ) 
+    {                                       
+      if ( debug )
+        System.out.println("buffer null in HitRecord constructor" +
+        		"or length invalid. Length = " + buffer.length +
+        		", start = " + start );
+      return;
+    }
+	  
     int n_names = buffer[ start ];
     if ( n_names <= 0 || n_names > 100 )     // something must be wrong with
     {                                        // the hit buffer
@@ -87,17 +102,14 @@ public class HitRecord
       return;
     }
 
-    if ( buffer == null || buffer.length < start + n_names + 3 ) 
+    if ( buffer.length < start + n_names + 3 ) 
     {                                       
       if ( debug )
       {
         System.out.println("Invalid buffer in HitRecord constructor " );
-        if ( buffer == null )
-          System.out.println("buffer is null " );
-        else
-          System.out.println("length = " + buffer.length + 
-                             ", start = " + start +
-                             ", num_names = " + n_names );
+        System.out.println("length = " + buffer.length + 
+                           ", start = " + start +
+                           ", num_names = " + n_names );
       }
       return;
     }

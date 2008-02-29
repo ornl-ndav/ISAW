@@ -25,6 +25,18 @@
  * Modified:
  *
  *  $Log: RayMath.java,v $
+ *  Revision 1.2  2007/08/14 00:03:30  dennis
+ *  Major update to JSR231 based version from UW-Stout repository.
+ *
+ *  Revision 1.2  2007/08/09 13:29:38  dennis
+ *  The PerpVector() method now starts with the basis vector
+ *  that is the most nearly perpendicular to the specified vector u.
+ *  This is the basis vector for which the absolute value of the
+ *  dot product is smallest.
+ *
+ *  Revision 1.1  2005/10/14 04:13:36  dennis
+ *  Copied to local CVS repository from CVS repository at IPNS.
+ *
  *  Revision 1.1  2005/07/18 16:54:40  dennis
  *  Convenience class for some basic calculations needed for Rays.
  *
@@ -64,16 +76,14 @@ public class RayMath
       {
          if ( c == 0 )                     // any number is a solution
            return 1;
-         else                              // no solution
-           return Double.NaN;
+                                           // no solution
+         return Double.NaN;
       }
-      else
-      {
-        if ( -c/b > 0 )
-          return -c/b;                     // positive solution to linear eqn.
-        else
-          return Double.NaN;               // no positive solution
-      }
+     
+      if ( -c/b > 0 )
+        return -c/b;                       // positive solution to linear eqn.
+        
+      return Double.NaN;                   // no positive solution
     }
                                            // use quadratic equation to find
     double disc = b*b - 4 * a * c;         // real point of intersection, if
@@ -92,8 +102,8 @@ public class RayMath
 
      if ( min > 0 )
        return min;
-     else
-       return max;
+     
+     return max;
   }
 
 
@@ -114,12 +124,13 @@ public class RayMath
      float dot_prods[] = new float[3];              // that is not collinear
      dot_prods[0] = u.dot( new Vector3D(1,0,0) );   // by choosing a coord
      dot_prods[1] = u.dot( new Vector3D(0,1,0) );   // axis vector with the
-     dot_prods[2] = u.dot( new Vector3D(0,0,1) );   // smallest dot product
+     dot_prods[2] = u.dot( new Vector3D(0,0,1) );   // smallest magnitude 
+                                                    // dot product
                                                     // with the given vector
      int min_index = 0;
      float min = dot_prods[0];
      for ( int i = 1; i < 3; i++ )
-       if ( dot_prods[i] < min )
+       if ( Math.abs(dot_prods[i]) < Math.abs(min) )
        {
          min_index = i;
          min = dot_prods[i];

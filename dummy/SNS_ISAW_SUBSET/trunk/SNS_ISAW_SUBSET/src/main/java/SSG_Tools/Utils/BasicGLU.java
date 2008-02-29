@@ -21,9 +21,12 @@
  *  Modified:
  *
  *  $Log: BasicGLU.java,v $
- *  Revision 1.4  2005/07/14 21:49:06  dennis
- *  Switched from local copy of Vector3D, etc. to using Vector3D, etc.
- *  from gov.anl.ipns.MathTools.Geometry.
+ *  Revision 1.5  2007/08/14 00:03:33  dennis
+ *  Major update to JSR231 based version from UW-Stout repository.
+ *
+ *  Revision 1.4  2006/08/04 02:16:21  dennis
+ *  Updated to work with JSR-231, 1.0 beta 5,
+ *  instead of jogl 1.1.1.
  *
  *  Revision 1.3  2004/11/22 18:46:07  dennis
  *  Documented empty body of default constructor.
@@ -47,9 +50,9 @@
 
 package SSG_Tools.Utils;
 
-import net.java.games.jogl.*;
+import javax.media.opengl.*;
 
-import gov.anl.ipns.MathTools.*;
+import SSG_Tools.MathTools.*;
 
 /**
  *  This class contains several utilities typically provided by the GLU 
@@ -165,7 +168,7 @@ public class BasicGLU
      m[3+4* 2] = 0.0;
      m[3+4* 3] = 1.0;
 
-     gl.glMultMatrixd(m);
+     gl.glMultMatrixd(m,0); 
 
      /* Translate Eye to Origin */
      gl.glTranslated(-eyex, -eyey, -eyez);
@@ -263,7 +266,7 @@ public class BasicGLU
      m[14] = 0;
      m[15] = 1;
 
-     gl.glMultMatrixf(m);
+     gl.glMultMatrixf(m,0);
   }
 
 
@@ -315,7 +318,7 @@ public class BasicGLU
          index++;
        }
 
-     double product_matrix[][] = LinearAlgebra.mult(projection, model_view);
+     double product_matrix[][] = LinearAlgebra.multiply(projection, model_view);
 
      double point[] = new double[4];
      point[0] = (win_x - viewport[0]) * 2.0 / viewport[2] - 1.0;

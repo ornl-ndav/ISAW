@@ -30,6 +30,16 @@
  * Modified: 
  *
  * $Log: StrokeFont.java,v $
+ * Revision 1.3  2007/08/14 00:03:30  dennis
+ * Major update to JSR231 based version from UW-Stout repository.
+ *
+ * Revision 1.2  2006/08/29 04:47:44  dennis
+ * Updated to work with JSR-231, 1.0 beta 5,
+ * instead of jogl 1.1.1.
+ *
+ * Revision 1.1  2005/10/14 04:02:21  dennis
+ * Copied into local CVS repository from CVS repository at IPNS.
+ *
  * Revision 1.2  2005/07/25 14:04:00  dennis
  * Removed some commented out code.
  *
@@ -54,7 +64,7 @@
 
 package SSG_Tools.Fonts;
 
-import net.java.games.jogl.*;
+import javax.media.opengl.*;
 
 /**
  *  A StrokeFont object encapsulates the low-level data describing how to draw
@@ -88,7 +98,7 @@ abstract public class StrokeFont
    */
   public float CharWidth( char ch )
   {
-    int index = (int)ch - first_char_code;
+    int index = ch - first_char_code;
     if ( index < 0 || index >= num_chars ) 
       return 0;
 
@@ -197,9 +207,9 @@ abstract public class StrokeFont
    *  @param  drawable  The OpenGL drawable to which the character is drawn.
    *  @param  ch        The character to draw.
    */
-  public void DrawCharacter( GLDrawable drawable, char ch )
+  public void DrawCharacter( GLAutoDrawable drawable, char ch )
   {
-    int char_num = (int)ch - first_char_code;
+    int char_num = ch - first_char_code;
     if ( char_num < 0 || char_num >= num_chars )     // invalid char so just
       return;                                        // ignore it
 

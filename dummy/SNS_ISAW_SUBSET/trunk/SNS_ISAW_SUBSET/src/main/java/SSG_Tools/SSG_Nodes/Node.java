@@ -25,6 +25,23 @@
  * Modified:
  *
  *  $Log: Node.java,v $
+ *  Revision 1.9  2007/08/26 23:23:20  dennis
+ *  Updated to latest version from UW-Stout repository.
+ *
+ *  Revision 1.8  2007/08/25 03:46:03  dennis
+ *  Parameterized raw types.
+ *
+ *  Revision 1.7  2006/12/10 06:14:09  dennis
+ *  When the static Hashtable containing references to all pickable nodes
+ *  is cleared, the pick IDs of all nodes are now reset to INVALID.
+ *
+ *  Revision 1.6  2006/08/04 02:16:21  dennis
+ *  Updated to work with JSR-231, 1.0 beta 5,
+ *  instead of jogl 1.1.1.
+ *
+ *  Revision 1.5  2005/10/14 03:46:47  dennis
+ *  Updated from current version kept in CVS at IPNS.
+ *
  *  Revision 1.7  2005/08/03 16:55:20  dennis
  *  Minor fix to javadocs.
  *
@@ -72,7 +89,7 @@ package SSG_Tools.SSG_Nodes;
 
 import java.util.*;
 
-import net.java.games.jogl.*;
+import javax.media.opengl.*;
 
 import SSG_Tools.*;
 
@@ -101,7 +118,8 @@ abstract public class Node implements IGL_Renderable
 {
   public  static final int INVALID_PICK_ID = -1;
 
-  private static Hashtable id_table = new Hashtable();
+  private static Hashtable<Integer,Node> id_table = 
+                                                new Hashtable<Integer,Node>();
   
   private Group  my_parent = null;
   private int    pick_id   = INVALID_PICK_ID;
@@ -151,8 +169,8 @@ abstract public class Node implements IGL_Renderable
    */
   public void setPickID( int id )
   {
-    if ( id == INVALID_PICK_ID )               // just remove the node from the
-    {                                          // id_table, record it and return
+    if ( id == INVALID_PICK_ID )             // just remove the node from the
+    {                                        // id_table, record it and return
       id_table.remove( new Integer(pick_id) );  
       pick_id = id;
       return;
@@ -192,7 +210,7 @@ abstract public class Node implements IGL_Renderable
    *
    *  @param  drawable  The drawable on which the object is to be rendered.
    */
-  public void preRender( GLDrawable drawable )
+  public void preRender( GLAutoDrawable drawable )
   {
     if ( pick_id != Node.INVALID_PICK_ID )                // put new name on
     {                                                     // name stack for
@@ -212,7 +230,7 @@ abstract public class Node implements IGL_Renderable
    *
    *  @param  drawable  The drawable on which the object is to be rendered.
    */
-  public void postRender( GLDrawable drawable )
+  public void postRender( GLAutoDrawable drawable )
   {
     if ( pick_id != Node.INVALID_PICK_ID )         // pop the name stack if we
     {                                              // pushed a new name on it
@@ -255,7 +273,7 @@ abstract public class Node implements IGL_Renderable
     if ( id != INVALID_PICK_ID )
     {
       Integer key = new Integer(id);
-      Node node = (Node)(id_table.get( key ));
+      Node node = id_table.get( key );
       if ( node != null )
       {
         node.pick_id = INVALID_PICK_ID;
@@ -299,6 +317,14 @@ abstract public class Node implements IGL_Renderable
    */
   public static void clearPickIDs()
   {
+                                            // reset all pick ids
+    Enumeration<Node> e = id_table.elements();
+    while ( e.hasMoreElements() )
+    {
+      Node node = e.nextElement();
+      node.pick_id = INVALID_PICK_ID; 
+    }
+                                            // empty the table
     id_table.clear();
   }
 

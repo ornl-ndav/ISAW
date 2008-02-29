@@ -25,6 +25,12 @@
  * Modified:
  *
  *  $Log: Ray.java,v $
+ *  Revision 1.2  2007/08/14 00:03:30  dennis
+ *  Major update to JSR231 based version from UW-Stout repository.
+ *
+ *  Revision 1.1  2005/10/14 04:13:36  dennis
+ *  Copied to local CVS repository from CVS repository at IPNS.
+ *
  *  Revision 1.1  2005/07/18 16:52:12  dennis
  *  Initial version of class encapsulating a "ray" consisting of an
  *  initial 3D point and a 3D vector.

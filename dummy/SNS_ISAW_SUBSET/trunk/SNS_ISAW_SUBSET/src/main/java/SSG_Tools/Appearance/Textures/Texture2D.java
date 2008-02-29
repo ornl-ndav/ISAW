@@ -27,9 +27,15 @@
  * Modified:
  *
  * $Log: Texture2D.java,v $
- * Revision 1.2  2006/07/20 18:14:22  dennis
- * Updated from CVS repository on isaw.mscs.uwstout.edu
- * Basically, improved documentation.
+ * Revision 1.3  2007/08/14 00:03:27  dennis
+ * Major update to JSR231 based version from UW-Stout repository.
+ *
+ * Revision 1.4  2006/12/10 06:12:05  dennis
+ * Now automatically builds MipMaps, using a GLU object.
+ *
+ * Revision 1.3  2006/08/04 02:16:21  dennis
+ * Updated to work with JSR-231, 1.0 beta 5,
+ * instead of jogl 1.1.1.
  *
  * Revision 1.2  2005/11/01 20:52:46  dennis
  * Removed setImage() method.  The image and texture properties should
@@ -43,7 +49,12 @@
  */
 package SSG_Tools.Appearance.Textures;
 
-import net.java.games.jogl.*;
+import java.nio.*;
+
+import javax.media.opengl.*;
+import javax.media.opengl.glu.*;
+
+import SSG_Tools.Viewers.*;
 
 /**
  *  This class creates a 2-dimensional OpenGL Texture object.  After creating
@@ -120,11 +131,13 @@ public class Texture2D extends Texture
    *  object, as the scene graph is being rendered.  Applications should
    *  not call this directly.
    *
-   *  @param gl   The OpenGL context for which the texture object is used.
+   *  @param drawable The OpenGL drawable for which the texture object is used.
    */
-  public void activate( GL gl )
+  public void activate( GLAutoDrawable drawable )
   {                                      // always do the things that get 
                                          // stored in the display list
+    GL gl = drawable.getGL();
+
     gl.glEnable( GL.GL_TEXTURE_2D );
     int tex_name = getTexture_name( gl );
     gl.glBindTexture( GL.GL_TEXTURE_2D, tex_name );
@@ -133,19 +146,22 @@ public class Texture2D extends Texture
     if ( rebuild_texture && getImage() != null )     // do the things that are
     {                                                // stored in the current
                                                      // 2D texture object
+      GLU glu = ((IGetGLU)drawable).getGLU();
+
       gl.glPixelStorei( GL.GL_UNPACK_ALIGNMENT, 1 );
-      gl.glTexImage2D( GL.GL_TEXTURE_2D, 0, 3,
-                       n_cols, n_rows,
-                       0, GL.GL_RGB,
-                       GL.GL_UNSIGNED_BYTE,
-                       getImage() );
+      glu.gluBuild2DMipmaps( GL.GL_TEXTURE_2D, 3,
+                             n_cols, n_rows,
+                             GL.GL_RGB,
+                             GL.GL_UNSIGNED_BYTE,
+                             ByteBuffer.wrap( getImage() ) );
 
       gl.glTexParameterf( GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, wrap_s );
       gl.glTexParameterf( GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, wrap_t );
+
       gl.glTexParameterf( GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, 
-                          getFilter() );
-      gl.glTexParameterf( GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, 
-                          getFilter() );
+                          getMagFilter() );
+      gl.glTexParameterf( GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER,
+                          getMinFilter() );
       rebuild_texture = false;
     }
   }
@@ -158,10 +174,11 @@ public class Texture2D extends Texture
    *  appearance object, as the scene graph is being rendered.  Applications
    *  should not call this directly.
    *
-   *  @param gl   The OpenGL context for which the texture object is used.
+   *  @param drawable The OpenGL drawable for which the texture object is used.
    */
-  public void deactivate( GL gl )
+  public void deactivate( GLAutoDrawable drawable )
   {
+     GL gl = drawable.getGL();
      gl.glBindTexture( GL.GL_TEXTURE_2D, 0 );
      gl.glDisable( GL.GL_TEXTURE_2D );
   }

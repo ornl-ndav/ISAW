@@ -25,9 +25,12 @@
  * Modified:
  *           
  *  $Log: SpotLight.java,v $
- *  Revision 1.3  2005/07/14 21:49:05  dennis
- *  Switched from local copy of Vector3D, etc. to using Vector3D, etc.
- *  from gov.anl.ipns.MathTools.Geometry.
+ *  Revision 1.4  2007/08/14 00:03:32  dennis
+ *  Major update to JSR231 based version from UW-Stout repository.
+ *
+ *  Revision 1.3  2006/08/04 02:16:21  dennis
+ *  Updated to work with JSR-231, 1.0 beta 5,
+ *  instead of jogl 1.1.1.
  *
  *  Revision 1.2  2004/12/13 05:02:27  dennis
  *  Minor fix to documentation
@@ -39,7 +42,7 @@
 
 package SSG_Tools.SSG_Nodes.Lights;
 
-import net.java.games.jogl.*;
+import javax.media.opengl.*;
 import gov.anl.ipns.MathTools.Geometry.*;
 
 /**
@@ -127,7 +130,7 @@ public class SpotLight extends PointLight
    *
    *  @param  drawable  The drawable on which the light is to be used.
    */
-  public void Render( GLDrawable drawable )
+  public void Render( GLAutoDrawable drawable )
   {
     GL gl = drawable.getGL();
 
@@ -135,7 +138,7 @@ public class SpotLight extends PointLight
     {
       super.Render( drawable );
       float direction_arr[] = direction.get();
-      gl.glLightfv( light_num, GL.GL_SPOT_DIRECTION, direction_arr );
+      gl.glLightfv( light_num, GL.GL_SPOT_DIRECTION, direction_arr, 0 );
       gl.glLightf( light_num, GL.GL_SPOT_CUTOFF, cutoff_angle );
       gl.glLighti( light_num, GL.GL_SPOT_EXPONENT, spot_exponent );
     }

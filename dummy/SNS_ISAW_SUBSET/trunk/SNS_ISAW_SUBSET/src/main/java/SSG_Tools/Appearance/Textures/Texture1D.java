@@ -27,9 +27,17 @@
  * Modified:
  *
  * $Log: Texture1D.java,v $
- * Revision 1.2  2006/07/20 18:14:22  dennis
- * Updated from CVS repository on isaw.mscs.uwstout.edu
- * Basically, improved documentation.
+ * Revision 1.3  2007/08/14 00:03:27  dennis
+ * Major update to JSR231 based version from UW-Stout repository.
+ *
+ * Revision 1.4  2006/12/10 06:17:49  dennis
+ * Updated to use separate min and mag filters.
+ * Updated activate and deactivate methods to accept a GLAutoDrawable
+ * instead of just a GL object.
+ *
+ * Revision 1.3  2006/08/04 02:16:21  dennis
+ * Updated to work with JSR-231, 1.0 beta 5,
+ * instead of jogl 1.1.1.
  *
  * Revision 1.2  2005/11/01 20:52:33  dennis
  * Removed setImage() method.  The image and texture properties should
@@ -44,8 +52,8 @@
 
 package SSG_Tools.Appearance.Textures;
 
-import net.java.games.jogl.*;
-
+import javax.media.opengl.*;
+import java.nio.*;
 
 /**
  *  This class creates a 1-dimensional OpenGL Texture object.  After creating
@@ -114,11 +122,13 @@ public class Texture1D extends Texture
    *  object, as the scene graph is being rendered.  Applications should
    *  not call this directly.
    *
-   *  @param gl   The OpenGL context for which the texture object is used.
+   *  @param drawable The OpenGL drawable for which the texture object is used.
    */
-  public void activate( GL gl )
+  public void activate( GLAutoDrawable drawable )
   {                                      // always do the things that get 
                                          // stored in the display list
+    GL gl = drawable.getGL();
+
     gl.glEnable( GL.GL_TEXTURE_1D );
     int tex_name = getTexture_name( gl );
     gl.glBindTexture( GL.GL_TEXTURE_1D, tex_name );
@@ -133,13 +143,13 @@ public class Texture1D extends Texture
                        0, 
                        GL.GL_RGB,
                        GL.GL_UNSIGNED_BYTE,
-                       getImage() );
+                       ByteBuffer.wrap( getImage() ) );
 
       gl.glTexParameterf( GL.GL_TEXTURE_1D, GL.GL_TEXTURE_WRAP_S, wrap_s );
       gl.glTexParameterf( GL.GL_TEXTURE_1D, GL.GL_TEXTURE_MAG_FILTER, 
-                          getFilter() );
+                          getMagFilter() );
       gl.glTexParameterf( GL.GL_TEXTURE_1D, GL.GL_TEXTURE_MIN_FILTER, 
-                          getFilter() );
+                          getMinFilter() );
       rebuild_texture = false;
     }
   }
@@ -152,10 +162,11 @@ public class Texture1D extends Texture
    *  appearance object, as the scene graph is being rendered.  Applications
    *  should not call this directly.
    *
-   *  @param gl   The OpenGL context for which the texture object is used.
+   *  @param drawable The OpenGL drawable for which the texture object is used.
    */
-  public void deactivate( GL gl )
+  public void deactivate( GLAutoDrawable drawable )
   {
+     GL gl = drawable.getGL();
      gl.glBindTexture( GL.GL_TEXTURE_1D, 0 );
      gl.glDisable( GL.GL_TEXTURE_1D );
   }

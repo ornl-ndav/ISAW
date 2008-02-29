@@ -37,10 +37,12 @@
  * Modified:
  *
  * $Log: GothicGermanTriplex_part_2.java,v $
- * Revision 1.1  2006/09/10 01:58:57  dennis
+ * Revision 1.2  2007/08/14 00:03:28  dennis
+ * Major update to JSR231 based version from UW-Stout repository.
+ *
+ * Revision 1.1  2006/09/05 02:41:59  dennis
  * Split off y-coordinate of font points to fix problem with
  * code too large.
- *
  *
  */
 package SSG_Tools.Fonts;

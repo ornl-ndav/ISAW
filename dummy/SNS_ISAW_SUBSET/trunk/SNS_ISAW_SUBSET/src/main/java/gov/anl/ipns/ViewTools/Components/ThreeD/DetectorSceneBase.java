@@ -34,6 +34,13 @@
  *  Modified:
  *
  *  $Log: DetectorSceneBase.java,v $
+ *  Revision 1.12  2007/08/21 20:26:58  dennis
+ *  Removed the setBackgroundColor method, since the setBackgroundColor
+ *  method from the JoglPanel class must be used instead of this one.
+ *
+ *  Revision 1.11  2007/08/14 01:21:25  dennis
+ *  Switched to JSR231 version of jogl.
+ *
  *  Revision 1.10  2006/11/04 20:17:31  dennis
  *  Minor efficiency improvement for new non-array Vector3D class.
  *
@@ -95,7 +102,7 @@ import java.util.Iterator;
 
 import javax.swing.*;
 
-import net.java.games.jogl.*;
+import javax.media.opengl.*;
 
 import gov.anl.ipns.MathTools.Geometry.Vector3D;
 import SSG_Tools.Viewers.*;
@@ -162,8 +169,6 @@ public class DetectorSceneBase extends Group
   private   boolean is_list            = false;
   protected boolean compileDisplayList = true;   
   
-  private boolean changeBackground = false; 
-  private Color backgroundColor;
   private Group scene_circle;
   private Group scene_axes;
   
@@ -238,11 +243,8 @@ public class DetectorSceneBase extends Group
           Vector3D[] pts = new Vector3D[1];
           pts[0] = point_list.getPoint(i);
           
-          shape = new PixelPolymarker(i, pts, Color.WHITE);
-//        ((PixelPolymarker)shape).setSize((int)extents[0]);
-          ((PixelPolymarker)shape).setSize((2));        // ### should calcluate
-                                                        // ### proper dot size
-          ((PixelPolymarker)shape).setType(PixelPolymarker.DOT);
+          int size = 2;
+          shape = new PixelPolymarker(i, pts, size, PixelPolymarker.DOT, Color.WHITE);
         }
         
         else if(shapeType == RECTANGLE)
@@ -473,18 +475,7 @@ public class DetectorSceneBase extends Group
     return diameter;
   }
   
-  /**
-   * This changes the background (glClearColor) to the specified
-   * Color object.
-   *
-   *  @param background The color to change the background to.
-   */
-  public void setBackgroundColor(Color background)
-  {
-    backgroundColor = background;
-    changeBackground = true;
-  }
-  
+
   /*-------------- SELECTION METHODS ------------------------*/
   
   /**
@@ -903,19 +894,9 @@ public class DetectorSceneBase extends Group
    *
    *   @param  drawable  The drawable on which the object is to be rendered.
    */
-  public void Render( GLDrawable drawable )
+  public void Render( GLAutoDrawable drawable )
   { 
     GL gl = drawable.getGL();
-    
-    if(changeBackground)
-    {
-      gl.glClearColor(backgroundColor.getRed()/255.f, 
-                      backgroundColor.getGreen()/255.f,
-                      backgroundColor.getBlue()/255.f,
-                      backgroundColor.getAlpha()/255.f);
-      gl.glClear(GL.GL_COLOR_BUFFER_BIT);
-      changeBackground = false;
-    }
     
     if( !is_list || compileDisplayList ) 
     {

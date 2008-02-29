@@ -28,6 +28,9 @@
  * Modified:
  *
  * $Log: Circle.java,v $
+ * Revision 1.3  2007/08/14 00:03:32  dennis
+ * Major update to JSR231 based version from UW-Stout repository.
+ *
  * Revision 1.2  2006/07/04 00:38:15  dennis
  * Replace call to deprecated method JFrame.show() with call to
  * setVisible( true )
@@ -40,7 +43,7 @@
 
 package SSG_Tools.SSG_Nodes.Shapes;
 
-import net.java.games.jogl.*;
+import javax.media.opengl.*;
 import java.awt.*;
 import javax.swing.*;
 
@@ -94,7 +97,7 @@ public class Circle extends Shape
    *
    *  @param  drawable  The drawable on which the sphere is to be drawn.
    */
-  public void Render( GLDrawable drawable )
+  public void Render( GLAutoDrawable drawable )
   {
     GL gl = drawable.getGL();
 

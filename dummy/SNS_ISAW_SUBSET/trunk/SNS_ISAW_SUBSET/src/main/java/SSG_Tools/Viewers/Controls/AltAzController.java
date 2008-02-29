@@ -31,30 +31,31 @@
  * Modified:
  *
  * $Log: AltAzController.java,v $
- * Revision 1.2  2006/07/25 13:01:05  dennis
- * Replaced call to deprecated method show() with
- * call to setVisible(true).
+ * Revision 1.3  2007/08/26 23:23:21  dennis
+ * Updated to latest version from UW-Stout repository.
+ *
+ * Revision 1.3  2007/08/26 21:07:21  dennis
+ * Added serialVersionUID = 1
+ *
+ * Revision 1.2  2006/07/20 19:59:01  dennis
+ * Replaced deprecated method frame.show() with setVisible(true)
  *
  * Revision 1.1  2005/07/25 15:35:45  dennis
  * Simple altitude, azimuth and distance control for the camera associated
  * with a panel.  The altitude and azimuth angles are treated as angles
  * of rotation of the viewer around the VRP.  The VUV is fixed to the
  * initial value when the controller is constructed.
- *
- *
  */
 
 package SSG_Tools.Viewers.Controls;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.io.*;
 import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.event.*;
 
 import gov.anl.ipns.MathTools.Geometry.*;
-import gov.anl.ipns.ViewTools.UI.*;
 
 import SSG_Tools.Cameras.*;
 import SSG_Tools.Viewers.*;
@@ -67,7 +68,7 @@ import SSG_Tools.SSG_Nodes.SimpleShapes.*;
  *  relative to the view reference point.  The position is specified by
  *  sliders controlling the altitude angle, azimuth angle and distance to
  *  the view reference point.
- */ 
+ */
 
 public class AltAzController extends JPanel
 {
@@ -76,6 +77,8 @@ public class AltAzController extends JPanel
   public static final float ANGLE_SCALE_FACTOR    = 10.0f;
   public static final float DISTANCE_SCALE_FACTOR = 10.0f;
   
+  private static final long serialVersionUID = 1;
+
   private JSlider    azimuth_slider;
   private JSlider    altitude_slider;
   private JSlider    distance_slider;
@@ -148,7 +151,6 @@ public class AltAzController extends JPanel
     setLayout( new GridLayout(4,1) );
     TitledBorder border = new TitledBorder(
                              LineBorder.createBlackLineBorder(),"View Control");
-    border.setTitleFont( FontUtil.BORDER_FONT );
     setBorder( border );
 
     ortho_checkbox = new JCheckBox( "Orthographic" );
@@ -159,7 +161,6 @@ public class AltAzController extends JPanel
                                    0 );
     altitude_slider.addChangeListener( slider_listener );
     border = new TitledBorder( LineBorder.createBlackLineBorder(),"Altitude");
-    border.setTitleFont( FontUtil.BORDER_FONT );
     altitude_slider.setBorder( border );
     add( altitude_slider ); 
 
@@ -169,14 +170,12 @@ public class AltAzController extends JPanel
                                   0 );
     azimuth_slider.addChangeListener( slider_listener );
     border = new TitledBorder( LineBorder.createBlackLineBorder(),"Azimuth");
-    border.setTitleFont( FontUtil.BORDER_FONT );
     azimuth_slider.setBorder( border );
     add( azimuth_slider ); 
 
     distance_slider = new JSlider( JSlider.HORIZONTAL, 1, 20, 10 );
     distance_slider.addChangeListener( slider_listener );
     border = new TitledBorder( LineBorder.createBlackLineBorder(),"Distance");
-    border.setTitleFont( FontUtil.BORDER_FONT );
     distance_slider.setBorder( border );
     add( distance_slider ); 
 
@@ -185,7 +184,6 @@ public class AltAzController extends JPanel
     setAltitudeAngle( altitude );
     setAzimuthAngle( azimuth );
 
-    ortho_checkbox.setFont(  FontUtil.BORDER_FONT );
     ortho_checkbox.addActionListener( new ProjectionTypeListener() );
     if ( camera instanceof OrthographicCamera )
       ortho_checkbox.setSelected( true );
@@ -196,7 +194,6 @@ public class AltAzController extends JPanel
     panel.setLayout( new GridLayout(1,1) );
     panel.add( ortho_checkbox );
     border = new TitledBorder( LineBorder.createBlackLineBorder(),"Projection");
-    border.setTitleFont( FontUtil.BORDER_FONT );
     panel.setBorder( border );
     add( panel );
 
@@ -427,10 +424,9 @@ public class AltAzController extends JPanel
  
 /* ---------------------------- SliderChanged ---------------------------- */
 
-  private class SliderChanged    implements ChangeListener,
-                                            Serializable
+  private class SliderChanged    implements ChangeListener
   {
-     public void stateChanged( ChangeEvent e )
+	 public void stateChanged( ChangeEvent e )
      {
        JSlider slider = (JSlider)e.getSource();
 
@@ -448,7 +444,7 @@ public class AltAzController extends JPanel
 
 /* ------------------------- ProjectionTypeListener ---------------------- */
 
-  private class ProjectionTypeListener implements ActionListener, Serializable
+  private class ProjectionTypeListener implements ActionListener
   {
      public void actionPerformed( ActionEvent e )
      {
@@ -472,9 +468,10 @@ public class AltAzController extends JPanel
 
     Node box = new PositionedBox( center, base, up, extent, Color.BLUE );
     JoglPanel demo = new JoglPanel( box );
+
     Camera camera = demo.getCamera();
     camera.setVRP( new Vector3D(0,0,0) );
-    camera.setCOP( new Vector3D(0,0,5) );
+    camera.setCOP( new Vector3D(3,4,5) );
 
     JFrame frame = new JFrame( "SolidBox Test" );
     frame.setSize(500,517);
@@ -488,5 +485,4 @@ public class AltAzController extends JPanel
     f.getContentPane().add( controller );
     f.setVisible( true );
   }
- 
 }

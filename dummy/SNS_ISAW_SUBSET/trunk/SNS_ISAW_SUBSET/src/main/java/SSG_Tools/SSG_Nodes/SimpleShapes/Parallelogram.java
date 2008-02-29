@@ -25,23 +25,36 @@
  * Modified:
  *
  *  $Log: Parallelogram.java,v $
- *  Revision 1.2  2006/07/04 00:40:47  dennis
- *  Replaced call to deprecated method JFrame.show(), with call
- *  to setVisible(true).
+ *  Revision 1.3  2007/08/14 00:03:33  dennis
+ *  Major update to JSR231 based version from UW-Stout repository.
  *
- *  Revision 1.1  2005/07/25 15:46:02  dennis
- *  Initial version of simple shape.
+ *  Revision 1.5  2006/11/26 01:43:02  dennis
+ *  Changed to allow a null color.  If color is null, the last color
+ *  that was set will be used.
  *
+ *  Revision 1.4  2006/09/23 05:05:32  dennis
+ *  Added MouseArcBall to control the view.
  *
+ *  Revision 1.3  2006/08/04 02:16:21  dennis
+ *  Updated to work with JSR-231, 1.0 beta 5,
+ *  instead of jogl 1.1.1.
+ *
+ *  Revision 1.2  2006/07/20 19:59:01  dennis
+ *  Replaced deprecated method frame.show() with setVisible(true)
+ *
+ *  Revision 1.1  2005/10/14 04:04:11  dennis
+ *  Copied into local CVS repository from CVS repository at IPNS.
  */
+
 package SSG_Tools.SSG_Nodes.SimpleShapes;
 
 import java.awt.*;
 import javax.swing.*;
-import net.java.games.jogl.*;
+import javax.media.opengl.*;
 
 import gov.anl.ipns.MathTools.Geometry.*;
 import SSG_Tools.Viewers.*;
+import SSG_Tools.Viewers.Controls.*;
 
 import SSG_Tools.Cameras.*;
 
@@ -93,10 +106,6 @@ public class Parallelogram extends SimpleShape
     normal_vec.cross( base_vec, up_vec );
     normal_vec.normalize();
     normal = normal_vec.get();
-    
-    color[0] = new_color.getRed()/255f;
-    color[1] = new_color.getGreen()/255f;
-    color[2] = new_color.getBlue()/255f;
   }
 
 
@@ -106,19 +115,23 @@ public class Parallelogram extends SimpleShape
    *
    *  @param  drawable  The drawable on which the Parallelogram is to be drawn.
    */
-  public void Render( GLDrawable drawable )
+  public void Render( GLAutoDrawable drawable )
   {
     GL gl = drawable.getGL();
 
     super.preRender( drawable );
+
+    if ( color != null )
+      gl.glColor3fv( color, 0 );
+
     gl.glBegin( GL.GL_POLYGON );
-      gl.glNormal3fv( normal );
-      gl.glColor3fv( color );
-      gl.glVertex3fv( p1 );
-      gl.glVertex3fv( p2 );
-      gl.glVertex3fv( p3 );
-      gl.glVertex3fv( p4 );
+      gl.glNormal3fv( normal, 0 );
+      gl.glVertex3fv( p1, 0 );
+      gl.glVertex3fv( p2, 0 );
+      gl.glVertex3fv( p3, 0 );
+      gl.glVertex3fv( p4, 0 );
     gl.glEnd();
+
     super.postRender( drawable );
   }
 
@@ -131,12 +144,13 @@ public class Parallelogram extends SimpleShape
   public static void main( String args[] )
   {
     Parallelogram par = new Parallelogram( new Vector3D( 0,0,0 ),
-                                            new Vector3D( 1,0,0 ),
-                                            new Vector3D( 0,1,0 ),
-                                            Color.RED );
+                                           new Vector3D( 1,0,0 ),
+                                           new Vector3D( 0,1,0 ),
+                                           Color.RED );
 
     JoglPanel demo = new JoglPanel( par );
     demo.enableHeadlight( true );
+    new MouseArcBall( demo );
 
     Camera camera = demo.getCamera();
     camera.setVRP( new Vector3D( 0,0, 0 ) );
@@ -144,11 +158,11 @@ public class Parallelogram extends SimpleShape
     camera.SetViewVolume( 1, 10, 40 );
     demo.setCamera( camera );
   
-    JFrame frame = new JFrame( "Sphere Scene" );
+    JFrame frame = new JFrame( "Parallelogram" );
     frame.setSize(500,517);
     frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
     frame.getContentPane().add( demo.getDisplayComponent() );
-    frame.setVisible(true);
+    frame.setVisible( true );
   }
 
 }

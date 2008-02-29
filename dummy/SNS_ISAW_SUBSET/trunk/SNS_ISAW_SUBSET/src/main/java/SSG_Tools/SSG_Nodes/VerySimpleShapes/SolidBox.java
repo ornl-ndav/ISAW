@@ -25,12 +25,15 @@
  * Modified:
  *
  * $Log: SolidBox.java,v $
+ * Revision 1.1  2007/08/14 00:33:18  dennis
+ * Added some files from SSG_Tools at UW-Stout.
+ *
  *
  */
 
 package SSG_Tools.SSG_Nodes.VerySimpleShapes;
 
-import net.java.games.jogl.*;
+import javax.media.opengl.*;
 import javax.swing.*;
 
 import SSG_Tools.Viewers.*;
@@ -119,7 +122,7 @@ public class SolidBox extends Node
    *
    *  @param  drawable  The drawable on which the box is to be drawn.
    */
-  public void Render( GLDrawable drawable )
+  public void Render( GLAutoDrawable drawable )
   {
     GL gl = drawable.getGL();
 

@@ -25,12 +25,8 @@
  * Modified:
  *
  *  $Log: OrientationTransform.java,v $
- *  Revision 1.4  2006/07/20 15:23:52  dennis
- *  Updated from CVS repository at isaw.mscs.uwstout.edu.
- *  This added a method apply_to() to apply the transformation
- *  to a particular vector.
- *  Also added get methods for the basic information that
- *  can be set.
+ *  Revision 1.5  2007/08/14 00:03:31  dennis
+ *  Major update to JSR231 based version from UW-Stout repository.
  *
  *  Revision 1.3  2005/10/15 19:47:22  dennis
  *  Added methods to allow getting and setting of base, up and
@@ -47,7 +43,6 @@
 package SSG_Tools.SSG_Nodes.Groups.Transforms;
 
 import gov.anl.ipns.MathTools.Geometry.*;
-
 
 /**
  *  This class represents transformation nodes that both "rotate" an object

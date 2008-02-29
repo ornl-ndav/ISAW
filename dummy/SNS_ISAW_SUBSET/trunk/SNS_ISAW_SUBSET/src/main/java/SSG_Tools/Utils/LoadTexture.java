@@ -25,12 +25,14 @@
  * Modified:
  *
  *  $Log: LoadTexture.java,v $
- *  Revision 1.3  2006/07/20 14:05:42  dennis
+ *  Revision 1.4  2007/08/14 00:03:33  dennis
+ *  Major update to JSR231 based version from UW-Stout repository.
+ *
+ *  Revision 1.3  2005/10/29 21:50:35  dennis
  *  Reversed the order of the rows in the returned array of bytes.
  *  The last row of the image is now returned first in the array
  *  of bytes.
  *  Made minor additions to the javadocs.
- *
  *
  *  Revision 1.2  2004/11/22 18:47:06  dennis
  *  Removed redundant else clause.

@@ -25,12 +25,12 @@
  * Modified:
  *
  *  $Log: Rotate.java,v $
- *  Revision 1.5  2006/07/20 15:23:53  dennis
- *  Updated from CVS repository at isaw.mscs.uwstout.edu.
- *  This added a method apply_to() to apply the transformation
- *  to a particular vector.
- *  Also added get methods for the basic information that
- *  can be set.
+ *  Revision 1.6  2007/08/14 00:03:31  dennis
+ *  Major update to JSR231 based version from UW-Stout repository.
+ *
+ *  Revision 1.6  2006/08/04 02:16:21  dennis
+ *  Updated to work with JSR-231, 1.0 beta 5,
+ *  instead of jogl 1.1.1.
  *
  *  Revision 1.5  2005/11/23 00:17:08  dennis
  *  Added public method, apply_to(), that will apply the transformation
@@ -53,7 +53,7 @@
 
 package SSG_Tools.SSG_Nodes.Groups.Transforms;
 
-import net.java.games.jogl.*;
+import javax.media.opengl.*;
 import gov.anl.ipns.MathTools.Geometry.*;
 
 /**

@@ -25,6 +25,9 @@
  * Modified:
  *
  * $Log: Box.java,v $
+ * Revision 1.6  2007/08/14 00:03:32  dennis
+ * Major update to JSR231 based version from UW-Stout repository.
+ *
  * Revision 1.5  2006/07/20 16:00:42  dennis
  * Updated from CVS repository at isaw.mscs.uwstout.edu
  * Added methods to get the dimensions of the box.
@@ -39,7 +42,7 @@
 
 package SSG_Tools.SSG_Nodes.Shapes;
 
-import net.java.games.jogl.*;
+import javax.media.opengl.*;
 import javax.swing.*;
 
 import SSG_Tools.Viewers.*;
@@ -113,7 +116,7 @@ public class Box extends Shape
    *
    *  @param  drawable  The drawable on which the box is to be drawn.
    */
-  public void Render( GLDrawable drawable )
+  public void Render( GLAutoDrawable drawable )
   {
     preRender( drawable );                // handle name stack and appearance
   	

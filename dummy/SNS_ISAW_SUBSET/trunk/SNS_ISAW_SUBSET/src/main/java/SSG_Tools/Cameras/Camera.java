@@ -25,8 +25,20 @@
  * Modified:
  *
  *  $Log: Camera.java,v $
- *  Revision 1.7  2006/07/20 14:40:12  dennis
- *  Added additional explanator java docs at the start of the class.
+ *  Revision 1.8  2007/08/14 00:03:27  dennis
+ *  Major update to JSR231 based version from UW-Stout repository.
+ *
+ *  Revision 1.7  2006/08/04 02:16:21  dennis
+ *  Updated to work with JSR-231, 1.0 beta 5,
+ *  instead of jogl 1.1.1.
+ *
+ *  Revision 1.6  2005/10/29 22:09:24  dennis
+ *  Changed default far plane position from 50 to 500.
+ *  Added some additional explanatory javadocs at the start of
+ *  the class.
+ *
+ *  Revision 1.5  2005/10/14 03:46:47  dennis
+ *  Updated from current version kept in CVS at IPNS.
  *
  *  Revision 1.6  2005/07/18 18:47:26  dennis
  *  Added methods:
@@ -60,7 +72,7 @@
  */
 package SSG_Tools.Cameras;
 
-import net.java.games.jogl.*;
+import javax.media.opengl.*;
 
 import SSG_Tools.Utils.*;
 import SSG_Tools.RayTools.*;
@@ -99,9 +111,9 @@ abstract public class Camera
 
                      // Default view volume
 
-  protected float near_plane = 1;  
-  protected float far_plane  = 50;
-  protected float view_angle = 60; 
+  protected float near_plane =   1;  
+  protected float far_plane  = 500;
+  protected float view_angle =  60; 
 
 
 /* -------------------------------- set -------------------------------- */
@@ -531,9 +543,9 @@ abstract public class Camera
   *  that the matrix mode is GL_MODELVIEW, and that the matrix stack has been
   *  reset at the time that this method is called.
   *
-  *  @param drawable  The GLDrawable for the canvas.
+  *  @param drawable  The GLAutoDrawable for the canvas.
   */
-  public void MakeViewMatrix( GLDrawable drawable )
+  public void MakeViewMatrix( GLAutoDrawable drawable )
   {
     GL  gl  = drawable.getGL();
 
@@ -557,11 +569,11 @@ abstract public class Camera
   *  application programs.  NOTE: It is assumed that the matrix mode is
   *  GL_PROJECTION.
   *
-  *  @param drawable  The GLDrawable for this canvas.
+  *  @param drawable  The GLAutoDrawable for this canvas.
   *  @param width     The width of the window in pixels
   *  @param height    The height of the window in pixels
   */
-  abstract public void MakeProjectionMatrix( GLDrawable drawable,
+  abstract public void MakeProjectionMatrix( GLAutoDrawable drawable,
                                              int        width,
                                              int        height );
 

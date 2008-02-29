@@ -25,6 +25,26 @@
  * Modified:
  *           
  *  $Log: Material.java,v $
+ *  Revision 1.8  2007/08/26 22:46:24  dennis
+ *  Copied from repository at UW-Stout.
+ *
+ *  Revision 1.10  2007/08/24 20:18:38  dennis
+ *  Moved copy constructor next to other constructors.
+ *
+ *  Revision 1.9  2007/08/24 17:24:18  dennis
+ *  The material color array now has four components.
+ *  Fixed a few typos in javadocs.
+ *
+ *  Revision 1.8  2006/10/22 16:48:51  dennis
+ *  Added some introductory javadoc comments, and explained use of setColor.
+ *
+ *  Revision 1.7  2006/08/04 02:16:21  dennis
+ *  Updated to work with JSR-231, 1.0 beta 5,
+ *  instead of jogl 1.1.1.
+ *
+ *  Revision 1.6  2005/10/14 03:46:47  dennis
+ *  Updated from current version kept in CVS at IPNS.
+ *
  *  Revision 1.6  2005/07/25 13:58:32  dennis
  *  If the diffuse color is set, this now calls glColor3fv() for the
  *  specified diffuse color.  This assumes that glColorMaterial has
@@ -48,10 +68,17 @@
 package SSG_Tools.Appearance;
 
 import java.awt.*;
-import net.java.games.jogl.*;
+import javax.media.opengl.*;
 
 import SSG_Tools.*;
 
+/**
+ *  This class represents the basic material properties of a shape.  It
+ *  records values for ambient, diffuse and specular colors of the shape,
+ *  as well as an emissive color and shininess exponent.  When the Render()
+ *  method is called, any of the colors (ambient, diffuse, specular, emmssion)
+ *  that is not null will be set, using glColor() or glMaterial().
+ */
 public class Material implements IGL_Renderable
 {
   private Color ambient; 
@@ -69,6 +96,7 @@ public class Material implements IGL_Renderable
     setColor( Color.GRAY );
   }
 
+
   /* -------------------------- constructor ------------------------ */
   /**
    *  Construct a new material object, using the specified color for the
@@ -81,13 +109,34 @@ public class Material implements IGL_Renderable
     setColor( color );
   }
 
+
+  /* ----------------------- copy constructor ----------------------- */
+  /**
+   *  Construct a new material object with the same values as the 
+   *  specified material.
+   *
+   *  @param material  The material whose values are to be copied.
+   */
+  public Material( Material material )
+  {
+    ambient  = material.ambient;
+    diffuse  = material.diffuse;
+    specular = material.specular;
+    emission = material.emission;
+
+    shininess = material.shininess;
+  }
+
+
   /* ------------------------- setColor --------------------------- */
   /**
    *  Convenience method to set the ambient and diffuse and specular
    *  colors based on a specified color.  The diffuse color is set
    *  to the specified color.  The ambient color is set to a lower 
    *  intensity version of the specified color.  The specular color
-   *  is set to LIGHT_GRAY.
+   *  is set to LIGHT_GRAY.  If the default balance between diffuse
+   *  ambient and specular components is not appropriate, the methods
+   *  setAmbient, setDiffuse and set Specular can be called separately.
    *
    *  @param color  The new color to use for this object for ambient 
    *                light and diffuse reflection.
@@ -136,7 +185,7 @@ public class Material implements IGL_Renderable
 
   /* ------------------------- setShininess -------------------------- */
   /**
-   *  Set the exponent to use for the shininess calculaton.  The value
+   *  Set the exponent to use for the shininess calculation.  The value
    *  will be clamped to the range 0 to 128.  Larger values will make the
    *  surface appear more shiny.
    *
@@ -200,7 +249,7 @@ public class Material implements IGL_Renderable
 
   /* ------------------------- getShininess -------------------------- */
   /**
-   *  Get the exponent used for the shininess calculaton.  
+   *  Get the exponent used for the shininess calculation.  
    *
    *  @return exponent  The exponent used for specular reflection
    *                    clamped to the range [0,128].
@@ -223,42 +272,25 @@ public class Material implements IGL_Renderable
   }
 
 
-  /* ----------------------- copy constructor ----------------------- */
-  /**
-   *  Construct a new material object with the same values as the 
-   *  specified material.
-   *
-   *  @param material  The material whose values are to be copied.
-   */
-  public Material( Material material )
-  {
-    ambient  = material.ambient;
-    diffuse  = material.diffuse; 
-    specular = material.specular;
-    emission = material.emission;
-
-    shininess = material.shininess;
-  }
-
-
   /* ---------------------------- Render ------------------------------ */
   /**
    *  Use OpenGL calls to set the material properties.
    *
    *  @param  drawable  The drawable for which the material properties are set. 
    */
-  public void Render( GLDrawable drawable )
+  public void Render( GLAutoDrawable drawable )
   {
     GL gl = drawable.getGL();
 
-    float mat[] = new float[3];
+    float mat[] = new float[4];
+    mat[3] = 1.0f;            // Alpha = 1 for these materials
 
     if ( ambient != null ) 
     {
       mat[0] = ambient.getRed()/255f;
       mat[1] = ambient.getGreen()/255f;
       mat[2] = ambient.getBlue()/255f;
-      gl.glMaterialfv( GL.GL_FRONT_AND_BACK, GL.GL_AMBIENT, mat );
+      gl.glMaterialfv( GL.GL_FRONT_AND_BACK, GL.GL_AMBIENT, mat, 0 );
     }
                               // NOTE: The JoglPanel enables ColorMaterial with
                               //       the material diffuse color tracking
@@ -269,7 +301,7 @@ public class Material implements IGL_Renderable
       mat[0] = diffuse.getRed()/255f;
       mat[1] = diffuse.getGreen()/255f;
       mat[2] = diffuse.getBlue()/255f;
-      gl.glColor3fv( mat ); 
+      gl.glColor4fv( mat, 0 ); 
     }
 
     if ( specular != null )
@@ -277,7 +309,7 @@ public class Material implements IGL_Renderable
       mat[0] = specular.getRed()/255f;
       mat[1] = specular.getGreen()/255f;
       mat[2] = specular.getBlue()/255f;
-      gl.glMaterialfv( GL.GL_FRONT_AND_BACK, GL.GL_SPECULAR, mat );
+      gl.glMaterialfv( GL.GL_FRONT_AND_BACK, GL.GL_SPECULAR, mat, 0 );
     }
 
     if ( emission != null )
@@ -285,7 +317,7 @@ public class Material implements IGL_Renderable
       mat[0] = emission.getRed()/255f;
       mat[1] = emission.getGreen()/255f;
       mat[2] = emission.getBlue()/255f;
-      gl.glMaterialfv( GL.GL_FRONT_AND_BACK, GL.GL_EMISSION, mat );
+      gl.glMaterialfv( GL.GL_FRONT_AND_BACK, GL.GL_EMISSION, mat, 0 );
     }
 
     gl.glMaterialf( GL.GL_FRONT_AND_BACK, GL.GL_SHININESS, shininess );

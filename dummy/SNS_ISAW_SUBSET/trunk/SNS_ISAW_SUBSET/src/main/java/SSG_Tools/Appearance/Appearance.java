@@ -25,6 +25,30 @@
  * Modified:
  *           
  *  $Log: Appearance.java,v $
+ *  Revision 1.7  2007/08/14 00:03:26  dennis
+ *  Major update to JSR231 based version from UW-Stout repository.
+ *
+ *  Revision 1.10  2006/12/10 06:16:27  dennis
+ *  Updated to use new interface for Texture objects.  That is, now
+ *  pass in a GLAutoDrawable object rather than just the GL object.
+ *
+ *  Revision 1.9  2006/11/27 02:14:20  dennis
+ *  Now pushes the polygon attributes as well as the lighting
+ *  attributes.  Also, now pops the attribute stack in postrender
+ *  precisely when the attribute stack was pushed in prerender,
+ *  without re-checking a logical condition for pushing the stack.
+ *
+ *  Revision 1.8  2006/10/10 02:49:26  dennis
+ *  Fixed bug with setPolygonMode(), polygon mode was not being set
+ *  properly.
+ *
+ *  Revision 1.7  2006/08/04 02:16:21  dennis
+ *  Updated to work with JSR-231, 1.0 beta 5,
+ *  instead of jogl 1.1.1.
+ *
+ *  Revision 1.6  2005/10/14 03:46:47  dennis
+ *  Updated from current version kept in CVS at IPNS.
+ *
  *  Revision 1.6  2005/07/25 14:01:16  dennis
  *  If a material object has been set for this appearance, the current
  *  lighting/material state is now pushed on the attribute stack in the
@@ -54,7 +78,7 @@
 
 package SSG_Tools.Appearance;
 
-import net.java.games.jogl.*;
+import javax.media.opengl.*;
 import SSG_Tools.Appearance.Textures.*;
 
 public class Appearance 
@@ -63,6 +87,7 @@ public class Appearance
   private Texture  texture      = null;
   private int      shade_model  = GL.GL_NONE;
   private int      polygon_mode = GL.GL_NONE;
+  private boolean  pushed_stack = false;
 
 
   /* -------------------------- constructor ------------------------ */
@@ -200,10 +225,10 @@ public class Appearance
    */
   public void setPolygonMode( int polygon_mode )
   {
-    if ( shade_model == GL.GL_POINT ||
-         shade_model == GL.GL_LINE  ||
-         shade_model == GL.GL_FILL  ||
-         shade_model == GL.GL_NONE   )
+    if ( polygon_mode == GL.GL_POINT ||
+         polygon_mode == GL.GL_LINE  ||
+         polygon_mode == GL.GL_FILL  ||
+         polygon_mode == GL.GL_NONE   )
       this.polygon_mode = polygon_mode;
   }
 
@@ -227,29 +252,31 @@ public class Appearance
    *
    *  @param  drawable  The drawable for which the material properties are set. 
    */
-  public void preRender( GLDrawable drawable )
+  public void preRender( GLAutoDrawable drawable )
   {
-    if ( shade_model != GL.GL_NONE )
-    { 
-      GL gl = drawable.getGL();
-      gl.glShadeModel( shade_model );
+    GL gl = drawable.getGL();
+
+    if ( shade_model  != GL.GL_NONE ||     // if we are going to change one
+         polygon_mode != GL.GL_NONE ||     // of these, push/pop the attribute
+         material     != null          )   // stack to isolate the changes
+    {
+      gl.glPushAttrib( GL.GL_LIGHTING_BIT | GL.GL_POLYGON_BIT );
+      pushed_stack = true;
     }
+    else
+      pushed_stack = false;
+
+    if ( shade_model != GL.GL_NONE )
+      gl.glShadeModel( shade_model );
 
     if ( polygon_mode != GL.GL_NONE )
-    {
-      GL gl = drawable.getGL();
       gl.glPolygonMode( GL.GL_FRONT_AND_BACK, polygon_mode );
-    }
 
     if ( material != null )
-    {
-      GL gl = drawable.getGL();
-      gl.glPushAttrib( GL.GL_LIGHTING_BIT );
       material.Render( drawable );
-    }
 
     if ( texture != null )
-      texture.activate( drawable.getGL() );
+      texture.activate( drawable );
   }
 
 
@@ -259,12 +286,12 @@ public class Appearance
    *
    *  @param  drawable  The drawable for which the material properties are set. 
    */
-  public void postRender( GLDrawable drawable )
+  public void postRender( GLAutoDrawable drawable )
   {
     if ( texture != null )
-      texture.deactivate( drawable.getGL() );
+      texture.deactivate( drawable );
 
-    if ( material != null )
+    if ( pushed_stack )
     {
       GL gl = drawable.getGL();
       gl.glPopAttrib();

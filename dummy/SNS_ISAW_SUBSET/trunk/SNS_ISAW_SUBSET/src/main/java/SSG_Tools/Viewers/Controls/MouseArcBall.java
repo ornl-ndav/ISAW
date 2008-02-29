@@ -25,12 +25,18 @@
  * Modified:
  *
  *  $Log: MouseArcBall.java,v $
- *  Revision 1.4  2006/07/25 13:01:05  dennis
- *  Replaced call to deprecated method show() with
- *  call to setVisible(true).
+ *  Revision 1.5  2007/08/26 23:23:22  dennis
+ *  Updated to latest version from UW-Stout repository.
  *
- *  Revision 1.3  2006/07/20 14:28:58  dennis
- *  Added small main program for testing.
+ *  Revision 1.3  2006/12/11 04:31:21  dennis
+ *  Fixed a couple of spelling errors in java docs.
+ *  Fixed title on frame in test main method.
+ *
+ *  Revision 1.2  2006/07/20 19:59:01  dennis
+ *  Replaced deprecated method frame.show() with setVisible(true)
+ *
+ *  Revision 1.1  2005/10/14 04:00:28  dennis
+ *  Moved into local CVS repository, from CVS repository at IPNS.
  *
  *  Revision 1.2  2005/08/02 14:46:01  dennis
  *  Removed unused imports.
@@ -92,7 +98,7 @@ public class MouseArcBall extends    MouseAdapter
    *  Enable or disable this MouseArcBall.  If it is disabled, no events
    *  will be processed.
    *
-   *  @param  on_off  Flag controling whether or not the MosueArcBall is
+   *  @param  on_off  Flag controlling whether or not the MouseArcBall is
    *                  enabled to handle events.
    */
    public void setEnabled( boolean on_off )
@@ -211,7 +217,7 @@ public class MouseArcBall extends    MouseAdapter
 
     new MouseArcBall( demo );
 
-    JFrame frame = new JFrame( "SolidBox Test" );
+    JFrame frame = new JFrame( "MouseArcBall Test" );
     frame.setSize(500,517);
     frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
     frame.getContentPane().add( demo.getDisplayComponent() );

@@ -27,9 +27,27 @@
  * Modified:
  *
  * $Log: Texture.java,v $
- * Revision 1.2  2006/07/20 18:14:22  dennis
- * Updated from CVS repository on isaw.mscs.uwstout.edu
- * Basically, improved documentation.
+ * Revision 1.3  2007/08/14 00:03:27  dennis
+ * Major update to JSR231 based version from UW-Stout repository.
+ *
+ * Revision 1.6  2006/12/11 19:04:13  dennis
+ * Fixed spelling in javadoc comment
+ *
+ * Revision 1.5  2006/12/11 17:57:18  dennis
+ * Fixed error in javadoc comment.
+ *
+ * Revision 1.4  2006/12/10 06:10:14  dennis
+ * Added methods to get and set the min and mag filters separately.
+ * This was needed since we now build MipMaps automatically for the
+ * textures, and so the additional MIPMAP options had to be made
+ * available for the min filter.
+ * Also, the GLAutoDrawable passed in must now be either an SSG_Drawable
+ * or an SSG_JPanel, so that it implements the IGetGLU interface.  This
+ * will always be the case when a scene graph is used from a JoglPanel.
+ *
+ * Revision 1.3  2006/08/04 02:16:21  dennis
+ * Updated to work with JSR-231, 1.0 beta 5,
+ * instead of jogl 1.1.1.
  *
  * Revision 1.2  2005/11/01 20:31:18  dennis
  * Added more explanatory javadoc comments at the start of the class.
@@ -44,7 +62,7 @@
 
 package SSG_Tools.Appearance.Textures; 
 
-import net.java.games.jogl.*;
+import javax.media.opengl.*;
 
 
 /**
@@ -55,7 +73,10 @@ import net.java.games.jogl.*;
  *  Shape to be textured must also define texture coordinates, or have 
  *  automatic texture coordinate generation enabled.   See Shape.java.  
  *  To improve efficiency, methods that change the texture map or the
- *  way the texture map is interpreted (setMode(), setFilter())
+ *  way the texture map is interpreted (setMode(), setMinFilter(), 
+ *  setMagFilter()) are included.  These should generally be called 
+ *  immediately after constructing the texture object, before it is rendered.
+ *  NOTE: MipMaps will be automatically generated for the texture objects.
  */
 
 abstract public class Texture 
@@ -64,8 +85,9 @@ abstract public class Texture
   private int texture_name = DEFAULT_TEXTURE_NAME;
 
   private  byte image[] = null;
-  private  float filter = GL.GL_LINEAR;
-  private  float mode   = GL.GL_MODULATE;
+  private  float mag_filter = GL.GL_LINEAR;
+  private  float min_filter = GL.GL_LINEAR;
+  private  float mode       = GL.GL_MODULATE;
 
   protected boolean rebuild_texture = true;
 
@@ -90,9 +112,10 @@ abstract public class Texture
    *  object, as the scene graph is being rendered.  Applications should
    *  not call this directly.
    *
-   *  @param gl   The OpenGL context for which the texture object is used.
+   *  @param drawable  The OpenGL drawable for which the texture object 
+   *                   is used.
    */
-  abstract public void activate( GL gl );
+  abstract public void activate( GLAutoDrawable drawable );
 
 
   /* ---------------------------- deactivate ---------------------------- */
@@ -102,9 +125,10 @@ abstract public class Texture
    *  appearance object, as the scene graph is being rendered.  Applications
    *  should not call this directly.
    *
-   *  @param gl   The OpenGL context for which the texture object is used.
+   *  @param drawable  The OpenGL drawable for which the texture object 
+   *                   is used.
    */
-  abstract public void deactivate( GL gl );
+  abstract public void deactivate( GLAutoDrawable drawable );
 
 
   /* ---------------------------- setImage ---------------------------- */
@@ -164,7 +188,7 @@ abstract public class Texture
     if ( texture_name == DEFAULT_TEXTURE_NAME )
     {
       int list[] = new int[1];
-      gl.glGenTextures( 1, list );
+      gl.glGenTextures( 1, list, 0 );
       texture_name = list[0];
     }
     return texture_name;
@@ -181,21 +205,73 @@ abstract public class Texture
    */
   public void setFilter( float filter_code )
   {
-    filter = filter_code;
+    min_filter = filter_code;
+    mag_filter = filter_code;
     rebuild_texture = true;
   }
 
 
-  /* -------------------------- getFilter ---------------------------- */
+  /* -------------------------- setMinFilter -------------------------- */
   /**
-   *  Get the filter type that has been specified for this texture.
+   *  Set the filter type to be used for image minification, when one
+   *  on-screen pixel being rendered maps to an area greater than one
+   *  texture element. This should generally not be called after the 
+   *  texture map has been rendered.
    *
-   * @return The code for the current texture filter, such as
-   *         GL.GL_LINEAR
+   * @param filter_code  One of the values GL.GL_LINEAR, GL.GL_NEAREST
+   *                     GL_NEAREST_MIPMAP_NEAREST, GL_LINEAR_MIPMAP_NEAREST,
+   *                     GL_NEAREST_MIPMAP_LINEAR or GL_LINEAR_MIPMAP_LINEAR
    */
-  public float getFilter() 
+  public void setMinFilter( float filter_code )
   {
-    return filter;
+    min_filter = filter_code;
+    rebuild_texture = true;
+  }
+
+
+  /* -------------------------- setMagFilter -------------------------- */
+  /**
+   *  Set the filter type to be used for image magnification, when one
+   *  on-screen pixel being rendered maps to an area less than or equal
+   *  to one texture element. This should generally not be called after 
+   *  the texture map has been rendered.
+   *
+   * @param filter_code  One of the values GL.GL_LINEAR or GL.GL_NEAREST
+   */
+  public void setMagFilter( float filter_code )
+  {
+    mag_filter = filter_code;
+    rebuild_texture = true;
+  }
+
+
+  /* -------------------------- getMinFilter --------------------------- */
+  /**
+   *  Get the minification filter type that has been specified for 
+   *  this texture.
+   *
+   *  @return The code for the current minification texture filter, 
+   *          GL.GL_LINEAR, GL.GL_NEAREST, GL_NEAREST_MIPMAP_NEAREST, 
+   *          GL_LINEAR_MIPMAP_NEAREST, GL_NEAREST_MIPMAP_LINEAR or 
+   *          GL_LINEAR_MIPMAP_LINEAR
+   */
+  public float getMinFilter() 
+  {
+    return min_filter;
+  }
+
+
+  /* -------------------------- getMagFilter --------------------------- */
+  /**
+   *  Get the magnification filter type that has been specified for
+   *  this texture.
+   *
+   *  @return The code for the current magnification texture filter,
+   *          GL.GL_LINEAR or GL.GL_NEAREST.
+   */
+  public float getMagFilter()
+  {
+    return mag_filter;
   }
 
 

@@ -25,6 +25,9 @@
  * Modified:
  *
  * $Log: Sphere.java,v $
+ * Revision 1.10  2007/08/14 00:03:33  dennis
+ * Major update to JSR231 based version from UW-Stout repository.
+ *
  * Revision 1.9  2006/07/20 15:53:22  dennis
  * Updated from CVS repository at isaw.mscs.uwstout.edu.
  * Added generation of texture coordinates.
@@ -61,7 +64,7 @@
 
 package SSG_Tools.SSG_Nodes.Shapes;
 
-import net.java.games.jogl.*;
+import javax.media.opengl.*;
 import java.awt.*;
 import javax.swing.*;
 
@@ -183,7 +186,7 @@ public class Sphere extends Shape
    *
    *  @param  drawable  The drawable on which the sphere is to be drawn.
    */
-  public void Render( GLDrawable drawable )
+  public void Render( GLAutoDrawable drawable )
   {
     GL gl = drawable.getGL();
 

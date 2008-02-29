@@ -25,6 +25,13 @@
  * Modified:
  *           
  * $Log: Light.java,v $
+ * Revision 1.3  2007/08/14 00:03:31  dennis
+ * Major update to JSR231 based version from UW-Stout repository.
+ *
+ * Revision 1.3  2006/08/04 02:16:21  dennis
+ * Updated to work with JSR-231, 1.0 beta 5,
+ * instead of jogl 1.1.1.
+ *
  * Revision 1.2  2004/12/13 05:02:27  dennis
  * Minor fix to documentation
  *
@@ -36,7 +43,7 @@
 package SSG_Tools.SSG_Nodes.Lights;
 
 import java.awt.*;
-import net.java.games.jogl.*;
+import javax.media.opengl.*;
 
 import SSG_Tools.SSG_Nodes.*;
 
@@ -152,7 +159,7 @@ abstract public class Light extends Node
    *
    *  @param  drawable  The drawable on which the light is to be used.
    */
-  public void Render( GLDrawable drawable )
+  public void Render( GLAutoDrawable drawable )
   {
     GL gl = drawable.getGL();
     gl.glEnable( light_num );
@@ -162,13 +169,13 @@ abstract public class Light extends Node
     color_arr[1] = color.getGreen()/255f;
     color_arr[2] = color.getBlue()/255f;
     color_arr[3] = 1;
-    gl.glLightfv( light_num, GL.GL_SPECULAR, color_arr );
-    gl.glLightfv( light_num, GL.GL_DIFFUSE, color_arr );
+    gl.glLightfv( light_num, GL.GL_SPECULAR, color_arr, 0 );
+    gl.glLightfv( light_num, GL.GL_DIFFUSE, color_arr, 0 );
 
                                                 // use a fraction of the color
     for ( int i = 0; i < 3; i++ )               // for the ambient light
       color_arr[i] *= ambient_factor;
-    gl.glLightfv( light_num, GL.GL_AMBIENT, color_arr );
+    gl.glLightfv( light_num, GL.GL_AMBIENT, color_arr, 0 );
   }
 
 }

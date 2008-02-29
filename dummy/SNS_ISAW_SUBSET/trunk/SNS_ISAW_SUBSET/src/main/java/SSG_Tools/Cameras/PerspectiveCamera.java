@@ -25,6 +25,16 @@
  * Modified:
  *
  *  $Log: PerspectiveCamera.java,v $
+ *  Revision 1.4  2007/08/14 00:03:27  dennis
+ *  Major update to JSR231 based version from UW-Stout repository.
+ *
+ *  Revision 1.4  2006/08/04 02:16:21  dennis
+ *  Updated to work with JSR-231, 1.0 beta 5,
+ *  instead of jogl 1.1.1.
+ *
+ *  Revision 1.3  2005/10/14 03:46:47  dennis
+ *  Updated from current version kept in CVS at IPNS.
+ *
  *  Revision 1.3  2005/07/18 18:39:44  dennis
  *  Added a copy constructor to initialize the camera values from
  *  another camera.  Added getLineOfSight() method that finds a
@@ -47,7 +57,7 @@
  */
 package SSG_Tools.Cameras;
 
-import net.java.games.jogl.*;
+import javax.media.opengl.*;
 
 import SSG_Tools.Utils.*;
 import SSG_Tools.RayTools.*;
@@ -69,6 +79,7 @@ public class PerspectiveCamera extends Camera
  */ 
   public PerspectiveCamera()
   {
+    // Create a default PerspectiveCamera looking at the origin.
   }
 
 
@@ -89,11 +100,11 @@ public class PerspectiveCamera extends Camera
   *  dimensions  and the current view angle and clipping planes.  
   *  NOTE: It is assumed that the matrix mode is GL_PROJECTION.
   *
-  *  @param drawable  The GLDrawable for this canvas.
+  *  @param drawable  The GLAutoDrawable for this canvas.
   *  @param width     The width of the window in pixels
   *  @param height    The height of the window in pixels
   */
-  public void MakeProjectionMatrix( GLDrawable drawable,
+  public void MakeProjectionMatrix( GLAutoDrawable drawable,
                                     int width,
                                     int height )
   {

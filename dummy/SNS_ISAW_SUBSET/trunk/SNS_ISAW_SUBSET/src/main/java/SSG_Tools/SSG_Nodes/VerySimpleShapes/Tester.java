@@ -7,7 +7,7 @@ package SSG_Tools.SSG_Nodes.VerySimpleShapes;
 import java.awt.*;
 import javax.swing.*;
 
-import net.java.games.jogl.*;
+import javax.media.opengl.*;
 
 import gov.anl.ipns.MathTools.Geometry.*;
 import SSG_Tools.Viewers.*;
@@ -76,16 +76,16 @@ public class Tester extends Group
       box.setPickID( 2 * index );
 
       if ( row == n_rows/2 && col == n_cols/2 )
-        addChild( new LightingOnOff( false ) );
+        addChild( new glDisableNode( GL.GL_LIGHTING ) );
 
       index++;
     }
 
-    addChild( new LightingOnOff( true ) );
+    addChild( new glEnableNode( GL.GL_LIGHTING ) );
   }
 
 
-  public void Render( GLDrawable drawable )
+  public void Render( GLAutoDrawable drawable )
   {
     GL gl = drawable.getGL();
     int num_children = numChildren();

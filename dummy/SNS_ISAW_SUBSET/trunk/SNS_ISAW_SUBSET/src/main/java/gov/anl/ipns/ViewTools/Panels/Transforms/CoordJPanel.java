@@ -30,6 +30,42 @@
  * Modified:
  *
  *  $Log: CoordJPanel.java,v $
+ *  Revision 1.47  2008/01/11 22:46:45  amoe
+ *  Added functionality for setting the tooltip visibility .
+ *  Added method setWCToolTipVisible(..) .
+ *
+ *  Revision 1.46  2007/12/14 07:23:14  amoe
+ *  Same as the previous log.  The previous revision was not actually carried
+ *  out...until this revision
+ *
+ *  Revision 1.45  2007/11/30 22:47:21  amoe
+ *  Made the world coordinate tooltip be displayed depending on the boolean IsawProps variable "ShowWCToolTip" .  Changes made in inner class CoordMouseMotionAdapter .
+ *
+ *  Revision 1.44  2007/11/20 17:56:25  amoe
+ *  Added a feature to show the current World Coordinate from the mouse pointer in
+ *  a tool-tip box.  This involved adding mouseMoved(..) to the inner class
+ *  CoordMouseMotionAdapter .
+ *
+ *  Revision 1.43  2007/09/17 02:08:48  dennis
+ *  Some code cleanup while working toward finding and fixing a problem
+ *  with setting ranges in the FunctionViewComponent class.
+ *  1. Removed ZOOM_REGION from state information.  The ZOOM_REGION
+ *     was stored in terms of pixels, which is not meaningful or
+ *     necessary.  The same information is stored in world coordinates
+ *     in the local transformations source region.
+ *  2. Renamed getZoom_region() to getLastZoomRegionInPixels(), which
+ *     is more descriptive.  This method is only used by the old Contour
+ *     view, and should eventually be removed from this class entirely.
+ *  3. Renamed setZoom_region to setLocalWorldCoords(x1,y1,x2,y2), since
+ *     that is a more accurate description of what it does.  It just
+ *     overloads the name setLocalWorldCoordinates(), passing in four
+ *     separate numbers instead of one CoordBounds object.  Removed
+ *     unneeded send_message( ZOOM_IN ), so that both forms of the
+ *     setLocalWorldCoords() method have the same behavior regarding
+ *     sending messages.
+ *  4. Removed method SetZoomRegionToWindowSize() that is unneeded now
+ *     that the pixel based zoom region is not in the ObjectState.
+ *
  *  Revision 1.42  2007/07/29 20:45:16  dennis
  *  Changed local_transform and global_transform to be private
  *  in CoordJPanel class, to keep better control over who can
@@ -37,7 +73,7 @@
  *
  *  Revision 1.41  2007/07/29 19:05:59  dennis
  *  Minor adjustment to ZoomToPixelSubregion().  Uses slightly larger
- *  region and cals setLocalWorldCoords() to clamp the region to
+ *  region and calls setLocalWorldCoords() to clamp the region to
  *  the global bounds.
  *
  *  Revision 1.40  2007/03/10 15:05:26  dennis
@@ -205,12 +241,6 @@ public class CoordJPanel extends ActiveJPanel implements Serializable,
   public static final String CURSOR_MOVED      = "Cursor Moved";
 
   // these variables preserve state for the CoordJPanel
- /**
-  * "Zoom Region" - This constant String is a key for referencing the state
-  * information about the pixel bounds of the zoomed region. The value
-  * referenced by this key is of type Rectangle.
-  */
-  public static final String ZOOM_REGION       = "Zoom Region";
   
  /**
   * "Horizontal Scroll" - This constant String is a key for referencing the
@@ -264,9 +294,8 @@ public class CoordJPanel extends ActiveJPanel implements Serializable,
   * by my_setPreferredSize(). The value referenced by this key is of type
   * Dimension.
   */
-  public static final String PREFERRED_SIZE    = "Preferred Size";
-  
-  
+  public static final String PREFERRED_SIZE    = "Preferred Size"; 
+
   private Rectangle zoom_region   = null;     // current zoom_region
   private boolean doing_crosshair = false;    // flags used by several device
   private boolean doing_box       = false;    // adapter classes to control
@@ -288,11 +317,28 @@ public class CoordJPanel extends ActiveJPanel implements Serializable,
                                                     // on this panel
   
   protected Dimension       preferred_size = null;
+  
+  private boolean tooltip_enabled;
+  private boolean tooltip_visible = true;   
+  
+  private CoordJPanel coordJPanel = null;
 
 
   /* --------------------------- constructor -------------------------- */
   public CoordJPanel()
   { 
+    coordJPanel = this;
+    
+    //loading the flag that decides if the tooltip should be drawn
+    String prop_str = System.getProperty("ShowWCToolTip");    
+    if(prop_str != null)
+    {
+      tooltip_enabled = Boolean.parseBoolean(prop_str.trim());
+    }
+    else 
+      tooltip_enabled = false;
+    
+    
     CoordMouseAdapter mouse_adapter = new CoordMouseAdapter();
     addMouseListener( mouse_adapter );
 
@@ -312,7 +358,6 @@ public class CoordJPanel extends ActiveJPanel implements Serializable,
     local_transform  = new CoordTransform();
 
     SetTransformsToWindowSize();
-    SetZoomRegionToWindowSize();
     this_panel = this;
 
     set_crosshair( current_point );
@@ -332,14 +377,8 @@ public class CoordJPanel extends ActiveJPanel implements Serializable,
   public void setObjectState( ObjectState new_state )
   {
     boolean redraw = false;  // if any values are changed, repaint.
-    Object temp = new_state.get(ZOOM_REGION);
-    if( temp != null )
-    {
-      zoom_region = (Rectangle)temp;
-      redraw = true;  
-    }
     
-    temp = new_state.get(HORIZONTAL_SCROLL);
+    Object temp = new_state.get(HORIZONTAL_SCROLL);
     if( temp != null )
     {
       h_scroll = ((Boolean)temp).booleanValue();
@@ -417,7 +456,6 @@ public class CoordJPanel extends ActiveJPanel implements Serializable,
       state.insert( CURRENT_POINT, new Point(current_point) );
       state.insert( GLOBAL_BOUNDS, getGlobalWorldCoords().MakeCopy() );
       state.insert( LOCAL_BOUNDS, getLocalWorldCoords().MakeCopy() );
-      state.insert( ZOOM_REGION, new Rectangle( zoom_region ) );
     }
     
     return state;
@@ -489,34 +527,23 @@ public class CoordJPanel extends ActiveJPanel implements Serializable,
     invalidate();
   }
 
-
-  /* ------------------------- getZoom_region -------------------------- */
+  
+  /* ------------------ getLastZoomRegionInPixels ----------------- */
   /**
-   *  Get a rectangular subregion selected by user.
+   *  Get the last zoom region, in pixel coordinates, relative to the
+   *  current global transformation.  If there is no valid zoom region 
+   *  then the rectangle containing the whole panel is returned.
+   *  NOTE: This method should not be used by new code.  It is 
+   *  retained only for compatibility with the ContourViewComponent.
    *
    *  @return a reference to the subregion (pixel Rectangle) of the panel 
    *  that was selected by the rubber band box cursor.
    */
-  public Rectangle getZoom_region()
+  public Rectangle getLastZoomRegionInPixels()
   {
-    return zoom_region;
-  }
-  
-
-  /* ----------------------- setZoom_region ----------------------------- */
-  public void setZoom_region(float x1, float y1, float x2, float y2)
-  {
-    if ( ( x1 == x2 ) || ( y1 == y2 ) )         // ignore degenerate region
-    {
-      SetZoomRegionToWindowSize();
-      return;
-    }
-
-    SetTransformsToWindowSize();
-
-    local_transform.setSource(x1, y1, x2, y2 );
-  
-    send_message( ZOOM_IN );
+    if (zoom_region != null )
+     return zoom_region;
+    return new Rectangle(0,0,getWidth(), getHeight() );
   }
 
 
@@ -567,7 +594,7 @@ public class CoordJPanel extends ActiveJPanel implements Serializable,
    *  should start.
    */
   public void setCurrent_WC_point( floatPoint2D WC_point )
-  {
+  {    
     SetTransformsToWindowSize();
     current_point.x = (int)( 0.5 + local_transform.MapXTo( WC_point.x ) );
     current_point.y = (int)( 0.5 + local_transform.MapYTo( WC_point.y ) );
@@ -649,6 +676,27 @@ public class CoordJPanel extends ActiveJPanel implements Serializable,
   }
 
 
+  /* ------------------- setLocalWorldCoords ------------------------ */
+  /**
+   *  Set the world coordinate system for the local transform for the
+   *  panel to be the rectangle specified.
+   *  The specified bounds will restricted to a subregion of the  
+   *  world coordinate region for the global transform.
+   *
+   *  @param  x1   The min x value for the rectangle.
+   *  @param  y1   The min y value for the rectangle.
+   *  @param  x2   The max x value for the rectangle.
+   *  @param  y2   The max y value for the rectangle.
+   */
+  public void setLocalWorldCoords(float x1, float y1, float x2, float y2)
+  {
+    if ( ( x1 == x2 ) || ( y1 == y2 ) )         // ignore degenerate region
+      return;
+    CoordBounds bounds = new CoordBounds(x1, y1, x2, y2);
+    setLocalWorldCoords( bounds );
+  }
+
+
   /* ----------------------- setLocalWorldCoords ------------------------ */
   /**
    *  Set the world coordinate system for the local transform for the
@@ -661,6 +709,8 @@ public class CoordJPanel extends ActiveJPanel implements Serializable,
    */
   public void setLocalWorldCoords( CoordBounds b )
   {
+//  System.out.println("setLocaWorldCoords to " + b );
+//  float trigger_stackdump = 1/0;
     SetTransformsToWindowSize();
 
     CoordBounds global_WC = getGlobalWorldCoords();      // keep new bounds
@@ -683,7 +733,17 @@ public class CoordJPanel extends ActiveJPanel implements Serializable,
     return( local_transform.getSource( ) );
   }
 
-
+  /**
+   * This method sets the visibility of the tooltip.
+   * 
+   * @param is_vis - true if the tooltip should be visible.
+   *                 false if the tooltip should not be visible.
+   */
+  public void setWCToolTipVisible(boolean is_vis)
+  {
+    tooltip_visible = is_vis;
+  }
+  
   /* ---------------------------- showState ------------------------------ */
   /**
    *  Print the current global and local coordinate bounds and the current
@@ -708,8 +768,8 @@ public class CoordJPanel extends ActiveJPanel implements Serializable,
    */
   public void set_crosshair_WC( floatPoint2D pt )
   {
-   setCurrent_WC_point( pt );
-   set_crosshair( current_point );
+    setCurrent_WC_point( pt );
+    set_crosshair( current_point );
   }
 
 
@@ -721,7 +781,7 @@ public class CoordJPanel extends ActiveJPanel implements Serializable,
    *  @param current  The point where the crosshair should be drawn
    */
   public void set_crosshair( Point current )
-  {
+  {    
     stop_box( current, false );
     current_point = current;
     if ( doing_crosshair )
@@ -767,7 +827,7 @@ public class CoordJPanel extends ActiveJPanel implements Serializable,
    *  @param current  The point where the rubber band box should be drawn
    */
   public void set_box( Point current )
-  {
+  {    
     stop_crosshair( current );
     current_point = current;
     if ( doing_box )
@@ -928,7 +988,7 @@ protected void LocalTransformChanged()
 
 private void resetZoom()
 {
-  SetZoomRegionToWindowSize();
+//  System.out.println("resetZoom to " + global_transform.getSource() );
   SetTransformsToWindowSize();
   local_transform.setSource( global_transform.getSource() );
   LocalTransformChanged();
@@ -956,18 +1016,6 @@ private void showCurrentPoint( )
 }
 
 
-/* ----------------------- SetZoomRegionToWindowSize  -------------------- */
-
-private void SetZoomRegionToWindowSize()
-{
-  if ( !isVisible() )   // not yet visible, so ignore it
-    return;
-
-  Dimension total_size = this.getSize();
-  zoom_region = new Rectangle( 0, 0, total_size.width, total_size.height );
-}
-
-
 /* ----------------------- SetTransformsToWindowSize  -------------------- */
 
 public void SetTransformsToWindowSize()
@@ -989,7 +1037,7 @@ public void SetTransformsToWindowSize()
  *  Adjust local coordinate zoom region to snap to a boundary if the
  *  edge of the zoom region is close to the boundary. 
  */ 
-private void ZoomToPixelSubregion( float x1, float y1, float x2, float y2 )
+private void ZoomToPixelSubregion( int x1, int y1, int x2, int y2 )
 {
 /*
   System.out.println("ZoomToPixelSubregion called----------------------");
@@ -1013,11 +1061,7 @@ private void ZoomToPixelSubregion( float x1, float y1, float x2, float y2 )
         WC_y2;
 
   if ( ( x1 == x2 ) || ( y1 == y2 ) )         // ignore degenerate region
-  {
-    SetZoomRegionToWindowSize();
     return;
-  }
-
 
   SetTransformsToWindowSize();
 
@@ -1050,7 +1094,6 @@ private void ZoomToPixelSubregion( float x1, float y1, float x2, float y2 )
   setLocalWorldCoords( bounds );
 
   send_message( ZOOM_IN );
-
 /*
   System.out.println("WC: x1, y1, x2, y2 = " + WC_x1 + ", " + WC_y1 + ", " +
                                                WC_x2 + ", " + WC_y2 );
@@ -1179,11 +1222,14 @@ class CoordMouseAdapter extends MouseAdapter
       mouse_on_panel = false;
     }
   }
+  
 }
 
 
 class CoordMouseMotionAdapter extends MouseMotionAdapter
 {
+  
+  //This handles the drawing of the zoom box
   public void mouseDragged(MouseEvent e)
   {
     if ( isListening )
@@ -1195,13 +1241,33 @@ class CoordMouseMotionAdapter extends MouseMotionAdapter
         set_box( e.getPoint() );
       else
         if( mouse_on_panel )
+        {
           set_crosshair( e.getPoint() );
+        }
     }
     else
       current_point = e.getPoint();
   }
+  
+  //This handles the showing of the tooltip box
+  public void mouseMoved(MouseEvent e)
+  {
+    if ( isListening && mouse_on_panel && tooltip_enabled && tooltip_visible)
+    {      
+      //convert current mouse point to World Coordinates
+      floatPoint2D fp2d = new floatPoint2D( 
+          local_transform.MapXFrom( e.getPoint().x ), 
+          local_transform.MapYFrom( e.getPoint().y ) );
+        
+      //set the tool-tip text to the current World Coordinate
+      coordJPanel.setToolTipText("["+fp2d.x+","+fp2d.y+"]");
+    }
+    else
+    {
+    	coordJPanel.setToolTipText(null);
+    }
+  }
 }
-
 
 class CoordKeyAdapter extends KeyAdapter
 {
@@ -1309,7 +1375,6 @@ class CoordComponentAdapter extends ComponentAdapter
     stop_crosshair( current_point );
 
     SetTransformsToWindowSize();
-    local_transform.setSource( local_transform.getSource() );
     LocalTransformChanged();
     current_size = size;
   }

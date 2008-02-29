@@ -25,23 +25,37 @@
  * Modified:
  *
  *  $Log: Polymarker.java,v $
- *  Revision 1.2  2006/07/04 00:40:47  dennis
- *  Replaced call to deprecated method JFrame.show(), with call
- *  to setVisible(true).
+ *  Revision 1.3  2007/08/14 00:03:33  dennis
+ *  Major update to JSR231 based version from UW-Stout repository.
  *
- *  Revision 1.1  2005/07/25 15:46:03  dennis
- *  Initial version of simple shape.
+ *  Revision 1.5  2006/11/26 01:43:02  dennis
+ *  Changed to allow a null color.  If color is null, the last color
+ *  that was set will be used.
  *
+ *  Revision 1.4  2006/09/23 05:04:41  dennis
+ *  Removed the setType() and setSize() methods to make the class
+ *  immutable.  Added a MouseArcBall to control the view.
  *
+ *  Revision 1.3  2006/08/04 02:16:21  dennis
+ *  Updated to work with JSR-231, 1.0 beta 5,
+ *  instead of jogl 1.1.1.
+ *
+ *  Revision 1.2  2006/07/20 19:59:01  dennis
+ *  Replaced deprecated method frame.show() with setVisible(true)
+ *
+ *  Revision 1.1  2005/10/14 04:04:11  dennis
+ *  Copied into local CVS repository from CVS repository at IPNS.
  */
+
 package SSG_Tools.SSG_Nodes.SimpleShapes;
 
 import java.awt.*;
 import javax.swing.*;
-import net.java.games.jogl.*;
+import javax.media.opengl.*;
 
 import gov.anl.ipns.MathTools.Geometry.*;
 import SSG_Tools.Viewers.*;
+import SSG_Tools.Viewers.Controls.*;
 
 import SSG_Tools.Cameras.*;
 
@@ -52,11 +66,12 @@ import SSG_Tools.Cameras.*;
 
 public class Polymarker extends SimpleShape 
 {
-  public static final int DOT   = 1;
-  public static final int PLUS  = 2;
-  public static final int STAR  = 3;
-  public static final int BOX   = 4;
-  public static final int CROSS = 5;
+  public static final int   DOT   = 1;
+  public static final int   PLUS  = 2;
+  public static final int   STAR  = 3;
+  public static final int   BOX   = 4;
+  public static final int   CROSS = 5;
+  public static final float SIZE_SCALE = 100;
 
   Vector3D vertices[];
   float    size = 1;
@@ -65,54 +80,35 @@ public class Polymarker extends SimpleShape
 
   /* --------------------------- Constructor --------------------------- */
   /**
-   *  Construct a Polymarker of the specified type through the specified points.
+   *  Construct a Polymarker with marks at the specified points.  The 
+   *  default marker type is a dot.
    *
+   *  @param  verts        Array of Vector3D objects specifying where the
+   *                       markers should be drawn.
+   *  @param  size         The size of the marker.  For all markers other 
+   *                       than DOT, the size is specified in terms of a 
+   *                       percentage of a unit length in world coordinates. 
+   *                       For a DOT, the actual size in pixels is specified.
+   *                       
+   *  @param  type         Type code for the marker to use.  This should be 
+   *                       one of the defined marker types such as DOT, PLUS, 
+   *                       STAR, etc.
    *  @param  new_color    The color of the parallelogram.
-   *
    */
   public Polymarker( Vector3D verts[], 
+                     int      size,
+                     int      type,
                      Color    new_color )
   {
     super(new_color);
-    vertices = new Vector3D[ verts.length ];
-    for ( int i = 0; i < verts.length; i++ )
-      vertices[i] = verts[i];
-  }
-
-
-  /* ------------------------------- setSize ---------------------------- */
-  /**
-   *  Set the size of the markers to be drawn.  The sizes are specified in
-   *  terms of the number of pixels to move on each side of the pixel at
-   *  which the marker is placed.  This affects all of the marker types,
-   *  except the DOT marker.  A DOT marker is always just one pixel.
-   *
-   *  @param size  Adjust the size of the marker.  The actual size in pixels
-   *               is 2*size + 1, since this parameter specifies the distance
-   *               to draw from the center position.
-   */
-  public void setSize( int size )
-  {
-    if ( size < 1 )
-      return;
 
     this.size = size;
-  }
-
-
-  /* ------------------------------- setType ------------------------------ */
-  /**  
-   *  Specify the type of marker to be placed at each point of this polymarker.
-   *
-   *  @param  type  Type code for the marker to use.  This should be one of
-   *                the defined marker types such as DOT, PLUS, STAR, etc.
-   */
-  public void setType( int type )
-  {
-    if ( type < DOT || type > CROSS )
-      return;
-
     this.type = type;
+
+    vertices = new Vector3D[ verts.length ];
+
+    for ( int i = 0; i < verts.length; i++ )
+      vertices[i] = verts[i];
   }
 
 
@@ -122,11 +118,14 @@ public class Polymarker extends SimpleShape
    *
    *  @param  drawable  The drawable on which the Parallelogram is to be drawn.
    */
-  public void Render( GLDrawable drawable )
+  public void Render( GLAutoDrawable drawable )
   {
     GL gl = drawable.getGL();
 
     super.preRender( drawable );
+
+    if ( color != null )
+      gl.glColor3fv( color, 0 );
 
     if ( type == DOT )
       drawDots( gl );
@@ -147,7 +146,7 @@ public class Polymarker extends SimpleShape
 
   /* -------------------------------------------------------------------------
    *
-   *  Private methods 
+   *  Private methods to draw various marker types
    *
    */
  
@@ -155,19 +154,17 @@ public class Polymarker extends SimpleShape
   {
     gl.glPointSize( size );
     gl.glBegin( GL.GL_POINTS );
-      gl.glColor3fv( color );
       for ( int i = 0; i < vertices.length; i++ )
-        gl.glVertex3fv( vertices[i].get() );
+        gl.glVertex3fv( vertices[i].get(), 0 );
     gl.glEnd();
   }
 
 
   private void drawPluses( GL gl )
   {
-    float delta = size/100;
+    float delta = size/SIZE_SCALE;
     float center[];
     gl.glBegin( GL.GL_LINES );
-      gl.glColor3fv( color );
       for ( int i = 0; i < vertices.length; i++ )
       {
         center = vertices[i].get(); 
@@ -184,11 +181,10 @@ public class Polymarker extends SimpleShape
 
   private void drawStars( GL gl )
   {
-    float delta_1 = size/100;
+    float delta_1 = size/SIZE_SCALE;
     float delta_2 = .7f * delta_1;
     float center[];
     gl.glBegin( GL.GL_LINES );
-      gl.glColor3fv( color );
       for ( int i = 0; i < vertices.length; i++ )
       {
         center = vertices[i].get();
@@ -220,11 +216,10 @@ public class Polymarker extends SimpleShape
 
   private void drawBoxes( GL gl )
   {
-    float delta = size/100;
+    float delta = size/SIZE_SCALE;
     float center[];
     for ( int i = 0; i < vertices.length; i++ )
     {
-      gl.glColor3fv( color );
       gl.glBegin( GL.GL_LINE_LOOP );
         center = vertices[i].get();
         gl.glVertex3f( center[0] - delta, center[1] - delta, center[2] + delta);
@@ -259,11 +254,10 @@ public class Polymarker extends SimpleShape
 
   private void drawCrosses( GL gl )
   {
-    float delta_1 = size/100;
+    float delta_1 = size/SIZE_SCALE;
     float delta_2 = .7f * delta_1;
     float center[];
     gl.glBegin( GL.GL_LINES );
-      gl.glColor3fv( color );
       for ( int i = 0; i < vertices.length; i++ )
       {
         center = vertices[i].get();
@@ -288,7 +282,7 @@ public class Polymarker extends SimpleShape
 
   /* --------------------------- main ----------------------------------- */
   /**
-   *  Main program that constructs an instance of Parallelogram and displays 
+   *  Main program that constructs an instance of a Polymarker and displays 
    *  it in 3D for testing purposes.  
    */
   public static void main( String args[] )
@@ -298,24 +292,25 @@ public class Polymarker extends SimpleShape
     verts[1] = new Vector3D( 1, 0, 0 );
     verts[2] = new Vector3D( 1, 1, 0 );
     verts[3] = new Vector3D( 1, 1, 1 );
-    Polymarker markers = new Polymarker( verts, Color.RED );
-    markers.setType( BOX );
-    markers.setSize( 5 );
+
+    int size = 5;
+    Polymarker markers = new Polymarker( verts, size, BOX, Color.RED );
 
     JoglPanel demo = new JoglPanel( markers );
     demo.enableHeadlight( true );
+    new MouseArcBall( demo );
 
     Camera camera = demo.getCamera();
-    camera.setVRP( new Vector3D( 0,0, 0 ) );
+    camera.setVRP( new Vector3D( 0, 0, 0 ) );
     camera.setCOP( new Vector3D( 0, 0, 8 ) );
     camera.SetViewVolume( 1, 20, 40 );
     demo.setCamera( camera );
   
-    JFrame frame = new JFrame( "Sphere Scene" );
+    JFrame frame = new JFrame( "Polymarker" );
     frame.setSize(500,517);
     frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
     frame.getContentPane().add( demo.getDisplayComponent() );
-    frame.setVisible(true);
+    frame.setVisible( true );
   }
 
 }

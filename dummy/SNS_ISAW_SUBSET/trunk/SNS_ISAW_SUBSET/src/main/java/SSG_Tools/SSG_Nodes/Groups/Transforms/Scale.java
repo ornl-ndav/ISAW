@@ -25,16 +25,18 @@
  * Modified:
  *
  *  $Log: Scale.java,v $
- *  Revision 1.6  2006/11/04 20:22:39  dennis
- *  No longer modify Vector3D object by reference, to support switch
- *  to new non-array form of Vector3D.
+ *  Revision 1.7  2007/08/14 00:03:31  dennis
+ *  Major update to JSR231 based version from UW-Stout repository.
  *
- *  Revision 1.5  2006/07/20 15:23:53  dennis
- *  Updated from CVS repository at isaw.mscs.uwstout.edu.
- *  This added a method apply_to() to apply the transformation
- *  to a particular vector.
- *  Also added get methods for the basic information that
- *  can be set.
+ *  Revision 1.7  2006/09/10 19:33:32  dennis
+ *  Switched to use new Vector3D representation with separate fields
+ *  for x,y,z and w.  Since the Vector3D.get() method now just returns
+ *  a copy of the values in an array, the values in the Vector3D object
+ *  can no longer be altered by altering the values in the array.
+ *
+ *  Revision 1.6  2006/08/04 02:16:21  dennis
+ *  Updated to work with JSR-231, 1.0 beta 5,
+ *  instead of jogl 1.1.1.
  *
  *  Revision 1.5  2005/11/23 00:17:08  dennis
  *  Added public method, apply_to(), that will apply the transformation
@@ -57,7 +59,7 @@
 
 package SSG_Tools.SSG_Nodes.Groups.Transforms;
 
-import net.java.games.jogl.*;
+import javax.media.opengl.*;
 import gov.anl.ipns.MathTools.Geometry.*;
 
 /**
@@ -157,14 +159,10 @@ public class Scale extends TransformGroup
      if ( in_vec == null || out_vec == null )
        throw new IllegalArgumentException("null vector in Scale.apply_to()");
 
-     out_vec.set( in_vec );
-
-     float coords[] = out_vec.get();   // get copy of array of components
-                                       // and scale the components
+     float coords[] = in_vec.get();
      coords[0] *= sx;
      coords[1] *= sy;
      coords[2] *= sz;
-     
      out_vec.set( coords );
   }
 

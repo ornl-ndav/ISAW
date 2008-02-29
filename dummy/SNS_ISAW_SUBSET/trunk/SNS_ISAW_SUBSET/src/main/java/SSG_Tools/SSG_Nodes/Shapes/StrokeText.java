@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log: StrokeText.java,v $
+ * Revision 1.1  2007/08/14 00:37:32  dennis
+ * Added files from SSG_Tools at UW-Stout
+ *
  * Revision 1.3  2005/01/10 16:10:26  dennis
  * Fixed minor error that would cause an extra glTranslate() to
  * be called when it would not be used.
@@ -55,7 +58,7 @@ package SSG_Tools.SSG_Nodes.Shapes;
 import java.awt.*;
 import javax.swing.*;
 
-import net.java.games.jogl.*;
+import javax.media.opengl.*;
 
 import gov.anl.ipns.MathTools.Geometry.*;
 import SSG_Tools.Fonts.*;
@@ -248,7 +251,7 @@ public class StrokeText extends Shape
    *
    *  @param drawable  The drawable to which the text is drawn.
    */
-  public void Render( GLDrawable drawable )
+  public void Render( GLAutoDrawable drawable )
   {
     float center;
     float right;
@@ -286,7 +289,7 @@ public class StrokeText extends Shape
           vals[k] = m[row][col];
           k++;
         }
-      gl.glMultMatrixf( vals );
+      gl.glMultMatrixf( vals, 0 );
 
       switch ( v_align )
       {
@@ -342,10 +345,10 @@ public class StrokeText extends Shape
     StrokeText z_label = new StrokeText( "  Z-Axis", font );
 
     Group group = new Group();
-    group.addChild( new LightingOnOff(false) );
+    group.addChild( new glDisableNode(GL.GL_LIGHTING ));
     group.addChild( x_label );
     group.addChild( y_label );
-    group.addChild( new LightingOnOff(true) );
+    group.addChild( new glEnableNode(GL.GL_LIGHTING ));
     group.addChild( z_label );
 
     Vector3D base = new Vector3D( 0, 1, 0 );

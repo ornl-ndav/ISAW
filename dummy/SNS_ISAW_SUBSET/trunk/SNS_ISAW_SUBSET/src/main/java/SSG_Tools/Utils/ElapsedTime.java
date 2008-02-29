@@ -25,6 +25,13 @@
  * Modified:
  *
  *  $Log: ElapsedTime.java,v $
+ *  Revision 1.3  2007/08/14 00:03:33  dennis
+ *  Major update to JSR231 based version from UW-Stout repository.
+ *
+ *  Revision 1.3  2006/09/05 01:43:33  dennis
+ *  Updated to use System.nanoTime() instead of System.currentTimMillis,
+ *  to get more accurate timing for short time intervals.
+ *
  *  Revision 1.2  2004/12/13 05:02:27  dennis
  *  Minor fix to documentation
  *
@@ -44,12 +51,12 @@ public class ElapsedTime
   long      base_time;
 
   /**
-   *  Construct an ElapsedTime object, and start measuring elapsed time from 
+   *  Construct an ElapsedTime object, and start measuring elapsed time from
    *  the time it was constructed.
    */
-  public ElapsedTime() 
+  public ElapsedTime()
   {
-    base_time = System.currentTimeMillis();
+    base_time = System.nanoTime();
   }
 
   /**
@@ -60,7 +67,7 @@ public class ElapsedTime
    */
   public float elapsed()
   {
-    return ( System.currentTimeMillis() - base_time ) / 1000.0f;
+    return ( System.nanoTime() - base_time ) / 1.0e9f;
   }
 
   /**
@@ -68,7 +75,7 @@ public class ElapsedTime
    */
   public void reset()
   {
-    base_time = System.currentTimeMillis();
+    base_time = System.nanoTime();
   }
 
   /*

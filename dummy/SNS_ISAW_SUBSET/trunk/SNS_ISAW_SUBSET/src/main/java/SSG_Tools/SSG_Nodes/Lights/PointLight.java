@@ -25,9 +25,12 @@
  * Modified:
  *           
  *  $Log: PointLight.java,v $
- *  Revision 1.3  2005/07/14 21:49:05  dennis
- *  Switched from local copy of Vector3D, etc. to using Vector3D, etc.
- *  from gov.anl.ipns.MathTools.Geometry.
+ *  Revision 1.4  2007/08/14 00:03:32  dennis
+ *  Major update to JSR231 based version from UW-Stout repository.
+ *
+ *  Revision 1.3  2006/08/04 02:16:21  dennis
+ *  Updated to work with JSR-231, 1.0 beta 5,
+ *  instead of jogl 1.1.1.
  *
  *  Revision 1.2  2004/12/13 05:02:27  dennis
  *  Minor fix to documentation
@@ -39,7 +42,7 @@
 
 package SSG_Tools.SSG_Nodes.Lights;
 
-import net.java.games.jogl.*;
+import javax.media.opengl.*;
 import gov.anl.ipns.MathTools.Geometry.*;
 
 /**
@@ -133,7 +136,7 @@ public class PointLight extends Light
    *
    *  @param  drawable  The drawable on which the light is to be used.
    */
-  public void Render( GLDrawable drawable )
+  public void Render( GLAutoDrawable drawable )
   {
     GL gl = drawable.getGL();
  
@@ -141,7 +144,7 @@ public class PointLight extends Light
     {
       super.Render( drawable );
       float position_arr[] = position.get();
-      gl.glLightfv( light_num, GL.GL_POSITION, position_arr );
+      gl.glLightfv( light_num, GL.GL_POSITION, position_arr, 0 );
       gl.glLightf( light_num, GL.GL_CONSTANT_ATTENUATION, constant_attenuation);
       gl.glLightf( light_num, GL.GL_LINEAR_ATTENUATION, linear_attenuation );
       gl.glLightf( light_num, GL.GL_QUADRATIC_ATTENUATION, 

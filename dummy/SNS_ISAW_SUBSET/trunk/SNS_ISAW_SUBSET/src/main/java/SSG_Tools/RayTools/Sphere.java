@@ -25,6 +25,12 @@
  * Modified:
  *
  *  $Log: Sphere.java,v $
+ *  Revision 1.3  2007/08/14 00:03:31  dennis
+ *  Major update to JSR231 based version from UW-Stout repository.
+ *
+ *  Revision 1.1  2005/10/14 04:13:36  dennis
+ *  Copied to local CVS repository from CVS repository at IPNS.
+ *
  *  Revision 1.2  2005/08/02 23:02:39  dennis
  *  Fixed javadoc error.
  *

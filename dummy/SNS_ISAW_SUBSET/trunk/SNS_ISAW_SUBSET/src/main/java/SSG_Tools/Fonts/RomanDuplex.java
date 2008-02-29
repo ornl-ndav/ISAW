@@ -37,6 +37,12 @@
  * Modified:
  *
  * $Log: RomanDuplex.java,v $
+ * Revision 1.2  2007/08/14 00:03:29  dennis
+ * Major update to JSR231 based version from UW-Stout repository.
+ *
+ * Revision 1.1  2005/10/14 04:02:21  dennis
+ * Copied into local CVS repository from CVS repository at IPNS.
+ *
  * Revision 1.1  2005/07/19 13:02:15  dennis
  * Stroke font data files.
  *

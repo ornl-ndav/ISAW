@@ -25,6 +25,13 @@
  * Modified:
  *
  *  $Log: IGL_Renderable.java,v $
+ *  Revision 1.2  2007/08/14 00:03:26  dennis
+ *  Major update to JSR231 based version from UW-Stout repository.
+ *
+ *  Revision 1.2  2006/08/04 02:16:21  dennis
+ *  Updated to work with JSR-231, 1.0 beta 5,
+ *  instead of jogl 1.1.1.
+ *
  *  Revision 1.1  2004/10/25 21:48:01  dennis
  *  Added to SSG_Tools CVS repository
  *
@@ -32,7 +39,7 @@
 
 package SSG_Tools;
 
-import net.java.games.jogl.*;
+import javax.media.opengl.*;
 
 /** 
  *  This interface is the interface that classes must implement in order to
@@ -48,7 +55,7 @@ public interface IGL_Renderable
    *
    *  @param  drawable  The drawable on which the object is to be rendered.
    */
-  public void Render( GLDrawable drawable );
+  public void Render( GLAutoDrawable drawable );
 
 }
 

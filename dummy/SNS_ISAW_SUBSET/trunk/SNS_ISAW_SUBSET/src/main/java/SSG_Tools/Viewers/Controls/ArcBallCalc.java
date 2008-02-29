@@ -25,6 +25,16 @@
  * Modified:
  *
  *  $Log: ArcBallCalc.java,v $
+ *  Revision 1.4  2007/08/26 23:23:21  dennis
+ *  Updated to latest version from UW-Stout repository.
+ *
+ *  Revision 1.2  2006/12/11 04:33:15  dennis
+ *  Added methods DollyInXZ_Plane(), DollyInYU_Plane() and
+ *  LookUpDownLeftRight() to support the MouseWalkView control.
+ *
+ *  Revision 1.1  2005/10/14 04:00:28  dennis
+ *  Moved into local CVS repository, from CVS repository at IPNS.
+ *
  *  Revision 1.3  2005/08/03 16:50:04  dennis
  *  ArcBall method now reverts to ad_hoc_ArcBall in another case.
  *  The calculation of the angle of rotation using arccos(dot_prod/norms)
@@ -150,7 +160,147 @@ public class ArcBallCalc
       panel.Draw();
    }
 
- 
+
+   /* ------------------------- DollyInXZ_Plane -------------------------- */
+   /**
+    *  This method moves the camera horizontally in the XZ plane.
+    *  Both the COP and VRP move by the same amount.
+    *  
+    *  @param  x        The current x pixel position
+    *  @param  y        The current y pixel position
+    *  @param  last_x   The previously used x pixel position
+    *  @param  last_y   The previously used y pixel position
+    *  @param  panel    The panel whose camera is to be controlled by this
+    *                   object.
+    */
+   public static void DollyInXZ_Plane( int       x,
+                                       int       y,
+                                       int       last_x,
+                                       int       last_y,
+                                       JoglPanel panel)
+   {
+      if ( x == last_x && y == last_y )
+        return;
+
+      Component comp = panel.getDisplayComponent();
+      Dimension size = comp.getSize();
+
+      Camera camera = panel.getCamera();
+      float forward_distance = (last_y - y) * camera.distance() / size.height;
+      float lateral_distance = (last_x - x) * camera.distance() / size.width;
+
+      Vector3D forward_move = camera.getN();
+      float xyz[] = forward_move.get();
+      forward_move.set( xyz[0], 0, xyz[2] );
+      forward_move.multiply( -forward_distance );
+      camera.WorldCoordMove( forward_move );
+
+      Vector3D lateral_move = camera.getU();
+      xyz = lateral_move.get();
+      lateral_move.set( xyz[0], 0, xyz[2] );
+      lateral_move.multiply( lateral_distance );
+      camera.WorldCoordMove( lateral_move );
+
+      panel.Draw();
+   }
+
+
+   /* ------------------------ DollyInYU_Plane ------------------------- */
+   /**
+    *  This method moves the camera vertically in the Y direction or
+    *  laterally in the U direction.  Both the COP and VRP move by the 
+    *  same amount.
+    *  
+    *  @param  x        The current x pixel position
+    *  @param  y        The current y pixel position
+    *  @param  last_x   The previously used x pixel position
+    *  @param  last_y   The previously used y pixel position
+    *  @param  panel    The panel whose camera is to be controlled by this
+    *                   object.
+    */
+   public static void DollyInYU_Plane( int       x,
+                                       int       y,
+                                       int       last_x,
+                                       int       last_y,
+                                       JoglPanel panel)
+   {
+      if ( x == last_x && y == last_y )
+        return;
+
+      Component comp = panel.getDisplayComponent();
+      Dimension size = comp.getSize();
+
+      Camera camera = panel.getCamera();
+      float updown_distance  = (last_y - y) * camera.distance() / size.height;
+      float lateral_distance = (last_x - x) * camera.distance() / size.width;
+
+      Vector3D updown_move = new Vector3D( 0, 1, 0 );
+      updown_move.multiply(  updown_distance );
+      camera.WorldCoordMove( updown_move );
+
+      Vector3D lateral_move = camera.getU();
+      float[] xyz = lateral_move.get();
+      lateral_move.set( xyz[0], 0, xyz[2] );
+      lateral_move.multiply( -lateral_distance );
+      camera.WorldCoordMove( lateral_move );
+
+      panel.Draw();
+   }
+
+
+   /* ----------------------- LookUpDownLeftRight ------------------------- */
+   /**
+    *  This method rotates the camera about the COP, based on pixel position.
+    *  Both the VRP and VUV rotate by the same angle.
+    *  
+    *  @param  x        The current x pixel position
+    *  @param  y        The current y pixel position
+    *  @param  last_x   The previously used x pixel position
+    *  @param  last_y   The previously used y pixel position
+    *  @param  panel    The panel whose camera is to be controlled by this
+    *                   object.
+    */
+   public static void LookUpDownLeftRight( int x,
+                                           int y, 
+                                           int last_x, 
+                                           int last_y, 
+                                           JoglPanel panel)
+   {
+      if ( x == last_x && y == last_y )
+        return;
+
+      Component comp = panel.getDisplayComponent();
+      Dimension size = comp.getSize();
+
+      Camera camera = panel.getCamera();
+      Ray line_of_sight     = camera.getLineOfSight( x, y,
+                                                     size.width, size.height);
+      Ray old_line_of_sight = camera.getLineOfSight( last_x, last_y,
+                                                     size.width, size.height);
+
+      Vector3D v1 = old_line_of_sight.getPoint();
+      v1.subtract( camera.getCOP() );
+
+      Vector3D v2 = line_of_sight.getPoint();
+      v2.subtract( camera.getCOP() );
+
+      float angle = (float)Math.acos( v1.dot(v2) / (v1.length()*v2.length()));
+      angle *= (float)(180/Math.PI);
+
+      float dx     = x - last_x;
+      float dy     = y - last_y;
+      float length = (float)Math.sqrt( dx*dx + dy*dy );
+      
+      float horiz_angle = -angle * dx/length;
+      float vert_angle  = -angle * dy/length;
+
+      camera.RotateAroundCOP( horiz_angle, new Vector3D( 0, 1, 0 ) );
+      camera.RotateAroundCOP( vert_angle, camera.getU() );
+
+      panel.Draw();
+   }
+
+
    /* ----------------------------- ArcBall ---------------------------- */
    /**
     *  This method provides an "arc ball" like rotation of a view, given

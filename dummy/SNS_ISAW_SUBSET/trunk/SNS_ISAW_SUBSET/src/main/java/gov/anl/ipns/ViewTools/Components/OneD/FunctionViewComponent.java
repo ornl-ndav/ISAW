@@ -33,6 +33,47 @@
  * Modified:
  *
  *  $Log: FunctionViewComponent.java,v $
+ *  Revision 1.96  2007/09/17 02:50:12  dennis
+ *  Some code cleanup and additions working towards fixing the problem
+ *  with specified axis values not having an effect.  This is ultimately
+ *  due to the code always auto-scaling to fit the data, regardless of
+ *  whether or not Axis information was specified for the VirtualArray1D.
+ *  Additional information is needed by the FunctionViewComponent to
+ *  determine whether it should auto-scale or not.  So:
+ *  1. Added another constructor that takes an additional boolean flag,
+ *     autoscale.  If passed in as false, this should use data from the
+ *     AxisInfo objects that are part of the virtual array, instead of
+ *     autoscaling to the data values.  This is NOT FULLY IMPLEMENTED
+ *     YET.
+ *  2. Removed methods and messaging related to selection.  The
+ *     methods were not yet used, and were only partly implemented or were
+ *     just "stubs".  Since the selection process has been updated for the
+ *     ImageViewComponent, the selection related methods in
+ *     FunctionViewComponent need to be entirely redone.  These "stubs"
+ *     were therefore useless and could cause problems if people tried to
+ *     use them.
+ *  3. Removed some commented out code that would initialize line colors
+ *     and types, since this is now done elsewhere.
+ *  4. Renamed setAxisInfo() method to setMaximumDisplayableWCRegion(),
+ *     since that name is more descriptive.  This method did nothing with
+ *     the AxisInfo objects, but just initializes the gjp's global world
+ *     coordinate system to just fit the range covered by the data.
+ *     This is yet another autoscaling operation.  However, when this
+ *     is called in the constructor, the region set by this method is
+ *     later changed when the RangeControl is built.  This method is
+ *     also called by the dataChanged() method.
+ *     This method should take into account whether the AxisInfo that
+ *     was specified should be used.
+ *
+ *  Revision 1.95  2007/09/09 23:28:45  dennis
+ *  Now only sends POINTED_AT_CHANGED message in response to a
+ *  CURSOR_MOVED message, if this component did NOT itself request
+ *  the move.  This fixes a problem with an infinite loop of
+ *  POINTED_AT_CHANGED messages and a cursor update problem.
+ *  Some cleanup:
+ *    -removed unused local variable
+ *    -removed some old code that was commented out.
+ *
  *  Revision 1.94  2007/06/08 20:29:48  dennis
  *  setAxisInfo() now inverts the bounds to be consistent with
  *  other parts of the system.
@@ -369,7 +410,6 @@ import java.io.Serializable;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.border.*;
-import java.awt.Point;
 
 /**
  * This class allows the user to view data in the form of an image. Meaning
@@ -452,37 +492,63 @@ public class FunctionViewComponent implements IViewComponent1D,
      public static final String FUNCTION_CONTROLS = "FunctionControls";       
       
 
-  
+  private boolean   autoscale;                     // Set true if the maximum displayable 
+                                                   // region is determined by the actual
+                                                   // data. Set false if the values passed
+                                                   // in as AxisInfo in the VirtualArray
+                                                   // are to be used.
   private transient IVirtualArrayList1D Varray1D;  //An object containing our
-                                               // array of data
-  private transient Point[] selectedset;  //To be returned by getSelectedSet()
+                                                   // array of data
   private transient Vector Listeners   = null;
   private transient JPanel big_picture = new JPanel();
   private transient JPanel background = new JPanel(new BorderLayout());
   protected transient GraphJPanel gjp;
   private final int MAX_GRAPHS = 20;
+
+  private transient boolean ignore_pointed_at = false;
  
   // for component size and location adjustments
-  //private ComponentAltered comp_listener;
   private transient Rectangle regioninfo;
   protected transient Vector transparencies = new Vector(  );
   private int precision;
   private Font font;
- // private transient LinkedList controls = new LinkedList(  );
- // private int linewidth      = 1;
   protected FunctionControls mainControls;
   private boolean draw_pointed_at = false;
   private JMenuItem control_box = new JMenuItem();
   protected FunctionViewComponent fvc;
 
   /**
-   * Constructor that takes in a virtual array and creates an graphjpanel
-   * to be viewed in a border layout.
+   * Constructor that just takes in a virtual array.  The graph
+   * region will be automatically scaled to fit the data.  Any 
+   * information regarding the range of data in the AxisInfo 
+   * objects stored in the virtual array is ignored.  
    *
-   *  @param varr The IVirtual array containing data for producing the graph.
+   * @param varr The IVirtual array containing data for producing the graph.
    */
   public FunctionViewComponent( IVirtualArrayList1D varr ) {
+    this( varr, true );
+  }
+  
+  
+  /**
+   * Constructor that takes in a virtual array and a boolean flag.
+   * The flag indicates whether the view should be auto scaled to
+   * fit the data, or if the region specified by the AxisInfo objects
+   * in the virtual array should be used to specifiy the region used.
+   *
+   * @param varr       The IVirtual array containing data for 
+   *                   producing the graph.
+   * @param autoscale  Flag indicating whether to autoscale or use
+   *                   the AxisInfo from the virtual array to 
+   *                   specifiy the region covered by the graph.
+   *                   If this parameter is true, the region will
+   *                   be automatically determined based on the 
+   *                   region covered by the data.
+   */
+  public FunctionViewComponent( IVirtualArrayList1D varr, boolean autoscale ) {
 
+    this.autoscale =  autoscale;    // record autoscaling preference
+    
     Varray1D    = varr;  // Get reference to varr
     precision   = 6;
     font        = FontUtil.LABEL_FONT2;
@@ -494,29 +560,16 @@ public class FunctionViewComponent implements IViewComponent1D,
     int num_lines = varr.getNumSelectedGraphs(  );
     float x[];
     float y[];
-    for( int i = 1; i < num_lines+1; i++ ) {
-       x = Varray1D.getXValues(i-1);
-       y = Varray1D.getYValues(i-1);
-       gjp.setData( x, y, i, false );     
+    for( int i = 0; i < num_lines; i++ ) {
+       x = Varray1D.getXValues(i);
+       y = Varray1D.getYValues(i);
+       gjp.setData( x, y, i+1, false );     // graph0 reserved for pointed at
     }
     gjp.setBackground( Color.white );
     gjp.setBorder(new LineBorder(Color.black));
     
-/*    // set initial line styles
-    if( varr.getNumSelectedGraphs(  ) > 1 ) {
-      gjp.setColor( Color.blue, 2, true );
-      gjp.setStroke( gjp.strokeType( gjp.LINE, 2 ), 2, true );
-      gjp.setLineWidth( linewidth, 2, false );
-    }
-
-    if( varr.getNumSelectedGraphs(  ) > 2 ) {
-      gjp.setColor( Color.green, 3, false );
-      gjp.setStroke( gjp.strokeType( gjp.LINE, 3 ), 3, true );
-      gjp.setLineWidth( linewidth, 3, false );
-    }
-*/
-    setAxisInfo();
-    ImageListener gjp_listener = new ImageListener(  );
+    setMaximumDisplayableWCRegion();
+    GraphListener gjp_listener = new GraphListener(  );
 
     gjp.addActionListener( gjp_listener );
 
@@ -524,7 +577,7 @@ public class FunctionViewComponent implements IViewComponent1D,
 
     gjp.addComponentListener( comp_listener );
 
-    regioninfo      = new Rectangle( gjp.getBounds(  ) );
+    regioninfo = new Rectangle( gjp.getBounds(  ) );
 
     Listeners = new Vector(  );
     
@@ -532,30 +585,16 @@ public class FunctionViewComponent implements IViewComponent1D,
     {
       buildViewComponent();     // initializes big_picture to jpanel containing
                                 // the background and transparencies
-      /*
-      // create transparencies
-      AnnotationOverlay top = new AnnotationOverlay( this );
-      top.setVisible( false );    // initialize this overlay to off.
-
-                                  // Default ticks inward for this component
-      AxisOverlay2D bottom = new AxisOverlay2D( this, true );
-
-      LegendOverlay leg_overlay = new LegendOverlay( this );
-   
-      transparencies.add( leg_overlay ); 
-      transparencies.add( top );
-      transparencies.add( bottom );  // add the transparency to the vector
-      */
       initTransparancies();
       OverlayLayout overlay = new OverlayLayout( big_picture );
-
+      
       big_picture.setLayout( overlay );
 
       for( int trans = 0; trans < transparencies.size(  ); trans++ ) {
      	big_picture.add( ( OverlayJPanel )transparencies.elementAt( trans ) );
       }
       big_picture.add( background );
-      
+   
       if(Varray1D.getNumSelectedGraphs() > 0)
       {
         draw_pointed_at = false;
@@ -579,7 +618,6 @@ public class FunctionViewComponent implements IViewComponent1D,
 
       if(Varray1D.getNumSelectedGraphs() > 1)
       {
-    	  
     	  //Retrieving viewcontrol list 
     	  //ViewControl[] vcontrol = mainControls.getControlList();
     	  
@@ -596,7 +634,7 @@ public class FunctionViewComponent implements IViewComponent1D,
     	  gjp.setMultiplotOffsets((int)(20 ),
                                 (int)( 20 ));
     	  gjp.repaint(); 
-      }
+       }
     }
     else
     {
@@ -630,36 +668,29 @@ public class FunctionViewComponent implements IViewComponent1D,
   */
   public void setObjectState( ObjectState new_state )
   {
-    boolean redraw = false;  // if any values change redraw.
-   
     Object temp = new_state.get(GRAPHJPANEL);
     if ( temp != null){
       gjp.setObjectState( (ObjectState)temp );
-      redraw = true;
     }
 
     temp = new_state.get(PRECISION);
     if ( temp != null){
       precision = ((Integer)temp).intValue();
-      redraw = true;
     }
     
     temp = new_state.get(FONT);
     if( temp != null ){
       font = (Font)temp;
-      redraw = true;
     }
 
     temp = new_state.get(POINTED_AT_CONTROL);
     if( temp != null ){
       draw_pointed_at = ((Boolean)temp).booleanValue();
-      redraw = true;
     }
 
     temp = new_state.get(CONTROL_BOX);
     if( temp != null ){
       control_box.setSelected( ((Boolean)temp).booleanValue() );
-      redraw = true;
     }
     
     temp = new_state.get(LEGEND_OVERLAY);
@@ -667,7 +698,6 @@ public class FunctionViewComponent implements IViewComponent1D,
     {
        ((OverlayJPanel)transparencies.elementAt(0)).setObjectState(
 						(ObjectState)temp);
-       redraw = true;
     }
     
     temp = new_state.get(ANNOTATION_OVERLAY);
@@ -675,7 +705,6 @@ public class FunctionViewComponent implements IViewComponent1D,
     {
        ((OverlayJPanel)transparencies.elementAt(1)).setObjectState(
 						(ObjectState)temp);
-       redraw = true;
     }       
     
     temp = new_state.get(AXIS_OVERLAY_2D);
@@ -683,15 +712,12 @@ public class FunctionViewComponent implements IViewComponent1D,
     {
        ((OverlayJPanel)transparencies.elementAt(2)).setObjectState(
 						(ObjectState)temp);
-       redraw = true;
     }
     
     temp = new_state.get(FUNCTION_CONTROLS);
     if (temp != null)
     {
        mainControls.setObjectState((ObjectState)temp);
- 
-       redraw = true;
     }       
   } 
 
@@ -730,27 +756,22 @@ public class FunctionViewComponent implements IViewComponent1D,
   /**
    * This method initializes the world coords.
    */
-  public void setAxisInfo() {
+  private void setMaximumDisplayableWCRegion() {
     CoordBounds bounds = new CoordBounds( gjp.getXmin(), gjp.getYmin(),
                                           gjp.getXmax(), gjp.getYmax() );
+    bounds.scaleBounds(1, gjp.getScaleFactor() );
     bounds.invertBounds();
     gjp.initializeWorldCoords( bounds );
-
   }
 
  
   public AxisInfo getAxisInformation( int axis ) {
-    /*float xmin,xmax,ymin,ymax;
-       xmin = gjp.getXmin();
-       xmax = gjp.getXmax();
-       ymin = gjp.getYmin();
-       ymax = gjp.getYmax();*/
 
     // if true, return x info
     if( axis == AxisInfo.X_AXIS) {
       if(gjp.getLogScaleX() == true) {
         return new AxisInfo( 
-	    gjp.getPositiveXmin(),
+	        gjp.getPositiveXmin(),
             gjp.getXmax(),
             Varray1D.getAxisInfo( AxisInfo.X_AXIS ).getLabel(  ),
             Varray1D.getAxisInfo( AxisInfo.X_AXIS ).getUnits(  ),
@@ -829,7 +850,7 @@ public class FunctionViewComponent implements IViewComponent1D,
    *
    *  @return font of displayed values
    */
-  public Font getFont(  ) {
+  public Font getFont() {
     return font;
   }
 
@@ -844,8 +865,10 @@ public class FunctionViewComponent implements IViewComponent1D,
    public GraphData getGraphData(int graph){
      GraphData data = null;
 
-     if ( gjp != null && gjp.graphs != null && graph > 
-          0 && graph < gjp.graphs.size() )
+     if ( gjp != null        && 
+          gjp.graphs != null && 
+          graph > 0          && 
+          graph < gjp.graphs.size() )
        data = ( GraphData )gjp.graphs.elementAt( graph );
     
      return data; //test 
@@ -958,13 +981,13 @@ public class FunctionViewComponent implements IViewComponent1D,
     // If y axis, return smallest positive y.
     if( axis == ITruLogAxisAddible.Y_AXIS )
       return gjp.getScaleFactor();
-    // Invalid axis, return zero.
+
     return 1f;
   }
 
   public boolean isDrawingPointedAtGraph()
   {
-	  return draw_pointed_at;
+    return draw_pointed_at;
   }
   
   /**
@@ -979,21 +1002,11 @@ public class FunctionViewComponent implements IViewComponent1D,
     //System.out.println( "X value = " + pt.getX(  ) );
     //System.out.println( "Y value = " + pt.getY(  ) );
     //set the cursor position on GraphJPanel
-    gjp.setCurrent_WC_point( pt );
-    gjp.set_crosshair_WC(new floatPoint2D(pt.x,gjp.getY_value(pt.x,0)));
-  }
 
-
-  /**
-   * This method creates a selected region to be displayed over the graphjpanel
-   * by an overlay.
-   *
-   *  @param  pts
-   */
-  public void setSelectedSet( Point[] pts ) {
-    // implement after selection overlay has been created
-    //System.out.println( "Entering: void setSelectedSet( Point[] coords )" );
-    //System.out.println( "" );
+    floatPoint2D graph_pt = new floatPoint2D(pt.x, gjp.getY_value(pt.x,0));
+    gjp.setCurrent_WC_point( graph_pt );
+    gjp.set_crosshair_WC(new floatPoint2D( graph_pt.x, graph_pt.y ) );
+    ignore_pointed_at = true;
   }
 
 
@@ -1008,6 +1021,7 @@ public class FunctionViewComponent implements IViewComponent1D,
        }
        paintComponents(big_picture.getGraphics());
        //System.out.println("FVC.datachanged().gjp.isDoingBox()");
+
        sendMessage(POINTED_AT_CHANGED); 
        //System.out.println( "FunctionViewComponent.dataChanged()" );
     }
@@ -1022,7 +1036,6 @@ public class FunctionViewComponent implements IViewComponent1D,
    */
   public void dataChanged( IVirtualArrayList1D pin_varray ) //pin == "passed in"
   {
-    // System.out.println("gjp.clearData()");
     gjp.clearData();          // since any of the graphs might have changed, we
                               // clear out all stored copies and start over.
 
@@ -1033,7 +1046,7 @@ public class FunctionViewComponent implements IViewComponent1D,
     float[] x_vals = pin_varray.getXValues(0);
     float[] y_vals = pin_varray.getYValues(0);
     gjp.setData(x_vals,y_vals, 0, false);
-    setAxisInfo();            // force update of Axis (Jim Kohl)
+    setMaximumDisplayableWCRegion();            // force update of Axis (Jim Kohl)
  
     Varray1D = pin_varray;
                               // rebuild controls for the new data IN THE 
@@ -1063,21 +1076,6 @@ public class FunctionViewComponent implements IViewComponent1D,
     {
       ((LegendOverlay)transparencies.elementAt(0)).setVisible(true);    	
     }
-  }
-
-
-  /**
-   * Get selected set specified by setSelectedSet. The selection overlay
-   * will need to use this method.
-   *
-   *  @return selectedset
-   */
-  public Point[] getSelectedSet(  )  //keep the same (for now)
-   {
-    //System.out.println( "Entering: Point[] getSelectedSet()" );
-    //System.out.println( "" );
-
-    return selectedset;
   }
 
 
@@ -1121,30 +1119,8 @@ public class FunctionViewComponent implements IViewComponent1D,
     Listeners.removeAllElements(  );
   }
 
-  public ViewControl[] getControls(  ) {
- /*  // if no 
-   if( Varray1D.getNumGraphs(  ) < 1 )
-     return new ViewControl[0];
-    //System.out.println("");
-   ViewControl[] Res = new ViewControl [2];
-   /
-   JPanel test_p = new JPanel();
-   JLabel test_l = new JLabel("Graph View");
-   test_p.add(test_l);
-   Res[0] = test_p;
-   /
-   Res[0] = control_box;
-   ((ControlCheckbox)Res[0]).setText("Function Controls");
-   ((ControlCheckbox)Res[0]).addActionListener( new ControlListener() );
-    
-   Res[1] = new ControlCheckbox(true);
-   ((ControlCheckbox)Res[1]).setText("Show Pointed At");
-   ((ControlCheckbox)Res[1]).addActionListener( new ControlListener() );
-   
-   // Res[0]   =  mainControls.get_panel().getPanel();
 
-    return Res;
-*/
+  public ViewControl[] getControls(  ) {
      return new ViewControl[0];
   }
 
@@ -1223,11 +1199,12 @@ public class FunctionViewComponent implements IViewComponent1D,
    *  @param  message
    */
   private void sendMessage( String message ) {
+
     for( int i = 0; i < Listeners.size(  ); i++ ) {
       ActionListener listener = ( ActionListener )Listeners.elementAt( i );
-
       listener.actionPerformed( new ActionEvent( this, 0, message ) );
     }
+
   }
 
 
@@ -1259,7 +1236,7 @@ public class FunctionViewComponent implements IViewComponent1D,
     return false;
   }
 
-
+/*
   private void reInit(){
 
     if( Varray1D.getNumGraphs(  ) > 0 )
@@ -1282,7 +1259,7 @@ public class FunctionViewComponent implements IViewComponent1D,
       big_picture.add( no_graph );
     }
   }  
-    
+*/  
 
   private int DrawSelectedGraphs() {
     int draw_count = 0;
@@ -1338,18 +1315,21 @@ public class FunctionViewComponent implements IViewComponent1D,
    
   // required since implementing ActionListener
 
+
   /**
    * To be continued...
    */
   public void actionPerformed( ActionEvent e ) {
+
     //get POINTED_AT_CHANGED or SELECTED_CHANGED message from e 
     String message = e.getActionCommand(  );
+
     //Send message to tester 
     if( message.equals(POINTED_AT_CHANGED) ) {
       sendMessage( POINTED_AT_CHANGED );
     }
     else if( message.equals(SELECTED_CHANGED) ) {
-       sendMessage (SELECTED_CHANGED);
+      sendMessage (SELECTED_CHANGED);
     }
   }
 
@@ -1481,33 +1461,34 @@ public class FunctionViewComponent implements IViewComponent1D,
   }
 
   /*
-   * ImageListener monitors if the graphjpanel has sent any messages.
+   * GraphListener monitors if the graphjpanel has sent any messages.
    * If so, process the message and relay it to the viewer.
    */
-  private class ImageListener implements ActionListener {
+  private class GraphListener implements ActionListener {
     //~ Methods ****************************************************************
 
     public void actionPerformed( ActionEvent ae ) {
       String message = ae.getActionCommand(  );
       
       //System.out.println("FunctionViewComponent...isDoingBox1? "+gjp.isDoingBox());
-
       //System.out.println("Graph sent message " + message );
+
       if( message == CoordJPanel.CURSOR_MOVED ) {
-        //System.out.println("FunctionViewComponent$ImageListener - CURSOR_MOVED" );
-        sendMessage( POINTED_AT_CHANGED );
-        //sendMessage( GraphJPanel.CURSOR_MOVED );
-        
+        //System.out.println("FunctionViewComponent$GraphListener - CURSOR_MOVED" );
+        if ( ignore_pointed_at ) 
+          ignore_pointed_at = false;           // ignore one pointed at message echoed back
+        else                                   // from the GraphJPanel
+          sendMessage( POINTED_AT_CHANGED );
       }
 
       if( message == CoordJPanel.ZOOM_IN ) {
-        //System.out.println("FunctionViewComponent$ImageListener - ZOOM_IN" + regioninfo );
+        //System.out.println("FunctionViewComponent$GraphListener - ZOOM_IN" + regioninfo );
         paintComponents();
         sendMessage( SELECTED_CHANGED );
       }
 
       if( message == CoordJPanel.RESET_ZOOM ) {
-        //System.out.println("FunctionViewComponent$ImageListener - RESET_ZOOM" );
+        //System.out.println("FunctionViewComponent$GraphListener - RESET_ZOOM" );
         paintComponents();
         sendMessage( SELECTED_CHANGED );
       }      	
@@ -1533,8 +1514,8 @@ public class FunctionViewComponent implements IViewComponent1D,
             mainControls.close_frame();
             control_box.setSelected(false);
           }
-          
         }
+        
         else if( control.getText(  ).equals( "Show Pointed At" ) ) {
           if( control.isSelected(  ) ) {
             draw_pointed_at = true;
@@ -1544,10 +1525,9 @@ public class FunctionViewComponent implements IViewComponent1D,
             draw_pointed_at = false;
           }
           paintComponents(big_picture.getGraphics()); 
-           
         }
-        
       }
+      
       else if( message.equals("Options.Function Controls"))
       {  
          JMenuItem theItem = ((ViewMenuItem)ae.getSource()).getItem();

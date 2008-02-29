@@ -25,6 +25,9 @@
  * Modified:
  *
  * $Log: BezierSurface.java,v $
+ * Revision 1.8  2007/08/14 00:03:32  dennis
+ * Major update to JSR231 based version from UW-Stout repository.
+ *
  * Revision 1.7  2006/07/20 15:35:51  dennis
  * Fixed import & use of deprecated method.
  *
@@ -73,7 +76,7 @@
 
 package SSG_Tools.SSG_Nodes.Shapes;
 
-import net.java.games.jogl.*;
+import javax.media.opengl.*;
 
 import javax.swing.*;
 
@@ -301,7 +304,7 @@ public class BezierSurface extends Shape
    *
    *  @param  drawable  The drawable on which the plane is to be drawn.
    */
-  public void Render( GLDrawable drawable )
+  public void Render( GLAutoDrawable drawable )
   {
     preRender( drawable );                // handle name stack, appearance, etc
 
@@ -310,7 +313,7 @@ public class BezierSurface extends Shape
     if ( first_time )                     // get the max size for array of 
     {                                     // control points the first time
       int order[] = new int[1];
-      gl.glGetIntegerv( GL.GL_MAX_EVAL_ORDER, order );
+      gl.glGetIntegerv( GL.GL_MAX_EVAL_ORDER, order, 0 );
       max_size = order[0];      
     }
 
@@ -349,12 +352,12 @@ public class BezierSurface extends Shape
 
     gl.glMap2f( GL.GL_MAP2_VERTEX_3, 
                 0, 1, 3 * n_cols, n_rows,
-                0, 1, 3,          n_cols, float_pts );
+                0, 1, 3,          n_cols, float_pts, 0 );
 
     float tex_coords[] = { 0, max_t,   max_s, max_t,   0, 0,   max_s, 0 };
     gl.glMap2f( GL.GL_MAP2_TEXTURE_COORD_2, 
                 0, 1, 2 * 2, 2,
-                0, 1, 2,     2, tex_coords );
+                0, 1, 2,     2, tex_coords, 0 );
 
     gl.glEnable( GL.GL_MAP2_VERTEX_3 );
     gl.glEnable( GL.GL_AUTO_NORMAL );
