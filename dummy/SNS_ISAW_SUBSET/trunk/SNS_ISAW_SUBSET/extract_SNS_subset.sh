@@ -1,3 +1,5 @@
+# File: extract_SNS_subset.sh
+# Date: 2/28/08
 #
 # This is a SIMPLE MINDED shell script that copies the souce files needed
 # by the Display*D classes from an ISAW distribution to a directory
@@ -163,6 +165,9 @@ rm     SSG_Tools/Fonts/ItalicComplex.java
 rm     SSG_Tools/Fonts/ItalicTriplex.java
 rm     SSG_Tools/Fonts/ScriptComplex.java
 rm     SSG_Tools/Fonts/ScriptSimplex.java
+
+mkdir MessageTools
+cp    $ISAW/MessageTools/IUpdate.java MessageTools
 
 #
 # Bring over the ExcelAdapter for cut/paste from tables
