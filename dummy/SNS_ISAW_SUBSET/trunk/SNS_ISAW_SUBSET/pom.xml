@@ -11,14 +11,20 @@
   </parent>
   <groupId>ISAW</groupId>
   <artifactId>sns-isaw-subset</artifactId>
-  <version>1.1-SNAPSHOT</version>
+  <version>1.2-SNAPSHOT</version>
   <name>SNS ISAW</name>
   <description>SNS ISAW Viewers Subset</description>
   <dependencies>
     <dependency>
       <groupId>ISAW</groupId>
       <artifactId>jogl</artifactId>
-      <version>1.0</version>
+      <version>1.1.0</version>
+	  <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>ISAW</groupId>
+      <artifactId>gluegen</artifactId>
+      <version>1.1.0</version>
 	  <scope>provided</scope>
     </dependency>
   </dependencies>
