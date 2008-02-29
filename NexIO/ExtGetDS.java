@@ -887,7 +887,7 @@ public class ExtGetDS{
          return dsInf;
       if( mm.getClass() == null)
          return dsInf;
-      if( !mm.getClass().equals("NXmonitor"))
+      if( !mm.getNodeClass().equals("NXmonitor"))
          return dsInf;
       //------------Is a monitor node ---------
      
