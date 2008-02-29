@@ -30,6 +30,14 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.44  2008/02/29 03:56:58  dennis
+ * Now checks for detector pixel or group positions that have
+ * NaN coordinates, so that depth sorting is not "broken" due
+ * to comparison with NaN values.  The number of NaN pixels
+ * and groups are displayed for information purposes.  This
+ * fixes a drawing order problem for some SNS NeXus files that
+ * currently have some NaN values.
+ *
  * Revision 1.43  2008/01/11 22:48:25  amoe
  * The tooltip is now turned off for the ThreeDView.
  *
@@ -145,6 +153,7 @@ import DataSetTools.viewer.*;
 import DataSetTools.viewer.util.*;
 import DataSetTools.components.ui.*;
 import DataSetTools.retriever.*;
+import DataSetTools.util.*;
 import gov.anl.ipns.MathTools.Geometry.*;
 import gov.anl.ipns.Util.Messaging.*;
 import gov.anl.ipns.ViewTools.Panels.Image.*;
@@ -217,7 +226,11 @@ public class ThreeDView extends DataSetViewer
   private final Integer  BEAM            = 300000000;
   private final Integer  INSTRUMENT      = 400000000;
 
+  private int pixel_NaN_count = 0;
+  private int group_NaN_count = 0;
+
   private boolean debug = false;
+
 
 /* --------------------------------------------------------------------------
  *
@@ -502,6 +515,13 @@ private Vector3D group_location( int index )
     return null;
 
   float coords[] = position.getCartesianCoords();
+  for ( int i = 0; i < 3; i++ )
+    if ( Float.isNaN( coords[i] ) )
+    {
+      group_NaN_count++;
+      return null;
+    }
+
   Vector3D pt_3D = new Vector3D( coords[0], coords[1], coords[2] );
 
   return pt_3D;
@@ -512,6 +532,9 @@ private Vector3D group_location( int index )
 
 private void MakeThreeD_Scene()
 {
+  group_NaN_count = 0;
+  pixel_NaN_count = 0;
+
   float group_radius = 0;
   float detector_radius = 0;
 
@@ -555,6 +578,12 @@ private void MakeThreeD_Scene()
   draw_instrument( radius );
 
   set_colors( frame_control.getFrameValue() );
+
+  if ( pixel_NaN_count != 0 )
+    SharedData.addmsg("NaN pixel count = " + pixel_NaN_count );
+
+  if ( group_NaN_count != 0 )
+    SharedData.addmsg("NaN group count = " + group_NaN_count );
 }
 
 
@@ -769,6 +798,7 @@ private float draw_detectors()
   Vector3D  point,
             base,
             up;
+  Vector3D  pixel_defs[] = new Vector3D[3]; 
 
   points[0] = new Vector3D();
   IThreeD_Object objects[];
@@ -789,8 +819,16 @@ private float draw_detectors()
         base  = pil.pixel(k).x_vec();
         up    = pil.pixel(k).y_vec();
 
-        if ( point == null )
-          objects[k]   = new ThreeD_Non_Object();
+        pixel_defs[0] = point;
+        pixel_defs[1] = base;
+        pixel_defs[2] = up;
+
+        if ( isNullOrNaN( pixel_defs ) )
+        {
+          objects[k] = new ThreeD_Non_Object();
+          pixel_NaN_count++;
+        }
+
         else
         {
           radius = point.length();
@@ -811,6 +849,34 @@ private float draw_detectors()
 
 //  System.out.println("End draw_detectors");
   return max_radius;
+}
+
+
+/**
+ *  Check for any null vector, or vector with a NaN component in the
+ *  list.  
+ *  @param list   Array of vectors to check
+ *  @return true if any vector is null or has a NaN entry, and returns
+ *          false if they are all OK.
+ */
+private boolean isNullOrNaN( Vector3D[] list )
+{
+  if ( list == null || list.length <= 0 )
+    return true;
+
+  float[] coords;
+  for ( int i = 0; i < list.length; i++ )
+  {
+    if ( list[i] == null )
+      return true;
+
+    coords = list[i].get();
+    for ( int k = 0; k < coords.length; k++ )
+      if ( Float.isNaN( coords[k] ) )
+        return true;
+  }
+
+  return false;
 }
 
 
