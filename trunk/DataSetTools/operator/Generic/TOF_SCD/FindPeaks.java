@@ -422,7 +422,7 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
             
             peak=pkfac.getPixelInstance(i,j,k,0,0);
             peak.seqnum(peakNum);
-            peak.ipkobs((int)Math.round(I));
+            peak.ipkobs( Math.round(I));
             peak.nearedge( minColumn,   maxColumn,
                            minRow,      maxRow,
                            minTimeChan, maxTimeChan);
@@ -457,7 +457,7 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
   
   /**
    * This does the real work of finding a bunch of peaks for a given
-   * detector umber.
+   * detector number.
    */
  public static  Vector findDetectorPeaks( 
                             DataSet     data_set,
@@ -477,38 +477,13 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
     float detA  = Util.detector_angle(data_set,detNum);
     float detA2 = Util.detector_angle2(data_set,detNum);
     float detD  = Util.detector_distance(data_set,detNum);
-    pkfac = new PeakFactory(run_num , detNum, L1, detD, detA, detA2  );
     
-
-    // create an array of for indexing into the data
-   // int[][] ids=Util.createIdMap(data_set,detNum);
+    pkfac = new PeakFactory(run_num , detNum, L1, detD, detA, detA2  );
     Data data=null;
-//    int minColumn=1000;
- //   int maxColumn=0;
-//    int minRow=1000;
-//    int maxRow=0;
     IDataGrid grid = DataSetTools.dataset.Grid_util.getAreaGrid( data_set, detNum);
      if( grid == null)
         throw new IllegalArgumentException("There is no such grid ID for this DataSet");
 
-    // determine the minimum and maximum row and columns
-/*    outer: for( int i=0 ; i<ids.length ; i++ ){
-      for( int j=0 ; j<ids[0].length ; j++ ){
-        if(ids[i][j]==-1) continue; // there is nothing here
-        minColumn=i;
-        minRow=j;
-        break outer;
-      }
-    }
-    outer: for( int i=ids.length-1 ; i>minColumn ; i-- ){
-      for( int j=ids[0].length-1 ; j>minRow ; j-- ){
-        if(ids[i][j]==-1) continue; // there is nothing here
-        maxColumn=i;
-        maxRow=j;
-        break outer;
-      }
-    }
-    */
     data=grid.getData_entry(1,1);
     maxTimeChan= Math.min( maxTimeChan, (data.getY_values()).length );
 
@@ -591,7 +566,7 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
             
             peak=pkfac.getPixelInstance(i,j,k,0,0);
             peak.seqnum(peakNum);
-            peak.ipkobs((int)Math.round(I));
+            peak.ipkobs( Math.round(I));
             peak.nearedge( 1,   grid.num_cols(),
                            1,     grid.num_rows(),
                            minTimeChan, maxTimeChan);
