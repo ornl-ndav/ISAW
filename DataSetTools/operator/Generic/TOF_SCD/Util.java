@@ -188,7 +188,8 @@ public class Util{
       // stop looping b/c we found something
       if(detID==detNum) break;
     }
-
+    if( data == null)
+       return Float.NaN;
     Object attr_val=data.getAttributeValue(Attribute.DETECTOR_CEN_ANGLE);
     if(attr_val!=null && attr_val instanceof Float)
       return ((Float)attr_val).floatValue();
@@ -253,8 +254,8 @@ public class Util{
     // get the detector distance
     if(detID==-1)
       return Float.NaN;
-    else
-      return detector_distance(ds,detID);
+   
+    return detector_distance(ds,detID);
   }
   
   /**
@@ -401,9 +402,9 @@ public class Util{
     
     // create the surrounding area
     float[][][] surround=new float[7][7][3];
-    int col=(int)Math.round(peak.x());
-    int row=(int)Math.round(peak.y());
-    int time=(int)Math.round(peak.z());
+    int col= Math.round(peak.x());
+    int row= Math.round(peak.y());
+    int time=Math.round(peak.z());
     Data data=null;
     try{
       for( int i=col-3 ; i<=col+3 ; i++ ){
@@ -427,10 +428,10 @@ public class Util{
       for( int j=0 ; j<7 ; j++ ){
         for( int i=0 ; i<7 ; i++ ){
           if( i==0 || i==6 ){ // left and right borders
-            back=back+(double)surround[i][j][k];
+            back=back+surround[i][j][k];
           }else{
             if( j==0 || j==6 ){ // top and bottom borders
-              back=back+(double)surround[i][j][k];
+              back=back+surround[i][j][k];
             }
           }
         }
@@ -439,9 +440,9 @@ public class Util{
       // find the sums for the centroid
       for( int j=2 ; j<5 ; j++ ){
         for( int i=2 ; i<5 ; i++ ){
-          count=(double)surround[i][j][k]-back;
-          xsum=xsum+count*((double)i+1.);
-          ysum=ysum+count*((double)j+1.);
+          count=surround[i][j][k]-back;
+          xsum=xsum+count*(i+1.);
+          ysum=ysum+count*(j+1.);
           zsum=zsum+count*(peak.z()+(double)k);
           asum=asum+count;
         }
@@ -454,27 +455,133 @@ public class Util{
       return peak;
     }
     // centroid the peaks
-    x=(float)(xsum/asum)+(float)peak.x()-4f;
-    y=(float)(ysum/asum)+(float)peak.y()-4f;
+    x=(float)(xsum/asum)+peak.x()-4f;
+    y=(float)(ysum/asum)+peak.y()-4f;
     z=(float)(zsum/asum)-1f; // -1 is to convert to java counting
     
     // find out how far the peaks were moved
-    float dx=Math.abs(x-(float)peak.x());
-    float dy=Math.abs(y-(float)peak.y());
-    float dz=Math.abs(z-(float)peak.z());
+    float dx=Math.abs(x-peak.x());
+    float dy=Math.abs(y-peak.y());
+    float dz=Math.abs(z-peak.z());
     
     if( dx>1.0 || dy>1.0 || dz>1.0 ){
       // don't shift positions if it is moving more than one bin
       peak.reflag(reflag+20);
       return peak;
-    }else{
-      // update the peak
-      peak.pixel(x,y,z);
     }
+      // update the peak
+    peak.pixel(x,y,z);
+   
     
     // return the updated peak
     peak.reflag(reflag+10);
     return peak;
+  }
+  /**
+   * Find the centroided location of a peak.
+   *
+   * @param peak the peak to centroid which already has an initial
+   * position
+   * @param ds the dataset to use for centroiding
+   * @param ids a 2D array of ids where the indices are column and row
+   * of the data block.
+   */
+  public static IPeak centroid(IPeak peak, DataSet ds, IDataGrid grid){
+    
+    double asum  = 0.;
+    double xsum  = 0.;
+    double ysum  = 0.;
+    double zsum  = 0.;
+    double back  = 0.;
+    double count = 0.;
+    
+    // create the new reflection flag
+    float x,y,z;
+    int reflag=peak.reflag();
+    reflag=(reflag/100)*100+reflag%10;
+    
+    // check that the peak isn't too close to the edge
+    if( peak.nearedge()<=4.0f ){
+      peak.reflag(reflag+20);
+      return peak;
+    }
+    
+    // create the surrounding area
+    float[][][] surround=new float[7][7][3];
+    int col=  Math.round(peak.x());
+    int row=  Math.round(peak.y());
+    int time=  Math.round(peak.z());
+    Data data=null;
+    try{
+      for( int i=col-3 ; i<=col+3 ; i++ ){
+        for( int j=row-3 ; j<=row+3 ; j++ ){
+          data=grid.getData_entry( j , i );//ds.getData_entry(ids[i][j]);
+          if(data==null) return null;
+          surround[i-col+3][j-row+3][0]=data.getY_values()[time-1];
+          surround[i-col+3][j-row+3][1]=data.getY_values()[time  ];
+          surround[i-col+3][j-row+3][2]=data.getY_values()[time+1];
+        }
+      }
+    }catch(ArrayIndexOutOfBoundsException e){
+      peak.reflag(reflag+20);
+      return peak;
+    }
+                                              
+
+    for( int k=0 ; k<3 ; k++ ){
+      // determine the background for this time slice
+      back=0.;
+      for( int j=0 ; j<7 ; j++ ){
+        for( int i=0 ; i<7 ; i++ ){
+          if( i==0 || i==6 ){ // left and right borders
+            back=back+surround[i][j][k];
+          }else{
+            if( j==0 || j==6 ){ // top and bottom borders
+              back=back+surround[i][j][k];
+            }
+          }
+        }
+      }
+      back=back/24f; // normalize the background by number of points
+      // find the sums for the centroid
+      for( int j=2 ; j<5 ; j++ ){
+        for( int i=2 ; i<5 ; i++ ){
+          count=surround[i][j][k]-back;
+          xsum=xsum+count*(i+1.);
+          ysum=ysum+count*(j+1.);
+          zsum=zsum+count*(peak.z()+k);
+          asum=asum+count;
+        }
+      }
+    }
+    
+    // total count must be greater than zero for this to make sense
+    if(asum<=0){
+      peak.reflag(reflag+20);
+      return peak;
+    }
+    // centroid the peaks
+    x=(float)(xsum/asum)+peak.x()-4f;
+    y=(float)(ysum/asum)+peak.y()-4f;
+    z=(float)(zsum/asum)-1f; // -1 is to convert to java counting
+    
+    // find out how far the peaks were moved
+    float dx=Math.abs(x-peak.x());
+    float dy=Math.abs(y-peak.y());
+    float dz=Math.abs(z-peak.z());
+    
+    if( dx>1.0 || dy>1.0 || dz>1.0 ){
+      // don't shift positions if it is moving more than one bin
+      peak.reflag(reflag+20);
+      return peak;
+    }
+      // update the peak
+    IPeak ResPeak = peak.createNewPeakxyz( x , y , z );
+   
+    
+    // return the updated peak
+    ResPeak .reflag(reflag+10);
+    return ResPeak ;
   }
 
   /**
