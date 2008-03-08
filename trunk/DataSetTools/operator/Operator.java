@@ -215,7 +215,7 @@ import NetComm.RemoteOpExecClient;
  * and will not be available in scripts.</P>
  */
 
-abstract public class Operator implements Serializable
+abstract public class Operator implements Serializable, gov.anl.ipns.Operator.IOperator
 {
                                  // Constants giving operator category names
                                  // for the inheritance hierarchy of operators.
