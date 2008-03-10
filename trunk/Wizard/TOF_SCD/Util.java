@@ -46,19 +46,16 @@ import DataSetTools.operator.Generic.Special.*;
 public class Util {
    //TODO need to load in a peaks file first 
    //Possible option on append: choicelist, append/load/neither
-   //TODO: fix the order of the output to the peaks file and the
-   //      peaks in the form that uses the ParallelExecutor.
-   //Results(parallel)               1proc         2 proc
-   //  with Parallel Executor       14 sec          10 sec
-   //  w.o. Parallel Executor       13 sec          12 sec
    //
+   //Results(parallel)               1 threads          2 threads
+   //  with Parallel Executor       14.5 sec        12 sec
+   //  w.o. Parallel Executor       13 sec          10 sec
+   //                    
    //Conclusion: w. Parallel  Executor did seq reading first then  
    //            parallel calc after reading was through.
    //            w.o. Parallel Executor interspersed reading and
-   //            calculations(in threads). Seems like I/O tied up
-   //            one processor with minimal switching for idle time
-   //            If have 4 processors, may get better results with
-   //            the w.o. Parallel Executor
+   //            calculations(in threads).  Essential to eliminate 
+   //            ALL I/O in the threads.  
    /**
     *  FindCentroidedPeaks method uses threads to find and centroid
     *  the peaks from several runs and several data sets per run. The
@@ -105,6 +102,7 @@ public class Util {
       
       int[] Runs = IntList.ToArray( runnums );
       int[] DSnums = IntList.ToArray( dataSetNums );
+      Vector<StringBuffer> LogInfo = new Vector<StringBuffer>();
       if( !extension.startsWith( "." ))
          extension="."+extension;
       if( Runs == null || DSnums == null)
@@ -172,7 +170,7 @@ public class Util {
                     
                     MergeInfo(keys,  DS,   num_peaks, min_int, min_time_chan,
                              max_time_chan,PixelRow, monCount, operators, 
-                             ResultPeaks,  maxNumThreads);
+                             ResultPeaks, LogInfo, maxNumThreads);
                     }//for enumeration
                     
                  }//else gridIds == null
@@ -187,13 +185,23 @@ public class Util {
          }
       }//for @ run
    
-    /*//Uses parallel Executor. Requires reading in files first
+   /*//Uses parallel Executor(MergeInfo1). Requires reading in files first
       // Then calculations are done in parallel
-        if(operators.size()>0){//Have some operators not run?
+       if(operators.size()>0){//Have some operators not run?
 
          ParallelExecutor PE = new ParallelExecutor(
-                           operators,maxNumThreads,3000);
-         Vector Results = PE.runOperators();
+                           operators,maxNumThreads,30000*operators.size());
+         
+         Vector Results = null;
+         try{
+             Results = PE.runOperators();
+
+         }catch( ExecFailException ss){
+            Results = ss.getPartialResults();
+            SharedMessages.addmsg( "Timeout error:"+ss );
+         }catch(Throwable s1){
+            SharedMessages.addmsg( "Execute error:"+s1 );
+         }
          int seqNum = ResultPeaks.size()+1;
          if(Results != null)
             for( int kk=0; kk< Results.size(); kk++){
@@ -203,11 +211,12 @@ public class Util {
                   ResultPeaks.addElement( R);
                   seqNum++;
               }
-            
+              SharedMessages.addmsg( LogInfo.firstElement());
+              LogInfo.remove(0);
             }
        }
-    */// does not use Parallel Executor.  
-       long timeOut =30000;
+   */ // does not use Parallel Executor.  Uses MergeInfo
+     long timeOut =30000;
        while( operators.size() > 0 && timeOut < 180000){
           for( int i=operators.size()-1; i>=0; i-- ){
              OperatorThread opThreadElt =(OperatorThread)(operators.elementAt( i ));
@@ -232,8 +241,12 @@ public class Util {
        if( timeOut >= 180000)
           SharedMessages.addmsg( operators.size()+" detectors did not finish in over 1 minute" );
        SortUnPackFix(ResultPeaks);
+       for( int i=0; i< LogInfo.size(); i++)
+          SharedMessages.addmsg(  LogInfo.elementAt( i ) );
+       LogInfo.clear();
       //----------- Write and View Peaks --------------------
       (new WritePeaks( PeakFileName, ResultPeaks,append)).getResult();
+      ResultPeaks.clear();
       System.out.println("--- find_multiple_peaks is done. ---");
       SharedMessages.addmsg( "Peaks are listed in "+PeakFileName );
       (new ViewASCII(PeakFileName)).getResult();
@@ -244,7 +257,7 @@ public class Util {
    //ResultPeaks is a Vector of Vector of Peaks
    // Sort according to run number and detectorID
    // Unpack means to make into a Vector of Peaks
-   // add sequence numbers
+   // Fix means to adds sequence numbers
    private static void SortUnPackFix( Vector ResultPeaks){
       if(ResultPeaks == null)
          return;
@@ -290,53 +303,49 @@ public class Util {
          int i2 = o2.intValue();
          if( i1 == i2)
             return 0;
-         if( i1 < 0 ||i1>= ResultPeaks.size())
+         if( i1 < 0 ||i1>= ResultPeaks.size()){
             if( i2<0 || i2 >= ResultPeaks.size())
                return 0;
-            else
-               return 1;
+             return 1;
+            }
          
-         if( i2 < 0 ||i2>= ResultPeaks.size())
+         if( i2 < 0 ||i2>= ResultPeaks.size()){
             if( i1<0 || i1 >= ResultPeaks.size())
                return 0;
-            else
-               return -1;
+            return -1;
+         }  
          
          Object R1 = ResultPeaks.elementAt(i1);
          Object R2 = ResultPeaks.elementAt(i2);
          if( R1 == null ||  !(R1 instanceof Vector)
-                  || ((Vector)R1).size() < 1)
+                  || ((Vector)R1).size() < 1){
             if( R2 == null ||  !(R2 instanceof Vector)
                      || ((Vector)R2).size() < 1)
                return 0;
-            else 
-               return 1;
-         
+            return 1;
+         }
 
          if( R2 == null ||  !(R2 instanceof Vector)
-                  || ((Vector)R2).size() < 1)
-            if( R1 == null ||  !(R1 instanceof Vector)
+                  || ((Vector)R2).size() < 1){
+            if(  !(R1 instanceof Vector)
                      || ((Vector)R1).size() < 1)
                return 0;
-            else 
-               return -1;
-         
+            return -1;
+         }
                      
          Object pk1 = ((Vector)R1).elementAt( 0 );
          Object pk2 =((Vector)R2).elementAt( 0 );
-         if( pk1 == null || !(pk1 instanceof IPeak))
+         if( pk1 == null || !(pk1 instanceof IPeak)){
             if( pk2 == null || !(pk2 instanceof IPeak))
                return 0;
-            else
-               return -1;
-         
+            return -1;
+         }
 
-         if( pk2 == null || !(pk2 instanceof IPeak))
-            if( pk1 == null || !(pk1 instanceof IPeak))
+         if( pk2 == null || !(pk2 instanceof IPeak)){
+            if(  !(pk1 instanceof IPeak))
                return 0;
-            else
-               return 1;
-         
+            return 1;
+         }
          IPeak peak1 = (IPeak)pk1;
          IPeak peak2 = (IPeak)pk2;
          if( peak1.nrun() < peak2.nrun())
@@ -389,27 +398,40 @@ public class Util {
             int         monCount,
             Vector      operators, 
             Vector      ResultPeaks,
+            Vector<StringBuffer> buff,
             int         maxNumThreads){
       
       if( keys == null || DS == null || num_peaks <=0)
          return;
-      
+     Vector<Integer> keyList = new Vector<Integer>();
       for(;keys.hasMoreElements();){
-         
          Object K = keys.nextElement();
-
-         if( K != null  && K instanceof Integer){
-            
+         if( K != null && K instanceof Integer)
+            keyList.addElement((Integer)K);
+      } 
+      int[] Keys = new int[keyList.size()];
+      
+      for( int i=0; i< keyList.size(); i++){
+         Keys[i]= keyList.elementAt( i );
+      }
+      java.util.Arrays.sort( Keys );
+         
+      for( int i=0; i < Keys.length; i++){
+            int K = Keys[i];
+            StringBuffer Sbuff= new StringBuffer();
+            buff.addElement( Sbuff);
             operators.addElement( SetUpfindPeaksOp(DS,
-                         ((Integer)K).intValue(),num_peaks, 
+                         K,num_peaks, 
                                min_int,  min_time_chan, max_time_chan,
-                               PixelRow, monCount));
+                               PixelRow, monCount, Sbuff));
            
             if( operators.size() >= maxNumThreads){
                ParallelExecutor PE = new ParallelExecutor(
                                   operators,maxNumThreads,30000*maxNumThreads);
                
                Vector Results = null;
+               System.out.println("Start run in parallel "+ System.currentTimeMillis());
+               SharedMessages.addmsg("Start run in parallel" );
                try{
                    Results = PE.runOperators();
                }catch( ExecFailException ss){
@@ -418,6 +440,9 @@ public class Util {
                }catch(Throwable s1){
                   SharedMessages.addmsg( "Execute error:"+s1 );
                }
+
+               System.out.println("End run in parallel"+ System.currentTimeMillis());
+               SharedMessages.addmsg("End run in parallel" );
                //-------- Set sequence numbers-------
                int seqNum = ResultPeaks.size()+1;
                if(Results != null)
@@ -433,14 +458,17 @@ public class Util {
                            seqNum++;
                         }
                      }
+                     StringBuffer sbuff= buff.firstElement();
+                     buff.remove( 0 );
+                     SharedMessages.addmsg( sbuff );
                   }//For each operator
 
                operators.removeAllElements();
-
+               buff.clear();
             }//if operators.size() >= maxNumThreads
          }
       }
-   }
+  
    
    // Calculates Peaks and adds them to the ResultPeaks. 
   // Does NOT use the Parallel Executor
@@ -457,6 +485,7 @@ public class Util {
             int         monCount,
             Vector      operators, 
             Vector      ResultPeaks,
+            Vector<StringBuffer> buff,
             int         maxNumThreads){
       
       if( keys == null || DS == null || num_peaks <=0)
@@ -469,10 +498,10 @@ public class Util {
          if( K != null  && K instanceof Integer){
             
             
-            int timeOut = 30000;
+            int timeOut = 3000;
             while( operators.size() >= maxNumThreads  && timeOut < 180000){
                boolean done = false;
-               for( int i=operators.size()-1; i>=0 && !done; i--){
+               for( int i=0; i < operators.size() && !done; i++){
                   OperatorThread opThreadelt = 
                                   (OperatorThread)(operators.elementAt(i));
                   try{
@@ -489,17 +518,19 @@ public class Util {
                   }
                   
                }
-               timeOut = 2*timeOut;
+               if( !done) timeOut = 2*timeOut;
             }//while operators.size() >= maxNumThreads
             if( timeOut >= 180000){
                System.out.println("TimeOut problem. Several Threads are hung");
             }
+            StringBuffer Sbuff = new StringBuffer();
             OperatorThread opThread = new OperatorThread( SetUpfindPeaksOp(DS,
                          ((Integer)K).intValue(),num_peaks, 
                                min_int,  min_time_chan, max_time_chan,
-                               PixelRow, monCount));
+                               PixelRow, monCount, Sbuff));
             opThread.start();
             operators.addElement(  opThread );
+            buff.addElement( Sbuff );
          }
       }
    }
@@ -513,7 +544,8 @@ public class Util {
             int     min_time_chan,
             int     max_time_chan,
             String  PixelRow,
-            int     monCount){
+            int     monCount,
+            StringBuffer buff){
       
           findDetectorCentroidedPeaks op = new findDetectorCentroidedPeaks();
           op.getParameter( 0 ).setValue( DS );
@@ -524,6 +556,7 @@ public class Util {
           op.getParameter( 5 ).setValue( max_time_chan );
           op.getParameter( 6 ).setValue( PixelRow );
           op.getParameter( 7 ).setValue( monCount );
+          op.getParameter( 8 ).setValue( buff );
           
           return op;
    }
@@ -540,6 +573,10 @@ public class Util {
     * @param max_time_chan  The maximum time channel to use.
     * @param PixelRow       The row/col to keep
     * @param monCount       Monitor Count
+    * @param buff           If this is a non-null StringBuffer, the log 
+    *                           information will be appended to it, otherwise
+    *                           the log info will be displayed on the Status
+    *                           Pane.
     * @return               A Vector of peaks
     */
    public static Vector<IPeak> findDetectorCentroidedPeaks( 
@@ -550,7 +587,8 @@ public class Util {
             int     min_time_chan,
             int     max_time_chan,
             String  PixelRow,
-            int     monCount){
+            int     monCount,
+            StringBuffer buff){
 
       IDataGrid grid = Grid_util.getAreaGrid( DS , DetectorID );
       if( grid == null)
@@ -560,7 +598,7 @@ public class Util {
       
       //------------------ Find Peaks ------------------
       Vector Pks = FindPeaks.findDetectorPeaks( DS , DetectorID , min_time_chan ,
-               max_time_chan , num_peaks , min_int , PixelRow );
+               max_time_chan , num_peaks , min_int , PixelRow, buff );
       
       
       if(Pks == null || Pks.size() < 1)
@@ -588,15 +626,18 @@ public class Util {
          grid = grid1;  
         
       }
+      grid = grid.clone();//So do not wipe out other grids.
       grid.clearData_entries(); 
      
 
       Vector<IPeak> ResultantPeak= new Vector<IPeak>( Pks.size());
       for( int i=0; i< Pks.size(); i++){
+         
          IPeak pk1 = (IPeak)Pks.elementAt( i );
          
          Peak_new pk = new Peak_new( pk1.x(), pk1.y(),pk1.z(),grid, sampOrient, T0,
                   xscl, InitialPath);
+         
          pk.ipkobs( pk1.ipkobs() );
          pk.inti( pk1.inti() );
          pk.sigi(pk1.sigi() );
