@@ -154,7 +154,7 @@ public class findDetectorPeaks extends GenericOperator{
          int MaxNPeaks = ((IntegerPG)(getParameter(4))).getintValue();
          int mincount = ((IntegerPG)(getParameter(5))).getintValue();
          String Pixel_row = getParameter(6).getValue().toString();
-         java.util.Vector Xres=DataSetTools.operator.Generic.TOF_SCD.FindPeaks.findDetectorPeaks(DS,ID,MinTimeChan,MaxTimeChan,MaxNPeaks,mincount,Pixel_row );
+         java.util.Vector Xres=DataSetTools.operator.Generic.TOF_SCD.FindPeaks.findDetectorPeaks(DS,ID,MinTimeChan,MaxTimeChan,MaxNPeaks,mincount,Pixel_row, null );
 
          return Xres;
        }catch( Throwable XXX){
