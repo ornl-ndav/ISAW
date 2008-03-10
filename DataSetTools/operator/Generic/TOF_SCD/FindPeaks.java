@@ -442,7 +442,7 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
                       maxNumPeaks+")");
     
     SharedData.addmsg("Sorting peaks");
-    peaks=sort(peaks,maxNumPeaks);
+    peaks=sort(peaks,maxNumPeaks, null);
     
     if(peaks.size()>maxNumPeaks){
       for( int i=peaks.size()-1 ; i>=maxNumPeaks ; i-- ){
@@ -466,8 +466,11 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
                             int         maxTimeChan,
                             int         maxNumPeaks,
                             int          min_count,
-                            String PixelRow ) throws IllegalArgumentException{
+                            String       PixelRow,
+                            Object       buff) throws IllegalArgumentException{
     PeakFactory pkfac;
+    StringBuffer log = new StringBuffer();
+       
     if( data_set == null)
        throw new IllegalArgumentException(" DataSet is null");
     int run_num = ((int[])data_set.getData_entry(0).getAttributeValue( Attribute.RUN_NUM))[0];
@@ -487,10 +490,10 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
     data=grid.getData_entry(1,1);
     maxTimeChan= Math.min( maxTimeChan, (data.getY_values()).length );
 
-    SharedData.addmsg("Columns("+1+"<"+grid.num_cols()
+    log.append("Columns("+1+"<"+grid.num_cols()
                       +") Rows("+1+"<"+grid.num_rows()
                       +") TimeIndices("+minTimeChan+"<"+maxTimeChan+")");
-    
+    log.append( "\n" );
     float[] Dpp=null, Dtp=null, Dnp=null,
             Dpt=null, Dtt=null, Dnt=null,
        Dpn=null, Dtn=null, Dnn=null;
@@ -582,27 +585,32 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
         } // end of loop over timeslice
       }     // end of loop over row
     }         // end of loop over column
-    SharedData.addmsg("Found "+peaks.size()+" peaks (maximum number "+
+    log.append("Found "+peaks.size()+" peaks (maximum number "+
                       maxNumPeaks+")");
-    
-    SharedData.addmsg("Sorting peaks");
-    peaks=sort(peaks,maxNumPeaks);
+    log.append( "\n" );
+    log.append("Sorting peaks\n");
+    peaks=sort(peaks,maxNumPeaks, buff);
     
     if(peaks.size()>maxNumPeaks){
       for( int i=peaks.size()-1 ; i>=maxNumPeaks ; i-- ){
         peaks.remove(i);
       }
-      SharedData.addmsg("Keeping "+peaks.size()+" peaks");
+      log.append("Keeping "+peaks.size()+" peaks\n");
     }
     
     peaks=sortT(peaks);
+    if( buff == null || !(buff instanceof StringBuffer) )
+       SharedData.addmsg(  log );
+    else
+      ((StringBuffer) buff).append(log);
+       
     return peaks;
   }
   
 
   
   /* ------------------------------- sort --------------------------------- */ 
-  private static Vector sort(Vector peaks, int maxNumPeaks){
+  private static Vector sort(Vector peaks, int maxNumPeaks, Object buff){
     Vector sortPeaks=new Vector();
     int origPeaksSize=peaks.size();
     Peak peak=new Peak();
@@ -623,8 +631,12 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
     }
     
     if(origPeaksSize>maxNumPeaks){
-      SharedData.addmsg("Keeping largest "+sortPeaks.size()
+       if( buff == null || !(buff instanceof StringBuffer))
+             SharedData.addmsg("Keeping largest "+sortPeaks.size()
                         +" peaks");
+       else
+          ((StringBuffer)buff).append("Keeping largest "+sortPeaks.size()
+                   +" peaks\n");
     }
     
     return sortPeaks;
