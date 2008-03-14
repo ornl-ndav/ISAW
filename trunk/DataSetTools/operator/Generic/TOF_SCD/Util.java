@@ -471,8 +471,8 @@ public class Util{
     }
       // update the peak
     peak.pixel(x,y,z);
-   
-    
+     //IPeak Res = peak.createNewPeakxyz( x , y , z );
+     //peak = Res;
     // return the updated peak
     peak.reflag(reflag+10);
     return peak;
@@ -577,6 +577,11 @@ public class Util{
     }
       // update the peak
     IPeak ResPeak = peak.createNewPeakxyz( x , y , z );
+    //ResPeak is close to peak so bring values in
+    ResPeak.sethkl(peak.h(),peak.k(),peak.l());
+    ResPeak.ipkobs( peak.ipkobs());
+    ResPeak.inti( peak.inti());
+    ResPeak.sigi( peak.sigi());
    
     
     // return the updated peak
