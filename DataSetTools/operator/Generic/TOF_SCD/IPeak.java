@@ -316,6 +316,15 @@ public interface IPeak {
    float inti( float inti);
    
    /**
+    * Sets the monitor Count
+    * @param monitorCount  The new monitorCount
+    * 
+    *
+    */
+   float monct( float monitorCount);
+   
+   
+   /**
     * Sets the ref flag
     * @param flag  The new code for this flag
     * 
