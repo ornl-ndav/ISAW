@@ -241,6 +241,9 @@ public class Peak_new implements IPeak_IPNS_out {
          detA=(float)(180*Math.atan2(pp[1],pp[0])/Math.PI);
          setUpRot( grid);
          update_xcm_ycm_wl();
+         
+         //Sets how close to edge the peak is.
+         nearedge(1,grid.num_cols(),1,grid.num_rows(),0,xscale.getNum_x()-1);
       }
   }
 
