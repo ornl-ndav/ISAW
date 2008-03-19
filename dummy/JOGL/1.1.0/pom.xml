@@ -1,0 +1,12 @@
+<project>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>ISAW</groupId>
+  <artifactId>jogl</artifactId>
+  <version>1.1.0</version>
+  <name>ISAW - JOGL</name>
+  <description>
+    Java Binding for the OpenGL API (JSR-231). This
+    version of the JOGL library came as ISAW dependency.
+  </description>
+  <url>https://jogl.dev.java.net/</url>
+</project>
