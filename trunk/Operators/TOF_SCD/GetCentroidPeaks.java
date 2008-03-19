@@ -212,6 +212,8 @@ public class GetCentroidPeaks implements Wrappable, HiddenOperator {
          pk.sigi(p.sigi());
          pk.reflag( p.reflag());
          pk.UB(p.UB());
+         pk.nrun( p.nrun());
+         pk.ipkobs( p.ipkobs() );
          
          Res.addElement(pk);       
        }
