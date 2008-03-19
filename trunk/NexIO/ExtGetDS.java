@@ -1012,13 +1012,15 @@ public class ExtGetDS{
      }
      
      int nGroups = 1;
-     int[] dim = mm.getDimension();
+     int[] dim = dat.getDimension();
      for( int ii = 0 ; ii + 1 < dim.length ; ii++ )
         nGroups *= dim[ ii ];
      
      
-     if( indx < 0)
+     if( indx < 0){
         dsInf = new DataSetInfo( entryNode, mm, -1, -1, S);
+        EntryToDSs.addElement( dsInf);
+     }
      if( dsInf == null)
         return;
      dsInf.nelts += nGroups;
