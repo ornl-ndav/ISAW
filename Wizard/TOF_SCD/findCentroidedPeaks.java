@@ -38,7 +38,7 @@ import DataSetTools.operator.*;
 import DataSetTools.operator.Generic.*;
 import gov.anl.ipns.Parameters.*;
 import DataSetTools.parameter.*;
-
+import java.util.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
 import Command.*;
@@ -75,7 +75,7 @@ public class findCentroidedPeaks extends GenericOperator{
       clearParametersVector();
       addParameter( new DataDirPG("raw data path",null));
       addParameter( new DataDirPG("Output data path for the .peaks file.",null));
-      addParameter( new IntArrayPG("The run numbers to load",""));
+      addParameter( new ArrayPG("The run numbers to load",""));
       addParameter( new IntArrayPG("The data set numbers to load in each run",""));
       addParameter( new StringPG("The experiment name",""));
       addParameter( new IntegerPG("The maximum number of peaks to retur",30));
@@ -177,7 +177,7 @@ public class findCentroidedPeaks extends GenericOperator{
 
          java.lang.String rawpath = getParameter(0).getValue().toString();
          java.lang.String outpath = getParameter(1).getValue().toString();
-         java.lang.String runnums = (java.lang.String)(getParameter(2).getValue());
+         java.util.Vector runnums = (Vector)((ArrayPG)getParameter(2)).getValue();
          java.lang.String dataSetNums = (java.lang.String)(getParameter(3).getValue());
          java.lang.String expname = getParameter(4).getValue().toString();
          int num_peaks = ((IntegerPG)(getParameter(5))).getintValue();
