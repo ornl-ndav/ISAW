@@ -39,11 +39,17 @@ import Operators.Special.Calib;
 import gov.anl.ipns.Operator.Threads.*;
 import gov.anl.ipns.Util.Sys.*;
 import DataSetTools.operator.DataSet.Math.Analyze.IntegrateGroup;
+import DataSetTools.operator.DataSet.Attribute.*;
 import DataSetTools.operator.Generic.Special.*;
 /**
  * This class contains an assortment of Utility methods for TOF_SCD wizards
  */
 public class Util {
+   
+   public static final String[] CenteringNames={"primitive","a centered",
+              "b centered","c centered", "[f]ace centered",
+            "[i] body centered","[r]hombohedral centered"};
+   
    //TODO need to load in a peaks file first 
    //Possible option on append: choicelist, append/load/neither
    //
@@ -84,7 +90,7 @@ public class Util {
    public static Vector<IPeak> findCentroidedPeaks( 
             String   rawpath, 
             String   outpath, 
-            String   runnums, 
+            Vector   runnums, 
             String   dataSetNums,
             String   expname,
             int      num_peaks, 
@@ -100,7 +106,16 @@ public class Util {
             String   fileNamePrefix,
             int      maxNumThreads){
       
-      int[] Runs = IntList.ToArray( runnums );
+      if( runnums == null)
+         return null;
+      int[] Runs = new int[runnums.size()];
+      try{
+      for( int i=0; i<runnums.size(); i++)
+         Runs[i]= ((Integer)runnums.elementAt( i )).intValue();
+      }catch(Exception s){
+         return null;
+      }
+      java.util.Arrays.sort( Runs );
       int[] DSnums = IntList.ToArray( dataSetNums );
       Vector<StringBuffer> LogInfo = new Vector<StringBuffer>();
       if( !extension.startsWith( "." ))
@@ -246,11 +261,14 @@ public class Util {
        LogInfo.clear();
       //----------- Write and View Peaks --------------------
       (new WritePeaks( PeakFileName, ResultPeaks,append)).getResult();
-      ResultPeaks.clear();
+      
       System.out.println("--- find_multiple_peaks is done. ---");
       SharedMessages.addmsg( "Peaks are listed in "+PeakFileName );
+      
       (new ViewASCII(PeakFileName)).getResult();
-    
+ //     DataSetTools.trial.SCDRecipLat Lat = new DataSetTools.trial.SCDRecipLat("C:/Isaw1/IsawHelp/SCDRecipA.html");
+ //     Lat.getSCDLat(  ResultPeaks, 200f, true);
+ //     Command.ScriptUtil.display(  Lat.getPlaneNormals() );
       return ResultPeaks;
    }
    
@@ -618,6 +636,9 @@ public class Util {
       float T0 = AttrUtil.getT0Shift( DS.getData_entry( 0 ) );
       if( Float.isNaN( T0 ))
          T0 = 0;
+      if( sampOrient == null )
+         sampOrient = new DataSetTools.instruments.IPNS_SCD_SampleOrientation(0f,0f,0f);
+      
       //Now get a Peak_new
       if( grid instanceof RowColGrid){
          IDataGrid grid1 = RowColGrid.getUniformDataGrid((RowColGrid) grid , .001f);
@@ -649,5 +670,269 @@ public class Util {
       }
       return ResultantPeak;
    }
+   
+   public static int getMonCount( Retriever retriever, int dsnum){
+      int monCount = 10000;
+      int ID = -1;
+      DataSet Monitor = null;
+      if( retriever.getType( 0 )== Retriever.MONITOR_DATA_SET){
+         Monitor = retriever.getDataSet( 0 );
+         ID = MonitorID_Calc.UpstreamMonitorID(Monitor );
+         if( ID >= 0){
+            Object Result= (new IntegrateGroup( Monitor,ID,0,50000)).getResult();
+            if( Result instanceof java.lang.Number)
+              monCount =((Number)Result).intValue();
+         }
+            
+      }
+      return monCount;
+      
+   }
+    
+   /**
+    * For each detector in multiple files,finds theoretical positions of peaks
+    * and integrates them.
+    * @assumption  The matrix files are stored in outpath +"ls"+expName+runnum+".mat"
+    * 
+    * @param path                 The path where the multiple data set files 
+    *                                are stored 
+    * @param outpath              The path where all the outputs go
+    * @param run_numbers          The Run numbers of the data set files
+    * @param DataSetNums          The data set numbers in a file to "integrate" 
+    * @param expname              The name of the experiment
+    * @param centering            The centering type:primitive,a centered,
+    *                                b centered,c centered, [f]ace centered,
+    *                                [i] body centered,[r]hombohedral centered
+    * @param useCalibFile         Calibrate the data sets(yes/no)
+    * @param calibfile            The calibration file used to calibrate the 
+    *                               data sets
+    * @param line2use             The line in the calibration file to use
+    * @param time_slice_range     Time-slice range around peak center
+    * @param increase             Increment slice size by          
+    * @param inst                 Instrument name(Prefix after path for a file)
+    * @param FileExt              Extension for filename
+    * @param d_min                minimum d-spacing to consider
+    * @param PeakAlg              Peak Algorithm:MaxIToSigI,Shoe Box, 
+    *                                MaxIToSigI-old,TOFINT,or EXPERIMENTAL
+    * @param Xrange               Range of offsets around a peak's 
+    *                                  x value(-1:3)
+    * @param Yrange               Range of offsets around a peak's
+    *                                  y value(-1:3)
+    * @param ShowLog              Pop up the log file
+    * @param MaxThreads           The maximum number of threads to run
+    * @return  nothing though a .integrate and a .log file are created.
+    */
+   public static Object IntegrateMultipleRuns(
+           String path,
+           String outpath,
+           Vector  run_numbers, 
+           String DataSetNums,
+           String expname,
+           String centeringName ,
+           boolean useCalibFile ,
+           String calibfile ,
+           int    line2use,
+           String time_slice_range,
+           int increase,
+           String inst,
+           String FileExt ,
+           float d_min ,
+           String PeakAlg,
+           String Xrange,
+           String Yrange,
+           boolean ShowLog,
+           int     maxThreads
+            ){
+      
+      SharedMessages.addmsg( "Instrument = "+inst );
+      if( run_numbers == null)
+         return new ErrorString("No run numbers to integrate");
+      int[] Runs = new int[run_numbers.size()];
+      try{
+      for( int i=0; i<run_numbers.size(); i++)
+         Runs[i]= ((Integer)run_numbers.elementAt( i )).intValue();
+      }catch(Exception s){
+         return new ErrorString("Improper format for run numbers");
+      }
+      java.util.Arrays.sort( Runs );
+      int[] DSnums = IntList.ToArray(DataSetNums );
+      Vector<StringBuffer> LogInfo = new Vector<StringBuffer>();
+      Vector<OperatorThread> operators = new Vector<OperatorThread>();
+      if( !FileExt.startsWith( "." ))
+         FileExt="."+FileExt;
+      if( Runs == null || DSnums == null)
+         return new ErrorString("No Data Sets to process");
+      Vector Peaks = new Vector();
+      int[] timeZrange = getMaxMin(time_slice_range);
+      int[] colXrange  = getMaxMin( Xrange);
+      int[] rowYrange =  getMaxMin( Yrange);
+      int centering = getCenterIndex( centeringName);
+      if( timeZrange == null || colXrange == null || rowYrange == null)
+         return new ErrorString("x,y, or time offsets not set");
+      
+      
+      for( int runIndx =0; runIndx < Runs.length; runIndx++){
+         
+         String filename =path+inst+Runs[runIndx]+FileExt;
+         SharedMessages.addmsg( "Loading "+filename);
+         
+         System.out.println("Integrating peaks in "+filename);
+         int dsIndx = -1;
+         try{
+           Retriever retriever = Command.ScriptUtil.getRetriever( filename );
+           int monCount = getMonCount( retriever ,0);
+           String matFileName =outpath+"ls"+expname+Runs[runIndx]+".mat";
+           for( dsIndx=0; dsIndx < DSnums.length; dsIndx++){
+              DataSet ds = retriever.getDataSet( DSnums[dsIndx] );
+              
+              if( ds == null){
+                 return new ErrorString("Error in retrieving "+filename+ 
+                          "dataset num "+DSnums[dsIndx]);
+              }
+              if( useCalibFile)
+                 Calibrate( ds, calibfile, line2use);
+              Object Result = (new LoadOrientation( ds, matFileName)).
+                                                             getResult();
+              if(Result != null && Result instanceof gov.anl.ipns.Util.
+                                  SpecialStrings.ErrorString)
+                 return Result;
+              Object Res = RunOperators( operators, Peaks, maxThreads );
+              if( Res!= null && Res instanceof ErrorString)
+                 return Res;
+              StringBuffer sbuff = new StringBuffer();
+              OperatorThread opThrd = getIntegOpThread( ds,centering,
+                       timeZrange,increase,d_min,1,PeakAlg,colXrange,
+                       rowYrange,monCount,sbuff);
+              opThrd.setName( filename+" ds num=" +DSnums[dsIndx] );//For error reporting
+              LogInfo.addElement(  sbuff );
+              operators.addElement( opThrd );
+              opThrd.start();
+           }
            
+         }catch( Exception ss){
+            SharedMessages.addmsg( "Error in retrieving "+filename+"::"+ss );
+            String S ="";
+            if( dsIndx >=0)
+               S =" data set num="+DSnums[dsIndx];
+            return new gov.anl.ipns.Util.SpecialStrings.ErrorString("Error in retrieving "+filename+ S);
+         }
+             
+      }
+      Object Res =RunOperators( operators, Peaks, 1 ); 
+      if( Res!= null && Res instanceof ErrorString)
+         return Res;
+      if( operators.size()>0)
+         Res =RunOperators( operators, Peaks, 1 ); 
+      if( Res!= null && Res instanceof ErrorString)
+         return Res;
+      if( operators.size() > 0)
+         return new ErrorString(" timeout for "+operators.size()+ " threads");
+      SortUnPackFix(Peaks);
+      
+      String logFile = outpath+"integrate.log";
+      java.io.FileOutputStream fout=null;
+      try{
+         fout = new java.io.FileOutputStream(logFile);
+        for( int i=0; i< LogInfo.size(); i++){
+           if( LogInfo.elementAt(i) != null)
+             fout.write( LogInfo.elementAt( i ).toString().getBytes()  );
+        }
+        fout.flush();
+        fout.close();
+      
+      }catch(Exception s){
+         SharedMessages.addmsg( "Could not write out the integrate.log file" );
+      }
+      
+      String integfile = outpath+expname+".integrate";
+      WritePeaks writer=new WritePeaks(integfile,Peaks,new Boolean(false));
+      Res =  writer.getResult();
+      (new ViewASCII( outpath+expname+".integrate")).getResult();
+
+      if( ShowLog)
+         (new ViewASCII( outpath+"integrate.log")).getResult();
+      else
+        SharedMessages.addmsg( "The log file is in integrate.log. Use the"+
+                                                   " View menu to open it");
+     
+      
+      return Res;
+   }
+   
+   //Sets up the operator thread
+   private static OperatorThread getIntegOpThread( DataSet ds , int centering ,
+            int[] timeZrange , int increase , float d_min , int listNthPeak ,
+            String PeakAlg , int[] colXrange , int[] rowYrange ,
+            float monCount , StringBuffer sbuff ) {
+
+      integrate Int = new integrate();
+      Int.getParameter( 0 ).setValue( ds );
+      Int.getParameter( 1 ).setValue( centering );
+      Int.getParameter( 2 ).setValue( timeZrange );
+      Int.getParameter( 3 ).setValue( increase );
+      Int.getParameter( 4 ).setValue( d_min );
+      Int.getParameter( 5 ).setValue( listNthPeak );
+      Int.getParameter( 6 ).setValue( PeakAlg );
+      Int.getParameter( 7 ).setValue( colXrange );
+      Int.getParameter( 8 ).setValue( rowYrange );
+      Int.getParameter( 9 ).setValue( monCount );
+      Int.getParameter( 10 ).setValue( sbuff );
+      OperatorThread Res = new OperatorThread( Int);
+      
+      return Res;
+
+   }
+   private static int getCenterIndex(String centeringName){
+      for( int i=0; i< 6;i++)
+         if( CenteringNames[i].equals(centeringName))
+            return i;
+      return 0;
+   }
+   
+   // Gets min, max from the string form of a ranve
+   private static int[] getMaxMin( String range){
+       int[] list = IntList.ToArray( range );
+       if( list == null || list.length < 1)
+          return null;
+       int[] Res = new int[2];
+       Res[0] = list[0];
+       Res[1] = list[list.length-1];
+       return Res;
+   }
+   //returns null or ErrorString
+   private static Object RunOperators( Vector<OperatorThread> operators, Vector Peaks, int maxNumThreads){
+      if( operators.size() < maxNumThreads)
+         return null;
+      int timeOut = 300000;
+      Vector<Integer> Finished = new Vector<Integer>();
+      while( timeOut < 1200000 && Finished.size()<1) {
+         for( int i = 0 ; i < operators.size() ; i++ ) {
+            OperatorThread opThrd = operators.elementAt( i );
+            try {
+               opThrd.join( timeOut );
+            }
+            catch( Exception s ) {
+               return new ErrorString( "Thread error for " + opThrd.getName()
+                        + "::" + s );
+            }
+            if( opThrd.getState() == Thread.State.TERMINATED ) {
+               Object Res = opThrd.getResult();
+               if( Res instanceof Vector )
+                  Peaks.addElement(  Res );
+               else if( Res instanceof ErrorString )
+                  return Res;
+               else
+                  return new ErrorString( "Thread " + opThrd.getName()
+                           + " did not finish-->" + Res );
+               Finished.addElement( i );
+            }
+
+         }//for
+         timeOut +=300000;
+      }//while
+      for( int i= Finished.size()-1; i>=0; i--)
+         operators.remove(  Finished.elementAt(i).intValue() );
+      
+      return null;
+   }
 }
