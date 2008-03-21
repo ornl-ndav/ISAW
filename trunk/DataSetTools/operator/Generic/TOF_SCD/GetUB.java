@@ -111,7 +111,7 @@ public class GetUB {
 
    public static float[]    xixj     = null;
    
-   private static float[] line = new float[61];
+  // private static float[] line = new float[61];
 
    /**
     * 
@@ -151,7 +151,7 @@ public class GetUB {
     * @return Each bin width on the line is delta. The center bin represents 0
     */
    public static float[] ProjectPeakToDir( float x , float y , Vector Peaks ,
-            boolean[] omit , float MaxXtallengthReal )
+            boolean[] omit , float MaxXtallengthReal, float[] line )
             throws IllegalArgumentException {
 
       float[] Res = line;
@@ -242,7 +242,7 @@ public class GetUB {
          double L =Math.sqrt(Dirs[i][0]*Dirs[i][0]+Dirs[i][1]*Dirs[i][1]+
                                                         Dirs[i][2]*Dirs[i][2]);
          for( int j=0; j< 3; j++)
-           sb= dform3.format((double)Dirs[i][j]/L,sb, new FieldPosition( NumberFormat.FRACTION_FIELD));
+           sb= dform3.format(Dirs[i][j]/L,sb, new FieldPosition( NumberFormat.FRACTION_FIELD));
          System.out.println( sb.append(":length="+L) );
          sb.setLength( 0 );
       }
@@ -272,9 +272,9 @@ public class GetUB {
       int nspans = ( maxIndex - minIndex ) / 3;
       if( nspans <= 1 )
          return null;
-      xixj = new float[ nspans - 2 ];
+      float[] xi_xj = new float[ nspans - 2 ];
       float[] xs_end = new float[ maxIndex - minIndex + 1 ];
-      Arrays.fill( xixj , 0f );
+      Arrays.fill( xi_xj , 0f );
       float sxx = 0;
       float minDat = 0;
       int maxDatIndx = minIndex;
@@ -289,7 +289,7 @@ public class GetUB {
 
          sxx += binnedData[ i ] * binnedData[ i ];
          for( int k = i + 2 ; ( k <= maxIndex ) && ( k - i - 2 < nspans - 2 ) ; k++ ) {
-            xixj[ k - i - 2 ] += binnedData[ i ] * binnedData[ k ];
+            xi_xj[ k - i - 2 ] += binnedData[ i ] * binnedData[ k ];
          }
       }
 
@@ -303,12 +303,12 @@ public class GetUB {
          float z = 0;
          if( maxIndex - minIndex - i - 1 < xs_end.length )
             z = xs_end[ maxIndex - minIndex - i - 1 ];
-         xixj[ i ] += - mu * xs_end[ i + 2 ] + n * mu * mu - mu
+         xi_xj[ i ] += - mu * xs_end[ i + 2 ] + n * mu * mu - mu
                   * ( ( maxIndex - minIndex + 1 ) * mu - z );
-         xixj[ i ] = xixj[ i ] / ( n * sigsq );
+         xi_xj[ i ] = xi_xj[ i ] / ( n * sigsq );
 
       }
-
+      xixj = xi_xj;
       boolean done = false;
       int faze = 0;
       int maxIndx = - 1;
@@ -353,51 +353,7 @@ public class GetUB {
       else
          return null;
 
-      // -----Now determine goodness of fit ------------
- /*     int N1 = 0 , 
-          N2 = 0 ,
-          N3 = 0;
-      float perc80 = (float) ( binnedData[ maxDatIndx ] - .2 * ( binnedData[ maxDatIndx ] - minDat ) );
-      float perc60 = (float) ( binnedData[ maxDatIndx ] - .4 * ( binnedData[ maxDatIndx ] - minDat ) );
-      for( int i = maxDatIndx + maxIndx + 2 ; i < maxIndex ; i += maxIndx + 2 )
-         if( binnedData[ i ] > perc80 )
-            N1++ ;
-         else if( binnedData[ i ] > perc60 )
-            N2++ ;
-         else
-            N3++ ;
-      for( int i = maxDatIndx ; i >= minIndex ; i -= maxIndx + 2 )
-         if( binnedData[ i ] > perc80 )
-            N1++ ;
-         else if( binnedData[ i ] > perc60 )
-            N2++ ;
-         else
-            N3++ ;
-      float Fit = ( N1 + N2 / 2 ) / (float) ( N1 + N2 + N3 );
-      N1 = 0;
-      N2 = 0;
-      N3 = 0;
-      float perc20 = (float) ( binnedData[ maxDatIndx ] - .8 * ( binnedData[ maxDatIndx ] - minDat ) );
-      float perc40 = (float) ( binnedData[ maxDatIndx ] - .6 * ( binnedData[ maxDatIndx ] - minDat ) );
-      for( int i = maxDatIndx + maxIndx / 2 + 1 ; i < maxIndex ; i += maxIndx + 2 )
-         if( binnedData[ i ] < perc20 )
-            N1++ ;
-         else if( binnedData[ i ] < perc40 )
-            N2++ ;
-         else
-            N3++ ;
-      for( int i = maxDatIndx - maxIndx / 2 - 1 ; i >= minIndex ; i -= maxIndx )
-         if( binnedData[ i ] < perc20 )
-            N1++ ;
-         else if( binnedData[ i ] < perc40 )
-            N2++ ;
-         else
-            N3++ ;
-
-      Fit += ( N1 + N2 / 2 ) / (float) ( N1 + N2 + N3 );
-
-      Res[ FIT ] = Fit / 2;
-       */
+ 
       int center = binnedData.length / 2;
      
       Res[FIT] =0;
@@ -410,23 +366,23 @@ public class GetUB {
             if( Math.abs( x - Math.floor ( x + .5 ) ) < .2 )
                TotInt += binnedData[ i ];
          }
-      Res[ FIT1 ] = 2 * TotInt / (float) Tot;
+      Res[ FIT1 ] = 2 * TotInt /  Tot;
       return Res;
    }
 
 
    private static float[] doOneDirection( Vector Peaks , float x , float y ,
-            boolean[] omit , float MaxXtallengthReal ) {
+            boolean[] omit , float MaxXtallengthReal, float[] line ) {
 
       
       float delta = MaxXtallengthReal;
-      int span = 1 , Mx = - 1 , Mn = - 1;
+      int  Mx = - 1 , Mn = - 1;
       float[] Res = null;
 
-      line = ProjectPeakToDir( x , y , Peaks , omit , delta );
+      line = ProjectPeakToDir( x , y , Peaks , omit , delta, line );
       Mx = findMaxNonZero( line );
       Mn = findMinNonZero( line );
-      span = Mx - Mn;
+      
 
       Res = CalcStats( line , Mn , Mx );
 
@@ -443,36 +399,34 @@ public class GetUB {
  
    //Can be deleted when Xplore disappears
    public static void getCandidateDirections( Vector Peaks , boolean[] omit ,
-            float gridLength , float MaxXtalLengthReal ){
+            float gridLength , float MaxXtalLengthReal, float[] line ){
       List = new float[ 50 ][ 7 ];
       Nelements = 0;
-      /*float[] Res = doOneDirection( Peaks , 0f , 0f , omit , MaxXtalLengthReal );
+ 
+      float[]Res = doOneDirection( Peaks , 1f , 0f , omit , MaxXtalLengthReal,
+               line);
       if( Res != null ) {
-         List = InsertInList( List , Nelements , Res );
-         Nelements++ ;
-      }*/
-      float[]Res = doOneDirection( Peaks , 1f , 0f , omit , MaxXtalLengthReal );
-      if( Res != null ) {
-         List = InsertInList( List , Nelements , Res );
-         Nelements++ ;
+         InsertInList(  Res );
+         
       }
-      Res = doOneDirection( Peaks , 0f , 1f , omit , MaxXtalLengthReal );
+      Res = doOneDirection( Peaks , 0f , 1f , omit , MaxXtalLengthReal,
+               line);
       if( Res != null ) {
-         List = InsertInList( List , Nelements , Res );
-         Nelements++ ;
+          InsertInList(  Res );
+         
       }
 
       for( float x = - 1 + gridLength ; x < 1 - gridLength ; x += gridLength )
          for( float y = - (float) Math.sqrt( 1 - x * x ) ; y <= (float) Math
-                  .sqrt( 1 - x * x ) ; y += .1f ) {
+                  .sqrt( 1 - x * x ) ; y += gridLength ) {
             if( 1 - x * x - y * y >= 0 )
-               Res = doOneDirection( Peaks , x , y , omit , MaxXtalLengthReal );
+               Res = doOneDirection( Peaks , x , y , omit , MaxXtalLengthReal,line );
             else
                Res = null;
             if( Res != null )
               if( Res[ LEN ] >= 1/MaxXtalLengthReal){
-               List = InsertInList( List , Nelements , Res );
-               Nelements++ ;
+                InsertInList(  Res );
+               
             }
          }
      
@@ -582,36 +536,50 @@ public class GetUB {
       List = new float[ 50 ][ 7 ];
       Nelements = 0;
       code[ 0 ] = 0;
-      float[] Res = doOneDirection( Peaks , 0f , 0f , omit , MaxXtalLengthReal );
+      float[] line = new float[300];
+      float[] Res = doOneDirection( Peaks , 0f , 0f , omit , MaxXtalLengthReal,
+               line);
       if( Res != null ) {
-         List = InsertInList( List , Nelements , Res );
-         Nelements++ ;
+         InsertInList(  Res );
+         
       }
-      Res = doOneDirection( Peaks , 1f , 0f , omit , MaxXtalLengthReal );
+      Res = doOneDirection( Peaks , 1f , 0f , omit , MaxXtalLengthReal,
+               line);
       if( Res != null ) {
-         List = InsertInList( List , Nelements , Res );
-         Nelements++ ;
+          InsertInList(  Res );
+        
       }
-      Res = doOneDirection( Peaks , 0f , 1f , omit , MaxXtalLengthReal );
+      Res = doOneDirection( Peaks , 0f , 1f , omit , MaxXtalLengthReal,
+               line);
       if( Res != null ) {
-         List = InsertInList( List , Nelements , Res );
-         Nelements++ ;
+          InsertInList(  Res );
+         
       }
-
-      for( float x = - 1 + gridLength ; x < 1 - gridLength ; x += gridLength )
+     int k=0;
+     for( float x = - 1 + gridLength ; x < 1 - gridLength ; x += gridLength )
          for( float y = - (float) Math.sqrt( 1 - x * x ) ; y <= (float) Math
-                  .sqrt( 1 - x * x ) ; y += .1f ) {
+                  .sqrt( 1 - x * x ) ; y += gridLength ) {
+            
             if( 1 - x * x - y * y >= 0 )
-               Res = doOneDirection( Peaks , x , y , omit , MaxXtalLengthReal );
+               Res = doOneDirection( Peaks , x , y , omit , MaxXtalLengthReal,
+                        line);
             else
                Res = null;
             if( Res != null ) {
-               List = InsertInList( List , Nelements , Res );
-               Nelements++ ;
+               InsertInList( Res );
             }
+            
          }
-
-      //show( List );
+      
+    
+/*
+     Thread[] thrds = new Thread[4];
+       for( int i=0; i<4;i++)
+          thrds[i] = new DoQuadrantDirections( Peaks, omit,  gridLength,
+               MaxXtalLengthReal, i);
+       Execute1( thrds);
+*/
+     //show( List );
       if( Nelements <= 0 )
          return null;
       float[] q1 , q2 , q3;
@@ -666,7 +634,8 @@ public class GetUB {
              insert(listEntry[X], elimX);
              insert(listEntry[Y], elimY);
           }
-          if( listEntry[FIT1] < .5){
+          
+          if( listEntry != null && listEntry[FIT1] < .5){
              done = true;
              listEntry = null;
           }
@@ -699,6 +668,30 @@ public class GetUB {
       return Res1;
 
 
+   }
+   
+   public static void Execute( Thread[] thrds){
+      for( int i=0; i<4;i++){
+         thrds[i].run();
+         System.out.println("after thread "+i);
+      }
+      System.out.println("Through executing threads serially");
+      
+   }
+   
+   public static void Execute1( Thread[] thrds){
+      for( int i=0; i<4;i++)
+         thrds[i].start();
+      
+      for( int i=0; i<4; i++)
+         try{
+           thrds[i].join();
+           System.out.println("Joined thread " + i);
+         }catch( Throwable s){
+            System.out.println("Thread "+i+" interrupted \n");
+            s.printStackTrace();
+         }
+      
    }
    
    //Determines if this listEntry is coplanar
@@ -739,8 +732,11 @@ public class GetUB {
       
    }
 
+   
+   
    /**
-    * 
+    *  Finds a new UB matrix. This matrix has been run through
+    *         blind.
     * @param Peaks
     *           A Vector of Peaks
     * @param MaxXtalLengthReal
@@ -754,8 +750,32 @@ public class GetUB {
     */
    public static float[][] GetUBMatrix( Vector Peaks , float MaxXtalLengthReal ,
             float[] Stats ) throws IllegalArgumentException {
+      return GetUB.GetUBMatrix1(Peaks, MaxXtalLengthReal , Stats, -1f );
+   }
    
-
+   
+   /**
+    *  Finds a new UB matrix. This matrix has been run through
+    *         blind.
+    * @param Peaks
+    *           A Vector of Peaks
+    * @param MaxXtalLengthReal
+    *           The maximum length of crystal lattice in real space or -1 for
+    *           default and adjustable
+    * @param Stats (output)
+    *           Will Contain the percent of all peaks whose index values are within
+    *           .1, .2, .3,..  of an integer 
+    * @param Lengthgrid  Adjusts the fineness of search grid. A negative value or too
+    *                    large of a value will be ignored and a default value
+    *                    will be used
+    * @return Returns a new UB matrix or null. This matrix has been run through
+    *         blind.
+    */
+   
+   public static float[][] GetUBMatrix1( Vector Peaks , float MaxXtalLengthReal ,
+            float[] Stats, float Lengthgrid ) throws IllegalArgumentException {
+   
+      
       boolean done = false;
       float MaxLength = MaxXtalLengthReal;
       float MinNewDir =.2f;//not used
@@ -768,10 +788,13 @@ public class GetUB {
       float[][] Dirs = null;
       boolean[] omit = null;
       float gridLength = .02f;
+      if(Lengthgrid >0 && Lengthgrid <.3)
+          gridLength = Lengthgrid;
       float DDir = .2f;
       int Nomitted = 0;
-      boolean gridChanged = false;
-      while( ! done ) {
+      
+     // while( ! done ) 
+      {
          float[] code = new float[ 7 ];
 
          code[ 6 ] = 0;
@@ -789,7 +812,7 @@ public class GetUB {
             System.out.println("-------------------------------------------");
             if( code[ 6 ] < 100 || Dirs== null || Dirs.length < 3){
                gridLength = gridLength / 2f;
-               gridChanged = true;
+               
             }
          }
          int NomittedOld = Nomitted;
@@ -804,7 +827,9 @@ public class GetUB {
                      boolean[] omit_copy= new boolean[ Peaks.size() ];
                      System.arraycopy( omit, 0,omit_copy,0,omit.length);
                      
-                  int N = OmitPeaks( Peaks , Dirs[ i ] , omit_copy , P, false );
+                  int N = 0;
+                  if( Dirs != null && Dirs.length >i )
+                      N = OmitPeaks( Peaks , Dirs[ i ] , omit_copy , P, false );
                   if( debug)
                      System.out.println("omitted "+N+" peaks for direction "+ i +
                               " at level "+ P);
@@ -829,7 +854,7 @@ public class GetUB {
            
               
             gridLength /= 2f;
-            gridChanged = true;
+            
                
               
             if( gridLength < .005f )
@@ -838,8 +863,6 @@ public class GetUB {
                omit = null;
            
          }
-         else
-            gridChanged = false;
 
       }// while !done
    
@@ -1032,14 +1055,14 @@ public class GetUB {
       
    }
    
-   private static float[] FindNextTop( float[][] List , int Nelements ,
+   private static float[] FindNextTop( float[][] Listt , int Nelts ,
             float[] elimX, float[] elimY,
             float NewDir , float gridLength ) {
 
     
       
-      for( int i = Nelements - 1 ; i >= 0 ; i-- ) {
-         float[] listElement = List[ i ];
+      for( int i = Nelts - 1 ; i >= 0 ; i-- ) {
+         float[] listElement = Listt[ i ];
          int nelims=0,
              nCandidates =0;
          for( int j=0; j<elimX.length && elimX[j] >-3 && nelims == nCandidates; j++){
@@ -1055,10 +1078,10 @@ public class GetUB {
                                                                                     // to
                                                                                     // increase
                                                                                     // NewDir
-                  return FindNextTop( List , Nelements , elimX , elimY , 
+                  return FindNextTop( Listt , Nelts , elimX , elimY , 
                                         NewDir + 2 * gridLength , gridLength );
                else
-                  nCandidates++;
+                 nCandidates++;
               
          }
          if( nCandidates == nelims)
@@ -1071,14 +1094,18 @@ public class GetUB {
    
    
    
-   private static float[][] InsertInList( float[][] List , int Nelements ,
-            float[] Res ) {
-
+   private static synchronized void InsertInList( float[] Res ){
+      int x;
+      x=3;
+      
       if( List.length < Nelements + 1 ) {
          float[][] List1 = new float[ Nelements + 12 ][ 7 ];
          System.arraycopy( List , 0 , List1 , 0 , Nelements );
          List = List1;
       }
+      if( Nelements >0 &&( Math.abs( List[Nelements-1][X]+.26)>.00001 ||
+               Math.abs( List[Nelements-1][Y]-.44)>.00001))
+           x=3;
       boolean done = false;
       float key = Res[ FIT1 ] + Res[ CORR ];
       for( int i = Nelements - 1 ; ( i >= 0 ) && ! done ; i-- ) {
@@ -1091,9 +1118,9 @@ public class GetUB {
       }
       if( ! done )
          List[ 0 ] = Res;
+      Nelements++;
 
-
-      return List;
+     
    }
 
 
@@ -1131,15 +1158,75 @@ public class GetUB {
      // System.out.println( "omitted " + c + " peaks of" + Peaks.size() );
       return Res;
    }
-
+    static class DoQuadrantDirections extends Thread{
+      Vector Peaks;
+      boolean[] omit;
+      float gridLength;
+      float MaxXtalLengthReal;
+      int Quadrant;
+      public DoQuadrantDirections( Vector Peaks, boolean[] omit, float gridLength,
+              float  MaxXtalLengthReal, int Quadrant){
+         this.Peaks = Peaks;
+         this.omit = omit;
+         this.gridLength = gridLength;
+         this.MaxXtalLengthReal = MaxXtalLengthReal;
+         this.Quadrant = Quadrant;
+      }
+      public void run(){
+         float[] Res=null;
+         float xstart = -1+gridLength;
+         float xend = 0-gridLength/2; 
+         int Q = Quadrant;
+         if( Quadrant >1){
+            xstart = 0;
+            xend = 1 - gridLength;
+            Q = Quadrant-2;
+         }
+         float[] line = new float[300];
+         
+         for( float x = xstart ; x < xend ; x += gridLength )
+            for( float y = - (float) Math.sqrt( 1 - x * x )*Q ; y <= (float) Math
+                     .sqrt( 1 - x * x )*(1-Q) ; y += gridLength ) {
+               if( 1 - x * x - y * y >= 0 )
+                  Res = GetUB.doOneDirection( Peaks , x , y , omit , MaxXtalLengthReal,
+                           line);
+               else
+                  Res = null;
+               if( Res != null ) {
+                 if( Math.abs( x+.26 )<.00001 && Math.abs( y-.44 )<.0001)
+                    System.out.println( "**"+ Res[0]+" "+Res[1]+"  "+Res[2]+
+                             "  "+Res[5]);
+                 GetUB.InsertInList( Res );
+               }
+            }
+      }
+   }
 
    /**
     * @param args
     */
    public static void main( String[] args ) {
-
+      String filename = null;
+      if( args!= null && args.length >0)
+         filename = args[0];
+      else{
+         javax.swing.JFileChooser jf=(new javax.swing.JFileChooser());
+         if( jf.showOpenDialog( null )!=javax.swing.JFileChooser.APPROVE_OPTION){
+            System.out.println("Need to have a peaks file)");
+            System.exit(0);
+         }
+         java.io.File f = jf.getSelectedFile();
+         filename = f.toString();
+         System.out.println("filename is "+filename);
+         
+      }
       Vector Peaks = (Vector) ( new DataSetTools.operator.Generic.TOF_SCD.ReadPeaks(
-               args[ 0 ] ) ).getResult();
+               filename ) ).getResult();
+      if( Peaks == null){
+         System.out.println("Cannot read Peaks file");
+         System.exit(0);
+            
+      }
       float x = 0;
       float y ;
       x = 0.037499327f;
@@ -1148,7 +1235,7 @@ public class GetUB {
       float grid = .1f;
       float range = .3f;
       float Xtal = 20f;
-      float[] line = null;
+      float[] linee = new float[300];
       boolean[] omit = null;
       float[][] Dirs = null;
       float[][] UB = null;
@@ -1198,28 +1285,29 @@ public class GetUB {
 
          }
          else if( L.startsWith( "l" ) ) {
-            line = GetUB.ProjectPeakToDir( x , y , Peaks , omit , 20f );
-            if(line != null)
-               for( int i=0;i< line.length; i++)
+            linee = GetUB.ProjectPeakToDir( x , y , Peaks , omit , 20f ,
+                     linee);
+            if(linee != null)
+               for( int i=0;i< linee.length; i++)
                   if( i%25 ==0)
-                    System.out.println( dform.format((double)line[i]));
+                    System.out.println( dform.format(linee[i]));
                   else 
-                     System.out.print( dform.format((double)line[i]));
+                     System.out.print( dform.format(linee[i]));
             else
                System.out.println("null");
          }
          else if( L.startsWith( "s" ) ) {
             xixj = null;
-            float[] Res = GetUB.CalcStats( line , GetUB.findMinNonZero( line ) ,
-                     GetUB.findMaxNonZero( line ) );
+            float[] Res = GetUB.CalcStats( linee , GetUB.findMinNonZero( linee ) ,
+                     GetUB.findMaxNonZero( linee ) );
             if( Res == null )
                System.out.println( "null" );
             else {
                for( int i = 0 ; i < Res.length ; i++ )
                   if( i%25==0)
-                     System.out.println( dform.format((double)Res[ i ] ) );
+                     System.out.println( dform.format(Res[ i ] ) );
                   else
-                     System.out.print( dform.format((double)Res[ i ] ) );
+                     System.out.print( dform.format(Res[ i ] ) );
                      
                System.out.println( "" );
             }
@@ -1230,9 +1318,9 @@ public class GetUB {
             else
                for( int i = 0 ; i < xixj.length ; i++ )
                   if( i%25==0)
-                      System.out.println( dform.format((double)xixj[ i ]));
+                      System.out.println( dform.format(xixj[ i ]));
                   else
-                     System.out.print( dform.format((double)xixj[ i ]));
+                     System.out.print( dform.format(xixj[ i ]));
             System.out.println( "" );
          }
          else if( L.startsWith( "a" ) ) {
@@ -1248,6 +1336,7 @@ public class GetUB {
             else {
                if( omit == null )
                   omit = new boolean[ Peaks.size() ];
+               if( Dirs != null && Dirs.length >=1)
                GetUB.OmitPeaks( Peaks , Dirs[ 0 ] , omit , range,false );
             }
 
@@ -1258,7 +1347,8 @@ public class GetUB {
             else {
                if( omit == null )
                   omit = new boolean[ Peaks.size() ];
-               GetUB.OmitPeaks( Peaks , Dirs[ 1 ] , omit , range,false );
+               if( Dirs != null && Dirs.length >= 2)
+                  GetUB.OmitPeaks( Peaks , Dirs[ 1 ] , omit , range,false );
             }
 
          }
@@ -1268,12 +1358,20 @@ public class GetUB {
             else {
                if( omit == null )
                   omit = new boolean[ Peaks.size() ];
-               GetUB.OmitPeaks( Peaks , Dirs[ 2 ] , omit , range, false );
+               if( Dirs != null && Dirs.length >= 3)
+                  GetUB.OmitPeaks( Peaks , Dirs[ 2 ] , omit , range, false );
             }
          }
          else if( L.startsWith( "w" ) ) {
-            UB = GetUB.GetUBMatrix( Peaks , 20f , null);
+            java.util.GregorianCalendar Cal = new java.util.GregorianCalendar();
+            long start_time =Cal.getTimeInMillis();
+            float[]Stats = new float[8];
+            UB = GetUB.GetUBMatrix( Peaks , 20f , Stats);
+            long end_time = Cal.getTimeInMillis();
+            System.out.println("Time(ms) ="+ (end_time - start_time));
             ScriptUtil.display( UB );
+            System.out.print("Stats=");
+            ScriptUtil.display( Stats);
          }
          else if( L.startsWith( "r" ) ) {
 
@@ -1287,7 +1385,7 @@ public class GetUB {
          else if( L.startsWith( "u" ) ) {
 
 
-            if( Dirs.length == 3 ) {
+            if( Dirs != null && Dirs.length == 3 ) {
                UB = GetUB.UBMatrixFrPlanes( Dirs , Peaks , omit ,null,0);
                ScriptUtil.display( UB );
             }
@@ -1316,9 +1414,11 @@ public class GetUB {
          }
          else if( L.startsWith( "O" ) ) {
             ScriptUtil.display( GetUB.doOneDirection( Peaks , x , y , omit ,
-                     Xtal ) );
+                     Xtal,linee ) );
 
          }
       }
    }
+   
+   
 }
