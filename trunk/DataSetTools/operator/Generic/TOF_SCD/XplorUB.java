@@ -324,9 +324,10 @@ public class XplorUB {
          }
          else if( S.equals( "f" ) ) {
             System.out.println("");
+            float[] L = new float[200];
             if(CandidatesNeedCalc){
                GetUB.getCandidateDirections( Peaks, omit,gridWidth,
-                                                             MaxXtalLength);
+                                                         MaxXtalLength, L);
                CandidatesNeedCalc =false;
             }
             System.out.println("");
@@ -398,11 +399,13 @@ public class XplorUB {
          else if( S.equals( "l" ) ) {
             System.out.println("");
             corrs1Line = null;
+            float[] L = new float[200];
             if( 1 - x*x-y*y >=0){
                System.out.println("NOTE: Center is middle entry and each bin "+
                         " spans a distance in q of "+
                                                  1 /MaxXtalLength / 4f / 12f );
-               line = GetUB.ProjectPeakToDir( x, y, Peaks, omit, MaxXtalLength);
+               line = GetUB.ProjectPeakToDir( x, y, Peaks, omit, 
+                                          MaxXtalLength, L);
                XplorUB.showLine( line);
             } else{
                line = null;
