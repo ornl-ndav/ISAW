@@ -283,12 +283,13 @@ import gov.anl.ipns.Parameters.IntArrayPG;
 import gov.anl.ipns.Parameters.IntegerPG;
 import gov.anl.ipns.Parameters.LoadFilePG;
 import gov.anl.ipns.Parameters.SaveFilePG;
+import gov.anl.ipns.Util.Sys.*;
 
 import java.io.*;
 import java.util.Vector;
 import DataSetTools.operator.DataSet.Conversion.XAxis.*;
 import Operators.TOF_SCD.*;
-import DataSetTools.operator.Generic.TOF_SCD.*;
+//import DataSetTools.operator.Generic.TOF_SCD.*;
 import DataSetTools.operator.Generic.TOF_SCD.IPeak;
 /** 
  * This is a ported version of A.J.Schultz's INTEGRATE program. 
@@ -298,9 +299,6 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
   private static       boolean      DEBUG       = false;
   private static       Vector       choices     = null;
   private              StringBuffer logBuffer   = null;
-  private              float        chi         = 0f;
-  private              float        phi         = 0f;
-  private              float        omega       = 0f;
   private              int          listNthPeak = 3;
   private              int          centering   = 0;
   public static        String     OLD_INTEGRATE ="MaxIToSigI-old";
@@ -334,7 +332,7 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
   
   private String PeakAlg = "MaxItoSigI";
   
-  private IntegratePt opIntPt = new IntegratePt();
+  //private  IntegratePt opIntPt = new IntegratePt();
 
   /* ------------------------ Default constructor ------------------------- */ 
   /**
@@ -617,7 +615,7 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
     }else{
       return new ErrorString("Value of first parameter must be a dataset");
     }
-    String logfile = null;
+    //String logfile = null;
 
     // then the integrate file
     val=getParameter(1).getValue();                        // Parameter 1 ****
@@ -626,7 +624,7 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
       if(integfile.length()<=0)
         return new ErrorString("Integrate filename is null");
       integfile=FilenameUtil.setForwardSlash(integfile);
-      logfile=integfile;
+      //logfile=integfile;
       
       
     }else{
@@ -640,13 +638,11 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
       File dir=new File(matfile);
       if(dir.isDirectory())
         matfile=null;
-    }else{
-      matfile=null;
     }
 
     // then the centering condition
     val=getParameter(3).getValue().toString();             // Parameter 3 **** 
-    centering=choices.indexOf((String)val);
+    centering=choices.indexOf(val);
     if( centering<0 || centering>=choices.size() ) centering=0;
 
     // then the time slice range
@@ -673,12 +669,13 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
     boolean append=((BooleanPG)getParameter(8)).getbooleanValue(); // Param 8 **
       
     PeakAlg =getParameter(9).getValue().toString();                // Param 9 **
+ /*  //moved to inside Integrate 
     if( PeakAlg.equals(Integrate_new.OLD_INTEGRATE))
         opIntPt.setIntgratePkOp(new INTEG(),1,1,1);
     else if( PeakAlg.equals(Integrate_new.TOFINT))
         opIntPt.setIntgratePkOp(new TOFINT(),1,1,1);
      opIntPt.setDataSet(ds);
-
+*/
     // then the x range
     {
       int[] myXrange=((IntArrayPG)getParameter(10)).getArrayValue();//Param 10**
@@ -709,33 +706,8 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
      System.out.println("Z range = " + timeZrange[0] + " to " + timeZrange[1] );
    }
 
-    // get list of detectors
-    int[] det_number=null;
-    {
-      // determine all unique detector numbers
-      Integer detNum=null;
-      Vector innerDetNum=new Vector();
-      for( int i=0 ; i<ds.getNum_entries() ; i++ ){
-        detNum=new Integer(Util.detectorID(ds.getData_entry(i)));
-        if( ! innerDetNum.contains(detNum) ) innerDetNum.add(detNum);
-      }
-      // copy them over to the detector number array
-      det_number=new int[innerDetNum.size()];
-      for( int i=0 ; i<det_number.length ; i++ )
-        det_number[i]=((Integer)innerDetNum.elementAt(i)).intValue();
-    }
-    if(det_number==null)
-      return new ErrorString("Could not determine detector numbers");
-
-    if(DEBUG){
-      System.out.println("DataSet:"+ds);
-      System.out.println("MatFile:"+matfile);
-      System.out.print(  "DetNum :");
-      for( int i=0 ; i<det_number.length ; i++ )
-        System.out.print(det_number[i]+" ");
-      System.out.println();
-    }
-
+   
+  
     // add the parameter values to the logBuffer
     logBuffer.append("---------- PARAMETERS\n");
     logBuffer.append(getParameter(0).getName()+" = "+ds.toString()+"\n");
@@ -749,20 +721,7 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
     logBuffer.append("Adjust center to nearest point with dX="+dX+" dY="+dY
                      +" dZ="+dZ+"\n");
 
-    Data data=ds.getData_entry(0);
-
-    // get the sample orientation
-    {
-      SampleOrientation orientation =
-        (SampleOrientation)data.getAttributeValue(Attribute.SAMPLE_ORIENTATION);
-      if ( orientation != null )
-      {
-        phi   = orientation.getPhi();
-        chi   = orientation.getChi();
-        omega = orientation.getOmega();
-      }
-      orientation = null;
-    }
+    Data data = ds.getData_entry( 0 );
 
     // get the orientation matrix
     float[][] UB=null;
@@ -775,7 +734,8 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
         UB=(float[][])UBval;
       UBval=null;
     }
-
+    if( DEBUG)
+       System.out.println("MatFile:"+matfile);
     if(UB==null){ // try loading it
       LoadOrientation loadorient=new LoadOrientation(ds, matfile);
       Object res=loadorient.getResult();
@@ -794,7 +754,105 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
     }
     System.out.println("UB matrix is " );
     LinearAlgebra.print( UB );
+   
+    Object Res = integrate( ds,centering,timeZrange,incrSlice,
+        d_min,listNthPeak,PeakAlg,colXrange,rowYrange,10000, null);
+    
+    if( Res == null || !(Res instanceof Vector))
+       return Res;
+    //!!!!! Move this to end of getResult method.
+   // String errmsg=this.writeLog(logfile,append);
+  //  if(errmsg!=null)
+  //    SharedData.addmsg(errmsg);
+   
+    // write out the peaks
+    WritePeaks writer=new WritePeaks(integfile,(Vector)Res,new Boolean(append));
+  
+    return writer.getResult();
+   
+  }
+  
+  /**
+   * Integrates one data set
+   * 
+   * @param ds    The data set with the information to integrate with the
+   *               orientation attribute set
+   * @param centering integer 0->6 where primitive is 0, a centered is 1,
+   *                  b centered is 2,c centered is 3,[f]ace centered is 4,
+   *                 [i] body centered is 5, and [r]hombohedral centered is 6
+   * @param timeZrange  left and right offset around Peak time channel to consider
+   * @param incrSlice The incremental amount to increase the slice size by.
+   * @param d_min     the minimum d-spacing allowed
+   * @param listNthPeak Log every nth peak
+   * @param append      Whether to append to the file  
+   * @param PeakAlg     Peak Algorithm identifier. Use only the Strings below
+   *                         MaxItoSigI, Shoe Box, MaxIToSigI-old, TOFINT                  
+   * @param colXrange   left and   right offset around Peak column to consider
+   * @param rowYrange   left and right offset around Peak row  to consider
+   * @param monCount    Monitor Count
+   * @param logbuffer   if this a non-null StringBuffer, the log information
+   *                    will be appended to it.
+   * @return
+   */
+  public static Object integrate( DataSet ds, int centering,
+           int[] timeZrange,int incrSlice,float d_min, int listNthPeak,
+           String PeakAlg, int[] colXrange, int[]rowYrange,float monCount,
+           Object logbuffer){
+  
 
+
+      float        chi         = 0f;
+      float        phi         = 0f;
+      float        omega       = 0f;
+      float[][]    UB ;
+    // get list of detectors
+    int[] det_number=null;
+    {
+      // determine all unique detector numbers
+      Integer detNum=null;
+      Vector innerDetNum=new Vector();
+      for( int i=0 ; i<ds.getNum_entries() ; i++ ){
+        detNum=new Integer(Util.detectorID(ds.getData_entry(i)));
+        if( ! innerDetNum.contains(detNum) ) innerDetNum.add(detNum);
+      }
+      // copy them over to the detector number array
+      det_number=new int[innerDetNum.size()];
+      for( int i=0 ; i<det_number.length ; i++ )
+        det_number[i]=((Integer)innerDetNum.elementAt(i)).intValue();
+    }
+    //if(det_number==null)
+    //  return new ErrorString("Could not determine detector numbers");
+    Data data = ds.getData_entry( 0 );
+    UB=(float[][])ds.getAttributeValue(Attribute.ORIENT_MATRIX);
+    if( UB == null)
+       UB= (float[][])data.getAttributeValue(Attribute.ORIENT_MATRIX);
+    if( UB ==  null)
+       return new ErrorString("UB matrix is not loaded into the dataset");
+    if(DEBUG){
+       System.out.println("DataSet:"+ds);
+       System.out.print(  "DetNum :");
+       for( int i=0 ; i<det_number.length ; i++ )
+         System.out.print(det_number[i]+" ");
+       System.out.println();
+     }
+    IntegratePt opIntPt = new IntegratePt();
+    if( PeakAlg.equals(Integrate_new.OLD_INTEGRATE))
+       opIntPt.setIntgratePkOp(new INTEG(),1,1,1);
+    else if( PeakAlg.equals(Integrate_new.TOFINT))
+       opIntPt.setIntgratePkOp(new TOFINT(),1,1,1);
+    opIntPt.setDataSet(ds);
+    // get the sample orientation
+    {
+      SampleOrientation orientation =
+        (SampleOrientation)data.getAttributeValue(Attribute.SAMPLE_ORIENTATION);
+      if ( orientation != null )
+      {
+        phi   = orientation.getPhi();
+        chi   = orientation.getChi();
+        omega = orientation.getOmega();
+      }
+      orientation = null;
+    }
     // determine the initial flight path
     float init_path=0f;
     {
@@ -826,7 +884,7 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
     PeakFactory pkfac=new PeakFactory(nrun,0,init_path,0f,0f,0f);
     pkfac.UB(UB);
     pkfac.sample_orient(chi,phi,omega);
-
+    pkfac.calib((float[]) data.getAttributeValue(Attribute.SCD_CALIB) );
     // create a vector for the results
     Vector peaks=new Vector();
    
@@ -838,17 +896,29 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
       System.out.println("Processing detector " + det_number[i] );
      
       innerPeaks=new Vector();
-      error=integrateDetector(ds,innerPeaks,pkfac,det_number[i],d_min,UB);
+      error=Integrate_new.integrateDetector(ds,innerPeaks,pkfac,det_number[i],
+                           d_min,listNthPeak,centering, UB,chi,phi,omega,
+                           PeakAlg,timeZrange, colXrange,rowYrange,
+                           incrSlice,opIntPt,logbuffer);
       if(DEBUG) System.out.println("ERR="+error);
       if(error!=null) return error;
       if(DEBUG) System.out.println("integrated "+innerPeaks.size()+" peaks");
-      if(innerPeaks!=null && innerPeaks.size()>0)
+      if( innerPeaks.size()>0)
         peaks.addAll(innerPeaks);
     }
-
+    for( int i=0; i< peaks.size(); i++){
+       ((IPeak)peaks.elementAt( i )).monct( monCount);
+    }
+       
+    return peaks;
+   //!! append logbuffer to StringBuffer argument. Lost if null
+   //!!   
+    //!!return peaks
+    //!!}
+   
     // write out the logfile integrate.log
     
-   
+   /* //!!!!! Move this to end of getResult method.
     String errmsg=this.writeLog(logfile,append);
     if(errmsg!=null)
       SharedData.addmsg(errmsg);
@@ -857,26 +927,57 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
     WritePeaks writer=new WritePeaks(integfile,peaks,new Boolean(append));
   
     return writer.getResult();
-   
+   */
   }
 
 
 // ========== start of detector dependence
-
-  private ErrorString integrateDetector(DataSet     ds, 
+/*  private  ErrorString integrateDetector(DataSet     ds, 
+           Vector      peaks, 
+           PeakFactory pkfac, 
+           int         detnum,
+           float       d_min,
+           int         ListNthPeak,  
+           int         Centering,
+           float       chi,
+           float       phi,
+           float       omega,
+           float       UB[][]  ){
+       return Integrate_new.integrateDetector( ds,peaks,pkfac,detnum,
+                d_min,ListNthPeak,Centering,UB, chi,phi,omega,PeakAlg,
+                logBuffer);
+  }
+*/
+  //TODO eliminate UB,opIntPt, chi,phi, omega, and opIntPt.Also pkfac 
+  //              Make public. For parallel
+  private static ErrorString integrateDetector(
+                                        DataSet     ds, 
                                         Vector      peaks, 
                                         PeakFactory pkfac, 
                                         int         detnum,
                                         float       d_min,
-                                        float       UB[][]  )
+                                        int         listNthPeak, 
+                                        int         centering,
+                                        float       UB[][],
+                                        float       chi,
+                                        float       phi,
+                                        float       omega,
+                                        String      PeakAlg,
+                                        int[]       timeZrange, 
+                                        int[]       colXrange,
+                                        int[]       rowYrange,
+                                        int         incrSlice,
+                                        IntegratePt opIntPt,
+                                        Object      logbuffer)
   {
     if(DEBUG) System.out.println("Integrating detector "+detnum);
-
+    StringBuffer logBuffer = new StringBuffer();
+    int dX=2, dY=2, dZ=1;
     // get the detector number
     if(detnum<=0)
       return new ErrorString("invalid detector number: "+detnum);
     pkfac.detnum(detnum);
-
+    
     // create the lookup table
     int[][] ids=Util.createIdMap(ds,detnum);
     if(ids==null)
@@ -970,17 +1071,17 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
                                         max_tof,
                                         samp_or.getGoniometerRotationInverse(),
                                         inv_orientation_tran );
+    //TODO add another string buffer
+    //System.out.println("MIN, MAX HKL FOR GRID ID " + grid.ID() );
+    //System.out.println("  MIN: " + min_max_hkl[0] );
+    //System.out.println("  MAX: " + min_max_hkl[1] );
     
-    System.out.println("MIN, MAX HKL FOR GRID ID " + grid.ID() );
-    System.out.println("  MIN: " + min_max_hkl[0] );
-    System.out.println("  MAX: " + min_max_hkl[1] );
-    
-    int min_h = (int)Math.round(min_max_hkl[0].get()[0]) - 1;
-    int max_h = (int)Math.round(min_max_hkl[1].get()[0]) + 1;
-    int min_k = (int)Math.round(min_max_hkl[0].get()[1]) - 1;
-    int max_k = (int)Math.round(min_max_hkl[1].get()[1]) + 1;
-    int min_l = (int)Math.round(min_max_hkl[0].get()[2]) - 1;
-    int max_l = (int)Math.round(min_max_hkl[1].get()[2]) + 1;
+    int min_h = Math.round(min_max_hkl[0].get()[0]) - 1;
+    int max_h = Math.round(min_max_hkl[1].get()[0]) + 1;
+    int min_k = Math.round(min_max_hkl[0].get()[1]) - 1;
+    int max_k = Math.round(min_max_hkl[1].get()[1]) + 1;
+    int min_l = Math.round(min_max_hkl[0].get()[2]) - 1;
+    int max_l = Math.round(min_max_hkl[1].get()[2]) + 1;
 
     float[][] real_lim=IntegrateUtils.minmaxreal(pkfac, ids, times);
 
@@ -1108,7 +1209,8 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
       System.out.println("peak x,y,z = " + peak.x() + ", " + peak.y() + ", " 
                                          + peak.z() );
     */
-    System.out.println("Integration Method: " + PeakAlg );
+    //TODO add to echo point
+    //System.out.println("Integration Method: " + PeakAlg );
 
     // integrate the peaks
     for( int i=peaks.size()-1 ; i>=0 ; i-- )
@@ -1129,7 +1231,7 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
           integratePeakExp((IPeak)peaks.elementAt(i),
                             ds, ids,
                             timeZrange, incrSlice,
-                            logBuffer);    
+                            opIntPt,logBuffer);    
       }
       else                                      // integrate but don't log
       {
@@ -1137,25 +1239,29 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
           IntegrateUtils.integrateShoebox( (IPeak)peaks.elementAt(i),
                                             ds, ids,
                                             colXrange, rowYrange, timeZrange,
-                                            null );
+                                            logBuffer );
         else if(PeakAlg.equals(NEW_INTEGRATE))
           IntegrateUtils.integratePeak( (IPeak)peaks.elementAt(i),
                                          ds, ids,
                                          timeZrange,incrSlice,
-                                         null);
+                                         logBuffer);
         else
         integratePeakExp( (IPeak)peaks.elementAt(i),
                            ds, ids,
                            timeZrange, incrSlice,
-                           null);  
+                           opIntPt,logBuffer);  
       }
 
     }
-
-/*
+    if( logbuffer != null && logbuffer instanceof StringBuffer)
+       ((StringBuffer)logbuffer).append(logBuffer);
+    else
+       SharedMessages.addmsg(  logBuffer );
+       
+       
     // centroid the peaks
     for( int i=0 ; i<peaks.size() ; i++ ){
-      peak=Util.centroid((Peak)peaks.elementAt(i),ds,ids);
+      peak=Util.centroid((IPeak)peaks.elementAt(i),ds,grid);
       if(peak!=null){
         peak.seqnum(i+1); // renumber the peaks
         peaks.set(i,peak);
@@ -1164,10 +1270,10 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
         i--;
       }
     }
-*/
 
-    for ( int i = 0; i < peaks.size(); i++ )
-      System.out.println( (IPeak)(peaks.elementAt(i)) );
+
+ //   for ( int i = 0; i < peaks.size(); i++ )
+  //    System.out.println( (IPeak)(peaks.elementAt(i)) );
 
     // things went well so return null
     return null;
@@ -1193,9 +1299,9 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
    *
    * @return a String if anything goes wrong, null otherwise.
    */
-  private String writeLog(String logfile,boolean append){
-    if( logBuffer==null || logBuffer.length()<=0 )
-      return "No information in log buffer";
+// private String writeLog(String logfile,boolean append){
+ //  if( logBuffer==null || logBuffer.length()<=0 )
+  //    return "No information in log buffer";
 
     /*FileOutputStream fout=null;
 
@@ -1215,24 +1321,25 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
       }
     }
    */
-    gov.anl.ipns.Util.Sys.SharedMessages.LOGaddmsg(logBuffer.toString());
-    return null;
-  }
+   // gov.anl.ipns.Util.Sys.SharedMessages.LOGaddmsg(logBuffer.toString());
+  //  return null;
+ // }
 
   /**
     * This method integrates the peak by using an experimental integrate peak
     *  using the experimental IntegratePt information operator.  The low-level
     *  code can be plugged into IntegratePt using the setIntgratePkOp() method.
     */
-   private  void integratePeakExp( IPeak peak, DataSet ds, int[][] ids,
-                         int[] timeZrange, int increaseSlice, StringBuffer log){
+   private  static void integratePeakExp( IPeak peak, DataSet ds, int[][] ids,
+                         int[] timeZrange, int increaseSlice, 
+                         IntegratePt opIntPt,StringBuffer log){
 
    
      // set up where the peak is located
      
-     int cenX=(int)Math.round(peak.x());
-     int cenY=(int)Math.round(peak.y());
-     int cenZ=(int)Math.round(peak.z());
+     int cenX= Math.round(peak.x());
+     int cenY= Math.round(peak.y());
+     int cenZ= Math.round(peak.z());
      Data D = ds.getData_entry( ids[cenX][cenY]);
      if( D == null)
         return;
