@@ -113,6 +113,7 @@ import DataSetTools.retriever.*;
 import DataSetTools.viewer.*;
 import DataSetTools.dataset.*;
 import DataSetTools.math.*;
+import DataSetTools.operator.Generic.TOF_SCD.*;
 import DataSetTools.instruments.*;
 import gov.anl.ipns.MathTools.*;
 import gov.anl.ipns.MathTools.Geometry.*;
@@ -126,10 +127,12 @@ import gov.anl.ipns.ViewTools.UI.*;
 import java.util.*;
 import java.awt.*;
 import java.awt.event.*;
+
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.border.*;
 import jnt.FFT.*;
+import gov.anl.ipns.ViewTools.Panels.ThreeD.*;
 
 /** 
  *  This class reads through a sequence of SCD run files and constructs
@@ -174,10 +177,13 @@ public class SCDRecipLat
 
   int             global_obj_index = 0;  // needed to keep the pick ids distinct
   String          file_names[];
+  boolean         JFrameOpen;
 
   /* ---------------------------- Constructor ----------------------------- */
-
-  public SCDRecipLat()
+  public SCDRecipLat(){
+     this( null);
+  }
+  public SCDRecipLat( String HelpFileName)
   {
     JFrame scene_f = new JFrame("Reciprocal Lattice Viewer");
     JPanel q_panel = new JPanel();
@@ -273,7 +279,9 @@ public class SCDRecipLat
     controller.setDistanceRange( 0.1f, 500 );
     controller.addControlledPanel( vec_Q_space );
 
-    scene_f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    scene_f.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+    if( HelpFileName != null)
+       SetUpHelp( scene_f, HelpFileName);
     scene_f.setVisible( true );
 
     vec_Q_space.addMouseListener( new ViewMouseInputAdapter() );
@@ -286,9 +294,39 @@ public class SCDRecipLat
     Redraw();
 
     vec_q_transformer = new Vector();
+    scene_f.addWindowListener( new JFrameListener() );
+    JFrameOpen = false;
+    if( HelpFileName == null)
+       return;
+    
   }
  
 
+  private void SetUpHelp( JFrame scene_f, String HelpFileName){
+     if(scene_f == null || HelpFileName == null )
+        return;
+     java.io.File f = new java.io.File( HelpFileName);
+     if( !f.exists())
+        return;
+     JMenuBar jmb = scene_f.getJMenuBar();
+     if( jmb == null){
+        jmb = new JMenuBar();
+        scene_f.setJMenuBar( jmb );
+     }
+     JMenu helpMenu = null;
+     for( int i=0; i < jmb.getMenuCount() && helpMenu == null; i++)
+        if( jmb.getMenu( i).getText().equalsIgnoreCase( "Help" ))
+        		helpMenu = jmb.getMenu( i );
+     if( helpMenu == null){
+        helpMenu = new JMenu("Help");
+        jmb.add( helpMenu );
+       
+     }
+     JMenuItem jmi = new JMenuItem("How To");
+     jmi.addActionListener( new HelpMenuListener( HelpFileName ) );
+     helpMenu.add(  jmi );
+     
+  }
   /* ---------------------------- Angle ---------------------------------- */
   /*
    *  Calculate the angle between two vectors, in degrees and return the
@@ -662,6 +700,7 @@ public class SCDRecipLat
       return non_zero_objs;
   }
 
+ 
   /* ------------------------- make_slice ---------------------------- */
   private float[][] make_slice( Vector3D origin, 
                                 Vector3D base,
@@ -1242,8 +1281,210 @@ public class SCDRecipLat
     distance[0] = c;
     return residual;
   }
+  
+  /**
+   * Sends back the unitized a*,b*, and c* vectors selected in this viewer.
+   * NOTE: Check the help menu for the interpretation of these vectors.
+   *       If there is no help menu, these are ??????
+   *
+   * @return  an array of unit vectors that are the normals to
+   *          three planes
+   */
+  public float[][] getPlaneNormals(){
+     float[][] Res = new float[3][];
+     Vector3D v =a_star_vec.getVector();
+     if( v== null)
+        Res[0] = null;
+     else{
+        v.normalize();
+        Res[0] = v.get();
+     }
+     
+     v =b_star_vec.getVector();
+     if( v== null)
+        Res[1] = null;
+     else{
+        v.normalize();
+        Res[1] = v.get();
+     }
+     
+     v =c_star_vec.getVector();
+     if( v== null)
+        Res[2] = null;
+     else{
+        v.normalize();
+        Res[2] = v.get();
+     }
+     
+     return Res;
+     
+  }
+     
+    
+  //Calculates normals.  deprecated too difficult to get 3 planes
+  private float[][] getPlaneNormals_Dist(){
+     Vector3D[] vects = new Vector3D[3];
+     vects[0]=a_star_vec.getVector();
+     vects[1]=b_star_vec.getVector();
+     vects[2]=c_star_vec.getVector();
+     float[][] Res = new float[3][];
+     for( int direction = 0 ; direction < 3 ; direction++ ) {
+         Vector3D v1 = vects[ ( direction  ) % 3 ];
+         Vector3D v2 = vects[ ( direction + 1 ) % 3 ];
+         if( v1 == null || v2 == null )
+            Res[direction]= null;
+         else {
+            v1.cross( v2 );
+            v1.normalize();
+            IThreeD_Object[] objs = get_data_objects();
+            Vector3D[] points = new Vector3D[ objs.length ];
+            for( int i = 0 ; i < objs.length ; i++ ) {
+               points[ i ] = objs[ i ].position();
+            }
+            Data ds = ProjectPoints( points , v1 , direction +1 );
+            if( ds == null )
+               return null;
+            DataSet DS = new DataSet();
+            DS.addData_entry( ds );
+            DS = FFT( DS );
+            if( DS == null )
+               Res[direction] = null;
+            else {
+               ds = DS.getData_entry( 0 );
+               Res[ direction ]= CalcNormal( v1, ds);
+            }
+         }
 
+      }
+    
+      return Res;
+   }
+  
+  //Returns the float[3] whose direction is the normal to the selected plane
+  // and whose length represents the distance between two such planes
+  private float[] CalcNormal( Vector3D direction, Data ds){
+     if( ds == null)
+        return null;
+     
+     float[] yvals = ds.getY_values();
+     float[] xvals = ds.getX_values();
+     if( yvals == null || xvals == null)
+        return null;
+     if( yvals.length <3  || xvals.length < 3 || yvals[0] < 0)
+        return null;
+     float Ty = 0;
+     for( int i=0; i< yvals.length; i++)
+        Ty +=yvals[i];
+     Ty= Ty/yvals.length;
+     int mode = 0;//0 start 1- in 1st neg region  //2 in pos region  
+                  //3 next neg region  done
+     float zeroTolerance = (yvals[1]-Ty)/15f;
+     float maxY=Float.NEGATIVE_INFINITY;
+     float maxX = Float.NaN;
+     for( int i=1; i< yvals.length || mode < 3; i++ ){
+        if( mode == 0){
+           if( yvals[i]< Ty-zeroTolerance)
+              mode =1;
+        }else if( mode ==1){
+           if( yvals[i]>Ty+zeroTolerance){
+              mode =2;
+              maxY= yvals[i];
+              maxX = xvals[i];
+           }
+        }else if( mode ==2){
+           if( yvals[i]>maxY){
+              maxY= yvals[i];
+              maxX = xvals[i];
+           }else if( yvals[i]< Ty-zeroTolerance)
+              mode = 3;
+        }
+     }
+     if( mode < 3 || Float.isNaN( maxX ))
+        return null;
+     
+     direction.multiply( maxX );
+     return direction.get();
+     
+    
+  }
+  
+  // Gets the maximum peak ipkobs and also maximum Q for all the peaks
+  private float[] GetMaxPkIntensity( Vector Peaks){
+     float Max = 0;
+     
+     float Qmax  = 0;
+     if(Peaks == null)
+        return null;
+     for( int i=0;i<Peaks.size();i++)
+        if( Peaks.elementAt(i)!= null && Peaks.elementAt(i) instanceof IPeak){
+           IPeak pk = ((IPeak)Peaks.elementAt(i));
+           if( pk.ipkobs() > Max)
+              Max =pk.ipkobs();
+           double[] Q =pk.getUnrotQ();
+           float MQ =(float)( Q[0]*Q[0]+Q[1]*Q[1]+Q[2]*Q[2]);
+           if( MQ >Qmax)
+              Qmax = MQ;
+        }
+     float[] Res = new float[2];
+     Res[0] = Max;
+     Res[1]= (float)Math.sqrt(Qmax);
+     return Res;     
+  }
+  
+  /**
+   * Creates a reciprocal lattice viewer from Peaks.
+   * @param Peaks  A Vector of peaks
+   * @param wait   true if it should wait until Frame is closed
+   * @return    The SCDRecipLat is returned for information
+   */
+  public SCDRecipLat getSCDLat( Vector Peaks,float MaxIntensity, boolean wait){
+     if( Peaks == null)
+        return null; 
+     JFrameOpen = true;
+     IThreeD_Object[] objs = new IThreeD_Object[Peaks.size()];
+     float[] Range = GetMaxPkIntensity( Peaks);
+     if(MaxIntensity < 0 )
+        MaxIntensity = Range[0];
+     file_names = new String[1];
+     file_names[0]= "Peaks";
+     float ballSize = Range[1]/Math.max(Peaks.size(),400 );
+     for( int i=0; i< Peaks.size(); i++)
+        if( Peaks.elementAt(i)!= null && 
+                 (Peaks.elementAt( i ) instanceof IPeak)){
+           IPeak Peak = (IPeak)(Peaks.elementAt(i));
+           int intensity = Peak.ipkobs();
+           double[] Q = Peak.getUnrotQ();
+           int color = (int)(intensity*127/MaxIntensity);
+           if( color >= colors.length)
+              color = colors.length-1;
+           objs[i] = new Ball( new Vector3D((float) Q[0], (float)Q[1],
+                                           (float)Q[2]),ballSize,colors[color]);
+           objs[i].setPickID( i );
+           
+        
+     }
+     this.vec_Q_space.setObjects(  file_names[0] , objs );
+     Redraw();
+     if( wait )
+        checkJFrameDone();   
+     
 
+     return this;
+     
+  }
+  
+  private void checkJFrameDone(){
+     
+     while( JFrameOpen )
+      try{
+        Thread.sleep( 3000 );
+      }catch(Exception s){
+         System.out.println("Exception while waiting");
+         s.printStackTrace();
+         JFrameOpen=false;
+      }
+     System.out.println("After checkJFrameDone");
+  }
   /* ------------------------- main -------------------------------- */
 
   public static void main( String args[] )
@@ -1473,5 +1714,48 @@ private class ReadoutListener implements ActionListener
    }
  } 
 
+  class JFrameListener extends WindowAdapter{
 
+   /* (non-Javadoc)
+    * @see java.awt.event.WindowAdapter#windowClosed(java.awt.event.WindowEvent)
+    */
+   @Override
+   public void windowClosed( WindowEvent e ) {
+       
+       super.windowClosed( e );
+       if( !JFrameOpen)
+          if(e.getSource()instanceof JFrame)
+             ((JFrame)e.getSource()).dispose();
+       JFrameOpen = false;
+   }
+     
+  }
+  class HelpMenuListener implements ActionListener{
+     String HelpFileName;
+     
+     public HelpMenuListener( String HelpFileName){
+        if( HelpFileName != null &&
+                    !HelpFileName.toUpperCase().startsWith( "FILE" )&&
+                    !HelpFileName.toUpperCase().startsWith( "HTTP" )){
+           java.io.File f = new java.io.File(HelpFileName);
+           if( !f.exists()){
+              HelpFileName = null;
+              return;
+           }
+           try{
+              HelpFileName  = f.toURI().toURL().toString();
+           }catch( Exception s){
+              HelpFileName = null;
+           }
+           
+        }
+        this.HelpFileName = HelpFileName;
+     }
+     
+     public void actionPerformed( ActionEvent evt){
+        IsawGUI.Browser B =(new IsawGUI.Browser( HelpFileName));
+        if( B== null)
+           return;
+     }
+  }
 }
