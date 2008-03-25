@@ -6,7 +6,16 @@ GLUEGEN	=	./jogl-1.1.0-linux-i586/lib/gluegen-rt.jar
 install:  local_deploy
 
 deploy:
-	@ echo "Please Use Continuum to Deploy... :-}"
+	mvn deploy:deploy-file -DgroupId=ISAW -DartifactId=jogl \
+		-Dversion=1.1.0 -Dpackaging=jar -Dfile=$(JOGL) \
+		-DrepositoryId=sns-internal \
+		-DpomFile=pom.xml \
+		-Durl=scpexe://flathead.ornl.gov/maven/internal
+	mvn deploy:deploy-file -DgroupId=ISAW -DartifactId=gluegen \
+		-Dversion=1.1.0 -Dpackaging=jar -Dfile=$(GLUEGEN) \
+		-DrepositoryId=sns-internal \
+		-DpomFile=pom.xml \
+		-Durl=scpexe://flathead.ornl.gov/maven/internal
 
 old_deploy:
 	mvn deploy:deploy-file -DgroupId=ISAW -DartifactId=jogl \
