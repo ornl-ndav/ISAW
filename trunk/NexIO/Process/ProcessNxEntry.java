@@ -147,7 +147,12 @@ public class ProcessNxEntry  implements IProcessNxEntry {
         if (NxDataNode == null) { // Monitor DataSet
        
             int k = 0;
-
+            String MonNames = entryState.NodeNames;
+            if( MonNames == null || MonNames.length()<1){
+               errormessage="No monitors";
+               return true;
+            }
+            String[] MonitorNodeNames = MonNames.split( ";" );
             monitorDS = true;
             DS.setTitle("Mon_" + NxEntryNode.getNodeName());
         
@@ -157,11 +162,11 @@ public class ProcessNxEntry  implements IProcessNxEntry {
             if (instType != null)
                 DataSetFactory.addMonitorOperators(DS, instType.intValue());
                
-            for (int child = 0; child < NxEntryNode.getNChildNodes(); child++) {
-          
-                NxNode Child = NxEntryNode.getChildNode(child);  
+           // for (int child = 0; child < NxEntryNode.getNChildNodes(); child++) {
+           for( int i =0; i< MonitorNodeNames.length; i++){
+                NxNode Child = NxEntryNode.getChildNode( MonitorNodeNames[i] );  
 
-                if (Child.getNodeClass().equals("NXmonitor")) {
+                if (Child != null && Child.getNodeClass().equals("NXmonitor")) {
              
                     NxMonitor nxMon = new NxMonitor();
 
@@ -180,18 +185,7 @@ public class ProcessNxEntry  implements IProcessNxEntry {
         
             DS.setTitle(NxDataNode.getNodeName());
       
-            //NxInstrumentNode = null;
-            //NxBeamNode = null;
-          /*//already found
-            for (int child = 0; (child < NxEntryNode.getNChildNodes()); child++) {
-                NxNode Child = NxEntryNode.getChildNode(child);
-
-                if (Child.getNodeClass().equals("NXinstrument"))
-                    NxInstrumentNode = Child;
-                else if (Child.getNodeClass().equals("NXbeam"))
-                    NxBeamNode = Child;
-            }
-           */
+ 
             IProcessNxData proc = QueryNxData.getNxDataProcessor(States, 
                     NxDataNode, NxInstrumentNode);
             boolean res = proc.processDS(NxEntryNode, NxDataNode, NxInstrumentNode, 
