@@ -86,7 +86,7 @@ import DataSetTools.dataset.*;
 import NexIO.Util.NexUtils;
 import NexIO.State.*;
 import NexIO.Util.*;
-import java.lang.reflect.*;
+//import java.lang.reflect.*;
 import java.util.*;
 //import javax.xml.parsers.*;
 
@@ -353,10 +353,26 @@ public class NxInstrument{
 
   
          }
-
-         // NXdetector stuff done in NXdata
-         //for( int i = 0 ; i < node.getNChildNodes() ; i++ ) 
-         if( EntryState != null && EntryState.InstrSourceNode!= null){
+         if( EntryState != null){
+            distance = NexIO.Util.ConvertDataTypes.floatValue( 
+                     NexUtils.getFloatFieldValue( EntryState.InstrModeratorNode , "distance" ));
+            String units = NexUtils.getStringAttributeValue( EntryState.InstrModeratorNode , "units");
+            if( Float.isNaN( distance )){
+               distance = NexIO.Util.ConvertDataTypes.floatValue( 
+                        NexUtils.getFloatFieldValue( EntryState.InstrSourceNode , "distance" ));
+               units = NexUtils.getStringAttributeValue( EntryState.InstrSourceNode , "units");
+            }
+            if( !Float.isNaN( distance ) && units!= null){
+               float mult= NexIO.Util.ConvertDataTypes.getUnitMultiplier( units , "meters" );
+               if( !Float.isNaN(  mult ))
+                  distance = mult*distance;
+            }
+            
+               
+         }
+         
+         
+        /*if( EntryState != null && EntryState.InstrSourceNode!= null){
             NxNode tnode = EntryState.InstrSourceNode;
 
             if( tnode.getNodeClass().equals( "NXsource" ) ) {
@@ -374,9 +390,10 @@ public class NxInstrument{
                      }
                }
             }
-         }
+         }*/
       }
-    if( xmlDoc != null){
+      
+    if( xmlDoc != null && EntryState!= null && fileStateInfo != null){
        Node[] NN= NexIO.Util.Util.getxmlNXentryNodes( xmlDoc,EntryState.Name, fileStateInfo.filename);
        for( int i=0; i<4;i++){
          
@@ -390,6 +407,8 @@ public class NxInstrument{
                distance = f;
        }
     }
+    if( !Float.isNaN(  distance ) && distance < 0)
+       distance = -distance;
     if( name != null )
        DS.setAttribute( new StringAttribute( Attribute.INST_NAME , name
                 .trim() ) );
