@@ -258,6 +258,7 @@ public class ExtGetDS{
    
    DataSetInfo dsInf = (DataSetInfo)(EntryToDSs.elementAt(data_set_num));
     
+   
    NxNode EntryNode= dsInf.NxentryNode;
    AttributeList AL = getGlobalAttributes( EntryNode ) ;
    NxfileStateInfo FileState = new NxfileStateInfo( node , filename,
@@ -266,7 +267,8 @@ public class ExtGetDS{
    NxEntryStateInfo EntryState = new NxEntryStateInfo( EntryNode,FileState,
                dsInf.NxInstrumentNode, dsInf.NxSampleNode, dsInf.NxBeamNode,
                dsInf.NxInstrSourceNode);
- 
+   EntryState.InstrModeratorNode=dsInf.NxInstrModeratorNode;
+   EntryState.NodeNames = dsInf.NodeNames;
    DataSet DS;
    int instrType = -1; 
    
@@ -639,20 +641,24 @@ public class ExtGetDS{
       if( InstrumentNode == null)
          return;
       NxNode InstrSource = null;
-      for( int i=0; i< InstrumentNode.getNChildNodes() &&
-                 InstrSource == null ; i++){
+      NxNode InstrModerator = null;
+      for( int i=0; i< InstrumentNode.getNChildNodes()  ; i++){
          NxNode childNode = InstrumentNode.getChildNode( i );
-         if( childNode != null && childNode.getNodeClass()!=  null
-                  && childNode.getNodeClass().equals( "NXsource" ))
-            InstrSource = childNode;
+         if( childNode != null && childNode.getNodeClass()!=  null)
+               if( childNode.getNodeClass().equals( "NXsource" ))
+                    InstrSource = childNode;
+               else if( childNode.getNodeClass().equals("NXmoderator"))
+                  InstrModerator = childNode;
       }
       
-      if( InstrSource == null)
+      if( InstrSource == null && InstrModerator == null)
          return;
       for( int i=0; i< EntryToDSs.size(); i++){
          DataSetInfo dsInf =(DataSetInfo)(EntryToDSs.elementAt( i ));
-         if( dsInf != null)
+         if( dsInf != null){
             dsInf.NxInstrSourceNode = InstrSource;
+            dsInf.NxInstrModeratorNode = InstrModerator;
+         }
       }
       
    }
@@ -1017,7 +1023,7 @@ public class ExtGetDS{
         nGroups *= dim[ ii ];
      
      
-     if( indx < 0){
+     if( indx < 0){// No entry for this label yet.
         dsInf = new DataSetInfo( entryNode, mm, -1, -1, S);
         EntryToDSs.addElement( dsInf);
      }
