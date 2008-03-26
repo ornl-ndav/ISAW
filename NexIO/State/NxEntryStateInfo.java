@@ -89,6 +89,9 @@ public class NxEntryStateInfo extends StateInfo {
     public NxNode SampleNode;
     public NxNode BeamNode;
     public NxNode InstrSourceNode;
+    public NxNode InstrModeratorNode;
+    public String NodeNames;//From DataInfo.
+                     //Semicolon separated list of node names(monitor)
     /**
      *   The Name of the NXentry node
      */
@@ -163,6 +166,8 @@ public class NxEntryStateInfo extends StateInfo {
        this.BeamNode = BeamNodee;
        this.InstrumentNode = InstrumentNodee;
        this.InstrSourceNode =InstrSourceNodee;
+       this.InstrModeratorNode = null;
+       NodeNames = null;
        facility = getFacility( InstrumentNode);
      
     }
