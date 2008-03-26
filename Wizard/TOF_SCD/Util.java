@@ -183,9 +183,12 @@ public class Util {
                  else{
                     Enumeration keys = gridIDs.keys();
                     
-                    MergeInfo(keys,  DS,   num_peaks, min_int, min_time_chan,
+                    Object Err =MergeInfo(keys,  DS,   num_peaks, min_int, min_time_chan,
                              max_time_chan,PixelRow, monCount, operators, 
                              ResultPeaks, LogInfo, maxNumThreads);
+                    if(Err != null){
+                       SharedMessages.addmsg( "Error in finding peaks "+Err.toString() );
+                    }
                     }//for enumeration
                     
                  }//else gridIds == null
@@ -492,7 +495,8 @@ public class Util {
   // Does NOT use the Parallel Executor
    // ResultantPeaks is a Vector of Vector of Peaks where each
    //    Vector of Peaks is from one detector on one run
-   private static void MergeInfo(
+   //returns false if an error message occurred
+   private static Object MergeInfo(
             Enumeration keys,
             DataSet     DS, 
             int         num_peaks, 
@@ -507,7 +511,7 @@ public class Util {
             int         maxNumThreads){
       
       if( keys == null || DS == null || num_peaks <=0)
-         return;
+         return null;
       
       for(;keys.hasMoreElements();){
          
@@ -515,7 +519,7 @@ public class Util {
 
          if( K != null  && K instanceof Integer){
             
-            
+            Object Error = null;
             int timeOut = 3000;
             while( operators.size() >= maxNumThreads  && timeOut < 180000){
                boolean done = false;
@@ -528,6 +532,8 @@ public class Util {
                        Object Res = opThreadelt.getResult();
                        if( Res != null && Res instanceof Vector)
                           ResultPeaks.addElement(  Res );
+                       else if( Res != null && Res instanceof ErrorString)
+                          Error = Res;
                        operators.remove(  i);
                        done = true;
                     }
@@ -537,6 +543,8 @@ public class Util {
                   
                }
                if( !done) timeOut = 2*timeOut;
+               if( Error != null)
+                  return Error;
             }//while operators.size() >= maxNumThreads
             if( timeOut >= 180000){
                System.out.println("TimeOut problem. Several Threads are hung");
@@ -549,8 +557,10 @@ public class Util {
             opThread.start();
             operators.addElement(  opThread );
             buff.addElement( Sbuff );
+            
          }
       }
+      return null;
    }
    
    // creates the operator findDetectorCentroidPeaks and sets up the parameter
