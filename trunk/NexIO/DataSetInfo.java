@@ -25,6 +25,7 @@ package NexIO;
     public NxNode NxSampleNode;
     public NxNode NxBeamNode;
     public NxNode NxInstrSourceNode;
+    public NxNode NxInstrModeratorNode;
     public String NodeNames;//semicolon separated list of monitor or merged
                             //   NXdata names
     //Note that getChildNode by name is fast. 
@@ -48,5 +49,8 @@ package NexIO;
        nelts = 0;
        ndetectors = 0;
        NodeNames = "";
+
+       NxInstrumentNode=NxSampleNode=NxBeamNode=
+           NxInstrSourceNode=NxInstrModeratorNode= null;
     }
 }//DataSetInfo
