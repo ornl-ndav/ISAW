@@ -65,11 +65,11 @@ public class PointList extends SimpleShape
   /**
    *  Construct a PointList from the specified arrays.
    *
-   *  @param  x_vals[]  The list of x-coordinates. 
-   *  @param  y_vals[]  The list of y-coordinates. 
-   *  @param  z_vals[]  The list of z-coordinates. 
-   *  @param  size      The size to use for the points specified in pixel 
-   *                    units.
+   *  @param  x_vals  The list of x-coordinates. 
+   *  @param  y_vals  The list of y-coordinates. 
+   *  @param  z_vals  The list of z-coordinates. 
+   *  @param  size    The size to use for the points specified in pixel 
+   *                  units.
    *  @param  new_color The color of the LineStrip.
    *
    */
@@ -93,9 +93,9 @@ public class PointList extends SimpleShape
   /**
    *  Construct a PointList from the specified list of Vector3D objects.
    *
-   *  @param  verts[]   List of Vector3D objects specifying point positions.
-   *  @param  size      The size to use for the points specified in pixel 
-   *                    units.
+   *  @param  verts   List of Vector3D objects specifying point positions.
+   *  @param  size    The size to use for the points specified in pixel 
+   *                  units.
    *  @param  new_color The color of the LineStrip.
    *
    */
