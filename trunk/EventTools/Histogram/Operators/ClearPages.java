@@ -52,7 +52,7 @@ public class ClearPages implements IOperator
    * Construct an operator to clear the specified range of pages in 
    * the specified histogram array.
    *  
-   * @param histogram  The 3D array which is to be cleared.
+   * @param array       The 3D array which is to be cleared.
    * @param first_page The first page of the portion of the 3D histogram 
    *                   that this operator will clear.
    * @param last_page  The last page of the portion of the 3D histogram 
