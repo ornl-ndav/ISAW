@@ -477,14 +477,15 @@ public class Util{
     peak.reflag(reflag+10);
     return peak;
   }
+
   /**
    * Find the centroided location of a peak.
    *
-   * @param peak the peak to centroid which already has an initial
-   * position
-   * @param ds the dataset to use for centroiding
-   * @param ids a 2D array of ids where the indices are column and row
-   * of the data block.
+   * @param peak  the peak to centroid which already has an initial
+   *              position
+   * @param ds    the dataset to use for centroiding
+   * @param grid  IDataGrid with references to the Data blocks for each
+   *              column and row of an area detector.
    */
   public static IPeak centroid(IPeak peak, DataSet ds, IDataGrid grid){
     
