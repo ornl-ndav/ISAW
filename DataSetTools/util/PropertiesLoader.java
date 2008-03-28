@@ -235,9 +235,64 @@ public class PropertiesLoader implements java.io.Serializable
             rs=System.getProperty(prop,def);
         }
         if ( rs != null )
+        {
           rs = rs.trim();
+          rs = TranslateSysPropertyPrefix( rs );
+        }
+
         return rs;
     }
+
+
+    /**
+     *  A property can reference a java property or environmental 
+     *  variable such as "${user.home}/data" or ${HOME}/data.  This,
+     *  method checks first for a java property with the specified 
+     *  name and if it is not found, it next checks for a system 
+     *  environment variable with the name.  If is is found, the 
+     *  tag ${....} substring will be replaced with the property or
+     *  environmental value that was found.  If it is not found, the
+     *  original string will be returned.
+     *
+     *  @param rs   A trimmed "raw" property string as returned by
+     *              System.getProperty()
+     *
+     *  @return If the String rs, starts with a sequence of characters
+     *          like: ${name}, a new string is returned with that 
+     *          sequence replaced by the corresponding java property
+     *          or system environment value.  If the property is not
+     *          found, then the original rs is returned. If the String
+     *          rs is null, or doesn't start with a "$" then the
+     *          original rs is also returned.
+     */ 
+    public String TranslateSysPropertyPrefix( String rs )
+    {
+      if ( rs == null )
+        return rs;
+
+      if ( ! rs.startsWith("$") )      // no embedded system property
+        return rs;
+ 
+      int index_1 = rs.indexOf( "{" );  
+      int index_2 = rs.indexOf( "}" );  
+                                       // make sure we have a reasonably valid
+                                       // form for the property name
+      if ( index_1 < 0 || index_2 < 0 || index_1 > index_2 )  
+        return rs;
+
+      String property_name  = rs.substring( index_1 + 1, index_2 );
+      String property_value = System.getProperty( property_name );
+      if ( property_value == null )
+        property_value = System.getenv( property_name );
+
+      if ( property_value == null )
+        return rs;
+
+      String remaining_chars = rs.substring( index_2 + 1 );
+
+      return property_value + remaining_chars;
+    }
+
 
     /**
      * Determines the system property using appropriate default values
