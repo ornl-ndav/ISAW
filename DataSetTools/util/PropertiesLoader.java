@@ -204,7 +204,7 @@ public class PropertiesLoader implements java.io.Serializable
         }else if( prop.equals(ViewerState.AUTO_SCALE) ){
             def="0";
         }else if( prop.equals("Default_Ext") ){
-            def="ipns";
+            def="nexus";
         }else if( prop.equals( ViewerState.CONTOUR_STYLE) ){
            { def = ""+gov.noaa.pmel.sgt.GridAttribute.RASTER;
              
