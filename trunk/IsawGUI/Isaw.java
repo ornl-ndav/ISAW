@@ -2483,14 +2483,18 @@ public class Isaw
                 //loads files in an interactive mode
     if( !batch )
     {
-       if( data_dir==null) data_dir = SharedData.getProperty( DATA_DIR_ENV );
+      if( data_dir == null) 
+        data_dir = SharedData.getProperty( DATA_DIR_ENV );
+
       if( data_dir == null )
         data_dir = SharedData.getProperty( "user.home" );
         
       // get the default FileFilter out of the properties file
-      if(load_filter==null){
+      if(load_filter==null)
+      {
         String ext=SharedData.getProperty("Default_Ext");
-        if(ext!=null){
+        if ( ext!=null )
+        {
           ext=ext.toLowerCase();
 
           if (ext.equals("ipns") || ext.equals("run"))
@@ -2511,6 +2515,8 @@ public class Isaw
           else if (ext.equals("sdds"))
             load_filter=new DataSetTools.retriever.SDDSFileFilter();
         }
+        else
+          load_filter=new NexIO.NexusfileFilter();
       }
                                        //create and display the 
                                        //file chooser, load files
