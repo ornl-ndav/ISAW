@@ -191,7 +191,7 @@ public class JDataViewUI extends JDesktopPane implements Serializable
             JInternalFrame[] frames = getAllFrames();
 		    for(int i=0; i < frames.length; ++i) 
 		    frames[i].dispose();
-		    		System.gc();
+		    		// System.gc();
 		            System.runFinalization();
 	    }
 

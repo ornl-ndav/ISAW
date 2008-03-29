@@ -460,7 +460,7 @@ public class execOneLine implements gov.anl.ipns.Util.Messaging.IObserver,IObser
         ObjectInfo.clear();
         ObjectInfo = null;
         ObjectInfo = new Hashtable();
-        System.gc();
+     //   System.gc();
     }
    /**
    *  Unfinished

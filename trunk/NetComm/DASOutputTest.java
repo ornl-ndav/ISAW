@@ -154,7 +154,7 @@ public class DASOutputTest
         catch(Exception e){ System.out.println("sleep Exception"); } 
       }
     }  
-    System.gc();
+    //System.gc();
   }
 
   /**

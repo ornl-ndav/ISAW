@@ -136,7 +136,7 @@ public class FileDataServer extends DataSetServer
             tcp_io.Reset();
             tcp_io.Send( types );
             r = null; 
-            System.gc();
+            //System.gc();
           }
         }
 
@@ -162,7 +162,7 @@ public class FileDataServer extends DataSetServer
             else                                       
               tcp_io.Send( DataSet.EMPTY_DATA_SET );
             r = null; 
-            System.gc();
+            //System.gc();
           }
         }
   

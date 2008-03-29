@@ -199,7 +199,7 @@ public class Util
             dss[i] = r.getDataSet( i );
       }
       r = null;
-      System.gc();
+      //System.gc();
       return dss;
    }
 
