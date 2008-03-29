@@ -346,7 +346,7 @@ public class NxWriteData {
                                                               orientation ); 
                     }      
                     dnode.setLinkHandle( DS.getTitle() + "_" + k );
-                    util.writeIntAttr( dnode , "axis" , 1 );
+                    util.writeIntAttr( dnode , "axis" , 2 );
                     util.writeStringAttr( dnode , "units" , DS.getX_units() );
                     
                     datanode.addLink( DS.getTitle() + "_" + k );
@@ -359,7 +359,7 @@ public class NxWriteData {
                                                                     "_" + k );
                     datanode.addLink( "detector_number" + DS.getTitle() +
                                                                     "_" + k );
-                    util.writeIntAttr( dnode , "axis" , 2 );
+                    util.writeIntAttr( dnode , "axis" , 1 );
           
                     dnode = util.writeFA_SDS( detnode , "distance" , distance ,
                                 NexIO.Inst_Type.makeRankArray( distance.length , 
@@ -492,13 +492,13 @@ public class NxWriteData {
         if ( newElement == null ) 
             return null;
          
-        if ( !( newElement instanceof float[] ) )
-            return null;
+        //if ( !( newElement instanceof float[] ) )
+         //   return null;
        
         float[] A1 = new float[ Array.length + newElement.length ];
 
         System.arraycopy( Array , 0 , A1 , 0 , Array.length );
-        System.arraycopy( ( float[] ) newElement , 0 , A1 , Array.length , newElement.length );  
+        System.arraycopy(  newElement , 0 , A1 , Array.length , newElement.length );  
         return A1;
 
     }
@@ -517,13 +517,13 @@ public class NxWriteData {
         if ( newElement == null ) 
             return null; 
        
-        if ( !( newElement instanceof int[] ) )
-            return null; 
+       // if ( !( newElement instanceof int[] ) )
+       //     return null; 
        
         int[] A1 = new int[ Array.length + newElement.length ];
 
         System.arraycopy( Array , 0 , A1 , 0 , Array.length );
-        System.arraycopy( ( int[] ) newElement , 0 , A1 , Array.length ,
+        System.arraycopy(  newElement , 0 , A1 , Array.length ,
                                                     newElement.length );
         
         return A1;
@@ -821,6 +821,7 @@ public class NxWriteData {
 
         java.util.Arrays.fill( GridClass , -1 );
    
+        //Set up GridClass array and NGridClasses
         for ( int i = 0 ; i < grids.length ; i++ ) {
             IDataGrid grid1 = getAreaGrid( DS , grids[ i ] );
 
@@ -875,11 +876,11 @@ public class NxWriteData {
             Data d = grid1.getData_entry( 1 , 1 );
             int ny_s = d.getY_values().length;
        
-            float[][][][] data = new float[ NDet ][ grid1.num_rows() ]
-                                                [ grid1.num_cols() ][ ny_s ];
+            float[][][][] data = new float[ NDet ]
+                                                [ grid1.num_cols() ][ grid1.num_rows() ][ ny_s ];
             
-            float[][][][] errors = new float[ NDet ][ grid1.num_rows() ]
-                                                [ grid1.num_cols() ][ ny_s ];
+            float[][][][] errors = new float[ NDet ]
+                                                [ grid1.num_cols() ][ grid1.num_rows() ][ ny_s ];
             
             float[] distance = new float[ NDet ] ,
                     azim     = new float[ NDet ] ,
@@ -911,18 +912,18 @@ public class NxWriteData {
                 if ( GridClass[ first ] == GridClass[ j ] ) {
           
                     IDataGrid grid = getAreaGrid( DS , grids[ j ] );
-
-                    for ( int row = 1 ; row <= grid.num_rows() ; row++)
-                        for ( int col = 1 ; col <= grid.num_cols() ; col++ ) {
+                    for ( int col = 1 ; col <= grid.num_cols() ; col++ )
+                        for ( int row = 1 ; row <= grid.num_rows() ; row++)
+                         {
              
                             Data db = grid.getData_entry( row , col );
 
                             System.arraycopy( db.getY_values() , 0 , 
-                                     data[ det ][ row - 1 ][ col - 1 ] ,0 ,
+                                     data[ det ][ col - 1 ][ row - 1 ] ,0 ,
                                                                      ny_s );
                             
                             System.arraycopy( db.getErrors() , 0 , 
-                                        errors[ det ][ row - 1 ][ col - 1 ] ,
+                                        errors[ det ][ col - 1 ][ row - 1 ] ,
                                         0 , ny_s );
                         }
                     id[ det ] = grids[ j ];
@@ -1010,7 +1011,7 @@ public class NxWriteData {
             return;
        
         for ( int i = 0 ; i < f.length ; i++ )
-            f[ i ] = ( float ) ( i + 1 );
+            f[ i ] = ( i + 1 );
     }
    
     private boolean CreateG3NXdetectorNode( NxWriteNode nxDetector , int[]id ,
@@ -1054,7 +1055,7 @@ public class NxWriteData {
         node = util.writeFA_SDS( nxDetector , "time_of_flight" , tof ,  
                  NexIO.Inst_Type.makeRankArray( tof.length , -1 , -1 , -1 , -1 ) );
         
-        util.writeIntAttr( node , "axis" , 1 );
+        util.writeIntAttr( node , "axis" , 4 );
         util.writeStringAttr( node , "units" , DS.getX_units() );
         node.setLinkHandle( DS.getTitle() + "_G2" + det );
       
@@ -1129,7 +1130,7 @@ public class NxWriteData {
         NxWriteNode tofnode = Nxdetector.newChildNode( "time_of_flight" , 
                                                                      "SDS" );
 
-        tofnode.addAttribute( "axis" , NexIO.Inst_Type.makeRankArray( 1 , -1 , 
+        tofnode.addAttribute( "axis" , NexIO.Inst_Type.makeRankArray( 3 , -1 , 
                           -1 , -1 , -1 ) , NexIO.Types.Int , NexIO.Inst_Type.
                           makeRankArray( 1 , -1 , -1 , -1 , -1 ) );
 
@@ -1154,7 +1155,7 @@ public class NxWriteData {
         //----------------------- axis 1 ------------------------------
         NxWriteNode xoffset = Nxdata.newChildNode( "x_offset" , "SDS" );
 
-        xoffset.addAttribute( "axis" , NexIO.Inst_Type.makeRankArray( 2 , -1 ,
+        xoffset.addAttribute( "axis" , NexIO.Inst_Type.makeRankArray(1 , -1 ,
                  -1 , -1 , -1 ) , NexIO.Types.Int , NexIO.Inst_Type.
                  makeRankArray( 1 , -1 , -1 , -1 , -1 ) );
         
@@ -1180,7 +1181,7 @@ public class NxWriteData {
         NxWriteNode yoffset = Nxdata.newChildNode( "y_offset" , "SDS" );
 
         yoffset.addAttribute( "axis" , NexIO.Inst_Type.makeRankArray
-            ( 3 , -1 , -1 , -1 , -1 ) , NexIO.Types.Int , NexIO.Inst_Type.
+            ( 2 , -1 , -1 , -1 , -1 ) , NexIO.Types.Int , NexIO.Inst_Type.
             makeRankArray( 1 , -1 , -1 , -1 , -1 ) );
          
         yoffset.addAttribute( "units" , ( grid.units() + ( char ) 0 )
@@ -1200,23 +1201,23 @@ public class NxWriteData {
         int ny_s = grid.getData_entry( 1 , 1 ).getY_values().length;
         int numRows = grid.num_rows();
         int numCols = grid.num_cols();
-        float[][][] data = new float[ grid.num_rows() ][ grid.num_cols() ]
+        float[][][] data = new float[ grid.num_cols() ][ grid.num_rows() ]
                                                                   [ ( ny_s ) ];
      
-        float[][][] errs = new float[ grid.num_rows() ][ grid.num_cols() ]
+        float[][][] errs = new float[ grid.num_cols() ][ grid.num_rows() ]
                                                                  [ ( ny_s ) ];
-
-        for ( int row = 1 ; row <= grid.num_rows() ; row++ )
-            for ( int col = 1 ; col <= grid.num_cols() ; col++ ) {
+        for ( int col = 1 ; col <= grid.num_cols() ; col++ ) 
+            for ( int row = 1 ; row <= grid.num_rows() ; row++ )
+            {
           
                 float[] yvalues = grid.getData_entry( row , col )
                                                            .getY_values();
 
-                System.arraycopy( yvalues , 0 , data[ row - 1 ][ col - 1 ] , 
+                System.arraycopy( yvalues , 0 , data[ col - 1 ][ row - 1 ] , 
                                                                    0 , ny_s );
                 
                 yvalues = grid.getData_entry( row , col ).getErrors();
-                System.arraycopy( yvalues , 0 , errs[ row - 1 ][ col - 1 ] , 
+                System.arraycopy( yvalues , 0 , errs[ col - 1 ][ row - 1 ] , 
                                                                    0 , ny_s );
             }
      
@@ -1236,7 +1237,7 @@ public class NxWriteData {
                  ( DS.getTitle().length() + 1 , -1 , -1 , -1 , -1 ) );
          
         dataNode.setNodeValue( data , NexIO.Types.Float , NexIO.Inst_Type.
-                           makeRankArray( numRows , numCols , ny_s , -1 , -1 ) );
+                           makeRankArray(  numCols ,numRows , ny_s , -1 , -1 ) );
 
         dataNode = Nxdata.newChildNode( "errors" , "SDS" );
         
@@ -1245,7 +1246,7 @@ public class NxWriteData {
                  ( DS.getY_units().length() + 1 , -1 , -1 , -1 , -1 ) );
         
         dataNode.setNodeValue( errs , NexIO.Types.Float , NexIO.Inst_Type.
-                 makeRankArray( numRows , numCols , ny_s , -1 , -1 ) );
+                 makeRankArray(  numCols,numRows ,  ny_s , -1 , -1 ) );
 
         //-------------------NxDetector fields -----------------------------
     
