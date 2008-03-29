@@ -503,7 +503,7 @@ public class ViewManager extends    JFrame
         WindowShower.show( this );        // the Swing event handling thread
       
       conversion_operator = null;
-      System.gc();
+      //System.gc();
    }
 
 
@@ -533,7 +533,7 @@ public class ViewManager extends    JFrame
      if ( viewer != null )
        viewer.setDataSet( tempDataSet ); 
 
-     System.gc();
+     //System.gc();
    }
 
 
@@ -665,7 +665,7 @@ public class ViewManager extends    JFrame
       BuildConversionsMenu();
       BuildOptionMenu();
       BuildHelpMenu( view_type);
-      System.gc();
+      //System.gc();
    }
    
 
@@ -845,7 +845,7 @@ public class ViewManager extends    JFrame
          makeTempDataSet( false );
          viewer.setDataSet( tempDataSet );
          setTitle( dataSet.toString() );
-         System.gc();
+         //System.gc();
        }
        else if ( r_string.equals( IObserver.POINTED_AT_CHANGED )  )
        {
@@ -970,7 +970,7 @@ public class ViewManager extends    JFrame
      tempDataSet.deleteIObserver( this );
      viewer = null;
      dispose();
-     System.gc();
+     //System.gc();
    }
 
 

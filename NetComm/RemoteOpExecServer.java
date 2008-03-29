@@ -112,7 +112,7 @@ public class RemoteOpExecServer extends TCPServer
           }
 
           result = null; 
-          System.gc();
+          //System.gc();
         }
 
         else if ( command.getCommand() == CommandObject.RESULT_IN_FILE )
@@ -140,7 +140,7 @@ public class RemoteOpExecServer extends TCPServer
             tcp_io.Send( "SAVED TO:" + filename ); 
           }            
           result = null;
-          System.gc();
+          //System.gc();
         }
   
         else if ( command.getCommand() == CommandObject.GET_STATUS )

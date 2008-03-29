@@ -1878,7 +1878,7 @@ public class SANDWedgeViewer extends gov.anl.ipns.Util.Sys.FinishJFrame implemen
 	  oldview = null;
 	}
 	this_viewer.dispose();
-	System.gc();
+	//System.gc();
 	//System.exit(0);
       }
     }

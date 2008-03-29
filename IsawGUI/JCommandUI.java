@@ -237,7 +237,7 @@ class MyHandler implements ActionListener
          if ( obj instanceof LiveDataMonitor )
            ((LiveDataMonitor)obj).destroy();
          obj = null;
-         System.gc();
+         //System.gc();
          jtp.remove( jtp.getSelectedIndex()); 
       }
  }

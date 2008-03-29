@@ -420,7 +420,7 @@ public class ScriptUtil{
     }finally{
       // always cleanup
       retriever = null;
-      System.gc();
+      //System.gc();
     }
   }
 

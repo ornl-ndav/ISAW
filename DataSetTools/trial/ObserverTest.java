@@ -141,7 +141,7 @@ public class ObserverTest extends    JFrame
 
         new_ds = null;
         System.runFinalization();
-        System.gc();
+        //System.gc();
       }
     }
 
