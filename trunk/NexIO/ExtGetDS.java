@@ -606,18 +606,23 @@ public class ExtGetDS{
                     
                   }else if(nodeClass.equals("NXbeam")){
                      BeamNode = childNode;
+                     nxLogLocator.scanForNxLogUnderNode( childNode );
                   
                   }else if( nodeClass.equals("NXSample")){
                      SampleNode = childNode;
+                     nxLogLocator.scanForNxLogUnderNode( childNode );
                   
                   }else if( nodeClass.equals( "NXmonitor" )){
                      MonitorDSinf = this.AddOneMonitor( nn, childNode, MonitorDSinf );
-                  
+
+                     nxLogLocator.scanForNxLogUnderNode( childNode );
                 
                   }else if( nodeClass.equals("NXdata")){
                      AddOneLabeledHistogramDataSet( nn, childNode,startEntryToDSsElement);
                      AddOneUnMergedHistogramDataSets( nn, childNode);
-                  }
+                     nxLogLocator.scanForNxLogUnderNode( childNode );
+                  }else if( !nodeClass.equals("SDS"))
+                     nxLogLocator.scanForNxLogUnderNode( childNode );
                }//if child node is not null
             }//for each NXentry child
             if( MonitorDSinf != null)
@@ -644,6 +649,7 @@ public class ExtGetDS{
       NxNode InstrModerator = null;
       for( int i=0; i< InstrumentNode.getNChildNodes()  ; i++){
          NxNode childNode = InstrumentNode.getChildNode( i );
+         nxLogLocator.scanForNxLogUnderNode( childNode );
          if( childNode != null && childNode.getNodeClass()!=  null)
                if( childNode.getNodeClass().equals( "NXsource" ))
                     InstrSource = childNode;
