@@ -98,6 +98,22 @@ public class NxEntryStateInfo extends StateInfo {
     public String Name;
     public String facility;
   
+    public NxEntryStateInfo( NxEntryStateInfo entryState){
+       if( entryState == null)
+          return;
+       description = entryState.description;
+       
+       version = entryState.version;
+       
+       InstrumentNode = entryState.InstrumentNode;
+       SampleNode = entryState.SampleNode;
+       BeamNode = entryState.BeamNode;
+       InstrSourceNode = entryState.InstrSourceNode;
+       InstrModeratorNode = entryState.InstrModeratorNode;
+       NodeNames = entryState.NodeNames;
+       Name = entryState.Name;
+       facility = entryState.facility;
+    }
     /**
      *   Constructor
      *   @param NxEntryNode  an NxNode containing information on a NeXus NXentry
