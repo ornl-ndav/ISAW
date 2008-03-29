@@ -71,7 +71,7 @@ public class NxlogLocator
                "root node to the NxlogLocator constructor.");
       this.logNodeVec = new Vector();
       
-      scanForNxLogUnderNode(rootNode);
+     // scanForNxLogUnderNode(rootNode);
    }
    
    //----------=[ Private Methods ]=--------------
@@ -84,7 +84,7 @@ public class NxlogLocator
     * Note:  This method does not clear the Vector 
     * {@link #logNodeVec logNodeVec} before it adds extra nodes to it.
     */
-   private void scanForNxLogUnderNode(NxNode node)
+   public void scanForNxLogUnderNode(NxNode node)
    {
       if (node == null)
          return;
