@@ -101,6 +101,8 @@ public class ProcessmNxData implements IProcessNxData {
               int startGroupID ){
      
      NxDataStateInfo dsInf = NexUtils.getDataStateInfo( State );
+     NxEntryStateInfo entryInf= NexUtils.getEntryStateInfo( State );
+     
      if( startGroupID <= 0 && dsInf != null)
         startGroupID = dsInf.startGroupID;
      
@@ -113,9 +115,11 @@ public class ProcessmNxData implements IProcessNxData {
         datState =dsInf = new NxDataStateInfo( NxDataNode, State.InstrumentNode,
                              State, startGroupID);
 
-     NxfileStateInfo StateSav = new NxfileStateInfo(State);
-
-     StateSav.Push( datState);
+     NxfileStateInfo StateSav =new NxfileStateInfo( State );
+     NxDataStateInfo datStateInfo = null;
+     NxEntryStateInfo entryStateInfo = null;
+     
+     //StateSav.Push( datState);
      for( int i = 0; i< NxEntryNode.getNChildNodes(); i++){
         NxNode Child = NxEntryNode.getChildNode(i);
         
@@ -126,16 +130,26 @@ public class ProcessmNxData implements IProcessNxData {
                  if( label.equals( ConvertDataTypes.StringValue
                              ( datanode.getAttrValue("label")).trim())){
                     Process1NxData proc =new Process1NxData();
-                    StateSav.Pop();
-                    datState = new NxDataStateInfo( Child,State.InstrumentNode,StateSav, startGroupID);
-                    datState.startGroupID = startGroupID;
+                   
+                    
                     int NDetectors1 = Grid_util.getAllDataGrids( DS ).size();
                     datState.startDetectorID =dsInf.startDetectorID + NDetectors1-NDetectors;
                     NDetectors = NDetectors1;
-                    StateSav.Push( datState );
+                    //StateSav.Push( datState );
                     int N = DS.getNum_entries();
-                    boolean res = proc.processDS(NxEntryNode, Child,
+                    StateSav = new NxfileStateInfo( State);
+                    datStateInfo = new NxDataStateInfo(dsInf);
+                    entryStateInfo = new NxEntryStateInfo(entryInf);
+                    if(datStateInfo != null)
+                       StateSav.Push( datStateInfo );
+                    if(entryStateInfo != null)
+                       StateSav.Push( entryStateInfo );
+                    boolean res = true;
+                    if( StateSav != null)
+                        res = proc.processDS(NxEntryNode, Child,
                             NxinstrumentNode, DS, StateSav, startGroupID);
+                    else
+                       return setErrorMessage("Not enough State information");
                     if( res)
                        return setErrorMessage( proc.getErrorMessage()); 
                     int N2 = DS.getNum_entries();
