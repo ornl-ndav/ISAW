@@ -211,8 +211,11 @@ public class NxWriteEntry{
     }
     ranks = new int[1];
     ranks[0] = 4;
-    n1.addAttribute("version",("1.0"+cc).getBytes(),Types.Char, ranks);
+    n1=node.newChildNode( "definition" , "SDS" );
     
+    n1.addAttribute("version",("2.0"+cc).getBytes(),Types.Char, ranks);
+    n1.setNodeValue( "   ".getBytes() ,Types.Char , NexIO.Inst_Type.
+             makeRankArray( 3 , -1 , -1 , -1 , -1 ) );
     //--------------------- duration ---------------------------
     Object O = DS.getAttributeValue( Attribute.NUMBER_OF_PULSES );
     if( O != null ){
