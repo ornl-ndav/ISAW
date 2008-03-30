@@ -27,11 +27,11 @@
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
- * Modified:
+ * Last Modified:
  *
- * This operator merges two DataSets by putting a copy of all spectra from
- * both DataSets into a new DataSet.  This will only be done if the X and Y
- * units match for the two DataSets being merged.
+ *  $Author:$
+ *  $Date:$            
+ *  $Revision:$
  *
  *  $Log$
  *  Revision 1.9  2006/07/10 21:28:22  dennis
@@ -78,15 +78,17 @@ import  DataSetTools.viewer.*;
 import  DataSetTools.operator.*;
 
 /**
-  * This operator creates a new DataSet by combining the Data blocks from the 
-  * current DataSet with the Data blocks of a specified DataSet.  This can 
-  * only be done if the two DataSets have the same X and Y units.  If a 
-  * DataSet with N Data blocks is merged with a DataSet with M Data blocks,
-  * the new DataSet will have N+M Data blocks.
+  * This operator creates a new DataSet by combining COPIES of the 
+  * Data blocks from the current DataSet with COPIES of the Data 
+  * blocks of a specified DataSet.  That is, this operator does
+  * a DEEP COPY of the Data blocks.  This will only be done if the two
+  * DataSets have the same X and Y units.  If a * DataSet with N Data
+  * blocks is merged with a DataSet with M Data blocks, the new DataSet
+  *  will have N+M Data blocks.
   */
 
-public class DataSetMerge extends    DS_EditList 
-                                     implements Serializable
+public class DataSetMerge extends DS_EditList 
+                                  implements Serializable
 {
   /* ------------------------ DEFAULT CONSTRUCTOR -------------------------- */
   /**
@@ -112,8 +114,8 @@ public class DataSetMerge extends    DS_EditList
    *  @param  ds_to_merge The DataSet to merge with DataSet ds.
    */
 
-  public DataSetMerge( DataSet             ds,
-                       DataSet             ds_to_merge )
+  public DataSetMerge( DataSet  ds,
+                       DataSet  ds_to_merge )
   {
     this();                         // do the default constructor, then set
                                     // the parameter value(s) by altering a
@@ -140,7 +142,7 @@ public class DataSetMerge extends    DS_EditList
  /* -------------------------- setDefaultParameters ------------------------- */
  /**
   *  Set the parameters to default values.
-  */
+  *
   public void setDefaultParameters()
   {
     parameters = new Vector();  // must do this to clear any old parameters
@@ -160,28 +162,33 @@ public class DataSetMerge extends    DS_EditList
   {
      StringBuffer s = new StringBuffer();
      s.append("@overview This operator creates a new DataSet by combining ");
-     s.append("the Data blocks from the current DataSet with the Data ");
-     s.append("blocks of a specified DataSet.");
-     s.append("@assumptions The two DataSets have the same X and Y units.");
-     s.append("@algorithm Merges the two DataSet's Data blocks.  ");
+     s.append("COPIES of Data blocks from the current DataSet with ");
+     s.append("COPIES of  Data blocks of a specified DataSet.  That ");
+     s.append("is, this Operator does a DEEP COPY of the Data blocks. ");
+     s.append("@assumptions The two DataSets have the same X and Y units. ");
+     s.append("@algorithm Merges COPIES of the Data blocks from ");
+     s.append("two DataSet to form a new DataSet.  ");
      s.append("If a DataSet with N Data blocks is merged with a DataSet ");
      s.append("with M Data blocks, the new DataSet will have N+M Data ");
-     s.append("blocks.");
+     s.append("blocks. ");
      s.append("@param The DataSet to which the operation is applied.");
      s.append("@param The DataSet to merge with the first DataSet.");
      s.append("@return The DataSet which consists of the merging of the ");
      s.append("first and second DataSets.");
      s.append("@error Returns an ErrorString if the two DataSets' X and Y ");
      s.append("units do not match.");
+
      return s.toString();
   }
 
   /* ---------------------------- getResult ------------------------------- */
   /**
-   *  Gets the second DataSet from the parameter list and merges its Data
-   *  objects with Data objects from the first DataSet.
-   *  @return DataSet which consists of the merging of the first
-   *          and second DataSets.
+   *  Gets the second DataSet from the parameter list and merges COPIES 
+   *  of its Data blocks with COPIES of Data blocks from the first DataSet.
+   *  NOTE: This operator COPIES the data blocks into the new DataSet. 
+   *  Since it does a DEEP COPY, it is fairly expensive.
+   *  @return DataSet which results from merging COPIES of the Data blocks 
+   *          from  the first and second DataSets.
    */
   public Object getResult()
   {                                  // get the DataSet to merge with 
