@@ -1,5 +1,5 @@
 from DataSetTools.operator.Generic.Load import GenericLoad
-from DataSetTools.operator.DataSet.EditList import DataSetMerge
+from DataSetTools.operator.DataSet.EditList import DataSetFastMerge
 from DataSetTools.retriever import *
 from DataSetTools.viewer import *
 
@@ -106,7 +106,7 @@ class LoadMergeNXS(GenericLoad):
                 if merged is None:
                     merged = retriever.getDataSet(i)
                 else:
-                    merger = DataSetMerge(merged, retriever.getDataSet(i))
+                    merger = DataSetFastMerge(merged, retriever.getDataSet(i))
                     merged = merger.getResult()
             else:
                 if loadMon:
@@ -114,7 +114,7 @@ class LoadMergeNXS(GenericLoad):
                     result.add(ds)
 
         # fix the title
-        merged = fixTitle(merged, titles)
+        # merged = fixTitle(merged, titles)
 
         # plot the data if requested
         if viewtype is not None:
