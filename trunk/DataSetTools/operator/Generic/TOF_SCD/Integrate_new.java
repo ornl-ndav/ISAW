@@ -775,18 +775,18 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
   /**
    * Integrates one data set
    * 
-   * @param ds    The data set with the information to integrate with the
-   *               orientation attribute set
-   * @param centering integer 0->6 where primitive is 0, a centered is 1,
-   *                  b centered is 2,c centered is 3,[f]ace centered is 4,
-   *                 [i] body centered is 5, and [r]hombohedral centered is 6
-   * @param timeZrange  left and right offset around Peak time channel to consider
-   * @param incrSlice The incremental amount to increase the slice size by.
-   * @param d_min     the minimum d-spacing allowed
+   * @param ds          The data set with the information to integrate with 
+   *                    the orientation attribute set
+   * @param centering   integer 0->6 where primitive is 0, a centered is 1,
+   *                    b centered is 2,c centered is 3,[f]ace centered is 4,
+   *                    [i] body centered is 5, and [r]hombohedral centered is 6
+   * @param timeZrange  left and right offset around Peak time channel to 
+   *                    consider
+   * @param incrSlice   The incremental amount to increase the slice size by.
+   * @param d_min       the minimum d-spacing allowed
    * @param listNthPeak Log every nth peak
-   * @param append      Whether to append to the file  
    * @param PeakAlg     Peak Algorithm identifier. Use only the Strings below
-   *                         MaxItoSigI, Shoe Box, MaxIToSigI-old, TOFINT                  
+   *                    MaxItoSigI, Shoe Box, MaxIToSigI-old, TOFINT                  
    * @param colXrange   left and   right offset around Peak column to consider
    * @param rowYrange   left and right offset around Peak row  to consider
    * @param monCount    Monitor Count
@@ -795,11 +795,9 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
    * @return
    */
   public static Object integrate( DataSet ds, int centering,
-           int[] timeZrange,int incrSlice,float d_min, int listNthPeak,
-           String PeakAlg, int[] colXrange, int[]rowYrange,float monCount,
+           int[] timeZrange, int incrSlice, float d_min, int listNthPeak,
+           String PeakAlg, int[] colXrange, int[] rowYrange, float monCount,
            Object logbuffer){
-  
-
 
       float        chi         = 0f;
       float        phi         = 0f;
