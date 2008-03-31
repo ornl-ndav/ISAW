@@ -27,7 +27,11 @@
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
- * Modified:
+ * Last Modified:
+ *
+ *  $Author$
+ *  $Date$            
+ *  $Revision$
  *
  *  $Log$
  *  Revision 1.20  2004/08/18 20:17:46  rmikk
@@ -105,12 +109,15 @@ public class SharedData implements java.io.Serializable
   *  To guarantee that the IsawProps.dat file is loaded, construct an
   *  object of type SharedData.  eg: SharedData sd = new SharedData();
   */
-  public static final PropertiesLoader isaw_props 
-                                        = new PropertiesLoader("IsawProps.dat");
+
+  public static final String USER_PROPS_FILE = "IsawProps.dat";
+
+  private static final PropertiesLoader isaw_props 
+                               = new PropertiesLoader( USER_PROPS_FILE );
   
   public static boolean DEBUG = false;
 
- public static final String VERSION     = "Unknown_Version";
+  public static final String VERSION     = "Unknown_Version";
  
   public static final String BUILD_DATE = "Unknown_Build_Date";
 
@@ -157,124 +164,159 @@ public class SharedData implements java.io.Serializable
     /**
      * Convenience method to consolidate getting system properties.
      */
+
+    /**
+     *  Reload the ISAW properties, first from a file defined by the
+     *  System environmental SHARED_ISAW_PROPS, second from the file
+     *  "IsawProps.dat" in the user's home directory.
+     */
+    public static void reloadProperties()
+    {
+      isaw_props.reload();
+    }
+
+
+    /**
+     * Get the specifed property.  If the value of the property starts
+     * with an expression of the form ${name}, and the specified name
+     * is the name of a System environmental variable, or a Java
+     * property, then ${name} will be replaced by the value of that
+     * environmental, or Java property.
+     *
+     * @param  prop   The name of the property to get.
+     *
+     * @return A String with the value of the property if that 
+     *         property is defined, or null if it's not defined.
+     */
     public static String getProperty(String prop){
         return isaw_props.get(prop);
     }
 
     /**
-     * Convenience method to consolidate getting system properties.
+     * Get the specifed property.  If the value of the property starts
+     * with an expression of the form ${name}, and the specified name
+     * is the name of a System environmental variable, or a Java
+     * property, then ${name} will be replaced by the value of that
+     * environmental, or Java property.
+     *
+     * @param  prop   The name of the property to get.
+     * @param  def    Default value to return if the property is not
+     *                defined.
+     *
+     * @return A String with the value of the property if that 
+     *         property is defined, or null if it's not defined.
      */
     public static String getProperty(String prop, String def){
         return isaw_props.get(prop,def);
     }
 
     /**
-     * Convenience method to consolidate getting system properties.
+     * Convenience method to get a boolean valued property.
      */
     public static boolean getbooleanProperty(String prop){
         return getBooleanProperty(prop).booleanValue();
     }
 
     /**
-     * Convenience method to consolidate getting system properties.
+     * Convenience method to get a boolean valued property.
      */
     public static boolean getbooleanProperty(String prop, String def){
         return getBooleanProperty(prop,def).booleanValue();
     }
 
     /**
-     * Convenience method to consolidate getting system properties.
+     * Convenience method to get a Boolean valued property.
      */
     public static Boolean getBooleanProperty(String prop){
        return isaw_props.getBoolean(prop);
     }
 
     /**
-     * Convenience method to consolidate getting system properties.
+     * Convenience method to get a Boolean valued property.
      */
     public static Boolean getBooleanProperty(String prop, String def){
         return isaw_props.getBoolean(prop,def);
     }
 
     /**
-     * Convenience method to consolidate getting system properties.
+     * Convenience method to get a double valued property.
      */
     public static double getdoubleProperty(String prop){
         return getDoubleProperty(prop).doubleValue();
     }
 
     /**
-     * Convenience method to consolidate getting system properties.
+     * Convenience method to get a double valued property.
      */
     public static double getdoubleProperty(String prop, String def){
         return getDoubleProperty(prop,def).doubleValue();
     }
 
     /**
-     * Convenience method to consolidate getting system properties.
+     * Convenience method to get a Double valued property.
      */
     public static Double getDoubleProperty(String prop){
        return isaw_props.getDouble(prop);
     }
 
     /**
-     * Convenience method to consolidate getting system properties.
+     * Convenience method to get a Double valued property.
      */
     public static Double getDoubleProperty(String prop, String def){
         return isaw_props.getDouble(prop,def);
     }
 
     /**
-     * Convenience method to consolidate getting system properties.
+     * Convenience method to get an int valued property.
      */
     public static int getintProperty(String prop){
         return getIntegerProperty(prop).intValue();
     }
 
     /**
-     * Convenience method to consolidate getting system properties.
+     * Convenience method to get an int valued property.
      */
     public static int getintProperty(String prop, String def){
         return getIntegerProperty(prop,def).intValue();
     }
 
     /**
-     * Convenience method to consolidate getting system properties.
+     * Convenience method to get an Integer valued property.
      */
     public static Integer getIntegerProperty(String prop){
         return isaw_props.getInteger(prop);
     }
 
     /**
-     * Convenience method to consolidate getting system properties.
+     * Convenience method to get an Integer valued property.
      */
     public static Integer getIntegerProperty(String prop, String def){
         return isaw_props.getInteger(prop,def);
     }
 
     /**
-     * Convenience method to consolidate getting system properties.
+     * Convenience method to get a float valued property.
      */
     public static float getfloatProperty(String prop){
         return getFloatProperty(prop).floatValue();
     }
 
     /**
-     * Convenience method to consolidate getting system properties.
+     * Convenience method to get a float valued property.
      */
     public static float getfloatProperty(String prop, String def){
         return getFloatProperty(prop,def).floatValue();
     }
 
     /**
-     * Convenience method to consolidate getting system properties.
+     * Convenience method to get a Float valued property.
      */
     public static Float getFloatProperty(String prop){
         return isaw_props.getFloat(prop);
     }
 
     /**
-     * Convenience method to consolidate getting system properties.
+     * Convenience method to get a Float valued property.
      */
     public static Float getFloatProperty(String prop, String def){
         return isaw_props.getFloat(prop,def);
