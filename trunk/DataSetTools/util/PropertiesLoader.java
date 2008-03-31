@@ -27,7 +27,11 @@
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
- * Modified:
+ * Last Modified:
+ *
+ *  $Author$
+ *  $Date$            
+ *  $Revision$
  *
  *  $Log$
  *  Revision 1.16  2005/06/15 13:49:39  dennis
@@ -89,19 +93,26 @@ import IsawGUI.DefaultProperties;
 import DataSetTools.viewer.ViewerState;
 
 /**
+ *  This class provides controlled/filtered access to System properties
+ *  for the SharedData class.  For example, it supports interpreting
+ *  properties with prefixes defined by other System properties.  Also,
+ *  fall back "default" values are provided for some properties, if they
+ *  have not been set by any other means.  This class only has package 
+ *  visibiltiy.  Classes in other packages needing to access the System 
+ *  properties in this way, MUST use the SharedData class!
  *  Constructing an object of this class will load the system properties
  *  from the specified properties file.  If the properties file is edited,
  *  the properties file may be re-read by calling the reload() method.
  */
 
-public class PropertiesLoader implements java.io.Serializable 
+class PropertiesLoader implements java.io.Serializable 
 {
   private boolean debug  = false;
   private String  f_name = "";
   private boolean loaded_ok = false;
 
 
-  public PropertiesLoader( String file_name )
+  PropertiesLoader( String file_name )
   {
     f_name = file_name;
     reload();
@@ -113,7 +124,7 @@ public class PropertiesLoader implements java.io.Serializable
  *
  *  @return  true if the properties has been properly loaded, false otherwise.
  */
-  public boolean is_loaded()
+  boolean is_loaded()
   {
     return loaded_ok;
   }
@@ -126,11 +137,16 @@ public class PropertiesLoader implements java.io.Serializable
  *  to high and the user may have edited the properties file since it
  *  was last read.
  */
-  public void reload(){
-    String full_name = System.getProperty( "user.home" ) + "/" + f_name;
-    try{
+  void reload(){
+    loaded_ok = false;
+    String system_props_file = System.getenv( "SHARED_ISAW_PROPS" );
+    String user_props_file   = System.getProperty( "user.home" ) 
+                               + "/" + f_name;
 
-      Properties new_props = new Properties( System.getProperties() );
+    Properties new_props = new Properties( System.getProperties() );
+
+    try                    // First try loading the SHARED_ISAW_PROPS
+    {
       if ( debug )
       {
         System.out.println("========= " +
@@ -139,13 +155,15 @@ public class PropertiesLoader implements java.io.Serializable
         new_props.list(System.out);
       }
 
-//    System.out.println("LOADING PROPERTIES FROM " + full_name + "....");
-      FileInputStream input = new FileInputStream( full_name );
+      //if ( debug )
+        System.out.println("LOADING SHARED PROPERTIES " + system_props_file + 
+                           "...." );
+      FileInputStream input = new FileInputStream( system_props_file );
       new_props.load( input );
       if ( debug )
       {
         System.out.println("========== " + 
-                           "After reading IsawProps.dat, properties are" +
+                           "After reading SHARED_ISAW_PROPS, properties are" +
                            " ==========" );
         new_props.list(System.out);
       }
@@ -153,11 +171,40 @@ public class PropertiesLoader implements java.io.Serializable
       System.setProperties( new_props );
       input.close();
       loaded_ok = true;
+    }
+    catch ( Exception e )
+    {
+       System.out.println("SHARED_ISAW_PROPS " + system_props_file +
+                          " NOT FOUND");
+       new_props = new Properties( System.getProperties() );
+    }
 
-    }catch ( IOException e ){
-      System.out.println("Properties file: " + full_name + " NOT FOUND" );
-      DefaultProperties dp=new DefaultProperties();
-      dp.write();
+    try                     // Then try loading the user's properties
+    {
+      if ( debug )
+        System.out.println("LOADING USER PROPERTIES " + user_props_file +
+                           "...." );
+      FileInputStream input = new FileInputStream( user_props_file );
+      new_props.load( input );
+      if ( debug )
+      {
+        System.out.println("========== " +
+                           "After reading USER_ISAW_PROPS, properties are" +
+                           " ==========" );
+        new_props.list(System.out);
+      }
+      System.out.println("Loaded Shared Props from " + user_props_file );
+      System.setProperties( new_props );
+      input.close();
+      loaded_ok = true;
+
+    }
+    catch ( Exception e )
+    {
+      System.out.println("User Properties file: " + user_props_file +
+                         " NOT FOUND, writing default IsawProps.dat.");
+      DefaultProperties dp=new DefaultProperties( new_props );
+      dp.write( user_props_file );
       loaded_ok = true;
       return;
     }  
@@ -180,7 +227,7 @@ public class PropertiesLoader implements java.io.Serializable
             def=get("ISAW_HOME")+"/images/";
         }else if( prop.equals(ViewerState.COLOR_SCALE) ){
             def=
-             gov.anl.ipns.ViewTools.Panels.Image.IndexColorMaker.HEATED_OBJECT_SCALE;
+        gov.anl.ipns.ViewTools.Panels.Image.IndexColorMaker.HEATED_OBJECT_SCALE;
         }else if( prop.equals(ViewerState.REBIN) ){
             def="true";
         }else if( prop.equals(ViewerState.H_SCROLL) ){
@@ -217,7 +264,7 @@ public class PropertiesLoader implements java.io.Serializable
      * Convenience method that calls get(prop,def) with the
      * appropriate default value.
      */
-    public String get(String prop){
+    String get(String prop){
         return this.get(prop,this.getDefault(prop));
     }
 
@@ -225,7 +272,7 @@ public class PropertiesLoader implements java.io.Serializable
      * Determines the system property using appropriate default values
      * if necessary.
      */
-    public String get(String prop, String def){
+    String get(String prop, String def){
         String rs=null;
         if(!loaded_ok) reload();
         
@@ -265,7 +312,7 @@ public class PropertiesLoader implements java.io.Serializable
      *          rs is null, or doesn't start with a "$" then the
      *          original rs is also returned.
      */ 
-    public String TranslateSysPropertyPrefix( String rs )
+    String TranslateSysPropertyPrefix( String rs )
     {
       if ( rs == null )
         return rs;
@@ -298,7 +345,7 @@ public class PropertiesLoader implements java.io.Serializable
      * Determines the system property using appropriate default values
      * if necessary.
      */
-    protected Boolean getBoolean(String prop){
+    Boolean getBoolean(String prop){
         return this.getBoolean(prop,this.getDefault(prop));
     }
 
@@ -306,7 +353,7 @@ public class PropertiesLoader implements java.io.Serializable
      * Determines the system property using appropriate default values
      * if necessary.
      */
-    protected Boolean getBoolean(String prop, String def){
+    Boolean getBoolean(String prop, String def){
         String property=this.get(prop,def);
         Boolean val=null;
 
@@ -320,7 +367,7 @@ public class PropertiesLoader implements java.io.Serializable
      * Determines the system property using appropriate default values
      * if necessary.
      */
-    protected Double getDouble(String prop){
+    Double getDouble(String prop){
         return this.getDouble(prop,this.getDefault(prop));
     }
 
@@ -328,7 +375,7 @@ public class PropertiesLoader implements java.io.Serializable
      * Determines the system property using appropriate default values
      * if necessary.
      */
-    protected Double getDouble(String prop, String def){
+    Double getDouble(String prop, String def){
         String property=this.get(prop,def);
         Double val=null;
 
@@ -352,7 +399,7 @@ public class PropertiesLoader implements java.io.Serializable
      * Determines the system property using appropriate default values
      * if necessary.
      */
-    protected Float getFloat(String prop){
+    Float getFloat(String prop){
         return this.getFloat(prop,this.getDefault(prop));
     }
 
@@ -360,7 +407,7 @@ public class PropertiesLoader implements java.io.Serializable
      * Determines the system property using appropriate default values
      * if necessary.
      */
-    protected Float getFloat(String prop, String def){
+    Float getFloat(String prop, String def){
         String property=this.get(prop,def);
         Float val=null;
 
@@ -384,7 +431,7 @@ public class PropertiesLoader implements java.io.Serializable
      * Determines the system property using appropriate default values
      * if necessary.
      */
-    protected Integer getInteger(String prop){
+    Integer getInteger(String prop){
         return this.getInteger(prop,this.getDefault(prop));
     }
 
@@ -392,7 +439,7 @@ public class PropertiesLoader implements java.io.Serializable
      * Determines the system property using appropriate default values
      * if necessary.
      */
-    protected Integer getInteger(String prop, String def){
+    Integer getInteger(String prop, String def){
         String property=this.get(prop,def);
 
         Integer val=null;
