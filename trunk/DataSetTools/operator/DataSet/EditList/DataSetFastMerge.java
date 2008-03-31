@@ -29,9 +29,9 @@
  *
  * Last Modified:
  *
- *  $Author:$
- *  $Date:$            
- *  $Revision:$
+ *  $Author$
+ *  $Date$            
+ *  $Revision$
  */
 
 package DataSetTools.operator.DataSet.EditList;
@@ -70,7 +70,7 @@ public class DataSetFastMerge extends DS_EditList
 
   public DataSetFastMerge( )
   {
-    super( "Merge with a DataSet" );
+    super( "Fast Merge with a DataSet" );
   }
 
   /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
@@ -116,7 +116,7 @@ public class DataSetFastMerge extends DS_EditList
   {
     parameters = new Vector();  // must do this to clear any old parameters
 
-    Parameter parameter = new Parameter( "DataSet to Merge",
+    Parameter parameter = new Parameter( "DataSet to Fast Merge",
                                           DataSet.EMPTY_DATA_SET ); 
     addParameter( parameter );
   }
