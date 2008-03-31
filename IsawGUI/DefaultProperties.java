@@ -193,9 +193,9 @@ public class DefaultProperties{
      *  default properties, that have NOT already been set by the
      *  specified properties object.
      *
-     *  @param current_properties  The properties that have been previously
-     *                             set and should not be overridden by 
-     *                             default.
+     *  @param current_props  The properties that have been previously
+     *                        set and should not be overridden by 
+     *                        default.
      */
     public DefaultProperties( Properties current_props ){
     
