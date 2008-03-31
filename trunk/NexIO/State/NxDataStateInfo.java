@@ -140,7 +140,7 @@ public class NxDataStateInfo extends StateInfo{
   public int startGroupID;
   
   public int startDetectorID;
-
+  public int endDetectorID;//not used unless data.label attribute in use
   /**
    *   The name of the corresponding NXdetector for this NXdata node. This
    *   comes from a link attribute on one of the axes.
