@@ -181,55 +181,62 @@ import DataSetTools.util.*;
   * DataSetTools, IPNS, ChopTools and graph packages.
   */
 public class DefaultProperties{
-    private String IsawHome;
-    private String UserHome;
-    private String IsawProps;
-    private Properties isawProp;
+    private String     IsawHome;
+    private String     UserHome;
+    private Properties current_props;
 
-    private static final String separator        = "/";
-    private static final String newline          = "\n";
+    private static final String separator = "/";
+    private static final String newline   = "\n";
 
     /** **************************************************************
-     * Constructor that does all of the work for you. Will find a
-     * working version of ISAW to base the directory information on.
+     *  Construct a new DefaultProperties object that will set 
+     *  default properties, that have NOT already been set by the
+     *  specified properties object.
+     *
+     *  @param current_properties  The properties that have been previously
+     *                             set and should not be overridden by 
+     *                             default.
      */
-    public DefaultProperties(){
-        String temp=System.getProperty("user.home");
-        if(temp!=null){
-            UserHome=FilenameUtil.setForwardSlash(temp);
-        }
+    public DefaultProperties( Properties current_props ){
+    
+        if ( current_props != null )
+          this.current_props = current_props;
+        else
+          this.current_props = new Properties();
+
+        String temp = System.getProperty("user.home");
+        if( temp != null )
+          UserHome = FilenameUtil.setForwardSlash(temp);
+
         temp=getIsawHome();
-        if(temp!=null){
-            IsawHome=FilenameUtil.setForwardSlash(temp);
-        }else{
-            IsawHome=UserHome+separator+"ISAW";
-        }
+        if( temp != null )
+          IsawHome = FilenameUtil.setForwardSlash(temp);
+        else
+          IsawHome = UserHome+separator+"ISAW";
+
         //System.out.println(UserHome+","+IsawHome);
-        IsawProps=defaultString();
     }
  
-    /** **************************************************************
-     * Write out the properties file in the user's home directory then
-     * read it in to get all of the properties into memory.
+    /*****************************************************************
+     * Write out the default properties to the specified file.
      */
-    public boolean write(){
-        String propsFile=UserHome+"/IsawProps.dat";
+    public boolean write( String propsFile )
+    {
         System.out.println("Creating a new Properties file: "
                            +propsFile);
-        try{
+        try
+        {
             FileWriter fos = new FileWriter(propsFile);
-            fos.write(IsawProps);
+            fos.write( defaultString(current_props) );
             fos.flush();
             fos.close();
-        }catch(Exception e){
+        }
+        catch(Exception e)
+        {
             SharedData.addmsg("Could not write file:"+e);
             return false;
         }
 
-        if(isawProp==null){
-            //System.out.println("isawProp was null");
-            isawProp=new Properties(System.getProperties());
-        }
         return load(propsFile);
     }
 
@@ -239,6 +246,7 @@ public class DefaultProperties{
      */
     private boolean load(String propsFile){
         try{
+            Properties isawProp = new Properties(System.getProperties());
             FileInputStream fis = new FileInputStream(propsFile);
             isawProp.load(fis);
             System.setProperties(isawProp);
@@ -279,150 +287,140 @@ public class DefaultProperties{
         return classFile;
     }
 
-    /**
-     * Resolve the full path for a directory (get rid of ~ and .)
-     */
-    private String resolveDir(String origDir){
-        String dir=(new File(origDir)).getAbsolutePath();
-        dir=FilenameUtil.setForwardSlash(dir);
-        int index=dir.indexOf("/.");
-        if(index>0){
-            dir=dir.substring(0,index);
-        }
-
-        return dir;
-    }
 
     /**
      * Build the default string for the properties file
      */
-    private String defaultString(){
+    private String defaultString( Properties current_props )
+    {
         StringBuffer rs=new StringBuffer();
         String defstr="";
         String eol=newline;
 
         rs.append("#").append(eol)
-            .append("# This is your ISAW properties file ... ").append(eol)
-            .append("# THE DIRECTORIES ON YOUR SYSTEM MUST").append(eol)
-            .append("#   MATCH THOSE LISTED IN THIS FILE").append(eol)
-            .append("#").append(eol)
-            .append("# The '#' symbol denotes a commented line").append(eol)
-            .append("#").append(eol)
-            .append(eol)
-            .append("#").append(eol)
-            .append("# Directory Options");
+          .append("# This is your ISAW properties file ... ").append(eol)
+          .append("# THE DIRECTORIES ON YOUR SYSTEM MUST").append(eol)
+          .append("# MATCH THOSE LISTED IN THIS FILE").append(eol)
+          .append("#").append(eol)
+          .append("# The '#' symbol denotes a commented line").append(eol)
+          .append("#").append(eol)
+          .append(eol)
+          .append("#").append(eol)
+          .append("# Directory Options");
+        
         if(IsawHome.equals("DEFAULT")){
             rs.append(" - replace the word DEFAULT with").append(eol)
-                .append("# the location of the ISAW home directory");
+              .append("# the location of the ISAW home directory");
         }
-        rs.append(eol).append("#").append(eol)
-            .append("ISAW_HOME=").append(IsawHome).append(eol)
-            .append("#GROUP_HOME=").append(UserHome).append(separator)
-            .append("ipns").append(eol)
-             .append("#GROUP_NAME=").append("My Scripts").append(eol);
-        if(IsawHome.equals("DEFAULT")){
+        
+        rs.append(eol).append("#").append(eol);
+
+        if ( current_props.getProperty("ISAW_HOME") != null )
+          rs.append("#");
+        rs.append("ISAW_HOME=").append(IsawHome).append(eol);
+        
+        rs.append("#GROUP_HOME=").append(UserHome).append(separator)
+          .append("ipns").append(eol);
+        
+        rs.append("#GROUP_NAME=").append("My Scripts").append(eol);
+        
+        if(IsawHome.equals("DEFAULT"))
+        {
             defstr="#";
         }
+        
+        if ( current_props.getProperty("Help_Directory") != null )
+          rs.append("#");
         rs.append(defstr).append("Help_Directory=").append(IsawHome)
-            .append(separator).append("IsawHelp").append(eol)
-            .append(defstr).append("Script_Path=").append(IsawHome)
-            .append(separator).append("Scripts").append(eol)
-            .append(defstr).append("Docs_Directory=").append(IsawHome)
-            .append(separator).append("docs").append(separator)
-            .append("html").append(eol)
-            .append(defstr).append("Data_Directory=").append(IsawHome)
-            .append(separator).append("SampleRuns").append(eol)
-            .append(eol)
-            .append("#").append(eol)
-            .append("# Command to start browser for Help system").append(eol)
-            .append("#").append(eol)
-            .append("#PREFERRED_BROWSER=/usr/bin/mozilla").append(eol)
-            .append(eol)
-            .append("#").append(eol)
-            .append("# Default data file extension").append(eol)
-            .append("#").append(eol)
-            .append("#Default_Ext=hdf").append(eol)
-            .append(eol)
-            .append("#").append(eol)
-            .append("# Live Data Server Options").append(eol)
-            .append("#").append(eol)
-            .append("Inst1_Name=HRMECS").append(eol)
-            .append("Inst1_Path=hrmecs.pns.anl.gov;6088").append(eol)
-            .append("Inst2_Name=SCD").append(eol)
-            .append("Inst2_Path=scd2.pns.anl.gov;6088").append(eol)
-            .append("Inst3_Name=QUIP").append(eol)
-            .append("Inst3_Path=vulcan.pns.anl.gov;6088").append(eol)
-            .append("Inst3_Name=Test:( UW-Stout Live Data Simulator )")
-            .append(eol)
-            .append("Inst3_Path=isaw.mscs.uwstout.edu;6088").append(eol)
-            .append(eol)
-            .append("#").append(eol)
-            .append("# Remote Data Server Options").append(eol)
-            .append("#").append(eol)
-            .append("IsawFileServer1_Name=IPNS(hrmecs)").append(eol)
-            .append("IsawFileServer1_Path=hrmecs.pns.anl.gov;6089").append(eol)
-            .append("IsawFileServer2_Name=Test:( UW-Stout ISAW File Server )")
-            .append(eol)
-            .append("IsawFileServer2_Path=isaw.mscs.uwstout.edu;6089")
-            .append(eol)
-//          .append("NDSFileServer1_Name=Test:( UW-Stout Nexus Data Server )")
-//          .append(eol)
-//          .append("NDSFileServer1_Path=isaw.mscs.uwstout.edu;6008")
-//          .append(eol)
-            .append(eol)
-            .append("#").append(eol)
-            .append("# Screen Size in percentage (<=1) or pixels (>1)")
-            .append(eol)
-            .append("#").append(eol)
-            .append("Isaw_Width=0.8").append(eol)
-            .append("Isaw_Height=0.4").append(eol)
-            .append("Tree_Width=0.2").append(eol)
-            .append("Status_Height=0.2").append(eol)
-            .append(eol)
-            .append("#").append(eol)
-
-            .append("# PixelDepthScale=256 for ATI FireGL T2 drivers on nw8000")
-            .append(eol)
-            .append("#").append(eol)
-            .append("#PixelDepthScale=256").append(eol)
-            .append(eol)
-            .append("#").append(eol)
-            .append("# Viewer Options").append(eol)
-            .append("#").append(eol)
-            .append("Default_Instrument=HRCS").append(eol)
-            .append("ColorScale=Heat 2").append(eol)
-            .append("ViewDetectors=Filled").append(eol)
-            .append("#ViewGroups=Medium").append(eol)
-            .append("#RebinFlag=false").append(eol)
-            .append("#HScrollFlag=false").append(eol)
-            .append("#ViewAltitudeAngle=20.0").append(eol)
-            .append("#ViewAzimuthAngle=45.0").append(eol)
-            .append("#ViewDistance=4.5").append(eol)
-            .append("#Brightness=40").append(eol)
-            .append("#Auto-Scale=0.0").append(eol)
-            .append("#ShowWCToolTip=true").append(eol)
-            .append("#XRange_Time(us)_min=0.0").append(eol)
-            .append("#XRange_Time(us)_max=0.0").append(eol)
-            .append("#YRange_Counts_min=0.0").append(eol)
-            .append("#YRange_Counts_max=0.0").append(eol)
-            .append(eol)
-            .append("#").append(eol)
-            .append("# Wizard Options").append(eol)
-            .append("#").append(eol)
-            .append("WIZARD_WIDTH=700").append(eol)
-            .append("WIZARD_HEIGHT=600").append(eol)
-            .append("#NSavedFiles=0").append(eol)
-            .append("#ShortSavedFilename=false").append(eol);
+          .append(separator).append("IsawHelp").append(eol);
+        
+        if ( current_props.getProperty("Script_Path") != null )
+          rs.append("#");
+        rs.append(defstr).append("Script_Path=").append(IsawHome)
+          .append(separator).append("Scripts").append(eol);
+        
+        if ( current_props.getProperty("Docs_Directory") != null )
+          rs.append("#");
+        rs.append(defstr).append("Docs_Directory=").append(IsawHome)
+          .append(separator).append("docs").append(separator)
+          .append("html").append(eol);
+        
+        if ( current_props.getProperty("Data_Directory") != null )
+          rs.append("#");
+        rs.append(defstr).append("Data_Directory=").append(IsawHome)
+          .append(separator).append("SampleRuns").append(eol);
+        rs.append(eol);
+        
+        rs.append("#").append(eol);
+        rs.append("# Command to start browser for Help system").append(eol);
+        rs.append("#").append(eol);
+        
+        rs.append("#PREFERRED_BROWSER=/usr/bin/mozilla").append(eol);
+        rs.append(eol);
+        rs.append("#").append(eol);
+        rs.append("# Default data file extension, hdf or ipns").append(eol);
+        rs.append("#").append(eol);
+        rs.append("#Default_Ext=hdf").append(eol);
+        rs.append(eol);
+        
+        rs.append("#").append(eol);
+        rs.append("# Live Data Server Options").append(eol);
+        rs.append("#").append(eol);
+        rs.append("Inst1_Name=Test:( UW-Stout Live Data Simulator )")
+          .append(eol);
+        rs.append("Inst1_Path=isaw.mscs.uwstout.edu;6088").append(eol);
+        rs.append(eol);
+        rs.append("#").append(eol);
+        rs.append("# Remote Data Server Options").append(eol);
+        rs.append("#").append(eol);
+        rs.append("IsawFileServer1_Name=Test:( UW-Stout ISAW File Server )")
+          .append(eol);
+        rs.append("IsawFileServer1_Path=isaw.mscs.uwstout.edu;6089")
+          .append(eol);
+        rs.append("#").append(eol);
+        rs.append("# Screen Size in percentage (<=1) or pixels (>1)")
+          .append(eol);
+        rs.append("#").append(eol);
+        rs.append("Isaw_Width=0.8").append(eol);
+        rs.append("Isaw_Height=0.4").append(eol);
+        rs.append("Tree_Width=0.2").append(eol);
+        rs.append("Status_Height=0.2").append(eol);
+        rs.append(eol);
+        
+        rs.append("#").append(eol);
+        rs.append("# PixelDepthScale=256 for ATI FireGL T2 drivers on nw8000")
+          .append(eol);
+        rs.append("#").append(eol);
+        rs.append("#PixelDepthScale=256").append(eol);
+        rs.append(eol);
+        rs.append("#").append(eol);
+        rs.append("# Viewer Options").append(eol);
+        rs.append("#").append(eol);
+        rs.append("Default_Instrument=HRCS").append(eol);
+        rs.append("ColorScale=Heat 2").append(eol);
+        rs.append("ViewDetectors=Filled").append(eol);
+        rs.append("#ViewGroups=Medium").append(eol);
+        rs.append("#RebinFlag=false").append(eol);
+        rs.append("#HScrollFlag=false").append(eol);
+        rs.append("#ViewAltitudeAngle=20.0").append(eol);
+        rs.append("#ViewAzimuthAngle=45.0").append(eol);
+        rs.append("#ViewDistance=4.5").append(eol);
+        rs.append("#Brightness=40").append(eol);
+        rs.append("#Auto-Scale=0.0").append(eol);
+        rs.append("#ShowWCToolTip=true").append(eol);
+        rs.append("#XRange_Time(us)_min=0.0").append(eol);
+        rs.append("#XRange_Time(us)_max=0.0").append(eol);
+        rs.append("#YRange_Counts_min=0.0").append(eol);
+        rs.append("#YRange_Counts_max=0.0").append(eol);
+        rs.append(eol);
+        rs.append("#").append(eol);
+        rs.append("# Wizard Options").append(eol);
+        rs.append("#").append(eol);
+        rs.append("WIZARD_WIDTH=700").append(eol);
+        rs.append("WIZARD_HEIGHT=600").append(eol);
+        rs.append("#NSavedFiles=0").append(eol);
+        rs.append("#ShortSavedFilename=false").append(eol);
             
-
-      /* This causes more problems with nexus than it fixes. These
-         lines are taken from the original code that was inside Isaw.java.
-	 if ( windows ){
-	 opw.write("neutron.nexus.JNEXUSLIB="+ipath+"lib/jnexus.dll");
-	 System.setProperty("neutron.nexus.JNEXUSLIB",ipath+"lib/jnexus.dll");
-	 opw.write("\n");   
-	 } */
-
         return rs.toString();
     }
 
@@ -430,9 +428,9 @@ public class DefaultProperties{
      * Testing routine for the class.
      */
     public static void main( String[] args ){
-        DefaultProperties newguy 
-            = new DefaultProperties();
+        DefaultProperties newguy = new DefaultProperties( null );
         //System.out.println(newguy.defaultString());
-        newguy.write();
+        String propsFile = System.getProperty("user.home")+"/IsawProps.dat";
+        newguy.write( propsFile );
     }
 }
