@@ -126,6 +126,8 @@ public class Process1NxData implements IProcessNxData {
       int npush = 0;
       
       NxDataStateInfo DataState = NexIO.Util.NexUtils.getDataStateInfo( States );
+     
+    
       NxEntryStateInfo EntryState = NexIO.Util.NexUtils
                .getEntryStateInfo( States );
       if( EntryState == null ) {
@@ -223,7 +225,7 @@ public class Process1NxData implements IProcessNxData {
          if( xx != null ) DetState.hasLayout = xx.getNodeValue().toString();
       }
 
-      boolean res = nxut.setUpNxData( DS , NxDataNode , DataState.startGroupID ,
+      boolean res = nxut.setUpNxData( DS , NxDataNode , startGroupID ,
                States );
       if( res ) {
 
