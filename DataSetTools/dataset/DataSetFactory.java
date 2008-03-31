@@ -358,6 +358,7 @@ public class DataSetFactory implements Serializable
     ds.addOperator( new ExtractCurrentlySelected() );
 
     ds.addOperator( new DataSetMerge() );
+    ds.addOperator( new DataSetFastMerge() );
     ds.addOperator( new ResampleDataSet() );
     ds.addOperator( new ResampleOnGeometricProgression() );
     ds.addOperator( new ConvertHistogramToFunction() );
