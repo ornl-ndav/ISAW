@@ -1926,7 +1926,7 @@ public class Script_Class_List_Handler  implements OperatorHandler{
      */
     public static void main( String args[] ){
       //load up IsawProps.dat
-        new PropertiesLoader("IsawProps.dat"  );
+        SharedData.reloadProperties();
         
         Script_Class_List_Handler.LoadDebug = true;
         Script_Class_List_Handler BB = new Script_Class_List_Handler();

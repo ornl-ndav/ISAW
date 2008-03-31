@@ -2316,11 +2316,11 @@ public class Isaw
       Document doc = propsText.getDocument() ; 
       if( s.equals("Save") ){ 
         (new Util()).saveDoc( doc , filename );        
-        SharedData.isaw_props.reload();
+        SharedData.reloadProperties();
         SharedData.addmsg( "IsawProps saved successfully") ;     
       }else if( s.equals("Save and Exit") ){
         (new Util()).saveDoc( doc , filename );        
-        SharedData.isaw_props.reload();
+        SharedData.reloadProperties();
         SharedData.addmsg( "IsawProps saved successfully") ;     
 	kp.dispose();
       }else if( s.equals("Exit") ){ 

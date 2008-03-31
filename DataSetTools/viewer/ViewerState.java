@@ -215,7 +215,7 @@ public class ViewerState  implements Serializable
                                                     // initialize state from
                                                     // IsawProps.dat file, if
                                                     // possible.  
-      SharedData.isaw_props.reload();
+      SharedData.reloadProperties();
                                                        // color scale ......
       String scale_name = SharedData.getProperty( COLOR_SCALE ); 
       state.put( COLOR_SCALE, scale_name );
