@@ -333,7 +333,7 @@ import DataSetTools.operator.DataSet.EditList.*;
 import DataSetTools.operator.DataSet.Math.DataSet.*;
 import DataSetTools.operator.DataSet.Conversion.XAxis.*;
 import DataSetTools.components.ui.*;
-//import DataSetTools.util.SysUtil;
+import DataSetTools.util.SharedData;
 import DataSetTools.viewer.Graph.*;
 import DataSetTools.viewer.Image.*;
 import DataSetTools.viewer.ThreeD.*;
@@ -352,7 +352,6 @@ import java.awt.Component;
 import java.awt.event.*;
 import java.io.*;
 import javax.swing.*;
-import DataSetTools.util.PropertiesLoader;
 
 /**
  *  A ViewManager object manages viewers for a DataSet in an external 
@@ -610,16 +609,17 @@ public class ViewManager extends    JFrame
 
            ObjectState view_objSt = (ObjectState)st.get("View");
        	         	 
-           PropertiesLoader propLoad = new PropertiesLoader("IsawProps.dat");
-        	 
            String script_xmin = 
-                            propLoad.get("XRange_"+dataSet.getX_units()+"_min");
+                SharedData.getProperty("XRange_"+dataSet.getX_units()+"_min");
+
            String script_xmax = 
-                            propLoad.get("XRange_"+dataSet.getX_units()+"_max");
+                SharedData.getProperty("XRange_"+dataSet.getX_units()+"_max");
+
            String script_ymin = 
-                            propLoad.get("YRange_"+dataSet.getY_units()+"_min");
+                SharedData.getProperty("YRange_"+dataSet.getY_units()+"_min");
+
            String script_ymax = 
-                            propLoad.get("YRange_"+dataSet.getY_units()+"_max");
+                SharedData.getProperty("YRange_"+dataSet.getY_units()+"_max");
         	         	 
          //System.out.println("xmin: "+script_xmin);
          //System.out.println("xmax: "+script_xmax);
