@@ -110,7 +110,11 @@ class PropertiesLoader implements java.io.Serializable
   private boolean debug  = false;
   private String  f_name = "";
   private boolean loaded_ok = false;
-
+  
+  /**
+   * Environmental variable specifying a shared properties file.
+   */
+  public static final String SHARED_ISAW_PROPS = "SHARED_ISAW_PROPS";
 
   PropertiesLoader( String file_name )
   {
@@ -139,7 +143,7 @@ class PropertiesLoader implements java.io.Serializable
  */
   void reload(){
     loaded_ok = false;
-    String system_props_file = System.getenv( "SHARED_ISAW_PROPS" );
+    String system_props_file = System.getenv( SHARED_ISAW_PROPS );
     String user_props_file   = System.getProperty( "user.home" ) 
                                + "/" + f_name;
 
@@ -155,19 +159,20 @@ class PropertiesLoader implements java.io.Serializable
         new_props.list(System.out);
       }
 
-      //if ( debug )
-        System.out.println("LOADING SHARED PROPERTIES " + system_props_file + 
+      if ( debug )
+        System.out.println("LOADING " + SHARED_ISAW_PROPS +system_props_file+ 
                            "...." );
       FileInputStream input = new FileInputStream( system_props_file );
       new_props.load( input );
       if ( debug )
       {
         System.out.println("========== " + 
-                           "After reading SHARED_ISAW_PROPS, properties are" +
+                     "After reading " +system_props_file+ ", properties are" +
                            " ==========" );
         new_props.list(System.out);
       }
 
+      System.out.println("Loaded Shared Props from " + system_props_file );
       System.setProperties( new_props );
       input.close();
       loaded_ok = true;
@@ -193,7 +198,8 @@ class PropertiesLoader implements java.io.Serializable
                            " ==========" );
         new_props.list(System.out);
       }
-      System.out.println("Loaded Shared Props from " + user_props_file );
+
+      System.out.println("Loaded User Props from " + user_props_file );
       System.setProperties( new_props );
       input.close();
       loaded_ok = true;
