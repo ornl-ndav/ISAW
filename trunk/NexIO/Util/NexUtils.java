@@ -761,6 +761,7 @@ public class NexUtils implements INexUtils {
       }
       if( Grid != null)
          Grid.setData_entries( DS );
+      dataState.endDetectorID = grid+startGridNum;
       return false;
    }
 
