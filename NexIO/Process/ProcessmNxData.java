@@ -120,6 +120,7 @@ public class ProcessmNxData implements IProcessNxData {
      NxEntryStateInfo entryStateInfo = null;
      
      //StateSav.Push( datState);
+     int lastDetectorID= dsInf.startDetectorID;
      for( int i = 0; i< NxEntryNode.getNChildNodes(); i++){
         NxNode Child = NxEntryNode.getChildNode(i);
         
@@ -138,17 +139,24 @@ public class ProcessmNxData implements IProcessNxData {
                     //StateSav.Push( datState );
                     int N = DS.getNum_entries();
                     StateSav = new NxfileStateInfo( State);
-                    datStateInfo = new NxDataStateInfo(dsInf);
+                    
+                 
                     entryStateInfo = new NxEntryStateInfo(entryInf);
-                    if(datStateInfo != null)
-                       StateSav.Push( datStateInfo );
+                   
                     if(entryStateInfo != null)
                        StateSav.Push( entryStateInfo );
+                    datStateInfo = new NxDataStateInfo(Child,NxinstrumentNode,StateSav,startGroupID);
+                    datStateInfo.startDetectorID= lastDetectorID;
+                    if(datStateInfo != null){
+                       datStateInfo.startDetectorID=lastDetectorID;
+                       StateSav.Push( datStateInfo );
+                    }
                     boolean res = true;
-                    if( StateSav != null)
+                    if( StateSav != null){
                         res = proc.processDS(NxEntryNode, Child,
                             NxinstrumentNode, DS, StateSav, startGroupID);
-                    else
+                        lastDetectorID= datStateInfo.endDetectorID+1;
+                    }else
                        return setErrorMessage("Not enough State information");
                     if( res)
                        return setErrorMessage( proc.getErrorMessage()); 
