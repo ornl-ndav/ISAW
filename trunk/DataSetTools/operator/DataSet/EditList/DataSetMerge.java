@@ -29,9 +29,9 @@
  *
  * Last Modified:
  *
- *  $Author:$
- *  $Date:$            
- *  $Revision:$
+ *  $Author$
+ *  $Date$            
+ *  $Revision$
  *
  *  $Log$
  *  Revision 1.9  2006/07/10 21:28:22  dennis
@@ -142,7 +142,7 @@ public class DataSetMerge extends DS_EditList
  /* -------------------------- setDefaultParameters ------------------------- */
  /**
   *  Set the parameters to default values.
-  *
+  */
   public void setDefaultParameters()
   {
     parameters = new Vector();  // must do this to clear any old parameters
