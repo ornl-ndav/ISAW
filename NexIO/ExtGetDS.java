@@ -608,7 +608,7 @@ public class ExtGetDS{
                      BeamNode = childNode;
                      nxLogLocator.scanForNxLogUnderNode( childNode );
                   
-                  }else if( nodeClass.equals("NXSample")){
+                  }else if( nodeClass.equals("NXsample")){
                      SampleNode = childNode;
                      nxLogLocator.scanForNxLogUnderNode( childNode );
                   
