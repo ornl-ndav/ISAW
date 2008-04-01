@@ -168,7 +168,10 @@ public class SCDRecipLat
   VectorReadout   a_star_vec;
   VectorReadout   b_star_vec;
   VectorReadout   c_star_vec;
-
+  float[]         abNormal;
+  float[]         bcNormal;
+  float[]         acNormal;
+  
   JLabel          a_star_b_star;
   JLabel          b_star_c_star;
   JLabel          c_star_a_star;
@@ -178,11 +181,18 @@ public class SCDRecipLat
   int             global_obj_index = 0;  // needed to keep the pick ids distinct
   String          file_names[];
   boolean         JFrameOpen;
-
+  boolean         omit_fit_plane;
   /* ---------------------------- Constructor ----------------------------- */
   public SCDRecipLat(){
      this( null);
   }
+  
+  /**
+   * Constructor
+   * @param HelpFileName  Help file name
+   * NOTE: A good help file for the case when viewing peaks and selecting planes
+   *   is ISAW_HELP_PATH+"SCDRecipA.html"
+   */
   public SCDRecipLat( String HelpFileName)
   {
     JFrame scene_f = new JFrame("Reciprocal Lattice Viewer");
@@ -296,9 +306,10 @@ public class SCDRecipLat
     vec_q_transformer = new Vector();
     scene_f.addWindowListener( new JFrameListener() );
     JFrameOpen = false;
+    omit_fit_plane=false;
+    abNormal = acNormal = bcNormal = null;
     if( HelpFileName == null)
        return;
-    
   }
  
 
@@ -816,6 +827,8 @@ public class SCDRecipLat
   {
                                          // first, get the positions of the
                                          // data points.
+    if( omit_fit_plane)
+       return;
     IThreeD_Object obj[] = get_data_objects();
     
     Vector3D n = new Vector3D();
@@ -1291,8 +1304,28 @@ public class SCDRecipLat
    *          three planes
    */
   public float[][] getPlaneNormals(){
+     
      float[][] Res = new float[3][];
-     Vector3D v =a_star_vec.getVector();
+     if( abNormal == null)
+        Res[0]=null;
+     else 
+        Res[0]=abNormal;
+     
+
+     if( bcNormal == null)
+        Res[0]=null;
+     else 
+        Res[0]=bcNormal;
+     
+
+     if( acNormal == null)
+        Res[0]=null;
+     else 
+        Res[0]=acNormal;
+     
+     return Res;
+     
+    /* Vector3D v =a_star_vec.getVector();
      if( v== null)
         Res[0] = null;
      else{
@@ -1317,7 +1350,7 @@ public class SCDRecipLat
      }
      
      return Res;
-     
+     */
   }
      
     
@@ -1441,6 +1474,7 @@ public class SCDRecipLat
      if( Peaks == null)
         return null; 
      JFrameOpen = true;
+     omit_fit_plane=true;
      IThreeD_Object[] objs = new IThreeD_Object[Peaks.size()];
      float[] Range = GetMaxPkIntensity( Peaks);
      if(MaxIntensity < 0 )
@@ -1591,18 +1625,33 @@ private class SliceButtonListener implements ActionListener
     System.out.println( action );
 
     float image[][] = null;
-    if ( action.equals( A_B_SLICE ) )
-    {
-      image = make_slice( origin_vec.getVector(), 
-                          a_star_vec.getVector(),
-                          b_star_vec.getVector(),
-                          SLICE_SIZE );
-      if ( a_b_frame == null )
-        a_b_frame = new ImageFrame( image, A_B_SLICE );
-      else
-        a_b_frame.setData( image );
-    }
-    else if ( action.equals( B_C_SLICE ) )
+    if( action.equals( A_B_SLICE ) ) {
+       
+       image = make_slice( origin_vec.getVector() ,
+                   a_star_vec.getVector() , b_star_vec.getVector() ,
+                     SLICE_SIZE );
+       if( a_b_frame == null )
+          a_b_frame = new ImageFrame( image , A_B_SLICE );
+       else
+          a_b_frame.setData( image );
+
+
+       if( Undefined( a_star_vec.getVector() )
+                     || Undefined( b_star_vec.getVector() ) )
+          abNormal = null;
+       else {
+          
+          Vector3D V = new Vector3D();
+          V.cross( a_star_vec.getVector() , b_star_vec.getVector() );
+          V.normalize();
+          abNormal = V.get();
+       }
+       
+       if( omit_fit_plane )
+          ShowPlane( origin_vec.getVector() , a_star_vec.getVector() ,
+                        b_star_vec.getVector() , 0 );
+         
+   }else if ( action.equals( B_C_SLICE ) )
     {
       image = make_slice( origin_vec.getVector(), 
                           b_star_vec.getVector(),
@@ -1611,7 +1660,18 @@ private class SliceButtonListener implements ActionListener
       if ( b_c_frame == null )
         b_c_frame = new ImageFrame( image, B_C_SLICE );
       else
-        b_c_frame.setData( image );
+        b_c_frame.setData( image ); Vector3D V= new Vector3D();
+      if( Undefined( c_star_vec.getVector())||Undefined(b_star_vec.getVector()))
+        bcNormal = null;
+      else{
+        V.cross(b_star_vec.getVector(), c_star_vec.getVector());
+        V.normalize();
+        bcNormal= V.get();
+      }
+        if( omit_fit_plane )
+           ShowPlane( origin_vec.getVector(),
+                            b_star_vec.getVector(),
+                            c_star_vec.getVector(), 1 );
     }
     else if ( action.equals( C_A_SLICE ) )
     {
@@ -1622,8 +1682,66 @@ private class SliceButtonListener implements ActionListener
       if ( c_a_frame == null )
         c_a_frame = new ImageFrame( image, C_A_SLICE );
       else
-        c_a_frame.setData( image );
+        c_a_frame.setData( image ); 
+      if( Undefined( a_star_vec.getVector())||Undefined(c_star_vec.getVector()))
+        acNormal = null;
+      else{
+        Vector3D V= new Vector3D();
+        V.cross(a_star_vec.getVector(), c_star_vec.getVector());
+        V.normalize();
+        acNormal= V.get();
+      }
+        if( omit_fit_plane )
+           ShowPlane( origin_vec.getVector(),
+                            a_star_vec.getVector(),
+                            c_star_vec.getVector(), 2 );
     }
+  }
+  private boolean Undefined( Vector3D vec){
+     if( vec == null)
+        return true;
+     if( Float.isNaN(vec.length()))
+        return true;
+     return false;
+  }
+  private void ShowPlane( Vector3D origin, Vector3D base1, Vector3D base2,
+              int code){
+     
+
+     String name = ""+(char)((int)'a'+code);
+     name +=(char)((int)'a'+((code+1)%3));
+     name +="_Plane points";
+     if( Undefined( origin)||Undefined(base1)||Undefined(base2)){
+        vec_Q_space.removeObjects( name);
+        return;
+     }
+     IThreeD_Object objects[] = new IThreeD_Object[ 1 ];
+     Vector3D points[] = new Vector3D[3];
+
+     points[0] = new Vector3D(origin);
+     points[1]=new Vector3D(origin);
+     points[2]=new Vector3D(origin);
+     points[1].add(base1);
+     points[2].add( base2);
+     
+     int type=Polymarker.CROSS;
+     Color color = Color.pink;
+     if(code==0){
+        type=Polymarker.PLUS;
+        color = Color.yellow;
+     }else if( code ==1){
+        type = Polymarker.STAR;
+        color =  Color.lightGray;
+     }
+     Polymarker marker = new Polymarker( points, color);
+     marker.setSize( 10 );
+     
+     
+     marker.setType( type );
+     objects[0] = marker;
+     vec_Q_space.setObjects( name, objects );
+     
+     
   }
 }
 
