@@ -1225,7 +1225,11 @@ public class NexUtils implements INexUtils {
         
         float x = NexUtils.getFloatFieldValue( NxMonitorNode , "distance" )
                                                             .floatValue();
-
+        float[] yvals= DB.getY_values(); 
+        float totCount =0;
+        for( int kk=0; kk< yvals.length;kk++)
+           totCount +=yvals[kk];
+        DB.setAttribute( new FloatAttribute( Attribute.TOTAL_COUNT, totCount) );
         if ( !Float.isNaN( x ) )
             ConvertDataTypes.addAttribute( DB , new DetPosAttribute(
                     Attribute.DETECTOR_POS , new DetectorPosition(
@@ -1332,7 +1336,10 @@ public class NexUtils implements INexUtils {
                    errs = null;
                    DB = new HistogramTable( xsc , yvals ,  id );
                 }
-
+                float totCount =0;
+                for( int kk=0; kk< yvals.length;kk++)
+                   totCount +=yvals[kk];
+                DB.setAttribute( new FloatAttribute( Attribute.TOTAL_COUNT, totCount) );
                 DS.addData_entry( DB );
             }
             
