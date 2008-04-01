@@ -756,7 +756,7 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
     LinearAlgebra.print( UB );
    
     Object Res = integrate( ds,centering,timeZrange,incrSlice,
-        d_min,listNthPeak,PeakAlg,colXrange,rowYrange,10000, null);
+        d_min,listNthPeak,PeakAlg,colXrange,rowYrange,10000, logBuffer);
     
     if( Res == null || !(Res instanceof Vector))
        return Res;
@@ -767,7 +767,7 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
    
     // write out the peaks
     WritePeaks writer=new WritePeaks(integfile,(Vector)Res,new Boolean(append));
-  
+    gov.anl.ipns.Util.Sys.SharedMessages.LOGaddmsg(logBuffer.toString());
     return writer.getResult();
    
   }
