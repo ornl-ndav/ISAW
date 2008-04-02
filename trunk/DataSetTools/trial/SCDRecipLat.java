@@ -1313,15 +1313,15 @@ public class SCDRecipLat
      
 
      if( bcNormal == null)
-        Res[0]=null;
+        Res[1]=null;
      else 
-        Res[0]=bcNormal;
+        Res[1]=bcNormal;
      
 
      if( acNormal == null)
-        Res[0]=null;
+        Res[2]=null;
      else 
-        Res[0]=acNormal;
+        Res[2]=acNormal;
      
      return Res;
      
@@ -1470,13 +1470,14 @@ public class SCDRecipLat
    * @param wait   true if it should wait until Frame is closed
    * @return    The SCDRecipLat is returned for information
    */
-  public SCDRecipLat getSCDLat( Vector Peaks,float MaxIntensity, boolean wait){
+  public SCDRecipLat getSCDLat( Vector Peaks, boolean wait){
      if( Peaks == null)
         return null; 
      JFrameOpen = true;
      omit_fit_plane=true;
      IThreeD_Object[] objs = new IThreeD_Object[Peaks.size()];
      float[] Range = GetMaxPkIntensity( Peaks);
+     float MaxIntensity = Range[0];
      if(MaxIntensity < 0 )
         MaxIntensity = Range[0];
      file_names = new String[1];
@@ -1517,7 +1518,7 @@ public class SCDRecipLat
          s.printStackTrace();
          JFrameOpen=false;
       }
-     System.out.println("After checkJFrameDone");
+     
   }
   /* ------------------------- main -------------------------------- */
 
@@ -1595,6 +1596,10 @@ private class ViewMouseInputAdapter extends MouseInputAdapter
    private void handle_event( MouseEvent e )
    {
      int index = vec_Q_space.pickID( e.getX(), e.getY(), 5 );
+     if( omit_fit_plane && index!=IThreeD_Object.INVALID_PICK_ID)
+        if(e.getButton() == MouseEvent.BUTTON3)
+           JOptionPane.showMessageDialog( null , "Seq Num="+index , "Peak" , 
+                    JOptionPane.INFORMATION_MESSAGE );
      if ( index != last_index )
      {
        last_index = index;
@@ -1622,7 +1627,7 @@ private class SliceButtonListener implements ActionListener
   public void actionPerformed( ActionEvent e )
   {
     String action = e.getActionCommand();
-    System.out.println( action );
+    //System.out.println( action );
 
     float image[][] = null;
     if( action.equals( A_B_SLICE ) ) {
@@ -1875,5 +1880,96 @@ private class ReadoutListener implements ActionListener
         if( B== null)
            return;
      }
+  }
+  
+  /**
+   * Static method to create operator to display the peaks and allow a user
+   * to select three planes which will determine a UB matrix. 
+   * 
+   * The UB matrix is optimized and passed through Blind to put the 
+   * basis Q vectors in a standard crystllographic form
+   * 
+   * @param Peaks   A Vector peaks
+   * @param MaxXtallengthReal The maximum length of a side of a crystal
+   *               in real space between
+   *             
+   * @param Stats  A return value where Stats[0],[1],.. returns the
+   *    fraction of all peaks within 10%,20%,30%,.. of all the planes
+   *    
+   * @return  a UB matrix or throws an IllegalArgumentException
+   */
+  public static float[][] GetUBFrRecipLattice( Vector Peaks,
+                 float MaxXtallengthReal, float[] Stats){
+     
+     String HelpFileName = System.getProperty( "ISAW_HOME" );
+     if( HelpFileName != null){
+        HelpFileName = HelpFileName.replace( '\\','/' );
+        if(!HelpFileName.endsWith( "/" ))
+           HelpFileName +="/";
+        HelpFileName +="IsawHelp/SCDRecipA.html";
+     }
+     SCDRecipLat RecipLat = new SCDRecipLat( HelpFileName);
+    
+     RecipLat.getSCDLat( Peaks , true );
+     float[][] UnitNormals = RecipLat.getPlaneNormals();
+     if( UnitNormals == null)
+        throw new IllegalArgumentException("No Planes specified");
+     if( UnitNormals.length < 3)
+        throw new IllegalArgumentException("Not enough Planes specified");
+     for( int i=0; i< 3;i++){
+        
+        if( UnitNormals[i]==null || UnitNormals[i].length < 3)
+           throw new IllegalArgumentException("Not enough Planes specified");
+        
+        if( UnitNormals[i][2]< 0){
+           UnitNormals[i][0]= -UnitNormals[i][0];
+           UnitNormals[i][1]= -UnitNormals[i][1];
+           UnitNormals[i][2]= -UnitNormals[i][2];
+        }
+     }
+     
+     float[][] Directions= new float[3][3];
+     float[] line = new float[200];
+     for( int i=0; i< 3;i++){
+        line=GetUB.ProjectPeakToDir( UnitNormals[i][0] , UnitNormals[i][1] , Peaks ,
+                 null , MaxXtallengthReal , line );
+        int minIndex=GetUB.findMinNonZero(line );
+        int maxIndex = GetUB.findMaxNonZero( line );
+        float[]Res= GetUB.CalcStats( line , minIndex , maxIndex );
+        if( Res == null)
+           throw new IllegalArgumentException("Direction "+i+"not good");
+        
+        float dSpaceRecip = Res[GetUB.LEN]/(48*MaxXtallengthReal);
+        
+        Directions[i]= new float[3];
+        for( int j=0;j<3;j++){
+           Directions[i][j]= dSpaceRecip*UnitNormals[i][j];
+        }         
+        
+     }
+     boolean[] omit = new boolean[ Peaks.size()];
+     java.util.Arrays.fill( omit , false );
+     //Only eliminate even close outliers.
+     GetUB.OmitPeaks( Peaks , Directions[0] , omit , .1f , true );
+     GetUB.OmitPeaks( Peaks , Directions[1] , omit , .1f , true );
+     GetUB.OmitPeaks( Peaks , Directions[2] , omit , .1f , true );
+     
+     float[][] UB =GetUB.UBMatrixFrPlanes( Directions, Peaks , omit , Stats 
+                                                                 , 3 );
+     
+     if( UB == null){ 
+        throw new IllegalArgumentException("Cannot Get a UB matrix. "+
+                 "Planes not distinct directions or not enough points are " +
+                 "close to the planes");
+     }
+     int n=0;
+     if( Stats != null){
+        n = Math.min( 4 , Stats.length );
+        java.util.Arrays.fill( Stats ,0 );
+        for( int i=0; i < n; i++){
+           Stats[i] = GetUB.IndexStat( UB, Peaks,(i+1)*.1f, null);
+        }
+     }
+     return UB;
   }
 }
