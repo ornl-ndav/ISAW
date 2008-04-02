@@ -1,81 +1,128 @@
 <HTML><Body>
    <H1> <Center> Reciprocal Lattice Viewer for Selecting Planes of Peaks </Center></H1>
 <ul>
-<li>This viewer creates a display from Peaks and allows you to select 3 planes. The 
-    information on these planes are returned when the viewer is exitted.<P>
-     <ol type="1"><H2><Center> <a name="Planes"></a>The 3 planes are defined as follows:</Center></H2>
-       <li> <u>Plane 1</u> information is calculated when the a*&lt;->b* Slice button is pressed.
-            This plane is determined by the points selected for the origin, a*, and b*.<P>
-       <li><u>Plane 2</u> information is calculated when the b*&lt;->c* Slice button is pressed.
-            This plane is determined by the points selected for the origin, b*, and c*.<P>
-       <li><u>Plane 3</u> information is calculated when the c*&lt;->a* Slice button is pressed.
-            This plane is determined by the points selected for the origin, a*, and c*.<P>
+<li>This viewer creates a display from Peaks and allows you to select 3 planes.
+    The information on these planes are returned when the viewer is exitted.<P>
+    
+     <ol type="1"><H2><Center> <a name="Planes"></a>The three planes are defined as
+           follows:</Center></H2>
+     
+       <li> <u>Plane 1</u> information is calculated when the a*&lt;->b* Slice
+            button is pressed. This plane is determined by the points selected
+            for the origin, a*, and b*.<P>
+            
+       <li><u>Plane 2</u> information is calculated when the b*&lt;->c* Slice
+           button is pressed. This plane is determined by the points selected 
+           for the origin, b*, and c*.<P>
+            
+       <li><u>Plane 3</u> information is calculated when the c*&lt;->a* Slice 
+            button is pressed. This plane is determined by the points selected 
+            for the origin, a*, and c*.<P>
+            
+       <li> <B>NOTE:</B> No two of the three planes should be parallel.
+            
      </ol>
      
       <P><HR>
      <UL> <H2><Center>Using the controls on the viewer</Center></H2>
-       <li><u>Distance control</u>: Moves the display closer/farther from the center. This seems
-           to have to be moved at first to get any display<P>
-       <li> <u>Azimuthal control</u>: Rotates the display around the vertical( Fixed and blue)
-            axis<P>
-       <li> <u>Altitude control</u>: Rotates the display around the line from the center
-          pointing to the right.<P>
-       <li><B><U>NOTE:</U></B> The azimuthal and altitude controls are used to align the peaks on
-          lines in the display. These <I>lines of peaks usually define a plane</I>, since usually
-          these points are not all on one line.
+       <li><u>Distance control</u>: Moves the display closer/farther from the
+          center. This seems to have to be moved at first to get any display<P>
+           
+       <li> <u>Azimuthal control</u>: Rotates the display around the vertical
+           ( Fixed and blue) axis<P>
+            
+       <li> <u>Altitude control</u>: Rotates the display around the line from 
+            the center pointing to the right.<P>
+          
+       <li><B><U>NOTE:</U></B> The azimuthal and altitude controls are used to 
+           align the peaks on lines in the display. These <I>lines of peaks 
+           usually define a plane</I>, since usually these points are not all
+           on one line.
      
      
      </UL> 
      <P><HR><P><P>
      <UL><H2><Center> Mouse Actions</Center></H2>
-       <li> Clicking on <U>a Peak</U> in the display will set Qxyz information box.<P>
-       <li> Clicking on the <U>origin</U> will replace the origin by the contents in the Qxyz
-           information box.<P>
-       <li> Clicking on the <U>a*(+)</U>  ,<U>b*(*)</U> , or <U>c*(X)</U> buttons will transfer the contents
-          of the Qxyz point with the origin subtracted to the corresponding positions.
-          NOTE: a*,b* and c* are directions. The program automatically converts to and
-          from directions to points where necessary.<P>
-       <li> Clicking on the <U>a*&lt;->b* Slice</U> , <U>b*&lt;->c* Slice</U> , and the <U>c*&lt;->a* Slice</U> will define
-            planes as indicated <a href="#Planes">above</a>. The points of the plane will
-             be marked so it is possible to determine the planes that have already been 
-             selected. If the mark is a "+" this is the a*b* plane. If the mark is a "*", it
-             is the b*c* plane and if the mark is a "X" it is the c*a* plane.<P>
-       <LI><a name="editPlanes"></a> NOTE: Clicking the mouse at a point with no peak causes the Qxyz information
-           box to be <B>undefined</B>. Then clicking on the a*(+), b*(*), or c*(X) buttons will
-           cause those to become undefined( and the <B>marks disappear</B>). The Planes become
-           <B>undefined( and marks disappear)</B> if the corresponding origin,a*,b*, or c* values
-           are undefined when a Slice button are pressed(Note: the display may not be
-           refreshed after such an operation).<P>
-        <LI> A new plane is not parallel to the others if at least two of the three plane
-            marks are not on the same line.  3 distinct planes should be selected.<P>
+       <li> Clicking on <U>a Peak</U> in the display will set Qxyz information
+            box.<P>
+            
+       <li> Clicking on the <U>origin</U> will replace the origin by the 
+            contents in the Qxyz information box.<P>
+           
+       <li> Clicking on the <U>a*(+)</U>  ,<U>b*(*)</U> , or <U>c*(X)</U> 
+            buttons will transfer the contents of the Qxyz point with the
+            origin subtracted to the corresponding positions.<BR>
+            NOTE: a*,b* and c* are directions. The program automatically 
+            converts to and from directions to points where necessary.<P>
+          
+       <li> Clicking on the <U>a*&lt;->b* Slice</U> , <U>b*&lt;->c* Slice</U> , 
+            and the <U>c*&lt;->a* Slice</U> will define planes as indicated <
+            a href="#Planes">above</a>. The points of the plane will be marked 
+             so it is possible to determine the planes that have already been 
+             selected. If the mark is a "+" this is the a*b* plane. If the mark
+              is a "*", it is the b*c* plane and if the mark is a "X" it is the 
+              c*a* plane.<P>
+              
+       <LI> <U>RIGHT CLICKING a PEAK</U>(Button3 in Windows is right click) 
+             displays the <B>Sequence number of the Peak</B><P>
+             
+       <LI><a name="editPlanes"></a> NOTE: Clicking the mouse at a point with 
+             no peak causes the Qxyz information box to be <B>undefined</B>. 
+             Then clicking on the a*(+), b*(*), or c*(X) buttons will
+             cause those to become undefined( and the <B>marks disappear</B>).
+             The Planes become <B>undefined( and marks disappear)</B> if 
+             the corresponding origin,a*,b*, or c* values
+             are undefined when a Slice button are pressed(Note: the display 
+             may not be refreshed after such an operation).<P>
+             
+        <LI> A new plane is not parallel to the others if at least one of the 
+            three plane marks are not on the same line.  3 distinct planes 
+            should be selected.<P>
        
      </UL>
      <P><HR>
-     <OL type = "1"> <H2><Center>Steps to Get Three distinct planes</Center></H2>
-        <li> Use the azimuthal and altitude controls to get the <U>peaks aligned</U> into
-            parallel lines.<P>
-        <li> Select one line and pick a point at the center. Then click the <U>origin/Select</U>
-             button.<P>
-        <li> Select another point on the line a ways away from the first point. Then
-             press the <U>a*(+)</U> Select button.<P>
-        <li> Now rotate the display a bit to find points behind the front points( use the
-           azimuthal and altitude controls). Pick a point and press the <U>b*(*)</U> Select button.
-           Check and make sure the three points are not collinear or close to collinear. Use
-           the azimuthal and altitude controls to look at the three points at different angles.<P>
-        <LI> Press the b*(*) Select button then press the <U>a*&lt;->b* Slice</U> button.<P>
+     <OL type = "1"> <H2><Center>Steps to Get Three distinct planes
+                                                              </Center></H2>
+                                                              
+        <li> Use the azimuthal and altitude controls to get the <U>peaks 
+             aligned</U> into parallel lines.<P>
+             
+        <li> Select one line and pick a point at the center. Then click the 
+             <U>origin/Select</U> button.<P>
+             
+        <li> Select another point on the line a ways away from the first point.
+             Then press the <U>a*(+)</U> Select button.<P>
+             
+        <li> Now rotate the display a bit to find points behind the front 
+             points( use the azimuthal and altitude controls). Pick a point and
+             press the <U>b*(*)</U> Select button.<BR>
+             
+             Check and make sure the three points are not collinear or close to
+              collinear. Use the azimuthal and altitude controls to look at the 
+              three points at different angles.<P>
+              
+        <LI> Press the b*(*) Select button then press the <U>a*&lt;->b* Slice
+             </U> button.<P>
         
-        <li> <U>Clear</U> out the origin, a*,and b* values and their displays by clicking at a
-          point in the display so the Qxyz information box says undefined. Then click the
-          origin, a*, and b* Select button.<P>
-        <LI> <U>Repeat</U> steps 1 through 6 with another alignment of peaks.  Make sure that
-           the marks from the a*&lt;->b* Slice button are <u>NOT all on the same line</u> in this
-           display. Put the points in the origin,b*(*), and c*(X) positions and press the
-           b*&lt;->c* Slice button.<P>
-         <LI> Repeat steps 1 through 6 with another alignment of peaks. Here make sure 
-           the marks for each selected plane do NOT lie on the same line. Here, put the
-           points in the origin, a*(+),and  c*(X) positions and select the c*&lt;->a* button
+        <li> <U>Clear</U> out the origin, a*,and b* values and their displays
+             by clicking at a point in the display so the Qxyz information box
+             says undefined. Then click the origin, a*, and b* Select
+             button.<P>
+             
+        <LI> <U>Repeat</U> steps 1 through 6 with another alignment of peaks.
+            Make sure that the marks from the a*&lt;->b* Slice button are 
+            <u>NOT all on the same line</u> in this display. Put the points in 
+            the origin,b*(*), and c*(X) positions and press the b*&lt;->c* 
+            Slice button.<P>
+            
+         <LI> Repeat steps 1 through 6 with another alignment of peaks. Here 
+             make sure the marks for each selected plane do NOT lie on the 
+             same line. Here, put the points in the origin, a*(+),and  c*(X)
+             positions and select the c*&lt;->a* button
            <P>
-        <LI> Now you can exit the display. You can also <a href ="#editPlanes">edit the planes</a>.  
+           
+        <LI> Now you can exit the display. You can also <a href =
+             "#editPlanes">edit the planes</a>.  
      
      
      </OL>
