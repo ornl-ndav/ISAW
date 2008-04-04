@@ -1730,7 +1730,7 @@ public class Script_Class_List_Handler  implements OperatorHandler{
         S= (String)Fin.readObject();
         if( !S.equals("XXXX"))
         if(!S.equals( System.getProperty("GROUP_HOME")))
-           return Message("Group HOme did not match", Fin);
+           return Message("Group HOME did not match", Fin);
         boolean done = S.equals("XXXX");
         for( int i=1; !done; i++){
           S= (String)Fin.readObject();
