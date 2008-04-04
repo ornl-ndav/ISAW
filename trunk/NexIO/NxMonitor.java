@@ -216,7 +216,9 @@ public class NxMonitor{
     
     
     //-------------Create a PixelInfo list for this entry-----------------
-    float distance = NexUtils.getFloatFieldValue( node,"distance");
+    float distance = ConvertDataTypes.floatValue( 
+                            NexUtils.getFloatFieldValue( node,"distance"));
+    
     if( Float.isNaN( distance)){
        return false;
     }
