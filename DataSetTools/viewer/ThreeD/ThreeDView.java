@@ -1111,10 +1111,9 @@ private void init()
   threeD_panel = new ThreeD_JPanel();
   threeD_panel.setBackground( new Color( 90, 90, 90 ) );
   
-  threeD_panel.setWCToolTipVisible(false); //Set world-coordinate tooltip to 
-                                           //false.  This is because 
-                                           //CoordJPanel's world-coordinates 
-                                           //don't apply in 3D.
+  //setting coord info source to null because it doesn't really apply to 
+  // a 3d environment
+  threeD_panel.setCoordInfoSource(null);
 
   control_panel = new Box( BoxLayout.Y_AXIS );
 
