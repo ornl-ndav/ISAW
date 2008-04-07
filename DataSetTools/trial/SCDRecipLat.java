@@ -132,7 +132,7 @@ import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.border.*;
 import jnt.FFT.*;
-import gov.anl.ipns.ViewTools.Panels.ThreeD.*;
+
 
 /** 
  *  This class reads through a sequence of SCD run files and constructs
@@ -150,6 +150,9 @@ public class SCDRecipLat
   public static final String A_B_SLICE = "a*<->b* Slice";
   public static final String B_C_SLICE = "b*<->c* Slice";
   public static final String C_A_SLICE = "c*<->a* Slice";
+  public static final String LOAD_ORIENT = "Load Orientation Matrix";
+  
+  public static final String SHOW_RESULTS = "Current Results";
   public static final int    SLICE_SIZE = 700;
 
   ImageFrame a_b_frame = null;
@@ -182,18 +185,23 @@ public class SCDRecipLat
   String          file_names[];
   boolean         JFrameOpen;
   boolean         omit_fit_plane;
+  int             DisplayMode;//Detemines other display elements
+  InfoActionListener actListener= null;//For Info button. Need peaks
   /* ---------------------------- Constructor ----------------------------- */
   public SCDRecipLat(){
-     this( null);
+     this( null,0);
   }
   
   /**
    * Constructor
    * @param HelpFileName  Help file name
+   * @param  DisplayMode  Mode for display
+   *               mode =0  None
+   *               mode=1  Peaks to find 3 planes
    * NOTE: A good help file for the case when viewing peaks and selecting planes
    *   is ISAW_HELP_PATH+"SCDRecipA.html"
    */
-  public SCDRecipLat( String HelpFileName)
+  public SCDRecipLat( String HelpFileName, int DisplayMode)
   {
     JFrame scene_f = new JFrame("Reciprocal Lattice Viewer");
     JPanel q_panel = new JPanel();
@@ -308,11 +316,51 @@ public class SCDRecipLat
     JFrameOpen = false;
     omit_fit_plane=false;
     abNormal = acNormal = bcNormal = null;
-    if( HelpFileName == null)
-       return;
+    this.DisplayMode = DisplayMode;
+    if( DisplayMode ==1){//Add menu items and listeners
+       SetUpPeakMenuItems( scene_f);
+    }
   }
  
+  private void SetUpPeakMenuItems( JFrame scene_f ) {
 
+      if( DisplayMode !=1)
+         return;
+      this.actListener = new InfoActionListener();
+      
+      JMenuBar jmb = scene_f.getJMenuBar();
+      if( jmb == null ) {
+         jmb = new JMenuBar();
+         scene_f.setJMenuBar( jmb );
+      }
+      
+      JMenu Info = new JMenu("Information");
+      
+      jmb.add( Info );
+      JMenuItem Load= new JMenuItem( LOAD_ORIENT);
+      Info.add( Load );
+      Load.setToolTipText( "Loads and displays UB matrix as a*,b* and c*" );
+      
+      Load.addActionListener(  actListener );
+      
+      JMenuItem Res = new JMenuItem(SHOW_RESULTS);
+      Info.add( Res );
+      Res.setToolTipText( "Reports stats and UB so far" );
+      Res.addActionListener( actListener );
+      jmb.repaint();
+ /*     
+      System.out.println("JMenuBar info");
+      System.out.println("JMenuBar "+jmb.getMenuCount());
+      for( int i=0; i< jmb.getMenuCount();i++){
+         JMenu jmnu = jmb.getMenu( i );
+         System.out.println("JMenu "+jmnu.getText() +" had "+jmnu.getItemCount());
+         for( int j=0; j< jmnu.getItemCount();j++){
+            JMenuItem jmi = jmnu.getItem( j );
+            System.out.println("jmenuItem "+jmi.getText());
+         }
+      }
+*/
+   }
   private void SetUpHelp( JFrame scene_f, String HelpFileName){
      if(scene_f == null || HelpFileName == null )
         return;
@@ -893,22 +941,22 @@ public class SCDRecipLat
  
     Plane3D test_plane1 = new Plane3D();
     test_plane1.fit( points );             // test the first fitting method 
-    time1 = (float)timer.elapsed();
+    time1 = timer.elapsed();
 
     timer.reset();
     Plane3D test_plane2 = new Plane3D();
     residual = test_plane2.fit( points );  // test the second fitting method
-    time2 = (float)timer.elapsed();
+    time2 = timer.elapsed();
 
     timer.reset();
     Plane3D test_plane3 = new Plane3D();
     test_plane3.fit( points );             // test the third fitting method 
-    time3 = (float)timer.elapsed();
+    time3 = timer.elapsed();
 
     timer.reset();
     Plane3D test_plane4 = new Plane3D();
     test_plane4.fit( points );             // test the fourth fitting method 
-    time4 = (float)timer.elapsed();
+    time4 = timer.elapsed();
 
     n = test_plane4.getNormal(); 
     c = test_plane4.getDistance();
@@ -1473,11 +1521,13 @@ public class SCDRecipLat
   public SCDRecipLat getSCDLat( Vector Peaks, boolean wait){
      if( Peaks == null)
         return null; 
+     this.actListener.setPeaks( Peaks );
      JFrameOpen = true;
      omit_fit_plane=true;
      IThreeD_Object[] objs = new IThreeD_Object[Peaks.size()];
      float[] Range = GetMaxPkIntensity( Peaks);
      float MaxIntensity = Range[0];
+     controller.setDistanceRange( 0f ,Range[1]*5f );
      if(MaxIntensity < 0 )
         MaxIntensity = Range[0];
      file_names = new String[1];
@@ -1635,6 +1685,7 @@ private class SliceButtonListener implements ActionListener
        image = make_slice( origin_vec.getVector() ,
                    a_star_vec.getVector() , b_star_vec.getVector() ,
                      SLICE_SIZE );
+       if(!omit_fit_plane)
        if( a_b_frame == null )
           a_b_frame = new ImageFrame( image , A_B_SLICE );
        else
@@ -1662,6 +1713,7 @@ private class SliceButtonListener implements ActionListener
                           b_star_vec.getVector(),
                           c_star_vec.getVector(),
                           SLICE_SIZE );
+      if(!omit_fit_plane)
       if ( b_c_frame == null )
         b_c_frame = new ImageFrame( image, B_C_SLICE );
       else
@@ -1684,6 +1736,7 @@ private class SliceButtonListener implements ActionListener
                           c_star_vec.getVector(),
                           a_star_vec.getVector(),
                           SLICE_SIZE );
+      if(!omit_fit_plane)
       if ( c_a_frame == null )
         c_a_frame = new ImageFrame( image, C_A_SLICE );
       else
@@ -1713,8 +1766,8 @@ private class SliceButtonListener implements ActionListener
               int code){
      
 
-     String name = ""+(char)((int)'a'+code);
-     name +=(char)((int)'a'+((code+1)%3));
+     String name = ""+(char)('a'+code);
+     name +=(char)('a'+((code+1)%3));
      name +="_Plane points";
      if( Undefined( origin)||Undefined(base1)||Undefined(base2)){
         vec_Q_space.removeObjects( name);
@@ -1883,6 +1936,110 @@ private class ReadoutListener implements ActionListener
   }
   
   /**
+   * Manages the Information Menu item
+   * @author Ruth
+   *
+   */
+  private class InfoActionListener implements ActionListener{
+     float MaxCrystalDistance = -1;
+     Vector Peaks = null;
+     
+     /**
+      * Sets the Vector of peaks for calculations required by some of
+      * the options in the information menu item.
+      * 
+      * @param Peaks The Vector of Peaks to use
+      */
+     public void setPeaks( Vector Peaks){
+        this.Peaks = Peaks;
+     }
+     
+     /**
+      * Set the maximum distance in real space for the distance between
+      * any pair of parallel planes.
+      * @param MaxCrystalDistance  The maximum distance in real space for 
+      *       the distance between pairs of parallel planes.
+      */
+     public void setMaxXtalLength( float MaxCrystalDistance){
+        this.MaxCrystalDistance = MaxCrystalDistance;
+     }
+     
+     /**
+      * Handles the operations from the Information menu
+      */
+     public void actionPerformed( ActionEvent evt){
+        
+        if( evt.getActionCommand() == LOAD_ORIENT){
+           
+           JFileChooser jf = new JFileChooser();
+           if( jf.showOpenDialog( null )!= JFileChooser.APPROVE_OPTION)
+              return;
+           java.io.File file =  jf.getSelectedFile();
+           Object O = 
+              Operators.TOF_SCD.IndexJ.readOrient( file.toString());
+           if( O==null ||
+                 (O instanceof gov.anl.ipns.Util.SpecialStrings.ErrorString)){
+                   
+              JOptionPane.showMessageDialog( null , 
+                       "Could not Load Orientation Matrix:"+O );
+              
+              return;
+           }
+           float[][]UB= (float[][])O;
+           origin_vec.setVector( new Vector3D(0f,0f,0f) );
+           a_star_vec.setVector( new Vector3D(UB[0][0],UB[1][0],UB[2][0]) );
+           b_star_vec.setVector( new Vector3D(UB[0][1],UB[1][1],UB[2][1]) );
+           c_star_vec.setVector( new Vector3D(UB[0][2],UB[1][2],UB[2][2]) );
+           Redraw();
+           
+        }else if( evt.getActionCommand() == SHOW_RESULTS){
+           if( Peaks == null || this.MaxCrystalDistance < 0)
+              return;
+           float[][] UnitNormals = getPlaneNormals();
+           Vector Stats = new Vector(4);
+           try{
+              float[][]UB = CalcUB(Peaks, UnitNormals, MaxCrystalDistance,  
+                                                                Stats);
+              if(UB == null){
+                 JOptionPane.showMessageDialog( null , "Error-Not enough Planes");
+                 return;
+              }
+              String Message ="UB matrix\n";
+              for( int i=0;i<3;i++)
+                 Message +=UB[i][0]+" , "+UB[i][1]+" , "+UB[i][2]+"\n";
+              Message +="\n Stats(Fraction indexed at given level)\n";
+              if( Stats != null)
+              for( int i=0; i< Math.min( 4, Stats.size()); i++)
+                 Message += (10+10*i)+"%   :"+Stats.elementAt(i)+"\n";
+              JOptionPane.showMessageDialog( null , Message );
+                 
+           }catch(Exception s){
+              JOptionPane.showMessageDialog( null , "Error-"+s );
+              s.printStackTrace();
+              return;
+           }
+           
+           
+           
+        }
+     }
+  }
+  
+  /**
+   * Used only in a mode that calculates the UB matrix from plane
+   * normals.
+   * 
+   * @param MaxDistance  The maximum distance between any two consecutive
+   *     parallel planes.
+   */
+   public void setMaxCrystalDistance( float MaxDistance){
+      
+      if( actListener != null)
+        actListener.setMaxXtalLength( MaxDistance );
+   }
+   
+   
+  /**
    * Static method to create operator to display the peaks and allow a user
    * to select three planes which will determine a UB matrix. 
    * 
@@ -1893,13 +2050,14 @@ private class ReadoutListener implements ActionListener
    * @param MaxXtallengthReal The maximum length of a side of a crystal
    *               in real space between
    *             
-   * @param Stats  A return value where Stats[0],[1],.. returns the
-   *    fraction of all peaks within 10%,20%,30%,.. of all the planes
+   * @param Stats  A return value where the elements represent the
+   *    fraction of all peaks indexed within 10%,20%,30%,.. of all the planes
+   *    defined by the calculated UB matrix
    *    
    * @return  a UB matrix or throws an IllegalArgumentException
    */
   public static float[][] GetUBFrRecipLattice( Vector Peaks,
-                 float MaxXtallengthReal, float[] Stats){
+                 float MaxXtallengthReal, Vector Stats){
      
      String HelpFileName = System.getProperty( "ISAW_HOME" );
      if( HelpFileName != null){
@@ -1908,10 +2066,21 @@ private class ReadoutListener implements ActionListener
            HelpFileName +="/";
         HelpFileName +="IsawHelp/SCDRecipA.html";
      }
-     SCDRecipLat RecipLat = new SCDRecipLat( HelpFileName);
-    
+     SCDRecipLat RecipLat = new SCDRecipLat( HelpFileName, 1);
+     RecipLat.setMaxCrystalDistance( MaxXtallengthReal );
      RecipLat.getSCDLat( Peaks , true );
+    
      float[][] UnitNormals = RecipLat.getPlaneNormals();
+     
+     return RecipLat.CalcUB(Peaks, UnitNormals, MaxXtallengthReal, Stats);
+  }
+   
+  
+  
+  //Calculates the UB matrix from GetUB with the selected normals
+  protected float[][] CalcUB( Vector Peaks, float[][] UnitNormals,
+              float MaxXtallengthReal, Vector Stats){ 
+     
      if( UnitNormals == null)
         throw new IllegalArgumentException("No Planes specified");
      if( UnitNormals.length < 3)
@@ -1953,8 +2122,8 @@ private class ReadoutListener implements ActionListener
      GetUB.OmitPeaks( Peaks , Directions[0] , omit , .1f , true );
      GetUB.OmitPeaks( Peaks , Directions[1] , omit , .1f , true );
      GetUB.OmitPeaks( Peaks , Directions[2] , omit , .1f , true );
-     
-     float[][] UB =GetUB.UBMatrixFrPlanes( Directions, Peaks , omit , Stats 
+     float[] Statsfl= new float[4];
+     float[][] UB =GetUB.UBMatrixFrPlanes( Directions, Peaks , omit , Statsfl 
                                                                  , 3 );
      
      if( UB == null){ 
@@ -1962,12 +2131,11 @@ private class ReadoutListener implements ActionListener
                  "Planes not distinct directions or not enough points are " +
                  "close to the planes");
      }
-     int n=0;
+     int n=4;
      if( Stats != null){
-        n = Math.min( 4 , Stats.length );
-        java.util.Arrays.fill( Stats ,0 );
+        Stats.clear();
         for( int i=0; i < n; i++){
-           Stats[i] = GetUB.IndexStat( UB, Peaks,(i+1)*.1f, null);
+           Stats.addElement(  GetUB.IndexStat( UB, Peaks,(i+1)*.1f, null));
         }
      }
      return UB;
