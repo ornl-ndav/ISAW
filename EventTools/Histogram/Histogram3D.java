@@ -193,22 +193,25 @@ public class Histogram3D
    * underlying array, the event lists are returned in many small sections.
    * Specifically, a Vector of Vectors is returned, with one entry in the
    * top level Vector, for each segment of the array that was processed
-   * separately.  The "inner" Vector, corresponding to one segment of the
+   * separately.  The "inner" Vectors, corresponding to one segment of the
    * array, contains multiple IEventList3D objects, one for each bin of the
-   * specified binner.  Specifically, if the specified binner split the 
-   * interval [10,100) into 9 uniform bins, then 9 lists of events will 
+   * specified binner, and one for 3D histogram bins with values larger than
+   * the maximum binner value.  Specifically, if the specified binner splits 
+   * the interval [10,100) into 9 uniform bins, then 10 lists of events will 
    * be returned.  The first list of events will have x,y,z values at bin 
    * centers, for bins in the segment with counts in the interval [10,20).
-   * The second list of events will have x,y,z values at bin centers, 
-   * for bins with counts in the interval [20,30), etc.  The code for
-   * each event will be set to the value that was in the bin. If there were 
-   * no bins with counts in a particular interval, in a particular segment
-   * of the array, then that IEventList3D will be NULL. 
+   * The event codes will be 0 for these events. The second list of events 
+   * will have x,y,z values at bin centers, for bins with counts in the 
+   * interval [20,30), etc.  The event codes will be 1 for these events.
+   * Finally, 10th list will have the x,y,z values at bin centers, for bins
+   * with counts greater than 100.  If there were no bins with counts in a 
+   * particular interval, in a particular segment of the array, then that 
+   * IEventList3D will be NULL. 
    *   For example, if the binner had 9 bins and the array was split 
-   * into 4 segments, then there could be as many as 36 IEventList3D 
+   * into 4 segments, then there could be as many as 40 IEventList3D 
    * objects.  The top level vector would have 4 entries, one for each 
    * segment that was processed.  Each of these 4 entries would be a
-   * Vector with 9 entries.  Each of those 9 entries would either be 
+   * Vector with 10 entries.  Each of those 10 entries would either be 
    * an IEventList3D, or null.  
    *   
    * @param binner  The IEventBinner specifying the histogram levels
