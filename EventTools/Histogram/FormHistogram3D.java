@@ -50,7 +50,7 @@ public class FormHistogram3D
 
   public static void main( String args[] ) throws IOException
   {
-    int HIST_SIZE = 512;
+    //int HIST_SIZE = 512;
 
 
     //------------
@@ -75,9 +75,13 @@ public class FormHistogram3D
     System.out.println("Y range: " + events.getYExtent() );
     System.out.println("Z range: " + events.getZExtent() );
 
-    IEventBinner x_bin = new UniformEventBinner( x_min, x_max, HIST_SIZE );
-    IEventBinner y_bin = new UniformEventBinner( y_min, y_max, HIST_SIZE );
-    IEventBinner z_bin = new UniformEventBinner( z_min, z_max, HIST_SIZE );
+    int X_SIZE = (int)((x_max-x_min)*1000.0/50.0);
+    int Y_SIZE = (int)((y_max-y_min)*1000.0/50.0);
+    int Z_SIZE = (int)((z_max-z_min)*1000.0/50.0);
+    System.out.println("Sizes = " + X_SIZE + ", " + Y_SIZE + ", " + Z_SIZE );
+    IEventBinner x_bin = new UniformEventBinner( x_min, x_max, X_SIZE );
+    IEventBinner y_bin = new UniformEventBinner( y_min, y_max, Y_SIZE );
+    IEventBinner z_bin = new UniformEventBinner( z_min, z_max, Z_SIZE );
 
 
     //------------
@@ -147,8 +151,10 @@ public class FormHistogram3D
       } 
     }
 
-
-    binner = new UniformEventBinner( 5, 100, 15 );
+    float min  =  15;
+    float max  =  100;
+    int   bins =  20;
+    binner = new UniformEventBinner( min, max, bins );
     ShowHistogram.show_histogram( hist_3D, binner );
   }
 
