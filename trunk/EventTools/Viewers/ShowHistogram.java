@@ -89,7 +89,7 @@ public class ShowHistogram
         {
           events = (FloatArrayEventList3D)(lists.elementAt(k));
           pts = events.getEventArrays();
-          size = (6*k)/lists.size() + 1;
+          size = (6*k)/lists.size() + 2;
           shape = new PointList( pts[0], pts[1], pts[2], 
                                  size, colors[k+shift], 1.0f );
           group.addChild( shape );
@@ -117,7 +117,7 @@ public class ShowHistogram
 //    demo.setCamera( new OrthographicCamera( demo.getCamera() ) );
     new MouseArcBall( demo );
 
-    JFrame frame = new JFrame( "BoxGeometry Test" );
+    JFrame frame = new JFrame( "Thresholded Histogram" );
     frame.setSize(500,517);
     frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
     frame.getContentPane().add( demo.getDisplayComponent() );
