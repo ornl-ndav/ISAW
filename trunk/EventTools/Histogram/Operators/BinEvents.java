@@ -136,7 +136,7 @@ public class BinEvents implements IOperator
 
     for ( int i = 0; i <  num_events; i++ )
     {
-      /*  NOTE: This second form of the calculation executes faster on 
+      /*  NOTE: This form of the calculation executes faster on 
        *        a 2-processor XEON (32 bit Linux).
        */
        events.getEventVals( i, ev_xyz );
@@ -164,7 +164,7 @@ public class BinEvents implements IOperator
          }
        }
        
-      /*  NOTE: This second form of the calculation executes faster on 
+      /*  NOTE: This form of the calculation executes faster on 
        *        a 4-core Opteron (64 bit Linux).
        *        
        val     = events.getEventZ( i );
