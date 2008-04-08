@@ -44,9 +44,15 @@ import gov.anl.ipns.Operator.*;
 /**
  * This IOperator extracts information from the specified 3D array in the form
  * of lists of events at bin centers, for bins whose count values are in
- * specified intervals.  Several objects of this class, covering different 
- * ranges of "pages" in the 3D array are run in separate threads by a method
- * in the Histogram3D class, to get events from the entire Histogram3D object.  
+ * specified intervals.  The code for the "event" is the index of the binner
+ * interval containing the bin count, if the bin count is in the half open
+ * interval covered by the binner.  If the bin count is greater than the
+ * right end point of the interval covered by the binner, then the 
+ * event code is the number of bins in the binner.  If the bin count is less
+ * than the left endpoint NO event is associated with the bin.  Several 
+ * objects of this class, covering different ranges of "pages" in the 3D 
+ * array are run in separate threads by a method in the Histogram3D class, 
+ * to get events from the entire Histogram3D object.  
  */
 
 public class GetEventLists implements IOperator
@@ -64,10 +70,11 @@ public class GetEventLists implements IOperator
   /**
    * Construct an operator to extract events from the specified range of
    * pages of the specified histogram array.  All events are assumed to 
-   * occur at the bin centers.  A bin with a count of 10 will give an 
-   * event with count 10 at the x,y,z values corresponding to the center of
+   * occur at the bin centers.  Suppose the binner has bins [ai,bi) for i = 0 
+   * to NUM_BINS-1.  A bin with a count that lies in [ai,bi) will give an 
+   * event with code k at the x,y,z values corresponding to the center of
    * the bin's column, row and page.  IEventBinner objects determine the 
-   * mapping between page,row and column numbers and x,y,z coordinates.
+   * mapping between page, row and column numbers and x,y,z coordinates.
    *  
    * @param histogram  The 3D array from which the events are extracted.
    * @param first_page The first page of the portion of the 3D histogram 
@@ -113,9 +120,14 @@ public class GetEventLists implements IOperator
    *  have x,y,z values at bin centers, for bins with counts in the 
    *  interval [10,20).  The second list of events will have x,y,z values
    *  at bin centers, for bins with counts in the interval [20,30), etc.
+   *  The event code for a bin with count in the 0th interval, [10,20), will 
+   *  be zero; the event code for a bin with count in the 1st interval, 
+   *  [20,30), will be 1, etc.  The event code for a bin with count >= 100
+   *  will be 9.
    *
-   *  @return A vector containing one IEventList3D objects for each 
-   *          interval [ai,bi) of the given binner.
+   *  @return A vector containing one IEventList3D object for each 
+   *          interval [ai,bi) of the given binner, and on IEventList3D
+   *          object for bins exceeding the maximum value of the binner. 
    *          NOTE: If there were no events in an interval [ai,bi) then
    *          the corresponding entry in the Vector will be null. 
    *          CAUTION: IT IS NECESSARY TO CHECK IF EACH RETURNED VECTOR 
@@ -124,7 +136,7 @@ public class GetEventLists implements IOperator
   public Object getResult()
   {
     int       n_bins    = binner.getNumBins();
-    int[]     bin_count = new int[ n_bins ];
+    int[]     bin_count = new int[ n_bins + 1 ];
     
     int       index;
     float[][] one_page;
@@ -144,18 +156,20 @@ public class GetEventLists implements IOperator
           index = binner.getIndex( one_row[col] );
           if ( index >= 0 && index < n_bins )
             bin_count[index]++;
+          else if ( index >= n_bins )
+            bin_count[n_bins]++;
         }
       }
     }
 
-    int[][]   codes  = new int[n_bins][] ;
-    float[][] x_vals = new float[n_bins][];
-    float[][] y_vals = new float[n_bins][];
-    float[][] z_vals = new float[n_bins][];
+    int[][]   codes  = new int[n_bins+1][] ;
+    float[][] x_vals = new float[n_bins+1][];
+    float[][] y_vals = new float[n_bins+1][];
+    float[][] z_vals = new float[n_bins+1][];
 
     Vector result = new Vector( n_bins );
     int n_events;
-    for ( int i = 0; i < n_bins; i++ )
+    for ( int i = 0; i < n_bins+1; i++ )
     {
       n_events = bin_count[i];
       if ( n_events > 0 )
@@ -167,7 +181,7 @@ public class GetEventLists implements IOperator
       }
     }
 
-    int[] ilist = new int[n_bins];
+    int[] ilist = new int[n_bins+1];
     for ( int page = first_page; page <= last_page; page++ )
     {
       one_page = histogram[page];
@@ -177,7 +191,9 @@ public class GetEventLists implements IOperator
         for ( int col = 0; col < n_cols; col++ )
         {
           index = binner.getIndex( one_row[col] );
-          if ( index >= 0 && index < n_bins )
+          if ( index >= n_bins )
+            index = n_bins;
+          if ( index >= 0 )
           {
             codes[index] [ ilist[index] ] = index;
             x_vals[index][ ilist[index] ] = (float)(x_binner.getCenter(col));
