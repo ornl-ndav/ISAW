@@ -1544,7 +1544,7 @@ public class SCDRecipLat
               color = colors.length-1;
            objs[i] = new Ball( new Vector3D((float) Q[0], (float)Q[1],
                                            (float)Q[2]),ballSize,colors[color]);
-           objs[i].setPickID( i );
+           objs[i].setPickID( Peak.seqnum() );
            
         
      }
