@@ -131,7 +131,7 @@ public class GetUB {
       return null;
    }
 
-
+  
    /**
     * Project all the peaks onto a line( thru the origin and unit vector
     * (x,y,z), z>=0).
@@ -146,9 +146,13 @@ public class GetUB {
     *           A Vector of peaks
     * @param omit
     *           a boolean array telling which peaks to omit if true
+    *           
     * @param MaxXtallengthReal
     *           The maximum length in real space of the side of the crystal
-    * @return Each bin width on the line is delta. The center bin represents 0
+    *           
+    * @return A line where each bin width on the line corresponds to length 
+    *         delta=1/(48*MaxXtallengthReal).  The center bin is the first 
+    *         element of the returned result.
     */
    public static float[] ProjectPeakToDir( float x , float y , Vector Peaks ,
             boolean[] omit , float MaxXtallengthReal, float[] line )
@@ -256,12 +260,12 @@ public class GetUB {
     *           A bunch of histogram info
     * @param minIndex   The start index of binnedData to be considered
     * @param maxIndex   the last index of the binnedData to be considered
-    * @return a 7 tuple where first pair is correlation of leading direction
-    *         then fraction that map to planes withih .2 for this direction. The
-    *         next two are the analogous information for the second leading
-    *         direction and the third pair is the analogous information for the
-    *         3rd leading direction. The last position contains the number of
-    *         candidates pick from.
+    * @return an array Res where
+    *             Res[FIT1]=2*fraction of intensity within 20% of a plane
+    *             Res[CORR] =the correlation between points that are
+    *             Res[LEN] steps apart on the binnedData line. 
+    *               The values
+    *                at CORR and LEN in Res are the best possible.
     * 
     */
    public static float[] CalcStats( float[] binnedData , int minIndex ,
@@ -297,7 +301,7 @@ public class GetUB {
 
       float sigsq = sxx - ( maxIndex - minIndex + 1 ) * mu * mu;
       sigsq = sigsq / ( maxIndex - minIndex );
-
+      float maxr=-1, minr=1;
       for( int i = 0 ; i < nspans - 2 ; i++ ) {
          int n = ( maxIndex - minIndex + 1 ) - i - 2;
          float z = 0;
@@ -306,35 +310,37 @@ public class GetUB {
          xi_xj[ i ] += - mu * xs_end[ i + 2 ] + n * mu * mu - mu
                   * ( ( maxIndex - minIndex + 1 ) * mu - z );
          xi_xj[ i ] = xi_xj[ i ] / ( n * sigsq );
-
+         if(xi_xj[i] >maxr)maxr=xi_xj[i];
+         if( xi_xj[i] < minr)minr=xi_xj[i];
       }
       xixj = xi_xj;
       boolean done = false;
       int faze = 0;
       int maxIndx = - 1;
-      float zero = 0f;
+      float middle=(maxr+minr)/2;
+      float zero = (maxr-minr)/30;
       float max_xixj_start =0;
       for( int i = 0 ; ( i < xixj.length ) && ! done ; i++ ) {
          if( faze == 0 ) {  
             
-            if( xixj[i] > max_xixj_start){
+           /* if( xixj[i] > max_xixj_start){
                
                max_xixj_start = xixj[i];
                zero = max_xixj_start/10;
             }
-            
-            if( xixj[ i ] < -zero )
+            */
+            if( xixj[ i ] < middle-zero )
                faze = 1;
                
             
          }
          else if( faze == 1 ) {
-            if( xixj[ i ] > zero )
+            if( xixj[ i ] > middle+zero )
                faze = 2;
             maxIndx = i;
          }
          else if( faze == 2 ) {
-            if( xixj[ i ] < -zero )
+            if( xixj[ i ] < middle-zero )
                faze = 3;
             else if( xixj[ i ] > xixj[ maxIndx ] ) {
 
@@ -370,7 +376,7 @@ public class GetUB {
       return Res;
    }
 
-
+ 
    private static float[] doOneDirection( Vector Peaks , float x , float y ,
             boolean[] omit , float MaxXtallengthReal, float[] line ) {
 
@@ -879,9 +885,24 @@ public class GetUB {
 
    }
 
-   //stop==1 --> returns UB coresponding to the dirs
-   //stop ==2 --> returns UB after optimization
-   //otherwise it goes through blind
+   /**
+    *  Calculates the UB matrix from a list of normals to planes whose
+    *  length is the length between consecutive planes
+   
+    * 
+    * @param PlaneDirs array of 3 plane normals whose lengths are the
+    *                  length between consecutive planes
+    * @param Peaks    The Vector of peaks
+    * @param omit     The peaks to omit from consideration
+    * @param Stats    Output of stats. Stats[0] is fraction within 10% of a 
+    *             plane Stats[1] is the fraction within 20% of plane, Stats[3]
+    *              within 30%, etc.
+    * @param stop   if 1, gets UB corresponding to dirs only
+    *               if 2, gets UB after optimization
+    *               otherwise the UB matrix is optimized and goes throug
+    *               blind.
+    * @return  The UB matrix for the Peaks
+    */
    public static float[][] UBMatrixFrPlanes( float[][] PlaneDirs ,
             Vector Peaks , boolean[] omit, float[]Stats , int stop) {
 
@@ -1123,11 +1144,36 @@ public class GetUB {
      
    }
 
-
+   /**
+    * Fills up the omit array with false for all the peaks that do not fall
+    * within the specified level of closeness to a plane in a family of planes
+    * defined by the normal to the plane whose length is the distance between
+    * planes. If count is true, the omit array is not changed but the number 
+    * that would have been omitted is returned.
+    * 
+    * @param Peaks  The vector of Peaks objects
+    * @param qNormal  The plane normal whose length is the distance between
+    *                 the parallel planes. It is assumed the first in the set
+    *                 of planes starts at 0.
+    *                 
+    * @param omit    the array of booleans that will be set( if count is false)
+    *                false if the peaks is not close to one of the parallel 
+    *                planes
+    *                
+    * @param level   The measure at how close a peak must be "indexed" to a 
+    *                plane before it will not be omitted
+    *                
+    * @param count   If true, the omit array will not be changed. This only
+    *                returns the number of Peaks that will not be indexed to
+    *                the specified level. A negative number indicates an error
+    *                
+    * @return  The number of peaks that are not indexed within the specified
+    *          level.
+    */
    public static int OmitPeaks( Vector Peaks , float[] qNormal ,
             boolean[] omit , float level, boolean count ) {
 
-      int Res = 0;
+      int Res = -1;
       if( omit == null )
          return Res;
       if( Peaks == null )
@@ -1139,6 +1185,7 @@ public class GetUB {
       if( Peaks.size() != omit.length )
          return Res;
       int c = 0;
+      Res = 0;
       float Lsq = qNormal[ 0 ] * qNormal[ 0 ] + qNormal[ 1 ] * qNormal[ 1 ]
                + qNormal[ 2 ] * qNormal[ 2 ];
       for( int i = 0 ; i < Peaks.size() ; i++ )
