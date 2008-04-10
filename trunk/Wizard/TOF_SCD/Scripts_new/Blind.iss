@@ -30,10 +30,11 @@ $Title= Blind ( Get Initial Orientation Matrix )
 # ------Parameters ---------------------
 $Peaks   PlaceHolder                  Enter peaks
 
-$useFile  BooleanEnable([False,1,3])  Use Matrix From File
+#$useFile  BooleanEnable([False,1,3])  Use Matrix From File
+$method    ChoiceList(["Blind","Read from File","Automatic","from Q Viewer"])  Method to use
 $file1    LoadFile               Input Orientation Matrix File ( .mat )    
 
-$Seq      IntArray               Sequence Numbers For Blind
+$Seq      IntArray               Sequence Numbers(Blind Method only)
 $file     SaveFile               Output Orientation Matrix File ( .mat ) 
 
 $ShowLog  Boolean( false)        Pop Up blind.log 
@@ -43,28 +44,57 @@ $path     DataDirectoryString    Output Data Path
 
 #-------------  Code ----------------
 
-if useFile
+if method == "Read from File"
 
-  return readOrient( file1 )
+  X= readOrient( file1 )
+  WriteMatrix( file, X)
+  return X
   
 endif
 
+Status =[1,2,3,4]
+MaxXtalLength = 12.0
 
-X= JBlindB( Peaks, seq, file )
+if method =="Blind"
 
-
-if ShowLog
- 
-   ViewASCII( path&"blind.log")
+   X= JBlindB( Peaks, seq, file )
    
-else
-    Display "the file blind.log has the log information"
+elseif method =="Automatic"
+   P= VectorTo_floatArray([1,2,3,4])
+
+   X=GetUBMatrix( Peaks, MaxXtalLength, P)
+   Status = ToVec(P)
+
+elseif method =="from Q Viewer"
+   X = GetUBFrRecipLatPlanes( Peaks,MaxXTalLength,Status)
+   
+endif
+
+if method =="Blind"
+  if ShowLog
+  
+      ViewASCII( path&"blind.log")
+  
+   
+  elseif method == "Blind"
+      Display "the file blind.log has the log information"
     
+  endif
+else
+  WriteMatrix(file, X )
+  Display "Fit Stats for Result"
+  n=ArrayLength(Status)-1
+  for i in [0:n] 
+     Display "Fraction within "&(10*(i+1))&"% of Planes="&Status[i]
+  
+  endfor
+  if showLog
+    ViewASCII(file)
+  endif
 endif
 
 
-
-Display "------------ Finished with Blind -------------------"
+Display "------------ Finished with the Blind Form-------------------"
 
 return X
 
