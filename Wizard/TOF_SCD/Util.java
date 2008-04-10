@@ -269,9 +269,7 @@ public class Util {
       SharedMessages.addmsg( "Peaks are listed in "+PeakFileName );
       
       (new ViewASCII(PeakFileName)).getResult();
- //     DataSetTools.trial.SCDRecipLat Lat = new DataSetTools.trial.SCDRecipLat("C:/Isaw1/IsawHelp/SCDRecipA.html");
- //     Lat.getSCDLat(  ResultPeaks, 200f, true);
- //     Command.ScriptUtil.display(  Lat.getPlaneNormals() );
+ 
       return ResultPeaks;
    }
    
@@ -702,7 +700,7 @@ public class Util {
    /**
     * For each detector in multiple files,finds theoretical positions of peaks
     * and integrates them.
-    * The matrix files are stored in outpath +"ls"+expName+runnum+".mat"
+    * @assumption  The matrix files are stored in outpath +"ls"+expName+runnum+".mat"
     * 
     * @param path                 The path where the multiple data set files 
     *                                are stored 
@@ -710,9 +708,9 @@ public class Util {
     * @param run_numbers          The Run numbers of the data set files
     * @param DataSetNums          The data set numbers in a file to "integrate" 
     * @param expname              The name of the experiment
-    * @param centeringName        The centering type:primitive,a centered,
-    *                               b centered,c centered, [f]ace centered,
-    *                               [i] body centered,[r]hombohedral centered
+    * @param centering            The centering type:primitive,a centered,
+    *                                b centered,c centered, [f]ace centered,
+    *                                [i] body centered,[r]hombohedral centered
     * @param useCalibFile         Calibrate the data sets(yes/no)
     * @param calibfile            The calibration file used to calibrate the 
     *                               data sets
@@ -729,7 +727,7 @@ public class Util {
     * @param Yrange               Range of offsets around a peak's
     *                                  y value(-1:3)
     * @param ShowLog              Pop up the log file
-    * @param maxThreads           The maximum number of threads to run
+    * @param MaxThreads           The maximum number of threads to run
     * @return  nothing though a .integrate and a .log file are created.
     */
    public static Object IntegrateMultipleRuns(
@@ -746,7 +744,7 @@ public class Util {
            int increase,
            String inst,
            String FileExt,
-           float d_min ,
+           float d_min,
            String PeakAlg,
            String Xrange,
            String Yrange,
