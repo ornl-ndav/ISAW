@@ -1,0 +1,99 @@
+
+Auto formation of Display Lists... considerations.
+
+To allow for mutabilitiy of nodes:
+
+1. If a node is altered, it must inform it's parent that it was altered.
+   This "ListStale()" message must propagate up through all ancestor nodes,
+   so that actual Render() methods are called, rather than GL calling 
+   a DisplayList at a top level with no lower level nodes Render() method
+   getting called.  (GL directly invokes Display Lists.)
+
+2. When Render() is called, node must:
+
+   a) Do full Render(), calling Render() on it's children, 
+      IF any one of it's children is not a list.  (i.e. if ListStale()
+      was called "recently".)  In this case, it should NOT form a
+      new list.
+      (Infact, it must call kid's method: CanAddToList()
+
+   b) Make an new list for itself, if ALL of it's children are lists,
+      but it is not currently a list.  That is, it will create a new list,
+      call Render() on it's children, then mark itself as being a list.
+ 
+   c) Just Call it's own list, if it is a list, and ListStale() was 
+      not called "recently".
+
+This requires methods for each Node ( or Geometry or Appearance ):
+
+ListStale()  called to inform parent Node that one or more of its children have 
+been altered.
+
+IsList() called by parent to check if it's child's List has been rebuilt yet.
+
+ 
+
+Methods and fields needed on any node that can be a kid:
+
+CanBePutInList() -- Called by parent, when parent is deciding whether
+                       whether to form list.
+                       Returns true if kid is a list, or if kid does NOT
+                       form its own list.
+
+ListStale()      -- called when node is altered, 
+                       calls parent.ListStale()
+                       sets list_ok false
+list_ok
+list_id
+
+Methods and fields needed on any node that can be a parent:
+
+ListStale()
+
+---------------------------------------------------------------------------
+NODE STATES:
+
+AS PARENT -----------------------------------------------------------------
+
+A. kids can't be put in list    => just do explict Render(), 
+                                   and call kids.Render()
+
+B. kids ready to be put in list => open list then do explicit Render()
+                                   and call kids.Render(), then close list.
+
+C. I'm already a list           => just call list.
+
+
+Transitions:
+  A. => B.   Before doing explicit Render(), call all kids.CanBePutInList().
+             If all return true, state changes from A. to B. and a list is
+             formed.
+   
+  B. => C.   The Render() method will form list immediately, when it 
+             discovers the kids are ready.
+
+  C. => B.   If my ListStale() method is called, because I was modified.
+
+  C. => A.   If my ListStale() method is called by a kid that was modified.
+
+  B. => A.   This is trouble... this could occur if a kid is altered
+             by a different thread, after node has opened a new list
+             and started rendering, but before the kid's render is called.
+             DO ALL RENDER METHODS NEED TO BE SYNCHRONIZED?
+             DO ALL NODE MODIFICATIONS NEED TO ARBITRATED, SAY PULLED FROM
+                A QUEUE BEFORE RENDER STARTS?
+
+AS KID -----------------------------------------------------------------
+
+D. I'm a list, and the list is called implicitly by OpenGL, since 
+   my parent is also a list.
+
+E. I'm a list but my parent is not, so my Render() method is called, and
+   I just call my list.
+
+F. I'm not a list,  
+
+
+
+
+
