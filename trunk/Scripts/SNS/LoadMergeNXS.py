@@ -99,6 +99,7 @@ class LoadMergeNXS(GenericLoad):
             dataType = retriever.getType(i)
             if (dataType == Retriever.HISTOGRAM_DATA_SET) or loadMon:
                 ds = retriever.getDataSet(i)
+                print "Reading %d of %d: %s" % (i, num, ds.getTitle())
             else:
                 ds = None
             if retriever.getType(i) == Retriever.HISTOGRAM_DATA_SET:
@@ -114,7 +115,10 @@ class LoadMergeNXS(GenericLoad):
                     result.add(ds)
 
         # fix the title
-        # merged = fixTitle(merged, titles)
+        try:
+            merged = fixTitle(merged, titles)
+        except:
+            pass
 
         # plot the data if requested
         if viewtype is not None:
