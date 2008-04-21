@@ -194,9 +194,9 @@ public class BlindJ_base extends  GenericTOF_SCD implements
     Vector newPeaks = new Vector();
     int seqNumindx = 0;
     for(int i=0; (i < peaks.size()) && (seqNumindx <seq.length);i++){
-       IPeak_IPNS_out p =(IPeak_IPNS_out) peaks.elementAt(i);
-       if(p.seqnum() == seq[seqNumindx]){
-         newPeaks.addElement( p);
+       IPeak ipeak =(IPeak)peaks.elementAt(i);
+       if(ipeak.seqnum() == seq[seqNumindx]){
+         newPeaks.addElement(ipeak);
          seqNumindx ++;
        }
     }
