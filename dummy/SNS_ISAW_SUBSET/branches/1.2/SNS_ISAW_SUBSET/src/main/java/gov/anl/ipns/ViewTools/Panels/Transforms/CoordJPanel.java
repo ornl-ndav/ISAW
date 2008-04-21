@@ -715,7 +715,9 @@ public class CoordJPanel extends ActiveJPanel implements Serializable,
 
     CoordBounds global_WC = getGlobalWorldCoords();      // keep new bounds
                                                          // within global WC
-    local_transform.setSource( b.intersect( global_WC ));
+    CoordBounds restrictedBounds = b.intersect( global_WC );
+    if ( restrictedBounds != null )
+      local_transform.setSource( restrictedBounds );
   }
  
 
