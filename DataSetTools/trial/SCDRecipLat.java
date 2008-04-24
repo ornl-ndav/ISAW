@@ -1373,73 +1373,11 @@ public class SCDRecipLat
      
      return Res;
      
-    /* Vector3D v =a_star_vec.getVector();
-     if( v== null)
-        Res[0] = null;
-     else{
-        v.normalize();
-        Res[0] = v.get();
-     }
-     
-     v =b_star_vec.getVector();
-     if( v== null)
-        Res[1] = null;
-     else{
-        v.normalize();
-        Res[1] = v.get();
-     }
-     
-     v =c_star_vec.getVector();
-     if( v== null)
-        Res[2] = null;
-     else{
-        v.normalize();
-        Res[2] = v.get();
-     }
-     
-     return Res;
-     */
+   
   }
      
     
-  //Calculates normals.  deprecated too difficult to get 3 planes
-  private float[][] getPlaneNormals_Dist(){
-     Vector3D[] vects = new Vector3D[3];
-     vects[0]=a_star_vec.getVector();
-     vects[1]=b_star_vec.getVector();
-     vects[2]=c_star_vec.getVector();
-     float[][] Res = new float[3][];
-     for( int direction = 0 ; direction < 3 ; direction++ ) {
-         Vector3D v1 = vects[ ( direction  ) % 3 ];
-         Vector3D v2 = vects[ ( direction + 1 ) % 3 ];
-         if( v1 == null || v2 == null )
-            Res[direction]= null;
-         else {
-            v1.cross( v2 );
-            v1.normalize();
-            IThreeD_Object[] objs = get_data_objects();
-            Vector3D[] points = new Vector3D[ objs.length ];
-            for( int i = 0 ; i < objs.length ; i++ ) {
-               points[ i ] = objs[ i ].position();
-            }
-            Data ds = ProjectPoints( points , v1 , direction +1 );
-            if( ds == null )
-               return null;
-            DataSet DS = new DataSet();
-            DS.addData_entry( ds );
-            DS = FFT( DS );
-            if( DS == null )
-               Res[direction] = null;
-            else {
-               ds = DS.getData_entry( 0 );
-               Res[ direction ]= CalcNormal( v1, ds);
-            }
-         }
-
-      }
-    
-      return Res;
-   }
+ 
   
   //Returns the float[3] whose direction is the normal to the selected plane
   // and whose length represents the distance between two such planes
@@ -1729,6 +1667,7 @@ private class SliceButtonListener implements ActionListener
            ShowPlane( origin_vec.getVector(),
                             b_star_vec.getVector(),
                             c_star_vec.getVector(), 1 );
+       
     }
     else if ( action.equals( C_A_SLICE ) )
     {
@@ -1771,6 +1710,7 @@ private class SliceButtonListener implements ActionListener
      name +="_Plane points";
      if( Undefined( origin)||Undefined(base1)||Undefined(base2)){
         vec_Q_space.removeObjects( name);
+        Redraw();
         return;
      }
      IThreeD_Object objects[] = new IThreeD_Object[ 1 ];
@@ -1798,7 +1738,7 @@ private class SliceButtonListener implements ActionListener
      marker.setType( type );
      objects[0] = marker;
      vec_Q_space.setObjects( name, objects );
-     
+     Redraw();
      
   }
 }
@@ -1998,6 +1938,7 @@ private class ReadoutListener implements ActionListener
            float[][] UnitNormals = getPlaneNormals();
            Vector Stats = new Vector(4);
            try{
+              
               float[][]UB = CalcUB(Peaks, UnitNormals, MaxCrystalDistance,  
                                                                 Stats);
               if(UB == null){
@@ -2007,6 +1948,11 @@ private class ReadoutListener implements ActionListener
               String Message ="UB matrix\n";
               for( int i=0;i<3;i++)
                  Message +=UB[i][0]+" , "+UB[i][1]+" , "+UB[i][2]+"\n";
+              Message +="\n Cell Parameters\n";
+              double[] lats= Util.abc( LinearAlgebra.float2double( UB ) );
+              if( lats != null && lats.length >=6)
+              Message += lats[0]+"  "+lats[1]+"  "+lats[2]+"\n     "+lats[3]+" "+
+                     lats[4]+"  "+lats[5]+"\n\n";
               Message +="\n Stats(Fraction indexed at given level)\n";
               if( Stats != null)
               for( int i=0; i< Math.min( 4, Stats.size()); i++)
@@ -2099,6 +2045,8 @@ private class ReadoutListener implements ActionListener
      
      float[][] Directions= new float[3][3];
      float[] line = new float[200];
+     
+     float[] Max = new float[3];
      for( int i=0; i< 3;i++){
         line=GetUB.ProjectPeakToDir( UnitNormals[i][0] , UnitNormals[i][1] , Peaks ,
                  null , MaxXtallengthReal , line );
@@ -2113,9 +2061,22 @@ private class ReadoutListener implements ActionListener
         Directions[i]= new float[3];
         for( int j=0;j<3;j++){
            Directions[i][j]= dSpaceRecip*UnitNormals[i][j];
+           if(Math.abs( Directions[i][j]) >Max[i])
+              Max[i] =Math.abs( Directions[i][j]) ;
         }         
         
      }
+     //Check if independent
+     float det = (float)LinearAlgebra.determinant( 
+                LinearAlgebra.float2double( Directions ));
+     
+     if( Math.abs( det )< .01*Max[0]*Max[1]*Max[2]){
+        throw new IllegalArgumentException(
+                 "The normals to the 3 planes are collinear");
+        
+     }
+     
+     
      boolean[] omit = new boolean[ Peaks.size()];
      java.util.Arrays.fill( omit , false );
      //Only eliminate even close outliers.
