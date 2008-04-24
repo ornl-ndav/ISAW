@@ -513,6 +513,7 @@ public class ConvertDataTypes{
         return null;
         
      String[] X = StringArrayValue( O );
+     
      if( X == null )
        return null;
        
@@ -636,6 +637,18 @@ public class ConvertDataTypes{
   public static java.util.Date parse( java.lang.String DateString ){
     
      return NxNodeUtils.parse( DateString );
+  }
+  
+  public static java.util.Date parse2Date( java.lang.String DateString ){
+     
+     long T = parse_new( DateString );
+     if( T < 0 )
+        return null;
+     
+
+     GregorianCalendar GCal = new GregorianCalendar();
+     GCal.setTimeInMillis( T );
+     return GCal.getTime();
   }
   
   
@@ -808,7 +821,7 @@ public class ConvertDataTypes{
          }
       }
       
-      GregorianCalendar GCal = new GregorianCalendar( year , month , day ,
+      GregorianCalendar GCal = new GregorianCalendar( year , month-1 , day ,
                hour , minute , second );
       GCal.set( Calendar.MILLISECOND , (int) ( frac_second * 1000 ) );
       return GCal.getTimeInMillis();
