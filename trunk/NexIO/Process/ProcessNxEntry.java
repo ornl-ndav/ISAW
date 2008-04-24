@@ -198,12 +198,18 @@ public class ProcessNxEntry  implements IProcessNxEntry {
        
         }
         //--------------- Run Number DataSet Attribute ---------------
-        Integer run_num = NexUtils.getIntFieldValue(NxEntryNode, "run_number");
-
-        if (run_num != null) {
+        String St_run_num = NexUtils.getStringFieldValue(NxEntryNode, "run_number");
+        int run_num = -1;
+        try{
+           run_num = Integer.parseInt( St_run_num );
+        }catch(Exception ss){
+           run_num = -1;
+        }
+        
+        if (run_num >=0 ) {
             int[] runs = new int[1];
 
-            runs[0] = run_num.intValue();
+            runs[0] = run_num;
             DS.setAttribute(new IntListAttribute(Attribute.RUN_NUM, runs));
         }
 
