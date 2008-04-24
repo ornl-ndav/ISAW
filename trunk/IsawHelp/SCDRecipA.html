@@ -19,7 +19,10 @@
             button is pressed. This plane is determined by the points selected 
             for the origin, a*, and c*.<P>
             
-       <li> <B>NOTE:</B> No two of the three planes should be parallel.
+       <li> <B>NOTE:</B> Need at least  <U><B>3 NON-PARALLEL PLANES</B></u> with 
+          <U><B>3 NON-COPLANAR NORMAL DIRECTIONS</B></U> to get a UB matrix.<BR>
+          Check Information Menu to see if you were successful.
+       
             
      </ol>
      
@@ -81,6 +84,21 @@
        
      </UL>
      <P><HR>
+     <UL><H2><CENTER> Menu Items </CENTER><H2>
+         <LI> <U>Help-How To</U>:  Displays this help menu
+         <LI> <U>Information-Load Orientation Matrix</u>: Loads and displays the orientation
+                  matrix centered at the origin( shows q directions associated with
+                  (h,k,l)=(1,0,0) and (0,1,0) and (0,0,1)).<P>
+              <B>NOTE</B> Changing the origin point will translate these vectors
+
+         <LI> <U>Information-Current Results</u>: Displays the UB matrix that will be
+              returned and also the statistics for goodness of fit. The statistics that
+              are displayed are the fraction of peaks that are indexed within 10% , 20%,
+              30%, and 40% of the family of planes defined by the orientation matrix
+
+     </UL>
+     <P><HR>
+   
      <OL type = "1"> <H2><Center>Steps to Get Three distinct planes
                                                               </Center></H2>
                                                               
