@@ -61,7 +61,7 @@ def fixTitle(dataset, titles):
         if numBank == len(titles):
             bankLen = len("bank")
             for i in range(len(titles)):
-                titles[i] = titles[i][bankLen]
+                titles[i] = titles[i][bankLen:]
             title = "banks " + condenseList(titles)
         else:
             title = ",".join(titles)
