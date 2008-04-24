@@ -170,10 +170,10 @@ public class NxfileStateInfo extends StateInfo{
                    if( kk + Names[k][m].length() + 1 < ((String)attr.getItemValue()).length())
                       if( ", +-[{(/t/n/r%&$".indexOf( ((String)attr.getItemValue()).charAt(kk+Names[k][m].length()+1))>=0)
                          return Names[k][0];
-                 kk = ((String)attr.getItemName()).indexOf( Names[k][m]);
+                 kk = (attr.getItemName()).indexOf( Names[k][m]);
                  if( kk >0) 
-                   if( kk + Names[k][m].length() + 1 < ((String)attr.getItemName()).length())
-                      if( ", +-[{(/t/n/r%&$".indexOf( ((String)attr.getItemName()).charAt(kk+Names[k][m].length()+1))>=0)
+                   if( kk + Names[k][m].length() + 1 < (attr.getItemName()).length())
+                      if( ", +-[{(/t/n/r%&$".indexOf( (attr.getItemName()).charAt(kk+Names[k][m].length()+1))>=0)
                          return Names[k][0];
               }
               
@@ -190,7 +190,7 @@ public class NxfileStateInfo extends StateInfo{
     if( InstrSourceNode != null){
    // for( int i=0;( i< InstrNode.getNChildNodes()) &&(NODE == null); i++){
        NxNode node= InstrSourceNode;
-       if( node.getClass().equals("NXsource")){
+       if( node.getNodeClass().equals("NXsource")){
           NODE=node;
           for( int k=0; k< Names.length; k++)
              for( int m=0; m< Names[k].length; m++){
@@ -274,7 +274,7 @@ public class NxfileStateInfo extends StateInfo{
                if( s instanceof org.xml.sax.SAXParseException)
                   S +=" at line "+
                       ((org.xml.sax.SAXParseException)s).getLineNumber();
-               (new javax.swing.JOptionPane()).showMessageDialog(null,S);
+               javax.swing.JOptionPane.showMessageDialog(null,S);
                return null;
             
          }
