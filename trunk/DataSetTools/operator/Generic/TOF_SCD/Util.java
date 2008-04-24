@@ -127,6 +127,7 @@ import DataSetTools.dataset.IntAttribute;
 import DataSetTools.dataset.IntListAttribute;
 import DataSetTools.dataset.PixelInfoList;
 import DataSetTools.dataset.PixelInfoListAttribute;
+import DataSetTools.dataset.XScale;
 
 public class Util{
   /**
@@ -589,6 +590,366 @@ public class Util{
     ResPeak .reflag(reflag+10);
     return ResPeak ;
   }
+  
+  /**
+   * Calculates approximate number of pixels on detector that spans an
+   * "error" of dQ
+   * 
+   * @param dQ       The error in Q( Q-reg/2PI  or 1/d)
+   * @param Q        The Q(or 1/d) value for the pixel.
+   * @param ScatAng  The scattering angle of the pixel in radians
+   * @param D        The distance the pixel is from the sample,(m)
+   * @param pixelW_H The minimum of width and height of the pixel,(m)
+   * @return  Approximate number of pixels that will have Q values 
+   *          within Q +/- dQ
+   * <HR width="100%">
+   * <H1><Center>FORMULAS</center></H1><P>
+   * <table><tr>
+   *   <td> Q = </td>
+   *   <td> <table><tr><td> mv sin(scatAng/2)</td></tr>
+   *               <tr><td><hr width=100%></td></tr>
+   *               <tr><td align=CENTER> &pi; </td></tr>
+   *         </table> </td>
+   * </tr></table><P>
+   * 
+   * <table border = 1><CAPTION> Partial wrt ScatAngle</CAPTION><tr>
+   *    <td> dQ =</td>
+   *    <td> <table>
+   *            <tr><td> mv cos(scatAng/2) d ScatAng</td></tr>
+   *            <tr><td><hr width="100%"></td></tr>
+   *            <tr><td align = CENTER> 2&pi; </td></tr> 
+   *    
+   *         </table>
+   *    </td>
+   *   <td> =</td>
+   *   <td><table>
+   *         <tr><td align=center> Q dScatAng</td></tr>
+   *         <tr><td><hr width="100%"></td></tr>
+   *         <tr><td>  2 tan(ScatAng/2)</td></tr>
+   *   
+   *       </table>
+   *   </td>
+   * </tr></table><P>
+   * <table border=1><CAPTION> Solve for dScatAng</CAPTION><tr>
+   *   <td> dScatAng =</td>
+   *   <td> <table> 
+   *          <tr> <td align=center>2 tan(ScatAng/2) dQ</td></tr>
+   *            <tr><td><hr width="100%"></td></tr>
+   *          <tr> <td align=center> Q</td></tr>
+   *        </table>
+   *   </td><P>
+   *   
+   * 
+   * </tr></table><P>  
+   *        
+    * <CENTER>Now transfer changed to dRow,dCol. </CENTER><P>
+   * <CENTER>Assume Span of peak well with in dQ*.3 where 
+   *               dQ=1/Max Crystal cell side</CENTER><P>
+   *               
+   * <U>dDist =  Dist*dScatAng</u> &nbsp; &nbsp; &nbsp; (s =r &theta; formula)<P>
+   * <U> dNrows = dDist/(height of center pixel)</u><P>
+   * <U> dNcols = dDist/(width of center pixel)</u><P>          
+   */
+  public static float dPixel(float dQ, float Q, float ScatAng, float D, 
+                                                             float pixelW_H ){
+     
+     return (float)(dQ*2*Math.tan( ScatAng/2 )*D / (pixelW_H * Q));
+     
+  }
+  
+  /**
+     * Calculates approximate number of time channels that spans an
+   * "error" of dQ in Q
+  * @param dQ       The error in Q( Q-reg/2PI  or 1/d)
+   * @param Q       The Q( Q-reg/2PI  or 1/d) value for the pixel.
+   * @param Time    The total time in us from moderator to detector
+   * @param dT_Chan The time in us in the time channel.
+   * @return     The approximate number of time channels that span an error
+   *             of dQ in Q.
+     * <HR width="100%">
+   * <H1><Center>FORMULAS</center></H1><P>  
+   * 
+   * <table border = 1><CAPTION> Partial wrt to time. v = path_lenTot/Time</CAPTION>
+   *    <tr>
+   *      <td> dQ =</td>
+   *      <td> 
+   *         <table> 
+   *            <tr><td>[-]m* sin(ScatAng/2)path_lenTot*dTime</td></tr>
+   *            <tr><td><hr width="100%"></td></tr>
+   *            <tr><td align=center> &pi; Time<sup>2</sup>
+   *         
+   *         </table>
+   *      </td>
+   *      <td> =</td>
+   *      <td><table>
+   *            <tr> <td>[-]Q*dTime</td></tr>
+   *            <tr><td><hr width="100%"></td></tr>
+   *            <tr><td align=center>  Time</td></tr>
+   *            
+   *      
+   *          </table>
+   *      </td>
+   * 
+   * </tr></table><P>
+   * 
+   * <table border=1><CAPTION> Solve for dTime</CAPTION><tr>
+   *    <td> dTime =</td>
+   *     <td><table>
+   *           <tr><td>[-] Time*dQ</td></tr>
+   *            <tr><td><hr width="100%"></td></tr>
+   *            <tr><td align=center> Q</td></tr>
+   *         </table>
+   *     </td>
+   * </tr></table><P>  <P>
+   * <U> dNChan = dTime/( length of time bin center)         
+   */
+  public static float dTChan( float dQ, float Q, float Time, float dT_Chan ){
+     
+     return Time*dQ/Q/dT_Chan;
+     
+  }
+  /**
+   * Find the centroided location of a peak. Algorithm not good
+   *
+   * @param peak  the peak to centroid which already has an initial
+   *              position
+   * @param ds    the dataset to use for centroiding
+   * @param grid  IDataGrid with references to the Data blocks for each
+   *              column and row of an area detector.
+   * @param MaxXtallength  The maximum length of a side in a unit cell
+   * <HR width="100%">
+   * <H1><Center>FORMULAS</center></H1><P>
+   * <table><tr>
+   *   <td> Q = </td>
+   *   <td> <table><tr><td> mv sin(scatAng/2)</td></tr>
+   *               <tr><td><hr width=100%></td></tr>
+   *               <tr><td align=CENTER> &pi; </td></tr>
+   *         </table> </td>
+   * </tr></table><P>
+   * 
+   * <table border = 1><CAPTION> Partial wrt ScatAngle</CAPTION><tr>
+   *    <td> dQ =</td>
+   *    <td> <table>
+   *            <tr><td> mv cos(scatAng/2) d ScatAng</td></tr>
+   *            <tr><td><hr width="100%"></td></tr>
+   *            <tr><td align = CENTER> 2&pi; </td></tr> 
+   *    
+   *         </table>
+   *    </td>
+   *   <td> =</td>
+   *   <td><table>
+   *         <tr><td align=center> Q dScatAng</td></tr>
+   *         <tr><td><hr width="100%"></td></tr>
+   *         <tr><td>  2 tan(ScatAng/2)</td></tr>
+   *   
+   *       </table>
+   *   </td>
+   * </tr></table><P>
+   * <table border=1><CAPTION> Solve for dScatAng</CAPTION><tr>
+   *   <td> dScatAng =</td>
+   *   <td> <table> 
+   *          <tr> <td align=center>2 tan(ScatAng/2) dQ</td></tr>
+   *            <tr><td><hr width="100%"></td></tr>
+   *          <tr> <td align=center> Q</td></tr>
+   *        </table>
+   *   </td><P>
+   *   
+   * 
+   * </tr></table><P>
+   * 
+   * <table border = 1><CAPTION> Partial wrt to time. v = path_lenTot/Time</CAPTION>
+   *    <tr>
+   *      <td> dQ =</td>
+   *      <td> 
+   *         <table> 
+   *            <tr><td>[-]m* sin(ScatAng/2)path_lenTot*dTime</td></tr>
+   *            <tr><td><hr width="100%"></td></tr>
+   *            <tr><td align=center> &pi; Time<sup>2</sup>
+   *         
+   *         </table>
+   *      </td>
+   *      <td> =</td>
+   *      <td><table>
+   *            <tr> <td>[-]Q*dTime</td></tr>
+   *            <tr><td><hr width="100%"></td></tr>
+   *            <tr><td align=center>  Time</td></tr>
+   *            
+   *      
+   *          </table>
+   *      </td>
+   * 
+   * </tr></table><P>
+   * 
+   * <table border=1><CAPTION> Solve for dTime</CAPTION><tr>
+   *    <td> dTime =</td>
+   *     <td><table>
+   *           <tr><td>[-] Time*dQ</td></tr>
+   *            <tr><td><hr width="100%"></td></tr>
+   *            <tr><td align=center> Q</td></tr>
+   *         </table>
+   *     </td>
+   * </tr></table><P>
+   * 
+   * <CENTER>Now transfer changed to dRow,dCol. </CENTER><P>
+   * <CENTER>Assume Span of peak well with in dQ*.3 where 
+   *               dQ=1/Max Crystal cell side</CENTER><P>
+   *               
+   * <U>dDist =  Dist*dScatAng</u> &nbsp; &nbsp; &nbsp; (s =r &theta; formula)<P>
+   * <U> dNrows = dDist/(height of center pixel)</u><P>
+   * <U> dNcols = dDist/(width of center pixel)</u><P>
+   * <U> dNChan = dTime/( length of time bin center) 
+   * 
+   * 
+   */
+  public static IPeak centroidA(IPeak peak, DataSet ds, IDataGrid grid,
+            float MaxXtallength){
+     
+    //--------------------CAlC size of one peak---------------- 
+     float DQ= .3f/MaxXtallength;
+     float Q = (new Vector3D(peak.getQ())).length();
+     float L1 = peak.L1();
+     float DT = (L1+peak.time())*DQ/Q;
+    
+     
+     Vector3D pos = grid.position( peak.y(), peak.x());
+ 
+     float D = pos.length();
+     float ScatAng = (float) Math.acos(  pos.get()[0]/D );
+     
+     float dScat =(float)( 2*DQ*Math.tan(ScatAng/2)/Q);
+     float Ddist =(D*dScat);
+     
+     
+    double asum  = 0.;
+    double xsum  = 0.;
+    double ysum  = 0.;
+    double zsum  = 0.;
+    double back  = 0.;
+    double count = 0.;
+    
+    // create the new reflection flag
+    float x,y,z;
+    int reflag=peak.reflag();
+    reflag=(reflag/100)*100+reflag%10;
+    
+    // check that the peak isn't too close to the edge
+    if( peak.nearedge()<=4.0f ){
+      peak.reflag(reflag+20);
+      return peak;
+    }
+    
+    // create the surrounding area
+    // min is in caes peak.x = ncols+.5, It could be rounded up
+    int col=  Math.min( grid.num_cols(),Math.round(peak.x()));
+    int row=  Math.min(  grid.num_rows() ,Math.round(peak.y()));
+    int time=  Math.round(peak.z());
+    
+    float dPixels = Ddist/Math.min( grid.width(row,col) ,
+             grid.height(row, col));
+    dPixels = (int)Math.max( 4 , dPixels );
+    
+    XScale xscl = grid.getData_entry(  row , col ).getX_scale();
+    int delt=1;
+    if( time >= xscl.getNum_x())
+       delt = -1;
+    
+    float TimeOneChan= Math.abs( xscl.getX( time )- xscl.getX( time + delt ) );
+    
+    int dNChan = (int)(.5+ DT/TimeOneChan);
+    dNChan = Math.max( dNChan , 2 );
+    
+    
+    int nback=0;
+    int Srow=0, Scol=0, Schan=0;
+    try{
+       
+      for( int i = col - (int) dPixels ; i <= col + (int) dPixels ; i++ ) {
+            for( int j = row - (int) dPixels ; j <= row + (int) dPixels ; j++ ) {
+               Data data = grid.getData_entry( j , i );// ds.getData_entry(ids[i][j]);
+               if( data != null ) {
+                  
+                  float[] yvals = data.getY_values();
+                 
+                  for( int k = time - dNChan ; k <= time + dNChan ; k++ ) 
+                  if(k>=0 && k <yvals.length){
+                     xsum += i * yvals[ k ];
+                     ysum += j * yvals[ k ];
+                     zsum += k * yvals[ k ];
+                     asum += yvals[ k ];
+                     count++ ;
+                     Srow +=j;
+                     Scol +=i;
+                     Schan +=k;
+                     if( i == col - (int) dPixels || i == col + (int) dPixels
+                              || j == row - (int) dPixels
+                              || j == row + (int) dPixels  
+                        || k == time-dNChan|| k == time+dNChan) { 
+                       
+                        back += yvals[ k ];
+                        nback++ ;
+                     }
+
+                  }//for k
+               }//if data != null
+            }//for j
+         }//for i
+    }catch(ArrayIndexOutOfBoundsException e){
+       
+      peak.reflag(reflag+20);
+      return peak;
+      
+    }
+    
+    double backPerCell =0;
+    if( nback > 0)
+       backPerCell = back/nback;  
+    
+    xsum = xsum - Scol*backPerCell;                                      
+    ysum = ysum - Srow*backPerCell;                                      
+    zsum = zsum - Schan*backPerCell;
+    asum = asum - count*backPerCell;
+  
+    
+    // total count must be greater than zero for this to make sense
+    if(asum<=0){
+      peak.reflag(reflag+20);
+      return peak;
+    }
+    // centroid the peaks
+    x = (float)(xsum /asum);
+    y = (float)(ysum /asum);
+    z = (float)(zsum /asum); 
+    
+    // find out how far the peaks were moved
+    float dx = Math.abs(x - peak.x());
+    float dy = Math.abs(y - peak.y());
+    float dz = Math.abs(z - peak.z());
+    
+    // Another Scaling problem.  May be a scattered peak
+    
+    if( dx > Math.max( dPixels / 2  , 1 ) || 
+        dy > Math.max( dPixels / 2 , 1 ) || 
+        dz > Math.max( dNChan / 2 , 1 ) ){
+      // don't shift positions if it is moving more than one bin
+     System.out.println("x,y,z orig, new="+peak.x()+","+peak.y()+","+peak.z()+"::"+
+              x+","+y+","+z+"::"+ dPixels+","+dNChan+","+peak.seqnum());
+      peak.reflag(reflag+20);
+      return peak;
+    }
+    
+      // update the peak
+    IPeak ResPeak = peak.createNewPeakxyz( x , y , z );
+    
+    //ResPeak is close to the original peak so bring values in
+    ResPeak.sethkl( peak.h(), peak.k(), peak.l() );
+    ResPeak.ipkobs( peak.ipkobs() );
+    ResPeak.inti( peak.inti() );
+    ResPeak.sigi( peak.sigi() );
+    
+    // return the updated peak
+    ResPeak .reflag( reflag + 10 );
+    return ResPeak ;
+  }
 
   /**
    * Write out the orientation matrix and lattice parameters to the
@@ -711,7 +1072,11 @@ public class Util{
       // sigmas
       for( int i=0 ; i<7 ; i++)
         sb.append(Format.real(sig[i],10,3));
-      sb.append("\n");
+      sb.append("\n\n\n");
+      sb.append("The above matrix is the TRANSPOSE of the UB Matrix that");
+      sb.append( "  maps the column \nvector (h,k,l ) to the column vector (q'x,q'y,q'z)");
+      sb.append( "  where \n|Q'|=1/dspacing and its coordinates are \"currently\" relative to IPNS's \n");
+      sb.append( "  right-hand coordinate system. Here x is the beam direction and z is up" );
     }
     //Write results to the matrix file
     FileWriter fw=null;
