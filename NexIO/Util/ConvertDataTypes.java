@@ -26,7 +26,7 @@
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
  *
- * For further information, see <http://www.pns.anl.gov/ISAW/>
+ * For further information, see  <http://www.pns.anl.gov/ISAW/>
  *
  * Modified:
  *
@@ -93,7 +93,7 @@ import java.util.regex.*;
 
 /**
 *    This class contains methods to convert Objects to a specified
-*    data type(including dates), Change units for data, convert Nexus axis 
+*    data type(including dates ), Change units for data, convert Nexus axis 
 *    to Isaw axes.
 *    Also, there are routines that pass through null values without causing
 *    null pointer exceptions.  These save programming lines.
@@ -109,49 +109,152 @@ public class ConvertDataTypes{
    *  @return  the float Array value corresponding to the object or null if
    *           it cannot be converted.
    */
-  public static float[] floatArrayValue( Object O){
-     if( O == null)
+  public static float[] floatArrayValue( Object O ){
+     
+     if( O == null )
         return null;
+     
      try{
-        if( O.getClass().isArray()){
-           float[] Res = new float[ Array.getLength(O)];
-           for( int i=0; i< Res.length; i++){
-              Object El = Array.get( O,i);
-              if( El instanceof Number)
-                 Res[i] = ((Number)El).floatValue();
-              else if( El instanceof String)
-                 Res[i] = (new Float( (String)El)).floatValue(); 
+        
+        if( O.getClass().isArray() ){
+           
+           if( O instanceof float[] )
+              return (float[] )O;
+           
+           if( O instanceof int[] )
+              return intArray2floatArray( (int[])O );
+           
+           if( O instanceof double[] )
+              return doubleArray2floatArray( (double[])O );
+           
+           if( O instanceof long[] )
+              return longArray2floatArray( (long[])O );
+           
+           if( O instanceof short[] )
+              return shortArray2floatArray( (short[])O );
+           
+           float[] Res = new float[ Array.getLength( O ) ];
+           for( int i = 0; i < Res.length; i++ ){
+              
+              Object El = Array.get( O, i );
+              if( El instanceof Number )
+                 Res[ i ] = ( (Number)El ).floatValue();
+              else if( El instanceof String )
+                 Res[ i ] = ( new Float( (String)El ) ).floatValue(); 
            }
            return Res; 
-        }else if( O instanceof Number){
-           float[] Res = new float[1];
-           Res[0] = ((Number)O).floatValue();
-           return Res;
-        }else if( O instanceof String){
-           String[] substrings = ((String)O).trim().split("(\\s*[,;]\\s*)|\\s+");
            
-           if( substrings == null)
+        }else if( O instanceof Number ){
+           
+           float[] Res = new float[ 1 ];
+           Res[ 0 ] = ( (Number)O ).floatValue();
+           return Res;
+           
+        }else if( O instanceof String ){
+           
+           String[] substrings = ( (String)O ).trim().split( "(\\s*[,;]\\s*)|\\s+" );
+           
+           if( substrings == null )
               return null;
            
-           float[] Res = new float[substrings.length];
+           float[] Res = new float[ substrings.length ];
            
-           for( int i=0; i<Res.length ; i++)
-              Res[i] = ( new Float( substrings[i])).floatValue();
+           for( int i= 0; i < Res.length ; i++ )
+              Res[ i ] = ( new Float( substrings[ i ] ) ).floatValue();
           
            return Res;
   
   
-        }else if( O instanceof Vector){
-            return floatArrayValue( ((Vector)O).toArray());
-
-        
+        }else if( O instanceof Vector ){
+            return floatArrayValue( ( (Vector)O).toArray() );
   
         }
-     }catch( Exception S){}
+        
+     }catch( Exception S ){}
+     
      return null;
 
         
   }
+  
+  /**
+   * Converts an integer array to a float array. Fast Utility method.
+   * @param data The integer array
+   * @return   The corresponding float array
+   */
+  public static float[] intArray2floatArray( int[] data ){
+     
+     if( data == null )
+        return null;
+     
+     float[] Res = new float[ data.length ];
+     
+     for( int i = 0; i < data.length; i++ )
+        Res[ i ] = data[ i ];
+     
+     return Res;
+     
+  } 
+  
+  
+  /**
+   * Converts a  double array to a float array. Fast Utility method.
+   * @param data The double array
+   * @return   The corresponding float array
+   */
+  public static float[] doubleArray2floatArray( double[] data ){
+     
+     if( data == null )
+        return null;
+     
+     float[] Res = new float[ data.length ];
+     
+     for( int i = 0; i < data.length; i++ )
+        Res[ i ] = (float)data[ i ];
+     
+     return Res;
+  }
+  
+  
+  /**
+   * Converts an long array to a float array. Fast Utility method.
+   * @param data The long array
+   * @return   The corresponding float array
+   */
+  public static float[] longArray2floatArray( long[] data ){
+     
+     if( data == null )
+        return null;
+     
+     float[] Res = new float[ data.length ];
+     
+     for( int i = 0; i < data.length; i++ )
+        Res[ i ] = data[ i ];
+     
+     return Res;
+  }
+  
+  
+  
+  /**
+   * Converts an short array to a float array. Fast Utility method.
+   * @param data The array of shorts
+   * @return   The corresponding float array
+   */
+  public static float[] shortArray2floatArray( short[] data ){
+     
+     if( data == null )
+        return null;
+     
+     float[] Res = new float[ data.length ];
+     
+     for( int i = 0; i < data.length; i++ )
+        Res[ i ] = data[ i ];
+     
+     return Res;
+  }
+  
+ 
  
   /**
    *  returns a int array corresponding to the object O or null if not possible.
@@ -162,50 +265,50 @@ public class ConvertDataTypes{
    *  @return  the int Array value corresponding to the object or null if
    *           it cannot be converted.
    */
-  public static int[]   intArrayValue( Object O) {
-     if( O == null)
+  public static int[] intArrayValue( Object O ) {
+     
+     if( O == null )
         return null;
         
      try{
-        if( O.getClass().isArray()){
+        
+        if( O.getClass().isArray() ){
           
-           int[] Res = new int[ Array.getLength(O)];
-           for( int i=0; i< Res.length; i++){
+           int[] Res = new int[ Array.getLength( O ) ];
+           for( int i = 0; i < Res.length; i++ ){
              
-              Object El = Array.get( O,i);
-              if( El instanceof Number)
-              
-                 Res[i] = ((Number)El).intValue();
+              Object El = Array.get( O, i );
+              if( El instanceof Number )              
+                 Res[ i ] = ( (Number)El ).intValue();
                  
-              else if( El instanceof String)
-              
-                 Res[i] = (new Integer( (String)El)).intValue(); 
+              else if( El instanceof String )              
+                 Res[ i ] = ( new Integer( (String)El ) ).intValue(); 
                  
            }
            return Res; 
            
-        }else if( O instanceof Number){
+        }else if( O instanceof Number ){
           
-           int[] Res = new int[1];
-           Res[0] = ((Number)O).intValue();
+           int[] Res = new int[ 1 ];
+           Res[ 0 ] = ( (Number)O ).intValue();
            return Res;
            
-        }else if( O instanceof String){
+        }else if( O instanceof String ){
            
-           String[] substrings = ((String)O).trim().split("(\\s*[,;]\\s*)|\\s+");
+           String[] substrings = ( (String)O).trim().split( "(\\s*[,;]\\s*)|\\s+" );
            
-           if( substrings == null)
+           if( substrings == null )
               return null;
            
-           int[] Res = new int[substrings.length];
+           int[] Res = new int[ substrings.length ];
            
-           for( int i=0; i<Res.length ; i++)
-              Res[i] = ( new Integer( substrings[i])).intValue();
+           for( int i = 0; i < Res.length ; i++ )
+              Res[ i ] = ( new Integer( substrings[ i ] ) ).intValue();
           
            return Res;
   
         }
-     }catch( Exception S){}
+     }catch( Exception S ){}
      
      return null;
 
@@ -221,16 +324,16 @@ public class ConvertDataTypes{
    *  @return  the float value corresponding to the object or Float.NaN if
    *           it cannot be converted.
    */
-  public static float  floatValue( Object O){
-     float[] Res = floatArrayValue( O);
+  public static float  floatValue( Object O ){
+     float[] Res = floatArrayValue( O );
      
-     if( Res == null)
+     if( Res == null )
         return Float.NaN;
         
-     if( Res.length < 1)
+     if( Res.length < 1 )
         return Float.NaN;
         
-     return Res[0];
+     return Res[ 0 ];
 
   }
 
@@ -243,28 +346,28 @@ public class ConvertDataTypes{
    *  @return  the int value corresponding to the object or Integer.MIN_VALUE
    *            if it cannot be converted.
    */
-  public static int intValue( Object O){
-     int[] Res = intArrayValue( O);
+  public static int intValue( Object O ){
+     int[] Res = intArrayValue( O );
      
-     if( Res == null)
+     if( Res == null )
         return java.lang.Integer.MIN_VALUE;
         
-     if( Res.length < 1)
+     if( Res.length < 1 )
         return java.lang.Integer.MIN_VALUE;
         
-     return Res[0];
+     return Res[ 0 ];
 
   }
 
   
   
-  private static char[] cnvertTochar( byte[] L){
-     if( L == null)
+  private static char[] cnvertTochar( byte[] L ){
+     if( L == null )
         return null;
         
-     char[] Res = new char[ L.length];
-     for( int i=0; i< L.length; i++)
-        Res[i] = (char)L[i];
+     char[] Res = new char[ L.length ];
+     for( int i = 0; i < L.length; i++ )
+        Res[ i ] = (char)L[ i ];
         
      return Res;
 
@@ -272,20 +375,20 @@ public class ConvertDataTypes{
   
   
   
-  private static int findNext( char[] L, char[] F, int start){
+  private static int findNext( char[] L, char[] F, int start ){
     
-     for( int i = start; (i >=0) && (i < L.length); i++){
+     for( int i = start; ( i >= 0 ) && ( i < L.length ); i++ ){
        
         boolean match = true;
-        for( int j = 0; (j< F.length) &&(match); j++)
+        for( int j = 0; ( j < F.length ) && match; j++ )
         
-           if( i+j >L.length)
+           if( i + j > L.length )
               match = false;
               
-           else if( L[i+j] != F[j])
+           else if( L[ i + j ] != F[ j ] )
               match = false;
               
-        if(match) 
+        if( match ) 
            return i;
      }
      
@@ -296,22 +399,20 @@ public class ConvertDataTypes{
   
   /** end is not included
   */
-  private static int countt( char[]L, char [] F, int start, int end){
+  private static int countt( char[]L, char [] F, int start, int end ){
      int n = 0;
-     for( int i = start; (i >=0) && (i < end); i++){
+     for( int i = start; ( i >= 0 ) && ( i < end ); i++ ){
        
         boolean match = true;
-        for( int j = 0; (j< F.length) &&(match); j++)
+        for( int j = 0; ( j < F.length ) && match ; j++ )
         
-           if( i+j >L.length)
-           
+           if( i + j > L.length )           
              match = false;
              
-           else if( L[i+j] != F[j]) 
-           
+           else if( L[ i + j ] != F[ j ] )            
               match = false;
               
-        if(match)
+        if( match )
            n++;
      }
      
@@ -328,29 +429,32 @@ public class ConvertDataTypes{
    *  @return  an array of Strings corresponding to the null terminated char
    *           sequences in L
    */
-  public static String[] charArraystoStrings( char[] L){
+  public static String[] charArraystoStrings( char[] L ){
      
-    if( L == null)
+    if( L == null )
        return null;
-    char[] two0= new char[2];
-    two0[0]=0; 
-    two0[1] = 0;
     
-    char[] one0= new char[1];
-    one0[0] = 0;
-    int n = countt( L,one0,0,L.length);
-    if( n <=0)
+    char[] two0 = new char[ 2 ];
+    two0[ 0 ] = 0; 
+    two0[ 1 ] = 0;
+    
+    char[] one0 = new char[ 1 ];
+    one0[ 0 ] = 0;
+    int n = countt( L, one0, 0, L.length );
+    if( n <= 0 )
       n++;
-    String[] Res = new String[n];
-    int k=0;
-    for( int i=0; i < n; i++){
+    
+    String[] Res = new String[ n ];
+    int k = 0;
+    
+    for( int i = 0; i < n; i++ ){
       
-       int k1 = findNext(L,one0,k);
-       if( k1 <0) 
+       int k1 = findNext( L, one0, k );
+       if( k1 < 0 ) 
           k1 = L.length;
           
-       Res[i] = new String (L,k,k1 - k );
-       k =k1+1;
+       Res[ i ] = new String ( L, k, k1 - k );
+       k = k1 + 1;
     }
     
    return Res;
@@ -365,33 +469,33 @@ public class ConvertDataTypes{
    *  @return  the String Array value corresponding to the object or null if
    *           it cannot be converted.
    */
-  public static String[] StringArrayValue( Object O){
-     if( O == null)
+  public static String[] StringArrayValue( Object O ){
+     if( O == null )
         return null;
         
-     if( O instanceof char[]){
-        return charArraystoStrings( (char[])O);
+     if( O instanceof char[] ){
+        return charArraystoStrings( (char[])O );
 
      }
      
-     if( O instanceof byte[])
+     if( O instanceof byte[] )
         return charArraystoStrings( cnvertTochar( (byte[])O));
         
-     else if( O.getClass().isArray()){
+     else if( O.getClass().isArray() ){
        
-        String[] Res = new String[ Array.getLength(O)];
-        for( int i=0; i< Res.length; i++){
+        String[] Res = new String[ Array.getLength( O ) ];
+        for( int i = 0; i < Res.length; i++ ){
           
-           Object El = Array.get( O,i);
-           Res[i] = El.toString();
+           Object El = Array.get( O, i );
+           Res[ i ] = El.toString();
         }
         
         return Res; 
         
      }else {
        
-        String[] Res = new String[1];
-        Res[0] = O.toString();
+        String[] Res = new String[ 1 ];
+        Res[ 0 ] = O.toString();
         return Res;
      }
   }
@@ -404,24 +508,24 @@ public class ConvertDataTypes{
    *  @return  the String value corresponding to the object or null if
    *           it cannot be converted.
    */
-  public static String StringValue( Object O){
-     if( O == null) 
+  public static String StringValue( Object O ){
+     if( O == null ) 
         return null;
         
-     String[] X = StringArrayValue( O);
-     if( X == null)
+     String[] X = StringArrayValue( O );
+     if( X == null )
        return null;
        
-     if( X.length < 1)
+     if( X.length < 1 )
        return null;
        
-     return X[0]; 
+     return X[ 0 ]; 
 
   }
 
 
   /**
-   * Gives Factor to mulitply OldUnits to get NewUnits(ISAW units)
+   * Gives Factor to mulitply OldUnits to get NewUnits(ISAW units )
    * 
    * @param  OldUnits  the units that are non ISAW units
    * 
@@ -431,7 +535,7 @@ public class ConvertDataTypes{
    * @return the factor to multiply a quantity in old units to get to the new units
    
    */
-  public static float getUnitMultiplier( String OldUnits, String StdUnits){
+  public static float getUnitMultiplier( String OldUnits, String StdUnits ){
      
     String NewUnits = StdUnits;
     
@@ -454,7 +558,7 @@ public class ConvertDataTypes{
     if( NewUnits.equals( "Mev" ) )
       return EnergyConversionFactor( OldUnits.trim() );
 
-    if( NewUnits.equals("steradian"))  //"sr is another symbol but if not this
+    if( NewUnits.equals("steradian" ) )  //"sr is another symbol but if not this
        return 1.0f;                    //??????????????????????????????????
     
     else return 1.0f;
@@ -479,8 +583,8 @@ public class ConvertDataTypes{
    *                 multiplying conversion factor by mult has this quantity added to
    *                 it.(For Temperature)
    */
-  public static void UnitsAdjust( float[] d,String oldUnits,String StdUnits, 
-                 float mult, float add){ //y = mx+b
+  public static void UnitsAdjust( float[] d, String oldUnits, String StdUnits, 
+                 float mult, float add ){ //y = mx+b
      
     if( oldUnits == null )
       return ;
@@ -497,7 +601,7 @@ public class ConvertDataTypes{
       return;
     
     for( int i = 0; i < d.length; i++ )
-      d[i] =mult* f * d[i]+add;
+      d[ i ] = mult * f * d[ i ] + add;
       
   } 
   
@@ -515,41 +619,41 @@ public class ConvertDataTypes{
    *         
    * @return  the ISAW detector position corresponding to the given position 
    */
-  public static DetectorPosition convertToIsaw(float distance,
+  public static DetectorPosition convertToIsaw( float distance,
                                              float phi,
-                                             float theta){
+                                             float theta ){
                                                
      DetectorPosition dp = new DetectorPosition();
-     float[] f = Types.convertFromNexus(distance, phi, theta);
-     dp.setSphericalCoords( f[0],f[2],f[1]);
+     float[] f = Types.convertFromNexus( distance, phi, theta );
+     dp.setSphericalCoords( f[ 0 ], f[ 2 ], f[ 1 ] );
      return dp;
   }
 
 
   /**
-   *  @see NexIO.NxNodeUtils#parse(String)
+   *  @see NexIO.NxNodeUtils#parse(String )
   */
-  public static java.util.Date parse(java.lang.String DateString){
+  public static java.util.Date parse( java.lang.String DateString ){
     
-     return NxNodeUtils.parse( DateString);
+     return NxNodeUtils.parse( DateString );
   }
   
   
-  private static String Year ="[12][0-9][0-9][0-9]";
-  private static String MonthDay ="([0-1][0-9])[ \\-:/\\\\]([0-3][0-9])";
-  private static String Time ="([0-5][0-9])[ \\-:]([0-5][0-9])[ \\-:]([0-5][0-9])([.][0-9]*)?";
+  private static String Year = "[12][0-9][0-9][0-9]";
+  private static String MonthDay = "([0-1][0-9])[ \\-:/\\\\]([0-3][0-9])";
+  private static String Time = "([0-5][0-9])[ \\-:]([0-5][0-9])[ \\-:]([0-5][0-9])([.][0-9]*)?";
   private static String Zone = "[+\\-]([0-2][0-9])[:]?([0-5][0-9])";
   private static String pattern = "(("+Year+")[ \\-:/\\\\]("+MonthDay+"))(([ T]"+Time+")("+Zone+")?)?";
   
   
-  private static long parse_neww( String DateString){
+  private static long parse_neww( String DateString ){
      
-     Matcher M = Pattern.compile( pattern).matcher( DateString );
-     if( !M.find())
+     Matcher M = Pattern.compile( pattern ).matcher( DateString );
+     if( !M.find() )
         return -1;
      
-     for( int i=0; i<= M.groupCount(); i++)
-        System.out.println( i+"::"+M.group(i));
+     for( int i = 0; i <= M.groupCount(); i++ )
+        System.out.println( i + "::"  + M.group( i ) );
      
      return 0;
      
@@ -563,7 +667,8 @@ public class ConvertDataTypes{
    */
   public static long parse_new( String DateString ) {
 
-      if( DateString == null ) return - 1;
+      if( DateString == null ) 
+         return - 1;
 
       DateString = DateString.trim();
       int year = - 1;
@@ -578,17 +683,20 @@ public class ConvertDataTypes{
       Pattern P1 = Pattern.compile( "[12][09][0-9][0-9][ :\\-/]" );
       Matcher M = P1.matcher( DateString );
 
-      if( ! M.find() ) return - 1;
+      if( ! M.find() ) 
+         return - 1;
 
       year = ( new Integer( DateString.substring( 0 , 4 ) ) ).intValue();
 
 
       // ----- Find Month ----------
       DateString = DateString.substring( 5 );
-      if( DateString.length() < 1 ) return - 1;
+      if( DateString.length() < 1 ) 
+         return - 1;
 
       M = Pattern.compile( "[0-1][0-9][ :\\-/]" ).matcher( DateString );
-      if( ! M.find() ) return - 1;
+      if( ! M.find() ) 
+         return - 1;
 
       month = ( new Integer( DateString.substring( 0 , 2 ) ) ).intValue();
 
@@ -596,11 +704,13 @@ public class ConvertDataTypes{
       // ----- Find Day ----------
 
       DateString = DateString.substring( 3 );
-      if( DateString.length() < 1 ) return - 1;
+      if( DateString.length() < 1 ) 
+         return - 1;
 
 
       M = Pattern.compile( "[0-1][0-9][ :\\-/T]" ).matcher( DateString );
-      if( ! M.find() ) return - 1;
+      if( ! M.find() ) 
+         return - 1;
 
       day = ( new Integer( DateString.substring( 0 , 2 ) ) ).intValue();
 
@@ -662,17 +772,23 @@ public class ConvertDataTypes{
                                  String S = M.group( 2 );
                                  if( S.length() > 1 ) {
                                     int k = S.indexOf( ":" , 1 );
-                                    if( k < 0 ) k = S.indexOf( "-" , 1 );
+                                    if( k < 0 ) 
+                                       k = S.indexOf( "-" , 1 );
+                                    
                                     if( k >= 0 )
                                        k++ ;
+                                    
                                     else
                                        k = 3;
+                                    
                                     int h = ( new Integer( S.substring( 1 , 3 ) ) )
                                              .intValue();
                                     int m = ( new Integer( S.substring( k ) ) )
                                              .intValue();
                                     int sgn = 1;
-                                    if( S.startsWith( "-" ) ) sgn = - 1;
+                                    if( S.startsWith( "-" ) ) 
+                                       sgn = - 1;
+                                    
                                     hour += sgn * h;
                                     minute += sgn * m;
                                     // while( hour <0){hour +=24;
@@ -704,12 +820,12 @@ public class ConvertDataTypes{
    *    DataSet.addAttribute but att can be null. In the case where att
    *    or DS is null nothing happens.
    */
-  public static void addAttribute( DataSet DS, Attribute att){
+  public static void addAttribute( DataSet DS, Attribute att ){
     
-     if( att == null)
+     if( att == null )
        return;
        
-     DS.setAttribute( att);
+     DS.setAttribute( att );
   }
 
     
@@ -717,27 +833,27 @@ public class ConvertDataTypes{
    *    DB.addAttribute but att can be null. In the case where att
    *    or DB is null nothing happens.
    */
-  public static void addAttribute(Data DB, Attribute att){
+  public static void addAttribute( Data DB, Attribute att ){
     
-     if( att == null)
+     if( att == null )
         return;
         
-     DB.setAttribute( att);
+     DB.setAttribute( att );
   }
 
   /**
    *   Not implemented yet
    */
   public  static DetPosAttribute CreateDetPosAttribute( String AttributeName,
-                                                    Object value)
+                                                    Object value )
    {
-     if(value == null) 
+     if( value == null ) 
         return null;
         
-     if( !(value instanceof DetectorPosition))
+     if( !( value instanceof DetectorPosition ) )
         return null;
 
-     return new DetPosAttribute( AttributeName, (DetectorPosition)value);
+     return new DetPosAttribute( AttributeName, (DetectorPosition)value );
    }
 
   /** 
@@ -752,17 +868,17 @@ public class ConvertDataTypes{
    *          to a float or if the AttributeName is null.
    */
   public  static FloatAttribute CreateFloatAttribute( String AttributeName, 
-                           Object value){
+                           Object value ){
        
      if( AttributeName == null )
         return null;
      
-     float V = floatValue(value);
+     float V = floatValue( value );
      
-     if( Float.isNaN( V))
+     if( Float.isNaN( V ) )
         return null;
         
-     return new FloatAttribute( AttributeName, V);
+     return new FloatAttribute( AttributeName, V );
         
   }
 
@@ -770,7 +886,7 @@ public class ConvertDataTypes{
    *   Not implemented yet
    */
   public  static Float1DAttribute CreateFloat1DAttribute( String AttributeName, 
-                                                    Object value)
+                                                    Object value )
      {
        return null;
      }
@@ -789,16 +905,17 @@ public class ConvertDataTypes{
    *          to a int or if the AttributeName is null.
    */
   public  static IntAttribute CreateIntAttribute( String AttributeName, 
-                  Object value){
+                  Object value ){
       
-     if( AttributeName == null)
+     if( AttributeName == null )
         return null;
      
-     int V = intValue(value);
-     if( V== Integer.MIN_VALUE)
+     int V = intValue( value );
+     
+     if( V == Integer.MIN_VALUE )
         return null;
         
-     return new IntAttribute( AttributeName, V);
+     return new IntAttribute( AttributeName, V );
         
   }
 
@@ -815,16 +932,16 @@ public class ConvertDataTypes{
    *          to a String or if the AttributeName is null.
    */
   public  static StringAttribute CreateStringAttribute( String AttributeName, 
-                           Object value){
+                           Object value ){
      
-     if( AttributeName == null)
+     if( AttributeName == null )
         return null;
      
-     String V = StringValue(value);
-     if( V == null)
+     String V = StringValue( value );
+     if( V == null )
         return null;
      
-     return new StringAttribute( AttributeName, V);
+     return new StringAttribute( AttributeName, V );
         
   }
 
@@ -833,7 +950,7 @@ public class ConvertDataTypes{
    *   Not implemented yet
    */
   public  static SampleOrientationAttribute CreateSampleOrientationAttribute( 
-                        String AttributeName, Object value)
+                        String AttributeName, Object value )
     {
      return null;
     }
@@ -843,7 +960,7 @@ public class ConvertDataTypes{
    *   Not implemented yet
    */
   public static  PixelInfoListAttribute CreatePixelInfoListAttribute( 
-                 String AttributeName, Object value)
+                 String AttributeName, Object value )
     {
      return null;
     }
@@ -856,9 +973,9 @@ public class ConvertDataTypes{
    *   
    *   @return the integer corresponding to the InstrumentType in ISAW
    */
-  public int getIsawInstrumentNumber( String NeXusAnalysisCode){
+  public int getIsawInstrumentNumber( String NeXusAnalysisCode ){
     
-     return (new Inst_Type()).getIsawInstrNum( NeXusAnalysisCode);
+     return ( new Inst_Type() ).getIsawInstrNum( NeXusAnalysisCode );
      
   }
 
@@ -877,18 +994,18 @@ public class ConvertDataTypes{
 
   private static float LengthConversionFactor( String OldUnits ){ //base m
     
-     int n = getNumericStart( OldUnits);
+     int n = getNumericStart( OldUnits );
      float factor = 1;
-     if( n >0)
+     if( n > 0 )
         try{
-           factor = (new Float( OldUnits.substring( 0,n))).floatValue();
+           factor = ( new Float( OldUnits.substring( 0 , n ) ) ).floatValue();
  
-        }catch( Exception ss){
+        }catch( Exception ss ){
            factor = 1;
         }
-     OldUnits = OldUnits.substring(n);
+     OldUnits = OldUnits.substring( n );
 
-     if("mm;millim;millimeter;100um;100microm;".indexOf( OldUnits + ";" ) >= 0)
+     if( "mm;millim;millimeter;100um;100microm;".indexOf( OldUnits + ";" ) >= 0 )
         return factor*.001f;
      
      if( "m;meter;met;".indexOf( OldUnits + ";" ) >= 0 )
@@ -928,49 +1045,49 @@ public class ConvertDataTypes{
 
   private static float TimeConversionFactor( String OldUnits ){ //us
      
-     int n = getNumericStart( OldUnits);
+     int n = getNumericStart( OldUnits );
      float factor = 1;
      
-     if( n >0)
+     if( n > 0 )
         try{
-          factor = (new Float( OldUnits.substring( 0,n))).floatValue();
+          factor = ( new Float( OldUnits.substring( 0 , n ) ) ).floatValue();
  
-        }catch( Exception ss){
+        }catch( Exception ss ){
            factor = 1;
         }
-     OldUnits = OldUnits.substring(n);
-     if( OldUnits == null)
+     OldUnits = OldUnits.substring( n );
+     if( OldUnits == null )
         return factor;
         
-     if( OldUnits.length() < 1)
+     if( OldUnits.length() < 1 )
         return factor;
         
-     if( OldUnits.charAt(0)=='*')
-        OldUnits = OldUnits.substring(1);
+     if( OldUnits.charAt(0 )== '*' )
+        OldUnits = OldUnits.substring( 1 );
    
-     if("s;sec;second;seconds;".indexOf(OldUnits+";") >=0)
+     if( "s;sec;second;seconds;".indexOf( OldUnits + ";" ) >= 0 )
         return factor*1000000.0f;
         
      if( "ms;msec;mseconds;msecond;millis;millisec;milliseconds".
-                                                  indexOf(OldUnits+";")>=0)
+                                                  indexOf( OldUnits + ";" ) >= 0 )
         return factor*1000.0f;
         
-     if("us;usec;useconds;usecond;micros;microsec;microseconds;".
-                                                  indexOf( OldUnits+";") >=0)
+     if( "us;usec;useconds;usecond;micros;microsec;microseconds;".
+                                                  indexOf( OldUnits + ";" ) >= 0 )
      
         return factor;
         
-     if("ns;nsec;nseconds;nanos;nanosec;nanosecond;nanoseconds;".
-                                                  indexOf( OldUnits+";") >=0)
+     if( "ns;nsec;nseconds;nanos;nanosec;nanosecond;nanoseconds;".
+                                                  indexOf( OldUnits + ";" ) >= 0 )
         return factor*.001f;
         
-     if("min;minute;minutes;".indexOf(OldUnits+";")>=0)
+     if( "min;minute;minutes;".indexOf( OldUnits + ";" ) >= 0 )
         return factor*60*1000000.0f;
         
-     if("hr;hour;hrs;hours;".indexOf(OldUnits+";")>=0)
+     if( "hr;hour;hrs;hours;".indexOf( OldUnits + ";" ) >= 0 )
         return 60*factor*1000000.0f;
         
-     if("day;days;".indexOf(OldUnits+";")>=0)
+     if( "day;days;".indexOf( OldUnits + ";" ) >= 0 )
         return 24*60*factor*1000000.0f;
         
 
@@ -990,29 +1107,29 @@ public class ConvertDataTypes{
      return 1.0f;
   }
 
- private static int getNumericStart( String S){
+ private static int getNumericStart( String S ){
     
      boolean decimalDone = false, 
              expOn = false, 
-             leadSign=true;
+             leadSign = true;
 
-     for( int i = 0; i< S.length(); i++){
+     for( int i = 0; i < S.length(); i++ ){
        
-      char c= S.charAt(i);
-      if( Character.isDigit( c)){
+      char c = S.charAt( i );
+      if( Character.isDigit( c ) ){
          
           leadSign = false;}
           
-      else if( (c=='.') && !decimalDone&&!expOn){
+      else if( ( c== '.' ) && !decimalDone && !expOn ){
         
           leadSign = false;
           decimalDone = true;
       }
-      else if( ("+-".indexOf(c) >=0) && leadSign)
+      else if( ( "+-".indexOf( c ) >= 0 ) && leadSign )
       
           leadSign = false;
           
-      else if( ("Ee^".indexOf( c) >=0) && !expOn){
+      else if( ( "Ee^".indexOf( c ) >= 0 ) && !expOn ){
         
           expOn = true;
           leadSign = true;
@@ -1026,10 +1143,10 @@ public class ConvertDataTypes{
      return S.length();
   }
  
- public static void main( String[] args){
-    long T = ConvertDataTypes.parse_neww( args[0]);
+ public static void main( String[] args ){
+    long T = ConvertDataTypes.parse_neww( args[ 0 ]);
     
-    System.out.println( "Time in milliseconds is "+ T);
+    System.out.println( "Time in milliseconds is " + T );
     //GregorianCalendar calendar = new GregorianCalendar();
     //calendar.setTimeInMillis(T);
     //System.out.println("YEAR: " + calendar.get(Calendar.YEAR)); System.out.println("MONTH: " + calendar.get(Calendar.MONTH)); System.out.println("WEEK_OF_YEAR: " + calendar.get(Calendar.WEEK_OF_YEAR)); System.out.println("WEEK_OF_MONTH: " + calendar.get(Calendar.WEEK_OF_MONTH)); System.out.println("DATE: " + calendar.get(Calendar.DATE)); System.out.println("DAY_OF_MONTH: " + calendar.get(Calendar.DAY_OF_MONTH)); System.out.println("DAY_OF_YEAR: " + calendar.get(Calendar.DAY_OF_YEAR)); System.out.println("DAY_OF_WEEK: " + calendar.get(Calendar.DAY_OF_WEEK)); System.out.println("DAY_OF_WEEK_IN_MONTH: " + calendar.get(Calendar.DAY_OF_WEEK_IN_MONTH)); System.out.println("AM_PM: " + calendar.get(Calendar.AM_PM)); System.out.println("HOUR: " + calendar.get(Calendar.HOUR)); System.out.println("HOUR_OF_DAY: " + calendar.get(Calendar.HOUR_OF_DAY)); System.out.println("MINUTE: " + calendar.get(Calendar.MINUTE)); System.out.println("SECOND: " + calendar.get(Calendar.SECOND)); System.out.println("MILLISECOND: " + calendar.get(Calendar.MILLISECOND));
