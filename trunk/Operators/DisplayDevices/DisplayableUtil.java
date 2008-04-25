@@ -27,6 +27,11 @@
  * number DMR-0426797, and by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
  *
+ *  Last Modified:
+ *
+ *  $Author$
+ *  $Date$            
+ *  $Revision$
  *
  * Modified:
  *
@@ -78,8 +83,8 @@ public class DisplayableUtil
         view_name = "Selected Graph View";
       else if ( view_name.equalsIgnoreCase( "Image" ) )
         view_name = "Image View";
-      else if ( view_name.equalsIgnoreCase( "Contour" ) )
-        view_name = "Contour View";
+      else if ( view_name.equalsIgnoreCase( "2D Viewer" ) )
+        view_name = "2D Viewer";
 
       return new DataSetDisplayable( (DataSet)data_object, view_name );
     } 
