@@ -27,10 +27,15 @@
  * number DMR-0426797, and by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
  *
+ *  Last Modified:
+ *
+ *  $Author$
+ *  $Date$            
+ *  $Revision$
  *
  * Modified:
  *
- * $Log$
+ * $Log: DataSetDisplayable.java,v $
  * Revision 1.15  2007/08/08 21:47:02  oakgrovej
  * Commenting and cleanup
  *
@@ -95,6 +100,7 @@ package DataSetTools.viewer.DisplayDevices;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.util.Hashtable;
+import java.util.Vector;
 
 import javax.swing.*;
 
@@ -255,6 +261,8 @@ public class DataSetDisplayable extends Displayable
         OSVal = new Dimension(xVal,yVal);
       }
     }
+    else if(name.contains("color"))
+      OSVal = Util.Convert2Color(value);
     else
       OSVal = Util.TranslateKey(valueList,value);
     
@@ -268,8 +276,34 @@ public class DataSetDisplayable extends Displayable
     }
     viewManager.setObjectState(Ostate);
   }
-
-
+  
+  @Override
+  public void setLineAttribute(int index, String name, Object value)
+  		throws Exception {
+  	if(value instanceof String)
+  		setLineAttribute(index,name,(String)value);
+  	else
+  	{
+  		String OSAttribute = (String)Util.TranslateKey(graphAttributes,name.toLowerCase());
+  	    if(viewManager.getView().equals(ViewManager.SELECTED_GRAPHS))
+  	      OSAttribute = graphAttributes.get("selected graph data")+index+"."+OSAttribute;
+  	    else if(viewManager.getView().equals(ViewManager.DIFFERENCE_GRAPH))
+  	      OSAttribute = graphAttributes.get("difference graph data")+index+"."+OSAttribute;
+  	    else
+  	      OSAttribute = null;
+  		
+  		try
+  	    {
+  	      setLineAttribute(OSAttribute, value);
+  	    }
+  	    catch(Exception e)
+  	    {
+  	      throw new Exception ("Cannot put "+value+" into "+name);
+  	    }
+  	}
+  	
+  }  
+  
  /**
   *  This method sets an attribute of the displayable that pertains
   *  to a particular portion of the display, such as one particular
@@ -281,7 +315,7 @@ public class DataSetDisplayable extends Displayable
   *  @param  Attribute  The name of the attribute being set.
   *  @param  val        The value to use for the attribute.
   */
-  public void setLineAttribute(int    index, 
+  private void setLineAttribute(int    index, 
                                String Attribute, 
                                String val        ) throws Exception
   {
@@ -297,14 +331,18 @@ public class DataSetDisplayable extends Displayable
     else
       OSAttribute = null;
     
-    Object OSVal = Util.TranslateKey(valueList,val);
+    Object OSVal;
+    if(Attribute.contains("color"))
+      OSVal = Util.Convert2Color(val);
+    else
+      OSVal = Util.TranslateKey(valueList,val);
     try
     {
       setLineAttribute(OSAttribute, OSVal);
     }
     catch(Exception e)
     {
-      throw new Exception("Cannot put "+val+" into "+Attribute);
+      throw new Exception ("Cannot put "+val+" into "+Attribute);
     }
   }
 
@@ -361,10 +399,10 @@ public class DataSetDisplayable extends Displayable
   public static Hashtable<String,String> getViewAttributeList()
   {
     Hashtable<String,String> temp = new Hashtable<String,String>();
-    temp.put("legend", "View Component0.FunctionControls.Legend Control.Selected");
-    temp.put("grid lines x", "View Component0.AxisOverlay2D.Grid Display X");
-    temp.put("grid lines y", "View Component0.AxisOverlay2D.Grid Display Y");
-    temp.put("grid color", "View Component0.AxisOverlay2D.Grid Color");
+    temp.put("legend", "Selected Graph View.View.FunctionControls.Legend Control.Selected");
+    temp.put("grid lines x", "Selected Graph View.View.AxisOverlay2D.Grid Display X");
+    temp.put("grid lines y", "Selected Graph View.View.AxisOverlay2D.Grid Display Y");
+    temp.put("grid color", "Selected Graph View.View.AxisOverlay2D.Grid Color");
     return temp;
   }
   
@@ -386,6 +424,7 @@ public class DataSetDisplayable extends Displayable
     temp.put("red", Color.red);
     temp.put("yellow", Color.yellow);
     temp.put("gray", Color.gray);
+    temp.put("magenta", Color.magenta);
     temp.put("light gray", Color.lightGray);
     temp.put("dotted", GraphJPanel.DOTTED);
     temp.put("dashed", GraphJPanel.DASHED);
@@ -418,6 +457,7 @@ public class DataSetDisplayable extends Displayable
 
     //for ( int i = 0; i < 100; i++ )
       //ds.setSelectFlag(  i, true );
+    
     
     DataSet ds = new DataSet();    
     float[][] testData = ContourViewComponent.getTestDataArr(41,51,3,4);
@@ -454,25 +494,41 @@ public class DataSetDisplayable extends Displayable
     
     disp.setLineAttribute(1, "line color", "red");
     disp.setLineAttribute(2, "line color", "red");
-    disp.setLineAttribute(1,"transparent", "true");
-//    disp.setLineAttribute(1, "line tYpe", "doTtEd");
+    disp.setLineAttribute(2, "line tYpe", "dashdot");
+    disp.setLineAttribute(2, "line tYpe", "solid");
+    //disp.setLineAttribute(1,"transparent", "true");
+    disp.setLineAttribute(1, "line tYpe", "doTtEd");
     disp.setLineAttribute(1, "Mark Type", "plus");
-    disp.setLineAttribute(1, "Mark color", "cyan");
+    //disp.setLineAttribute(1, "Mark color", "cyan");
+    
+    disp.setViewAttribute("legend", "true");
+    disp.setViewAttribute("grid lines x", 1);
+    disp.setViewAttribute("grid lines y", true);
+    disp.setViewAttribute("grid color", Color.red);
     
 //  GraphicsDevice gd = new ScreenDevice();
 //  GraphicsDevice gd = new FileDevice("C:/Documents and Settings/student/My Documents/My Pictures/test.jpg");
 //  GraphicsDevice gd = new PreviewDevice();
-  GraphicsDevice gd = new PrinterDevice("HP LaserJet 4000 Series PCL");//HP LaserJet 4000 Series PCL Adobe PDF
+  GraphicsDevice gd = new PrinterDevice("Adobe PDF");//HP LaserJet 4000 Series PCL Adobe PDF
     
+  System.out.println(((DataSetDisplayable) disp).Ostate);
     // -------------For PrinterDevice
     //gd.setDeviceAttribute("orientation", "landscape");
     //gd.setDeviceAttribute("copies", 1);
   
-    gd.setRegion(0, 0, 250, 600);
+   
+    gd.setRegion(10, 0, 200, 600);
     //gd2.setRegion( 600,0, 600, 900 );
+   // Vector bound = new Vector<Integer>();
+    //bound.add(700);
+    //bound.add(100);
+    //((FileDevice)gd).setBounds(bound);
     gd.display( disp, true );
-    gd.setRegion(20, 200, 250, 250 );
+    gd.setRegion(200, 10, 250, 250 );
+    System.out.println(gd.getBounds());
     gd.display( disp2, true );
+    gd.setDeviceAttribute("orientation", "portrait");
+    //gd.setDeviceAttribute("file resolution", value)
     //gd.setDeviceAttribute("printableareax", .5f);
     //gd.setDeviceAttribute("printableareay", .5f);
     //gd2.display( disp2,true);
@@ -480,4 +536,5 @@ public class DataSetDisplayable extends Displayable
     //gd2.print();
 //    gd.close();
   }
+
 }
