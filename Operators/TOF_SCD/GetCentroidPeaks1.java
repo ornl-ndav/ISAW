@@ -241,16 +241,21 @@ public class GetCentroidPeaks1 implements Wrappable, HiddenOperator {
 				
 		    else if( cutoff < P.ipkobs()/200 )
 		    	done = true;
-			else if( cutoff - PP.getCalcBackgroundLevel() < .3 )
+			else if( cutoff - PP.getCalcBackgroundLevel() < .3 ){
 		   		done = true;
+		   		if(cutoff - PP.getCalcBackgroundLevel() < 0)
+		   		  return PP2;
+			}
 			if( !done ){
 				PP2 = PP;
 				
-				float cutoff1 = ( cutoff + PP.getCalcBackgroundLevel() )/2.0f;
+				float cutoff1 = cutoff;
+				if( PP != null)
+				   cutoff = ( cutoff + PP.getCalcBackgroundLevel() )/2.0f;
 				
-				if( Float.isNaN( cutoff1 ) )
+				if( Float.isNaN( cutoff1 )|| PP == null )
 					cutoff = cutoff/2.0f;
-				
+				 
 				else if( ( cutoff1 >= cutoff )&&( PP.getNCells() >1) ) // Getting into another peak
 					return PP2;
 				else if( cutoff1 >= cutoff)
@@ -278,7 +283,6 @@ public class GetCentroidPeaks1 implements Wrappable, HiddenOperator {
       int nrows = grid.num_rows();
        int ncols = grid.num_cols();
 
-
       float cutoff = .8f*grid.intensity( y,x,z );
        int nchan = grid.num_channels(1,1);
        
@@ -288,6 +292,8 @@ public class GetCentroidPeaks1 implements Wrappable, HiddenOperator {
       while( !done ){
          if( PP == null )
             done = false;
+         else if( cutoff < grid.intensity( y,x,z )/200 )
+               done = true;
           else if( Float.isNaN( PP.getCalcBackgroundLevel() ) )
             done = false;
          else if( PP.getNCells() < 5 )
@@ -299,10 +305,11 @@ public class GetCentroidPeaks1 implements Wrappable, HiddenOperator {
             PP = PP2;
          }
             
-          else if( cutoff < grid.intensity( y,x,z )/200 )
-            done = true;
-         else if( cutoff - PP.getCalcBackgroundLevel() < .3 )
+       
+         else if( cutoff - PP.getCalcBackgroundLevel() < .3 ){
                done = true;
+               PP2 = PP;
+         }
          if( !done ){
             PP2 = PP;
             
@@ -324,16 +331,17 @@ public class GetCentroidPeaks1 implements Wrappable, HiddenOperator {
             PP = GetPeak.getPeakInfo( y, x, z, grid , cutoff, PeakSpan );
          }
       }
-      if( PP2 != null){
+      Arrays.fill( Centroid , -1f );
+      if( PP2 != null && !Float.isNaN( PP2.getCalcBackgroundLevel() ) && 
+              PP2.getNCells()>4   )
+               {
         Centroid[0]= PP2.getWeightedAverageRow();
         Centroid[1]=PP2.getWeightedAverageCol();
         Centroid[2] = PP2.getWeightedAverageChan();
-      }else{
-         Centroid[0]= y;
-         Centroid[1]=x;
-         Centroid[2] = z;
-         
       }
+      if( Centroid[0]<=1 || Centroid[1]<=1 || Centroid[2]<=0)
+         Arrays.fill( Centroid , -1f );
+      
       return;
       
    }
@@ -407,7 +415,7 @@ public class GetCentroidPeaks1 implements Wrappable, HiddenOperator {
     * @param PeakSpan  The maximum span of the peak in rows, cols, and
     *              time channels or -1 if none
     */
-   public static void CentroidPeakDS(DataSet DS, int GridID, 
+  public static void CentroidPeakDS(DataSet DS, int GridID, 
              int row, int col, int timeChan, 
             float[] Centroid, int PeakSpan ){
       CentroidPk( new DSGrid( DS,GridID),row, col, timeChan,
