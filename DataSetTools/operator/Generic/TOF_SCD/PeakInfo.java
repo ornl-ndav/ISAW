@@ -194,11 +194,14 @@ public class PeakInfo {
           startCol = col;
           startChan = timeChan;
         }
-        if( MaxExtent >0){
-           if( Math.abs( row - startRow)> MaxExtent) return false;
-           if( Math.abs( col - startCol)> MaxExtent) return false;
-           if( Math.abs( timeChan - startChan)> MaxExtent) return false;
+    	 
+    	           
+        if( MaxExtent > 0){
+           if( Math.abs( row - startRow) > MaxExtent) return false;
+           if( Math.abs( col - startCol) > MaxExtent) return false;
+           if( Math.abs( timeChan - startChan) >  MaxExtent) return false;
         }
+        
         if( row < 1 ) 
         	return false;
         if( col < 1 ) 
@@ -306,12 +309,15 @@ public class PeakInfo {
         Wx += intensity;
         Wy += intensity;
         Wz += intensity;
-        int xx;
-        if( Float.isNaN(intensity))
-            xx=1;
         TotIntensity += intensity;
+        
         if( ncells  > 0 )
-           background = ( TotExtentIntensity - TotIntensity )/( (1 + maxX - minX )*(1 + maxY - minY )*(1 + maxZ - minZ ) - ncells );
+           background = ( TotExtentIntensity - TotIntensity )/
+                           ( (1 + maxX - minX )*(1 + maxY - minY )*(1 + maxZ - minZ ) - ncells );
+        
+        if( !Float.isNaN( background )&& background > backgroundIntensity)
+              background = backgroundIntensity;
+        
        return true; 
     }
     
@@ -329,16 +335,22 @@ public class PeakInfo {
     	
         if( row < minY ) 
         	return false;
+        
         if( col < minX )
         	return false;
+        
         if( timeChan < minZ )
         	return false;
+        
         if( row > maxY ) 
         	return false;
+        
         if( col > maxX ) 
         	return false;
+        
         if( timeChan > maxZ )
         	return false;
+        
         
         return true;
     }
@@ -623,14 +635,22 @@ public class PeakInfo {
     	 if( DS == null)
           return null;
     	setUpBasics();
+    	int reflag = 11;
     	if( ncells < 0 )
-    		return null;
+    	  reflag = 21;
         if( maxX < 0 )
-        	return null;
+           reflag = 21;
         if( ncells == ( maxX - minX + 1 )*( maxY -minY + 1 )*( maxZ - minZ + 1 ) )
-        	return null;
-    	Peak_new PP = new Peak_new( getWeightedAverageCol() , getWeightedAverageRow() , getWeightedAverageChan() ,
+           reflag = 21;
+    	Peak_new PP = null;
+    	if( reflag == 11)
+    	  PP = new Peak_new( getWeightedAverageCol() , getWeightedAverageRow() , getWeightedAverageChan() ,
     			     grid , sampOrient , T0 , xscl , initialPath );
+    	else{ 
+    	  PP = new Peak_new( startCol, startRow, startChan,
+                 grid , sampOrient , T0 , xscl , initialPath );
+    	}
+      PP.reflag( reflag);
   
     	float peakIntensity = Float.NaN;
     
