@@ -3,7 +3,7 @@
 #  File: Wizard/TOF_SCD/Scripts_new/Blind.iss
 #
 #  @overview  This determines the orientation matrix from the Blind program 
-#       or readsbasis in Q from a file.  Blind takes a sequence of peaks and 
+#       or reads basis in Q from a file.  Blind takes a sequence of peaks and 
 #        finds a Niggli-like  for these peaks( orientation matrix)
 #  @algorithm If blind is  used, the peaks are sent through the Blind 
 #     program.This is a program used at the IPNS division at Argonne National
@@ -11,12 +11,16 @@
 
 #  @assumptions The Peaks parameter must be a Vector of Peaks object
 #  @param      Peaks      a vector of Peaks object
-#  @param      useFile    if true the resultant orientation matrix will
-#                          come from the MatFilename, not from Blind
+#  @param     method      Offers the following choices
+#                         Blind- Enter Sequence Numbers
+#                         Read from File- Enter filename in Input Orientation Matrix File
+#                         Automatic - Just does it
+#                         from Q Viewer-Allows user to select planes from reciprocal lattice viewer
 #  @param      file1      The file with the orientation matrix
 #  @param     SeqNums    The list of sequence numbers to use. Eg 33:36,47
 #  @param     file       The filename to store the orientation  matrix 
 #                          and the other cell parameters
+#  @param     Max_dSpacing  Maximum d-Spacing
 #  @param     ShowLog    If true blind.log will pop up in a window
 #  @param     path       The path where output information goes
 
@@ -37,6 +41,7 @@ $file1    LoadFile               Input Orientation Matrix File ( .mat )
 $Seq      IntArray               Sequence Numbers(Blind Method only)
 $file     SaveFile               Output Orientation Matrix File ( .mat ) 
 
+$Max_dSpacing  Float(12)         Maximum d-Spacing
 $ShowLog  Boolean( false)        Pop Up blind.log 
 
 $path     DataDirectoryString    Output Data Path 
@@ -53,7 +58,7 @@ if method == "Read from File"
 endif
 
 Status =[1,2,3,4]
-MaxXtalLength = 12.0
+MaxXtalLength = Max_dSpacing
 
 if method =="Blind"
 
