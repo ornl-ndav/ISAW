@@ -136,8 +136,10 @@ public interface IPeak {
    
    
    /**
-    * Returns the z(channel) value corresponding to this peak
-    * @return tthe z(channel) value corresponding to this peak
+    * Returns the z(channel) value corresponding to this peak. The first
+    * channel has a z value of zero at this point. 
+    * 
+    * @return the z(channel) value corresponding to this peak
     */
    float    z();
    
