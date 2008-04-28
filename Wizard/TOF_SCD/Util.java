@@ -28,27 +28,33 @@
 
 
 package Wizard.TOF_SCD;
+
 import DataSetTools.dataset.*;
 import DataSetTools.operator.Generic.TOF_SCD.*;
 import DataSetTools.operator.*;
+import DataSetTools.operator.DataSet.Attribute.*;
+import DataSetTools.operator.DataSet.Math.Analyze.IntegrateGroup;
+import DataSetTools.operator.Generic.Special.*;
+import DataSetTools.retriever.*;
+
+import Operators.Special.Calib;
+
 import java.util.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 import gov.anl.ipns.Util.Numeric.*;
-import DataSetTools.retriever.*;
-import Operators.Special.Calib;
 import gov.anl.ipns.Operator.Threads.*;
 import gov.anl.ipns.Util.Sys.*;
-import DataSetTools.operator.DataSet.Math.Analyze.IntegrateGroup;
-import DataSetTools.operator.DataSet.Attribute.*;
-import DataSetTools.operator.Generic.Special.*;
+import gov.anl.ipns.MathTools.Geometry.*;
+
+
 /**
  * This class contains an assortment of Utility methods for TOF_SCD wizards
  */
 public class Util {
    
-   public static final String[] CenteringNames={"primitive","a centered",
-              "b centered","c centered", "[f]ace centered",
-            "[i] body centered","[r]hombohedral centered"};
+   public static final String[] CenteringNames = {"primitive" , "a centered" ,
+              "b centered" , "c centered" , "[f]ace centered",
+            "[i] body centered" , "[r]hombohedral centered"};
    
    //TODO need to load in a peaks file first 
    //Possible option on append: choicelist, append/load/neither
@@ -102,28 +108,41 @@ public class Util {
             String   calibfile ,
             int      line2use,
             String   PixelRow,
+            float    Max_dSpacing,
             String   extension,
             String   fileNamePrefix,
-            int      maxNumThreads){
+            boolean  ViewPeaks,
+            int      maxNumThreads ){
       
-      if( runnums == null)
+      if( runnums == null )
          return null;
-      int[] Runs = new int[runnums.size()];
-      try{
-      for( int i=0; i<runnums.size(); i++)
-         Runs[i]= ((Integer)runnums.elementAt( i )).intValue();
-      }catch(Exception s){
+      
+      int[] Runs = new int[ runnums.size() ];
+      
+      try {
+         
+         for( int i = 0 ; i < runnums.size() ; i++ )
+            Runs[ i ] = ( (Integer) runnums.elementAt( i ) ).intValue();
+         
+      }catch( Exception s ) {
+         
          return null;
+         
       }
+      
       java.util.Arrays.sort( Runs );
+      
       int[] DSnums = IntList.ToArray( dataSetNums );
+      
       Vector<StringBuffer> LogInfo = new Vector<StringBuffer>();
-      if( !extension.startsWith( "." ))
-         extension="."+extension;
-      if( Runs == null || DSnums == null)
+      
+      if( !extension.startsWith( "." ) )
+         extension = "."+extension;
+      
+      if( Runs == null || DSnums == null )
          return null;
       
-      if( useCalib)
+      if( useCalib )
          SharedMessages.addmsg( "Calibration File ="+calibfile );
       
       Vector operators = new Vector();
@@ -132,172 +151,220 @@ public class Util {
       String PeakFileName = outpath+expname+".peaks";
       String ExpFileName  = outpath+expname+".x";
       
-      if( append )if( !(new java.io.File(PeakFileName)).exists() ||
-               !(new java.io.File(ExpFileName)).exists())
+      if( append )if( !( new java.io.File( PeakFileName ) ).exists() ||
+               !( new java.io.File( ExpFileName ) ).exists() )
          append = false;
+      
       boolean append1 = false || append;
       
-      for( int i=0; i< Runs.length; i++){
+      for( int i = 0; i < Runs.length; i++ ){
          
-         String filename =rawpath+fileNamePrefix+Runs[i]+extension;
-         
-         try{
-           Retriever retriever = Command.ScriptUtil.getRetriever( filename );
-           
-           //------------Get monitor count ---------------------
-           int monCount = 10000;
-           int ID = -1;
-           DataSet Monitor = null;
-           if( retriever.getType( 0 )== Retriever.MONITOR_DATA_SET){
-              Monitor = retriever.getDataSet( 0 );
-              ID = MonitorID_Calc.UpstreamMonitorID(Monitor );
-              if( ID >= 0){
-                 Object Result= (new IntegrateGroup( Monitor,ID,0,50000)).getResult();
-                 if( Result instanceof java.lang.Number)
-                   monCount =((Number)Result).intValue();
-              }
-                 
-           }
-           //--------------- For each data set in a run---------------------
-           SharedMessages.addmsg( "Loading "+filename );
-           for( int j=0; j< DSnums.length; j++){
-              
-              DataSet DS = retriever.getDataSet( DSnums[j] );
-              if( DS == null){
-                 javax.swing.JOptionPane.showMessageDialog( null , "Could not retrieve "+filename+
-                                                         " dataset "+DSnums[j] );
-              }else {
-                 
-                 if( useCalib)
-                    Calibrate( DS, calibfile, line2use);
-                 
-                 if( AttrUtil.getUser( DS )== null)
-                     DS.setAttribute( new StringAttribute(Attribute.USER,"George User") );
-                 
-                 //----------------- For each grid in the data set ----------------
-                 java.util.Hashtable gridIDs=Grid_util.getAllDataGrids( DS );
-                 if( gridIDs == null)
-                    javax.swing.JOptionPane.showMessageDialog( null , 
-                             "Grids not set up for "+filename+ " dataset "
-                             +DSnums[j] );
-                 else{
-                    Enumeration keys = gridIDs.keys();
-                    
-                    Object Err =MergeInfo(keys,  DS,   num_peaks, min_int, min_time_chan,
-                             max_time_chan,PixelRow, monCount, operators, 
-                             ResultPeaks, LogInfo, maxNumThreads);
-                    if(Err != null){
-                       SharedMessages.addmsg( "Error in finding peaks "+Err.toString() );
-                    }
-                    }//for enumeration
-                    
-                 }//else gridIds == null
-              
-                 (new WriteExp( DS, Monitor, ExpFileName ,ID,append1 )).getResult();
-                 append1=true;
-                 
-              }//else DS == null
-           
-         }catch(Exception s){
-           SharedMessages.addmsg( "Could not retrieve "+filename );
-         }
-      }//for @ run
-   
-   /*//Uses parallel Executor(MergeInfo1). Requires reading in files first
-      // Then calculations are done in parallel
-       if(operators.size()>0){//Have some operators not run?
+         String filename = rawpath+fileNamePrefix+Runs[ i ]+extension;
 
-         ParallelExecutor PE = new ParallelExecutor(
-                           operators,maxNumThreads,30000*operators.size());
-         
-         Vector Results = null;
-         try{
-             Results = PE.runOperators();
+         Retriever retriever = null;
+         try {
+            retriever = Command.ScriptUtil.getRetriever( filename );
 
-         }catch( ExecFailException ss){
-            Results = ss.getPartialResults();
-            SharedMessages.addmsg( "Timeout error:"+ss );
-         }catch(Throwable s1){
-            SharedMessages.addmsg( "Execute error:"+s1 );
-         }
-         int seqNum = ResultPeaks.size()+1;
-         if(Results != null)
-            for( int kk=0; kk< Results.size(); kk++){
-               Object R = Results.elementAt( kk );
-               if( R != null && R instanceof IPeak){
-                  ((IPeak)R).seqnum( seqNum );
-                  ResultPeaks.addElement( R);
-                  seqNum++;
-              }
-              SharedMessages.addmsg( LogInfo.firstElement());
-              LogInfo.remove(0);
+            // ------------Get monitor count ---------------------
+            int monCount = 10000;
+            int ID = - 1;
+            DataSet Monitor = null;
+            
+            if( retriever.getType( 0 ) == Retriever.MONITOR_DATA_SET ) {
+               
+               Monitor = retriever.getDataSet( 0 );
+               ID = MonitorID_Calc.UpstreamMonitorID( Monitor );
+               
+               if( ID >= 0 ) {
+                  
+                  Object Result = ( new IntegrateGroup( Monitor , ID , 0 ,
+                           50000 ) ).getResult();
+                  
+                  if( Result instanceof java.lang.Number )
+                     monCount = ( (Number) Result ).intValue();
+                  
+               }
             }
-       }
-   */ // does not use Parallel Executor.  Uses MergeInfo
-     long timeOut =30000;
-       while( operators.size() > 0 && timeOut < 180000){
-          for( int i=operators.size()-1; i>=0; i-- ){
-             OperatorThread opThreadElt =(OperatorThread)(operators.elementAt( i ));
+
+            // --------------- For each data set in a run---------------------
+            SharedMessages.addmsg( "Loading " + filename );
+
+            for( int j = 0 ; j < DSnums.length ; j++ ) {
+
+               DataSet DS = retriever.getDataSet( DSnums[ j ] );
+               
+               if( DS == null ) {
+                  javax.swing.JOptionPane.showMessageDialog( null ,
+                           "Could not retrieve " + filename + " dataset "
+                                    + DSnums[ j ] );
+               }
+               else {
+
+                  if( useCalib )
+                     Calibrate( DS , calibfile , line2use );
+
+                  if( AttrUtil.getUser( DS ) == null )
+                     DS.setAttribute( new StringAttribute( Attribute.USER ,
+                              "George User" ) );
+
+                  // ----------------- For each grid in the data set
+                  // ----------------
+                  java.util.Hashtable gridIDs = Grid_util.getAllDataGrids( DS );
+                  
+                  if( gridIDs == null )
+                     javax.swing.JOptionPane.showMessageDialog( null ,
+                              "Grids not set up for " + filename + " dataset "
+                                       + DSnums[ j ] );
+                  else {
+                     
+                     Enumeration keys = gridIDs.keys();
+                    
+                     Object Err = MergeInfo( keys , DS , num_peaks , min_int ,
+                              min_time_chan , max_time_chan , PixelRow ,
+                              monCount , operators , ResultPeaks , LogInfo ,
+                              maxNumThreads , Max_dSpacing );
+                     
+                     if( Err != null ) {
+                        SharedMessages.addmsg( "Error in finding peaks "
+                                 + Err.toString() );
+
+                     }                    
+                  }// for enumeration
+               }// else gridIds == null
+                /* Took too long on ARCS DATA Set with 20000 time channels */
+               // (new WriteExp( DS, Monitor, ExpFileName ,ID,append1
+               // ) ).getResult();
+               // append1= true;  
+
+            }// for  DS in run
+
+         }
+         catch( Exception s ) {
+            
+            SharedMessages.addmsg( "Could not retrieve " + filename );
+         }
+         
+           
+         
+      }//for @ run
+      
+   
+     //--------------------Now finish the rest of the threads ---------------------
+     long timeOut = 30000;
+       while( operators.size() > 0 && timeOut < 360000 ){
+          for( int i = operators.size() - 1 ; i >= 0 ; i-- ){
+             OperatorThread opThreadElt = ( OperatorThread )( operators.elementAt( i ) );
              try{
-                opThreadElt.join(timeOut);
-                if( opThreadElt.getState() == Thread.State.TERMINATED){
+                opThreadElt.join( timeOut );
+                if( opThreadElt.getState() == Thread.State.TERMINATED ){
                    operators.remove( i );
-                   Object Res =opThreadElt.getResult() ;
-                   if( Res != null && Res instanceof Vector)
+                   Object Res = opThreadElt.getResult() ;
+                   if( Res != null && Res instanceof Vector )
                        ResultPeaks.addElement( Res  );
+                  
+                   timeOut = 3000;
                 }
-             }catch(InterruptedException ss){
+             }catch( InterruptedException ss ){
                 //Do nothing. Next time join should return and you have a terminated thread
              }
              
              
           }
-          timeOut = 2*timeOut;
+          timeOut = 2 * timeOut;
        }
        //ToDo  get more info on operators
        // operators Vector could take an Array with more info( run num, detector num
-       if( timeOut >= 180000)
+       if( timeOut >= 180000 )
           SharedMessages.addmsg( operators.size()+" detectors did not finish in over 1 minute" );
-       SortUnPackFix(ResultPeaks);
-       for( int i=0; i< LogInfo.size(); i++)
+       
+       SortUnPackFix( ResultPeaks );
+       
+       for( int i = 0 ; i < LogInfo.size() ; i++ )
           SharedMessages.addmsg(  LogInfo.elementAt( i ) );
+       
        LogInfo.clear();
+       
       //----------- Write and View Peaks --------------------
-      (new WritePeaks( PeakFileName, ResultPeaks,append)).getResult();
+      (new WritePeaks( PeakFileName, ResultPeaks, append1 ) ).getResult();
       
-      System.out.println("--- find_multiple_peaks is done. ---");
+      System.out.println( "--- find_multiple_peaks is done. ---" );
       SharedMessages.addmsg( "Peaks are listed in "+PeakFileName );
       
-      (new ViewASCII(PeakFileName)).getResult();
+      if( ViewPeaks )
+         ( new ViewASCII( PeakFileName ) ).getResult();
  
       return ResultPeaks;
    }
+   
+   /*//Uses parallel Executor(MergeInfo1). Requires reading in files first
+   // Then calculations are done in parallel
+    if(operators.size()>0 ){//Have some operators not run?
+
+      ParallelExecutor PE = new ParallelExecutor(
+                        operators, maxNumThreads, 30000*operators.size() );
+      
+      Vector Results = null;
+      try{
+          Results = PE.runOperators();
+
+      }catch( ExecFailException ss ){
+         Results = ss.getPartialResults();
+         SharedMessages.addmsg( "Timeout error:"+ss );
+      }catch(Throwable s1 ){
+         SharedMessages.addmsg( "Execute error:"+s1 );
+      }
+      int seqNum = ResultPeaks.size()+1;
+      if(Results != null )
+         for( int kk=0 ; kk < Results.size( ) ; kk++){
+            Object R = Results.elementAt( kk  );
+            if( R != null && R instanceof IPeak){
+               ((IPeak)R).seqnum( seqNum  );
+               ResultPeaks.addElement( R );
+               seqNum++;
+           }
+           SharedMessages.addmsg( LogInfo.firstElement() );
+           LogInfo.remove(0 );
+         }
+    }
+*/ // does not use Parallel Executor.  Uses MergeInfo
+   
+   
    
    //ResultPeaks is a Vector of Vector of Peaks
    // Sort according to run number and detectorID
    // Unpack means to make into a Vector of Peaks
    // Fix means to adds sequence numbers
-   private static void SortUnPackFix( Vector ResultPeaks){
-      if(ResultPeaks == null)
+   private static void SortUnPackFix( Vector ResultPeaks ){
+      
+      if( ResultPeaks == null )
          return;
       
-      Integer[] rankSort = new Integer[ResultPeaks.size()];
-      for( int i=0; i< ResultPeaks.size(); i++)
-         rankSort[i]=i;
-      java.util.Arrays.sort(  rankSort, new VComparator(ResultPeaks) );
-      Vector V = new Vector( ResultPeaks.size());
-      for( int i=0; i< rankSort.length; i++)
-         V.addElement(  ResultPeaks.elementAt(rankSort[i]) );
+      Integer[] rankSort = new Integer[ ResultPeaks.size() ];
+      
+      for( int i = 0 ; i < ResultPeaks.size() ; i++ )
+         rankSort[ i ] = i;
+      
+      java.util.Arrays.sort(  rankSort, new VComparator( ResultPeaks ) );
+      
+      Vector V = new Vector( ResultPeaks.size() );
+      for( int i = 0 ; i < rankSort.length ; i++ )
+         V.addElement(  ResultPeaks.elementAt( rankSort[ i ] ) );
+      
       ResultPeaks.clear();
-      int seqNum=1;
-      for( int i=0; i< V.size(); i++){
-         Vector V1 =(Vector)(V.elementAt( i ));
-         for( int j=0; j< V1.size(); j++){
-            Object R = V1.elementAt(j);
-            if( R != null && R instanceof IPeak){
-               ((IPeak)R).seqnum( seqNum );
+      
+      int seqNum =1;
+      for( int i = 0 ; i < V.size() ; i++ ){
+         
+         Vector V1 = ( Vector  )( V.elementAt( i ) );
+         for( int j = 0 ; j < V1.size() ; j++ ){
+            
+            Object R = V1.elementAt( j );
+            if( R != null && R instanceof IPeak ){
+               
+               ( ( IPeak )R ).seqnum( seqNum );
                seqNum++;
                ResultPeaks.addElement( R );
+               
             }
          }
             
@@ -305,12 +372,13 @@ public class Util {
       
    }
    
+   
    // Used to Sort a Vector of Vector of Peaks where the Vector of Peaks
    //    come from the same detector and run number
    private static class VComparator implements java.util.Comparator<Integer>{
 
       Vector ResultPeaks;
-      public VComparator( Vector ResultPeaks){
+      public VComparator( Vector ResultPeaks ){
          this.ResultPeaks = ResultPeaks;
       }
       /* (non-Javadoc)
@@ -320,60 +388,60 @@ public class Util {
       public int compare( Integer o1 , Integer o2 ) {
          int i1 = o1.intValue();
          int i2 = o2.intValue();
-         if( i1 == i2)
+         if( i1 == i2 )
             return 0;
-         if( i1 < 0 ||i1>= ResultPeaks.size()){
-            if( i2<0 || i2 >= ResultPeaks.size())
+         if( i1 < 0 ||i1 >= ResultPeaks.size() ){
+            if( i2 < 0 || i2 >= ResultPeaks.size() )
                return 0;
              return 1;
             }
          
-         if( i2 < 0 ||i2>= ResultPeaks.size()){
-            if( i1<0 || i1 >= ResultPeaks.size())
+         if( i2 < 0 ||i2 >= ResultPeaks.size() ){
+            if( i1 < 0 || i1 >= ResultPeaks.size() )
                return 0;
             return -1;
          }  
          
-         Object R1 = ResultPeaks.elementAt(i1);
-         Object R2 = ResultPeaks.elementAt(i2);
-         if( R1 == null ||  !(R1 instanceof Vector)
-                  || ((Vector)R1).size() < 1){
-            if( R2 == null ||  !(R2 instanceof Vector)
-                     || ((Vector)R2).size() < 1)
+         Object R1 = ResultPeaks.elementAt( i1 );
+         Object R2 = ResultPeaks.elementAt( i2 );
+         if( R1 == null ||  !( R1 instanceof Vector )
+                  || ( ( Vector )R1 ).size() < 1 ){
+            if( R2 == null ||  !( R2 instanceof Vector )
+                     || ( ( Vector )R2 ).size() < 1 )
                return 0;
             return 1;
          }
 
-         if( R2 == null ||  !(R2 instanceof Vector)
-                  || ((Vector)R2).size() < 1){
-            if(  !(R1 instanceof Vector)
-                     || ((Vector)R1).size() < 1)
+         if( R2 == null ||  !( R2 instanceof Vector )
+                  || ( ( Vector )R2 ).size() < 1 ){
+            if(  !( R1 instanceof Vector )
+                     || ( ( Vector )R1 ).size() < 1 )
                return 0;
             return -1;
          }
                      
-         Object pk1 = ((Vector)R1).elementAt( 0 );
-         Object pk2 =((Vector)R2).elementAt( 0 );
-         if( pk1 == null || !(pk1 instanceof IPeak)){
-            if( pk2 == null || !(pk2 instanceof IPeak))
+         Object pk1 = ( ( Vector )R1 ).elementAt( 0 );
+         Object pk2 = ( ( Vector )R2 ).elementAt( 0 );
+         if( pk1 == null || !( pk1 instanceof IPeak ) ){
+            if( pk2 == null || !( pk2 instanceof IPeak ) )
                return 0;
             return -1;
          }
 
-         if( pk2 == null || !(pk2 instanceof IPeak)){
-            if(  !(pk1 instanceof IPeak))
+         if( pk2 == null || !( pk2 instanceof IPeak ) ){
+            if(  !( pk1 instanceof IPeak ) )
                return 0;
             return 1;
          }
-         IPeak peak1 = (IPeak)pk1;
-         IPeak peak2 = (IPeak)pk2;
-         if( peak1.nrun() < peak2.nrun())
+         IPeak peak1 = ( IPeak )pk1;
+         IPeak peak2 = ( IPeak )pk2;
+         if( peak1.nrun() < peak2.nrun() )
             return -1;
-         if( peak1.nrun() > peak2.nrun())
+         if( peak1.nrun() > peak2.nrun() )
             return 1;
-         if( peak1.detnum()< peak2.detnum())
+         if( peak1.detnum() < peak2.detnum() )
             return -1;
-         if( peak1.detnum()> peak2.detnum())
+         if( peak1.detnum() > peak2.detnum() )
             return 1;
          
          
@@ -383,16 +451,16 @@ public class Util {
    }
    // Sets up the calibrate operator(Calib) and executes it
    private static void Calibrate( DataSet DS, String calibFileName, 
-                                                          int lineNum){
-      Calib calib= new Calib();
+                                                          int lineNum ){
+      Calib calib = new Calib();
       calib.DS = DS;
-      calib.CalibFile1 = new LoadFileString( calibFileName);
+      calib.CalibFile1 = new LoadFileString( calibFileName );
       Vector V = new Vector();
       V.add( lineNum );
       calib.otherInformation = V;
       Object Result = calib.calculate();
-      if(Result instanceof ErrorString)
-         SharedMessages.addmsg( "Error calibrating "+ DS +"::"+Result );
+      if( Result instanceof ErrorString )
+         SharedMessages.addmsg( "Error calibrating "+ DS + "::"+Result );
       
    }
    
@@ -418,72 +486,97 @@ public class Util {
             Vector      operators, 
             Vector      ResultPeaks,
             Vector<StringBuffer> buff,
-            int         maxNumThreads){
+            int         maxNumThreads ){
       
-      if( keys == null || DS == null || num_peaks <=0)
+      if( keys == null || DS == null || num_peaks <= 0 )
          return;
-     Vector<Integer> keyList = new Vector<Integer>();
-      for(;keys.hasMoreElements();){
-         Object K = keys.nextElement();
-         if( K != null && K instanceof Integer)
-            keyList.addElement((Integer)K);
-      } 
-      int[] Keys = new int[keyList.size()];
       
-      for( int i=0; i< keyList.size(); i++){
-         Keys[i]= keyList.elementAt( i );
+     Vector<Integer> keyList = new Vector<Integer>();
+     
+      for( ; keys.hasMoreElements() ; ){
+         
+         Object K = keys.nextElement();
+         
+         if( K != null && K instanceof Integer )
+            keyList.addElement( ( Integer )K );
+         
+      } 
+      
+      int[] Keys = new int[ keyList.size() ];
+      
+      for( int i = 0 ; i < keyList.size() ; i++ ){
+         Keys[ i ] = keyList.elementAt( i );
       }
+      
       java.util.Arrays.sort( Keys );
          
-      for( int i=0; i < Keys.length; i++){
-            int K = Keys[i];
-            StringBuffer Sbuff= new StringBuffer();
-            buff.addElement( Sbuff);
-            operators.addElement( SetUpfindPeaksOp(DS,
-                         K,num_peaks, 
+      for( int i = 0 ; i < Keys.length ; i++ ){
+         
+            int K = Keys[ i ];
+            
+            StringBuffer Sbuff = new StringBuffer();
+            
+            buff.addElement( Sbuff );
+            
+            operators.addElement( SetUpfindPeaksOp( DS,
+                         K, num_peaks, 
                                min_int,  min_time_chan, max_time_chan,
-                               PixelRow, monCount, Sbuff));
+                               PixelRow, monCount, Sbuff, 12f ) );
            
-            if( operators.size() >= maxNumThreads){
+            if( operators.size() >= maxNumThreads ){
                ParallelExecutor PE = new ParallelExecutor(
-                                  operators,maxNumThreads,30000*maxNumThreads);
+                                  operators, maxNumThreads, 30000 * maxNumThreads );
                
                Vector Results = null;
-               System.out.println("Start run in parallel "+ System.currentTimeMillis());
-               SharedMessages.addmsg("Start run in parallel" );
+               System.out.println( "Start run in parallel "+ System.currentTimeMillis() );
+               SharedMessages.addmsg( "Start run in parallel" );
+               
                try{
+                  
                    Results = PE.runOperators();
-               }catch( ExecFailException ss){
+                   
+               }catch( ExecFailException ss ){
+                  
                   Results = ss.getPartialResults();
                   SharedMessages.addmsg( "Timeout error:"+ss );
-               }catch(Throwable s1){
+                  
+               }catch( Throwable s1 ){
+                  
                   SharedMessages.addmsg( "Execute error:"+s1 );
+                  
                }
 
-               System.out.println("End run in parallel"+ System.currentTimeMillis());
-               SharedMessages.addmsg("End run in parallel" );
+               System.out.println( "End run in parallel"+ System.currentTimeMillis() );
+               SharedMessages.addmsg( "End run in parallel" );
+               
                //-------- Set sequence numbers-------
                int seqNum = ResultPeaks.size()+1;
-               if(Results != null)
-                  for( int kk=0; kk< operators.size(); kk++){
+               
+               if( Results != null )
+                  for( int kk = 0 ; kk < operators.size() ; kk++ ){
                      
                      Object RR = Results.elementAt( kk );
-                     if( RR != null && RR instanceof Vector){
-                        for( int p=0; p < ((Vector)RR).size();p++){
+                     if( RR != null && RR instanceof Vector ){
+                        
+                        for( int p =0 ; p < ( ( Vector )RR ).size() ; p++ ){
                            
-                           IPeak R =(IPeak)((Vector)RR).elementAt(p);
+                           IPeak R = ( IPeak )( ( Vector )RR ).elementAt( p );
                            R.seqnum( seqNum );
-                           ResultPeaks.addElement( R);
+                           ResultPeaks.addElement( R );
                            seqNum++;
+                           
                         }
                      }
-                     StringBuffer sbuff= buff.firstElement();
+                     
+                     StringBuffer sbuff = buff.firstElement();
                      buff.remove( 0 );
                      SharedMessages.addmsg( sbuff );
+                     
                   }//For each operator
 
                operators.removeAllElements();
                buff.clear();
+               
             }//if operators.size() >= maxNumThreads
          }
       }
@@ -506,56 +599,84 @@ public class Util {
             Vector      operators, 
             Vector      ResultPeaks,
             Vector<StringBuffer> buff,
-            int         maxNumThreads){
+            int         maxNumThreads,
+            float         Max_dSpacing ){
       
-      if( keys == null || DS == null || num_peaks <=0)
+      if( keys == null || DS == null || num_peaks <= 0 )
          return null;
       
-      for(;keys.hasMoreElements();){
+      for( ; keys.hasMoreElements() ; ){
          
          Object K = keys.nextElement();
 
-         if( K != null  && K instanceof Integer){
+         if( K != null  && K instanceof Integer ){
             
             Object Error = null;
             int timeOut = 3000;
-            while( operators.size() >= maxNumThreads  && timeOut < 180000){
+            
+            while( operators.size() >= maxNumThreads  && timeOut < 18000 ){
+              
                boolean done = false;
-               for( int i=0; i < operators.size() && !done; i++){
+               for( int i = 0 ; i < operators.size() && !done ; i++ ){
+                  
                   OperatorThread opThreadelt = 
-                                  (OperatorThread)(operators.elementAt(i));
+                                  ( OperatorThread )( operators.elementAt( i ) );
+                  
                   try{
-                    opThreadelt.join(timeOut);
-                    if( opThreadelt.getState() == Thread.State.TERMINATED){
+                     
+                    opThreadelt.join( timeOut );
+                    
+                    if( opThreadelt.getState() == Thread.State.TERMINATED ){
+                       
                        Object Res = opThreadelt.getResult();
-                       if( Res != null && Res instanceof Vector)
+                       
+                       if( Res != null && Res instanceof Vector )
                           ResultPeaks.addElement(  Res );
-                       else if( Res != null && Res instanceof ErrorString)
+                       
+                       else if( Res != null && Res instanceof ErrorString )
                           Error = Res;
-                       operators.remove(  i);
+                       
+                       operators.remove(  i );
+                       
+                       timeOut = 3000;
                        done = true;
+                       
                     }
-                  }catch(Exception ss){
+                  }catch( Exception ss ){
+                     
                      done = false;
                   }
                   
                }
-               if( !done) timeOut = 2*timeOut;
-               if( Error != null)
+               
+               if( !done ) 
+                  timeOut = 2 * timeOut;
+              
+              
+               if( Error != null )
                   return Error;
+               
             }//while operators.size() >= maxNumThreads
-            if( timeOut >= 180000){
-               System.out.println("TimeOut problem. Several Threads are hung");
-            }
-            StringBuffer Sbuff = new StringBuffer();
-            OperatorThread opThread = new OperatorThread( SetUpfindPeaksOp(DS,
-                         ((Integer)K).intValue(),num_peaks, 
-                               min_int,  min_time_chan, max_time_chan,
-                               PixelRow, monCount, Sbuff));
-            opThread.start();
-            operators.addElement(  opThread );
-            buff.addElement( Sbuff );
             
+            
+            if( timeOut >= 180000 ){
+               
+               System.out.println( "TimeOut problem. Several Threads are hung" );
+            }
+            
+            StringBuffer Sbuff = new StringBuffer();
+            OperatorThread opThread = new OperatorThread( SetUpfindPeaksOp( DS,
+                         ( ( Integer )K ).intValue(), num_peaks, 
+                               min_int,  min_time_chan, max_time_chan,
+                               PixelRow, monCount, Sbuff, Max_dSpacing ) );
+            
+
+            opThread.start();
+            
+            operators.addElement(  opThread );
+            
+            buff.addElement( Sbuff );
+           
          }
       }
       return null;
@@ -571,8 +692,9 @@ public class Util {
             int     max_time_chan,
             String  PixelRow,
             int     monCount,
-            StringBuffer buff){
-      
+            StringBuffer buff,
+            float   Max_dSpacing ){
+          
           findDetectorCentroidedPeaks op = new findDetectorCentroidedPeaks();
           op.getParameter( 0 ).setValue( DS );
           op.getParameter( 1 ).setValue( DetectorID );
@@ -582,8 +704,9 @@ public class Util {
           op.getParameter( 5 ).setValue( max_time_chan );
           op.getParameter( 6 ).setValue( PixelRow );
           op.getParameter( 7 ).setValue( monCount );
-          op.getParameter( 8 ).setValue( buff );
-          
+          op.getParameter( 8 ).setValue( Max_dSpacing );
+          op.getParameter( 9 ).setValue( buff );
+         
           return op;
    }
    
@@ -614,82 +737,260 @@ public class Util {
             int     max_time_chan,
             String  PixelRow,
             int     monCount,
-            StringBuffer buff){
+            float  Max_dSpacing,
+            StringBuffer buff ){
 
       IDataGrid grid = Grid_util.getAreaGrid( DS , DetectorID );
-      if( grid == null)
+      if( grid == null )
+         return null;    
+      
+      if( DS.getNum_entries() < 1 )
          return null;
-      if( DS.getNum_entries()<1)
-         return null;
+     
+      int[] RowColRange = {1 , grid.num_rows() , 1 , grid.num_cols()};
+      
+      if( PixelRow != null && PixelRow.length() > 1 ){
+         
+         int[] rr = IntList.ToArray( PixelRow );
+        
+         if( rr != null && rr.length >= 2 && rr[ 0 ] > 0 && rr[ rr.length - 1 ] > 0 ){
+            
+           RowColRange[ 0 ] = RowColRange[ 2 ] = Math.min( rr[ 0 ], RowColRange[ 0 ] );
+           RowColRange[ 1 ] = RowColRange[ 3 ] =
+                      Math.min( rr[ rr.length - 1 ], RowColRange[ 1 ] );
+           
+         }
+            
+      }
+      
       
       //------------------ Find Peaks ------------------
       Vector Pks = FindPeaks.findDetectorPeaks( DS , DetectorID , min_time_chan ,
                max_time_chan , num_peaks , min_int , PixelRow, buff );
-      
-      
-      if(Pks == null || Pks.size() < 1)
+           
+      if( Pks == null || Pks.size() < 1 ){
+        
          return Pks;
+      }
+     
+      float pixelW_H = Math.max(  grid.width()/grid.num_cols() , 
+                                    grid.height()/grid.num_rows() );
+      if( min_time_chan < 0 )
+         min_time_chan = 0;
       
       //---------------Centroid Peaks ---------------------------
-      for( int i=0; i< Pks.size(); i++){
-         IPeak Pk =(IPeak)(Pks.elementAt( i ));
-         Pk = DataSetTools.operator.Generic.TOF_SCD.Util.centroid( Pk , DS , grid );
-         Pks.set( i,Pk);
+      for( int i = 0 ; i < Pks.size() ; i++ ){
+         IPeak Pk = ( IPeak )( Pks.elementAt( i ) );       
+ 
+         Pk = CentroidPeak( Pk, DS, grid, Max_dSpacing, pixelW_H, min_time_chan,
+                  max_time_chan ,RowColRange );
+        
+         Pks.set( i , Pk );
+         
       }
+     
+      EliminateDuplicatePeaks( Pks );
+      
       
       //------------------ Replace IPeak by Peak_new ----------------------
-      XScale xscl = grid.getData_entry( 1,1 ).getX_scale();
-      DataSetTools.instruments.SampleOrientation sampOrient = AttrUtil.getSampleOrientation( DS );
+      XScale xscl = grid.getData_entry( 1 , 1  ).getX_scale();
+      DataSetTools.instruments.SampleOrientation sampOrient = AttrUtil.
+                                                   getSampleOrientation( DS );
       float InitialPath = AttrUtil.getInitialPath( DS.getData_entry( 0 ) );
       float T0 = AttrUtil.getT0Shift( DS.getData_entry( 0 ) );
-      if( Float.isNaN( T0 ))
+      
+      if( Float.isNaN( T0 ) )
          T0 = 0;
+      
       if( sampOrient == null )
-         sampOrient = new DataSetTools.instruments.IPNS_SCD_SampleOrientation(0f,0f,0f);
+         sampOrient = new DataSetTools.instruments.IPNS_SCD_SampleOrientation( 0f , 0f , 0f );
       
       //Now get a Peak_new
-      if( grid instanceof RowColGrid){
-         IDataGrid grid1 = RowColGrid.getUniformDataGrid((RowColGrid) grid , .001f);
-         if( grid1 == null)
-            throw new IllegalArgumentException( "grid "+grid.ID()+" not uniform enough");
+      if( grid instanceof RowColGrid ){
+         IDataGrid grid1 = RowColGrid.getUniformDataGrid( ( RowColGrid ) grid , .001f );
+         if( grid1 == null )
+            throw new IllegalArgumentException( "grid "+grid.ID()+" not uniform enough" );
          grid = grid1;  
         
       }
+      
       grid = grid.clone();//So do not wipe out other grids.
       grid.clearData_entries(); 
      
 
-      Vector<IPeak> ResultantPeak= new Vector<IPeak>( Pks.size());
-      for( int i=0; i< Pks.size(); i++){
+      //Convert all Peaks to a Peak_new Object so position info can be determined
+      Vector<IPeak> ResultantPeak = new Vector<IPeak>( Pks.size() );
+      for( int i = 0 ; i < Pks.size() ; i++ ){
          
-         IPeak pk1 = (IPeak)Pks.elementAt( i );
+         IPeak pk1 = ( IPeak )Pks.elementAt( i );
          
-         Peak_new pk = new Peak_new( pk1.x(), pk1.y(),pk1.z(),grid, sampOrient, T0,
-                  xscl, InitialPath);
+         Peak_new pk = new Peak_new( pk1.x(), pk1.y(), pk1.z(), grid, sampOrient, T0,
+                  xscl, InitialPath );
          
          pk.ipkobs( pk1.ipkobs() );
          pk.inti( pk1.inti() );
-         pk.sigi(pk1.sigi() );
-         pk.reflag(pk1.reflag());
+         pk.sigi( pk1.sigi() );
+         pk.reflag( pk1.reflag() );
          pk.monct( monCount );
          pk.nrun( pk1.nrun() );
          ResultantPeak.add(  pk );
          
-      }
+      }   
+      
       return ResultantPeak;
    }
    
-   public static int getMonCount( Retriever retriever, int dsnum){
+   
+   
+   //Uses the old centroid peak
+   private static IPeak CentroidPeak( IPeak Pk, DataSet DS, IDataGrid grid,
+                  float Max_dSpacing, float pixelW_H, int min_time_chan,
+                  int max_time_chan , int[] RowColRange ){
+      
+      return DataSetTools.operator.Generic.TOF_SCD.Util.centroid( Pk , DS , grid );
+   } 
+   
+   
+   //Uses the experimental Centroid that can span more cells
+   private static IPeak CentroidPeak1( IPeak Pk, DataSet DS, IDataGrid grid, 
+                      float Max_dSpacing, float pixelW_H, int min_time_chan, 
+                      int max_time_chan , int[] RowColRange ){
+      
+      float[] Centroid = new float[ 3 ];
+      Arrays.fill( Centroid , -1f );
+      
+      int reflag = Pk.reflag();
+      reflag = ( reflag/100 ) * 100 + reflag % 10;
+      
+      Vector3D pos = grid.position( Pk.y() , Pk.x() );
+      float Q = ( new Vector3D( Pk.getQ() ) ).length();
+      
+      Data D = grid.getData_entry( (int)( Pk.y() ) , (int)( Pk.x() ) );
+      XScale xscl = D.getX_scale();
+     
+      float dT_Chan = xscl.getX( (int) Pk.z()+1 ) - xscl.getX( (int)Pk.z() );
+      
+      int PDelta =(int)( .5+ DataSetTools.operator.Generic.TOF_SCD.Util.dPixel( 
+               .1f/Max_dSpacing , Q, 
+               ( new DetectorPosition( pos ) ).getScatteringAngle()
+                , pos.length() , pixelW_H ) );
+      
+      int DtimeChan = (int)( .5+DataSetTools.operator.Generic.TOF_SCD.Util.
+          dTChan( .1f/Max_dSpacing , Q , Pk.time() , dT_Chan ) );
+      
+      PDelta = Math.min( Math.max( 3 , PDelta ), 
+           Math.max( 3 , Math.min( grid.num_rows() , grid.num_cols() )/10 ) );
+      
+      DtimeChan = Math.max( 1 , Math.min( DtimeChan, xscl.getNum_x()/10 ) );
+      
+      if( max_time_chan <= min_time_chan || 
+                           ( max_time_chan > xscl.getNum_x() - 1 ) )
+         
+         max_time_chan = xscl.getNum_x() - 1;
+      
+      int Six = Math.max( PDelta , DtimeChan );  
+    
+   
+      if( !NearEdge( PDelta, DtimeChan, Pk, RowColRange,  min_time_chan,
+                                                      max_time_chan ) )
+         Operators.TOF_SCD.GetCentroidPeaks1.CentroidPeakDS(  DS ,  
+                    grid.ID() , (int)( Pk.y()+.5 ) , (int)( Pk.x()+.5 ) , 
+                    (int )( Pk.z()+.5 ) , Centroid , Six );
+      
+      else
+         Pk.reflag( reflag+20 );
+     
+      if( Centroid[ 0 ] > 0 &&Centroid[ 1 ] > 0 &&Centroid[ 2 ] >= min_time_chan &&
+          Centroid[ 0 ] <= grid.num_rows() &&Centroid[ 1  ] <= grid.num_cols()
+          &&Centroid[ 2 ] <= max_time_chan ){
+         
+            IPeak Pk1 = Pk.createNewPeakxyz( Centroid[ 1 ] , Centroid[ 0 ] ,
+                               Centroid[ 2 ] );
+           
+            Pk1.reflag( 10 + reflag );
+            return Pk1;
+            
+      }else{
+        
+         Pk.reflag( reflag + 20 );
+         return Pk;
+         
+      }
+   }
+   
+   
+   //Determines whether a peaks is too near the edge
+   private static boolean NearEdge( int PDelta, int DtimeChan,
+             IPeak Pk, int[]RowColRange, int minTchan, int maxTchan ){
+      
+      if( Pk.x() - RowColRange[ 2 ] - PDelta < 0 )
+         return true;
+      
+      if( Pk.y() - RowColRange[ 0 ] - PDelta < 0 )
+         return true;
+      
+      if( RowColRange[ 3 ] - Pk.x() - PDelta < 0 )
+         return true;
+      
+      if( RowColRange[ 1 ] - Pk.y() - PDelta < 0 )
+         return true;
+      
+      if( Pk.z() - DtimeChan  - minTchan < 0 )
+         return true;
+      
+      if(maxTchan  - Pk.z() - DtimeChan < 0 )
+         return true;
+      
+      return false;
+      
+   }
+   
+   
+   
+   //Eliminate peaks whose centroid is 
+   private static void EliminateDuplicatePeaks( Vector Peaks ){
+      
+    boolean done = Peaks == null || Peaks.size() < 1;
+    
+    for( int i = 0 ; !done ; i++ ){
+       
+       IPeak Pk = ( IPeak )Peaks.elementAt( i );
+       for( int j = Peaks.size() - 1 ; j > i ; j-- ){
+          
+          IPeak Pk1 = ( IPeak )Peaks.elementAt( j );
+          if( Pk1.x() < Pk.x() - 2  || Pk1.x() > Pk.x() + 2||
+              Pk1.y() < Pk.y() - 2  || Pk1.y() > Pk.y() + 2||
+              Pk1.z() < Pk.z() - 2  || Pk1.z() > Pk.z() + 2
+                   )
+           {}
+          else
+             Peaks.remove( j );
+       }
+       
+      if( i + 1 >= Peaks.size() )
+         done = true;
+    }
+      
+   }
+   
+   
+   public static int getMonCount( Retriever retriever, int dsnum ){
+      
       int monCount = 10000;
       int ID = -1;
       DataSet Monitor = null;
-      if( retriever.getType( 0 )== Retriever.MONITOR_DATA_SET){
+      
+      if( retriever.getType( 0 )== Retriever.MONITOR_DATA_SET ){
+         
          Monitor = retriever.getDataSet( 0 );
-         ID = MonitorID_Calc.UpstreamMonitorID(Monitor );
-         if( ID >= 0){
-            Object Result= (new IntegrateGroup( Monitor,ID,0,50000)).getResult();
-            if( Result instanceof java.lang.Number)
-              monCount =((Number)Result).intValue();
+         ID = MonitorID_Calc.UpstreamMonitorID( Monitor );
+         
+         if( ID >= 0 ){
+            
+            Object Result = ( new IntegrateGroup( Monitor, ID, 0, 50000 ) ).getResult();
+            if( Result instanceof java.lang.Number )
+              monCount = ( ( Number )Result ).intValue();
+            
          }
             
       }
@@ -752,116 +1053,164 @@ public class Util {
            int     maxThreads
             ){
       
-      SharedMessages.addmsg( "Instrument = "+inst );
-      if( run_numbers == null)
-         return new ErrorString("No run numbers to integrate");
-      int[] Runs = new int[run_numbers.size()];
-      try{
-      for( int i=0; i<run_numbers.size(); i++)
-         Runs[i]= ((Integer)run_numbers.elementAt( i )).intValue();
-      }catch(Exception s){
-         return new ErrorString("Improper format for run numbers");
+      SharedMessages.addmsg( "Instrument = " + inst );
+      
+      if( run_numbers == null )
+         return new ErrorString( "No run numbers to integrate" );
+      
+      int[] Runs = new int[ run_numbers.size() ];
+      
+      try {
+
+         for( int i = 0 ; i < run_numbers.size() ; i++ )
+            Runs[ i ] = ( (Integer) run_numbers.elementAt( i ) ).intValue();
+         
+      }catch( Exception s ) {
+         
+         return new ErrorString( "Improper format for run numbers" );
       }
+      
       java.util.Arrays.sort( Runs );
-      int[] DSnums = IntList.ToArray(DataSetNums );
+      
+      int[] DSnums = IntList.ToArray( DataSetNums );
+      
       Vector<StringBuffer> LogInfo = new Vector<StringBuffer>();
+      
       Vector<OperatorThread> operators = new Vector<OperatorThread>();
-      if( !FileExt.startsWith( "." ))
-         FileExt="."+FileExt;
-      if( Runs == null || DSnums == null)
-         return new ErrorString("No Data Sets to process");
+      
+      if( !FileExt.startsWith( "."  ) )
+         FileExt = "." + FileExt;
+      
+      if( Runs == null || DSnums == null )
+         return new ErrorString( "No Data Sets to process" );
+      
       Vector Peaks = new Vector();
-      int[] timeZrange = getMaxMin(time_slice_range);
-      int[] colXrange  = getMaxMin( Xrange);
-      int[] rowYrange =  getMaxMin( Yrange);
-      int centering = getCenterIndex( centeringName);
-      if( timeZrange == null || colXrange == null || rowYrange == null)
-         return new ErrorString("x,y, or time offsets not set");
+      int[] timeZrange = getMaxMin( time_slice_range );
+      int[] colXrange  = getMaxMin( Xrange );
+      int[] rowYrange =  getMaxMin( Yrange );
+      int centering = getCenterIndex( centeringName );
+      
+      if( timeZrange == null || colXrange == null || rowYrange == null )
+         return new ErrorString( "x,y, or time offsets not set" );
       
       
-      for( int runIndx =0; runIndx < Runs.length; runIndx++){
+      for( int runIndx = 0 ; runIndx < Runs.length ; runIndx++ ){
          
-         String filename =path+inst+Runs[runIndx]+FileExt;
-         SharedMessages.addmsg( "Loading "+filename);
+         String filename = path + inst + Runs[ runIndx ] + FileExt;
+         SharedMessages.addmsg( "Loading " + filename );
          
-         System.out.println("Integrating peaks in "+filename);
+         System.out.println( "Integrating peaks in " + filename );
          int dsIndx = -1;
          try{
+            
            Retriever retriever = Command.ScriptUtil.getRetriever( filename );
-           int monCount = getMonCount( retriever ,0);
-           String matFileName =outpath+"ls"+expname+Runs[runIndx]+".mat";
-           for( dsIndx=0; dsIndx < DSnums.length; dsIndx++){
-              DataSet ds = retriever.getDataSet( DSnums[dsIndx] );
+           
+           int monCount = getMonCount( retriever , 0 );
+           String matFileName = outpath + "ls" + expname + Runs[ runIndx ] + ".mat";
+           
+           for( dsIndx = 0 ; dsIndx < DSnums.length ; dsIndx++ ){
               
-              if( ds == null){
-                 return new ErrorString("Error in retrieving "+filename+ 
-                          "dataset num "+DSnums[dsIndx]);
+              DataSet ds = retriever.getDataSet( DSnums[ dsIndx ] );
+              
+              if( ds == null ){
+                 return new ErrorString( "Error in retrieving " + filename +  
+                          "dataset num " + DSnums[ dsIndx ] );
               }
-              if( useCalibFile)
-                 Calibrate( ds, calibfile, line2use);
-              Object Result = (new LoadOrientation( ds, matFileName)).
+              
+              if( useCalibFile )
+                 Calibrate( ds, calibfile, line2use );
+              
+              Object Result = ( new LoadOrientation( ds, matFileName ) ).
                                                              getResult();
-              if(Result != null && Result instanceof gov.anl.ipns.Util.
-                                  SpecialStrings.ErrorString)
+              if( Result != null && Result instanceof gov.anl.ipns.Util.
+                                  SpecialStrings.ErrorString )
                  return Result;
+              
               Object Res = RunOperators( operators, Peaks, maxThreads );
-              if( Res!= null && Res instanceof ErrorString)
+              
+              if( Res != null && Res instanceof ErrorString )
                  return Res;
+              
               StringBuffer sbuff = new StringBuffer();
-              OperatorThread opThrd = getIntegOpThread( ds,centering,
-                       timeZrange,increase,d_min,1,PeakAlg,colXrange,
-                       rowYrange,monCount,sbuff);
-              opThrd.setName( filename+" ds num=" +DSnums[dsIndx] );//For error reporting
+              
+              OperatorThread opThrd = getIntegOpThread( ds, centering,
+                       timeZrange, increase, d_min, 1, PeakAlg, colXrange,
+                       rowYrange, monCount, sbuff );
+              
+              opThrd.setName( filename + " ds num=" + DSnums[ dsIndx ] );//For error reporting
+              
               LogInfo.addElement(  sbuff );
+              
               operators.addElement( opThrd );
+              
               opThrd.start();
            }
            
-         }catch( Exception ss){
-            SharedMessages.addmsg( "Error in retrieving "+filename+"::"+ss );
-            String S ="";
-            if( dsIndx >=0)
-               S =" data set num="+DSnums[dsIndx];
-            return new gov.anl.ipns.Util.SpecialStrings.ErrorString("Error in retrieving "+filename+ S);
+         }catch( Exception ss ){
+            
+            SharedMessages.addmsg( "Error in retrieving " + filename + "::" + ss );
+            String S = "";
+            
+            if( dsIndx >= 0 )
+               S = " data set num=" + DSnums[ dsIndx ];
+            
+            return new gov.anl.ipns.Util.SpecialStrings.ErrorString(
+                                       "Error in retrieving " + filename +  S );
          }
              
       }
-      Object Res =RunOperators( operators, Peaks, 1 ); 
-      if( Res!= null && Res instanceof ErrorString)
-         return Res;
-      if( operators.size()>0)
-         Res =RunOperators( operators, Peaks, 1 ); 
-      if( Res!= null && Res instanceof ErrorString)
-         return Res;
-      if( operators.size() > 0)
-         return new ErrorString(" timeout for "+operators.size()+ " threads");
-      SortUnPackFix(Peaks);
       
-      String logFile = outpath+"integrate.log";
-      java.io.FileOutputStream fout=null;
+      
+      Object Res = RunOperators( operators, Peaks, 1 ); 
+      
+      if( Res != null && Res instanceof ErrorString )
+         return Res;
+      
+      if( operators.size() > 0 )
+         Res = RunOperators( operators, Peaks, 1 ); 
+      
+      if( Res != null && Res instanceof ErrorString )
+         return Res;
+      
+      if( operators.size() > 0 )
+         return new ErrorString( " timeout for " + operators.size() + " threads" );
+      
+      SortUnPackFix( Peaks );
+      
+      String logFile = outpath + "integrate.log";
+      java.io.FileOutputStream fout = null;
+      
       try{
-         fout = new java.io.FileOutputStream(logFile);
-        for( int i=0; i< LogInfo.size(); i++){
-           if( LogInfo.elementAt(i) != null)
+         
+        fout = new java.io.FileOutputStream( logFile );
+        for( int i = 0 ; i < LogInfo.size() ; i++ ){
+           
+           if( LogInfo.elementAt( i ) != null )
              fout.write( LogInfo.elementAt( i ).toString().getBytes()  );
+           
         }
         fout.flush();
         fout.close();
       
-      }catch(Exception s){
+      }catch( Exception s ){
+         
          SharedMessages.addmsg( "Could not write out the integrate.log file" );
       }
       
-      String integfile = outpath+expname+".integrate";
-      WritePeaks writer=new WritePeaks(integfile,Peaks,new Boolean(false));
+      String integfile = outpath + expname + ".integrate";
+      WritePeaks writer = new WritePeaks( integfile, Peaks, new Boolean( false ) );
       Res =  writer.getResult();
-      (new ViewASCII( outpath+expname+".integrate")).getResult();
+      
+      ( new ViewASCII( outpath + expname + ".integrate" ) ).getResult();
 
-      if( ShowLog)
-         (new ViewASCII( outpath+"integrate.log")).getResult();
+      if( ShowLog )
+         
+         (new ViewASCII( outpath + "integrate.log" ) ).getResult();
+      
       else
-        SharedMessages.addmsg( "The log file is in integrate.log. Use the"+
-                                                   " View menu to open it");
+         
+        SharedMessages.addmsg( "The log file is in integrate.log. Use the" + 
+                                                   " View menu to open it" );
      
       
       return Res;
@@ -885,37 +1234,58 @@ public class Util {
       Int.getParameter( 8 ).setValue( rowYrange );
       Int.getParameter( 9 ).setValue( monCount );
       Int.getParameter( 10 ).setValue( sbuff );
-      OperatorThread Res = new OperatorThread( Int);
+      OperatorThread Res = new OperatorThread( Int );
       
       return Res;
 
    }
-   private static int getCenterIndex(String centeringName){
-      for( int i=0; i< 6;i++)
-         if( CenteringNames[i].equals(centeringName))
+   
+   
+   
+   private static int getCenterIndex( String centeringName ){
+      
+      for( int i = 0 ; i < 6 ; i++ )
+         
+         if( CenteringNames[ i ].equals( centeringName ) )
             return i;
+      
       return 0;
    }
    
-   // Gets min, max from the string form of a ranve
-   private static int[] getMaxMin( String range){
+   
+   
+   // Gets min, max from the string form of a range
+   private static int[] getMaxMin( String range ){
+      
        int[] list = IntList.ToArray( range );
-       if( list == null || list.length < 1)
+       if( list == null || list.length < 1 )
           return null;
-       int[] Res = new int[2];
-       Res[0] = list[0];
-       Res[1] = list[list.length-1];
+       
+       int[] Res = new int[ 2 ];
+       
+       Res[ 0 ] = list[ 0 ];
+       Res[ 1 ] = list[ list.length - 1 ];
+       
        return Res;
    }
+   
+   
+   
    //returns null or ErrorString
-   private static Object RunOperators( Vector<OperatorThread> operators, Vector Peaks, int maxNumThreads){
-      if( operators.size() < maxNumThreads)
+   private static Object RunOperators( Vector<OperatorThread> operators, 
+                                       Vector Peaks, int maxNumThreads ){
+      
+      if( operators.size() < maxNumThreads )
          return null;
+      
       int timeOut = 300000;
       Vector<Integer> Finished = new Vector<Integer>();
-      while( timeOut < 1200000 && Finished.size()<1) {
+      
+      while( timeOut < 1200000 && Finished.size() < 1 ) {
+         
          for( int i = 0 ; i < operators.size() ; i++ ) {
             OperatorThread opThrd = operators.elementAt( i );
+            
             try {
                opThrd.join( timeOut );
             }
@@ -923,23 +1293,36 @@ public class Util {
                return new ErrorString( "Thread error for " + opThrd.getName()
                         + "::" + s );
             }
+            
             if( opThrd.getState() == Thread.State.TERMINATED ) {
+               
                Object Res = opThrd.getResult();
+               
                if( Res instanceof Vector )
+                  
                   Peaks.addElement(  Res );
+               
                else if( Res instanceof ErrorString )
+                  
                   return Res;
+               
                else
+                  
                   return new ErrorString( "Thread " + opThrd.getName()
                            + " did not finish-->" + Res );
+               
                Finished.addElement( i );
             }
 
          }//for
-         timeOut +=300000;
+         
+         timeOut += 300000;
       }//while
-      for( int i= Finished.size()-1; i>=0; i--)
-         operators.remove(  Finished.elementAt(i).intValue() );
+      
+      
+      for( int i = Finished.size() - 1 ; i >= 0 ; i-- )
+         
+         operators.remove(  Finished.elementAt( i ).intValue() );
       
       return null;
    }
