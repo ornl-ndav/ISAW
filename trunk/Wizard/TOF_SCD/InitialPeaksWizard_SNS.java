@@ -123,7 +123,7 @@ public class InitialPeaksWizard_SNS extends Wizard {
                 new int[0]));
      
      addForm( new ScriptForm(path+"Blind.iss",new ArrayPG("Orientation Matrix", null),
-                       new int[]{0,6})); 
+                       new int[]{0,5,7})); 
      
      addForm( new ScriptForm(path+"JIndex_Init1.iss", new StringPG("Result",""),
     		 new int[]{0,1,6,7} ));
@@ -138,12 +138,13 @@ public class InitialPeaksWizard_SNS extends Wizard {
      
      
      
-      int[][] Xlate= { {17, 0, 0,-1, 0, 0}, //peaks vector
-                       {-1, 7, 1, 0,-1,-1}, //init UB matrix
+      int[][] Xlate= { {19, 0, 0,-1, 0, 0}, //peaks vector
+                       {-1, 8, 1, 0,-1,-1}, //init UB matrix
                        {-1,-1,-1, 6, 5,-1}, //Transformation
                        {-1,-1,-1,-1,11, 1},  //lsqrs UB matrix
                        {1 , 6 ,6, 3,10, 6},//path
-                       {4 ,-1 ,7,-1, -1,7}//expname
+                       {4 ,-1 ,7,-1, -1,7},//expname
+                       {14,5,-1,-1,-1,-1}  //Max dSpacing
                      
                      };
      linkFormParameters(Xlate);

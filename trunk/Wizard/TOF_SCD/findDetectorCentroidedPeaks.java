@@ -79,6 +79,7 @@ public class findDetectorCentroidedPeaks extends GenericOperator{
       addParameter( new IntegerPG("max_time_chan",50000));
       addParameter( new ChoiceListPG("Rows/Cols to keep",""));
       addParameter( new IntegerPG("monitor count",10000));
+      addParameter( new FloatPG("Max d-spacing",12f));
       addParameter( new PlaceHolderPG("log stuff", null));
    }
 
@@ -115,6 +116,8 @@ public class findDetectorCentroidedPeaks extends GenericOperator{
       S.append("The row/col to keep");
       S.append("@param   ");
       S.append("Monitor count");
+      S.append("@param   ");
+      S.append("Monitor Maximum real d-spacing");
       S.append("@param   ");
       S.append("log buffer If this is a non-null StringBuffer, log info will"+
                          "be appended to it ");
@@ -155,11 +158,13 @@ public class findDetectorCentroidedPeaks extends GenericOperator{
          int max_time_chan = ((IntegerPG)(getParameter(5))).getintValue();
          java.lang.String PixelRow = getParameter(6).getValue().toString();
          int monCount = ((IntegerPG)(getParameter(7))).getintValue();
-         Object logBuffer = getParameter(8).getValue();
+         float MaxDspacing =((FloatPG)(getParameter(8))).getfloatValue();
+         Object logBuffer = getParameter(9).getValue();
          StringBuffer LogBuffer = null;
          if( logBuffer instanceof StringBuffer)
             LogBuffer =(StringBuffer)logBuffer;
-         java.util.Vector Xres=Wizard.TOF_SCD.Util.findDetectorCentroidedPeaks(DS,DetectorID,num_peaks,min_int,min_time_chan,max_time_chan,PixelRow,monCount, LogBuffer );
+         java.util.Vector Xres=Wizard.TOF_SCD.Util.findDetectorCentroidedPeaks(DS,DetectorID,num_peaks,min_int,
+                     min_time_chan,max_time_chan,PixelRow,monCount,MaxDspacing, LogBuffer );
 
          return Xres;
        }catch( Throwable XXX){
