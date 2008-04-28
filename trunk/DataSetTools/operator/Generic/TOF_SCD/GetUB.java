@@ -315,40 +315,55 @@ public class GetUB {
       }
       xixj = xi_xj;
       boolean done = false;
-      int faze = 0;
-      int maxIndx = - 1;
-      float middle=(maxr+minr)/2;
-      float zero = (maxr-minr)/30;
-      float max_xixj_start =0;
-      for( int i = 0 ; ( i < xixj.length ) && ! done ; i++ ) {
-         if( faze == 0 ) {  
-            
-           /* if( xixj[i] > max_xixj_start){
-               
-               max_xixj_start = xixj[i];
-               zero = max_xixj_start/10;
-            }
-            */
-            if( xixj[ i ] < middle-zero )
-               faze = 1;
-               
-            
-         }
-         else if( faze == 1 ) {
-            if( xixj[ i ] > middle+zero )
-               faze = 2;
-            maxIndx = i;
-         }
-         else if( faze == 2 ) {
-            if( xixj[ i ] < middle-zero )
-               faze = 3;
-            else if( xixj[ i ] > xixj[ maxIndx ] ) {
+      int faze=-1,
+          maxIndx=-1;
+      for( int k = 0 ; k < 3 && ! done ; k++ ) {
+         faze = 0;
+         maxIndx = - 1;
+         float middle = ( maxr + minr ) / 2;
+         float zero = ( maxr - minr ) / 30;
+         float max_xixj_start = 0;
+         for( int i = 0 ; ( i < xixj.length ) && ! done ; i++ ) {
+            if( faze == 0 ) {
 
+               /*
+                * if( xixj[i] > max_xixj_start){
+                * 
+                * max_xixj_start = xixj[i]; zero = max_xixj_start/10; }
+                */
+               if( xixj[ i ] < middle - zero )
+                  faze = 1;
+
+
+            }
+            else if( faze == 1 ) {
+               if( xixj[ i ] > middle + zero )
+                  faze = 2;
                maxIndx = i;
             }
+            else if( faze == 2 ) {
+               if( xixj[ i ] < middle - zero )
+                  faze = 3;
+               else if( xixj[ i ] > xixj[ maxIndx ] ) {
+
+                  maxIndx = i;
+               }
+            }
+            else
+               done = true;
          }
-         else
-            done = true;
+         if( done && maxIndx < 8 && k<2){//tried for 10 between
+            done = false;
+            maxr=-1; minr=1;
+            for( int ii=0; ii< xixj.length-1;ii++){
+               xixj[ii]=(xixj[ii]+xixj[ii+1])/2;
+               if( xixj[ii]>maxr)
+                  maxr=xixj[ii];
+               if( xixj[ii] < minr)
+                  minr =xixj[ii];
+            }
+            
+         }
       }
       float[] Res = new float[ 7 ];
       if( faze >= 2 ) {
