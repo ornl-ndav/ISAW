@@ -100,14 +100,10 @@ public class NxfileStateInfo extends StateInfo{
      HDFVersion = NexUtils.getStringAttributeValue( NxfileNode, "HDF_version");
      String time =NexUtils.getStringAttributeValue( NxfileNode, "file_time");
      
-     long Tmill = ConvertDataTypes.parse_new( time );
-     if( Tmill < 0 )
+     Time = ConvertDataTypes.parse2Date( time );
+     if( Time == null )
          Time = ConvertDataTypes.parse( time);
-     else{
-        GregorianCalendar GCal = new GregorianCalendar();
-        GCal.setTimeInMillis( Tmill );
-        Time = GCal.getTime();
-     }
+    
      
      Spectra = null;
      InstrumentNode = null;
