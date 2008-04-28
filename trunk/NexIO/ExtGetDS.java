@@ -261,14 +261,17 @@ public class ExtGetDS{
    
    NxNode EntryNode= dsInf.NxentryNode;
    AttributeList AL = getGlobalAttributes( EntryNode ) ;
+   
    NxfileStateInfo FileState = new NxfileStateInfo( node , filename,
             dsInf.NxInstrSourceNode);
-   
+
+  
    NxEntryStateInfo EntryState = new NxEntryStateInfo( EntryNode,FileState,
                dsInf.NxInstrumentNode, dsInf.NxSampleNode, dsInf.NxBeamNode,
                dsInf.NxInstrSourceNode);
    EntryState.InstrModeratorNode=dsInf.NxInstrModeratorNode;
    EntryState.NodeNames = dsInf.NodeNames;
+   
    DataSet DS;
    int instrType = -1; 
    
@@ -311,6 +314,8 @@ public class ExtGetDS{
    }
    
    DS.setTitle( EntryNode.getNodeName() );
+
+  
    FileState.Push( EntryState);
    
    IProcessNxEntry entry = QueryNxEntry.getNxEntryProcessor(FileState, 
@@ -323,7 +328,7 @@ public class ExtGetDS{
       FileState.Push( DataState );
       
    }
-   
+  
    boolean res = entry.processDS( DS, EntryNode, dsInf.NxdataNode, FileState,
            dsInf.startGroupID);
            
@@ -335,6 +340,7 @@ public class ExtGetDS{
       //return DS;
       
    }
+   
    String DSType = (String)DS.getAttributeValue( Attribute.DS_TYPE);
    if( DSType == null)
      return DS;
@@ -432,14 +438,10 @@ public class ExtGetDS{
     if( S != null){
       
        Date D = null;
-       long T = NexIO.Util.ConvertDataTypes.parse_new( S );
-       if( T < 0)
+       D = NexIO.Util.ConvertDataTypes.parse2Date( S );
+       if( D== null)
            D = NexIO.Util.ConvertDataTypes.parse(S);
-       else{
-         GregorianCalendar Gcal = new GregorianCalendar();
-         Gcal.setTimeInMillis( T );
-         D = Gcal.getTime();
-       }
+       
        if( D != null){
          
          java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat();
