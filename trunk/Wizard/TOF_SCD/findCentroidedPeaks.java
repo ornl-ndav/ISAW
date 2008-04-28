@@ -92,8 +92,10 @@ public class findCentroidedPeaks extends GenericOperator{
       addParameter( new LoadFilePG("SCD calibration file.",""));
       addParameter( new IntegerPG("Calibration file line(mode)",-1));
       addParameter( new IntArrayPG("Row/Col values to keep. Blank for all",""));
+      addParameter( new FloatPG("Max d-spacing",12f));
       addParameter( new StringPG("Data filename extension",".nxs"));
       addParameter( new StringPG("The prefix for the filename","SCD"));
+      addParameter( new BooleanPG("View Peaks file",true));
       addParameter( new IntegerPG("maxNumThreads",1));
    }
 
@@ -144,9 +146,13 @@ public class findCentroidedPeaks extends GenericOperator{
       S.append("@param   ");
       S.append("The Row/Col values to keep. Blank for all");
       S.append("@param   ");
+      S.append("Maximum real d-Spacing");
+      S.append("@param   ");
       S.append("The name of the extension on the data file");
       S.append("@param   ");
       S.append("The prefix for the filename. Does not include path.");
+      S.append("@param   ");
+      S.append("View Peaks file.");
       S.append("@param   ");
       S.append("The maximum number of threads to execute at one time");
       S.append("@error ");
@@ -189,10 +195,14 @@ public class findCentroidedPeaks extends GenericOperator{
          java.lang.String calibfile = getParameter(11).getValue().toString();
          int line2use = ((IntegerPG)(getParameter(12))).getintValue();
          java.lang.String PixelRow = getParameter(13).getValue().toString();
-         java.lang.String extension = getParameter(14).getValue().toString();
-         java.lang.String fileNamePrefix = getParameter(15).getValue().toString();
-         int maxNumThreads = ((IntegerPG)(getParameter(16))).getintValue();
-         java.util.Vector Xres=Wizard.TOF_SCD.Util.findCentroidedPeaks(rawpath,outpath,runnums,dataSetNums,expname,num_peaks,min_int,min_time_cha,max_time_chan,append,useCalib,calibfile,line2use,PixelRow,extension,fileNamePrefix,maxNumThreads );
+         float Max_dSpacing =((FloatPG)getParameter(14)).getfloatValue();
+         java.lang.String extension = getParameter(15).getValue().toString();
+         java.lang.String fileNamePrefix = getParameter(16).getValue().toString();
+         boolean ViewPeaks = ((BooleanPG)(getParameter(17))).getbooleanValue();
+         int maxNumThreads = ((IntegerPG)(getParameter(18))).getintValue();
+         java.util.Vector Xres=Wizard.TOF_SCD.Util.findCentroidedPeaks(rawpath,outpath,runnums,
+                  dataSetNums,expname,num_peaks,min_int,min_time_cha,max_time_chan,append,useCalib,calibfile,line2use,PixelRow,
+                  Max_dSpacing, extension,fileNamePrefix,ViewPeaks,maxNumThreads );
 
          return Xres;
        }catch( Throwable XXX){
