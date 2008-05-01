@@ -226,26 +226,37 @@ public class GetCentroidPeaks1 implements Wrappable, HiddenOperator {
 	    done = ( PP ==  null );
 	    PeakInfo PP2 = null;
 		while( !done ){
-			if( PP == null )
+		   if( cutoff < P.ipkobs()/200 )
+            done = true;
+		   else if( PP == null )
 				done = false;
-		    else if( Float.isNaN( PP.getCalcBackgroundLevel() ) )
+		   else if( Float.isNaN( PP.getCalcBackgroundLevel() ) )
 				done = false;
-			else if( PP.getNCells() < 5 )
-				done = false;
-			else if( PP.getNCells() > .8*PP.getNCellsExtent() )
-				done = false;
+         else if( PP.getNCells() < 5 )
+            done = false;
+		   else if( cutoff - PP.getCalcBackgroundLevel() < .5 ){
+             done = true;
+             if(cutoff - PP.getCalcBackgroundLevel() < 0)
+               PP.setBackground( cutoff );
+         }
+			//else if( PP.getNCells() > .8*PP.getNCellsExtent() )
+			//	done = false;
+		  
 			else if( ( PP.maxX - PP.minX > .15*ncols )||( PP.maxY - PP.minY > .15*nrows )||( PP.maxZ - PP.minZ > .1*nchan ) ){
 				done = true;
 				PP = PP2;
-			}
+			}else if( Math.abs( PP.getAverageRow()-PP.getWeightedAverageRow())>.015)
+	            done = false;
+         else if( Math.abs( PP.getAverageCol()-PP.getWeightedAverageCol())>.015)
+            done = false;
+         else if( Math.abs( PP.getAverageRow()-PP.getWeightedAverageRow())<=.015)
+            done = true;
+	         
+			else
+			   done = false;
 				
-		    else if( cutoff < P.ipkobs()/200 )
-		    	done = true;
-			else if( cutoff - PP.getCalcBackgroundLevel() < .3 ){
-		   		done = true;
-		   		if(cutoff - PP.getCalcBackgroundLevel() < 0)
-		   		  return PP2;
-			}
+		   
+			
 			if( !done ){
 				PP2 = PP;
 				
@@ -253,15 +264,17 @@ public class GetCentroidPeaks1 implements Wrappable, HiddenOperator {
 				if( PP != null)
 				   cutoff = ( cutoff + PP.getCalcBackgroundLevel() )/2.0f;
 				
-				if( Float.isNaN( cutoff1 )|| PP == null )
-					cutoff = cutoff/2.0f;
+				if( Float.isNaN( cutoff )|| PP == null )
+					cutoff = cutoff1/2;
 				 
-				else if( ( cutoff1 >= cutoff )&&( PP.getNCells() >1) ) // Getting into another peak
+				else if( ( cutoff1 < cutoff )&&( PP.getNCells() >1) ) // Getting into another peak
 					return PP2;
+				
 				else if( cutoff1 >= cutoff)
 				   cutoff =  .9f*cutoff;
 				else
-					cutoff = cutoff1;
+				   cutoff= .9f*cutoff1;
+				
 					
 				PP = GetPeak.getPeakInfo( y, x, z, gridID, DS, cutoff, PeakSpan );
 			}
@@ -290,40 +303,53 @@ public class GetCentroidPeaks1 implements Wrappable, HiddenOperator {
        done = ( PP ==  null );
        PeakInfo PP2 = null;
       while( !done ){
-         if( PP == null )
-            done = false;
-         else if( cutoff < grid.intensity( y,x,z )/200 )
+         
+         if( cutoff < grid.intensity( y,x,z )/100 )
                done = true;
-          else if( Float.isNaN( PP.getCalcBackgroundLevel() ) )
+         else  if( PP == null )
+            done = false;
+         else if( Float.isNaN( PP.getCalcBackgroundLevel() ) )
             done = false;
          else if( PP.getNCells() < 5 )
             done = false;
-         else if( PP.getNCells() > .8*PP.getNCellsExtent() )
-            done = false;
-         else if( ( PP.maxX - PP.minX > .15*ncols )||( PP.maxY - PP.minY > .15*nrows )||( PP.maxZ - PP.minZ > .1*nchan ) ){
+         else if( cutoff < PP.getTotIntensity()/50/PP.getNCells())//cutoff zero relative to average intensity
+            done = true;
+        // else if( PP.getNCells() > .8*PP.getNCellsExtent() )
+        //    done = false;
+         else if( ( PP.maxX - PP.minX > .15*ncols )||
+                  ( PP.maxY - PP.minY > .15*nrows )||
+                  ( PP.maxZ - PP.minZ > .1*nchan ) ){
             done = true;
             PP = PP2;
          }
             
        
-         else if( cutoff - PP.getCalcBackgroundLevel() < .3 ){
+         else if( cutoff - PP.getCalcBackgroundLevel() < .6 ){
                done = true;
                PP2 = PP;
+               if( cutoff >= PP.getCalcBackgroundLevel())
+                  PP2.setBackground( (cutoff + PP.getCalcBackgroundLevel())/2 );
+               
+                  
          }
          if( !done ){
             PP2 = PP;
             
-            float cutoff1 = ( cutoff + PP.getCalcBackgroundLevel() )/2.0f;
+            float cutoff1 = cutoff;
+            if( PP != null)
+               cutoff1 = ( cutoff + PP.getCalcBackgroundLevel() )/2.0f;
             
-            if( Float.isNaN( cutoff1 ) )
+            if( Float.isNaN( cutoff1 )|| PP== null )
                cutoff = cutoff/2.0f;
             
-            else if( ( cutoff1 >= cutoff )&&( PP.getNCells() >1) ) {// Getting into another peak
+            else if( ( cutoff1 > cutoff )&&( PP.getNCells() >1) ) {// Getting into another peak
+               
                Centroid[0]=PP2.getWeightedAverageRow();
                Centroid[1]=PP2.getWeightedAverageCol();
                Centroid[2] = PP2.getWeightedAverageChan();
                return;
-            }else if( cutoff1 >= cutoff)
+               
+            }else if( cutoff >= .9*cutoff1)
                cutoff =  .9f*cutoff;
             else
                cutoff = cutoff1;
