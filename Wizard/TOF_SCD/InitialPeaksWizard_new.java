@@ -122,7 +122,7 @@ public class InitialPeaksWizard_new extends Wizard {
                new PlaceHolderPG("Peaks", new Vector())));
      
      addForm( new ScriptForm(path+"Blind.iss",new ArrayPG("Orientation Matrix", null),
-                       new int[]{0,6})); 
+                       new int[]{0,7})); 
      
      addForm( new ScriptForm(path+"JIndex_Init1.iss", new StringPG("Result",""),
     		 new int[]{0,1,6,7} ));
@@ -138,10 +138,10 @@ public class InitialPeaksWizard_new extends Wizard {
      
      
       int[][] Xlate= { {13, 0, 0,-1, 0, 0}, //peaks vector
-                       {-1, 7, 1, 0,-1,-1}, //init UB matrix
+                       {-1, 8, 1, 0,-1,-1}, //init UB matrix
                        {-1,-1,-1, 6, 5,-1}, //Transformation
                        {-1,-1,-1,-1,11, 1},  //lsqrs UB matrix
-                       {1 , 6 ,6, 3,10, 6},//path
+                       {1 , 7 ,6, 3,10, 6},//path
                        {3 ,-1 ,7,-1, -1,7}//expname
                      
                      };
