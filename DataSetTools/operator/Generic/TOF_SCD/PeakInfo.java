@@ -127,14 +127,14 @@ public class PeakInfo {
          MaxIntensity = TotExtentIntensity = 0; 
        if( !Float.isNaN( backgroundIntensity ) && ( backgroundIntensity  > 0 ) )
             
-          background = this.backgroundIntensity = backgroundIntensity;
+           background = this.backgroundIntensity = backgroundIntensity;
       
       else{
          
-          backgroundIntensity = 0f;
-          background = 0f;
+          background = backgroundIntensity = 0f;
           
       }
+      //background = Float.NaN;
       C_Grid = grid;
       DS =null;
       xscl = null;
@@ -464,8 +464,13 @@ public class PeakInfo {
        
     }
 
-    
-    
+    /**
+     * Sets the background to the given value
+     * @param background  The new background
+     */
+    public void setBackground( float background){
+       this.background = background;
+    }
     /**
      * Returns the intensity weighted average row(y value) for the cells in the peak
      * @return  the intensity weighted average row(y value) for the cells in the peak
