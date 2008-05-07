@@ -26,6 +26,7 @@ $RestrSeq    IntList              Sequence numbers to use("" for all)
 $SaveDir     DataDirectoryString  Directory to save files
 $MinIntens   Integer(0)           Minimum Peak Intensity Threshold
 $RowColKeep  IntList(0:100)       Pixel Rows and Columns to Keep
+$Constr      ChoiceList( ["Triclinic","Monoclinic ( b unique )","Monoclinic ( a unique )","Monoclinic ( c unique )","Orthorhombic","Tetragonal","Rhombohedral","Hexagonal","Cubic"] )     Cell Type Constraint
 $ShowLog     Boolean(false)       Pop Up lsqrs.log
 
 
@@ -38,7 +39,7 @@ for i in runnums
       Pk1[j]= Peaks[j]
    endfor
    
-   JLsqrs(Pk1,""&i,RestrSeq,"[[1,0,0],[0,1,0],[0,0,1]]", filename, MinIntens,RowColKeep)
+   JLsqrs(Pk1,""&i,RestrSeq,"[[1,0,0],[0,1,0],[0,0,1]]", filename, MinIntens,RowColKeep,Constr)
    LogMsg( "-----------After run num "& i&"-----------------------\n")
 endfor
 
@@ -58,7 +59,7 @@ for j in [0:N-1]
    Pk1[j]= Peaks[j]
 endfor
 
-JLsqrs(Pk1,S,RestrSeq,"[[1,0,0],[0,1,0],[0,0,1]]",filename,MinIntens,RowColKeep)
+JLsqrs(Pk1,S,RestrSeq,"[[1,0,0],[0,1,0],[0,0,1]]",filename,MinIntens,RowColKeep, Constr)
    LogMsg( "-----------Finished Least Squares -----------------------\n")
 
 CloseLog()
