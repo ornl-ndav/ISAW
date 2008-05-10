@@ -362,7 +362,8 @@ public class DefaultProperties{
         rs.append("#").append(eol);
         rs.append("#Default_Ext=hdf").append(eol);
         rs.append(eol);
-        
+        rs.append("# Slab size for reading NeXus files").append(eol);
+        rs.append("# NexusSlabSize = 8NexusSlabSized(eol).append(eol);
         rs.append("#").append(eol);
         rs.append("# Live Data Server Options").append(eol);
         rs.append("#").append(eol);
