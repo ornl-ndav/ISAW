@@ -85,6 +85,8 @@ import gov.anl.ipns.Parameters.ArrayPG;
 import gov.anl.ipns.Parameters.PlaceHolderPG;
 import gov.anl.ipns.Parameters.StringPG;
 import java.util.*;
+import javax.swing.*;
+import java.awt.event.*;
 
 /**
  * @author MikkelsonR
@@ -157,5 +159,38 @@ public class InitialPeaksWizard_SNS extends Wizard {
     InitialPeaksWizard_SNS w = new InitialPeaksWizard_SNS( true );
     w.wizardLoader( args );
   }
+  
+  
+ public static JMenu CreateMenuItems( String MenuText ){
+    if( MenuText == null)
+       MenuText ="SNS SCD Wizards";
+     JMenu Res = new JMenu(MenuText);
+     JMenuItem initial = new JMenuItem("Initial Peaks Wizard");
+     Res.add( initial );
+     JMenuItem daily = new JMenuItem("Daily Peaks Wizard");
+     Res.add( daily );
+     initial.addActionListener( new InitialPeaksWizard_SNS.WizardMenuListener());
+     daily.addActionListener( new InitialPeaksWizard_SNS.WizardMenuListener());
+     
+     return Res;
+    
+ }
+ 
+ 
+ 
+ static class WizardMenuListener implements ActionListener{
+    
+    public void actionPerformed( ActionEvent evt){
+       if( evt.getActionCommand().startsWith( "Initial" )){
+          new InitialPeaksWizard_SNS( false ).wizardLoader( null );
+          
+       }else{
+          new DailyPeaksWizard_SNS( false ).wizardLoader( null );
+          
+       }
+    }
+    
+    
+ }
 
 }
