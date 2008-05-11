@@ -1126,6 +1126,7 @@ public class Isaw
     wizardMenu.add( SADMenu );
     wizardMenu.add( SCDMenu );
     wizardMenu.add(LansceWizard);
+    wizardMenu.add(  Wizard.TOF_SCD.InitialPeaksWizard_SNS.CreateMenuItems( "SCD at SNS" ) );
     
     InitPeaksWItem.addActionListener( menu_item_handler );
     DailyPeaksWItem.addActionListener( menu_item_handler );
