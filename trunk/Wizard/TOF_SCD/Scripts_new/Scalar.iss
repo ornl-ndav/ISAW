@@ -27,7 +27,7 @@ $ShowLog   Boolean( false)        Pop Up scalar.log
 OpenLog( path&"scalar.log")
 if Constr ="Use Identity Matrix"
 
-   LogMsg("The identity is the transformation \n   It has the same scalars as the orientation matrix\n"
+   LogMsg("The identity is the transformation \n   It has the same scalars as the orientation matrix\n")
    return "[[1,0,0],[0,1,0],[0,0,1]]"
 endif
 
