@@ -80,7 +80,7 @@ public class IntegrateMultipleRuns extends GenericOperator{
       addParameter( new BooleanPG("Calibrate the data sets(yes/no)",new Boolean(false)));
       addParameter( new LoadFilePG("Calibration file",null));
       addParameter( new IntegerPG("line or mode",-1));
-      addParameter( new IntArrayPG("offsets from peak time","-1:3"));
+      addParameter( new IntArrayPG("Offsets from peak time","-1:3"));
       addParameter( new IntegerPG("Increment slice amount",1));
       addParameter( new StringPG("Instrument","SCD0"));
       addParameter( new StringPG("File extension",".run"));

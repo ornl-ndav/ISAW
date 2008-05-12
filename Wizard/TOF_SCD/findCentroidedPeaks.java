@@ -73,30 +73,30 @@ public class findCentroidedPeaks extends GenericOperator{
     */
    public void setDefaultParameters(){
       clearParametersVector();
-      addParameter( new DataDirPG("raw data path",null));
-      addParameter( new DataDirPG("Output data path for the .peaks file.",null));
+      addParameter( new DataDirPG("Raw data path",null));
+      addParameter( new DataDirPG("Output data path for the .peaks file",null));
       addParameter( new ArrayPG("The run numbers to load",""));
       addParameter( new IntArrayPG("The data set numbers to load in each run",""));
       addParameter( new StringPG("The experiment name",""));
-      addParameter( new IntegerPG("The maximum number of peaks to retur",30));
-      addParameter( new IntegerPG("minimum peak intensity to look fo",0));
-      addParameter( new IntegerPG("minimum time channel to use.",0));
-      addParameter( new IntegerPG("maximum time channel to use",50000));
-      addParameter( new BooleanPG("append to prev file output",false));
+      addParameter( new IntegerPG("The maximum number of peaks to return",30));
+      addParameter( new IntegerPG("Minimum peak intensity to look for",0));
+      addParameter( new IntegerPG("Minimum time channel to use",0));
+      addParameter( new IntegerPG("Maximum time channel to use",50000));
+      addParameter( new BooleanPG("Append to prev file output",false));
       
       java.util.Vector args = new java.util.Vector(3);
         args.addElement( false );
         args.addElement(2);
         args.addElement( 0 );
       addParameter( new BooleanEnablePG("Use calibration information",args));
-      addParameter( new LoadFilePG("SCD calibration file.",""));
+      addParameter( new LoadFilePG("SCD calibration file",""));
       addParameter( new IntegerPG("Calibration file line(mode)",-1));
-      addParameter( new IntArrayPG("Row/Col values to keep. Blank for all",""));
+      addParameter( new IntArrayPG("Row/Col values to keep(blank for all)",""));
       addParameter( new FloatPG("Max d-spacing",12f));
       addParameter( new StringPG("Data filename extension",".nxs"));
       addParameter( new StringPG("The prefix for the filename","SCD"));
       addParameter( new BooleanPG("View Peaks file",true));
-      addParameter( new IntegerPG("maxNumThreads",1));
+      addParameter( new IntegerPG("Max Number of Threads",1));
    }
 
 
