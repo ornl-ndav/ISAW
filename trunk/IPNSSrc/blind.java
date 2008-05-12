@@ -283,7 +283,7 @@ public class blind {
 
     // Manipulates the basis(the first 3 elements of xx,yy,and zz) so
     // B*Tranps(B) about diagonal
-    abid(xx,yy,zz);
+    boolean okay = abid(xx,yy,zz);
 
     // return the error message if necessary
     if( errormessage.length()>0)
@@ -340,7 +340,7 @@ public class blind {
    * in the first three positions of XX,YY, and ZZ. The other vectors
    * are all moved up d
    */
-  public void abid (double[] Qx, double[] Qy, double[] Qz ) {
+  public boolean abid (double[] Qx, double[] Qy, double[] Qz ) {
     int length=Qx.length-3; // -3 b/c a couple are added for new basis vectors
     double d=0.0;
     double[][] UB=new double[3][3]; // the ub matrix
@@ -348,14 +348,17 @@ public class blind {
     double [] za= new double[length];
     double [] xa= new double[length];
     int [] l=sortQ(Qx,Qy,Qz);
-    
+    errormessage ="Not independent Peaks";
     // initialize the sorted vector arrays
-    for( int j=0 ; j<length ; j++ ){ 
+    for( int j=0 ; j<length ; j++ ){
+     if( l[j]-1 < 0) return false;
+     if( l[j]>= Qx.length) return false;
       xa[j] = Qx[l[j]-1];
       ya[j] = Qy[l[j]-1];
       za[j] = Qz[l[j]-1];
     }
 
+    errormessage ="";
     //While the proposed basis vectors are coplanar
     int k = 3;
     while(true){
@@ -373,7 +376,7 @@ public class blind {
             System.out.println(" D="+d);
           }
         }
-        return;
+        return false; 
       }
       double max = 0;
       for( int i=0 ; i<3 ; i++ ){
@@ -433,7 +436,7 @@ public class blind {
       Qz[i] = UB[i][2];
     }
 
-    return;
+    return true;
   }
 
   /**
