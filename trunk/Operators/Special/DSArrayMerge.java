@@ -29,17 +29,15 @@
  *
  * Modified:
  *
- *  $Author:$
- *  $Date:$            
- *  $Revision:$
+ *  $Author$
+ *  $Date$            
+ *  $Revision$
  *
  */
 
 package Operators.Special;
-import DataSetTools.operator.*;
 import DataSetTools.operator.Generic.*;
 import gov.anl.ipns.Parameters.*;
-import DataSetTools.parameter.*;
 
 import gov.anl.ipns.Util.SpecialStrings.*;
 
