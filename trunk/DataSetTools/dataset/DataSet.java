@@ -2752,13 +2752,14 @@ public class DataSet implements IAttributeList,
         inst_type = ((int[])types_obj)[0]; 
 
       String ds_type = (String)attr_list.getAttributeValue(Attribute.DS_TYPE); 
+      
       if ( ds_type != null )
-      {
-        if ( ds_type.equals( Attribute.SAMPLE_DATA ) )
-          DataSetFactory.addOperators( this, inst_type );
-        else if ( ds_type.equals( Attribute.MONITOR_DATA ) )
-          DataSetFactory.addMonitorOperators( this, inst_type );
-      }
+       try{
+          if ( ds_type.equals( Attribute.SAMPLE_DATA ) )
+            DataSetFactory.addOperators( this, inst_type );
+          else if ( ds_type.equals( Attribute.MONITOR_DATA ) )
+            DataSetFactory.addMonitorOperators( this, inst_type );
+      }catch(Throwable ss){}
     }
   }
 }
