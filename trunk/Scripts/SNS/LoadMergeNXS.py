@@ -1,7 +1,7 @@
 from DataSetTools.operator.Generic.Load import GenericLoad
-from DataSetTools.operator.DataSet.EditList import DataSetFastMerge
 from DataSetTools.retriever import *
 from DataSetTools.viewer import *
+from Operators.Special import DataSetArrayMerge_calc
 
 def getConcurrentIndices(banks, startIndex=0):
     start = startIndex
@@ -93,26 +93,24 @@ class LoadMergeNXS(GenericLoad):
         retriever = NexusRetriever(filename)
         num = retriever.numDataSets()
         result = Vector()
+        histogram_dss = Vector()
         merged = None
-        titles =[]
+        titles = []
         for i in range(num):
             dataType = retriever.getType(i)
-            if (dataType == Retriever.HISTOGRAM_DATA_SET) or loadMon:
+            if (dataType == Retriever.MONITOR_DATA_SET) and loadMon:
+                mon_ds = retriever.getDataSet(i)
+                print "Reading %d of %d: %s" % (i, num, mon_ds.getTitle())
+                mon_ds.setTitle("%s[%s]" % (runPrefix(mon_ds), mon_ds.getTitle()))
+                result.add( mon_ds )
+
+            if dataType == Retriever.HISTOGRAM_DATA_SET:
                 ds = retriever.getDataSet(i)
-                print "Reading %d of %d: %s" % (i, num, ds.getTitle())
-            else:
-                ds = None
-            if retriever.getType(i) == Retriever.HISTOGRAM_DATA_SET:
                 titles.append(ds.getTitle())
-                if merged is None:
-                    merged = retriever.getDataSet(i)
-                else:
-                    merger = DataSetFastMerge(merged, retriever.getDataSet(i))
-                    merged = merger.getResult()
-            else:
-                if loadMon:
-                    ds.setTitle("%s[%s]" % (runPrefix(ds), ds.getTitle()))
-                    result.add(ds)
+                histogram_dss.add( ds )
+                print "Reading %d of %d: %s" % (i, num, ds.getTitle())
+
+        merged = DataSetArrayMerge_calc.merge( histogram_dss )
 
         # fix the title
         try:
@@ -121,11 +119,11 @@ class LoadMergeNXS(GenericLoad):
             pass
 
         # plot the data if requested
-        if viewtype is not None:
+        if (viewtype is not None) and (merged is not None):
             view = ViewManager(merged, viewtype)
 
         # return the data
-        if loadMon:
+        if loadMon and (merged is not None):
             result.add(merged)
             return result
         else:
