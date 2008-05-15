@@ -631,6 +631,7 @@ public class ExtGetDS{
                EntryToDSs.insertElementAt( MonitorDSinf ,startEntryToDSsElement  );
             propogate(InstrumentNode,SampleNode ,BeamNode ,startEntryToDSsElement);
             GetPropogateInstSource( InstrumentNode, startEntryToDSsElement);
+            RecordGivenGroupDetIDs(nn, EntryToDSs, InstrumentNode);
             SetDefaultGroupDetIDs( nn, EntryToDSs);
          }//NXentry not null
          }// for each NXentry
@@ -726,17 +727,18 @@ public class ExtGetDS{
       
       String Link = null;
       for(int ik =0; ik < DataNode.getNChildNodes(); ik++){
+         NxNode nnode = DataNode.getChildNode(ik);
          String S = ConvertDataTypes.StringValue(
                  
-                          DataNode.getChildNode(ik).getAttrValue("link"));
+                          nnode.getAttrValue("link"));
          if( S == null)
             S =ConvertDataTypes.StringValue(
                     
-                              DataNode.getChildNode(ik).getAttrValue("target")); 
+                              nnode.getAttrValue("target")); 
          if( S != null)
-            Link = S;
+            Link = NexIO.State.NxDataStateInfo.FixUp(S, nnode);
          
-      }    
+      } 
       int[] Res= new int[5];
       
       Res[0]=Res[1]=Res[2] = Res[3]=Res[4]=-1;
@@ -750,9 +752,10 @@ public class ExtGetDS{
       
       int[] ids = NexUtils.getIntArrayFieldValue( detNode,"id");
       int[] detNums = NexUtils.getIntArrayFieldValue( detNode , "detector_number");
-      if(ids == null)
+      if(ids == null && detNums!=null && detNums.length >= NGroups){
          ids = detNums;
-      
+         detNums = null;
+      }
   
       Res[2] = 0;
       if( detNums != null)
