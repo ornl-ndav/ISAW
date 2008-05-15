@@ -424,11 +424,18 @@ public class NexUtils implements INexUtils {
          if( y_offsets.length != dataState.dimensions[ 
                             rowIndex(dataState.dimensions) ] )
             y_offsets = null;
-
-      int[] ids = NexUtils.getIntArrayFieldValue( NxDetector ,
-               detState.DetectorIDFieldName );
-
       int NGroups = getNGroups( dataState.dimensions );
+   
+      int[] ids = NexUtils.getIntArrayFieldValue( NxDetector ,
+              "id" );
+      if( ids == null){
+         ids = NexUtils.getIntArrayFieldValue( NxDetector ,
+         "detector_number" );
+        if( ids != null && ids.length< NGroups)
+            ids = null;
+      }
+
+      
 
       if( NGroups < 0 )
          return setErrorMessage( " Improper dimensions in "
