@@ -28,7 +28,11 @@
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
- * Modified:
+ * Last Modified:
+ *
+ *  $Author$
+ *  $Date$            
+ *  $Revision$
  *
  *  $Log: Isaw.java,v $
  *  Revision 1.280  2008/01/31 19:22:07  dennis
@@ -1003,7 +1007,7 @@ public class Isaw
         String val="";
 
         if(SharedData.VERSION.equals("Unknown_Version"))
-          version="1.9.0_a1";
+          version="1.9.0_a2";
         else
           version=SharedData.VERSION;
 
