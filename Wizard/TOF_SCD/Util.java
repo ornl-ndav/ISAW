@@ -995,13 +995,13 @@ public class Util {
             
       }
       return monCount;
-      
    }
+
     
    /**
-    * For each detector in multiple files,finds theoretical positions of peaks
+    * For each detector in multiple files, find theoretical positions of peaks
     * and integrates them.
-    * @assumption  The matrix files are stored in outpath +"ls"+expName+runnum+".mat"
+    * The matrix files are stored in outpath +"ls"+expName+runnum+".mat"
     * 
     * @param path                 The path where the multiple data set files 
     *                                are stored 
@@ -1009,7 +1009,7 @@ public class Util {
     * @param run_numbers          The Run numbers of the data set files
     * @param DataSetNums          The data set numbers in a file to "integrate" 
     * @param expname              The name of the experiment
-    * @param centering            The centering type:primitive,a centered,
+    * @param centeringName        The centering type:primitive,a centered,
     *                                b centered,c centered, [f]ace centered,
     *                                [i] body centered,[r]hombohedral centered
     * @param useCalibFile         Calibrate the data sets(yes/no)
@@ -1028,27 +1028,27 @@ public class Util {
     * @param Yrange               Range of offsets around a peak's
     *                                  y value(-1:3)
     * @param ShowLog              Pop up the log file
-    * @param MaxThreads           The maximum number of threads to run
+    * @param maxThreads           The maximum number of threads to run
     * @return  nothing though a .integrate and a .log file are created.
     */
    public static Object IntegrateMultipleRuns(
-           String path,
-           String outpath,
+           String  path,
+           String  outpath,
            Vector  run_numbers, 
-           String DataSetNums,
-           String expname,
-           String centeringName,
+           String  DataSetNums,
+           String  expname,
+           String  centeringName,
            boolean useCalibFile,
-           String calibfile,
-           int    line2use,
-           String time_slice_range,
-           int increase,
-           String inst,
-           String FileExt,
-           float d_min,
-           String PeakAlg,
-           String Xrange,
-           String Yrange,
+           String  calibfile,
+           int     line2use,
+           String  time_slice_range,
+           int     increase,
+           String  inst,
+           String  FileExt,
+           float   d_min,
+           String  PeakAlg,
+           String  Xrange,
+           String  Yrange,
            boolean ShowLog,
            int     maxThreads
             ){
