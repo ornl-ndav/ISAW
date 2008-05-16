@@ -99,7 +99,7 @@ public class DataSetArrayMerge_calc
   /**
    *  Merge the Data blocks from a Vector of DataSets to form a new DataSet.
    *
-   *  @param ds_array   Vector containing the DataSets to merge.
+   *  @param ds_list   Vector containing the DataSets to merge.
    *
    *  @return A DataSet with attributes taken from the first DataSet and
    *          containing all of the Data blocks from all of the DataSets 
