@@ -1,4 +1,3 @@
-
 /*
  * File:  NxDataStateInfo.java
  *
@@ -358,13 +357,14 @@ public class NxDataStateInfo extends StateInfo{
    
    /**
     *   Finds the axes from an XML file.  All it does is search for
-    *   <axes  , gets the string value and converts it to an array of
+    *   <axes, gets the string value and converts it to an array of
     *   integers.
-    * @param xmlDoc  the xml parsed document in which to search for <axes
+    * @param  Params  The NxfileStateInfo object that contains the xml 
+    *                 parsed document in which to search for <axes.
     * @return   The value of the tag( if tail) returned as an int array
     * 
     */
-   public int[] FindAxes(   NxfileStateInfo Params ){
+   public int[] FindAxes( NxfileStateInfo Params ){
       
       Node xmlDoc = Params.xmlDoc;
       String fileName = Params.filename;
