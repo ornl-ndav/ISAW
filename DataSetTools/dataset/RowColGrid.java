@@ -23,11 +23,6 @@
  *            Menomonie, WI. 54751
  *            (715)-232-2291
  *
- * This work was supported by the National Science Foundation under grant
- * number DMR-0426797, and by the Intense Pulsed Neutron Source Division
- * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
- *
- *
  * Modified:
  * $Log$
  * Revision 1.7  2008/02/23 06:06:25  dennis
@@ -288,7 +283,6 @@ public class RowColGrid implements IDataGrid {
    /**
     * @return the depth of the grid. 
     * 
-    * @see setGridDepth
     */
    public float depth() {
 
