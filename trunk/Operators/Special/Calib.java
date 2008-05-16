@@ -190,10 +190,12 @@ public class Calib implements Wrappable, IWrappableWithCategoryList {
         phi = Float.NaN ,
         chi = Float.NaN ,
         omega = Float.NaN ;
+
   /**
    * This method determines which load routine to use and uses it.
    */
   public Object calculate(  ) {
+
     String fil = AttrUtil.getFileName(DS);
     clearGridData();
     if(fil == null)
@@ -203,6 +205,13 @@ public class Calib implements Wrappable, IWrappableWithCategoryList {
     if( indx >=0)
        fil = fil.substring(indx+1);
     String calibFile = CalibFile1.toString();
+
+    if ( calibFile.toUpperCase().endsWith("DETCAL") )
+    {
+      SNSDetCal.ApplySNSDetectorCalibration( DS, calibFile, false );
+      return null;
+    }
+
     if( fil.toUpperCase().startsWith("SCD") && (calibFile !=null)&&
      (calibFile.length() >4) && calibFile.toUpperCase().endsWith(".DAT")){
 
@@ -496,13 +505,11 @@ public class Calib implements Wrappable, IWrappableWithCategoryList {
        float conv = (float)(180/Math.PI);
        Operators.Example.LansceUtil.AddSampleOrientationAttribute( DS1, phi*conv, chi*conv, omega*conv);
        DS.copy(DS1);
-       
-      
       }
      
      return null;
    }
-   
+
    
    /**
     * This method fixes Lansce Hippo files that are stored in their preNeXus mode
