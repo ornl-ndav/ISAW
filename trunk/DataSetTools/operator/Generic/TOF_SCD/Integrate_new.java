@@ -792,7 +792,8 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
    * @param monCount    Monitor Count
    * @param logbuffer   if this a non-null StringBuffer, the log information
    *                    will be appended to it.
-   * @return
+   * @return            A Vector containing all peaks that were integrated,
+   *                    or an ErrorString if something went wrong.
    */
   public static Object integrate( DataSet ds, int centering,
            int[] timeZrange, int incrSlice, float d_min, int listNthPeak,
