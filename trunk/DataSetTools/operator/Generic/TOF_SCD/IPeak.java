@@ -414,7 +414,7 @@ public interface IPeak {
     * @param Instrument   The Instrument conventions at this facility to use 
     *                   for displaying things like sample orientation data
     */
-   void writePeak( OutputStream f, IPeak prevPeak,String Facility, String Instrument);
+  // void writePeak( OutputStream f, IPeak prevPeak,String Facility, String Instrument);
    
    /**
     * Reads information on the next peak entries from the given InputStream. 
@@ -430,7 +430,7 @@ public interface IPeak {
     *                   for displaying things like sample orientation data
     * @return  A new peak
     */
-   IPeak readPeak( InputStream f, String Facility, String Instrument);
+//   IPeak readPeak( InputStream f, String Facility, String Instrument);
    
    /**
     * Writes out the information in this peak to a file. If the common fields
@@ -440,7 +440,7 @@ public interface IPeak {
     * @param f The OutputStream to which the writing will go
     * @param prevPeak The previous peak written out or null
     */
-    void writePeak( OutputStream f, IPeak prevPeak);
+//    void writePeak( OutputStream f, IPeak prevPeak);
     
     /**
       * Reads information on the next peak entries from the given InputStream. 
@@ -453,6 +453,6 @@ public interface IPeak {
     *             
     * @return  A new peak
      */
-    IPeak readPeak( InputStream f);
+//    IPeak readPeak( InputStream f);
    
 }

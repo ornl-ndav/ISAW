@@ -1241,6 +1241,7 @@ public IPeak createNewPeakhkl( float h , float k , float l , float[][] UB ) {
  * @see DataSetTools.operator.Generic.TOF_SCD.IPeak#createNewPeakxyz(float, 
  *                    float, float)
  */
+
 public IPeak createNewPeakxyz( float x , float y , float z ) {
 
    Peak_new Res = new Peak_new( x,y,z,grid, orient, timeAdjustment,xscale, L1);
@@ -1249,6 +1250,7 @@ public IPeak createNewPeakxyz( float x , float y , float z ) {
    Res.nrun( nrun );
    return Res;   
 }
+
 
 /* (non-Javadoc)
  * @see DataSetTools.operator.Generic.TOF_SCD.IPeak#detnum()
@@ -1402,6 +1404,7 @@ public static IPeak readHeader( String S){
   /* (non-Javadoc)
  * @see DataSetTools.operator.Generic.TOF_SCD.IPeak#readPeak(java.io.InputStream, java.lang.String, java.lang.String)
  */
+/*  
 public IPeak readPeak( InputStream f , String Facility , String Instrument ) {
 
    
@@ -1451,15 +1454,18 @@ public IPeak readPeak( InputStream f , String Facility , String Instrument ) {
     pk1.ipkobs( pkobs );
     return pk1;
 }
-
+*/
+  
 /* (non-Javadoc)
  * @see DataSetTools.operator.Generic.TOF_SCD.IPeak#readPeak(java.io.InputStream)
  */
+/*  
 public IPeak readPeak( InputStream f ) {
 
   return readPeak( f, FacilityName, InstrumentName);   
 }
-
+*/
+  
 /* (non-Javadoc)
  * @see DataSetTools.operator.Generic.TOF_SCD.IPeak#setFacility(java.lang.String)
  */
