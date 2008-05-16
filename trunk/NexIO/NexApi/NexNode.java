@@ -137,7 +137,7 @@ public class NexNode implements NxNode{
       
     }catch( NexusException s ){
        
-      errormessage = NxNodeUtils.ER_BADFILE;//s.getMessage();
+      errormessage = NxNodeUtils.ER_BADFILE + ":"+ filename+":" + s.getMessage();
       NF = null;
       
     }
