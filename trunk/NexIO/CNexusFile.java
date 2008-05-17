@@ -148,11 +148,16 @@ public class CNexusFile extends NexusFile{
    * @throws NexusException
    */
   public synchronized void close() throws NexusException{
-     
-      if(handle  >= 0)
-      {
-         close(handle);
+      int thandle = handle;
+      handle = -1;
+      if(thandle  >= 0)
+        try{
+          Thread.sleep( 300 );
+         close(thandle);
+         Thread.sleep( 300 );
          handle = -1;
+      }catch(Exception s){
+         System.out.println("Error closing Nexus file "+s);
       }
   }
 }
