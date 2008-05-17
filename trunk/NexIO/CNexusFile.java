@@ -142,4 +142,17 @@ public class CNexusFile extends NexusFile{
 
     return null;
   }
+  
+  /**
+   * close the NeXus file. To make javalint and diamond happy
+   * @throws NexusException
+   */
+  public synchronized void close() throws NexusException{
+     
+      if(handle  >= 0)
+      {
+         close(handle);
+         handle = -1;
+      }
+  }
 }
