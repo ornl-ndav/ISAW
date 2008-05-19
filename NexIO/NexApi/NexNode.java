@@ -154,7 +154,7 @@ public class NexNode implements NxNode{
   
   private int getMAX_BLOB_SIZE(){
      
-     long M1= java.lang.Runtime.getRuntime().maxMemory()/40;
+     long M1= java.lang.Runtime.getRuntime().maxMemory()/100;
      M1 = Math.max( 80000 , M1 );
      return DataSetTools.util.SharedData.getIntegerProperty( 
               "NexusSlabSize",""+M1 ).intValue();
@@ -784,6 +784,13 @@ public class NexNode implements NxNode{
       
       Object array =  ((new NxNodeUtils()).CreateArray(args[1],
                                 TotLength));
+      
+      //Get whole SDS in if slab size large enough
+      if(  TotLength < MaxBlobSize  || MAX_BLOB_SIZE < 0){
+         NF.getdata(  array );
+         return array;
+         
+      }
       boolean done = false;
       int k_array = 0;
       int[] start = new int[n], 
