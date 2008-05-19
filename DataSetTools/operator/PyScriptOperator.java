@@ -860,10 +860,13 @@ public class PyScriptOperator extends GenericOperator
    * @param reason One of the DataSetTools.util.IObserver reasons.
    */
   public final void update( Object observed_obj, Object reason ) {
+     
     if( observed_obj instanceof DataSet ) {
       if( reason instanceof String ) {
         if( IObserver.DESTROY.equals( reason ) ) {
           ( ( DataSet )observed_obj ).deleteIObserver( this );
+           Dsets.remove( observed_obj );
+           interp.set( "ISAWDS" + ((DataSet)observed_obj).getTag(  ), null );
         }
       }
     }
