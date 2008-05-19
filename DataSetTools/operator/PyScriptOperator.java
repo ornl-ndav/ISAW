@@ -819,6 +819,7 @@ public class PyScriptOperator extends GenericOperator
       //initialize the system state
       initInterpreter(  );
     } else {
+      interp.cleanup();
       resetInterpreter(  );
     }
 
@@ -1040,4 +1041,17 @@ public class PyScriptOperator extends GenericOperator
     //reset the error message
     resetError(  );
   }
+  
+  protected void finalize(){
+     
+     if( Dsets !=null){
+        for( int i =0; i< Dsets.size();i++)
+           ((DataSet)Dsets.elementAt( i )).deleteIObserver( this );
+        Dsets.clear();
+     }
+     
+    if( interp != null)
+       interp.cleanup();
+  }
+  
 }
