@@ -29,6 +29,10 @@
  * grant number DMR-0218882
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
+ *  $Author$
+ *  $Date$            
+ *  $Revision$
+ *
  * $Log$
  * Revision 1.12  2008/01/29 20:40:28  rmikk
  * Replaced Peak by IPeak
@@ -341,7 +345,6 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
    */  
   public Integrate_new(){
     super( TITLE );
-  
   }
   
   /** 
@@ -705,8 +708,6 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
      System.out.println("Y range = " + rowYrange[0] + " to " + rowYrange[1] );
      System.out.println("Z range = " + timeZrange[0] + " to " + timeZrange[1] );
    }
-
-   
   
     // add the parameter values to the logBuffer
     logBuffer.append("---------- PARAMETERS\n");
@@ -803,30 +804,20 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
       float        chi         = 0f;
       float        phi         = 0f;
       float        omega       = 0f;
-      float[][]    UB ;
+      float[][]    UB;
+      
     // get list of detectors
-    int[] det_number=null;
-    {
-      // determine all unique detector numbers
-      Integer detNum=null;
-      Vector innerDetNum=new Vector();
-      for( int i=0 ; i<ds.getNum_entries() ; i++ ){
-        detNum=new Integer(Util.detectorID(ds.getData_entry(i)));
-        if( ! innerDetNum.contains(detNum) ) innerDetNum.add(detNum);
-      }
-      // copy them over to the detector number array
-      det_number=new int[innerDetNum.size()];
-      for( int i=0 ; i<det_number.length ; i++ )
-        det_number[i]=((Integer)innerDetNum.elementAt(i)).intValue();
-    }
-    //if(det_number==null)
-    //  return new ErrorString("Could not determine detector numbers");
+    int[] det_number = Grid_util.getAreaGridIDs(ds);
+    if( det_number == null || det_number.length <= 0 )
+      return new ErrorString("Could not determine detector numbers");
+    
     Data data = ds.getData_entry( 0 );
     UB=(float[][])ds.getAttributeValue(Attribute.ORIENT_MATRIX);
     if( UB == null)
        UB= (float[][])data.getAttributeValue(Attribute.ORIENT_MATRIX);
     if( UB ==  null)
        return new ErrorString("UB matrix is not loaded into the dataset");
+
     if(DEBUG){
        System.out.println("DataSet:"+ds);
        System.out.print(  "DetNum :");
@@ -834,50 +825,42 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
          System.out.print(det_number[i]+" ");
        System.out.println();
      }
+
     IntegratePt opIntPt = new IntegratePt();
+
     if( PeakAlg.equals(Integrate_new.OLD_INTEGRATE))
        opIntPt.setIntgratePkOp(new INTEG(),1,1,1);
     else if( PeakAlg.equals(Integrate_new.TOFINT))
        opIntPt.setIntgratePkOp(new TOFINT(),1,1,1);
+
     opIntPt.setDataSet(ds);
+
     // get the sample orientation
+   
+    SampleOrientation orientation = AttrUtil.getSampleOrientation( ds );
+    if ( orientation == null )
+      orientation = AttrUtil.getSampleOrientation( data );
+    if ( orientation != null )
     {
-      SampleOrientation orientation =
-        (SampleOrientation)data.getAttributeValue(Attribute.SAMPLE_ORIENTATION);
-      if ( orientation != null )
-      {
-        phi   = orientation.getPhi();
-        chi   = orientation.getChi();
-        omega = orientation.getOmega();
-      }
-      orientation = null;
+      phi   = orientation.getPhi();
+      chi   = orientation.getChi();
+      omega = orientation.getOmega();
     }
-    // determine the initial flight path
-    float init_path=0f;
-    {
-      Object L1=data.getAttributeValue(Attribute.INITIAL_PATH);
-      if(L1!=null){
-        if(L1 instanceof Float)
-          init_path=((Float)L1).floatValue();
-      }
-      L1=null;
-    }
+    else
+      System.out.println("ERROR: NO SAMPLE ORIENTATION IN Data or DataSet");
     
-    if(init_path==0f)
+    // determine the initial flight path
+    float init_path = AttrUtil.getInitialPath( ds );
+    if ( Float.isNaN(init_path) )
+      init_path = AttrUtil.getInitialPath( data );
+    if ( Float.isNaN(init_path) )
       return new ErrorString("initial flight path is zero");
 
     // get the run number
     int nrun=0;
-    {
-      Object Nrun=data.getAttributeValue(Attribute.RUN_NUM);
-      if(Nrun!=null){
-        if( Nrun instanceof Integer)
-          nrun=((Integer)Nrun).intValue();
-        else if( Nrun instanceof int[])
-          nrun=((int[])Nrun)[0];
-          }
-      Nrun=null;
-    }
+    int[] run_numbers = AttrUtil.getRunNumber(ds);
+    if ( run_numbers != null && run_numbers.length > 0 )
+      nrun = run_numbers[0];
    
     // create a PeakFactory for use throughout this operator
     PeakFactory pkfac=new PeakFactory(nrun,0,init_path,0f,0f,0f);
@@ -890,7 +873,7 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
     // integrate each detector
     Vector innerPeaks=null;
     ErrorString error=null;
-    for( int i=0 ; i<det_number.length ; i++ ){
+    for( int i = 0; i < det_number.length; i++ ){
 
       System.out.println("Processing detector " + det_number[i] );
      
@@ -910,43 +893,10 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
     }
        
     return peaks;
-   //!! append logbuffer to StringBuffer argument. Lost if null
-   //!!   
-    //!!return peaks
-    //!!}
-   
-    // write out the logfile integrate.log
-    
-   /* //!!!!! Move this to end of getResult method.
-    String errmsg=this.writeLog(logfile,append);
-    if(errmsg!=null)
-      SharedData.addmsg(errmsg);
-   
-    // write out the peaks
-    WritePeaks writer=new WritePeaks(integfile,peaks,new Boolean(append));
-  
-    return writer.getResult();
-   */
   }
 
 
-// ========== start of detector dependence
-/*  private  ErrorString integrateDetector(DataSet     ds, 
-           Vector      peaks, 
-           PeakFactory pkfac, 
-           int         detnum,
-           float       d_min,
-           int         ListNthPeak,  
-           int         Centering,
-           float       chi,
-           float       phi,
-           float       omega,
-           float       UB[][]  ){
-       return Integrate_new.integrateDetector( ds,peaks,pkfac,detnum,
-                d_min,ListNthPeak,Centering,UB, chi,phi,omega,PeakAlg,
-                logBuffer);
-  }
-*/
+  // ========== start of detector dependence
   //TODO eliminate UB,opIntPt, chi,phi, omega, and opIntPt.Also pkfac 
   //              Make public. For parallel
   private static ErrorString integrateDetector(
@@ -971,8 +921,17 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
   {
     if(DEBUG) System.out.println("Integrating detector "+detnum);
     StringBuffer logBuffer = new StringBuffer();
-    int dX=2, dY=2, dZ=1;
-    // get the detector number
+    
+    int dX=2, 
+        dY=2, 
+        dZ=1;
+
+    // get the run number
+    int nrun=0;
+    int[] run_numbers = AttrUtil.getRunNumber(ds);
+    if ( run_numbers != null && run_numbers.length > 0 )
+      nrun = run_numbers[0];
+   
     if(detnum<=0)
       return new ErrorString("invalid detector number: "+detnum);
     pkfac.detnum(detnum);
@@ -1029,12 +988,32 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
     int zmin=0;
     int zmax=times.getNum_x()-1;
 
-    // add the position number to the logBuffer
+    // add sample orientation and detector info to logBuffer
     logBuffer.append("---------- PHYSICAL PARAMETERS\n");
-    logBuffer.append(" x/y min, x/y max: "+rcBound[0]+" "+rcBound[1]+"   "
+    logBuffer.append("RUN NUMBER :        " + nrun + "\n" );
+    logBuffer.append("DETECTOR ID:        " + grid.ID() + "\n");
+    logBuffer.append("SAMPLE ORIENTATION: chi = " +
+                      chi + "  phi = " + phi + "  omega = " + omega + "\n");
+
+    logBuffer.append("COLUMN/ROW RANGE:   "
+                     +rcBound[0]+" "+rcBound[1]+"   "
                      +rcBound[2]+" "+rcBound[3]+"\n");
-    logBuffer.append("chi="+chi+"  phi="+phi+"  omega="+omega+"\n");
-    logBuffer.append("detD="+detD+"  detA="+detA+"  detA2="+detA2+"\n");
+    //logBuffer.append("detD="+detD+"  detA="+detA+"  detA2="+detA2+"\n");
+    logBuffer.append("detD:      " + 100 * grid.position().length() + "\n" );
+
+    String format = "%10.5f %10.5f %10.5f\n";
+    float[] coord = grid.position().get();
+    String  out = String.format("Center:  " + format,
+                            coord[0] * 100, coord[1] * 100, coord[2] * 100 );
+    logBuffer.append( out );
+
+    coord = grid.x_vec().get();
+    out = String.format("Base:    " + format, coord[0], coord[1], coord[2] );
+    logBuffer.append( out );
+
+    coord = grid.y_vec().get();
+    out = String.format("Up:      " + format, coord[0], coord[1], coord[2] );
+    logBuffer.append( out );
 
     // determine the detector limits in hkl
     VecQToTOF transformer = new VecQToTOF( ds, grid );
@@ -1082,8 +1061,6 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
     int min_l = Math.round(min_max_hkl[0].get()[2]) - 1;
     int max_l = Math.round(min_max_hkl[1].get()[2]) + 1;
 
-    float[][] real_lim=IntegrateUtils.minmaxreal(pkfac, ids, times);
-
 /*
     System.out.println("h limit from " +hkl_lim[0][0]+ " to " + hkl_lim[0][1] );
     System.out.println("k limit from " +hkl_lim[1][0]+ " to " + hkl_lim[1][1] );
@@ -1095,9 +1072,10 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
     // add the limits to the logBuffer
     logBuffer.append("---------- LIMITS\n");
     logBuffer.append("min hkl,  max hkl : " 
-                     +min_h+" "+max_h +" "
-                     +min_k+" "+max_k+" "
-                     +min_l+" "+max_l+"\n");
+                     + min_h +" "+ min_k +" "+ min_l +"   "
+                     + max_h +" "+ max_k +" "+ max_l +"\n");
+/*    
+    float[][] real_lim=IntegrateUtils.minmaxreal(pkfac, ids, times);
     logBuffer.append("min xcm ycm wl, max xcm ycm wl: "
                      +SCD_LogUtils.formatFloat(real_lim[0][0])+" "
                      +SCD_LogUtils.formatFloat(real_lim[1][0])+" "
@@ -1105,7 +1083,7 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
                      +SCD_LogUtils.formatFloat(real_lim[0][1])+" "
                      +SCD_LogUtils.formatFloat(real_lim[1][1])+" "
                      +SCD_LogUtils.formatFloat(real_lim[2][1])+"\n");
-
+*/
     // add information about integrating the peaks
     logBuffer.append("\n");
     logBuffer.append("========== PEAK INTEGRATION ==========\n");
@@ -1119,7 +1097,6 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
       System.out.println( "PeakFactory = " + pkfac );
      // System.out.println( "(1,1,1) Peak = " + pkfac.getHKLInstance(1,1,1) );
     }
-
 
     int seqnum=1;
     // loop over all of the possible hkl values and create peaks
@@ -1183,8 +1160,6 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
 
     // move peaks to the most intense point nearby
     
-       
-    
    for(int i=peaks.size()-1; i>=0; i--){
       IPeak P1=(IPeak)(peaks.elementAt(i));
       IPeak P=IntegrateUtils.maxClosePeak(P1,ds,ids,dX,dY,dZ);
@@ -1198,7 +1173,6 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
         }
       }
     }
-
 
     IntegrateUtils.RemovePeaksWithSmall_d( peaks, d_min, ds, detnum );
 
@@ -1256,8 +1230,7 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
        ((StringBuffer)logbuffer).append(logBuffer);
     else
        SharedMessages.addmsg(  logBuffer );
-       
-       
+              
     // centroid the peaks
     for( int i=0 ; i<peaks.size() ; i++ ){
       peak=Util.centroid((IPeak)peaks.elementAt(i),ds,grid);
@@ -1270,9 +1243,8 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
       }
     }
 
-
- //   for ( int i = 0; i < peaks.size(); i++ )
-  //    System.out.println( (IPeak)(peaks.elementAt(i)) );
+    // for ( int i = 0; i < peaks.size(); i++ )
+    //   System.out.println( (IPeak)(peaks.elementAt(i)) );
 
     // things went well so return null
     return null;
@@ -1299,11 +1271,11 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
    * @return a String if anything goes wrong, null otherwise.
    */
 // private String writeLog(String logfile,boolean append){
- //  if( logBuffer==null || logBuffer.length()<=0 )
+  //  if( logBuffer==null || logBuffer.length()<=0 )
   //    return "No information in log buffer";
 
-    /*FileOutputStream fout=null;
-
+  /*
+    FileOutputStream fout=null;
     try{
       fout=new FileOutputStream(logfile,append);
       fout.write(logBuffer.toString().getBytes());
@@ -1321,7 +1293,7 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
     }
    */
    // gov.anl.ipns.Util.Sys.SharedMessages.LOGaddmsg(logBuffer.toString());
-  //  return null;
+   //  return null;
  // }
 
   /**
@@ -1333,7 +1305,6 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
                          int[] timeZrange, int increaseSlice, 
                          IntegratePt opIntPt,StringBuffer log){
 
-   
      // set up where the peak is located
      
      int cenX= Math.round(peak.x());
