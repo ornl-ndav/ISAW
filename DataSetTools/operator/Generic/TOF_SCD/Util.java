@@ -1073,10 +1073,14 @@ public class Util{
       for( int i=0 ; i<7 ; i++)
         sb.append(Format.real(sig[i],10,3));
       sb.append("\n\n\n");
-      sb.append("The above matrix is the TRANSPOSE of the UB Matrix that");
-      sb.append( "  maps the column \nvector (h,k,l ) to the column vector (q'x,q'y,q'z)");
-      sb.append( "  where \n|Q'|=1/dspacing and its coordinates are \"currently\" relative to IPNS's \n");
-      sb.append( "  right-hand coordinate system. Here x is the beam direction and z is up" );
+      sb.append("The above matrix is the TRANSPOSE of the UB Matrix that ");
+      sb.append( "maps the column \n");
+      sb.append( "vector (h,k,l ) to the column vector (q'x,q'y,q'z).\n");
+      sb.append( "|Q'|=1/dspacing and its coordinates are \"currently\" " );
+      sb.append( "relative to IPNS's \n");
+      sb.append( "right-hand coordinate system where x is the beam ");
+      sb.append( "direction and z is \n");
+      sb.append( "vertically upward.\n" );
     }
     //Write results to the matrix file
     FileWriter fw=null;
