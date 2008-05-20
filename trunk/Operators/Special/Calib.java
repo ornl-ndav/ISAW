@@ -29,7 +29,11 @@
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
- * Modified:
+ * Last Modified:
+ *
+ * $Author:$
+ * $Date:$
+ * $Revisions:$
  *
  * $Log$
  * Revision 1.17  2006/07/19 18:07:15  dennis
@@ -207,10 +211,7 @@ public class Calib implements Wrappable, IWrappableWithCategoryList {
     String calibFile = CalibFile1.toString();
 
     if ( calibFile.toUpperCase().endsWith("DETCAL") )
-    {
-      SNSDetCal.ApplySNSDetectorCalibration( DS, calibFile, false );
-      return null;
-    }
+      return SNSDetCal.ApplySNSDetectorCalibration( DS, calibFile, false );
 
     if( fil.toUpperCase().startsWith("SCD") && (calibFile !=null)&&
      (calibFile.length() >4) && calibFile.toUpperCase().endsWith(".DAT")){
