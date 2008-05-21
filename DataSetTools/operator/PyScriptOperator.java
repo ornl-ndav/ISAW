@@ -1045,13 +1045,28 @@ public class PyScriptOperator extends GenericOperator
   protected void finalize(){
      
      if( Dsets !=null){
-        for( int i =0; i< Dsets.size();i++)
-           ((DataSet)Dsets.elementAt( i )).deleteIObserver( this );
+        for( int i =0; i< Dsets.size();i++){
+           DataSet DD = (DataSet)Dsets.elementAt(i);
+           DD.deleteIObserver( this );
+           interp.set( "ISAWDS"+DD.getTag() , null );
+        }
         Dsets.clear();
      }
      
     if( interp != null)
        interp.cleanup();
+    
+    if( obss != null)
+       obss.deleteIObservers();
+   
+    PS = null;
+    try{
+      if( eos != null)
+         eos.close();
+    }catch( Exception s){
+       
+    }
+   
   }
   
 }
