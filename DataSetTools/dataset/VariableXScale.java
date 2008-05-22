@@ -127,7 +127,7 @@ public class VariableXScale extends XScale implements Serializable
                                              // REMOVING FIELDS, IF
                                              // readObject() CAN FIX ANY
                                              // COMPATIBILITY PROBLEMS
-  private float x[] = { 0, 1 }; 
+  protected float x[] = { 0, 1 }; 
 
   /**
    * Constructs a VariableXScale object by specifying a list of x values.
