@@ -128,6 +128,7 @@ public class PyScriptOperator extends GenericOperator
   private String                errormessage;
   transient private ByteArrayOutputStream eos;
   private boolean               IAmOperator = false;
+  private boolean               scriptLoaded = false;
   private int                   errLineNum  = -1;
 
   //~ Constructors -------------------------------------------------------------
@@ -497,7 +498,7 @@ public class PyScriptOperator extends GenericOperator
 
         //execute level 0 stuff
         interp.exec( script.toString(  ) );
-
+        scriptLoaded = true;
         //interpreter hit an error when processing the document, so return it
         if( eos.size(  ) > 0 ) {
           errormessage = "Error " + eos.toString(  );
@@ -675,9 +676,10 @@ public class PyScriptOperator extends GenericOperator
    * @param dss The DataSet to add.
    */
   public final void addDataSet( DataSet dss ) {
-    dss.addIObserver( this );
+    /*dss.addIObserver( this );
     Dsets.addElement( dss );
     interp.set( "ISAWDS" + dss.getTag(  ), dss );
+   */
   }
 
   /**
@@ -834,6 +836,7 @@ public class PyScriptOperator extends GenericOperator
       // execute the file (level 0) --> this throws the PyException
       try { // one is faster, the other throws exceptions with the right filename
         interp.exec( script.toString(  ) );
+        
 
         //interp.execfile(script.getFilename());
       } catch( PyException e ) {
@@ -995,7 +998,9 @@ public class PyScriptOperator extends GenericOperator
    */
   private final void resetInterpreter(  ) {
     // instantiate AFTER initialize
+    CleanInterpreter();
     interp = new PythonInterpreter(  );
+    scriptLoaded = false;
 
     //execute a series of default import statements
     PyScriptOperator.initImports( interp );
@@ -1042,17 +1047,17 @@ public class PyScriptOperator extends GenericOperator
     resetError(  );
   }
   
-  protected void finalize(){
+ public void finalize()throws Throwable{
      
      if( Dsets !=null){
         for( int i =0; i< Dsets.size();i++){
            DataSet DD = (DataSet)Dsets.elementAt(i);
            DD.deleteIObserver( this );
-           interp.set( "ISAWDS"+DD.getTag() , null );
+          // interp.exec( "del ISAWDS"+DD.getTag());
         }
         Dsets.clear();
      }
-     
+    CleanInterpreter();
     if( interp != null)
        interp.cleanup();
     
@@ -1066,7 +1071,46 @@ public class PyScriptOperator extends GenericOperator
     }catch( Exception s){
        
     }
-   
+ 
+    super.finalize(); 
   }
   
+  /**
+   *  If the interpret variable is being wiped out, this will attempt to
+   *  delete as much of the set variables as possible
+   */
+  private void CleanInterpreter(){
+     if( Dsets != null)
+        for( int i =0; i< Dsets.size();i++){
+           DataSet DD = (DataSet)Dsets.elementAt(i);
+           interp.exec( "del ISAWDS"+DD.getTag());
+        }
+     
+     if(obss != null)
+       interp.exec( "del IOBS" );
+
+     if( IAmOperator && scriptLoaded)
+        interp.exec("clearParametersVector()");
+      
+      
+   
+      //interp.setErr( (OutputStream)null );
+     // interp.setOut( (OutputStream)null ); 
+ 
+  }
+
 }
+/*=======================================
+   ... Set up the initial state of myInterpreter, as before ..
+   // Save the initial state of myInterpreter.
+   PyObject localsMap = myInterpreter.getLocals();
+   PyObject initialState = localsMap.invoke("copy");
+
+   ... Change the state of myInterpreter, as before ...
+
+   // Restore the initial state of myInterpreter.  
+   myInterpreter.setLocals(initialState.invoke("copy"));
+
+======================================
+
+*/
