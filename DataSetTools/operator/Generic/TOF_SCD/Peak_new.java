@@ -1205,6 +1205,7 @@ public static Peak_new getNewPeak_hkl( DataSet DS, int GridID, float h, float k,
   /* (non-Javadoc)
  * @see DataSetTools.operator.Generic.TOF_SCD.IPeak#createNewPeakhkl(float, float, float, float[][])
  */
+/*  
 public IPeak createNewPeakhkl( float h , float k , float l , float[][] UB ) {
    
    if( UB == null)
@@ -1236,13 +1237,14 @@ public IPeak createNewPeakhkl( float h , float k , float l , float[][] UB ) {
    return new Peak_new(x,y,z, grid, this.orient,this.timeAdjustment,
                this.xscale, this.L1);
 }
-
+*/
+  
 /* (non-Javadoc)
  * @see DataSetTools.operator.Generic.TOF_SCD.IPeak#createNewPeakxyz(float, 
- *                    float, float)
+ *                    float, float, float)
  */
 
-public IPeak createNewPeakxyz( float x , float y , float z ) {
+public IPeak createNewPeakxyz( float x , float y , float z, float tof ) {
 
    Peak_new Res = new Peak_new( x,y,z,grid, orient, timeAdjustment,xscale, L1);
    Res.setInstrument(  this.InstrumentName );
