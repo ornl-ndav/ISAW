@@ -657,6 +657,7 @@ public class NexUtils implements INexUtils {
             if( Grid != null && !(nrows<=1 && ncols<=1 && dims.length >=3) ) {
                
                Grid.setData_entries( DS );
+               Grid_util.setEffectivePositions( DS , Grid.ID() );
               
             }
 
@@ -766,8 +767,10 @@ public class NexUtils implements INexUtils {
             }
          }
       }
-      if( Grid != null)
+      if( Grid != null){
          Grid.setData_entries( DS );
+         Grid_util.setEffectivePositions( DS , Grid.ID() );
+      }
       dataState.endDetectorID = grid+startGridNum;
       return false;
    }
