@@ -382,23 +382,8 @@ public interface IPeak {
     * NOTE: These values can be Float.NaN, but it is not a good idea.
     *     
     */
-   IPeak  createNewPeakxyz( float x, float y, float z);
-   
-   /**
-    * Uses the current peak as a peak factory. Changes the h,k and l  values and
-    * all values derived from it and creates a new Peak
+   IPeak  createNewPeakxyz( float x, float y, float z, float wl);
     
-    * @param h   the h(Miller index) value associated with the new peak
-    * @param k    the k(Miller index) value associated with the new peak
-    * @param l    the l(Miller index) value associated with the new peak
-    * @param UB   the UB matrix associated with the new peak. 
-    * @return a new peak with the h,k,l, UB and all other derived values
-    *          changed. The other fields stay the same
-    * 
-    *  NOTE: The h,k,l values can be Float.NaN and UB can be null.
-    */
-   IPeak  createNewPeakhkl( float h, float k, float l, float[][]UB); 
-   
    
    //---------------I/O---------------------
    
