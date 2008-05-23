@@ -1395,16 +1395,21 @@ public class IntegrateUtils
         }
       }
     }
+    
+    IData data = ds.getData_entry( ids[x][y] );
+    XScale x_scale = data.getX_scale(); 
     if(maxX!=x || maxY!=y || maxZ!=z){ // move to nearby maximum
       //peak.pixel(maxX,maxY,maxZ);
       //peak.ipkobs(maxP);
-       IPeak Res = peak.createNewPeakxyz(maxX , maxY , maxZ );
+       float tof = x_scale.getX( maxZ );
+       IPeak Res = peak.createNewPeakxyz( maxX, maxY, maxZ, tof  );
        Res.ipkobs( maxP );
        Res.reflag( peak.reflag());
        Res.seqnum( peak.seqnum() );
        return Res;
     }else{
-       IPeak Res = peak.createNewPeakxyz(x ,y , z );
+       float tof = x_scale.getX( z );       
+       IPeak Res = peak.createNewPeakxyz(x, y, z, tof );
        Res.ipkobs( peak.ipkobs());
        Res.reflag( peak.reflag());
        Res.UB(peak.UB());
@@ -1415,7 +1420,7 @@ public class IntegrateUtils
        Res.seqnum( peak.seqnum() );
        
        return Res;
-      //peak.pixel(x,y,z); // move it onto integer pixel postion
+      //peak.pixel(x,y,z); // move it onto integer pixel position
     }
   }
 

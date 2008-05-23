@@ -903,9 +903,12 @@ public class Util {
       if( Centroid[ 0 ] > 0 &&Centroid[ 1 ] > 0 &&Centroid[ 2 ] >= min_time_chan &&
           Centroid[ 0 ] <= grid.num_rows() &&Centroid[ 1  ] <= grid.num_cols()
           &&Centroid[ 2 ] <= max_time_chan ){
-         
-            IPeak Pk1 = Pk.createNewPeakxyz( Centroid[ 1 ] , Centroid[ 0 ] ,
-                               Centroid[ 2 ] );
+      
+            float tof = xscl.getInterpolatedX( Centroid[ 2 ] );
+            IPeak Pk1 = Pk.createNewPeakxyz( Centroid[ 1 ], 
+                                             Centroid[ 0 ],
+                                             Centroid[ 2 ],
+                                             tof );
            
             Pk1.reflag( 10 + reflag );
             return Pk1;

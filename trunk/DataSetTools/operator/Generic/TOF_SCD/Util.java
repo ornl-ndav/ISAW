@@ -529,7 +529,6 @@ public class Util{
       return peak;
     }
                                               
-
     for( int k=0 ; k<3 ; k++ ){
       // determine the background for this time slice
       back=0.;
@@ -578,7 +577,9 @@ public class Util{
       return peak;
     }
       // update the peak
-    IPeak ResPeak = peak.createNewPeakxyz( x , y , z );
+    XScale x_scale = data.getX_scale();
+    float tof = x_scale.getInterpolatedX( z );
+    IPeak ResPeak = peak.createNewPeakxyz( x , y , z, tof );
     //ResPeak is close to peak so bring values in
     ResPeak.sethkl(peak.h(),peak.k(),peak.l());
     ResPeak.ipkobs( peak.ipkobs());
@@ -809,7 +810,6 @@ public class Util{
      float Q = (new Vector3D(peak.getQ())).length();
      float L1 = peak.L1();
      float DT = (L1+peak.time())*DQ/Q;
-    
      
      Vector3D pos = grid.position( peak.y(), peak.x());
  
@@ -818,8 +818,7 @@ public class Util{
      
      float dScat =(float)( 2*DQ*Math.tan(ScatAng/2)/Q);
      float Ddist =(D*dScat);
-     
-     
+        
     double asum  = 0.;
     double xsum  = 0.;
     double ysum  = 0.;
@@ -839,10 +838,10 @@ public class Util{
     }
     
     // create the surrounding area
-    // min is in caes peak.x = ncols+.5, It could be rounded up
-    int col=  Math.min( grid.num_cols(),Math.round(peak.x()));
-    int row=  Math.min(  grid.num_rows() ,Math.round(peak.y()));
-    int time=  Math.round(peak.z());
+    // min is in case peak.x = ncols+.5, It could be rounded up
+    int col =  Math.min( grid.num_cols(), Math.round(peak.x()));
+    int row =  Math.min( grid.num_rows(), Math.round(peak.y()));
+    int time = Math.round(peak.z());
     
     float dPixels = Ddist/Math.min( grid.width(row,col) ,
              grid.height(row, col));
@@ -937,8 +936,9 @@ public class Util{
       return peak;
     }
     
-      // update the peak
-    IPeak ResPeak = peak.createNewPeakxyz( x , y , z );
+    // update the peak
+    float tof = xscl.getInterpolatedX( z );
+    IPeak ResPeak = peak.createNewPeakxyz( x , y , z, tof );
     
     //ResPeak is close to the original peak so bring values in
     ResPeak.sethkl( peak.h(), peak.k(), peak.l() );
