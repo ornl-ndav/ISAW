@@ -28,6 +28,10 @@
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
+ * $Author:$
+ * $Version:$
+ * $Date:$
+ *
  * $Log$
  * Revision 1.27  2008/01/29 19:15:06  rmikk
  * Now extends IPeak.
@@ -1227,9 +1231,9 @@ public IPeak createNewPeakhkl( float h , float k , float l , float[][] UB ) {
 }
 
 /* (non-Javadoc)
- * @see DataSetTools.operator.Generic.TOF_SCD.IPeak#createNewPeakxyz(float, float, float)
+ * @see DataSetTools.operator.Generic.TOF_SCD.IPeak#createNewPeakxyz(float, float, float,float)
  */
-public IPeak createNewPeakxyz( float x , float y , float z ) {
+public IPeak createNewPeakxyz( float x , float y , float z, float tof ) {
 
    // TODO Auto-generated method stub   
    Peak p_new =(Peak)clone();
