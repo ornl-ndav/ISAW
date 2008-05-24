@@ -28,7 +28,15 @@
  * grant number DMR-0218882
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
- * * Modified:
+ *
+ *
+ *  Last Modified:
+ * 
+ *  $Author: eu7 $
+ *  $Date: 2008-04-08 16:31:08 -0500 (Tue, 08 Apr 2008) $            
+ *  $Revision: 19031 $
+ *
+ * Modified:
  *
  * $Log$
  * Revision 1.2  2008/02/13 20:10:43  dennis
@@ -39,9 +47,6 @@
  * 
  */
 package DataSetTools.operator.Generic.TOF_SCD;
-import gov.anl.ipns.MathTools.Geometry.*;
-import java.io.*;
-
 
 /**
  * @author Ruth
@@ -348,7 +353,7 @@ public interface IPeak {
     *        IPNS and calculation mode
     * @see #chi
     */
-   void setFacility( String facilityName);
+   void setFacility( String facilityName );
    
    
    /**
@@ -357,7 +362,7 @@ public interface IPeak {
     *       SCD and calculation mode
     * @see #chi
     */
-   void setInstrument( String instrumentName);
+   void setInstrument( String instrumentName );
    
    //------------copy/clone/factory methods---------------------
    
@@ -372,9 +377,11 @@ public interface IPeak {
     * Uses the current peak as a peak factory. Changes the x,y and z values and
     * all values derived from it and creates a new Peak
     * 
-    * @param x  the column in the detector associated with the new peak
-    * @param y  the row in the detector associated with the new peak
-    * @param z  the time channel associated with the new peak
+    * @param x   the column in the detector associated with the new peak
+    * @param y   the row in the detector associated with the new peak
+    * @param z   the time channel associated with the new peak
+    * @param tof the time-of-flight corresponding to the specified channel
+    *            (z value).
     * 
     * @return  a new peak with the x,y,z and all other derived values
     *          changed. The other fields stay the same
@@ -382,7 +389,7 @@ public interface IPeak {
     * NOTE: These values can be Float.NaN, but it is not a good idea.
     *     
     */
-   IPeak  createNewPeakxyz( float x, float y, float z, float wl);
+   IPeak  createNewPeakxyz( float x, float y, float z, float tof );
     
    
    //---------------I/O---------------------
