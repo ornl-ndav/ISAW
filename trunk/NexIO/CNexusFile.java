@@ -27,7 +27,11 @@
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
- * Modified:
+ *  Last Modified:
+ * 
+ *  $Author$
+ *  $Date$            
+ *  $Revision: 19031 
  *
  * $Log$
  * Revision 1.6  2007/08/26 23:55:44  rmikk
@@ -148,6 +152,7 @@ public class CNexusFile extends NexusFile{
    * @throws NexusException
    */
   public synchronized void close() throws NexusException{
+/*
       int thandle = handle;
       handle = -1;
       if(thandle  >= 0)
@@ -159,5 +164,6 @@ public class CNexusFile extends NexusFile{
       }catch(Exception s){
          System.out.println("Error closing Nexus file "+s);
       }
+*/
   }
 }
