@@ -30,6 +30,12 @@
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
+ *  Last Modified:
+ * 
+ *  $Author$
+ *  $Date$            
+ *  $Revision$
+ *
  * $Log$
  * Revision 1.15  2008/01/29 19:50:08  rmikk
  * Replaced Peak by IPeak
@@ -103,15 +109,12 @@ import gov.anl.ipns.Parameters.StringPG;
 import gov.anl.ipns.Util.Numeric.Format;
 import gov.anl.ipns.Util.SpecialStrings.ErrorString;
 
-//import java.io.File;
 import java.util.Vector;
 
 import DataSetTools.operator.Generic.TOF_SCD.GenericTOF_SCD;
 import DataSetTools.operator.Generic.TOF_SCD.MatrixFilter;
 import DataSetTools.operator.Generic.TOF_SCD.IPeak;
 import DataSetTools.operator.Generic.TOF_SCD.Peak;
-import DataSetTools.operator.Generic.TOF_SCD.Peak_new;
-//import DataSetTools.operator.Generic.TOF_SCD.ReadPeaks;
 import DataSetTools.operator.Generic.TOF_SCD.Util;
 import DataSetTools.util.FilenameUtil;
 import DataSetTools.util.SharedData;
@@ -324,8 +327,14 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
                    String cellType){
 
      Vector peaks =new Vector();
-     for( int i=0; i< peaksPar.size(); i++){
-         peaks.addElement(((Peak_new)peaksPar.elementAt(i)).clone());
+     for( int i=0; i< peaksPar.size(); i++)
+     {
+       IPeak old_peak = (IPeak)peaksPar.elementAt(i);
+       IPeak new_peak = old_peak.createNewPeakxyz( old_peak.x(), 
+                                                   old_peak.y(),
+                                                   old_peak.z(), 
+                                                   old_peak.time() );
+       peaks.addElement( new_peak );
      }  
      
      if ( run_nums != null && run_nums.length < 1 )
@@ -333,7 +342,6 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
       if ( seq_nums != null && seq_nums.length < 1 )
         seq_nums = null;
       
-     
      int lowerLimit;
      int upperLimit;
      double[] sig_abc = null;
@@ -348,21 +356,10 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
      }
 
      String logfile;
-
-     
-     
-
-  
-     
-
-    
-
+   
     matfile = FilenameUtil.setForwardSlash( matfile );
 
     // confirm the parameters
-    
-      
-
       if( ( matfile == null ) || ( matfile.length(  ) <= 0 ) ) {
         matfile = null;
       } 
@@ -370,9 +367,6 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
       if( matfile == null ) {
        // return new ErrorString( "Matrix file has not been specified" );
       }
-
-     
-    
 
     // create a buffer for a log file
     StringBuffer logBuffer = new StringBuffer(  );
@@ -428,7 +422,7 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
       }
     }
 
-    // trim out the peaks with out hkl listed
+    // trim out the peaks without hkl listed
     for( int i = peaks.size(  ) - 1; i >= 0; i-- ) {
       peak = ( IPeak )peaks.elementAt( i );
       //peak.UB(matrix);
@@ -474,8 +468,7 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
       //assuming a SQUARE detector, so we'll reject it if the x or y position
       //is not within our range
       if(keep[i] ==0)
-      if( 
-        ( peak.x(  ) > upperLimit ) || ( peak.x(  ) < lowerLimit ) ||
+      if( ( peak.x(  ) > upperLimit ) || ( peak.x(  ) < lowerLimit ) ||
           ( peak.y(  ) > upperLimit ) || ( peak.y(  ) < lowerLimit ) ) {
         
               keep[i] = -1;
@@ -555,11 +548,9 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
       k++;
     }
 
-
     // calculate ub
     double[][] UB = new double[3][3];
     double chisq  = 0.;
-
     
       double[][] Thkl = new double[peaks.size(  )][3];
       double[][] Tq   = new double[peaks.size(  )][3];
@@ -578,7 +569,6 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
          sig_abc= new double[7];
         chisq = SCD_util.BestFitMatrix( cellType, UB, Thkl, Tq ,sig_abc);
       }
-
 
 
       if ( Double.isNaN( chisq ) )
@@ -658,7 +648,6 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
         } 
         logBuffer.append( "\n" );
         k++;
-
       }
 
       // calculate 
@@ -678,7 +667,6 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
 
     // determine uncertainties
    
-
     if(sig_abc == null){
        sig_abc = new double[7];
     

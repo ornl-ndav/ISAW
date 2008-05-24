@@ -29,6 +29,11 @@
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
+ *  Last Modified:
+ * 
+ *  $Author: eu7 $
+ *  $Date: 2008-04-08 16:31:08 -0500 (Tue, 08 Apr 2008) $            
+ *  $Revision: 19031 $
  *
  * Modified:
  *
@@ -542,24 +547,19 @@ public class PeakInfo {
      */    
     public float getMiddleRow(){
     	
-       return  ( maxY + minY )/2f;
-       
+       return  ( maxY + minY )/2f;   
     }
     
     
-
-
     /**
      * 
      * @return  the average of the Maximum z value and minimum z value for this peak
      */    
     public float getMiddleChan(){
     	
-       return  ( maxZ + minZ )/2f;
-       
+       return  ( maxZ + minZ )/2f;  
     }
-    
-    
+        
 
     /**
      * 
@@ -572,10 +572,7 @@ public class PeakInfo {
         if( Float.isNaN(b))
         	b=backgroundIntensity;
         return  TotIntensity - ncells*backgroundIntensity;
-        
     }
-    
-    
     
 
     /**
@@ -585,14 +582,10 @@ public class PeakInfo {
     
     public int getNCells(){
     	
-       
-    return ncells;
-    
+      return ncells;
     }
     
     
-    
-
     /**
      * 
      * @return  the number of cells in the extent. Includes the peak cells
@@ -603,12 +596,10 @@ public class PeakInfo {
     	if( maxX < 0 ) 
     		return 0;
     	
-    	return ( maxX - minX + 1 )*( maxY - minY + 1 )*( maxZ - minZ + 1 );
-    	
+    	return ( maxX - minX + 1 )*( maxY - minY + 1 )*( maxZ - minZ + 1 );	
     }
     
-    
-    
+       
     // Gets attributes out of the data set and data blocks
     private void setUpBasics(){
     	
@@ -625,11 +616,8 @@ public class PeakInfo {
     	if( I == null )
     		initialPath = 0f;
     	else
-    		initialPath = I.floatValue();
-    	
+    		initialPath = I.floatValue();	
     }
-    
-    
     
       
     /**
@@ -637,7 +625,7 @@ public class PeakInfo {
      * @return  a PeakObject
      */
     public Peak_new makePeak(){
-    	 if( DS == null)
+        if( DS == null)
           return null;
     	setUpBasics();
     	int reflag = 11;
@@ -648,29 +636,49 @@ public class PeakInfo {
         if( ncells == ( maxX - minX + 1 )*( maxY -minY + 1 )*( maxZ - minZ + 1 ) )
            reflag = 21;
     	Peak_new PP = null;
-    	if( reflag == 11)
-    	  PP = new Peak_new( getWeightedAverageCol() , getWeightedAverageRow() , getWeightedAverageChan() ,
-    			     grid , sampOrient , T0 , xscl , initialPath );
-    	else{ 
-    	  PP = new Peak_new( startCol, startRow, startChan,
-                 grid , sampOrient , T0 , xscl , initialPath );
-    	}
-      PP.reflag( reflag);
-  
-    	float peakIntensity = Float.NaN;
     
-        peakIntensity = MaxIntensity;
-        
+        int run_num = 0;
+        int[] runs = (int[])DS.getAttributeValue( Attribute.RUN_NUM );
+        if( runs != null && runs.length  > 0 )
+          run_num = runs[ 0 ];
+    
+        float monct = 0;
+    	if( reflag == 11)
+        {
+          float chan = getWeightedAverageChan();
+    	  PP = new Peak_new( run_num,
+    	                     monct,
+    	                     getWeightedAverageCol(), 
+    	                     getWeightedAverageRow(), 
+    	                     chan,
+    			     grid, 
+    			     sampOrient,
+    			     xscl.getInterpolatedX( chan ),
+    			     initialPath,
+    			     T0 );
+        }  
+    	else
+        { 
+    	  PP = new Peak_new( run_num,
+    	                     monct,
+    	                     startCol, 
+    	                     startRow, 
+    	                     startChan,
+                             grid, 
+                             sampOrient, 
+                             xscl.getInterpolatedX( startChan ),
+                             initialPath,
+                             T0 );
+    	}
+
+    	float peakIntensity = Float.NaN;   
+        peakIntensity = MaxIntensity;     
     	PP.ipkobs( (int)( peakIntensity + .5 ) );
     	PP.inti( getTotIntensity() );
-    	int[] runs = (int[])DS.getAttributeValue( Attribute.RUN_NUM );
-    	if( runs != null ) if( runs.length  > 0 )
-    		PP.nrun( runs[ 0 ] );
-    	
-    	return PP;
-    	
-    }
+        PP.reflag( reflag );
     
+    	return PP;
+    }
     
     
 }

@@ -1038,7 +1038,7 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
       index++;
     }
 
-    int run_nums[] = AttrUtil.getRunNumber( ds );
+//    int run_nums[] = AttrUtil.getRunNumber( ds );
 
     float min_tof = x_scale.getStart_x();
     float max_tof = x_scale.getEnd_x();
@@ -1129,12 +1129,21 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
                  col  > rcBound[1] + delta && col  < rcBound[3] - delta  && 
                  chan > zmin + delta       && chan < zmax - delta         )
             {
-              peak=new Peak_new( row_col_ch[1], row_col_ch[0], row_col_ch[2],
-                                 grid, samp_or, 0, x_scale, initial_path );
+              peak=new Peak_new( nrun,
+                                 0,
+                                 row_col_ch[1], 
+                                 row_col_ch[0], 
+                                 row_col_ch[2],
+                                 grid, 
+                                 samp_or,
+                                 x_scale.getInterpolatedX( row_col_ch[2] ), 
+                                 initial_path,
+                                 0 );
               peak.sethkl( h, k, l);
               peak.seqnum(seqnum);
-              if ( run_nums != null && run_nums.length > 0 )
-                ((Peak_new)peak).nrun( run_nums[0] );
+
+//              if ( run_nums != null && run_nums.length > 0 )
+//                ((Peak_new)peak).nrun( run_nums[0] );
               peak.reflag(10);                         // Mark as ok for now 
 
               peaks.add(peak);
