@@ -28,9 +28,9 @@
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
- * $Author:$
+ * $Author$
  * $Version:$
- * $Date:$
+ * $Date$
  *
  * $Log$
  * Revision 1.27  2008/01/29 19:15:06  rmikk
