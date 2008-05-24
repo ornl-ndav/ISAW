@@ -28,6 +28,13 @@
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
+ *
+ *  Last Modified:
+ * 
+ *  $Author$
+ *  $Date$            
+ *  $Revision$
+ *
  * $Log$
  * Revision 1.18  2008/01/29 19:18:04  rmikk
  * Repllaced Peak by IPeak
@@ -83,6 +90,7 @@ import DataSetTools.operator.HiddenOperator;
 import DataSetTools.operator.Operator;
 import DataSetTools.operator.Parameter;
 import DataSetTools.dataset.*;
+
 import org.w3c.dom.*;
 import javax.xml.parsers.*;
 import javax.xml.transform.*;
@@ -358,7 +366,10 @@ public class WritePeaks extends GenericTOF_SCD implements HiddenOperator{
      AddSpaceNL(xmlDoc,node,3);
  
      IDataGrid grid = ((Peak_new)P).getGrid();
-     XScale xscl =((Peak_new)P).getXscale(); 
+//     XScale xscl =((Peak_new)P).getXscale();
+     XScale xscl = new UniformXScale( 0, 1, 2 ); // TO DO get rid of xscl 
+                                                 // if it is not needed
+     
      float[] center = grid.position().get();
      Node child = xmlDoc.createElement( "center" );
      childVal = xmlDoc.createTextNode(  center[0]+"  "+center[1]+"  "
@@ -411,7 +422,9 @@ public class WritePeaks extends GenericTOF_SCD implements HiddenOperator{
 
      AddSpaceNL(xmlDoc,node,3);
      child = xmlDoc.createElement( "T0" );
-       childVal = xmlDoc.createTextNode(((Peak_new)P).timeAdjust()+"");
+//       childVal = xmlDoc.createTextNode(((Peak_new)P).timeAdjust()+"");
+       childVal = xmlDoc.createTextNode( 0 +"");   // TO DO get rid of this
+                                                   // if it is not needed.
        child.appendChild( childVal );
        node.appendChild( child);
 

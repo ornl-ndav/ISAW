@@ -30,6 +30,12 @@
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
+ *  Last Modified:
+ * 
+ *  $Author$
+ *  $Date$            
+ *  $Revision$
+ *
  * $Log$
  * Revision 1.13  2008/01/29 19:44:46  rmikk
  * Replaced Peak by IPeak
@@ -339,7 +345,11 @@ public class IndexJ_base extends    GenericTOF_SCD implements
     for( int i=0 ; i<peaks.size() ; i++ ){
       peak=(IPeak)peaks.elementAt(i);
       if(indexpeak(peak,runs,seqs))
+      {
+        peak.UB(null);
+        peak.sethkl(0,0,0);
         peak.UB(UB);
+      }
       /*else{
       
         peak.UB(null);

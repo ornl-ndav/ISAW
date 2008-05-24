@@ -33,6 +33,10 @@
  *
  * Modified:
  *
+ *  $Author$
+ *  $Date$            
+ *  $Revision$
+ *
  * $Log$
  * Revision 1.7  2008/01/29 19:43:07  rmikk
  * Used Peak_new methods to set up a Peak_new
@@ -181,17 +185,26 @@ public class GetCentroidPeaks implements Wrappable, HiddenOperator {
               Attribute.SAMPLE_ORIENTATION);
     if( sampOrient == null)
       sampOrient = new IPNS_SCD_SampleOrientation(0f,0f,0f);
-    Peak_new mold = new Peak_new(0f,0f,0f, Grids[0], sampOrient,
-           0f, 
-           xscales[0], AttrUtil.getInitialPath(db));
-    mold.nrun( AttrUtil.getRunNumber(DS)[0]);  
-    mold.monct(moncount);    
+    
+    int run_num = 0;
+    int[] runs = (int[])DS.getAttributeValue( Attribute.RUN_NUM );
+    if( runs != null && runs.length  > 0 )
+      run_num = runs[ 0 ];   
+
+    Peak_new mold = new Peak_new( run_num, 
+                                  moncount, 
+                                  0f,0f,0f, 
+                                  Grids[0], 
+                                  sampOrient,
+                                  xscales[0].getX( 0 ), 
+                                  AttrUtil.getInitialPath(db),
+                                  0 );
+  
     for( int i=0; i < V.size(); i++){
        Peak p = (Peak)(V.elementAt(i));
        //if( java.util.Arrays.binarySearch(Rows,(int)(p.x()))>=0)
        //if( java.util.Arrays.binarySearch(Rows,(int)(p.y()))>=0)
-       {
-         
+       {        
          //Peak_new pk = (Peak_new) mold.clone();
          //pk.pixel(p.x(),p.y(),p.z());
          int detnum =p.detnum();
@@ -202,17 +215,24 @@ public class GetCentroidPeaks implements Wrappable, HiddenOperator {
          pk.L1( AttrUtil.getInitialPath(Grids[indx].getData_entry(1,1)));
          pk.ipkobs(p.ipkobs());
          */
-         Peak_new pk = new Peak_new(p.x(),p.y(),p.z(),Grids[indx],
-                  sampOrient,calibTimeAdjustments[indx],
-                  xscales[indx],
-                  AttrUtil.getInitialPath(Grids[indx].getData_entry(1,1)));
-         
-         pk.monct( p.monct() );
+         float initial_path = 
+                     AttrUtil.getInitialPath(Grids[indx].getData_entry(1,1));
+         Peak_new pk = new Peak_new( p.nrun(),
+                                     p.monct(),
+                                     p.x(),
+                                     p.y(),
+                                     p.z(),
+                                     Grids[indx],
+                                     sampOrient,
+                                     xscales[indx].getInterpolatedX( p.z() ),
+                                     initial_path,
+                                     calibTimeAdjustments[indx] );      
+//       pk.monct( p.monct() );
+//       pk.nrun( p.nrun());
          pk.inti(p.inti());
          pk.sigi(p.sigi());
          pk.reflag( p.reflag());
          pk.UB(p.UB());
-         pk.nrun( p.nrun());
          pk.ipkobs( p.ipkobs() );
          
          Res.addElement(pk);       

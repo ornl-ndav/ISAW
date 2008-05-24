@@ -4,28 +4,31 @@
  * Copyright (C) Ruth Mikkelson 2008
  *
  * This program is free software; you can redistribute it and/or 
- *modify it under the terms of the GNU General Public License
- *as published by the Free Software Foundation; either version 2
- *of the License, or (at your option) any later version.
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
  *
- *This program is distributed in the hope that it will be useful,
- *but WITHOUT ANY WARRANTY; without even the implied warranty of
- *MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
  *
- *Contact:Ruth Mikkelson,mikkelsonr@uwstout.edu
- *        Menomonie, WI 54751
+ * Contact:Ruth Mikkelson,mikkelsonr@uwstout.edu
+ *         Menomonie, WI 54751
  *
- *This work was supported by the Intense Pulsed Neutron Source Division
+ * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA. 
- 
- * Modified:   Log:DailyPeaksWizard_new.java, v$
+ *
+ *  Last Modified:
+ * 
+ *  $Author: eu7 $
+ *  $Date: 2008-04-08 16:31:08 -0500 (Tue, 08 Apr 2008) $            
+ *  $Revision: 19031 $
 */
-
 
 package Wizard.TOF_SCD;
 
@@ -823,18 +826,24 @@ public class Util {
       for( int i = 0 ; i < Pks.size() ; i++ ){
          
          IPeak pk1 = ( IPeak )Pks.elementAt( i );
-         
-         Peak_new pk = new Peak_new( pk1.x(), pk1.y(), pk1.z(), grid, sampOrient, T0,
-                  xscl, InitialPath );
+         Peak_new pk = new Peak_new( pk1.nrun(),
+                                     monCount,
+                                     pk1.x(), 
+                                     pk1.y(), 
+                                     pk1.z(), 
+                                     grid, 
+                                     sampOrient, 
+                                     xscl.getInterpolatedX( pk1.z() ), 
+                                     InitialPath,
+                                     T0 );
          
          pk.ipkobs( pk1.ipkobs() );
          pk.inti( pk1.inti() );
          pk.sigi( pk1.sigi() );
          pk.reflag( pk1.reflag() );
-         pk.monct( monCount );
-         pk.nrun( pk1.nrun() );
+ //        pk.monct( monCount );
+ //        pk.nrun( pk1.nrun() );
          ResultantPeak.add(  pk );
-         
       }   
       
       return ResultantPeak;

@@ -28,6 +28,12 @@
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
+ *  Last Modified:
+ * 
+ *  $Author$
+ *  $Date$            
+ *  $Revision$
+ *
  * $Log$
  * Revision 1.11  2008/01/29 19:18:42  rmikk
  * Repllaced Peak by IPeak
@@ -421,16 +427,25 @@ public class ReadPeaks extends GenericTOF_SCD implements HiddenOperator{
     float timeAdjustment = ((Float)DetInfo.elementAt( 1 )).floatValue();
     float InitialPath =((Float)DetInfo.elementAt(2 )).floatValue();
     XScale xscl = (XScale)DetInfo.lastElement();
+   
+    SampleOrientation sample_orientation =
+      new IPNS_SCD_SampleOrientation(peak.phi(), peak.chi(),peak.omega());
+    Peak_new PP = new Peak_new( peak.nrun(),
+                                peak.monct(),
+                                peak.x(), 
+                                peak.y(),
+                                peak.z(),
+                                grid,
+                                sample_orientation,
+                                xscl.getInterpolatedX( peak.z() ), 
+                                InitialPath,
+                                timeAdjustment );
     
-    Peak_new PP = new Peak_new(peak.x(), peak.y(),peak.z(),grid,
-              new IPNS_SCD_SampleOrientation(peak.phi(), peak.chi(),peak.omega()),
-              timeAdjustment, xscl, InitialPath);
-    
-    PP.nrun( peak.nrun());
-    //PP.detnum( peak.detnum() );
+//  PP.nrun( peak.nrun());
+//  PP.monct( peak.monct() );
+//  PP.detnum( peak.detnum() );
     PP.inti( peak.inti() );
     PP.ipkobs( peak.ipkobs() );
-    PP.monct( peak.monct() );
     PP.reflag( peak.reflag() );
     PP.seqnum( peak.seqnum() );
     PP.sigi( peak.sigi() );
