@@ -26,7 +26,13 @@
  * This work was supported by the National Science Foundation under
  * grant number DMR-0218882
  *
+ *  Last Modified:
+ * 
+ *  $Author: eu7 $
+ *  $Date: 2008-04-08 16:31:08 -0500 (Tue, 08 Apr 2008) $            
+ *  $Revision: 19031 $
  *
+ * 
  * Modified:
  *
  * $Log$
@@ -41,6 +47,12 @@
  */
 
 package DataSetTools.operator.Generic.TOF_SCD;
+import DataSetTools.dataset.AttrUtil;
+import DataSetTools.dataset.Data;
+import DataSetTools.dataset.Grid_util;
+import DataSetTools.dataset.IDataGrid;
+import DataSetTools.dataset.XScale;
+import DataSetTools.instruments.SampleOrientation;
 import DataSetTools.operator.Generic.*;
 import gov.anl.ipns.Parameters.*;
 import DataSetTools.parameter.*;
@@ -148,7 +160,24 @@ public class getNewPeak_xyz extends GenericOperator{
          float y = ((FloatPG)(getParameter(3))).getfloatValue();
          float z = ((FloatPG)(getParameter(4))).getfloatValue();
          int seqNum =(( IntegerPG)(getParameter(5))).getintValue();
-         DataSetTools.operator.Generic.TOF_SCD.Peak_new Xres=DataSetTools.operator.Generic.TOF_SCD.Peak_new.getNewPeak_xyz(DS,ID,x,y,z,seqNum );
+         
+         int[] run_nums = AttrUtil.getRunNumber( DS );
+         IDataGrid grid = Grid_util.getAreaGrid( DS, ID );
+         SampleOrientation orientation = AttrUtil.getSampleOrientation( DS );
+         Data data = grid.getData_entry( (int)y, (int)x );
+         XScale xscl = data.getX_scale();
+         float initial_path = AttrUtil.getInitialPath( DS );
+         float t_zero = AttrUtil.getT0Shift( DS );
+         Peak_new Xres = new Peak_new( run_nums[0],
+                                       0,
+                                       x,y,z,
+                                       grid,
+                                       orientation,
+                                       xscl.getInterpolatedX( z ),
+                                       initial_path,
+                                       t_zero
+                                       );
+         Xres.seqnum( seqNum );
 
          return Xres;
        }catch(java.lang.IllegalArgumentException S0){
