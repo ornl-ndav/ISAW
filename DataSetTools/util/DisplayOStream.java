@@ -98,6 +98,11 @@ public class DisplayOStream extends OutputStream {
 
     DataSetTools.util.SharedData.addmsg( bytes.toString(  ).trim(  ) );
 
-    bytes = new StringBuffer(  );
+    bytes.setLength( 0 );
+  }
+  
+  public void finalize() throws Throwable{
+     bytes = null;
+     super.finalize();
   }
 }
