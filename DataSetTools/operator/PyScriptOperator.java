@@ -130,6 +130,7 @@ public class PyScriptOperator extends GenericOperator
   private boolean               IAmOperator = false;
   private boolean               scriptLoaded = false;
   private int                   errLineNum  = -1;
+  private static boolean        PySystemInitted = false;
 
   //~ Constructors -------------------------------------------------------------
 
@@ -920,6 +921,11 @@ public class PyScriptOperator extends GenericOperator
    */
   private final void initInterpreter(  ) {
     // get preProperties, postProperties, and systemProperties
+    if( PySystemInitted ){
+       resetInterpreter(  );
+       return;
+    }
+    PySystemInitted = true;
     Properties postProps = new Properties(  );
     Properties sysProps = System.getProperties(  );
 
@@ -1092,7 +1098,12 @@ public class PyScriptOperator extends GenericOperator
      if( IAmOperator && scriptLoaded)
         interp.exec("clearParametersVector()");
       
-      
+     if( eos != null)
+        try{
+          eos.close();
+        }catch(Exception s){
+           
+        }
    
       //interp.setErr( (OutputStream)null );
      // interp.setOut( (OutputStream)null ); 
