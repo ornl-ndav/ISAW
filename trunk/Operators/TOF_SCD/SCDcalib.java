@@ -124,6 +124,7 @@ import DataSetTools.viewer.*;
 import DataSetTools.retriever.*;
 
 import gov.anl.ipns.MathTools.*;
+import gov.anl.ipns.MathTools.Geometry.*;
 import gov.anl.ipns.MathTools.Functions.*;
 import gov.anl.ipns.Parameters.LoadFilePG;
 import gov.anl.ipns.Parameters.BooleanEnablePG;
@@ -704,6 +705,42 @@ public class SCDcalib extends GenericTOF_SCD
                            );
       out.println("#");
     }
+    out.println("#");
+    out.println("#");
+    out.println("# NEW CALIBRAION FILE FORMAT:");
+    out.println("#");
+    out.println("#6         L1     T0_SHIFT");
+    out.printf ("#7 %10.4f   %10.3f\n", values[ SCDcal.L1_INDEX ] * 100, 
+                                        values[ SCDcal.T0_INDEX ] );
+
+    out.println("#");
+    out.println("#4 DETNUM  NROWS  NCOLS    WIDTH   HEIGHT   DEPTH   DETD   "+
+                "CenterX   CenterY   CenterZ    "+
+                "BaseX    BaseY    BaseZ      "+
+                "UpX      UpY      UpZ" );
+    for ( int i = 0; i < grids.length; i++ )
+    {
+      int        det_num = grids[i].ID();
+      int        n_rows  = grids[i].num_rows();
+      int        n_cols  = grids[i].num_cols();
+      double     width   = grids[i].width()  * 100;    // convert to cm
+      double     height  = grids[i].height() * 100;
+      double     depth   = grids[i].depth()  * 100;
+      Vector3D_d center  = grids[i].position();
+      Vector3D_d base    = grids[i].x_vec();
+      Vector3D_d up      = grids[i].y_vec();
+      double     det_d   = center.length() * 100;
+
+      out.printf("#5 %6d %6d %6d %8.4f %8.4f %7.4f %6.2f ",
+                  det_num, n_rows, n_cols, width, height, depth, det_d );
+      out.printf("%9.4f %9.4f %9.4f ",
+                  center.getX()*100, center.getY()*100, center.getZ()*100);
+      out.printf("%8.5f %8.5f %8.5f ",
+                  base.getX(), base.getY(), base.getZ());
+      out.printf("%8.5f %8.5f %8.5f\n",
+                  up.getX(), up.getY(), up.getZ());
+    }
+    out.println("#");
     out.println("#");
 
     for ( int i = 0; i < values.length; i++ )
