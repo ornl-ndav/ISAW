@@ -40,11 +40,20 @@ import java.io.IOException;
 import java.util.Hashtable;
 import java.util.Scanner;
 
+import gov.anl.ipns.MathTools.Geometry.DetectorPosition;
 import gov.anl.ipns.MathTools.Geometry.Vector3D;
 import gov.anl.ipns.Util.SpecialStrings.ErrorString;
+import DataSetTools.dataset.AttrUtil;
+import DataSetTools.dataset.Attribute;
+import DataSetTools.dataset.Data;
 import DataSetTools.dataset.DataSet;
+import DataSetTools.dataset.DetPosAttribute;
+import DataSetTools.dataset.DetectorPixelInfo;
 import DataSetTools.dataset.Grid_util;
 import DataSetTools.dataset.IDataGrid;
+import DataSetTools.dataset.IPixelInfo;
+import DataSetTools.dataset.PixelInfoList;
+import DataSetTools.dataset.PixelInfoListAttribute;
 import DataSetTools.dataset.UniformGrid;
 import DataSetTools.retriever.RunfileRetriever;
 
@@ -142,7 +151,7 @@ public class SNSDetCal
      {
        return new ErrorString( "Error reading calibration file " + file_name);
      }
-     
+/*     
      for ( int i = 0; i < ids.length; i++ )
      { 
        UniformGrid raw_grid = (UniformGrid)Grid_util.getAreaGrid( ds, ids[i] );
@@ -161,13 +170,53 @@ public class SNSDetCal
          return new ErrorString( "NO Calibration information for detector " 
                                   + ids[i]);
      }
-     
-     for ( int i = 0; i < ids.length; i++ )
-     { 
-       UniformGrid raw_grid = (UniformGrid)Grid_util.getAreaGrid( ds, ids[i] );
-       if ( debug )
-    	 System.out.println( "DataSet GRID " + raw_grid );
+*/     
+     // replace all of the grids in all of the pixel info lists with with
+     // one of the new calibrated uniform grids, and set the effective
+     // position of each pixel.
+     Data             data;
+     PixelInfoList    old_pil;
+     PixelInfoList    new_pil;
+     IPixelInfo       old_pi;
+     int              pixel_id;
+     int              grid_id;
+     short            row;
+     short            col;
+     IDataGrid        grid;
+     DetectorPosition pos;
+     int num_data = ds.getNum_entries();
+     for ( int i = 0; i < num_data; i++ )
+     {
+       data     = ds.getData_entry( i );
+       old_pil  = AttrUtil.getPixelInfoList( data );
+       old_pi   = old_pil.pixel( 0 );
+       pixel_id = old_pi.ID();
+       grid_id  = old_pi.gridID();
+       row      = (short)old_pi.row();
+       col      = (short)old_pi.col();
+       grid     = (IDataGrid)grids.get( grid_id );
+       new_pil  = 
+         new PixelInfoList(new DetectorPixelInfo(pixel_id, row, col, grid)); 
+
+       data.setAttribute(
+            new PixelInfoListAttribute(Attribute.PIXEL_INFO_LIST, new_pil) );
+
+       pos = new DetectorPosition( grid.position( row, col ) );
+       data.setAttribute( new DetPosAttribute(Attribute.DETECTOR_POS, pos) );
+     } 
+
+     for ( int i = 0; i < ids.length; i++ )   // NOTE: This is inefficient
+     {
+        UniformGrid new_grid = (UniformGrid)grids.get( ids[i] );
+        new_grid.setData_entries( ds );
      }
+     
+     if ( debug )
+       for ( int i = 0; i < ids.length; i++ )
+       { 
+         UniformGrid raw_grid = (UniformGrid)Grid_util.getAreaGrid(ds, ids[i]);
+         System.out.println( "DataSet GRID " + raw_grid );
+       }
      return null;
    }
    
