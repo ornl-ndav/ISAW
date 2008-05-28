@@ -60,6 +60,8 @@ import java.util.zip.*;
 
 public final class DataSet_IO implements Serializable
 {
+   
+   public  static final long serialVersionUID = 1L;
   /**
    * Store a DataSet as a serialized object without storing the list of
    * observers.  This routine carries out the following steps:
@@ -137,6 +139,7 @@ public final class DataSet_IO implements Serializable
     {
       System.out.println("ERROR reading file:" + file_name );
       System.out.println("Exception is" + e);
+      e.printStackTrace();
     }
     return ds;
   }
