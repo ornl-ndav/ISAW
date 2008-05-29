@@ -95,7 +95,7 @@ public class findCentroidedPeaks extends GenericOperator{
       addParameter( new FloatPG("Max d-spacing",12f));
       addParameter( new StringPG("Data filename extension",".nxs"));
       addParameter( new StringPG("The prefix for the filename","SCD"));
-      addParameter( new BooleanPG("View Peaks file",true));
+      addParameter( new BooleanPG("Pop Up Peaks File",true));
       addParameter( new IntegerPG("Max Number of Threads",1));
    }
 
