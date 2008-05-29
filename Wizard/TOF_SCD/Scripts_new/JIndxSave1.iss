@@ -23,8 +23,8 @@ $Deltak          Float(.20)           Deltas k
 $Deltal          Float(.20)           Deltas l
 $path            DataDirectoryString  Directory for log information
 $expName         String               Experiment name
-$logfile         Boolean(false)       Pop up index.log
-$peakFile        Boolean(false)       Pop up Peaks File
+$logfile         Boolean(false)       Pop Up index.log
+$peakFile        Boolean(false)       Pop Up Peaks File
 
 
 $ Title = Index/Write Peaks

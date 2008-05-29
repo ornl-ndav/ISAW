@@ -86,9 +86,9 @@ public class IntegrateMultipleRuns extends GenericOperator{
       addParameter( new StringPG("File extension",".run"));
       addParameter( new FloatPG("Minimum d-spacing",0));
       addParameter( new ChoiceListPG("Peak Algorithm",new String[]{"MaxIToSigI","Shoe Box", "MaxIToSigI-old","TOFINT","EXPERIMENTAL"}));
-      addParameter( new IntArrayPG("Range of offsets to Peak x","-1:3"));
-      addParameter( new IntArrayPG("Range of Peak yoffset","-1:3"));
-      addParameter( new BooleanPG("Show log info",new Boolean(false)));
+      addParameter( new IntArrayPG("Box Delta x (col) Range","-2:2"));
+      addParameter( new IntArrayPG("Box Delta y (row) Range","-2:2"));
+      addParameter( new BooleanPG("Pop Up Log Info",new Boolean(false)));
       addParameter( new IntegerPG("Max running threads",1));
    }
 
@@ -139,11 +139,11 @@ public class IntegrateMultipleRuns extends GenericOperator{
       S.append("@param   ");
       S.append("minimum d-spacing to consider");
       S.append("@param   ");
-      S.append("eak Algorithm:MaxIToSigI,Shoe Box,      MaxIToSigI-old,TOFINT,or EXPERIMENTAL");
+      S.append("Peak Algorithm: MaxIToSigI, Shoe_Box, MaxIToSigI-old, TOFINT or EXPERIMENTAL");
       S.append("@param   ");
-      S.append("Range of offsets around a peak's   x value(-1:3)");
+      S.append("Box Delta x (col) Range (-2:2)");
       S.append("@param   ");
-      S.append("Range of offsets around a peak's y value(-1:3)");
+      S.append("Box Delta y (row) Range (-2:2)");
       S.append("@param   ");
       S.append("Pop up the log file");
       S.append("@param   ");

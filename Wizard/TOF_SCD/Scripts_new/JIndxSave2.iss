@@ -29,7 +29,7 @@ $OrientFileDir  DataDirectoryString   Dir with Matrices to Load
 $RunNums        Array                 Run Numbers
 $RestrRuns      IntList               Restrict Runs
 
-$logfile        Boolean(true)         Show log info 
+$logfile        Boolean(true)         Pop Up Log Info 
 $expName        String                Experiment name
 
 $ CATEGORY = operator,Instrument Type, TOF_NSCD
