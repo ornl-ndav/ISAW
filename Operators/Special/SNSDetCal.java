@@ -49,6 +49,7 @@ import DataSetTools.dataset.Data;
 import DataSetTools.dataset.DataSet;
 import DataSetTools.dataset.DetPosAttribute;
 import DataSetTools.dataset.DetectorPixelInfo;
+import DataSetTools.dataset.FloatAttribute;
 import DataSetTools.dataset.Grid_util;
 import DataSetTools.dataset.IDataGrid;
 import DataSetTools.dataset.IPixelInfo;
@@ -97,15 +98,34 @@ public class SNSDetCal
        return new ErrorString("NO area grids in ApplySNSDetectorCalibration");
          
      Hashtable grids = new Hashtable();
-     
+     float l1 = Float.NaN;
+     float t0 = Float.NaN; 
      try
      {
        FileReader f_in = new FileReader( file_name );
        BufferedReader buff = new BufferedReader( f_in );
        Scanner scanner = new Scanner( buff );
-       
-       while ( !scanner.next().equals("5") )    // skip to line type 5
+
+       String next_val = scanner.next();
+       while( !next_val.equals("5")  &&          // skip to line type 5 or 7
+              !next_val.equals("7")   )
+       {
          scanner.nextLine();
+         next_val = scanner.next();
+       }
+
+       if ( next_val.equals("7") )               // Read in  L1 & T0
+       {
+         l1 = scanner.nextFloat()/100;           // file value in cm
+         t0 = scanner.nextFloat();
+         scanner.nextLine();
+         next_val = scanner.next();
+         while( !next_val.equals("5") )          // now skip to line type 5
+         {
+           scanner.nextLine();
+           next_val = scanner.next();
+         }
+       }
 
        boolean more_grids = true;
        while ( more_grids )
@@ -151,7 +171,36 @@ public class SNSDetCal
      {
        return new ErrorString( "Error reading calibration file " + file_name);
      }
-/*     
+
+     if ( !Float.isNaN(l1) )
+     {
+       Attribute init_path_attr = new FloatAttribute(Attribute.INITIAL_PATH,l1);
+       ds.setAttribute( init_path_attr );
+                                            // IF the initial path was only
+                                            // stored in the DataSet we would
+                                            // not have to set it on every
+                                            // Data block
+       int num_data = ds.getNum_entries();
+       for ( int i = 0; i < num_data; i++ )
+         ds.getData_entry(i).setAttribute( init_path_attr );
+     }
+
+     if ( !Float.isNaN(t0) )
+     {
+       Attribute t0_attr = new FloatAttribute(Attribute.T0_SHIFT, t0);
+       ds.setAttribute(t0_attr );
+                                            // IF t_zero was only
+                                            // stored in the DataSet we would
+                                            // not have to set it on every
+                                            // Data block
+       int num_data = ds.getNum_entries();
+       for ( int i = 0; i < num_data; i++ )
+         ds.getData_entry(i).setAttribute( t0_attr );
+     }
+    
+
+/*   // THIS VERSION ONLY WORKS IF THE GRIDS IN THE DATA SET ARE ALREADY
+     // UNIFORM GRIDS.
      for ( int i = 0; i < ids.length; i++ )
      { 
        UniformGrid raw_grid = (UniformGrid)Grid_util.getAreaGrid( ds, ids[i] );
@@ -171,6 +220,8 @@ public class SNSDetCal
                                   + ids[i]);
      }
 */     
+     // This version "should" work for Ruth's RowColGrid objects, which will
+     // be in NeXus files from SNS.  In that case, to apply calibraions, we
      // replace all of the grids in all of the pixel info lists with with
      // one of the new calibrated uniform grids, and set the effective
      // position of each pixel.
