@@ -119,6 +119,7 @@ import gov.anl.ipns.Util.SpecialStrings.ErrorString;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import DataSetTools.dataset.AttrUtil;
 import DataSetTools.dataset.Attribute;
 import DataSetTools.dataset.Data;
 import DataSetTools.dataset.DataSet;
@@ -579,7 +580,10 @@ public class Util{
       // update the peak
     XScale x_scale = data.getX_scale();
     float tof = x_scale.getInterpolatedX( z );
-    IPeak ResPeak = peak.createNewPeakxyz( x , y , z, tof );
+    float t0_shift = AttrUtil.getT0Shift( ds );
+    if ( Float.isNaN( t0_shift ) )
+      t0_shift = 0f;
+    IPeak ResPeak = peak.createNewPeakxyz( x , y , z, tof + t0_shift );
     //ResPeak is close to peak so bring values in
     ResPeak.sethkl(peak.h(),peak.k(),peak.l());
     ResPeak.ipkobs( peak.ipkobs());

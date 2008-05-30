@@ -200,6 +200,7 @@ public class GetCentroidPeaks implements Wrappable, HiddenOperator {
                                   AttrUtil.getInitialPath(db),
                                   0 );
   
+
     for( int i=0; i < V.size(); i++){
        Peak p = (Peak)(V.elementAt(i));
        //if( java.util.Arrays.binarySearch(Rows,(int)(p.x()))>=0)
@@ -209,6 +210,7 @@ public class GetCentroidPeaks implements Wrappable, HiddenOperator {
          //pk.pixel(p.x(),p.y(),p.z());
          int detnum =p.detnum();
          int indx = java.util.Arrays.binarySearch(GridIDs,detnum);
+         float t0_shift = calibTimeAdjustments[indx];
          /*pk.Grid( Grids[indx]);
          pk.time(xscales[indx]);
          pk.timeAdjust( calibTimeAdjustments[indx]);
@@ -224,9 +226,9 @@ public class GetCentroidPeaks implements Wrappable, HiddenOperator {
                                      p.z(),
                                      Grids[indx],
                                      sampOrient,
-                                     xscales[indx].getInterpolatedX( p.z() ),
+                                     xscales[indx].getInterpolatedX(p.z())+t0_shift,
                                      initial_path,
-                                     calibTimeAdjustments[indx] );      
+                                     t0_shift );      
 //       pk.monct( p.monct() );
 //       pk.nrun( p.nrun());
          pk.inti(p.inti());
