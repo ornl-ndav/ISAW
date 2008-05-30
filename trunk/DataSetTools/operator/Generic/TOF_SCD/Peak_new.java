@@ -462,18 +462,17 @@ public class Peak_new implements IPeak_IPNS_out
     return wl;
   }
   
+  /**
+   *  Calculate the d-spacing corresponding to the current peak.  For now
+   *  this returns 1/q instead of 2PI/q
+   */
   public float d()
   {
-    float[] spherical_coords = NeXus_coordinates();
-    float two_theta = 3.14159265f - spherical_coords[0];
-
-    if ( two_theta == 3.14159265f )
-      return Float.NaN;
-//    return (float)(wl/( 2 * Math.sin( two_theta )));
     Vector3D vec_q = new Vector3D( qx, qy, qz );
-//    return (float)(Math.PI * 2 / vec_q.length() );
-    return 1.0f/vec_q.length();                      // TODO Fix this
-  }
+//  return (float)(Math.PI * 2 / vec_q.length() );   // d "should be 2PI/q"
+    return 1.0f/vec_q.length();                      // but users of this 
+                                                     // just expect 1/q
+  }                                                  // TODO: Fix this
 
   @Override
   public float x()
