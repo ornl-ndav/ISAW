@@ -768,16 +768,16 @@ public class Util {
       
       
       //------------------ Find Peaks ------------------
-      Vector Pks = FindPeaks.findDetectorPeaks( DS , DetectorID , min_time_chan ,
-               max_time_chan , num_peaks , min_int , PixelRow, buff );
+      Vector Pks = FindPeaks.findDetectorPeaks( DS, DetectorID, min_time_chan,
+               max_time_chan, num_peaks, min_int, PixelRow, buff );
            
       if( Pks == null || Pks.size() < 1 ){
         
          return Pks;
       }
      
-      float pixelW_H = Math.max(  grid.width()/grid.num_cols() , 
-                                    grid.height()/grid.num_rows() );
+      float pixelW_H = Math.max( grid.width()/grid.num_cols() , 
+                                 grid.height()/grid.num_rows() );
       if( min_time_chan < 0 )
          min_time_chan = 0;
       
@@ -786,7 +786,7 @@ public class Util {
          IPeak Pk = ( IPeak )( Pks.elementAt( i ) );       
  
          Pk = CentroidPeak( Pk, DS, grid, Max_dSpacing, pixelW_H, min_time_chan,
-                  max_time_chan ,RowColRange );
+                            max_time_chan, RowColRange );
         
          Pks.set( i , Pk );
          
@@ -796,9 +796,11 @@ public class Util {
       
       
       //------------------ Replace IPeak by Peak_new ----------------------
+
       XScale xscl = grid.getData_entry( 1 , 1  ).getX_scale();
       DataSetTools.instruments.SampleOrientation sampOrient = AttrUtil.
                                                    getSampleOrientation( DS );
+
       float InitialPath = AttrUtil.getInitialPath( DS.getData_entry( 0 ) );
       float T0 = AttrUtil.getT0Shift( DS.getData_entry( 0 ) );
       
@@ -833,7 +835,7 @@ public class Util {
                                      pk1.z(), 
                                      grid, 
                                      sampOrient, 
-                                     xscl.getInterpolatedX( pk1.z() ), 
+                                     xscl.getInterpolatedX( pk1.z() ) + T0, 
                                      InitialPath,
                                      T0 );
          
