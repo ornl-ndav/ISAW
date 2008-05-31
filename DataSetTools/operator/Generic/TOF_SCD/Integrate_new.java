@@ -293,7 +293,6 @@ import java.io.*;
 import java.util.Vector;
 import DataSetTools.operator.DataSet.Conversion.XAxis.*;
 import Operators.TOF_SCD.*;
-//import DataSetTools.operator.Generic.TOF_SCD.*;
 import DataSetTools.operator.Generic.TOF_SCD.IPeak;
 /** 
  * This is a ported version of A.J.Schultz's INTEGRATE program. 
@@ -305,11 +304,11 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
   private              StringBuffer logBuffer   = null;
   private              int          listNthPeak = 3;
   private              int          centering   = 0;
-  public static        String     OLD_INTEGRATE ="MaxIToSigI-old";
-  public static        String     NEW_INTEGRATE ="MaxIToSigI";
-  public static        String     TOFINT        ="TOFINT";
-  public static        String     EXPERIMENTAL  ="EXPERIMENTAL";
-  public static        String     SHOE_BOX      = "Shoe Box";
+  public static        String       OLD_INTEGRATE ="MaxIToSigI-old";
+  public static        String       NEW_INTEGRATE ="MaxIToSigI";
+  public static        String       TOFINT        ="TOFINT";
+  public static        String       EXPERIMENTAL  ="EXPERIMENTAL";
+  public static        String       SHOE_BOX      = "Shoe Box";
     
   
   /**
@@ -672,13 +671,7 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
     boolean append=((BooleanPG)getParameter(8)).getbooleanValue(); // Param 8 **
       
     PeakAlg =getParameter(9).getValue().toString();                // Param 9 **
- /*  //moved to inside Integrate 
-    if( PeakAlg.equals(Integrate_new.OLD_INTEGRATE))
-        opIntPt.setIntgratePkOp(new INTEG(),1,1,1);
-    else if( PeakAlg.equals(Integrate_new.TOFINT))
-        opIntPt.setIntgratePkOp(new TOFINT(),1,1,1);
-     opIntPt.setDataSet(ds);
-*/
+
     // then the x range
     {
       int[] myXrange=((IntArrayPG)getParameter(10)).getArrayValue();//Param 10**
@@ -808,11 +801,7 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
                                   float   monCount,
                                   Object  logbuffer)
   {
-
-      float        chi         = 0f;
-      float        phi         = 0f;
-      float        omega       = 0f;
-      float[][]    UB;
+    float[][]    UB;
       
     // get list of detectors
     int[] det_number = Grid_util.getAreaGridIDs(ds);
@@ -842,21 +831,7 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
        opIntPt.setIntgratePkOp(new TOFINT(),1,1,1);
 
     opIntPt.setDataSet(ds);
-
-    // get the sample orientation
    
-    SampleOrientation orientation = AttrUtil.getSampleOrientation( ds );
-    if ( orientation == null )
-      orientation = AttrUtil.getSampleOrientation( data );
-    if ( orientation != null )
-    {
-      phi   = orientation.getPhi();
-      chi   = orientation.getChi();
-      omega = orientation.getOmega();
-    }
-    else
-      System.out.println("ERROR: NO SAMPLE ORIENTATION IN Data or DataSet");
-    
     // determine the initial flight path
     float init_path = AttrUtil.getInitialPath( ds );
     if ( Float.isNaN(init_path) )
@@ -864,17 +839,6 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
     if ( Float.isNaN(init_path) )
       return new ErrorString("initial flight path is zero");
 
-    // get the run number
-    int nrun=0;
-    int[] run_numbers = AttrUtil.getRunNumber(ds);
-    if ( run_numbers != null && run_numbers.length > 0 )
-      nrun = run_numbers[0];
-   
-    // create a PeakFactory for use throughout this operator
-    PeakFactory pkfac=new PeakFactory(nrun,0,init_path,0f,0f,0f);
-    pkfac.UB(UB);
-    pkfac.sample_orient(chi,phi,omega);
-    pkfac.calib((float[]) data.getAttributeValue(Attribute.SCD_CALIB) );
     // create a vector for the results
     Vector peaks=new Vector();
    
@@ -888,13 +852,11 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
       innerPeaks=new Vector();
       error=Integrate_new.integrateDetector(ds,
                                             innerPeaks,
-                                            //pkfac,
                                             det_number[i],
                                             d_min,
                                             listNthPeak,
                                             centering, 
                                             UB,
-                                            chi,phi,omega,
                                             PeakAlg,
                                             timeZrange, 
                                             colXrange,rowYrange,
@@ -917,20 +879,16 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
 
 
   // ========== start of detector dependence
-  //TODO eliminate UB, opIntPt, chi, phi, omega and opIntPt.  Also pkfac 
+  //TODO eliminate UB, chi, phi, omega and opIntPt.
   //               Make public (for parallel)
   private static ErrorString integrateDetector(
                                         DataSet     ds, 
                                         Vector      peaks, 
-                                    //    PeakFactory pkfac, 
                                         int         detnum,
                                         float       d_min,
                                         int         listNthPeak, 
                                         int         centering,
                                         float       UB[][],
-                                        float       chi,
-                                        float       phi,
-                                        float       omega,
                                         String      PeakAlg,
                                         int[]       timeZrange, 
                                         int[]       colXrange,
@@ -954,7 +912,6 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
    
     if(detnum<=0)
       return new ErrorString("invalid detector number: "+detnum);
-//    pkfac.detnum(detnum);
     
     // create the lookup table
     int[][] ids=Util.createIdMap(ds,detnum);
@@ -973,40 +930,28 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
     if(data==null)
       return new ErrorString("no minimum pixel found");
 
-    // get the calibration for this
-    
-// float[] calib = {1.0f, 0.153469f,0.157197f, -9.922570f, -10.169874f, 7.55f };
-//    pkfac.calib( calib );
-//    float[] calib=(float[])data.getAttributeValue(Attribute.SCD_CALIB);
-//    if(calib==null)
-//     return new ErrorString("Could not find calibration for detector " +detnum);
-//    pkfac.calib(calib);
-
     // get the xscale from the data to give to the new peaks objects
     XScale times=data.getX_scale();
-//    pkfac.time(times);
 
-    // determine the detector postion
-//    float detA=Util.detector_angle(ds,detnum);           // REMOVE THESE
-//    float detA2=Util.detector_angle2(ds,detnum);
-//    float detD=Util.detector_distance(ds,detnum);
-
-                                      // get proper values for detA, etc.
     UniformGrid grid = (UniformGrid)Grid_util.getAreaGrid( ds, detnum ); 
-//    Vector3D center_vec = grid.position();
-//    detD = center_vec.length();
-//    float coords[] = center_vec.get();
-//    detA = (float)( Math.atan2( coords[1], coords[0] ) * 180/Math.PI );
-//    double radius = Math.sqrt( coords[0]*coords[0] + coords[1]*coords[1] ); 
-//    detA2 = (float)( Math.atan2( coords[2], radius ) * 180/Math.PI );
-
-//    pkfac.detA(detA);
-//    pkfac.detA2(detA2);
-//    pkfac.detD(detD);
 
     // determine the min and max pixel-times
     int zmin=0;
     int zmax=times.getNum_x()-1;
+    
+    // get the sample orientation  
+    SampleOrientation samp_or = AttrUtil.getSampleOrientation( ds );
+    if ( samp_or == null )
+      samp_or = AttrUtil.getSampleOrientation( data );
+    float phi   = 0;
+    float chi   = 0;
+    float omega = 0;
+    if ( samp_or != null )
+    {
+      phi   = samp_or.getPhi();
+      chi   = samp_or.getChi();
+      omega = samp_or.getOmega();
+    }
 
     // add sample orientation and detector info to logBuffer
     logBuffer.append("---------- PHYSICAL PARAMETERS\n");
@@ -1046,8 +991,7 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
     Tran3D orientation_tran = new Tran3D( UB_times_2PI );
     Tran3D inv_orientation_tran = new Tran3D( UB_times_2PI );
     inv_orientation_tran.invert();
-
-    SampleOrientation samp_or = AttrUtil.getSampleOrientation( ds );
+    
     XScale x_scale = ds.getData_entry(0).getX_scale();
 
     float initial_path = AttrUtil.getInitialPath( ds );  // get initial path
@@ -1062,8 +1006,6 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
     t0 = AttrUtil.getT0Shift( ds );
     if ( Float.isNaN( t0 ) )
       t0 = 0;
-
-//    int run_nums[] = AttrUtil.getRunNumber( ds );
 
     float min_tof = x_scale.getStart_x();
     float max_tof = x_scale.getEnd_x();
@@ -1117,12 +1059,6 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
     boolean printPeak=false; // REMOVE
     IPeak peak=null;
 
-    if ( DEBUG )
-    {
- //     System.out.println( "PeakFactory = " + pkfac );
-     // System.out.println( "(1,1,1) Peak = " + pkfac.getHKLInstance(1,1,1) );
-    }
-
     int seqnum=1;
     // loop over all of the possible hkl values and create peaks
     for( int h = min_h; h <= max_h; h++ ){
@@ -1166,11 +1102,7 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
                                  t0 );
               peak.sethkl( h, k, l);
               peak.seqnum(seqnum);
-
-//              if ( run_nums != null && run_nums.length > 0 )
-//                ((Peak_new)peak).nrun( run_nums[0] );
               peak.reflag(10);                         // Mark as ok for now 
-
               peaks.add(peak);
               seqnum++;
             }
