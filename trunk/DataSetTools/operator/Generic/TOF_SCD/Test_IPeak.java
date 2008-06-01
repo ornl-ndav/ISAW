@@ -17,89 +17,89 @@ public class Test_IPeak
 
   public static IPeak make_test_Peak_new()
   {
-	int   run_num = 8336;
-	float mon_ct  = 10101f;
-	float col   = 14.64f;
-	float row   = 42.12f;
-	float chan  = 24.55f;
-	float phi   = 0;
-	float chi   = 167;
-	float omega = 45;
-	int   id    = 17;
-	Vector3D center = new Vector3D(  0.064748f, -.253230f,  -0.011417f );
-	Vector3D x_vec  = new Vector3D( -0.954441f, -0.298400f, -0.000457f );
-	Vector3D y_vec  = new Vector3D(  0.000054f, -0.001706f,  0.999999f );
-	float    width  = 17.1228f / 100;
-	float    height = 17.1218f / 100;
-	float    depth  = 0.2f / 100;
-	int      n_rows = 100;
-	int      n_cols = 100;
-	IDataGrid grid = new UniformGrid( id, "m",
-			                          center, x_vec, y_vec,
-			                          width, height, depth,
-			                          n_rows, n_cols );
-	SampleOrientation orientation = 
-		              new IPNS_SCD_SampleOrientation( phi, chi, omega );
-	float tof = 1263;
-	float initial_path = 9.3777f;
-	float t0 = 0;
+    int   run_num = 8336;
+    float mon_ct  = 10101f;
+    float col   = 14.64f;
+    float row   = 42.12f;
+    float chan  = 24.55f;
+    float phi   = 0;
+    float chi   = 167;
+    float omega = 45;
+    int   id    = 17;
+    Vector3D center = new Vector3D(  0.064748f, -.253230f,  -0.011417f );
+    Vector3D x_vec  = new Vector3D( -0.954441f, -0.298400f, -0.000457f );
+    Vector3D y_vec  = new Vector3D(  0.000054f, -0.001706f,  0.999999f );
+    float    width  = 17.1228f / 100;
+    float    height = 17.1218f / 100;
+    float    depth  = 0.2f / 100;
+    int      n_rows = 100;
+    int      n_cols = 100;
+    IDataGrid grid = new UniformGrid( id, "m",
+                                      center, x_vec, y_vec,
+                                      width, height, depth,
+                                      n_rows, n_cols );
+    SampleOrientation orientation = 
+                         new IPNS_SCD_SampleOrientation( phi, chi, omega );
+    float tof = 1263;
+    float initial_path = 9.3777f;
+    float t0 = 0;
 
-	IPeak peak = new Peak_new( run_num,
-                                   mon_ct,
-                                   col, row, chan, 
-                                   grid,
-                                   orientation, 
-                                   tof,
-                                   initial_path,
-                                   t0             );
-	peak.seqnum( 46 );
-	peak.sethkl( -2, 9, 3 );
-	peak.ipkobs(21);
-	peak.inti( 104.99f );
-	peak.sigi( 20.35f );
-	peak.reflag( 10 );
-	
-	return peak;
+    IPeak peak = new Peak_new( run_num,
+                               mon_ct,
+                               col, row, chan, 
+                               grid,
+                               orientation, 
+                               tof,
+                               initial_path,
+                               t0             );
+    peak.seqnum( 46 );
+    peak.sethkl( -2, 9, 3 );
+    peak.ipkobs(21);
+    peak.inti( 104.99f );
+    peak.sigi( 20.35f );
+    peak.reflag( 10 );
+
+    return peak;
   }
   
   
   public static void show_peak( IPeak peak )
   {
-	IDataGrid grid = ((Peak_new)peak).getGrid();
-	int det_num = peak.detnum();
-	int n_rows  = grid.num_rows();
-	int n_cols  = grid.num_cols();
-	float width = grid.width()  * 100;    // convert to cm
-	float height= grid.height() * 100;
-	float depth = grid.depth()  * 100;
-	Vector3D center = grid.position();
-	Vector3D base   = grid.x_vec();
-	Vector3D up     = grid.y_vec();
-	float det_d = center.length() * 100;
+    IDataGrid grid = ((Peak_new)peak).getGrid();
+    int det_num = peak.detnum();
+    int n_rows  = grid.num_rows();
+    int n_cols  = grid.num_cols();
+    float width = grid.width()  * 100;    // convert to cm
+    float height= grid.height() * 100;
+    float depth = grid.depth()  * 100;
+    Vector3D center = grid.position();
+    Vector3D base   = grid.x_vec();
+    Vector3D up     = grid.y_vec();
+    float det_d = center.length() * 100;
 	
-	System.out.println( "4 DETNUM  NROWS  NCOLS  WIDTH HEIGHT  DEPTH " +
-			            "  DETD CenterX CenterY CenterZ   BaseX  " +
-			            " BaseY   BaseZ     UpX     UpY     UpZ" );
-	System.out.printf("5 %6d %6d %6d %6.3f %6.3f %6.3f %6.2f ",
-			det_num, n_rows, n_cols, width, height, depth, det_d );
-	System.out.printf("%7.3f %7.3f %7.3f ", 
-	        center.getX()*100, center.getY()*100, center.getZ()*100);
-	System.out.printf("%7.3f %7.3f %7.3f ", 
-	           base.getX(), base.getY(), base.getZ());
-	System.out.printf("%7.3f %7.3f %7.3f\n", 
-	           up.getX(), up.getY(), up.getZ());
+    System.out.println( "4 DETNUM  NROWS  NCOLS  WIDTH HEIGHT  DEPTH " +
+                        "  DETD CenterX CenterY CenterZ   BaseX  " +
+                        " BaseY   BaseZ     UpX     UpY     UpZ" );
+    System.out.printf("5 %6d %6d %6d %6.3f %6.3f %6.3f %6.2f ",
+                       det_num, n_rows, n_cols, width, height, depth, det_d );
+    System.out.printf("%7.3f %7.3f %7.3f ", 
+                       center.getX()*100, center.getY()*100, center.getZ()*100);
+    System.out.printf("%7.3f %7.3f %7.3f ", 
+                       base.getX(), base.getY(), base.getZ());
+    System.out.printf("%7.3f %7.3f %7.3f\n", 
+                       up.getX(), up.getY(), up.getZ());
 	
-	int run_num = peak.nrun();
-	SampleOrientation orientation = ((Peak_new)peak).getSampleOrientation();
+    int run_num = peak.nrun();
+    SampleOrientation orientation = ((Peak_new)peak).getSampleOrientation();
     float chi = peak.chi();
     float phi = peak.phi();
     float omega = peak.omega();
     float monct = peak.monct();
     float l1    = peak.L1() * 100;
-	System.out.println();
-	System.out.println("0 NRUN DETNUM    CHI    PHI  OMEGA MONCNT     L1");
+    System.out.println();
+    System.out.println("0 NRUN DETNUM    CHI    PHI  OMEGA MONCNT     L1");
     System.out.printf( "0 %4d %6d %6.2f %6.2f %6.2f %6.0f %6.1f\n",
-    		run_num, det_num, chi, phi, omega, monct, l1 );
+                        run_num, det_num, chi, phi, omega, monct, l1 );
     
     int seqn   = peak.seqnum();
     float h    = peak.h();
@@ -187,6 +187,5 @@ public class Test_IPeak
     for ( int i = 0; i < x_vals.length; i++ )
       System.out.printf("%12.3f  %12.3f \n", x_vals[i], log_vals[i] );
     */
-    
   }
 }
