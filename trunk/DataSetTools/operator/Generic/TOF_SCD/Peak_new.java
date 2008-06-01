@@ -107,9 +107,14 @@ public class Peak_new implements IPeak_IPNS_out
    *                      and omega angles, as well as the matrices providing
    *                      the goniometer rotation and inverse goniometer 
    *                      rotation for the specific type of goniometer.
-   *  @param tof          The time-of-flight in microseconds at which this 
-   *                      peak occurs.
-   *  @param initial_path the length(m) of the primary flight path.
+   *  @param tof          The corrected time-of-flight in microseconds at 
+   *                      which this peak occurs.
+   *  @param initial_path The length(m) of the primary flight path.
+   *  @param t_zero       The calibrated time shift.  The corrected time of
+   *                      flight it T + t_zero where T is the measured time
+   *                      of flight.  The wavelength is assumed to have
+   *                      been calculated using the corrected time of flight.
+   *                      That is, the tof parameter must be T + t_zero.
    */
   public Peak_new( int               run_num,
                    float             monct,
