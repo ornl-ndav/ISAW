@@ -760,7 +760,7 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
   //    SharedData.addmsg(errmsg);
    
     // write out the peaks
-    WritePeaks writer=new WritePeaks(integfile,(Vector)Res,new Boolean(append));
+    WritePeaks writer = new WritePeaks( integfile, (Vector)Res, append );
     gov.anl.ipns.Util.Sys.SharedMessages.LOGaddmsg(logBuffer.toString());
     return writer.getResult();
    
