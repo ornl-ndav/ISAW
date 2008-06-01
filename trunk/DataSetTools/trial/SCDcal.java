@@ -813,7 +813,7 @@ public class SCDcal   extends    OneVarParameterizedFunction
   /**
    *  For each detector, show only those calibration values that are currently
    *  used in the SCD software, in the form that they are used as of 7/29/2003.
-   *  Other parameters are ont displayed.
+   *  Other parameters are not displayed.
    */
   public void ShowOldCalibrationInfo( PrintStream out )
   {
