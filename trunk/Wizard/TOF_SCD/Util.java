@@ -42,6 +42,7 @@ import DataSetTools.retriever.*;
 
 import Operators.Special.Calib;
 
+import java.io.*;
 import java.util.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 import gov.anl.ipns.Util.Numeric.*;
@@ -115,7 +116,8 @@ public class Util {
             String   extension,
             String   fileNamePrefix,
             boolean  ViewPeaks,
-            int      maxNumThreads ){
+            int      maxNumThreads )  throws IOException
+     {
       
       if( runnums == null )
          return null;
@@ -287,8 +289,12 @@ public class Util {
        
        LogInfo.clear();
        
+       Peak_new_IO.Write_new( PeakFileName, 
+                              (Vector<Peak_new>)ResultPeaks, 
+                               append1 );
+
       //----------- Write and View Peaks --------------------
-      (new WritePeaks( PeakFileName, ResultPeaks, append1 ) ).getResult();
+      // (new WritePeaks( PeakFileName, ResultPeaks, append1 ) ).getResult();
       
       System.out.println( "--- find_multiple_peaks is done. ---" );
       SharedMessages.addmsg( "Peaks are listed in "+PeakFileName );
@@ -1210,10 +1216,32 @@ public class Util {
          
          SharedMessages.addmsg( "Could not write out the integrate.log file" );
       }
+
+      int n_peaks = Peaks.size();           // Only use peaks with reflag = 10
+      Peak_new peak;
+      Vector filtered_peaks = new Vector();
+      for (int i = 0; i < n_peaks; i++ )
+      {
+        peak = (Peak_new)Peaks.elementAt(i);
+        if ( peak.reflag() == 10 )
+          filtered_peaks.add( peak );
+      }
+      Peaks = filtered_peaks;
       
       String integfile = outpath + expname + ".integrate";
-      WritePeaks writer = new WritePeaks( integfile, Peaks, new Boolean( false ) );
-      Res =  writer.getResult();
+
+
+      try
+      {
+        Peak_new_IO.Write_new( integfile, (Vector<Peak_new>)Peaks, false );
+      }
+      catch (IOException ex )
+      {
+        return new ErrorString("Could not write integrate file " + integfile );
+      }
+
+//      WritePeaks writer = new WritePeaks( integfile, Peaks, new Boolean( false ) );
+//      Res =  writer.getResult();
       
       ( new ViewASCII( outpath + expname + ".integrate" ) ).getResult();
 
@@ -1225,8 +1253,6 @@ public class Util {
          
         SharedMessages.addmsg( "The log file is in integrate.log. Use the" + 
                                                    " View menu to open it" );
-     
-      
       return Res;
    }
    
