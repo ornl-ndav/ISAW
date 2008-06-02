@@ -185,7 +185,6 @@ public class Peak_new_IO
   {
     int id      = peak.getGrid().ID();
     int run_num = peak.nrun();
-    SampleOrientation orientation = peak.getSampleOrientation();
     float chi   = peak.chi();
     float phi   = peak.phi();
     float omega = peak.omega();
