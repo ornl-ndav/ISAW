@@ -54,7 +54,8 @@ else
 endif
 
 append = false
-WritePeaks(path&expname&".peaks",peaks,append)
+#WritePeaks(path&expname&".peaks",peaks,append)
+WritePeaks_new(path&expname&".peaks",peaks,append)
 
 if ShowPeaks
    ViewASCII(path&expname&".peaks")

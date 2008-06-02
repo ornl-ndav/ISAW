@@ -32,7 +32,8 @@ OpenLog( SS)
 V = JIndex(peaks,OrientMat,RestrRuns, Deltah,Deltak,Deltal)
 CloseLog()
 
-WritePeaks(path&expName&".peaks", peaks)
+#WritePeaks(path&expName&".peaks", peaks)
+WritePeaks_new(path&expName&".peaks", peaks, false)
 Display "printed peaks to file"
 
 if logfile
