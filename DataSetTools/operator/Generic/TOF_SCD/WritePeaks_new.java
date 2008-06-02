@@ -38,7 +38,6 @@ package DataSetTools.operator.Generic.TOF_SCD;
 import DataSetTools.operator.*;
 import DataSetTools.operator.Generic.*;
 import gov.anl.ipns.Parameters.*;
-import DataSetTools.parameter.*;
 
 import gov.anl.ipns.Util.SpecialStrings.*;
 
