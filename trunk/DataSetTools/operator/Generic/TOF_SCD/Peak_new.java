@@ -50,6 +50,8 @@ import DataSetTools.math.tof_calc;
 
 public class Peak_new implements IPeak_IPNS_out
 {
+  public static final String UNSPECIFIED = "UNSPECIFIED";
+
   // This first group of fields that determine the peak are IMMUTABLE.
   // They should NOT be changed after the peak has been constructed.
   private int               run_num;
@@ -72,8 +74,8 @@ public class Peak_new implements IPeak_IPNS_out
   //
   // The following group of fields are MUTABLE
   //
-  private String facility_name   = "NO_FACILITY";
-  private String instrument_name = "NO_INSTRUMENT";
+  private String facility_name   = UNSPECIFIED;
+  private String instrument_name = UNSPECIFIED;
 
   private float[][]  UB = null;
   private float      h_index = 0.0f;
@@ -151,6 +153,14 @@ public class Peak_new implements IPeak_IPNS_out
   public float L1()
   {
     return l1;
+  }
+
+  /**
+   *  Get the value of the t_zero shift.  
+   */
+  public float T0()
+  {
+    return t_zero;
   }
 
   @Override
@@ -422,10 +432,20 @@ public class Peak_new implements IPeak_IPNS_out
     this.facility_name = facilityName;
   }
 
+  public String getFacility()
+  {
+    return this.facility_name;
+  }
+
   @Override
   public void setInstrument( String instrumentName )
   {
     this.instrument_name = instrumentName;
+  }
+
+  public String getInstrument()
+  {
+    return this.instrument_name;
   }
 
   @Override
