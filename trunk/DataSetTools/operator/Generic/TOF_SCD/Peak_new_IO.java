@@ -37,6 +37,7 @@ import java.util.*;
 import java.io.*;
 
 import gov.anl.ipns.MathTools.Geometry.Vector3D;
+
 import DataSetTools.dataset.IDataGrid;
 import DataSetTools.dataset.IDataGridComparator;
 import DataSetTools.dataset.UniformGrid;
@@ -70,19 +71,27 @@ public class Peak_new_IO
 
 
   /**
-   *  Vector must contain only Peak_new objects
+   *  Write the specified peaks to the specified file in the 
+   *  new SNS peaks file format, with calibration information and
+   *  a table of detector position and orientation information at
+   *  the start of the file.
+   *
+   *  @param  file_name  The name of the peaks file to be created.
+   *  @param  peaks      A Vector of Peak_new objects.  NOTE:
+   *                     The Vector must contain only Peak_new objects.
+   *  @param  append     Flag indicating whether or not to append to
+   *                     an existing peaks file (CURRENTLY NOT USED).
    */
-  public static void Write_new( String           file_name, 
-                                Vector<Peak_new> peaks, 
-                                boolean          append      )
+  public static void WritePeaks_new( String           file_name, 
+                                     Vector<Peak_new> peaks, 
+                                     boolean          append      )
                      throws IOException
   {
      PrintStream out = new PrintStream( file_name );  
      if ( peaks == null || peaks.size() <= 0 )
-     {
-       System.out.println("ERROR: NO PEAKS IN Write_new()" );
-       return;
-     }
+       throw new IllegalArgumentException(
+                               "Null or empty peaks Vector in Write_new()");
+
                                                   // Find all the grids
 
      Hashtable<Integer,IDataGrid> grids = new Hashtable<Integer,IDataGrid>();
