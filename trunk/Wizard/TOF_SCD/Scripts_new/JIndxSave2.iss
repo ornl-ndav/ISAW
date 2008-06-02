@@ -74,8 +74,8 @@ endif
 CloseLog()
 filename = OrientFileDir&expName&".peaks" 
 
-WritePeaks(filename, peaks)
-
+#WritePeaks(filename, peaks)
+WritePeaks_new(filename, peaks, false)
  
 if logfile
   ViewASCII( path&"index.log")

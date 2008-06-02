@@ -36,7 +36,8 @@ V = JIndex(peaks,OrientMat,RestrRuns, Deltah,Deltak,Deltal)
 CloseLog()   
 
 peakfilename = path&expName&".peaks" 
-WritePeaks(peakfilename, peaks)
+#WritePeaks(peakfilename, peaks)
+WritePeaks_new(peakfilename, peaks, false)
   
 if logfile
   ViewASCII( path&"index.log")
