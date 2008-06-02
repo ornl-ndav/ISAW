@@ -289,9 +289,9 @@ public class Util {
        
        LogInfo.clear();
        
-       Peak_new_IO.Write_new( PeakFileName, 
-                              (Vector<Peak_new>)ResultPeaks, 
-                               append1 );
+       Peak_new_IO.WritePeaks_new( PeakFileName, 
+                                  (Vector<Peak_new>)ResultPeaks, 
+                                   append1 );
 
       //----------- Write and View Peaks --------------------
       // (new WritePeaks( PeakFileName, ResultPeaks, append1 ) ).getResult();
@@ -1233,14 +1233,14 @@ public class Util {
 
       try
       {
-        Peak_new_IO.Write_new( integfile, (Vector<Peak_new>)Peaks, false );
+        Peak_new_IO.WritePeaks_new(integfile, (Vector<Peak_new>)Peaks, false);
       }
       catch (IOException ex )
       {
         return new ErrorString("Could not write integrate file " + integfile );
       }
 
-//      WritePeaks writer = new WritePeaks( integfile, Peaks, new Boolean( false ) );
+//      WritePeaks writer = new WritePeaks( integfile, Peaks, false );
 //      Res =  writer.getResult();
       
       ( new ViewASCII( outpath + expname + ".integrate" ) ).getResult();
