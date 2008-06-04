@@ -129,6 +129,7 @@ public class PyScriptOperator extends GenericOperator
   transient private ByteArrayOutputStream eos;
   private boolean               IAmOperator = false;
   private boolean               scriptLoaded = false;
+  private boolean               ParamsSet = false;
   private int                   errLineNum  = -1;
   private static boolean        PySystemInitted = false;
 
@@ -280,6 +281,7 @@ public class PyScriptOperator extends GenericOperator
     try {
       reset(  );
       interp.exec( "innerClass.setDefaultParameters(  )" );
+      ParamsSet = true;
     } catch( InstantiationError ie ) {
       //setDefaultParameters can be called before it is at all useful, so we
       //will catch the exception and print a message.
@@ -486,7 +488,7 @@ public class PyScriptOperator extends GenericOperator
    */
   public final Object getResult(  ) {
     errLineNum = -1;
-
+  
     if( !IAmOperator ) {
       //we must be working with a document that does not have a class
       //definition, so we'll try to just execute the document text
@@ -514,9 +516,9 @@ public class PyScriptOperator extends GenericOperator
         Object   result = null;
 
         if( pyResult != null ) {
-          result = ( Object )pyResult;
+          result = pyResult;
         }
-
+        pyResult = null;
         return result;
       } catch( PyException s ) {
         //hit some sort of Python syntax error
@@ -536,7 +538,9 @@ public class PyScriptOperator extends GenericOperator
 
       //convert the PyObject to a useful Java Object
       Object oResult = pyResult.__tojava__( Object.class );
-
+   
+      pyResult = null;
+      
       return oResult;
     }
   }
@@ -837,7 +841,7 @@ public class PyScriptOperator extends GenericOperator
       // execute the file (level 0) --> this throws the PyException
       try { // one is faster, the other throws exceptions with the right filename
         interp.exec( script.toString(  ) );
-        
+        scriptLoaded = true;
 
         //interp.execfile(script.getFilename());
       } catch( PyException e ) {
@@ -849,6 +853,7 @@ public class PyScriptOperator extends GenericOperator
     }
   }
 
+ 
   /**
    * Resets the internal errormessage.
    */
@@ -925,6 +930,12 @@ public class PyScriptOperator extends GenericOperator
        resetInterpreter(  );
        return;
     }
+    initPySystem();
+    resetInterpreter(  );
+  }
+  private final void initPySystem(){
+    if( PySystemInitted)
+       return;
     PySystemInitted = true;
     Properties postProps = new Properties(  );
     Properties sysProps = System.getProperties(  );
@@ -939,10 +950,9 @@ public class PyScriptOperator extends GenericOperator
         postProps.put( name, System.getProperty( name ) );
       }
     }
-
+    postProps.put( "internalTablesImpl" , "weak" );
     // here's the initialization step
     PythonInterpreter.initialize( sysProps, postProps, null );
-    resetInterpreter(  );
   }
 
   /**
@@ -951,6 +961,8 @@ public class PyScriptOperator extends GenericOperator
    * script defines an operator.
    */
   private final void initOperator(  ) {
+   
+    initPySystem();
     if( script.isValid(  ) ) {
       IAmOperator = true;
     } else {
@@ -1004,7 +1016,8 @@ public class PyScriptOperator extends GenericOperator
    */
   private final void resetInterpreter(  ) {
     // instantiate AFTER initialize
-    CleanInterpreter();
+    if( interp != null)
+       CleanInterpreter();
     interp = new PythonInterpreter(  );
     scriptLoaded = false;
 
@@ -1063,7 +1076,9 @@ public class PyScriptOperator extends GenericOperator
         }
         Dsets.clear();
      }
-    CleanInterpreter();
+    if( interp != null)
+       CleanInterpreter();
+    
     if( interp != null)
        interp.cleanup();
     
@@ -1086,6 +1101,7 @@ public class PyScriptOperator extends GenericOperator
    *  delete as much of the set variables as possible
    */
   private void CleanInterpreter(){
+     try{
      if( Dsets != null)
         for( int i =0; i< Dsets.size();i++){
            DataSet DD = (DataSet)Dsets.elementAt(i);
@@ -1095,8 +1111,10 @@ public class PyScriptOperator extends GenericOperator
      if(obss != null)
        interp.exec( "del IOBS" );
 
-     if( IAmOperator && scriptLoaded)
-        interp.exec("clearParametersVector()");
+     if( IAmOperator && scriptLoaded){
+   
+        interp.exec( "del innerClass" );
+     }
       
      if( eos != null)
         try{
@@ -1104,12 +1122,46 @@ public class PyScriptOperator extends GenericOperator
         }catch(Exception s){
            
         }
-   
+     }catch( Exception ss){
+        ss.printStackTrace();
+     }
       //interp.setErr( (OutputStream)null );
      // interp.setOut( (OutputStream)null ); 
  
   }
 
+}
+/**
+ * Used for testing instance handliing
+ * @author Ruth
+ *
+ */
+class MyPyInterpreter extends PythonInterpreter{
+   
+   private static int nInterp =0;
+   private int thisInterp;
+   private static java.util.logging.Logger Log = null;
+   public MyPyInterpreter(){
+      super();
+      thisInterp= nInterp++;
+      if( Log == null){
+         Log = java.util.logging.Logger.getLogger( "PythonInterpreter" );
+         try{
+         java.util.logging.FileHandler FH = new java.util.logging.FileHandler("C:\\PythonInterpreter.log");
+         Log.addHandler( FH );
+         FH.setFormatter( new java.util.logging.SimpleFormatter() );
+         }catch(Exception sss){}
+      }
+      Log.setLevel( java.util.logging.Level.OFF );
+      Log.info("PythonIntereter "+thisInterp+" add");
+   }
+   
+   public void finalize() throws Throwable{
+
+     Log.info("PythonIntereter "+thisInterp+" sub");
+      super.finalize();
+   }
+   
 }
 /*=======================================
    ... Set up the initial state of myInterpreter, as before ..
