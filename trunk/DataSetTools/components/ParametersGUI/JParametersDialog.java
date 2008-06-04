@@ -684,7 +684,7 @@ public class JParametersDialog implements Serializable,
           ((IParameterGUI)iparam).destroyGUIPanel();    
 
       }
-     
+ 
        
     }
     
@@ -741,7 +741,7 @@ public class JParametersDialog implements Serializable,
              // System.out.println("buttonpressed" +ev);
       JParameterGUI pGUI;
       s="";
-
+      Result = null;
       if(apply.getText().equals(HALT)){
         worker.interrupt();
         apply.setText(APPLY);
@@ -800,6 +800,7 @@ public class JParametersDialog implements Serializable,
               if( op instanceof IObservable)
                 {((IObservable)op).addIObserver(io);
                 }
+              Result = NOT_THROUGH;
               Result=op.getResult();
               if( op instanceof IObservable)
                 ((IObservable)op).deleteIObserver(io); 
@@ -943,6 +944,7 @@ public class JParametersDialog implements Serializable,
   {
     public void actionPerformed(ActionEvent ev) 
     {  
+      
        if( opDialog != null)
           destroyGUIs();
      }
@@ -952,6 +954,7 @@ public class JParametersDialog implements Serializable,
     
     
     public void windowClosing(WindowEvent e){
+      
        if( opDialog != null)
           destroyGUIs();
        
@@ -959,7 +962,7 @@ public class JParametersDialog implements Serializable,
     
     
     public void windowClosed(WindowEvent e){
-
+     
        if( opDialog != null)
           destroyGUIs();
     }
