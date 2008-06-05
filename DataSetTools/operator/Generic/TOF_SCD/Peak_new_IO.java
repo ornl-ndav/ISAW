@@ -695,6 +695,11 @@ public class Peak_new_IO
     peak.sigi( 20.35f );
     peak.reflag( 10 );
 
+    System.out.println("------------- OLD PEAK FORMAT --------------" );
+    System.out.println( peak );
+    System.out.println(); 
+    System.out.println("------------- OLD PEAK FORMAT --------------" );
+
     System.out.println( L1_T0_TITLES );
     System.out.println( L1_T0_String( peak ) );
 
