@@ -43,8 +43,16 @@ import DataSetTools.dataset.IDataGridComparator;
 import DataSetTools.dataset.UniformGrid;
 import DataSetTools.instruments.IPNS_SCD_SampleOrientation;
 import DataSetTools.instruments.SampleOrientation;
+import DataSetTools.math.tof_calc;
 
 
+/**
+ *  This class has static methods for reading and writing part or all
+ *  of a new(as of May 2008) format Peaks file.  Since length values are
+ *  listed in CENTIMETERS in the file, but most are recorded in METERS
+ *  in internal data structures, these I/O routines do the required
+ *  conversions.
+ */
 public class Peak_new_IO
 {
   public static final String L1_T0_TITLES = "6         L1    T0_SHIFT";
@@ -62,6 +70,10 @@ public class Peak_new_IO
                        "     L2  2_THETA       AZ        WL        D " +
                        "  IPK      INTI   SIGI RFLG";
 
+  public static final String VERSION_TITLE    = "Version:";
+  public static final String FACILITY_TITLE   = "Facility:";
+  public static final String INSTRUMENT_TITLE = "Instrument:";
+
 
   private Peak_new_IO()
   {
@@ -71,7 +83,7 @@ public class Peak_new_IO
 
 
   /**
-   *  Write the specified peaks to the specified file in the 
+   *  Write the specified Vector of peaks to the specified file in the 
    *  new SNS peaks file format, with calibration information and
    *  a table of detector position and orientation information at
    *  the start of the file.
@@ -81,6 +93,8 @@ public class Peak_new_IO
    *                     The Vector must contain only Peak_new objects.
    *  @param  append     Flag indicating whether or not to append to
    *                     an existing peaks file (CURRENTLY NOT USED).
+   *
+   *  @throws an IOException if there is a problem writing the file.
    */
   public static void WritePeaks_new( String           file_name, 
                                      Vector<Peak_new> peaks, 
@@ -118,9 +132,9 @@ public class Peak_new_IO
 
      Arrays.sort( peak_array, new Peak_newComparator() );
 
-     out.println( "Version: 2.0" + 
-                         "  Facility: "    + peak_array[0].getFacility() +
-                         "  Instrument: "  + peak_array[0].getInstrument() );
+     out.println( VERSION_TITLE    + " " + "2.0" + "  " +
+                  FACILITY_TITLE   + " " + peak_array[0].getFacility() + "  " +
+                  INSTRUMENT_TITLE + " " + peak_array[0].getInstrument() );
                          
      out.println( L1_T0_TITLES ); 
      out.println( L1_T0_String( peak_array[0]) ); 
@@ -151,13 +165,17 @@ public class Peak_new_IO
        peak.seqnum(i+1);
        out.println( PeakString( peak ) );
      }
+     out.close();
   }
 
 
  /**
-  *  Get a String listing the calibrate L1 and T0_shift values
+  *  Get a String listing the calibrated L1 and T0_shift values
   *  for a group of peaks, in a form required for writing a new 
   *  format peaks file.
+  *
+  *  NOTE: The L1 value from the peak is converted from METERS
+  *        to CM, for writing to the peaks file.
   *
   *  @param peak  The peak from which the information is obtained.
   *
@@ -165,7 +183,7 @@ public class Peak_new_IO
   */
   public static String L1_T0_String( Peak_new peak )
   {
-     float l1 = peak.L1() * 100;    // l1 in cm
+     float l1 = peak.L1() * 100f;    // l1 in cm
      float T0 = peak.T0();
      return String.format("7 %10.4f  %10.3f", l1, T0 );
   } 
@@ -175,6 +193,9 @@ public class Peak_new_IO
   *  Get a String listing the run number, detector number, chi, phi
   *  and omega, etc. for a group of peaks, in a form required for 
   *  writing a new format peaks file.
+  *
+  *  NOTE: The L1 value from the peak is converted from METERS
+  *        to CM, for writing to the peaks file.
   *
   *  @param peak  The peak from which the information is obtained.
   *
@@ -189,7 +210,7 @@ public class Peak_new_IO
     float phi   = peak.phi();
     float omega = peak.omega();
     float monct = peak.monct();
-    float l1    = peak.L1() * 100;
+    float l1    = peak.L1() * 100f;
     return String.format( "1 %4d %6d %6.2f %6.2f %6.2f %6.0f %6.1f",
                            run_num, id, chi, phi, omega, monct, l1 );
   }
@@ -198,6 +219,9 @@ public class Peak_new_IO
  /**
   *  Get a String listing the information from a peak in the form
   *  required for writing a new format peaks file.
+  *
+  *  NOTE: The L2 value from the peak pixel is converted from METERS
+  *        to CM, for writing to the peaks file.
   *
   *  @param peak  The peak from which the information is obtained.
   *
@@ -236,7 +260,11 @@ public class Peak_new_IO
   /**
    *  Get a String listing the information from a grid in the form
    *  required for writing a new format peaks file.  
-   *  NOTE: This writes the grid info in SNS/NeXus coordinates!!!
+   *
+   *  NOTE: The grid dimensions and position are converted from METERS
+   *        to CM in the formatted String.
+   *
+   *  NOTE: This formats the grid info in SNS/NeXus coordinates!!!
    *
    *  @param grid  The grid from which the information is obtained.
    *
@@ -266,6 +294,363 @@ public class Peak_new_IO
                           up.getY(),         up.getZ(),         up.getX() );
   }
 
+
+  /**
+   *  Read a complete new format peaks file and return a Vector of 
+   *  Peak_new objects.
+   *
+   *  @param filename  The name of the new peaks file to be read
+   *
+   *  @return a Vector containing the Peak_new objects that were constructed
+   *          based on information from the specified file.
+   *
+   *  @throws IOException if there is a problem reading the specified file.
+   */
+  public static Vector<Peak_new> ReadPeaks_new( String filename ) 
+                                 throws IOException
+  {
+     FileReader     f_in        = new FileReader( filename );
+     BufferedReader buff_reader = new BufferedReader( f_in );
+     Scanner        sc          = new Scanner( buff_reader );
+
+     String[]  header_strings = ReadHeaderInfo( sc );
+     float[]   l1_t0 = Read_L1_T0( sc );
+     Hashtable grids = Read_Grids( sc );
+    
+     float  l1         = l1_t0[0];
+     float  T0_shift   = l1_t0[1];
+     String facility   = header_strings[1];
+     String instrument = header_strings[2];
+     Vector<Peak_new> peaks = Read_Peaks( sc, 
+                                          grids, 
+                                          l1, 
+                                          T0_shift, 
+                                          facility, 
+                                          instrument );
+     sc.close();
+     return peaks;
+  }
+
+
+  /**
+   *  Read in the header information, consisting of the version, facility
+   *  and instrument.  Comment lines starting with a "#" can precede the
+   *  header line.  The file (scanner) should already be opened and 
+   *  positioned at the start of the file before calling this method.
+   *  When this method returns, the file will be positioned at the start
+   *  of the first line following the line with the version, facility and
+   *  instrument.
+   *  NOTE: This method is used by the ReadPeaks_new() method, which is the 
+   *  method most users should call to read the peaks file.
+   *
+   *  @return an array of Strings, containing the version, facility and
+   *          instrument names in that order.  If Strings with the proper
+   *          titles are not found, this returns null.
+   */
+  public static String[] ReadHeaderInfo( Scanner sc ) throws IOException
+  {
+     String version_title = sc.next();
+     while ( version_title.startsWith("#") )       // Skip any comment lines
+     {
+       sc.nextLine();
+       version_title = sc.next();
+     }
+
+     if ( !version_title.equalsIgnoreCase( VERSION_TITLE ) )
+       throw new IOException("ERROR: Bad version title in ReadHeaderInfo");
+
+     String[] results = new String[3];
+     results[0] = sc.next();                       // The version name
+
+     String facility_title = sc.next();
+     if ( !facility_title.equalsIgnoreCase( FACILITY_TITLE ) )
+       throw new IOException("ERROR: Bad facility title in ReadHeaderInfo");
+
+     results[1] = sc.next();                       // Facility name
+
+     String instrument_title = sc.next();
+     if ( !instrument_title.equalsIgnoreCase( INSTRUMENT_TITLE ) )
+       throw new IOException("ERROR: Bad instrument title in ReadHeaderInfo");
+     
+     results[2] = sc.next();                       // Instrument name
+
+     sc.nextLine();                          // Discard the rest of the line
+                                             // so next method starts at the
+                                             // beginning of a line.
+     return results; 
+  }
+
+
+ /**
+  *  Find and read the values for L1 (in METERS) and T0 at the start of 
+  *  the peaks file.  Lines that don't start with 7 will be skipped.  
+  *  When the line starting with 7 is found, the L1 and T0_SHIFT values 
+  *  will be read.
+  *  When this method returns, the file will be positioned at the start
+  *  of the line following the line with the l1 and t0 values.
+  *
+  *  NOTE: This method is used by the ReadPeaks_new() method, which is the 
+  *  method most users should call to read the peaks file.
+  *
+  *  @param sc   The Scanner from which the values are to be read.
+  *
+  *  @return An array containing two floats, the L1 value and the T0 value
+  *          in that order.  The value of L1 is CONVERTED from CM to METERS.
+  *          and the value in meters is returned by this method.
+  *          If the values are not read correctly from the file, this 
+  *          method returns null.
+  *
+  *  @throws IOException if the values are not read successfully.
+  */
+  public static float[] Read_L1_T0( Scanner sc ) throws IOException
+  {
+    String next_val = sc.next();
+    while ( !next_val.equals("7") )            // skip to line type 7 which
+    {                                          // has l1 & t_zero values
+      sc.nextLine();
+      next_val = sc.next();
+    }
+
+     float l1 = Float.NaN;
+     float t0 = Float.NaN;
+     l1 = sc.nextFloat()/100f;
+     t0 = sc.nextFloat();
+     sc.nextLine();                            // Discard the rest of the line
+                                               // so next method starts at the
+                                               // beginning of a line.
+
+     if ( Float.isNaN( l1 ) || Float.isNaN( t0 ) )    // something is wrong
+       throw new IOException("l1 or T0_shift NaN in Read_L1_T0");
+
+     float[] results = new float[2];
+     results[0] = l1;
+     results[1] = t0;
+
+     return results;
+  }
+
+
+  /**
+   *  Read in all of the grid information from the start of the file,
+   *  converting from CENTIMETER values recorded in the file the values
+   *  in METERS required by ISAW.  
+   *  The file (scanner) must be positioned at the START of a line, before
+   *  the first detector grid information line (line type 5).
+   *  When this method returns, the file will be positioned at the start
+   *  of the second non-blank line after the last detector grid information
+   *  line.  
+   *
+   *  NOTE: This method is used by the ReadPeaks_new() method, which is the 
+   *        method most users should call to read the peaks file.
+   *
+   *  NOTE: Grids are returned with sizes and center position in METERS.
+   *
+   *  NOTE: Currently, this permutes the coordinates, so that assuming
+   *        the peaks file is written in SNS/NeXus coordinates, this 
+   *        method will return grids in ISAW coordinates.
+   *
+   *  @param  sc   The Scanner from which the grid information is read.
+   *  @return a Hashtable of Uniform grids with grid ID as key.
+   *
+   *  @throws IOException if no detector grids were successfully read. 
+   */
+  public static Hashtable<Integer,UniformGrid> Read_Grids( Scanner sc )
+                                               throws IOException
+  {
+    String next_val = sc.next();
+    while ( !next_val.equals("5") )            // skip to line type 5 which
+    {                                          // has the data grid info
+      sc.nextLine();
+      next_val = sc.next();
+    }
+    
+    Hashtable<Integer,UniformGrid> grids = new Hashtable<Integer,UniformGrid>();
+    boolean more_grids = true;
+    while ( more_grids )
+    {
+      int id = sc.nextInt();
+      int nrows      = sc.nextInt();
+      int ncols      = sc.nextInt();
+      float width    = sc.nextFloat()/100; // file values in cm
+      float height   = sc.nextFloat()/100;
+      float depth    = sc.nextFloat()/100;
+      sc.next(); // skip the redundant DETD
+      float center_y = sc.nextFloat()/100;
+      float center_z = sc.nextFloat()/100;
+      float center_x = sc.nextFloat()/100;
+      float base_y   = sc.nextFloat();
+      float base_z   = sc.nextFloat();
+      float base_x   = sc.nextFloat();
+      float up_y     = sc.nextFloat();
+      float up_z     = sc.nextFloat();
+      float up_x     = sc.nextFloat();
+      Vector3D center  = new Vector3D( center_x, center_y, center_z );
+      Vector3D base    = new Vector3D( base_x, base_y, base_z );
+      Vector3D up      = new Vector3D( up_x, up_y, up_z );
+      UniformGrid grid = new UniformGrid( id, "m",
+                                        center, base, up,
+                                        width, height, depth,
+                                        nrows, ncols );
+      grids.put( new Integer(grid.ID()), grid );
+      if ( sc.hasNext() )
+      {
+        if ( !sc.next().equals("5") )
+        {
+          more_grids = false;
+          sc.nextLine();                // discard the line so next method
+        }                               // can start at the beginning of a line
+      }
+      else
+        more_grids = false;
+    }
+
+    if ( grids.size() <= 0 )
+      throw new IOException("ERROR: No Detector grids found in peaks file");
+
+     return grids;
+  }
+
+
+  /**
+   *  Read the peaks portion of a new Peaks file.  This method assumes that
+   *  the header and grid information has already been read, and that the 
+   *  next character to be read is the first character on a line, at or 
+   *  before the first line of peak run/sample orientation(line type "1").
+   *  This method will finish reading all peak information form the file.
+   *  NOTE: This method is used by the ReadPeaks_new() method, which is the 
+   *  method most users should call to read the peaks file.
+   *
+   *  @param  sc          The scanner from which the peaks are to be read.
+   *  @param  grids       A Hashtable of UniformGrid objects to use when
+   *                      constructing the Peak_new objects.  There must be
+   *                      an entry in this Hashtable for each detector listed 
+   *                      in the peaks file.
+   *  @param  l1_header   The l1 value (in METERS) to use for each peak.
+   *  @param  T0_shift    The T0 value to use for each peak.
+   *  @param  facility    The facility name to use for each peak.
+   *  @param  instrument  The instrument name to use for each peak.
+   *
+   *  @throws IOException if the file cannot be read properly.
+   */
+  public static Vector<Peak_new> 
+                Read_Peaks( Scanner   sc, 
+                            Hashtable<Integer,UniformGrid> grids,
+                            float     l1_header,
+                            float     T0_shift,
+                            String    facility,
+                            String    instrument )
+                throws IOException
+  {
+    Vector<Peak_new> peaks = new Vector<Peak_new>();
+
+    int nrun,
+        detnum,
+        seqn,
+        h, k, l,
+        ipk,
+        rflg;
+    float chi, phi, omega, moncnt,
+          l2, l1_nom, l2_nom,
+          col, row, chan,
+          theta2, az, wl, tof, d,
+          inti, sigi;
+
+    String next_val = sc.next();
+
+    boolean has_more_lines = sc.hasNext();
+    while ( has_more_lines )
+    {
+      while ( !next_val.equals("1") )            // skip to line type 1 which
+      {                                          // has the RUN, DET, CHI, etc. 
+        sc.nextLine();
+        next_val = sc.next();
+      }
+      nrun   = sc.nextInt();
+      detnum = sc.nextInt();
+      chi    = sc.nextFloat();
+      phi    = sc.nextFloat();
+      omega  = sc.nextFloat();
+      moncnt = sc.nextFloat();
+      l1_nom = sc.nextFloat() / 100f;             // convert cm to meters
+      sc.nextLine();                              // advance to next full line
+
+                                                  // TODO change this if the
+                                                  // interpretation of phi,
+                                                  // chi, omega change!
+      SampleOrientation orientation = 
+                             new IPNS_SCD_SampleOrientation( phi, chi, omega);
+
+      if ( !sc.next().equals("2") )  
+        throw new IOException("ERROR in peaks file, expected line type 2");
+     
+      sc.nextLine();                               // skip peak heading line
+      
+      next_val = sc.next();
+      while (sc.hasNext() && next_val.equals("3")) // process all type 3 lines 
+      {        
+        seqn   = sc.nextInt();
+        h      = sc.nextInt();
+        k      = sc.nextInt();
+        l      = sc.nextInt();
+        col    = sc.nextFloat();
+        row    = sc.nextFloat();
+        chan   = sc.nextFloat() - 1;     // file has channel + 1
+
+        l2_nom = sc.nextFloat() / 100f;  // convert cm to meters, however, l2
+                                         // is nominal so we later find it
+                                         // based on the grid, row and column
+        theta2 = sc.nextFloat();
+        az     = sc.nextFloat();
+        wl     = sc.nextFloat();
+        d      = sc.nextFloat();
+        ipk    = sc.nextInt();
+        inti   = sc.nextFloat();
+        sigi   = sc.nextFloat(); 
+        rflg   = sc.nextInt();
+        IDataGrid grid = grids.get( detnum );
+        if ( grid == null )
+          throw new IOException("ERROR: missing detector #" + detnum);
+
+        Vector3D position = grid.position(row,col);
+        l2 = position.length();
+        tof = tof_calc.TOFofWavelength( l1_header + l2, wl );
+
+        Peak_new peak = new Peak_new( nrun,
+                                      moncnt,
+                                      col, row, chan,
+                                      grid,
+                                      orientation,
+                                      tof,
+                                      l1_header,
+                                      T0_shift    );
+
+        peak.setFacility( facility );
+        peak.setInstrument( instrument );
+        peak.seqnum( seqn );
+        peak.sethkl( h, k, l );
+        peak.ipkobs( ipk );
+        peak.inti( inti );
+        peak.sigi( sigi );
+        peak.reflag( rflg );
+        peaks.add( peak );
+ 
+        if ( sc.hasNext() )
+          sc.nextLine();
+        if ( sc.hasNext() )
+          next_val = sc.next();
+      }
+
+      if ( !sc.hasNext() )
+        has_more_lines = false;
+    }
+
+    return peaks;
+  }
+
+
+  /**
+   *  Basic functionality test of peak I/O
+   */
   public static void main( String args[] )
   {
     int   id    = 17;
@@ -293,7 +678,7 @@ public class Peak_new_IO
                          new IPNS_SCD_SampleOrientation( phi, chi, omega );
     float tof = 1263;
     float initial_path = 9.3777f;
-    float t0 = 0;
+    float t0 = 23.45f;
 
     Peak_new peak = new Peak_new( run_num,
                                   mon_ct,
@@ -327,6 +712,29 @@ public class Peak_new_IO
     System.out.println( PeakString( peak ) );
     System.out.println( PeakString( peak ) );
     System.out.println( PeakString( peak ) );
+
+    Vector peaks = new Vector();
+    for ( int i = 0; i < 10; i++ )
+      peaks.add(peak);
+
+    try 
+    {
+      WritePeaks_new( "Test_1.peaks", peaks, false );
+      peaks = ReadPeaks_new( "Test_1.peaks" );
+      WritePeaks_new( "Test_2.peaks", peaks, false );
+/*
+      peaks = ReadPeaks_new("/usr2/SNS_OXALIC_ACID_TEST/oxalic.integrate");
+      WritePeaks_new( "Test_3.peaks", peaks, false );
+
+      peaks = ReadPeaks_new( "Test_3.peaks" );
+      WritePeaks_new( "Test_4.peaks", peaks, false );
+*/
+    }
+    catch ( IOException ex )
+    {
+       System.out.println( ex );
+       ex.printStackTrace();
+    }
   }
 
 }
