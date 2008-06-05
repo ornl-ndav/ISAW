@@ -48,6 +48,66 @@ import DataSetTools.dataset.IDataGrid;
 import DataSetTools.instruments.SampleOrientation;
 import DataSetTools.math.tof_calc;
 
+/**
+ *  This class is a second pass at representing the key data for peaks,
+ *  inspired by the original Peaks object put together by Peter Peterson.
+ *  The goals were to make it simpler to use (fewer things mutable, more
+ *  maintainable), and to use the detector grid concept, so that detectors
+ *  and calibrations could better deal with area detectors in arbitrary
+ *  positions and orientations.  Since this had to be implemented without
+ *  breaking existing functionality, some further refinements to this
+ *  concept are on hold, pending a complete separation of the new peak
+ *  class from the original Peak class.  Currently there is an interface,
+ *  IPeak that extracts some of the common functionality, but also partly
+ *  binds the two implementations together.  Some of the work remaining to
+ *  be done includes:
+ * -- The calculation of nearedge MUST be be changed to allow for
+ *    having bounds other than 1 & size.  Should the parameter-less
+ *    nearedge be replaced by nearedge(minx,maxx,miny,maxy) in both
+ *    the interface and in Peak_new?
+ * -- methods detA, detA2, detD are not in interface but were needed
+ *    for some places where Peak_new was used.  These should be removed
+ *    as Peak and Peak_new are separated.
+ * -- methods xcm, ycm are not needed for new format.  They should be
+ *    removed from interface and Peak_new, as Peak and Peak_new are
+ *    separated.
+ * -- NeXus_coordinates method may belong in the interface, or perhaps
+ *    in some utility class, if it doesn't get put in the interface.
+ * -- Methods x,y,z should be renamed col, row, channel.
+ * -- How should the instrument and facility name be handled?  Currently
+ *    there are just getter's and setters for this in Peak_new but the
+ *    getters are NOT in the interface.  These could be useful to have in
+ *    the Peak_new class, IF we will need to deal with peaks from multiple
+ *    instruments and multiple facilities.  In the mean time this just
+ *    temporarily holds the values so that the information can be put
+ *    at the top of the peaks file.
+ * -- Methods to get and set the sequence number could be removed from
+ *    the interface and from Peak_new, since the sequence numbers are
+ *    just set by the order the peaks are written.
+ * -- Methods to get the sample orientation and the grid were needed
+ *    in practice, so they should probably be added to the interface.
+ * -- The UB matrix could probably be removed IPeak and Peak_new, and
+ *    have any methods that rely on this, just take a UB matrix as
+ *    an additional parameter, rather than storing it in the peak object.
+ * -- Currently, the t_zero shift is just stored (and returned by) the
+ *    peak, but is not used by the peak.  Should this be removed?  It is
+ *    handy when printing the peaks file, so that t_zero can be listed
+ *    at the top, but that is all it is used for.
+ * -- The new peaks file format should probably have l1 removed from the
+ *    block of information at the start of a group of peaks, since
+ *    that information is also recorded along with t_zero at the start
+ *    of the file.
+ * -- The d() method currently returns 1/|q| instead of 2pi/|q|, since
+ *    that is what some old code expects.  This should be changed to
+ *    return 2pi/|q| and code using this should be adjusted accordingly.
+ * -- Currently, only the getUnrotQ() method returns double precision
+ *    values.  That should probably be changed to return single, but
+ *    the interface and old Peak object would also need to be changed.
+ *    If the Peak_new and Peak can be separated, then either the
+ *    getUnrotQ() could be changed to return floats, or the Peak_new
+ *    class could be switched entirely to double.
+ */
+
 public class Peak_new implements IPeak_IPNS_out
 {
   public static final String UNSPECIFIED = "UNSPECIFIED";
@@ -113,10 +173,15 @@ public class Peak_new implements IPeak_IPNS_out
    *                      which this peak occurs.
    *  @param initial_path The length(m) of the primary flight path.
    *  @param t_zero       The calibrated time shift.  The corrected time of
-   *                      flight it T + t_zero where T is the measured time
-   *                      of flight.  The wavelength is assumed to have
-   *                      been calculated using the corrected time of flight.
-   *                      That is, the tof parameter must be T + t_zero.
+   *                      flight it T_measured + t_zero where T_measured
+   *                      is the measured time of flight.  The wavelength 
+   *                      is calculated from the specified time of flight, 
+   *                      so the tof parameter MUST be passed in as 
+   *                      T_measured + t_zero.  The t_zero parameter is NOT
+   *                      used in this class, it is only required for 
+   *                      information purposes.  It can be obtained from a
+   *                      peak object, so that code using the peak object 
+   *                      can find the corresponding measured time-of-flight.
    */
   public Peak_new( int               run_num,
                    float             monct,
@@ -149,19 +214,23 @@ public class Peak_new implements IPeak_IPNS_out
     this.qz = (float)(vec_q.getZ()/Math.PI/2);
   }
   
+
   @Override
   public float L1()
   {
     return l1;
   }
 
+
   /**
-   *  Get the value of the t_zero shift.  
+   *  Return the value of the t_zero shift that was specified when the 
+   *  peak was constructed. 
    */
   public float T0()
   {
     return t_zero;
   }
+
 
   @Override
   public float[][] UB()
@@ -171,6 +240,7 @@ public class Peak_new implements IPeak_IPNS_out
     else
       return LinearAlgebra.copy(  UB  );
   }
+
 
   @Override
   public void UB( float[][] UB ) throws IllegalArgumentException
@@ -218,18 +288,21 @@ public class Peak_new implements IPeak_IPNS_out
     k_index = hkl_vec.getY();
     l_index = hkl_vec.getZ();
   }
+
   
   @Override
   public float chi()
   {
     return sample_orientation.getChi();
   }
+
   
   @Override
   public float phi()
   {
     return sample_orientation.getPhi();
   }
+
   
   @Override
   public float omega()
@@ -237,7 +310,8 @@ public class Peak_new implements IPeak_IPNS_out
     return sample_orientation.getOmega();
   }
  
-   
+
+  @Override   
   public IPeak createNewPeakxyz( float x, float y, float z, float tof )
   { 
     Peak_new new_peak = new Peak_new( run_num,
@@ -273,22 +347,36 @@ public class Peak_new implements IPeak_IPNS_out
     return new_peak;
   }
   
+
   @Override
   public int detnum()
   {
     return grid.ID();
   }
 
+
+  /**
+   *  Get the detector grid for this peak.
+   *
+   *  @return a reference to the grid.
+   */ 
   public IDataGrid getGrid()
   {
     return grid;
   }
   
+ 
+  /**
+   *  Get SampleOrientation object for this peak.
+   *
+   *  @return a reference to the sample orientation.
+   */
   public SampleOrientation getSampleOrientation()
   {
     return sample_orientation;
   }
   
+
   @Override
   public float[] getQ()
   {
@@ -298,6 +386,7 @@ public class Peak_new implements IPeak_IPNS_out
     qxyz[2] = qz;
     return qxyz;
   }
+
 
   @Override
   public double[] getUnrotQ()    // TODO Why is this double?
@@ -314,11 +403,13 @@ public class Peak_new implements IPeak_IPNS_out
     return q_vals_d;
   }
 
+
   @Override
   public float h()
   {
     return h_index;
   }
+
   
   @Override
   public float k()
@@ -326,17 +417,20 @@ public class Peak_new implements IPeak_IPNS_out
     return k_index;
   }
 
+
   @Override
   public float l()
   {
     return l_index;
   }
+
   
   @Override
   public float inti()
   {
     return inti;
   }
+
 
   @Override
   public float inti( float inti )
@@ -345,11 +439,13 @@ public class Peak_new implements IPeak_IPNS_out
     return inti;
   }
 
+
   @Override
   public int ipkobs()
   {
     return ipkobs;
   }
+
 
   @Override
   public int ipkobs( int pkObs )
@@ -358,11 +454,13 @@ public class Peak_new implements IPeak_IPNS_out
     return ipkobs;
   }
 
+
   @Override
   public float monct()
   {
     return monct;
   }
+
   
   @Override
   public float monct( float monitorCount )
@@ -370,6 +468,7 @@ public class Peak_new implements IPeak_IPNS_out
     this.monct = monitorCount;
     return monct;
   }
+
   
   @Override
   public float nearedge()  // TODO should be named edgeDistance
@@ -392,17 +491,20 @@ public class Peak_new implements IPeak_IPNS_out
     return Math.min( row_dist, col_dist );
   }
 
+
   @Override
   public int nrun()
   {
     return run_num;
   }
 
+
   @Override
   public int reflag()
   {
     return reflag;
   }
+
 
   @Override
   public int reflag( int flag )
@@ -411,12 +513,14 @@ public class Peak_new implements IPeak_IPNS_out
     return flag;
   }
 
+
   @Override
   public int seqnum()
   {
     // System.out.println("Obsolete seqnum() method called");
     return seqnum;
   }
+
 
   @Override
   public int seqnum( int seq )
@@ -426,16 +530,25 @@ public class Peak_new implements IPeak_IPNS_out
     return seqnum;
   }
 
+
   @Override
   public void setFacility( String facilityName )
   {
     this.facility_name = facilityName;
   }
 
+
+  /**
+   *  Accessor method the get the facility name for this peak.
+   *
+   *  @return The string that was set as the facility name for this peak
+   *          or UNSPECIFIED is none was set.
+   */
   public String getFacility()
   {
     return this.facility_name;
   }
+
 
   @Override
   public void setInstrument( String instrumentName )
@@ -443,10 +556,18 @@ public class Peak_new implements IPeak_IPNS_out
     this.instrument_name = instrumentName;
   }
 
+
+  /**
+   *  Accessor method the get the instrument name for this peak.
+   *
+   *  @return The string that was set as the instrument name for this peak
+   *          or UNSPECIFIED is none was set.
+   */
   public String getInstrument()
   {
     return this.instrument_name;
   }
+
 
   @Override
   public void sethkl( float h, float k, float l )
@@ -458,6 +579,7 @@ public class Peak_new implements IPeak_IPNS_out
     k_index = k;
     l_index = l;
   }
+
 
   @Override
   public float sigi()
@@ -472,6 +594,7 @@ public class Peak_new implements IPeak_IPNS_out
     return sigi;
   }
 
+
   @Override
   public float time()
   {
@@ -481,15 +604,19 @@ public class Peak_new implements IPeak_IPNS_out
     return tof_calc.TOFofWavelength( l1+l2, wl );
   }
 
+
   @Override
   public float wl()
   {
     return wl;
   }
+
   
   /**
    *  Calculate the d-spacing corresponding to the current peak.  For now
-   *  this returns 1/q instead of 2PI/q
+   *  this returns 1/|q| instead of 2PI/|q|
+   *
+   *  @return the calculated d-spacing value corresponding to this peak.
    */
   public float d()
   {
@@ -499,11 +626,13 @@ public class Peak_new implements IPeak_IPNS_out
                                                      // just expect 1/q
   }                                                  // TODO: Fix this
 
+
   @Override
   public float x()
   {
     return col;
   }
+
 
   @Override
   public float y()
@@ -511,31 +640,42 @@ public class Peak_new implements IPeak_IPNS_out
     return row;
   }
 
+
   @Override
   public float z()
   {
     return chan;
   }
-  
+
+
+  /**
+   *  Get an array listing the NeXus coordinates of the pixel for this peak.
+   *  
+   *  @return An array of three values, r ( the sample to pixel distance ),
+   *          az (the NeXus azimuthal angle) and two theta (the scattering 
+   *          angle)
+   */  
   public float[] NeXus_coordinates()
   {
     Vector3D pixel_pos = grid.position( row, col );
     Position3D det_pos = new Position3D();
-                                                 // NOTE: Since x,y,z are currently
-                                                 // in IPNS coords, the xyz coords
-                                                 // are permuted. TODO fix this
+                                              // NOTE: Since x,y,z are currently
+                                              // in IPNS coords, the xyz coords
+                                              // are permuted. TODO fix this
     det_pos.setCartesianCoords( pixel_pos.getY(), 
                                 pixel_pos.getZ(), 
                                 pixel_pos.getX() );
 
     return det_pos.getSphericalCoords();
   }
+
   
   @Override
   public float xcm()
   {
     return grid.x( row, col ) * 100;   // assuming grid size is in meters
   }
+
 
   @Override
   public float ycm()
@@ -545,7 +685,10 @@ public class Peak_new implements IPeak_IPNS_out
 
 
   /**
-   *  Accessor method for the detector angle in degrees
+   *  Accessor method for the IPNS first detector angle in degrees, aka detA.
+   *
+   *  @return the angle between the beam direction and a vector from the
+   *          sample to the detector, "in the horizontal plane".
    */
   public float detA()
   {
@@ -553,9 +696,13 @@ public class Peak_new implements IPeak_IPNS_out
     double angle_radians = Math.atan2( position.getY(), position.getX() );
     return (float)(angle_radians * 180.0/Math.PI);
   }
+
   
   /**
-   *  Accessor method for the second detector angle in degrees
+   *  Accessor method for the IPNS second detector angle in degrees, aka detA2.
+   *
+   *  @return the angle between a vector from the sample to the detector,
+   *          and the horizontal plane.
    */
   public float detA2()
   {
@@ -565,8 +712,12 @@ public class Peak_new implements IPeak_IPNS_out
     return (float)(angle_radians * 180.0/Math.PI);
   }
   
+
   /**
-   *  Accessor method for the detector distance which is given in cm.
+   *  Accessor method for the distance to the center of the detector,
+   *  which is given in cm.
+   *
+   *  @return the sample to detector center distance in cm.
    */
   public float detD()
   {
@@ -576,73 +727,22 @@ public class Peak_new implements IPeak_IPNS_out
 
   /* ------------------- toString method -------------------- */
   /**
-   *  Format the toString method to be the full version of how it
-   *  can be specified. This is in the Schultz format.
+   *  Produce a String representation of this peak's specific
+   *  information in the form of an "old" peaks file as was used
+   *  with the IPNS SCD.
    */
-  public String toString( ){
-    String rs="";
-    
-    DecimalFormat df_se_tw=new DecimalFormat("###0.00");
-    DecimalFormat df_ei_fo=new DecimalFormat("##0.0000");
-    DecimalFormat df_ni_tw=new DecimalFormat("#####0.00");
-    
-    rs="3"+format(seqnum,6)+format(h(),4)+format(k(),4)+format(l(),4);
-    if(Float.isNaN(x())){
-      rs=rs+"     "+x();
-    }else{
-      rs=rs+format(df_se_tw.format(x()),7);
-    }
-    if(Float.isNaN(y())){
-      rs=rs+"     "+y();
-    }else{
-      rs=rs+format(df_se_tw.format(y()),7);
-    }
-    if(Float.isNaN(z())){
-      rs=rs+"     "+z();
-    }else{
-      rs=rs+format(df_se_tw.format(z()+1),7); // internally z is stored as one 
-                                            // less than the file representation
-    }
-    rs=rs+format(df_se_tw.format(xcm()),7)
-      +format(df_se_tw.format(ycm()),7)
-      +format(df_ei_fo.format(wl()),8)
-      //+format(df_ei_fo.format(t),8)
-      +format(ipkobs,6)
-      +format(df_ni_tw.format(inti()),9)
-      +format(df_ni_tw.format(sigi()),9)
-      +format(reflag,5)+format(nrun(),6)+format(detnum(),3);
-    
-    return rs;
-  }
-  /**
-   * Format an integer by padding on the left.
-   */
-  static private String format(int number, int length){
-    String rs=new Integer(number).toString();
-    while(rs.length()<length){
-      rs=" "+rs;
-    }
-    return rs;
-  }
-  
-  /**
-   * Format a float by padding on the left.
-   */
-  static private String format(float number, int length){
-    String rs=format(Math.round(number),length);
-    while(rs.length()<length){
-      rs=" "+rs;
-    }
-    return rs;
+  public String toString( )
+  {
+    return String.format( "3 %5d %3.0f %3.0f %3.0f" +
+                          " %6.2f %6.2f %6.2f"      +
+                          " %6.2f %6.2f %7.4f"      +
+                          " %5d %8.2f %8.2f"        +
+                          " %4d %5d %2d", 
+                          seqnum, h_index, k_index, l_index,
+                          col, row, (chan +1),
+                          xcm(), ycm(), wl,
+                          ipkobs, inti, sigi,
+                          reflag, run_num, grid.ID() );
   }
 
-  /**
-   * Format a string by padding on the left.
-   */
-  static private String format(String rs, int length){
-    while(rs.length()<length){
-      rs=" "+rs;
-    }
-    return rs;
-  }
 }
