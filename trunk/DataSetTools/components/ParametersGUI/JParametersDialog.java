@@ -615,7 +615,11 @@ public class JParametersDialog implements Serializable,
        
         WindowShower.show(opDialog);  
      }
-       
+    
+    
+ 
+  
+  
   public void addIObserver(IObserver iobs) 
   {
     APH.addIObserver(iobs);
@@ -654,11 +658,15 @@ public class JParametersDialog implements Serializable,
                  OPERATION_THROUGH) );
 
      }
-
+     Result = null;
+     System.gc();
 
    }
   /** Returns the result of the last execution of the operator or
- *    null if the Apply button was not pressed
+ *    null if the Apply button was not pressed. 
+ *    NOTE: You should invoke this method in the actionListener set with the addActionListener method.
+ *    A reference to this JParametersDialog is needed. It should be the source of the event passed into
+ *    the actionPerformed method.
  *
  */
     public Object getLastResult()   
@@ -737,8 +745,7 @@ public class JParametersDialog implements Serializable,
     
     public void actionPerformed(ActionEvent ev) 
     {
-             //  optionPane.setValue(btnString1);
-             // System.out.println("buttonpressed" +ev);
+            
       JParameterGUI pGUI;
       s="";
       Result = null;
@@ -804,12 +811,14 @@ public class JParametersDialog implements Serializable,
               Result=op.getResult();
               if( op instanceof IObservable)
                 ((IObservable)op).deleteIObserver(io); 
+              processResult();
               notifyListeners( OPERATION_THROUGH); 
-              return Result;
+             
+              return null;
             }catch(Throwable e){
               Result= new ErrorString("Error="+ e.toString());
               e.printStackTrace();
-              notifyListeners( OPERATION_THROUGH);
+              //notifyListeners( OPERATION_THROUGH);
               SharedData.addmsg( Result);
               return Result;
             }
@@ -818,10 +827,11 @@ public class JParametersDialog implements Serializable,
           public void finished(){
             apply.setText(APPLY);
             exit.setEnabled(true);
-            processResult();
+            interrupt();
           }
         };
       worker.start();
+      worker = null;
     }
 
     /**
@@ -839,6 +849,7 @@ public class JParametersDialog implements Serializable,
         int index=type.lastIndexOf(".");
         if(index<0) index=-1;
         resultsLabel.setText("FAILED: Encountered "+type.substring(index+1));
+        result = null;
         return;
       }
 
@@ -936,17 +947,44 @@ public class JParametersDialog implements Serializable,
         resultsLabel.setText("Result ="+ StringUtil.toString( result));
         util.appendDoc(sessionLog, op.getCommand()+"(" +s +")");
      }
+     result = null;
    }
   } 
     
   public class ExitButtonHandler implements ActionListener,
                                             WindowListener
   {
+     private void clearVars(){
+        
+        io=null;
+       util = null;
+       sessionLog=null ; 
+      if( vparamGUI != null)
+         vparamGUI.clear();
+       vparamGUI=null;
+      
+       
+       jf =null;
+       if( Result != null)
+         System.out.println("Result in clear "+Result.hashCode());
+       Result = null;
+       resultsLabel = null;
+       APH=null;
+       ObjectParameters =null;
+   
+       ds_src=null;
+      
+       apply = null;
+       exit = null;
+       opDialog = null;
+       op = null;
+     }
     public void actionPerformed(ActionEvent ev) 
     {  
-      
+       
        if( opDialog != null)
           destroyGUIs();
+       clearVars();
      }
     public void windowOpened(WindowEvent e){
       
@@ -957,6 +995,7 @@ public class JParametersDialog implements Serializable,
       
        if( opDialog != null)
           destroyGUIs();
+       clearVars();
        
     }
     
@@ -965,6 +1004,7 @@ public class JParametersDialog implements Serializable,
      
        if( opDialog != null)
           destroyGUIs();
+       clearVars();
     }
     
     
