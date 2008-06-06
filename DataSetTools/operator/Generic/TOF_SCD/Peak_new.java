@@ -37,8 +37,6 @@
 
 package DataSetTools.operator.Generic.TOF_SCD;
 
-import java.text.DecimalFormat;
-
 import gov.anl.ipns.MathTools.LinearAlgebra;
 import gov.anl.ipns.MathTools.Geometry.Position3D;
 import gov.anl.ipns.MathTools.Geometry.Tran3D;
