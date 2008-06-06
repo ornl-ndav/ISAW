@@ -978,6 +978,10 @@ public class JParametersDialog implements Serializable,
        exit = null;
        opDialog = null;
        op = null;
+       if( Action_list != null)
+          Action_list.clear();
+       Action_list = null;
+       s = null;
      }
     public void actionPerformed(ActionEvent ev) 
     {  
