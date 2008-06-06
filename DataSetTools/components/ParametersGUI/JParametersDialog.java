@@ -754,6 +754,7 @@ public class JParametersDialog implements Serializable,
         apply.setText(APPLY);
         exit.setEnabled(true);
         resultsLabel.setText("HALTED OPERATION: "+op.getCommand());
+        worker = null;
         return;
       }
       apply.setText(HALT);
@@ -831,7 +832,6 @@ public class JParametersDialog implements Serializable,
           }
         };
       worker.start();
-      worker = null;
     }
 
     /**
@@ -969,11 +969,16 @@ public class JParametersDialog implements Serializable,
          System.out.println("Result in clear "+Result.hashCode());
        Result = null;
        resultsLabel = null;
-       APH=null;
        ObjectParameters =null;
    
        ds_src=null;
-      
+       if( apply != null){
+          if( APH != null)
+             apply.removeActionListener( APH );
+          apply.removeAll();
+       }
+
+       APH=null;  
        apply = null;
        exit = null;
        opDialog = null;
