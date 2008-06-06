@@ -681,10 +681,10 @@ public class PyScriptOperator extends GenericOperator
    * @param dss The DataSet to add.
    */
   public final void addDataSet( DataSet dss ) {
-    /*dss.addIObserver( this );
+    dss.addIObserver( this );
     Dsets.addElement( dss );
     interp.set( "ISAWDS" + dss.getTag(  ), dss );
-   */
+   
   }
 
   /**
