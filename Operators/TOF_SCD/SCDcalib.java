@@ -26,6 +26,13 @@
  * number DMR-0218882.
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
+ * 
+ *  Last Modified:
+ * 
+ *  $Author$
+ *  $Date$            
+ *  $Revision$
+ *
  *
  * Modified:
  *
@@ -126,6 +133,7 @@ import DataSetTools.retriever.*;
 import gov.anl.ipns.MathTools.*;
 import gov.anl.ipns.MathTools.Geometry.*;
 import gov.anl.ipns.MathTools.Functions.*;
+import gov.anl.ipns.Parameters.BooleanPG;
 import gov.anl.ipns.Parameters.LoadFilePG;
 import gov.anl.ipns.Parameters.BooleanEnablePG;
 import gov.anl.ipns.Parameters.DataDirPG;
@@ -179,6 +187,12 @@ public class SCDcalib extends GenericTOF_SCD
    *  the operator.
    *
    *  @param  peaksfile   SCD peaks file containing the observed peaks. 
+   *  @param  old_format  Flag indicating whether or not the peaks file
+   *                      is an old format peaks file, in which case the
+   *                      runfile is needed.  If the peaks file is in the
+   *                      new (5/08) format developed for use with the 
+   *                      SNS SCD instruments, then the runfile is not
+   *                      needed.
    *  @param  runfile     Runfile for one of the runs that produced the
    *                      peaks file (we assume all runs use the same 
    *                      time bins and detector positions).
@@ -240,6 +254,7 @@ public class SCDcalib extends GenericTOF_SCD
    *  @param param_file   File from which the initial values would be read.
    */
   public SCDcalib( String   peaksfile,
+                   boolean  old_format,
                    String   runfile,
                    float    a,
                    float    b,
@@ -265,13 +280,21 @@ public class SCDcalib extends GenericTOF_SCD
     this();
     parameters = new Vector();
 
-    LoadFilePG lfpg = new LoadFilePG( peaksfile, null );
-    lfpg.setFilter( new PeaksFilter() );
-    addParameter( lfpg );
+    LoadFilePG peaksfilePG = new LoadFilePG( peaksfile, null );
+    peaksfilePG.setFilter( new PeaksFilter() );
+    addParameter( peaksfilePG );
 
-    LoadFilePG rfpg = new LoadFilePG( runfile, null );
-    rfpg.setFilter( new RunfileFilter() );
-    addParameter( rfpg );
+    Vector vals = new Vector();
+    vals.add( old_format );
+    vals.add( 1 );
+    vals.add( 0 );
+    BooleanEnablePG old_formatPG = 
+      new BooleanEnablePG( "Old peaks file (requires runfile)", vals ); 
+    addParameter( old_formatPG );
+    
+    LoadFilePG runfilePG = new LoadFilePG( runfile, null );
+    runfilePG.setFilter( new RunfileFilter() );
+    addParameter( runfilePG );
 
     addParameter( new Parameter("lattice 'a'", new Float(a)) );
     addParameter( new Parameter("lattice 'a'", new Float(b)) );
@@ -366,7 +389,14 @@ public class SCDcalib extends GenericTOF_SCD
 
     Res.append("@param  peaksfile - SCD peaks file containing the ");
     Res.append(" observed peaks.");
-
+    
+    Res.append("@param old_format - boolean flag indicating whether ");
+    Res.append(" the peaks file is in the old format used at the IPNS ");
+    Res.append(" or is in the new format, with more complete information ");
+    Res.append(" developed for use with the SNS SCD instruments(5/08). ");
+    Res.append(" A runfile is NOT needed if the peaks file is in the new ");
+    Res.append(" format." );
+    
     Res.append("@param  runfile - Runfile for one of the runs that ");
     Res.append(" produced the peaks file (we assume all runs use the same ");
     Res.append(" time bins and detector positions).");
@@ -477,15 +507,21 @@ public class SCDcalib extends GenericTOF_SCD
   {
     parameters = new Vector();
 
-    LoadFilePG lfpg = new LoadFilePG( "Peaks file", null );
-    lfpg.setFilter( new PeaksFilter(  ) );
+    LoadFilePG peaksfilePG = new LoadFilePG( "Peaks file", null );
+    peaksfilePG.setFilter( new PeaksFilter(  ) );
+    addParameter( peaksfilePG );
 
-    addParameter( lfpg );
-
-    LoadFilePG rfpg = new LoadFilePG( "Run file", null );
-    rfpg.setFilter( new RunfileFilter() );
-
-    addParameter( rfpg );
+    Vector vals = new Vector();
+    vals.add( false );
+    vals.add( 1 );
+    vals.add( 0 );
+    BooleanEnablePG old_formatPG = 
+      new BooleanEnablePG( "Old peaks file (requires runfile)", vals ); 
+    addParameter( old_formatPG );
+    
+    LoadFilePG runfilePG = new LoadFilePG( "Run file", null );
+    runfilePG.setFilter( new RunfileFilter() );
+    addParameter( runfilePG );
 
     addParameter( new Parameter("lattice 'a'", new Float(4.9138f)) );
     addParameter( new Parameter("lattice 'b'", new Float(4.9138f)) );
@@ -833,32 +869,33 @@ public class SCDcalib extends GenericTOF_SCD
    */
   public Object getResult() 
   {
-    String peaksfile  = getParameter(0).getValue().toString();
-    String runfile    = getParameter(1).getValue().toString();
-    String logname    = "SCDcalib.log";
+    String peaksfile   = getParameter(0).getValue().toString();
+    boolean old_format = ((BooleanPG)getParameter(1)).getbooleanValue();
+    String runfile     = getParameter(2).getValue().toString();
+    String logname     = "SCDcalib.log";
 
     float  lat_params[] = new float[6];
     for ( int i = 0; i < 6; i++ )
-      lat_params[i] = ((Float)(getParameter(i+2).getValue())).floatValue(); 
+      lat_params[i] = ((Float)(getParameter(i+3).getValue())).floatValue(); 
 
-    int max_steps = ((Integer)(getParameter(8).getValue())).intValue();
-    int tol_exp   = ((Integer)(getParameter(9).getValue())).intValue();
+    int max_steps = ((Integer)(getParameter(9).getValue())).intValue();
+    int tol_exp   = ((Integer)(getParameter(10).getValue())).intValue();
 
-    boolean use_L1    = ((Boolean)(getParameter(10).getValue())).booleanValue();
-    boolean use_t0    = ((Boolean)(getParameter(11).getValue())).booleanValue();
-    boolean use_A     = ((Boolean)(getParameter(12).getValue())).booleanValue();
-    boolean use_ssh   = ((Boolean)(getParameter(13).getValue())).booleanValue();
-    boolean use_width = ((Boolean)(getParameter(14).getValue())).booleanValue();
-    boolean use_height =((Boolean)(getParameter(15).getValue())).booleanValue();
-    boolean use_xoff  = ((Boolean)(getParameter(16).getValue())).booleanValue();
-    boolean use_yoff  = ((Boolean)(getParameter(17).getValue())).booleanValue();
-    boolean use_dist  = ((Boolean)(getParameter(18).getValue())).booleanValue();
-    boolean use_rot   = ((Boolean)(getParameter(19).getValue())).booleanValue();
+    boolean use_L1    = ((Boolean)(getParameter(11).getValue())).booleanValue();
+    boolean use_t0    = ((Boolean)(getParameter(12).getValue())).booleanValue();
+    boolean use_A     = ((Boolean)(getParameter(13).getValue())).booleanValue();
+    boolean use_ssh   = ((Boolean)(getParameter(14).getValue())).booleanValue();
+    boolean use_width = ((Boolean)(getParameter(15).getValue())).booleanValue();
+    boolean use_height =((Boolean)(getParameter(16).getValue())).booleanValue();
+    boolean use_xoff  = ((Boolean)(getParameter(17).getValue())).booleanValue();
+    boolean use_yoff  = ((Boolean)(getParameter(18).getValue())).booleanValue();
+    boolean use_dist  = ((Boolean)(getParameter(19).getValue())).booleanValue();
+    boolean use_rot   = ((Boolean)(getParameter(20).getValue())).booleanValue();
 
     boolean read_params = 
-                       ((Boolean)(getParameter(20).getValue())).booleanValue();
-    String  param_file  = getParameter(21).getValue().toString(); 
-    String  output_dir  = getParameter(22).getValue().toString(); 
+                       ((Boolean)(getParameter(21).getValue())).booleanValue();
+    String  param_file  = getParameter(22).getValue().toString(); 
+    String  output_dir  = getParameter(23).getValue().toString(); 
 
                                                       // open the log file
     PrintStream log_print = null;
@@ -879,56 +916,47 @@ public class SCDcalib extends GenericTOF_SCD
     for ( int i = 0; i < 6; i++ )
       lattice_params[i] = lat_params[i];
 
-                                                    // load the vector of peaks
+    String instrument_type = PeakData_d.SNS_SCD;
+    
     DataSet ds = null;
-    boolean lansce_file = true;
-    if ( runfile.endsWith("run") || runfile.endsWith("RUN") )
-      lansce_file = false;
+    if ( old_format )
+    {  
+      boolean lansce_file = true;
+      if ( runfile.endsWith("run") || runfile.endsWith("RUN") )
+        lansce_file = false;
 
-    if ( lansce_file )
-    {
-      System.out.println("Starting to load LANSCE NeXus file: " + runfile );
-      Retriever nr = new NexusRetriever( runfile );
-      ds = nr.getDataSet(3);
-    }
-    else
-    {
-      System.out.println("Starting to load IPNS file: " + runfile );
-      RunfileRetriever rr = new RunfileRetriever( runfile );
-      ds = (DataSet)rr.getFirstDataSet( Retriever.HISTOGRAM_DATA_SET );
+      if ( lansce_file )
+      {
+        instrument_type = PeakData_d.LANSCE_SCD;
+        System.out.println("Starting to load LANSCE NeXus file: " + runfile );
+        Retriever nr = new NexusRetriever( runfile );
+        ds = nr.getDataSet(3);
+      }
+      else
+      {
+        instrument_type = PeakData_d.IPNS_SCD;
+        System.out.println("Starting to load IPNS file: " + runfile );
+        RunfileRetriever rr = new RunfileRetriever( runfile );
+        ds = (DataSet)rr.getFirstDataSet( Retriever.HISTOGRAM_DATA_SET );
+      }
+
+      if ( ds == null )
+        return new ErrorString("ERROR: Couldn't read Runfile " + runfile);
     }
 
-    if ( ds == null )
-      return new ErrorString("ERROR: Couldn't read Runfile " + runfile);
-
-    String instrument_type = "UNDEFINED";
-
-    Vector peaks = null;
-    if ( lansce_file )
-    {
-      instrument_type = PeakData_d.LANSCE_SCD;
-//    peaks = PeakData_d.ReadPeakData(peaksfile, instrument_type); 
-      peaks = PeakData_d.ReadPeaks(peaksfile, ds, instrument_type); 
-    }
-    else
-    {
-      instrument_type = PeakData_d.IPNS_SCD;
-//    peaks = PeakData_d.ReadPeakData(peaksfile, instrument_type); 
-      peaks = PeakData_d.ReadPeaks(peaksfile, ds, instrument_type); 
-    }
+    Vector peaks = PeakData_d.ReadPeaks(peaksfile, ds, instrument_type); 
+    ds = null;                     // We're done with any DataSet after
+                                   // loading the peaks, so get rid of it.
 
     if ( peaks == null || peaks.size() <= 0 )
       return new ErrorString("Failed to read " + peaksfile );
- 
-    ds = null;                     // We're done with this DataSet after
-                                   // loading the peaks, so get rid of it.
 
+    
     System.out.println( "Read " + peaks.size() + " peaks from file.");
     PeakData_d peak = (PeakData_d)peaks.elementAt(0);
-    double l1 = peak.l1;
-    
+    double l1 = peak.l1;  
 
-    Hashtable grids = new Hashtable();
+    Hashtable grids = new Hashtable();         // find all grids used by peaks
     for ( int i = 0; i < peaks.size(); i++ )
     {
       UniformGrid_d grid = ((PeakData_d)peaks.elementAt(i)).grid;
