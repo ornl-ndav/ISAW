@@ -28,6 +28,12 @@
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
+ *  Last Modified:
+ * 
+ *  $Author$
+ *  $Date$            
+ *  $Revision$
+ * 
  * $Log$
  * Revision 1.26  2006/07/27 00:32:37  dennis
  * Moved ExcelAdapter to package ExtTools
@@ -249,7 +255,7 @@ class MyHandler implements ActionListener
   if(ds.getTag() == current_dsTag)    //Only draw the log for a different dataset.
    return;
   current_dsTag = ds.getTag(); 
-            DefaultMutableTreeNode level1 = new DefaultMutableTreeNode(ds); 
+            DefaultMutableTreeNode level1 = new DefaultMutableTreeNode(ds.toString()); 
             if(root.getChildCount()>0)
              {
                 DefaultMutableTreeNode dsnode =  (DefaultMutableTreeNode)root.getChildAt(0);
