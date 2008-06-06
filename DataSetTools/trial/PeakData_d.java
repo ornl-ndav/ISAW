@@ -1,5 +1,4 @@
 /*
- * File:  PeakData_d.java
  *
  * Copyright (C) 2003, Dennis Mikkelson
  *
@@ -27,6 +26,12 @@
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
+ *
+ *  Last Modified:
+ * 
+ *  $Author$
+ *  $Date$            
+ *  $Revision$
  *
  * Modified:
  *
@@ -128,6 +133,7 @@ public class PeakData_d
     public static final String IPNS_SCD   = "IPNS_SCD";
     public static final String LANSCE_SCD = "LANSCE_SCD";
     public static final String ISIS_SXD   = "ISIS_SXD";
+    public static final String SNS_SCD    = "SNS_SCD";
 
     public static final double DEFAULT_DEPTH = 0.002; // default area detector
                                                       // thickness, 2mm
@@ -625,6 +631,21 @@ public class PeakData_d
                                   DataSet ds,
                                   String  instrument )
   {
+    if ( instrument.equalsIgnoreCase( SNS_SCD ) )
+    { 
+      try
+      {
+        return ReadNewPeaks( peaks_file_name );
+      }
+      catch ( IOException ex )
+      {
+    	System.out.println("ERROR reading " + peaks_file_name );
+    	System.out.println( ex );
+    	ex.printStackTrace();
+    	return null;
+      }
+    }
+    
     Operator op = new ReadPeaks( peaks_file_name );
 
     Object obj = op.getResult();
@@ -721,6 +742,73 @@ public class PeakData_d
                                                              p.omega() );
 
       pd.grid = (UniformGrid_d)grids.get( new Integer(p.detnum()) );
+
+      pd.qx  = 0;            // Q position, not set for now, since not needed
+      pd.qy  = 0;
+      pd.qz  = 0;
+
+      pd.h   = p.h();
+      pd.k   = p.k();
+      pd.l   = p.l();
+      pd_peaks.add( pd );
+    }
+
+    return pd_peaks;
+  }
+
+
+  /**
+   *  Read a new peaks file format peaks file, translate the Peak_new
+   *  objects to PeakData_d objects and return the Vector of PeakData_d 
+   *  objects.
+   *
+   *  @param   peaks_file_name  The name of the new peaks format file.
+   *
+   *  @return  A vector filled with the PeakData objects read from the file.
+   */
+  public static Vector<PeakData_d> ReadNewPeaks( String peaks_file_name )
+                                   throws IOException
+  {  
+    Vector<Peak_new> new_peaks = Peak_new_IO.ReadPeaks_new( peaks_file_name );
+
+    Vector pd_peaks = new Vector( new_peaks.size() );
+    
+    UniformGrid_d grid; 
+    UniformGrid   sgrid;
+    Hashtable<Integer,UniformGrid_d> grids = 
+    	                            new Hashtable<Integer,UniformGrid_d>();
+    int id;
+    for ( int i = 0; i < new_peaks.size(); i++ )
+    {
+      sgrid = (UniformGrid)new_peaks.elementAt(i).getGrid();
+      id = sgrid.ID();
+      if ( grids.get(id) == null )     // this is a new id, so make a new grid
+      {	  
+        grid = new UniformGrid_d( sgrid, false );
+        grids.put( id, grid );
+      }
+    }
+    
+    for ( int i = 0; i < new_peaks.size(); i++ )
+    {
+      PeakData_d pd = new PeakData_d();
+      Peak_new   p  = new_peaks.elementAt(i);
+
+      pd.run_num = p.nrun();
+      pd.moncnt  = p.monct();
+      pd.l1      = p.L1();
+      pd.seqn    = p.seqnum();
+      pd.counts  = p.ipkobs();
+      pd.row     = p.y();
+      pd.col     = p.x();
+      pd.tof     = p.time() - p.T0();    // convert back to raw time-of-flight
+      
+                           // for now do IPNS convention.  TODO CHANGE THIS
+      pd.orientation = new IPNS_SCD_SampleOrientation_d( p.phi(), 
+                                                         p.chi(), 
+                                                         p.omega() );
+      id             = p.getGrid().ID();
+      pd.grid        = grids.get(id);
 
       pd.qx  = 0;            // Q position, not set for now, since not needed
       pd.qy  = 0;
