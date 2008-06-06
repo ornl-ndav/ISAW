@@ -104,7 +104,7 @@ public class JCommandUI  extends JPanel  implements IObserver, Serializable
      Document sessionLog=null;
      DefaultTreeModel model;
      DefaultTableModel dtm ;
-     DataSet current_ds = null;
+     long current_dsTag = -1;
      Vector tab_titles;
      JPropertiesUI jpui;
      
@@ -244,9 +244,11 @@ class MyHandler implements ActionListener
 
  public void showLog(DataSet ds)
   {
-  if(ds == current_ds)    //Only draw the log for a different dataset.
+  if( ds == null)
+     return;
+  if(ds.getTag() == current_dsTag)    //Only draw the log for a different dataset.
    return;
-  current_ds = ds; 
+  current_dsTag = ds.getTag(); 
             DefaultMutableTreeNode level1 = new DefaultMutableTreeNode(ds); 
             if(root.getChildCount()>0)
              {
