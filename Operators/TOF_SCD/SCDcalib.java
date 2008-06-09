@@ -743,7 +743,7 @@ public class SCDcalib extends GenericTOF_SCD
     }
     out.println("#");
     out.println("#");
-    out.println("# NEW CALIBRAION FILE FORMAT:");
+    out.println("# NEW CALIBRAION FILE FORMAT (in NeXus/SNS coordinates):");
     out.println("#");
     out.println("#6         L1     T0_SHIFT");
     out.printf ("#7 %10.4f   %10.3f\n", values[ SCDcal.L1_INDEX ] * 100, 
@@ -770,11 +770,11 @@ public class SCDcalib extends GenericTOF_SCD
       out.printf("#5 %6d %6d %6d %8.4f %8.4f %7.4f %6.2f ",
                   det_num, n_rows, n_cols, width, height, depth, det_d );
       out.printf("%9.4f %9.4f %9.4f ",
-                  center.getX()*100, center.getY()*100, center.getZ()*100);
+                  center.getY()*100, center.getZ()*100, center.getX()*100);
       out.printf("%8.5f %8.5f %8.5f ",
-                  base.getX(), base.getY(), base.getZ());
+                  base.getY(), base.getZ(), base.getX());
       out.printf("%8.5f %8.5f %8.5f\n",
-                  up.getX(), up.getY(), up.getZ());
+                  up.getY(), up.getZ(), up.getX());
     }
     out.println("#");
     out.println("#");
