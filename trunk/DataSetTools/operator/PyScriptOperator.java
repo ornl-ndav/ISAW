@@ -516,7 +516,7 @@ public class PyScriptOperator extends GenericOperator
         Object   result = null;
 
         if( pyResult != null ) {
-          result = pyResult;
+          result = pyResult.__tojava__( Object.class );;
         }
         pyResult = null;
         return result;
