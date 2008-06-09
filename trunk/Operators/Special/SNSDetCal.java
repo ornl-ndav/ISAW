@@ -137,15 +137,23 @@ public class SNSDetCal
           float height = scanner.nextFloat()/100;
           float depth  = scanner.nextFloat()/100;
           scanner.next(); // skip the redundant DETD
-          float center_x = scanner.nextFloat()/100;
+                                                  // The grid values are now
+                                                  // written in SNS coords, so
+                                                  // we need to permute them
+                                                  // back to IPNS coords by
+                                                  // reading in the order yzx
           float center_y = scanner.nextFloat()/100;
           float center_z = scanner.nextFloat()/100;
-          float base_x   = scanner.nextFloat();
+          float center_x = scanner.nextFloat()/100;
+
           float base_y   = scanner.nextFloat();
           float base_z   = scanner.nextFloat();
-          float up_x     = scanner.nextFloat();
+          float base_x   = scanner.nextFloat();
+
           float up_y     = scanner.nextFloat();
           float up_z     = scanner.nextFloat();
+          float up_x     = scanner.nextFloat();
+
           Vector3D center = new Vector3D( center_x, center_y, center_z );
           Vector3D base   = new Vector3D( base_x, base_y, base_z );
           Vector3D up     = new Vector3D( up_x, up_y, up_z );
