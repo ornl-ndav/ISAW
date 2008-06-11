@@ -200,6 +200,9 @@ public class Process1NxData implements IProcessNxData {
       NxInstrumentStateInfo InstrumentState = new NxInstrumentStateInfo(
                NxInstrument , States );
 
+      ConvertDataTypes.addAttribute( DS , ConvertDataTypes.CreateStringAttribute(
+               Attribute.INST_NAME, InstrumentState.name ) );
+      
       States.Push( InstrumentState );
 
 
