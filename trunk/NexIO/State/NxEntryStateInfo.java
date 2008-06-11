@@ -184,7 +184,7 @@ public class NxEntryStateInfo extends StateInfo {
        this.InstrSourceNode =InstrSourceNodee;
        this.InstrModeratorNode = null;
        NodeNames = null;
-       facility = getFacility( InstrumentNode);
+       facility = getFacility( InstrSourceNode);
      
     }
     
