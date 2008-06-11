@@ -197,6 +197,9 @@ public class ProcessNxEntry  implements IProcessNxEntry {
             } 
        
         }
+        
+       
+        
         //--------------- Run Number DataSet Attribute ---------------
         String St_run_num = NexUtils.getStringFieldValue(NxEntryNode, "run_number");
         int run_num = -1;
@@ -293,7 +296,9 @@ public class ProcessNxEntry  implements IProcessNxEntry {
                  errormessage +=";"+nb .getErrorMessage();
         
         //----------------------------
-       
+       ConvertDataTypes.addAttribute( DS , 
+            ConvertDataTypes.CreateStringAttribute( Attribute.FACILITY_NAME , entryState.facility));
+      
         
         Object X1 = DS.getAttributeValue(Attribute.RUN_NUM);
         int[] run_numm = null;
