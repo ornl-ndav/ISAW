@@ -44,6 +44,7 @@
 
 package NexIO.State;
 import NexIO.*;
+import NexIO.Util.*;
 
 /**
  *   This class contains state information needed to process an NXinstrument
@@ -53,7 +54,7 @@ public class NxInstrumentStateInfo extends StateInfo{
    /**
    *  try for names like IPNS,ISIS,LANSCE
    */
-   public String facility;
+   public String name;
 
    /**
    *  Examples Pulsed, Reactor etc
@@ -71,6 +72,25 @@ public class NxInstrumentStateInfo extends StateInfo{
    public NxInstrumentStateInfo( NxNode NxInstrumentNode , 
                 NxfileStateInfo Params){
       this.InstrumentNode = NxInstrumentNode;
+      if( InstrumentNode == null)
+         return;
+      name = ConvertDataTypes.StringValue( NexUtils.getSubNodeValue(  InstrumentNode, "name" ));
+      if( name != null)
+         return;
+      name = InstrumentNode.getNodeName();
+      if( name == null)
+         return;
+      if( name.toUpperCase().startsWith("INSTR")){
+         name = null;
+         return;
+      }else if( Character.isDigit(  name.charAt(0) )){
+         name = null;
+         return;
+         
+      }
+      int i;
+      for( i=0; i<name.length() && !Character.isDigit(  name.charAt(i) ); i++){}
+      name = name.substring(0,i);
 
    }
   
