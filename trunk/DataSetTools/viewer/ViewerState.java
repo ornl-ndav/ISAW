@@ -27,14 +27,19 @@
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
- * Modified:
+ *  Last Modified:
+ * 
+ *  $Author$
+ *  $Date$            
+ *  $Revision$
  *
  *  $Log$
  *  Revision 1.39  2005/05/16 16:28:03  dennis
  *  Commented out debug print "length of array".
  *
  *  Revision 1.38  2004/08/05 15:28:13  rmikk
- *  Added a ViewerState to determine which mode the SliceViewer starts in- Table or Image
+ *  Added a ViewerState to determine which mode the SliceViewer
+ *  starts in - Table or Image
  *
  *  Revision 1.37  2004/06/25 18:26:05  rmikk
  *  Changed initial value of ControlPanelWidth(%) from 75 to 25
@@ -60,7 +65,8 @@
  *  script language and from a StringPG
  *
  * Revision 1.32 2004/06/14 robertson
- * Added setViewerState(String) to allow stringPG's to be used to change the viewer state.
+ * Added setViewerState(String) to allow stringPG's to be used to change 
+ * the viewer state.
  * 
  *  Revision 1.31  2004/05/03 16:25:19  dennis
  *  Removed unused local variables.
@@ -79,7 +85,8 @@
  *  Added several more Contour view states
  *
  *  Revision 1.26  2003/12/15 00:37:39  rmikk
- *  Added a state for the Contour View to remember the new button, ShowAll in contour view
+ *  Added a state for the Contour View to remember the new button, 
+ *  ShowAll in contour view
  *
  *  Revision 1.25  2003/10/28 16:19:10  rmikk
  *  Fixed some spelliing errors in state names
@@ -163,8 +170,12 @@ public class ViewerState  implements Serializable
   public static final String TABLE_DATA        = "tableViewData";
   public static final String TIMEVSGROUPTABLE  = "TimeVsGroupSet";
   public static final String TIMEVSGROUPTABLE_SHOWALL = "TimeVsGroupShowAll";
-  public static final String TIMEVSGROUPTABLE_SHOWERR = "ShowErrors";//(TableTimeVsGroup);
-  public static final String TIMEVSGROUPTABLE_SHOWIND = "ShowIndicies";//(Table time vs Group);
+
+  public static final String TIMEVSGROUPTABLE_SHOWERR = "ShowErrors";
+                                                       //(TableTimeVsGroup);
+
+  public static final String TIMEVSGROUPTABLE_SHOWIND = "ShowIndicies";
+                                                       //(Table time vs Group);
  
    /** CONTOUR_STYLE(really "Contour.Style") is an int whose values can be
    *          AREA_FILL(1), AREA_FILL_CONTOUR(4) ,CONTOUR(2) ,RASTER(0), 
@@ -212,10 +223,6 @@ public class ViewerState  implements Serializable
     public ViewerState( )
     {
       state = new Hashtable();
-                                                    // initialize state from
-                                                    // IsawProps.dat file, if
-                                                    // possible.  
-      SharedData.reloadProperties();
                                                        // color scale ......
       String scale_name = SharedData.getProperty( COLOR_SCALE ); 
       state.put( COLOR_SCALE, scale_name );
