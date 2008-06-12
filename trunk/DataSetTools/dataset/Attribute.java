@@ -276,6 +276,13 @@ abstract public class Attribute implements Serializable,
    */    
   public static final String  INST_TYPE         = "Instrument Type";
 
+
+  /**
+   * FACILITY_NAME  = "Facility" is the name of a String Attribute giving the Facility Name.
+   */  
+  public static final String  FACILITY_NAME         = "Facility";
+  
+  
   /**
    * FILE_NAME = "File" is the name of a String Attribute giving the File Name.
    */  
