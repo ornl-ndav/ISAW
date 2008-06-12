@@ -150,7 +150,7 @@ public class NxSample{
                   "radians" , (float) ( 180.0 / java.lang.Math.PI ) , 0f );
         
       }
-    
+       
     if( fileStateInfo != null)if( fileStateInfo.xmlDoc != null){
       Node[] NN= NexIO.Util.Util.getxmlNXentryNodes( fileStateInfo.xmlDoc,EntryState.Name, fileStateInfo.filename);
       for( int i=0; i<4; i++){
@@ -184,16 +184,36 @@ public class NxSample{
     if( ! Float.isNaN( pressure ) )
        DS.setAttribute( new FloatAttribute( Attribute.PRESSURE ,
                 pressure ) );
+
+    NxInstrumentStateInfo InstrState = null;
+    for( StateInfo currState = fileStateInfo ; InstrState == null && currState!= null; currState=currState.getNext())
+        if( currState instanceof NxInstrumentStateInfo )
+           InstrState = (NxInstrumentStateInfo)currState;
+    String instr = null;
+    if( InstrState != null)
+        instr = InstrState.name;
+    if( instr == null && fileStateInfo!= null)
+       instr = fileStateInfo.InstrumentName;
+    
     if( orientation != null ){
-       if( fileStateInfo != null)
-          if((fileStateInfo.facility != null) && ( fileStateInfo.facility.equals("LANL")))
-          if(( fileStateInfo.InstrumentName != null ) && (fileStateInfo.InstrumentName.equals("SCD"))){
+       if( EntryState != null && instr != null )
+          if((EntryState.facility != null) && ( EntryState.facility.equals("LANL"))){
+          if( instr.equals("SCD")){
 
              DS.setAttribute( new SampleOrientationAttribute(
                       Attribute.SAMPLE_ORIENTATION ,
                       new LANSCE_SCD_SampleOrientation( orientation[ 0 ] ,
                                orientation[ 1 ] , orientation[ 2 ] ) ) );
              return false;
+          }}
+          else if((EntryState.facility != null) && ( EntryState.facility.equals("SNS"))){
+             if( instr.equals("SCD")){
+                DS.setAttribute( new SampleOrientationAttribute(
+                         Attribute.SAMPLE_ORIENTATION ,
+                         new SNS_SampleOrientation( orientation[ 0 ] ,
+                                  orientation[ 1 ] , orientation[ 2 ] ) ) );
+                return false;
+             }
           }
              
          DS.setAttribute( new SampleOrientationAttribute(
