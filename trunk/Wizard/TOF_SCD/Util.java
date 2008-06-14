@@ -812,17 +812,13 @@ public class Util {
       
       if( Float.isNaN( T0 ) )
          T0 = 0;
-      
-      if( sampOrient == null )
-         sampOrient = new DataSetTools.instruments.IPNS_SCD_SampleOrientation( 0f , 0f , 0f );
-      
+     
       //Now get a Peak_new
       if( grid instanceof RowColGrid ){
          IDataGrid grid1 = RowColGrid.getUniformDataGrid( ( RowColGrid ) grid , .001f );
          if( grid1 == null )
             throw new IllegalArgumentException( "grid "+grid.ID()+" not uniform enough" );
-         grid = grid1;  
-        
+         grid = grid1;         
       }
       
       grid = grid.clone();//So do not wipe out other grids.
