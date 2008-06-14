@@ -42,7 +42,10 @@ import DataSetTools.dataset.IDataGrid;
 import DataSetTools.dataset.IDataGridComparator;
 import DataSetTools.dataset.UniformGrid;
 import DataSetTools.instruments.IPNS_SCD_SampleOrientation;
+import DataSetTools.instruments.LANSCE_SCD_SampleOrientation;
+import DataSetTools.instruments.SNS_SampleOrientation;
 import DataSetTools.instruments.SampleOrientation;
+import DataSetTools.instruments.FacilityInstrumentNames;
 import DataSetTools.math.tof_calc;
 
 
@@ -574,12 +577,22 @@ public class Peak_new_IO
       l1_nom = sc.nextFloat() / 100f;             // convert cm to meters
       sc.nextLine();                              // advance to next full line
 
-                                                  // TODO change this if the
-                                                  // interpretation of phi,
-                                                  // chi, omega change!
-      SampleOrientation orientation = 
-                             new IPNS_SCD_SampleOrientation( phi, chi, omega);
+      SampleOrientation orientation;
 
+      if ( facility.equalsIgnoreCase(FacilityInstrumentNames.SNS) )
+      {
+        System.out.println("SNS orientation");
+        orientation = new SNS_SampleOrientation( phi, chi, omega);
+      }
+      else if ( facility.equalsIgnoreCase(FacilityInstrumentNames.LANSCE) )
+        orientation = new LANSCE_SCD_SampleOrientation( phi, chi, omega);
+
+      else
+      {
+        System.out.println("IPNS orientation");
+        orientation = new IPNS_SCD_SampleOrientation( phi, chi, omega);
+      }
+      
       if ( !sc.next().equals("2") )  
         throw new IOException("ERROR in peaks file, expected line type 2");
      
