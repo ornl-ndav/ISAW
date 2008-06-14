@@ -167,7 +167,7 @@ public class PeakData_d
    */
   public PeakData_d()
   {
-    orientation = new IPNS_SCD_SampleOrientation_d(0,0,0);
+    orientation = new SNS_SampleOrientation_d(0,0,0);
 
     int    det_id = 0; 
     Vector3D_d center = new Vector3D_d( 0, -1, 0 );
@@ -325,6 +325,8 @@ public class PeakData_d
 
   /**
    *  Read a vector of PeakData objects from a specified file.
+   *  NOTE: This uses the old peaks file format and is not general
+   *        enough to handle arbitrary detector positions as at SNS!
    *
    *  @param  file_name   The PeakData file to read (NOTE: This must be
    *                      a file in the form handled by RecipPlaneView
@@ -336,15 +338,16 @@ public class PeakData_d
    *                      orientation angles chi, phi and omega are interpreted.
    *                      The default is LANSCE SCD, since the shifted 
    *                      goniometer angles follow a strict right hand rule.
-   *                      This should be PeakData_d.IPNS_SCD or 
-   *                      PeakData_d.LANSCE_SCD.
+   *                      This should be PeakData_d.SNS_SCD, 
+   *                      PeakData_d.IPNS_SCD or PeakData_d.LANSCE_SCD.
+   *                      If none of these strings is passed in, an SNS_SCD
+   *                      orientation will be used by default.
    *
    *  @return  A vector filled with the PeakData objects read from the file.
    */
   public static Vector ReadPeakData( String file_name, String instrument )
   {
     Vector              peaks            = new Vector();
-
     SampleOrientation_d last_orientation = null; 
     double chi,
            phi,
@@ -358,8 +361,8 @@ public class PeakData_d
            width,
            x, y, z;
 
-    double last_moncnt   =  1.0,
-           last_l1       =  9.378;
+    double last_moncnt = 1.0,
+           last_l1     = 9.378;
 
     int    det_id,
            n_rows,
@@ -399,9 +402,12 @@ public class PeakData_d
             if ( instrument.equalsIgnoreCase( IPNS_SCD ) )
               last_orientation = 
                    new IPNS_SCD_SampleOrientation_d(phi,chi,omega);
-            else
+            else if ( instrument.equalsIgnoreCase( LANSCE_SCD ) )
               last_orientation = 
                    new LANSCE_SCD_SampleOrientation_d(phi,chi,omega);
+            else
+              last_orientation = 
+                   new SNS_SampleOrientation_d(phi,chi,omega);
 
             last_moncnt  = tfr.read_double();
             last_l1      = tfr.read_double();
@@ -493,8 +499,8 @@ public class PeakData_d
    *                      orientation angles chi, phi and omega are interpreted.
    *                      The default is LANSCE SCD, since the shifted 
    *                      goniometer angles follow a strict right hand rule.
-   *                      This should be PeakData_d.IPNS_SCD or 
-   *                      PeakData_d.LANSCE_SCD.
+   *                      This should be PeakData_d.IPNS_SCD,
+   *                      PeakData_d.LANSCE_SCD or PeakData_d.SNS_SCD.
    */
   public static void CentroidPeaksFile( String in_file,
                                         String out_file,
@@ -622,8 +628,8 @@ public class PeakData_d
    *                      orientation angles chi, phi and omega are interpreted.
    *                      The default is LANSCE SCD, since the shifted 
    *                      goniometer angles follow a strict right hand rule.
-   *                      This should be PeakData_d.IPNS_SCD or 
-   *                      PeakData_d.LANSCE_SCD.
+   *                      This should be PeakData_d.SNS_SCD, 
+   *                      PeakData_d.IPNS_SCD or PeakData_d.LANSCE_SCD.
    *
    *  @return  A vector filled with the PeakData objects read from the file.
    */
@@ -631,10 +637,12 @@ public class PeakData_d
                                   DataSet ds,
                                   String  instrument )
   {
+    System.out.println("Reading " + peaks_file_name + instrument );
     if ( instrument.equalsIgnoreCase( SNS_SCD ) )
     { 
       try
       {
+        System.out.println("CALLING NEW ReadNewPeaks()");
         return ReadNewPeaks( peaks_file_name );
       }
       catch ( IOException ex )
@@ -646,6 +654,7 @@ public class PeakData_d
       }
     }
     
+    System.out.println("CALLING OLD Readpeaks()");
     Operator op = new ReadPeaks( peaks_file_name );
 
     Object obj = op.getResult();
@@ -740,6 +749,9 @@ public class PeakData_d
         pd.orientation = new LANSCE_SCD_SampleOrientation_d( p.phi(), 
                                                              p.chi(), 
                                                              p.omega() );
+      // NOTE: the SNS_SampleOrientation case is handled in the next 
+      //       ReadNewPeaks method that works with the new Peaks file 
+      //       format.
 
       pd.grid = (UniformGrid_d)grids.get( new Integer(p.detnum()) );
 
@@ -803,10 +815,20 @@ public class PeakData_d
       pd.col     = p.x();
       pd.tof     = p.time() - p.T0();    // convert back to raw time-of-flight
       
-                           // for now do IPNS convention.  TODO CHANGE THIS
-      pd.orientation = new IPNS_SCD_SampleOrientation_d( p.phi(), 
-                                                         p.chi(), 
-                                                         p.omega() );
+      SampleOrientation orientation_f = p.getSampleOrientation();
+      if ( orientation_f instanceof IPNS_SCD_SampleOrientation )
+        pd.orientation = new IPNS_SCD_SampleOrientation_d( p.phi(), 
+                                                           p.chi(), 
+                                                           p.omega() );
+      else if ( orientation_f instanceof LANSCE_SCD_SampleOrientation )
+        pd.orientation = new LANSCE_SCD_SampleOrientation_d( p.phi(),
+                                                             p.chi(),
+                                                             p.omega() );
+      else
+        pd.orientation = new SNS_SampleOrientation_d( p.phi(),
+                                                      p.chi(),
+                                                      p.omega() );
+
       id             = p.getGrid().ID();
       pd.grid        = grids.get(id);
 
@@ -820,6 +842,7 @@ public class PeakData_d
       pd_peaks.add( pd );
     }
 
+    System.out.println("READ: " + pd_peaks.size() + " peaks" );
     return pd_peaks;
   }
 
