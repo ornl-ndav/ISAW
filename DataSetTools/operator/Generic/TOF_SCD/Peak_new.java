@@ -43,6 +43,7 @@ import gov.anl.ipns.MathTools.Geometry.Tran3D;
 import gov.anl.ipns.MathTools.Geometry.Vector3D;
 
 import DataSetTools.dataset.IDataGrid;
+import DataSetTools.instruments.SNS_SampleOrientation;
 import DataSetTools.instruments.SampleOrientation;
 import DataSetTools.math.tof_calc;
 
@@ -167,6 +168,9 @@ public class Peak_new implements IPeak_IPNS_out
    *                      and omega angles, as well as the matrices providing
    *                      the goniometer rotation and inverse goniometer 
    *                      rotation for the specific type of goniometer.
+   *                      If a null value is passed in, a sample orientation
+   *                      with phi=chi=omega=0 (i.e. the identity transform)
+   *                      will be constructed by default.
    *  @param tof          The corrected time-of-flight in microseconds at 
    *                      which this peak occurs.
    *  @param initial_path The length(m) of the primary flight path.
@@ -198,7 +202,12 @@ public class Peak_new implements IPeak_IPNS_out
     this.row           = row;
     this.chan          = chan;
     this.grid          = grid;
-    sample_orientation = orientation;
+
+    if ( orientation != null )
+      sample_orientation = orientation;
+    else
+      sample_orientation = new SNS_SampleOrientation(0,0,0);
+    
     float l2 = grid.position( row, col ).length();
     float wavelength = tof_calc.Wavelength( initial_path+l2, tof );
     this.wl            = wavelength; 
