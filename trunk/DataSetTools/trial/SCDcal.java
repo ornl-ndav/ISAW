@@ -60,7 +60,7 @@
  *  Added method getAllGridIDs() to get the list of IDs used in the
  *  calibration.  Modified getMeasuredPeakPositions() and
  *  getTheoreticalPeakPositions() to include the detector ID as
- *  a parameters and return the list if positions with NULL for
+ *  a parameters and return the list of positions with NULL for
  *  data that did not correspond to the specified detector ID.
  *
  *  Revision 1.13  2004/04/02 15:29:21  dennis
@@ -196,7 +196,8 @@ public class SCDcal   extends    OneVarParameterizedFunction
   private int       used_p_index[];     // index into list of params used, 
                                         // for each possible parameter
 
-  private String    instrument_type;    // PeakData_d.IPNS_SCD or
+  private String    instrument_type;    // PeakData_d.SNS_SCD,
+                                        // PeakData_d.IPNS_SCD or
                                         // PeakData_d.LANSCE_SCD
   /**
    *  Construct a function defined on the grid of (x,y) values specified, 
@@ -678,20 +679,27 @@ public class SCDcal   extends    OneVarParameterizedFunction
        {
          UniformGrid_d grid_d = (UniformGrid_d)grids.get( new Integer(id[i]) );
          UniformGrid grid = new UniformGrid( grid_d, false ); 
+
          float phi   = (float)peak.orientation.getPhi();
          float chi   = (float)peak.orientation.getChi();
          float omega = (float)peak.orientation.getOmega();
 
-         SampleOrientation orientation = null;
-         if ( instrument_type.equals( PeakData_d.LANSCE_SCD ) )
-           orientation = new LANSCE_SCD_SampleOrientation( phi, chi, omega );
+         SampleOrientation   orientation_f = null;
+         SampleOrientation_d orientation_d = peak.orientation;
+
+         if ( orientation_d instanceof LANSCE_SCD_SampleOrientation_d )
+           orientation_f = new LANSCE_SCD_SampleOrientation( phi, chi, omega );
+
+         else  if ( orientation_d instanceof IPNS_SCD_SampleOrientation_d )
+           orientation_f = new IPNS_SCD_SampleOrientation( phi, chi, omega );
+
          else
-           orientation = new IPNS_SCD_SampleOrientation( phi, chi, omega );
+           orientation_f = new SNS_SampleOrientation( phi, chi, omega );
 
          VecQMapper mapper = new VecQMapper( grid, 
                                             (float)l1, 
                                             (float)t0, 
-                                             orientation );
+                                             orientation_f );
 
          Vector3D q_vec = new Vector3D( (float)qxyz_theoretical[i][0],
                                         (float)qxyz_theoretical[i][1],
