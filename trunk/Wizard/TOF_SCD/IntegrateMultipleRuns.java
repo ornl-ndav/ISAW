@@ -88,8 +88,9 @@ public class IntegrateMultipleRuns extends GenericOperator{
       addParameter( new ChoiceListPG("Peak Algorithm",new String[]{"MaxIToSigI","Shoe Box", "MaxIToSigI-old","TOFINT","EXPERIMENTAL"}));
       addParameter( new IntArrayPG("Box Delta x (col) Range","-2:2"));
       addParameter( new IntArrayPG("Box Delta y (row) Range","-2:2"));
-      addParameter( new BooleanPG("Pop Up Log Info",new Boolean(false)));
       addParameter( new IntegerPG("Max running threads",1));
+      addParameter( new BooleanPG("Pop Up Log Info",new Boolean(false)));
+      addParameter( new BooleanPG("Pop Up Peaks file",new Boolean(false)));
    }
 
 
@@ -129,7 +130,7 @@ public class IntegrateMultipleRuns extends GenericOperator{
       S.append("@param   ");
       S.append("The line in the calibration file to use or mode");
       S.append("@param   ");
-      S.append("ime-slice range around peak center");
+      S.append("time-slice range around peak center");
       S.append("@param   ");
       S.append("Increment slice size by");
       S.append("@param   ");
@@ -145,9 +146,11 @@ public class IntegrateMultipleRuns extends GenericOperator{
       S.append("@param   ");
       S.append("Box Delta y (row) Range (-2:2)");
       S.append("@param   ");
+      S.append("The maximum number of threads to run");
+      S.append("@param   ");
       S.append("Pop up the log file");
       S.append("@param   ");
-      S.append("The maximum number of threads to run");
+      S.append("Pop up the Peaks file");
       S.append("@error ");
       S.append("No Data Seets to integrate");
       S.append(" No span around a peak to integrate");
@@ -194,9 +197,12 @@ public class IntegrateMultipleRuns extends GenericOperator{
          java.lang.String PeakAlg = getParameter(14).getValue().toString();
          java.lang.String Xrange = (java.lang.String)(getParameter(15).getValue());
          java.lang.String Yrange = (java.lang.String)(getParameter(16).getValue());
-         boolean ShowLog = ((BooleanPG)(getParameter(17))).getbooleanValue();
-         int MaxThreads = ((IntegerPG)(getParameter(18))).getintValue();
-         java.lang.Object Xres=Wizard.TOF_SCD.Util.IntegrateMultipleRuns(path,outpath,run_numbers,DataSetNums,expName,centering,useCalibFile,calibfile,line2use,time_slcie_range,increase,instr,FileExt,d_min,PeakAlg,Xrange,Yrange,ShowLog,MaxThreads );
+         int MaxThreads = ((IntegerPG)(getParameter(17))).getintValue();
+         boolean ShowLog = ((BooleanPG)(getParameter(18))).getbooleanValue();
+         boolean ShowPeaks = ((BooleanPG)(getParameter(19))).getbooleanValue();
+         java.lang.Object Xres=Wizard.TOF_SCD.Util.IntegrateMultipleRuns(path,outpath,run_numbers,DataSetNums,expName,
+                  centering,useCalibFile,calibfile,line2use,time_slcie_range,increase,instr,FileExt,d_min,PeakAlg,
+                  Xrange,Yrange,MaxThreads,ShowLog, ShowPeaks );
 
          return Xres;
        }catch( Throwable XXX){
