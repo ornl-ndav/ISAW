@@ -1043,8 +1043,9 @@ public class Util {
     *                                  x value(-1:3)
     * @param Yrange               Range of offsets around a peak's
     *                                  y value(-1:3)
-    * @param ShowLog              Pop up the log file
     * @param maxThreads           The maximum number of threads to run
+    * @param ShowLog              Pop up the log file
+    * @param ShowPeaks            Pop up the Peaks file
     * @return  nothing though a .integrate and a .log file are created.
     */
    public static Object IntegrateMultipleRuns(
@@ -1065,8 +1066,9 @@ public class Util {
            String  PeakAlg,
            String  Xrange,
            String  Yrange,
+           int     maxThreads,
            boolean ShowLog,
-           int     maxThreads
+           boolean ShowPeaks
             ){
       
       SharedMessages.addmsg( "Instrument = " + inst );
@@ -1238,7 +1240,7 @@ public class Util {
 
 //      WritePeaks writer = new WritePeaks( integfile, Peaks, false );
 //      Res =  writer.getResult();
-      
+      if( ShowPeaks )
       ( new ViewASCII( outpath + expname + ".integrate" ) ).getResult();
 
       if( ShowLog )
