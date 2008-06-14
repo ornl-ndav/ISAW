@@ -541,7 +541,10 @@ public class Peak_new implements IPeak_IPNS_out
   @Override
   public void setFacility( String facilityName )
   {
-    this.facility_name = facilityName;
+    if ( facilityName != null )
+      this.facility_name = facilityName;
+    else
+      this.facility_name = UNSPECIFIED;
   }
 
 
@@ -560,7 +563,10 @@ public class Peak_new implements IPeak_IPNS_out
   @Override
   public void setInstrument( String instrumentName )
   {
-    this.instrument_name = instrumentName;
+    if ( instrumentName != null )
+      this.instrument_name = instrumentName;
+    else
+      this.instrument_name = UNSPECIFIED;
   }
 
 
