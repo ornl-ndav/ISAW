@@ -183,40 +183,13 @@ public class GetCentroidPeaks implements Wrappable, HiddenOperator {
     Data db = DS.getData_entry(0);
     SampleOrientation sampOrient =(SampleOrientation) db.getAttributeValue( 
               Attribute.SAMPLE_ORIENTATION);
-    if( sampOrient == null)
-      sampOrient = new IPNS_SCD_SampleOrientation(0f,0f,0f);
-    
-    int run_num = 0;
-    int[] runs = (int[])DS.getAttributeValue( Attribute.RUN_NUM );
-    if( runs != null && runs.length  > 0 )
-      run_num = runs[ 0 ];   
-
-    Peak_new mold = new Peak_new( run_num, 
-                                  moncount, 
-                                  0f,0f,0f, 
-                                  Grids[0], 
-                                  sampOrient,
-                                  xscales[0].getX( 0 ), 
-                                  AttrUtil.getInitialPath(db),
-                                  0 );
-  
 
     for( int i=0; i < V.size(); i++){
        Peak p = (Peak)(V.elementAt(i));
-       //if( java.util.Arrays.binarySearch(Rows,(int)(p.x()))>=0)
-       //if( java.util.Arrays.binarySearch(Rows,(int)(p.y()))>=0)
        {        
-         //Peak_new pk = (Peak_new) mold.clone();
-         //pk.pixel(p.x(),p.y(),p.z());
          int detnum =p.detnum();
          int indx = java.util.Arrays.binarySearch(GridIDs,detnum);
          float t0_shift = calibTimeAdjustments[indx];
-         /*pk.Grid( Grids[indx]);
-         pk.time(xscales[indx]);
-         pk.timeAdjust( calibTimeAdjustments[indx]);
-         pk.L1( AttrUtil.getInitialPath(Grids[indx].getData_entry(1,1)));
-         pk.ipkobs(p.ipkobs());
-         */
          float initial_path = 
                      AttrUtil.getInitialPath(Grids[indx].getData_entry(1,1));
          Peak_new pk = new Peak_new( p.nrun(),
@@ -229,8 +202,6 @@ public class GetCentroidPeaks implements Wrappable, HiddenOperator {
                                      xscales[indx].getInterpolatedX(p.z())+t0_shift,
                                      initial_path,
                                      t0_shift );      
-//       pk.monct( p.monct() );
-//       pk.nrun( p.nrun());
          pk.inti(p.inti());
          pk.sigi(p.sigi());
          pk.reflag( p.reflag());
