@@ -440,10 +440,10 @@ public class ReadPeaks extends GenericTOF_SCD implements HiddenOperator{
                                 xscl.getInterpolatedX( peak.z() ), 
                                 InitialPath,
                                 timeAdjustment );
-    
-//  PP.nrun( peak.nrun());
-//  PP.monct( peak.monct() );
-//  PP.detnum( peak.detnum() );
+    // Since the peak is always given an IPNS
+    // sample orientation, we assume IPNS/SCD0
+    PP.setFacility( FacilityInstrumentNames.IPNS );
+    PP.setInstrument( FacilityInstrumentNames.SCD0 );
     PP.inti( peak.inti() );
     PP.ipkobs( peak.ipkobs() );
     PP.reflag( peak.reflag() );

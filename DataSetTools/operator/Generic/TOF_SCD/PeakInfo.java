@@ -185,7 +185,7 @@ public class PeakInfo {
     
     /**
      * Adds the current cell to the peak if it is in bounds or large enough average intensity with
-     * neightbors
+     * neighbors
      * 
      * @param row    The row for the current cell
      * @param col    The column for the current cell
@@ -490,11 +490,8 @@ public class PeakInfo {
         if( Float.isNaN(b))
         	b=backgroundIntensity;
         //float b = backgroundIntensity; 
-       return (WsumY - b*sumY )/(TotIntensity - ncells*b );
-       
+       return (WsumY - b*sumY )/(TotIntensity - ncells*b );  
     }
-
-    
     
     
     /**
@@ -676,6 +673,8 @@ public class PeakInfo {
     	PP.ipkobs( (int)( peakIntensity + .5 ) );
     	PP.inti( getTotIntensity() );
         PP.reflag( reflag );
+        PP.setFacility( AttrUtil.getFacilityName( DS ) );
+        PP.setInstrument( AttrUtil.getInstrumentName( DS ) );
     
     	return PP;
     }
