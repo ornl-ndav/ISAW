@@ -82,24 +82,24 @@ import DataSetTools.instruments.SampleOrientation;
  * @see DataSetTools.dataset.IntAttribute
  * @see DataSetTools.dataset.IntListAttribute
  * @see DataSetTools.dataset.StringAttribute
- *
- * @version 1.0  
  */
+
+
 
 public class AttrUtil 
 {
   /**
    * Looks for the attribute with the name <code>name</code> from the list 
    * of attributes.  If the attribute is not in the list or a String object 
-   * cannot be aquired from it, <code>null</code> is returned.
+   * cannot be acquired from it, <code>null</code> is returned.
    *
    * @param attr_name The name of the attribute to search for.
    *
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the named attribute value is to be obtained.
    *
-   * @return The String object aquired from the attribute with the specified 
-   * name or <code>null</code> if it can't be aquired.
+   * @return The String object acquired from the attribute with the specified 
+   * name or <code>null</code> if it can't be acquired.
    */
    public static String getStringValue( String         attr_name,
                                         IAttributeList attr_list  )
@@ -118,15 +118,15 @@ public class AttrUtil
   /**
    * Looks for the attribute with the name <code>name</code> from the list 
    * of attributes.  If the attribute is not in the list or a float value 
-   * cannot be aquired from it, <code>Float.NaN</code> is returned.
+   * cannot be acquired from it, <code>Float.NaN</code> is returned.
    *
    * @param attr_name The name of the attribute to search for.
    *
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the named attribute value is to be obtained.
    *
-   * @return The float value aquired from the attribute with the specified 
-   * name or <code>Float.NaN</code> if it can't be aquired.
+   * @return The float value acquired from the attribute with the specified 
+   * name or <code>Float.NaN</code> if it can't be acquired.
    */
    public static float getFloatValue( String         attr_name,
                                       IAttributeList attr_list  )
@@ -208,15 +208,15 @@ public class AttrUtil
   /**
    * Looks for the attribute with the name <code>name</code> from the list 
    * of attributes.  If the attribute is not in the list or an integer value 
-   * cannot be aquired from it, -1 is returned.
+   * cannot be acquired from it, -1 is returned.
    *
    * @param attr_name The name of the attribute to search for.
    *
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the named attribute value is to be obtained.
    *
-   * @return The integer value aquired from the attribute with the specified 
-   * name or -1 if it can't be aquired.
+   * @return The integer value acquired from the attribute with the specified 
+   * name or -1 if it can't be acquired.
    */
    public static int getIntValue( String         attr_name,
                                   IAttributeList attr_list  )
@@ -235,15 +235,15 @@ public class AttrUtil
   /**
    * Looks for the attribute with the name <code>name</code> from the list 
    * of attributes.  If the attribute is not in the list or an integer array 
-   * cannot be aquired from it, <code>null</code> is returned.
+   * cannot be acquired from it, <code>null</code> is returned.
    *
    * @param attr_name The name of the attribute to search for.
    *
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the named attribute value is to be obtained.
    *
-   * @return The integer array aquired from the attribute with the specified 
-   * name or <code>null</code> if it can't be aquired.
+   * @return The integer array acquired from the attribute with the specified 
+   * name or <code>null</code> if it can't be acquired.
    */
    public static int[] getIntArrayValue( String         attr_name,
                                          IAttributeList attr_list  )
@@ -262,15 +262,15 @@ public class AttrUtil
   /**
    * Looks for the attribute with the name <code>name</code> from the list 
    * of attributes.  If the attribute is not in the list or a DetectorPosition
-   * object cannot be aquired from it, <code>null</code> is returned.
+   * object cannot be acquired from it, <code>null</code> is returned.
    *
    * @param attr_name The name of the attribute to search for.
    *
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the named attribute value is to be obtained.
    *
-   * @return The DetectorPosition object aquired from the attribute with the
-   * specified name or <code>null</code> if it can't be aquired.
+   * @return The DetectorPosition object acquired from the attribute with the
+   * specified name or <code>null</code> if it can't be acquired.
    */
    public static DetectorPosition getDetectorPositionValue(
                                              String         attr_name,
@@ -290,15 +290,15 @@ public class AttrUtil
   /**
    * Looks for the attribute with the name <code>name</code> from the list 
    * of attributes.  If the attribute is not in the list or a IDataGrid object 
-   * cannot be aquired from it, <code>null</code> is returned.
+   * cannot be acquired from it, <code>null</code> is returned.
    *
    * @param attr_name The name of the attribute to search for.
    *
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the named attribute value is to be obtained.
    *
-   * @return The IDataGrid object aquired from the attribute with the specified 
-   * name or <code>null</code> if it can't be aquired.
+   * @return The IDataGrid object acquired from the attribute with the specified 
+   * name or <code>null</code> if it can't be acquired.
    */
    public static IDataGrid getDataGridValue( String         attr_name,
                                              IAttributeList attr_list  )
@@ -317,15 +317,15 @@ public class AttrUtil
   /**
    * Looks for the attribute with the name <code>name</code> from the list 
    * of attributes.  If the attribute is not in the list or a GsasCalib object 
-   * cannot be aquired from it, <code>null</code> is returned.
+   * cannot be acquired from it, <code>null</code> is returned.
    *
    * @param attr_name The name of the attribute to search for.
    *
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the named attribute value is to be obtained.
    *
-   * @return The GsasCalib object aquired from the attribute with the specified 
-   * name or <code>null</code> if it can't be aquired.
+   * @return The GsasCalib object acquired from the attribute with the specified 
+   * name or <code>null</code> if it can't be acquired.
    */
    public static GsasCalib getGsasCalibValue( String         attr_name,
                                               IAttributeList attr_list  )
@@ -344,15 +344,15 @@ public class AttrUtil
   /**
    * Looks for the attribute with the name <code>name</code> from the list 
    * of attributes.  If the attribute is not in the list or a SampleOrientation
-   * object cannot be aquired from it, <code>null</code> is returned.
+   * object cannot be acquired from it, <code>null</code> is returned.
    *
    * @param attr_name The name of the attribute to search for.
    *
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the named attribute value is to be obtained.
    *
-   * @return The SampleOrientation object aquired from the attribute with the
-   * specified name or <code>null</code> if it can't be aquired.
+   * @return The SampleOrientation object acquired from the attribute with the
+   * specified name or <code>null</code> if it can't be acquired.
    */
    public static SampleOrientation getSampleOrientationValue(
                                                      String         attr_name,
@@ -372,15 +372,15 @@ public class AttrUtil
   /**
    * Looks for the attribute with the name <code>name</code> from the list 
    * of attributes.  If the attribute is not in the list or a PixelInfoList
-   * object cannot be aquired from it, <code>null</code> is returned.
+   * object cannot be acquired from it, <code>null</code> is returned.
    *
    * @param attr_name The name of the attribute to search for.
    *
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the named attribute value is to be obtained.
    *
-   * @return The PixelInfoList object aquired from the attribute with the
-   * specified name or <code>null</code> if it can't be aquired.
+   * @return The PixelInfoList object acquired from the attribute with the
+   * specified name or <code>null</code> if it can't be acquired.
    */
    public static PixelInfoList getPixelInfoListValue( String         attr_name,
                                                       IAttributeList attr_list )
@@ -427,8 +427,8 @@ public class AttrUtil
    *
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
-   * @return The integer value aquired from the attribute with the specified 
-   * name or -1 if it can't be aquired.
+   * @return The integer value acquired from the attribute with the specified 
+   * name or -1 if it can't be acquired.
    */
    public static int getDS_TAG( IAttributeList attr_list )
    {
@@ -443,13 +443,29 @@ public class AttrUtil
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
    *
-   * @return The String object aquired from the attribute with the specified 
-   * name or <code>null</code> if it can't be aquired.
+   * @return The String object acquired from the attribute with the specified 
+   * name or <code>null</code> if it can't be acquired.
    */
    public static String getUser( IAttributeList attr_list )
    {
       return getStringValue(Attribute.USER, attr_list );
    }
+   
+   
+   /**
+    * Get the value of the attribute specified by
+    * <code>Attribute.FACILITY_NAME</code> or null if it can't be determined.
+    *
+    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
+    *                  from which the attribute value is to be obtained.
+    *
+    * @return The String object acquired from the attribute with the specified 
+    * name or <code>null</code> if it can't be acquired.
+    */
+    public static String getFacilityName( IAttributeList attr_list )
+    {
+       return getStringValue(Attribute.FACILITY_NAME, attr_list );
+    }
 
 
   /**
@@ -459,8 +475,8 @@ public class AttrUtil
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
    *
-   * @return The String object aquired from the attribute with the specified 
-   * name or <code>null</code> if it can't be aquired.
+   * @return The String object acquired from the attribute with the specified 
+   * name or <code>null</code> if it can't be acquired.
    */
    public static String getInstrumentName( IAttributeList attr_list )
    {
@@ -474,8 +490,8 @@ public class AttrUtil
    *
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
-   * @return The integer value aquired from the attribute with the specified 
-   * name or -1 if it can't be aquired.
+   * @return The integer value acquired from the attribute with the specified 
+   * name or -1 if it can't be acquired.
    */
    public static int getInstrumentType( IAttributeList attr_list )
    {
@@ -490,8 +506,8 @@ public class AttrUtil
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
    *
-   * @return The String object aquired from the attribute with the specified 
-   * name or <code>null</code> if it can't be aquired.
+   * @return The String object acquired from the attribute with the specified 
+   * name or <code>null</code> if it can't be acquired.
    */
    public static String getFileName( IAttributeList attr_list )
    {
@@ -506,8 +522,8 @@ public class AttrUtil
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
    *
-   * @return The String object aquired from the attribute with the specified 
-   * name or <code>null</code> if it can't be aquired.
+   * @return The String object acquired from the attribute with the specified 
+   * name or <code>null</code> if it can't be acquired.
    */
    public static String getRunTitle( IAttributeList attr_list )
    {
@@ -522,8 +538,8 @@ public class AttrUtil
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
    *
-   * @return The integer array aquired from the attribute with the specified 
-   * name or <code>null</code> if it can't be aquired.
+   * @return The integer array acquired from the attribute with the specified 
+   * name or <code>null</code> if it can't be acquired.
    */
    public static int[] getRunNumber( IAttributeList attr_list )
    {
@@ -538,8 +554,8 @@ public class AttrUtil
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
    *
-   * @return The String object aquired from the attribute with the specified 
-   * name or <code>null</code> if it can't be aquired.
+   * @return The String object acquired from the attribute with the specified 
+   * name or <code>null</code> if it can't be acquired.
    */
    public static String getEndDate( IAttributeList attr_list )
    {
@@ -555,8 +571,8 @@ public class AttrUtil
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
    *
-   * @return The String object aquired from the attribute with the specified 
-   * name or <code>null</code> if it can't be aquired.
+   * @return The String object acquired from the attribute with the specified 
+   * name or <code>null</code> if it can't be acquired.
    */
    public static String getEndTime( IAttributeList attr_list )
    {
@@ -571,8 +587,8 @@ public class AttrUtil
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
    *
-   * @return The String object aquired from the attribute with the specified 
-   * name or <code>null</code> if it can't be aquired.
+   * @return The String object acquired from the attribute with the specified 
+   * name or <code>null</code> if it can't be acquired.
    */
    public static String getStartDate( IAttributeList attr_list )
    {
@@ -587,8 +603,8 @@ public class AttrUtil
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
    *
-   * @return The String object aquired from the attribute with the specified 
-   * name or <code>null</code> if it can't be aquired.
+   * @return The String object acquired from the attribute with the specified 
+   * name or <code>null</code> if it can't be acquired.
    */
    public static String getStartTime( IAttributeList attr_list )
    {
@@ -603,8 +619,8 @@ public class AttrUtil
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
    *
-   * @return The String object aquired from the attribute with the specified 
-   * name or <code>null</code> if it can't be aquired.
+   * @return The String object acquired from the attribute with the specified 
+   * name or <code>null</code> if it can't be acquired.
    */
    public static String getUpdateTime( IAttributeList attr_list )
    {
@@ -619,8 +635,8 @@ public class AttrUtil
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
    *
-   * @return The DetectorPosition object aquired from the attribute with the
-   * specified name or <code>null</code> if it can't be aquired.
+   * @return The DetectorPosition object acquired from the attribute with the
+   * specified name or <code>null</code> if it can't be acquired.
    */
    public static DetectorPosition getDetectorPosition(IAttributeList attr_list)
    {   
@@ -637,8 +653,8 @@ public class AttrUtil
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
    *
-   * @return The float value aquired from the attribute with the specified 
-   * name or <code>Float.NaN</code> if it can't be aquired.
+   * @return The float value acquired from the attribute with the specified 
+   * name or <code>Float.NaN</code> if it can't be acquired.
    */
    public static float getRawAngle( IAttributeList attr_list )
    {
@@ -654,8 +670,8 @@ public class AttrUtil
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
    *
-   * @return The float value aquired from the attribute with the specified 
-   * name or <code>Float.NaN</code> if it can't be aquired.
+   * @return The float value acquired from the attribute with the specified 
+   * name or <code>Float.NaN</code> if it can't be acquired.
    */
    public static float getRawDistance( IAttributeList attr_list )
    {
@@ -671,8 +687,8 @@ public class AttrUtil
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
    *
-   * @return The float value aquired from the attribute with the specified 
-   * name or <code>Float.NaN</code> if it can't be aquired.
+   * @return The float value acquired from the attribute with the specified 
+   * name or <code>Float.NaN</code> if it can't be acquired.
    */
    public static float getSolidAngle( IAttributeList attr_list )
    {
@@ -688,8 +704,8 @@ public class AttrUtil
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
    *
-   * @return The float value aquired from the attribute with the specified 
-   * name or <code>Float.NaN</code> if it can't be aquired.
+   * @return The float value acquired from the attribute with the specified 
+   * name or <code>Float.NaN</code> if it can't be acquired.
    */
    public static float getOmega( IAttributeList attr_list )
    {
@@ -705,8 +721,8 @@ public class AttrUtil
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
    *
-   * @return The float value aquired from the attribute with the specified 
-   * name or <code>Float.NaN</code> if it can't be aquired.
+   * @return The float value acquired from the attribute with the specified 
+   * name or <code>Float.NaN</code> if it can't be acquired.
    */
    public static float getDelta2Theta( IAttributeList attr_list )
    {
@@ -722,8 +738,8 @@ public class AttrUtil
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
    *
-   * @return The float value aquired from the attribute with the specified 
-   * name or <code>Float.NaN</code> if it can't be aquired.
+   * @return The float value acquired from the attribute with the specified 
+   * name or <code>Float.NaN</code> if it can't be acquired.
    */
    public static float getEfficiencyFactor( IAttributeList attr_list )
    {
@@ -739,8 +755,8 @@ public class AttrUtil
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
    *
-   * @return The integer array aquired from the attribute with the specified 
-   * name or <code>null</code> if it can't be aquired.
+   * @return The integer array acquired from the attribute with the specified 
+   * name or <code>null</code> if it can't be acquired.
    */
    public static int[] getDetectorIDs( IAttributeList attr_list )
    {
@@ -756,8 +772,8 @@ public class AttrUtil
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
    *
-   * @return The integer array aquired from the attribute with the specified 
-   * name or <code>null</code> if it can't be aquired.
+   * @return The integer array acquired from the attribute with the specified 
+   * name or <code>null</code> if it can't be acquired.
    */
    public static int[] getSegmentIDs( IAttributeList attr_list )
    {
@@ -772,8 +788,8 @@ public class AttrUtil
    *
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
-   * @return The integer value aquired from the attribute with the specified 
-   * name or -1 if it can't be aquired.
+   * @return The integer value acquired from the attribute with the specified 
+   * name or -1 if it can't be acquired.
    */
    public static int getGroupID( IAttributeList attr_list )
    {
@@ -788,8 +804,8 @@ public class AttrUtil
    *
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
-   * @return The integer value aquired from the attribute with the specified 
-   * name or -1 if it can't be aquired.
+   * @return The integer value acquired from the attribute with the specified 
+   * name or -1 if it can't be acquired.
    */
    public static int getTimeFieldType( IAttributeList attr_list )
    {
@@ -804,8 +820,8 @@ public class AttrUtil
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
    *
-   * @return The integer array aquired from the attribute with the specified 
-   * name or <code>null</code> if it can't be aquired.
+   * @return The integer array acquired from the attribute with the specified 
+   * name or <code>null</code> if it can't be acquired.
    */
    public static int[] getCrate( IAttributeList attr_list )
    {
@@ -820,8 +836,8 @@ public class AttrUtil
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
    *
-   * @return The integer array aquired from the attribute with the specified 
-   * name or <code>null</code> if it can't be aquired.
+   * @return The integer array acquired from the attribute with the specified 
+   * name or <code>null</code> if it can't be acquired.
    */
    public static int[] getSlot( IAttributeList attr_list )
    {
@@ -836,8 +852,8 @@ public class AttrUtil
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
    *
-   * @return The integer array aquired from the attribute with the specified 
-   * name or <code>null</code> if it can't be aquired.
+   * @return The integer array acquired from the attribute with the specified 
+   * name or <code>null</code> if it can't be acquired.
    */
    public static int[] getInput( IAttributeList attr_list )
    {
@@ -853,8 +869,8 @@ public class AttrUtil
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
    *
-   * @return The float value aquired from the attribute with the specified 
-   * name or <code>Float.NaN</code> if it can't be aquired.
+   * @return The float value acquired from the attribute with the specified 
+   * name or <code>Float.NaN</code> if it can't be acquired.
    */
    public static float getDetectorCENDistance( IAttributeList attr_list )
    {
@@ -870,8 +886,8 @@ public class AttrUtil
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
    *
-   * @return The float value aquired from the attribute with the specified 
-   * name or <code>Float.NaN</code> if it can't be aquired.
+   * @return The float value acquired from the attribute with the specified 
+   * name or <code>Float.NaN</code> if it can't be acquired.
    */
    public static float getDetectorCENAngle( IAttributeList attr_list )
    {
@@ -887,8 +903,8 @@ public class AttrUtil
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
    *
-   * @return The float value aquired from the attribute with the specified 
-   * name or <code>Float.NaN</code> if it can't be aquired.
+   * @return The float value acquired from the attribute with the specified 
+   * name or <code>Float.NaN</code> if it can't be acquired.
    */
    public static float getDetectorCENHeight( IAttributeList attr_list )
    {
@@ -904,8 +920,8 @@ public class AttrUtil
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
    *
-   * @return The IDataGrid object aquired from the attribute with the specified 
-   * name or <code>null</code> if it can't be aquired.
+   * @return The IDataGrid object acquired from the attribute with the specified 
+   * name or <code>null</code> if it can't be acquired.
    */
    public static IDataGrid getDetectorDataGrid( IAttributeList attr_list )
    {
@@ -921,8 +937,8 @@ public class AttrUtil
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
    *
-   * @return The float value aquired from the attribute with the specified 
-   * name or <code>Float.NaN</code> if it can't be aquired.
+   * @return The float value acquired from the attribute with the specified 
+   * name or <code>Float.NaN</code> if it can't be acquired.
    */
    public static float getInitialPath( IAttributeList attr_list )
    {
@@ -938,8 +954,8 @@ public class AttrUtil
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
    *
-   * @return The float value aquired from the attribute with the specified 
-   * name or <code>Float.NaN</code> if it can't be aquired.
+   * @return The float value acquired from the attribute with the specified 
+   * name or <code>Float.NaN</code> if it can't be acquired.
    */
    public static float getEnergyIn( IAttributeList attr_list )
    {
@@ -955,8 +971,8 @@ public class AttrUtil
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
    *
-   * @return The float value aquired from the attribute with the specified 
-   * name or <code>Float.NaN</code> if it can't be aquired.
+   * @return The float value acquired from the attribute with the specified 
+   * name or <code>Float.NaN</code> if it can't be acquired.
    */
    public static float getNominalEnergyIn( IAttributeList attr_list )
    {
@@ -972,8 +988,8 @@ public class AttrUtil
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
    *
-   * @return The float value aquired from the attribute with the specified 
-   * name or <code>Float.NaN</code> if it can't be aquired.
+   * @return The float value acquired from the attribute with the specified 
+   * name or <code>Float.NaN</code> if it can't be acquired.
    */
    public static float getEnergyOut( IAttributeList attr_list )
    {
@@ -989,8 +1005,8 @@ public class AttrUtil
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
    *
-   * @return The float value aquired from the attribute with the specified 
-   * name or <code>Float.NaN</code> if it can't be aquired.
+   * @return The float value acquired from the attribute with the specified 
+   * name or <code>Float.NaN</code> if it can't be acquired.
    */
    public static float getNominalSourceToSampleTOF( IAttributeList attr_list )
    {
@@ -1007,8 +1023,8 @@ public class AttrUtil
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
    *
-   * @return The float value aquired from the attribute with the specified 
-   * name or <code>Float.NaN</code> if it can't be aquired.
+   * @return The float value acquired from the attribute with the specified 
+   * name or <code>Float.NaN</code> if it can't be acquired.
    */
    public static float getSourceToSampleTOF( IAttributeList attr_list )
    {
@@ -1024,8 +1040,8 @@ public class AttrUtil
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
    *
-   * @return The float value aquired from the attribute with the specified 
-   * name or <code>Float.NaN</code> if it can't be aquired.
+   * @return The float value acquired from the attribute with the specified 
+   * name or <code>Float.NaN</code> if it can't be acquired.
    */
    public static float getT0Shift( IAttributeList attr_list )
    {
@@ -1041,8 +1057,8 @@ public class AttrUtil
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
    *
-   * @return The float value aquired from the attribute with the specified 
-   * name or <code>Float.NaN</code> if it can't be aquired.
+   * @return The float value acquired from the attribute with the specified 
+   * name or <code>Float.NaN</code> if it can't be acquired.
    */
    public static float getSampleChi( IAttributeList attr_list )
    {
@@ -1058,8 +1074,8 @@ public class AttrUtil
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
    *
-   * @return The float value aquired from the attribute with the specified 
-   * name or <code>Float.NaN</code> if it can't be aquired.
+   * @return The float value acquired from the attribute with the specified 
+   * name or <code>Float.NaN</code> if it can't be acquired.
    */
    public static float getSamplePhi( IAttributeList attr_list )
    {
@@ -1075,8 +1091,8 @@ public class AttrUtil
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
    *
-   * @return The float value aquired from the attribute with the specified 
-   * name or <code>Float.NaN</code> if it can't be aquired.
+   * @return The float value acquired from the attribute with the specified 
+   * name or <code>Float.NaN</code> if it can't be acquired.
    */
    public static float getSampleOmega( IAttributeList attr_list )
    {
@@ -1092,8 +1108,8 @@ public class AttrUtil
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
    *
-   * @return The SampleOrientation object aquired from the attribute with the
-   * specified name or <code>null</code> if it can't be aquired.
+   * @return The SampleOrientation object acquired from the attribute with the
+   * specified name or <code>null</code> if it can't be acquired.
    */
    public static SampleOrientation getSampleOrientation( 
                                             IAttributeList attr_list )
@@ -1111,8 +1127,8 @@ public class AttrUtil
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
    *
-   * @return The String object aquired from the attribute with the specified 
-   * name or <code>null</code> if it can't be aquired.
+   * @return The String object acquired from the attribute with the specified 
+   * name or <code>null</code> if it can't be acquired.
    */
    public static String getSampleName( IAttributeList attr_list )
    {
@@ -1128,8 +1144,8 @@ public class AttrUtil
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
    *
-   * @return The float value aquired from the attribute with the specified 
-   * name or <code>Float.NaN</code> if it can't be aquired.
+   * @return The float value acquired from the attribute with the specified 
+   * name or <code>Float.NaN</code> if it can't be acquired.
    */
    public static float getTemperature( IAttributeList attr_list )
    {
@@ -1145,8 +1161,8 @@ public class AttrUtil
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
    *
-   * @return The float value aquired from the attribute with the specified 
-   * name or <code>Float.NaN</code> if it can't be aquired.
+   * @return The float value acquired from the attribute with the specified 
+   * name or <code>Float.NaN</code> if it can't be acquired.
    */
    public static float getPressure( IAttributeList attr_list )
    {
@@ -1162,8 +1178,8 @@ public class AttrUtil
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
    *
-   * @return The float array aquired from the attribute with the specified 
-   * name or <code>null</code> if it can't be aquired.
+   * @return The float array acquired from the attribute with the specified 
+   * name or <code>null</code> if it can't be acquired.
     */
    public static float[] getMagneticField( IAttributeList attr_list )
    {
@@ -1178,8 +1194,8 @@ public class AttrUtil
    *
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
-   * @return The integer value aquired from the attribute with the specified 
-   * name or -1 if it can't be aquired.
+   * @return The integer value acquired from the attribute with the specified 
+   * name or -1 if it can't be acquired.
    */
    public static int getNumberOfPulses( IAttributeList attr_list )
    {
@@ -1195,8 +1211,8 @@ public class AttrUtil
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
    *
-   * @return The float value aquired from the attribute with the specified 
-   * name or <code>Float.NaN</code> if it can't be aquired.
+   * @return The float value acquired from the attribute with the specified 
+   * name or <code>Float.NaN</code> if it can't be acquired.
    */
    public static float getTotalCount( IAttributeList attr_list )
    {
@@ -1212,8 +1228,8 @@ public class AttrUtil
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
    *
-   * @return The float value aquired from the attribute with the specified 
-   * name or <code>Float.NaN</code> if it can't be aquired.
+   * @return The float value acquired from the attribute with the specified 
+   * name or <code>Float.NaN</code> if it can't be acquired.
    */
    public static float getQValue( IAttributeList attr_list )
    {
@@ -1229,8 +1245,8 @@ public class AttrUtil
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
    *
-   * @return The GsasCalib object aquired from the attribute with the specified 
-   * name or <code>null</code> if it can't be aquired.
+   * @return The GsasCalib object acquired from the attribute with the specified 
+   * name or <code>null</code> if it can't be acquired.
    */
    public static GsasCalib getGSASCalib( IAttributeList attr_list )
    {
@@ -1246,8 +1262,8 @@ public class AttrUtil
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
    *
-   * @return The String object aquired from the attribute with the specified 
-   * name or <code>null</code> if it can't be aquired.
+   * @return The String object acquired from the attribute with the specified 
+   * name or <code>null</code> if it can't be acquired.
    */
    public static String getGSASIParm( IAttributeList attr_list )
    {
@@ -1263,8 +1279,8 @@ public class AttrUtil
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
    *
-   * @return The float array aquired from the attribute with the specified 
-   * name or <code>null</code> if it can't be aquired.
+   * @return The float array acquired from the attribute with the specified 
+   * name or <code>null</code> if it can't be acquired.
    */
    public static float[] getLatticeParam( IAttributeList attr_list )
    {
@@ -1280,8 +1296,8 @@ public class AttrUtil
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
    *
-   * @return The String object aquired from the attribute with the specified 
-   * name or <code>null</code> if it can't be aquired.
+   * @return The String object acquired from the attribute with the specified 
+   * name or <code>null</code> if it can't be acquired.
    */
    public static float[][] getOrientMatrix( IAttributeList attr_list )
    {
@@ -1307,8 +1323,8 @@ public class AttrUtil
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
    *
-   * @return The String object aquired from the attribute with the specified 
-   * name or <code>null</code> if it can't be aquired.
+   * @return The String object acquired from the attribute with the specified 
+   * name or <code>null</code> if it can't be acquired.
    */
    public static String getOrientFile( IAttributeList attr_list )
    {
@@ -1324,8 +1340,8 @@ public class AttrUtil
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
    *
-   * @return The float value aquired from the attribute with the specified 
-   * name or <code>Float.NaN</code> if it can't be aquired.
+   * @return The float value acquired from the attribute with the specified 
+   * name or <code>Float.NaN</code> if it can't be acquired.
    */
    public static float getCellVolume( IAttributeList attr_list )
    {
@@ -1341,8 +1357,8 @@ public class AttrUtil
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
    *
-   * @return The String object aquired from the attribute with the specified 
-   * name or <code>null</code> if it can't be aquired.
+   * @return The String object acquired from the attribute with the specified 
+   * name or <code>null</code> if it can't be acquired.
    */
    public static String getSCDCalid( IAttributeList attr_list )
    {
@@ -1358,8 +1374,8 @@ public class AttrUtil
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
    *
-   * @return The String object aquired from the attribute with the specified 
-   * name or <code>null</code> if it can't be aquired.
+   * @return The String object acquired from the attribute with the specified 
+   * name or <code>null</code> if it can't be acquired.
    */
    public static String getSCDCalibFile( IAttributeList attr_list )
    {
@@ -1375,8 +1391,8 @@ public class AttrUtil
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
    *
-   * @return The PixelInfoList object aquired from the attribute with the
-   * specified name or <code>null</code> if it can't be aquired.
+   * @return The PixelInfoList object acquired from the attribute with the
+   * specified name or <code>null</code> if it can't be acquired.
    */
    public static PixelInfoList getPixelInfoList( IAttributeList attr_list )
    {
@@ -1392,8 +1408,8 @@ public class AttrUtil
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
    *
-   * @return The String object aquired from the attribute with the specified 
-   * name or <code>null</code> if it can't be aquired.
+   * @return The String object acquired from the attribute with the specified 
+   * name or <code>null</code> if it can't be acquired.
    */
    public static String getDSType( IAttributeList attr_list )
    {
@@ -1409,8 +1425,8 @@ public class AttrUtil
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
    *
-   * @return The float value aquired from the attribute with the specified 
-   * name or <code>Float.NaN</code> if it can't be aquired.
+   * @return The float value acquired from the attribute with the specified 
+   * name or <code>Float.NaN</code> if it can't be acquired.
    */
    public static float getTimeOffset( IAttributeList attr_list )
    {
@@ -1425,8 +1441,8 @@ public class AttrUtil
    *
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
-   * @return The integer value aquired from the attribute with the specified 
-   * name or -1 if it can't be aquired.
+   * @return The integer value acquired from the attribute with the specified 
+   * name or -1 if it can't be acquired.
    */
    public static int getStartTimeSec( IAttributeList attr_list )
    {
@@ -1442,8 +1458,8 @@ public class AttrUtil
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
    *
-   * @return The String object aquired from the attribute with the specified 
-   * name or <code>null</code> if it can't be aquired.
+   * @return The String object acquired from the attribute with the specified 
+   * name or <code>null</code> if it can't be acquired.
    */
    public static String getTimeOfDay( IAttributeList attr_list )
    {
@@ -1459,8 +1475,8 @@ public class AttrUtil
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
    *
-   * @return The String object aquired from the attribute with the specified 
-   * name or <code>null</code> if it can't be aquired.
+   * @return The String object acquired from the attribute with the specified 
+   * name or <code>null</code> if it can't be acquired.
    */
    public static String getDayOfMonth( IAttributeList attr_list )
    {
@@ -1475,8 +1491,8 @@ public class AttrUtil
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
    *
-   * @return The String object aquired from the attribute with the specified 
-   * name or <code>null</code> if it can't be aquired.
+   * @return The String object acquired from the attribute with the specified 
+   * name or <code>null</code> if it can't be acquired.
    */
    public static String getUnknown( IAttributeList attr_list )
    {
@@ -1492,8 +1508,8 @@ public class AttrUtil
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
    *
-   * @return The String object aquired from the attribute with the specified 
-   * name or <code>null</code> if it can't be aquired.
+   * @return The String object acquired from the attribute with the specified 
+   * name or <code>null</code> if it can't be acquired.
    */
    public static String getInvalidDataSet( IAttributeList attr_list )
    {
@@ -1509,8 +1525,8 @@ public class AttrUtil
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
    *
-   * @return The String object aquired from the attribute with the specified 
-   * name or <code>null</code> if it can't be aquired.
+   * @return The String object acquired from the attribute with the specified 
+   * name or <code>null</code> if it can't be acquired.
    */
    public static String getMonitorData( IAttributeList attr_list )
    {
@@ -1526,8 +1542,8 @@ public class AttrUtil
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
    *
-   * @return The String object aquired from the attribute with the specified 
-   * name or <code>null</code> if it can't be aquired.
+   * @return The String object acquired from the attribute with the specified 
+   * name or <code>null</code> if it can't be acquired.
    */
    public static String getSampleData( IAttributeList attr_list )
    {
@@ -1543,8 +1559,8 @@ public class AttrUtil
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
    *
-   * @return The String object aquired from the attribute with the specified 
-   * name or <code>null</code> if it can't be aquired.
+   * @return The String object acquired from the attribute with the specified 
+   * name or <code>null</code> if it can't be acquired.
    */
    public static String getPulseHeightData( IAttributeList attr_list )
    {
@@ -1560,8 +1576,8 @@ public class AttrUtil
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
    *
-   * @return The String object aquired from the attribute with the specified 
-   * name or <code>null</code> if it can't be aquired.
+   * @return The String object acquired from the attribute with the specified 
+   * name or <code>null</code> if it can't be acquired.
    */
    public static String getTemperatureData( IAttributeList attr_list )
    {
@@ -1577,8 +1593,8 @@ public class AttrUtil
    * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
    *                  from which the attribute value is to be obtained.
    *
-   * @return The String object aquired from the attribute with the specified 
-   * name or <code>null</code> if it can't be aquired.
+   * @return The String object acquired from the attribute with the specified 
+   * name or <code>null</code> if it can't be acquired.
    */
    public static String getPressureData( IAttributeList attr_list )
    {
