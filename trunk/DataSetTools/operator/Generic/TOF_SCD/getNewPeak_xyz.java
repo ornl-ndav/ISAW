@@ -178,6 +178,8 @@ public class getNewPeak_xyz extends GenericOperator{
                                        t_zero
                                        );
          Xres.seqnum( seqNum );
+         Xres.setFacility( AttrUtil.getFacilityName( DS ) );
+         Xres.setInstrument( AttrUtil.getInstrumentName( DS ) );
 
          return Xres;
        }catch(java.lang.IllegalArgumentException S0){

@@ -52,6 +52,8 @@ public class Test_IPeak
                                tof,
                                initial_path,
                                t0             );
+    peak.setFacility( "IPNS" );
+    peak.setInstrument( "SCD0" );
     peak.seqnum( 46 );
     peak.sethkl( -2, 9, 3 );
     peak.ipkobs(21);

@@ -840,13 +840,12 @@ public class Util {
                                      xscl.getInterpolatedX( pk1.z() ) + T0, 
                                      InitialPath,
                                      T0 );
-         
+         pk.setFacility( AttrUtil.getFacilityName( DS ) );
+         pk.setInstrument( AttrUtil.getInstrumentName( DS ) );
          pk.ipkobs( pk1.ipkobs() );
          pk.inti( pk1.inti() );
          pk.sigi( pk1.sigi() );
          pk.reflag( pk1.reflag() );
- //        pk.monct( monCount );
- //        pk.nrun( pk1.nrun() );
          ResultantPeak.add(  pk );
       }   
       

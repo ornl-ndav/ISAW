@@ -1100,6 +1100,8 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
                                  x_scale.getInterpolatedX( row_col_ch[2] ) + t0, 
                                  initial_path,
                                  t0 );
+              peak.setFacility( AttrUtil.getFacilityName( ds ) );
+              peak.setInstrument( AttrUtil.getInstrumentName( ds ) );
               peak.sethkl( h, k, l);
               peak.seqnum(seqnum);
               peak.reflag(10);                         // Mark as ok for now 

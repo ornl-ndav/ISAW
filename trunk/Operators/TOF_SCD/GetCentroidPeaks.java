@@ -201,7 +201,9 @@ public class GetCentroidPeaks implements Wrappable, HiddenOperator {
                                      sampOrient,
                                      xscales[indx].getInterpolatedX(p.z())+t0_shift,
                                      initial_path,
-                                     t0_shift );      
+                                     t0_shift );   
+         pk.setFacility( AttrUtil.getFacilityName( DS ) );
+         pk.setInstrument( AttrUtil.getInstrumentName( DS ) );
          pk.inti(p.inti());
          pk.sigi(p.sigi());
          pk.reflag( p.reflag());
