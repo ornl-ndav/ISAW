@@ -758,7 +758,7 @@ public class Util {
      
       int[] RowColRange = {1 , grid.num_rows() , 1 , grid.num_cols()};
       
-      if( PixelRow != null && PixelRow.length() > 1 ){
+      if( PixelRow != null && PixelRow.trim().length() > 1 ){
          
          int[] rr = IntList.ToArray( PixelRow );
         
@@ -770,7 +770,8 @@ public class Util {
            
          }
             
-      }
+      }else
+         PixelRow="1:"+ Math.max( grid.num_rows() , grid.num_cols() );
       
       
       //------------------ Find Peaks ------------------
