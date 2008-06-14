@@ -10,12 +10,17 @@
 #
 #
 #@param  Peaks        The Vector of Peaks to work with
-#@param  expName      The name of the experiment(for use in filenames)
-#@param  runnums      Restrict run nums(blank for all) 
+#@param runnums       Only Use Run Numbers ( "" for all )
 #@param  RestrSeqNums The sequence nums to restrict
-#@param  SaveDir      The directory to save the mat files to
+#@param useUserMat   Enter Matrix( instead of Scalar's)
+#@param TransMat1    Enter Transformation Matrix
+#@param TransMat    Transformation Matrix From Scalar
+#@param MatFileName   Matrix to write to
 #@param  MinIntens    The minimum intenstity threshold
 #@param  RowColKeep   Pixel Rows and columns to keep
+#@param Constr        Cell Type Constraint
+#@param  SaveDir      The directory to save the mat files to
+#@param ShowLog      Pop up log file
 #
 #@return the orientation matrix for all the runs
 
@@ -34,6 +39,7 @@ $MinIntens   Integer(0)                          Minimum Peak Intensity Threshol
 $RowColKeep  IntList(0:128)                      Pixel Rows and Columns to Keep
 $Constr      ChoiceList( ["Triclinic","Monoclinic ( b unique )","Monoclinic ( a unique )","Monoclinic ( c unique )","Orthorhombic","Tetragonal","Rhombohedral","Hexagonal","Cubic"] )     Cell Type Constraint
 $SaveDir     DataDirectoryString                 Directory to save files
+$ShowLog     Boolean(false)                      Pop up log file
 
 
 if useUserMat
@@ -48,6 +54,9 @@ Display "seqnums = :"&RestrSeq&":"
 OpenLog( SaveDir&"lsqrs.log")
 R = JLsqrs(Peaks,runnums,RestrSeq,tMat,MatFilename,MinIntens,RowColKeep,Constr)
 CloseLog()   
+if ShowLog
+   ViewASCII( SaveDir & "lsqrs.log" )
+endif
 return R
 
    
