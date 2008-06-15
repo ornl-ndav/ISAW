@@ -31,6 +31,7 @@ $RestrRuns      IntList               Restrict Runs
 
 $logfile        Boolean(true)         Pop Up Log Info 
 $expName        String                Experiment name
+$peakFile       Boolean(false)        Save tben Pop up Peak File
 
 $ CATEGORY = operator,Instrument Type, TOF_NSCD
 $ Title = Index/Write Peaks
@@ -81,6 +82,10 @@ if logfile
   ViewASCII( path&"index.log")
 endif
 
+if peakFile
+  ViewASCII(filename)
+
+endif
 return peaks
   
 
