@@ -36,7 +36,7 @@ $Peaks   PlaceHolder                  Enter peaks
 
 $useFile  BooleanEnable([False,1,4])  Use Matrix From File
 $file1    LoadFile               Input Orientation Matrix File ( .mat )    
-$method    ChoiceList(["Blind","Read from File","Automatic","from Q Viewer"])  Method to use
+$method    ChoiceList(["Blind","Automatic","from Q Viewer"])  Method to use
 
 $Seq      IntArray               Sequence Numbers(Blind Method only)
 $file     SaveFile               Output Orientation Matrix File ( .mat ) 
