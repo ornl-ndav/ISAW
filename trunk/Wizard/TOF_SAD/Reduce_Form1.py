@@ -58,25 +58,25 @@ class Reduce_Form1(GenericOperator):
         self.super__clearParametersVector()
         FilePG =LoadFilePG("Sensitivity File(*.dat)",None)
         FF = GenericFileFilter(".dat","Sensitivity File(*.dat)")
-        FilePG.addFilter(FF)
+        FilePG.setFilter(FF)
         self.addParameter(FilePG )
          
         FilePG =LoadFilePG("Efficiency File",None)
         FF = GenericFileFilter(".dat","Efficiency File(*.dat)")
        
         
-        FilePG.addFilter(FF)
+        FilePG.setFilter(FF)
         self.addParameter(FilePG )
 
         useBackTransmissionPG = BooleanPG("Use Background Transm", Boolean(3==3))
         
         self.addParameter( useBackTransmissionPG)
         FilePG=LoadFilePG("BackGround Transmission File",None)
-        FilePG.addFilter(GenericFileFilter(".cf","Transmission File(*.cf)"))
+        FilePG.setFilter(GenericFileFilter(".cf","Transmission File(*.cf)"))
         self.addParameter(FilePG)
         useBackTransmission = self.getParameter(2)
         FilePG = self.getParameter(3)
-        useBackTransmission.addPropertyChangeListener( PChangeListener( FilePG))
+        #useBackTransmission.addPropertyChangeListener( PChangeListener( FilePG))
         
     def getTitle(self):
         return "Select Calibration files"

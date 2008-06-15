@@ -58,11 +58,11 @@ class Reduce_Form2(GenericOperator):
         self.super__clearParametersVector()
         FilePG =LoadFilePG("Sample Runfile",None)
         FF = GenericFileFilter(".run","Run File(*.run)")
-        FilePG.addFilter(FF)
+        FilePG.setFilter(FF)
         self.addParameter(FilePG )
 
         FilePG =LoadFilePG("Background Run file",None)
-        FilePG.addFilter(FF)
+        FilePG.setFilter(FF)
         self.addParameter(FilePG )
         
         BoolPG = BooleanPG("Use Cadmium Run",  Boolean(3==3))
@@ -70,7 +70,7 @@ class Reduce_Form2(GenericOperator):
 
         
         File1PG=LoadFilePG("Cadmium Run File",None)
-        File1PG.addFilter(FF)
+        File1PG.setFilter(FF)
         self.addParameter(File1PG)
 
         BoolPG1 = BooleanPG( "Calculate Sample Transmission", Boolean(3==2))
@@ -78,7 +78,7 @@ class Reduce_Form2(GenericOperator):
 
 
         FilePG2= LoadFilePG("Sample Transmission Run", None)
-        FilePG2.addFilter( GenericFileFilter(".cf","Transmission(*.cf)"))
+        FilePG2.setFilter( GenericFileFilter(".cf","Transmission(*.cf)"))
         self.addParameter( FilePG2)
         
         FloatPG1 =FloatPG("Neutron Delay fraction",  Float(.0011))
@@ -91,10 +91,10 @@ class Reduce_Form2(GenericOperator):
         self.addParameter(IntPG3) 
         BoolPG3 = BooleanPG("Use 1/sqrt y weights",  Boolean(3==2))
         self.addParameter(BoolPG3)
-        self.getParameter(2).addPropertyChangeListener( PChangeListener( self.getParameter(3),Boolean(3==3)))
+        #self.getParameter(2).addPropertyChangeListener( PChangeListener( self.getParameter(3),Boolean(3==3)))
         S =[self.getParameter(6),self.getParameter(7),self.getParameter(8),self.getParameter(9),self.getParameter(10)]
-        self.getParameter(4).addPropertyChangeListener(  PChangeListener( S,Boolean(3==3)))
-        self.getParameter(4).addPropertyChangeListener( PChangeListener(self.getParameter(5),Boolean(3==2)))
+        #self.getParameter(4).addPropertyChangeListener(  PChangeListener( S,Boolean(3==3)))
+        #self.getParameter(4).addPropertyChangeListener( PChangeListener(self.getParameter(5),Boolean(3==2)))
     def getResult(self):
         
         SampleFileName = self.getParameter(0).value
