@@ -843,6 +843,7 @@ public class Util {
                                      T0 );
          pk.setFacility( AttrUtil.getFacilityName( DS ) );
          pk.setInstrument( AttrUtil.getInstrumentName( DS ) );
+         pk.seqnum( pk1.seqnum() );
          pk.ipkobs( pk1.ipkobs() );
          pk.inti( pk1.inti() );
          pk.sigi( pk1.sigi() );
@@ -852,7 +853,6 @@ public class Util {
       
       return ResultantPeak;
    }
-   
    
    
    //Uses the old centroid peak
