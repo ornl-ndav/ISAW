@@ -58,7 +58,7 @@ class Reduce_Form3(GenericOperator):
         V= Vector()
         V.addElement("1D")
         V.addElement("2D")
-        butt = RadioButtonPG("Output", V ,Boolean(3==3))
+        butt = RadioButtonPG("Output", V )
         self.addParameter( butt)
         BoolPG = BooleanPG("Use Defaults", Boolean(3==3))
         self.addParameter( BoolPG)
@@ -80,11 +80,11 @@ class Reduce_Form3(GenericOperator):
         self.addParameter(NQxDivs)
         self.addParameter( NQyDivs)  #parameter 8
         S = [self.getParameter(3),self.getParameter(4),self.getParameter(5),self.getParameter(6),self.getParameter(7),self.getParameter(8)]
-        self.getParameter(0).addPropertyChangeListener( PChangeListener(self.getParameter(2),"1D"))
-        self.getParameter(0).addPropertyChangeListener( PChangeListener(S,"2D"))
+        #self.getParameter(0).addPropertyChangeListener( PChangeListener(self.getParameter(2),"1D"))
+        #self.getParameter(0).addPropertyChangeListener( PChangeListener(S,"2D"))
       
-        S = [self.getParameter(2),self.getParameter(3),self.getParameter(4),self.getParameter(5),self.getParameter(6)]
-        self.getParameter(1).addPropertyChangeListener( PChangeListener(S,Boolean(2==3)))
+        #S = [self.getParameter(2),self.getParameter(3),self.getParameter(4),self.getParameter(5),self.getParameter(6)]
+        #self.getParameter(1).addPropertyChangeListener( PChangeListener(S,Boolean(2==3)))
     def getResult(self):
         Dimension = self.getParameter(0).getStringValue()
         useDefaults = self.getParameter(1).value
