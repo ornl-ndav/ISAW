@@ -29,14 +29,14 @@
 
 #  @return   an orientation matrix either from blind or the file 
 
-$Title= Blind ( Get Initial Orientation Matrix ) 
+$Title= Initial Orientation Matrix  
 
 # ------Parameters ---------------------
 $Peaks   PlaceHolder                  Enter peaks
 
-#$useFile  BooleanEnable([False,1,3])  Use Matrix From File
-$method    ChoiceList(["Blind","Read from File","Automatic","from Q Viewer"])  Method to use
+$useFile  BooleanEnable([False,1,4])  Use Matrix From File
 $file1    LoadFile               Input Orientation Matrix File ( .mat )    
+$method    ChoiceList(["Blind","Read from File","Automatic","from Q Viewer"])  Method to use
 
 $Seq      IntArray               Sequence Numbers(Blind Method only)
 $file     SaveFile               Output Orientation Matrix File ( .mat ) 
