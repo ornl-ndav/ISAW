@@ -791,8 +791,9 @@ public abstract class Form extends Operator implements PropertyChanger {
     for( int i= 0; i< this.getNum_parameters(); i++)
     	V.addElement(  this.getParameter(i ));
     
-    for( int i=0; i< this.getNum_parameters(); i++){
-        IParameterGUI param = ( IParameterGUI )getParameter( i );
+    int[] varPars = param_ref[VAR_PARAM];
+    for( int i=0; i< varPars.length; i++){
+        IParameterGUI param = ( IParameterGUI )getParameter( varPars[i] );
         if( param instanceof BooleanEnablePG){
         	
             ((BooleanEnablePG)param).addPropertyChangeListener( new EnableParamListener( V, i));
