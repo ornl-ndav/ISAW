@@ -796,7 +796,7 @@ public abstract class Form extends Operator implements PropertyChanger {
         IParameterGUI param = ( IParameterGUI )getParameter( varPars[i] );
         if( param instanceof BooleanEnablePG){
         	
-            ((BooleanEnablePG)param).addPropertyChangeListener( new EnableParamListener( V, i));
+            ((BooleanEnablePG)param).addPropertyChangeListener( new EnableParamListener( V, varPars[i]));
             ((BooleanEnablePG)param).fire();
         }
     }
