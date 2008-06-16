@@ -49,7 +49,7 @@ $path     DataDirectoryString    Output Data Path
 
 #-------------  Code ----------------
 
-if method == "Read from File"
+if useFile
 
   X= readOrient( file1 )
   WriteMatrix( file, X)
