@@ -198,7 +198,9 @@ public class SampleOrientationAttribute extends Attribute
       sb.append( "</name>\n<value>\n" );
       sb.append( or.getPhi() +" "+or.getChi()+" "+or.getOmega() );
 
-      sb.append( "</value>\n</SampleOrientationAttribute>\n" );
+      sb.append( "</value>\n");
+      sb.append( "<type>"+or.getClass().toString()+"</type>\n");
+      sb.append("</SampleOrientationAttribute>\n" );
 
       stream.write( sb.substring(0).getBytes() );
       return true;
@@ -261,9 +263,12 @@ public class SampleOrientationAttribute extends Attribute
       j=pcom.indexOf(' ');
       float chi   = (new Float( pcom.substring(0,j).trim())).floatValue();
       float omega = (new Float( pcom.substring(  j).trim())).floatValue();
-
+      
+      //NOTE: The "correct" SampleOrienation data type is created lateer after
+      //      the type tag is read.
       IPNS_SCD_SampleOrientation samp_orientation = 
                             new IPNS_SCD_SampleOrientation( phi, chi , omega);
+      
       value = samp_orientation;
 
     }catch( Exception ss ){
@@ -301,6 +306,12 @@ public class SampleOrientationAttribute extends Attribute
     Tag =xml_utils.getTag( stream ); 
     if( Tag == null)
       return xml_utils.setError( xml_utils.getErrorMessage() );
+    String error = null;
+    if( Tag.equals("type"))
+        error = Convert2SampOrientType( stream);
+    if( error != null && error.length() >0)
+       return xml_utils.setError( error );
+    Tag = xml_utils.getTag(  stream );
     if( !Tag.equals( "/SampleOrientationAttribute" ) )
       return xml_utils.setError( "Tags not nested in Sample orientation" + Tag );
     if( !xml_utils.skipAttributes( stream ) )
@@ -308,6 +319,29 @@ public class SampleOrientationAttribute extends Attribute
     return true;
   }
 
+  private String Convert2SampOrientType( InputStream stream){
+     if(!xml_utils.skipAttributes( stream))
+        return  xml_utils.getErrorMessage() ;
+     String val = xml_utils.getValue( stream );
+     if( val == null)
+        return "No value for SampleOrientation data type";
+     
+     if( val.equals( LANSCE_SCD_SampleOrientation.class.toString() )){
+        value = new LANSCE_SCD_SampleOrientation( value.getPhi(),value.getChi(), value.getOmega());
+     }else if( val.equals(SNS_SampleOrientation.class.toString())){
+
+        value = new SNS_SampleOrientation( value.getPhi(),value.getChi(), value.getOmega());
+     }
+     String Tag =xml_utils.getEndTag( stream );
+     if( Tag == null)
+        return xml_utils.errormessage;
+     if( !Tag.equals("/type"))
+        return "Improper end tag for SampleOrientation Type";
+     if(!xml_utils.skipAttributes( stream))
+        return xml_utils.getErrorMessage() ;
+     return null;
+     
+  }
 /* ---------------------------- main --------------------------------- */
 /*
  *  Basic main program for testing
