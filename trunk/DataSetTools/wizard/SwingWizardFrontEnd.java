@@ -1153,6 +1153,7 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
         if( f.getParameter( var_indices[j] ) instanceof BooleanEnablePG)
         	BoolEnablePGs.add( (BooleanEnablePG)f.getParameter(var_indices[j]));
       }
+      if( enable)
       for( int i=0; i<BoolEnablePGs.size(); i++)
     	  BoolEnablePGs.elementAt(i).fire();
     }//end enableFormParams
