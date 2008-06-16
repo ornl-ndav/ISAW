@@ -90,7 +90,7 @@ public class IntegrateMultipleRuns extends GenericOperator{
       addParameter( new IntArrayPG("Box Delta y (row) Range","-2:2"));
       addParameter( new IntegerPG("Max running threads",1));
       addParameter( new BooleanPG("Pop Up Log Info",new Boolean(false)));
-      addParameter( new BooleanPG("Pop Up Peaks file",new Boolean(false)));
+      addParameter( new BooleanPG("Pop Up integrate file",new Boolean(false)));
    }
 
 
