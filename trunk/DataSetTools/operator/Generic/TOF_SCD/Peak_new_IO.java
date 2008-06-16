@@ -66,7 +66,7 @@ public class Peak_new_IO
                        "  BaseY    BaseZ      UpX      UpY      UpZ";
 
   public static final String PEAK_GROUP_TITLES =
-                       "0 NRUN DETNUM    CHI    PHI  OMEGA MONCNT     L1";
+                       "0 NRUN DETNUM    CHI    PHI  OMEGA MONCNT";
 
   public static final String PEAK_TITLES =
                        "2   SEQN    H    K    L     COL     ROW    CHAN  " +
@@ -213,9 +213,8 @@ public class Peak_new_IO
     float phi   = peak.phi();
     float omega = peak.omega();
     float monct = peak.monct();
-    float l1    = peak.L1() * 100f;
-    return String.format( "1 %4d %6d %6.2f %6.2f %6.2f %6.0f %6.1f",
-                           run_num, id, chi, phi, omega, monct, l1 );
+    return String.format( "1 %4d %6d %6.2f %6.2f %6.2f %6.0f",
+                           run_num, id, chi, phi, omega, monct );
   }
 
 
@@ -522,6 +521,10 @@ public class Peak_new_IO
    *  This method will finish reading all peak information form the file.
    *  NOTE: This method is used by the ReadPeaks_new() method, which is the 
    *  method most users should call to read the peaks file.
+   *  NOTE: The values for l2, 2_theta, az, and d-spacing are all ignored
+   *  when reading the file, since that information is derived from the
+   *  pixel position and wavelength.  Values for l2, 2_theta, az and d
+   *  are included in the peaks file for information purposes only.
    *
    *  @param  sc          The scanner from which the peaks are to be read.
    *  @param  grids       A Hashtable of UniformGrid objects to use when
@@ -553,9 +556,9 @@ public class Peak_new_IO
         ipk,
         rflg;
     float chi, phi, omega, moncnt,
-          l2, l1_nom, l2_nom,
+          l2,
           col, row, chan,
-          theta2, az, wl, tof, d,
+          wl, tof,
           inti, sigi;
 
     String next_val = sc.next();
@@ -574,7 +577,6 @@ public class Peak_new_IO
       phi    = sc.nextFloat();
       omega  = sc.nextFloat();
       moncnt = sc.nextFloat();
-      l1_nom = sc.nextFloat() / 100f;             // convert cm to meters
       sc.nextLine();                              // advance to next full line
 
       SampleOrientation orientation;
@@ -608,14 +610,14 @@ public class Peak_new_IO
         col    = sc.nextFloat();
         row    = sc.nextFloat();
         chan   = sc.nextFloat() - 1;     // file has channel + 1
-
-        l2_nom = sc.nextFloat() / 100f;  // convert cm to meters, however, l2
-                                         // is nominal so we later find it
-                                         // based on the grid, row and column
-        theta2 = sc.nextFloat();
-        az     = sc.nextFloat();
+                 sc.nextFloat();         // skip the l2 value from the
+                                         // file, since it is just a nominal
+                                         // value and we later calculate it.
+                                         // IF used, it would need to be /100
+                 sc.nextFloat();         // skip 2_theta since it is derived
+                 sc.nextFloat();         // skip az, since it is derived
         wl     = sc.nextFloat();
-        d      = sc.nextFloat();
+                 sc.nextFloat();         // skip d, since it is derived
         ipk    = sc.nextInt();
         inti   = sc.nextFloat();
         sigi   = sc.nextFloat(); 
