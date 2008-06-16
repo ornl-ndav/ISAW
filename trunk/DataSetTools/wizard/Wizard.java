@@ -1357,7 +1357,9 @@ public class Wizard implements PropertyChangeListener, Serializable {
         }
       }
     }
+    invalidate(0);
   }
+  
 
   /**
    * Write the Forms to a file, using the conc_forms Vector. The only things
