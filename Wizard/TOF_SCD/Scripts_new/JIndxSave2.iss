@@ -31,7 +31,7 @@ $RestrRuns      IntList               Restrict Runs
 
 $logfile        Boolean(true)         Pop Up Log Info 
 $expName        String                Experiment name
-$peakFile       Boolean(false)        Pop up Peak File
+$peakFile       Boolean(false)        Pop Up Peaks File
 
 $ CATEGORY = operator,Instrument Type, TOF_NSCD
 $ Title = Index/Write Peaks
