@@ -181,6 +181,12 @@ public class ReadPeaks extends GenericTOF_SCD implements HiddenOperator{
   public Object getResult(){
     // get the filename
     String  filename = getParameter(0).getValue().toString();
+    if( NewPeakFileFormat( filename))
+       try{
+       return  Peak_new_IO.ReadPeaks_new( filename );
+       }catch( Exception sss){
+          return new ErrorString( sss.toString());
+       }
     boolean readXml = false;
     Node node = null;
    
@@ -599,5 +605,27 @@ public class ReadPeaks extends GenericTOF_SCD implements HiddenOperator{
     }
     
     System.exit(0);
+  }
+  
+  /**
+   * Returns true if the Peaks file is in the new format( starts with the word version)
+   * 
+   * @param filename  The name of the file containing peak information
+   * 
+   * @return  true if new Peak file format, otherwise false
+   */
+  public static boolean NewPeakFileFormat( String filename){
+     try{
+        FileInputStream fin = new FileInputStream( filename);
+        String S ="";
+        for( int i=0; i< 7; i++)
+           S += (char)fin.read();
+        fin.close();
+        if( S.toUpperCase().equals( "VERSION" ))
+           return true;
+        return false;
+     }catch(Exception s ){
+        return false;
+     }
   }
 }
