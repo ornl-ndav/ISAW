@@ -286,6 +286,7 @@ public class GL_RecipPlaneView
   private final float BLUE[]      = { 0.3f, 0.3f, 0.8f };
 
   private FinishJFrame scene_f;
+
   private ImageFrame2 h_frame = null;
   private ImageFrame2 k_frame = null;
   private ImageFrame2 l_frame = null;
@@ -399,7 +400,7 @@ public class GL_RecipPlaneView
 
   public GL_RecipPlaneView()
   {
-//    System.out.println("In default constructor for GL_RecipPlaneView");
+//  System.out.println("In default constructor for GL_RecipPlaneView");
 
     scene_f = new FinishJFrame("Reciprocal Lattice Plane Viewer");
     scene_f.setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
@@ -865,13 +866,10 @@ public class GL_RecipPlaneView
       }
     }
 
-    if ( orientation_matrix == null )
-      draw_Q_axes( 15, vec_Q_space );
-    else
-      draw_HKL_axes( 15, vec_Q_space );
-
     if ( extract_peaks )
       ExtractPeaks();
+
+    draw_Axes();
 
     Redraw();
   }
@@ -1132,7 +1130,7 @@ public class GL_RecipPlaneView
          start_vec[i] = (Vector3D)h_line_list.elementAt( 2*i );
          end_vec[i] = (Vector3D)h_line_list.elementAt( 2*i + 1 );
        }
-       Lines h_lines = new Lines( start_vec, end_vec );
+       Lines h_lines = new Lines( vec_Q_space, start_vec, end_vec );
        h_lines.setColor( RED );
 
        for ( int i = 0; i < n_points; i++ )
@@ -1140,7 +1138,7 @@ public class GL_RecipPlaneView
          start_vec[i] = (Vector3D)k_line_list.elementAt( 2*i );
          end_vec[i] = (Vector3D)k_line_list.elementAt( 2*i + 1 );
        }
-       Lines k_lines = new Lines( start_vec, end_vec );
+       Lines k_lines = new Lines( vec_Q_space, start_vec, end_vec );
        k_lines.setColor( GREEN );
 
        for ( int i = 0; i < n_points; i++ )
@@ -1148,7 +1146,7 @@ public class GL_RecipPlaneView
          start_vec[i] = (Vector3D)l_line_list.elementAt( 2*i );
          end_vec[i] = (Vector3D)l_line_list.elementAt( 2*i + 1 );
        }
-       Lines l_lines = new Lines( start_vec, end_vec );
+       Lines l_lines = new Lines( vec_Q_space, start_vec, end_vec );
        l_lines.setColor( BLUE );
 
        GL_Shape[] result = new GL_Shape[3]; 
@@ -1428,7 +1426,7 @@ public class GL_RecipPlaneView
       corner[1][1][1] = getQ( combinedR, p11, last_t, initial_path );
       corner[1][0][1] = getQ( combinedR, p01, last_t, initial_path );
 
-      Voxel region = new Voxel( corner );
+      Voxel region = new Voxel( vec_Q_space, corner );
       return region;
   }
 
@@ -1530,7 +1528,7 @@ public class GL_RecipPlaneView
       start_vec[i] = (Vector3D)start.elementAt(i);
       end_vec[i]   = (Vector3D)end.elementAt(i);
     }
-    Lines lines = new Lines( start_vec, end_vec );
+    Lines lines = new Lines( vec_Q_space, start_vec, end_vec );
     lines.setColor( GRAY );
     return lines;
   }
@@ -1594,7 +1592,7 @@ public class GL_RecipPlaneView
       start_vec[i] = (Vector3D)start.elementAt(i);
       end_vec[i]   = (Vector3D)end.elementAt(i);
     }
-    Lines lines = new Lines( start_vec, end_vec );
+    Lines lines = new Lines( vec_Q_space, start_vec, end_vec );
     lines.setColor( GRAY );
     return lines;
   }
@@ -1659,7 +1657,7 @@ public class GL_RecipPlaneView
       start_vec[i] = (Vector3D)start.elementAt(i);
       end_vec[i]   = (Vector3D)end.elementAt(i);
     }
-    Lines lines = new Lines( start_vec, end_vec );
+    Lines lines = new Lines( vec_Q_space, start_vec, end_vec );
     lines.setColor( GRAY );
     return lines;
   }
@@ -1753,7 +1751,7 @@ public class GL_RecipPlaneView
       end[i]   = getQ( combinedR, corners[i], t_end   + t0, initial_path );
     }
 
-    boundaries[0] = new Lines( start, end );
+    boundaries[0] = new Lines( vec_Q_space, start, end );
 
     Vector3D points[] = new Vector3D[2*n_rows + 2*n_cols - 3];   // outer face
     int index = 0;                                               // at t min
@@ -1785,7 +1783,7 @@ public class GL_RecipPlaneView
       index++;
     }
 
-    boundaries[1] = new LineStrip( points ); 
+    boundaries[1] = new LineStrip( vec_Q_space, points ); 
                                                         // inner face at t_max
     index = 0;
     for ( int col = 1; col <= n_cols; col++ )
@@ -1816,7 +1814,7 @@ public class GL_RecipPlaneView
       index++;
     }
 
-    boundaries[2] = new LineStrip( points );
+    boundaries[2] = new LineStrip( vec_Q_space, points );
 
                                                    // set label for region 
     Vector3D text_pt = getQ( combinedR,
@@ -1848,8 +1846,10 @@ public class GL_RecipPlaneView
       up.multiply( -1 );
     }
                                                      // make the label centered 
-    StrokeFont font = new RomanComplex();            // on back face of region 
-    StrokeText text = new StrokeText( label, font ); // with up toward det top
+    StrokeFont font = new RomanComplex();            // on back face of region
+                                                     // with up toward det top.
+    StrokeText text = new StrokeText( vec_Q_space, label, font ); 
+
     text.setPosition( text_pt );
     text.setOrientation( base, up );
     text.setAlignment( StrokeText.HORIZ_CENTER, StrokeText.VERT_HALF );
@@ -2549,19 +2549,37 @@ public class GL_RecipPlaneView
     vec_Q_space.Draw();
   }
 
+
+  /* ---------------------------- draw_Axes ----------------------------- */
+  /*
+   * Draw the appropriate type of axes, depending on whether or not an
+   * orienation transformation was specified.
+   */
+  private void draw_Axes()
+  {
+    if ( orientation_matrix == null )
+      draw_Q_axes( 15, vec_Q_space );
+    else
+      draw_HKL_axes( 15, vec_Q_space );
+  }
+
+
   /* ---------------------------- draw_Q_axes ----------------------------- */
   /*
    *  Draw orthogonal axes in "Q".
    */
   private  void draw_Q_axes( float length, ThreeD_GL_Panel threeD_panel  )
   {
-    Axis x_axis = Axis.getInstance( new Vector3D( -length/20, 0, 0 ),
+    Axis x_axis = Axis.getInstance( threeD_panel,
+                                    new Vector3D( -length/20, 0, 0 ),
                                     new Vector3D(  length,    0, 0 ),
                                     "Qx" );
-    Axis y_axis = Axis.getInstance( new Vector3D( 0, -length/20, 0 ),
+    Axis y_axis = Axis.getInstance( threeD_panel,
+                                    new Vector3D( 0, -length/20, 0 ),
                                     new Vector3D( 0,  length,    0 ),
                                     "Qy" );
-    Axis z_axis = Axis.getInstance( new Vector3D( 0, 0, -length/20 ),
+    Axis z_axis = Axis.getInstance( threeD_panel,
+                                    new Vector3D( 0, 0, -length/20 ),
                                     new Vector3D( 0, 0,  length    ),
                                     "Qz" );
     z_axis.setSkipValue( 0 );
@@ -2678,9 +2696,12 @@ public class GL_RecipPlaneView
     minus_k_dir.multiply( -1 );
     minus_l_dir.multiply( -1 );
  
-    Axis h_axis = Axis.getInstance( minus_h_dir, h_dir,"              a*-Axis");
-    Axis k_axis = Axis.getInstance( minus_k_dir, k_dir,"              b*-Axis");
-    Axis l_axis = Axis.getInstance( minus_l_dir, l_dir,"              c*-Axis");
+    Axis h_axis = Axis.getInstance( threeD_panel, 
+                                    minus_h_dir, h_dir,"              a*-Axis");
+    Axis k_axis = Axis.getInstance( threeD_panel,
+                                    minus_k_dir, k_dir,"              b*-Axis");
+    Axis l_axis = Axis.getInstance( threeD_panel,
+                                    minus_l_dir, l_dir,"              c*-Axis");
 
     h_axis.setSkipValue( 0 );
     k_axis.setSkipValue( 0 );
@@ -2718,7 +2739,7 @@ public class GL_RecipPlaneView
     Vector3D points[] = new Vector3D[1];
 
     points[0] = vec;
-    Polymarker marker = new Polymarker( points, type, 0.1f );
+    Polymarker marker = new Polymarker( vec_Q_space, points, type, 0.1f );
     marker.setColor( YELLOW );
     objects[0] = marker;
 
@@ -2744,7 +2765,7 @@ public class GL_RecipPlaneView
     end[0]   = new Vector3D( origin_vec.getVector() );
     end[0].add( vec );
 
-    Lines lines = new Lines( start, end );
+    Lines lines = new Lines( vec_Q_space, start, end );
     lines.setColor( color );
 
     vec_Q_space.setObject( name, lines );
@@ -3233,6 +3254,7 @@ private class PeakThresholdScaleHandler implements ChangeListener
       peak_threshold = value;
       scene_f.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
       ExtractPeaks();
+      draw_Axes();
       vec_Q_space.Draw();
       scene_f.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }
@@ -3267,6 +3289,7 @@ private class PeakThresholdScaleHandler implements ChangeListener
 
          scene_f.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
          ExtractPeaks();
+         draw_Axes();
          vec_Q_space.Draw();
          scene_f.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
        }
@@ -3293,6 +3316,7 @@ private class PeakThresholdScaleHandler implements ChangeListener
        {
          scene_f.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
          ExtractPeaks();
+         draw_Axes();
          vec_Q_space.Draw();
          scene_f.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
        }
@@ -3552,6 +3576,7 @@ private class PlaneListener implements ActionListener
      {
         scene_f.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         ExtractPeaks();
+        draw_Axes();
         vec_Q_space.Draw();
         scene_f.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
      }
@@ -3683,7 +3708,7 @@ private class FFTListener implements IObserver
              poly_verts[i].add( step_vec );
            }
            Polymarker plane_marks = 
-                      new Polymarker( poly_verts, Polymarker.BOX, q_spacing/5 );
+             new Polymarker( vec_Q_space, poly_verts, Polymarker.BOX, q_spacing/5 );
            plane_marks.setColor( CYAN );
            vec_Q_space.setObject( "Selected Plane Spacing", plane_marks );
 
