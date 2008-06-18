@@ -123,7 +123,8 @@ import gov.anl.ipns.Util.Sys.*;
 import gov.anl.ipns.ViewTools.Panels.Image.*;
 import gov.anl.ipns.ViewTools.Panels.ThreeD.*;
 import gov.anl.ipns.ViewTools.UI.*;
-
+import gov.anl.ipns.Util.SpecialStrings.ErrorString;
+import gov.anl.ipns.MathTools.LinearAlgebra;
 import java.util.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -185,8 +186,11 @@ public class SCDRecipLat
   String          file_names[];
   boolean         JFrameOpen;
   boolean         omit_fit_plane;
+ 
   int             DisplayMode;//Detemines other display elements
   InfoActionListener actListener= null;//For Info button. Need peaks
+  
+  JCheckBoxMenuItem   Planes, Points;
   /* ---------------------------- Constructor ----------------------------- */
   public SCDRecipLat(){
      this( null,0);
@@ -210,11 +214,11 @@ public class SCDRecipLat
     controller  = new AltAzController();
     q_readout   = new JLabel("undefined");
 
-    origin_vec  = new VectorReadout( ORIGIN );
-    origin_vec.setVector( new Vector3D(0,0,0) );
-    a_star_vec  = new VectorReadout( A_STAR, "Select +" );
-    b_star_vec  = new VectorReadout( B_STAR, "Select *" );
-    c_star_vec  = new VectorReadout( C_STAR, "Select X" );
+    origin_vec  = new VectorReadout( ORIGIN  , false);
+    origin_vec.setVector( new Vector3D(0,0,0 ) );
+    a_star_vec  = new VectorReadout( A_STAR, "Select +" , false);
+    b_star_vec  = new VectorReadout( B_STAR, "Select *"  , false);
+    c_star_vec  = new VectorReadout( C_STAR, "Select X"  , false);
 
     TitledBorder border = new TitledBorder(
                              LineBorder.createBlackLineBorder(),"Qxyz");
@@ -317,6 +321,7 @@ public class SCDRecipLat
     omit_fit_plane=false;
     abNormal = acNormal = bcNormal = null;
     this.DisplayMode = DisplayMode;
+    Planes = Points = null;
     if( DisplayMode ==1){//Add menu items and listeners
        SetUpPeakMenuItems( scene_f);
     }
@@ -337,6 +342,16 @@ public class SCDRecipLat
       JMenu Info = new JMenu("Information");
       
       jmb.add( Info );
+      Planes = new JCheckBoxMenuItem(" 3 plane mode");
+      Points = new JCheckBoxMenuItem(" 4 points mode");
+      ButtonGroup BG = new ButtonGroup();
+      BG.add( Planes);
+      BG.add( Points);
+      Points.setSelected( true );
+      
+      Info.add(  Points );
+      Info.add( Planes );
+      Info.add(  new JSeparator() );
       JMenuItem Load= new JMenuItem( LOAD_ORIENT);
       Info.add( Load );
       Load.setToolTipText( "Loads and displays UB matrix as a*,b* and c*" );
@@ -1818,7 +1833,7 @@ private class ReadoutListener implements ActionListener
        {
          scale_factor = Float.valueOf(action).floatValue();
          Vector3D vec = readout.getVector();
-         vec.multiply( scale_factor );
+         vec.multiply( 1/scale_factor );
          readout.setVector( vec );
        }
        catch ( Exception exception )
@@ -1939,8 +1954,14 @@ private class ReadoutListener implements ActionListener
            Vector Stats = new Vector(4);
            try{
               
-              float[][]UB = CalcUB(Peaks, UnitNormals, MaxCrystalDistance,  
+              float[][]UB = null;
+              if( Planes.isSelected())
+                   UB =CalcUB(Peaks, UnitNormals, MaxCrystalDistance,  
                                                                 Stats);
+              else{
+                  float[][] dirs = get4Points();
+                  UB = CalcUB4(Peaks, dirs,Stats);
+              }
               if(UB == null){
                  JOptionPane.showMessageDialog( null , "Error-Not enough Planes");
                  return;
@@ -2015,13 +2036,73 @@ private class ReadoutListener implements ActionListener
      SCDRecipLat RecipLat = new SCDRecipLat( HelpFileName, 1);
      RecipLat.setMaxCrystalDistance( MaxXtallengthReal );
      RecipLat.getSCDLat( Peaks , true );
-    
-     float[][] UnitNormals = RecipLat.getPlaneNormals();
+     if( RecipLat.PlaneMode()){
+       float[][] UnitNormals = RecipLat.getPlaneNormals();
      
-     return RecipLat.CalcUB(Peaks, UnitNormals, MaxXtallengthReal, Stats);
+       return RecipLat.CalcUB(Peaks, UnitNormals, MaxXtallengthReal, Stats);
+     }else{// 4point mode
+        float[][] Points = RecipLat.get4Points();
+        return RecipLat.CalcUB4(Peaks,  Points, Stats );
+        
+     }
   }
-   
   
+  private  Vector3D add( Vector3D a, Vector3D b){
+     if( a== null || b== null)
+        return new Vector3D(0,0,0);
+     Vector3D  V = new Vector3D(a);
+     V.add( b );
+     return V;
+  }
+  /**
+   * Really returns the 3 directions only. This is sent into Blind
+   * @return
+   */
+  public float[][] get4Points(){
+     if( a_star_vec == null || b_star_vec == null || c_star_vec==null ||
+               origin_vec == null)
+        return null;
+     if( a_star_vec.getVector() == null || b_star_vec.getVector() == null ||
+              c_star_vec.getVector()==null || origin_vec.getVector() == null)
+       return null;
+     float[][] Res = new float[3][3];
+     Vector3D origin = origin_vec.getVector();
+    
+     Res[0]=a_star_vec.getVector().get();
+     Res[1]=b_star_vec.getVector().get();
+     Res[2]=c_star_vec.getVector().get();
+     return Res;
+     
+     
+  }
+  
+  public float[][] CalcUB4( Vector Peaks, float[][] Points, Vector Stats){
+     float[][] Res = new float[3][3];
+     for( int i=0; i<3;i++)
+        for( int j=0;j<3;j++)
+           Res[j][i]= Points[i][j];
+     
+     IPNSSrc.blind Blind = new IPNSSrc.blind();
+     Object R = Blind.blaue( Res );
+     if( R instanceof ErrorString){
+        JOptionPane.showMessageDialog( null , "Error "+R.toString());
+        return null;
+     }
+     
+     
+    float[][]UB=  LinearAlgebra.double2float(  Blind.UB );
+    updateStatsVector( Peaks, Stats, UB);
+    return UB;
+        
+  }
+  public boolean PlaneMode(){
+     
+     if( Planes == null)
+        return false;
+     if( Planes.isSelected())
+        return true;
+     return false;
+  }
   
   //Calculates the UB matrix from GetUB with the selected normals
   protected float[][] CalcUB( Vector Peaks, float[][] UnitNormals,
@@ -2092,6 +2173,13 @@ private class ReadoutListener implements ActionListener
                  "Planes not distinct directions or not enough points are " +
                  "close to the planes");
      }
+     
+     updateStatsVector( Peaks, Stats, UB);
+     return UB;
+  }
+  
+  private void updateStatsVector( Vector Peaks,  Vector Stats, float[][]UB){
+
      int n=4;
      if( Stats != null){
         Stats.clear();
@@ -2099,6 +2187,5 @@ private class ReadoutListener implements ActionListener
            Stats.addElement(  GetUB.IndexStat( UB, Peaks,(i+1)*.1f, null));
         }
      }
-     return UB;
   }
 }
