@@ -65,12 +65,13 @@ import org.nexusformat.*;
  * amount of time for retrieving this type of data
  */
 public class CNexusFile extends NexusFile{
-
+    Thread openThread;
    /**
     *Constructor that just calls the super constructor
     */
   public CNexusFile( String filename, int access ) throws NexusException{
     super( filename, access );
+    openThread = Thread.currentThread();
   }
 
   /** 
@@ -152,18 +153,19 @@ public class CNexusFile extends NexusFile{
    * @throws NexusException
    */
   public synchronized void close() throws NexusException{
-/*
+
+     if( openThread != Thread.currentThread())
+        return;
+ 
       int thandle = handle;
       handle = -1;
       if(thandle  >= 0)
         try{
-          Thread.sleep( 300 );
          close(thandle);
-         Thread.sleep( 300 );
          handle = -1;
       }catch(Exception s){
          System.out.println("Error closing Nexus file "+s);
       }
-*/
+
   }
 }
