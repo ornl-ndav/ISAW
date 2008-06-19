@@ -249,7 +249,9 @@ public class Util {
             SharedMessages.addmsg( "Could not retrieve " + filename );
          }
          
-           
+         if( retriever != null)
+            if( retriever instanceof NexusRetriever)
+               ((NexusRetriever)retriever).close();
          
       }//for @ run
       
@@ -855,6 +857,7 @@ public class Util {
    }
    
    
+   
    //Uses the old centroid peak
    private static IPeak CentroidPeak( IPeak Pk, DataSet DS, IDataGrid grid,
                   float Max_dSpacing, float pixelW_H, int min_time_chan,
@@ -1119,9 +1122,10 @@ public class Util {
          
          System.out.println( "Integrating peaks in " + filename );
          int dsIndx = -1;
+         Retriever retriever = null;
          try{
             
-           Retriever retriever = Command.ScriptUtil.getRetriever( filename );
+           retriever = Command.ScriptUtil.getRetriever( filename );
            
            int monCount = getMonCount( retriever , 0 );
            String matFileName = outpath + "ls" + expname + Runs[ runIndx ] + ".mat";
@@ -1162,7 +1166,7 @@ public class Util {
               operators.addElement( opThrd );
               
               opThrd.start();
-           }
+           }//fro dsIndex
            
          }catch( Exception ss ){
             
@@ -1175,7 +1179,9 @@ public class Util {
             return new gov.anl.ipns.Util.SpecialStrings.ErrorString(
                                        "Error in retrieving " + filename +  S );
          }
-             
+         if( retriever != null)
+            if( retriever instanceof NexusRetriever) 
+              ((NexusRetriever)retriever).close();
       }
       
       
