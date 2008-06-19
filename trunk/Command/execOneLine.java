@@ -357,7 +357,7 @@ public class execOneLine implements gov.anl.ipns.Util.Messaging.IObserver,IObser
 
     Hashtable ArrayInfo = new Hashtable();
     Hashtable MacroInfo = new Hashtable();                  //Stores Macros
-    Hashtable ObjectInfo= new Hashtable();
+    HashMap ObjectInfo= new HashMap();
     
     /* ----------------------  End Symbol Table(s) --------------------------*/
     IObserverList  OL; 
@@ -459,7 +459,7 @@ public class execOneLine implements gov.anl.ipns.Util.Messaging.IObserver,IObser
         ArrayInfo=new Hashtable();
         ObjectInfo.clear();
         ObjectInfo = null;
-        ObjectInfo = new Hashtable();
+        ObjectInfo = new HashMap();
      //   System.gc();
     }
    /**
@@ -3495,7 +3495,7 @@ public class execOneLine implements gov.anl.ipns.Util.Messaging.IObserver,IObser
           Result = new Float( ((Double)Result).floatValue());
           
         if(ObjectInfo.containsKey( vname.toUpperCase())  ){
-        
+           
              ObjectInfo.put(vname, Result);
              return;
         }
@@ -3689,6 +3689,7 @@ public class execOneLine implements gov.anl.ipns.Util.Messaging.IObserver,IObser
                return;
             }
          } 
+        
          ObjectInfo.put(vname.toUpperCase().trim(), Result); 
       }
         
