@@ -113,6 +113,7 @@ public class NexNode implements NxNode{
   
   Hashtable typeToString;
   Hashtable LinkInfo;
+  Thread    OpenThread;
   
   static int NameInt = 0;
   boolean debug = false;
@@ -130,7 +131,7 @@ public class NexNode implements NxNode{
     errormessage = "";
     this.filename = filename;
     MAX_BLOB_SIZE = getMAX_BLOB_SIZE();
-    
+    OpenThread = Thread.currentThread();
     try{
        
       NF = new CNexusFile( filename, NexusFile.NXACC_READ );
@@ -1400,7 +1401,14 @@ public class NexNode implements NxNode{
    * closes the connection
    */
   public void close(){
-     
+    if( NF == null)
+       return;
+    try{
+       NF.close();
+    }catch(Exception ss){
+       ss.printStackTrace();
+    }
+ 
     NF = null;
   }
 
