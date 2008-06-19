@@ -99,7 +99,12 @@ public class NexusRetriever extends Retriever implements hasInformation
      errormessage = ext.getErrorMessage() ;
      return DS ;
     }               
-  
+  public void close(){
+     if( node != null)
+        node.close();
+     node = null;
+     ext = null;
+  }
   /**
   * @param data_set_num the data set index
   * @return the type( Histogram/monitor/invalid/etc.) of the data 
@@ -143,6 +148,8 @@ public class NexusRetriever extends Retriever implements hasInformation
      * @see #getType(int )
      */
    public String[] getDataSetInfo( int data_set_num){
+      if( ext == null)
+         return new String[0];
       return ext.getDataSetInfo( data_set_num);
    }
 
