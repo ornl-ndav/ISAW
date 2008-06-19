@@ -399,7 +399,6 @@ public class GL_RecipPlaneView
      }
 
      initialize( true );
-     System.out.println("End constructor for GL_RecipPlaneView");
   }
 
 
