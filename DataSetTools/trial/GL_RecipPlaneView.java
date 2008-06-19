@@ -28,6 +28,12 @@
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
+ *  Last Modified:
+ * 
+ *  $Author$
+ *  $Date$            
+ *  $Revision$
+ *
  * Modified:
  *
  * $Log$
@@ -256,6 +262,7 @@ public class GL_RecipPlaneView
   public static final String CONST_L_SLICE = "Const l Slice";
   public static final int    SLICE_STEPS = 700;
 
+  static File input_orientation_matrix_dir = null;
                                                     // flags for various options
   private boolean iso_surface_shown         = false;
 
@@ -514,14 +521,18 @@ public class GL_RecipPlaneView
     plane_controls.add( k_plane_ui );
     plane_controls.add( l_plane_ui );
 
-    JButton write_matrix_file = new JButton("Write Orientation Matrix");
+    JButton write_matrix_file        = new JButton("Write Orientation Matrix");
+    JButton read_matrix_file         = new JButton("Read Orientation Matrix");
+    JButton clear_orientation_matrix = new JButton("Clear Orientation Matrix");
     JButton write_peaks_file = new JButton("Write Peak Data File");
     JPanel button_panel = new JPanel();
-    button_panel.setLayout( new GridLayout(2,1) );
+    button_panel.setLayout( new GridLayout(4,1) );
     button_panel.add( write_matrix_file );
+    button_panel.add( read_matrix_file );
+    button_panel.add( clear_orientation_matrix );
     button_panel.add( write_peaks_file );
     plane_controls.add( button_panel );
-    tabbed_pane.addTab( "Planes", plane_controls );
+    tabbed_pane.addTab( "HKL-Planes", plane_controls );
     tabbed_pane.setSelectedIndex(0);
     control_panel.add( tabbed_pane );
 
@@ -579,6 +590,8 @@ public class GL_RecipPlaneView
     l_plane_ui.addActionListener( plane_listener );    
 
     write_matrix_file.addActionListener( new WriteMatrixFileListener() );
+    read_matrix_file.addActionListener( new ReadMatrixFileListener() );
+    clear_orientation_matrix.addActionListener( new ClearMatrixListener() );
     write_peaks_file.addActionListener( new WritePeaksFileListener() );
 
     vec_q_transformer = new Vector();
@@ -2557,8 +2570,16 @@ public class GL_RecipPlaneView
    */
   private void draw_Axes()
   {
-    if ( orientation_matrix == null )
-      draw_Q_axes( 15, vec_Q_space );
+                                            // First clear out the old axes
+    vec_Q_space.removeObjects( "QX-AXIS" );
+    vec_Q_space.removeObjects( "QY-AXIS" );
+    vec_Q_space.removeObjects( "QZ-AXIS" );
+    vec_Q_space.removeObjects( "a*-AXIS" );
+    vec_Q_space.removeObjects( "b*-AXIS" );
+    vec_Q_space.removeObjects( "c*-AXIS" );
+                                            // Then draw the right new one
+    if ( orientation_matrix == null )       // NOTE: this could also be
+      draw_Q_axes( 15, vec_Q_space );       //       controlled by a checkbox
     else
       draw_HKL_axes( 15, vec_Q_space );
   }
@@ -3111,12 +3132,14 @@ private class ViewMouseInputAdapter extends MouseInputAdapter
    private void handle_event( MouseEvent e )
    {
      int index = vec_Q_space.pickID( e.getX(), e.getY(), 5 );
+     System.out.println("Pick ID = " + index );
      if ( index != last_index )
      {
        last_index = index;
        if ( index != GL_Shape.INVALID_PICK_ID )
        {
          Vector3D position = vec_Q_space.pickedPoint( e.getX(), e.getY() );
+         System.out.println("Point = " + position );
          if ( position != null )
          {
            Toolkit.getDefaultToolkit().beep();
@@ -3363,6 +3386,57 @@ private class CalcFFTButtonHandler implements ActionListener
 }
 
 
+/* ----------------------- ReadMatrixFileListener ------------------------ */
+/*
+ *  Load the orientation matrix and lattice parameters from a file and 
+ *  redraw with a*, b* and c* axes.
+ */
+private class ReadMatrixFileListener implements ActionListener
+{
+
+  public void actionPerformed( ActionEvent e )
+  {
+    RobustFileFilter filter = new RobustFileFilter();
+    filter.addExtension("mat");
+
+    JFileChooser chooser = null;
+    if ( input_orientation_matrix_dir == null )
+      chooser = new JFileChooser();
+    else
+      chooser = new JFileChooser( input_orientation_matrix_dir );
+
+    chooser.setFileFilter( filter );
+
+    int returnVal = chooser.showOpenDialog( scene_f );
+    if(returnVal == JFileChooser.APPROVE_OPTION)
+    {
+      input_orientation_matrix_dir = chooser.getCurrentDirectory();
+      loadOrientationMatrix( chooser.getSelectedFile().toString() );
+      draw_Axes();
+      vec_Q_space.Draw();
+    }
+  }
+}
+
+
+/* ----------------------- ClearMatrixListener ------------------------ */
+/*
+ *  Reset the orientation matrix back to null and 
+ *  redraw with Qx, Qy and Qz axes.
+ */
+private class ClearMatrixListener implements ActionListener
+{
+  public void actionPerformed( ActionEvent e )
+  {
+    orientation_matrix = null;
+    orientation_matrix_inverse = null;
+     
+    draw_Axes();
+    vec_Q_space.Draw();
+  }
+}
+
+
 /* ----------------------- WriteMatrixFileListener ------------------------ */
 /*
  *  Write the orientation matrix and lattice parameters to a file and to
@@ -3376,8 +3450,6 @@ private class WriteMatrixFileListener implements ActionListener
     int returnVal = chooser.showOpenDialog( scene_f );
     if(returnVal == JFileChooser.APPROVE_OPTION) 
       WriteMatrixFile( chooser.getSelectedFile().toString() );
-
-    return;
   }
 }
 
@@ -3409,8 +3481,6 @@ private class WritePeaksFileListener implements ActionListener
         SharedData.addmsg( "  " + io_exception.toString() );
       }
     }
-
-    return;
   }
 }
 
