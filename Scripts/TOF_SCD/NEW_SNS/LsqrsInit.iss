@@ -26,7 +26,7 @@
 
 
 $command=LsqrsInit
-$category=operator,Instrument Type,TOF_NSCD
+$category=operator,Instrument Type,TOF_NSCD,NEW_SNS
 $title=Least Squares ( Optimize Orientation Matrix )
 
 $filename     LoadFile                           Peaks filename
