@@ -173,10 +173,13 @@ public class SNSDetCal
           if ( debug )
         	System.out.println("CALIBRATED GRID " + grid);
        }
+       scanner.close();
+       buff.close();
        f_in.close();
      }
      catch ( IOException exception )
      {
+       exception.printStackTrace();
        return new ErrorString( "Error reading calibration file " + file_name);
      }
 
