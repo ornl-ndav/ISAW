@@ -317,7 +317,7 @@ public class ExtGetDS{
 
   
    FileState.Push( EntryState);
-   
+   FileState.Push( new NxInstrumentStateInfo(dsInf.NxInstrumentNode, FileState));
    IProcessNxEntry entry = QueryNxEntry.getNxEntryProcessor(FileState, 
                      dsInf.NxdataNode,  null, dsInf.startGroupID);
    
