@@ -125,6 +125,8 @@ import gov.anl.ipns.ViewTools.Panels.ThreeD.*;
 import gov.anl.ipns.ViewTools.UI.*;
 import gov.anl.ipns.Util.SpecialStrings.ErrorString;
 import gov.anl.ipns.MathTools.LinearAlgebra;
+import gov.anl.ipns.ViewTools.Panels.ThreeD.*;
+import  gov.anl.ipns.ViewTools.UI.*;
 import java.util.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -140,7 +142,7 @@ import jnt.FFT.*;
  *  a basic view of the peaks in 3D "Q" space.
  */
 
-public class SCDRecipLat
+public class SCDRecipLat  implements IThreeD_drawObject
 {
   public static final String NORMAL_ATTRIBUTE = "Plane Normal";
   public static final String ORIGIN = " origin ";
@@ -191,6 +193,8 @@ public class SCDRecipLat
   InfoActionListener actListener= null;//For Info button. Need peaks
   
   JCheckBoxMenuItem   Planes, Points;
+  
+  int unitSize =3;
   /* ---------------------------- Constructor ----------------------------- */
   public SCDRecipLat(){
      this( null,0);
@@ -324,6 +328,7 @@ public class SCDRecipLat
     Planes = Points = null;
     if( DisplayMode ==1){//Add menu items and listeners
        SetUpPeakMenuItems( scene_f);
+       
     }
   }
  
@@ -331,7 +336,8 @@ public class SCDRecipLat
 
       if( DisplayMode !=1)
          return;
-      this.actListener = new InfoActionListener();
+      
+   
       
       JMenuBar jmb = scene_f.getJMenuBar();
       if( jmb == null ) {
@@ -339,6 +345,9 @@ public class SCDRecipLat
          scene_f.setJMenuBar( jmb );
       }
       
+      
+      
+      this.actListener = new InfoActionListener();
       JMenu Info = new JMenu("Information");
       
       jmb.add( Info );
@@ -362,21 +371,17 @@ public class SCDRecipLat
       Info.add( Res );
       Res.setToolTipText( "Reports stats and UB so far" );
       Res.addActionListener( actListener );
+      
+      
+      jmb.add(  new ThreeDAttributeJMenu( this, "Attributes","Marks",
+               new String[]{"Box","Cross","Dot","Plus","Star"}, "Size", 1f,30f,2f,
+               null,null,null) );
+      
       jmb.repaint();
- /*     
-      System.out.println("JMenuBar info");
-      System.out.println("JMenuBar "+jmb.getMenuCount());
-      for( int i=0; i< jmb.getMenuCount();i++){
-         JMenu jmnu = jmb.getMenu( i );
-         System.out.println("JMenu "+jmnu.getText() +" had "+jmnu.getItemCount());
-         for( int j=0; j< jmnu.getItemCount();j++){
-            JMenuItem jmi = jmnu.getItem( j );
-            System.out.println("jmenuItem "+jmi.getText());
-         }
-      }
-*/
+ 
    }
   private void SetUpHelp( JFrame scene_f, String HelpFileName){
+     
      if(scene_f == null || HelpFileName == null )
         return;
      java.io.File f = new java.io.File( HelpFileName);
@@ -1472,11 +1477,12 @@ public class SCDRecipLat
    * @return    The SCDRecipLat is returned for information
    */
   public SCDRecipLat getSCDLat( Vector Peaks, boolean wait){
+     
      if( Peaks == null)
         return null; 
      this.actListener.setPeaks( Peaks );
      JFrameOpen = true;
-     omit_fit_plane=true;
+     omit_fit_plane = true;
      IThreeD_Object[] objs = new IThreeD_Object[Peaks.size()];
      float[] Range = GetMaxPkIntensity( Peaks);
      float MaxIntensity = Range[0];
@@ -1486,6 +1492,7 @@ public class SCDRecipLat
      file_names = new String[1];
      file_names[0]= "Peaks";
      float ballSize = Range[1]/Math.max(Peaks.size(),400 );
+     unitSize = 4;
      for( int i=0; i< Peaks.size(); i++)
         if( Peaks.elementAt(i)!= null && 
                  (Peaks.elementAt( i ) instanceof IPeak)){
@@ -1495,8 +1502,13 @@ public class SCDRecipLat
            int color = (int)(intensity*127/MaxIntensity);
            if( color >= colors.length)
               color = colors.length-1;
-           objs[i] = new Ball( new Vector3D((float) Q[0], (float)Q[1],
-                                           (float)Q[2]),ballSize,colors[color]);
+           Vector3D[] Marks = new Vector3D[1];
+           Marks[0]= new Vector3D((float) Q[0], (float)Q[1],
+                    (float)Q[2]);
+           
+           objs[i] = new Polymarker(Marks,colors[color]);
+           ((Polymarker)objs[i]).setSize( unitSize );
+           ((Polymarker)objs[i]).setType(  Polymarker.STAR );
            objs[i].setPickID( Peak.seqnum() );
            
         
@@ -1510,6 +1522,9 @@ public class SCDRecipLat
      return this;
      
   }
+  
+  
+  
   
   private void checkJFrameDone(){
      
@@ -2187,5 +2202,39 @@ private class ReadoutListener implements ActionListener
            Stats.addElement(  GetUB.IndexStat( UB, Peaks,(i+1)*.1f, null));
         }
      }
+  }
+  
+  public String drawObjects( int fillType, float size, java.awt.Color color, Vector pick_ids){
+     
+    int[] Type ={Polymarker.BOX,Polymarker.CROSS,Polymarker.DOT,
+                    Polymarker.PLUS,Polymarker.STAR};
+     if( DisplayMode !=1)
+        return null;
+     int Fill =-1;
+     if( fillType >=0 && fillType < Type.length)
+        Fill = Type[fillType];
+     
+     int Size = -1;
+     if( size >.5 && size < 20)
+        Size = (int)(size+.5);
+     
+     IThreeD_Object[] objs = vec_Q_space.getObjects( "Peaks" );
+     if( objs != null &&( Fill >=0 || Size >=1)){
+        
+        for( int i=0;  i< objs.length; i++)
+          if( objs[i] instanceof Polymarker){
+              Polymarker P = (Polymarker)objs[i];
+              if( Fill >=0)
+                 P.setType(Fill);
+              if( Size >=1)
+                 P.setSize(  Size );
+              
+          
+         }
+      vec_Q_space.setObjects( "Peaks" , objs );
+      Redraw();
+     }
+    
+     return null;
   }
 }
