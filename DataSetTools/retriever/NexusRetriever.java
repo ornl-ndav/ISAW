@@ -70,7 +70,7 @@ public class NexusRetriever extends Retriever implements hasInformation
     public NexusRetriever(  String dataSourceName )
     {super(  dataSourceName ) ;
      errormessage = "" ;
-     node = ( NxNode )( new NexIO.NexApi.NexNode(  dataSourceName  ) ) ;
+     node = ( new NexIO.NexApi.NexNode(  dataSourceName  ) ) ;
      if( node.getErrorMessage() != null)
        if( node.getErrorMessage().length() > 0)
          {errormessage = node.getErrorMessage();
@@ -84,6 +84,27 @@ public class NexusRetriever extends Retriever implements hasInformation
      if( errormessage != null)
        if( errormessage.length() > 0)
           ext = null;
+    }
+    
+    /**
+     * Saves the information from this NeXus file about each data set. This
+     * includes information to access relevant information where the information
+     * about this data set is stored in the NeXus file
+     * 
+     * @return  true if successful otherwise false
+     */
+    public boolean SaveSetUpInfo(){
+       return ext.SaveStartUpInfo();
+    }
+    
+    
+    /**
+     * Uses the information stored in SaveSetUpInf() to initialize the information
+     * on the data sets stored in this file.
+     * 
+     */
+    public void RetrieveSetUpInfo(){
+       ext.RestoreStartUpInfo();
     }
 
     /** 
