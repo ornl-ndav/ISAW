@@ -1,5 +1,5 @@
 /*
- * File:  ExtGetDS.java 
+ * File:  ExtGetDS.java
  *             
  * Copyright (C) 2001, Ruth Mikkelson
  *
@@ -143,6 +143,7 @@ import NexIO.State.*;
 import NexIO.Process.*;
 import NexIO.Util.*;
 import NexIO.Query.*;
+import DataSetTools.operator.Generic.TOF_SCD.*;
 
 /**  Class that retrieves DataSets from sources with an NxNode interface AND
  *  which
@@ -164,20 +165,330 @@ public class ExtGetDS{
   /** Used to search through a NeXus file for all of its NXlog nodes. */
   NxlogLocator nxLogLocator;
 
+  public ExtGetDS( NxNode node , String filename ){
+     this( node, filename, false);
+  }
+  
   /**
    *  Constructor 
    *  @param node the NxNode used to communicate with the underlying
    *                 datasource
    *  @param filename the filename
    */
-  public ExtGetDS( NxNode node , String filename ){
+  public ExtGetDS( NxNode node , String filename, boolean UsePreSet ){
     this.node = node ;
     this.filename = filename ;
     errormessage = "" ;
     EntryToDSs= new Vector() ;
     this.nxLogLocator = new NxlogLocator(this.node);
+    if( UsePreSet)
+       RestoreStartUpInfo();
   }
 
+  /**
+   * Restores the saved startup information for a NeXus file. If successful
+   * EntryToDSs and setupDSs variables will be set.
+   * If unsuccessful the two variables will be set appropriately
+   * 
+   * 
+   */
+   public void RestoreStartUpInfo(){
+      
+     String F = NameFile(filename);
+     if( F == null || F.length() < 3)
+        return;
+     String Fname = System.getProperty( "user.home" );
+     if( Fname.length() > 0 && !(Fname.endsWith( "\\" ) || Fname.endsWith( "/" ) ))
+        Fname =Fname+"/";
+
+     Fname = Fname+"ISAW/"+F.substring( 0,3 )+".startup";
+     
+
+     this.EntryToDSs = new Vector();
+     this.setupDSs = true;
+     EntryToDSs = new Vector();
+     NxNode entry,instr,source,moderator,beam, sample;
+     entry = instr = source = moderator = beam = sample =null;
+     try{
+        FileInputStream fin = new FileInputStream( Fname );
+        for( String line= Peak.getLine(fin); line !=null; line = Peak.getLine(fin)){
+           int endDetectorID = Integer.parseInt( line.trim() );
+           int endGroupID= Integer.parseInt( Peak.getLine(fin).trim() );;
+           int startDetectorID= Integer.parseInt(Peak.getLine(fin).trim() );;
+           int startGroupID= Integer.parseInt( Peak.getLine(fin).trim() );;
+           int nelts = Integer.parseInt( Peak.getLine(fin).trim() );
+           int ndetectors = Integer.parseInt( Peak.getLine( fin ).trim());
+           String label = Peak.getLine(fin).trim();
+           if( label != null && label.length() < 1)
+              label = null;
+           String NodeNames  = Peak.getLine(fin).trim();
+
+           String NxentryName = Peak.getLine(fin).trim();
+           String NxdataName = Peak.getLine(fin).trim(); 
+           String NxInstrumentName = Peak.getLine(fin).trim();
+           String NxBeamName = Peak.getLine(fin).trim();
+           String NxInstrModeratorName = Peak.getLine(fin).trim();
+           String NxInstrSourceName = Peak.getLine(fin).trim();
+           String NxSampleName = Peak.getLine(fin).trim();
+           if( entry == null || !entry.getNodeName().equals(  NxentryName )){
+              entry = node.getChildNode( NxentryName );
+              if( entry == null ){
+                 setupDSs=false; 
+                 return;
+              }
+              instr = entry.getChildNode( NxInstrumentName );
+              source = NexUtils.GetSubNode( instr, NxInstrSourceName );
+              moderator =NexUtils.GetSubNode( instr, NxInstrModeratorName);   
+              beam = entry.getChildNode( NxBeamName );
+              sample = entry.getChildNode(  NxSampleName );
+            
+           }
+           DataSetInfo dsInf =CreateSetUpEntry( endDetectorID, endGroupID, 
+                    startDetectorID, startGroupID, nelts, ndetectors,  label,
+                    NodeNames, entry,  NxdataName, instr, 
+                    beam, moderator,  source,sample );
+           if( dsInf != null)
+              EntryToDSs.addElement(  dsInf );
+           else{
+             EntryToDSs = new Vector();
+             setupDSs = false;
+           }
+           
+           
+        }  
+        
+     }catch( Exception ss){
+        this.EntryToDSs = new Vector();
+        this.setupDSs = false;
+     }
+     
+   }
+   
+   /**
+    * Creates an internal block describin a data set
+    * 
+    * @param endDetectorID   Last detectorID( not needed)
+    * @param endGroupID      Last GroupID( not needed)
+    * @param startDetectorID Start detector ID( necessary))
+    * @param startGroupID     Start Group ID( necessary))
+    * @param nspectra        Number of spectra in this data set
+    * @param label           label name of an attribute in an NXdata.data to 
+    *                         be merged with other NXdata with this label name
+    * @param NodeNames       List of monitor names(NXdataName=null) or NXdata names
+    *                         with the same label
+    * @param NXentryName    The NXentry name for this data set
+    * @param NXdataName     The name of an NXdata for this data set
+    * @param NxInstrumentName  The NXinstrument name for this NXentry
+    * @param NxBeamName        The NXbeam node name in this NXentyr
+    * @param NXModeratorName    the name of the NXmoderator node in NXinstrument
+    * @param NxSourceName     The name of the NXsource entry
+    * @param NxSampleName    The name of the NXsample entry.
+    * 
+    * @return  The above information transformed to the internal form.
+    */
+   public DataSetInfo CreateSetUpEntry( int endDetectorID, int endGroupID, 
+                                int startDetectorID, int startGroupID, 
+                                int nspectra, int ndet, String label,String NodeNames,
+                                String NXentryName, String NXdataName,
+                                String   NxInstrumentName, String NxBeamName,
+                                String NXModeratorName, String NxSourceName,
+                                String NxSampleName ){
+      
+      NxNode entry = node.getChildNode( NXentryName );
+      if( entry == null )
+         return null;
+      NxNode instr = entry.getChildNode(  NxInstrumentName );
+      NxNode data  = entry.getChildNode(  NXdataName );
+      DataSetInfo dsInf= new DataSetInfo( entry, data, startGroupID, endGroupID , label );
+      dsInf.NxInstrumentNode = instr;
+      dsInf.startDetectorID = startDetectorID;
+      dsInf.endDetectorID = endDetectorID;
+      dsInf.nelts = nspectra;
+      if( NodeNames.trim().length()>0)
+         dsInf.NodeNames = NodeNames;
+      else 
+         dsInf.NodeNames = null;
+      
+      dsInf.NxBeamNode = entry.getChildNode( NxBeamName );
+      dsInf.NxInstrModeratorNode = NexUtils.GetSubNode( instr, NXModeratorName );
+      dsInf.NxInstrSourceNode = NexUtils.GetSubNode( instr,NxSourceName );
+      dsInf.NxSampleNode = entry.getChildNode( NxSampleName );
+      return dsInf;
+   }
+   
+   /**
+    * Faster create setUpEntry when previous DataSetInfo is in the same NXentry 
+    * of a NeXus file.
+    * 
+    * @param dataInf      Previous DataSetInfo in the same NXentry
+     
+    * @param endDetectorID   Last detectorID( not needed)
+    * @param endGroupID      Last GroupID( not needed)
+    * @param startDetectorID Start detector ID( necessary))
+    * @param startGroupID     Start Group ID( necessary))
+    * @param nspectra        Number of spectra in this data set
+    * @param label           label name of an attribute in an NXdata.data to 
+    *                         be merged with other NXdata with this label name
+    * @param NodeNames       List of monitor names(NXdataName=null) or NXdata names
+    ** @param NXdataName  The name of an NXdata for this data set
+    * @return   The above information transformed to the internal form.
+    */
+   public DataSetInfo CreateSetUpEntry( DataSetInfo dataInf, int endDetectorID , int endGroupID ,
+            int startDetectorID , int startGroupID , int nspectra , int ndet ,
+            String label , String NodeNames , String NXdataName ){
+      
+      return CreateSetUpEntry( endDetectorID ,  endGroupID , startDetectorID , 
+               startGroupID ,  nspectra , ndet , label ,  NodeNames, 
+               dataInf.NxentryNode, NXdataName , dataInf.NxInstrumentNode,
+               dataInf.NxBeamNode, dataInf.NxInstrModeratorNode, 
+               dataInf.NxInstrSourceNode, dataInf.NxSampleNode);
+      
+   }
+   
+   private DataSetInfo CreateSetUpEntry( int endDetectorID , int endGroupID ,
+            int startDetectorID , int startGroupID , int nspectra , int ndet ,
+            String label , String NodeNames , NxNode entry , String NXdataName ,
+            NxNode instr , NxNode NxBeam , NxNode NXModerator ,
+            NxNode NxSource , NxNode NxSample ) {
+
+
+      if( entry == null )
+         return null;
+      
+      NxNode data = entry.getChildNode( NXdataName );
+      DataSetInfo dsInf = new DataSetInfo( entry , data , startGroupID ,
+               endGroupID , label );
+      dsInf.NxInstrumentNode = instr;
+      dsInf.startDetectorID = startDetectorID;
+      dsInf.endDetectorID = endDetectorID;
+      dsInf.nelts = nspectra;
+      if( NodeNames.trim().length() > 0 )
+         dsInf.NodeNames = NodeNames;
+      else
+         dsInf.NodeNames = null;
+
+      dsInf.NxBeamNode = NxBeam;
+      dsInf.NxInstrModeratorNode = NXModerator;
+      dsInf.NxInstrSourceNode =  NxSource;
+      dsInf.NxSampleNode = NxSample;
+      return dsInf;
+   }
+
+   
+   
+   
+  /**
+   * Saves the start up information to the ISAW subdirectory in the user's home directory in
+   * a file derived from the first 3 letters in the filename( -path)
+   * 
+   * @return true if successful otherwise false.
+   */
+  public boolean SaveStartUpInfo(){
+     if(!setupDSs ) 
+        setUpDataSetList() ;
+     
+     if( filename == null)
+        return false;
+     
+     String Fname = System.getProperty( "user.home" );
+     if( Fname == null)
+        Fname ="";
+     if( Fname.length() > 0 && !(Fname.endsWith( "\\" ) || Fname.endsWith( "/" ) ))
+          Fname =Fname+"/";
+    
+     String F = NameFile( filename);
+     if( F == null || F.length() < 3)
+        return false;
+     Fname = Fname+"ISAW/"+F.substring( 0,3 )+".startup";
+     
+     try{
+        FileOutputStream fout = new FileOutputStream( Fname );
+        for( int i=0; i< this.EntryToDSs.size(); i++){
+           DataSetInfo dsInf = (DataSetInfo)EntryToDSs.elementAt( i );
+           fout.write((dsInf.endDetectorID+"\n").getBytes());
+           fout.write((dsInf.endGroupID+"\n").getBytes());
+           fout.write((dsInf.startDetectorID+"\n").getBytes());
+           fout.write((dsInf.startGroupID+"\n").getBytes());
+           fout.write((dsInf.nelts+"\n").getBytes());
+           fout.write((dsInf.ndetectors+"\n").getBytes());
+           fout.write((FixUpNull(dsInf.label)+"\n").getBytes());
+           fout.write((FixUpNull(dsInf.NodeNames)+"\n").getBytes());
+
+           if( dsInf.NxentryNode == null)
+              fout.write(" \n".getBytes());
+           else         
+              fout.write((dsInf.NxentryNode.getNodeName()+"\n").getBytes());
+
+           if( dsInf.NxdataNode == null)
+              fout.write(" \n".getBytes());
+           else
+              fout.write((dsInf.NxdataNode.getNodeName()+"\n").getBytes()); 
+
+           if( dsInf.NxInstrumentNode == null)
+              fout.write(" \n".getBytes());
+           else
+              fout.write((dsInf.NxInstrumentNode.getNodeName()+"\n").getBytes());
+           
+           if( dsInf.NxBeamNode == null)
+              fout.write(" \n".getBytes());
+           else
+              fout.write((dsInf.NxBeamNode.getNodeName()+"\n").getBytes());
+
+           if( dsInf.NxInstrModeratorNode == null)
+              fout.write(" \n".getBytes());
+           else
+              fout.write((dsInf.NxInstrModeratorNode.getNodeName()+"\n").getBytes());
+           if( dsInf.NxInstrSourceNode == null)
+              fout.write(" \n".getBytes());
+           else
+              fout.write((dsInf.NxInstrSourceNode.getNodeName()+"\n").getBytes());
+           if( dsInf.NxSampleNode == null)
+              fout.write(" \n".getBytes());
+           else
+              fout.write((dsInf.NxSampleNode.getNodeName()+"\n").getBytes());
+           
+           
+        }
+        fout.close();
+     }catch( Exception s){
+         
+       return false;
+     }
+    
+     
+    return true;    
+     
+  }
+  
+  private String FixUpNull( String S){
+     if( S == null)
+        return " ";
+     if( S.length()<1)
+        return " ";
+     return S;
+  }
+  /**
+   * Returns the filename with the path removed
+   * 
+   * @param wholeFileName  Whole filename including path
+   * 
+   * @return the filename with the path removed or null if filename is null
+   */
+  public String NameFile( String wholeFileName ){
+     
+       if( wholeFileName == null )
+          return null;
+       int i= wholeFileName.lastIndexOf('\\');
+       i = Math.max(  i ,wholeFileName.lastIndexOf('/')  );
+     
+       String F = filename;
+       if( i >=0)
+          F = filename.substring( i+1);
+       return F;
+          
+  
+     
+  }
   /**
    * Returns the type of the DataSet. 
    * @param data_set_num  the data set whose type is desired
@@ -258,6 +569,24 @@ public class ExtGetDS{
    
    DataSetInfo dsInf = (DataSetInfo)(EntryToDSs.elementAt(data_set_num));
     
+   return getDataSet( dsInf);
+ }
+ 
+ 
+  /**
+   * Gets a data set from the information in the DataSetInfo argument
+   * 
+   * @param dsInf   Contains information on where to get the information in 
+   *                the NeXus file to create the Data set
+   * @return   The Data set corresponding to dsInf
+   * 
+   * @see CreateSetUpEntry( int, int,int,int,int,String,String,String,String,String,String,String,String,String)
+   * @seen CreateSetUpEnry( DataSetInfo, int, int, int, int, int, int,String,String)
+   */
+ public DataSet getDataSet( DataSetInfo dsInf){
+ 
+   if( dsInf == null)
+      return null;
    
    NxNode EntryNode= dsInf.NxentryNode;
    AttributeList AL = getGlobalAttributes( EntryNode ) ;
