@@ -169,6 +169,22 @@ public class NexUtils implements INexUtils {
     }
 
     
+    /**
+     * Gets the submode if the node is not null otherwise returns null.
+     * For eliminating an "if".
+     * 
+     * @param node    The parent node or null
+     * @param subnodeName  The name of the subnode
+     * @return  the subnode if there is one, otherwise null will be returned
+     */
+    public static NxNode GetSubNode( NxNode node, String subnodeName ){
+       
+       if( node == null)
+          return null;
+       return node.getChildNode(  subnodeName );
+       
+    }
+  
     private void Incr_detDig( int[] detDig, int[]dims){
        
        if( detDig.length > 0 ){ //increment w. carry detDig
