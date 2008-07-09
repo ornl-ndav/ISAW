@@ -77,7 +77,8 @@ public class findDetectorCentroidedPeaks extends GenericOperator{
       addParameter( new IntegerPG("min Peak intensity",0));
       addParameter( new IntegerPG("min_time_chan",0));
       addParameter( new IntegerPG("max_time_chan",50000));
-      addParameter( new ChoiceListPG("Rows/Cols to keep",""));
+      addParameter( new ChoiceListPG("Rows to keep",""));
+      addParameter( new ChoiceListPG("Cols to keep",""));
       addParameter( new IntegerPG("monitor count",10000));
       addParameter( new FloatPG("Max d-spacing",12f));
       addParameter( new PlaceHolderPG("log stuff", null));
@@ -113,7 +114,13 @@ public class findDetectorCentroidedPeaks extends GenericOperator{
       S.append("@param   ");
       S.append("The maximum time channel to use.");
       S.append("@param   ");
-      S.append("The row/col to keep");
+      S.append("min row to keep");
+      S.append("@param   ");
+      S.append("max row to keep");
+      S.append("@param   ");
+      S.append("min col to keep");
+      S.append("@param   ");
+      S.append("max col to keep");
       S.append("@param   ");
       S.append("Monitor count");
       S.append("@param   ");
@@ -157,14 +164,15 @@ public class findDetectorCentroidedPeaks extends GenericOperator{
          int min_time_chan = ((IntegerPG)(getParameter(4))).getintValue();
          int max_time_chan = ((IntegerPG)(getParameter(5))).getintValue();
          java.lang.String PixelRow = getParameter(6).getValue().toString();
-         int monCount = ((IntegerPG)(getParameter(7))).getintValue();
-         float MaxDspacing =((FloatPG)(getParameter(8))).getfloatValue();
-         Object logBuffer = getParameter(9).getValue();
+         java.lang.String PixelCol = getParameter(7).getValue().toString();
+         int monCount = ((IntegerPG)(getParameter(8))).getintValue();
+         float MaxDspacing =((FloatPG)(getParameter(9))).getfloatValue();
+         Object logBuffer = getParameter(10).getValue();
          StringBuffer LogBuffer = null;
          if( logBuffer instanceof StringBuffer)
             LogBuffer =(StringBuffer)logBuffer;
          java.util.Vector Xres=Wizard.TOF_SCD.Util.findDetectorCentroidedPeaks(DS,DetectorID,num_peaks,min_int,
-                     min_time_chan,max_time_chan,PixelRow,monCount,MaxDspacing, LogBuffer );
+                     min_time_chan,max_time_chan,PixelRow, PixelCol,monCount,MaxDspacing, LogBuffer );
 
          return Xres;
        }catch( Throwable XXX){

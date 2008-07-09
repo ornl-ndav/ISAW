@@ -91,7 +91,10 @@ public class Util {
     * @param useCalib       Use the calibration file
     * @param calibfile      SCD calibration file.
     * @param line2use       SCD calibration file line to use.
-    * @param PixelRow       The Row/Col values to keep. Blank for all
+    * @param min_row        The minimum row to use(add peak height)
+    * @param max_row        The maximum row to use(subtract peak height)
+    * @param min_col        The minimum column to use(add peak width)
+    * @param max_col        The maximum column to use(subtract peak width)
     * @param extension      The name of the extension on the data file
     * @param fileNamePrefix The prefix for the filename.
     * @param maxNumThreads  The maximum number of threads to execute at one time
@@ -111,7 +114,10 @@ public class Util {
             boolean  useCalib,
             String   calibfile ,
             int      line2use,
-            String   PixelRow,
+            int      min_row,
+            int      max_row,
+            int      min_col, 
+            int      max_col,
             float    Max_dSpacing,
             String   extension,
             String   fileNamePrefix,
@@ -121,7 +127,12 @@ public class Util {
       
       if( runnums == null )
          return null;
-      
+      min_row =Math.max( 1,  min_row );
+      max_row = Math.max(  max_row ,  min_row );
+      min_col =Math.max( 1,  min_row );
+      max_col = Math.max(  max_col ,  min_col );
+      String PixelRow = min_row+":"+max_row;
+      String PixelCol = min_col+":"+max_col;
       int[] Runs = new int[ runnums.size() ];
       
       try {
@@ -223,9 +234,9 @@ public class Util {
                   else {
                      
                      Enumeration keys = gridIDs.keys();
-                    
+                     
                      Object Err = MergeInfo( keys , DS , num_peaks , min_int ,
-                              min_time_chan , max_time_chan , PixelRow ,
+                              min_time_chan , max_time_chan , PixelRow ,PixelCol,
                               monCount , operators , ResultPeaks , LogInfo ,
                               maxNumThreads , Max_dSpacing );
                      
@@ -493,6 +504,7 @@ public class Util {
             int         min_time_chan,
             int         max_time_chan,
             String      PixelRow,
+            String      PixelCol,
             int         monCount,
             Vector      operators, 
             Vector      ResultPeaks,
@@ -532,7 +544,7 @@ public class Util {
             operators.addElement( SetUpfindPeaksOp( DS,
                          K, num_peaks, 
                                min_int,  min_time_chan, max_time_chan,
-                               PixelRow, monCount, Sbuff, 12f ) );
+                               PixelRow, PixelCol,monCount, Sbuff, 12f ) );
            
             if( operators.size() >= maxNumThreads ){
                ParallelExecutor PE = new ParallelExecutor(
@@ -606,6 +618,7 @@ public class Util {
             int         min_time_chan,
             int         max_time_chan,
             String      PixelRow,
+            String      PixelCol,
             int         monCount,
             Vector      operators, 
             Vector      ResultPeaks,
@@ -679,7 +692,7 @@ public class Util {
             OperatorThread opThread = new OperatorThread( SetUpfindPeaksOp( DS,
                          ( ( Integer )K ).intValue(), num_peaks, 
                                min_int,  min_time_chan, max_time_chan,
-                               PixelRow, monCount, Sbuff, Max_dSpacing ) );
+                               PixelRow,PixelCol, monCount, Sbuff, Max_dSpacing ) );
             
 
             opThread.start();
@@ -702,6 +715,7 @@ public class Util {
             int     min_time_chan,
             int     max_time_chan,
             String  PixelRow,
+            String  PixelCol,
             int     monCount,
             StringBuffer buff,
             float   Max_dSpacing ){
@@ -714,9 +728,10 @@ public class Util {
           op.getParameter( 4 ).setValue( min_time_chan );
           op.getParameter( 5 ).setValue( max_time_chan );
           op.getParameter( 6 ).setValue( PixelRow );
-          op.getParameter( 7 ).setValue( monCount );
-          op.getParameter( 8 ).setValue( Max_dSpacing );
-          op.getParameter( 9 ).setValue( buff );
+          op.getParameter( 7 ).setValue( PixelCol );
+          op.getParameter( 8 ).setValue( monCount );
+          op.getParameter( 9 ).setValue( Max_dSpacing );
+          op.getParameter( 10 ).setValue( buff );
          
           return op;
    }
@@ -747,6 +762,7 @@ public class Util {
             int     min_time_chan,
             int     max_time_chan,
             String  PixelRow,
+            String  PixelCol,
             int     monCount,
             float  Max_dSpacing,
             StringBuffer buff ){
@@ -778,7 +794,7 @@ public class Util {
       
       //------------------ Find Peaks ------------------
       Vector Pks = FindPeaks.findDetectorPeaks( DS, DetectorID, min_time_chan,
-               max_time_chan, num_peaks, min_int, PixelRow, buff );
+               max_time_chan, num_peaks, min_int, PixelRow, PixelCol, buff );
            
       if( Pks == null || Pks.size() < 1 ){
         
