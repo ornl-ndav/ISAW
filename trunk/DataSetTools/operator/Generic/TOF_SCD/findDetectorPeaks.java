@@ -87,6 +87,7 @@ public class findDetectorPeaks extends GenericOperator{
       addParameter( new IntegerPG("Max num Peaks",30));
       addParameter( new IntegerPG("min Peak intensity",0));
       addParameter( new StringPG("Pixel rows to keep","1:100"));
+      addParameter( new StringPG("Pixel cols to keep","1:100"));
    }
 
 
@@ -117,7 +118,9 @@ public class findDetectorPeaks extends GenericOperator{
       S.append("@param   ");
       S.append("The minimum count for a cell to represent a peak");
       S.append("@param   ");
-      S.append("The list of rows and columns to consider");
+      S.append("The list of rows  to consider");
+      S.append("@param   ");
+      S.append("The list of columns  to consider");
       S.append("@return   ");
       S.append("Vector of Old peaks objects");
       S.append("@error ");
@@ -154,7 +157,9 @@ public class findDetectorPeaks extends GenericOperator{
          int MaxNPeaks = ((IntegerPG)(getParameter(4))).getintValue();
          int mincount = ((IntegerPG)(getParameter(5))).getintValue();
          String Pixel_row = getParameter(6).getValue().toString();
-         java.util.Vector Xres=DataSetTools.operator.Generic.TOF_SCD.FindPeaks.findDetectorPeaks(DS,ID,MinTimeChan,MaxTimeChan,MaxNPeaks,mincount,Pixel_row, null );
+         String Pixel_col = getParameter(7).getValue().toString();
+         java.util.Vector Xres=DataSetTools.operator.Generic.TOF_SCD.FindPeaks.findDetectorPeaks(DS,ID,MinTimeChan,MaxTimeChan,
+                         MaxNPeaks,mincount,Pixel_row, Pixel_col, null );
 
          return Xres;
        }catch( Throwable XXX){

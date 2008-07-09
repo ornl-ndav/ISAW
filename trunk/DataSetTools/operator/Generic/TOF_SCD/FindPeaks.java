@@ -467,6 +467,7 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
                             int         maxNumPeaks,
                             int          min_count,
                             String       PixelRow,
+                            String       PixelCol,
                             Object       buff) throws IllegalArgumentException{
     PeakFactory pkfac;
     StringBuffer log = new StringBuffer();
@@ -511,11 +512,12 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
     pkfac.detA2(detA2);
     pkfac.detD(detD);
     int[] rowList= IntList.ToArray( PixelRow.toString());
+    int[] colList =IntList.ToArray( PixelCol.toString());
     java.util.Arrays.sort(rowList);
     // stay off of the edges
     for( int i=1+1 ; i< grid.num_cols()-1 ; i++ ){  // loop over column
       for( int j=1+1 ; j<grid.num_rows()-1 ; j++ )
-      if( java.util.Arrays.binarySearch(rowList,i)>=0)
+      if( java.util.Arrays.binarySearch(colList,i)>=0)
       if( java.util.Arrays.binarySearch(rowList,j)>=0)
       {      // loop over row
         // set up datasets for adjacent pixels
@@ -570,12 +572,14 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
             peak=pkfac.getPixelInstance(i,j,k,0,0);
             peak.seqnum(peakNum);
             peak.ipkobs( Math.round(I));
-            peak.nearedge( 1,   grid.num_cols(),
-                           1,     grid.num_rows(),
-                           minTimeChan, maxTimeChan);
-            if(peak.nearedge()<3)
-              peak.reflag(2);
-            else
+            //------------User MUST fix row, col to keep so peaks do not run 
+            //-----------    into the side or bad side elements of a detector 
+            //peak.nearedge( 1,   grid.num_cols(),
+            //               1,     grid.num_rows(),
+            //               minTimeChan, maxTimeChan);
+            //if(peak.nearedge()<3)
+            //  peak.reflag(2);
+            //else
               peak.reflag(1);
             peaks.add(peak.clone());
             peakNum++;
