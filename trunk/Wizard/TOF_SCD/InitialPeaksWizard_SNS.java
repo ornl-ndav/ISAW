@@ -140,7 +140,7 @@ public class InitialPeaksWizard_SNS extends Wizard {
      
      
      
-      int[][] Xlate= { {19, 0, 0,-1, 0, 0}, //peaks vector
+      int[][] Xlate= { {22, 0, 0,-1, 0, 0}, //peaks vector
                        {-1, 9, 1, 0,-1,-1}, //init UB matrix
                        {-1,-1,-1, 6, 5,-1}, //Transformation
                        {-1,-1,-1,-1,12, 1},  //lsqrs UB matrix
