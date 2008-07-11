@@ -289,7 +289,7 @@ public class NexNode implements NxNode{
         
       }catch( NexusException s ){
          
-        errormessage = s.getMessage();
+        errormessage += ";"+s.getMessage();
         return false;
         
       }
@@ -322,7 +322,7 @@ public class NexNode implements NxNode{
           
         }catch( NexusException s ){
            
-          errormessage = s.getMessage();
+          errormessage += ";"+ s.getMessage();
           dirinfo = null;
           
         }
@@ -352,7 +352,7 @@ public class NexNode implements NxNode{
     
     if( ( index < 0 ) || ( index >= n ) ){
        
-      errormessage = "index out of range";
+      errormessage += ";index out of range";
       return null;
       
     }
@@ -385,7 +385,7 @@ public class NexNode implements NxNode{
 	
     if( NodeName == null ){
        
-      errormessage = "Null child not allowed in " + NodeName;
+      errormessage += ";Null child not allowed in " + NodeName;
       return null;
       
     }
@@ -394,7 +394,7 @@ public class NexNode implements NxNode{
     
     if( keyValue == null ){
        
-      errormessage = "No Such Child " + NodeName;
+      errormessage += ";No Such Child " + NodeName;
       return null;
       
     }
@@ -470,7 +470,7 @@ public class NexNode implements NxNode{
         
       }catch( NexusException s ){
          
-        errormessage = s.getMessage();
+        errormessage += ";"+s.getMessage();
         attrlist = null;
         
       }
@@ -503,14 +503,14 @@ public class NexNode implements NxNode{
       
     }catch( NexusException s ){
        
-      errormessage += s.getMessage();
+      errormessage +=";"+ s.getMessage();
       return null;
       
     }
     
     if( l == null ){
        
-      errormessage = "Link could not be established";
+      errormessage += ";Link could not be established";
       return null;
       
     }
@@ -546,7 +546,7 @@ public class NexNode implements NxNode{
       
     }catch( NexusException s ){
        
-      errormessage += s.getMessage();
+      errormessage += ";"+s.getMessage();
       System.out.println( "NexNode,Equal Error=" + errormessage );
       return false;
       
@@ -619,7 +619,7 @@ public class NexNode implements NxNode{
     }
     catch( NexusException s ){
        
-      errormessage = s.getMessage();
+      errormessage += ";"+s.getMessage();
       return null;
       
     }
@@ -659,7 +659,7 @@ public class NexNode implements NxNode{
 
       if( args[0] <= 0 ){
          
-        errormessage = "No Data Here";
+        errormessage += ";No Data Here";
         return null;
         
       }
@@ -685,7 +685,7 @@ public class NexNode implements NxNode{
       
     }catch( NexusException s ){
        
-      errormessage = s.getMessage();
+      errormessage +=";"+ s.getMessage();
       return null;
       
     }
@@ -723,7 +723,7 @@ public class NexNode implements NxNode{
 
       if( args[0] <= 0 ){
          
-        errormessage = "No Data Here";
+        errormessage += ";No Data Here";
         return null;
         
       }
@@ -862,7 +862,7 @@ public class NexNode implements NxNode{
       
     }catch( NexusException s ){
        
-      errormessage = s.getMessage();
+      errormessage += ";"+s.getMessage();
       return null;
       
     }
@@ -873,7 +873,7 @@ public class NexNode implements NxNode{
   private Object linearlizeArray(Object array, int ndims, int lengths[],
                                  int type){
      
-    errormessage = "improper dimensions linearlize";
+    errormessage += ";improper dimensions linearlize";
     if( ndims < 1 )
       return null;
     
@@ -922,7 +922,7 @@ public class NexNode implements NxNode{
         
       }catch( Exception s ){
          
-        errormessage = "arraycopy error " + s;
+        errormessage += ";arraycopy error " + s;
         return -1;
         
       }
@@ -1034,7 +1034,7 @@ public class NexNode implements NxNode{
       else if( type == NexusFile.NX_UINT8 )
         return new byte[length[0]][length[1]];
       
-      errormessage = "Undefined data type" + type;
+      errormessage += ";Undefined data type" + type;
       
       return null;
       
@@ -1069,13 +1069,13 @@ public class NexNode implements NxNode{
         return new byte[length[0]][length[1]][length[2]];
       
       
-      errormessage = "Undefined data type" + type;
+      errormessage += ";Undefined data type" + type;
       
       return null;
       
     }
     
-    errormessage = "Too many Dimensions";
+    errormessage += ";Too many Dimensions";
     
     return null;
     
@@ -1109,7 +1109,7 @@ public class NexNode implements NxNode{
       
     }catch( Exception s ){
        
-      errormessage = "Class=" + C + " creation error=" + s;
+      errormessage += ";Class=" + C + " creation error=" + s;
       //System.out.println("Class="+C+" creation error="+s);
       return null;
       
@@ -1150,7 +1150,7 @@ public class NexNode implements NxNode{
     
     if( ( index < 0 ) || ( index >= n ) ){
        
-      errormessage = "index out of range";
+      errormessage += ";index out of range";
       return null;
       
     }
@@ -1208,7 +1208,7 @@ public class NexNode implements NxNode{
 
     if( X == null ){
        
-      errormessage = NN.getErrorMessage();
+      errormessage += ";"+NN.getErrorMessage();
       return null;
       
     }
@@ -1225,7 +1225,7 @@ public class NexNode implements NxNode{
       NF.getattr( AttrName, X, args );
     }catch( NexusException s ){
        
-      errormessage = s.getMessage();
+      errormessage += ";"+s.getMessage();
       return null;
       
     }
@@ -1252,7 +1252,7 @@ public class NexNode implements NxNode{
     
     if( keyValue == null ){
        
-      errormessage = "No such Attribute";
+      errormessage += ";No such Attribute" + AttrName;
       return null;
       
     }
@@ -1590,7 +1590,7 @@ public class NexNode implements NxNode{
       }else if( c == 'b' ){
          
           Object O = NN.getSlab(dim, rank, initslabElement);
-         System.out.println("slab ="+ StringUtil.toString( O,false));
+        
 
       }else if( c == 'i' ){
          
@@ -1635,10 +1635,9 @@ public class NexNode implements NxNode{
    */
  public Object getSlab( int[] dim, int[] rank, int[] initslabElement){
     
-     System.out.println("dim,rank,init, array length="+StringUtil.toString(dim)+
-             StringUtil.toString(rank)+StringUtil.toString(initslabElement));
+   
     float[] array = new float[arrayProd( rank)];
-    System.out.println( array.length);
+    
     
     if(array.length < 1) 
        return array;
@@ -1649,8 +1648,8 @@ public class NexNode implements NxNode{
        return array;
        
    }catch( Exception ss){
-      
-      System.out.println("Slab exception="+ss.toString());
+      errormessage += ";"+ss.getMessage();
+     
       return null;
       
       }
