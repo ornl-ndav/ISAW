@@ -616,7 +616,7 @@ public class NexUtils implements INexUtils {
       }
 
       if( P != ngrids ) {
-         errormessage = "Dimensions are out of order";
+         errormessage += ";Dimensions are out of order";
          return false;
       }
 
@@ -1300,7 +1300,7 @@ public class NexUtils implements INexUtils {
                                                           getNodeValue() );
     
         if ( data == null ) 
-            return setErrorMessage( "No data in NxData" );
+            return setErrorMessage( "No data in NxData"+ dataNode.getErrorMessage()  );
         
         if ( ( DataInf.axisName == null ) || ( DataInf.axisName.length < 1 ) ) 
             return setErrorMessage( "No axis 1 information in NXnode " + 
@@ -1312,7 +1312,7 @@ public class NexUtils implements INexUtils {
 
         if ( tofNode == null )
             return setErrorMessage( "No tof axis named " + 
-                 DataInf.axisName[ n ] + "in SetupNxData" );
+                 DataInf.axisName[ n ] + "in SetupNxData"+ NxDataNode.getErrorMessage() );
                  
         float[] xvals = ConvertDataTypes.floatArrayValue( tofNode.
                                                      getNodeValue() );
@@ -1332,11 +1332,11 @@ public class NexUtils implements INexUtils {
         }
      
         if ( xvals == null )
-            return setErrorMessage( "no x values" );
+            return setErrorMessage( "no x values" +tofNode.getErrorMessage());
      
         if ( xvals.length != length )
             if ( xvals.length != length + 1 )
-                return setErrorMessage( "Improper length for axis 1" );
+                return setErrorMessage( "Improper length for axis 1"+tofNode.getErrorMessage() );
     
         XScale xsc = new VariableXScale( xvals );
 
@@ -1395,13 +1395,13 @@ public class NexUtils implements INexUtils {
     
     // sets error message and returns null
     private Object setErrorMessageReturnNull( String err){
-       errormessage = err;
+       errormessage +=";"+ err;
        return null;
     }
 
     //Sets error message and returns true
     private boolean setErrorMessage( String err ) {
-        errormessage = err;
+        errormessage += ";"+err;
         return true;
     }
 
