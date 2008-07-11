@@ -243,7 +243,7 @@ public interface IPeak {
     *     Q vector is adjusted by the sample orientation 
     * @return the  Q/2pi vector in crystal coordinates associated with this peak
     */
-   double[]  getUnrotQ();
+   float[]  getUnrotQ();
    
    /**
     * Returns the  "Q" vector(really Q/2pi) associated with this peak. This

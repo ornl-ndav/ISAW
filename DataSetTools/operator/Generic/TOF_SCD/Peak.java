@@ -1024,14 +1024,14 @@ public class Peak  implements IPeak_IPNS_out{
   /**
    * Returns 1/d vector (Q/2PI) in crystal reference frame.
    */
-  public double[] getUnrotQ(){
+  public float[] getUnrotQ(){
     float[]   Q=this.getQ();
     float[][] invROT=LinearAlgebra.getInverse(this.ROT);
-    double[]  unrotQ={0.,0.,0.};
+    float[]   unrotQ={0,0,0};
 
     for( int i=0; i<3 ; i++ ){
       for( int j=0 ; j<3 ; j++ ){
-        unrotQ[i]=unrotQ[i]+(double)(invROT[i][j]*Q[j]);
+        unrotQ[i]=unrotQ[i]+invROT[i][j]*Q[j];
       }
     }
 

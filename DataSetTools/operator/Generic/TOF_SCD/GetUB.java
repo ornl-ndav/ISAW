@@ -182,7 +182,7 @@ public class GetUB {
       for( int i = 0 ; i < Peaks.size() ; i++ )
          if( ! omit[ i ] ) {
             IPeak pk = (IPeak) Peaks.elementAt( i );
-            double[] Qvec = pk.getUnrotQ();
+            float[] Qvec = pk.getUnrotQ();
             float p = (float) ( Qvec[ 0 ] * x + Qvec[ 1 ] * y + Qvec[ 2 ] * z );
             int index = (int)Math.floor ( p / delta + .5 );
             if( Math.abs( index ) >= Res.length / 2 ) {
@@ -952,14 +952,15 @@ public class GetUB {
       int ct;
      
       for( int i = 0 ; i < Peaks.size() ; i++ ) {
-         double[] qvec = ( (IPeak) Peaks.elementAt( i ) ).getUnrotQ();
+         float[] qvec = ( (IPeak) Peaks.elementAt( i ) ).getUnrotQ();
          ct = 0;
          for( int j = 0 ; j < 3 ; j++ ) {
             double x = qvec[ 0 ] * unit[ j ][ 0 ] + qvec[ 1 ] * unit[ j ][ 1 ]
                      + qvec[ 2 ] * unit[ j ][ 2 ];
             x = x / L[ j ];
             if( ( omit == null ) || ( ! omit[ i ] ) ) {
-               q[ k ] = qvec;
+               for ( int component = 0; component < 3; component++ )
+                 q[ k ][component] = qvec[component];
                hkl[ k ][ j ] = Math.floor( x + .5 );
                ct++ ;
             }
@@ -1024,7 +1025,7 @@ public class GetUB {
          omit = null;
       int ct = 0;
       for( int i=0; i< Peaks.size(); i++){
-         double[] qvec = ( (IPeak) Peaks.elementAt( i ) ).getUnrotQ();
+         float[] qvec = ( (IPeak) Peaks.elementAt( i ) ).getUnrotQ();
          int k=0;
          for( int j = 0 ; j < 3 ; j++ ) {
             double x = qvec[ 0 ] * invUB[ j ][ 0 ] + qvec[ 1 ] * invUB[ j ][ 1 ]
@@ -1057,7 +1058,7 @@ public class GetUB {
       java.util.Arrays.fill( Stats , 0f );
       for( int i=0; i< Peaks.size(); i++){
          IPeak P = (IPeak)Peaks.elementAt( i );
-         double[] Qs = P.getUnrotQ();
+         float[] Qs = P.getUnrotQ();
          float Max =0;
          for(int r=0; r<3;r++){
             
@@ -1205,7 +1206,7 @@ public class GetUB {
                + qNormal[ 2 ] * qNormal[ 2 ];
       for( int i = 0 ; i < Peaks.size() ; i++ )
          if( ! omit[ i ] ) {
-            double[] qvec = ( (IPeak) Peaks.elementAt( i ) ).getUnrotQ();
+            float[] qvec = ( (IPeak) Peaks.elementAt( i ) ).getUnrotQ();
             double x = qvec[ 0 ] * qNormal[ 0 ] + qvec[ 1 ] * qNormal[ 1 ]
                      + qvec[ 2 ] * qNormal[ 2 ];
             x = x / Lsq;

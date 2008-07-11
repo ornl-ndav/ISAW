@@ -552,13 +552,16 @@ public class LsqrsJ extends GenericTOF_SCD {
     // create the hkl-matrix and q-matrix (q=1/d)
     double[][] q   = new double[peaks.size(  )][3];
     double[][] hkl = new double[peaks.size(  )][3];
+    float[]    unrotQ;
 
     for( int i = 0; i < hkl.length; i++ ) {
       peak        = ( Peak )peaks.elementAt( i );
       hkl[i][0]   = Math.round( peak.h(  ) );
       hkl[i][1]   = Math.round( peak.k(  ) );
       hkl[i][2]   = Math.round( peak.l(  ) );
-      q[i]        = peak.getUnrotQ(  );
+      unrotQ = peak.getUnrotQ();
+      for ( int component = 0; component < 3; component++ )
+        q[i][component] = unrotQ[component];
     }
 
     // apply the transformation matrix

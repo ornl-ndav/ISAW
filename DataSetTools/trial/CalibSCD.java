@@ -251,7 +251,9 @@ public class CalibSCD extends OneVarParameterizedFunction
                { //pk.calib( calib1);
                 if( get_wl ( pk , k ) == 0 )
                   System.out.println( "wl2=0 for " + pk.h() + "," + pk.k() + "," + pk.l());
-                Qxyz[k] = pk.getUnrotQ();
+                float[] unrotQ = pk.getUnrotQ();
+                for ( int component = 0; component < 3; component++ )
+                  Qxyz[k][component] = unrotQ[component];
                 k++ ;
                }
           }
