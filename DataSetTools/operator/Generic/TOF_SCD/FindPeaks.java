@@ -511,10 +511,18 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
     pkfac.detA(detA);
     pkfac.detA2(detA2);
     pkfac.detD(detD);
+    if( PixelRow == null || PixelRow.trim().length() < 1 )
+       PixelRow ="1:"+grid.num_rows();
+    if( PixelCol == null || PixelCol.trim().length() < 1 )
+       PixelCol ="1:"+grid.num_cols();
+  
     int[] rowList= IntList.ToArray( PixelRow.toString());
     int[] colList =IntList.ToArray( PixelCol.toString());
     java.util.Arrays.sort(rowList);
     // stay off of the edges
+    if( colList== null || colList.length < 1 || rowList == null ||
+             rowList.length < 1 )
+         return new Vector();
     for( int i=1+1 ; i< grid.num_cols()-1 ; i++ ){  // loop over column
       for( int j=1+1 ; j<grid.num_rows()-1 ; j++ )
       if( java.util.Arrays.binarySearch(colList,i)>=0)
@@ -574,9 +582,9 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
             peak.ipkobs( Math.round(I));
             //------------User MUST fix row, col to keep so peaks do not run 
             //-----------    into the side or bad side elements of a detector 
-            //peak.nearedge( 1,   grid.num_cols(),
-            //               1,     grid.num_rows(),
-            //               minTimeChan, maxTimeChan);
+            peak.nearedge( colList[0],   colList[ colList.length -1 ],
+                           rowList[0],   rowList[ rowList.length -1 ],
+                           minTimeChan, maxTimeChan);
             //if(peak.nearedge()<3)
             //  peak.reflag(2);
             //else
