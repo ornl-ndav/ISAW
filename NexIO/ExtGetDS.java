@@ -621,7 +621,7 @@ public class ExtGetDS{
       try{
         DS = DSF.getTofDataSet(instrType) ;
       }catch( IllegalArgumentException ss){
-         DS = new DataSet();
+         DS = DSF.getDataSet();
       }
       DS.setAttributeList( AL ) ;
       DataSetFactory.addOperators( DS );
