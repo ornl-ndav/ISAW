@@ -650,13 +650,13 @@ public class NxNodeUtils {
         if ("s;sec;second;seconds;".indexOf(OldUnits + ";") >= 0)
             return factor * 1000000.0f;
       
-        if ("ms;msec;mseconds;msecond;millis;millisec;milliseconds".indexOf(OldUnits + ";") >= 0)
+        if ("ms;msec;mseconds;msecond;millis;millisec;milliseconds;millisecond;".indexOf(OldUnits + ";") >= 0)
             return factor * 1000.0f;
       
-        if ("us;usec;useconds;usecond;micros;microsec;microseconds;".indexOf(OldUnits + ";") >= 0)
+        if ("us;usec;useconds;usecond;micros;microsec;microseconds;microsecond;".indexOf(OldUnits + ";") >= 0)
             return factor;
       
-        if ("ns;nsec;nseconds;nanos;nanosec;nanosecond;nanoseconds;".indexOf(OldUnits + ";") >= 0)
+        if ("ns;nsec;nseconds;nsecond;nanos;nanosec;nanosecond;nanoseconds;".indexOf(OldUnits + ";") >= 0)
             return factor * .001f;
       
         if ("min;minute;minutes;".indexOf(OldUnits + ";") >= 0)
