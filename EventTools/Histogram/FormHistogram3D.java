@@ -75,9 +75,15 @@ public class FormHistogram3D
     System.out.println("Y range: " + events.getYExtent() );
     System.out.println("Z range: " + events.getZExtent() );
 
-    int X_SIZE = (int)((x_max-x_min)*1000.0/50.0);
-    int Y_SIZE = (int)((y_max-y_min)*1000.0/50.0);
-    int Z_SIZE = (int)((z_max-z_min)*1000.0/50.0);
+    int X_SIZE = (int)((x_max-x_min)*1000.0/50.0 * 2);
+    int Y_SIZE = (int)((y_max-y_min)*1000.0/50.0 * 2);
+    int Z_SIZE = (int)((z_max-z_min)*1000.0/50.0 * 2);
+
+    System.out.println( "NUM Histogram bins: " + X_SIZE +
+                        ", " + Y_SIZE + ", " + Z_SIZE  );
+    System.out.println( "Total number of bins = " + 
+                         (long)X_SIZE * Y_SIZE * Z_SIZE );
+   
     System.out.println("Sizes = " + X_SIZE + ", " + Y_SIZE + ", " + Z_SIZE );
     IEventBinner x_bin = new UniformEventBinner( x_min, x_max, X_SIZE );
     IEventBinner y_bin = new UniformEventBinner( y_min, y_max, Y_SIZE );
@@ -151,7 +157,7 @@ public class FormHistogram3D
       } 
     }
 
-    float min  =  15;
+    float min  =  3;
     float max  =  100;
     int   bins =  20;
     binner = new UniformEventBinner( min, max, bins );
