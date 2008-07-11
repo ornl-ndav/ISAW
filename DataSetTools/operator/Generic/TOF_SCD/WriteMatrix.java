@@ -131,6 +131,8 @@ public class WriteMatrix extends GenericOperator implements HiddenOperator{
       try{
 
          java.lang.String Filename = getParameter(0).getValue().toString();
+         if( getParameter(1).getValue() == null)
+            return new ErrorString(" UB matrix is null");
          float[][] UB = (float[][])(getParameter(1).getValue());
          gov.anl.ipns.Util.SpecialStrings.ErrorString Xres=DataSetTools.operator.Generic.TOF_SCD.Util.WriteMatrix(Filename,UB );
 
