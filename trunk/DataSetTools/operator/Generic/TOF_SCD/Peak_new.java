@@ -285,10 +285,10 @@ public class Peak_new implements IPeak_IPNS_out
 
     Tran3D inv_orientation_tran = new Tran3D( UB_times_2PI );
     inv_orientation_tran.invert();
-    double[] q_vals = getUnrotQ();
-    Vector3D q_vec = new Vector3D( (float)q_vals[0], 
-                                   (float)q_vals[1],
-                                   (float)q_vals[2] );
+
+    float[]  q_vals  = getUnrotQ();
+    Vector3D q_vec   = new Vector3D( q_vals );
+
     Vector3D hkl_vec = new Vector3D();
     inv_orientation_tran.apply_to( q_vec, hkl_vec );
     h_index = hkl_vec.getX();
@@ -396,14 +396,14 @@ public class Peak_new implements IPeak_IPNS_out
 
 
   @Override
-  public double[] getUnrotQ()    // TODO Why is this double?
+  public float[] getUnrotQ()
   {
     Vector3D q_vec = new Vector3D( qx, qy, qz );
     Tran3D   tran  = sample_orientation.getGoniometerRotationInverse();
     tran.apply_to( q_vec, q_vec );
     float[] q_vals = q_vec.get();
 
-    double[] q_vals_d = new double[3];
+    float[] q_vals_d = new float[3];
     for ( int i = 0; i < 3; i++ )
       q_vals_d[i] = q_vals[i];
 

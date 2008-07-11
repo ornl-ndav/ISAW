@@ -489,8 +489,9 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
 
 
     // create the hkl-matrix and q-matrix (q=1/d)
-    double[][] q   = new double[ nargs ][ 3 ];
-    double[][] hkl = new double[ nargs ][ 3 ];
+    double[][] q      = new double[ nargs ][ 3 ];
+    double[][] hkl    = new double[ nargs ][ 3 ];
+    float[]    unrotQ = new float[3];
     int k=0;
     for( int i = 0; i < peaks.size(); i++ ) 
     if( keep[i]==0){
@@ -498,7 +499,9 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
       hkl[k][0]   = Math.round( peak.h(  ) );
       hkl[k][1]   = Math.round( peak.k(  ) );
       hkl[k][2]   = Math.round( peak.l(  ) );
-      q[k]        = peak.getUnrotQ(  );
+      unrotQ      = peak.getUnrotQ();
+      for ( int component = 0; component < 3; component++ )
+        q[k][component] = unrotQ[component];
       k++;
     }else{
        peak =( IPeak )peaks.elementAt( i );

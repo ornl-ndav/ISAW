@@ -250,7 +250,7 @@ public class blind {
         if( peak.wl() <= .00001) continue;
 
         //Calculate the Qx,Qy,Qz value for this peak
-        double[] Qvec=peak.getUnrotQ();
+        float[] Qvec=peak.getUnrotQ();
         String SS="";
         xx[i]=Qvec[0];
         yy[i]=Qvec[1];

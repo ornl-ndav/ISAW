@@ -1,16 +1,16 @@
 package DataSetTools.operator.Generic.TOF_SCD;
 
 import gov.anl.ipns.MathTools.Geometry.Vector3D;
-import DataSetTools.dataset.Data;
-import DataSetTools.dataset.DataSet;
-import DataSetTools.dataset.GeometricProgressionXScale;
+//import DataSetTools.dataset.Data;
+//import DataSetTools.dataset.DataSet;
+//import DataSetTools.dataset.GeometricProgressionXScale;
 import DataSetTools.dataset.IDataGrid;
-import DataSetTools.dataset.LogXScale;
+//import DataSetTools.dataset.LogXScale;
 import DataSetTools.dataset.UniformGrid;
-import DataSetTools.dataset.XScale;
+//import DataSetTools.dataset.XScale;
 import DataSetTools.instruments.IPNS_SCD_SampleOrientation;
 import DataSetTools.instruments.SampleOrientation;
-import DataSetTools.retriever.RunfileRetriever;
+//import DataSetTools.retriever.RunfileRetriever;
 
 public class Test_IPeak 
 {
@@ -132,8 +132,8 @@ public class Test_IPeak
     		          l2, two_theta, azimuth, wl, dspacing,
     		          ipk, inti, sigi, reflag );
     
-    float[] q = peak.getQ();
-    double[] un_rot_q = peak.getUnrotQ();
+    float[] q        = peak.getQ();
+    float[] un_rot_q = peak.getUnrotQ();
     System.out.println();
     System.out.printf( "       Qxyz = %7.3f %7.3f %7.3f\n", 
                                q[0], q[1], q[2]);

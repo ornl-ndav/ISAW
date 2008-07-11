@@ -1459,8 +1459,8 @@ public class SCDRecipLat  implements IThreeD_drawObject
            IPeak pk = ((IPeak)Peaks.elementAt(i));
            if( pk.ipkobs() > Max)
               Max =pk.ipkobs();
-           double[] Q =pk.getUnrotQ();
-           float MQ =(float)( Q[0]*Q[0]+Q[1]*Q[1]+Q[2]*Q[2]);
+           float[] Q =pk.getUnrotQ();
+           float MQ = Q[0]*Q[0]+Q[1]*Q[1]+Q[2]*Q[2];
            if( MQ >Qmax)
               Qmax = MQ;
         }
@@ -1498,7 +1498,7 @@ public class SCDRecipLat  implements IThreeD_drawObject
                  (Peaks.elementAt( i ) instanceof IPeak)){
            IPeak Peak = (IPeak)(Peaks.elementAt(i));
            int intensity = Peak.ipkobs();
-           double[] Q = Peak.getUnrotQ();
+           float[] Q = Peak.getUnrotQ();
            int color = (int)(intensity*127/MaxIntensity);
            if( color >= colors.length)
               color = colors.length-1;
