@@ -276,7 +276,7 @@ public class GL_RecipPlaneView
   private float SLICE_SIZE_IN_Q = 20;
   private int   FFT_DATA_LENGTH = 512;
   private int   SLIDER_DEF      = 60;
-  private int   SLIDER_MIN      = 5;
+  private int   SLIDER_MIN      = 3;
   private int   SLIDER_MAX      = 250;
 
   private float min_Q_threshold    = MIN_Q_DEF;
@@ -2515,7 +2515,7 @@ public class GL_RecipPlaneView
     System.out.println(
        "  -C<calibration file name> specify name of calibration file");
     System.out.println(
-       "  -O<orientation matris file name> specify name of calibration file");
+       "  -O<orientation matrix file name> specify name of calibration file");
     System.out.println(
        "  -T<relative threshold> specify scale factor to apply to the");
     System.out.println(
