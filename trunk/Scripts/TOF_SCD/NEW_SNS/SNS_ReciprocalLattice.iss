@@ -1,7 +1,6 @@
 #
 # @overview This script will load a list of SCD runs into the SCD Reciprocal plane viewer.
-#           Any SCD instrument whose data can be read by ISAW should work.  Currently that
-#           is the IPNS SCD and the LANSCE SCD. 
+#           This version has been adapted to work for the SNS SCD instruments. 
 #
 # @algorithm Any histogram bin that is above the specified threshold will be mapped to
 #            reciprocal space and displayed in a three dimensional viewer.  The viewer
@@ -14,6 +13,8 @@
 #                     Colons separate the first and last run numbers in a sequence of run numbers.
 # @param suffx        The SCD data file extension, such as ".run"
 # @param tof_ds_index The index of the time-of-flight DataSet in the list of DataSets in the data files.
+#                     For SNS instruments, this will typically be a list of area detectors, or detector
+#                     banks, corresponding to NxData blocks in the NeXus files.
 #                     For the IPNS SCD, this is currently "2".  For the LANSCE SCD, this is currently "3".
 # @param threshold    The minimum value in a histogram bin that will be considered part of a peak.
 #
