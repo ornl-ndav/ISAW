@@ -212,6 +212,7 @@ import DataSetTools.util.*;
 import DataSetTools.operator.*;
 import DataSetTools.operator.DataSet.EditList.*;
 import DataSetTools.operator.DataSet.Information.XAxis.*;
+import DataSetTools.operator.Generic.TOF_SCD.*;
 import DataSetTools.math.*;
 import DataSetTools.instruments.*;
 import DataSetTools.components.ui.*;
@@ -1230,16 +1231,27 @@ public class GL_RecipPlaneView
      vec_q_transformer = new Vector();
      ds_of_transformer = new Vector();
      for ( int index = 0; index < data_sets.size(); index++ )
-     { 
+     {
+        System.out.println("Making VecQTransformer for DS #" + index); 
         DataSet ds = (DataSet)data_sets.elementAt(index);
         try
         {
           Hashtable grid_hash = Grid_util.getAllDataGrids( ds );
+          if ( grid_hash != null )
+            System.out.println("Got hashtable of grids, size = " + 
+                                grid_hash.size() );
+          else
+            System.out.println("ERROR no grids found!");
+
           Enumeration e = grid_hash.elements();
           while ( e.hasMoreElements() )
           {
             IDataGrid grid = (IDataGrid)e.nextElement();
             VecQToTOF transformer = new VecQToTOF( ds, grid );
+            if ( transformer != null )
+              System.out.println("Got transformer OK");
+            else
+              System.out.println("Failed to get VecQ tranformer");
             vec_q_transformer.add( transformer );
             ds_of_transformer.add( ds );
           }
@@ -1255,13 +1267,12 @@ public class GL_RecipPlaneView
      }
   }
 
+
   /* ------------------------- getPeaks ---------------------------- */
   /*
    *  Get an array of peaks from the specified grid, based on the specified
    *  threshold scale factor.
    *
-   *
-   *  @param index            The index of the DataGrid in the list. 
    *  @param index            The index of the DataGrid in the list. 
    *  @param peak_threshold   The absolute threshold in counts.
    *
@@ -1351,10 +1362,6 @@ public class GL_RecipPlaneView
                   color_index = 127;
                 c = rgb_colors[ color_index ];
 
-//                float coords[] = pts[0].get();
-//                objs[ obj_index ] =
-//                            new Cube(coords[0], coords[1], coords[2], 0.04f);Z
-
                 objs[ obj_index ] = getVoxel( grid, row, col, times, j, 
                                               t0, combinedR, initial_path );
 
@@ -1364,21 +1371,20 @@ public class GL_RecipPlaneView
                 objs[obj_index].setPickID( global_obj_index );
                 obj_index++;
                 global_obj_index++;
-                PeakData pd = new PeakData( orientation, (UniformGrid)grid );
-                pd.run_num = runs[run_num_index];
-                pd.l1    = initial_path; 
-  
-                pd.tof = t;
-                pd.row = row;
-                pd.col = col;
-                float temp[] = pts[0].get();
-                pd.qx  = temp[0];
-                pd.qy  = temp[1];
-                pd.qz  = temp[2];
-                pd.counts = ys[j];
-                pd.run_num = 
-                  (int)(d.getAttribute(Attribute.RUN_NUM).getNumericValue());
-                all_peaks.add( pd );
+
+                float chan = j + 0.5f;
+                Peak_new pk_new = new Peak_new( runs[run_num_index], 
+                                                0, 
+                                                col, 
+                                                row, 
+                                                chan, 
+                                                grid, 
+                                                orientation,  
+                                                t + t0,
+                                                initial_path, 
+                                                t0 );
+                pk_new.ipkobs( (int)ys[j] );
+                all_peaks.add( pk_new );
               }
             }
           }
@@ -1943,11 +1949,13 @@ public class GL_RecipPlaneView
   private Vector3D[] get_data_points()
   {
     Vector3D all_vectors[] = new Vector3D[ all_peaks.size() ];
-    PeakData pd;
+    Peak_new pk_new;
     for ( int i = 0; i < all_vectors.length; i++ )
     {
-      pd = (PeakData)all_peaks.elementAt(i);
-      all_vectors[i] = new Vector3D((float)pd.qx, (float)pd.qy, (float)pd.qz );
+      pk_new = (Peak_new)all_peaks.elementAt(i);
+      all_vectors[i] = new Vector3D( pk_new.getUnrotQ() );
+      all_vectors[i].multiply((float)(2*Math.PI));  //#### work around Peak_new
+                                                    // using q/(2*PI)
     }
 
     return all_vectors;
@@ -2223,14 +2231,14 @@ public class GL_RecipPlaneView
 
     for ( int i = 0; i < all_peaks.size(); i++ )
     {
-       PeakData pd = (PeakData)all_peaks.elementAt(i);
-       q = new Vector3D( (float)pd.qx, (float)pd.qy, (float)pd.qz );
+       Peak_new pk_new = (Peak_new)all_peaks.elementAt(i);
+       q = new Vector3D( pk_new.getUnrotQ() );
+       q.multiply( (float)(2*Math.PI) );        // #### work around Peak_new
+                                                // using q/(2*PI)
        float h = q.dot(a)/mag_a;
        float k = q.dot(b)/mag_b;
        float l = q.dot(c)/mag_c;
-       pd.h = h;
-       pd.k = k;
-       pd.l = l;
+       pk_new.sethkl(h,k,l);
     }
   }
 
@@ -2935,16 +2943,19 @@ public void WriteMatrixFile( String filename )
   double M[][]   = new double[3][3];
   double q[][]   = new double[k][3];
   double hkl[][] = new double[k][3];
-
+  float[] unrotQ;
   for ( int i = 0; i < all_peaks.size(); i++ )
   {
-    PeakData pd = (PeakData)all_peaks.elementAt(i);
-    q[i][0] = pd.qx;
-    q[i][1] = pd.qy;
-    q[i][2] = pd.qz;
-    hkl[i][0] = Math.round( pd.h );
-    hkl[i][1] = Math.round( pd.k );
-    hkl[i][2] = Math.round( pd.l );
+    Peak_new pk_new = (Peak_new)all_peaks.elementAt(i);
+    unrotQ = pk_new.getUnrotQ();
+
+    for ( int component = 0; component < 3; component++ )
+      q[i][component] = (float)(unrotQ[component] * 2 * Math.PI);
+                                                // #### work around Peak_new
+                                                // using q/(2*PI)
+    hkl[i][0] = Math.round( pk_new.h() );
+    hkl[i][1] = Math.round( pk_new.k() );
+    hkl[i][2] = Math.round( pk_new.l());
   }
 
   double std_dev = LinearAlgebra.BestFitMatrix( M, hkl, q );
@@ -3021,93 +3032,29 @@ public void WriteMatrixFile( String filename )
 }
 
 
-/* ------------------------ WritePeakDataFile ---------------------------- */
+/* ----------------------------- WritePeaksFile ---------------------------- */
 /**
- *  Write the best fit orientation matrix and lattice parameters to the 
- *  specified file and to the status pane.
+ *  Write the data grids and lists of Peak_new objects to the specified
+ *  file.
  */
-public void WritePeakDataFile( String filename )
+public void WritePeaksFile( String filename )
 {
   assignHKLs();
-                                                          //copy peaks to array
-  Object peak_data_array[] = new Object[ all_peaks.size() ];
-  for ( int i = 0; i < peak_data_array.length; i++ )
-    peak_data_array[i] = all_peaks.elementAt(i);
-                                                          // sort on l, k, h
-  Arrays.sort( peak_data_array, new CompareHKL(2) ); 
-  Arrays.sort( peak_data_array, new CompareHKL(1) ); 
-  Arrays.sort( peak_data_array, new CompareHKL(0) ); 
-
-  Vector sorted_peaks = new Vector( all_peaks.size() );   // copy to new vector
-  for ( int i = 0; i < peak_data_array.length; i++ )      // so we can print
-    sorted_peaks.add( peak_data_array[i] );
-
-  PeakData.WritePeakData( sorted_peaks, filename );
+  try
+  {
+    Peak_new_IO.WritePeaks_new( filename, all_peaks, false );
+  }
+  catch( IOException ex )
+  {
+    SharedData.addmsg( "Could not write peaks file: " + filename );
+  }
 }
-
 
 /* --------------------------------------------------------------------------
  *
  *  PRIVATE CLASSES
  *
  */
-
-/* ----------------------------- CompareH ----------------------------- */
-/**
- *  Comparator to compare the assigned h, k or l index values of two 
- *  PeakData objects.  Which of the indices is compared is determined by
- *  the index_code passed to the constructor.
- */
-private class CompareHKL implements Comparator
-{
-  int index_code;
-  /* 
-   *  Use index_code = 0 to compare h, index_code = 1 to compare k and
-   *  index_code 2 to compare l.
-   */
-  public CompareHKL( int index_code )
-  {
-    this.index_code = index_code;
-  }
- 
-  public int compare( Object o1, Object o2 )
-  {
-    if ( o1 == o2 )
-      return 0;
-    if ( ! (o1 instanceof PeakData) )
-      return 0; 
-    if ( ! (o2 instanceof PeakData) )
-      return 0;
- 
-    float v1;
-    float v2;
-    if ( index_code == 0 )
-    {
-      v1 = ((PeakData)o1).h;
-      v2 = ((PeakData)o2).h;
-    }
-    else if ( index_code == 1 )
-    {
-      v1 = ((PeakData)o1).k;
-      v2 = ((PeakData)o2).k;
-    }
-    else
-    {
-      v1 = ((PeakData)o1).l;
-      v2 = ((PeakData)o2).l;
-    }
-
-    v1 = Math.round(v1);
-    v2 = Math.round(v2);
-
-    if ( v1 > v2 )
-      return 1;
-    else if ( v1 < v2 )
-      return -1;
-    else 
-      return 0;
-  }
-}
 
 
 /* ------------------------- ViewMouseInputAdapter ----------------------- */
@@ -3470,7 +3417,7 @@ private class WritePeaksFileListener implements ActionListener
       try
       {
         file_name = chooser.getSelectedFile().toString();
-        WritePeakDataFile( file_name );
+        WritePeaksFile( file_name );
 
         System.out.println("Wrote Peak Data to " + file_name );
       }
