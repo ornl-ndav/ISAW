@@ -536,7 +536,8 @@ public class DataSetFactory implements Serializable
     else
     {
         DataSetTools.util.SharedData.addmsg(
-        "WARNING: Unsupported instrument type in DataSetFactory.addOperators");
+        "WARNING: Unsupported instrument type in DataSetFactory.addOperators "+
+                  "for DataSet " + ds );
         DataSetTools.util.SharedData.addmsg( 
         "Requested type " + instrument_type );
         throw new IllegalArgumentException(instrument_type + " NOT SUPPORTED");
