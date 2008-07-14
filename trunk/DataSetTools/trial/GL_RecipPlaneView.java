@@ -1211,9 +1211,7 @@ public class GL_RecipPlaneView
       }
       else
         vec_Q_space.removeObjects( PEAK_OBJECTS+i );
-      
     }
-
                                        // initialize the list of all q vectors
                                        // and the QR factorization
     all_vectors = get_data_points();
@@ -1303,12 +1301,7 @@ public class GL_RecipPlaneView
       IDataGrid grid = transformer.getDataGrid();
       d = grid.getData_entry(1,1);
 
-      SampleOrientation orientation = null;
-      attr = d.getAttribute(Attribute.SAMPLE_ORIENTATION);
-      if ( attr != null )                                     
-        orientation = (SampleOrientation)attr.getValue();
-      else                                                   // provide default
-        orientation = new IPNS_SCD_SampleOrientation( 0, 0, 0 );
+      SampleOrientation orientation = transformer.getSampleOrientation();
 
       float initial_path = 9.378f; 
       attr = d.getAttribute(Attribute.INITIAL_PATH);
@@ -1328,6 +1321,9 @@ public class GL_RecipPlaneView
 
       if ( edge_pix > grid.num_rows() / 3 )   // can't discard more than 1/3
         edge_pix = grid.num_rows() / 3;       // of the rows and columns
+
+      if ( edge_pix > grid.num_cols() / 3 )   // can't discard more than 1/3
+        edge_pix = grid.num_cols() / 3;       // of the rows and columns
 
       if ( debug )
         System.out.println("Discarding " + edge_pix + " edge rows and columns");
