@@ -132,6 +132,7 @@ public class PyScriptOperator extends GenericOperator
   private boolean               ParamsSet = false;
   private int                   errLineNum  = -1;
   private static boolean        PySystemInitted = false;
+  private static Object        syncObj = new Object();  
 
   //~ Constructors -------------------------------------------------------------
 
@@ -194,13 +195,17 @@ public class PyScriptOperator extends GenericOperator
     if( !IAmOperator ) {
       return super.getCategoryList(  );
     }
-
-    PyObject pyCatList = interp.eval( "innerClass.getCategoryList(  )" );
+    
+    PyObject pyCatList = null;
+    String[] catList = null;
+    synchronized(  syncObj){
+    pyCatList = interp.eval( "innerClass.getCategoryList(  )" );
 
     //convert the PyObject to a useful Java Object
-    String[] catList = ( String[] )pyCatList.__tojava__( String[].class );
-
+    catList = ( String[] )pyCatList.__tojava__( String[].class );
+    }
     return catList;
+    
   }
 
   /**
@@ -215,13 +220,14 @@ public class PyScriptOperator extends GenericOperator
     if( !IAmOperator ) {
       return super.getCommand(  );
     }
-
+    synchronized(  syncObj){
     PyObject pyDocs = interp.eval( "innerClass.getCommand(  )" );
 
     //convert the PyObject to a useful Java Object
     String sDocs = ( String )pyDocs.__tojava__( String.class );
 
     return sDocs;
+    }
   }
 
   /**
@@ -277,10 +283,12 @@ public class PyScriptOperator extends GenericOperator
       //i.e. The constructor has not yet been called.
       return;
     }
-
+  
     try {
       reset(  );
+      synchronized(  syncObj){
       interp.exec( "innerClass.setDefaultParameters(  )" );
+      }
       ParamsSet = true;
     } catch( InstantiationError ie ) {
       //setDefaultParameters can be called before it is at all useful, so we
@@ -288,6 +296,7 @@ public class PyScriptOperator extends GenericOperator
       System.out.println( "Error in setDefaultParameters in PyScriptOperator " +
         ie.getMessage(  ) );
     }
+   
   }
 
   /**
@@ -316,13 +325,14 @@ public class PyScriptOperator extends GenericOperator
     if( !IAmOperator ) {
       return super.getDocumentation(  );
     }
-
+    synchronized(  syncObj){
     PyObject pyDocs = interp.eval( "innerClass.getDocumentation(  )" );
 
     //convert the PyObject to a useful Java Object
     String sDocs = ( String )pyDocs.__tojava__( String.class );
 
     return sDocs;
+    }
   }
 
   /**
@@ -396,13 +406,14 @@ public class PyScriptOperator extends GenericOperator
     if( !IAmOperator ) {
       return 0;
     }
-
+    synchronized(  syncObj){
     PyObject pyNumParams = interp.eval( "innerClass.getNum_parameters(  )" );
 
     //convert the PyObject to a useful Java Object
     Integer numParams = ( Integer )( pyNumParams.__tojava__( Integer.class ) );
 
     return numParams.intValue(  );
+    }
   }
 
   /**
@@ -419,7 +430,7 @@ public class PyScriptOperator extends GenericOperator
     if( !IAmOperator ) {
       return false;
     }
-
+    synchronized(  syncObj){
     //set the parameter in the Jython namespace
     interp.set( "tempParam", param );
 
@@ -430,6 +441,7 @@ public class PyScriptOperator extends GenericOperator
     Boolean bVal = ( Boolean )pyBool.__tojava__( Boolean.class );
 
     return bVal.booleanValue(  );
+    }
   }
 
   /**
@@ -446,12 +458,14 @@ public class PyScriptOperator extends GenericOperator
       return null;
     }
 
+    synchronized(  syncObj){
     PyObject pyParam = interp.eval( "innerClass.getParameter( " + index + " )" );
 
     //convert the PyObject to a useful Java Object
     IParameter iParam = ( IParameter )( pyParam.__tojava__( IParameter.class ) );
 
     return iParam;
+    }
   }
 
   /**
@@ -498,9 +512,10 @@ public class PyScriptOperator extends GenericOperator
 
       try {
         reset(  );
-
+        synchronized(  syncObj){
         //execute level 0 stuff
         interp.exec( script.toString(  ) );
+        }
         scriptLoaded = true;
         //interpreter hit an error when processing the document, so return it
         if( eos.size(  ) > 0 ) {
@@ -512,6 +527,7 @@ public class PyScriptOperator extends GenericOperator
         //we don't really have an inner class to work with here, so we will
         //try to get the "Result" from the Jython code.  If we can't get it,
         //then we have to assume that no one set it, and continue on.
+        synchronized(  syncObj){
         PyObject pyResult = interp.get( "Result" );
         Object   result = null;
 
@@ -520,6 +536,7 @@ public class PyScriptOperator extends GenericOperator
         }
         pyResult = null;
         return result;
+        }
       } catch( PyException s ) {
         //hit some sort of Python syntax error
         errormessage   = "ERROR1:" + s.toString(  );
@@ -534,6 +551,7 @@ public class PyScriptOperator extends GenericOperator
         return new ErrorString( errormessage );
       }
     } else {
+       synchronized(  syncObj){
       PyObject pyResult = interp.eval( "innerClass.getResult(  )" );
 
       //convert the PyObject to a useful Java Object
@@ -542,6 +560,7 @@ public class PyScriptOperator extends GenericOperator
       pyResult = null;
       
       return oResult;
+       }
     }
   }
 
@@ -638,13 +657,14 @@ public class PyScriptOperator extends GenericOperator
     if( !IAmOperator ) {
       return super.getTitle(  );
     }
-
+    synchronized(  syncObj){
     PyObject pyString = interp.eval( "innerClass.getTitle(  )" );
 
     //convert the PyObject to a useful Java Object
     String stringRep = ( String )pyString.__tojava__( String.class );
 
     return stringRep;
+    }
   }
 
   /**
@@ -653,7 +673,9 @@ public class PyScriptOperator extends GenericOperator
    * @return Formatted Python version number.
    */
   public final String getVersion(  ) {
+     synchronized(  syncObj){
     return "V1-PYth v" + PySystemState.version;
+     }
   }
 
   /**
@@ -669,10 +691,11 @@ public class PyScriptOperator extends GenericOperator
     if( !IAmOperator ) {
       return;
     }
-
+    synchronized(  syncObj){
     //set the operator in the Jython namespace
     interp.set( "tempOp", op );
     interp.exec( "innerClass.CopyParametersFrom( tempOp )" );
+    }
   }
 
   /**
@@ -683,7 +706,9 @@ public class PyScriptOperator extends GenericOperator
   public final void addDataSet( DataSet dss ) {
     dss.addIObserver( this );
     Dsets.addElement( dss );
+    synchronized(  syncObj){
     interp.set( "ISAWDS" + dss.getTag(  ), dss );
+    }
    
   }
 
@@ -765,12 +790,13 @@ public class PyScriptOperator extends GenericOperator
 
     if( codeLine != null ) {
       eos.reset(  );
-
+      synchronized(  syncObj){
       try {
         interp.exec( codeLine );
       } catch( Exception s ) {
         errormessage = s.getMessage(  );
         SharedData.addmsg( errormessage );
+      }
       }
     }
   }
@@ -790,7 +816,9 @@ public class PyScriptOperator extends GenericOperator
     }
 
     scriptsDir = StringUtil.setFileSeparator( scriptsDir + "/Scripts/" );
+    synchronized(  syncObj){
     pyInterp.execfile( scriptsDir + "default_imports.py" );
+    }
   }
 
   /**
@@ -961,19 +989,20 @@ public class PyScriptOperator extends GenericOperator
    * script defines an operator.
    */
   private final void initOperator(  ) {
-   
+    synchronized(  syncObj){
     initPySystem();
     if( script.isValid(  ) ) {
       IAmOperator = true;
     } else {
       IAmOperator = false;
     }
-
+    }
     reset(  );
 
     if( IAmOperator ) {
       setDefaultParameters(  );
     }
+   
   }
 
   /**
@@ -1043,11 +1072,12 @@ public class PyScriptOperator extends GenericOperator
       PS = new PropertyChangeSupport( this );
     }
 
+    synchronized( syncObj){
     for( int i = 0; i < Dsets.size(  ); i++ ) {
       DataSet DS = ( DataSet )( Dsets.elementAt( i ) );
-
       //reset the internal DataSet variables
       interp.set( "ISAWDS" + DS.getTag(  ), DS );
+      
     }
 
     //reset the IObserver internal variable
@@ -1061,7 +1091,7 @@ public class PyScriptOperator extends GenericOperator
 
     //set the interpreter's output stream
     interp.setOut( new DisplayOStream(  ) );
-
+    }
     //reset the error message
     resetError(  );
   }
@@ -1076,6 +1106,8 @@ public class PyScriptOperator extends GenericOperator
         }
         Dsets.clear();
      }
+
+     synchronized( syncObj){
     if( interp != null)
        CleanInterpreter();
     
@@ -1092,7 +1124,7 @@ public class PyScriptOperator extends GenericOperator
     }catch( Exception s){
        
     }
- 
+     }
     super.finalize(); 
   }
   
@@ -1101,6 +1133,7 @@ public class PyScriptOperator extends GenericOperator
    *  delete as much of the set variables as possible
    */
   private void CleanInterpreter(){
+    synchronized( syncObj){
      try{
      if( Dsets != null)
         for( int i =0; i< Dsets.size();i++){
@@ -1125,6 +1158,7 @@ public class PyScriptOperator extends GenericOperator
      }catch( Exception ss){
         ss.printStackTrace();
      }
+    }
       //interp.setErr( (OutputStream)null );
      // interp.setOut( (OutputStream)null ); 
  
