@@ -192,7 +192,9 @@ public class VecQToTOF
 
   private IDataGrid grid;
 
-  private Tran3D   goniometerR,
+  private SampleOrientation orientation; 
+
+  private Tran3D   goniometerR,   
                    goniometerRinv;
 
   private Vector3D det_center;  // center position of detector.
@@ -386,19 +388,19 @@ public class VecQToTOF
     temp.multiply( 0.5f );
     det_center.add( temp );
 
-    SampleOrientation orientation =
+    orientation =
         (SampleOrientation)ds.getAttributeValue(Attribute.SAMPLE_ORIENTATION);
 
-    if ( orientation != null )        // get the forward and inverse rotation
+    if ( orientation == null )
     {
-      goniometerR    = orientation.getGoniometerRotation();
-      goniometerRinv = orientation.getGoniometerRotationInverse();    
+      System.out.println("WARNING: NO SampleOrientation in " + ds );
+      System.out.println("Needed for VecQToTOF constructor. Using default.");
+      orientation = new IPNS_SCD_SampleOrientation( 0, 0, 0 );
     }
-    else                              // just use the identity transformation
-    {                                 // if there is not a SampleOrientation
-      goniometerR    = new Tran3D();
-      goniometerRinv = new Tran3D();    
-    }
+                                     // get the forward and inverse rotation
+    goniometerR    = orientation.getGoniometerRotation();
+    goniometerRinv = orientation.getGoniometerRotationInverse();    
+    
     // To allow for quickly discarding q's that couldn't come from this 
     // detector & chi,phi,omega, we keep a unit vector in the direction of
     // the q vector corresponding to the the detector center(q_center) as well 
@@ -440,6 +442,16 @@ public class VecQToTOF
   public IDataGrid getDataGrid()
   {
     return grid;
+  }
+
+
+  /* ------------------------- getSampleOrienation ------------------------ */
+  /**
+   *  Get reference to sample orienation for the DataSet
+   **/
+  public SampleOrientation getSampleOrientation()
+  {
+    return orientation;
   }
 
 
