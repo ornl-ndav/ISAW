@@ -182,7 +182,7 @@ public class ExtGetDS{
     EntryToDSs= new Vector() ;
     this.nxLogLocator = new NxlogLocator(this.node);
     if( UsePreSet)
-       RestoreStartUpInfo();
+       RestoreStartUpInfo( null );
   }
 
   /**
@@ -190,9 +190,10 @@ public class ExtGetDS{
    * EntryToDSs and setupDSs variables will be set.
    * If unsuccessful the two variables will be set appropriately
    * 
+   * @param filename the name of the file with the start up information
    * 
    */
-   public void RestoreStartUpInfo(){
+   public void RestoreStartUpInfo(  String fname ){
       
      String F = NameFile(filename);
      if( F == null || F.length() < 3)
@@ -203,7 +204,8 @@ public class ExtGetDS{
 
      Fname = Fname+"ISAW/"+F.substring( 0,3 )+".startup";
      
-
+     if( fname != null )
+        Fname = fname;
      this.EntryToDSs = new Vector();
      this.setupDSs = true;
      EntryToDSs = new Vector();
@@ -381,9 +383,11 @@ public class ExtGetDS{
    * Saves the start up information to the ISAW subdirectory in the user's home directory in
    * a file derived from the first 3 letters in the filename( -path)
    * 
+   * @param filename  the name of the file to have the start up information
+   * 
    * @return true if successful otherwise false.
    */
-  public boolean SaveStartUpInfo(){
+  public boolean SaveStartUpInfo( String fname){
      if(!setupDSs ) 
         setUpDataSetList() ;
      
@@ -400,6 +404,8 @@ public class ExtGetDS{
      if( F == null || F.length() < 3)
         return false;
      Fname = Fname+"ISAW/"+F.substring( 0,3 )+".startup";
+     if( fname != null)
+        Fname = fname;
      
      try{
         FileOutputStream fout = new FileOutputStream( Fname );
