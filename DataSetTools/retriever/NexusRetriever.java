@@ -91,10 +91,13 @@ public class NexusRetriever extends Retriever implements hasInformation
      * includes information to access relevant information where the information
      * about this data set is stored in the NeXus file
      * 
+     * @param filename  the name of the file to get the information or null
+     *                  if it goes to the standard place for the instrument
+     *                  
      * @return  true if successful otherwise false
      */
-    public boolean SaveSetUpInfo(){
-       return ext.SaveStartUpInfo();
+    public boolean SaveSetUpInfo( String filename ){
+       return ext.SaveStartUpInfo( filename );
     }
     
     
@@ -102,9 +105,12 @@ public class NexusRetriever extends Retriever implements hasInformation
      * Uses the information stored in SaveSetUpInf() to initialize the information
      * on the data sets stored in this file.
      * 
+     * @param filename  the name of the file to with the information or null
+     *                  if it uses the standard file for the instrument
+     * 
      */
-    public void RetrieveSetUpInfo(){
-       ext.RestoreStartUpInfo();
+    public void RetrieveSetUpInfo( String filename ){
+       ext.RestoreStartUpInfo( filename);
     }
 
     /** 
