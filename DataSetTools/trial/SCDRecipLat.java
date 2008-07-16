@@ -2069,9 +2069,13 @@ private class ReadoutListener implements ActionListener
      V.add( b );
      return V;
   }
+
+
   /**
-   * Really returns the 3 directions only. This is sent into Blind
-   * @return
+   * Get the vectors to send into Blind.
+   * @return Two dimensional array of floats with three rows.  The 
+   *         three rows contain vectors a*, b* and c* to be sent in
+   *         to Blind.
    */
   public float[][] get4Points(){
      if( a_star_vec == null || b_star_vec == null || c_star_vec==null ||
@@ -2087,8 +2091,6 @@ private class ReadoutListener implements ActionListener
      Res[1]=b_star_vec.getVector().get();
      Res[2]=c_star_vec.getVector().get();
      return Res;
-     
-     
   }
   
   public float[][] CalcUB4( Vector Peaks, float[][] Points, Vector Stats){
