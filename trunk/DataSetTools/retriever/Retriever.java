@@ -191,70 +191,74 @@ public abstract class Retriever implements Serializable
     /**
      *  Specify how many attributes are to be included when DataSets are
      *  retrieved, base on a string code.  The common attributes for
-     *  Time-of-Flight Neutron Scattering experiments can be grouped as:
-     *  -- 1 ------------------------------------------------------------------
-     *  GROUP_ID             ( required )
+     *  Time-of-Flight Neutron Scattering experiments can be grouped as:<BR>
+     *  <table border="1">
+     * <tr><td align="center"> --- 1--- </td></tr>
+     *  
+     *  <tr><td>GROUP_ID</td><td>( required )</td></tr>
      *
-     *  -- 2 ------ vis_attrs -------------------------------------------------
-     *  PIXEL_INFO_LIST      ( Used by newer codes, keeps info on pixels
-     *                        used and references to their data grids. This
-     *                        has methods to calculate effective position,
-     *                        total solid angles and delta 2 theta, so this
-     *                        "should" replace other attributes.  )
-     *  DELTA_2THETA         ( used for "True Angle" view and QE display
-     *                        should be replaced by data grid methods )
+     *  <tr><td align="center"> --- 2 (vis_attrs) --- </td></tr>
+     *  
+     *  <tr><td>PIXEL_INFO_LIST</td><td>( Used by newer codes, keeps info on pixels<Br>
+     *                        used and references to their data grids. This<Br>
+     *                        has methods to calculate effective position,<Br>
+     *                        total solid angles and delta 2 theta, so this<Br>
+     *                        "should" replace other attributes.  )</td></tr>
+     * <tr><td> DELTA_2THETA </td><td>( used for "True Angle" view and QE display<br>
+     *                        should be replaced by data grid methods )</td></tr>
      *
-     * -- 3 ------- run_attrs ------------------------------------------------
-     *  RUN_NUM              ( shared )
-     *  INITIAL_PATH         ( shared )
-     *  DETECTOR_POS         ( per group, weighted by solid angles, should be
-     *                         replaced by pixel info list method )
-     *  TOTAL_COUNTS         ( used for SAND, UpStreamMonitorID, etc. )
+     * <tr><td align="center"> --- 3(run_attrs) --- </td>
+     * <tr><td> RUN_NUM</td><td>( shared )</td></tr>
+     *  <tr><td>INITIAL_PATH</td><td>( shared )</td></tr>
+     *  <tr><td>DETECTOR_POS</td><td>( per group, weighted by solid angles, should be<br>
+     *                         replaced by pixel info list method )</td></tr>
+     *  <tr><td>TOTAL_COUNTS</td><td>( used for SAND, UpStreamMonitorID, etc. )</td></tr>
      *
-     * -- 4 ------- npd_attrs ------------------------------------------------
-     *  RAW_ANGLE            ( used for GSAS )
-     *  OMEGA                ( only added for TOF_DIFFRACTOMETER )
+     * <tr><td align="center"> --- 4 (npd_attrs ) --- </td></tr>
+     * <tr><td> RAW_ANGLE </td><td>( used for GSAS )</td></tr>
+     *   <tr><td>OMEGA </td><td>( only added for TOF_DIFFRACTOMETER )</td></tr>
      *
-     * -- 5 ------- scd_attrs ------------------------------------------------
-     *  NUMBER_OF_PULSES     ( shared, used for SCD )
-     *  SAMPLE_ORIENTATION   ( only added for SCD, shared by all spectra in run)
-     *  DETECTOR_CEN_DISTANCE
-     *  DETECTOR_CEN_ANGLE
+     * <tr><td align="center"> --- 5 (scd_attrs) --- </td></tr>
+     *   <tr><td>NUMBER_OF_PULSES</td><td>( shared, used for SCD )</td></tr>
+     *   <tr><td>SAMPLE_ORIENTATION</td><td>( only added for SCD, shared by all spectra in run)</td></tr>
+     *   <tr><td>DETECTOR_CEN_DISTANCE</td></tr>
+     *   <tr><td>DETECTOR_CEN_ANGLE</td></tr>
      *
-     * -- 6 -------- dgs_attrs -----------------------------------------------
-     *  RAW_DISTANCE         ( used for HRMCS )
-     *  SOLID_ANGLE          ( total of group, used by HRMCS )
-     *  NOMINAL_ENERGY_IN    ( only added for TOF_DG_SPECTROMETER )
-     *  ENERGY_IN            ( only added for TOF_DG_SPECTROMETER )
-     *  NOMINAL_SOURCE_TO_SAMPLE_TOF ( only added for TOF_DG_SPECTROMETER )
-     *  SOURCE_TO_SAMPLE_TOF         ( only added for TOF_DG_SPECTROMETER )
+     * <tr><td align="center"> --- 6 (dgs_attrs) --- </td></tr>
+     *   <tr><td>RAW_DISTANCE</td><td>( used for HRMCS )</td></tr>
+     *   <tr><td>SOLID_ANGLE</td><td>( total of group, used by HRMCS )</td></tr>
+     *   <tr><td>NOMINAL_ENERGY_IN</td><td>( only added for TOF_DG_SPECTROMETER )</td></tr>
+     *   <tr><td>ENERGY_IN</td><td>( only added for TOF_DG_SPECTROMETER )</td></tr>
+     *   <tr><td>NOMINAL_SOURCE_TO_SAMPLE_TOF</td><td>( only added for TOF_DG_SPECTROMETER )</td></tr>
+     *   <tr><td>SOURCE_TO_SAMPLE_TOF</td><td>( only added for TOF_DG_SPECTROMETER )</td></tr>
      *
-     * -- 7 ------- igs_attrs -------------------------------------------------
-     *  ENERGY_OUT           ( only added for TOF_IDG_SPECTROMETER )
+     * <tr><td align="center"> --- 7 (igs_attrs ) --- </td></tr>
+     *   <tr><td>ENERGY_OUT</td><td>( only added for TOF_IDG_SPECTROMETER )</td></tr>
      *
-     * -- 9 ----- diagnostic_attrs --------------------------------------------
-     *  CRATE
-     *  SLOT
-     *  INPUT
-     *  DETECTOR_IDS         ( can be replaced by pixel info list methods, if
+     * <tr><td align="center"> --- 9  --- (diagnostic_attrs)</td></tr>
+     *   <tr><td>CRATE</td></tr>
+     *  <tr><td>SLOT</td></tr>
+     *   <tr><td>INPUT</td></tr>
+     *   <tr><td>DETECTOR_IDS </td><td>( can be replaced by pixel info list methods, if<br>
      *                         the grid IDs and the detector IDs match )
-     *  SEGMENT_IDS          ( can "almost" be replaced by pixel info list
-     *                         and data grid methods.  The numbering scheme
-     *                         may not match the ids in the runfiles. )
+     *   <tr><td>SEGMENT_IDS</td><td>( can "almost" be replaced by pixel info list<br>
+     *                         and data grid methods.  The numbering scheme<br>
+     *                         may not match the ids in the runfiles. )</td></tr>
+     *  </table>
      *
-     *  @param level  The string specifying the attributes that are to be
+     *  @param level  <ul>The string specifying the attributes that are to be
      *                included.  This should be one of the following Strings:
-     *                "NONE"                     means 1
-     *                "MINIMAL VISUALIZATION"    means 1,2
-     *                "MINIMAL ANALYSIS"         means 1,2,3
-     *                "TOFNSAS ANALYSIS"         means 1,2,3
-     *                "TOFNPD  ANALYSIS"         means 1,2,3,4,8
-     *                "TOFNSCD ANALYSIS"         means 1,2,3,5
-     *                "TOFNDGS ANALYSIS"         means 1,2,3,6,8
-     *                "TOFNIGS ANALYSIS"         means 1,2,3,7
-     *                "ANALYSIS"                 means 1,2,3,4,5,6,7,8
-     *                "DIAGNOSTIC"               means everything
-     *
+     *               <li> "NONE"                     means 1
+     *               <li> "MINIMAL VISUALIZATION"    means 1,2
+     *               <li> "MINIMAL ANALYSIS"         means 1,2,3
+     *               <li> "TOFNSAS ANALYSIS"         means 1,2,3
+     *               <li> "TOFNPD  ANALYSIS"         means 1,2,3,4,8
+     *               <li> "TOFNSCD ANALYSIS"         means 1,2,3,5
+     *               <li> "TOFNDGS ANALYSIS"         means 1,2,3,6,8
+     *               <li> "TOFNIGS ANALYSIS"         means 1,2,3,7
+     *               <li> "ANALYSIS"                 means 1,2,3,4,5,6,7,8
+     *               <li> "DIAGNOSTIC"               means everything
+     *         </ul>
      *  @return This returns true if a valid level was specified and returns
      *          false otherwise.  If the level was not valid, it will 
      *          default to "DIAGNOSTIC", and all possible attributes will
