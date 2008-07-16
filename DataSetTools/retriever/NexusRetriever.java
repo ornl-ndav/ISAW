@@ -53,8 +53,12 @@
 */
 
 package DataSetTools.retriever ;
+
 import DataSetTools.dataset.* ;
 import NexIO.*;
+import gov.anl.ipns.Util.SpecialStrings.*;
+import gov.anl.ipns.Util.Numeric.*;
+import java.util.*;
 
 /**  Class used to Retrieve local nexus files
  */
@@ -125,13 +129,20 @@ public class NexusRetriever extends Retriever implements hasInformation
      DataSet DS = ext.getDataSet( data_set_num ) ;
      errormessage = ext.getErrorMessage() ;
      return DS ;
-    }               
+    }  
+  
+  
+  /**
+   * Tries to close the file in the underlying NeXus system
+   */
   public void close(){
      if( node != null)
         node.close();
      node = null;
      ext = null;
   }
+  
+  
   /**
   * @param data_set_num the data set index
   * @return the type( Histogram/monitor/invalid/etc.) of the data 
@@ -147,6 +158,8 @@ public class NexusRetriever extends Retriever implements hasInformation
       return type ;
      }           
   
+   
+   
   /**
   * returns the total number of datasets of All Types
   */
@@ -181,13 +194,93 @@ public class NexusRetriever extends Retriever implements hasInformation
    }
 
 
+   
   /**
   * Returns any errormessages or "" if there are no errors or warnings
   */
    public String getErrorMessage()
     {return errormessage ;
     }
-  /** Test program for the NexusRetriever module 
+ 
+   
+   /**
+    * Retrieves datasets from one NeXus file with options to use caching for 
+    * faster loading of the data
+    * 
+    * @param filename          The name of the nexus file with the data sets
+    * @param DsNums            The data set numbers to be loaded or empty to 
+    *                              load all
+    * @param GroupIDs          The group IDs to be loaded or Empty for all.
+    * @param useDefaultCache   Use the default cache for this instrument. This
+    *                          file is located in user.home/ISAW. Its name
+    *                          starts with the first 3 letters of the instrument
+    *                          name( first 3 characters of the filename). It ends
+    *                          with \".startup\".
+    *               
+    * @param CacheFilename    The name of the filename with the cache information
+    * 
+    * @return   The array of data sets from this NeXus file.
+    */
+   public static DataSet[]  LoadNeXusDataSetsFast( String filename, 
+                                                IntListString DsNums, 
+                                                IntListString GroupIDs, 
+                                                boolean useDefaultCache, 
+                                                String CacheFilename){
+      
+      
+         NexusRetriever retriever = new NexusRetriever( filename);
+         
+         if( useDefaultCache)
+            retriever.RetrieveSetUpInfo( null );
+         else if(CacheFilename != null && CacheFilename.trim().length()>1)
+            retriever.RetrieveSetUpInfo(  CacheFilename );
+      
+         if( DsNums == null || DsNums.toString().trim().length() <1 )
+            DsNums = new IntListString("0:"+ (retriever.numDataSets()-1));
+         
+         int[] dsList = IntList.ToArray(  DsNums.toString() );
+         
+         int[] GroupList = null;
+         if( GroupIDs != null)
+            GroupList = IntList.ToArray( GroupIDs.toString() );
+         
+         DataSet[] DSS = new DataSet[ dsList.length];
+         for( int i=0; i< DSS.length; i++)
+            if( GroupList != null)
+               DSS[i] = retriever.getDataSet(  dsList[i], GroupList );
+            else
+               DSS[i] = retriever.getDataSet(  dsList[i]);
+         
+        
+        return DSS; 
+        
+      
+   }
+   
+   /**
+    *  Get the dataset with number dsNum and only keeps those with the given ids.
+    *  
+    *  @param dsNum    the number associated with the data set to be retrieved
+    *  @param ids      the groupIDs to keep.
+    *  
+    *  @return  the given data set or null if there is no data set or ids specified.
+    */
+   public DataSet getDataSet( int dsNum, int[] ids){
+      DataSet ds = getDataSet( dsNum );
+      if( ds == null || ds.getNum_entries() < 1 || ids ==null || 
+                                                 ids.length < 1)
+         return ds;
+     
+      for( int i= ds.getNum_entries() - 1 ; i >= 0 ; i-- )
+         if( Arrays.binarySearch( ids, ds.getData_entry(i).getGroup_ID()) < 0 )
+            ds.removeData_entry( i );
+      
+      
+      return ds;
+         
+   }
+   
+   /** Test program for the NexusRetriever module 
  */
   public static void main( String args[] )
    {String filename = "C:\\SampleRuns\\Nex\\lrcs3000.nxs" ;
