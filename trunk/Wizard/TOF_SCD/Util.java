@@ -167,8 +167,8 @@ public class Util {
       String PeakFileName = outpath+expname+".peaks";
       String ExpFileName  = outpath+expname+".x";
       
-      if( append )if( !( new java.io.File( PeakFileName ) ).exists() ||
-               !( new java.io.File( ExpFileName ) ).exists() )
+      if( append )if( !( new java.io.File( PeakFileName ) ).exists() )
+             // || !( new java.io.File( ExpFileName ) ).exists() )
          append = false;
       
       boolean append1 = false || append;
@@ -301,7 +301,18 @@ public class Util {
           SharedMessages.addmsg(  LogInfo.elementAt( i ) );
        
        LogInfo.clear();
+       Vector<Peak_new> Peak1= new Vector<Peak_new>();
+       if( append)
+          try{
+             Peak1 = Peak_new_IO.ReadPeaks_new( PeakFileName);
+         
+          }catch( Exception s1){
+            SharedMessages.addmsg("Cannot append:"+ s1) ;
+            Peak1 = new Vector<Peak_new>();
+          }
        
+       Peak1.addAll(  ResultPeaks );
+       ResultPeaks = Peak1;
        Peak_new_IO.WritePeaks_new( PeakFileName, 
                                   (Vector<Peak_new>)ResultPeaks, 
                                    append1 );
@@ -879,7 +890,7 @@ public class Util {
                   float Max_dSpacing, float pixelW_H, int min_time_chan,
                   int max_time_chan , int[] RowColRange ){
       
-      return DataSetTools.operator.Generic.TOF_SCD.Util.centroid( Pk , DS , grid );
+      return DataSetTools.operator.Generic.TOF_SCD.Util.centroid( Pk , DS, grid );
    } 
    
    
