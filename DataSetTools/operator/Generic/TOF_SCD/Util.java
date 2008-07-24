@@ -115,10 +115,11 @@ import gov.anl.ipns.MathTools.Geometry.Vector3D;
 import gov.anl.ipns.Util.File.TextFileReader;
 import gov.anl.ipns.Util.Numeric.Format;
 import gov.anl.ipns.Util.SpecialStrings.ErrorString;
+import gov.anl.ipns.Util.SpecialStrings.IntListString;
 
 import java.io.FileWriter;
 import java.io.IOException;
-
+import java.util.*;
 import DataSetTools.dataset.AttrUtil;
 import DataSetTools.dataset.Attribute;
 import DataSetTools.dataset.Data;
@@ -129,7 +130,7 @@ import DataSetTools.dataset.IntListAttribute;
 import DataSetTools.dataset.PixelInfoList;
 import DataSetTools.dataset.PixelInfoListAttribute;
 import DataSetTools.dataset.XScale;
-
+import DataSetTools.operator.Generic.TOF_SCD.*;
 public class Util{
   /**
    * Don't let anyone try to instantiate the class
@@ -489,7 +490,7 @@ public class Util{
    * @param grid  IDataGrid with references to the Data blocks for each
    *              column and row of an area detector.
    */
-  public static IPeak centroid(IPeak peak, DataSet ds, IDataGrid grid){
+  public static IPeak centroidxx(IPeak peak,DataSet ds, IDataGrid grid){
     
     double asum  = 0.;
     double xsum  = 0.;
@@ -596,6 +597,146 @@ public class Util{
     return ResPeak ;
   }
   
+  /**
+   * Find the centroided location of a peak.
+   *
+   * @param peak  the peak to centroid which already has an initial
+   *              position
+   * @param ds    the dataset to use for centroiding
+   * @param grid  IDataGrid with references to the Data blocks for each
+   *              column and row of an area detector.
+   *              
+   *              
+   *  This version could be fixed for larger sized peaks( xtra args, replace
+   *    3's, 2's and 1's by variables            
+   */
+ public static IPeak centroid(IPeak peak,  DataSet DS, IDataGrid grid){
+    
+    double asum  = 0.;
+    double xsum  = 0.;
+    double ysum  = 0.;
+    double zsum  = 0.;
+    double back  = 0.;
+    double count = 0.;
+    double Sx , Sy, Sz, S1;
+    
+    // create the new reflection flag
+    float x,y,z;
+    int reflag=peak.reflag();
+    reflag=(reflag/100)*100+reflag%10;
+    
+    // check that the peak isn't too close to the edge
+    if( peak.nearedge()<=0.0f ){
+      peak.reflag(reflag+20);
+      return peak;
+    }
+    
+    
+    int col=  Math.round(peak.x());
+    int row=  Math.round(peak.y());
+    int time=  Math.round(peak.z());
+    Data D=null;
+    int minCol = Math.max(  col-3, 1 );
+    int minRow = Math.max(  row-3, 1 );
+    int maxCol = Math.min(  col+3, grid.num_cols() );
+    int maxRow = Math.min(  row+3, grid.num_rows());
+    int minTime = Math.max( 1 , time -1 );
+    int maxTime = Math.min( time+1 , grid.getData_entry( row , col ).getY_values().length-1);
+    
+    
+   
+      
+                                              
+    for( int k = minTime ; k<= maxTime ; k++ ){
+      // determine the background for this time slice
+      back = Sx = Sy = Sz = S1 = 0.;
+      float nback=0;
+      for( int j=minRow ; j<= maxRow ; j++ ){
+        for( int i=minCol ; i<=maxCol ; i++ ){
+          D = grid.getData_entry(  j, i  );
+          if( D == null)
+             return null;
+          if( ( i == minCol && col - 3 >= 1 ) || // left and right borders
+                   (i == maxCol && col + 3 <= maxCol) ){ //if not at edge
+                                               
+            back=back+D.getY_values()[k];
+            nback+=1;
+          }else  if( (j == minRow && row - 3 >= 1) ||   // top and bottom borders
+                   (j == maxRow && row + 3 <=maxRow ) ){ //if not at edge
+             
+              back = back+D.getY_values()[k];
+              nback += 1;
+            }
+          //eliminate boundary cells(  edge 2 cells)
+          else if( j - minRow <= 1  && row - 1 >= minRow ){}
+          else if( maxRow-  j <= 1 &&  row + 1 <= maxRow ){}
+          else if( i - minCol <= 1 && col - 1 >= minCol ){}
+          else if( maxCol - i <= 1 && col + 1 <= maxCol ){}
+          
+          
+          else {
+             count = D.getY_values()[k];
+             xsum = xsum + count * i;
+             Sx += i;
+             ysum = ysum + count * j;
+             Sy += j;
+             zsum = zsum + count * (k);
+             Sz += k;
+             asum  = asum + count;
+             S1++;
+             
+          }
+        }
+      }
+      back=back/nback; // normalize the background by number of points
+      // find the sums for the centroid
+      
+      xsum -= back * Sx;
+      ysum -= back * Sy;
+      zsum -= back * Sz;
+      asum -= back * S1;
+     
+    }
+    
+    // total count must be greater than zero for this to make sense
+    if(asum<=0){
+      peak.reflag(reflag+20);
+      return peak;
+    }
+    // centroid the peaks
+    x=(float)(xsum/asum);
+    y=(float)(ysum/asum);
+    z=(float)(zsum/asum); // -1 is to convert to java counting
+    
+    // find out how far the peaks were moved
+    float dx=Math.abs(x-peak.x());
+    float dy=Math.abs(y-peak.y());
+  
+    float dz=Math.abs(z-peak.z());
+    
+    if( dx>1.0 || dy>1.0 || dz>1.0 ){
+      // don't shift positions if it is moving more than one bin
+      peak.reflag(reflag+20);
+      return peak;
+    }
+      // update the peak
+    XScale x_scale = D.getX_scale();
+    float tof = x_scale.getInterpolatedX( z );
+    float t0_shift = AttrUtil.getT0Shift( DS );
+    if ( Float.isNaN( t0_shift ) )
+      t0_shift = 0f;
+    IPeak ResPeak = peak.createNewPeakxyz( x , y , z, tof + t0_shift );
+    //ResPeak is close to peak so bring values in
+    ResPeak.sethkl(peak.h(),peak.k(),peak.l());
+    ResPeak.ipkobs( peak.ipkobs());
+    ResPeak.inti( peak.inti());
+    ResPeak.sigi( peak.sigi());
+   
+    
+    // return the updated peak
+    ResPeak .reflag(reflag+10);
+    return ResPeak ;
+  }
   /**
    * Calculates approximate number of pixels on detector that spans an
    * "error" of dQ
@@ -1158,5 +1299,43 @@ public class Util{
 
     // return the result
     return scalars;
+  }
+  
+  /**
+   * Test for comparing two centroid algorithms
+   * @param args  first element is the filename for peaks
+   */
+  public static void main( String[] args){
+     //javax.swing.JFileChooser jfc = new javax.swing.JFileChooser(  );
+     String filename = "C:/ISAW/Sampleruns/scd06496.run";
+     //if( jfc.showOpenDialog( null )== javax.swing.JFileChooser.APPROVE_OPTION)
+    //    filename = jfc.getSelectedFile().getAbsolutePath();
+    // else
+    //    System.exit(0);
+     try{
+        DataSet[] DSS = Command.ScriptUtil.load( filename );
+        DataSet DS = DSS[ DSS.length-1];
+        Vector Peaks = (Vector)( new FindPeaks(DS,0f, 30,0, 1,5000, new IntListString("1:128"))).getResult(); 
+        for( int i=0; i < Peaks.size(); i++){
+           Peak pk = (Peak)(Peaks.elementAt(i));
+           IDataGrid grid = DataSetTools.dataset.Grid_util.getAreaGrid(DS  , pk.detnum() );
+           
+           IPeak pk1 =(Util.centroid( pk , DS,grid  ));
+           if(pk1 != null)
+              System.out.println( pk1);
+           IPeak pk2 = (Util.centroidxx( pk ,DS, grid  ));
+           if(pk2 != null)
+              System.out.println( pk2);
+           System.out.println("---------------------------------------------");
+           
+        }
+     
+     
+     
+     }catch( Exception s){
+        s.printStackTrace();
+     }
+     
+     
   }
 }
