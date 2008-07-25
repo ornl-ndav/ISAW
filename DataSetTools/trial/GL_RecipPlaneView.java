@@ -395,7 +395,11 @@ public class GL_RecipPlaneView
      runs = new int[ ds_array.length ];
      for ( int i = 0; i < ds_array.length; i++ )
      {
-       runs[i] = 1000 + i;
+       int[] run_num_list = AttrUtil.getRunNumber( ds_array[i] );
+       if ( run_num_list != null && run_num_list.length >= 1 )
+         runs[i] = run_num_list[0];
+       else
+         runs[i] = 1000000 + i;
        data_sets.add( ds_array[i] );
      }
 
@@ -1098,9 +1102,14 @@ public class GL_RecipPlaneView
     float max[] = hkl_min_max[1].get();
     float rctof[];
     Vector3D point = new Vector3D(); 
+/*
     for ( int h = (int)min[0]; h <= (int)max[0]; h++ )
       for ( int k = (int)min[1]; k <= (int)max[1]; k++ )
         for ( int l = (int)min[2]; l <= (int)max[2]; l++ )
+*/
+    for ( int h = -10; h <= 10; h++ )       // Temporarily just use fixed
+      for ( int k = -10; k <= 10; k++ )     // range.  ARCS covered too
+        for ( int l = -10; l <= 10; l++ )   // much volume and took too long.
         {
            point.set( h, k, l ); 
            orientation_matrix.apply_to( point, point );
