@@ -61,8 +61,8 @@ public class Peak_new_IO
   public static final String L1_T0_TITLES = "6         L1    T0_SHIFT";
 
   public static final String GRID_TITLES =
-                       "4 DETNUM  NROWS  NCOLS   WIDTH  HEIGHT   DEPTH " +
-                       "  DETD  CenterX  CenterY  CenterZ    BaseX  " +
+                       "4 DETNUM  NROWS  NCOLS   WIDTH   HEIGHT   DEPTH " +
+                       "  DETD   CenterX   CenterY   CenterZ    BaseX  " +
                        "  BaseY    BaseZ      UpX      UpY      UpZ";
 
   public static final String PEAK_GROUP_TITLES =
@@ -287,7 +287,7 @@ public class Peak_new_IO
     float det_d     = center.length() * 100;
 
     return String.format("5 %6d %6d %6d %7.4f %7.4f %7.4f %6.2f " +
-                         "%8.4f %8.4f %8.4f " +
+                         "%9.4f %9.4f %9.4f " +
                          "%8.5f %8.5f %8.5f " +
                          "%8.5f %8.5f %8.5f",
                       id, n_rows, n_cols, width, height, depth, det_d,
@@ -715,7 +715,7 @@ public class Peak_new_IO
     System.out.println("------------- OLD PEAK FORMAT --------------" );
     System.out.println( peak );
     System.out.println(); 
-    System.out.println("------------- OLD PEAK FORMAT --------------" );
+    System.out.println("------------- NEW PEAK FORMAT --------------" );
 
     System.out.println( L1_T0_TITLES );
     System.out.println( L1_T0_String( peak ) );
