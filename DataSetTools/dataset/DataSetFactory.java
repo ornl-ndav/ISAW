@@ -219,9 +219,10 @@ public class DataSetFactory implements Serializable
   }
 
   /**
-   * Constructs a data set "factory" that will produce empty DataSets with the 
-   * specified title, default values for the units and labels together with a 
-   * list of operators suitable for any data set.
+   * Constructs a data set "factory" that will produce empty DataSets with 
+   * specified title and default values for the units and labels for a 
+   * Time-of-flight DataSet, together with a list of operators suitable 
+   * for any data set.
    * 
    * @param   title     String giving a title for the DataSets produced.
    *
@@ -285,6 +286,7 @@ public class DataSetFactory implements Serializable
    * @param  label  String giving the label for the "Y" axis
    */
   public void setY_label( String label ) { this.y_label = label; }
+
 
   /**
    * Get a new empty data set with the title, units, label, ID and initial log 
@@ -461,7 +463,7 @@ public class DataSetFactory implements Serializable
    *
    * @param  instrument_type  Code for the type of instrument for which
    *                          the DataSet is to be configured.  The codes
-   *                         are in DataSetTools/instrument/InstrumentType.java 
+   *                          are in DataSetTools/instrument/InstrumentType.java 
    *                          InstrumentType.TOF_DIFFRACTOMETER
    *                          InstrumentType.TOF_SCD
    *                          InstrumentType.TOF_SAD
@@ -494,8 +496,8 @@ public class DataSetFactory implements Serializable
       ds.addOperator( new TrueAngle() );
       ds.addOperator( new LoadOrientation() );
       ds.addOperator( new LoadSCDCalib() );
+
       IntegratePt intPk = new IntegratePt();
-      
       ds.addOperator(intPk);
       intPk.setIntgratePkOp(new Operators.TOF_SCD.INTEG(),1,1,1);
     }
@@ -544,6 +546,7 @@ public class DataSetFactory implements Serializable
     }
   }
 
+
   /**
    * Configure an existing DataSet by adding the set of operators
    * appropriate to the monitors on a particular instrument type,
@@ -553,7 +556,8 @@ public class DataSetFactory implements Serializable
    *
    * @param  instrument_type  Code for the type of instrument for which
    *                          the DataSet is to be configured.  The codes
-   *                          are in DataSetTools/instrument/InstrumentType.java   *                          InstrumentType.TOF_DIFFRACTOMETER
+   *                          are in DataSetTools/instrument/InstrumentType.java   
+   *                          InstrumentType.TOF_DIFFRACTOMETER
    *                          InstrumentType.TOF_SCD
    *                          InstrumentType.TOF_SAD
    *                          InstrumentType.TOF_DG_SPECTROMETER
