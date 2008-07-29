@@ -171,15 +171,6 @@ public class NxMonitor{
     if( ( xvals == null ) ||(  yvals==null ) ) 
       return setErrorMessage( "Cannot convert data to float array in NxMonitor");
     
-    Data D;
-    
-    if( errs == null)
-      D = Data.getInstance(new VariableXScale(xvals),yvals, monitor_num);
-    else
-      D = Data.getInstance( new VariableXScale(xvals),yvals, errs, monitor_num);
-
-    DS.addData_entry( D );
-    int index=DS.getNum_entries()-1;
     
     String Xlabel = NexUtils.getStringAttributeValue( ntof, "long_name");
     if( Xlabel != null)
@@ -187,19 +178,30 @@ public class NxMonitor{
     
 
     String Xunits = NexUtils.getStringAttributeValue( ntof, "units");
-    if( Xunits != null)
-       DS.setX_units( Xunits );
+    
     
     String Ylabel = NexUtils.getStringAttributeValue( ndata, "long_name");
-    if( Xlabel != null)
-       DS.setY_label( Xlabel );
+    if( Ylabel != null)
+       DS.setY_label( Ylabel );
     
 
     String Yunits = NexUtils.getStringAttributeValue( ndata, "units");
-    if( Xunits != null)
-       DS.setY_units( Xunits );
+    if( Yunits != null)
+       DS.setY_units( Yunits );
     
     
+    Data D;
+    if( Xunits != null )
+       ConvertDataTypes.UnitsAdjust( xvals , Xunits , "meters" ,1f , 0f );
+    if( errs == null)
+       D = Data.getInstance(new VariableXScale(xvals),yvals, monitor_num);
+    else
+      D = Data.getInstance( new VariableXScale(xvals),yvals, errs, monitor_num);
+ 
+    DS.addData_entry( D );
+    int index = DS.getNum_entries()-1;
+    
+   
     
     (new NXData_util()).setOtherAttributes( node  ,DS , index ,index+1) ;
   
@@ -275,6 +277,9 @@ public class NxMonitor{
     
     D.setAttribute( new PixelInfoListAttribute( Attribute.PIXEL_INFO_LIST,
                                                  new PixelInfoList( detPix)));
+    
+    D.setAttribute(  new DetPosAttribute( Attribute.DETECTOR_POS, 
+             new DetectorPosition( new Vector3D(distance,0f,0f))) );
     
     return false;
   }
