@@ -640,7 +640,11 @@ public class ExtGetDS{
    }else{
       DS = new DataSet();
       DS.setAttributeList( AL ) ;
-
+      DS.setX_label("Time-of-flight"  );
+      DS.setX_units(  "Time(us)" );
+      DS.setY_label("Scattering Intensity"  );
+      DS.setY_units(  "Counts" );
+      
       DataSetFactory.addOperators( DS );
       DataSetFactory.addMonitorOperators( DS, instrType);
       
