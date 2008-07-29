@@ -305,316 +305,309 @@ public class JParametersDialog implements Serializable,
        
        
       }
-    public JParametersDialog( Operator  op, 
-                              IDataSetListHandler ds_src, 
-                              Document  sessionLog, 
-                              IObserver io , boolean modal )
-     {
-        this.op =op;
-        this.ds_src = ds_src;
-        this.sessionLog = sessionLog;    
-        this.io = io;
-        this.modal = modal;
-        String Title = op.getTitle();
-        if( Title.equals( IssScript.UNKNOWN))
-           Title = "CommandPane";
-        jf = new FinishJFrame();
-        opDialog = new FinishJDialog( jf, Title, modal);
-        //opDialog.addComponentListener( new MyComponentListener());       
-        int Size = 0 ;
-        int Size1 = 0;
-        String SS ="Operation "+op.getCommand();
-        Width = 0;
-        if(op instanceof DataSetOperator)
-            SS = SS +" on "+((DataSetOperator)op).getDataSet();
-	//#
-        if(op.getCommand().equals(IssScript.UNKNOWN)) SS ="";
-        Box BB = new Box( BoxLayout.Y_AXIS);
-        JLabel Header = new JLabel(SS ,SwingConstants.CENTER);
-        Header.setForeground( Color.black);
-        JPanel HeaderPanel = new JPanel();
-        HeaderPanel.add( Box.createGlue());
-        HeaderPanel.add( Header );
-        HeaderPanel.add( Box.createGlue() );
-        BB.add( HeaderPanel );
-        Size1 = new JLabel( SS ).getPreferredSize().height;
-        
-        
-        if( Size1 < 0)
-	    Size += 12;
-        else
-           Size += Size1;     
-        APH = new ApplyButtonHandler();
-        if( io != null) 
-              addIObserver(io);
-        
-        //Center the opdialog frame 
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        Width = screenSize.width;
-        Dimension size = opDialog.getSize();
-        screenSize.height = screenSize.height/2;
-        screenSize.width = screenSize.width/2;
-        size.height = size.height/2;
-        size.width = size.width/2;
-        int y = screenSize.height - size.height;
-        int x = screenSize.width - size.width;
-        //opDialog.setSize(570,450);
-        opDialog.setLocation(x, y);
-        opDialog.addWindowListener( new ExitButtonHandler());
+    public JParametersDialog( Operator op, IDataSetListHandler ds_src,
+            Document sessionLog, IObserver io, boolean modal ) {
 
-        int num_param = op.getNum_parameters();
-       
-	// opDialog.getContentPane().setLayout(new GridLayout(num_param+5,1));
-        
-        IParameter iparam;
-        Parameter param;
-        JParameterGUI paramGUI;
-       
-        //op.setDefaultParameters();
-        ObjectParameters = new Vector();
-        for (int i = 0; i<num_param; i++)
-        {
-       //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%     
-           Size1=-1;
-           iparam = op.getParameter(i);
-           if( iparam instanceof IParameterGUI)
-             {if( iparam instanceof DataSetPG){
-                DSSS=ds_src.getDataSets();
-                if( DSSS != null)
-                for( int k =0; k< DSSS.length; k++)
-                    ((DataSetPG)iparam).addItem( DSSS[k]);
-              }
+      this.op = op;
+      this.ds_src = ds_src;
+      this.sessionLog = sessionLog;
+      this.io = io;
+      this.modal = modal;
+      String Title = op.getTitle();
+      if( Title.equals( IssScript.UNKNOWN ) )
+         Title = "CommandPane";
+      jf = new FinishJFrame();
+      opDialog = new FinishJDialog( jf , Title , modal );
+      // opDialog.addComponentListener( new MyComponentListener());
+      int Size = 0;
+      int Size1 = 0;
+      String SS = "Operation " + op.getCommand();
+      Width = 0;
+      if( op instanceof DataSetOperator )
+         SS = SS + " on " + ( (DataSetOperator) op ).getDataSet();
+      // #
+      if( op.getCommand().equals( IssScript.UNKNOWN ) )
+         SS = "";
+      Box BB = new Box( BoxLayout.Y_AXIS );
+      JLabel Header = new JLabel( SS , SwingConstants.CENTER );
+      Header.setForeground( Color.black );
+      JPanel HeaderPanel = new JPanel();
+      HeaderPanel.add( Box.createGlue() );
+      HeaderPanel.add( Header );
+      HeaderPanel.add( Box.createGlue() );
+      BB.add( HeaderPanel );
+      Size1 = new JLabel( SS ).getPreferredSize().height;
 
-              JComponent pp= ((IParameterGUI)iparam).getGUIPanel( false );
-              if( pp == null)
-                {System.out.println("GUIPanel null" + iparam.getClass());
-                 return;
-                }
-            
-              
-              BB.add(pp);
-              vparamGUI.addElement( iparam );
 
-              Size1 = pp.getPreferredSize().height;
-        
-              if( Size1 < 0)
-	        Size += 10;
-              else
-                Size += Size1;
-             
-             }            
-           else if(iparam instanceof Parameter){
-              param=(Parameter)iparam;
-          
-            
-              if(  param.getValue() instanceof String  &&
-                               op instanceof IntervalSelectionOp  )
-                {
-                 DataSet ds = ((DS_Attribute)op).getDataSet();
-                 AttributeList attrs = ds.getData_entry(0).getAttributeList();
-                 paramGUI = new JIntervalParameterGUI( param, attrs );
-              
-                }
+      if( Size1 < 0 )
+         Size += 12;
+      else
+         Size += Size1;
 
-              else if(param.getValue() == null)
-               {paramGUI = new JObjectParameterGUI(param);
-	        ObjectParameters.addElement( new Integer( i ));
+      APH = new ApplyButtonHandler();
+      if( io != null )
+         addIObserver( io );
+
+      // Center the opdialog frame
+      Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+      Width = screenSize.width;
+      Dimension size = opDialog.getSize();
+      screenSize.height = screenSize.height / 2;
+      screenSize.width = screenSize.width / 2;
+      size.height = size.height / 2;
+      size.width = size.width / 2;
+      int y = screenSize.height - size.height;
+      int x = screenSize.width - size.width;
+      // opDialog.setSize(570,450);
+      opDialog.setLocation( x , y );
+      opDialog.addWindowListener( new ExitButtonHandler() );
+
+      int num_param = op.getNum_parameters();
+
+      // opDialog.getContentPane().setLayout(new GridLayout(num_param+5,1));
+
+      IParameter iparam;
+      Parameter param;
+      JParameterGUI paramGUI;
+
+      // op.setDefaultParameters();
+      ObjectParameters = new Vector();
+      for( int i = 0 ; i < num_param ; i++ ) {
+         // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+         Size1 = - 1;
+         iparam = op.getParameter( i );
+         if( iparam instanceof IParameterGUI ) {
+            if( iparam instanceof DataSetPG ) {
+               DSSS = ds_src.getDataSets();
+               if( DSSS != null )
+                  for( int k = 0 ; k < DSSS.length ; k++ )
+                     ( (DataSetPG) iparam ).addItem( DSSS[ k ] );
+            }
+
+            JComponent pp = ( (IParameterGUI) iparam ).getGUIPanel( false );
+            if( pp == null ) {
+               System.out.println( "GUIPanel null" + iparam.getClass() );
+               return;
+            }
+
+
+            BB.add( pp );
+            vparamGUI.addElement( iparam );
+
+            Size1 = pp.getPreferredSize().height;
+
+            if( Size1 < 0 )
+               Size += 10;
+            else
+               Size += Size1;
+
+         }
+         else if( iparam instanceof Parameter ) {
+            param = (Parameter) iparam;
+
+
+            if( param.getValue() instanceof String
+                     && op instanceof IntervalSelectionOp ) {
+               DataSet ds = ( (DS_Attribute) op ).getDataSet();
+               AttributeList attrs = ds.getData_entry( 0 ).getAttributeList();
+               paramGUI = new JIntervalParameterGUI( param , attrs );
+
+            }
+
+            else if( param.getValue() == null )
+
+            {
+               paramGUI = new JObjectParameterGUI( param );
+
+               ObjectParameters.addElement( new Integer( i ) );
+            }
+            else if( param.getValue() instanceof Float )
+               paramGUI = new JFloatParameterGUI( param );
+            else if( param.getValue() instanceof Integer )
+               paramGUI = new JIntegerParameterGUI( param );
+            else if( param.getValue() instanceof Boolean )
+               paramGUI = new JBooleanParameterGUI( param );
+            else if( param.getValue() instanceof String )
+               paramGUI = new JStringParameterGUI( param );
+            else if( param.getValue() instanceof IntListString ) { // param.setValue(
+                                                                     // param.getValue().toString());
+               paramGUI = new JStringParameterGUI( param );
+            }
+            else if( param.getValue() instanceof Vector )
+               paramGUI = new JArrayParameterGUI( param );
+            else if( ( param.getValue() instanceof AttributeNameString )
+                     && ( op instanceof DataSetOperator ) ) {
+               DataSet ds = ( (DataSetOperator) op ).getDataSet();
+               AttributeList attr_list;
+               // if the operator is a DataSet
+               // operator, get the list from the
+               // DataSet, otherwise get it from the
+               // data block.
+               if( op.getTitle().indexOf( "DataSet" ) >= 0 )
+                  attr_list = ds.getAttributeList();
+
+               else {
+                  Data data = ds.getData_entry( 0 );
+                  if( data != null )
+                     attr_list = data.getAttributeList();
+                  else
+                     attr_list = new AttributeList();
                }
-              else if (param.getValue() instanceof Float)
-                 paramGUI = new JFloatParameterGUI(param);
-              else if(param.getValue() instanceof Integer)
-                 paramGUI = new JIntegerParameterGUI(param);
-              else if(param.getValue() instanceof Boolean)
-                 paramGUI = new JBooleanParameterGUI(param);
-              else if(param.getValue() instanceof String)
-                paramGUI = new JStringParameterGUI(param);
-              else if(param.getValue() instanceof IntListString)
-                { //param.setValue( param.getValue().toString());
-                 paramGUI = new JStringParameterGUI(param);
-                }
-              else if(param.getValue() instanceof Vector)
-                 paramGUI = new JArrayParameterGUI(param);
-              else if((param.getValue() instanceof AttributeNameString) &&
-                   (op instanceof DataSetOperator))
-                {
-                 DataSet ds =((DataSetOperator)op).getDataSet();
-                 AttributeList attr_list; 
-                             // if the operator is a DataSet 
-                             // operator, get the list from the
-                             // DataSet, otherwise get it from the
-                             // data block.
-                 if ( op.getTitle().indexOf( "DataSet" ) >= 0 )
-                     attr_list = ds.getAttributeList();
+               // System.out.println("Num attributes="+
+               // attr_list.getNum_attributes());
+               paramGUI = new JAttributeNameParameterGUI( param , attr_list );
+            }
 
-	         else
-                   {
-                    Data data = ds.getData_entry(0);
-                    if ( data != null )
-                       attr_list = data.getAttributeList();
-                    else
-                       attr_list = new AttributeList();
-                   }
-                 //System.out.println("Num attributes="+
-                 //      attr_list.getNum_attributes());
-                 paramGUI = new JAttributeNameParameterGUI(param, attr_list);
-                }
+            else if( ( param.getValue() instanceof DataSet ) ) {
+               paramGUI = new JDataSetParameterGUI( param , ds_src
+                        .getDataSets() );
+            }
 
-              else if((param.getValue() instanceof DataSet)  ){
-                 paramGUI = new JDataSetParameterGUI(  param, 
-                                                     ds_src.getDataSets()  );
-                 }
-              
-              else if( param.getValue() instanceof DataDirectoryString )
-                { 
-                  String DirPath=param.getValue().toString();
-                  if(DirPath==null || DirPath.length()<=0){
-                    DirPath = SharedData.getProperty("Data_Directory");
-                    if( DirPath != null )
-                      DirPath = StringUtil.setFileSeparator(DirPath+"\\");
-                    else
-                      DirPath = "";
+            else if( param.getValue() instanceof DataDirectoryString ) {
+               String DirPath = param.getValue().toString();
+               if( DirPath == null || DirPath.length() <= 0 ) {
+                  DirPath = SharedData.getProperty( "Data_Directory" );
+                  if( DirPath != null )
+                     DirPath = StringUtil.setFileSeparator( DirPath + "\\" );
+                  else
+                     DirPath = "";
 
-                    param.setValue( new DataDirectoryString(DirPath) );
-                  }
-                paramGUI = new JOneFileChooserParameterGUI( param ) ;
-                }
+                  param.setValue( new DataDirectoryString( DirPath ) );
+               }
+               paramGUI = new JOneFileChooserParameterGUI( param );
+            }
 
 
-       
-               else if (param.getValue() instanceof IStringList )
-                 paramGUI = 
-                       new JIStringListParameterGUI( param ,
-                                         (IStringList)(param.getValue()));
-/*        {
-          AttributeList A = new AttributeList();
-          int num_strings =
-            ((IStringList)param.getValue()).num_strings();
+            else if( param.getValue() instanceof IStringList )
+               paramGUI = new JIStringListParameterGUI( param ,
+                        (IStringList) ( param.getValue() ) );
+            /*
+             * { AttributeList A = new AttributeList(); int num_strings =
+             * ((IStringList)param.getValue()).num_strings();
+             * 
+             * for ( int k = 0; k < num_strings; k++ ) { String str =
+             * ((IStringList)param.getValue()).getString(k); A.addAttribute( new
+             * StringAttribute( str, "" )); } paramGUI = new
+             * JAttributeNameParameterGUI(param , A); }
+             */
 
-          for ( int k = 0; k < num_strings; k++ )
-          {
-            String str =
-                  ((IStringList)param.getValue()).getString(k);
-            A.addAttribute( new StringAttribute( str, "" ));
-          }
-          paramGUI =  new JAttributeNameParameterGUI(param  , A);
-        }
-*/
+            else if( param.getValue() instanceof InstrumentNameString ) {
+               String XX = param.getValue().toString();
+               if( XX == null || XX.length() <= 0 )
+                  SharedData.getProperty( "DefaultInstrument" );
 
-              else if( param.getValue() instanceof InstrumentNameString)
-                {
-                 String XX = param.getValue().toString();
-                 if(XX==null || XX.length()<=0)
-                   SharedData.getProperty("DefaultInstrument");
+               if( XX == null )
+                  XX = "";
 
-                 if( XX == null )
-                   XX = "";
+               param.setValue( new InstrumentNameString( XX ) );
+               paramGUI = new JStringParameterGUI( param );
+            }
+            else if( param.getValue() instanceof LoadFileString ) {
+               String FileName = param.getValue().toString();
+               if( FileName == null || FileName.length() <= 0 )
+                  FileName = SharedData.getProperty( "Data_Directory" ) + "\\";
+               if( FileName != null && FileName.length() > 0 )
+                  FileName = StringUtil.setFileSeparator( FileName );
+               else
+                  FileName = "";
 
-                 param.setValue(new InstrumentNameString( XX ));
-                 paramGUI= new JStringParameterGUI( param);
-                }
-              else if( param.getValue() instanceof LoadFileString){
-                String FileName=param.getValue().toString();
-                if(FileName==null || FileName.length()<=0)
-                  FileName=SharedData.getProperty("Data_Directory")+"\\";
-                if(FileName!=null && FileName.length()>0)
-                  FileName=StringUtil.setFileSeparator(FileName);
-                else
-                  FileName="";
+               param.setValue( new LoadFileString( FileName ) );
+               paramGUI = new JLoadFileParameterGUI( param );
+            }
+            else if( param.getValue() instanceof SaveFileString ) {
+               String FileName = param.getValue().toString();
+               if( FileName == null || FileName.length() <= 0 )
+                  FileName = SharedData.getProperty( "Data_Directory" ) + "\\";
+               if( FileName != null && FileName.length() > 0 )
+                  FileName = StringUtil.setFileSeparator( FileName );
+               else
+                  FileName = "";
 
-                param.setValue( new LoadFileString(FileName) );
-                paramGUI=new JLoadFileParameterGUI(param);
-                }
-              else if( param.getValue() instanceof SaveFileString){
-                 String FileName=param.getValue().toString();
-                 if(FileName==null || FileName.length()<=0)
-                   FileName=SharedData.getProperty("Data_Directory")+"\\";
-                 if(FileName!=null && FileName.length()>0)
-                   FileName=StringUtil.setFileSeparator(FileName);
-                 else
-                   FileName="";
-                 
-                 param.setValue( new SaveFileString(FileName) );
-                 paramGUI=new JSaveFileParameterGUI(param);
-                }
-     
-              else 
-                {
-                  SharedData.addmsg("Unsupported Parameter in "
-                                    +"JParamatersDialog");
-                  return ;
-                }
-              Size1 = paramGUI.getGUISegment().getPreferredSize().height;
-        
-             if( Size1 < 0)
-	       Size += 10;
-             else
-               Size += Size1;     
-                
-             //Add other kinds of parameter types here.
-            
-	    //# opDialog.getContentPane().add(paramGUI.getGUISegment());
-              BB.add(paramGUI.getGUISegment());
-              vparamGUI.addElement(paramGUI);
-                         //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
-            
-             }
-          }//for i < nparameters
+               param.setValue( new SaveFileString( FileName ) );
+               paramGUI = new JSaveFileParameterGUI( param );
+            }
 
-        for( int i=0; i< vparamGUI.size();i++)
-            if(vparamGUI.elementAt(i) instanceof BooleanEnablePG)
-                    ((BooleanEnablePG)(vparamGUI.elementAt(i))).addPropertyChangeListener( new EnableParamListener( vparamGUI, i));
-    
+            else {
+               SharedData.addmsg( "Unsupported Parameter in "
+                        + "JParamatersDialog" );
+               return;
+            }
+            Size1 = paramGUI.getGUISegment().getPreferredSize().height;
 
-            
-        JPanel Filler = new JPanel();
-        Filler.setPreferredSize( new Dimension(120,2000));
-        BB.add( Filler ); 
-        JPanel resultsPanel = new JPanel(new GridLayout( 1, 1 ) );
-        resultsLabel.setForeground( Color.black);            
-        resultsPanel.add( resultsLabel );
-              
-        BB.add(resultsPanel );
-        Size1 = resultsLabel.getPreferredSize().height;
-       
-        if( Size1 < 0)
-	    Size += 10;
-        else
-           Size += Size1;    
-        JPanel buttonpanel = new JPanel( );
-        buttonpanel.setLayout(new FlowLayout());
-         
-            
-        apply = new JButton(APPLY);
-        exit = new JButton("Exit");
-        JButton help  = new JButton( "Help" );
-          
-        buttonpanel.add(apply);
-        apply.addActionListener( APH );
-                 
-        buttonpanel.add(exit);
-        exit.addActionListener(new ExitButtonHandler());
+            if( Size1 < 0 )
+               Size += 10;
+            else
+               Size += Size1;
 
-        buttonpanel.add( help );
-        help.addActionListener( new HelpButtonListener() );
+            // Add other kinds of parameter types here.
 
-        Size1 = buttonpanel.getPreferredSize().height;
-        
-        if( Size1 < 0)
-	    Size += 10;
-        else
-           Size += Size1;    
-       
-        BB.add(buttonpanel);
-        opDialog.getContentPane().add( BB);
-        //#
-       
-        Size += (num_param  + 4 )*3 + 42;
-        
-        opDialog.setSize((int)(.4* Width) , new Float(Size +.8).intValue());
-        opDialog.validate();
-       
-        WindowShower.show(opDialog);  
-     }
+            // # opDialog.getContentPane().add(paramGUI.getGUISegment());
+            BB.add( paramGUI.getGUISegment() );
+            vparamGUI.addElement( paramGUI );
+            // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+         }
+      }// for i < nparameters
+
+      for( int i = 0 ; i < vparamGUI.size() ; i++ )
+         if( vparamGUI.elementAt( i ) instanceof BooleanEnablePG )
+            ( (BooleanEnablePG) ( vparamGUI.elementAt( i ) ) )
+                     .addPropertyChangeListener( new EnableParamListener(
+                              vparamGUI , i ) );
+
+
+      //JPanel Filler = new JPanel();
+      //Filler.setPreferredSize( new Dimension( 120 , 2000 ) );
+      //BB.add( Filler );
+      BB.add(  new JLabel("         ") );
+      JPanel resultsPanel = new JPanel( new GridLayout( 1 , 1 ) );
+      resultsLabel.setForeground( Color.black );
+      resultsPanel.add( resultsLabel );
+
+      BB.add( resultsPanel );
+      Size1 = resultsLabel.getPreferredSize().height;
+
+      if( Size1 < 0 )
+         Size += 10;
+      else
+         Size += Size1;
+      JPanel buttonpanel = new JPanel();
+      buttonpanel.setLayout( new FlowLayout() );
+
+
+      apply = new JButton( APPLY );
+      exit = new JButton( "Exit" );
+      JButton help = new JButton( "Help" );
+
+      buttonpanel.add( apply );
+      apply.addActionListener( APH );
+
+      buttonpanel.add( exit );
+      exit.addActionListener( new ExitButtonHandler() );
+
+      buttonpanel.add( help );
+      help.addActionListener( new HelpButtonListener() );
+
+      Size1 = buttonpanel.getPreferredSize().height;
+
+      if( Size1 < 0 )
+         Size += 10;
+      else
+         Size += Size1;
+
+      BB.add( buttonpanel );
+
+      opDialog.getContentPane().add( new JScrollPane( BB ) );
+      // #
+
+      Size += ( num_param + 4 ) * 3 + 42;
+
+      opDialog.setSize( (int) ( .4 * Width ) , new Float( Size + .8 )
+               .intValue() );
+      opDialog.validate();
+
+      WindowShower.show( opDialog );
+   }
     
     
  
@@ -637,10 +630,9 @@ public class JParametersDialog implements Serializable,
 
   Vector Action_list = new Vector();
   /**
-  *   Adds an action listener
-  *   The only event reported so far is the end of op.getResult.
-  *   The actionCommand for this event is "OPERATION THROUGH"
-  */
+    * Adds an action listener The only event reported so far is the end of
+    * op.getResult. The actionCommand for this event is "OPERATION THROUGH"
+    */
   public void addActionListener( ActionListener listener)
   {
    
