@@ -631,7 +631,7 @@ public class ExtGetDS{
       }
       DS.setAttributeList( AL ) ;
       DataSetFactory.addOperators( DS );
-      if( instrType >0)
+      if( instrType > 0)
          DataSetFactory.addOperators( DS,instrType );
       DS.setAttribute( new IntAttribute( Attribute.INST_TYPE, instrType)); 
       DS.setAttribute( new StringAttribute( Attribute.DS_TYPE,Attribute.SAMPLE_DATA));
@@ -642,8 +642,8 @@ public class ExtGetDS{
       DS.setAttributeList( AL ) ;
 
       DataSetFactory.addOperators( DS );
-      if( instrType >= 0)
-          DataSetFactory.addMonitorOperators( DS, instrType);
+      DataSetFactory.addMonitorOperators( DS, instrType);
+      
       DS.setAttribute( new IntAttribute( Attribute.INST_TYPE, instrType)); 
       DS.setAttribute( new StringAttribute( Attribute.DS_TYPE,Attribute.MONITOR_DATA));
    }
