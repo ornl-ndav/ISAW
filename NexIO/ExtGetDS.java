@@ -190,7 +190,7 @@ public class ExtGetDS{
    * EntryToDSs and setupDSs variables will be set.
    * If unsuccessful the two variables will be set appropriately
    * 
-   * @param filename the name of the file with the start up information
+   * @param fname the name of the file with the start up information
    * 
    */
    public void RestoreStartUpInfo(  String fname ){
@@ -383,7 +383,7 @@ public class ExtGetDS{
    * Saves the start up information to the ISAW subdirectory in the user's home directory in
    * a file derived from the first 3 letters in the filename( -path)
    * 
-   * @param filename  the name of the file to have the start up information
+   * @param fname  the name of the file to have the start up information
    * 
    * @return true if successful otherwise false.
    */
@@ -586,8 +586,8 @@ public class ExtGetDS{
    *                the NeXus file to create the Data set
    * @return   The Data set corresponding to dsInf
    * 
-   * @see CreateSetUpEntry( int, int,int,int,int,String,String,String,String,String,String,String,String,String)
-   * @seen CreateSetUpEnry( DataSetInfo, int, int, int, int, int, int,String,String)
+   * @see #CreateSetUpEntry( int, int,int,int,int,String,String,String,String,String,String,String,String,String)
+   * @see #CreateSetUpEnry( DataSetInfo, int, int, int, int, int, int,String,String)
    */
  public DataSet getDataSet( DataSetInfo dsInf){
  
