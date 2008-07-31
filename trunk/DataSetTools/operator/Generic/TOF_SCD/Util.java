@@ -602,7 +602,7 @@ public class Util{
    *
    * @param peak  the peak to centroid which already has an initial
    *              position
-   * @param ds    the dataset to use for centroiding
+   * @param DS    the dataset to use for centroiding
    * @param grid  IDataGrid with references to the Data blocks for each
    *              column and row of an area detector.
    *              
@@ -610,7 +610,7 @@ public class Util{
    *  This version could be fixed for larger sized peaks( xtra args, replace
    *    3's, 2's and 1's by variables            
    */
- public static IPeak centroid(IPeak peak,  DataSet DS, IDataGrid grid){
+ public static IPeak centroid(IPeak peak, DataSet DS, IDataGrid grid){
     
     double asum  = 0.;
     double xsum  = 0.;
