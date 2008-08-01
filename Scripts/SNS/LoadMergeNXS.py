@@ -2,7 +2,9 @@ from DataSetTools.operator.Generic.Load import GenericLoad
 from DataSetTools.retriever import *
 from DataSetTools.viewer import *
 from Operators.Special import DataSetArrayMerge_calc
-
+from NexIO import *
+from IPNS.Runfile import InstrumentType
+from Operators.Special import SetInstrumentTypeCalc
 def getConcurrentIndices(banks, startIndex=0):
     start = startIndex
     stop = start
@@ -80,7 +82,18 @@ class LoadMergeNXS(GenericLoad):
         choicelist.addItem("3D View")
         choicelist.addItem("Image View")
         self.addParameter(choicelist)
+        choicelist1 = ChoiceListPG("Instrument Type", "UNKNOWN")
+        choicelist1.addItem( "TOF_NPD")
 
+        choicelist1.addItem("TOF_NGLAD")
+        choicelist1.addItem("TOF_NSCD")
+        choicelist1.addItem("TOF_NSAS")
+        choicelist1.addItem("TOF_NDGS")
+        choicelist1.addItem("TOF_NIGS")
+        choicelist1.addItem("TOF_NREFL")
+        self.addParameter( choicelist1)
+        
+        self.addParameter( BooleanPG("Default NeXus fast load", 0))
     def getResult(self):
         # get the value of the parameters
         filename = self.getParameter(0).value
@@ -91,11 +104,15 @@ class LoadMergeNXS(GenericLoad):
 
         # load in the data
         retriever = NexusRetriever(filename)
+        retriever.RetrieveSetUpInfo( None)
         num = retriever.numDataSets()
         result = Vector()
         histogram_dss = Vector()
         merged = None
         titles = []
+        instType = self.getParameter(3).value
+        print "instrument Type"
+        print instType
         for i in range(num):
             dataType = retriever.getType(i)
             if (dataType == Retriever.MONITOR_DATA_SET) and loadMon:
@@ -125,6 +142,8 @@ class LoadMergeNXS(GenericLoad):
         # return the data
         if loadMon and (merged is not None):
             result.add(merged)
+            SetInstrumentTypeCalc.setInstrumentType(result,instType) 
             return result
         else:
+            SetInstrumentTypeCalc.setInstrumentType(merged,instType) 
             return merged
