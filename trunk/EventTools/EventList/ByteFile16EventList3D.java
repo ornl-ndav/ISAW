@@ -195,6 +195,100 @@ public class ByteFile16EventList3D implements IEventList3D
   }
 
 
+  /**
+   *  Write a file containing a list of 3D events, with coordinates
+   *  rounded to 16 bits, in the form read by the constructor of 
+   *  this class.
+   *
+   *  @param events      The list of events to write to the file.
+   *  @param file_name   The name of the file to write
+   *
+   */
+  public static void MakeByteFile16_3D( IEventList3D events,
+                                        String       file_name  )
+                     throws IOException
+  {
+    FileOutputStream fos     = new FileOutputStream( file_name );
+    BufferedOutputStream bos = new BufferedOutputStream( fos );
+    DataOutputStream dos     = new DataOutputStream( bos );
+
+    int num_events = events.getNumEntries();
+
+    IEventBinner x_extent = events.getXExtent();
+    IEventBinner y_extent = events.getYExtent();
+    IEventBinner z_extent = events.getZExtent();
+    float x_min = (float)x_extent.getMin();
+    float x_max = (float)x_extent.getMax();
+    float y_min = (float)y_extent.getMin();
+    float y_max = (float)y_extent.getMax();
+    float z_min = (float)z_extent.getMin();
+    float z_max = (float)z_extent.getMax();
+
+    int n_x = 65536;
+    int n_y = 65536;
+    int n_z = 65536;
+
+    UniformEventBinner x_binner = new UniformEventBinner( x_min, x_max, n_x );
+    UniformEventBinner y_binner = new UniformEventBinner( y_min, y_max, n_y );
+    UniformEventBinner z_binner = new UniformEventBinner( z_min, z_max, n_z );
+
+    System.out.println("START FILE WRITE");
+    long start = System.nanoTime();
+
+    dos.writeInt( num_events );
+
+    dos.writeFloat( x_min );
+    dos.writeFloat( x_max );
+    dos.writeInt( n_x );
+
+    dos.writeFloat( y_min );
+    dos.writeFloat( y_max );
+    dos.writeInt( n_y );
+
+    dos.writeFloat( z_min );
+    dos.writeFloat( z_max );
+    dos.writeInt( n_z );
+
+    byte[] bytes = new byte[8*num_events];
+    int index = 0;
+    float val; 
+    int   counts;
+    for ( int i = 0; i < num_events; i++ )
+    {
+       val = (float)events.getEventX(i);
+       fill_bytes( x_binner.getIndex(val), bytes, index );
+       index += 2;
+
+       val = (float)events.getEventY(i);
+       fill_bytes( y_binner.getIndex(val), bytes, index );
+       index += 2;
+
+       val = (float)events.getEventZ(i);
+       fill_bytes( z_binner.getIndex(val), bytes, index );
+       index += 2;
+
+       counts = events.getEventCode(i);
+       fill_bytes( counts, bytes, index );
+       index += 2;
+    }
+
+    dos.write( bytes, 0, bytes.length );
+    dos.close();
+
+    System.out.println("FILE WRITTEN");
+    System.out.println("WRITE TIME = " + (System.nanoTime()-start)/1000000 );
+    System.out.println("TOTAL EVENTS = " + num_events );
+  }
+
+  
+  static private void fill_bytes( int val, byte[] array, int index )
+  {
+    array[index] = (byte)(val & 255);
+    index++;
+    val = val/256;
+    array[index] = (byte)(val & 255);
+  }
+
   public static void main( String args[] ) throws IOException
   {
     System.out.println("Opening " + args[0] );
