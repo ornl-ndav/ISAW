@@ -586,8 +586,9 @@ public class ExtGetDS{
    *                the NeXus file to create the Data set
    * @return   The Data set corresponding to dsInf
    * 
-   * @see #CreateSetUpEntry( int, int,int,int,int,String,String,String,String,String,String,String,String,String)
-   * @see #CreateSetUpEnry( DataSetInfo, int, int, int, int, int, int,String,String)
+   * @see #CreateSetUpEntry( int, int,int,int,int,int,String,String,String,String,String,String,String,String,String) Create Set Up Info
+   * 
+   * @see #CreateSetUpEntry( DataSetInfo, int, int, int, int, int, int,String,String,String)  Create Set Up Info(multiple use)
    */
  public DataSet getDataSet( DataSetInfo dsInf){
  
