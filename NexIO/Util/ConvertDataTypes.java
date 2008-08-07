@@ -598,7 +598,7 @@ public class ConvertDataTypes{
 
     float f = NxNodeUtils.getConversionFactor( oldUnits, StdUnits );
 
-    if( f == Float.NaN )
+    if( Float.isNaN( f ))
       return;
     
     for( int i = 0; i < d.length; i++ )
