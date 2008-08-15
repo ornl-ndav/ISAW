@@ -88,37 +88,37 @@ public class FloatArrayEventList3D implements IEventList3D
   }
 
 
-  public int getNumEntries()
+  public int numEntries()
   {
     return codes.length;
   }
 
 
-  public int getEventCode( int i )
+  public int eventCode( int i )
   {
     return codes[i];
   }
 
 
-  public double getEventX( int i )
+  public double eventX( int i )
   {
     return x_vals[i];
   }
 
 
-  public double getEventY( int i )
+  public double eventY( int i )
   {
     return y_vals[i];
   }
 
 
-  public double getEventZ( int i )
+  public double eventZ( int i )
   {
     return z_vals[i];
   }
 
 
-  public void getEventVals( int i, double[] values )
+  public void eventVals( int i, double[] values )
   {
     values[0] = x_vals[i];
     values[1] = y_vals[i];
@@ -142,7 +142,7 @@ public class FloatArrayEventList3D implements IEventList3D
   }
 
 
-  public IEventBinner getXExtent()
+  public IEventBinner xExtent()
   {
     if ( x_extent == null )
       x_extent = min_max( x_vals );
@@ -151,7 +151,7 @@ public class FloatArrayEventList3D implements IEventList3D
   }
 
   
-  public IEventBinner getYExtent()
+  public IEventBinner yExtent()
   {
     if ( y_extent == null )
       y_extent = min_max( y_vals );
@@ -160,7 +160,7 @@ public class FloatArrayEventList3D implements IEventList3D
   }
 
   
-  public IEventBinner getZExtent()
+  public IEventBinner zExtent()
   {
     if ( z_extent == null )
       z_extent = min_max( z_vals );
@@ -168,16 +168,31 @@ public class FloatArrayEventList3D implements IEventList3D
     return z_extent;
   }
 
-
+  
+  /**
+   *  Return a string giving the number of entries, and the
+   *  x,y,z extents of the events.
+   */
   public String toString()
   {
-    return String.format( "Num: %6d ", getNumEntries() ) +
-           "XRange: " + getXExtent() +
-           "YRange: " + getXExtent() +
-           "ZRange: " + getXExtent();
+    return String.format( "Num: %6d ", numEntries() ) +
+           "XRange: " + xExtent() +
+           "YRange: " + xExtent() +
+           "ZRange: " + xExtent();
   }
 
 
+  /**
+   * Construct an event binner that spans the extent of the
+   * values stored in the specified array.
+   *  
+   * @param vals Array of values that is scanned to find the 
+   *             min and max.
+   *             
+   * @return An event binner whose min and max specify a half
+   * open interval, [min,max) that contains the values in the
+   * array.
+   */
   private IEventBinner min_max( float[] vals )
   {
     float min = vals[0];
@@ -224,7 +239,7 @@ public class FloatArrayEventList3D implements IEventList3D
      for ( int i = 0; i < lists.size(); i++ )
      {
        list = lists.elementAt(i);
-       total_size += list.getNumEntries();
+       total_size += list.numEntries();
      }
 
      float[] all_x     = new float[total_size];
@@ -235,14 +250,14 @@ public class FloatArrayEventList3D implements IEventList3D
      for ( int i = 0; i < lists.size(); i++ )
      {
        list = lists.elementAt(i);
-       int length = list.getNumEntries();
+       int length = list.numEntries();
        if ( length > 0 )
          for ( int k = 0; k < length; k++ )
          {
-           all_x[index] = (float)list.getEventX(k);
-           all_y[index] = (float)list.getEventY(k);
-           all_z[index] = (float)list.getEventZ(k);
-           all_codes[index] = list.getEventCode(k);
+           all_x[index] = (float)list.eventX(k);
+           all_y[index] = (float)list.eventY(k);
+           all_z[index] = (float)list.eventZ(k);
+           all_codes[index] = list.eventCode(k);
            index++;        
          }
      }
