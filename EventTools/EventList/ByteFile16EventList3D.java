@@ -81,7 +81,7 @@ public class ByteFile16EventList3D implements IEventList3D
     BufferedInputStream bis = new BufferedInputStream( fis );
     DataInputStream dis = new DataInputStream( bis );
 
-    num_events   = dis.readInt();
+    num_events = dis.readInt();
 
     double min       = dis.readFloat();
     double max       = dis.readFloat();
@@ -106,79 +106,92 @@ public class ByteFile16EventList3D implements IEventList3D
   }
 
 
-  public int getNumEntries()
+  public int numEntries()
   {
     return num_events;
   }
 
 
-  public int getEventCode( int i )
+  public int eventCode( int i )
   {
     return getValue_16( i * 8 + 6 );
   }
 
 
-  public double getEventX( int i )
+  public double eventX( int i )
   {
     int index = getValue_16( i * 8 );
-    return x_binner.getCenter( index );
+    return x_binner.centerVal( index );
   }
 
 
-  public double getEventY( int i )
+  public double eventY( int i )
   {
     int index = getValue_16( i * 8 + 2 );
-    return y_binner.getCenter( index );
+    return y_binner.centerVal( index );
   }
 
 
-  public double getEventZ( int i )
+  public double eventZ( int i )
   {
     int index = getValue_16( i * 8 + 4 );
-    return z_binner.getCenter( index );
+    return z_binner.centerVal( index );
   }
 
 
-  public void getEventVals( int i, double[] values )
+  public void eventVals( int i, double[] values )
   {
     int index = getValue_16( i * 8 );
-    values[0] = x_binner.getCenter( index );
+    values[0] = x_binner.centerVal( index );
 
     index = getValue_16( i * 8 + 2 );
-    values[1] = y_binner.getCenter( index );
+    values[1] = y_binner.centerVal( index );
 
     index = getValue_16( i * 8 + 4 );
-    values[2] = z_binner.getCenter( index );
+    values[2] = z_binner.centerVal( index );
   }
 
 
-  public IEventBinner getXExtent( )
+  public IEventBinner xExtent( )
   {
     return x_binner;
   }
 
 
-  public IEventBinner getYExtent( )
+  public IEventBinner yExtent( )
   {
     return y_binner;
   }
 
 
-  public IEventBinner getZExtent( )
+  public IEventBinner zExtent( )
   {
     return z_binner;
   }
 
 
+  /**
+   *  Return a string giving the number of entries, and the
+   *  x,y,z extents of the events.
+   */
   public String toString()
   {
-    return String.format( "Num: %6d ", getNumEntries() ) +
-           "XRange: " + getXExtent() +
-           "YRange: " + getYExtent() +
-           "ZRange: " + getZExtent(); 
+    return String.format( "Num: %6d ", numEntries() ) +
+           "XRange: " + xExtent() +
+           "YRange: " + yExtent() +
+           "ZRange: " + zExtent(); 
   }
 
 
+  /**
+   * Decode the integer value stored in a sequence of 
+   * two bytes in the buffer.
+   * 
+   * @param byte_index  The index of the first byte in the
+   *                    buffer
+   *                    
+   * @return The integer value 256*byte_2 + byte_1
+   */
   private int getValue_16( int byte_index )
   {
     int byte_1 = buffer[byte_index++];
@@ -212,17 +225,17 @@ public class ByteFile16EventList3D implements IEventList3D
     BufferedOutputStream bos = new BufferedOutputStream( fos );
     DataOutputStream dos     = new DataOutputStream( bos );
 
-    int num_events = events.getNumEntries();
+    int num_events = events.numEntries();
 
-    IEventBinner x_extent = events.getXExtent();
-    IEventBinner y_extent = events.getYExtent();
-    IEventBinner z_extent = events.getZExtent();
-    float x_min = (float)x_extent.getMin();
-    float x_max = (float)x_extent.getMax();
-    float y_min = (float)y_extent.getMin();
-    float y_max = (float)y_extent.getMax();
-    float z_min = (float)z_extent.getMin();
-    float z_max = (float)z_extent.getMax();
+    IEventBinner x_extent = events.xExtent();
+    IEventBinner y_extent = events.yExtent();
+    IEventBinner z_extent = events.zExtent();
+    float x_min = (float)x_extent.axisMin();
+    float x_max = (float)x_extent.axisMax();
+    float y_min = (float)y_extent.axisMin();
+    float y_max = (float)y_extent.axisMax();
+    float z_min = (float)z_extent.axisMin();
+    float z_max = (float)z_extent.axisMax();
 
     int n_x = 65536;
     int n_y = 65536;
@@ -255,19 +268,19 @@ public class ByteFile16EventList3D implements IEventList3D
     int   counts;
     for ( int i = 0; i < num_events; i++ )
     {
-       val = (float)events.getEventX(i);
-       fill_bytes( x_binner.getIndex(val), bytes, index );
+       val = (float)events.eventX(i);
+       fill_bytes( x_binner.index(val), bytes, index );
        index += 2;
 
-       val = (float)events.getEventY(i);
-       fill_bytes( y_binner.getIndex(val), bytes, index );
+       val = (float)events.eventY(i);
+       fill_bytes( y_binner.index(val), bytes, index );
        index += 2;
 
-       val = (float)events.getEventZ(i);
-       fill_bytes( z_binner.getIndex(val), bytes, index );
+       val = (float)events.eventZ(i);
+       fill_bytes( z_binner.index(val), bytes, index );
        index += 2;
 
-       counts = events.getEventCode(i);
+       counts = events.eventCode(i);
        fill_bytes( counts, bytes, index );
        index += 2;
     }
@@ -279,8 +292,20 @@ public class ByteFile16EventList3D implements IEventList3D
     System.out.println("WRITE TIME = " + (System.nanoTime()-start)/1000000 );
     System.out.println("TOTAL EVENTS = " + num_events );
   }
-
   
+
+  /**
+   * Pack the specified integer value into a sequence of two
+   * bytes in the byte array buffer.  The integer value must
+   * be between -32768 and 32767 for this to work properly.
+   * 
+   * @param val    The integer value to be encoded in the buffer
+   * @param array  Array of bytes into which the value will be
+   *               stored.
+   * @param index  The position at which the low order byte will
+   *               be stored.  The high order byte is stored at 
+   *               position index+1.
+   */
   static private void fill_bytes( int val, byte[] array, int index )
   {
     array[index] = (byte)(val & 255);
@@ -289,6 +314,15 @@ public class ByteFile16EventList3D implements IEventList3D
     array[index] = (byte)(val & 255);
   }
 
+  
+  /**
+   * Basic test of this class by reading in a file of events
+   * and printing information about them.
+   * 
+   * @param args  The first command line argument must be the
+   *              name of the file of events to read.
+   * @throws IOException
+   */
   public static void main( String args[] ) throws IOException
   {
     System.out.println("Opening " + args[0] );
@@ -300,13 +334,13 @@ public class ByteFile16EventList3D implements IEventList3D
     long end = System.nanoTime();
     System.out.println("Time to load event list = " + (end-start)/1000000 );
 
-    System.out.println("number of events = " + events.getNumEntries() );
+    System.out.println("number of events = " + events.numEntries() );
     double[] vals = new double[3];
     int      code;
     for ( int i = 0; i < 10; i ++ )
     {
-      events.getEventVals( i, vals );
-      code = events.getEventCode( i );
+      events.eventVals( i, vals );
+      code = events.eventCode( i );
 
       System.out.printf( "%12.7f %12.7f %12.7f %6d\n",
                           vals[0], vals[1], vals[2], code );
@@ -314,12 +348,12 @@ public class ByteFile16EventList3D implements IEventList3D
 
     double sum = 0;
     start = System.nanoTime();
-    int n_events = events.getNumEntries();
+    int n_events = events.numEntries();
     for ( int i = 0; i < n_events; i ++ )
     {
-      events.getEventVals( i, vals );
+      events.eventVals( i, vals );
       sum += vals[0] + vals[1] + vals[2];
-      code = events.getEventCode( i );
+      code = events.eventCode( i );
     }
     end = System.nanoTime();
     System.out.println("Time to get event array = " + (end-start)/1000000 );
@@ -328,14 +362,14 @@ public class ByteFile16EventList3D implements IEventList3D
     double x, y, z;
     sum = 0;
     start = System.nanoTime();
-    n_events = events.getNumEntries();
+    n_events = events.numEntries();
     for ( int i = 0; i < n_events; i ++ )
     {
-      x = events.getEventX( i );
-      y = events.getEventY( i );
-      z = events.getEventZ( i );
+      x = events.eventX( i );
+      y = events.eventY( i );
+      z = events.eventZ( i );
       sum += x+y+z;
-      code = events.getEventCode( i );
+      code = events.eventCode( i );
     }
     end = System.nanoTime();
     System.out.println("Time to get all events = " + (end-start)/1000000 );
