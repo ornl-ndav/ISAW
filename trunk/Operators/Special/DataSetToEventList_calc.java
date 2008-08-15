@@ -1,3 +1,37 @@
+/* 
+ * File: FormHistogram.java
+ *
+ * Copyright (C) 2008, Dennis Mikkelson
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
+ *           Department of Mathematics, Statistics and Computer Science
+ *           University of Wisconsin-Stout
+ *           Menomonie, WI 54751, USA
+ *
+ * This work was supported by the Spallation Neutron Source Division
+ * of Oak Ridge National Laboratory, Oak Ridge, TN, USA.
+ *
+ *  Last Modified:
+ * 
+ *  $Author: eu7 $
+ *  $Date: 2008-07-31 20:35:22 -0500 (Thu, 31 Jul 2008) $            
+ *  $Revision: 19280 $
+ */
+
 package Operators.Special;
 
 import java.util.*;
@@ -84,20 +118,27 @@ public class DataSetToEventList_calc
        path_len_m = initial_path + pos.getDistance();
   
        q_dir = new Vector3D(scatt_coords);
-       q_dir.normalize();
+       q_dir.normalize();                      // normalize to subtract unit
+                                               // vectors
        q_dir.subtract( beam_dir );
+
+       q_dir.normalize();                      // normalize again to get unit
+                                               // vector in direction of Q
  
        float[] ys = data.getY_values();
        float[] xs = data.getX_scale().getXs();
        for ( int k = 0; k < ys.length; k++ )
        {
-         if ( ys[k] >= 1 )                    // add event to list
+//       if ( xs[k] < 16500 && ys[k] >= 1 )    // stay before next pulse 
+         if ( ys[k] >= 1 )                     // add event to list 
          {
            mag_Q = tof_calc.DiffractometerQ( angle_radians, path_len_m, xs[k] );
            vec = new Vector3D( q_dir );
            vec.multiply( mag_Q );   
            q_vectors.add( vec );
            counts.add( (int)ys[k] );
+//         counts.add( (int)Math.max( mag_Q/20 * ys[k],1) );
+//         counts.add( (int)Math.max( mag_Q*mag_Q/400 * ys[k],1) );
          }
        }         
      } 
