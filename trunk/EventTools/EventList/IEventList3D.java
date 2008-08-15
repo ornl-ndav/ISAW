@@ -62,7 +62,7 @@ public interface IEventList3D
    *          IEventBinner will provide the correspondence between bin number
    *          and X-coordinate in the interval [x_min,x_max).  
    */
-  IEventBinner getXExtent();
+  IEventBinner xExtent();
   
 
   /**
@@ -80,7 +80,7 @@ public interface IEventList3D
    *          IEventBinner will provide the correspondence between bin number
    *          and Y-coordinate in the interval [y_min,y_max).  
    */
-  IEventBinner getYExtent();
+  IEventBinner yExtent();
 
 
   /**
@@ -98,7 +98,7 @@ public interface IEventList3D
    *          IEventBinner will provide the correspondence between bin number
    *          and Z-coordinate in the interval [z_min,z_max).  
    */
-  IEventBinner getZExtent();
+  IEventBinner zExtent();
 
 
   /**
@@ -108,7 +108,7 @@ public interface IEventList3D
    * 
    * @return  an integer given the number of entries in this event list.
    */
-  int    getNumEntries();
+  int numEntries();
 
   
   /**
@@ -118,7 +118,7 @@ public interface IEventList3D
    * 
    * @return  An integer giving the event code for the specified entry.
    */
-  int    getEventCode( int index );
+  int eventCode( int index ); 
 
   
   /**
@@ -129,7 +129,7 @@ public interface IEventList3D
    *               out with the x,y and z values in positions 0,1 and 2 
    *               respectively.
    */
-  void   getEventVals( int index, double[] values ); 
+  void eventVals( int index, double[] values ); 
 
   
   /**
@@ -139,7 +139,7 @@ public interface IEventList3D
    * 
    * @return  An double giving the X-cooordinate for the specified entry.
    */
-  double getEventX( int index ); 
+  double eventX( int index ); 
   
   
   /**
@@ -149,7 +149,7 @@ public interface IEventList3D
    * 
    * @return  An double giving the Y-cooordinate for the specified entry.
    */
-  double getEventY( int index ); 
+  double eventY( int index ); 
   
   
   /**
@@ -159,5 +159,5 @@ public interface IEventList3D
    * 
    * @return  An double giving the Z-cooordinate for the specified entry.
    */
-  double getEventZ( int index ); 
+  double eventZ( int index ); 
 }
