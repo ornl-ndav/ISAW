@@ -86,22 +86,22 @@ public class UniformEventBinner implements IEventBinner
     to_index_shift = -min * to_index_scale;
   }
 
-  public double getMin()
+  public double axisMin()
   {
     return min;
   }
 
-  public double getMax()
+  public double axisMax()
   {
     return max;
   }
 
-  public int getNumBins()
+  public int numBins()
   {
     return num_bins;
   }
 
-  public int getIndex( double val )
+  public int index( double val )
   {
     if ( val < min )
       return -1;
@@ -111,17 +111,17 @@ public class UniformEventBinner implements IEventBinner
     return index;
   }
 
-  public double getCenter( int index )
+  public double centerVal( int index )
   {
     return to_val_shift + index * to_val_scale;
   }
 
-  public double getLeft( int index )
+  public double minVal( int index )
   {
     return min + index * to_val_scale;
   }
 
-  public double getRight( int index )
+  public double maxVal( int index )
   {
     return min + (index + 1) * to_val_scale;
   }
@@ -146,7 +146,7 @@ public class UniformEventBinner implements IEventBinner
   {
     IEventBinner binner = new UniformEventBinner( -5, 5, 10 );
     for ( int i = -1; i < 11; i++ )
-      System.out.println( i + " " + binner.getCenter( i ) );
+      System.out.println( i + " " + binner.centerVal( i ) );
 
     double val;
     double eps = 1e-14;
@@ -155,29 +155,29 @@ public class UniformEventBinner implements IEventBinner
     for ( int i = -6; i < 7; i++ )
     {
       val = i - eps;
-      index = binner.getIndex( val );
+      index = binner.index( val );
       System.out.printf( "%18.14f %3d", val, index );
       System.out.printf(
                          " in[ %18.14f, %18.14f )\n",
-                         binner.getLeft( index ),
-                         binner.getRight( index ) );
+                         binner.minVal( index ),
+                         binner.maxVal( index ) );
       System.out.println();
 
       val = val + eps;
-      index = binner.getIndex( val );
+      index = binner.index( val );
       System.out.printf( "%18.14f %3d", val, index );
       System.out.printf(
                          " in[ %18.14f, %18.14f )\n",
-                         binner.getLeft( index ),
-                         binner.getRight( index ) );
+                         binner.minVal( index ),
+                         binner.maxVal( index ) );
 
       val = val + eps;
-      index = binner.getIndex( val );
+      index = binner.index( val );
       System.out.printf( "%18.14f %3d", val, index );
       System.out.printf(
                          " in[ %18.14f, %18.14f )\n",
-                         binner.getLeft( index ),
-                         binner.getRight( index ) );
+                         binner.minVal( index ),
+                         binner.maxVal( index ) );
     }
 
   }

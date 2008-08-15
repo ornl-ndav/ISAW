@@ -62,18 +62,18 @@ public class FormHistogram3D
     System.out.println("Time to read Byte16FileEventList3D (ms) = " + 
                         (end_time - start_time) / 1000000 );
 
-    int num_points = events.getNumEntries();
-    double x_min = events.getXExtent().getMin();
-    double x_max = events.getXExtent().getMax();
-    double y_min = events.getYExtent().getMin();
-    double y_max = events.getYExtent().getMax();
-    double z_min = events.getZExtent().getMin();
-    double z_max = events.getZExtent().getMax();
+    int num_points = events.numEntries();
+    double x_min = events.xExtent().axisMin();
+    double x_max = events.xExtent().axisMax();
+    double y_min = events.yExtent().axisMin();
+    double y_max = events.yExtent().axisMax();
+    double z_min = events.zExtent().axisMin();
+    double z_max = events.zExtent().axisMax();
 
     System.out.println("NUMBER OF EVENTS = " + num_points );
-    System.out.println("X range: " + events.getXExtent() );
-    System.out.println("Y range: " + events.getYExtent() );
-    System.out.println("Z range: " + events.getZExtent() );
+    System.out.println("X range: " + events.xExtent() );
+    System.out.println("Y range: " + events.yExtent() );
+    System.out.println("Z range: " + events.zExtent() );
 
     int X_SIZE = (int)((x_max-x_min)*1000.0/100.0 );
     int Y_SIZE = (int)((y_max-y_min)*1000.0/100.0 );
@@ -109,9 +109,9 @@ public class FormHistogram3D
     System.out.println("Time to form histogram (ms) = " +
                         (end_time - start_time) / 1000000 );
     System.out.println("ADDED " + n_events );
-    System.out.println("min = " + hist_3D.getMin() );
-    System.out.println("max = " + hist_3D.getMax() );
-    System.out.println("sum = " + hist_3D.getTotal() );
+    System.out.println("min = " + hist_3D.minVal() );
+    System.out.println("max = " + hist_3D.maxVal() );
+    System.out.println("sum = " + hist_3D.total() );
 
 
     //------------- 
@@ -125,9 +125,9 @@ public class FormHistogram3D
       end_time = System.nanoTime();
       System.out.println("Time to ScanHistogram (ms) = " + 
                         (end_time - start_time) / 1000000 );
-      System.out.println("min = " + hist_3D.getMin() );
-      System.out.println("max = " + hist_3D.getMax() );
-      System.out.println("sum = " + hist_3D.getTotal() );
+      System.out.println("min = " + hist_3D.minVal() );
+      System.out.println("max = " + hist_3D.maxVal() );
+      System.out.println("sum = " + hist_3D.total() );
     }
 
     IEventBinner binner = new UniformEventBinner( 10, 100, 15 );
@@ -157,8 +157,8 @@ public class FormHistogram3D
       } 
     }
 
-    float min  =  3;
-    float max  =  100;
+    float min  =  25;
+    float max  =  1000;
     int   bins =  20;
     binner = new UniformEventBinner( min, max, bins );
     ShowHistogram.show_histogram( hist_3D, binner );
