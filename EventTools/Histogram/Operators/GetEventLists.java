@@ -135,7 +135,7 @@ public class GetEventLists implements IOperator
    */
   public Object getResult()
   {
-    int       n_bins    = binner.getNumBins();
+    int       n_bins    = binner.numBins();
     int[]     bin_count = new int[ n_bins + 1 ];
     
     int       index;
@@ -153,7 +153,7 @@ public class GetEventLists implements IOperator
         one_row = one_page[row];
         for ( int col = 0; col < n_cols; col++ )
         {
-          index = binner.getIndex( one_row[col] );
+          index = binner.index( one_row[col] );
           if ( index >= 0 && index < n_bins )
             bin_count[index]++;
           else if ( index >= n_bins )
@@ -190,15 +190,15 @@ public class GetEventLists implements IOperator
         one_row = one_page[row];
         for ( int col = 0; col < n_cols; col++ )
         {
-          index = binner.getIndex( one_row[col] );
+          index = binner.index( one_row[col] );
           if ( index >= n_bins )
             index = n_bins;
           if ( index >= 0 )
           {
             codes[index] [ ilist[index] ] = index;
-            x_vals[index][ ilist[index] ] = (float)(x_binner.getCenter(col));
-            y_vals[index][ ilist[index] ] = (float)(y_binner.getCenter(row));
-            z_vals[index][ ilist[index] ] = (float)(z_binner.getCenter(page));
+            x_vals[index][ ilist[index] ] = (float)(x_binner.centerVal(col));
+            y_vals[index][ ilist[index] ] = (float)(y_binner.centerVal(row));
+            z_vals[index][ ilist[index] ] = (float)(z_binner.centerVal(page));
             ilist[index]++;
           }
         }

@@ -129,28 +129,28 @@ public class BinEvents implements IOperator
             y_index,
             z_index;
 
-    int     num_x_bins = x_binner.getNumBins();
-    int     num_y_bins = y_binner.getNumBins();
+    int     num_x_bins = x_binner.numBins();
+    int     num_y_bins = y_binner.numBins();
     
-    int num_events = events.getNumEntries();
+    int num_events = events.numEntries();
 
     for ( int i = 0; i <  num_events; i++ )
     {
       /*  NOTE: This form of the calculation executes faster on 
        *        a 2-processor XEON (32 bit Linux).
        */
-       events.getEventVals( i, ev_xyz );
-       z_index = z_binner.getIndex( ev_xyz[2] );
+       events.eventVals( i, ev_xyz );
+       z_index = z_binner.index( ev_xyz[2] );
 
        if ( z_index >= first_page && z_index <= last_page )
        {
-         x_index = x_binner.getIndex( ev_xyz[0] );
-         y_index = y_binner.getIndex( ev_xyz[1] );
+         x_index = x_binner.index( ev_xyz[0] );
+         y_index = y_binner.index( ev_xyz[1] );
 
          if ( x_index >= 0 && x_index < num_x_bins &&
               y_index >= 0 && y_index < num_y_bins  )
          {
-           count = events.getEventCode( i );
+           count = events.eventCode( i );
            val = histogram[z_index][y_index][x_index];
            val += count;
            histogram[z_index][y_index][x_index] = val;

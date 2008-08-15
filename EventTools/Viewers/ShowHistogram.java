@@ -43,10 +43,12 @@ import gov.anl.ipns.MathTools.Geometry.*;
 import EventTools.EventList.FloatArrayEventList3D;
 import EventTools.Histogram.Histogram3D;
 import EventTools.Histogram.IEventBinner;
+//import SSG_Tools.Cameras.OrthographicCamera;
 import SSG_Tools.SSG_Nodes.SimpleShapes.*;
 import SSG_Tools.SSG_Nodes.Group;
 import SSG_Tools.Viewers.*;
 import SSG_Tools.Viewers.Controls.*;
+
 
 import gov.anl.ipns.ViewTools.Panels.Image.*;
 
@@ -68,7 +70,7 @@ public class ShowHistogram
   public static void show_histogram( Histogram3D hist_3D, 
                                      IEventBinner binner  )
   {
-    int n_bins = binner.getNumBins();
+    int n_bins = binner.numBins();
     int shift  = n_bins/3;
     int size = 1;
     Color[] colors = IndexColorMaker.getColorTable( "Heat 1", n_bins+shift );
@@ -89,7 +91,8 @@ public class ShowHistogram
         {
           events = (FloatArrayEventList3D)(lists.elementAt(k));
           pts = events.getEventArrays();
-          size = (6*k)/lists.size() + 2;
+//        size = (6*k)/lists.size() + 2;
+          size = k/2 + 2;
           shape = new PointList( pts[0], pts[1], pts[2], 
                                  size, colors[k+shift], 1.0f );
           group.addChild( shape );
