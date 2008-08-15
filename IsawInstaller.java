@@ -651,7 +651,7 @@ public class IsawInstaller extends JFrame
 		+"rem The following command is used to run from jar files\n"
 		+"rem --"+newline
 		+"cd "+isaw_home+newline
-		+"path %PATH%;./lib"+newline
+		+"path ./lib;%PATH%"+newline
 		+"java -mx256m -cp \""+fixSeparator(isaw_home)
                 +";Isaw.jar;sgt_v2.jar;gov.jar;IPNS.jar;ISIS.jar;jnexus.jar;sdds.jar;SSG_Tools.jar;jogl.jar;gluegen-rt.jar;"
                 +"jhall.jar;jython.jar;.\" IsawGUI.Isaw"+newline
