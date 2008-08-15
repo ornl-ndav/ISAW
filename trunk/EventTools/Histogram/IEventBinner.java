@@ -49,20 +49,20 @@ public interface IEventBinner
 {
   /**
    * Get the left hand end point, a, of the half open interval, [a,b), 
-   * where an event may occur.
+   * where an event may occur along this axis.
    * 
    * @return  The left hand end point, a.
    */
-  double getMin();
+  double axisMin();
   
   
   /**
    * Get the right hand end point, b, of the half open interval, [a,b), 
-   * where an event may occur.
+   * where an event may occur along this axis
    * 
    * @return  The right hand end point, b.
    */
-  double getMax();
+  double axisMax();
   
   
   /**
@@ -70,12 +70,12 @@ public interface IEventBinner
    * 
    * @return the number of subintervals. 
    */
-  int    getNumBins();
+  int numBins();
 
   
   /**
    * Get the index, i, of the subinterval [ai,bi) that contains the specified
-   * value.  
+   * value along this axis.  
    * NOTE: If the specified value is outside of the half-open interval, then
    * the returned index may not be valid.  That is, the returned value will
    * only be in the range 0,...,(num_bins-1) for values in [min,max).
@@ -89,7 +89,7 @@ public interface IEventBinner
    *           this method must return a value greater than or equal to 
    *           the number of bins. 
    */
-  int    getIndex( double val );
+  int index( double val );
   
   
   /**
@@ -102,7 +102,7 @@ public interface IEventBinner
    * @return The center of the bin with the specified index, if the index
    *         is valid.
    */
-  double getCenter( int index );
+  double centerVal( int index );
   
   
   /**
@@ -115,7 +115,7 @@ public interface IEventBinner
    * @return The left endpoint, ai, of the bin with the specified index, if 
    *         the index is valid.
    */
-  double getLeft  ( int index );
+  double minVal( int index );
 
   
   /**
@@ -128,6 +128,6 @@ public interface IEventBinner
    * @return The left endpoint, ai, of the bin with the specified index, if 
    *         the index is valid.
    */
-  double getRight ( int index );
+  double maxVal( int index );
 
 }
