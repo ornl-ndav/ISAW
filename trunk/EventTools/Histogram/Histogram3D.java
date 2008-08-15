@@ -100,9 +100,9 @@ public class Histogram3D
     this.y_binner = y_binner;
     this.z_binner = z_binner;
 
-    histogram = new float[z_binner.getNumBins()]
-                         [y_binner.getNumBins()]
-                         [x_binner.getNumBins()];
+    histogram = new float[z_binner.numBins()]
+                         [y_binner.numBins()]
+                         [x_binner.numBins()];
 
     max = Float.NEGATIVE_INFINITY;
     min = Float.POSITIVE_INFINITY;
@@ -114,29 +114,32 @@ public class Histogram3D
    * Get the maximum value of any bin in the histogram.
    * @return  The max bin value.
    */
-  public double getMax()
+  public double maxVal()
   {
     return max;
   }
 
+  
   /**
    * Get the minimum value of any bin in the histogram.
    * @return  The min bin value.
    */
-  public double getMin()
+  public double minVal()
   {
     return min;
   }
 
+  
   /**
    * Get the total of all bins in the histogram.
    * @return  The total value.
    */
-  public double getTotal()
+  public double total()
   {
     return sum;
   }
 
+  
   /**
    *  Set all bins of the histogram to 0.
    */
@@ -233,6 +236,29 @@ public class Histogram3D
     return results;
   }
 
+  
+  static float[][] one_row = new float[1024][1024];
+  
+  public float[][] getRow( int row )
+  {
+    int num_pages = z_binner.numBins();
+    int num_cols  = x_binner.numBins();
+//    float[][] one_row = new float[num_cols][num_pages];
+    for ( int page = 0; page < num_pages; page++ )
+       for ( int col = 0; col < num_cols; col++ )
+          one_row[col][page] = histogram[page][row][col];
+ 
+    return one_row;
+  }
+
+
+  public float[][] getPage( int page )
+  {
+    return histogram[page];
+  }
+
+  
+  
   /**
    * Scan across ALL bins of this histogram and set the min, max and total
    * value information.  NOTE: This method should NOT generally have to be
