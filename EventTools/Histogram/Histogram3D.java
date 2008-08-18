@@ -45,15 +45,20 @@ import gov.anl.ipns.Operator.Threads.*;
 
 /**
  *   This class represents a 3D histogram.  Currently only a minimal set of
- * operations is provided, but those operations have been tuned and can be
+ * operations is provided, but some of those operations have been tuned and
  * run in multiple threads to take advantage of multi-core processors.
  * In most cases, up to four threads on a can be used with reasonable 
  * on a system with four or more cores.  Use of more than four threads will
  * probably not be very helpful.    
- *   The bins of the 3D histogram are determined by three IEventBinner
- * objects. One binner maps between the "X" coordinate and columns of the 
- * underlying 3D array, one maps between "Y" and row numbers and the third
- * maps between "Z" and page number.  
+ *   The bins of the 3D histogram are determined by three IProjectionBinner3D
+ * objects. Each binner object has a direction vector, and the bin number 
+ * (i.e. index) is determined by the dot product of the event with that 
+ * direction vector.  The first, "X" binner maps the 3D event to a column
+ * number of the underlying 3D array.  The second "Y" binner maps the 3D 
+ * event to a row number, and the third "Z" binner, maps to a page number.
+ * In simple cases, the vector for the "X" binner could be (1,0,0); the
+ * vector for the "Y" binner could be (0,1,0); the vector for the "Z" binner 
+ * could be (0,0,1)   
  *   The histogram also records basic information such as the min and max
  * value, and sum of all values in the histogram.
  */
@@ -63,7 +68,7 @@ public class Histogram3D
   private float  min;
   private double sum;
 
-  private IEventBinner x_binner,
+  private IProjectionBinner3D x_binner,
                        y_binner,
                        z_binner;
 
@@ -77,33 +82,39 @@ public class Histogram3D
 
 
   /**
-   * Construct a Histogram3D object covering an axis aligned rectangular
-   * region of 3-dimensional real space.  The extent and number of sub-
-   * divisions in the x, y and z directions are determined independently
-   * by the three IEventBinner parameters.
+   * Construct a Histogram3D object covering a parallelopiped region 
+   * of 3-dimensional real space.  The shape and number of subdivision 
+   * of the region covered is determined by the direction vectors and
+   * number of steps of the projection binners used.
    * 
-   * @param x_binner  IEventBinner that determines the range of X-values
-   *                  covered by this histogram, and the subintervals
-   *                  used for the histogram.
-   * @param y_binner  IEventBinner that determines the range of Y-values
-   *                  covered by this histogram, and the subintervals
-   *                  used for the histogram.
-   * @param z_binner  IEventBinner that determines the range of Z-values
-   *                  covered by this histogram, and the subintervals
-   *                  used for the histogram.
+   * @param x_binner  IProjectionBinner3D that determines the region 
+   *                  and number of slices covered by the "columns" of 
+   *                  the histogram array.
+   * @param y_binner  IProjectionBinner3D that determines the region 
+   *                  and number of slices covered by the "rows" of 
+   *                  the histogram array.
+   * @param z_binner  IProjectionBinner3D that determines the region 
+   *                  and number of slices covered by the "pages" of 
+   *                  the histogram array.
    */
-  public Histogram3D( IEventBinner x_binner, 
-                      IEventBinner y_binner,
-                      IEventBinner z_binner )
+  public Histogram3D( IProjectionBinner3D x_binner, 
+                      IProjectionBinner3D y_binner,
+                      IProjectionBinner3D z_binner )
   {
     this.x_binner = x_binner;
     this.y_binner = y_binner;
     this.z_binner = z_binner;
 
-    histogram = new float[z_binner.numBins()]
-                         [y_binner.numBins()]
-                         [x_binner.numBins()];
+    int num_x = x_binner.numBins();
+    int num_y = y_binner.numBins();
+    int num_z = z_binner.numBins();
+    histogram = new float[num_z][num_y][];
 
+    for ( int iz = 0; iz < num_z; iz++ )       // it's about 30% faster to
+      for ( int iy = 0; iy < num_y; iy++ )     // allocate the rows ourselves
+        histogram[iz][iy] = new float[num_x];  // than to just declare one 
+                                               // large 3D array on opteron
+                                               // system with 4 cores!
     max = Float.NEGATIVE_INFINITY;
     min = Float.POSITIVE_INFINITY;
     sum = 0;
@@ -236,23 +247,37 @@ public class Histogram3D
     return results;
   }
 
-  
-  static float[][] one_row = new float[1024][1024];
-  
-  public float[][] getRow( int row )
+  // TODO remove rowSlice and instead generate a new 3D histogram
+  // from the original event list, using only events falling in the 
+  // specified row interval.
+  /**
+   * Temporary code to get one row of data from this 3D histogram
+   * @param row
+   * @return The data from one row of this 3D histogram.
+   */
+  public float[][] rowSlice( int row )
   {
     int num_pages = z_binner.numBins();
     int num_cols  = x_binner.numBins();
-//    float[][] one_row = new float[num_cols][num_pages];
+    float[][] one_row = new float[num_cols][num_pages];
     for ( int page = 0; page < num_pages; page++ )
-       for ( int col = 0; col < num_cols; col++ )
-          one_row[col][page] = histogram[page][row][col];
- 
+      System.arraycopy(histogram[page][row],0,one_row[page],0,num_cols);
+/*
+      for ( int col = 0; col < num_cols; col++ )
+        one_row[col][page] = histogram[page][row][col];
+*/
     return one_row;
   }
 
 
-  public float[][] getPage( int page )
+  // TODO remove pageSlice and instead generate a new 3D histogram with
+  // only one page
+  /**
+   * Temporary code to get one page of data from this 3D histogram
+   * @param page
+   * @return A reference to one page of this 3D histogram
+   */
+  public float[][] pageSlice( int page )
   {
     return histogram[page];
   }
