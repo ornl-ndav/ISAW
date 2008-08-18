@@ -79,16 +79,24 @@ public class ClearPages implements IOperator
     int n_cols = array[0][0].length;
     int n_rows = array[0].length;
 
+    boolean first_row = true;
+
     for ( int page = first_page; page <= last_page; page++ )
     {
       one_page = array[page];
       for ( int row = 0; row < n_rows; row++ )
       {
         one_row = one_page[row];
-        for ( int col = 0; col < n_cols; col++ )
-        {
-          one_row[col] = 0;
+        if ( first_row )
+        {        
+          for ( int col = 0; col < n_cols; col++ )
+          {
+            one_row[col] = 0;
+          }
+          first_row = false;
         }
+        else
+          System.arraycopy( array[first_page][0], 0, one_row, 0, n_cols );
       }
     }
     return new Double( 0 );
