@@ -36,8 +36,9 @@ package EventTools.Histogram.Operators;
 import java.util.*;
 
 import EventTools.EventList.IEventList3D;
-import EventTools.Histogram.IEventBinner;
+import EventTools.Histogram.IProjectionBinner3D;
 import gov.anl.ipns.Operator.*;
+import gov.anl.ipns.MathTools.Geometry.Vector3D;
 
 /**
  * This IOperator adds a list of events to appropriate bins in the specified 
@@ -55,9 +56,9 @@ public class BinEvents implements IOperator
                       max;
 
   private IEventList3D events;
-  private IEventBinner x_binner;
-  private IEventBinner y_binner;
-  private IEventBinner z_binner;
+  private IProjectionBinner3D x_binner;
+  private IProjectionBinner3D y_binner;
+  private IProjectionBinner3D z_binner;
 
 
   /**
@@ -93,9 +94,9 @@ public class BinEvents implements IOperator
                     float             max,
                     int               first_page, 
                     int               last_page,
-                    IEventBinner      x_binner,
-                    IEventBinner      y_binner,
-                    IEventBinner      z_binner,
+                    IProjectionBinner3D   x_binner,
+                    IProjectionBinner3D   y_binner,
+                    IProjectionBinner3D   z_binner,
                     IEventList3D events    )
   {
     this.histogram  = histogram;
@@ -122,7 +123,24 @@ public class BinEvents implements IOperator
   public Object getResult()
   {
     double[] ev_xyz = new double[3];
+    Vector3D x_vec  = x_binner.directionVec();
+    Vector3D y_vec  = y_binner.directionVec();
+    Vector3D z_vec  = z_binner.directionVec();
+
+    float x0 = x_vec.getX();
+    float x1 = x_vec.getY();
+    float x2 = x_vec.getZ();
+
+    float y0 = y_vec.getX();
+    float y1 = y_vec.getY();
+    float y2 = y_vec.getZ();
+
+    float z0 = z_vec.getX();
+    float z1 = z_vec.getY();
+    float z2 = z_vec.getZ();
+
     float   val;
+    double  d_val;
     float   count;
     double  sum = 0;
     int     x_index,
@@ -140,12 +158,20 @@ public class BinEvents implements IOperator
        *        a 2-processor XEON (32 bit Linux).
        */
        events.eventVals( i, ev_xyz );
-       z_index = z_binner.index( ev_xyz[2] );
+       
+       d_val = ev_xyz[0]*z0 + ev_xyz[1]*z1 + ev_xyz[2]*z2;
+       z_index = z_binner.index( d_val );
+//       z_index = z_binner.index( ev_xyz[2] );
 
        if ( z_index >= first_page && z_index <= last_page )
        {
-         x_index = x_binner.index( ev_xyz[0] );
-         y_index = y_binner.index( ev_xyz[1] );
+         d_val = ev_xyz[0]*x0 + ev_xyz[1]*x1 + ev_xyz[2]*x2;
+         x_index = x_binner.index( d_val );
+
+         d_val = ev_xyz[0]*y0 + ev_xyz[1]*y1 + ev_xyz[2]*y2;
+         y_index = y_binner.index( d_val );
+//         x_index = x_binner.index( ev_xyz[0] );
+//         y_index = y_binner.index( ev_xyz[1] );
 
          if ( x_index >= 0 && x_index < num_x_bins &&
               y_index >= 0 && y_index < num_y_bins  )
@@ -167,21 +193,21 @@ public class BinEvents implements IOperator
       /*  NOTE: This form of the calculation executes faster on 
        *        a 4-core Opteron (64 bit Linux).
        *        
-       val     = events.getEventZ( i );
-       z_index = z_binner.getIndex( val );
+       d_val   = events.eventZ( i );
+       z_index = z_binner.index( d_val );
        
        if ( z_index >= first_page && z_index <= last_page )
        {
-         val     = events.getEventY( i );
-         y_index = y_binner.getIndex( val );
+         d_val   = events.eventY( i );
+         y_index = y_binner.index( d_val );
 
-         val     = events.getEventX( i );
-         x_index = x_binner.getIndex( val );
+         d_val   = events.eventX( i );
+         x_index = x_binner.index( d_val );
          
          if ( x_index >= 0 && x_index < num_x_bins &&
               y_index >= 0 && y_index < num_y_bins  )
          {
-           count = events.getEventCode( i );
+           count = events.eventCode( i );
            
            val = histogram[z_index][y_index][x_index];
            val += count;
@@ -195,7 +221,7 @@ public class BinEvents implements IOperator
            sum += count;
          }
        }
-      */
+       */
     }
 
     Vector results = new Vector(3);

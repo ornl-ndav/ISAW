@@ -34,6 +34,8 @@
 
 package EventTools.Histogram;
 
+import gov.anl.ipns.MathTools.Geometry.Vector3D;
+
 import java.io.*;
 import java.util.*;
 
@@ -79,15 +81,21 @@ public class FormHistogram3D
     int Y_SIZE = (int)((y_max-y_min)*1000.0/100.0 );
     int Z_SIZE = (int)((z_max-z_min)*1000.0/100.0 );
 
+    Vector3D xVec = new Vector3D(1,0,0);
+    Vector3D yVec = new Vector3D(0,1,0);
+    Vector3D zVec = new Vector3D(0,0,1);
     System.out.println( "NUM Histogram bins: " + X_SIZE +
                         ", " + Y_SIZE + ", " + Z_SIZE  );
     System.out.println( "Total number of bins = " + 
                          (long)X_SIZE * Y_SIZE * Z_SIZE );
    
     System.out.println("Sizes = " + X_SIZE + ", " + Y_SIZE + ", " + Z_SIZE );
-    IEventBinner x_bin = new UniformEventBinner( x_min, x_max, X_SIZE );
-    IEventBinner y_bin = new UniformEventBinner( y_min, y_max, Y_SIZE );
-    IEventBinner z_bin = new UniformEventBinner( z_min, z_max, Z_SIZE );
+    IProjectionBinner3D x_bin = 
+             new UniformProjectionBinner3D( x_min, x_max, X_SIZE, xVec );
+    IProjectionBinner3D y_bin = 
+             new UniformProjectionBinner3D( y_min, y_max, Y_SIZE, yVec );
+    IProjectionBinner3D z_bin = 
+             new UniformProjectionBinner3D( z_min, z_max, Z_SIZE, zVec );
 
 
     //------------
