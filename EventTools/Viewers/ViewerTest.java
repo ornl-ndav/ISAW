@@ -36,12 +36,14 @@ package EventTools.Viewers;
 
 import java.io.IOException;
 import javax.swing.*;
+
+import gov.anl.ipns.MathTools.Geometry.Vector3D;
 import gov.anl.ipns.ViewTools.Panels.Image.*;
 
 import EventTools.EventList.ByteFile16EventList3D;
 import EventTools.Histogram.Histogram3D;
-import EventTools.Histogram.IEventBinner;
-import EventTools.Histogram.UniformEventBinner;
+import EventTools.Histogram.IProjectionBinner3D;
+import EventTools.Histogram.UniformProjectionBinner3D;
 
 /**
  *  This class provides a basic test of some of the capabilities of
@@ -53,7 +55,7 @@ public class ViewerTest
 
   public static void main( String args[] ) throws IOException
   {
-    int NUM_BINS = 1024;
+    int NUM_BINS = 512;
 
     long start = System.nanoTime();
     long elapsed;
@@ -81,9 +83,13 @@ public class ViewerTest
     System.out.println("Total events = " + sum);
 
     start = System.nanoTime();
-    IEventBinner x_binner = new UniformEventBinner(-25,0,NUM_BINS);
-    IEventBinner y_binner = new UniformEventBinner(-12,12,NUM_BINS);
-    IEventBinner z_binner = new UniformEventBinner(-12,12,NUM_BINS);
+    
+    Vector3D xVec = new Vector3D(1,0,0);
+    Vector3D yVec = new Vector3D(0,1,0);
+    Vector3D zVec = new Vector3D(0,0,1);
+    IProjectionBinner3D x_binner = new UniformProjectionBinner3D(-40,0,NUM_BINS,xVec);
+    IProjectionBinner3D y_binner = new UniformProjectionBinner3D(-20,20,NUM_BINS,yVec);
+    IProjectionBinner3D z_binner = new UniformProjectionBinner3D(-20,20,NUM_BINS,zVec);
     Histogram3D hist_3D = new Histogram3D(x_binner, y_binner, z_binner); 
     elapsed = System.nanoTime()-start;
     System.out.println("Time(ms) to allocate histogram = " + elapsed/1.0E6);
@@ -96,18 +102,18 @@ public class ViewerTest
     float [][] image = null;
     start = System.nanoTime();
     for ( int i = 0; i < NUM_BINS; i++ )
-      image = hist_3D.getPage(i);
+      image = hist_3D.pageSlice(i);
     elapsed = System.nanoTime()-start;
     System.out.println("Time(ms) to get all pages = " + elapsed/1.0E6);
 
     start = System.nanoTime();
     for ( int i = 0; i < NUM_BINS; i++ )
-      image = hist_3D.getRow(i);
+      image = hist_3D.rowSlice(i);
     elapsed = System.nanoTime()-start;
     System.out.println("Time(ms) to get all rows = " + elapsed/1.0E6);
 
 //  image = hist_3D.getPage(NUM_BINS/2);
-    image = hist_3D.getRow(NUM_BINS/2);
+    image = hist_3D.rowSlice(NUM_BINS/2);
 
     JFrame f = new JFrame("Test for ImageJPanel");
     f.setBounds(0,0,500,500);
@@ -123,7 +129,7 @@ public class ViewerTest
 
     for ( int i = 0; i < NUM_BINS; i++ )
     {
-      image = hist_3D.getRow(i);
+      image = hist_3D.rowSlice(i);
       panel.setData( image, true );
       try
       {
@@ -134,8 +140,14 @@ public class ViewerTest
       }
     }
 
-    panel.setData( hist_3D.getPage(NUM_BINS/2), true );
+    panel.setData( hist_3D.pageSlice(NUM_BINS/2), true );
  
+    
+    start = System.nanoTime();
+    hist_3D.clear();
+    elapsed = System.nanoTime()-start;
+    System.out.println("Time(ms) to clear histogram = " + elapsed/1.0E6);
+
   }
 
 }
