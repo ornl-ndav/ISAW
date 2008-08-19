@@ -1,5 +1,5 @@
 /* 
- * File: IVecEventBinner.java
+ * File: IProjectionBinner3D.java
  *
  * Copyright (C) 2008, Dennis Mikkelson
  *
@@ -77,5 +77,19 @@ public interface IProjectionBinner3D extends IEventBinner
    *         specified bin.
    */
   Vector3D centerVec( int index );
-  
+
+  /**
+   * Get the coordinates of the center of the bin with the specified index,
+   * and return them in the array coords.
+   *
+   * @param  index   The index of the bin whose center coordinates are
+   *                 needed.
+   * @param  coords  Array of floats, of length at least 3, in which 
+   *                 the x, y and z coordinates of the bin center will be
+   *                 returned in the first three positions. 
+   * @throws an IllegalArgumentException, if the array coords is null or
+   *         has length less than three.
+   */
+  void centerPoint( int index, float[] coords );
+
 }
