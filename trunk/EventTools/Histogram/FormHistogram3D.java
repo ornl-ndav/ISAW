@@ -90,12 +90,12 @@ public class FormHistogram3D
                          (long)X_SIZE * Y_SIZE * Z_SIZE );
    
     System.out.println("Sizes = " + X_SIZE + ", " + Y_SIZE + ", " + Z_SIZE );
-    IProjectionBinner3D x_bin = 
-             new UniformProjectionBinner3D( x_min, x_max, X_SIZE, xVec );
-    IProjectionBinner3D y_bin = 
-             new UniformProjectionBinner3D( y_min, y_max, Y_SIZE, yVec );
-    IProjectionBinner3D z_bin = 
-             new UniformProjectionBinner3D( z_min, z_max, Z_SIZE, zVec );
+    IEventBinner x_bin1D = new UniformEventBinner( x_min, x_max, X_SIZE );
+    IEventBinner y_bin1D = new UniformEventBinner( y_min, y_max, Y_SIZE );
+    IEventBinner z_bin1D = new UniformEventBinner( z_min, z_max, Z_SIZE );
+    ProjectionBinner3D x_bin = new ProjectionBinner3D( x_bin1D, xVec );
+    ProjectionBinner3D y_bin = new ProjectionBinner3D( y_bin1D, yVec );
+    ProjectionBinner3D z_bin = new ProjectionBinner3D( z_bin1D, zVec );
 
 
     //------------
