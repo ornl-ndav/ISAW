@@ -50,7 +50,7 @@ import gov.anl.ipns.Operator.Threads.*;
  * In most cases, up to four threads on a can be used with reasonable 
  * on a system with four or more cores.  Use of more than four threads will
  * probably not be very helpful.    
- *   The bins of the 3D histogram are determined by three IProjectionBinner3D
+ *   The bins of the 3D histogram are determined by three ProjectionBinner3D
  * objects. Each binner object has a direction vector, and the bin number 
  * (i.e. index) is determined by the dot product of the event with that 
  * direction vector.  The first, "X" binner maps the 3D event to a column
@@ -200,6 +200,36 @@ public class Histogram3D
   }
 
 
+  /** Get the value recorded at the histogram bin corresponding to the 
+   *  point (x,y,z).  If the position is outside of the region covered 
+   *  by the histogram, zero is returned.
+   *
+   *  @param  x   The x-coordinate of the point
+   *  @param  y   The y-coordinate of the point
+   *  @param  z   The z-coordinate of the point
+   *
+   *  @return The value recorded in the histogram bin containing (x,y,z), if
+   *          the point (x,y,z) is in the region covered by the histogram,
+   *          or zero, if (x,y,z) is outside the region. 
+   */
+  public float valueAt( float x, float y, float z )
+  {
+    int z_index = z_binner.index(x,y,z);
+    if ( z_index < 0 || z_index >= histogram.length )
+      return 0;
+
+    int y_index = y_binner.index(x,y,z);
+    if ( y_index < 0 || y_index >= histogram[0].length )
+      return 0;
+
+    int x_index = x_binner.index(x,y,z);
+    if ( x_index < 0 || x_index >= histogram[0][0].length )
+      return 0;
+
+    return histogram[z_index][y_index][x_index];
+  }
+
+
   /**
    * Get event lists from bins of this histogram with values in intervals
    * determined by the specified IEventBinner.  Since the event lists are
@@ -259,12 +289,12 @@ public class Histogram3D
   {
     int num_pages = z_binner.numBins();
     int num_cols  = x_binner.numBins();
-    float[][] one_row = new float[num_cols][num_pages];
+    float[][] one_row = new float[num_pages][num_cols];
     for ( int page = 0; page < num_pages; page++ )
       System.arraycopy(histogram[page][row],0,one_row[page],0,num_cols);
 /*
       for ( int col = 0; col < num_cols; col++ )
-        one_row[col][page] = histogram[page][row][col];
+        one_row[page][col] = histogram[page][row][col];
 */
     return one_row;
   }
