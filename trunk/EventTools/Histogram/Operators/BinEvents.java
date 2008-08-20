@@ -36,7 +36,7 @@ package EventTools.Histogram.Operators;
 import java.util.*;
 
 import EventTools.EventList.IEventList3D;
-import EventTools.Histogram.IProjectionBinner3D;
+import EventTools.Histogram.ProjectionBinner3D;
 import gov.anl.ipns.Operator.*;
 import gov.anl.ipns.MathTools.Geometry.Vector3D;
 
@@ -56,9 +56,9 @@ public class BinEvents implements IOperator
                       max;
 
   private IEventList3D events;
-  private IProjectionBinner3D x_binner;
-  private IProjectionBinner3D y_binner;
-  private IProjectionBinner3D z_binner;
+  private ProjectionBinner3D x_binner;
+  private ProjectionBinner3D y_binner;
+  private ProjectionBinner3D z_binner;
 
 
   /**
@@ -78,12 +78,15 @@ public class BinEvents implements IOperator
    *                   that this operator will use.
    * @param last_page  The last page of the portion of the 3D histogram 
    *                   that this operator will use.
-   * @param x_binner   The IEventBinner that determines which column of the
-   *                   3D array corresponds to an event's X-coordinate.
-   * @param y_binner   The IEventBinner that determines which row of the
-   *                   3D array corresponds to an event's Y-coordinate.
-   * @param z_binner   The IEventBinner that determines which page of the
-   *                   3D array corresponds to an event's Z-coordinate.
+   * @param x_binner   The ProjectionBinner3D that determines which column 
+   *                   of the 3D array corresponds to the component of an 
+   *                   event in the x_binner's direction.
+   * @param y_binner   The ProjectionBinner3D that determines which row
+   *                   of the 3D array corresponds to the component of an 
+   *                   event in the y_binner's direction.
+   * @param z_binner   The ProjectionBinner3D that determines which page
+   *                   of the 3D array corresponds to the component of an 
+   *                   event in the z_binner's direction.
    * @param events     The list of events to be categorized and added to the
    *                   histogram array.  NOTE: currently the "code" associated
    *                   with the event is assumed to be a count of multiple
@@ -94,9 +97,9 @@ public class BinEvents implements IOperator
                     float             max,
                     int               first_page, 
                     int               last_page,
-                    IProjectionBinner3D   x_binner,
-                    IProjectionBinner3D   y_binner,
-                    IProjectionBinner3D   z_binner,
+                    ProjectionBinner3D   x_binner,
+                    ProjectionBinner3D   y_binner,
+                    ProjectionBinner3D   z_binner,
                     IEventList3D events    )
   {
     this.histogram  = histogram;
@@ -122,25 +125,10 @@ public class BinEvents implements IOperator
    */
   public Object getResult()
   {
-    double[] ev_xyz = new double[3];
-    Vector3D x_vec  = x_binner.directionVec();
-    Vector3D y_vec  = y_binner.directionVec();
-    Vector3D z_vec  = z_binner.directionVec();
-
-    float x0 = x_vec.getX();
-    float x1 = x_vec.getY();
-    float x2 = x_vec.getZ();
-
-    float y0 = y_vec.getX();
-    float y1 = y_vec.getY();
-    float y2 = y_vec.getZ();
-
-    float z0 = z_vec.getX();
-    float z1 = z_vec.getY();
-    float z2 = z_vec.getZ();
-
+    float   x, 
+            y, 
+            z;
     float   val;
-    double  d_val;
     float   count;
     double  sum = 0;
     int     x_index,
@@ -154,24 +142,16 @@ public class BinEvents implements IOperator
 
     for ( int i = 0; i <  num_events; i++ )
     {
-      /*  NOTE: This form of the calculation executes faster on 
-       *        a 2-processor XEON (32 bit Linux).
-       */
-       events.eventVals( i, ev_xyz );
-       
-       d_val = ev_xyz[0]*z0 + ev_xyz[1]*z1 + ev_xyz[2]*z2;
-       z_index = z_binner.index( d_val );
-//       z_index = z_binner.index( ev_xyz[2] );
+       x = (float)events.eventX(i);
+       y = (float)events.eventY(i);
+       z = (float)events.eventZ(i);
+
+       z_index = z_binner.index( x, y, z );
 
        if ( z_index >= first_page && z_index <= last_page )
        {
-         d_val = ev_xyz[0]*x0 + ev_xyz[1]*x1 + ev_xyz[2]*x2;
-         x_index = x_binner.index( d_val );
-
-         d_val = ev_xyz[0]*y0 + ev_xyz[1]*y1 + ev_xyz[2]*y2;
-         y_index = y_binner.index( d_val );
-//         x_index = x_binner.index( ev_xyz[0] );
-//         y_index = y_binner.index( ev_xyz[1] );
+         x_index = x_binner.index( x, y, z );
+         y_index = y_binner.index( x, y, z );
 
          if ( x_index >= 0 && x_index < num_x_bins &&
               y_index >= 0 && y_index < num_y_bins  )
@@ -189,39 +169,6 @@ public class BinEvents implements IOperator
            sum += count;
          }
        }
-       
-      /*  NOTE: This form of the calculation executes faster on 
-       *        a 4-core Opteron (64 bit Linux).
-       *        
-       d_val   = events.eventZ( i );
-       z_index = z_binner.index( d_val );
-       
-       if ( z_index >= first_page && z_index <= last_page )
-       {
-         d_val   = events.eventY( i );
-         y_index = y_binner.index( d_val );
-
-         d_val   = events.eventX( i );
-         x_index = x_binner.index( d_val );
-         
-         if ( x_index >= 0 && x_index < num_x_bins &&
-              y_index >= 0 && y_index < num_y_bins  )
-         {
-           count = events.eventCode( i );
-           
-           val = histogram[z_index][y_index][x_index];
-           val += count;
-           histogram[z_index][y_index][x_index] = val;
-           
-           if ( val > max )
-             max = val;
-           if ( val < min )
-             min = val;
-
-           sum += count;
-         }
-       }
-       */
     }
 
     Vector results = new Vector(3);
