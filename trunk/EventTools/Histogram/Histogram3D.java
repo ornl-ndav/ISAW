@@ -120,6 +120,45 @@ public class Histogram3D
     sum = 0;
   }
 
+
+  /**
+   * Get a reference to the ProjectionBinner3D used for
+   * the X-axis of this histogram
+   *
+   * @return A reference to the binner in the direction of the local "X"
+   *         axis for this histogram.
+   */
+  public ProjectionBinner3D xBinner()
+  {
+    return x_binner;
+  }
+
+
+  /**
+   * Get a reference to the ProjectionBinner3D used for
+   * the Y-axis of this histogram
+   *
+   * @return A reference to the binner in the direction of the local "Y"
+   *         axis for this histogram.
+   */
+  public ProjectionBinner3D yBinner()
+  {
+    return y_binner;
+  }
+
+
+  /**
+   * Get a reference to the ProjectionBinner3D used for
+   * the Z-axis of this histogram
+   *
+   * @return A reference to the binner in the direction of the local "Z"
+   *         axis for this histogram.
+   */
+  public ProjectionBinner3D zBinner()
+  {
+    return z_binner;
+  }
+
  
   /**
    * Get the maximum value of any bin in the histogram.
@@ -173,7 +212,11 @@ public class Histogram3D
 
   /**
    * Add all events from the specified IEventList3D to corresponding
-   * bins in this histogram.
+   * bins in this histogram.  Note: first creating an empty histogram
+   * then adding events to it will allow for stepping through a huge 
+   * list of events one portion at a time.  If the event list is too 
+   * large to conveniently fit in memory, then parts of the event list
+   * can be loaded and passed to addEvents(), sequentially.
    * 
    * @param events  The list of events to be added to this histogram.
    * @return  The total event count that was added.  NOTE: currently,
