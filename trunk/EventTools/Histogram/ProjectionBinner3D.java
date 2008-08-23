@@ -56,6 +56,8 @@ public class ProjectionBinner3D implements IProjectionBinner3D
   {
     if ( direction == null )
       throw new IllegalArgumentException("NULL direction ");
+    else if ( direction.length() == 0 )
+      throw new IllegalArgumentException("ZERO length direction vector");
 
     binner1D = binner; 
 
@@ -197,7 +199,7 @@ public class ProjectionBinner3D implements IProjectionBinner3D
    * @param  x_binner  Binner for the first basis direction, "x".
    * @param  y_binner  Binner for the second basis direction, "y".
    * @param  z_binner  Binner for the third basis direction, "z".
-   * @param  coords    Array with at least positions, into which the sum
+   * @param  coords    Array with at least 3 positions, into which the sum
    *                   of x*x_vec + y*y_vec + z*zvec will be stored.  The
    *                   vectors, x_vec, y_vec and z_vec are the unit direction
    *                   vectors of the x,z and z binners.  The values, x, y, z
