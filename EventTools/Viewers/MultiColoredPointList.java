@@ -51,6 +51,7 @@ public class MultiColoredPointList extends SimpleShape
   private float[]  z = null;
   private float    size  = 1;
   private int[]    index = null;
+
   private float[]  red;
   private float[]  green;
   private float[]  blue;
@@ -60,15 +61,23 @@ public class MultiColoredPointList extends SimpleShape
 
   /* --------------------------- Constructor --------------------------- */
   /**
-   *  Construct a PointList from the specified arrays.
+   *  Construct a PointList, where each point can have its own color.
+   *  NOTE: For efficiency, this class keeps a reference to the list
+   *        of coordinates and color indexes.  The calling program should
+   *        generally not use those arrays after they have been passed in
+   *        to this constructor.
    *
-   *  @param  x_vals  The list of x-coordinates. 
-   *  @param  y_vals  The list of y-coordinates. 
-   *  @param  z_vals  The list of z-coordinates. 
-   *  @param  size    The size to use for the points specified in pixel 
-   *                  units.
-   *  @param  new_color The color of the LineStrip.
-   *
+   *  @param  x_vals       The list of x-coordinates. 
+   *  @param  y_vals       The list of y-coordinates. 
+   *  @param  z_vals       The list of z-coordinates. 
+   *  @param  color_index  List of indices into the specified color scale
+   *                       The ith point will be drawn using the color
+   *                       color_scale[color_index[i]].
+   *  @param  color_scale  List of colors making up the color map for
+   *                       this list of points.
+   *  @param  size         The size to use for the points specified in pixel 
+   *                       units.
+   *  @param  alpah        The alpha value for this list of points.
    */
   public MultiColoredPointList( float[]  x_vals,
                                 float[]  y_vals,
@@ -79,14 +88,29 @@ public class MultiColoredPointList extends SimpleShape
                                 float    alpha  )
   {
     super(Color.WHITE);
-    this.alpha = alpha;
+
     x = x_vals;
     y = y_vals;
     z = z_vals;
     index = color_index;
 
-    this.size = size;
+    setColorScale( color_scale );
 
+    this.alpha = alpha;
+    this.size = size;
+    this.alpha = alpha;
+  }
+
+  /**
+   *  Set the color scale to use for these points.  NOTE: This method must
+   *  NOT be called at the same time as the points are being rendered.  Doing
+   *  will cause an array index out of bounds exception, if the size of the
+   *  color scale is reduced.
+   *
+   *  @param color_scale  The new color scale to use when drawing the points.
+   */
+  public void setColorScale( Color[] color_scale )
+  {
     red   = new float[color_scale.length];
     green = new float[color_scale.length];
     blue  = new float[color_scale.length];
@@ -97,24 +121,19 @@ public class MultiColoredPointList extends SimpleShape
        blue[i]  = color_scale[i].getBlue()/255.0f;
     }
   }
-
  
+
   /* ------------------------------ Render ----------------------------- */
   /**
-   *  Render this LineStrip to the specified drawable.  
+   *  Render this list of points to the specified drawable.  
    *
-   *  @param  drawable  The drawable on which the LineStrip is to be drawn.
+   *  @param  drawable  The drawable on which the list of points will be drawn.
    */
   public void Render( GLAutoDrawable drawable )
   {
     GL gl = drawable.getGL();
 
     super.preRender( drawable );
-
-    gl.glDisable( GL.GL_LIGHTING ); 
-    gl.glEnable( GL.GL_BLEND );
-    gl.glBlendFunc( GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA );
-//    gl.glBlendFunc( GL.GL_SRC_ALPHA, GL.GL_ONE );
 
     int pos;
     gl.glPointSize( size );
@@ -127,7 +146,6 @@ public class MultiColoredPointList extends SimpleShape
     }
     gl.glEnd();
 
-//    gl.glDisable( GL.GL_BLEND );
     super.postRender( drawable );
   }
 }
