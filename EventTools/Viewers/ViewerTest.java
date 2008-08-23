@@ -108,16 +108,60 @@ public class ViewerTest
 
     start = System.nanoTime();
     
-    Vector3D xVec = new Vector3D(1,0,0);
-    Vector3D yVec = new Vector3D(0,1,0);
-    Vector3D zVec = new Vector3D(0,0,1);
+    Vector3D xVec = new Vector3D();
+    Vector3D yVec = new Vector3D();
+    Vector3D zVec = new Vector3D();
+
+
+/*
+    float[] or_mat = {   0.144197f, -0.113545f,  0.001307f,
+                        -0.081427f, -0.105487f, -0.125956f,
+                         0.078414f,  0.098819f, -0.133258f,
+                            5.448f,     5.454f,     5.450f,
+                           89.958f,    89.851f,    90.121f,
+                          161.929f  };
+
+    float[] or_mat = {   0.303850f,  0.090603f, -0.006335f,
+                        -0.287995f,  0.226658f, -0.002725f,
+                        -0.140991f,  0.120480f,  0.258142f,
+                            3.858f,     3.854f,     3.852f,  
+                          119.979f,    89.950f,    60.096f,    
+                           40.542f };
+*/
+   float[] or_mat = null;
+
+    if ( or_mat == null )
+    {                                  // use default i, j, k basis vectors
+      xVec.set(1,0,0);      
+      yVec.set(0,1,0);
+      zVec.set(0,0,1);
+    }
+    else                               // calculate plane normals in 
+    {                                  // reciprocal space
+      Vector3D a_star = new Vector3D( or_mat[0], or_mat[1], or_mat[2] );
+      Vector3D b_star = new Vector3D( or_mat[3], or_mat[4], or_mat[5] );
+      Vector3D c_star = new Vector3D( or_mat[6], or_mat[7], or_mat[8] );
+      
+      xVec.cross(b_star,c_star);
+      yVec.cross(c_star,a_star);
+      zVec.cross(a_star,b_star);
+
+      System.out.println("xVec = " + xVec + ", length = " + xVec.length() );
+      System.out.println("yVec = " + yVec + ", length = " + yVec.length() );
+      System.out.println("zVec = " + zVec + ", length = " + zVec.length() );
+    }
+
 /*
     IEventBinner x_bin1D = new UniformEventBinner( -10,  0, NUM_BINS );
     IEventBinner y_bin1D = new UniformEventBinner(   0, 10, NUM_BINS );
     IEventBinner z_bin1D = new UniformEventBinner(  -5,  5, NUM_BINS );
-*/
+
     IEventBinner x_bin1D = new UniformEventBinner( -25,  0, NUM_BINS );
     IEventBinner y_bin1D = new UniformEventBinner(   0, 25, NUM_BINS );
+    IEventBinner z_bin1D = new UniformEventBinner( -12.5f, 12.5f, NUM_BINS );
+*/
+    IEventBinner x_bin1D = new UniformEventBinner( -12.5f, 12.5f, NUM_BINS );
+    IEventBinner y_bin1D = new UniformEventBinner( -12.5f, 12.5f, NUM_BINS );
     IEventBinner z_bin1D = new UniformEventBinner( -12.5f, 12.5f, NUM_BINS );
 
     ProjectionBinner3D x_binner = new ProjectionBinner3D(x_bin1D, xVec);
