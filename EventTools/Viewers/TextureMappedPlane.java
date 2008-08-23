@@ -130,7 +130,6 @@ public class TextureMappedPlane extends Shape
 
     int n_rows = image.length;
     int n_cols = image[0].length;
-    System.out.println("Number of rows * cols = " + n_rows + ", " + n_cols );
     byte[] rgb_image = new byte[3*n_rows*n_cols];
 
     Color color;
