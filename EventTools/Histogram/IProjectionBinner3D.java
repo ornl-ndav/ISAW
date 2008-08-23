@@ -66,17 +66,39 @@ public interface IProjectionBinner3D extends IEventBinner
    * dot product.
    */
   int index( Vector3D vec );  
-  
+
   /**
-   * Get a Vector3D object giving the center of the  
+   * Get a Vector3D object giving the "lower" endpoint of the  
    * bin with the specified index.
    * 
    * @param index  The index of the bin
    * 
-   * @return A Vector3D object giving the center of the 
-   *         specified bin.
+   * @return A Vector3D object giving the "lower" endpoint of the 
+   *         specified bin along the direction vector.
+   */
+  Vector3D minVec( int index );
+
+  /**
+   * Get a Vector3D object giving the center point of the  
+   * bin with the specified index.
+   * 
+   * @param index  The index of the bin
+   * 
+   * @return A Vector3D object giving the center point of the 
+   *         specified bin along the direction vector.
    */
   Vector3D centerVec( int index );
+
+  /**
+   * Get a Vector3D object giving the "upper" endpoint of the  
+   * bin with the specified index.
+   * 
+   * @param index  The index of the bin
+   * 
+   * @return A Vector3D object giving the "upper" endpoint of the 
+   *         specified bin along the direction vector.
+   */
+  Vector3D maxVec( int index );
 
   /**
    * Get the coordinates of the center of the bin with the specified index,
