@@ -65,12 +65,12 @@ public class PointList extends SimpleShape
   /**
    *  Construct a PointList from the specified arrays.
    *
-   *  @param  x_vals  The list of x-coordinates. 
-   *  @param  y_vals  The list of y-coordinates. 
-   *  @param  z_vals  The list of z-coordinates. 
-   *  @param  size    The size to use for the points specified in pixel 
-   *                  units.
-   *  @param  new_color The color of the LineStrip.
+   *  @param  x_vals    The list of x-coordinates. 
+   *  @param  y_vals    The list of y-coordinates. 
+   *  @param  z_vals    The list of z-coordinates. 
+   *  @param  size      The size to use for the points specified in pixel 
+   *                    units.
+   *  @param  new_color The color of the points.
    *
    */
   public PointList( float[]  x_vals,
@@ -93,10 +93,10 @@ public class PointList extends SimpleShape
   /**
    *  Construct a PointList from the specified list of Vector3D objects.
    *
-   *  @param  verts   List of Vector3D objects specifying point positions.
-   *  @param  size    The size to use for the points specified in pixel 
-   *                  units.
-   *  @param  new_color The color of the LineStrip.
+   *  @param  verts     List of Vector3D objects specifying point positions.
+   *  @param  size      The size to use for the points specified in pixel 
+   *                    units.
+   *  @param  new_color The color of the points.
    *
    */
   public PointList( Vector3D verts[],
@@ -124,9 +124,9 @@ public class PointList extends SimpleShape
 
   /* ------------------------------ Render ----------------------------- */
   /**
-   *  Render this LineStrip to the specified drawable.  
+   *  Render this list of points to the specified drawable.  
    *
-   *  @param  drawable  The drawable on which the LineStrip is to be drawn.
+   *  @param  drawable  The drawable on which the points will be drawn.
    */
   public void Render( GLAutoDrawable drawable )
   {
@@ -135,13 +135,7 @@ public class PointList extends SimpleShape
     super.preRender( drawable );
 
     if ( color != null )
-//      gl.glColor3fv( color, 0 );
-    gl.glColor4f( color[0], color[1], color[2], alpha );
-
-    gl.glDisable( GL.GL_LIGHTING );  //#####
-//    gl.glEnable( GL.GL_BLEND );
-//    gl.glBlendFunc( GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA );
-//    gl.glBlendFunc( GL.GL_SRC_ALPHA, GL.GL_ONE );
+      gl.glColor4f( color[0], color[1], color[2], alpha );
 
     gl.glPointSize( size );
     gl.glBegin( GL.GL_POINTS );
@@ -155,8 +149,8 @@ public class PointList extends SimpleShape
 
   /* --------------------------- main ----------------------------------- */
   /**
-   *  Main program that constructs an instance of the LineStrip and displays 
-   *  it in 3D for testing purposes.  
+   *  Main program that constructs an instance of a list of points and 
+   *  displays them in 3D for testing purposes.  
    */
   public static void main( String args[] )
   {
