@@ -118,11 +118,29 @@ public class ProjectionBinner3D implements IProjectionBinner3D
 
 
   @Override
+  public Vector3D minVec( int index )
+  {
+    Vector3D min = new Vector3D( vec_x, vec_y, vec_z );
+    min.multiply( (float)binner1D.minVal(index) );
+    return min;
+  }
+
+
+  @Override
   public Vector3D centerVec( int index )
   {
     Vector3D center = new Vector3D( vec_x, vec_y, vec_z );
     center.multiply( (float)binner1D.centerVal(index) );
     return center;
+  }
+
+
+  @Override
+  public Vector3D maxVec( int index )
+  {
+    Vector3D max = new Vector3D( vec_x, vec_y, vec_z );
+    max.multiply( (float)binner1D.maxVal(index) );
+    return max;
   }
 
 
