@@ -152,6 +152,15 @@ public class ShowEventList
     ProjectionBinner3D y_binner = histogram.yBinner();
     ProjectionBinner3D z_binner = histogram.zBinner();
 
+    System.out.println("x_binner, min = " + x_binner.axisMin() +
+                               ", max = " + x_binner.axisMax()  );
+
+    System.out.println("y_binner, min = " + y_binner.axisMin() +
+                               ", max = " + y_binner.axisMax()  );
+
+    System.out.println("z_binner, min = " + z_binner.axisMin() +
+                               ", max = " + z_binner.axisMax()  );
+
                                                     // calculate corner point
     Vector3D ll_corner = x_binner.minVec(0);
     ll_corner.add( y_binner.minVec(0) );
@@ -160,10 +169,12 @@ public class ShowEventList
     int last_x_index = x_binner.numBins() - 1;
     Vector3D base = x_binner.maxVec( last_x_index );
     base.subtract( x_binner.minVec(0) );
+    System.out.println("base vec = " + base + ", length = " + base.length());
                                                    // calculate up vector
     int last_y_index = y_binner.numBins() - 1;
     Vector3D up = y_binner.maxVec( last_y_index );
-    base.subtract( y_binner.minVec(0) );
+    up.subtract( y_binner.minVec(0) );
+    System.out.println("up vec = " + up + ", length = " + up.length());
 
     float alpha = 0.5f;
     int[] color_tran = new int[ colors.length ];
@@ -179,8 +190,11 @@ public class ShowEventList
                                                        up, 
                                                        alpha );
 
+    Group plane_group = new Group();
+
     group.addChild( new glEnableNode(GL.GL_BLEND) );
-    group.addChild( plane );
+    group.addChild( plane_group );
+      plane_group.addChild( plane );
     group.addChild( new glDisableNode(GL.GL_BLEND) );
 
     JoglPanel demo = new JoglPanel( group, true, JoglPanel.DEBUG_MODE );
@@ -192,6 +206,71 @@ public class ShowEventList
     frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
     frame.getContentPane().add( demo.getDisplayComponent() );
     frame.setVisible( true );
+
+    JFrame f = new JFrame("Test for ImageJPanel");
+    f.setBounds(0,0,500,500);
+    f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    ImageJPanel panel = new ImageJPanel();
+    panel.setData( histogram.pageSlice(slice_num), true );
+    panel.setNamedColorModel( IndexColorMaker.HEATED_OBJECT_SCALE_2,
+                              true,
+                              true );
+    f.getContentPane().add(panel);
+    f.setVisible(true);
+    panel.changeLogScale(50,true);
+
+    float[][] flipped_slice = new float[y_binner.numBins()][x_binner.numBins()];
+    for ( int i = 0; i < z_binner.numBins(); i++ )
+    {
+       ll_corner = x_binner.minVec(0);
+       ll_corner.add( y_binner.minVec(0) );
+       ll_corner.add( z_binner.centerVec(i) );
+
+       slice = histogram.pageSlice( i );
+       plane = new TextureMappedPlane( slice,
+                                       (int)histogram.maxVal(),
+                                        color_tran,
+                                        colors,
+                                        ll_corner,
+                                        base,
+                                        up,
+                                        alpha );
+       plane_group.Clear();
+       plane_group.addChild(plane);
+       demo.Draw();
+
+       for ( int k = 0; k < slice.length; k++ )
+         flipped_slice[k] = slice[y_binner.numBins()-k-1];
+
+       panel.setData( flipped_slice, true );
+
+       try
+       {
+         Thread.sleep( 50 );
+       }
+       catch ( Exception ex )
+       {
+         System.out.println("Exception Sleeping " + ex);
+       }
+    }
+
+    ll_corner = x_binner.minVec(0);
+    ll_corner.add( y_binner.minVec(0) );
+    ll_corner.add( z_binner.centerVec(slice_num) );
+
+    slice = histogram.pageSlice( slice_num );
+    plane = new TextureMappedPlane( slice,
+                                    (int)histogram.maxVal(),
+                                     color_tran,
+                                     colors,
+                                     ll_corner,
+                                     base,
+                                     up,
+                                     alpha );
+    plane_group.Clear();
+    plane_group.addChild(plane);
+    demo.Draw();
+
   }
 
 
