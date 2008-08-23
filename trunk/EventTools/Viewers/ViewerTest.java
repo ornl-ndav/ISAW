@@ -56,7 +56,7 @@ public class ViewerTest
 
   public static void main( String args[] ) throws IOException
   {
-    int NUM_BINS = 1024;
+    int NUM_BINS = 512;
 
     long start = System.nanoTime();
     long elapsed;
@@ -118,7 +118,7 @@ public class ViewerTest
 */
     IEventBinner x_bin1D = new UniformEventBinner( -25,  0, NUM_BINS );
     IEventBinner y_bin1D = new UniformEventBinner(   0, 25, NUM_BINS );
-    IEventBinner z_bin1D = new UniformEventBinner( -12, 12, NUM_BINS );
+    IEventBinner z_bin1D = new UniformEventBinner( -12.5f, 12.5f, NUM_BINS );
 
     ProjectionBinner3D x_binner = new ProjectionBinner3D(x_bin1D, xVec);
     ProjectionBinner3D y_binner = new ProjectionBinner3D(y_bin1D, yVec);
