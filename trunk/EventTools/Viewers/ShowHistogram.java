@@ -38,6 +38,7 @@ import java.awt.*;
 import java.util.Vector;
 
 import javax.swing.*;
+import javax.media.opengl.*;
 
 import gov.anl.ipns.MathTools.Geometry.*;
 import EventTools.EventList.FloatArrayEventList3D;
@@ -46,6 +47,7 @@ import EventTools.Histogram.IEventBinner;
 //import SSG_Tools.Cameras.OrthographicCamera;
 import SSG_Tools.SSG_Nodes.SimpleShapes.*;
 import SSG_Tools.SSG_Nodes.Group;
+import SSG_Tools.SSG_Nodes.StateControls.glDisableNode;
 import SSG_Tools.Viewers.*;
 import SSG_Tools.Viewers.Controls.*;
 
@@ -67,8 +69,8 @@ public class ShowHistogram
    * @param binner   IEventBinner specifying the levels of bins from
    *                 the histogram that should be displayed.
    */
-  public static void show_histogram( Histogram3D hist_3D, 
-                                     IEventBinner binner  )
+  public static void show_histogram( Histogram3D   hist_3D, 
+                                     IEventBinner  binner  )
   {
     int n_bins = binner.numBins();
     int shift  = n_bins/3;
@@ -78,6 +80,7 @@ public class ShowHistogram
     Vector all_lists = hist_3D.getEventLists( binner );
 
     Group group = new Group();
+    group.addChild( new glDisableNode(GL.GL_LIGHTING) );
 
     SimpleShape shape;
     FloatArrayEventList3D events;
