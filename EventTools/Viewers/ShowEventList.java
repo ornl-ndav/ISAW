@@ -43,21 +43,15 @@ import gov.anl.ipns.MathTools.Geometry.*;
 import EventTools.EventList.IEventList3D;
 import EventTools.EventList.ByteFile16EventList3D;
 import EventTools.Histogram.Histogram3D;
+import EventTools.Histogram.ProjectionBinner3D;
 import EventTools.Histogram.IEventBinner;
 
 //import SSG_Tools.Cameras.OrthographicCamera;
-import SSG_Tools.Appearance.Appearance;
-import SSG_Tools.Appearance.TransparentMaterial;
-import SSG_Tools.Appearance.Textures.Texture2D;
-import SSG_Tools.Geometry.Geometry;
-import SSG_Tools.Geometry.PlaneGeometry;
-import SSG_Tools.SSG_Nodes.Shapes.GenericShape;
+
 import SSG_Tools.SSG_Nodes.StateControls.glEnableNode;
 import SSG_Tools.SSG_Nodes.StateControls.glDisableNode;
-import SSG_Tools.SSG_Nodes.StateControls.glFrontFaceNode;
 import SSG_Tools.SSG_Nodes.SimpleShapes.*;
 import SSG_Tools.SSG_Nodes.Group;
-import SSG_Tools.Utils.LoadTexture;
 import SSG_Tools.Viewers.*;
 import SSG_Tools.Viewers.Controls.*;
 
@@ -92,6 +86,7 @@ public class ShowEventList
     Color[] colors = IndexColorMaker.getColorTable( "Heat 1", 128 );
 
     Group group = new Group();
+    group.addChild( new glDisableNode(GL.GL_LIGHTING) );
 
     float  eventX,
            eventY,
@@ -104,12 +99,12 @@ public class ShowEventList
       eventY = (float)events.eventY( i );
       eventZ = (float)events.eventZ( i );
       eventCode = (int)histogram.valueAt( eventX, eventY, eventZ );
-      if ( eventCode > 2 )
+      if ( eventCode > 12 )
       {
         event_array[0][eventCount] = (float)eventX;
         event_array[1][eventCount] = (float)eventY;
         event_array[2][eventCount] = (float)eventZ;
-        eventCode = 8*eventCode;
+//      eventCode = 8 * eventCode;
         if ( eventCode < colors.length )
           codes[eventCount] = eventCode;
         else
@@ -150,28 +145,42 @@ public class ShowEventList
     group.addChild( y_axis );
     group.addChild( z_axis );
 
-    Geometry plane_geometry = new PlaneGeometry( 10, 10, 20, 20 );
-    GenericShape plane = new GenericShape( plane_geometry, null );
+    int slice_num = 255;
+    float[][] slice = histogram.pageSlice( slice_num );
 
-    Appearance plane_appearance = new Appearance(); 
-    String directory = System.getProperty( "user.home" ) +
-                       "/SSG_Data/TextureImages/OpenInventor/";
-    String name = "Marble01.jpg";
-    int n_rows = 512;
-    int n_cols = 512;
-    byte image[] = LoadTexture.LoadImage( directory + name, n_rows, n_cols );
-    Texture2D texture = new Texture2D( image, n_rows, n_cols );
+    ProjectionBinner3D x_binner = histogram.xBinner();
+    ProjectionBinner3D y_binner = histogram.yBinner();
+    ProjectionBinner3D z_binner = histogram.zBinner();
 
-    TransparentMaterial material = new TransparentMaterial();
-    material.setColor( Color.WHITE );
-    material.setAlpha(0.25f);
+                                                    // calculate corner point
+    Vector3D ll_corner = x_binner.minVec(0);
+    ll_corner.add( y_binner.minVec(0) );
+    ll_corner.add( z_binner.centerVec(slice_num) );
+                                                    // calculate base vector
+    int last_x_index = x_binner.numBins() - 1;
+    Vector3D base = x_binner.maxVec( last_x_index );
+    base.subtract( x_binner.minVec(0) );
+                                                   // calculate up vector
+    int last_y_index = y_binner.numBins() - 1;
+    Vector3D up = y_binner.maxVec( last_y_index );
+    base.subtract( y_binner.minVec(0) );
 
-    plane_appearance.setMaterial( material );
-    plane_appearance.setTexture( texture );
-    plane.setAppearance( plane_appearance );
+    float alpha = 0.5f;
+    int[] color_tran = new int[ colors.length ];
+    for ( int i = 0; i < color_tran.length; i++ )
+      color_tran[i] = i;
+
+    TextureMappedPlane plane = new TextureMappedPlane( slice, 
+                                                       (int)histogram.maxVal(),
+                                                       color_tran,
+                                                       colors,
+                                                       ll_corner, 
+                                                       base, 
+                                                       up, 
+                                                       alpha );
 
     group.addChild( new glEnableNode(GL.GL_BLEND) );
-    group.addChild(plane);
+    group.addChild( plane );
     group.addChild( new glDisableNode(GL.GL_BLEND) );
 
     JoglPanel demo = new JoglPanel( group, true, JoglPanel.DEBUG_MODE );
@@ -200,6 +209,7 @@ public class ShowEventList
     Color[] colors = IndexColorMaker.getColorTable( "Heat 1", 128 );
 
     Group group = new Group();
+    group.addChild( new glDisableNode(GL.GL_LIGHTING) );
 
     float eventX,
           eventY,
