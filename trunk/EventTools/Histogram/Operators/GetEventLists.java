@@ -38,6 +38,7 @@ import java.util.*;
 import EventTools.EventList.FloatArrayEventList3D;
 import EventTools.EventList.IEventList3D;
 import EventTools.Histogram.IEventBinner;
+import EventTools.Histogram.ProjectionBinner3D;
 
 import gov.anl.ipns.Operator.*;
 
@@ -62,9 +63,9 @@ public class GetEventLists implements IOperator
   private int          last_page;
   private IEventBinner binner;
 
-  private IEventBinner x_binner;
-  private IEventBinner y_binner;
-  private IEventBinner z_binner;
+  private ProjectionBinner3D x_binner;
+  private ProjectionBinner3D y_binner;
+  private ProjectionBinner3D z_binner;
 
 
   /**
@@ -73,31 +74,34 @@ public class GetEventLists implements IOperator
    * occur at the bin centers.  Suppose the binner has bins [ai,bi) for i = 0 
    * to NUM_BINS-1.  A bin with a count that lies in [ai,bi) will give an 
    * event with code k at the x,y,z values corresponding to the center of
-   * the bin's column, row and page.  IEventBinner objects determine the 
-   * mapping between page, row and column numbers and x,y,z coordinates.
+   * the bin's column, row and page.  ProjectionBinner3D objects determine 
+   * the mapping between page, row and column numbers and x,y,z coordinates.
    *  
    * @param histogram  The 3D array from which the events are extracted.
    * @param first_page The first page of the portion of the 3D histogram 
    *                   that this operator will use.
    * @param last_page  The last page of the portion of the 3D histogram 
    *                   that this operator will use.
-   * @param x_binner   The IEventBinner that determines which X-coordinate
-   *                   corresponds to a particular column of the array.
-   * @param y_binner   The IEventBinner that determines which Y-coordinate
-   *                   corresponds to a particular row of the array.
-   * @param z_binner   The IEventBinner that determines which Z-coordinate
-   *                   corresponds to a particular page of the array.
+   * @param x_binner   The ProjectionBinner3D that determines which
+   *                   distance along the "x" direction vector corresponds
+   *                   to a particular column of the array.
+   * @param y_binner   The ProjectionBinner3D that determines which
+   *                   distance along the "y" direction vector corresponds
+   *                   to a particular row of the array.
+   * @param z_binner   The ProjectionBinner3D that determines which
+   *                   distance along the "z" direction vector corresponds
+   *                   to a particular page of the array.
    * @param binner     This binner specifies which count values will be
    *                   returned as events when the getResult() method is
    *                   called.
    */
-  public GetEventLists( float[][][]  histogram, 
-                        int          first_page, 
-                        int          last_page,
-                        IEventBinner x_binner,
-                        IEventBinner y_binner,
-                        IEventBinner z_binner,
-                        IEventBinner binner )
+  public GetEventLists( float[][][]        histogram, 
+                        int                first_page, 
+                        int                last_page,
+                        ProjectionBinner3D x_binner,
+                        ProjectionBinner3D y_binner,
+                        ProjectionBinner3D z_binner,
+                        IEventBinner       binner )
   {
     this.first_page = first_page;
     this.last_page  = last_page;
@@ -180,7 +184,15 @@ public class GetEventLists implements IOperator
         z_vals[i] = new float[ n_events ]; 
       }
     }
-
+                                     // Since the x,y,z- binners use direction
+                                     // vectors, we need to calculate the
+                                     // vector position as a vector sum for
+                                     // each bin.  The array coords will
+    float[] coords = new float[3];   // be set to that vector sum
+                                     // TODO: This calculation works for
+                                     //       arbitarary ORTHOGONAL vectors,
+                                     //       but must be revised to deal with
+                                     //       the general case. 
     int[] ilist = new int[n_bins+1];
     for ( int page = first_page; page <= last_page; page++ )
     {
@@ -196,9 +208,12 @@ public class GetEventLists implements IOperator
           if ( index >= 0 )
           {
             codes[index] [ ilist[index] ] = index;
-            x_vals[index][ ilist[index] ] = (float)(x_binner.centerVal(col));
-            y_vals[index][ ilist[index] ] = (float)(y_binner.centerVal(row));
-            z_vals[index][ ilist[index] ] = (float)(z_binner.centerVal(page));
+            ProjectionBinner3D.centerPoint( col, row, page,
+                                            x_binner, y_binner, z_binner,
+                                            coords );
+            x_vals[index][ ilist[index] ] = coords[0];
+            y_vals[index][ ilist[index] ] = coords[1];
+            z_vals[index][ ilist[index] ] = coords[2];
             ilist[index]++;
           }
         }
