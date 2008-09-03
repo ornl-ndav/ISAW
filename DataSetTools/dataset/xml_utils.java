@@ -190,7 +190,7 @@ public class xml_utils
     sb.append(c);
     cc=is.read();
     c = (char)cc;
-    while( (cc>=0)&&((delimiters+"=></\"").indexOf((char)c)<0)){
+    while( (cc>=0)&&((delimiters+"=></\"").indexOf(c)<0)){
       sb.append(c);
       cc=is.read();
       c = (char)cc;
@@ -692,12 +692,13 @@ public static void main( String args[])
   { System.out.println("Here");
     if( args == null)
       System.exit(0);
-    if( args.length < 1)
+    else if( args.length < 1)
       System.exit(0);
-    File f = new File( args[0]);
+    File f = null;
      FileInputStream fin =null;
+    if( args != null && args.length > 0)
     try
-     {
+     {  f = new File( args[0]);
         fin = new FileInputStream( f);
       }
      catch( Exception s)
@@ -718,7 +719,7 @@ public static void main( String args[])
         System.out.println("  e: get errormessage");
         System.out.println("  x:exit");
         c=0;
-        while( (int) c < 32)
+        while(  c < 32)
          try
           { c=(char) System.in.read();
             System.out.println("c="+(int)c+","+c);
