@@ -140,7 +140,7 @@ public class ArrayFxn implements Wrappable, IWrappableWithCategoryList {
     *  The entry point to this class that can be used by Java and Jython.
     *   This method applies the Rule to every element(subelement, subelement of 
     *   subelement, etc) of ArrayHolder.
-    *   @param ArrayHolder  Contains a possibly multi dimensioned array or Vector.
+    *   @param array_holder  Contains a possibly multi dimensioned array or Vector.
     *   @param Rule  The rule that is to be applied to elements of ArrayHolder. 
     *     This rule must contain only one variable, x0. It can use the operations 
     *     +,-,*,/,^,sin,asin,cos,acos,tan,atan,exp,and log(base e),max,min,int,
@@ -149,9 +149,9 @@ public class ArrayFxn implements Wrappable, IWrappableWithCategoryList {
     *     have the Rule applied to them
     *   @see gov.anl.ipns.MathTools.Functions.FunctionTools
     */
-  public Object calculate( Vector ArrayHolder, String Rule){
+  public Object calculate( Vector array_holder, String Rule){
 
-     this.ArrayHolder= ArrayHolder;
+     this.ArrayHolder= array_holder;
      this.formula = Rule;
      return calculate();
   }
@@ -172,17 +172,17 @@ public class ArrayFxn implements Wrappable, IWrappableWithCategoryList {
       if( F == null)
          return new ErrorString("Improper formula:"+S.geterrormessage()
                     +" at pos "+S.geterrorposition()+" in "+formula);
-      return Calc( ArrayHolder, F);        
+      return Calc( ArrayHolder);        
   }
 
- private Object Calc( Object Dat, Fxn F){
+ private Object Calc( Object Dat){
     if( Dat == null)
       return new ErrorString("Data contains a null entry");
 
     if( Dat instanceof Vector){
        Vector V = new Vector();
        for(int i=0;i<((Vector)Dat).size(); i++){
-         Object O = Calc( ((Vector)Dat).elementAt(i),F);
+         Object O = Calc( ((Vector)Dat).elementAt(i));
          if( O instanceof ErrorString)
            return O;
          V.addElement(O);
@@ -190,11 +190,11 @@ public class ArrayFxn implements Wrappable, IWrappableWithCategoryList {
        return V;
 
     }else if( Dat instanceof Float){
-       x[0]= (double)(((Float)Dat).floatValue());
+       x[0]= (((Float)Dat).floatValue());
        double xx= F.vall(x,1);
        return new Float( (float)xx);
     }else if( Dat instanceof Integer){
-       x[0]= (double)(((Integer)Dat).intValue());
+       x[0]= (((Integer)Dat).intValue());
        double xx= F.vall(x,1);
        return new Integer( (int)xx);
 
@@ -204,7 +204,7 @@ public class ArrayFxn implements Wrappable, IWrappableWithCategoryList {
        return new Double( xx);
 
     }else if( Dat instanceof Long){
-       x[0]= (double)(((Long)Dat).longValue());
+       x[0]= (((Long)Dat).longValue());
        double xx= F.vall(x,1);
        return new Long( (long)xx);
 
@@ -221,7 +221,7 @@ public class ArrayFxn implements Wrappable, IWrappableWithCategoryList {
     }else if( Dat instanceof float[]){
       float[] f = new float[ ((float[])Dat).length];
       for( int i = 0;i < f.length; i++){
-          x[0]= (double)((float[])Dat)[i];
+          x[0]= ((float[])Dat)[i];
           double xx= F.vall(x,1);
           f[i]=(float)xx;
       }
@@ -230,7 +230,7 @@ public class ArrayFxn implements Wrappable, IWrappableWithCategoryList {
     }else if( Dat instanceof int[]){
       int[] f = new int[ ((int[])Dat).length];
       for( int i = 0;i < f.length; i++){
-          x[0]= (double)((int[])Dat)[i];
+          x[0]= ((int[])Dat)[i];
           double xx= F.vall(x,1);
           f[i]=(int)xx;
       }
@@ -239,16 +239,16 @@ public class ArrayFxn implements Wrappable, IWrappableWithCategoryList {
     }else if( Dat instanceof double[]){
       double[] f = new double[ ((double[])Dat).length];
       for( int i = 0;i < f.length; i++){
-          x[0]= (double)((double[])Dat)[i];
+          x[0]=((double[])Dat)[i];
           double xx= F.vall(x,1);
-          f[i]=(double)xx;
+          f[i]=xx;
       }
      return f;
 
     }else if( Dat instanceof short[]){
       short[] f = new short[ ((short[])Dat).length];
       for( int i = 0;i < f.length; i++){
-          x[0]= (double)((short[])Dat)[i];
+          x[0]= ((short[])Dat)[i];
           double xx= F.vall(x,1);
           f[i]=(short)xx;
       }
@@ -257,7 +257,7 @@ public class ArrayFxn implements Wrappable, IWrappableWithCategoryList {
     }else if( Dat instanceof long[]){
       long[] f = new long[ ((long[])Dat).length];
       for( int i = 0;i < f.length; i++){
-          x[0]= (double)((long[])Dat)[i];
+          x[0]= ((long[])Dat)[i];
           double xx= F.vall(x,1);
           f[i]=(long)xx;
       }
@@ -266,7 +266,7 @@ public class ArrayFxn implements Wrappable, IWrappableWithCategoryList {
     }else if( Dat instanceof byte[]){
       byte[] f = new byte[ ((byte[])Dat).length];
       for( int i = 0;i < f.length; i++){
-          x[0]= (double)((byte[])Dat)[i];
+          x[0]=((byte[])Dat)[i];
           double xx= F.vall(x,1);
           f[i]=(byte)xx;
       }
@@ -283,7 +283,7 @@ public class ArrayFxn implements Wrappable, IWrappableWithCategoryList {
          if( O.getClass().isPrimitive())
             return new ErrorString("Primitive data type "+O.getClass()+
                   " is not supported");
-         O = Calc(O, F);
+         O = Calc(O);
          Array.set(Res,i,O);
        }
       return Res;
