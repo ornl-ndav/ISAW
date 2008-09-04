@@ -195,7 +195,7 @@ public class Util {
               
               if( NodeName2Match != null)
                  NodeName2Match= NodeName2Match.trim();
-              if( NodeName2Match.length()<1)
+              if( NodeName2Match!= null && NodeName2Match.length() <1 )
                  NodeName2Match= null;
 
                if( NodeName2Match != null )
@@ -273,7 +273,7 @@ public class Util {
               String Clist = null , 
                      CNameList = null;
               
-              if( k >= 0 ){
+              if( k >= 0 && NXclassPath != null){
                  k = NXclassPath.indexOf( '.' , k + 1 );
                  if( k >= 0 ) 
                     Clist = NXclassPath.substring( k );
@@ -282,7 +282,7 @@ public class Util {
               if( ThisNodeFileName != null )
                  filename = null;
               
-              if( ThisNodeName != null ){
+              if( ThisNodeName != null && NXclassNameList != null ){
                  k = NXclassNameList.indexOf( "." +  ThisNodeName + "." );
                  if( k >= 0  ){
                     k = k + 2 + ThisNodeName.length();
@@ -594,7 +594,8 @@ public class Util {
                String[] SS = S.split( "[,:]" );
                
                axes = new int[ SS.length ];
-               for( int i = 0 ; ( i < axes.length ) &&( axes != null ) ; i++ ){
+               
+               for( int i = 0 ; ( axes != null ) && ( i < axes.length )  ; i++ ){
                   
                   int indx = -1;
                   for( int k = 0 ; ( k < dataState.axisName.length )&&( indx < 0 ) ; k++ )
@@ -641,7 +642,7 @@ public class Util {
          int[] ResDim = new int[ dataState.dimensions.length - minAx + 1 ];
          java.util.Arrays.fill( ResDim , -1 );
          
-         int L = ResDim.length-1 ;
+//         int L = ResDim.length-1 ;
          
 //         for( int i = 0 ; i < dim.length ;  i++ )
 //            ResDim[ L - axes[ i ] +1 ] = dim[ i ];
@@ -717,7 +718,7 @@ public class Util {
                String[] SS = S.split( "[,:]" );
                
                axes = new int[ SS.length ];
-               for( int i = 0 ; ( i < axes.length ) &&( axes != null ) ; i++ ){
+               for( int i = 0 ; ( axes != null ) && ( i < axes.length )  ; i++ ){
                   
                   int indx = -1;
                   for( int k = 0 ; ( k < dataState.axisName.length )&&( indx < 0 ) ; k++ )
@@ -765,7 +766,7 @@ public class Util {
          int[] ResDim = new int[ dataState.dimensions.length - minAx + 1 ];
          java.util.Arrays.fill( ResDim , -1 );
          
-         int L = ResDim.length - 1;
+//         int L = ResDim.length - 1;
          dim = dataState.dimensions;
          //for( int i = 0 ; i < dim.length ;  i++ )
          //   ResDim[ L - axes[ i ] + minAx ] = dim[ i ];
@@ -788,7 +789,7 @@ public class Util {
                                      int[] AllDims , int grid , int ngrids ,
                                       int RowDim , int ColDim , int TimeDim ){
        
-       int D = 1;
+//       int D = 1;
        int G = 1;
        if( AllDims == null )
           return Float.NaN;
@@ -816,11 +817,11 @@ public class Util {
                 if( i != AllDims.length - TimeDim - 1 ){
                    
                    G *= AllDims[ i ];
-                   int DD = (int )( NGrids/AllDims[ i ] );
+                   int DD = ( NGrids/AllDims[ i ] );
                    if( listDims[ i ] <  0 )
                        coord[ i ] = -1;
                    else
-                      coord[ i ] = (int)( GRid/DD );
+                      coord[ i ] = ( GRid/DD );
                   GRid = GRid %DD;
                   NGrids = NGrids/AllDims[ i ];                 
                 }
@@ -978,7 +979,7 @@ public class Util {
       Node N = getNXInfo( xmlDoc , NXclassPath , "" , fieldName , "" );
     
       int i=1;
-      String S= "";
+//      String S= "";
       
       int NClassNames =0;
       if( NXclassNameList != null)
@@ -1060,7 +1061,7 @@ public class Util {
 
       while( Res != null && Res.endsWith("."))
          Res = Res.substring(0,Res.length()-1);
-      if( Res.trim().length() < 1)
+      if( Res != null && Res.trim().length() < 1)
          Res = null;
       return Res;
    }
