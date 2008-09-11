@@ -136,7 +136,7 @@ public class NexNode implements NxNode{
       NxFileOpenThread nxf = new NxFileOpenThread( filename,NexusFile.NXACC_READ );
       nxf.start();
       NF = nxf.getNxFile();
-      System.out.println("After getting Nexus file sturct in nNXnode");
+    
       //NF = new CNexusFile( filename, NexusFile.NXACC_READ );
       
     }catch( NexusException s ){
