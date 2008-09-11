@@ -133,8 +133,11 @@ public class NexNode implements NxNode{
     MAX_BLOB_SIZE = getMAX_BLOB_SIZE();
     OpenThread = Thread.currentThread();
     try{
-       
-      NF = new CNexusFile( filename, NexusFile.NXACC_READ );
+      NxFileOpenThread nxf = new NxFileOpenThread( filename,NexusFile.NXACC_READ );
+      nxf.start();
+      NF = nxf.getNxFile();
+      System.out.println("After getting Nexus file sturct in nNXnode");
+      //NF = new CNexusFile( filename, NexusFile.NXACC_READ );
       
     }catch( NexusException s ){
        
@@ -1403,6 +1406,7 @@ public class NexNode implements NxNode{
   public void close(){
     if( NF == null)
        return;
+    
     try{
        NF.close();
     }catch(Exception ss){
