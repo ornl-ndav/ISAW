@@ -64,6 +64,9 @@ public class ViewerTest
     ByteFile16EventList3D events = new ByteFile16EventList3D(args[0]);
     int num_events = events.numEntries();
 
+    elapsed = System.nanoTime()-start;
+    System.out.println("Time(ms) to read file = " + elapsed/1.0E6);
+    
     // Check event access methods
     double[] event_xyz = new double[3]; 
     int small_count = 0;
@@ -87,9 +90,6 @@ public class ViewerTest
     }
     System.out.println("In ViewerTest "+small_count+" |z|'s less than 0.01" );
 
-    elapsed = System.nanoTime()-start;
-    System.out.println("Time(ms) to read file = " + elapsed/1.0E6);
-    
     start = System.nanoTime();
     ShowEventList.show_events( events );
     elapsed = System.nanoTime() - start;
@@ -112,7 +112,6 @@ public class ViewerTest
     Vector3D yVec = new Vector3D();
     Vector3D zVec = new Vector3D();
 
-
 /*
     float[] or_mat = {   0.144197f, -0.113545f,  0.001307f,
                         -0.081427f, -0.105487f, -0.125956f,
@@ -120,15 +119,17 @@ public class ViewerTest
                             5.448f,     5.454f,     5.450f,
                            89.958f,    89.851f,    90.121f,
                           161.929f  };
-
+*/
     float[] or_mat = {   0.303850f,  0.090603f, -0.006335f,
                         -0.287995f,  0.226658f, -0.002725f,
                         -0.140991f,  0.120480f,  0.258142f,
                             3.858f,     3.854f,     3.852f,  
                           119.979f,    89.950f,    60.096f,    
                            40.542f };
+
+/*
+  float[] or_mat = null;
 */
-   float[] or_mat = null;
 
     if ( or_mat == null )
     {                                  // use default i, j, k basis vectors
@@ -177,6 +178,9 @@ public class ViewerTest
     elapsed = System.nanoTime()-start;
     System.out.println("Time(ms) to fill histogram = " + elapsed/1.0E6);
     
+    System.out.println("MAX VALUE = " + hist_3D.maxVal() );
+    System.out.println("MIN VALUE = " + hist_3D.minVal() );
+ 
     float [][] image = null;
 /*
     start = System.nanoTime();
@@ -221,9 +225,13 @@ public class ViewerTest
     }
 */
     panel.setData( hist_3D.pageSlice(NUM_BINS/2), true );
-
+/*
     float min  =  25;
     float max  =  1000;
+*/
+    float min  =  400;
+    float max  =  20000;
+
     int   bins =  20;
     UniformEventBinner binner = new UniformEventBinner( min, max, bins );
     ShowHistogram.show_histogram( hist_3D, binner );
@@ -238,6 +246,7 @@ public class ViewerTest
     ShowEventList.show_events( events, hist_3D, binner );    
     elapsed = System.nanoTime()-start;
     System.out.println("Time(ms) to show_events /w histogram = "+elapsed/1.0E6);
+
   }
 
 }
