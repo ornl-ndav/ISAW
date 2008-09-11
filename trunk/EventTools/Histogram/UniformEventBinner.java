@@ -86,21 +86,25 @@ public class UniformEventBinner implements IEventBinner
     to_index_shift = -min * to_index_scale;
   }
 
+  @Override
   public double axisMin()
   {
     return min;
   }
 
+  @Override
   public double axisMax()
   {
     return max;
   }
 
+  @Override
   public int numBins()
   {
     return num_bins;
   }
 
+  @Override
   public int index( double val )
   {
     if ( val < min )
@@ -111,16 +115,19 @@ public class UniformEventBinner implements IEventBinner
     return index;
   }
 
+  @Override
   public double centerVal( int index )
   {
     return to_val_shift + index * to_val_scale;
   }
 
+  @Override
   public double minVal( int index )
   {
     return min + index * to_val_scale;
   }
 
+  @Override
   public double maxVal( int index )
   {
     return min + (index + 1) * to_val_scale;
