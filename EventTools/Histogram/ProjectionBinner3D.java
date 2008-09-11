@@ -37,9 +37,9 @@ package EventTools.Histogram;
 import gov.anl.ipns.MathTools.Geometry.Vector3D;
 
 /**
- * Extends UniformEventBinner to bin events based on the
- * dot product with a specified direction vector.
- * The vector is assumed to start at the origin.
+ * A ProjectionBinner3D bins events based on the dot product of the event
+ * coordinates with of a unit vector in a specified direction.  The vector 
+ * is assumed to start at the origin.  
  */
 public class ProjectionBinner3D implements IProjectionBinner3D
 {
@@ -51,6 +51,17 @@ public class ProjectionBinner3D implements IProjectionBinner3D
                                    // bin positions along the direction
                                    // vector
 
+  /**
+   *  Construct a ProjectionBinner3D object using the specified vector
+   *  direction and one-dimensional event binner.  
+   *
+   *  @param binner    The one-dimensional binner that will map between
+   *                   positions along the vector and indicies.
+   *  @param direction The direction vector for this binner.  This vector
+   *                   is normalized to be of length 1, before it is
+   *                   used to calculate the indices corresponding to
+   *                   event coordinates.
+   */
   public ProjectionBinner3D( IEventBinner binner,
                              Vector3D     direction )
   {
@@ -192,6 +203,22 @@ public class ProjectionBinner3D implements IProjectionBinner3D
    * y_binner's direction, and the z_index determines a vector in the 
    * z_binner's direction.  The array coords[] is filled with the 
    * coordinates of the sum of these three vectors. 
+   * NOTE: If three binners with ortho-normal directions are used to
+   * for form the histogram, then the same three binners can be used
+   * in this method to reconstruct the bin centers.  HOWEVER, if the
+   * three binners don't have ortho-normal direction vectors, then a 
+   * different set of binners are needed to reconstruct the bin center.
+   * Specifically, if x_dir, y_dir and z_dir are the original three binners
+   * used to form the histogram, then three new binners, with direction
+   * vectors that are in the directions of the dual basis:
+   *     x_dir* = y_dir X z_dir 
+   *     y_dir* = z_dir X x_dir
+   *     z_dir* = x_dir X y_dir
+   * MUST be passed in to this method, instead of the original 3 binners.
+   * In addition to changes to the direction vectors, the new binners
+   * also have different length scales.  The convenience method,
+   * getDualBasis() will construct the set of 3 Projection3D binners
+   * that are necessary to reconstruct bin centers, from three indices.
    *
    * @param  x_index   The index of the bin in the direction of the x_binner
    * @param  y_index   The index of the bin in the direction of the y_binner
@@ -229,5 +256,46 @@ public class ProjectionBinner3D implements IProjectionBinner3D
     coords[1] += temp[1];
     coords[2] += temp[2];
   }
+
+
+  public static IProjectionBinner3D[] getDualBinners(
+                                      IProjectionBinner3D x_binner,
+                                      IProjectionBinner3D y_binner,
+                                      IProjectionBinner3D z_binner  )
+  {
+    IProjectionBinner3D[] result = new IProjectionBinner3D[3];
+
+    result[0] = getDualBinner( x_binner, y_binner, z_binner );
+    result[1] = getDualBinner( y_binner, z_binner, x_binner );
+    result[2] = getDualBinner( z_binner, x_binner, y_binner );
+
+    return result;
+  }
+
+  
+  private static IProjectionBinner3D getDualBinner(
+                                      IProjectionBinner3D binner_1,
+                                      IProjectionBinner3D binner_2,
+                                      IProjectionBinner3D binner_3  )
+  {
+    Vector3D u_star = new Vector3D();
+    u_star.cross( binner_2.directionVec(), binner_3.directionVec() );
+    u_star.normalize();
+    double scale_factor = 1.0/u_star.dot(binner_1.directionVec());
+
+    if ( scale_factor < 0 )          // if u and u* are in opposition 
+    {                                // directions, reflect to be basically
+      u_star.multiply(-1);           // in the same direction
+      scale_factor = -scale_factor;
+    }
+
+    double min = scale_factor * binner_1.axisMin();
+    double max = scale_factor * binner_1.axisMax();
+    int num_bins = binner_1.numBins();
+
+    IEventBinner u_star_binner = new UniformEventBinner( min, max, num_bins );
+    return new ProjectionBinner3D( u_star_binner, u_star );
+  }
+
 
 }
