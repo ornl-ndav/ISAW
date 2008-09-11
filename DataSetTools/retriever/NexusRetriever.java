@@ -251,7 +251,7 @@ public class NexusRetriever extends Retriever implements hasInformation
             else
                DSS[i] = retriever.getDataSet(  dsList[i]);
          
-        
+        retriever.close();
         return DSS; 
         
       
