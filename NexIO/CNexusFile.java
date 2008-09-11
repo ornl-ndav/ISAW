@@ -55,9 +55,8 @@
 package NexIO;
 
 
-//import  neutron.nexus.*;
+
 import org.nexusformat.*;
-//import ncsa.hdf.hdflib.HDFArray;
 
 /** 
  * This class extends the NexusFile class to getData that is
@@ -65,15 +64,23 @@ import org.nexusformat.*;
  * amount of time for retrieving this type of data
  */
 public class CNexusFile extends NexusFile{
+   
     Thread openThread;
+    NxFileOpenThread IOThread;
    /**
     *Constructor that just calls the super constructor
     */
   public CNexusFile( String filename, int access ) throws NexusException{
     super( filename, access );
     openThread = Thread.currentThread();
+    IOThread = null;
   }
 
+  public void setIOThread( NxFileOpenThread IOThread){
+     
+     this.IOThread = IOThread;
+     
+  }
   /** 
    * The new getData that gets multidimensional data as a linear array
    *
@@ -148,24 +155,57 @@ public class CNexusFile extends NexusFile{
     return null;
   }
   
+  public void finalize()  throws Throwable{
+     
+     if( IOThread != null)
+        IOThread.close();
+   
+     super.finalize();
+   
+  }
+  
+  /**
+   * Should only be  externally by the thread NxFileOpenThread to
+   * invoke the Nexus file close method.
+   */
+  public void Doclose(){
+     
+     if( IOThread == null)
+        return;
+     if( Thread.currentThread() !=IOThread)
+        return;
+        
+    
+     Close();
+  }  
+   private void Close(){
+      
+      int thandle = handle;
+     handle = -1;
+     if(thandle  >= 0)
+       try{
+        close(thandle);
+        handle = -1;
+     }catch(Exception s){
+        System.out.println("Error closing Nexus file "+s);
+     }
+
+  }
+  
   /**
    * close the NeXus file. To make javalint and diamond happy
    * @throws NexusException
    */
-  public synchronized void close() throws NexusException{
-
+  public synchronized void close() throws NexusException{     
+     
+     if( IOThread != null){
+        IOThread.close();
+        return;
+     }
+     
      if( openThread != Thread.currentThread())
         return;
- 
-      int thandle = handle;
-      handle = -1;
-      if(thandle  >= 0)
-        try{
-         close(thandle);
-         handle = -1;
-      }catch(Exception s){
-         System.out.println("Error closing Nexus file "+s);
-      }
-
+     
+     Close();
   }
 }
