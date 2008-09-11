@@ -38,6 +38,7 @@ import java.util.*;
 import EventTools.EventList.FloatArrayEventList3D;
 import EventTools.EventList.IEventList3D;
 import EventTools.Histogram.IEventBinner;
+import EventTools.Histogram.IProjectionBinner3D;
 import EventTools.Histogram.ProjectionBinner3D;
 
 import gov.anl.ipns.Operator.*;
@@ -61,36 +62,48 @@ public class GetEventLists implements IOperator
   private float[][][]  histogram;
   private int          first_page;
   private int          last_page;
-  private IEventBinner binner;
+  private IEventBinner binner;      // Binner to categorize the values stored
+                                    // in the histogram.
 
-  private ProjectionBinner3D x_binner;
-  private ProjectionBinner3D y_binner;
-  private ProjectionBinner3D z_binner;
+  private IProjectionBinner3D x_star_binner;
+  private IProjectionBinner3D y_star_binner;
+  private IProjectionBinner3D z_star_binner;
+                                    // The x_star, y_star, z_star binners are
+                                    // the "dual" binners required to re-
+                                    // construct the bin center positions from
+                                    // the col, row and page indices.  They
+                                    // will be the same as the x,y,z binners
+                                    // used to place events in histogram bins
+                                    // IF AND ONLY IF the direction vectors for
+                                    // the x,y,z binners are mutually 
+                                    // orthogonal and follow a right hand rule.
 
 
   /**
    * Construct an operator to extract events from the specified range of
    * pages of the specified histogram array.  All events are assumed to 
-   * occur at the bin centers.  Suppose the binner has bins [ai,bi) for i = 0 
-   * to NUM_BINS-1.  A bin with a count that lies in [ai,bi) will give an 
-   * event with code k at the x,y,z values corresponding to the center of
-   * the bin's column, row and page.  ProjectionBinner3D objects determine 
-   * the mapping between page, row and column numbers and x,y,z coordinates.
+   * occur at the bin centers.  Suppose the one-dimensional binner has bins 
+   * [ai,bi) for i = 0 to NUM_BINS-1.  A bin with counts=C where C lies in 
+   * [ai,bi) will give an event with code i at the x,y,z values corresponding 
+   * to the center of the bin's column, row and page.  ProjectionBinner3D 
+   * objects determine the mapping between (column,row,page) numbers 
+   * and (x,y,z) coordinates.  The three projection binners, x_binner, y_binner
+   * and z_binner, must be the binners that were used to map from (x,y,z) 
+   * values to (col,row,page) indices.  This operator will construct and use
+   * the "dual" binners required to map back from (col,row,page) indices to
+   * the (x,y,z) values.
    *  
    * @param histogram  The 3D array from which the events are extracted.
    * @param first_page The first page of the portion of the 3D histogram 
    *                   that this operator will use.
    * @param last_page  The last page of the portion of the 3D histogram 
    *                   that this operator will use.
-   * @param x_binner   The ProjectionBinner3D that determines which
-   *                   distance along the "x" direction vector corresponds
-   *                   to a particular column of the array.
-   * @param y_binner   The ProjectionBinner3D that determines which
-   *                   distance along the "y" direction vector corresponds
-   *                   to a particular row of the array.
-   * @param z_binner   The ProjectionBinner3D that determines which
-   *                   distance along the "z" direction vector corresponds
-   *                   to a particular page of the array.
+   * @param x_binner   The ProjectionBinner3D that was used to determine
+   *                   which column of the histogram an event was mapped to. 
+   * @param y_binner   The ProjectionBinner3D that was used to determine
+   *                   which row of the histogram an event was mapped to. 
+   * @param z_binner   The ProjectionBinner3D that was used to determine
+   *                   which page of the histogram an event was mapped to. 
    * @param binner     This binner specifies which count values will be
    *                   returned as events when the getResult() method is
    *                   called.
@@ -107,9 +120,16 @@ public class GetEventLists implements IOperator
     this.last_page  = last_page;
     this.histogram  = histogram;
     this.binner     = binner;
-    this.x_binner   = x_binner;
-    this.y_binner   = y_binner;
-    this.z_binner   = z_binner;
+                                          // make and save the "dual" binners
+                                          // used to reconstruct the bin
+                                          // centers from the col, row, page
+                                          // indexes.
+    IProjectionBinner3D[] dual_binners =
+          ProjectionBinner3D.getDualBinners(x_binner, y_binner, z_binner );
+
+    x_star_binner = dual_binners[0];
+    y_star_binner = dual_binners[1];
+    z_star_binner = dual_binners[2];
   }
 
 
@@ -189,10 +209,7 @@ public class GetEventLists implements IOperator
                                      // vector position as a vector sum for
                                      // each bin.  The array coords will
     float[] coords = new float[3];   // be set to that vector sum
-                                     // TODO: This calculation works for
-                                     //       arbitarary ORTHOGONAL vectors,
-                                     //       but must be revised to deal with
-                                     //       the general case. 
+
     int[] ilist = new int[n_bins+1];
     for ( int page = first_page; page <= last_page; page++ )
     {
@@ -209,7 +226,9 @@ public class GetEventLists implements IOperator
           {
             codes[index] [ ilist[index] ] = index;
             ProjectionBinner3D.centerPoint( col, row, page,
-                                            x_binner, y_binner, z_binner,
+                                            x_star_binner, 
+                                            y_star_binner, 
+                                            z_star_binner,
                                             coords );
             x_vals[index][ ilist[index] ] = coords[0];
             y_vals[index][ ilist[index] ] = coords[1];
