@@ -43,6 +43,7 @@ import gov.anl.ipns.MathTools.Geometry.*;
 import EventTools.EventList.IEventList3D;
 import EventTools.EventList.ByteFile16EventList3D;
 import EventTools.Histogram.Histogram3D;
+import EventTools.Histogram.IProjectionBinner3D;
 import EventTools.Histogram.ProjectionBinner3D;
 import EventTools.Histogram.IEventBinner;
 
@@ -145,12 +146,12 @@ public class ShowEventList
     group.addChild( y_axis );
     group.addChild( z_axis );
 
-    int slice_num = 255;
-    float[][] slice = histogram.pageSlice( slice_num );
-
     ProjectionBinner3D x_binner = histogram.xBinner();
     ProjectionBinner3D y_binner = histogram.yBinner();
     ProjectionBinner3D z_binner = histogram.zBinner();
+
+    int slice_num = z_binner.numBins()/2;
+    float[][] slice = histogram.pageSlice( slice_num );
 
     System.out.println("x_binner, min = " + x_binner.axisMin() +
                                ", max = " + x_binner.axisMax()  );
@@ -161,19 +162,25 @@ public class ShowEventList
     System.out.println("z_binner, min = " + z_binner.axisMin() +
                                ", max = " + z_binner.axisMax()  );
 
+    IProjectionBinner3D[] dual_binners = 
+          ProjectionBinner3D.getDualBinners( x_binner, y_binner, z_binner );
+
+    IProjectionBinner3D x_star = dual_binners[0];
+    IProjectionBinner3D y_star = dual_binners[1];
+    IProjectionBinner3D z_star = dual_binners[2];
                                                     // calculate corner point
-    Vector3D ll_corner = x_binner.minVec(0);
-    ll_corner.add( y_binner.minVec(0) );
-    ll_corner.add( z_binner.centerVec(slice_num) );
+    Vector3D ll_corner = x_star.minVec(0);
+    ll_corner.add( y_star.minVec(0) );
+    ll_corner.add( z_star.centerVec(slice_num) );
                                                     // calculate base vector
-    int last_x_index = x_binner.numBins() - 1;
-    Vector3D base = x_binner.maxVec( last_x_index );
-    base.subtract( x_binner.minVec(0) );
+    int last_x_index = x_star.numBins() - 1;
+    Vector3D base = x_star.maxVec( last_x_index );
+    base.subtract( x_star.minVec(0) );
     System.out.println("base vec = " + base + ", length = " + base.length());
                                                    // calculate up vector
-    int last_y_index = y_binner.numBins() - 1;
-    Vector3D up = y_binner.maxVec( last_y_index );
-    up.subtract( y_binner.minVec(0) );
+    int last_y_index = y_star.numBins() - 1;
+    Vector3D up = y_star.maxVec( last_y_index );
+    up.subtract( y_star.minVec(0) );
     System.out.println("up vec = " + up + ", length = " + up.length());
 
     float alpha = 0.5f;
@@ -222,9 +229,9 @@ public class ShowEventList
     float[][] flipped_slice = new float[y_binner.numBins()][x_binner.numBins()];
     for ( int i = 0; i < z_binner.numBins(); i++ )
     {
-       ll_corner = x_binner.minVec(0);
-       ll_corner.add( y_binner.minVec(0) );
-       ll_corner.add( z_binner.centerVec(i) );
+       ll_corner = x_star.minVec(0);
+       ll_corner.add( y_star.minVec(0) );
+       ll_corner.add( z_star.centerVec(i) );
 
        slice = histogram.pageSlice( i );
        plane = new TextureMappedPlane( slice,
@@ -254,9 +261,9 @@ public class ShowEventList
        }
     }
 
-    ll_corner = x_binner.minVec(0);
-    ll_corner.add( y_binner.minVec(0) );
-    ll_corner.add( z_binner.centerVec(slice_num) );
+    ll_corner = x_star.minVec(0);
+    ll_corner.add( y_star.minVec(0) );
+    ll_corner.add( z_star.centerVec(slice_num) );
 
     slice = histogram.pageSlice( slice_num );
     plane = new TextureMappedPlane( slice,
