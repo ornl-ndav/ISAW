@@ -64,7 +64,7 @@ public class NxFileOpenThread extends Thread {
    }
    
    public CNexusFile  getNxFile(){
-      while( NxFile == null && !finished)
+      while( NxFile == null && !finished )
          try{
             Thread.sleep( 500 );
          }catch( Exception s){
@@ -94,8 +94,7 @@ public class NxFileOpenThread extends Thread {
          try{
             if( finished)
                return;
-            if( close){
-               System.out.println("Closing Nexus file in thread");
+            if( close){               
                NxFile.Doclose();
                finished = true;
                done = true;
