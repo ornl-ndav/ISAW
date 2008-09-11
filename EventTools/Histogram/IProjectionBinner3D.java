@@ -68,46 +68,46 @@ public interface IProjectionBinner3D extends IEventBinner
   int index( Vector3D vec );  
 
   /**
-   * Get a Vector3D object giving the "lower" endpoint of the  
-   * bin with the specified index.
+   * Get a Vector3D object giving the "lower" endpoint of the interval
+   * along the direction vector, with the specified index.
    * 
    * @param index  The index of the bin
    * 
    * @return A Vector3D object giving the "lower" endpoint of the 
-   *         specified bin along the direction vector.
+   *         specified interval along the direction vector.
    */
   Vector3D minVec( int index );
 
   /**
-   * Get a Vector3D object giving the center point of the  
-   * bin with the specified index.
+   * Get a Vector3D object giving the center of the interval
+   * along the direction vector, with the specified index.
    * 
    * @param index  The index of the bin
    * 
    * @return A Vector3D object giving the center point of the 
-   *         specified bin along the direction vector.
+   *         specified interval along the direction vector.
    */
   Vector3D centerVec( int index );
 
   /**
-   * Get a Vector3D object giving the "upper" endpoint of the  
-   * bin with the specified index.
+   * Get a Vector3D object giving the "upper" endpoint of the interval
+   * along the direction vector, with the specified index.
    * 
    * @param index  The index of the bin
    * 
    * @return A Vector3D object giving the "upper" endpoint of the 
-   *         specified bin along the direction vector.
+   *         specified interval along the direction vector.
    */
   Vector3D maxVec( int index );
 
   /**
-   * Get the coordinates of the center of the bin with the specified index,
-   * and return them in the array coords.
+   * Get the coordinates of the center of the interval along
+   * the direction vectorx, with the specified index.
    *
-   * @param  index   The index of the bin whose center coordinates are
+   * @param  index   The index of the interval whose center coordinates are
    *                 needed.
    * @param  coords  Array of floats, of length at least 3, in which 
-   *                 the x, y and z coordinates of the bin center will be
+   *                 the x, y and z coordinates of the interval center will be
    *                 returned in the first three positions. 
    * @throws an IllegalArgumentException, if the array coords is null or
    *         has length less than three.
