@@ -142,8 +142,10 @@ class LoadMergeNXS(GenericLoad):
         # return the data
         if loadMon and (merged is not None):
             result.add(merged)
-            SetInstrumentTypeCalc.setInstrumentType(result,instType) 
+            if instType != "UNKNOWN":
+              SetInstrumentTypeCalc.setInstrumentType(result,instType) 
             return result
         else:
-            SetInstrumentTypeCalc.setInstrumentType(merged,instType) 
+            if instType != "UNKNOWN":
+              SetInstrumentTypeCalc.setInstrumentType(merged,instType) 
             return merged
