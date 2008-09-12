@@ -77,7 +77,7 @@ public class MultiColoredPointList extends SimpleShape
    *                       this list of points.
    *  @param  size         The size to use for the points specified in pixel 
    *                       units.
-   *  @param  alpah        The alpha value for this list of points.
+   *  @param  alpha        The alpha value for this list of points.
    */
   public MultiColoredPointList( float[]  x_vals,
                                 float[]  y_vals,
