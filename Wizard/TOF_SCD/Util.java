@@ -1195,6 +1195,10 @@ public class Util {
               opThrd.start();
            }//fro dsIndex
            
+
+           if( retriever != null)
+              if( retriever instanceof NexusRetriever) 
+                ((NexusRetriever)retriever).close();
          }catch( Exception ss ){
             
             SharedMessages.addmsg( "Error in retrieving " + filename + "::" + ss );
@@ -1206,9 +1210,6 @@ public class Util {
             return new gov.anl.ipns.Util.SpecialStrings.ErrorString(
                                        "Error in retrieving " + filename +  S );
          }
-         if( retriever != null)
-            if( retriever instanceof NexusRetriever) 
-              ((NexusRetriever)retriever).close();
       }
       
       
