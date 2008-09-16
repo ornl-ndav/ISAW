@@ -157,8 +157,13 @@ public class CNexusFile extends NexusFile{
   
   public void finalize()  throws Throwable{
      
-     if( IOThread != null)
+     if( IOThread != null){
         IOThread.close();
+        IOThread.join(400);
+        if( handle >= 0)
+          IOThread.join(200);
+        IOThread = null;
+     }
    
      super.finalize();
    
@@ -174,11 +179,16 @@ public class CNexusFile extends NexusFile{
         return;
      if( Thread.currentThread() !=IOThread)
         return;
-        
-    
+     
      Close();
-  }  
-   private void Close(){
+     
+     IOThread = null;
+  } 
+  
+  //Low-level checks around jni close( handle) routine. Checks
+  // if already closed.  DOES NOT CHECK IF SAME THREAD CLOSING
+  // MATCHES THREAD THAT OPENED.  This causes a crash.
+   private synchronized void Close(){
       
       int thandle = handle;
      handle = -1;
@@ -200,6 +210,7 @@ public class CNexusFile extends NexusFile{
      
      if( IOThread != null){
         IOThread.close();
+        IOThread = null;
         return;
      }
      
