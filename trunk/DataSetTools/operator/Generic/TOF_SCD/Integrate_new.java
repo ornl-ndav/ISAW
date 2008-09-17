@@ -935,7 +935,6 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
     XScale times=data.getX_scale();
 
     UniformGrid grid = (UniformGrid)Grid_util.getAreaGrid( ds, detnum ); 
-    grid.clearData_entries();
 
     // determine the min and max pixel-times
     int zmin=0;
@@ -1217,6 +1216,14 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
     //   System.out.println( (IPeak)(peaks.elementAt(i)) );
 
     // things went well so return null
+
+    grid.clearData_entries();  // NOTE: Currently this is critical, since
+                               //       the grid was given to all peaks and
+                               //       so the peak objects contain references
+                               //       to ALL the data.  This leads to a
+                               //       MUCH bigger memory "footprint" for
+                               //       integrate, than would normally be 
+                               //       required.
     return null;
   }
 
