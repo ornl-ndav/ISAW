@@ -805,6 +805,7 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
       
     // get list of detectors
     int[] det_number = Grid_util.getAreaGridIDs(ds);
+
     if( det_number == null || det_number.length <= 0 )
       return new ErrorString("Could not determine detector numbers");
     
@@ -934,6 +935,7 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
     XScale times=data.getX_scale();
 
     UniformGrid grid = (UniformGrid)Grid_util.getAreaGrid( ds, detnum ); 
+    grid.clearData_entries();
 
     // determine the min and max pixel-times
     int zmin=0;
