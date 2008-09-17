@@ -29,6 +29,12 @@
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
+ * Last Modified:
+ *
+ *  $Author$
+ *  $Date$            
+ *  $Revision$
+ *
  * Modified:
  *
  * $Log$
@@ -292,7 +298,6 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
    * indeterminate.  updateFormProgress() will change it back.
    */
   public final void setFormProgressIndeterminate(  ) {
-    formProgress.setVisible( false );
 
     //we want to display the currently executing form correctly, even if we are
     //on the last form and e.g. no forms have been done already
@@ -302,12 +307,10 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
       lastValFormNum = -1;
     }
 
-    formProgress.setString( "Executing " + wiz.getForm( lastValFormNum + 1 ) );
-    formProgress.setIndeterminate( true );
-
     ProgressBarUpdater pBarUpdater = new ProgressBarUpdater( formProgress );
-    EventQueue.invokeLater( pBarUpdater );
-    pBarUpdater = null;
+
+    pBarUpdater.setString( "Executing " + wiz.getForm( lastValFormNum + 1 ) );
+    pBarUpdater.setIndeterminate( true );
   }
 
   /**
@@ -454,27 +457,25 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
    * completely done or completely "not done."
    */
   public final void updateFormProgress(  ) {
+
     Form f = wiz.getCurrentForm(  );
 
-    formProgress.setVisible( false );
-    formProgress.setIndeterminate( false );
+    ProgressBarUpdater pBarUpdater = new ProgressBarUpdater( formProgress );
+
+    pBarUpdater.setIndeterminate( false );
 
     if( f != null ) {
       if( f.done(  ) ) {
-        formProgress.setString( f.getTitle(  ) + " Done" );
-        formProgress.setValue( FORM_PROGRESS );
+        pBarUpdater.setString( f.getTitle(  ) + " Done" );
+        pBarUpdater.setValue( FORM_PROGRESS );
       } else {
-        formProgress.setString( f.getTitle(  ) + " Progress" );
-        formProgress.setValue( 0 );
+        pBarUpdater.setString( f.getTitle(  ) + " Progress" );
+        pBarUpdater.setValue( 0 );
       }
     } else {
-      formProgress.setString( "Form Progress" );
-      formProgress.setValue( 0 );
+      pBarUpdater.setString( "Form Progress" );
+      pBarUpdater.setValue( 0 );
     }
-
-    ProgressBarUpdater pBarUpdater = new ProgressBarUpdater( formProgress );
-    EventQueue.invokeLater( pBarUpdater );
-    pBarUpdater = null;
   }
 
   /**
@@ -482,18 +483,15 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
    * based on the last form completed at the time of the method call.
    */
   public final void updateWizardProgress(  ) {
-    wizProgress.setVisible( false );
-    wizProgress.setIndeterminate( false );
 
     int lastDone = wiz.getLastValidFormNum(  ) + 1;
 
-    wizProgress.setValue( lastDone );
-    wizProgress.setString( "Wizard Progress: " + ( lastDone ) + " of " +
-      wiz.getNumForms(  ) + " Forms done" );
-
     ProgressBarUpdater pBarUpdater = new ProgressBarUpdater( wizProgress );
-    EventQueue.invokeLater( pBarUpdater );
-    pBarUpdater = null;
+
+    pBarUpdater.setIndeterminate( false );
+    pBarUpdater.setValue( lastDone );
+    pBarUpdater.setString( "Wizard Progress: " + ( lastDone ) + " of " +
+      wiz.getNumForms(  ) + " Forms done" );
   }
 
   /**
