@@ -678,7 +678,7 @@ C------------------------------------------------------------
 
 !	A. J. Schultz, June, 2008
 	
-	include 'datacom_sns.inc'
+	include 'datacom_SNS.inc'
 	
 	real mu, muR	!mu is the linear absorption coefficient,
 			!R is the radius of the spherical sample.
