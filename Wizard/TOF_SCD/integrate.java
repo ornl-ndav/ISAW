@@ -177,7 +177,6 @@ public class integrate extends GenericOperator{
                        monCount,logbuffer );
          ds.removeAllOperators();
          ds.removeAll_data_entries();
-         System.out.println("Removed ops and data for "+ ds.toString());
          ds = null;
          return Xres;
        }catch( Throwable XXX){
