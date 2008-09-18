@@ -198,6 +198,8 @@ public class Util
          for( int i = 0; i < numberOfDataSets; i++ )
             dss[i] = r.getDataSet( i );
       }
+      if( r instanceof NexusRetriever)
+         ((NexusRetriever)r).close();
       r = null;
       //System.gc();
       return dss;
