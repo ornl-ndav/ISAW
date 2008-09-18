@@ -135,6 +135,13 @@ public class NexNode implements NxNode{
     try{
       NxFileOpenThread nxf = new NxFileOpenThread( filename,NexusFile.NXACC_READ );
       nxf.start();
+      try{
+         nxf.join(1500);
+        
+      }catch(Exception s){
+         errormessage =""+s;
+         NF = null;
+      }
       NF = nxf.getNxFile();
     
       //NF = new CNexusFile( filename, NexusFile.NXACC_READ );
