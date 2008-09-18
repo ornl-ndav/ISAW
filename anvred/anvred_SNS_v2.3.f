@@ -169,6 +169,11 @@ C
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+	WRITE (*, 1330) 
+1330	FORMAT(' Enter the spectrum file name: ',$)
+	READ (*, 100) SpecNam
+
+
 	OPEN(UNIT=21,TYPE='OLD',FILE=SpecNam)
 	WRITE (*, *) ' '
 	WRITE (*, 6290) SpecNam
