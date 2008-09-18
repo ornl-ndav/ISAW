@@ -175,7 +175,10 @@ public class integrate extends GenericOperator{
          java.lang.Object logbuffer = (java.lang.Object)(getParameter(10).getValue());
          java.lang.Object Xres=DataSetTools.operator.Generic.TOF_SCD.Integrate_new.integrate(ds,centering,timeZrange,incrSlice,dmin,listNthPeak,PeakAlg,colXrange,rowYrange,
                        monCount,logbuffer );
-
+         ds.removeAllOperators();
+         ds.removeAll_data_entries();
+         System.out.println("Removed ops and data for "+ ds.toString());
+         ds = null;
          return Xres;
        }catch( Throwable XXX){
         String[]Except = ScriptUtil.
