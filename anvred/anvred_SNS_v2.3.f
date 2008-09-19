@@ -54,7 +54,8 @@ C
 
 	INTEGER CURHST
 	integer today(3), now(3)
-	CHARACTER*60 ANS,NAM2,NAM1,BNAM,DEFNAM, SpecNam
+	CHARACTER*60 NAM2,NAM1,BNAM,DEFNAM, SpecNam
+	character*240 ANS
 	CHARACTER ALINE*78
 
 	DIMENSION PJ(11,2)	!Spectrum coefficients
@@ -918,7 +919,7 @@ C------------------------------------------------------------
 !	Return number of characters and text.
 !	A.Schultz	January, 2002
 
-        CHARACTER*60 ANS
+        CHARACTER*240 ANS
 
 	DO I=1,60
 		ANS(I:I) = ' '
