@@ -114,6 +114,7 @@ import Command.ScriptUtil;
 import DataSetTools.operator.*;
 import DataSetTools.util.SharedData;
 import gov.anl.ipns.Parameters.*;
+import gov.anl.ipns.Util.SpecialStrings.*;
 //import ExtTools.monq.stuff.*;
 
 /**
@@ -159,6 +160,7 @@ public class Exec extends    GenericSpecial {
         parameters=new Vector();
         addParameter( new Parameter("Command",""));
         addParameter( new StringPG( "InputFileName", ""));
+        addParameter( new StringPG("Working Directory", null));
     }
 
 
@@ -226,6 +228,9 @@ public class Exec extends    GenericSpecial {
         String command=(String)(getParameter(0).getValue());
 
         String InputFile = getParameter(1).getValue().toString();
+        String WorkingDir = getParameter(2).getValue().toString();
+        if( WorkingDir != null && WorkingDir.length()<1)
+           WorkingDir = null;
         if( InputFile == null || InputFile.length() < 1)
            InputFile = null;
         else if( !(new java.io.File( InputFile)).exists())
@@ -235,9 +240,18 @@ public class Exec extends    GenericSpecial {
         // Put in an array so command name does not have to parse a command
         //  line
         String[] cmd ={command};
-        try 
-        {
-         process = Runtime.getRuntime().exec( cmd, null );
+        File WorkingFile = null;
+        if( WorkingDir != null){
+           WorkingFile = new File( WorkingDir);
+           if( !WorkingFile.exists())
+              WorkingFile = null;
+        }
+        try{
+         if( WorkingFile != null)        
+            process = Runtime.getRuntime().exec( cmd, null ,WorkingFile); 
+         else      
+            process = Runtime.getRuntime().exec( cmd, null);
+      
          InputStream fin = null;
          if( InputFile != null ) {
             fin = new FileInputStream( InputFile );
@@ -264,11 +278,12 @@ public class Exec extends    GenericSpecial {
             return "Finished OK";
 
          if( !ex.finished())
-            return "Application did not finish";
+            return new ErrorString("Application did not finish");
          
          Exception except = ex.getException();
          if( except == null)
-            return "Application terminated with a non-zero exit status";
+            return  new ErrorString(
+                     "Application terminated with a non-zero exit status");
          
          
          String[] trace = ScriptUtil.GetExceptionStackInfo( except, true, 3);
