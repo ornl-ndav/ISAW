@@ -19,7 +19,7 @@ public class ParseStringMacroBase {
 
     /**
      * Static method for parsing a string to look for macros.  Macros have the form 
-     * $(MACRO_NAME) which are imbedded within strings.  The macro will be substituted by
+     * ${MACRO_NAME} which are embedded within strings.  The macro will be substituted by
      * values found in the System properties.  
      */
 	public static String parseMacroString(String inStr) throws ParseException {
