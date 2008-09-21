@@ -300,6 +300,8 @@ public class SCDRecipLat  implements IThreeD_drawObject
 
     vec_Q_space.setBackground( new Color( 90, 90, 90 ) );
     draw_axes(1, vec_Q_space );
+    draw_beam(1, vec_Q_space );
+
     scene_f.setSize(900,700);
 
     controller.setDistanceRange( 0.1f, 500 );
@@ -438,23 +440,45 @@ public class SCDRecipLat  implements IThreeD_drawObject
    */
   private  void draw_axes( float length, ThreeD_JPanel threeD_panel  )
   {
-    IThreeD_Object objects[] = new IThreeD_Object[ 4 ];
+    IThreeD_Object objects[] = new IThreeD_Object[ 3 ];
     Vector3D points[] = new Vector3D[2];
 
     points[0] = new Vector3D( 0, 0, 0 );                    // y_axis
     points[1] = new Vector3D( 0, length, 0 );
     objects[0] = new Polyline( points, Color.green );
-                                                          // z_axis
+                                                            // z_axis
     points[1] = new Vector3D( 0, 0, length );
     objects[1] = new Polyline( points, Color.blue );
 
     points[1] = new Vector3D( length, 0, 0 );               // +x-axis
     objects[2] = new Polyline( points, Color.red );
 
-    points[1] = new Vector3D( -length/3, 0, 0 );            // -x-axis
-    objects[3] = new Polyline( points, Color.red );
-
     threeD_panel.setObjects( "AXES", objects );
+  }
+
+
+  /* --------------------------- draw_beam --------------------------- */
+
+  private void draw_beam( float length, ThreeD_JPanel threeD_panel )
+  {
+    IThreeD_Object objects[] = new IThreeD_Object[ 15 ];
+    Vector3D points[] = new Vector3D[1];
+
+    points[0] = new Vector3D( 0, 0, 0 );                    // sample
+    Polymarker sample = new Polymarker( points, Color.red );
+    sample.setType( Polymarker.STAR );
+    sample.setSize( 10 );
+    objects[0] = sample;
+
+    for ( int i = 1; i < 15; i++ )                       // beam is segmented
+    {                                                    // for depth sorting
+      points = new Vector3D[2];
+      points[0] = new Vector3D( -(i-1)*length/3, 0, 0 ); // beam in 
+      points[1] = new Vector3D( -i*length/3, 0, 0 );     // -x-axis direction
+      objects[i] = new Polyline( points, Color.red );
+    }
+
+    threeD_panel.setObjects( "BEAM", objects );
   }
 
 
