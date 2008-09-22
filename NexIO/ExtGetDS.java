@@ -394,7 +394,9 @@ public class ExtGetDS{
      if( filename == null)
         return false;
      
-     String Fname = System.getProperty( "user.home" );
+     String Fname = fname;
+     
+     Fname = System.getProperty( "user.home" );
      if( Fname == null)
         Fname ="";
      if( Fname.length() > 0 && !(Fname.endsWith( "\\" ) || Fname.endsWith( "/" ) ))
@@ -404,8 +406,8 @@ public class ExtGetDS{
      if( F == null || F.length() < 3)
         return false;
      Fname = Fname+"ISAW/"+F.substring( 0,3 )+".startup";
-     if( fname != null)
-        Fname = fname;
+     if( fname != null && fname.trim().length() > 0 )
+        Fname = fname.trim();
      
      try{
         FileOutputStream fout = new FileOutputStream( Fname );
