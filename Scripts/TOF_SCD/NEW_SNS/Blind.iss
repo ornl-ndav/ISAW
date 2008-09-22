@@ -16,14 +16,14 @@
 #                         Read from File- Enter filename in Input Orientation Matrix File
 #                         Automatic - Just does it
 #                         from Q Viewer-Allows user to select planes from reciprocal lattice viewer
-#  @param      file1      The file with the orientation matrix
+
 #  @param     SeqNums    The list of sequence numbers to use. Eg 33:36,47
+#  @param     path       The path where output information goes
 #  @param     file       The filename to store the orientation  matrix 
 #                          and the other cell parameters
 #  @param     Max_dSpacing  Maximum d-Spacing
-#  @param     path       The path where output information goes
 
-#                    NOTE, the file can be viewed from the view menu 
+#                    NOTE, the file can be viewed from the view menu in the SCD Wizaards
 #                    using the view text submenu and selecting blind.log
 
 #  @return   an orientation matrix either from blind or the file 
@@ -36,16 +36,15 @@ $category=operator,Instrument Type,TOF_NSCD,NEW_SNS
 # ------Parameters ---------------------
 $filename LoadFile                Filename for Peaks
 
-$useFile  BooleanEnable([False,1,4])  Use Matrix From File
-$file1    LoadFile               Input Orientation Matrix File ( .mat )    
 $method    ChoiceList(["Blind","Automatic","from Q Viewer"])  Method to use
 
 $Seq      IntArray               Sequence Numbers(Blind Method only)
+
+$path     DataDirectoryString    Output Data Path for log file
 $file     SaveFile               Output Orientation Matrix File ( .mat ) 
 
 $Max_dSpacing  Float(12)         Maximum d-Spacing
 
-$path     DataDirectoryString    Output Data Path for log file
 
 
 #-------------  Code ----------------
