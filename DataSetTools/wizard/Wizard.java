@@ -1018,7 +1018,7 @@ public class Wizard implements PropertyChangeListener, Serializable {
     if( getProjectsDirectory(  ) != null ) {
       return getProjectsDirectory(  );
     } else {
-      return SharedData.getProperty( "user.dir" );
+      return SharedData.getProperty( "user.home" );
     }
   }
 
