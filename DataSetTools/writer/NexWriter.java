@@ -120,6 +120,11 @@ public class NexWriter extends Writer
       if( Monit[0] != null )//This means that there were no histograms
          Writer.Append( Monit[0], null);
       Writer.close();
+
+      String message = nwr.getErrorMessage();
+      if( message != null )
+          if(! message.equals(""))
+            System.out.println("Could not Create File " + message);
      
       
     }
