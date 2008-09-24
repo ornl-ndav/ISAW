@@ -315,7 +315,7 @@ public class NxWriteData {
          
                     util.writeStringAttr( dnode , "units" , "Count" );
                     util.writeIntAttr( dnode , "signal" , 1 );
-                    util.writeStringAttr( dnode , "label" , DS.getTitle() );
+                  //  util.writeStringAttr( dnode , "label" , DS.getTitle() );
           
                     util.writeStringAttr( dnode , "link" , DS.getTitle() + 
                                                               "_" + k );
@@ -351,7 +351,7 @@ public class NxWriteData {
                     
                     datanode.addLink( DS.getTitle() + "_" + k );
          
-                    dnode = util.writeIA_SDS( detnode , "detector_number" , id ,
+                    dnode = util.writeIA_SDS( detnode , "id" , id ,
                                 NexIO.Inst_Type.makeRankArray( id.length , -1 ,
                                  -1 , -1 , -1 ) );
                  
@@ -1020,9 +1020,13 @@ public class NxWriteData {
         float[] height , float[] depth , DataSet DS , float[] tof , int det ) {
                  
         //Inst_Type inst = new Inst_Type();
-        NxWriteNode node = util.writeIA_SDS( nxDetector , "detector_number" ,
+        NxWriteNode node = util.writeIA_SDS( nxDetector , "id" ,
                id , NexIO.Inst_Type.makeRankArray( id.length , -1 , -1 , -1 , -1 ) );
 
+        int[] Det = new int[1];
+        Det[0]=det;
+        node =util.writeIA_SDS( nxDetector , "detector_number" ,
+                 Det , NexIO.Inst_Type.makeRankArray( 1 , -1 , -1 , -1 , -1 ) );
         if ( slot != null )
             node = util.writeIA_SDS( nxDetector , "slot" , slot ,
                      NexIO.Inst_Type.makeRankArray( slot.length , -1 , -1 , -1 , -1 ) );
@@ -1074,6 +1078,7 @@ public class NxWriteData {
         ranks = util.setRankArray( data ,false );
         node.setNodeValue( data , Types.Float ,ranks );
         util.writeStringAttr( node , "units" , DS.getX_units() );
+        //XXXXXX-Omit for SNS save v
         util.writeStringAttr( node , "label" , DS.getTitle() );
         util.writeStringAttr( node , "link" , DS.getTitle() + "_G2" + det );
         util.writeIntAttr( node , "signal" , 1 );
@@ -1091,6 +1096,7 @@ public class NxWriteData {
                     util.setRankArray( row_cm ,false ) );
         util.writeIntAttr( node , "axis" , 2 );
         util.writeStringAttr( node , "link" , DS.getTitle() + "_G2" + det );
+        //XXXXX- omit line below for SNS Save
         util.writeStringAttr( node , "label" , DS.getTitle() );
  
         node = util.writeFA_SDS( nxData , "y_offset" , col_cm , 
@@ -1118,7 +1124,7 @@ public class NxWriteData {
             return false;
         
         if ( !grid.isData_entered() )
-            ( ( UniformGrid ) grid ).setData_entries( DS );
+               grid .setData_entries( DS );
   
         NxWriteNode Nxdata = nodeEntr.newChildNode( DS.getTitle() + "_G1" +
                                                       GridNum , "NXdata" );
@@ -1216,9 +1222,12 @@ public class NxWriteData {
                 System.arraycopy( yvalues , 0 , data[ col - 1 ][ row - 1 ] , 
                                                                    0 , ny_s );
                 
-                yvalues = grid.getData_entry( row , col ).getErrors();
-                System.arraycopy( yvalues , 0 , errs[ col - 1 ][ row - 1 ] , 
+                float[] errvalues = grid.getData_entry( row , col ).getErrors();
+                if( errvalues != null  && errs != null)
+                   System.arraycopy( yvalues , 0 , errs[ col - 1 ][ row - 1 ] , 
                                                                    0 , ny_s );
+                else
+                   errs = null;
             }
      
         NxWriteNode dataNode = Nxdata.newChildNode( "data" , "SDS" );
@@ -1231,7 +1240,7 @@ public class NxWriteData {
                  .getBytes() ,NexIO.Types.Char , NexIO.Inst_Type.
                  makeRankArray( DS.getY_units().length() + 1 , -1 , -1 , -1 , 
                           -1 ) );
-     
+        //XXXX delete lines below for SNS Save     
         dataNode.addAttribute( "label" , ( DS.getTitle() + ( char ) 0 ) 
                  .getBytes() ,NexIO.Types.Char , NexIO.Inst_Type.makeRankArray
                  ( DS.getTitle().length() + 1 , -1 , -1 , -1 , -1 ) );
@@ -1245,7 +1254,8 @@ public class NxWriteData {
                  .getBytes() ,NexIO.Types.Char , NexIO.Inst_Type.makeRankArray
                  ( DS.getY_units().length() + 1 , -1 , -1 , -1 , -1 ) );
         
-        dataNode.setNodeValue( errs , NexIO.Types.Float , NexIO.Inst_Type.
+        if( errs != null)
+           dataNode.setNodeValue( errs , NexIO.Types.Float , NexIO.Inst_Type.
                  makeRankArray(  numCols,numRows ,  ny_s , -1 , -1 ) );
 
         //-------------------NxDetector fields -----------------------------
@@ -1295,11 +1305,15 @@ public class NxWriteData {
             for ( int j = 1 ; j <= numCols ; j++ )
                 IDs[ i - 1 ][ j - 1 ] = grid.getData_entry( i , j ).getGroup_ID();
         
-        NxWriteNode idNode = Nxdetector.newChildNode( "detector_number" , "SDS" );
+        NxWriteNode idNode = Nxdetector.newChildNode( "id" , "SDS" );
 
         idNode.setNodeValue( IDs , NexIO.Types.Int , NexIO.Inst_Type.
                            makeRankArray( numRows , numCols , -1 , -1 , -1 ) );
-        
+        int[] Det = new int[1];
+        Det[0]=grid.ID();
+        NxWriteNode detNode = Nxdetector.newChildNode( "detector_number" , "SDS" );
+        detNode.setNodeValue(  Det ,  NexIO.Types.Int , NexIO.Inst_Type.
+                           makeRankArray( 1 , -1 , -1 , -1 , -1 ) );
         float[] width  = new float[ 1 ] ,
                 height = new float[ 1 ] ,
                 depth  = new float[ 1 ];
@@ -1608,7 +1622,7 @@ public class NxWriteData {
     public static int[] getAreaGrids( DataSet DS ) {
        
         Vector V = new Vector( DS.getNum_entries() );
-        UniformGrid grid = null;
+        IDataGrid grid = null;
 
         for ( int i = 0 ; i < DS.getNum_entries() ; i++ ) {
             IDataGrid dgrid = getDataGrid( DS.getData_entry( i ) );
@@ -1620,7 +1634,7 @@ public class NxWriteData {
                     V.addElement( new Integer( dgrid.ID() ) );
           
                 if ( grid == null )
-                    grid = ( UniformGrid ) dgrid;
+                    grid =  dgrid;
             }
         }
         
@@ -1630,7 +1644,8 @@ public class NxWriteData {
             Res[ i ] = ( ( Integer ) ( V.elementAt( i ) ) ).intValue();
       
         java.util.Arrays.sort( Res );
-        UniformGrid.setDataEntriesInAllGrids( DS );
+        if( grid instanceof UniformGrid)
+           UniformGrid.setDataEntriesInAllGrids( DS );
     
         return Res;
 
