@@ -1340,20 +1340,26 @@ public class NexUtils implements INexUtils {
     
         XScale xsc = new VariableXScale( xvals );
 
+        HistogramTable DB ;
+        float[] yvals = null;
+        float[] errs  = null;
+        float   totCount = 0;
+        int     id       = 0;
+        int     num_ys   = 0;
         for ( int i = 0 ; i < NGroups; i++ ) {
-            int id = startGroupID + i;  //will have NXdetector change groupID
+            id = startGroupID + i;  //will have NXdetector change groupID
 
             if ( ( States.Spectra == null ) ||
                 ( Arrays.binarySearch( States.Spectra , id ) >= 0 ) ) {
                
-                float[] yvals = new float[ length ];
-                float[] errs  = new float[length ];
+                yvals = new float[ length ];
                 
-                HistogramTable DB ;
+              
                 System.arraycopy( data , i * length , yvals , 0 , length );
                 
                 if( evals != null){
-                   
+
+                    errs  = new float[length ];
                     System.arraycopy( evals , i * length , errs , 0 , length );
                     DB = new HistogramTable( xsc , yvals , errs , id );
                     
@@ -1362,9 +1368,10 @@ public class NexUtils implements INexUtils {
                    errs = null;
                    DB = new HistogramTable( xsc , yvals ,  id );
                 }
-                float totCount =0;
-                for( int kk=0; kk< yvals.length;kk++)
-                   totCount +=yvals[kk];
+                totCount =0;
+                num_ys = yvals.length;
+                for( int kk = 0 ; kk < num_ys ; kk++ )
+                   totCount += yvals[kk];
                 DB.setAttribute( new FloatAttribute( Attribute.TOTAL_COUNT, totCount) );
                 DS.addData_entry( DB );
             }
