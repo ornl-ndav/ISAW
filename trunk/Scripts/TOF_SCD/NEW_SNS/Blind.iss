@@ -34,16 +34,16 @@ $category=operator,Instrument Type,TOF_NSCD,NEW_SNS
 
 
 # ------Parameters ---------------------
-$filename LoadFile                Filename for Peaks
+$filename LoadFile("${Data_Directory}")                         Filename for Peaks
 
 $method    ChoiceList(["Blind","Automatic","from Q Viewer"])  Method to use
 
-$Seq      IntArray               Sequence Numbers(Blind Method only)
+$Seq      IntArray                                            Sequence Numbers(Blind Method only)
 
-$path     DataDirectoryString    Output Data Path for log file
-$file     SaveFile               Output Orientation Matrix File ( .mat ) 
+$path     DataDirectoryString("${Data_Directory}")             Output Data Path for log file
+$file     SaveFile("${Data_Directory}")                        Output Orientation Matrix File ( .mat ) 
 
-$Max_dSpacing  Float(12)         Maximum d-Spacing
+$Max_dSpacing  Float(12)                                     Maximum d-Spacing
 
 
 
@@ -51,13 +51,7 @@ $Max_dSpacing  Float(12)         Maximum d-Spacing
 
 Peaks = ReadPeaks( filename)
 ShowLog = true
-if useFile
 
-  X= readOrient( file1 )
-  WriteMatrix( file, X)
-  return X
-  
-endif
 
 Status =[1,2,3,4]
 MaxXtalLength = Max_dSpacing
