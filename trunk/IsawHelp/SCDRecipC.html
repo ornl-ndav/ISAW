@@ -1,7 +1,24 @@
 <HTML><BODY>
  <H1> <Center> Reciprocal Lattice Viewer for Selecting <B><U>Points</U></B> (Peaks) </Center></H1>
  
- The 4 points used will be a*, b*, c*, and the origin.  These 4 points will be sent into blind directly.<P>
+ The 4 points used will be a*, b*, c*, and the origin.  These 4 points will be sent into blind directly on exiting
+  or closing the window.<P>
+  
+  <UL> Menu Items
+    <LI> Help- Brings up this Help menu
+    <LI> <UL>Information
+             <LI> Load Orientation Matrix-Loads orientation matrix into a*,b*, and c*
+             <LI> Current Results- Shows several goodnes of fit measures of the current settings
+                                     to the data
+         </ul>
+    <LI> Omit - Allows for omitting peaks that are uncentroided,  selected, or whose h,k, or l values within a certain
+                tolerance of an integer.
+    <LI> Tweak-Allows for making adjustments to a*-b*, a*c* and b*c* planes to get better results. Certain measures
+              are displayed for goodness of fit.  
+    <LI> Attributes- Allows the user to change the marks for peaks and the size of the marks.  The user must select
+               OK to make the changes.
+  
+  </UL>
  
  <B>NOTE:</B> For blind to work correctly, peaks on adjacent planes are desirable.  It is possible to select peaks several planes apart, then use
     the # Steps part of the Selection control to divide the length of the vector from the origin by 2 or 3...  This could give more accuracy.
@@ -21,10 +38,10 @@
  
  
  </UL>
- <B><U>NOTE:</U></B> The results are not least squared and may not be good with bad data.  Experience indicates that excellent results are obtained when these are least
-                 squared.<P><P>
+ <B><U>NOTE:</U></B> The results are not least squared and may not be good with bad data.  Experience indicates that excellent results are obtained 
+        when these are least squared.<P><P>
  <B><U>NOTE:</U></B> <U>RIGHT CLICKING a PEAK</U>(Button3 in Windows is right click) 
              displays the <B>Sequence number of the Peak</B><P><P>
  <B><U>NOTE:</U></B><a href=SCDRecipB.html#controls>See mouse and controls actions </a>
- 
+
  </body></html>
