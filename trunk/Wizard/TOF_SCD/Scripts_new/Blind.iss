@@ -17,7 +17,7 @@
 #                         Automatic - Just does it
 #                         from Q Viewer-Allows user to select planes from reciprocal lattice viewer
 #  @param      file1      The file with the orientation matrix
-#  @param     SeqNums    The list of sequence numbers to use. Eg 33:36,47
+#  @param     Seq         The list of sequence numbers to use. Eg 33:36,47
 #  @param     file       The filename to store the orientation  matrix 
 #                          and the other cell parameters
 #  @param     Max_dSpacing  Maximum d-Spacing
@@ -35,16 +35,16 @@ $Title= Initial Orientation Matrix
 $Peaks   PlaceHolder                  Enter peaks
 
 $useFile  BooleanEnable([False,1,4])  Use Matrix From File
-$file1    LoadFile               Input Orientation Matrix File ( .mat )    
+$file1    LoadFile(${Data_Directory})       Input Orientation Matrix File ( .mat )    
 $method    ChoiceList(["Blind","Automatic","from Q Viewer"])  Method to use
 
 $Seq      IntArray               Sequence Numbers(Blind Method only)
-$file     SaveFile               Output Orientation Matrix File ( .mat ) 
+$file     String                 Output Orientation Matrix File ( .mat ) 
 
 $Max_dSpacing  Float(12)         Maximum d-Spacing
 $ShowLog  Boolean( false)        Pop Up blind.log 
 
-$path     DataDirectoryString    Output Data Path 
+$path     DataDirectoryString(${Data_Directory})    Output Data Path 
 
 
 #-------------  Code ----------------
@@ -56,6 +56,8 @@ if useFile
   return X
   
 endif
+
+file = path & file
 
 Status =[1,2,3,4]
 MaxXtalLength = Max_dSpacing
