@@ -115,7 +115,6 @@ import DataSetTools.dataset.*;
 import DataSetTools.math.*;
 import DataSetTools.operator.Generic.TOF_SCD.*;
 import DataSetTools.instruments.*;
-import gov.anl.ipns.MathTools.*;
 import gov.anl.ipns.MathTools.Geometry.*;
 import gov.anl.ipns.Util.Messaging.*;
 import gov.anl.ipns.Util.Numeric.*;
@@ -125,8 +124,6 @@ import gov.anl.ipns.ViewTools.Panels.ThreeD.*;
 import gov.anl.ipns.ViewTools.UI.*;
 import gov.anl.ipns.Util.SpecialStrings.ErrorString;
 import gov.anl.ipns.MathTools.LinearAlgebra;
-import gov.anl.ipns.ViewTools.Panels.ThreeD.*;
-import  gov.anl.ipns.ViewTools.UI.*;
 import java.util.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -192,9 +189,15 @@ public class SCDRecipLat  implements IThreeD_drawObject
   int             DisplayMode;//Detemines other display elements
   InfoActionListener actListener= null;//For Info button. Need peaks
   
-  JCheckBoxMenuItem   Planes, Points;
+  //JCheckBoxMenuItem   Planes, Points;
   
   int unitSize =3;
+  boolean[] omit, Cleared ;
+  boolean[] reflag;
+  Vector Peaks;
+  float MaxIntensity;
+  
+  TweakerFrame     TweakFrame;
   /* ---------------------------- Constructor ----------------------------- */
   public SCDRecipLat(){
      this( null,0);
@@ -327,11 +330,16 @@ public class SCDRecipLat  implements IThreeD_drawObject
     omit_fit_plane=false;
     abNormal = acNormal = bcNormal = null;
     this.DisplayMode = DisplayMode;
-    Planes = Points = null;
+   
     if( DisplayMode ==1){//Add menu items and listeners
        SetUpPeakMenuItems( scene_f);
        
     }
+    omit = reflag =  null;
+    Peaks = null;
+    MaxIntensity = -1;
+    scene_f.doLayout();
+    
   }
  
   private void SetUpPeakMenuItems( JFrame scene_f ) {
@@ -353,7 +361,7 @@ public class SCDRecipLat  implements IThreeD_drawObject
       JMenu Info = new JMenu("Information");
       
       jmb.add( Info );
-      Planes = new JCheckBoxMenuItem(" 3 plane mode");
+      /*Planes = new JCheckBoxMenuItem(" 3 plane mode");
       Points = new JCheckBoxMenuItem(" 4 points mode");
       ButtonGroup BG = new ButtonGroup();
       BG.add( Planes);
@@ -363,6 +371,7 @@ public class SCDRecipLat  implements IThreeD_drawObject
       Info.add(  Points );
       Info.add( Planes );
       Info.add(  new JSeparator() );
+      */
       JMenuItem Load= new JMenuItem( LOAD_ORIENT);
       Info.add( Load );
       Load.setToolTipText( "Loads and displays UB matrix as a*,b* and c*" );
@@ -375,10 +384,112 @@ public class SCDRecipLat  implements IThreeD_drawObject
       Res.addActionListener( actListener );
       
       
-      jmb.add(  new ThreeDAttributeJMenu( this, "Attributes","Marks",
-               new String[]{"Box","Cross","Dot","Plus","Star"}, "Size", 1f,30f,2f,
-               null,null,null) );
+      JMenu Filter = new JMenu("Omit");
+      jmb.add( Filter );
       
+      JCheckBoxMenuItem refOmit = new JCheckBoxMenuItem("UnCentroided peaks");
+      JMenuItem Selected  = new JMenuItem("Select Peak");
+      JMenuItem ClearSel = new JMenuItem("Clear all selected peaks");
+      JMenu a_star = new JMenu("a* index");
+        JCheckBoxMenuItem a_None = new JCheckBoxMenuItem("None");
+        JCheckBoxMenuItem a_10 = new JCheckBoxMenuItem("> 10% from integer");
+        JCheckBoxMenuItem a_20 = new JCheckBoxMenuItem("> 20% from integer");
+        JCheckBoxMenuItem a_30 = new JCheckBoxMenuItem("> 30% from integer");
+        JCheckBoxMenuItem a_40 = new JCheckBoxMenuItem("> 40% from integer");
+      JMenu b_star = new JMenu("b* index");
+        JCheckBoxMenuItem b_None = new JCheckBoxMenuItem("None");
+        JCheckBoxMenuItem b_10 = new JCheckBoxMenuItem("> 10% from integer");
+        JCheckBoxMenuItem b_20 = new JCheckBoxMenuItem("> 20% from integer");
+        JCheckBoxMenuItem b_30 = new JCheckBoxMenuItem("> 30% from integer");
+        JCheckBoxMenuItem b_40 = new JCheckBoxMenuItem("> 40% from integer");
+      JMenu c_star = new JMenu("c* index");
+        JCheckBoxMenuItem c_None = new JCheckBoxMenuItem("None");
+        JCheckBoxMenuItem c_10 = new JCheckBoxMenuItem("> 10% from integer");
+        JCheckBoxMenuItem c_20 = new JCheckBoxMenuItem("> 20% from integer");
+        JCheckBoxMenuItem c_30 = new JCheckBoxMenuItem("> 30% from integer");
+        JCheckBoxMenuItem c_40 = new JCheckBoxMenuItem("> 40% from integer");
+     //JMenuItem OK = new JMenuItem("Execute");
+     
+     JMenuItem Save= new JMenuItem( "Save omits to Peaks");
+     Filter.add(refOmit);
+     Filter.add(Selected);
+     Filter.add( ClearSel);
+     Filter.add(a_star);
+     Filter.add(b_star);
+     Filter.add(c_star);
+     a_star.add(a_None);
+     a_star.add(a_10);
+     a_star.add(a_20);
+     a_star.add(a_30);
+     a_star.add(a_40);
+     b_star.add(b_None);
+     b_star.add(b_10);
+     b_star.add(b_20);
+     b_star.add(b_30);
+     b_star.add(b_40);
+     c_star.add(c_None);
+     c_star.add(c_10);
+     c_star.add(c_20);
+     c_star.add(c_30);
+     c_star.add(c_40);
+     ButtonGroup BGa = new ButtonGroup();
+     ButtonGroup BGb = new ButtonGroup();
+     ButtonGroup BGc = new ButtonGroup();
+     BGa.add(  a_None );
+     BGa.add(  a_10 );
+     BGa.add(  a_20 );
+     BGa.add(  a_30 );
+     BGa.add(  a_40 );
+     a_None.setSelected( true );
+     BGb.add(  b_None );
+     BGb.add(  b_10 );
+     BGb.add(  b_20 );
+     BGb.add(  b_30 );
+     BGb.add(  b_40 );
+     b_None.setSelected( true );
+     BGc.add(  c_None );
+     BGc.add(  c_10 );
+     BGc.add(  c_20 );
+     BGc.add(  c_30 );
+     BGc.add(  c_40 );
+     c_None.setSelected( true );
+     
+     //Filter.add( OK );
+     Filter.add( Save );  
+     FilterActionListener FF = new FilterActionListener( Filter );
+     //OK.addActionListener( FF );
+       refOmit.addActionListener(FF);
+       a_None.addActionListener(  FF );
+       a_10.addActionListener(  FF );
+       a_20.addActionListener(  FF );
+       a_30.addActionListener(  FF );
+       a_40.addActionListener(  FF );
+       b_None.addActionListener(  FF );
+       b_10.addActionListener(  FF );
+       b_20.addActionListener(  FF );
+       b_30.addActionListener(  FF );
+       b_40.addActionListener(  FF );
+       c_None.addActionListener(  FF );
+       c_10.addActionListener(  FF );
+       c_20.addActionListener(  FF );
+       c_30.addActionListener(  FF );
+       c_40.addActionListener(  FF );
+     ClearSel.addActionListener(  FF  );
+     Selected.addActionListener(  FF  );
+     Save.addActionListener( new SaveActionListener());
+
+     
+     JMenu Tweak = new JMenu("Tweak");
+     MenuListener TweakListener = new TweakListener();
+     Tweak.addMenuListener(  TweakListener );
+     jmb.add( Tweak );
+     
+     JMenu D3Men = new ThreeDAttributeJMenu( this, "Attributes","Marks",
+              new String[]{"Box","Cross","Dot","Plus","Star"}, "Size", 1f,30f,2f,
+              null,null,null);
+     
+     jmb.add(  D3Men );
+      jmb.doLayout();
       jmb.repaint();
  
    }
@@ -1495,6 +1606,21 @@ public class SCDRecipLat  implements IThreeD_drawObject
   }
   
   /**
+   * Bad if any decimal digit is greater than 1
+   * @param num  The bad number
+   * @return  true if any decimal digit is greater than 1
+   */
+  private boolean isBad( int num ){
+     if( num < 0)
+        return true;
+    for(int X = num; X >0; X = X/10)
+       if( X % 10 > 1)
+          return true;
+    return false;
+
+     
+  }
+  /**
    * Creates a reciprocal lattice viewer from Peaks.
    * @param Peaks  A Vector of peaks
    * @param wait   true if it should wait until Frame is closed
@@ -1507,37 +1633,31 @@ public class SCDRecipLat  implements IThreeD_drawObject
      this.actListener.setPeaks( Peaks );
      JFrameOpen = true;
      omit_fit_plane = true;
-     IThreeD_Object[] objs = new IThreeD_Object[Peaks.size()];
-     float[] Range = GetMaxPkIntensity( Peaks);
-     float MaxIntensity = Range[0];
-     controller.setDistanceRange( 0f ,Range[1]*5f );
-     if(MaxIntensity < 0 )
-        MaxIntensity = Range[0];
-     file_names = new String[1];
-     file_names[0]= "Peaks";
-     float ballSize = Range[1]/Math.max(Peaks.size(),400 );
-     unitSize = 4;
-     for( int i=0; i< Peaks.size(); i++)
+     this.Peaks = Peaks;
+     
+     reflag = new boolean[ Peaks.size() ];
+     Arrays.fill( reflag , false );
+     for( int i=0; i< Peaks.size(); i++){
         if( Peaks.elementAt(i)!= null && 
                  (Peaks.elementAt( i ) instanceof IPeak)){
            IPeak Peak = (IPeak)(Peaks.elementAt(i));
-           int intensity = Peak.ipkobs();
-           float[] Q = Peak.getUnrotQ();
-           int color = (int)(intensity*127/MaxIntensity);
-           if( color >= colors.length)
-              color = colors.length-1;
-           Vector3D[] Marks = new Vector3D[1];
-           Marks[0]= new Vector3D((float) Q[0], (float)Q[1],
-                    (float)Q[2]);
-           
-           objs[i] = new Polymarker(Marks,colors[color]);
-           ((Polymarker)objs[i]).setSize( unitSize );
-           ((Polymarker)objs[i]).setType(  Polymarker.STAR );
-           objs[i].setPickID( Peak.seqnum() );
-           
-        
+           if( isBad(Peak.reflag()))
+                    reflag[i]=true;
+        }
      }
-     this.vec_Q_space.setObjects(  file_names[0] , objs );
+     float[] Range = GetMaxPkIntensity( Peaks);
+     MaxIntensity = Range[0];
+     controller.setDistanceRange( 0f ,Range[1]*5f );
+     if(MaxIntensity < 0 )
+        MaxIntensity = Range[0];
+     
+     if( omit == null){
+        omit = new boolean[ Peaks.size()];
+        Arrays.fill( omit, false);
+     }
+        
+     Create3DPeakView( omit );  
+     
      Redraw();
      if( wait )
         checkJFrameDone();   
@@ -1547,7 +1667,50 @@ public class SCDRecipLat  implements IThreeD_drawObject
      
   }
   
-  
+  private void notifyDataChanged(){
+     
+     if( TweakFrame != null)
+        TweakFrame.actionPerformed( null );
+     
+     
+  }
+  protected void Create3DPeakView( boolean[] omit ){
+    int nn=0;
+    for( int ii =0; ii < omit.length ; ii++)
+       if( !omit[ii] ) nn++;
+    
+    IThreeD_Object[] Allobjs = new IThreeD_Object[ nn ];
+     
+     file_names = new String[1];
+     file_names[0]= "Peaks";
+     //float ballSize = Range[1]/Math.max(Peaks.size(),400 );
+     unitSize = 4;
+     int j=0;
+     for( int i=0; i< Peaks.size(); i++)
+        if( !omit[i])
+        if( Peaks.elementAt(i)!= null && 
+                 (Peaks.elementAt( i ) instanceof IPeak)){
+           IPeak Peak = (IPeak)(Peaks.elementAt(i));
+         
+           int intensity = Peak.ipkobs();
+           float[] Q = Peak.getUnrotQ();
+           int color = (int)(intensity*127/MaxIntensity);
+           if( color >= colors.length)
+              color = colors.length-1;
+           Vector3D[] Marks = new Vector3D[1];
+           Marks[0]= new Vector3D( Q[0], Q[1],Q[2]);
+           
+           Allobjs[j] = new Polymarker(Marks,colors[color]);
+           ((Polymarker)Allobjs[j]).setSize( unitSize );
+           ((Polymarker)Allobjs[j]).setType(  Polymarker.STAR );
+           Allobjs[j].setPickID( Peak.seqnum() );
+           j++;
+           
+        
+     }
+     this.vec_Q_space.setObjects(  file_names[0] , Allobjs );
+     notifyDataChanged();
+  }
   
   
   private void checkJFrameDone(){
@@ -1660,6 +1823,182 @@ private class ViewMouseInputAdapter extends MouseInputAdapter
    }
 }
 
+private class TweakListener extends WindowAdapter implements MenuListener{
+   
+ 
+   
+   public void menuSelected(MenuEvent e){
+      
+      if( TweakFrame == null){
+         
+         TweakFrame = new TweakerFrame( vec_Q_space, a_star_vec,
+                  b_star_vec,c_star_vec);
+         TweakFrame.addWindowListener( this );
+      }
+     
+   }
+   
+   public void menuDeselected(MenuEvent e){
+      
+   }
+   public void menuCanceled(MenuEvent e){
+      
+   }
+   public void windowClosing(WindowEvent e){
+      TweakFrame = null;
+      
+   }
+     
+  
+ 
+}
+private class FilterActionListener implements ActionListener{
+   
+   JMenu FilterMenu;
+   int refl_index, a_index, b_index, c_index, sel_index; 
+   public FilterActionListener( JMenu jmb){
+      
+      FilterMenu = jmb;
+      refl_index=a_index=b_index=c_index= sel_index=-1;
+      if( jmb == null)
+         return;
+      for( int i=0; i < FilterMenu.getItemCount() ; i++){
+         String Text = FilterMenu.getItem( i ).getText();
+         if(Text.indexOf( "Centroid" ) >=0 )
+            refl_index = i;
+         else if( Text.indexOf( "Select" ) >= 0 )
+            sel_index = i;
+         else if( Text.indexOf( "a*" ) >= 0 )
+            a_index = i;
+         else if( Text.indexOf( "b*" ) >= 0 )
+            b_index = i;
+         else if( Text.indexOf( "c*" ) >= 0 )
+            c_index = i;
+         
+      }
+   }
+   
+   private void Calculate( JMenuItem men, VectorReadout dir, boolean[] omit, boolean[] clear ){
+      if( men == null || dir == null || omit == null || clear == null || 
+                       Peaks == null)
+         return;
+      if( omit.length != clear.length || omit.length != Peaks.size())
+         return;
+         if( !(men instanceof JMenu) )
+            return;
+         JMenu mmen = (JMenu) men;
+         float percent = -1;
+         for( int i=0; i < mmen.getItemCount(); i++)
+            if( mmen.getItem(  i ).isSelected()){
+               String S = mmen.getItem( i ).getText();
+               if( S.indexOf( "None" ) >= 0){}
+               else if( S.indexOf( "10" ) >= 0)
+                  percent = .1f;
+               else if( S.indexOf( "20" ) >= 0)
+                  percent = .2f;
+               else if( S.indexOf( "30" ) >= 0)
+                  percent = .3f;
+               else if( S.indexOf( "40" ) >= 0)
+                  percent = .4f;
+               		
+            }
+         if( percent < 0)
+            return;
+         Vector3D NormDir = TweakerFrame.NormalUnitDir(TweakerFrame.getVec( dir ) , 
+                  TweakerFrame.getVec( a_star_vec ) , TweakerFrame.getVec( b_star_vec ) , 
+                  TweakerFrame.getVec( c_star_vec) );
+         if( NormDir == null)
+            return;
+         float L = dir.getVector().dot( NormDir );
+         if(  L == 0 )
+            return;
+         float[] dd = NormDir.get();
+          
+         for( int i=0; i< Peaks.size(); i++)
+          if( !omit[i])
+         {
+            IPeak P = (IPeak)Peaks.elementAt( i );
+            float[] Q = P.getUnrotQ();
+            float Proj = Q[0]*dd[0]+Q[1]*dd[1]+Q[2]*dd[2];
+            float cell = Math.abs( Proj/L );
+            if( Math.abs( cell -(int)cell) > percent)
+               if( Math.abs( (int)cell +1 -cell ) > percent )
+                  omit[i] = true;
+            
+         }else if( Cleared[i])
+            omit[i]=true;
+         
+   }
+   public void actionPerformed( ActionEvent evt){
+      if( Peaks == null || FilterMenu == null)
+         return;
+
+      if( Cleared == null){
+         Cleared = new boolean[Peaks.size()];
+         Arrays.fill(  Cleared , false );
+      }
+     
+      if( evt.getActionCommand().indexOf( "Select" ) >= 0 ){
+         IThreeD_Object pick = vec_Q_space.pickedObject();
+         if( pick == null)
+            return;
+         int i = pick.getPickID();
+         if( i-1 >= 0 && i-1 < Cleared.length){
+            Cleared[i-1] = true;
+            omit[i-1] = true;
+         }
+            
+      }else
+      if( evt.getActionCommand().indexOf("Clear")>=0 ){
+         Arrays.fill(  Cleared , false );
+       
+         
+      }
+      omit = new boolean[Peaks.size()];
+      if( refl_index >=0 && FilterMenu.getItem( refl_index ).isSelected())
+         System.arraycopy( reflag , 0 , omit , 0 , omit.length );
+      else
+         Arrays.fill( omit , false );
+      for( int i=0; i< omit.length; i++)
+         if( Cleared[i])
+            omit[i]=true;
+      if( a_index >= 0)
+         Calculate( FilterMenu.getItem(a_index), a_star_vec, omit, Cleared);
+      if( b_index >= 0)
+         Calculate( FilterMenu.getItem(b_index), b_star_vec, omit, Cleared);
+      if( c_index >= 0)
+         Calculate( FilterMenu.getItem(c_index), c_star_vec, omit, Cleared);
+    
+      vec_Q_space.removeObjects();
+      Create3DPeakView(omit);
+      Redraw();
+      
+   }
+}
+
+private class SaveActionListener implements ActionListener{
+   
+  
+   
+   public void actionPerformed( ActionEvent evt){
+      if( omit == null || Peaks == null )
+         return;
+      if( omit.length != Peaks.size())
+         return;
+      for( int i=0; i < omit.length ;i++){
+         IPeak p = (IPeak) (Peaks.elementAt( i ));
+         int r = p.reflag();
+         if( !reflag[i])
+            if( omit[i])
+               p.reflag( r+30);
+            else
+               p.reflag(r - 10*((r/10)%10 )+10);
+            
+       
+      }
+      
+   }
+}
 /* ------------------------- SliceButtonListener ------------------------- */
 /**
  * Class to handle SliceButton press events
@@ -1994,15 +2333,18 @@ private class ReadoutListener implements ActionListener
            try{
               
               float[][]UB = null;
-              if( Planes.isSelected())
+
+              float[][] dirs = get4Points();
+              UB = CalcUB4(Peaks, dirs,Stats);
+              /*if( Planes.isSelected())
                    UB =CalcUB(Peaks, UnitNormals, MaxCrystalDistance,  
                                                                 Stats);
               else{
                   float[][] dirs = get4Points();
                   UB = CalcUB4(Peaks, dirs,Stats);
-              }
+              }*/
               if(UB == null){
-                 JOptionPane.showMessageDialog( null , "Error-Not enough Planes");
+                 JOptionPane.showMessageDialog( null , "Error-Points collinear");
                  return;
               }
               String Message ="UB matrix\n";
@@ -2070,7 +2412,7 @@ private class ReadoutListener implements ActionListener
         HelpFileName = HelpFileName.replace( '\\','/' );
         if(!HelpFileName.endsWith( "/" ))
            HelpFileName +="/";
-        HelpFileName +="IsawHelp/SCDRecipA.html";
+        HelpFileName +="IsawHelp/SCDRecipC.html";
      }
      SCDRecipLat RecipLat = new SCDRecipLat( HelpFileName, 1);
      RecipLat.setMaxCrystalDistance( MaxXtallengthReal );
@@ -2118,10 +2460,17 @@ private class ReadoutListener implements ActionListener
   }
   
   public float[][] CalcUB4( Vector Peaks, float[][] Points, Vector Stats){
+     
      float[][] Res = new float[3][3];
+     if( Points == null || Points.length <3)
+        return null;
      for( int i=0; i<3;i++)
+        if( Points[i].length < 3)
         for( int j=0;j<3;j++)
+           
            Res[j][i]= Points[i][j];
+        else
+           return null;
      
      IPNSSrc.blind Blind = new IPNSSrc.blind();
      Object R = Blind.blaue( Res );
@@ -2138,10 +2487,11 @@ private class ReadoutListener implements ActionListener
   }
   public boolean PlaneMode(){
      
-     if( Planes == null)
+     /*if( Planes == null)
         return false;
      if( Planes.isSelected())
         return true;
+        */
      return false;
   }
   
@@ -2245,7 +2595,7 @@ private class ReadoutListener implements ActionListener
         Size = (int)(size+.5);
      
      IThreeD_Object[] objs = vec_Q_space.getObjects( "Peaks" );
-     if( objs != null &&( Fill >=0 || Size >=1)){
+     if( objs != null &&( Fill >=0 || Size >= 1) ){
         
         for( int i=0;  i< objs.length; i++)
           if( objs[i] instanceof Polymarker){
