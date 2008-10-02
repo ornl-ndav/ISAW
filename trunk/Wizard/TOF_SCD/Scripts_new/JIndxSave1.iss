@@ -16,18 +16,19 @@
 
 
 $peaks           PlaceHolder          Peaks
-$OrientMatFile   LoadFile             Orientation Matrix file name
+$OrientMatFile   String               Orientation Matrix file name(in Output Dir)
 $RestrRuns       IntList("")          Restrict Runs
 $Deltah          Float(.20)           Deltas h
 $Deltak          Float(.20)           Deltas k
 $Deltal          Float(.20)           Deltas l
-$path            DataDirectoryString  Directory for log information
+$path            DataDirectoryString(${Data_Directory})  Output Directory 
 $expName         String               Experiment name
 $logfile         Boolean(false)       Pop Up index.log
 $peakFile        Boolean(false)       Pop Up Peaks File
 
 
 $ Title = Index/Write Peaks
+OrientMatFile = path & OrientMatFile
 OrientMat = readOrient( OrientMatFile)
 OpenLog( path&"index.log")
 
