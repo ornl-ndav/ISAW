@@ -2465,7 +2465,7 @@ private class ReadoutListener implements ActionListener
      if( Points == null || Points.length <3)
         return null;
      for( int i=0; i<3;i++)
-        if( Points[i].length < 3)
+        if( Points[i].length >= 3)
         for( int j=0;j<3;j++)
            
            Res[j][i]= Points[i][j];
