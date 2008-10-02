@@ -34,11 +34,11 @@ $RestrSeq    IntList                             Only Use Sequence Numbers( "" f
 $useUserMat   BooleanEnable([true,1,0])          Enter Matrix( instead of Scalar's)
 $TransMat1   String([[1,0,0],[0,1,0],[0,0,1]])   Enter Transformation Matrix
 $TransMat    String                              Transformation Matrix From Scalar
-$MatFileName SaveFile                            Matrix to write to
+$MatFileName String                              Matrix to write to
 $MinIntens   Integer(0)                          Minimum Peak Intensity Threshold
 $RowColKeep  IntList(0:128)                      Pixel Rows and Columns to Keep
 $Constr      ChoiceList( ["Triclinic","Monoclinic ( b unique )","Monoclinic ( a unique )","Monoclinic ( c unique )","Orthorhombic","Tetragonal","Rhombohedral","Hexagonal","Cubic"] )     Cell Type Constraint
-$SaveDir     DataDirectoryString                 Directory to save files
+$SaveDir     DataDirectoryString(${Data_Directory})                 Directory to save files
 $ShowLog     Boolean(false)                      Pop up log file
 
 
@@ -47,6 +47,8 @@ if useUserMat
 else
   tmat = TransMat
 endif
+
+MatFileName = SaveDir & MatFileName
 
 Display "runnums = :"&runnums&":"
 Display "seqnums = :"&RestrSeq&":"
