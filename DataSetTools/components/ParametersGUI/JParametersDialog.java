@@ -850,6 +850,7 @@ public class JParametersDialog implements Serializable,
       if(op instanceof java.beans.Customizer)
         ((java.beans.Customizer)op)
                     .removePropertyChangeListener( SharedData.getStatusPane());
+      if( ObjectParameters != null)
       for( int i = 0; i < ObjectParameters.size(); i++ )
         { int k = ((Integer)ObjectParameters.elementAt(i)).intValue();
           String ParName = op.getParameter(k).getName();
@@ -870,29 +871,24 @@ public class JParametersDialog implements Serializable,
       }
      else if (result instanceof DataSet)
      {
-             // DataSet[] dss = new DataSet[1];
-             //   dss[0] = (DataSet)result;
-                  //jtui.addDataSet((DataSet)result);
-        
+                  
                   
         OL.notifyIObservers( this , (DataSet)result); 
-                
-        //System.out.println("The new Title is:" +((DataSet)result).getTitle());
+       
         resultsLabel.setText("Operation completed");
         util.appendDoc(sessionLog,  
                 ((DataSet)result).toString()+"="+op.getCommand()+"(" +s +")");
      }
      else if( result instanceof Object[] )
-       { //DataSet DSS[];
-         //DSS = (DataSet[])result; 
+       { 
           Object[] listt = (Object[])result; 
            for( int i = 0; i < listt.length; i++)
               if( listt[i] instanceof DataSet)
                  OL.notifyIObservers( this, listt[i]);
         resultsLabel.setText("Result ="+ 
-                              StringUtil.toString( result));
+                                                StringUtil.toString( result));
         util.appendDoc(sessionLog,  
-                "DS[]="+op.getCommand()+"(" +s +")");      
+                                         "DS[]="+op.getCommand()+"(" +s +")");      
        } 
 
      else if (result instanceof Float)
