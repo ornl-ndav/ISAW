@@ -128,7 +128,7 @@ public class InitialPeaksWizard_SNS extends Wizard {
                        new int[]{0,8})); 
      
      addForm( new ScriptForm(path+"JIndex_Init1.iss", new StringPG("Result",""),
-    		 new int[]{0,1,6,8} ));
+    		 new int[]{0,1,6} ));
      
      addForm( new ScriptForm(path +"Scalar.iss", new StringPG("Transformation from Scalar",""),
                 new int[]{0,3}));
