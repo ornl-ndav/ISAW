@@ -597,7 +597,9 @@ public class JParametersDialog implements Serializable,
 
       BB.add( buttonpanel );
 
-      opDialog.getContentPane().add( new JScrollPane( BB ) );
+      opDialog.getContentPane().add( new JScrollPane( BB , 
+               ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+               ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER) );
       // #
 
       Size += ( num_param + 4 ) * 3 + 42;
