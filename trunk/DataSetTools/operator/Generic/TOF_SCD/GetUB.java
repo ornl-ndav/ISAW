@@ -183,7 +183,7 @@ public class GetUB {
          if( ! omit[ i ] ) {
             IPeak pk = (IPeak) Peaks.elementAt( i );
             float[] Qvec = pk.getUnrotQ();
-            float p = (float) ( Qvec[ 0 ] * x + Qvec[ 1 ] * y + Qvec[ 2 ] * z );
+            float p =  ( Qvec[ 0 ] * x + Qvec[ 1 ] * y + Qvec[ 2 ] * z );
             int index = (int)Math.floor ( p / delta + .5 );
             if( Math.abs( index ) >= Res.length / 2 ) {
                float[] Res1 = new float[ 2 * Math.abs( index ) + 1 + 10 ];
@@ -221,15 +221,15 @@ public class GetUB {
    }
 
 
-   private static void show( float[][] List ) {
+   private static void show( float[][] Listt ) {
 
       System.out.println( "------------------------------" );
-      if( List == null )
+      if( Listt == null )
          return;
-      for( int i = 0 ; i < List.length ; i++ ) {
+      for( int i = 0 ; i < Listt.length ; i++ ) {
          System.out.print( i + ":" );
-         for( int j = 0 ; j < List[ i ].length ; j++ )
-            System.out.print( List[ i ][ j ] + "  " );
+         for( int j = 0 ; j < Listt[ i ].length ; j++ )
+            System.out.print( Listt[ i ][ j ] + "  " );
          System.out.println( "" );
       }
       System.out.println( "----------------------------------------" );
@@ -322,15 +322,10 @@ public class GetUB {
          maxIndx = - 1;
          float middle = ( maxr + minr ) / 2;
          float zero = ( maxr - minr ) / 30;
-         float max_xixj_start = 0;
          for( int i = 0 ; ( i < xixj.length ) && ! done ; i++ ) {
             if( faze == 0 ) {
 
-               /*
-                * if( xixj[i] > max_xixj_start){
-                * 
-                * max_xixj_start = xixj[i]; zero = max_xixj_start/10; }
-                */
+              
                if( xixj[ i ] < middle - zero )
                   faze = 1;
 
@@ -576,8 +571,8 @@ public class GetUB {
           InsertInList(  Res );
          
       }
-     int k=0;
-     for( float x = - 1 + gridLength ; x < 1 - gridLength ; x += gridLength )
+ /* int k=0;
+   for( float x = - 1 + gridLength ; x < 1 - gridLength ; x += gridLength )
          for( float y = - (float) Math.sqrt( 1 - x * x ) ; y <= (float) Math
                   .sqrt( 1 - x * x ) ; y += gridLength ) {
             
@@ -592,14 +587,14 @@ public class GetUB {
             
          }
       
-    
-/*
+ */   
+
      Thread[] thrds = new Thread[4];
        for( int i=0; i<4;i++)
           thrds[i] = new DoQuadrantDirections( Peaks, omit,  gridLength,
                MaxXtalLengthReal, i);
        Execute1( thrds);
-*/
+
      //show( List );
       if( Nelements <= 0 )
          return null;
@@ -701,18 +696,40 @@ public class GetUB {
    }
    
    public static void Execute1( Thread[] thrds){
-      for( int i=0; i<4;i++)
+      
+      if( thrds == null)
+         return;
+      int k = Runtime.getRuntime().availableProcessors();
+      if( k <=0)
+         k=1;
+      if( k > thrds.length)
+         k= thrds.length;
+      
+      for( int i=0; i < k; i++)
          thrds[i].start();
       
-      for( int i=0; i<4; i++)
+      int nDone = 0;
+      while( nDone < thrds.length )
+      for( int i=0; i< k ; i++)
+         if( thrds[i] != null)
          try{
-           thrds[i].join();
-           System.out.println("Joined thread " + i);
+           thrds[i].join(10000);
+           if( thrds[i].getState().equals( Thread.State.TERMINATED )){
+            
+              thrds[i] = null;
+              nDone ++;
+              if( k < thrds.length )
+                 thrds[k].start();
+              if( k < thrds.length)
+                 k++;
+              
+           }
          }catch( Throwable s){
             System.out.println("Thread "+i+" interrupted \n");
             s.printStackTrace();
+            thrds[i] = null;
+            nDone++;
          }
-      
    }
    
    //Determines if this listEntry is coplanar
@@ -1132,17 +1149,14 @@ public class GetUB {
    
    
    private static synchronized void InsertInList( float[] Res ){
-      int x;
-      x=3;
+   
       
       if( List.length < Nelements + 1 ) {
          float[][] List1 = new float[ Nelements + 12 ][ 7 ];
          System.arraycopy( List , 0 , List1 , 0 , Nelements );
          List = List1;
       }
-      if( Nelements >0 &&( Math.abs( List[Nelements-1][X]+.26)>.00001 ||
-               Math.abs( List[Nelements-1][Y]-.44)>.00001))
-           x=3;
+      
       boolean done = false;
       float key = Res[ FIT1 ] + Res[ CORR ];
       for( int i = Nelements - 1 ; ( i >= 0 ) && ! done ; i-- ) {
@@ -1256,9 +1270,7 @@ public class GetUB {
                else
                   Res = null;
                if( Res != null ) {
-                 if( Math.abs( x+.26 )<.00001 && Math.abs( y-.44 )<.0001)
-                    System.out.println( "**"+ Res[0]+" "+Res[1]+"  "+Res[2]+
-                             "  "+Res[5]);
+              
                  GetUB.InsertInList( Res );
                }
             }
@@ -1396,34 +1408,37 @@ public class GetUB {
          else if( L.startsWith( "o1" ) ) {
             if( range < 0 )
                omit = null;
-            else {
+            else if( Peaks != null){
                if( omit == null )
                   omit = new boolean[ Peaks.size() ];
                if( Dirs != null && Dirs.length >=1)
                GetUB.OmitPeaks( Peaks , Dirs[ 0 ] , omit , range,false );
-            }
+            }else
+               omit = null;
 
          }
          else if( L.startsWith( "o2" ) ) {
             if( range < 0 )
                omit = null;
-            else {
+            else if( Peaks != null){
                if( omit == null )
                   omit = new boolean[ Peaks.size() ];
                if( Dirs != null && Dirs.length >= 2)
                   GetUB.OmitPeaks( Peaks , Dirs[ 1 ] , omit , range,false );
-            }
+            }else 
+               omit = null;
 
          }
          else if( L.startsWith( "o3" ) ) {
             if( range < 0 )
                omit = null;
-            else {
+            else if( Peaks != null ){
                if( omit == null )
                   omit = new boolean[ Peaks.size() ];
                if( Dirs != null && Dirs.length >= 3)
                   GetUB.OmitPeaks( Peaks , Dirs[ 2 ] , omit , range, false );
-            }
+            }else
+               omit= null;
          }
          else if( L.startsWith( "w" ) ) {
             java.util.GregorianCalendar Cal = new java.util.GregorianCalendar();
