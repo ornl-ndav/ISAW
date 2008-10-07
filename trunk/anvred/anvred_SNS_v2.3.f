@@ -54,7 +54,7 @@ C
 
 	INTEGER CURHST
 	integer today(3), now(3)
-	CHARACTER*60 NAM2,NAM1,BNAM,DEFNAM, SpecNam
+	CHARACTER*240 NAM2,NAM1,BNAM,DEFNAM, SpecNam
 	character*240 ANS
 	CHARACTER ALINE*78
 
@@ -96,12 +96,12 @@ C
 
 	WRITE (*,552) DEFNAM(1:LCS2)
 552	FORMAT(/,
-	1' Input the name of the input reflection file <',A,
-	2'>: ',$)
+     1' Input the name of the input reflection file <',A,
+     2'>: ',$)
 	CALL READANS (NCHRS, NAM1)	
 	IF (nchrs.eq.0) nam1=defnam
-	  OPEN(UNIT=9,TYPE='OLD',NAME=NAM1,
-	1	err=5004)
+	  OPEN(UNIT=9,STATUS='OLD',FILE=NAM1,
+     1	err=5004)
 	
 !  Initial read of integrate file to get instrument and detectors calibration.
 	call readrefl_SNS_header (9, ieof)
@@ -115,15 +115,15 @@ C
 	LCS2 = LCS+4
 	WRITE (*, 60) defnam(1:LCS2)
 60	FORMAT(/,
-	1' Input the name of the output reflection file <',A,
-	2'>: ',$)
+     1' Input the name of the output reflection file <',A,
+     2'>: ',$)
 	CALL READANS (NCHRS, BNAM)
 	if (nchrs.eq.0) bnam=defnam
 
 	WRITE (16,60) defnam(1:LCS2)
 	WRITE (16,'(A)') BNAM
 
-	OPEN(UNIT=4,TYPE='OLD',NAME=BNAM,ERR=610)
+	OPEN(UNIT=4,STATUS='OLD',FILE=BNAM,ERR=610)
 	WRITE (*, *) ' ***Output will be appended to existing file.***'
 605	READ (4,100,END=400) ALINE
 	GO TO 605
@@ -131,7 +131,7 @@ C
 	GO TO 400
 
 610	WRITE (*,*) ' ***New output reflection file is being created.***'
-	OPEN(UNIT=4,TYPE='NEW',NAME=BNAM,ERR=5004)
+	OPEN(UNIT=4,STATUS='NEW',FILE=BNAM,ERR=5004)
 
 400	CONTINUE
 
@@ -143,7 +143,7 @@ C
       	call itime(now)     ! now(1)=hour, (2)=minute, (3)=second
      	write ( 16, 9000 )  today(2), today(1), today(3), now
 9000	format (//,' ***   ANVRED   ', i2.2, '/', i2.2, '/', i4.4,' ',
-	1	i2.2, ':', i2.2, ':', i2.2,'   ***'//)
+     1	i2.2, ':', i2.2, ':', i2.2,'   ***'//)
 	
       WRITE (*, 9613)
 9613	FORMAT(//,
@@ -164,7 +164,8 @@ C
 C
 C   SETUP FOR ABSORPTION CORRECTION
 C
-	IF (ANS.EQ.'Y' .OR. ANS.EQ.'y') CALL ABSOR1_SNS (smu, amu, radius)
+	IF (ANS.EQ.'Y' .OR. ANS.EQ.'y') 
+     1          CALL ABSOR1_SNS (smu, amu, radius)
 	transmin = 1.0
 	transmax = 0.0
 
@@ -175,11 +176,11 @@ C
 	READ (*, 100) SpecNam
 
 
-	OPEN(UNIT=21,TYPE='OLD',FILE=SpecNam)
+	OPEN(UNIT=21,STATUS='OLD',FILE=SpecNam)
 	WRITE (*, *) ' '
 	WRITE (*, 6290) SpecNam
 6290	FORMAT(
-	1' Incident spectrum coefficients in ',A)
+     1' Incident spectrum coefficients in ',A)
 	WRITE (16,6290)
 	WRITE (*, *) ' '
 
@@ -212,7 +213,7 @@ C
 !  Reject border peaks.
 	WRITE (*, 6360)
 6360	FORMAT(//,' Reject peaks within N channels of the border.'/,
-	1' Input a value for N (<10>): ',$)
+     1' Input a value for N (<10>): ',$)
 	CALL READANS (NCHRS, ANS)
 	IF (NCHRS.EQ.0) THEN
 		NBCH = 10
@@ -225,8 +226,8 @@ C
 !  Reject peaks for which CENTROID failed (REFLAG .NE. 10)
 	WRITE (*, 7360)
 7360	FORMAT(//,
-	1' Reject peaks for which the centroid calculation failed',
-	2' (<y> or n): ',$)
+     1' Reject peaks for which the centroid calculation failed',
+     2' (<y> or n): ',$)
 	CALL READANS (NCHRS, ANS)
 	IF (NCHRS.EQ.0) THEN
 		JREF = 1
@@ -244,7 +245,7 @@ C
 !  Reject peaks below a threshold peak count	!ajs 5/6/03
 	WRITE (*, 8360)
 8360	FORMAT(//,
-	1' Input mininum peak count (<0>): ',$)
+     1' Input mininum peak count (<0>): ',$)
 	CALL READANS (NCHRS, ANS)
 	IF (NCHRS.EQ.0) THEN
 		IPKMIN = 0
@@ -258,7 +259,7 @@ C
 !  Reject peaks below a minimum d-spacing		!ajs 7/2/03
 	WRITE (*, 8370)
 8370	FORMAT(//,
-	1' Input mininum d-spacing (<0.0>): ',$)
+     1' Input mininum d-spacing (<0.0>): ',$)
 	CALL READANS (NCHRS, ANS)
 	IF (NCHRS.EQ.0) THEN
 		DMIN = 0.0
@@ -273,9 +274,9 @@ C
 !  Multiply by a scale factor.
 	WRITE (*, 5370)
 5370	FORMAT(//,
-	1' If integrated counts are very large, one may wish to multiply'/,
-	2' by a factor, such as 0.1 or less.'/,
-	3' Scaling factor applied to FSQ and sig(FSQ) (<1.0>): ',$)
+     1' If integrated counts are very large, one may wish to multiply'/,
+     2' by a factor, such as 0.1 or less.'/,
+     3' Scaling factor applied to FSQ and sig(FSQ) (<1.0>): ',$)
 	CALL READANS (NCHRS, ANS)
 	IF (NCHRS.EQ.0) THEN
 		SCALEFACTOR = 1.0
@@ -307,10 +308,10 @@ C	SPECT1 = A1(JS)*EXP(-A2(JS)/T**2)/T**5 + A3(JS)*EXP(-A4(JS)*T*T)
 C     &		+ A5(JS)*EXP(-A6(JS)*T**3) + A7(JS)*EXP(-A8(JS)*T**4) 
 ! TYPE 2 function in GSAS.
 	SPECT1(id) = PJ(1,id) + PJ(2,id)*EXP(-PJ(3,id)/T**2)/T**5
-	1	+ PJ(4,id)*EXP(-PJ(5,id)*T**2)
-	2	+ PJ(6,id)*EXP(-PJ(7,id)*T**3)
-	3	+ PJ(8,id)*EXP(-PJ(9,id)*T**4)
-	4	+ PJ(10,id)*EXP(-PJ(11,id)*T**5)
+     1	+ PJ(4,id)*EXP(-PJ(5,id)*T**2)
+     2	+ PJ(6,id)*EXP(-PJ(7,id)*T**3)
+     3	+ PJ(8,id)*EXP(-PJ(9,id)*T**4)
+     4	+ PJ(10,id)*EXP(-PJ(11,id)*T**5)
 	
 		end do
 		
@@ -410,10 +411,10 @@ C     &		+ A5(JS)*EXP(-A6(JS)*T**3) + A7(JS)*EXP(-A8(JS)*T**4)
 ! TYPE 2 function in GSAS.
 
 	SPECT = PJ(1,id) + PJ(2,id)*EXP(-PJ(3,id)/T**2)/T**5
-	1	+ PJ(4,id)*EXP(-PJ(5,id)*T**2)
-	2	+ PJ(6,id)*EXP(-PJ(7,id)*T**3)
-	3	+ PJ(8,id)*EXP(-PJ(9,id)*T**4)
-	4	+ PJ(10,id)*EXP(-PJ(11,id)*T**5)
+     1	+ PJ(4,id)*EXP(-PJ(5,id)*T**2)
+     2	+ PJ(6,id)*EXP(-PJ(7,id)*T**3)
+     3	+ PJ(8,id)*EXP(-PJ(9,id)*T**4)
+     4	+ PJ(10,id)*EXP(-PJ(11,id)*T**5)
  
 	SPECT = SPECT/SPECT1(id)
 C+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -696,25 +697,25 @@ C------------------------------------------------------------
 	dimension pc(4,19)	!polynomial coefficients
 	
 	data pc/
-	1	0.9369,  2.1217, -0.1304,  1.1717,
-	2	0.9490,	 2.0149,  0.0423,  1.0872,
-	3	0.9778,  1.7559,  0.4664,  0.8715,
-	4	1.0083,  1.4739,  0.9427,  0.6068,
-	5	1.0295,  1.2669,  1.3112,  0.3643,
-	6	1.0389,  1.1606,  1.5201,  0.1757,
-	7	1.0392,  1.1382,  1.5844,  0.0446,
-	8	1.0338,  1.1724,  1.5411, -0.0375,
-	9	1.0261,  1.2328,  1.4370, -0.0853,
-	1	1.0180,  1.3032,  1.2998, -0.1088,
-	2	1.0107,  1.3706,  1.1543, -0.1176,
-	3	1.0046,  1.4300,  1.0131, -0.1177,
-	4	0.9997,  1.4804,  0.8820, -0.1123,
-	5	0.9957,  1.5213,  0.7670, -0.1051,
-	6	0.9929,  1.5524,  0.6712, -0.0978,
-	7	0.9909,  1.5755,  0.5951, -0.0914,
-	8	0.9896,  1.5913,  0.5398, -0.0868,
-	9	0.9888,  1.6005,  0.5063, -0.0840,
-	1	0.9886,  1.6033,  0.4955, -0.0833/
+     1	0.9369,  2.1217, -0.1304,  1.1717,
+     2	0.9490,	 2.0149,  0.0423,  1.0872,
+     3	0.9778,  1.7559,  0.4664,  0.8715,
+     4	1.0083,  1.4739,  0.9427,  0.6068,
+     5	1.0295,  1.2669,  1.3112,  0.3643,
+     6	1.0389,  1.1606,  1.5201,  0.1757,
+     7	1.0392,  1.1382,  1.5844,  0.0446,
+     8	1.0338,  1.1724,  1.5411, -0.0375,
+     9	1.0261,  1.2328,  1.4370, -0.0853,
+     1	1.0180,  1.3032,  1.2998, -0.1088,
+     2	1.0107,  1.3706,  1.1543, -0.1176,
+     3	1.0046,  1.4300,  1.0131, -0.1177,
+     4	0.9997,  1.4804,  0.8820, -0.1123,
+     5	0.9957,  1.5213,  0.7670, -0.1051,
+     6	0.9929,  1.5524,  0.6712, -0.0978,
+     7	0.9909,  1.5755,  0.5951, -0.0914,
+     8	0.9896,  1.5913,  0.5398, -0.0868,
+     9	0.9888,  1.6005,  0.5063, -0.0840,
+     1	0.9886,  1.6033,  0.4955, -0.0833/
 	
 	
 	mu = smu + (amu/1.8)*wl
@@ -829,10 +830,10 @@ C------------------------------------------------------------
 	  nod = nod + 1
 	  i = nod
 	  READ (TEXT, *) ISENT, detnum(i), NROWS(i), NCOLS(i),
-	1	WIDTH(i), HEIGHT(i), DEPTH(i), DIST(i),
-	2	CenterX(i), CenterY(i), CenterZ(i),
-	3	BaseX(i), BaseY(i), BaseZ(i),
-	4	UpX(i), UpY(i), UpZ(i) 
+     1	WIDTH(i), HEIGHT(i), DEPTH(i), DIST(i),
+     2	CenterX(i), CenterY(i), CenterZ(i),
+     3	BaseX(i), BaseY(i), BaseZ(i),
+     4	UpX(i), UpY(i), UpZ(i) 
          GO TO 300
 	
 
@@ -886,17 +887,17 @@ C------------------------------------------------------------
 ! ISENT=3 ---> reflection
 	IF (ISENT.EQ.3) THEN				!Reflection record
 		READ (text, *) ISENT,SEQNUM,H,K,L,col,row,chan,L2, !ISENT=3
-	1		twoth,az,wl,dsp,ipkobs,inti,sigi,reflag
+     1		twoth,az,wl,dsp,ipkobs,inti,sigi,reflag
 		RETURN
 	END IF
 
 ! ISENT=0 ---> new histogram
 	IF (ISENT.EQ.0) THEN	!First record of a new histogram
 		READ (IUNIT,*) ISENT,NRUN,DN,		!ISENT=1
-	1		CHI,PHI,OMEGA,MONCNT
+     1		CHI,PHI,OMEGA,MONCNT
 		READ (IUNIT,100) TEXT				!ISENT=2
 		READ (IUNIT, *) ISENT,SEQNUM,H,K,L,col,row,chan,L2, !ISENT=3
-	1		twoth,az,wl,dsp,ipkobs,inti,sigi,reflag
+     1		twoth,az,wl,dsp,ipkobs,inti,sigi,reflag
 		RETURN
 	END IF
 
@@ -930,7 +931,6 @@ C------------------------------------------------------------
 
         RETURN
         END
-
 
 
 
