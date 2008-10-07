@@ -32,9 +32,9 @@
 
 ! Labelled common for 100 SNS detectors		3/21/08
 	common /detect/ nrows(100), ncols(100), width(100),
-	1	HEIGHT(100), DEPTH(100), DIST(100), CenterX(100),
-	2	CenterY(100), CenterZ(100), BaseX(100), BaseY(100),
-	3	BaseZ(100), UpX(100), UpY(100), UpZ(100), nod
+     1	HEIGHT(100), DEPTH(100), DIST(100), CenterX(100),
+     2	CenterY(100), CenterZ(100), BaseX(100), BaseY(100),
+     3	BaseZ(100), UpX(100), UpY(100), UpZ(100), nod
 	COMMON    /PEAKS/ col, row, chan, L2, twoth, az, dsp
 !
 
@@ -46,7 +46,7 @@
 	COMMON    /RFIL/   BUFF,NLEN
 	COMMON    /SET/    CHI,PHI,OMEGA,DETA,DETD,DETA2
 	COMMON    /SIG/    SIGA,SIGB,SIGC,SIGALP,SIGBET,SIGGAM,
-	1				SIGVOL
+     1				SIGVOL
 	COMMON    /TIME/   NTIME,NDMIN,NDMAX
 	COMMON    /TIMES/  TMIN,TMAX
 
@@ -62,7 +62,7 @@
 	COMMON    /DATA10/ CRUN
 	COMMON    /DATA11/ NRUN,NRUN1,DETNUM,dn,EXPNAM
 	COMMON    /DATA12/ SEQNUM,H,K,L,X,Y,Z,XCM,YCM,WL,
-	1			IPKOBS,INTI,SIGI,REFLAG
+     1			IPKOBS,INTI,SIGI,REFLAG
 
 	DATA	RAD /57.295779513/
 	DATA	HOM /0.39559974/
