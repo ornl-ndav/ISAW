@@ -85,7 +85,7 @@ OpenLog( Scratch, false)
 
   CloseLog()
   IsawHome = getSysProp("ISAW_HOME")
-  Anvred = CreateExecFileName(IsawHome,"anvred/anvred",true)
+  Anvred = CreateExecFileName(IsawHome,"Operators/TOF_SCD/anvred",true)
   Exec( Anvred,Scratch, OutputDir )
 
 
