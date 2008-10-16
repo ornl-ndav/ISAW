@@ -42,14 +42,18 @@ import DataSetTools.retriever.*;
 
 import Operators.Special.Calib;
 
+import java.awt.GridLayout;
 import java.io.*;
 import java.util.*;
+
+import javax.swing.JFrame;
+
 import gov.anl.ipns.Util.SpecialStrings.*;
 import gov.anl.ipns.Util.Numeric.*;
 import gov.anl.ipns.Operator.Threads.*;
 import gov.anl.ipns.Util.Sys.*;
 import gov.anl.ipns.MathTools.Geometry.*;
-
+import gov.anl.ipns.ViewTools.Panels.PeakArrayPanel.*;
 
 /**
  * This class contains an assortment of Utility methods for TOF_SCD wizards
@@ -60,18 +64,7 @@ public class Util {
               "b centered" , "c centered" , "[f]ace centered",
             "[i] body centered" , "[r]hombohedral centered"};
    
-   //TODO need to load in a peaks file first 
-   //Possible option on append: choicelist, append/load/neither
-   //
-   //Results(parallel)               1 threads          2 threads
-   //  with Parallel Executor       14.5 sec        12 sec
-   //  w.o. Parallel Executor       13 sec          10 sec
-   //                    
-   //Conclusion: w. Parallel  Executor did seq reading first then  
-   //            parallel calc after reading was through.
-   //            w.o. Parallel Executor interspersed reading and
-   //            calculations(in threads).  Essential to eliminate 
-   //            ALL I/O in the threads.  
+   
    /**
     *  FindCentroidedPeaks method uses threads to find and centroid
     *  the peaks from several runs and several data sets per run. The
@@ -125,6 +118,7 @@ public class Util {
             int      maxNumThreads )  throws IOException
      {
       
+      boolean useCache = false;
       if( runnums == null )
          return null;
       min_row =Math.max( 1,  min_row );
@@ -172,15 +166,22 @@ public class Util {
          append = false;
       
       boolean append1 = false || append;
-      
+      String cacheFilename = gov.anl.ipns.Util.File.FileIO.CreateDistinctFileName(  
+                System.getProperty( "user.home" ), "ISAW/localCache" , ".txt" , 20 );
+      if( !useCache)
+         cacheFilename = null;
       for( int i = 0; i < Runs.length; i++ ){
-         
+         //Replace by FindNexus operator in Operators/Generic/System/findnexus static method.
          String filename = rawpath+fileNamePrefix+Runs[ i ]+extension;
 
          Retriever retriever = null;
          try {
             retriever = Command.ScriptUtil.getRetriever( filename );
-
+            if( cacheFilename != null)
+            if( i == 0 && retriever instanceof NexusRetriever )
+               ((NexusRetriever)retriever).SaveSetUpInfo( cacheFilename );
+            else
+               ((NexusRetriever)retriever).RetrieveSetUpInfo( cacheFilename );
             // ------------Get monitor count ---------------------
             int monCount = 10000;
             int ID = - 1;
@@ -265,7 +266,8 @@ public class Util {
                ((NexusRetriever)retriever).close();
          
       }//for @ run
-      
+      if( cacheFilename != null)
+      (new File( cacheFilename)).delete();
    
      //--------------------Now finish the rest of the threads ---------------------
      long timeOut = 30000;
@@ -762,7 +764,7 @@ public class Util {
     * @param buff           If this is a non-null StringBuffer, the log 
     *                           information will be appended to it, otherwise
     *                           the log info will be displayed on the Status
-    *                           Pane.
+    *                          Pane.
     * @return               A Vector of peaks
     */
    public static Vector<IPeak> findDetectorCentroidedPeaks( 
@@ -851,12 +853,16 @@ public class Util {
          grid = grid1;         
       }
       
+      IDataGrid gridSave = grid;
+      gridSave.setData_entries( DS );
       grid = grid.clone();//So do not wipe out other grids.
       grid.clearData_entries(); 
      
 
       //Convert all Peaks to a Peak_new Object so position info can be determined
       Vector<IPeak> ResultantPeak = new Vector<IPeak>( Pks.size() );
+      PeakDisplayInfo[] infos = new PeakDisplayInfo[ Pks.size() ];
+      int NOffset = 7;
       for( int i = 0 ; i < Pks.size() ; i++ ){
          
          IPeak pk1 = ( IPeak )Pks.elementAt( i );
@@ -870,6 +876,23 @@ public class Util {
                                      xscl.getInterpolatedX( pk1.z() ) + T0, 
                                      InitialPath,
                                      T0 );
+         float[][][] data = new float[5][NOffset*2+1][NOffset*2+1];
+         for( int t = -2;t <= +2;t++)
+            for( int r = -NOffset; r <= NOffset; r++)
+               for( int c= -NOffset; c <= NOffset; c++){
+                  if( t+pk1.z() < 0 || r+pk1.y() < 1 || c+pk1.x() < 1)
+                     data[t+2][r+NOffset][c+NOffset] =0;
+                  else if( r+pk1.y() > gridSave.num_rows() || 
+                               c+pk1.x() > gridSave.num_cols()||
+                               gridSave.getData_entry( (int)pk1.y()+r ,(int) pk1.x()+c).getY_values()== null
+                              || t+pk1.z()> gridSave.getData_entry( (int)pk1.y()+r ,(int) pk1.x()+c).getY_values().length) 
+                     data[t+2][r+NOffset][c+NOffset] =0;
+                  else
+                     data[t+2][r+NOffset][c+NOffset] = gridSave.getData_entry( r+(int)pk1.y() ,c+(int) pk1.x()).
+                                 getY_values()[ t+(int)pk1.z()] ;
+               }
+         infos[i]= new PeakDisplayInfo(""+(i+1)+":"+(int)pk1.x()+":"+(int)pk1.y()+":"+(int)pk1.z(), data, 
+                  (int)pk1.y()-NOffset,(int)pk1.x()-NOffset,(int)pk1.z()-2,true);     
          pk.setFacility( AttrUtil.getFacilityName( DS ) );
          pk.setInstrument( AttrUtil.getInstrumentName( DS ) );
          pk.seqnum( pk1.seqnum() );
@@ -879,7 +902,12 @@ public class Util {
          pk.reflag( pk1.reflag() );
          ResultantPeak.add(  pk );
       }   
-      
+      PeaksDisplayPanel main_panel= new PeaksDisplayPanel( infos);
+      JFrame jf = new JFrame("Peak Picture for detector "+DetectorID+" ,Run "+AttrUtil.getFileName( DS ));
+      jf.getContentPane().setLayout(  new GridLayout(1,1) );
+      jf.getContentPane().add( main_panel );
+      jf.setSize( 100*main_panel.numPanelCols(), 100*main_panel.numPanelRows()+30);
+      jf.setVisible(  true );
       return ResultantPeak;
    }
    
@@ -1100,7 +1128,7 @@ public class Util {
            boolean ShowLog,
            boolean ShowPeaks
             ){
-      
+      boolean useCache = false;
       SharedMessages.addmsg( "Instrument = " + inst );
       
       if( run_numbers == null )
@@ -1141,7 +1169,11 @@ public class Util {
       if( timeZrange == null || colXrange == null || rowYrange == null )
          return new ErrorString( "x,y, or time offsets not set" );
       
-      
+
+      String cacheFilename = gov.anl.ipns.Util.File.FileIO.CreateDistinctFileName(  
+                System.getProperty( "user.home" ), "ISAW/localCache" , ".txt" , 20 );
+      if( !useCache)
+         cacheFilename = null;
       for( int runIndx = 0 ; runIndx < Runs.length ; runIndx++ ){
          
          String filename = path + inst + Runs[ runIndx ] + FileExt;
@@ -1153,7 +1185,12 @@ public class Util {
          try{
             
            retriever = Command.ScriptUtil.getRetriever( filename );
-           
+
+           if( cacheFilename != null)
+           if( runIndx == 0 && retriever instanceof NexusRetriever )
+              ((NexusRetriever)retriever).SaveSetUpInfo( cacheFilename );
+           else
+              ((NexusRetriever)retriever).RetrieveSetUpInfo( cacheFilename );
            int monCount = getMonCount( retriever , 0 );
            String matFileName = outpath + "ls" + expname + Runs[ runIndx ] + ".mat";
            
@@ -1261,8 +1298,8 @@ public class Util {
       Peaks = filtered_peaks;
       
       String integfile = outpath + expname + ".integrate";
-
-
+      if( cacheFilename != null )
+      ( new File( cacheFilename)).delete();
       try
       {
         Peak_new_IO.WritePeaks_new(integfile, (Vector<Peak_new>)Peaks, false);
