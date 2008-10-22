@@ -806,9 +806,29 @@ public class Util {
       
       
       //------------------ Find Peaks ------------------
-      Vector Pks = FindPeaks.findDetectorPeaks( DS, DetectorID, min_time_chan,
-               max_time_chan, num_peaks, min_int, PixelRow, PixelCol, buff );
-           
+      /*
+      Vector Pks = FindPeaks.findDetectorPeaks( DS,
+                                                DetectorID,  
+                                                min_time_chan, 
+                                                max_time_chan, 
+                                                num_peaks, 
+                                                min_int,
+                                                PixelRow, 
+                                                PixelCol, 
+                                                buff );
+      */
+
+      boolean smooth_data = true;
+      Vector Pks = FindPeaks.findDetectorPeaks_new( DS, 
+                                                    DetectorID,
+                                                    min_time_chan,
+                                                    max_time_chan,
+                                                    num_peaks, 
+                                                    min_int,
+                                                    PixelRow, 
+                                                    PixelCol,
+                                                    smooth_data,
+                                                    buff );
       if( Pks == null || Pks.size() < 1 ){
         
          return Pks;
