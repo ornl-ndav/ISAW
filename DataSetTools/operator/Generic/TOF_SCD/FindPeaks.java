@@ -109,6 +109,10 @@ import DataSetTools.util.SharedData;
 import gov.anl.ipns.Util.SpecialStrings.*;
 import gov.anl.ipns.Util.Numeric.*;
 import DataSetTools.dataset.IDataGrid;
+import DataSetTools.dataset.Grid_util;
+import DataSetTools.dataset.AttrUtil;
+import DataSetTools.instruments.*;
+
 /** 
  * This operator is a small building block of an ISAW version of
  * A.J.Schultz's PEAKS program. While the original program found all
@@ -453,6 +457,119 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
     
     peaks=sortT(peaks);
     return peaks;
+  }
+
+
+  /**
+   * This method finds peaks within one detector, using a new algorithm 
+   * for finding and validating peaks. (10/20/08)
+   */
+  public static  Vector findDetectorPeaks_new(
+                            DataSet      data_set,
+                            int          detNum,
+                            int          minTimeChan,
+                            int          maxTimeChan,
+                            int          maxNumPeaks,
+                            int          min_count,
+                            String       PixelRow,
+                            String       PixelCol,
+                            boolean      smooth_data,
+                            StringBuffer log ) throws IllegalArgumentException
+  {
+    if( data_set == null)
+       throw new IllegalArgumentException("DataSet is null");
+
+    IDataGrid grid = Grid_util.getAreaGrid( data_set, detNum );
+    if ( grid == null )
+      throw new IllegalArgumentException(
+             "DataSet " + data_set + " does'nt have grid # " + detNum );
+
+    Data  data     = grid.getData_entry( 1, 1 );
+
+    int[] run_nums = AttrUtil.getRunNumber( data_set ); 
+    if ( run_nums == null )
+      run_nums = AttrUtil.getRunNumber( data );
+    if ( run_nums == null )
+      throw new IllegalArgumentException("NO run number in " + data_set );
+
+    float initial_path = AttrUtil.getInitialPath( data_set );
+    if ( Float.isNaN(initial_path) )
+      initial_path = AttrUtil.getInitialPath( data );
+    if ( Float.isNaN(initial_path) )
+      throw new IllegalArgumentException("NO initial path in " + data_set );
+
+    float t_zero = AttrUtil.getT0Shift( data_set );
+    if ( Float.isNaN(t_zero) )
+      t_zero = AttrUtil.getT0Shift( data );
+    if ( Float.isNaN(t_zero) )
+      t_zero = 0;
+
+    SampleOrientation orientation = AttrUtil.getSampleOrientation( data_set );
+    if ( orientation == null )
+      orientation = AttrUtil.getSampleOrientation( data );
+    if ( orientation == null )
+      orientation = new SNS_SampleOrientation( 0, 0, 0 );
+    
+    maxTimeChan= Math.min( maxTimeChan, (data.getY_values()).length );
+
+    int num_rows = grid.num_rows();
+    int num_cols = grid.num_cols();
+
+    float[][][] raw_data = new float[num_rows][num_cols][];
+    for ( int row = 1; row <= num_rows; row++ )
+      for ( int col = 1; col <= num_cols; col++ )
+        raw_data[row-1][col-1] = grid.getData_entry( row, col ).getY_values();
+
+    int   row_border = 3;
+    int   col_border = 3;
+    int[] histogram  = new int[10000];
+    BasicPeakInfo[] peaks_array = FindPeaksViaSort.getPeaks( raw_data,
+                                                             smooth_data,
+                                                             2*maxNumPeaks,
+                                                             min_count,
+                                                             row_border,
+                                                             col_border,
+                                                             minTimeChan,
+                                                             maxTimeChan,
+                                                             histogram,
+                                                             log );
+
+    Vector result    = new Vector();
+    int    num_peaks = 0;
+    int    index     = 0;
+    float  monct     = 0;
+    XScale x_scale   = data.getX_scale();
+    float  row,
+           col,
+           chan;
+    float  tof;
+    while ( index < peaks_array.length && num_peaks < maxNumPeaks )
+    {
+      BasicPeakInfo old_peak = peaks_array[index];
+      if ( old_peak.isValid() )
+      {
+        row  = old_peak.getRowCenter();
+        col  = old_peak.getColCenter();
+        chan = old_peak.getChanCenter();
+        tof = x_scale.getInterpolatedX( chan );
+        Peak_new new_peak = new Peak_new( run_nums[0],
+                                          monct,
+                                          col,
+                                          row,
+                                          chan,
+                                          grid,
+                                          orientation,
+                                          tof,
+                                          initial_path,
+                                          t_zero );
+        new_peak.ipkobs( (int)raw_data[(int)row][(int)col][(int)chan] );
+        result.add( new_peak );
+        num_peaks++;
+      }
+      index++;
+    }
+
+    return result;
   }
   
   /**
