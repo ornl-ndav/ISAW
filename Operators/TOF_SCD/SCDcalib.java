@@ -607,6 +607,12 @@ public class SCDcalib extends GenericTOF_SCD
                             String          units, 
                             floatPoint2D[]  pairs )
   {
+    if ( pairs == null || pairs.length <= 0 )
+    {
+      System.out.println("ERROR: No pairs of points for " + title );
+      return;
+    }
+
     DataSetFactory ds_factory = new DataSetFactory( title, 
                                                     units, 
                                                    "Theoretical " + label, 
@@ -1238,7 +1244,8 @@ public class SCDcalib extends GenericTOF_SCD
     result_vector.addElement( results );
     result_vector.addElement( parameter_names );
 
-    return result_vector;
+//    return result_vector;
+    return "Complete";
   }
 
 }
