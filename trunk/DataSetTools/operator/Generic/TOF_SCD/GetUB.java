@@ -913,7 +913,10 @@ public class GetUB {
      
       float[][] UB = UBMatrixFrPlanes( Dirs, Peaks, omit, Stats,1);
       IndexStat( UB,  Peaks, .3f, omit);
-      return UBMatrixFrPlanes( Dirs , Peaks , omit, Stats,0 );
+      float[][] Res = UBMatrixFrPlanes( Dirs , Peaks , omit, Stats,0 );
+      if( Res == null)
+         throw new IllegalArgumentException(" Not enough directions to get UB matrix");
+      return Res;
 
    }
 
