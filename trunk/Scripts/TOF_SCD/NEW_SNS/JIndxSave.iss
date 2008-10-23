@@ -23,7 +23,7 @@ $path            DataDirectoryString  Directory for log information
 
 
 $ Title = Index/Write Peaks
-$ command = JBlind
+$ command = indexPeaks
 $category=operator,Instrument Type,TOF_NSCD,NEW_SNS
 
 logfile = true
