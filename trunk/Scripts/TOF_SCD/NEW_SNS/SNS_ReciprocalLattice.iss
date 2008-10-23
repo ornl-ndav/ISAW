@@ -22,7 +22,8 @@
 # $Date: 2008-06-01 $
 #
 $Category = Macros, Instrument Type, TOF_NSCD, NEW_SNS
-
+$Title=SCD Reciprocaal Lattice Viewer
+$Command=SCDRecipLatViewer
 $directory DataDirectoryString(/usr2/IPNS_OXALIC_SNS_FORM/)              Data Directory Name
 $prefix       String(scd0)                                               File Name Prefix
 $runs         IntList(9164,9183)                                         List of run numbers
