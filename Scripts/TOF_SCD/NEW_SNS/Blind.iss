@@ -17,19 +17,19 @@
 #                         Automatic - Just does it
 #                         from Q Viewer-Allows user to select planes from reciprocal lattice viewer
 
-#  @param     SeqNums    The list of sequence numbers to use. Eg 33:36,47
+#  @param     Seq        The list of sequence numbers to use. Eg 33:36,47
 #  @param     path       The path where output information goes
 #  @param     file       The filename to store the orientation  matrix 
 #                          and the other cell parameters
 #  @param     Max_dSpacing  Maximum d-Spacing
 
-#                    NOTE, the file can be viewed from the view menu in the SCD Wizaards
+#                    NOTE, the file can be viewed from the view menu in the SCD Wizards
 #                    using the view text submenu and selecting blind.log
 
 #  @return   an orientation matrix either from blind or the file 
 
 $Title= Initial Orientation Matrix  
-$Command = JBlind
+$Command = FindOrientationMatrix
 $category=operator,Instrument Type,TOF_NSCD,NEW_SNS
 
 
@@ -41,7 +41,7 @@ $method    ChoiceList(["Blind","Automatic","from Q Viewer"])  Method to use
 $Seq      IntArray                                            Sequence Numbers(Blind Method only)
 
 $path     DataDirectoryString("${Data_Directory}")             Output Data Path for log file
-$file     SaveFile("${Data_Directory}")                        Output Orientation Matrix File ( .mat ) 
+$file     String                                               Output Orientation Matrix File ( .mat ) 
 
 $Max_dSpacing  Float(12)                                     Maximum d-Spacing
 
@@ -51,7 +51,7 @@ $Max_dSpacing  Float(12)                                     Maximum d-Spacing
 
 Peaks = ReadPeaks( filename)
 ShowLog = true
-
+file = path&file
 
 Status =[1,2,3,4]
 MaxXtalLength = Max_dSpacing
