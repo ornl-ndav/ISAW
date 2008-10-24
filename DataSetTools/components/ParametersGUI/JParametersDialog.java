@@ -290,7 +290,7 @@ public class JParametersDialog implements Serializable,
     JButton apply = null;
     JButton exit = null;
     private boolean modal;
-
+    int ncharsLabel=40;
   private static int screenwidth=0; // for help dialog
   private static int screenheight=0;
     
@@ -344,7 +344,7 @@ public class JParametersDialog implements Serializable,
       else
          Size += Size1;
 
-      APH = new ApplyButtonHandler();
+      APH = new ApplyButtonHandler( opDialog );
       if( io != null )
          addIObserver( io );
 
@@ -563,7 +563,7 @@ public class JParametersDialog implements Serializable,
       JPanel resultsPanel = new JPanel( new GridLayout( 1 , 1 ) );
       resultsLabel.setForeground( Color.black );
       resultsPanel.add( resultsLabel );
-
+     
       BB.add( resultsPanel );
       Size1 = resultsLabel.getPreferredSize().height;
 
@@ -597,7 +597,8 @@ public class JParametersDialog implements Serializable,
 
       BB.add( buttonpanel );
 
-      opDialog.getContentPane().add( new JScrollPane( BB , 
+      opDialog.getContentPane().add( 
+      new JScrollPane( BB , 
                ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
                ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER) );
       // #
@@ -715,10 +716,12 @@ public class JParametersDialog implements Serializable,
   {
     IObserverList OL;
     SwingWorker worker=null;
+    JDialog jp;
 
-    public ApplyButtonHandler()
+    public ApplyButtonHandler( JDialog jp)
     {
       OL = new IObserverList();
+      this.jp = jp;
     }
 
     public void addIObserver(IObserver iobs) 
@@ -875,7 +878,7 @@ public class JParametersDialog implements Serializable,
      {
                   
                   
-        OL.notifyIObservers( this , (DataSet)result); 
+        OL.notifyIObservers( this , result); 
        
         resultsLabel.setText("Operation completed");
         util.appendDoc(sessionLog,  
@@ -887,10 +890,9 @@ public class JParametersDialog implements Serializable,
            for( int i = 0; i < listt.length; i++)
               if( listt[i] instanceof DataSet)
                  OL.notifyIObservers( this, listt[i]);
-        resultsLabel.setText("Result ="+ 
-                                                StringUtil.toString( result));
-        util.appendDoc(sessionLog,  
-                                         "DS[]="+op.getCommand()+"(" +s +")");      
+        
+        resultsLabel.setText(MakeMultLineLabelText("Result ="+ StringUtil.toString( result),jp));
+        util.appendDoc(sessionLog,  "DS[]="+op.getCommand()+"(" +s +")");      
        } 
 
      else if (result instanceof Float)
@@ -902,21 +904,21 @@ public class JParametersDialog implements Serializable,
      else if (result instanceof String)
      {
         String value = (String)result;
-        resultsLabel.setText("Result:  " +value );
+        resultsLabel.setText(MakeMultLineLabelText("Result:  " +value ,jp));
         util.appendDoc(sessionLog, op.getCommand()+"(" +s +")");
 
      }
      else if (result instanceof ErrorString)
      {
         ErrorString value = (ErrorString)result;
-        resultsLabel.setText("Operation failed:"+value.toString() );
+        resultsLabel.setText(MakeMultLineLabelText("Operation failed:"+value.toString(),jp) );
         util.appendDoc(sessionLog, op.getCommand()+"(" +s +")");
      }
      else if( result instanceof int[])
      { 
         int X[] = (int[]) result;
         String SS = IntList.ToString( X );
-        resultsLabel.setText(SS);
+        resultsLabel.setText(MakeMultLineLabelText(SS,jp));
         util.appendDoc(sessionLog, op.getCommand()+"(" +s +")");
      }
    
@@ -926,21 +928,62 @@ public class JParametersDialog implements Serializable,
           if( V.elementAt(i) instanceof DataSet)
             OL.notifyIObservers( this, V.elementAt(i) );
         
-        resultsLabel.setText("Result ="+ 
-                              StringUtil.toString( result));
+        resultsLabel.setText(MakeMultLineLabelText("Result ="+ 
+                              StringUtil.toString( result),jp));
         
         util.appendDoc(sessionLog, op.getCommand()+"(" +s +")");
      }
 
      else
      {
-        resultsLabel.setText("Result ="+ StringUtil.toString( result));
+        resultsLabel.setText(MakeMultLineLabelText("Result ="+ StringUtil.toString( result),jp));
         util.appendDoc(sessionLog, op.getCommand()+"(" +s +")");
      }
      result = null;
    }
   } 
-    
+  public static String MakeMultLineLabelText( String text, JDialog label){
+     if( label == null || text == null)
+        return "";
+     if( text.length() <10)
+        return text;
+     int W = label.getWidth();
+     Font fnt = label.getFont();
+     FontMetrics fmet = label.getFontMetrics( fnt );
+     int nchars= (int)(7*W/(float)fmet.stringWidth( "abc def" ));//(int)(W/(float)dpi*72f/(float)FSize);
+     //(int)(.5f*7*W/(float)fmet.stringWidth( "abc def" ));//
+     if( text.length() <nchars)
+        return text;
+     String Res ="<html><body>";
+     
+     while( text.length()> 0){
+        int k  = nchars;
+        if( text.length() < k){
+           Res += text+"</body></html>";
+           return Res;
+        }
+        int k1= text.lastIndexOf(' ',k);
+
+        int k2= text.lastIndexOf(' ',k);
+        int k3= text.lastIndexOf(' ',k);
+        if( k1<0) k1=0;
+        if( k2<0) k2=0;
+        if( k3 < 0) k3=0;
+        k1= Math.max( k1,Math.max(k2,k3) );
+        if( k1 <=0)k1=k;
+        if( k1 >= text.length())
+           k1= text.length();
+        
+        System.out.println("&&&& "+fmet.stringWidth( text.substring( 0,k1 ))+
+                 ",,"+W);
+        Res += text.substring(0,k1)+"<br>";
+        text = text.substring( k1 );
+        
+        
+     }
+     Res +=text+"</body></html>";
+     return Res;
+  }
   public class ExitButtonHandler implements ActionListener,
                                             WindowListener
   {
@@ -1041,12 +1084,12 @@ public class JParametersDialog implements Serializable,
       if(screenwidth==0 && screenheight==0){
         Dimension screensize=Toolkit.getDefaultToolkit().getScreenSize();
         screenheight=screensize.height;
-        screenwidth=(int)(screenheight*4/3);
+        screenwidth=(screenheight*4/3);
       }
       
-      FinishJFrame jf = new FinishJFrame( "operator "+op.getCommand());
+      FinishJFrame Hframe = new FinishJFrame( "operator "+op.getCommand());
       JMenuBar jmenBar= new JMenuBar();
-      jf.setJMenuBar(jmenBar);
+      Hframe.setJMenuBar(jmenBar);
       
       JEditorPane jedPane = new JEditorPane();
       jedPane.setEditable(false);
@@ -1060,10 +1103,10 @@ public class JParametersDialog implements Serializable,
       
       //Add Jeditor pane to the JFrame
       JScrollPane scroll =new JScrollPane( jedPane);
-      jf.getContentPane().add( scroll );
-      jf.setSize( (int)(screenwidth/2), (int)(3*screenheight/4) );
+      Hframe.getContentPane().add( scroll );
+      Hframe.setSize( (screenwidth/2), (3*screenheight/4) );
       
-      WindowShower.show(jf);
+      WindowShower.show(Hframe);
     } 
   }
   
