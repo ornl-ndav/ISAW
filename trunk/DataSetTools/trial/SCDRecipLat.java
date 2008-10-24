@@ -226,6 +226,10 @@ public class SCDRecipLat  implements IThreeD_drawObject
     a_star_vec  = new VectorReadout( A_STAR, "Select +" , false);
     b_star_vec  = new VectorReadout( B_STAR, "Select *"  , false);
     c_star_vec  = new VectorReadout( C_STAR, "Select X"  , false);
+    origin_vec.set_dSpace_mode( false );
+    a_star_vec.set_dSpace_mode( false );
+    b_star_vec.set_dSpace_mode( false );
+    c_star_vec.set_dSpace_mode( false );
 
     TitledBorder border = new TitledBorder(
                              LineBorder.createBlackLineBorder(),"Qxyz");
@@ -2556,8 +2560,12 @@ private class ReadoutListener implements ActionListener
      GetUB.OmitPeaks( Peaks , Directions[1] , omit , .1f , true );
      GetUB.OmitPeaks( Peaks , Directions[2] , omit , .1f , true );
      float[] Statsfl= new float[4];
-     float[][] UB =GetUB.UBMatrixFrPlanes( Directions, Peaks , omit , Statsfl 
-                                                                 , 3 );
+     float[][] UB =null;
+     try{
+        UB = GetUB.UBMatrixFrPlanes( Directions, Peaks , omit , Statsfl , 3 ); 
+     }catch( Exception ss){
+        UB= null;
+     }
      
      if( UB == null){ 
         throw new IllegalArgumentException("Cannot Get a UB matrix. "+
