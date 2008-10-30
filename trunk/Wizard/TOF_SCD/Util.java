@@ -879,10 +879,10 @@ public class Util {
       grid.clearData_entries(); 
      
 
-      //Convert all Peaks to a Peak_new Object so position info can be determined
+     //Convert all Peaks to a Peak_new Object so position info can be determined
       Vector<IPeak> ResultantPeak = new Vector<IPeak>( Pks.size() );
       PeakDisplayInfo[] infos = new PeakDisplayInfo[ Pks.size() ];
-      int NOffset = 7;
+      int NOffset = 21;
       for( int i = 0 ; i < Pks.size() ; i++ ){
          
          IPeak pk1 = ( IPeak )Pks.elementAt( i );
@@ -911,8 +911,8 @@ public class Util {
                      data[t+2][r+NOffset][c+NOffset] = gridSave.getData_entry( r+(int)pk1.y() ,c+(int) pk1.x()).
                                  getY_values()[ t+(int)pk1.z()] ;
                }
-         infos[i]= new PeakDisplayInfo(""+(i+1)+":"+(int)pk1.x()+":"+(int)pk1.y()+":"+(int)pk1.z(), data, 
-                  (int)pk1.y()-NOffset,(int)pk1.x()-NOffset,(int)pk1.z()-2,true);     
+         String name = ""+(i+1)+": "+(int)pk1.x()+", "+(int)pk1.y()+", "+(int)pk1.z();
+         infos[i]= new PeakDisplayInfo( name, data, (int)pk1.y()-NOffset, (int)pk1.x()-NOffset, (int)pk1.z()-2, true);     
          pk.setFacility( AttrUtil.getFacilityName( DS ) );
          pk.setInstrument( AttrUtil.getInstrumentName( DS ) );
          pk.seqnum( pk1.seqnum() );
@@ -923,7 +923,8 @@ public class Util {
          ResultantPeak.add(  pk );
       }   
       PeaksDisplayPanel main_panel= new PeaksDisplayPanel( infos);
-      JFrame jf = new JFrame("Peak Picture for detector "+DetectorID+" ,Run "+AttrUtil.getFileName( DS ));
+      JFrame jf = new JFrame("Detector: " + DetectorID + 
+                             ", Run: " + AttrUtil.getFileName( DS ));
       jf.getContentPane().setLayout(  new GridLayout(1,1) );
       jf.getContentPane().add( main_panel );
       jf.setSize( 100*main_panel.numPanelCols(), 100*main_panel.numPanelRows()+30);
