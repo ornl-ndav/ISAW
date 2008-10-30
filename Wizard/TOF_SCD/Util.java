@@ -88,8 +88,16 @@ public class Util {
     * @param max_row        The maximum row to use(subtract peak height)
     * @param min_col        The minimum column to use(add peak width)
     * @param max_col        The maximum column to use(subtract peak width)
+    * @param Max_dSpacing   Max d spacing between peaks
+    * @param NewFindPeaks   Use the new find peaks method
+    * @param SmoothData     Smooth the data in the new find peaks method
+    * @param ValidityTest   Do validity test in the new find peaks method
+    * @param Centroid       Perform old centroid on peaks
     * @param extension      The name of the extension on the data file
     * @param fileNamePrefix The prefix for the filename.
+    * @param ShowPeaksView   Show image view of peaks
+    * @param numSlices      The number of slices around  peak in image view.
+    * @param ViewPeaks      Show the Peaks file
     * @param maxNumThreads  The maximum number of threads to execute at one time
     * @return a Vector of peaks, Grouped by detector
     */
@@ -112,8 +120,14 @@ public class Util {
             int      min_col, 
             int      max_col,
             float    Max_dSpacing,
+            boolean  NewFindPeaks,
+            boolean  SmoothData,
+            boolean  ValidityTest,
+            boolean  Centroid,
             String   extension,
             String   fileNamePrefix,
+            boolean ShowPeaksView,
+            int     numSlices,
             boolean  ViewPeaks,
             int      maxNumThreads )  throws IOException
      {
@@ -239,7 +253,12 @@ public class Util {
                      Object Err = MergeInfo( keys , DS , num_peaks , min_int ,
                               min_time_chan , max_time_chan , PixelRow ,PixelCol,
                               monCount , operators , ResultPeaks , LogInfo ,
-                              maxNumThreads , Max_dSpacing );
+                              maxNumThreads , Max_dSpacing ,
+                              NewFindPeaks,
+                              SmoothData,
+                              ValidityTest, Centroid,
+                              ShowPeaksView,
+                              numSlices );
                      
                      if( Err != null ) {
                         SharedMessages.addmsg( "Error in finding peaks "
@@ -522,6 +541,13 @@ public class Util {
             Vector      operators, 
             Vector      ResultPeaks,
             Vector<StringBuffer> buff,
+
+            boolean NewFindPeaks,
+            boolean  SmoothData,
+            boolean  ValidityTest,
+            boolean Centroid,
+            boolean ShowPeaksView,
+            int numSlices ,
             int         maxNumThreads ){
       
       if( keys == null || DS == null || num_peaks <= 0 )
@@ -557,7 +583,13 @@ public class Util {
             operators.addElement( SetUpfindPeaksOp( DS,
                          K, num_peaks, 
                                min_int,  min_time_chan, max_time_chan,
-                               PixelRow, PixelCol,monCount, Sbuff, 12f ) );
+                               PixelRow, PixelCol,monCount, Sbuff, 12f,
+                               NewFindPeaks,
+                               SmoothData,
+                               ValidityTest,
+                               Centroid,
+                              ShowPeaksView,
+                               numSlices  ) );
            
             if( operators.size() >= maxNumThreads ){
                ParallelExecutor PE = new ParallelExecutor(
@@ -637,7 +669,14 @@ public class Util {
             Vector      ResultPeaks,
             Vector<StringBuffer> buff,
             int         maxNumThreads,
-            float         Max_dSpacing ){
+            float         Max_dSpacing,
+
+            boolean NewFindPeaks,
+            boolean  SmoothData,
+            boolean  ValidityTest,
+            boolean   Centroid,
+            boolean ShowPeaksView,
+            int numSlices ){
       
       if( keys == null || DS == null || num_peaks <= 0 )
          return null;
@@ -705,7 +744,13 @@ public class Util {
             OperatorThread opThread = new OperatorThread( SetUpfindPeaksOp( DS,
                          ( ( Integer )K ).intValue(), num_peaks, 
                                min_int,  min_time_chan, max_time_chan,
-                               PixelRow,PixelCol, monCount, Sbuff, Max_dSpacing ) );
+                               PixelRow,PixelCol, monCount, Sbuff, Max_dSpacing,
+                                NewFindPeaks,
+                               SmoothData,
+                               ValidityTest,
+                               Centroid,
+                               ShowPeaksView,
+                               numSlices  ) );
             
 
             opThread.start();
@@ -731,7 +776,13 @@ public class Util {
             String  PixelCol,
             int     monCount,
             StringBuffer buff,
-            float   Max_dSpacing ){
+            float   Max_dSpacing,
+            boolean NewFindPeaks,
+            boolean  SmoothData,
+            boolean  ValidityTest,
+            boolean  Centroid,
+            boolean ShowPeaksView,
+            int numSlices ){
           
           findDetectorCentroidedPeaks op = new findDetectorCentroidedPeaks();
           op.getParameter( 0 ).setValue( DS );
@@ -744,7 +795,15 @@ public class Util {
           op.getParameter( 7 ).setValue( PixelCol );
           op.getParameter( 8 ).setValue( monCount );
           op.getParameter( 9 ).setValue( Max_dSpacing );
-          op.getParameter( 10 ).setValue( buff );
+
+          op.getParameter( 10 ).setValue(NewFindPeaks );
+          op.getParameter( 11).setValue(SmoothData );
+          op.getParameter( 12).setValue(ValidityTest );
+          op.getParameter( 13).setValue(Centroid );
+          op.getParameter( 14).setValue(ShowPeaksView );
+          op.getParameter( 15).setValue(numSlices );
+          op.getParameter( 16 ).setValue( buff );
+          
          
           return op;
    }
@@ -761,6 +820,13 @@ public class Util {
     * @param max_time_chan  The maximum time channel to use.
     * @param PixelRow       The row/col to keep
     * @param monCount       Monitor Count
+    * @param Max_dSpacing   Maximum d-spacing between peaks
+    * @param NewFindPeaks   Use new find peaks method
+    * @param SmoothData     Use smoothed date in new find peaks method
+    * @param ValidityTest   Use a validity check in the new find peaks
+    * @param Centroid       Use old Centroid peaks method on each peak
+    * @param ShowPeaksView  Show image view of peaks
+    * @param numSlices      The number of slices around a peak to show/
     * @param buff           If this is a non-null StringBuffer, the log 
     *                           information will be appended to it, otherwise
     *                           the log info will be displayed on the Status
@@ -778,6 +844,12 @@ public class Util {
             String  PixelCol,
             int     monCount,
             float  Max_dSpacing,
+            boolean NewFindPeaks,
+            boolean  SmoothData,
+            boolean  ValidityTest,
+            boolean  Centroid,
+            boolean ShowPeaksView,
+            int numSlices,
             StringBuffer buff ){
 
       IDataGrid grid = Grid_util.getAreaGrid( DS , DetectorID );
@@ -806,8 +878,9 @@ public class Util {
       
       
       //------------------ Find Peaks ------------------
-      /*
-      Vector Pks = FindPeaks.findDetectorPeaks( DS,
+      Vector Pks = null;
+      if( !NewFindPeaks)
+      Pks = FindPeaks.findDetectorPeaks( DS,
                                                 DetectorID,  
                                                 min_time_chan, 
                                                 max_time_chan, 
@@ -816,10 +889,10 @@ public class Util {
                                                 PixelRow, 
                                                 PixelCol, 
                                                 buff );
-      */
-
-      boolean smooth_data = true;
-      Vector Pks = FindPeaks.findDetectorPeaks_new( DS, 
+     
+      else{
+        boolean smooth_data = SmoothData;
+        Pks = FindPeaks.findDetectorPeaks_new( DS, 
                                                     DetectorID,
                                                     min_time_chan,
                                                     max_time_chan,
@@ -829,6 +902,7 @@ public class Util {
                                                     PixelCol,
                                                     smooth_data,
                                                     buff );
+      }
       if( Pks == null || Pks.size() < 1 ){
         
          return Pks;
@@ -840,6 +914,7 @@ public class Util {
          min_time_chan = 0;
       
       //---------------Centroid Peaks ---------------------------
+      if( Centroid)
       for( int i = 0 ; i < Pks.size() ; i++ ){
          IPeak Pk = ( IPeak )( Pks.elementAt( i ) );       
  
@@ -879,9 +954,10 @@ public class Util {
       grid.clearData_entries(); 
      
 
-     //Convert all Peaks to a Peak_new Object so position info can be determined
+      //Convert all Peaks to a Peak_new Object so position info can be determined
       Vector<IPeak> ResultantPeak = new Vector<IPeak>( Pks.size() );
-      PeakDisplayInfo[] infos = new PeakDisplayInfo[ Pks.size() ];
+      PeakDisplayInfo[] infos = null;
+      if( ShowPeaksView) infos =new PeakDisplayInfo[ Pks.size() ];
       int NOffset = 21;
       for( int i = 0 ; i < Pks.size() ; i++ ){
          
@@ -896,23 +972,8 @@ public class Util {
                                      xscl.getInterpolatedX( pk1.z() ) + T0, 
                                      InitialPath,
                                      T0 );
-         float[][][] data = new float[5][NOffset*2+1][NOffset*2+1];
-         for( int t = -2;t <= +2;t++)
-            for( int r = -NOffset; r <= NOffset; r++)
-               for( int c= -NOffset; c <= NOffset; c++){
-                  if( t+pk1.z() < 0 || r+pk1.y() < 1 || c+pk1.x() < 1)
-                     data[t+2][r+NOffset][c+NOffset] =0;
-                  else if( r+pk1.y() > gridSave.num_rows() || 
-                               c+pk1.x() > gridSave.num_cols()||
-                               gridSave.getData_entry( (int)pk1.y()+r ,(int) pk1.x()+c).getY_values()== null
-                              || t+pk1.z()> gridSave.getData_entry( (int)pk1.y()+r ,(int) pk1.x()+c).getY_values().length) 
-                     data[t+2][r+NOffset][c+NOffset] =0;
-                  else
-                     data[t+2][r+NOffset][c+NOffset] = gridSave.getData_entry( r+(int)pk1.y() ,c+(int) pk1.x()).
-                                 getY_values()[ t+(int)pk1.z()] ;
-               }
-         String name = ""+(i+1)+": "+(int)pk1.x()+", "+(int)pk1.y()+", "+(int)pk1.z();
-         infos[i]= new PeakDisplayInfo( name, data, (int)pk1.y()-NOffset, (int)pk1.x()-NOffset, (int)pk1.z()-2, true);     
+         if( ShowPeaksView)
+            infos[i]= ShowOnePeakImageView( pk, gridSave, numSlices, i);     
          pk.setFacility( AttrUtil.getFacilityName( DS ) );
          pk.setInstrument( AttrUtil.getInstrumentName( DS ) );
          pk.seqnum( pk1.seqnum() );
@@ -922,17 +983,54 @@ public class Util {
          pk.reflag( pk1.reflag() );
          ResultantPeak.add(  pk );
       }   
-      PeaksDisplayPanel main_panel= new PeaksDisplayPanel( infos);
-      JFrame jf = new JFrame("Detector: " + DetectorID + 
-                             ", Run: " + AttrUtil.getFileName( DS ));
-      jf.getContentPane().setLayout(  new GridLayout(1,1) );
-      jf.getContentPane().add( main_panel );
-      jf.setSize( 100*main_panel.numPanelCols(), 100*main_panel.numPanelRows()+30);
-      jf.setVisible(  true );
+      if( ShowPeaksView){
+         PeaksDisplayPanel main_panel= new PeaksDisplayPanel( infos);
+         JFrame jf = new JFrame("Detector: " + DetectorID + 
+                             " Run: " + AttrUtil.getFileName( DS ));
+         jf.getContentPane().setLayout(  new GridLayout(1,1) );
+         jf.getContentPane().add( main_panel );
+         jf.setSize( 100*main_panel.numPanelCols(), 100*main_panel.numPanelRows()+30);
+         jf.setVisible(  true );
+      }
       return ResultantPeak;
    }
    
-   
+   /**
+    * Creates a PeakDisplayInfoElement from a peak
+    * @param pk1     The Peak from which the PeakDisplayInfo Element is created
+    * @param gridSave The Data Grid. It must have the data in the data 
+    *                            set entered
+    * @param NOffset  Number of pixels around the peak to include in the image
+    *                                     view
+    * @param seq    The sequence information for the peak
+    * @return    The PeakDisplayInfoElement corresponding to the peak
+    */
+   public static PeakDisplayInfo ShowOnePeakImageView( Peak_new pk1, 
+                         IDataGrid gridSave, int NOffset,int seq){
+      
+      float[][][] data = new float[5][NOffset*2+1][NOffset*2+1];
+      
+      for( int t = -2;t <= +2;t++)
+         for( int r = -NOffset; r <= NOffset; r++)
+            for( int c= -NOffset; c <= NOffset; c++){
+               if( t+pk1.z() < 0 || r+pk1.y() < 1 || c+pk1.x() < 1)
+                  data[t+2][r+NOffset][c+NOffset] =0;
+               else if( r+pk1.y() > gridSave.num_rows() || 
+                            c+pk1.x() > gridSave.num_cols()||
+                            gridSave.getData_entry( (int)pk1.y()+r ,
+                                     (int) pk1.x()+c).getY_values()== null
+                           || t+pk1.z()> gridSave.getData_entry( (int)pk1.y()+r ,
+                                    (int) pk1.x()+c).getY_values().length) 
+                  data[t+2][r+NOffset][c+NOffset] =0;
+               else
+                  data[t+2][r+NOffset][c+NOffset] = gridSave.getData_entry( 
+                                     r+(int)pk1.y() ,c+(int) pk1.x()).
+                              getY_values()[ t+(int)pk1.z()] ;
+            }
+     return new PeakDisplayInfo(""+(seq+1)+":"+(int)pk1.x()+":"+(int)pk1.y()
+                                                  +":"+(int)pk1.z(), data, 
+               (int)pk1.y()-NOffset,(int)pk1.x()-NOffset,(int)pk1.z()-2, pk1.reflag() < 11);     
+   }
    
    //Uses the old centroid peak
    private static IPeak CentroidPeak( IPeak Pk, DataSet DS, IDataGrid grid,

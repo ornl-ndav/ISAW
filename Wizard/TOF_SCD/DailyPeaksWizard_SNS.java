@@ -52,9 +52,9 @@ public class DailyPeaksWizard_SNS extends Wizard
      ,{3, -1,-1,-1, 3}   //DataSet NUmbers
      ,{4,  7, 1, 8, 4}   //exp name
                          
-     ,{22, 0, 0, 0,-1}   //peaks
-     ,{19,-1,-1,-1,11} //instName
-     ,{18,-1,-1,-1,12} //FileExt
+     ,{28, 0, 0, 0,-1}   //peaks
+     ,{23,-1,-1,-1,11} //instName
+     ,{22,-1,-1,-1,12} //FileExt
      ,{11,-1,-1,-1, 7}  //calibFilename
      ,{12,-1,-1,-1, 8}    // line2 use
      ,{10,-1,-1,-1, 6}  //use Calib file

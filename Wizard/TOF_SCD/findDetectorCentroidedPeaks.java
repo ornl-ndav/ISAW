@@ -36,7 +36,7 @@ import DataSetTools.operator.*;
 import DataSetTools.operator.Generic.*;
 import gov.anl.ipns.Parameters.*;
 import DataSetTools.parameter.*;
-
+import java.util.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
 import Command.*;
@@ -81,9 +81,22 @@ public class findDetectorCentroidedPeaks extends GenericOperator{
       addParameter( new ChoiceListPG("Cols to keep",""));
       addParameter( new IntegerPG("monitor count",10000));
       addParameter( new FloatPG("Max d-spacing",12f));
+      addParameter( new BooleanEnablePG("Use new FindPeaks",
+               addTo(addTo(addTo(new Vector(), true),2),0)));
+      addParameter( new BooleanPG("Use Smoothed Data", true));
+      addParameter( new BooleanPG("Use validity test", true));
+      addParameter( new BooleanPG("Use old Centroid", true));
+      addParameter( new BooleanEnablePG("Show Peak Images",
+               addTo(addTo(addTo(new Vector(), true),1),0)));
+      addParameter( new IntegerPG("Num slices in peaks image",2));
       addParameter( new PlaceHolderPG("log stuff", null));
    }
-
+   private Vector addTo(Vector V1, Object value){
+      if( V1 == null)
+         return addTo( new Vector(), value);
+      V1.addElement( value);
+      return V1;
+   }
 
    /**
     * Writes a string for the documentation of the operator provided by
@@ -123,8 +136,14 @@ public class findDetectorCentroidedPeaks extends GenericOperator{
       S.append("max col to keep");
       S.append("@param   ");
       S.append("Monitor count");
-      S.append("@param   ");
-      S.append("Monitor Maximum real d-spacing");
+      S.append( "@param MaxDSpacing   maximum d-spacing for crystal" );
+
+      S.append( "@param NewPeakAlg Use new FindPeaks");
+      S.append( "@param Use Smoothed Data" );
+      S.append( "@param Use validity test" );
+      S.append( "@param Use old Centroid" );
+      S.append( "@param Show Peak Images" );
+     
       S.append("@param   ");
       S.append("log buffer If this is a non-null StringBuffer, log info will"+
                          "be appended to it ");
@@ -167,12 +186,26 @@ public class findDetectorCentroidedPeaks extends GenericOperator{
          java.lang.String PixelCol = getParameter(7).getValue().toString();
          int monCount = ((IntegerPG)(getParameter(8))).getintValue();
          float MaxDspacing =((FloatPG)(getParameter(9))).getfloatValue();
-         Object logBuffer = getParameter(10).getValue();
+
+         boolean NewFindPeaks= ((BooleanPG)getParameter(10)).getbooleanValue();
+         boolean  SmoothData= ((BooleanPG)getParameter(11)).getbooleanValue();
+         boolean  ValidityTest= ((BooleanPG)getParameter(12)).getbooleanValue();
+         boolean  Centroid= ((BooleanPG)getParameter(13)).getbooleanValue();
+         boolean ShowPeaksView= ((BooleanPG)getParameter(14)).getbooleanValue();
+         int numSlices= ((IntegerPG)(getParameter(15))).getintValue();
+         Object logBuffer = getParameter(16).getValue();
          StringBuffer LogBuffer = null;
          if( logBuffer instanceof StringBuffer)
             LogBuffer =(StringBuffer)logBuffer;
          java.util.Vector Xres=Wizard.TOF_SCD.Util.findDetectorCentroidedPeaks(DS,DetectorID,num_peaks,min_int,
-                     min_time_chan,max_time_chan,PixelRow, PixelCol,monCount,MaxDspacing, LogBuffer );
+                     min_time_chan,max_time_chan,PixelRow, PixelCol,monCount,MaxDspacing, 
+
+                    NewFindPeaks,
+                     SmoothData,
+                     ValidityTest,
+                     Centroid,
+                     ShowPeaksView,
+                     numSlices,LogBuffer );
 
          return Xres;
        }catch( Throwable XXX){

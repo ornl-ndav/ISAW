@@ -89,19 +89,32 @@ public class findCentroidedPeaks extends GenericOperator{
         args.addElement(2);
         args.addElement( 0 );
       addParameter( new BooleanEnablePG("Use calibration information",args));
-      addParameter( new LoadFilePG("SCD calibration file",""));
+      addParameter( new LoadFilePG( "SCD calibration file" , System.getProperty( "Data_Directory" , null )));
       addParameter( new IntegerPG("Calibration file line(mode)",-1));
       addParameter( new IntegerPG("Min row to keep(add Peak height)",1));
       addParameter( new IntegerPG("Max row to keep(take off Peak height)",400));
       addParameter( new IntegerPG("Min col to keep(add Peak width)",1));
       addParameter( new IntegerPG("Max col to keep(take off Peak width)",400));
       addParameter( new FloatPG("Max d-spacing",12f));
+      addParameter( new BooleanEnablePG("Use new FindPeaks", addTo(addTo(addTo(null,true),2),0)));
+      addParameter( new BooleanPG("Use Smoothed Data", true));
+      addParameter( new BooleanPG("Check Validity", true));
+      addParameter( new BooleanPG("Use old centroid", true));
       addParameter( new StringPG("Data filename extension",".nxs"));
       addParameter( new StringPG("The prefix for the filename","SCD"));
+      addParameter( new BooleanEnablePG("Show Peak Images", addTo(addTo(addTo(null,true),1),0)));
+      addParameter( new IntegerPG("Number slices in image)",2));
+    
       addParameter( new BooleanPG("Pop Up Peaks File",true));
       addParameter( new IntegerPG("Max Number of Threads",1));
    }
 
+   Vector addTo( Vector V, Object value){
+      if( V == null)
+         return addTo( new Vector(), value);
+      V.addElement(  value );
+      return V;
+   }
 
    /**
     * Writes a string for the documentation of the operator provided by
@@ -150,10 +163,17 @@ public class findCentroidedPeaks extends GenericOperator{
       S.append("The Row/Col values to keep. Blank for all");
       S.append("@param   ");
       S.append("Maximum real d-Spacing");
+      S.append("@param NewFindPeaks   Use the new find peaks method");
+      S.append("@param SmoothData     Smooth the data in the new find peaks method");
+      S.append("@param ValidityTest   Do validity test in the new find peaks method");
+      S.append(" @param Centroid       Perform old centroid on peaks");
       S.append("@param   ");
       S.append("The name of the extension on the data file");
       S.append("@param   ");
       S.append("The prefix for the filename. Does not include path.");
+
+      S.append("@param ShowPeaksView   Show image view of peaks");
+      S.append("@param numSlices      The number of slices around  peak in image view.");
       S.append("@param   ");
       S.append("View Peaks file.");
       S.append("@param   ");
@@ -202,13 +222,26 @@ public class findCentroidedPeaks extends GenericOperator{
          int min_col = ((IntegerPG)getParameter(15)).getintValue();
          int max_col = ((IntegerPG)getParameter(16)).getintValue();
          float Max_dSpacing =((FloatPG)getParameter(17)).getfloatValue();
-         java.lang.String extension = getParameter(18).getValue().toString();
-         java.lang.String fileNamePrefix = getParameter(19).getValue().toString();
-         boolean ViewPeaks = ((BooleanPG)(getParameter(20))).getbooleanValue();
-         int maxNumThreads = ((IntegerPG)(getParameter(21))).getintValue();
+         boolean  NewFindPeaks = ((BooleanEnablePG)getParameter(18)).getbooleanValue();
+         boolean  SmoothData= ((BooleanPG)getParameter(19)).getbooleanValue();
+         boolean  ValidityTest= ((BooleanPG)getParameter(20)).getbooleanValue();
+         boolean  Centroid= ((BooleanPG)getParameter(21)).getbooleanValue();
+         java.lang.String extension = getParameter(22).getValue().toString();
+         java.lang.String fileNamePrefix = getParameter(23).getValue().toString();
+         boolean ShowPeaksView= ((BooleanEnablePG)getParameter(24)).getbooleanValue();
+         int     numSlices= ((IntegerPG)getParameter(25)).getintValue();
+         boolean ViewPeaks = ((BooleanPG)(getParameter(26))).getbooleanValue();
+         int maxNumThreads = ((IntegerPG)(getParameter(27))).getintValue();
          java.util.Vector Xres=Wizard.TOF_SCD.Util.findCentroidedPeaks(rawpath,outpath,runnums,
                   dataSetNums,expname,num_peaks,min_int,min_time_cha,max_time_chan,append,useCalib,calibfile,line2use,
-                  min_row,max_row,min_col, max_col,Max_dSpacing, extension,fileNamePrefix,ViewPeaks,maxNumThreads );
+                  min_row,max_row,min_col, max_col,Max_dSpacing,
+
+                  NewFindPeaks,
+                  SmoothData,
+                  ValidityTest,
+                  Centroid,extension,fileNamePrefix,
+                  ShowPeaksView,
+                 numSlices,ViewPeaks,maxNumThreads );
 
          return Xres;
        }catch( Throwable XXX){
