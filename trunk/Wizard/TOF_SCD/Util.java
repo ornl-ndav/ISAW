@@ -942,9 +942,11 @@ public class Util {
      
       //Now get a Peak_new
       if( grid instanceof RowColGrid ){
-         IDataGrid grid1 = RowColGrid.getUniformDataGrid( ( RowColGrid ) grid , .001f );
+         IDataGrid grid1 = RowColGrid.getUniformDataGrid( ( RowColGrid ) grid,
+                                                            .001f );
          if( grid1 == null )
-            throw new IllegalArgumentException( "grid "+grid.ID()+" not uniform enough" );
+            throw new IllegalArgumentException( "grid "+grid.ID()+
+                                                " not uniform enough" );
          grid = grid1;         
       }
       
@@ -952,9 +954,9 @@ public class Util {
       gridSave.setData_entries( DS );
       grid = grid.clone();//So do not wipe out other grids.
       grid.clearData_entries(); 
-     
 
-      //Convert all Peaks to a Peak_new Object so position info can be determined
+      // Convert all Peaks to a Peak_new Object so position info can be 
+      // determined
       Vector<IPeak> ResultantPeak = new Vector<IPeak>( Pks.size() );
       PeakDisplayInfo[] infos = null;
       if( ShowPeaksView) infos =new PeakDisplayInfo[ Pks.size() ];
@@ -973,7 +975,11 @@ public class Util {
                                      InitialPath,
                                      T0 );
          if( ShowPeaksView)
-            infos[i]= ShowOnePeakImageView( pk, gridSave, numSlices, i);     
+            infos[i]= ShowOnePeakImageView( pk, 
+                                            gridSave, 
+                                            NOffset, 
+                                            numSlices, 
+                                            i );
          pk.setFacility( AttrUtil.getFacilityName( DS ) );
          pk.setInstrument( AttrUtil.getInstrumentName( DS ) );
          pk.seqnum( pk1.seqnum() );
@@ -983,53 +989,86 @@ public class Util {
          pk.reflag( pk1.reflag() );
          ResultantPeak.add(  pk );
       }   
-      if( ShowPeaksView){
+
+      if( ShowPeaksView ){
          PeaksDisplayPanel main_panel= new PeaksDisplayPanel( infos);
          JFrame jf = new JFrame("Detector: " + DetectorID + 
-                             " Run: " + AttrUtil.getFileName( DS ));
+                                " Run: " + AttrUtil.getFileName( DS ));
          jf.getContentPane().setLayout(  new GridLayout(1,1) );
          jf.getContentPane().add( main_panel );
-         jf.setSize( 100*main_panel.numPanelCols(), 100*main_panel.numPanelRows()+30);
-         jf.setVisible(  true );
+         jf.setSize( 100*main_panel.numPanelCols(), 
+                     100*main_panel.numPanelRows() + 30 );
+         jf.setVisible( true );
       }
+
       return ResultantPeak;
    }
    
+
    /**
-    * Creates a PeakDisplayInfoElement from a peak
-    * @param pk1     The Peak from which the PeakDisplayInfo Element is created
-    * @param gridSave The Data Grid. It must have the data in the data 
-    *                            set entered
-    * @param NOffset  Number of pixels around the peak to include in the image
-    *                                     view
-    * @param seq    The sequence information for the peak
-    * @return    The PeakDisplayInfoElement corresponding to the peak
+    * Creates a PeakDisplayInfoElement from a peak.  
+    * NOTE: The number of slices before and after the peak is constrained
+    *       to be between one and 20.
+    * @param pk1       The Peak from which the PeakDisplayInfo Element is 
+    *                  created
+    * @param gridSave  The Data Grid. It must have the data in the data 
+    *                  set entered
+    * @param NOffset   Number of pixels around the peak to include in the image
+    *                  view
+    * @param numSlices Number of slices to include before and and after the
+    *                  peak
+    * @param seq       The sequence information for the peak
+    * @return          The PeakDisplayInfoElement corresponding to the peak
     */
-   public static PeakDisplayInfo ShowOnePeakImageView( Peak_new pk1, 
-                         IDataGrid gridSave, int NOffset,int seq){
+   public static PeakDisplayInfo ShowOnePeakImageView(
+                         Peak_new  pk1, 
+                         IDataGrid gridSave, 
+                         int       NOffset,
+                         int       numSlices,
+                         int       seq ) {
+      if ( numSlices < 1 ) 
+        numSlices = 1;
+      if ( numSlices > 20 )
+        numSlices = 20;
+
+      float[][][] data = new float[2*numSlices+1][NOffset*2+1][NOffset*2+1];
       
-      float[][][] data = new float[5][NOffset*2+1][NOffset*2+1];
-      
-      for( int t = -2;t <= +2;t++)
-         for( int r = -NOffset; r <= NOffset; r++)
-            for( int c= -NOffset; c <= NOffset; c++){
-               if( t+pk1.z() < 0 || r+pk1.y() < 1 || c+pk1.x() < 1)
-                  data[t+2][r+NOffset][c+NOffset] =0;
-               else if( r+pk1.y() > gridSave.num_rows() || 
-                            c+pk1.x() > gridSave.num_cols()||
-                            gridSave.getData_entry( (int)pk1.y()+r ,
-                                     (int) pk1.x()+c).getY_values()== null
-                           || t+pk1.z()> gridSave.getData_entry( (int)pk1.y()+r ,
-                                    (int) pk1.x()+c).getY_values().length) 
-                  data[t+2][r+NOffset][c+NOffset] =0;
-               else
-                  data[t+2][r+NOffset][c+NOffset] = gridSave.getData_entry( 
-                                     r+(int)pk1.y() ,c+(int) pk1.x()).
-                              getY_values()[ t+(int)pk1.z()] ;
+      int data_row;
+      int data_col;
+      int data_chan;
+      float[] ys;
+      for( int t = -numSlices; t <= numSlices; t++ )
+         for( int r = -NOffset; r <= NOffset; r++ )
+            for( int c = -NOffset; c <= NOffset; c++ ){
+              data_col  = (int)(c+pk1.x());    
+              data_row  = (int)(r+pk1.y());    
+              data_chan = (int)(t+pk1.z());    
+              if( data_chan < 0                   || 
+                  data_row  < 1                   || 
+                  data_row  > gridSave.num_rows() || 
+                  data_col  < 1                   ||
+                  data_col  > gridSave.num_cols()    )
+                data[t+numSlices][r+NOffset][c+NOffset] = 0;
+              else   
+              {
+                ys = gridSave.getData_entry(data_row, data_col).getY_values();
+                if ( ys == null || data_chan > ys.length - 1 )
+                  data[t+numSlices][r+NOffset][c+NOffset] = 0;
+                else
+                  data[t+numSlices][r+NOffset][c+NOffset] = ys[data_chan];
+              }
             }
-     return new PeakDisplayInfo(""+(seq+1)+":"+(int)pk1.x()+":"+(int)pk1.y()
-                                                  +":"+(int)pk1.z(), data, 
-               (int)pk1.y()-NOffset,(int)pk1.x()-NOffset,(int)pk1.z()-2, pk1.reflag() < 11);     
+
+     String name ="" + (seq+1) + ": " + (int)pk1.x() + 
+                                 ", " + (int)pk1.y() + 
+                                 ", " + (int)pk1.z();
+
+     return new PeakDisplayInfo( name,
+                                 data, 
+                                 (int)pk1.y()-NOffset,
+                                 (int)pk1.x()-NOffset,
+                                 (int)pk1.z()-2, 
+                                 pk1.reflag() < 11 );     
    }
    
    //Uses the old centroid peak
