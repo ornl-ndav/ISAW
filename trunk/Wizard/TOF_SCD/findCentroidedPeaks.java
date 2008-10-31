@@ -79,7 +79,7 @@ public class findCentroidedPeaks extends GenericOperator{
       addParameter( new IntArrayPG("The data set numbers to load in each run",""));
       addParameter( new StringPG("The experiment name",""));
       addParameter( new IntegerPG("The maximum number of peaks to return",30));
-      addParameter( new IntegerPG("Minimum peak intensity to look for",0));
+      addParameter( new IntegerPG("Minimum peak intensity to look for",5));
       addParameter( new IntegerPG("Minimum time channel to use",0));
       addParameter( new IntegerPG("Maximum time channel to use",50000));
       addParameter( new BooleanPG("Append to prev file output",false));
@@ -103,7 +103,7 @@ public class findCentroidedPeaks extends GenericOperator{
       addParameter( new StringPG("Data filename extension",".nxs"));
       addParameter( new StringPG("The prefix for the filename","SCD"));
       addParameter( new BooleanEnablePG("Show Peak Images", addTo(addTo(addTo(null,true),1),0)));
-      addParameter( new IntegerPG("Number slices in image)",2));
+      addParameter( new IntegerPG("Number of frames before/after peak",2));
     
       addParameter( new BooleanPG("Pop Up Peaks File",true));
       addParameter( new IntegerPG("Max Number of Threads",1));
@@ -211,6 +211,8 @@ public class findCentroidedPeaks extends GenericOperator{
          java.lang.String expname = getParameter(4).getValue().toString();
          int num_peaks = ((IntegerPG)(getParameter(5))).getintValue();
          int min_int = ((IntegerPG)(getParameter(6))).getintValue();
+         if ( min_int < 2 )
+           min_int = 2;
          int min_time_cha = ((IntegerPG)(getParameter(7))).getintValue();
          int max_time_chan = ((IntegerPG)(getParameter(8))).getintValue();
          boolean append = ((BooleanPG)(getParameter(9))).getbooleanValue();
