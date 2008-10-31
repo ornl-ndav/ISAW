@@ -474,6 +474,7 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
                             String       PixelRow,
                             String       PixelCol,
                             boolean      smooth_data,
+                            boolean      check_validity,
                             StringBuffer log ) throws IllegalArgumentException
   {
     if( data_set == null)
@@ -546,7 +547,7 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
     while ( index < peaks_array.length && num_peaks < maxNumPeaks )
     {
       BasicPeakInfo old_peak = peaks_array[index];
-      if ( old_peak.isValid() )
+      if ( old_peak.isValid() || !check_validity )
       {
         row  = old_peak.getRowCenter();
         col  = old_peak.getColCenter();
