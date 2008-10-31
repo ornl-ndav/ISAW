@@ -134,10 +134,11 @@ public class FindPeaksViaSort
     for ( int i = 1; i < max_histogram; i++ )
       cdf[i] = cdf[i-1] + histogram[i];
 
-    if ( threshold <= 0 )                     // set threshold
+    int num_bins = n_rows * n_cols * n_pages;
+    int cutoff;
+    if ( threshold <= 0 )                     // automatically set threshold
     {
-      int num_bins = n_rows * n_cols * n_pages;
-      int cutoff = (int)( num_bins * 0.999f );
+      cutoff = (int)( num_bins * 0.999f );
       threshold = 0;
       while ( threshold < max_histogram && cdf[threshold] < cutoff )
         threshold++;
@@ -155,16 +156,18 @@ public class FindPeaksViaSort
           threshold = 3;            // three counts to be a peak for raw data.
       }
     }
-
-    if ( threshold < 2 )            // in any case require at least two conunts
-      threshold = 2;                // to be a peak!
-
-    // NOTE: Figure out the size of the array we need, when we
-    //       sort the potential peaks.
-    int num_bins = n_rows * n_cols * n_pages;
+                                    // "Safety": don't check more than 1% of
+                                    // the bins, regardless of what the user
+                                    // might have requested.
+    cutoff = (int)( num_bins * 0.99f );
+    while ( threshold < max_histogram && cdf[threshold] < cutoff )
+      threshold++;
 
     if ( threshold > cdf.length - 2) // BAD THRESHOLD would find 0 peaks if
       threshold = cdf.length - 2;    // histogram is large enough.
+
+    if ( threshold < 2 )            // in any case require at least two conunts
+      threshold = 2;                // to be a peak!
     
     int num_above_threshold = num_bins - cdf[threshold];
     log.append( "THRESHOLD = " + threshold + "\n" );
