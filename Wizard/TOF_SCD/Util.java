@@ -173,7 +173,8 @@ public class Util {
       Vector ResultPeaks = new Vector();
       
       String PeakFileName = outpath+expname+".peaks";
-      String ExpFileName  = outpath+expname+".x";
+      String LogFileName = outpath+"FindPeaks"+expname+".log";
+      //String ExpFileName  = outpath+expname+".x";
       
       if( append )if( !( new java.io.File( PeakFileName ) ).exists() )
              // || !( new java.io.File( ExpFileName ) ).exists() )
@@ -317,10 +318,19 @@ public class Util {
           SharedMessages.addmsg( operators.size()+" detectors did not finish in over 1 minute" );
        
        SortUnPackFix( ResultPeaks );
+       try{
+       FileOutputStream fout = new FileOutputStream( LogFileName );
        
-       for( int i = 0 ; i < LogInfo.size() ; i++ )
-          SharedMessages.addmsg(  LogInfo.elementAt( i ) );
-       
+       for( int i = 0 ; i < LogInfo.size() ; i++ ){
+         String S =  LogInfo.elementAt( i ).toString() ;
+         S = S+"\n";
+         fout.write( S.getBytes() );
+       }
+       fout.close();
+       SharedMessages.addmsg("Log File written to "+LogFileName);
+       }catch( Exception t){
+          SharedMessages.addmsg("Log info bad :"+t.toString());
+       }
        LogInfo.clear();
        Vector<Peak_new> Peak1= new Vector<Peak_new>();
        if( append)
@@ -335,7 +345,7 @@ public class Util {
        Peak1.addAll(  ResultPeaks );
        ResultPeaks = Peak1;
        Peak_new_IO.WritePeaks_new( PeakFileName, 
-                                  (Vector<Peak_new>)ResultPeaks, 
+                                  ResultPeaks, 
                                    append1 );
 
       //----------- Write and View Peaks --------------------
@@ -974,7 +984,7 @@ public class Util {
                                      xscl.getInterpolatedX( pk1.z() ) + T0, 
                                      InitialPath,
                                      T0 );
-         if( ShowPeaksView)
+         if( ShowPeaksView && infos!= null)
             infos[i]= ShowOnePeakImageView( pk, 
                                             gridSave, 
                                             NOffset, 
@@ -1182,7 +1192,9 @@ public class Util {
    //Eliminate peaks whose centroid is 
    private static void EliminateDuplicatePeaks( Vector Peaks ){
       
-    boolean done = Peaks == null || Peaks.size() < 1;
+    if( Peaks == null || Peaks.size() < 1)
+       return;
+    boolean done = false;
     
     for( int i = 0 ; !done ; i++ ){
        
@@ -1460,7 +1472,7 @@ public class Util {
       ( new File( cacheFilename)).delete();
       try
       {
-        Peak_new_IO.WritePeaks_new(integfile, (Vector<Peak_new>)Peaks, false);
+        Peak_new_IO.WritePeaks_new(integfile, Peaks, false);
       }
       catch (IOException ex )
       {
