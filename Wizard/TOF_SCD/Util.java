@@ -911,6 +911,7 @@ public class Util {
                                                     PixelRow, 
                                                     PixelCol,
                                                     smooth_data,
+                                                    ValidityTest,
                                                     buff );
       }
       if( Pks == null || Pks.size() < 1 ){
