@@ -38,10 +38,74 @@ import java.util.*;
 
 public class FindPeaksViaSort 
 {
+  private static String  discard_fmt_1 = "%3d %3d %4d %6d Discarded: %s\n" ;
+  private static String  discard_fmt_2 = "%3d %3d %4d %6d Discarded: %s %d\n" ;
+
+  private static String BODY_OVERLAPS      = "Body Overlaps Peak#";
+  private static String OVERLAPS           = "Overlaps Peak#";
+  private static String UNDEFINED_CENTROID = "Undefined Centroid";
+  private static String NOT_LOCAL_MAX      = "Not Local Max";
 
   /**
+   *  Add information on possible peak that was discarded to the specified
+   *  log buffer.
+   *
+   *  @param  log      String buffer that holds the overall log info
+   *  @param  reason   String giving reason for discarding peak
+   *  @param  row      The row number of this possible peak
+   *  @param  col      The column number of this possible peak
+   *  @param  chan     The channel number of this possible peak
+   *  @param  value    The value of this possible peak
+   *  @param  index    The index of a second peak that this overlaps
+   */
+  public static void ShowDiscard( StringBuffer  log,
+                                  String reason,
+                                  int row,
+                                  int col,
+                                  int chan,
+                                  int value,
+                                  int index  )
+  {
+    String message;
+
+    if ( index >= 0 )
+      message = String.format( discard_fmt_2, 
+                               col, row, chan, value, reason, index );
+    else
+      message = String.format( discard_fmt_1, 
+                               col, row, chan, value, reason );
+
+    log.append( message );  
+  }
+
+
+  /**
+   *  Find the peaks in the three dimension array of SCD data.  
    *  NOTE: We assume data stored as raw_data[row][col][channel] !
    *        Histogram must be allocated array of 10000 ints !
+   *  
+   *  @param  raw_data        The 3D array of data from one detector
+   *  @param  do_smoothing    If true, the data will be smoothed by 
+   *                          replacing the value at each bin by the sum
+   *                          of the 3x3 neighborhood of the bin on the
+   *                          time slice.
+   *  @param  num_requested   The maximum number of peaks that should be
+   *                          returned.
+   *  @param  threshold       The minimum raw peak count to use in the
+   *                          initial search for a peak.
+   *  @param  row_border      The number of rows to omit at the top and
+   *                          bottom of the detector
+   *  @param  col_border      The number of columns to omit at the top and
+   *                          bottom of the detector
+   *  @param  min_chan_index  The minimum time channel to use
+   *  @param  max_chan_index  The maximum time channel to use
+   *  @param  histogram       An array of 10,000 floats that will be filled
+   *                          out with the histogram of the detector data
+   *  @param  log             The StringBuffer into which log messages will
+   *                          be written
+   *
+   *  @return an array of BasicPeakInfo objects listing the peaks that were
+   *          found.
    */
   public static BasicPeakInfo[] getPeaks( float[][][]  raw_data,
                                           boolean      do_smoothing,
@@ -82,7 +146,66 @@ public class FindPeaksViaSort
     log.append("NUMBER OF COLS  = " + n_cols + "\n" );
     log.append("NUMBER OF PAGES = " + n_pages + "\n" );
 
-    if ( do_smoothing )
+    if ( do_smoothing )                // Smooth IN PLACE!
+    {
+      float[][] prev_row_average = new float[n_cols][n_pages];
+      float[][] row_average      = new float[n_cols][n_pages];
+      float[][] temp;
+
+                                       // scale row 0 by factor of 9
+      for ( int col = 0; col < n_cols-1; col++ )
+        for ( int page = 0; page < n_pages; page++ )
+          prev_row_average[col][page] = 9 * raw_data[0][col][page];
+
+
+      for ( int row = 1; row < n_rows-1; row++ )
+      {
+                                      // scale first and last col
+                                      // by 9
+        for ( int page = 0; page < n_pages; page++ )
+        {
+          row_average[    0   ][page] = 9 * raw_data[row][    0   ][page];
+          row_average[n_cols-1][page] = 9 * raw_data[row][n_cols-1][page];
+        }
+/*
+        System.arraycopy( raw_data[row][0], 0, row_average[0], 0, n_pages );
+        System.arraycopy( raw_data[row][n_cols-1], 0, 
+                          row_average[n_cols-1], 0, n_pages );
+*/
+        for ( int col = 1; col < n_cols-1; col++ )
+          for ( int page = 0; page < n_pages; page++ )
+            row_average[col][page] = raw_data[row-1][col-1][page] +
+                                     raw_data[row-1][col  ][page] +
+                                     raw_data[row-1][col+1][page] +
+                                     raw_data[row  ][col-1][page] +
+                                     raw_data[row  ][col  ][page] +
+                                     raw_data[row  ][col+1][page] +
+                                     raw_data[row+1][col-1][page] +
+                                     raw_data[row+1][col  ][page] +
+                                     raw_data[row+1][col+1][page];
+
+         temp = raw_data[row - 1];
+         raw_data[row - 1] = prev_row_average;
+         prev_row_average = row_average;
+         row_average = temp;
+      }
+
+      raw_data[ n_rows - 2 ] = prev_row_average;
+
+                                     // scale last row by factor of 9 
+      for ( int col = 0; col < n_cols-1; col++ )
+        for ( int page = 0; page < n_pages; page++ )
+          raw_data[n_rows-1][col][page] *= 9;
+
+      end = System.nanoTime();
+      log.append("--- Time(ms) to smooth data = " + (end-start)/1e6 + "\n" );
+    }
+
+    data_arr = raw_data;
+      
+
+/*
+    if ( do_smoothing )                // Smooth into new array
     {
       float[][][] smoothed_data = new float[n_rows][n_cols][n_pages];
 
@@ -106,6 +229,7 @@ public class FindPeaksViaSort
     }
     else
       data_arr = raw_data;
+*/
 
     start = System.nanoTime();
 
@@ -133,6 +257,9 @@ public class FindPeaksViaSort
     cdf[0] = histogram[0];
     for ( int i = 1; i < max_histogram; i++ )
       cdf[i] = cdf[i-1] + histogram[i];
+
+    if ( do_smoothing )                      // scale up any specified 
+      threshold *= 9;                        // threshold
 
     int num_bins = n_rows * n_cols * n_pages;
     int cutoff;
@@ -204,14 +331,18 @@ public class FindPeaksViaSort
     
     Arrays.sort( count_list );
 
+    int info[]   = new int[4]; 
+    int pk_count = 0;
+
+/*  It takes a lot of room in the log file to print out this list,
+    so for now we won't print it.
+
     log.append( "--- Sorted list of bins above threshold" + "\n"  );
     log.append( String.format("%5s; %4s %4s %4s %5s\n", 
                               "Index", "Col", "Row", "Chan", "Value") );
 
-    int pk_count = 0;
-
-    int info[] = new int[4];                        // show positions we're 
-    for ( int i = 0; i < count_list.length; i++ )   // considering...
+                                                   // print list of peaks we're
+    for ( int i = 0; i < count_list.length; i++ )  // considering...
     {
       info = BinaryPeakCode.Decode( count_list[i], info );
       int chan = info[0];
@@ -221,6 +352,7 @@ public class FindPeaksViaSort
       log.append( String.format ( "%5d; %4d %4d %4d %5d\n",
                                    i, col, row, chan, val ) );
     }
+*/
 
     index = count_list.length - 1;
     Vector peaks = new Vector( num_requested );
@@ -245,9 +377,9 @@ public class FindPeaksViaSort
 
       boolean local_max = true;                 // check if point is local max
       value = (int)data_arr[row][col][chan];
+
       if ( !overlaps )        
       { 
-
         int delta_row  = 3;
         int delta_col  = 3;
         int delta_chan = 3;
@@ -264,10 +396,7 @@ public class FindPeaksViaSort
                 local_max = false;
 
         if ( !local_max )
-          log.append("NOT LOCAL MAX " + col  + 
-                                  " " + row  + 
-                                  " " + chan + 
-                                  " " + value );
+          ShowDiscard( log, NOT_LOCAL_MAX, col, row, chan, value, -1 );
       }
                                               // if point ok, find the extent
                                               // of the peak and check if the
@@ -311,15 +440,13 @@ public class FindPeaksViaSort
             pk_count++;
           }
           else
-            log.append("Bin Index: " + index + " BODY OVERLAPS " +
-                        peak_index + "\n");
-
+            ShowDiscard(log, BODY_OVERLAPS, col, row, chan, value, peak_index);
         }
         else
-          log.append("Bin Index: " + index + " UNDEFINED CENTROID\n");
+          ShowDiscard( log, UNDEFINED_CENTROID, col, row, chan, value, -1 );
       }
       else 
-        log.append("Bin Index: " + index + " OVERLAPS " + peak_index + "\n");
+        ShowDiscard( log, OVERLAPS, col, row, chan, value, peak_index );
 
       index--;
     } 
