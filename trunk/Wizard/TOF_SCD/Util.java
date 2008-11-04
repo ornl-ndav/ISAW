@@ -985,12 +985,7 @@ public class Util {
                                      xscl.getInterpolatedX( pk1.z() ) + T0, 
                                      InitialPath,
                                      T0 );
-         if( ShowPeaksView && infos!= null)
-            infos[i]= ShowOnePeakImageView( pk, 
-                                            gridSave, 
-                                            NOffset, 
-                                            numSlices, 
-                                            i );
+
          pk.setFacility( AttrUtil.getFacilityName( DS ) );
          pk.setInstrument( AttrUtil.getInstrumentName( DS ) );
          pk.seqnum( pk1.seqnum() );
@@ -998,6 +993,13 @@ public class Util {
          pk.inti( pk1.inti() );
          pk.sigi( pk1.sigi() );
          pk.reflag( pk1.reflag() );
+
+         if( ShowPeaksView && infos!= null)
+            infos[i]= ShowOnePeakImageView( pk, 
+                                            gridSave, 
+                                            NOffset, 
+                                            numSlices, 
+                                            i );
          ResultantPeak.add(  pk );
       }   
 
@@ -1074,12 +1076,17 @@ public class Util {
                                  ", " + (int)pk1.y() + 
                                  ", " + (int)pk1.z();
 
+     boolean valid = ( pk1.reflag() <= 11 );
+     if ( !valid )                                     // mark invalid peaks
+       name = "-" + name;                              // with "-" even if
+                                                       // we display them.
+//   System.out.println( "reflag = " + pk1.reflag() );
      return new PeakDisplayInfo( name,
                                  data, 
                                  (int)pk1.y()-NOffset,
                                  (int)pk1.x()-NOffset,
                                  (int)pk1.z()-2, 
-                                 pk1.reflag() < 11 );     
+                                 valid );     
    }
    
    //Uses the old centroid peak
@@ -1087,7 +1094,7 @@ public class Util {
                   float Max_dSpacing, float pixelW_H, int min_time_chan,
                   int max_time_chan , int[] RowColRange ){
       
-      return DataSetTools.operator.Generic.TOF_SCD.Util.centroid( Pk , DS, grid );
+     return DataSetTools.operator.Generic.TOF_SCD.Util.centroid( Pk, DS, grid );
    } 
    
    
