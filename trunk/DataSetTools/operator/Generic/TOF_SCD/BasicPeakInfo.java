@@ -284,12 +284,15 @@ public class BasicPeakInfo
     for ( int i = 0; i < slice_info_arr.length; i++ )
       log.append( slice_info_arr[i].toString() );
 
+    log.append("\n");
                                                   // But this can happen....
     if ( Float.isNaN( slice_info_arr[2].rowCentroid() ) ||  
          Float.isNaN( slice_info_arr[2].colCentroid() ) )
       return false;  
 
 // Check the signal to noise ratio on the central slice.
+/* This was not a useful test, since "hot" pixels would give a high signal 
+   to noise ratio.
 
     float MIN_SIG_TO_NOISE = 5;
 
@@ -302,6 +305,7 @@ public class BasicPeakInfo
     }
     else
       log.append("5:  FAILED Signal To Noise = " + sig_to_noise + "\n" );
+*/
 
 // Check the ratio of the largest value on the center slice, compared to
 // the average values on slices two steps before and after the center slice.
@@ -400,7 +404,6 @@ public class BasicPeakInfo
    */
   public boolean isValid()
   {
-//    return test_2 || test_3 || test_4 || test_5 || test_6;
     return test_6 || test_7 || test_8;
   }
 
@@ -771,7 +774,6 @@ public class BasicPeakInfo
   }
 
 
-
   /**
    *  Get a String giving the column, row, channel, iPeak, and standard
    *  deviations for this peak.
@@ -781,10 +783,10 @@ public class BasicPeakInfo
   public String col_row_chan_ipk( float counts[][][] )
   {
     String result =  String.format( 
-           "%8.2f %8.2f %8.2f   %4d  %5.2f  %5.2f  %5.2f",
-           (col_cent), 
-           (row_cent), 
-           (chan_cent),
+           "%8.2f %8.2f %8.2f %6d %5.2f %5.2f %5.2f",
+           col_cent, 
+           row_cent, 
+           chan_cent,
            (int)counts[(int)init_row][(int)init_col][(int)init_chan],
            delta_col,
            delta_row,
@@ -796,17 +798,6 @@ public class BasicPeakInfo
      return result;
   }
 
-
-  /**
-   *  Get the fractional row center for this peak.  NOTE: This should be
-   *  valid if set_centroid_and_extent() has been called.
-   *
-   *  @param the fractional row number of this peak.
-   */
-  public float getRowCenter()
-  {
-    return row_cent;
-  }
 
   /**
    *  Get the intensity at the point at which this peak was 
@@ -821,14 +812,25 @@ public class BasicPeakInfo
     return ipk;
   }
 
+
+  /**
+   *  Get the fractional row center for this peak.  NOTE: This should be
+   *  valid if set_centroid_and_extent() has been called.
+   *
+   *  @return the fractional row number of this peak.
+   */
+  public float getRowCenter()
+  {
+    return row_cent;
+  }
+
+
   /**
    *  Get the fractional column center for this peak.  NOTE: This should be
    *  valid if set_centroid_and_extent() has been called.
    *
-   *  @param the fractional column number of this peak.
+   *  @return the fractional column number of this peak.
    */
-
-
   public float getColCenter()
   {
     return col_cent;
@@ -836,11 +838,11 @@ public class BasicPeakInfo
 
 
   /**
-   *  Get the fractional column center for this peak.  NOTE: This should be
+   *  Get the fractional channel center for this peak.  NOTE: This should be
    *  valid if set_centroid_and_extent() has been called.  Currently, this
    *  is not moved from the center of the initially specified channel.
    *
-   *  @param the fractional channel number of this peak.
+   *  @return the fractional channel number of this peak.
    */
   public float getChanCenter()
   {
