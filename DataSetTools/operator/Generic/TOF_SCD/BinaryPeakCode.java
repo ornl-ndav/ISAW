@@ -74,8 +74,11 @@ public class BinaryPeakCode
    *  allow sorting on the value, using the Arrays.sort() method applied to
    *  a list of encoded values.
    *
-   *  @param code  A long that encodes the value, row, col and channel
-   *               for a histogram bin.
+   *  @param val    The number of counts in the histogram bin. 
+   *                NOTE: This is limited to 2^31, or about 2 billion
+   *  @param row    The row number of the bin.
+   *  @param col    The column number of the bin.
+   *  @param chan   The channel number of the bin.
    * 
    *  @return an array with four ints containing the channel, column, row
    *          and value in that order. 
