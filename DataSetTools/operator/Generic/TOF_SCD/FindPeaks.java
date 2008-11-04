@@ -564,8 +564,13 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
                                           initial_path,
                                           t_zero );
         new_peak.ipkobs( (int)raw_data[(int)row][(int)col][(int)chan] );
-        result.add( new_peak );
+        if ( old_peak.isValid() )
+          new_peak.reflag( 11 );
+        else
+          new_peak.reflag( 22 );
+
         num_peaks++;
+        result.add( new_peak );
       }
       index++;
     }
