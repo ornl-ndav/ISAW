@@ -583,7 +583,7 @@ public class Peak_new_IO
 
       if ( facility.equalsIgnoreCase(FacilityInstrumentNames.SNS) )
       {
-        System.out.println("SNS orientation");
+//      System.out.println("SNS orientation");
         orientation = new SNS_SampleOrientation( phi, chi, omega);
       }
       else if ( facility.equalsIgnoreCase(FacilityInstrumentNames.LANSCE) )
