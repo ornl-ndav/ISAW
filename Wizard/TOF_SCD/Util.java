@@ -1011,6 +1011,7 @@ public class Util {
          jf.getContentPane().add( main_panel );
          jf.setSize( 100*main_panel.numPanelCols(), 
                      100*main_panel.numPanelRows() + 30 );
+         jf.setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
          jf.setVisible( true );
       }
 
