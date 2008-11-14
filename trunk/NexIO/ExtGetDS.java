@@ -211,6 +211,7 @@ public class ExtGetDS{
      EntryToDSs = new Vector();
      NxNode entry,instr,source,moderator,beam, sample;
      entry = instr = source = moderator = beam = sample =null;
+     boolean closed=false;
      try{
         FileInputStream fin = new FileInputStream( Fname );
         for( String line= Peak.getLine(fin); line !=null; line = Peak.getLine(fin)){
@@ -258,11 +259,14 @@ public class ExtGetDS{
            
            
         }  
-        
+        closed = true;
+        fin.close(); 
      }catch( Exception ss){
         this.EntryToDSs = new Vector();
         this.setupDSs = false;
+       
      }
+     
      
    }
    
@@ -475,6 +479,59 @@ public class ExtGetDS{
         return " ";
      return S;
   }
+  
+  /**
+   * Fixes attributes of the DataSet DS using information from this NeXus file
+   * @param DS   The DataSet to be fixed
+   * @param dsNum  The corresponding data set number associated with this data set
+   * @param Mode   The sum of the INex constants in NeXusRetriever indicating
+   *               the Class name to use to change attributes.  Only 1 is in use
+   * @return   false if there is no error otherwise true. See getErrorMessage for
+   *          a problem
+   */
+  public boolean FixUpDataSet( DataSet DS, int dsNum,int Mode){
+     
+     if( DS == null || dsNum <0|| dsNum >= numDataSets()|| Mode <=0 )
+        return false;
+     
+     DataSetInfo  dsInf = (DataSetInfo)(EntryToDSs.elementAt( dsNum ));
+     NxfileStateInfo FInfo = new NxfileStateInfo( node, filename,dsInf.NxInstrSourceNode);
+     NxEntryStateInfo EInfo = new NxEntryStateInfo( dsInf.NxentryNode, 
+              FInfo, dsInf.NxInstrumentNode,dsInf.NxSampleNode, dsInf.NxBeamNode,
+               dsInf.NxInstrSourceNode);
+     FInfo.Push( EInfo );
+     NxDataStateInfo DInfo = null;
+     if( dsInf.NxdataNode != null){
+        DInfo = new NxDataStateInfo(dsInf.NxdataNode ,dsInf.NxInstrumentNode , 
+                FInfo , dsInf.startGroupID);
+         EInfo.Push(  DInfo );
+     }else{//monitor ??? may be a bunch
+     }
+    NxInstrumentStateInfo InstInfo = new NxInstrumentStateInfo( dsInf.NxInstrumentNode , 
+             FInfo);
+    FInfo.Push(  InstInfo );
+    
+     
+     
+     if( Mode % 2 >=0){
+        NexUtils nxUt = new NexUtils();
+        if( DInfo != null){
+           NxNode NxDetectorNode = NexUtils.getCorrespondingNxDetector( DInfo.linkName ,
+                                                        dsInf.NxInstrumentNode );
+           boolean Res = nxUt.setUpNXdetectorAttributes( DS , dsInf.NxdataNode , 
+                                   NxDetectorNode , dsInf.startGroupID , FInfo );
+           if( Res){
+              errormessage = nxUt.getErrorMessage();
+              return Res;
+           }
+        }else{//Monitor
+           return false;// Monitor has no NXdetector stuff
+        }
+     }
+     
+     
+     return false;
+  }
   /**
    * Returns the filename with the path removed
    * 
@@ -482,7 +539,7 @@ public class ExtGetDS{
    * 
    * @return the filename with the path removed or null if filename is null
    */
-  public String NameFile( String wholeFileName ){
+  public  String NameFile( String wholeFileName ){
      
        if( wholeFileName == null )
           return null;
