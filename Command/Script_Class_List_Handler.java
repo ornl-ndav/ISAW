@@ -1599,6 +1599,8 @@ public class Script_Class_List_Handler  implements OperatorHandler{
      * 
      */
     public static void Save( boolean create){
+       if( 3==3)
+          return;
       String S = System.getProperty("user.home");
       if(S == null){ 
         JOptionPane.showMessageDialog( null, "There is no User Home directory");
@@ -1697,6 +1699,8 @@ public class Script_Class_List_Handler  implements OperatorHandler{
      *                   false is returned.
      */
     public static synchronized boolean Restore(){
+       if( 3==3)
+          return false;
       if(!first)
           return true;
       if( restored)
