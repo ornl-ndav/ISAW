@@ -244,7 +244,7 @@ public class NexUtils implements INexUtils {
      *        next dimension represent col then row, then detectors. col
      *        or row dimensions can be missing.
      */
-    public boolean setUpNXdetectorAttributes( DataSet DS , NxNode NxDataNode ,
+    public  boolean setUpNXdetectorAttributes( DataSet DS , NxNode NxDataNode ,
             NxNode NxDetector , int startDSindex , NxfileStateInfo States ) {
 
       NxDataStateInfo dataState = NexUtils.getDataStateInfo( States );  
@@ -709,7 +709,7 @@ public class NexUtils implements INexUtils {
                                  x_dirDim , dims , 0 ) , Val( detDig , width ,
                                  widthDim , dims , 0 , 1f ) , Val( detDig ,
                                  height , heightDim , dims , 0 , 1f ) , Val(
-                                 detDig , depth , depthDim , dims , 0 , .1f ) ,
+                                 detDig , depth , depthDim , dims , 0 , .002f ) ,
                         Val( detDig , diameter , diameterDim , dims , 0 , 0f ) ,
                         detType , Row(nrows , ncols),Col(nrows,ncols) , x_offsets , 
                         y_offsets 
@@ -724,7 +724,7 @@ public class NexUtils implements INexUtils {
                         new Vector3D( 0f , 1f , 0f ) , Val( detDig , width ,
                                  widthDim , dims , 0 , 1f ) , Val( detDig ,
                                  height , heightDim , dims , 0 , 1f ) , Val(
-                                 detDig , depth , depthDim , dims , 0 , .1f ) ,
+                                 detDig , depth , depthDim , dims , 0 , .002f ) ,
                         1 , 1 );
 
             else if( nrows>1 || ncols > 1)  //Other case t RowColGrid 
