@@ -521,15 +521,34 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
       for ( int col = 1; col <= num_cols; col++ )
         raw_data[row-1][col-1] = grid.getData_entry( row, col ).getY_values();
 
-    int   row_border = 3;
-    int   col_border = 3;
     int[] histogram  = new int[10000];
+
+                                             // Get the list of rows to use
+    if( PixelRow == null || PixelCol.trim().length() < 1 )
+       PixelRow ="1:"+ num_rows;
+
+    int[] row_list= IntList.ToArray( PixelRow.toString() );
+
+    if ( row_list.length < 1 )
+      throw new IllegalArgumentException("NO rows specified:" + PixelRow );
+
+
+                                             // Get the list of columns to use
+    if( PixelCol == null || PixelCol.trim().length() < 1 )
+       PixelCol ="1:"+num_cols;
+
+    int[] col_list =IntList.ToArray( PixelCol.toString() );
+
+    if ( col_list.length < 1 )
+      throw new IllegalArgumentException("NO columns specified:" + PixelCol );
+
+
     BasicPeakInfo[] peaks_array = FindPeaksViaSort.getPeaks( raw_data,
                                                              smooth_data,
                                                              2*maxNumPeaks,
                                                              min_count,
-                                                             row_border,
-                                                             col_border,
+                                                             row_list,
+                                                             col_list,
                                                              minTimeChan,
                                                              maxTimeChan,
                                                              histogram,
@@ -540,37 +559,48 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
     int    index     = 0;
     float  monct     = 0;
     XScale x_scale   = data.getX_scale();
-    float  row,
-           col,
+    float  row = -1,
+           col = -1,
            chan;
     float  tof;
     while ( index < peaks_array.length && num_peaks < maxNumPeaks )
     {
-      BasicPeakInfo old_peak = peaks_array[index];
-      if ( old_peak.isValid() || !check_validity )
+      try 
       {
-        row  = old_peak.getRowCenter();
-        col  = old_peak.getColCenter();
-        chan = old_peak.getChanCenter();
-        tof = x_scale.getInterpolatedX( chan );
-        Peak_new new_peak = new Peak_new( run_nums[0],
-                                          monct,
-                                          col,
-                                          row,
-                                          chan,
-                                          grid,
-                                          orientation,
-                                          tof,
-                                          initial_path,
-                                          t_zero );
-        new_peak.ipkobs( (int)raw_data[(int)row][(int)col][(int)chan] );
-        if ( old_peak.isValid() )
-          new_peak.reflag( 11 );
-        else
-          new_peak.reflag( 22 );
+        BasicPeakInfo old_peak = peaks_array[index];
+        if ( old_peak.isValid() || !check_validity )
+        {
+          row  = old_peak.getRowCentroid() + 1;   // NOTE: row and col indexes
+          col  = old_peak.getColCentroid() + 1;   // start at 1 in Peak_new
+          chan = old_peak.getChanCenter();
+          tof = x_scale.getInterpolatedX( chan );
+          Peak_new new_peak = new Peak_new( run_nums[0],
+                                            monct,
+                                            col,
+                                            row,
+                                            chan,
+                                            grid,
+                                            orientation,
+                                            tof,
+                                            initial_path,
+                                            t_zero );
+        
+                                          // NOTE: row and col indexes start at
+                                          // zero in the array
+          new_peak.ipkobs( (int)raw_data[(int)row-1][(int)col-1][(int)chan] );
+          if ( old_peak.isValid() )
+            new_peak.reflag( 11 );
+          else
+            new_peak.reflag( 22 );
 
-        num_peaks++;
-        result.add( new_peak );
+          num_peaks++;
+          result.add( new_peak );
+        }
+      }
+      catch( Exception ex )
+      {
+       log.append( "Warning: centroid bad at row, col = " + row +
+                   ", " + col + ex ); 
       }
       index++;
     }
