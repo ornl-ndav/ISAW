@@ -117,7 +117,7 @@ public class RowColGrid implements IDataGrid {
       this.ID = ID;
       filled = false;
       units = "m";
-      depth = .05f;
+      depth = .002f;
 
 
    }
