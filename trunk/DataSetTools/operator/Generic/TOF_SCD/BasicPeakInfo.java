@@ -240,16 +240,17 @@ public class BasicPeakInfo
       col_cent = col_centroid;
 
 /*  NOTE: for now, leave the channel center at the peak max
-
+*/
     float cent_sum   = 0;
     float weight_sum = 0;
-    for ( int i = 1; i < slice_info_arr.length - 1; i++ ) 
-    {
-      weight_sum += slice_info_arr[i].Ipk();
-      cent_sum   += slice_info_arr[i].Ipk() * slice_info_arr[i].channel_num;
-    }
+    for ( int i = 0; i < slice_info_arr.length; i++ ) 
+      if ( slice_info_arr[i] != null )
+      {
+        weight_sum += slice_info_arr[i].Ipk();
+        cent_sum   += slice_info_arr[i].Ipk() * 
+                      ( slice_info_arr[i].channel_num + 0.5f );
+      }
     chan_cent = cent_sum/weight_sum; 
-*/
 
 /*  DON'T DO THIS WEIGHTING NOW:
     for ( int i = 0; i < slice_info_arr.length; i++ )
@@ -814,26 +815,68 @@ public class BasicPeakInfo
 
 
   /**
-   *  Get the fractional row center for this peak.  NOTE: This should be
-   *  valid if set_centroid_and_extent() has been called.
+   *  Get the fractional row centroid for this peak (minus background).
+   *  NOTE: This should be valid if set_centroid_and_extent() has
+   *         been called.
    *
-   *  @return the fractional row number of this peak.
+   *  @return the fractional row centroid of this peak.
    */
-  public float getRowCenter()
+  public float getRowCentroid()
   {
     return row_cent;
   }
 
 
   /**
-   *  Get the fractional column center for this peak.  NOTE: This should be
-   *  valid if set_centroid_and_extent() has been called.
+   *  Get the fractional column centroid for this peak (minus background).
+   *  NOTE: This should be *  valid if set_centroid_and_extent() has 
+   *        been called.
    *
-   *  @return the fractional column number of this peak.
+   *  @return the fractional column centroid of this peak.
    */
-  public float getColCenter()
+  public float getColCentroid()
   {
     return col_cent;
+  }
+
+
+  /**
+   *  Get the fractional row mean for this peak, including bacground.
+   *  NOTE: This should be valid if set_centroid_and_extent() has
+   *         been called.
+   *
+   *  @return the fractional row mean of this peak.
+   */
+  public float getRowMean()
+  {
+    if ( slice_info_arr != null  &&
+         slice_info_arr.length > 0 )
+    {
+      int mid = slice_info_arr.length / 2;
+      return slice_info_arr[mid].row_mean;
+    }
+    
+    return row_cent ;
+  }
+
+
+  /**
+   *  Get the fractional column mean for this peak, including background.
+   *  NOTE: This should be valid if set_centroid_and_extent() has 
+   *        been called.
+   *
+   *  @return the fractional column mean of this peak.
+   */
+  public float getColMean()
+  {
+    if ( slice_info_arr != null  &&
+         slice_info_arr.length > 0 )
+    {
+      int mid = slice_info_arr.length / 2;
+      return slice_info_arr[mid].col_mean;
+    }
+    
+    return col_cent ;
   }
 
 
