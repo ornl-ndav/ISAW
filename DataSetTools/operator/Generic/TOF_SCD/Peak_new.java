@@ -208,7 +208,19 @@ public class Peak_new implements IPeak_IPNS_out
     else
       sample_orientation = new SNS_SampleOrientation(0,0,0);
     
-    float l2 = grid.position( row, col ).length();
+    float l2 = 0;
+    if ( grid == null )
+      throw new IllegalArgumentException("ERROR: Grid null in Peak_new");
+    else
+    {
+      Vector3D position = grid.position( row, col );
+      if ( position == null )
+        throw new IllegalArgumentException("ERROR: row, col invalid in " +
+                        "Peak_new " + row + ", " + col );
+      else 
+        l2 = position.length();
+    }
+
     float wavelength = tof_calc.Wavelength( initial_path+l2, tof );
     this.wl            = wavelength; 
     this.l1            = initial_path;
