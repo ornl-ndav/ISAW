@@ -142,7 +142,7 @@ public class Util {
       String PixelRow = min_row+":"+max_row;
       String PixelCol = min_col+":"+max_col;
       int[] Runs = new int[ runnums.size() ];
-      
+      long currentTime = System.currentTimeMillis();
       try {
          
          for( int i = 0 ; i < runnums.size() ; i++ )
@@ -356,7 +356,9 @@ public class Util {
       
       if( ViewPeaks )
          ( new ViewASCII( PeakFileName ) ).getResult();
- 
+   
+      if( ShowPeaksView)
+         PeakArrayPanels.DisplayPeaks( "Peak Images",null,"PeakV",".pvw",currentTime);
       return ResultPeaks;
    }
    
@@ -1005,7 +1007,7 @@ public class Util {
 
       if( ShowPeaksView ){
          PeaksDisplayPanel main_panel= new PeaksDisplayPanel( infos);
-         JFrame jf = new JFrame("Detector: " + DetectorID + 
+         /*JFrame jf = new JFrame("Detector: " + DetectorID + 
                                 " Run: " + AttrUtil.getFileName( DS ));
          jf.getContentPane().setLayout(  new GridLayout(1,1) );
          jf.getContentPane().add( main_panel );
@@ -1013,6 +1015,32 @@ public class Util {
                      100*main_panel.numPanelRows() + 30 );
          jf.setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
          jf.setVisible( true );
+         */
+         
+         String outFilename = System.getProperty( "user.home" ,"");
+         outFilename = outFilename.replace('\\', '/');
+         if(outFilename.length() > 0 && !outFilename.endsWith( "/" ))
+            outFilename +="/";
+         outFilename = outFilename+"ISAW/tmp";
+         File F = new File(outFilename.replace( '/' , '\\'));
+         if(!F.exists() ||  !F.isDirectory())
+            if( ! F.mkdir())
+               return ResultantPeak;
+         String fname = AttrUtil.getFileName( DS );
+         int k = fname.lastIndexOf( '.' );
+         fname = fname.replace( '\\' , '/' );
+         if( k >=0)
+            fname = fname.substring(0,k);
+         k= fname.lastIndexOf( '/' );
+         if( k >=0)
+            fname = fname.substring(k+1);
+         outFilename +="/PeakV"+fname +"_"+DetectorID+".pvw";
+         try{
+             ObjectOutputStream out = new ObjectOutputStream( new FileOutputStream( outFilename));
+             out.writeObject( main_panel );
+         }catch(Exception s){
+            
+         }
       }
 
       return ResultantPeak;
