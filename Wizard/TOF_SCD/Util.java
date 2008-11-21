@@ -1021,8 +1021,8 @@ public class Util {
          outFilename = outFilename.replace('\\', '/');
          if(outFilename.length() > 0 && !outFilename.endsWith( "/" ))
             outFilename +="/";
-         outFilename = outFilename+"ISAW/tmp";
-         File F = new File(outFilename.replace( '/' , '\\'));
+         outFilename = outFilename+"ISAW/tmp/";
+         File F = new File(outFilename.replace( '/' , File.separatorChar));
          if(!F.exists() ||  !F.isDirectory())
             if( ! F.mkdir())
                return ResultantPeak;
@@ -1034,7 +1034,7 @@ public class Util {
          k= fname.lastIndexOf( '/' );
          if( k >=0)
             fname = fname.substring(k+1);
-         outFilename +="/PeakV"+fname +"_"+DetectorID+".pvw";
+         outFilename +="PeakV"+fname +"_"+DetectorID+".pvw";
          try{
              ObjectOutputStream out = new ObjectOutputStream( new FileOutputStream( outFilename));
              out.writeObject( main_panel );
