@@ -1034,7 +1034,8 @@ public class Util {
          k= fname.lastIndexOf( '/' );
          if( k >=0)
             fname = fname.substring(k+1);
-         outFilename +="PeakV"+fname +"_"+DetectorID+".pvw";
+         outFilename +="PeakV"+fname +"_"+String.format( "%4d" , DetectorID).replace( ' ' , '0' )+".pvw";
+         System.out.println("outfilename ="+outFilename);
          try{
              ObjectOutputStream out = new ObjectOutputStream( new FileOutputStream( outFilename));
              out.writeObject( main_panel );
