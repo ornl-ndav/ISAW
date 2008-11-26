@@ -48,10 +48,53 @@ import gov.anl.ipns.MathTools.Geometry.*;
  */
 public class DataSetToEventList_calc
 {
+
   public enum BeamDirection{ X, Y, Z };
 
+
   /**
-   *  Make an event list in reciprocal space, from the bins of the 
+   *  Make an event list in reciprocal space from the bins of the 
+   *  specified DataSet that have 1 or more counts.
+   *  
+   *  @param ds   The DataSet whose bins are mapped to reciprocal space
+   *              to form the event list.
+   *
+   *  @param dir  String containing axis name for the neutron beam direction,
+   *              "X", "Y" or "Z".  If anyother string is passed, an 
+   *              exception will be thrown. 
+   *              The beam direction is "X" for IPNS coordinates, and "Z"
+   *              for SNS coordinates, although currently the coordinates
+   *              for SNS files are translated into IPNS coordinates, so
+   *              "X" should be used in both cases. 
+   *
+   *  @return A list of the events in reciprocal space, or null if all of the
+   *          bins of the DataSet have zero counts.
+   */
+  public static FloatArrayEventList3D
+                    MakeDiffractometerQEventList( DataSet  ds,
+                                                  String   dir )
+  {
+    BeamDirection beam_dir = null;
+
+    if ( dir.equalsIgnoreCase( "X" ) )
+      beam_dir = BeamDirection.X;
+
+    if ( dir.equalsIgnoreCase( "Y" ) )
+      beam_dir = BeamDirection.Y;
+
+    if ( dir.equalsIgnoreCase( "Z" ) )
+      beam_dir = BeamDirection.Z;
+
+    if ( beam_dir == null )
+      throw new IllegalArgumentException( "Beam direction must be string, x"+
+                                          " X, Y or Z" );
+
+    return MakeDiffractometerQEventList( ds, beam_dir );
+  }
+
+
+  /**
+   *  Make an event list in reciprocal space from the bins of the 
    *  specified DataSet that have 1 or more counts.
    *  
    *  @param ds   The DataSet whose bins are mapped to reciprocal space
@@ -66,6 +109,8 @@ public class DataSetToEventList_calc
                     MakeDiffractometerQEventList( DataSet       ds,
                                                   BeamDirection dir )
   {
+     int max_time = 10000;
+
      if ( ds == null )
        throw new IllegalArgumentException("ERROR: ds null");
 
@@ -129,16 +174,14 @@ public class DataSetToEventList_calc
        float[] xs = data.getX_scale().getXs();
        for ( int k = 0; k < ys.length; k++ )
        {
-//       if ( xs[k] < 16500 && ys[k] >= 1 )    // stay before next pulse 
-         if ( ys[k] >= 1 )                     // add event to list 
+         if ( xs[k] < max_time && ys[k] >= 1 ) // stay before next pulse 
+                                               // add event to list 
          {
            mag_Q = tof_calc.DiffractometerQ( angle_radians, path_len_m, xs[k] );
            vec = new Vector3D( q_dir );
            vec.multiply( mag_Q );   
            q_vectors.add( vec );
            counts.add( (int)ys[k] );
-//         counts.add( (int)Math.max( mag_Q/20 * ys[k],1) );
-//         counts.add( (int)Math.max( mag_Q*mag_Q/400 * ys[k],1) );
          }
        }         
      } 
@@ -176,12 +219,21 @@ public class DataSetToEventList_calc
     int min_ds_num = 2;
     int max_ds_num = 2;
 */
+/*
     String indir  = "/usr2/ARCS_SCD/";
     String infile = "ARCS_419";
     String inname = indir + infile + ".nxs";
     Retriever rr = new NexusRetriever( inname );
     int min_ds_num = 1;
     int max_ds_num = 114;
+*/
+    String indir  = "/usr2/SNAP/";
+    String infile = "SNAP_7";
+    String inname = indir + infile + ".nxs";
+    Retriever rr = new NexusRetriever( inname );
+    int min_ds_num = 0;
+    int max_ds_num = 2;
+
 
     BeamDirection beam_dir = BeamDirection.X; // currently SNS NeXus files are
                                               // are remapped into IPNS coords
@@ -190,8 +242,10 @@ public class DataSetToEventList_calc
     Vector<IEventList3D> all_events = new Vector<IEventList3D>();
     for ( int i = min_ds_num; i <= max_ds_num; i++ )
     {
+      System.out.println("Processing DataSet #" + i );
       DataSet ds = rr.getDataSet(i);
-      events = MakeDiffractometerQEventList( ds, beam_dir );
+//      events = MakeDiffractometerQEventList( ds, beam_dir );
+      events = MakeDiffractometerQEventList( ds, "X" );
       if ( events != null )
         all_events.add( events );
     }
@@ -203,7 +257,10 @@ public class DataSetToEventList_calc
     String outname = outdir + infile + ".events";
     
     ByteFile16EventList3D.MakeByteFile16_3D( events, outname );
+
+    System.out.println("NORMAL EXIT...");
   }
 
 
 }
+
