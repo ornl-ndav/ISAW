@@ -38,7 +38,6 @@ import java.util.*;
 import EventTools.EventList.IEventList3D;
 import EventTools.Histogram.ProjectionBinner3D;
 import gov.anl.ipns.Operator.*;
-import gov.anl.ipns.MathTools.Geometry.Vector3D;
 
 /**
  * This IOperator adds a list of events to appropriate bins in the specified 
