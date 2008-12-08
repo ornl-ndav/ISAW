@@ -1,0 +1,236 @@
+/* 
+ * File: FindPeaksProcessCaller.java
+ *
+ * Copyright (C) 2008, Dennis Mikkelson
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
+ *           Department of Mathematics, Statistics and Computer Science
+ *           University of Wisconsin-Stout
+ *           Menomonie, WI 54751, USA
+ *
+ * This work was supported by the Spallation Neutron Source Division
+ * of Oak Ridge National Laboratory, Oak Ridge, TN, USA.
+ *
+ *  Last Modified:
+ * 
+ *  $Author$
+ *  $Date$            
+ *  $Revision$
+ */
+package DataSetTools.operator.Generic.TOF_SCD;
+
+import java.util.*;
+import java.io.*;
+
+import DataSetTools.operator.Generic.TOF_SCD.*;
+import DataSetTools.retriever.*;
+import DataSetTools.dataset.*;
+import gov.anl.ipns.Operator.*;
+
+
+/**
+ *  The getResult() method of this class will execute the FindPeaksProcess
+ *  main method, to find the peaks in a particular detector.  The peaks
+ *  are returned in a Vector of Peak_new objects.
+ *  
+ */
+public class FindPeaksProcessCaller implements IOperator
+{
+  String   cmd_name = null;
+  String   fin_name;
+  String   fout_name;
+  int      ds_num;
+  int      num_peaks;
+  int      min_intensity;
+  int      min_time_chan;
+  int      max_time_chan;
+  String   pixel_row;
+  String   pixel_col;
+  int      mon_count;
+  float    max_Dspacing;
+  boolean  use_new_find_peaks;
+  boolean  do_smoothing;
+  boolean  do_validity_test;
+  boolean  do_centroid;
+  boolean  show_peaks_view;
+  int      num_slices;
+
+
+  /**
+   *  Construct an object to find the peaks in the specified detector, using
+   *  the specified parameters.
+   */
+  public FindPeaksProcessCaller( String   cmd_name,
+                                 String   fin_name, 
+                                 String   fout_name,
+                                 int      ds_num,
+                                 int      num_peaks,
+                                 int      min_intensity,
+                                 int      min_time_chan,
+                                 int      max_time_chan,
+                                 String   pixel_row,
+                                 String   pixel_col,
+                                 int      mon_count,
+                                 float    max_Dspacing,
+                                 boolean  use_new_find_peaks,
+                                 boolean  do_smoothing,
+                                 boolean  do_validity_test,
+                                 boolean  do_centroid,
+                                 boolean  show_peaks_view,
+                                 int      num_slices
+                               )
+  {
+    this.cmd_name           = cmd_name;
+    this.fin_name           = fin_name;
+    this.fout_name          = fout_name;
+    this.ds_num             = ds_num;
+    this.num_peaks          = num_peaks;
+    this.min_intensity      = min_intensity;
+    this.min_time_chan      = min_time_chan;
+    this.max_time_chan      = max_time_chan;
+    this.pixel_row          = pixel_row;
+    this.pixel_col          = pixel_col;
+    this.mon_count          = mon_count;
+    this.max_Dspacing       = max_Dspacing;
+    this.use_new_find_peaks = use_new_find_peaks;
+    this.do_smoothing       = do_smoothing;
+    this.do_validity_test   = do_validity_test;
+    this.do_centroid        = do_centroid;
+    this.show_peaks_view    = show_peaks_view;
+    this.num_slices         = num_slices;
+  }
+
+
+  /**
+   *  Execute the FindPeaksProcess main program as a separate process,
+   *  then read the file that is produced and return the peaks that were
+   *  found in a Vector of Peak_new objects.  The temporary peaks file
+   *  is deleted after it is read.
+   *
+   *  @return a Vector of Peak_new objects.
+   */
+  public Object getResult()
+  {
+    String command = null;
+    try
+    {                                                // Build the command 
+                                                     // NOTE: The same command
+                                                     // must work on all 
+                                                     // systems.
+
+      String exe_path = "DataSetTools.operator.Generic.TOF_SCD.";
+
+      command = cmd_name           + " " +
+                exe_path           +
+               "FindPeaksProcess"  + " " + 
+                fin_name           + " " +                  
+                fout_name          + " " +
+                ds_num             + " " +
+                num_peaks          + " " +
+                min_intensity      + " " +
+                min_time_chan      + " " +
+                max_time_chan      + " " + 
+                pixel_row          + " " + 
+                pixel_col          + " " + 
+                mon_count          + " " +
+                max_Dspacing       + " " +
+                use_new_find_peaks + " " +
+                do_smoothing       + " " + 
+                do_validity_test   + " " + 
+                do_centroid        + " " + 
+                show_peaks_view    + " " + 
+                num_slices         + " " ; 
+
+      System.out.println("EXECUTING: " + command );
+ 
+                                                     // Execute the command
+                                                     // possibly on remote node
+      Process process = Runtime.getRuntime().exec( command );
+
+      InputStream process_out = process.getInputStream();
+      InputStreamReader process_out_reader = new InputStreamReader(process_out);
+      BufferedReader process_out_buff = new BufferedReader( process_out_reader);
+    
+      String line;
+      /*  For now, don't show the output.....
+      while ((line = process_out_buff.readLine()) != null) 
+        System.out.println(line);
+      */
+
+      InputStream process_err = process.getErrorStream();
+      InputStreamReader process_err_reader = new InputStreamReader(process_err);
+      BufferedReader process_err_buff = new BufferedReader( process_err_reader);
+
+      boolean first_time = true;
+      while ((line = process_err_buff.readLine()) != null)
+      {
+        if ( first_time )
+        {
+          System.out.println("ERRORS FOR COMMAND: " + command );
+          first_time = false;
+        }
+        System.out.println(line);
+      }  
+      try 
+      {
+        if (process.waitFor() != 0) 
+          System.out.println("exit value = " + process.exitValue() );
+      }
+      catch (InterruptedException e) 
+      {
+        System.err.println(e);
+      }
+    }
+    catch( Exception ex )
+    {
+      System.out.println( "EXCEPTION executing command " + command +
+                          " for " + fin_name +
+                          " ds_num " + ds_num +
+                          " on server " + cmd_name );
+      ex.printStackTrace();
+    }
+
+    System.out.println( "Peaks file written for run " + fin_name +
+                        " ds_num " + ds_num );
+
+                                                     // NOW read in the results
+    Vector peaks = new Vector();                     // from the file and
+    try                                              // return vector of peaks
+    {
+      File file = new File(fout_name);
+      if ( file.exists() )
+      {
+        peaks = Peak_new_IO.ReadPeaks_new( fout_name );
+        File delete_file = new File( fout_name );
+        delete_file.delete();
+      }
+    }
+    catch ( Exception ex )
+    {
+      System.out.println( "EXCEPTION reading temporary peaks file "+fout_name+
+                          " for " + fin_name +
+                          " ds_num " + ds_num +
+                          " on server " + cmd_name );
+      ex.printStackTrace();
+    }
+
+    System.out.println( "Returning peaks for run " + fin_name +
+                        " ds_num " + ds_num );
+    return peaks;
+  }
+
+}
