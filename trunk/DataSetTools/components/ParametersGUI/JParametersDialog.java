@@ -605,7 +605,7 @@ public class JParametersDialog implements Serializable,
 
       Size += ( num_param + 4 ) * 3 + 42;
 
-      opDialog.setSize( (int) ( .4 * Width ) , new Float( Size + .8 )
+      opDialog.setSize( (int) ( .5 * Width ) , new Float( Size + .8 )
                .intValue() );
       opDialog.validate();
 
