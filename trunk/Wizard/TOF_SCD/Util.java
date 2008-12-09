@@ -49,6 +49,7 @@ import java.util.*;
 import javax.swing.JFrame;
 
 import gov.anl.ipns.Util.SpecialStrings.*;
+import gov.anl.ipns.Util.File.FileIO;
 import gov.anl.ipns.Util.Numeric.*;
 import gov.anl.ipns.Operator.Threads.*;
 import gov.anl.ipns.Util.Sys.*;
@@ -358,7 +359,7 @@ public class Util {
          ( new ViewASCII( PeakFileName ) ).getResult();
    
       if( ShowPeaksView)
-         PeakArrayPanels.DisplayPeaks( "Peak Images",null,"PeakV",".pvw",currentTime);
+         PeakArrayPanels.DisplayPeaks( "Peak Images",null,"",".pvw",currentTime);
       return ResultPeaks;
    }
    
@@ -701,9 +702,32 @@ public class Util {
             
             Object Error = null;
             int timeOut = 3000;
-            
+            if( maxNumThreads <=0 ){//do totally sequentially
+               StringBuffer Sbuff = new StringBuffer();
+               Operator op =SetUpfindPeaksOp( DS,
+                        ( ( Integer )K ).intValue(), num_peaks, 
+                        min_int,  min_time_chan, max_time_chan,
+                        PixelRow,PixelCol, monCount, Sbuff, Max_dSpacing,
+                         NewFindPeaks,
+                        SmoothData,
+                        ValidityTest,
+                        Centroid,
+                        ShowPeaksView,
+                        numSlices  );
+               Object Res = op.getResult();
+
+               buff.addElement( Sbuff );
+               if( Res != null && Res instanceof Vector )
+                  ResultPeaks.addElement(  Res );
+               
+               else if( Res != null && Res instanceof ErrorString )
+                  Error = Res;
+               
+               return Error;
+                  
+            }else
             while( operators.size() >= maxNumThreads  && timeOut < 18000 ){
-              
+               
                boolean done = false;
                for( int i = 0 ; i < operators.size() && !done ; i++ ){
                   
@@ -1007,25 +1031,19 @@ public class Util {
 
       if( ShowPeaksView ){
          PeaksDisplayPanel main_panel= new PeaksDisplayPanel( infos);
-         /*JFrame jf = new JFrame("Detector: " + DetectorID + 
-                                " Run: " + AttrUtil.getFileName( DS ));
-         jf.getContentPane().setLayout(  new GridLayout(1,1) );
-         jf.getContentPane().add( main_panel );
-         jf.setSize( 100*main_panel.numPanelCols(), 
-                     100*main_panel.numPanelRows() + 30 );
-         jf.setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
-         jf.setVisible( true );
-         */
+  
          
-         String outFilename = System.getProperty( "user.home" ,"");
-         outFilename = outFilename.replace('\\', '/');
-         if(outFilename.length() > 0 && !outFilename.endsWith( "/" ))
-            outFilename +="/";
-         outFilename = outFilename+"ISAW/tmp/";
+         String outFilename = FileIO.appendPath(System.getProperty( "user.home") ,
+                      "ISAW"+File.separator+"tmp"+File.separator);
+         
          File F = new File(outFilename.replace( '/' , File.separatorChar));
          if(!F.exists() ||  !F.isDirectory())
             if( ! F.mkdir())
                return ResultantPeak;
+         
+         //Now get the part of the filename after the path and before the extension
+         // this will be part of the filename along with "_" followed by detector ID
+         //  and then the extension
          String fname = AttrUtil.getFileName( DS );
          int k = fname.lastIndexOf( '.' );
          fname = fname.replace( '\\' , '/' );
@@ -1034,7 +1052,10 @@ public class Util {
          k= fname.lastIndexOf( '/' );
          if( k >=0)
             fname = fname.substring(k+1);
-         outFilename +="PeakV"+fname +"_"+String.format( "%4d" , DetectorID).replace( ' ' , '0' )+".pvw";
+         
+         //
+         //outfilename is {user.home}/ISAW/tmp/PeakV{filename}_{detectorID}.pvw
+         outFilename +=fname +"_"+String.format( "%4d" , DetectorID).replace( ' ' , '0' )+".pvw";
         
          try{
              ObjectOutputStream out = new ObjectOutputStream( new FileOutputStream( outFilename));
@@ -1586,7 +1607,7 @@ public class Util {
        return Res;
    }
    
-   
+ 
    
    //returns null or ErrorString
    private static Object RunOperators( Vector<OperatorThread> operators, 
