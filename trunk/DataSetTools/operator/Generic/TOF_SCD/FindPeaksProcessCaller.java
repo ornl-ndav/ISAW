@@ -52,7 +52,7 @@ public class FindPeaksProcessCaller implements IOperator
 {
   String   cmd_name = null;
   String   fin_name;
-  String   fout_name;
+  String   fout_base;
   int      ds_num;
   int      num_peaks;
   int      min_intensity;
@@ -76,7 +76,7 @@ public class FindPeaksProcessCaller implements IOperator
    */
   public FindPeaksProcessCaller( String   cmd_name,
                                  String   fin_name, 
-                                 String   fout_name,
+                                 String   fout_base,
                                  int      ds_num,
                                  int      num_peaks,
                                  int      min_intensity,
@@ -96,7 +96,7 @@ public class FindPeaksProcessCaller implements IOperator
   {
     this.cmd_name           = cmd_name;
     this.fin_name           = fin_name;
-    this.fout_name          = fout_name;
+    this.fout_base          = fout_base;
     this.ds_num             = ds_num;
     this.num_peaks          = num_peaks;
     this.min_intensity      = min_intensity;
@@ -138,7 +138,7 @@ public class FindPeaksProcessCaller implements IOperator
                 exe_path           +
                "FindPeaksProcess"  + " " + 
                 fin_name           + " " +                  
-                fout_name          + " " +
+                fout_base          + " " +
                 ds_num             + " " +
                 num_peaks          + " " +
                 min_intensity      + " " +
@@ -211,17 +211,17 @@ public class FindPeaksProcessCaller implements IOperator
     Vector peaks = new Vector();                     // from the file and
     try                                              // return vector of peaks
     {
-      File file = new File(fout_name);
+      File file = new File(fout_base + ".peaks");
       if ( file.exists() )
       {
-        peaks = Peak_new_IO.ReadPeaks_new( fout_name );
-        File delete_file = new File( fout_name );
+        peaks = Peak_new_IO.ReadPeaks_new( fout_base + ".peaks" );
+        File delete_file = new File( fout_base + ".peaks" );
         delete_file.delete();
       }
     }
     catch ( Exception ex )
     {
-      System.out.println( "EXCEPTION reading temporary peaks file "+fout_name+
+      System.out.println( "EXCEPTION reading temporary peaks file "+fout_base+
                           " for " + fin_name +
                           " ds_num " + ds_num +
                           " on server " + cmd_name );

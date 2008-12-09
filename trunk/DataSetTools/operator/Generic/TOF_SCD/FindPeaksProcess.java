@@ -59,7 +59,8 @@ public class FindPeaksProcess
    *  peaks file.  The parameters are taken from the command line as follows:
    *
    *  args[ 0] - fully qualified NeXus file name
-   *  args[ 1] - fully qualified peaks file name
+   *  args[ 1] - fully qualified base name for peaks file, logfile and 
+   *             viewer file.
    *  args[ 2] - data set number to read from the file
    *  args[ 3] - number of peaks to toe be returned, if possible
    *  args[ 4] - minimum intensity to use with the peaks search
@@ -89,7 +90,7 @@ public class FindPeaksProcess
   public static void main( String args[] )
   {
     String  fin_name           = args[0];
-    String  fout_name          = args[1];
+    String  fout_base          = args[1];
     int     ds_num             = Integer.parseInt( args[2] );
     int     num_peaks          = Integer.parseInt( args[3] );
     int     min_intensity      = Integer.parseInt( args[4] );
@@ -109,7 +110,7 @@ public class FindPeaksProcess
 
     /*
     System.out.println( "LOADING " + fin_name + " #" + ds_num );
-    System.out.println( "WRITING " + fout_name );
+    System.out.println( "WRITING " + fout_base );
     System.out.println( "num_peaks          = " + num_peaks );
     System.out.println( "min_intensity      = " + min_intensity );
     System.out.println( "min_time_chan      = " + min_time_chan );
@@ -129,7 +130,10 @@ public class FindPeaksProcess
     */
 
     NexusRetriever nr = new NexusRetriever( fin_name );
-    nr.RetrieveSetUpInfo(null);
+
+// TODO We need a parameter to determine if cache info is used!!!
+//    nr.RetrieveSetUpInfo(null);
+
     DataSet   ds = nr.getDataSet( ds_num );
 
     nr.close();
@@ -168,17 +172,19 @@ public class FindPeaksProcess
 
     if ( peaks.size() > 0 )
     {
-      try
+      String file_name = fout_base + ".peaks";
+      try                                            // Write temp peaks file
       {
-        Peak_new_IO.WritePeaks_new( fout_name, peaks, false );
-        System.out.println( "+++++++++FINISHED WRITING PEAKS " + fout_name +
+        Peak_new_IO.WritePeaks_new( file_name, peaks, false );
+        System.out.println( "+++++++++FINISHED WRITING PEAKS " + file_name +
                             " for DS ###" + ds_num );
       }
       catch ( Exception ex )
       {
-        System.out.println("Exception writing peak file " + fout_name );
+        System.out.println("Exception writing peaks file " + file_name );
         ex.printStackTrace();
       }
+      
     }
 
     return; 
