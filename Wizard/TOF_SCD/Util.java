@@ -1030,7 +1030,7 @@ public class Util {
       }   
 
       if( ShowPeaksView ){
-         PeaksDisplayPanel main_panel= new PeaksDisplayPanel( infos);
+         //PeaksDisplayPanel main_panel= new PeaksDisplayPanel( infos);
   
          
          String outFilename = FileIO.appendPath(System.getProperty( "user.home") ,
@@ -1059,7 +1059,7 @@ public class Util {
         
          try{
              ObjectOutputStream out = new ObjectOutputStream( new FileOutputStream( outFilename));
-             out.writeObject( main_panel );
+             out.writeObject( infos );
          }catch(Exception s){
             
          }
