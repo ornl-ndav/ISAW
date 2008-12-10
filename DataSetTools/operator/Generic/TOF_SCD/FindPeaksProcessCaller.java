@@ -58,6 +58,11 @@ public class FindPeaksProcessCaller implements IOperator
   int      min_intensity;
   int      min_time_chan;
   int      max_time_chan;
+
+  boolean  use_calib_file;
+  String   calib_file;
+  int      calib_file_line;
+
   String   pixel_row;
   String   pixel_col;
   int      mon_count;
@@ -82,6 +87,11 @@ public class FindPeaksProcessCaller implements IOperator
                                  int      min_intensity,
                                  int      min_time_chan,
                                  int      max_time_chan,
+
+                                 boolean  use_calib_filer,
+                                 String   calib_file,
+                                 int      calib_file_line,
+
                                  String   pixel_row,
                                  String   pixel_col,
                                  int      mon_count,
@@ -102,6 +112,11 @@ public class FindPeaksProcessCaller implements IOperator
     this.min_intensity      = min_intensity;
     this.min_time_chan      = min_time_chan;
     this.max_time_chan      = max_time_chan;
+
+    this.use_calib_file     = use_calib_file;
+    this.calib_file         = calib_file;
+    this.calib_file_line    = calib_file_line;
+
     this.pixel_row          = pixel_row;
     this.pixel_col          = pixel_col;
     this.mon_count          = mon_count;
@@ -144,6 +159,12 @@ public class FindPeaksProcessCaller implements IOperator
                 min_intensity      + " " +
                 min_time_chan      + " " +
                 max_time_chan      + " " + 
+                                                   // NOTE: Append to file
+                                                   //       is NOT passed down
+                use_calib_file     + " " + 
+                calib_file         + " " + 
+                calib_file_line    + " " + 
+
                 pixel_row          + " " + 
                 pixel_col          + " " + 
                 mon_count          + " " +
