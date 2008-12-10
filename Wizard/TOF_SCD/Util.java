@@ -516,9 +516,21 @@ public class Util {
       }
        
    }
-   // Sets up the calibrate operator(Calib) and executes it
-   private static void Calibrate( DataSet DS, String calibFileName, 
-                                                          int lineNum ){
+
+
+   /**
+    *  Apply the specified calibration information to the specified
+    *  DataSet, using the Calib operator.
+    *
+    *  @param DS             The DataSet to calibrate.
+    *  @param calibFileName  The name of the calibration file
+    *  @param lineNum        The line number to use from the IPNS
+    *                        style calibration file.
+    *
+    */
+   public static void Calibrate( DataSet DS, 
+                                 String  calibFileName, 
+                                 int     lineNum ){
       Calib calib = new Calib();
       calib.DS = DS;
       calib.CalibFile1 = new LoadFileString( calibFileName );
@@ -528,7 +540,6 @@ public class Util {
       Object Result = calib.calculate();
       if( Result instanceof ErrorString )
          SharedMessages.addmsg( "Error calibrating "+ DS + "::"+Result );
-      
    }
    
    
