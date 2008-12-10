@@ -52,7 +52,6 @@ import java.util.*;
  */
 public class FindPeaksProcess 
 {
- 
   /**
    *  Read the specified detector data from the specified file, find the
    *  peaks in that detector and write the resulting information to a 
@@ -67,24 +66,29 @@ public class FindPeaksProcess
 
    *  args[ 5] - minimum time channel to check
    *  args[ 6] - maximum time cahnnel to check
-   *  args[ 7] - string specifying the row numbers to use, indexed
+
+   *  args[ 7] - flag indicating whether or not to use a calibration file
+   *  args[ 8] - fully qualified calibration file name 
+   *  args[ 9] - the line number of the (ipns style) calibration file 
+
+   *  args[10] - string specifying the row numbers to use, indexed
    *             starting with index 1.
-   *  args[ 8] - string specifying the column numbers to use, indexed
+   *  args[11] - string specifying the column numbers to use, indexed
    *             starting with index 1.
-   *  args[ 9] - the monitor count for this run
-   *  args[10] - the maximum D-spacing to consider
-   *  args[11] - boolean indicating whether or not to use the new find peaks
+   *  args[12] - the monitor count for this run
+   *  args[13] - the maximum D-spacing to consider
+   *  args[14] - boolean indicating whether or not to use the new find peaks
    *             method
-   *  args[12] - flag indicating whether or not the data should be smoothed as
+   *  args[15] - flag indicating whether or not the data should be smoothed as
    *             part of the find peaks process.
-   *  args[13] - flag indicating whether or not to eliminate peaks that do
+   *  args[16] - flag indicating whether or not to eliminate peaks that do
    *             not appear to be valid based on heuristics in the new
    *             find peaks model
-   *  args[14] - flag indicating whether the old centrod algorithm should be
+   *  args[17] - flag indicating whether the old centrod algorithm should be
    *             applied to set the reflag code, and adjust the peak position
-   *  args[15] - flag indicating whether the new peaks view should be 
+   *  args[18] - flag indicating whether the new peaks view should be 
    *             displayed for the peaks.
-   *  args[16] - the number of time-of-flight slices to include in the peaks
+   *  args[19] - the number of time-of-flight slices to include in the peaks
    *             view, before and after the central peak position.
    */
   public static void main( String args[] )
@@ -97,16 +101,20 @@ public class FindPeaksProcess
     int     min_time_chan      = Integer.parseInt( args[5] );
     int     max_time_chan      = Integer.parseInt( args[6] );
 
-    String  pixel_row          = args[7];
-    String  pixel_col          = args[8];
-    int     mon_count          = Integer.parseInt( args[9] );
-    float   max_Dspacing       = Float.parseFloat( args[10] );
-    boolean use_new_find_peaks = Boolean.parseBoolean( args[11] );
-    boolean do_smoothing       = Boolean.parseBoolean( args[12] );
-    boolean do_validity_test   = Boolean.parseBoolean( args[13] );
-    boolean do_centroid        = Boolean.parseBoolean( args[14] );
-    boolean show_peaks_view    = Boolean.parseBoolean( args[15] );
-    int     num_slices         = Integer.parseInt( args[16] );
+    boolean use_calib_file     = Boolean.parseBoolean( args[7] );
+    String  calib_file         = args[8];
+    int     calib_file_line    = Integer.parseInt( args[9] );
+
+    String  pixel_row          = args[10];
+    String  pixel_col          = args[11];
+    int     mon_count          = Integer.parseInt( args[12] );
+    float   max_Dspacing       = Float.parseFloat( args[13] );
+    boolean use_new_find_peaks = Boolean.parseBoolean( args[14] );
+    boolean do_smoothing       = Boolean.parseBoolean( args[15] );
+    boolean do_validity_test   = Boolean.parseBoolean( args[16] );
+    boolean do_centroid        = Boolean.parseBoolean( args[17] );
+    boolean show_peaks_view    = Boolean.parseBoolean( args[18] );
+    int     num_slices         = Integer.parseInt( args[19] );
 
     /*
     System.out.println( "LOADING " + fin_name + " #" + ds_num );
@@ -115,6 +123,10 @@ public class FindPeaksProcess
     System.out.println( "min_intensity      = " + min_intensity );
     System.out.println( "min_time_chan      = " + min_time_chan );
     System.out.println( "max_time_chan      = " + max_time_chan );
+
+    System.out.println( "use_calib_file     = " + use_calib_file );
+    System.out.println( "calib_file         = " + calib_file );
+    System.out.println( "calib_file_line    = " + calib_file_line );
 
     System.out.println( "pixel_row          = " + pixel_row );
     System.out.println( "pixel_col          = " + pixel_col );
@@ -129,16 +141,27 @@ public class FindPeaksProcess
 
     */
 
-    NexusRetriever nr = new NexusRetriever( fin_name );
+    Retriever retriever = null;
+
+    boolean is_IPNS_file = fin_name.toUpperCase().endsWith( "RUN" );
+    if ( is_IPNS_file )
+      retriever = new RunfileRetriever( fin_name );
+    else
+      retriever = new NexusRetriever( fin_name );
 
 // TODO We need a parameter to determine if cache info is used!!!
-//    nr.RetrieveSetUpInfo(null);
+//    retriever.RetrieveSetUpInfo(null);
 
-    DataSet   ds = nr.getDataSet( ds_num );
+    DataSet   ds = retriever.getDataSet( ds_num );
+    
+    if ( !is_IPNS_file )
+      ((NexusRetriever)retriever).close();
 
-    nr.close();
     System.out.println( "+++++++++FINISHED READING " + fin_name +
                         " closed for DS ###" + ds_num );
+
+    if ( use_calib_file )
+      Wizard.TOF_SCD.Util.Calibrate( ds, calib_file, calib_file_line );
 
                                              // NOTE THIS WILL NOT WORK FOR
                                              // IPNS DATA WITH SEVERAL GRIDS
