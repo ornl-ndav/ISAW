@@ -725,11 +725,12 @@ public abstract class Form extends Operator implements PropertyChanger {
     if( errmessage instanceof String ) {
       message = "FORM ERROR: " + errmessage;
       SharedData.addmsg( message );
+     
     } else {
       message = "FORM ERROR: " + errmessage.toString(  );
       SharedData.addmsg( message );
     }
-
+    JOptionPane.showMessageDialog( null , message );
     return new ErrorString( message );
   }
 
