@@ -365,7 +365,19 @@ public class DefaultProperties{
         rs.append("# Slab size for reading NeXus files").append(eol);
         rs.append("# NexusSlabSize = 80000").append(eol).append(eol);
         rs.append("#").append(eol);
-        rs.append("# Live Data Server Options").append(eol);
+        
+
+        rs.append( "#" ).append( eol );
+        rs.append( "# Slurm Queue Info" ).append( eol );
+        rs.append( "# Specify the queue name and the amount of memory" ).
+                           append(eol );
+        rs.append( "# used for each FindPeaksProcess, in megabytes" )
+                .append( eol );
+        rs.append( "#" ).append( eol );
+        rs.append( "#Slurm_Queue_Name=snapq" ).append( eol );
+        rs.append( "#Find_Peaks_Process_Memory=1500" ).append( eol );
+        
+        rs.append( "# Live Data Server Options").append(eol);
         rs.append("#").append(eol);
         rs.append("Inst1_Name=Test:( UW-Stout Live Data Simulator )")
           .append(eol);
