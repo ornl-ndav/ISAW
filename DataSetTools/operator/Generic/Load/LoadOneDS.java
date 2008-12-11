@@ -239,6 +239,9 @@ public class LoadOneDS extends    GenericLoad
      else
        ds = rr.getDataSet( ds_num, ids );
 
+     if( rr instanceof NexusRetriever)
+        ((NexusRetriever)rr).close();
+        
      if ( ds == null )
        return new ErrorString("requested DataSet not in " + file_name);
 
