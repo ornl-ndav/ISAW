@@ -1,5 +1,5 @@
 # File: extract_SNS_subset.sh
-# Date: 2/28/08
+# Date: 12/07/08
 #
 # This is a SIMPLE MINDED shell script that copies the souce files needed
 # by the Display*D classes from an ISAW distribution to a directory
@@ -8,7 +8,7 @@
 # NOTE: Change the line below to point to your unpacked ISAW soruce tree
 # This will only work with ISAW version 1.8.0 beta 2, or later.
 #
-ISAW=/home/dennis/WORK/ISAW
+ISAW=/home/dennis/SNS_ISAW/ISAW_ALL/
 
 #
 # Make the base directory structure
@@ -103,6 +103,7 @@ cp    $ISAW/gov/anl/ipns/Util/Numeric/IntList.java                  gov/anl/ipns
 cp    $ISAW/gov/anl/ipns/Util/Numeric/UniqueIntGenerator.java       gov/anl/ipns/Util/Numeric
 cp    $ISAW/gov/anl/ipns/Util/Numeric/ClosedInterval.java           gov/anl/ipns/Util/Numeric
 cp    $ISAW/gov/anl/ipns/Util/Numeric/arrayUtil.java                gov/anl/ipns/Util/Numeric
+cp    $ISAW/gov/anl/ipns/Util/Numeric/Subdivide.java                gov/anl/ipns/Util/Numeric
 
 mkdir gov/anl/ipns/Util/Sys
 cp    $ISAW/gov/anl/ipns/Util/Sys/WindowShower.java              gov/anl/ipns/Util/Sys
