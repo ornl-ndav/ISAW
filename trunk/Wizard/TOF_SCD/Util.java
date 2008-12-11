@@ -1071,8 +1071,9 @@ public class Util {
          try{
              ObjectOutputStream out = new ObjectOutputStream( new FileOutputStream( outFilename));
              out.writeObject( infos );
+             out.close();
          }catch(Exception s){
-            
+            s.printStackTrace();
          }
       }
 
