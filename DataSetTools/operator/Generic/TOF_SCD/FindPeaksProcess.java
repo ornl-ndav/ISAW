@@ -36,9 +36,10 @@ package DataSetTools.operator.Generic.TOF_SCD;
 
 import DataSetTools.retriever.*;
 import DataSetTools.dataset.*;
-
 import DataSetTools.operator.Generic.TOF_SCD.Peak_new_IO;
+
 import gov.anl.ipns.Operator.*;
+
 import Wizard.TOF_SCD.*;
 import java.util.*;
 
@@ -141,21 +142,34 @@ public class FindPeaksProcess
 
     */
 
+    boolean is_IPNS_file = fin_name.toUpperCase().endsWith( "RUN" );
     Retriever retriever = null;
 
-    boolean is_IPNS_file = fin_name.toUpperCase().endsWith( "RUN" );
+    DataSet   ds     = null;
+
     if ( is_IPNS_file )
+    {
       retriever = new RunfileRetriever( fin_name );
+      ds = retriever.getDataSet( ds_num );
+                                             // NOTE THIS WILL NOT WORK FOR
+                                             // IPNS DATA WITH SEVERAL GRIDS
+                                             // IN ONE DataSet
+    }
     else
+    {
       retriever = new NexusRetriever( fin_name );
-
-// TODO We need a parameter to determine if cache info is used!!!
-//    retriever.RetrieveSetUpInfo(null);
-
-    DataSet   ds = retriever.getDataSet( ds_num );
-    
-    if ( !is_IPNS_file )
+      ds = retriever.getDataSet( ds_num );
       ((NexusRetriever)retriever).close();
+    }
+             // TODO We need a parameter to determine if cache info is used!!!
+             //    retriever.RetrieveSetUpInfo(null);
+
+    if ( ds == null )
+    {  
+       System.err.println("NULL DataSet number " + ds_num + 
+                          " from file " + fin_name );
+       return;
+    }
 
     System.out.println( "+++++++++FINISHED READING " + fin_name +
                         " closed for DS ###" + ds_num );
@@ -163,11 +177,14 @@ public class FindPeaksProcess
     if ( use_calib_file )
       Wizard.TOF_SCD.Util.Calibrate( ds, calib_file, calib_file_line );
 
-                                             // NOTE THIS WILL NOT WORK FOR
-                                             // IPNS DATA WITH SEVERAL GRIDS
-                                             // IN ONE DataSet
-    int[]        det_ids = Grid_util.getAreaGridIDs( ds ); 
-    int          det_id = det_ids[0];
+    int[] det_ids = Grid_util.getAreaGridIDs( ds ); 
+    if ( det_ids == null )
+    {
+       System.err.println("No area detectors in DataSet number " + ds_num + 
+                            " from file " + fin_name );
+       return;
+    }
+    int det_id = det_ids[0];
 
     StringBuffer log_buffer = new StringBuffer();
     
@@ -191,7 +208,9 @@ public class FindPeaksProcess
        log_buffer );
 
     System.out.println( "+++++++++FINISHED FINDING PEAKS " + fin_name +
-                        " for DS ###" + ds_num + " FOUND " + peaks.size()  );
+                        ", for DS number = " + ds_num + 
+                        ", Det ID = " + det_id +
+                        ", FOUND " + peaks.size()  );
 
     if ( peaks.size() > 0 )
     {
@@ -204,8 +223,8 @@ public class FindPeaksProcess
       }
       catch ( Exception ex )
       {
-        System.out.println("Exception writing peaks file " + file_name );
-        ex.printStackTrace();
+        System.err.println("Exception writing peaks file " + file_name );
+        System.err.println( ex.getStackTrace() );
       }
       
     }
