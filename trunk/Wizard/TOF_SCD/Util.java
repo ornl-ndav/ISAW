@@ -32,6 +32,8 @@
 
 package Wizard.TOF_SCD;
 
+import IsawGUI.Isaw;
+
 import DataSetTools.dataset.*;
 import DataSetTools.operator.Generic.TOF_SCD.*;
 import DataSetTools.operator.*;
@@ -64,6 +66,258 @@ public class Util {
    public static final String[] CenteringNames = {"primitive" , "a centered" ,
               "b centered" , "c centered" , "[f]ace centered",
             "[i] body centered" , "[r]hombohedral centered"};
+
+   /**
+    *  FindCentroidedPeaks method uses separate processes to find and centroid
+    *  the peaks from several runs and several data sets per run
+    *
+    * @param rawpath           The raw data path.
+    * @param outpath           The output data path for the .peaks file.
+    * @param runnums           The run numbers to load.
+    * @param dataSetNums       The data set numbers to load in each run
+    * @param expname           The experiment name (i.e. "quartz").
+    * @param num_peaks         The maximum number of peaks to return.
+    * @param min_intensity     The minimum peak intensity to look for.
+    * @param min_time_chan     The minimum time channel to use.
+    * @param max_time_chan     The maximum time channel to use. for all.
+    * @param append            Append to file (yes/no).
+    * @param use_calib_file    Use the calibration file
+    * @param calib_file        SCD calibration file.
+    * @param calib_file_line   SCD calibration file line to use.
+    * @param min_row           The minimum row to use(add peak height)
+    * @param max_row           The maximum row to use(subtract peak height)
+    * @param min_col           The minimum column to use(add peak width)
+    * @param max_col           The maximum column to use(subtract peak width)
+    * @param max_Dspacing      Max d spacing between peaks
+    * @param use_new_find_peaks Use the new find peaks method
+    * @param do_smoothing      Smooth the data in the new find peaks method
+    * @param do_validity_test  Do validity test in the new find peaks method
+    * @param do_centroid       Perform old centroid on peaks
+    * @param extension         The name of the extension on the data file
+    * @param fileNamePrefix    The prefix for the filename.
+    * @param show_peaks_view   Show image view of peaks
+    * @param num_slices        The number of slices around  peak in image view.
+    * @param ViewPeaks         Show the Peaks file
+    * @param slurm_queue_name  The name of the slurm queue where the
+    *                          processes should run
+    * @return a Vector of peaks, Grouped by detector
+    */
+   public static Vector<IPeak> findCentroidedPeaksUsingProcesses(
+            String   rawpath,
+            String   outpath,
+            Vector   runnums,
+            String   dataSetNums,
+            String   expname,             // ?
+            int      num_peaks,
+            int      min_intensity,
+            int      min_time_chan,
+            int      max_time_chan,
+            boolean  append,
+            boolean  use_calib_file,
+            String   calib_file ,
+            int      calib_file_line,
+            int      min_row,
+            int      max_row,
+            int      min_col,
+            int      max_col,
+            float    max_Dspacing,
+            boolean  use_new_find_peaks,
+            boolean  do_smoothing,
+            boolean  do_validity_test,
+            boolean  do_centroid,
+            String   extension,
+            String   fileNamePrefix,
+            boolean  show_peaks_view,
+            int      num_slices,
+            boolean  ViewPeaks,
+            String   slurm_queue_name )
+  {
+    if( runnums == null )
+    {
+      System.out.println("Null run numbers");
+      return null;
+    }
+
+    int[] run_numbers = new int[ runnums.size() ];
+    try 
+    {
+      for( int i = 0 ; i < runnums.size() ; i++ )
+        run_numbers[ i ] = ( (Integer) runnums.elementAt( i ) ).intValue();
+    }
+    catch( Exception s ) 
+    {
+      System.err.println("Entry not integer in runnums Vector");
+      return null;
+    }
+
+    min_row = Math.max( 1, min_row );
+    max_row = Math.max( max_row, min_row );
+
+    min_col = Math.max( 1,  min_col );
+    max_col = Math.max( max_col, min_col );
+
+    String pixel_row = min_row+":"+max_row;
+    String pixel_col = min_col+":"+max_col;
+
+    java.util.Arrays.sort( run_numbers );
+
+    int[] ds_numbers = IntList.ToArray( dataSetNums );
+
+    if( !extension.startsWith( "." ) )
+       extension = "."+extension;
+
+    if( run_numbers == null || ds_numbers == null )
+    {
+       System.out.println("NULL ds_numbers or run_numbers");
+       return null;
+    }
+
+    if( use_calib_file )
+       SharedMessages.addmsg( "Calibration File ="+calib_file );
+
+    Vector ops = new Vector();
+    Random random = new Random();
+
+    String fout_prefix = System.getProperty("user.home") + "/ISAW/SNAP_";
+
+    int mon_count = 0;           // mon_count is not needed at this point
+
+    for (int run_index = 0; run_index < run_numbers.length; run_index++ )
+      for (int ds_index = 0; ds_index < ds_numbers.length; ds_index++ )
+      {
+        int ds_num  = ds_numbers[ ds_index ];
+        int run_num = run_numbers[ run_index ];
+
+        String fin_name  = rawpath + fileNamePrefix + run_num + extension;
+        String fout_base = fout_prefix + run_num + "_DS_" + ds_num +
+                              "_" + random.nextInt();
+        String result = fout_prefix + run_num + "_" + ds_num + "_returned.txt";
+
+        String cp = System.getProperty( "java.class.path" );
+        if ( cp == null )
+          cp = " ";
+        else 
+          cp = " -cp " + cp + " ";
+
+        String mem = System.getProperty( "Find_Peaks_Process_Memory" );
+        if ( mem == null )
+          mem = "2000";
+
+        String cmd  = " java -mx" + mem + "M " + cp;
+
+        cmd = " srun -p " + slurm_queue_name +
+              " -J SCD_Find_Peaks -o " + result +
+              cmd;
+
+        FindPeaksProcessCaller s_caller =
+                 new FindPeaksProcessCaller( cmd,
+                                             fin_name,
+                                             fout_base,
+                                             ds_num,
+                                             num_peaks,
+                                             min_intensity,
+                                             min_time_chan,
+                                             max_time_chan,
+
+                                             use_calib_file,
+                                             calib_file,
+                                             calib_file_line,
+
+                                             pixel_row,
+                                             pixel_col,
+                                             mon_count,
+                                             max_Dspacing,
+                                             use_new_find_peaks,
+                                             do_smoothing,
+                                             do_validity_test,
+                                             do_centroid,
+                                             show_peaks_view,
+                                             num_slices );
+        ops.add( s_caller );
+      }
+
+    ParallelExecutor executor;
+    int num_processes = run_numbers.length * ds_numbers.length;
+
+    executor = new ParallelExecutor(ops, num_processes, 600000);
+
+    Vector results = executor.runOperators();
+
+    if ( fout_prefix.startsWith("/SNS/" ) )             // do SNS Logging
+    {
+      String cmd = "/usr/bin/logger -p local5.notice ISAW ISAW_" +
+                   Isaw.getVersion(false) + 
+                   " " + System.getProperty("user.name");
+      SimpleExec.Exec( cmd );
+    }
+
+    String out_file_name = outpath + expname + ".peaks";
+    Vector all_peaks = null;
+    if ( results != null )
+    {
+      all_peaks = new Vector();
+      for ( int i = 0; i < results.size(); i++ )
+      {
+        Vector peaks = (Vector)results.elementAt(i);
+        if ( peaks != null )
+          for ( int k = 0; k < peaks.size(); k++ )
+            all_peaks.add( peaks.elementAt(k) );
+        else
+          System.out.println("ERROR: NULL IN PEAK RESULTS VECTOR AT i = " + i );
+      }
+
+      if ( append )
+      {                                         // read in any existing peaks
+        try                                     // and add to all_peaks Vector 
+        {
+          File file = new File(out_file_name + ".peaks");
+          if ( file.exists() )
+          {
+            Vector old_peaks = Peak_new_IO.ReadPeaks_new( out_file_name );
+            File delete_file = new File( out_file_name );
+            delete_file.delete();
+            if ( old_peaks != null )
+              for ( int i = 0; i < old_peaks.size(); i++ )
+                all_peaks.add( old_peaks.elementAt(i) );
+          }
+        }
+        catch ( Exception ex )
+        {
+          System.out.println( "EXCEPTION reading old peaks file for append:" +
+                               out_file_name );
+          ex.printStackTrace();
+          return null;
+        }
+      }
+
+      try
+      {
+        Peak_new_IO.WritePeaks_new( out_file_name, all_peaks, false );
+        all_peaks = Peak_new_IO.ReadPeaks_new( out_file_name );  
+                                                        // re-read peaks to
+                                                        // put them in order
+      }
+      catch ( Exception ex )
+      {
+        System.out.println("Exception writing full file " + out_file_name );
+        ex.printStackTrace();
+      }
+
+    }
+    else
+    {
+      System.out.println("ERROR: RESULTS VECTOR NULL ");
+      return null;
+    }
+
+    if( ViewPeaks )
+      ( new ViewASCII( out_file_name ) ).getResult();
+
+    if ( show_peaks_view )
+      PeakArrayPanels.DisplayPeaks( "Test Peaks", null, "", null, -1 );
+
+    return all_peaks; 
+  }
    
    
    /**
@@ -132,13 +386,47 @@ public class Util {
             boolean  ViewPeaks,
             int      maxNumThreads )  throws IOException
      {
+
+   String slurm_queue_name = System.getProperty( "Slurm_Queue_Name" );
+   System.out.println("SLURM QUEUE NAME = " + slurm_queue_name );
+
+   if ( slurm_queue_name != null )
+     return findCentroidedPeaksUsingProcesses(
+                       rawpath,
+                       outpath,
+                       runnums,
+                       dataSetNums,
+                       expname,      
+                       num_peaks,
+                       min_int,
+                       min_time_chan,
+                       max_time_chan,
+                       append,
+                       useCalib,
+                       calibfile,
+                       line2use,
+                       min_row,
+                       max_row,
+                       min_col,
+                       max_col,
+                       Max_dSpacing,
+                       NewFindPeaks,
+                       SmoothData,
+                       ValidityTest,
+                       Centroid,
+                       extension,
+                       fileNamePrefix,
+                       ShowPeaksView,
+                       numSlices,
+                       ViewPeaks,
+                       slurm_queue_name );
       
       boolean useCache = false;
       if( runnums == null )
          return null;
-      min_row =Math.max( 1,  min_row );
+      min_row = Math.max( 1,  min_row );
       max_row = Math.max(  max_row ,  min_row );
-      min_col =Math.max( 1,  min_row );
+      min_col = Math.max( 1,  min_col );
       max_col = Math.max(  max_col ,  min_col );
       String PixelRow = min_row+":"+max_row;
       String PixelCol = min_col+":"+max_col;
