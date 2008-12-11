@@ -33,9 +33,8 @@
  *
  * Modified:
  *
- *  $Log: FieldEntryControl.java,v $
+ *  $Log$
  *  Revision 1.20  2005/06/15 14:19:34  kramer
- *
  *  Modified the method enableFilter(StringFilter) in the inner class
  *  FilteredTextField to use 'this.addKeyListener(...)' and
  *  'this.removeKeyListener(....)' so that the specific methods of

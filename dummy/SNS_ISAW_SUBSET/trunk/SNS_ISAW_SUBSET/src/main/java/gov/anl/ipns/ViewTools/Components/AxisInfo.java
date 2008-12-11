@@ -33,7 +33,7 @@
  *
  * Modified:
  *
- *  $Log: AxisInfo.java,v $
+ *  $Log$
  *  Revision 1.9  2005/06/02 13:51:08  dennis
  *  Removed construction of new String object in copy() method.
  *  Since Strings are immutable, they can be shared, so it is not
@@ -86,6 +86,8 @@
 
 package gov.anl.ipns.ViewTools.Components;
 
+import java.io.Serializable;
+
 /**
  * This class groups all of the information about an axis into one object.
  * The class contains the "world coordinates" minimum and maximum, the
@@ -94,7 +96,7 @@ package gov.anl.ipns.ViewTools.Components;
  *
  *  @see gov.anl.ipns.ViewTools.Components.IVirtualArray
  */
-public class AxisInfo
+public class AxisInfo  implements Serializable
 {  
  /**
   * 0 - this int variable defines the use of the x axis.

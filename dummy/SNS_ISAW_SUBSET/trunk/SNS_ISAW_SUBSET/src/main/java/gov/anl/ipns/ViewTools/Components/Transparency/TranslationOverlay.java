@@ -33,7 +33,7 @@
  *
  * Modified:
  *
- *  $Log: TranslationOverlay.java,v $
+ *  $Log$
  *  Revision 1.21  2007/07/23 20:52:04  dennis
  *  Removed local list of listeners and methods that dealt with
  *  the list of listeners, since those capbabilities are provided

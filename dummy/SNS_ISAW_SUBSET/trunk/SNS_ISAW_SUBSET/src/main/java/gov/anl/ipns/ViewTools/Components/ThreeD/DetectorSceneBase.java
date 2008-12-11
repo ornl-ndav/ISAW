@@ -33,7 +33,7 @@
  *
  *  Modified:
  *
- *  $Log: DetectorSceneBase.java,v $
+ *  $Log$
  *  Revision 1.12  2007/08/21 20:26:58  dennis
  *  Removed the setBackgroundColor method, since the setBackgroundColor
  *  method from the JoglPanel class must be used instead of this one.

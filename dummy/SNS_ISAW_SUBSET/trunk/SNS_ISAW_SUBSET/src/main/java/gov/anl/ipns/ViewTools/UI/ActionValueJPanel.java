@@ -33,7 +33,7 @@
  *
  * Modified:
  *
- *  $Log: ActionValueJPanel.java,v $
+ *  $Log$
  *  Revision 1.1  2005/03/28 05:35:42  millermi
  *  - Initial Version - This new event, listener, and utility classes
  *    are used by ComponentSwappers, ComponentLayoutManagers, and

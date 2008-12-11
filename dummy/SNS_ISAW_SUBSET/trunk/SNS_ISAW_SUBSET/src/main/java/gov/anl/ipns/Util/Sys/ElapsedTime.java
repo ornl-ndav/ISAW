@@ -29,7 +29,7 @@
  *
  * Modified:
  *
- *  $Log: ElapsedTime.java,v $
+ *  $Log$
  *  Revision 1.6  2006/05/01 19:24:29  dennis
  *  Now uses the newer high resolution timer, System.nanoTime(),
  *  to get a timing resolution of 20 microseconds or better,

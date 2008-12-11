@@ -32,7 +32,7 @@
  *   "graphic JAVA", David M. Geary, Alan L. McClellan, SunSoft Press
  *   Prentice Hall, 1997 )
  *
- *  $Log: XOR_Cursor3pt.java,v $
+ *  $Log$
  *  Revision 1.6  2007/06/15 22:30:40  oakgrovej
  *  Added cursor tag & get panel method
  *

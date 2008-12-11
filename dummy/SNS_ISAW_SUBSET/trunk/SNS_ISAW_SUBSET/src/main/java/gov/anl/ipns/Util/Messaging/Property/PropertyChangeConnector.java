@@ -32,9 +32,8 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * Modified:
- * $Log: PropertyChangeConnector.java,v $
+ * $Log$
  * Revision 1.2  2005/10/07 21:28:28  kramer
- *
  * Added javadoc comments for everything in the class/interface.
  *
  * Revision 1.1  2005/07/25 20:29:15  kramer

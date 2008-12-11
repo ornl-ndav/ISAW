@@ -29,7 +29,7 @@
  *
  * Modified:
  *
- * $Log: Tran3D_d.java,v $
+ * $Log$
  * Revision 1.9  2007/01/12 14:57:55  dennis
  * Removed unused imports.
  *

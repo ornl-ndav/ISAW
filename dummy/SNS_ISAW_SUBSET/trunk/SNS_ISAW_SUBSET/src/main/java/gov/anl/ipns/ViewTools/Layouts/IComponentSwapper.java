@@ -33,9 +33,8 @@
  *
  * Modified:
  *
- *  $Log: IComponentSwapper.java,v $
+ *  $Log$
  *  Revision 1.4  2005/06/28 18:26:34  kramer
- *
  *  Added javadocs to the CONTOUR field.
  *
  *  Revision 1.3  2005/06/06 20:39:28  kramer

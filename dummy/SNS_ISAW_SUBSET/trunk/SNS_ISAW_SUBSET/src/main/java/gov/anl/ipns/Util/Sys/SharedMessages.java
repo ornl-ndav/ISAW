@@ -32,7 +32,7 @@
  *
  * Modified:
  *
- *  $Log: SharedMessages.java,v $
+ *  $Log$
  *  Revision 1.7  2006/06/06 22:20:30  rmikk
  *  Added a method to the OpenLog method to add an append boolean.  The
  *  default is not to append.

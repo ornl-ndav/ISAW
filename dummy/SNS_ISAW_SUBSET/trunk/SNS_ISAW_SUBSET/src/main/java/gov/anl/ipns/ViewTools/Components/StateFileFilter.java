@@ -28,7 +28,7 @@
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
- * $Log: StateFileFilter.java,v $
+ * $Log$
  * Revision 1.2  2004/03/11 23:35:50  rmikk
  * Fixed package problems
  *

@@ -29,7 +29,7 @@
  *
  * Modified:
  *
- * $Log: Vector3D_d.java,v $
+ * $Log$
  * Revision 1.10  2006/11/12 05:31:54  dennis
  * Switched 3D vector representation to use separate fields for
  * x,y,z,w, instead of using an array to hold the four values.
@@ -279,6 +279,56 @@ public class Vector3D_d
   {
     double[] v = {x,y,z,w};
     return v;
+  }
+
+
+  /*------------------------------- getX --------------------------------*/
+  /**
+   *  Get the X coordinate of this vector.
+   *
+   *  return the X coordinate.
+   */
+  public double getX()
+  {
+    return x;
+  }
+
+
+  /*------------------------------- getY --------------------------------*/
+  /**
+   *  Get the Y coordinate of this vector.
+   *
+   *  return the Y coordinate.
+   */
+  public double getY()
+  {
+    return y;
+  }
+
+
+  /*------------------------------- getZ --------------------------------*/
+  /**
+   *  Get the Z coordinate of this vector.
+   *
+   *  return the Z coordinate.
+   */
+  public double getZ()
+  {
+    return z;
+  }
+
+
+  /*------------------------------- getW --------------------------------*/
+  /**
+   *  Get the homogeneous W coordinate of this vector.  This will usually
+   *  return 1 unless the vector has justbeen multiplied by a projection
+   *  matrix and not standardized.
+   *
+   *  return the W coordinate.
+   */
+  public double getW()
+  {
+    return w;
   }
 
 

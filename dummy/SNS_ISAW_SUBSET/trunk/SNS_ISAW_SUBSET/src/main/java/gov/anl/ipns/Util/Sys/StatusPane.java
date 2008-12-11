@@ -30,7 +30,7 @@
  *  
  * Modified:  
  *  
- * $Log: StatusPane.java,v $
+ * $Log$
  * Revision 1.14  2006/08/25 17:03:18  rmikk
  * Eliminated a debug print
  *

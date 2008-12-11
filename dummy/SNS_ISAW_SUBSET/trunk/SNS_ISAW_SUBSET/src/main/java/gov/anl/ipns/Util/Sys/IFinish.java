@@ -33,7 +33,7 @@
  *
  * Modified:
  *
- * $Log: IFinish.java,v $
+ * $Log$
  * Revision 1.1  2004/03/23 14:44:24  rmikk
  * Initial checkin
  *

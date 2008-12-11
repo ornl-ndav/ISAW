@@ -32,9 +32,8 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * Modified:
- * $Log: UniformContours.java,v $
+ * $Log$
  * Revision 1.9  2005/07/29 15:40:32  kramer
- *
  * Removed some unnecessary System.out.println() statements.
  *
  * Revision 1.8  2005/07/28 23:09:03  kramer

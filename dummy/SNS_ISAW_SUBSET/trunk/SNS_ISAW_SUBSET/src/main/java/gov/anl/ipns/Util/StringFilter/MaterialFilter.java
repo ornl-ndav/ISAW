@@ -30,7 +30,7 @@
  *
  * Modified:
  *
- *  $Log: MaterialFilter.java,v $
+ *  $Log$
  *  Revision 1.5  2004/03/11 23:02:00  hammonds
  *  Changed classpath to gov.anl.ipns.Util.StringFilter.
  *

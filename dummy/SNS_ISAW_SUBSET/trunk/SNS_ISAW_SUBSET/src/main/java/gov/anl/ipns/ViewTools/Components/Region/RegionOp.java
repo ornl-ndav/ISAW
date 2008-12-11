@@ -27,7 +27,7 @@
  * number DMR-0426797.
  *
  * Modified:
- * $Log: RegionOp.java,v $
+ * $Log$
  * Revision 1.1  2007/04/11 21:51:10  dennis
  * New class for dealing with unions, intersections and complements
  * of selected regions.

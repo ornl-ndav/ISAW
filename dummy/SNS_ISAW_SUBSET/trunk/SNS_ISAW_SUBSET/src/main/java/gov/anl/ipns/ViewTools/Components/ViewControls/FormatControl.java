@@ -33,7 +33,7 @@
  *
  * Modified:
  *
- *  $Log: FormatControl.java,v $
+ *  $Log$
  *  Revision 1.8  2005/05/25 20:28:42  dennis
  *  Now calls convenience method WindowShower.show() to show
  *  the window, instead of instantiating a WindowShower object

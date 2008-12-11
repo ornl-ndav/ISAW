@@ -29,7 +29,7 @@
  *
  * Modified:
  *
- *  $Log: Position3D.java,v $
+ *  $Log$
  *  Revision 1.16  2005/04/20 21:53:17  dennis
  *  Improved documentation.  Now emphasizes angles returned and specified
  *  in radians.

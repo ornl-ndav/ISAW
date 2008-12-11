@@ -32,9 +32,8 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * Modified:
- * $Log: Contours.java,v $
+ * $Log$
  * Revision 1.6  2005/07/12 16:39:07  kramer
- *
  * Reorganized the code and added comments and javadoc statements.
  * Implemented the IPreserveState interface and made basic implementations
  * of the getObjectState() and setObjectState() methods to maintain the

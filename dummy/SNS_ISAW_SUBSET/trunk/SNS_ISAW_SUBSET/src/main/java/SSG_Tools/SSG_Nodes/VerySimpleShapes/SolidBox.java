@@ -24,7 +24,7 @@
  *
  * Modified:
  *
- * $Log: SolidBox.java,v $
+ * $Log$
  * Revision 1.1  2007/08/14 00:33:18  dennis
  * Added some files from SSG_Tools at UW-Stout.
  *

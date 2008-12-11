@@ -30,7 +30,7 @@
  *
  * Modified:
  *
- *  $Log: IMutableVirtualArrayList1D.java,v $
+ *  $Log$
  *  Revision 1.1  2006/04/03 00:18:54  dennis
  *  Initial version with Mutator methods moved to IMutableVirtualArrayList1D.
  *  (More work needs to be done to clean up this implementation of the concept.)

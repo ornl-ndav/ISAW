@@ -33,7 +33,7 @@
  *
  * Modified:
  *
- *  $Log: IPseudoLogAxisAddible.java,v $
+ *  $Log$
  *  Revision 1.1  2004/11/05 21:58:48  millermi
  *  - Renaming of ILogAxisAddible, now divided into this class
  *    and ITruLogAxisAddible.

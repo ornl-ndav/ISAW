@@ -27,7 +27,7 @@
  *
  * Modified:
  *
- * $Log: PixelBox.java,v $
+ * $Log$
  * Revision 1.3  2006/07/04 00:35:55  dennis
  * Removed unused imports.
  *

@@ -31,7 +31,7 @@
  *
  * Modified:
  *
- * $Log: SaveImageActionListener.java,v $
+ * $Log$
  * Revision 1.8  2007/07/16 18:26:40  rmikk
  * Eliminated some mor  subtle conventions that forced saving jpeg files
  *

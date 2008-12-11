@@ -32,7 +32,7 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * Modified:
- * $Log: ContourJPanel.java,v $
+ * $Log$
  * Revision 1.31  2008/01/29 22:13:38  dennis
  * This commit represents more progress on fixing the update of
  * the thumbnail for the PanViewControl.  Specifically:

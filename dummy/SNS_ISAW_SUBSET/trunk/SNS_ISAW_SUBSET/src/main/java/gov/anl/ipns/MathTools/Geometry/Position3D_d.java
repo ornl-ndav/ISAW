@@ -29,7 +29,7 @@
  *
  * Modified:
  *
- *  $Log: Position3D_d.java,v $
+ *  $Log$
  *  Revision 1.3  2004/03/19 17:24:26  dennis
  *  Removed unused variables
  *

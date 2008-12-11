@@ -32,7 +32,7 @@
  *
  * Modified:
  *
- *  $Log: SelectionJPanel.java,v $
+ *  $Log$
  *  Revision 1.26  2007/07/31 16:42:24  dennis
  *  Split ButtonListener class into two separate classes, one for
  *  the Region type selection, on for handling commands.

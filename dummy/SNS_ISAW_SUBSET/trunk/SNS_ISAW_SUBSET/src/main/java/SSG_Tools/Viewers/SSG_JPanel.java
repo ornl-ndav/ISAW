@@ -24,7 +24,7 @@
  *
  * Modified:
  *
- * $Log: SSG_JPanel.java,v $
+ * $Log$
  * Revision 1.2  2007/08/26 23:23:21  dennis
  * Updated to latest version from UW-Stout repository.
  *

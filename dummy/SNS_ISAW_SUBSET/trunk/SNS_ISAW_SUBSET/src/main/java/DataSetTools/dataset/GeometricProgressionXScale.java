@@ -26,7 +26,7 @@
  *
  * Modified:
  *
- *  $Log: GeometricProgressionXScale.java,v $
+ *  $Log$
  *  Revision 1.2  2005/11/17 23:05:26  dennis
  *  Fixed error message in readObject() method
  *

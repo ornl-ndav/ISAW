@@ -34,7 +34,7 @@
  *
  * Modified:
  *
- *  $Log: XOR_PanCursor.java,v $
+ *  $Log$
  *  Revision 1.5  2007/06/15 22:31:11  oakgrovej
  *  Added cursor tag
  *

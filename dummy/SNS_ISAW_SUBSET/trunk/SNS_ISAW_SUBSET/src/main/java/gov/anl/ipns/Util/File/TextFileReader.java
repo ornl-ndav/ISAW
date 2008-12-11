@@ -29,7 +29,7 @@
  *
  * Modified:
  *
- *  $Log: TextFileReader.java,v $
+ *  $Log$
  *  Revision 1.15  2005/06/27 02:11:10  dennis
  *  Added convenience method to skip comment lines beginning with a
  *  specified character.

@@ -32,7 +32,7 @@
  *
  * Modified:
  *
- *  $Log: FunctionViewComponent.java,v $
+ *  $Log$
  *  Revision 1.96  2007/09/17 02:50:12  dennis
  *  Some code cleanup and additions working towards fixing the problem
  *  with specified axis values not having an effect.  This is ultimately

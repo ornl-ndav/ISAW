@@ -24,7 +24,7 @@
  *
  * Modified:
  *
- *  $Log: IOneVariableFunction.java,v $
+ *  $Log$
  *  Revision 1.1  2007/08/14 00:29:06  dennis
  *  Adding files from SSG_Tools at UW-Stout.
  *

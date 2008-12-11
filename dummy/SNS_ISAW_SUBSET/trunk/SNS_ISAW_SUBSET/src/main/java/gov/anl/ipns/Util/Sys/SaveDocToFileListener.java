@@ -30,7 +30,7 @@
  *
  * Modified:
  *
- * $Log: SaveDocToFileListener.java,v $
+ * $Log$
  * Revision 1.10  2004/03/11 23:26:29  millermi
  * - Made all methods of DocumentIO static.
  * - Listener classes using DocumentIO now call static methods.

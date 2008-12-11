@@ -33,7 +33,7 @@
  *
  * Modified:
  *
- *  $Log: AbstractLayoutManager.java,v $
+ *  $Log$
  *  Revision 1.1  2005/03/28 05:54:04  millermi
  *  - Initial Version - This is a building block in the new viewer
  *    structure.

@@ -29,7 +29,7 @@
  *
  * Modified:
  *
- *  $Log: arrayUtil.java,v $
+ *  $Log$
  *  Revision 1.21  2005/05/27 03:57:29  dennis
  *  Fixed javadoc error.
  *

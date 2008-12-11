@@ -33,7 +33,7 @@
  *
  * Modified:
  *
- *  $Log: AbstractComponentSwapper.java,v $
+ *  $Log$
  *  Revision 1.6  2007/01/12 14:57:56  dennis
  *  Removed unused imports.
  *

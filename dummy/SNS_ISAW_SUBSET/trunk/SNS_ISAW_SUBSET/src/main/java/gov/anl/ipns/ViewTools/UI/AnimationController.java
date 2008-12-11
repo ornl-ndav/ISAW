@@ -29,7 +29,7 @@
  *
  * Modified:
  *
- *  $Log: AnimationController.java,v $
+ *  $Log$
  *  Revision 1.18  2004/03/19 17:24:28  dennis
  *  Removed unused variables
  *

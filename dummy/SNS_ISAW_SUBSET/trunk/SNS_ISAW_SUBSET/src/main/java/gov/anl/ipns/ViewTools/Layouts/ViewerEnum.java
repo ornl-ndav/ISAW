@@ -33,7 +33,7 @@
  *
  * Modified:
  *
- *  $Log: ViewerEnum.java,v $
+ *  $Log$
  *  Revision 1.2  2005/05/07 00:12:13  millermi
  *  - Fixed javadoc error.
  *

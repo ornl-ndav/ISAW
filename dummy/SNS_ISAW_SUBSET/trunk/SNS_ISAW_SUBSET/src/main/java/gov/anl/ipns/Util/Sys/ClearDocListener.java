@@ -30,7 +30,7 @@
  *
  * Modified:
  *
- * $Log: ClearDocListener.java,v $
+ * $Log$
  * Revision 1.4  2004/03/11 22:46:18  millermi
  * - Changed package.
  *

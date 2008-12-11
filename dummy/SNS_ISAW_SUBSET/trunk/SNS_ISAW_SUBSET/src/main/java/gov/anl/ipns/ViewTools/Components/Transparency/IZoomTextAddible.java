@@ -33,7 +33,7 @@
  *
  * Modified:
  *
- *  $Log: IZoomTextAddible.java,v $
+ *  $Log$
  *  Revision 1.3  2004/04/02 20:58:33  millermi
  *  - Fixed javadoc errors
  *

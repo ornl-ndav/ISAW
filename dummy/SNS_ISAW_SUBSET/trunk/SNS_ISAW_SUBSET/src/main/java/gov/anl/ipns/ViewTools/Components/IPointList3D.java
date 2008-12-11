@@ -33,7 +33,7 @@
  * 
  *  Modified:
  *
- *  $Log: IPointList3D.java,v $
+ *  $Log$
  *  Revision 1.5  2005/08/04 22:43:57  cjones
  *  Fixed error in comment header
  *

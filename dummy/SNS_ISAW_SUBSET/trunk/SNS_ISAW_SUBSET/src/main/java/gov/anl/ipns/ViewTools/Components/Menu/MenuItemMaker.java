@@ -31,7 +31,7 @@
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
- * $Log: MenuItemMaker.java,v $
+ * $Log$
  * Revision 1.7  2004/08/06 18:52:12  millermi
  * - Added HTML to javadocs to make them legible.
  *

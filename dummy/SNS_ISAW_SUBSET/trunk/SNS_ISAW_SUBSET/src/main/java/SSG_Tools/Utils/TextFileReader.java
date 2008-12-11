@@ -27,11 +27,18 @@
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
- * Modified:
+ *  Last Modified:
+ * 
+ *  $Author: eu7 $
+ *  $Date: 2008-08-21 15:42:07 -0500 (Thu, 21 Aug 2008) $            
+ *  $Revision: 308 $
  *
  *  $Log: TextFileReader.java,v $
- *  Revision 1.2  2007/08/26 23:23:20  dennis
- *  Updated to latest version from UW-Stout repository.
+ *
+ *  2008/08/21  Updated to latest version from UW-Stout repository.
+ *
+ *  Revision 1.4  2008/08/09 21:37:36  dennis
+ *  Added tests for null TextFileReader in main test program.
  *
  *  Revision 1.3  2007/08/26 21:06:34  dennis
  *  Modifed control loop to not use empty statement.
@@ -784,23 +791,32 @@ public class TextFileReader
 
     try
     {
-      f_num = f.read_float();
-      System.out.println("A:Read : " + f_num );
+      if ( f == null )
+        System.out.println("f null at position 1 in TextFileReader main");
+      else
+      {
+        f_num = f.read_float();
+        System.out.println("A:Read : " + f_num );
 
-      f_num = f.read_float();
-      System.out.println("A:Read : " + f_num );
+        f_num = f.read_float();
+        System.out.println("A:Read : " + f_num );
    
-      f.read_line();
-      f_num = f.read_float();
-      System.out.println("A:Read : " + f_num );
+        f.read_line();
+        f_num = f.read_float();
+        System.out.println("A:Read : " + f_num );
+      }
     }
     catch ( Exception e )
     {
       System.out.println("2: EXCEPTION: " + e );
     }
 
-    try{
-        line = f.read_line();
+    try
+    {
+      if ( f == null )
+        System.out.println("f null at position 2 in TextFileReader main");
+      else
+      {
         System.out.println("read line is <" + line + ">" );
         //f.read_char();
         String str=f.read_String(8);
@@ -816,7 +832,10 @@ public class TextFileReader
         f.read_line();
         float fl=f.read_float(4);
         System.out.println(" "+fl);
-    }catch( Exception e ){
+      }  
+    }
+    catch( Exception e )
+    {
         System.out.println("3: EXCEPTION: " + e );
     }
 

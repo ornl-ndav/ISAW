@@ -29,7 +29,7 @@
  *
  * Modified:
  *
- *  $Log: ErrorString.java,v $
+ *  $Log$
  *  Revision 1.9  2004/07/14 16:05:21  rmikk
  *  Fixed possible null pointer exception
  *

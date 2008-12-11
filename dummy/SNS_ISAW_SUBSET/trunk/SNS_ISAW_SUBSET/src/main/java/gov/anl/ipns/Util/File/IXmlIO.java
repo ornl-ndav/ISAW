@@ -29,7 +29,7 @@
  *
  * Modified:
  *
- *  $Log: IXmlIO.java,v $
+ *  $Log$
  *  Revision 1.3  2004/03/11 22:17:04  millermi
  *  - Changed package names and replaced SharedData with
  *    SharedMessages class.

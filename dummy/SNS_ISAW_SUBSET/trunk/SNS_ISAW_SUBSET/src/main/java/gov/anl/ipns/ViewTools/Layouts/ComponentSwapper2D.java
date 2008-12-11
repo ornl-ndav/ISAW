@@ -33,7 +33,7 @@
  *
  * Modified:
  *
- *  $Log: ComponentSwapper2D.java,v $
+ *  $Log$
  *  Revision 1.9  2006/11/03 19:42:40  amoe
  *  - Edited:  //Changed protected buildComponent(..) to public
  *                  //Changed protected linkComponents(..)  to  public

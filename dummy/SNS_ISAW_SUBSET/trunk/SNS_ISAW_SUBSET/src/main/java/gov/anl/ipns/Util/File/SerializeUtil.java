@@ -28,7 +28,7 @@
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
- * $Log: SerializeUtil.java,v $
+ * $Log$
  * Revision 1.2  2004/03/11 22:17:04  millermi
  * - Changed package names and replaced SharedData with
  *   SharedMessages class.

@@ -33,7 +33,7 @@
  *
  * Modified:
  *
- *  $Log: BoxCursor.java,v $
+ *  $Log$
  *  Revision 1.3  2004/03/12 00:15:43  rmikk
  *  Fixed Package Names
  *

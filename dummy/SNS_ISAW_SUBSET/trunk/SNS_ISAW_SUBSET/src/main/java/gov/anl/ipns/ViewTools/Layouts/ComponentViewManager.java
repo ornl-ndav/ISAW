@@ -33,7 +33,7 @@
  *
  * Modified:
  *
- *  $Log: ComponentViewManager.java,v $
+ *  $Log$
  *  Revision 1.6  2007/08/08 02:21:16  dennis
  *  Commented out parts that rely on DataSets.  If this class
  *  belongs in the gov hierarchy, it MUST not depend on DataSets.
@@ -942,7 +942,7 @@ import javax.swing.KeyStroke;
             // Release all screen resources used by the ViewManager.
             dispose();
             // Run garbage collector.
-            System.gc();
+            // System.gc();
          }
       }
    }
@@ -962,7 +962,7 @@ import javax.swing.KeyStroke;
        if( cvm_counter <= 0 )
          shared_ctrls_ui.dispose();
        // Call garbage collector to free up system resources.
-       System.gc();
+       // System.gc();
      }
    }
    

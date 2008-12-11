@@ -30,7 +30,7 @@
  *
  * Modified:
  *
- *  $Log: Contour2D.java,v $
+ *  $Log$
  *  Revision 1.1  2004/07/07 23:06:15  dennis
  *  Class with static methods for generating contour lines given a 2D array
  *  of floats.  Currently only a basic method to generate iso-value line

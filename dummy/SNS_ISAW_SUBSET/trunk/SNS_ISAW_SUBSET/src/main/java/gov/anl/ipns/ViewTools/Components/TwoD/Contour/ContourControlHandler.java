@@ -32,7 +32,7 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * Modified:
- * $Log: ContourControlHandler.java,v $
+ * $Log$
  * Revision 1.14  2007/10/09 01:06:26  rmikk
  * Introduced static String constants for some of the viewControls so there is
  *    access to them outside the unit

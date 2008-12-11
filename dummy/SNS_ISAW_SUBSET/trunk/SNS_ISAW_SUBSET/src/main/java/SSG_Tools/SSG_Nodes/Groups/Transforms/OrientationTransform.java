@@ -22,11 +22,19 @@
  *           University of Wisconsin-Stout
  *           Menomonie, WI 54751, USA
  *
- * Modified:
+ *  Last Modified:
+ * 
+ *  $Author: eu7 $
+ *  $Date: 2008-08-21 14:03:41 -0500 (Thu, 21 Aug 2008) $            
+ *  $Revision: 300 $
  *
  *  $Log: OrientationTransform.java,v $
- *  Revision 1.5  2007/08/14 00:03:31  dennis
- *  Major update to JSR231 based version from UW-Stout repository.
+ * 
+ *  Updated 2008/08/21 from UW-Stout repository.
+ *
+ *  Revision 1.4  2007/10/23 20:19:09  dennis
+ *  Fixed bug in full constructor.  Did not properly initialize the
+ *  place vector from the postion parameter.
  *
  *  Revision 1.3  2005/10/15 19:47:22  dennis
  *  Added methods to allow getting and setting of base, up and
@@ -88,7 +96,7 @@ public class OrientationTransform extends MatrixTransform
   {
     base  = new Vector3D( base_vec );
     up    = new Vector3D( up_vec );
-    place = new Vector3D( place );
+    place = new Vector3D( position );
     setMatrix( base_vec, up_vec, position );
   }
 

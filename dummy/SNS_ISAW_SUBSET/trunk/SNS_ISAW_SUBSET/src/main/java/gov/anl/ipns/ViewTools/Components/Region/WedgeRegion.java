@@ -33,7 +33,7 @@
  *
  * Modified:
  *
- *  $Log: WedgeRegion.java,v $
+ *  $Log$
  *  Revision 1.23  2007/07/30 14:30:33  dennis
  *  The originally specified defining points are now modified to
  *  enforce symmetry.  Since the originaly defining points are

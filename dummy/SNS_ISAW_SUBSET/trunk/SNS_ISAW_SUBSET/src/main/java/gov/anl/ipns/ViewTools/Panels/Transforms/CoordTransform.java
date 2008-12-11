@@ -29,7 +29,7 @@
  *
  * Modified:
  *
- *  $Log: CoordTransform.java,v $
+ *  $Log$
  *  Revision 1.12  2007/07/30 13:56:23  dennis
  *  The setSource() method with one signature now calls the setSource()
  *  method with the other signature, so the actual work is only done

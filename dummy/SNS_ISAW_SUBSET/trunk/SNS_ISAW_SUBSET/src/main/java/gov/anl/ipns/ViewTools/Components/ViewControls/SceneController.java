@@ -29,7 +29,7 @@
  *
  * Modified:
  *
- * $Log: SceneController.java,v $
+ * $Log$
  * Revision 1.4  2006/07/19 18:07:44  dennis
  * Removed unused imports.
  *

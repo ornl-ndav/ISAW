@@ -27,7 +27,7 @@
  * number DMR-0426797.
  *
  * Modified:
- * $Log: RegionOpListWithColor.java,v $
+ * $Log$
  * Revision 1.2  2007/08/07 20:57:21  rmikk
  * Adds a constructor to make a RegionOpListWithColor from a RegionOpList
  *

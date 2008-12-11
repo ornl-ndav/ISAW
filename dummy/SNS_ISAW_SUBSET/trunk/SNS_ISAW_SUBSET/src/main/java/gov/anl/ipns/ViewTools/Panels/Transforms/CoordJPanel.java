@@ -27,9 +27,12 @@
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
+ *  $Author: eu7 $
+ *  $Date: 2008-04-21 14:41:26 -0500 (Mon, 21 Apr 2008) $            
+ *  $Revision: 5600 $
  * Modified:
  *
- *  $Log: CoordJPanel.java,v $
+ *  $Log$
  *  Revision 1.47  2008/01/11 22:46:45  amoe
  *  Added functionality for setting the tooltip visibility .
  *  Added method setWCToolTipVisible(..) .
@@ -39,11 +42,13 @@
  *  out...until this revision
  *
  *  Revision 1.45  2007/11/30 22:47:21  amoe
- *  Made the world coordinate tooltip be displayed depending on the boolean IsawProps variable "ShowWCToolTip" .  Changes made in inner class CoordMouseMotionAdapter .
+ *  Made the world coordinate tooltip be displayed depending on the boolean 
+ *  IsawProps variable "ShowWCToolTip" .  Changes made in inner class 
+ *  CoordMouseMotionAdapter .
  *
  *  Revision 1.44  2007/11/20 17:56:25  amoe
- *  Added a feature to show the current World Coordinate from the mouse pointer in
- *  a tool-tip box.  This involved adding mouseMoved(..) to the inner class
+ *  Added a feature to show the current World Coordinate from the mouse pointer
+ *  in a tool-tip box.  This involved adding mouseMoved(..) to the inner class
  *  CoordMouseMotionAdapter .
  *
  *  Revision 1.43  2007/09/17 02:08:48  dennis
@@ -319,7 +324,7 @@ public class CoordJPanel extends ActiveJPanel implements Serializable,
   protected Dimension       preferred_size = null;
   
   private boolean tooltip_enabled;
-  private boolean tooltip_visible = true;   
+  private ICoordInfoSource coordInfo = null;
   
   private CoordJPanel coordJPanel = null;
 
@@ -366,6 +371,8 @@ public class CoordJPanel extends ActiveJPanel implements Serializable,
     set_box( current_point );
     stop_box( current_point, false );
     CJP_handle_arrow_keys = true;
+    
+    coordInfo = new LinearInfoSource(3,coordJPanel);
   }
 
   /**
@@ -682,6 +689,11 @@ public class CoordJPanel extends ActiveJPanel implements Serializable,
    *  panel to be the rectangle specified.
    *  The specified bounds will restricted to a subregion of the  
    *  world coordinate region for the global transform.
+   *  NOTE: If the specified bounds do not intersect the current GLOBAL 
+   *  world coordinates, this method will NOT change the LOCAL world 
+   *  coordinates.  It necessary to first call setGlobalWorldCoordinates to 
+   *  to set the global coordinate region to a large enough region to 
+   *  enclose the desired local coordinate region.
    *
    *  @param  x1   The min x value for the rectangle.
    *  @param  y1   The min y value for the rectangle.
@@ -702,7 +714,12 @@ public class CoordJPanel extends ActiveJPanel implements Serializable,
    *  Set the world coordinate system for the local transform for the
    *  panel to be the rectangle specified by the bounds parameter, b.  
    *  The specified bounds are restricted to a subregion of the  
-   *  world coordinate region for the global transform.
+   *  world coordinate region for the global transform.  
+   *  NOTE: If the specified bounds do not intersect the current GLOBAL 
+   *  world coordinates, this method will NOT change the LOCAL world 
+   *  coordinates.  It necessary to first call setGlobalWorldCoordinates to 
+   *  to set the global coordinate region to a large enough region to 
+   *  enclose the desired local coordinate region.
    *
    *  @param b The bounds that determine the world coordinate system for
    *           the zoomed subregion of the panel.
@@ -734,16 +751,10 @@ public class CoordJPanel extends ActiveJPanel implements Serializable,
     SetTransformsToWindowSize();
     return( local_transform.getSource( ) );
   }
-
-  /**
-   * This method sets the visibility of the tooltip.
-   * 
-   * @param is_vis - true if the tooltip should be visible.
-   *                 false if the tooltip should not be visible.
-   */
-  public void setWCToolTipVisible(boolean is_vis)
+ 
+  public void setCoordInfoSource(ICoordInfoSource cis)
   {
-    tooltip_visible = is_vis;
+	  coordInfo = cis;
   }
   
   /* ---------------------------- showState ------------------------------ */
@@ -966,7 +977,7 @@ public class CoordJPanel extends ActiveJPanel implements Serializable,
 
 /* ------------------------- LocalTransformChanged ------------------------ */
 /**
- *  The responsibility of this method is to do what is necessary to regemerate
+ *  The responsibility of this method is to do what is necessary to regenerate
  *  the panel on the screen, after changing the local transformation.  
  *  Derived may need to override this method.  For example the ImageJPanel
  *  overrides this method to regenerate a rescaled image and then call
@@ -1254,15 +1265,10 @@ class CoordMouseMotionAdapter extends MouseMotionAdapter
   //This handles the showing of the tooltip box
   public void mouseMoved(MouseEvent e)
   {
-    if ( isListening && mouse_on_panel && tooltip_enabled && tooltip_visible)
-    {      
-      //convert current mouse point to World Coordinates
-      floatPoint2D fp2d = new floatPoint2D( 
-          local_transform.MapXFrom( e.getPoint().x ), 
-          local_transform.MapYFrom( e.getPoint().y ) );
-        
+    if ( isListening && mouse_on_panel && tooltip_enabled && coordInfo != null)
+    {             
       //set the tool-tip text to the current World Coordinate
-      coordJPanel.setToolTipText("["+fp2d.x+","+fp2d.y+"]");
+      coordJPanel.setToolTipText( coordInfo.getInfoString(e.getPoint().x, e.getPoint().y) );
     }
     else
     {

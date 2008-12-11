@@ -22,11 +22,19 @@
  *           University of Wisconsin-Stout
  *           Menomonie, WI 54751, USA
  *
- * Modified:
+ *  Last Modified:
+ * 
+ *  $Author: eu7 $
+ *  $Date: 2008-08-21 14:00:12 -0500 (Thu, 21 Aug 2008) $            
+ *  $Revision: 298 $
  *
  *  $Log: TransformGroup.java,v $
- *  Revision 1.4  2007/08/14 00:03:31  dennis
- *  Major update to JSR231 based version from UW-Stout repository.
+ *
+ *  Updated 2008/08/21 from UW-Stout repository.
+ *
+ *  Revision 1.5  2007/10/23 19:05:53  dennis
+ *  Added method getCummulativeTransform() that calculates the resulting
+ *  position and orientation for a node in a scene graph.
  *
  *  Revision 1.4  2006/08/04 02:16:21  dennis
  *  Updated to work with JSR-231, 1.0 beta 5,
@@ -44,6 +52,8 @@
  */
 
 package SSG_Tools.SSG_Nodes.Groups.Transforms;
+
+import java.util.Vector;
 
 import javax.media.opengl.*;
 import SSG_Tools.SSG_Nodes.*;
@@ -105,4 +115,60 @@ abstract public class TransformGroup extends Group
    */
   abstract public void apply_to( Vector3D in_vec, Vector3D out_vec );
 
+  
+  /* ----------------------- getCummulativeTransform --------------------- */
+  /**
+   *  Get an OrientationTransform that represents the cummulative effect
+   *  of all transforms applied to the specified node.  This method will
+   *  repeatedly use getParent() to find all ancestors of this node. 
+   *  References to ancestors that are TransformGroups are saved and then
+   *  applied in sequence to the vectors (0,0,0), (1,0,0) and (0,1,0) to 
+   *  calculate the final position and orientation of an object transformed
+   *  by the ancestor transformations.  This will work correctly provided 
+   *  two conditions are met.  
+   *    First, all of the transforms applied to the node must rigid motions
+   *  or uniform scaling operations.  If some non-uniform scaling or other
+   *  arbitrary matrix transforms have been used, this will probably not
+   *  work correctly, since the orthonormal basis vectors i,j,k may be 
+   *  transformed to a non-orthogonal set of vectors.
+   *    Second, the node and each of it's ancestors must have at most one
+   *  parent. 
+   *  
+   *  @param node   The node for which the cummulative transformation is
+   *                calculated.  The specified node can be any node in a
+   *                scene graph.  If the specified node is a transformation
+   *                node, then the effect of that transformation node is
+   *                also included in the cummulative transformation.
+   *                
+   *  @return Any OrientationTransform constructed from the final position
+   *          and orientation of the origin and basis vectors, as transformed
+   *          by this node and any ancestor nodes.
+   */
+  public static OrientationTransform getCummulativeTransform( Node node )
+  {
+    Vector<TransformGroup> transforms = new Vector<TransformGroup>();
+
+    while ( node != null )                     // build up list of transforms 
+    {                                          // that were applied in reverse
+      if ( node instanceof TransformGroup )    // order
+        transforms.add( (TransformGroup)node );       
+      node = node.getParent();     
+    }
+                                                // now find where origin and
+                                                // i & j basis vectors move to
+    Vector3D origin   = new Vector3D( 0, 0, 0 );
+    Vector3D base_vec = new Vector3D( 1, 0, 0 );
+    Vector3D up_vec   = new Vector3D( 0, 1, 0 );
+    for ( int k = transforms.size()-1; k >= 0; k-- )  // apply transforms 
+    {                                                 // in order
+      transforms.elementAt(k).apply_to(origin,origin);
+      transforms.elementAt(k).apply_to( base_vec, base_vec );
+      transforms.elementAt(k).apply_to( up_vec, up_vec );
+    }
+    base_vec.subtract( origin );
+    up_vec.subtract( origin );
+    
+    return new OrientationTransform( base_vec, up_vec, origin );
+  }
+  
 }

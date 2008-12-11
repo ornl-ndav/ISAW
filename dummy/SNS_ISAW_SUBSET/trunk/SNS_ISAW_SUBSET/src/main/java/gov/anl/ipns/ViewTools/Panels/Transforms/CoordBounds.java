@@ -29,7 +29,7 @@
  *
  * Modified:
  *
- * $Log: CoordBounds.java,v $
+ * $Log$
  * Revision 1.15  2007/03/10 22:03:15  dennis
  * Changed the methods that check if a point is on an interval to
  * use the half open intervals [xmin,xmax) and [ymin,ymax) to conform

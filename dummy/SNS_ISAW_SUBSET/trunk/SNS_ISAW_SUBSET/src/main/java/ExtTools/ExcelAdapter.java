@@ -4,7 +4,7 @@
  * This file is from Java World, Java Tip 77.
  * See: http://www.javaworld.com/javaworld/javatips/jw-javatip77.html
  *
- * $Log: ExcelAdapter.java,v $
+ * $Log$
  * Revision 1.1  2006/07/27 00:26:17  dennis
  * Moved to ExtTools from IsawGUI.Isaw, since this is a
  * general purpose, externally developed tool that is

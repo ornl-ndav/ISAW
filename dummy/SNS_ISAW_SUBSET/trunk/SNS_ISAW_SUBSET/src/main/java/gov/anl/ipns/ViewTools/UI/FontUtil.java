@@ -29,7 +29,7 @@
  *
  * Modified:
  *
- *  $Log: FontUtil.java,v $
+ *  $Log$
  *  Revision 1.9  2005/05/25 18:07:18  dennis
  *  Replaced direct call to .show() method for window,
  *  since .show() is deprecated in java 1.5.

@@ -34,7 +34,7 @@
  *  Basic linear algebra operations such as QR factorization and solution of
  *  system of linear equations using QR factorization
  * 
- *  $Log: LinearAlgebra.java,v $
+ *  $Log$
  *  Revision 1.29  2006/07/26 15:55:42  dennis
  *  Commented out BestFitMatrix2() method that uses the Jama package.
  *  This method was only used for performance testing of our

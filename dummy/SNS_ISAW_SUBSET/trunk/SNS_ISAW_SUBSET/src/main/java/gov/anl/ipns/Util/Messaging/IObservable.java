@@ -29,7 +29,7 @@
  *
  * Modified:
  *
- *  $Log: IObservable.java,v $
+ *  $Log$
  *  Revision 1.7  2004/03/17 20:27:33  dennis
  *  Fixed @see tag that was broken when view components, math and
  *  util were moved to gov package.

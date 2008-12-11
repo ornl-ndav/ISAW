@@ -33,7 +33,7 @@
  *
  * Modified:
  *
- *  $Log: ITruLogAxisAddible.java,v $
+ *  $Log$
  *  Revision 1.2  2004/12/05 05:39:01  millermi
  *  - Fixed Eclipse warning.
  *

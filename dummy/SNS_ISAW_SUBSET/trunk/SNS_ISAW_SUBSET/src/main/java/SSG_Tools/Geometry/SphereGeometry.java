@@ -24,7 +24,7 @@
  *
  * Modified:
  *
- * $Log: SphereGeometry.java,v $
+ * $Log$
  * Revision 1.2  2007/08/26 23:14:53  dennis
  * Copied latest version from UW-Stout repository.
  *

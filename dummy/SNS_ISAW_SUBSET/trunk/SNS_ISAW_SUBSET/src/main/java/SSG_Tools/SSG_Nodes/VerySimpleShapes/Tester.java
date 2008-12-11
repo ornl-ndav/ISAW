@@ -4,7 +4,7 @@
  */
 package SSG_Tools.SSG_Nodes.VerySimpleShapes;
 
-import java.awt.*;
+//import java.awt.*;
 import javax.swing.*;
 
 import javax.media.opengl.*;
@@ -30,11 +30,11 @@ public class Tester extends Group
 {
   public static final int SIZE = 256;
 
-  private Color[] colors = { Color.WHITE, 
+/*  private Color[] colors = { Color.WHITE, 
                              Color.RED,   Color.CYAN,
                              Color.GREEN, Color.MAGENTA,
                              Color.BLUE,  Color.YELLOW  };
-                                 
+*/                                 
   boolean is_list      = false;
   boolean rebuild_list = false;
   int     list_id = -1;
@@ -50,9 +50,9 @@ public class Tester extends Group
    */
   public Tester( int n_rows, int n_cols )
   {
-    Vector3D origin = new Vector3D( 0, 0, 0 );
-    Vector3D x_axis = new Vector3D( 1, 0, 0 );
-    Vector3D y_axis = new Vector3D( 0, 1, 0 );
+//    Vector3D origin = new Vector3D( 0, 0, 0 );
+//    Vector3D x_axis = new Vector3D( 1, 0, 0 );
+//    Vector3D y_axis = new Vector3D( 0, 1, 0 );
 
     this.n_rows = n_rows;
     this.n_cols = n_cols;

@@ -24,7 +24,7 @@
  *
  * Modified:
  *
- * $Log: IGetGLU.java,v $
+ * $Log$
  * Revision 1.1  2007/08/14 00:42:14  dennis
  * Added files allowing use of GLCanvas or GLJPanel polymorphically.
  * Files copied from SSG_Tools at UW-Stout.

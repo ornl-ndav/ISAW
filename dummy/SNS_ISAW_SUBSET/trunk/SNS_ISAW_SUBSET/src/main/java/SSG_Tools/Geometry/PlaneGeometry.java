@@ -24,7 +24,7 @@
  *
  * Modified:
  *
- * $Log: PlaneGeometry.java,v $
+ * $Log$
  * Revision 1.1  2007/08/14 00:26:51  dennis
  * New geometry classes from updated SSG_Tools at UW-Stout.
  *

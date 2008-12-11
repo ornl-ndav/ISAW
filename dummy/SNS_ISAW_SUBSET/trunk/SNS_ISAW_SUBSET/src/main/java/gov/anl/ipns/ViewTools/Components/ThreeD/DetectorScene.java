@@ -35,7 +35,7 @@
  *
  *  Modified:
  *
- *  $Log: DetectorScene.java,v $
+ *  $Log$
  *  Revision 1.10  2007/08/14 01:27:27  dennis
  *  Switched to JSR231 based jogl.
  *

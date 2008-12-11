@@ -30,7 +30,7 @@
  * 
  * Modified: 
  * 
- * $Log: RegionOpEditFrame.java,v $
+ * $Log$
  * Revision 1.7  2007/08/23 21:06:32  dennis
  * Removed unused imports.
  *

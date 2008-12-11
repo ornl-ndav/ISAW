@@ -29,7 +29,7 @@
  *
  * Modified:
  *
- *  $Log: VariableXScale.java,v $
+ *  $Log$
  *  Revision 1.21  2006/07/26 19:10:15  dennis
  *  Moved method to convert an Object to a VariableXScale, out
  *  of the VariableXScale class, into
@@ -127,7 +127,7 @@ public class VariableXScale extends XScale implements Serializable
                                              // REMOVING FIELDS, IF
                                              // readObject() CAN FIX ANY
                                              // COMPATIBILITY PROBLEMS
-  private float x[] = { 0, 1 }; 
+  protected float x[] = { 0, 1 }; 
 
   /**
    * Constructs a VariableXScale object by specifying a list of x values.

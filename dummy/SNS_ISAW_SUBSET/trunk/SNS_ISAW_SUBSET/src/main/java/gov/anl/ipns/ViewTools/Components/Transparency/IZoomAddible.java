@@ -33,7 +33,7 @@
  *
  * Modified:
  *
- *  $Log: IZoomAddible.java,v $
+ *  $Log$
  *  Revision 1.2  2004/03/12 02:06:55  serumb
  *  Changed package and imports.
  *

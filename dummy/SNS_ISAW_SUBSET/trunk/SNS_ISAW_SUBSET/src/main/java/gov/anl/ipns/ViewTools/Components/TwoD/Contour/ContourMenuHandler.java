@@ -32,9 +32,8 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * Modified:
- * $Log: ContourMenuHandler.java,v $
+ * $Log$
  * Revision 1.4  2005/10/07 21:32:36  kramer
- *
  * Added javadoc comments for every field, constructor, method, inner class,
  * etc. in this class.
  *

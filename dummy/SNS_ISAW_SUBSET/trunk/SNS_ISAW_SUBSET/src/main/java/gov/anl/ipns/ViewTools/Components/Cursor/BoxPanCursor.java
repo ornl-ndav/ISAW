@@ -34,7 +34,7 @@
  *
  * Modified:
  *
- *  $Log: BoxPanCursor.java,v $
+ *  $Log$
  *  Revision 1.3  2007/06/15 22:19:44  oakgrovej
  *  Added method to get the last point
  *

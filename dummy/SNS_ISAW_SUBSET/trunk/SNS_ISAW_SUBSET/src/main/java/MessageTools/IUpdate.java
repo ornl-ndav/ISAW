@@ -24,7 +24,7 @@
  *
  * Modified:
  *
- *  $Log: IUpdate.java,v $
+ *  $Log$
  *  Revision 1.1  2007/08/14 00:09:00  dennis
  *  Added MessageTools files from UW-Stout repository.
  *

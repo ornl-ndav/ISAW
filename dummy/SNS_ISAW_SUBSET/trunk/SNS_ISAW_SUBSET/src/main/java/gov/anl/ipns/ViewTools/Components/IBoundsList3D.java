@@ -33,7 +33,7 @@
  *
  *  Modified:
  *
- *  $Log: IBoundsList3D.java,v $
+ *  $Log$
  *  Revision 1.4  2005/08/04 22:42:29  cjones
  *  Updated comment header and javadocs
  *

@@ -31,7 +31,7 @@
  *
  * Modified:
  *
- * $Log: ViewControlsPanel.java,v $
+ * $Log$
  * Revision 1.2  2004/03/12 03:05:53  dennis
  * Moved to package gov.anl.ipns.ViewTools.Components.ViewControls
  *

@@ -33,7 +33,7 @@
  *
  * Modified:
  *
- *  $Log: AnnotationOverlay.java,v $
+ *  $Log$
  *  Revision 1.38  2007/09/06 20:05:20  rmikk
  *  Added a line to prevent a null pointer exception if the editor was null
  *

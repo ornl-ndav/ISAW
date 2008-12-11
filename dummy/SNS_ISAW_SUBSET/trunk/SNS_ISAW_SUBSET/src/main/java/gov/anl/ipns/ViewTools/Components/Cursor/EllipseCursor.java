@@ -36,7 +36,7 @@
  *
  * Modified:
  *
- *  $Log: EllipseCursor.java,v $
+ *  $Log$
  *  Revision 1.1  2007/03/17 04:24:36  dennis
  *  Class for ellipse, similar to class for circle.
  *

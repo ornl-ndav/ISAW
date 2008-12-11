@@ -29,7 +29,7 @@
  *
  * Modified:
  *
- *  $Log: UniformXScale.java,v $
+ *  $Log$
  *  Revision 1.20  2005/11/17 23:04:41  dennis
  *  Removed expand() method that was only used as a convenience in finding
  *  the range of X-values in a DataSet, and was difficult or meaningless

@@ -27,7 +27,7 @@
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
- * $Log: CrosshairCursor.java,v $
+ * $Log$
  * Revision 1.7  2004/03/12 00:16:37  rmikk
  * Fixed Package Names
  *

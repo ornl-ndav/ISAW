@@ -29,7 +29,7 @@
  *
  * Modified:
  *
- *  $Log: Format.java,v $
+ *  $Log$
  *  Revision 1.14  2006/07/18 21:32:36  amoe
  *  Fixed code in round(..) that caused incorrect rounding.  When
  *  dividing "num" by ten, num could end up slightly lower than desired:

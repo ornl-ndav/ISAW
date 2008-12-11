@@ -26,7 +26,7 @@
  *
  * Modified:
  *
- * $Log: Texture2D.java,v $
+ * $Log$
  * Revision 1.3  2007/08/14 00:03:27  dennis
  * Major update to JSR231 based version from UW-Stout repository.
  *

@@ -33,7 +33,7 @@
  *
  * Modified:
  *
- *  $Log: ObjectState.java,v $
+ *  $Log$
  *  Revision 1.17  2007/07/16 15:46:48  rmikk
  *  Added a public static String that is a returned value of the get method when
  *    the path was absent( this was not as advertised it should return null)

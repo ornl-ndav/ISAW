@@ -33,7 +33,7 @@
  *
  * Modified:
  *
- *  $Log: Line.java,v $
+ *  $Log$
  *  Revision 1.4  2004/03/12 01:33:22  millermi
  *  - Changed package and imports.
  *

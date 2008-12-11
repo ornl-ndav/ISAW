@@ -29,7 +29,7 @@
  *
  * Modified:
  *
- *  $Log: ClosedInterval.java,v $
+ *  $Log$
  *  Revision 1.8  2004/03/12 02:55:22  hammonds
  *  Change package name to gov.anl.ipns.Util.Numeric
  *

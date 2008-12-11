@@ -33,7 +33,7 @@
  *
  *  Modified:
  *
- *  $Log: IViewComponent3D.java,v $
+ *  $Log$
  *  Revision 1.3  2005/08/04 22:36:44  cjones
  *  Updated documentation and comment header.
  *

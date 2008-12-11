@@ -36,7 +36,7 @@
  *
  * Modified:
  *
- *  $Log: AnnularCursor.java,v $
+ *  $Log$
  *  Revision 1.4  2007/06/15 22:18:29  oakgrovej
  *  Added draw for the inner circle in draw method
  *

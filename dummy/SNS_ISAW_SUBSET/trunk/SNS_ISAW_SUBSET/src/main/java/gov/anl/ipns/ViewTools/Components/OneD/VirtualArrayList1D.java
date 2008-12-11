@@ -32,7 +32,7 @@
  *
  * Modified:
  *
- *  $Log: VirtualArrayList1D.java,v $
+ *  $Log$
  *  Revision 1.12  2007/07/17 15:56:31  rmikk
  *  Made the setGraphTitle method set the title, not return the previous title
  *

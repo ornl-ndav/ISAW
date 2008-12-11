@@ -24,7 +24,7 @@
  *
  * Modified:
  *           
- *  $Log: Material.java,v $
+ *  $Log$
  *  Revision 1.8  2007/08/26 22:46:24  dennis
  *  Copied from repository at UW-Stout.
  *

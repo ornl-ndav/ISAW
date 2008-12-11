@@ -30,7 +30,7 @@
  * 
  * Modified: 
  * 
- * $Log: PointRegionOpEditFrame.java,v $
+ * $Log$
  * Revision 1.3  2007/07/02 20:02:03  oakgrovej
  * Added Copyright notice & log message
  * 

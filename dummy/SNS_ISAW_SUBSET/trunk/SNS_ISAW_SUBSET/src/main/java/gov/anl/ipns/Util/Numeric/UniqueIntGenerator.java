@@ -35,7 +35,7 @@
  *
  *  Modified:
  *
- *  $Log: UniqueIntGenerator.java,v $
+ *  $Log$
  *  Revision 1.1  2005/08/04 22:21:56  cjones
  *  This class provides a method to generate consecutive integers based
  *  off a static integer.  Other classes that need unique integer values

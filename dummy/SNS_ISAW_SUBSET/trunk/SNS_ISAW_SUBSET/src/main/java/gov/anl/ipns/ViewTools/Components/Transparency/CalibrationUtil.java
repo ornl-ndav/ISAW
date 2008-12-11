@@ -33,7 +33,7 @@
  *
  * Modified:
  *
- *  $Log: CalibrationUtil.java,v $
+ *  $Log$
  *  Revision 1.13  2006/07/18 21:56:25  amoe
  *  Fixed javadoc typo.
  *

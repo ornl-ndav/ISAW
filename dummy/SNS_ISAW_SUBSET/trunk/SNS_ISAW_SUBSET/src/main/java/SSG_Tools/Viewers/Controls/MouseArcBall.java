@@ -24,7 +24,7 @@
  *
  * Modified:
  *
- *  $Log: MouseArcBall.java,v $
+ *  $Log$
  *  Revision 1.5  2007/08/26 23:23:22  dennis
  *  Updated to latest version from UW-Stout repository.
  *

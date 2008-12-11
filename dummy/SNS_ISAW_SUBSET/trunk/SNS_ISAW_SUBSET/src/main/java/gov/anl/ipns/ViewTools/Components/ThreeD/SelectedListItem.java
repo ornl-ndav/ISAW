@@ -35,7 +35,7 @@
  *
  *  Modified:
  *
- *  $Log: SelectedListItem.java,v $
+ *  $Log$
  *  Revision 1.2  2006/07/21 14:40:42  dennis
  *  Cleaned up some formatting problems caused by tabs.
  *

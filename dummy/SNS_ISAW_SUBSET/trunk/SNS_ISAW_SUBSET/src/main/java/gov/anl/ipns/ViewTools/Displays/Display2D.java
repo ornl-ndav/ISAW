@@ -32,7 +32,7 @@
  *
  * Modified:
  *
- * $Log: Display2D.java,v $
+ * $Log$
  * Revision 1.17  2007/07/18 18:36:31  rmikk
  * Fixed default getObjectState to return default for current view type
  *
@@ -467,7 +467,9 @@ public class Display2D extends Display
     
     if( current_view == IMAGE )
     {
-      ivc = new ImageViewComponent( (IVirtualArray2D)data );
+      boolean use_new_color_control = true;
+      ivc = new ImageViewComponent( (IVirtualArray2D)data, 
+                                    use_new_color_control );
       ((ImageViewComponent)ivc).setColorControlEast(true);
 //    ((ImageViewComponent)ivc).preserveAspectRatio(true);
       if( colorscale != null )

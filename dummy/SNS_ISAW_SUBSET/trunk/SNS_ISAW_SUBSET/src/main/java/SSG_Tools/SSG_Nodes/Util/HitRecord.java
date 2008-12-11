@@ -27,11 +27,19 @@
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
- * Modified:
+ *  Last Modified:
+ * 
+ *  $Author: eu7 $
+ *  $Date: 2008-08-21 15:16:55 -0500 (Thu, 21 Aug 2008) $            
+ *  $Revision: 303 $
  *
  * $Log: HitRecord.java,v $
- * Revision 1.3  2007/08/26 23:23:20  dennis
- * Updated to latest version from UW-Stout repository.
+ *
+ * 2008/08/21  Updated to latest version from UW-Stout repository.
+ *
+ * Revision 1.4  2008/08/09 21:38:25  dennis
+ * Constructor now first checks for buffer == null, then separately
+ * compares start with buffer length.
  *
  * Revision 1.3  2007/08/26 20:16:11  dennis
  * Fixed order of validity checks.
@@ -84,12 +92,21 @@ public class HitRecord
    */
   public HitRecord( int buffer[], int start )
   {
-    if ( buffer == null || start >= buffer.length ) 
+    if ( buffer == null ) 
     {                                       
       if ( debug )
         System.out.println("buffer null in HitRecord constructor" +
-        		"or length invalid. Length = " + buffer.length +
-        		", start = " + start );
+        		   ", start = " + start );
+      return;
+    }
+    
+    if ( start >= buffer.length ) 
+    {                                       
+      if ( debug )
+        System.out.println("buffer length or start invalid " +
+                           "in HitRecord constructor.  " +
+                           "length = " + buffer.length +
+                           ", start = " + start );
       return;
     }
 	  

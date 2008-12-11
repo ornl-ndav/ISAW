@@ -32,9 +32,8 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * Modified:
- * $Log: MixedContours.java,v $
+ * $Log$
  * Revision 1.5  2005/07/12 16:36:04  kramer
- *
  * Made this class an abstract class and now the classes OrderedContours and
  * NonUniformContours extend this class (previously, these two classes were
  * encapsulated in this class).  This was done so that the methods for the

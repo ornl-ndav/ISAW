@@ -22,11 +22,18 @@
  *           University of Wisconsin-Stout
  *           Menomonie, WI 54751, USA
  *
- * Modified:
+ *  Last Modified:
+ * 
+ *  $Author: eu7 $
+ *  $Date: 2008-08-21 15:24:13 -0500 (Thu, 21 Aug 2008) $            
+ *  $Revision: 304 $
  *
  *  $Log: Camera.java,v $
- *  Revision 1.8  2007/08/14 00:03:27  dennis
- *  Major update to JSR231 based version from UW-Stout repository.
+ *
+ *  2008/08/21  Updated to latest version from UW-Stout repository.
+ *
+ *  Revision 1.8  2008/06/19 02:05:16  dennis
+ *  Changed to use individual methods to get/set x,y,z components
  *
  *  Revision 1.7  2006/08/04 02:16:21  dennis
  *  Updated to work with JSR-231, 1.0 beta 5,
@@ -385,10 +392,9 @@ abstract public class Camera
    Vector3D v_comp = getV();
    Vector3D n_comp = getN();
 
-   float  components[] = move_vec.get();
-   u_comp.multiply( components[0] );
-   v_comp.multiply( components[1] );
-   n_comp.multiply( components[2] );
+   u_comp.multiply( move_vec.getX() );
+   v_comp.multiply( move_vec.getY() );
+   n_comp.multiply( move_vec.getZ() );
 
    Vector3D wc_vec = new Vector3D( u_comp );
    wc_vec.add( v_comp );
@@ -549,14 +555,10 @@ abstract public class Camera
   {
     GL  gl  = drawable.getGL();
 
-    float cop[] = COP.get();
-    float vrp[] = VRP.get();
-    float vuv[] = VUV.get();
-
     BasicGLU.gluLookAt( gl,                 // multiply in viewing tranform RT
-                        cop[0], cop[1], cop[2],
-                        vrp[0], vrp[1], vrp[2],
-                        vuv[0], vuv[1], vuv[2] );
+                        COP.getX(), COP.getY(), COP.getZ(),
+                        VRP.getX(), VRP.getY(), VRP.getZ(),
+                        VUV.getX(), VUV.getY(), VUV.getZ() );
   }
 
 

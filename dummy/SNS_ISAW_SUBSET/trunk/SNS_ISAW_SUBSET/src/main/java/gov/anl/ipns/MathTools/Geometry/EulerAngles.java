@@ -29,7 +29,7 @@
  *
  * Modified:
  * 
- *  $Log: EulerAngles.java,v $
+ *  $Log$
  *  Revision 1.2  2006/11/04 20:20:07  dennis
  *  Minor efficiency improvement for new non-array Vector3D.
  *

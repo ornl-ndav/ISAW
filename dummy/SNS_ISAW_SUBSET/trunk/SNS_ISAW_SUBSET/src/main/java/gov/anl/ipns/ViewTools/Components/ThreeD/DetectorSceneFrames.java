@@ -33,7 +33,7 @@
  *
  *  Modified:
  *
- *  $Log: DetectorSceneFrames.java,v $
+ *  $Log$
  *  Revision 1.9  2007/08/14 01:27:27  dennis
  *  Switched to JSR231 based jogl.
  *

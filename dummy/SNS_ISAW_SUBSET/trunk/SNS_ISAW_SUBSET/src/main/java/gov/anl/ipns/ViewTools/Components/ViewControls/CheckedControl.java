@@ -32,7 +32,7 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * Modified:
- * $Log: CheckedControl.java,v $
+ * $Log$
  * Revision 1.5  2007/08/09 17:46:06  rmikk
  * Eliminated the addActionListener method in this class
  *

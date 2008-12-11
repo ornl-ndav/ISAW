@@ -29,8 +29,11 @@
  *
  * Modified:
  *
- *
- *  $Log: XScale.java,v $
+ *  $Author: eu7 $
+ *  $Revision: 19115 $
+ *  $Date: 2008-05-23 13:57:18 -0500 (Fri, 23 May 2008) $
+ *  
+ *  $Log$
  *  Revision 1.22  2005/11/13 03:07:23  dennis
  *  Added Print() method for debugging.
  *  Added test methods to test getX(), getXs(), getI(), getI_GLB().
@@ -266,10 +269,14 @@ abstract public class XScale implements Serializable
 
 
   /**
-   * Determines if the specified "X" is within the range of the
-   * Xscale.
+   * Determines if the specified "X" value is within the range of the
+   * XScale.
+   * 
+   * @param val  The val to check
+   * @return  true if val is in the closed interval [start_x,end_x].
    */
-  public boolean inRange( float val ){
+  public boolean inRange( float val )
+  {
       if( val>=start_x && val<=end_x )
           return true;
       else
@@ -297,7 +304,36 @@ abstract public class XScale implements Serializable
    */
   abstract public float getX( int i );
 
+  
+  /**
+   * Get a linearly interpolated x-value that corresponds to the specified
+   * fractional index.  For example, if the fractional index 2.25 is passed
+   * in, this will return the x-value that is one fourth of the way from 
+   * x2 and x3.
+   * 
+   * @param fractional_i  The fractional index of a point between two XScale
+   *                      values.
+   *                      
+   * @return An interpolated x-value if the fractional index is in range.
+   *         If a fractional index is not in the range of valid indices, the
+   *         Float.NaN is returned.  If an integer index is specified, then
+   *         the x-value at that point is returned. 
+   */
+  public float getInterpolatedX( float fractional_i )
+  {
+     float x0 = getX( (int)Math.floor( fractional_i ));
+     float x1 = getX( (int)Math.ceil( fractional_i ));
+     
+     if ( Float.isNaN( x0 ) || Float.isNaN( x1 ) )
+       return Float.NaN;
 
+     if ( x0 == x1 )
+       return x0;
+                                          
+     float fractional_part = fractional_i - (float)Math.floor( fractional_i );
+     return x0 + fractional_part * (x1 - x0);
+  }
+  
   /**
    *  Get the position (or index of the LUB) of the specified x-value in
    *  this XScale.

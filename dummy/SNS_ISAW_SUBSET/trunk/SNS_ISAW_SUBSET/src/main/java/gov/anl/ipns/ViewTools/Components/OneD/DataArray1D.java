@@ -33,7 +33,7 @@
  *
  * Modified:
  *
- *  $Log: DataArray1D.java,v $
+ *  $Log$
  *  Revision 1.2  2004/04/20 04:14:54  millermi
  *  - Fixed java doc error.
  *

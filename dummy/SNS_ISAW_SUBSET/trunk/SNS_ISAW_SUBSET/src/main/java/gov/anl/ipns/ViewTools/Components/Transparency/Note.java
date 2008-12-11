@@ -33,7 +33,7 @@
  *
  * Modified:
  *
- *  $Log: Note.java,v $
+ *  $Log$
  *  Revision 1.6  2004/05/20 03:21:45  millermi
  *  - Removed unused imports.
  *

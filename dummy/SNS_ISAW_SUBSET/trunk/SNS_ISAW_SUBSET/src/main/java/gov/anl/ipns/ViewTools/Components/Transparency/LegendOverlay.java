@@ -33,7 +33,7 @@
  *
  * Modified:
  *
- *  $Log: LegendOverlay.java,v $
+ *  $Log$
  *  Revision 1.21  2007/07/11 18:36:12  dennis
  *  Replaced paint() by paintComponent, removed call to super.paint(),
  *  and now work with a Graphics2D object that is a copy of the original

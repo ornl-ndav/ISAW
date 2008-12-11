@@ -29,7 +29,7 @@
  *
  * Modified:
  *
- * $Log: GraphJPanel.java,v $
+ * $Log$
  * Revision 1.65  2007/09/17 02:12:52  dennis
  * Removed some blocks of code that were commented out, since the
  * functionality was now implemented in other ways.  Specifically,

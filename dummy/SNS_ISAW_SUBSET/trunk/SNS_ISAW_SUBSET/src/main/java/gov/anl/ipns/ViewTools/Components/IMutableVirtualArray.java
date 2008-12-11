@@ -30,7 +30,7 @@
  *
  * Modified:
  *
- * $Log: IMutableVirtualArray.java,v $
+ * $Log$
  * Revision 1.1  2006/03/30 23:54:35  dennis
  * New interfaces that define the methods for altering the values
  * in a VirtualArray.  These methods were previously part of the

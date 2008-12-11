@@ -31,7 +31,7 @@
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
- * $Log: HelpMenu.java,v $
+ * $Log$
  * Revision 1.4  2004/03/15 23:53:50  dennis
  * Removed unused imports, after factoring out the View components,
  * Math and other utils.

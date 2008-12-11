@@ -22,11 +22,19 @@
  *           University of Wisconsin-Stout
  *           Menomonie, WI 54751, USA
  *
- * Modified:
+ * Last Modified:
+ *
+ *  $Author: eu7 $
+ *  $Date: 2008-08-21 14:06:02 -0500 (Thu, 21 Aug 2008) $            
+ *  $Revision: 301 $
  *
  *  $Log: Group.java,v $
- *  Revision 1.6  2007/08/26 23:23:20  dennis
- *  Updated to latest version from UW-Stout repository.
+ *  2008/08/21  Updated to latest version from UW-Stout repository.
+ *
+ *  Revision 1.7  2007/11/30 05:32:57  dennis
+ *  Now checks whether the node being added as a child is this node.
+ *  If so, the node is not added.  This prevents introducing a cycle
+ *  in the scene graph.
  *
  *  Revision 1.6  2007/08/25 04:21:55  dennis
  *  Parameterized raw type.
@@ -80,11 +88,11 @@ public class Group extends Node
    */
   public void addChild( Node child )
   {
-    if ( child != null )
+    if ( child != null && child != this )
     {
       children.addElement( child );
       child.setParent( this );
-    }
+    }      
   }
 
   /* -------------------------- addChild ---------------------------- */
@@ -97,13 +105,17 @@ public class Group extends Node
    */
   public void addChild( Node child, int index )
   {
-    if ( child != null && index >= 0 && index <= children.size() )
+    if ( child != null && 
+         child != this && 
+         index >= 0    && 
+         index <= children.size() )
     {
       children.add( index, child );
       child.setParent( this );
-    }
+    }   
   }
 
+  
   /* -------------------------- removeChild ---------------------------- */
   /**
    *  Remove the specified child.
@@ -119,6 +131,7 @@ public class Group extends Node
     }
   }
 
+  
   /* -------------------------- removeChild ---------------------------- */
   /**
    *  Remove the child at the specified index.

@@ -33,7 +33,7 @@
  *
  * Modified:
  *
- *  $Log: PointRegion.java,v $
+ *  $Log$
  *  Revision 1.13  2007/08/23 21:06:31  dennis
  *  Removed unused imports.
  *

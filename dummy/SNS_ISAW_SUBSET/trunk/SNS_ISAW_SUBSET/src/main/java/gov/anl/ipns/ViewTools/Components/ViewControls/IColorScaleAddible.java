@@ -33,7 +33,7 @@
  *
  * Modified:
  *
- *  $Log: IColorScaleAddible.java,v $
+ *  $Log$
  *  Revision 1.4  2004/08/06 18:48:52  millermi
  *  - Added public messaging String COLORSCALE_CHANGED which is to be
  *    sent out whenever the colorscale is changed.

@@ -29,7 +29,7 @@
  *
  * Modified:
  *
- *  $Log: TextRangeUI.java,v $
+ *  $Log$
  *  Revision 1.12  2006/06/12 15:33:38  dennis
  *  Trivial fix to docs and frame label.
  *

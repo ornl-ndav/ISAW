@@ -32,7 +32,7 @@
  *
  * Modified:
  *
- * $Log: Display1D.java,v $
+ * $Log$
  * Revision 1.15  2008/01/30 18:15:42  dennis
  * Trivial reformatting to make use of white space more consistent.
  *

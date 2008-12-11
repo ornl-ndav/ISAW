@@ -36,7 +36,7 @@
  *
  * Modified:
  *
- *  $Log: DoubleWedgeCursor.java,v $
+ *  $Log$
  *  Revision 1.6  2007/03/23 20:26:56  dennis
  *  Now extends WedgeCursor, so all drawing and delicate calculations
  *  already done in WedgeCursor are not repeated here.  The second

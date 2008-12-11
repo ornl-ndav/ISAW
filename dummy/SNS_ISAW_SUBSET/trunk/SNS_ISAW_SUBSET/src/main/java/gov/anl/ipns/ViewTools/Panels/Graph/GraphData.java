@@ -29,7 +29,7 @@
  *
  * Modified:
  *
- * $Log: GraphData.java,v $
+ * $Log$
  * Revision 1.24  2007/08/03 16:26:24  oakgrovej
  * Added code to set the mark size in the setObjectState() method.
  *

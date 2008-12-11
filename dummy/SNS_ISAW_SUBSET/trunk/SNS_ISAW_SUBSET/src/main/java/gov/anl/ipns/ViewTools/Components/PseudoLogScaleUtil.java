@@ -36,7 +36,7 @@
  ***************************************************************************
  * Modified:
  *
- *  $Log: PseudoLogScaleUtil.java,v $
+ *  $Log$
  *  Revision 1.2  2004/12/05 05:27:01  millermi
  *  - Fixed Eclipse warnings.
  *

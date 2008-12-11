@@ -32,7 +32,7 @@
  *
  * Modified:
  *
- * $Log: FinishWindowListener.java,v $
+ * $Log$
  * Revision 1.2  2004/07/28 16:07:32  dennis
  * Added java docs.
  *

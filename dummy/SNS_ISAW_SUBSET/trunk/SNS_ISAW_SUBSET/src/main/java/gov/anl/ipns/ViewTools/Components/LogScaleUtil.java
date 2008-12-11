@@ -36,7 +36,7 @@
  ***************************************************************************
  * Modified:
  *
- *  $Log: LogScaleUtil.java,v $
+ *  $Log$
  *  Revision 1.13  2004/12/05 05:25:17  millermi
  *  - Fixed eclipse warnings.
  *
