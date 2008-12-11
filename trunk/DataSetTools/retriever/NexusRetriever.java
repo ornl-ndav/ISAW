@@ -66,6 +66,10 @@ public class NexusRetriever extends Retriever implements hasInformation
 {ExtGetDS ext ;
  String errormessage ;
  NxNode node ;
+ public static final int INexDetector   = 1;
+ public static final int INexSample   = 2;
+ public static final int INexBeam   = 4;
+ 
 
     /**
      *@param   dataSourceName  should be a local filename<P>
@@ -278,6 +282,30 @@ public class NexusRetriever extends Retriever implements hasInformation
       
       return ds;
          
+   }
+   
+   /**
+    * This fixes a DataSet where the Fixup file is a NeXus file
+    * @param DS    The data set to be fixed
+    * @param dsNum  The data set number in the NeXus file corresponding to this data set
+    * @param Mode   Sum of the INex constants corresponding to the Nexus classes to be redone
+    * @param CacheFilename  Name of the fast load Cache for this type of NeXus files or null
+    * @return  true if there is and error( check errormessage) or false if there is no error
+    */
+   public boolean FixUpDataSet( DataSet DS, int dsNum,int Mode, 
+            String CacheFilename){
+      
+      if( Mode <= 0)
+         return false;
+      
+      if( CacheFilename != null)
+         RetrieveSetUpInfo( CacheFilename);
+      errormessage ="";
+      boolean Res = ext.FixUpDataSet( DS, dsNum, Mode);
+      if( Res)
+         errormessage = ext.getErrorMessage();
+      return Res;     
+      
    }
    
    /** Test program for the NexusRetriever module 
