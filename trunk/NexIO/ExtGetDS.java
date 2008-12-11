@@ -482,7 +482,9 @@ public class ExtGetDS{
   
   /**
    * Fixes attributes of the DataSet DS using information from this NeXus file
-   * @param DS   The DataSet to be fixed
+   * @param DS   The DataSet to be fixed. Will not work when the data of the
+   * data set spans more NXdata.
+   * 
    * @param dsNum  The corresponding data set number associated with this data set
    * @param Mode   The sum of the INex constants in NeXusRetriever indicating
    *               the Class name to use to change attributes.  Only 1 is in use
@@ -490,6 +492,11 @@ public class ExtGetDS{
    *          a problem
    */
   public boolean FixUpDataSet( DataSet DS, int dsNum,int Mode){
+     
+
+     if(!setupDSs ) 
+       setUpDataSetList() ;
+     
      
      if( DS == null || dsNum <0|| dsNum >= numDataSets()|| Mode <=0 )
         return false;
@@ -504,12 +511,16 @@ public class ExtGetDS{
      if( dsInf.NxdataNode != null){
         DInfo = new NxDataStateInfo(dsInf.NxdataNode ,dsInf.NxInstrumentNode , 
                 FInfo , dsInf.startGroupID);
-         EInfo.Push(  DInfo );
+        DInfo.startDetectorID = dsInf.startDetectorID;
+        EInfo.Push(  DInfo );
      }else{//monitor ??? may be a bunch
      }
-    NxInstrumentStateInfo InstInfo = new NxInstrumentStateInfo( dsInf.NxInstrumentNode , 
-             FInfo);
-    FInfo.Push(  InstInfo );
+     NxInstrumentStateInfo InstInfo = new NxInstrumentStateInfo( dsInf.NxInstrumentNode , 
+              FInfo);
+     
+     FInfo.Push(  InstInfo );
+     
+   
     
      
      
@@ -518,8 +529,10 @@ public class ExtGetDS{
         if( DInfo != null){
            NxNode NxDetectorNode = NexUtils.getCorrespondingNxDetector( DInfo.linkName ,
                                                         dsInf.NxInstrumentNode );
+           NxDetectorStateInfo detInfo = new NxDetectorStateInfo( NxDetectorNode, FInfo );
+           FInfo.Push( detInfo  );
            boolean Res = nxUt.setUpNXdetectorAttributes( DS , dsInf.NxdataNode , 
-                                   NxDetectorNode , dsInf.startGroupID , FInfo );
+                                   NxDetectorNode , 0 , FInfo );
            if( Res){
               errormessage = nxUt.getErrorMessage();
               return Res;
