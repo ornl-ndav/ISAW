@@ -94,6 +94,7 @@ cp    $ISAW/gov/anl/ipns/Util/File/xml_utils.java                 gov/anl/ipns/U
 cp    $ISAW/gov/anl/ipns/Util/File/SerializeUtil.java             gov/anl/ipns/Util/File
 cp    $ISAW/gov/anl/ipns/Util/File/TextFileReader.java            gov/anl/ipns/Util/File
 cp    $ISAW/gov/anl/ipns/Util/File/RobustFileFilter.java          gov/anl/ipns/Util/File
+cp    $ISAW/gov/anl/ipns/Util/File/FileIo.java                    gov/anl/ipns/Util/File
 
 mkdir gov/anl/ipns/Util/Numeric
 cp    $ISAW/gov/anl/ipns/Util/Numeric/floatPoint2D.java             gov/anl/ipns/Util/Numeric

@@ -30,6 +30,7 @@
 
 package gov.anl.ipns.ViewTools.Panels.PeakArrayPanel;
 
+import gov.anl.ipns.Util.File.FileIO;
 import gov.anl.ipns.Util.Sys.WindowShower;
 
 import javax.swing.*;
@@ -271,15 +272,15 @@ public class PeakArrayPanels extends JFrame {
 
    }
 
-
+   
    /**
-    * Utility to create this JFrame a Display the Peaks. The PeaksDisplayPanels
+    * Utility to create this JFrame and Display the Peaks. Arrays of PeakDisplayInfos
     * are serialized and stored in files in the specified Directory. The names
     * of the files start with the specified prefix and have the specified
     * extension. Only files created after currentTime will be used. Also, part
     * of the filename after the last "_" will represent an ID and the part of
     * the name of the file before the last "_" will represent a title associated
-    * with the PeaksDisplay panel in that file.
+    * with the PeaksDisplay panel created from the array of PeakDisplayInfo's.
     * 
     * @param Title
     *           Title to appear on the JFrame that will pop up
@@ -296,26 +297,61 @@ public class PeakArrayPanels extends JFrame {
     *           The extension with the "." that these file will have. If null it
     *           will ".pvw"
     *           
+    
     * @param currentTime
     *           The time in milliseconds since January 1, 1970 UTC. Only files
     *           created after this time will be considered.
     *           
     */
    public static void DisplayPeaks( String Title , String Directory ,
-            String prefix , String extension , long currentTime ) {
+            String prefix , String extension , long currentTime) {
+       
+      DisplayPeaks( Title, Directory, prefix, extension, currentTime, false );
+   }
+
+   /**
+    * Utility to create this JFrame and Display the Peaks. Arrays of PeakDisplayInfos
+    * are serialized and stored in files in the specified Directory. The names
+    * of the files start with the specified prefix and have the specified
+    * extension. Only files created after currentTime will be used. Also, part
+    * of the filename after the last "_" will represent an ID and the part of
+    * the name of the file before the last "_" will represent a title associated
+    * with the PeaksDisplay panel created from the array of PeakDisplayInfo's.
+    * 
+    * @param Title
+    *           Title to appear on the JFrame that will pop up
+    *           
+    * @param Directory
+    *           The Directory where the serialized PeaksDisplayPanels are
+    *           stored. If null it will be in {user.hom}/ISAW/tmp/
+    *           
+    * @param prefix
+    *           The prefix these filenames will have. If null this will be
+    *           "PeakV"
+    *           
+    * @param extension
+    *           The extension with the "." that these file will have. If null it
+    *           will ".pvw"
+    *           
+    * @param kepFiles
+    *          if false the files with the image information will be deleted.
+    *           
+    * @param currentTime
+    *           The time in milliseconds since January 1, 1970 UTC. Only files
+    *           created after this time will be considered.
+    *           
+    */
+   public static void DisplayPeaks( String Title , String Directory ,
+            String prefix , String extension , long currentTime, boolean keepFiles ) {
       
       boolean defaultDirectory = false;
       if( Directory == null ){
-         Directory = System.getProperty( "user.home" );
-         defaultDirectory = true;
-      }
+         Directory = FileIO.appendPath(System.getProperty( "user.home" ),
+                                 "ISAW"+File.separator+"tmp"+File.separator);
+         
+      }else
+         Directory= FileIO.appendPath(  null , Directory );
       
-      Directory = Directory.replace( '\\' , '/' );
-      if( ! Directory.endsWith( "/ " ) )
-         Directory += "/";
-      
-      if( defaultDirectory)
-         Directory += "ISAW/tmp/";
       
       if( prefix == null )
          prefix = "PeakV";
@@ -337,45 +373,10 @@ public class PeakArrayPanels extends JFrame {
             if( filename != null && filename.startsWith( prefix )
                      && filename.endsWith( extension )
                      && currentTime < Files[ i ].lastModified() )
-               try {
-                  
-                  ObjectInputStream inp = new ObjectInputStream(
-                           new FileInputStream( Files[ i ] ) );
-                  
-                  PeaksDisplayPanel disp = (PeaksDisplayPanel) inp.readObject();
-                  filename = filename.substring( 0 , filename.length()
-                           - extension.length() );
-                  
-                  int k1 = filename.lastIndexOf( "_" );
-                  String ID = null;
-                  
-                  if( k1 >= 0 )
-                     ID = filename.substring( k1 + 1 );
-                  
-                  else {
-                     ID = null;
-                     k1 = filename.length() - 1;
-                  }
-                  
-                  int k2 = filename.lastIndexOf( "/" , k1 );
-                  
-                  String title = null;
-                  if( k2 < 0 )
-                     k2 = - 1;
-                  
-                  title = filename.substring( k2 + 1 , k1 );
-                  panels.addPanel( disp , title , ID );
-                  
-               }
-               catch( Exception ss ) {
-                
-                  JOptionPane.showMessageDialog( null ,
-                           "Cannot read Peak images for "
-                                    + Files[ i ].toString() );
-
-               }
+               getOneFilename(panels,  Directory+filename, keepFiles )   ;   
+            
+               
          }
-      
       panels.display( "File" , "Detector" );
 
 
@@ -383,13 +384,88 @@ public class PeakArrayPanels extends JFrame {
 
 
    /**
+    * Utility to create this JFrame and Display the Peaks. Arrays of PeaksDisplayInfos
+    * are serialized and stored in the array of filenames. The parts of the file name
+    * before and after the last "_" will become titles for the resultant display.
+    * 
+    * @param Title
+    *           Title to appear on the JFrame that will pop up
+    *           
+    * @param filenames  An array of filenames each of which stores the Object value
+    *        of an array of PeakDisplaInfo's
+    *        
+    * @param keepFiles  if false the files will be deleted
+    */           
+   public static void DisplayPeaks( String Title, String[] filenames, boolean keepFiles){
+      if( filenames == null)
+         return;
+      
+
+      PeakArrayPanels panels = new PeakArrayPanels( Title );
+      for( int i=0; i<filenames.length ; i++){
+         getOneFilename(panels,  filenames[i] , keepFiles)   ;
+
+         panels.display( "File" , "Detector" );
+      }
+   }
+   
+   
+   private static void getOneFilename( PeakArrayPanels panels, String filename
+             , boolean keepFiles){
+      try {
+         File F = new File( filename);
+         FileInputStream fin = new FileInputStream( F);
+         ObjectInputStream inp = new ObjectInputStream(
+                 fin );
+         
+         PeakDisplayInfo[] disp =  (PeakDisplayInfo[]) inp.readObject();
+         
+         int k=filename.lastIndexOf( '.' );
+         String file = filename.substring( 0 , k);
+         
+         int k1 = file.lastIndexOf( "_" );
+         String ID = null;
+         
+         if( k1 >= 0 )
+            ID = file.substring( k1 + 1 );
+         
+         else {
+            ID = null;
+            k1 = file.length() - 1;
+         }
+         
+         int k2 = file.lastIndexOf( "/" , k1 );
+         
+         String title = null;
+         if( k2 < 0 )
+            k2 = - 1;
+         
+         title = file.substring( k2 + 1 , k1 );
+         PeaksDisplayPanel one_panel = new PeaksDisplayPanel( disp);
+         panels.addPanel( one_panel , title , ID );
+         if( !keepFiles){
+            inp.close();
+           if(! (new File( filename)).delete())
+              System.out.println("Could not delete "+filename);
+         }
+      }
+      catch( Exception ss ) {
+       
+         JOptionPane.showMessageDialog( null ,
+                  "Cannot read Peak images for "
+                           + filename);
+
+      }
+
+   }
+   /**
     *  Will Display Peaks whose files are in default directory with default prefix 
     *  and extension
     * @param args   Not used
     */
    public static void main( String[] args ) {
 
-      PeakArrayPanels.DisplayPeaks( "Test" , null , null , null , - 1 );
+      PeakArrayPanels.DisplayPeaks( "Test" , null , "" , null , - 1 );
 
    }
 
