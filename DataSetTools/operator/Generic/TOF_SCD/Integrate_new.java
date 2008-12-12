@@ -934,7 +934,7 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
     // get the xscale from the data to give to the new peaks objects
     XScale times=data.getX_scale();
 
-    UniformGrid grid = (UniformGrid)Grid_util.getAreaGrid( ds, detnum ); 
+    IDataGrid grid = Grid_util.getAreaGrid( ds, detnum ); 
 
     // determine the min and max pixel-times
     int zmin=0;
