@@ -37,6 +37,7 @@ import java.util.*;
 import java.io.*;
 
 import gov.anl.ipns.MathTools.Geometry.Vector3D;
+import gov.anl.ipns.Util.Sys.SharedMessages;
 
 import DataSetTools.dataset.IDataGrid;
 import DataSetTools.dataset.IDataGridComparator;
@@ -105,9 +106,11 @@ public class Peak_new_IO
                      throws IOException
   {
      PrintStream out = new PrintStream( file_name );  
-     if ( peaks == null || peaks.size() <= 0 )
-       throw new IllegalArgumentException(
-                               "Null or empty peaks Vector in Write_new()");
+     if ( peaks == null || peaks.size() <= 0 ){
+       SharedMessages.addmsg(
+                               "Null or empty peaks Vector in Write_new() ");
+       return;
+     }
 
                                                   // Find all the grids
 
