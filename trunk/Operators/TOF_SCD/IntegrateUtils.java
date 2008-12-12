@@ -1764,7 +1764,7 @@ public class IntegrateUtils
       System.out.println("Processing DataSet    " + ds );
       System.out.println("Processing detector # " + detnum );
     }
-    UniformGrid grid = (UniformGrid)Grid_util.getAreaGrid( ds, detnum );
+    IDataGrid grid = Grid_util.getAreaGrid( ds, detnum );
     if ( grid != null )
     {
       if ( DEBUG )
@@ -1816,7 +1816,7 @@ public class IntegrateUtils
    */
   public static boolean peak_d_OK( IPeak        peak,
                                    float       d_min,
-                                   UniformGrid grid  )
+                                   IDataGrid   grid  )
   {
     int row     = Math.round( peak.y() );
     int col     = Math.round( peak.x() );
