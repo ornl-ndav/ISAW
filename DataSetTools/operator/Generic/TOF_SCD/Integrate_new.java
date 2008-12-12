@@ -952,7 +952,8 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
       phi   = samp_or.getPhi();
       chi   = samp_or.getChi();
       omega = samp_or.getOmega();
-    }
+    }else
+       samp_or = new DataSetTools.instruments.SNS_SampleOrientation( 0f, 0f, 0f);
 
     // add sample orientation and detector info to logBuffer
     logBuffer.append("---------- PHYSICAL PARAMETERS\n");
