@@ -198,7 +198,8 @@ public class NxSample{
     if( orientation != null ){
        if( EntryState != null && instr != null )
           if((EntryState.facility != null) && ( EntryState.facility.equals("LANL"))){
-          if( instr.equals("SCD")){
+          if( instr.equals("SCD")|| instr.equals("SNAP")||instr.equals("TOPAZ")||
+                   instr.equals("MANDI")){
 
              DS.setAttribute( new SampleOrientationAttribute(
                       Attribute.SAMPLE_ORIENTATION ,
