@@ -280,6 +280,14 @@ public class NxMonitor{
     
     D.setAttribute(  new DetPosAttribute( Attribute.DETECTOR_POS, 
              new DetectorPosition( new Vector3D(distance,0f,0f))) );
+    float Totcount = 0;
+    if( yvals != null && D.getAttribute(  Attribute.TOTAL_COUNT)== null){
+       
+       for( int i=0; i< yvals.length;i++)
+          Totcount +=yvals[i];
+       
+       D.setAttribute(  new FloatAttribute( Attribute.TOTAL_COUNT, Totcount) );
+    }
     
     return false;
   }
