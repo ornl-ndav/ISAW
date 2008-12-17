@@ -839,7 +839,10 @@ public class PeakData_d
       pd.h   = p.h();
       pd.k   = p.k();
       pd.l   = p.l();
-      pd_peaks.add( pd );
+      if ( pd.h == 0 && pd.k == 0 && pd.l == 0 )
+        System.out.println("Skipping Peak with h,k,l = 0,0,0");
+      else
+        pd_peaks.add( pd );
     }
 
     System.out.println("READ: " + pd_peaks.size() + " peaks" );
