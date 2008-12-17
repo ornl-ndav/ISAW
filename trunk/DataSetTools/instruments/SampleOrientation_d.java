@@ -192,6 +192,17 @@ abstract public class SampleOrientation_d implements Serializable
   abstract protected void build_transforms();
 
 
+  /**
+   *  Return a string giving the angles for this SampleOrientation.
+   *
+   *  @return A string with the phi, chi and omega angles labeled.
+   */
+  public String toString()
+  {
+    return "phi = " + phi + ", chi = " + chi + ", omega = " + omega;
+  }
+
+
 /* -----------------------------------------------------------------------
  *
  *  PRIVATE METHODS
