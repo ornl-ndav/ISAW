@@ -935,6 +935,26 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
     XScale times=data.getX_scale();
 
     IDataGrid grid = Grid_util.getAreaGrid( ds, detnum ); 
+    if ( grid == null )
+      throw new IllegalArgumentException(
+                "DataSet doesn't have detector grid in Integrate_new");
+ 
+                                                // NOTE: to find hkl ranges,
+    if ( grid instanceof RowColGrid )           // we need a uniform grid, so
+    {                                           // make one now, if necessary
+      UniformGrid ugrid = new UniformGrid( grid.ID(),
+                                           grid.units(),
+                                           grid.position(),
+                                           grid.x_vec(),
+                                           grid.y_vec(),
+                                           grid.width(),
+                                           grid.height(),
+                                           grid.depth(),
+                                           grid.num_rows(),
+                                           grid.num_cols() );
+      ugrid.setData_entries( ds );
+      grid = ugrid;
+    }
 
     // determine the min and max pixel-times
     int zmin=0;
@@ -952,8 +972,15 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
       phi   = samp_or.getPhi();
       chi   = samp_or.getChi();
       omega = samp_or.getOmega();
-    }else
-       samp_or = new DataSetTools.instruments.SNS_SampleOrientation( 0f, 0f, 0f);
+    }
+    else
+    {
+      System.out.println("WARNING: Making default SNS SampleOrientation");
+      samp_or = new DataSetTools.instruments.SNS_SampleOrientation(0f, 0f, 0f);
+      ds.setAttribute( new SampleOrientationAttribute (
+                                      Attribute.SAMPLE_ORIENTATION,
+                                      samp_or) );
+    }
 
     // add sample orientation and detector info to logBuffer
     logBuffer.append("---------- PHYSICAL PARAMETERS\n");
@@ -1011,17 +1038,32 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
 
     float min_tof = x_scale.getStart_x();
     float max_tof = x_scale.getEnd_x();
+    if ( min_tof < 1000 )
+    {
+      System.out.println("WARNING: setting min_tof to 1000, not " + min_tof );
+      min_tof = 1000;
+    }
+    if ( max_tof > 16666 )
+    {
+      System.out.println("WARNING: setting max_tof to 16666, not " + max_tof );
+      max_tof = 16666;
+    }
+
+    Tran3D gonRot    = samp_or.getGoniometerRotation();
+    Tran3D gonRotInv = samp_or.getGoniometerRotationInverse();
+
     Vector3D min_max_hkl[] = SCD_util.DetectorToMinMaxHKL(
                                         grid,
                                         initial_path,
                                         min_tof,
                                         max_tof,
-                                        samp_or.getGoniometerRotationInverse(),
+                                        gonRotInv,
                                         inv_orientation_tran );
-    //TODO add another string buffer
-    //System.out.println("MIN, MAX HKL FOR GRID ID " + grid.ID() );
-    //System.out.println("  MIN: " + min_max_hkl[0] );
-    //System.out.println("  MAX: " + min_max_hkl[1] );
+
+    // TODO add another string buffer
+    // System.out.println("MIN, MAX HKL FOR GRID ID " + grid.ID() );
+    // System.out.println("  MIN: " + min_max_hkl[0] );
+    // System.out.println("  MAX: " + min_max_hkl[1] );
     
     int min_h = Math.round(min_max_hkl[0].get()[0]) - 1;
     int max_h = Math.round(min_max_hkl[1].get()[0]) + 1;
@@ -1029,30 +1071,17 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
     int max_k = Math.round(min_max_hkl[1].get()[1]) + 1;
     int min_l = Math.round(min_max_hkl[0].get()[2]) - 1;
     int max_l = Math.round(min_max_hkl[1].get()[2]) + 1;
-
 /*
-    System.out.println("h limit from " +hkl_lim[0][0]+ " to " + hkl_lim[0][1] );
-    System.out.println("k limit from " +hkl_lim[1][0]+ " to " + hkl_lim[1][1] );
-    System.out.println("l limit from " +hkl_lim[2][0]+ " to " + hkl_lim[2][1] );
-    System.out.println("real from " +real_lim[0][0]+ " to " + real_lim[0][1] );
-    System.out.println("real from " +real_lim[1][0]+ " to " + real_lim[1][1] );
-    System.out.println("real from " +real_lim[2][0]+ " to " + real_lim[2][1] );
+    System.out.println("min, max h = " + min_h + ", " + max_h);
+    System.out.println("min, max k = " + min_k + ", " + max_k);
+    System.out.println("min, max l = " + min_l + ", " + max_l);
 */
     // add the limits to the logBuffer
     logBuffer.append("---------- LIMITS\n");
     logBuffer.append("min hkl,  max hkl : " 
                      + min_h +" "+ min_k +" "+ min_l +"   "
                      + max_h +" "+ max_k +" "+ max_l +"\n");
-/*    
-    float[][] real_lim=IntegrateUtils.minmaxreal(pkfac, ids, times);
-    logBuffer.append("min xcm ycm wl, max xcm ycm wl: "
-                     +SCD_LogUtils.formatFloat(real_lim[0][0])+" "
-                     +SCD_LogUtils.formatFloat(real_lim[1][0])+" "
-                     +SCD_LogUtils.formatFloat(real_lim[2][0])+"   "
-                     +SCD_LogUtils.formatFloat(real_lim[0][1])+" "
-                     +SCD_LogUtils.formatFloat(real_lim[1][1])+" "
-                     +SCD_LogUtils.formatFloat(real_lim[2][1])+"\n");
-*/
+
     // add information about integrating the peaks
     logBuffer.append("\n");
     logBuffer.append("========== PEAK INTEGRATION ==========\n");
@@ -1060,6 +1089,57 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
 
     boolean printPeak=false; // REMOVE
     IPeak peak=null;
+
+/* DEBUG....
+    if ( grid.ID() == 2 )
+    {
+      Vector3D  q_lab = new Vector3D();      // Q vector in "laboratory
+                                             // coordinates
+      Vector3D  q_crystal = new Vector3D();  // Q vector un-rotated by 
+                                             // goniometer rotation, to
+                                             // be in coordinate system 
+                                             // attached to the crystal
+
+      System.out.println("REVERSED Mapping h,k,l = -1,1,-4 TO row_col_ch");
+      Vector3D hkl_vec = new Vector3D( -1,1,-4 );
+      System.out.println("hkl = hkl_vec " + hkl_vec );
+
+      orientation_tran.apply_to( hkl_vec, q_crystal );
+      System.out.println("XTAL q_vec = " + q_crystal );
+
+      gonRot.apply_to( q_crystal, q_lab );
+      System.out.println("q_lab = " + q_lab );
+
+      float row_col_tof[] = transformer.QtoRowColTOF( q_crystal );
+      System.out.println( "row,col,chan = " + row_col_tof[0] + ", " +
+                                            + row_col_tof[1] + ", " +
+                                            + row_col_tof[2] );
+      float row = row_col_tof[0];
+      float col = row_col_tof[1];
+      Vector3D pixel_vec = grid.position( row, col );
+
+      Vector3D temp_hkl_vec = SCD_util.RealToHKL( pixel_vec,
+                                             initial_path,
+                                             row_col_tof[2],
+                                             gonRotInv,
+                                             inv_orientation_tran );
+
+      System.out.println("Returned hkl = " + temp_hkl_vec );
+
+
+      q_lab = tof_calc.DiffractometerVecQ( pixel_vec, 
+                                           initial_path, row_col_tof[2] );
+      System.out.println("q_lab = " + q_lab );
+
+      gonRotInv.apply_to( q_lab, q_crystal );
+      System.out.println("XTAL q_vec = " + q_crystal );
+
+      inv_orientation_tran.apply_to( q_crystal, temp_hkl_vec );
+      System.out.println("Recalculated  hkl = " + temp_hkl_vec );
+    }
+
+   END DEBUG....
+*/
 
     int seqnum=1;
     // loop over all of the possible hkl values and create peaks
