@@ -990,7 +990,8 @@ public class Util{
     
     float dPixels = Ddist/Math.min( grid.width(row,col) ,
              grid.height(row, col));
-    dPixels = (int)Math.max( 4 , dPixels );
+    dPixels = (int)Math.max( 3, dPixels );
+    dPixels = Math.min( dPixels , Math.min(grid.num_rows(),grid.num_cols())/20 );
     
     XScale xscl = grid.getData_entry(  row , col ).getX_scale();
     int delt=1;
@@ -1001,12 +1002,13 @@ public class Util{
     
     int dNChan = (int)(.5+ DT/TimeOneChan);
     dNChan = Math.max( dNChan , 2 );
+    dNChan = Math.min(  dNChan , xscl.getNum_x()/20 );
     
     
     int nback=0;
     int Srow=0, Scol=0, Schan=0;
     try{
-       
+       for( int k = time - dNChan ; k <= time + dNChan ; k++ ){
       for( int i = col - (int) dPixels ; i <= col + (int) dPixels ; i++ ) {
             for( int j = row - (int) dPixels ; j <= row + (int) dPixels ; j++ ) {
                Data data = grid.getData_entry( j , i );// ds.getData_entry(ids[i][j]);
@@ -1014,7 +1016,7 @@ public class Util{
                   
                   float[] yvals = data.getY_values();
                  
-                  for( int k = time - dNChan ; k <= time + dNChan ; k++ ) 
+                   
                   if(k>=0 && k <yvals.length){
                      xsum += i * yvals[ k ];
                      ysum += j * yvals[ k ];
@@ -1032,11 +1034,24 @@ public class Util{
                         back += yvals[ k ];
                         nback++ ;
                      }
-
-                  }//for k
+                  }//if nlegit time
+                  
                }//if data != null
             }//for j
-         }//for i
+            }//for i
+            double backPerCell =0;
+            if( nback > 0)
+               backPerCell = back/nback;  
+           
+            xsum = xsum - Scol*backPerCell;                                      
+            ysum = ysum - Srow*backPerCell;                                      
+            zsum = zsum - Schan*backPerCell;
+            asum = asum - count*backPerCell;
+            Scol= Srow=Schan = 0;//average per channel
+            count = nback = 0;
+          
+      }//for k
+       
     }catch(ArrayIndexOutOfBoundsException e){
        
       peak.reflag(reflag+20);
@@ -1044,15 +1059,7 @@ public class Util{
       
     }
     
-    double backPerCell =0;
-    if( nback > 0)
-       backPerCell = back/nback;  
     
-    xsum = xsum - Scol*backPerCell;                                      
-    ysum = ysum - Srow*backPerCell;                                      
-    zsum = zsum - Schan*backPerCell;
-    asum = asum - count*backPerCell;
-  
     
     // total count must be greater than zero for this to make sense
     if(asum<=0){
