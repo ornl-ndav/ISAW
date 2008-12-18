@@ -339,6 +339,46 @@ public class InstrumentType implements Serializable
 
     return type_code;
   }
+  
+
+  /**
+   *  Get the String instrument name from a int type code specifying the
+   *  the instrument name of the form:
+   *  TOF_NPD, TOF_NGLAD, TOF_NSCD, TOF_NSAS, TOF_NDGS, TOF_NIGS, TOF_NREFL.
+   *
+   *  @param  typeCode   Isaw type code for an instrument.
+   *  
+   *  @return The string name corresponding to the ISAW typeCode.
+   */
+   public static String getNameFromTypeCode( int type )
+   {
+     
+      if( type ==  TOF_DIFFRACTOMETER)
+         return TOF_NPD;
+
+      if( type ==  TOF_SCD)
+         return TOF_NSCD;
+
+      if( type ==  TOF_SAD)
+         return TOF_NSAS;
+      
+      if( type ==  TOF_DG_SPECTROMETER)
+         return TOF_NDGS;
+
+      
+      if( type ==  TOF_DG_SPECTROMETER)
+         return TOF_NDGS;
+      
+      if( type ==  TOF_IDG_SPECTROMETER)
+         return TOF_NIGS;
+      
+      if( type ==  TOF_REFLECTOMETER)
+         return TOF_NREFL;
+     
+   
+     return null;
+   }
+
 
 
  /**
