@@ -83,6 +83,7 @@ import NexIO.*;
 import DataSetTools.dataset.*;
 import java.util.*;
 import java.text.*;
+import NexIO.Write.NexApi.*;
 
 public class NxWriteEntry{
   String errormessage;
@@ -214,8 +215,11 @@ public class NxWriteEntry{
     n1=node.newChildNode( "definition" , "SDS" );
     
     n1.addAttribute("version",("2.0"+cc).getBytes(),Types.Char, ranks);
-    n1.setNodeValue( "   ".getBytes() ,Types.Char , NexIO.Inst_Type.
-             makeRankArray( 3 , -1 , -1 , -1 , -1 ) );
+    String InstName = DataSetTools.instruments.InstrumentType.getNameFromTypeCode( instrType);
+    if( InstName == null)
+       InstName ="   ";
+    n1.setNodeValue( InstName.getBytes() ,Types.Char , NexIO.Inst_Type.
+             makeRankArray( InstName.length() , -1 , -1 , -1 , -1 ) );
     //--------------------- duration ---------------------------
     Object O = DS.getAttributeValue( Attribute.NUMBER_OF_PULSES );
     if( O != null ){
