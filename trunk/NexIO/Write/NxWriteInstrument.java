@@ -55,6 +55,7 @@ package NexIO.Write;
 
 import NexIO.*;
 import DataSetTools.dataset.*;
+import DataSetTools.instruments.*;
 
 public class NxWriteInstrument{
   String errormessage;
@@ -125,6 +126,8 @@ public class NxWriteInstrument{
     
     if( X != null ){
       String instr_name = ne.cnvertoString( X );
+      if( instr_name == null )
+           instr_name ="SCD";
       if( instr_name != null ){
         n1 = NxInstr.newChildNode( "name" , "SDS" );
         ranks = new int[1];
@@ -169,10 +172,11 @@ public class NxWriteInstrument{
    }
    
 */
+    NxWriteNode nxSrce = null;
     if( DS.getNum_entries() > 0 ){
       Object XX =DS.getData_entry(0).getAttributeValue(Attribute.INITIAL_PATH);
       if( XX !=  null )if( XX instanceof Number ){
-        NxWriteNode nxSrce = NxInstr.newChildNode( "Source" , "NXsource" );
+        nxSrce = NxInstr.newChildNode( "Source" , "NXsource" );
         NxWriteNode n3 = nxSrce.newChildNode( "distance" , "SDS" );
         int rank[];
         rank = new int[1];
@@ -183,6 +187,21 @@ public class NxWriteInstrument{
         n3.setNodeValue( xx , Types.Float  , rank );
       }
     }
+    if( nxSrce == null){
+       nxSrce = NxInstr.newChildNode( "Source" , "NXsource" );
+    }
+    NxWriteNode nxSrcName = nxSrce.newChildNode( "name" , "SDS" );
+    SampleOrientation Samp_orient = AttrUtil.getSampleOrientation( DS );
+    String facility="SNS";
+    if( Samp_orient instanceof IPNS_SCD_SampleOrientation )
+       facility ="IPNS";
+    else if( Samp_orient instanceof LANSCE_SCD_SampleOrientation)
+       facility = "LANL";
+    
+    
+    nxSrcName.setNodeValue( (facility+(char)0).getBytes() , Types.Char , 
+               NexIO.Inst_Type.makeRankArray( 1+facility.length() , -1 , -1 , -1 , -1 ) );
+   
     return false;
   }
   
