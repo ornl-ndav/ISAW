@@ -63,6 +63,7 @@
 
 package NexIO.Write;
 import DataSetTools.dataset.*;
+import DataSetTools.instruments.IPNS_SCD_SampleOrientation;
 
 /**
  * Class responsible for saving NXsample information from data sets to
@@ -94,14 +95,14 @@ public class NxWriteSample{
   public boolean processDS( NxWriteNode node , DataSet DS){
     errormessage = "";
     if( DS == null) return false;
-    NxWriteNode NxSampNode = node.newChildNode( "Sample", "NXsample");
+    NxWriteNode NxSampNode = node.newChildNode( "sample", "NXsample");
     if( DS != null){
     Object X = DS.getAttributeValue( Attribute.SAMPLE_NAME);
     if( X !=  null){
       String Samp_name = NexIO.Util.ConvertDataTypes.StringValue( X);
       if( Samp_name != null){
         
-        NxWriteNode Instrnode = node.newChildNode( "sample", "NXsample");
+        NxWriteNode Instrnode = NxSampNode;
         NxWriteNode nameNode = Instrnode.newChildNode( "name", "SDS");
         int[] ranks = new int[1];
         ranks[0] = Samp_name.length()+1;
@@ -129,6 +130,9 @@ public class NxWriteSample{
       chi_phi_omega[1]=  ornt.getChi();
       chi_phi_omega[0]= ornt.getPhi();
       chi_phi_omega[2]= ornt.getOmega();
+     // if( ornt instanceof IPNS_SCD_SampleOrientation)
+      //   chi_phi_omega[2] = -ornt.getOmega();
+      //facility name will do this
     }else
       chi_phi_omega[0] = chi_phi_omega[1] =chi_phi_omega[2] = Float.NaN;
        
