@@ -137,24 +137,26 @@ public class NxWriteMonitor{
     n2.setNodeValue( xvals , Types.Float , rank1 );
     //--------------------- error node ---------------------------
 
-    NxWriteNode n3 = node.newChildNode( "errors" , "SDS" );
-    units = DS.getX_units();
-    if( units != null ){
-      rank1[ 0 ] = units.length( ) + 1;
-      n3.addAttribute("units",(units+(char)0).getBytes(),Types.Char,rank1);
-    }
-
-    rank1[ 0 ] = 1;
-    intval = new int[ 1 ];
-    intval[ 0 ] = 1;
-    n3.addAttribute( "signal" , intval , Types.Int , rank1 ); 
     xvals = new float[ 0 ];
     xvals = DS.getData_entry(datablock).getErrors();
-    rank1[ 0 ] = xvals.length;
-    n3.setNodeValue( xvals , Types.Float , rank1 ); 
-   
-    //range[2]
-    //---------------- Other Attributes --------------------------  
+    if (xvals != null) {
+         NxWriteNode n3 = node.newChildNode("errors", "SDS");
+         units = DS.getX_units();
+         if (units != null) {
+            rank1[0] = units.length() + 1;
+            n3.addAttribute("units", (units + (char) 0).getBytes(), Types.Char,
+                  rank1);
+         }
+
+         rank1[0] = 1;
+         intval = new int[1];
+         intval[0] = 1;
+         n3.addAttribute("signal", intval, Types.Int, rank1);
+         rank1[0] = xvals.length;
+         n3.setNodeValue(xvals, Types.Float, rank1);
+      }
+    // range[2]
+    // ---------------- Other Attributes --------------------------
     XScale uxs = DS.getData_entry(datablock).getX_scale();
     new NxWriteDetector(instrType).processDS( node,DS,datablock,datablock+1);
     float[] range = new float[2];
