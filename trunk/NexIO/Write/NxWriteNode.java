@@ -94,14 +94,17 @@ public interface NxWriteNode{
    * Adds an already set up link as a child of this node
    *
    * @param  linkhandle   A name used to refer to a link
+   * 
+   * @param SourceNode   the node with the data
    */
-  public void addLink( String linkhandle );
+  public void addLink( String linkhandle , NxWriteNode SourceNode);
 
   /**
    * Sets up a link thus Avoiding saving the same information twice
    *
    * @param linkhandle the name used to refer to this link
    *
+   *NOTE: The data is in this node
    * NOTE: Each link should have a separate name
    */
   public void  setLinkHandle(String linkhandle);
