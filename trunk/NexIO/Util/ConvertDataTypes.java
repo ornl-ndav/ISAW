@@ -698,8 +698,16 @@ public class ConvertDataTypes{
 
       if( ! M.find() ) 
          return - 1;
-
-      year = ( new Integer( DateString.substring( 0 , 4 ) ) ).intValue();
+      if( DateString == null || DateString.length()<4)
+         return -1;
+      Integer Int =null;
+      try{
+          Int = new Integer( DateString.substring( 0 , 4 ) );
+      }catch(NumberFormatException sss){
+         return -1;
+      }
+      
+      year = ( Int ).intValue();
 
 
       // ----- Find Month ----------
