@@ -119,10 +119,12 @@ public class NxWriteData {
     String axis1Link = "axis1";
     String axis2Link = "axis2";
     String axis3Link = "axis3";
+    public boolean write = false;
     int MIN_GRID_SIZE = 8;  //if grid ==null or numrows*numcols <MIN_GRID_SIZE
     //   the detector will be saved as individual pixels
     int MAX_GRID_SIZE = 100; // if grid larger than this, will not be merged
     int Inst_Type;
+    Vector<NxWriteNode>  dataNodes = new Vector<NxWriteNode>();
 
     public NxWriteData( int Inst_Type ) {
       
@@ -305,7 +307,7 @@ public class NxWriteData {
           
                     NxWriteNode datanode = nodeEntr.newChildNode( DS.getTitle() 
                           + "_" + k , "NXdata" );
-                    
+                    dataNodes.add( datanode);
                     NxWriteNode detnode = nxInstr.newChildNode( DS.getTitle() 
                              + "_"  + k , "NXdetector" );
                     
@@ -349,7 +351,7 @@ public class NxWriteData {
                     util.writeIntAttr( dnode , "axis" , 2 );
                     util.writeStringAttr( dnode , "units" , DS.getX_units() );
                     
-                    datanode.addLink( DS.getTitle() + "_" + k );
+                    datanode.addLink( DS.getTitle() + "_" + k ,dnode);
          
                     dnode = util.writeIA_SDS( detnode , "id" , id ,
                                 NexIO.Inst_Type.makeRankArray( id.length , -1 ,
@@ -358,7 +360,8 @@ public class NxWriteData {
                     dnode.setLinkHandle( "detector_number" + DS.getTitle() + 
                                                                     "_" + k );
                     datanode.addLink( "detector_number" + DS.getTitle() +
-                                                                    "_" + k );
+                                                                    "_" + k,
+                                                                    dnode);
                     util.writeIntAttr( dnode , "axis" , 1 );
           
                     dnode = util.writeFA_SDS( detnode , "distance" , distance ,
@@ -420,6 +423,9 @@ public class NxWriteData {
                 }
 
         }//for j=0; j< num_entries
+        if( write )
+        for( i=0; i< dataNodes.size(); i++)
+           dataNodes.elementAt(i).write();
         return false;
     }
 
@@ -988,6 +994,7 @@ public class NxWriteData {
             
             NxWriteNode nxData = nodeEntr.newChildNode( DS.getTitle() +
                     "_G2" + det , "NXdata" );
+            dataNodes.add( nxData);
             NxWriteNode nxDetector = nxInstr.newChildNode( DS.getTitle() +
                     "_G2" + det , "NXdetector" );
 
@@ -1083,6 +1090,7 @@ public class NxWriteData {
         util.writeStringAttr( node , "link" , DS.getTitle() + "_G2" + det );
         util.writeIntAttr( node , "signal" , 1 );
 
+        nxData.addLink( DS.getTitle() + "_G2" + det , node);
         node = nxData.newChildNode( "errors" , "SDS" );
         ranks = util.setRankArray( errors ,false );
       
@@ -1090,7 +1098,6 @@ public class NxWriteData {
         node.setNodeValue( errors , Types.Float ,ranks );
         util.writeStringAttr( node , "units" , DS.getX_units() );
 
-        nxData.addLink( DS.getTitle() + "_G2" + det );
       
         node = util.writeFA_SDS( nxData , "x_offset" , row_cm , 
                     util.setRankArray( row_cm ,false ) );
@@ -1128,6 +1135,7 @@ public class NxWriteData {
   
         NxWriteNode Nxdata = nodeEntr.newChildNode( DS.getTitle() + "_G1" +
                                                       GridNum , "NXdata" );
+        dataNodes.add( Nxdata);
         
         NxWriteNode Nxdetector = nxInstr.newChildNode( DS.getTitle() + "_G1" +
                                                       GridNum , "NXdetector" );
@@ -1156,7 +1164,7 @@ public class NxWriteData {
                            makeRankArray( xvals.length , -1 , -1 , -1 , -1 ) );
            
         tofnode.setLinkHandle( "NXdata_" + GridNum );
-        Nxdata.addLink( "NXdata_" + GridNum );
+        Nxdata.addLink( "NXdata_" + GridNum, tofnode );
 
         //----------------------- axis 1 ------------------------------
         NxWriteNode xoffset = Nxdata.newChildNode( "x_offset" , "SDS" );
