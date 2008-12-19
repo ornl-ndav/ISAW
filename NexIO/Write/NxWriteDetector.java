@@ -354,6 +354,7 @@ public class NxWriteDetector{
                        Inst_Type.makeRankArray( distance.length,-1,-1,-1,-1));
       nn.addAttribute("units", ("meter"+(char)0).getBytes(),Types.Char,
                       Inst_Type.makeRankArray(2,-1,-1,-1,-1));
+      
     }
     if( phi!=null)if(!LinkAxisMatch("phi",instrType,1,4)){
       NxWriteNode nn = node.newChildNode("polar_angle","SDS");
@@ -576,6 +577,10 @@ public class NxWriteDetector{
     rank[ 0 ] = distance.length;
     
     n1.setNodeValue( distance , Types.Float  , rank );
+    n1.addAttribute("units", ("meter"+(char)0).getBytes(),Types.Char,
+          Inst_Type.makeRankArray(2,-1,-1,-1,-1));
+
+    
     if( solidAngle != null )if( solidAngle.length == rank[ 0 ] )
       n1.addAttribute( "solid_angle" , solidAngle , Types.Float , rank );
     if( Det2Thet != null )if( Det2Thet.length == rank[ 0 ] )
@@ -1060,6 +1065,10 @@ public class NxWriteDetector{
     rank[ 0 ] = distance.length;
     
     n1.setNodeValue( distance , Types.Float  , rank );
+    n1.addAttribute("units", ("meter"+(char)0).getBytes(),Types.Char,
+          Inst_Type.makeRankArray(2,-1,-1,-1,-1));
+
+    
     if( solidAngle != null )if( solidAngle.length == rank[ 0 ] )
       n1.addAttribute( "solid_angle" , solidAngle , Types.Float , rank );
     if( Det2Thet != null )if( Det2Thet.length == rank[ 0 ] )
