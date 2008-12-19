@@ -109,11 +109,16 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
   String nodename;
   boolean Debug = false;
   Hashtable linkInfo;
-  NexWriteNode parent;
+  String LinkedName = null;//Not null means already recorded some other place
+  public NexWriteNode parent;
   Object value;
   int ranks[] , type;
   boolean written;
+  boolean childrenAdded;
+  boolean attributesAdded;
   int num_nxEntries;
+  public static Vector<NexWriteNode> PosWriter = null;
+  NexWriteNode TheEntryNode = null;
 
   /**
    * @param filename the name of a file written in the Nexus API
@@ -124,6 +129,10 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
   public NexWriteNode( String filename ){
     errormessage = "";
     nf = null;
+    if( PosWriter == null)
+       PosWriter = new Vector<NexWriteNode>();
+    PosWriter.add( this );
+    childrenAdded = attributesAdded = false;
     int open_mode = NexusFile.NXACC_CREATE5;
     num_nxEntries = 0;     
     if( filename == null){
@@ -144,7 +153,12 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
         Hashtable HT = nf.groupdir();
         Enumeration E = HT.elements();
         num_nxEntries =0;
-        Object X;
+        Object X =HT.get("entry");
+        if(X != null &&  "NXentry".equals(X)){
+           TheEntryNode =(NexWriteNode) newChildNode("entry","NXentry");
+           PosWriter.add(TheEntryNode);
+        }
+        
         if( E != null)
           for( ; E.hasMoreElements(); ){
             X = E.nextElement();
@@ -176,6 +190,7 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
     linkInfo = new Hashtable();
     parent = null;
     errormessage = "";
+    
   }
   String nodeName = null;
   public String getNodeName(){
@@ -256,7 +271,13 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
    * NXdata,etc.
    */
   public NxWriteNode newChildNode(  String node_name , String node_class ){
+     
     errormessage = "";
+    if( classname.equals("File")&& nodename.equals("File")&&
+          node_name.equals("entry")&& node_class.equals("NXentry"))
+       if( TheEntryNode != null)
+       return TheEntryNode;
+    
     NexWriteNode nw = new NexWriteNode( filename , nf , linkInfo , this );
     nw.nodename = new String( node_name );
     nw.classname = new String( node_class );   
@@ -264,6 +285,7 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
     if( classname.equals("File"))
       if(node_class.equals("NXentry"))
         num_nxEntries++;
+    childrenAdded= true;
     return ( NxWriteNode )nw;   
   }
    
@@ -284,6 +306,7 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
     value = ranks = null;
     type = -1;
     this.parent = parent;
+    childrenAdded = attributesAdded= false;
   }
   
   /**
@@ -364,6 +387,7 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
     V.addElement( new Integer( type ) );
     V.addElement( rank1 );
     attributes.addElement( V );
+    attributesAdded = true;
   }
 
   //------------------ Links ----------------------------
@@ -372,15 +396,18 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
    * Adds a link to information as a child to this node
    *
    * @param linkhandle the name used to refer to this linked
+   * 
+   * @param sourceNode the name with the data source
    * information
    */
-  public void addLink( String linkhandle ){
+  public void addLink( String linkhandle, NxWriteNode sourceNode ){
     if( nf == null ){
       errormessage = "Not initialized yes";
       return;
     }
     errormessage = "";
     children.addElement( linkhandle );
+    linkInfo.put( linkhandle, sourceNode);
   }
 
   /**
@@ -398,8 +425,85 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
     Vector V = new Vector();
     V.addElement( handleName );
     V.addElement( this );
-    children.addElement( V );
+    children.addElement( handleName );
+    linkInfo.put( handleName, this);
     //children.addElement( handleName );
+  }
+  
+  private boolean Position( NexWriteNode to){
+     Vector<NexWriteNode> V = new Vector<NexWriteNode>();
+     V.add( this);
+     for( NexWriteNode par = parent; par != null; par =par.parent){
+        V.insertElementAt( par,0);
+     }
+     boolean done = false;
+     int i;
+     for( i=0; i < Math.min( V.size(), PosWriter.size()) && !done; i++)
+        if( V.elementAt(i)!= PosWriter.elementAt(i))
+           done = true;
+     
+     for( int k= PosWriter.size()-1; k>=i; k--)
+       try{
+        NexWriteNode elt = PosWriter.elementAt(k);
+        if( elt.classname.equals("SDS"))
+           nf.closedata();
+        else if( !elt.classname.equals("File"))
+           nf.closegroup();
+        PosWriter.remove(PosWriter.size()-1);
+      }catch(Exception s1){
+         errormessage+="Nexus file out of kilter;";
+         return true;
+      }
+      
+    
+     NexWriteNode elt = V.elementAt(i-1);
+     Hashtable tab = null;
+     try{
+     
+     tab= nf.groupdir();
+     }catch(Exception s3){
+        errormessage +="NexusFile out ofkilter;";
+        tab = new Hashtable();
+     }
+     if( i <=0)
+        errormessage +="Nexus file out of kilter;";
+     
+     
+     for( int k=i; k+1< V.size(); k++){
+        elt = V.elementAt(k);
+        try{
+           boolean exists = tab.containsKey(elt.nodename);
+           tab = new Hashtable();
+           if( elt.classname.equals("SDS")){
+              if(exists)
+                 nf.opendata(elt.nodename);
+              else{
+                
+                 nf.makedata(elt.nodename, elt.type,elt.ranks.length,
+                       elt.ranks);
+                 nf.opendata( elt.nodename);
+              }
+              
+           }else if( !elt.classname.equals("File")){
+              if( exists){
+                 nf.opengroup(elt.nodename,elt.classname);
+                 tab = nf.groupdir();
+              } else{
+                 nf.makegroup( elt.nodename,elt.classname);
+                 nf.opengroup(elt.nodename,elt.classname);
+              }
+              
+           }
+          if(! elt.classname.equals("File"))
+           PosWriter.addElement( elt);
+           
+        }catch(Exception s1){
+           errormessage+="Nexus file out of kilter;";
+           return true;
+           
+        }
+     }
+     return false;
   }
 
 //------------------ Saving --------------------------
@@ -410,6 +514,17 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
    * assumes current node is opened
    */
   public void write(){
+    
+    
+    if(Position ( this))
+       return;
+    Hashtable Kids = null;
+    try{
+       Kids = nf.groupdir();
+    }catch(Exception s3){
+       Kids = new Hashtable();
+    }
+   
     boolean closed = false;
     if( nf == null ){
       errormessage ="file Not created";
@@ -420,14 +535,35 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
       errormessage = "";
     if( errormessage != "" )
       return;
-    if( written && !( classname.equals( "File" ) ) ){
-      errormessage = "already written";
-      return;
-    }
+    Object R;
+    if (written && !(classname.equals("File")))
+         if (LinkedName != null) {
+            R = linkInfo.get(LinkedName);
+            if (R != null && R instanceof NXlink)
+               try{
+               nf.makelink((NXlink) R);
+               written = true;
+               return;
+              }catch(Exception ss){
+                 errormessage += ss.toString()+";";
+                 return;
+              }
+         } else {
+            errormessage = "already written;";
+            return;
+         }
      
     //close all first
     if( !written )
       try{
+        if( LinkedName != null){
+          R = linkInfo.get(LinkedName);
+          if( R != null && R instanceof NXlink){
+             nf.makelink( (NXlink)R);
+             written = true;
+             return;
+          }
+        }
         if( Debug)
           System.out.println( "C"+classname+classname.equals( "SDS" ) );
         if( classname.equals( "SDS" ) ){
@@ -444,32 +580,53 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
             return;
           }     
           ranks = fixRankArray( ranks );
-          nf.makedata(nodename,TypeConv.convertFrom(type),ranks.length,ranks);
+          if(! Kids.containsKey(nodename))
+             nf.makedata(nodename,TypeConv.convertFrom(type),ranks.length,ranks);
          
           nf.opendata( nodename );
+          PosWriter.add(this);
            nf.compress( NexusFile.NX_COMP_LZW);
           
         }else if(( ! classname.equals( "File" ) ) ){
-          nf.makegroup( nodename , classname );
+          if(! Kids.containsKey(nodename))
+             nf.makegroup( nodename , classname );
           nf.opengroup( nodename , classname );
+          PosWriter.add(this);
         }
       }catch( NexusException s ){
         errormessage = "init write:"+s.getMessage( );
         if( Debug) System.out.println( errormessage );
         try{
-          if( classname.equals( "SDS" ) )
+          if( classname.equals( "SDS" ) ){
             nf.closedata();
-          else if( !classname.equals( "File" ) )
+          }else if( !classname.equals( "File" ) ){
             nf.closegroup();
+          }
+          PosWriter.remove(PosWriter.size()-1);
           closed = true;
         }catch( Exception s3 ){
           // let it drop on the floor
         }
         return;
+     }else{
+        try{
+        if( classname.equals("SDS")){
+          nf.opendata(nodename);
+          
+        } else if( !classname.equals("File")){
+           nf.opengroup( nodename, classname);
+        }
+        PosWriter.add( this );
+        }catch(Exception ss){
+           errormessage +="cannot open node ;";
+           return;
+        }
      }
-     written = true;
+        
+     
    
      try{
+       
        for( int i= 0 ; i < attributes.size() ; i++ ){
          Vector V = ( Vector )( attributes.elementAt(  i  ) );
          String Name = ( String )( V.elementAt( 0 ) );
@@ -477,42 +634,60 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
          int type = ( ( Integer )( V.elementAt( 2 ) ) ).intValue();
          nf.putattr( Name , Value , TypeConv.convertFrom( type ) );
        }
+        attributesAdded = false;
        if( Debug )System.out.println( "  end put attr" );
-       
-       if( classname.equals( "SDS" ) )
-         if( ( value == null )||( ranks == null ) ){
-           SetDataLink( nf , linkInfo , children );
-           nf.closedata();
-           closed = true;
-           return;
-         }else if ( value != null ){ //data
-           if( ranks == null ) 
-             if( Debug ) System.out.print( "ranks null" );
-           int[] ranks1 = util.setRankArray(value, false);
-           Object array = Types.linearlizeArray(value, ranks1.length,ranks1,
-               ( type ));
-                         //convertArray( value , TypeConv.convertFrom( type ) ,
-                         //               ranks.length , ranks );
-                                             
-           if( array == null ){
-             nf.closedata( );
-             if( value == null ) 
-               if( Debug)System.out.println( "Data null" );
-             if( ranks == null ) 
-               if( Debug) System.out.println( "ranks  is null" );
-             return;
-           }
-      
-           if( Debug )
-             System.out.print( "ere putdata info"+ranks.length+","+ranks[ 0] );
-          
-           nf.putdata( array );
-           SetDataLink( nf , linkInfo , children );
-           nf.closedata( );
-           closed = true;
-           if( Debug )System.out.println( "   end put data" );
-           return;
-           
+       //linking
+       if (!written) {
+            if (classname.equals("SDS"))
+               if ((value == null) || (ranks == null)) {
+                  SetDataLink(nf, linkInfo, children);
+                  nf.closedata();
+
+                  PosWriter.remove(PosWriter.size()-1);
+                  closed = true;
+                  written = true;
+                  return;
+               } else if (value != null) { // data
+                  if (ranks == null)
+                     if (Debug)
+                        System.out.print("ranks null");
+                  int[] ranks1 = util.setRankArray(value, false);
+                  Object array = Types.linearlizeArray(value, ranks1.length,
+                        ranks1, (type));
+                  // convertArray( value , TypeConv.convertFrom( type ) ,
+                  // ranks.length , ranks );
+                  written = true;
+                  if (array == null) {
+                     nf.closedata();
+
+                     PosWriter.remove(PosWriter.size()-1);
+                     if (value == null)
+                        if (Debug)
+                           System.out.println("Data null");
+                     if (ranks == null)
+                        if (Debug)
+                           System.out.println("ranks  is null");
+                     nf.closedata();
+
+                     PosWriter.remove(PosWriter.size()-1);
+                     closed = true;
+                     return;
+                  }
+
+                  if (Debug)
+                     System.out.print("ere putdata info" + ranks.length + ","
+                           + ranks[0]);
+
+                  nf.putdata(array);
+                  SetDataLink(nf, linkInfo, children);
+                  nf.closedata();
+
+                  PosWriter.remove(PosWriter.size()-1);
+                  closed = true;
+                  if (Debug)
+                     System.out.println("   end put data");
+                  return;
+               }
          }
      }catch( NexusException s ){
        errormessage = "write:"+s.getMessage();
@@ -523,6 +698,8 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
              nf.closedata();
            else if( !classname.equals( "File" ) )
              nf.closegroup();
+
+         PosWriter.remove(PosWriter.size()-1);
        }catch( Exception s1 ){
          // let it drop on the floor
        }
@@ -531,40 +708,60 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
      }
     
      errormessage = "";
+     if( childrenAdded)
      for( int i = 0; i < children.size() ; i++ ){
        Object X = children.elementAt( i );
        try{
-         if( X instanceof NexWriteNode ){
-           (( NexWriteNode )X).write();
-           if( (( NexWriteNode ) X).getErrorMessage() != "")
-             errormessage +=";"+ ( ( NexWriteNode )X ).getErrorMessage();
-         }else if( X instanceof String ){
-           String S = ( String )X;
-           X = linkInfo.get( S );
-           
-           if( ( X instanceof NXlink )&&( X !=  null ) ){
-             nf.makelink( ( NXlink )X );
-           }else{
-             errormessage+= "v:No link defined up to this point "+S;
-             if( !closed )
-               if( classname.equals( "SDS" ) )
-                 nf.closedata();
-               else if( !classname.equals( "File" ) )
-                 nf.closegroup();
-             return;
-           }
-         }else{
-           Vector V = ( Vector )X;
-           
-           NXlink nlink ;
-           
-           if( classname.equals( "SDS" ) )
-             nlink = nf.getdataID();
-           else
-             nlink = nf.getgroupID();
-           V.setElementAt( nlink , 1 );
-           linkInfo.put( V.firstElement() , nlink );
-         }
+         if (X instanceof NexWriteNode) {
+            
+             ((NexWriteNode) X).write();
+             if (((NexWriteNode) X).getErrorMessage() != "")
+                     errormessage += ";" + ((NexWriteNode) X).getErrorMessage();
+         } else if (X instanceof String) {
+             String S = (String) X;
+             X = linkInfo.get(S);
+             if (X == null)
+                errormessage += "Linking not paired for " + S;
+             else if ((X instanceof NXlink) && (X != null))
+                nf.makelink((NXlink) X);
+             else if (X == this) {
+                NXlink lnk = null;
+                if (classname.equals("SDS"))
+                   lnk = nf.getdataID();
+                else if (!classname.equals("File"))
+                   lnk = nf.getgroupID();
+                if( lnk != null)
+                   linkInfo.put(S, lnk);
+
+             } else if (!(X instanceof NexWriteNode))
+                     errormessage += "Linking not correct for " + S;
+               else {
+                  NexWriteNode newNode = (NexWriteNode) X;
+                  NexWriteNode par = newNode.parent;
+                  newNode.parent= parent;
+                  newNode.write();
+                  newNode.parent = par;
+                  NXlink lnk;
+                  if (newNode.classname.equals("SDS")) {
+                     nf.opendata(newNode.nodename);
+                     
+                     lnk = nf.getdataID();
+                     nf.closedata();
+                  } else {
+                     nf.opengroup(newNode.nodename, newNode.classname);
+                     lnk = nf.getgroupID();
+                     nf.closegroup();
+                 }
+
+                  //PosWriter.remove(PosWriter.size()-1);
+                  linkInfo.put(S, lnk);
+                  newNode.LinkedName = S;
+               }
+              
+            } else
+                  errormessage += "Linking incorrect;";
+        
+         
        }catch( Exception s ){
          errormessage += s.getMessage();
          if( Debug ) System.out.println( "ErrorB = "+s );
@@ -574,12 +771,15 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
                nf.closedata();
              else if( !classname.equals( "File" ) )
                nf.closegroup();
+
+           PosWriter.remove(PosWriter.size()-1);
          }catch( Exception s2 ){
            // let it drop on the floor
          }
          return;
        }
      }
+     childrenAdded = false;
      //System.out.println( "PP after for loop"+nodename );
      try{
        //Hashtable HT = nf.attrdir();
@@ -588,19 +788,25 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
        //Showw( "groups"+nodename , HT );
        
        if( !classname.equals( "SDS" ) )
-         if( !classname.equals( "File" ) )
+         if( !classname.equals( "File" ) ){
            nf.closegroup();
+
+           PosWriter.remove(PosWriter.size()-1);
+         }
        closed = true;
      }catch( NexusException s ){
        errormessage += ";"+s.getMessage();
        if( Debug )System.out.println( "cannot close group"+errormessage );
      }
      try{
-       if( !closed )
+       if( !closed ){
          if( classname.equals( "SDS" ) )
            nf.closedata();
          else if( !classname.equals( "File" ) )
            nf.closegroup( );
+
+       PosWriter.remove(PosWriter.size()-1);
+       }
      }catch(Exception s ){
        // let it drop on the floor
      }
@@ -872,7 +1078,7 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
     ranks[ 0 ] = 8;
     n1.addAttribute("Testing",("xxxxxxx"+0).getBytes(),NexIO.Types.Char,ranks);
   
-    n1.addLink( "RRR" );
+    n1.addLink( "RRR", n2 );
     nw.write();
     System.out.println( "Error1 = "+nw.getErrorMessage( ) );
     nw.close();
@@ -964,7 +1170,7 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
       }else if( c == 'L' ){
         n1.setLinkHandle( S1 );
       }else if( c == 'l' ){
-        n1.addLink( S1 );
+        //n1.addLink( S1 );
       }else if( c== 'c' ){
         nnn.close();
         System.exit( 0 );
