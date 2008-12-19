@@ -223,8 +223,9 @@ public abstract class NexWriteUtil implements NxWriteNode {
    * Adds a link to information as a child to this node
    * @param linkhandle the name used to refer to this linked
    * information
+   * @param sourceNode the name of the node where the data is
    */
-  public void addLink( String linkhandle ){
+  public void addLink( String linkhandle, NxWriteNode sourceNode ){
     errormessage = "";
     children.addElement( linkhandle );
   }
