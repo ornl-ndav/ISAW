@@ -78,7 +78,6 @@ public class SubSample extends GenericSave {
         NxWriteEntry Wentry = new NxWriteEntry( inst_type );
 
 		NxWriteNode instrNode = entryNode.newChildNode("instrument", "NXinstrument");
-		DataSet D1 = ret.getDataSet(Math.min(1,  ndataSets-1));
 		for( int i=0; i< ndataSets; i++){
 			DataSet DD = ret.getDataSet(i ) ;
 			
@@ -128,9 +127,12 @@ public class SubSample extends GenericSave {
 				
 			}
 			
-			
+		   DD = null;	
 		}
 		
+
+		DataSet D1 = ret.getDataSet(Math.min(1,  ndataSets-1));
+
 		if( Wentry.processDS((NxWriteNode)entryNode, D1))
 			errorMessage=Wentry.getErrorMessage();
 		
