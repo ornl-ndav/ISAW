@@ -108,9 +108,12 @@
    * @param collection   The collection string
    * @param verbose      True or false
    * @param Dirs         The other directory(s) to look in. Separate multiple
-   *                     directories with semicolons(not implemented yet)
+   *                     directories with semicolons(not implemented yet).
+   *                     Each directory MUST end in the File.separator 
+   *                     character
    *                     
-   * @param extension    The extension for the filenames
+   * @param extension    The extension(including ".") for the filenames
+   * 
    * @param recurselevel  The number of level of subdirectories to search.
    * @return   The full name of the file or null if it cannot be found
    * @error  Check the variable errorString if the result is null.
@@ -120,6 +123,14 @@
                     boolean verbose, String Dirs, String extension,
                     int recurselevel){
       errorString ="";
+      String fname = System.getProperty( "ISAW_HOME" );
+      if( fname== null ){
+         fname= filename.substring(12);
+      }else if( !fname.endsWith("\\") && !fname.endsWith( "/" )){
+         fname = fname+java.io.File.separator +filename.substring(12);
+      }else
+         fname = fname+filename.substring(12);
+        
       try{
          PythonInterpreter interp = new PythonInterpreter();
          interp.execfile( Fixup( filename ) );
@@ -148,10 +159,11 @@
       }catch( Exception s){
          errorString = s.toString();
          return null;
-      }
-      
+      }     
       
    }
+   
+   
    public Object getResult(){
       try{
         PythonInterpreter interp = new PythonInterpreter();
