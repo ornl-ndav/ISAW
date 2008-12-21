@@ -425,4 +425,30 @@ public class NXutil{
 
     return result;
   }
+  
+  public static int ConvertNxDataType2IsawDataType( int NexDataType){
+    if(NexDataType ==  NexusFile.NX_BOOLEAN){
+       return Types.Byte;
+    }else if(NexDataType ==  NexusFile.NX_CHAR){
+       return Types.Char;
+    }else  if(NexDataType ==  NexusFile.NX_FLOAT32){
+       return Types.Float;
+    }else if(NexDataType ==  NexusFile.NX_FLOAT64){
+       return Types.Double;
+    }else   if(NexDataType ==  NexusFile.NX_INT16){
+       return Types.Short;
+    }else  if(NexDataType ==  NexusFile.NX_INT32){
+       return Types.Int;
+    }else  if(NexDataType ==  NexusFile.NX_INT8){
+       return Types.Byte;
+    }else  if(NexDataType ==  NexusFile.NX_UINT16){
+       return Types.UShort;
+    }else if(NexDataType ==  NexusFile.NX_UINT32){
+       return Types.UInt;
+    }else  if(NexDataType ==  NexusFile.NX_UINT8){
+       return Types.UByte;
+    }else {
+       return -1; 
+    }
+  }
 }
