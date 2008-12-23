@@ -5,6 +5,7 @@ import java.util.Vector;
 
 import gov.anl.ipns.Parameters.LoadFilePG;
 import gov.anl.ipns.Util.SpecialStrings.ErrorString;
+import DataSetTools.components.ParametersGUI.JParametersDialog;
 import DataSetTools.dataset.*;
 import DataSetTools.operator.Generic.Save.GenericSave;
 import NexIO.CNexusFile;
@@ -144,6 +145,9 @@ public class SubSample extends GenericSave {
 		   errorMessage +=sampWrite.getErrorMessage()+";";
 		topNode.write();
 		topNode.close();
+		if( errorMessage == null || errorMessage.length()<1)
+		   return "Wrote Nexus file "+outputFileName;
+		
 		return errorMessage;
 	}
 	
@@ -257,10 +261,9 @@ public class SubSample extends GenericSave {
             "Only 1 or 2 are currently supported. Groups are disjoint\n");
       Res.append("@param     colGrouping,  colGrouping  the number of columns  "+
             "to be grouped. Only 1 or 2 are currently supported. Groups are disjoint\n");
-      Res.append("@param     timeGrouping,  -1 or the number of time bins  "+
-         "to be grouped. Only 1 or 2 are currently supported. Groups are disjoint\n");
+      Res.append("@param     timeGrouping,  -1 or the number of time bins(not supported)  ");
       Res.append("@param    startTime  The start time for new time scale or -1 "+
-            "for no change\n");
+            "for no rebinning\n");
       Res.append("@param   endTime The end time for new time scale \n"); 
       Res.append("@param   firstBinLength the length of the first bin if there"
             +" is a new time scale\n");
@@ -273,8 +276,11 @@ public class SubSample extends GenericSave {
 	
 	public void setDefaultParameters() {
 	   this.clearParametersVector();
-	   addParameter(new LoadFilePG("Input File",null)); 
-	   addParameter(new SaveFilePG("Output File",null)); 
+	   
+	   addParameter(new LoadFilePG("Input File",System.getProperty( "Data_Directory"))); 
+	   ((LoadFilePG)getParameter(0)).setFilter( new NexIO.NexusfileFilter() );
+	   addParameter(new SaveFilePG("Output File",System.getProperty( "Data_Directory"))); 
+      ((SaveFilePG)getParameter(1)).setFilter( new NexIO.NexusfileFilter() );
 	   addParameter(new IntegerPG("row grouping",2)); 
       addParameter(new IntegerPG("col grouping",2));
       addParameter(new IntegerPG("Time grouping",1));
@@ -292,13 +298,74 @@ public class SubSample extends GenericSave {
 	}
 
 	/**
+	 * Application to run this "operator"
 	 * @param args
+    *    arg 1- Input filename(Nexus)");
+    *    arg 2- Output filename(Nexus)");
+    *    
+    *    The following are optional defauls(in parens)");
+    *    arg 3- row Grouping(2) Must be 1 or 2");
+    *    arg 4- col grouping(2) Must be 1 or 2");
+    *    arg 5- time grouping( not used)");
+    *    arg 6- min time for binning(-1 means no rebinning)");
+    *    arg 7- max time for binning(100000)");
+    *    arg 8- bin width first bin(40)");
+    *    arg 9-log binning( false)");
 	 */
 	public static void main(String[] args) {
-		String filename = "/home/ruth/SNS_ISAW/ISAW/SampleRuns/SNAP_245";
-		System.out.println("Total Result="+SubSample.SubSample(filename+".nxs",  
-				            filename+"1.nxs",2,2,1,400f,15000f,14.763f, true));
-		System.exit(0);	                      
+	   DataSetTools.util.SharedData ut = new DataSetTools.util.SharedData();
+	   
+	   if( args == null || args.length < 2){/*
+	      System.out.println("       USAGE    ");
+	      System.out.println(" arg 1- Input filename(Nexus)");
+         System.out.println(" arg 2- Output filename(Nexus)");
+         System.out.println("The following are optional defauls(in parens)");
+         System.out.println("arg 3- row Grouping(2)1 or 2 only");
+         System.out.println(" arg 4- col grouping(2) 1 or 2 only");
+         System.out.println(" arg 5- time grouping( not used)");
+         System.out.println(" arg 6- min time for binning(-1 no rebinning)");
+         System.out.println(" arg 7- max time for binning(100000)");
+         System.out.println(" arg 8- bin width first bin(40)");
+         System.out.println(" arg 9-log binning( false)");
+         System.exit( 0 );
+	    */
+	     JParametersDialog JP = (new JParametersDialog( new SubSample(),null, null, null));
+	      
+	   }else{
+	   
+		String filename =args[0];
+		String outfile = args[1];
+		int rowGroup = 2;
+		int colGroup = 2;
+		int timeGroup = 1;
+		float minTime = -1;
+		float maxTime = 10000;
+		float firstBin = 40;
+		boolean isLog = false;
+		try{
+		if( args.length <3)
+		   rowGroup = Integer.parseInt(  args[2] );
+      if( args.length <4)
+         colGroup = Integer.parseInt(  args[3] );
+      if( args.length <5)
+         timeGroup = Integer.parseInt(  args[4] );
+      if( args.length <6)
+         minTime = Float.parseFloat(  args[5] );
+      if( args.length <7)
+         maxTime = Float.parseFloat(  args[6] );
+      if( args.length <8)
+         firstBin = Float.parseFloat(  args[7] );
+      if( args.length <9)
+         isLog = Boolean.parseBoolean(  args[8] );
+		}catch( Exception ss){
+		   System.out.println(" arguments do not parse correctly ");
+		   System.exit( 0 );
+		}
+		System.out.println("Total Result="+SubSample.SubSample(filename,  
+		         outfile,rowGroup,colGroup,timeGroup, minTime,maxTime,
+		         firstBin, isLog));
+		System.exit(0);	
+	   }
 
 	}
 
