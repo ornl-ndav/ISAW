@@ -245,9 +245,19 @@ public class NxfileStateInfo extends StateInfo{
 
 
     Node N1 = null;
-    String dir = (new File( filename )).getParent();
-    
+
+    String dir;
+    try{
+ 
+       dir = (new File( filename )).getCanonicalFile().getParent();
+    }catch(Exception s){
+       dir = null;
+    }
+    if( dir == null)
+      return null;
     File dirFile = new File( dir);
+    if( dirFile == null)
+       return null; 
     File[] dirList = dirFile.listFiles();
     
     if( dirList != null)
