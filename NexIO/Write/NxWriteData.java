@@ -143,9 +143,6 @@ public class NxWriteData {
         return errormessage;
     }
 
-    
-    
-    
     /**
      * Writes the Data from a data set to a NXdata section of a Nexus
      * file
@@ -160,6 +157,27 @@ public class NxWriteData {
      */
     public boolean processDS( NxWriteNode nodeEntr , NxWriteNode nxInstr ,  
         DataSet DS , boolean makelinks ) {
+       return processDS( nodeEntr, nxInstr,DS, makelinks, false);
+    }
+  
+    
+    
+    /**
+     * Writes the Data from a data set to a NXdata section of a Nexus
+     * file
+     *
+     * @param nodeEntr  an NxEntry node
+     * @param nxInstr   an NXinstrument node
+     * @param DS        The data set with the information
+     * @param makelinks Should always be true
+     * @param useLabel  Add a label field so loader merges all NXdata with the
+     *                  same label( different tof axes usually)
+     *
+     * NOTE: This routine also writes some NXdetector information due to
+     * linking requirements
+     */
+    public boolean processDS( NxWriteNode nodeEntr , NxWriteNode nxInstr ,  
+        DataSet DS , boolean makelinks ,boolean useLabel) {
 
         int  i, 
              j;
@@ -178,7 +196,7 @@ public class NxWriteData {
         
          
         //----- process Gridded data  --------------------------
-        int nNXdatas = processDSgrid( nodeEntr , nxInstr , DS , makelinks );
+        int nNXdatas = processDSgrid( nodeEntr , nxInstr , DS , makelinks, useLabel );
 
         //--------process pixels as singleton's in one NXdata per XScale----------
     
@@ -787,7 +805,7 @@ public class NxWriteData {
     * @return  1 if successful or -1 if unsuccessful
     */
     public int processDSgrid( NxWriteNode nodeEntr , NxWriteNode nxInstr , 
-        DataSet DS , boolean makelinks ) {
+        DataSet DS , boolean makelinks ,boolean useLabel) {
               
         int nNXdatas = 0;
         int[] grids = getAreaGrids( DS ); 
@@ -796,14 +814,14 @@ public class NxWriteData {
         
            
             if ( processDSgrid1( nodeEntr , nxInstr , DS , makelinks ,
-                                                                grids[ i ] ) )
+                                                                grids[ i ], grids.length ) )
                 return -1;
                
             else 
                 nNXdatas++;
 
             if( ProcessGroupedGrids(  nodeEntr , nxInstr , DS , makelinks , 
-                                                                    grids ) )
+                                                            grids ) )
                 return -1;
         return 1;    
 
@@ -1020,12 +1038,15 @@ public class NxWriteData {
         for ( int i = 0 ; i < f.length ; i++ )
             f[ i ] = ( i + 1 );
     }
+    
+    
    
     private boolean CreateG3NXdetectorNode( NxWriteNode nxDetector , int[]id ,
         int[] slot , int[] crate , int[] input , float[] distance , 
         float[] azim , float[] polar , float[][]orientation , float[] width , 
-        float[] height , float[] depth , DataSet DS , float[] tof , int det ) {
-                 
+        float[] height , float[] depth , DataSet DS , float[] tof , int det) {
+           
+       boolean useLabel = false;
         //Inst_Type inst = new Inst_Type();
         NxWriteNode node = util.writeIA_SDS( nxDetector , "id" ,
                id , NexIO.Inst_Type.makeRankArray( id.length , -1 , -1 , -1 , -1 ) );
@@ -1078,7 +1099,8 @@ public class NxWriteData {
     private boolean CreateG3NXdataNode( NxWriteNode nxData , 
              float[][][][] data , float[][][][] errors , float[]row_cm , 
              float[]col_cm , float[]DetNums , DataSet DS , int det ) {
-
+      
+       boolean useLabel = false;
         NxWriteNode node = nxData.newChildNode( "data" , "SDS" );
         int[] ranks = util.setRankArray( data ,false );
        
@@ -1086,7 +1108,8 @@ public class NxWriteData {
         node.setNodeValue( data , Types.Float ,ranks );
         util.writeStringAttr( node , "units" , DS.getX_units() );
         //XXXXXX-Omit for SNS save v
-        util.writeStringAttr( node , "label" , DS.getTitle() );
+        if( useLabel)
+           util.writeStringAttr( node , "label" , DS.getTitle() );
         util.writeStringAttr( node , "link" , DS.getTitle() + "_G2" + det );
         util.writeIntAttr( node , "signal" , 1 );
 
@@ -1104,7 +1127,8 @@ public class NxWriteData {
         util.writeIntAttr( node , "axis" , 2 );
         util.writeStringAttr( node , "link" , DS.getTitle() + "_G2" + det );
         //XXXXX- omit line below for SNS Save
-        util.writeStringAttr( node , "label" , DS.getTitle() );
+        if( useLabel)
+           util.writeStringAttr( node , "label" , DS.getTitle() );
  
         node = util.writeFA_SDS( nxData , "y_offset" , col_cm , 
                     util.setRankArray( col_cm ,false ) );
@@ -1119,7 +1143,7 @@ public class NxWriteData {
  
     // Sets one grid per NXdetectr-NXdata pair
     public boolean processDSgrid1( NxWriteNode nodeEntr , NxWriteNode nxInstr , 
-        DataSet DS , boolean makelinks , int GridNum ) {
+        DataSet DS , boolean makelinks , int GridNum , int ngridsTot) {
 
         IDataGrid grid = getAreaGrid( DS , GridNum );
       
@@ -1132,13 +1156,16 @@ public class NxWriteData {
         
         if ( !grid.isData_entered() )
                grid .setData_entries( DS );
+       String tag ="";
+       if( ngridsTot > 1)
+          tag ="_G1"+GridNum;
   
-        NxWriteNode Nxdata = nodeEntr.newChildNode( DS.getTitle() + "_G1" +
-                                                      GridNum , "NXdata" );
+        NxWriteNode Nxdata = nodeEntr.newChildNode( DS.getTitle() + tag  ,
+              "NXdata" );
         dataNodes.add( Nxdata);
         
-        NxWriteNode Nxdetector = nxInstr.newChildNode( DS.getTitle() + "_G1" +
-                                                      GridNum , "NXdetector" );
+        NxWriteNode Nxdetector = nxInstr.newChildNode( DS.getTitle()+tag , 
+              "NXdetector" );
                                           
         //------------------ time_of_flight field -----------------------
         NxWriteNode tofnode = Nxdetector.newChildNode( "time_of_flight" , 
@@ -1248,9 +1275,10 @@ public class NxWriteData {
                  .getBytes() ,NexIO.Types.Char , NexIO.Inst_Type.
                  makeRankArray( DS.getY_units().length() + 1 , -1 , -1 , -1 , 
                           -1 ) );
-        //XXXX delete lines below for SNS Save     
+        //XXXX delete lines below for SNS Save  
+        if( !tag.equals(""))
         dataNode.addAttribute( "label" , ( DS.getTitle() + ( char ) 0 ) 
-                 .getBytes() ,NexIO.Types.Char , NexIO.Inst_Type.makeRankArray
+                .getBytes() ,NexIO.Types.Char , NexIO.Inst_Type.makeRankArray
                  ( DS.getTitle().length() + 1 , -1 , -1 , -1 , -1 ) );
          
         dataNode.setNodeValue( data , NexIO.Types.Float , NexIO.Inst_Type.
@@ -1467,21 +1495,21 @@ public class NxWriteData {
             NxWriteNode nn = Nxdetector.newChildNode( "crate" , "SDS" );
 
             nn.setNodeValue( crate , NexIO.Types.Int , NexIO.Inst_Type.
-                            makeRankArray( crate.length , -1 , -1 , -1 , -1 ) );
+                            makeRankArray( numRows,numCols , -1 , -1 , -1 ) );
      
         }
         if ( input != null ) {
             NxWriteNode nn = Nxdetector.newChildNode( "input" , "SDS" );
 
             nn.setNodeValue( input , NexIO.Types.Int , NexIO.Inst_Type.
-                              makeRankArray( input.length , -1 , -1 , -1 , -1 ) );
+                              makeRankArray( numRows,numCols , -1 , -1 , -1 ) );
       
         }
         if ( solidAngle != null ) {
             NxWriteNode nn = Nxdetector.newChildNode( "solid_angle" , "SDS" );
 
             nn.setNodeValue( solidAngle , NexIO.Types.Float , NexIO.Inst_Type.
-                             makeRankArray( solidAngle.length , -1 , -1 , -1 , -1 ) );
+                             makeRankArray( numRows,numCols , -1 , -1 , -1 ) );
             
             nn.addAttribute( "units" , ( "radian" + ( char ) 0 ).getBytes() , 
                      NexIO.Types.Char , NexIO.Inst_Type.makeRankArray( 8 , -1 ,
@@ -1492,7 +1520,7 @@ public class NxWriteData {
             NxWriteNode nn = Nxdetector.newChildNode( "raw_angle" , "SDS" );
 
             nn.setNodeValue( rawAngle , NexIO.Types.Float , NexIO.Inst_Type.
-                         makeRankArray( rawAngle.length , -1 , -1 , -1 , -1 ) );
+                         makeRankArray( numRows,numCols , -1 , -1 , -1 ) );
             
             nn.addAttribute( "units" , ( "degree" + ( char ) 0 ).getBytes() , 
                      NexIO.Types.Char ,NexIO.Inst_Type.makeRankArray( 8 , -1 ,
@@ -1504,8 +1532,8 @@ public class NxWriteData {
            
             NxWriteNode nn = Nxdetector.newChildNode( "total_count" , "SDS" );
 
-            nn.setNodeValue( Tot_Count , NexIO.Types.Int , NexIO.Inst_Type.
-                        makeRankArray( Tot_Count.length , -1 , -1 , -1 , -1 ) );
+            nn.setNodeValue( Tot_Count , NexIO.Types.Float , NexIO.Inst_Type.
+                        makeRankArray( numRows,numCols  , -1 , -1 , -1 ) );
     
         }
 
