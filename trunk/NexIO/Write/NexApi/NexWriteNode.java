@@ -117,6 +117,7 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
   boolean childrenAdded;
   boolean attributesAdded;
   int num_nxEntries;
+  NxFileOpenThread nxf;
   public static Vector<NexWriteNode> PosWriter = null;
   NexWriteNode TheEntryNode = null;
 
@@ -148,7 +149,17 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
       return;
     }    
     try{
-      nf = new CNexusFile( filename , open_mode );       
+       nxf = new NxFileOpenThread( filename,open_mode);
+       nxf.start(); 
+       try{
+          nxf.join(1500);
+         
+       }catch(Exception s){
+          errormessage =""+s;
+          nf = null;
+       }  
+      nf = nxf.getNxFile();
+      nf.setIOThread( nxf );
       if( open_mode == NexusFile.NXACC_RDWR ){
         Hashtable HT = nf.groupdir();
         Enumeration E = HT.elements();
@@ -545,11 +556,12 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
                written = true;
                return;
               }catch(Exception ss){
-                 errormessage += ss.toString()+";";
+                 errormessage += ss.toString()+" in makeLink for "+ nodename+"("+
+                     classname+"):";
                  return;
               }
          } else {
-            errormessage = "already written;";
+            //errormessage = "already written;";
             return;
          }
      
@@ -580,12 +592,16 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
             return;
           }     
           ranks = fixRankArray( ranks );
-          if(! Kids.containsKey(nodename))
-             nf.makedata(nodename,TypeConv.convertFrom(type),ranks.length,ranks);
+          if(! Kids.containsKey(nodename)){
+             if( Okay2Compress(type ,ranks))
+                 nf.compmakedata(nodename,TypeConv.convertFrom(type),ranks.length,ranks,
+                      NexusFile.NX_COMP_LZW, ranks);
+             else nf.makedata(nodename,TypeConv.convertFrom(type),ranks.length,ranks);
+          }
          
           nf.opendata( nodename );
           PosWriter.add(this);
-           nf.compress( NexusFile.NX_COMP_LZW);
+           //nf.compress( NexusFile.NX_COMP_LZW);
           
         }else if(( ! classname.equals( "File" ) ) ){
           if(! Kids.containsKey(nodename))
@@ -594,7 +610,8 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
           PosWriter.add(this);
         }
       }catch( NexusException s ){
-        errormessage = "init write:"+s.getMessage( );
+        errormessage += "NexExceptionA:"+s.getMessage( )+ "in "+ nodename+"("+
+              classname+"):";
         if( Debug) System.out.println( errormessage );
         try{
           if( classname.equals( "SDS" ) ){
@@ -618,7 +635,8 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
         }
         PosWriter.add( this );
         }catch(Exception ss){
-           errormessage +="cannot open node ;";
+           errormessage +="cannot open node in "+ nodename+"("+
+           classname+"):";;
            return;
         }
      }
@@ -660,14 +678,15 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
                   if (array == null) {
                      nf.closedata();
 
-                     PosWriter.remove(PosWriter.size()-1);
+                     errormessage += "cannot linearlize data in "+nodename+"("+
+                           classname+");";
                      if (value == null)
                         if (Debug)
                            System.out.println("Data null");
                      if (ranks == null)
                         if (Debug)
                            System.out.println("ranks  is null");
-                     nf.closedata();
+                    
 
                      PosWriter.remove(PosWriter.size()-1);
                      closed = true;
@@ -690,7 +709,8 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
                }
          }
      }catch( NexusException s ){
-       errormessage = "write:"+s.getMessage();
+       errormessage += "ExceptionB:"+s.getMessage()+ "in "+ nodename+"("+
+       classname+"):";;
        if( Debug )System.out.println( "Error A "+errormessage );
        try{
          if( !closed )
@@ -707,7 +727,7 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
        return;
      }
     
-     errormessage = "";
+    
      if( childrenAdded)
      for( int i = 0; i < children.size() ; i++ ){
        Object X = children.elementAt( i );
@@ -721,7 +741,8 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
              String S = (String) X;
              X = linkInfo.get(S);
              if (X == null)
-                errormessage += "Linking not paired for " + S;
+                errormessage += "Linking not paired for " + S +"in "+ nodename+"("+
+                classname+"):";
              else if ((X instanceof NXlink) && (X != null))
                 nf.makelink((NXlink) X);
              else if (X == this) {
@@ -734,7 +755,8 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
                    linkInfo.put(S, lnk);
 
              } else if (!(X instanceof NexWriteNode))
-                     errormessage += "Linking not correct for " + S;
+                     errormessage += "Linking not correct for " + S+ "in "+ nodename+"("+
+                     classname+"):";
                else {
                   NexWriteNode newNode = (NexWriteNode) X;
                   NexWriteNode par = newNode.parent;
@@ -759,11 +781,13 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
                }
               
             } else
-                  errormessage += "Linking incorrect;";
+                  errormessage += "Linking incorrect;"+ "in "+ nodename+"("+
+                  classname+"):";
         
          
        }catch( Exception s ){
-         errormessage += s.getMessage();
+         errormessage += "ExceptionC:"+s.getMessage()+ "in "+ nodename+"("+
+         classname+"):";
          if( Debug ) System.out.println( "ErrorB = "+s );
          try{
            if( !closed )
@@ -795,7 +819,8 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
          }
        closed = true;
      }catch( NexusException s ){
-       errormessage += ";"+s.getMessage();
+       errormessage += "ExceptionD:"+s.getMessage()+ "in "+ nodename+"("+
+       classname+"):";
        if( Debug )System.out.println( "cannot close group"+errormessage );
      }
      try{
@@ -812,6 +837,21 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
      }
   }//write
   
+  private boolean Okay2Compress( int Nextype, int[] ranks){
+     if( Nextype == NexusFile.NX_CHAR)
+        return false;
+     if( Nextype == NexusFile.NX_BINARY)
+        return false;
+     if( Nextype == NexusFile.NX_BOOLEAN)
+        return false;
+    
+     if( ranks == null || ranks.length < 1)
+        return false;
+     if( ranks.length <=1 && ranks[0]< 500)
+        return false;
+     
+     return true;
+  }
   private int[] fixRankArray( int[] ranks ){
      if(0==0)
         return ranks;
@@ -870,7 +910,8 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
       try{
         nl = nf.getdataID();
       }catch( NexusException s ){
-        errormessage += ";" +s.getMessage();
+        errormessage += "Exception" +s.getMessage()+ "in "+ nodename+"("+
+        classname+"):";
         return;
       }
       LinkInfo.put( ident , nl );
@@ -882,14 +923,16 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
    * Needed to actually save this type of Nexus file
    */
   public void close(){
-    errormessage = "";
+     if(errormessage == null)
+       errormessage = "";
     
     try{
       nf.flush();
       nf.finalize();
     }catch( Throwable s ){
-      errormessage = s.getMessage();
+      errormessage += s.getMessage();
       if( Debug )System.out.println( "close:"+s );
+      
     }
     nf = null;
   }
