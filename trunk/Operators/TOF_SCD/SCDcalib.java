@@ -806,7 +806,7 @@ public class SCDcalib extends GenericTOF_SCD
    *  @param  names      The list of parameter names
    *  @param  values     The list of parameter values
    */
-  private void ReadParams( String filename, String names[], double values[])
+  private void ReadParams( String filename, String names[], double values[] )
   {
     FileReader fr = null;
     BufferedReader br = null;
@@ -830,6 +830,13 @@ public class SCDcalib extends GenericTOF_SCD
         System.out.println("READ -> " + line );
       }
 
+                                              // make array of NaNs so we
+                                              // can check if all values were
+                                              // initialized from the file
+      double[] file_values = new double[values.length];
+      for ( int i = 0; i < file_values.length; i++ )
+        file_values[i] = Double.NaN;
+      
       String name;
       String val_string;
       double value;
@@ -837,8 +844,8 @@ public class SCDcalib extends GenericTOF_SCD
       while ( line != null )
       {
         colon_index = line.indexOf( ":" );
-        if ( colon_index > 0 )                // try to find the parameter name
-        {
+        if ( colon_index > 0 )               // try to find the parameter name
+        {                                    // ignore line if no ":" on line
           name = line.substring( 0, colon_index );
           name.trim();
           for ( int i = 0; i < names.length; i++ )
@@ -847,7 +854,7 @@ public class SCDcalib extends GenericTOF_SCD
                val_string = line.substring( colon_index + 1 ); 
                val_string.trim();
                value = Double.parseDouble( val_string );      
-               values[i] = value;
+               file_values[i] = value;
             }
         }
         line = br.readLine();
@@ -855,6 +862,15 @@ public class SCDcalib extends GenericTOF_SCD
       } 
       br.close();
       fr.close();
+      boolean missing_values = false;
+      for ( int i = 0; i < values.length; i++ )
+        if ( Double.isNaN( file_values[i] ) )
+          missing_values = true;
+        else
+          values[i] = file_values[i];
+      
+      if ( missing_values )
+        throw new IllegalArgumentException("Failed to read some parameter");
     }
     catch ( Exception e )
     {
