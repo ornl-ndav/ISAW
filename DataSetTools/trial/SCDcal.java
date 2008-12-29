@@ -303,6 +303,10 @@ public class SCDcal   extends    OneVarParameterizedFunction
      System.out.println("2 * PI * B_theoretical = " );
      LinearAlgebra.print( B_theoretical );
 
+                                    // find all of the distinct runs, and 
+                                    // save the goniometer rotation and its
+                                    // inverse in hashtables, using the
+                                    // run number as the key.
      gon_rotation_inverse = new Hashtable();
      gon_rotation         = new Hashtable();
      for ( int i = 0; i < run.length; i++ )
@@ -445,7 +449,10 @@ public class SCDcal   extends    OneVarParameterizedFunction
       //       direction and perpendicular to the line from the detector 
       //       center to the sample.  This version should work provided the
       //       nominal detector center is not directly above or below the 
-      //       sample. 
+      //       sample.  HOWEVER, this is only appropriate if the detector face
+      //       is perpendicular to the line from the center of the detector
+      //       to the sample.  THIS DOES NOT WORK PROPERLY FOR THE SNAP
+      //       instrument at the SNS!
       //       Offsets are measured from the nominal position of the detector.
       //
       Vector3D_d center      = new Vector3D_d( nom_pos );
@@ -469,10 +476,13 @@ public class SCDcal   extends    OneVarParameterizedFunction
       center.add( y_shift ); 
       grid.setCenter( center );
 
-      Tran3D_d euler_rotation = tof_calc_d.makeEulerRotation(phi, chi, omega);
-      euler_rotation.apply_to( x_vec, x_vec );
-      euler_rotation.apply_to( y_vec, y_vec );
-      grid.setOrientation( x_vec, y_vec );
+      if ( phi != 0 || chi != 0 || omega != 0 )
+      {
+        Tran3D_d euler_rotation = tof_calc_d.makeEulerRotation(phi, chi, omega);
+        euler_rotation.apply_to( x_vec, x_vec );
+        euler_rotation.apply_to( y_vec, y_vec );
+        grid.setOrientation( x_vec, y_vec );
+      }
 
       det_count++;
     }
@@ -603,6 +613,8 @@ public class SCDcal   extends    OneVarParameterizedFunction
      for ( int i = 0; i < ids.length; i++ )
        ids[i] = ((UniformGrid_d)grid_objects[i]).ID();
 
+     Arrays.sort( ids );
+     
      return ids;
   }
 
@@ -614,13 +626,13 @@ public class SCDcal   extends    OneVarParameterizedFunction
    */
   public UniformGrid_d[] getAllGrids()
   {
-     Object grid_objects[] = grids.values().toArray();
-     UniformGrid_d grids[] = new UniformGrid_d[ grid_objects.length ]; 
+    int[] ids = getAllGridIDs();
+    UniformGrid_d all_grids[] = new UniformGrid_d[ ids.length ]; 
 
-     for ( int i = 0; i < grids.length; i++ )
-       grids[i] = (UniformGrid_d)grid_objects[i];
+    for ( int i = 0; i < ids.length; i++ )
+      all_grids[i] = (UniformGrid_d)(grids.get( ids[i] ));
 
-     return grids;
+    return all_grids;
   }
 
 
