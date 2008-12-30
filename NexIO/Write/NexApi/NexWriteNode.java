@@ -120,6 +120,7 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
   NxFileOpenThread nxf;
   public static Vector<NexWriteNode> PosWriter = null;
   NexWriteNode TheEntryNode = null;
+  static int SlabSize = -1;
 
   /**
    * @param filename the name of a file written in the Nexus API
@@ -175,7 +176,7 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
             X = E.nextElement();
             if( X instanceof String)
               if( X != null)
-                if( "NXentry".equals((String) X ))
+                if( "NXentry".equals( X ))
                   num_nxEntries++;           
           }
       }     
@@ -201,6 +202,11 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
     linkInfo = new Hashtable();
     parent = null;
     errormessage = "";
+    try{
+       SlabSize = Integer.parseInt( System.getProperty( "NexusSlabSize" ,"80000"));
+    }catch(Exception s){
+       SlabSize = 80000;
+    }
     
   }
   String nodeName = null;
@@ -211,16 +217,16 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
      this.nodeName = nodeName;
   }
 
-  private boolean canWrite( String filename ){
+  private boolean canWrite( String fileName ){
     //
-    //System.out.println("canWrite returning true for " + filename );
+    //System.out.println("canWrite returning true for " + fileName );
     //
     // TO DO.  Check if this method is really still needed to work around
     // problems with jnexus.  For now just return true, since NeXus files 
     // were not found if not fully qualified with the path.
     return true;
 /*
-    String F = filename.replace('\\','/');
+    String F = fileName.replace('\\','/');
     int k = F.lastIndexOf('/');   
     if( k < 0 )
       return false;
@@ -266,8 +272,8 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
    * @param classname Should be "NXentry"
    * @return the number of NXentries in this file<br>
    */ 
-  public int getNumClasses( String classname){
-    if ( classname.equals( "NXentry"))
+  public int getNumClasses( String className){
+    if ( className.equals( "NXentry"))
       return num_nxEntries;
     return -1;
   }
@@ -297,7 +303,7 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
       if(node_class.equals("NXentry"))
         num_nxEntries++;
     childrenAdded= true;
-    return ( NxWriteNode )nw;   
+    return nw;   
   }
    
   private NexWriteNode( String filename , CNexusFile nf , Hashtable linkInfo , 
@@ -381,8 +387,8 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
    *
    * @see NexIO.Types#Int Type names
    */
-  public void addAttribute(String AttrName, Object AttrValue, int type,
-                           int ranks[] ){
+  public void addAttribute(String AttrName, Object AttrValue, int Type,
+                           int Ranks[] ){
     if( nf == null ){
       errormessage = "Not initialized yes";
       return;
@@ -390,12 +396,12 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
     errormessage = "";
     Object AttrValue1 = AttrValue;
     int rank1[];
-    rank1 = new int[ ranks.length ];
-    System.arraycopy( ranks , 0 ,  rank1 , 0 , ranks.length );
+    rank1 = new int[ Ranks.length ];
+    System.arraycopy( Ranks , 0 ,  rank1 , 0 , Ranks.length );
     Vector V = new Vector( );
     V.addElement( new String( AttrName ) );
     V.addElement( AttrValue1 );
-    V.addElement( new Integer( type ) );
+    V.addElement( new Integer( Type ) );
     V.addElement( rank1 );
     attributes.addElement( V );
     attributesAdded = true;
@@ -649,10 +655,11 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
          Vector V = ( Vector )( attributes.elementAt(  i  ) );
          String Name = ( String )( V.elementAt( 0 ) );
          Object Value = V.elementAt( 1 );
-         int type = ( ( Integer )( V.elementAt( 2 ) ) ).intValue();
-         nf.putattr( Name , Value , TypeConv.convertFrom( type ) );
+         int Type = ( ( Integer )( V.elementAt( 2 ) ) ).intValue();
+         nf.putattr( Name , Value , TypeConv.convertFrom( Type ) );
        }
         attributesAdded = false;
+        attributes.clear();
        if( Debug )System.out.println( "  end put attr" );
        //linking
        if (!written) {
@@ -672,9 +679,11 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
                   int[] ranks1 = util.setRankArray(value, false);
                   Object array = Types.linearlizeArray(value, ranks1.length,
                         ranks1, (type));
+                  value = null;
                   // convertArray( value , TypeConv.convertFrom( type ) ,
                   // ranks.length , ranks );
                   written = true;
+                  
                   if (array == null) {
                      nf.closedata();
 
@@ -690,14 +699,17 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
 
                      PosWriter.remove(PosWriter.size()-1);
                      closed = true;
+                     array = null;
                      return;
                   }
 
                   if (Debug)
                      System.out.print("ere putdata info" + ranks.length + ","
                            + ranks[0]);
-
-                  nf.putdata(array);
+                  String SS = PutArray( nf,array, type,ranks1, SlabSize);
+                  if( SS != null && SS.length()>0)
+                     errormessage += SS +"in "+ nodename+"("+classname+");";
+                 
                   SetDataLink(nf, linkInfo, children);
                   nf.closedata();
 
@@ -804,12 +816,9 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
        }
      }
      childrenAdded = false;
-     //System.out.println( "PP after for loop"+nodename );
+     children.clear();
+     
      try{
-       //Hashtable HT = nf.attrdir();
-       //Showw( "attributes"+nodename , HT );
-       //HT = nf.groupdir();
-       //Showw( "groups"+nodename , HT );
        
        if( !classname.equals( "SDS" ) )
          if( !classname.equals( "File" ) ){
@@ -837,7 +846,83 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
      }
   }//write
   
-  private boolean Okay2Compress( int Nextype, int[] ranks){
+  /**
+   * Puts an array onto a file using slabs if the array is too large
+   * @param nf   The Nexus file pointer at the openned data position
+   * @param array  The array to be saved
+   * @param type   The NexIO.Types data tpe
+   * @param ranks  The ranks of the array
+   * @param SlabSize  The slab size( -1 will not slab)
+   * @return  An error string
+   */
+  public static String PutArray( CNexusFile nf , Object array ,int type, int[] ranks, int SlabSize ) {
+
+     
+      try {
+         int n = ranks.length;
+
+         if( ranks == null || n < 2 || ranks[ 0 ] < 50 ||
+                  SlabSize <=100) {
+            nf.putdata( array );
+            return "";
+         }
+         
+         int incrPos=-1;
+         int incrSize =1;
+         int[] start= new int[ranks.length];
+         int[] increment = new int[ ranks.length ];
+         int Prod = ranks[ ranks.length-1];
+         for( incrPos= n-2; Prod < SlabSize && incrPos >=0 ; ){
+            Prod *= ranks[incrPos];
+            if( Prod < SlabSize)
+               incrPos--;
+         }
+         if( incrPos <0){
+            nf.putdata( array );
+            return "";
+         }
+         
+         incrSize = Math.max( 1, SlabSize*ranks[incrPos]/Prod);
+         Arrays.fill( start , 0 );
+         System.arraycopy( ranks,0,increment,0,increment.length);
+         for( int i=0; i< incrPos; i++)
+            increment[i]=1;
+         int karray =0;
+         
+         Prod = Prod/ranks[incrPos];
+         Object buffer = NexIO.Types.CreateArray( type , Prod*incrSize );
+         for( boolean done = false; !done;){
+            increment[incrPos]= Math.min(  incrSize , ranks[incrPos]- start[incrPos]  );
+            int length =Prod*increment[incrPos]; 
+            System.arraycopy( array , karray, buffer , 0 ,length );
+            karray += length;
+            nf.putslab( buffer , start , increment );
+            int j = incrPos;
+            start[incrPos]+=increment[incrPos];
+            for(; j>=0&&start[j]>=ranks[j];j--){
+               
+               if( j-1 >=0){
+                  start[j]=0;
+                  start[j-1]++;
+               }else
+                  done = true;
+            }
+            
+            
+         }
+         return "";
+         
+      }
+      catch( Exception s ) {
+         return s.toString();
+      }
+
+   }
+
+  private boolean Okay2Compress( int Nextype, int[] ranks1){
+
+     return false;
+  /*
      if( Nextype == NexusFile.NX_CHAR)
         return false;
      if( Nextype == NexusFile.NX_BINARY)
@@ -845,38 +930,46 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
      if( Nextype == NexusFile.NX_BOOLEAN)
         return false;
     
-     if( ranks == null || ranks.length < 1)
+     if( ranks1 == null || ranks1.length < 1)
         return false;
-     if( ranks.length <=1 && ranks[0]< 500)
+     if( ranks1.length <=1 && ranks1[0]< 500)
         return false;
      
      return true;
+  */
+   
   }
-  private int[] fixRankArray( int[] ranks ){
+  
+  /**
+   * 
+   * @param Ranks
+   * @return
+   */
+  private int[] fixRankArray( int[] Ranks ){
      if(0==0)
-        return ranks;
-     if( ranks == null)
+        return Ranks;
+     if( Ranks == null)
         return null;
-     if( ranks.length <= 1)
-        return ranks;
+     if( Ranks.length <= 1)
+        return Ranks;
      int k=0;
-     for( int i=0; i<ranks.length; i++)     
-        if( ranks[i] <=1)
+     for( int i=0; i<Ranks.length; i++)     
+        if( Ranks[i] <=1)
            k++;
-     if( k >= ranks.length){
+     if( k >= Ranks.length){
        int[] R = new int[1];
        R[0]=1;
        return R;
      }
        
-     int[] Result = new int[ranks.length-k];
+     int[] Result = new int[Ranks.length-k];
      
      k=0;
-     for( int i=0; i< ranks.length; i++){
-       if( ranks[i] <=0) 
+     for( int i=0; i< Ranks.length; i++){
+       if( Ranks[i] <=0) 
           k++;
        else
-          Result[i-k] =ranks[i];
+          Result[i-k] =Ranks[i];
      }
      return Result;
      
@@ -900,15 +993,15 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
     }
   }    
 
-  private void SetDataLink(NexusFile nf,Hashtable LinkInfo,Vector children){
-    if( children.size() < 1 )
+  private void SetDataLink(NexusFile nexf,Hashtable LinkInfo,Vector Children){
+    if( Children.size() < 1 )
       return;
-    Object O = children.elementAt( 0 );
+    Object O = Children.elementAt( 0 );
     if( O instanceof Vector ){
       String ident = ( String )(( (Vector )O ).firstElement() );
       NXlink nl = null;
       try{
-        nl = nf.getdataID();
+        nl = nexf.getdataID();
       }catch( NexusException s ){
         errormessage += "Exception" +s.getMessage()+ "in "+ nodename+"("+
         classname+"):";
@@ -947,20 +1040,20 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
     }
   }
 
-  private int convertArrayR( int rankoffset, Object value, int valueoffset,
-                             int type, int ndims, int ranks[], Object Result ){
+  private int convertArrayR( int rankoffset, Object Value, int valueoffset,
+                             int Type, int ndims, int Ranks[], Object Result ){
     int i;
     if( rankoffset == ndims - 1 ){
-      System.arraycopy( value, valueoffset, Result, 0, ranks[ndims-1] );
-      return valueoffset+ranks[ ndims-1 ];
+      System.arraycopy( Value, valueoffset, Result, 0, Ranks[ndims-1] );
+      return valueoffset+Ranks[ ndims-1 ];
     }
    
-    String S = TypeConv.Classname( type );
+    String S = TypeConv.Classname( Type );
    
     S = S.substring( 5 ).trim();  
     
     for( i = rankoffset+1  ; i <= ndims - 3 ; i++ )
-      S = "["+S;                    //Class type for Result[ i ]
+      S = "["+S;                    //Class Type for Result[ i ]
 
     Class C = null;
     try{
@@ -975,18 +1068,18 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
      
     int n = valueoffset;
      
-    for( i = 0 ; i < ranks[  rankoffset ] ; i++ ){
+    for( i = 0 ; i < Ranks[  rankoffset ] ; i++ ){
       try{
         if( rankoffset+1 < ndims-1 )
-          R[ i ] = (Object)Array.newInstance( C, ranks[  rankoffset+1 ] );
+          R[ i ] = Array.newInstance( C, Ranks[  rankoffset+1 ] );
         else 
-          R[ i ] = ( new NxNodeUtils() ).CreateArray( type, ranks[ndims-1] );
+          R[ i ] = ( new NxNodeUtils() ).CreateArray( Type, Ranks[ndims-1] );
       }catch( Exception s ){
         errormessage =  "DD"+s.toString();
         return -1;
       }
  
-      n = convertArrayR( rankoffset+1, value, n, type, ndims, ranks, R[i] );
+      n = convertArrayR( rankoffset+1, Value, n, Type, ndims, Ranks, R[i] );
        
       if( n < 0 ) return -1;
     }
@@ -997,20 +1090,20 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
    * Converts a linear array to a multidimesioned array.  Non-linear
    * values are just returned.
    */
-  private Object convertArray(Object value, int type1, int ndims, int ranks[]){
+  private Object convertArray(Object Value, int type1, int ndims, int Ranks[]){
     errormessage = "";
     if( ndims <= 1 )
-      return value;
+      return Value;
     errormessage = "improper inputs to convertArray";
     errormessage += "1";
     
-    if( value instanceof Object[] )
-      return value;
+    if( Value instanceof Object[] )
+      return Value;
     errormessage += "1";
-    if( ranks == null )
+    if( Ranks == null )
       return null;
 
-    if( ranks.length < ndims-1 )
+    if( Ranks.length < ndims-1 )
       return null;
    
  
@@ -1034,16 +1127,16 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
       return null;
     }
    
-    Object R = Array.newInstance( C , ranks[ 0 ] );
+    Object R = Array.newInstance( C , Ranks[ 0 ] );
     
-    errormessage = "Improper null value";
-    if( value == null )
+    errormessage = "Improper null Value";
+    if( Value == null )
       return null;
     if( R == null ) 
       return null;
     errormessage = "";
     
-    int n = convertArrayR( 0 , value , 0 , type1  , ndims , ranks , R );
+    int n = convertArrayR( 0 , Value , 0 , type1  , ndims , Ranks , R );
     
     if( n < 0 ) 
       return null;
@@ -1111,7 +1204,7 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
     ranks = new int[ 1 ];
     ranks[ 0 ] = 9;
     //ndims = 1;
-    nw.addAttribute( "filenamee", (Object)(new String("Hi There").getBytes()),
+    nw.addAttribute( "filenamee", (new String("Hi There").getBytes()),
                      NexIO.Types.Char , ranks );
     n1 = ( NexWriteNode )nw.newChildNode( "entry1" , "NXentry" );
     n2 = ( NexWriteNode )n1.newChildNode( "det1" , "NXdetector" );
@@ -1226,7 +1319,7 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
                               +StringUtil.toString(  Res ) );
       }else if( c == 'n' )
 	System.out.println( nnn.getNumNXentries());
-      
+   n1.ShwDims( null ) ;  
     }//while c!= 'x'
   }//main
 }
