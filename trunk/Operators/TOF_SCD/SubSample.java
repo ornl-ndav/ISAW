@@ -1,3 +1,33 @@
+/* 
+ * File: SubSample.java
+ *
+ * Copyright (C) 2008, Ruth Mikkelson
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * Contact : Ruth Mikkelson <mikkelsonr@uwstout.edu>
+ *           Menomonie, WI 54751, USA
+ *
+ * This work was supported by the Spallation Neutron Source Division
+ * of Oak Ridge National Laboratory, Oak Ridge, TN, USA.
+ *
+ *  Last Modified:
+ * 
+ *  
+ */
+
 package Operators.TOF_SCD;
 
 import java.io.File;
@@ -8,10 +38,8 @@ import gov.anl.ipns.Util.SpecialStrings.ErrorString;
 import DataSetTools.components.ParametersGUI.JParametersDialog;
 import DataSetTools.dataset.*;
 import DataSetTools.operator.Generic.Save.GenericSave;
-import NexIO.CNexusFile;
 import NexIO.Write.*;
 import NexIO.Write.NexApi.NexWriteNode;
-import DataSetTools.instruments.*;
 import DataSetTools.operator.DataSet.Math.Analyze.*;
 import DataSetTools.retriever.NexusRetriever;
 import gov.anl.ipns.Parameters.*;
@@ -42,7 +70,7 @@ public class SubSample extends GenericSave {
 	 * NOTE: All data sets will be placed in one NXentry, so the inputFileName
 	 * must be a file with only ONE NXentry.
 	 */
-	public static Object SubSample( String  inputFileName, 
+	public static Object sub_sample( String  inputFileName, 
 			                       String   outputFileName,
 			                       int      rowGrouping, 
 			                       int      colGrouping,
@@ -52,7 +80,7 @@ public class SubSample extends GenericSave {
 			                       float    firstBinLength,
 			                       boolean   isLog){
 		
-		CNexusFile nxFile = null;
+		
 		NexWriteNode topNode;
 		String errorMessage="";
 		if( inputFileName == null || outputFileName == null||
@@ -77,12 +105,11 @@ public class SubSample extends GenericSave {
 		//Write global attributes
 		int inst_type =  DataSetTools.instruments.InstrumentType.TOF_SCD;
         NxWriteEntry Wentry = new NxWriteEntry( inst_type );
-
+                 
 		NxWriteNode instrNode = entryNode.newChildNode("instrument", "NXinstrument");
 		for( int i=0; i< ndataSets; i++){
 			DataSet DD = ret.getDataSet(i ) ;
 			
-			   
 			boolean isMonitor = true;
 			if( !AttrUtil.getDSType(DD).equals(Attribute.MONITOR_DATA)){
 				String Res= FixUpGrid(DD);
@@ -91,6 +118,7 @@ public class SubSample extends GenericSave {
 				isMonitor = false;
 				
 			}
+                        
 			Object Result= null;
 			if( startTime >=0 )
 				if( isLog){
@@ -106,8 +134,7 @@ public class SubSample extends GenericSave {
 			if(Result instanceof ErrorString)
 				errorMessage +=Result.toString()+";";
 			if( !isMonitor){
-				String node_name = DD.getTitle();
-				//NxWriteNode dataNode;// = entryNode.newChildNode(node_name, "NXdata");
+				
 				NxWriteData dataWrite = new NxWriteData( inst_type);
 				dataWrite.write = true;
 				if( dataWrite.processDS(entryNode, instrNode,  DD, true))
@@ -127,21 +154,20 @@ public class SubSample extends GenericSave {
 				}
 				
 			}
-			
 		   DD = null;	
 		}
 		
 
 		DataSet D1 = ret.getDataSet(Math.min(1,  ndataSets-1));
 
-		if( Wentry.processDS((NxWriteNode)entryNode, D1))
-			errorMessage=Wentry.getErrorMessage();
+		if( Wentry.processDS( entryNode, D1))
+			errorMessage += Wentry.getErrorMessage();
 		
 		NxWriteInstrument instrWrite = new NxWriteInstrument( inst_type);
 		if(instrWrite.processDS( instrNode, D1))
 				errorMessage += instrWrite.getErrorMessage();
 		NxWriteSample sampWrite = new NxWriteSample( inst_type);
-		if(sampWrite.processDS((NxWriteNode)entryNode, D1))
+		if(sampWrite.processDS(entryNode, D1))
 		   errorMessage +=sampWrite.getErrorMessage()+";";
 		topNode.write();
 		topNode.close();
@@ -236,7 +262,7 @@ public class SubSample extends GenericSave {
       float    firstBinLength= ((FloatPG)getParameter(7)).getfloatValue();
       boolean   isLog =((BooleanPG)getParameter(8)).getbooleanValue();
       
-      return SubSample.SubSample(inputFileName, outputFileName, rowGrouping,
+      return SubSample.sub_sample(inputFileName, outputFileName, rowGrouping,
             colGrouping, timeGrouping, startTime, endTime, firstBinLength, isLog);
 	}
 
@@ -285,9 +311,9 @@ public class SubSample extends GenericSave {
       addParameter(new IntegerPG("col grouping",2));
       addParameter(new IntegerPG("Time grouping",1));
 
-      addParameter(new FloatPG("start time(us)",-1)); 
-      addParameter(new FloatPG("end time(us)",1000)); 
-      addParameter(new FloatPG("Length 1st bin(us)",10)); 
+      addParameter(new FloatPG("start time(us) or -1(no rebin)",-1)); 
+      addParameter(new FloatPG("end time(us)",16666)); 
+      addParameter(new FloatPG("Length 1st bin(us)",4)); 
       addParameter(new BooleanPG("Log time binning?", false));
 	}
 
@@ -315,22 +341,10 @@ public class SubSample extends GenericSave {
 	public static void main(String[] args) {
 	   DataSetTools.util.SharedData ut = new DataSetTools.util.SharedData();
 	   
-	   if( args == null || args.length < 2){/*
-	      System.out.println("       USAGE    ");
-	      System.out.println(" arg 1- Input filename(Nexus)");
-         System.out.println(" arg 2- Output filename(Nexus)");
-         System.out.println("The following are optional defauls(in parens)");
-         System.out.println("arg 3- row Grouping(2)1 or 2 only");
-         System.out.println(" arg 4- col grouping(2) 1 or 2 only");
-         System.out.println(" arg 5- time grouping( not used)");
-         System.out.println(" arg 6- min time for binning(-1 no rebinning)");
-         System.out.println(" arg 7- max time for binning(100000)");
-         System.out.println(" arg 8- bin width first bin(40)");
-         System.out.println(" arg 9-log binning( false)");
-         System.exit( 0 );
-	    */
-	     JParametersDialog JP = (new JParametersDialog( new SubSample(),null, null, null));
+	   if( args == null || args.length < 2){
 	      
+	      JParametersDialog jp=(new JParametersDialog( new SubSample(),null, null, null));
+	     
 	   }else{
 	   
 		String filename =args[0];
@@ -361,11 +375,12 @@ public class SubSample extends GenericSave {
 		   System.out.println(" arguments do not parse correctly ");
 		   System.exit( 0 );
 		}
-		System.out.println("Total Result="+SubSample.SubSample(filename,  
+		System.out.println("Total Result="+SubSample.sub_sample(filename,  
 		         outfile,rowGroup,colGroup,timeGroup, minTime,maxTime,
 		         firstBin, isLog));
-		System.exit(0);	
+		 System.exit(0);  
 	   }
+      
 
 	}
 
