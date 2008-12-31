@@ -88,7 +88,7 @@ public class FindPeaksProcessCaller implements IOperator
                                  int      min_time_chan,
                                  int      max_time_chan,
 
-                                 boolean  use_calib_filer,
+                                 boolean  use_calib_file,
                                  String   calib_file,
                                  int      calib_file_line,
 
