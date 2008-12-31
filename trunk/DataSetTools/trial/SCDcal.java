@@ -185,7 +185,9 @@ public class SCDcal   extends    OneVarParameterizedFunction
   private Hashtable gon_rotation_inverse;
   private Hashtable gon_rotation;
   private Hashtable grids;
-  private Vector    nominal_position;
+  private Vector3D_d[]  nominal_position;
+  private Vector3D_d[]  nominal_base_vec;
+  private Vector3D_d[]  nominal_up_vec;
   private double    standard_dev_in_Q = Double.MAX_VALUE;    
 
   private double    all_parameters[];   // full list of all possible params
@@ -332,10 +334,28 @@ public class SCDcal   extends    OneVarParameterizedFunction
        }
      }
 
-     nominal_position = new Vector();
+     nominal_position = new Vector3D_d[ grids.size() ];
+     nominal_base_vec = new Vector3D_d[ grids.size() ];
+     nominal_up_vec   = new Vector3D_d[ grids.size() ];
+     int index = 0;
      Enumeration e = grids.elements();
      while ( e.hasMoreElements() )
-       nominal_position.add( ((UniformGrid_d)e.nextElement()).position() ); 
+     { 
+       UniformGrid_d grid = (UniformGrid_d)(e.nextElement());
+       nominal_position[index] = grid.position();
+       nominal_base_vec[index] = grid.x_vec();
+       nominal_up_vec[index]   = grid.y_vec();
+       index++;
+     }
+
+     System.out.println("GRIDS position, base and up vectors are:");
+     for ( int i = 0; i < nominal_position.length; i++ )
+     {
+       System.out.println(":::::::::::::::: " + i + " ::::::::::::::::::::" );
+       System.out.println( nominal_position[i] );
+       System.out.println( nominal_base_vec[i] );
+       System.out.println( nominal_up_vec[i] );
+     }
 
      qxyz_theoretical = new double[n_peaks][3];
      qxyz_observed    = new double[n_peaks][3];
@@ -403,7 +423,9 @@ public class SCDcal   extends    OneVarParameterizedFunction
       index = DET_BASE_INDEX + det_count * N_DET_PARAMS;
 
       UniformGrid_d grid = (UniformGrid_d)e.nextElement();
-      Vector3D_d nom_pos = (Vector3D_d)nominal_position.elementAt(det_count);
+      Vector3D_d nom_pos      = nominal_position[det_count];
+      Vector3D_d nom_base_vec = nominal_base_vec[det_count];
+      Vector3D_d nom_up_vec   = nominal_up_vec[det_count];
       double width  = all_parameters[ index + DET_WIDTH_INDEX  ];
       double height = all_parameters[ index + DET_HEIGHT_INDEX ];
       double x_off  = all_parameters[ index + DET_X_OFF_INDEX  ];
@@ -441,7 +463,7 @@ public class SCDcal   extends    OneVarParameterizedFunction
       center.add( y_shift ); 
       grid.setCenter( center );
 */
-
+/*
       // NOTE: using this second block, the x and y offsets are interpreted 
       //       as follows:  The x offset is in a horizontal plane perpendicular
       //       to the line from the nominal center to the sample.  The
@@ -482,6 +504,66 @@ public class SCDcal   extends    OneVarParameterizedFunction
         euler_rotation.apply_to( x_vec, x_vec );
         euler_rotation.apply_to( y_vec, y_vec );
         grid.setOrientation( x_vec, y_vec );
+      }
+*/
+      // NOTE: This third block should work in most cases.  det_d, x,y 
+      //       offsets, and Euler angles are interpreted as explained below.
+      //       The x,y offsets and Euler angles are applied to the nominal
+      //       position and orientation obtained from the initial detector 
+      //       grid that is passed in to the constructor.  
+      //       det_d is the length of the line from the sample to the shifted
+      //       grid center.  In general the grid's base(x_vec) and up(y_vec)
+      //       vectors will NOT be perpendicular to this line, so the x and
+      //       y offsets can't be interpreted as shifts in these directions,
+      //       To avoid this problem, a new vector, x_perp, is constructed
+      //       so that it is in the same general direction as the grid's
+      //       x_vec, and is in the same plane as x_vec and the line from 
+      //       the grid center to the the sample, but is perpendicular to
+      //       the line from the center to the sample.  Similarly, a new
+      //       vector y_perp is constructed to be in the same general direction
+      //       as the grid's y_vec, but is perpendicular to the line from
+      //       the sample to the grid center.  x_perp and y_perp are based
+      //       on the grid's initial position.
+      //       x offset is an offset in the direction of x_perp.
+      //       y offset is an offset in the direction of y_perp.
+      //       AFTER shifting the center according to the x and y offset
+      //       values, the center is scaled to have length det_d.  This 
+      //       will change the x and y offsets slightly.
+      //
+      Vector3D_d center      = new Vector3D_d( nom_pos );
+      Vector3D_d minus_z_vec = new Vector3D_d( center );
+      minus_z_vec.normalize();
+
+      Vector3D_d x_perp = new Vector3D_d( nom_base_vec );
+      double axial_comp = x_perp.dot( minus_z_vec );
+      Vector3D_d delta  = new Vector3D_d( minus_z_vec );
+      delta.multiply( -axial_comp );
+      x_perp.add( delta );
+      x_perp.normalize();
+      x_perp.multiply( x_off );
+
+      Vector3D_d y_perp = new Vector3D_d( nom_up_vec );
+      axial_comp = y_perp.dot( minus_z_vec );
+      delta  = new Vector3D_d( minus_z_vec );
+      delta.multiply( -axial_comp );
+      y_perp.add( delta );
+      y_perp.normalize();
+      y_perp.multiply( y_off );
+
+      center.add( x_perp );
+      center.add( y_perp );
+      center.normalize();
+      center.multiply( det_d );
+      grid.setCenter( center );
+
+      if ( phi != 0 || chi != 0 || omega != 0 )
+      {
+        Vector3D_d new_base = new Vector3D_d( nom_base_vec ); 
+        Vector3D_d new_up   = new Vector3D_d( nom_up_vec ); 
+        Tran3D_d euler_rotation = tof_calc_d.makeEulerRotation(phi,chi,omega);
+        euler_rotation.apply_to( new_base, new_base );
+        euler_rotation.apply_to( new_up, new_up );
+        grid.setOrientation( new_base, new_up );
       }
 
       det_count++;
