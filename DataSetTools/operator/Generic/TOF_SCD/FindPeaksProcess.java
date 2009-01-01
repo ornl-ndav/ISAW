@@ -168,7 +168,7 @@ public class FindPeaksProcess
     {  
        System.err.println("NULL DataSet number " + ds_num + 
                           " from file " + fin_name );
-       return;
+       System.exit(1);
     }
 
     System.out.println( "+++++++++FINISHED READING " + fin_name +
@@ -182,7 +182,7 @@ public class FindPeaksProcess
     {
        System.err.println("No area detectors in DataSet number " + ds_num + 
                             " from file " + fin_name );
-       return;
+       System.exit(2);
     }
     int det_id = det_ids[0];
 
@@ -225,11 +225,12 @@ public class FindPeaksProcess
       {
         System.err.println("Exception writing peaks file " + file_name );
         System.err.println( ex.getStackTrace() );
+        System.exit(3); 
       }
       
     }
 
-    return; 
+    System.exit(0); 
   }
 
 }
