@@ -105,12 +105,13 @@ public class Peak_new_IO
                                      boolean          append      )
                      throws IOException
   {
-     PrintStream out = new PrintStream( file_name );  
-     if ( peaks == null || peaks.size() <= 0 ){
-       SharedMessages.addmsg(
-                               "Null or empty peaks Vector in Write_new() ");
+     if ( peaks == null || peaks.size() <= 0 )
+     {
+       SharedMessages.addmsg("Null or empty peaks Vector in Write_new() ");
        return;
      }
+
+     PrintStream out = new PrintStream( file_name );  
 
                                                   // Find all the grids
 
@@ -333,6 +334,8 @@ public class Peak_new_IO
                                           facility, 
                                           instrument );
      sc.close();
+     buff_reader.close();
+     f_in.close();
      return peaks;
   }
 
