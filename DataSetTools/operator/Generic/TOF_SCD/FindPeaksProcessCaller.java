@@ -182,20 +182,14 @@ public class FindPeaksProcessCaller implements IOperator
                                                      // possibly on remote node
       Process process = Runtime.getRuntime().exec( command );
 
-      InputStream process_out = process.getInputStream();
-      InputStreamReader process_out_reader = new InputStreamReader(process_out);
-      BufferedReader process_out_buff = new BufferedReader( process_out_reader);
-    
-      String line;
-      /*  For now, don't show the output.....
-      while ((line = process_out_buff.readLine()) != null) 
-        System.out.println(line);
-      */
+      OutputStream process_out = process.getOutputStream();
+      InputStream  process_in  = process.getInputStream();
 
       InputStream process_err = process.getErrorStream();
       InputStreamReader process_err_reader = new InputStreamReader(process_err);
       BufferedReader process_err_buff = new BufferedReader( process_err_reader);
 
+      String line;
       boolean first_time = true;
       while ((line = process_err_buff.readLine()) != null)
       {
@@ -215,6 +209,15 @@ public class FindPeaksProcessCaller implements IOperator
       {
         System.err.println(e);
       }
+
+      process_err_buff.close();
+      process_err_reader.close();
+      process_err.close();
+
+      process_out.close();
+      process_in.close();
+
+      process.destroy();                       // get rid of the process 
     }
     catch( Exception ex )
     {
