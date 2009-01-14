@@ -58,11 +58,11 @@ public class SubSample extends GenericSave {
 	 *
 	 * @param inputFileName   The input filename
 	 * @param outputFileName   The output Nexus filename 
-	 * @param rowGrouping,     Number of rows that are grouped(2 only)
-	 * @param colGrouping,     Number of cols that are grouped(2 only)
+	 * @param rowGrouping      Number of rows that are grouped(2 only)
+	 * @param colGrouping      Number of cols that are grouped(2 only)
 	 * @param startTime        -1 if time scale stays same, otherwise minTime
 	 * @param endTime          end Time for the rebinned time data
-	 * @param firstBinlength   The length of the first bin
+	 * @param firstBinLength   The length of the first bin
 	 * @param isLog            The rebinned time is logarithmic if true 
 	 *                         otherwise it will be linear
 	 * @return  null or an ErrorString
