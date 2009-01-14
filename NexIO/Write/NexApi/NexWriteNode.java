@@ -269,7 +269,7 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
   /**
    * Returns the number of NXentries in this file
    *
-   * @param classname Should be "NXentry"
+   * @param className Should be "NXentry"
    * @return the number of NXentries in this file<br>
    */ 
   public int getNumClasses( String className){
@@ -381,8 +381,8 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
    *
    * @param AttrName the name of this attribute
    * @param AttrValue the value of this attribute
-   * @param type the type in NexIO.Types.java for this attribute
-   * @param ranks the length of rank is the number of dimensions and
+   * @param Type the type in NexIO.Types.java for this attribute
+   * @param Ranks the length of rank is the number of dimensions and
    * rank[i] is size of the array for dimension i.
    *
    * @see NexIO.Types#Int Type names
