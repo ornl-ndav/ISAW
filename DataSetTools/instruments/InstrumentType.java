@@ -346,7 +346,7 @@ public class InstrumentType implements Serializable
    *  the instrument name of the form:
    *  TOF_NPD, TOF_NGLAD, TOF_NSCD, TOF_NSAS, TOF_NDGS, TOF_NIGS, TOF_NREFL.
    *
-   *  @param  typeCode   Isaw type code for an instrument.
+   *  @param  type   Isaw type code for an instrument.
    *  
    *  @return The string name corresponding to the ISAW typeCode.
    */
