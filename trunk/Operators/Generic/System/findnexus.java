@@ -116,7 +116,7 @@
    * 
    * @param recurselevel  The number of level of subdirectories to search.
    * @return   The full name of the file or null if it cannot be found
-   * @error  Check the variable errorString if the result is null.
+   *           Check the variable errorString if the result is null.
    */
    public static String findNeXus( String runNum, String instrument, 
                     String Facility, String proposal, String collection,
