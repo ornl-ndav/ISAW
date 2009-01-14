@@ -157,12 +157,16 @@ public class FindPeaksProcess
     }
     else
     {
+             // NOTE: We may need some way to control if cache info is used.
+             //       The statement retriever.RetrieveSetUpInfo(null);
+             //       will use the cache if available, so that's OK.  The big
+             //       problem is that the cache will be out of date if the
+             //       instrument configuration changes !!!
       retriever = new NexusRetriever( fin_name );
+      ((NexusRetriever)retriever).RetrieveSetUpInfo(null);
       ds = retriever.getDataSet( ds_num );
       ((NexusRetriever)retriever).close();
     }
-             // TODO We need a parameter to determine if cache info is used!!!
-             //    retriever.RetrieveSetUpInfo(null);
 
     if ( ds == null )
     {  
