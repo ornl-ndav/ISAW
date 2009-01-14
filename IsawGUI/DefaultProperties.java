@@ -425,6 +425,8 @@ public class DefaultProperties{
         rs.append("#ViewAltitudeAngle=20.0").append(eol);
         rs.append("#ViewAzimuthAngle=45.0").append(eol);
         rs.append("#ViewDistance=4.5").append(eol);
+        rs.append("#ViewUpdateWhileAdjusting=false").append(eol);
+
         rs.append("#Brightness=40").append(eol);
         rs.append("#Auto-Scale=0.0").append(eol);
         rs.append("#ShowWCToolTip=true").append(eol);
