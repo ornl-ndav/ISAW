@@ -171,11 +171,12 @@ public class CNexusFile extends NexusFile{
   
   /**
    * Used if you want to use low level NeXus routines.
-   * @return
+   * @return The low-level NeXus file handle.
    */
   public int getHandle(){
      return handle;
   }
+
   /**
    * Should only be  externally by the thread NxFileOpenThread to
    * invoke the Nexus file close method.
