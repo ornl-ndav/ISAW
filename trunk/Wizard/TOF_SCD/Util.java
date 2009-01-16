@@ -248,6 +248,13 @@ public class Util {
       String cmd = "/usr/bin/logger -p local5.notice ISAW ISAW_" +
                    Isaw.getVersion(false) + 
                    " " + System.getProperty("user.name");
+                                                        // append year as
+                                                        // requested by Jim T.
+      Calendar calendar = Calendar.getInstance();
+      int      year     = calendar.get( Calendar.YEAR );
+
+      cmd = cmd + " " + year;
+
       SimpleExec.Exec( cmd );
     }
 
