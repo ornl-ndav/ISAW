@@ -1307,7 +1307,7 @@ public class NxWriteData {
         distanceNode.setNodeValue( res , NexIO.Types.Float , NexIO.Inst_Type.
                                       makeRankArray( 1 , -1 , -1 , -1 , -1 ) );
      
-        distanceNode.addAttribute( "units" , ( DS.getX_units() + ( char ) 0 ).
+        distanceNode.addAttribute( "units" , ( "meter"+ ( char ) 0 ).
                  getBytes() , NexIO.Types.Char , NexIO.Inst_Type.makeRankArray(
                  DS.getX_units().length() + 1 , -1 , -1 , -1 , -1 ) );
 
