@@ -109,7 +109,7 @@ public class NxWriteDetector{
     this.axis1Link = "axis1"; 
     this.axis2Link = "axis2"; 
     this.axis3Link = "axis3";
-    this.instrType = instrType;
+    NxWriteDetector.instrType = instrType;
   }
 
   /**
@@ -153,7 +153,7 @@ public class NxWriteDetector{
   public static void SetUpIsawAttributes(NxWriteNode node, int startIndex,
                                       int endIndex,DataSet DS,boolean monitor){
     NxData_Gen ng = new NxData_Gen ();
-    NXData_util nu = new NXData_util();
+    //NXData_util nu = new NXData_util();
     Object XX;
 
     int array_length   = endIndex-startIndex;
@@ -190,17 +190,18 @@ public class NxWriteDetector{
       }
       //solid angle
       XX = DB.getAttributeValue( Attribute.SOLID_ANGLE );
-      if( XX == null) solidAngle = null;
-      if( XX != null ){
+      if( XX == null) 
+         solidAngle = null;
+      if( XX != null && solidAngle != null ){
         if( solidAngle == null ){
-          //solidAngle = new float[ endIndex - startIndex ];
+          solidAngle = new float[ endIndex - startIndex ];
           for( int k = startIndex ; k < i ; k++ )
             solidAngle[ k -startIndex ] = -1;
         }
         Float F = ng.cnvertoFloat( XX );
-        if( F != null )
+        if( F != null && solidAngle != null )
           solidAngle[ i - startIndex ] = F.floatValue();
-        else 
+        else if( solidAngle != null )
           solidAngle[ i -startIndex ] = -1.0f;
       }else if( solidAngle != null )
         solidAngle[ i - startIndex ] = -1.0f;
@@ -227,7 +228,7 @@ public class NxWriteDetector{
       if( XX == null) rawAngle = null;
       if( XX != null ){
         if( rawAngle == null ){
-          //rawAngle = new float[ endIndex - startIndex ];
+          rawAngle = new float[ array_length ];
           for( int k = startIndex ; k < i ; k++ )
             rawAngle[ k -startIndex ] = -1;
         }
@@ -279,17 +280,17 @@ public class NxWriteDetector{
       XX = DB.getAttributeValue( Attribute.TOTAL_COUNT );
       if( XX == null) Tot_Count = null;
       if( XX != null ){
-        if( Tot_Count  == null ){
-          //Tot_Count = new float[ endIndex - startIndex ];
+        if( Tot_Count  != null ){
+          Tot_Count = new float[ array_length ];
           for( int k = startIndex ; k < i ; k++ )
             Tot_Count[ k -startIndex ] = -1.0f;
         }
         Float  F = ng.cnvertoFloat(  XX );
-        if( F == null )
+        if( F == null && Tot_Count != null )
           Tot_Count[ i-startIndex ] = -1.0f;
-        else if( F.floatValue() >= 0 )
+        else if(F != null &&  F.floatValue() >= 0 && Tot_Count != null  )
           Tot_Count[ i-startIndex ] = F.floatValue();
-        else 
+        else if(  Tot_Count != null )
           Tot_Count[ i-startIndex ] = -1.0f;
       }else if( Tot_Count != null )
         Tot_Count[ i-startIndex ] = -1.0f;
@@ -303,7 +304,7 @@ public class NxWriteDetector{
           for( int k = startIndex ; k < i ; k++ )
             slot[ k -startIndex ] = -1;
         }
-        float[] F = nu.Arrayfloatconvert( XX );
+        float[] F = NXData_util.Arrayfloatconvert( XX );
         slot[ i-startIndex ] = -1;
         if( F != null )
           if(F.length >0)
@@ -321,7 +322,7 @@ public class NxWriteDetector{
           for( int k = startIndex ; k < i ; k++ )
             crate[ k -startIndex ] = -1;
         }
-        float[] F = nu.Arrayfloatconvert( XX );
+        float[] F = NXData_util.Arrayfloatconvert( XX );
         crate[ i-startIndex ] = -1;
         if( F != null )
           if(F.length >0)
@@ -331,18 +332,21 @@ public class NxWriteDetector{
 
       //input
       XX = DB.getAttributeValue( Attribute.INPUT );
-      if( XX == null) input = null;
+      if( XX == null) 
+           input = null;
       if( XX != null ){
-        if( input == null ){
-          //input = new int[ endIndex - startIndex ];
+        if( input != null ){
+          input = new int[ endIndex - startIndex ];
           for( int k = startIndex ; k < i ; k++ )
             input[ k -startIndex ] = -1;
         }
-        float[] F = nu.Arrayfloatconvert( XX );
-        input[ i-startIndex ] = -1;
-        if( F != null )
-          if(F.length >0)
-            input[ i - startIndex ] = (int)(F[0]);
+        if( input != null ) {
+               float[] F = NXData_util.Arrayfloatconvert( XX );
+               input[ i - startIndex ] = - 1;
+               if( F != null )
+                  if( F.length > 0 )
+                     input[ i - startIndex ] = (int) ( F[ 0 ] );
+            }
       }else if( input != null )
         input[ i - startIndex ] = -1;
       
@@ -428,6 +432,7 @@ public class NxWriteDetector{
  
   }
   //obsolete
+  /*
   private static void SetUpIsawAttributes1(NxWriteNode nxData_Monitor, 
                                     int startIndex, int endIndex, DataSet DS ){
     float coords[];
@@ -549,7 +554,7 @@ public class NxWriteDetector{
          }
          else if( Group_ID != null )
          Group_ID[ i-startIndex ] = -1;
-      */
+      *//*
       Group_ID[i-startIndex]=DB.getGroup_ID();
 
       //Total counts
@@ -570,7 +575,8 @@ public class NxWriteDetector{
       }else if( Tot_Count != null )
         Tot_Count[ i-startIndex ] = -1.0f;
     }// for i = startIndex to endIndex 
-
+   */
+   /*
     n1 = node.newChildNode( "distance" , "SDS" );
     int rank[];
     rank = new int[ 1 ];
@@ -588,7 +594,8 @@ public class NxWriteDetector{
     if( Time_Field_Type != null )if( Time_Field_Type.length ==  rank[ 0 ] )
       n1.addAttribute( "time_field_type" , Time_Field_Type , 
                        Types.Int , rank );
-       
+   */
+  /*     
     if( Group_ID != null )if( Group_ID.length == rank[ 0 ] )
       if( !LinkAxisMatch("detector_number",instrType,1,5) )
         n1.addAttribute( "detector_number" , Group_ID ,Types.Int ,  rank );
@@ -624,7 +631,8 @@ public class NxWriteDetector{
       }
     }
   }
-
+*/
+  /*
   private void PackInfo(DataSet DS,float distance[],float phi[],float theta[],
                  float solidAngle[],float rawAngle[],float Det2Thet[],
                  float Tot_Count[],int Group_ID[],int startIndex,int endIndex){
@@ -639,7 +647,7 @@ public class NxWriteDetector{
     for( int i = startIndex ; i < endIndex ; i++ ){
       Data DB = DS.getData_entry( i );
       XX = DB.getAttributeValue( Attribute.DETECTOR_POS );
-      if( XX instanceof DetectorPosition ){
+      if(XX != null && XX instanceof DetectorPosition ){
         float[] coords;
         coords = ( ( DetectorPosition )XX ).getSphericalCoords();
         float coords1[];
@@ -655,21 +663,22 @@ public class NxWriteDetector{
 
       //solid angle
       XX = DB.getAttributeValue( Attribute.SOLID_ANGLE );
-      if( XX == null) solidAngle = null;
-      if( XX != null ){
-        if( solidAngle == null ){
+      if( XX == null) 
+         solidAngle = null;
+      if( XX != null  ){
+        if( solidAngle != null ){
           //solidAngle = new float[ endIndex - startIndex ];
           for( int k = startIndex ; k < i ; k++ )
             solidAngle[ k -startIndex ] = -1;
         }
         Float F = ng.cnvertoFloat( XX );
-        if( F != null )
+        if( F != null && solidAngle != null )
           solidAngle[ i - startIndex ] = F.floatValue();
-        else 
+        else if( solidAngle != null)
           solidAngle[ i -startIndex ] = -1.0f;
       }else if( solidAngle != null )
         solidAngle[ i - startIndex ] = -1.0f;
-
+     */
       /*//Delta_2Theta
         XX = DB.getAttributeValue( Attribute.DELTA_2THETA );
         if( XX != null )
@@ -687,7 +696,7 @@ public class NxWriteDetector{
         else if( Det2Thet != null )
         Det2Thet[ i - startIndex ] = -1.0f;
       */
-
+      /*
       //Raw Angle--------
       XX = DB.getAttributeValue( Attribute.RAW_ANGLE );
       if( XX == null) rawAngle = null;
@@ -705,7 +714,7 @@ public class NxWriteDetector{
       }
       else if( rawAngle != null )
         rawAngle[ i - startIndex ] = -1.0f;
-
+      */
       /*//Time field type 
         XX = DB.getAttributeValue( Attribute.TIME_FIELD_TYPE );
         if( XX != null )
@@ -739,6 +748,7 @@ public class NxWriteDetector{
       else if( Group_ID != null )
       Group_ID[ i-startIndex ] = -1;
       */
+     /*
       Group_ID[i-startIndex] = DB.getGroup_ID();
 
       //Total counts
@@ -759,8 +769,9 @@ public class NxWriteDetector{
           Tot_Count[ i-startIndex ] = -1.0f;
       }else if( Tot_Count != null )
         Tot_Count[ i-startIndex ] = -1.0f;
-    }// for i = startIndex to endIndex 
-  }
+    }// for i = startIndex to endIndex
+     
+  }*/
 
   /**
    * Writes the NXDetector information in a Data Set to a Nexus file
@@ -801,7 +812,7 @@ public class NxWriteDetector{
      //Get crate
    }
 
-  private static boolean LinkAxisMatch( String axisName, int instrType,
+  private static boolean LinkAxisMatch( String axisName, int instr_type,
                                         int minAxisNum, int maxAxisNum){
                                           
     if(axisName ==  null) 
@@ -809,18 +820,18 @@ public class NxWriteDetector{
       
     for( int i=minAxisNum; i <=maxAxisNum; i++){
       
-      if( axisName.equals((new Inst_Type()).getLinkAxisName( instrType, i)))
+      if( axisName.equals((new Inst_Type()).getLinkAxisName( instr_type, i)))
         return true;
     }
     
     return false;
   }
-
+  /*
   private boolean processDSx( NxWriteNode node, DataSet DS, int startIndex,
                               int endIndex ){
     int[] intval,rank1;
     char cc=0;
-    /* //assumed set from NxData
+    //assumed set from NxData
        int rank1[] , intval[];
        Data DB = DS.getData_entry( startIndex );
        XScale XU = DB.getX_scale();
@@ -865,6 +876,7 @@ public class NxWriteDetector{
        return true;
        }
     */
+  /*
     float phi[] ;
     phi = new float[ endIndex-startIndex ];
    
@@ -1111,4 +1123,5 @@ public class NxWriteDetector{
   
     return false;
   }//processDS
+  */
 }
