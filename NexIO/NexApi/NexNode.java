@@ -143,6 +143,7 @@ public class NexNode implements NxNode{
          NF = null;
       }
       NF = nxf.getNxFile();
+      NF.setIOThread( nxf );
     
       //NF = new CNexusFile( filename, NexusFile.NXACC_READ );
       
