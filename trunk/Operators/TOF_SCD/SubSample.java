@@ -357,19 +357,19 @@ public class SubSample extends GenericSave {
 		float firstBin = 40;
 		boolean isLog = false;
 		try{
-		if( args.length <3)
+		if( args.length >=3)
 		   rowGroup = Integer.parseInt(  args[2] );
-      if( args.length <4)
+      if( args.length >=4)
          colGroup = Integer.parseInt(  args[3] );
-      if( args.length <5)
+      if( args.length >=5)
          timeGroup = Integer.parseInt(  args[4] );
-      if( args.length <6)
+      if( args.length >=6)
          minTime = Float.parseFloat(  args[5] );
-      if( args.length <7)
+      if( args.length >=7)
          maxTime = Float.parseFloat(  args[6] );
-      if( args.length <8)
+      if( args.length >=8)
          firstBin = Float.parseFloat(  args[7] );
-      if( args.length <9)
+      if( args.length >=9)
          isLog = Boolean.parseBoolean(  args[8] );
 		}catch( Exception ss){
 		   System.out.println(" arguments do not parse correctly ");
