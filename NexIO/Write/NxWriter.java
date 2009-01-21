@@ -122,7 +122,9 @@ public class NxWriter{
    * formatted file.
    *
    * NOTE: To Save an experiment, call the Append function twice
+   * NOT USED
    */
+  /*
   private void Append1( DataSet[] Monitors , DataSet[] Histogram){
     int n;  
     
@@ -177,9 +179,9 @@ public class NxWriter{
            
       }else if ( Monitors != null ){
         n1 = node.newChildNode( "Histogram0", "NXentry" );
-        NxWriteNode nwNode = node.newChildNode( "instrument", "NXinstrument" );
-        if( nw.processDS( nwNode , Histogram[i]  ) )
-          errormessage += ";" + nw.getErrorMessage();
+        //NxWriteNode nwNode = node.newChildNode( "instrument", "NXinstrument" );
+        //if( nw.processDS( nwNode , Histogram[i]  ) )
+        //  errormessage += ";" + nw.getErrorMessage();
         int kk = 1 ;
         for( int j = 0; j<Monitors.length; j++ )
           for( int k = 0; k< Monitors[j].getNum_entries(); k++ ){
@@ -201,18 +203,13 @@ public class NxWriter{
       if( ns.processDS( n1Sampe , Histogram[i] ) )
         errormessage +=  ";" + ns.getErrorMessage();
       
-      /* //Done in NXsample or subclass of NXinstrument
-      NxWriteBeam nb = new NxWriteBeam(instrType);
-      NxWriteNode n1Beam = n1.newChildNode("Beam", "NXbeam");
-      if( nb.processDS( n1Beam , Histogram[i] ) )
-        errormessage += ";" + nb.getErrorMessage();
-      */
+     
     }//For each histogram
     //     (( NexWriteNode )node ).show();
     if(errormessage !="")
       SharedData.addmsg(errormessage);
   }
-
+*/
   /**
    * Appends the histograms with their monitors to a nexus file
    *
@@ -224,10 +221,8 @@ public class NxWriter{
    * NOTE: To Save an experiment, call the Append function twice
    */
   public void Append( DataSet[] Monitors , DataSet[] Histogram){
+     
     int n;
-    
-   
-    
     int instrType = getInstrumentType( Monitors, Histogram);
     
     if( Histogram == null ) 
@@ -248,6 +243,7 @@ public class NxWriter{
        DS = Histogram[0];
     else if( Monitors != null && Monitors.length > 0)
        DS = Monitors[0];
+    
     if( nw.processDS(nxInstr,DS)){
       errormessage +=";"+nw.getErrorMessage();
     }
@@ -329,20 +325,17 @@ public class NxWriter{
   }
 
   //check for upstream and downstream angle
+/*
   private String getMonitorName( int instrType, int MonitorNum, Data DB){
     if( instrType == InstrumentType.TOF_DIFFRACTOMETER)
       if( MonitorNum ==1)
         return "upstream";
       else if( MonitorNum == 2)
         return "downstream";
-    /* else
-       {SharedData.status_pane.add("TOF DIFFRACTOMETERS only have 2 monitors");
-       return "ERROR";
-       }
-    */
+   
     return "monitor"+MonitorNum;
   }
-
+*/
   private int getInstrumentType( DataSet[] Monitors, DataSet[] Histograms){
     int type = InstrumentType.UNKNOWN;
    
@@ -414,7 +407,7 @@ public class NxWriter{
     // for( i=0; i<  x.length; i++)
     //   System.out.print( x[i]+":: ");
     // System.out.println("");
-    NexIO.Write.NxWriteNode nwrx =  (NexIO.Write.NxWriteNode)nwr;
+    NexIO.Write.NxWriteNode nwrx =  nwr;
     NxWriter Writer = new NxWriter( nwrx  );
     //Has one monitor and one histogram
     for(  i = 0; i < n ; i++ ){
@@ -428,7 +421,7 @@ public class NxWriter{
         Writer.Append( DSM , DSH );
       }
       System.out.println( " Error =" + Writer.getErrorMessage() ) ; 
-      if( i+1 < n)
+      if( i+1 < n &&  args != null)
         filename = args [ i+1 ];
     }
     nwrx.show();
