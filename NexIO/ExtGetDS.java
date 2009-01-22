@@ -666,7 +666,10 @@ public class ExtGetDS{
  
    if( dsInf == null)
       return null;
-   
+   String dsName ="Monitor";
+   if( dsInf.NxdataNode != null)
+      dsName = dsInf.NxdataNode.getNodeName();
+   System.out.println("Retrieving "+dsName);
    NxNode EntryNode= dsInf.NxentryNode;
    AttributeList AL = getGlobalAttributes( EntryNode ) ;
    
@@ -1041,6 +1044,7 @@ public class ExtGetDS{
             }//for each NXentry child
             if( MonitorDSinf != null)
                EntryToDSs.insertElementAt( MonitorDSinf ,startEntryToDSsElement  );
+            SortOnDSName( startEntryToDSsElement, EntryToDSs );
             propogate(InstrumentNode,SampleNode ,BeamNode ,startEntryToDSsElement);
             GetPropogateInstSource( InstrumentNode, startEntryToDSsElement);
             RecordGivenGroupDetIDs(nn, EntryToDSs, InstrumentNode);
@@ -1056,6 +1060,99 @@ public class ExtGetDS{
  */
    }
    
+   private void  SortOnDSName(int  startEntryToDSsElement, Vector<DataSetInfo> EntryInfo ){
+      if( EntryInfo == null || EntryInfo.size()<=startEntryToDSsElement)
+         return;
+      
+      int[] pos = new int[ EntryInfo.size()-startEntryToDSsElement];
+      Integer[] sortList = new Integer[ pos.length];
+      String[] bankNames = new String[ pos.length];
+      int[] bankNum = new int[pos.length];
+      int k=0;
+      for( int i=startEntryToDSsElement; i < EntryInfo.size(); i++){
+         DataSetInfo dsInf = EntryInfo.elementAt(i);
+         if( dsInf.NxdataNode != null && 
+                   dsInf.NxdataNode.getNodeClass().equals("NXdata")){
+            pos[k] = i;
+            String NxDataName = dsInf.NxdataNode.getNodeName();
+            if( NxDataName.indexOf(';')>=0)
+               NxDataName = NxDataName.substring(0, NxDataName.indexOf( ';'));
+           int c;
+           for( c= NxDataName.length()-1; c >=0 && 
+                                Character.isDigit( NxDataName.charAt( c ));c--){}
+           bankNames[k] = NxDataName.substring(0,c+1);
+           if( c+1 >= NxDataName.length())
+              bankNum[k]= Integer.MIN_VALUE;
+           else
+              bankNum[k]= Integer.parseInt( NxDataName.substring( c+1));
+                         
+            sortList[k] =k;
+            k++;
+         }
+            
+         
+      }
+      
+      java.util.Arrays.sort( sortList, 0, k, new MyComparator(k,pos, bankNames, bankNum) );
+      DataSetInfo[] dsinfs = new DataSetInfo[k];
+      for( int i=0; i< k ; i++)
+         dsinfs[i] = EntryInfo.elementAt( pos[sortList[i]]);
+      for( int i=0; i < k ; i++)
+         EntryInfo.set( pos[i] , dsinfs[i] );
+     
+   }
+   
+   
+   class MyComparator implements Comparator{
+      int[] pos; 
+      String[] bankNames;
+      int[] bankNums;
+      int k;
+      public MyComparator( int length,int[] poss, String[] BankNames, int[] BankNums){
+         this.pos = poss;
+         bankNames = BankNames;
+         bankNums = BankNums;
+         k = length;
+      }
+      /* (non-Javadoc)
+       * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
+       */
+      @Override
+      public int compare( Object o1 , Object o2 ) {
+
+         
+         if( pos == null )
+            return 0;
+         if( o1 == null || !(o1 instanceof Integer))
+            if( o2 == null ||  !(o2 instanceof Integer))
+               return 0;
+            else
+               return -1;
+        if( o2 == null ||!(o2 instanceof Integer))
+           return 1;
+        
+         int indx1 = ((Integer)o1).intValue();
+         int indx2 = ((Integer)o2).intValue();
+         if( indx1 <0 || indx1 >= k )
+            if( indx2 < 0 || indx2 >= k)
+                return 0;
+            else
+                return -1;
+         if( indx2 < 0 || indx2 >=k )
+            return 1;
+         int r =  bankNames[indx1].compareTo(  bankNames[indx2] );
+         if( r !=0)
+            return r;
+         if( bankNums[indx1]< bankNums[indx2])
+            return -1;
+
+         if( bankNums[indx1]> bankNums[indx2])
+            return 1;
+         return 0;
+            
+      }
+      
+   }
    private void GetPropogateInstSource( NxNode InstrumentNode, 
                                                                   int startEntryIndx){
       if( InstrumentNode == null)
