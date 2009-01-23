@@ -890,8 +890,17 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
          int karray =0;
          
          Prod = Prod/ranks[incrPos];
+         int ntimes = ranks[incrPos]/incrSize;
+         if( ntimes * incrSize < ranks[incrPos]) ntimes ++;
+         for( int i=0; i< incrPos; i++)ntimes *= ranks[i];
+         int time =0;
          Object buffer = NexIO.Types.CreateArray( type , Prod*incrSize );
          for( boolean done = false; !done;){
+            if( time > 0 && time % 10 ==0  ){
+               System.out.println("     Saved "+(100*time/(float)ntimes)+"% of data."+
+                            " Set NexusSlabSize to -1 for speed");
+            }
+            time ++;
             increment[incrPos]= Math.min(  incrSize , ranks[incrPos]- start[incrPos]  );
             int length =Prod*increment[incrPos]; 
             System.arraycopy( array , karray, buffer , 0 ,length );
