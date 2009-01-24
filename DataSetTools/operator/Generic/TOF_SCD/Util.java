@@ -1158,7 +1158,7 @@ public class Util{
           line=tfr.read_line();
           if(line.startsWith("CRS0  VSIGV")){ // cell volume
             sb.append("CRS0  VSIGV"+Format.real(abc[6],11,4)
-                      +Format.real(sig[6],10,4)+"\n");
+                      +Format.real(sig[6],11,4)+"\n");
           }else if(line.startsWith("CRS1  ABC   ")){ // lattice param lengths
             sb.append("CRS1  ABC   ");
             for(int i=0 ; i<3 ; i++ )
@@ -1172,12 +1172,12 @@ public class Util{
           }else if(line.startsWith("CRS1  ANGLES")){ // lattice param angles
             sb.append("CRS1  ANGLES");
             for(int i=3 ; i<6 ; i++ )
-              sb.append(Format.real(abc[i],10,3));
+              sb.append(Format.real(abc[i],10,4));
             sb.append(Format.string("\n",39));
           }else if(line.startsWith("CRS1  ANGSIG")){ // uncertainties in param angles
             sb.append("CRS1  ANGSIG");
             for(int i=3 ; i<6 ; i++ )
-              sb.append(Format.real(sig[i],10,3));
+              sb.append(Format.real(sig[i],10,4));
             sb.append(Format.string("\n",39));
           }else if(line.startsWith("CRS11 UBMAT1")){ // orientation matrix
             sb.append("CRS11 UBMAT1");
@@ -1219,11 +1219,11 @@ public class Util{
 
       // lattice parameters
       for( int i=0 ; i<7 ; i++ )
-        sb.append(Format.real(abc[i],10,3));
+        sb.append(Format.real(abc[i],10,4));
       sb.append("\n");
       // sigmas
       for( int i=0 ; i<7 ; i++)
-        sb.append(Format.real(sig[i],10,3));
+        sb.append(Format.real(sig[i],10,4));
       sb.append("\n\n\n");
       sb.append("The above matrix is the TRANSPOSE of the UB Matrix that ");
       sb.append( "maps the column \n");
