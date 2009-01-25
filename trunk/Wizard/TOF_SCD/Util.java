@@ -44,11 +44,8 @@ import DataSetTools.retriever.*;
 
 import Operators.Special.Calib;
 
-import java.awt.GridLayout;
 import java.io.*;
 import java.util.*;
-
-import javax.swing.JFrame;
 
 import gov.anl.ipns.Util.SpecialStrings.*;
 import gov.anl.ipns.Util.File.FileIO;
@@ -260,6 +257,7 @@ public class Util {
 
     String out_file_name = outpath + expname + ".peaks";
     Vector all_peaks = null;
+
     if ( results != null )
     {
       all_peaks = new Vector();
@@ -300,25 +298,53 @@ public class Util {
       try
       {
         Peak_new_IO.WritePeaks_new( out_file_name, all_peaks, false );
-        all_peaks = Peak_new_IO.ReadPeaks_new( out_file_name );  
-                                                        // re-read peaks to
-                                                        // put them in order
       }
       catch ( Exception ex )
       {
         System.out.println("Exception writing full file " + out_file_name );
         ex.printStackTrace();
       }
-
     }
     else
     {
       System.out.println("ERROR: RESULTS VECTOR NULL ");
       return null;
     }
+                                        // Sort Vector of peaks so that 
+                                        // the peaks appear in order
+    System.out.println("TOTAL NUMBER OF PEAKS = " + all_peaks.size() );                                 
+    Peak_new[] peak_array = new Peak_new[all_peaks.size()];
+    for ( int i = 0; i < peak_array.length; i++ )
+      peak_array[i] = (Peak_new)(all_peaks.elementAt(i));
+ 
+    Arrays.sort( peak_array, new Peak_newComparator() );
+    all_peaks = new Vector( peak_array.length );
 
-    if( ViewPeaks )
-      ( new ViewASCII( out_file_name ) ).getResult();
+    for ( int i = 0; i < peak_array.length; i++ )
+      all_peaks.add( peak_array[i] );
+
+    if( ViewPeaks )                         // pause briefly to allow the
+    {                                       // file to finish writing
+       int     counter     = 0;             // before we try to read it
+       boolean file_exists = false;
+       File    new_file;
+       while ( counter < 10 && !file_exists )
+       {
+         new_file = new File( out_file_name );
+         file_exists = new_file.exists();
+
+         try
+         {
+           Thread.sleep( 1000 );
+         }
+         catch ( Exception ex )
+         {
+           System.out.println("Exception while waiting for Peaks file " );
+           ex.printStackTrace();
+         }
+       }
+       ( new ViewASCII( out_file_name ) ).getResult();
+    }
 
     if ( show_peaks_view )
       PeakArrayPanels.DisplayPeaks( "Test Peaks", null, "", null, -1 );
@@ -641,7 +667,7 @@ public class Util {
        Peak1.addAll(  ResultPeaks );
        ResultPeaks = Peak1;
        Peak_new_IO.WritePeaks_new( PeakFileName, 
-                                  ResultPeaks, 
+                                   ResultPeaks, 
                                    append1 );
 
       //----------- Write and View Peaks --------------------
@@ -650,11 +676,32 @@ public class Util {
       System.out.println( "--- find_multiple_peaks is done. ---" );
       SharedMessages.addmsg( "Peaks are listed in "+PeakFileName );
       
-      if( ViewPeaks )
+      if( ViewPeaks )                         // pause briefly to allow the
+      {                                       // file to finish writing
+         int     counter     = 0;             // before we try to read it
+         boolean file_exists = false;
+         File    new_file;
+         while ( counter < 10 && !file_exists )
+         {
+           new_file = new File( PeakFileName );
+           file_exists = new_file.exists();
+
+           try 
+           {
+             Thread.sleep( 1000 );
+           }
+           catch ( Exception ex )
+           {
+             System.out.println("Exception while waiting for Peaks file " );
+             ex.printStackTrace();
+           }
+         }
          ( new ViewASCII( PeakFileName ) ).getResult();
+      }
    
       if( ShowPeaksView)
-         PeakArrayPanels.DisplayPeaks( "Peak Images",null,"",".pvw",currentTime);
+        PeakArrayPanels.DisplayPeaks( "Peak Images",null,"",".pvw",currentTime);
+
       return ResultPeaks;
    }
    
