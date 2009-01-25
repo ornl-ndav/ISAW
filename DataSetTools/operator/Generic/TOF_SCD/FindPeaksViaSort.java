@@ -407,22 +407,25 @@ public class FindPeaksViaSort
       int row  = info[2];
       int val  = info[3];
 
-      boolean overlaps = false;                    // check if point overlaps
-      int     peak_index = 0;                      // a previous peak.
-      while ( !overlaps && peak_index < peaks.size() )
+      boolean bad_peak = false;                // check if point is in 
+      int     peak_index = 0;                  // any previous peaks.
+      BasicPeakInfo old_peak;
+      while ( !bad_peak && peak_index < peaks.size() )
       {
-        BasicPeakInfo old_peak = (BasicPeakInfo)peaks.elementAt( peak_index );
+        old_peak = (BasicPeakInfo)peaks.elementAt( peak_index );
         if ( old_peak.overlap( row, col, chan ) )
-          overlaps = true;
+        {
+          bad_peak = true;
+          LogDiscard(log, OVERLAPS, col, row, chan, val, peak_index);
+        }
         else
           peak_index++;
       }
-
-      boolean local_max = true;                 // check if point is local max
-      value = (int)data_arr[row][col][chan];
-
-      if ( !overlaps )        
+                                               // if it misses all previous
+                                               // peaks, check if local max
+      if ( !bad_peak ) 
       { 
+        float center_value = data_arr[row][col][chan];
         int delta_row  = 3;
         int delta_col  = 3;
         int delta_chan = 3;
@@ -432,19 +435,31 @@ public class FindPeaksViaSort
         int col_1 = Math.min( col+delta_col, n_cols-1 );
         int chan_0 = Math.max( chan-delta_chan, 0 );
         int chan_1 = Math.min( chan+delta_chan, n_pages-1 );
+/*
+        log.append("VOXEL = " + col + ", " + row + ", " + chan + ", " + center_value + "\n" );
+        log.append("COL  RANGE = " + col_0 + ", " + col_1   + "\n" );
+        log.append("ROW  RANGE = " + row_0 + ", " + row_1   + "\n" );
+        log.append("CHAN RANGE = " + chan_0 + ", " + chan_1 + "\n" );
+*/
         for ( int i = row_0; i <= row_1; i++ )
           for ( int j = col_0; j <= col_1; j++ )
             for ( int k = chan_0; k <= chan_1; k++ )
-              if ( data_arr[i][j][k] > value )
-                local_max = false;
-
-        if ( !local_max )
-          LogDiscard( log, NOT_LOCAL_MAX, col, row, chan, value, -1 );
+            {
+//            log.append( "i,j,k,val = " + i + ", " + j + ", " + k + ", " + data_arr[i][j][k] + "\n"); 
+              if ( data_arr[i][j][k] > center_value )
+              {
+//              log.append( "*****TOO BIG i,j,k,val = " + i + ", " + j + ", " + k + ", " + data_arr[i][j][k] + "\n"); 
+                bad_peak = true;
+              }
+            }
+        if ( bad_peak )
+          LogDiscard( log, NOT_LOCAL_MAX, col, row, chan, val, -1 );
       }
-                                              // if point ok, find the extent
-                                              // of the peak and check if the
-                                              // body overlaps a previous peak
-      if ( ! overlaps && local_max ) 
+                                            // if point misses previous peaks
+                                            // and is local max, find it's 
+                                            // extent and check if the 
+                                            // body overlaps a previous peak
+      if ( !bad_peak ) 
       {
         BasicPeakInfo peak = new BasicPeakInfo( row  + 0.5f, 
                                                 col  + 0.5f, 
@@ -458,38 +473,37 @@ public class FindPeaksViaSort
         log.append( "\nCHECKING POSSIBLE PEAK " + 
                        peak.col_row_chan_ipk(data_arr)  );
 
-        boolean peak_ok;                         // true if peak seems
+                                                 // does peak seem
                                                  // ok after finding
                                                  // its extent.
-        peak_ok = peak.set_centroid_and_extent( data_arr, log ); 
+        bad_peak = !peak.set_centroid_and_extent( data_arr, log ); 
 
-        if ( peak_ok )                           // make sure it doesn't        
+        if ( !bad_peak )                         // make sure it doesn't        
         {                                        // overlap a previous peak
           peak_index = 0;
-          while ( !overlaps && peak_index < peaks.size() )
+          while ( !bad_peak && peak_index < peaks.size() )
           {
-           BasicPeakInfo old_peak = (BasicPeakInfo)peaks.elementAt(peak_index);
+            old_peak = (BasicPeakInfo)peaks.elementAt(peak_index);
             if ( old_peak.overlap( peak ) )
-              overlaps = true;
+            {
+              bad_peak = true;
+              LogDiscard(log, BODY_OVERLAPS, col, row, chan, val, peak_index);
+            }
             else
               peak_index++;
           }
 
-          if ( ! overlaps )
+          if ( !bad_peak )
           {
             peaks.add( peak );
             log.append("*******" + pk_count + ":  ADDED PEAK " + 
                                    peak.col_row_chan_ipk( data_arr ) + "\n");
             pk_count++;
           }
-          else
-            LogDiscard(log, BODY_OVERLAPS, col, row, chan, value, peak_index);
         }
         else
-          LogDiscard( log, UNDEFINED_CENTROID, col, row, chan, value, -1 );
+          LogDiscard( log, UNDEFINED_CENTROID, col, row, chan, val, -1 );
       }
-      else 
-        LogDiscard( log, OVERLAPS, col, row, chan, value, peak_index );
 
       index--;
     } 
