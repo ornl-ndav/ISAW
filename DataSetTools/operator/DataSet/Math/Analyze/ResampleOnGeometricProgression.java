@@ -305,7 +305,7 @@ public class ResampleOnGeometricProgression extends    AnalyzeOp
     else
     {
       ds.notifyIObservers( IObserver.DATA_CHANGED );
-      return new String( "Data resampled uniformly" );
+      return new String( "Data resampled on 'log' scale" );
     }
   }  
 
