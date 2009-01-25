@@ -132,10 +132,9 @@ public class Peak_new_IO
 
      Arrays.sort( grid_array, new IDataGridComparator() );
 
-     Object[]   temp_array = peaks.toArray();
-     Peak_new[] peak_array = new Peak_new[temp_array.length];
-     for ( int i = 0; i < temp_array.length; i++ )
-        peak_array[i] = (Peak_new)(temp_array[i]);
+     Peak_new[] peak_array = new Peak_new[peaks.size()];
+     for ( int i = 0; i < peak_array.length; i++ )
+        peak_array[i] = (Peak_new)(peaks.elementAt(i));
 
      Arrays.sort( peak_array, new Peak_newComparator() );
 
