@@ -446,6 +446,29 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
     linkInfo.put( handleName, this);
     //children.addElement( handleName );
   }
+  private boolean Equal( NexWriteNode node1, NexWriteNode node2){
+     if( node1 == null)
+        if( node2 == null)
+           return true;
+        else 
+           return false;
+     
+     if( ! node1.getNodeName().equals(  node2.getNodeName() ))
+        return false;
+     
+     if( node1.classname == null)
+        if(node2.classname == null)
+           return true;
+        else
+           return false;
+     
+     if( ! node1.classname.equals(  node2.classname ))
+        return false;
+     
+     return true;
+     
+  }
+  
   
   private boolean Position( NexWriteNode to){
      Vector<NexWriteNode> V = new Vector<NexWriteNode>();
@@ -455,11 +478,13 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
      }
      boolean done = false;
      int i;
-     for( i=0; i < Math.min( V.size(), PosWriter.size()) && !done; i++)
-        if( V.elementAt(i)!= PosWriter.elementAt(i))
+     for( i =0 ; i < Math.min( V.size(), PosWriter.size()) && !done; )
+        if( !Equal(V.elementAt(i), PosWriter.elementAt(i)))
            done = true;
+        else
+           i++;
      
-     for( int k= PosWriter.size()-1; k>=i; k--)
+     for( int k = PosWriter.size()-1; k >= i; k--)
        try{
         NexWriteNode elt = PosWriter.elementAt(k);
         if( elt.classname.equals("SDS"))
@@ -529,6 +554,12 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
    * Writes node to file if it can. The node cannot have attributes,
    * children, or links incorporated after this method is executed.
    * assumes current node is opened
+   * 
+   * Linking format
+   * Node 1(2ns):   Children[i] is link handle(String)    linkinfo contains vector link handle and sourceNode
+   * Node 2(1st): Childre4n[i] is vector <linkhandle, thisNode>  linkinfo should already have linkhandle in it
+   * 
+   * When written linkinfo's 2nd vector element should be replacerd by an NXlink
    */
   public void write(){
     
@@ -772,7 +803,7 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
                else {
                   NexWriteNode newNode = (NexWriteNode) X;
                   NexWriteNode par = newNode.parent;
-                  newNode.parent= parent;
+                  newNode.parent= this;
                   newNode.write();
                   newNode.parent = par;
                   NXlink lnk;
