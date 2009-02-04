@@ -961,8 +961,7 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
 
   private boolean Okay2Compress( int Nextype, int[] ranks1){
 
-     return false;
-  /*
+   
      if( Nextype == NexusFile.NX_CHAR)
         return false;
      if( Nextype == NexusFile.NX_BINARY)
@@ -976,7 +975,6 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
         return false;
      
      return true;
-  */
    
   }
   
