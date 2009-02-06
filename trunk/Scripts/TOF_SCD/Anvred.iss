@@ -19,6 +19,7 @@
 #@param JREF           REJECT PEAKS FOR WHICH THE CENTROID CALCULATION FAILED(USE Yes or No, only)
 #@param IPKMIN         MINIMUMPEAK COUNT FOR A PEAK TO BE CONSIDERED
 #@param DMIN           MINIMUM D-SPACING FOR A PEAK TO BE CONSIDERED
+#@param IIQ            Use Common Scale Factors per detector(2) or per setting(1)
 #@param SCALEFACTOR    MULTIPLY FSQ AND SIG(FSQ) TO REDUCE THEIR SIZE
 
 #@return  Result OK or error in the program. anvred.log and {ExpName}.hkl appear in the OutputDir
@@ -30,11 +31,11 @@
 
 
 $ ExpName         String("oxalic")                                                    The Name of the Experiment
-$ DataDir         DataDir(${Data_Directory})                                         Directory with Input files
-$ OutputDir       DataDir("${Data_Directory}")                                   Directory for output files
+$ DataDir         DataDir(${Data_Directory})                                          Directory with Input files
+$ OutputDir       DataDir("${Data_Directory}")                                        Directory for output files
 $ IntegrateFile   String("oxalic.integrate")                                          The Integrated peaks file
 $ OutputFile      String("oxalic.hkl")                                                Output reflection file  
-$ SpecFileName    LoadFile("${ISAW_HOME}/anvred/")                                    File with spectrum coefficients 
+$ SpecFileName    LoadFile("${ISAW_HOME}/Operators/TOF_SCD/")                                    File with spectrum coefficients 
 $ SMU             Float( 1.30157733)                                                  Linear abs coeff( Tot Scat)
 $ AMU             Float( 1.68592)                                                     Linear abs coeff( True Abs)ection)
 $ radius          float(.17)                                                          Rad of Sphere in cm(Spherical correction only)
@@ -45,6 +46,7 @@ $ NBCH           int(5)                                                         
 $ JREF            Choice(["Yes","No"])                                                REJECT PEAKS FOR WHICH THE CENTROID CALCULATION FAILED
 $ IPKMIN        int(0)                                                                MINIMUMPEAK COUNT FOR A PEAK TO BE CONSIDERED
 $ DMIN           float(.5)                                                            MINIMUM D-SPACING FOR A PEAK TO BE CONSIDERED
+$ IIQ            int(1)                                                               Input (1):Common scale factor per setting or (2) per detector
 $ SCALEFACTOR    float(.1)                                                            MULTIPLY FSQ AND SIG(FSQ) TO REDUCE THEIR SIZE
 # GOWS          FLOAT(262656) or(ngaus(1)*ngaus(2)*ngaus(3)*4 or 5)
 # RalpS        float(262656) or float(ngaus(1)*ngaus(2)*ngaus(3)) ngaus starts at 1
@@ -80,7 +82,7 @@ OpenLog( Scratch, false)
    LogMsg( IPKMIN&"\n")
 
     LogMsg(DMIN &"\n")
-
+    LogMsg(IIQ &"\n")
    LogMsg( SCALEFACTOR & "\n")
 
   CloseLog()
