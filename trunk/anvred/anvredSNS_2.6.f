@@ -310,7 +310,7 @@ C
 		READ (ANS, *) IIQ
 	  END IF
 
-	WRITE (16, 8370)
+	WRITE (16, 8380)
 	WRITE (16, '(A)') IIQ
 
 !  Multiply by a scale factor.
