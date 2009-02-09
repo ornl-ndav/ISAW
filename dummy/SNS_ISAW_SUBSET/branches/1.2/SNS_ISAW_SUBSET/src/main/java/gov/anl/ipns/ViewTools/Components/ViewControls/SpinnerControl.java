@@ -32,9 +32,8 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * Modified:
- * $Log: SpinnerControl.java,v $
+ * $Log$
  * Revision 1.3  2005/07/12 16:54:46  kramer
- *
  * Now the setObjectState() method calls super.setObjectState() to set the
  * state that the superclass maintains.
  *

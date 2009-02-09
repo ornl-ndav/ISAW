@@ -30,7 +30,7 @@
  *
  * Modified:
  *
- * $Log: WindowShower.java,v $
+ * $Log$
  * Revision 1.4  2005/05/25 16:09:58  dennis
  * Added convenience static method 'show', that constructs
  * a WindowShower object for a specified window and adds

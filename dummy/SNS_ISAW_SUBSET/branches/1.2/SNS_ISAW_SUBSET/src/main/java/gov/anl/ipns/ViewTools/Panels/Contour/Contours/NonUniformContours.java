@@ -32,9 +32,8 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * Modified:
- * $Log: NonUniformContours.java,v $
+ * $Log$
  * Revision 1.9  2005/07/29 15:40:33  kramer
- *
  * Removed some unnecessary System.out.println() statements.
  *
  * Revision 1.8  2005/07/12 16:33:14  kramer

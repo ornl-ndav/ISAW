@@ -29,7 +29,7 @@
  *
  * Modified:
  *
- * $Log: StrokeText.java,v $
+ * $Log$
  * Revision 1.1  2007/08/14 00:37:32  dennis
  * Added files from SSG_Tools at UW-Stout
  *

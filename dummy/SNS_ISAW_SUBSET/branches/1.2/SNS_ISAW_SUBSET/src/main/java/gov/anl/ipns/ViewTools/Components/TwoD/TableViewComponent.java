@@ -33,7 +33,7 @@
  *
  * Modified:
  *
- *  $Log: TableViewComponent.java,v $
+ *  $Log$
  *  Revision 1.16  2008/01/28 19:15:42  dennis
  *  Removed reference to PanViewControl.makeNewPanImage, which is no
  *  longer used.

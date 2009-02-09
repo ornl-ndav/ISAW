@@ -29,7 +29,7 @@
  *
  * Modified:
  *
- *  $Log: floatPoint2D.java,v $
+ *  $Log$
  *  Revision 1.11  2007/03/23 18:15:30  dennis
  *  Added some "vector" methods: add(), subtract(), dot(), scale() and
  *  normalize().

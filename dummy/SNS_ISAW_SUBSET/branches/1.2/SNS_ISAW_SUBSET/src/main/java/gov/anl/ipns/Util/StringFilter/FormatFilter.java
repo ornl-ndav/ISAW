@@ -30,7 +30,7 @@
  *
  * Modified:
  *
- *  $Log: FormatFilter.java,v $
+ *  $Log$
  *  Revision 1.5  2004/03/11 23:01:55  hammonds
  *  Changed classpath to gov.anl.ipns.Util.StringFilter.
  *

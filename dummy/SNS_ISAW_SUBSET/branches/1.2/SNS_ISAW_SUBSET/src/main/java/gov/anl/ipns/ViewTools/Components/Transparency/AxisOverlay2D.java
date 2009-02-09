@@ -33,7 +33,7 @@
  *
  * Modified:
  *
- *  $Log: AxisOverlay2D.java,v $
+ *  $Log$
  *  Revision 1.58  2007/10/12 22:33:26  amoe
  *  Fixed a bug that caused DifferenceViewComponent's Y Axis label to not
  *  shift with the number labels.

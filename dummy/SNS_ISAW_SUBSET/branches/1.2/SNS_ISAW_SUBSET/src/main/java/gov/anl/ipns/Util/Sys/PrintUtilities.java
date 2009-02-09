@@ -30,7 +30,7 @@
  *
  * Modified:
  *
- *  $Log: PrintUtilities.java,v $
+ *  $Log$
  *  Revision 1.16  2006/07/26 16:10:32  dennis
  *  Moved ComponentPrintable.java to gov/anl/ipns/Util/Sys
  *  so it is with the PrintUtilities class that uses it.

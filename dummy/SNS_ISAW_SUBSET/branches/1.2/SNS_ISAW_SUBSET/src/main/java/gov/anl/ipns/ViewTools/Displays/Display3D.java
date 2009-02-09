@@ -32,7 +32,7 @@
  *
  *  Modified:
  *
- *  $Log: Display3D.java,v $
+ *  $Log$
  *  Revision 1.6  2006/07/25 13:02:27  dennis
  *  Commented out some unused variables.
  *

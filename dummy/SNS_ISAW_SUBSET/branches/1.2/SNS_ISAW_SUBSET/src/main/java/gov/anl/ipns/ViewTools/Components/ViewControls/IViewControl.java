@@ -33,7 +33,7 @@
  *
  * Modified:
  *
- *  $Log: IViewControl.java,v $
+ *  $Log$
  *  Revision 1.9  2005/03/20 05:29:22  millermi
  *  - Added methods getSharedKey() and setSharedKey() for use with
  *    ControlManager.

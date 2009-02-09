@@ -33,7 +33,7 @@
  *
  * Modified:
  *
- *  $Log: TableModelMaker.java,v $
+ *  $Log$
  *  Revision 1.4  2005/05/25 20:28:49  dennis
  *  Now calls convenience method WindowShower.show() to show
  *  the window, instead of instantiating a WindowShower object

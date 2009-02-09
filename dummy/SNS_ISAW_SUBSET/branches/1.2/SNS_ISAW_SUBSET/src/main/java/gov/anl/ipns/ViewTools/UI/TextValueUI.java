@@ -27,7 +27,7 @@
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
- * $Log: TextValueUI.java,v $
+ * $Log$
  * Revision 1.11  2005/03/09 06:39:20  millermi
  * - Added if statement to check for Float.NaN in findNumber(). Using
  *   Java's NumberFormat.format(Float.NaN) creates a String that

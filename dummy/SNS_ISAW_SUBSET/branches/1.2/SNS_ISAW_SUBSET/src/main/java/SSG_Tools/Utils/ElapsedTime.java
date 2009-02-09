@@ -22,11 +22,19 @@
  *           University of Wisconsin-Stout
  *           Menomonie, WI 54751, USA
  *
- * Modified:
+ *  Last Modified:
+ * 
+ *  $Author: eu7 $
+ *  $Date: 2008-08-21 15:34:58 -0500 (Thu, 21 Aug 2008) $            
+ *  $Revision: 306 $
  *
  *  $Log: ElapsedTime.java,v $
- *  Revision 1.3  2007/08/14 00:03:33  dennis
- *  Major update to JSR231 based version from UW-Stout repository.
+ *
+ *  2008/08/21  Updated to latest version from UW-Stout repository.
+ *
+ *  Revision 1.4  2007/10/29 03:00:16  dennis
+ *  Added methods to pause and resume the timer, and check whether or
+ *  not the timer is currently paused.
  *
  *  Revision 1.3  2006/09/05 01:43:33  dennis
  *  Updated to use System.nanoTime() instead of System.currentTimMillis,
@@ -43,12 +51,16 @@
 package SSG_Tools.Utils;
 
 /**
- *  Simple timer object for performance testing.
+ *  This timer object is intended to be used for performance testing and
+ *  animation control.  The timer can be reset or paused.
  */
 
 public class ElapsedTime
 {
   long      base_time;
+  long      paused_time;
+  boolean   paused = false;
+  
 
   /**
    *  Construct an ElapsedTime object, and start measuring elapsed time from
@@ -56,26 +68,71 @@ public class ElapsedTime
    */
   public ElapsedTime()
   {
-    base_time = System.nanoTime();
+    reset();
   }
 
   /**
    *  Get the elapsed time since this timer was constructed, or was last
-   *  reset.
+   *  reset.  Time during which the timer is paused does NOT add to the
+   *  total elapsed time.
    *
    *  @return   The elapsed time in seconds.
    */
   public float elapsed()
   {
-    return ( System.nanoTime() - base_time ) / 1.0e9f;
+    if ( paused )
+      return (float)((paused_time - base_time ) / 1.0e9);
+    
+    return (float)(( System.nanoTime() - base_time ) / 1.0e9);
   }
 
   /**
-   *  Reset the elapsed time to zero.
+   * Pause the elapsed time.  This has no effect if called when the timer
+   * is already paused.
+   */
+  public void pause()
+  {
+    if ( !paused )     // If not already paused, record the current time so
+    {                  // the base time can be adjusted when counting resumes. 
+      paused_time = System.nanoTime();
+      paused = true;
+    }
+  }
+  
+  /**
+   * Resume counting the elapsed time.  This has no effect if called when
+   * the timer is still counting and has not been paused.
+   */
+  public void resume()
+  {
+    if ( paused )      // Advance the base time by the length of time we've 
+    {                  // been paused, then trip paused to false.
+      base_time += System.nanoTime() - paused_time;
+      paused     = false;
+    }
+  }
+  
+  
+  /**
+   * Check whether or not this timer is paused.
+   * 
+   *  @return true if this timer is currently paused and false if this timer
+   *          is currently running.
+   */
+  public boolean isPaused()
+  {
+    return paused;
+  }
+  
+  
+  /**
+   *  Reset the elapsed time to zero, and set the paused flag to false.
+   *  The timer will immediately start running. 
    */
   public void reset()
   {
     base_time = System.nanoTime();
+    paused    = false;
   }
 
   /*

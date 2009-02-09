@@ -32,7 +32,7 @@
  *
  * Modified:
  *
- *  $Log: FrameController.java,v $
+ *  $Log$
  *  Revision 1.1  2005/07/22 19:46:23  cjones
  *  Cleaned up code. Added a FrameController that uses AnimationController to
  *  handle frames in a scene.

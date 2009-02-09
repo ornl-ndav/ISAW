@@ -33,7 +33,7 @@
  *
  * Modified:
  *
- *  $Log: IViewComponent2D.java,v $
+ *  $Log$
  *  Revision 1.12  2007/08/09 15:35:41  dennis
  *  Minor fix to javadocs.
  *

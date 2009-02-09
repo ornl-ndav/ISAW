@@ -33,7 +33,7 @@
  *
  * Modified:
  *
- *  $Log: WCRegion.java,v $
+ *  $Log$
  *  Revision 1.6  2007/03/16 16:54:08  dennis
  *  Fixed file name in comment.
  *

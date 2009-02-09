@@ -32,9 +32,8 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * Modified:
- * $Log: ControlCheckboxCombobox.java,v $
+ * $Log$
  * Revision 1.2  2005/07/19 19:00:42  kramer
- *
  * Added javadocs and modified the main method to test the
  * set/getObjectState() methods.
  *

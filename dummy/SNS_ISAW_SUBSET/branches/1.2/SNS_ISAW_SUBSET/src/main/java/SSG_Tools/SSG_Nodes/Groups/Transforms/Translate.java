@@ -22,11 +22,18 @@
  *           University of Wisconsin-Stout
  *           Menomonie, WI 54751, USA
  *
- * Modified:
+ *  Last Modified:
+ * 
+ *  $Author: eu7 $
+ *  $Date: 2008-08-21 14:01:59 -0500 (Thu, 21 Aug 2008) $            
+ *  $Revision: 299 $
  *
  *  $Log: Translate.java,v $
- *  Revision 1.7  2007/08/14 00:03:31  dennis
- *  Major update to JSR231 based version from UW-Stout repository.
+ * 
+ *  Updated 2008/08/21 from UW-Stout repository.
+ *
+ *  Revision 1.8  2008/06/19 02:03:25  dennis
+ *  Changed to use individual methods to get/set x,y,z components.
  *
  *  Revision 1.7  2006/09/10 19:33:32  dennis
  *  Switched to use new Vector3D representation with separate fields
@@ -60,6 +67,7 @@
 package SSG_Tools.SSG_Nodes.Groups.Transforms;
 
 import javax.media.opengl.*;
+
 import gov.anl.ipns.MathTools.Geometry.*;
 
 /**
@@ -112,10 +120,9 @@ public class Translate extends TransformGroup
       return;
     }
 
-    float t[] = translation.get();
-    tx = t[0];
-    ty = t[1];
-    tz = t[2];
+    tx = translation.getX();
+    ty = translation.getY();
+    tz = translation.getZ();
   }
 
 
@@ -155,12 +162,14 @@ public class Translate extends TransformGroup
   {
      if ( in_vec == null || out_vec == null )
        throw new IllegalArgumentException(
-                                "null vector in Translate.apply_to()");
-     float coords[] = in_vec.get(); 
-     coords[0] += tx;
-     coords[1] += ty;
-     coords[2] += tz;
-     out_vec.set( coords );
+                                "null vector in Translate.apply_to()"); 
+     float x = in_vec.getX();
+     float y = in_vec.getY();
+     float z = in_vec.getZ();
+     x += tx;
+     y += ty;
+     z += tz;
+     out_vec.set( x, y, z );
   }
 
 

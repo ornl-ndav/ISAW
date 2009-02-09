@@ -35,7 +35,7 @@
  *
  * Modified:
  *
- *  $Log: CircleCursor.java,v $
+ *  $Log$
  *  Revision 1.4  2004/04/02 20:58:32  millermi
  *  - Fixed javadoc errors
  *

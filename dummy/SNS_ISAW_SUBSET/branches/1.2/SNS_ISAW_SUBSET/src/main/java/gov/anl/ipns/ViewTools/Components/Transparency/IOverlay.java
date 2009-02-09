@@ -33,7 +33,7 @@
  *
  * Modified:
  *
- *  $Log: IOverlay.java,v $
+ *  $Log$
  *  Revision 1.5  2004/03/15 23:53:53  dennis
  *  Removed unused imports, after factoring out the View components,
  *  Math and other utils.

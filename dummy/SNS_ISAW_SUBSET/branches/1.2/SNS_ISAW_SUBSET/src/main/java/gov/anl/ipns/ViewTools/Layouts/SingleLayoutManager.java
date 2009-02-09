@@ -33,9 +33,8 @@
  *
  * Modified:
  *
- *  $Log: SingleLayoutManager.java,v $
+ *  $Log$
  *  Revision 1.5  2005/07/28 15:52:04  kramer
- *
  *  Modified to make the ContourViewComponent's new PanViewControl a visible
  *  control.
  *

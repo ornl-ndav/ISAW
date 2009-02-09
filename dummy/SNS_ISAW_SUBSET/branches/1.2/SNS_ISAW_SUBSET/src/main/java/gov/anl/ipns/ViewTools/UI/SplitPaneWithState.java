@@ -29,7 +29,7 @@
  *
  * Modified:
  *  
- * $Log: SplitPaneWithState.java,v $
+ * $Log$
  * Revision 1.8  2004/03/12 00:39:52  serumb
  * Changed package.
  *

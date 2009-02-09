@@ -32,9 +32,8 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * Modified:
- * $Log: ColorControl.java,v $
+ * $Log$
  * Revision 1.4  2005/07/12 17:00:40  kramer
- *
  * Added javadocs.  Also, now when the user wants to select a color, the
  * color selector displayed has "Ok", "Cancel", and "Reset" options.
  *

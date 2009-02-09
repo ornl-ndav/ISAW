@@ -33,7 +33,7 @@
  *
  * Modified:
  *
- * $Log: FinishJFrame.java,v $
+ * $Log$
  * Revision 1.2  2007/07/26 17:20:25  rmikk
  * Added the setDefaultCloseOperastion to be Dispose on close
  *

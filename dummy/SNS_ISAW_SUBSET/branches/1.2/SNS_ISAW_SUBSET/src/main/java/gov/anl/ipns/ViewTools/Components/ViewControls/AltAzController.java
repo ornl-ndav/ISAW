@@ -30,7 +30,7 @@
  *
  * Modified:
  *
- * $Log: AltAzController.java,v $
+ * $Log$
  * Revision 1.3  2005/07/22 21:42:59  cjones
  * Added functionality for Orthographic Checkbox
  *

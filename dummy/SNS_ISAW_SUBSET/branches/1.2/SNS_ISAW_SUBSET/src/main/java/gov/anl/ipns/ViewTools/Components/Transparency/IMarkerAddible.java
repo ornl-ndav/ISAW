@@ -33,7 +33,7 @@
  *
  * Modified:
  *
- *  $Log: IMarkerAddible.java,v $
+ *  $Log$
  *  Revision 1.1  2004/08/13 02:48:06  millermi
  *  - Initial Version - Defines three methods that should exist in
  *    any class that uses the MarkerOverlay.

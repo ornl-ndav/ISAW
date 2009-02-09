@@ -33,7 +33,7 @@
  *
  * Modified:
  *
- *  $Log: ViewerSim.java,v $
+ *  $Log$
  *  Revision 1.14  2007/03/16 18:32:37  dennis
  *  Adapted to new getSelectedPoints() method for regions.  Now passes in
  *  the world_to_array transformation, as an argument to getSelectedPoints().

@@ -24,7 +24,7 @@
  *
  * Modified:
  *
- *  $Log: glColorNode.java,v $
+ *  $Log$
  *  Revision 1.1  2007/08/14 00:31:16  dennis
  *  Nodes to control the OpenGL state added from SSG_Tools
  *  at UW-Stout.

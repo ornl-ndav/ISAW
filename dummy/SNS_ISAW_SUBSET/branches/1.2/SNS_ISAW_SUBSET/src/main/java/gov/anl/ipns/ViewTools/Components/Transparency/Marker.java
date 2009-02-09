@@ -33,7 +33,7 @@
  *
  * Modified:
  *
- *  $Log: Marker.java,v $
+ *  $Log$
  *  Revision 1.4  2004/04/07 20:41:47  millermi
  *  - Constructed parallel arrays for String and int code. Also
  *    added methods to easily convert from one to the other.

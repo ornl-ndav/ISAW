@@ -29,7 +29,7 @@
  *
  * Modified:
  *
- * $Log: Tran3D.java,v $
+ * $Log$
  * Revision 1.15  2006/11/12 05:31:53  dennis
  * Switched 3D vector representation to use separate fields for
  * x,y,z,w, instead of using an array to hold the four values.

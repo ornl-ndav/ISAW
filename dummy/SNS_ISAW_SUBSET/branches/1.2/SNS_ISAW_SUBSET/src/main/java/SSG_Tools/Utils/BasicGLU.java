@@ -20,7 +20,7 @@
  *
  *  Modified:
  *
- *  $Log: BasicGLU.java,v $
+ *  $Log$
  *  Revision 1.5  2007/08/14 00:03:33  dennis
  *  Major update to JSR231 based version from UW-Stout repository.
  *

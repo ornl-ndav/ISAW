@@ -33,7 +33,7 @@
  *
  *  Modified:
  *
- *  $Log: PhysicalArray3DList.java,v $
+ *  $Log$
  *  Revision 1.3  2005/08/04 22:42:33  cjones
  *  Updated comment header and javadocs
  *

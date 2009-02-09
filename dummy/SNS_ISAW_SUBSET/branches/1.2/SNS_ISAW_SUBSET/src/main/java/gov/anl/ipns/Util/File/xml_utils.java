@@ -29,7 +29,7 @@
  *
  * Modified:
  *
- *  $Log: xml_utils.java,v $
+ *  $Log$
  *  Revision 1.10  2004/03/11 23:07:13  dennis
  *  Removed dependency on DataSet Attributes
  *

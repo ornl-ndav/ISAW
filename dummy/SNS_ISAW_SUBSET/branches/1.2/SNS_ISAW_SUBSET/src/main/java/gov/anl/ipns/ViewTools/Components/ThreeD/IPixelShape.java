@@ -33,7 +33,7 @@
  *
  * Modified:
  *
- * $Log: IPixelShape.java,v $
+ * $Log$
  * Revision 1.2  2005/08/04 22:36:44  cjones
  * Updated documentation and comment header.
  *

@@ -27,7 +27,7 @@
  * number DMR-0426797.
  *
  * Modified:
- * $Log: RegionOpList.java,v $
+ * $Log$
  * Revision 1.7  2007/08/08 01:17:16  rmikk
  * Made a field protected so that subclasses could change it.
  *

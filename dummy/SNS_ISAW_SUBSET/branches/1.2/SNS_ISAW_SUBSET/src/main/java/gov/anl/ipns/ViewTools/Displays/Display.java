@@ -32,7 +32,7 @@
  *
  * Modified:
  *
- * $Log: Display.java,v $
+ * $Log$
  * Revision 1.14  2007/05/08 13:41:19  rmikk
  * Now extends a subclass of JFrame which finalizes the JFrame when disposed.
  * Also called the super() for the constructors
@@ -430,7 +430,7 @@ abstract public class Display extends gov.anl.ipns.Util.Sys.FinishJFrame impleme
       else if( ae.getActionCommand().equals("Exit") )
       {
 	this_viewer.dispose();
-	System.gc();
+	//System.gc();
 	//System.exit(0);
       }
     }

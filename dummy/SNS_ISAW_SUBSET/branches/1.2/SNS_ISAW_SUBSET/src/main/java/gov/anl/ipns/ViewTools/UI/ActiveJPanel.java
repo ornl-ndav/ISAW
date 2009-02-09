@@ -27,7 +27,7 @@
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
- * $Log: ActiveJPanel.java,v $
+ * $Log$
  * Revision 1.9  2007/08/09 14:33:25  rmikk
  * Added and implemented a new method send_out_messages that can "disable"
  *   one of these ActiveJPanels( though disable in terms of events to outside only)

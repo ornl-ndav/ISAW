@@ -33,7 +33,7 @@
  *
  * Modified:
  *
- *  $Log: IVirtualArray.java,v $
+ *  $Log$
  *  Revision 1.6  2006/03/30 23:57:55  dennis
  *  Modified to not require the use of mutator methods for the
  *  virtual arrays.  These changes were required since the concept

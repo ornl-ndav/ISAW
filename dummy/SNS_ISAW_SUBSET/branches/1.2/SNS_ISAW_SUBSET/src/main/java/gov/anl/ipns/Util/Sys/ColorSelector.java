@@ -33,9 +33,8 @@
  *
  * Modified:
  *
- *  $Log: ColorSelector.java,v $
+ *  $Log$
  *  Revision 1.4  2005/06/28 16:03:15  kramer
- *
  *  Added the methods setSelectedColor() and getModel().
  *
  *  Revision 1.3  2005/05/25 20:28:26  dennis

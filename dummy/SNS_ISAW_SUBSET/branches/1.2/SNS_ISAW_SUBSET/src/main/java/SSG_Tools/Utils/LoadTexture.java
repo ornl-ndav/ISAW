@@ -21,12 +21,23 @@
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
  *           Menomonie, WI 54751, USA
- *
- * Modified:
+ * 
+ *  Last Modified:
+ * 
+ *  $Author: eu7 $
+ *  $Date: 2008-08-21 15:38:40 -0500 (Thu, 21 Aug 2008) $            
+ *  $Revision: 307 $
  *
  *  $Log: LoadTexture.java,v $
- *  Revision 1.4  2007/08/14 00:03:33  dennis
- *  Major update to JSR231 based version from UW-Stout repository.
+ *
+ *  2008/08/21  Updated to latest version from UW-Stout repository.
+ *
+ *  Revision 1.4  2007/11/15 21:37:59  dennis
+ *  Now flushes image to free any resources the system might be
+ *  holding on to.  (See docs for getImage().)
+ *  (Hopefully) improved messages printed to console as the image is
+ *  being loaded.
+ *  Minor fixes to spelling in javadocs.
  *
  *  Revision 1.3  2005/10/29 21:50:35  dennis
  *  Reversed the order of the rows in the returned array of bytes.
@@ -56,16 +67,16 @@ public class LoadTexture
 {
 
  /**
-  *  Load an image, resample it to the specified size, and return an
+  *  Load an image, re-sample it to the specified size, and return an
   *  array of RGB bytes containing the pixel data.  The image must be in
   *  a form that is supported by the AWT Toolkit.getImage() method.  
   *  Currently, the forms supported are JPEG, PNG and GIF.
   *
   *  @param  filename  The file name from which the image should be loaded
-  *  @param  n_rows    The number of rows to which the image will be resampled.
+  *  @param  n_rows    The number of rows to which the image will be re-sampled.
   *                    This must be a power of 2.
   *  @param  n_cols    The number of columns to which the image will be 
-  *                    resampled. This must be a power of 2.
+  *                    re-sampled. This must be a power of 2.
   *
   *  @return An array of bytes containing the RGB values for the image read.
   *          The pixel information is stored in the array, in row major order,
@@ -75,38 +86,40 @@ public class LoadTexture
   */
   public static byte[] LoadImage( String filename, int n_rows, int n_cols )
   {
-    System.out.println("Loading Texture Image " + filename );
+    System.out.println("Loading texture image from: " + filename + " ..." );
     Image image;
     image = Toolkit.getDefaultToolkit().getImage( filename );
     image = image.getScaledInstance( n_cols, n_rows, Image.SCALE_SMOOTH );
-    
+    image.flush();                       // discard any previously loaded
+                                         // image data. (See docs for 
+                                         // getImage() )
     int packed_pix[] = new int [ n_rows * n_cols ];
     PixelGrabber pg = new  PixelGrabber( image, 
                                          0, 0, n_cols, n_rows, 
                                          packed_pix, 0, n_cols );
-
-    int timeOut = 5000;                  // wait for up to five seconds to load
-    try 
+    
+    int timeOut = 5000;                  // wait for up to five seconds to
+    try                                  // grab the pixels
     {
       if ( pg.grabPixels( timeOut ) )
       {
-        System.out.println("Got the pixels from " + filename );
         byte vals[] = new byte[ n_rows * n_cols * 3 ];
         int  index1,
              index2;
         for ( int row = 0; row < n_rows; row++ )
           for ( int col = 0; col < n_cols; col++ )
-          {                                                //extract rgb bytes
+          {                                                //extract RGB bytes
             index1 = row * n_cols + col;
             index2 = (n_rows - 1 - row) * n_cols + col;
             vals[3*index1 + 0] = (byte)((packed_pix[index2] >> 16) & 0xFF); 
             vals[3*index1 + 1] = (byte)((packed_pix[index2] >>  8) & 0xFF);
             vals[3*index1 + 2] = (byte)( packed_pix[index2]        & 0xFF);
           }
+        System.out.println("DONE");
         return vals;
       }
 
-      System.out.println("ERROR: Couldn't get the pixels from " + filename );
+      System.out.println("ERROR: Couldn't load texture image from "+filename);
       return null;
     }
     catch ( InterruptedException e )

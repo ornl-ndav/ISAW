@@ -33,7 +33,7 @@
  *
  * Modified:
  *
- *  $Log: ViewControlMaker.java,v $
+ *  $Log$
  *  Revision 1.10  2005/05/25 20:28:43  dennis
  *  Now calls convenience method WindowShower.show() to show
  *  the window, instead of instantiating a WindowShower object

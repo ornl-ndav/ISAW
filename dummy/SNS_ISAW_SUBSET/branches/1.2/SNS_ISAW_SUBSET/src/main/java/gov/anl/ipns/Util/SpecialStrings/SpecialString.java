@@ -29,7 +29,7 @@
  *
  * Modified:
  *
- *  $Log: SpecialString.java,v $
+ *  $Log$
  *  Revision 1.8  2004/03/11 22:26:53  millermi
  *  - Changed package.
  *

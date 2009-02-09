@@ -22,11 +22,30 @@
  *           University of Wisconsin-Stout
  *           Menomonie, WI 54751, USA
  *
- * Modified:
+ *  Last Modified:
+ * 
+ *  $Author: eu7 $
+ *  $Date: 2008-08-21 15:58:37 -0500 (Thu, 21 Aug 2008) $            
+ *  $Revision: 310 $
  *
  * $Log: JoglPanel.java,v $
- * Revision 1.14  2007/08/26 23:23:21  dennis
- * Updated to latest version from UW-Stout repository.
+ *
+ * 2008/08/21  Updated to latest version from UW-Stout repository.
+ *
+ * Revision 1.18  2008/02/18 20:08:31  dennis
+ * Added workaround for a bug in some OpenGL implementations that
+ * causes the screen to blank after rendering in selection mode.
+ *
+ * Revision 1.17  2007/11/03 04:37:12  dennis
+ * Added capability to time and print the average time required to
+ * render the scene.  This option is controlled by the method
+ * FrameTimerOnOff(), which allows specifying the number of frames
+ * averaged.
+ *
+ * Revision 1.16  2007/10/11 01:20:48  dennis
+ * Now pushes all attributes before drawing and then pops the
+ * attibute stack when drawing is complete.  As a result, each
+ * redraw of the scene graph will start with the same OpenGL state.
  *
  * Revision 1.15  2007/08/25 03:46:03  dennis
  * Parameterized raw types.
@@ -159,12 +178,12 @@ import java.nio.*;
 import javax.media.opengl.*;
 import com.sun.opengl.util.*;
 
-import MessageTools.*;
+import gov.anl.ipns.MathTools.Geometry.*;
 
+import MessageTools.*;
 import SSG_Tools.*;
 import SSG_Tools.Cameras.*;
 import SSG_Tools.Utils.*;
-import gov.anl.ipns.MathTools.Geometry.*;
 import SSG_Tools.SSG_Nodes.Shapes.*;
 import SSG_Tools.SSG_Nodes.Util.*;
 import SSG_Tools.Viewers.Controls.*;
@@ -185,7 +204,7 @@ import SSG_Tools.Geometry.*;
 
 public class JoglPanel implements IUpdate 
 {
-  public static final int NORMAL_MODE = 0;  // flag use for normal (quiet) mode 
+  public static final int NORMAL_MODE = 0;  // flag for normal (quiet) mode 
   public static final int DEBUG_MODE  = 1;  // flag to turn on debug mode
   public static final int TRACE_MODE  = 2;  // flat to turn on trace mode
 
@@ -208,7 +227,7 @@ public class JoglPanel implements IUpdate
   private Color          clear_color     = Color.BLACK;
 
   private boolean        draw_requested = false; // flag set true when draw is
-                                                 // requested and tripped false
+                                                 // requested and set false
                                                  // when drawing is complete
  
   private boolean        do_locate = false;      // flag indicating that the
@@ -233,6 +252,11 @@ public class JoglPanel implements IUpdate
   private static float pixel_depth_scale_factor = 1;   // Use 256 to workaround
                                                        // quirk with ATI cards,
                                                        // use 1 otherwise.
+  private ElapsedTime frame_timer = new ElapsedTime();
+  private boolean     frame_timer_on;
+  private int         frame_count;
+  private int         num_frames_to_average;
+  
 
   /* --------------------------- Constructor --------------------------- */
   /**
@@ -348,7 +372,33 @@ public class JoglPanel implements IUpdate
       mode_flag = mode;                                 // mode values
   }
 
-
+  
+/* ------------------------- FrameTimerOnOff ------------------------- */
+/**
+ * Turn the display of the average time per frame on or off.  If on,
+ * the average time to display the last N frames will be calculated
+ * and displayed.
+ * 
+ * @param n_frames  The number of frames to average
+ * @param on_off    Boolean flag indicating whether to display or
+ *                  not display the frame rate information
+ */
+ public void FrameTimerOnOff( int n_frames, boolean on_off )
+ {
+   frame_timer_on = on_off;
+   if ( on_off )
+   {
+     frame_count = 0;
+     frame_timer.reset();
+     frame_timer.pause();
+     if ( n_frames > 0 )                
+       num_frames_to_average = n_frames;
+     else
+       num_frames_to_average = 20;  // average over 20 frames by default
+   }
+ }
+  
+  
 /* ---------------------------- getDisplayComponent ---------------------- */
 /**
  *  Get the actual GLCanvas that this panel draws into.
@@ -782,6 +832,9 @@ public Vector3D pickedPoint( int x, int y )
         return;
       }
 
+      gl.glPushAttrib( GL.GL_ALL_ATTRIB_BITS ); // save initial state of all
+                                                // attributes
+
       gl.glEnable( GL.GL_DEPTH_TEST );
       gl.glClearColor( clear_color.getRed()/255.0f, 
                        clear_color.getGreen()/255.0f,
@@ -825,14 +878,51 @@ public Vector3D pickedPoint( int x, int y )
       gl.glMatrixMode( GL.GL_MODELVIEW );     // select mode or render mode 
       gl.glLoadIdentity();
       my_camera.MakeViewMatrix( drawable ); 
+      
+      if ( frame_timer_on )
+        frame_timer.resume();
+      
       my_scene.Render( drawable );
       gl.glFlush(); 
+      
+      if ( frame_timer_on )
+      {
+        frame_timer.pause();
+        frame_count++;
+        if ( frame_count >= num_frames_to_average )
+        {
+          double average_time = frame_timer.elapsed()/frame_count;
+          System.out.printf("average time per frame = %8.6f sec, ", 
+                             average_time );
+          if ( average_time > 0 )
+          {
+            double frame_rate = 1/average_time;
+            System.out.printf("frame rate = %4.2f FPS\n", frame_rate );
+          }
+          else
+            System.out.println();
+          
+          frame_timer.reset();
+          frame_timer.pause();
+          frame_count = 0;
+        }
+      }
 
       if ( do_select )                        // switch back to render mode
       {                                       // to get the number of hits
         n_hits = gl.glRenderMode( GL.GL_RENDER );
         do_select = false;
+        Draw();                             // This Draw() should NOT be needed
+                                            // but it provides a work-around 
+                                            // for the scene blacking out when
+                                            // using selection with some OpenGL
+                                            // implementations.
+                                            // (Eg:ATI/VESA on HP xw8240 laptop)
       }
+
+      gl.glPopAttrib();                       // restore default state so each
+                                              // draw will start with the same
+                                              // default attributes
 
       draw_requested = false;                 // reset draw_requested flag,
                                               // now that we've finished drawing

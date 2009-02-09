@@ -33,7 +33,7 @@
  *
  * Modified:
  *
- *  $Log: PanViewControl.java,v $
+ *  $Log$
  *  Revision 1.31  2008/01/28 19:12:48  dennis
  *  Removed variable, makeNewPanImage, which is no longer used.
  *  Removed unused constructor, ThumbnailJPanel(Image i), from the private

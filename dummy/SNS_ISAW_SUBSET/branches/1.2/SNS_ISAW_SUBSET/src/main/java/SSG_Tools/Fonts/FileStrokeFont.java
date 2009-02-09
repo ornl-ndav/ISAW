@@ -27,11 +27,18 @@
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
- * Modified:
+ *  Last Modified:
+ * 
+ *  $Author: eu7 $
+ *  $Date: 2008-08-21 16:08:20 -0500 (Thu, 21 Aug 2008) $            
+ *  $Revision: 311 $
  *
  * $Log: FileStrokeFont.java,v $
- * Revision 1.2  2007/08/14 00:03:27  dennis
- * Major update to JSR231 based version from UW-Stout repository.
+ *
+ * 2008/08/21  Updated to latest version from UW-Stout repository.
+ *
+ * Revision 1.2  2008/08/09 21:43:17  dennis
+ * Added check for PrintStream null before printing.
  *
  * Revision 1.1  2005/10/14 04:02:21  dennis
  * Copied into local CVS repository from CVS repository at IPNS.
@@ -158,7 +165,7 @@ public class FileStrokeFont extends StrokeFont
     PrintStream ps = null;
     try
     {
-      File out_file      = new File( args[1]+args[2]+".java" );
+      File out_file   = new File( args[1]+args[2]+".java" );
       OutputStream os = new FileOutputStream( out_file );
       ps = new PrintStream( os );
     }
@@ -172,7 +179,12 @@ public class FileStrokeFont extends StrokeFont
     // data directly, without having to locate and load the original text
     // files.
     //
-
+    
+    if ( ps == null )
+    {
+      System.out.println("Error: PrintStream null in FileStrokeFont.main()");
+      return;
+    }
     ps.println("/*");
     ps.println(" * File: " + args[2] + ".java");
     ps.println(" *");

@@ -33,7 +33,7 @@
  *
  * Modified:
  *
- *  $Log: IAxisAddible.java,v $
+ *  $Log$
  *  Revision 1.4  2004/11/11 19:48:47  millermi
  *  - Now extends IZoomAddible to gain access to local and global bounds to
  *    enable calibrations of logs while zooming.

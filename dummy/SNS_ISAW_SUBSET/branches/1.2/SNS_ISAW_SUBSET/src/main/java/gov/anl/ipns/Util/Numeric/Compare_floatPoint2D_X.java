@@ -29,7 +29,7 @@
  *
  * Modified:
  *
- *  $Log: Compare_floatPoint2D_X.java,v $
+ *  $Log$
  *  Revision 1.9  2004/04/02 15:10:26  dennis
  *  Uncommented use of "Comparator" and "SortOnX()" method to sort
  *  floatPoint2D objects on their X components.  This had been commented

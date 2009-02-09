@@ -32,7 +32,7 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * Modified:
- * $Log: ContourViewComponent.java,v $
+ * $Log$
  * Revision 1.10  2008/01/29 22:16:42  dennis
  * This CountourViewComponent now keeps a reference to the
  * ContourJPanel that displays the contours, so that it can notify

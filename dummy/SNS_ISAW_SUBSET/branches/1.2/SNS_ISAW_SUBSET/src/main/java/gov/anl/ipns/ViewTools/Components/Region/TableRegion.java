@@ -33,7 +33,7 @@
  *
  * Modified:
  *
- *  $Log: TableRegion.java,v $
+ *  $Log$
  *  Revision 1.5  2007/03/16 16:53:03  dennis
  *  Removed initializeSelectedPoints() method that was no longer needed.
  *  Adapted to newly revised Region class.

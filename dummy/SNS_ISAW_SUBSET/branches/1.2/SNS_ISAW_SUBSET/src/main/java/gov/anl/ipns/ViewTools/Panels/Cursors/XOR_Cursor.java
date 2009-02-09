@@ -31,7 +31,7 @@
  *   "graphic JAVA", David M. Geary, Alan L. McClellan, SunSoft Press
  *   Prentice Hall, 1997 )
  *
- *  $Log: XOR_Cursor.java,v $
+ *  $Log$
  *  Revision 1.5  2007/06/15 22:37:12  oakgrovej
  *  Added cursor tag
  *

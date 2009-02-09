@@ -27,7 +27,7 @@
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
- * $Log: ColorScaleMenu.java,v $
+ * $Log$
  * Revision 1.5  2004/04/02 20:59:46  millermi
  * - Fixed javadoc errors
  *

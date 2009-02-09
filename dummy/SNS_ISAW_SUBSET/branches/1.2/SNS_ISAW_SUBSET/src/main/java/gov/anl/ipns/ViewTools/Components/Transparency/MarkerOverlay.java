@@ -33,7 +33,7 @@
  *
  * Modified:
  *
- *  $Log: MarkerOverlay.java,v $
+ *  $Log$
  *  Revision 1.12  2007/07/11 18:32:36  dennis
  *  Relaced paint() by paintComponent, removed call to super.paint(),
  *  and now work with a Graphics2D object that is a copy of the original

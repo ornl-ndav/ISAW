@@ -26,7 +26,7 @@
  *
  * Modified:
  *
- *  $Log: RegionWithInterior.java,v $
+ *  $Log$
  *  Revision 1.5  2007/06/15 22:41:20  oakgrovej
  *  added if else statement to catch an error
  *

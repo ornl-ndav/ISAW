@@ -22,11 +22,18 @@
  *           University of Wisconsin-Stout
  *           Menomonie, WI 54751, USA
  *
- * Modified:
+ *  Last Modified:
+ * 
+ *  $Author: eu7 $
+ *  $Date: 2008-08-21 15:12:56 -0500 (Thu, 21 Aug 2008) $            
+ *  $Revision: 302 $
  *
  *  $Log: LineStrip.java,v $
- *  Revision 1.3  2007/08/14 00:03:33  dennis
- *  Major update to JSR231 based version from UW-Stout repository.
+ *
+ *  2008/08/21  Updated to latest version from UW-Stout repository.
+ *
+ *  Revision 1.6  2007/12/07 05:17:52  dennis
+ *  Fixed some minor javadoc errors.
  *
  *  Revision 1.5  2006/11/26 01:43:02  dennis
  *  Changed to allow a null color.  If color is null, the last color
@@ -71,7 +78,7 @@ public class LineStrip extends SimpleShape
   /**
    *  Construct a LineStrip through the specified points.
    *
-   *  @param  new_color    The color of the parallelogram.
+   *  @param  new_color    The color of the LineStrip.
    *
    */
   public LineStrip( Vector3D verts[], 
@@ -88,7 +95,7 @@ public class LineStrip extends SimpleShape
   /**
    *  Render this LineStrip to the specified drawable.  
    *
-   *  @param  drawable  The drawable on which the Parallelogram is to be drawn.
+   *  @param  drawable  The drawable on which the LineStrip is to be drawn.
    */
   public void Render( GLAutoDrawable drawable )
   {
@@ -110,7 +117,7 @@ public class LineStrip extends SimpleShape
 
   /* --------------------------- main ----------------------------------- */
   /**
-   *  Main program that constructs an instance of Parallelogram and displays 
+   *  Main program that constructs an instance of the LineStrip and displays 
    *  it in 3D for testing purposes.  
    */
   public static void main( String args[] )

@@ -33,7 +33,7 @@
  *
  * Modified:
  *
- *  $Log: PixelParallelogram.java,v $
+ *  $Log$
  *  Revision 1.2  2005/08/04 22:36:45  cjones
  *  Updated documentation and comment header.
  *

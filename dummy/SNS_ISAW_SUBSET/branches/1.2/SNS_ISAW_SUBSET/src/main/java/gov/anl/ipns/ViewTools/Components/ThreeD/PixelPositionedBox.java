@@ -33,7 +33,7 @@
  *
  * Modified:
  *
- * $Log: PixelPositionedBox.java,v $
+ * $Log$
  * Revision 1.3  2006/08/10 15:01:28  dennis
  * Added basic test in main().
  *

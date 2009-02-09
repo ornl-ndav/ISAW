@@ -33,7 +33,7 @@
  *
  * Modified:
  *
- *  $Log: ILegendAddible.java,v $
+ *  $Log$
  *  Revision 1.2  2005/01/10 16:13:16  dennis
  *  Removed unused imports.
  *

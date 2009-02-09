@@ -32,7 +32,7 @@
  *
  * Modified:
  *
- *  $Log: IViewComponent1D.java,v $
+ *  $Log$
  *  Revision 1.9  2006/07/25 20:44:42  amoe
  *  Fixed javadoc.
  *

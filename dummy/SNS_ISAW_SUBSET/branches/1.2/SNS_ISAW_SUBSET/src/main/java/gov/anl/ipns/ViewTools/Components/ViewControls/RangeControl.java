@@ -30,7 +30,7 @@
  *
  * Modified:
  *
- *  $Log: RangeControl.java,v $
+ *  $Log$
  *  Revision 1.6  2007/09/17 02:16:15  dennis
  *  Modified setObjectState so that a RANGE_CHANGED message would only
  *  be sent if the min or max values are actually set.  Removed method

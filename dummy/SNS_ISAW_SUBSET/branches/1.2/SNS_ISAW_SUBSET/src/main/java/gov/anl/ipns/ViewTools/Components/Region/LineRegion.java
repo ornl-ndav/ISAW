@@ -33,7 +33,7 @@
  *
  * Modified:
  *
- *  $Log: LineRegion.java,v $
+ *  $Log$
  *  Revision 1.13  2007/05/10 20:55:43  dennis
  *  Now uses the Region.ClampPointsToArray() to restrict the points returned
  *  by getSelectedPoints() to lie in the array.

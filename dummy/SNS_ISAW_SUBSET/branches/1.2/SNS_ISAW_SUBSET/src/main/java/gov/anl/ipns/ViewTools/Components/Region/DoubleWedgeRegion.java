@@ -33,7 +33,7 @@
  *
  * Modified:
  *
- *  $Log: DoubleWedgeRegion.java,v $
+ *  $Log$
  *  Revision 1.16  2007/07/30 14:25:32  dennis
  *  Updated javadocs.
  *

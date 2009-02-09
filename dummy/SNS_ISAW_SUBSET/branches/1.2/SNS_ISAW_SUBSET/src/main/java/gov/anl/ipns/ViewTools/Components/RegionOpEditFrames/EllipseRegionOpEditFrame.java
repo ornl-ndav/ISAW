@@ -30,7 +30,7 @@
  * 
  * Modified: 
  * 
- * $Log: EllipseRegionOpEditFrame.java,v $
+ * $Log$
  * Revision 1.5  2007/08/23 21:06:31  dennis
  * Removed unused imports.
  *

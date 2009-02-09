@@ -32,7 +32,7 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * Modified:
- * $Log: ContourLayoutHandler.java,v $
+ * $Log$
  * Revision 1.6  2005/11/22 21:09:59  dennis
  * Modified to point tick marks inward by default.
  *

@@ -30,7 +30,7 @@
  * 
  * Modified: 
  * 
- * $Log: LineRegionOpEditFrame.java,v $
+ * $Log$
  * Revision 1.6  2007/08/23 21:06:32  dennis
  * Removed unused imports.
  *

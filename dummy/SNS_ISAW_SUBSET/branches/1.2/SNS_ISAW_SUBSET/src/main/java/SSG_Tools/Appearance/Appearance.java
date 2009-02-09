@@ -22,9 +22,19 @@
  *           University of Wisconsin-Stout
  *           Menomonie, WI 54751, USA
  *
- * Modified:
+ *  Last Modified:
+ * 
+ *  $Author: eu7 $
+ *  $Date: 2008-08-21 20:30:52 -0500 (Thu, 21 Aug 2008) $            
+ *  $Revision: 313 $
  *           
- *  $Log: Appearance.java,v $
+ *  $Log: TransparentMaterial.java,v $
+ *
+ *  get/setMaterial object no longer makes a copy of the object, but 
+ *  returns or stores a reference to the material object.  This was 
+ *  more convenient when dealing with TransparentMaterial objects, since
+ *  juat making a copy of a Material object lost the transparency.  
+ *           
  *  Revision 1.7  2007/08/14 00:03:26  dennis
  *  Major update to JSR231 based version from UW-Stout repository.
  *
@@ -128,17 +138,14 @@ public class Appearance
 
   /* -------------------------- setMaterial -------------------------- */
   /**
-   *  Record a copy of the specified material object, in this Appearance
+   *  Record a reference to the specified material object, in this Appearance
    *  object.
    *
    *  @param new_material  The new material to use for this Appearance object.
    */
   public void setMaterial( Material new_material )
   {
-    if ( new_material != null )
-      this.material = new Material( new_material );
-    else
-      this.material = null;
+    this.material = new_material;
   }
 
 
@@ -146,15 +153,12 @@ public class Appearance
   /**
    *  Get a copy of the current Material object for this Appearance.
    *
-   *  @return  a copy of the Material object, or null if none has been 
+   *  @return  a reference to the Material object, or null if none has been 
    *           set.
    */
   public Material getMaterial()
   {
-    if ( material != null )
-      return new Material( material );
-   
-    return null;
+    return material;
   }
 
 
@@ -175,7 +179,7 @@ public class Appearance
   /**
    *  Get a reference to the current texture object for this Appearance.
    *
-   *  @return  a copy of the Texture object, or null if none has been 
+   *  @return  a reference to the Texture object, or null if none has been 
    *           set.
    */
   public Texture getTexture()

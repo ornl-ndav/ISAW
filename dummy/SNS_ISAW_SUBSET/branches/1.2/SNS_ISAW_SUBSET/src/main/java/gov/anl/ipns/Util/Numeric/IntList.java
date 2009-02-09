@@ -31,7 +31,7 @@
  *
  * Modified:
  *
- *  $Log: IntList.java,v $
+ *  $Log$
  *  Revision 1.9  2004/04/02 03:37:27  bouzekc
  *  Is now kinder to users by trimming out any trailing or leading
  *  semicolons or commas.

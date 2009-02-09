@@ -35,7 +35,7 @@
  * only this class uses three points.)
  *
  * Modified:
- *  $Log: WedgeCursor.java,v $
+ *  $Log$
  *  Revision 1.10  2007/07/30 14:31:41  dennis
  *  Minor javadoc fix.
  *

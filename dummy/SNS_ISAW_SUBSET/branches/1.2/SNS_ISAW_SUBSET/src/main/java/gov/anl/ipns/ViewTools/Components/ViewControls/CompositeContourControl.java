@@ -32,9 +32,8 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * Modified:
- * $Log: CompositeContourControl.java,v $
+ * $Log$
  * Revision 1.9  2005/08/01 23:17:14  kramer
- *
  * Modified the setControlValue() method to be able to accept MixedContours
  * objects as inputs.
  *

@@ -33,9 +33,8 @@
  *
  * Modified:
  *
- *  $Log: ArrayGenerator.java,v $
+ *  $Log$
  *  Revision 1.3  2005/07/28 15:16:44  kramer
- *
  *  Modified the getRegionValues() method.  Previously if the field
  *  'dataArray' was 'null' it was filled with data without being instantiated
  *  (causing a NullPointerException).  Now if 'dataArray' is 'null' a new

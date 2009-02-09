@@ -32,7 +32,7 @@
  *
  * Modified:
  *
- *  $Log: AnnotationJPanel.java,v $
+ *  $Log$
  *  Revision 1.7  2004/03/15 23:53:50  dennis
  *  Removed unused imports, after factoring out the View components,
  *  Math and other utils.

@@ -29,7 +29,7 @@
  *
  * Modified:
  *
- *  $Log: ButtonControl.java,v $
+ *  $Log$
  *  Revision 1.10  2006/01/05 20:29:34  rmikk
  *  set the Title for a button in the constructor
  *

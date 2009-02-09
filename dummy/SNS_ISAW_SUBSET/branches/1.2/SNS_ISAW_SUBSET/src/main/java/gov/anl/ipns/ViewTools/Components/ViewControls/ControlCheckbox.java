@@ -33,9 +33,8 @@
  *
  * Modified:
  *
- *  $Log: ControlCheckbox.java,v $
+ *  $Log$
  *  Revision 1.13  2005/06/22 22:20:44  kramer
- *
  *  Added the setEnabled(boolean) method.
  *
  *  Revision 1.12  2005/05/25 20:28:37  dennis

@@ -30,7 +30,7 @@
  *
  * Modified:
  *
- *  $Log: PrintComponentActionListener.java,v $
+ *  $Log$
  *  Revision 1.7  2005/02/02 21:50:18  dennis
  *  Cleaned up formatting.
  *

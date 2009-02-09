@@ -33,7 +33,7 @@
  *
  * Modified:
  *
- *  $Log: IViewComponent.java,v $
+ *  $Log$
  *  Revision 1.7  2007/06/12 20:31:07  rmikk
  *  Redefined POINTED_AT_CHANGED to correspond to IObserver's POINTED_AT
  *     _CHANGED

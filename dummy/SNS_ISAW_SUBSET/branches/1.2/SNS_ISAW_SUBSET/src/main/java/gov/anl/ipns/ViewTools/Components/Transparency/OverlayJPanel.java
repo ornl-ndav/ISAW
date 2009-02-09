@@ -33,7 +33,7 @@
  *
  * Modified:
  *
- *  $Log: OverlayJPanel.java,v $
+ *  $Log$
  *  Revision 1.11  2007/07/23 20:10:18  dennis
  *  Now extends ActiveJPanel (which maintains list of listeners)
  *  so that subclasses do not need to maintain their own lists.

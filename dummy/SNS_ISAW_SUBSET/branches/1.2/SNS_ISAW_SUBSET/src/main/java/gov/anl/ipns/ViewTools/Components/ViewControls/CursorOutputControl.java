@@ -31,7 +31,7 @@
  *
  * Modified:
  *
- *  $Log: CursorOutputControl.java,v $
+ *  $Log$
  *  Revision 1.11  2005/05/25 20:28:39  dennis
  *  Now calls convenience method WindowShower.show() to show
  *  the window, instead of instantiating a WindowShower object

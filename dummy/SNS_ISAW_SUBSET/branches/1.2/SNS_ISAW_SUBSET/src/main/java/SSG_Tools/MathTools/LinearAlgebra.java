@@ -27,11 +27,20 @@
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
- * Modified:
+ *  Last Modified:
+ * 
+ *  $Author: eu7 $
+ *  $Date: 2008-08-21 15:29:09 -0500 (Thu, 21 Aug 2008) $            
+ *  $Revision: 305 $
  * 
  *  $Log: LinearAlgebra.java,v $
- *  Revision 1.4  2007/08/14 00:29:07  dennis
- *  Adding files from SSG_Tools at UW-Stout.
+ *
+ *  2008/08/21  Updated to latest version from UW-Stout repository.
+ *
+ *  Revision 1.3  2008/08/09 21:39:50  dennis
+ *  Method HouseholderTransform() checks for null vectors before
+ *  checking for unequal length vectors.
+ *  Method BestFitMatrix() checks for Q == null before printing Q info.
  *
  *  Revision 1.2  2004/11/22 18:42:33  dennis
  *  Documented empty body of default constructor.
@@ -391,7 +400,10 @@ public final class LinearAlgebra
       System.out.println("r size = " + r.length + " by " + r[0].length );
       System.out.println("q size = " + q.length + " by " + q[0].length );
       System.out.println("b length = " + b.length );
-      System.out.println("Q size = " + Q.length + " by " + Q[0].length );
+      if ( Q == null )
+        System.out.println("Q == null " );
+      else
+        System.out.println("Q size = " + Q.length + " by " + Q[0].length );
       return Double.NaN;
     }
 
@@ -410,7 +422,13 @@ public final class LinearAlgebra
    */
    public static void HouseholderTransform( double u[], double y[] )
    {
-      if ( u == null || y == null || u.length != y.length )
+      if ( u == null || y == null )
+      {
+        System.out.println("ERROR: null vectors in Householder Tranform");
+        return;
+      }
+      
+      if ( u.length != y.length )
       {
         System.out.println("ERROR: Invalid vectors in Householder Tranform");
         System.out.println("u.length = " + u.length );

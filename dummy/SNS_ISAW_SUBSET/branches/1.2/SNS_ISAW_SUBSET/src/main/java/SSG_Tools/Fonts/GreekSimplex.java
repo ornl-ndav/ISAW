@@ -36,7 +36,7 @@
  *
  * Modified:
  *
- * $Log: GreekSimplex.java,v $
+ * $Log$
  * Revision 1.2  2007/08/14 00:03:29  dennis
  * Major update to JSR231 based version from UW-Stout repository.
  *

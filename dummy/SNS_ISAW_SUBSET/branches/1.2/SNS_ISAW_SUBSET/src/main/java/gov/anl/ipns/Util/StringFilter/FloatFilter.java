@@ -30,7 +30,7 @@
  *
  * Modified:
  *
- *  $Log: FloatFilter.java,v $
+ *  $Log$
  *  Revision 1.6  2004/03/11 23:01:54  hammonds
  *  Changed classpath to gov.anl.ipns.Util.StringFilter.
  *

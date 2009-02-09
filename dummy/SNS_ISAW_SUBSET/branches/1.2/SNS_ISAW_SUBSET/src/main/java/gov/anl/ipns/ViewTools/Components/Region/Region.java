@@ -33,7 +33,7 @@
  *
  * Modified:
  *
- *  $Log: Region.java,v $
+ *  $Log$
  *  Revision 1.20  2007/07/31 14:01:59  dennis
  *  Removed getRegionUnion() method.  This operation is now
  *  carried out using the RegionOpList class.

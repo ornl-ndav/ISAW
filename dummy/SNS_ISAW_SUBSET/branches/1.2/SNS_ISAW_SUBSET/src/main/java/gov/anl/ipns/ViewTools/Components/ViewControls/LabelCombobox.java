@@ -29,7 +29,7 @@
  *
  * Modified:
  *
- *  $Log: LabelCombobox.java,v $
+ *  $Log$
  *  Revision 1.11  2007/06/15 22:37:52  oakgrovej
  *  addItem method
  *

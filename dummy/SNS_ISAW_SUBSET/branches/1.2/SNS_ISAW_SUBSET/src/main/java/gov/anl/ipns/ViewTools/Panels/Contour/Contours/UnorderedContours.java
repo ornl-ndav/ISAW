@@ -32,9 +32,8 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * Modified:
- * $Log: UnorderedContours.java,v $
+ * $Log$
  * Revision 1.1  2005/07/12 16:26:00  kramer
- *
  * Initial checkin.  This class represents a collection of uniformly
  * spaced and non-uniformly spaced contour levels that are not necessarily
  * in ascending order.  If ordering is not important, this class should be

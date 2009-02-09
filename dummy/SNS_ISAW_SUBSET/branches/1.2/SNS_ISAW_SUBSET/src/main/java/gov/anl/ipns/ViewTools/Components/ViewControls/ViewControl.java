@@ -33,9 +33,8 @@
  *
  * Modified:
  *
- *  $Log: ViewControl.java,v $
+ *  $Log$
  *  Revision 1.12  2005/07/19 18:55:30  kramer
- *
  *  Added support for the ObjectState to maintain if this control has its
  *  border displayed.
  *

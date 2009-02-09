@@ -33,7 +33,7 @@
  *
  * Modified:
  *
- *  $Log: TableJPanel.java,v $
+ *  $Log$
  *  Revision 1.18  2007/07/31 14:05:28  dennis
  *  Switched to combine regions using RegionOpList class rather
  *  than the obsolete Region.getRegionUnion() method.

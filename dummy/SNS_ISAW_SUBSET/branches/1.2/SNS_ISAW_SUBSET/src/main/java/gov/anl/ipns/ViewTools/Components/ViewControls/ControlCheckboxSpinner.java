@@ -32,9 +32,8 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * Modified:
- * $Log: ControlCheckboxSpinner.java,v $
+ * $Log$
  * Revision 1.3  2005/07/19 18:59:27  kramer
- *
  * Added javadocs.
  *
  * Revision 1.2  2005/06/23 20:58:18  kramer

@@ -30,7 +30,7 @@
  * 
  * Modified: 
  * 
- * $Log: WedgeRegionOpEditFrame.java,v $
+ * $Log$
  * Revision 1.8  2007/08/23 21:06:32  dennis
  * Removed unused imports.
  *

@@ -33,7 +33,7 @@
  *
  *  Modified:
  *
- *  $Log: SceneFramesViewComponent.java,v $
+ *  $Log$
  *  Revision 1.11  2007/08/21 20:25:47  dennis
  *  Now uses the setBackgroundColor method from the JoglPanel class.
  *  The background can now be changed.

@@ -32,9 +32,8 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * Modified:
- * $Log: ControlList.java,v $
+ * $Log$
  * Revision 1.7  2005/08/04 14:41:50  kramer
- *
  * Fixed some javadoc errors.
  *
  * Revision 1.6  2005/07/12 16:54:46  kramer

@@ -22,11 +22,23 @@
  *           University of Wisconsin-Stout
  *           Menomonie, WI 54751, USA
  *
- * Modified:
+ *  Last Modified:
+ * 
+ *  $Author: eu7 $
+ *  $Date: 2008-08-21 15:50:01 -0500 (Thu, 21 Aug 2008) $            
+ *  $Revision: 309 $
  *
  *  $Log: ArcBallCalc.java,v $
- *  Revision 1.4  2007/08/26 23:23:21  dennis
- *  Updated to latest version from UW-Stout repository.
+ *
+ *  2008/08/21  Updated to latest version from UW-Stout repository.
+ *
+ *  Revision 1.3  2007/11/18 01:51:20  dennis
+ *  Split method DollyInXZ_Plane into two methods.  The new version,
+ *  DollyInXZ_Plane_1() only moves in and out of the scene.  Lateral
+ *  moves of the mouse have no effect.  This seems less confusion to
+ *  use than the original version, now called DollyInXZ_Plane_2().
+ *  The original version moved both in and out of the scene and
+ *  moved laterally within the scene.
  *
  *  Revision 1.2  2006/12/11 04:33:15  dennis
  *  Added methods DollyInXZ_Plane(), DollyInYU_Plane() and
@@ -161,9 +173,49 @@ public class ArcBallCalc
    }
 
 
-   /* ------------------------- DollyInXZ_Plane -------------------------- */
+   /* ----------------------- DollyInXZ_Plane_1 -------------------------- */
    /**
-    *  This method moves the camera horizontally in the XZ plane.
+    *  This method moves the camera horizontally parallel to the XZ plane, 
+    *  ONLY in the direction the observer is looking.  Both the COP and VRP 
+    *  move by the same amount.
+    *  
+    *  @param  x        The current x pixel position
+    *  @param  y        The current y pixel position
+    *  @param  last_x   The previously used x pixel position
+    *  @param  last_y   The previously used y pixel position
+    *  @param  panel    The panel whose camera is to be controlled by this
+    *                   object.
+    */
+   public static void DollyInXZ_Plane_1( int       x,
+                                         int       y,
+                                         int       last_x,
+                                         int       last_y,
+                                         JoglPanel panel)
+   {
+      if ( x == last_x && y == last_y )
+        return;
+
+      Component comp = panel.getDisplayComponent();
+      Dimension size = comp.getSize();
+
+      Camera camera = panel.getCamera();
+      float forward_distance = (last_y - y) * camera.distance() / size.height;
+
+      Vector3D forward_move = camera.getN();
+      float xyz[] = forward_move.get();
+      forward_move.set( xyz[0], 0, xyz[2] );
+      forward_move.multiply( -forward_distance );
+      camera.WorldCoordMove( forward_move );
+
+      panel.Draw();
+   }
+
+
+
+   /* ----------------------- DollyInXZ_Plane_2 -------------------------- */
+   /**
+    *  This method moves the camera horizontally parallel to the XZ plane,
+    *  both in the direction the observer is looking, and laterally. 
     *  Both the COP and VRP move by the same amount.
     *  
     *  @param  x        The current x pixel position
@@ -173,11 +225,11 @@ public class ArcBallCalc
     *  @param  panel    The panel whose camera is to be controlled by this
     *                   object.
     */
-   public static void DollyInXZ_Plane( int       x,
-                                       int       y,
-                                       int       last_x,
-                                       int       last_y,
-                                       JoglPanel panel)
+   public static void DollyInXZ_Plane_2( int       x,
+                                         int       y,
+                                         int       last_x,
+                                         int       last_y,
+                                         JoglPanel panel)
    {
       if ( x == last_x && y == last_y )
         return;
@@ -291,8 +343,8 @@ public class ArcBallCalc
       float dy     = y - last_y;
       float length = (float)Math.sqrt( dx*dx + dy*dy );
       
-      float horiz_angle = -angle * dx/length;
-      float vert_angle  = -angle * dy/length;
+      float horiz_angle = -2*angle * dx/length;
+      float vert_angle  = -2*angle * dy/length;
 
       camera.RotateAroundCOP( horiz_angle, new Vector3D( 0, 1, 0 ) );
       camera.RotateAroundCOP( vert_angle, camera.getU() );

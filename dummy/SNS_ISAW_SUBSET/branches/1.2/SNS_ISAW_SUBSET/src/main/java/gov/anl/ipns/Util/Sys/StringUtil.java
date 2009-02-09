@@ -29,7 +29,7 @@
  *
  * Modified:
  *
- *  $Log: StringUtil.java,v $
+ *  $Log$
  *  Revision 1.30  2004/03/11 22:13:15  millermi
  *  - Changed package names and replaced SharedData with
  *    SharedMessages class.

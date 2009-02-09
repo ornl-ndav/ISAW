@@ -32,7 +32,7 @@
  *
  * Modified:
  *
- *  $Log: TranslationJPanel.java,v $
+ *  $Log$
  *  Revision 1.16  2007/07/29 20:45:14  dennis
  *  Changed local_transform and global_transform to be private
  *  in CoordJPanel class, to keep better control over who can

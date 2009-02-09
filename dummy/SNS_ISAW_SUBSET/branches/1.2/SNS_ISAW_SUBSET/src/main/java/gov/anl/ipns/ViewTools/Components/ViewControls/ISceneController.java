@@ -29,7 +29,7 @@
  *
  * Modified:
  *
- * $Log: ISceneController.java,v $
+ * $Log$
  * Revision 1.1  2005/07/14 14:09:11  cjones
  * Added camera controls for 3D scene.
  *

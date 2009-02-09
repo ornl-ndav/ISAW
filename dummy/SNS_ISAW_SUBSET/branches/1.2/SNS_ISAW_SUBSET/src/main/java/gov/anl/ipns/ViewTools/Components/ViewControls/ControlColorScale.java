@@ -33,7 +33,7 @@
  *
  * Modified:
  *
- *  $Log: ControlColorScale.java,v $
+ *  $Log$
  *  Revision 1.35  2006/03/30 23:58:00  dennis
  *  Modified to not require the use of mutator methods for the
  *  virtual arrays.  These changes were required since the concept
@@ -280,7 +280,7 @@ public class ControlColorScale extends ViewControl
   private AxisOverlay2D axis;
   private JPanel background;
   private ColorScaleImage csi;
-  private String colorscheme = IndexColorMaker.HEATED_OBJECT_SCALE_2;
+  private String colorscheme = IndexColorMaker.HEATED_OBJECT_SCALE;
   private boolean isBasic = true; // basic vs calibrated color scales
   private Font font;
   private AxisInfo value_info;
