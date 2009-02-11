@@ -34,7 +34,7 @@ $Title= Initial Orientation Matrix
 # ------Parameters ---------------------
 $Peaks   PlaceHolder                  Enter peaks
 
-$useFile  BooleanEnable([False,1,4])  Use Matrix From File
+$useFile  BooleanEnable([False,1,5])  Use Matrix From File
 $file1    LoadFile(${Data_Directory})       Input Orientation Matrix File ( .mat )    
 $method    ChoiceList(["Blind","Automatic","from Q Viewer"])  Method to use
 
