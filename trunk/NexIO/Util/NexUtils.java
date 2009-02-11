@@ -1119,7 +1119,7 @@ public class NexUtils implements INexUtils {
            }else{
               
                    Width = width;
-               
+                   Depth = depth;
                    Height = height;
         }
         
