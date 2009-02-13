@@ -58,10 +58,15 @@ cp -rf $ISAW/gov/anl/ipns/ViewTools/Panels               gov/anl/ipns/ViewTools
 
 #
 # Remove my old home-made 3D stuff, and first pass at jogl/Opengl,
-# since new 3D work uses SSG_Tools
+# since new 3D work uses SSG_Tools.
 #
 rm -rf gov/anl/ipns/ViewTools/Panels/ThreeD
 rm -rf gov/anl/ipns/ViewTools/Panels/GL_ThreeD
+
+#
+# Remove new array of peaks display, since not currently needed in Portal
+#
+rm -rf gov/anl/ipns/ViewTools/Panels/PeakArrayPanel
 
 cp -rf $ISAW/gov/anl/ipns/ViewTools/Layouts              gov/anl/ipns/ViewTools
 
@@ -94,7 +99,6 @@ cp    $ISAW/gov/anl/ipns/Util/File/xml_utils.java                 gov/anl/ipns/U
 cp    $ISAW/gov/anl/ipns/Util/File/SerializeUtil.java             gov/anl/ipns/Util/File
 cp    $ISAW/gov/anl/ipns/Util/File/TextFileReader.java            gov/anl/ipns/Util/File
 cp    $ISAW/gov/anl/ipns/Util/File/RobustFileFilter.java          gov/anl/ipns/Util/File
-cp    $ISAW/gov/anl/ipns/Util/File/FileIo.java                    gov/anl/ipns/Util/File
 
 mkdir gov/anl/ipns/Util/Numeric
 cp    $ISAW/gov/anl/ipns/Util/Numeric/floatPoint2D.java             gov/anl/ipns/Util/Numeric
