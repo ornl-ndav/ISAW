@@ -74,6 +74,7 @@ public class SubSample extends GenericSave {
 			                       String   outputFileName,
 			                       int      rowGrouping, 
 			                       int      colGrouping,
+			                       boolean  useTimeGroups,
 			                       int      timeGrouping,
 			                       float    startTime,
 			                       float    endTime,  
@@ -120,7 +121,7 @@ public class SubSample extends GenericSave {
 			}
                         
 			Object Result= null;
-			if( startTime >=0 )
+			if( startTime >=0  && !useTimeGroups)
 				if( isLog){
 					Result = (new ResampleOnGeometricProgression( DD, 
 							startTime,endTime,
@@ -256,14 +257,16 @@ public class SubSample extends GenericSave {
       String   outputFileName=getParameter(1).getValue().toString(); 
       int      rowGrouping=  ((IntegerPG)getParameter(2)).getintValue(); 
       int      colGrouping = ((IntegerPG)getParameter(3)).getintValue();
-      int      timeGrouping = ((IntegerPG)getParameter(4)).getintValue();
-      float    startTime=      ((FloatPG)getParameter(5)).getfloatValue();
-      float    endTime= ((FloatPG)getParameter(6)).getfloatValue(); 
-      float    firstBinLength= ((FloatPG)getParameter(7)).getfloatValue();
-      boolean   isLog =((BooleanPG)getParameter(8)).getbooleanValue();
+      boolean  useTimeGrouping = ((BooleanEnablePG)getParameter(4)).getbooleanValue();
+      int      timeGrouping = ((IntegerPG)getParameter(5)).getintValue();
+      float    startTime=      ((FloatPG)getParameter(6)).getfloatValue();
+      float    endTime= ((FloatPG)getParameter(7)).getfloatValue(); 
+      float    firstBinLength= ((FloatPG)getParameter(8)).getfloatValue();
+      boolean   isLog =((BooleanPG)getParameter(9)).getbooleanValue();
       
       return SubSample.sub_sample(inputFileName, outputFileName, rowGrouping,
-            colGrouping, timeGrouping, startTime, endTime, firstBinLength, isLog);
+            colGrouping, useTimeGrouping, timeGrouping, startTime, endTime, 
+            firstBinLength, isLog);
 	}
 
 	
@@ -287,6 +290,8 @@ public class SubSample extends GenericSave {
             "Only 1 or 2 are currently supported. Groups are disjoint\n");
       Res.append("@param     colGrouping,  colGrouping  the number of columns  "+
             "to be grouped. Only 1 or 2 are currently supported. Groups are disjoint\n");
+      Res.append( "@param UseTimeGrouping  If true time grouping will be done otherwise \n" );
+         Res.append( " rebinning will be done" );
       Res.append("@param     timeGrouping,  -1 or the number of time bins(not supported)  ");
       Res.append("@param    startTime  The start time for new time scale or -1 "+
             "for no rebinning\n");
@@ -307,9 +312,14 @@ public class SubSample extends GenericSave {
 	   ((LoadFilePG)getParameter(0)).setFilter( new NexIO.NexusfileFilter() );
 	   addParameter(new SaveFilePG("Output File",System.getProperty( "Data_Directory"))); 
       ((SaveFilePG)getParameter(1)).setFilter( new NexIO.NexusfileFilter() );
-	   addParameter(new IntegerPG("row grouping",2)); 
-      addParameter(new IntegerPG("col grouping",2));
-      addParameter(new IntegerPG("Time grouping",1));
+	   addParameter(new IntegerPG("row grouping(1 or 2)",2)); 
+      addParameter(new IntegerPG("col grouping(1 or 2)",2));
+          Vector V = new Vector(3);
+          V.addElement(true);
+          V.addElement(1);
+          V.addElement( 4 );
+      addParameter( new BooleanEnablePG("Group Time bins(vs rebin)",V));
+      addParameter(new IntegerPG("Time grouping(1 only)",1));
 
       addParameter(new FloatPG("start time(us) or -1(no rebin)",-1)); 
       addParameter(new FloatPG("end time(us)",16666)); 
@@ -332,11 +342,12 @@ public class SubSample extends GenericSave {
     *    The following are optional defauls(in parens)");
     *    arg 3- row Grouping(2) Must be 1 or 2");
     *    arg 4- col grouping(2) Must be 1 or 2");
-    *    arg 5- time grouping( not used)");
-    *    arg 6- min time for binning(-1 means no rebinning)");
-    *    arg 7- max time for binning(100000)");
-    *    arg 8- bin width first bin(40)");
-    *    arg 9-log binning( false)");
+    *    arg 5- Use time binnin to subsample( vs rebinning)
+    *    arg 6- time grouping( not used)");
+    *    arg 7- min time for binning(-1 means no rebinning)");
+    *    arg 8- max time for binning(100000)");
+    *    arg 9- bin width first bin(40)");
+    *    arg 10-log binning( false)");
 	 */
 	public static void main(String[] args) {
 	   DataSetTools.util.SharedData ut = new DataSetTools.util.SharedData();
@@ -351,6 +362,7 @@ public class SubSample extends GenericSave {
 		String outfile = args[1];
 		int rowGroup = 2;
 		int colGroup = 2;
+		boolean useTimeGroup = true;
 		int timeGroup = 1;
 		float minTime = -1;
 		float maxTime = 10000;
@@ -362,22 +374,24 @@ public class SubSample extends GenericSave {
       if( args.length >=4)
          colGroup = Integer.parseInt(  args[3] );
       if( args.length >=5)
-         timeGroup = Integer.parseInt(  args[4] );
+         useTimeGroup = Boolean.parseBoolean(  args[4] );
       if( args.length >=6)
-         minTime = Float.parseFloat(  args[5] );
+         timeGroup = Integer.parseInt(  args[5] );
       if( args.length >=7)
-         maxTime = Float.parseFloat(  args[6] );
+         minTime = Float.parseFloat(  args[6] );
       if( args.length >=8)
-         firstBin = Float.parseFloat(  args[7] );
+         maxTime = Float.parseFloat(  args[7] );
       if( args.length >=9)
-         isLog = Boolean.parseBoolean(  args[8] );
+         firstBin = Float.parseFloat(  args[8] );
+      if( args.length >=10)
+         isLog = Boolean.parseBoolean(  args[9] );
 		}catch( Exception ss){
 		   System.out.println(" arguments do not parse correctly ");
 		   System.exit( 0 );
 		}
 		System.out.println("Total Result="+SubSample.sub_sample(filename,  
-		         outfile,rowGroup,colGroup,timeGroup, minTime,maxTime,
-		         firstBin, isLog));
+		         outfile,rowGroup,colGroup,useTimeGroup, timeGroup, minTime,
+		         maxTime,firstBin, isLog));
 		 System.exit(0);  
 	   }
       
