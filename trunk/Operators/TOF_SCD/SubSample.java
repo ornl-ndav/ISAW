@@ -279,28 +279,35 @@ public class SubSample extends GenericSave {
 	public String getDocumentation() {
 		
 	   StringBuffer Res = new StringBuffer(10*50);
-      Res.append("This operator groups rows(currently only 2) and columns(only 2)"+
-                  "and \n");
-      Res.append("and time channels. Time channels have a choice to be "+
-                    "rebinned.\n");
-      Res.append("@param inputFileName  input Nexus filename\n");
-      Res.append("@param outputFileName output Nexus filename and not the "+
-                "same as the inputFileName\n");
-      Res.append("@param     rowGrouping  the number of rows to be grouped "+
-            "Only 1 or 2 are currently supported. Groups are disjoint\n");
-      Res.append("@param     colGrouping,  colGrouping  the number of columns  "+
-            "to be grouped. Only 1 or 2 are currently supported. Groups are disjoint\n");
+      Res.append("This operator rebins pixels on the detector to form ");
+      Res.append("new larger pixels from rectangular blocks of NxM pixels.\n");
+      Res.append("Currently N and M must be 1 or 2. \n" );
+      Res.append("Time channels may be rebinned to a uniform or log scale. ");
+      Res.append("Eventually, the capability to sum groups of adjacent \n");
+      Res.append("time bins, without moving bin boundaries will be included.\n");
+      Res.append("@param inputFileName   Name of the Nexus file to resample.");
+      Res.append("@param outputFileName  Output Nexus filename (must not "+
+                "be the same as the inputFileName)\n");
+      Res.append("@param     rowGrouping  The number of rows summed to form"+
+                 " new, larger pixels.\n");
+      Res.append("Only 1 or 2 are currently supported. \n");
+      Res.append("@param  colGrouping, The number of columns summed to form"+
+                 " new, larger pixels. \n");
+      Res.append("Only 1 or 2 are currently supported.\n");
       Res.append( "@param UseTimeGrouping  If true time grouping will be done otherwise \n" );
-         Res.append( " rebinning will be done" );
-      Res.append("@param     timeGrouping,  -1 or the number of time bins(not supported)  ");
-      Res.append("@param    startTime  The start time for new time scale or -1 "+
-            "for no rebinning\n");
-      Res.append("@param   endTime The end time for new time scale \n"); 
-      Res.append("@param   firstBinLength the length of the first bin if there"
-            +" is a new time scale\n");
-      Res.append("@param   isLog true if the new time scale is logarithmic "+
-            "otherwise it will be linear\n");
-      Res.append("@return   null or an error string\n");
+         Res.append( " rebinning will be done.  Time grouping is not " +
+                     " currently implemented\n" );
+      Res.append("@param     timeGrouping, The number of adjacent time bins "+
+                 " to be summed. Not currently implemented.\n");
+      Res.append("@param    startTime  If data is to be rebinned, this " +
+                 "specifies the start time for the rebinned time scale.\n");
+      Res.append("If set to -1 then no rebinning will be done.\n");
+      Res.append("@param   endTime The end time for the rebinned time scale \n"); 
+      Res.append("@param   firstBinLength The length of the first bin in the"
+            +" rebinned time scale\n");
+      Res.append("@param   isLog True if the rebinned time scale should be "+
+                 "logarithmic, otherwise it will be linear\n");
+      Res.append("@return   null or an error string if the operations fails.\n");
       return Res.toString();
 	}
 
@@ -308,9 +315,11 @@ public class SubSample extends GenericSave {
 	public void setDefaultParameters() {
 	   this.clearParametersVector();
 	   
-	   addParameter(new LoadFilePG("Input File",System.getProperty( "Data_Directory"))); 
-	   ((LoadFilePG)getParameter(0)).setFilter( new NexIO.NexusfileFilter() );
-	   addParameter(new SaveFilePG("Output File",System.getProperty( "Data_Directory"))); 
+	   addParameter(
+          new LoadFilePG("Input File",System.getProperty( "Data_Directory"))); 
+	 ((LoadFilePG)getParameter(0)).setFilter( new NexIO.NexusfileFilter() );
+	   addParameter(
+          new SaveFilePG("Output File",System.getProperty( "Data_Directory"))); 
       ((SaveFilePG)getParameter(1)).setFilter( new NexIO.NexusfileFilter() );
 	   addParameter(new IntegerPG("Row grouping(1 or 2)",2)); 
       addParameter(new IntegerPG("Col grouping(1 or 2)",2));
@@ -318,7 +327,8 @@ public class SubSample extends GenericSave {
           V.addElement(true);
           V.addElement(1);
           V.addElement( 4 );
-      BooleanEnablePG group_bins =  new BooleanEnablePG("Group Time bins(vs rebin) (NOT IMPLEMENTED)", V);
+      BooleanEnablePG group_bins =  
+         new BooleanEnablePG("Group Time bins(vs rebin) (NOT IMPLEMENTED)", V);
       group_bins.setValue( new Boolean(false) );
       addParameter( group_bins );
       addParameter(new IntegerPG("Time grouping(NOT IMPLEMENTED, MUST = 1)",1));
