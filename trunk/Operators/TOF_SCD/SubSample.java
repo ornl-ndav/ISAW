@@ -312,19 +312,21 @@ public class SubSample extends GenericSave {
 	   ((LoadFilePG)getParameter(0)).setFilter( new NexIO.NexusfileFilter() );
 	   addParameter(new SaveFilePG("Output File",System.getProperty( "Data_Directory"))); 
       ((SaveFilePG)getParameter(1)).setFilter( new NexIO.NexusfileFilter() );
-	   addParameter(new IntegerPG("row grouping(1 or 2)",2)); 
-      addParameter(new IntegerPG("col grouping(1 or 2)",2));
+	   addParameter(new IntegerPG("Row grouping(1 or 2)",2)); 
+      addParameter(new IntegerPG("Col grouping(1 or 2)",2));
           Vector V = new Vector(3);
           V.addElement(true);
           V.addElement(1);
           V.addElement( 4 );
-      addParameter( new BooleanEnablePG("Group Time bins(vs rebin)",V));
-      addParameter(new IntegerPG("Time grouping(1 only)",1));
+      BooleanEnablePG group_bins =  new BooleanEnablePG("Group Time bins(vs rebin) (NOT IMPLEMENTED)", V);
+      group_bins.setValue( new Boolean(false) );
+      addParameter( group_bins );
+      addParameter(new IntegerPG("Time grouping(NOT IMPLEMENTED, MUST = 1)",1));
 
-      addParameter(new FloatPG("start time(us) or -1(no rebin)",-1)); 
-      addParameter(new FloatPG("end time(us)",16666)); 
-      addParameter(new FloatPG("Length 1st bin(us)",4)); 
-      addParameter(new BooleanPG("Log time binning?", false));
+      addParameter(new FloatPG("Start time(us) or -1 for no rebinning",-1)); 
+      addParameter(new FloatPG("End time(us)",16666)); 
+      addParameter(new FloatPG("Length of 1st bin(us)",4)); 
+      addParameter(new BooleanPG("Use Log time binning?", true));
 	}
 
 	@Override
