@@ -293,7 +293,22 @@ public class Util {
           ex.printStackTrace();
           return null;
         }
+      }else 
+      {
+         String PeakFileName = out_file_name + ".peaks";
+         File PkFile = new File( PeakFileName );
+         if( PkFile.exists() )
+            try {
+               PkFile.delete();
+            }
+            catch( Exception ss ) {
+               SharedMessages
+                        .addmsg( "Could NOT delete old " + PeakFileName );
+            }
+
+
       }
+
 
       try
       {
@@ -323,9 +338,9 @@ public class Util {
     for ( int i = 0; i < peak_array.length; i++ )
       all_peaks.add( peak_array[i] );
 
-    if( ViewPeaks )                         // pause briefly to allow the
-    {                                       // file to finish writing
-       int     counter     = 0;             // before we try to read it
+    if( ViewPeaks && (new File( out_file_name).exists()))     // pause briefly to allow the
+    {                                                        // file to finish writing
+       int     counter     = 0;                              // before we try to read it
        boolean file_exists = false;
        File    new_file;
        while ( counter < 10 && !file_exists )
@@ -503,6 +518,16 @@ public class Util {
          append = false;
       
       boolean append1 = false || append;
+      if( !append1){
+         File PkFile = new File( PeakFileName);
+         if( PkFile.exists())
+            try{
+               PkFile.delete();
+            }catch(Exception ss){
+               SharedMessages.addmsg( "Could NOT delete old "+PeakFileName );
+            }
+      }
+      
       String cacheFilename = gov.anl.ipns.Util.File.FileIO.CreateDistinctFileName(  
                 System.getProperty( "user.home" ), "ISAW/localCache" , ".txt" , 20 );
       if( !useCache)
@@ -674,9 +699,12 @@ public class Util {
       // (new WritePeaks( PeakFileName, ResultPeaks, append1 ) ).getResult();
       
       System.out.println( "--- find_multiple_peaks is done. ---" );
-      SharedMessages.addmsg( "Peaks are listed in "+PeakFileName );
+      if(  ResultPeaks != null && ResultPeaks.size()>0)
+         SharedMessages.addmsg( "Peaks are listed in "+PeakFileName );
+       else
+          SharedMessages.addmsg( "There are no peaks" );
       
-      if( ViewPeaks )                         // pause briefly to allow the
+      if( ViewPeaks && ResultPeaks != null && ResultPeaks.size()>0)                         // pause briefly to allow the
       {                                       // file to finish writing
          int     counter     = 0;             // before we try to read it
          boolean file_exists = false;
@@ -699,7 +727,7 @@ public class Util {
          ( new ViewASCII( PeakFileName ) ).getResult();
       }
    
-      if( ShowPeaksView)
+      if( ShowPeaksView&& ResultPeaks != null && ResultPeaks.size()>0)
         PeakArrayPanels.DisplayPeaks( "Peak Images",null,"",".pvw",currentTime);
 
       return ResultPeaks;
@@ -1240,7 +1268,7 @@ public class Util {
             boolean ShowPeaksView,
             int numSlices,
             StringBuffer buff ){
-
+      
       IDataGrid grid = Grid_util.getAreaGrid( DS , DetectorID );
       if( grid == null )
          return null;    
@@ -1297,7 +1325,7 @@ public class Util {
         
          return Pks;
       }
-     
+      
       float pixelW_H = Math.max( grid.width()/grid.num_cols() , 
                                  grid.height()/grid.num_rows() );
       if( min_time_chan < 0 )
