@@ -206,12 +206,23 @@ public class Script extends Object{
         buffer.deleteCharAt(index);
         index=buffer.toString().indexOf("\r");
       }
+      
       this.script=buffer.toString();
+    }
+    StringBuffer buffer = new StringBuffer( this.script);
+    for( int i=0; i< buffer.length();){
+       char c = buffer.charAt( i );
+       if( c <' ' && c!='\n')
+          buffer.deleteCharAt( i );
+       else
+          i++;
     }
 
     if(! this.script.endsWith("\n") ){
       this.script=this.script+"\n";
     }
+    
+    
   }
 
   /**
