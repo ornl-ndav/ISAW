@@ -275,7 +275,7 @@ public class Util {
       {                                         // read in any existing peaks
         try                                     // and add to all_peaks Vector 
         {
-          File file = new File(out_file_name + ".peaks");
+          File file = new File(out_file_name );
           if ( file.exists() )
           {
             Vector old_peaks = Peak_new_IO.ReadPeaks_new( out_file_name );
@@ -295,7 +295,7 @@ public class Util {
         }
       }else 
       {
-         String PeakFileName = out_file_name + ".peaks";
+         String PeakFileName = out_file_name ;
          File PkFile = new File( PeakFileName );
          if( PkFile.exists() )
             try {
