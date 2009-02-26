@@ -497,18 +497,52 @@ public class SCDRecipLat  implements IThreeD_drawObject
       jmb.repaint();
  
    }
-  private void SetUpHelp( JFrame scene_f, String HelpFileName){
+  
+  /**
+   * Listen for the exit button press under the File Menu item.
+   * @author Ruth
+   *
+   */
+  class MyExitListener implements ActionListener{
      
-     if(scene_f == null || HelpFileName == null )
-        return;
-     java.io.File f = new java.io.File( HelpFileName);
-     if( !f.exists())
+     JFrame scene_f;
+     public MyExitListener( JFrame scene_f){
+        this.scene_f = scene_f;
+     }
+     
+     public void actionPerformed( ActionEvent evt){
+        JFrameOpen = false;
+        if( scene_f != null)
+           scene_f.dispose();
+           
+        
+     }
+  }
+  
+  
+  //Sets up the File-Exit choide and the Help Choice.
+  private void SetUpHelp( JFrame scene_f, String HelpFileName){
+       
+     if( scene_f == null)
         return;
      JMenuBar jmb = scene_f.getJMenuBar();
      if( jmb == null){
         jmb = new JMenuBar();
         scene_f.setJMenuBar( jmb );
      }
+     JMenu FileMenu = new JMenu("File");
+     jmb.add( FileMenu );
+     JMenuItem Exit= new JMenuItem("Exit");
+     FileMenu.add( Exit );
+     Exit.addActionListener(  new MyExitListener( scene_f ) );
+     
+     
+     
+     if(scene_f == null || HelpFileName == null )
+        return;
+     java.io.File f = new java.io.File( HelpFileName);
+     if( !f.exists())
+        return;
      JMenu helpMenu = null;
      for( int i=0; i < jmb.getMenuCount() && helpMenu == null; i++)
         if( jmb.getMenu( i).getText().equalsIgnoreCase( "Help" ))
