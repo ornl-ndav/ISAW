@@ -121,9 +121,14 @@ public class ColorSelector extends ActiveJPanel
   */
   public ColorSelector( int chooser_model )
   { 
+System.err.println( "Entry ColorSelector()." );
+System.err.println( "Before JColorChooser() instantiate..." );
     colorchooser = new JColorChooser(Color.black);
+System.err.println( "After JColorChooser() instantiate colorchooser="
+		+ colorchooser );
     current_color = Color.black;
     setModel(chooser_model); 
+System.err.println( "Exit ColorSelector()." );
   }
   
  /**
