@@ -25,8 +25,8 @@
  *  Last Modified:
  * 
  *  $Author: eu7 $
- *  $Date: 2008-08-21 20:30:52 -0500 (Thu, 21 Aug 2008) $            
- *  $Revision: 313 $
+ *  $Date: 2009-02-02 09:59:11 -0600 (Mon, 02 Feb 2009) $            
+ *  $Revision: 316 $
  *           
  *  $Log: TransparentMaterial.java,v $
  *
@@ -151,7 +151,7 @@ public class Appearance
 
   /* ------------------------- getMaterial ---------------------------- */
   /**
-   *  Get a copy of the current Material object for this Appearance.
+   *  Get a reference to the current Material object for this Appearance.
    *
    *  @return  a reference to the Material object, or null if none has been 
    *           set.

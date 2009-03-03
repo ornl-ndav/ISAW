@@ -23,9 +23,9 @@
  *
  *  Last Modified:
  * 
- *  $Author: ehx $
- *  $Date: 2008-12-11 09:33:03 -0500 (Thu, 11 Dec 2008) $            
- *  $Revision: 5746 $
+ *  $Author: eu7 $
+ *  $Date: 2009-01-14 08:48:15 -0600 (Wed, 14 Jan 2009) $            
+ *  $Revision: 5752 $
  *
  */
 
@@ -153,7 +153,7 @@ public class ColorEditPanel extends ViewControl
    public ViewControl copy() {
 
       ObjectState state = getObjectState( false );
-      ColorEditPanel Res = new ColorEditPanel( max, min);
+      ColorEditPanel Res = new ColorEditPanel( min, max );
       Res.setObjectState(  state  );
       return Res;
        
@@ -203,7 +203,7 @@ public class ColorEditPanel extends ViewControl
               Slider.insert( StretchTopBottom.INTERVAL_MAXMIN_TOP ,
                                                       makeArray(6000f,1f));
               state.insert(PRESCALE,1f );
-              state.insert( AUTO_SCALE,true );
+              state.insert( AUTO_SCALE, false );
               
            }else{
               state.insert( MAXSET, max );
@@ -380,6 +380,7 @@ public class ColorEditPanel extends ViewControl
       setControlValue( state.get( NUM_COLORS ),NUM_COLORS );
       setControlValue( state.get( COLOR_INDEX_CHOICE ),COLOR_INDEX_CHOICE );
       setControlValue( state.get( LOGSCALE ),LOGSCALE );
+/*
       ObjectState sliderState =  (ObjectState)state.get( SLIDERS );
            setControlValue( sliderState.get( StretchTopBottom.MAXMIN),
                                          SLIDERS+"."+StretchTopBottom.MAXMIN);
@@ -400,7 +401,7 @@ public class ColorEditPanel extends ViewControl
      
            setControlValue( sliderState.get( StretchTopBottom.GANG),
                                            SLIDERS+"."+StretchTopBottom.GANG);
-          
+*/          
       setControlValue( state.get( PRESCALE ),PRESCALE );
       checkValues();
       calculateMapping();
@@ -597,6 +598,7 @@ public class ColorEditPanel extends ViewControl
 	 */
 	private void calculateMapping()
 	{
+           checkValues();
 	   setSUBINTERVAL();
 		localMin = sliders.getBottomValue();
 		localMax = sliders.getTopValue();
