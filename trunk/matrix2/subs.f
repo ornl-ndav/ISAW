@@ -1,5 +1,52 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+C***************************************************************
+C*******************   SUBROUTINE ABC   ************************
+C***************************************************************
+
+
+      SUBROUTINE ABC (U,A,B,C,ALPHA,BETA,GAMMA,VOL)
+
+
+C***  CALCULATE CELL PARAMETERS FROM THE U MATRIX.
+C***  THE INVERSE G MATRIX IS EQUAL TO THE PRODUCT OF U
+C***  AND THE TRANSPOSE OF U.
+C***                              A.J. SCHULTZ   12/8/80
+
+!	Linux version: February, 2002		A. J. Schultz
+!       SNS version: March, 2009		A. J. Schultz
+
+      DIMENSION U(3,3),UT(3,3),G(3,3),GI(3,3)
+      DATA RAD /57.295779513/
+      
+      DO 600 I=1,3
+      DO 600 J=1,3
+600   UT(I,J) = U(J,I)
+
+      CALL MATMULx (U,UT,GI)
+      
+	call matin2(GI, G)
+      
+      A = SQRT(G(1,1))
+      B = SQRT(G(2,2))
+      C = SQRT(G(3,3))
+	ARG1 = G(2,3)/(B*C)
+	ARG2 = G(1,3)/(A*C)
+	ARG3 = G(1,2)/(A*B)
+      ALPHA = ( ACOS( ARG1 ) )  *  RAD
+      BETA  = ( ACOS( ARG2 ) )  *  RAD
+      GAMMA = ( ACOS( ARG3 ) )  *  RAD
+
+C***  CALCULATE VOLUME
+
+      CSTAR = SQRT(GI(3,3))
+      VOL = A * B * SIN(GAMMA/RAD) * (1.0/CSTAR)
+
+      RETURN
+      END
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 
 
 C**********   SUBROUTINE CENTER   **********
