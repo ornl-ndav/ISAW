@@ -367,8 +367,8 @@ public class DefaultProperties{
         rs.append("# Slab size for reading NeXus files").append(eol);
         rs.append("#" ).append( eol );
         rs.append("NexusSlabSize = 80000").append(eol).append(eol);
-
-
+        rs.append("# Set to No to get uncompressed written files").append( eol );
+        rs.append("#Nexus_Write_Compress=Yes").append( eol );
         rs.append( "#" ).append( eol );
         rs.append( "# SLURM Queue Info" ).append( eol );
         rs.append( "# Specify the queue name and the amount of memory" ).
