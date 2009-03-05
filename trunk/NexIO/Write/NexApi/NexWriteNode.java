@@ -961,7 +961,8 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
 
   private boolean Okay2Compress( int Nextype, int[] ranks1){
 
-   
+     if( !System.getProperty( "Nexus_Write_Compress","YES" ).toUpperCase().equals( "YES" ))
+        return false;
      if( Nextype == NexusFile.NX_CHAR)
         return false;
      if( Nextype == NexusFile.NX_BINARY)
