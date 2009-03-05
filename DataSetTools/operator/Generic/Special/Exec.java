@@ -158,9 +158,9 @@ public class Exec extends    GenericSpecial {
                                     // parameters
 
         parameters=new Vector();
-        addParameter( new Parameter("Command",""));
-        addParameter( new StringPG( "InputFileName", ""));
-        addParameter( new StringPG("Working Directory", null));
+        addParameter( new LoadFilePG("Command",""));
+        addParameter( new LoadFilePG( "InputFileName", ""));
+        addParameter( new DataDirPG("Working Directory", null));
     }
 
 
@@ -204,7 +204,8 @@ public class Exec extends    GenericSpecial {
       s.append("also grabs the process's STDOUT stream (if available) and ");
       s.append("prints it to the screen.\n");
       s.append("@param command  The command to be executed.\n");
-      s.append("@param CommandInputs  The inputs to the command to be executed.\n");
+      s.append("@param InputFile  The data to be input or a blank string\n");
+      s.append("@param WorkingDir  The working directory or a blank string\n");
       s.append("@return Integer object which represents the exit value of the ");
       s.append("command.\n");
       s.append("@error If the command may hang.  Use op system kill command to" +
