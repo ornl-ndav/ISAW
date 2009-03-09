@@ -25,8 +25,8 @@
  *  Last Modified:
  * 
  *  $Author: eu7 $
- *  $Date: 2008-12-05 00:42:15 -0600 (Fri, 05 Dec 2008) $            
- *  $Revision: 5714 $
+ *  $Date: 2009-02-14 15:14:14 -0600 (Sat, 14 Feb 2009) $            
+ *  $Revision: 5761 $
  */
 
 package gov.anl.ipns.ViewTools.Panels.TwoD;
@@ -40,7 +40,7 @@ import java.awt.*;
  */
 public abstract class Axis extends Drawable
 {
-  public static enum  Orientation { HORIZONTAL, VERTICAL };
+  public enum  Orientation { HORIZONTAL, VERTICAL };
 
   protected Orientation orientation;
 
