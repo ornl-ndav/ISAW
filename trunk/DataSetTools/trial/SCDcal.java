@@ -985,13 +985,13 @@ public class SCDcal   extends    OneVarParameterizedFunction
      // Lattice Parameters for Quartz
       double lattice_params[] = new double[6];
       lattice_params[0] = 4.9138;
-      lattice_params[2] = 4.9138;
-      lattice_params[1] = 5.4051;
+      lattice_params[1] = 4.9138;
+      lattice_params[2] = 5.4051;
       lattice_params[3] = 90;
-      lattice_params[5] = 90;
-      lattice_params[4] = 120;
+      lattice_params[4] = 90;
+      lattice_params[5] = 120;
                                                     // load the vector of peaks
-      Vector peaks = PeakData_d.ReadPeakData( args[0], PeakData_d.IPNS_SCD ); 
+      Vector peaks = PeakData_d.ReadPeaks( args[0], null, PeakData_d.SNS_SCD );
       PeakData_d peak = (PeakData_d)peaks.elementAt(0);
       double l1 = peak.l1; 
 
@@ -1072,16 +1072,19 @@ public class SCDcal   extends    OneVarParameterizedFunction
    // is_used[ L1_INDEX ] = false;
    // is_used[ T0_INDEX ] = false;
       is_used[ A_INDEX  ] = false;
-   // is_used[ SX_INDEX ] = false;
-   // is_used[ SY_INDEX ] = false;
-   // is_used[ SZ_INDEX ] = false;
+      is_used[ SX_INDEX ] = false;
+      is_used[ SY_INDEX ] = false;
+      is_used[ SZ_INDEX ] = false;
                               // then turn off some params for all detectors.
       for ( int i = 0; i < det_count; i++ )   
       {
         index = DET_BASE_INDEX + i * N_DET_PARAMS;
-        is_used[ index + DET_D_INDEX      ] = false;
+
     //  is_used[ index + DET_WIDTH_INDEX  ] = false;
     //  is_used[ index + DET_HEIGHT_INDEX ] = false;
+    //  is_used[ index + DET_X_OFF_INDEX  ] = false;
+    //  is_used[ index + DET_Y_OFF_INDEX  ] = false;
+        is_used[ index + DET_D_INDEX      ] = false;
         is_used[ index + DET_PHI_INDEX    ] = false;
         is_used[ index + DET_CHI_INDEX    ] = false;
         is_used[ index + DET_OMEGA_INDEX  ] = false;
@@ -1093,7 +1096,7 @@ public class SCDcal   extends    OneVarParameterizedFunction
           n_used++;
                                                      // build the one variable
                                                      // function
-      SCDcal error_f = new SCDcal( PeakData_d.IPNS_SCD,
+      SCDcal error_f = new SCDcal( PeakData_d.SNS_SCD,
                                    peaks, 
                                    grids,
                                    parameters, 
