@@ -375,8 +375,21 @@ public class ColorEditPanel extends ViewControl
       ObjectState state = new_state;
 
       setControlValue( state.get( AUTO_SCALE ),AUTO_SCALE );
-      setControlValue( state.get( MAXSET ),MAXSET );
-      setControlValue( state.get( MINSET ),MINSET );
+
+      // setControlValue( state.get( MAXSET ),MAXSET );
+      // setControlValue( state.get( MINSET ),MINSET );
+
+	  // Alternate Implementation for Portal "Update" bug...
+      if ( state.get(MAXSET) instanceof Number
+            && state.get(MINSET) instanceof Number ) {
+         float new_max_val = ((Number)state.get(MAXSET)).floatValue();
+         float new_min_val = ((Number)state.get(MINSET)).floatValue();
+         if ( new_min_val < new_max_val )
+            setMaxMin( new_max_val, new_min_val );
+         else
+            setMaxMin( new_min_val, new_max_val );
+      }
+
       setControlValue( state.get( NUM_COLORS ),NUM_COLORS );
       setControlValue( state.get( COLOR_INDEX_CHOICE ),COLOR_INDEX_CHOICE );
       setControlValue( state.get( LOGSCALE ),LOGSCALE );
