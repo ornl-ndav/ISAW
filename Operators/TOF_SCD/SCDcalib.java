@@ -339,6 +339,7 @@ public class SCDcalib extends GenericTOF_SCD
     return "SCDcalib";
   }
 
+
   /* ------------------------ getDocumentation ---------------------------- */
   /**
    *  Get the documentation to be displayed by the help system.
@@ -574,313 +575,6 @@ public class SCDcalib extends GenericTOF_SCD
   }
 
  
-  /*
-   *  Extract list of (theory,measured) pairs, in a list of float point 2D
-   *  objects.  If k = 0, this will the the row numbers.  If k = 1, this
-   *  will be the column numbers.  If k = 2, this will be the times-of-flight
-   */
-  private floatPoint2D[] getPairs( int k, float theory[][], float measured[][] )
-  {
-     if ( k < 0 || k > 2 )
-     {
-       System.out.println("ERROR: invalid index in SCDcalib.getPairs() " + k );
-       return null;
-     }
-                                                    // Build a vector keeping
-                                                    // only non-null points
-     Vector pairs_vector = new Vector( measured.length );
-     for ( int i = 0; i < measured.length; i++ )
-       if ( theory[i] != null && measured[i] != null )
-         pairs_vector.add( new floatPoint2D( theory[i][k], measured[i][k] ) );
-
-     floatPoint2D pairs[] = new floatPoint2D[ pairs_vector.size() ];
-     for ( int i = 0; i < pairs.length; i++ )
-       pairs[i] = (floatPoint2D)pairs_vector.elementAt( i );
-
-     arrayUtil.SortOnX( pairs );
-     return pairs;
-  }
-
-
-  private void MakeDisplay( String          title, 
-                            String          label, 
-                            String          units, 
-                            floatPoint2D[]  pairs )
-  {
-    if ( pairs == null || pairs.length <= 0 )
-    {
-      System.out.println("ERROR: No pairs of points for " + title );
-      return;
-    }
-
-    DataSetFactory ds_factory = new DataSetFactory( title, 
-                                                    units, 
-                                                   "Theoretical " + label, 
-                                                    units, 
-                                                   "Measured " + label );
-
-                                           // one entry measured vs theoretical
-    DataSet ds = ds_factory.getDataSet();
-    Vector unique = new Vector( pairs.length );
-    unique.add( pairs[0] );
-    for ( int i = 1; i < pairs.length; i++ )
-      if ( pairs[i].x > pairs[i-1].x )             // ok to add if increasing
-        unique.add( pairs[i] );
-
-    float x[] = new float[ unique.size() ];
-    float y[] = new float[ unique.size() ];
-    for ( int i = 0; i < x.length; i++ )
-    {
-      floatPoint2D point = (floatPoint2D)unique.elementAt( i );
-      x[i] = point.x;
-      y[i] = point.y;
-    }
-    XScale x_scale = new VariableXScale( x );
-    Data d = Data.getInstance( x_scale, y, 1 ); 
-    ds.addData_entry( d );
-
-                                           // make second entry with y = x 
-    for ( int i = 0; i < y.length; i++ )
-      y[i] = x[i];
-    d = Data.getInstance( x_scale, y, 2 );
-    ds.addData_entry( d );
-
-    ds.setSelectFlag( 0, true );
-    ds.setSelectFlag( 1, true );
-
-    new ViewManager( ds, IViewManager.SELECTED_GRAPHS );
-  }
-
-
-  /**
-   *  Write all of the parameters names and values to the specified stream
-   *
-   *  @param  out      The print stream to write to
-   *  @param  names    The list of parameter names
-   *  @param  values   The list of parameter values
-   *  @param  is_used  The list of flags indicating whether or not the 
-   *                   parameter is refined.
-   */
-  private void ShowInitalValues( PrintStream out,
-                                 String      names[],
-                                 double      values[],
-                                 boolean     is_used[]  )
-  {
-    if ( out == null )
-      return;
-
-    out.println("------------- Initial Parameter Values ---------------");
-    for ( int i = 0; i < values.length; i++ )
-    {
-      if ( is_used[i] )
-        out.print("  ");
-      else
-        out.print("* ");
-      out.println( names[i] +" = " + values[i] );
-    }
-  }
- 
-  /**
-   *  Write all of the parameters names and values to the specified stream
-   *
-   *  @param  out    The print stream to write to
-   *  @param  names  The list of parameter names
-   *  @param  values The list of parameter values
-   *  @param  s_dev  One standard deviation error distance in Q
-   *  @param  grids  Array of the data grids
-   */
-  private void WriteAllParams( PrintStream    out, 
-                               String         names[], 
-                               double         values[],
-                               double         s_dev,
-                               UniformGrid_d  grids[]    )
-  {
-    if ( out == null )
-    {
-      SharedMessages.addmsg("WARNING: Can't write to .log or .results file!" );
-      return;
-    }
-
-    int max_label_length = 0;
-    for ( int i = 0; i < names.length; i++ )
-      if ( max_label_length < names[i].length() )
-        max_label_length = names[i].length();
-
-    out.println("#");
-    out.println("# ALL POSSIBLE CALIBRATION PARAMETERS " ); 
-    out.println("# " + (new Date()).toString() );
-    out.println("# Lengths in meters");
-    out.println("# Times in microseconds");
-    out.println("# Angles in degrees");
-    out.println("#");
-    out.println("# One standard deviation error distance in Q = " + s_dev );
-    out.println("#");
-    for ( int i = 0; i < grids.length; i++ )
-    {
-      out.println("# Orientation of Detector " + grids[i].ID() + "-----------");
-      double comp[] = grids[i].position().get(); 
-      out.println("# Center position:  ( " +
-                           Format.real(comp[0], 10, 6, false) + ", " +
-                           Format.real(comp[1], 10, 6, false) + ", " +
-                           Format.real(comp[2], 10, 6, false) + ") "
-                           );
-
-      comp = grids[i].x_vec().get();
-      out.println("#  local x_vector:  ( " +
-                           Format.real(comp[0], 10, 6, false) + ", " +
-                           Format.real(comp[1], 10, 6, false) + ", " +
-                           Format.real(comp[2], 10, 6, false) + ") " 
-                           );
-
-      comp = grids[i].y_vec().get();
-      out.println("#  local y_vector:  ( " +
-                           Format.real(comp[0], 10, 6, false) + ", " +
-                           Format.real(comp[1], 10, 6, false) + ", " +
-                           Format.real(comp[2], 10, 6, false) + ") "
-                           );
-
-      comp = grids[i].z_vec().get();
-      out.println("#  detector normal: ( " + 
-                           Format.real(comp[0], 10, 6, false) + ", " +
-                           Format.real(comp[1], 10, 6, false) + ", " +
-                           Format.real(comp[2], 10, 6, false) + ") "
-                           );
-      out.println("#");
-    }
-    out.println("#");
-    out.println("#");
-    out.println("# NEW CALIBRAION FILE FORMAT (in NeXus/SNS coordinates):");
-    out.println("#");
-    out.println("#6         L1     T0_SHIFT");
-    out.printf ("#7 %10.4f   %10.3f\n", values[ SCDcal.L1_INDEX ] * 100, 
-                                        values[ SCDcal.T0_INDEX ] );
-
-    out.println("#");
-    out.println("#4 DETNUM  NROWS  NCOLS    WIDTH   HEIGHT   DEPTH   DETD   "+
-                "CenterX   CenterY   CenterZ    "+
-                "BaseX    BaseY    BaseZ      "+
-                "UpX      UpY      UpZ" );
-    for ( int i = 0; i < grids.length; i++ )
-    {
-      int        det_num = grids[i].ID();
-      int        n_rows  = grids[i].num_rows();
-      int        n_cols  = grids[i].num_cols();
-      double     width   = grids[i].width()  * 100;    // convert to cm
-      double     height  = grids[i].height() * 100;
-      double     depth   = grids[i].depth()  * 100;
-      Vector3D_d center  = grids[i].position();
-      Vector3D_d base    = grids[i].x_vec();
-      Vector3D_d up      = grids[i].y_vec();
-      double     det_d   = center.length() * 100;
-
-      out.printf("#5 %6d %6d %6d %8.4f %8.4f %7.4f %6.2f ",
-                  det_num, n_rows, n_cols, width, height, depth, det_d );
-      out.printf("%9.4f %9.4f %9.4f ",
-                  center.getY()*100, center.getZ()*100, center.getX()*100);
-      out.printf("%8.5f %8.5f %8.5f ",
-                  base.getY(), base.getZ(), base.getX());
-      out.printf("%8.5f %8.5f %8.5f\n",
-                  up.getY(), up.getZ(), up.getX());
-    }
-    out.println("#");
-    out.println("#");
-
-    for ( int i = 0; i < values.length; i++ )
-    {
-      out.print( names[i] + ": " );
-      int pad = max_label_length - names[i].length(); 
-      for (int space = 0; space < pad; space ++ )
-        out.print(" ");
-      if ( values[i] >= 0 )
-        out.println ( " " + values[i] );
-      else
-        out.println ( values[i] );
-    }
-  }
-
-
-  /**
-   *  Read parameter values from a file. 
-   *
-   *  @param  filename   The name of the file to read from. 
-   *  @param  names      The list of parameter names
-   *  @param  values     The list of parameter values
-   */
-  private void ReadParams( String filename, String names[], double values[] )
-  {
-    FileReader fr = null;
-    BufferedReader br = null;
-    System.out.println("Trying to read parameters: " + filename );
-    try
-    {
-      fr = new FileReader( filename );
-      if ( fr == null )
-        System.out.println("ERROR: couldn't make FileReader " + filename );
-      else
-        System.out.println("SUCCESS: made FileReader " + filename );
-
-      br = new BufferedReader( fr );
-      String line;
-                                                // skip leading comment lines
-      line = br.readLine(); 
-      System.out.println("READ -> " + line );
-      while ( line != null && line.startsWith("#") )
-      {
-        line = br.readLine(); 
-        System.out.println("READ -> " + line );
-      }
-
-                                              // make array of NaNs so we
-                                              // can check if all values were
-                                              // initialized from the file
-      double[] file_values = new double[values.length];
-      for ( int i = 0; i < file_values.length; i++ )
-        file_values[i] = Double.NaN;
-      
-      String name;
-      String val_string;
-      double value;
-      int    colon_index;
-      while ( line != null )
-      {
-        colon_index = line.indexOf( ":" );
-        if ( colon_index > 0 )               // try to find the parameter name
-        {                                    // ignore line if no ":" on line
-          name = line.substring( 0, colon_index );
-          name.trim();
-          for ( int i = 0; i < names.length; i++ )
-            if ( name.equalsIgnoreCase( names[i] ) )
-            {
-               val_string = line.substring( colon_index + 1 ); 
-               val_string.trim();
-               value = Double.parseDouble( val_string );      
-               file_values[i] = value;
-            }
-        }
-        line = br.readLine();
-        System.out.println("READ -> " + line );
-      } 
-      br.close();
-      fr.close();
-      boolean missing_values = false;
-      for ( int i = 0; i < values.length; i++ )
-        if ( Double.isNaN( file_values[i] ) )
-          missing_values = true;
-        else
-          values[i] = file_values[i];
-      
-      if ( missing_values )
-        throw new IllegalArgumentException("Failed to read some parameter");
-    }
-    catch ( Exception e )
-    {
-      SharedMessages.addmsg("WARNING: Problem reading parameter from file: " );
-      SharedMessages.addmsg(" " + filename );
-      e.printStackTrace();
-    }
-  }
-
-
   /**
    * Uses the current values of the parameters to calcuate calibrated values
    * for the instrument parameters.
@@ -1028,13 +722,13 @@ public class SCDcalib extends GenericTOF_SCD
     parameters[ SZ_INDEX ]  = 0.0;
 
     int index     = DET_BASE_INDEX;
-    int det_count = 0;
-    Enumeration e = grids.elements();
-    while ( e.hasMoreElements() )
+
+    UniformGrid_d[] grid_arr = SCDcal.getAllGrids( grids );
+    for ( int det_count = 0; det_count < grid_arr.length; det_count++ )
     {
       index = DET_BASE_INDEX + det_count * N_DET_PARAMS;
 
-      UniformGrid_d grid = (UniformGrid_d)e.nextElement();
+      UniformGrid_d grid = grid_arr[ det_count ];
       int id = grid.ID();
       parameter_names[index + DET_WIDTH_INDEX ] = "Det " + id + "    Width";
       parameters     [index + DET_WIDTH_INDEX ] = grid.width();
@@ -1059,12 +753,10 @@ public class SCDcalib extends GenericTOF_SCD
 
       parameter_names[index + DET_OMEGA_INDEX ] = "Det " + id + "    omega";
       parameters     [index + DET_OMEGA_INDEX ] = 0;
-
-      det_count++;
     }
 
     if ( read_params )
-      ReadParams( param_file, parameter_names, parameters );
+      SCDcal.ReadParams( param_file, parameter_names, parameters );
 
     boolean is_used[] = new boolean[n_params];
     for ( int i = 0; i < n_params; i++ )
@@ -1078,7 +770,7 @@ public class SCDcalib extends GenericTOF_SCD
     is_used[ SY_INDEX ] = use_ssh;
     is_used[ SZ_INDEX ] = use_ssh;
                               // then turn off some params for all detectors.
-    for ( int i = 0; i < det_count; i++ )
+    for ( int i = 0; i < grid_arr.length; i++ )
     {
       index = DET_BASE_INDEX + i * N_DET_PARAMS;
       is_used[ index + DET_WIDTH_INDEX  ] = use_width;
@@ -1109,8 +801,8 @@ public class SCDcalib extends GenericTOF_SCD
                                  log_print );
 
                                                       // show initial values
-    ShowInitalValues( System.out, parameter_names, parameters, is_used );
-    ShowInitalValues( log_print, parameter_names, parameters, is_used );
+    SCDcal.ShowInitalValues( System.out, parameter_names, parameters, is_used );
+    SCDcal.ShowInitalValues( log_print, parameter_names, parameters, is_used );
 
     String message = "Before fit... params are";
     error_f.ShowProgress( message, System.out );
@@ -1174,7 +866,7 @@ public class SCDcalib extends GenericTOF_SCD
     error_f.ShowOldCalibrationInfo( log_print  );
 
                                              // log & show row, col, tof errors
-    int id_list[] = error_f.getAllGridIDs();
+    int id_list[] = error_f.getAllGridIDs( grids );
     for ( int count = 0; count < id_list.length; count++ )
     {
       int det_id = id_list[count]; 
@@ -1182,9 +874,9 @@ public class SCDcalib extends GenericTOF_SCD
       float meas_pos[][] = error_f.getMeasuredPeakPositions( det_id );
       float theo_pos[][] = error_f.getTheoreticalPeakPositions( det_id );
 
-      floatPoint2D row_pairs[] = getPairs( 0, theo_pos, meas_pos );
-      floatPoint2D col_pairs[] = getPairs( 1, theo_pos, meas_pos );
-      floatPoint2D tof_pairs[] = getPairs( 2, theo_pos, meas_pos );
+      floatPoint2D row_pairs[] = SCDcal.getPairs( 0, theo_pos, meas_pos );
+      floatPoint2D col_pairs[] = SCDcal.getPairs( 1, theo_pos, meas_pos );
+      floatPoint2D tof_pairs[] = SCDcal.getPairs( 2, theo_pos, meas_pos );
 
       if ( log_print != null )
       {
@@ -1212,12 +904,12 @@ public class SCDcalib extends GenericTOF_SCD
                              Format.real( tof_pairs[i].y, 13, 3 )    );
       }
 
-      MakeDisplay( "Theoretical vs Measured Row, ID " + det_id, 
-                   "Row", "Number", row_pairs );
-      MakeDisplay( "Theoretical vs Measured Column, ID " + det_id, 
-                   "Column", "Number", col_pairs );
-      MakeDisplay( "Theoretical vs Measured TOF, ID " + det_id, 
-                   "Time", "us", tof_pairs );
+      SCDcal.MakeDisplay( "Theoretical vs Measured Row, ID " + det_id, 
+                          "Row", "Number", row_pairs );
+      SCDcal.MakeDisplay( "Theoretical vs Measured Column, ID " + det_id, 
+                          "Column", "Number", col_pairs );
+      SCDcal.MakeDisplay( "Theoretical vs Measured TOF, ID " + det_id, 
+                          "Time", "us", tof_pairs );
     }
                                                    // record the results file
     String resultname = RESULTS_FILE_NAME;
@@ -1235,20 +927,23 @@ public class SCDcalib extends GenericTOF_SCD
       result_print = null;
     }
 
-    UniformGrid_d grid_arr[] = error_f.getAllGrids();
+    grid_arr = SCDcal.getAllGrids(grids);
     double s_dev = error_f.getStandardDeviationInQ();
 
-    WriteAllParams( System.out, parameter_names, parameters, s_dev, grid_arr );
+    SCDcal.WriteAllParams( 
+                System.out, parameter_names, parameters, s_dev, grid_arr );
     if ( result_print != null )
     {
-      WriteAllParams(result_print,parameter_names, parameters, s_dev, grid_arr);
-      error_f.ShowOldCalibrationInfo( result_print  );
+      error_f.ShowOldCalibrationInfo( result_print );
+      SCDcal.WriteAllParams(
+                  result_print, parameter_names, parameters, s_dev, grid_arr);
       result_print.close();
     }
 
     if ( log_print != null )
     {
-      WriteAllParams( log_print, parameter_names, parameters, s_dev, grid_arr );
+      SCDcal.WriteAllParams( 
+                  log_print, parameter_names, parameters, s_dev, grid_arr );
       log_print.close();
     }
 
