@@ -28,7 +28,11 @@
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
- * Modified:
+ *  Last Modified:
+ * 
+ *  $Author$
+ *  $Date$            
+ *  $Revision$
  *
  *  $Log$
  *  Revision 1.19  2007/06/07 20:24:03  dennis
@@ -126,15 +130,12 @@ import gov.anl.ipns.MathTools.*;
 import gov.anl.ipns.MathTools.Functions.*;
 import gov.anl.ipns.MathTools.Geometry.*;
 import gov.anl.ipns.Util.Numeric.*;
-import gov.anl.ipns.Util.Sys.*;
 
 import java.io.*;
 import java.util.*;
-import javax.swing.*;
 import DataSetTools.math.*;
 import DataSetTools.dataset.*;
 import DataSetTools.instruments.*;
-import DataSetTools.viewer.*;
 
 /**
  * This class implements a parameterized "function" that calculates the
@@ -164,47 +165,47 @@ public class SCDcal   extends    OneVarParameterizedFunction
   public static final int DET_CHI_INDEX    = 6;
   public static final int DET_OMEGA_INDEX  = 7;
 
-  private PrintStream log_file = null;
+  protected PrintStream log_file = null;
 
-  private Vector peaks_vector;
-  private int    n_peaks;
-  private int    run[]; 
-  private int    id[];
-  private double hkl[][];      // list of hkl triples for ith point in ith row
-  private double tof[];
-  private double row[];
-  private double col[];
+  protected Vector peaks_vector;
+  protected int    n_peaks;
+  protected int    run[]; 
+  protected int    id[];
+  protected double hkl[][];   // list of hkl triples for ith point in ith row
+  protected double tof[];
+  protected double row[];
+  protected double col[];
 
-  public double U_observed[][];
-  public double B_observed[][];
-  public double B_theoretical[][];
-  public double A_matrix[][];
+  protected double U_observed[][];
+  protected double B_observed[][];
+  protected double B_theoretical[][];
+  protected double A_matrix[][];
 
-  private double qxyz_observed[][];
-  private double qxyz_theoretical[][];
+  protected double qxyz_observed[][];
+  protected double qxyz_theoretical[][];
 
-  private int  eval_count = 0;
+  protected int  eval_count = 0;
 
-  private Hashtable gon_rotation_inverse;
-  private Hashtable gon_rotation;
+  protected Hashtable gon_rotation_inverse;
+  protected Hashtable gon_rotation;
 
-  private Hashtable grids;
-  private UniformGrid_d[] grid_array;
+  protected Hashtable grids;
+  protected UniformGrid_d[] grid_array;
 
-  private Vector3D_d[]  nominal_position;
-  private Vector3D_d[]  nominal_base_vec;
-  private Vector3D_d[]  nominal_up_vec;
-  private double    standard_dev_in_Q = Double.MAX_VALUE;    
+  protected Vector3D_d[]  nominal_position;
+  protected Vector3D_d[]  nominal_base_vec;
+  protected Vector3D_d[]  nominal_up_vec;
+  protected double    standard_dev_in_Q = Double.MAX_VALUE;    
 
-  private double    all_parameters[];   // full list of all possible params
-  private String    all_parameter_names[];
+  protected double    all_parameters[]; // full list of all possible params
+  protected String    all_parameter_names[];
 
-  private int       all_p_index[];      // index into full list of all params,
+  protected int       all_p_index[];    // index into full list of all params,
                                         // for each used parameter
-  private int       used_p_index[];     // index into list of params used, 
+  protected int       used_p_index[];   // index into list of params used, 
                                         // for each possible parameter
 
-  private String    instrument_type;    // PeakData_d.SNS_SCD,
+  protected String    instrument_type;  // PeakData_d.SNS_SCD,
                                         // PeakData_d.IPNS_SCD or
                                         // PeakData_d.LANSCE_SCD
   /**
@@ -379,9 +380,10 @@ public class SCDcal   extends    OneVarParameterizedFunction
      qxyz_theoretical = new double[n_peaks][3];
      qxyz_observed    = new double[n_peaks][3];
 
-     setParameters(parameters);   // This may seem circular, but it forces the
-                                  // local version to set up initial values
-                                  // for qxyz_theoretical, observed, UB, etd.
+     setParameters(parameters);      // This may seem circular, but it forces 
+                                     // the local version to set up initial 
+                                     // values for qxyz_theoretical, observed,
+                                     // UB, etc.
 
      /*
      for ( int i = 0; i < n_peaks; i++ )
@@ -599,10 +601,34 @@ public class SCDcal   extends    OneVarParameterizedFunction
   } 
 
   /**
+   *  Get a copy of the current U matrix, as calculated based on the
+   *  measured peaks.
+   *
+   *  @return a copy of the U_observed matrix.
+   */
+  public double[][] getU_observed()
+  {
+    return SCDcal_util.copy( U_observed );
+  }
+
+
+  /**
+   *  Get a copy of the current B matrix, as calculated based on the
+   *  measured peaks.
+   *
+   *  @return a copy of the B_observed matrix.
+   */
+  public double[][] getB_observed()
+  {
+    return SCDcal_util.copy( B_observed );
+  }
+
+
+  /**
    *  Calculate the rotation matrix from the list of hkl and observed qxyzs.
    *  NOTE: the observed qxyzs must have been previously calculated.
    */
-  private double find_U_and_B_observed()
+  protected double find_U_and_B_observed()
   {
     double UB[][] = new double[3][3];
     double my_hkl[][]  = SCDcal_util.copy( hkl );
@@ -620,7 +646,7 @@ public class SCDcal   extends    OneVarParameterizedFunction
    *  Calculate the list of observed qxyz values, using the measured tof,
    *  row and col values with the current values of the instrument parameters. 
    */
-  private void find_qxyz_observed()
+  protected void find_qxyz_observed()
   {
     double l1 = all_parameters[L1_INDEX];
     double t0 = all_parameters[T0_INDEX];
@@ -663,7 +689,7 @@ public class SCDcal   extends    OneVarParameterizedFunction
    *  are calculated as  UB * hkl = qxyz.  NOTE: U_observed must have been
    *  previously calculated.
    */
-  private void find_qxyz_theoretical()
+  protected void find_qxyz_theoretical()
   {
     double UB[][] = LinearAlgebra.mult( U_observed, B_theoretical );
     for ( int peak = 0; peak < n_peaks; peak++ )

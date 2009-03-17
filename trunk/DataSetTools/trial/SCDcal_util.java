@@ -31,8 +31,6 @@
 
 package  DataSetTools.trial;
 
-import gov.anl.ipns.MathTools.*;
-import gov.anl.ipns.MathTools.Functions.*;
 import gov.anl.ipns.MathTools.Geometry.*;
 import gov.anl.ipns.Util.Numeric.*;
 import gov.anl.ipns.Util.Sys.*;
@@ -40,9 +38,7 @@ import gov.anl.ipns.Util.Sys.*;
 import java.io.*;
 import java.util.*;
 import javax.swing.*;
-import DataSetTools.math.*;
 import DataSetTools.dataset.*;
-import DataSetTools.instruments.*;
 import DataSetTools.viewer.*;
 
 /**
