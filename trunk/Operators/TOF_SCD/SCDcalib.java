@@ -127,11 +127,9 @@ import DataSetTools.operator.Generic.TOF_SCD.*;
 import DataSetTools.operator.*;
 import DataSetTools.trial.*;
 import DataSetTools.dataset.*;
-import DataSetTools.viewer.*;
 import DataSetTools.retriever.*;
 
 import gov.anl.ipns.MathTools.*;
-import gov.anl.ipns.MathTools.Geometry.*;
 import gov.anl.ipns.MathTools.Functions.*;
 import gov.anl.ipns.Parameters.BooleanPG;
 import gov.anl.ipns.Parameters.LoadFilePG;
@@ -845,13 +843,14 @@ public class SCDcalib extends GenericTOF_SCD
 
     System.out.println("RESULTS -----------------------------------------");
     System.out.println("observed U matrix:");
-    LinearAlgebra.print( error_f.U_observed );
+    LinearAlgebra.print( error_f.getU_observed() );
 
     System.out.println("observed B matrix:");
-    LinearAlgebra.print( error_f.B_observed );
+    LinearAlgebra.print( error_f.getB_observed() );
 
     System.out.println("observed UB matrix:");
-    double UB[][] = LinearAlgebra.mult(error_f.U_observed, error_f.B_observed);
+    double UB[][] = LinearAlgebra.mult( error_f.getU_observed(), 
+                                        error_f.getB_observed() );
     LinearAlgebra.print( UB );
 
     System.out.println("Transpose of observed UB/(2PI)");
