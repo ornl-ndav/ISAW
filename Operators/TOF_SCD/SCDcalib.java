@@ -723,7 +723,7 @@ public class SCDcalib extends GenericTOF_SCD
 
     int index     = DET_BASE_INDEX;
 
-    UniformGrid_d[] grid_arr = SCDcal.getAllGrids( grids );
+    UniformGrid_d[] grid_arr = SCDcal_util.getAllGrids( grids );
     for ( int det_count = 0; det_count < grid_arr.length; det_count++ )
     {
       index = DET_BASE_INDEX + det_count * N_DET_PARAMS;
@@ -756,7 +756,7 @@ public class SCDcalib extends GenericTOF_SCD
     }
 
     if ( read_params )
-      SCDcal.ReadParams( param_file, parameter_names, parameters );
+      SCDcal_util.ReadParams( param_file, parameter_names, parameters );
 
     boolean is_used[] = new boolean[n_params];
     for ( int i = 0; i < n_params; i++ )
@@ -801,8 +801,11 @@ public class SCDcalib extends GenericTOF_SCD
                                  log_print );
 
                                                       // show initial values
-    SCDcal.ShowInitalValues( System.out, parameter_names, parameters, is_used );
-    SCDcal.ShowInitalValues( log_print, parameter_names, parameters, is_used );
+    SCDcal_util.ShowInitalValues( 
+                          System.out, parameter_names, parameters, is_used );
+
+    SCDcal_util.ShowInitalValues( 
+                          log_print, parameter_names, parameters, is_used );
 
     String message = "Before fit... params are";
     error_f.ShowProgress( message, System.out );
@@ -866,7 +869,7 @@ public class SCDcalib extends GenericTOF_SCD
     error_f.ShowOldCalibrationInfo( log_print  );
 
                                              // log & show row, col, tof errors
-    int id_list[] = error_f.getAllGridIDs( grids );
+    int id_list[] = SCDcal_util.getAllGridIDs( grids );
     for ( int count = 0; count < id_list.length; count++ )
     {
       int det_id = id_list[count]; 
@@ -874,9 +877,9 @@ public class SCDcalib extends GenericTOF_SCD
       float meas_pos[][] = error_f.getMeasuredPeakPositions( det_id );
       float theo_pos[][] = error_f.getTheoreticalPeakPositions( det_id );
 
-      floatPoint2D row_pairs[] = SCDcal.getPairs( 0, theo_pos, meas_pos );
-      floatPoint2D col_pairs[] = SCDcal.getPairs( 1, theo_pos, meas_pos );
-      floatPoint2D tof_pairs[] = SCDcal.getPairs( 2, theo_pos, meas_pos );
+      floatPoint2D row_pairs[] = SCDcal_util.getPairs( 0, theo_pos, meas_pos );
+      floatPoint2D col_pairs[] = SCDcal_util.getPairs( 1, theo_pos, meas_pos );
+      floatPoint2D tof_pairs[] = SCDcal_util.getPairs( 2, theo_pos, meas_pos );
 
       if ( log_print != null )
       {
@@ -904,12 +907,12 @@ public class SCDcalib extends GenericTOF_SCD
                              Format.real( tof_pairs[i].y, 13, 3 )    );
       }
 
-      SCDcal.MakeDisplay( "Theoretical vs Measured Row, ID " + det_id, 
-                          "Row", "Number", row_pairs );
-      SCDcal.MakeDisplay( "Theoretical vs Measured Column, ID " + det_id, 
-                          "Column", "Number", col_pairs );
-      SCDcal.MakeDisplay( "Theoretical vs Measured TOF, ID " + det_id, 
-                          "Time", "us", tof_pairs );
+      SCDcal_util.MakeDisplay( "Theoretical vs Measured Row, ID " + det_id, 
+                               "Row", "Number", row_pairs );
+      SCDcal_util.MakeDisplay( "Theoretical vs Measured Column, ID " + det_id, 
+                               "Column", "Number", col_pairs );
+      SCDcal_util.MakeDisplay( "Theoretical vs Measured TOF, ID " + det_id, 
+                               "Time", "us", tof_pairs );
     }
                                                    // record the results file
     String resultname = RESULTS_FILE_NAME;
@@ -927,22 +930,22 @@ public class SCDcalib extends GenericTOF_SCD
       result_print = null;
     }
 
-    grid_arr = SCDcal.getAllGrids(grids);
+    grid_arr = SCDcal_util.getAllGrids(grids);
     double s_dev = error_f.getStandardDeviationInQ();
 
-    SCDcal.WriteAllParams( 
+    SCDcal_util.WriteAllParams( 
                 System.out, parameter_names, parameters, s_dev, grid_arr );
     if ( result_print != null )
     {
       error_f.ShowOldCalibrationInfo( result_print );
-      SCDcal.WriteAllParams(
+      SCDcal_util.WriteAllParams(
                   result_print, parameter_names, parameters, s_dev, grid_arr);
       result_print.close();
     }
 
     if ( log_print != null )
     {
-      SCDcal.WriteAllParams( 
+      SCDcal_util.WriteAllParams( 
                   log_print, parameter_names, parameters, s_dev, grid_arr );
       log_print.close();
     }
