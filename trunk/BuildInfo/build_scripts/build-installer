@@ -1,0 +1,75 @@
+#!/bin/sh
+date
+VERSION=190_02
+PACKDATE=02_17_2009
+PACKDIR="$HOME/IsawMake/packup/ISAW"
+JAVADIR="/usr/local/java/bin/"
+# copy the correct jar files into the build directory
+cp docs_$PACKDATE.jar         $PACKDIR/docs.jar
+cp gov_$PACKDATE.jar          $PACKDIR/gov.jar
+cp IPNS_$PACKDATE.jar         $PACKDIR/IPNS.jar
+cp ISIS_$PACKDATE.jar         $PACKDIR/ISIS.jar
+cp SSG_Tools_$PACKDATE.jar    $PACKDIR/SSG_Tools.jar
+cp Isaw_$PACKDATE.jar         $PACKDIR/Isaw.jar
+cp Operators_$PACKDATE.jar    $PACKDIR/Operators.jar
+# move into the directory where everything resides
+echo "moving into ISAW directory"
+cd $PACKDIR
+# start unpacking
+echo "unpacking jar files"
+# unpack and compile the installer
+${JAVADIR}/jar xvf Isaw.jar IsawInstaller.java
+rm IsawInstaller*.class
+
+#${JAVADIR}/javac IsawInstaller.java
+${JAVADIR}/javac -target 1.5  IsawInstaller.java
+
+#
+# unpack the materials database, glad detector parameters, etc.
+#
+${JAVADIR}/jar xvf Isaw.jar  Databases/ScattInfo.dat
+${JAVADIR}/jar xvf Isaw.jar  Databases/gladdets6.par
+${JAVADIR}/jar xvf Isaw.jar  Databases/sears91.dat
+# unpack and remove jar file for the documentation
+#rm docs/html/index*.html
+#rm docs/html/deprecated-list.html
+#rm docs/html/help-doc.html
+#rm docs/html/overview*.html
+#rm docs/html/package*.html
+#rm docs/html/serialized-form.html
+#rm docs/html/stylesheet.css
+rm -rf docs/html/ChopTools/*
+#rm -rf docs/html/Command/*
+#rm -rf docs/html/DataSetTools/*
+rm -rf docs/html/graph/*
+#rm -rf docs/html/IPNS/*
+#rm -rf docs/html/IsawGUI/*
+#rm -rf docs/html/NetComm/*
+#rm -rf docs/html/NexIO/*
+rm -rf docs/html/OverplotView/*
+#rm -rf docs/html/Wizard/*
+${JAVADIR}/jar xvf docs.jar
+rm docs.jar
+#
+# unpack the Wizard scripts
+#
+rm -rf Wizard/TOF_SCD/Scripts_new
+${JAVADIR}/jar xvf Isaw.jar Wizard/TOF_SCD/Scripts_new 
+#
+# unpack the help files
+${JAVADIR}/jar xvf Isaw.jar IsawHelp/
+# unpack and remove jar file for the external operators
+rm -rf Operators/*
+rm -rf Scripts/*
+${JAVADIR}/jar xvf Operators.jar
+rm Operators.jar
+# remove the old manifest
+rm -rf META-INF
+# create the jar file and force the manifest
+echo "creating Isaw-$VERSION-install.jar"
+${JAVADIR}/jar cvfm Isaw-$VERSION-install.jar ../jarmanifest *
+# move it into the parent directory
+mv Isaw-$VERSION-install.jar $HOME/IsawMake
+cd $HOME/IsawMake
+# return sucess
+echo "Isaw-$VERSION-install.jar successfully created"

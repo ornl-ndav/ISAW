@@ -1,0 +1,245 @@
+#!/usr/bin/perl
+use strict;
+
+my($defCodeDir)=$ENV{'HOME'}.'/IsawMake/ISAW';
+my(@codeDirs);
+my($codeDir);
+my($docDir);
+my($title);
+my($DEBUG)=0;
+my($command);
+my($isIsaw)=0;
+my(@bannedPackages)=qw( CVS docs graph images ncsa neutron );
+my(@packages);
+
+# parse the command line
+for( my($int)=0 ; $int<scalar(@ARGV) ; $int++ ){
+  if($ARGV[$int] eq '-d'){
+    $DEBUG++;
+  }elsif($ARGV[$int] eq '-D'){
+    $int++;
+    $docDir="$ARGV[$int]";
+  }elsif($ARGV[$int] eq '-h' || $ARGV[$int] eq '--help'){
+    print "USAGE: build_javadoc <code directory> [-d] [-D doc directory] [-t doc title]\n";
+    exit(0);
+  }elsif($ARGV[$int] eq '-t'){
+    $int++;
+    $title="$ARGV[$int]";
+  }elsif($ARGV[$int] eq '-c'){
+    $int++;
+    if($ARGV[$int] eq 'IPNS'){
+      push(@codeDirs,$ENV{'HOME'}.'/IsawMake/lib/IPNS');
+      $docDir=$ENV{'HOME'}.'/IsawMake/lib/javadocs/IPNS';
+      $title="IPNS Documentation";
+    }elsif($ARGV[$int] eq 'ISAW'){
+      push(@codeDirs,$ENV{'HOME'}.'/IsawMake/ISAW');
+      # docDir is dealt with below
+      # title is dealt with below
+    }elsif($ARGV[$int] eq 'nexus'){
+      push(@codeDirs,$ENV{'HOME'}.'/IsawMake/ISAW/neutron');
+      push(@codeDirs,$ENV{'HOME'}.'/IsawMake/ISAW/ncsa');
+      $docDir=$ENV{'HOME'}.'/IsawMake/lib/javadocs/nexus';
+      $title="NeXus Documentation";
+    }elsif($ARGV[$int] eq 'sgt'){
+      push(@codeDirs,$ENV{'HOME'}.'/IsawMake/ISAW/gov');
+      $docDir=$ENV{'HOME'}.'/IsawMake/lib/javadocs/sgt';
+      $title="Scientific Graphics Toolkit Documentation";
+    }else{
+      push(@codeDirs,"$ARGV[$int]");
+    }
+  }
+}
+
+# use defaults if not stuff isn't already set
+(@codeDirs=["$defCodeDir"])unless(scalar(@codeDirs));
+($docDir="$codeDirs[0]/docs/html")unless($docDir);
+if(! $title){
+  my($version)=getVersion();
+  $title="$version Documentation";
+}
+
+# set the list of banned packages
+#formalizeBanned();
+
+# print out debug information
+if($DEBUG){
+  print "####################\n";
+  print "# CODE= ";
+  foreach(@codeDirs){
+    print "$_ ";
+  }
+  print "\n";
+  print "# DOCS= $docDir\n";
+  print "# TITL= $title\n";
+  print "# DBUG= $DEBUG\n";
+}
+
+
+# build the list of packages
+for( my($int)=0 ; $int<scalar(@codeDirs) ; $int++ ){
+  $codeDir="$codeDirs[$int]";
+  $isIsaw=($codeDir=~/\QISAW\E\/?$/);
+  foreach(<$codeDir/*>){
+    if(/\/$/){
+      addSubDirs("$_");
+    }else{
+      addSubDirs("$_/");
+    }
+  }
+}
+
+# create the command to run javadoc
+$command=buildCommand();
+if ($DEBUG) {
+  ($command.="\n")if(scalar(@packages)%2==1);
+  (print "# SIZE= ".scalar(@packages)."\n")if($DEBUG>1);
+  print "####################\n";
+}
+
+# run the javadoc command
+runCommand($command);
+
+######################################################################
+# SUBROUTINES
+######################################################################
+
+####################
+# Create the command from the directories, version name and package list
+####################
+sub buildCommand{
+  (return)unless(scalar(@packages));
+  my($command)="/usr/local/java/bin/javadoc -J-Xmx400M -breakiterator -d $docDir -windowtitle \"$title\" ";
+  ($command.="\n")if($DEBUG);
+  $command.="-doctitle \"$title\" ";
+  ($command.="\n")if($DEBUG);
+  foreach ( my($int)=0 ; $int<scalar(@packages) ; $int++ ) {
+    if ($DEBUG) {
+      $command.=sprintf("%55s",$packages[$int]);
+      ($command.="\n")if($int%2==1);
+    } else {
+      $command.=$packages[$int]." ";
+    }
+  }
+  return $command;
+}
+
+####################
+# remove a file or directory
+####################
+sub remove{
+  my($file)=@_;
+  my($command)="rm";
+
+  unless(-e "$file"){
+    return;
+  }
+  if(-d "$file"){
+    $command="$command -rf";
+  }
+  runCommand("$command $file");
+}
+
+####################
+# add a directory to the list of packages
+####################
+sub addSubDirs{
+  my($base)=@_;
+  my($posdir)="";
+  (return)if($base=~/CVS.?$/); # skip 'CVS' directories
+  ($base.='/')unless($base=~/\/$/);
+  (print "BASE:$base\n")if($DEBUG>2);
+  for( my($int)=0 ; $int<scalar(@bannedPackages) ; $int++ ){
+    (return)if($base=~/$bannedPackages[$int]\/$/);
+  }
+  addPackage($base);
+  foreach $posdir (<$base*>){
+    if(-d $posdir){
+      ($posdir.='/')unless($posdir=~/\/$/);
+      (next)if($_ eq $base);
+      addSubDirs($posdir);
+    }else{
+      next;
+    }
+  }
+}
+
+####################
+# see if there is a class file in the directory
+####################
+sub hasClass{
+  my($dir)=@_;
+  my($posdir)="";
+
+  foreach $posdir (<$dir*>){
+    (return 1)if($posdir=~/\.class$/);
+  }
+
+  return 0;
+}
+
+####################
+# does a couple of checks then converts the specified directory into a
+# package name and adds it to the list.
+####################
+sub addPackage{
+  my($dir)=@_;
+  # check that it contains class files
+  (return)unless(hasClass($dir));
+
+  my($package)="$dir";
+  # turn it into a package name
+  $package=~s/\/$//;
+  if($isIsaw){
+    $package=~s/$codeDir\/(.+)/$1/;
+  }else{
+    my($codePack)="$codeDir";
+    $codePack=~s/.+\/([a-zA-Z0-9]+)$/$1/;
+    $package=~s/.+\/($codePack\/.+)/$1/;
+  }
+  $package=~s/\//./g;
+
+  # check that it isn't already in the list
+  (return)if(inPackage($package));
+
+  # add it to the list
+  push(@packages,$package);
+}
+
+####################
+# checks if the specified package is already listed in the vector
+####################
+sub inPackage{
+  my($dir)=@_;
+  foreach(@packages){
+    if(/^$dir$/){
+      return 1;
+    }
+  }
+  return 0;
+}
+
+####################
+# makes the system call or prints to STDOUT (if in debug mode)
+####################
+sub runCommand{
+  my($command)=@_;
+  if($DEBUG){
+    print "$command\n";
+  }else{
+    system("$command");
+  }
+}
+
+####################
+# determines the version of ISAW running
+####################
+sub getVersion{
+  my($version);
+  if($ENV{'USER'} eq 'IsawMake'){
+    $version=`/home/dennis/IsawMake/build_scripts/run_isaw_for_version.sh`;
+  }else{
+    $version=`java IsawGUI.Isaw --version`;
+  }
+  chomp($version);
+  return $version;
+}
