@@ -512,19 +512,42 @@ public class SCD_Grouped_cal  extends    SCDcal
         is_used[ index + DET_OMEGA_INDEX  ] = false;
       }
 */
+/*
+      int[][] groups = new int[grid_arr.length][1];  // these groups all have
+      for ( int i = 0; i < groups.length; i++ )      // just one detector
+        groups[i][0] = grid_arr[i].ID();
+*/
+//    int[][] groups = { { 2, 3, 4, 5, 6, 7, 8, 9, 10 } };
+/*    int[][] groups = { { 2, 3, 4 }, 
+                         { 5, 6, 7 }, 
+                         { 8, 9, 10 } };
+*/
+      int[][] groups = { { 2 }, { 3 }, { 4 }, 
+                         { 5 }, { 6 }, { 7 }, 
+                         { 8 }, { 9 }, { 10 } };
+
                                                   // turn off everything but
                                                   // width & height for NON-KEY
-      for ( int i = 1; i < grid_arr.length; i++ )   
+      for ( int i = 0; i < grid_arr.length; i++ )   
       {
-        index = DET_BASE_INDEX + i * N_DET_PARAMS;
-    //  is_used[ index + DET_WIDTH_INDEX  ] = false;
-    //  is_used[ index + DET_HEIGHT_INDEX ] = false;
-        is_used[ index + DET_X_OFF_INDEX  ] = false;
-        is_used[ index + DET_Y_OFF_INDEX  ] = false;
-        is_used[ index + DET_D_INDEX      ] = false;
-        is_used[ index + DET_PHI_INDEX    ] = false;
-        is_used[ index + DET_CHI_INDEX    ] = false;
-        is_used[ index + DET_OMEGA_INDEX  ] = false;
+        int id = grid_arr[i].ID();
+        boolean key_detector = false;              
+        for ( int k = 0; k < groups.length; k++ )  
+          if ( id == groups[k][0] )
+            key_detector = true;
+          
+        if ( !key_detector )
+        {
+          index = DET_BASE_INDEX + i * N_DET_PARAMS;
+    //    is_used[ index + DET_WIDTH_INDEX  ] = false;
+    //    is_used[ index + DET_HEIGHT_INDEX ] = false;
+          is_used[ index + DET_X_OFF_INDEX  ] = false;
+          is_used[ index + DET_Y_OFF_INDEX  ] = false;
+          is_used[ index + DET_D_INDEX      ] = false;
+          is_used[ index + DET_PHI_INDEX    ] = false;
+          is_used[ index + DET_CHI_INDEX    ] = false;
+          is_used[ index + DET_OMEGA_INDEX  ] = false;
+        }
       }
 
                               // now count the number that were used
@@ -532,12 +555,6 @@ public class SCD_Grouped_cal  extends    SCDcal
       for ( int i = 0; i < n_params; i++ )
         if ( is_used[i] )
           n_used++;
-/*
-      int[][] groups = new int[grid_arr.length][1];  // these groups all have
-      for ( int i = 0; i < groups.length; i++ )      // just one detector
-        groups[i][0] = grid_arr[i].ID();
-*/
-      int[][] groups = { { 2, 3, 4, 5, 6, 7, 8, 9, 10 } };
                                                      // build the one variable
                                                      // function
       File log_name = new File( "SCD_Grouped_cal.log" );
