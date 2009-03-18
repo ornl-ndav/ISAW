@@ -1,0 +1,189 @@
+#!/usr/bin/python
+
+import os
+import re
+from string import split
+from string import join
+from string import strip
+from sys    import argv
+from sys    import exit
+
+DEBUG=0
+
+##############################
+# execute a command
+##############################
+def execute(command):
+    if DEBUG:
+        print command
+    else:
+        os.system(command)
+
+##############################
+# execute an export command
+##############################
+def exec_export(svn_direc,my_direc,revision):
+    if not svn_direc: return
+    if not my_direc: return
+#   revision not currently used!!
+#    if not revision: return
+    command="svn export "
+#    command +=" -r "
+#    command += revision
+    command +=" https://flathead.ornl.gov/repos/"
+    command += svn_direc
+    command += "/trunk "
+    command += my_direc
+    print command
+    execute(command)
+
+##############################
+# read in the configuration file
+##############################
+def read_config(version):
+    if DEBUG: print "VERSION=%s"%version
+    file=os.environ['HOME']+"/IsawMake/svn_ISAW.config"
+    if not os.path.exists(file):
+        print "Could not find configuration file: %s" % file
+        return None
+
+    # read in file looking for the right value
+    for line in open(file).readlines():
+        if re.search(r"^#",line): continue # skip comment lines
+        line=strip(line) # remove whitespace on both ends
+        if not line: continue # skip empty lines
+        vals=split(line) # split on whitespace
+        if not vals: continue # skip line if vals doesn't work out
+
+        if not version: break # used first line if no version
+        if vals[0]==version: break # if version matches stop
+
+        vals=None
+
+    # return the right thing
+    if vals:
+        return (vals[0],vals[1])
+    else:
+        return None
+            
+##############################
+# converts the abbreviated version name to something useful
+##############################
+def format_version(old):
+    if not old: return None
+
+    if re.search(r"^\d+\.\d+\.\d+a\d*",old):
+        return re.sub(r"^(\d+\.\d+\.\d+)a(\d*)",r"\1 alpha\2",old)
+    elif re.search(r"^\d+\.\d+\.\d+b\d*",old):
+        return re.sub(r"^(\d+\.\d+\.\d+)b(\d*)",r"\1 beta\2",old)
+    else:
+        return old
+
+##############################
+# this sets the version in ~/set_version.sh even in debug mode
+##############################
+def set_version(new):
+    if not new: return
+    
+    file=os.environ['HOME']+"/IsawMake/build_scripts/set_version.sh"
+    lines=open(file).readlines()
+    for i in range(len(lines)):
+        if re.search(r"^VERSION=",lines[i]):
+            lines[i]="VERSION=\"%s\"\n" % new
+            break
+    outfile=open(file,"w")
+    outfile.write(join(lines,""))
+    outfile.close()
+
+##############################
+# this sets the packdate in ~/cp_files.sh
+##############################
+def set_packdate(new):
+    if not new: return
+
+    file=os.environ['HOME']+"/IsawMake/build_scripts/cp_files.sh"
+    lines=open(file).readlines()
+    for i in range(len(lines)):
+        if re.search(r"^PACKDATE=",lines[i]):
+            lines[i]="PACKDATE=%s\n" % new
+            break
+    outfile=open(file,"w")
+    outfile.write(join(lines,""));
+    outfile.close()
+
+##############################
+# this sets the version and packdate in build-installer
+##############################
+def edit_installer(version,packdate):
+    if not version: return
+    if not packdate: return
+
+    if DEBUG: print "VERSION=",version,
+    version=re.sub(r"\.","",version)
+    version=re.sub(r" ","",version)
+    version=re.sub(r"alpha","a",version)
+    version=re.sub(r"beta","b",version)
+    if DEBUG: print "",version
+
+    file=os.environ['HOME']+"/IsawMake/build_scripts/build-installer"
+    lines=open(file).readlines()
+    for i in range(len(lines)):
+        if(re.search(r"^PACKDATE=",lines[i])):
+            lines[i]="PACKDATE=%s\n" % packdate
+        elif(re.search(r"^VERSION=",lines[i])):
+            lines[i]="VERSION=%s\n" % version
+    outfile=open(file,"w")
+    outfile.write(join(lines,""));
+    outfile.close()
+
+##############################
+# Main method when running
+##############################
+if __name__ == "__main__":
+    version=None
+    # parse command line
+    if len(argv)>1:
+        for arg in argv[1:]:
+            if arg=="-d":
+                DEBUG+=1
+            elif arg=="-h" or arg=="--help":
+                print "cvs_ISAW <version> [-d] [-h|--help]"
+                exit(0)
+            else:
+                version=arg
+
+    # find the tags from the config file
+    tags=read_config(version)
+    if not tags:
+        print "Found no tags found for: ",version
+        exit(-1)
+    elif len(tags)!=2:
+        print "Invalid tags found:",version,tags
+        exit(-1)
+
+    # reform the tags and version
+    # NOTE: In SVN we don't get to specify date or tag when checking out
+    #       so tags[2] is NO LONGER USED
+    version=tags[0]
+    packdate=tags[1]
+
+    if(DEBUG): print version,packdate,tags
+
+    # set the version
+    version=format_version(version)
+    set_packdate(packdate)
+    set_version(version)
+    edit_installer(version,packdate)
+
+    # execute everything
+    execute("rm -Rf ISAW")
+    execute("rm -Rf gov")
+    execute("rm -Rf ISIS")
+    execute("rm -Rf IPNS")
+    execute("rm -Rf SSG_Tools")
+
+    exec_export("ISAW","ISAW", -1);
+    exec_export("ipns-gov","gov", -1);
+    exec_export("IPNS","IPNS", -1);
+    exec_export("ipns-ISIS","ISIS", -1);
+    exec_export("SSG_Tools","SSG_Tools", -1);

@@ -1,0 +1,164 @@
+#!/usr/bin/perl
+####################
+# Created on August 16, 2002 by: Peter Peterson
+# Last Modified: August 16, 2002
+####################
+my($debug)=0;
+my($verbose)=1;
+my($dir)="";
+my($cmd)="";
+my($ext)="";
+my($def_command,$def_extension)=("javac","java");
+
+foreach(@ARGV){
+  if($_ eq '-h'){
+    printHelp();
+  }elsif($_ eq '--help'){
+    printHelp();
+  }elsif(/^\Q-D\E/){
+    $dir="$_";        # setting the directory
+    $dir=~s/^\Q-D\E//;
+  }elsif($_ eq '-d'){
+    $debug++;         # debug mode
+  }elsif($_ eq '-q'){
+    $verbose=0;
+  }elsif(/^\Q-e\E/){
+    $ext="$_";
+    $ext=~s/^\Q-e\E//;
+    $ext=~s/^\Q*.\E//;
+  }else{
+    $cmd.="$_ ";        # setting the directory
+  }
+}
+($dir="./")unless($dir);      # current directory is the default
+($cmd="$def_command")unless($cmd);
+($ext="$def_extension")unless($ext);
+$dir=standardize($dir);
+addSubDirs(standardize($dir));
+
+if($debug){
+  print "******************************\n";
+  print "* DIR: $dir\n";
+  print "* CMD: $cmd\n";
+  print "* EXT: $ext\n";
+  print "******************************\n";
+}
+print "RECURSE: \"$cmd *.$ext\" starting in \"$dir\"\n";
+foreach(@dirs){
+  runCommand($_,$cmd);
+}
+
+############################## SUBROUTINES ##############################
+sub addSubDirs{
+  my($base)=@_;
+  my($posdir)="";
+  (return)if($base=~/CVS.?$/); # skip 'CVS' directories
+  (print "BASE:$base\n")if($debug>1);
+  push(@dirs,$base);
+  foreach $posdir (<$base*>){
+    if(-d $posdir){
+      ($posdir.='/')unless($posdir=~/\/$/);
+      (next)if($_ eq $base);
+      (next)unless(checkCVS($base,$posdir));
+      addSubDirs($posdir);
+    }else{
+      next;
+    }
+  }
+}
+
+sub checkCVS{
+  my($dir,$posdir)=@_;
+  my($return)=1;
+  my($shortdir)="$posdir";
+  $shortdir=~s/$dir(.+)\//$1/;
+
+  (return 0)if($posdir=~/CVS.?$/);
+
+  #print $dir." ";
+  if(-e "$dir/.cvsignore"){
+    #print "HAS CVSIGNORE\n";
+    open(CVS,"$dir/.cvsignore") || die "Could not open $dir/.cvsignore: $!";
+    while(<CVS>){
+      chomp();
+      if(/^$shortdir/){
+        $return=0;
+        last;
+      }
+    }
+    close(CVS) || die "Could not close $dir/.cvsignore: $!";
+  }
+
+  return $return;
+}
+
+sub standardize{
+  my($return)=@_;
+
+  (print "$return -> ")if($debug>1);
+  unless($return=~m%/$%){
+    $return.='/';
+  }
+
+  (print "$return -> ")if($debug>1);
+  unless($return=~/^\.?\//){
+    $return='./'.$return;
+  }
+
+  (print "$return -> ")if($debug>1);
+  $return=~s/^\.\//$ENV{'PWD'}\//;
+
+  (print "$return -> ")if($debug>1);
+  while($return=~/\.\.\//){
+    $return=~s/\w+\/\.\.\///;
+  }
+
+  printHelp() unless( -e $dir );
+
+  (print "$return\n")if($debug>1);
+  return $return;
+}
+
+sub runCommand{
+  my($dir,$cmd)=@_;
+  my($file);
+  my($run)=0;
+
+  (print "==DEBUG== ")if($debug);
+  (print "IN $dir\n")if($verbose || $debug);
+
+  for $file (<$dir*.$ext>){
+    if($debug){
+      print "$cmd $dir*.$ext\n";
+    }else{
+      system("$cmd $dir*.$ext");
+    }
+    $run=1;
+    last;
+  }
+  if($run){
+    #(print "\n")unless($debug);
+  }else{
+    (print "   -> NO $ext FILES\n")if($verbose || $debug);
+  }
+}
+
+sub printHelp{
+  print STDOUT "USAGE: recurse <options> <command>\n";
+  print STDOUT "\n";
+  print STDOUT "This Perl script executes a command according to the command line switches. \n"
+    ."The default is to execute \"$def_command\" on the current directory, \"./\", and all\n"."of its subdirectories. Any 'CVS' directories (or directories specified in\n"
+      .".cvsignore) will be skipped.\n";
+  print STDOUT "OPTIONS:\n";
+  print STDOUT "  -h : print this message\n";
+  print STDOUT "  -D : specify a directory\n";
+  print STDOUT "  -d : debug mode - print which files will be removed but do nothing\n";
+  print STDOUT "  -e : extension to operate on (default is *.$def_extension)\n";
+  print STDOUT "  -q : quite mode\n";
+  print STDOUT "\n";
+  print STDOUT "EXAMPLES:\n";
+  print STDOUT "  recurse                  (IMPLICIT $def_command -D./ -e$def_extension)\n";
+  print STDOUT "  recurse \"jikes --depend\" (IMPLICIT -D./ -e$def_extension)\n";
+
+  exit(0);
+}

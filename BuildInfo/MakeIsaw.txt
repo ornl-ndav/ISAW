@@ -1,0 +1,94 @@
+
+Instructions to build ISAW with Peter Peterson's installer.  
+( Revised 3/27/2008, D.M. )
+
+This file describes how to build the ISAW distribution on a 
+Linux system, assuming you have SVN access to the repository at
+
+ORNL:  https://flathead.ornl.gov/repos
+
+The repository is "hard coded" into the script svn_ISAW in the
+build_scripts directory.
+
+Currently, only building from the current revision in the SVN
+repository is supported.  However, you should record the SVN
+revision numbers as comments in the svn_ISAW.config file, so that
+if need be old versions could be rebuilt, with some manual
+interventions.  (That is, use separate command line svn export
+statements to get the older versions of the source code.)
+
+1. You must have the directory IsawMake in your HOME directory.
+   Also:
+     -- the IsawMake directory must contain the directory
+        with the build scripts (build_scripts).
+     -- the IsawMake directory must contain the directory,
+        packup, that holds the various shared libraries 
+        needed by the ISAW system, and other files that will
+        be placed in the distribution .jar file.
+     -- add the .../IsawMake/build_scripts directory to your path.
+     -- Python must be installed on your system for some of the
+        build scripts.
+     -- check that the directories listed in the scripts:
+           .../IsawMake/build_scripts/dennis_make_distro.sh
+           .../IsawMake/build_scripts/build-installer
+        scripts are correct for your system.
+
+2. In the IsawMake home directory, place the file: 
+
+       svn_ISAW.config
+
+   which contains the version number and date information used by the
+   svn_ISAW script.  Edit this file so that the top configuration line
+   contains the proper version number, build date and time.  You should
+   also add a comment line containing the svn version numbers for each
+   of the packages..
+
+3. Checkout the complete source tree from the repository by giving 
+   the command:
+
+      'svn_ISAW'
+
+   NOTE: In addition to exporting the source code from SVN, the
+         svn_ISAW modifies some of the other build scripts to
+         set the proper version number and date!!!
+
+   NOTE: For some reason this sometimes "hangs" during the export
+         operation.  In that case, svn_ISAW will have modified the
+         build scripts, and it should work to manually export the
+         files using:
+
+         svn export https://flathead.ornl.gov/repos/ISAW/trunk ISAW
+         svn export https://flathead.ornl.gov/repos/IPNS/trunk IPNS
+         svn export https://flathead.ornl.gov/repos/ipns-gov/trunk  gov
+         svn export https://flathead.ornl.gov/repos/ipns-ISIS/trunk ISIS
+         svn export https://flathead.ornl.gov/repos/SSG_Tools/trunk SSG_Tools
+
+         'svn_ISAW' does not "hang" when executed on the local SNS systems, 
+         such as outback.sns.gov.  
+
+4. Build the class files, docs etc. by giving the command:
+
+      'dennis_make_distro.sh'
+
+   This will create four jar files named using the current PACKDATE
+   (doc_PACKDATE.jar, IPNS_PACKDATE.jar, Isaw_PACKDATE.jar, and 
+    Operators_PACKDATE.jar) which can be used to create the installer.
+
+5. Build the installer and pack up the distribution jar by giving the command:
+
+      'build-installer'
+
+    This should make the file Isaw-nnnn-install.jar, where nnnn is the
+    version number specified in the first line of the 
+    svn_ISAW.config file.
+
+6. Put the Isaw-nnnn-install.jar file on the ISAW ftp site at ORNL:
+
+    http://ftp.sns.gov/ISAW 
+
+   It can be browsed via HTTP and FTP.  To place the .jar file there,
+   use sftp to faregate.ornl.gov and put the file in /var/ftp/ISAW. 
+
+7. Send an annoucement to the isaw mailing list:  isaw@email.ornl.gov.
+   The web site for the mailing list is:
+       https://email.ornl.gov/mailman/listinfo/isaw
