@@ -1038,6 +1038,7 @@ public class SCDcal   extends    OneVarParameterizedFunction
       is_used[ SY_INDEX ] = false;
       is_used[ SZ_INDEX ] = false;
                               // then turn off some params for all detectors.
+/*
       for ( int i = 0; i < grid_arr.length; i++ )   
       {
         index = DET_BASE_INDEX + i * N_DET_PARAMS;
@@ -1051,6 +1052,7 @@ public class SCDcal   extends    OneVarParameterizedFunction
         is_used[ index + DET_CHI_INDEX    ] = false;
         is_used[ index + DET_OMEGA_INDEX  ] = false;
       }
+*/
                               // now count the number that were used
       int n_used = 0;
       for ( int i = 0; i < n_params; i++ )
@@ -1095,7 +1097,7 @@ public class SCDcal   extends    OneVarParameterizedFunction
                                            // build the data fitter and display 
                                            // the results.
       MarquardtArrayFitter fitter = 
-      new MarquardtArrayFitter(error_f, x_index, z_vals, sigmas, 1.0e-16, 2000);
+      new MarquardtArrayFitter(error_f, x_index, z_vals, sigmas, 1.0e-12, 500);
 
       System.out.println( fitter.getResultsString() );
 
@@ -1121,6 +1123,11 @@ public class SCDcal   extends    OneVarParameterizedFunction
       error_f.ShowProgress( message, System.out );
       error_f.ShowProgress( message, error_f.log_file );
 
-      error_f.ShowOldCalibrationInfo();
+      double s_dev = error_f.getStandardDeviationInQ();
+      SCDcal_util.WriteAllParams( System.out,
+                                  parameter_names,
+                                  parameters,
+                                  s_dev,
+                                  grid_arr );
     }
 }
