@@ -1282,7 +1282,7 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 				Save(W);
 			else if( evt.getActionCommand().equals("Info")){
 				
-				new IsawGUI.Browser( DataSetTools.util.FilenameUtil.helpDir("wizard/operator_generator_help/operator_generator_help.html"));
+				new Browser( DataSetTools.util.FilenameUtil.helpDir("wizard/operator_generator_help/operator_generator_help.html"));
 				
 			}
             else if( evt.getActionCommand().equals("Save Contact Info"))
