@@ -343,7 +343,7 @@ public class SCDcal_util
    *  indication of whether or not they are used.
    *
    *  @param  out     The print stream to write to
-   *  @param  names   The list of parameter names
+   *  @param  name    The list of parameter names
    *  @param  is_used List of flags indicating whether or not the 
    *                  corresponding parameter is used for calibration
    */
