@@ -42,6 +42,7 @@ package  DataSetTools.trial;
 import gov.anl.ipns.MathTools.*;
 import gov.anl.ipns.MathTools.Functions.*;
 import gov.anl.ipns.MathTools.Geometry.*;
+import gov.anl.ipns.Util.Numeric.*;
 
 import java.io.*;
 import java.util.*;
@@ -155,8 +156,9 @@ public class SCD_Grouped_cal  extends    SCDcal
                                      grid.position() );
          key_tran_inverse.multiply_by( member_tran );
          relative_transf.put( member_id, key_tran_inverse );
-         System.out.println("Relative transf for Detector ======" + member_id );
-         System.out.println( key_tran_inverse );
+
+//       System.out.println("Relative transf for Detector ======" + member_id );
+//       System.out.println( key_tran_inverse );
        }
      }
 /*
@@ -214,7 +216,7 @@ public class SCD_Grouped_cal  extends    SCDcal
       UniformGrid_d key_grid = (UniformGrid_d)grids.get( key_id );
 
                             // find position of the key grid in array of dets
-      int det_count = detArrayIndex( key_id, grid_array );
+      int det_count = SCDcal_util.detArrayIndex( key_id, grid_array );
 
       det_index = DET_BASE_INDEX + det_count * N_DET_PARAMS;
 
@@ -309,7 +311,7 @@ public class SCD_Grouped_cal  extends    SCDcal
         UniformGrid_d member_grid = (UniformGrid_d)grids.get( member_id );
 
                            // find position of the member grid in array of dets
-        det_count = detArrayIndex( member_id, grid_array );
+        det_count = SCDcal_util.detArrayIndex( member_id, grid_array );
 
         det_index = DET_BASE_INDEX + det_count * N_DET_PARAMS;
         width  = all_parameters[ det_index + DET_WIDTH_INDEX  ];
@@ -376,26 +378,61 @@ public class SCD_Grouped_cal  extends    SCDcal
 
 
   /**
-   *  Find the index of a specified grid ID in the specified array
-   *  of UniformGrid_d objects.
+   *  Show the progress of the calibration calculation by printing the
+   *  observed lattice parameters, standard deviation in the current 
+   *  function values (i.e. differences between Q theoretical and
+   *  Q observed) and the current detector parameter estimates.
    *
-   *  @return If a grid with the specified ID is present in the array,
-   *          this returns the position in the array where it occurs.
-   *          If there is no grid with the specified id in the array, then
-   *          this throws an illegal argument exception.
+   *  @param message  A message String to print before the progress info
+   *  @param out      The PrintStream to which the message and info is
+   *                  to be sent.
    */
-  private int detArrayIndex( int id, UniformGrid_d[] array )
+  public void ShowProgress( String message, PrintStream out )
   {
-    int det_count = 0;   
-    while ( det_count < array.length &&
-            array[det_count].ID() != id )
-      det_count++;
+    if ( out == null )
+      return;
 
-    if ( det_count > array.length )
-      throw new IllegalArgumentException("Did not find detector ID " + id );
+    out.println("==================================================");
+    out.println(message);
+    out.println("==================================================");
+    out.println( "Number of evaluations = " + eval_count );
 
-    return det_count;
+                                       // first show observed cell parameters
+                                       // for current stage of calibration
+    double my_B[][] = SCDcal_util.copy ( B_observed );
+    for ( int k = 0; k < 3; k++ )
+      for ( int j = 0; j < 3; j++ )
+        my_B[k][j] /= (2*Math.PI);
+
+    double cell_params[] = lattice_calc.LatticeParamsOfUB( my_B );
+    out.println("Observed cell parameters now are.... ");
+    for ( int i = 0; i < 3; i++ )
+      out.print( " " + Format.real( cell_params[i], 10, 6 ) );
+    for ( int i = 3; i < 6; i++ )
+      out.print( " " + Format.real( cell_params[i], 10, 5 ) );
+    out.println( " " + Format.real( cell_params[6], 10, 5 ) );
+
+                                       // then show the standard deviation of
+                                       // the error in q, from all zeros
+    double index[] = new double[n_peaks];
+    for ( int i = 0; i < index.length; i++ )
+      index[i] = i;
+
+    double vals[] = getValues( index );
+    double sum_sq_errors = 0;
+    for ( int i = 0; i < vals.length; i++ )
+      sum_sq_errors += vals[i] * vals[i];
+
+    standard_dev_in_Q = Math.sqrt( sum_sq_errors/vals.length );
+
+    out.println();
+    out.println("One standard dev error distance in Q = " + standard_dev_in_Q );
+
+    double L1 = parameters[ SCDcal.L1_INDEX ];
+    double t0 = parameters[ SCDcal.T0_INDEX ];
+    SCDcal_util.WriteNewCalibrationInfo( out, L1, t0, grid_array );
   }
+
 
 
  /* -------------------------------------------------------------------------
@@ -517,15 +554,15 @@ public class SCD_Grouped_cal  extends    SCDcal
       for ( int i = 0; i < groups.length; i++ )      // just one detector
         groups[i][0] = grid_arr[i].ID();
 */
-//    int[][] groups = { { 2, 3, 4, 5, 6, 7, 8, 9, 10 } };
+      int[][] groups = { { 2, 3, 4, 5, 6, 7, 8, 9, 10 } };
 /*    int[][] groups = { { 2, 3, 4 }, 
                          { 5, 6, 7 }, 
                          { 8, 9, 10 } };
-*/
+
       int[][] groups = { { 2 }, { 3 }, { 4 }, 
                          { 5 }, { 6 }, { 7 }, 
                          { 8 }, { 9 }, { 10 } };
-
+*/
                                                   // turn off everything but
                                                   // width & height for NON-KEY
       for ( int i = 0; i < grid_arr.length; i++ )   
@@ -569,6 +606,12 @@ public class SCD_Grouped_cal  extends    SCDcal
       {
         System.out.println("Can't find file " + log_name );
       }
+
+     for ( int i = 0; i < is_used.length; i++ )
+       if ( is_used[i] )
+         System.out.println( "USED " + parameter_names[i] );
+       else
+         System.out.println( "     " + parameter_names[i] );
 
       SCD_Grouped_cal error_f = new SCD_Grouped_cal( peaks, 
                                      grids,
