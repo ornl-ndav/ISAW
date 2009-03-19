@@ -368,6 +368,7 @@ public class SCDcal   extends    OneVarParameterizedFunction
        nominal_up_vec  [ det_count ] = grid.y_vec();
      }
 
+/*
      System.out.println("GRIDS initial position, base and up vectors are:");
      for ( int i = 0; i < nominal_position.length; i++ )
      {
@@ -376,7 +377,7 @@ public class SCDcal   extends    OneVarParameterizedFunction
        System.out.println( nominal_base_vec[i] );
        System.out.println( nominal_up_vec[i] );
      }
-
+*/
      qxyz_theoretical = new double[n_peaks][3];
      qxyz_observed    = new double[n_peaks][3];
 
