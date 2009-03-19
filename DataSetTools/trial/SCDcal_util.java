@@ -124,6 +124,190 @@ public class SCDcal_util
 
 
   /**
+   *  Form an int[][] with valid groups, as specified by the input Vector 
+   *  of Vectors defining the groups.  The groups are "validated" by 
+   *  removing any IDs that are not valid detector IDs, and by removing any
+   *  duplicate group IDs.  The is_used flags array is also updated 
+   *  by setting the position and orientation flags to false for each member
+   *  of a group that is not the "key" member, and by setting all
+   *  flags to false for any detector NOT listed in a group.  
+   *
+   *  @param groups_vec  Each entry in this Vector must be another Vector
+   *                     which contains the Integer objects for one group
+   *                     of detectors.
+   *  @param grids       Hashtable of the grid objects.
+   *  @param is_used     Vector of flags indicating which parameters are
+   *                     used in the calibration.  These flags are updated
+   *                     based on the final group information in the int[][]
+   *                     that is built by this method.
+   *
+   *  @return An int[][] where each row contains the IDs of a valid group
+   *          of detectors.  The is_used flags are also updated by setting
+   *          the position and orientation flags to false for each member
+   *          of a group that is not the "key" member, and setting all
+   *          flags false for any detector NOT listed in a group.
+   */
+  public static int[][] formGroups( Vector groups_vec, 
+                                    Hashtable grids,
+                                    boolean[] is_used )
+  {
+    for ( int i = 0; i < groups_vec.size(); i++ )
+    {
+      Vector this_group = (Vector)groups_vec.elementAt(i);
+      for ( int j = 0; j < this_group.size(); j++ )
+        if ( ! ( (Integer)this_group.elementAt(j) instanceof Integer ) )
+          throw new IllegalArgumentException( 
+            "Need Vector of Vector of Integers in SCDcal_util.formGroups()" ); 
+    }
+                                         // First "filter" the groups_vec
+                                         // it only has valid detector IDs
+    for ( int i = groups_vec.size() - 1; i >= 0; i-- )
+    {
+      Vector this_group = (Vector)groups_vec.elementAt(i);
+      for ( int j = this_group.size()-1; j >= 0; j-- )
+      {
+        Integer id = (Integer)this_group.elementAt(j);
+        UniformGrid_d grid = (UniformGrid_d)grids.get(id);
+        if ( grid == null )
+        {
+          this_group.removeElementAt(j); // discard invalid detector_id
+          SharedMessages.addmsg("WARNING: Removed invalid detector_id: "+id );
+          System.out.println("WARNING: Removed invalid detector_id: "+id );
+        }
+      }
+      if ( this_group.size() <= 0 )
+        groups_vec.removeElementAt(i);   // discard empty group
+    }
+
+                                         // Next, get rid of any duplicates
+    Hashtable id_hash = new Hashtable();
+    for ( int i = groups_vec.size() - 1; i >= 0; i-- )
+    {
+      Vector this_group = (Vector)groups_vec.elementAt(i);
+      for ( int j = this_group.size()-1; j >= 0; j-- )
+      {
+        Integer id = (Integer)this_group.elementAt(j);
+        Integer previous_id = (Integer)id_hash.get(id); 
+        if ( previous_id != null )
+        {
+          this_group.removeElementAt(j); // discard previously used group_id
+          SharedMessages.addmsg("WARNING: Removed duplicate detector_id: "+id );
+          System.out.println("WARNING: Removed duplicate detector_id: "+id );
+        }
+        else
+          id_hash.put( id, id );
+      }
+      if ( this_group.size() <= 0 )
+        groups_vec.removeElementAt(i);   // discard empty group
+    }
+    
+                                         // Now form the groups array.
+    int[][] groups = new int[groups_vec.size()][];
+    for ( int i = 0; i < groups_vec.size(); i++ )
+    {
+      Vector this_group = (Vector)groups_vec.elementAt(i);
+      groups[i] = new int[ this_group.size() ];
+      for ( int j = 0; j < this_group.size(); j++ )
+        groups[i][j] = (Integer)this_group.elementAt(j);
+    }
+                                         // Adjust the is_used flags
+                                         // so detectors NOT in a group are NOT
+                                         // used at all.
+    UniformGrid_d[] grid_array = getAllGrids( grids );
+    for ( int det_index = 0; det_index < grid_array.length; det_index++ )
+    {
+      Integer grid_id = (Integer)id_hash.get( grid_array[det_index].ID() );
+
+      if ( grid_id == null )             // grid not in group, so don't modify
+      {
+        int index = SCDcal.DET_BASE_INDEX + det_index * SCDcal.N_DET_PARAMS;
+        is_used[ index + SCDcal.DET_WIDTH_INDEX  ] = false;
+        is_used[ index + SCDcal.DET_HEIGHT_INDEX ] = false;
+        is_used[ index + SCDcal.DET_X_OFF_INDEX  ] = false;
+        is_used[ index + SCDcal.DET_Y_OFF_INDEX  ] = false;
+        is_used[ index + SCDcal.DET_D_INDEX      ] = false;
+        is_used[ index + SCDcal.DET_PHI_INDEX    ] = false;
+        is_used[ index + SCDcal.DET_CHI_INDEX    ] = false;
+        is_used[ index + SCDcal.DET_OMEGA_INDEX  ] = false;
+      }
+    }
+                                         // Adjust the is_used flags so
+                                         // detectors that are not the
+                                         // "key" member are not moved.
+    for ( int i = 0; i < groups.length; i++ )
+    {
+      for ( int j = 1; j < groups[i].length; j++ )   // grid not a key grid so
+      {                                              // don't move it
+        int member_id = groups[i][j];
+        int det_index = detArrayIndex( member_id, grid_array ); 
+        int index = SCDcal.DET_BASE_INDEX + det_index * SCDcal.N_DET_PARAMS;
+        is_used[ index + SCDcal.DET_X_OFF_INDEX  ] = false;
+        is_used[ index + SCDcal.DET_Y_OFF_INDEX  ] = false;
+        is_used[ index + SCDcal.DET_D_INDEX      ] = false;
+        is_used[ index + SCDcal.DET_PHI_INDEX    ] = false;
+        is_used[ index + SCDcal.DET_CHI_INDEX    ] = false;
+        is_used[ index + SCDcal.DET_OMEGA_INDEX  ] = false;
+      } 
+    }
+
+    return groups;
+  }
+
+
+  /**
+   *  Print the collection of group IDs used for calibration to the
+   *  specified stream, in human readable form.
+   *
+   *  @param  out     The PrintStream to which the ids will be printed 
+   *  @param  groups  The list of arrays giving the group structure
+   *                  used for the calibration.
+   */
+  public static void showGroups( PrintStream out, 
+                                 int[][]     groups )
+  {
+    if ( out == null || groups == null )
+      return;
+
+    out.println();
+    out.println("Detector Groups used in calibration..... ");
+    for ( int i = 0; i < groups.length; i++ )
+    {
+      if ( groups[i] != null )
+      {
+        out.print("Group " + i + ": " );
+        for ( int j = 0; j < groups[i].length; j++ )
+          out.print(" " + groups[i][j] );
+        out.println();
+      } 
+    }
+    out.println();
+  }
+
+
+  /**
+   *  Find the index of a specified grid ID in the specified array
+   *  of UniformGrid_d objects.
+   *
+   *  @return If a grid with the specified ID is present in the array,
+   *          this returns the position in the array where it occurs.
+   *          If there is no grid with the specified id in the array, then
+   *          this throws an illegal argument exception.
+   */
+  public static int detArrayIndex( int id, UniformGrid_d[] array )
+  {
+    int det_count = 0;
+    while ( det_count < array.length &&
+            array[det_count].ID() != id )
+      det_count++;
+
+    if ( det_count > array.length )
+      throw new IllegalArgumentException("Did not find detector ID " + id );
+
+    return det_count;
+  }
+
+
+  /**
    *  Write all of the parameters names and values to the specified stream
    *
    *  @param  out      The print stream to write to
