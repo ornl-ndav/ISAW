@@ -913,6 +913,15 @@ public class SCDcalib extends GenericTOF_SCD
       SCDcal_util.MakeDisplay( "Theoretical vs Measured TOF, ID " + det_id, 
                                "Time", "us", tof_pairs );
     }
+
+    message = "CALIBRATION INFORMATION";
+
+    error_f.ShowOldCalibrationInfo( System.out );
+    double L1 = parameters[ SCDcal.L1_INDEX ];
+    double t0 = parameters[ SCDcal.T0_INDEX ];
+    error_f.ShowProgress( message, System.out );
+    SCDcal_util.WriteNewCalibrationInfo( System.out, L1, t0, grid_arr );
+
                                                    // record the results file
     String resultname = RESULTS_FILE_NAME;
     PrintStream result_print = null;
@@ -929,26 +938,25 @@ public class SCDcalib extends GenericTOF_SCD
       result_print = null;
     }
 
-    grid_arr = SCDcal_util.getAllGrids(grids);
-    double s_dev = error_f.getStandardDeviationInQ();
-
-    SCDcal_util.WriteAllParams( 
-                System.out, parameter_names, parameters, s_dev, grid_arr );
     if ( result_print != null )
     {
+      SCDcal_util.WriteAllParams( result_print, parameter_names, parameters );
       error_f.ShowOldCalibrationInfo( result_print );
-      SCDcal_util.WriteAllParams(
-                  result_print, parameter_names, parameters, s_dev, grid_arr);
+      error_f.ShowProgress( message, result_print );
+      SCDcal_util.WriteNewCalibrationInfo( result_print, L1, t0, grid_arr );
       result_print.close();
     }
 
     if ( log_print != null )
     {
-      SCDcal_util.WriteAllParams( 
-                  log_print, parameter_names, parameters, s_dev, grid_arr );
+      SCDcal_util.WriteAllParams( log_print, parameter_names, parameters );
+      error_f.ShowOldCalibrationInfo( log_print );
+      error_f.ShowProgress( message, log_print  );
+      SCDcal_util.WriteNewCalibrationInfo( log_print, L1, t0, grid_arr );
       log_print.close();
     }
 
+/*
     float results[] = new float[ parameters.length ];
     for ( int i = 0; i < parameters.length; i++ )
       results[i] = (float)parameters[i];
@@ -957,7 +965,8 @@ public class SCDcalib extends GenericTOF_SCD
     result_vector.addElement( results );
     result_vector.addElement( parameter_names );
 
-//    return result_vector;
+    return result_vector;
+*/
     return "Complete";
   }
 
