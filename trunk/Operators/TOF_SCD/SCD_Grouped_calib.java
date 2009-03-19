@@ -244,29 +244,31 @@ public class SCD_Grouped_calib extends GenericTOF_SCD
     Res.append(" The detectors can be arranged in groups.  During the ");
     Res.append(" optimization, detectors in a group will be moved ");
     Res.append(" together as though rigidly attached to each other. ");
-    Res.append(" This allow treating each detector panels for the SNAP ");
+    Res.append(" This allows treating each detector panel for the SNAP ");
     Res.append(" instrument as a rigid assembly.  ");
-    Res.append(" NOTE: This operator automatically writes two files to ");
-    Res.append(" by default to the users home directory. ");
+    Res.append(" NOTE: This operator automatically writes two files ");
+    Res.append(" by default to the user's home directory. ");
     Res.append(" The first file, SCD_Grouped_calib.results, ");
     Res.append(" contains the results of the calibration, including the ");
-    Res.append(" internal form of all supported parameters, the local ");
-    Res.append(" coordinate basis vectors for the detectors, and the ");
+    Res.append(" internal form of all supported parameters, the  ");
     Res.append(" calibrated L1, t0 and detector position information ");
     Res.append(" in the form used by ISAW's SNS SCD codes.  This file ");
     Res.append(" can also be read by the operator, to get initial values ");
-    Res.append(" for the parameters, instead of using nominal values from ");
-    Res.append(" the runfile.  If you specify that the results from this ");
-    Res.append(" be used as initial values, it is possible to resume ");
-    Res.append(" refining the parameters after the operator has terminated.");
-    Res.append(" The second file that is automatically ");
+    Res.append(" for the parameters, instead of using values from ");
+    Res.append(" the NeXus file.  After running this at least once, you ");
+    Res.append(" can check the option to Load Initial Values From File. ");
+    Res.append(" By doing this, it is possible to resume refining the ");
+    Res.append(" parameters from where they were after the operator ");
+    Res.append(" terminated.  The second file that is automatically ");
     Res.append(" produced is SCD_Grouped_calib.log.  This log file ");
     Res.append(" contains the ");
     Res.append(" initial values used for this run, some progress reports ");
     Res.append(" on the optimization, written while it's in progress, lists ");
     Res.append(" of theoretical versus measured row, col and tof values for ");
-    Res.append(" all detectors, and the resulting parameters in");
-    Res.append(" internal form.");
+    Res.append(" all detectors, the resulting parameters in");
+    Res.append(" internal form, and final calibration information both ");
+    Res.append(" in the new SNS form and in the form needed for the ");
+    Res.append(" old IPNS SCD instrument. ");
 
     Res.append("@algorithm The calibration codes calculate where peaks ");
     Res.append(" should occur in Q-space (theoretical positions) based ");
@@ -280,19 +282,33 @@ public class SCD_Grouped_calib extends GenericTOF_SCD
     Res.append(" when the algorithm terminates.  The user can also ");
     Res.append(" choose which instrument parameters are adjusted. ");
     Res.append(" Since the instrument parameters are related, ");
-    Res.append(" it is NOT possible to optimize the fit for all ");
+    Res.append(" it may not be possible to optimize the fit for all ");
     Res.append(" of them simultaneously.  For example, if the detector ");
-    Res.append(" distance is allowed to vary, the detector width and ");
-    Res.append(" height should be kept fixed. ");
+    Res.append(" distance is allowed to vary, it may be best to keep " );
+    Res.append(" the detector width and height fixed. ");
 
     Res.append("@param  peaksfile - SCD peaks file containing the ");
     Res.append(" observed peaks.");
     
     Res.append("@param  det_groups - String specifying how the detectors ");
     Res.append(" should be grouped during the optimization. ");
-    Res.append(" The positions and orientations of the detectors in ");
+    Res.append(" The positions and orientations of the detectors in a group ");
     Res.append(" are all changed together, as though the detectors were ");
     Res.append(" rigidly attached to each other.");
+    Res.append(" The groups must be specified as a list of lists of ");
+    Res.append(" detector IDs.  Square brackets indicate a list, and ");
+    Res.append(" detector IDs are spcified in comma separated lists. ");
+    Res.append(" A range of consecutive integers can be specified using " );
+    Res.append(" a colon between the first and last integer.  For example: " );
+    Res.append(" [[2:5][6,9,10:20]].");
+    Res.append(" NOTE: The groups are checked for validity before ");
+    Res.append(" they are used.  Specifically, any detectors that are ");
+    Res.append(" not present in the peaks file are removed from groups. ");
+    Res.append(" Any duplicate detector IDs are also removed.  ");
+    Res.append(" Any detector that is NOT listed in a group will not be ");
+    Res.append(" adjusted during the calibration.  ");
+    Res.append(" If individual detectors are to be adjusted, they must ");
+    Res.append(" be put in a group with one member.");
 
     Res.append("@param  a - Lattice parameter, 'a b c' must correspond ");
     Res.append(" to the order of the axes in the peaksfile.");
@@ -304,21 +320,21 @@ public class SCD_Grouped_calib extends GenericTOF_SCD
     Res.append(" to the order of the axes in the peaksfile.");
 
     Res.append("@param  alpha - Lattice parameter, 'alpha beta gamma' ");
-    Res.append(" angles must correspond to the order of the axes in the ");
+    Res.append(" angles must correspond to the order of the angles in the ");
     Res.append(" peaks file");
 
     Res.append("@param  beta - Lattice parameter, 'alpha beta gamma' ");
-    Res.append(" angles must correspond to the order of the axes in the ");
+    Res.append(" angles must correspond to the order of the angles in the ");
     Res.append(" peaks file");
 
     Res.append("@param  gamma - Lattice parameter, 'alpha beta gamma' ");
-    Res.append(" angles must correspond to the order of the axes in the ");
+    Res.append(" angles must correspond to the order of the angles in the ");
     Res.append(" peaks file");
 
     Res.append("@param  max_steps - The maximum number of iteration ");
     Res.append(" steps for the optimization. ");
 
-    Res.append("@param  tol_exp - he exponent for the tolerance. ");
+    Res.append("@param  tol_exp - The exponent for the tolerance.  ");
     Res.append(" The iteration stops when the normalized relative ");
     Res.append(" change in the parameters is less than 10^tol_exp.");
     Res.append(" Values of -10 to -16 should work.");
@@ -377,11 +393,18 @@ public class SCD_Grouped_calib extends GenericTOF_SCD
     Res.append(" This is a convenient way to refine iteratively on different ");
     Res.append(" sets of parameters.");
 
+    Res.append(" @param data_dir - Directory where the .resuls and .log ");
+    Res.append(" will be written.  This defaults to the user's home ");
+    Res.append(" directory.  ");
+
+    Res.append("@return A String indicating that the operation was ");
+    Res.append(" completed.  ");
+/*
     Res.append("@return A vector containing entries giving the ");
     Res.append(" values of the instrument parameters followed by the ");
     Res.append(" names of the instrument paramters.  Most of the results ");
     Res.append(" are currently displayed on the system console. ");
-
+*/
     return Res.toString();
   }
 
@@ -395,8 +418,7 @@ public class SCD_Grouped_calib extends GenericTOF_SCD
   {
     parameters = new Vector();
 
-    LoadFilePG peaksfilePG = new LoadFilePG( "Peaks file", 
-                              "/usr2/SNAP_2/QUARTZ/quartz_235-246_NEW.peaks" );
+    LoadFilePG peaksfilePG = new LoadFilePG( "Peaks file", null );
     peaksfilePG.setFilter( new PeaksFilter(  ) );
     addParameter( peaksfilePG );
 
@@ -782,12 +804,14 @@ public class SCD_Grouped_calib extends GenericTOF_SCD
 
     message = "CALIBRATION INFORMATION:";
     error_f.ShowProgress( message, System.out );
+    SCDcal_util.showGroups( System.out, groups );
 
 
     if ( result_print != null )
     {
       SCDcal_util.WriteAllParams( result_print, parameter_names, parameters );
       error_f.ShowProgress( message, result_print );
+      SCDcal_util.showGroups( result_print, groups );
       result_print.close();
     }
 
