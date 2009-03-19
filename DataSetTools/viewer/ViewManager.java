@@ -1602,7 +1602,7 @@ private float solve( float new_x ) // find what x in the original DataSet maps
          return;
       }
      
-     IsawGUI.Browser x=(new IsawGUI.Browser( url ));
+     Browser x=(new Browser( url ));
     }
  }
 
