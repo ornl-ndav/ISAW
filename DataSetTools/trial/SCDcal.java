@@ -1124,11 +1124,9 @@ public class SCDcal   extends    OneVarParameterizedFunction
       error_f.ShowProgress( message, System.out );
       error_f.ShowProgress( message, error_f.log_file );
 
-      double s_dev = error_f.getStandardDeviationInQ();
+      SCDcal_util.WriteGridInfo( System.out, grid_arr );
       SCDcal_util.WriteAllParams( System.out,
                                   parameter_names,
-                                  parameters,
-                                  s_dev,
-                                  grid_arr );
+                                  parameters );
     }
 }
