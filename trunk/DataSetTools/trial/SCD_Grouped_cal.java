@@ -395,7 +395,9 @@ public class SCD_Grouped_cal  extends    SCDcal
     out.println("==================================================");
     out.println(message);
     out.println("==================================================");
+    out.println();
     out.println( "Number of evaluations = " + eval_count );
+    out.println();
 
                                        // first show observed cell parameters
                                        // for current stage of calibration
@@ -427,6 +429,7 @@ public class SCD_Grouped_cal  extends    SCDcal
 
     out.println();
     out.println("One standard dev error distance in Q = " + standard_dev_in_Q );
+    out.println();
 
     double L1 = parameters[ SCDcal.L1_INDEX ];
     double t0 = parameters[ SCDcal.T0_INDEX ];
@@ -679,8 +682,6 @@ public class SCD_Grouped_cal  extends    SCDcal
       double s_dev = error_f.getStandardDeviationInQ();
       SCDcal_util.WriteAllParams( System.out,
                                   parameter_names, 
-                                  parameters, 
-                                  s_dev,
-                                  grid_arr );
+                                  parameters );
     }
 }
