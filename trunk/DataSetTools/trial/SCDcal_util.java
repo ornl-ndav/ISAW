@@ -269,7 +269,9 @@ public class SCDcal_util
       return;
 
     out.println();
-    out.println("Detector Groups used in calibration..... ");
+    out.println("================================================");
+    out.println("Detector Groups used in calibration:");
+    out.println("================================================");
     for ( int i = 0; i < groups.length; i++ )
     {
       if ( groups[i] != null )
@@ -337,20 +339,42 @@ public class SCDcal_util
 
 
   /**
+   *  Utility method to write all of the parameters names with an 
+   *  indication of whether or not they are used.
+   *
+   *  @param  out     The print stream to write to
+   *  @param  names   The list of parameter names
+   *  @param  is_used List of flags indicating whether or not the 
+   *                  corresponding parameter is used for calibration
+   */
+  public static void ShowIfUsed( PrintStream  out,
+                                 String[]     name,
+                                 boolean[]    is_used )
+  {
+    out.println(); 
+    out.println("================================================="); 
+    out.println("PARAMETERS USED FOR CALIBRATION:"); 
+    out.println("================================================="); 
+    for ( int i = 0; i < is_used.length; i++ )
+      if ( is_used[i] )
+        out.println( "USED " + name[i] );
+      else
+        out.println( "     " + name[i] );
+  }
+
+
+
+  /**
    *  Utility method to write all of the parameters names and values to 
    *  a specified stream
    *
    *  @param  out    The print stream to write to
    *  @param  names  The list of parameter names
    *  @param  values The list of parameter values
-   *  @param  s_dev  One standard deviation error distance in Q
-   *  @param  grids  Array of the data grids
    */
   public static void WriteAllParams( PrintStream    out,
                                      String         names[],
-                                     double         values[],
-                                     double         s_dev,
-                                     UniformGrid_d  grids[]    )
+                                     double         values[] )
   {
     if ( out == null )
     {
@@ -364,8 +388,6 @@ public class SCDcal_util
     out.println("# Lengths in meters");
     out.println("# Times in microseconds");
     out.println("# Angles in degrees");
-    out.println("#");
-    out.println("# One standard deviation error distance in Q = " + s_dev );
     out.println("#");
     int max_label_length = 0;
     for ( int i = 0; i < names.length; i++ )
@@ -383,6 +405,18 @@ public class SCDcal_util
       else
         out.println ( values[i] );
     }
+  }
+
+
+  /**
+   *  Utility method to write the information about the detector data grids
+   *  to the specified output stream.
+   *
+   *  @param  out    The print stream to write to
+   *  @param  grids  The array of detector grids to print.
+   */
+  public static void WriteGridInfo( PrintStream out, UniformGrid_d[] grids )
+  {
     out.println("#");
     out.println("#");
     out.println("#  DETECTOR POSITION AND ORIENTATION VECTORS");
@@ -421,10 +455,6 @@ public class SCDcal_util
                            );
       out.println("#");
     }
-
-    double L1 = values[ SCDcal.L1_INDEX ];
-    double t0 = values[ SCDcal.T0_INDEX ];
-    WriteNewCalibrationInfo( out, L1, t0, grids );
   }
 
 
@@ -442,7 +472,6 @@ public class SCDcal_util
                                               double         t0,
                                               UniformGrid_d  grids[]    )
   {
-    out.println("#");
     out.println("#");
     out.println("# NEW CALIBRATION FILE FORMAT (in NeXus/SNS coordinates):");
     out.println("# Lengths are in centimeters. "); 
