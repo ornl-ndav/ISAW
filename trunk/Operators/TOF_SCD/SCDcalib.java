@@ -678,7 +678,7 @@ public class SCDcalib extends GenericTOF_SCD
       if ( grids.get(key) == null )            // new detector, so add it
       {
         grids.put( key, grid );
-        System.out.println("grid = " + grid );
+        System.out.println("Found detector :" + grid.ID() );
       }
     }
                                                    // set up the list of
