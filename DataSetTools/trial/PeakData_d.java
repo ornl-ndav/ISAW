@@ -801,6 +801,7 @@ public class PeakData_d
       }
     }
     
+    int num_000 = 0;
     for ( int i = 0; i < new_peaks.size(); i++ )
     {
       PeakData_d pd = new PeakData_d();
@@ -840,11 +841,12 @@ public class PeakData_d
       pd.k   = p.k();
       pd.l   = p.l();
       if ( pd.h == 0 && pd.k == 0 && pd.l == 0 )
-        System.out.println("Skipping Peak with h,k,l = 0,0,0");
+        num_000++;
       else
         pd_peaks.add( pd );
     }
 
+    System.out.println("Skipped " + num_000 + " peaks with h,k,l = 0,0,0");
     System.out.println("READ: " + pd_peaks.size() + " peaks" );
     return pd_peaks;
   }
