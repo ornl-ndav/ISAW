@@ -2300,7 +2300,7 @@ private class ReadoutListener implements ActionListener
      }
      
      public void actionPerformed( ActionEvent evt){
-        IsawGUI.Browser B =(new IsawGUI.Browser( HelpFileName));
+        Browser B =(new Browser( HelpFileName));
         if( B== null)
            return;
      }
