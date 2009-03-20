@@ -70,10 +70,18 @@ public class InterActiveExec extends GenericOperator{
     */
    public void setDefaultParameters(){
       clearParametersVector();
-      addParameter( new LoadFilePG("Executable Filename",null));
+      String DirName = System.getProperty( "ISAW_HOME" ,"");
+      DirName = DirName.replace( '\\' , '/' );
+      if( !DirName.endsWith( "/"))
+               DirName +='/';
+      DirName +="bin/";
+      DirName = DirName.replace( '/' , java.io.File.separatorChar );
+      
+      System.out.println("DirName= "+ DirName);
+      addParameter( new LoadFilePG("Executable Filename",DirName));
       addParameter( new StringPG("Short Name","short name"));
       addParameter( new ArrayPG("Command line args",new java.util.Vector()));
-      addParameter( new LoadFilePG("Working Dir",null));
+      addParameter( new DataDirPG("Working Dir",null));
       addParameter( new LoadFilePG("Help File Name",null));
    }
 
