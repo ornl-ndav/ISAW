@@ -90,7 +90,8 @@ public class Peak_new_IO
    *  Write the specified Vector of peaks to the specified file in the 
    *  new SNS peaks file format, with calibration information and
    *  a table of detector position and orientation information at
-   *  the start of the file.
+   *  the start of the file.  The peaks are sorted based on the run number
+   *  and detector ID ONLY.
    *
    *  @param  file_name  The name of the peaks file to be created.
    *  @param  peaks      A Vector of Peak_new objects.  NOTE:
@@ -100,9 +101,64 @@ public class Peak_new_IO
    *
    *  @throws an IOException if there is a problem writing the file.
    */
-  public static void WritePeaks_new( String           file_name, 
-                                     Vector<Peak_new> peaks, 
+  public static void WritePeaks_new( String           file_name,
+                                     Vector<Peak_new> peaks,
                                      boolean          append      )
+                     throws IOException
+  {
+     WritePeaksSorted( file_name, 
+                       peaks, 
+                       append, 
+                       new Peak_newBasicComparator() );
+  }
+
+
+  /**
+   *  Write the specified Vector of peaks to the specified file in the 
+   *  new SNS peaks file format, with calibration information and
+   *  a table of detector position and orientation information at
+   *  the start of the file.  The peaks are sorted based on the run number,
+   *  detector ID and the h,k,l values.
+   *
+   *  @param  file_name  The name of the peaks file to be created.
+   *  @param  peaks      A Vector of Peak_new objects.  NOTE:
+   *                     The Vector must contain only Peak_new objects.
+   *  @param  append     Flag indicating whether or not to append to
+   *                     an existing peaks file (CURRENTLY NOT USED).
+   *
+   *  @throws an IOException if there is a problem writing the file.
+   */
+  public static void WritePeaksSortedHKL( String           file_name,
+                                          Vector<Peak_new> peaks,
+                                          boolean          append      )
+                     throws IOException
+  {
+     WritePeaksSorted( file_name,
+                       peaks, 
+                       append, 
+                       new Peak_newComparator() );
+  }
+
+
+  /**
+   *  Write the specified Vector of peaks to the specified file in the 
+   *  new SNS peaks file format, with calibration information and
+   *  a table of detector position and orientation information at
+   *  the start of the file.  The peaks are sorted using the specified
+   *  Comparator for two Peak_new objects.
+   *
+   *  @param  file_name  The name of the peaks file to be created.
+   *  @param  peaks      A Vector of Peak_new objects.  NOTE:
+   *                     The Vector must contain only Peak_new objects.
+   *  @param  append     Flag indicating whether or not to append to
+   *                     an existing peaks file (CURRENTLY NOT USED).
+   *
+   *  @throws an IOException if there is a problem writing the file.
+   */
+  public static void WritePeaksSorted( String           file_name, 
+                                       Vector<Peak_new> peaks, 
+                                       boolean          append,
+                                       Comparator       comparator )
                      throws IOException
   {
      if ( peaks == null || peaks.size() <= 0 )
@@ -136,7 +192,7 @@ public class Peak_new_IO
      for ( int i = 0; i < peak_array.length; i++ )
         peak_array[i] = (Peak_new)(peaks.elementAt(i));
 
-     Arrays.sort( peak_array, new Peak_newComparator() );
+     Arrays.sort( peak_array, comparator );
 
      out.println( VERSION_TITLE    + " " + "2.0" + "  " +
                   FACILITY_TITLE   + " " + peak_array[0].getFacility() + "  " +
