@@ -33,7 +33,10 @@ statements to get the older versions of the source code.)
            .../IsawMake/build_scripts/build-installer
         scripts are correct for your system.
 
-2. In the IsawMake home directory, place the file: 
+2. Before doing a build, copy the latest versions of the scripts from
+   ISAW/BuildInfo/scripts to IsawMake/build_scripts
+
+3. In the IsawMake home directory, place the file: 
 
        svn_ISAW.config
 
@@ -43,7 +46,7 @@ statements to get the older versions of the source code.)
    also add a comment line containing the svn version numbers for each
    of the packages..
 
-3. Checkout the complete source tree from the repository by giving 
+4. Checkout the complete source tree from the repository by giving 
    the command:
 
       'svn_ISAW'
@@ -66,7 +69,7 @@ statements to get the older versions of the source code.)
          'svn_ISAW' does not "hang" when executed on the local SNS systems, 
          such as outback.sns.gov.  
 
-4. Build the class files, docs etc. by giving the command:
+5. Build the class files, docs etc. by giving the command:
 
       'dennis_make_distro.sh'
 
@@ -74,7 +77,7 @@ statements to get the older versions of the source code.)
    (doc_PACKDATE.jar, IPNS_PACKDATE.jar, Isaw_PACKDATE.jar, and 
     Operators_PACKDATE.jar) which can be used to create the installer.
 
-5. Build the installer and pack up the distribution jar by giving the command:
+6. Build the installer and pack up the distribution jar by giving the command:
 
       'build-installer'
 
@@ -82,13 +85,13 @@ statements to get the older versions of the source code.)
     version number specified in the first line of the 
     svn_ISAW.config file.
 
-6. Put the Isaw-nnnn-install.jar file on the ISAW ftp site at ORNL:
+7. Put the Isaw-nnnn-install.jar file on the ISAW ftp site at ORNL:
 
     http://ftp.sns.gov/ISAW 
 
    It can be browsed via HTTP and FTP.  To place the .jar file there,
    use sftp to faregate.ornl.gov and put the file in /var/ftp/ISAW. 
 
-7. Send an annoucement to the isaw mailing list:  isaw@email.ornl.gov.
+8. Send an annoucement to the isaw mailing list:  isaw@email.ornl.gov.
    The web site for the mailing list is:
        https://email.ornl.gov/mailman/listinfo/isaw
