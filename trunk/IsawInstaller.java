@@ -728,6 +728,35 @@ public class IsawInstaller extends JFrame
 	return;
     }
 
+
+    /**
+     *  Make all files in the ISAW/bin directory executable on Linux or Sun.
+     */
+    private void makeBinExecutable()
+    {  
+      if ( operating_system.equals(LIN_ID) || operating_system.equals(SUN_ID) )
+      {
+        String bin_dir = location.getText() + "/bin"; 
+        Process proc = null;
+        try 
+        {
+           String command = "chmod -R +x " + bin_dir;
+           proc=Runtime.getRuntime().exec( command );
+           proc.waitFor();
+        }
+        catch ( Exception e ) 
+        {
+          System.err.println("Could not make binaries executable: "+e);
+        }
+        finally
+        {
+          if ( proc != null )
+            proc.destroy();
+        }
+      }
+    }
+
+
     /* ======================== extraction ======================== */
     /**
      * Determine the name of the jar file.
@@ -1354,6 +1383,9 @@ public class IsawInstaller extends JFrame
 		    try { in.close(); } catch(IOException ioe) {} 
 		}
 	    }
+
+            makeBinExecutable();
+
 	    app.closeMain(extracted);
 	}
 
