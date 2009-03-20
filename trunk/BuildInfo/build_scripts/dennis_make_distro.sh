@@ -187,6 +187,15 @@ printf "done\n"
 cp -rf ISAW/InstrumentInfo  packup/ISAW
 
 #
+# move source code for Art's Fortran programs, and the bin directory
+# with executables to the packup directory, so it ends up unpacked
+#
+cp -rf ISAW/anvred   packup/ISAW
+cp -rf ISAW/matrix2  packup/ISAW
+cp -rf ISAW/bin      packup/ISAW
+chmod +x packup/ISAW/bin/*
+
+#
 #pack up class files, now putting the Operators directory in a separate file
 #
 printf "packing up class files..."
