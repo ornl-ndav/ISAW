@@ -899,6 +899,9 @@ public class Isaw
   private static final String WIN_ID     = "Windows";
 
   private static boolean showTiming=false;
+
+  private static SplashWindowFrame swe = null;  
+
   JDataTree jdt;  
 
   JPropertiesUI jpui;
@@ -1351,7 +1354,7 @@ public class Isaw
   /**
    * Deals with closing up ISAW.  Saves the window size and exits the system.
    */
-  void closeISAW(  ) {
+  private void closeISAW(  ) {
                                    // clamp the size stored in IsawProps.dat
                                    // so when Isaw restarts, the control panel
                                    // is at least still visible.
@@ -2355,53 +2358,116 @@ public class Isaw
     worker.start();
   }
 
-   /**
-    * entry point for the ISAW application.
-    */
-  public static void main( String[] args ) 
-  { try{
-      System.out.println("Start of IsawMain");
-      initScriptList(); // initialize Script_Class_List_Handler
-    
-      for( int i=0 ; i<Array.getLength(args) ; i++ ){
-        if("--version".equals(args[i])){
-            System.out.println(getVersion(true));
-            System.exit(0);
-        }else if("-v".equals(args[i])){
-            Script_Class_List_Handler.LoadDebug=true;
-            SharedData.DEBUG=true;
-        }else if("-t".equals(args[i])){
-          showTiming=true;
-        }
+
+  /**
+   *  The main method places two runnables on the AWT event queue.
+   *  The first runnable will just pop up the splash window 
+   *  from the event queue.  The second runnable will construct
+   *  and pop up the main Isaw window from the event queue.
+   *  It also does some of the initialization of Isaw that can
+   *  be done from the main thread, rather than from the event queue.
+   */
+  public static void main( String[] args )
+  {
+    System.out.println("Start of IsawMain");
+
+              // Queue up a request to pop up the spash screen.
+    SwingUtilities.invokeLater( new SplashStarter() );
+
+              // Sleep here to pause this thread and give time for
+              // the AWT event thread to run and actually display the
+              // splash window that was to be started.
+    try
+    {
+      Thread.sleep( 500 );
+    }
+    catch ( Exception e )
+    {
+       System.out.println("Exception while sleeping: " + e );
+    }
+
+    System.out.println("Loading "+getVersion(true));
+    initScriptList(); // initialize Script_Class_List_Handler
+
+    for( int i=0 ; i<Array.getLength(args) ; i++ ){
+      if("--version".equals(args[i])){
+          System.out.println(getVersion(true));
+          System.exit(0);
+      }else if("-v".equals(args[i])){
+          Script_Class_List_Handler.LoadDebug=true;
+          SharedData.DEBUG=true;
+      }else if("-t".equals(args[i])){
+        showTiming=true;
       }
-   
-      // show the splash screen
-      SplashWindowFrame swe = new SplashWindowFrame();
-      swe.showSplash();
+    }
+             // Now queue up the request to start ISAW in the
+             // AWT event thread.
+    IsawRunner isaw_runner = new IsawRunner( args );
+    SwingUtilities.invokeLater( isaw_runner ); 
+  }
 
-      System.out.println("Loading "+getVersion(true));
- 
-      JFrame Isaw = new Isaw( args );
-      Isaw.pack();
-      //Isaw.setBounds(x,y,window_width,window_height);
-      ((Isaw)Isaw).setBounds();
-      Isaw.validate();
 
-      //Isaw.show();   // replace call to show(), with later use of the 
-                       // WindowShower, so that the frame is only actually
-                       // displayed by the event thread, after it is completely
-                       // built.  Based on "Core Java Technologies Tech Tips", 
-                       // December 8, 2003
-      WindowShower.show( Isaw );
+  /**
+   *  This class will actually invoke code to construct and
+   *  display the main Isaw window, from the AWT event thread.
+   */
+  private static class IsawRunner implements Runnable
+  {
+    String[] args;
+    public IsawRunner( String[] args )
+    {
+      this.args = args;
+    }
+
+    public void run()
+    {
+      run_main( args );
+    }
+  }
+
+
+  /**
+   *  This class will invoke code to display the splash screen
+   *  from the AWT event thread.
+   */
+  private static class SplashStarter implements Runnable
+  {
+    public void run()
+    {
+       swe = new SplashWindowFrame();
+       swe.showTimedSplash();
+       // NOTE: We MUST use showTimedSpash() rather than
+       //       just show splash, so that the window will
+       //       still eventually be closed, even if it was
+       //       opened late, after ISAW came up.  If it 
+       //       opens late, then the code in run_main() that
+       //       should close it, will have already been done
+       //       (with no effect) before the splash window
+       //       gets shown. :-(
+    }
+  }
+
+
+   /**
+    * This method actually constructs the main ISAW application
+    * and GUI.  It must be called from the AWT event thread.
+    */
+  public static void run_main( String[] args ) 
+  {
+   try{
+      Isaw isaw = new Isaw( args );
+      isaw.pack();
+
+      isaw.setBounds();
+      isaw.setVisible( true );
       
-      //hide the splash screen
-      swe.dispose();
+      if ( swe != null ) // get rid of the splash screen, if any.
+      {
+        swe.dispose();
+        swe = null;
+      }
       
-      //this has to be some of the ugliest syntax I have seen yet, but I had to do it.  I didn't know the
-      //reason behind making the Isaw instance a JFrame (why not just make it of type Isaw?).
-      //At any rate, we need to cast it as an "Isaw" Object then qualify the "new" declaration (with the dot) 
-      //so we can instantiate the listener - CMB, 2004
-      Isaw.addWindowListener( ( ( Isaw )Isaw ).new IsawWindowCloser(  ) );
+      isaw.addWindowListener( isaw.new IsawWindowCloser(  ) );
 
       mw_resized();
     }catch( Throwable ss){

@@ -110,7 +110,7 @@ public class SplashWindowFrame extends    Frame
 {
   private static final int    WIN_WIDTH  = 475;  // size of splash screen
   private static final int    WIN_HEIGHT = 360;
-  private static final float  TIME       = 8;    // time to display the splash
+  private static final float  TIME       = 5;    // time to display the splash
                                                  // screen, in seconds
   
   private SplashWindow splash;
