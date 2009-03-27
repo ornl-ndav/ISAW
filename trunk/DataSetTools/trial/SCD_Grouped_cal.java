@@ -431,8 +431,8 @@ public class SCD_Grouped_cal  extends    SCDcal
     out.println("One standard dev error distance in Q = " + standard_dev_in_Q );
     out.println();
 
-    double L1 = parameters[ SCDcal.L1_INDEX ];
-    double t0 = parameters[ SCDcal.T0_INDEX ];
+    double L1 = all_parameters[ SCDcal.L1_INDEX ];
+    double t0 = all_parameters[ SCDcal.T0_INDEX ];
     SCDcal_util.WriteNewCalibrationInfo( out, L1, t0, grid_array );
   }
 
