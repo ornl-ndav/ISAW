@@ -96,7 +96,15 @@ public class Util {
     * @param num_slices        The number of slices around  peak in image view.
     * @param ViewPeaks         Show the Peaks file
     * @param slurm_queue_name  The name of the slurm queue where the
-    *                          processes should run
+    *                          processes should run.  If this is passed in 
+    *                          as null, just execute the prescribed number
+    *                          of processes locally.
+    * @param max_processes     The maximun number of processes to use, 
+    *                          locally, or with slurm.  This should not
+    *                          be larger than the number of cores available
+    *                          locally (or in the slurm queue if using slurm)
+    *                          and may need to be restrained further due to 
+    *                          available memory, if running locally.
     * @return a Vector of peaks, Grouped by detector
     */
    public static Vector<IPeak> findCentroidedPeaksUsingProcesses(
@@ -127,7 +135,8 @@ public class Util {
             boolean  show_peaks_view,
             int      num_slices,
             boolean  ViewPeaks,
-            String   slurm_queue_name )
+            String   slurm_queue_name,
+            int      max_processes )
   {
     if( runnums == null )
     {
@@ -200,11 +209,15 @@ public class Util {
         if ( mem == null )
           mem = "2000";
 
-        String cmd  = " java -mx" + mem + "M " + cp;
+        String cmd  = " java -mx" + mem + "M "     +
+                      " -XX:+AggressiveHeap "      +
+                      " -XX:+DisableExplicitGC "   +
+                      " -XX:ParallelGCThreads=4 "  + cp;
 
-        cmd = " srun -p " + slurm_queue_name +
-              " -J SCD_Find_Peaks -o " + result +
-              cmd;
+        if ( slurm_queue_name != null )               // use slurm, otherwise
+          cmd = " srun -p " + slurm_queue_name +      // just pass in the
+                " -J SCD_Find_Peaks -o " + result +   // basic command
+                cmd;
 
         FindPeaksProcessCaller s_caller =
                  new FindPeaksProcessCaller( cmd,
@@ -234,13 +247,39 @@ public class Util {
       }
 
     ParallelExecutor executor;
+
     int num_processes = run_numbers.length * ds_numbers.length;
+                                            // cap the number of processes to
+                                            // avoid overloading slurm or the
+                                            // local system.
+    if (num_processes > max_processes )
+      num_processes = max_processes;
 
-    executor = new ParallelExecutor(ops, num_processes, 600000);
+    int max_time = ops.size() * 120000 + 600000;
+    executor = new ParallelExecutor( ops, num_processes, max_time );
 
-    Vector results = executor.runOperators();
+    Vector results = null;
+    try                                     // try to do everything during the
+    {                                       // alloted time and return partial
+      results = executor.runOperators();    // results if something fails
+    }                                       // or we run out of time.
+    catch ( ExecFailException fail_ex )
+    {
+      FailState state = fail_ex.getFailureStatus();
 
-    if ( fout_prefix.startsWith("/SNS/" ) )             // do SNS Logging
+      String reason;
+      if ( state == FailState.NOT_DONE )
+        reason = "maximum time, " + max_time/1000 + " seconds, elapsed ";
+      else
+        reason = "a process was interrupted.";
+
+      SharedMessages.addmsg("WARNING: Find peaks did not finish: " + reason);
+      SharedMessages.addmsg("The result returned is incomplete.");
+      results = fail_ex.getPartialResults();
+    }
+
+    if ( fout_prefix.startsWith("/SNS/" ) &&             // do SNS Logging if
+         slurm_queue_name != null         )              // using slurm at SNS
     {
       String cmd = "/usr/bin/logger -p local5.notice ISAW ISAW_" +
                    Isaw.getVersion(false) + 
@@ -262,13 +301,16 @@ public class Util {
     {
       all_peaks = new Vector();
       for ( int i = 0; i < results.size(); i++ )
-      {
-        Vector peaks = (Vector)results.elementAt(i);
-        if ( peaks != null )
-          for ( int k = 0; k < peaks.size(); k++ )
-            all_peaks.add( peaks.elementAt(k) );
-        else
-          System.out.println("ERROR: NULL IN PEAK RESULTS VECTOR AT i = " + i );
+      {                                                  // if process did not
+        if ( results.elementAt(i) instanceof Vector )    // complete, there is
+        {                                                // a FailState object
+          Vector peaks = (Vector)results.elementAt(i);   // not a peaks Vector
+          if ( peaks != null )
+            for ( int k = 0; k < peaks.size(); k++ )
+              all_peaks.add( peaks.elementAt(k) );
+          else
+            System.out.println("ERROR: NULL IN PEAK RESULTS VECTOR AT i = "+i);
+        }
       }
 
       if ( append )
@@ -305,10 +347,7 @@ public class Util {
                SharedMessages
                         .addmsg( "Could NOT delete old " + PeakFileName );
             }
-
-
       }
-
 
       try
       {
@@ -338,9 +377,10 @@ public class Util {
     for ( int i = 0; i < peak_array.length; i++ )
       all_peaks.add( peak_array[i] );
 
-    if( ViewPeaks && (new File( out_file_name).exists()))     // pause briefly to allow the
-    {                                                        // file to finish writing
-       int     counter     = 0;                              // before we try to read it
+    if( ViewPeaks && (new File( out_file_name).exists())) 
+                                                // pause briefly to allow the
+    {                                           // file to finish writing
+       int     counter     = 0;                 // before we try to read it
        boolean file_exists = false;
        File    new_file;
        while ( counter < 10 && !file_exists )
@@ -467,8 +507,10 @@ public class Util {
                        ShowPeaksView,
                        numSlices,
                        ViewPeaks,
-                       slurm_queue_name );
-      
+                       slurm_queue_name,
+                       maxNumThreads );
+// START WITH THREADS      
+
       boolean useCache = false;
       if( runnums == null )
          return null;
@@ -615,7 +657,7 @@ public class Util {
                      }                    
                   }// for enumeration
                }// else gridIds == null
-                /* Took too long on ARCS DATA Set with 20000 time channels */
+                // Took too long on ARCS DATA Set with 20000 time channels 
                // (new WriteExp( DS, Monitor, ExpFileName ,ID,append1
                // ) ).getResult();
                // append1= true;  
@@ -731,6 +773,8 @@ public class Util {
         PeakArrayPanels.DisplayPeaks( "Peak Images",null,"",".pvw",currentTime);
 
       return ResultPeaks;
+
+// END WITH THREADS
    }
    
    /*//Uses parallel Executor(MergeInfo1). Requires reading in files first
