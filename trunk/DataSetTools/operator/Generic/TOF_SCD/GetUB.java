@@ -122,7 +122,6 @@ public class GetUB {
       List = null;
       Nelements =0;
       xixj = null;
-      // TODO Auto-generated constructor stub
    }
 
 
@@ -519,6 +518,204 @@ public class GetUB {
             return;
          }
       }
+   }
+   
+   /**
+    * Attempts to automatically create a vector of normals to 3 planes whose
+    * lengths correspond to the distance between the corresponding planes from a
+    * Vector of Peaks
+    * 
+    * @param Peaks
+    *           The vector of peaks
+    * @param omit
+    *           The peaks to omit
+    * @param gridLength
+    *           Directions are determined by a point in the upper half of the
+    *           unit circle( z is sqrt(1-x^2-y^2). This is the length between
+    *           two consecutive "directions" in x and in the y direction(.01 is
+    *           best)
+   
+    * @param code
+    *           a code that, if this algorithm fails to find 3 vectors, what
+    *           parameters to tweak code[0]=# of directions to choose from
+    *           code[0] = Min corr for the directions chosen code[0]=2- two of
+    *           the resultant vectors are close( lower newDir or up gridLength)
+    * @return  An array of possible orientation matrices. max 1st 50
+    */
+   public static Vector<float[][]> getAllOrientationMatrices( Vector Peaks , boolean[] omit ,
+            float gridLength ,float MaxXtalLengthReal ) {
+
+      List = new float[ 50 ][ 7 ];
+      Nelements = 0;
+      float[] line = new float[300];
+      float[] Res = doOneDirection( Peaks , 0f , 0f , omit , MaxXtalLengthReal,
+               line);
+      if( Res != null ) {
+         InsertInList(  Res );
+         
+      }
+      Res = doOneDirection( Peaks , 1f , 0f , omit , MaxXtalLengthReal,
+               line);
+      if( Res != null ) {
+          InsertInList(  Res );
+        
+      }
+      Res = doOneDirection( Peaks , 0f , 1f , omit , MaxXtalLengthReal,
+               line);
+      if( Res != null ) {
+          InsertInList(  Res );
+         
+      }
+
+     Thread[] thrds = new Thread[4];
+     for( int i=0; i<4;i++)
+        thrds[i] = new DoQuadrantDirections( Peaks, omit,  gridLength,
+             MaxXtalLengthReal, i);
+     Execute1( thrds);
+     
+     Vector<float[][]> MRes = new Vector<float[][]>();
+     if( Nelements < 1)
+        return MRes;
+     float FitMax = List[Nelements-1][FIT1]+List[Nelements-1][CORR];
+     FitMax = .75f*FitMax;
+     System.out.println("Through initial find directions,nelets, FitMax= "+Nelements+
+              ","+FitMax);
+     int n=Nelements-1;
+     for( int i=Nelements-1; i>0 && (List[i][FIT1]+List[i][CORR])> FitMax; i--)
+        n=i;
+     n = Math.max(  n , Nelements-1-70 );
+     for( int i=Nelements-1; i>= n; i--)
+        optimize( List[i],Peaks,omit,MaxXtalLengthReal);
+     System.out.println("Through with optimize of first " + n );
+     n = Nelements - 10;
+     for( int i=Nelements-1; i>=n; i--)
+        for( int j=i-1; j>= n; j--)
+           for( int k=j-1; k >= n; k--)
+              
+           {
+             float[][]UB = List2UBinv( i,j,k);
+             if( UB != null)
+                MRes.add( LinearAlgebra.copy( UB) );
+           }
+       System.out.println( "Through finding UB's");
+       return MRes;
+   }
+   
+   private static float[][] List2UBinv( int i1, int i2, int i3)
+   {
+      if( i1 <0 || i2<0|| i3 <0)
+         return null;
+      if( i1>= List.length || i2 >= List.length || i3 >= List.length)
+         return null;
+      float[][] Dirs = new float[3][3];
+      Dirs[0] = PlaneNormal( i1);
+      Dirs[1] = PlaneNormal( i2);
+      Dirs[2] = PlaneNormal( i3);
+      float[][] Res = UBMatrixFrPlanes( Dirs, null,null,null,1);
+      if( Res == null)
+         return null;
+      float Max = Float.MIN_VALUE;
+      float Min = Float.MAX_VALUE;
+      for( int i=0; i<3;i++)
+         for( int j=0; j<3; j++)
+         {
+            if( Res[i][j] >Max)
+               Max = Res[i][j];
+            if( Res[i][j] < Min)
+               Min = Res[i][j];
+            
+         }
+            
+      Max = Math.max(  Math.abs(Max) , Math.abs(Min) );
+      if( Math.abs(LinearAlgebra.determinant( LinearAlgebra.float2double( Res ) ))
+               < Max*Max*Max/1000)
+         return null;
+      return Res;
+      
+   }
+   private static float[] PlaneNormal( int i1){
+
+      float[] coeff = new float[3];
+      coeff[0]= List[i1][X];
+      coeff[1]= List[i1][Y];
+      float len = List[i1][LEN];
+      
+      coeff[2]=(float) Math.sqrt(1- coeff[0]*coeff[0]-coeff[1]*coeff[1]);
+      if( Float.isNaN( coeff[2] ))
+         coeff[2]=0;
+      coeff[0] *= len;
+      coeff[1] *= len;
+      coeff[2] *= len; 
+      return coeff;
+   }
+   private static boolean optimize( float[] ListElt, Vector Peaks,boolean[] omit,
+            float MaxXtalLengthReal)
+   {
+     
+      int k=0;
+      float[] coeff = new float[3];
+      coeff[0]= ListElt[X];
+      coeff[1]= ListElt[Y];
+      float len = ListElt[LEN];
+      
+      coeff[2]=(float) Math.sqrt(1- coeff[0]*coeff[0]-coeff[1]*coeff[1]);
+      if( Float.isNaN(  coeff[2] ))
+         coeff[2]=0;
+      coeff[0]/=len;
+      coeff[1]/=len;
+      coeff[2]/=len;
+      float[][] QQ = new float[3][3];
+      float[]IQ = new float[3];
+      java.util.Arrays.fill(QQ[0],0f);
+      java.util.Arrays.fill(QQ[1],0f);
+      java.util.Arrays.fill(QQ[2],0f);
+      java.util.Arrays.fill(IQ,0f);
+      
+      for( int i=0;i< Peaks.size(); i++)
+         if( omit == null || omit.length <= i || !omit[i])
+      {
+         float[] Qs =((IPeak)Peaks.elementAt( i )).getUnrotQ();
+         float indx = Qs[0]*coeff[0]+Qs[1]*coeff[1]+Qs[2]*coeff[2];
+         int IND = (int)Math.floor(  indx +.1 );
+         if( Math.abs( IND-indx)<.1)
+           for( int j=0; j<3;j++) 
+           {
+              IQ[j] +=Qs[j]*IND;
+              QQ[0][j]+= Qs[0]*Qs[j];
+              QQ[1][j] += Qs[1]*Qs[j];
+              QQ[2][j] += Qs[2]*Qs[j];
+           }
+         else k++;
+      }else
+         k++;
+      if( k == Peaks.size())
+         return false;
+     float[][] inv = LinearAlgebra.getInverse( QQ );
+     if( inv == null)
+        return false;
+     float[] Res = LinearAlgebra.mult( inv ,IQ );
+     if( Res == null)
+        return false;
+     len = (float)Math.sqrt( Res[0]*Res[0]+Res[1]*Res[1]+Res[2]*Res[2]);
+     if( len <=0)
+        return false;
+     float[] Listt = doOneDirection( Peaks ,Res[0]/len ,Res[1]/len ,
+              omit , MaxXtalLengthReal, new float[100] );
+     if( Listt == null)
+        return false;
+     
+     if( Listt[FIT1]+ Listt[CORR] <= ListElt[FIT1]+ ListElt[CORR])
+        return false;
+    
+     System.arraycopy( Listt,0,ListElt , 0 , Math.min(ListElt.length, Listt.length) );
+     return true;
+      
+   }
+   
+   private boolean showError(String message)
+   {
+      System.out.println( message );
+      return  false;
    }
    /**
     * Attempts to automatically create a vector of normals to 3 planes whose
@@ -945,9 +1142,9 @@ public class GetUB {
          return null;
       if( PlaneDirs.length < 3 )
          return null;
-      if( Peaks == null )
+      if( Peaks == null && stop !=1 )
          return null;
-      if( Peaks.size() < 4 )
+      if( Peaks != null && Peaks.size() < 4 )
          return null;
 
 
@@ -1150,7 +1347,7 @@ public class GetUB {
    }
    
    
-   
+   static float MinKeyVal = Float.NaN;
    private static synchronized void InsertInList( float[] Res ){
    
       
@@ -1162,6 +1359,14 @@ public class GetUB {
       
       boolean done = false;
       float key = Res[ FIT1 ] + Res[ CORR ];
+      if( Nelements <=0)
+         MinKeyVal = .5f*key;
+      else if(  List[Nelements-1][FIT1]+List[Nelements-1][CORR] < key)
+         MinKeyVal = .5f*key;
+      
+      if( key < MinKeyVal)
+        return;
+      
       for( int i = Nelements - 1 ; ( i >= 0 ) && ! done ; i-- ) {
          if( List[ i ][ FIT1 ] + List[ i ][ CORR ] > key )
             List[ i + 1 ] = List[ i ];
@@ -1171,7 +1376,9 @@ public class GetUB {
          }
       }
       if( ! done )
+      {
          List[ 0 ] = Res;
+      }
       Nelements++;
 
      
