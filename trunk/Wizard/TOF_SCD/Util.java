@@ -193,7 +193,7 @@ public class Util {
       {
         int ds_num  = ds_numbers[ ds_index ];
         int run_num = run_numbers[ run_index ];
-
+        ClearFiles( fileNamePrefix+run_numbers[run_index]);
         String fin_name  = rawpath + fileNamePrefix + run_num + extension;
         String fout_base = fout_prefix + run_num + "_DS_" + ds_num +
                               "_" + random.nextInt();
@@ -402,7 +402,8 @@ public class Util {
     }
 
     if ( show_peaks_view )
-      PeakArrayPanels.DisplayPeaks( "Test Peaks", null, "", null, -1 );
+      PeakArrayPanels.DisplayPeaks( "Test Peaks", null, "", null, -1, System.getProperty(
+              PeakArrayPanels.KEEP_IMAGES) != null );
 
     return all_peaks; 
   }
@@ -577,10 +578,11 @@ public class Util {
       for( int i = 0; i < Runs.length; i++ ){
          //Replace by FindNexus operator in Operators/Generic/System/findnexus static method.
          String filename = rawpath+fileNamePrefix+Runs[ i ]+extension;
-
+         ClearFiles( fileNamePrefix+Runs[i]);
          Retriever retriever = null;
          try {
             retriever = Command.ScriptUtil.getRetriever( filename );
+       
             if( cacheFilename != null)
             if( i == 0 && retriever instanceof NexusRetriever )
                ((NexusRetriever)retriever).SaveSetUpInfo( cacheFilename );
@@ -770,12 +772,53 @@ public class Util {
       }
    
       if( ShowPeaksView&& ResultPeaks != null && ResultPeaks.size()>0)
-        PeakArrayPanels.DisplayPeaks( "Peak Images",null,"",".pvw",currentTime);
+        PeakArrayPanels.DisplayPeaks( "Peak Images",null,"",".pvw",currentTime,
+                 System.getProperty(  PeakArrayPanels.KEEP_IMAGES )!= null );
 
       return ResultPeaks;
 
 // END WITH THREADS
    }
+   
+   //If image files will not be cleared after showing, should clear out all possible filenames
+   // in the default directory of peak images
+   private static void ClearFiles( String filenamePart )
+   {
+
+      if( System.getProperty( PeakArrayPanels.KEEP_IMAGES ) == null )
+         return;
+
+      String S = FileIO.appendPath( System.getProperty( "user.home" ) , "ISAW"
+               + File.separator + "tmp" + File.separator );
+
+      File F = new File( S );
+      if( ! F.exists() || ! F.isDirectory() )
+         return;
+
+      File[] list = F.listFiles();
+      if( list == null )
+         return;
+
+      for( int i = 0 ; i < list.length ; i++ )
+      {
+         String SS = list[ i ].getName();
+         if( SS != null && SS.endsWith( ".pvw" )
+                  && SS.startsWith( filenamePart + "_" ) )
+            try
+            {
+               list[ i ].delete();
+            }
+            catch( Exception ss )
+            {
+               System.out.println( "Cannot delete " + list[ i ].toString()
+                        + " because " + ss.toString() );
+
+            }
+      }
+
+
+   }
+   
    
    /*//Uses parallel Executor(MergeInfo1). Requires reading in files first
    // Then calculations are done in parallel
