@@ -187,6 +187,9 @@ public class SCD_Grouped_cal  extends    SCDcal
    */
   public void setParameters( double parameters[] )
   {
+    do_SCDcal_setParameters = false; // in SCD_Grouped_cal, we don't want to do 
+                                     // SCDcal's setParameters() method.
+
     if ( groups == null )    // this is null when called from the super class
       return;                // constructor, so we just return now.  This 
                              // method is called again from this classes' 

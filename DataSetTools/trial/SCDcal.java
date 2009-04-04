@@ -205,6 +205,11 @@ public class SCDcal   extends    OneVarParameterizedFunction
   protected int       used_p_index[];   // index into list of params used, 
                                         // for each possible parameter
 
+  protected boolean   do_SCDcal_setParameters; // subclasses should set this
+                                               // false, to do their own 
+                                               // setParameters() method and
+                                               // NOT do this one.!
+
   protected String    instrument_type;  // PeakData_d.SNS_SCD,
                                         // PeakData_d.IPNS_SCD or
                                         // PeakData_d.LANSCE_SCD
@@ -245,6 +250,9 @@ public class SCDcal   extends    OneVarParameterizedFunction
                                    // be called first, so we have to pass in
                                    // empty arrays and then change the values
      super( "SCDcal", new double[n_used], new String[n_used] );
+
+     do_SCDcal_setParameters = true; // in SCDcal, we want to do SCDcal's
+                                     // setParameters() method.
      this.log_file = log_file;
 
      this.instrument_type = instrument_type;
@@ -430,6 +438,8 @@ public class SCDcal   extends    OneVarParameterizedFunction
   public void setParameters( double parameters[] )
   {
     super.setParameters( parameters );
+    if ( !do_SCDcal_setParameters )
+      return;
 
     // copy the parameters that are being used for optimization into to master
     // list of parameters and then actually use all values from the master list.
