@@ -122,6 +122,10 @@ public class SCD_Grouped_calib extends GenericTOF_SCD
    *                      should be allowed to vary from it's nominal value.
    *  @param use_t0       Flag indicating whether or not the value of t0 
    *                      should be allowed to vary from it's nominal value.
+   *  @param use_A        Flag indicating whether or not the value of A 
+   *                      in the wavelength dependent time-of-flight shift
+   *                      equation calibrated_tof=A*tof+t0, should be allowed 
+   *                      to vary from it's nominal value of 1.
    *  @param use_ssh      Flag indicating whether or not the sample position
    *                      should be shifted from the center of the goniometer.
    *                      The shift values SX, SY, SZ are shifts in the
@@ -162,6 +166,7 @@ public class SCD_Grouped_calib extends GenericTOF_SCD
                             int      tol_exp,
                             boolean  use_L1,
                             boolean  use_t0,
+                            boolean  use_A,
                             boolean  use_ssh,
                             boolean  use_width,
                             boolean  use_height,
@@ -196,6 +201,7 @@ public class SCD_Grouped_calib extends GenericTOF_SCD
 
     addParameter( new Parameter("Refine L1",  new Boolean(use_L1)) );
     addParameter( new Parameter("Refine t0",  new Boolean(use_t0)) );
+    addParameter( new Parameter("Refine 'A'(tof=At+t0)", new Boolean(use_A)) );
     addParameter( new Parameter("Refine sample shift", new Boolean(use_ssh)) );
 
     addParameter( new Parameter("Refine det width",  new Boolean(use_width)) );
@@ -347,6 +353,11 @@ public class SCD_Grouped_calib extends GenericTOF_SCD
     Res.append(" value of t0 should be allowed to vary from it's ");
     Res.append(" nominal value.");
 
+    Res.append("@param use_A - Flag indicating whether or not the ");
+    Res.append(" value of A in the wavelength dependent time-of-flight " );
+    Res.append(" shift equation (calibrated_tof=A*tof+t0), should be allowed ");
+    Res.append(" to vary from it's nominal value of 1.");
+
     Res.append("@param use_ssh - Flag indicating whether or not the ");
     Res.append(" sample position should be shifted from the center of the ");
     Res.append(" goniometer. The shift values SX, SY, SZ are shifts in ");
@@ -439,6 +450,7 @@ public class SCD_Grouped_calib extends GenericTOF_SCD
 
     addParameter( new Parameter("Refine L1",  new Boolean(true)) ); 
     addParameter( new Parameter("Refine t0",  new Boolean(true)) ); 
+    addParameter( new Parameter("Refine 'A'(tof=At+t0)", new Boolean(false)) ); 
     addParameter( new Parameter("Refine sample shift", new Boolean(false)) );
 
     addParameter( new Parameter("Refine det width",  new Boolean(true)) ); 
@@ -500,18 +512,19 @@ public class SCD_Grouped_calib extends GenericTOF_SCD
 
     boolean use_L1    = ((Boolean)(getParameter(10).getValue())).booleanValue();
     boolean use_t0    = ((Boolean)(getParameter(11).getValue())).booleanValue();
-    boolean use_ssh   = ((Boolean)(getParameter(12).getValue())).booleanValue();
-    boolean use_width = ((Boolean)(getParameter(13).getValue())).booleanValue();
-    boolean use_height =((Boolean)(getParameter(14).getValue())).booleanValue();
-    boolean use_xoff  = ((Boolean)(getParameter(15).getValue())).booleanValue();
-    boolean use_yoff  = ((Boolean)(getParameter(16).getValue())).booleanValue();
-    boolean use_dist  = ((Boolean)(getParameter(17).getValue())).booleanValue();
-    boolean use_rot   = ((Boolean)(getParameter(18).getValue())).booleanValue();
+    boolean use_A     = ((Boolean)(getParameter(12).getValue())).booleanValue();
+    boolean use_ssh   = ((Boolean)(getParameter(13).getValue())).booleanValue();
+    boolean use_width = ((Boolean)(getParameter(14).getValue())).booleanValue();
+    boolean use_height =((Boolean)(getParameter(15).getValue())).booleanValue();
+    boolean use_xoff  = ((Boolean)(getParameter(16).getValue())).booleanValue();
+    boolean use_yoff  = ((Boolean)(getParameter(17).getValue())).booleanValue();
+    boolean use_dist  = ((Boolean)(getParameter(18).getValue())).booleanValue();
+    boolean use_rot   = ((Boolean)(getParameter(19).getValue())).booleanValue();
 
     boolean read_params = 
-                       ((Boolean)(getParameter(19).getValue())).booleanValue();
-    String  param_file  = getParameter(20).getValue().toString(); 
-    String  output_dir  = getParameter(21).getValue().toString(); 
+                       ((Boolean)(getParameter(20).getValue())).booleanValue();
+    String  param_file  = getParameter(21).getValue().toString(); 
+    String  output_dir  = getParameter(22).getValue().toString(); 
 
                                                       // open the log file
     String      logname   = "SCD_Grouped_calib.log";
@@ -637,7 +650,7 @@ public class SCD_Grouped_calib extends GenericTOF_SCD
                               // First turn off any params shared by all dets.
     is_used[ L1_INDEX ] = use_L1;
     is_used[ T0_INDEX ] = use_t0;
-    is_used[ A_INDEX  ] = false;
+    is_used[ A_INDEX  ] = use_A;
     is_used[ SX_INDEX ] = use_ssh;
     is_used[ SY_INDEX ] = use_ssh;
     is_used[ SZ_INDEX ] = use_ssh;

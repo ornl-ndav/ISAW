@@ -488,11 +488,18 @@ public class SCDcalib extends GenericTOF_SCD
     Res.append(" This is a convenient way to refine iteratively on different ");
     Res.append(" sets of parameters.");
 
+    Res.append(" @param data_dir - Directory where the .resuls and .log ");
+    Res.append(" will be written.  This defaults to the user's home ");
+    Res.append(" directory.  ");
+
+    Res.append("@return A String indicating that the operation was ");
+    Res.append(" completed.  ");
+/*
     Res.append("@return A vector containing entries giving the ");
     Res.append(" values of the instrument parameters followed by the ");
     Res.append(" names of the instrument paramters.  Most of the results ");
     Res.append(" are currently displayed on the system console. ");
-
+*/
     return Res.toString();
   }
 
