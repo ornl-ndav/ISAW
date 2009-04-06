@@ -36,6 +36,7 @@ package DataSetTools.components.ui.Peaks;
 
 import gov.anl.ipns.MathTools.Geometry.Tran3D;
 import gov.anl.ipns.MathTools.*;
+import gov.anl.ipns.Util.File.FileIO;
 import gov.anl.ipns.Util.File.RobustFileFilter;
 import gov.anl.ipns.Util.SpecialStrings.ErrorString;
 import gov.anl.ipns.ViewTools.Components.OneD.DataArray1D;
@@ -82,6 +83,8 @@ public class OrientMatrixControl extends JButton
    public static String SAVE_ORIENT1            = "Save Orientation matrix";
 
    public static String SHOW_SEL_MAT            = "Show/Select Matrix from Set";
+   
+   public static String ADJUST_OR_MAT           ="Adjust Orientation Matrix";
 
    //------------------------------------------------------
    public static String VIEWS                   = "View in QViewer";
@@ -295,6 +298,7 @@ public class OrientMatrixControl extends JButton
 
       l_offsetInfHandler.setNewData( addVec( addVec( null , xvals ) , lyvals ) );
 
+      Listener.do3DView();
    }
 
 
@@ -426,24 +430,34 @@ public class OrientMatrixControl extends JButton
 
    }
 
-
+ //converts mask form to int[] form
+   protected int[] getOmittedSeqNums( )
+   {
+      return getOmittedSeqNums( true );
+   }
    //converts mask form to int[] form
-   protected int[] getOmittedSeqNums()
+   protected int[] getOmittedSeqNums( boolean omitted )
    {
 
       if( omittedPeakIndex == null )
-         return new int[ 0 ];
+         omittedPeakIndex = new boolean[0];
 
-      int[] list = new int[ omittedPeakIndex.length ];
+      int[] list = new int[ Peaks.size() ];
 
       int k = 0;
+      
       for( int i = 0 ; i < omittedPeakIndex.length ; i++ )
 
-         if( omittedPeakIndex[ i ] )
+         if( omittedPeakIndex[ i ] == omitted)
 
             list[ k++ ] = i + 1;
-
-
+      
+      for( int j= omittedPeakIndex.length; j< Peaks.size(); j++)
+         
+         if( false == omitted)
+            
+            list[k++]= j+1;
+      
       int[] Res = new int[ k ];
 
       System.arraycopy( list , 0 , Res , 0 , k );
@@ -583,8 +597,13 @@ public class OrientMatrixControl extends JButton
       }
 
       ( Menu.add( SAVE_ORIENT1 ) ).addActionListener( Listener );
+      
+      (Menu.add(SHOW_SEL_MAT )).addActionListener( Listener );
+      
 
       ( Menu.add( VIEWS ) ).addActionListener( Listener );
+      ( Menu.add( ADJUST_OR_MAT ) ).addActionListener( Listener );
+      
 
       ( Menu.add( CALC_ORIENT ) ).addActionListener( Listener );
 
@@ -681,8 +700,10 @@ public class OrientMatrixControl extends JButton
       CalculateListener CalcListener = null;
 
       int               planeNum     = - 1;
+      
+      public   String   SelView3DItem = "None";
 
-
+      float[]  zero = new float[]{0f,0f,0f};
       public MyActionListener( JButton but )
       {
 
@@ -690,7 +711,51 @@ public class OrientMatrixControl extends JButton
          lastFileName = System.getProperty( "ISAW_HOME" );
       }
 
+      /**
+       * The action commands that are responded to are
+       * 
+       * 
+       */
+      public void do3DView(  )
+      {
+         if( SelView3DItem.equals(  "None" ) ) 
+            
+            View.showPlanes( null , null , null , null );
+         
+         else if( SelView3DItem == VIEW_ORIENT)
+         {
 
+            View.showOrientation( orientationMatrix , View.getLastSelectedSeqNum() );
+            ( (OrientMatInfoHandler) OrientMatInfHandler ).setOrientationInfo(
+                     View , orientationMatrix );
+
+         }else if(  SelView3DItem == VIEW_PLANEab)
+         {
+
+            View.showPlanes( zero , TranspOrientationMatrix[ 0 ] ,
+                     TranspOrientationMatrix[ 1 ] ,
+                     TranspOrientationMatrix[ 2 ] );
+
+         }else if(  SelView3DItem == VIEW_PLANEac)
+         {
+            View.showPlanes( zero , TranspOrientationMatrix[ 0 ] ,
+                     TranspOrientationMatrix[ 2 ] ,
+                     TranspOrientationMatrix[ 1 ] );
+
+            
+         }else if(  SelView3DItem == VIEW_PLANEbc)
+         {
+
+            View.showPlanes( zero , TranspOrientationMatrix[ 1 ] ,
+                     TranspOrientationMatrix[ 2 ] ,
+                     TranspOrientationMatrix[ 0 ] );
+
+         }
+
+ 
+         
+      }
+      
       /* (non-Javadoc)
        * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
        */
@@ -732,9 +797,57 @@ public class OrientMatrixControl extends JButton
 
          if( evt == SAVE_ORIENT1 )
          {
+            if( orientationMatrix == null)
+            {
+               JOptionPane.showMessageDialog( null , 
+                            "There is no orientation matrix to save" );
+               return;
+            }
+            JFileChooser jf = new JFileChooser( lastFileName );
+            RobustFileFilter F = ( new RobustFileFilter() );
+            F.addExtension( "mat" );
+            jf.setFileFilter( F );
 
+            if( jf.showSaveDialog( null ) != JFileChooser.APPROVE_OPTION )
+               return;
+
+            String filename = jf.getSelectedFile().getAbsolutePath();
+
+            lastFileName = filename;
+
+            Object Res= DataSetTools.operator.Generic.TOF_SCD.Util.WriteMatrix(
+                     filename , orientationMatrix );
+            if( Res != null)
+               JOptionPane.showMessageDialog(null, Res);
+
+            return;
+            
+            
+         }if( evt ==  SHOW_SEL_MAT )
+         {
+            showCurrentOrientationMatrices( true, true );
+            
             return; 
-         }
+         }  
+         
+         
+         if( evt ==  ADJUST_OR_MAT )
+         {
+              JPopupMenu pop = new JPopupMenu("Adjust Orient Matrix");
+              (pop.add( "Index Peaks" )).addActionListener(this);
+              (pop.add( "Niggli with Blind" )).addActionListener( this);
+              (pop.add( "Niggli(experimental" )).addActionListener( this);
+              (pop.add( "Optimize" )).addActionListener( this );
+              if( e.getSource() instanceof AbstractButton)
+                   pop.show( button, 0,0);
+              else
+                 pop.show( null, 100,100);
+              
+
+               return; 
+         } 
+        
+         
          if( evt == VIEWS )
          {
             if( orientationMatrix == null )
@@ -780,11 +893,16 @@ public class OrientMatrixControl extends JButton
                men.setState( false );
                return;
             }
-
+           
             float[][] mat = null;
 
             if( men.getState() )
                mat = orientationMatrix;
+            
+            if( mat != null )
+               SelView3DItem = VIEW_ORIENT;
+            else
+               SelView3DItem = "None";
 
             View.showOrientation( mat , View.getLastSelectedSeqNum() );
             ( (OrientMatInfoHandler) OrientMatInfHandler ).setOrientationInfo(
@@ -828,7 +946,12 @@ public class OrientMatrixControl extends JButton
                View.showPlanes( null , null , null , null );
 
             planeNum = 1;
-
+            
+            if( isSelected )
+               SelView3DItem = VIEW_PLANEab;
+            else
+               SelView3DItem="None";
+            
             return;
 
          }
@@ -867,6 +990,12 @@ public class OrientMatrixControl extends JButton
 
             planeNum = 3;
 
+            
+            if( isSelected )
+               SelView3DItem = VIEW_PLANEbc;
+            else
+               SelView3DItem = "None";
+            
             return;
 
          }
@@ -875,7 +1004,9 @@ public class OrientMatrixControl extends JButton
          if( evt.equals( "None" ) )
          {
             View.showPlanes( null , null , null , null );
-            return;
+            
+           
+            SelView3DItem = "None";
          }
 
          if( evt == CALC_ORIENT )
@@ -892,10 +1023,86 @@ public class OrientMatrixControl extends JButton
 
          if( evt == PeakFilterer.OMITTED_PEAKS_CHANGED )
          {
-            int[] omitted = peakFilter.getOmittedSequnceNumbers();
+            int[] omitted = peakFilter.getOmittedSequenceNumbers();
 
             SetOmittedPeaks( omitted );
 
+         }
+         
+
+         if( evt.equals("Index Peaks" ))
+            
+            
+         {
+            String S = JOptionPane.showInputDialog(  "Enter delta h,delta k, delta l separated by commas" );
+            if( S == null)
+               return;
+            Object Res = null;
+            try
+            {
+            String[] Data = S.split( "," );
+            Res =( new  Operators.TOF_SCD.IndexJ_base( Peaks, orientationMatrix,
+                     "", Float.parseFloat( Data[0].trim() ), Float.parseFloat( Data[1].trim() ),
+                     Float.parseFloat( Data[2].trim() ))).getResult();
+             if( !(Res instanceof ErrorString))
+             {
+                gov.anl.ipns.Util.Sys.SharedMessages.addmsg(   Res );
+                if( peakFilter != null )
+                   peakFilter.set_hklMinMax();
+                return;
+             }
+                
+            }catch( Exception ss){
+               Res = ss.toString();
+            }
+            
+            JOptionPane.showMessageDialog( null, "Error=="+Res );
+            return;
+         }
+
+         if( evt.equals("Niggli with Blind" ))
+         {
+            if( orientationMatrix == null)
+            {
+               gov.anl.ipns.Util.Sys.SharedMessages.addmsg(  "There is no orientation matrix");
+               return;
+            }
+            blind Blind = new blind();
+            Object Res = Blind.blaue( orientationMatrix);
+            if( Res != null)
+            {
+               JOptionPane.showMessageDialog( null, "Error=="+Res );
+               return;
+            }
+            setOrientationMatrix( LinearAlgebra.double2float( Blind.UB ));
+            return;
+         }
+
+         if( evt.equals("Niggli(experimental" ))
+         {
+            setOrientationMatrix( subs.Nigglify( orientationMatrix ));
+            return;
+         }
+
+         if( evt .equals("Optimize" ))
+         {
+            String filename =FileIO.appendPath( System.getProperty( "user.home"),"ISAW/tmp" );
+            filename +="Lsqrs.mat";
+            
+            Object Res = Operators.TOF_SCD.LsqrsJ_base.LsqrsJ1(  Peaks,null, 
+                     getOmittedSeqNums( false),  null,filename, 0,null,"triclinic");
+            if( Res != null  && (Res instanceof ErrorString))
+            {
+               JOptionPane.showMessageDialog( null , "Error Least Squares "+ Res );
+               return;
+            }
+            
+            LoadOrientMatrix( filename );
+
+            if( OrientMatInfHandler != null)
+                OrientMatInfHandler.setNewData( subs.GetPeakFitInfo( Peaks ,
+                         orientationMatrix , omittedPeakIndex ) );
+            return;
          }
 
       }
