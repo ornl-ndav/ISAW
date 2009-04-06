@@ -38,9 +38,6 @@ import DataSetTools.retriever.*;
 import DataSetTools.dataset.*;
 import DataSetTools.operator.Generic.TOF_SCD.Peak_new_IO;
 
-import gov.anl.ipns.Operator.*;
-
-import Wizard.TOF_SCD.*;
 import java.util.*;
 
 /**
@@ -62,16 +59,16 @@ public class FindPeaksProcess
    *  args[ 1] - fully qualified base name for peaks file, logfile and 
    *             viewer file.
    *  args[ 2] - data set number to read from the file
-   *  args[ 3] - number of peaks to toe be returned, if possible
+   *  args[ 3] - number of peaks to be returned, if possible
    *  args[ 4] - minimum intensity to use with the peaks search
-
+   *
    *  args[ 5] - minimum time channel to check
    *  args[ 6] - maximum time cahnnel to check
-
+   *
    *  args[ 7] - flag indicating whether or not to use a calibration file
    *  args[ 8] - fully qualified calibration file name 
    *  args[ 9] - the line number of the (ipns style) calibration file 
-
+   *
    *  args[10] - string specifying the row numbers to use, indexed
    *             starting with index 1.
    *  args[11] - string specifying the column numbers to use, indexed
@@ -85,7 +82,7 @@ public class FindPeaksProcess
    *  args[16] - flag indicating whether or not to eliminate peaks that do
    *             not appear to be valid based on heuristics in the new
    *             find peaks model
-   *  args[17] - flag indicating whether the old centrod algorithm should be
+   *  args[17] - flag indicating whether the old centroid algorithm should be
    *             applied to set the reflag code, and adjust the peak position
    *  args[18] - flag indicating whether the new peaks view should be 
    *             displayed for the peaks.
