@@ -260,7 +260,7 @@ public class XtalLatticeControl extends Object
     * 
     * @param TensorMatrix   The Tensor matrix
     * 
-    * @return  a float conaining a,b,c,alpha,beta,gamma. a is the sqrt(TensorMatris[0][0])
+    * @return  a float containing a,b,c,alpha,beta,gamma. a is the sqrt(TensorMatris[0][0])
     */
    public static double[] XtalParamsFromGMatrix( double[][] TensorMatrix )
    {
