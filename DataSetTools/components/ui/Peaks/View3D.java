@@ -38,6 +38,7 @@ import java.util.Vector;
 
 import DataSetTools.operator.Generic.TOF_SCD.IPeak;
 import gov.anl.ipns.MathTools.Geometry.Tran3D;
+import gov.anl.ipns.Util.Sys.SharedMessages;
 import gov.anl.ipns.ViewTools.Panels.Image.IndexColorMaker;
 import gov.anl.ipns.ViewTools.Panels.ThreeD.*;
 import gov.anl.ipns.ViewTools.Panels.Transforms.CoordBounds;
@@ -54,7 +55,6 @@ import java.awt.event.MouseMotionListener;
 
 // import javax.swing.JFileChooser;
 import javax.swing.*;
-import javax.swing.JSplitPane;
 
 
 // TODO checkin Wizard.TOF_SCD.Util and
@@ -201,7 +201,8 @@ public class View3D extends ThreeD_JPanel
 
 
       }
-
+      MaxQ = Math.max(  Math.abs(MaxQ) , Math.abs(MinQ) );
+      MinQ = -MaxQ;
       setGlobalWorldCoords( new CoordBounds( - MaxQ , MaxQ , MaxQ , - MaxQ ) );
       setLocalWorldCoords( new CoordBounds( - MaxQ , MaxQ , MaxQ ,- MaxQ ) );
       
@@ -328,6 +329,22 @@ public class View3D extends ThreeD_JPanel
    }
 
 
+   private float getVal( float[] normalUnit , int maxCoeffIndex ,
+            float[] pt , float MinMax1 , float MinMax2)
+   {
+      if( normalUnit[maxCoeffIndex] == 0 )
+         return Float.NaN;
+      
+      float zz = normalUnit[ ( maxCoeffIndex + 1 ) % 3 ]
+                             * ( MinMax1 - pt[ ( maxCoeffIndex + 1 ) % 3 ] )
+                             + normalUnit[ ( maxCoeffIndex + 2 ) % 3 ]
+                             * ( MinMax2 - pt[ ( maxCoeffIndex + 2 ) % 3 ] );
+                    
+       zz = pt[ maxCoeffIndex ] - zz / normalUnit[ maxCoeffIndex ];
+       
+       return zz;
+                  
+   }
    // Gets the point on the plane with normal(unit) and through pt. The other
    // point
    // has coordinates MinMax1 and MinMax2 in the two positions that follow
@@ -336,17 +353,50 @@ public class View3D extends ThreeD_JPanel
             float[] pt , float MinMax1 , float MinMax2 )
    {
 
-      float zz = normalUnit[ ( maxCoeffIndex + 1 ) % 3 ]
-               * ( MinMax1 - pt[ ( maxCoeffIndex + 1 ) % 3 ] )
-               + normalUnit[ ( maxCoeffIndex + 2 ) % 3 ]
-               * ( MinMax2 - pt[ ( maxCoeffIndex + 2 ) % 3 ] );
-      
-      zz = pt[ maxCoeffIndex ] - zz / normalUnit[ maxCoeffIndex ];
+      float zz =getVal( normalUnit, maxCoeffIndex,pt, MinMax1, MinMax2);
+      float[] MinMax = new float[3];
 
+      MinMax[ (maxCoeffIndex+1)%3] = MinMax1;
+      MinMax[ (maxCoeffIndex+2)%3] = MinMax2;
+      
+     /* if( Float.isNaN( zz ) || zz < MinQ || zz > MaxQ)
+      {
+         if( Float.isNaN( zz ))
+         {
+            System.out.println("All are zero "+ normalUnit[0]+","+ normalUnit[1]+","+ normalUnit[2]);
+            return null; //Should not happen unless everything is zero
+         }else if( zz < MinQ)
+            MinMax[ maxCoeffIndex ]= MinQ;
+         else
+            MinMax[ maxCoeffIndex ]= MaxQ;
+         
+         int i1 = (maxCoeffIndex+1)%3;
+         int i2 = (maxCoeffIndex+2)%3;
+         if( Math.abs( normalUnit[i1]) < Math.abs(  normalUnit[(i1+1)%3] ))
+         {
+            int sav = i1;
+            i1 = i2;
+            i2 = sav;  
+         }
+
+         maxCoeffIndex = i1;
+         zz = getVal( normalUnit, i1,pt, MinMax1, MinMax2);
+         if( Float.isNaN( zz) || zz < MinQ || zz > MaxQ)
+         {
+            zz = getVal( normalUnit, i2,pt, MinMax1, MinMax2);
+            maxCoeffIndex = i2;
+         }
+         if( Float.isNaN( zz) || zz < MinQ || zz > MaxQ)
+         {  System.out.println("XXXXXX"+ normalUnit[0]+","+ normalUnit[1]+","+ normalUnit[2]);
+            return null;
+         }
+            
+      }
+      */
       float[] Res = new float[ 3 ];
       Res[ maxCoeffIndex ] = zz;
-      Res[ ( maxCoeffIndex + 1 ) % 3 ] = MinMax1;
-      Res[ ( maxCoeffIndex + 2 ) % 3 ] = MinMax2;
+      Res[ ( maxCoeffIndex + 1 ) % 3 ] = MinMax[( maxCoeffIndex + 1 ) % 3 ];
+      Res[ ( maxCoeffIndex + 2 ) % 3 ] =  MinMax[( maxCoeffIndex + 2 ) % 3 ];;
 
 
       return new Vector3D( Res );
@@ -386,13 +436,56 @@ public class View3D extends ThreeD_JPanel
          return null;
 
       Vector3D[] verts = new Vector3D[ 4 ];
-      verts[ 0 ] = getPoint( coeff , i1 , q1 , MinQ , MinQ );
-      verts[ 1 ] = getPoint( coeff , i1 , q1 , MinQ , MaxQ );
-      verts[ 2 ] = getPoint( coeff , i1 , q1 , MaxQ , MaxQ );
-      verts[ 3 ] = getPoint( coeff , i1 , q1 , MaxQ , MinQ );
+      verts[ 0 ] = getPoint( coeff , i1 , q1 , MinQ/2 , MinQ/2 );
+      verts[ 1 ] = getPoint( coeff , i1 , q1 , MinQ/2 , MaxQ/2 );
+      verts[ 2 ] = getPoint( coeff , i1 , q1 , MaxQ/2 , MaxQ/2);
+      verts[ 3 ] = getPoint( coeff , i1 , q1 , MaxQ/2 , MinQ/2 );
+      
+      if( verts[0] == null || verts[1] == null || verts[2] == null ||
+               verts[3] == null )
+          return null;
+      int npatterns = 3;
+      Vector3D[] V = new Vector3D[ 8*npatterns+3 ];
+      V[0] =verts[0];
+      Vector3D HDir = new Vector3D(verts[1]);
+      HDir.subtract( verts[0] );
+      HDir.multiply(1f/(2*npatterns+1));
+      Vector3D VDir = new Vector3D(verts[3]);
+      VDir.subtract(verts[0]);
+      for( int j=0; j<2; j++)
+      {
+         int startj=1+ j*(1+ npatterns*4);
+         for( int i = 0 ; i < npatterns ; i++ )
+         {
+            V[ startj+ 4*i  ] = new Vector3D( V[ startj+ 4*i -1] );
+            V[ startj+4*i  ].add( HDir );
+            V[  startj+4*i + 1 ] = new Vector3D( V[startj+4*i ] );
+            V[ startj+ 4*i + 1 ].add( VDir );
+            V[ startj+ 4*i + 2 ] = new Vector3D( V[ startj+ 4*i + 1 ] );
+            V[ startj+ 4*i + 2 ].add( HDir );
+            V[ startj+ 4*i + 3 ] = new Vector3D( V[  startj+ 4*i + 2  ] );
+            V[ startj+ 4*i + 3 ].subtract( VDir );
 
-      return new gov.anl.ipns.ViewTools.Panels.ThreeD.Polygon( verts ,
-               new Color( .5f , 0f , .5f , .4f ) );
+         }
+         if( j < 1)
+           V[ 1+4*npatterns ] = verts[ 1 ];
+         else
+            V[8*npatterns+2]= verts[2];
+
+        
+         HDir = new Vector3D( verts[ 2 ] );
+         HDir.subtract( verts[ 1 ] );
+         HDir.multiply(  1f/(2*npatterns+1) );
+         VDir = new Vector3D( verts[ 0 ] );
+         VDir.subtract( verts[ 1 ] );
+      }
+      
+      //gov.anl.ipns.ViewTools.Panels.ThreeD.Polyline P = new gov.anl.ipns.ViewTools.Panels.ThreeD.Polyline( V ,
+      //         new Color( .5f , 0f , .5f , .1f ) ); 
+      gov.anl.ipns.ViewTools.Panels.ThreeD.Polygon P = new gov.anl.ipns.ViewTools.Panels.ThreeD.Polygon( verts ,
+                        new Color( .5f , 0f , .5f , .1f ) );
+     // P.setType(  gov.anl.ipns.ViewTools.Panels.ThreeD.Polygon.HOLLOW );
+      return P;
 
    }
 
@@ -419,7 +512,11 @@ public class View3D extends ThreeD_JPanel
       
       IThreeD_Object[] objs = new IThreeD_Object[ 1 ];
       objs[ 0 ] = getPlane( q1 , q2 , q3 );
-
+      if( objs == null || objs[0] == null)
+      {
+         JOptionPane.showMessageDialog( null , "Peaks may be null or collinear");
+         return;
+      }
       setObjects( "Plane" , objs );
 
       repaint();
@@ -474,17 +571,45 @@ public class View3D extends ThreeD_JPanel
          shifts[ 2 ][ i ] = Q[ 2 ][ i ] - Q[ 1 ][ i ];
 
       Vector< IThreeD_Object > objs = new Vector< IThreeD_Object >();
-      objs.addElement( getPlane( Q[ 0 ] , Q[ 1 ] , Q[ 2 ] ) );
+      
+      IThreeD_Object newPlane =getPlane( Q[ 0 ] , Q[ 1 ] , Q[ 2 ] );
+      
+      boolean NoPlaneShownMessage = false;
+      if( newPlane != null)
+         
+         objs.addElement( newPlane );
+      
+      else
+      {   
+         NoPlaneShownMessage = true;
+         SharedMessages.addmsg( " Cannot create plane from points. "+
+                          "May be collinear or null" );
+      }
+      
       float MM = Math.max( Math.abs( MaxQ ) , Math.abs( MinQ ) );
       float MxQ = MM / 2;
       
       for( int time = 0 ; time < 20 && MxQ < MM ; time++ )
       {
+         
          for( int i = 0 ; i < 3 ; i++ )
             for( int j = 0 ; j < 3 ; j++ )
                Q[ i ][ j ] += Q[ 3 ][ j ];
+         
          MxQ = ShiftQs( Q , shifts );
-         objs.addElement( getPlane( Q[ 0 ] , Q[ 1 ] , Q[ 2 ] ) );
+         
+         newPlane =getPlane( Q[ 0 ] , Q[ 1 ] , Q[ 2 ] );
+         
+         if( newPlane != null)
+            
+            objs.addElement( newPlane );
+         
+         else if( !NoPlaneShownMessage)
+         {   
+            NoPlaneShownMessage = true;
+            SharedMessages.addmsg( " Cannot create plane from points. "+
+                             "May be collinear or null" );
+         }
       }
       
       MxQ = MM / 2;
@@ -493,13 +618,23 @@ public class View3D extends ThreeD_JPanel
          for( int i = 0 ; i < 3 ; i++ )
             for( int j = 0 ; j < 3 ; j++ )
                Q_Sav[ i ][ j ] -= Q_Sav[ 3 ][ j ];
+         
          MxQ = ShiftQs( Q_Sav , shifts );
-         objs.addElement( getPlane( Q_Sav[ 0 ] , Q_Sav[ 1 ] , Q_Sav[ 2 ] ) );
+          newPlane =getPlane(Q_Sav[ 0 ] , Q_Sav[ 1 ] , Q_Sav[ 2 ] );
+         
+         if( newPlane != null)
+            
+             objs.addElement( newPlane );
+
+         else if( !NoPlaneShownMessage)
+         {   
+            NoPlaneShownMessage = true;
+            SharedMessages.addmsg( " Cannot create plane from points. "+
+                             "May be collinear or null" );
+         }
       }
       
-      for( int i = 0 ; i < objs.size() ; i++ )
-         if( objs.elementAt( i ) == null )
-            System.out.println( " Is NULL at " + i );
+  
       
       IThreeD_Object[] obj = objs.toArray( new IThreeD_Object[ 0 ] );
       this.setObjects( "Plane" , obj );
@@ -516,7 +651,7 @@ public class View3D extends ThreeD_JPanel
       
       for( int i = 0 ; i < 3 ; i++ )
          for( int j = 0 ; j < 3 ; j++ )
-            if( Math.abs( Q[ i ][ j ] ) > Maxx )
+            if( Math.abs( Q[ i ][ j ] ) < Maxx )
                Maxx = Math.abs( Q[ i ][ j ] );
 
       return Maxx;
@@ -1388,7 +1523,8 @@ public class View3D extends ThreeD_JPanel
 
       System.out.println( "Enter Peaks filename" );
       // JFileChooser jf = new JFileChooser();
-      String filename = "C:\\ISAW\\SampleRuns\\SNS\\Snap\\QuartzRunsFixed\\quartz.peaks";
+      //String filename = "C:\\ISAW\\SampleRuns\\SNS\\Snap\\QuartzRunsFixed\\quartz.peaks";
+      String filename = "C:\\ISAW1\\SampleRuns\\INITIAL_WITH_CAL\\quartz.peaks";
       // String filename = "C:\\ISAW1\\anvred\\ox80nxs.integrate";
       System.out.println( filename );
       /* if( jf.showOpenDialog( null ) == JFileChooser.APPROVE_OPTION)
@@ -1403,26 +1539,38 @@ public class View3D extends ThreeD_JPanel
                filename ) ).getResult();
 
       View3D V = new View3D( pks );
+      
       View3DControl vcontrol = new View3DControl( V , pks );
+      
       Info inf = new Info( vcontrol );
-      PeakImageInfoHandler pkImage = new PeakImageInfoHandler( null , "SNAP_" );
-      inf.addInfoHandler( "Peak Image" , pkImage );
+      
+     // PeakImageInfoHandler pkImage = new PeakImageInfoHandler( null , "SNAP_" );
+    //  inf.addInfoHandler( "Peak Image" , pkImage );
+      
       JPanel ControlPanel = new JPanel();
       BoxLayout bLayout = new BoxLayout( ControlPanel , BoxLayout.Y_AXIS );
       ControlPanel.setLayout( bLayout );
+      
       OrientMatrixControl orient = new OrientMatrixControl( inf , V , pks ,
                vcontrol );
       ControlPanel.add( orient );
+      
       SetPeaks peakSetter = new SetPeaks( V , pks );
+      
       ControlPanel.add( new View3DItems( V , pks.size() , peakSetter ) );
+      
       PeakFilterer pkFilt = new PeakFilterer( pks );
       ControlPanel.add( pkFilt );
-      ControlPanel.add( peakSetter );
       orient.setPeakFilterer( pkFilt );
+      
+      ControlPanel.add( peakSetter );
       orient.setPeakSelector( peakSetter );
+      
       XtalLatticeControl LatControl = new XtalLatticeControl( peakSetter , inf );
       orient.setCrystalLatticeHandler( LatControl , true );
+      
       ControlPanel.add( inf );
+      
       JFrame jfr = new JFrame( "Test" );
       jfr.getContentPane().setLayout( new GridLayout( 1 , 1 ) );
       SplitPaneWithState splt = new SplitPaneWithState(
