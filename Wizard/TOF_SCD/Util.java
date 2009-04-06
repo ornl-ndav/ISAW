@@ -138,9 +138,9 @@ public class Util {
             String   slurm_queue_name,
             int      max_processes )
   {
-    if( runnums == null )
+    if ( runnums == null )
     {
-      System.out.println("Null run numbers");
+      SharedMessages.addmsg( "No run numbers for find peaks." );
       return null;
     }
 
@@ -1768,6 +1768,295 @@ public class Util {
       }
       return monCount;
    }
+   
+     
+   /**
+    * For each detector in multiple files, find theoretical positions of peaks
+    * and integrates them.
+    * The matrix files are stored in outpath +"ls"+expName+runnum+".mat"
+    * 
+    * @param path                 The path where the multiple data set files 
+    *                                are stored 
+    * @param outpath              The path where all the outputs go
+    * @param runnums              The Run numbers of the data set files
+    * @param DataSetNums          The data set numbers in a file to "integrate" 
+    * @param expname              The name of the experiment
+    * @param centeringName        The centering type:primitive,a centered,
+    *                                b centered,c centered, [f]ace centered,
+    *                                [i] body centered,[r]hombohedral centered
+    * @param use_calib_file       Calibrate the data sets(yes/no)
+    * @param calib_file           The calibration file used to calibrate the 
+    *                               data sets
+    * @param calib_file_line      The line in the calibration file to use
+
+    * @param time_slice_range     Time-slice range around peak center
+    * @param incr_time_amount     Increment slice size by          
+    * @param inst                 Instrument name(Prefix after path for a file)
+    * @param FileExt              Extension for filename
+    * @param d_min                minimum d-spacing to consider
+    * @param PeakAlg              Peak Algorithm:MaxIToSigI,Shoe Box, 
+    *                                MaxIToSigI-old,TOFINT,or EXPERIMENTAL
+    * @param Xrange               Range of offsets around a peak's 
+    *                                  x value(-1:3)
+    * @param Yrange               Range of offsets around a peak's
+    *                                  y value(-1:3)
+    * @param ShowLog              Pop up the log file
+    * @param ShowPeaks            Pop up the Peaks file
+    * @param slurm_queue_name     The name of the slurm queue to use, or
+    *                             null if just using local processes.
+    * @param max_processes        The maximum number of processes to run
+    * @return  nothing though a .integrate and a .log file are created.
+    */
+   public static Object IntegrateMultipleRunsUsingProcesses(
+           String  path,
+           String  outpath,
+           Vector  runnums, 
+           String  DataSetNums,
+           String  expname,
+           String  centeringName,
+
+           boolean use_calib_file,
+           String  calib_file,
+           int     calib_file_line,
+
+           String  time_slice_range,
+           int     incr_time_amount,
+           String  inst,
+           String  FileExt,
+           float   d_min,
+
+           String  peak_algorithm,
+           String  Xrange,
+           String  Yrange,
+
+           boolean ShowLog,
+           boolean ShowPeaks,
+
+           String  slurm_queue_name,
+           int     max_processes
+            )
+   {
+      int log_Nth_peak = 1;
+      
+      if( runnums == null )
+         return new ErrorString( "No run numbers to integrate" );
+      
+      int[] run_numbers = new int[ runnums.size() ];
+      try 
+      {
+         for ( int i = 0 ; i < runnums.size() ; i++ )
+           run_numbers[ i ] = ( (Integer) runnums.elementAt( i ) ).intValue();
+      }
+      catch( Exception s ) 
+      {
+         return new ErrorString( "Improper format for run numbers" );
+      }
+      java.util.Arrays.sort( run_numbers );
+      
+      int[] ds_numbers = IntList.ToArray( DataSetNums );
+      
+      if( !FileExt.startsWith( "."  ) )
+         FileExt = "." + FileExt;
+      
+      if( run_numbers == null || ds_numbers == null )
+         return new ErrorString( "No Data Sets to process" );
+
+      int[] timeZrange = getMaxMin( time_slice_range );
+      int[] colXrange  = getMaxMin( Xrange );
+      int[] rowYrange =  getMaxMin( Yrange );
+      int centering = getCenterIndex( centeringName );
+
+      if( timeZrange == null || colXrange == null || rowYrange == null )
+         return new ErrorString( "x,y, or time offsets not set" );
+
+      Vector ops = new Vector();
+      Random random = new Random();
+
+      String fout_prefix = System.getProperty("user.home") + "/ISAW/" + inst;
+
+      // #### TODO  Take care of mon count and cache file
+
+      for ( int run_index = 0; run_index < run_numbers.length ; run_index++ )
+        for ( int ds_index = 0 ; ds_index < ds_numbers.length ; ds_index++ )
+        {
+          int ds_num   = ds_numbers[ ds_index ];
+          int  run_num = run_numbers[ run_index ];
+
+          String fin_name = path + inst + run_num + FileExt;
+           
+           String fout_base = fout_prefix + run_num + "_DS_" + ds_num +
+                               "_" + random.nextInt();
+
+           String orientation_file = outpath +"ls" +expname +run_num +".mat";
+           String result = fout_prefix + run_num + "_" + 
+                           ds_num + "_returned.txt";
+
+           String cp = System.getProperty( "java.class.path" );
+           if ( cp == null )
+             cp = " ";
+           else
+             cp = " -cp " + cp + " ";
+
+           String mem = System.getProperty( "Integrate_Peaks_Process_Memory" );
+           if ( mem == null )
+              mem = "2000";
+
+           String cmd  = " java -mx" + mem + "M "     +
+                         " -XX:+AggressiveHeap "      +
+                         " -XX:+DisableExplicitGC "   +
+                         " -XX:ParallelGCThreads=4 "  + cp;
+
+           if ( slurm_queue_name != null )             // use slurm, otherwise
+             cmd = " srun -p " + slurm_queue_name +    // just pass in the
+                   " -J SCD_Find_Peaks -o " + result + // basic command
+                   cmd;
+
+           IntegratePeaksProcessCaller s_caller =
+                   new IntegratePeaksProcessCaller( cmd,
+                                                    fin_name,
+                                                    fout_base,
+                                                    ds_num,
+
+                                                    use_calib_file,
+                                                    calib_file,
+                                                    calib_file_line,
+
+                                                    orientation_file,
+
+                                                    centering,
+                                                    timeZrange[0],
+                                                    timeZrange[1],
+                                                    incr_time_amount,
+
+                                                    d_min,
+                                                    log_Nth_peak,
+                                                    peak_algorithm,
+                            
+                                                    colXrange[0],
+                                                    colXrange[1],
+                            
+                                                    rowYrange[0],
+                                                    rowYrange[1]
+                                                   );
+            ops.add( s_caller );
+        }
+
+       ParallelExecutor executor;
+
+       int num_processes = run_numbers.length * ds_numbers.length;
+                                            // cap the number of processes to
+                                            // avoid overloading slurm or the
+                                            // local system.
+       if (num_processes > max_processes )
+         num_processes = max_processes;
+
+       int max_time = ops.size() * 120000 + 600000;
+       executor = new ParallelExecutor( ops, num_processes, max_time );
+
+       Vector results = null;
+       try                                  // try to do everything during the
+       {                                    // alloted time and return partial
+         results = executor.runOperators(); // results if something fails
+       }                                    // or we run out of time.
+       catch ( ExecFailException fail_ex )
+       {
+         FailState state = fail_ex.getFailureStatus();
+
+         String reason;
+         if ( state == FailState.NOT_DONE )
+           reason = "maximum time, " + max_time/1000 + " seconds, elapsed ";
+         else
+           reason = "a process was interrupted.";
+
+         SharedMessages.addmsg("WARNING: Find peaks did not finish: " + reason);
+         SharedMessages.addmsg("The result returned is incomplete.");
+         results = fail_ex.getPartialResults();
+       }
+
+       if ( fout_prefix.startsWith("/SNS/" ) &&          // do SNS Logging if
+            slurm_queue_name != null         )           // using slurm at SNS
+       {
+         String cmd = "/usr/bin/logger -p local5.notice ISAW ISAW_" +
+                      Isaw.getVersion(false) +
+                      " " + System.getProperty("user.name");
+                                                        // append year as
+                                                        // requested by Jim T.
+         Calendar calendar = Calendar.getInstance();
+         int      year     = calendar.get( Calendar.YEAR );
+
+         cmd = cmd + " " + year;
+
+         SimpleExec.Exec( cmd );
+       }
+
+       Vector all_peaks = null;
+       String out_file_name = outpath + expname + ".integrate";
+
+       if ( results != null )
+       {
+         all_peaks = new Vector();
+         for ( int i = 0; i < results.size(); i++ )
+         {                                                // if process did not
+           if ( results.elementAt(i) instanceof Vector )  // complete, there is
+           {                                              // a FailState object
+             Vector peaks = (Vector)results.elementAt(i); // not a peaks Vector
+             if ( peaks != null )
+               for ( int k = 0; k < peaks.size(); k++ )
+                 all_peaks.add( peaks.elementAt(k) );
+             else
+               System.out.println("ERROR: NULL INTEGRATE RESULT AT i = "+i);
+           }
+         }
+
+         int n_peaks = all_peaks.size();      // Only use peaks with reflag = 10
+         Peak_new peak;
+         Vector filtered_peaks = new Vector();
+         for (int i = 0; i < n_peaks; i++ )
+         {
+           peak = (Peak_new)all_peaks.elementAt(i);
+           if ( peak.reflag() == 10 )
+             filtered_peaks.add( peak );
+         }
+
+         all_peaks = filtered_peaks;
+
+         try
+         {
+           Peak_new_IO.WritePeaks_new(out_file_name, all_peaks, false);
+         }
+         catch (IOException ex )
+         {
+           return new ErrorString("Could not write integrate file " 
+                                  + out_file_name );
+         }
+      }
+
+      if( ShowPeaks && (new File( out_file_name).exists()))
+                                                // pause briefly to allow the
+      {                                         // file to finish writing
+         int     counter     = 0;               // before we try to read it
+         boolean file_exists = false;
+         File    new_file;
+         while ( counter < 10 && !file_exists )
+         {
+           new_file = new File( out_file_name );
+           file_exists = new_file.exists();
+
+           try
+           {
+             Thread.sleep( 1000 );
+           }
+           catch ( Exception ex )
+           {
+             System.out.println("Exception while waiting for Peaks file " );
+             ex.printStackTrace();
+           }
+         }
+         ( new ViewASCII( out_file_name ) ).getResult();
+      }
+
+      return all_peaks;
+   }
 
     
    /**
@@ -1826,6 +2115,45 @@ public class Util {
            boolean ShowLog,
            boolean ShowPeaks
             ){
+
+      String slurm_queue_name = System.getProperty( "Slurm_Queue_Name" );
+      System.out.println("SLURM QUEUE NAME = " + slurm_queue_name );
+
+      if ( slurm_queue_name != null )      // use processes, not threads
+      {
+        Object result = IntegrateMultipleRunsUsingProcesses(
+           path,
+           outpath,
+           run_numbers,
+           DataSetNums,
+           expname,
+           centeringName,
+
+           useCalibFile,
+           calibfile,
+           line2use,
+
+           time_slice_range,
+           increase,
+           inst,
+           FileExt,
+           d_min,
+
+           PeakAlg,
+           Xrange,
+           Yrange,
+
+           ShowLog,
+           ShowPeaks,
+
+           slurm_queue_name,
+           maxThreads
+            );
+ 
+         return result;
+      }
+
+
       boolean useCache = false;
       SharedMessages.addmsg( "Instrument = " + inst );
       
@@ -2044,9 +2372,7 @@ public class Util {
       OperatorThread Res = new OperatorThread( Int );
       
       return Res;
-
    }
-   
    
    
    private static int getCenterIndex( String centeringName ){
@@ -2058,7 +2384,6 @@ public class Util {
       
       return 0;
    }
-   
    
    
    // Gets min, max from the string form of a range
@@ -2076,7 +2401,6 @@ public class Util {
        return Res;
    }
    
- 
    
    //returns null or ErrorString
    private static Object RunOperators( Vector<OperatorThread> operators, 
