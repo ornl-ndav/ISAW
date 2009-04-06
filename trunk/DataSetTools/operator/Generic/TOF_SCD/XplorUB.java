@@ -419,7 +419,7 @@ public class XplorUB {
                System.out.println("");
                corrs1Line = GetUB.CalcStats( line, GetUB.findMinNonZero( line),
                         GetUB.findMaxNonZero( line ));
-              
+               d = corrs1Line[ GetUB.LEN]/MaxXtalLength / 4f / 12f;
             }else if( line == null)
                System.out.println(" Must use option l first");
             System.out.println("");
