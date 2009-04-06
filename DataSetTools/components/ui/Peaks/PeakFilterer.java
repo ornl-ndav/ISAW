@@ -60,28 +60,48 @@ import DataSetTools.operator.Generic.TOF_SCD.Peak_new;
 
 
 
-
-public class PeakFilterer extends JButton
+/**
+ * Class that handles filtering of peaks. It also listens for notification when
+ * the Peaks are indexed. The event command is "Peaks Indexed"
+ * @author Ruth
+ *
+ */
+public class PeakFilterer extends JButton implements ActionListener
 {
+   /**
+    *  The Action command that is sent to listeners of this class
+    */
    public static String OMITTED_PEAKS_CHANGED ="Omitted peaks changed";
+   
+   /**
+    *  The Action command that this class listens to.
+    */
+   public static String PEAKS_ARE_INDEXED ="Peaks Indexed";
    MyActionListener listener;
    Vector<ActionListener> FilterListeners;
    Vector<Peak_new> peaks;
    //add reflag
+   
    private static String[] Fields={
         "row","col","channel","intensity","d-spacing","time",
         "qx","qy","qz","h","k","l","h int offset","k int offset",
         "l int offset","seq nums", "run nums", "det nums"};
+   
    private float[] Mins;
    private float[] Maxs;
+   
    JList  list;
    int LastIntervalIndex = 14;
+   
    Vector<OneFilterElement> CurrentAndList;
    Vector<Vector<OneFilterElement>> OmitRule;
+   
    int[] omittedSeqNums;
-   String PeakMainFloatRes =";row;col;channel;iintensity;time;h;k;l;";
+   
+   String PeakMainFloatRes =";row;col;channel;intensity;time;h;k;l;";
    String PeakQCalcRes =";d-spacing;qx;qy;qz;";
    String PeakIntArrayRes =";seq nums;run nums;det nums;";
+   
    public PeakFilterer( Vector<Peak_new> Peaks)
    {
       super("Peak Filterer");
@@ -92,8 +112,10 @@ public class PeakFilterer extends JButton
       peaks =Peaks;
       Mins = new float[Fields.length];
       Maxs = new float[ Fields.length];
+      
       java.util.Arrays.fill( Mins , Float.POSITIVE_INFINITY );
       java.util.Arrays.fill(  Maxs ,Float.NEGATIVE_INFINITY );
+      
       for( int i=0; i< peaks.size(); i++)
       { 
          IPeak pk = peaks.elementAt( i );
@@ -104,62 +126,69 @@ public class PeakFilterer extends JButton
          float[] Qs = pk.getUnrotQ();
          float Q = (new Vector3D(Qs[0],Qs[1],Qs[2])).length();
          Set(Mins, Maxs, 4, 1f/Q);
-         Set( Mins,Maxs,5, pk.ipkobs());
-         Set( Mins,Maxs,6, pk.ipkobs());
-         Set( Mins,Maxs,7, pk.ipkobs());
          
-         Set( Mins,Maxs,8, pk.time());
-         Set( Mins,Maxs,9, Qs[0]);
-         Set( Mins,Maxs,10,Qs[1]);
-         Set( Mins,Maxs,11, Qs[2]);
+         Set( Mins,Maxs,5, pk.time());
+         Set( Mins,Maxs,6, Qs[0]);
+         Set( Mins,Maxs,7,Qs[1]);
+         Set( Mins,Maxs,8, Qs[2]);
 
-         Set( Mins,Maxs,12, pk.h());
-         Set( Mins,Maxs,13, pk.k());
-         Set( Mins,Maxs,14, pk.l());
+         Set( Mins,Maxs,9, pk.h());
+         Set( Mins,Maxs,10, pk.k());
+         Set( Mins,Maxs,11, pk.l());
          
          
-         Set( Mins,Maxs,1, Qs[2]);
-         Set( Mins,Maxs,1, Qs[2]);
+         //Set( Mins,Maxs,1, Qs[2]);
+         //Set( Mins,Maxs,1, Qs[2]);
          
       }
       
       Mins[12] =Mins[13]=Mins[14] =-.5f;
       Maxs[12] =Maxs[13]=Maxs[14] =.5f;
       
-      for( int i=18; i <Fields.length ; i++ )
+      for( int i=15; i <Fields.length ; i++ )
          Maxs[i]=Mins[i] = Float.NaN;
       
       list = new JList( Fields );
       
       list.setBorder( new TitledBorder( new LineBorder( Color.black), "Start AND Seq") );
       list.setSelectionMode( ListSelectionModel.SINGLE_SELECTION );
+      
       list.addMouseListener( listener );
        CurrentAndList = new Vector<OneFilterElement>();
        
       OmitRule = new Vector<Vector<OneFilterElement>> ();
    }
    
-   public int[] getOmittedSequnceNumbers()
+   /**
+    *
+    * @return the current omitted sequence numbers
+    */
+   public int[] getOmittedSequenceNumbers()
    {
       return omittedSeqNums;
    }
+   
+   
    /**
-    *  Do this when the peaks object is indexed, The hkl are changed
+    *  Allows for finding the range of h,k, and l values when the
+    *  peaks are reindexed
     */
    public void set_hklMinMax()
    {
-      for( int i=12; i<=14; i++){
+      for( int i=9; i<=11; i++){
          Mins[i]= Float.POSITIVE_INFINITY;
          Maxs[i]= Float.NEGATIVE_INFINITY;
       }
       for( int i=0; i< peaks.size(); i++)
       {
          IPeak pk = peaks.elementAt( i );
-         Set( Mins,Maxs,12, pk.h());
-         Set( Mins,Maxs,13, pk.k());
-         Set( Mins,Maxs,14, pk.l());
+         Set( Mins,Maxs,9, pk.h());
+         Set( Mins,Maxs,10, pk.k());
+         Set( Mins,Maxs,11, pk.l());
       }
    }
+   
+   
    private void Set( float[] Mins, float[] Maxs, int index, float val)
    {
       if( val < Mins[index])
@@ -168,76 +197,125 @@ public class PeakFilterer extends JButton
       if( val > Maxs[index])
          Maxs[index] =val; 
    }
-      
+   
+   
+   
   private  int[] CalcOmits( Vector<Vector <OneFilterElement> >omitRule)
   {
      Vector<Integer> omit = new Vector<Integer>();
+     
      for( int pk = 0 ; pk < peaks.size() ; pk++ )
       {
         IPeak peak1 = peaks.elementAt( pk );
-         for( int i = 0 ; i < omitRule.size() ; i++ )
+         boolean omitted = false;
+         for( int i = 0 ; i < omitRule.size() && !omitted ; i++ )
          {
             Vector< OneFilterElement > AndSequence = omitRule.elementAt( i );
-            boolean Res = true;
-            for( int k = 0 ; k < AndSequence.size() && Res ; k++ )
+            omitted = true;
+            
+            for( int k = 0 ; k < AndSequence.size() && omitted ; k++ )//If anyone cond is false jump out
             {
                OneFilterElement elt = AndSequence.elementAt( k );
+               
                float n =1;
                if (!elt.inside)
                   n = -1;
+               
                String FieldName = ";"+Fields[ elt.fieldIndex]+";";
                if( elt.fieldIndex <= LastIntervalIndex )
                {
                   float val;
                   if( PeakMainFloatRes.indexOf( FieldName) >=0)
+                     
                      val = getFloatValMain( peak1 , elt.fieldIndex);
+                  
                   else if( PeakQCalcRes.indexOf( FieldName )>=0)
+                     
                      val = getFloatValQCalc( peak1 ,  elt.fieldIndex);
+                  
                   else 
+                     
                      val= getFloatOtherCalc(  peak1 , FieldName.charAt(1));
-                  boolean r1 =true, r2=true;
+                  
+                  boolean r1 =true, 
+                          r2=true;
+                  
                   if( (elt.min - val )*n > 0)
+                     
                      r1 = false;
+                  
                   if( (elt.max -val)*n < 0  )
+                     
                      r2 = false;
+                  
                  if( n < 0)
-                    Res = r1 || r2;
+                    
+                    omitted = r1 || r2;
+                 
                  else
-                    Res = r1 && r2;
+                    
+                    omitted = r1 && r2;
                   
                }else if( elt.list != null && elt.list.length >0)
-               { int val =-1;
+               { 
+                  int val =-1;
+                  
                  if(FieldName.indexOf(1) == 's' )
+                    
                     val = peak1.seqnum();
+                 
                  else if(FieldName.indexOf(1) == 'r' )
+                    
                     val = peak1.nrun();
+                 
                  else  if(FieldName.indexOf(1) == 'd' )
+                    
                     val = peak1.detnum();
+                 
                  if( java.util.Arrays.binarySearch( elt.list , val ) < 0)
-                    Res = false;
+                    
+                    omitted = false;
                }
                
 
             }
-            if( Res ) omit.addElement(  peak1.seqnum() );
+            
+            if( omitted ) if( !omit.contains( peak1.seqnum() ))
+                     omit.addElement(  peak1.seqnum() );
          }
       }
      
      int[] res = new int[ omit.size() ];
+     
      for( int i=0; i< res.length ; i++)
+        
         res[i]= omit.elementAt( i ).intValue();
      
      return res;
   }
   
-   // For users to get notif ied of changes
+  
+  
+  /**
+   * Adds an action listener to listen for the OMITTED_PEAKS_CHANGED action event
+   * 
+   * @param ev  The action listener to be notified when the omitted peaks should be changed.
+   */
    public void addFilterListener( ActionListener ev)
    {
       if( ev != null && !FilterListeners.contains( ev ))
+         
          FilterListeners.add(  ev );
       
    }
    
+   /**
+    * Removes an action listener to listen for the OMITTED_PEAKS_CHANGED 
+    *          action event
+   * 
+   * @param ev  The action listener that was to be notified when the omitted 
+   *            peaks should be changed.
+    */
    public void removeFilterListener( ActionListener ev)
    {
       if( ev != null && FilterListeners.contains( ev ))
@@ -255,13 +333,36 @@ public class PeakFilterer extends JButton
          RunInEventQueue R =(new RunInEventQueue( evt ,
                                                 FilterListeners.elementAt(i)));
       }
-      
-      
         
    }
    
    
    
+   
+   /* 
+    * Only responds to PEAKS_ARE_INDEXED action events
+    * (non-Javadoc)
+    * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+    */
+   @Override
+   public void actionPerformed( ActionEvent e )
+   {
+
+     if( !e.getActionCommand().equals( PEAKS_ARE_INDEXED ) )
+        return;
+     
+     set_hklMinMax();
+      
+   }
+
+
+
+ /**
+  * Thread that runs the actionPerformed method in the AWT event queue if not 
+  *   already in the event queue.
+  * @author Ruth
+  *
+  */
    class RunInEventQueue extends Thread 
    {
       ActionEvent Evt;
@@ -276,12 +377,23 @@ public class PeakFilterer extends JButton
          else
             SwingUtilities.invokeLater( this );
       }
+      
+      
       public void run()
       {
          Listener.actionPerformed( Evt );
       }
+      
    }
    
+   
+   /**
+    * Implements menus, menu responses, etc. needed to get the user to select
+    * the peaks that are to be omitted.
+    * 
+    * @author Ruth
+    *
+    */
    class MyActionListener extends MouseAdapter implements ActionListener  
                                               // ,ListSelectionListener
                                 
@@ -304,10 +416,11 @@ public class PeakFilterer extends JButton
         {
            MakeMenu( (Component)e.getSource());
            but = (JButton) e.getSource();
-           System.out.println("LOC+"+but.getLocation());
            return;
         }
+        
         String evtString = e.getActionCommand();
+        
         if( evtString ==START_AND)
         {
            if( CurrentAndList.size() > 0)
@@ -316,27 +429,35 @@ public class PeakFilterer extends JButton
            MakeFieldMenu( "START", but);
            return;
         }
+        
         if( evtString ==AND_PREV)
         {
            MakeFieldMenu("AND", but);
            return;
         }
+        
         if( evtString ==CALC_FILTER)
         {
            if( CurrentAndList.size() > 0)
+              
               OmitRule.addElement( new Vector<OneFilterElement>( CurrentAndList) );
            
            CurrentAndList = new Vector<OneFilterElement>();
            omittedSeqNums = CalcOmits( OmitRule );
+           
            fireFilterListeners();
            OmitRule.clear();
            return;
         }
+        
+        
         if( evtString == CLEAR_OMITS)
         {
            CurrentAndList = new Vector<OneFilterElement>();
            OmitRule = new Vector< Vector< OneFilterElement>>();
         }
+        
+        
       }
       
       public void mouseClicked(MouseEvent e)
@@ -348,14 +469,19 @@ public class PeakFilterer extends JButton
 
          OneFilterElement F;
          Pop.hide();
+         
          if( k <= LastIntervalIndex )
          {
             
            IntervalDialog filtElt = new IntervalDialog( Fields[k], Mins[k],
                     Maxs[k]);
+           
            if( filtElt.MinVal() == Mins[k] && filtElt.MaxVal() == Maxs[k])
+              
               F = null;
+           
            else
+              
              F = new OneFilterElement( k,filtElt.MinVal(),
                     filtElt.MaxVal(), null, filtElt.Inside);
            
@@ -364,22 +490,27 @@ public class PeakFilterer extends JButton
             String res = JOptionPane.showInputDialog("Enter "+Fields[k]+
                                                             " list" );
             if(res == null)
+               
                F = null;
+            
             else
             {
                int[] listt = IntList.ToArray( res );
+               
                F = new OneFilterElement( k , Float.NaN , Float.NaN , listt, false );
             }
-            
-            
          }
+         
          if( F != null)
+            
             CurrentAndList.addElement( F );
 
-        // list.removeListSelectionListener( listener );
+      
          if( Pop !=null)
+            
             Pop.hide();
       }
+      
       
       /* Did not work well. Too many valueChanged events occurred with littl ways for
        * determinimg what they are.
@@ -428,21 +559,29 @@ public class PeakFilterer extends JButton
          if( Pop !=null)
             Pop.hide();
       }
+      
+      
 
       private void MakeFieldMenu(  String message, Object obj)
       {
          if( Pop != null)
             Pop.hide();
+         
          String Title= "AND to Current AND sequence";
+         
          if( message.startsWith( "START" ))
+            
             Title = "Start AND Seq";
          
          ((TitledBorder)(list.getBorder())).setTitle( Title );
+         
          Component comp =(Component)obj;
+         
          Point P = getScreenLoc( comp);
+         
          list.clearSelection();
 
-         //list.addListSelectionListener( listener );;
+        
          Pop = PopupFactory.getSharedInstance().getPopup( (Component)obj ,
                   list, P.x , P.y );
          
@@ -455,33 +594,51 @@ public class PeakFilterer extends JButton
       {
          if( comp == null)
             return null;
+         
          Point P = comp.getLocation();
+         
          if( comp instanceof Window)
+            
             return P;
+         
          Point P1 =  getScreenLoc( comp.getParent());
+         
          return new Point( P.x+P1.x, P.y+P1.y);
       }
+      
       
       private void MakeMenu( Component comp)
       {
          JPopupMenu popUp = new JPopupMenu("Peak Filter");
+         
          JMenuItem item =new JMenuItem(START_AND);
+         
          item.setToolTipText( "<html><body>Starts an AND sequence of conditions <BR>"+
                   " This sequence will be OR'd with previous and sequences"+
                   "</body></html>");
+         
          popUp.add( item ).addActionListener( this);
+         
          item =new JMenuItem(AND_PREV);
+         
          item.setToolTipText( "ANDs the next condition to the current"+
                   " AND sequence only ");
+         
          popUp.add( item ).addActionListener( this);
+         
          popUp.add( CLEAR_OMITS).addActionListener( this );
+         
          item =new JMenuItem(CALC_FILTER);
+         
          item.setToolTipText( "Calculates the omitted Peaks, Notifies listeners");
+         
          popUp.add( item ).addActionListener( this);
+         
          popUp.show( comp,0,0 );
       }
       
    }
+   
    
    public static void main( String[] args)
    {
@@ -493,7 +650,7 @@ public class PeakFilterer extends JButton
       */
    }
 
-   private static JFrame getJFrame(String Message )
+   private static JFrame getJFrame( String Message )
    {
       JFrame jf = new JFrame( Message );
       jf.setSize(  200,300 );
@@ -501,23 +658,54 @@ public class PeakFilterer extends JButton
       jf.setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
       return jf;
    }
+   
+   /**
+    * A Dialog for soliciting a user's selection of range of values for
+    * a given item associated with Peak objects
+    * 
+    * @author Ruth
+    *
+    */
    class IntervalDialog  extends JDialog implements ActionListener
    {
       float MinVal,
             MaxVal;
+      
       float minimum,
             maximum;
+      
       boolean Inside;
+      
       String Message;
       JCheckBox inside;
       StretchTopBottom sliders;
+      
+      /**
+       *  Constructor 
+       * @param message  Message on the dialog box indicating the field desired
+       * @param minVal  Min value for the field
+       * @param maxVal  max value for the field
+       */
       public IntervalDialog( String message, float minVal, float maxVal)
+      {
+         this( message, minVal, maxVal, true );
+      }
+      
+      /**
+       Constructor 
+       * @param message  Message on the dialog box indicating the field desired
+       * @param minVal  Min value for the field
+       * @param maxVal  max value for the field
+       * @param isModal Indicates whether the dialog box is modal or not.
+       */
+      public IntervalDialog( String message, float minVal, float maxVal, boolean isModal)
       {
          super( getJFrame(message),message, true);
          MinVal = minimum = minVal;
          MaxVal = maximum = maxVal;
          Message = message;
          Inside = true;
+         
          //-----------------------------
          JPanel contentPane= new JPanel();
          contentPane.setLayout(  new BorderLayout() );
@@ -541,6 +729,7 @@ public class PeakFilterer extends JButton
            buttonPanel.setBackground( java.awt.Color.GRAY );
            
            contentPane.add( buttonPanel , BorderLayout.NORTH);
+           
            //-----------------
            sliders = new StretchTopBottom( MinVal, MaxVal);
            sliders.addActionListener( this );
@@ -551,6 +740,13 @@ public class PeakFilterer extends JButton
           setVisible( true);
          
       }
+      
+      /**
+       * Sets the minimum and maximum possible value
+       * 
+       * @param max  maximum possible value for this field
+       * @param min  minimum possible value for this field
+       */
       public void setMaxMinVal( float max, float min)
       {
           minimum = min;
@@ -558,17 +754,40 @@ public class PeakFilterer extends JButton
           sliders.setMaxMin( maximum , minimum );
       }
       
+      /**
+       * 
+       * @return
+       */
       public float MinVal()
       {
+         if(sliders.checkValues())
+            updateVals();
          return minimum;
       }
       public float MaxVal()
       {
+
+         if(sliders.checkValues())
+            updateVals();
          return maximum;
       }
       public boolean inside()
       {
+
+         if(sliders.checkValues())
+            updateVals();
          return Inside;
+      }
+      
+      /**
+       * Should do a checkValues before this
+       */
+      private void updateVals()
+      {
+
+         minimum= sliders.getBottomValue();
+         maximum = sliders.getTopValue();
+         Inside = inside.isSelected();
       }
       /* (non-Javadoc)
        * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
@@ -577,11 +796,10 @@ public class PeakFilterer extends JButton
       public void actionPerformed( ActionEvent e )
       {
          String evtString = e.getActionCommand();
+         sliders.checkValues();
          if( evtString.equals( "Exit/Save" ))
          {
-            minimum= sliders.getBottomValue();
-            maximum = sliders.getTopValue();
-            Inside = inside.isSelected();
+            updateVals();
            
             dispose();
             return;
@@ -624,26 +842,37 @@ public class PeakFilterer extends JButton
       
    }  
    
-  //;row;col;channel;iintensity;time;h;k;l;=0,1,2,3,5
+  //;row;col;channel;iintensity;time;h;k;l;=0,1,2,3,5,9,10,11
    private float getFloatValMain( IPeak pk, int k)
    {
-      if( k < 2)
-        if( k==0)
-           return pk.y();
-        else
-           return pk.x();
+      if( k < 4)
+        if( k<=1)
+          if( k==0)
+             return pk.y();
+          else
+             return pk.x();
+        else//k>=2
+           if( k==2)
+              return pk.z();
+           else
+              return pk.ipkobs();  
+     
          
-      else if( k > 2)
-         if( k==3)
-            return pk.ipkobs();
-         else
-            return pk.time();
-         
-     else
-         return pk.z();
+     else //k>=4
+        if( k <= 9 )
+           if( k==5)
+              return pk.time();
+           else
+              return pk.h();
+           
+        else //k>=10
+          if( k==10)
+             return pk.k();
+          else
+             return pk.l();
    }
    
-   //;d-spacing;qx;qy;qz;=4,6,7,8
+   //;d-spacing;qx;qy;qz;h int offset; k int offset; l int offset=4,6,7,8,12,13,14
    private float getFloatValQCalc( IPeak pk, int k)
    {
       float[] Qs = pk.getUnrotQ();
@@ -660,11 +889,11 @@ public class PeakFilterer extends JButton
       private float  getFloatOtherCalc(IPeak pk, char c )
       {
          if( c=='h')
-            return pk.h()-(float)Math.floor( pk.h() );
+            return pk.h()-(float)Math.floor( pk.h()+.5 );
          if( c=='k')
-            return pk.k()-(float)Math.floor( pk.k() );
+            return pk.k()-(float)Math.floor( pk.k()+.5 );
          if( c=='l')
-            return pk.l()-(float)Math.floor( pk.l() );
+            return pk.l()-(float)Math.floor( pk.l()+.5 );
          return Float.NaN;
       }
   
