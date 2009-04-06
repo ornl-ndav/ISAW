@@ -183,7 +183,7 @@ public class subs
 
 
       for( int i = 0 ; i < Peaks.size() ; i++ )
-         if( omittedPeakIndex == null || omittedPeakIndex.length > i
+         if( omittedPeakIndex == null || omittedPeakIndex.length <= i
                   || ! omittedPeakIndex[ i ] )
          {
             NPeaks++ ;
@@ -342,9 +342,9 @@ public class subs
       float[] Res = new float[ xvals.length - 1 ];
       java.util.Arrays.fill( Res , 0f );
       int NPeaks = 0;
-
+      //ignore h=0,k=0,k=0
       for( int i = 0 ; i < Peaks.size() ; i++ )
-         if( omittedMask == null || omittedMask.length < i || ! omittedMask[ i ] )
+         if( omittedMask == null || omittedMask.length <= i || ! omittedMask[ i ] )
          {
             NPeaks++ ;
             IPeak P = Peaks.elementAt( i );
@@ -353,7 +353,7 @@ public class subs
             float miller = InvMat[ indx ][ 0 ] * Qs[ 0 ] + InvMat[ indx ][ 1 ]
                      * Qs[ 1 ] + InvMat[ indx ][ 2 ] * Qs[ 2 ];
             
-            float offset = miller - (int) Math.floor( miller );
+            float offset = miller - (int) Math.floor( miller +.5 );
             
             int Index = (int) ( ( offset - minX ) / delta );
             
@@ -863,8 +863,175 @@ public class subs
 
    }
 
+   //NiggReal not need inverse of interchange two rows is = itself and
+   // its transpose
+  private static boolean Sortt( float[][] Tensor, float[][] UB, boolean NiggReal)
+  {
+  
+     boolean changed = false;
+     for(int k=0; k<2; k++)
+     for( int i=0; i<2; i++)
+       
+        if( Tensor[i][i] >=  Tensor[i+1][i+1] )
+        {
+           int sgn =1;
+           if( Tensor[i][i+1]< 0)
+              sgn = -1;
+           boolean ok = false;
+           if( Tensor[i][i] == Tensor[i+1][i+1] && 
+                 sgn*Tensor[(i+2)%3][i+1] <= sgn*Tensor[(i+2)%3][i] )
+                 ok = true;
+           if( !ok)//Xchg row i and row i+1
+           { 
+              changed = true;
+              for( int col = 0; col < 3; col++)//Interchange row i, i+1
+              {
+                 float sav = Tensor[i][col];
+                 Tensor[i][col] = Tensor[i+1][col];
+                 Tensor[i+1][col] = sav;
+              }
+              for( int row =0; row < 3; row++)// Interchange col i and i+1
+              {
+                 float sav = Tensor[row][i];
+                 Tensor[row][i] = Tensor[row][i+1];
+                 Tensor[row][i+1] = sav;
+                 sav = UB[row][i];
+                 UB[row][i] = UB[row][i+1];
+                 UB[row][i+1] = sav;
+              }
+              
+              
+           }
+        }
+     return changed;
+  }
+  private static void showNig( float[][] Tensor, float[][]UB, boolean NiggReal)
+  {
+     System.out.println("Tensor");
+     LinearAlgebra.print( Tensor );
+     System.out.println("UB");
+     LinearAlgebra.print( UB);
+     System.out.println(  "Compare to tensor");
+     float[][] UB1 = UB;
+     if(  NiggReal)
+        UB1 = LinearAlgebra.getInverse(LinearAlgebra.getTranspose(  UB) );
+     LinearAlgebra.print(  LinearAlgebra.mult( LinearAlgebra.getTranspose(UB1), UB1) );
+     System.out.println( "-------------------------------------");
+     
+  }
+   public static float[][] Nigglify( float[][]UB)
+   {
+       boolean NiggReal = true;
+      
+      if( UB == null)
+         return null;
+      float[][] UB1 = LinearAlgebra.copy( UB );
+      float[][] Tensor = LinearAlgebra.mult( LinearAlgebra.getTranspose( UB1 ) , UB1 );
+      int invSgn =1;
+      if( NiggReal)
+      {
+         Tensor = LinearAlgebra.getInverse(  Tensor  );
+         invSgn=-1;
+      }
+      float[][] ident = new float[][]{{1f,0f,0f},{0f,1f,0f},{0f,0f,1f}};
+      boolean done = false;
+      while( !done)
+      { 
+         Sortt( Tensor, UB1, NiggReal);
+         boolean changed = false;
+         for( int i=0; i<2 && !changed; i++)
+            for(  int j=i+1; j< 3 && !changed; j++)
+            { 
+               int sgn = 1;
+               if( Tensor[i][j] < 0)
+                  sgn = -1;
+               int oth = i+1;
+               
+               if( oth ==j)
+                  oth = (oth+1)%3;
+               
+               if(  Tensor[i][i]/2 < sgn*Tensor[i][j] ||
+                        (Tensor[i][i]/2 == sgn*Tensor[i][j] &&
+                           Tensor[oth][i] > 2*Tensor[oth][j]     ))
+               {
+                  changed = true;
+                  ident[j][i]= -sgn;
+                  Tensor = LinearAlgebra.mult( ident , Tensor );
+                  ident[j][i]=-sgn*invSgn;
+                  UB1 = LinearAlgebra.mult( UB1 , ident  );
+                  ident[j][i]=0;
+                  ident[i][j]= -sgn;
+                  Tensor = LinearAlgebra.mult( Tensor, ident);
+                  
+                  ident[i][j]=0;
+               }
+            }
+         
+         done = !changed;
+         if( !changed )// Currently Assumes no two are equal.
+         {
+            int c=0;
+            if( Tensor[0][1]<= 0)c++;
+            if( Tensor[0][2]<= 0)c++;
+            if( Tensor[1][2] <= 0)c++;
+            if( c >0 && c <3)
+            {
+               int sgn =1;
+               if( c == 2)
+                  sgn = -1;
+               int kk=-1;
+               if( sgn* Tensor[0][1] <= 0)kk = 2;
+               if( sgn*Tensor[0][2] <= 0) kk = 1;
+               if( sgn*Tensor[1][2] <= 0)kk = 0;
+               // off sign. change common of the two with same signs
+               ident[kk][kk] = -1;
+               UB1 =LinearAlgebra.mult( UB1,ident);
+               Tensor = LinearAlgebra.mult( ident , Tensor );
+               Tensor=  LinearAlgebra.mult( Tensor, ident );
+               ident[kk][kk] = 1;
+               showNig( Tensor, UB1, NiggReal);
+            }  
+            
+            // now check for C -a-b
+            
+            float sgn = 1;
+            if( Tensor[0][1] < 0) sgn =-1; // All should have same sign
+            float x = sgn*Tensor[0][1] +sgn*Tensor[0][2] +sgn*Tensor[1][2] ;
+            if( x >= .5*(Tensor[0][0]+ Tensor[1][1]) && sgn < 0 )
+            {
+                changed = true;
+                done = false;
+                if( x == .5*(Tensor[0][0]+ Tensor[1][1]))
+                 if( Tensor[0][0] <=2*(sgn*Tensor[0][2] +sgn*Tensor[0][1] ) 
+                                                       || sgn > 0 ) {
+                    changed = false;
+                    done = true;
+                 }
+                
+                if( changed)
+                {
+                   ident[2][1] = ident[2][0] = -sgn;
+                   Tensor = LinearAlgebra.mult(  ident , Tensor );
+                   ident[2][1] = ident[2][0] = -sgn*invSgn;
+                   UB1 = LinearAlgebra.mult( UB1 , ident );
+                   
+                   ident[2][1] = ident[2][0] = 0;
+                   ident[1][2] = ident[0][2] = -sgn;
+                   Tensor = LinearAlgebra.mult( Tensor , ident );
+                   ident[1][2] = ident[0][2] = 0;  // inverse
 
-   public static void main( String[] args )
+                }
+                  
+           
+            }//!changed
+         }
+      }//while not done
+      if( Sortt( Tensor, UB1, NiggReal))
+         showNig( Tensor, UB1, NiggReal);
+      
+      return UB1;
+   }
+   public static void main1( String[] args )
    {
 
       System.out.println( subs.getCoordinateInformation( false ) );
@@ -877,6 +1044,39 @@ public class subs
                .readOrient( "C:\\ISAW\\SampleRuns\\SNS\\Snap\\QuartzRunsFixed\\quartz.mat" );
       System.out.println( subs.ShowOrientationInfo( pks , orientMat , null ,
                null , true ) );
+
+
+   }
+   //Tests new nigglify for = cases
+   public static void main( String[] args )
+   {
+      
+      //Test results: cannot get === so gave up on testing
+      // This tests 
+     double dot1 = -Math.cos( 75*Math.PI/180 )*4;
+     double dot2 = dot1/2*3;
+     System.out.println("dots="+dot1+","+dot2);
+     double[][] RealTensor = {{ 4,   dot1  , dot2 },
+                              { dot1  ,4  , dot2 },
+                              {dot2,  dot2    , 9 }
+                        };
+                               //{{4  ,.4f  ,.2f},{.4f  ,4  ,.3f}, {.2f , .3f  ,9}};
+     double[]LatParams = lattice_calc.LatticeParamsOfG( RealTensor );
+     double[][] RealUB = lattice_calc.A_matrix( LatParams );
+     double[][] UB1 = LinearAlgebra.getInverse( RealUB);
+     double[][] DD =(  LinearAlgebra.mult(LinearAlgebra.getTranspose(UB1),UB1) );
+     LinearAlgebra.print( LinearAlgebra.getInverse( DD) );
+     float[][] UB = LinearAlgebra.double2float( UB1);// LinearAlgebra.mult( UB1 , T));
+     
+     LinearAlgebra.print( subs.Nigglify( UB ));
+    
+     blind B = new blind();
+     B.blaue( LinearAlgebra.double2float( UB1 ) );
+     System.out.println("From blind");
+     LinearAlgebra.print( B.UB );
+     System.out.println("Recip tensor");
+     LinearAlgebra.print(  LinearAlgebra.getInverse( LinearAlgebra.mult(LinearAlgebra.getTranspose( B.UB ),B.UB) ) );
+     
 
 
    }
