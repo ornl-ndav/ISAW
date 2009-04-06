@@ -71,6 +71,7 @@ import java.util.*;
 
 import Command.ScriptUtil;
 import Command.Script_Class_List_Handler;
+import DataSetTools.components.ui.Peaks.subs;
 import IPNSSrc.blind;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
@@ -630,7 +631,11 @@ public class GetUB {
       if( Math.abs(LinearAlgebra.determinant( LinearAlgebra.float2double( Res ) ))
                < Max*Max*Max/1000)
          return null;
-      return Res;
+      //Nigglify
+      blind B = new blind();
+      B.blaue( Res  );
+      
+      return LinearAlgebra.double2float( B.UB );
       
    }
    private static float[] PlaneNormal( int i1){
