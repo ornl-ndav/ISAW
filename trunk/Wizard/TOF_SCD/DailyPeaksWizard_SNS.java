@@ -92,7 +92,7 @@ public class DailyPeaksWizard_SNS extends Wizard
     		            new PlaceHolderPG("Peaks",null),new int[]{0,4,5,6,8}));
      
      addForm( new OperatorForm(new IntegrateMultipleRuns(), 
-    		            new StringPG("Result",""),new int[]{0,1,2,3,4,6,7,8,11,12}));
+    		            new PlaceHolderPG("Result",""),new int[]{0,1,2,3,4,6,7,8,11,12}));
      
     linkFormParameters( ParamTable );
     String S="" ;
