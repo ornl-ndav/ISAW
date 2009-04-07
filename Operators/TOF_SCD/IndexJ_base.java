@@ -152,7 +152,61 @@ public class IndexJ_base extends    GenericTOF_SCD implements
     getParameter(5).setValue(new Float(delta));
    
   }
+  /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
+  /**
+   *  Construct operator to execute index.
+   *
+   *  @param peaks The Vector of peaks Objects to index. 
+   *  @param UB   Orientation matrix 
+   * @param RestrRuns   The int list of restricted runs
+   *  @param delta1 The error parameter for indexing peaks h value
+   *  @param delta2 The error parameter for indexing peaks k value
+   *  @param delta3 The error parameter for indexing peaks l value
+   *  @param  Stats  output only. Returns number indexed(first element) and
+   *                  number that were tried(second element)
+   */
   
+  public IndexJ_base( Vector peaks, float[][] UB, String RestrRuns,float delta1,
+           float delta2, float delta3, Vector Stats){
+    this();
+    
+    getParameter(0).setValue(peaks);
+    getParameter(1).setValue(UB);
+    getParameter(2).setValue(RestrRuns);
+    getParameter(3).setValue(new Float(delta1));
+    getParameter(4).setValue(new Float(delta2));
+    getParameter(5).setValue(new Float(delta3));
+    getParameter(6).setValue( Stats );
+    
+   
+  }
+  
+  /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
+  /**
+   *  Construct operator to execute index.
+   *
+   *  @param peaks The Vector of peaks Objects to index. 
+   *  @param UB   Orientation matrix 
+   * @param RestrRuns   The int list of restricted runs
+   *  @param delta1 The error parameter for indexing peaks h value
+   *  @param delta2 The error parameter for indexing peaks k value
+   *  @param delta3 The error parameter for indexing peaks l value
+   */
+  
+  public IndexJ_base( Vector peaks, float[][] UB, String RestrRuns,float delta1,
+           float delta2, float delta3){
+     this();
+     
+     getParameter(0).setValue(peaks);
+     getParameter(1).setValue(UB);
+     getParameter(2).setValue(RestrRuns);
+     getParameter(3).setValue(new Float(delta1));
+     getParameter(4).setValue(new Float(delta2));
+     getParameter(5).setValue(new Float(delta3));
+    
+       
+   
+  }
   
   /**
    *  Construct operator to execute index.
