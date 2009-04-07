@@ -1520,13 +1520,49 @@ public class View3D extends ThreeD_JPanel
 
    public static void main( String[] args )
    {
-
+      String filename = null;
+      String ImageFilePrefix = null;
+      String ImageFileDirectory = null;
+      if( args == null || args.length < 1)
+      {
+         JFileChooser jfc = new JFileChooser( System.getProperty("Data_Directory"));
+         if( jfc.showOpenDialog( null )==JFileChooser.APPROVE_OPTION)
+            filename = jfc.getSelectedFile().toString();
+      }else if( args[0].trim().startsWith( "-" ))
+      {
+         System.out.println("A. With no arguments, a file chooser dialog "+
+                               "appears to select the peaks file\n");
+                               		
+         System.out.println("B. To see the peak images, run View3D on the"+
+                  " command line with the ");
+         System.out.println("    peaks filename , the prefix(eg. SNAP_) ");
+         System.out.println(" then the directory where the image files are saved ");
+         System.out.println("   if it is not in the ISAW/tmp directory in the user's "+
+                  "home directory\n\n");
+         System.out.println("   To keep the peak image files add to your "+
+                  "IsawProps.dat file");
+         System.out.println("-----KeepPeakImageFiles=true-----");
+         System.out.println(" Then run the first form of SNS's initial peaks wizard");
+         System.out.println("----------------------------------------------");
+         System.out.println("\n\n") ; 
+         System.exit(0);
+         
+      }else
+      {
+         filename = args[0];
+         if( args.length >1)
+            ImageFilePrefix = args[1];
+         if( args.length >2)
+            ImageFileDirectory = args[2];
+         
+      }
+         
       System.out.println( "Enter Peaks filename" );
       // JFileChooser jf = new JFileChooser();
       //String filename = "C:\\ISAW\\SampleRuns\\SNS\\Snap\\QuartzRunsFixed\\quartz.peaks";
-      String filename = "C:\\ISAW1\\SampleRuns\\INITIAL_WITH_CAL\\quartz.peaks";
+     // String filename = "C:\\ISAW1\\SampleRuns\\INITIAL_WITH_CAL\\quartz.peaks";
       // String filename = "C:\\ISAW1\\anvred\\ox80nxs.integrate";
-      System.out.println( filename );
+      //System.out.println( filename );
       /* if( jf.showOpenDialog( null ) == JFileChooser.APPROVE_OPTION)
        {
           filename = jf.getSelectedFile().getAbsolutePath();
@@ -1544,8 +1580,12 @@ public class View3D extends ThreeD_JPanel
       
       Info inf = new Info( vcontrol );
       
-     // PeakImageInfoHandler pkImage = new PeakImageInfoHandler( null , "SNAP_" );
-    //  inf.addInfoHandler( "Peak Image" , pkImage );
+      if( ImageFilePrefix != null)
+      {
+         PeakImageInfoHandler pkImage = new PeakImageInfoHandler( 
+                                     ImageFileDirectory , ImageFilePrefix );
+         inf.addInfoHandler( "Peak Image" , pkImage );
+      }
       
       JPanel ControlPanel = new JPanel();
       BoxLayout bLayout = new BoxLayout( ControlPanel , BoxLayout.Y_AXIS );
