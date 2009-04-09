@@ -51,10 +51,13 @@ import java.util.*;
  */
 public class IntegratePeaksProcess 
 {
+  public static final float DEFAULT_MONITOR_COUNT = 10000;
+
   /**
-   *  Read the specified detector data from the specified file, find the
-   *  peaks in that detector and write the resulting information to a 
-   *  peaks file.  The parameters are taken from the command line as follows:
+   *  Read the specified detector data from the specified file, integrate the
+   *  peaks in that detector and write the resulting information to an 
+   *  "integrate" file.  The parameters are taken from the command line as 
+   *  follows:
    *
    *  args[ 0] - fully qualified NeXus file name
    *  args[ 1] - fully qualified base name for peaks file, logfile and 
@@ -173,15 +176,41 @@ public class IntegratePeaksProcess
       retriever = new NexusRetriever( fin_name );
       ((NexusRetriever)retriever).RetrieveSetUpInfo(null);
       ds = retriever.getDataSet( ds_num );
-      ((NexusRetriever)retriever).close();
     }
 
     if ( ds == null )
-    {  
-       System.err.println("NULL DataSet number " + ds_num + 
+    {
+       System.err.println("NULL DataSet number " + ds_num +
                           " from file " + fin_name );
        System.exit(1);
     }
+
+    float   monct     = DEFAULT_MONITOR_COUNT;
+    int     mon_index = 0;
+    boolean found     = false;
+    int     n_ds      = retriever.numDataSets();
+    while ( mon_index < n_ds && !found )
+    {
+      if ( retriever.getType( mon_index ) == Retriever.MONITOR_DATA_SET )
+        found = true;
+      else
+        mon_index++;
+    }
+
+    if ( found )
+    {
+      DataSet mon_ds = retriever.getDataSet( mon_index );
+      if ( mon_ds != null && mon_ds.getNum_entries() > 0 )
+      {
+        float[] ys = mon_ds.getData_entry(0).getY_values();
+        if ( ys != null && ys.length > 0 )
+          for ( int i = 0; i < ys.length; i++ )
+            monct += ys[i];
+       }
+    }
+
+    if ( retriever instanceof NexusRetriever ) // must close the NeXus file
+      ((NexusRetriever)retriever).close();
 
     System.out.println( "+++++++++FINISHED READING " + fin_name +
                         " closed for DS ###" + ds_num );
@@ -211,7 +240,6 @@ public class IntegratePeaksProcess
 
     StringBuffer log_buffer = new StringBuffer();
 
-    float mon_count = 10000;             // TO DO get correct value
 
     int[] time_range = { minus_time_offset, plus_time_offset };
     int[] col_range  = { minus_col_offset, plus_col_offset };
@@ -226,7 +254,7 @@ public class IntegratePeaksProcess
                                   peak_algorithm,
                                   col_range,
                                   row_range,
-                                  mon_count,
+                                  monct,
                                   log_buffer );
 
     System.out.println( "+++++++++FINISHED INTEGRATING PEAKS " + fin_name +
