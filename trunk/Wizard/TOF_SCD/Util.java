@@ -182,7 +182,6 @@ public class Util {
        SharedMessages.addmsg( "Calibration File ="+calib_file );
 
     Vector ops = new Vector();
-    Random random = new Random();
 
     String fout_prefix = System.getProperty("user.home") + "/ISAW/SNAP_";
 
@@ -195,8 +194,7 @@ public class Util {
         int run_num = run_numbers[ run_index ];
         ClearFiles( fileNamePrefix+run_numbers[run_index]);
         String fin_name  = rawpath + fileNamePrefix + run_num + extension;
-        String fout_base = fout_prefix + run_num + "_DS_" + ds_num +
-                              "_" + random.nextInt();
+        String fout_base = fout_prefix + run_num + "_DS_" + ds_num + "_";
         String result = fout_prefix + run_num + "_" + ds_num + "_returned.txt";
 
         String cp = System.getProperty( "java.class.path" );
@@ -208,16 +206,36 @@ public class Util {
         String mem = System.getProperty( "Find_Peaks_Process_Memory" );
         if ( mem == null )
           mem = "2000";
-
+                                                     // construct basic command
         String cmd  = " java -mx" + mem + "M "     +
                       " -XX:+AggressiveHeap "      +
                       " -XX:+DisableExplicitGC "   +
                       " -XX:ParallelGCThreads=4 "  + cp;
 
-        if ( slurm_queue_name != null )               // use slurm, otherwise
-          cmd = " srun -p " + slurm_queue_name +      // just pass in the
-                " -J SCD_Find_Peaks -o " + result +   // basic command
-                cmd;
+        System.out.println("NUMBER OF CORES = " +
+                            Runtime.getRuntime().availableProcessors() );
+
+        boolean use_slurm = ( slurm_queue_name != null );
+        if ( use_slurm )                 
+        {
+          max_processes = 20;                        // overide max_processes
+                                                     // since slurm will queue
+          cmd = " srun -p " + slurm_queue_name +     // up the requests.
+                " -J SCD_Find_Peaks -o " + result +  // Add the slurm stuff to
+                cmd;                                 // the basic command.
+        }
+        else
+        { 
+          int num_cores = Runtime.getRuntime().availableProcessors();
+
+          if ( num_cores > 1 )                       // leave one core free
+            num_cores--;                             // if possible
+
+          max_processes = Math.min(max_processes, num_cores );
+
+          if ( max_processes < 1 )                   // we need at least one
+            max_processes = 1;
+        }
 
         FindPeaksProcessCaller s_caller =
                  new FindPeaksProcessCaller( cmd,
@@ -254,6 +272,8 @@ public class Util {
                                             // local system.
     if (num_processes > max_processes )
       num_processes = max_processes;
+
+    System.out.println("USING " + num_processes + " concurrent processes");
 
     int max_time = ops.size() * 120000 + 600000;
     executor = new ParallelExecutor( ops, num_processes, max_time );
@@ -402,9 +422,11 @@ public class Util {
     }
 
     if ( show_peaks_view )
-      PeakArrayPanels.DisplayPeaks( "Test Peaks", null, "", null, -1, System.getProperty(
-              PeakArrayPanels.KEEP_IMAGES) != null );
-
+    {
+      String keep_images = System.getProperty( PeakArrayPanels.KEEP_IMAGES);
+      boolean keep = keep_images != null;
+      PeakArrayPanels.DisplayPeaks( "Test Peaks", null, "", null, -1, keep );
+    }
     return all_peaks; 
   }
    
@@ -479,7 +501,7 @@ public class Util {
    String slurm_queue_name = System.getProperty( "Slurm_Queue_Name" );
    System.out.println("SLURM QUEUE NAME = " + slurm_queue_name );
 
-   if ( slurm_queue_name != null )
+//   if ( slurm_queue_name != null )
      return findCentroidedPeaksUsingProcesses(
                        rawpath,
                        outpath,
@@ -511,7 +533,7 @@ public class Util {
                        slurm_queue_name,
                        maxNumThreads );
 // START WITH THREADS      
-
+/*
       boolean useCache = false;
       if( runnums == null )
          return null;
@@ -778,6 +800,7 @@ public class Util {
       return ResultPeaks;
 
 // END WITH THREADS
+*/
    }
    
    //If image files will not be cleared after showing, should clear out all possible filenames
@@ -1870,7 +1893,6 @@ public class Util {
          return new ErrorString( "x,y, or time offsets not set" );
 
       Vector ops = new Vector();
-      Random random = new Random();
 
       String fout_prefix = System.getProperty("user.home") + "/ISAW/" + inst;
 
@@ -1884,8 +1906,7 @@ public class Util {
 
           String fin_name = path + inst + run_num + FileExt;
            
-           String fout_base = fout_prefix + run_num + "_DS_" + ds_num +
-                               "_" + random.nextInt();
+           String fout_base = fout_prefix + run_num + "_DS_" + ds_num + "_";
 
            String orientation_file = outpath +"ls" +expname +run_num +".mat";
            String result = fout_prefix + run_num + "_" + 
@@ -1906,10 +1927,27 @@ public class Util {
                          " -XX:+DisableExplicitGC "   +
                          " -XX:ParallelGCThreads=4 "  + cp;
 
-           if ( slurm_queue_name != null )             // use slurm, otherwise
-             cmd = " srun -p " + slurm_queue_name +    // just pass in the
-                   " -J SCD_Find_Peaks -o " + result + // basic command
-                   cmd;
+           boolean use_slurm = ( slurm_queue_name != null );
+           if ( use_slurm )
+           {
+             max_processes = 20;                     // overide max_processes
+                                                     // since slurm will queue
+             cmd = " srun -p " + slurm_queue_name +  // up the requests.
+                " -J SCD_Find_Peaks -o " + result +  // Add the slurm stuff to
+                cmd;                                 // the basic command.
+           }
+           else
+           { 
+             int num_cores = Runtime.getRuntime().availableProcessors();
+
+             if ( num_cores > 1 )                       // leave one core free
+               num_cores--;                             // if possible
+
+             max_processes = Math.min(max_processes, num_cores );
+
+             if ( max_processes < 1 )                   // we need at least one
+               max_processes = 1;
+           }
 
            IntegratePeaksProcessCaller s_caller =
                    new IntegratePeaksProcessCaller( cmd,
@@ -1949,6 +1987,8 @@ public class Util {
                                             // local system.
        if (num_processes > max_processes )
          num_processes = max_processes;
+
+       System.out.println("USING " + num_processes + " concurrent processes");
 
        int max_time = ops.size() * 120000 + 600000;
        executor = new ParallelExecutor( ops, num_processes, max_time );
@@ -2119,7 +2159,7 @@ public class Util {
       String slurm_queue_name = System.getProperty( "Slurm_Queue_Name" );
       System.out.println("SLURM QUEUE NAME = " + slurm_queue_name );
 
-      if ( slurm_queue_name != null )      // use processes, not threads
+//      if ( slurm_queue_name != null )      // use processes, not threads
       {
         Object result = IntegrateMultipleRunsUsingProcesses(
            path,
@@ -2152,7 +2192,8 @@ public class Util {
  
          return result;
       }
-
+/*
+//START WITH THREADS  
 
       boolean useCache = false;
       SharedMessages.addmsg( "Instrument = " + inst );
@@ -2349,8 +2390,11 @@ public class Util {
         SharedMessages.addmsg( "The log file is in integrate.log. Use the" + 
                                                    " View menu to open it" );
       return Res;
-   }
    
+// END WITH THREADS  
+*/
+  }
+
    //Sets up the operator thread
    private static OperatorThread getIntegOpThread( DataSet ds , int centering ,
             int[] timeZrange , int increase , float d_min , int listNthPeak ,
