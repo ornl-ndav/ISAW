@@ -36,11 +36,7 @@ package DataSetTools.operator.Generic.TOF_SCD;
 import java.util.*;
 import java.io.*;
 
-import DataSetTools.operator.Generic.TOF_SCD.*;
-import DataSetTools.retriever.*;
-import DataSetTools.dataset.*;
 import gov.anl.ipns.Operator.*;
-
 
 /**
  *  The getResult() method of this class will execute the FindPeaksProcess
