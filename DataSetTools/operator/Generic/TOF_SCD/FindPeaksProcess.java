@@ -38,6 +38,7 @@ import DataSetTools.retriever.*;
 import DataSetTools.dataset.*;
 import DataSetTools.operator.Generic.TOF_SCD.Peak_new_IO;
 
+import java.io.*;
 import java.util.*;
 
 /**
@@ -50,6 +51,9 @@ import java.util.*;
  */
 public class FindPeaksProcess 
 {
+  public static final String LOG_SUFFIX   = "find_peaks.log";
+  public static final String PEAKS_SUFFIX = ".peaks";
+
   /**
    *  Read the specified detector data from the specified file, find the
    *  peaks in that detector and write the resulting information to a 
@@ -114,7 +118,6 @@ public class FindPeaksProcess
     boolean show_peaks_view    = Boolean.parseBoolean( args[18] );
     int     num_slices         = Integer.parseInt( args[19] );
 
-    /*
     System.out.println( "LOADING " + fin_name + " #" + ds_num );
     System.out.println( "WRITING " + fout_base );
     System.out.println( "num_peaks          = " + num_peaks );
@@ -137,12 +140,11 @@ public class FindPeaksProcess
     System.out.println( "show_peaks_view    = " + show_peaks_view );
     System.out.println( "num_slices         = " + num_slices );
 
-    */
 
     boolean is_IPNS_file = fin_name.toUpperCase().endsWith( "RUN" );
     Retriever retriever = null;
 
-    DataSet   ds     = null;
+    DataSet ds = null;
 
     if ( is_IPNS_file )
     {
@@ -188,6 +190,8 @@ public class FindPeaksProcess
     int det_id = det_ids[0];
 
     StringBuffer log_buffer = new StringBuffer();
+    log_buffer.append( "\n FIND PEAKS LOG INFORMATION FOR RUN " + fin_name +
+                       " DS " + ds_num + " #########################\n");
     
     Vector peaks = Wizard.TOF_SCD.Util.findDetectorCentroidedPeaks ( 
        ds,
@@ -215,7 +219,7 @@ public class FindPeaksProcess
 
     if ( peaks.size() > 0 )
     {
-      String file_name = fout_base + ".peaks";
+      String file_name = fout_base + PEAKS_SUFFIX;
       try                                            // Write temp peaks file
       {
         Peak_new_IO.WritePeaks_new( file_name, peaks, false );
@@ -228,7 +232,24 @@ public class FindPeaksProcess
         System.err.println( ex.getStackTrace() );
         System.exit(3); 
       }
-      
+    }
+
+    String file_name = fout_base + LOG_SUFFIX;
+    try
+    {
+      FileOutputStream fos = new FileOutputStream( file_name );
+      fos.write( log_buffer.toString().getBytes() );
+      fos.close();
+      System.out.println( "+++++++++FINISHED WRITING FIND PEAKS LOG " + 
+                          file_name +
+                          " for DS ###" +
+                          ds_num );
+    }
+    catch ( Exception ex )
+    {
+      System.err.println("Exception writing find peaks log file "+file_name);
+      System.err.println( ex.getStackTrace() );
+      System.exit(3);
     }
 
     System.exit(0); 
