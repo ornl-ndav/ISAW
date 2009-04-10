@@ -60,6 +60,10 @@ import gov.anl.ipns.ViewTools.Panels.PeakArrayPanel.*;
  */
 public class Util {
    
+   public static final String ISAW_SCRATCH_DIRECTORY = 
+                              System.getProperty("user.home") + "/ISAW/tmp/";
+   public static final String SLURM_RETURN_SUFFIX = "_returned.txt";
+
    public static final String[] CenteringNames = {"primitive" , "a centered" ,
               "b centered" , "c centered" , "[f]ace centered",
             "[i] body centered" , "[r]hombohedral centered"};
@@ -138,6 +142,8 @@ public class Util {
             String   slurm_queue_name,
             int      max_processes )
   {
+    boolean use_slurm = ( slurm_queue_name != null );
+
     if ( runnums == null )
     {
       SharedMessages.addmsg( "No run numbers for find peaks." );
@@ -183,7 +189,12 @@ public class Util {
 
     Vector ops = new Vector();
 
-    String fout_prefix = System.getProperty("user.home") + "/ISAW/SNAP_";
+    String fout_prefix = ISAW_SCRATCH_DIRECTORY + fileNamePrefix;
+    CheckTmpDirectory();
+    ClearFiles( fileNamePrefix, FindPeaksProcess.LOG_SUFFIX );
+    ClearFiles( "", SLURM_RETURN_SUFFIX );
+
+    int local_cores = Runtime.getRuntime().availableProcessors();
 
     int mon_count = 0;           // mon_count is not needed at this point
 
@@ -195,7 +206,8 @@ public class Util {
         ClearFiles( fileNamePrefix+run_numbers[run_index]);
         String fin_name  = rawpath + fileNamePrefix + run_num + extension;
         String fout_base = fout_prefix + run_num + "_DS_" + ds_num + "_";
-        String result = fout_prefix + run_num + "_" + ds_num + "_returned.txt";
+        String result = fout_prefix + run_num + "_" + ds_num +
+                        SLURM_RETURN_SUFFIX;
 
         String cp = System.getProperty( "java.class.path" );
         if ( cp == null )
@@ -212,10 +224,6 @@ public class Util {
                       " -XX:+DisableExplicitGC "   +
                       " -XX:ParallelGCThreads=4 "  + cp;
 
-        System.out.println("NUMBER OF CORES = " +
-                            Runtime.getRuntime().availableProcessors() );
-
-        boolean use_slurm = ( slurm_queue_name != null );
         if ( use_slurm )                 
         {
           max_processes = 20;                        // overide max_processes
@@ -226,8 +234,7 @@ public class Util {
         }
         else
         { 
-          int num_cores = Runtime.getRuntime().availableProcessors();
-
+          int num_cores = local_cores;
           if ( num_cores > 1 )                       // leave one core free
             num_cores--;                             // if possible
 
@@ -264,8 +271,7 @@ public class Util {
         ops.add( s_caller );
       }
 
-    ParallelExecutor executor;
-
+    int max_time = ops.size() * 120000 + 600000;
     int num_processes = run_numbers.length * ds_numbers.length;
                                             // cap the number of processes to
                                             // avoid overloading slurm or the
@@ -273,10 +279,16 @@ public class Util {
     if (num_processes > max_processes )
       num_processes = max_processes;
 
-    System.out.println("USING " + num_processes + " concurrent processes");
+    System.out.println("NUMBER OF LOCAL CORES = " + local_cores );
+    if ( use_slurm )
+      System.out.println("USING " + num_processes + " processes on " +
+                         slurm_queue_name );
+    else
+      System.out.println("USING " + num_processes + " local processes");
+    System.out.println("TIME LIMIT(seconds) = " + max_time/1000.0 );
 
-    int max_time = ops.size() * 120000 + 600000;
-    executor = new ParallelExecutor( ops, num_processes, max_time );
+    ParallelExecutor executor =
+                          new ParallelExecutor( ops, num_processes, max_time );
 
     Vector results = null;
     try                                     // try to do everything during the
@@ -299,7 +311,7 @@ public class Util {
     }
 
     if ( fout_prefix.startsWith("/SNS/" ) &&             // do SNS Logging if
-         slurm_queue_name != null         )              // using slurm at SNS
+         use_slurm                        )              // using slurm at SNS
     {
       String cmd = "/usr/bin/logger -p local5.notice ISAW ISAW_" +
                    Isaw.getVersion(false) + 
@@ -427,6 +439,38 @@ public class Util {
       boolean keep = keep_images != null;
       PeakArrayPanels.DisplayPeaks( "Test Peaks", null, "", null, -1, keep );
     }
+
+    try                                            // Combine the log files
+    {
+      StringBuffer log_buffer = new StringBuffer();
+      for (int run_index = 0; run_index < run_numbers.length; run_index++ )
+        for (int ds_index = 0; ds_index < ds_numbers.length; ds_index++ )
+        {
+          int ds_num  = ds_numbers[ ds_index ];
+          int run_num = run_numbers[ run_index ];
+          String fout_base = fout_prefix + run_num + "_DS_" + ds_num + "_";
+          String logpart_name = fout_base + FindPeaksProcess.LOG_SUFFIX;
+          File in_file = new File( logpart_name );
+          int size = (int)in_file.length();          // NEED <= 2GB file size
+          byte[] buffer = new byte[ size ];
+          FileInputStream fis = new FileInputStream( in_file );
+          fis.read( buffer, 0, size );
+          fis.close();
+          in_file.delete();
+          log_buffer.append( new String(buffer) ); 
+        }
+      String log_file_name = outpath + "find_peaks_" + expname + ".log";
+      FileOutputStream fos = new FileOutputStream( log_file_name );
+      fos.write( log_buffer.toString().getBytes() );        
+      fos.close();
+    }
+    catch ( Exception ex )
+    {
+      System.out.println("Exception while writing FindPeaks log file " +
+                          out_file_name );
+      ex.printStackTrace();
+    }
+
     return all_peaks; 
   }
    
@@ -498,11 +542,18 @@ public class Util {
             int      maxNumThreads )  throws IOException
      {
 
-   String slurm_queue_name = System.getProperty( "Slurm_Queue_Name" );
-   System.out.println("SLURM QUEUE NAME = " + slurm_queue_name );
+     String slurm_queue_name = System.getProperty( "Slurm_Queue_Name" );
+     System.out.println("SLURM QUEUE NAME = " + slurm_queue_name );
 
-//   if ( slurm_queue_name != null )
-     return findCentroidedPeaksUsingProcesses(
+                              // Based on timing tests on our cluster,
+                              // threads will only beat processes for
+                              // finding peaks if there are <= 2 cores
+                              // available.  If available with >= 4 cores,
+                              // slurm will be faster.  We assume
+                              // slurm will always have at least 4 cores,
+                              // so only do threads if <= 2 cores and no slurm. 
+     if ( slurm_queue_name != null || maxNumThreads >= 3 )  
+       return findCentroidedPeaksUsingProcesses(
                        rawpath,
                        outpath,
                        runnums,
@@ -532,8 +583,8 @@ public class Util {
                        ViewPeaks,
                        slurm_queue_name,
                        maxNumThreads );
-// START WITH THREADS      
-/*
+
+      // START WITH THREADS      
       boolean useCache = false;
       if( runnums == null )
          return null;
@@ -799,8 +850,7 @@ public class Util {
 
       return ResultPeaks;
 
-// END WITH THREADS
-*/
+     // END WITH THREADS
    }
    
    //If image files will not be cleared after showing, should clear out all possible filenames
@@ -835,11 +885,66 @@ public class Util {
             {
                System.out.println( "Cannot delete " + list[ i ].toString()
                         + " because " + ss.toString() );
-
             }
       }
+   }
 
 
+   /**
+    *  Remove all files in the ISAW_SCRATCH_DIRECTORY that start with the
+    *  specified prefix and end with the specified suffix.  NOTE: an empty
+    *  String passed in for the prefix or suffix will act like a wild card.
+    *
+    *  @param prefix  The prefix on files that should be deleted.
+    *  @param suffix  The suffix on files that should be deleted.
+    */
+   private static void ClearFiles( String prefix, 
+                                   String suffix )
+   {
+      File F = new File( ISAW_SCRATCH_DIRECTORY );
+      if( ! F.exists() || ! F.isDirectory() )
+         return;
+
+      File[] list = F.listFiles();
+      if( list == null )
+         return;
+
+      for( int i = 0 ; i < list.length ; i++ )
+      {
+         String fname = list[ i ].getName();
+         if ( fname != null              && 
+              fname.startsWith( prefix ) && 
+              fname.endsWith( suffix )   ) 
+            try
+            {
+               list[ i ].delete();
+            }
+            catch( Exception ss )
+            {
+               System.out.println( "Cannot delete " + list[ i ].toString()
+                        + " because " + ss.toString() );
+            }
+      }
+   }
+
+
+   /**
+    *  Check whether or not the scratch directory exists, and try to 
+    *  create it if it does not exist.
+    *
+    *  @return true if the scratch directory now exists, or false if it
+    *  does not exist and could not be created.
+    */
+   private static boolean CheckTmpDirectory()
+   {
+     String outFilename = ISAW_SCRATCH_DIRECTORY; 
+
+     File F = new File(outFilename.replace( '/' , File.separatorChar));
+     if ( !F.exists() || !F.isDirectory() )
+       if( !F.mkdir() )
+         return false;
+
+     return true;
    }
    
    
@@ -1859,6 +1964,8 @@ public class Util {
            int     max_processes
             )
    {
+      boolean use_slurm = ( slurm_queue_name != null );
+
       int log_Nth_peak = 1;
       
       if( runnums == null )
@@ -1894,9 +2001,13 @@ public class Util {
 
       Vector ops = new Vector();
 
-      String fout_prefix = System.getProperty("user.home") + "/ISAW/" + inst;
+      String fout_prefix = ISAW_SCRATCH_DIRECTORY + inst;
 
-      // #### TODO  Take care of mon count and cache file
+      CheckTmpDirectory();
+      ClearFiles( inst, IntegratePeaksProcess.LOG_SUFFIX );
+      ClearFiles( "", SLURM_RETURN_SUFFIX );
+
+      int local_cores = Runtime.getRuntime().availableProcessors();
 
       for ( int run_index = 0; run_index < run_numbers.length ; run_index++ )
         for ( int ds_index = 0 ; ds_index < ds_numbers.length ; ds_index++ )
@@ -1906,50 +2017,48 @@ public class Util {
 
           String fin_name = path + inst + run_num + FileExt;
            
-           String fout_base = fout_prefix + run_num + "_DS_" + ds_num + "_";
+          String fout_base = fout_prefix + run_num + "_DS_" + ds_num + "_";
 
-           String orientation_file = outpath +"ls" +expname +run_num +".mat";
-           String result = fout_prefix + run_num + "_" + 
-                           ds_num + "_returned.txt";
+          String orientation_file = outpath +"ls" +expname +run_num +".mat";
+          String result = fout_prefix + run_num + "_" + 
+                          ds_num + SLURM_RETURN_SUFFIX;
 
-           String cp = System.getProperty( "java.class.path" );
-           if ( cp == null )
-             cp = " ";
-           else
-             cp = " -cp " + cp + " ";
+          String cp = System.getProperty( "java.class.path" );
+          if ( cp == null )
+            cp = " ";
+          else
+            cp = " -cp " + cp + " ";
 
-           String mem = System.getProperty( "Integrate_Peaks_Process_Memory" );
-           if ( mem == null )
-              mem = "2000";
+          String mem = System.getProperty( "Integrate_Peaks_Process_Memory" );
+          if ( mem == null )
+             mem = "2000";
 
-           String cmd  = " java -mx" + mem + "M "     +
-                         " -XX:+AggressiveHeap "      +
-                         " -XX:+DisableExplicitGC "   +
-                         " -XX:ParallelGCThreads=4 "  + cp;
+          String cmd  = " java -mx" + mem + "M "     +
+                        " -XX:+AggressiveHeap "      +
+                        " -XX:+DisableExplicitGC "   +
+                        " -XX:ParallelGCThreads=4 "  + cp;
 
-           boolean use_slurm = ( slurm_queue_name != null );
-           if ( use_slurm )
-           {
-             max_processes = 20;                     // overide max_processes
-                                                     // since slurm will queue
-             cmd = " srun -p " + slurm_queue_name +  // up the requests.
-                " -J SCD_Find_Peaks -o " + result +  // Add the slurm stuff to
-                cmd;                                 // the basic command.
-           }
-           else
-           { 
-             int num_cores = Runtime.getRuntime().availableProcessors();
+          if ( use_slurm )
+          {
+            max_processes = 20;                     // overide max_processes
+                                                    // since slurm will queue
+            cmd = " srun -p " + slurm_queue_name +  // up the requests.
+               " -J SCD_Find_Peaks -o " + result +  // Add the slurm stuff to
+               cmd;                                 // the basic command.
+          }
+          else
+          { 
+            int num_cores = local_cores;
+            if ( num_cores > 1 )                       // leave one core free
+              num_cores--;                             // if possible
 
-             if ( num_cores > 1 )                       // leave one core free
-               num_cores--;                             // if possible
+            max_processes = Math.min(max_processes, num_cores );
 
-             max_processes = Math.min(max_processes, num_cores );
+            if ( max_processes < 1 )                   // we need at least one
+              max_processes = 1;
+          }
 
-             if ( max_processes < 1 )                   // we need at least one
-               max_processes = 1;
-           }
-
-           IntegratePeaksProcessCaller s_caller =
+          IntegratePeaksProcessCaller s_caller =
                    new IntegratePeaksProcessCaller( cmd,
                                                     fin_name,
                                                     fout_base,
@@ -1976,11 +2085,10 @@ public class Util {
                                                     rowYrange[0],
                                                     rowYrange[1]
                                                    );
-            ops.add( s_caller );
-        }
+          ops.add( s_caller );
+       }
 
-       ParallelExecutor executor;
-
+       int max_time = ops.size() * 120000 + 600000;
        int num_processes = run_numbers.length * ds_numbers.length;
                                             // cap the number of processes to
                                             // avoid overloading slurm or the
@@ -1988,10 +2096,16 @@ public class Util {
        if (num_processes > max_processes )
          num_processes = max_processes;
 
-       System.out.println("USING " + num_processes + " concurrent processes");
+       System.out.println("NUMBER OF LOCAL CORES = " + local_cores );
+       if ( use_slurm )
+         System.out.println("USING " + num_processes + " processes on " +
+                            slurm_queue_name );
+       else
+         System.out.println("USING " + num_processes + " local processes");
+       System.out.println("TIME LIMIT(seconds) = " + max_time/1000.0 );
 
-       int max_time = ops.size() * 120000 + 600000;
-       executor = new ParallelExecutor( ops, num_processes, max_time );
+       ParallelExecutor executor =
+                         new ParallelExecutor( ops, num_processes, max_time );
 
        Vector results = null;
        try                                  // try to do everything during the
@@ -2095,6 +2209,37 @@ public class Util {
          ( new ViewASCII( out_file_name ) ).getResult();
       }
 
+      try                                            // Combine the log files
+      {
+        StringBuffer log_buffer = new StringBuffer();
+        for (int run_index = 0; run_index < run_numbers.length; run_index++ )
+          for (int ds_index = 0; ds_index < ds_numbers.length; ds_index++ )
+          {
+            int ds_num  = ds_numbers[ ds_index ];
+            int run_num = run_numbers[ run_index ];
+            String fout_base = fout_prefix + run_num + "_DS_" + ds_num + "_";
+            String logpart_name = fout_base + IntegratePeaksProcess.LOG_SUFFIX;
+            File in_file = new File( logpart_name );
+            int size = (int)in_file.length();          // NEED <= 2GB file size
+            byte[] buffer = new byte[ size ];
+            FileInputStream fis = new FileInputStream( in_file );
+            fis.read( buffer, 0, size );
+            fis.close();
+            in_file.delete();
+            log_buffer.append( new String(buffer) );
+          }
+        String log_file_name = outpath + "integrate_" + expname + ".log";
+        FileOutputStream fos = new FileOutputStream( log_file_name );
+        fos.write( log_buffer.toString().getBytes() );
+        fos.close();
+      }
+      catch ( Exception ex )
+      {
+        System.out.println("Exception while writing integrate log file " +
+                            out_file_name );
+        ex.printStackTrace();
+      }
+
       return all_peaks;
    }
 
@@ -2159,9 +2304,15 @@ public class Util {
       String slurm_queue_name = System.getProperty( "Slurm_Queue_Name" );
       System.out.println("SLURM QUEUE NAME = " + slurm_queue_name );
 
-//      if ( slurm_queue_name != null )      // use processes, not threads
-      {
-        Object result = IntegrateMultipleRunsUsingProcesses(
+                                 // Based on timing tests on our cluster,
+                                 // threads will only beat processes for
+                                 // integration if there is only one core
+                                 // available.  If available with >= 4 cores
+                                 // slurm will be faster.  We assume
+                                 // slurm will always have at least 4 cores,
+                                 // so only do threads if 1 core and no slurm. 
+      if ( slurm_queue_name != null || maxThreads >= 2 )     
+        return IntegrateMultipleRunsUsingProcesses(
            path,
            outpath,
            run_numbers,
@@ -2190,10 +2341,8 @@ public class Util {
            maxThreads
             );
  
-         return result;
-      }
-/*
-//START WITH THREADS  
+
+      //START WITH THREADS  
 
       boolean useCache = false;
       SharedMessages.addmsg( "Instrument = " + inst );
@@ -2391,8 +2540,7 @@ public class Util {
                                                    " View menu to open it" );
       return Res;
    
-// END WITH THREADS  
-*/
+      // END WITH THREADS  
   }
 
    //Sets up the operator thread
