@@ -507,6 +507,7 @@ public class IndexAllPeaks
      double[] lat_params = lattice_calc.LatticeParamsOfUB( temp );
      for ( int k = 0; k < 3; k++ )
        lat_params[k] *= Math.PI * 2;
+     lat_params[6] *= 8 * Math.PI * Math.PI * Math.PI;
      System.out.printf("%7.4f  %7.4f  %7.4f   %8.4f %8.4f %8.4f  %7.2f \n",
                        lat_params[0], lat_params[1], lat_params[2],
                        lat_params[3], lat_params[4], lat_params[5],

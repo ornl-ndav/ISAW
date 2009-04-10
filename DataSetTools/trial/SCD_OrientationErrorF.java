@@ -49,7 +49,8 @@ public class SCD_OrientationErrorF extends    OneVarParameterizedFunction
 //     System.out.println("B = " );
 //     LinearAlgebra.print( B );
 
-     double lat_par[] = lattice_calc.LatticeParamsOfUB( B );
+//     double lat_par[] = lattice_calc.LatticeParamsOfUB( B );
+//     lat_params[6] *= 8 * Math.PI * Math.PI * Math.PI;
 //     System.out.println("Re-calculated Lattice Parameters");
 //     LinearAlgebra.print( lat_par );
 
