@@ -40,6 +40,7 @@ import DataSetTools.operator.Generic.TOF_SCD.Peak_new_IO;
 import DataSetTools.operator.DataSet.Attribute.LoadOrientation;
 
 import java.util.*;
+import java.io.*;
 
 /**
  *  The main program of this class will take a list of parameters from the
@@ -51,6 +52,9 @@ import java.util.*;
  */
 public class IntegratePeaksProcess 
 {
+  public static final String LOG_SUFFIX       = "integrate.log";
+  public static final String INTEGRATE_SUFFIX = ".integrate";
+
   public static final float DEFAULT_MONITOR_COUNT = 10000;
 
   /**
@@ -239,7 +243,8 @@ public class IntegratePeaksProcess
     int det_id = det_ids[0];
 
     StringBuffer log_buffer = new StringBuffer();
-
+    log_buffer.append( "\n INTEGRATE LOG INFORMATION FOR RUN " + fin_name +
+                       " DS " + ds_num + " #########################\n");
 
     int[] time_range = { minus_time_offset, plus_time_offset };
     int[] col_range  = { minus_col_offset, plus_col_offset };
@@ -274,12 +279,14 @@ public class IntegratePeaksProcess
 
     if ( peaks != null && peaks.size() > 0 )
     {
-      String file_name = fout_base + ".integrate";
+      String file_name = fout_base + INTEGRATE_SUFFIX;
       try                                            // Write temp peaks file
       {
         Peak_new_IO.WritePeaks_new( file_name, peaks, false );
-        System.out.println( "+++++++++FINISHED WRITING PEAKS " + file_name +
-                            " for DS ###" + ds_num );
+        System.out.println( "+++++++++FINISHED WRITING INTEGRATE FILE " +
+                            file_name +
+                            " for DS ###" + 
+                            ds_num );
       }
       catch ( Exception ex )
       {
@@ -287,6 +294,24 @@ public class IntegratePeaksProcess
         System.err.println( ex.getStackTrace() );
         System.exit(3); 
       }
+    }
+
+    String file_name = fout_base + LOG_SUFFIX;
+    try
+    {
+      FileOutputStream fos = new FileOutputStream( file_name );
+      fos.write( log_buffer.toString().getBytes() );
+      fos.close();
+      System.out.println( "+++++++++FINISHED WRITING INTEGRATE LOG " + 
+                          file_name +
+                          " for DS ###" +
+                          ds_num );
+    }
+    catch ( Exception ex )
+    {
+      System.err.println("Exception writing integrate log file "+file_name);
+      System.err.println( ex.getStackTrace() );
+      System.exit(3);
     }
 
     System.exit(0); 
