@@ -174,7 +174,7 @@ public class Rebinner
     else
       my_x_scale = x_scales[ data_index ];
 
-    int bin_number = my_x_scale.getI(x);
+    int bin_number = my_x_scale.getI_GLB(x);
     if ( bin_number < 0 || bin_number >= ys[data_index].length )
       return 0;
     else
