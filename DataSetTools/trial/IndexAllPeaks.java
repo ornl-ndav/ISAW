@@ -132,7 +132,6 @@ public class IndexAllPeaks
     */
    public static void SortPeaks( Vector<Peak_new> peaks )
    {
-      System.out.println("There are " + peaks.size() + " peaks");
       Peak_new[] peak_arr = new Peak_new[ peaks.size() ];
       for ( int i = 0; i < peak_arr.length; i++ )
         peak_arr[i] = peaks.elementAt(i);
@@ -142,7 +141,25 @@ public class IndexAllPeaks
       peaks.clear();
       for ( int i = 0; i < peak_arr.length; i++ )
         peaks.add( peak_arr[i] );
-      System.out.println("After sorting there are " + peaks.size() + " peaks");
+   }
+
+
+   /**
+    *  Sort the vector of peaks based on the magnitude of their Q value. 
+    *
+    *  @param  peaks       Vector of peaks to be sorted.
+    */
+   public static void SortPeaksMagQ( Vector<Peak_new> peaks )
+   {
+      Peak_new[] peak_arr = new Peak_new[ peaks.size() ];
+      for ( int i = 0; i < peak_arr.length; i++ )
+        peak_arr[i] = peaks.elementAt(i);
+
+      Arrays.sort( peak_arr, new MagnitudeQComparator() );
+
+      peaks.clear();
+      for ( int i = 0; i < peak_arr.length; i++ )
+        peaks.add( peak_arr[i] );
    }
 
 
@@ -156,7 +173,6 @@ public class IndexAllPeaks
     */
    public static void SortPeaks( Peak_new fixed_peak, Vector<Peak_new> peaks )
    {
-      System.out.println("There are " + peaks.size() + " peaks");
       Peak_new[] peak_arr = new Peak_new[ peaks.size() ];
       for ( int i = 0; i < peak_arr.length; i++ )
         peak_arr[i] = peaks.elementAt(i);
@@ -166,7 +182,6 @@ public class IndexAllPeaks
       peaks.clear();
       for ( int i = 0; i < peak_arr.length; i++ )
         peaks.add( peak_arr[i] );
-      System.out.println("After sorting there are " + peaks.size() + " peaks");
    }
 
 
@@ -182,7 +197,6 @@ public class IndexAllPeaks
                                  Peak_new         fixed_peak_2,
                                  Vector<Peak_new> peaks )
    {
-      System.out.println("There are " + peaks.size() + " peaks");
       Peak_new[] peak_arr = new Peak_new[ peaks.size() ];
       for ( int i = 0; i < peak_arr.length; i++ )
         peak_arr[i] = peaks.elementAt(i);
@@ -193,8 +207,6 @@ public class IndexAllPeaks
       peaks.clear();
       for ( int i = 0; i < peak_arr.length; i++ )
         peaks.add( peak_arr[i] );
-
-      System.out.println("After sorting there are " + peaks.size() + " peaks");
    }
 
 
@@ -245,6 +257,36 @@ public class IndexAllPeaks
           return 0;
        }
    }
+
+
+   private static class MagnitudeQComparator implements Comparator
+   {
+     /**
+       *  Compare two Peak_new objects based on the magnitude of their Q value.
+       *
+       *  @param  peak_1   The first  peak
+       *  @param  peak_2   The second peak 
+       *
+       *  @return A positive integer if peak_1's run number is greater than
+       */
+       public int compare( Object peak_1, Object peak_2 )
+       {
+         float[] q1  = ((Peak_new)peak_1).getQ();
+         float[] q2  = ((Peak_new)peak_2).getQ();
+
+         float mag_q1 = q1[0]*q1[0] + q1[1]*q1[1] + q1[2]*q1[2];
+         float mag_q2 = q2[0]*q2[0] + q2[1]*q2[1] + q2[2]*q2[2];
+
+         if ( mag_q1 < mag_q2 )
+           return 1;
+         else if  ( mag_q1 > mag_q2 )
+           return -1;
+
+          return 0;
+       }
+   }
+
+
 
 
    private static class DistanceComparator1 implements Comparator
@@ -508,7 +550,7 @@ public class IndexAllPeaks
      for ( int k = 0; k < 3; k++ )
        lat_params[k] *= Math.PI * 2;
      lat_params[6] *= 8 * Math.PI * Math.PI * Math.PI;
-     System.out.printf("%7.4f  %7.4f  %7.4f   %8.4f %8.4f %8.4f  %7.2f \n",
+     System.out.printf("%7.4f  %7.4f  %7.4f   %8.4f %8.4f %8.4f  %9.5f \n",
                        lat_params[0], lat_params[1], lat_params[2],
                        lat_params[3], lat_params[4], lat_params[5],
                        lat_params[6] );
@@ -578,9 +620,18 @@ public class IndexAllPeaks
      }
      else if ( args[0].equalsIgnoreCase( "BaFeAs" ) )
      {
-       lattice_params[0] = 4;
-       lattice_params[1] = 4;
-       lattice_params[2] = 12.9;
+       lattice_params[0] = 3.96;
+       lattice_params[1] = 3.96;
+       lattice_params[2] = 13.09;
+       lattice_params[3] = 90;
+       lattice_params[4] = 90;
+       lattice_params[5] = 90;
+     }
+     else if ( args[0].equalsIgnoreCase( "FeSi" ) )
+     {
+       lattice_params[0] = 4.486;
+       lattice_params[1] = 4.486;
+       lattice_params[2] = 4.486;
        lattice_params[3] = 90;
        lattice_params[4] = 90;
        lattice_params[5] = 90;
@@ -743,6 +794,7 @@ public class IndexAllPeaks
     }
  
                                          // Refine UB -----------------------
+//    SortPeaksMagQ( strong_peaks );
     if ( num_attempts < MAX_ATTEMPTS )
     {
      peaks.clear();
@@ -760,11 +812,13 @@ public class IndexAllPeaks
        num_to_add = (int)( .2 * peaks.size() );
 //       num_to_add = num_to_add + 20;
 
+       
        System.out.println("NUM INDEXED = " +
                            NumIndexed( peaks, UBinverse, hkl_tol ) +
                           " OUT OF " + peaks.size() + 
                           " WITH TOLERANCE = " + hkl_tol );
 
+        
        hkls = OptimizeUB( peaks, UBinverse, newUBinverse, hkl_tol );
        if ( hkls == null )
        {
@@ -782,6 +836,7 @@ public class IndexAllPeaks
        }
      }
 
+     SortPeaksMagQ( all_peaks );
      if ( num_attempts <= MAX_ATTEMPTS )
      {
                                         // Iterate on all peaks -------------
@@ -819,6 +874,20 @@ public class IndexAllPeaks
     }
     else
       System.out.println("FAILED TO INDEX PEAKS");
+
+    /*
+     * Input parameters needed:
+     *
+     *   lattice_parameters  array of floats
+     *   peaks_in            Vector      -> input file
+     *   peaks_indexed       Vector      -> output file
+     *   peaks_not_indexed   Vector      -> output file
+     *   ub_inverse          double[][]  -> matrix file 
+     *   hkl_tolerance       0.12, distance from integer hkl
+     *   num_neighbors       40, number of neighbors to work with
+     *   fraction_neighbors  .4, fraction of neighbors that should be indexed
+     *   
+     */ 
  
 
    }
