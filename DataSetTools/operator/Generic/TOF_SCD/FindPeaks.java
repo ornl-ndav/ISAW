@@ -585,9 +585,7 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
                                             initial_path,
                                             t_zero );
         
-                                          // NOTE: row and col indexes start at
-                                          // zero in the array
-          new_peak.ipkobs( (int)raw_data[(int)row-1][(int)col-1][(int)chan] );
+          new_peak.ipkobs( (int)old_peak.Ipk() );
           if ( old_peak.isValid() )
             new_peak.reflag( 11 );
           else
