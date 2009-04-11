@@ -436,19 +436,22 @@ public class FindPeaksViaSort
         int chan_0 = Math.max( chan-delta_chan, 0 );
         int chan_1 = Math.min( chan+delta_chan, n_pages-1 );
 /*
-        log.append("VOXEL = " + col + ", " + row + ", " + chan + ", " + center_value + "\n" );
+        log.append("VOXEL = " + col + ", " + row + ", " + chan + 
+                   ", " + center_value + "\n" );
         log.append("COL  RANGE = " + col_0 + ", " + col_1   + "\n" );
         log.append("ROW  RANGE = " + row_0 + ", " + row_1   + "\n" );
         log.append("CHAN RANGE = " + chan_0 + ", " + chan_1 + "\n" );
 */
-        for ( int i = row_0; i <= row_1; i++ )
-          for ( int j = col_0; j <= col_1; j++ )
+        for ( int i = row_0; i <= row_1 && !bad_peak; i++ )
+          for ( int j = col_0; j <= col_1 && !bad_peak; j++ )
             for ( int k = chan_0; k <= chan_1; k++ )
             {
-//            log.append( "i,j,k,val = " + i + ", " + j + ", " + k + ", " + data_arr[i][j][k] + "\n"); 
+//            log.append( "i,j,k,val = " + i + ", " + j + ", " + k + 
+//                        ", " + data_arr[i][j][k] + "\n"); 
               if ( data_arr[i][j][k] > center_value )
               {
-//              log.append( "*****TOO BIG i,j,k,val = " + i + ", " + j + ", " + k + ", " + data_arr[i][j][k] + "\n"); 
+//              log.append( "*****TOO BIG i,j,k,val = " + i + ", " + j + 
+//                          ", " + k + ", " + data_arr[i][j][k] + "\n"); 
                 bad_peak = true;
               }
             }
