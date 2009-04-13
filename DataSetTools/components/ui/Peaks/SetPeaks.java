@@ -47,7 +47,7 @@ import DataSetTools.operator.Generic.TOF_SCD.IPeak;
 
 /**
  * Handler for setting peaks. It currently subclasses JButton
- * @see subs.getJMenuItem
+ * @see subs#getJMenuItem(AbstractButton)
  * @author Ruth
  *
  */
@@ -262,8 +262,6 @@ public class SetPeaks extends JButton
     * Sets the hkl  values only  for a set peak
     * @param PeakNum  The set peak num. It starts at 0 
     * @param pk       The selected peak. 
-    * @param PeakNum
-    * @param pk
     */
    public void setPeakHKL( int PeakNum , IPeak pk )
    {

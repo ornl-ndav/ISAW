@@ -65,7 +65,7 @@ public class XtalLatticeControl extends Object
 
    /**
     * This is the actionCommand of an ActionEvent for a listener.
-    * @see getListener()
+    * @see #getListener()
     */
    public static String CRYSTAL_LAT_INPUT_TEXT = "Crystal Lattice Input";
 
@@ -329,7 +329,8 @@ public class XtalLatticeControl extends Object
    /**
     * Use this listener to handle actions corresponding to pressing a button.
     * The action command must be the String  CRYSTAL_LAT_INPUT_TEXT
-    * @return
+    * @return  The action listener that handles the CRYSTAL_LAT_INPUT_TEXT 
+    *          action command.  
     */
    public ActionListener getListener()
    {

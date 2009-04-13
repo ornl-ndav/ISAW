@@ -198,9 +198,7 @@ public class View3DControl implements ActionListener
 
    /**
     * removes all ISelectPeakHandler
-    * 
-    * @param handler
-    *           The SelectPeakHandler
+    *
     */
    public void removeAllSelectPeakHandler()
    {
@@ -231,7 +229,7 @@ public class View3DControl implements ActionListener
     * Removes an IRotatePeaksHandler
     * 
     * @param handler
-    *           The IRotatePeaksHandler
+    *           The IRotPeaksHandler
     */
    public void removeRotatePeaksHandler( IRotatePeaksHandler handler )
    {
@@ -247,10 +245,7 @@ public class View3DControl implements ActionListener
 
    /**
     * Removes all IRotatePeaksHandlers
-    * 
-    * @param handler
-    *           The IRotatePeaksHandler
-    */
+   */
    public void removeAllRotatePeaksHandler()
    {
 
