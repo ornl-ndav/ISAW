@@ -535,13 +535,10 @@ public class GetUB {
     *           unit circle( z is sqrt(1-x^2-y^2). This is the length between
     *           two consecutive "directions" in x and in the y direction(.01 is
     *           best)
-   
-    * @param code
-    *           a code that, if this algorithm fails to find 3 vectors, what
-    *           parameters to tweak code[0]=# of directions to choose from
-    *           code[0] = Min corr for the directions chosen code[0]=2- two of
-    *           the resultant vectors are close( lower newDir or up gridLength)
-    * @return  An array of possible orientation matrices. max 1st 50
+    *  @param MaxXtalLengthReal  
+    *           The maximum length of the side of a unit cell in real spacel
+    *            
+    * @return  A Vector of possible orientation matrices. max 1st 50
     */
    public static Vector<float[][]> getAllOrientationMatrices( Vector Peaks , boolean[] omit ,
             float gridLength ,float MaxXtalLengthReal ) {
