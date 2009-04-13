@@ -25,7 +25,7 @@ $Deltah         Float(.20)            Delta h
 $Deltak         Float(.20)            Delta k
 $Deltal         Float(.20)            Delta l
 
-$OrientFileDir  DataDirectoryString   Dir with Matrices to Load
+$OrientFileDir  DataDirectoryString(${Data_Directory})   Dir with Matrices to Load
 $RunNums        Array                 Run Numbers
 $RestrRuns      IntList               Restrict Runs
 
