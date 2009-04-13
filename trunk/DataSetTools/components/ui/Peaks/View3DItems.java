@@ -51,6 +51,25 @@ import javax.swing.*;
 public class View3DItems extends JButton
 {
 
+   /**
+    * Value = "Runs". Will cause different runs to have different colors. The
+    * Source of the event must be a JCheckBoxMenuItem
+    */
+   public static String     RUN_NUMS       = "Runs";
+
+   /**
+    * Value = "Detectors". Will cause different detectors to have different colors. The
+    * Source of the event must be a JCheckBoxMenuItem
+    */
+   public static String     DETECTOR_NUMS  = "Detectors";
+
+   public static String     SEQUENCE_NUMS  = "Sequence Numbers";
+
+   public static String     CLEAR_SEQ_NUMS = "Clear View";
+
+   public static String     SHOW1PLANE     = "One Plane on three peaks";
+
+   public static String     SHOW_PLANES    = " Family of planes";
 
 
    /**
@@ -175,6 +194,17 @@ public class View3DItems extends JButton
       listener = new MyActionListener( view , nPeaks , peakSetter );
       addActionListener( listener );
    }
+   
+   /**
+    * Returns a listener that handles the following ActionEvent commands
+    * Listed above
+    * 
+    * @return  The action listener
+    */
+   public ActionListener getListener()
+   {
+      return listener;
+   }
 
    /**
     * listener to menu items
@@ -186,18 +216,6 @@ public class View3DItems extends JButton
    {
 
 
-
-      public String     RUN_NUMS       = "Runs";
-
-      public String     DETECTOR_NUMS  = "Detectors";
-
-      public String     SEQUENCE_NUMS  = "Sequence Numbers";
-
-      public String     CLEAR_SEQ_NUMS = "Clear View of Sequence Nums";
-
-      public String     SHOW1PLANE     = "One Plane on three peaks";
-
-      public String     SHOW_PLANES    = " Family of planes";
 
       View3D            View;
 
@@ -299,7 +317,7 @@ public class View3DItems extends JButton
             View.HighlightSeqNums( seqNums , false );
 
             SeqNums_shown.clear();
-
+            View.showPlane(  null , null , null );
             return;
          }
 

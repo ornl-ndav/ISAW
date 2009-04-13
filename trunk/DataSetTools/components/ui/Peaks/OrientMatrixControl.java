@@ -502,7 +502,7 @@ public class OrientMatrixControl extends JButton
     * Shows information about the current orientation matrices in an option 
     * dialog 
     * 
-    * @param WithSelectPoint  Include information about the set peaks
+    * @param WithSelectPeaks Include information about the set peaks
     * 
     * @param SelectMatrix   Allow for the selecting one orientation matrix
     */

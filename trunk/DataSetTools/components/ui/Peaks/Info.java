@@ -229,10 +229,10 @@ public class Info extends JPanel implements ActionListener ,
 
 
    /**
-    * Invoked when the 3D view of reciprocal space has a peak selecetrd. This
-    * information will be updated in the current viewed
+    * Invoked when the 3D view of reciprocal space has a peak selected. This
+    * information will be updated in the current view
     * 
-    * @param transformation
+    * @param Peak
     *           The new peak
     */
    @Override

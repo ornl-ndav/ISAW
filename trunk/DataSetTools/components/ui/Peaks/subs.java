@@ -71,7 +71,7 @@ public class subs
     * @param html
     *           If true, an html string will be returned starting with <html><body>.
     *           Text uses \n
-    * @return
+    * @return  A string with information on the orientation matrix
     */
    public static String ShowOrientationInfo( Vector< IPeak > Peaks ,
                                              float[][] orientationMatrix ,
@@ -165,7 +165,8 @@ public class subs
     *           The orientation matrix
     * @param omittedPeakIndex
     *           The indices in Peaks of the omitted peaks
-    * @return
+    * @return the fraction of peaks whose h,k, and l values lie within .1, .2,.3
+    *          and .4 of an integer
     */
    public static float[] GetPeakFitInfo( Vector< IPeak > Peaks ,
             float[][] orientationMatrix , boolean[] omittedPeakIndex )
@@ -247,7 +248,7 @@ public class subs
     * 
     * @param html
     *           if true, text is html encoded
-    * @return
+    * @return  A string explaining the Coordinate system being used
     */
    public static String getCoordinateInformation( boolean html )
    {
@@ -308,7 +309,7 @@ public class subs
     *           number of peaks is considered
     * @param indexChar
     *           Either h,k,or l to specify which miller index is used
-    * @return
+    * @return  the distances a miller index is from an integer
     */
    public static float[] getMillerOffsets( Vector< IPeak > Peaks ,
             boolean[] omittedMask , float[][] orientationMatrix ,
@@ -414,7 +415,8 @@ public class subs
     *           Not used
     * @param Center
     *           Centering character P,A,B,C,F,I, or R
-    * @return
+    * @return the list of possible hkl tuples that will yield q values with same
+    *           length as q
     */
    public static int[][] FindPossibleHKLs( float[][] B , float[] q ,
             float Qtol , float Qtol2 , char Center )
@@ -572,11 +574,11 @@ public class subs
     * Returns true if this hkl is allowed for the given centering P,A,B,C,F,I,
     * or R
     * 
-    * @param h
+    * @param H
     *           h, miller index,value
-    * @param k
+    * @param K
     *           k value
-    * @param l
+    * @param L
     *           l value
     * @param Center
     *           the character P,A,B,C,F,I, or R
@@ -666,7 +668,7 @@ public class subs
     *           Corresponding hkl value
     * @param BMat
     *           The unrotated orientation matrix.
-    * @return
+    * @return the orientation matrix with the given parameters
     */
    public static float[][] getOrientationMatrix( float[] q1 , float[] hkl1 ,
             float[] q2 , float[] hkl2 , float[][] BMat )
