@@ -20,7 +20,7 @@ $title=Scalar ( Generate Possible Transformations to Desired Cell )
 $UB   Array          UB Matrix
 $Delta  Float(.01)   Delta
 $Constr    Choice([ "No Restriction","Highest Symmetry","Use Identity Matrix","P - Cubic","F - Cubic","R - Hexagonal","I - Cubic","I - Tetragonal","I - Orthorombic","P - Tetragonal","P - Hexagonal","C - Orthorombic","C - Monoclinic","F - Orthorombic","P - Orthorombic","P - Monoclinic","P - Triclinic","R11 == R22 == R33","R11 == R22 != R33","R11 == R33 != R22","R11 != R22 != R33"])   Symmetry Constraints
-$path      DataDirectoryString    Output Data Path 
+$path      DataDirectoryString(${Data_Directory})    Output Data Path 
 $ShowLog   Boolean( false)        Pop Up scalar.log
 
 

@@ -23,9 +23,9 @@ $Peaks       PlaceHolder          Peaks
 $expName     String               Name of experiment
 $runnums     Array([])            Restrict Run Numbers ("" for all)
 $RestrSeq    IntList              Sequence numbers to use("" for all)
-$SaveDir     DataDirectoryString  Directory to save files
+$SaveDir     DataDirectoryString(${Data_Directory})  Directory to save files
 $MinIntens   Integer(0)           Minimum Peak Intensity Threshold
-$RowColKeep  IntList(0:100)       Pixel Rows and Columns to Keep
+$RowColKeep  IntList(0:256)       Pixel Rows and Columns to Keep
 $Constr      ChoiceList( ["Triclinic","Monoclinic ( b unique )","Monoclinic ( a unique )","Monoclinic ( c unique )","Orthorhombic","Tetragonal","Rhombohedral","Hexagonal","Cubic"] )     Cell Type Constraint
 $ShowLog     Boolean(false)       Pop Up lsqrs.log
 

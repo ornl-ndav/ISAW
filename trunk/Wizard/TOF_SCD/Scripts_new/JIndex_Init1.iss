@@ -33,7 +33,7 @@ $deltak    Float(.2) Delta k
  
 $deltal    Float(.2) Delta l
 
-$path      DataDirectoryString   Output Data Path 
+$path      DataDirectoryString(${Data_Directory})   Output Data Path 
 
 $expname   String             Experiment Name
 
