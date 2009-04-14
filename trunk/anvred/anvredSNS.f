@@ -52,7 +52,10 @@ C
 !			up the code using ftnchek.    10/13/08
 !	anvredSNS_2.6: assign a common scale factor for each
 !			crystal setting, or for each detector. 1/29/09
+!
+!	4/13/09	Number of possible spectra increased from 2 to 100.
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 
 	Program ANVRED_SNS
 
@@ -89,7 +92,8 @@ C
 	character*240 ANS
 	CHARACTER ALINE*78
 
-	DIMENSION PJ(11,2)	!Spectrum coefficients
+	DIMENSION PJ(11,100)	!Spectrum coefficients for 100 detectors
+				! 4-13-2009
 	dimension xtof(100), spect1(100)
 
        DATA IQ/1/
@@ -210,16 +214,14 @@ C
 	WRITE (16,6290)
 	WRITE (*, *) ' '
 
+		do ii=1,nod	! 4-13-09
+	
 	read (21,100) ALINE
-	read (21,*) (PJ(J,1),J=1,11)
+	read (21,*) (PJ(J,ii),J=1,11)
 	write (*,100) ALINE
-	write (*,*) (PJ(J,1),J=1,11)
+	write (*,*) (PJ(J,ii),J=1,11)
 
-	read (21,100) ALINE
-	read (21,*) (PJ(J,2),J=1,11)
-	write (*,100) ALINE
-	write (*,*) (PJ(J,2),J=1,11)
-
+		end do
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
