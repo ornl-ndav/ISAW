@@ -1,7 +1,7 @@
 /* 
  * File: FindPeaksViaSort.java
  *
- * Copyright (C) 2008, Dennis Mikkelson
+ * Copyright (C) 2008,2009 Dennis Mikkelson
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -77,6 +77,406 @@ public class FindPeaksViaSort
                                col, row, chan, value, reason );
 
     log.append( message );  
+  }
+
+
+  /**
+   *  Smooth the specified 3D array by summing neighborhoods of each
+   *  pixel on each "page" and return a new array with the smoothed
+   *  data.  The array indices of the original array are assumed to 
+   *  represent rows, columns and pages in that order.  This method 
+   *  does the smoothing "in place" so minimal extra storage is needed,
+   *  but THE ORIGINAL ARRAY IS DESTROYED.  The returned 3D array has the same
+   *  dimensions as the original array and contains the smoothed data.
+   *  For pixels interior to a page the value is the sum of the neighboring
+   *  pixels in a 3x3 neighborhood centered a the pixel.  For edge pixels,
+   *  the sum of a 3x2 or 2x3 neighborhood is scaled by a factor of 9/6
+   *  and used as value of the smoothed data.  For corner pixels, the sum
+   *  of a 2x2 neighborhood containing the corner pixel is scaled by a
+   *  factor of 9/4 and used as the value of the smoothed data.
+   *
+   *  NOTE: While this method returns complete smoothed data, it takes
+   *  about three times as long as SmoothData_1_Fast.
+   *
+   *  @param raw_data  3D array of floats containing the original data.  This
+   *                   array must be a full rectangular array, i.e. NOT a 
+   *                   "ragged" array.
+   *
+   *  @return a 3D array of floats containing the smoothed data, using 
+   *          mostly the same memory locations as in the raw_data array,
+   *          BUT ARRANGED DIFFERENTLY.
+   */
+  public static float[][][] SmoothData( float[][][] raw_data )
+  {
+    int n_rows  = raw_data.length;
+    int n_cols  = raw_data[0].length;
+    int n_pages = raw_data[0][0].length;
+
+                                       // Smooth IN PLACE!  Use buffers to 
+                                       // hold the row sums from two complete
+                                       // rows, so the original values can
+                                       // be used from the raw_data array,
+                                       // before replacing with the sums. 
+    float[][] prev_row_sums = new float[n_cols][n_pages];
+    float[][] row_sums      = new float[n_cols][n_pages];
+    float[][] temp;
+
+    for ( int row = 0; row < n_rows; row++ )
+    {
+      int row_0 = Math.max(        0, row-1 );
+      int row_1 = Math.min( n_rows-1, row+1 );
+      for ( int col = 0; col < n_cols; col++ )
+      {
+        int col_0 = Math.max(        0, col-1 );
+        int col_1 = Math.min( n_cols-1, col+1 );
+
+        for ( int page = 0; page < n_pages; page++ )
+          row_sums[col][page] = 0;
+
+        for ( int rr = row_0; rr <= row_1; rr++ )
+          for ( int cc = col_0; cc <= col_1; cc++ )
+            for ( int page = 0; page < n_pages; page++ )
+              row_sums[col][page] += raw_data[rr][cc][page];
+
+        int n_pix = (row_1 - row_0 + 1) * (col_1 - col_0 + 1);
+        float scale = 9.0f/n_pix;
+        for ( int page = 0; page < n_pages; page++ )
+          row_sums[col][page] *= scale;
+      }
+                                      // now cycle the buffers forward by one
+      if ( row > 0 )
+      {
+        temp = raw_data[row - 1];
+        raw_data[row - 1] = prev_row_sums;
+        prev_row_sums = row_sums;
+        row_sums = temp;
+      }
+      else                          // first time through, swap buffers
+      {
+        temp          = prev_row_sums;
+        prev_row_sums = row_sums;
+        row_sums      = temp;
+      }
+    }                               // finally, take care of the last row 
+    raw_data[ n_rows - 1 ] = prev_row_sums;
+
+    return raw_data;
+  }
+
+
+  /**
+   *  Smooth the specified 3D array by summing neighborhoods of each
+   *  pixel on each "page" and return a new array with the smoothed
+   *  data.  The array indices of the original array are assumed to 
+   *  represent rows, columns and pages in that order.  This method 
+   *  does the smoothing "in place" so minimal extra storage is needed,
+   *  but THE ORIGINAL ARRAY IS DESTROYED.  The returned 3D array has the same
+   *  dimensions as the original array and contains the smoothed data.
+   *  For pixels interior to a page the value is the sum of the neighboring
+   *  pixels in a 3x3 neighborhood centered a the pixel.  For edge pixels,
+   *  the sum of a 3x2 or 2x3 neighborhood is scaled by a factor of 9/6
+   *  and used as value of the smoothed data.  For corner pixels, the sum
+   *  of a 2x2 neighborhood containing the corner pixel is scaled by a
+   *  factor of 9/4 and used as the value of the smoothed data.
+   *
+   *  NOTE: This method also uses temporary references to arrays of floats
+   *  to do the smoothing very rapidly.  It both does complete smoothing
+   *  including edge and corner pixels and executes very fast (about
+   *  three times FASTER then the SmoothData method.)
+   *
+   *  @param raw_data  3D array of floats containing the original data.  This
+   *                   array must be a full rectangular array, i.e. NOT a 
+   *                   "ragged" array.
+   *
+   *  @return a 3D array of floats containing the smoothed data, using 
+   *          mostly the same memory locations as in the raw_data array,
+   *          BUT ARRANGED DIFFERENTLY.
+   */
+  public static float[][][] SmoothData_Fast( float[][][] raw_data )
+  {
+    int n_rows  = raw_data.length;
+    int n_cols  = raw_data[0].length;
+    int n_pages = raw_data[0][0].length;
+
+    float[] temp00;
+    float[] temp01;
+    float[] temp02;
+    float[] temp10;
+    float[] temp11;
+    float[] temp12;
+    float[] temp20;
+    float[] temp21;
+    float[] temp22;
+                                     // find first and last rows of smoothed
+                                     // data, BEFORE messing with the
+                                     // original data
+    float[][] first_row = new float[n_cols][n_pages];
+    float[][] last_row  = new float[n_cols][n_pages];
+    int last_row_index  = n_rows-1;
+
+    for ( int col = 1; col < n_cols-1; col++ )
+    {
+                                                // interior of first row
+        temp10 = raw_data[0][col-1];            // scale by 9/6
+        temp11 = raw_data[0][col  ];
+        temp12 = raw_data[0][col+1];
+        temp20 = raw_data[1][col-1];
+        temp21 = raw_data[1][col  ];
+        temp22 = raw_data[1][col+1];
+        for ( int page = 0; page < n_pages; page++ )
+          first_row[col][page] = 1.5f * ( temp10[page] +
+                                          temp11[page] +
+                                          temp12[page] +
+                                          temp20[page] +
+                                          temp21[page] +
+                                          temp22[page] );
+
+                                                     // interior of last row
+        temp00 = raw_data[last_row_index-1][col-1];  // scale by 9/6
+        temp01 = raw_data[last_row_index-1][col  ];
+        temp02 = raw_data[last_row_index-1][col+1];
+        temp10 = raw_data[last_row_index  ][col-1];
+        temp11 = raw_data[last_row_index  ][col  ];
+        temp12 = raw_data[last_row_index  ][col+1];
+        for ( int page = 0; page < n_pages; page++ )
+          last_row[col][page] = 1.5f * ( temp00[page] +
+                                          temp01[page] +
+                                          temp02[page] +
+                                          temp10[page] +
+                                          temp11[page] +
+                                          temp12[page] );
+    }
+                                                // NOW DO FOUR CORNER PIXELS
+                                                // AT ENDS OF FIRST AND LAST
+                                                // ROWS.
+    temp11 = raw_data[0][0];                    // first row, first col
+    temp12 = raw_data[0][1];                    // scale by 9/4
+    temp21 = raw_data[1][0];
+    temp22 = raw_data[1][1];
+    for ( int page = 0; page < n_pages; page++ )
+      first_row[0][page] = 2.25f * ( temp11[page] +
+                                     temp12[page] +
+                                     temp21[page] +
+                                     temp22[page] );
+
+    int last_col_index = n_cols - 1;
+    temp10 = raw_data[0][last_col_index-1];     // first row, last col
+    temp11 = raw_data[0][last_col_index  ];     // scale by 9/4
+    temp20 = raw_data[1][last_col_index-1];
+    temp21 = raw_data[1][last_col_index  ];
+    for ( int page = 0; page < n_pages; page++ )
+      first_row[last_col_index][page] = 2.25f * ( temp10[page] +
+                                                  temp11[page] +
+                                                  temp20[page] +
+                                                  temp21[page] );
+
+    temp01 = raw_data[last_row_index-1][0];      // last row, first_col
+    temp02 = raw_data[last_row_index-1][1];      // scale by 9/4
+    temp11 = raw_data[last_row_index  ][0];
+    temp12 = raw_data[last_row_index  ][1];
+    for ( int page = 0; page < n_pages; page++ )
+      last_row[0][page] = 2.25f * ( temp01[page] +
+                                    temp02[page] +
+                                    temp11[page] +
+                                    temp12[page] );
+
+                                                   // last row, last_col
+                                                   // scale by 9/4
+    temp00 = raw_data[last_row_index-1][last_col_index-1];
+    temp01 = raw_data[last_row_index-1][last_col_index  ];
+    temp10 = raw_data[last_row_index  ][last_col_index-1];
+    temp11 = raw_data[last_row_index  ][last_col_index  ];
+    for ( int page = 0; page < n_pages; page++ )
+      last_row[last_col_index][page] = 2.25f * ( temp00[page] +
+                                                 temp01[page] +
+                                                 temp10[page] +
+                                                 temp11[page] );
+
+                                                 // NOW TAKE CARE OF ALL
+                                                 // INTERIOR ROWS.
+
+    float[][][] smoothed_data = new float[n_rows][][];
+    smoothed_data[0]          = new float[n_cols][n_pages];
+    smoothed_data[n_rows-1]   = new float[n_cols][n_pages];
+
+    float[][] row_sums =  new float[n_cols][n_pages];
+    float[][] row_buffer = raw_data[0];
+    for ( int row = 1; row < n_rows-1; row++ )
+    {                                       // Do Column 0, with 6 neighbors
+                                            // so weight by factor of 1.5
+      temp01 = row_buffer[ 0 ];
+      temp02 = row_buffer[ 1 ];
+      temp11 = raw_data[row  ][ 0 ];
+      temp12 = raw_data[row  ][ 1 ];
+      temp21 = raw_data[row+1][ 0 ];
+      temp22 = raw_data[row+1][ 1 ];
+      for ( int page = 0; page < n_pages; page++ )
+        row_sums[0][page] = 1.50f *( temp01[page] +
+                                     temp02[page] +
+                                     temp11[page] +
+                                     temp12[page] +
+                                     temp21[page] +
+                                     temp22[page] );
+
+                                              // Do columns 1 - n-2, with 9
+                                              // neighbors, so weight is 1
+      for ( int col = 1; col < n_cols-1; col++ )
+      {
+        temp00 = row_buffer[col-1];
+        temp01 = row_buffer[col  ];
+        temp02 = row_buffer[col+1];
+        temp10 = raw_data[row  ][col-1];
+        temp11 = raw_data[row  ][col  ];
+        temp12 = raw_data[row  ][col+1];
+        temp20 = raw_data[row+1][col-1];
+        temp21 = raw_data[row+1][col  ];
+        temp22 = raw_data[row+1][col+1];
+        for ( int page = 0; page < n_pages; page++ )
+          row_sums[col][page] = temp00[page] +
+                                temp01[page] +
+                                temp02[page] +
+                                temp10[page] +
+                                temp11[page] +
+                                temp12[page] +
+                                temp20[page] +
+                                temp21[page] +
+                                temp22[page];
+       }
+
+                                          // Do last column, with 6 neighbors
+                                          // so weight by factor of 1.5
+      int last_col = n_cols - 1;
+      temp00 = row_buffer[last_col - 1];
+      temp01 = row_buffer[last_col    ];
+      temp10 = raw_data[row  ][last_col - 1];
+      temp11 = raw_data[row  ][last_col    ];
+      temp20 = raw_data[row+1][last_col - 1];
+      temp21 = raw_data[row+1][last_col    ];
+      float sum;
+      for ( int page = 0; page < n_pages; page++ )
+        row_sums[last_col][page] = 1.50f *( temp00[page] +
+                                            temp01[page] +
+                                            temp10[page] +
+                                            temp11[page] +
+                                            temp20[page] +
+                                            temp21[page] );
+       smoothed_data[row] = row_sums;
+       row_sums = row_buffer;
+       row_buffer = raw_data[row];
+    }
+                                         // finally put in the first and last
+                                         // rows of smoothed data.
+    smoothed_data[0]        = first_row;
+    smoothed_data[n_rows-1] = last_row;
+
+    return smoothed_data;
+  }
+
+
+  /**
+   *  Smooth the specified 3D array by summing 3x3 neighborhoods of each
+   *  non-border pixel on each "page" and return a new array with the smoothed
+   *  data.  The array indices of the original array are assumed to 
+   *  represent rows, columns and pages in that order.  The original array
+   *  is NOT changed by this method.  The returned 3D array has the same
+   *  dimensions as the original array and contains the smoothed data for
+   *  pixels interior to a page, but has zero values in all first and last 
+   *  rows and columns. 
+   *  NOTE: Since a new array is created and the original array is not changed
+   *  this smoothing method uses twice as much memory as the original array.
+   *
+   *  @param raw_data  3D array of floats containing the original data.  This
+   *                   array must be a full rectangular array, i.e. NOT a 
+   *                   "ragged" array.
+   *
+   *  @return a new 3D array of floats containing the smoothed data.
+   */
+  public static float[][][] SmoothData_1( float[][][] raw_data )
+  {
+    int n_rows  = raw_data.length;
+    int n_cols  = raw_data[0].length;
+    int n_pages = raw_data[0][0].length;
+
+    float[][][] smoothed_data = new float[n_rows][n_cols][n_pages];
+
+                                       // NOTE: We leave a border of 0's around
+                                       //       the edges of the array.
+    for ( int col = 1; col < n_cols-1; col++ )
+      for ( int row = 1; row < n_rows-1; row++ )
+        for ( int page = 0; page < n_pages; page++ )
+          smoothed_data[row][col][page] = raw_data[row-1][col-1][page] +
+                                          raw_data[row-1][col  ][page] +
+                                          raw_data[row-1][col+1][page] +
+                                          raw_data[row  ][col-1][page] +
+                                          raw_data[row  ][col  ][page] +
+                                          raw_data[row  ][col+1][page] +
+                                          raw_data[row+1][col-1][page] +
+                                          raw_data[row+1][col  ][page] +
+                                          raw_data[row+1][col+1][page];
+    return smoothed_data;
+  }
+
+
+  /**
+   *  Smooth the specified 3D array by summing 3x3 neighborhoods of each
+   *  non-border pixel on each "page" and return a new array with the smoothed
+   *  data.  This method produces the same result, and requires the same
+   *  amount of memory as SmoothData_1.  However, it has been optimized for
+   *  speed by reducing the amount of array dereferencing, using references
+   *  to neighboring 1-D arrays.  It takes about 50-75% of the time 
+   *  the SmoothData_1 method.
+   *
+   *  @param raw_data  3D array of floats containing the original data.  This
+   *                   array must be a full rectangular array, i.e. NOT a 
+   *                   "ragged" array.
+   *
+   *  @return a new 3D array of floats containing the smoothed data.
+   */
+  public static float[][][] SmoothData_1_Fast( float[][][] raw_data )
+  {
+    int n_rows  = raw_data.length;
+    int n_cols  = raw_data[0].length;
+    int n_pages = raw_data[0][0].length;
+
+    float[] temp00;        // These temporary arrays are set to point to 
+    float[] temp01;        // spectra that are in a neighborhood of the 
+    float[] temp02;        // central spectrum, temp11.
+    float[] temp10;
+    float[] temp11;
+    float[] temp12;
+    float[] temp20;
+    float[] temp21;
+    float[] temp22;
+
+    float[][][] smoothed_data = new float[n_rows][n_cols][n_pages];
+
+                                       // NOTE: We leave a border of 0's around
+                                       //       the edges of the array.
+    for ( int col = 1; col < n_cols-1; col++ )
+      for ( int row = 1; row < n_rows-1; row++ )
+      {
+        temp00 = raw_data[row-1][col-1];
+        temp01 = raw_data[row-1][col  ];
+        temp02 = raw_data[row-1][col+1];
+        temp10 = raw_data[row  ][col-1];
+        temp11 = raw_data[row  ][col  ];
+        temp12 = raw_data[row  ][col+1];
+        temp20 = raw_data[row+1][col-1];
+        temp21 = raw_data[row+1][col  ];
+        temp22 = raw_data[row+1][col+1];
+        for ( int page = 0; page < n_pages; page++ )
+          smoothed_data[row][col][page] = temp00[page] +
+                                          temp01[page] +
+                                          temp02[page] +
+                                          temp10[page] +
+                                          temp11[page] +
+                                          temp12[page] +
+                                          temp20[page] +
+                                          temp21[page] +
+                                          temp22[page];
+       }
+
+    return smoothed_data;
   }
 
 
@@ -161,90 +561,18 @@ public class FindPeaksViaSort
     float INITIAL_EXTENT = 1.0f;
 
     start = System.nanoTime();
-                                       // Smoothing is done by forming sums
-                                       // of 3x3 regions in each slice.  Border
-                                       // pixels are multiplied scaled by 9/N.
-    if ( do_smoothing )                // Smooth IN PLACE!  Use buffers to 
-    {                                  // hold the row sums from two complete
-                                       // rows, so the original values can
-                                       // be used from the raw_data array,
-                                       // before replacing with the sums. 
-      float[][] prev_row_sums = new float[n_cols][n_pages];
-      float[][] row_sums      = new float[n_cols][n_pages];
-      float[][] temp;
 
-      for ( int row = 0; row < n_rows; row++ )
-      {
-        int row_0 = Math.max(        0, row-1 );
-        int row_1 = Math.min( n_rows-1, row+1 );
-        for ( int col = 0; col < n_cols; col++ )
-        {
-          int col_0 = Math.max(        0, col-1 );
-          int col_1 = Math.min( n_cols-1, col+1 );
-
-          for ( int page = 0; page < n_pages; page++ )
-            row_sums[col][page] = 0;
-
-          for ( int rr = row_0; rr <= row_1; rr++ )
-            for ( int cc = col_0; cc <= col_1; cc++ )
-              for ( int page = 0; page < n_pages; page++ )
-                row_sums[col][page] += raw_data[rr][cc][page];
-
-          int n_pix = (row_1 - row_0 + 1) * (col_1 - col_0 + 1);
-          float scale = 9.0f/n_pix;
-          for ( int page = 0; page < n_pages; page++ )
-            row_sums[col][page] *= scale;
-        }
-                                      // now cycle the buffers forward by one
-        if ( row > 0 )
-        {
-          temp = raw_data[row - 1];
-          raw_data[row - 1] = prev_row_sums;
-          prev_row_sums = row_sums;
-          row_sums = temp;
-        }
-        else                          // first time through, swap buffers
-        {
-          temp          = prev_row_sums;
-          prev_row_sums = row_sums;
-          row_sums      = temp;
-        }
-      }                               // finally, take care of the last row 
-      raw_data[ n_rows - 1 ] = prev_row_sums;
-
+    if ( do_smoothing )  
+    {                            
+//    data_arr = SmoothData       ( raw_data );      // 18 sec/DataSet 
+      data_arr = SmoothData_Fast  ( raw_data );      //  4 sec/DataSet
+//    data_arr = SmoothData_1     ( raw_data );      //  7 sec/DataSet
+//    data_arr = SmoothData_1_Fast( raw_data );      //  7 sec/DataSet
       end = System.nanoTime();
       log.append("--- Time(ms) to smooth data = " + (end-start)/1e6 + "\n" );
-    }
-
-    data_arr = raw_data;
-
-/*
-    if ( do_smoothing )                // Simple smoothing into new array
-    {                                  // setting borders to zero
-
-      float[][][] smoothed_data = new float[n_rows][n_cols][n_pages];
-
-                                       // NOTE: We leave a border of 0's around
-                                       //       the edges of the array.
-      for ( int col = 1; col < n_cols-1; col++ )
-        for ( int row = 1; row < n_rows-1; row++ )
-          for ( int page = 0; page < n_pages; page++ )
-            smoothed_data[row][col][page] = raw_data[row-1][col-1][page] +
-                                            raw_data[row-1][col  ][page] +
-                                            raw_data[row-1][col+1][page] +
-                                            raw_data[row  ][col-1][page] +
-                                            raw_data[row  ][col  ][page] +
-                                            raw_data[row  ][col+1][page] +
-                                            raw_data[row+1][col-1][page] +
-                                            raw_data[row+1][col  ][page] +
-                                            raw_data[row+1][col+1][page];
-      end = System.nanoTime();
-      log.append("--- Time(ms) to smooth data = " + (end-start)/1e6 + "\n" );
-      data_arr = smoothed_data;
     }
     else
       data_arr = raw_data;
-*/
 
 /* 
    DUMP OUT DATA FROM ARRAY AS TEST
@@ -525,7 +853,7 @@ public class FindPeaksViaSort
     for ( int i = 0; i < peak_array.length; i++ )
     {
       log.append( String.format("Peak #%2d   ", i) );
-      log.append( peak_array[i].col_row_chan_ipk( raw_data ) + "\n" );
+      log.append( peak_array[i].col_row_chan_ipk( data_arr ) + "\n" );
     }
 
     return peak_array;
