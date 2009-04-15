@@ -61,8 +61,8 @@ ClearSelect( data_set )
 # area detector.
 #
 for col in [first_col:last_col]
-  first_index = (col-1)*256 + first_row-1
-  last_index  = (col-1)*256 + last_row-1
+  first_index = (col-1)*column_length + first_row-1
+  last_index  = (col-1)*column_length + last_row-1
   range_string = "" & first_index & ":" & last_index
   SelectByIndex( data_set, range_string, "Set Selected" )
 endfor
