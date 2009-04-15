@@ -230,7 +230,10 @@ public class blind {
   /**
    * Finds the basis of the smallest non coplanar in Qx,Qy,Qz peaks.
    * The basis is manipulated so that B*Transpose(B) is "about" a
-   * diagonal
+   * diagonal.
+   * NOTE: If xx,yy,and zz are set to the q vals of the peaks with
+   * three extra places at the top. Use abid then bias to have the rsult
+   * in UB
    */ 
   public ErrorString blaue (Vector peaks, double[] xx, double[] yy,
                             double[] zz, int[] seq) {
