@@ -85,7 +85,7 @@ public class NxFileOpenThread extends Thread {
      try{
       NxFile = new CNexusFile( NexusFilename, access);
       NxFile.setIOThread( this );
-     }catch(Exception ss){
+     }catch(Throwable ss){
         System.out.println("Cannot open file "+ NexusFilename+"-"+ss.toString());
         finished = true;
         NxFile = null;
