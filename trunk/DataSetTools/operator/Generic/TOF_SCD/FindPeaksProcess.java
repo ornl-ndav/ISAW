@@ -227,7 +227,7 @@ public class FindPeaksProcess
                         ", Det ID = " + det_id +
                         ", FOUND " + peaks.size()  );
 
-    if ( peaks.size() > 0 )
+    if ( peaks != null && peaks.size() > 0 )
     {
       String file_name = fout_base + PEAKS_SUFFIX;
       try                                            // Write temp peaks file
@@ -243,6 +243,11 @@ public class FindPeaksProcess
         System.exit(3); 
       }
     }
+    else
+      System.err.println("NO PEAKS FOUND FOR " + fin_name +        
+                         " DS number " + ds_num +
+                         " Det ID " + det_id );
+
 
     String file_name = fout_base + LOG_SUFFIX;
     try

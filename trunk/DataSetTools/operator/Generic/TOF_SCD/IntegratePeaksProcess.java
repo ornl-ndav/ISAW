@@ -159,30 +159,39 @@ public class IntegratePeaksProcess
 
     boolean is_IPNS_file = fin_name.toUpperCase().endsWith( "RUN" );
     Retriever retriever = null;
-
     DataSet   ds     = null;
 
-    if ( is_IPNS_file )
+    try
     {
-      retriever = new RunfileRetriever( fin_name );
-      ds = retriever.getDataSet( ds_num );
+      if ( is_IPNS_file )
+      {
+        retriever = new RunfileRetriever( fin_name );
+        ds = retriever.getDataSet( ds_num );
                                              // NOTE THIS WILL NOT WORK FOR
                                              // IPNS DATA WITH SEVERAL GRIDS
                                              // IN ONE DataSet
-    }
-    else
-    {
+      }
+      else
+      {
              // NOTE: We may need some way to control if cache info is used.
              //       The statement retriever.RetrieveSetUpInfo(null);
              //       will use the cache if available, so that's OK.  The big
              //       problem is that the cache will be out of date if the
              //       instrument configuration changes !!!
-      retriever = new NexusRetriever( fin_name );
-      ((NexusRetriever)retriever).RetrieveSetUpInfo(null);
-      ds = retriever.getDataSet( ds_num );
+        retriever = new NexusRetriever( fin_name );
+        ((NexusRetriever)retriever).RetrieveSetUpInfo(null);
+        ds = retriever.getDataSet( ds_num );
+      }
+    }
+    catch ( Throwable ex )
+    {
+      System.err.println("Could not get DataSet #" + ds_num +
+                         " from file " + fin_name );
+      System.err.println( ex.getStackTrace() );
+      System.exit(5);
     }
 
-    if ( ds == null )
+    if ( ds == null || ds.getNum_entries() <= 0 )
     {
        System.err.println("NULL DataSet number " + ds_num +
                           " from file " + fin_name );
@@ -206,6 +215,7 @@ public class IntegratePeaksProcess
       DataSet mon_ds = retriever.getDataSet( mon_index );
       if ( mon_ds != null && mon_ds.getNum_entries() > 0 )
       {
+        monct = 0;
         float[] ys = mon_ds.getData_entry(0).getY_values();
         if ( ys != null && ys.length > 0 )
           for ( int i = 0; i < ys.length; i++ )
@@ -295,6 +305,10 @@ public class IntegratePeaksProcess
         System.exit(3); 
       }
     }
+    else
+      System.err.println("NO PEAKS INTEGRATED FOR " + fin_name + 
+                         " DS number " + ds_num +
+                         " Det ID " + det_id );
 
     String file_name = fout_base + LOG_SUFFIX;
     try
@@ -311,7 +325,7 @@ public class IntegratePeaksProcess
     {
       System.err.println("Exception writing integrate log file "+file_name);
       System.err.println( ex.getStackTrace() );
-      System.exit(3);
+      System.exit(4);
     }
 
     System.exit(0); 
