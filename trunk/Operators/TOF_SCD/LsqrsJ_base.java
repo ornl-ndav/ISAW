@@ -384,7 +384,7 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
         logBuffer.append( Format.real( matrix[0][i], 3 ) + " " );
       }
 
-      logBuffer.append( "\n" + "UB = " );
+      logBuffer.append( "\n" + "Tr = " );
 
       for( int i = 0; i < 3; i++ ) {
         logBuffer.append( Format.real( matrix[1][i], 3 ) + " " );
@@ -597,7 +597,7 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
 
       // write information to the log file
       logBuffer.append( 
-        " seq#   h     k     l      x      y      z      " +
+        " seq#   h     k     l      x      y       z      " +
         "xcm    ycm      wl  Iobs    Qx     Qy     Qz\n" );
       k=0;
       for( int i = 0; i < peaks.size(  ); i++ ) 
@@ -606,33 +606,33 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
   
                         // The first line logged for a peak has the observered
                         // values for the peak, 'indexed' by integer hkl values.
-        logBuffer.append( Format.integer( peak.seqnum(), 5 ) +
-                          Format.integer( peak.h(), 4 ) +
-                          Format.integer( peak.k(), 6 ) +
-                          Format.integer( peak.l(), 6 ) +
-                          Format.real( peak.x(),   9, 2 ) +
-                          Format.real( peak.y(),   7, 2 ) +
-                          Format.real( peak.z(),   7, 2 ) +
-                          Format.real( peak.xcm(), 7, 2 ) +
-                          Format.real( peak.ycm(), 7, 2 ) +
-                          Format.real( peak.wl(),  8, 4 ) +
-                          Format.integer(  peak.ipkobs(), 6 ) +
-                          Format.real( peak.getUnrotQ()[0], 8, 3 ) +
-                          Format.real( peak.getUnrotQ()[1], 7, 3 ) + 
-                          Format.real( peak.getUnrotQ()[2], 7, 3 ) +"\n" );
+        logBuffer.append( Format.integer( peak.seqnum(), 5)+" " +
+                          Format.integer( peak.h(), 3 )+" " +
+                          Format.integer( peak.k(), 5 )+" " +
+                          Format.integer( peak.l(), 5 )+" " +
+                          Format.real( peak.x(),   8, 2 )+" " +
+                          Format.real( peak.y(),   6, 2 )+" " +
+                          Format.real( peak.z(),   7, 2 )+" " +
+                          Format.real( peak.xcm(), 6, 2 )+" " +
+                          Format.real( peak.ycm(), 6, 2 )+" " +
+                          Format.real( peak.wl(),  7, 4 )+" " +
+                          Format.integer(  peak.ipkobs(), 5 )+" " +
+                          Format.real( peak.getUnrotQ()[0], 7, 3 )+" " +
+                          Format.real( peak.getUnrotQ()[1], 6, 3 )+" " + 
+                          Format.real( peak.getUnrotQ()[2], 6, 3 )+"\n" );
 
                   logBuffer.append( Format.string("",73) +
-                          Format.real( Tq[0][k], 7, 3 ) + 
-                          Format.real( Tq[1][k], 7, 3 ) +
-                          Format.real( Tq[2][k], 7, 3 ) + "\n" );
+                          Format.real( Tq[0][k], 6, 3 )+" " + 
+                          Format.real( Tq[1][k], 6, 3 )+" " +
+                          Format.real( Tq[2][k], 6, 3 ) + "\n" );
 
                           // The third line logged has the fractional hkl
                           // values observed for a peak, together with the
                           // difference in theoretical and observed hkl
         logBuffer.append( "      " + 
-                          Format.real( obs_hkl[0][k], 6, 2 ) +
-                          Format.real( obs_hkl[1][k], 6, 2 ) + 
-                          Format.real( obs_hkl[2][k], 6, 2 )  );
+                          Format.real( obs_hkl[0][k], 6, 2 )+" " +
+                          Format.real( obs_hkl[1][k], 5, 2 )+" " + 
+                          Format.real( obs_hkl[2][k], 5, 2 )+" "  );
 
         double error = Math.abs( obs_hkl[0][k] - peak.h() ) +
                        Math.abs( obs_hkl[1][k] - peak.k() ) +
@@ -713,7 +713,7 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
 
     for( int i = 0; i < 3; i++ ) {
       for( int j = 0; j < 3; j++ ) {
-        logBuffer.append( Format.real( UB[j][i], 10, 6 ) );
+        logBuffer.append( Format.real( UB[j][i], 9, 6 ) +" ");
       }
 
       logBuffer.append( "\n" );
@@ -723,13 +723,13 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
     logBuffer.append( "Lattice parameters:\n" );
 
     for( int i = 0; i < 7; i++ ) {
-      logBuffer.append( Format.real( abc[i], 10, 3 ) );
+      logBuffer.append( Format.real( abc[i], 9, 3 )+" " );
     }
 
     logBuffer.append( "\n" );
 
     for( int i = 0; i < 7; i++ ) {
-      logBuffer.append( Format.real( sig_abc[i], 10, 3 ) );
+      logBuffer.append( Format.real( sig_abc[i], 9, 3 )+" " );
     }
 
     logBuffer.append( "\n" );
@@ -1213,7 +1213,7 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
 
     for( int i = 0; i < 3; i++ ) {
       for( int j = 0; j < 3; j++ ) {
-        sb.append( Format.real( UB[j][i], 10, 6 ) );
+        sb.append( Format.real( UB[j][i], 9, 6 ) +" ");
       }
 
       sb.append( "\n" );
@@ -1227,7 +1227,7 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
     }
 
     for( int i = 0; i < 7; i++ ) {
-      sb.append( Format.real( abc[i], 10, 3 ) );
+      sb.append( Format.real( abc[i], 90, 3 )+" " );
     }
 
     sb.append( "\n" );
@@ -1240,7 +1240,7 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
     }
 
     for( int i = 0; i < 7; i++ ) {
-      sb.append( Format.real( sig_abc[i], 10, 3 ) );
+      sb.append( Format.real( sig_abc[i], 9, 3 ) +" ");
     }
 
     sb.append( "\n" );
