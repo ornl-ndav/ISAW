@@ -1213,17 +1213,17 @@ public class Util{
       // the UB matrix
       for( int i=0 ; i<3 ; i++ ){
         for (int j=0 ; j<3 ;j++ )
-          sb.append(Format.real(UB[j][i],10,6));
+          sb.append(Format.real(UB[j][i],11,8)+" ");
         sb.append("\n");
       }
 
       // lattice parameters
       for( int i=0 ; i<7 ; i++ )
-        sb.append(Format.real(abc[i],10,4));
+        sb.append(Format.real(abc[i],11,4)+" ");
       sb.append("\n");
       // sigmas
       for( int i=0 ; i<7 ; i++)
-        sb.append(Format.real(sig[i],10,4));
+        sb.append(Format.real(sig[i],11,4)+" ");
       sb.append("\n\n\n");
       sb.append("The above matrix is the TRANSPOSE of the UB Matrix that ");
       sb.append( "maps the column \n");
