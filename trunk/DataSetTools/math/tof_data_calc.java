@@ -170,7 +170,8 @@ public static final float  LOW_E_EXTENT  = 3.0f;
        x[i] = coords[0];
        centroid[i] = peak.getPosition();
      }
-     energy = tof_calc.Energy( x[1]-x[0], centroid[1]-centroid[0] );
+     energy = tof_calc.Energy( Math.abs(x[1]-x[0]), 
+                               Math.abs(centroid[1]-centroid[0]) );
 
                                      // make refined estimate for energy using
                                      // centroid with appropriate extent_factor
@@ -184,7 +185,8 @@ public static final float  LOW_E_EXTENT  = 3.0f;
        float area  = peak.Area();
        centroid[i] = peak.Moment(0, 1) / area;
      }
-     energy = tof_calc.Energy( x[1]-x[0], centroid[1]-centroid[0] );
+     energy = tof_calc.Energy( Math.abs(x[1]-x[0]), 
+                               Math.abs(centroid[1]-centroid[0]) );
 
 
      System.out.println("EnergyFromMonitorData ");
