@@ -148,14 +148,17 @@ public class IndexAllPeaks
     *  Sort the vector of peaks based on the magnitude of their Q value. 
     *
     *  @param  peaks       Vector of peaks to be sorted.
+    *  @param  decreasing  Set true to sort from largest to smallest;
+    *                      set false to sort from smallest to largest.
     */
-   public static void SortPeaksMagQ( Vector<Peak_new> peaks )
+   public static void SortPeaksMagQ( Vector<Peak_new> peaks, 
+                                     boolean          decreasing )
    {
       Peak_new[] peak_arr = new Peak_new[ peaks.size() ];
       for ( int i = 0; i < peak_arr.length; i++ )
         peak_arr[i] = peaks.elementAt(i);
 
-      Arrays.sort( peak_arr, new MagnitudeQComparator() );
+      Arrays.sort( peak_arr, new MagnitudeQComparator(decreasing) );
 
       peaks.clear();
       for ( int i = 0; i < peak_arr.length; i++ )
@@ -261,6 +264,20 @@ public class IndexAllPeaks
 
    private static class MagnitudeQComparator implements Comparator
    {
+     boolean decreasing;
+
+     /**
+      *  Construct a comparator to sort a list of peaks in increasing or
+      *  decreasing order based on |Q|.
+      *
+      *  @param  decreasing  Set true to sort from largest to smallest;
+      *                      set false to sort from smallest to largest.
+      */
+     public MagnitudeQComparator( boolean decreasing )
+     {
+       this.decreasing = decreasing;
+     }
+
      /**
        *  Compare two Peak_new objects based on the magnitude of their Q value.
        *
@@ -277,12 +294,22 @@ public class IndexAllPeaks
          float mag_q1 = q1[0]*q1[0] + q1[1]*q1[1] + q1[2]*q1[2];
          float mag_q2 = q2[0]*q2[0] + q2[1]*q2[1] + q2[2]*q2[2];
 
-         if ( mag_q1 < mag_q2 )
-           return 1;
-         else if  ( mag_q1 > mag_q2 )
-           return -1;
+         if ( decreasing )
+         {
+           if ( mag_q1 < mag_q2 )
+             return 1;
+           else if  ( mag_q1 > mag_q2 )
+             return -1;
+         }
+         else
+         {
+           if ( mag_q1 < mag_q2 )
+             return -1;
+           else if  ( mag_q1 > mag_q2 )
+             return 1;
+         }
 
-          return 0;
+         return 0;
        }
    }
 
@@ -636,6 +663,15 @@ public class IndexAllPeaks
        lattice_params[4] = 90;
        lattice_params[5] = 90;
      }
+     else if ( args[0].equalsIgnoreCase( "natrolite" ) )
+     {
+       lattice_params[0] = 18.325;
+       lattice_params[1] = 18.653; 
+       lattice_params[2] = 6.601;
+       lattice_params[3] = 90;
+       lattice_params[4] = 90;
+       lattice_params[5] = 90;
+     }
      else if ( args[0].equalsIgnoreCase( "FAKE" ) )
      {
        lattice_params[0] = 1;
@@ -651,6 +687,9 @@ public class IndexAllPeaks
        System.out.println("oxalic");
        System.out.println("quartz");
        System.out.println("BaFeAs");
+       System.out.println("FeSi");
+       System.out.println("natrolite");
+       System.out.println("FAKE");
        System.exit(1);
      }
      
@@ -675,26 +714,22 @@ public class IndexAllPeaks
 
     Vector<Peak_new> peaks = new Vector<Peak_new>();
                  
-                                                 // now sort by ipkobs
+                                                 // now sort by ipkobs and |Q|
+    SortPeaksMagQ( all_peaks, false );
     SortPeaks( all_peaks );
+
+    for ( int i = 0; i < 5; i++ )
+      System.out.println("IPK = " + 
+              all_peaks.elementAt(i).ipkobs() );
+
     Peak_new largest = all_peaks.elementAt(0);
     System.out.println("Largest Peak is " + largest );
 
-                                                  // just look at strong peaks
     Vector<Peak_new> strong_peaks = new Vector<Peak_new>();
-    int num_strong = all_peaks.size() / 100;
-    if ( num_strong < 50 )
-      num_strong = all_peaks.size()/50;
-    if ( num_strong < 50 )
-      num_strong = all_peaks.size()/20;
-    if ( num_strong < 50 )
-      num_strong = all_peaks.size()/10;
-    if ( num_strong < 50 )
-      num_strong = all_peaks.size()/5;
-    if ( num_strong < 50 )
-      num_strong = all_peaks.size()/2;
-    if ( num_strong < 50 )
-      num_strong = all_peaks.size();
+    int num_strong = all_peaks.size();
+                                          // just look at 40 strongest peaks
+    if (num_strong >40)
+      num_strong = 40;
 
     for ( int i = 0; i < num_strong; i++ )
       strong_peaks.add( all_peaks.elementAt(i) );
@@ -730,11 +765,21 @@ public class IndexAllPeaks
       int num_kept = 0;
 
       SortPeaks( strong_peaks );
+      SortPeaksMagQ( strong_peaks, false );
+      for ( int i = 0; i < 5; i++ )
+      {
+        float[] qxyz = ((Peak_new)strong_peaks.elementAt(i)).getUnrotQ();
+        float mag_2 = qxyz[0]*qxyz[0] + qxyz[1]*qxyz[1] + qxyz[2]*qxyz[2];
+        System.out.printf("MagQ = %8.2f\n", Math.sqrt(mag_2) );
+      }
+
       peaks.add( strong_peaks.elementAt(0) );
 //      first_peak = (int)( (strong_peaks.size()-1) * random.nextDouble());
 //      peaks.add( strong_peaks.elementAt( first_peak) );
 
-      second_peak = 1+(int)( (strong_peaks.size()-2) * random.nextDouble());
+//      second_peak = 1;
+//      second_peak = 1+(int)( (strong_peaks.size()-2) * random.nextDouble());
+      second_peak = 1+(int)( (strong_peaks.size()/2) * random.nextDouble());
       peaks.add( strong_peaks.elementAt( second_peak ) );
 
       SortPeaks( peaks.elementAt(0), peaks.elementAt(1), strong_peaks );
@@ -809,7 +854,7 @@ public class IndexAllPeaks
          next_peak++;
          count++;
        }
-       num_to_add = (int)( .2 * peaks.size() );
+       num_to_add = (int)( .1 * peaks.size() );
 //       num_to_add = num_to_add + 20;
 
        
@@ -836,7 +881,7 @@ public class IndexAllPeaks
        }
      }
 
-     SortPeaksMagQ( all_peaks );
+     SortPeaksMagQ( all_peaks, false );
      if ( num_attempts <= MAX_ATTEMPTS )
      {
                                         // Iterate on all peaks -------------
