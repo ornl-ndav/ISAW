@@ -29,7 +29,7 @@
  *
  *   Last Modified:
  * 
- *  $Author:$
+ *  $Author$
  *  $Date$            
  *  $Revision$
  */
@@ -56,7 +56,7 @@ public class TOF_NDGS_Calc
   public static final int MIN_DELAY_CHANNELS = 10;
 
   /**
-   *  Switch the specified TOF_NDGS DataSet the Data block's time-of-flight
+   *  Switch the specified TOF_NDGS DataSet so the Data block's time-of-flight
    *  axes all specify the time-of-flight from the sample to the detector
    *  instead of from the moderator to the detector.  The time-of-flight 
    *  axes are assumed to be the same on all Data blocks in the DataSet.
@@ -77,10 +77,11 @@ public class TOF_NDGS_Calc
    *
    *  Third, the initial portion of the data, corresponding to zero or negative 
    *  sample to detector times-of-flight is removed.  In fact, some additional
-   *  channels can be omitted, to keep the energies bounded.
+   *  channels should be omitted, to keep the energies bounded.
    *
-   *  @param  ds
-   *  @param  Ein 
+   *  @param  ds                The sample histogram DataSet to be adjusted
+   *                            to give sample to detector times-of-flight.
+   *  @param  Ein               The incident energy
    *  @param  a                 The "a" coefficient in the correction equation
    *  @param  b                 The "b" coefficient in the correction equation
    *  @param  c                 The "c" coefficient in the correction equation
@@ -91,7 +92,7 @@ public class TOF_NDGS_Calc
    *                            the channel where the time-of-flight from the
    *                            sample to detector is 0.  This must be at
    *                            least 10 and more typically should be several
-   *                            humdred.
+   *                            hundred.
    */
   public static void SetFinalTOF( DataSet ds, 
                                   float   Ein, 
@@ -166,18 +167,18 @@ public class TOF_NDGS_Calc
 
 
   /**
-   *  Use the first two Data blocks from the monitor DataSet.
-   *  Return a new monitor Data block obtained by restricting the specified  
-   *  monitor Data block to a time-of-flight window centered on the 
-   *  specified energy, with width twices the specified tof half interval.
-   *  The specified Data block must be a HistogramTable.
+   *  Use the first two Data blocks from the monitor DataSet to calculate
+   *  the incident energy, given an estimate of the incident energy and
+   *  information about the width of a time-of-flight window centered on
+   *  that incident energy, that should be used to locate the incident 
+   *  pulse in a monitor spectrum.
    *
    *  @param mon_ds             A monitor DataSet containing two distinct
    *                            beam monitors as the first two entries.
    *  @param Ein_estimate       Estimate of the incident energy(meV), used to 
    *                            find the time-of-flight that will be at the 
    *                            center of windows containing the incident
-   *                            neutron pulse in monitor spectrum.
+   *                            neutron pulse in the monitor spectra.
    *  @param tof_half_interval  Half-width in microseconds of the 
    *                            time-of-flight windows containing the
    *                            incident neutron pulse in monitor spectra.
@@ -308,6 +309,16 @@ public class TOF_NDGS_Calc
     SetInstrumentTypeCalc.setInstrumentType( one_ds, "TOF_NDGS" );
 
     new ViewManager( one_ds, ViewManager.IMAGE );
+
+    for ( int i = 1; i < retriever.numDataSets(); i++ )
+    {
+      System.out.println("Converting DS # " + i );
+      one_ds = retriever.getDataSet(i);
+      SetFinalTOF( one_ds, Ein, a, b, c, d, f, g, 300 );
+      SetInstrumentTypeCalc.setInstrumentType( one_ds, "TOF_NDGS" );
+      if ( i % 10 == 0 )
+        new ViewManager( one_ds, ViewManager.IMAGE );
+    }
   }
 
 }
