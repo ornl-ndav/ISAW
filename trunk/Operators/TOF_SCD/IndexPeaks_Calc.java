@@ -730,7 +730,7 @@ public class IndexPeaks_Calc
     * by adjusting the lattice parameters.
     * Finally, the algorithm attempts to extend this indexing to all
     * of the peaks.  The peaks that are not indexed are written to
-    * as specified file, so that they can be (possibly) indexed latter.
+    * a specified file, so that they can be (possibly) indexed latter.
     * This allows indexing twins or more complicated samples with several
     * crystalites.
     *
@@ -837,6 +837,7 @@ public class IndexPeaks_Calc
       }
     }
                                          // Refine UB -----------------------
+    String return_msg = "FALIED";
     if ( num_attempts < MAX_ATTEMPTS )
     {
      peaks.clear();
@@ -882,11 +883,11 @@ public class IndexPeaks_Calc
          hkls = OptimizeUB( all_peaks, UBinverse, newUBinverse, hkl_tol );
          ShowLatticeParams( newUBinverse );
 
-         System.out.println("NUM INDEXED = " +
-                             NumIndexed( all_peaks, UBinverse, hkl_tol ) +
-                            " OUT OF " + all_peaks.size() +
-                            " WITH TOLERANCE = " + hkl_tol );
         }
+        return_msg = "NUM INDEXED = " +
+                      NumIndexed( all_peaks, UBinverse, hkl_tol ) +
+                     " OUT OF " + all_peaks.size() +
+                     " WITH TOLERANCE = " + hkl_tol;
        
         WriteNotIndexedPeaks( all_peaks, 
                               newUBinverse, 
@@ -894,7 +895,8 @@ public class IndexPeaks_Calc
                               not_indexed_file_name );
 
         Index( all_peaks, UBinverse );
-        Peak_new_IO.WritePeaks_new( peaks_file_name, all_peaks, false );
+        if ( peaks_file_name.length() > 0 )
+          Peak_new_IO.WritePeaks_new( peaks_file_name, all_peaks, false );
 
                                          // standardize the unit cell
         double[][] UB = LinearAlgebra.copy( newUBinverse );
@@ -909,10 +911,13 @@ public class IndexPeaks_Calc
         for ( int row = 0; row < 3; row++ )
           for ( int col = 0; col < 3; col++ )
             floatUB[row][col] = (float)(my_blind.UB[row][col]);
-        Util.WriteMatrix( matrix_file_name, floatUB );
+
+        if ( matrix_file_name.length() > 0 )
+          Util.WriteMatrix( matrix_file_name, floatUB );
       }
     }
-    return "Done";
+
+    return return_msg;
   }
 
 
