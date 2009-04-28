@@ -1922,7 +1922,7 @@ public class Util {
     * @param inst                 Instrument name(Prefix after path for a file)
     * @param FileExt              Extension for filename
     * @param d_min                minimum d-spacing to consider
-    * @param PeakAlg              Peak Algorithm:MaxIToSigI,Shoe Box, 
+    * @param peak_algorithm       Peak Algorithm:MaxIToSigI,Shoe Box, 
     *                                MaxIToSigI-old,TOFINT,or EXPERIMENTAL
     * @param Xrange               Range of offsets around a peak's 
     *                                  x value(-1:3)
