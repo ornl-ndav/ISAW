@@ -276,28 +276,44 @@ public static final float  LOW_E_EXTENT  = 3.0f;
 public static Data NewEnergyInData( TabulatedData  data, 
                                     float          new_e_in )
 {
-  Float Float_e  = (Float)data.getAttribute(Attribute.ENERGY_IN).getValue();
-  Float Float_l  = (Float)data.getAttribute(Attribute.INITIAL_PATH).getValue();
-  Float Float_pl = (Float)data.getAttribute(Attribute.RAW_DISTANCE).getValue();
-  DetectorPosition position = (DetectorPosition)
-                     data.getAttribute(Attribute.DETECTOR_POS).getValue();
+  float float_e  = AttrUtil.getEnergyIn( data );
+  float float_l  = AttrUtil.getInitialPath( data );;
+  float float_pl = AttrUtil.getRawDistance( data );
+  DetectorPosition position = AttrUtil.getDetectorPosition( data );
 
- 
-  if ( Float_e   == null || 
-       Float_l   == null || 
-       Float_pl  == null || 
-       position  == null  )
+  if (  Float.isNaN( float_e ) )
   {
-    System.out.println("ERROR: missing attribute in " +
+    System.out.println("ERROR: missing incident energy attribute in " +
                               "tof_data_calc.SetNewEnergyIn");
     return data;
   }
 
+  if ( Float.isNaN( float_l ) )
+  {
+    System.out.println("ERROR: missing initial path attribute in " +
+                              "tof_data_calc.SetNewEnergyIn");
+    return data;
+  }
+ 
+  if ( position  == null  )
+  {
+    System.out.println("ERROR: missing position attribute in " +
+                              "tof_data_calc.SetNewEnergyIn");
+    return data;
+  }
+
+  if ( Float.isNaN( float_pl ) )
+  {
+//    System.out.println( "WARNING: no RawDistance in NewEnergyInData, " +
+//                        "using detector positon distance" );
+    float_pl = position.getDistance();
+  } 
+
   float focused_L2  = position.getDistance();
-  float physical_L2 = Float_pl.floatValue();    // use average of physical dists
+  float physical_L2 = float_pl;  
      
-  float old_e_in     = Float_e.floatValue();
-  float initial_path = Float_l.floatValue();
+  float old_e_in     = float_e;
+  float initial_path = float_l;
 
   float t_old = tof_calc.TOFofEnergy( initial_path, old_e_in );
   float t_new = tof_calc.TOFofEnergy( initial_path, new_e_in );
