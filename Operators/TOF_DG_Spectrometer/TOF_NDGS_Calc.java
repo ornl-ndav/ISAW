@@ -38,6 +38,7 @@ package Operators.TOF_DG_Spectrometer;
 import java.util.*;
 
 import gov.anl.ipns.MathTools.Geometry.*;
+import gov.anl.ipns.Util.Sys.*;
 
 import DataSetTools.retriever.*;
 import DataSetTools.dataset.*;
@@ -206,6 +207,13 @@ public class TOF_NDGS_Calc
                                             tof_half_interval );
 
     float Ein = tof_data_calc.EnergyFromMonitorData( mon_0, mon_1 );
+    if ( Float.isNaN( Ein ) )
+    {
+      SharedMessages.addmsg(
+            "WARNING: EnergyFromMonitorData FAILED, using Ein_estimate.." ); 
+      return Ein_estimate;
+    }
+
     return Ein;
   }
 
