@@ -69,8 +69,6 @@ import Command.ScriptUtil;
  */
 public class RowColGrid implements IDataGrid {
 
-
-
    int      nrows;
 
    int      ncols;
@@ -79,9 +77,13 @@ public class RowColGrid implements IDataGrid {
 
    Data[][] Grid;
 
+   Vector3D[][]  pixel_pos;
+
    int      NSet;
 
    boolean  filled;
+
+   boolean  first_setData_entries = true; 
 
    String   units;
 
@@ -100,7 +102,6 @@ public class RowColGrid implements IDataGrid {
     */
    public RowColGrid( int nrows, int ncols, int ID )
             throws IllegalArgumentException {
-      
 
       if( nrows < 1 || ncols < 1 )
          throw new IllegalArgumentException(
@@ -108,20 +109,81 @@ public class RowColGrid implements IDataGrid {
 
       this.nrows = nrows;
       this.ncols = ncols;
-      Grid = new Data[ nrows ][ ncols ];
+      Grid      = new Data[ nrows ][ ncols ];
+      pixel_pos = new Vector3D[ nrows ][ ncols ];
 
       for( int i = 0 ; i < nrows ; i++ )
+      {
          java.util.Arrays.fill( Grid[ i ] , null );
+         java.util.Arrays.fill( pixel_pos[ i ] , null );
+      }
 
       NSet = 0;
       this.ID = ID;
       filled = false;
       units = "m";
       depth = .002f;
-
-
    }
- 
+
+
+   /**
+    *  This method will set the pixel positions of this grid 
+    *  using the effective positions of corresponding data blocks
+    *  in the specified DataSet.  NOTE: the DataSet must contain
+    *  a Data block with the effective position set for each pixel 
+    *  in the grid, or some pixel positions will be set NULL!   
+    *  This method will be automatically called by the setData_entries
+    *  method THE FIRST TIME setData_entries() is called either 
+    *  directly, or by calling setDataSet().  IF the geometry must
+    *  be changed subsequently, then this method can be called 
+    *  directly.
+    *  @param ds  The DataSet whose detector positions are used
+    *             to set the pixel positions of this grid.
+    *
+    *  @return true if ALL pixel positions in the grid were set and
+    *          false otherwise.
+    */
+   public boolean setPixelPositions( DataSet ds )
+   {
+      int n_set = 0;
+      int row,
+          col;
+      IData data;
+
+      for ( row = 0; row < nrows; row++ )
+        for ( col = 0; col < ncols; col++ )
+          pixel_pos[row][col] = null;
+
+      for ( int i = 0 ; i < ds.getNum_entries() ; i++ ) 
+      {
+        data = ds.getData_entry( i );
+        PixelInfoList plist = AttrUtil.getPixelInfoList( data );
+
+        if( plist != null && plist.num_pixels() > 0 ) 
+        {
+          IPixelInfo pinf = plist.pixel( 0 );
+          if( pinf.gridID() == ID ) 
+          {
+            DetectorPosition det_pos = AttrUtil.getDetectorPosition(data);
+            if ( det_pos != null )
+            {
+              row = (int)pinf.row() - 1;
+              col = (int)pinf.col() - 1;
+              if( pixel_pos[ row ][ col ] == null )
+                 n_set++ ;
+              pixel_pos[ row ][ col ] = new Vector3D( det_pos );
+            }
+          }
+        }
+      }
+
+      if ( n_set == nrows * ncols )
+        return true;
+
+      return false;
+   } 
+
+
    public IDataGrid clone(){
       
       RowColGrid Res = new RowColGrid( nrows, ncols, ID);
@@ -131,10 +193,19 @@ public class RowColGrid implements IDataGrid {
          for( int col=0; col<  ncols; col++)
             if( Grid[row][col] != null)
                Res.setOneData( Grid[row][col] , row+1 , col+1 );
+
+      for( int row =0; row < nrows; row++)
+         for( int col=0; col<  ncols; col++)
+           Res.pixel_pos[row][col] = new Vector3D( pixel_pos[row][col] );
+
+      Res.NSet = NSet;
+      Res.filled = filled;
+      Res.first_setData_entries = first_setData_entries;
+      Res.units = units;
       
       return Res;
-      
    }
+
 
    /**
     * Set the depth of this grid in meters
@@ -145,7 +216,6 @@ public class RowColGrid implements IDataGrid {
    public void setGridDepth( float depth ) {
 
       this.depth = depth;
-      
    }
 
 
@@ -173,7 +243,6 @@ public class RowColGrid implements IDataGrid {
          NSet--;
 
       Grid[ row - 1 ][ col - 1 ] = D;
-
    }
 
 
@@ -183,21 +252,24 @@ public class RowColGrid implements IDataGrid {
    public int ID() {
 
       return ID;
-
    }
+
 
    /**
     * @return the units for lengths of the sides of this grid
     */
    public String units() {
 
-
       return units;
    }
 
 
+   /**
+    * @return The unit vector for the direction to the Data element at
+    * the next row to the right  from the data element(s) at the center of the 
+    * grid
+    */
    public Vector3D x_vec() {
-
 
       return x_vec( .5f + nrows / 2f , .5f + ncols / 2f );
    }
@@ -210,21 +282,17 @@ public class RowColGrid implements IDataGrid {
    public Vector3D y_vec() {
 
       return y_vec( .5f + nrows / 2f , .5f + ncols / 2f );
-
-
    }
 
+
    /**
-    * @return The unit vector for the direction to the Data element at
-    * the next row to the right  from the data element(s) at the center of the 
+    * @return The unit normal for the data element at the center of the 
     * grid
     */
    public Vector3D z_vec() {
 
-
       return z_vec( .5f + nrows / 2f , .5f + ncols / 2f );
    }
-
 
    
    /**
@@ -233,12 +301,8 @@ public class RowColGrid implements IDataGrid {
     */
    public Vector3D position() {
 
-      //
       return position( .5f + nrows / 2f , .5f + ncols / 2f );
-
-
    }
-
 
    
    /**
@@ -247,10 +311,8 @@ public class RowColGrid implements IDataGrid {
     */
    public float width() {
 
-
-      Vector3D L = position( 1 + (int) ( nrows / 2f ) , .5f );
-      Vector3D R = position( 1 + (int) ( nrows / 2f ) , ncols + .5f );
-
+      Vector3D L = position( 1 + (int) ( nrows / 2f ) , 0.5f );
+      Vector3D R = position( 1 + (int) ( nrows / 2f ) , ncols + 0.5f );
 
       if( L == null || R == null )
          return Float.NaN;
@@ -267,7 +329,6 @@ public class RowColGrid implements IDataGrid {
     */
    public float height() {
 
-
       Vector3D L = position( .5f , 1 + (int) ( ncols / 2f ) );
       Vector3D R = position( nrows + .5f , 1 + (int) ( ncols / 2f ) );
 
@@ -277,8 +338,8 @@ public class RowColGrid implements IDataGrid {
       R.subtract( L );
 
       return R.length();
-
    }
+
 
    /**
     * @return the depth of the grid. 
@@ -310,7 +371,7 @@ public class RowColGrid implements IDataGrid {
 
 
    /**
-    *    * 
+    *  
     * @param row  the row in question in this grid
     * @param col the column in question in this grid
     * 
@@ -323,7 +384,6 @@ public class RowColGrid implements IDataGrid {
       if( P == null )
          return Float.NaN;
 
-
       Vector3D xDir = x_vec();
       if( xDir == null )
          return Float.NaN;
@@ -333,7 +393,7 @@ public class RowColGrid implements IDataGrid {
 
 
    /**
-    *    * 
+    * 
     * @param row  the row in question in this grid
     * @param col the column in question in this grid
     * 
@@ -352,8 +412,6 @@ public class RowColGrid implements IDataGrid {
          return Float.NaN;
 
       return P.dot( yDir );
-
-
    }
 
 
@@ -372,7 +430,6 @@ public class RowColGrid implements IDataGrid {
       xvec.add( yvec );
 
       return xvec;
-
    }
 
 
@@ -393,10 +450,8 @@ public class RowColGrid implements IDataGrid {
       if( f == null )
          return Float.NaN;
 
-      
       return f[ 0 ];
    }
-
 
 
    /**
@@ -420,8 +475,10 @@ public class RowColGrid implements IDataGrid {
       return f[ 1 ];
    }
 
-  //error   x(row,col)*x_vec()+y(row,col)*y_vec()+
+
+   //error   x(row,col)*x_vec()+y(row,col)*y_vec()+
    //  z(row,col)*z_vec()= position(row,col)
+
    private float[] findRowCol( float x , float y ) {
 
       Vector3D xvec = x_vec();
@@ -447,12 +504,8 @@ public class RowColGrid implements IDataGrid {
 
                   return Res;
                }
-
-
          }
       return null;
-
-
    }
 
 
@@ -461,16 +514,14 @@ public class RowColGrid implements IDataGrid {
       if( row < 1 || col < 1 || row > nrows || col > ncols )
          return null;
       
-      Data D = Grid[ row - 1 ][ col - 1 ];
-      if( D == null )
-         return null;
-      DetectorPosition dp =AttrUtil.getDetectorPosition( D );
-      if( dp == null)
-         return null;
-      return new Vector3D( dp );
+      return new Vector3D( pixel_pos[ row - 1 ][ col - 1 ] );
    }
 
 
+   /**
+    *  Get a rounded value of the specified float that is clamped
+    *  to lie in the interval [1,max-1].
+    */
    private int roundd( float f , int max ) {
 
       int ff = (int) ( f + .5 );
@@ -479,7 +530,6 @@ public class RowColGrid implements IDataGrid {
       if( ff < 1 )
          ff++ ;
       return ff;
-
    }
 
 
@@ -492,7 +542,6 @@ public class RowColGrid implements IDataGrid {
       float[] F = V.getCartesianCoords();
       System.out.println( message + "(" + F[ 0 ] + "," + F[ 1 ] + "," + F[ 2 ]
                + ")" );
-
    }
 
   
@@ -506,51 +555,63 @@ public class RowColGrid implements IDataGrid {
     */
    public Vector3D position( float row , float col ) {
 
+      // System.out.println("FINDING POSITION at " + row + ", " + col );
       if( row < .5 || col < .5 || row > nrows + .5 || col > ncols + .5 )
          return null;
 
       int rrow = Math.min( (int) row , nrows  );
       int ccol = Math.min( (int) col , ncols  );
 
-
-      Vector3D pos = new Vector3D( 0f , 0f , 0f ) , pos1;
-
+      Vector3D pos = new Vector3D( 0f , 0f , 0f );
+      Vector3D pos1;
       
       float rowFrac = row - rrow;
       float colFrac = col - ccol;
+
       int drow = 0;
       if( rowFrac != 0 )
          drow = 1;
+
       int dcol = 0;
       if( colFrac != 0 )
          dcol = 1;
 
+      // System.out.println("rowFrac = " + rowFrac + " colFrac = " + colFrac );
+      // System.out.println("drow = " + drow + " dcol = " + dcol );
       for( int i = 0 ; i < 1 + drow ; i++ )
          for( int j = 0 ; j < 1 + dcol ; j++ ) {
             
-            Data D = getData_entry( rrow + i , ccol + j );
+            pos1 = null;
+            try
+            { 
+              pos1 = pixel_pos[ rrow + i - 1 ][ ccol + j - 1 ];
+              pos1 = new Vector3D( pos1 );
+            }
+            catch ( Exception ex )
+            {
+              // return null;
+            }
+            // System.out.println("i,j,pos1 = " + i + ", " + j + ", " + pos1 );
             
-            if( D != null ) {
-               pos1 = new Vector3D( AttrUtil.getDetectorPosition( D ) );
+            if( pos1 != null ) {
 
-               if( pos1 == null )
-                  return null;
-
-               pos1.multiply( Math.abs(1- i - rowFrac )
-                                 * Math.abs(1- j - colFrac ) );
+               pos1.multiply( Math.abs( 1 - i - rowFrac ) * 
+                              Math.abs( 1 - j - colFrac ) );
                pos.add( pos1 );
-
             }
             
-            else if( rrow + i <= nrows && ccol + j <= ncols && rrow + i >= 1
-                     && ccol + j >= 1 )
+            else if( rrow + i <= nrows &&
+                     ccol + j <= ncols && 
+                     rrow + i >= 1     &&
+                     ccol + j >= 1 )
 
                return null;// The Grid is not full
 
             else {// edge or corner , reflect back and extrapolate
                
                int rowDir = 0 , // direction to a valid cell
-               colDir = 0;
+                   colDir = 0;
+
                if( rrow + i > nrows )
                   rowDir = - 1;
                else if( rrow + i < 1 )
@@ -561,50 +622,63 @@ public class RowColGrid implements IDataGrid {
                else if( ccol + j < 1 )
                   colDir = 1;
 
-               D = getData_entry( rrow + i+ rowDir , ccol+j + colDir );
-               if( D == null )
-                  return null;
-               DetectorPosition dp = AttrUtil.getDetectorPosition( D );
-               if( dp == null )
-                  return null;
-               Vector3D P0 = new Vector3D( dp );
-               
+               Vector3D P0;
+               try 
+               {
+                 P0 = pixel_pos[rrow + i + rowDir - 1]
+                               [ccol + j + colDir - 1];
+                 P0 = new Vector3D( P0 );
+               }
+               catch ( Exception ex )
+               {
+                 return null;
+               }
+               // System.out.println("P0 " + P0 );
 
-               D = getData_entry( rrow + i +   2*rowDir , ccol+j +colDir );
-               if( D == null )
-                  return null;
-               dp = AttrUtil.getDetectorPosition( D );
-               if( dp == null )
-                  return null;
+               Vector3D P;
+               try
+               {
+                 P = pixel_pos[ rrow + i + 2 * rowDir - 1 ]
+                              [ ccol + j +     colDir - 1 ];
+                 P = new Vector3D( P );
+               }
+               catch ( Exception ex )
+               {
+                 return null;
+               }
+               // System.out.println("P " + P );
 
-               Vector3D P = new Vector3D( dp );
                Vector3D Prow = new Vector3D( P0 );
                Prow.multiply( 2f );
                Prow.subtract( P );
 
+               try
+               {
+                 P = pixel_pos[ rrow + i +     rowDir - 1 ]
+                              [ ccol + j + 2 * colDir - 1 ];
+                 P = new Vector3D( P );
+               }
+               catch ( Exception ex )
+               {
+                 return null;
+               }
+               // System.out.println("P " + P );
 
-               D = getData_entry( rrow+i+ rowDir , ccol +j+ 2 * colDir );
-               if( D == null )
-                  return null;
-               dp = AttrUtil.getDetectorPosition( D );
-               if( dp == null )
-                  return null;
-
-               P = new Vector3D( dp );
                Vector3D Pcol = new Vector3D( P0 );
                Pcol.multiply( 2f );
                Pcol.subtract( P );
 
                Prow.subtract( P0 );
                Prow.add( Pcol );
-               Prow.multiply( Math.abs(1- i - rowFrac )
-                                 * Math.abs( 1-j - colFrac ) );
+               Prow.multiply( Math.abs( 1 - i - rowFrac ) *
+                              Math.abs( 1 - j - colFrac ) );
 
                pos.add( Prow );
             }
          }
       return pos;
    }
+
 
    /**
     * 
@@ -728,12 +802,18 @@ public class RowColGrid implements IDataGrid {
     */
    public Vector3D y_vec( float row , float col ) {
 
+//      System.out.println("nrows, ncols = " + nrows + ", " + ncols);
+
       boolean negate  = false;
       int current_col = roundd( col, ncols );
 
       Vector3D P0 = getPos( roundd( row , nrows ), current_col );
       if( P0 == null )
+      {
+//         System.out.println("P0 is null at " + roundd( row , nrows ) + 
+//                            ", " + current_col );
          return null;
+      }
       
       Vector3D P1;
       if ( row < nrows )
@@ -745,7 +825,11 @@ public class RowColGrid implements IDataGrid {
       }
       
       if ( P1 == null )
+      {
+//        System.out.println("P1 is null at " + roundd( row+1 , nrows ) +
+//                            ", " + current_col );
         return null;
+      }
 
       P1.subtract( P0 );
       P1.normalize();
@@ -767,12 +851,18 @@ public class RowColGrid implements IDataGrid {
       Vector3D V = x_vec( row , col );
       
       if( V == null )
+      {
+//         System.out.println("x_vec null for " + row + ", " + col );
          return null;
+      }
       
       Vector3D V1 = y_vec( row , col );
       
       if( V1 == null )
+      {
+//         System.out.println("y_vec null for " + row + ", " + col );
          return null;
+      }
 
       V.cross( V , V1 );
       V.normalize();
@@ -790,6 +880,20 @@ public class RowColGrid implements IDataGrid {
     */
    public boolean setData_entries( DataSet ds ) {
 
+      if ( first_setData_entries )
+      {
+        // System.out.println("SETTING ENTRIES FROM " + ds  + " IN " + this );
+        setPixelPositions( ds );
+        first_setData_entries = false;
+/*
+        for ( int row = 0; row < nrows; row++ )
+          for ( int col = 0; col < ncols; col++ )
+            System.out.println("row, col, vec = " + row + 
+                               ", " + col + 
+                               ", " + pixel_pos[row][col] );
+*/
+      }
+
       NSet = 0;
       clearData_entries();
       for( int i = 0 ; i < ds.getNum_entries() ; i++ ) {
@@ -805,20 +909,22 @@ public class RowColGrid implements IDataGrid {
                if( Grid[ (int) pinf.row() - 1 ][ (int) pinf.col() - 1 ] == null )
                   NSet++ ;
                
-               Grid[ (int) pinf.row() - 1 ][ (int) pinf.col() - 1 ] = ds
-                        .getData_entry( i );
+               Grid[ (int) pinf.row() - 1 ][ (int) pinf.col() - 1 ] = 
+                                                           ds.getData_entry( i );
                
             }
          }
       }
-      
+     
+      // System.out.println("N entries = " + ds.getNum_entries() +
+      //                    " NSet = " + NSet ); 
       filled = true;
       return true;
    }
 
 
    /**
-    *  * 
+    *  
     * @param row  the row in question in this grid
     * @param col the column in question in this grid
     * 
@@ -830,17 +936,14 @@ public class RowColGrid implements IDataGrid {
          return null;
 
       return Grid[ row - 1 ][ col - 1 ];
-
-      // TODO Auto-generated method stub
-
    }
+
 
    /**
     * @return true if the data blocks are set into this Grid,
     *              otherwise false 
     */
    public boolean isData_entered() {
-
 
       return filled;
    }
@@ -860,34 +963,93 @@ public class RowColGrid implements IDataGrid {
 
       filled = false;
       NSet = 0;
-
    }
 
 
-   /**
-    *  * 
-    * @param row  the row in question in this grid
-    * @param col the column in question in this grid
-    * 
-    * Not Implemented Yet
-    */
-   public float SolidAngle( float row , float col ) {
-      
+  /**
+   *  Get the solid angle subtended by this grid "box" from the origin. 
+   *  If the row and column values are not integers, they will be rounded
+   *  to obtain integer values that specify a particular grid "box".  The
+   *  solid angle is approximated as:
+   *
+   *    A * |cos(t)| / (r*r) 
+   *  
+   *  where A = dx * dy is the area of the "face" of the pixel, t is the
+   *  angle between the unit vector pointing towards the origin from the 
+   *  center of the box and the detector surface normal ("z" orientation 
+   *  vector for the pixel).
+   *
+   *  @param row  row number from 1 to the total number of rows.
+   *  @param col  column number from 1 to the total number of columns.
+   * 
+   *  @return the solid angle subtended by the specified grid box.
+   */
+  public float SolidAngle( float row, float col )
+  {
+    row = Math.round(row);
+    col = Math.round(col);
+
+    Vector3D z_vec = z_vec(row,col);
+    float[] z_vector = z_vec.get();
+
+    Vector3D pos = position( row, col );
+    float r = pos.length();
+
+    if ( r == 0 )
+      return 0;
+
+    pos.normalize();
+    float pos_arr[] = pos.get();
+    float dot = 0f;
+    for ( int i = 0; i < 3; i++ )
+      dot += z_vector[i] * pos_arr[i];
+
+    if ( dot < 0 )
+      dot = -dot;
+
+    float dx = width( row, col );
+    float dy = height( row, col );
+    return dot * dx * dy / (float)( r * r );
+  }
+
+
+  /**
+   *  Get the approximate range of scattering angles subtended by the 
+   *  specified grid "box".  If the row and column values are not integers, 
+   *  they will be rounded to obtain integer values that specify a particular 
+   *  grid "box".  The box is assumed to be oriented so that the "z" vector
+   *  points towards the origin.  In that case the delta two theta value
+   *  will be determined by the height and width of the box.
+   *
+   *  @param row  row number from 1 to the total number of rows.
+   *  @param col  column number from 1 to the total number of columns.
+   *
+   *  @return the range of scattering angles for the specified grid box,
+   *          in degrees.
+   */
+  public float Delta2Theta( float row, float col )
+  {
+    if ( row < 0.5 || row > nrows + 0.5 )
       return Float.NaN;
-   }
 
-
-   /**
-    * 
-    * @param row  the row in question in this grid
-    * @param col the column in question in this grid
-    * 
-    * Not implemented yet
-    */
-   public float Delta2Theta( float row , float col ) {
-     
+    if ( col < 0.5 || col > ncols + 0.5 )
       return Float.NaN;
-   }
+
+    int i_row = roundd( row, nrows );
+    int i_col = roundd( col, ncols );
+
+    Vector3D pos = position( i_row, i_col );
+    float r = pos.length();
+
+    if ( r == 0 )
+      return 180.0f;
+
+    float dx = width( i_row, i_col );
+    float dy = height( i_row, i_col );
+    double angle = 2 * Math.atan( Math.sqrt(dx*dx + dy*dy)/2/r );
+
+    return (float)( angle * 180 / Math.PI );
+  }
 
 
    /**
@@ -953,7 +1115,6 @@ public class RowColGrid implements IDataGrid {
             if( P.length() > tolerance ) 
 
                 return null; 
-
          }
 
       return UGrid;
@@ -961,17 +1122,17 @@ public class RowColGrid implements IDataGrid {
 
 
    /**
-    * Sets this grid as the main(1st) grid in the DataSet and then sets the data
-    *  blocks into the grid's table of data blocks
+    *  For each Data entry in a RowColGrid, change the pixel list attribute
+    *  to use the second IDataGrid, and set the Data blocks as entries in
+    *  the second IDataGrid.
     * 
-    * @param Gr
-    *           The RowColGrid with info about which data blocks are at a given
-    *           row and column
-    * @param grid
-    *           The grid to place in the pixelinfo attribute
+    * @param Gr    The RowColGrid from which data blocks are copied to the
+    *              second IDataGrid.
+    *
+    * @param grid  The IDataGrid to use in the new pixel info list attributes
+    *              and into which the data blocks are set as data entries.
     * 
-    * @param DS
-    *           The data set containing this grid
+    * @param DS    The data set containing the RowColumGrid
     */
    public static void setDataSet( RowColGrid Gr , IDataGrid grid , DataSet DS ) {
 
@@ -997,7 +1158,6 @@ public class RowColGrid implements IDataGrid {
                D.setAttribute( new PixelInfoListAttribute(
                         Attribute.PIXEL_INFO_LIST , plist ) );
             }
-
          }
 
       grid.setData_entries( DS );
@@ -1006,7 +1166,6 @@ public class RowColGrid implements IDataGrid {
       
       DS.addOperator( new DataSetTools.operator.DataSet.
                 Attribute.GetPixelInfo_op() );
-
    }
 
 
@@ -1018,19 +1177,23 @@ public class RowColGrid implements IDataGrid {
 
       int nrows = ( new Integer( args[ 0 ] ) ).intValue();
       int ncols = ( new Integer( args[ 1 ] ) ).intValue();
-      int ntimes = 20;
-      RowColGrid Gr = new RowColGrid( nrows , ncols , 105 );
+      int ntimes  = 20;
+      int grid_id = 105;
+      RowColGrid Gr = new RowColGrid( nrows , ncols , grid_id );
+      UniformGrid grid = null;
 
       DataSet DS = new DataSet( "test" , "new dataset" , "m" , "time" ,
                "counts" , "intensity" );
       UniformGrid UGrid = new UniformGrid( 3 , "m" , new Vector3D( 2 , 1 , 3 ) ,
                new Vector3D( 0 , 1 , 0 ) , new Vector3D( 0 , 0 , 1 ) , 5f , 4f ,
                .1f , nrows , ncols );
-      System.out.println( "UGrid LB,RB,LT,RT=" + UGrid.position( .5f , .5f )
-               + "::" + UGrid.position( .5f , 8.5f ) + "::"
-               + UGrid.position( 6.5f , .5f ) + "::"
-               + UGrid.position( 6.5f , 8.5f ) );
+      System.out.println( "UGrid LB,RB,LT,RT=\n" + 
+                           UGrid.position( .5f , .5f )  + "\n" +
+                           UGrid.position( .5f , 8.5f ) + "\n" +
+                           UGrid.position( 6.5f , .5f ) + "\n" +
+                           UGrid.position( 6.5f , 8.5f ) );
       int xx;
+      int seg_id = 0;
       for( int row = 0 ; row < nrows ; row++ )
          for( int col = 0 ; col < ncols ; col++ ) {
             float[] Time = new float[ ntimes ];
@@ -1046,7 +1209,8 @@ public class RowColGrid implements IDataGrid {
                xx = 1;
             Vector3D V = UGrid.position( row + 1 , col + 1 );
             if( row == 3 && col == 4 )
-               Gr.show( "pos assigned to center=" , new Position3D( V ) );
+               Gr.show( "pos(3,4) =" , new Position3D( V ) );
+
             D.setAttribute( new DetPosAttribute( Attribute.DETECTOR_POS ,
                      new DetectorPosition( V ) ) );
             if( row < 2 && col < 2 ) {
@@ -1057,13 +1221,30 @@ public class RowColGrid implements IDataGrid {
                // System.out.println("UGrid value="+UGrid.position(row+1,col+1)
                // );
             }
+            
+            DetectorPixelInfo pixel = new
+               DetectorPixelInfo( seg_id, (short)(row+1), (short)(col+1), Gr );
+            IPixelInfo[] pix_array = { pixel };
+            PixelInfoList pil = new PixelInfoList( pix_array );
+            PixelInfoListAttribute pil_attr = 
+               new PixelInfoListAttribute( Attribute.PIXEL_INFO_LIST, pil );
+            D.setAttribute( pil_attr );
+            seg_id++;
+
             DS.addData_entry( D );
          }
-      ScriptUtil.display( DS.clone() );
+      System.out.println("BEFORE setData_entries--------------");
+      Gr.setData_entries( DS );
+      System.out.println("AFTER setData_entries --------------");
+
+//      ScriptUtil.display( DS.clone() );
+      ScriptUtil.display( DS );
+
       System.out.println( "Grid width=" + Gr.width() );
       System.out.println( "Grid height= " + Gr.height() );
       System.out.println( "Grid Center =" + Gr.position() );
-      UniformGrid grid = RowColGrid.getUniformDataGrid( Gr , .0001f );
+
+      grid = RowColGrid.getUniformDataGrid( Gr , .0001f );
       if( grid == null ) {
          System.out.println( "Could not make a uniform Grid" );
       }
@@ -1073,6 +1254,17 @@ public class RowColGrid implements IDataGrid {
          ScriptUtil.display( DS );
       }
 
+      for ( int row = 1; row <= nrows; row++ )
+        for ( int col = 1; col <= ncols; col++ )
+        {
+          System.out.println("Row, col = " + row + ", " + col );
+
+          System.out.println("RowColGrid.SolidAngle  = " + Gr.SolidAngle(row,col) );
+          System.out.println("UniformGrid.SolidAngle = " + grid.SolidAngle(row,col) );
+
+          System.out.println("RowColGrid.Delta2Theta  = " + Gr.Delta2Theta(row,col) );
+          System.out.println("UniformGrid.Delta2Theta = " + grid.Delta2Theta(row,col) );
+        }
    }
 
 }
