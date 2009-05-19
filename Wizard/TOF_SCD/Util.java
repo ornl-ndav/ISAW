@@ -898,7 +898,7 @@ public class Util {
     *  @param prefix  The prefix on files that should be deleted.
     *  @param suffix  The suffix on files that should be deleted.
     */
-   private static void ClearFiles( String prefix, 
+   public static void ClearFiles( String prefix, 
                                    String suffix )
    {
       File F = new File( ISAW_SCRATCH_DIRECTORY );
@@ -935,7 +935,7 @@ public class Util {
     *  @return true if the scratch directory now exists, or false if it
     *  does not exist and could not be created.
     */
-   private static boolean CheckTmpDirectory()
+   public static boolean CheckTmpDirectory()
    {
      String outFilename = ISAW_SCRATCH_DIRECTORY; 
 
