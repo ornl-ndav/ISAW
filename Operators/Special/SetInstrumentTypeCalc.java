@@ -128,7 +128,8 @@ public class SetInstrumentTypeCalc
     int type_code = InstrumentType.getTypeCodeFromName( type );
     ds.removeAllOperators();
     DataSetFactory.addOperators( ds );
-    DataSetFactory.addOperators( ds, type_code );
+    if ( type_code > 0 )                            // supported instrument
+      DataSetFactory.addOperators( ds, type_code );
 
     ds.setAttribute( new IntAttribute( Attribute.INST_TYPE, type_code ) );
     String message = "Operators and INST_TYPE attribute set to " + type;

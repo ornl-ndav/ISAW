@@ -316,7 +316,7 @@ public class InstrumentType implements Serializable
   */
   public static int getTypeCodeFromName( String type )
   {
-    int type_code = -1;
+    int type_code = UNKNOWN;
 
     if ( type.equalsIgnoreCase( TOF_NPD )  ||
          type.equalsIgnoreCase( TOF_NGLAD ) )
