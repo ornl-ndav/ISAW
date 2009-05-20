@@ -1595,7 +1595,8 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 				}
 
 				fout.write(
-					(" *\r\n *\r\n * Modified:\r\n *\r\n * $" + "Log:" + "$\r\n" + " *" + "\r\n */\r\n\r\n")
+					(" *\r\n *\r\n * Last Modified:\r\n *\r\n * $ Author: $\r\n" + " * $Date$" + "$\r\n" + 
+					         " * $Revision$" + "\r\n */\r\n\r\n")
 						.getBytes());
 
 				//Write out package information
@@ -1621,7 +1622,7 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 				
 				// Documentation for the constructor
 				fout.write("   /**\r\n".getBytes());
-				fout.write("	* Constructor for the operator.  Calls the super class constructor.\r\n".getBytes());
+				fout.write("    * Constructor for the operator.  Calls the super class constructor.\r\n".getBytes());
 				fout.write("    */\r\n".getBytes());
 				
 				fout.write(
@@ -1636,7 +1637,7 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 				fout.write("   /**\r\n".getBytes());
 				fout.write("    * Gives the user the command for the operator.\r\n".getBytes());
 				fout.write("    *\r\n".getBytes());
-				fout.write("	 * @return  The command for the operator, a String.\r\n".getBytes());
+				fout.write("    * @return  The command for the operator, a String.\r\n".getBytes());
 				fout.write("    */\r\n".getBytes());
 				
 				//Write out the getCommand     
@@ -1676,7 +1677,7 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 				fout.write("    * Writes a string for the documentation of the operator provided by\r\n".getBytes());
 				fout.write("    * the user.\r\n".getBytes());
 				fout.write("    *\r\n".getBytes());
-				fout.write("	 * @return  The documentation for the operator.\r\n".getBytes());
+				fout.write("    * @return  The documentation for the operator.\r\n".getBytes());
 				fout.write("    */\r\n".getBytes());
 				
 				// Write out the documentation
