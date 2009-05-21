@@ -255,6 +255,7 @@ public class DoubleDifferentialCrossection extends    GenericTOF_DG_Spectrometer
     addParameter( parameter );
   }
 
+
   /* ---------------------- getDocumentation --------------------------- */
   /**
    *  Returns the documentation for this method as a String.  The format
@@ -420,11 +421,24 @@ public class DoubleDifferentialCrossection extends    GenericTOF_DG_Spectrometer
     {
       data = ds.getData_entry( index );
                                                // get the needed attributes
+      solid_angle = AttrUtil.getSolidAngle(data);
+      if ( Float.isNaN(solid_angle) )
+      {
+        PixelInfoList pil = AttrUtil.getPixelInfoList(data);
+        
+        if ( pil != null )
+        {
+          solid_angle = pil.SolidAngle();
+          data.setAttribute( 
+                     new FloatAttribute(Attribute.SOLID_ANGLE,solid_angle) );
+        }
+      }
+
+      if ( Float.isNaN(solid_angle) )
+        throw new IllegalArgumentException(
+          "ERROR: no SolidAngle or PixelInfoList attribute, needed by DSDODE");
+
       attr_list   = data.getAttributeList();
-
-      Float_val   = (Float)attr_list.getAttributeValue(Attribute.SOLID_ANGLE);
-      solid_angle = Float_val.floatValue();
-
       Float_val   = (Float)attr_list.getAttributeValue(Attribute.ENERGY_IN);
       energy_in   = Float_val.floatValue();
 
