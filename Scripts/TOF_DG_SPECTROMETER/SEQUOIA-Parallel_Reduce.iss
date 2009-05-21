@@ -27,7 +27,7 @@ $ first_ds_index    Integer(3)                              Smallest Sample Data
 $ last_ds_index     Integer(100)                            Largest DataSet Index ( num det banks )
 $ banks_per_process Integer(5)                              Number of detector banks for each process
 $ mem_per_process   Integer(4000)                           Megabytes per process
-$ queue             String("mikkcomp")                      SLURM queue name
+$ queue             String("sequoiaq")                      SLURM queue name
 $ max_simultaneous_processes  Integer(20)                   Max number of cores to use
 $ max_time                    Integer(600)                  Max run time in seconds 
 $ out_dir           String("/home/dennis/ISAW/tmp")         Location for temporary files.
