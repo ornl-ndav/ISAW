@@ -44,6 +44,7 @@ import DataSetTools.retriever.*;
 import DataSetTools.dataset.*;
 import DataSetTools.viewer.*;
 import DataSetTools.math.*;
+import DataSetTools.peak.*;
 
 import Operators.Special.*;
 
@@ -304,6 +305,70 @@ public class TOF_NDGS_Calc
 
 
   /**
+   *  Calculate the area under the specified peak in the specified
+   *  monitor.  The peak to integrate is determined by finding the
+   *  largest histogram bin within the specified time-of-flight 
+   *  interval around the specified incident energy.  An estimate of
+   *  a linear background is subtracted from the peak area.
+   *
+   *  @param mon_ds             A monitor DataSet containing the specified
+   *                            beam monitor data.
+   *  @param mon_id             The id of the monitor to integrate.
+   *  @param Ein_estimate       Estimate of the incident energy(meV), used to 
+   *                            find the time-of-flight that will be at the 
+   *                            center of a window containing the incident
+   *                            neutron pulse in the monitor spectrum.
+   *  @param tof_half_interval  Half-width in microseconds of the 
+   *                            time-of-flight windows containing the
+   *                            incident neutron pulse in monitor spectra.
+   *                            The search for the peak is restricted to
+   *                            the time-of-flight corresponding to the
+   *                            estimated Ein, plus or minus the 
+   *                            tof_half_interval.
+   *  @param extent_factor      The extent factor to use for the peak.  The
+   *                            peak will be considered to have zero counts
+   *                            outside of the interval extent_factor*FWHM.
+   *                            The integration and background estimate is
+   *                            done on the interval of length 
+   *                            extent_factor*FWHM.
+   *
+   *  @return The integrated monitor counts over the interval of length
+   *          extent_factor*FWHM, centered on the peak maximum,
+   *          minus an estimated linear background.
+   */
+  public static float MonitorPeakArea(  DataSet  mon_ds,
+                                        int      mon_id,
+                                        float    Ein_estimate,
+                                        float    tof_half_interval,
+                                        float    extent_factor )
+  {
+    if ( mon_ds == null )
+      throw new IllegalArgumentException( "Monitor DataSet is null" );
+
+    if ( mon_ds.getNum_entries() < 1 )
+      throw new IllegalArgumentException( "no data in Monitor DataSet");
+
+    float initial_path = AttrUtil.getInitialPath( mon_ds );
+    Data  data = mon_ds.getData_entry_with_id( mon_id );
+    HistogramTable mon_data = RestrictMonitor( data,
+                                               initial_path,
+                                               Ein_estimate,
+                                               tof_half_interval );
+
+    HistogramDataPeak peak = new HistogramDataPeak( mon_data, extent_factor );
+    peak.setEvaluationMode( IPeak.PEAK_ONLY );
+
+    System.out.println("PEAK in monitor: " + mon_id  );
+    System.out.println("position  : " + peak.getPosition() );
+    System.out.println("amplitude : " + peak.getAmplitude() );
+    System.out.println("FWHM      : " + peak.getFWHM() );
+    System.out.println("area      : " + peak.Area() );
+    System.out.println("extent    : " + peak.getExtent_factor() );
+    return peak.Area();
+  }
+
+
+  /**
    *  Return a new monitor Data block obtained by restricting the specified  
    *  monitor Data block to a time-of-flight window centered on the 
    *  specified energy, with width twices the specified tof half interval.
@@ -378,19 +443,32 @@ public class TOF_NDGS_Calc
   public static void main( String args[] )
   {
     String filename = "/usr2/SEQUOIA/SEQ_195.nxs";
+    float Ein_estimate = 45;
+
+//    String filename = "/usr2/SEQUOIA/SEQ_223.nxs";
+//    float Ein_estimate = 92;
+
+
     NexusRetriever retriever = new NexusRetriever( filename );
     retriever.RetrieveSetUpInfo(null);                        // get cache info
 
     DataSet mon_ds = retriever.getDataSet(0);
     float Ein = EnergyFromMonitors( mon_ds,
-                                    50,
+                                    Ein_estimate,
                                     700 );
     System.out.println( "Calculated Ein is : " + Ein );
+
+    float tof_int = 700;
+    float ext_f = 8.5f;
+    float mon_1_peak_area = MonitorPeakArea( mon_ds, 1, Ein, tof_int, ext_f );
+    float mon_2_peak_area = MonitorPeakArea( mon_ds, 2, Ein, tof_int, ext_f );
+    System.out.println("monitor 1 area = " + mon_1_peak_area );
+    System.out.println("monitor 2 area = " + mon_2_peak_area );
 
     DataSet one_ds = retriever.getDataSet(10);                // ds 10 has data
 
 //  float Ein =  45.504f;
-    float a   =  92.0f;
+    float a   =  Ein_estimate;
     float b   =  81.3f;
     float c   =  0.00130f;
     float d   = -751f;
