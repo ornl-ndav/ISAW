@@ -57,19 +57,58 @@ public class TOF_NDGS_Calc
   public static final int MIN_DELAY_CHANNELS = 10;
 
   /**
+   *  Calculate an energy dependent t0 correction for the total
+   *  time-of-flight.  The correction should be subtracted from the
+   *  experimentally determined time of flight.  The correction is:
+   *
+   *  t0_shift = 
+   * (1+tanh((Ei-a)/b))/(2*c*Ei)+(1-tanh((Ei-a)/b))/(2*d*Ei)+f+g*tanh((Ei-a)/b).
+   *
+   *  This funtion models the delay time of neutron emission from the 
+   *  moderator. (Alexander Kolesnikov).  
+   *
+   *  @param  Ein               The incident energy
+   *  @param  a                 The "a" coefficient in the correction equation
+   *  @param  b                 The "b" coefficient in the correction equation
+   *  @param  c                 The "c" coefficient in the correction equation
+   *  @param  d                 The "d" coefficient in the correction equation
+   *  @param  f                 The "f" coefficient in the correction equation
+   *  @param  g                 The "g" coefficient in the correction equation
+   *
+   *  @return  The t0_shift that should be subtracted from the experimentally
+   *           measured time-of-flight.
+   */
+  public static float NDGS_t0_correction( float   Ein,
+                                          float   a,
+                                          float   b,
+                                          float   c,
+                                          float   d,
+                                          float   f,
+                                          float   g )
+  {
+    double tanh_E   = Math.tanh((Ein-a)/b);
+    double t0_shift = (1+tanh_E)/(2*c*Ein)+(1-tanh_E)/(2*d*Ein)+f+g*tanh_E;
+
+    return (float)t0_shift;
+  }
+
+
+  /**
    *  Switch the specified TOF_NDGS DataSet so the Data block's time-of-flight
    *  axes all specify the time-of-flight from the sample to the detector
    *  instead of from the moderator to the detector.  The time-of-flight 
    *  axes are assumed to be the same on all Data blocks in the DataSet.
    *  Three operations are performed.
    *
-   *  First, a corrected total time-of-flight is calculated, based on the
-   *  the experimentally measured time of flight as:
-   *   t_total = t_exp -
-   *  (1+tanh((Ei-a)/b))/(2*c*Ei)+(1-tanh((Ei-a)/b))/(2*d*Ei)+f+g*tanh((Ei-a)/b)
+   *  First, a correction for the total time-of-flight is calculated, based 
+   *  on the the experimentally measured time of flight as:
+   *  t0_shift = 
+   * (1+tanh((Ei-a)/b))/(2*c*Ei)+(1-tanh((Ei-a)/b))/(2*d*Ei)+f+g*tanh((Ei-a)/b).
    *
    *  This funtion models the delay time of neutron emission from the 
    *  moderator(Alexander Kolesnikov).  
+   *
+   *  The total time-of-flight is then corrected to t_total = t_exp - t0_shift.
    *
    *  Second, the time-of-flight from the moderator to the sample is calculated
    *  based on Ein and the initial flight path.  This "initial time-of-flight"
@@ -95,14 +134,63 @@ public class TOF_NDGS_Calc
    *                            least 10 and more typically should be several
    *                            hundred.
    */
+  public static void SetFinalTOF( DataSet ds,
+                                  float   Ein,
+                                  float   a,
+                                  float   b,
+                                  float   c,
+                                  float   d,
+                                  float   f,
+                                  float   g,
+                                  int     n_channels_delay )
+  {
+    if ( ds == null )
+      throw new IllegalArgumentException("DataSet is null");
+
+    if ( ds.getNum_entries() == 0 )
+      throw new IllegalArgumentException("DataSet is empty");
+
+    float t0_shift = NDGS_t0_correction( Ein, a, b, c, d, f, g );
+
+    SetFinalTOF( ds, Ein, (float)t0_shift, n_channels_delay );
+  }
+
+
+  /**
+   *  Switch the specified TOF_NDGS DataSet so the Data block's time-of-flight
+   *  axes all specify the time-of-flight from the sample to the detector
+   *  instead of from the moderator to the detector.  The time-of-flight 
+   *  axes are assumed to be the same on all Data blocks in the DataSet.
+   *  Three operations are performed.  A t0 shift value may specified.
+   *  The t0 shift value is subtracted from the total time-of-flight.
+   *
+   *  First, the total time-of-flight is corrected using the 
+   *  specified t0_shift value as:  t_total = t_exp - t0_shift.
+   *
+   *  Second, the time-of-flight from the moderator to the sample is calculated
+   *  based on Ein and the initial flight path.  This "initial time-of-flight"
+   *  is subtracted from the corrected total time-of-flight, to obtain the
+   *  sample to detector time-of-flight.
+   *
+   *  Third, the initial portion of the data, corresponding to zero or negative 
+   *  sample to detector times-of-flight is removed.  In fact, some additional
+   *  channels should be omitted, to keep the energies bounded.
+   *
+   *  @param  ds                The sample histogram DataSet to be adjusted
+   *                            to give sample to detector times-of-flight.
+   *  @param  Ein               The incident energy
+   *  @param  t0_shift          The value to subtract from the total time-of
+   *                            flight to get a corrected total 
+   *                            time-of-flight.
+   *  @param  n_channels_delay  The number of time channels to skip beyond
+   *                            the channel where the time-of-flight from the
+   *                            sample to detector is 0.  This must be at
+   *                            least 10 and more typically should be several
+   *                            hundred.
+   */
   public static void SetFinalTOF( DataSet ds, 
                                   float   Ein, 
-                                  float   a, 
-                                  float   b, 
-                                  float   c, 
-                                  float   d, 
-                                  float   f, 
-                                  float   g,
+                                  float   t0_shift, 
                                   int     n_channels_delay )
   {
     if ( ds == null )
@@ -126,11 +214,8 @@ public class TOF_NDGS_Calc
 
     float initial_tof = tof_calc.TOFofEnergy( initial_path, Ein );
 
-    double tanh_E = Math.tanh((Ein-a)/b);
-    double correction = (1+tanh_E)/(2*c*Ein)+(1-tanh_E)/(2*d*Ein)+f+g*tanh_E;
-    
     for ( int i = 0; i < xs.length; i++ )
-       xs[i] = (float)(xs[i] - correction - initial_tof);
+       xs[i] = (float)(xs[i] - t0_shift - initial_tof);
 
     if ( n_channels_delay < MIN_DELAY_CHANNELS )
       n_channels_delay = MIN_DELAY_CHANNELS;
