@@ -247,6 +247,30 @@ public class TOF_NDGS_Calc
       new_data.setAttributeList(attr_list);
       new_data.setAttribute( Ein_attr );
       new_data.setAttribute( intof_attr );
+                                               // check/set attributes that
+                                               // are needed later
+      Float solid_angle = AttrUtil.getSolidAngle(new_data);
+      Float delta2theta = AttrUtil.getDelta2Theta(new_data);
+      if ( Float.isNaN(solid_angle) || Float.isNaN(delta2theta) )
+      {
+        PixelInfoList pil = AttrUtil.getPixelInfoList(new_data);
+
+        if ( pil != null )
+        {
+          if ( Float.isNaN(solid_angle) )
+          {
+            solid_angle = pil.SolidAngle();
+            new_data.setAttribute(
+                     new FloatAttribute(Attribute.SOLID_ANGLE,solid_angle) );
+          }
+          if ( Float.isNaN(delta2theta) )
+          {
+            delta2theta = pil.Delta2Theta();
+            new_data.setAttribute(
+                    new FloatAttribute(Attribute.DELTA_2THETA,delta2theta) );
+          }
+        }
+      }
 
       ds.replaceData_entry( new_data, i );
     }
