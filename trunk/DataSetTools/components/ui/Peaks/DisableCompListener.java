@@ -185,7 +185,8 @@ public class DisableCompListener extends Object implements ActionListener
          return;// Nonsense
 
       for( int i = 0 ; i < Disable.length ; i++ )
-         Disable[ i ].setEnabled( ! disable );
+         if( Disable[i] != null)
+            Disable[ i ].setEnabled( ! disable );
 
    }
 
