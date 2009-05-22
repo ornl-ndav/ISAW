@@ -72,7 +72,7 @@ sample_ds_vec = ToVec( sample_ds_array )
 n_channels_delay = 200
 for i in [0:num_ds-1] 
   setInstrumentType( sample_ds_vec[i], "TOF_NDGS" )
-  SetFinalTOF( sample_ds_vec[i], Ein, t0_correction, n_channels_delay )
+  SetFinalTOF_2( sample_ds_vec[i], Ein, t0_correction, n_channels_delay )
 endfor
 
 #
