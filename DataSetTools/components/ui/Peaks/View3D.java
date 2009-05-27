@@ -273,6 +273,46 @@ public class View3D extends ThreeD_JPanel
    }
 
 
+   public void showOrientPeaks( float[][] orientationMatrix)
+   {
+      if( orientationMatrix == null || orientationMatrix.length !=3)
+      {
+         removeObjects("PredPeaks");
+         repaint();
+         return;
+      }
+      float[] q = new float[3];
+      q[0] = q[1] = q[2] = Math.max(  Math.abs( MinQ) , Math.abs( MaxQ) );
+      int M=subs.MaxHKLVal( orientationMatrix , q );
+      Vector<Vector3D> obj = new Vector<Vector3D>();
+      for( int h=-M; h<=M; h++)
+         for( int k=-M; k<=M; k++)
+           for( int l=-M; l<=M; l++)
+           {
+              float[] Q = new float[3];
+              boolean keep = true;
+              for(int s=0; s<3;s++)
+              {
+                 Q[s]= orientationMatrix[s][0]*h+orientationMatrix[s][1]*k+
+                 orientationMatrix[s][2]*l;
+                 if( Q[s] > MaxQ)
+                    keep =false;
+                 else if( Q[s]< MinQ)
+                    keep = false;
+              }
+             if( keep)
+                obj.addElement( new Vector3D(Q)) ;
+            
+           }
+      Vector3D[] Vs = obj.toArray( new Vector3D[0]);
+      Polymarker[] Pm= new Polymarker[1];
+      Pm[0]= new Polymarker(Vs, Color.blue);
+      Pm[0].setType( Polymarker.BOX);
+      Pm[0].setSize(3);
+      setObjects("PredPeaks", Pm);
+      repaint();
+      
+   }
    /**
     * Causes the 3D view of Q space to show the orientation matrix
     * 
@@ -1523,7 +1563,7 @@ public class View3D extends ThreeD_JPanel
       String filename = null;
       String ImageFilePrefix = null;
       String ImageFileDirectory = null;
-      if( args == null || args.length < 1)
+ /*     if( args == null || args.length < 1)
       {
          JFileChooser jfc = new JFileChooser( System.getProperty("Data_Directory"));
          if( jfc.showOpenDialog( null )==JFileChooser.APPROVE_OPTION)
@@ -1556,10 +1596,11 @@ public class View3D extends ThreeD_JPanel
             ImageFileDirectory = args[2];
          
       }
-         
+ */        
       System.out.println( "Enter Peaks filename" );
       // JFileChooser jf = new JFileChooser();
-      //String filename = "C:\\ISAW\\SampleRuns\\SNS\\Snap\\QuartzRunsFixed\\quartz.peaks";
+      filename = "C:\\ISAW\\SampleRuns\\SNS\\Snap\\QuartzRunsFixed\\quartz.peaks";
+      ImageFilePrefix = "SNAP_";
      // String filename = "C:\\ISAW1\\SampleRuns\\INITIAL_WITH_CAL\\quartz.peaks";
       // String filename = "C:\\ISAW1\\anvred\\ox80nxs.integrate";
       //System.out.println( filename );
@@ -1614,9 +1655,9 @@ public class View3D extends ThreeD_JPanel
       JFrame jfr = new JFrame( "Test" );
       jfr.getContentPane().setLayout( new GridLayout( 1 , 1 ) );
       SplitPaneWithState splt = new SplitPaneWithState(
-               JSplitPane.HORIZONTAL_SPLIT , V , ControlPanel , .8f );
+               JSplitPane.HORIZONTAL_SPLIT , V , ControlPanel , .7f );
       jfr.getContentPane().add( splt );
-      jfr.setSize( 600 , 700 );
+      jfr.setSize( 3000 , 2500 );
       jfr.setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
       jfr.setVisible( true );
 

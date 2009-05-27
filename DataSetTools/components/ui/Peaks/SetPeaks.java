@@ -60,6 +60,12 @@ public class SetPeaks extends JButton
     * Maximum number of peaks that can be set
     */
    public static int     MAX_SEL_PEAKS   = 12;
+   
+   /**
+    * Action command when notifying action listeners that new peaks have 
+    * been set.
+    */
+   public static String SET_PEAK_INFO_CHANGED ="Set Peaks Changed";
 
    /**
     * The Text on the JButton. 
@@ -215,7 +221,7 @@ public class SetPeaks extends JButton
       SelectedPeaks[ PeakNum ][ 1 ] = qy;
       SelectedPeaks[ PeakNum ][ 2 ] = qz;
       seqNums[ PeakNum ] = - 1;
-
+      fireSetPeakListeners( SET_PEAK_INFO_CHANGED);
    }
 
 
@@ -255,6 +261,8 @@ public class SetPeaks extends JButton
       hklVals[ PeakNum ][ 1 ] = k;
       hklVals[ PeakNum ][ 2 ] = l;
 
+      fireSetPeakListeners( SET_PEAK_INFO_CHANGED);
+
    }
 
 
@@ -273,10 +281,63 @@ public class SetPeaks extends JButton
    }
 
 
+   Vector<ActionListener> SetPeakListeners = new Vector<ActionListener>();
+   public void addSetPeakListeners( ActionListener  Listener)
+   {
+    if( Listener == null)
+       return;
+    if( SetPeakListeners.contains( Listener))
+       return;
+    SetPeakListeners.add( Listener);
+    
+   }
+   
+   public void removeSetPeakListener( ActionListener Listener)
+   {
+      if( Listener == null)
+         return;
+      if( SetPeakListeners.contains(  Listener ))
+         SetPeakListeners.remove(  Listener );
+   }
+   
+   public void removeAllSetPeakListeners()
+   {
+      SetPeakListeners.clear();
+   }
+   
+   private void fireSetPeakListeners( String message)
+   {
+      for( int i=0; i< SetPeakListeners.size(); i++)
+         SetPeakListeners.elementAt( i ).actionPerformed(   
+                  new ActionEvent( this, ActionEvent.ACTION_PERFORMED, message));
+   }
+   
+   String               OmittedMenuItems;
+   public void ManageShownMenus( String MenuItem, boolean show)
+   {
+      if( MenuItem == null)
+         return;
+      
+      if( show)
+      {
+         int i= OmittedMenuItems.indexOf( ";"+MenuItem+";" );
+         if( i < 0)
+            return;
+         OmittedMenuItems = OmittedMenuItems.substring( 0,i+1 )+
+                OmittedMenuItems.substring( i+MenuItem.length()+2 );
+         return;
+      }
+      int i= OmittedMenuItems.indexOf( ";"+MenuItem+";" );
+      if(i>=0)
+         return;
+      
+      OmittedMenuItems +=MenuItem+";";
+      
+   }
    /**
-    * Clears out all set peaks
+    * Clears out all set peaks and hkl values
     */
-   private void Clear()
+   public void Clear()
    {
 
       SelectedPeaks = new float[ MAX_SEL_PEAKS ][ 3 ];
@@ -306,6 +367,7 @@ public class SetPeaks extends JButton
 
       SAV_MaxPksSet = 0;
       SAV_MaxhklSet = 0;
+      fireSetPeakListeners( SET_PEAK_INFO_CHANGED);
    }
 
 
@@ -489,7 +551,7 @@ public class SetPeaks extends JButton
       }
 
 
-      public void MakePopUpMenu( JButton but )
+      public void MakePopUpMenu( JButton BUT )
       {
 
          if( disable )
@@ -503,7 +565,7 @@ public class SetPeaks extends JButton
 
          update( pop , CLEAR_SET_PEAKS , "Clears all settings" );
 
-         pop.show( but , 0 , 0 );
+         pop.show( BUT , 0 , 0 );
 
       }
 
@@ -543,7 +605,7 @@ public class SetPeaks extends JButton
        *                      allow for changing this value
        * @param men           The JButton on which to hang the OptionPane on.
        */
-      public void MakeMenu2( boolean specifyPeak , int PeakNum , JComponent men )
+      public void MakeMenu2( boolean SpecifyPeak , int PeakNum , JComponent men )
       {
 
          int seqNum = - 1;
@@ -556,7 +618,7 @@ public class SetPeaks extends JButton
 
          int n = 1;
 
-         if( specifyPeak )
+         if( SpecifyPeak )
             n++ ;
          if( PeakNum > 3 )
             n++ ;
@@ -569,7 +631,7 @@ public class SetPeaks extends JButton
          JCheckBox inView = null;
          if( seqNum >= 1 )
 
-            inView = new JCheckBox( "Use Q View Selection" , specifyPeak );
+            inView = new JCheckBox( "Use Q View Selection" , SpecifyPeak );
 
 
          //------------------ spinner
@@ -596,7 +658,7 @@ public class SetPeaks extends JButton
 
          //----------------------- seq num text
          JTextField text = null;
-         if( specifyPeak )
+         if( SpecifyPeak )
          {
             JPanel pp = new JPanel();
             pp.setLayout( new GridLayout( 1 , 2 ) );
@@ -618,7 +680,7 @@ public class SetPeaks extends JButton
          String lab = "Enter Q vals";
          String InitVal = "1.1 , 2.3, -4";
 
-         if( ! specifyPeak )
+         if( ! SpecifyPeak )
          {
             lab = "Enter h,k,l value";
 
@@ -666,6 +728,7 @@ public class SetPeaks extends JButton
          int SNum = - 1;
          try
          {
+            if( text != null)
             SNum = Integer.parseInt( text.getText().trim() );
 
          }
@@ -676,7 +739,7 @@ public class SetPeaks extends JButton
                   && ( inView == null || ! inView.isSelected() ) )
          {
 
-            if( specifyPeak )
+            if( SpecifyPeak )
                seqNums[ PeakNum ] = SNum;
 
             IPeak pk = Peaks.elementAt( SNum - 1 );
@@ -685,7 +748,7 @@ public class SetPeaks extends JButton
          }
          else if( seqNum > 0 && inView != null && inView.isSelected() )
          {
-            if( specifyPeak )
+            if( SpecifyPeak )
                seqNums[ PeakNum ] = seqNum;
 
             IPeak pk = Peaks.elementAt( seqNum - 1 );
@@ -695,7 +758,7 @@ public class SetPeaks extends JButton
          else if( S != null )
          {
 
-            if( specifyPeak )
+            if( SpecifyPeak )
                seqNums[ PeakNum ] = - 1;
 
             String[] SS = S.split( "," );
@@ -716,7 +779,7 @@ public class SetPeaks extends JButton
                   }
          }
 
-         if( specifyPeak )
+         if( SpecifyPeak )
 
             SelectedPeaks[ PeakNum ] = q;
 
@@ -724,14 +787,15 @@ public class SetPeaks extends JButton
 
             hklVals[ PeakNum ] = q;
 
-         if( specifyPeak && PeakNum == MaxPksSet )
+         if( SpecifyPeak && PeakNum == MaxPksSet )
 
             MaxPksSet = FindLastSet( PeakNum , MaxPksSet , SelectedPeaks );
 
-         else if( ! specifyPeak && PeakNum == MaxhklSet )
+         else if( ! SpecifyPeak && PeakNum == MaxhklSet )
 
             MaxhklSet = FindLastSet( PeakNum , MaxhklSet , hklVals );
-
+         
+         fireSetPeakListeners( SET_PEAK_INFO_CHANGED );
 
       }
 

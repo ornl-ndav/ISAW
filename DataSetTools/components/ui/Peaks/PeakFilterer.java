@@ -220,6 +220,16 @@ public class PeakFilterer extends JButton implements ActionListener
       return omittedSeqNums;
    }
 
+   /**
+    * Sets the omitted sequence numbers for the peaks.
+    * There will be no notification. See fireFilterListeners to notify
+    * 
+    * @param omittedPeaks  the list of omitted sequence numbers
+    */
+   public void setOmittedSequenceNumbers( int[] omittedPeaks)
+   {
+      omittedSeqNums = omittedPeaks;
+   }
 
    /**
     *  Allows for finding the range of h,k, and l values when the
@@ -252,6 +262,20 @@ public class PeakFilterer extends JButton implements ActionListener
 
       if( val > maxs[ index ] )
          maxs[ index ] = val;
+      
+      //Get max and min a little over/under an actual value
+      float F = Math.min( .1f , ( maxs[index]-mins[index])/100 );
+      if( F ==0)
+         return;
+      
+      if( mins[index]== val)
+         mins[index]= val - F;
+      
+      if( maxs[index]== val)
+         maxs[index]= val + F;
+      
+      
+      
    }
 
 
@@ -317,15 +341,15 @@ public class PeakFilterer extends JButton implements ActionListener
                {
                   int val = - 1;
 
-                  if( FieldName.indexOf( 1 ) == 's' )
+                  if( FieldName.charAt( 1 ) == 's' )
 
                      val = peak1.seqnum();
 
-                  else if( FieldName.indexOf( 1 ) == 'r' )
+                  else if( FieldName.charAt( 1 ) == 'r' )
 
                      val = peak1.nrun();
 
-                  else if( FieldName.indexOf( 1 ) == 'd' )
+                  else if( FieldName.charAt( 1 ) == 'd' )
 
                      val = peak1.detnum();
 
@@ -384,7 +408,7 @@ public class PeakFilterer extends JButton implements ActionListener
    }
 
 
-   private void fireFilterListeners()
+   public void fireFilterListeners()
    {
 
       for( int i = 0 ; i < FilterListeners.size() ; i++ )
@@ -398,6 +422,7 @@ public class PeakFilterer extends JButton implements ActionListener
 
    }
 
+   
 
    /* 
     * Only responds to PEAKS_ARE_INDEXED action events
@@ -453,7 +478,103 @@ public class PeakFilterer extends JButton implements ActionListener
 
    }
 
+   /**
+    * Method for external programs to create a complex or simple rule
+    * 
+    * @param FieldName  The name of the field
+    * 
+    * @param min        The new minimum value for field
+    * 
+    * @param max        The new max value for field
+    * 
+    * @param inside     if true, omit those inside, otherwise omit those outside
+    * 
+    * @param list       The list of numbers that apply to several fields
+    * 
+    * @param newAndSeq  if true, start a new and sequence, or the previous
+    *                   and sequence to the other and sequences
+    */
+   public void addRule( String FieldName, 
+                        float min, 
+                        float max, 
+                        boolean inside, 
+                        int[] List, 
+                        boolean newAndSeq) throws IllegalArgumentException
+   {
+      int k = java.util.Arrays.binarySearch( Fields ,FieldName );
+      if( k < 0 )
+         throw new IllegalArgumentException( FieldName +
+                                   " is not a field in list");
+      OneFilterElement elt = new OneFilterElement( k,min,max, List, inside);
+      
+      if( newAndSeq )
+        if( CurrentAndList != null && CurrentAndList.size() > 0)
+        {
+           OmitRule.add(  new Vector< OneFilterElement >(CurrentAndList) );
+           CurrentAndList = new Vector<OneFilterElement>();
+        }
+      CurrentAndList.add( elt );
+           
+   }
+   
+   
 
+
+
+   /**
+    * Calculate and/or clear out the rule. calc= true will notify listeners 
+    * 
+    * @param calc     if true, will calculate new omits
+    * @param clear    if true, will clear out rule only.
+    *
+    */
+   public void CalcClear( boolean calc, boolean clear)
+   {
+      if( calc )
+      {
+         if( CurrentAndList != null && CurrentAndList.size() > 0 )
+           {
+              OmitRule.add(  new Vector< OneFilterElement >(CurrentAndList) );
+              CurrentAndList = new Vector< OneFilterElement >();
+           }
+
+         omittedSeqNums = CalcOmits( OmitRule );
+         fireFilterListeners();
+         OmitRule.clear();
+         CurrentAndList.clear();
+      }
+      
+      if( clear){
+         
+         OmitRule.clear();
+         CurrentAndList.clear();
+         
+      }
+         
+   }
+
+   String               OmittedMenuItems;
+   public void ManageShownMenus( String MenuItem, boolean show)
+   {
+      if( MenuItem == null)
+         return;
+      
+      if( show)
+      {
+         int i= OmittedMenuItems.indexOf( ";"+MenuItem+";" );
+         if( i < 0)
+            return;
+         OmittedMenuItems = OmittedMenuItems.substring( 0,i+1 )+
+                OmittedMenuItems.substring( i+MenuItem.length()+2 );
+         return;
+      }
+      int i= OmittedMenuItems.indexOf( ";"+MenuItem+";" );
+      if(i>=0)
+         return;
+      
+      OmittedMenuItems +=MenuItem+";";
+      
+   }
    /**
     * Implements menus, menu responses, etc. needed to get the user to select
     * the peaks that are to be omitted.
@@ -466,7 +587,7 @@ public class PeakFilterer extends JButton implements ActionListener
 
    {
 
-
+      public String INTERACTIVE = "Interactive";
 
       public String START_AND   = "New(OR'd)";
 
@@ -479,6 +600,8 @@ public class PeakFilterer extends JButton implements ActionListener
       JButton       but;                                // Needed for an anchor for pop up menus
 
       Popup         Pop         = null;
+      
+      boolean     interactive  = false;
 
 
       /* (non-Javadoc)
@@ -496,14 +619,21 @@ public class PeakFilterer extends JButton implements ActionListener
          }
 
          String evtString = e.getActionCommand();
-
+         
+         if( evtString == INTERACTIVE)
+         {
+            interactive = true;
+            MakeFieldMenu( "Interactive", but);
+            return;
+         }
+         interactive = false;
          if( evtString == START_AND )
          {
             if( CurrentAndList.size() > 0 )
                OmitRule.addElement( CurrentAndList );
 
             CurrentAndList = new Vector< OneFilterElement >();
-
+            interactive = false;
             MakeFieldMenu( "START" , but );
 
             return;
@@ -512,6 +642,7 @@ public class PeakFilterer extends JButton implements ActionListener
 
          if( evtString == AND_PREV )
          {
+            interactive = false;
             MakeFieldMenu( "AND" , but );
             return;
          }
@@ -558,7 +689,7 @@ public class PeakFilterer extends JButton implements ActionListener
          {
 
             IntervalDialog filtElt = new IntervalDialog( Fields[ k ] ,
-                     Mins[ k ] , Maxs[ k ] );
+                     Mins[ k ] , Maxs[ k ], !interactive, k );
 
             if( filtElt.MinVal() == Mins[ k ] && filtElt.MaxVal() == Maxs[ k ] )
 
@@ -701,7 +832,12 @@ public class PeakFilterer extends JButton implements ActionListener
 
          JPopupMenu popUp = new JPopupMenu( "Peak Filter" );
 
-         JMenuItem item = new JMenuItem( START_AND );
+         JMenuItem item = new JMenuItem( INTERACTIVE );
+         item.setToolTipText( "Sets only one field immediately" );
+         
+         popUp.add( item).addActionListener( this );
+         
+         item = new JMenuItem( START_AND );
 
          item
                   .setToolTipText( "<html><body>Starts an AND sequence of conditions <BR>"
@@ -776,6 +912,10 @@ public class PeakFilterer extends JButton implements ActionListener
       JCheckBox        inside;
 
       StretchTopBottom sliders;
+      
+      boolean          IsModal;
+      
+      int              fieldIndex;
 
 
       /**
@@ -787,7 +927,7 @@ public class PeakFilterer extends JButton implements ActionListener
       public IntervalDialog( String message, float minVal, float maxVal )
       {
 
-         this( message , minVal , maxVal , true );
+         this( message , minVal , maxVal , true ,-1);
       }
 
 
@@ -797,16 +937,20 @@ public class PeakFilterer extends JButton implements ActionListener
        * @param minVal  Min value for the field
        * @param maxVal  max value for the field
        * @param isModal Indicates whether the dialog box is modal or not.
+       * @param FieldIndex  the index of field if not modal.
        */
       public IntervalDialog( String message, float minVal, float maxVal,
-               boolean isModal )
+               boolean isModal, int FieldIndex )
       {
 
          super( getJFrame( message ) , message , true );
+         
+         IsModal = isModal;
+         fieldIndex = FieldIndex;
          MinVal = minimum = minVal;
          MaxVal = maximum = maxVal;
          Message = message;
-         Inside = true;
+         Inside = false;
 
          //-----------------------------
          JPanel contentPane = new JPanel();
@@ -819,6 +963,8 @@ public class PeakFilterer extends JButton implements ActionListener
          inside = new JCheckBox( "Inside interval" , true );
          inside.setToolTipText( "False-outside of interval, otherwise inside" );
          buttonPanel.add( inside );
+         if( !IsModal)
+            inside.addActionListener(  this  );
 
          buttonPanel.add( Box.createHorizontalGlue() );
 
@@ -870,8 +1016,8 @@ public class PeakFilterer extends JButton implements ActionListener
       public float MinVal()
       {
 
-         if( sliders.checkValues() )
-            updateVals();
+         sliders.checkValues();
+         updateVals();
          return minimum;
       }
 
@@ -883,8 +1029,8 @@ public class PeakFilterer extends JButton implements ActionListener
       public float MaxVal()
       {
 
-         if( sliders.checkValues() )
-            updateVals();
+         sliders.checkValues();
+         updateVals();
          return maximum;
       }
 
@@ -897,8 +1043,8 @@ public class PeakFilterer extends JButton implements ActionListener
       public boolean inside()
       {
 
-         if( sliders.checkValues() )
-            updateVals();
+         sliders.checkValues();
+         updateVals();
 
          return Inside;
       }
@@ -952,8 +1098,20 @@ public class PeakFilterer extends JButton implements ActionListener
                str.setControlValue( val , StretchTopBottom.BOTTOM_VALUE );
                repaint();
             }
+            
          }
+         if( !IsModal && (e.getSource()== inside || e.getSource()== sliders))
+         {
+            OneFilterElement elt = new OneFilterElement( fieldIndex, MinVal(), 
+                     MaxVal(), null, inside());
+            Vector<OneFilterElement> V1 = new Vector<OneFilterElement>();
+            V1.add(  elt );
+            Vector<Vector<OneFilterElement>> V2 = new Vector<Vector<OneFilterElement>>(  ); 
+            V2.add(  V1 );
+            omittedSeqNums =CalcOmits( V2);
+            fireFilterListeners();
 
+         }
       }
 
    }
@@ -1059,7 +1217,7 @@ public class PeakFilterer extends JButton implements ActionListener
             return Float.NaN;
       
       float Q = (float) Math.sqrt( Qs[ 0 ] * Qs[ 0 ] + Qs[ 1 ] * Qs[ 1 ]
-               + Qs[ 2 ] * Qs[ 3 ] );
+               + Qs[ 2 ] * Qs[ 2] );
       
       return 1f / Q;
 

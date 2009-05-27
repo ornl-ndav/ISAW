@@ -27,9 +27,9 @@
  *
  *  Last Modified:
  * 
- *  $Author$
- *  $Date$            
- *  $Rev$
+ *  $Author$:
+ *  $Date$:            
+ *  $Rev$:
  */
 
 package DataSetTools.components.ui.Peaks;
@@ -97,6 +97,8 @@ public class OrientMatrixControl extends JButton
    public static String VIEW_PLANEac            = "View Plane Family a*c*";
 
    public static String VIEW_PLANEbc            = "View Plane Family b*c*";
+   
+   public static String  VIEW_PRED_PEAKS        = "View Predicted Peaks";
 
    //---------------------------------------------------------
    public static String CALC_ORIENT             = "Calculate Orientation matrix(s)";
@@ -158,7 +160,13 @@ public class OrientMatrixControl extends JButton
 
    JPopupMenu           Menu;
 
-
+   String               InputFileName = null;//
+   
+   Vector<ActionListener>  OrientControlListeners;
+   
+   //-------------- Notification Messages --------------------
+   
+   public static String  INPUT_FILE_CHANGE  ="Input File Has Changed";
    /**
     * Constructor
     * 
@@ -177,6 +185,7 @@ public class OrientMatrixControl extends JButton
       Peaks = peaks;
       textInfo = TextInf;
 
+      
       omittedPeakIndex = null;
       View = view;
       V3DControl = v3DControl;
@@ -192,12 +201,53 @@ public class OrientMatrixControl extends JButton
       LatControl = null;
 
       showLatinOrientMenu = false;
-
+      OmittedMenuItems =";";
+      
       OrMatrices = new Vector< float[][] >();
+      
+      OrientControlListeners = new Vector<ActionListener>();
 
    }
 
-
+   private void fireOrientationMatrixListeners( String message)
+   {
+      for( int i=0; i< OrientControlListeners.size(); i++)
+         ((ActionListener)OrientControlListeners.elementAt( i )).actionPerformed(  
+                  new ActionEvent(this, ActionEvent.ACTION_PERFORMED, message));
+   }
+   public void addOrientationMatrixListener( ActionListener evt)
+   {
+      if( evt == null)
+         return;
+      if( OrientControlListeners.contains( evt ))
+         return;
+      OrientControlListeners.add( evt);
+   }
+   public void removeOrientationMatrixListener( ActionListener evt)
+   {
+      if( evt == null)
+         return;
+      if( !OrientControlListeners.contains( evt ))
+         return;
+      OrientControlListeners.remove( evt);
+      
+   }
+   public void removeAllOrientationMatrixListener( )
+   {
+      
+      OrientControlListeners.clear();
+   }
+   
+   /**
+    * Returns the name of the last file used to load the orientation matrix
+    * or null if the orientation matrix was found some other way
+    * 
+    * @return  The filename with the current orientation matrix
+    */
+   public String getInputFileName()
+   {
+      return InputFileName;
+   }
    /**
     * Sets the orientation matrix and updates the Info viewers only 
     * of this information. To reflect this change in the Q viewer
@@ -299,6 +349,10 @@ public class OrientMatrixControl extends JButton
       l_offsetInfHandler.setNewData( addVec( addVec( null , xvals ) , lyvals ) );
 
       Listener.do3DView();
+      
+
+      fireOrientationMatrixListeners( INPUT_FILE_CHANGE);
+      
    }
 
 
@@ -342,6 +396,28 @@ public class OrientMatrixControl extends JButton
    }
 
 
+   String               OmittedMenuItems;
+   public void ManageShownMenus( String MenuItem, boolean show)
+   {
+      if( MenuItem == null)
+         return;
+      
+      if( show)
+      {
+         int i= OmittedMenuItems.indexOf( ";"+MenuItem+";" );
+         if( i < 0)
+            return;
+         OmittedMenuItems = OmittedMenuItems.substring( 0,i+1 )+
+                OmittedMenuItems.substring( i+MenuItem.length()+2 );
+         return;
+      }
+      int i= OmittedMenuItems.indexOf( ";"+MenuItem+";" );
+      if(i>=0)
+         return;
+      
+      OmittedMenuItems +=MenuItem+";";
+      
+   }
    /**
     * Sets the crystal lattice handler and incorporates it into the system
     * 
@@ -414,9 +490,9 @@ public class OrientMatrixControl extends JButton
 
       java.util.Arrays.fill( omittedPeakIndex , false );
 
-      if( seqNums != null )
+      if( seqNums != null && omittedPeakIndex != null )
 
-         for( int i = 0 ; i < seqNums.length ; i++ )
+         for( int i = 0 ; i < seqNums.length && seqNums[i]-1<omittedPeakIndex.length; i++ )
             omittedPeakIndex[ seqNums[ i ] - 1 ] = true;
 
       else
@@ -480,7 +556,8 @@ public class OrientMatrixControl extends JButton
       if( res instanceof float[][] )
 
          setOrientationMatrix( (float[][]) res );
-
+      InputFileName = filename;
+      fireOrientationMatrixListeners( INPUT_FILE_CHANGE);
    }
 
 
@@ -517,7 +594,9 @@ public class OrientMatrixControl extends JButton
 
       float[][] M = ( new OrientMatListHandler( OrMatrices , Setpks ,
                SelectMatrix ) ).run();
-
+      
+      this.InputFileName = null;
+      
       if( M != null )
          setOrientationMatrix( M );
 
@@ -702,6 +781,8 @@ public class OrientMatrixControl extends JButton
       int               planeNum     = - 1;
       
       public   String   SelView3DItem = "None";
+      
+      JMenuItem  None3DView;
 
       float[]  zero = new float[]{0f,0f,0f};
       public MyActionListener( JButton but )
@@ -709,6 +790,7 @@ public class OrientMatrixControl extends JButton
 
          button = but;
          lastFileName = System.getProperty( "ISAW_HOME" );
+         None3DView= null;
       }
 
       /**
@@ -719,10 +801,11 @@ public class OrientMatrixControl extends JButton
       public void do3DView(  )
       {
          if( SelView3DItem.equals(  "None" ) ) 
-            
+         {  
             View.showPlanes( null , null , null , null );
-         
-         else if( SelView3DItem == VIEW_ORIENT)
+            View.showOrientPeaks( null);
+            
+         }else if( SelView3DItem == VIEW_ORIENT)
          {
 
             View.showOrientation( orientationMatrix , View.getLastSelectedSeqNum() );
@@ -750,6 +833,9 @@ public class OrientMatrixControl extends JButton
                      TranspOrientationMatrix[ 2 ] ,
                      TranspOrientationMatrix[ 0 ] );
 
+         }else if( SelView3DItem == VIEW_PRED_PEAKS)
+         {
+            View.showOrientPeaks( orientationMatrix);
          }
 
  
@@ -856,7 +942,7 @@ public class OrientMatrixControl extends JButton
             JPopupMenu pop = new JPopupMenu();
             ButtonGroup grp = new ButtonGroup();
 
-            JMenuItem men = pop.add( new JCheckBoxMenuItem( VIEW_ORIENT ) );
+            JMenuItem men = pop.add( new JCheckBoxMenuItem( VIEW_ORIENT ,planeNum == 0) );
             men.addActionListener( this );
             grp.add( men );
 
@@ -876,48 +962,54 @@ public class OrientMatrixControl extends JButton
             grp.add( men );
 
 
-            men = pop.add( new JCheckBoxMenuItem( "None" ) );
+            men = pop
+               .add( new JCheckBoxMenuItem( VIEW_PRED_PEAKS , planeNum == 4 ) );
             men.addActionListener( this );
             grp.add( men );
 
+            men = pop.add( new JCheckBoxMenuItem( "None" ,planeNum < 0) );
+            men.addActionListener( this );
+            grp.add( men );
+   
+            None3DView = men;
             pop.show( button , 0 , 0 );
-
+            return;
          }
 
-
+        
          if( evt == VIEW_ORIENT )
          {
+            boolean isSelected = true;
+            if( planeNum ==0)
+               isSelected = false;
             JCheckBoxMenuItem men = (JCheckBoxMenuItem) e.getSource();
             if( orientationMatrix == null || View == null )
             {
                men.setState( false );
+               planeNum = -1;
                return;
             }
            
             float[][] mat = null;
 
-            if( men.getState() )
+            if(isSelected )
                mat = orientationMatrix;
             
             if( mat != null )
                SelView3DItem = VIEW_ORIENT;
             else
+            {
                SelView3DItem = "None";
+               
+            }
 
             View.showOrientation( mat , View.getLastSelectedSeqNum() );
-            ( (OrientMatInfoHandler) OrientMatInfHandler ).setOrientationInfo(
-                     View , orientationMatrix );
-
-            if( mat != null )
-
-               V3DControl.addSelectPeakHandler( 
-                             (OrientMatInfoHandler) OrientMatInfHandler );
-
-            else
-
-               V3DControl.removeSelectPeakHandler( 
-                        (OrientMatInfoHandler) OrientMatInfHandler );
-
+            if( mat == null)
+            {
+               planeNum =-1;
+               None3DView.setSelected(true);
+            }
+            else planeNum =0;
 
             return;
 
@@ -926,7 +1018,10 @@ public class OrientMatrixControl extends JButton
          boolean isSelected = false;
 
          if( e.getSource() instanceof JCheckBoxMenuItem )
+         {
             isSelected = ( (JCheckBoxMenuItem) e.getSource() ).isSelected();
+          
+         }
 
          float[] zero =
          {
@@ -935,6 +1030,9 @@ public class OrientMatrixControl extends JButton
 
          if( evt == VIEW_PLANEab )
          {
+            if( planeNum == 1)
+               isSelected =false;
+            
             if( isSelected )
 
                View.showPlanes( zero , TranspOrientationMatrix[ 0 ] ,
@@ -950,7 +1048,11 @@ public class OrientMatrixControl extends JButton
             if( isSelected )
                SelView3DItem = VIEW_PLANEab;
             else
+            {
                SelView3DItem="None";
+               planeNum = -1;
+               None3DView.setSelected( true );
+            }
             
             return;
 
@@ -959,6 +1061,8 @@ public class OrientMatrixControl extends JButton
          if( evt == VIEW_PLANEac )
          {
 
+            if( planeNum == 2)
+               isSelected = false;
             if( isSelected )
 
                View.showPlanes( zero , TranspOrientationMatrix[ 0 ] ,
@@ -969,7 +1073,14 @@ public class OrientMatrixControl extends JButton
 
                View.showPlanes( null , null , null , null );
 
-            planeNum = 2;
+            if( isSelected)
+               planeNum = 2;
+            else 
+            {
+               planeNum = -1;
+
+               None3DView.setSelected( true );
+            }
 
             return;
 
@@ -977,6 +1088,9 @@ public class OrientMatrixControl extends JButton
 
          if( evt == VIEW_PLANEbc )
          {
+            if( planeNum == 3)
+               isSelected = false;
+            
             if( isSelected )
 
 
@@ -994,19 +1108,41 @@ public class OrientMatrixControl extends JButton
             if( isSelected )
                SelView3DItem = VIEW_PLANEbc;
             else
-               SelView3DItem = "None";
+            {
+
+               SelView3DItem = "None"; 
+               planeNum = -1;
+
+               None3DView.setSelected( true );
+            }
             
             return;
 
          }
+         if( evt == VIEW_PRED_PEAKS)
+         {
+            if( planeNum == 4)
+               isSelected = false;
+               
+            planeNum =4;
+            float[][] O = orientationMatrix;
+            if( !isSelected)
+                O= null;
+            View.showOrientPeaks( O);
+            if( O == null){
+               planeNum = -1;
 
+               None3DView.setSelected( true );
+            }
+         }
 
          if( evt.equals( "None" ) )
          {
             View.showPlanes( null , null , null , null );
             
-           
+            planeNum = -1;
             SelView3DItem = "None";
+            None3DView.setSelected( true );
          }
 
          if( evt == CALC_ORIENT )
@@ -1180,7 +1316,8 @@ public class OrientMatrixControl extends JButton
       {
 
          String evtString = e.getActionCommand();
-
+         String filename = InputFileName;
+         InputFileName = null;
          if( evtString == BLIND || evtString == FOUR_PEAK )
          {
             blind BLIND = new blind();
@@ -1377,7 +1514,7 @@ public class OrientMatrixControl extends JButton
 
             return;
          }
-
+        InputFileName = filename;
       }
 
 

@@ -377,8 +377,15 @@ public class subs
 
    }
 
-
-   private static int MaxHKLVal( float[][] UB , float[] q )
+  /**
+   * Calculated tje max absolute value for h,k, and l values.
+   * 
+   * @param UB  the UB matrix
+   * @param q   the Qx,Qy, and Qz values(or max Q value)
+   * 
+   * @return  the Max value that h,k, and l could  be  to match the given q value
+   */
+   public static int MaxHKLVal( float[][] UB , float[] q )
    {
 
       float Mx = Float.NEGATIVE_INFINITY;
@@ -391,9 +398,9 @@ public class subs
                
                M = Math.abs( UB[ i ][ j ] );
          
-         if( q[ i ] / M > Mx )
+         if( Math.abs(  q[ i ]) / M > Mx )
             
-            Mx = q[ i ] / M;
+            Mx = Math.abs(  q[ i ]) / M;
          
       }
       
