@@ -27,9 +27,9 @@
  *
  *  Last Modified:
  * 
- *  $Author$
- *  $Date$            
- *  $Rev$
+ *  $Author$:
+ *  $Date$:           
+ *  $Rev$:
  */
 
 package DataSetTools.components.ui.Peaks;
@@ -88,12 +88,13 @@ public class Info extends JPanel implements ActionListener ,
 
       super();
 
-      if( V3DControl != null )
+      if( V3DControl != null  && V3DControl.Peaks.size() > 0 )
       {
          V3DControl.addSelectPeakHandler( this );
          V3DControl.addRotatePeaksHandler( this );
          currentPeak = V3DControl.Peaks.elementAt( 0 );
-      }
+      }else
+         currentPeak = null;
 
       ChoiceItems = new Vector< String >();
 

@@ -301,9 +301,16 @@ public class XtalLatticeControl extends Object
    {
 
       if( params == null || params.length < 6 )
-         return;
-
-      setXtalParams( params[ 0 ] , params[ 1 ] , params[ 2 ] , params[ 3 ] ,
+      {
+         XtalParams = null;
+         OutInfo.removeInfoHandler( "Peak1(Crystal Params"  );
+         OutInfo.removeInfoHandler( "Peak2(Crystal Params"  );
+         Peak1Info = null;
+         Peak2Info = null;
+         
+      }else
+         
+         setXtalParams( params[ 0 ] , params[ 1 ] , params[ 2 ] , params[ 3 ] ,
                params[ 4 ] , params[ 5 ] );
 
    }
@@ -331,6 +338,9 @@ public class XtalLatticeControl extends Object
     * The action command must be the String  CRYSTAL_LAT_INPUT_TEXT
     * @return  The action listener that handles the CRYSTAL_LAT_INPUT_TEXT 
     *          action command.  
+    * NOTE: This listeners pops up a  JOptionPane to input these parameters
+    * @see #setXtalParams(float[]) 
+    * @see #setXtalParams(float, float, float, float, float, float)
     */
    public ActionListener getListener()
    {
@@ -358,7 +368,8 @@ public class XtalLatticeControl extends Object
    }
 
    /**
-    * Listener to the menus
+    * Listener to the CRYSTAL_LAT_INPUT_TEXT action command. When triggered,
+    * an JOptionPane will solicit inputs for these values.
     * @author Ruth
     *
     */
@@ -415,9 +426,16 @@ public class XtalLatticeControl extends Object
          panel.add( new JLabel( "Enter Crystal Parameters" ) );
          panel.validate();
 
-
+         String SS ="2,5,3,90,120,90";
+         if( XtalParams != null && XtalParams.length >=6)
+         {
+            SS = ""+XtalParams[0];
+            for( int k=1; k< 6; k++)
+               SS +=","+XtalParams[k];
+            
+         }
          String Res = JOptionPane.showInputDialog( null , panel ,
-                  "2,5,3,90,120,90" );
+                  SS );
          if( Res == null )
             return;
 

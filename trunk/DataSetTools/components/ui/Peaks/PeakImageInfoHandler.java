@@ -38,7 +38,7 @@ import java.awt.GridLayout;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.ObjectInputStream;
-
+import javax.swing.*;
 import gov.anl.ipns.MathTools.Geometry.Tran3D;
 import gov.anl.ipns.Util.File.*;
 import gov.anl.ipns.ViewTools.Panels.PeakArrayPanel.*;
@@ -100,10 +100,11 @@ public class PeakImageInfoHandler implements InfoHandler
    public void show( IPeak pk , Tran3D transformation , JPanel panel )
    {
 
+     
       panel.removeAll();
       if( pk == null )
          return;
-      
+
       String filename = fileNamePrefix + pk.nrun() + "_"
                + String.format( "%4d" , pk.detnum() ).replace( ' ' , '0' )
                + ".pvw";
@@ -139,13 +140,16 @@ public class PeakImageInfoHandler implements InfoHandler
          D[ 0 ] = disp[ k ];
          
          panel.setLayout( new GridLayout( 1 , 1 ) );
-         
+
          PeaksDisplayPanel PP = new PeaksDisplayPanel( D );
          
          panel.add( PP );
-         
+
          PP.invalidate();
          PP.repaint();
+         panel.invalidate();
+         panel.repaint();
+
 
       }
       catch( Exception s )

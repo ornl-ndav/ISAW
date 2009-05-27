@@ -130,6 +130,28 @@ public class View3DControl implements ActionListener
    }
 
 
+   String               OmittedMenuItems;
+   public void ManageShownMenus( String MenuItem, boolean show)
+   {
+      if( MenuItem == null)
+         return;
+      
+      if( show)
+      {
+         int i= OmittedMenuItems.indexOf( ";"+MenuItem+";" );
+         if( i < 0)
+            return;
+         OmittedMenuItems = OmittedMenuItems.substring( 0,i+1 )+
+                OmittedMenuItems.substring( i+MenuItem.length()+2 );
+         return;
+      }
+      int i= OmittedMenuItems.indexOf( ";"+MenuItem+";" );
+      if(i>=0)
+         return;
+      
+      OmittedMenuItems +=MenuItem+";";
+      
+   }
    // ---------------------------------------
    private JMenuItem getItemWithListener( String Name )
    {

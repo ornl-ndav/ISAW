@@ -35,6 +35,8 @@
 package DataSetTools.components.ui.Peaks;
 
 
+import gov.anl.ipns.Util.Numeric.IntList;
+
 import java.awt.event.*;
 import java.util.Vector;
 
@@ -194,7 +196,30 @@ public class View3DItems extends JButton
       listener = new MyActionListener( view , nPeaks , peakSetter );
       addActionListener( listener );
    }
-   
+ 
+
+   String               OmittedMenuItems;
+   public void ManageShownMenus( String MenuItem, boolean show)
+   {
+      if( MenuItem == null)
+         return;
+      
+      if( show)
+      {
+         int i= OmittedMenuItems.indexOf( ";"+MenuItem+";" );
+         if( i < 0)
+            return;
+         OmittedMenuItems = OmittedMenuItems.substring( 0,i+1 )+
+                OmittedMenuItems.substring( i+MenuItem.length()+2 );
+         return;
+      }
+      int i= OmittedMenuItems.indexOf( ";"+MenuItem+";" );
+      if(i>=0)
+         return;
+      
+      OmittedMenuItems +=MenuItem+";";
+      
+   }
    /**
     * Returns a listener that handles the following ActionEvent commands
     * Listed above
@@ -279,8 +304,15 @@ public class View3DItems extends JButton
                      "Enter Sequence numbers" , "1,3,5:9" );
             if( res == null || res.length() < 1 )
                return;
-
-            String[] inputs = res.split( "," );
+            int[] seqNums ;
+            res = res.trim();
+            if( res.endsWith( "]" ))
+               res = res.substring( 0, res.length()-1 );
+            if( res.startsWith( "[" ))
+               res = res.substring( 1 );
+            
+            seqNums = IntList.ToArray(res);
+           /* String[] inputs = res.split( "," );
             if( inputs == null || inputs.length < 1 )
                return;
 
@@ -301,8 +333,11 @@ public class View3DItems extends JButton
                   return;
 
                }
+            */
             View.HighlightSeqNums( seqNums , true );
-
+            for( int i=0; i< seqNums.length; i++)
+               if( !SeqNums_shown.contains( seqNums[i]))
+                  SeqNums_shown.add( seqNums[i]);
             return;
          }
 
