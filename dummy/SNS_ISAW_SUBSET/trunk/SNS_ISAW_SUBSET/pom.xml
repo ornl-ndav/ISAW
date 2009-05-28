@@ -7,7 +7,7 @@
   <parent>
     <groupId>gov.ornl.sns</groupId>
     <artifactId>sns-asg-pom</artifactId>
-    <version>1.3.0</version>
+    <version>1.0.1</version>
   </parent>
   <groupId>ISAW</groupId>
   <artifactId>sns-isaw-subset</artifactId>
