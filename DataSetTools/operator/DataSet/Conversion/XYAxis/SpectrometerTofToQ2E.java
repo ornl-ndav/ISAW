@@ -527,11 +527,11 @@ public class SpectrometerTofToQ2E extends    XYAxisConversionOp
                                         // array of values and add it with
                                         // any previous values
 
-        q_index = Math.round(( qsq_val-min_Q2 )/(max_Q2 - min_Q2) *n_Q2_bins);
-        e_index = Math.round(( e_val - min_E )/( max_E - min_E ) * n_E_bins);
+        q_index = (int)Math.floor((qsq_val-min_Q2)/(max_Q2-min_Q2) * n_Q2_bins);
+        e_index = (int)Math.floor((e_val-min_E)/(max_E-min_E) * n_E_bins);
 
-        if ( q_index > 0 && q_index < n_Q2_bins &&     // the value falls in
-             e_index > 0 && e_index < n_E_bins   )     // the range we're using
+        if ( q_index >= 0 && q_index < n_Q2_bins &&    // the value falls in
+             e_index >= 0 && e_index < n_E_bins   )    // the range we're using
         {
           Q2E_vals[q_index][e_index]   += y_val;
           n_Q2E_vals[q_index][e_index] += 1;
@@ -575,16 +575,26 @@ public class SpectrometerTofToQ2E extends    XYAxisConversionOp
 
       float const_e_slice[] = new float[ n_Q2_bins ];
       float slice_errors[]  = new float[ n_Q2_bins ];
+      float bin_weights[]   = new float[ n_Q2_bins ];
       for ( int row = 0; row < n_Q2_bins; row++ )
       {
         const_e_slice[row] = Q2E_vals[row][col];
         slice_errors[row]  = err_vals[row][col];
+        bin_weights[row]   = n_Q2E_vals[row][col];
       }
 
       new_data = Data.getInstance(Q2_scale, const_e_slice, slice_errors, col+1);
-      e_val = col * (max_E - min_E) / n_E_bins + min_E;
+
+                                               // use energy value at bin
+                                               // center
+      e_val = (col + 0.5f) * (max_E - min_E) / n_E_bins + min_E;
       Attribute e_attr = new FloatAttribute( Attribute.ENERGY_TRANSFER, 
                                              e_in - e_val );  
+
+      Attribute weight_attr = new Float1DAttribute( Attribute.BIN_WEIGHTS,
+                                                    bin_weights );
+      new_data.setAttribute( weight_attr );
+
       new_data.setAttribute( e_attr );
       new_data.setLabel( Attribute.ENERGY_TRANSFER );
 
