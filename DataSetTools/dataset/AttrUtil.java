@@ -999,6 +999,23 @@ public class AttrUtil
 
   /**
    * Get the value of the attribute specified by
+   * <code>Attribute.ENERGY_TRANSFER</code>
+   * or <code>Float.NaN</code> if it can't be determined.
+   *
+   * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
+   *                  from which the attribute value is to be obtained.
+   *
+   * @return The float value acquired from the attribute with the specified 
+   * name or <code>Float.NaN</code> if it can't be acquired.
+   */
+   public static float getEnergyTransfer( IAttributeList attr_list )
+   {
+      return getFloatValue(Attribute.ENERGY_TRANSFER, attr_list );
+   }
+
+
+  /**
+   * Get the value of the attribute specified by
    * <code>Attribute.NOMINAL_SOURCE_TO_SAMPLE_TOF</code>
    * or <code>Float.NaN</code> if it can't be determined.
    *
@@ -1029,6 +1046,23 @@ public class AttrUtil
    public static float getSourceToSampleTOF( IAttributeList attr_list )
    {
       return getFloatValue(Attribute.SOURCE_TO_SAMPLE_TOF, attr_list );
+   }
+
+
+  /**
+   * Get the value of the attribute specified by
+   * <code>Attribute.BIN_WEIGHTS</code>
+   * or null if it can't be determined.
+   *
+   * @param attr_list The IAttributeList object (eg. a DataSet or Data block)
+   *                  from which the attribute value is to be obtained.
+   *
+   * @return The float array acquired from the attribute with the specified 
+   * name or <code>null</code> if it can't be acquired.
+    */
+   public static float[] getBinWeights( IAttributeList attr_list )
+   {
+      return getFloatArrayValue(Attribute.BIN_WEIGHTS, attr_list );
    }
 
 
