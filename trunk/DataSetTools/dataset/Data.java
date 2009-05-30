@@ -198,8 +198,8 @@ public abstract class Data implements IData,
                                            // label value, otherwise, use the
                                            // label_string directly as the  
                                            // label
-  transient private   String   label_string = Attribute.GROUP_ID;
-  transient private   boolean  label_is_attribute = true;
+  private   String   label_string = Attribute.GROUP_ID;
+  private   boolean  label_is_attribute = true;
 
   // NOTE: The following fields are serialized.  If new fields are added that
   //       are not static, reasonable default values should be assigned in the
@@ -1496,8 +1496,6 @@ public abstract class Data implements IData,
                                          // set meaningful values for transient
     hide         = false;                // fields
     selected     = 0;
-    label_string = Attribute.GROUP_ID;
-    label_is_attribute = true;
   }
 
 /* ----------------------- syncGroup_ID_to_Attribute ---------------------- */
