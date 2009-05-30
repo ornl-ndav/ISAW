@@ -36,9 +36,12 @@
 package Operators.TOF_DG_Spectrometer;
 
 import java.util.*;
+import java.io.*;
 
 import gov.anl.ipns.MathTools.Geometry.*;
 import gov.anl.ipns.Util.Sys.*;
+import gov.anl.ipns.Util.SpecialStrings.*;
+import gov.anl.ipns.Util.Numeric.*;
 
 import DataSetTools.retriever.*;
 import DataSetTools.dataset.*;
@@ -56,6 +59,267 @@ import Operators.Special.*;
 public class TOF_NDGS_Calc
 {
   public static final int MIN_DELAY_CHANNELS = 10;
+
+
+  /**
+   *    This method merges a list (Vector) of DataSets, each of which 
+   *  is an S(Q,E) (or S(Q^2,E)) DataSet and produces a new 
+   *  DataSet combining the information from all of the DataSets.  
+   *  The DataSets must cover the same range of Q and E values with 
+   *  the same number of subdivisions in Q and E.  In most cases the 
+   *  DataSets will come from making a QE DataSet, with the same parmeters
+   *  but using different detectors.  The resulting combined QE DataSet
+   *  can be written to a text file, if the specified filename is not
+   *  null and the file is writeable by the user.
+   *    The ToQE and ToQ2E operators record an average S(Q,E) array 
+   *  normalized by the number of pixels that contribute to a S(Q,E) bin.
+   *  (The contribution from an individual pixel is first normalized by
+   *  by the solid angle subtended by the pixel.)  These operators also
+   *  record the number of pixels that contributed to each S(Q,E) bin.
+   *  This allow merging information from multiple S(Q,E) DataSets by
+   *  first multiplying the averaged S(Q,E) values by the number of
+   *  pixels used, summing across all DataSets, then dividing by the
+   *  new total count.  The errors are treated similarly.
+   *
+   *  @param  dss       List (i.e.Vector) of QE or Q2E DataSets to merge.
+   *  @param  filename  The name of the file to write.  If null or blank,
+   *                    no file will be written.
+   *
+   *  @return The combined S(Q,E) DataSet. 
+   */
+  public static DataSet MergeQE( Vector<DataSet> dss, String filename )
+  {
+    if ( dss == null )
+      throw new IllegalArgumentException( 
+                                 "null list of DataSets in MergeQE_DSs" );
+    if ( dss.size() <= 0 )
+      throw new IllegalArgumentException( 
+                                 "empty list of DataSets in MergeQE_DSs" );
+    
+    int required_rows = -1;
+    int required_cols = -1;
+    for ( int i = 0; i < dss.size(); i++ )
+    {
+      Object obj = dss.elementAt(i);
+      if ( !(obj instanceof DataSet ) || obj == null )
+        throw new IllegalArgumentException( 
+          "Element " + i + " not a DataSet in MergeQE_DSs" );
+      
+      DataSet ds = (DataSet)obj;
+      int n_rows = ds.getNum_entries();
+      if ( n_rows <= 0 )
+        throw new IllegalArgumentException( 
+          "DataSet " + i + " empty in MergeQE_DSs" );
+      
+      if ( required_rows == -1 )
+        required_rows = n_rows;
+      else if ( n_rows != required_rows )
+          throw new IllegalArgumentException( 
+              "number of entries don't match in MergeQE_DS\n" +
+              "To match first DataSet, need " + required_rows + "\n" + 
+              "Data block " + i + " has " + n_rows );
+      
+      int n_cols = ds.getData_entry(0).getY_values().length;
+      if ( n_cols <= 0 )
+        throw new IllegalArgumentException( 
+          "DataSet " + i + " has no channels in MergeQE_DSs" );
+
+      if ( required_cols == -1 )
+        required_cols = n_cols;
+      else if ( n_cols != required_cols )       // should check all Data, for
+        throw new IllegalArgumentException(     // now just check the first
+            "number of columns don't match in MergeQE_DS\n" +
+            "To match first DataSet, need " + required_cols + "\n" + 
+            "Data block " + i + " has " + n_cols );
+    }
+
+    if ( required_rows < 2 )
+      throw new IllegalArgumentException
+        ("Need at least 2 energy bins in MergeQE, got " + required_rows );
+
+                                     // first build sums of restored QEs,
+                                     // variances and numbers of bins
+    int n_E_bins = required_rows;
+    int n_Q_bins = required_cols;
+    int n_samples;
+    float err_val;
+    float[][] QE_vals   = new float[n_E_bins][n_Q_bins];
+    float[][] err_vals  = new float[n_E_bins][n_Q_bins];
+    float[][] n_QE_vals = new float[n_E_bins][n_Q_bins];
+    for ( int ds_count = 0; ds_count < dss.size(); ds_count++ )
+    {
+      DataSet ds_1 = dss.elementAt( ds_count );
+      for ( int row = 0; row < n_E_bins; row++ )
+      {  
+        Data data = ds_1.getData_entry( row );
+        float[] QE_vals_1 = data.getY_values();
+        float[] err_vals_1 = data.getErrors();
+        float[] n_QE_vals_1 = AttrUtil.getBinWeights( data );
+        for ( int col = 0; col < n_Q_bins; col++ )
+        {
+          n_samples = (int)n_QE_vals_1[col];
+          QE_vals[row][col] += n_samples * QE_vals_1[col];
+          err_val = n_samples * err_vals_1[col];
+          err_vals[row][col] += err_val * err_val;    // add variances
+          n_QE_vals[row][col] += n_samples;
+        }
+      }
+    }
+                                               // then change to average
+                                               // values for QE, and std_dev
+                                               // for error estimates
+    for ( int row = 0; row < n_Q_bins; row++ )
+      for ( int col = 0; col < n_E_bins; col++ )
+        if ( n_QE_vals[row][col] > 0 )
+        {
+          n_samples = (int)n_QE_vals[row][col];
+          QE_vals[row][col]  /= n_samples;
+          err_vals[row][col]  = (float)Math.sqrt( err_vals[row][col] );
+          err_vals[row][col] /= n_samples;
+        }
+                                               // finally, put this all back
+                                               // as Data blocks in the new
+                                               // merged DataSet
+    DataSet new_ds = dss.elementAt( 0 ).empty_clone();
+    new_ds.setTitle( "COMBINED QE" );
+    Data new_data;
+
+    Data old_data = dss.elementAt( 0 ).getData_entry( 0 );
+    XScale Q_scale = old_data.getX_scale();
+                                                // reconstruct E_scale from
+                                                // energy transfer values of
+                                                // the rows.  We assume these
+                                                // are ordered in reverse from
+                                                // the group_ID.
+
+    float E_center_max = AttrUtil.getEnergyTransfer( old_data );
+
+    old_data = dss.elementAt( 0 ).getData_entry( n_E_bins - 1 );
+
+    float E_center_min = AttrUtil.getEnergyTransfer( old_data );
+
+    float delta_E = (E_center_max - E_center_min) / (n_E_bins - 1 );    
+    
+    XScale E_scale = new UniformXScale( E_center_min - delta_E/2,
+                                        E_center_max + delta_E/2,
+                                        n_E_bins + 1 );        
+                
+                                                // Create new DataSet using 
+                                                // cuts at constant E.
+    for ( int row = 0; row < n_E_bins; row++ ) 
+    { 
+      float const_e_slice[] = QE_vals[row];
+      float slice_errors[]  = err_vals[row];
+      float bin_weights[]   = n_QE_vals[row];
+
+      new_data = Data.getInstance( Q_scale, const_e_slice, slice_errors, row+1);
+
+      old_data = dss.elementAt( 0 ).getData_entry( row );
+      Attribute e_attr = old_data.getAttribute( Attribute.ENERGY_TRANSFER );
+      new_data.setAttribute( e_attr );
+      new_data.setLabel( Attribute.ENERGY_TRANSFER );
+
+      Attribute weight_attr = new Float1DAttribute( Attribute.BIN_WEIGHTS,
+                                                    bin_weights );
+      new_data.setAttribute( weight_attr );
+
+      new_ds.addData_entry( new_data );
+    }
+
+    if ( filename != null && filename.trim().length() > 0 )
+    {
+      String x_units = "inv(A)";
+      String x_label = "Momentum Transfer";
+      String y_label = "Energy Transfer";
+      ErrorString err = PrintToFile( filename, 
+                                     Q_scale, 
+                                     E_scale, 
+                                     x_label, 
+                                     x_units,
+                                     y_label,
+                                     QE_vals,
+                                     err_vals  );
+      if ( err != null )
+      {
+        SharedMessages.addmsg( "Didn't write S(Q,E), " + new_ds + 
+                           ", to file " + filename );
+        return new_ds;
+      }
+      else
+        SharedMessages.addmsg( "Wrote S(Q,E), " + new_ds + 
+                               ", to file " + filename);
+    }    
+
+    return new_ds;
+  }
+
+
+  /*
+   *  Private method to print the array of S(Q,E) (or S(Q^2,E))
+   *  values to a file
+   */
+
+  private static ErrorString PrintToFile( String file_name,
+                                          XScale Q_scale,
+                                          XScale E_scale,
+                                          String x_label,
+                                          String x_units,
+                                          String y_label,
+                                          float  QE_vals[][],
+                                          float  errors[][] )
+  {
+     FileOutputStream fout= null;
+     try
+     {
+        fout = new FileOutputStream( file_name );
+     }
+     catch( Exception ss)
+     {
+       return new ErrorString("Could not open output file:" + file_name);
+     }
+
+     StringBuffer buff = new StringBuffer( 1000 );
+     try
+     {
+       buff.append("# Row:    " + QE_vals[0].length + "\n");
+       buff.append("# Column: " + QE_vals.length + "\n");
+       buff.append("# X Label: " + x_label + "\n");
+       buff.append("# X Units: " + x_units + "\n");
+       buff.append("# Y Label: " + y_label + "\n");
+       buff.append("# Y Units: meV \n");
+       buff.append("# Z Label: Intensity \n");
+       buff.append("# Z Units: Arb. Units\n");
+       float x   = 0;
+       float y   = 0;
+       float val = 0;
+       float err = 0;
+
+       int max_row = QE_vals.length - 1;
+       int max_col = QE_vals[0].length - 1;
+       for( int row = 0; row <= max_row; row++)
+         for( int col = 0; col <= max_col; col++)
+         {
+            x = Q_scale.getX( row );
+            y = E_scale.getX( col );
+            val = QE_vals[row][max_col - col];     // Data is inverted
+            err = errors[row][max_col - col];
+            buff.append( Format.real(x,15,5) );
+            buff.append( Format.real(y,15,5) );
+            buff.append( Format.real(val,15,5) );
+            buff.append( Format.real(err,15,5) + "\n" );
+
+            fout.write( buff.toString().getBytes());
+            buff.setLength(0);
+          }
+         fout.close();
+      }
+      catch( Exception e )
+      {
+        return new ErrorString("Error: " + e.toString() );
+      }
+      return null;
+  }
+
 
   /**
    *  Calculate an energy dependent t0 correction for the total
@@ -215,6 +479,9 @@ public class TOF_NDGS_Calc
 
     float initial_tof = tof_calc.TOFofEnergy( initial_path, Ein );
 
+//  System.out.print("Calculated initial_tof : " + initial_tof );
+//  System.out.println("  T0 shift = " +  t0_shift );
+
     for ( int i = 0; i < xs.length; i++ )
        xs[i] = (float)(xs[i] - t0_shift - initial_tof);
 
@@ -243,6 +510,7 @@ public class TOF_NDGS_Calc
       System.arraycopy( ys, start, new_ys, 0, num_kept-1 );
 
       HistogramTable new_data = new HistogramTable( new_x_scale, new_ys, id );
+      new_data.setSqrtErrors( true );
 
       new_data.setAttributeList(attr_list);
       new_data.setAttribute( Ein_attr );
