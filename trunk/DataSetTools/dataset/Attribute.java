@@ -514,12 +514,23 @@ abstract public class Attribute implements Serializable,
    */   						
   public static final String  SOURCE_TO_SAMPLE_TOF = 
                                                   "Source to Sample TOF";
-	
+
+  /**
+   * BIN_WEIGHTS = "BIN Weights" is the name of a Float1DAttribute giving
+   * a weighting factor for each bin in a Data block.  This is used to
+   * record the number of pixels contributing to each bin in a Data block
+   * from an S(Q,E) DataSet.  This information allow S(Q,E) DataSets from
+   * different overlaping regions to be combined.
+   */
+  public static final String BIN_WEIGHTS = "BIN Weights";
+
+
   /**
    * T0_SHIFT = "T0 shift" is the name of a float Attribute giving an offset for
    * the pulse, measured in microseconds.
    */ 						  
   public static final String  T0_SHIFT          = "T0 shift";
+
 
   /**
    * SAMPLE_CHI = "Sample Chi" is the name of a float Attribute giving the
