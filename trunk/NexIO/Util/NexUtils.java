@@ -1367,6 +1367,7 @@ public class NexUtils implements INexUtils {
                    
                    errs = null;
                    DB = new HistogramTable( xsc , yvals ,  id );
+                   DB.setSqrtErrors( true );
                 }
                 totCount =0;
                 num_ys = yvals.length;
