@@ -1939,18 +1939,18 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 				FileOutputStream fout = new FileOutputStream(fileName);
 				ObjectOutputStream Oout = new ObjectOutputStream(fout);
 
-				Oout.writeObject((Object) W.infPanel.Acknowl.getText());
-				Oout.writeObject((Object) W.infPanel.Address.getText());
-				Oout.writeObject((Object) W.infPanel.Email.getText());
-				Oout.writeObject((Object) W.infPanel.Instit.getText());
-				Oout.writeObject((Object) W.infPanel.Name.getText());
-				Oout.writeObject((Object) W.opPanel.CommandName.getText());
-				Oout.writeObject((Object) W.opPanel.OperatorTitle.getText());
+				Oout.writeObject( W.infPanel.Acknowl.getText());
+				Oout.writeObject( W.infPanel.Address.getText());
+				Oout.writeObject( W.infPanel.Email.getText());
+				Oout.writeObject( W.infPanel.Instit.getText());
+				Oout.writeObject( W.infPanel.Name.getText());
+				Oout.writeObject( W.opPanel.CommandName.getText());
+				Oout.writeObject( W.opPanel.OperatorTitle.getText());
 
-				Oout.writeObject((Object) W.opPanel.fileName.getText());
+				Oout.writeObject( W.opPanel.fileName.getText());
 
-				Oout.writeObject((Object) W.methPanel.fileName);
-				Oout.writeObject((Object) W.methPanel.meth.getName());
+				Oout.writeObject( W.methPanel.fileName);
+				Oout.writeObject( W.methPanel.meth.getName());
 				Class[] CC = W.methPanel.meth.getParameterTypes();
 
 				Oout.writeInt(CC.length);
@@ -2007,6 +2007,7 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 		 */
 		public void RestoreState(Method2OperatorWizard W) {
 
+		   
 			JFileChooser jf = new JFileChooser(System.getProperty("ISAW_HOME", ""));
          gov.anl.ipns.Util.File.RobustFileFilter fil = new gov.anl.ipns.Util.File.RobustFileFilter();
          Vector V = new Vector();
@@ -2080,7 +2081,10 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 					}
 				}
 
-                W.docPanel.newOp=true;
+				W.opPanel.fileName.setText( OpfileName);//Here becaue changing
+				                                        //method name may make this
+				                                        // invalide
+            W.docPanel.newOp=true;
 				W.docPanel.OverView.setText( (String) Oout.readObject());
 				W.docPanel.Algorithm.setText( (String) Oout.readObject());
 				W.docPanel.Assump.setText( (String) Oout.readObject());
