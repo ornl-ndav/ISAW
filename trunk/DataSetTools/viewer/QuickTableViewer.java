@@ -502,6 +502,8 @@ public class QuickTableViewer extends FinishJFrame implements WindowListener,
 	  public MTableModel(Data db, boolean showErrs, boolean showInd){
 		   this.db = db;
 		   this.showErrs = showErrs;
+	   if( db.getErrors() == null)
+		      this.showErrs = false;
 		   this.showInd = showInd;
 		   yy= db.getY_values();
 		   ee=db.getErrors();
