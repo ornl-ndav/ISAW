@@ -5,7 +5,7 @@
 
 #
 $ Volume	Float(245)		Enter unit cell volume, Angstroms^3
-$ NAtoms	Integer(7)		Enter of independent atoms (nearest integer)
+$ NAtoms	Integer(7)		Enter the number of independent atoms (nearest integer)
 $ dmin		Float(0.7)		Enter the minimum d-spacing, Angstroms
 $ Sym_factor	Integer(4)		Enter the symmetry factor (triclinic=2, monoclinic=4, etc.)
 
