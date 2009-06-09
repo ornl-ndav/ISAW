@@ -707,7 +707,7 @@ public class Wizard implements PropertyChangeListener, Serializable {
         helpURL         = SharedData.getProperty( "Help_Directory" ) +
           "/wizard/" + helpURL;
         helpURL         = FilenameUtil.setForwardSlash( helpURL );
-        wizardHelpURL   = new URL( "file", "localhost", helpURL );
+        wizardHelpURL   = new URL( "file", "", helpURL );
       }
     } catch( java.net.MalformedURLException mue ) {
       //drop it on the floor
