@@ -1,0 +1,141 @@
+<!--
+  File: IPW.html
+ 
+  Copyright (C) 2003, Chris M. Bouzek
+ 
+  Permission is granted to copy, distribute and/or modify this document
+  under the terms of the GNU Free Documentation License, Version 1.2
+  or any later version published by the Free Software Foundation;
+  with no Invariant Sections, no Front-Cover Texts, and no Back-Cover
+  Texts.
+ 
+  You should have received a copy of the GNU Free Documentation License
+  along with this library; if not, write to the Free Software
+  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
+ 
+  Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
+            Department of Mathematics, Statistics and Computer Science
+            University of Wisconsin-Stout
+            Menomonie, WI 54751, USA
+ 
+            Chris Bouzek <coldfusion78@yahoo.com>
+ 
+  This work was supported by the National Science Foundation under grant
+  number DMR-0218882.
+ 
+  For further information, see <http://www.pns.anl.gov/ISAW/>
+ 
+  $Log$
+  Revision 1.2  2004/03/30 01:04:36  bouzekc
+  Changed license to GNU Free Documentation License; removed tabs.
+
+  Revision 1.1  2003/10/18 21:26:05  bouzekc
+  Added to CVS.
+
+-->
+<html>
+  <head>
+    <title>SCD Wizard How-To</title>
+  </head>
+
+  <body>
+  <hr>
+  <center>
+  <font size=+3>Intro</font>
+  </center>
+  <hr>
+  The Wizards are meant as a tool to bridge the gap between analyzing data
+  using the ISAW program, which is a fully flexible analysis, and analyzing
+  data using scripts, which are fast but only run sequentially.<br><br>
+  The Wizards allow you to perform predetermined steps one at a time, view
+  intermediate results, and go back to change and/or optimize inputs in a
+  previous step.
+  <hr>
+  <center>
+  <font size=+3>Starting the SCD Wizards</font>
+  </center>
+  <hr>
+  <OL>The ISAW Wizards can be invoked in several manners
+     <LI> IsawGUI.Isaw has links to several of these wizards under Wizards on the
+        menu bar. Just click the appropriate menu item.
+      <LI> <UL>From a command prompt as follows:
+           <LI> open a command prompt to run the wizards. 
+           <LI>  Set your classpath to run the Wizards.<BR>
+              If you are running Isaw from the command line or Eclipse everything
+              should be OK. <BR>
+              If you run Isaw from IsawExec, look at the batch file. Find the line that
+              starts with java -cp ****** . The **** to the next space should be the long 
+              classpath that should follow the -cp in the commands below.
+            </ul>
+           <B>COMMAND</B>: java Wizard.TOF_SCD.InitialPeaksWizard_SNS1 <BR>
+             if classpath is set up in the system<P>
+
+           <B>COMMAND</B>: java -cp ***** Wizard.TOF_SCD.InitialPeaksWizard_SNS1 <BR>
+             if classpath is not set up in the system<P>
+
+       <li> From a copy of IsawExec.? where ? is bat or sh. In the copy, replace
+            IsawGUI.Isaw by Wizard.TOF_SCD.InitialPeaksWizard_SNS1.<BR>
+            <B>COMMAND</B>: InitPeaks 
+            
+       
+    </ol> 
+       
+  <hr>
+  <center>
+  <font size=+3>General use of the Wizards</font>
+  </center>
+  <hr>
+  There are several ways to navigate through the Wizards.  The double arrow
+  buttons move to the first step or the last step and the single arrows move
+  one step forward or backward.<br><br>
+  To execute an intermediate step, you can click on the "Do" button, and to
+  execute all steps, you can click on the "Do All" button.  To view the results
+  and parameters of the intermediate steps, you can select "View" from the menu
+  bar then select the parameter you want to view.<br><br>
+  To get help on the Wizard or a particular step, you can click on the "Help"
+  option in the menu bar, then click on "On Wizard" or "On Current Form"
+  respectively.<br><br>
+  To save your progress, you can click on the "File" option in the menu bar,
+  then click on "Save Wizard State", then type the file name that you want to
+  save your progress to.  A ".wsf" extension is automatically appended to the
+  name.  In a similar manner, you can load a previously saved Wizard using
+  "File" then "Load Wizard State."<br><br>
+  Clicking on "Reset" or "Reset All" will clear the progress bar for the
+  current step or all steps, respectively.  This allows you to rerun one or
+  more steps without changing any parameters.<br><br>
+  To set a working or projects directory, select "Projects Directory" from the
+  wizard menu, then simply select the directory you want.  The projects directory 
+  will coerce the file browsers to initially open to your selected directory.
+
+  <!-- Initial Peaks Wizard -->
+
+  <hr>
+  <center>
+  <font size=+3>SCD Initial Peaks Wizard</font>
+  </center>
+  <hr>
+  This Wizard is meant to be used for an initial run to establish a baseline
+  for further runs on the same sample.  There are six steps in this Wizard:<br>
+  <ol>
+    <li>Finding peaks</li>
+    <li>Establishing an initial orientation matrix</li>
+    <li>Indexing the peaks</li>
+    <li>Finding crystal geometry</li>
+    <li>Refining the orientation matrix with a least squares routine.</li>
+    <li>Reindexing peaks using the refined orientation matrix</li>
+  </ol>
+  The last step is optional, although typically multiple iterations are done
+  over steps 5 and 6.
+  <hr>
+  <center>
+  <font size=+2>Description of steps and parameters</font>
+  </center><P>
+    The parameters and description for each step can be retrieved using the
+    Form submenu option under the Help menu. <P>
+<strong><div align="center">Conditional Statements</div></strong>
+The contents of this document are licensed under the
+<a href="http://www.gnu.org/copyleft/fdl.html" >GNU Free 
+Documentation License</a> license.
+      <font size=-1>Copyright 2003 Chris M. Bouzek</font>
+  </body>
+</html>

@@ -1,0 +1,47 @@
+<html><body>
+  <H1><Center>Filtering Out Peaks </Center></H1>
+<P>
+This button provide options for filtering out(omitting) peaks.  The filtering has an 
+interactive mode that uses only the values from one Field.  Advanced filtering allows
+using values from several fields to filter out peaks.
+<P>
+<UL><B>Options</B>
+   <LI><I>Interactive</I>-Omit peaks based on values from one Field. There is no need to
+            <I>Set Filter</I> or <I>Clear Omitted Peaks</I><P>
+   <LI><I>New(Or'd)</I> - Starts a new and sequence that will be Or'd with the previous
+           And sequences<P>
+   <LI> <I>Add(And) to Previous</I>- Adds current condition to the current And sequence<P>
+   <LI><I>Clear Omitted Peaks</I>- Clears current conditions to determine which peaks
+         are to be omitted.<P>
+   <LI> <I>Set Filter</I>-Calculates the sequence numbers to be omitted and notifies 
+          listeners that the omitted sequence has changed. One of the listeners is the
+          <a href=QView.html#Omit>3D QViewer for the peaks</a>.<P>
+</UL><P><P><HR>
+<H2><Center> Fields </Center></H2>
+<table border=1>
+<tr><td>row </td><td> col </td><td> channel </td><td> intensity </td><td> d-spacing </td></tr>
+<tr><td> time </td><td>qx </td><td> qy </td><td> qz </td><td> h </td></tr>
+<tr><td> k </td><td> l </td><td> h int offset </td><td>k int offset </td>
+           <td> l int offset </td></tr>
+<tr><td> seq nums </td><td> run nums </td><td>det nums</td><td>reflag</td></tr>
+
+
+</table>
+<P><HR>
+<H2><Center>Specifying Field Values</Center></H2>
+The GUI for numeric fields that can span a range of values is <BR>
+<table botfrt=0>
+<tr><td>
+<img src="FieldEx.jpg" alt="No Pix"/> </td>
+
+
+<td> <table border=1>
+      <tr><td><B>Title</B>- field </td></tr> <tr><td><B>Sliders</B> for min val to max val</td></tr> 
+       <tr><td> Check <B>Inside Interval</B> to  omit peaks whose field values are
+         between the values</td></tr>
+       <tr><td><B>Cancel</B>-Cancels operation</td></tr><tr><td> <B>Exit/Save</B> will exit and save choice</td></tr>
+</td></tr>
+</table>
+
+
+</body></html>

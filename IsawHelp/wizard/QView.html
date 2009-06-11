@@ -1,0 +1,43 @@
+<html><body>
+   <H1><Center> Viewer of Peaks in Q Space(QViewer)</Center> </H1>
+ This viewer allows for viewing peaks in Q space, moving them around, selecting peaks.
+  Information handlers are available to show information on and image of data around  the 
+  selected peak,and information on the rotation.<P>
+
+  <UL>There are several<B><U> "cursor" modes</U></B><P>
+     <LI> <I>Selectiong mode</I>  - allows for selecting peaks<P>
+     <LI> <I>Rotation mode</I>    - allows for rotating peaks.  This is
+             done by selecting a peak then dragging the peak<P>
+     <LI> <I>Disable Mouse Mode</I> - mouse actions in this view are ignored<P>
+  </ul><P>
+  In this view, up is vertical, right is in the beam direction and vertical to right forms a 
+   right handed system, so the usual third axis is back.  Unfortunately, in the rotation info,
+   right is the 1st coordinate, up the 2nd and points in front of the plane have positive 3rd
+   coordinates( 1st coordinate to 2nd coordinate is also a right hand system.<P>
+  <P><P><HR>
+  <UL> <B><U>Info panels</U></B><P>
+    <LI> <I>Selected peak</I> - Gives sequence number,qx,qy,qz(q-right,q-back,q-up), h,k,l, etc values
+    <LI> <UL><I>Rotation information</I> :
+             <LI> Euler angles- rotations needed to rotate start to new positions<P>
+             <LI> Positions of original vert,beam and back axes<P>
+             <LI> Position of the selected point<P>
+         </ul><P>
+    <LI> <I>Image of data</I>  around the selected peak to check if it is a good peak
+   </UL>
+   <P><P><HR>
+
+   <UL> <B><U>Other information </U></B>settable from outside in the QViewer<P>
+      <LI> <a name="HighLight"><I>Show Peaks with specific</I>  sequence numbers, run numbers, 
+                 detector numbers</a><P>
+      <LI> <I>Planes/Family of planes</I>  corresponding to the orientation matrix or selected 
+              points<P>
+      <LI> <a name="IndexedPeaks">Peaks that are <I>indexed</I>  or the Peak that is currently 
+            selected</a><P>
+      <LI> <a name="astar"><I>a*,b*,and c* </I> from the selected point </a><P>
+      <LI> <a name="Omit"><I>Omit/add  Peaks</I> to be shown </a><P>
+    </ul>
+
+
+
+
+</body></html>
