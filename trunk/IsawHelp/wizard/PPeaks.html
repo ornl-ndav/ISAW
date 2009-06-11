@@ -1,0 +1,32 @@
+<html><body>
+  <H1><Center> Selecting Peaks/Points in Q Space</CENTER></H1>
+This button presents options to select peaks(or points) and specify hkl values.<BR>
+These selected points are arguments to several 
+  <a href="OrientMat.html#CalcOrient">calculate orientation matrix routines</a> and
+to at least <a href="Vin3D.html#Planes">one view in QViewer option</a>.
+<UL> <I>Notes</I> on format
+    <LI> The options are set up to easily specify one peak at a time selected from the 
+           3D QViewer of the Peaks.<P> 
+    <LI> Since most options that use selected points require 4 or fewer selected points,
+         the menu gives options to select Peak1, Peak2, .. Peak4.
+ </UL><P><P>
+<HR>
+<UL> <B> Sub menu options </B>
+   <LI> <I>Set/Alter Peak</I>- Submenu options are to setPeak1, setPeak2,..,setPeak4, then
+           set Other Peaks(up to 12 peaks).  For each option a dialog box pops up where
+           the peak number(if over 4), use peak selected in the QViewer, specify sequence
+           number(if previous choice is false), and specify Q values( if a sequence number is
+           less than 0).<U>NOTE:Make sure dialog box has "Enter Q Vals"</u><P>
+
+   <LI> <I>Set/Alter hkl Value</I>- Submenu options are to setPeak1, setPeak2,..,setPeak4, then
+           set Other Peaks(up to 12 peaks).  For each option a dialog box pops up where
+           the peak number(if over 4), use peak selected in the QViewer,and specify hkl values
+            if Use Selection from QViewer is not selected.
+            <U>NOTE:Make sure dialog box has "Enter h,k,l Vals"</u><P>
+   <LI> <I>Set List of Peaks</I> - Allows for entering a large( can be more than 12) list of
+            sequence numbers all at once.<P>
+   <LI> <I>Clear All Set Peaks</I>-Clears all selected peaks.
+
+
+
+</body></html>

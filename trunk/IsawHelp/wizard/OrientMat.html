@@ -1,0 +1,70 @@
+<html><body>
+   <H1><Center> Orientation Matrix </center></h1>
+
+This button presents options for creating orientation matrices, viewing various
+aspects of the orientation matrix, and saving or loading the orientation matrix.
+<P><P>
+<UL><B> Creating Orientation Matrix Options </B><P>
+   <LI> <U>Load Orientation Matrix</u>/ <U>Save Orientation Matrix</U>
+        <UL> Can load in a matrix from another program or load one in that was
+              saved previously</UL>
+   <LI> <UL><U>Calculate Orientation Matrix</U> 
+            <LI> <I>Automatic</I>- Uses an automatic method based on Rossman's algorithm if
+                     no Crystal lattice parameters are present, otherwise an automatic
+                     method starting with these parameters is used.<P>
+            <LI> <I>From 4 Peaks</I>- Four <a href="PPeaks.html">peaks must be selected</a>. 
+                      These must represent
+                     four corners of a unit cell for the result to be meaningful.<P>
+            <LI><I>From 2 Peaks with hkls</I> -The crystal parameters and tolerances along
+                     with <a href="PPeaks.html">two peaks must be selected</a>. Optionally
+                     their corresponding hkl values should also be specified.(If hkl values 
+                       not set, all possible
+                      ones are used).  This uses the Matrix program from Art Schultz that is
+                      distributed with ISAW.<P>
+            <LI> <I>From 3 Peaks with hkls</I>-<a href="PPeaks.html">Three peaks and their 
+                      corresponding hkl values
+                     must be selected</a>.  This will calculate the orientation matrix that will give
+                     those three peaks the specified hkl values.  This matrix may have to be
+                     Nigglified.<P>
+            <LI> <I>Blind</I>- At least 4 peaks must be specified. This goes through the IPNS
+                 Blind routine.
+         </UL><P>
+     <LI> <U>Show/Select Matrix from Set</U>-Some routines that calculate orientation matrices
+             return a list of possible matrices. Use this option to see the LAST list created
+             and select the desired one as the current orientation matrix
+      </ul><P><P><HR>
+
+  <UL><a href="QView.html#HighLight"><B> View in QViewer</B></a> -to see various aspects of 
+              the orientation matrix in  the 3D view of the Peaks 
+          of the peaks in Q space<P>
+      <LI> <I>View Orientation Matrix</I>- The a*,b*, and c* vectors centered at the selected 
+               point from the QViewer are displayed.<P>
+
+      <LI> <I> View Plane Family a*b*</I>( a*c* or b*c*)-The family of planes containing the
+              directions a* and b*(a* and c*,etc) with distance between planes determined by
+              c*(b*,etc.) are drawn. Again, it is best to rotate the display to view these
+              planes sideways in the view.<P>
+      <LI>  <I> View Predicted Peaks</I>- The positions where peaks should have occurred are
+               marked with a white box.<P>
+
+     
+ </UL><P><P><HR>
+
+   <UL> <B> Utilities></B><I>Adjust Orientation Matrix</I><P>
+       <LI> <I>Index Peaks</I>- This will index the peaks with the current orientation matrix.
+              The tolerance will be asked for. NOTE: Index the peaks if you want to omit
+              peaks, or optimize the orientation matrix.<P> 
+
+       <LI> <I>Nigglify Orientation Matrix</I>-Some orientation matrices are not in standard 
+              form. The non-experimentl Nigglify uses blind.<P> 
+
+       <LI> <I>Optimize</I> Orientation Matrix- Optimizes the orientation matrix that has been
+              indexed.<P> 
+
+       <LI> Use the <a href="PFilter.html">Peak Filterer</a> to omit peaks. These will be
+           omitted in the QViewer and not be  used in several automatic methods for calculating
+           the orientation matrix. 
+   </UL>
+
+
+</body></html>
