@@ -700,7 +700,9 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
    * @param html The help message to display.
    */
   private void displayHelpMessage( String tempTitle, String html ) {
-    JFrame    help_frame  = new JFrame( tempTitle );
+     
+    Browser B = (new Browser(html));
+   /* JFrame    help_frame  = new JFrame( tempTitle );
     Dimension screen_size = Toolkit.getDefaultToolkit(  ).getScreenSize(  );
 
     help_frame.setSize( new Dimension( 
@@ -712,6 +714,7 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
     htmlDisplay.setEditable( false );
     help_frame.getContentPane(  ).add( new JScrollPane( htmlDisplay ) );
     WindowShower.show(help_frame);
+  */
   }
 
   /**
@@ -724,7 +727,9 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
    * @param url The URL that contains the HTML page.
    */
   private void displayURL( String tempTitle, URL url ) {
-    JFrame    help_frame  = new JFrame( tempTitle );
+     
+     Browser B = (new Browser(url.toString()));
+     /*JFrame    help_frame  = new JFrame( tempTitle );
     Dimension screen_size = Toolkit.getDefaultToolkit(  ).getScreenSize(  );
 
     help_frame.setSize( new Dimension( 
@@ -742,6 +747,7 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
     htmlDisplay.setEditable( false );
     help_frame.getContentPane(  ).add( new JScrollPane( htmlDisplay ) );
     WindowShower.show(help_frame);
+    */
   }
 
   /**
