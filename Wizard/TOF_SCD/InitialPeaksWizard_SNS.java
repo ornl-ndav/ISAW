@@ -150,6 +150,7 @@ public class InitialPeaksWizard_SNS extends Wizard {
                      
                      };
      linkFormParameters(Xlate);
+     setHelpURL("IPW_SNS.html");
    }
  
   /**
