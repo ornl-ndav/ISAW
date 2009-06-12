@@ -36,7 +36,7 @@ $Peaks   PlaceHolder                  Enter peaks
 
 $useFile  BooleanEnable([False,1,5])  Use Matrix From File
 $file1    LoadFile(${Data_Directory})       Input Orientation Matrix File ( .mat )    
-$method    ChoiceList(["Blind","Automatic","from Q Viewer"])  Method to use
+$method    ChoiceList(["Blind","Automatic","Automatic w Lat Params", "from Q Viewer"])  Method to use
 
 $Seq      IntArray               Sequence Numbers(Blind Method only)
 $file     String                 Output Orientation Matrix File ( .mat ) 
@@ -49,6 +49,7 @@ $path     DataDirectoryString(${Data_Directory})    Output Data Path
 
 #-------------  Code ----------------
 
+matPath=path&file
 if useFile
 
   X= readOrient( file1 )
@@ -74,7 +75,18 @@ elseif method =="Automatic"
 
 elseif method =="from Q Viewer"
    X = GetUBFrRecipLatPlanes( Peaks,MaxXTalLength,Status)
-   
+  
+elseif method =="Automatic w Lat Params"
+   PkFile =CreateExecFileName(getSysProp("user.home"),"ISAW/xxx.peaks")
+   WritePeaks_new(PkFile,Peaks,false)
+   Out1File =CreateExecFileName(getSysProp("user.home"),"ISAW/xxx1.peaks")
+   Prompts=["a","b ","c","alpha","beta","gamma"]
+   InitVals =[4.9,4.9, 5.4,90.,90.,120.0000 ]
+  
+   InputBox("Enter Crystal Parameters",Prompts, InitVals,[]);
+   IndexPeaksWithOptimizer( PkFile,matPath,Out1File,InitVals[0],InitVals[1], InitVals[2],InitVals[3],InitVals[4],InitVals[5])
+    X= readOrient( matPath )
+    return X
 endif
 
 if method =="Blind"
@@ -87,8 +99,8 @@ if method =="Blind"
       Display "the file blind.log has the log information"
     
   endif
-else
-  WriteMatrix(file, X )
+elseif method <>"Automatic w Lat Params"
+  WriteMatrix(matPath, X )
   Display "Fit Stats for Result"
   n=ArrayLength(Status)-1
   for i in [0:n] 
