@@ -57,8 +57,6 @@ import java.awt.event.MouseMotionListener;
 import javax.swing.*;
 
 
-// TODO checkin Wizard.TOF_SCD.Util and
-// gov.anl.ipns.ViewTools.Panels.PeakArrayPanel.PeakArrayPanels, 
 /**
  * This class implements a ThreeD_JPanel that displays and manipulates Peaks.
  * The manipulations supported are 1) Rotating- ActionListener Message
@@ -78,6 +76,7 @@ public class View3D extends ThreeD_JPanel
     public static Color UP_AXIS_COLOR = Color.GREEN.darker();
     public static Color BEAM_AXIS_COLOR = Color.red;
     public static Color THIRD_AXIS_COLOR = Color.blue;
+    public static Color  SELECTED_PEAK_COLOR = Color.white;
    /*
     * Mouse mode that is used for selecting peaks
     */
@@ -214,7 +213,7 @@ public class View3D extends ThreeD_JPanel
       currentTransformation = new Tran3D();
       
       currentTransformation.setIdentity();
-      
+      currentTransformation.setRotation(-90, new Vector3D(1f,0f,0f));
       SetViewing( currentTransformation );
       
       MouseListener = new MyMouseListener( this );
@@ -368,7 +367,82 @@ public class View3D extends ThreeD_JPanel
       repaint();
    }
 
-
+  Polymarker[] HighLightPeak( int[] seqNums, boolean dull)
+   {
+      if( seqNums == null || seqNums.length < 1)
+      {
+         return null;
+      }
+      Color C = SELECTED_PEAK_COLOR;
+      //if( dull)
+      //   C = C.darker();
+      Vector<Vector3D> V = new Vector<Vector3D>();
+      for( int i=0; i< seqNums.length; i++)
+         if( seqNums.length >=1 && seqNums.length <= Peaks.size())
+         {
+            float[] Qs = Peaks.elementAt( seqNums[i]-1 ).getUnrotQ();
+            if( Qs != null)
+            {
+              V.add(  new Vector3D(Qs) );
+            }
+         }
+      Polymarker P = new Polymarker( V.toArray( new Vector3D[0] ),C);
+      P.setSize( 5 );
+      if( dull)
+         P.setType( Polymarker.CROSS );
+      else
+         P.setType( Polymarker.BOX );
+      Polymarker[] res = new Polymarker[1];
+      res[0] = P;
+      return res;
+      
+   }
+   /**
+    * Will highlight the given peak. 
+    * @param seqNum  The sequence number of the peak. If not in
+    *                range, no selected peak will be shown
+    * @param dull    If dull, the color will be darker than usual
+    */
+   public void showSelectedPeak( int seqNum, boolean dull)
+   {
+     // return;
+    
+      if( seqNum < 1 || seqNum >Peaks.size())
+      {
+         removeObjects("Selected Peaks");
+         return;
+      }
+      int[] seqNums = new int[1];
+      seqNums[0] =  seqNum;
+      if( dull)
+      {
+         Polymarker[] res = HighLightPeak( seqNums, true);
+         setObjects("Selected Peaks", res);
+         return;
+      }
+      showSelectedPeaks( seqNums );
+     
+   }
+   
+   public void showSelectedPeaks(int[] seqNums)
+   {
+      // return;
+    
+      if( seqNums == null)
+      {
+         removeObjects("Selected Peaks");
+         repaint();
+         return;
+      }
+     
+      
+     Polymarker[] B = HighLightPeak( seqNums, false);
+    
+      setObjects("Selected Peaks", B);
+      repaint();
+   
+     
+   }
    private float getVal( float[] normalUnit , int maxCoeffIndex ,
             float[] pt , float MinMax1 , float MinMax2)
    {
@@ -1039,13 +1113,13 @@ public class View3D extends ThreeD_JPanel
             omittedSeqNums.remove( new Integer( Pk.seqnum() ) );
             Vector3D[] marks = new Vector3D[ 1 ];
             marks[ 0 ] = new Vector3D( Pk.getUnrotQ() );
-            
-            Polymarker pk = new Polymarker( marks , Color.blue );
             int size = 5 + (int) ( ( Pk.ipkobs() - MinIntensity )
                      / ( MaxIntensity - MinIntensity ) * 15 );
+            RoundBall pk = new RoundBall( marks[0] , (float)size,Color.blue );
+           
             
-            pk.setSize( size );
-            pk.setType( Polymarker.STAR );
+           // pk.setSize( size );
+           // pk.setType( Polymarker.STAR );
             pk.setPickID( Pk.seqnum() );
             
             added.addElement( pk );
@@ -1164,6 +1238,8 @@ public class View3D extends ThreeD_JPanel
       public void mouseDragged( MouseEvent e )
       {
 
+         
+        
          if( mode != RotateMode )
             return;
          
@@ -1176,7 +1252,7 @@ public class View3D extends ThreeD_JPanel
          if( Drag_old == null )
          {
 
-            int idd = panel.pickID( Drag.x , Drag.y , 6 );
+            int idd = panel.pickID( Drag.x , Drag.y , 12 );
             IThreeD_Object obj = panel.pickedObject();
             
             if( obj == null || idd == IThreeD_Object.INVALID_PICK_ID )
@@ -1354,10 +1430,13 @@ public class View3D extends ThreeD_JPanel
 
             Point P = panel.getCurrent_pixel_point();
 
-            id = panel.pickID( P.x , P.y , 3 );
+            id = panel.pickID( P.x , P.y , 13 );
             if( id != IThreeD_Object.INVALID_PICK_ID )
+            {
+               showSelectedPeak(id, false);
                send_message( SELECTED_PEAK_CHANGED );
-            ;
+            }
+            
          }
          Drag = null;
          dragStarted = false;
@@ -1429,7 +1508,6 @@ public class View3D extends ThreeD_JPanel
 
          Drag = null;
          dragStarted = false;
-
       }
 
    }
@@ -1484,9 +1562,9 @@ public class View3D extends ThreeD_JPanel
          Vector3D[] marks = new Vector3D[ 1 ];
          marks[ 0 ] = new Vector3D( P.getUnrotQ() );
          
-         Polymarker pk = new Polymarker( marks , Color.blue );
-         pk.setSize( size );
-         pk.setType( Polymarker.STAR );
+         RoundBall pk = new RoundBall( marks[0] ,size, Color.blue );
+         //pk.setSize( size );
+         //pk.setType( Polymarker.STAR );
          
          pk.setPickID( P.seqnum() );
          allObjects[ k ] = pk;

@@ -104,8 +104,8 @@ public class PeakFilterer extends JButton implements ActionListener
                                                              {
             "row" , "col" , "channel" , "intensity" , "d-spacing" , "time" ,
             "qx" , "qy" , "qz" , "h" , "k" , "l" , "h int offset" ,
-            "k int offset" , "l int offset" , "seq nums" , "run nums" ,
-            "det nums"
+            "k int offset" , "l int offset" , "reflag", "seq nums" ,
+            "run nums" ,"det nums"
                                                              };
 
    /**
@@ -123,7 +123,7 @@ public class PeakFilterer extends JButton implements ActionListener
    JList                               list;
 
    //Index of the last numeric field 
-   int                                 LastIntervalIndex     = 14;
+   int                                 LastIntervalIndex     = 15;
 
    //Current list of conditions that will be anded to get omitted peaks
    Vector< OneFilterElement >          CurrentAndList;
@@ -136,7 +136,7 @@ public class PeakFilterer extends JButton implements ActionListener
 
    // List of fields with indicated calculation/input  method
    String                              PeakMainFloatRes      = 
-                                     ";row;col;channel;intensity;time;h;k;l;";
+                                ";row;col;channel;intensity;time;h;k;l;reflag;";
 
    String                              PeakQCalcRes          = 
                                   ";d-spacing;qx;qy;qz;";
@@ -188,13 +188,15 @@ public class PeakFilterer extends JButton implements ActionListener
          Set( Mins , Maxs , 9 , pk.h() );
          Set( Mins , Maxs , 10 , pk.k() );
          Set( Mins , Maxs , 11 , pk.l() );
+         
+         Set(Mins, Maxs,15, pk.reflag());
 
       }
 
       Mins[ 12 ] = Mins[ 13 ] = Mins[ 14 ] = - .5f;
       Maxs[ 12 ] = Maxs[ 13 ] = Maxs[ 14 ] = .5f;
 
-      for( int i = 15 ; i < Fields.length ; i++ )
+      for( int i = LastIntervalIndex+1 ; i < Fields.length ; i++ )
          Maxs[ i ] = Mins[ i ] = Float.NaN;
 
       list = new JList( Fields );
@@ -439,7 +441,18 @@ public class PeakFilterer extends JButton implements ActionListener
       set_hklMinMax();
 
    }
-
+   private void InterActiveDo(int fieldIndex, float MinVal, float MaxVal,
+            int[]List, boolean inside   )
+      {
+         OneFilterElement elt = new OneFilterElement( fieldIndex, MinVal, 
+                  MaxVal, List, inside);
+         Vector<OneFilterElement> V1 = new Vector<OneFilterElement>();
+         V1.add(  elt );
+         Vector<Vector<OneFilterElement>> V2 = new Vector<Vector<OneFilterElement>>(  ); 
+         V2.add(  V1 );
+         omittedSeqNums =CalcOmits( V2);
+         fireFilterListeners();
+      }
 
    /**
     * Thread that runs an actionPerformed method in the AWT event queue if not 
@@ -705,17 +718,21 @@ public class PeakFilterer extends JButton implements ActionListener
          {
             String res = JOptionPane.showInputDialog( "Enter " + Fields[ k ]
                      + " list" );
+            int[] listt = null;
             if( res == null )
 
                F = null;
 
             else
             {
-               int[] listt = IntList.ToArray( res );
+               listt = IntList.ToArray( res );
 
                F = new OneFilterElement( k , Float.NaN , Float.NaN , listt ,
                         false );
             }
+            if( interactive)
+               InterActiveDo(k,Float.NaN,Float.NaN, listt,false);
+               
          }
 
          if( F != null )
@@ -765,6 +782,7 @@ public class PeakFilterer extends JButton implements ActionListener
                int[] listt = IntList.ToArray( res );
                F = new OneFilterElement( k , Float.NaN , Float.NaN , listt ,
                         false );
+               
             }
 
 
@@ -960,7 +978,7 @@ public class PeakFilterer extends JButton implements ActionListener
          BoxLayout blayout = new BoxLayout( buttonPanel , BoxLayout.X_AXIS );
          buttonPanel.setLayout( blayout );
 
-         inside = new JCheckBox( "Inside interval" , true );
+         inside = new JCheckBox( "Inside interval" , false );
          inside.setToolTipText( "False-outside of interval, otherwise inside" );
          buttonPanel.add( inside );
          if( !IsModal)
@@ -1061,7 +1079,8 @@ public class PeakFilterer extends JButton implements ActionListener
          Inside = inside.isSelected();
       }
 
-
+      //interactive should be true
+      
       /* (non-Javadoc)
        * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
        */
@@ -1102,7 +1121,9 @@ public class PeakFilterer extends JButton implements ActionListener
          }
          if( !IsModal && (e.getSource()== inside || e.getSource()== sliders))
          {
-            OneFilterElement elt = new OneFilterElement( fieldIndex, MinVal(), 
+            InterActiveDo( fieldIndex, MinVal(), 
+                     MaxVal(), null, inside());
+            /*OneFilterElement elt = new OneFilterElement( fieldIndex, MinVal(), 
                      MaxVal(), null, inside());
             Vector<OneFilterElement> V1 = new Vector<OneFilterElement>();
             V1.add(  elt );
@@ -1110,6 +1131,7 @@ public class PeakFilterer extends JButton implements ActionListener
             V2.add(  V1 );
             omittedSeqNums =CalcOmits( V2);
             fireFilterListeners();
+            */
 
          }
       }
@@ -1190,12 +1212,15 @@ public class PeakFilterer extends JButton implements ActionListener
             return pk.time();
          else
             return pk.h();
+         
 
       else //k>=10
       if( k == 10 )
          return pk.k();
-      else
+      else if( k < 15)
          return pk.l();
+      else
+         return pk.reflag();
    }
 
 

@@ -67,7 +67,7 @@ public class XtalLatticeControl extends Object
     * This is the actionCommand of an ActionEvent for a listener.
     * @see #getListener()
     */
-   public static String CRYSTAL_LAT_INPUT_TEXT = "Crystal Lattice Input";
+   public static String CRYSTAL_LAT_INPUT_TEXT = "Lattice Parameters";
 
    // Default inputs for peaks of interest
    SetPeaks             PeakSetter;
@@ -185,7 +185,10 @@ public class XtalLatticeControl extends Object
             float beta , float gamma )
    {
 
-      if( a <= 0 || b <= 0 || c <= 0 )
+      if( a <= 0 || b <= 0 || c <= 0 || Float.isNaN( a )||
+               Float.isNaN( b  )||Float.isNaN( c )|| 
+               Float.isNaN( alpha )||Float.isNaN( beta )||
+               Float.isNaN( gamma ))
       {
          XtalParams = null;
          BMat = null;
@@ -203,11 +206,12 @@ public class XtalLatticeControl extends Object
       XtalParams[ 4 ] = beta;
       XtalParams[ 5 ] = gamma;
 
-      double[] scalars = Util
-               .scalars( LinearAlgebra.float2double( XtalParams ) );
+     // double[] scalars = Util
+     //          .scalars( LinearAlgebra.float2double( XtalParams ) );
 
-      double[][] RealTens = new double[ 3 ][ 3 ];
-      for( int i = 0 ; i < 3 ; i++ )
+      double[ ][] RealTens = lattice_calc.A_matrix( 
+               LinearAlgebra.float2double( XtalParams ));
+     /*   for( int i = 0 ; i < 3 ; i++ )
          for( int j = i ; j < 3 ; j++ )
             if( i == j )
 
@@ -219,7 +223,7 @@ public class XtalLatticeControl extends Object
                RealTens[ j ][ i ] = RealTens[ i ][ j ];
             }
 
-      double[][] RecipTens = LinearAlgebra.copy( RealTens );
+   
 
       if( ! LinearAlgebra.invert( ( RecipTens ) ) )
       {
@@ -229,11 +233,23 @@ public class XtalLatticeControl extends Object
       }
 
       double[] RecipXtalParams = XtalParamsFromGMatrix( RecipTens );
-
+    
       BMat = LinearAlgebra.double2float( lattice_calc
                .A_matrix( RecipXtalParams ) );
       BMat = LinearAlgebra.getTranspose( BMat );
-
+  */  
+      
+      if( !LinearAlgebra.invert( RealTens ))
+      {
+         BMat = null;
+         XtalParams = null;
+         OutInfo.removeInfoHandler( "Peak1(Crystal Params"  );
+         OutInfo.removeInfoHandler( "Peak2(Crystal Params"  );
+         return;
+      }
+      BMat = LinearAlgebra.double2float( RealTens);
+      //BMat = LinearAlgebra.getTranspose( BMat );
+      
 
       //----------------------- Add or change info listeners ------------------------
       if( Peak1Info == null || Peak2Info == null )

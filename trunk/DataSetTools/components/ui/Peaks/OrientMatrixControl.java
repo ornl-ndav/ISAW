@@ -53,6 +53,7 @@ import javax.swing.filechooser.FileFilter;
 
 import DataSetTools.operator.Generic.TOF_SCD.GetUB;
 import DataSetTools.operator.Generic.TOF_SCD.IPeak;
+import DataSetTools.operator.Generic.TOF_SCD.Peak_new;
 import IPNSSrc.blind;
 
 import java.awt.*;
@@ -137,6 +138,9 @@ public class OrientMatrixControl extends JButton
    Vector< float[][] >  OrMatrices;
 
    float[]              err                     = null;
+   
+   float                Dmin                    =-1;
+   float                Dmax                    =-1;
 
    //View orientation mat in 3D view
    boolean              showLatinOrientMenu;
@@ -461,6 +465,17 @@ public class OrientMatrixControl extends JButton
 
    }
 
+   /**
+    * Dmin and Dmax may be used for some auto indexing routines
+    * 
+    * @param Dmin   The new Dmin or -1 if undefined
+    * @param Dmax   The new Dmax or -1 if undefined
+    */
+   public void setDMin_Max( float Dmin, float Dmax)
+   {
+      this.Dmin = Dmin;
+      this.Dmax = Dmax;
+   }
 
    /**
     * Sets omitted peaks
@@ -511,6 +526,7 @@ public class OrientMatrixControl extends JButton
    {
       return getOmittedSeqNums( true );
    }
+   
    //converts mask form to int[] form
    protected int[] getOmittedSeqNums( boolean omitted )
    {
@@ -800,10 +816,12 @@ public class OrientMatrixControl extends JButton
        */
       public void do3DView(  )
       {
+         if( !SelView3DItem.equals( VIEW_PRED_PEAKS ))
+            View.showOrientPeaks( null);
+         
          if( SelView3DItem.equals(  "None" ) ) 
          {  
             View.showPlanes( null , null , null , null );
-            View.showOrientPeaks( null);
             
          }else if( SelView3DItem == VIEW_ORIENT)
          {
@@ -811,6 +829,7 @@ public class OrientMatrixControl extends JButton
             View.showOrientation( orientationMatrix , View.getLastSelectedSeqNum() );
             ( (OrientMatInfoHandler) OrientMatInfHandler ).setOrientationInfo(
                      View , orientationMatrix );
+            V3DControl.addSelectPeakHandler((ISelectPeakHandler) OrientMatInfHandler );
 
          }else if(  SelView3DItem == VIEW_PLANEab)
          {
@@ -976,7 +995,12 @@ public class OrientMatrixControl extends JButton
             return;
          }
 
-        
+         if( evt != VIEW_ORIENT)
+         {
+            V3DControl.removeSelectPeakHandler( 
+                     (ISelectPeakHandler )OrientMatInfHandler);
+            View.showOrientation( null , -1 );
+         }
          if( evt == VIEW_ORIENT )
          {
             boolean isSelected = true;
@@ -996,14 +1020,23 @@ public class OrientMatrixControl extends JButton
                mat = orientationMatrix;
             
             if( mat != null )
+            {
                SelView3DItem = VIEW_ORIENT;
+               ((OrientMatInfoHandler) OrientMatInfHandler ).setOrientationInfo(
+                        View , orientationMatrix );
+               V3DControl.addSelectPeakHandler( 
+                        (ISelectPeakHandler )OrientMatInfHandler);
+            }
             else
             {
                SelView3DItem = "None";
+               V3DControl.removeSelectPeakHandler( 
+                        (ISelectPeakHandler )OrientMatInfHandler);
                
             }
 
             View.showOrientation( mat , View.getLastSelectedSeqNum() );
+            View.showOrientPeaks( null );
             if( mat == null)
             {
                planeNum =-1;
@@ -1042,6 +1075,9 @@ public class OrientMatrixControl extends JButton
             else
 
                View.showPlanes( null , null , null , null );
+            
+
+            View.showOrientPeaks( null );
 
             planeNum = 1;
             
@@ -1073,6 +1109,7 @@ public class OrientMatrixControl extends JButton
 
                View.showPlanes( null , null , null , null );
 
+            View.showOrientPeaks( null );
             if( isSelected)
                planeNum = 2;
             else 
@@ -1102,6 +1139,7 @@ public class OrientMatrixControl extends JButton
 
                View.showPlanes( null , null , null , null );
 
+            View.showOrientPeaks( null );
             planeNum = 3;
 
             
@@ -1139,7 +1177,8 @@ public class OrientMatrixControl extends JButton
          if( evt.equals( "None" ) )
          {
             View.showPlanes( null , null , null , null );
-            
+
+            View.showOrientPeaks( null );
             planeNum = -1;
             SelView3DItem = "None";
             None3DView.setSelected( true );
@@ -1369,33 +1408,62 @@ public class OrientMatrixControl extends JButton
 
 
          if( evtString == AUTOMATIC )
+          if(LatControl.XtalParams != null)
+          {
+             float[] Params = LatControl.XtalParams;
+             float[][]UB= null;
+             try
+             {
+                UB =Operators.TOF_SCD.IndexPeaks_Calc.
+            
+                 IndexPeaksWithOptimizer( Peaks , Params[0] , 
+                          Params[1], Params[2] , Params[3] , Params[4] ,
+                          Params[5] );
+                setOrientationMatrix(UB );
+                showCurrentOrientationMatrix( false);
+                
+             }catch( Exception s)
+             {
+                gov.anl.ipns.Util.Sys.SharedMessages.addmsg( 
+                         "Could not find matrix "+s );
+                return;
+             }
+                            
+             
+          }else
          {
-
-            String S = JOptionPane.showInputDialog( "Enter min D and MaxD" ,
-                     "3.1,12.5" );
-
-            if( S == null )
-               return;
-
-            float MaxXtalLengthReal;
-
-            try
+            
+            float MaxXtalLengthReal = Dmax;
+            if( Dmin < 0 || Dmax < 0 )
             {
-               String[] SS = S.split( "," );
-               if( SS == null || SS.length < 2 )
+               String S = JOptionPane.showInputDialog( "Enter min D and MaxD" ,
+                        "3.1,12.5" );
+
+               if( S == null )
                   return;
 
-               MaxXtalLengthReal = Float.parseFloat( SS[ 1 ] );
 
-            }
-            catch( Exception ss )
-            {
-               MaxXtalLengthReal = - 1;
-               return;
-            }
+               try
+               {
+                  String[] SS = S.split( "," );
+                  if( SS == null || SS.length < 2 )
+                     return;
 
+                  MaxXtalLengthReal = Float.parseFloat( SS[ 1 ] );
+
+               }
+               catch( Exception ss )
+               {
+                  MaxXtalLengthReal = - 1;
+                  return;
+               }
+            }
+            setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            
             OrMatrices = GetUB. getAllOrientationMatrices( Peaks , omittedPeakIndex ,
                      .02f , MaxXtalLengthReal );
+            
+            setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 
             if( OrMatrices == null || OrMatrices.size() < 1 )
                return;
@@ -1488,7 +1556,7 @@ public class OrientMatrixControl extends JButton
                   }
             }
 
-            if( OrMatrices != null && OrMatrices.size() > 1 )
+            if( OrMatrices != null && OrMatrices.size() >= 1 )
                setOrientationMatrix( OrMatrices.elementAt( 0 ) );
 
             showCurrentOrientationMatrices( true , true );
@@ -1990,7 +2058,7 @@ public class OrientMatrixControl extends JButton
          jp1.setLayout( new GridLayout( 1 , n ) );
 
          spinner = new JSpinner( new SpinnerNumberModel( 1 , 1 , orMatrices
-                  .size() + 1 , 1 ) );
+                  .size()  , 1 ) );
          spinner.addChangeListener( this );
 
          jp1.add( new JLabel( "Mat Num" ) );

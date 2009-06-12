@@ -141,6 +141,8 @@ public class subs
       Res += "closeness    Used       All" + eoln;
       Res += "to int      Peaks      Peaks" + eoln;
       Res += "------------------------------" + eoln;
+      if( AllPerc !=null &&  Perc != null && AllPerc.length >=4 &&
+               Perc.length >=4)
       for( int i = 0 ; i < 4 ; i++ )
          Res += " "
                   + String.format( "%2.1f%14.3f%11.3f" , .1 + i * .1 ,
@@ -283,10 +285,10 @@ public class subs
       Res += "|Q'|=1/dspacing and its coordinates are \"currently\" relative to IPNS's"
                + eoln;
       
-      Res += "right-hand coordinate system where x is the beam direction and z is "
+      Res += "right-hand coordinate system where x(1st coord) is the beam direction and "
                + eoln;
       
-      Res += "vertically upward" + eoln;
+      Res += " z(3rd coord) is vertically upward" + eoln;
       
       return Res;
    }
@@ -711,6 +713,9 @@ public class subs
       Q_n.cross( new Vector3D( Q2 ) );
       q_n.cross( new Vector3D( q2 ) );
       
+      //Q_n.normalize();
+     // q_n.normalize();
+      
       Vector3D Qy = new Vector3D( Q1 );
       Vector3D qy = new Vector3D( q1 );
       
@@ -718,7 +723,6 @@ public class subs
       qy.cross( q_n );
 
       float[][] M2I = new float[ 3 ][ 3 ];
-      
       M2I[ 0 ] = Q0.get();
       M2I[ 1 ] = Qy.get();
       M2I[ 2 ] = Q_n.get();
@@ -730,7 +734,6 @@ public class subs
       
 
       float[][] m2I = new float[ 3 ][ 3 ];
-      
       m2I[ 0 ] = q0.get();
       m2I[ 1 ] = qy.get();
       m2I[ 2 ] = q_n.get();

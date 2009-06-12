@@ -114,8 +114,8 @@ public class Info extends JPanel implements ActionListener ,
       viewPanel = new JPanel();
       add( viewPanel , BorderLayout.CENTER );
 
-      currentTransformation = new Tran3D();
-
+      currentTransformation = V3DControl.view.getCurrentTransformation();
+     
       CurrentHandler = table.get( "Rotation Information" );
       Choices.setSelectedItem( "Rotation Information" );
 
@@ -222,7 +222,7 @@ public class Info extends JPanel implements ActionListener ,
       currentTransformation = transformation;
       if( CurrentHandler != null )
       {
-         CurrentHandler.show( null , currentTransformation , viewPanel );
+         CurrentHandler.show( currentPeak , currentTransformation , viewPanel );
          validate();
          invalidate();
       }
@@ -244,7 +244,7 @@ public class Info extends JPanel implements ActionListener ,
 
       if( CurrentHandler != null )
       {
-         CurrentHandler.show( currentPeak , null , viewPanel );
+         CurrentHandler.show( currentPeak , currentTransformation , viewPanel );
          validate();
          invalidate();
       }
