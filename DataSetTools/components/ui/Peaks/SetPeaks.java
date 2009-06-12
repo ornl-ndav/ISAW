@@ -160,7 +160,6 @@ public class SetPeaks extends JButton
     */
    public float[] getSetPeakQ( int PeakNum )
    {
-
       if( PeakNum < 0 || PeakNum >= MAX_SEL_PEAKS )
          return null;
 

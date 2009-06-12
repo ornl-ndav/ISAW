@@ -65,7 +65,6 @@ public class SelPeakInfoHandler implements InfoHandler
     * Shows information about the selected peak. This includes run number,
     * detector number, sequence number, row, col, time, channel, wl, etc.
     */
-   @Override
    public void show( IPeak pk , Tran3D transformation , JPanel panel )
    {
 
@@ -87,6 +86,8 @@ public class SelPeakInfoHandler implements InfoHandler
       Information.setText( "  -Seq Num    " + pk.seqnum() );
       Information.append( " \n  -Run Num    " + pk.nrun() );
       Information.append( " \n  -Det Num    " + pk.detnum() );
+      Information.append( " \n  -Intensity  " + pk.ipkobs( ) );
+      
       
       Information.append( " \n  -Row        " + pk.y() );
       Information.append( " \n  -Col        " + pk.x() );
