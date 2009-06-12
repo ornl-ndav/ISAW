@@ -492,7 +492,6 @@ public class IndexPeaks_Calc
        peaks.elementAt(i).sethkl( 0, 0, 0 );
    }
 
-
    /**
     * Index the specified list of peaks using the specified UBinverse
     * matrix.
@@ -920,6 +919,196 @@ public class IndexPeaks_Calc
     return return_msg;
   }
 
+ 
+
+   /**
+    * Attempt to index the peaks from the vector of peaks, given the
+    * lattice constants.
+    * This method proceeds in three stages.  First the strongest
+    * peaks in the file are used with an optimization based method
+    * to find an initial indexing for a significant fraction of the
+    * strongest peaks, using the specified lattice constants.  
+    * Next, the algorithm attempts to index all of the strongest peaks
+    * by adjusting the lattice parameters.
+    * Finally, the algorithm attempts to extend this indexing to all
+    * of the peaks. The method WriteNotIndexedPeaks can be used to
+    * write the unindexed peaks to another file so that they can be (possibly)
+    *  indexed latter. This allows indexing twins or more complicated samples
+    *  with several crystalites.
+    *  @see WriteNotIndexedPeaks(Vector, double[][], double,String)
+    *
+    * @param  all_peaks             Vector of all peaks
+    * @param  a                     Lattice parameter 'a'
+    * @param  b                     Lattice parameter 'b'
+    * @param  c                     Lattice parameter 'c'
+    * @param  alpha                 Lattice parameter alpha 
+    * @param  beta                  Lattice parameter beta 
+    * @param  gamma                 Lattice parameter gamma
+    */
+   public static float[][] IndexPeaksWithOptimizer( Vector all_peaks,
+                                                 float a,
+                                                 float b,
+                                                 float c,
+                                                 float alpha,
+                                                 float beta,
+                                                 float gamma)
+                                                 throws IOException
+   {
+     int MAX_STRONG     = 40;
+     int MAX_ATTEMPTS   = 25;
+     int NUM_NEIGHBORS  = 20;
+
+     double lattice_params[] = new double[6];
+     lattice_params[0] = a;
+     lattice_params[1] = b;
+     lattice_params[2] = c;
+     lattice_params[3] = alpha;
+     lattice_params[4] = beta;
+     lattice_params[5] = gamma;
+
+    
+     clearIndexesG( all_peaks );
+                                                // now sort by ipkobs
+     SortPeaks( all_peaks );
+
+     Vector strong_peaks = new Vector();
+     int num_strong = all_peaks.size();
+                                          // just look at 40 strongest peaks
+     if (num_strong > MAX_STRONG )
+       num_strong = MAX_STRONG;
+
+     for ( int i = 0; i < num_strong; i++ )
+       strong_peaks.add( (IPeak)all_peaks.elementAt(i) );
+                                         // sort in increasing order of |Q|
+     SortPeaksMagQ( strong_peaks, false );
+
+     double[][] UBinverse = new double[3][3];
+     double[][] newUBinverse = new double[3][3];
+     double[][] hkls;
+
+     double REQUIRED_FRACTION = 0.4;  // NOTE: This is critical.  IF too low
+                                      //       (say .3) quartz many fails
+     double hkl_tol        = 0.12;
+     int    num_attempts   = 0;
+     int    num_indexed    = 0;
+     int    second_peak    = 0;
+
+     if ( NUM_NEIGHBORS > strong_peaks.size() )
+       NUM_NEIGHBORS = strong_peaks.size();
+ 
+                                   // Initial indexing -------------------
+    Vector peaks = new Vector();
+    Random random = new Random();
+    while ( num_indexed  < REQUIRED_FRACTION * NUM_NEIGHBORS &&
+            num_attempts < MAX_ATTEMPTS )
+    {
+      System.out.println(" ===================== AUTO INDEXING, ATTEMPT # "
+                         + (num_attempts + 1) );
+      peaks.clear();
+
+      SortPeaksMagQ( strong_peaks, false );
+      peaks.add( strong_peaks.elementAt(0) );
+      second_peak = 1+(int)( (strong_peaks.size()/2) * random.nextDouble());
+      peaks.add( strong_peaks.elementAt( second_peak ) );
+
+      SortPeaks((Peak_new) peaks.elementAt(0),(Peak_new)  peaks.elementAt(1), strong_peaks );
+      Vector<Peak_new> neighbors = new Vector<Peak_new>();
+      for ( int i = 2; i < Math.min(NUM_NEIGHBORS, strong_peaks.size()); i++ )
+        neighbors.add( (Peak_new) strong_peaks.elementAt(i) );
+
+      int retries = 0;
+      while ( num_indexed  < REQUIRED_FRACTION * NUM_NEIGHBORS &&
+              num_attempts < MAX_ATTEMPTS                      &&
+              retries      < 3 )
+      {
+        IndexByOptimizing(peaks,lattice_params,UBinverse);
+        System.out.println("After Optimize");
+        ShowLatticeParams( UBinverse );
+
+        num_indexed = NumIndexed( neighbors, UBinverse, hkl_tol );
+        System.out.println("---------- NUM INDEXED = " + num_indexed +
+                           " OUT OF " + neighbors.size() +
+                           " WITH TOLERANCE = " + hkl_tol );
+        num_attempts++;
+        retries++;
+      }
+    }
+                                         // Refine UB -----------------------
+    String return_msg = "FAILED";
+    if ( num_attempts < MAX_ATTEMPTS )
+    {
+     peaks.clear();
+     int next_peak = 0;
+     int num_to_add = NUM_NEIGHBORS;
+     while ( next_peak < strong_peaks.size() )
+     {
+       int count = 0;
+       while ( next_peak < strong_peaks.size() && count < num_to_add )
+       {
+         peaks.add( strong_peaks.elementAt(next_peak) );
+         next_peak++;
+         count++;
+       }
+       num_to_add = (int)( .1 * peaks.size() );
+
+       System.out.println("NUM INDEXED = " +
+                           NumIndexed( peaks, UBinverse, hkl_tol ) +
+                          " OUT OF " + peaks.size() +
+                          " WITH TOLERANCE = " + hkl_tol );
+
+
+       hkls = OptimizeUB( peaks, UBinverse, newUBinverse, hkl_tol );
+       if ( hkls == null )
+       {
+          System.out.println("FAILED**********************");
+          num_attempts = MAX_ATTEMPTS + 1;
+          next_peak = strong_peaks.size() + 1;
+       }
+       else
+       {
+         UBinverse = LinearAlgebra.copy( newUBinverse );
+         ShowLatticeParams( newUBinverse );
+       }
+     }
+
+     if ( num_attempts <= MAX_ATTEMPTS )
+     {
+                                        // Iterate on all peaks -------------
+       for ( int i = 0; i < 5; i++ )
+       {
+         UBinverse = LinearAlgebra.copy( newUBinverse );
+         hkls = OptimizeUB( all_peaks, UBinverse, newUBinverse, hkl_tol );
+         ShowLatticeParams( newUBinverse );
+
+        }
+        return_msg = "NUM INDEXED = " +
+                      NumIndexed( all_peaks, UBinverse, hkl_tol ) +
+                     " OUT OF " + all_peaks.size() +
+                     " WITH TOLERANCE = " + hkl_tol;
+       
+       
+
+        Index( all_peaks, UBinverse );
+                                         // standardize the unit cell
+        double[][] UB = LinearAlgebra.copy( newUBinverse );
+        LinearAlgebra.invert( UB );
+        float[][]  floatUB = new float[3][3];
+        for ( int row = 0; row < 3; row++ )
+          for ( int col = 0; col < 3; col++ )
+            floatUB[row][col] = (float)(UB[row][col] / (Math.PI * 2));
+                                          // NOTE: Transpose and factor of 2PI
+        blind my_blind = new blind();
+        my_blind.blaue( floatUB );
+        for ( int row = 0; row < 3; row++ )
+          for ( int col = 0; col < 3; col++ )
+            floatUB[row][col] = (float)(my_blind.UB[row][col]);
+
+        return floatUB ;
+      }
+    }
+    
+    throw new IllegalArgumentException("Could not find orientation matrix");
+  }
 
    public static void main( String args[] ) throws IOException
    {
