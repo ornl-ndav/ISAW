@@ -2573,7 +2573,7 @@ public class ExtGetDS
    public boolean check( int ndet,int nspectra, NxNode NxDataNode)
    {
       if( NxDataNode == null)
-         return false;
+         return true;//Monitor node
       
       if( ndet < 0 || nspectra < 0 )
          return false;
@@ -2592,14 +2592,14 @@ public class ExtGetDS
          return false;
       
       int Ndet =1;
-      for( int i=3; i< dim.length;i++)
+      for( int i=0; i< dim.length-3;i++)
          Ndet *= dim[i];
       
       if( ndet != Ndet)
          return false;
       
       int Nspec = 1;
-      for( int i=1; i<3;i++)
+      for( int i=Math.max( dim.length-3 ,0 ); i<dim.length-1;i++)
          Nspec *=dim[i];
       
       if( Nspec != nspectra)
