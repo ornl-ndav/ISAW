@@ -198,6 +198,7 @@ public class NxMonitor{
     else
       D = Data.getInstance( new VariableXScale(xvals),yvals, errs, monitor_num);
  
+    D.setSqrtErrors( true );
     DS.addData_entry( D );
     int index = DS.getNum_entries()-1;
     
