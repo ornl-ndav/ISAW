@@ -967,7 +967,7 @@ public class IndexPeaks_Calc
      lattice_params[5] = gamma;
 
     
-     clearIndexesG( all_peaks );
+     clearIndexes( all_peaks );
                                                 // now sort by ipkobs
      SortPeaks( all_peaks );
 
