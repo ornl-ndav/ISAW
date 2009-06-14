@@ -236,7 +236,7 @@ public class IntegrateUtils
     * 
     * @param  peak     - A peakd that is to be integrated
     * @param  ds       - The data set with the peak
-    * @param  minDX    - min delta col from peak to use
+    * @param  minDX    - min delta col from peak to use(should be neg)
     * @param  maxDX    - max delta  col from peak to use
     * @param  minDY    - min delta row from peak to use
     * @param  maxDY    - max delta row  from peak to use
@@ -317,8 +317,8 @@ public class IntegrateUtils
 
       SCD_LogUtils.addLogHeader( log, peak );
                                               // size of peak "shoebox"
-      int nX = 2;//assume step size 1 maxDX  - minDX  + 1;
-      int nY = 2;// assume step size 1 maxDY  - minDY  + 1;
+      int nX =  maxDX  - minDX  + 1;
+      int nY =  maxDY  - minDY  + 1;
 
       float n_signal =  nX    *  nY;
       float n_total  = (nX+2) * (nY+2);
@@ -341,12 +341,13 @@ public class IntegrateUtils
 
                                            // range of x,y,z enclosed in shoebox
       int first_x = cenX + minDX;
-      int last_x  = first_x+1;//cenX + maxDX;
+      int last_x  = cenX + maxDX;
       int first_y = cenY + minDY;
-      int last_y  = first_y+1;//cenY + maxDY;
+      int last_y  =cenY + maxDY;
       int first_z = cenZ + minChan;
-      int last_z  = first_z+1;//cenZ + maxChan;
-      for(int k = first_z; k <= last_z;  k++)
+      int last_z  = cenZ + maxChan;
+      boolean skip = false;
+      for(int k = first_z; k <= last_z && !skip;  k++)
       {
         slice_peak   = -1;
         slice_peak_x = -1;
@@ -382,9 +383,15 @@ public class IntegrateUtils
         slice_I    = p_sig_plus_back - ratio * border;
         slice_sigI = (float)Math.sqrt(p_sig_plus_back + ratio * ratio * border);
 
-        totI += slice_I;
-        totSigI = (float)Math.sqrt( slice_sigI * slice_sigI + totSigI * totSigI);
-
+        if( slice_I >0)
+        {
+           totI += slice_I; 
+           totSigI = (float)Math.sqrt( slice_sigI * slice_sigI + totSigI * totSigI);
+           
+        }else if(k> cenZ)        
+           skip = true;
+       
+        
         SCD_LogUtils.addLogSlice( log,
                                   k-cenZ, k,
                                   slice_peak_x, slice_peak_y, (int)slice_peak,
@@ -429,9 +436,9 @@ public class IntegrateUtils
 
     // set up where the peak is located
     float[] tempIsigI=null;
-    int cenX=(int)Math.round(peak.x());
-    int cenY=(int)Math.round(peak.y());
-    int cenZ=(int)Math.round(peak.z());
+    int cenX = Math.round(peak.x());
+    int cenY = Math.round(peak.y());
+    int cenZ= Math.round(peak.z());
 
     // set up the time slices to integrate
     int minZrange=timeZrange[0];
@@ -1950,6 +1957,8 @@ public class IntegrateUtils
 
     return bounds;
   }
+  
+ 
   public static void showUsage(){
      System.out.println("This is a test program for several methods");
      System.out.println(" Argument 1 is the filename for the data set");
@@ -1958,7 +1967,7 @@ public class IntegrateUtils
      System.out.println(" Arguemnt4,5,6 are the xychan values");
      System.exit(0);
   }
-  public static void main( String args[]){
+  public static void main1( String args[]){
      
      if( args== null || args.length != 6)
         IntegrateUtils.showUsage();
