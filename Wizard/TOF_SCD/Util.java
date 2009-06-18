@@ -60,6 +60,7 @@ import gov.anl.ipns.ViewTools.Panels.PeakArrayPanel.*;
  */
 public class Util {
    
+   public static final String Delim = getDelimiter();
    public static final String ISAW_SCRATCH_DIRECTORY = 
                               System.getProperty("user.home") + "/ISAW/tmp/";
    public static final String SLURM_RETURN_SUFFIX = "_returned.txt";
@@ -208,7 +209,8 @@ public class Util {
         String fout_base = fout_prefix + run_num + "_DS_" + ds_num + "_";
         String result = fout_prefix + run_num + "_" + ds_num +
                         SLURM_RETURN_SUFFIX;
-
+        fin_name= Delim+fin_name+Delim;
+        fout_base =Delim+fout_base+Delim;
         String cp = System.getProperty( "java.class.path" );
         if ( cp == null )
           cp = " ";
@@ -474,6 +476,14 @@ public class Util {
     return all_peaks; 
   }
    
+   public static String getDelimiter( )
+   {
+      
+      if( System.getProperty("os.name"," ").toUpperCase().indexOf("WINDOW")>=0)
+         return "\"";
+      return "";
+      
+   }
    
    /**
     *  FindCentroidedPeaks method uses threads to find and centroid
