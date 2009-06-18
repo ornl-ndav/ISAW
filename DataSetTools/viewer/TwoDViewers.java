@@ -249,7 +249,12 @@ public class TwoDViewers extends DataSetViewer {
       repaint();
       invalidate();
       addAncestorListener( new myAncestorListener() );
-
+      if( viewComp instanceof ImageViewComponent  && viewArray instanceof IhasMarkers)
+      {
+         Marker M = ((IhasMarkers)viewArray).getMarkers();
+         if( M != null)
+         ((ImageViewComponent)viewComp).addMarker( M );
+      }
    }
 
 
@@ -550,6 +555,12 @@ public class TwoDViewers extends DataSetViewer {
 
       JoverlayPanel.addActionListener( dispList );
       JoverlayPanel.addComponentListener( dispList );
+      
+      if( viewComp instanceof ImageViewComponent  && viewArray instanceof IhasMarkers)
+      {
+         Marker M = ((IhasMarkers)viewArray).getMarkers();
+         ((ImageViewComponent)viewComp).addMarker( M );
+      }
    }
 
    
@@ -776,6 +787,14 @@ public class TwoDViewers extends DataSetViewer {
                  
          ImageView.setSelected( true );
          currentViewType = "Image";
+         
+         if( viewComp instanceof ImageViewComponent  && viewArray instanceof IhasMarkers)
+         {
+            Marker M = ((IhasMarkers)viewArray).getMarkers();
+            ((ImageViewComponent)viewArray).removeAllMarkers();
+            if( M!= null)
+            ((ImageViewComponent)viewComp).addMarker( M );
+         }
          
       }
       else if( newViewType.equals( "Table" ) ) {
@@ -1011,6 +1030,13 @@ public class TwoDViewers extends DataSetViewer {
 
          Update2DObjectState();
          viewComp.dataChanged(  );
+         Marker M = ((IhasMarkers)viewArray).getMarkers();
+         if( M != null && viewComp instanceof ImageViewComponent)
+         {
+            ((ImageViewComponent)viewComp).removeAllMarkers();
+            ((ImageViewComponent)viewComp).addMarker( M );
+         }
+            
          Set2DObjectState();//Sets position of the JTable
        
          if( viewComp instanceof CoordJPanel)
