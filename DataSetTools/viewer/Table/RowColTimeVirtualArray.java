@@ -122,12 +122,17 @@
  */
 
 package DataSetTools.viewer.Table;
+import gov.anl.ipns.MathTools.LinearAlgebra;
+import gov.anl.ipns.MathTools.Geometry.DetectorPosition;
+import gov.anl.ipns.MathTools.Geometry.Vector3D;
 import gov.anl.ipns.Util.Messaging.*;
+import gov.anl.ipns.Util.Numeric.floatPoint2D;
 import gov.anl.ipns.Util.Sys.*;
 import gov.anl.ipns.ViewTools.Components.*;
 import gov.anl.ipns.ViewTools.Components.Menu.*;
 import gov.anl.ipns.ViewTools.UI.*;
 import gov.anl.ipns.ViewTools.Components.Region.*;
+import gov.anl.ipns.ViewTools.Components.Transparency.Marker;
 import gov.anl.ipns.ViewTools.Panels.Transforms.*;
 
 import java.util.*;
@@ -135,7 +140,12 @@ import java.awt.event.*;
 import javax.swing.*;
 
 import DataSetTools.dataset.*;
+import DataSetTools.instruments.SampleOrientation;
+import DataSetTools.math.tof_calc;
+
 import java.io.*;
+
+import DataSetTools.trial.*;
 import DataSetTools.util.*;
 import DataSetTools.viewer.*;
 import DataSetTools.components.ui.*;
@@ -149,7 +159,8 @@ import java.awt.*;
 */
 public class RowColTimeVirtualArray extends 
                           DataSetTools.viewer.Table.Time_Slice_TableModel 
-                       implements IArrayMaker_DataSet, IVirtualArray2D,doesColumns{
+                       implements IArrayMaker_DataSet, IVirtualArray2D,doesColumns,
+                       IhasMarkers{
   //DataSet DS;
   String Title;
   JCheckBoxMenuItem jmErr=null; 
@@ -905,6 +916,149 @@ public class RowColTimeVirtualArray extends
     }
 
 
+  //------------------------implements IhasMarkers------------
+  
+  
+  /**
+   * Will produce marks where Peaks should occur. 
+   * (non-Javadoc)
+   * @see DataSetTools.viewer.IhasMarkers#getMarkers()
+   */
+  @Override
+  public Marker getMarkers()
+  {
+    int indx = x_scale.getI_GLB(  Time );
+    
+    if( indx <0 || indx >= x_scale.getEnd_x())
+       return null;
+    
+    float minTime = x_scale.getX( indx );
+    float maxTime = x_scale.getX( indx+1 );
+    
+    IDataGrid grid = Grid_util.getAreaGrid( DS , DetNum );
+    if( grid == null)
+       return null;
+    SampleOrientation sampOrient = AttrUtil.getSampleOrientation( DS );
+    
+    float[][] OrientMat = null;
+    try
+    {
+       OrientMat =  AttrUtil.getOrientMatrix( DS );
+    }catch(Exception s){
+       
+    }
+    
+    if( sampOrient == null || OrientMat == null)
+      return null;
+    VecQToTOF Xlate = new VecQToTOF( DS, grid );
+    float initialPath = AttrUtil.getInitialPath( DS );
+    float[][] invOrient = LinearAlgebra.getInverse( OrientMat);
+    invOrient =Mult(  invOrient , 
+                 sampOrient.getGoniometerRotationInverse().get() );
+    
+    if( invOrient == null)
+       return null; 
+      float[][] Phkl= new float[8][3];
+      Phkl[0] = LinearAlgebra.mult( invOrient , tof_calc
+               .DiffractometerVecQ( new DetectorPosition(grid.position( 1 , 1 )) , initialPath ,
+                        minTime ).getCartesianCoords() );
+      Phkl[1]  = LinearAlgebra.mult( invOrient , tof_calc
+               .DiffractometerVecQ( new DetectorPosition(grid.position( 1 , 1 )) , initialPath ,
+                        maxTime ).getCartesianCoords() );
+      Phkl[2]  = LinearAlgebra.mult( invOrient , tof_calc
+               .DiffractometerVecQ( new DetectorPosition(grid.position( 1 , grid.num_cols() ) ),
+                        initialPath , minTime ).getCartesianCoords() );
+      Phkl[3]  = LinearAlgebra.mult( invOrient , tof_calc
+               .DiffractometerVecQ( new DetectorPosition(grid.position( 1 , grid.num_cols() ) ),
+                        initialPath , maxTime ).getCartesianCoords() );
+      Phkl[4]  = LinearAlgebra.mult( invOrient , tof_calc
+               .DiffractometerVecQ( new DetectorPosition(grid.position( grid.num_rows() , 1 )) , initialPath ,
+                        minTime ).getCartesianCoords() );
+      Phkl[5]  = LinearAlgebra.mult( invOrient , tof_calc
+               .DiffractometerVecQ( new DetectorPosition(grid.position( grid.num_rows() , 1 )) , initialPath ,
+                        maxTime ).getCartesianCoords() );
+      Phkl[6]  = LinearAlgebra.mult( invOrient , tof_calc
+               .DiffractometerVecQ( new DetectorPosition(grid.position( grid.num_rows() , grid.num_cols() )) ,
+                        initialPath , minTime ).getCartesianCoords() );
+      Phkl[7]  = LinearAlgebra.mult( invOrient , tof_calc
+               .DiffractometerVecQ( new DetectorPosition(grid.position( grid.num_rows() , grid.num_cols() )) ,
+                        initialPath , maxTime ).getCartesianCoords() );
+     float[] Minhkl =new float[3];
+     float[] Maxhkl = new float[3];
+     for( int j=0; j<3;j++)
+     {
+        Minhkl[j] = Maxhkl[j]=Phkl[0][j];
+     }
+     for( int i=1;i<8;i++)
+        for(int j=0; j< 3; j++)
+        {
+           if(Phkl[i][j] < Minhkl[j])
+              Minhkl[j]= Phkl[i][j];
+           if(Phkl[i][j] > Maxhkl[j])
+              Maxhkl[j]= Phkl[i][j];
+          
+        }
+     Vector<int[]> data = new Vector<int[]>();
+     float[] hkl= new float[3];
+     float twoPI = (float)(2*Math.PI);
+     int minh=  (int)Math.floor(Minhkl[0]/twoPI);
+     int maxh = (int)(Math.floor( Maxhkl[0]/twoPI)+1);
+     int mink=  (int)(Math.floor(Minhkl[1]/twoPI));
+     int maxk = (int)(Math.floor( Maxhkl[1]/twoPI)+1);
+     int minl=  (int)(Math.floor(Minhkl[2]/twoPI));
+     int maxl = (int)(Math.floor( Maxhkl[2]/twoPI)+1);
+     
+     for( int h= minh; h <=maxh; h++)
+        for( int k= mink; k <=maxk; k++)
+           for( int l= minl; l <=maxl; l++)
+           {
+              hkl[0]=(float)(h*(Math.PI*2));hkl[1]=(float)(k*(Math.PI*2));
+              hkl[2]=(float)(l*(Math.PI*2));
+              float[] Qs =  LinearAlgebra.mult( OrientMat , hkl );
+              
+              
+              float[] rcT = Xlate.QtoRowColTOF( new Vector3D(Qs));//,sampOrient, grid, initialPath );
+              
+              
+              if( rcT != null && rcT[2]<=maxTime && rcT[2]>=minTime )
+              {
+                 int[] D = new int[2];
+                 D[0] =grid.num_cols()+1-(int)(rcT[0]+.5);
+                 D[1] =(int)(rcT[1]+.5);
+                 data.add( D );
+              }
+           }
+     
+     if( data.size()<1)
+        return null;
+     
+     floatPoint2D[] pts = new floatPoint2D[data.size()]; 
+     for( int i=0;i< data.size(); i++)
+     {
+        int[] point = data.elementAt( i );
+        pts[i]= new floatPoint2D( point[1],point[0]);
+     }
+     
+     return new Marker(Marker.BOX, pts, Color.white,1f, Marker.RESIZEABLE);
+    
+  }
+
+ 
+  private float[][] Mult( float[][]mat1,float[][] subMat2)
+  {
+     float[][] Res =new float[3][3];
+     Arrays.fill( Res[0] , 0f );
+     Arrays.fill( Res[1] , 0f );
+     Arrays.fill( Res[2] , 0f );
+     
+     for( int row=0; row< 3; row++)
+       for( int col=0; col < 3; col++)
+          for(int srow=0; srow < mat1[row].length; srow++)
+          Res[row][col] += mat1[row][srow] * subMat2[srow][col];
+     
+     return Res;
+     
+  }
   /**
   *    Called when this is an ActionListener.  Currently it is invoked only
   *    when data is changed by the superclass
@@ -1429,6 +1583,7 @@ public class RowColTimeVirtualArray extends
           }
        }
     }
+
 
   
 }//RowColTimeVirtualArray
