@@ -823,8 +823,13 @@ public class JParametersDialog implements Serializable,
            
           }
           public void finished(){
-            apply.setText(APPLY);
-            exit.setEnabled(true);
+             
+             if( apply != null)
+                apply.setText(APPLY);
+             
+             if( exit != null)
+               exit.setEnabled(true);
+             
             interrupt();
           }
         };
@@ -890,8 +895,10 @@ public class JParametersDialog implements Serializable,
            for( int i = 0; i < listt.length; i++)
               if( listt[i] instanceof DataSet)
                  OL.notifyIObservers( this, listt[i]);
-        
-        resultsLabel.setText(MakeMultLineLabelText("Result ="+ StringUtil.toString( result),jp));
+        String S = StringUtil.toString( result);
+        if( S == null)
+           S ="(null)";
+        resultsLabel.setText(MakeMultLineLabelText("Result ="+ S,jp));
         util.appendDoc(sessionLog,  "DS[]="+op.getCommand()+"(" +s +")");      
        } 
 
@@ -911,6 +918,7 @@ public class JParametersDialog implements Serializable,
      else if (result instanceof ErrorString)
      {
         ErrorString value = (ErrorString)result;
+       
         resultsLabel.setText(MakeMultLineLabelText("Operation failed:"+value.toString(),jp) );
         util.appendDoc(sessionLog, op.getCommand()+"(" +s +")");
      }
@@ -1074,8 +1082,9 @@ public class JParametersDialog implements Serializable,
   
   
   public void dispose(){
-
-     opDialog.dispose();
+     if( opDialog != null)
+        opDialog.dispose();
+     if( jf !=null)
      jf.dispose();
   }
   public class HelpButtonListener implements ActionListener{
