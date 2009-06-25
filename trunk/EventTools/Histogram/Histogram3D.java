@@ -68,9 +68,9 @@ public class Histogram3D
   private float  min;
   private double sum;
 
-  private ProjectionBinner3D x_binner,
-                             y_binner,
-                             z_binner;
+  private IProjectionBinner3D x_binner,
+                              y_binner,
+                              z_binner;
 
   private float[][][] histogram;
   private int         n_threads  = 4;
@@ -87,19 +87,19 @@ public class Histogram3D
    * of the region covered is determined by the direction vectors and
    * number of steps of the projection binners used.
    * 
-   * @param x_binner  ProjectionBinner3D that determines the region 
+   * @param x_binner  IProjectionBinner3D that determines the region 
    *                  and number of slices covered by the "columns" of 
    *                  the histogram array.
-   * @param y_binner  ProjectionBinner3D that determines the region 
+   * @param y_binner  IProjectionBinner3D that determines the region 
    *                  and number of slices covered by the "rows" of 
    *                  the histogram array.
-   * @param z_binner  ProjectionBinner3D that determines the region 
+   * @param z_binner  IProjectionBinner3D that determines the region 
    *                  and number of slices covered by the "pages" of 
    *                  the histogram array.
    */
-  public Histogram3D( ProjectionBinner3D x_binner, 
-                      ProjectionBinner3D y_binner,
-                      ProjectionBinner3D z_binner )
+  public Histogram3D( IProjectionBinner3D x_binner, 
+                      IProjectionBinner3D y_binner,
+                      IProjectionBinner3D z_binner )
   {
     this.x_binner = x_binner;
     this.y_binner = y_binner;
@@ -128,7 +128,7 @@ public class Histogram3D
    * @return A reference to the binner in the direction of the local "X"
    *         axis for this histogram.
    */
-  public ProjectionBinner3D xBinner()
+  public IProjectionBinner3D xBinner()
   {
     return x_binner;
   }
@@ -141,7 +141,7 @@ public class Histogram3D
    * @return A reference to the binner in the direction of the local "Y"
    *         axis for this histogram.
    */
-  public ProjectionBinner3D yBinner()
+  public IProjectionBinner3D yBinner()
   {
     return y_binner;
   }
@@ -154,7 +154,7 @@ public class Histogram3D
    * @return A reference to the binner in the direction of the local "Z"
    *         axis for this histogram.
    */
-  public ProjectionBinner3D zBinner()
+  public IProjectionBinner3D zBinner()
   {
     return z_binner;
   }

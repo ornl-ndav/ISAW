@@ -36,7 +36,7 @@ package EventTools.Histogram.Operators;
 import java.util.*;
 
 import EventTools.EventList.IEventList3D;
-import EventTools.Histogram.ProjectionBinner3D;
+import EventTools.Histogram.IProjectionBinner3D;
 import gov.anl.ipns.Operator.*;
 
 /**
@@ -55,9 +55,9 @@ public class BinEvents implements IOperator
                       max;
 
   private IEventList3D events;
-  private ProjectionBinner3D x_binner;
-  private ProjectionBinner3D y_binner;
-  private ProjectionBinner3D z_binner;
+  private IProjectionBinner3D x_binner;
+  private IProjectionBinner3D y_binner;
+  private IProjectionBinner3D z_binner;
 
 
   /**
@@ -96,9 +96,9 @@ public class BinEvents implements IOperator
                     float             max,
                     int               first_page, 
                     int               last_page,
-                    ProjectionBinner3D   x_binner,
-                    ProjectionBinner3D   y_binner,
-                    ProjectionBinner3D   z_binner,
+                    IProjectionBinner3D   x_binner,
+                    IProjectionBinner3D   y_binner,
+                    IProjectionBinner3D   z_binner,
                     IEventList3D events    )
   {
     this.histogram  = histogram;
