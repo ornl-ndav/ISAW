@@ -98,23 +98,23 @@ public class GetEventLists implements IOperator
    *                   that this operator will use.
    * @param last_page  The last page of the portion of the 3D histogram 
    *                   that this operator will use.
-   * @param x_binner   The ProjectionBinner3D that was used to determine
+   * @param x_binner   The IProjectionBinner3D that was used to determine
    *                   which column of the histogram an event was mapped to. 
-   * @param y_binner   The ProjectionBinner3D that was used to determine
+   * @param y_binner   The IProjectionBinner3D that was used to determine
    *                   which row of the histogram an event was mapped to. 
-   * @param z_binner   The ProjectionBinner3D that was used to determine
+   * @param z_binner   The IProjectionBinner3D that was used to determine
    *                   which page of the histogram an event was mapped to. 
    * @param binner     This binner specifies which count values will be
    *                   returned as events when the getResult() method is
    *                   called.
    */
-  public GetEventLists( float[][][]        histogram, 
-                        int                first_page, 
-                        int                last_page,
-                        ProjectionBinner3D x_binner,
-                        ProjectionBinner3D y_binner,
-                        ProjectionBinner3D z_binner,
-                        IEventBinner       binner )
+  public GetEventLists( float[][][]         histogram, 
+                        int                 first_page, 
+                        int                 last_page,
+                        IProjectionBinner3D x_binner,
+                        IProjectionBinner3D y_binner,
+                        IProjectionBinner3D z_binner,
+                        IEventBinner        binner )
   {
     this.first_page = first_page;
     this.last_page  = last_page;
