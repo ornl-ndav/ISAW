@@ -258,6 +258,43 @@ public class ProjectionBinner3D implements IProjectionBinner3D
   }
 
 
+  /**
+   * Method to construct three new projection binners, so that
+   * 3D events can be mapped to three indices (ix, iy, iz)
+   * that determine the correct 3D histogram bin by projecting
+   * on these three "dual" binners.  These "dual" binners
+   * work even if the original three binners did not use
+   * orthogonal directions.  The initial set of 3D binners
+   * may be thought of as dividing 3D space into a collection of
+   * of parallelepipeds, with the direction vectors along the edges
+   * of the parallelepipeds and the sizes of the edges determined by
+   * the bins of the corresponding 3D binner.  However, if the three
+   * initial 3D binners do not use orthogonal vectors, then they
+   * cannot be used directly to determine indices into a 3D array
+   * of values for counts in the parallelepipeds.  To do this, a
+   * new set of 3D binners is needed with binner[0] perpendicular
+   * to the plane determined by y_binner and z_binner; binner[1]
+   * perpendicular to the plane determined by z_binner and x_binner,
+   * and binner[2] perpendicular to the plane determined by
+   * x_binner and y_binner.
+   *
+   * @param  x_binner  Binner in direction of the first parallelegram
+   *                   edge.  For binning events in Q-space this would 
+   *                   usually be a*.
+   *
+   * @param  y_binner  Binner in direction of the second parallelegram
+   *                   edge.  For binning events in Q-space this would 
+   *                   usually be b*.
+   *
+   * @param  z_binner  Binner in direction of the second parallelegram
+   *                   edge.  For binning events in Q-space this would 
+   *                   usually be c*.
+   *
+   * @return An array of three binners that can be used to place events
+   *         in the correct 3D histogram bin corresponding to a 
+   *         parallelepiped in 3D.
+   */
+
   public static IProjectionBinner3D[] getDualBinners(
                                       IProjectionBinner3D x_binner,
                                       IProjectionBinner3D y_binner,
