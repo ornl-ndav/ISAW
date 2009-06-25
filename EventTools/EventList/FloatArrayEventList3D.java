@@ -88,36 +88,35 @@ public class FloatArrayEventList3D implements IEventList3D
   }
 
 
+  @Override
   public int numEntries()
   {
     return codes.length;
   }
 
 
+  @Override
   public int eventCode( int i )
   {
     return codes[i];
   }
 
 
-  public double eventX( int i )
+  @Override
+  public int[] eventCodes()
   {
-    return x_vals[i];
+    return codes;
   }
 
 
-  public double eventY( int i )
+  @Override
+  public void setEventCodes( int[] codes )
   {
-    return y_vals[i];
+    this.codes = codes;
   }
 
 
-  public double eventZ( int i )
-  {
-    return z_vals[i];
-  }
-
-
+  @Override
   public void eventVals( int i, double[] values )
   {
     values[0] = x_vals[i];
@@ -126,22 +125,43 @@ public class FloatArrayEventList3D implements IEventList3D
   }
 
 
-  public float[][] getEventArrays()
+  @Override
+  public float[] eventVals()
   {
-    float[][] result = new float[3][];
-    result[0] = x_vals;
-    result[1] = y_vals;
-    result[2] = z_vals;
-    return result;
+    float[] vals = new float[ 3*x_vals.length ];
+    int index = 0;
+    for ( int i = 0; i < x_vals.length; i++ )
+    {
+      vals[index++] = x_vals[i];
+      vals[index++] = y_vals[i];
+      vals[index++] = z_vals[i];
+    }
+    return vals;
   }
 
-  
-  public int[] getCodeArray()
+
+  @Override
+  public double eventX( int i )
   {
-    return codes;
+    return x_vals[i];
   }
 
 
+  @Override
+  public double eventY( int i )
+  {
+    return y_vals[i];
+  }
+
+
+  @Override
+  public double eventZ( int i )
+  {
+    return z_vals[i];
+  }
+
+
+  @Override
   public IEventBinner xExtent()
   {
     if ( x_extent == null )
@@ -151,6 +171,7 @@ public class FloatArrayEventList3D implements IEventList3D
   }
 
   
+  @Override
   public IEventBinner yExtent()
   {
     if ( y_extent == null )
@@ -160,6 +181,7 @@ public class FloatArrayEventList3D implements IEventList3D
   }
 
   
+  @Override
   public IEventBinner zExtent()
   {
     if ( z_extent == null )
