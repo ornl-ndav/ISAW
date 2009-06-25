@@ -70,8 +70,6 @@ public class IndexPeaks_Calc
 
     double                 best_chi_sqr = Double.POSITIVE_INFINITY;
     SCD_OrientationErrorF  best_error_f = null;
- //   MarquardtArrayFitter   best_fitter  = null;
-
     SCD_OrientationErrorF  error_f = null;
 
     Random random = new Random();
@@ -108,7 +106,6 @@ public class IndexPeaks_Calc
       {
         best_chi_sqr = chi_sqr;
         best_error_f = error_f;
-//        best_fitter  = fitter;
       }
 /*
       if ( count % 100 == 10 )
@@ -297,6 +294,7 @@ public class IndexPeaks_Calc
      {
        this.decreasing = decreasing;
      }
+
 
      /**
        *  Compare two Peak_new objects based on the magnitude of their Q value.
@@ -492,21 +490,31 @@ public class IndexPeaks_Calc
        peaks.elementAt(i).sethkl( 0, 0, 0 );
    }
 
+
    /**
     * Index the specified list of peaks using the specified UBinverse
     * matrix.
     *
     * @param peaks     The list of peaks to index
     * @param UBinverse The inverse of the UB matrix
+    * @param tolerance The HKL value assigned to the peak must be
+    *                  closer to integer values than the specified
+    *                  tolerance, in order to consider the peak to be
+    *                  indexed.
     */
-   public static void Index( Vector<Peak_new> peaks, double[][] UBinverse )
+   public static void Index( Vector<Peak_new> peaks, 
+                             double[][]       UBinverse,
+                             double           tolerance )
    {
      double[][] hkls = SCD_OrientationErrorF.get_hkls( peaks, UBinverse );
      for ( int i = 0; i < hkls.length; i++ )
      {
-       peaks.elementAt(i).sethkl( (float)hkls[i][0],
-                                  (float)hkls[i][1],
-                                  (float)hkls[i][2]  );
+       if ( DistanceToInts( hkls[i] ) < tolerance )
+         peaks.elementAt(i).sethkl( (float)hkls[i][0],
+                                    (float)hkls[i][1],
+                                    (float)hkls[i][2]  );
+       else
+         peaks.elementAt(i).sethkl( 0, 0, 0 );
      }
    }
 
@@ -655,18 +663,30 @@ public class IndexPeaks_Calc
     */
    public static void ShowLatticeParams( double[][] UBinverse )
    {
+     System.out.println( getLatticeParams( UBinverse ) );
+   }
+ 
+
+  /**
+   *  Get a String form of the lattice parameters corresponding to the
+   *  specified UB inverse matrix.
+   *
+   *  @param UBinverse the inverse of a UB matrix.
+   */
+   private static String getLatticeParams( double[][] UBinverse )
+   {
      double[][] temp = LinearAlgebra.copy( UBinverse );
      LinearAlgebra.invert( temp );
      double[] lat_params = lattice_calc.LatticeParamsOfUB( temp );
      for ( int k = 0; k < 3; k++ )
        lat_params[k] *= Math.PI * 2;
      lat_params[6] *= 8 * Math.PI * Math.PI * Math.PI;
-     System.out.printf("%7.4f  %7.4f  %7.4f   %8.4f %8.4f %8.4f  %9.5f \n",
+     return String.format(" %3.1f %3.1f %3.1f  %4.1f %4.1f %4.1f  %5.1f \n",
                        lat_params[0], lat_params[1], lat_params[2],
                        lat_params[3], lat_params[4], lat_params[5],
                        lat_params[6] );
    }
- 
+
 
    /**
     *  Print out the h,k,l indices of a list of peaks.
@@ -852,7 +872,6 @@ public class IndexPeaks_Calc
          count++;
        }
        num_to_add = (int)( .1 * peaks.size() );
-
        System.out.println("NUM INDEXED = " +
                            NumIndexed( peaks, UBinverse, hkl_tol ) +
                           " OUT OF " + peaks.size() +
@@ -881,19 +900,22 @@ public class IndexPeaks_Calc
          UBinverse = LinearAlgebra.copy( newUBinverse );
          hkls = OptimizeUB( all_peaks, UBinverse, newUBinverse, hkl_tol );
          ShowLatticeParams( newUBinverse );
+       }
+       UBinverse = LinearAlgebra.copy( newUBinverse );
 
-        }
-        return_msg = "NUM INDEXED = " +
+        return_msg = "INDEXED: " +
                       NumIndexed( all_peaks, UBinverse, hkl_tol ) +
-                     " OUT OF " + all_peaks.size() +
-                     " WITH TOLERANCE = " + hkl_tol;
+                     " OF " + all_peaks.size() +
+                     " WITHIN " + hkl_tol;
+
+        return_msg += "  LATTICE CONSTANTS:" + getLatticeParams( UBinverse );
        
         WriteNotIndexedPeaks( all_peaks, 
                               newUBinverse, 
                               hkl_tol, 
                               not_indexed_file_name );
 
-        Index( all_peaks, UBinverse );
+        Index( all_peaks, UBinverse, hkl_tol );
         if ( peaks_file_name.length() > 0 )
           Peak_new_IO.WritePeaks_new( peaks_file_name, all_peaks, false );
 
@@ -1088,7 +1110,7 @@ public class IndexPeaks_Calc
        
        
 
-        Index( all_peaks, UBinverse );
+        Index( all_peaks, UBinverse, hkl_tol );
                                          // standardize the unit cell
         double[][] UB = LinearAlgebra.copy( newUBinverse );
         LinearAlgebra.invert( UB );
