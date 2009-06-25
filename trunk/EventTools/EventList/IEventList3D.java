@@ -122,6 +122,24 @@ public interface IEventList3D
 
   
   /**
+   * Get a list of all of the event codes for this event list.  The ith
+   * entry in the array of event codes is the code for the ith event.
+   * 
+   * @return  An integer array giving the event codes for all of the
+   * events in this list, in order.
+   */
+  int[] eventCodes(); 
+  
+
+  /**
+   *  Set the list of event codes for the events in this list.  
+   *
+   *  @param codes  the new list of event codes for the events.
+   */
+  public void setEventCodes( int[] codes );
+  
+
+  /**
    * Get the x,y,z values of the specified event list entry.
    * 
    * @param index  The index of the event list entry.
@@ -131,6 +149,22 @@ public interface IEventList3D
    */
   void eventVals( int index, double[] values ); 
 
+  
+  /**
+   * Get all of the events in this event list, in the form of a 
+   * one-dimensional array containing interleaved events.  Specifically,
+   * the first three entries will be the x, y and z coordinates of the
+   * first event, the next three, the x, y and z coordinates of the second
+   * event, etc.  In general the x,y,z coordinates of the ith event are
+   * at positions 3*i, 3*i+1 and 3*i+2.
+   * NOTE: For efficiency, this may return a reference to an internal array
+   * of events, so the elements of this array should NOT be altered by 
+   * the calling code.
+   * 
+   * @return a list of the x,y,z coordinates for all of the events.
+   */
+  float[] eventVals();
+  
   
   /**
    * Get the X-coordinate for the specified entry in this event list.
@@ -160,4 +194,5 @@ public interface IEventList3D
    * @return  An double giving the Z-cooordinate for the specified entry.
    */
   double eventZ( int index ); 
+  
 }

@@ -66,6 +66,7 @@ public class ByteFile16EventList3D implements IEventList3D
 
   private int     num_events;
   private byte[]  buffer;
+  private int[]   specified_codes = null;
 
 /**
  * Construct an event list from the specified binary file.
@@ -105,40 +106,46 @@ public class ByteFile16EventList3D implements IEventList3D
     fis.close();
   }
 
-
+  
+  @Override
   public int numEntries()
   {
     return num_events;
   }
 
-
+  
+  @Override
   public int eventCode( int i )
   {
-    return getValue_16( i * 8 + 6 );
+    if ( specified_codes == null )
+      return getValue_16( i * 8 + 6 );
+    else
+      return specified_codes[i];
   }
-
-
-  public double eventX( int i )
+ 
+  
+  @Override
+  public int[] eventCodes()
   {
-    int index = getValue_16( i * 8 );
-    return x_binner.centerVal( index );
+    if ( specified_codes != null )
+      return specified_codes;
+
+    int[] codes = new int[ num_events ];
+    for ( int i = 0; i < num_events; i++ )
+      codes[i] = getValue_16( i * 8 + 6 );
+
+    return codes;
   }
 
 
-  public double eventY( int i )
+  @Override
+  public void setEventCodes( int[] codes )
   {
-    int index = getValue_16( i * 8 + 2 );
-    return y_binner.centerVal( index );
+    this.specified_codes = codes;
   }
 
-
-  public double eventZ( int i )
-  {
-    int index = getValue_16( i * 8 + 4 );
-    return z_binner.centerVal( index );
-  }
-
-
+  
+  @Override
   public void eventVals( int i, double[] values )
   {
     int index = getValue_16( i * 8 );
@@ -149,6 +156,48 @@ public class ByteFile16EventList3D implements IEventList3D
 
     index = getValue_16( i * 8 + 4 );
     values[2] = z_binner.centerVal( index );
+  }
+
+  
+  @Override
+  public float[] eventVals()
+  {
+    float[] values = new float[3*num_events];
+    int index;
+    for ( int i = 0; i < num_events; i++ )
+    {
+      index = getValue_16( i * 8 );
+      values[ index ] = (float)x_binner.centerVal( index );
+      index++;
+      values[ index ] = (float)y_binner.centerVal( index );
+      index++;
+      values[ index ] = (float)z_binner.centerVal( index );
+      index++;
+    }
+    return values;
+  }
+  
+  @Override
+  public double eventX( int i )
+  {
+    int index = getValue_16( i * 8 );
+    return x_binner.centerVal( index );
+  }
+
+
+  @Override
+  public double eventY( int i )
+  {
+    int index = getValue_16( i * 8 + 2 );
+    return y_binner.centerVal( index );
+  }
+
+
+  @Override
+  public double eventZ( int i )
+  {
+    int index = getValue_16( i * 8 + 4 );
+    return z_binner.centerVal( index );
   }
 
 
