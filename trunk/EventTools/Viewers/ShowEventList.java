@@ -146,9 +146,9 @@ public class ShowEventList
     group.addChild( y_axis );
     group.addChild( z_axis );
 
-    ProjectionBinner3D x_binner = histogram.xBinner();
-    ProjectionBinner3D y_binner = histogram.yBinner();
-    ProjectionBinner3D z_binner = histogram.zBinner();
+    IProjectionBinner3D x_binner = histogram.xBinner();
+    IProjectionBinner3D y_binner = histogram.yBinner();
+    IProjectionBinner3D z_binner = histogram.zBinner();
 
     int slice_num = z_binner.numBins()/2;
     float[][] slice = histogram.pageSlice( slice_num );
