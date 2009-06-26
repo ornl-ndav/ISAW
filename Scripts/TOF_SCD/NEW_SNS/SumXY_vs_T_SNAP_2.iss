@@ -77,5 +77,6 @@ Send sum_ds
 #  Display the sum of the selected pixels
 #
 Display sum_ds
+Display sum_ds, "GRX_Y"
 
 return "Finished"
