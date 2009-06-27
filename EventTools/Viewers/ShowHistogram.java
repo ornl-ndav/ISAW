@@ -84,7 +84,7 @@ public class ShowHistogram
 
     SimpleShape shape;
     FloatArrayEventList3D events;
-    float[][] pts;
+    float[] pts;
     for ( int i = 0; i < all_lists.size(); i++ )
     {
       Vector lists = (Vector)all_lists.elementAt(i);
@@ -93,10 +93,20 @@ public class ShowHistogram
         if ( lists.elementAt(k) != null )
         {
           events = (FloatArrayEventList3D)(lists.elementAt(k));
-          pts = events.getEventArrays();
+          pts = events.eventVals();
+          float[] x_vals = new float[ pts.length/3 ];
+          float[] y_vals = new float[ pts.length/3 ];
+          float[] z_vals = new float[ pts.length/3 ];
+          int index = 0;
+          for ( int j = 0; j < x_vals.length; j++ )
+          {
+            x_vals[j] = pts[index++];
+            y_vals[j] = pts[index++];
+            z_vals[j] = pts[index++];
+          }
 //        size = (6*k)/lists.size() + 2;
           size = k/2 + 2;
-          shape = new PointList( pts[0], pts[1], pts[2], 
+          shape = new PointList( x_vals, y_vals, z_vals, 
                                  size, colors[k+shift], 1.0f );
           group.addChild( shape );
         }
