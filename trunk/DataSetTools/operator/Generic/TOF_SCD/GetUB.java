@@ -575,30 +575,87 @@ public class GetUB {
      if( Nelements < 1)
         return MRes;
      float FitMax = List[Nelements-1][FIT1]+List[Nelements-1][CORR];
-     FitMax = .75f*FitMax;
+     FitMax = .65f*FitMax;
      System.out.println("Through initial find directions,nelets, FitMax= "+Nelements+
               ","+FitMax);
      int n=Nelements-1;
      for( int i=Nelements-1; i>0 && (List[i][FIT1]+List[i][CORR])> FitMax; i--)
         n=i;
      n = Math.max(  n , Nelements-1-70 );
+     
      for( int i=Nelements-1; i>= n; i--)
         optimize( List[i],Peaks,omit,MaxXtalLengthReal);
+     
      System.out.println("Through with optimize of first " + n );
      n = Nelements - 10;
-     for( int i=Nelements-1; i>=n; i--)
-        for( int j=i-1; j>= n; j--)
-           for( int k=j-1; k >= n; k--)
-              
+     float[] weights = new float[7];
+     Arrays.fill( weights , 0f );
+     weights[LEN]= -1;
+     weights[FIT1]=-.2f;
+     weights[CORR]=-.2f;
+     
+     ListComparator comp = new ListComparator( List, n, Nelements-1,weights );
+     comp.sort();
+     Integer[] sortList = comp.getRangList();
+ //    for( int i=Nelements-1; i>=n; i--)
+//        for( int j=i-1; j>= n; j--)
+//           for( int k=j-1; k >= n; k--)
+       /* for( int i=0; i< sortList.length-2;i++)
+           for( int j=i+1; j<sortList.length-1; j++ )
+              for( int k=j+1; k<sortList.length; k++ )
            {
-             float[][]UB = List2UBinv( i,j,k);
+             float[][]UB = List2UBinv( sortList[i],sortList[j],
+                      sortList[k]);
              if( UB != null)
                 MRes.add( LinearAlgebra.copy( UB) );
            }
+           */
+       MRes=GetUBs(  sortList,null);
        System.out.println( "Through finding UB's");
        return MRes;
    }
    
+   private static Vector<float[][]> GetUBs( Integer[] sortList,int[] elts)
+   {
+      Vector<float[][]> Res = new Vector<float[][]>();
+      int[] tuple = new int[3];
+      tuple[0]=0; tuple[1]=1; tuple[2] =2;
+      int N=2;
+      boolean done = tuple[2] >=sortList.length;
+      while(!done)
+      {
+         int i1 = sortList[tuple[0]];
+         int i2 = sortList[tuple[1]];
+         int i3 = sortList[tuple[2]];
+         float[][]UB = List2UBinv( i1, i2, i3);
+         if(UB != null)
+         {
+            Res.add(UB);
+            if( elts != null && elts.length ==3)
+            {
+               elts[0]=i1;
+               elts[1]= i2;
+               elts[2] =i3;
+               return Res;
+            }
+         }
+         //next tuple
+         if( tuple[0]+1 < tuple[1] )
+            tuple[0]++;
+         else if( tuple[1]+1 < tuple[2])
+         {   tuple[1]++;
+             tuple[0]=0;
+         }else
+         {tuple[0]=0; tuple[1]=1;
+          N++;
+           tuple[2]=N;
+         }
+         done = tuple[2] >=sortList.length;
+        
+      }
+      return Res;
+      
+   }
    private static float[][] List2UBinv( int i1, int i2, int i3)
    {
       if( i1 <0 || i2<0|| i3 <0)
@@ -635,7 +692,7 @@ public class GetUB {
       return LinearAlgebra.double2float( B.UB );
       
    }
-   private static float[] PlaneNormal( int i1){
+  private static float[] PlaneNormal( int i1){
 
       float[] coeff = new float[3];
       coeff[0]= List[i1][X];
@@ -793,9 +850,54 @@ public class GetUB {
           thrds[i] = new DoQuadrantDirections( Peaks, omit,  gridLength,
                MaxXtalLengthReal, i);
        Execute1( thrds);
+  //----------- added code to sort by length major-----
+     int n = 0 ;
+       float[] weights = new float[7];
+       Arrays.fill( weights , 0f );
+       weights[LEN]= -1;
+       weights[FIT1]=-.5f;
+       weights[CORR]=-.5f;
+       
+       ListComparator comp = new ListComparator( List, n, Nelements-1,weights );
+       comp.sort();
+       Integer[] sortList = comp.getRangList();
+       float[][] FList = new float[sortList.length][];
+       System.out.println("NElts, sortList, List ="+ sortList.length+","+Nelements);
+       for( int i=0; i< sortList.length; i++)
+          System.out.print( sortList[i]+",");
+       int[] poss = new int[3];
+       Vector<float[][]> OO = GetUBs( sortList, poss);
+       if( OO == null || OO.size() < 1)
+          return null;
+       else
+       {  
+          Arrays.fill( code , - 1f );
+          code[6] = Nelements;
+          
+          float[][] Res1= new float[3][3];
+          for( int ii=0;ii<3; ii++ )
+          {
 
-     //show( List );
-      if( Nelements <= 0 )
+             float[] listEntry = List[ poss[ii] ];
+             code[ 0+2*ii ] = listEntry[ CORR ];
+             code[ 1+2*ii ] = listEntry[ FIT1 ] / 2f;
+             float x = listEntry[ X ] ;
+             float y = listEntry[ Y ] ;
+             float scale = listEntry[ LEN ];
+            
+             Res1[ii][ 0 ] = x * scale;
+             Res1[ii][ 1 ] = y * scale;
+             Res1[ii][ 2 ] = (float) Math.sqrt( 1 - x *x - y * y ) * scale;
+          }
+          
+          
+       }
+          
+          
+      // List = FList;
+ 
+   //----------end added code to sort the list------
+       if( Nelements <= 0 )
          return null;
       float[] q1 , q2 , q3;
       q1 = new float[ 3 ];
@@ -1712,3 +1814,88 @@ public class GetUB {
    
    
 }
+
+class ListComparator implements Comparator<Integer>
+{
+   float[][] list;
+   float[] weights;
+   int start,
+       end;
+   Integer[] sortInfo;
+   public ListComparator( float[][] list,int start, int end,float[] weights)
+   {
+      this.list = list;
+      this.weights = weights;
+      this.start = Math.min( start, list.length);
+      this.end  = Math.max(0,end);
+      if(start > end)
+         sortInfo = null;
+      else
+      {
+         sortInfo = new Integer[ end - start +1];
+         for( int i =0; i< sortInfo.length; i++ )
+            sortInfo[i]= start +i;
+      }
+   }
+
+   /* (non-Javadoc)
+    * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
+    */
+   @Override
+   public int compare( Integer o1 , Integer o2 )
+   {
+      if( list == null || start > end)
+         return 0;
+      
+      if( o1 == null)
+         if( o2 == null)
+            return 0;
+         else
+            return -1;
+      if( o2 == null)
+         return 1;
+      int i1 =(o1).intValue();
+      int i2 =(o2).intValue();
+      if( i1 < start || i1 >end)
+         return -1;
+      if( i2 < start || i2 >end)
+         return 1;
+      float v1 = 0;
+      float w;
+      for( int i=0; i< list[i1].length; i++)
+      {
+         w=1;
+         if( weights != null && weights.length >i)
+            w= weights[i];
+         v1 += w*list[i1][i];
+      }
+      float v2 = 0;
+      
+      for( int i=0; i< list[i2].length; i++)
+      {
+         w=1;
+         if( weights != null && weights.length >i)
+            w= weights[i];
+         v2 += w*list[i2][i];
+      }
+      
+      if( v1 < v2)
+         return -1;
+      if( v1 > v2)
+         return 1;
+      
+      return 0;
+   }
+   
+   public void sort()
+   {
+      Arrays.sort(  sortInfo, this );
+   }
+   
+   public Integer[] getRangList()
+   {
+      return sortInfo;
+   }
+   
+}
+
