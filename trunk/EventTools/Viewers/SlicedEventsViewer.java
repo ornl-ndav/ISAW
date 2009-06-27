@@ -44,11 +44,12 @@ import gov.anl.ipns.MathTools.Geometry.*;
 import EventTools.EventList.IEventList3D;
 import EventTools.EventList.ByteFile16EventList3D;
 import EventTools.Histogram.Histogram3D;
+import EventTools.Histogram.IProjectionBinner3D;
 import EventTools.Histogram.ProjectionBinner3D;
 import EventTools.Histogram.UniformEventBinner;
 import EventTools.Histogram.IEventBinner;
 
-//import SSG_Tools.Cameras.OrthographicCamera;
+import SSG_Tools.Cameras.OrthographicCamera;
 
 import SSG_Tools.SSG_Nodes.StateControls.glEnableNode;
 import SSG_Tools.SSG_Nodes.StateControls.glDisableNode;
@@ -93,6 +94,7 @@ public class SlicedEventsViewer
                            Histogram3D  histogram,
                            IEventBinner binner     )
   {
+    this.histogram = histogram;
     int n_events = events.numEntries();
 
     float[][] event_array = new float[3][n_events];
@@ -136,14 +138,14 @@ public class SlicedEventsViewer
     System.arraycopy( event_array[2], 0, eventZs, 0, eventCount );
 
     int size = 1;
-    SimpleShape shape = new MultiColoredPointList( eventXs,
+    SimpleShape shape = new MultiColoredPointList_2( eventXs,
                                                    eventYs,
                                                    eventZs,
                                                    codes,
                                                    colors,
                                                    size,
                                                    1.0f );
-    group.addChild( shape );
+
     Vector3D xmin = new Vector3D( -25,  0,  0 );
     Vector3D xmax = new Vector3D(  25,  0,  0 );
     Vector3D ymin = new Vector3D(  0, -25,  0 );
@@ -166,11 +168,14 @@ public class SlicedEventsViewer
     plane_group = new Group();
 
     group.addChild( new glEnableNode(GL.GL_BLEND) );
+    group.addChild( shape );
     group.addChild( plane_group );
     group.addChild( new glDisableNode(GL.GL_BLEND) );
 
     jogl_panel = new JoglPanel( group, true, JoglPanel.DEBUG_MODE );
     Camera camera = jogl_panel.getCamera();
+//    camera = new OrthographicCamera( camera );
+//    jogl_panel.setCamera( camera );
     camera.setVRP( new Vector3D( -5, 5, 0 ) ); 
 
     jogl_panel.setBackgroundColor( Color.GRAY );
@@ -191,9 +196,9 @@ public class SlicedEventsViewer
 
   private void set_slice_plane( Histogram3D histogram, int slice_num )
   {
-    ProjectionBinner3D x_binner = histogram.xBinner();
-    ProjectionBinner3D y_binner = histogram.yBinner();
-    ProjectionBinner3D z_binner = histogram.zBinner();
+    IProjectionBinner3D x_binner = histogram.xBinner();
+    IProjectionBinner3D y_binner = histogram.yBinner();
+    IProjectionBinner3D z_binner = histogram.zBinner();
 
                                                     // calculate corner point
     Vector3D ll_corner = x_binner.minVec(0);
@@ -250,7 +255,7 @@ public class SlicedEventsViewer
   }
 
 
-  private void make_frame_control()
+  public void make_frame_control()
   {
     JFrame f = new JFrame("Slice Selector");
     f.setBounds(750,500,200,150);
@@ -259,7 +264,7 @@ public class SlicedEventsViewer
     f.getContentPane().setLayout( new GridLayout(1,1) );
     f.getContentPane().add(frame_control);
 
-    ProjectionBinner3D page_binner = histogram.zBinner();
+    IProjectionBinner3D page_binner = histogram.zBinner();
     int num_pages = page_binner.numBins();
     float values[] = new float[num_pages];
     for ( int i = 0; i < values.length; i++ )
@@ -295,24 +300,26 @@ public class SlicedEventsViewer
 
     start_time = System.nanoTime();
     int NUM_BINS = 512;
+
     Vector3D xVec = new Vector3D(1,0,0);
     Vector3D yVec = new Vector3D(0,1,0);
     Vector3D zVec = new Vector3D(0,0,1);
-
+    
     IEventBinner x_bin1D = new UniformEventBinner( -26.5f,  0,    NUM_BINS );
-    IEventBinner y_bin1D = new UniformEventBinner(   0,    25.6f, NUM_BINS );
+    IEventBinner y_bin1D = new UniformEventBinner(      0, 25.6f, NUM_BINS );
     IEventBinner z_bin1D = new UniformEventBinner( -12.8f, 12.8f, NUM_BINS );
 
-    ProjectionBinner3D x_binner = new ProjectionBinner3D(x_bin1D, xVec);
-    ProjectionBinner3D y_binner = new ProjectionBinner3D(y_bin1D, yVec);
-    ProjectionBinner3D z_binner = new ProjectionBinner3D(z_bin1D, zVec);
+    IProjectionBinner3D x_binner = new ProjectionBinner3D(x_bin1D, xVec);
+    IProjectionBinner3D y_binner = new ProjectionBinner3D(y_bin1D, yVec);
+    IProjectionBinner3D z_binner = new ProjectionBinner3D(z_bin1D, zVec);
 
-    my_viewer.histogram = new Histogram3D(x_binner, y_binner, z_binner);
+    Histogram3D histogram = new Histogram3D(x_binner, y_binner, z_binner);
+    my_viewer.histogram = histogram;
     elapsed = System.nanoTime() - start_time;
     System.out.println("Time(ms) to allocate histogram = " + elapsed/1.e6);
 
     start_time = System.nanoTime();
-    my_viewer.histogram.addEvents( events );
+    histogram.addEvents( events );
     elapsed = System.nanoTime() - start_time;
     System.out.println("Time(ms) to add events to histogram = " + elapsed/1.e6);
 
@@ -320,7 +327,7 @@ public class SlicedEventsViewer
     float max  =  1000;
     int   bins =  20;
     UniformEventBinner binner = new UniformEventBinner( min, max, bins );
-    my_viewer.show_events( events, my_viewer.histogram, binner );
+    my_viewer.show_events( events, histogram, binner );
 
     my_viewer.make_frame_control();
 
