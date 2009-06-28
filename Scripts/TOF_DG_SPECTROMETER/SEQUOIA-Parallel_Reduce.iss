@@ -94,6 +94,7 @@ for i in [0:num_processes]
     endif
     commands[i] = command & " " & index_1 & " " & index_2
     GFunFile_name[i] = out_dir & "/GFun_" & index_1 & "-" & index_2 &".isd"
+    SFunFile_name[i] = out_dir & "/SFun_" & index_1 & "-" & index_2 &".isd"
 #   Display commands[i]
 #   Display GFunFile_name[i]
   endif
@@ -110,32 +111,62 @@ srunOps( queue, max_simultaneous_processes, max_time, mem_per_process, commands 
 # all of the DG_Spectrometer operators, so reset the instrument type
 # to UNKNOWN.
 #
-first_time = true
+first_GFun = true
+first_SFun = true
 for i in [0:num_processes]
+
   On Error
-    Load GFunFile_name[i], "loaded_ds"
-    setInstrumentType( loaded_ds[0], "UNKNOWN" )
-    if ( first_time )
-      result_ds = loaded_ds[0]
-       first_time = false
+    Load SFunFile_name[i], "S_loaded_ds"
+    setInstrumentType( S_loaded_ds[0], "UNKNOWN" )
+    if ( first_SFun )
+      S_result_ds = S_loaded_ds[0]
+      first_SFun = false
     else
-      result_ds = Merge( result_ds, loaded_ds[0] ) 
+      S_result_ds = Merge( S_result_ds, S_loaded_ds[0] )
+    endif
+#   Display "Loaded " & SFunFile_name[i]
+  End Error
+
+  On Error
+    Load GFunFile_name[i], "G_loaded_ds"
+    setInstrumentType( G_loaded_ds[0], "UNKNOWN" )
+    if ( first_GFun )
+      G_result_ds = G_loaded_ds[0]
+      first_GFun = false
+    else
+      G_result_ds = Merge( G_result_ds, G_loaded_ds[0] )
     endif
 #   Display "Loaded " & GFunFile_name[i]
   End Error
+
 endfor
+
+#
+# Save the collection of Scattering Functions calculated from the sets of
+# detctors.
+#
+SetField( S_result_ds, "Title", "Scattering Functions from Sets of Detectors" )
+send S_result_ds
+
+#
+# Sum and save the total of the the individually calculated Scattering Functions
+#
+Ssum_ds =  SumAtt(S_result_ds,  "Group ID", true, 0.0, 5000000.0)
+SetField( Ssum_ds, "Title", "Combined Scattering Function" )
+send Ssum_ds
+
 
 #
 # Save the collection of G Functions calculated from the sets of
 # detctors.
 #
-SetField( result_ds, "Title", "G Functions from Sets of Detectors" )
-send result_ds
+SetField( G_result_ds, "Title", "G Functions from Sets of Detectors" )
+send G_result_ds
 
 #
 # Sum and save the total of the the individually calculated G Functions
 #
-Gsum_ds =  SumAtt(result_ds,  "Group ID", true, 0.0, 5000000.0)
+Gsum_ds =  SumAtt(G_result_ds,  "Group ID", true, 0.0, 5000000.0)
 SetField( Gsum_ds, "Title", "Combined G Function" )
 send Gsum_ds
 

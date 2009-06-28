@@ -148,6 +148,13 @@ SetField( Res_F_sub_1, "Title", "Scaled Scattering Function" )
 send Res_F_sub_1
 
 #
+# Save the Scattering Function to a file so it can be combined with the
+# results from other subsets of detectors.
+#
+S_outfile_name = out_dir & "/SFun_"&first_ds_index&"-"&last_ds_index&".isd"
+Save Res_F_sub_1, S_outfile_name
+
+#
 # Calculate and write the GFun function DataSet to a temporary
 # "Isaw DataSet" (.isd) file.  The name of the output file MUST be
 # coordinated with the script that will read it in and combine
