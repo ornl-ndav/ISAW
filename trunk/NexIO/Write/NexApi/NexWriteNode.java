@@ -203,7 +203,7 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
     parent = null;
     errormessage = "";
     try{
-       SlabSize = Integer.parseInt( System.getProperty( "NexusSlabSize" ,"80000"));
+       SlabSize = Integer.parseInt( System.getProperty( "NexusSlabSize" ,"80000").trim());
     }catch(Exception s){
        SlabSize = 80000;
     }
@@ -928,6 +928,7 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
          Object buffer = NexIO.Types.CreateArray( type , Prod*incrSize );
          for( boolean done = false; !done;){
             if( time > 0 && time % 10 ==0  ){
+               System.out.println("SlabSize = " + SlabSize );
                System.out.println("     Saved "+(100*time/(float)ntimes)+"% of data."+
                             " Set NexusSlabSize to -1 for speed");
             }
