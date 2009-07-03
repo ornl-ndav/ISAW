@@ -56,6 +56,8 @@ import DataSetTools.math.*;
 public class SNS_Tof_to_Q_map 
 {
   public static final String SNAP = "SNAP";
+  public static final String ARCS = "ARCS";
+  public static final String SEQ  = "SEQ";
 
   private String       filename;
   private IDataGrid[]  grid_arr; 
@@ -101,20 +103,29 @@ public class SNS_Tof_to_Q_map
                                                   // Sort the grids on ID
      Object[] obj_arr = (grids.values()).toArray();
      Arrays.sort( obj_arr, new GridID_Comparator() );
-                        
+/*                        
+     System.out.println("Working with " + obj_arr.length + " GRIDS " );
+*/
                                                   // and record them in our
                                                   // local list.
      grid_arr = new IDataGrid[ obj_arr.length ];
      for ( int i = 0; i < grid_arr.length; i++ )
        grid_arr[i] = (IDataGrid)obj_arr[i]; 
 
-     if ( instrument_name.equalsIgnoreCase("SNAP") )
+     if ( instrument_name.equalsIgnoreCase(SNAP) )
        ReorderSNAP_grids( grid_arr );
 
-     BuildMaps();
+     if ( instrument_name.equalsIgnoreCase(ARCS) )
+       ReorderARCS_grids( grid_arr );
 
+     if ( instrument_name.equalsIgnoreCase(SEQ) )
+       grid_arr = ReorderSEQ_grids( grid_arr );
+
+     BuildMaps();
+/*
      System.out.println( "L1 = " + L1 );
      System.out.println( "t0 = " + t0 );
+*/
   }
 
 
@@ -157,28 +168,42 @@ public class SNS_Tof_to_Q_map
      int     id_offset;
      int     index;
      float   magQ;
+     float   qx,qy,qz;
+     int     minus_id_count = 0;
+     int     large_id_count = 0;
      for ( int i = 0; i < tofs.length; i++ )
      {
-       id        = ids[i];
-       id_offset = 3*id;
+       id = ids[i];
        if ( id > 0 && id < tof_to_MagQ.length )
        {
          magQ = tof_to_MagQ[id]/(t0 + tofs[i]);
 
+         id_offset = 3*id;
+         qx = magQ * QUxyz[id_offset++];
+         qy = magQ * QUxyz[id_offset++];
+         qz = magQ * QUxyz[id_offset  ];
+
          index = i * 3;
-         Qxyz[index] = magQ * QUxyz[id_offset];
-         index++;
-         Qxyz[index] = magQ * QUxyz[id_offset + 1];
-         index++;
-         Qxyz[index] = magQ * QUxyz[id_offset + 2];
+         Qxyz[index++] = qx;
+         Qxyz[index++] = qy;
+         Qxyz[index  ] = qz;
        }
+       else if ( id < 0 )
+         minus_id_count++;
+       else if ( id >= tof_to_MagQ.length )
+         large_id_count++;
      } 
+/*
+     System.out.println("tof_to_MagQ.length = " + tof_to_MagQ.length );
+     System.out.println("NUMBER OF EVENTS WITH -ID      = " + minus_id_count );
+     System.out.println("NUMBER OF EVENTS WITH LARGE ID = " + large_id_count );
 
      for ( int i = 0; i < 10; i++ )
       System.out.printf("tof: %8.1f  id: %7d " +
                         "  Qx: %6.2f  Qy: %6.2f  Qz: %6.2f\n",
                         (tofs[i]/10.0), ids[i], 
                         Qxyz[3*i], Qxyz[3*i+1], Qxyz[3*i+2]);
+*/
      return Qxyz;
   }
 
@@ -190,6 +215,7 @@ public class SNS_Tof_to_Q_map
    */
   private void BuildMaps()
   {
+    int first_offset = 1;
     int pix_count = 0;                             // first count the pixels
     for ( int  i = 0; i < grid_arr.length; i++ )
     {
@@ -200,9 +226,11 @@ public class SNS_Tof_to_Q_map
                                                    // start at 1 in the file
                                                    // so to avoid shifting we
                                                    // will also start at 1
-    tof_to_MagQ = new float[  (pix_count + 1)];    // Scale factor to convert
+    tof_to_MagQ = new float[  (pix_count + first_offset)]; 
+                                                   // Scale factor to convert
                                                    // tof to Magnitude of Q
-    QUxyz       = new float[3*(pix_count + 1)];    // Interleaved components
+    QUxyz       = new float[3*(pix_count + first_offset)];
+                                                   // Interleaved components
                                                    // of unit vector in the
                                                    // direction of Q for this
                                                    // pixel.
@@ -222,7 +250,7 @@ public class SNS_Tof_to_Q_map
     float[]   coords;
     IDataGrid grid;
     int       index;
-    pix_count = 1;
+    pix_count = first_offset;                       // pixel index starts at 1
     for ( int  i = 0; i < grid_arr.length; i++ )
     {
       grid = grid_arr[i];
@@ -234,9 +262,10 @@ public class SNS_Tof_to_Q_map
         {
            pix_pos    = grid.position( row, col );
            L2         = pix_pos.length();
+/*
            if ( row == 1 && col == 1 )
              System.out.println("L2 = " + L2);
-
+*/
            coords     = pix_pos.get();
            coords[0] -= L2;                        // internally using IPNS
                                                    // coordinates
@@ -253,21 +282,30 @@ public class SNS_Tof_to_Q_map
            pix_count++; 
         }
     }
-
-    for ( int i = 0; i < 10; i++ )
-      System.out.printf( "For detector #%2d  " +
+                                                   // As a check, dump out
+                                                   // QUxyz for the first pixel
+                                                   // in each detector
+    /*
+    index = 0; 
+    for ( int i = 0; i < grid_arr.length; i++ )
+    {
+      System.out.printf( "For first pixel in detector #%2d  " +
                          "MagQ conv factor = %7.4f  " + 
                          "Qx = %6.3f  Qy = %6.3f  Qz = %6.3f\n",
                           i,
                           tof_to_MagQ[i],
-                          QUxyz[ 3*i     ],  
-                          QUxyz[ 3*i + 1 ],  
-                          QUxyz[ 3*i + 2 ]  );
+                          QUxyz[ 3*index     ],  
+                          QUxyz[ 3*index + 1 ],  
+                          QUxyz[ 3*index + 2 ]  );
+      grid = grid_arr[i];
+      index += grid.num_rows() * grid.num_cols();
+    }
+    */
   }
 
 
   /**
-   *  Reorder the grids, so that they appear in the array of grids in the
+   *  Reorder the SNAP grids, so that they appear in the array of grids in the
    *  order that corresponds to the DAS pixel numbering.
    *  Looking at the face of the detector array from the sample position,
    *  the DAS numbers the 3x3 array of detectors as:
@@ -319,7 +357,129 @@ public class SNS_Tof_to_Q_map
     grid_arr[6] = temp[6];
     grid_arr[7] = temp[3];
     grid_arr[8] = temp[0];
-     
+  }
+
+
+  /**
+   *  Reorder the ARCS grids, so that they appear in the array of grids in the
+   *  order that corresponds to the DAS pixel numbering.
+   *
+   *  This method re-forms the grid array, so that the correct IDataGrid
+   *  occupies the position indexed by the id information from the DAS.
+   *
+   *  @param grid_arr  List of IDataGrids in order of increasing
+   *                   detector number (according to ISAW/NeXus).
+   */
+  private void ReorderARCS_grids( IDataGrid[] grid_arr )
+  {
+    if ( grid_arr.length != 115 )
+      System.out.println("WARNING: ARCS configuration changed. \n" +
+                         "Update SNS_Tof_to_Q_map.ReorderARCS_grids!" );
+
+    IDataGrid[] temp = new IDataGrid[ grid_arr.length ];
+
+    for ( int i = 0; i < grid_arr.length; i++ )
+      temp[i] = grid_arr[i];
+
+    
+    int index = 77;
+    for ( int i = 0; i <= 37; i++ )
+      grid_arr[i] = temp[index++];
+
+    index = 38;
+    for ( int i = 38; i <= 76; i++ )
+      grid_arr[i] = temp[index++];
+
+    index = 0;
+    for ( int i = 77; i <= 114; i++ )
+      grid_arr[i] = temp[index++];
+/*
+    for ( int i = 0; i < grid_arr.length; i++ )
+      System.out.println( Peak_new_IO.GridString(grid_arr[i]) );
+*/
+  }
+
+
+  /**
+   *  NOT WORKING YET !!!!!!!!!!!!!!!!!!
+   *  Reorder the SEQIOIA grids, so that they appear in the array of grids
+   *  in the order that corresponds to the DAS pixel numbering.
+   *
+   *  This method re-forms the grid array, so that the correct IDataGrid
+   *  occupies the position indexed by the id information from the DAS.
+   *  As of 6/29/09 the relationship between the grids as loaded by ISAW
+   *  and the detectors/pixels written by the DAS is:
+   *
+   *    MY SEQ GRIDS        SEQ DAS INDEX
+   *      MISSING          A1-A37     0 -  36
+   *      0 -  36          B1-B37    37 -  73
+   *     37 -  75          C1-C37    74 - 112 ( two split packs: C25T, C25B
+   *                                                             C26T, C26B )
+   *     76 - 112          D1-D37   113 - 149
+   *      MISSING          E1-E37   150 - 186
+   *
+   *  see: https://flathead.ornl.gov/trac/TranslationService/browser/
+   *                                 calibration/geometry/SEQ_geom.txt
+   *
+   *  @param grid_arr  List of IDataGrids in order of increasing
+   *                   detector number (according to ISAW/NeXus).
+   */
+  private IDataGrid[]  ReorderSEQ_grids( IDataGrid[] grid_arr )
+  {
+    int N_SEQUOIA_GRIDS = 187;      // total projected number of Data grids
+                                    // eventually in SEQUOIA
+
+    IDataGrid[] new_grids = new IDataGrid[ N_SEQUOIA_GRIDS ];
+
+    if ( grid_arr.length != 113 )
+      System.out.println("WARNING: SEQUOIA configuration changed. \n" +
+                         "Update SNS_Tof_to_Q_map.ReorderSEQ_grids!" );
+
+    IDataGrid dummy = makeDummyGrid();
+
+    for ( int i = 0; i <= 36; i++ )
+      new_grids[i] = dummy;
+
+    int index = 0;
+    for ( int i = 37; i <= 73; i++ )
+      new_grids[i] = grid_arr[index++];
+
+    index = 37;
+    for ( int i = 74; i <= 112; i++ )
+      new_grids[i] = grid_arr[index++];
+
+    index = 76;
+    for ( int i = 113; i <= 149; i++ )
+      new_grids[i] = grid_arr[index++];
+
+    for ( int i = 150; i <= 186; i++ )
+      new_grids[i] = dummy;
+/*
+    for ( int i = 0; i < new_grids.length; i++ )
+      System.out.println( Peak_new_IO.GridString(new_grids[i]) );
+*/
+    return new_grids;
+  }
+
+
+  private IDataGrid  makeDummyGrid()
+  {
+    int      id       =  1;
+    String   units    = "meters";
+    Vector3D center   = new Vector3D( 0, 10, 0 );
+    Vector3D x_vector = new Vector3D( 1,  0, 0 );
+    Vector3D y_vector = new Vector3D( 0,  1, 0 );
+    float    width    = 0.1f;
+    float    height   = 0.1f;
+    float    depth    = 0.0001f;
+    int      n_rows   = 128;
+    int      n_cols   = 1;
+
+    UniformGrid dummy = new UniformGrid( id, units,
+                                         center, x_vector, y_vector,
+                                         width, height, depth,
+                                         n_rows, n_cols );
+    return dummy;
   }
 
 
