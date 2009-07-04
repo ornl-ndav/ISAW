@@ -74,7 +74,7 @@ public class MultiColoredPointList_2 extends SimpleShape
                                       // are actually drawn
 
   private boolean  filter_below_min = true;
-  private boolean  filter_above_max = false;
+  private boolean  filter_above_max = true;
   private boolean  use_alpha        = true;
 
   /* --------------------------- Constructor --------------------------- */
@@ -120,8 +120,8 @@ public class MultiColoredPointList_2 extends SimpleShape
     this.size  = size;
     this.alpha = alpha;
 
-    setPoints( x_vals, y_vals, z_vals );
-    setColorScale();
+    setPointsBuffer( x_vals, y_vals, z_vals );
+    setPointsColorBuffer();
   }
 
 
@@ -136,6 +136,7 @@ public class MultiColoredPointList_2 extends SimpleShape
    *  @param  x_vals       The list of x-coordinates. 
    *  @param  y_vals       The list of y-coordinates. 
    *  @param  z_vals       The list of z-coordinates. 
+   *  @param  code         The list of integer codes for the points.
    *  @param  min          The value that maps to the first color.
    *  @param  max          The value that maps to the last color.
    *  @param  color_table  This is a list of indices into the specified 
@@ -163,7 +164,63 @@ public class MultiColoredPointList_2 extends SimpleShape
   {
     super(Color.WHITE);
 
+    System.out.println("IN MultiColoredPointList_2, min, max = "
+                        + min + ", " + max );
     this.num_points  = x_vals.length;
+    this.code        = code;
+    this.min         = 0;
+    this.max         = color_scale.length-1;
+    this.color_table = color_table;
+    this.color_scale = color_scale;
+    this.size  = size;
+    this.alpha = alpha;
+
+    setPointsBuffer( x_vals, y_vals, z_vals );
+    setPointsColorBuffer();
+  }
+
+
+  /* --------------------------- Constructor --------------------------- */
+  /**
+   *  Construct a PointList, where each point can have its own color.
+   *  NOTE: This class keeps a reference to the list of codes, the 
+   *        color_table and color scale.  The calling program should
+   *        generally not use those arrays after they have been passed in
+   *        to this constructor.
+   *
+   *  @param  xyz          The list of interleaved xyz-coordinates. 
+   *  @param  min          The value that maps to the first color.
+   *  @param  max          The value that maps to the last color.
+   *  @param  color_table  This is a list of indices into the specified 
+   *                       color scale that describe a possibly non-linear
+   *                       mapping between numbers between the current
+   *                       min and max and positions in the specified color
+   *                       scale.  This must have values between 0 and
+   *                       the length of the color scale - 1.
+   *  @param  color_scale  List of colors making up the color scale used for
+   *                       this list of points.
+   *  @param  size         The size to use for the points specified in pixel 
+   *                       units.
+   *  @param  alpha        The alpha value for this list of points.
+   */
+  public MultiColoredPointList_2( float[]  xyz,
+                                  int[]    code,
+                                  float    min,
+                                  float    max,
+                                  int[]    color_table,
+                                  Color[]  color_scale,
+                                  float    size,
+                                  float    alpha  )
+  {
+    super(Color.WHITE);
+
+    System.out.println("MCPL Constructor, min, max = " + min + ", " + max );
+    System.out.println("MCPL Constructor, color_scale length = " + 
+                        color_scale.length );
+    System.out.println("MCPL Constructor, color_table length = " + 
+                        color_table.length );
+
+    this.num_points  = xyz.length / 3;
     this.code        = code;
     this.min         = min;
     this.max         = max;
@@ -172,8 +229,45 @@ public class MultiColoredPointList_2 extends SimpleShape
     this.size  = size;
     this.alpha = alpha;
 
-    setPoints( x_vals, y_vals, z_vals );
-    setColorScale();
+    setPointsBuffer( xyz );
+    setPointsColorBuffer();
+  }
+
+
+  /**
+   *  Set the color lookup table information for this list of points.
+   *
+   *  @param  min          The value that maps to the first color.
+   *  @param  max          The value that maps to the last color.
+   *  @param  color_table  This is a list of indices into the specified 
+   *                       color scale that describe a possibly non-linear
+   *                       mapping between numbers between the current
+   *                       min and max and positions in the specified color
+   *                       scale.  This must have values between 0 and
+   *                       the length of the color scale - 1.
+   *  @param  color_scale  List of colors making up the color scale used for
+   *                       this list of points.
+   */
+  public void setColorInfo( float   min, 
+                            float   max, 
+                            int[]   color_table, 
+                            Color[] color_scale )
+  {
+    this.min         = min;
+    this.max         = max;
+    this.color_table = color_table;
+    this.color_scale = color_scale;
+    setPointsColorBuffer();
+  }
+
+
+  public void setDrawOptions( boolean filter_above_max,
+                              boolean filter_below_min, 
+                              boolean use_alpha )
+  {
+    this.filter_above_max = filter_above_max;
+    this.filter_below_min = filter_below_min;
+    this.use_alpha        = use_alpha;
   }
 
 
@@ -181,8 +275,22 @@ public class MultiColoredPointList_2 extends SimpleShape
    *  Build the color_buffer for the current list of points, using the
    *  current code and color information.
    */
-  private void setColorScale()
+  private void setPointsColorBuffer()
   {
+    System.out.println("Color index table length = " + color_table.length );
+    System.out.println("min, max = " + min + ", " + max );
+/*
+    int[] counters = new int[20];
+    for ( int i = 0; i < num_points; i++ )
+    {
+      if ( code[i] < counters.length )
+        counters[ code[i] ]++;
+    }
+
+    for ( int i = 0; i < counters.length; i++ )
+      System.out.printf( "i = %6d    count = %6d \n", i, counters[i] );
+*/
+
     alpha = 0.2f;
 
     UniformEventBinner color_binner = 
@@ -190,6 +298,7 @@ public class MultiColoredPointList_2 extends SimpleShape
     int place = 0;
     int index;
     int color_index;
+    int point_code;
     
     int[] element_index = new int[num_points];
     element_count = 0;
@@ -200,8 +309,9 @@ public class MultiColoredPointList_2 extends SimpleShape
     for ( int i = 0; i < num_points; i++ )
     {
       draw = true;
-      index = color_binner.index( code[i] ); 
-      if ( index < 0 )
+      point_code = code[i];
+      index = color_binner.index( point_code ); 
+      if ( point_code < min )  
       {
         index = 0;
         if ( filter_below_min )
@@ -230,8 +340,9 @@ public class MultiColoredPointList_2 extends SimpleShape
             rgb[place++] = (byte)(index); 
           else
             rgb[place++] = (byte)(255);          
-
         }
+        else
+         place += 4;
       }
       else
         place += 4;                             // advance to next position
@@ -257,7 +368,7 @@ public class MultiColoredPointList_2 extends SimpleShape
    *  @param  y_vals       The list of y-coordinates. 
    *  @param  z_vals       The list of z-coordinates. 
    */
-  private void setPoints( float[] x_vals, float[] y_vals, float[] z_vals )
+  private void setPointsBuffer(float[] x_vals, float[] y_vals, float[] z_vals)
   { 
     float[] xyz = new float[3*x_vals.length];
 
@@ -269,6 +380,20 @@ public class MultiColoredPointList_2 extends SimpleShape
       xyz[place++] = z_vals[i];
     }
 
+    vertices_buffer = BufferUtil.newFloatBuffer( xyz.length );
+    vertices_buffer.put( xyz );
+    vertices_buffer.rewind();
+  }
+
+
+  /**
+   *  Set up an NIO FloatBuffer, so it can be used with
+   *  glDrawArrays for faster drawing.
+   *
+   *  @param  xyz   An interleaved list of xyz-coordinates for the points.
+   */
+  private void setPointsBuffer( float[] xyz )
+  {
     vertices_buffer = BufferUtil.newFloatBuffer( xyz.length );
     vertices_buffer.put( xyz );
     vertices_buffer.rewind();
@@ -308,8 +433,8 @@ public class MultiColoredPointList_2 extends SimpleShape
     super.postRender( drawable );
 
     long time = System.nanoTime() - start;
-    System.out.printf("Drew %6d Points in %4.1f ms\n",
-                       num_points, time/1.0E6 );
+//    System.out.printf("Drew %6d Points in %4.1f ms\n",
+//                       element_count, time/1.0E6 );
   }
 
 }
