@@ -163,20 +163,19 @@ public class ByteFile16EventList3D implements IEventList3D
   public float[] eventVals()
   {
     float[] values = new float[3*num_events];
-    int index;
+    int index = 0;
     for ( int i = 0; i < num_events; i++ )
     {
-      index = getValue_16( i * 8 );
-      values[ index ] = (float)x_binner.centerVal( index );
-      index++;
-      values[ index ] = (float)y_binner.centerVal( index );
-      index++;
-      values[ index ] = (float)z_binner.centerVal( index );
-      index++;
+      values[ index++ ] = (float)eventX(i);
+
+      values[ index++ ] = (float)eventY(i);
+
+      values[ index++ ] = (float)eventZ(i);
     }
     return values;
   }
   
+
   @Override
   public double eventX( int i )
   {
