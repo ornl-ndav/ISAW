@@ -179,14 +179,14 @@ public class SNS_TofEventList implements ITofEventList
   {
     try
     {
-      System.out.println("Making file for " + filename );
-      System.out.println("first event = " + first_event + 
-                         " num_events = " + num_events );
+//    System.out.println("Loading file " + filename );
+//    System.out.println("first event = " + first_event + 
+//                       " num_events = " + num_events );
       RandomAccessFile r_file = new RandomAccessFile( filename, "r" );
 
       tofs      = new int[(int)num_events];
       pixel_ids = new int[(int)num_events];
-      System.out.println( "Array sizes = " + tofs.length );
+//    System.out.println( "Array sizes = " + tofs.length );
 
       r_file.seek( 8*first_event );    // move to first requested event in
                                        // the file an read the requested 
@@ -216,7 +216,7 @@ public class SNS_TofEventList implements ITofEventList
           num_loaded = num_events;
         }
       }
-      System.out.println("num_loaded = " + num_loaded );
+//    System.out.println("num_loaded = " + num_loaded );
       r_file.close();
     }
     catch ( IOException ex )
