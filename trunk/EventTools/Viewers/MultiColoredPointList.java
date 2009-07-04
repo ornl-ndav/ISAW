@@ -131,6 +131,8 @@ public class MultiColoredPointList extends SimpleShape
    */
   public void Render( GLAutoDrawable drawable )
   {
+    long start = System.nanoTime();
+
     GL gl = drawable.getGL();
 
     super.preRender( drawable );
@@ -147,5 +149,7 @@ public class MultiColoredPointList extends SimpleShape
     gl.glEnd();
 
     super.postRender( drawable );
+    long time = System.nanoTime() - start;
+    System.out.println( time/1.0E6 );
   }
 }
