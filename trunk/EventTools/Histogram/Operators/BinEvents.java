@@ -137,13 +137,15 @@ public class BinEvents implements IOperator
     int     num_x_bins = x_binner.numBins();
     int     num_y_bins = y_binner.numBins();
     
-    int num_events = events.numEntries();
+    int     num_events = events.numEntries();
+    float[] event_xyz  = events.eventVals();
+    int     event_index = 0;
 
     for ( int i = 0; i <  num_events; i++ )
     {
-       x = (float)events.eventX(i);
-       y = (float)events.eventY(i);
-       z = (float)events.eventZ(i);
+       x = event_xyz[event_index++];   
+       y = event_xyz[event_index++];   
+       z = event_xyz[event_index++];   
 
        z_index = z_binner.index( x, y, z );
 
