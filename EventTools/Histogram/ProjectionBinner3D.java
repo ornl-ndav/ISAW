@@ -196,6 +196,13 @@ public class ProjectionBinner3D implements IProjectionBinner3D
   }
 
 
+  @Override
+  public String toString()
+  {
+    return "" + directionVec() + binner1D; 
+  }
+
+
   /**
    * Convenience method to calculate the center point of a specified bin
    * in a 3D histogram.  The x_index, determines a vector in the 
@@ -318,7 +325,7 @@ public class ProjectionBinner3D implements IProjectionBinner3D
     Vector3D u_star = new Vector3D();
     u_star.cross( binner_2.directionVec(), binner_3.directionVec() );
     u_star.normalize();
-    double scale_factor = 1.0/u_star.dot(binner_1.directionVec());
+    double scale_factor = u_star.dot(binner_1.directionVec());
 
     if ( scale_factor < 0 )          // if u and u* are in opposition 
     {                                // directions, reflect to be basically
