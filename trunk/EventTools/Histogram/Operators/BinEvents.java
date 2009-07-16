@@ -140,6 +140,7 @@ public class BinEvents implements IOperator
     int     num_events = events.numEntries();
     float[] event_xyz  = events.eventVals();
     int     event_index = 0;
+    double  d2;
 
     for ( int i = 0; i <  num_events; i++ )
     {
@@ -157,7 +158,9 @@ public class BinEvents implements IOperator
          if ( x_index >= 0 && x_index < num_x_bins &&
               y_index >= 0 && y_index < num_y_bins  )
          {
-           count = events.eventCode( i );
+           //count = events.eventCode( i );
+           d2 = Math.sqrt(x*x+y*y+z*z);
+           count = (float)(events.eventCode( i ) * d2 * d2 * d2);
            val = histogram[z_index][y_index][x_index];
            val += count;
            histogram[z_index][y_index][x_index] = val;
