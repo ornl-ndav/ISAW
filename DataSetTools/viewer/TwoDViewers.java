@@ -791,7 +791,7 @@ public class TwoDViewers extends DataSetViewer {
          if( viewComp instanceof ImageViewComponent  && viewArray instanceof IhasMarkers)
          {
             Marker M = ((IhasMarkers)viewArray).getMarkers();
-            ((ImageViewComponent)viewArray).removeAllMarkers();
+           ((ImageViewComponent)viewComp).removeAllMarkers();
             if( M!= null)
             ((ImageViewComponent)viewComp).addMarker( M );
          }
