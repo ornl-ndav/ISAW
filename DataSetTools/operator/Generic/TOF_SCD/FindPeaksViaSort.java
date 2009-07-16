@@ -643,6 +643,9 @@ public class FindPeaksViaSort
                                     // set threshold so all bins are <= to it.
                                     // In this case shift down to include
                                     // some values. 
+    if ( threshold >= cdf.length )
+      threshold = cdf.length - 1;
+
     while ( threshold > 0 && cdf[threshold] >= num_bins )
       threshold--;
 
