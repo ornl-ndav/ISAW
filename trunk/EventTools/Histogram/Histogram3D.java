@@ -41,7 +41,9 @@ import EventTools.Histogram.Operators.BinEvents;
 import EventTools.Histogram.Operators.ClearPages;
 import EventTools.Histogram.Operators.ScanHistogram3D;
 import EventTools.Histogram.Operators.GetEventLists;
+
 import gov.anl.ipns.Operator.Threads.*;
+import gov.anl.ipns.MathTools.Geometry.*;
 
 /**
  *   This class represents a 3D histogram.  Currently only a minimal set of
@@ -67,7 +69,15 @@ public class Histogram3D
   private float  max;
   private float  min;
   private double sum;
-
+                                             // These determine the edges of
+                                             // the parallelepipeds that are
+                                             // the histogram bins
+  private IProjectionBinner3D x_edge_binner,
+                              y_edge_binner,
+                              z_edge_binner;
+                                             // These are normal to the planes 
+                                             // that form the histogram bin
+                                             // boundaries.
   private IProjectionBinner3D x_binner,
                               y_binner,
                               z_binner;
@@ -85,25 +95,37 @@ public class Histogram3D
    * Construct a Histogram3D object covering a parallelopiped region 
    * of 3-dimensional real space.  The shape and number of subdivision 
    * of the region covered is determined by the direction vectors and
-   * number of steps of the projection binners used.
+   * number of steps of the specified projection binners.  The specified
+   * projection binners determine the edges of the histogram bins
+   * (parallelepipeds).  Another set of three projection binners that
+   * are perpendicular to the histogram bin faces is calculated and used
+   * to place points in the correct histogram bin.
    * 
-   * @param x_binner  IProjectionBinner3D that determines the region 
-   *                  and number of slices covered by the "columns" of 
-   *                  the histogram array.
-   * @param y_binner  IProjectionBinner3D that determines the region 
-   *                  and number of slices covered by the "rows" of 
-   *                  the histogram array.
-   * @param z_binner  IProjectionBinner3D that determines the region 
-   *                  and number of slices covered by the "pages" of 
-   *                  the histogram array.
+   * @param x_edge_binner  IProjectionBinner3D that determines the edges of 
+   *                       the histogram bins (parallelepipeds) in the 
+   *                       "x direction".
+   * @param y_edge_binner  IProjectionBinner3D that determines the edges of 
+   *                       the histogram bins (parallelepipeds) in the 
+   *                       "y direction".
+   * @param z_edge_binner  IProjectionBinner3D that determines the edges of 
+   *                       the histogram bins (parallelepipeds) in the 
+   *                       "z direction".
    */
-  public Histogram3D( IProjectionBinner3D x_binner, 
-                      IProjectionBinner3D y_binner,
-                      IProjectionBinner3D z_binner )
+  public Histogram3D( IProjectionBinner3D x_edge_binner, 
+                      IProjectionBinner3D y_edge_binner,
+                      IProjectionBinner3D z_edge_binner )
   {
-    this.x_binner = x_binner;
-    this.y_binner = y_binner;
-    this.z_binner = z_binner;
+    this.x_edge_binner = x_edge_binner;
+    this.y_edge_binner = y_edge_binner;
+    this.z_edge_binner = z_edge_binner;
+
+    IProjectionBinner3D[] dual_binners =
+                         ProjectionBinner3D.getDualBinners( x_edge_binner, 
+                                                            y_edge_binner, 
+                                                            z_edge_binner );
+    this.x_binner = dual_binners[0];
+    this.y_binner = dual_binners[1];
+    this.z_binner = dual_binners[2];
 
     int num_x = x_binner.numBins();
     int num_y = y_binner.numBins();
@@ -122,11 +144,57 @@ public class Histogram3D
 
 
   /**
-   * Get a reference to the ProjectionBinner3D used for
-   * the X-axis of this histogram
+   * Get a reference to the ProjectionBinner3D that was passed into the
+   * constructor to determine the edges of the histogram bins in the 
+   * local "X" direction.
    *
    * @return A reference to the binner in the direction of the local "X"
    *         axis for this histogram.
+   */
+  public IProjectionBinner3D xEdgeBinner()
+  {
+    return x_edge_binner;
+  }
+
+
+  /**
+   * Get a reference to the ProjectionBinner3D that was passed into the
+   * constructor to determine the edges of the histogram bins in the 
+   * local "Y" direction.
+   *
+   * @return A reference to the binner in the direction of the local "Y"
+   *         axis for this histogram.
+   */
+  public IProjectionBinner3D yEdgeBinner()
+  {
+    return y_edge_binner;
+  }
+
+
+  /**
+   * Get a reference to the ProjectionBinner3D that was passed into the
+   * constructor to determine the edges of the histogram bins in the 
+   * local "Z" direction.
+   *
+   * @return A reference to the binner in the direction of the local "Z"
+   *         axis for this histogram.
+   */
+  public IProjectionBinner3D zEdgeBinner()
+  {
+    return z_edge_binner;
+  }
+
+
+  /**
+   * Get a reference to the ProjectionBinner3D used to determine in which
+   * bin in the local "X" direction a 3D point should be placed.  The
+   * direction of this binner is perpendicular to the local "YZ" plane.  If
+   * the original edge binners are orthogonal, then the binner returned
+   * by this method  will be the same as the binner returned by the
+   * xEdgeBinner() method.
+   *
+   * @return A reference to the binner used to categorize points in 
+   *         the direction of the local "X" axis for this histogram.
    */
   public IProjectionBinner3D xBinner()
   {
@@ -135,11 +203,15 @@ public class Histogram3D
 
 
   /**
-   * Get a reference to the ProjectionBinner3D used for
-   * the Y-axis of this histogram
+   * Get a reference to the ProjectionBinner3D used to determine in which
+   * bin in the local "Y" direction a 3D point should be placed.  The
+   * direction of this binner is perpendicular to the local "XZ" plane.  If
+   * the original edge binners are orthogonal, then the binner returned
+   * by this method  will be the same as the binner returned by the
+   * yEdgeBinner() method.
    *
-   * @return A reference to the binner in the direction of the local "Y"
-   *         axis for this histogram.
+   * @return A reference to the binner used to categorize points in 
+   *         the direction of the local "X" axis for this histogram.
    */
   public IProjectionBinner3D yBinner()
   {
@@ -148,11 +220,15 @@ public class Histogram3D
 
 
   /**
-   * Get a reference to the ProjectionBinner3D used for
-   * the Z-axis of this histogram
+   * Get a reference to the ProjectionBinner3D used to determine in which
+   * bin in the local "Z" direction a 3D point should be placed.  The
+   * direction of this binner is perpendicular to the local "XY" plane.  If
+   * the original edge binners are orthogonal, then the binner returned
+   * by this method  will be the same as the binner returned by the
+   * zEdgeBinner() method.
    *
-   * @return A reference to the binner in the direction of the local "Z"
-   *         axis for this histogram.
+   * @return A reference to the binner used to categorize points in 
+   *         the direction of the local "X" axis for this histogram.
    */
   public IProjectionBinner3D zBinner()
   {
@@ -231,7 +307,7 @@ public class Histogram3D
     Vector  ops = new Vector();
     for ( int i = 0; i < n_segments; i++ )
       ops.add( new BinEvents( histogram, min, max, page_1[i], page_2[i], 
-                              x_binner, y_binner, z_binner,  events));
+                              x_binner, y_binner, z_binner,  events ) );
 
     ParallelExecutor pe = new ParallelExecutor( ops, n_threads, max_time );
     Vector results = pe.runOperators();
@@ -312,13 +388,18 @@ public class Histogram3D
 
     Vector  ops = new Vector();
     for ( int i = 0; i < n_segments; i++ )
-      ops.add( new GetEventLists( histogram, page_1[i], page_2[i],
-                                  x_binner, y_binner, z_binner, binner ) );
+      ops.add( new GetEventLists( histogram, 
+                                  page_1[i], page_2[i],
+                                  x_edge_binner,
+                                  y_edge_binner,
+                                  z_edge_binner,
+                                  binner ) );
 
     ParallelExecutor pe = new ParallelExecutor( ops, n_threads, max_time );
     Vector results = pe.runOperators();
     return results;
   }
+
 
   // TODO remove rowSlice and instead generate a new 3D histogram
   // from the original event list, using only events falling in the 
@@ -354,7 +435,6 @@ public class Histogram3D
   {
     return histogram[page];
   }
-
   
   
   /**
