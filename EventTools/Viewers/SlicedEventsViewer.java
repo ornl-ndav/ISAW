@@ -306,9 +306,9 @@ public class SlicedEventsViewer
     if ( histogram == null )
       return;
 
-    IProjectionBinner3D x_binner = histogram.xBinner();
-    IProjectionBinner3D y_binner = histogram.yBinner();
-    IProjectionBinner3D z_binner = histogram.zBinner();
+    IProjectionBinner3D x_binner = histogram.xEdgeBinner();
+    IProjectionBinner3D y_binner = histogram.yEdgeBinner();
+    IProjectionBinner3D z_binner = histogram.zEdgeBinner();
 
                                                     // calculate corner point
     Vector3D ll_corner = x_binner.minVec(0);
