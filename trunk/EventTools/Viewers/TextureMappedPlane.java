@@ -114,8 +114,7 @@ public class TextureMappedPlane extends Shape
     lr_vec = new Vector3D( ll_corner );
     lr_vec.add( base_vec );
 
-    ur_vec = new Vector3D( ll_corner );
-    ur_vec.add( base_vec );
+    ur_vec = new Vector3D( lr_vec );
     ur_vec.add( up_vec );
 
     ul_vec = new Vector3D( ll_corner );
