@@ -41,6 +41,8 @@ import gov.anl.ipns.MathTools.Geometry.*;
 import gov.anl.ipns.Operator.*;
 import gov.anl.ipns.Operator.Threads.*;
 
+import DataSetTools.operator.Generic.TOF_SCD.FindPeaksViaSort;
+
 import EventTools.Histogram.*;
 import EventTools.Viewers.*;
 
@@ -57,19 +59,17 @@ public class Test_3_SNS_Events
     Vector3D zVec = new Vector3D(0,0,1);
 
     IEventBinner x_bin1D = new UniformEventBinner( -25.6f,  0,    num_bins );
-    IEventBinner y_bin1D = new UniformEventBinner( -12.8f, 12.8f, num_bins );
+//  IEventBinner y_bin1D = new UniformEventBinner( -12.8f, 12.8f, num_bins );
+    IEventBinner y_bin1D = new UniformEventBinner( -25.6f,  0,    num_bins );
     IEventBinner z_bin1D = new UniformEventBinner( -12.8f, 12.8f, num_bins );
 
     ProjectionBinner3D x_binner = new ProjectionBinner3D(x_bin1D, xVec);
     ProjectionBinner3D y_binner = new ProjectionBinner3D(y_bin1D, yVec);
     ProjectionBinner3D z_binner = new ProjectionBinner3D(z_bin1D, zVec);
 
-    IProjectionBinner3D[] dual_binners =
-         ProjectionBinner3D.getDualBinners( x_binner, y_binner, z_binner );
-
-    Histogram3D histogram = new Histogram3D( dual_binners[0],
-                                             dual_binners[1],
-                                             dual_binners[2]);
+    Histogram3D histogram = new Histogram3D( x_binner, 
+                                             y_binner,
+                                             z_binner );
     long run_time = System.nanoTime() - start_time;
     System.out.println("Time(ms) to allocate histogram = " + run_time/1.e6);
 
@@ -117,6 +117,11 @@ public class Test_3_SNS_Events
      b_star.normalize();
      c_star.normalize();
 
+     System.out.println("BuildHistogram ........ " );
+     System.out.println("a_star: " + a_star );
+     System.out.println("b_star: " + b_star );
+     System.out.println("c_star: " + c_star );
+
      float h_val = 0;
      float k_val = 0;
      float l_val = 0;
@@ -129,14 +134,14 @@ public class Test_3_SNS_Events
        h_val = -4;
        k_val =  0;
        l_val =  8;
-       extent_factor = 12;
+       extent_factor = 18;
      }
      else if ( SNAP_240 )
      {
        h_val =  0;
        k_val =  0;
        l_val =  0;
-       extent_factor = 15;
+       extent_factor = 10;
      }
 
      float a_center = h_val * a;
@@ -158,17 +163,32 @@ public class Test_3_SNS_Events
      IEventBinner c_bin1D = new UniformEventBinner( c_center - l_extent, 
                                                     c_center + l_extent, 
                                                     num_bins );
+     
+     ProjectionBinner3D x_edge_binner = null;
+     ProjectionBinner3D y_edge_binner = null;
+     ProjectionBinner3D z_edge_binner = null; 
+     int order = 1;
+     if ( order == 1 )
+     {
+       x_edge_binner = new ProjectionBinner3D(a_bin1D, a_star);
+       y_edge_binner = new ProjectionBinner3D(b_bin1D, b_star);
+       z_edge_binner = new ProjectionBinner3D(c_bin1D, c_star);     }
+     else if ( order == 2 )
+     {
+       z_edge_binner = new ProjectionBinner3D(a_bin1D, a_star);
+       x_edge_binner = new ProjectionBinner3D(b_bin1D, b_star);
+       y_edge_binner = new ProjectionBinner3D(c_bin1D, c_star);
+     }
+     else
+     {
+       y_edge_binner = new ProjectionBinner3D(a_bin1D, a_star);
+       z_edge_binner = new ProjectionBinner3D(b_bin1D, b_star);
+       x_edge_binner = new ProjectionBinner3D(c_bin1D, c_star);
+     }
 
-     ProjectionBinner3D x_binner = new ProjectionBinner3D(c_bin1D, c_star);
-     ProjectionBinner3D y_binner = new ProjectionBinner3D(a_bin1D, a_star);
-     ProjectionBinner3D z_binner = new ProjectionBinner3D(b_bin1D, b_star);
-
-     IProjectionBinner3D[] dual_binners =
-          ProjectionBinner3D.getDualBinners( x_binner, y_binner, z_binner );
-
-     Histogram3D histogram = new Histogram3D( dual_binners[0],
-                                              dual_binners[1],
-                                              dual_binners[2]);
+     Histogram3D histogram = new Histogram3D( x_edge_binner,
+                                              y_edge_binner,
+                                              z_edge_binner);
      long run_time = System.nanoTime() - start_time;
      System.out.println("Time(ms) to allocate histogram = " + run_time/1.e6);
 
@@ -182,18 +202,21 @@ public class Test_3_SNS_Events
 
 //   String file_name = "/usr2/SNAP_2/EVENTS/SNAP_238_neutron_event.dat";
 //   String file_name = "/usr2/SNAP_2/EVENTS/SNAP_239_neutron_event.dat";
-     String file_name = "/usr2/SNAP_2/EVENTS/SNAP_240_neutron_event.dat";
+//   String file_name = "/usr2/SNAP_2/EVENTS/SNAP_240_neutron_event.dat";
 //   String file_name = "/usr2/SNAP_2/EVENTS/SNAP_248_neutron_event.dat";
 //   String file_name = "/usr2/SNAP_2/EVENTS/SNAP_252_neutron_event.dat";
 //   String file_name = "/usr2/SNAP_2/EVENTS/SNAP_253_neutron_event.dat";
 //   String file_name = "/usr2/SNAP_2/EVENTS/SNAP_254_neutron_event.dat";
 //   String file_name = "/usr2/SNAP_2/EVENTS/SNAP_259_neutron_event.dat";
 //   String file_name = "/usr2/SNAP_3/EVENTS/SNAP_427_neutron_event.dat";
+//   String file_name = "/usr2/SNAP_4/EVENTS/SNAP_730_neutron_event.dat";
+//   String file_name = "/usr2/SNAP_4/EVENTS/SNAP_732_neutron_event.dat";
 //   String file_name = "/usr2/SNAP_4/EVENTS/SNAP_734_neutron_event.dat";
 //   String file_name = "/usr2/SNAP_4/EVENTS/SNAP_735_neutron_event.dat";
 //   String file_name = "/usr2/SNAP_4/EVENTS/SNAP_736_neutron_event.dat";
 //   String file_name = "/usr2/SNAP_4/EVENTS/SNAP_737_neutron_event.dat";
 //   String file_name = "/usr2/SNAP_4/EVENTS/SNAP_738_neutron_event.dat";
+     String file_name = "/usr2/SNAP_5/EVENTS/SNAP_875_neutron_event.dat";
 
 //   String file_name = "/usr2/ARCS_SCD/EVENTS/ARCS_419_neutron_event.dat";
 //   String file_name = "/usr2/ARCS_SCD_2/EVENTS/ARCS_1250_neutron_event.dat";
@@ -217,7 +240,8 @@ public class Test_3_SNS_Events
        instrument = SNS_Tof_to_Q_map.SNAP;
        det_file   = "/usr2/SNS_SCD_TEST_3/SNAP_1_Panel.DetCal";
        if ( file_name.indexOf("240") >= 0 )
-         mat_file = "/usr2/SNAP_2/QUARTZ/quartz_240_ls.mat"; 
+         mat_file = 
+              "/usr2/SNAP_2/QUARTZ_NOT_ROTATED/quartz_240_NOT_ROTATED_ls.mat"; 
      }
      else if  ( file_name.indexOf( "SEQ") >= 0 )
      {
@@ -313,6 +337,7 @@ public class Test_3_SNS_Events
 
      int NUM_BINS = 512;
      Histogram3D histogram = BuildHistogram( mat_file, NUM_BINS );
+//     Histogram3D histogram = DefaultHistogram( NUM_BINS );
 
      // Now make histogram
 /*
@@ -356,7 +381,7 @@ public class Test_3_SNS_Events
      SlicedEventsViewer my_viewer = new SlicedEventsViewer( histogram,
                                                             file_name );
 
-     int MAX_EVENTS = 1000000;
+     int MAX_EVENTS = 50000000;
      int n_lists = event_lists.length;
 
      int n_events = 0;
@@ -370,7 +395,39 @@ public class Test_3_SNS_Events
 
      my_viewer.setOrthographicView( false );
      my_viewer.updateDisplay();
+/*
+     float[][][] histogram_array = new float[NUM_BINS][][];
+     for ( int page = 0; page < NUM_BINS; page++ )
+       histogram_array[page] = histogram.pageSlice( page );
 
+     int[] val_histogram = new int[10000];
+     
+     int[] row_list = new int[NUM_BINS];
+     int[] col_list = new int[NUM_BINS];
+     for ( int k = 0; k < NUM_BINS; k++ )
+     {
+       row_list[k] = k + 1;
+       col_list[k] = k + 1;
+     }
+
+     StringBuffer log = new StringBuffer();
+     FindPeaksViaSort.getPeaks( histogram_array,
+                                false,
+                                100,
+                                90000,
+                                row_list,
+                                col_list,
+                                0,
+                                NUM_BINS-1,
+                                val_histogram,
+                                log );
+
+    String        log_file = "/home/dennis/Test_3.log"; 
+    FileWriter     writer  = new FileWriter( log_file );
+    BufferedWriter output  = new BufferedWriter( writer );
+    output.write( log.toString() );
+    output.close();
+*/
   }
 
 }
