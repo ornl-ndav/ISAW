@@ -25,13 +25,11 @@ $  last_row       INTEGER(245)    Last  Row of Region (max Y)
 #  Load a data file
 #
 Load (path & "SNAP_" & runNum_1 & ".nxs", "ds")
-#data_set = ds[2]
 
 # Begin for loop for each of 9 detectors.
 
 	for bank in [10:18]
 	  Display "Detector Bank = " & bank
-	  start_index = (bank-10)*65536
 	  data_set = ds[bank-9]
 
 #
