@@ -60,7 +60,11 @@ Send sum_ds
 #
 #  Display the sum of the selected pixels
 #
-Display sum_ds
+Display sum_ds, "Selected Graph View"
+#
+#  Save spectrum to an ASCII text file
+#
+SaveASCII(sum_ds, false, "%10.0f %10.0f", path & "Run" & runNum_1 & "_Bank" & bank & ".asc")
 #
 #
 # End of for loop for each of 9 detectors.
