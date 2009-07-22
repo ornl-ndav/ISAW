@@ -131,6 +131,13 @@ public class ProjectionBinner3D implements IProjectionBinner3D
 
 
   @Override
+  public double Val( double fractional_index )
+  {
+    return binner1D.Val( fractional_index );
+  }
+
+
+  @Override
   public Vector3D minVec( int index )
   {
     Vector3D min = new Vector3D( vec_x, vec_y, vec_z );
@@ -154,6 +161,15 @@ public class ProjectionBinner3D implements IProjectionBinner3D
     Vector3D max = new Vector3D( vec_x, vec_y, vec_z );
     max.multiply( (float)binner1D.maxVal(index) );
     return max;
+  }
+
+
+  @Override
+  public Vector3D Vec( double fractional_index )
+  {
+    Vector3D vec = new Vector3D( vec_x, vec_y, vec_z );
+    vec.multiply( (float)binner1D.Val(fractional_index) );
+    return vec;
   }
 
 

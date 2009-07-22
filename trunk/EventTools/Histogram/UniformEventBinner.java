@@ -133,6 +133,12 @@ public class UniformEventBinner implements IEventBinner
     return min + (index + 1) * to_val_scale;
   }
 
+  @Override
+  public double Val( double fractional_index )
+  {
+    return min + fractional_index * to_val_scale; 
+  }
+
   
   /**
    * Get a string specifying the min, max and number of steps used.

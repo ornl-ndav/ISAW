@@ -130,4 +130,22 @@ public interface IEventBinner
    */
   double maxVal( int index );
 
+
+  /**
+   * Get the fractional value along the subinterval corresponding to the 
+   * specified fractional index.
+   * NOTE: The returned value will only be valid if the index is at least 
+   * zero and less than the number of bins.
+   * 
+   * @param fraction_index The fractional index of a point part way 
+   *                       through a bin.  If i is the floor and
+   *                       x the fractional part above the floor, the
+   *                       the point in [ai,bi) that that is "x" of the 
+   *                       way from ai to bi will be returned.
+   * 
+   * @return The point part way along the bin specified by the given
+   *         fractional index.
+   */
+  double Val( double fractional_index );
+
 }
