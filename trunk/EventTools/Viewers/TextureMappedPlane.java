@@ -43,6 +43,8 @@ import SSG_Tools.Appearance.Textures.Texture2D;
 
 import SSG_Tools.SSG_Nodes.Shapes.Shape;
 
+import EventTools.Histogram.*;
+
 import gov.anl.ipns.MathTools.Geometry.*;
 
 /**
@@ -101,6 +103,7 @@ public class TextureMappedPlane extends Shape
    *  @param  alpha       The alpha value for the plane.
    */
   public TextureMappedPlane( float[][]  image,
+                             float      min,
                              float      max, 
                              int[]      color_tran,
                              Color[]    color_scale, 
@@ -131,33 +134,39 @@ public class TextureMappedPlane extends Shape
     int n_cols = image[0].length;
     byte[] rgb_image = new byte[3*n_rows*n_cols];
 
+    UniformEventBinner color_binner =
+                       new UniformEventBinner( min, max, color_tran.length ); 
     Color color;
-    int image_val;
-    int color_index;
-    int n_transf_vals = color_tran.length;
-    int index = 0;
+    float image_val;
+    int   color_index;
+    int   index = 0; 
     for ( int row = 0; row < n_rows; row++ )
       for ( int col = 0; col < n_cols; col++ )
       {
-        image_val =  (int)(150 *
-                      Math.sqrt(image[row][col] * (n_transf_vals-1) / max) );
-        if ( image_val < 0 )
-          image_val = 0;
-        else if ( image_val >= n_transf_vals )
-          image_val = n_transf_vals - 1;
+        image_val = image[row][col];
 
-        color_index = color_tran[ image_val ];
-        if ( color_index < 0 )
+        if ( image_val <= min )
           color_index = 0;
-        else if ( color_index >= color_scale.length )
+
+        else if ( image_val >= max )
+          color_index = color_tran.length - 1; 
+
+        else
+          color_index = color_binner.index( image_val ); 
+
+        color_index = color_tran[ color_index ];
+
+        if ( color_index > color_scale.length - 1 )
           color_index = color_scale.length - 1;
 
         color = color_scale[color_index];    
+
         rgb_image[3*index  ] = (byte)color.getRed(); 
         rgb_image[3*index+1] = (byte)color.getGreen();
         rgb_image[3*index+2] = (byte)color.getBlue();
         index++;
       }
+
     Texture2D texture = new Texture2D( rgb_image, n_rows, n_cols );
 
     appearance = new Appearance();

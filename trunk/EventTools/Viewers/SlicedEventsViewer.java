@@ -506,6 +506,10 @@ public class SlicedEventsViewer
 
       applyColorOptions();
  
+      int slice_num = frame_control.getFrameNumber();
+      set_slice_plane( slice_num );
+      show_image_slice( slice_num );
+
       jogl_panel.Draw(); 
     }
   }
