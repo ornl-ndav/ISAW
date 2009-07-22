@@ -727,6 +727,9 @@ public class IndexPeaks_Calc
                                             String           filename )
                       throws IOException
    {
+     if ( filename == null || filename.length() <= 0 )
+       return;
+
      Vector<Peak_new> not_indexed = new Vector<Peak_new>();
 
      double[][] hkls = SCD_OrientationErrorF.get_hkls( peaks, UBinverse );
@@ -787,6 +790,10 @@ public class IndexPeaks_Calc
      lattice_params[3] = alpha;
      lattice_params[4] = beta;
      lattice_params[5] = gamma;
+
+     if ( peaks_file_name == null || peaks_file_name.length() <= 0 )
+       throw new IllegalArgumentException("Invalid peaks file name " +
+                                           peaks_file_name );
 
      Vector<Peak_new> all_peaks = Peak_new_IO.ReadPeaks_new( peaks_file_name );
      clearIndexes( all_peaks );
@@ -933,7 +940,7 @@ public class IndexPeaks_Calc
           for ( int col = 0; col < 3; col++ )
             floatUB[row][col] = (float)(my_blind.UB[row][col]);
 
-        if ( matrix_file_name.length() > 0 )
+        if ( matrix_file_name != null && matrix_file_name.length() > 0 )
           Util.WriteMatrix( matrix_file_name, floatUB );
       }
     }
