@@ -214,11 +214,11 @@ public class MultiColoredPointList_2 extends SimpleShape
   {
     super(Color.WHITE);
 
-    System.out.println("MCPL Constructor, min, max = " + min + ", " + max );
-    System.out.println("MCPL Constructor, color_scale length = " + 
-                        color_scale.length );
-    System.out.println("MCPL Constructor, color_table length = " + 
-                        color_table.length );
+//    System.out.println("MCPL Constructor, min, max = " + min + ", " + max );
+//    System.out.println("MCPL Constructor, color_scale length = " + 
+//                        color_scale.length );
+//    System.out.println("MCPL Constructor, color_table length = " + 
+//                        color_table.length );
 
     this.num_points  = xyz.length / 3;
     this.code        = code;
@@ -277,8 +277,8 @@ public class MultiColoredPointList_2 extends SimpleShape
    */
   private void setPointsColorBuffer()
   {
-    System.out.println("Color index table length = " + color_table.length );
-    System.out.println("min, max = " + min + ", " + max );
+//    System.out.println("Color index table length = " + color_table.length );
+//    System.out.println("min, max = " + min + ", " + max );
 /*
     int[] counters = new int[20];
     for ( int i = 0; i < num_points; i++ )
@@ -290,8 +290,6 @@ public class MultiColoredPointList_2 extends SimpleShape
     for ( int i = 0; i < counters.length; i++ )
       System.out.printf( "i = %6d    count = %6d \n", i, counters[i] );
 */
-
-    alpha = 0.2f;
 
     UniformEventBinner color_binner = 
                        new UniformEventBinner( min, max, color_table.length );
