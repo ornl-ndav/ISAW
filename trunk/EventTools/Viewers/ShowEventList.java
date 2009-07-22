@@ -100,7 +100,7 @@ public class ShowEventList
       eventY = (float)events.eventY( i );
       eventZ = (float)events.eventZ( i );
       eventCode = (int)histogram.valueAt( eventX, eventY, eventZ );
-      if ( eventCode > 12 )
+      if ( eventCode > 20 )
       {
         event_array[0][eventCount] = (float)eventX;
         event_array[1][eventCount] = (float)eventY;
@@ -146,41 +146,25 @@ public class ShowEventList
     group.addChild( y_axis );
     group.addChild( z_axis );
 
-    IProjectionBinner3D x_binner = histogram.xBinner();
-    IProjectionBinner3D y_binner = histogram.yBinner();
-    IProjectionBinner3D z_binner = histogram.zBinner();
+    IProjectionBinner3D x_binner = histogram.xEdgeBinner();
+    IProjectionBinner3D y_binner = histogram.yEdgeBinner();
+    IProjectionBinner3D z_binner = histogram.zEdgeBinner();
 
     int slice_num = z_binner.numBins()/2;
     float[][] slice = histogram.pageSlice( slice_num );
-
-    System.out.println("x_binner, min = " + x_binner.axisMin() +
-                               ", max = " + x_binner.axisMax()  );
-
-    System.out.println("y_binner, min = " + y_binner.axisMin() +
-                               ", max = " + y_binner.axisMax()  );
-
-    System.out.println("z_binner, min = " + z_binner.axisMin() +
-                               ", max = " + z_binner.axisMax()  );
-
-    IProjectionBinner3D[] dual_binners = 
-          ProjectionBinner3D.getDualBinners( x_binner, y_binner, z_binner );
-
-    IProjectionBinner3D x_star = dual_binners[0];
-    IProjectionBinner3D y_star = dual_binners[1];
-    IProjectionBinner3D z_star = dual_binners[2];
                                                     // calculate corner point
-    Vector3D ll_corner = x_star.minVec(0);
-    ll_corner.add( y_star.minVec(0) );
-    ll_corner.add( z_star.centerVec(slice_num) );
+    Vector3D ll_corner = x_binner.minVec(0);
+    ll_corner.add( y_binner.minVec(0) );
+    ll_corner.add( z_binner.centerVec(slice_num) );
                                                     // calculate base vector
-    int last_x_index = x_star.numBins() - 1;
-    Vector3D base = x_star.maxVec( last_x_index );
-    base.subtract( x_star.minVec(0) );
+    int last_x_index = x_binner.numBins() - 1;
+    Vector3D base = x_binner.maxVec( last_x_index );
+    base.subtract( x_binner.minVec(0) );
     System.out.println("base vec = " + base + ", length = " + base.length());
                                                    // calculate up vector
-    int last_y_index = y_star.numBins() - 1;
-    Vector3D up = y_star.maxVec( last_y_index );
-    up.subtract( y_star.minVec(0) );
+    int last_y_index = y_binner.numBins() - 1;
+    Vector3D up = y_binner.maxVec( last_y_index );
+    up.subtract( y_binner.minVec(0) );
     System.out.println("up vec = " + up + ", length = " + up.length());
 
     float alpha = 0.5f;
@@ -189,6 +173,7 @@ public class ShowEventList
       color_tran[i] = i;
 
     TextureMappedPlane plane = new TextureMappedPlane( slice, 
+                                                       0,
                                                        (int)histogram.maxVal(),
                                                        color_tran,
                                                        colors,
@@ -208,7 +193,7 @@ public class ShowEventList
     demo.setBackgroundColor( Color.GRAY );
     new MouseArcBall( demo );
 
-    JFrame frame = new JFrame( "Thresholded Histogram" );
+    JFrame frame = new JFrame( "NEW Thresholded Histogram" );
     frame.setSize(500,517);
     frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
     frame.getContentPane().add( demo.getDisplayComponent() );
@@ -227,14 +212,16 @@ public class ShowEventList
     panel.changeLogScale(50,true);
 
     float[][] flipped_slice = new float[y_binner.numBins()][x_binner.numBins()];
+/*
     for ( int i = 0; i < z_binner.numBins(); i++ )
     {
-       ll_corner = x_star.minVec(0);
-       ll_corner.add( y_star.minVec(0) );
-       ll_corner.add( z_star.centerVec(i) );
+       ll_corner = x_binner.minVec(0);
+       ll_corner.add( y_binner.minVec(0) );
+       ll_corner.add( z_binner.centerVec(i) );
 
        slice = histogram.pageSlice( i );
        plane = new TextureMappedPlane( slice,
+                                       0,
                                        (int)histogram.maxVal(),
                                         color_tran,
                                         colors,
@@ -260,13 +247,14 @@ public class ShowEventList
          System.out.println("Exception Sleeping " + ex);
        }
     }
-
-    ll_corner = x_star.minVec(0);
-    ll_corner.add( y_star.minVec(0) );
-    ll_corner.add( z_star.centerVec(slice_num) );
+*/
+    ll_corner = x_binner.minVec(0);
+    ll_corner.add( y_binner.minVec(0) );
+    ll_corner.add( z_binner.centerVec(slice_num) );
 
     slice = histogram.pageSlice( slice_num );
     plane = new TextureMappedPlane( slice,
+                                    0,
                                     (int)histogram.maxVal(),
                                      color_tran,
                                      colors,
@@ -306,9 +294,9 @@ public class ShowEventList
       eventX = (float)events.eventX( i );
       eventY = (float)events.eventY( i );
       eventZ = (float)events.eventZ( i );
-      if ( eventX < -3    && eventX > -4.5 &&
-           eventY >  2.25    && eventY <  3.75 &&
-           eventZ > -0.75 && eventZ <  0.75 )
+      if ( eventX <   0 && eventX > -25 &&
+           eventY > -12 && eventY <  12 &&
+           eventZ > -12 && eventZ <  12 )
       {
         event_array[0][eventCount] = eventX;
         event_array[1][eventCount] = eventY;
