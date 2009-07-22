@@ -228,7 +228,7 @@ public class Util {
 
         if ( use_slurm )                 
         {
-          max_processes = 20;                        // overide max_processes
+          // max_processes = 20;                     // overide max_processes
                                                      // since slurm will queue
           cmd = " srun -p " + slurm_queue_name +     // up the requests.
                 " -J SCD_Find_Peaks -o " + result +  // Add the slurm stuff to
@@ -2050,7 +2050,7 @@ public class Util {
 
           if ( use_slurm )
           {
-            max_processes = 20;                     // overide max_processes
+            // max_processes = 20;                  // overide max_processes
                                                     // since slurm will queue
             cmd = " srun -p " + slurm_queue_name +  // up the requests.
                " -J SCD_Find_Peaks -o " + result +  // Add the slurm stuff to
