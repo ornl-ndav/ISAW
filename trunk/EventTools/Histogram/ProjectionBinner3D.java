@@ -199,7 +199,7 @@ public class ProjectionBinner3D implements IProjectionBinner3D
   @Override
   public String toString()
   {
-    return "" + directionVec() + binner1D; 
+    return "" + directionVec() + " " + binner1D; 
   }
 
 
@@ -230,9 +230,9 @@ public class ProjectionBinner3D implements IProjectionBinner3D
    * @param  x_index   The index of the bin in the direction of the x_binner
    * @param  y_index   The index of the bin in the direction of the y_binner
    * @param  z_index   The index of the bin in the direction of the z_binner
-   * @param  x_binner  Binner for the first basis direction, "x".
-   * @param  y_binner  Binner for the second basis direction, "y".
-   * @param  z_binner  Binner for the third basis direction, "z".
+   * @param  x_binner  "Edge" Binner for the first basis direction, "x".
+   * @param  y_binner  "Edge" Binner for the second basis direction, "y".
+   * @param  z_binner  "Edge" Binner for the third basis direction, "z".
    * @param  coords    Array with at least 3 positions, into which the sum
    *                   of x*x_vec + y*y_vec + z*zvec will be stored.  The
    *                   vectors, x_vec, y_vec and z_vec are the unit direction
@@ -317,6 +317,11 @@ public class ProjectionBinner3D implements IProjectionBinner3D
   }
 
   
+  /**
+   *  Get a "dual" binner roughly in the direction of binner_1, 
+   *  that is perpendicular to the plane containing binner_2 and
+   *  binner_3.
+   */
   private static IProjectionBinner3D getDualBinner(
                                       IProjectionBinner3D binner_1,
                                       IProjectionBinner3D binner_2,
