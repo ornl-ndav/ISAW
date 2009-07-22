@@ -36,15 +36,20 @@ package EventTools.EventList;
 
 import java.util.*;
 import java.io.*;
+import java.awt.*;
 
 import gov.anl.ipns.MathTools.Geometry.*;
 import gov.anl.ipns.Operator.*;
 import gov.anl.ipns.Operator.Threads.*;
 
 import DataSetTools.operator.Generic.TOF_SCD.FindPeaksViaSort;
+import DataSetTools.operator.Generic.TOF_SCD.BasicPeakInfo;
 
 import EventTools.Histogram.*;
 import EventTools.Viewers.*;
+
+import SSG_Tools.SSG_Nodes.SimpleShapes.*;
+
 
 public class Test_3_SNS_Events
 {
@@ -202,7 +207,7 @@ public class Test_3_SNS_Events
 
 //   String file_name = "/usr2/SNAP_2/EVENTS/SNAP_238_neutron_event.dat";
 //   String file_name = "/usr2/SNAP_2/EVENTS/SNAP_239_neutron_event.dat";
-//   String file_name = "/usr2/SNAP_2/EVENTS/SNAP_240_neutron_event.dat";
+     String file_name = "/usr2/SNAP_2/EVENTS/SNAP_240_neutron_event.dat";
 //   String file_name = "/usr2/SNAP_2/EVENTS/SNAP_248_neutron_event.dat";
 //   String file_name = "/usr2/SNAP_2/EVENTS/SNAP_252_neutron_event.dat";
 //   String file_name = "/usr2/SNAP_2/EVENTS/SNAP_253_neutron_event.dat";
@@ -216,7 +221,7 @@ public class Test_3_SNS_Events
 //   String file_name = "/usr2/SNAP_4/EVENTS/SNAP_736_neutron_event.dat";
 //   String file_name = "/usr2/SNAP_4/EVENTS/SNAP_737_neutron_event.dat";
 //   String file_name = "/usr2/SNAP_4/EVENTS/SNAP_738_neutron_event.dat";
-     String file_name = "/usr2/SNAP_5/EVENTS/SNAP_875_neutron_event.dat";
+//   String file_name = "/usr2/SNAP_5/EVENTS/SNAP_875_neutron_event.dat";
 
 //   String file_name = "/usr2/ARCS_SCD/EVENTS/ARCS_419_neutron_event.dat";
 //   String file_name = "/usr2/ARCS_SCD_2/EVENTS/ARCS_1250_neutron_event.dat";
@@ -339,34 +344,11 @@ public class Test_3_SNS_Events
      Histogram3D histogram = BuildHistogram( mat_file, NUM_BINS );
 //     Histogram3D histogram = DefaultHistogram( NUM_BINS );
 
-     // Now make histogram
-/*
      start_time = System.nanoTime();
 
-     Vector3D xVec = new Vector3D(1,0,0);
-     Vector3D yVec = new Vector3D(0,1,0);
-     Vector3D zVec = new Vector3D(0,0,1);
-
-     IEventBinner x_bin1D = new UniformEventBinner( -25.6f,  0,    NUM_BINS );
-     IEventBinner y_bin1D = new UniformEventBinner( -12.8f, 12.8f, NUM_BINS );
-     IEventBinner z_bin1D = new UniformEventBinner( -12.8f, 12.8f, NUM_BINS );
-
-     ProjectionBinner3D x_binner = new ProjectionBinner3D(x_bin1D, xVec);
-     ProjectionBinner3D y_binner = new ProjectionBinner3D(y_bin1D, yVec);
-     ProjectionBinner3D z_binner = new ProjectionBinner3D(z_bin1D, zVec);
-
-     IProjectionBinner3D[] dual_binners =
-          ProjectionBinner3D.getDualBinners( x_binner, y_binner, z_binner );
-
-     Histogram3D histogram = new Histogram3D( dual_binners[0], 
-                                              dual_binners[1], 
-                                              dual_binners[2]);
-     run_time = System.nanoTime() - start_time;
-     System.out.println("Time(ms) to allocate histogram = " + run_time/1.e6);
-*/
-     start_time = System.nanoTime();
      for ( int i = 0; i < n_threads; i++ )
        histogram.addEvents( event_lists[i] );
+
      run_time = System.nanoTime() - start_time;
      System.out.println("Time(ms) to add events to histogram = " +
                          run_time / 1.e6);
@@ -381,7 +363,7 @@ public class Test_3_SNS_Events
      SlicedEventsViewer my_viewer = new SlicedEventsViewer( histogram,
                                                             file_name );
 
-     int MAX_EVENTS = 50000000;
+     int MAX_EVENTS = 100000000;
      int n_lists = event_lists.length;
 
      int n_events = 0;
@@ -395,7 +377,8 @@ public class Test_3_SNS_Events
 
      my_viewer.setOrthographicView( false );
      my_viewer.updateDisplay();
-/*
+
+// /*
      float[][][] histogram_array = new float[NUM_BINS][][];
      for ( int page = 0; page < NUM_BINS; page++ )
        histogram_array[page] = histogram.pageSlice( page );
@@ -411,23 +394,48 @@ public class Test_3_SNS_Events
      }
 
      StringBuffer log = new StringBuffer();
-     FindPeaksViaSort.getPeaks( histogram_array,
-                                false,
-                                100,
-                                90000,
-                                row_list,
-                                col_list,
-                                0,
-                                NUM_BINS-1,
-                                val_histogram,
-                                log );
+     BasicPeakInfo[] peaks = FindPeaksViaSort.getPeaks( histogram_array,
+                                                        false,
+                                                        100,
+                                                        90000,
+                                                        row_list,
+                                                        col_list,
+                                                        0,
+                                                        NUM_BINS-1,
+                                                        val_histogram,
+                                                        log );
 
-    String        log_file = "/home/dennis/Test_3.log"; 
+    String        log_file = "/home/dennis/Test_3_" + NUM_BINS + ".log"; 
     FileWriter     writer  = new FileWriter( log_file );
     BufferedWriter output  = new BufferedWriter( writer );
     output.write( log.toString() );
     output.close();
-*/
+
+    IProjectionBinner3D x_binner = histogram.xEdgeBinner();
+    IProjectionBinner3D y_binner = histogram.yEdgeBinner();
+    IProjectionBinner3D z_binner = histogram.zEdgeBinner();
+
+    Vector3D[] verts  = new Vector3D[ peaks.length ];
+    float[]    coords = new float[3];
+    for ( int k = 0; k < verts.length; k++ )
+    {
+      if ( peaks[k].isValid() )
+      {
+        float col  = peaks[k].getColMean();
+        float row  = peaks[k].getRowMean();
+        float page = peaks[k].getChanCenter();
+        ProjectionBinner3D.centerPoint( (int)page, (int)col, (int)row, 
+                                        x_binner, y_binner, z_binner,
+                                        coords );
+        verts[k] = new Vector3D( coords ); 
+      }
+      else
+        verts[k] = new Vector3D(0,0,0);
+    }
+    my_viewer.addMarkers( verts, 6, Polymarker.BOX, Color.WHITE );
+    my_viewer.updateDisplay();
+    System.out.println("DONE>>>>>>>>>>>>>>>>>>");
+// */
   }
 
 }
