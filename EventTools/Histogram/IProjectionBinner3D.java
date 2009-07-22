@@ -100,6 +100,26 @@ public interface IProjectionBinner3D extends IEventBinner
    */
   Vector3D maxVec( int index );
 
+
+  /**
+   * Get a Vector3D object that is at the specified fractional position
+   * along the subinterval corresponding to the specified fractional index.
+   * NOTE: The returned value will only be valid if the index is at least 
+   * zero and less than the number of bins.
+   * 
+   * @param fraction_index The fractional index of a point part way 
+   *                       through a bin.  If i is the floor and
+   *                       x the fractional part above the floor, the
+   *                       the point in ith subinterval that that is
+   *                       "x" of the way from the minVec to the
+   *                       maxVec in that interval will be returned.
+   * 
+   * @return The point part way along the interval specified by the given
+   *         fractional index.
+   */
+  Vector3D Vec( double fractional_index );
+
+
   /**
    * Get the coordinates of the center of the interval along
    * the direction vectorx, with the specified index.
