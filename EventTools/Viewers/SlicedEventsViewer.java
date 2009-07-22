@@ -80,6 +80,7 @@ public class SlicedEventsViewer
   private ImageJPanel     panel;
   private Group           plane_group;
   private Group           points_group;
+  private Group           marker_group;
   private Color[]         colors;
   private int[]           color_tran;
   private float           alpha = 0.55f;
@@ -117,9 +118,11 @@ public class SlicedEventsViewer
 
     plane_group  = new Group();
     points_group = new Group();
+    marker_group = new Group();
 
     root.addChild( new glEnableNode(GL.GL_BLEND) );
     root.addChild( points_group );
+    root.addChild( marker_group );
     root.addChild( plane_group );
     root.addChild( new glDisableNode(GL.GL_BLEND) );
 
@@ -222,18 +225,34 @@ public class SlicedEventsViewer
   }
 
 
+  public void ClearEvents()
+  {
+    points_group.Clear();
+  }
+
+
+  public void addMarkers( Vector3D[] verts,
+                          int        size,
+                          int        type,
+                          Color      color )
+  {
+    ClearMarkers();
+    marker_group.addChild( new Polymarker(verts, size, type, color) );
+  }
+
+ 
+  public void ClearMarkers()
+  {
+    marker_group.Clear();
+  }
+
+
   public void update_slice()
   {
     int slice_num = frame_control.getFrameNumber();
     set_slice_plane( slice_num );
     show_image_slice( slice_num );
     jogl_panel.Draw();
-  }
-
-
-  public void ClearEvents()
-  {
-    points_group.Clear();
   }
 
 
@@ -296,8 +315,8 @@ public class SlicedEventsViewer
 
     events.setEventCodes( codes );
 
-    System.out.printf("Time to assign codes = %5.1f ms\n",
-                       (System.nanoTime() - start)/1.0e6 );
+//    System.out.printf("Time to assign codes = %5.1f ms\n",
+//                       (System.nanoTime() - start)/1.0e6 );
   }
 
 
@@ -326,6 +345,7 @@ public class SlicedEventsViewer
     float[][] slice = histogram.pageSlice( slice_num );
 
     TextureMappedPlane plane = new TextureMappedPlane( slice, 
+                                                       0,
                                                        (int)histogram.maxVal(),
                                                        color_tran,
                                                        colors,
@@ -426,13 +446,13 @@ public class SlicedEventsViewer
     float          max         = color_info.getTableMax();
 
     colors = IndexColorMaker.getColorTable( scale_name, num_colors );
-    int[] color_index = new int[color_table.length];
+    color_tran = new int[color_table.length];
     for ( int i = 0; i < color_table.length; i++ )
-      color_index[i] = color_table[i];
+      color_tran[i] = color_table[i];
 
     Vector<MultiColoredPointList_2> nodes = getColoredPointLists();
     for ( int i = 0; i < nodes.size(); i++ )
-      nodes.elementAt(i).setColorInfo( min, max, color_index, colors );
+      nodes.elementAt(i).setColorInfo( min, max, color_tran, colors );
   }
 
 
