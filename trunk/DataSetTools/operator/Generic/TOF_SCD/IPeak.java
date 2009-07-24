@@ -52,7 +52,7 @@ package DataSetTools.operator.Generic.TOF_SCD;
  * @author Ruth
  *
  */
-public interface IPeak {
+public interface IPeak extends IPeakQ {
    /**
     * @author Ruth
     *
@@ -66,9 +66,10 @@ public interface IPeak {
     * facility and instrument associated with this peak
     * @return the chi value for the sample orientation
     * 
-    * NOTE: Set the facility to IPNS or null and instrument to SCD or null to get correct
-    *       calculations with this peak.  To get site/instrument specific output
-    *       set the facility and instrument correspondingly
+    * NOTE: Set the facility to IPNS or null and instrument to SCD or null 
+    *       to get correct calculations with this peak.  To get 
+    *       site/instrument specific output set the facility and 
+    *       instrument correspondingly
     *       
     * @see  #setFacility(String)
     * @see  #setInstrument(String)
@@ -80,9 +81,10 @@ public interface IPeak {
     * facility and instrument associated with this peak
     * @return the phi value for the sample orientation
     * 
-    * NOTE: Set the facility to IPNS or null and instrument to SCD or null to get correct
-    *       calculations with this peak.  To get site/instrument specific output
-    *       set the facility and instrument correspondingly
+    * NOTE: Set the facility to IPNS or null and instrument to SCD or 
+    *       null to get correct calculations with this peak.  To get 
+    *       site/instrument specific output set the facility and 
+    *       instrument correspondingly
     *       
     * @see  #setFacility(String)
     * @see  #setInstrument(String)
@@ -94,20 +96,22 @@ public interface IPeak {
     * facility and instrument associated with this peak
     * @return the omega value for the sample orientation
     * 
-    * NOTE: Set the facility to IPNS or null and instrument to SCD or null to get correct
-    *       calculations with this peak.  To get site/instrument specific output
-    *       set the facility and instrument correspondingly
+    * NOTE: Set the facility to IPNS or null and instrument to SCD or 
+    *       null to get correct calculations with this peak.  To get 
+    *       site/instrument specific output set the facility and 
+    *       instrument correspondingly
     *       
     * @see  #setFacility(String)
     * @see  #setInstrument(String)
     */
    float    omega();
-   
   
    
    /**
     * Returns the distance in cm of this pixel from the center of the detector
-    *   in the detector's "x" direction     * @return the distance in cm of this pixel from the center in the detector
+    * in the detector's "x" direction     
+    *
+    * @return the distance in cm of this pixel from the center in the detector
     *         x direction
     */
    float    xcm();
@@ -115,7 +119,8 @@ public interface IPeak {
    
    /**
     * Returns the distance in cm of this pixel from the center of the detector
-    *   in the detector's "y" direction 
+    * in the detector's "y" direction 
+    *
     * @return the distance in cm of this pixel from the center in the detector
     *         y direction
     */
@@ -148,26 +153,6 @@ public interface IPeak {
     */
    float    z();
    
-   /**
-    *  Returns the h( Miller index) value corresponding to this peak
-    * @return the h( Miller index) value corresponding to this peak or 
-    *         zero if cannot be determined
-    */
-   float    h();
-   
-   /**
-    *  Returns the k( Miller index) value corresponding to this peak
-    * @return the k( Miller index) value corresponding to this peak or 
-    *         zero if cannot be determined
-    */
-   float    k();
-   
-   /**
-    *  Returns the l( Miller index) value corresponding to this peak
-    * @return the l( Miller index) value corresponding to this peak or 
-    *         zero if cannot be determined
-    */
-   float    l();
    
    /**
     * Returns the sequence number associated with this peak.
@@ -183,14 +168,6 @@ public interface IPeak {
     */
    float    time();
    
-   /**
-    * Returns the intensity at the given pixel and time associated with this 
-    *       peak
-    *       
-    * @return the intensity at the given pixel and time associated with this 
-    *       peak
-    */
-   int    ipkobs();
    
    /**
     * Returns the integrated peak intensity around the given pixel and time  
@@ -238,18 +215,13 @@ public interface IPeak {
     */
    float  L1();
    
-   /**
-    * Returns the  "Q" vector(really Q/2pi) associated with this peak. This
-    *     Q vector is adjusted by the sample orientation 
-    * @return the  Q/2pi vector in crystal coordinates associated with this peak
-    */
-   float[]  getUnrotQ();
    
    /**
     * Returns the  "Q" vector(really Q/2pi) associated with this peak. This
     *     Q vector is NOT adjusted by the sample orientation 
     *     
-    * @return the  Q/2pi vector in laboratory coordinates associated with this peak
+    * @return the Q/2pi vector in laboratory coordinates associated with 
+    *         this peak
     */
    float[]  getQ();
    
@@ -281,12 +253,8 @@ public interface IPeak {
      any other fields(except seqnum) that have legitimate values, otherwise 
      an exception should be thrown.
     */
-   /**
-    * Sets the h,k and l values
-    * @exception any of this peak's current h,k and l values known
-    */
-   void sethkl(float h, float k, float l) throws IllegalArgumentException;
    
+
    /**
     * Sets this peaks UB matrix
     * @param UB  this peaks UB matrix. It then calculates the h,k, and l values
@@ -294,16 +262,7 @@ public interface IPeak {
     */
    void UB( float[][] UB) throws IllegalArgumentException;
    
-   
-   /**
-    * Sets the intensity at the given pixel and time associated with this 
-    *       peak
-    *       
-    * @param pkObs the intensity at the given pixel and time associated with this 
-    *       peak
-    */
-   int    ipkobs( int pkObs);
-   
+
    /**
     * Sets this peaks Integrated intensity  error
     *
@@ -392,7 +351,7 @@ public interface IPeak {
    IPeak  createNewPeakxyz( float x, float y, float z, float tof );
     
    
-   //---------------I/O---------------------
+   //---------------I/O (MOVED TO Peak_new_IO class ---------------------
    
    /**
     * Writes out the information in this peak to a file. If the common fields
@@ -406,7 +365,8 @@ public interface IPeak {
     * @param Instrument   The Instrument conventions at this facility to use 
     *                   for displaying things like sample orientation data
     */
-  // void writePeak( OutputStream f, IPeak prevPeak,String Facility, String Instrument);
+  // void writePeak( OutputStream f, IPeak prevPeak,
+  //                 String Facility, String Instrument);
    
    /**
     * Reads information on the next peak entries from the given InputStream. 

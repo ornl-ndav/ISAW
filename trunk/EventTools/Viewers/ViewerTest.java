@@ -161,7 +161,7 @@ public class ViewerTest
     IEventBinner y_bin1D = new UniformEventBinner(   0, 25, NUM_BINS );
     IEventBinner z_bin1D = new UniformEventBinner( -12.5f, 12.5f, NUM_BINS );
 */
-    IEventBinner x_bin1D = new UniformEventBinner( -12.5f, 12.5f, NUM_BINS );
+    IEventBinner x_bin1D = new UniformEventBinner(  -25f,      0, NUM_BINS );
     IEventBinner y_bin1D = new UniformEventBinner( -12.5f, 12.5f, NUM_BINS );
     IEventBinner z_bin1D = new UniformEventBinner( -12.5f, 12.5f, NUM_BINS );
 
@@ -210,6 +210,7 @@ public class ViewerTest
     f.getContentPane().add(panel);
     f.setVisible(true);
     panel.changeLogScale(50,true);
+
 /*
     for ( int i = 0; i < NUM_BINS; i++ )
     {

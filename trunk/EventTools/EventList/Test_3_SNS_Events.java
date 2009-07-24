@@ -44,6 +44,10 @@ import gov.anl.ipns.Operator.Threads.*;
 
 import DataSetTools.operator.Generic.TOF_SCD.FindPeaksViaSort;
 import DataSetTools.operator.Generic.TOF_SCD.BasicPeakInfo;
+import DataSetTools.operator.Generic.TOF_SCD.IPeakQ;
+import DataSetTools.operator.Generic.TOF_SCD.PeakQ;
+
+import Operators.TOF_SCD.IndexPeaks_Calc;
 
 import EventTools.Histogram.*;
 import EventTools.Viewers.*;
@@ -340,7 +344,7 @@ public class Test_3_SNS_Events
      }
 
 
-     int NUM_BINS = 512;
+     int NUM_BINS = 1024;
      Histogram3D histogram = BuildHistogram( mat_file, NUM_BINS );
 //     Histogram3D histogram = DefaultHistogram( NUM_BINS );
 
@@ -396,7 +400,7 @@ public class Test_3_SNS_Events
      StringBuffer log = new StringBuffer();
      BasicPeakInfo[] peaks = FindPeaksViaSort.getPeaks( histogram_array,
                                                         false,
-                                                        100,
+                                                        150,
                                                         90000,
                                                         row_list,
                                                         col_list,
@@ -415,26 +419,76 @@ public class Test_3_SNS_Events
     IProjectionBinner3D y_binner = histogram.yEdgeBinner();
     IProjectionBinner3D z_binner = histogram.zEdgeBinner();
 
-    Vector3D[] verts  = new Vector3D[ peaks.length ];
-    float[]    coords = new float[3];
+    Vector3D   zero    = new Vector3D();
+    Vector3D[] verts   = new Vector3D[ peaks.length ];
+    float[]    coords  = new float[3];
+    int        counter = 0;
     for ( int k = 0; k < verts.length; k++ )
     {
       if ( peaks[k].isValid() )
       {
+        counter++;
+
         float col  = peaks[k].getColMean();
         float row  = peaks[k].getRowMean();
         float page = peaks[k].getChanCenter();
+
+        Vector3D point = x_binner.Vec( page );
+        Vector3D temp  = y_binner.Vec( col );
+        point.add( temp );
+        temp = z_binner.Vec( row );
+        point.add( temp );
+        verts[k] = point; 
+/*
         ProjectionBinner3D.centerPoint( (int)page, (int)col, (int)row, 
                                         x_binner, y_binner, z_binner,
                                         coords );
         verts[k] = new Vector3D( coords ); 
+*/
       }
       else
-        verts[k] = new Vector3D(0,0,0);
+        verts[k] = zero;
     }
+    System.out.println("Marked " + counter + " seemingly valid peaks");
     my_viewer.addMarkers( verts, 6, Polymarker.BOX, Color.WHITE );
     my_viewer.updateDisplay();
     System.out.println("DONE>>>>>>>>>>>>>>>>>>");
+
+    Vector<IPeakQ> q_peaks = new Vector<IPeakQ>();
+    for ( int k = 0; k < verts.length; k++ )
+    {
+      if ( verts[k] != zero )
+      {
+        float qx = verts[k].getX();
+        float qy = verts[k].getY();
+        float qz = verts[k].getZ();
+        float ipk_f = histogram.valueAt( qx, qy, qz );
+        qx = (float)(qx / (2 * Math.PI)) ;
+        qy = (float)(qy / (2 * Math.PI)) ;
+        qz = (float)(qz / (2 * Math.PI)) ;
+        q_peaks.add( new PeakQ( qx, qy, qz, (int)ipk_f ) );
+      } 
+    }
+
+    System.out.println("BEFORE INDEXING PEAKS" );
+    for  ( int k = 0; k < q_peaks.size(); k++ )
+      System.out.println( q_peaks.elementAt(k) );
+
+    IndexPeaks_Calc.IndexPeaksWithOptimizer( q_peaks,
+                                             4.915f, 4.915f, 5.4f,
+                                             90, 90, 120 );
+
+    System.out.println("AFTER INDEXING PEAKS" );
+    for  ( int k = 0; k < q_peaks.size(); k++ )
+      System.out.println( q_peaks.elementAt(k) );
+
+    
+    start_time = System.nanoTime();
+    histogram.clear();
+    run_time = System.nanoTime() - start_time;
+    System.out.println("Time(ms) to clear histogram = " + run_time/1.e6);
+
+
 // */
   }
 
