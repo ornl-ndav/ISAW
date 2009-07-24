@@ -59,10 +59,9 @@ public class IndexPeaks_Calc
     *  @return a two dimensional array containing the calculated h,k,l values
     *          for the peaks 
     */
-   public static double[][] IndexByOptimizing( 
-                                  Vector<Peak_new> peaks, 
-                                  double[]         lattice_params,
-                                  double[][]       UBinv  )
+   public static double[][] IndexByOptimizing( Vector<IPeakQ> peaks, 
+                                               double[]       lattice_params,
+                                               double[][]     UBinv  )
    {
     String[] param_names = { "phi", "chi", "omega" };
     double[] params      = { 40, 30, 60 };
@@ -147,9 +146,9 @@ public class IndexPeaks_Calc
     *
     *  @param  peaks       Vector of peaks to be sorted.
     */
-   public static void SortPeaks( Vector<Peak_new> peaks )
+   public static void SortPeaks( Vector<IPeakQ> peaks )
    {
-      Peak_new[] peak_arr = new Peak_new[ peaks.size() ];
+      IPeakQ[] peak_arr = new IPeakQ[ peaks.size() ];
       for ( int i = 0; i < peak_arr.length; i++ )
         peak_arr[i] = peaks.elementAt(i);
 
@@ -168,10 +167,10 @@ public class IndexPeaks_Calc
     *  @param  decreasing  Set true to sort from largest to smallest;
     *                      set false to sort from smallest to largest.
     */
-   public static void SortPeaksMagQ( Vector<Peak_new> peaks, 
+   public static void SortPeaksMagQ( Vector<IPeakQ> peaks, 
                                      boolean          decreasing )
    {
-      Peak_new[] peak_arr = new Peak_new[ peaks.size() ];
+      IPeakQ[] peak_arr = new IPeakQ[ peaks.size() ];
       for ( int i = 0; i < peak_arr.length; i++ )
         peak_arr[i] = peaks.elementAt(i);
 
@@ -191,9 +190,9 @@ public class IndexPeaks_Calc
     *                      this peak.
     *  @param  peaks       Vector of peaks to be sorted.
     */
-   public static void SortPeaks( Peak_new fixed_peak, Vector<Peak_new> peaks )
+   public static void SortPeaks( IPeakQ fixed_peak, Vector<IPeakQ> peaks )
    {
-      Peak_new[] peak_arr = new Peak_new[ peaks.size() ];
+      IPeakQ[] peak_arr = new IPeakQ[ peaks.size() ];
       for ( int i = 0; i < peak_arr.length; i++ )
         peak_arr[i] = peaks.elementAt(i);
 
@@ -213,11 +212,11 @@ public class IndexPeaks_Calc
     *  @param  fixed_peak_2  Second fixed peak 
     *  @param  peaks         Vector of peaks to be sorted.
     */
-   public static void SortPeaks( Peak_new         fixed_peak_1, 
-                                 Peak_new         fixed_peak_2,
-                                 Vector<Peak_new> peaks )
+   public static void SortPeaks( IPeakQ         fixed_peak_1, 
+                                 IPeakQ         fixed_peak_2,
+                                 Vector<IPeakQ> peaks )
    {
-      Peak_new[] peak_arr = new Peak_new[ peaks.size() ];
+      IPeakQ[] peak_arr = new IPeakQ[ peaks.size() ];
       for ( int i = 0; i < peak_arr.length; i++ )
         peak_arr[i] = peaks.elementAt(i);
 
@@ -240,12 +239,12 @@ public class IndexPeaks_Calc
     *  @return A reference to the largest peak, or null if the list of peaks
     *          is empty.
     */
-   public static Peak_new GetMaxPeak( Vector<Peak_new> peaks )
+   public static IPeakQ GetMaxPeak( Vector<IPeakQ> peaks )
    {
      if ( peaks == null || peaks.size() == 0 )
        return null;
 
-     Peak_new largest = peaks.elementAt(0);
+     IPeakQ largest = peaks.elementAt(0);
      for ( int i = 0; i < peaks.size(); i++ )
      {
        if ( largest.ipkobs() < peaks.elementAt(i).ipkobs() )
@@ -258,7 +257,7 @@ public class IndexPeaks_Calc
    private static class IPkObsComparator implements Comparator
    {
       /**
-       *  Compare two Peak_new objects based on their ipkobs value.
+       *  Compare two IPeakQ objects based on their ipkobs value.
        *
        *  @param  peak_1   The first  peak
        *  @param  peak_2   The second peak 
@@ -267,8 +266,8 @@ public class IndexPeaks_Calc
        */
        public int compare( Object peak_1, Object peak_2 )
        {
-         float ipk_1  = ((Peak_new)peak_1).ipkobs();
-         float ipk_2  = ((Peak_new)peak_2).ipkobs();
+         float ipk_1  = ((IPeakQ)peak_1).ipkobs();
+         float ipk_2  = ((IPeakQ)peak_2).ipkobs();
          if ( ipk_1 < ipk_2 )
            return 1;
          else if  ( ipk_1 > ipk_2 )
@@ -297,7 +296,7 @@ public class IndexPeaks_Calc
 
 
      /**
-       *  Compare two Peak_new objects based on the magnitude of their Q value.
+       *  Compare two IPeakQ objects based on the magnitude of their Q value.
        *
        *  @param  peak_1   The first  peak
        *  @param  peak_2   The second peak 
@@ -306,8 +305,8 @@ public class IndexPeaks_Calc
        */
        public int compare( Object peak_1, Object peak_2 )
        {
-         float[] q1  = ((Peak_new)peak_1).getQ();
-         float[] q2  = ((Peak_new)peak_2).getQ();
+         float[] q1  = ((IPeakQ)peak_1).getUnrotQ();
+         float[] q2  = ((IPeakQ)peak_2).getUnrotQ();
 
          float mag_q1 = q1[0]*q1[0] + q1[1]*q1[1] + q1[2]*q1[2];
          float mag_q2 = q2[0]*q2[0] + q2[1]*q2[1] + q2[2]*q2[2];
@@ -336,13 +335,13 @@ public class IndexPeaks_Calc
    {
       float[] fixed_q;
 
-      public DistanceComparator1( Peak_new fixed_peak )
+      public DistanceComparator1( IPeakQ fixed_peak )
       {
         fixed_q = fixed_peak.getUnrotQ();
       }
 
       /**
-       *  Compare two Peak_new objects based on their distance to the
+       *  Compare two IPeakQ objects based on their distance to the
        *  fixed peak passed in to the constructor.
        *
        *  @param  peak_1   The first  peak
@@ -352,8 +351,8 @@ public class IndexPeaks_Calc
        */
        public int compare( Object peak_1, Object peak_2 )
        {
-         float distance_1 = distance( (Peak_new)peak_1 );
-         float distance_2 = distance( (Peak_new)peak_2 );
+         float distance_1 = distance( (IPeakQ)peak_1 );
+         float distance_2 = distance( (IPeakQ)peak_2 );
          if ( distance_1 < distance_2 )
            return -1;
          else if  ( distance_1 < distance_2 )
@@ -366,7 +365,7 @@ public class IndexPeaks_Calc
         *  Calculate the squared distance in Q, from the specified peak 
         *  to the fixed_peak
         */
-       private float distance( Peak_new peak )
+       private float distance( IPeakQ peak )
        {
           float[] q     = peak.getUnrotQ();
           float   delta = 0;
@@ -386,15 +385,15 @@ public class IndexPeaks_Calc
       float[] fixed_q_1;
       float[] fixed_q_2;
 
-      public DistanceComparator2( Peak_new fixed_peak_1, 
-                                  Peak_new fixed_peak_2 )
+      public DistanceComparator2( IPeakQ fixed_peak_1, 
+                                  IPeakQ fixed_peak_2 )
       {
         fixed_q_1 = fixed_peak_1.getUnrotQ();
         fixed_q_2 = fixed_peak_2.getUnrotQ();
       }
 
       /**
-       *  Compare two Peak_new objects based on their distance to the
+       *  Compare two IPeakQ objects based on their distance to the
        *  fixed peak passed in to the constructor.
        *
        *  @param  peak_1   The first  peak
@@ -404,8 +403,8 @@ public class IndexPeaks_Calc
        */
        public int compare( Object peak_1, Object peak_2 )
        {
-         float distance_1 = distance( (Peak_new)peak_1 );
-         float distance_2 = distance( (Peak_new)peak_2 );
+         float distance_1 = distance( (IPeakQ)peak_1 );
+         float distance_2 = distance( (IPeakQ)peak_2 );
          if ( distance_1 < distance_2 )
            return -1;
          else if  ( distance_1 < distance_2 )
@@ -419,7 +418,7 @@ public class IndexPeaks_Calc
         *  to the two specified fixed peaks, and return the smaller of
         *  the two squared distances.
         */
-       private float distance( Peak_new peak )
+       private float distance( IPeakQ peak )
        {
           float[] q     = peak.getUnrotQ();
           float   delta = 0;
@@ -458,8 +457,8 @@ public class IndexPeaks_Calc
     *  @return true if the two peaks are collinear to within the specified
     *          angle.
     */
-   public static boolean areCollinear( Peak_new peak_1, 
-                                       Peak_new peak_2,
+   public static boolean areCollinear( IPeakQ peak_1, 
+                                       IPeakQ peak_2,
                                        float    min_angle )
    {
       float[] q = peak_1.getUnrotQ();
@@ -484,7 +483,7 @@ public class IndexPeaks_Calc
     *
     *  @param peaks  The list of peaks to set to (h,k,l) = (0,0,0)
     */
-   public static void clearIndexes( Vector<Peak_new> peaks )
+   public static void clearIndexes( Vector<IPeakQ> peaks )
    {
      for ( int i = 0; i < peaks.size(); i++ )
        peaks.elementAt(i).sethkl( 0, 0, 0 );
@@ -502,9 +501,9 @@ public class IndexPeaks_Calc
     *                  tolerance, in order to consider the peak to be
     *                  indexed.
     */
-   public static void Index( Vector<Peak_new> peaks, 
-                             double[][]       UBinverse,
-                             double           tolerance )
+   public static void Index( Vector<IPeakQ> peaks, 
+                             double[][]     UBinverse,
+                             double         tolerance )
    {
      double[][] hkls = SCD_OrientationErrorF.get_hkls( peaks, UBinverse );
      for ( int i = 0; i < hkls.length; i++ )
@@ -556,9 +555,9 @@ public class IndexPeaks_Calc
    *                   approximate index values to integer values.
    *  @return The number of peaks indexed to within the specified tolerance.
    */
-  public static int NumIndexed( Vector<Peak_new> peaks,
-                                double[][]       UBinverse,
-                                double           tolerance )
+  public static int NumIndexed( Vector<IPeakQ> peaks,
+                                double[][]     UBinverse,
+                                double         tolerance )
   {
      double hkl_vals[][] = SCD_OrientationErrorF.get_hkls( peaks, UBinverse );
      int num_indexed = 0;
@@ -587,15 +586,15 @@ public class IndexPeaks_Calc
    *         new indexing as rows.  The newUBinverse matrix is also filled
    *         out the newly calculated inverse.
    */
-   public static double[][] OptimizeUB( Vector<Peak_new> peaks, 
-                                        double[][]       UBinverse,
-                                        double[][]       newUBinverse,
-                                        double           tolerance )
+   public static double[][] OptimizeUB( Vector<IPeakQ> peaks, 
+                                        double[][]     UBinverse,
+                                        double[][]     newUBinverse,
+                                        double         tolerance )
    {
      double UB[][] = new double[3][3];
      double hkl_vals[][] = SCD_OrientationErrorF.get_hkls( peaks, UBinverse );
-     Vector<double[]> good_hkl = new Vector<double[]>();
-     Vector<Peak_new> good_peaks = new Vector<Peak_new>();
+     Vector<double[]> good_hkl   = new Vector<double[]>();
+     Vector<IPeakQ>   good_peaks = new Vector<IPeakQ>();
      int num_bad = 0;
      for ( int row = 0; row < hkl_vals.length; row++ )
      {
@@ -681,7 +680,7 @@ public class IndexPeaks_Calc
      for ( int k = 0; k < 3; k++ )
        lat_params[k] *= Math.PI * 2;
      lat_params[6] *= 8 * Math.PI * Math.PI * Math.PI;
-     return String.format(" %3.1f %3.1f %3.1f  %4.1f %4.1f %4.1f  %5.1f \n",
+     return String.format(" %3.2f %3.2f %3.2f   %4.1f %4.1f %4.1f  %5.1f \n",
                        lat_params[0], lat_params[1], lat_params[2],
                        lat_params[3], lat_params[4], lat_params[5],
                        lat_params[6] );
@@ -697,9 +696,9 @@ public class IndexPeaks_Calc
     *  @param tolerance Determines which peaks are considered well indexed;
     *                   other peaks are marked with ******
     */
-   public static void ShowHKLS( Vector<Peak_new> peaks, 
-                                double[][]       UBinverse,
-                                double           tolerance )
+   public static void ShowHKLS( Vector<IPeakQ> peaks, 
+                                double[][]     UBinverse,
+                                double         tolerance )
    {
      double[][] hkls = SCD_OrientationErrorF.get_hkls( peaks, UBinverse );
      for( int i = 0; i < hkls.length; i++ )
@@ -721,23 +720,25 @@ public class IndexPeaks_Calc
     *                   tolerance will be written
     *  @param filename  The name of the file to be written.
     */
-   public static void WriteNotIndexedPeaks( Vector<Peak_new> peaks,
-                                            double[][]       UBinverse,
-                                            double           tolerance,
-                                            String           filename )
+   public static void WriteNotIndexedPeaks( Vector<IPeakQ> peaks,
+                                            double[][]     UBinverse,
+                                            double         tolerance,
+                                            String         filename )
                       throws IOException
    {
      if ( filename == null || filename.length() <= 0 )
        return;
 
-     Vector<Peak_new> not_indexed = new Vector<Peak_new>();
+     Vector not_indexed = new Vector();
 
      double[][] hkls = SCD_OrientationErrorF.get_hkls( peaks, UBinverse );
      for( int i = 0; i < hkls.length; i++ )
        if ( DistanceToInts( hkls[ i ] ) >= tolerance )
          not_indexed.add( peaks.elementAt(i) );       
 
-     Peak_new_IO.WritePeaks_new( filename, not_indexed, false );
+     if ( not_indexed.size() > 0 &&
+          not_indexed.elementAt(0) instanceof Peak_new )
+       Peak_new_IO.WritePeaks_new( filename, not_indexed, false );
    }
 
 
@@ -795,12 +796,17 @@ public class IndexPeaks_Calc
        throw new IllegalArgumentException("Invalid peaks file name " +
                                            peaks_file_name );
 
-     Vector<Peak_new> all_peaks = Peak_new_IO.ReadPeaks_new( peaks_file_name );
+     Vector<Peak_new> peaks_new = Peak_new_IO.ReadPeaks_new( peaks_file_name );
+
+     Vector<IPeakQ> all_peaks = new Vector<IPeakQ>();
+     for ( int i = 0; i < peaks_new.size(); i++ )
+       all_peaks.add( peaks_new.elementAt(i) );
+
      clearIndexes( all_peaks );
                                                 // now sort by ipkobs
      SortPeaks( all_peaks );
 
-     Vector<Peak_new> strong_peaks = new Vector<Peak_new>();
+     Vector<IPeakQ> strong_peaks = new Vector<IPeakQ>();
      int num_strong = all_peaks.size();
                                           // just look at 40 strongest peaks
      if (num_strong > MAX_STRONG )
@@ -826,7 +832,7 @@ public class IndexPeaks_Calc
        NUM_NEIGHBORS = strong_peaks.size();
  
                                    // Initial indexing -------------------
-    Vector<Peak_new> peaks = new Vector<Peak_new>();
+    Vector<IPeakQ> peaks = new Vector<IPeakQ>();
     Random random = new Random();
     while ( num_indexed  < REQUIRED_FRACTION * NUM_NEIGHBORS &&
             num_attempts < MAX_ATTEMPTS )
@@ -841,7 +847,7 @@ public class IndexPeaks_Calc
       peaks.add( strong_peaks.elementAt( second_peak ) );
 
       SortPeaks( peaks.elementAt(0), peaks.elementAt(1), strong_peaks );
-      Vector<Peak_new> neighbors = new Vector<Peak_new>();
+      Vector<IPeakQ> neighbors = new Vector<IPeakQ>();
       for ( int i = 2; i < Math.min(NUM_NEIGHBORS, strong_peaks.size()); i++ )
         neighbors.add( strong_peaks.elementAt(i) );
 
@@ -924,7 +930,14 @@ public class IndexPeaks_Calc
 
         Index( all_peaks, UBinverse, hkl_tol );
         if ( peaks_file_name.length() > 0 )
-          Peak_new_IO.WritePeaks_new( peaks_file_name, all_peaks, false );
+          if ( all_peaks.size() > 0 &&                      // assume all peaks
+               all_peaks.elementAt(0) instanceof Peak_new ) // are same type
+          {
+            Vector write_peaks = new Vector();
+            for ( int i = 0; i < all_peaks.size(); i++ )
+              write_peaks.add( all_peaks.elementAt(i) );
+            Peak_new_IO.WritePeaks_new( peaks_file_name, write_peaks, false );
+          }
 
                                          // standardize the unit cell
         double[][] UB = LinearAlgebra.copy( newUBinverse );
@@ -1003,11 +1016,11 @@ public class IndexPeaks_Calc
      Vector strong_peaks = new Vector();
      int num_strong = all_peaks.size();
                                           // just look at 40 strongest peaks
-     if (num_strong > MAX_STRONG )
+     if ( num_strong > MAX_STRONG )
        num_strong = MAX_STRONG;
 
      for ( int i = 0; i < num_strong; i++ )
-       strong_peaks.add( (IPeak)all_peaks.elementAt(i) );
+       strong_peaks.add( all_peaks.elementAt(i) );
                                          // sort in increasing order of |Q|
      SortPeaksMagQ( strong_peaks, false );
 
@@ -1040,10 +1053,13 @@ public class IndexPeaks_Calc
       second_peak = 1+(int)( (strong_peaks.size()/2) * random.nextDouble());
       peaks.add( strong_peaks.elementAt( second_peak ) );
 
-      SortPeaks((Peak_new) peaks.elementAt(0),(Peak_new)  peaks.elementAt(1), strong_peaks );
-      Vector<Peak_new> neighbors = new Vector<Peak_new>();
+      SortPeaks( (IPeakQ)peaks.elementAt(0), 
+                 (IPeakQ)peaks.elementAt(1), 
+                 strong_peaks );
+
+      Vector<IPeakQ> neighbors = new Vector<IPeakQ>();
       for ( int i = 2; i < Math.min(NUM_NEIGHBORS, strong_peaks.size()); i++ )
-        neighbors.add( (Peak_new) strong_peaks.elementAt(i) );
+        neighbors.add( (IPeakQ)strong_peaks.elementAt(i) );
 
       int retries = 0;
       while ( num_indexed  < REQUIRED_FRACTION * NUM_NEIGHBORS &&
@@ -1132,6 +1148,7 @@ public class IndexPeaks_Calc
           for ( int col = 0; col < 3; col++ )
             floatUB[row][col] = (float)(my_blind.UB[row][col]);
 
+        System.out.println(return_msg);
         return floatUB ;
       }
     }

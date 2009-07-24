@@ -344,9 +344,12 @@ public class SlicedEventsViewer
 
     float[][] slice = histogram.pageSlice( slice_num );
 
+    int max = (int)histogram.maxVal();
+    if ( max <= 0 )
+      max = 1;
     TextureMappedPlane plane = new TextureMappedPlane( slice, 
                                                        0,
-                                                       (int)histogram.maxVal(),
+                                                       max,
                                                        color_tran,
                                                        colors,
                                                        ll_corner, 

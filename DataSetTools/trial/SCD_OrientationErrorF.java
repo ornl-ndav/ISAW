@@ -1,3 +1,39 @@
+/* 
+ * File: SCD_OrientationErrorF.java
+ *
+ * Copyright (C) 2009, Dennis Mikkelson
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
+ *           Department of Mathematics, Statistics and Computer Science
+ *           University of Wisconsin-Stout
+ *           Menomonie, WI 54751, USA
+ *
+ * This work was supported by the Spallation Neutron Source Division
+ * of Oak Ridge National Laboratory, Oak Ridge, TN, USA.
+ *
+ * NOTE: This class is a simplified version of the Peak.java class 
+ *       written by Peter Peterson.
+ *
+ *  Last Modified:
+ * 
+ *  $Author: eu7 $
+ *  $Date: 2008-11-20 10:12:35 -0600 (Thu, 20 Nov 2008) $            
+ *  $Revision: 19434 $
+ */
 
 package DataSetTools.trial;
 
@@ -22,7 +58,7 @@ public class SCD_OrientationErrorF extends    OneVarParameterizedFunction
   private double[][]   UBinverse;
 
 
-  public SCD_OrientationErrorF( Vector<Peak_new> peaks, 
+  public SCD_OrientationErrorF( Vector<IPeakQ> peaks, 
                                 double[] lattice_params,
                                 double[] params,
                                 String[] param_names )
@@ -153,7 +189,7 @@ public class SCD_OrientationErrorF extends    OneVarParameterizedFunction
   }
 
 
-  public static void show_hkls( Vector<Peak_new> peaks, double[][] UBinverse )
+  public static void show_hkls( Vector<IPeakQ> peaks, double[][] UBinverse )
   {
     System.out.println("HKL Values of peaks");
     float q_vecf[] = new float[3];
@@ -172,7 +208,7 @@ public class SCD_OrientationErrorF extends    OneVarParameterizedFunction
   }
 
 
-  public static double[][] get_hkls( Vector<Peak_new> peaks, 
+  public static double[][] get_hkls( Vector<IPeakQ> peaks, 
                                     double[][] UBinverse )
   {
     float  q_vecf[] = new float[3];
@@ -257,7 +293,10 @@ public class SCD_OrientationErrorF extends    OneVarParameterizedFunction
 //  String filename = "/usr2/SNAP_2/QUARTZ/quartz_test_235.peaks";
 //  String filename = "/usr2/SNAP_2/QUARTZ/quartz_test_235-238.peaks";
 
-    Vector<Peak_new> peaks = Peak_new_IO.ReadPeaks_new( filename );
+    Vector<Peak_new> peak_news = Peak_new_IO.ReadPeaks_new( filename );
+    Vector<IPeakQ> peaks = new Vector<IPeakQ>();
+    for ( int i = 0; i < peak_news.size(); i++ )
+      peaks.add( peak_news.elementAt(i) );
 
     String[] param_names = { "phi", "chi", "omega" };
     double[] params      = { 40, 30, 60 };
@@ -332,7 +371,7 @@ public class SCD_OrientationErrorF extends    OneVarParameterizedFunction
 
     double[][] UBinverse = best_error_f.getUBinverse(); 
 /*
-    Vector<Peak_new> all_peaks = Peak_new_IO.ReadPeaks_new( all_filename );
+    Vector<IPeakQ> all_peaks = Peak_new_IO.ReadPeaks_new( all_filename );
     show_hkls( all_peaks, UBinverse );
 */
     double[][]  indexing = best_error_f.get_hkls( peaks, UBinverse );
