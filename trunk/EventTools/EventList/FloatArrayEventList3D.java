@@ -40,12 +40,12 @@ import EventTools.Histogram.UniformEventBinner;
 
 /**
  * This class uses arrays of floats to record the x,y,z
- * coordinates of a list of events, and an array of ints
- * to record the corresponding integer codes for the events.
+ * coordinates of a list of events, and an array of floats 
+ * to record the corresponding weights for the events.
  */
 public class FloatArrayEventList3D implements IEventList3D 
 {
-  private int[]   codes;
+  private float[] weights;
   private float[] x_vals;
   private float[] y_vals;
   private float[] z_vals;
@@ -55,64 +55,64 @@ public class FloatArrayEventList3D implements IEventList3D
   private IEventBinner z_extent = null;
 
   /**
-   * Construct an event list using the specified arrays of codes and
+   * Construct an event list using the specified arrays of weights and
    * x,y,z coordinates.  All of the array parameters must have the same
    * length and must be non-empty.
    * 
-   * @param codes   Array of integer codes for the events.
+   * @param weights Array of weights for the events.
    * @param x_vals  Array of x-coordinates for the events.
    * @param y_vals  Array of y-coordinates for the events.
    * @param z_vals  Array of z-coordinates for the events.
    */
-  public FloatArrayEventList3D( int[]   codes,
+  public FloatArrayEventList3D( float[] weights,
                                 float[] x_vals,
                                 float[] y_vals,
                                 float[] z_vals  ) 
   {
-    if ( codes == null || x_vals == null || y_vals == null || z_vals == null )
+    if ( weights == null || x_vals == null || y_vals == null || z_vals == null )
       throw new IllegalArgumentException( "array null" );
 
-    int num_events = codes.length;
+    int num_events = x_vals.length;
     if ( num_events <= 0 )
-      throw new IllegalArgumentException( "zero length codes array" );
+      throw new IllegalArgumentException( "zero length weights array" );
 
     if ( x_vals.length != num_events ||
          y_vals.length != num_events ||
          z_vals.length != num_events  )
       throw new IllegalArgumentException( "wrong length of ?_vals array" );
 
-    this.codes  = codes;
-    this.x_vals = x_vals;
-    this.y_vals = y_vals;
-    this.z_vals = z_vals;
+    this.weights = weights;
+    this.x_vals  = x_vals;
+    this.y_vals  = y_vals;
+    this.z_vals  = z_vals;
   }
 
 
   @Override
   public int numEntries()
   {
-    return codes.length;
+    return x_vals.length;
   }
 
 
   @Override
-  public int eventCode( int i )
+  public float eventWeight( int i )
   {
-    return codes[i];
+    return weights[i];
   }
 
 
   @Override
-  public int[] eventCodes()
+  public float[] eventWeights()
   {
-    return codes;
+    return weights;
   }
 
 
   @Override
-  public void setEventCodes( int[] codes )
+  public void setEventWeights( float[] weights )
   {
-    this.codes = codes;
+    this.weights = weights;
   }
 
 
@@ -264,10 +264,10 @@ public class FloatArrayEventList3D implements IEventList3D
        total_size += list.numEntries();
      }
 
-     float[] all_x     = new float[total_size];
-     float[] all_y     = new float[total_size];
-     float[] all_z     = new float[total_size];
-     int[]   all_codes = new int[total_size];
+     float[] all_x       = new float[total_size];
+     float[] all_y       = new float[total_size];
+     float[] all_z       = new float[total_size];
+     float[] all_weights = new float[total_size];
      int index = 0;
      for ( int i = 0; i < lists.size(); i++ )
      {
@@ -279,12 +279,12 @@ public class FloatArrayEventList3D implements IEventList3D
            all_x[index] = (float)list.eventX(k);
            all_y[index] = (float)list.eventY(k);
            all_z[index] = (float)list.eventZ(k);
-           all_codes[index] = list.eventCode(k);
+           all_weights[index] = list.eventWeight(k);
            index++;        
          }
      }
 
-     return new FloatArrayEventList3D( all_codes, all_x, all_y, all_z );
+     return new FloatArrayEventList3D( all_weights, all_x, all_y, all_z );
   }
 
 }

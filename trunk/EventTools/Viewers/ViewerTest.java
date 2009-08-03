@@ -98,9 +98,9 @@ public class ViewerTest
     System.out.println("Number of event records = " + events.numEntries() );
 
     start = System.nanoTime();
-    int sum = 0;
+    float sum = 0;
     for ( int i = 0; i < num_events; i++ )
-      sum += events.eventCode(i);
+      sum += events.eventWeight(i);
     
     elapsed = System.nanoTime() - start;
     System.out.println("Time(ms) to sum events = " + elapsed/1.0E6);

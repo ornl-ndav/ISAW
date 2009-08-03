@@ -176,7 +176,7 @@ public class Test_3_SNS_Events
      ProjectionBinner3D x_edge_binner = null;
      ProjectionBinner3D y_edge_binner = null;
      ProjectionBinner3D z_edge_binner = null; 
-     int order = 1;
+     int order = 2;
      if ( order == 1 )
      {
        x_edge_binner = new ProjectionBinner3D(a_bin1D, a_star);
@@ -207,16 +207,27 @@ public class Test_3_SNS_Events
 
   public static void main( String args[] ) throws IOException
   {
-     int n_threads = 16;
+     int n_threads = 6;
 
 //   String file_name = "/usr2/SNAP_2/EVENTS/SNAP_238_neutron_event.dat";
 //   String file_name = "/usr2/SNAP_2/EVENTS/SNAP_239_neutron_event.dat";
-     String file_name = "/usr2/SNAP_2/EVENTS/SNAP_240_neutron_event.dat";
+//   String file_name = "/usr2/SNAP_2/EVENTS/SNAP_240_neutron_event.dat";
 //   String file_name = "/usr2/SNAP_2/EVENTS/SNAP_248_neutron_event.dat";
+//   String file_name = "/usr2/SNAP_2/EVENTS/SNAP_249_neutron_event.dat";
+//   String file_name = "/usr2/SNAP_2/EVENTS/SNAP_250_neutron_event.dat";
+//   String file_name = "/usr2/SNAP_2/EVENTS/SNAP_251_neutron_event.dat";
 //   String file_name = "/usr2/SNAP_2/EVENTS/SNAP_252_neutron_event.dat";
 //   String file_name = "/usr2/SNAP_2/EVENTS/SNAP_253_neutron_event.dat";
 //   String file_name = "/usr2/SNAP_2/EVENTS/SNAP_254_neutron_event.dat";
+//   String file_name = "/usr2/SNAP_2/EVENTS/SNAP_255_neutron_event.dat";
+//   String file_name = "/usr2/SNAP_2/EVENTS/SNAP_256_neutron_event.dat";
+//   String file_name = "/usr2/SNAP_2/EVENTS/SNAP_257_neutron_event.dat";
+//   String file_name = "/usr2/SNAP_2/EVENTS/SNAP_258_neutron_event.dat";
 //   String file_name = "/usr2/SNAP_2/EVENTS/SNAP_259_neutron_event.dat";
+//   String file_name = "/usr2/SNAP_2/EVENTS/SNAP_260_neutron_event.dat";
+//   String file_name = "/usr2/SNAP_2/EVENTS/SNAP_261_neutron_event.dat";
+//   String file_name = "/usr2/SNAP_2/EVENTS/SNAP_262_neutron_event.dat";
+     String file_name = "/usr2/SNAP_2/EVENTS/SNAP_263_neutron_event.dat";
 //   String file_name = "/usr2/SNAP_3/EVENTS/SNAP_427_neutron_event.dat";
 //   String file_name = "/usr2/SNAP_4/EVENTS/SNAP_730_neutron_event.dat";
 //   String file_name = "/usr2/SNAP_4/EVENTS/SNAP_732_neutron_event.dat";
@@ -334,17 +345,19 @@ public class Test_3_SNS_Events
 
      IEventList3D[] event_lists = new IEventList3D[n_threads];
 
+                                           // TODO: Weights should NOT
+                                           // be assigned here. FIX THIS
      for ( int i = 0; i < n_threads; i++ )
      {
-       float[] list = (float[])(((Vector)results).elementAt(i));
-       int[] codes = new int[ list.length/3 ];
-       for ( int k = 0; k < codes.length; k++ )
-         codes[k] = 1;
-       event_lists[i] = new FloatArrayEventList3D_2( codes, list ); 
+       float[] list    = (float[])(((Vector)results).elementAt(i));
+       float[] weights = new float[ list.length/3 ];
+       for ( int k = 0; k < weights.length; k++ )
+         weights[k] = 1;
+       event_lists[i] = new FloatArrayEventList3D_2( weights, list ); 
      }
 
 
-     int NUM_BINS = 1024;
+     int NUM_BINS = 512;
      Histogram3D histogram = BuildHistogram( mat_file, NUM_BINS );
 //     Histogram3D histogram = DefaultHistogram( NUM_BINS );
 
@@ -367,7 +380,7 @@ public class Test_3_SNS_Events
      SlicedEventsViewer my_viewer = new SlicedEventsViewer( histogram,
                                                             file_name );
 
-     int MAX_EVENTS = 100000000;
+     int MAX_EVENTS = 5000000;
      int n_lists = event_lists.length;
 
      int n_events = 0;
@@ -399,8 +412,8 @@ public class Test_3_SNS_Events
 
      StringBuffer log = new StringBuffer();
      BasicPeakInfo[] peaks = FindPeaksViaSort.getPeaks( histogram_array,
-                                                        false,
-                                                        150,
+                                                        true,
+                                                        100,
                                                         90000,
                                                         row_list,
                                                         col_list,
@@ -421,7 +434,6 @@ public class Test_3_SNS_Events
 
     Vector3D   zero    = new Vector3D();
     Vector3D[] verts   = new Vector3D[ peaks.length ];
-    float[]    coords  = new float[3];
     int        counter = 0;
     for ( int k = 0; k < verts.length; k++ )
     {
@@ -439,12 +451,6 @@ public class Test_3_SNS_Events
         temp = z_binner.Vec( row );
         point.add( temp );
         verts[k] = point; 
-/*
-        ProjectionBinner3D.centerPoint( (int)page, (int)col, (int)row, 
-                                        x_binner, y_binner, z_binner,
-                                        coords );
-        verts[k] = new Vector3D( coords ); 
-*/
       }
       else
         verts[k] = zero;
@@ -470,24 +476,34 @@ public class Test_3_SNS_Events
       } 
     }
 
+/*
     System.out.println("BEFORE INDEXING PEAKS" );
     for  ( int k = 0; k < q_peaks.size(); k++ )
       System.out.println( q_peaks.elementAt(k) );
+*/
+
+/*  // QUARTZ
 
     IndexPeaks_Calc.IndexPeaksWithOptimizer( q_peaks,
                                              4.915f, 4.915f, 5.4f,
                                              90, 90, 120 );
+*/
+    // OXALIC ACID  [6.094,3.601,11.915,90.0,103.2,90.0]
+  
+    IndexPeaks_Calc.IndexPeaksWithOptimizer( q_peaks,
+                                             6.094f,3.601f,11.915f,
+                                             90, 103.2f, 90 );
 
     System.out.println("AFTER INDEXING PEAKS" );
     for  ( int k = 0; k < q_peaks.size(); k++ )
       System.out.println( q_peaks.elementAt(k) );
 
-    
+/*    
     start_time = System.nanoTime();
     histogram.clear();
     run_time = System.nanoTime() - start_time;
     System.out.println("Time(ms) to clear histogram = " + run_time/1.e6);
-
+*/
 
 // */
   }

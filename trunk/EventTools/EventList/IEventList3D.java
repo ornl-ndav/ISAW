@@ -40,10 +40,8 @@ import EventTools.Histogram.IEventBinner;
  * This interface specifies methods that must be implemented by objects that
  * represent a list of events in 3-dimensional real space.  Each event
  * is associated with a particular location (x,y,z) and has an associated 
- * integer code.  The interpretation of the code may vary depending on the
- * application.  It may be used as an event count, if multiple events occur
- * at the same location.  In other contexts, it might be used as a pulse
- * ID, instead. 
+ * weight.  The weight is a scale factor to be applied to the event and
+ * reflects any scaling that must be applied to the event value.  
  */
 public interface IEventList3D 
 {
@@ -102,8 +100,8 @@ public interface IEventList3D
 
 
   /**
-   * Get the number of entries in this event list.  NOTE: If the code is used
-   * to represent multiple events occurring at the same locations, the value
+   * Get the number of entries in this event list.  NOTE: If the weights 
+   * represents multiple events occurring at the same locations, the value
    * returned will NOT account for this.  
    * 
    * @return  an integer given the number of entries in this event list.
@@ -112,31 +110,31 @@ public interface IEventList3D
 
   
   /**
-   * Get the event code for the specified entry in this event list.
+   * Get the weight for the specified entry in this event list.
    * 
    * @param index   The index of the event list entry
    * 
-   * @return  An integer giving the event code for the specified entry.
+   * @return  A float giving the weight for the specified entry.
    */
-  int eventCode( int index ); 
+  float eventWeight( int index ); 
 
   
   /**
-   * Get a list of all of the event codes for this event list.  The ith
-   * entry in the array of event codes is the code for the ith event.
+   * Get a list of all of the event weights for this event list.  The ith
+   * entry in the array of event weights is the weight for the ith event.
    * 
-   * @return  An integer array giving the event codes for all of the
+   * @return  A float array giving the event weights for all of the
    * events in this list, in order.
    */
-  int[] eventCodes(); 
+  float[] eventWeights(); 
   
 
   /**
-   *  Set the list of event codes for the events in this list.  
+   *  Set the list of event weights for the events in this list.  
    *
-   *  @param codes  the new list of event codes for the events.
+   *  @param weights  the new list of event weights for the events.
    */
-  public void setEventCodes( int[] codes );
+  public void setEventWeights( float[] weights );
   
 
   /**

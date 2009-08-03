@@ -43,7 +43,6 @@ import EventTools.Histogram.Operators.ScanHistogram3D;
 import EventTools.Histogram.Operators.GetEventLists;
 
 import gov.anl.ipns.Operator.Threads.*;
-import gov.anl.ipns.MathTools.Geometry.*;
 
 /**
  *   This class represents a 3D histogram.  Currently only a minimal set of
@@ -295,10 +294,7 @@ public class Histogram3D
    * can be loaded and passed to addEvents(), sequentially.
    * 
    * @param events  The list of events to be added to this histogram.
-   * @return  The total event count that was added.  NOTE: currently,
-   *          the event code of an event is used to record a number of
-   *          simultaneous events.  Consequently, the total returned
-   *          may be different from the length of the event list.
+   * @return  The total weighted event count that was added.  
    */
   public double addEvents( IEventList3D events )
   {

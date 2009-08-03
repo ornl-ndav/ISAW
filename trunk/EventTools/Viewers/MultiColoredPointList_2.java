@@ -334,8 +334,8 @@ public class MultiColoredPointList_2 extends SimpleShape
           rgb[place++] = (byte)(color_scale[color_index].getGreen());
           rgb[place++] = (byte)(color_scale[color_index].getBlue());
           if ( use_alpha )
-//          rgb[place++] = (byte)(alpha*255); 
-            rgb[place++] = (byte)(index); 
+//            rgb[place++] = (byte)(alpha*255); 
+            rgb[place++] = (byte)(alpha*index); 
           else
             rgb[place++] = (byte)(255);          
         }
@@ -406,7 +406,7 @@ public class MultiColoredPointList_2 extends SimpleShape
    */
   public void Render( GLAutoDrawable drawable )
   {
-    long start = System.nanoTime();
+//    long start = System.nanoTime();
 
     GL gl = drawable.getGL();
 
@@ -430,7 +430,7 @@ public class MultiColoredPointList_2 extends SimpleShape
 
     super.postRender( drawable );
 
-    long time = System.nanoTime() - start;
+//    long time = System.nanoTime() - start;
 //    System.out.printf("Drew %6d Points in %4.1f ms\n",
 //                       element_count, time/1.0E6 );
   }
