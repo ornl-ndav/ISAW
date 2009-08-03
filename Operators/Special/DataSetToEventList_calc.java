@@ -142,7 +142,7 @@ public class DataSetToEventList_calc
               mag_Q;
      DetectorPosition pos;
      Vector<Vector3D> q_vectors = new Vector<Vector3D>();
-     Vector<Integer>  counts    = new Vector<Integer>();
+     Vector<Float>    counts    = new Vector<Float>();
 
      int num_data = ds.getNum_entries();
      for ( int j = 0; j < num_data; j++ )
@@ -170,7 +170,7 @@ public class DataSetToEventList_calc
        q_dir.normalize();                      // normalize again to get unit
                                                // vector in direction of Q
  
-       float[] ys = data.getY_values();
+       float[] ys = data.getCopyOfY_values();
        float[] xs = data.getX_scale().getXs();
        for ( int k = 0; k < ys.length; k++ )
        {
@@ -181,29 +181,29 @@ public class DataSetToEventList_calc
            vec = new Vector3D( q_dir );
            vec.multiply( mag_Q );   
            q_vectors.add( vec );
-           counts.add( (int)ys[k] );
+           counts.add( ys[k] );
          }
        }         
      } 
     
-     int[]   codes  = new int[ counts.size() ]; 
-     float[] x_vals = new float[ q_vectors.size() ];
-     float[] y_vals = new float[ q_vectors.size() ];
-     float[] z_vals = new float[ q_vectors.size() ];
+     float[] weights = new float[ counts.size() ]; 
+     float[] x_vals  = new float[ q_vectors.size() ];
+     float[] y_vals  = new float[ q_vectors.size() ];
+     float[] z_vals  = new float[ q_vectors.size() ];
      
-     for ( int i = 0; i < codes.length; i++ )
+     for ( int i = 0; i < weights.length; i++ )
      {
-        codes[i] = counts.elementAt(i);
+        weights[i] = counts.elementAt(i);
 
         vec = q_vectors.elementAt(i);
         x_vals[i] = vec.getX();
         y_vals[i] = vec.getY();
         z_vals[i] = vec.getZ();
      }
-     System.out.println("Found events # " + codes.length );
+     System.out.println("Found events # " + weights.length );
 
-     if ( codes.length > 0 )
-       return new FloatArrayEventList3D(codes, x_vals, y_vals, z_vals);
+     if ( weights.length > 0 )
+       return new FloatArrayEventList3D(weights, x_vals, y_vals, z_vals);
      else
        return null; 
   }
@@ -235,10 +235,9 @@ public class DataSetToEventList_calc
     int max_ds_num = 2;
 
 
-    BeamDirection beam_dir = BeamDirection.X; // currently SNS NeXus files are
+//  BeamDirection beam_dir = BeamDirection.X; // currently SNS NeXus files are
                                               // are remapped into IPNS coords
     FloatArrayEventList3D events = null;
-    int num_datasets = rr.numDataSets();
     Vector<IEventList3D> all_events = new Vector<IEventList3D>();
     for ( int i = min_ds_num; i <= max_ds_num; i++ )
     {
