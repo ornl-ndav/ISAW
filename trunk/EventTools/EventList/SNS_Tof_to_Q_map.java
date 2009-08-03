@@ -42,6 +42,8 @@ import gov.anl.ipns.MathTools.Geometry.*;
 import DataSetTools.operator.Generic.TOF_SCD.*;
 import DataSetTools.dataset.*;
 import DataSetTools.math.*;
+import DataSetTools.trial.*;
+import DataSetTools.instruments.*;
 
 /** 
  *  This class constructs the time-of-flight to vector Q mapping information
@@ -59,8 +61,9 @@ public class SNS_Tof_to_Q_map
   public static final String ARCS = "ARCS";
   public static final String SEQ  = "SEQ";
 
-  private String       filename;
   private IDataGrid[]  grid_arr; 
+  private VecQMapper[] inverse_mapper;
+
   private float        L1;             // L1 in meters.
   private float        t0;             // t0 shift in 100ns units
   private float[]      QUxyz;
@@ -121,6 +124,11 @@ public class SNS_Tof_to_Q_map
      if ( instrument_name.equalsIgnoreCase(SEQ) )
        grid_arr = ReorderSEQ_grids( grid_arr );
 
+     SampleOrientation orient = new SNS_SampleOrientation( 0, 0, 0 );
+     inverse_mapper = new VecQMapper[ grid_arr.length ];
+     for ( int i = 0; i < grid_arr.length; i++ )
+       inverse_mapper[i] = new VecQMapper( grid_arr[i], L1, t0/10, orient );
+
      BuildMaps();
 /*
      System.out.println( "L1 = " + L1 );
@@ -171,6 +179,7 @@ public class SNS_Tof_to_Q_map
      float   qx,qy,qz;
      int     minus_id_count = 0;
      int     large_id_count = 0;
+//   int     test_count = 0;
      for ( int i = 0; i < tofs.length; i++ )
      {
        id = ids[i];
@@ -187,6 +196,31 @@ public class SNS_Tof_to_Q_map
          Qxyz[index++] = qx;
          Qxyz[index++] = qy;
          Qxyz[index  ] = qz;
+
+/*       // TEST map from qx,
+         test_count++;
+         if ( test_count % 10000 == 0 )
+         {
+           int   row = (id-1) % 256 + 1;
+           int   col = ((id-1) / 256 ) % 256 + 1;
+           float tof = (tofs[i] + t0)/10f;
+
+           int det_id = id / (256 * 256);
+           Vector3D q_vec = new Vector3D( qx, qy, qz );
+
+           System.out.println("ID: " + det_id);
+           System.out.printf( "Original  col = %5d  row = %5d  chan = %8.1f\n",
+                               col, row, tof );
+
+           float[] rctofid = QtoRowColTOF_ID( qx, qy, qz );
+           if ( rctofid != null )
+             System.out.printf( 
+               "Re-mapped col = %5.0f  row = %5.0f  tof  = %8.0f  ID = %2.0f\n",
+                      rctofid[1], rctofid[0], rctofid[2], rctofid[3] );
+           else
+             System.out.println("ERROR FAILED TO MAP Q TO ROW COL TOF ID");
+         } 
+*/
        }
        else if ( id < 0 )
          minus_id_count++;
@@ -205,6 +239,38 @@ public class SNS_Tof_to_Q_map
                         Qxyz[3*i], Qxyz[3*i+1], Qxyz[3*i+2]);
 */
      return Qxyz;
+  }
+
+
+  /**
+   *  Map a specified qx,qy,qz back to a detectors row, col, tof and ID, if
+   *  possible.  NOTE: Currently this does not use the sample orientation
+   *  information, but assumes that the sample orientation angles are all 
+   *  zero.  
+   * 
+   *  @param   qx  The x component of the q vector
+   *  @param   qy  The y component of the q vector
+   *  @param   qz  The z component of the q vector
+   *
+   *  @return an array of four floats containing the fractional row, column, 
+   *          time-of-flight and detector ID correspondingg the specified
+   *          Q vector.  If the Q vector does not match any pixel on any
+   *          of the detectors handled by this object, NULL is returned.
+   */
+  public float[] QtoRowColTOF_ID( float qx, float qy, float qz )
+  {
+    Vector3D q_vec = new Vector3D( qx, qy, qz );
+
+    for ( int k = 0; k < inverse_mapper.length; k++ )
+    {
+      float[] recalc = inverse_mapper[k].QtoRowColTOF( q_vec );
+      if ( recalc != null )
+      {
+        float[] result = { recalc[0], recalc[1], recalc[2], grid_arr[k].ID() };
+        return result;
+      }
+    }
+    return null;
   }
 
 
@@ -506,13 +572,6 @@ public class SNS_Tof_to_Q_map
       else 
         return -1;
     }
-  }
-
-
-  public static void main( String args[] ) throws IOException
-  {
-     String filename =  "/usr2/SNS_SCD_TEST_3/SNAP_1_Panel.DetCal";
-     SNS_Tof_to_Q_map mapper = new SNS_Tof_to_Q_map( filename, SNAP );
   }
 
 } 
