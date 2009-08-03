@@ -34,18 +34,17 @@
 
 package EventTools.EventList;
 
-import java.util.*;
 import EventTools.Histogram.IEventBinner;
 import EventTools.Histogram.UniformEventBinner;
 
 /**
  * This class uses arrays of floats to record the x,y,z
- * coordinates of a list of events, and an array of ints
- * to record the corresponding integer codes for the events.
+ * coordinates of a list of events, and an array of floats
+ * to record the corresponding weights for the events.
  */
 public class FloatArrayEventList3D_2 implements IEventList3D 
 {
-  private int[]   codes = null;
+  private float[] weights = null;
   private float[] xyz_vals;
 
   private IEventBinner x_extent = null;
@@ -53,14 +52,15 @@ public class FloatArrayEventList3D_2 implements IEventList3D
   private IEventBinner z_extent = null;
 
   /**
-   * Construct an event list using the specified arrays of codes and
-   * x,y,z coordinates.  All of the array parameters must have the same
-   * length and must be non-empty.
-   * 
+   * Construct an event list using the specified arrays of weights and
+   * x,y,z coordinates.  The xyz_vals array must be three times longer
+   * than the array of weights, if the array of weights is non-null.
+   * The xyz_vals array must be non-empty.
+   *  
    * @param xyz_vals  Array of x-coordinates for the events.
-   * @param codes     Array of integer codes for the events. May be null.
+   * @param weights   Array of weights for the events. May be null.
    */
-  public FloatArrayEventList3D_2( int[]   codes,
+  public FloatArrayEventList3D_2( float[] weights,
                                   float[] xyz_vals )
   {
     if ( xyz_vals == null )
@@ -68,9 +68,9 @@ public class FloatArrayEventList3D_2 implements IEventList3D
 
     int num_events = xyz_vals.length / 3;
     if ( num_events <= 0 )
-      throw new IllegalArgumentException( "zero length codes array" );
+      throw new IllegalArgumentException( "zero length weight array" );
 
-    this.codes    = codes;
+    this.weights  = weights;
     this.xyz_vals = xyz_vals;
   }
 
@@ -83,25 +83,25 @@ public class FloatArrayEventList3D_2 implements IEventList3D
 
 
   @Override
-  public int eventCode( int i )
+  public float eventWeight( int i )
   {
-    if ( codes != null )
-      return codes[i];
+    if ( weights != null )
+      return weights[i];
     return 0;
   }
 
 
   @Override
-  public int[] eventCodes()
+  public float[] eventWeights()
   {
-    return codes;
+    return weights;
   }
 
 
   @Override
-  public void setEventCodes( int[] codes )
+  public void setEventWeights( float[] weights )
   {
-    this.codes = codes;
+    this.weights = weights;
   }
 
 

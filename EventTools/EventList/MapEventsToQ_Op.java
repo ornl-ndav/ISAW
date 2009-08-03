@@ -34,9 +34,7 @@
 
 package EventTools.EventList;
 
-import java.util.*;
 import gov.anl.ipns.Operator.*;
-import gov.anl.ipns.Operator.Threads.*;
 
 /**
  *  This class represents a parallel IOperator that maps a list of events

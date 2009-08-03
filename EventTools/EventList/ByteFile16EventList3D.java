@@ -53,10 +53,10 @@ import EventTools.Histogram.UniformEventBinner;
  * float,float,32-bit int specifying the "Y" binner.
  * float,float,32-bit int specifying the "Z" binner.
  * list of 8*(number of events) bytes containing four 16-bit values
- * holding the x,y,z information and codes for each event.  The
+ * holding the x,y,z information and weights for each event.  The
  * first three 16-bit values get mapped to x,y,z coordinates using
  * the x,y,z binners, respectively.  The fourth 16-bit value holds 
- * the integer code for the event.  
+ * the weight for the event.  
  */
 public class ByteFile16EventList3D implements IEventList3D 
 {
@@ -66,7 +66,7 @@ public class ByteFile16EventList3D implements IEventList3D
 
   private int     num_events;
   private byte[]  buffer;
-  private int[]   specified_codes = null;
+  private float[] specified_weights = null;
 
 /**
  * Construct an event list from the specified binary file.
@@ -115,33 +115,33 @@ public class ByteFile16EventList3D implements IEventList3D
 
   
   @Override
-  public int eventCode( int i )
+  public float eventWeight( int i )
   {
-    if ( specified_codes == null )
+    if ( specified_weights == null )
       return getValue_16( i * 8 + 6 );
     else
-      return specified_codes[i];
+      return specified_weights[i];
   }
  
   
   @Override
-  public int[] eventCodes()
+  public float[] eventWeights()
   {
-    if ( specified_codes != null )
-      return specified_codes;
+    if ( specified_weights != null )
+      return specified_weights;
 
-    int[] codes = new int[ num_events ];
+    float[] weights = new float[ num_events ];
     for ( int i = 0; i < num_events; i++ )
-      codes[i] = getValue_16( i * 8 + 6 );
+      weights[i] = getValue_16( i * 8 + 6 );
 
-    return codes;
+    return weights;
   }
 
 
   @Override
-  public void setEventCodes( int[] codes )
+  public void setEventWeights( float[] weights )
   {
-    this.specified_codes = codes;
+    this.specified_weights = weights;
   }
 
   
@@ -328,7 +328,7 @@ public class ByteFile16EventList3D implements IEventList3D
        fill_bytes( z_binner.index(val), bytes, index );
        index += 2;
 
-       counts = events.eventCode(i);
+       counts = (int)events.eventWeight(i);
        fill_bytes( counts, bytes, index );
        index += 2;
     }
@@ -384,14 +384,14 @@ public class ByteFile16EventList3D implements IEventList3D
 
     System.out.println("number of events = " + events.numEntries() );
     double[] vals = new double[3];
-    int      code;
+    float    weight;
     for ( int i = 0; i < 10; i ++ )
     {
       events.eventVals( i, vals );
-      code = events.eventCode( i );
+      weight = events.eventWeight( i );
 
       System.out.printf( "%12.7f %12.7f %12.7f %6d\n",
-                          vals[0], vals[1], vals[2], code );
+                          vals[0], vals[1], vals[2], weight );
     }
 
     double sum = 0;
@@ -400,8 +400,8 @@ public class ByteFile16EventList3D implements IEventList3D
     for ( int i = 0; i < n_events; i ++ )
     {
       events.eventVals( i, vals );
-      sum += vals[0] + vals[1] + vals[2];
-      code = events.eventCode( i );
+      sum   += vals[0] + vals[1] + vals[2];
+      weight = events.eventWeight( i );
     }
     end = System.nanoTime();
     System.out.println("Time to get event array = " + (end-start)/1000000 );
@@ -417,7 +417,7 @@ public class ByteFile16EventList3D implements IEventList3D
       y = events.eventY( i );
       z = events.eventZ( i );
       sum += x+y+z;
-      code = events.eventCode( i );
+      weight = events.eventWeight( i );
     }
     end = System.nanoTime();
     System.out.println("Time to get all events = " + (end-start)/1000000 );

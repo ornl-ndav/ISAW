@@ -180,10 +180,10 @@ public class GetEventLists implements IOperator
       }
     }
 
-    int[][]   codes  = new int[n_bins+1][] ;
-    float[][] x_vals = new float[n_bins+1][];
-    float[][] y_vals = new float[n_bins+1][];
-    float[][] z_vals = new float[n_bins+1][];
+    float[][] weights = new float[n_bins+1][] ;
+    float[][] x_vals  = new float[n_bins+1][];
+    float[][] y_vals  = new float[n_bins+1][];
+    float[][] z_vals  = new float[n_bins+1][];
 
     Vector result = new Vector( n_bins );
     int n_events;
@@ -192,10 +192,10 @@ public class GetEventLists implements IOperator
       n_events = bin_count[i];
       if ( n_events > 0 )
       { 
-        codes[i]  = new int[ n_events ];
-        x_vals[i] = new float[ n_events ]; 
-        y_vals[i] = new float[ n_events ]; 
-        z_vals[i] = new float[ n_events ]; 
+        weights[i] = new float[ n_events ];
+        x_vals[i]  = new float[ n_events ]; 
+        y_vals[i]  = new float[ n_events ]; 
+        z_vals[i]  = new float[ n_events ]; 
       }
     }
                                      // Since the x,y,z- binners use direction
@@ -218,7 +218,7 @@ public class GetEventLists implements IOperator
             index = n_bins;
           if ( index >= 0 )
           {
-            codes[index] [ ilist[index] ] = index;
+            weights[index] [ ilist[index] ] = index;
             ProjectionBinner3D.centerPoint( col, row, page,
                                             x_edge_binner, 
                                             y_edge_binner, 
@@ -239,7 +239,7 @@ public class GetEventLists implements IOperator
       if ( n_events > 0 )
       {
         IEventList3D events = new
-           FloatArrayEventList3D( codes[i], x_vals[i], y_vals[i], z_vals[i] );
+           FloatArrayEventList3D( weights[i], x_vals[i], y_vals[i], z_vals[i] );
 
         result.add( events );
       }

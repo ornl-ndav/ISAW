@@ -44,7 +44,6 @@ import EventTools.EventList.IEventList3D;
 import EventTools.EventList.ByteFile16EventList3D;
 import EventTools.Histogram.Histogram3D;
 import EventTools.Histogram.IProjectionBinner3D;
-import EventTools.Histogram.ProjectionBinner3D;
 import EventTools.Histogram.IEventBinner;
 
 //import SSG_Tools.Cameras.OrthographicCamera;
@@ -210,9 +209,9 @@ public class ShowEventList
     f.getContentPane().add(panel);
     f.setVisible(true);
     panel.changeLogScale(50,true);
-
-    float[][] flipped_slice = new float[y_binner.numBins()][x_binner.numBins()];
 /*
+    float[][] flipped_slice = new float[y_binner.numBins()][x_binner.numBins()];
+
     for ( int i = 0; i < z_binner.numBins(); i++ )
     {
        ll_corner = x_binner.minVec(0);
@@ -301,7 +300,7 @@ public class ShowEventList
         event_array[0][eventCount] = eventX;
         event_array[1][eventCount] = eventY;
         event_array[2][eventCount] = eventZ;
-        event_array[3][eventCount] = (float)events.eventCode( i );
+        event_array[3][eventCount] = (float)events.eventWeight( i );
         eventCount++;
       }
     }

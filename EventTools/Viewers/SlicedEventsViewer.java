@@ -34,13 +34,13 @@
 
 package EventTools.Viewers;
 
-import java.io.*;
+//import java.io.*;
 import java.util.*;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 
-import javax.swing.*;
+//import javax.swing.*;
 import javax.media.opengl.*;
 import gov.anl.ipns.MathTools.Geometry.*;
 import gov.anl.ipns.ViewTools.Components.ViewControls.ColorScaleControl.*;
@@ -137,6 +137,9 @@ public class SlicedEventsViewer
     jogl_panel.setBackgroundColor( Color.GRAY );
     new MouseArcBall( jogl_panel );
 
+    jogl_panel.getDisplayComponent().addMouseListener( 
+                                          new MouseClickHandler( jogl_panel ));
+
     JFrame frame = new JFrame( title );
     frame.setSize(750,750);
     frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
@@ -198,12 +201,12 @@ public class SlicedEventsViewer
       current_tran = omega_rot;
     }
 
-    int n_events = events.numEntries();
-    int[] codes = events.eventCodes();
-    if ( codes == null || assign_codes )
+//    int n_events = events.numEntries();
+    float[] weights = events.eventWeights();
+    if ( weights == null || assign_codes )
     {
       AssignCodes( events );
-      codes = events.eventCodes();
+      weights = events.eventWeights();
     }
     float[] xyz_vals = events.eventVals();
 /* 
@@ -212,6 +215,9 @@ public class SlicedEventsViewer
       System.out.printf(" %5.1f  %5.1f  %5.1f  %4d\n", 
                          vals[3*i], vals[3*i+1], vals[3*i+2], codes[i] );
 */
+    int[] codes = new int[weights.length];
+    for ( int i = 0; i < codes.length; i++ )
+      codes[i] = (int)weights[i];
     int size = 1;
     SimpleShape shape = new MultiColoredPointList_2( xyz_vals,
                                                      codes,
@@ -295,11 +301,11 @@ public class SlicedEventsViewer
 
   private void AssignCodes( IEventList3D events )
   {
-    long start = System.nanoTime();
+//    long start = System.nanoTime();
 
     int n_events = events.numEntries();
 
-    int[] codes = new int[n_events];
+    float[] weights = new float[n_events];
 
     float  eventX,
            eventY,
@@ -307,13 +313,13 @@ public class SlicedEventsViewer
 
     for ( int i = 0; i < n_events; i++ )
     {
-      eventX   = (float)events.eventX( i );
-      eventY   = (float)events.eventY( i );
-      eventZ   = (float)events.eventZ( i );
-      codes[i] = (int)histogram.valueAt( eventX, eventY, eventZ );
+      eventX     = (float)events.eventX( i );
+      eventY     = (float)events.eventY( i );
+      eventZ     = (float)events.eventZ( i );
+      weights[i] = histogram.valueAt( eventX, eventY, eventZ );
     }
 
-    events.setEventCodes( codes );
+    events.setEventWeights( weights );
 
 //    System.out.printf("Time to assign codes = %5.1f ms\n",
 //                       (System.nanoTime() - start)/1.0e6 );
@@ -381,8 +387,19 @@ public class SlicedEventsViewer
   {
     if ( histogram == null )
       return;
+    
+    // NOTE MUST FIX THIS TO AVOID ARRAY INDEX OUT OF BOUNDS FOR FIRST & LAST
 
-    float[][] slice = histogram.pageSlice( slice_num );
+    float[][] slice1 = histogram.pageSlice( slice_num-1 );
+    float[][] slice2 = histogram.pageSlice( slice_num );
+    float[][] slice3 = histogram.pageSlice( slice_num+1 );
+    float[][] slice  = new float[slice1.length][slice1[0].length];
+    for ( int row = 0; row < slice.length; row++ )
+      for ( int col = 0; col < slice.length; col++ )
+        slice[row][col] = slice1[row][col] +
+                          slice2[row][col] + 
+                          slice3[row][col];
+     
     float[][] flipped_slice = new float[slice.length][slice[0].length];
     for ( int k = 0; k < slice.length; k++ )
       flipped_slice[k] = slice[slice.length-k-1];
@@ -405,7 +422,6 @@ public class SlicedEventsViewer
     filter_on_min = new JCheckBox("Omit events below min?", true);
     alpha_blend   = new JCheckBox("Blend events", false);
     orthographic  = new JCheckBox("Orthographic Projection", false);
-    JButton  apply_button  = new JButton("Apply");
 
     box.add( frame_control );
     box.add( filter_on_max );
@@ -425,8 +441,6 @@ public class SlicedEventsViewer
 
   private void applyDrawingOptions()
   {
-    boolean max_filter_on = filter_on_max.isSelected();
-
     Vector<MultiColoredPointList_2> nodes = getColoredPointLists();
     for ( int i = 0; i < nodes.size(); i++ )
       nodes.elementAt(i).setDrawOptions( filter_on_max.isSelected(),
@@ -498,6 +512,28 @@ public class SlicedEventsViewer
     color_control.setLogScale(true);
 
     color_control.addActionListener( new ColorListener() );
+  }
+
+
+  public class  MouseClickHandler extends MouseAdapter
+  {
+    JoglPanel my_panel;
+    public MouseClickHandler( JoglPanel panel )
+    {
+      my_panel = panel;
+    }
+
+    public void mouseClicked (MouseEvent e)
+    {
+      if ( e.getClickCount() == 1 )
+      {
+        int x = e.getX();
+        int y = e.getY();
+
+        Vector3D point = my_panel.pickedPoint( x, y );
+        System.out.println("3D point = " + point );
+      }
+    }
   }
 
 

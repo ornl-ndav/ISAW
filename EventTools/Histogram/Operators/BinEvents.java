@@ -160,7 +160,7 @@ public class BinEvents implements IOperator
          {
            //count = events.eventCode( i );
            d2 = Math.sqrt(x*x+y*y+z*z);
-           count = (float)(events.eventCode( i ) * d2 * d2 * d2);
+           count = (float)(events.eventWeight( i ) * d2 * d2 * d2);
            val = histogram[z_index][y_index][x_index];
            val += count;
            histogram[z_index][y_index][x_index] = val;

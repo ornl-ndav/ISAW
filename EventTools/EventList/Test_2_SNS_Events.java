@@ -170,10 +170,10 @@ public class Test_2_SNS_Events
      for ( int i = 0; i < n_threads; i++ )
      {
        float[] list = (float[])(((Vector)results).elementAt(i));
-       int[] codes = new int[ list.length/3 ];
-       for ( int k = 0; k < codes.length; k++ )
-         codes[k] = 1;
-       event_lists[i] = new FloatArrayEventList3D_2( codes, list ); 
+       float[] weights = new float[ list.length/3 ];
+       for ( int k = 0; k < weights.length; k++ )
+         weights[k] = 1;
+       event_lists[i] = new FloatArrayEventList3D_2( weights, list ); 
      }
 
      // Now make histogram

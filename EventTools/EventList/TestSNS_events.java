@@ -193,10 +193,10 @@ public class TestSNS_events
      for ( int i = 0; i < n_threads; i++ )
      {
        float[] list = (float[])(((Vector)results).elementAt(i));
-       int[] codes = new int[ list.length/3 ];
-       for ( int k = 0; k < codes.length; k++ )
-         codes[k] = 1;
-       event_lists[i] = new FloatArrayEventList3D_2( codes, list ); 
+       float[] weights = new float[ list.length/3 ];
+       for ( int k = 0; k < weights.length; k++ )
+         weights[k] = 1;
+       event_lists[i] = new FloatArrayEventList3D_2( weights, list ); 
      }
 
      for ( int i = 0; i < n_threads; i++ )
@@ -205,11 +205,11 @@ public class TestSNS_events
                             event_lists[i].numEntries() );
         System.out.println("First 5 entries are" );
         for ( int k = 0; k < 5; k++ )
-          System.out.printf( " %6.2f  %6.2f  %6.2f  %5d \n",
+          System.out.printf( " %6.2f  %6.2f  %6.2f  %5.1f \n",
                              event_lists[i].eventX(k),
                              event_lists[i].eventY(k),
                              event_lists[i].eventZ(k),
-                             event_lists[i].eventCode(k) );
+                             event_lists[i].eventWeight(k) );
      }
 
      // Now make histogram
