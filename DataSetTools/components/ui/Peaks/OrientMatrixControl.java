@@ -650,7 +650,7 @@ public class OrientMatrixControl extends JButton
       Text1 += "Seq \n";
       Text1 += "Num    qx     qy    qz     h    k     l\n";
 
-      for( int i = 0 ; i < SetPeaks.MAX_SEL_PEAKS ; i++ )
+      for( int i = 0 ; i < Peaks.size() ; i++ )
       {
 
          float[] Qs = selectedPeaks.getSetPeakQ( i );
@@ -1598,7 +1598,7 @@ public class OrientMatrixControl extends JButton
 
          int nPeaksSet = 0;
 
-         for( int i = 0 ; ( i < SetPeaks.MAX_SEL_PEAKS ) && nPeaksSet == i ; i++ )
+         for( int i = 0 ; ( i < Peaks.size() ) && nPeaksSet == i ; i++ )
             if( selectedPeaks.getSetPeakQ( i ) != null )
 
                nPeaksSet++ ;

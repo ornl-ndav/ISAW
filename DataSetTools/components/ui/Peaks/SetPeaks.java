@@ -34,6 +34,8 @@
 
 package DataSetTools.components.ui.Peaks;
 
+import gov.anl.ipns.Util.Numeric.IntList;
+
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -90,7 +92,7 @@ public class SetPeaks extends JButton
 
    private static String SET_PEAKN       = "Set Peak more Peak info";
 
-
+   private static String SET_PEAK_LIST  ="Set List of Peaks";
    // List of selected Peaks
    float[][]             SelectedPeaks;
 
@@ -160,7 +162,7 @@ public class SetPeaks extends JButton
     */
    public float[] getSetPeakQ( int PeakNum )
    {
-      if( PeakNum < 0 || PeakNum >= MAX_SEL_PEAKS )
+      if( PeakNum < 0 || PeakNum >= SelectedPeaks.length )
          return null;
 
       for( int j = 0 ; j < 3 ; j++ )
@@ -196,7 +198,7 @@ public class SetPeaks extends JButton
    public int getSetPeakSeqNum( int PeakNum )
    {
 
-      if( PeakNum < 0 || PeakNum >= MAX_SEL_PEAKS )
+      if( PeakNum < 0 || PeakNum >= seqNums.length )
          return - 1;
 
       return seqNums[ PeakNum ];
@@ -502,9 +504,66 @@ public class SetPeaks extends JButton
 
             return;
          }
+         if( evtString == SET_PEAK_LIST )
+         {
+            String S = JOptionPane
+                     .showInputDialog( but ,
+                          "Enter List of Peak sequence \n "+
+                          "Numbers separated by commas\n"+
+                          "Or use \":\" for a range of values");
+            if( S == null )
+               return;
+            S = S.trim();
+            if( S.length() >= 1 )
+               if( S.startsWith( "[" ) )
+                  S = S.substring( 1 );
+            S = S.trim();
+            if( S.length() >= 1 )
+
+               if( S.endsWith( "]" ) )
+                  S = S.substring( 0 , S.length() - 1 );
+            S = S.trim();
+           
+            float[] undef =
+            {
+                     Float.NaN , Float.NaN , Float.NaN
+            };
+            int[] SNums =IntList.ToArray(S );
+            if( SNums == null || SNums.length < 1 )
+            {
+               SelectedPeaks = new float[ MAX_SEL_PEAKS ][ 3 ];
+               seqNums = new int[ MAX_SEL_PEAKS ];
+               Arrays.fill( seqNums , - 1 );
+               Arrays.fill( SelectedPeaks , undef );
+               fireSetPeakListeners( SET_PEAK_INFO_CHANGED );
+               return;
+            }
+            
+            int i = - 1;
+            
+            if( SNums.length > MAX_SEL_PEAKS )
+            {
+               SelectedPeaks = new float[ SNums.length ][ 3 ];
+               seqNums = new int[ SNums.length ];
+            }
+            for( i = 0 ; i < SNums.length ; i++ )
+            {
+               seqNums[ i ] = SNums[ i ];
+               SelectedPeaks[ i ] = Peaks.elementAt( SNums[ i ] ).getUnrotQ();
+            }
+            if( SNums.length < MAX_SEL_PEAKS )
+            {
+               Arrays.fill( SelectedPeaks , SNums.length ,
+                        SelectedPeaks.length , undef );
+               Arrays.fill( seqNums , SNums.length , seqNums.length , - 1 );
+            }
+
+            fireSetPeakListeners( SET_PEAK_INFO_CHANGED );
+            return;
+         }
          if( evtString.equals( "Help" ) )
          {
-            String SS = "Q";
+           String  SS = "Q";
 
             if( ! specifyPeak )
                SS = "hkl";
@@ -561,6 +620,8 @@ public class SetPeaks extends JButton
          update( pop , SET_PEAK , "Sets the Q vals and seq num for a peak" );
 
          update( pop , SET_HKL , "Sets the hkl vals for a peak" );
+         
+         update(pop, SET_PEAK_LIST,"Sets a list of Peak Sequence nums");
 
          update( pop , CLEAR_SET_PEAKS , "Clears all settings" );
 
