@@ -380,16 +380,16 @@ public class subs
    }
 
   /**
-   * Calculated tje max absolute value for h,k, and l values.
+   * Calculated the max absolute value for h,k, and l values.
    * 
    * @param UB  the UB matrix
    * @param q   the Qx,Qy, and Qz values(or max Q value)
    * 
    * @return  the Max value that h,k, and l could  be  to match the given q value
    */
-   public static int MaxHKLVal( float[][] UB , float[] q )
+   public static int MaxHKLVal( float[][] UB , float  Q)
    {
-
+      
       float Mx = Float.NEGATIVE_INFINITY;
       for( int i = 0 ; i < 3 ; i++ )
       {
@@ -400,9 +400,9 @@ public class subs
                
                M = Math.abs( UB[ i ][ j ] );
          
-         if( Math.abs(  q[ i ]) / M > Mx )
+         if( Q / M > Mx )
             
-            Mx = Math.abs(  q[ i ]) / M;
+            Mx = Q / M;
          
       }
       
@@ -443,11 +443,11 @@ public class subs
 
       float Q = (float) Math.sqrt( Qsq );
       float Q1sq;
-      int M = MaxHKLVal( B , q );
+      int M = MaxHKLVal( B , Q );
       
-      for( int h = - M ; h < M ; h++ )
-         for( int k = - M ; k < M ; k++ )
-            for( int l = - M ; l < M ; l++ )
+      for( int h = - M ; h <= M ; h++ )
+         for( int k = - M ; k <= M ; k++ )
+            for( int l = - M ; l <= M ; l++ )
                if( CenteringOK( h , k , l , Center ) )
                {
                   Q1sq = 0;
@@ -544,7 +544,7 @@ public class subs
       float dot1 = q1[ 0 ] * q2[ 0 ] + q1[ 1 ] * q2[ 1 ] + q1[ 2 ] * q2[ 2 ];
       float Q1sq;
 
-      int M = MaxHKLVal( B , q2 );
+      int M = MaxHKLVal( B , Q );
       for( int h = - M ; h < M ; h++ )
          for( int k = - M ; k < M ; k++ )
             for( int l = - M ; l < M ; l++ )
@@ -931,6 +931,7 @@ public class subs
      System.out.println( "-------------------------------------");
      
   }
+  
    public static float[][] Nigglify( float[][]UB)
    {
        boolean NiggReal = true;
@@ -1068,15 +1069,23 @@ public class subs
      double dot1 = -Math.cos( 75*Math.PI/180 )*4;
      double dot2 = dot1/2*3;
      System.out.println("dots="+dot1+","+dot2);
-     double[][] RealTensor = {{ 4,   dot1  , dot2 },
-                              { dot1  ,4  , dot2 },
-                              {dot2,  dot2    , 9 }
+     double[][] RealTensor = {{ 4,   2  , 3 },
+                              { 2   ,4  , 6 },
+                              {3 ,  6   , 9 }
                         };
                                //{{4  ,.4f  ,.2f},{.4f  ,4  ,.3f}, {.2f , .3f  ,9}};
      double[]LatParams = lattice_calc.LatticeParamsOfG( RealTensor );
-     double[][] RealUB = lattice_calc.A_matrix( LatParams );
+     System.out.println("Lat params=");
+     LinearAlgebra.print( LatParams );
+     double[][] RealUB =  lattice_calc.A_matrix( LatParams );
+     System.out.println("RealUB=");
+     LinearAlgebra.print( RealUB );
+     System.out.println("Real Tensor");
+     LinearAlgebra.print( LinearAlgebra.mult(LinearAlgebra.getTranspose( RealUB), RealUB  ));
      double[][] UB1 = LinearAlgebra.getInverse( RealUB);
+     UB1= LinearAlgebra.getTranspose(  UB1 );// Why forgot this???
      double[][] DD =(  LinearAlgebra.mult(LinearAlgebra.getTranspose(UB1),UB1) );
+     System.out.println(" Real tensor again??");
      LinearAlgebra.print( LinearAlgebra.getInverse( DD) );
      float[][] UB = LinearAlgebra.double2float( UB1);// LinearAlgebra.mult( UB1 , T));
      
