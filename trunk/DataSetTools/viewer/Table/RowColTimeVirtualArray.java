@@ -227,15 +227,15 @@ public class RowColTimeVirtualArray extends
                  state.get_int( ViewerState.TABLE_TS_COLMAX )+.5f ,
                           "Column", "",AxisInfo.LINEAR);
      }else if( axis == AxisInfo.Y_AXIS){
-        if( !ReverseY )
-           return new AxisInfo( state.get_int(ViewerState.TABLE_TS_ROWMIN )-.5f , 
+        //if( !ReverseY )
+         return new AxisInfo( state.get_int(ViewerState.TABLE_TS_ROWMIN )-.5f , 
                     state.get_int( ViewerState.TABLE_TS_ROWMAX )+.5f,
                              "Row", "",AxisInfo.LINEAR);
         
 
-        return new AxisInfo( state.get_int(ViewerState.TABLE_TS_ROWMAX )+.5f , 
-                 state.get_int( ViewerState.TABLE_TS_ROWMIN )-.5f,
-                          "Row", "",AxisInfo.LINEAR);
+       // return new AxisInfo( state.get_int(ViewerState.TABLE_TS_ROWMAX )+.5f , 
+       //          state.get_int( ViewerState.TABLE_TS_ROWMIN )-.5f,
+       //                   "Row", "",AxisInfo.LINEAR);
      }else if( axis == AxisInfo.Z_AXIS){
         return new AxisInfo( 0f, DS.getYRange().getEnd_x(),"Intensities", "Counts",
                    AxisInfo.LINEAR);
@@ -685,9 +685,9 @@ public class RowColTimeVirtualArray extends
        {
         SelectedData2D Info2D =(SelectedData2D)Info;
         int row = Info2D.getRow()-tMinrow;
-        if( ReverseY){
-           row= tMaxrow -Info2D.getRow();
-        }
+        //if( ReverseY){
+        //   row= tMaxrow -Info2D.getRow();
+        //}
         int col = Info2D.getCol()-tMincol;
        
         
