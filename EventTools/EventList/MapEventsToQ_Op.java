@@ -52,7 +52,7 @@ public class MapEventsToQ_Op implements IOperator
   *  @param  tofs    The list of times-of-flight for the events
   *  @param  ids     The list of pixel ids for the events
   *  @param  mapper  The SNS_Tof_to_Q_map object that contains the 
-  *                  information and method to map the events to Q
+  *                  information and method to map the specified events to Q
   */
   public MapEventsToQ_Op( int[] tofs, int[] ids, SNS_Tof_to_Q_map mapper )
   {
@@ -64,11 +64,11 @@ public class MapEventsToQ_Op implements IOperator
 
   /**
    *  Run the specified SNS_Tof_to_Q_map mapper and return the resulting
-   *  float array with Qx,Qy,Qz values interleaved.
+   *  event list with Qx,Qy,Qz values and weights.
    */
   public Object getResult()
   {
-     return mapper.BuildPackedQxyz(tofs, ids ); 
+     return mapper.MapEventsToQ(tofs, ids ); 
   }
 
 } 
