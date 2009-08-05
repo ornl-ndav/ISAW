@@ -60,6 +60,7 @@ public class SNS_Tof_to_Q_map
   public static final String SNAP = "SNAP";
   public static final String ARCS = "ARCS";
   public static final String SEQ  = "SEQ";
+  public static final int    NUM_TOF_WEIGHTS = 166666/10;  // 1us tof bins
 
   private IDataGrid[]  grid_arr; 
   private VecQMapper[] inverse_mapper;
@@ -68,6 +69,13 @@ public class SNS_Tof_to_Q_map
   private float        t0;             // t0 shift in 100ns units
   private float[]      QUxyz;
   private float[]      tof_to_MagQ;
+  private float[]      tof_weight;
+  private float[]      pix_weight;
+
+  private String            instrument_name = "NO_NAME";
+  private int               run_num         = 0;
+  private float             monitor_count   = 100000;
+  private SampleOrientation orientation     = new SNS_SampleOrientation(0,0,0);
 
   /**
    *  Construct the mapping from (tof,id) to Qxyz from the information at
@@ -78,11 +86,15 @@ public class SNS_Tof_to_Q_map
    *  @param  filename  The name of the .DetCal or .peaks file with 
    *                    position information about EVERY detector and
    *                    L1 and t0 values.
+   *
+   *  @param  instrument_name  Name of the instrument, used to determine
+   *                           pixel orderings for event file.
    */
   public SNS_Tof_to_Q_map( String filename, String instrument_name )  
          throws IOException
   {
-                                                  // First bring in the grids
+     this.instrument_name = instrument_name;
+                                                  // Bring in the grids
      FileReader     f_in        = new FileReader( filename );
      BufferedReader buff_reader = new BufferedReader( f_in );
      Scanner        sc          = new Scanner( buff_reader );
@@ -130,6 +142,8 @@ public class SNS_Tof_to_Q_map
        inverse_mapper[i] = new VecQMapper( grid_arr[i], L1, t0/10, orient );
 
      BuildMaps();
+     BuildTofWeights();
+     BuildPixWeights();
 /*
      System.out.println( "L1 = " + L1 );
      System.out.println( "t0 = " + t0 );
@@ -153,7 +167,7 @@ public class SNS_Tof_to_Q_map
    *  @return an array of floats containing values (Qx,Qy,Qz) for each 
    *          event, interleaved in the array. 
    */
-  public float[] BuildPackedQxyz( int[] tofs, int[] ids )
+  public FloatArrayEventList3D_2 MapEventsToQ( int[] tofs, int[] ids )
   {
      if ( tofs == null )
        throw new IllegalArgumentException( "Time-of-flight array is null" );
@@ -169,12 +183,17 @@ public class SNS_Tof_to_Q_map
        throw new IllegalArgumentException("TOF array length " + tofs.length +
                                          " exceeds " + Integer.MAX_VALUE/3 );
      if ( tofs.length == 0 )
-       return new float[0];
+     {
+       float[] empty_Qxyz = new float[0];
+       return new FloatArrayEventList3D_2( null, empty_Qxyz );
+     }
 
-     float[] Qxyz =  new float[ 3 * tofs.length ];
+     float[] Qxyz    = new float[ 3 * tofs.length ];
+     float[] weights = new float[ tofs.length ];
      int     id;
      int     id_offset;
      int     index;
+     float   tof_chan;
      float   magQ;
      float   qx,qy,qz;
      int     minus_id_count = 0;
@@ -185,7 +204,8 @@ public class SNS_Tof_to_Q_map
        id = ids[i];
        if ( id > 0 && id < tof_to_MagQ.length )
        {
-         magQ = tof_to_MagQ[id]/(t0 + tofs[i]);
+         tof_chan = t0 + tofs[i];
+         magQ = tof_to_MagQ[id]/tof_chan;
 
          id_offset = 3*id;
          qx = magQ * QUxyz[id_offset++];
@@ -196,6 +216,44 @@ public class SNS_Tof_to_Q_map
          Qxyz[index++] = qx;
          Qxyz[index++] = qy;
          Qxyz[index  ] = qz;
+
+         //
+         // TODO
+         //
+         // following A.J.Schultz's anvred, weight factor should be:
+         //
+         //  sin^2(theta) / (lamda^4 * spec * eff * trans)
+         //
+         // where theta = scattering_angle/2
+         //       lamda = wavelength (in angstroms?)
+         //       spec  = incident spectrum correction
+         //       eff   = pixel efficiency
+         //       trans = absorption correction
+         //
+         // NOTE:
+         //
+         //   sin^2(theta) / eff  
+         //
+         // depends only on the pixel and can be pre-calculated 
+         // for each pixel.  It is saved in array pix_weight[]
+         //
+         // lamda is proportional to time-of-flight across the instrument
+         // to within about .1%, so we can temporarily replace 
+         //   
+         //   1/(lamda^4 * spec(lamda))  with  const /(tof^4 * spec(tof))
+         //
+         // which can be pre-calculated for each tof.  These values are
+         // saved in array tof_weight[].  It should only be necessary to
+         // save one tof_weight for each 10 possible tofs, i.e. one per
+         // microsecond.
+         //
+         // trans depends on both lamda and the pixel.  This is a fairly
+         // expensive calculation and will be omitted for now.
+
+         weights[i] = pix_weight[id] * tof_weight[ (int)(tof_chan/10.0f) ];
+//       weights[i] = tof_weight[ (int)(tof_chan/10.0f) ];
+
+//       weights[i] = magQ * magQ * magQ/1000;   // TODO remove temporary hack
 
 /*       // TEST map from qx,
          test_count++;
@@ -238,7 +296,7 @@ public class SNS_Tof_to_Q_map
                         (tofs[i]/10.0), ids[i], 
                         Qxyz[3*i], Qxyz[3*i+1], Qxyz[3*i+2]);
 */
-     return Qxyz;
+     return new FloatArrayEventList3D_2( weights, Qxyz );
   }
 
 
@@ -261,6 +319,8 @@ public class SNS_Tof_to_Q_map
   {
     Vector3D q_vec = new Vector3D( qx, qy, qz );
 
+    q_vec.multiply( (float)(2*Math.PI)  );
+
     for ( int k = 0; k < inverse_mapper.length; k++ )
     {
       float[] recalc = inverse_mapper[k].QtoRowColTOF( q_vec );
@@ -272,6 +332,129 @@ public class SNS_Tof_to_Q_map
     }
     return null;
   }
+
+
+  /**
+   *  Construct a Peak_new object from specified qx,qy,qz components if
+   *  possible.  If the specified qx,qy,qz values do not map to one of
+   *  the detectors held by this object, then null is returned.
+   *
+   *  NOTES:
+   *
+   *  1. Currently this does not use the sample orientation
+   *     information, but assumes that the sample orientation 
+   *     angles are all zero.  
+   *  2. The h,k,l, seqnum, ipkobs and Facility fields are NOT set
+   *     by this method.
+   *  3. Code using this should check that the result is not null     
+   * 
+   *  @param   qx  The x component of the q vector
+   *  @param   qy  The y component of the q vector
+   *  @param   qz  The z component of the q vector
+   *
+   *  @return A Peak_new object corresponding to the specified qx,qy,qz,
+   *          or null if the specified qx,qy,qz don't map back to any
+   *          detector.
+   */
+  public Peak_new GetPeak( float qx, float qy, float qz )
+  {
+    float[] row_col_tof_ID = QtoRowColTOF_ID( qx, qy, qz );
+    
+    if ( row_col_tof_ID == null )
+      return null;
+
+    int det_id = (int)row_col_tof_ID[3];
+     
+    boolean   found = false;                    // find the IDataGrid with
+    IDataGrid grid  = null;                     // the correct ID
+    int i = 0;
+    while ( !found && i < grid_arr.length )
+    {
+      grid = grid_arr[i];
+      if ( grid.ID() == det_id )
+        found = true;
+      else
+        i++;
+    }
+
+    Peak_new peak = new Peak_new( run_num,
+                                  monitor_count,
+                                  row_col_tof_ID[1],
+                                  row_col_tof_ID[0],
+                                  row_col_tof_ID[2]/10,   // use tof since not
+                                                          // histogrammed
+                                  grid,
+                                  orientation,
+                                  row_col_tof_ID[2],
+                                  L1,
+                                  t0  );
+    
+    peak.setInstrument(  instrument_name );
+    
+    return peak;
+  }
+
+
+  /**
+   *  Build the list of weights corresponding to different times-of-flight.
+   *  NOT COMPLETE.  Currently this method just makes a rough approximation
+   *  to the correct weight factor. (TODO)
+   */
+  private void BuildTofWeights()
+  {
+    tof_weight = new float[ NUM_TOF_WEIGHTS ];
+    for ( int i = 0; i < tof_weight.length; i++ )
+      tof_weight[i] = 1.0e10f/((float)Math.pow(i,2.7));
+  }
+
+
+  /**
+   *  Build the list of weights corresponding to different pixels. 
+   *  NOT COMPLETE.  Currently this method just makes a rough approximation
+   *  to the correct weight factor. (TODO)
+   */
+  private void BuildPixWeights()
+  {
+    int first_offset = 1;
+    int pix_count = 0;                             // first count the pixels
+    for ( int  i = 0; i < grid_arr.length; i++ )
+    {
+      IDataGrid grid = grid_arr[i];
+      pix_count += grid.num_rows() * grid.num_cols();
+    }
+
+    pix_weight =  new float[ (pix_count + first_offset) ];
+
+    Vector3D  pix_pos;                             // using IPNS coords 
+    Vector3D  beam_vec = new Vector3D( 1, 0, 0 );  // internally
+    double    cos_2_theta;
+    double    theta;
+    double    sine_theta;
+    int index = first_offset;                       // pixel index starts at 1
+    IDataGrid grid;
+    int       n_rows;
+    int       n_cols;
+    for ( int  i = 0; i < grid_arr.length; i++ )
+    {
+      grid = grid_arr[i];
+      n_rows = grid.num_rows();
+      n_cols = grid.num_cols();
+
+      for ( int col = 1; col <= n_cols; col++ )
+        for ( int row = 1; row <= n_rows; row++ )
+        {
+           pix_pos = grid.position( row, col );
+           pix_pos.normalize();
+
+           cos_2_theta = pix_pos.dot( beam_vec );
+           theta = Math.acos( cos_2_theta ) / 2;
+           sine_theta = Math.sin( theta );
+
+           pix_weight[ index++ ] = (float)(sine_theta * sine_theta);
+        }
+    }
+  }
+
 
 
   /**
