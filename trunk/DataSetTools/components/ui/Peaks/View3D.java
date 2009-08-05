@@ -282,7 +282,7 @@ public class View3D extends ThreeD_JPanel
       }
       float[] q = new float[3];
       q[0] = q[1] = q[2] = Math.max(  Math.abs( MinQ) , Math.abs( MaxQ) );
-      int M=subs.MaxHKLVal( orientationMatrix , q );
+      int M=subs.MaxHKLVal( orientationMatrix , (float)Math.sqrt( 3*q[0]*q[0] ) );
       Vector<Vector3D> obj = new Vector<Vector3D>();
       for( int h=-M; h<=M; h++)
          for( int k=-M; k<=M; k++)
