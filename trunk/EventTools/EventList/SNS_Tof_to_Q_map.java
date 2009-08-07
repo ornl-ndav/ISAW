@@ -57,6 +57,9 @@ import DataSetTools.instruments.*;
  */
 public class SNS_Tof_to_Q_map 
 {
+  public static final float  ANGST_PER_US_PER_M = 
+                                        (float)tof_calc.ANGST_PER_US_PER_M;
+
   public static final String SNAP = "SNAP";
   public static final String ARCS = "ARCS";
   public static final String SEQ  = "SEQ";
@@ -67,10 +70,12 @@ public class SNS_Tof_to_Q_map
 
   private float        L1;             // L1 in meters.
   private float        t0;             // t0 shift in 100ns units
-  private float[]      QUxyz;
-  private float[]      tof_to_MagQ;
-  private float[]      tof_weight;
-  private float[]      pix_weight;
+  private float[]      QUxyz;          // unit vector in Q direction for pixel
+  private float[]      tof_to_MagQ;    // magQ is tof_to_MagQ[id] / tof
+  private float[]      tof_to_lamda;   // lamda is tof_to_lamda[id] * tof
+  private float[]      lamda_weight;   // 1/(lamda^4 * spec(lamda)) indexed by
+                                       // 100 * lamda
+  private float[]      pix_weight;     // sin^2(theta(pix_id)) / eff(pix_id)
 
   private String            instrument_name = "NO_NAME";
   private int               run_num         = 0;
@@ -141,8 +146,10 @@ public class SNS_Tof_to_Q_map
      for ( int i = 0; i < grid_arr.length; i++ )
        inverse_mapper[i] = new VecQMapper( grid_arr[i], L1, t0/10, orient );
 
+     
      BuildMaps();
-     BuildTofWeights();
+     String spectrum_file_name = "/home/dennis/ISAW/SNAP_Spectrum.dat";
+     BuildLamdaWeights( spectrum_file_name );
      BuildPixWeights();
 /*
      System.out.println( "L1 = " + L1 );
@@ -199,6 +206,9 @@ public class SNS_Tof_to_Q_map
      int     minus_id_count = 0;
      int     large_id_count = 0;
 //   int     test_count = 0;
+//   float   inv_lamda_4;                     // 1/lamda^4
+     float   lamda;
+     int     lamda_index;
      for ( int i = 0; i < tofs.length; i++ )
      {
        id = ids[i];
@@ -237,20 +247,39 @@ public class SNS_Tof_to_Q_map
          // depends only on the pixel and can be pre-calculated 
          // for each pixel.  It is saved in array pix_weight[]
          //
-         // lamda is proportional to time-of-flight across the instrument
-         // to within about .1%, so we can temporarily replace 
+         // The time-of-flight is converted to wave length by multiplying
+         // by tof_to_lamda[id], then (int)100*lamda gives an index into
+         // the table lamda_weight[] which contains 500 values for:
          //   
-         //   1/(lamda^4 * spec(lamda))  with  const /(tof^4 * spec(tof))
+         //   1/(lamda^4 * spec(lamda))
          //
-         // which can be pre-calculated for each tof.  These values are
-         // saved in array tof_weight[].  It should only be necessary to
-         // save one tof_weight for each 10 possible tofs, i.e. one per
-         // microsecond.
+         // which are pre-calculated for each lamda.  These values are
+         // saved in array lamda_weight[].
          //
          // trans depends on both lamda and the pixel.  This is a fairly
-         // expensive calculation and will be omitted for now.
+         // expensive calculation and is omitted for now.
+/*
+         inv_lamda_4 = 1.0f / ( tof_chan/10.0f * tof_to_lamda[id] );
+         inv_lamda_4 = inv_lamda_4 * inv_lamda_4 * inv_lamda_4;
+         weights[i] = pix_weight[id] * inv_lamda_4;
+*/
+         lamda = tof_chan/10.0f * tof_to_lamda[id];
+         lamda_index = (int)(100*lamda);
 
-         weights[i] = pix_weight[id] * tof_weight[ (int)(tof_chan/10.0f) ];
+         if ( i < 100 )
+           System.out.println( "i, lamda, lamda_index, lamda_weight = " +
+                                i + ", " 
+                                + lamda + ", " + 
+                                + lamda_index + ", " + 
+                                + lamda_weight[ lamda_index ] );
+
+         if ( lamda_index < 0 )
+           lamda_index = 0;
+         if ( lamda_index > lamda_weight.length )
+           lamda_index = lamda_weight.length - 1;
+  
+         weights[i] = pix_weight[id] * lamda_weight[ lamda_index ];
+//       weights[i] = pix_weight[id] * tof_weight[ (int)(tof_chan/10.0f) ];
 //       weights[i] = tof_weight[ (int)(tof_chan/10.0f) ];
 
 //       weights[i] = magQ * magQ * magQ/1000;   // TODO remove temporary hack
@@ -400,11 +429,117 @@ public class SNS_Tof_to_Q_map
    *  NOT COMPLETE.  Currently this method just makes a rough approximation
    *  to the correct weight factor. (TODO)
    */
+/*
   private void BuildTofWeights()
   {
     tof_weight = new float[ NUM_TOF_WEIGHTS ];
     for ( int i = 0; i < tof_weight.length; i++ )
       tof_weight[i] = 1.0e10f/((float)Math.pow(i,2.7));
+  }
+*/
+
+  /**
+   *  Build the list of weights corresponding to different wavelengths.
+   *  NOTE: Although the spectrum file need not have a fixed numbe of
+   *  points, it MUST have the spectrum recorded in steps of 0.01 angstrom
+   *  starting at 0 out to the number of bins.  The resulting table will
+   *  allow (int)100*lamda to be used as an index into the table to 
+   *  find the weight to use for the specified lamda in Angstroms.
+   *  The entries in the table are:
+   *
+   *     1/( lamda^4 * spec(lamda) )
+   *
+   *  The spectrum values will be normalized so that the MAXIMUM value is
+   *  1 and the minimum value is .05.
+   */
+  private void BuildLamdaWeights( String spectrum_file_name )
+  {
+    int     DEFAULT_NUM_WAVELENGTHS = 500;
+    float   MIN_SPECTRUM_VALUE      = 0.15f;
+    float   lamda; 
+                                              // first try to load the file
+    boolean build_from_file = true;
+    int     num_bins = DEFAULT_NUM_WAVELENGTHS;
+    float[] spectrum = null;
+
+
+    try
+    { 
+      FileReader     f_in        = new FileReader( spectrum_file_name );
+      BufferedReader buff_reader = new BufferedReader( f_in );
+      Scanner        sc          = new Scanner( buff_reader );
+
+      for ( int i = 0; i < 6; i++ )                // skip info lines
+        sc.nextLine();
+
+      String num_y_line = sc.nextLine().trim();
+
+      int blank_index = num_y_line.lastIndexOf(" ");
+
+      num_y_line = num_y_line.substring(blank_index);
+      num_y_line = num_y_line.trim();
+
+      Integer NUM_BINS = new Integer( num_y_line );
+      num_bins = NUM_BINS;
+
+      spectrum = new float[ num_bins ];
+      for ( int i = 0; i < num_bins; i++ )
+      {
+        sc.nextDouble();
+        spectrum[i] = (float)sc.nextDouble();
+      }
+      build_from_file = true;
+    }
+    catch ( Exception ex )
+    {
+      System.out.println("EXCEPTION = " + ex );
+      ex.printStackTrace();
+      System.out.println("Failed to read spectrum file "+spectrum_file_name);
+      System.out.println("Using default approximate correcton" );
+      build_from_file = false;
+    }
+
+    if ( build_from_file )
+    {
+//    System.out.println("Building using spectrum file " );
+                                                      // normalize spectrum
+      float max = 0;
+      for ( int i = 0; i < num_bins; i++ )
+        if ( spectrum[i] > max )
+          max = spectrum[i];
+
+      if ( max <= 0 )
+        build_from_file = false;
+      else
+      {      
+        for ( int i = 0; i < num_bins; i++ )
+          spectrum[i] /= max;
+
+        for ( int i = 0; i < num_bins; i++ )          // clamp to be > 0
+          if ( spectrum[i] < MIN_SPECTRUM_VALUE )
+            spectrum[i] = MIN_SPECTRUM_VALUE;
+                                                      // compute weights
+        lamda_weight = new float[ num_bins ];
+        for ( int i = 0; i < num_bins; i++ )
+        {
+          lamda = i/100f;
+          lamda_weight[i] = 1f/(lamda*lamda*lamda*lamda * spectrum[i]);
+        }
+      }
+    }
+
+    if ( !build_from_file )                   // make rough approximation
+    {
+//    System.out.println("Building using weighting " );
+      
+      lamda_weight = new float[ DEFAULT_NUM_WAVELENGTHS ];
+      for ( int i = 0; i < lamda_weight.length; i++ )
+      {
+        lamda = i/100f;
+        lamda_weight[i] = (float)(1.0/Math.pow(lamda,2.4));
+      }
+    }
+
   }
 
 
@@ -423,17 +558,20 @@ public class SNS_Tof_to_Q_map
       pix_count += grid.num_rows() * grid.num_cols();
     }
 
-    pix_weight =  new float[ (pix_count + first_offset) ];
+    pix_weight   =  new float[ (pix_count + first_offset) ];
+    tof_to_lamda =  new float[ (pix_count + first_offset) ];
 
     Vector3D  pix_pos;                             // using IPNS coords 
     Vector3D  beam_vec = new Vector3D( 1, 0, 0 );  // internally
     double    cos_2_theta;
     double    theta;
     double    sine_theta;
-    int index = first_offset;                       // pixel index starts at 1
+    float     L2;
     IDataGrid grid;
     int       n_rows;
     int       n_cols;
+
+    int index = first_offset;                       // pixel index starts at 1
     for ( int  i = 0; i < grid_arr.length; i++ )
     {
       grid = grid_arr[i];
@@ -444,13 +582,22 @@ public class SNS_Tof_to_Q_map
         for ( int row = 1; row <= n_rows; row++ )
         {
            pix_pos = grid.position( row, col );
+           L2 = pix_pos.length();
            pix_pos.normalize();
 
            cos_2_theta = pix_pos.dot( beam_vec );
            theta = Math.acos( cos_2_theta ) / 2;
            sine_theta = Math.sin( theta );
 
+           tof_to_lamda[ index ] = ANGST_PER_US_PER_M /(L1 + L2);
            pix_weight[ index++ ] = (float)(sine_theta * sine_theta);
+/*
+           if ( row == 1 && col == 1 )
+           {
+             System.out.println("TOTAL PATH   = " + (L1+L2) );
+             System.out.println("tof_to_lamda = " + tof_to_lamda[index-1] );
+           }
+*/
         }
     }
   }
