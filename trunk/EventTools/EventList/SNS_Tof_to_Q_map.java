@@ -266,13 +266,14 @@ public class SNS_Tof_to_Q_map
          lamda = tof_chan/10.0f * tof_to_lamda[id];
          lamda_index = (int)(100*lamda);
 
+/*
          if ( i < 100 )
            System.out.println( "i, lamda, lamda_index, lamda_weight = " +
                                 i + ", " 
                                 + lamda + ", " + 
                                 + lamda_index + ", " + 
                                 + lamda_weight[ lamda_index ] );
-
+*/
          if ( lamda_index < 0 )
            lamda_index = 0;
          if ( lamda_index > lamda_weight.length )
