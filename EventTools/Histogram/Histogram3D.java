@@ -91,7 +91,7 @@ public class Histogram3D
 
 
   /**
-   * Construct a Histogram3D object covering a parallelopiped region 
+   * Construct a Histogram3D object covering a parallelepiped region 
    * of 3-dimensional real space.  The shape and number of subdivision 
    * of the region covered is determined by the direction vectors and
    * number of steps of the specified projection binners.  The specified
@@ -118,6 +118,13 @@ public class Histogram3D
     this.y_edge_binner = y_edge_binner;
     this.z_edge_binner = z_edge_binner;
 
+    init_histogram();
+  }
+
+
+
+  private void init_histogram()
+  {
     IProjectionBinner3D[] dual_binners =
                          ProjectionBinner3D.getDualBinners( x_edge_binner, 
                                                             y_edge_binner, 
@@ -262,6 +269,38 @@ public class Histogram3D
   public double total()
   {
     return sum;
+  }
+
+
+  /**
+   * Change the Histogram3D position to cover a new parallelepiped region 
+   * of 3-dimensional real space.  The shape and number of subdivision 
+   * of the region covered is determined by the direction vectors and
+   * number of steps of the specified projection binners.  The specified
+   * projection binners determine the edges of the histogram bins
+   * (parallelepipeds).  Another set of three projection binners that
+   * are perpendicular to the histogram bin faces is calculated and used
+   * to place points in the correct histogram bin.
+   * 
+   * @param x_edge_binner  IProjectionBinner3D that determines the edges of 
+   *                       the histogram bins (parallelepipeds) in the 
+   *                       "x direction".
+   * @param y_edge_binner  IProjectionBinner3D that determines the edges of 
+   *                       the histogram bins (parallelepipeds) in the 
+   *                       "y direction".
+   * @param z_edge_binner  IProjectionBinner3D that determines the edges of 
+   *                       the histogram bins (parallelepipeds) in the 
+   *                       "z direction".
+   */
+  public void setHistogramPosition( IProjectionBinner3D x_edge_binner,
+                                    IProjectionBinner3D y_edge_binner,
+                                    IProjectionBinner3D z_edge_binner )
+  {
+    this.x_edge_binner = x_edge_binner;
+    this.y_edge_binner = y_edge_binner;
+    this.z_edge_binner = z_edge_binner;
+
+    init_histogram();
   }
 
   
