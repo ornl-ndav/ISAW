@@ -166,11 +166,16 @@ public class InitialPeaksWizard_SNS extends Wizard {
     if( MenuText == null)
        MenuText ="SNS SCD Wizards";
      JMenu Res = new JMenu(MenuText);
-     JMenuItem initial = new JMenuItem("Initial Peaks Wizard");
+     JMenu initial = new JMenu("Initial Peaks Wizard");
      Res.add( initial );
+     JMenuItem init1 = new JMenuItem("Basic Version");
+     JMenuItem init2 = new JMenuItem("Test Version");
+     initial.add(  init1 );
+     initial.add( init2);
      JMenuItem daily = new JMenuItem("Daily Peaks Wizard");
      Res.add( daily );
-     initial.addActionListener( new InitialPeaksWizard_SNS.WizardMenuListener());
+     init1.addActionListener( new InitialPeaksWizard_SNS.WizardMenuListener());
+     init2.addActionListener( new InitialPeaksWizard_SNS.WizardMenuListener());
      daily.addActionListener( new InitialPeaksWizard_SNS.WizardMenuListener());
      
      return Res;
@@ -182,13 +187,16 @@ public class InitialPeaksWizard_SNS extends Wizard {
  static class WizardMenuListener implements ActionListener{
     
     public void actionPerformed( ActionEvent evt){
-       if( evt.getActionCommand().startsWith( "Initial" )){
+       if( evt.getActionCommand().startsWith( "Basic" )){
           new InitialPeaksWizard_SNS( false ).wizardLoader( null );
           
-       }else{
+       }else if( evt.getActionCommand().startsWith("Test")){
+
+          new InitialPeaksWizard_SNS1(false ).wizardLoader( null );
+       }else
           new DailyPeaksWizard_SNS( false ).wizardLoader( null );
           
-       }
+     
     }
     
     
