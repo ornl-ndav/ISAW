@@ -64,6 +64,11 @@
  *  Finished implementing methods, added javadoc comments and some
  *  test code in the main program.
  *
+ *  Last Modified:
+ * 
+ *  $Author$
+ *  $Date$            
+ *  $Revision$
  */
 
 package MessageTools;
@@ -111,6 +116,9 @@ import java.util.*;
 public class MessageCenter implements IReceiveMessage
 {
   private static final String DONE = "MC_Queue:SequenceOfMessagesProcessed";
+
+  private boolean debug_send    = false;
+  private boolean debug_receive = false;
 
   private String    center_name;
   private Hashtable<Object,Vector<Message>> message_table;
@@ -166,6 +174,9 @@ public class MessageCenter implements IReceiveMessage
        
        return false;
     }
+
+    if ( debug_receive )
+      System.out.println( "Received Message: " + message );
 
     if ( message == null )
     {
@@ -314,6 +325,35 @@ public class MessageCenter implements IReceiveMessage
   }
 
 
+  /**
+   *  Set debugging state for messages that are sent out from the message
+   *  center.
+   *  
+   *  @param debug_on_off  If true, every message that is sent from this
+   *                       message center will print an informational
+   *                       message on the console.  If false the message
+   *                       center will operate silently.
+   */
+  public void setDebugSend( boolean debug_on_off )
+  {
+    debug_send = debug_on_off;
+  }
+
+
+  /**
+   *  Set debugging state for messages that are received by the message
+   *  center.
+   *  
+   *  @param debug_on_off  If true, every message that is received by this
+   *                       message center will print an informational
+   *                       message on the console.
+   */
+  public void setDebugReceive( boolean debug_on_off )
+  {
+    debug_receive = debug_on_off;
+  }
+
+
   /* ----------------------------------------------------------------------
    *
    *  PRIVATE METHODS
@@ -394,13 +434,24 @@ public class MessageCenter implements IReceiveMessage
   private boolean sendMessage( Message message )
   {
     Vector<IReceiveMessage> listeners = receiver_table.get( message.getName() );
- 
+
     boolean some_processed = false;
     if ( listeners != null && listeners.size() > 0 )
     {
+      if ( debug_send )
+      {
+        System.out.println( "QUEUE: " + message.getName() );
+        System.out.println( "VALUE: " + message.getValue() );
+      }
+
       for ( int j = 0; j < listeners.size(); j++ )
+      {
+        if ( debug_send )
+          System.out.println("-->" + listeners.elementAt(j));
+
         if ( listeners.elementAt(j).receive( message ) )
           some_processed = true;
+      }
     }
   
     return some_processed;
