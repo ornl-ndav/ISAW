@@ -379,7 +379,7 @@ public class TestSNS_events
      SlicedEventsViewer my_viewer = new SlicedEventsViewer( histogram,
                                                             file_name );
 
-     int MAX_EVENTS = 5000000;
+     int MAX_EVENTS = 10000000;
      int n_lists = event_lists.length;
 
      int n_events = 0;
