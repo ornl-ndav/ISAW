@@ -7,20 +7,20 @@ public class LoadEventsCmd
    private String specFile;
    private String detEffFile;
    private String matFile;
-   private int    availableEvents;
-   private int    firstEvent;
+   private long   availableEvents;
+   private long   firstEvent;
    private long   eventsToLoad;
-   private int    eventsToShow;
+   private long   eventsToShow;
    
    public LoadEventsCmd( String eventFile, 
                          String detFile,
                          String specFile, 
                          String detEffFile, 
                          String matFile, 
-                         int    availableEvents, 
-                         int    firstEvent, 
+                         long   availableEvents, 
+                         long   firstEvent, 
                          long   eventsToLoad, 
-                         int    eventsToShow  )
+                         long   eventsToShow  )
    {
       this.eventFile       = eventFile;
       this.detFile         = detFile;
@@ -35,17 +35,23 @@ public class LoadEventsCmd
 
    public String getEventFile()
    {
+      if (eventFile == null || eventFile.trim().equals(""))
+        return null;
+
       return eventFile;
    }
 
    public String getDetFile()
    {
+      if (detFile == null || detFile.trim().equals(""))
+        return null;
+
       return detFile;
    }
 
    public String getIncSpectrumFile()
    {
-      if (specFile == null || specFile.equals(""))
+      if (specFile == null || specFile.trim().equals(""))
          return null;
 
       return specFile;
@@ -53,7 +59,7 @@ public class LoadEventsCmd
    
    public String getDetEffFile()
    {
-      if (detEffFile == null || detEffFile.equals(""))
+      if (detEffFile == null || detEffFile.trim().equals(""))
         return null;
 
       return detEffFile;
@@ -61,18 +67,18 @@ public class LoadEventsCmd
    
    public String getMatFile()
    {
-      if (matFile == null || matFile.equals(""))
+      if (matFile == null || matFile.trim().equals(""))
         return null;
 
       return matFile;
    }
 
-   public int getAvailableEvents()
+   public long getAvailableEvents()
    {
       return availableEvents;
    }
 
-   public int getFirstEvent()
+   public long getFirstEvent()
    {
       return firstEvent;
    }
@@ -82,7 +88,7 @@ public class LoadEventsCmd
       return eventsToLoad;
    }
 
-   public int getEventsToShow()
+   public long getEventsToShow()
    {
       return eventsToShow;
    }

@@ -88,11 +88,4 @@ public class multiPanel implements IReceiveMessage
       return false;
    }
    
-   public static void main(String[] args)
-   {
-      MessageCenter message_center = new MessageCenter("Test");
-      new UpdateManager(message_center, null, 100);
-
-      multiPanel mp = new multiPanel( message_center );
-   }  
 }

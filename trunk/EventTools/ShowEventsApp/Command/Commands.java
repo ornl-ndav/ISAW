@@ -11,6 +11,10 @@ public class Commands
   //NEW Messages
   //*
   public static final String LOAD_FILE = "Load New File";
+
+  public static final String ADD_EVENTS = "Add Events";
+  public static final String ADD_EVENTS_TO_VIEW = "Add Events to View";
+
   public static final String SET_SLICE_1 = "Set Slice 1";
   public static final String SET_SLICE_2 = "Set Slice 2";
   public static final String SET_SLICE_3 = "Set Slice 3";
@@ -38,10 +42,10 @@ public class Commands
   public static final String WRITE_PEAK_FILE = "Write Peak File";
   public static final String LOAD_PEAK_FILE = "Load Peak File";
   public static final String WRITE_ORIENTATION_FILE = "Write Orientation File";
-   public static final String LOAD_ORIENTATION_FILE = "Load Orientation File";
-   public static final String WRITE_INDEX_FILE = "Write Index File";
-   public static final String OMIT_PEAKS = "Omit Peaks";
-   public static final String FIND_PEAKS = "Find Peaks";
-   public static final String MARK_PEAKS = "Mark Peaks";
+  public static final String LOAD_ORIENTATION_FILE = "Load Orientation File";
+  public static final String WRITE_INDEX_FILE = "Write Index File";
+  public static final String OMIT_PEAKS = "Omit Peaks";
+  public static final String FIND_PEAKS = "Find Peaks";
+  public static final String MARK_PEAKS = "Mark Peaks";
   //*/
 }

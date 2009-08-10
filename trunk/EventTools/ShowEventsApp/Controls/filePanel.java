@@ -102,7 +102,7 @@ public class filePanel //extends JPanel
       evFileName.addMouseListener(new mouse());
       evFileName.setEditable(false);
       
-      String default_availableEvents = "100000000";
+      String default_availableEvents = "8000000";
       JLabel available = new JLabel("# of Events Available: ");
       availableEvents = new JTextField( default_availableEvents );
       
@@ -110,7 +110,7 @@ public class filePanel //extends JPanel
       JLabel first = new JLabel("First Event: ");
       firstEvent = new JTextField( default_firstEvent );
       
-      String default_numLoad = "100000000";
+      String default_numLoad = "8000000";
       JLabel numLoad = new JLabel("Num. to Load: ");
       eventsToLoad = new JTextField( default_numLoad );
       

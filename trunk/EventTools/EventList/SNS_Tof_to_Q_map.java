@@ -493,11 +493,13 @@ public class SNS_Tof_to_Q_map
     }
     catch ( Exception ex )
     {
-      System.out.println("EXCEPTION = " + ex );
+      System.out.println("EXCEPTION = " + ex + "\n" + "USING DEFAULT" );
+      build_from_file = false;
+/*
       ex.printStackTrace();
       System.out.println("Failed to read spectrum file "+spectrum_file_name);
       System.out.println("Using default approximate correcton" );
-      build_from_file = false;
+*/
     }
 
     if ( build_from_file )
