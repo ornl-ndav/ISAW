@@ -90,7 +90,6 @@ import gov.anl.ipns.ViewTools.Components.ViewControls.*;
 import gov.anl.ipns.ViewTools.UI.*;
 import gov.anl.ipns.ViewTools.Panels.*;
 import javax.swing.*;
-import gov.anl.ipns.ViewTools.Components.ViewControls.*;
 import DataSetTools.dataset.*;
 import DataSetTools.components.View.*;
 import java.awt.event.*;
@@ -187,7 +186,7 @@ public class TwoDViewers extends DataSetViewer {
       Ostate.insert( "ViewType" , "Image" );
       currentViewType = "Image";
       TableTopLeft = new Point( 1,1);
-      ObjectState ViewState = (ObjectState)viewComp.getObjectState( true );
+      ObjectState ViewState = viewComp.getObjectState( true );
       floatPoint2D Range = (floatPoint2D)ViewState.get( ImageViewComponent.LOG_SCALE_SLIDER+
                      "."+ControlSlider.RANGE);
       if( Range != null)
@@ -420,7 +419,7 @@ public class TwoDViewers extends DataSetViewer {
          jtab.add( "Other view Info" , OthCompControls );
       }
 
-
+      if( Arraycontrols != null)
       for( int i = 0 ; i < Arraycontrols.length ; i++ )
          if( Arraycontrols[ i ] instanceof PanViewControl )
             PanView = Arraycontrols[ i ];
@@ -599,10 +598,10 @@ public class TwoDViewers extends DataSetViewer {
 
    
    
-   private void removeViewComponentMenus( IViewComponent2D viewComp ) {
+   private void removeViewComponentMenus( IViewComponent2D ViewComp ) {
       
    
-      ViewMenuItem[] MenItem1 = viewComp.getMenuItems();
+      ViewMenuItem[] MenItem1 = ViewComp.getMenuItems();
       
       if( MenItem1 == null ) return;
       
@@ -629,7 +628,7 @@ public class TwoDViewers extends DataSetViewer {
                      if( bar.getMenu( j ).getText().equals( MenItem))
                         item = bar.getMenu( j );
                      
-               }else
+               }else if( item != null)
                   for( int j=0; j< item.getItemCount(); j++)
                      if( item.getItem(j) instanceof JMenu && 
                                  item.getItem(j).getText().equals( MenItem))
@@ -1422,7 +1421,7 @@ public class TwoDViewers extends DataSetViewer {
       if( V == null ) return;
       row = ( (Integer) V.firstElement() ).intValue();
       col = ( (Integer) V.elementAt( 1 ) ).intValue();
-      ActiveJPanel basePanel = MarkOverLayJPanels( (JPanel) this );
+      ActiveJPanel basePanel = MarkOverLayJPanels(  this );
 
       if( basePanel.getWidth() <= 0 || basePanel.getHeight() <= 0 ) return;
       Container C = basePanel;
@@ -1623,9 +1622,11 @@ public class TwoDViewers extends DataSetViewer {
          System.exit( 0 );
          
       }
-      
-      
-      DataSet DS = DSS[ DSS.length - 1 ];
+      DataSet DS =null;
+      if( DSS == null)
+         System.exit(0);
+      else
+          DS = DSS[ DSS.length - 1 ];
       FinishJFrame jf = new FinishJFrame( "Test" );
       
       jf.setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
@@ -1681,40 +1682,40 @@ public class TwoDViewers extends DataSetViewer {
       if( Ostate == null ) 
          Ostate = new ObjectState();
 
-      ObjectState state = new ObjectState();
+      ObjectState State = new ObjectState();
       
       if( ! is_default ) 
-         state = Ostate;
+         State = Ostate;
 
       ViewerState st = new ViewerState();
       
       if( ! is_default ) 
          st = this.state;
 
-      state.reset( "Data" , st );
+      State.reset( "Data" , st );
 
-      state.reset("ViewType", currentViewType);
+      State.reset("ViewType", currentViewType);
       
-      if(!state.reset( "View" + currentViewType , viewComp
+      if(!State.reset( "View" + currentViewType , viewComp
                .getObjectState( is_default ) ))
-          state.insert( "View" + currentViewType , viewComp
+          State.insert( "View" + currentViewType , viewComp
                   .getObjectState(true ));
       
       ActiveJPanel jp = MarkOverLayJPanels( DisplayPanel );
       
       if( jp == null)
-         return  state;
+         return  State;
     
       if( ! is_default ){         
          
-         state.reset( "ViewType" , currentViewType );                
+         State.reset( "ViewType" , currentViewType );                
       
       } else{
          
-         state.insert( "ViewType" , "Image" );
+         State.insert( "ViewType" , "Image" );
          
       }
-      return state;
+      return State;
 
    }
    
@@ -1746,7 +1747,7 @@ public class TwoDViewers extends DataSetViewer {
   }
   
   private void UpdateViewObjectState(){
-     if( viewComp instanceof IPreserveState)
+    // if( viewComp instanceof IPreserveState)
         
      if(!Ostate.reset( "View"+currentViewType, 
                  ((IPreserveState)viewComp).getObjectState( false )))
@@ -1769,11 +1770,11 @@ public class TwoDViewers extends DataSetViewer {
   
   private void SetViewObjectState(){
 
-     if( viewComp instanceof IPreserveState){
+     //if( viewComp instanceof IPreserveState){
           ObjectState O = (ObjectState)Ostate.get( "View"+currentViewType  ); 
           if( O != null)
              viewComp.setObjectState(O );
-     }
+     //}
   }
   
   private void Set2DObjectState(){
