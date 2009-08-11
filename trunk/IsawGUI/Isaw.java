@@ -1010,7 +1010,7 @@ public class Isaw
         String val="";
 
         if(SharedData.VERSION.equals("Unknown_Version"))
-          version="1.9.0_04B";
+          version="1.9.0_05";
         else
           version=SharedData.VERSION;
 
