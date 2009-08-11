@@ -445,7 +445,8 @@ public class SlicedEventsViewer
     for ( int i = 0; i < nodes.size(); i++ )
       nodes.elementAt(i).setDrawOptions( filter_on_max.isSelected(),
                                          filter_on_min.isSelected(),
-                                         alpha_blend.isSelected() );
+                                         alpha_blend.isSelected(),
+                                         alpha  );
 
     setOrthographicView( orthographic.isSelected() );
   }

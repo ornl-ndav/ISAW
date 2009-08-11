@@ -60,8 +60,13 @@ public class MainApp
     HistogramHandler hist_handler = 
                           new HistogramHandler( message_center, histogram );
 
-//  EventViewHandler view_handler = 
-//                        new EventViewHandler( message_center, histogram );
+    EventViewHandler view_handler = new EventViewHandler( message_center );
+
+    JFrame frame = new JFrame( "Reciprocal Space Events" );
+    frame.setSize(750,750);
+    frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
+    frame.getContentPane().add( view_handler.getPanel() );
+    frame.setVisible( true );
   }
 
 
