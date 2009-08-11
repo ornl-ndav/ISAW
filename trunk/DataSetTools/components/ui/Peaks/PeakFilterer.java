@@ -502,7 +502,7 @@ public class PeakFilterer extends JButton implements ActionListener
     * 
     * @param inside     if true, omit those inside, otherwise omit those outside
     * 
-    * @param list       The list of numbers that apply to several fields
+    * @param List       The list of numbers that apply to several fields
     * 
     * @param newAndSeq  if true, start a new and sequence, or the previous
     *                   and sequence to the other and sequences

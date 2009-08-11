@@ -383,7 +383,7 @@ public class subs
    * Calculated the max absolute value for h,k, and l values.
    * 
    * @param UB  the UB matrix
-   * @param q   the Qx,Qy, and Qz values(or max Q value)
+   * @param Q   the Qx,Qy, and Qz values(or max Q value)
    * 
    * @return  the Max value that h,k, and l could  be  to match the given q value
    */
