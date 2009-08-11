@@ -261,13 +261,26 @@ public class MultiColoredPointList_2 extends SimpleShape
   }
 
 
+  /**
+   *  Set options on how the points should drawn.
+   *
+   *  @param filter_above_max  Set true if events with a code above the
+   *                           current max value should NOT be drawn.
+   *  @param filter_below_min  Set true if events with a code below the
+   *                           current min value should NOT be drawn.
+   *  @param use_alpha         Set true if alpha blending should be used.
+   *  @param alpha             Alpha value (between 0 and 1) to use for
+   *                           the event points.
+   */
   public void setDrawOptions( boolean filter_above_max,
                               boolean filter_below_min, 
-                              boolean use_alpha )
+                              boolean use_alpha,
+                              float   alpha )
   {
     this.filter_above_max = filter_above_max;
     this.filter_below_min = filter_below_min;
     this.use_alpha        = use_alpha;
+    this.alpha            = alpha;
   }
 
 
