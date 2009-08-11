@@ -887,8 +887,8 @@ public class SNS_Tof_to_Q_map
    /**
     *  Compare two IDataGrid objects based on their IDs.
     *
-    *  @param  grid_1   The first grid 
-    *  @param  grid_2   The second grid 
+    *  @param  obj_1   The first grid 
+    *  @param  obj_2   The second grid 
     *
     *  @return An integer indicating whether grid_1's ID is greater than,
     *          equal to or less than grid_2's ID.
