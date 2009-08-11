@@ -91,10 +91,12 @@ import gov.anl.ipns.Util.Numeric.IntList;
 import gov.anl.ipns.Util.SpecialStrings.ErrorString;
 
 import java.util.Vector;
+import java.util.Arrays;
 
 import DataSetTools.dataset.Attribute;
 import DataSetTools.dataset.Data;
 import DataSetTools.dataset.DataSet;
+import DataSetTools.dataset.XScale;
 import DataSetTools.operator.Operator;
 import DataSetTools.operator.Parameter;
 import DataSetTools.operator.Generic.TOF_Diffractometer.GenericTOF_Diffractometer;
@@ -215,8 +217,16 @@ public class Grouping extends GenericTOF_Diffractometer{
         if ( ds == null )
             return new ErrorString("DataSet is null in Grouping");
         
-        if ( group_str == null || group_str.length()<=0 )
-            return new ErrorString("Invalid Grouping (null or empty string)");
+                                     // find all group IDs if none specified
+         if ( group_str == null || group_str.trim().length() <= 0 )
+         {
+           int   num_groups = ds.getNum_entries();
+           int[] id_list = new int[num_groups];
+           for ( int i = 0; i < num_groups; i++ )
+             id_list[i] = ds.getData_entry(i).getGroup_ID();
+           Arrays.sort( id_list );
+           group_str = IntList.ToString( id_list );
+         }
 
         // get the list of group ids
         int gid[] = IntList.ToArray( group_str );
@@ -233,9 +243,36 @@ public class Grouping extends GenericTOF_Diffractometer{
         Data temp_d=null;
         DetectorPosition temp_pos=null;
 
-        // do the grouping
-        for( int index=0 ; index<gid.length ; index++ ){
-            temp_d=ds.getData_entry_with_id(gid[index]);
+        System.out.println("BEFORE DOING GROUPING");
+
+                  // Getting a Data block by ID is VERY expensive for a 
+                  // large DataSet.  Processing all selected Data blocks is
+                  // is much more efficient if a lot of Data blocks are to be
+                  // processed.  So... we mark as selected the Data blocks
+                  // with the specified group IDs and process the selected
+                  // Data blocks.  To avoid side effects, we first save and
+                  // then restore the selected flags.
+
+                                 // save selections 
+        int[] original_selections = ds.getSelectedIndices();
+
+                                 // select based on ID
+        ds.clearSelections();
+        ds.setSelectFlagsByID( gid, true );
+
+                                 // get the indices based on selections
+        int[] indices_to_group = ds.getSelectedIndices();
+        int   num_grouped      = indices_to_group.length;
+
+                                 // restore the original selection flags
+        ds.clearSelections();
+        ds.setSelectFlagsByIndex( original_selections, true );
+ 
+                                 // do the grouping, using indices
+        int index;
+        for( int i = 0 ; i < num_grouped ; i++ ){
+            index = indices_to_group[ i ];
+            temp_d=ds.getData_entry( index );
             if(DEBUG)System.out.println("Data["+index+"]="+temp_d);
             if(temp_d!=null){ // check that there is data with that gid
                 temp_pos=(DetectorPosition)
@@ -253,7 +290,7 @@ public class Grouping extends GenericTOF_Diffractometer{
                 }
             }
         }
-        
+
         //handle the case where no valid group IDs are sent in
         if( d == null )
         {  
@@ -261,6 +298,50 @@ public class Grouping extends GenericTOF_Diffractometer{
             "No data entries with group ID(s) " + group_str + "\n");
         }
         
+        System.out.println("END OF STITCHING, BEGIN WEIGHTING");
+        float result_x[]     = d.getX_scale().getXs();
+        float result_y[]     = d.getCopyOfY_values();
+        float result_dy[]    = d.getCopyOfErrors();
+        int   num_bins       = result_y.length;
+        boolean is_histogram = d.isHistogram();
+                                                  // get all of the XScales
+                                                  // then count how many Data
+                                                  // Blocks contain each bin
+                                                  // center
+        XScale[] xscale_list = new XScale[ num_grouped ];
+        for ( int j = 0; j < num_grouped; j++ )
+        { 
+          index = indices_to_group[ j ];
+          xscale_list[j] = ds.getData_entry(index).getX_scale();
+        }
+
+        int[] num_d = new int[ num_bins ];
+        float xval;
+        for ( int i = 0; i < num_bins; i++ )
+        {
+          if ( is_histogram )
+            xval = (result_x[i]+result_x[i+1])/2f;
+          else
+            xval = result_x[i];
+          for ( int j = 0; j < num_grouped; j++ )
+            if ( xscale_list[j].inRange( xval ) )
+              num_d[ i ]++; 
+        }
+
+        int num_data = 0;
+        for ( int i = 0; i < num_bins; i++ )
+        {
+          num_data = num_d[i]; 
+          if ( num_data > 0 )
+          {
+            result_y[i] /= num_data;
+            if ( result_dy != null )
+              result_dy[i] /= num_data;
+          }
+        }
+
+        System.out.println("DONE WITH WEIGHTING ....");
+/*
         // normalize the data by the number of blocks combined to make
         // the new dataset.
         float num_d;
@@ -288,22 +369,32 @@ public class Grouping extends GenericTOF_Diffractometer{
                   dy[i]=dy[i]/num_d;
             }
         }
-
+*/
         // pack it all up and return the grouped data
-        Data new_d=Data.getInstance(d.getX_scale(),y,dy,new_gid);
+        Data new_d=Data.getInstance( d.getX_scale(),
+                                     result_y,
+                                     result_dy,
+                                     new_gid );
         new_d.setAttributeList(d.getAttributeList());
+
         DataSet new_ds=null;
         if(newDS)
-          new_ds=(DataSet)ds.clone();
-        else
+          new_ds=(DataSet)ds.empty_clone();
+
+        else                     // use the same DataSet, but get rid of 
+        {                        // the Data blocks we combined!
           new_ds=ds;
+                                 // We must be careful to remove Data blocks
+                                 // in reverse order since the meaning of the
+                                 // indices change as blocks are removed!!!
+          Arrays.sort( indices_to_group );
+          for( int i=num_grouped-1 ; i>=0 ; i-- )
+            new_ds.removeData_entry(indices_to_group[i]);
+        }
 
         new_ds.addLog_entry("Grouped " + group_str + " to group " + new_gid);
-
-        for( int i=0 ; i<gid.length ; i++ )
-          new_ds.removeData_entry_with_id(gid[i]);
-
         new_ds.addData_entry(new_d);
+
         return new_ds;
     }
 
