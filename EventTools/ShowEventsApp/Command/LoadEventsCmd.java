@@ -11,6 +11,7 @@ public class LoadEventsCmd
    private long   firstEvent;
    private long   eventsToLoad;
    private long   eventsToShow;
+   private int    numThreads;
    
    public LoadEventsCmd( String eventFile, 
                          String detFile,
@@ -20,7 +21,8 @@ public class LoadEventsCmd
                          long   availableEvents, 
                          long   firstEvent, 
                          long   eventsToLoad, 
-                         long   eventsToShow  )
+                         long   eventsToShow,
+                         int    numThreads)
    {
       this.eventFile       = eventFile;
       this.detFile         = detFile;
@@ -31,6 +33,7 @@ public class LoadEventsCmd
       this.firstEvent      = firstEvent;
       this.eventsToLoad    = eventsToLoad;
       this.eventsToShow    = eventsToShow;
+      this.numThreads      = numThreads;
    }
 
    public String getEventFile()
@@ -93,9 +96,14 @@ public class LoadEventsCmd
       return eventsToShow;
    }
 
+   public int getNumThreads()
+   {
+      return numThreads;
+   }
+   
    public String toString()
    {
-      return "Event File  : " + eventFile       + "\n" +
+      return "\nEvent File  : " + eventFile       + "\n" +
              "Det. File   : " + detFile         + "\n" +
              "Spec File   : " + specFile        + "\n" + 
              "Matrix File : " + matFile         + "\n" +
@@ -103,7 +111,8 @@ public class LoadEventsCmd
              "Num Events  : " + availableEvents + "\n" + 
              "First Event : " + firstEvent      + "\n" +
              "Num to load : " + eventsToLoad    + "\n" +
-             "Num to show : " + eventsToShow    + "\n";
+             "Num to show : " + eventsToShow    + "\n" +
+             "Num Threads : " + numThreads      + "\n";
    }
 
 }

@@ -1,6 +1,7 @@
 package EventTools.ShowEventsApp.Controls.Peaks;
 
 import javax.swing.*;
+import java.io.File;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -14,6 +15,7 @@ public class findPeaksPanel extends JPanel
    private MessageCenter      message_center;
    private JButton            findPeaksButton;
    private JCheckBox          smoothCbx;
+   private JCheckBox          markPeaksCbx;
    private JTextField         maxPeaksTxt;
    private JTextField         minPeakTxt;
    private JTextField         logFileTxt;
@@ -22,109 +24,161 @@ public class findPeaksPanel extends JPanel
    {
       this.message_center = message_center;
       
-      //this.setLayout(new GridLayout(2,3));
-      //this.setBounds(0, 0, 150, 175);
-      this.setLayout(new GridBagLayout());
-      GridBagConstraints gbc = new GridBagConstraints();
+      this.setLayout(new GridLayout(5,1));
+
+      this.add(buildCheckInfo());
+      this.add(buildMaxPeaks());
+      this.add(buildMinPeaks());
+      this.add(buildLogPanel());
+      this.add(buildButtonPanel());
+   }
+   
+   public JPanel buildCheckInfo()
+   {
+      JPanel panel = new JPanel();
+      panel.setLayout(new GridLayout(1,2));
       
       smoothCbx = new JCheckBox("Smooth Data");
       smoothCbx.setSelected(false);
+      smoothCbx.setHorizontalAlignment(JCheckBox.CENTER);
+      
+      markPeaksCbx = new JCheckBox("Mark Peaks");
+      markPeaksCbx.setSelected(true);
+      markPeaksCbx.addActionListener(new peaksListener());
+      markPeaksCbx.setHorizontalAlignment(JCheckBox.CENTER);
+      
+      panel.add(smoothCbx);
+      panel.add(markPeaksCbx);
+      
+      return panel;
+   }
+   
+   public JPanel buildMaxPeaks()
+   {
+      JPanel panel = new JPanel();
+      panel.setLayout(new GridLayout(1,2));
       
       JLabel maxPeaksLbl = new JLabel("Max # of Peaks");
       maxPeaksTxt = new JTextField();
-      maxPeaksTxt.setSize(100, 20);
+      maxPeaksTxt.setHorizontalAlignment(JTextField.RIGHT);
       
-      JLabel minPeakLbl = new JLabel("Min Peak Intens.");
+      panel.add(maxPeaksLbl);
+      panel.add(maxPeaksTxt);
+      
+      return panel;
+   }
+   
+   public JPanel buildMinPeaks()
+   {
+      JPanel panel = new JPanel();
+      panel.setLayout(new GridLayout(1,2));
+      
+      JLabel minPeakLbl = new JLabel("Min Peak Intensity");
       minPeakTxt = new JTextField();
-      minPeakTxt.setSize(100, 20);
+      minPeakTxt.setHorizontalAlignment(JTextField.RIGHT);
+      
+      panel.add(minPeakLbl);
+      panel.add(minPeakTxt);
+      
+      return panel;
+   }
+   
+   public JPanel buildLogPanel()
+   {
+      JPanel panel = new JPanel();
+      panel.setLayout(new GridLayout(1,2));
       
       JLabel logFileLbl = new JLabel("Log File Name");
       logFileTxt = new JTextField();
-      logFileTxt.setSize(100, 20);
+      logFileTxt.setHorizontalAlignment(JTextField.RIGHT);
+      
+      panel.add(logFileLbl);
+      panel.add(logFileTxt);
+      
+      return panel;
+   }
+   
+   public JPanel buildButtonPanel()
+   {
+      JPanel panel = new JPanel();
+      panel.setLayout(new GridLayout(1,1));
       
       findPeaksButton = new JButton("Find Peaks");
       findPeaksButton.addActionListener(new buttonListener());
-
-      gbc.fill = GridBagConstraints.HORIZONTAL;
-      gbc.gridx = 0;
-      gbc.gridy = 0;
-      gbc.gridwidth = 2;
-      gbc.weighty = 0.5;
-      this.add(smoothCbx, gbc);
       
-      gbc.fill = GridBagConstraints.HORIZONTAL;
-      gbc.weightx = 0.0;
-      gbc.weighty = 0.5;
-      gbc.gridx = 0;
-      gbc.gridy = 1;
-      gbc.gridwidth = 1;
-      this.add(maxPeaksLbl, gbc);
+      panel.add(findPeaksButton);
       
-      gbc.fill = GridBagConstraints.HORIZONTAL;
-      gbc.weightx = 0.5;
-      gbc.weighty = 0.5;
-      gbc.anchor = GridBagConstraints.FIRST_LINE_END;
-      gbc.gridx = 1;
-      gbc.gridy = 1;
-      gbc.gridwidth = 1;
-      gbc.ipadx = 25;
-      this.add(maxPeaksTxt, gbc);
+      return panel;
+   }
+   
+   private boolean valid()
+   {
+      try
+      {
+         Integer.parseInt(maxPeaksTxt.getText());
+      }
+      catch (NumberFormatException nfe)
+      {         
+         String error = "Max # of Peaks must be of type Integer!";
+         JOptionPane.showMessageDialog(null, error, "Invalid Input", JOptionPane.ERROR_MESSAGE);
+         return false;
+      }
       
-      gbc.fill = GridBagConstraints.HORIZONTAL;
-      gbc.weightx = 0.0;
-      gbc.weighty = 0.5;
-      gbc.gridx = 0;
-      gbc.gridy = 2;
-      gbc.gridwidth = 1;
-      gbc.ipadx = 0;
-      this.add(minPeakLbl, gbc);
+      try
+      {
+         Integer.parseInt(minPeakTxt.getText());
+      }
+      catch (NumberFormatException nfe)
+      {
+         String error = "Min Peak Intensity must be of type Integer!";
+         JOptionPane.showMessageDialog(null, error, "Invalid Input", JOptionPane.ERROR_MESSAGE);
+         return false;
+      }
       
-      gbc.fill = GridBagConstraints.HORIZONTAL;
-      gbc.weightx = 0.5;
-      gbc.weighty = 0.5;
-      gbc.gridx = 1;
-      gbc.gridy = 2;
-      gbc.gridwidth = 1;
-      gbc.ipadx = 25;
-      this.add(minPeakTxt, gbc);
+      if (logFileTxt.getText().equals(""))
+      {
+         String error = "You have not specified a log file!";
+         JOptionPane.showMessageDialog(null, error, "Invalid Input", JOptionPane.ERROR_MESSAGE);
+         return false;
+      }
+      /*else
+      {
+         File file = new File(logFileTxt.getText());
+         if (!file.exists())
+         {
+            String error = logFileTxt.getText() + " does not exist!";
+            JOptionPane.showMessageDialog(null, error, "Invalid Input", JOptionPane.ERROR_MESSAGE);
+            return false;
+         }
+      }*/
       
-      gbc.fill = GridBagConstraints.HORIZONTAL;
-      gbc.weightx = 0.0;
-      gbc.weighty = 0.5;
-      gbc.gridx = 0;
-      gbc.gridy = 3;
-      gbc.gridwidth = 1;
-      gbc.ipadx = 0;
-      this.add(logFileLbl, gbc);
-      
-      gbc.fill = GridBagConstraints.HORIZONTAL;
-      gbc.weightx = 0.5;
-      gbc.weighty = 0.5;
-      gbc.gridx = 1;
-      gbc.gridy = 3;
-      gbc.gridwidth = 1;
-      gbc.ipadx = 25;
-      this.add(logFileTxt, gbc);
-      
-      gbc.fill = GridBagConstraints.HORIZONTAL;
-      gbc.gridx = 0;
-      gbc.gridy = 4;
-      gbc.gridwidth = 2;
-      gbc.ipadx = 0;
-      this.add(findPeaksButton, gbc);
-      
-      this.validate();
+      return true;
    }
    
    private class buttonListener implements ActionListener
    {
       public void actionPerformed(ActionEvent e)
       {
-         FindPeaksCmd findPeaksCmd = new FindPeaksCmd(smoothCbx.isSelected(),
-               Integer.parseInt(maxPeaksTxt.getText()), Integer.parseInt(minPeakTxt.getText()),
-               logFileTxt.getText());
+         if (valid())
+         {
+            FindPeaksCmd findPeaksCmd = new FindPeaksCmd(smoothCbx.isSelected(),
+                  Integer.parseInt(maxPeaksTxt.getText()), 
+                  Integer.parseInt(minPeakTxt.getText()),
+                  logFileTxt.getText());
          
-         sendMessage(Commands.FIND_PEAKS, findPeaksCmd);
+            sendMessage(Commands.FIND_PEAKS, findPeaksCmd);
+         
+            if(!markPeaksCbx.isEnabled())
+               markPeaksCbx.setEnabled(true);
+         }
+      }
+   }
+   
+   private class peaksListener implements ActionListener
+   {
+      public void actionPerformed(ActionEvent e)
+      {
+         sendMessage(Commands.MARK_PEAKS, markPeaksCbx.isSelected());
       }
    }
    

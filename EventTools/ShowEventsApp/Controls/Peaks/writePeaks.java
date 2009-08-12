@@ -4,6 +4,7 @@ import javax.swing.*;
 
 import java.awt.event.*;
 import java.io.File;
+import java.awt.GridLayout;
 
 import MessageTools.*;
 import EventTools.ShowEventsApp.Command.*;
@@ -18,12 +19,11 @@ public class writePeaks extends JPanel
    {
       this.message_center = message_center;
 
-      this.setBorder(BorderFactory.createEmptyBorder());
+      this.setLayout(new GridLayout(1,1));
       savePeaks = new JButton("Write Peaks File...");
       savePeaks.addActionListener(new buttonListener());
       
       this.add(savePeaks);
-      this.validate();
    }
    
    private void sendMessage(String command, Object value)

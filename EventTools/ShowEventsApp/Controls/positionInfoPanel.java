@@ -28,9 +28,9 @@ public class positionInfoPanel extends JPanel
    public positionInfoPanel()//MessageCenter messageCenter)
    {
       //this.messageCenter = messageCenter;
-      this.setLayout(new GridLayout(2,1));
+      this.setLayout(new GridLayout(1,1));
       this.add(buildPanel());
-      this.add(buildZoomedPanel());
+      //this.add(buildZoomedPanel());
    }
 
    private JPanel buildZoomedPanel()
@@ -52,64 +52,92 @@ public class positionInfoPanel extends JPanel
       JTextField countLbl = new JTextField("Counts");
       countLbl.setEditable(false);
       countLbl.setBackground(Color.WHITE);
+      
       JTextField detectorLbl = new JTextField("Detector Number");
       detectorLbl.setEditable(false);
       detectorLbl.setBackground(Color.WHITE);
+      
       JTextField histogramLbl = new JTextField("Histogram Page");
       histogramLbl.setEditable(false);
       histogramLbl.setBackground(Color.WHITE);
+      
       JTextField hklLbl = new JTextField("h,k,l");
       hklLbl.setEditable(false);
       hklLbl.setBackground(Color.WHITE);
+      
       JTextField qxyzLbl = new JTextField("Qx,Qy,Qz");
       qxyzLbl.setEditable(false);
       qxyzLbl.setBackground(Color.WHITE);
+      
       JTextField qLbl = new JTextField("Q(Inv(" + ANG + "))");
       qLbl.setEditable(false);
       qLbl.setBackground(Color.WHITE);
+      
       JTextField dSpacingLbl = new JTextField("d-Spacing(" + ANG + ")");
       dSpacingLbl.setEditable(false);
       dSpacingLbl.setBackground(Color.WHITE);
+      
       JTextField timeLbl = new JTextField("Time(us)");
       timeLbl.setEditable(false);
       timeLbl.setBackground(Color.WHITE);
+      
       JTextField eLbl = new JTextField("E(meV)");
       eLbl.setEditable(false);
       eLbl.setBackground(Color.WHITE);
+      
       JTextField wavelengthLbl = new JTextField("Wavelength(" + ANG + ")");
       wavelengthLbl.setEditable(false);
       wavelengthLbl.setBackground(Color.WHITE);
       
-      countsTxt = new JTextField();
+      countsTxt = new JTextField("0");
       countsTxt.setEditable(false);
       countsTxt.setBackground(Color.WHITE);
-      detectorNumTxt = new JTextField();
+      countsTxt.setHorizontalAlignment(JTextField.RIGHT);
+      
+      detectorNumTxt = new JTextField("0");
       detectorNumTxt.setEditable(false);
       detectorNumTxt.setBackground(Color.WHITE);
-      histogramPageTxt = new JTextField();
+      detectorNumTxt.setHorizontalAlignment(JTextField.RIGHT);
+      
+      histogramPageTxt = new JTextField("0");
       histogramPageTxt.setEditable(false);
       histogramPageTxt.setBackground(Color.WHITE);
-      hklTxt = new JTextField();
+      histogramPageTxt.setHorizontalAlignment(JTextField.RIGHT);
+      
+      hklTxt = new JTextField("(0,0,0)");
       hklTxt.setEditable(false);
       hklTxt.setBackground(Color.WHITE);
-      qxyzTxt = new JTextField();
+      hklTxt.setHorizontalAlignment(JTextField.RIGHT);
+      
+      qxyzTxt = new JTextField("(0,0,0)");
       qxyzTxt.setEditable(false);
       qxyzTxt.setBackground(Color.WHITE);
-      qTxt = new JTextField();
+      qxyzTxt.setHorizontalAlignment(JTextField.RIGHT);
+      
+      qTxt = new JTextField("0");
       qTxt.setEditable(false);
       qTxt.setBackground(Color.WHITE);
-      dSpacingTxt = new JTextField();
+      qTxt.setHorizontalAlignment(JTextField.RIGHT);
+      
+      dSpacingTxt = new JTextField("0");
       dSpacingTxt.setEditable(false);
       dSpacingTxt.setBackground(Color.WHITE);
-      timeTxt = new JTextField();
+      dSpacingTxt.setHorizontalAlignment(JTextField.RIGHT);
+      
+      timeTxt = new JTextField("0");
       timeTxt.setEditable(false);
       timeTxt.setBackground(Color.WHITE);
-      eTxt = new JTextField();
+      timeTxt.setHorizontalAlignment(JTextField.RIGHT);
+      
+      eTxt = new JTextField("0");
       eTxt.setEditable(false);
       eTxt.setBackground(Color.WHITE);
-      wavelengthTxt = new JTextField();
+      eTxt.setHorizontalAlignment(JTextField.RIGHT);
+      
+      wavelengthTxt = new JTextField("0");
       wavelengthTxt.setEditable(false);
       wavelengthTxt.setBackground(Color.WHITE);
+      wavelengthTxt.setHorizontalAlignment(JTextField.RIGHT);
       
       panel.add(countLbl);
       panel.add(countsTxt);
@@ -135,11 +163,27 @@ public class positionInfoPanel extends JPanel
       return panel;
    }
    
+   private void setFields(SelectionInfoCmd selection)
+   {
+      countsTxt.setText("1");
+      detectorNumTxt.setText("1");
+      histogramPageTxt.setText("1");
+      hklTxt.setText("(1,1,1)");
+      qxyzTxt.setText("(1,1,1)");
+      qTxt.setText("1");
+      dSpacingTxt.setText("1");
+      timeTxt.setText("1");
+      eTxt.setText("1");
+      wavelengthTxt.setText("1");
+   }
+   
    public boolean receive(Message message)
    {
       if (message.getName().equals(Commands.SET_POSITION_INFO))
       {
          SelectionInfoCmd selection = (SelectionInfoCmd)message.getValue();
+         setFields(selection);
+         
          System.out.println(selection);
          
          return true;
@@ -154,7 +198,7 @@ public class positionInfoPanel extends JPanel
       TestReceiver tc = new TestReceiver("Position Info TestingMessages");
       mc.addReceiver(tc, Commands.SET_POSITION_INFO);
       
-      positionInfoPanel pip = new positionInfoPanel();//mc);
+      positionInfoPanel pip = new positionInfoPanel();
       
       JFrame View = new JFrame( "Test Position Info Panel" );
       View.setDefaultCloseOperation( WindowConstants.EXIT_ON_CLOSE );
