@@ -7,12 +7,16 @@ public class Commands
   public static final String ADD_EVENTS = "Add Events";
   public static final String ADD_EVENTS_TO_VIEW = "Add Events to View";
 
+  public static final String SELECT_POINT = "Select Point";
+  public static final String SELECTED_POINT_INFO = "Selected Point Info";
+  
+
   public static final String CHANGE_PANEL = "Change Panel";
   public static final String SET_COLOR_SCALE = "Set New Color Scale";
   public static final String FIND_PEAKS = "Find Peaks";
   public static final String INDEX_PEAKS = "Index Peaks";
   public static final String MARK_PEAKS = "Mark Peaks";
-  public static final String SET_POSITION_INFO = "Set Position Info";
+//  public static final String SET_POSITION_INFO = "Set Position Info";
   public static final String WRITE_PEAK_FILE = "Write Peak File";
   public static final String SET_FILTER_OPTIONS = "Set Filter Options";
   public static final String SET_ORIENTATION_MATRIX = "Set Orientation Matrix";

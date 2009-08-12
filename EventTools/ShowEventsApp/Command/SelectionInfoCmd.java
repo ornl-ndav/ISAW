@@ -4,67 +4,105 @@ import gov.anl.ipns.MathTools.Geometry.Vector3D;
 
 public class SelectionInfoCmd
 {
-   private float qx;
-   private float qy;
-   private float qz;
-   private float dx;
-   private float dy;
-   private float dz;
+   private float counts;
+   private int   det_num;
+   private int   page;
    
-   public SelectionInfoCmd(float qx, float qy, float qz,
-                           float dx, float dy, float dz)
-   {
-      this.qx = qz;
-      this.qy = qy;
-      this.qz = qz;
-      this.dx = dx;
-      this.dy = dy;
-      this.dz = dz;
-   }
+   private Vector3D hkl;
+   private Vector3D Qxyz;
 
-   public SelectionInfoCmd(Vector3D Q, Vector3D D)
-   {
-      this.qx = Q.getX();
-      this.qy = Q.getY();
-      this.qz = Q.getZ();
-      this.dx = D.getX();
-      this.dy = D.getY();
-      this.dz = D.getZ();
-   }
+   private float raw_Q;
+   private float d_spacing;
+   private float tof;
+   private float e_mev;
+   private float wavelength;
    
-   public float getQx()
+   public SelectionInfoCmd( float    counts,
+                            int      det_num,
+                            int      page,
+                            Vector3D hkl,
+                            Vector3D Qxyz,
+                            float    raw_Q,
+                            float    d_spacing,
+                            float    tof,
+                            float    e_mev,
+                            float    wavelength )
    {
-      return qx;
+      this.counts = counts;
+      this.det_num    = det_num;
+      this.page       = page; 
+      this.hkl        = new Vector3D( hkl );
+      this.Qxyz       = new Vector3D( Qxyz );
+      this.raw_Q      = raw_Q;
+      this.d_spacing  = d_spacing;
+      this.tof        = tof;
+      this.e_mev      = e_mev;
+      this.wavelength = wavelength;
    }
 
-   public float getQy()
-   {
-      return qy;
-   }
-
-   public float getQz()
-   {
-      return qz;
-   }
-
-   public float getDx()
-   {
-      return dx;
-   }
-
-   public float getDy()
-   {
-      return dy;
-   }
-
-   public float getDz()
-   {
-      return dz;
-   }
    
+   public float getCounts()
+   {
+      return counts;
+   }
+
+   public float getDetNum()
+   {
+      return det_num;
+   }
+
+   public float getHistPage()
+   {
+      return page;
+   }
+
+   public Vector3D getHKL()
+   {
+      return new Vector3D( hkl );
+   }
+
+   public Vector3D getQxyz()
+   {
+      return new Vector3D( Qxyz );
+   }
+
+   public float getRaw_Q()
+   {
+      return raw_Q;
+   }
+
+   public float getD_spacing()
+   {
+      return d_spacing;
+   }
+
+   public float getTof()
+   {
+      return tof;
+   }
+
+   public float getE_mev()
+   {
+      return e_mev;
+   }
+
+   public float getWavelength()
+   {
+      return wavelength;
+   }
+
+
    public String toString()
    {
-      return "\nQ(x,y,z) (" + qx + ", " + qy + ", " + qz + ")" +
-             "\nD(x,y,z) (" + dx + ", " + dy + ", " + dz + ")";
+      return "\nCounts      : " + getCounts() +
+             "\nDet Num     : " + getDetNum() + 
+             "\nPage        : " + getHistPage() + 
+             "\nHKL         : " + getHKL() + 
+             "\nQxya        : " + getQxyz() + 
+             "\nRaw Q       : " + getRaw_Q() + 
+             "\nD Spacing   : " + getD_spacing() + 
+             "\nTOF         : " + getTof() + 
+             "\nE(mev)      : " + getE_mev() + 
+             "\nWavelength  : " + getWavelength(); 
    }
 }

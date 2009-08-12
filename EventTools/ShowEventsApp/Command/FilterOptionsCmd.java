@@ -48,10 +48,10 @@ public class FilterOptionsCmd
    
    public String toString()
    {
-      return "\nOrthographic     : " + orthographic + "\n" +
-               "Filter Above Max : " + filterMax    + "\n" +
-               "Filter Below Mim : " + filterMin    + "\n" +
-               "Use Alpha        : " + alpha        + "\n" +
-               "Alpha Value      : " + alphaValue   + "\n";
+      return "\nOrthographic     : " + getOrthographic() + "\n" +
+               "Filter Above Max : " + getFilterMax()    + "\n" +
+               "Filter Below Mim : " + getFilterMin()    + "\n" +
+               "Use Alpha        : " + getAlpha()        + "\n" +
+               "Alpha Value      : " + getAlphaValue()   + "\n";
    }
 }

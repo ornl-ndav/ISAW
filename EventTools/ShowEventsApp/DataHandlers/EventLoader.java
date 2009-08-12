@@ -6,17 +6,22 @@ import java.util.Vector;
 import gov.anl.ipns.Operator.IOperator;
 import gov.anl.ipns.Operator.Threads.ParallelExecutor;
 import gov.anl.ipns.Operator.Threads.ExecFailException;
+import gov.anl.ipns.MathTools.Geometry.Vector3D;
 
 import MessageTools.IReceiveMessage;
 import MessageTools.Message;
 import MessageTools.MessageCenter;
+
 import EventTools.EventList.IEventList3D;
 import EventTools.EventList.SNS_Tof_to_Q_map;
 import EventTools.EventList.MapEventsToQ_Op;
 import EventTools.EventList.EventSegmentLoadOp;
 import EventTools.ShowEventsApp.Command.Commands;
 import EventTools.ShowEventsApp.Command.LoadEventsCmd;
+import EventTools.ShowEventsApp.Command.SelectPointCmd;
+import EventTools.ShowEventsApp.Command.SelectionInfoCmd;
 
+import DataSetTools.operator.Generic.TOF_SCD.Peak_new;
 
 public class EventLoader implements IReceiveMessage
 {
@@ -30,6 +35,7 @@ public class EventLoader implements IReceiveMessage
   {
     this.message_center = message_center;
     message_center.addReceiver( this, Commands.LOAD_FILE );
+    message_center.addReceiver( this, Commands.SELECT_POINT );
   }
 
 
@@ -89,6 +95,42 @@ public class EventLoader implements IReceiveMessage
                   cmd.getFirstEvent(),
                   cmd.getEventsToLoad(),
                   cmd.getEventsToShow() ); 
+    }
+    else if ( message.getName().equals(Commands.SELECT_POINT) )
+    {
+      SelectPointCmd   cmd = (SelectPointCmd)message.getValue();
+      SelectionInfoCmd info;
+      Peak_new peak = mapper.GetPeak( cmd.getQx(), cmd.getQy(), cmd.getQz() );
+
+      if ( peak == null )
+      {
+        info = new SelectionInfoCmd( 0, 0, 0, 
+                   new Vector3D(),
+                   new Vector3D(),
+                   0, 0, 0, 0, 0 );
+      }
+      else
+      {
+        float[]  Q        = peak.getUnrotQ();
+        Vector3D hkl      = new Vector3D( peak.h(), peak.k(), peak.l() );
+        Vector3D Qxyz     = new Vector3D( Q[0], Q[1], Q[2] );
+        float magnitude_Q = Qxyz.length();
+
+        info = new SelectionInfoCmd(
+                   peak.ipkobs(),
+                   peak.detnum(),
+                   0,                      // TODO  get correct histogram page
+                   hkl,
+                   Qxyz,
+                   magnitude_Q,
+                   peak.d(),
+                   peak.time(),
+                   Float.NaN,              // TODO get correct energy
+                   peak.wl()  );
+      }
+      Message info_message = 
+                     new Message( Commands.SELECTED_POINT_INFO, info, true);
+      message_center.receive( info_message );
     }
     return false;
   }
