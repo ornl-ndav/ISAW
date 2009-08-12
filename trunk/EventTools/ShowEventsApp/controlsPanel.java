@@ -71,7 +71,7 @@ public class controlsPanel extends JPanel
       filepanel = new filePanel(messageCenter);
       peakPanel = new peakOptionsPanel(messageCenter);
       indexPeakPanel = new indexPeaksPanel(messageCenter);
-      positionPanel = new positionInfoPanel();//messageCenter);
+      positionPanel = new positionInfoPanel(messageCenter);
       slicePanel = new sliceControl(messageCenter);
       drawoptions = new drawingOptions(messageCenter);
       

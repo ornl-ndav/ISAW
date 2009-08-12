@@ -12,7 +12,7 @@ public class positionInfoPanel extends JPanel
                                implements IReceiveMessage
 {
    public static final long    serialVersionUID = 1L;
-   //private MessageCenter     messageCenter;
+   private MessageCenter       messageCenter;
    private JTextField          countsTxt;
    private JTextField          detectorNumTxt;
    private JTextField          histogramPageTxt;
@@ -25,12 +25,13 @@ public class positionInfoPanel extends JPanel
    private JTextField          wavelengthTxt;
    private char                ANG = '\u00c5';
    
-   public positionInfoPanel()//MessageCenter messageCenter)
+   public positionInfoPanel(MessageCenter messageCenter)
    {
-      //this.messageCenter = messageCenter;
+      this.messageCenter = messageCenter;
       this.setLayout(new GridLayout(1,1));
       this.add(buildPanel());
       //this.add(buildZoomedPanel());
+      messageCenter.addReceiver(this, Commands.SELECTED_POINT_INFO);
    }
 
    private JPanel buildZoomedPanel()
@@ -165,21 +166,21 @@ public class positionInfoPanel extends JPanel
    
    private void setFields(SelectionInfoCmd selection)
    {
-      countsTxt.setText("1");
-      detectorNumTxt.setText("1");
-      histogramPageTxt.setText("1");
-      hklTxt.setText("(1,1,1)");
-      qxyzTxt.setText("(1,1,1)");
-      qTxt.setText("1");
-      dSpacingTxt.setText("1");
-      timeTxt.setText("1");
-      eTxt.setText("1");
-      wavelengthTxt.setText("1");
+      countsTxt.setText( "" + selection.getCounts() );
+      detectorNumTxt.setText( "" + selection.getDetNum() );
+      histogramPageTxt.setText( "" + selection.getHistPage() );
+      hklTxt.setText( selection.getHKL().toString() );
+      qxyzTxt.setText( selection.getQxyz().toString() );
+      qTxt.setText( "" + selection.getRaw_Q() );
+      dSpacingTxt.setText( "" + selection.getD_spacing() );
+      timeTxt.setText( "" + selection.getTof() );
+      eTxt.setText( "" + selection.getE_mev() );
+      wavelengthTxt.setText( "" + selection.getWavelength() );
    }
    
    public boolean receive(Message message)
    {
-      if (message.getName().equals(Commands.SET_POSITION_INFO))
+      if (message.getName().equals(Commands.SELECTED_POINT_INFO))
       {
          SelectionInfoCmd selection = (SelectionInfoCmd)message.getValue();
          setFields(selection);
@@ -196,9 +197,9 @@ public class positionInfoPanel extends JPanel
    {
       MessageCenter mc = new MessageCenter("Testing MessageCenter");
       TestReceiver tc = new TestReceiver("Position Info TestingMessages");
-      mc.addReceiver(tc, Commands.SET_POSITION_INFO);
+      mc.addReceiver(tc, Commands.SELECTED_POINT_INFO);
       
-      positionInfoPanel pip = new positionInfoPanel();
+      positionInfoPanel pip = new positionInfoPanel(mc);
       
       JFrame View = new JFrame( "Test Position Info Panel" );
       View.setDefaultCloseOperation( WindowConstants.EXIT_ON_CLOSE );
