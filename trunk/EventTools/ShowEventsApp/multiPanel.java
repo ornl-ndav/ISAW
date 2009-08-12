@@ -29,7 +29,6 @@ public class multiPanel implements IReceiveMessage
    public multiPanel( MessageCenter messageCenter )
    {
       this.messageCenter = messageCenter;
-      messageCenter.addReceiver(this, Commands.VALIDATE);
       
       controlpanel = new controlsPanel(messageCenter);
       displayPanel = new displayPanel(messageCenter);
@@ -61,20 +60,6 @@ public class multiPanel implements IReceiveMessage
    public boolean receive(Message message)
    {
       // System.out.println(message.getName() + " " + message.getValue());
-      
-      if (message.getName().equals(Commands.VALIDATE))
-      {
-         if (Boolean.parseBoolean((message.getValue().toString())))
-         {
-            //System.out.println("Start validate");
-            //splitPane.validate();
-            //mainView.validate();
-            //splitPane.resetToPreferredSizes();
-            //System.out.println("Finish validate");
-         }
-         
-         return true;
-      }
       
       /*if (message.getName().equals(Commands.LOAD_FILE))
       {

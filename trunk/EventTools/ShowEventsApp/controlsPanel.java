@@ -26,16 +26,19 @@ public class controlsPanel extends JPanel
    private JButton            indexPeaksBtn;
    private JButton            integrateBtn;
    
-   private JButton            positionInfoBtn;
+   private JButton            selectedPoint;
    private JButton            orientationBtn;
    private JButton            colorScaleBtn;
    private JButton            planeBtn;
+   private JButton            drawOptions;
    
    private filePanel          filepanel;
    private displayColorEditor colorEditPanel;
    private peakOptionsPanel   peakPanel;
    private indexPeaksPanel    indexPeakPanel;
    private positionInfoPanel  positionPanel;
+   private sliceControl       slicePanel;
+   private drawingOptions     drawoptions;
    
 //   private final Color background_color = new Color( 220, 230, 235 );
    private final Color background_color = new Color( 230, 232, 250 );
@@ -69,7 +72,8 @@ public class controlsPanel extends JPanel
       peakPanel = new peakOptionsPanel(messageCenter);
       indexPeakPanel = new indexPeaksPanel(messageCenter);
       positionPanel = new positionInfoPanel();//messageCenter);
-      //slicePanel = new sliceControl(messageCenter, oModel);
+      slicePanel = new sliceControl(messageCenter);
+      drawoptions = new drawingOptions(messageCenter);
       
       //Rectangle bounds = new Rectangle(100,100,400,500);
       colorEditPanel = new displayColorEditor(messageCenter,
@@ -125,11 +129,11 @@ public class controlsPanel extends JPanel
    {
       JPanel panel = new JPanel();
       panel.setBorder(new TitledBorder("Controls/Info"));
-      panel.setLayout(new GridLayout(4,1));
+      panel.setLayout(new GridLayout(5,1));
       
-      positionInfoBtn = new JButton("Position Info.");
-      positionInfoBtn.setBackground( background_color );
-      positionInfoBtn.addActionListener(new buttonListener());
+      selectedPoint = new JButton("Selected Point");
+      selectedPoint.setBackground( background_color );
+      selectedPoint.addActionListener(new buttonListener());
       
       orientationBtn = new JButton("Orientation Info.");
       orientationBtn.setBackground( background_color );
@@ -143,10 +147,15 @@ public class controlsPanel extends JPanel
       planeBtn.setBackground( background_color );
       planeBtn.addActionListener(new buttonListener());
       
-      panel.add(positionInfoBtn);
+      drawOptions = new JButton("Draw Options");
+      drawOptions.setBackground(background_color);
+      drawOptions.addActionListener(new buttonListener());
+      
+      panel.add(selectedPoint);
       panel.add(orientationBtn);
       panel.add(colorScaleBtn);
       panel.add(planeBtn);
+      panel.add(drawOptions);
       
       return panel;
    }
@@ -166,14 +175,20 @@ public class controlsPanel extends JPanel
          if (e.getSource().equals(indexPeaksBtn))
             value = indexPeakPanel;
          
-         if (e.getSource().equals(positionInfoBtn))
+         if (e.getSource().equals(selectedPoint))
             value = positionPanel;
 
          if (e.getSource().equals(colorScaleBtn))
             value = colorEditPanel.getColorPanel();
          
+         if (e.getSource().equals(planeBtn))
+            value = slicePanel;
+         
+         if (e.getSource().equals(drawOptions))
+            value = drawoptions;
+         
          //if (value != null)
-            sendMessage(Commands.CHANGE_PANEL, value);
+         sendMessage(Commands.CHANGE_PANEL, value);
       }
    }
    

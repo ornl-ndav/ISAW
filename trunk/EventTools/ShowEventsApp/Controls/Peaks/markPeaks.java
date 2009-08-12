@@ -3,6 +3,8 @@ package EventTools.ShowEventsApp.Controls.Peaks;
 import javax.swing.*;
 
 import java.awt.event.*;
+import java.awt.Dimension;
+import java.awt.GridLayout;
 
 import EventTools.ShowEventsApp.Command.*;
 import MessageTools.*;
@@ -17,13 +19,13 @@ public class markPeaks extends JPanel
    {
       this.message_center = message_center;
 
-      this.setBorder(BorderFactory.createEmptyBorder());
+      this.setLayout(new GridLayout(1,1));
       markPeaksCbx = new JCheckBox("Mark Peaks");
       markPeaksCbx.setSelected(false);
       markPeaksCbx.addActionListener(new peaksListener());
+      markPeaksCbx.setHorizontalAlignment(JCheckBox.CENTER);
       
       this.add(markPeaksCbx);
-      this.validate();
    }
 
    private class peaksListener implements ActionListener

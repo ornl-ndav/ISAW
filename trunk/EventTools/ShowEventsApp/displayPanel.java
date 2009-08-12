@@ -64,7 +64,6 @@ public class displayPanel extends JPanel
       if (message.getName().equals(Commands.CHANGE_PANEL))
       {
          setPanel((JPanel)message.getValue());
-         sendMessage(Commands.VALIDATE, true);
          return true;
       }
       
