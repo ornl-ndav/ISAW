@@ -14,6 +14,7 @@ import MessageTools.MessageCenter;
 
 import EventTools.EventList.IEventList3D;
 import EventTools.EventList.SNS_Tof_to_Q_map;
+import EventTools.EventList.SNS_TofEventList;
 import EventTools.EventList.MapEventsToQ_Op;
 import EventTools.EventList.EventSegmentLoadOp;
 import EventTools.ShowEventsApp.Command.Commands;
@@ -25,7 +26,6 @@ import DataSetTools.operator.Generic.TOF_SCD.Peak_new;
 
 public class EventLoader implements IReceiveMessage
 {
-  private static int       NUM_THREADS = 6;
   private MessageCenter    message_center;
   private String           instrument_name = null;
   private SNS_Tof_to_Q_map mapper;
@@ -94,7 +94,8 @@ public class EventLoader implements IReceiveMessage
       LoadEvents( event_file_name, 
                   cmd.getFirstEvent(),
                   cmd.getEventsToLoad(),
-                  cmd.getEventsToShow() ); 
+                  cmd.getEventsToShow(),
+                  cmd.getNumThreads()  ); 
     }
     else if ( message.getName().equals(Commands.SELECT_POINT) )
     {
@@ -129,7 +130,7 @@ public class EventLoader implements IReceiveMessage
                    peak.wl()  );
       }
       Message info_message = 
-                     new Message( Commands.SELECTED_POINT_INFO, info, true);
+                     new Message( Commands.SELECTED_POINT_INFO, info, true );
       message_center.receive( info_message );
     }
     return false;
@@ -139,21 +140,43 @@ public class EventLoader implements IReceiveMessage
   private void LoadEvents( String event_file_name, 
                            long   first, 
                            long   num_to_load,
-                           long   num_to_show )
+                           long   num_to_show,
+                           int    num_threads  )
   {
     System.out.println("FIRST = " + first );
     System.out.println("NUM_TO_LOAD = " + num_to_load );
     System.out.println("NUM_TO_SHOW = " + num_to_show );
+    System.out.println("NUM_THREADS = " + num_threads );
 
-    long MAX_SEG_SIZE = 2000000;
+    SNS_TofEventList check_file = new SNS_TofEventList( event_file_name );
+    long num_available = check_file.numEntries();
+    check_file = null;
+
+    if ( num_available > 0 )
+    {
+      message_center.receive(
+                        new Message( Commands.CLEAR_HISTOGRAM, null, true) );
+      message_center.receive( 
+                        new Message( Commands.CLEAR_EVENTS_VIEW, null, true) );
+    }
+    else
+    {
+      System.out.println("ERROR: No events in, or can't open " + 
+                          event_file_name );
+      return;
+    }
                                            // we'll save the events we'll view
                                            // in this vector
     Vector<IEventList3D> show_lists = new Vector<IEventList3D>();
 
+    if ( num_to_load > num_available )     // can load more than exist
+      num_to_load = num_available;
+
     if ( num_to_show > num_to_load )       // can't show more than are loaded
       num_to_show = num_to_load; 
 
-    long seg_size = num_to_load / NUM_THREADS;
+    long MAX_SEG_SIZE = 10000000;
+    long seg_size = num_to_load / num_threads;
     if ( seg_size > MAX_SEG_SIZE )
       seg_size = MAX_SEG_SIZE;
 
@@ -165,7 +188,7 @@ public class EventLoader implements IReceiveMessage
     {
       ops.clear();
       int n_threads = 0;
-      while ( n_threads < NUM_THREADS && num_loaded < num_to_load )
+      while ( n_threads < num_threads && num_loaded < num_to_load )
       {
         System.out.println("FIRST = " + first + " SEG_SIZE = " + seg_size );
         ops.add( new EventSegmentLoadOp( event_file_name, first, seg_size ) );
@@ -227,11 +250,23 @@ public class EventLoader implements IReceiveMessage
                         num_loaded, (run_time/1.0e6) );
 
       Vector<IEventList3D> event_lists = (Vector<IEventList3D>)results;
+
       for ( int i = 0; i < event_lists.size(); i++ )
       {
         message_center.receive( new Message( Commands.ADD_EVENTS, 
                                              event_lists.elementAt(i),
                                              false ));
+
+        IEventList3D list = event_lists.elementAt(i);
+        int n_printed = Math.min( 10, list.numEntries());
+        System.out.println("EventLoader, First " + n_printed + 
+                           " events-------------------------");
+        for ( int k = 0; k < n_printed; k++ )
+          System.out.println( "xyz = " + list.eventX(k) + " " +
+                                         list.eventY(k) + " " +
+                                         list.eventZ(k) + " " +
+                              "weight = " + list.eventWeight(k) );
+
         if ( num_viewed < num_to_show )
         {
           show_lists.add( event_lists.elementAt(i) );
@@ -242,6 +277,11 @@ public class EventLoader implements IReceiveMessage
       if ( num_loaded >= num_to_load )
         done = true; 
     }
+
+    for ( int i = 0; i < show_lists.size(); i++ )
+      message_center.receive(new Message(Commands.SET_WEIGHTS_FROM_HISTOGRAM,
+                                         show_lists.elementAt(i),
+                                         false ));
 
     for ( int i = 0; i < show_lists.size(); i++ )
       message_center.receive( new Message( Commands.ADD_EVENTS_TO_VIEW,

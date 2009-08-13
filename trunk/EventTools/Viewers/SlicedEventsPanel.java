@@ -79,9 +79,10 @@ public class SlicedEventsPanel
   private Group           marker_group;
   private Color[]         colors;
   private int[]           color_tran;
-  private float           min = .001f;
-  private float           max = 1000;
+  private float           min = 10f;
+  private float           max = 500;
   private boolean         filter_above_max = false;
+  private float           point_size = 1;
   private boolean         filter_below_min = true;
   private boolean         use_alpha        = false;
   private float           alpha            = 1;
@@ -149,7 +150,7 @@ public class SlicedEventsPanel
     float[] xyz_vals = events.eventVals();
     float[] weights = events.eventWeights();
 
-    int[] codes = new int[xyz_vals.length/3];
+    float[] codes = new float[xyz_vals.length/3];
     if ( weights == null )
     {
       for ( int i = 0; i < codes.length; i++ )
@@ -157,25 +158,25 @@ public class SlicedEventsPanel
     }
     else
     {
-      for ( int i = 0; i < codes.length; i++ )
-        codes[i] = (int)weights[i];
+      for ( int i = 0; i < weights.length; i++ )
+        codes[i] = weights[i];
     }
 
     color_tran = new int[ colors.length ];
     for ( int i = 0; i < color_tran.length; i++ )
       color_tran[i] = i;
 
-    int size = 1;
-    MultiColoredPointList_2  points = new MultiColoredPointList_2( xyz_vals,
-                                                                   codes,
-                                                                   min,
-                                                                   max,
-                                                                   color_tran,
-                                                                   colors,
-                                                                   size,
-                                                                   1.0f );
+    MultiColoredPointList  points = new MultiColoredPointList( xyz_vals,
+                                                               codes,
+                                                               min,
+                                                               max,
+                                                               color_tran,
+                                                               colors,
+                                                               point_size,
+                                                               1.0f );
     points.setDrawOptions( filter_above_max,
                            filter_below_min,
+                           point_size,
                            use_alpha,
                            alpha );
 
@@ -183,6 +184,13 @@ public class SlicedEventsPanel
     jogl_panel.Draw();
   }
 
+
+  public void clear()
+  {
+    ClearEvents();
+    ClearMarkers();
+    // TODO Clear slice plane; 
+  }
 
   public void ClearEvents()
   {
@@ -241,7 +249,7 @@ public class SlicedEventsPanel
     for ( int i = 0; i < color_table.length; i++ )
       color_tran[i] = color_table[i];
 
-    Vector<MultiColoredPointList_2> nodes = getColoredPointLists();
+    Vector<MultiColoredPointList> nodes = getColoredPointLists();
     for ( int i = 0; i < nodes.size(); i++ )
       nodes.elementAt(i).setColorInfo( min, max, color_tran, colors );
   }
@@ -249,20 +257,23 @@ public class SlicedEventsPanel
 
   public void setDrawingOptions( boolean filter_above_max,
                                  boolean filter_below_min,
+                                 float   point_size,
                                  boolean use_alpha,
                                  float   alpha,
                                  boolean orthographic )
   {
     this.filter_above_max = filter_above_max;
     this.filter_below_min = filter_below_min;
+    this.point_size       = point_size;
     this.use_alpha        = use_alpha;
     this.alpha            = alpha;
     this.orthographic     = orthographic;
 
-    Vector<MultiColoredPointList_2> nodes = getColoredPointLists();
+    Vector<MultiColoredPointList> nodes = getColoredPointLists();
     for ( int i = 0; i < nodes.size(); i++ )
       nodes.elementAt(i).setDrawOptions( filter_above_max,
                                          filter_below_min,
+                                         point_size,
                                          use_alpha,
                                          alpha );
 
@@ -280,23 +291,23 @@ public class SlicedEventsPanel
    *  Get all of the multicolored point lists that are displayed by
    *  this viewer.
    */
-  private Vector<MultiColoredPointList_2> getColoredPointLists()
+  private Vector<MultiColoredPointList> getColoredPointLists()
   {
-      Vector<MultiColoredPointList_2> nodes = 
-                                      new Vector<MultiColoredPointList_2>(); 
+      Vector<MultiColoredPointList> nodes = 
+                                      new Vector<MultiColoredPointList>(); 
 
                                       // the following allows for possible
                                       // transformation nodes above the
                                       // colored point list nodes.
       Node                    node;
-      MultiColoredPointList_2 point_list_node;
+      MultiColoredPointList point_list_node;
       for ( int i = 0; i < points_group.numChildren(); i++ )
       {
          node = points_group.getChild( i );
-         while ( !(node instanceof MultiColoredPointList_2) )
+         while ( !(node instanceof MultiColoredPointList) )
            node = ((Group)node).getChild(0);
 
-         point_list_node = (MultiColoredPointList_2)node;
+         point_list_node = (MultiColoredPointList)node;
          nodes.add( point_list_node );
       }
 

@@ -353,8 +353,18 @@ public class TestSNS_events
      IEventList3D[] event_lists = new IEventList3D[n_threads];
 
      for ( int i = 0; i < n_threads; i++ )
+     {
        event_lists[i] = (IEventList3D)(((Vector)results).elementAt(i));
-
+       IEventList3D list = event_lists[i];
+       int n_printed = Math.min( 10, list.numEntries());
+       System.out.println("EventLoader, First " + n_printed +
+                          " events-------------------------");
+       for ( int k = 0; k < n_printed; k++ )
+         System.out.println( "xyz = " + list.eventX(k) + " " +
+                                        list.eventY(k) + " " +
+                                        list.eventZ(k) + " " +
+                          "weight = " + list.eventWeight(k) );
+     }
 
      int NUM_BINS = 512;
 //   Histogram3D histogram = BuildHistogram( mat_file, NUM_BINS );

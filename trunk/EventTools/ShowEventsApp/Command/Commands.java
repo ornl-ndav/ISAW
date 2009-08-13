@@ -5,7 +5,12 @@ public class Commands
   public static final String LOAD_FILE = "Load New File";
 
   public static final String ADD_EVENTS = "Add Events";
+  public static final String CLEAR_HISTOGRAM = "Clear Histogram";
+  
   public static final String ADD_EVENTS_TO_VIEW = "Add Events to View";
+  public static final String CLEAR_EVENTS_VIEW = "Clear Events View";
+  public static final String SET_WEIGHTS_FROM_HISTOGRAM = 
+                                              "Set Weights from Histogram";
 
   public static final String SELECT_POINT = "Select Point";
   public static final String SELECTED_POINT_INFO = "Selected Point Info";

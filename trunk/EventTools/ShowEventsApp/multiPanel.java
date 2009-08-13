@@ -38,7 +38,7 @@ public class multiPanel implements IReceiveMessage
 
    private void buildMainFrame()
    {
-      mainView = new JFrame("Multi Panel Viewer");
+      mainView = new JFrame("Reciprocal Space Event Viewer");
       mainView.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
       mainView.setBounds(10, 10, 570, 480);
       mainView.setVisible(true);

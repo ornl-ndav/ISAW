@@ -1,7 +1,7 @@
 /* 
  * File: MultiColoredPointList.java
  *
- * Copyright (C) 2008, Dennis Mikkelson
+ * Copyright (C) 2008,2009 Dennis Mikkelson
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -35,9 +35,14 @@
 package EventTools.Viewers;
 
 import java.awt.*;
+
+import java.nio.*;
 import javax.media.opengl.*;
+import com.sun.opengl.util.*;
 
 import SSG_Tools.SSG_Nodes.SimpleShapes.*;
+
+import EventTools.Histogram.*;
 
 /**
  *  This class represents a list of colored points of a specified
@@ -46,82 +51,272 @@ import SSG_Tools.SSG_Nodes.SimpleShapes.*;
 
 public class MultiColoredPointList extends SimpleShape 
 {
-  private float[]  x = null;
-  private float[]  y = null;
-  private float[]  z = null;
-  private float    size  = 1;
-  private int[]    index = null;
+  private int      num_points;   // Total number of points available.
 
-  private float[]  red;
-  private float[]  green;
-  private float[]  blue;
+  private float[]  weight;       // list of weights for each of the points
 
+  private float    min;          // Points with this weight or lower will map
+                                 // to the first color
+  private float    max;          // Points with this weight or higher will map
+                                 // to the last color
+  private int[]    color_table;  // color look up table, as produced by 
+                                 // the color control
+
+  private Color[]  color_scale;  // list of RGB values describing the color
+                                 // scale.  This must have at most 127 entries
+  private float    point_size;   // Point size for marking each event.
   private float    alpha;
+
+  private FloatBuffer vertices_buffer;
+  private ByteBuffer  color_buffer;
+  private IntBuffer   index_buffer;
+  private int         element_count;  // counts the number of points that
+                                      // are actually drawn
+
+  private boolean  filter_below_min = true;
+  private boolean  filter_above_max = true;
+  private boolean  use_alpha        = true;
 
 
   /* --------------------------- Constructor --------------------------- */
   /**
    *  Construct a PointList, where each point can have its own color.
-   *  NOTE: For efficiency, this class keeps a reference to the list
-   *        of coordinates and color indexes.  The calling program should
+   *  NOTE: This class keeps a reference to the list of weights, the 
+   *        color_table and color scale.  The calling program should
    *        generally not use those arrays after they have been passed in
    *        to this constructor.
    *
-   *  @param  x_vals       The list of x-coordinates. 
-   *  @param  y_vals       The list of y-coordinates. 
-   *  @param  z_vals       The list of z-coordinates. 
-   *  @param  color_index  List of indices into the specified color scale
-   *                       The ith point will be drawn using the color
-   *                       color_scale[color_index[i]].
-   *  @param  color_scale  List of colors making up the color map for
+   *  @param  xyz          The list of interleaved xyz-coordinates. 
+   *  @param  weight       The list of weights for the event points
+   *                       determine the color used to draw the point.
+   *  @param  min          The value that maps to the first color.
+   *  @param  max          The value that maps to the last color.
+   *  @param  color_table  This is a list of indices into the specified 
+   *                       color scale that describe a possibly non-linear
+   *                       mapping between numbers between the current
+   *                       min and max and positions in the specified color
+   *                       scale.  This must have values between 0 and
+   *                       the length of the color scale - 1.
+   *  @param  color_scale  List of colors making up the color scale used for
    *                       this list of points.
    *  @param  size         The size to use for the points specified in pixel 
    *                       units.
    *  @param  alpha        The alpha value for this list of points.
    */
-  public MultiColoredPointList( float[]  x_vals,
-                                float[]  y_vals,
-                                float[]  z_vals,
-                                int[]    color_index,
-                                Color[]  color_scale, 
+  public MultiColoredPointList( float[]  xyz,
+                                float[]  weight,
+                                float    min,
+                                float    max,
+                                int[]    color_table,
+                                Color[]  color_scale,
                                 float    size,
                                 float    alpha  )
   {
     super(Color.WHITE);
 
-    x = x_vals;
-    y = y_vals;
-    z = z_vals;
-    index = color_index;
+//    System.out.println("MCPL Constructor, min, max = " + min + ", " + max );
+//    System.out.println("MCPL Constructor, color_scale length = " + 
+//                        color_scale.length );
+//    System.out.println("MCPL Constructor, color_table length = " + 
+//                        color_table.length );
 
-    setColorScale( color_scale );
+    this.num_points  = xyz.length / 3;
+    this.weight      = weight;
+    this.min         = min;
+    this.max         = max;
+    this.color_table = color_table;
+    this.color_scale = color_scale;
+    this.point_size  = size;
+    this.alpha = alpha;
 
-    this.alpha = alpha;
-    this.size = size;
-    this.alpha = alpha;
+    setPointsBuffer( xyz );
+    setPointsColorBuffer();
   }
+
 
   /**
-   *  Set the color scale to use for these points.  NOTE: This method must
-   *  NOT be called at the same time as the points are being rendered.  Doing
-   *  will cause an array index out of bounds exception, if the size of the
-   *  color scale is reduced.
+   *  Set the color lookup table information for this list of points.
    *
-   *  @param color_scale  The new color scale to use when drawing the points.
+   *  @param  min          The value that maps to the first color.
+   *  @param  max          The value that maps to the last color.
+   *  @param  color_table  This is a list of indices into the specified 
+   *                       color scale that describe a possibly non-linear
+   *                       mapping between numbers between the current
+   *                       min and max and positions in the specified color
+   *                       scale.  This must have values between 0 and
+   *                       the length of the color scale - 1.
+   *  @param  color_scale  List of colors making up the color scale used for
+   *                       this list of points.
    */
-  public void setColorScale( Color[] color_scale )
+  public void setColorInfo( float   min, 
+                            float   max, 
+                            int[]   color_table, 
+                            Color[] color_scale )
   {
-    red   = new float[color_scale.length];
-    green = new float[color_scale.length];
-    blue  = new float[color_scale.length];
-    for ( int i = 0; i < color_scale.length; i++ )
-    {
-       red[i]   = color_scale[i].getRed()/255.0f;
-       green[i] = color_scale[i].getGreen()/255.0f;
-       blue[i]  = color_scale[i].getBlue()/255.0f;
-    }
+    this.min         = min;
+    this.max         = max;
+    this.color_table = color_table;
+    this.color_scale = color_scale;
+
+    setPointsColorBuffer();
   }
+
+
+  /**
+   *  Set options on how the points should drawn.
+   *
+   *  @param filter_above_max  Set true if events with a weight above
+   *                           the current max value should  NOT be drawn.
+   *  @param filter_below_min  Set true if events with a weight below the
+   *                           current min value should NOT be drawn.
+   *  @param point_size        Size to use when drawing points must be
+   *                           at least 1.
+   *  @param use_alpha         Set true if alpha blending should be used.
+   *  @param alpha             Alpha value (between 0 and 1) to use for
+   *                           the event points.
+   */
+  public void setDrawOptions( boolean filter_above_max,
+                              boolean filter_below_min, 
+                              float   point_size,
+                              boolean use_alpha,
+                              float   alpha )
+  {
+    this.filter_above_max = filter_above_max;
+    this.filter_below_min = filter_below_min;
+    this.point_size       = point_size;
+    this.use_alpha        = use_alpha;
+    this.alpha            = alpha;
+
+    setPointsColorBuffer();
+  }
+
+
+  /**
+   *  Build the color_buffer for the current list of points, using the
+   *  current weight and color information.
+   */
+  private void setPointsColorBuffer()
+  {
+//    System.out.println("Color index table length = " + color_table.length );
+//    System.out.println("min, max = " + min + ", " + max );
+/*
+    int[] counters = new int[20];
+    for ( int i = 0; i < num_points; i++ )
+    {
+      if ( code[i] < counters.length )
+        counters[ code[i] ]++;
+    }
+
+    for ( int i = 0; i < counters.length; i++ )
+      System.out.printf( "i = %6d    count = %6d \n", i, counters[i] );
+*/
+
+    UniformEventBinner color_binner = 
+                       new UniformEventBinner( min, max, color_table.length );
+    int   place = 0;
+    int   index;
+    int   color_index;
+    float point_weight;
+    
+    int[] element_index = new int[num_points];
+    element_count = 0;
+
+    byte[] rgb = new byte[ 4*num_points ];   // four byte color for each point
+    
+    boolean draw;
+    for ( int i = 0; i < num_points; i++ )
+    {
+      draw = true;
+      point_weight = weight[i];
+      index = color_binner.index( point_weight ); 
+      if ( point_weight < min )  
+      {
+        index = 0;
+        if ( filter_below_min )
+          draw = false;
+      }
+      else if ( index >= color_table.length )
+      {
+        index = color_table.length - 1;
+        if ( filter_above_max )
+          draw = false;
+      }  
+
+      if ( draw )
+      {
+        element_index[ element_count++ ] = i;
+
+        color_index = color_table[ index ];
+
+        if ( color_index >= 0 && color_index < color_scale.length )
+        {     
+          rgb[place++] = (byte)(color_scale[color_index].getRed());
+          rgb[place++] = (byte)(color_scale[color_index].getGreen());
+          rgb[place++] = (byte)(color_scale[color_index].getBlue());
+          if ( use_alpha )
+//            rgb[place++] = (byte)(alpha*255); 
+            rgb[place++] = (byte)(alpha*index); 
+          else
+            rgb[place++] = (byte)(255);          
+        }
+        else
+         place += 4;
+      }
+      else
+        place += 4;                             // advance to next position
+                                                // even if not drawn
+    }
+
+    color_buffer = BufferUtil.newByteBuffer( rgb.length );
+    color_buffer.put( rgb );
+    color_buffer.rewind();
+
+    index_buffer = BufferUtil.newIntBuffer( element_count );
+    index_buffer.put( element_index, 0, element_count );
+    index_buffer.rewind();
+  }
+
  
+  /**
+   *  Pack the three arrays of x,y,z coordinates into an interleaved array
+   *  and wrap that array with an NIO FloatBuffer, so it can be used with
+   *  glDrawArrays for faster drawing.
+   *
+   *  @param  x_vals       The list of x-coordinates. 
+   *  @param  y_vals       The list of y-coordinates. 
+   *  @param  z_vals       The list of z-coordinates. 
+   */
+  private void setPointsBuffer(float[] x_vals, float[] y_vals, float[] z_vals)
+  { 
+    float[] xyz = new float[3*x_vals.length];
+
+    int place = 0;
+    for ( int i = 0; i < x_vals.length; i++ )
+    {
+      xyz[place++] = x_vals[i];
+      xyz[place++] = y_vals[i];
+      xyz[place++] = z_vals[i];
+    }
+
+    vertices_buffer = BufferUtil.newFloatBuffer( xyz.length );
+    vertices_buffer.put( xyz );
+    vertices_buffer.rewind();
+  }
+
+
+  /**
+   *  Set up an NIO FloatBuffer, so it can be used with
+   *  glDrawArrays for faster drawing.
+   *
+   *  @param  xyz   An interleaved list of xyz-coordinates for the points.
+   */
+  private void setPointsBuffer( float[] xyz )
+  {
+    vertices_buffer = BufferUtil.newFloatBuffer( xyz.length );
+    vertices_buffer.put( xyz );
+    vertices_buffer.rewind();
+  }
+
 
   /* ------------------------------ Render ----------------------------- */
   /**
@@ -131,25 +326,33 @@ public class MultiColoredPointList extends SimpleShape
    */
   public void Render( GLAutoDrawable drawable )
   {
-    long start = System.nanoTime();
+//    long start = System.nanoTime();
 
     GL gl = drawable.getGL();
 
     super.preRender( drawable );
 
-    int pos;
-    gl.glPointSize( size );
-    gl.glBegin( GL.GL_POINTS );
-    for ( int i = 0; i < x.length; i++ )
-    {
-      pos = index[i]; 
-      gl.glColor4f( red[pos], green[pos], blue[pos], alpha );
-      gl.glVertex3f( x[i], y[i], z[i] );
-    }
-    gl.glEnd();
+    gl.glPointSize( point_size );
+
+    gl.glEnableClientState( GL.GL_VERTEX_ARRAY );
+    gl.glVertexPointer( 3, GL.GL_FLOAT, 12, vertices_buffer );
+
+    gl.glEnableClientState( GL.GL_COLOR_ARRAY );
+    gl.glColorPointer( 4, GL.GL_UNSIGNED_BYTE, 0, color_buffer );
+
+    gl.glDrawElements( GL.GL_POINTS,  
+                       element_count, 
+                       GL.GL_UNSIGNED_INT, 
+                       index_buffer);
+
+    gl.glDisableClientState( GL.GL_COLOR_ARRAY );
+    gl.glDisableClientState( GL.GL_VERTEX_ARRAY );
 
     super.postRender( drawable );
-    long time = System.nanoTime() - start;
-    System.out.println( time/1.0E6 );
+
+//    long time = System.nanoTime() - start;
+//    System.out.printf("Drew %6d Points in %4.1f ms\n",
+//                       element_count, time/1.0E6 );
   }
+
 }

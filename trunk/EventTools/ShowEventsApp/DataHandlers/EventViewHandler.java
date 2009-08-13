@@ -36,6 +36,7 @@ public class EventViewHandler implements IReceiveMessage
   {
     this.message_center = message_center;
     message_center.addReceiver( this, Commands.ADD_EVENTS_TO_VIEW );
+    message_center.addReceiver( this, Commands.CLEAR_EVENTS_VIEW );
     message_center.addReceiver( this, Commands.SET_FILTER_OPTIONS );
     message_center.addReceiver( this, Commands.SET_COLOR_SCALE );
     events_panel = new SlicedEventsPanel();
@@ -67,15 +68,22 @@ public class EventViewHandler implements IReceiveMessage
       FilterOptionsCmd filter_options = (FilterOptionsCmd)message.getValue();
       events_panel.setDrawingOptions( filter_options.getFilterMax(),
                                       filter_options.getFilterMin(),
+                                      filter_options.getPointSize(),
                                       filter_options.getAlpha(),
                                       filter_options.getAlphaValue(),
                                       filter_options.getOrthographic() );
+      events_panel.updateDisplay();
 
     }
     else if ( message.getName().equals(Commands.SET_COLOR_SCALE ) )
     {
       ColorScaleInfo color_info = (ColorScaleInfo)message.getValue();
       events_panel.setColors( color_info );
+      events_panel.updateDisplay();
+    }
+    else if ( message.getName().equals(Commands.CLEAR_EVENTS_VIEW ) )
+    {
+      events_panel.clear();
       events_panel.updateDisplay();
     }
 
