@@ -93,7 +93,8 @@ public class displayColorEditor
       if( ae.getActionCommand().equals(ColorEditPanel.doneMessage))
       {
         sendMessage(command, getColorScaleInfo());
-        cEditPanel.dispose();
+        if (cEditPanel != null)
+           cEditPanel.dispose();
       }
       
       if (ae.getActionCommand().equals(ColorEditPanel.updateMessage))
