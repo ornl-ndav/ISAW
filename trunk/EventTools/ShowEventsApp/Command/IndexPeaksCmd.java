@@ -74,10 +74,12 @@ public class IndexPeaksCmd
    
    public String toString()
    {
-      return "\na,b,c " + a + ", " + b + ", " + c +
-             "\nalpha, beta, gamma " + alpha + ", " + beta + ", " + gamma +
-             "\ntolerance " + tolerance + 
-             "\nfixed peak index " + fixedPeakIndex +
-             "\nrequired fraction " + requiredFraction;
+      return "\na,b,c "              + 
+               String.format("%d, %d, %d", getA(), getB(), getC()) +
+             "\nalpha, beta, gamma " + 
+               String.format("%d, %d, %d", getAlpha(), getBeta(), getGamma()) +
+             "\nTolerance: "         + getTolerance()      + 
+             "\nFixed peak index: "  + getFixedPeakIndex() +
+             "\nRequired fraction: " + getRequiredFraction();
    }
 }

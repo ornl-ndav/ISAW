@@ -38,9 +38,9 @@ public class FindPeaksCmd
    
    public String toString()
    {
-      return "\nSmooth Data: " + smoothData + 
-             "\nMax # Peaks: " + maxNumberOfPeaks +
-             "\nMin Peak Int.: " + minPeakIntensity +
-             "\nLog File: " + logFileName;
+      return "\nSmooth Data: "   + getSmoothData()       + 
+             "\nMax # Peaks: "   + getMaxNumberPeaks()   +
+             "\nMin Peak Int.: " + getMinPeakIntensity() +
+             "\nLog File: "      + getLogFileName();
    }
 }

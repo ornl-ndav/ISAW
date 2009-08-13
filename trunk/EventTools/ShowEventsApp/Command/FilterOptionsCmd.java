@@ -2,28 +2,31 @@ package EventTools.ShowEventsApp.Command;
 
 public class FilterOptionsCmd
 {
-   private boolean alpha;
+   private boolean orthographic;
    private boolean filterMin;
    private boolean filterMax;
+   private float   pointSize;
+   private boolean alpha;
    private float   alphaValue;
-   private boolean orthographic;
    
-   public FilterOptionsCmd(boolean alpha,
-                        float alphaValue,
-                        boolean filterMin,
-                        boolean filterMax,
-                        boolean orthographic)
+   public FilterOptionsCmd(boolean orthographic,
+                           boolean filterMin,
+                           boolean filterMax,
+                           float   pointSize,
+                           boolean alpha,
+                           float   alphaValue)
    {
-      this.alpha = alpha;
+      this.orthographic = orthographic;
       this.filterMin = filterMin;
       this.filterMax = filterMax;
+      this.pointSize = pointSize;
+      this.alpha = alpha;
       this.alphaValue = alphaValue;
-      this.orthographic = orthographic;
    }
    
-   public boolean getAlpha()
+   public boolean getOrthographic()
    {
-      return alpha;
+      return orthographic;
    }
    
    public boolean getFilterMin()
@@ -35,23 +38,31 @@ public class FilterOptionsCmd
    {
       return filterMax;
    }
+
+   public float getPointSize()
+   {
+      return pointSize;
+   }
+   
+   public boolean getAlpha()
+   {
+      return alpha;
+   }
    
    public float getAlphaValue()
    {
       return alphaValue;
    }
    
-   public boolean getOrthographic()
-   {
-      return orthographic;
-   }
+
    
    public String toString()
    {
-      return "\nOrthographic     : " + getOrthographic() + "\n" +
-               "Filter Above Max : " + getFilterMax()    + "\n" +
-               "Filter Below Mim : " + getFilterMin()    + "\n" +
-               "Use Alpha        : " + getAlpha()        + "\n" +
-               "Alpha Value      : " + getAlphaValue()   + "\n";
+      return "\nOrthographic     : " + getOrthographic() +
+             "\nFilter Below Min : " + getFilterMin()    +
+             "\nFilter Above Max : " + getFilterMax()    +
+             "\nPoint Size       : " + getPointSize()    +
+             "\nUse Alpha        : " + getAlpha()        +
+             "\nAlpha Value      : " + getAlphaValue();
    }
 }

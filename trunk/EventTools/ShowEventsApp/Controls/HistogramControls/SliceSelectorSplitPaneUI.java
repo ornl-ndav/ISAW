@@ -1,4 +1,4 @@
-package EventTools.ShowEventsApp.Controls;
+package EventTools.ShowEventsApp.Controls.HistogramControls;
 
 import gov.anl.ipns.MathTools.Geometry.*;
 import gov.anl.ipns.ViewTools.Components.ViewControls.*;
@@ -9,10 +9,7 @@ import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.border.*;
 
-import EventTools.Histogram.IProjectionBinner3D;
-import EventTools.Histogram.ProjectionBinner3D;
 import EventTools.ShowEventsApp.Command.Commands;
-// import EventTools.Viewers.SplitPane.modelData;
 
 import java.io.*;
 
@@ -33,7 +30,6 @@ public class SliceSelectorSplitPaneUI extends    ActiveJPanel
   private HKLorQ_SelectorUI slice_mode;
   private SlicePlane3D_UI   plane_selector;
   private SliceImageUI      image_selector;
-  //private SliceStepperUI    stepper;
   private FrameController   frame_control;
   private JButton           apply;
 
@@ -48,50 +44,6 @@ public class SliceSelectorSplitPaneUI extends    ActiveJPanel
    *  @param  mode  Integer code should be one of HKL_MODE or QXYZ_MODE, or
    *                HKL_MODE will be used by default.
    */
-  public SliceSelectorSplitPaneUI( int mode, int wasinModel ) // , modelData inModel )
-  {
-    if ( mode != HKL_MODE && mode != QXYZ_MODE )
-      mode = HKL_MODE;
-
-    display_mode   = new HKLorQ_SelectorUI( "Display in " );
-    slice_mode     = new HKLorQ_SelectorUI( "Select  in " );
-    plane_selector = new SlicePlane3D_UI( mode );
-    image_selector = new SliceImageUI( "Select Plane Size" );
-    //stepper        = new SliceStepperUI( "Step In/Out" );
-    frame_control  = new FrameController();
-    
-    JPanel button  = new JPanel();
-    apply  = new JButton( "Apply" );
-    button.add(apply);
-    
-//    setFrameData(inModel);
-//    setImageData(inModel);
-    setDisplayMode( mode, true );
-    setSliceMode( mode, true );
-    
-    Box box = new Box( BoxLayout.Y_AXIS );
-    box.add( display_mode );
-    box.add( slice_mode );
-    box.add( plane_selector );
-    box.add( image_selector );
-    //box.add( stepper );
-    box.add( button );
-    box.add( frame_control );
-
-    setLayout( new GridLayout(1,1) );
-    add(box);
-    
-    ValueListener value_listener = new ValueListener();
-    //plane_selector.addActionListener( value_listener );
-    //image_selector.addActionListener( value_listener );
-    //display_mode.addActionListener( value_listener );
-    slice_mode.addActionListener(value_listener);
-    apply.addActionListener(value_listener);
-    
-    //stepper.addActionListener( new StepListener() );
-    frame_control.addActionListener( new StepListener() );
-  }
-
   public SliceSelectorSplitPaneUI( int mode )
   {
     if ( mode != HKL_MODE && mode != QXYZ_MODE )
@@ -101,7 +53,6 @@ public class SliceSelectorSplitPaneUI extends    ActiveJPanel
     slice_mode     = new HKLorQ_SelectorUI( "Select  in " );
     plane_selector = new SlicePlane3D_UI( mode );
     image_selector = new SliceImageUI( "Select Plane Size" );
-    //stepper        = new SliceStepperUI( "Step In/Out" );
     frame_control  = new FrameController();
     
     JPanel button  = new JPanel();
@@ -116,7 +67,6 @@ public class SliceSelectorSplitPaneUI extends    ActiveJPanel
     box.add( slice_mode );
     box.add( plane_selector );
     box.add( image_selector );
-    //box.add( stepper );
     box.add( button );
     box.add( frame_control );
 
@@ -124,13 +74,9 @@ public class SliceSelectorSplitPaneUI extends    ActiveJPanel
     add(box);
 
     ValueListener value_listener = new ValueListener();
-    //plane_selector.addActionListener( value_listener );
-    //image_selector.addActionListener( value_listener );
-    //display_mode.addActionListener( value_listener );
     slice_mode.addActionListener(value_listener);
     apply.addActionListener(value_listener);
     
-    //stepper.addActionListener( new StepListener() );
     frame_control.addActionListener( new StepListener() );
   }
 
@@ -242,16 +188,9 @@ public class SliceSelectorSplitPaneUI extends    ActiveJPanel
     return plane_selector.getPlane();
   }
 
-  public void setImageData()  // modelData inModel)
+  public void setImageData()
   {
-/*
-     float length = (float)(inModel.getHistogram().zBinner().axisMax() +
-                 Math.abs(inModel.getHistogram().zBinner().axisMin()));
-     setStepSize(length);
-     setSliceWidth((float)Math.abs(inModel.getHistogram().xBinner().axisMin()));
-     setSliceHeight((float)inModel.getHistogram().yBinner().axisMax());
-     setSliceThickness(length/num_pages);
-*/
+
   }
 
   /* ------------------------- setStepSize --------------------------- */
@@ -349,19 +288,9 @@ public class SliceSelectorSplitPaneUI extends    ActiveJPanel
     return image_selector.getSliceThickness();
   }
 
-  public void setFrameData()  // modelData inModel)
+  public void setFrameData()
   {
-/*
-     IProjectionBinner3D page_binner = inModel.getHistogram().zBinner();
-     num_pages = page_binner.numBins();
-     float values[] = new float[num_pages];
-     for ( int i = 0; i < values.length; i++ )
-        values[i] = (float)page_binner.centerVal(i);
-         
-     frame_control.setFrame_values( values );
-     frame_control.setStep_time( 50 );
-     frame_control.setFrameNumber( num_pages/2);
-*/
+
   }
 
   public int getSliceNumber()
@@ -445,7 +374,7 @@ public class SliceSelectorSplitPaneUI extends    ActiveJPanel
     
     // final SliceSelectorUI test = new SliceSelectorUI( HKL_MODE );
     final SliceSelectorSplitPaneUI test = 
-       new SliceSelectorSplitPaneUI( QXYZ_MODE);//, new modelData(args[0]) );
+       new SliceSelectorSplitPaneUI( QXYZ_MODE);
 
     test.addActionListener( new ActionListener()
     {

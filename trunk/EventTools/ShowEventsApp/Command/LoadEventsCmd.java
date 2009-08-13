@@ -103,16 +103,16 @@ public class LoadEventsCmd
    
    public String toString()
    {
-      return "\nEvent File  : " + eventFile       + "\n" +
-             "Det. File   : " + detFile         + "\n" +
-             "Spec File   : " + specFile        + "\n" + 
-             "Matrix File : " + matFile         + "\n" +
-             "Det Eff File: " + detEffFile      + "\n" +
-             "Num Events  : " + availableEvents + "\n" + 
-             "First Event : " + firstEvent      + "\n" +
-             "Num to load : " + eventsToLoad    + "\n" +
-             "Num to show : " + eventsToShow    + "\n" +
-             "Num Threads : " + numThreads      + "\n";
+      return "\nEvent File  : " + getEventFile()       +
+             "\nDet. File   : " + getDetFile()         +
+             "\nSpec File   : " + getIncSpectrumFile() +
+             "\nDet Eff File: " + getDetEffFile()      +
+             "\nMatrix File : " + getMatFile()         +
+             "\nNum Events  : " + getAvailableEvents() +
+             "\nFirst Event : " + getFirstEvent()      +
+             "\nNum to load : " + getEventsToLoad()    +
+             "\nNum to show : " + getEventsToShow()    +
+             "\nNum Threads : " + getNumThreads();
    }
 
 }

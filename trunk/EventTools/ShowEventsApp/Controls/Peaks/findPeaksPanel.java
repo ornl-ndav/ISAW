@@ -59,7 +59,8 @@ public class findPeaksPanel extends JPanel
       panel.setLayout(new GridLayout(1,2));
       
       JLabel maxPeaksLbl = new JLabel("Max # of Peaks");
-      maxPeaksTxt = new JTextField();
+      String defaultMaxPeaks = "50";
+      maxPeaksTxt = new JTextField(defaultMaxPeaks);
       maxPeaksTxt.setHorizontalAlignment(JTextField.RIGHT);
       
       panel.add(maxPeaksLbl);
@@ -74,7 +75,8 @@ public class findPeaksPanel extends JPanel
       panel.setLayout(new GridLayout(1,2));
       
       JLabel minPeakLbl = new JLabel("Min Peak Intensity");
-      minPeakTxt = new JTextField();
+      String defaultMinPeaks = "20";
+      minPeakTxt = new JTextField(defaultMinPeaks);
       minPeakTxt.setHorizontalAlignment(JTextField.RIGHT);
       
       panel.add(minPeakLbl);

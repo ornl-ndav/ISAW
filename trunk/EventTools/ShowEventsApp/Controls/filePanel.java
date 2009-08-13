@@ -60,7 +60,7 @@ public class filePanel //extends JPanel
       panel.setVisible(visible);
    }
 
-   private void getDefaultData()
+   /*private void getDefaultData()
    {
       try
       {
@@ -87,7 +87,7 @@ public class filePanel //extends JPanel
       {
          e.printStackTrace();
       }   
-   }
+   }*/
    
    /**
     * Builds the panel to contain the EventPanel, DetPanel and MatPanel.
