@@ -68,10 +68,12 @@ public class SlicePlaneInformationCmd
    
    public String toString()
    {
-      return "\nSlice Mode:" + sliceMode + 
-             "\n" + slicePlane.toString() + 
-             "\nDepth: " + depth + ", Width: " + width + 
-             "\nHeight: " + height + ", Thickness: " + thickness + 
-             "\nSliceNumber: " + sliceNumber;
+      return "\nSlice Mode: "  + getSliceMode()  +
+             "\n"              + getSlicePlane() +
+             "\nDepth: "       + getDepth()      +
+             "\nWidth: "       + getWidth()      +
+             "\nHeight: "      + getHeight()     +
+             "\nThickness: "   + getThickness()  + 
+             "\nSliceNumber: " + getSliceNumber();
    }
 }

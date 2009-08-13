@@ -43,7 +43,7 @@ public class indexPeaksPanel extends JPanel
       this.add(applyBtn);
    }
    
-   private void getDefaultData()
+   /*private void getDefaultData()
    {
       try
       {
@@ -66,7 +66,7 @@ public class indexPeaksPanel extends JPanel
       {
          e.printStackTrace();
       }   
-   }
+   }*/
    
    private JPanel buildPanel()
    {

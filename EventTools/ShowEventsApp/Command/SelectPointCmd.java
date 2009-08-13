@@ -64,7 +64,8 @@ public class SelectPointCmd
    
    public String toString()
    {
-      return "\nQ(x,y,z) (" + qx + ", " + qy + ", " + qz + ")" +
-             "\nD(x,y,z) (" + dx + ", " + dy + ", " + dz + ")";
+      String format = "Q(%f,%f,%f)\nD(%f,%f,%f)";
+      return String.
+         format(format, getQx(), getQy(), getQz(), getDz(), getDy(), getDz());
    }
 }

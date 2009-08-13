@@ -14,6 +14,7 @@ import MessageTools.*;
 import EventTools.ShowEventsApp.Command.*;
 import EventTools.ShowEventsApp.Controls.*;
 import EventTools.ShowEventsApp.Controls.Peaks.*;
+import EventTools.ShowEventsApp.Controls.HistogramControls.*;
 
 public class controlsPanel extends JPanel
 {
@@ -172,12 +173,21 @@ public class controlsPanel extends JPanel
          if (e.getSource().equals(findPeaksBtn))
             value = peakPanel;
          
+         if (e.getSource().equals(filterPeaksBtn))
+            value = notImplementedPanel();
+         
          if (e.getSource().equals(indexPeaksBtn))
             value = indexPeakPanel;
+         
+         if (e.getSource().equals(integrateBtn))
+            value = notImplementedPanel();
          
          if (e.getSource().equals(selectedPoint))
             value = positionPanel;
 
+         if (e.getSource().equals(orientationBtn))
+            value = notImplementedPanel();
+         
          if (e.getSource().equals(colorScaleBtn))
             value = colorEditPanel.getColorPanel();
          
@@ -190,6 +200,19 @@ public class controlsPanel extends JPanel
          //if (value != null)
          sendMessage(Commands.CHANGE_PANEL, value);
       }
+   }
+   
+   private JPanel notImplementedPanel()
+   {
+      JPanel panel = new JPanel();
+      panel.setLayout(new GridLayout(1,1));
+      
+      JLabel label = new JLabel("Not Yet Implemented");
+      label.setHorizontalAlignment(JLabel.CENTER);
+      
+      panel.add(label);
+      
+      return panel;
    }
    
    private void sendMessage(String command, Object value)
