@@ -33,6 +33,13 @@ public class SliceSelectorSplitPaneUI extends    ActiveJPanel
   private FrameController   frame_control;
   private JButton           apply;
 
+  private JCheckBox         sliceOneCbx;
+  private JCheckBox         sliceTwoCbx;
+  private JCheckBox         sliceThreeCbx;
+  private JRadioButton      moveSliceOne;
+  private JRadioButton      moveSliceTwo;
+  private JRadioButton      moveSliceThree;
+  
   private boolean           send_messages;
   private int               num_pages = 0;
 
@@ -68,7 +75,8 @@ public class SliceSelectorSplitPaneUI extends    ActiveJPanel
     box.add( plane_selector );
     box.add( image_selector );
     box.add( button );
-    box.add( frame_control );
+    box.add( buildSlicePanel() );
+    //box.add( frame_control );
 
     setLayout( new GridLayout(1,1) );
     add(box);
@@ -80,6 +88,54 @@ public class SliceSelectorSplitPaneUI extends    ActiveJPanel
     frame_control.addActionListener( new StepListener() );
   }
 
+  private JPanel buildSlicePanel()
+  {
+     JPanel outerPanel = new JPanel();
+     outerPanel.setLayout(new GridLayout(1,1));
+     outerPanel.setBorder(new TitledBorder("3D Slice Control"));
+     
+     JPanel slicePanel = new JPanel();
+     slicePanel.setLayout(new GridLayout(1,3));
+     
+     sliceOneCbx = new JCheckBox("Slice X");
+     sliceTwoCbx = new JCheckBox("Slice Y");
+     sliceThreeCbx = new JCheckBox("Slice Z");
+
+     slicePanel.add(sliceOneCbx);
+     slicePanel.add(sliceTwoCbx);
+     slicePanel.add(sliceThreeCbx);
+     
+     JPanel selectSlicePanel = new JPanel();
+     selectSlicePanel.setLayout(new GridLayout(1,3));
+     ButtonGroup group = new ButtonGroup();
+
+     moveSliceOne = new JRadioButton("Move X");
+     moveSliceOne.setActionCommand("X");
+     
+     moveSliceTwo = new JRadioButton("Move Y");
+     moveSliceTwo.setActionCommand("Y");
+     
+     moveSliceThree = new JRadioButton("Move Z");
+     moveSliceThree.setActionCommand("Z");
+     
+     group.add(moveSliceOne);
+     group.add(moveSliceTwo);
+     group.add(moveSliceThree);
+     
+     selectSlicePanel.add(moveSliceOne);
+     selectSlicePanel.add(moveSliceTwo);
+     selectSlicePanel.add(moveSliceThree);
+
+     Box box = new Box( BoxLayout.Y_AXIS );
+     box.add( slicePanel );
+     box.add( selectSlicePanel );
+     box.add( frame_control );
+     
+     outerPanel.add(box);
+     
+     return outerPanel;
+  }
+  
   /* --------------------------- setDisplayMode --------------------------- */
   /**
    *  Set the display mode choice either hkl or Qxzy mode, enabling or 

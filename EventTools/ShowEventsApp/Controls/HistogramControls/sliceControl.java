@@ -30,19 +30,9 @@ public class sliceControl extends JPanel
       this.add(scUI);
    }
    
-   public void setSliceInformation()
-   {
-
-   }
-   
    public void setPlane(SlicePlane3D plane)
    {
       scUI.setPlane(plane);
-   }
-   
-   public void setFrameInformation()
-   {
-
    }
    
    public void showSliceControl()

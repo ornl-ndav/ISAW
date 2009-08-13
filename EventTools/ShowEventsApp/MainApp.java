@@ -27,7 +27,6 @@ public class MainApp
     IEventBinner y_bin1D = new UniformEventBinner( -16.0f,  0,    num_bins );
     IEventBinner z_bin1D = new UniformEventBinner( - 8.0f, 8.0f, num_bins );
 
-
     ProjectionBinner3D x_binner = new ProjectionBinner3D(x_bin1D, xVec);
     ProjectionBinner3D y_binner = new ProjectionBinner3D(y_bin1D, yVec);
     ProjectionBinner3D z_binner = new ProjectionBinner3D(z_bin1D, zVec);
@@ -64,7 +63,7 @@ public class MainApp
 
     JFrame frame = new JFrame( "Reciprocal Space Events" );
     frame.setSize(750,750);
-    frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
+    frame.setDefaultCloseOperation( JFrame.DO_NOTHING_ON_CLOSE );
     frame.getContentPane().add( view_handler.getPanel() );
     frame.setVisible( true );
   }

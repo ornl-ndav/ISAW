@@ -81,7 +81,8 @@ public class drawingOptions extends JPanel
       panel.setLayout(new GridLayout(1,1));
 
       JLabel label = new JLabel("Point Size");
-      pointSize = new JTextField();
+      String defaultSize = "1";
+      pointSize = new JTextField(defaultSize);
       pointSize.setHorizontalAlignment(JTextField.RIGHT);
 
       panel.add(label);
@@ -169,8 +170,8 @@ public class drawingOptions extends JPanel
       {
          if (valid())
          {
-            FilterOptionsCmd filters = 
-               new FilterOptionsCmd(orthographic.isSelected(),
+            DrawingOptionsCmd filters = 
+               new DrawingOptionsCmd(orthographic.isSelected(),
                            filterBelow.isSelected(),
                            filterAbove.isSelected(),
                            Float.parseFloat(pointSize.getText()),

@@ -24,6 +24,7 @@ public class positionInfoPanel extends JPanel
    private JTextField          eTxt;
    private JTextField          wavelengthTxt;
    private char                ANG = '\u00c5';
+   private char                MU = '\u03bc';
    
    public positionInfoPanel(MessageCenter messageCenter)
    {
@@ -78,7 +79,7 @@ public class positionInfoPanel extends JPanel
       dSpacingLbl.setEditable(false);
       dSpacingLbl.setBackground(Color.WHITE);
       
-      JTextField timeLbl = new JTextField("Time(us)");
+      JTextField timeLbl = new JTextField("Time(" + MU + "s)");
       timeLbl.setEditable(false);
       timeLbl.setBackground(Color.WHITE);
       
@@ -105,37 +106,37 @@ public class positionInfoPanel extends JPanel
       histogramPageTxt.setBackground(Color.WHITE);
       histogramPageTxt.setHorizontalAlignment(JTextField.RIGHT);
       
-      hklTxt = new JTextField("(0,0,0)");
+      hklTxt = new JTextField("(000000.00,000000.00,000000.00)");
       hklTxt.setEditable(false);
       hklTxt.setBackground(Color.WHITE);
       hklTxt.setHorizontalAlignment(JTextField.RIGHT);
       
-      qxyzTxt = new JTextField("(0,0,0)");
+      qxyzTxt = new JTextField("(000000.00,000000.00,000000.00)");
       qxyzTxt.setEditable(false);
       qxyzTxt.setBackground(Color.WHITE);
       qxyzTxt.setHorizontalAlignment(JTextField.RIGHT);
       
-      qTxt = new JTextField("0");
+      qTxt = new JTextField("0000000.0000");
       qTxt.setEditable(false);
       qTxt.setBackground(Color.WHITE);
       qTxt.setHorizontalAlignment(JTextField.RIGHT);
       
-      dSpacingTxt = new JTextField("0");
+      dSpacingTxt = new JTextField("00000000.0000000");
       dSpacingTxt.setEditable(false);
       dSpacingTxt.setBackground(Color.WHITE);
       dSpacingTxt.setHorizontalAlignment(JTextField.RIGHT);
       
-      timeTxt = new JTextField("0");
+      timeTxt = new JTextField("000000.0");
       timeTxt.setEditable(false);
       timeTxt.setBackground(Color.WHITE);
       timeTxt.setHorizontalAlignment(JTextField.RIGHT);
       
-      eTxt = new JTextField("0");
+      eTxt = new JTextField("0000000.0000");
       eTxt.setEditable(false);
       eTxt.setBackground(Color.WHITE);
       eTxt.setHorizontalAlignment(JTextField.RIGHT);
       
-      wavelengthTxt = new JTextField("0");
+      wavelengthTxt = new JTextField("00000000.000000");
       wavelengthTxt.setEditable(false);
       wavelengthTxt.setBackground(Color.WHITE);
       wavelengthTxt.setHorizontalAlignment(JTextField.RIGHT);
@@ -169,13 +170,17 @@ public class positionInfoPanel extends JPanel
       countsTxt.setText( "" + selection.getCounts() );
       detectorNumTxt.setText( "" + selection.getDetNum() );
       histogramPageTxt.setText( "" + selection.getHistPage() );
-      hklTxt.setText( selection.getHKL().toString() );
-      qxyzTxt.setText( selection.getQxyz().toString() );
-      qTxt.setText( "" + selection.getRaw_Q() );
-      dSpacingTxt.setText( "" + selection.getD_spacing() );
-      timeTxt.setText( "" + selection.getTof() );
-      eTxt.setText( "" + selection.getE_mev() );
-      wavelengthTxt.setText( "" + selection.getWavelength() );
+      hklTxt.setText( String.format("(%6.2f, %6.2f, %6.2f)",
+            selection.getHKL().getX(), selection.getHKL().getY(),
+            selection.getHKL().getZ()) );
+      qxyzTxt.setText( String.format("(%6.2f, %6.2f, %6.2f)",
+            selection.getQxyz().getX(), selection.getQxyz().getY(),
+            selection.getQxyz().getZ()) );
+      qTxt.setText( String.format("%7.4f", selection.getRaw_Q()) );
+      dSpacingTxt.setText( String.format("%8.6f", selection.getD_spacing()) );
+      timeTxt.setText( String.format("%6.1f", selection.getTof()) );
+      eTxt.setText( String.format("%7.4f", selection.getE_mev()) );
+      wavelengthTxt.setText( String.format("%8.6f", selection.getWavelength()) );
    }
    
    public boolean receive(Message message)
