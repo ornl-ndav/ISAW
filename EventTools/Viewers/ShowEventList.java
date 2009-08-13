@@ -122,13 +122,13 @@ public class ShowEventList
     System.arraycopy( event_array[2], 0, eventZs, 0, eventCount );
 
     int size = 1;
-    SimpleShape shape = new MultiColoredPointList( eventXs,
-                                                   eventYs,
-                                                   eventZs,
-                                                   codes,
-                                                   colors,
-                                                   size,
-                                                   1.0f );
+    SimpleShape shape = new MultiColoredPointList_2( eventXs,
+                                                     eventYs,
+                                                     eventZs,
+                                                     codes,
+                                                     colors,
+                                                     size,
+                                                     1.0f );
     group.addChild( shape );
     Vector3D xmin = new Vector3D( -25,  0,  0 );
     Vector3D xmax = new Vector3D(  25,  0,  0 );

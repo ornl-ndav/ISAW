@@ -57,7 +57,7 @@ public class MultiColoredPointList_2 extends SimpleShape
 
   private float    min;          // codes with this value or lower will map
                                  // to the first color
-  private float    max;          // codes with this value or lower will map
+  private float    max;          // codes with this value or higher will map
                                  // to the last color
   private int[]    color_table;  // color look up table, as produced by 
                                  // the color control
