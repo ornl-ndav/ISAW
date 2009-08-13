@@ -18,7 +18,7 @@ import EventTools.Viewers.SlicedEventsPanel;
 import EventTools.Histogram.Histogram3D;
 import EventTools.EventList.IEventList3D;
 import EventTools.ShowEventsApp.Command.Commands;
-import EventTools.ShowEventsApp.Command.FilterOptionsCmd;
+import EventTools.ShowEventsApp.Command.DrawingOptionsCmd;
 import EventTools.ShowEventsApp.Command.SelectPointCmd;
 
 import SSG_Tools.Viewers.JoglPanel;
@@ -65,7 +65,7 @@ public class EventViewHandler implements IReceiveMessage
     }
     else if ( message.getName().equals(Commands.SET_FILTER_OPTIONS) )
     {
-      FilterOptionsCmd filter_options = (FilterOptionsCmd)message.getValue();
+       DrawingOptionsCmd filter_options = (DrawingOptionsCmd)message.getValue();
       events_panel.setDrawingOptions( filter_options.getFilterMax(),
                                       filter_options.getFilterMin(),
                                       filter_options.getPointSize(),
