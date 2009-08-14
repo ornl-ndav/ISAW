@@ -28,6 +28,8 @@ public class MainApp
                           new HistogramHandler( message_center, NUM_BINS );
 
     EventViewHandler view_handler = new EventViewHandler( message_center );
+    
+    StatusMessageHandler statHandler = new StatusMessageHandler( message_center, null);
   }
 
 
