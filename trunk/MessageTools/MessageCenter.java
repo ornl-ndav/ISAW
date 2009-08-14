@@ -176,7 +176,12 @@ public class MessageCenter implements IReceiveMessage
     }
 
     if ( debug_receive )
-      System.out.println( "Received Message: " + message );
+    {
+      System.out.println( "\n**** RECEIVED MESSAGE **** : ");
+      System.out.println( "QUEUE: " + message.getName() );
+      System.out.println( "VALUE: " + message.getValue() );
+      System.out.println();
+    }
 
     if ( message == null )
     {
@@ -440,20 +445,24 @@ public class MessageCenter implements IReceiveMessage
     {
       if ( debug_send )
       {
+        System.out.println( "\n**** SENDING MESSAGE **** : " );
         System.out.println( "QUEUE: " + message.getName() );
         System.out.println( "VALUE: " + message.getValue() );
+
+        if ( listeners.size() <= 0 )
+          System.out.println("+++++ WARNING +++++ : NO RECEIVERS!!");
       }
 
       for ( int j = 0; j < listeners.size(); j++ )
       {
         if ( debug_send )
-          System.out.println("-->" + listeners.elementAt(j));
+          System.out.println("SENT TO -->" + listeners.elementAt(j));
 
         if ( listeners.elementAt(j).receive( message ) )
           some_processed = true;
       }
     }
-  
+
     return some_processed;
   }
 
