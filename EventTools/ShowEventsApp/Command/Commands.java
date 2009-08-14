@@ -2,34 +2,34 @@ package EventTools.ShowEventsApp.Command;
 
 public class Commands 
 {
-  public static final String LOAD_FILE = "Load New File";
+  public static final String LOAD_FILE = "LOAD_FILE";
 
-  public static final String ADD_EVENTS = "Add Events";
-  public static final String CLEAR_HISTOGRAM = "Clear Histogram";
+  public static final String ADD_EVENTS = "ADD_EVENTS";
+  public static final String CLEAR_HISTOGRAM = "CLEAR_HISTOGRAM";
   
-  public static final String ADD_EVENTS_TO_VIEW = "Add Events to View";
-  public static final String CLEAR_EVENTS_VIEW = "Clear Events View";
+  public static final String ADD_EVENTS_TO_VIEW = "ADD_EVENTS_TO_VIEW";
+  public static final String CLEAR_EVENTS_VIEW = "CLEAR_EVENTS_VIEW";
   public static final String SET_WEIGHTS_FROM_HISTOGRAM = 
-                                              "Set Weights from Histogram";
+                                              "SET_WEIGHTS_FROM_HISTOGRAM";
 
-  public static final String SELECT_POINT = "Select Point";
-  public static final String SELECTED_POINT_INFO = "Selected Point Info";
-  
+  public static final String SELECT_POINT = "SELECT_POINT";
+  public static final String SELECTED_POINT_INFO = "SELECTED_POINT_INFO";
 
-  public static final String CHANGE_PANEL = "Change Panel";
-  public static final String SET_COLOR_SCALE = "Set New Color Scale";
-  public static final String FIND_PEAKS = "Find Peaks";
-  public static final String INDEX_PEAKS = "Index Peaks";
-  public static final String MARK_PEAKS = "Mark Peaks";
-//  public static final String SET_POSITION_INFO = "Set Position Info";
-  public static final String WRITE_PEAK_FILE = "Write Peak File";
-  public static final String SET_FILTER_OPTIONS = "Set Filter Options";
-  public static final String SET_ORIENTATION_MATRIX = "Set Orientation Matrix";
-  public static final String PLANE_CHANGED = "Plane Changed";
-  public static final String SLICE_MODE_CHANGED = "Slice Mode Changed";
-  public static final String SET_SLICE_1 = "Set Slice 1";
+  public static final String FIND_PEAKS = "FIND_PEAKS";
+  public static final String INDEX_PEAKS = "INDEX_PEAKS";
+  public static final String MARK_PEAKS = "MARK_PEAKS";
+  public static final String WRITE_PEAK_FILE = "WRITE_PEAK_FILE";
+
+  public static final String CHANGE_PANEL = "CHANGE_PANEL";
+  public static final String SET_COLOR_SCALE = "SET_COLOR_SCALE";
+  public static final String SET_FILTER_OPTIONS = "SET_FILTER_OPTIONS";
+  public static final String SET_ORIENTATION_MATRIX = "SET_ORIENTATION_MATRIX";
+  public static final String PLANE_CHANGED = "PLANE_CHANGED";
+  public static final String SLICE_MODE_CHANGED = "SLICE_MODE_CHANGED";
+  public static final String SET_SLICE_1 = "SET_SLICE_1";
   
   /*
+//  public static final String SET_POSITION_INFO = "SET_POSITION_INFO";
   public static final String SET_SLICE_2 = "Set Slice 2";
   public static final String SET_SLICE_3 = "Set Slice 3";  
   public static final String SET_COLOR_TABLE = "Set New Color Table";
