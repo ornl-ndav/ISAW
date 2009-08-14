@@ -6,6 +6,8 @@ public class SelectionInfoCmd
 {
    private float counts;
    private int   det_num;
+   private int   col;
+   private int   row;
    private int   page;
    
    private Vector3D hkl;
@@ -19,6 +21,8 @@ public class SelectionInfoCmd
    
    public SelectionInfoCmd( float    counts,
                             int      det_num,
+                            int      col,
+                            int      row,
                             int      page,
                             Vector3D hkl,
                             Vector3D Qxyz,
@@ -30,6 +34,8 @@ public class SelectionInfoCmd
    {
       this.counts = counts;
       this.det_num    = det_num;
+      this.col        = col;
+      this.row        = row;
       this.page       = page; 
       this.hkl        = new Vector3D( hkl );
       this.Qxyz       = new Vector3D( Qxyz );
@@ -49,6 +55,16 @@ public class SelectionInfoCmd
    public float getDetNum()
    {
       return det_num;
+   }
+
+   public float getCol()
+   {
+      return col;
+   }
+
+   public float getRow()
+   {
+      return row;
    }
 
    public float getHistPage()

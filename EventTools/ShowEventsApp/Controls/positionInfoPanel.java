@@ -15,6 +15,8 @@ public class positionInfoPanel extends JPanel
    private MessageCenter       messageCenter;
    private JTextField          countsTxt;
    private JTextField          detectorNumTxt;
+   private JTextField          ColRowTxt;
+   private JTextField          rowTxt;
    private JTextField          histogramPageTxt;
    private JTextField          hklTxt;
    private JTextField          qxyzTxt;
@@ -48,7 +50,7 @@ public class positionInfoPanel extends JPanel
    {
       JPanel panel = new JPanel();
       
-      panel.setLayout(new GridLayout(10, 2));
+      panel.setLayout(new GridLayout(11, 2));
       panel.setBorder(new TitledBorder("Position Info."));
       
       JTextField countLbl = new JTextField("Counts");
@@ -58,6 +60,12 @@ public class positionInfoPanel extends JPanel
       JTextField detectorLbl = new JTextField("Detector Number");
       detectorLbl.setEditable(false);
       detectorLbl.setBackground(Color.WHITE);
+      
+      JTextField ColRowLbl = new JTextField("Column,Row");
+      ColRowLbl.setEditable(false);
+      ColRowLbl.setBackground(Color.WHITE);
+      
+    
       
       JTextField histogramLbl = new JTextField("Histogram Page");
       histogramLbl.setEditable(false);
@@ -101,42 +109,52 @@ public class positionInfoPanel extends JPanel
       detectorNumTxt.setBackground(Color.WHITE);
       detectorNumTxt.setHorizontalAlignment(JTextField.RIGHT);
       
+      ColRowTxt = new JTextField("(  0,  0)");
+      ColRowTxt.setEditable(false);
+      ColRowTxt.setBackground(Color.WHITE);
+      ColRowTxt.setHorizontalAlignment(JTextField.RIGHT);
+      
+      detectorNumTxt = new JTextField("0");
+      detectorNumTxt.setEditable(false);
+      detectorNumTxt.setBackground(Color.WHITE);
+      detectorNumTxt.setHorizontalAlignment(JTextField.RIGHT);
+      
       histogramPageTxt = new JTextField("0");
       histogramPageTxt.setEditable(false);
       histogramPageTxt.setBackground(Color.WHITE);
       histogramPageTxt.setHorizontalAlignment(JTextField.RIGHT);
       
-      hklTxt = new JTextField("(000000.00,000000.00,000000.00)");
+      hklTxt = new JTextField("(  0.00,   0.00,   0.00)");
       hklTxt.setEditable(false);
       hklTxt.setBackground(Color.WHITE);
       hklTxt.setHorizontalAlignment(JTextField.RIGHT);
       
-      qxyzTxt = new JTextField("(000000.00,000000.00,000000.00)");
+      qxyzTxt = new JTextField("(  0.00,   0.00,   0.00)");
       qxyzTxt.setEditable(false);
       qxyzTxt.setBackground(Color.WHITE);
       qxyzTxt.setHorizontalAlignment(JTextField.RIGHT);
       
-      qTxt = new JTextField("0000000.0000");
+      qTxt = new JTextField(" 0.0000");
       qTxt.setEditable(false);
       qTxt.setBackground(Color.WHITE);
       qTxt.setHorizontalAlignment(JTextField.RIGHT);
       
-      dSpacingTxt = new JTextField("00000000.0000000");
+      dSpacingTxt = new JTextField(" 0.0000000");
       dSpacingTxt.setEditable(false);
       dSpacingTxt.setBackground(Color.WHITE);
       dSpacingTxt.setHorizontalAlignment(JTextField.RIGHT);
       
-      timeTxt = new JTextField("000000.0");
+      timeTxt = new JTextField("   0.0");
       timeTxt.setEditable(false);
       timeTxt.setBackground(Color.WHITE);
       timeTxt.setHorizontalAlignment(JTextField.RIGHT);
       
-      eTxt = new JTextField("0000000.0000");
+      eTxt = new JTextField(" 0.0000");
       eTxt.setEditable(false);
       eTxt.setBackground(Color.WHITE);
       eTxt.setHorizontalAlignment(JTextField.RIGHT);
       
-      wavelengthTxt = new JTextField("00000000.000000");
+      wavelengthTxt = new JTextField("0.000000");
       wavelengthTxt.setEditable(false);
       wavelengthTxt.setBackground(Color.WHITE);
       wavelengthTxt.setHorizontalAlignment(JTextField.RIGHT);
@@ -145,6 +163,8 @@ public class positionInfoPanel extends JPanel
       panel.add(countsTxt);
       panel.add(detectorLbl);
       panel.add(detectorNumTxt);
+      panel.add(ColRowLbl);
+      panel.add(ColRowTxt);
       panel.add(histogramLbl);
       panel.add(histogramPageTxt);
       panel.add(hklLbl);
@@ -169,6 +189,7 @@ public class positionInfoPanel extends JPanel
    {
       countsTxt.setText( "" + selection.getCounts() );
       detectorNumTxt.setText( "" + selection.getDetNum() );
+      ColRowTxt.setText( "("+selection.getCol()+", "+selection.getRow()+")" );
       histogramPageTxt.setText( "" + selection.getHistPage() );
       hklTxt.setText( String.format("(%6.2f, %6.2f, %6.2f)",
             selection.getHKL().getX(), selection.getHKL().getY(),
