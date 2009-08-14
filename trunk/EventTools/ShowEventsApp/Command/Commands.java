@@ -32,11 +32,29 @@ public class Commands
   public static final String ADD_HISTOGRAM_INFO = "ADD_HISTOGRAM_INFO";
   public static final String ADD_HISTOGRAM_INFO_ACK = "ADD_HISTOGRAM_INFO_ACK";
 
-  public static final String FIND_PEAKS     = "FIND_PEAKS";
-  public static final String FIND_PEAKS_ACK = "FIND_PEAKS_ACK";
+  public static final String FIND_PEAKS        = "FIND_PEAKS";
+
+  /**
+   *  SET_PEAK_Q_LIST has a Vector of PeakQ objects as it's  message value.
+   */
+  public static final String SET_PEAK_Q_LIST   = "SET_PEAK_Q_LIST";
+  
+  /**
+   *  GET_PEAK_NEW_LIST has a Vector of PeakQ objects as it's  message value.
+   */
+  public static final String GET_PEAK_NEW_LIST = "GET_PEAK_NEW_LIST";
+  /**
+   *  SET_PEAK_NEW_LIST has a Vector of Peak_new objects as it's  message value.
+   */
+  public static final String SET_PEAK_NEW_LIST = "SET_PEAK_NEW_LIST";
   
   public static final String INDEX_PEAKS = "INDEX_PEAKS";
+
+  /**
+   * MARK_PEAKS has value Boolean OR a vector of PeakQ objects
+   */
   public static final String MARK_PEAKS = "MARK_PEAKS";
+
   public static final String WRITE_PEAK_FILE = "WRITE_PEAK_FILE";
 
   public static final String CHANGE_PANEL = "CHANGE_PANEL";
