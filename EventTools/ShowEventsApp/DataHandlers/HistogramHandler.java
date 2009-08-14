@@ -33,6 +33,7 @@ public class HistogramHandler implements IReceiveMessage
     message_center.addReceiver( this, Commands.CLEAR_HISTOGRAM );
     message_center.addReceiver( this, Commands.SET_WEIGHTS_FROM_HISTOGRAM );
     message_center.addReceiver( this, Commands.ADD_HISTOGRAM_INFO );
+    message_center.addReceiver( this, Commands.FIND_PEAKS );
   }
 
 
@@ -44,60 +45,35 @@ public class HistogramHandler implements IReceiveMessage
     if ( message.getName().equals(Commands.ADD_EVENTS) )
     {
       IEventList3D events = (IEventList3D)message.getValue();
-      System.out.println("ASKED TO ADD EVENTS " + events.numEntries() );
       histogram.addEvents( events );
       System.out.println("MIN HISTOGRAM BIN " + histogram.minVal() );
       System.out.println("MAX HISTOGRAM BIN " + histogram.maxVal() );
     }
+
     else if (  message.getName().equals(Commands.CLEAR_HISTOGRAM) )
     {
       histogram.clear();
       System.out.println("CLEARED HISTOGRAM");
     }
+
     else if ( message.getName().equals(Commands.SET_WEIGHTS_FROM_HISTOGRAM))
     {
       IEventList3D events = (IEventList3D)message.getValue();
-
-      int n_events = events.numEntries();
-
-      float[] weights = events.eventWeights();
-      if ( weights == null || weights.length != n_events )
-        weights = new float[ n_events ];
-
-      float[] xyz = events.eventVals();
-
-      float eventX,
-            eventY,
-            eventZ;
-
-      int index = 0;
-      for ( int i = 0; i < n_events; i++ )
-      {
-        eventX     = xyz[ index++ ];
-        eventY     = xyz[ index++ ];
-        eventZ     = xyz[ index++ ];
-        weights[i] = histogram.valueAt( eventX, eventY, eventZ );
-      }
-
-      System.out.println("SET WEIGHTS FROM HISTOGRAM");
+      SetWeightsFromHistogram( events, histogram );
     }
+
     else if ( message.getName().equals(Commands.ADD_HISTOGRAM_INFO))
     {
       Object val = message.getValue();
       if ( val instanceof SelectionInfoCmd )         // fill in counts field
       {
         SelectionInfoCmd select_info_cmd = (SelectionInfoCmd)val;
-        Vector3D Qxyz = select_info_cmd.getQxyz();
 
-        float counts = histogram.valueAt( Qxyz.getX(), 
-                                          Qxyz.getY(), 
-                                          Qxyz.getZ() );
-        select_info_cmd.setCounts( counts );
+        AddHistogramInfo( select_info_cmd, histogram );
 
-        Message info_message =
-                   new Message( Commands.ADD_HISTOGRAM_INFO_ACK, 
-                                select_info_cmd, 
-                                true );
+        Message info_message = new Message( Commands.ADD_HISTOGRAM_INFO_ACK, 
+                                            select_info_cmd, 
+                                            true );
         System.out.println("SET COUNT FROM HISTOGRAM");
         message_center.receive( info_message );
       }
@@ -106,8 +82,8 @@ public class HistogramHandler implements IReceiveMessage
   }
 
 
-  public static void SetWeightsFromHistgram( IEventList3D events, 
-                                             Histogram3D histogram )
+  public static void SetWeightsFromHistogram( IEventList3D events, 
+                                              Histogram3D histogram )
   {
     int n_events = events.numEntries();
 
@@ -129,6 +105,19 @@ public class HistogramHandler implements IReceiveMessage
       eventZ     = xyz[ index++ ];
       weights[i] = histogram.valueAt( eventX, eventY, eventZ );
     }
+  }
+
+  
+  public static void AddHistogramInfo( SelectionInfoCmd select_info_cmd,
+                                       Histogram3D      histogram )
+  {
+    Vector3D Qxyz = select_info_cmd.getQxyz();
+
+    float counts = histogram.valueAt( Qxyz.getX(),
+                                      Qxyz.getY(),
+                                      Qxyz.getZ() );
+    select_info_cmd.setCounts( counts );
+                                              // TODO MUST ALSO SET PAGE
   }
 
 }
