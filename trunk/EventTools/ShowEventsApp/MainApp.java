@@ -5,6 +5,7 @@ import javax.swing.*;
 import MessageTools.*;
 
 import EventTools.ShowEventsApp.DataHandlers.*;
+import EventTools.ShowEventsApp.ViewHandlers.*;
 
 public class MainApp 
 {

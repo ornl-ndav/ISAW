@@ -1,5 +1,5 @@
 
-package EventTools.ShowEventsApp.DataHandlers;
+package EventTools.ShowEventsApp.ViewHandlers;
 
 import java.util.Vector;
 
