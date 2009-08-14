@@ -39,7 +39,7 @@ public class findPeaksPanel extends JPanel
       panel.setLayout(new GridLayout(1,2));
       
       smoothCbx = new JCheckBox("Smooth Data");
-      smoothCbx.setSelected(false);
+      smoothCbx.setSelected(true);
       smoothCbx.setHorizontalAlignment(JCheckBox.CENTER);
       
       markPeaksCbx = new JCheckBox("Mark Peaks");
@@ -137,13 +137,13 @@ public class findPeaksPanel extends JPanel
          return false;
       }
       
-      if (logFileTxt.getText().equals(""))
+      /* if (logFileTxt.getText().equals(""))
       {
          String error = "You have not specified a log file!";
          JOptionPane.showMessageDialog(null, error, "Invalid Input", JOptionPane.ERROR_MESSAGE);
          return false;
       }
-      /*else
+     else
       {
          File file = new File(logFileTxt.getText());
          if (!file.exists())
