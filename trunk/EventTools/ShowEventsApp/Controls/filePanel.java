@@ -42,12 +42,21 @@ public class filePanel //extends JPanel
    private JTextField         eventsToLoad;
    private JTextField         firstEventToShow;
    private JTextField         eventsToShow;
-   
+   private String             Datafilename;// Remember last file chosen
+
+   private String             Detfilename;// Remember last file chosen
+   private String             Incfilename;// Remember last file chosen
+   private String             DetEfffilename;// Remember last file chosen
+   private String             Matfilename;// Remember last file chosen
    public filePanel(MessageCenter message_center)
    {
       this.message_center = message_center;
       //this.setSize(300, 265);
       SharedData sd = new SharedData();//Will read in IsawProps.dat
+      Datafilename = System.getProperty("Data_Directory");
+      Detfilename =  System.getProperty( "InstrumentInfoDirectory");
+      Incfilename = DetEfffilename =Detfilename;
+      Matfilename = Datafilename;
       buildPanel();
       //this.add(panel);
    }
@@ -136,8 +145,10 @@ public class filePanel //extends JPanel
       evFileButton = new JButton("Event File...");
       evFileButton.addActionListener(new button());
       
-      String default_evFileName = System.getProperty( "Data_Directory", "");
+      
+      String default_evFileName = Datafilename;
                            // "/usr2/SNAP_2/EVENTS/SNAP_240_neutron_event.dat";
+      
       evFileName = new JTextField( default_evFileName );
       evFileName.addMouseListener(new mouse());
       evFileName.setEditable(false);
@@ -198,7 +209,7 @@ public class filePanel //extends JPanel
       detFileButton = new JButton("Det. File...");
       detFileButton.addActionListener(new button());
       
-      String default_detector_file =System.getProperty("Data_Directory","");
+      String default_detector_file =Detfilename;
          // /usr2/SNS_SCD_TEST_3/SNAP_1_Panel.DetCal";
       detFileName = new JTextField( default_detector_file);
       detFileName.addMouseListener(new mouse());
@@ -542,12 +553,20 @@ public class filePanel //extends JPanel
          }
          else
          {
-            String filename = null;
-            if( evFileName != null &&
-                evFileName.getText()!= null && 
-                evFileName.getText().length() >0)
-                     filename = evFileName.getText();
-            final JFileChooser fc = new JFileChooser( evFileName.getText());
+           String filename = null;
+           if( e.getSource() == evFileButton)
+              filename = Datafilename;
+           else if( e.getSource() == detFileButton)
+               filename = Detfilename;
+           else if( e.getSource() == incFileButton)
+              filename = Incfilename;
+           else if( e.getSource() == detEffFileButton)
+              filename = DetEfffilename;
+           else if( e.getSource() == matFileButton)
+              filename = Matfilename;
+           
+           
+            final JFileChooser fc = new JFileChooser(  filename);
             File file = null;
             int returnVal = fc.showOpenDialog(null);
             
@@ -598,6 +617,9 @@ public class filePanel //extends JPanel
                else
                {
                   setEventData(file);
+                 
+                  Datafilename =file.getPath();
+                
                }
             }
             else if (e.getSource() == detFileButton)
@@ -610,15 +632,18 @@ public class filePanel //extends JPanel
                //else
                //{
                   detFileName.setText(file.getPath());
+                  Detfilename = detFileName.getText();
                //}
             }
             else if (e.getSource() == incFileButton)
             {
                incFileName.setText(file.getPath());
+               Incfilename = incFileName.getText();
             }
             else if (e.getSource() == detEffFileButton)
             {
                detEffFileName.setText(file.getPath());
+               DetEfffilename = detEffFileName.getText();
             }
             else if (e.getSource() == matFileButton)
             {
@@ -630,6 +655,7 @@ public class filePanel //extends JPanel
                //else
                //{
                   matFileName.setText(file.getPath());
+                  Matfilename = matFileName.getText();
                //}
             }
          }
