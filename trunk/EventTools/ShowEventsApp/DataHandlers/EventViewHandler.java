@@ -20,6 +20,7 @@ import EventTools.EventList.IEventList3D;
 import EventTools.ShowEventsApp.Command.Commands;
 import EventTools.ShowEventsApp.Command.DrawingOptionsCmd;
 import EventTools.ShowEventsApp.Command.SelectPointCmd;
+import EventTools.ShowEventsApp.Command.LoadEventsCmd;
 
 import SSG_Tools.Viewers.JoglPanel;
 
@@ -31,6 +32,7 @@ public class EventViewHandler implements IReceiveMessage
 {
   private MessageCenter      message_center;
   private SlicedEventsPanel  events_panel; 
+  private JFrame             frame3D;
 
   public EventViewHandler( MessageCenter message_center )
   {
@@ -39,20 +41,24 @@ public class EventViewHandler implements IReceiveMessage
     message_center.addReceiver( this, Commands.CLEAR_EVENTS_VIEW );
     message_center.addReceiver( this, Commands.SET_FILTER_OPTIONS );
     message_center.addReceiver( this, Commands.SET_COLOR_SCALE );
+    message_center.addReceiver( this, Commands.LOAD_FILE );
     events_panel = new SlicedEventsPanel();
                                                 // Is there a better way to do
                                                 // this?  It would be nice to
                                                 // keep the jogl_panel 
                                                 // encapsulated
+
     JoglPanel jogl_panel = events_panel.getJoglPanel();
     jogl_panel.getDisplayComponent().addMouseListener(
                                     new MouseClickListener( jogl_panel ));
+    frame3D = new JFrame( "Reciprocal Space Events" );
+    frame3D.setSize(750,750);
+    frame3D.setDefaultCloseOperation( JFrame.DO_NOTHING_ON_CLOSE );
+    Component component = events_panel.getJoglPanel().getDisplayComponent();
+    frame3D.getContentPane().add( component );
+    frame3D.setVisible( true );
   }
 
-  public Component getPanel()
-  {
-    return events_panel.getJoglPanel().getDisplayComponent();
-  }
 
   public boolean receive( Message message )
   {
@@ -85,6 +91,11 @@ public class EventViewHandler implements IReceiveMessage
     {
       events_panel.clear();
       events_panel.updateDisplay();
+    }
+    else if( message.getName().equals( Commands.LOAD_FILE))
+    {
+      LoadEventsCmd info = (LoadEventsCmd)message.getValue();
+      frame3D.setTitle( "Reciprocal Space Events for "+info.getEventFile() );
     }
 
     return false;
