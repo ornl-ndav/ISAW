@@ -351,6 +351,12 @@ public class DefaultProperties{
           .append(separator).append("SampleRuns").append(eol);
         rs.append(eol);
         
+        if ( current_props.getProperty("InstrumentInfoDirectory") != null )           
+           rs.append("#");
+         rs.append(defstr).append("InstrumentInfoDirectory=").append(IsawHome)
+           .append(separator).append("InstrumentInfo").append(eol);
+         rs.append(eol);
+         
         rs.append("#").append(eol);
         rs.append("# Command to start browser for Help system").append(eol);
         rs.append("#").append(eol);
