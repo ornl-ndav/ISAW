@@ -16,6 +16,7 @@ import java.io.FileReader;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 
+import DataSetTools.util.SharedData;
 import EventTools.ShowEventsApp.Command.*;
 import MessageTools.*;
 
@@ -46,6 +47,7 @@ public class filePanel //extends JPanel
    {
       this.message_center = message_center;
       //this.setSize(300, 265);
+      SharedData sd = new SharedData();//Will read in IsawProps.dat
       buildPanel();
       //this.add(panel);
    }
@@ -134,8 +136,8 @@ public class filePanel //extends JPanel
       evFileButton = new JButton("Event File...");
       evFileButton.addActionListener(new button());
       
-      String default_evFileName =
-                            "/usr2/SNAP_2/EVENTS/SNAP_240_neutron_event.dat";
+      String default_evFileName = System.getProperty( "Data_Directory", "");
+                           // "/usr2/SNAP_2/EVENTS/SNAP_240_neutron_event.dat";
       evFileName = new JTextField( default_evFileName );
       evFileName.addMouseListener(new mouse());
       evFileName.setEditable(false);
@@ -196,7 +198,8 @@ public class filePanel //extends JPanel
       detFileButton = new JButton("Det. File...");
       detFileButton.addActionListener(new button());
       
-      String default_detector_file ="/usr2/SNS_SCD_TEST_3/SNAP_1_Panel.DetCal";
+      String default_detector_file =System.getProperty("Data_Directory","");
+         // /usr2/SNS_SCD_TEST_3/SNAP_1_Panel.DetCal";
       detFileName = new JTextField( default_detector_file);
       detFileName.addMouseListener(new mouse());
       detFileName.setEditable(false);
@@ -539,9 +542,13 @@ public class filePanel //extends JPanel
          }
          else
          {
-            final JFileChooser fc = new JFileChooser();
+            String filename = null;
+            if( evFileName != null &&
+                evFileName.getText()!= null && 
+                evFileName.getText().length() >0)
+                     filename = evFileName.getText();
+            final JFileChooser fc = new JFileChooser( evFileName.getText());
             File file = null;
-            
             int returnVal = fc.showOpenDialog(null);
             
             if (returnVal == JFileChooser.APPROVE_OPTION) 
@@ -571,7 +578,7 @@ public class filePanel //extends JPanel
                return;
             }
             
-            if (e.getSource() == evFileButton)
+            if (e.getSource() == evFileButton && file != null)
             {
                long file_size = file.length();
                if ( file_size % 8 != 0 )//|| file.toString().indexOf(".dat") < 0)
