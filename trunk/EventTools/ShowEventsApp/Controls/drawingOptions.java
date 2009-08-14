@@ -15,6 +15,7 @@ public class drawingOptions extends JPanel
    private MessageCenter    messageCenter;
    private JCheckBox        filterAbove;
    private JCheckBox        filterBelow;
+   private JCheckBox        showAxes;
    private JCheckBox        useAlpha;
    private JTextField       pointSize;
    private JTextField       alphaValue;
@@ -24,11 +25,12 @@ public class drawingOptions extends JPanel
    {
       this.messageCenter = messageCenter;
       this.setBorder(new TitledBorder("Display Options"));
-      this.setLayout(new GridLayout(6,1));
+      this.setLayout(new GridLayout(7,1));
       
       this.add(buildOrtho());
       this.add(buildMin());
       this.add(buildMax());
+      this.add( buildAxes());
       this.add(buildPointSize());
       this.add(builduseAlpha());
       
@@ -71,6 +73,19 @@ public class drawingOptions extends JPanel
       filterBelow.setSelected(true);
       
       panel.add(filterBelow);
+      
+      return panel;
+   }
+   
+   private JPanel buildAxes()
+   {
+      JPanel panel = new JPanel();
+      panel.setLayout(new GridLayout(1,1));
+
+      showAxes = new JCheckBox("Show Axes");
+      showAxes.setSelected(true);
+      
+      panel.add(showAxes);
       
       return panel;
    }
@@ -174,6 +189,7 @@ public class drawingOptions extends JPanel
                new DrawingOptionsCmd(orthographic.isSelected(),
                            filterBelow.isSelected(),
                            filterAbove.isSelected(),
+                           showAxes.isSelected(),
                            Float.parseFloat(pointSize.getText()),
                            useAlpha.isSelected(),
                            Float.parseFloat(alphaValue.getText()));
