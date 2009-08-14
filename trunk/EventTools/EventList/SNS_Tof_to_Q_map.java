@@ -504,7 +504,7 @@ public class SNS_Tof_to_Q_map
 
     if ( build_from_file )
     {
-//    System.out.println("Building using spectrum file " );
+      System.out.println("Building using spectrum file " );
                                                       // normalize spectrum
       float max = 0;
       for ( int i = 0; i < num_bins; i++ )
@@ -533,13 +533,15 @@ public class SNS_Tof_to_Q_map
 
     if ( !build_from_file )                   // make rough approximation
     {
-//    System.out.println("Building using weighting " );
+      System.out.println("Building using weighting " );
       
       lamda_weight = new float[ DEFAULT_NUM_WAVELENGTHS ];
       for ( int i = 0; i < lamda_weight.length; i++ )
       {
         lamda = i/100f;
-        lamda_weight[i] = (float)(1.0/Math.pow(lamda,2.4));
+//        lamda_weight[i] = (float)(1.0/Math.pow(lamda,2.4));
+//      lamda_weight[i] = (float)(1.0/lamda);
+        lamda_weight[i] = 1.0f;
       }
     }
 
