@@ -2,11 +2,18 @@
 package EventTools.ShowEventsApp.DataHandlers;
 
 import java.util.Vector;
+import java.io.FileWriter;
+import java.io.BufferedWriter;
 
 import gov.anl.ipns.Operator.IOperator;
 import gov.anl.ipns.Operator.Threads.ParallelExecutor;
 import gov.anl.ipns.Operator.Threads.ExecFailException;
 import gov.anl.ipns.MathTools.Geometry.Vector3D;
+
+import DataSetTools.operator.Generic.TOF_SCD.PeakQ;
+import DataSetTools.operator.Generic.TOF_SCD.Peak_new;
+import DataSetTools.operator.Generic.TOF_SCD.BasicPeakInfo;
+import DataSetTools.operator.Generic.TOF_SCD.FindPeaksViaSort;
 
 import MessageTools.IReceiveMessage;
 import MessageTools.Message;
@@ -17,6 +24,7 @@ import EventTools.EventList.IEventList3D;
 import EventTools.EventList.SNS_Tof_to_Q_map;
 import EventTools.ShowEventsApp.Command.Commands;
 import EventTools.ShowEventsApp.Command.SelectionInfoCmd;
+import EventTools.ShowEventsApp.Command.FindPeaksCmd;
 
 
 public class HistogramHandler implements IReceiveMessage
@@ -78,6 +86,33 @@ public class HistogramHandler implements IReceiveMessage
         message_center.receive( info_message );
       }
     }
+
+    else if ( message.getName().equals(Commands.FIND_PEAKS) )
+    {
+      Object val = message.getValue();
+      if ( val instanceof FindPeaksCmd )  
+      {
+        FindPeaksCmd cmd = (FindPeaksCmd)message.getValue();
+        System.out.println( "HistogramHandler processing: " +cmd.toString() );
+        
+        Vector<PeakQ> peakQs = FindPeaks( histogram,
+                                          cmd.getSmoothData(),
+                                          cmd.getMaxNumberPeaks(),
+                                          cmd.getMinPeakIntensity(),
+                                          cmd.getLogFileName() );
+
+        System.out.println( "Back from find peaks, size = " + peakQs.size() );
+        if ( peakQs != null && peakQs.size() > 0 || cmd.getMarkPeaks() )
+        {                                                // mark the peaks
+          Message mark_peaks  = new Message( Commands.MARK_PEAKS,
+                                             peakQs,
+                                             false );
+          System.out.println("SENT MARK PEAKS FROM HISTOGRAM");
+          message_center.receive( mark_peaks );
+        }
+      }
+    }
+
     return false;
   }
 
@@ -155,5 +190,121 @@ public class HistogramHandler implements IReceiveMessage
 
     return histogram;
   }
+
+
+  public Vector<PeakQ> FindPeaks( Histogram3D histogram,
+                                  boolean     smooth_data,
+                                  int         num_peaks,
+                                  float       min_intensity,
+                                  String      log_file )
+ 
+  {
+     System.out.println("START OF FindPeaks");
+     int num_pages = histogram.zBinner().numBins();
+     int num_rows  = histogram.yBinner().numBins();
+     int num_cols  = histogram.xBinner().numBins();
+     
+     float[][][] histogram_array = new float[num_pages][][];
+     for ( int page = 0; page < num_pages; page++ )
+       histogram_array[page] = histogram.pageSlice( page );
+
+     int[] val_histogram = new int[10000];
+
+   
+     int[] row_list = new int[num_rows];
+     for ( int k = 0; k < num_rows; k++ )
+       row_list[k] = k + 1;
+
+     int[] col_list = new int[num_cols];
+     for ( int k = 0; k < num_cols; k++ )
+       col_list[k] = k + 1;
+
+     StringBuffer log = new StringBuffer();
+
+                                    // TODO: change FindPeaksViaSort.getPeaks
+                                    //       to use a float min_intensity 
+     BasicPeakInfo[] peaks = FindPeaksViaSort.getPeaks( histogram_array,
+                                                        smooth_data,
+                                                        num_peaks,
+                                                        (int)min_intensity,
+                                                        row_list,
+                                                        col_list,
+                                                        0,
+                                                        num_pages-1,
+                                                        val_histogram,
+                                                        log );
+
+    if ( log_file == null || log_file.trim().length() <= 0 )
+    {
+      log_file = Wizard.TOF_SCD.Util.ISAW_SCRATCH_DIRECTORY +
+                                                "ShowEventsApp_FindPeaks.log";
+
+      Wizard.TOF_SCD.Util.CheckTmpDirectory();   // make dir if it's not there
+    }
+
+    try
+    {  
+      FileWriter     writer  = new FileWriter( log_file );
+      BufferedWriter output  = new BufferedWriter( writer );
+      output.write( log.toString() );
+      output.close();
+    }
+    catch ( Exception ex )
+    {
+      System.out.println("Exception writing log file " + log_file );
+      ex.printStackTrace();
+    }
+
+    IProjectionBinner3D x_binner = histogram.xEdgeBinner();
+    IProjectionBinner3D y_binner = histogram.yEdgeBinner();
+    IProjectionBinner3D z_binner = histogram.zEdgeBinner();
+
+    Vector3D   zero    = new Vector3D();
+    Vector3D[] verts   = new Vector3D[ peaks.length ];
+    int        counter = 0;
+    for ( int k = 0; k < verts.length; k++ )
+    {
+      if ( peaks[k].isValid() )
+      {
+        counter++;
+
+        float col  = peaks[k].getColMean();
+        float row  = peaks[k].getRowMean();
+        float page = peaks[k].getChanCenter();
+
+        Vector3D point = x_binner.Vec( page );
+        Vector3D temp  = y_binner.Vec( col );
+        point.add( temp );
+        temp = z_binner.Vec( row );
+        point.add( temp );
+        verts[k] = point;
+      }
+      else
+        verts[k] = zero;
+    }
+
+    Vector<PeakQ> q_peaks = new Vector<PeakQ>();
+    for ( int k = 0; k < verts.length; k++ )
+    {
+      if ( verts[k] != zero )
+      {
+        float qx = verts[k].getX();
+        float qy = verts[k].getY();
+        float qz = verts[k].getZ();
+        float ipk_f = histogram.valueAt( qx, qy, qz );
+        qx = (float)(qx / (2 * Math.PI)) ;
+        qy = (float)(qy / (2 * Math.PI)) ;
+        qz = (float)(qz / (2 * Math.PI)) ;
+        q_peaks.add( new PeakQ( qx, qy, qz, (int)ipk_f ) );
+      }
+    }
+
+    if ( q_peaks == null )
+      System.out.println("FOUND 0 PEAKS " );
+    else
+      System.out.println("FOUND " + q_peaks.size() + " PEAKS " );
+
+    return q_peaks;
+  }                         
 
 }

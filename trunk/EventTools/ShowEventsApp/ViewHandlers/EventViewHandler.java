@@ -10,6 +10,8 @@ import javax.swing.*;
 import gov.anl.ipns.MathTools.Geometry.*;
 import gov.anl.ipns.ViewTools.Components.ViewControls.ColorScaleControl.*;
 
+import DataSetTools.operator.Generic.TOF_SCD.PeakQ;
+
 import MessageTools.IReceiveMessage;
 import MessageTools.Message;
 import MessageTools.MessageCenter;
@@ -23,6 +25,8 @@ import EventTools.ShowEventsApp.Command.SelectPointCmd;
 import EventTools.ShowEventsApp.Command.LoadEventsCmd;
 
 import SSG_Tools.Viewers.JoglPanel;
+import SSG_Tools.SSG_Nodes.SimpleShapes.*;
+
 
 /**
  *  This class handles the messaging interface for the 3D event viewer
@@ -42,6 +46,7 @@ public class EventViewHandler implements IReceiveMessage
     message_center.addReceiver( this, Commands.SET_FILTER_OPTIONS );
     message_center.addReceiver( this, Commands.SET_COLOR_SCALE );
     message_center.addReceiver( this, Commands.LOAD_FILE );
+    message_center.addReceiver( this, Commands.MARK_PEAKS );
     events_panel = new SlicedEventsPanel();
                                                 // Is there a better way to do
                                                 // this?  It would be nice to
@@ -92,10 +97,30 @@ public class EventViewHandler implements IReceiveMessage
       events_panel.clear();
       events_panel.updateDisplay();
     }
-    else if( message.getName().equals( Commands.LOAD_FILE))
+    else if( message.getName().equals( Commands.LOAD_FILE ) )
     {
       LoadEventsCmd info = (LoadEventsCmd)message.getValue();
       frame3D.setTitle( "Reciprocal Space Events for "+info.getEventFile() );
+    }
+    else if ( message.getName().equals( Commands.MARK_PEAKS ) )
+    {
+       Object val = message.getValue();
+       if ( val != null && val instanceof Vector )
+       {
+         events_panel.ClearMarkers();
+         Vector<PeakQ> q_peaks = (Vector<PeakQ>)val;
+         Vector3D[] verts = new Vector3D[ q_peaks.size() ];
+         for ( int i = 0; i < verts.length; i++ )
+         {
+           float[] q_arr = q_peaks.elementAt(i).getUnrotQ();
+           float qx = (float)(q_arr[0] * 2 * Math.PI);
+           float qy = (float)(q_arr[1] * 2 * Math.PI);
+           float qz = (float)(q_arr[2] * 2 * Math.PI);
+           verts[i] = new Vector3D( qx, qy, qz );
+         }
+         events_panel.addMarkers( verts, 6, Polymarker.BOX, Color.WHITE );
+         events_panel.updateDisplay();
+       }
     }
 
     return false;
