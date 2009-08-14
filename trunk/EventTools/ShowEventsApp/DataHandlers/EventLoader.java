@@ -105,7 +105,7 @@ public class EventLoader implements IReceiveMessage
 
       if ( peak == null )
       {
-        info = new SelectionInfoCmd( 0, 0, 0, 
+        info = new SelectionInfoCmd( 0, 0, 0, 0, 0, 
                    new Vector3D(),
                    new Vector3D(),
                    0, 0, 0, 0, 0 );
@@ -120,6 +120,8 @@ public class EventLoader implements IReceiveMessage
         info = new SelectionInfoCmd(
                    peak.ipkobs(),
                    peak.detnum(),
+                   (int)(.5f+peak.x()),
+                   (int)(.5f+peak.y()),
                    0,                      // TODO  get correct histogram page
                    hkl,
                    Qxyz,
