@@ -122,7 +122,10 @@ public class findPeaksPanel extends JPanel
       catch (NumberFormatException nfe)
       {         
          String error = "Max # of Peaks must be of type Integer!";
-         JOptionPane.showMessageDialog(null, error, "Invalid Input", JOptionPane.ERROR_MESSAGE);
+         JOptionPane.showMessageDialog( null, 
+                                        error, 
+                                       "Invalid Input", 
+                                        JOptionPane.ERROR_MESSAGE);
          return false;
       }
       
@@ -133,14 +136,20 @@ public class findPeaksPanel extends JPanel
       catch (NumberFormatException nfe)
       {
          String error = "Min Peak Intensity must be of type Integer!";
-         JOptionPane.showMessageDialog(null, error, "Invalid Input", JOptionPane.ERROR_MESSAGE);
+         JOptionPane.showMessageDialog( null, 
+                                        error, 
+                                       "Invalid Input", 
+                                        JOptionPane.ERROR_MESSAGE );
          return false;
       }
       
       /* if (logFileTxt.getText().equals(""))
       {
          String error = "You have not specified a log file!";
-         JOptionPane.showMessageDialog(null, error, "Invalid Input", JOptionPane.ERROR_MESSAGE);
+         JOptionPane.showMessageDialog( null, 
+                                        error, 
+                                       "Invalid Input", 
+                                        JOptionPane.ERROR_MESSAGE );
          return false;
       }
      else
@@ -149,7 +158,9 @@ public class findPeaksPanel extends JPanel
          if (!file.exists())
          {
             String error = logFileTxt.getText() + " does not exist!";
-            JOptionPane.showMessageDialog(null, error, "Invalid Input", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog( null, error, 
+                                          "Invalid Input", 
+                                           JOptionPane.ERROR_MESSAGE);
             return false;
          }
       }*/
@@ -163,7 +174,9 @@ public class findPeaksPanel extends JPanel
       {
          if (valid())
          {
-            FindPeaksCmd findPeaksCmd = new FindPeaksCmd(smoothCbx.isSelected(),
+            FindPeaksCmd findPeaksCmd = new FindPeaksCmd(
+                  smoothCbx.isSelected(),
+                  markPeaksCbx.isSelected(),
                   Integer.parseInt(maxPeaksTxt.getText()), 
                   Integer.parseInt(minPeakTxt.getText()),
                   logFileTxt.getText());

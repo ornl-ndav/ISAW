@@ -6,6 +6,7 @@ import java.util.Vector;
 import gov.anl.ipns.Operator.IOperator;
 import gov.anl.ipns.Operator.Threads.ParallelExecutor;
 import gov.anl.ipns.Operator.Threads.ExecFailException;
+import gov.anl.ipns.MathTools.Geometry.Vector3D;
 
 import MessageTools.IReceiveMessage;
 import MessageTools.Message;
@@ -14,6 +15,7 @@ import EventTools.Histogram.Histogram3D;
 import EventTools.EventList.IEventList3D;
 import EventTools.EventList.SNS_Tof_to_Q_map;
 import EventTools.ShowEventsApp.Command.Commands;
+import EventTools.ShowEventsApp.Command.SelectionInfoCmd;
 
 
 public class HistogramHandler implements IReceiveMessage
@@ -30,11 +32,15 @@ public class HistogramHandler implements IReceiveMessage
     message_center.addReceiver( this, Commands.ADD_EVENTS );
     message_center.addReceiver( this, Commands.CLEAR_HISTOGRAM );
     message_center.addReceiver( this, Commands.SET_WEIGHTS_FROM_HISTOGRAM );
+    message_center.addReceiver( this, Commands.ADD_HISTOGRAM_INFO );
   }
 
 
   public boolean receive( Message message )
   {
+    System.out.println("***HistogramHandler in thread " 
+                       + Thread.currentThread());
+
     if ( message.getName().equals(Commands.ADD_EVENTS) )
     {
       IEventList3D events = (IEventList3D)message.getValue();
@@ -75,7 +81,27 @@ public class HistogramHandler implements IReceiveMessage
 
       System.out.println("SET WEIGHTS FROM HISTOGRAM");
     }
+    else if ( message.getName().equals(Commands.ADD_HISTOGRAM_INFO))
+    {
+      Object val = message.getValue();
+      if ( val instanceof SelectionInfoCmd )         // fill in counts field
+      {
+        SelectionInfoCmd select_info_cmd = (SelectionInfoCmd)val;
+        Vector3D Qxyz = select_info_cmd.getQxyz();
 
+        float counts = histogram.valueAt( Qxyz.getX(), 
+                                          Qxyz.getY(), 
+                                          Qxyz.getZ() );
+        select_info_cmd.setCounts( counts );
+
+        Message info_message =
+                   new Message( Commands.ADD_HISTOGRAM_INFO_ACK, 
+                                select_info_cmd, 
+                                true );
+        System.out.println("SET COUNT FROM HISTOGRAM");
+        message_center.receive( info_message );
+      }
+    }
     return false;
   }
 

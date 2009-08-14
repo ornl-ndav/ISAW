@@ -36,6 +36,7 @@ public class EventLoader implements IReceiveMessage
     this.message_center = message_center;
     message_center.addReceiver( this, Commands.LOAD_FILE );
     message_center.addReceiver( this, Commands.SELECT_POINT );
+    message_center.addReceiver( this, Commands.ADD_HISTOGRAM_INFO_ACK );
   }
 
 
@@ -134,8 +135,18 @@ public class EventLoader implements IReceiveMessage
                    Float.NaN,              // TODO get correct energy
                    peak.wl()  );
       }
+                                           // ask histogram object to get
+                                           // correct histogram page and
+                                           // correct ipkobs!
+        Message add_hist_info_message =
+                     new Message( Commands.ADD_HISTOGRAM_INFO, info, true );
+        message_center.receive( add_hist_info_message );
+    }
+    else if  ( message.getName().equals(Commands.ADD_HISTOGRAM_INFO_ACK) )
+    {
+      SelectionInfoCmd new_info = (SelectionInfoCmd)message.getValue();
       Message info_message = 
-                     new Message( Commands.SELECTED_POINT_INFO, info, true );
+                   new Message( Commands.SELECTED_POINT_INFO, new_info, true );
       message_center.receive( info_message );
     }
     return false;
