@@ -29,7 +29,7 @@ public class displayColorEditor
     message_center = inMessage_Center;
     command = inCommand;
     
-    colorEditPanel = new ColorEditPanel(min, max);
+    colorEditPanel = new ColorEditPanel(min, max, false, false);
     
     byte[] table = new byte[256];
     for(int i = 0; i < table.length-2; i++)
