@@ -46,6 +46,9 @@ public class Commands
   public static final String PLANE_CHANGED = "PLANE_CHANGED";
   public static final String SLICE_MODE_CHANGED = "SLICE_MODE_CHANGED";
   public static final String SET_SLICE_1 = "SET_SLICE_1";
+  public static final String DISPLAY_INFO = "Display Information";
+  public static final String DISPLAY_ERROR = "Display Error";
+  public static final String DISPLAY_WARNING = "Display Warning";
   
   /*
 //  public static final String SET_POSITION_INFO = "SET_POSITION_INFO";
