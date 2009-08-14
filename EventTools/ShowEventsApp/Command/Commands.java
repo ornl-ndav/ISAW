@@ -9,13 +9,32 @@ public class Commands
   
   public static final String ADD_EVENTS_TO_VIEW = "ADD_EVENTS_TO_VIEW";
   public static final String CLEAR_EVENTS_VIEW = "CLEAR_EVENTS_VIEW";
+
   public static final String SET_WEIGHTS_FROM_HISTOGRAM = 
                                               "SET_WEIGHTS_FROM_HISTOGRAM";
+  public static final String SET_WEIGHTS_FROM_HISTOGRAM_ACK = 
+                                              "SET_WEIGHTS_FROM_HISTOGRAM_ACK";
 
   public static final String SELECT_POINT = "SELECT_POINT";
   public static final String SELECTED_POINT_INFO = "SELECTED_POINT_INFO";
 
-  public static final String FIND_PEAKS = "FIND_PEAKS";
+  /**
+   *  An ADD_HISTOGRAM_INFO message will be sent to request that some class 
+   *  (HistogramHandler) should find the histogram intensity at each
+   *  Qxyz point in a Vector of IPeak objects, and set that intensity
+   *  in the IPeak objects.  
+   *  The class doing this (HistogramHandler) should a send an 
+   *  acknowlegement, ADD_HISTOGRAM_INFO_ACK, and return the modified Vector 
+   *  of IPeak objects, when it has finished.
+   *  This can also be applied to ONE SelectionInfoCmd object, in which
+   *  case it sets the counts field and the histogram page.
+   */
+  public static final String ADD_HISTOGRAM_INFO = "ADD_HISTOGRAM_INFO";
+  public static final String ADD_HISTOGRAM_INFO_ACK = "ADD_HISTOGRAM_INFO_ACK";
+
+  public static final String FIND_PEAKS     = "FIND_PEAKS";
+  public static final String FIND_PEAKS_ACK = "FIND_PEAKS_ACK";
+  
   public static final String INDEX_PEAKS = "INDEX_PEAKS";
   public static final String MARK_PEAKS = "MARK_PEAKS";
   public static final String WRITE_PEAK_FILE = "WRITE_PEAK_FILE";

@@ -3,14 +3,19 @@ package EventTools.ShowEventsApp.Command;
 public class FindPeaksCmd
 {
    private boolean smoothData;
+   private boolean markPeaks;
    private int     maxNumberOfPeaks;
    private int     minPeakIntensity;
    private String  logFileName;
    
-   public FindPeaksCmd(boolean smoothData, int maxNumberOfPeaks,
-                       int minPeakIntensity, String logFileName)
+   public FindPeaksCmd( boolean smoothData, 
+                        boolean markPeaks,
+                        int     maxNumberOfPeaks,
+                        int     minPeakIntensity, 
+                        String  logFileName )
    {
       this.smoothData = smoothData;
+      this.markPeaks  = markPeaks;
       this.maxNumberOfPeaks = maxNumberOfPeaks;
       this.minPeakIntensity = minPeakIntensity;
       this.logFileName = logFileName;
@@ -19,6 +24,11 @@ public class FindPeaksCmd
    public boolean getSmoothData()
    {
       return smoothData;
+   }
+   
+   public boolean getMarkPeaks()
+   {
+      return markPeaks;
    }
    
    public int getMaxNumberPeaks()
@@ -33,14 +43,15 @@ public class FindPeaksCmd
    
    public String getLogFileName()
    {
-      return logFileName;
+      return logFileName.trim();
    }
    
    public String toString()
    {
-      return "\nSmooth Data: "   + getSmoothData()       + 
-             "\nMax # Peaks: "   + getMaxNumberPeaks()   +
+      return "\nSmooth Data  : " + getSmoothData()       + 
+             "\nMark Peaks   : " + getMarkPeaks()        +
+             "\nMax # Peaks  : " + getMaxNumberPeaks()   +
              "\nMin Peak Int.: " + getMinPeakIntensity() +
-             "\nLog File: "      + getLogFileName();
+             "\nLog File     : " + getLogFileName()      + "\n";
    }
 }

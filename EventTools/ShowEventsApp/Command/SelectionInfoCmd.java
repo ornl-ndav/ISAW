@@ -52,6 +52,11 @@ public class SelectionInfoCmd
       return counts;
    }
 
+   public void setCounts( float counts )
+   {
+      this.counts = counts;
+   }
+
    public float getDetNum()
    {
       return det_num;
@@ -114,7 +119,7 @@ public class SelectionInfoCmd
              "\nDet Num     : " + getDetNum() + 
              "\nPage        : " + getHistPage() + 
              "\nHKL         : " + getHKL() + 
-             "\nQxya        : " + getQxyz() + 
+             "\nQxyz        : " + getQxyz() + 
              "\nRaw Q       : " + getRaw_Q() + 
              "\nD Spacing   : " + getD_spacing() + 
              "\nTOF         : " + getTof() + 

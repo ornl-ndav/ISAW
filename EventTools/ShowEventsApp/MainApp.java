@@ -22,10 +22,18 @@ public class MainApp
     Vector3D xVec = new Vector3D(1,0,0);
     Vector3D yVec = new Vector3D(0,1,0);
     Vector3D zVec = new Vector3D(0,0,1);
- 
-    IEventBinner x_bin1D = new UniformEventBinner( -16.0f,  0,    num_bins );
-    IEventBinner y_bin1D = new UniformEventBinner( -16.0f,  0,    num_bins );
+
+/*   FOR SNAP:
+*/
+    IEventBinner x_bin1D = new UniformEventBinner( -16.0f,  0,   num_bins );
+    IEventBinner y_bin1D = new UniformEventBinner( -16.0f,  0,   num_bins );
     IEventBinner z_bin1D = new UniformEventBinner( - 8.0f, 8.0f, num_bins );
+
+/*   FOR ARCS:
+    IEventBinner x_bin1D = new UniformEventBinner( -50.0f,    0,  num_bins );
+    IEventBinner y_bin1D = new UniformEventBinner( -10.0f, 40.0f, num_bins );
+    IEventBinner z_bin1D = new UniformEventBinner( -25.0f, 25.0f, num_bins );
+*/
 
     ProjectionBinner3D x_binner = new ProjectionBinner3D(x_bin1D, xVec);
     ProjectionBinner3D y_binner = new ProjectionBinner3D(y_bin1D, yVec);
