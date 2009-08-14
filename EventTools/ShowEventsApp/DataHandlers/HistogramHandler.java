@@ -11,7 +11,8 @@ import gov.anl.ipns.MathTools.Geometry.Vector3D;
 import MessageTools.IReceiveMessage;
 import MessageTools.Message;
 import MessageTools.MessageCenter;
-import EventTools.Histogram.Histogram3D;
+import EventTools.Histogram.*;
+
 import EventTools.EventList.IEventList3D;
 import EventTools.EventList.SNS_Tof_to_Q_map;
 import EventTools.ShowEventsApp.Command.Commands;
@@ -24,11 +25,10 @@ public class HistogramHandler implements IReceiveMessage
   private MessageCenter message_center;
   private Histogram3D   histogram;
 
-  public HistogramHandler( MessageCenter message_center,
-                           Histogram3D   histogram      )
+  public HistogramHandler( MessageCenter message_center, int num_bins )
   {
     this.message_center = message_center;
-    this.histogram      = histogram;
+    this.histogram      = DefaultHistogram( num_bins );;
     message_center.addReceiver( this, Commands.ADD_EVENTS );
     message_center.addReceiver( this, Commands.CLEAR_HISTOGRAM );
     message_center.addReceiver( this, Commands.SET_WEIGHTS_FROM_HISTOGRAM );
@@ -118,6 +118,42 @@ public class HistogramHandler implements IReceiveMessage
                                       Qxyz.getZ() );
     select_info_cmd.setCounts( counts );
                                               // TODO MUST ALSO SET PAGE
+  }
+
+
+  public Histogram3D DefaultHistogram( int num_bins )
+  {
+    // Just make default histogram aligned with coord axes.
+
+    long start_time = System.nanoTime();
+    Vector3D xVec = new Vector3D(1,0,0);
+    Vector3D yVec = new Vector3D(0,1,0);
+    Vector3D zVec = new Vector3D(0,0,1);
+
+/*   FOR SNAP:
+*/
+    IEventBinner x_bin1D = new UniformEventBinner( -16.0f,  0,   num_bins );
+    IEventBinner y_bin1D = new UniformEventBinner( -16.0f,  0,   num_bins );
+    IEventBinner z_bin1D = new UniformEventBinner( - 8.0f, 8.0f, num_bins );
+
+/*   FOR ARCS:
+    IEventBinner x_bin1D = new UniformEventBinner( -50.0f,    0,  num_bins );
+    IEventBinner y_bin1D = new UniformEventBinner( -10.0f, 40.0f, num_bins );
+    IEventBinner z_bin1D = new UniformEventBinner( -25.0f, 25.0f, num_bins );
+*/
+
+    ProjectionBinner3D x_binner = new ProjectionBinner3D(x_bin1D, xVec);
+    ProjectionBinner3D y_binner = new ProjectionBinner3D(y_bin1D, yVec);
+    ProjectionBinner3D z_binner = new ProjectionBinner3D(z_bin1D, zVec);
+
+    Histogram3D histogram = new Histogram3D( x_binner,
+                                             y_binner,
+                                             z_binner );
+    long run_time = System.nanoTime() - start_time;
+    System.out.println("Time(ms) to allocate default histogram = " +
+                        run_time/1.e6);
+
+    return histogram;
   }
 
 }
