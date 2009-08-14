@@ -2,6 +2,8 @@ package EventTools.ShowEventsApp;
 
 import javax.swing.*;
 import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 import gov.anl.ipns.ViewTools.UI.SplitPaneWithState;
 
@@ -39,24 +41,37 @@ public class multiPanel implements IReceiveMessage
    private void buildMainFrame()
    {
       mainView = new JFrame("Reciprocal Space Event Viewer");
-      mainView.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+      mainView.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
       mainView.setBounds(10, 10, 570, 480);
       mainView.setVisible(true);
+     
       
       JPanel panel = new JPanel();
       panel.setLayout(new GridLayout(1,1));
       panel.add(displayPanel);
-      
+     
       splitPane = new SplitPaneWithState(JSplitPane.HORIZONTAL_SPLIT,
                                          controlpanel, panel, .3f);
       splitPane.setOneTouchExpandable(false);
       splitPane.setDividerSize(3);
       
       mainView.add(splitPane);
+      mainView.setJMenuBar( getJMenuBar( controlpanel) );
       mainView.validate();
    }
    
-   
+   private JMenuBar getJMenuBar( JComponent C)
+   {
+      JMenuBar jmenBar= new JMenuBar();
+      JMenu FileMen = new JMenu("File");
+      
+      jmenBar.add(FileMen);
+      JMenuItem closeMenItem= new JMenuItem( "Exit"); 
+      FileMen.add( closeMenItem);
+      closeMenItem.addActionListener(  
+               new CloseAppActionListener( C, true) );
+      return jmenBar;
+   }
    public boolean receive(Message message)
    {
       // System.out.println(message.getName() + " " + message.getValue());
@@ -71,6 +86,34 @@ public class multiPanel implements IReceiveMessage
       }*/
       
       return false;
+   }
+   
+}
+class CloseAppActionListener implements java.awt.event.ActionListener
+{
+   JComponent comp;
+   boolean check;
+   public CloseAppActionListener(JComponent C,  boolean check)
+   {
+      comp = C;
+      this.check = check;
+   }
+   /* (non-Javadoc)
+    * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+    */
+   @Override
+   public void actionPerformed( ActionEvent e )
+   {
+     if( check)
+     {
+        int res = JOptionPane.showConfirmDialog( comp ,
+                 "Do you Really want to Exit" , "Exit" , 
+                 JOptionPane.YES_NO_OPTION);
+        if( res == JOptionPane.NO_OPTION)
+           return;
+     }
+      
+     System.exit( 0); 
    }
    
 }
