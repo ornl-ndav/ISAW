@@ -41,6 +41,8 @@ public class EventLoader implements IReceiveMessage
 
   public boolean receive( Message message )
   {
+    System.out.println("***EventLoader in thread " + Thread.currentThread());
+
     if ( message.getName().equals(Commands.LOAD_FILE) )
     {
       LoadEventsCmd cmd = (LoadEventsCmd)message.getValue();
@@ -68,6 +70,7 @@ public class EventLoader implements IReceiveMessage
       if ( instrument_name == null ||
            !new_instrument.equals( instrument_name ) )
       {
+        System.out.println("MAKING MAPPER FOR " + instrument_name );
         String det_file = cmd.getDetFile();
         if ( det_file == null )
         {
@@ -260,19 +263,24 @@ public class EventLoader implements IReceiveMessage
                                              false ));
 
         IEventList3D list = event_lists.elementAt(i);
-        int n_printed = Math.min( 10, list.numEntries());
-        System.out.println("EventLoader, First " + n_printed + 
-                           " events-------------------------");
-        for ( int k = 0; k < n_printed; k++ )
-          System.out.println( "xyz = " + list.eventX(k) + " " +
-                                         list.eventY(k) + " " +
-                                         list.eventZ(k) + " " +
-                              "weight = " + list.eventWeight(k) );
+        if ( list == null )
+          System.out.println("ERROR: null list in EventLoader");
+        else
+        { 
+          int n_printed = Math.min( 10, list.numEntries());
+          System.out.println("EventLoader, First " + n_printed + 
+                             " events-------------------------");
+          for ( int k = 0; k < n_printed; k++ )
+            System.out.println( "xyz = " + list.eventX(k) + " " +
+                                           list.eventY(k) + " " +
+                                           list.eventZ(k) + " " +
+                                "weight = " + list.eventWeight(k) );
 
-        if ( num_viewed < num_to_show )
-        {
-          show_lists.add( event_lists.elementAt(i) );
-          num_viewed += event_lists.elementAt(i).numEntries();
+          if ( num_viewed < num_to_show )
+          {
+            show_lists.add( event_lists.elementAt(i) );
+            num_viewed += event_lists.elementAt(i).numEntries();
+          }
         }
       }
 
