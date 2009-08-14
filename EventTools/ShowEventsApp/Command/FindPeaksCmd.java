@@ -5,13 +5,13 @@ public class FindPeaksCmd
    private boolean smoothData;
    private boolean markPeaks;
    private int     maxNumberOfPeaks;
-   private int     minPeakIntensity;
+   private float   minPeakIntensity;
    private String  logFileName;
    
    public FindPeaksCmd( boolean smoothData, 
                         boolean markPeaks,
                         int     maxNumberOfPeaks,
-                        int     minPeakIntensity, 
+                        float   minPeakIntensity, 
                         String  logFileName )
    {
       this.smoothData = smoothData;
@@ -36,7 +36,7 @@ public class FindPeaksCmd
       return maxNumberOfPeaks;
    }
    
-   public int getMinPeakIntensity()
+   public float getMinPeakIntensity()
    {
       return minPeakIntensity;
    }
