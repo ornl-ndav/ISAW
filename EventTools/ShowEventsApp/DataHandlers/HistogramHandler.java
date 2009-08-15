@@ -106,9 +106,13 @@ public class HistogramHandler implements IReceiveMessage
         {                                                // mark the peaks
           Message mark_peaks  = new Message( Commands.MARK_PEAKS,
                                              peakQs,
-                                             false );
-          System.out.println("SENT MARK PEAKS FROM HISTOGRAM");
+                                             true );
           message_center.receive( mark_peaks );
+
+          Message set_peak_Q_list = new Message( Commands.SET_PEAK_Q_LIST,
+                                                 peakQs,
+                                                 true );
+          message_center.receive( set_peak_Q_list );
         }
       }
     }

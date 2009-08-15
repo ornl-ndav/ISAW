@@ -404,14 +404,16 @@ public class filePanel //extends JPanel
       if (evFileName.getText().equals(""))
       {
          String error = "You have not specified an event file!";
-         JOptionPane.showMessageDialog(null, error, "Invalid Input", JOptionPane.ERROR_MESSAGE);
+         JOptionPane.showMessageDialog( null, error, "Invalid Input", 
+                                        JOptionPane.ERROR_MESSAGE );
          return false;
       }
 
       if (firstEvent.getText().equals(""))
       {
          String error = "You have not specified the first event to load!";
-         JOptionPane.showMessageDialog(null, error, "Invalid Input", JOptionPane.ERROR_MESSAGE);
+         JOptionPane.showMessageDialog( null, error, "Invalid Input", 
+                                        JOptionPane.ERROR_MESSAGE );
          return false;
       }
 
@@ -422,14 +424,16 @@ public class filePanel //extends JPanel
       catch (ParseException pe)
       {
          String error = "First event must be of type Integer!";
-         JOptionPane.showMessageDialog(null, error, "Invalid Input", JOptionPane.ERROR_MESSAGE);
+         JOptionPane.showMessageDialog( null, error, "Invalid Input", 
+                                        JOptionPane.ERROR_MESSAGE );
          return false;
       }
       
       if (eventsToLoad.getText().equals(""))
       {
          String error = "You have not specified the number of events to load!";
-         JOptionPane.showMessageDialog(null, error, "Invalid Input", JOptionPane.ERROR_MESSAGE);
+         JOptionPane.showMessageDialog( null, error, "Invalid Input", 
+                                        JOptionPane.ERROR_MESSAGE );
          return false;
       }
       
@@ -440,14 +444,16 @@ public class filePanel //extends JPanel
       catch (ParseException pe)
       {
          String error = "Number of events to load must be of type Integer!";
-         JOptionPane.showMessageDialog(null, error, "Invalid Input", JOptionPane.ERROR_MESSAGE);
+         JOptionPane.showMessageDialog( null, error, "Invalid Input", 
+                                        JOptionPane.ERROR_MESSAGE );
          return false;
       }
       
       if (firstEventToShow.getText().equals(""))
       {
          String error = "You have not specified the first event to display!";
-         JOptionPane.showMessageDialog(null, error, "Invalid Input", JOptionPane.ERROR_MESSAGE);
+         JOptionPane.showMessageDialog( null, error, "Invalid Input", 
+                                        JOptionPane.ERROR_MESSAGE );
          return false;
       }
       
@@ -458,14 +464,17 @@ public class filePanel //extends JPanel
       catch (ParseException pe)
       {
          String error = "First event to display must be of type Integer!";
-         JOptionPane.showMessageDialog(null, error, "Invalid Input", JOptionPane.ERROR_MESSAGE);
+         JOptionPane.showMessageDialog( null, error, "Invalid Input", 
+                                        JOptionPane.ERROR_MESSAGE );
          return false;
       }
       
       if (eventsToShow.getText().equals(""))
       {
-         String error = "You have not specified the number of events to display!";
-         JOptionPane.showMessageDialog(null, error, "Invalid Input", JOptionPane.ERROR_MESSAGE);
+         String error = 
+                   "You have not specified the number of events to display!";
+         JOptionPane.showMessageDialog( null, error, "Invalid Input", 
+                                        JOptionPane.ERROR_MESSAGE );
          return false;
       }
       
@@ -476,21 +485,24 @@ public class filePanel //extends JPanel
       catch (ParseException pe)
       {
          String error = "Number of events to show must be of type Integer!";
-         JOptionPane.showMessageDialog(null, error, "Invalid Input", JOptionPane.ERROR_MESSAGE);
+         JOptionPane.showMessageDialog( null, error, "Invalid Input", 
+                                        JOptionPane.ERROR_MESSAGE );
          return false;
       }
-      
+/*
       if (detFileName.getText().equals(""))
       {
          String error = "You have not specified a detector file!";
-         JOptionPane.showMessageDialog(null, error, "Invalid Input", JOptionPane.ERROR_MESSAGE);
+         JOptionPane.showMessageDialog( null, error, "Invalid Input", 
+                                        JOptionPane.ERROR_MESSAGE );
          return false;
       }
-      
+*/      
       if (numThreads.getText().equals(""))
       {
          String error = "You have not specified the number of threads to use!";
-         JOptionPane.showMessageDialog(null, error, "Invalid Input", JOptionPane.ERROR_MESSAGE);
+         JOptionPane.showMessageDialog( null, error, "Invalid Input", 
+                                        JOptionPane.ERROR_MESSAGE );
          return false;
       }
       
@@ -501,7 +513,8 @@ public class filePanel //extends JPanel
       catch (NumberFormatException nfe)
       {
          String error = "Number of threads to show must be of type Integer!";
-         JOptionPane.showMessageDialog(null, error, "Invalid Input", JOptionPane.ERROR_MESSAGE);
+         JOptionPane.showMessageDialog( null, error, "Invalid Input", 
+                                        JOptionPane.ERROR_MESSAGE );
          return false;
       }
       

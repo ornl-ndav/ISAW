@@ -22,14 +22,15 @@ public class MainApp
 
     multiPanel mp = new multiPanel( message_center );
 
-    EventLoader loader = new EventLoader( message_center );
+    new EventLoader( message_center );
 
-    HistogramHandler hist_handler = 
-                          new HistogramHandler( message_center, NUM_BINS );
+    new HistogramHandler( message_center, NUM_BINS );
 
-    EventViewHandler view_handler = new EventViewHandler( message_center );
+    new EventViewHandler( message_center );
+
+    new PeakListHandler( message_center );
     
-    StatusMessageHandler statHandler = new StatusMessageHandler( message_center, null);
+    new StatusMessageHandler( message_center, null);
   }
 
 
