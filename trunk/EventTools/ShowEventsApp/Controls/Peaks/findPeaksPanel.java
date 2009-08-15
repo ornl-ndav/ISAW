@@ -41,6 +41,7 @@ public class findPeaksPanel extends JPanel
       smoothCbx = new JCheckBox("Smooth Data");
       smoothCbx.setSelected(false);
       smoothCbx.setHorizontalAlignment(JCheckBox.CENTER);
+      smoothCbx.setEnabled( false );
       
       markPeaksCbx = new JCheckBox("Mark Peaks");
       markPeaksCbx.setSelected(true);
