@@ -37,11 +37,12 @@ public class HistogramHandler implements IReceiveMessage
   public HistogramHandler( MessageCenter message_center, int num_bins )
   {
     this.message_center = message_center;
-    this.histogram      = DefaultHistogram( num_bins );;
+    this.histogram      = DefaultHistogram( num_bins );
     message_center.addReceiver( this, Commands.ADD_EVENTS );
     message_center.addReceiver( this, Commands.CLEAR_HISTOGRAM );
     message_center.addReceiver( this, Commands.SET_WEIGHTS_FROM_HISTOGRAM );
     message_center.addReceiver( this, Commands.ADD_HISTOGRAM_INFO );
+    message_center.addReceiver( this, Commands.GET_HISTOGRAM_MAX );
     message_center.addReceiver( this, Commands.FIND_PEAKS );
   }
 
@@ -118,6 +119,14 @@ public class HistogramHandler implements IReceiveMessage
           Util.sendInfo( message_center, "Found " + peakQs.size() + " Peaks");
         }
       }
+    }
+    
+    else if ( message.getName().equals(Commands.GET_HISTOGRAM_MAX) )
+    {
+       Message hist_max = new Message( Commands.SET_HISTOGRAM_MAX,
+                                       new Float( histogram.maxVal() ),
+                                       true );
+       message_center.receive( hist_max );
     }
 
     return false;

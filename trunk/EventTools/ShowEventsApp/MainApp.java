@@ -30,6 +30,8 @@ public class MainApp
 
     new PeakListHandler( message_center );
     
+    new OrientationMatrixHandler( message_center );
+
     new StatusMessageHandler( message_center, null);
   }
 
