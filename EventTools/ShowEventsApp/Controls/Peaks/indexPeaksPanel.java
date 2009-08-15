@@ -28,7 +28,7 @@ public class indexPeaksPanel extends JPanel
    private JButton          applyBtn;
    
    
-   public indexPeaksPanel(MessageCenter messsageCenter)
+   public indexPeaksPanel(MessageCenter messageCenter)
    {
       this.messageCenter = messageCenter;
       

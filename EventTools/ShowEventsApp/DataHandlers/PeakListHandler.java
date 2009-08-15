@@ -6,16 +6,21 @@ import java.util.Vector;
 import gov.anl.ipns.Operator.IOperator;
 import gov.anl.ipns.Operator.Threads.ParallelExecutor;
 import gov.anl.ipns.Operator.Threads.ExecFailException;
+
 import DataSetTools.operator.Generic.TOF_SCD.Peak_new;
 import DataSetTools.operator.Generic.TOF_SCD.Peak_new_IO;
 import DataSetTools.operator.Generic.TOF_SCD.PeakQ;
 
+import Operators.TOF_SCD.IndexPeaks_Calc;
+
 import MessageTools.IReceiveMessage;
 import MessageTools.Message;
 import MessageTools.MessageCenter;
+
 import EventTools.EventList.IEventList3D;
 import EventTools.EventList.SNS_Tof_to_Q_map;
 import EventTools.ShowEventsApp.Command.Commands;
+import EventTools.ShowEventsApp.Command.IndexPeaksCmd;
 
 
 public class PeakListHandler implements IReceiveMessage
@@ -30,6 +35,7 @@ public class PeakListHandler implements IReceiveMessage
     message_center.addReceiver( this, Commands.SET_PEAK_Q_LIST );
     message_center.addReceiver( this, Commands.SET_PEAK_NEW_LIST );
     message_center.addReceiver( this, Commands.WRITE_PEAK_FILE );
+    message_center.addReceiver( this, Commands.INDEX_PEAKS );
   }
 
 
@@ -47,7 +53,7 @@ public class PeakListHandler implements IReceiveMessage
       if ( obj instanceof Vector ) 
       {
          Vector<PeakQ> new_peaks = (Vector<PeakQ>)obj;
-         peakQ_list.clear();
+         peakQ_list = new Vector<PeakQ>();
          for ( int i = 0; i < new_peaks.size(); i++ )
            peakQ_list.add( new_peaks.elementAt(i) );
 
@@ -70,7 +76,7 @@ public class PeakListHandler implements IReceiveMessage
       if ( obj instanceof Vector )
       {
          Vector<Peak_new> new_peaks = (Vector<Peak_new>)obj;
-         peakNew_list.clear();
+         peakNew_list = new Vector<Peak_new>();
          for ( int i = 0; i < new_peaks.size(); i++ )
            peakNew_list.add( new_peaks.elementAt(i) );
 
@@ -102,6 +108,43 @@ public class PeakListHandler implements IReceiveMessage
                   false );
         message_center.receive( error_message );
       }
+    }
+
+    else if ( message.getName().equals(Commands.INDEX_PEAKS ) )
+    {
+      Object obj = message.getValue();
+      if ( obj == null || !(obj instanceof IndexPeaksCmd) )
+        return false;
+
+      // TODO  Make sure the vector of peaks exists and send error 
+      //       message  and return if not. 
+
+      IndexPeaksCmd cmd = (IndexPeaksCmd)obj;
+    
+      float[][] UB = null;
+      try
+      {
+        UB = IndexPeaks_Calc.IndexPeaksWithOptimizer( peakNew_list,
+                                                      cmd.getA(),
+                                                      cmd.getB(),
+                                                      cmd.getC(),
+                                                      cmd.getAlpha(),
+                                                      cmd.getBeta(),
+                                                      cmd.getGamma() );
+      }
+      catch ( Exception ex )
+      {
+        Message error_message = new Message( Commands.DISPLAY_ERROR,
+                                            "ERROR: failed to index peaks",
+                                             false );
+        message_center.receive( error_message );
+      } 
+
+      Message set_peaks = new Message( Commands.SET_PEAK_NEW_LIST,
+                                       peakNew_list,
+                                       true );
+      message_center.receive( set_peaks );
+
     }
 
     return false;
