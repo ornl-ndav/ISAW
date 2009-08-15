@@ -52,13 +52,14 @@ public class writePeaks extends JPanel
             }
             else if (returnVal == JFileChooser.ERROR_OPTION)
             {
-               JOptionPane.showMessageDialog(null, "Error saving file", "Error Saving!", JOptionPane.ERROR_MESSAGE);
+               JOptionPane.showMessageDialog(null, "Error saving file", 
+                              "Error Saving!", JOptionPane.ERROR_MESSAGE);
                return;
             }
             else if (returnVal == JFileChooser.APPROVE_OPTION)
             {
-               File file = fc.getSelectedFile();
-               sendMessage(Commands.WRITE_PEAK_FILE, file);
+               String file_name = fc.getSelectedFile().toString();
+               sendMessage(Commands.WRITE_PEAK_FILE, file_name);
             }
          }
       }

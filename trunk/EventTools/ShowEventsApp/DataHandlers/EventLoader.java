@@ -23,6 +23,8 @@ import EventTools.ShowEventsApp.Command.SelectPointCmd;
 import EventTools.ShowEventsApp.Command.SelectionInfoCmd;
 
 import DataSetTools.operator.Generic.TOF_SCD.Peak_new;
+import DataSetTools.operator.Generic.TOF_SCD.IPeakQ;
+import DataSetTools.operator.Generic.TOF_SCD.PeakQ;
 
 public class EventLoader implements IReceiveMessage
 {
@@ -37,6 +39,7 @@ public class EventLoader implements IReceiveMessage
     message_center.addReceiver( this, Commands.LOAD_FILE );
     message_center.addReceiver( this, Commands.SELECT_POINT );
     message_center.addReceiver( this, Commands.ADD_HISTOGRAM_INFO_ACK );
+    message_center.addReceiver( this, Commands.GET_PEAK_NEW_LIST );
   }
 
 
@@ -72,25 +75,28 @@ public class EventLoader implements IReceiveMessage
            !new_instrument.equals( instrument_name ) )
       {
         System.out.println("MAKING MAPPER FOR " + instrument_name );
+
         String det_file = cmd.getDetFile();
-        if ( det_file == null )
+
+        if ( det_file == null || det_file.trim().length() == 0 )
         {
-          System.out.println("ERROR: Detector File is null" );
-          return false;
+          String isaw_home = System.getProperty( "ISAW_HOME" ) + "/";
+          det_file = isaw_home + "InstrumentInfo/SNS/" +
+                     new_instrument + ".DetCal";
         }
+
         long start = System.nanoTime();
        
         try
         {
-          mapper = new SNS_Tof_to_Q_map( cmd.getDetFile(), 
-                                         new_instrument );
+          mapper = new SNS_Tof_to_Q_map( det_file, new_instrument );
           System.out.println("Made Q mapper in " + 
                              (System.nanoTime() - start)/1.0e6 + " ms" );
         }
         catch ( Exception ex )
         {
           System.out.println("ERROR: Could not make Q mapper for " +
-                              cmd.getDetFile() );
+                              det_file );
           return false;
         }
       }
@@ -148,6 +154,22 @@ public class EventLoader implements IReceiveMessage
       Message info_message = 
                    new Message( Commands.SELECTED_POINT_INFO, new_info, true );
       message_center.receive( info_message );
+    }
+    else if ( message.getName().equals(Commands.GET_PEAK_NEW_LIST) )
+    {
+      Object obj = message.getValue();
+      if ( obj == null )
+        return false;
+
+      if ( obj instanceof Vector )
+      {
+        Vector<Peak_new> peak_new_list =
+                                  ConvertPeakQToPeakNew( mapper, (Vector)obj );
+        Message peak_new_message =
+               new Message( Commands.SET_PEAK_NEW_LIST, peak_new_list, true );
+
+        message_center.receive( peak_new_message );
+      }
     }
     return false;
   }
@@ -310,5 +332,25 @@ public class EventLoader implements IReceiveMessage
                                            false ));
   }
 
+
+  public static Vector<Peak_new>ConvertPeakQToPeakNew(SNS_Tof_to_Q_map mapper,
+                                                      Vector<PeakQ>  q_peaks )
+  {
+    Vector<Peak_new> new_peaks = new Vector<Peak_new>();
+
+    for  ( int k = 0; k < q_peaks.size(); k++ )
+    {
+      IPeakQ q_peak = q_peaks.elementAt(k);
+      float[] qxyz = q_peak.getUnrotQ();
+      Peak_new peak = mapper.GetPeak( qxyz[0], qxyz[1], qxyz[2] );
+      peak.setFacility( "SNS" );
+      peak.sethkl( q_peak.h(), q_peak.k(), q_peak.l() );
+      peak.seqnum( k );
+      peak.ipkobs( q_peak.ipkobs() );
+      new_peaks.add( peak );
+    }
+
+    return new_peaks;
+  }  
 
 }
