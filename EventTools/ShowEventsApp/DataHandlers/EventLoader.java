@@ -111,7 +111,13 @@ public class EventLoader implements IReceiveMessage
     {
       SelectPointCmd   cmd = (SelectPointCmd)message.getValue();
       SelectionInfoCmd info;
-      Peak_new peak = mapper.GetPeak( cmd.getQx(), cmd.getQy(), cmd.getQz() );
+                              // PeakQ, Peak_new and SelectionInfCom
+                              // use Q = 1/d  but the event display
+                              // and select point message use Q = 2PI/d                             
+      float eventx =  (float)( cmd.getQx() / (2 * Math.PI) );
+      float eventy =  (float)( cmd.getQy() / (2 * Math.PI) );
+      float eventz =  (float)( cmd.getQz() / (2 * Math.PI) );
+      Peak_new peak = mapper.GetPeak( eventx, eventy, eventz );
 
       if ( peak == null )
       {

@@ -152,9 +152,9 @@ public class HistogramHandler implements IReceiveMessage
   {
     Vector3D Qxyz = select_info_cmd.getQxyz();
 
-    float counts = histogram.valueAt( Qxyz.getX(),
-                                      Qxyz.getY(),
-                                      Qxyz.getZ() );
+    float counts = histogram.valueAt( (float)(Qxyz.getX() * 2 * Math.PI), 
+                                      (float)(Qxyz.getY() * 2 * Math.PI),
+                                      (float)(Qxyz.getZ() * 2 * Math.PI) );
     select_info_cmd.setCounts( counts );
                                               // TODO MUST ALSO SET PAGE
   }
