@@ -1,5 +1,6 @@
 package EventTools.ShowEventsApp;
 
+import gov.anl.ipns.Util.Sys.WindowShower;
 import gov.anl.ipns.ViewTools.Components.ViewControls.ColorScaleControl.*;
 
 import javax.swing.*;
@@ -8,9 +9,12 @@ import javax.swing.border.*;
 import java.awt.Color;
 import java.awt.event.*;
 import java.awt.GridLayout;
+import java.util.Vector;
 
 import MessageTools.*;
 
+import DataSetTools.operator.Generic.TOF_SCD.Peak_new;
+import DataSetTools.operator.Generic.TOF_SCD.Peak_new_IO;
 import EventTools.ShowEventsApp.Command.*;
 import EventTools.ShowEventsApp.Controls.*;
 import EventTools.ShowEventsApp.Controls.Peaks.*;
@@ -29,6 +33,7 @@ public class controlsPanel extends JPanel
    
    private JButton            selectedPoint;
    private JButton            orientationBtn;
+   private JButton            peakInfoBtn;
    private JButton            colorScaleBtn;
    private JButton            planeBtn;
    private JButton            drawOptions;
@@ -38,6 +43,7 @@ public class controlsPanel extends JPanel
    private peakOptionsPanel   peakPanel;
    private indexPeaksPanel    indexPeakPanel;
    private positionInfoPanel  positionPanel;
+   private peaksStatPanel     peakInfoPanel;
    private sliceControl       slicePanel;
    private drawingOptions     drawoptions;
    
@@ -73,6 +79,8 @@ public class controlsPanel extends JPanel
       peakPanel = new peakOptionsPanel(messageCenter);
       indexPeakPanel = new indexPeaksPanel(messageCenter);
       positionPanel = new positionInfoPanel(messageCenter);
+      peakInfoPanel = new peaksStatPanel( messageCenter);
+     
       slicePanel = new sliceControl(messageCenter);
       drawoptions = new drawingOptions(messageCenter);
       
@@ -130,7 +138,7 @@ public class controlsPanel extends JPanel
    {
       JPanel panel = new JPanel();
       panel.setBorder(new TitledBorder("Controls/Info"));
-      panel.setLayout(new GridLayout(5,1));
+      panel.setLayout(new GridLayout(6,1));
       
       selectedPoint = new JButton("Selected Point");
       selectedPoint.setBackground( background_color );
@@ -139,6 +147,11 @@ public class controlsPanel extends JPanel
       orientationBtn = new JButton("Orientation Info.");
       orientationBtn.setBackground( background_color );
       orientationBtn.addActionListener(new buttonListener());
+      
+      
+      peakInfoBtn = new JButton("Peaks Info.");
+      peakInfoBtn.setBackground( background_color );
+      peakInfoBtn.addActionListener(new buttonListener());
       
       colorScaleBtn = new JButton("Color Scale");
       colorScaleBtn.setBackground( background_color );
@@ -154,6 +167,7 @@ public class controlsPanel extends JPanel
       
       panel.add(selectedPoint);
       panel.add(orientationBtn);
+      panel.add( peakInfoBtn );
       panel.add(colorScaleBtn);
       panel.add(planeBtn);
       panel.add(drawOptions);
@@ -180,13 +194,16 @@ public class controlsPanel extends JPanel
             value = indexPeakPanel;
          
          if (e.getSource().equals(integrateBtn))
-            value = notImplementedPanel();
-         
-         if (e.getSource().equals(selectedPoint))
+         {   value = notImplementedPanel();
+             Test();
+         }if (e.getSource().equals(selectedPoint))
             value = positionPanel;
 
          if (e.getSource().equals(orientationBtn))
             value = notImplementedPanel();
+
+         if (e.getSource().equals(peakInfoBtn))
+            value = peakInfoPanel;
          
          if (e.getSource().equals(colorScaleBtn))
             value = colorEditPanel.getColorPanel();
@@ -201,7 +218,25 @@ public class controlsPanel extends JPanel
          sendMessage(Commands.CHANGE_PANEL, value);
       }
    }
-   
+   //Creates message to test new modules
+   private void Test()
+   {
+      String filename = "C:\\ISAW\\SampleRuns\\SNS\\Snap\\QuartzRunsFixed\\quartz.peaks";
+      Vector< Peak_new > peaks = null;
+      try
+      {
+         peaks = Peak_new_IO.ReadPeaks_new( filename );
+      }
+      catch( Exception s )
+      {
+        return;
+      }
+      MessageCenter msgC =messageCenter;
+    
+      Message mmm = new Message( Commands.SET_PEAK_NEW_LIST , peaks , false );
+      msgC.receive( mmm );
+      msgC.receive( MessageCenter.PROCESS_MESSAGES );
+   }
    private JPanel notImplementedPanel()
    {
       JPanel panel = new JPanel();
