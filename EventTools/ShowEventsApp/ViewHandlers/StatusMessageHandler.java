@@ -149,25 +149,30 @@ public class StatusMessageHandler implements IReceiveMessage
       StatusMessageHandler statPane = new StatusMessageHandler( msgC , null );
 
       Message msg = new Message( Commands.DISPLAY_INFO , "Hi There" , false );
-      SwingUtilities.invokeLater( new MyThread( msgC , msg ) );
+      SwingUtilities.invokeLater( new AWTQueueOP( msgC , msg ) );
       
       msg = new Message( Commands.DISPLAY_INFO , "I am fine" , false );
-      SwingUtilities.invokeLater( new MyThread( msgC , msg ) )
+      SwingUtilities.invokeLater( new AWTQueueOP( msgC , msg ) )
       ;
       msg = new Message( Commands.DISPLAY_INFO , "How are you" , false );
-      SwingUtilities.invokeLater( new MyThread( msgC , msg ) );
+      SwingUtilities.invokeLater( new AWTQueueOP( msgC , msg ) );
       
       msg = new Message( Commands.DISPLAY_INFO , "Too bad" , false );
-      SwingUtilities.invokeLater( new MyThread( msgC , msg ) );
+      SwingUtilities.invokeLater( new AWTQueueOP( msgC , msg ) );
       
-      SwingUtilities.invokeLater( new MyThread( msgC ,
+      SwingUtilities.invokeLater( new AWTQueueOP( msgC ,
                MessageCenter.PROCESS_MESSAGES ) );
 
    }
 }
 
-
-class MyThread extends Thread
+/**
+ * Used for testing purposes(SwingUtilities.invokeLater) in the main program
+ * 
+ * @author Ruth
+ *
+ */
+class AWTQueueOP extends Thread
 {
 
    MessageCenter msgC;
@@ -175,7 +180,7 @@ class MyThread extends Thread
    Message       msg;
 
 
-   public MyThread( MessageCenter msgC, Message msg )
+   public AWTQueueOP( MessageCenter msgC, Message msg )
    {
 
       this.msgC = msgC;
