@@ -21,6 +21,7 @@ import EventTools.ShowEventsApp.Command.Commands;
 import EventTools.ShowEventsApp.Command.LoadEventsCmd;
 import EventTools.ShowEventsApp.Command.SelectPointCmd;
 import EventTools.ShowEventsApp.Command.SelectionInfoCmd;
+import EventTools.ShowEventsApp.Command.Util;
 
 import DataSetTools.operator.Generic.TOF_SCD.Peak_new;
 import DataSetTools.operator.Generic.TOF_SCD.IPeakQ;
@@ -101,14 +102,28 @@ public class EventLoader implements IReceiveMessage
         }
       }
 
-      LoadEvents( event_file_name, 
-                  cmd.getFirstEvent(),
-                  cmd.getEventsToLoad(),
-                  cmd.getEventsToShow(),
-                  cmd.getNumThreads()  ); 
+      try
+      {
+        LoadEvents( event_file_name, 
+                    cmd.getFirstEvent(),
+                    cmd.getEventsToLoad(),
+                    cmd.getEventsToShow(),
+                    cmd.getNumThreads()  ); 
+      }
+      catch ( Exception ex )
+      {
+        Util.sendError( message_center, "ERROR: Failed to Load File :" +
+                        event_file_name + "\n" + ex );
+
+      }
     }
     else if ( message.getName().equals(Commands.SELECT_POINT) )
     {
+      if ( mapper == null )
+      {
+         Util.sendError( message_center, "NO DATA YET" );
+         return false;
+      }
       SelectPointCmd   cmd = (SelectPointCmd)message.getValue();
       SelectionInfoCmd info;
                               // PeakQ, Peak_new and SelectionInfCom
@@ -256,6 +271,12 @@ public class EventLoader implements IReceiveMessage
         results = fail_exception.getPartialResults();
         System.out.println("ExecFailException while loading events: " +
                             fail_exception.getFailureStatus() );
+        Util.sendError( message_center,
+                   "Failed to load events from " + event_file_name );
+
+        Util.sendError( message_center,
+                        fail_exception.getFailureStatus().toString() );
+        return;
       }
       long run_time = System.nanoTime() - start_time;
       System.out.printf("LOADED %d EVENTS IN %5.1f ms\n" ,
@@ -286,12 +307,17 @@ public class EventLoader implements IReceiveMessage
       catch ( ExecFailException fail_exception )
       {
         results = fail_exception.getPartialResults();
-        System.out.println("ExecFailException while converting to Q: " +
-                            fail_exception.getFailureStatus() );
+        Util.sendError( message_center,
+                   "Failed to convert events to Q " + event_file_name );
+
+        Util.sendError( message_center, 
+                        fail_exception.getFailureStatus().toString() );
+        return;
       }
       run_time = System.nanoTime() - start_time;
-      System.out.printf("PARALLEL CONVERTED %d EVENTS TO Q IN %5.1f ms\n" ,
-                        num_loaded, (run_time/1.0e6) );
+      Util.sendInfo( message_center, 
+            String.format("PARALLEL CONVERTED %d EVENTS TO Q IN %5.1f ms\n",
+                           num_loaded, (run_time/1.0e6) ) );
 
       Vector<IEventList3D> event_lists = (Vector<IEventList3D>)results;
 
@@ -326,6 +352,9 @@ public class EventLoader implements IReceiveMessage
       if ( num_loaded >= num_to_load )
         done = true; 
     }
+
+    Util.sendInfo( message_center, "Loaded " + num_loaded + 
+                                   " from "  + event_file_name );
 
     for ( int i = 0; i < show_lists.size(); i++ )
       message_center.receive(new Message(Commands.SET_WEIGHTS_FROM_HISTOGRAM,

@@ -21,6 +21,7 @@ import EventTools.EventList.IEventList3D;
 import EventTools.EventList.SNS_Tof_to_Q_map;
 import EventTools.ShowEventsApp.Command.Commands;
 import EventTools.ShowEventsApp.Command.IndexPeaksCmd;
+import EventTools.ShowEventsApp.Command.Util;
 
 
 public class PeakListHandler implements IReceiveMessage
@@ -89,11 +90,7 @@ public class PeakListHandler implements IReceiveMessage
     {
       if ( peakNew_list == null || peakNew_list.size() <= 0 )
       {
-        Message error_message = new Message( Commands.DISPLAY_ERROR,
-                                             "ERROR: No Peaks to write", 
-                                              false );
-        message_center.receive( error_message );
-        return false;
+        Util.sendError( message_center, "ERROR: No Peaks to write" );
       }
       
       String file_name = (String)message.getValue();
@@ -103,10 +100,10 @@ public class PeakListHandler implements IReceiveMessage
       }
       catch ( Exception ex )
       {
-        Message error_message = new Message( Commands.DISPLAY_ERROR,
-                 "ERROR: could not write peaks to file " + file_name,
-                  false );
-        message_center.receive( error_message );
+        Util.sendError( message_center, 
+                       "ERROR: could not write peaks to file " +
+                        file_name );
+        return false;
       }
     }
 
@@ -116,11 +113,16 @@ public class PeakListHandler implements IReceiveMessage
       if ( obj == null || !(obj instanceof IndexPeaksCmd) )
         return false;
 
-      // TODO  Make sure the vector of peaks exists and send error 
-      //       message  and return if not. 
+      if ( peakNew_list == null || peakNew_list.size() <= 0 )
+      {
+        Util.sendError( message_center, "ERROR: No Peaks Found Yet ");
+        return false;
+      }
 
       IndexPeaksCmd cmd = (IndexPeaksCmd)obj;
-    
+      float tolerance = .12f;                    // TODO: use tolerance for
+                                                 //       Index w/optimizer
+ 
       float[][] UB = null;
       try
       {
@@ -131,13 +133,12 @@ public class PeakListHandler implements IReceiveMessage
                                                       cmd.getAlpha(),
                                                       cmd.getBeta(),
                                                       cmd.getGamma() );
+        Util.sendInfo( message_center, "Finished Indexing" );
       }
       catch ( Exception ex )
       {
-        Message error_message = new Message( Commands.DISPLAY_ERROR,
-                                            "ERROR: failed to index peaks",
-                                             false );
-        message_center.receive( error_message );
+        Util.sendError( message_center, "ERROR: Failed to index Peaks ");
+        return false;
       } 
 
       Message set_peaks = new Message( Commands.SET_PEAK_NEW_LIST,
@@ -145,6 +146,19 @@ public class PeakListHandler implements IReceiveMessage
                                        true );
       message_center.receive( set_peaks );
 
+      System.out.println("Indexing results are: " );
+
+      int total_peaks = peakNew_list.size();
+      int count = 0;
+      for ( int i = 0; i < total_peaks; i++ )
+      {
+        Peak_new peak = peakNew_list.elementAt(i);
+        if ( peak.h() != 0 || peak.k() != 0 || peak.l() != 0 )
+          count++;
+      }       
+      Util.sendInfo( message_center, "Indexed " + count + 
+                                      " of " + total_peaks + 
+                                      " within " + tolerance );
     }
 
     return false;
