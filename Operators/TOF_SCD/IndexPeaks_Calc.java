@@ -672,7 +672,7 @@ public class IndexPeaks_Calc
    *
    *  @param UBinverse the inverse of a UB matrix.
    */
-   private static String getLatticeParams( double[][] UBinverse )
+   public static String getLatticeParams( double[][] UBinverse )
    {
      double[][] temp = LinearAlgebra.copy( UBinverse );
      LinearAlgebra.invert( temp );
