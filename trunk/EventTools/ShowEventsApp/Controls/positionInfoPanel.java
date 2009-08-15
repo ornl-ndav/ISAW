@@ -187,7 +187,7 @@ public class positionInfoPanel extends JPanel
    
    private void setFields(SelectionInfoCmd selection)
    {
-      countsTxt.setText( "" + selection.getCounts() );
+      countsTxt.setText( "" + String.format( "%4.2f" , selection.getCounts() ));
       detectorNumTxt.setText( "" + selection.getDetNum() );
       ColRowTxt.setText( "("+selection.getCol()+", "+selection.getRow()+")" );
       histogramPageTxt.setText( "" + selection.getHistPage() );
