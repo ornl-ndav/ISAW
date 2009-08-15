@@ -12,7 +12,8 @@ import java.util.Scanner;
 import MessageTools.*;
 import EventTools.ShowEventsApp.Command.*;
 
-public class indexPeaksPanel extends JPanel
+public class indexPeaksPanel extends JPanel 
+                                
 {
    public static final long serialVersionUID = 1L;
    private MessageCenter    messageCenter;
@@ -26,21 +27,21 @@ public class indexPeaksPanel extends JPanel
    private JTextField       fixedPeakTxt;
    private JTextField       requiredFractionTxt;
    private JButton          applyBtn;
-   
+   private JButton          MatFileBtn;  
+   private JTextField       MatFileName;
+   private String           fileName;
+   private JButton          ViewMatBtn;
+   private JButton          WriteMatBtn;
    
    public indexPeaksPanel(MessageCenter messageCenter)
    {
       this.messageCenter = messageCenter;
-      
       this.setBorder(new TitledBorder("Index Peaks"));
       this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-
+       
       this.add(buildPanel());
       
-      applyBtn = new JButton("Apply");
-      applyBtn.addActionListener(new buttonListener());
-      
-      this.add(applyBtn);
+      //this.add( buildButtonsPanel());
    }
    
    /*private void getDefaultData()
@@ -67,8 +68,63 @@ public class indexPeaksPanel extends JPanel
          e.printStackTrace();
       }   
    }*/
-   
    private JPanel buildPanel()
+   {
+      JPanel panel = new JPanel();
+      panel.setLayout(  new BorderLayout() );
+      panel.add(  buildFromFilePanel(),BorderLayout.NORTH );
+      panel.add( buildCalcMatPanel(), BorderLayout.CENTER);
+      panel.add( buildButtonsPanel(), BorderLayout.SOUTH );
+      return panel;
+   }
+   
+   private JPanel buildFromFilePanel()
+   {
+      JPanel panel = new JPanel();
+      panel.setBorder( new TitledBorder( new LineBorder(Color.black),
+                 "Matrix from File") );
+      panel.setLayout( new GridLayout(1,2));
+      MatFileBtn = new JButton("Matrix filename");
+      MatFileBtn.addActionListener( new buttonListener());
+      fileName = "";
+      panel.add( MatFileBtn );
+      MatFileName = new JTextField(10);
+      MatFileName.setText( "" );
+      panel.add(MatFileName );
+      return panel;
+      
+   }
+   private JPanel buildCalcMatPanel()
+   {
+      JPanel panel = buildPanel1();
+      panel.setBorder(  new TitledBorder( new LineBorder(Color.black),
+               "Calculate Matrix") );
+      return panel;
+   }
+   private JPanel buildButtonsPanel()
+   {  
+      JPanel panel = new JPanel();
+      
+      panel.setLayout( new GridLayout(1,3) );
+      applyBtn = new JButton("Index Peaks");
+      applyBtn.addActionListener(new buttonListener());
+      applyBtn.setToolTipText( "<HTML><BODY>Will get Matrix and"+
+               "<BR> apply it to the Peaks" );
+      panel.add(applyBtn);
+      
+      
+      ViewMatBtn = new JButton("Show Matrix");
+      
+      WriteMatBtn = new JButton("Write Matrix");
+      WriteMatBtn.addActionListener( new buttonListener());
+      ViewMatBtn.addActionListener( new buttonListener());
+     
+      panel.add( WriteMatBtn );
+      panel.add( ViewMatBtn );
+      return panel;
+      
+   }
+   private JPanel buildPanel1()
    {
       JPanel panel = new JPanel();
       panel.setLayout(new GridLayout(9, 2));
@@ -255,10 +311,38 @@ public class indexPeaksPanel extends JPanel
    
    private class buttonListener implements ActionListener
    {
-      public void actionPerformed(ActionEvent e)
+      String lastWriteFileName = System.getProperty("Data_Directory","");
+      String lastInpMatFileName= lastWriteFileName;
+      
+      private String getText( JTextField text)
       {
-         if (valid())
+         if( text == null || text.getText() == null)
+            return "";
+         return text.getText();
+      }
+      
+      private String Directory(String filename)
+      {
+         if( filename == null)
+            return "";
+         String Filename = filename.replace( '\\' , '/' );
+         int i= Filename.lastIndexOf( '/' );
+         if( i < 0)
+            return "";
+         String res = Filename.substring( 0,i );
+         return res.replace( '/' , java.io.File.separatorChar );
+      }
+      public void actionPerformed(ActionEvent e)
+      {  String cmd = e.getActionCommand();
+         if (cmd.startsWith( "Index" ))
          {
+            if( getText(MatFileName).length() > 0)
+         
+            {
+               JOptionPane.showMessageDialog( null , "Not possible yet" );
+            }
+            else if (valid())
+               {
             IndexPeaksCmd indexCmd 
                = new IndexPeaksCmd(Float.parseFloat(aTxt.getText()), 
                            Float.parseFloat(bTxt.getText()), 
@@ -271,6 +355,33 @@ public class indexPeaksPanel extends JPanel
                            Float.parseFloat(requiredFractionTxt.getText()));
          
             sendMessage(Commands.INDEX_PEAKS, indexCmd);
+               }
+         }else if(cmd.startsWith("Write"))
+         {
+            JFileChooser jfc = new JFileChooser( Directory(lastWriteFileName));
+            if( jfc.showSaveDialog( null )== JFileChooser.APPROVE_OPTION)
+            {
+               lastWriteFileName = jfc.getSelectedFile().toString();
+               messageCenter.receive( 
+                         new Message( Commands.WRITE_MATRIX, lastWriteFileName, false) );
+               
+            }
+         }else if( cmd.startsWith( "Show" ) )
+         {
+
+           JOptionPane.showMessageDialog( null , "Not possible yet" );
+           
+         }else if( cmd.startsWith("Matrix") )
+         {
+
+            JFileChooser jfc = new JFileChooser( Directory(lastInpMatFileName));
+            if( jfc.showOpenDialog( null )== JFileChooser.APPROVE_OPTION)
+            {
+               lastInpMatFileName = jfc.getSelectedFile().toString();
+               
+               MatFileName.setText( lastInpMatFileName);
+               
+            }
          }
       }
    }
