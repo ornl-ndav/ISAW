@@ -153,7 +153,7 @@ public class filePanel //extends JPanel
       evFileName.addMouseListener(new mouse());
       evFileName.setEditable(false);
       
-      String default_availableEvents = nf.getInstance().format(10000000);
+      String default_availableEvents = String.format( "%,8.d" ,10000000);// nf.getInstance().format(10000000);
       JLabel available = new JLabel("# of Events Available: ");
       availableEvents = new JTextField( default_availableEvents );
       availableEvents.setEditable(false);
@@ -341,7 +341,7 @@ public class filePanel //extends JPanel
       String size = String.valueOf((file_size / 8));
       
       evFileName.setText(inFile.getPath());
-      availableEvents.setText(size);
+      availableEvents.setText( String.format( "%,8.d" ,file_size/8));
       firstEvent.setText("1");
       eventsToLoad.setText(size);
       try
