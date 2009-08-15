@@ -4,13 +4,14 @@ package EventTools.ShowEventsApp.Controls;
 import gov.anl.ipns.Util.Sys.WindowShower;
 import gov.anl.ipns.ViewTools.Components.OneD.*;
 
-import java.awt.GridLayout;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Arrays;
 import java.util.Vector;
 
 import javax.swing.*;
+import javax.swing.border.*;
 
 import DataSetTools.operator.Generic.Special.ViewASCII;
 import DataSetTools.operator.Generic.TOF_SCD.IPeak;
@@ -56,6 +57,8 @@ public class peaksStatPanel extends JPanel implements IReceiveMessage
       Vector< Peak_new > val = (Vector< Peak_new >) message.getValue();
       removeAll();
       Info = new JPanel();
+      Info.setBorder( new TitledBorder(
+               new LineBorder( Color.black) ,"Peak Statisitics" ));
       add( Info );
       SwingUtilities.invokeLater( new MyThread( val , Info ) );
       return true;
@@ -159,9 +162,9 @@ class MyThread extends Thread implements ActionListener
       }
       
       // Now display in the JPanel
-      panel.setLayout( new BoxLayout( panel , BoxLayout.Y_AXIS ) );
+      panel.setLayout( new BorderLayout() );
       panel.add( new JLabel( "Indexed " + NIndexedPeaks + " out of "
-               + Peaks.size() + " peaks" ) );
+               + Peaks.size() + " peaks" ),BorderLayout.NORTH );
       // ----------------------
       VirtualArrayList1D hData = new VirtualArrayList1D( new DataArray1D(
                xaxis , h_offset ) );
@@ -180,26 +183,27 @@ class MyThread extends Thread implements ActionListener
       holder = new JPanel( new GridLayout( 1 , 1 ) );
       // -------------------------
      
-      JPanel pp = new JPanel( new GridLayout( 1 , 4 ) );
-      pp.add( new JLabel( "Show" ) );
-      JCheckBox box = new JCheckBox( "h offset" , true );
+      JPanel pp = new JPanel( new GridLayout( 3 , 1 ) );
+      
+      JCheckBox box = new JCheckBox( "h" , true );
       ButtonGroup grp = new ButtonGroup();
       grp.add( box );
       box.addActionListener( this );
       pp.add( box );
-      box = new JCheckBox( "k offset" , false );
+      box = new JCheckBox( "k" , false );
       grp.add( box );
       box.addActionListener( this );
       pp.add( box );
-      box = new JCheckBox( "l offset" , false );
+      box = new JCheckBox( "l" , false );
       grp.add( box );
       box.addActionListener( this );
       pp.add( box );
-      panel.add( pp );
+      panel.add( pp ,BorderLayout.EAST);
 
 
       holder.add( hGraph.getDisplayPanel() );
-      panel.add( holder );
+      holder.setBorder( new  LineBorder( Color.black));
+      panel.add( holder, BorderLayout.CENTER );
 
       // panel.add( kGraph.getDisplayPanel() );
 
@@ -207,13 +211,14 @@ class MyThread extends Thread implements ActionListener
 
       JPanel BottomPanel = new JPanel();
       BottomPanel.setLayout( new GridLayout( 1 , 2 ) );
-      BottomPanel.add( new JLabel( "Integrated " + NIntegrated + " out of "
-               + Peaks.size() + " peaks" ) );
+      JLabel IntegInfo =new JLabel( "Measured " + NIntegrated  );
+      IntegInfo.setToolTipText( "<html><body>Number of peaks where <BR> integrated"+
+                     " intensity / error >= 3</body></html>" );
+      BottomPanel.add( IntegInfo );
       JButton ShowPeaks = new JButton( "Show Peaks" );
       BottomPanel.add( ShowPeaks );
       ShowPeaks.addActionListener( this );
-      panel.add( Box.createVerticalGlue() );
-      panel.add( BottomPanel );
+      panel.add( BottomPanel, BorderLayout.SOUTH );
       panel.invalidate();
       panel.validate();
 
@@ -234,27 +239,32 @@ class MyThread extends Thread implements ActionListener
          String filename = gov.anl.ipns.Util.File.FileIO.appendPath( 
                   System.getProperty( "user.home" ), "ISAW/tmp/ppp.peaks" );
          try{
+            
          Peak_new_IO.WritePeaks_new(filename, Peaks, false);
-         }catch(Exception ss){
+         
+         }catch(Exception ss)
+         {
             JOptionPane.showMessageDialog( null , "Error in Peaks "+ss );
             return;
          }
+         
          (new ViewASCII(filename)).getResult();
-      }else   if( arg0.getActionCommand().startsWith( "h " ) )
+         
+      }else   if( arg0.getActionCommand().startsWith( "h" ) )
       {
          holder.removeAll();
          holder.add( hGraph.getDisplayPanel() );
          holder.validate();
          holder.repaint();
       }
-      else if( arg0.getActionCommand().startsWith( "k " ) )
+      else if( arg0.getActionCommand().startsWith( "k" ) )
       {  
          holder.removeAll();
          holder.add( kGraph.getDisplayPanel() );
          holder.validate();
          holder.repaint();
       }
-      else if( arg0.getActionCommand().startsWith( "l " ) )
+      else if( arg0.getActionCommand().startsWith( "l" ) )
       {
          holder.removeAll();
          holder.add( lGraph.getDisplayPanel() );
