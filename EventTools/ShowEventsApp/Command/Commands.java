@@ -31,6 +31,8 @@ public class Commands
    */
   public static final String ADD_HISTOGRAM_INFO = "ADD_HISTOGRAM_INFO";
   public static final String ADD_HISTOGRAM_INFO_ACK = "ADD_HISTOGRAM_INFO_ACK";
+  public static final String GET_HISTOGRAM_MAX = "GET_HISTOGRAM_MAX";
+  public static final String SET_HISTOGRAM_MAX = "SET_HISTOGRAM_MAX";
 
   public static final String FIND_PEAKS        = "FIND_PEAKS";
 

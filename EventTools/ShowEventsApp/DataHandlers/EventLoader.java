@@ -41,6 +41,7 @@ public class EventLoader implements IReceiveMessage
     message_center.addReceiver( this, Commands.SELECT_POINT );
     message_center.addReceiver( this, Commands.ADD_HISTOGRAM_INFO_ACK );
     message_center.addReceiver( this, Commands.GET_PEAK_NEW_LIST );
+    message_center.addReceiver( this, Commands.SET_HISTOGRAM_MAX );
   }
 
 
@@ -192,6 +193,17 @@ public class EventLoader implements IReceiveMessage
         message_center.receive( peak_new_message );
       }
     }
+
+    else if ( message.getName().equals(Commands.SET_HISTOGRAM_MAX) )
+    {                                       // All we do  is display the
+      Object obj = message.getValue();      // max value
+      if ( obj == null )
+        return false;
+
+      if ( obj instanceof Float )
+        Util.sendInfo( message_center, "Max Histogram Value : " + obj );
+    }
+
     return false;
   }
 
@@ -365,6 +377,13 @@ public class EventLoader implements IReceiveMessage
       message_center.receive( new Message( Commands.ADD_EVENTS_TO_VIEW,
                                            show_lists.elementAt(i),
                                            false ));
+
+                                          // Now that we've added the events,
+                                          // ask the histogram to announce
+                                          // the max value it has.
+    message_center.receive( new Message( Commands.GET_HISTOGRAM_MAX,
+                                         null,
+                                         true ));
   }
 
 

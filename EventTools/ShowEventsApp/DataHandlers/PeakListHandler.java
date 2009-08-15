@@ -146,6 +146,10 @@ public class PeakListHandler implements IReceiveMessage
                                        true );
       message_center.receive( set_peaks );
 
+      Message set_or = new Message( Commands.SET_ORIENTATION_MATRIX,
+                                    UB, true );
+      message_center.receive( set_or );
+
       System.out.println("Indexing results are: " );
 
       int total_peaks = peakNew_list.size();
