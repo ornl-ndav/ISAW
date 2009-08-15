@@ -526,7 +526,8 @@ public class SNS_Tof_to_Q_map
         for ( int i = 0; i < num_bins; i++ )
         {
           lamda = i/100f;
-          lamda_weight[i] = 1f/(lamda*lamda*lamda*lamda * spectrum[i]);
+//        lamda_weight[i] = 1f/(lamda*lamda*lamda*lamda * spectrum[i]);
+          lamda_weight[i] = 1f/(lamda*lamda*lamda * spectrum[i]);
         }
       }
     }
