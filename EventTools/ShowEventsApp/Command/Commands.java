@@ -75,6 +75,7 @@ public class Commands
   public static final String DISPLAY_ERROR = "DISPLAY_ERROR";
   public static final String DISPLAY_WARNING = "DISPLAY_WARNING";
   public static final String DISPLAY_CLEAR = "DISPLAY_CLEAR";
+  public static final String WRITE_MATRIX = "WRITE_MATRIX";
   
   /*
 //  public static final String SET_POSITION_INFO = "SET_POSITION_INFO";
