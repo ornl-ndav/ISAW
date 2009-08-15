@@ -47,6 +47,8 @@ public class Commands
    *  SET_PEAK_NEW_LIST has a Vector of Peak_new objects as it's  message value.
    */
   public static final String SET_PEAK_NEW_LIST = "SET_PEAK_NEW_LIST";
+  public static final String CLEAR_PEAK_LISTS = "CLEAR_PEAK_LISTS";
+
   
   public static final String INDEX_PEAKS = "INDEX_PEAKS";
 
@@ -60,7 +62,12 @@ public class Commands
   public static final String CHANGE_PANEL = "CHANGE_PANEL";
   public static final String SET_COLOR_SCALE = "SET_COLOR_SCALE";
   public static final String SET_FILTER_OPTIONS = "SET_FILTER_OPTIONS";
+
+  public static final String CLEAR_ORIENTATION_MATRIX
+                                                  = "CLEAR_ORIENTATION_MATRIX";
   public static final String SET_ORIENTATION_MATRIX = "SET_ORIENTATION_MATRIX";
+  public static final String GET_ORIENTATION_MATRIX = "GET_ORIENTATION_MATRIX";
+
   public static final String PLANE_CHANGED = "PLANE_CHANGED";
   public static final String SLICE_MODE_CHANGED = "SLICE_MODE_CHANGED";
   public static final String SET_SLICE_1 = "SET_SLICE_1";

@@ -25,6 +25,7 @@ import EventTools.EventList.SNS_Tof_to_Q_map;
 import EventTools.ShowEventsApp.Command.Commands;
 import EventTools.ShowEventsApp.Command.SelectionInfoCmd;
 import EventTools.ShowEventsApp.Command.FindPeaksCmd;
+import EventTools.ShowEventsApp.Command.Util;
 
 
 public class HistogramHandler implements IReceiveMessage
@@ -113,6 +114,8 @@ public class HistogramHandler implements IReceiveMessage
                                                  peakQs,
                                                  true );
           message_center.receive( set_peak_Q_list );
+
+          Util.sendInfo( message_center, "Found " + peakQs.size() + " Peaks");
         }
       }
     }
