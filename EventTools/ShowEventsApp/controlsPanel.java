@@ -136,9 +136,10 @@ public class controlsPanel extends JPanel
    
    private JPanel buildControlsPanel()
    {
+      int npanels =5;//Change when add or delete a button
       JPanel panel = new JPanel();
       panel.setBorder(new TitledBorder("Controls/Info"));
-      panel.setLayout(new GridLayout(6,1));
+      panel.setLayout(new GridLayout(npanels,1));
       
       selectedPoint = new JButton("Selected Point");
       selectedPoint.setBackground( background_color );
@@ -166,7 +167,7 @@ public class controlsPanel extends JPanel
       drawOptions.addActionListener(new buttonListener());
       
       panel.add(selectedPoint);
-      panel.add(orientationBtn);
+     // panel.add(orientationBtn);
       panel.add( peakInfoBtn );
       panel.add(colorScaleBtn);
       panel.add(planeBtn);
