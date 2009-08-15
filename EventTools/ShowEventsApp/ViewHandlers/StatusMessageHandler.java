@@ -89,6 +89,7 @@ public class StatusMessageHandler implements IReceiveMessage
       if( container == null )
       {
          JFrame jf = new JFrame( " Messages" );
+         jf.setDefaultCloseOperation( WindowConstants.DO_NOTHING_ON_CLOSE );
          Dimension D = jf.getToolkit().getScreenSize();
          jf.setBounds( 0 , (int) ( D.getHeight() * .7f ) ,
                   (int) ( D.getWidth() * .3 ) , (int) ( D.getHeight() * .3 ) );
