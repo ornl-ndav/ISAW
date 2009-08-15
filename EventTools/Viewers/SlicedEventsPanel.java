@@ -77,6 +77,7 @@ public class SlicedEventsPanel
 {
   private Group           points_group;
   private Group           marker_group;
+  private SimpleShape     marker_shape;
   private Color[]         colors;
   private int[]           color_tran;
   private float           min = 10f;
@@ -204,13 +205,31 @@ public class SlicedEventsPanel
                           Color      color )
   {
     ClearMarkers();
-    marker_group.addChild( new Polymarker(verts, size, type, color) );
+    marker_shape = new Polymarker(verts, size, type, color);
+    marker_group.addChild( marker_shape );
   }
 
  
   public void ClearMarkers()
   {
     marker_group.Clear();
+    marker_shape = null;           // get rid of old markers so we can't
+                                   // show "stale" markers.
+  }
+
+
+  public void SetMarkersOnOff( boolean turn_on )
+  {
+    if ( marker_shape == null )    // nothing to do
+      return;
+
+    if ( turn_on )
+    {
+      marker_group.Clear();
+      marker_group.addChild( marker_shape );
+    }
+    else
+      marker_group.Clear();
   }
 
 

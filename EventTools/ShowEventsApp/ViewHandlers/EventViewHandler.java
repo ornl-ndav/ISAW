@@ -105,7 +105,10 @@ public class EventViewHandler implements IReceiveMessage
     else if ( message.getName().equals( Commands.MARK_PEAKS ) )
     {
        Object val = message.getValue();
-       if ( val != null && val instanceof Vector )
+       if ( val == null )
+         return(false);
+
+       if ( val instanceof Vector )
        {
          events_panel.ClearMarkers();
          Vector<PeakQ> q_peaks = (Vector<PeakQ>)val;
@@ -121,6 +124,13 @@ public class EventViewHandler implements IReceiveMessage
          events_panel.addMarkers( verts, 6, Polymarker.BOX, Color.WHITE );
          events_panel.updateDisplay();
        }
+       else if ( val instanceof Boolean )
+       {
+         boolean on_off = (Boolean)val;
+         events_panel.SetMarkersOnOff( on_off );
+         events_panel.updateDisplay();
+       }
+       
     }
 
     return false;

@@ -481,7 +481,13 @@ public class TestSNS_events
         qx = (float)(qx / (2 * Math.PI)) ;
         qy = (float)(qy / (2 * Math.PI)) ;
         qz = (float)(qz / (2 * Math.PI)) ;
-        q_peaks.add( new PeakQ( qx, qy, qz, (int)ipk_f ) );
+        PeakQ new_peak =  new PeakQ( qx, qy, qz, (int)ipk_f );
+        q_peaks.add( new_peak );
+
+        System.out.printf("Original Qxyz = %7.4f %7.4f %7.4f ", qx, qy, qz );
+        float[] recalc = new_peak.getUnrotQ();
+        System.out.printf("NEW Qxyz = %7.4f %7.4f %7.4f\n", 
+                           recalc[0], recalc[1], recalc[2] );
       } 
     }
 
