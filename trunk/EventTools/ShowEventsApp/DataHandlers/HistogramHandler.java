@@ -32,14 +32,17 @@ public class HistogramHandler implements IReceiveMessage
 {
   private static int    NUM_THREADS = 6;
   private MessageCenter message_center;
-  private Histogram3D   histogram;
+  private Histogram3D   histogram = null;
+  private String        instrument_name;
+  private int           num_bins;
 
   public HistogramHandler( MessageCenter message_center, int num_bins )
   {
+    this.num_bins = num_bins;
     this.message_center = message_center;
-    this.histogram      = DefaultHistogram( num_bins );
     message_center.addReceiver( this, Commands.ADD_EVENTS );
     message_center.addReceiver( this, Commands.CLEAR_HISTOGRAM );
+    message_center.addReceiver( this, Commands.SET_NEW_INSTRUMENT );
     message_center.addReceiver( this, Commands.SET_WEIGHTS_FROM_HISTOGRAM );
     message_center.addReceiver( this, Commands.ADD_HISTOGRAM_INFO );
     message_center.addReceiver( this, Commands.GET_HISTOGRAM_MAX );
@@ -56,14 +59,31 @@ public class HistogramHandler implements IReceiveMessage
     {
       IEventList3D events = (IEventList3D)message.getValue();
       histogram.addEvents( events );
-      System.out.println("MIN HISTOGRAM BIN " + histogram.minVal() );
-      System.out.println("MAX HISTOGRAM BIN " + histogram.maxVal() );
     }
 
     else if (  message.getName().equals(Commands.CLEAR_HISTOGRAM) )
     {
       histogram.clear();
-      System.out.println("CLEARED HISTOGRAM");
+      Util.sendInfo( message_center, "CLEARED HISTOGRAM");
+    }
+
+    else if (  message.getName().equals(Commands.SET_NEW_INSTRUMENT) )
+    {
+      Object obj = message.getValue();
+
+      if ( obj == null || ! (obj instanceof String) )
+        return false;
+
+      String inst = (String)obj;
+
+      if ( inst.equals("SNAP") )
+        histogram = DefaultSNAP_Histogram( num_bins );
+      else if ( inst.equals("ARCS") )
+        histogram = DefaultARCS_Histogram( num_bins );
+      else
+        histogram = DefaultSNAP_Histogram( num_bins );
+
+      Util.sendInfo( message_center, "Set histogram for " + inst );
     }
 
     else if ( message.getName().equals(Commands.SET_WEIGHTS_FROM_HISTOGRAM))
@@ -172,7 +192,7 @@ public class HistogramHandler implements IReceiveMessage
   }
 
 
-  public Histogram3D DefaultHistogram( int num_bins )
+  public Histogram3D DefaultSNAP_Histogram( int num_bins )
   {
     // Just make default histogram aligned with coord axes.
 
@@ -181,17 +201,36 @@ public class HistogramHandler implements IReceiveMessage
     Vector3D yVec = new Vector3D(0,1,0);
     Vector3D zVec = new Vector3D(0,0,1);
 
-/*   FOR SNAP:
-*/
     IEventBinner x_bin1D = new UniformEventBinner( -16.0f,  0,   num_bins );
     IEventBinner y_bin1D = new UniformEventBinner( -16.0f,  0,   num_bins );
     IEventBinner z_bin1D = new UniformEventBinner( - 8.0f, 8.0f, num_bins );
 
-/*   FOR ARCS:
+    ProjectionBinner3D x_binner = new ProjectionBinner3D(x_bin1D, xVec);
+    ProjectionBinner3D y_binner = new ProjectionBinner3D(y_bin1D, yVec);
+    ProjectionBinner3D z_binner = new ProjectionBinner3D(z_bin1D, zVec);
+
+    Histogram3D histogram = new Histogram3D( x_binner,
+                                             y_binner,
+                                             z_binner );
+    long run_time = System.nanoTime() - start_time;
+    System.out.println("Time(ms) to allocate default histogram = " +
+                        run_time/1.e6);
+    return histogram;
+  }
+
+
+  public Histogram3D DefaultARCS_Histogram( int num_bins )
+  {
+    // Just make default histogram aligned with coord axes.
+
+    long start_time = System.nanoTime();
+    Vector3D xVec = new Vector3D(1,0,0);
+    Vector3D yVec = new Vector3D(0,1,0);
+    Vector3D zVec = new Vector3D(0,0,1);
+
     IEventBinner x_bin1D = new UniformEventBinner( -50.0f,    0,  num_bins );
     IEventBinner y_bin1D = new UniformEventBinner( -10.0f, 40.0f, num_bins );
     IEventBinner z_bin1D = new UniformEventBinner( -25.0f, 25.0f, num_bins );
-*/
 
     ProjectionBinner3D x_binner = new ProjectionBinner3D(x_bin1D, xVec);
     ProjectionBinner3D y_binner = new ProjectionBinner3D(y_bin1D, yVec);
