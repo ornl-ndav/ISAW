@@ -77,8 +77,10 @@ public class Commands
   public static final String DISPLAY_ERROR = "DISPLAY_ERROR";
   public static final String DISPLAY_WARNING = "DISPLAY_WARNING";
   public static final String DISPLAY_CLEAR = "DISPLAY_CLEAR";
-  public static final String WRITE_MATRIX = "WRITE_MATRIX";
-  
+  public static final String WRITE_ORIENTATION_MATRIX = "WRITE_ORIENTATION_MATRIX";
+  public static final String READ_ORIENTATION_MATRIX = "READ_ORIENTATION_MATRIX";
+  public static final String INDEX_PEAKS_WITH_ORIENTATION_MATRIX =
+                         "INDEX_PEAKS_WITH_ORIENTATION_MATRIX";
   /*
 //  public static final String SET_POSITION_INFO = "SET_POSITION_INFO";
   public static final String SET_SLICE_2 = "Set Slice 2";

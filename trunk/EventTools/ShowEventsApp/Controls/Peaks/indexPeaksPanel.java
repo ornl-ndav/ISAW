@@ -1,5 +1,7 @@
 package EventTools.ShowEventsApp.Controls.Peaks;
 
+import gov.anl.ipns.Util.Sys.WindowShower;
+
 import javax.swing.*;
 import javax.swing.border.*;
 import java.awt.event.*;
@@ -11,8 +13,10 @@ import java.util.Scanner;
 
 import MessageTools.*;
 import EventTools.ShowEventsApp.Command.*;
+import DataSetTools.components.ui.Peaks.*;
 
 public class indexPeaksPanel extends JPanel 
+                                    implements IReceiveMessage
                                 
 {
    public static final long serialVersionUID = 1L;
@@ -32,10 +36,17 @@ public class indexPeaksPanel extends JPanel
    private String           fileName;
    private JButton          ViewMatBtn;
    private JButton          WriteMatBtn;
+   private float[][]        currentOrientationMatrix;
+   private boolean          doShow;  //Show next incoming orientation matrix
+   private boolean          doIndex;//Index peaks with next incoming 
+                                    //orientation matrix
    
    public indexPeaksPanel(MessageCenter messageCenter)
    {
       this.messageCenter = messageCenter;
+      messageCenter.addReceiver( this , Commands.SET_ORIENTATION_MATRIX );
+      currentOrientationMatrix = null;
+      doShow = doIndex = false;
       this.setBorder(new TitledBorder("Index Peaks"));
       this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
        
@@ -309,6 +320,42 @@ public class indexPeaksPanel extends JPanel
       return true;
    }
    
+   
+   /* (non-Javadoc)
+    * @see MessageTools.IReceiveMessage#receive(MessageTools.Message)
+    */
+   @Override
+   public boolean receive( Message message )
+   {
+
+      if( message.getName().equals( Commands.SET_ORIENTATION_MATRIX ))
+      {
+         currentOrientationMatrix = (float[][])message.getValue();
+         if( doShow)
+         {
+            String ShowText = subs.ShowOrientationInfo( null , 
+                          currentOrientationMatrix , null , null ,true );
+         
+            JFrame jf = new JFrame( "Orientation Matrix");
+            jf.setSize( 400,200 );
+            jf.getContentPane().add( new JEditorPane("text/html", ShowText) );
+            jf.setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
+            
+            WindowShower.show(jf);
+            doShow = false;
+         }
+         if( doIndex)
+         {
+            sendMessage( Commands.INDEX_PEAKS_WITH_ORIENTATION_MATRIX,
+                     currentOrientationMatrix);
+            doIndex = false;
+         }
+         return true;
+      }
+      return false;
+   }
+
+
    private class buttonListener implements ActionListener
    {
       String lastWriteFileName = System.getProperty("Data_Directory","");
@@ -332,6 +379,8 @@ public class indexPeaksPanel extends JPanel
          String res = Filename.substring( 0,i );
          return res.replace( '/' , java.io.File.separatorChar );
       }
+      
+      
       public void actionPerformed(ActionEvent e)
       {  String cmd = e.getActionCommand();
          if (cmd.startsWith( "Index" ))
@@ -339,7 +388,9 @@ public class indexPeaksPanel extends JPanel
             if( getText(MatFileName).length() > 0)
          
             {
-               JOptionPane.showMessageDialog( null , "Not possible yet" );
+               sendMessage(  Commands.READ_ORIENTATION_MATRIX , getText(MatFileName) );
+               doIndex = true;
+               return;
             }
             else if (valid())
                {
@@ -363,13 +414,14 @@ public class indexPeaksPanel extends JPanel
             {
                lastWriteFileName = jfc.getSelectedFile().toString();
                messageCenter.receive( 
-                         new Message( Commands.WRITE_MATRIX, lastWriteFileName, false) );
+                         new Message( Commands.WRITE_ORIENTATION_MATRIX, lastWriteFileName, false) );
                
             }
          }else if( cmd.startsWith( "Show" ) )
          {
 
-           JOptionPane.showMessageDialog( null , "Not possible yet" );
+            sendMessage(  Commands.GET_ORIENTATION_MATRIX ,"" );
+            doShow = true;
            
          }else if( cmd.startsWith("Matrix") )
          {
