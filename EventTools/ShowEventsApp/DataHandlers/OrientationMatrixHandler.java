@@ -6,12 +6,14 @@ import java.util.Vector;
 import gov.anl.ipns.Operator.IOperator;
 import gov.anl.ipns.Operator.Threads.ParallelExecutor;
 import gov.anl.ipns.Operator.Threads.ExecFailException;
+import gov.anl.ipns.Util.SpecialStrings.ErrorString;
 import gov.anl.ipns.MathTools.LinearAlgebra;
 
 import DataSetTools.operator.Generic.TOF_SCD.Peak_new;
 import DataSetTools.operator.Generic.TOF_SCD.Peak_new_IO;
 import DataSetTools.operator.Generic.TOF_SCD.PeakQ;
 
+import Operators.TOF_SCD.IndexJ;
 import Operators.TOF_SCD.IndexPeaks_Calc;
 
 import MessageTools.IReceiveMessage;
@@ -42,6 +44,9 @@ public class OrientationMatrixHandler implements IReceiveMessage
     this.message_center = message_center;
     message_center.addReceiver( this, Commands.SET_ORIENTATION_MATRIX );
     message_center.addReceiver( this, Commands.GET_ORIENTATION_MATRIX );
+    message_center.addReceiver( this, Commands.WRITE_ORIENTATION_MATRIX );
+
+    message_center.addReceiver( this, Commands.READ_ORIENTATION_MATRIX );
   }
 
 
@@ -101,7 +106,33 @@ public class OrientationMatrixHandler implements IReceiveMessage
                                         orientation_matrix,
                                         true );
       message_center.receive( mat_message );
-    } 
+    }  else if ( message.getName().equals(Commands.WRITE_ORIENTATION_MATRIX))
+    {
+       String filename = (String)message.getValue();
+       ErrorString Res = DataSetTools.operator.Generic.TOF_SCD.Util.WriteMatrix( filename, orientation_matrix);
+       if( Res == null)
+          return true;
+       Util.sendError(  message_center , "Write Orientation Error:"+Res.toString() );
+       
+    } else if ( message.getName().equals(Commands.READ_ORIENTATION_MATRIX))
+    {
+
+       String filename = (String)message.getValue();
+       Object Res = Operators.TOF_SCD.IndexJ.readOrient( filename );
+       if( Res == null || !(Res instanceof float[][]) )
+       {
+          if( Res == null )
+             Res ="";
+          Util.sendError( message_center , "Read Orientation Matrix Error:"+Res.toString() );
+          return false;
+       }
+       float[][] orientSav = orientation_matrix;
+          receive( new Message(Commands.SET_ORIENTATION_MATRIX, Res, false));
+         if( orientation_matrix != orientSav)
+           return receive( new Message(Commands.GET_ORIENTATION_MATRIX,null,false));
+      
+       
+    }
     return false;
   }
 
