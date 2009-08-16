@@ -14,7 +14,7 @@ import MessageTools.*;
 import EventTools.ShowEventsApp.Command.*;
 
 
-public class displayColorEditor 
+public class displayColorEditor implements IReceiveMessage
 {
   private JFrame         cEditPanel;
   private ColorEditPanel  colorEditPanel;
@@ -40,7 +40,46 @@ public class displayColorEditor
                                         true, 127, table, true));
     if (addListener)
        colorEditPanel.addActionListener( new ColorListener() );
+
+    message_center.addReceiver( this, Commands.SET_HISTOGRAM_MAX );
   }
+
+
+  public boolean receive( Message message )
+  {
+    System.out.println("***displayColorEditor in thread "
+                       + Thread.currentThread());
+
+    if ( message.getName().equals(Commands.SET_HISTOGRAM_MAX) )
+    {
+      Object obj = message.getValue();
+
+      if ( obj == null || ! ( obj instanceof Float ) )
+        return false;
+
+      Float max = (Float)obj;
+      if ( max <= 0 )
+        return false;
+
+      float min = max/50;
+      if ( min < 1 ) 
+        min = 1;
+
+       if ( max < min + 9 )
+         max = min + 9;
+
+      System.out.println("Setting Color range to " + min + " to " + max );
+      colorEditPanel.setControlValue( 0.0001f, colorEditPanel.MINSET ); 
+      colorEditPanel.setControlValue( max, colorEditPanel.MAXSET ); 
+      colorEditPanel.setControlValue( min, colorEditPanel.MINSET ); 
+
+      sendMessage(Commands.SET_COLOR_SCALE, getColorScaleInfo()); 
+    }
+
+    return false;
+
+  }
+
   
   private displayColorEditor(MessageCenter inMessage_Center,
       String inCommand)

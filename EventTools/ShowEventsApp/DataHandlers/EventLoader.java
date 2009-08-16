@@ -49,6 +49,9 @@ public class EventLoader implements IReceiveMessage
   {
     System.out.println("***EventLoader in thread " + Thread.currentThread());
 
+    long   start;
+    double run_time;
+
     if ( message.getName().equals(Commands.LOAD_FILE) )
     {
       LoadEventsCmd cmd = (LoadEventsCmd)message.getValue();
@@ -67,8 +70,8 @@ public class EventLoader implements IReceiveMessage
  
       else
       {
-        System.out.println("ERROR: UNSUPPORTED INSTRUMENT" +
-                            event_file_name );
+        Util.sendError( message_center, "ERROR: UNSUPPORTED INSTRUMENT " +
+                                         event_file_name );
         return false;
       }
                                          // if this is a new instrument, get
@@ -76,8 +79,6 @@ public class EventLoader implements IReceiveMessage
       if ( instrument_name == null ||
            !new_instrument.equals( instrument_name ) )
       {
-        System.out.println("MAKING MAPPER FOR " + instrument_name );
-
         String det_file = cmd.getDetFile();
 
         if ( det_file == null || det_file.trim().length() == 0 )
@@ -87,22 +88,28 @@ public class EventLoader implements IReceiveMessage
                      new_instrument + ".DetCal";
         }
 
-        long start = System.nanoTime();
-       
         try
         {
-          mapper = new SNS_Tof_to_Q_map( det_file, new_instrument );
-          System.out.println("Made Q mapper in " + 
-                             (System.nanoTime() - start)/1.0e6 + " ms" );
+          start    = System.nanoTime();
+          mapper   = new SNS_Tof_to_Q_map( det_file, new_instrument );
+          run_time = (System.nanoTime() - start)/1.0e6;
+          System.out.printf("Made Q mapper in %5.1f ms\n", run_time  );
         }
         catch ( Exception ex )
         {
-          System.out.println("ERROR: Could not make Q mapper for " +
-                              det_file );
+          Util.sendError( message_center,
+                         "ERROR: Could not make Q mapper for "+ det_file );
           return false;
         }
+
+        instrument_name = new_instrument; 
+
+        Message new_inst_mess = new Message( Commands.SET_NEW_INSTRUMENT,
+                                             new_instrument, true );
+        message_center.receive( new_inst_mess );
       }
 
+      start = System.nanoTime();
       try
       {
         LoadEvents( event_file_name, 
@@ -115,8 +122,14 @@ public class EventLoader implements IReceiveMessage
       {
         Util.sendError( message_center, "ERROR: Failed to Load File :" +
                         event_file_name + "\n" + ex );
-
+        return false;
       }
+
+      run_time = (System.nanoTime() - start)/1.0e6;
+      String load_str = String.format( "Loaded file in %5.1f ms\n", run_time );
+      Util.sendInfo( message_center, load_str );
+      return false;
+
     }
     else if ( message.getName().equals(Commands.SELECT_POINT) )
     {
@@ -397,11 +410,14 @@ public class EventLoader implements IReceiveMessage
       IPeakQ q_peak = q_peaks.elementAt(k);
       float[] qxyz = q_peak.getUnrotQ();
       Peak_new peak = mapper.GetPeak( qxyz[0], qxyz[1], qxyz[2] );
-      peak.setFacility( "SNS" );
-      peak.sethkl( q_peak.h(), q_peak.k(), q_peak.l() );
-      peak.seqnum( k );
-      peak.ipkobs( q_peak.ipkobs() );
-      new_peaks.add( peak );
+      if ( peak != null )
+      {
+        peak.setFacility( "SNS" );
+        peak.sethkl( q_peak.h(), q_peak.k(), q_peak.l() );
+        peak.seqnum( k );
+        peak.ipkobs( q_peak.ipkobs() );
+        new_peaks.add( peak );
+      }
     }
 
     return new_peaks;

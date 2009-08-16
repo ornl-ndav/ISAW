@@ -18,6 +18,13 @@ public class Commands
   public static final String SELECT_POINT = "SELECT_POINT";
   public static final String SELECTED_POINT_INFO = "SELECTED_POINT_INFO";
 
+ /**
+  *  When a new data file is about to be loaded, this message should
+  *  be sent with the instrument name as it's value, so other objects
+  *  can start to re-configure themselves.  e.g. make a new default histogram
+  */
+  public static final String SET_NEW_INSTRUMENT = "SET_NEW_INSTRUMENT";
+
   /**
    *  An ADD_HISTOGRAM_INFO message will be sent to request that some class 
    *  (HistogramHandler) should find the histogram intensity at each
