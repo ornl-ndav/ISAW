@@ -462,44 +462,50 @@ public class SNS_Tof_to_Q_map
     boolean build_from_file = true;
     int     num_bins = DEFAULT_NUM_WAVELENGTHS;
     float[] spectrum = null;
-
-
-    try
-    { 
-      FileReader     f_in        = new FileReader( spectrum_file_name );
-      BufferedReader buff_reader = new BufferedReader( f_in );
-      Scanner        sc          = new Scanner( buff_reader );
-
-      for ( int i = 0; i < 6; i++ )                // skip info lines
-        sc.nextLine();
-
-      String num_y_line = sc.nextLine().trim();
-
-      int blank_index = num_y_line.lastIndexOf(" ");
-
-      num_y_line = num_y_line.substring(blank_index);
-      num_y_line = num_y_line.trim();
-
-      Integer NUM_BINS = new Integer( num_y_line );
-      num_bins = NUM_BINS;
-
-      spectrum = new float[ num_bins ];
-      for ( int i = 0; i < num_bins; i++ )
-      {
-        sc.nextDouble();
-        spectrum[i] = (float)sc.nextDouble();
-      }
-      build_from_file = true;
-    }
-    catch ( Exception ex )
-    {
-      System.out.println("EXCEPTION = " + ex + "\n" + "USING DEFAULT" );
+                                                  //  TODO
+    if ( instrument_name.equals( "ARCS" )  ||     // no incident spectrum yet
+         instrument_name.equals( "SEQ" )    )
       build_from_file = false;
+
+    if ( build_from_file )
+    {
+      try
+      { 
+        FileReader     f_in        = new FileReader( spectrum_file_name );
+        BufferedReader buff_reader = new BufferedReader( f_in );
+        Scanner        sc          = new Scanner( buff_reader );
+
+        for ( int i = 0; i < 6; i++ )                // skip info lines
+          sc.nextLine();
+
+        String num_y_line = sc.nextLine().trim();
+
+        int blank_index = num_y_line.lastIndexOf(" ");
+
+        num_y_line = num_y_line.substring(blank_index);
+        num_y_line = num_y_line.trim();
+
+        Integer NUM_BINS = new Integer( num_y_line );
+        num_bins = NUM_BINS;
+
+        spectrum = new float[ num_bins ];
+        for ( int i = 0; i < num_bins; i++ )
+        {
+          sc.nextDouble();
+          spectrum[i] = (float)sc.nextDouble();
+        }
+        build_from_file = true;
+      }
+      catch ( Exception ex )
+      {
+        System.out.println("EXCEPTION = " + ex + "\n" + "USING DEFAULT" );
+        build_from_file = false;
 /*
       ex.printStackTrace();
       System.out.println("Failed to read spectrum file "+spectrum_file_name);
       System.out.println("Using default approximate correcton" );
 */
+      }
     }
 
     if ( build_from_file )
@@ -540,9 +546,9 @@ public class SNS_Tof_to_Q_map
       for ( int i = 0; i < lamda_weight.length; i++ )
       {
         lamda = i/100f;
-//        lamda_weight[i] = (float)(1.0/Math.pow(lamda,2.4));
+        lamda_weight[i] = (float)(1.0/Math.pow(lamda,2.4));
 //      lamda_weight[i] = (float)(1.0/lamda);
-        lamda_weight[i] = 1.0f;
+//      lamda_weight[i] = 1.0f;
       }
     }
 
