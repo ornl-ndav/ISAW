@@ -43,7 +43,8 @@ import DataSetTools.operator.Generic.TOF_SCD.*;
 import IPNSSrc.blind;
 import gov.anl.ipns.MathTools.*;
 import gov.anl.ipns.MathTools.Geometry.*;
-import gov.anl.ipns.Util.SpecialStrings.ErrorString;
+//import gov.anl.ipns.Util.SpecialStrings.ErrorString;
+import gov.anl.ipns.Util.File.*;
 
 
 /**
@@ -80,78 +81,114 @@ public class subs
                                              boolean html )
    {
 
-      String Res , eoln , paragraph , end;
+      String Res , 
+             eoln  , 
+             end;
+      
+      String textType ="html";
+      
+      if( !html)
+         textType ="plain";
+      TextSeparators u = new TextSeparators(textType);
       // For lining up, need to use tables. Spaces are collapsed in html
-      if( html )
-      {
-         Res = "<html><body>\n";
-         eoln = "<BR>\n";
-         paragraph = "<P>\n";
-         end = "</b ody></html>";
-      }
-      else
-      {
-         Res = "";
-         eoln = "\n";
-         paragraph = "\n\n";
-         end = "";
-      }
+      
+      Res = u.start();
+      eoln =u.eol();
+      end = u.end();
+     
       
       if( orientationMatrix == null )
          return "";
-      
+      Res +=u.table();
+    
       for( int col = 0 ; col < 3 ; col++ )
-      {
+      {  Res +=u.row();
          for( int row = 0 ; row < 3 ; row++ )
+         {
             Res += String.format( "%10.6f" , orientationMatrix[ row ][ col ] );
-         
-         Res += eoln;
+            if( row < 2)
+               Res += u.col();
+         }
+         Res += u.rowEnd();
       }
-
+      Res += u.tableEnd();
+      
       double[] XtalParams = DataSetTools.operator.Generic.TOF_SCD.Util
                .abc( LinearAlgebra.float2double( orientationMatrix ) );
-      
+      if( XtalParams == null)
+      {
+         Res += u.end();
+         return Res;
+      }
+      Res +=u.table();
+      Res +=u.row();
       for( int i = 0 ; i < 6 ; i++ )
+      {
+         
          Res += String.format( "%10.4f" , XtalParams[ i ] );
-      
-      Res += eoln;
-
+         if( i < 5)
+            Res +=u.col();
+         
+      }
+      Res +=u.rowEnd();
+     
+      Res += u.row();
       for( int i = 0 ; i < 6 ; i++ )
          if( errs != null && errs.length > i )
-            
+         {   
             Res += String.format( "%10.4f" , errs[ i ] );
-      
-         else
-            
+            if( i < 5)
+               Res +=u.col();
+         }else
+         {   
             Res += String.format( "%10.4f" , 0f );
+            if( i < 5)
+               Res +=u.col();
+            
+         }
+      Res +=u.rowEnd();
+      Res += u.tableEnd();
       
       if( Peaks == null || Peaks.size() < 1 )
          return Res + end;
       
-      Res += eoln + paragraph;
+      Res += eoln ;
       
       float[] Perc = GetPeakFitInfo( Peaks , orientationMatrix ,
                omittedPeakIndex );
       
       float[] AllPerc = GetPeakFitInfo( Peaks , orientationMatrix , null );
-      
+      Res += u.indent();
       Res += "Percent Peaks where h,k, and l are within .1,.2,.. of an integer";
-      Res += paragraph;
+      Res += u.indentEnd();
+      Res += u.table()+u.row();
+      Res += "closeness "+u.col()+" Used  "+u.col()+"   All" +u.rowEnd();
+         Res += u.row();
+      Res += "to int "+u.col()+"   Peaks "+u.col()+"   Peaks" + u.rowEnd();
       
-      Res += "closeness    Used       All" + eoln;
-      Res += "to int      Peaks      Peaks" + eoln;
-      Res += "------------------------------" + eoln;
+      Res += u.row()+"---------"+u.col()+"-----"+u.col()+"------"+u.rowEnd();
+      
       if( AllPerc !=null &&  Perc != null && AllPerc.length >=4 &&
                Perc.length >=4)
-      for( int i = 0 ; i < 4 ; i++ )
-         Res += " "
-                  + String.format( "%2.1f%14.3f%11.3f" , .1 + i * .1 ,
-                           Perc[ i ] * 100 , AllPerc[ i ] * 100 ) + eoln;
-      if( html )
-      {
-         Res += "</body></html>";
-      }
+      {  
+         for( int i = 0 ; i < 4 ; i++ )
+         {
+            Res +=u.row();
+           // Res += " "
+            //      + String.format( "%2.1f%14.3f%11.3f" , .1 + i * .1 ,
+            //               Perc[ i ] * 100 , AllPerc[ i ] * 100 ) + u.col();
 
+            Res += " "
+                  + String.format( "%2.1f" , .1 + i * .1  ) +  u.col();
+            Res += 
+                String.format( "%14.3f" , Perc[ i ] * 100  ) +  u.col();
+            Res +=
+                String.format( "%11.3f" , AllPerc[ i ] * 100 ) + u.rowEnd();
+         }
+      }
+      Res += u.tableEnd();
+         Res += u.end();
+    
 
       return Res;
    }
@@ -256,24 +293,18 @@ public class subs
    {
 
       String Res , 
-            eoln ,
-            paragraph , 
-            end;
+            eoln ;
+      
+      
+      String textType ="html";
+      if( !html)
+         textType ="plain";
+      TextSeparators u = new TextSeparators(textType);
     
-      if( html )
-      {
-         Res = "<html><body>\n";
-         eoln = "<BR>\n";
-         paragraph = "<P>\n";
-         end = "</body></html>";
-      }
-      else
-      {
-         Res = "";
-         eoln = "\n";
-         paragraph = "\n\n";
-         end = "";
-      }
+      
+         Res = u.start();
+         eoln = u.eol();
+     
 
 
       Res += "The above orientation matrix in the file is the TRANSPOSE of the UB Matrix "
@@ -1044,24 +1075,30 @@ public class subs
       
       return UB1;
    }
-   public static void main1( String[] args )
+   public static void main( String[] args )
    {
 
-      System.out.println( subs.getCoordinateInformation( false ) );
-      System.exit( 0 );
+      //System.out.println( subs.getCoordinateInformation( false ) );
+      //System.exit( 0 );
       String filename = "C:\\ISAW\\SampleRuns\\SNS\\Snap\\QuartzRunsFixed\\quartz.peaks";
 
       Vector pks = (Vector) ( new DataSetTools.operator.Generic.TOF_SCD.ReadPeaks(
                filename ) ).getResult();
       float[][] orientMat = (float[][]) Operators.TOF_SCD.IndexJ
                .readOrient( "C:\\ISAW\\SampleRuns\\SNS\\Snap\\QuartzRunsFixed\\quartz.mat" );
-      System.out.println( subs.ShowOrientationInfo( pks , orientMat , null ,
-               null , true ) );
+      String S = subs.ShowOrientationInfo( pks , orientMat , null ,
+               null , false );
+      System.out.println(S );
+      JFrame jf  = new JFrame("PLAIN");
+      JEditorPane ed= new JEditorPane("text/plain", S);
+      jf.getContentPane().add(ed);
+      jf.setSize(400,400);
+      jf.show();
 
 
    }
    //Tests new nigglify for = cases
-   public static void main( String[] args )
+   public static void main1( String[] args )
    {
       
       //Test results: cannot get === so gave up on testing
