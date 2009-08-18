@@ -6,6 +6,7 @@ import java.util.Vector;
 import gov.anl.ipns.Operator.IOperator;
 import gov.anl.ipns.Operator.Threads.ParallelExecutor;
 import gov.anl.ipns.Operator.Threads.ExecFailException;
+import gov.anl.ipns.MathTools.LinearAlgebra;
 import gov.anl.ipns.MathTools.Geometry.Vector3D;
 
 import MessageTools.IReceiveMessage;
@@ -23,6 +24,7 @@ import EventTools.ShowEventsApp.Command.SelectPointCmd;
 import EventTools.ShowEventsApp.Command.SelectionInfoCmd;
 import EventTools.ShowEventsApp.Command.Util;
 
+import DataSetTools.math.tof_calc;
 import DataSetTools.operator.Generic.TOF_SCD.Peak_new;
 import DataSetTools.operator.Generic.TOF_SCD.IPeakQ;
 import DataSetTools.operator.Generic.TOF_SCD.PeakQ;
@@ -32,7 +34,8 @@ public class EventLoader implements IReceiveMessage
   private MessageCenter    message_center;
   private String           instrument_name = null;
   private SNS_Tof_to_Q_map mapper;
-
+  private float[][]        OrientationMatrix = null;
+  private float[][]        OrientationMatrixInv = null;
 
   public EventLoader( MessageCenter message_center )
   {
@@ -42,6 +45,7 @@ public class EventLoader implements IReceiveMessage
     message_center.addReceiver( this, Commands.ADD_HISTOGRAM_INFO_ACK );
     message_center.addReceiver( this, Commands.GET_PEAK_NEW_LIST );
     message_center.addReceiver( this, Commands.SET_HISTOGRAM_MAX );
+    message_center.addReceiver(this, Commands.SET_ORIENTATION_MATRIX);
   }
 
 
@@ -161,7 +165,11 @@ public class EventLoader implements IReceiveMessage
         Vector3D hkl      = new Vector3D( peak.h(), peak.k(), peak.l() );
         Vector3D Qxyz     = new Vector3D( Q[0], Q[1], Q[2] );
         float magnitude_Q = Qxyz.length();
-
+        
+        if( OrientationMatrix != null)
+           hkl =Calc_hkl(Q, OrientationMatrixInv);
+        float Energy = Calc_energy( peak);
+        
         info = new SelectionInfoCmd(
                    peak.ipkobs(),
                    peak.detnum(),
@@ -173,7 +181,7 @@ public class EventLoader implements IReceiveMessage
                    magnitude_Q,
                    peak.d(),
                    peak.time(),
-                   Float.NaN,              // TODO get correct energy
+                   Energy,              // TODO get correct energy
                    peak.wl()  );
       }
                                            // ask histogram object to get
@@ -216,8 +224,58 @@ public class EventLoader implements IReceiveMessage
       if ( obj instanceof Float )
         Util.sendInfo( message_center, "Max Histogram Value : " + obj );
     }
+    else if( message.getName().equals( Commands.SET_ORIENTATION_MATRIX ))
+    {
+       OrientationMatrix = (float[][])message.getValue();
+       if(!isOrientationOK())
+       {   OrientationMatrix = OrientationMatrixInv = null;
+           return  true;
+       }
+       OrientationMatrix = LinearAlgebra.getTranspose( OrientationMatrix );
+       OrientationMatrixInv = LinearAlgebra.getInverse( OrientationMatrix );
+    }
 
     return false;
+  }
+  
+  private Vector3D Calc_hkl(float[] Q, float[][]OrientationMatrixInv)
+  {
+     if( OrientationMatrixInv == null)
+        return new Vector3D(0f,0f,0f);
+     System.out.println("++++++++++++++Q+++++++++++++++++++");
+     LinearAlgebra.print( Q );
+     System.out.println("     - -- - - UBnv- - - - -- -");
+     LinearAlgebra.print( OrientationMatrixInv );
+     System.out.println("++++++++++++++++++++++++++++");
+     float[]hkl = new float[3];
+     java.util.Arrays.fill( hkl , 0f );
+     for( int i=0;i<3;i++)
+        for( int j=0; j< 3; j++)
+            hkl[i] +=OrientationMatrixInv[i][j]*Q[j];
+     
+     return new Vector3D(hkl);
+  }
+  
+  private float Calc_energy( Peak_new Peak)
+  {
+     float time = Peak.time();
+     float row = Peak.y();
+     float col = Peak.x();
+     float path_length = Peak.getGrid().position(row,col).length()+Peak.L1();
+     return tof_calc.Energy( path_length , time );
+  }
+  
+  
+  private boolean isOrientationOK()
+  {
+     if( OrientationMatrix == null)
+        return false;
+     if( OrientationMatrix.length !=3)
+        return false;
+     for( int i=0; i<3;i++)
+        if(OrientationMatrix[i].length !=3)
+           return false;
+     return true;
   }
 
 
