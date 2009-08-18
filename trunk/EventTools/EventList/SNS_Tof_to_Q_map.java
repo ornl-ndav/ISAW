@@ -148,7 +148,10 @@ public class SNS_Tof_to_Q_map
 
      
      BuildMaps();
-     String spectrum_file_name = "/home/dennis/ISAW/SNAP_Spectrum.dat";
+     String isaw_home = System.getProperty("ISAW_HOME");
+     String spectrum_file_name = isaw_home +
+                                 "/InstrumentInfo/SNS/SNAP_Spectrum.dat";
+
      BuildLamdaWeights( spectrum_file_name );
      BuildPixWeights();
 /*
