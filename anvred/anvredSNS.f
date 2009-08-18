@@ -74,6 +74,9 @@ C
      2	CenterY(100), CenterZ(100), BaseX(100), BaseY(100),
      3	BaseZ(100), UpX(100), UpY(100), UpZ(100), nod
      
+! Labelled common for the incident spectrum	July, 2009
+	common /spect_data/ xtime(1700), counts(1700)
+     
 	COMMON    /PEAKS/  col, row, chan, L2, twoth, az, dsp
 	COMMON    /INSPAR/ L1, TZERO
 	COMMON    /MONI/   MONCNT
@@ -201,6 +204,22 @@ C
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+	write (*, 9010)
+9010	format(/,'Is the incident spectrum correction based on'/,
+     1          '   (1) coefficients of a fitted equation'/,
+     2          'or (2) the actual spectral data?'/,
+     3          'Input 1 or 2: ',$)
+     	CALL READANS (NCHRS, ANS)
+	  IF (NCHRS.EQ.0) THEN
+		ispec = 1
+	  ELSE
+		READ (ANS, *) ispec
+	  END IF
+	WRITE (16, 9010)
+	WRITE (16, *) ispec
+
+			if (ispec .eq. 1) then
+
 	WRITE (*, 1330) 
 1330	FORMAT(' Enter the spectrum file name: ',$)
 	READ (*, 100) SpecNam
@@ -222,6 +241,23 @@ C
 	write (*,*) (PJ(J,ii),J=1,11)
 
 		end do
+		
+			end if
+			
+		if (ispec .eq. 2) then
+			
+	write (*, 789)
+789	format(/,'Input averaging range +/- (<5>): ',$)
+	CALL READANS (NCHRS, ANS)
+          IF (NCHRS.EQ.0) THEN
+		navg_range = 5
+	  ELSE
+		READ (ANS, *) navg_range
+	  END IF
+	write (16, 789)
+	write (16, *) navg_range
+	
+		end if
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -234,14 +270,13 @@ C
 	  ELSE
 		READ (ANS, *) ISIG
 	  END IF
-
 	WRITE (16, 5360)
 	WRITE (16, *) ISIG
 
 !  Reject border peaks.
 	WRITE (*, 6360)
 6360	FORMAT(//,' Reject peaks within N channels of the border.'/,
-     1' Input a value for N (<10>): ',$)
+     1' Input a value for N (<5>): ',$)
 	CALL READANS (NCHRS, ANS)
 	  IF (NCHRS.EQ.0) THEN
 		NBCH = 10
@@ -273,7 +308,7 @@ C
 !  Reject peaks below a threshold peak count	!ajs 5/6/03
 	WRITE (*, 8360)
 8360	FORMAT(//,
-     1' Input mininum peak count (<0>): ',$)
+     1' Input mininum peak count (<10>): ',$)
 	CALL READANS (NCHRS, ANS)
 	  IF (NCHRS.EQ.0) THEN
 		IPKMIN = 0
@@ -287,7 +322,7 @@ C
 !  Reject peaks below a minimum d-spacing		!ajs 7/2/03
 	WRITE (*, 8370)
 8370	FORMAT(//,
-     1' Input mininum d-spacing (<0.0>): ',$)
+     1' Input mininum d-spacing (<0.5>): ',$)
 	CALL READANS (NCHRS, ANS)
 	  IF (NCHRS.EQ.0) THEN
 		DMIN = 0.0
@@ -339,26 +374,60 @@ C  Calculate spectral correction at 1.0 Angstrom to normalize
 C  spectral correction factors later on.   This code was copied
 C  from SEPD_SPEC.
 
+
 		do id = 1, nod
+
+	if (ispec .eq. 1) then	! The spectrum is calculated from
+				! coefficients
+
 	
-	xtof(id) = (L1 + dist(id)) / hom
+	  xtof(id) = (L1 + dist(id)) / hom
 	
 c++	TOF = WLMIN * XTOF
 c++  Normalize to a wavelength of 1.0 Angstroms
-	TOF = 1.0 * XTOF(id)
-	T = TOF/1000.
+	  TOF = 1.0 * XTOF(id)
+	  T = TOF/1000.
 
 C	SPECT1 = A1(JS)*EXP(-A2(JS)/T**2)/T**5 + A3(JS)*EXP(-A4(JS)*T*T)
 C     &		+ A5(JS)*EXP(-A6(JS)*T**3) + A7(JS)*EXP(-A8(JS)*T**4) 
 ! TYPE 2 function in GSAS.
-	SPECT1(id) = PJ(1,id) + PJ(2,id)*EXP(-PJ(3,id)/T**2)/T**5
+	  SPECT1(id) = PJ(1,id) + PJ(2,id)*EXP(-PJ(3,id)/T**2)/T**5
      1	+ PJ(4,id)*EXP(-PJ(5,id)*T**2)
      2	+ PJ(6,id)*EXP(-PJ(7,id)*T**3)
      3	+ PJ(8,id)*EXP(-PJ(9,id)*T**4)
      4	+ PJ(10,id)*EXP(-PJ(11,id)*T**5)
+
+	else	! ispec = 2
+!!!!!!!!!!!! July 2009
+
+	  ibank = id + 9
+	  write (ans, '(I2)') ibank
+	  LCS = LNBLNK(ans)
+	  SpecNam = 'Bank'//ans(1:LCS)//'_spectrum.asc'
+	 
+	  open(unit=22, file=SpecNam, status='old')
 	
+	  do j=1,7		! Skip the first 7 lines.
+	    read (22, 100) aline
+	  end do
+	
+	  do j=1,1700
+	    read (22, *) xtime(j), counts(j)
+	  end do
+	
+	  close(unit=22)
+
+	  xtof(id) = (L1 + dist(id)) / hom
+	
+	  wl = 1.0
+	  spect1(id) = 1.0
+	  call spectrum (WL, XTOF(id), NAVG_RANGE, spect1(id), SPECT)
+	  spect1(id) = spect
+	  
+!!!!!!!!!!!!!!!
+	end if
 		end do
-		
+
 
 C-----------------------------------------------------------------------
  
@@ -398,6 +467,7 @@ C
 	
 	
 1090	continue
+
 
 	if (IIQ .eq. 2) hstnum = hstnum + 1
 	
@@ -450,6 +520,9 @@ C
 C+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 C   Spectral correction based on SCD TiZr data.
 
+
+		if (ispec .eq. 1) then
+
 C	SPECT = A1(JS)*EXP(-A2(JS)/T**2)/T**5 + A3(JS)*EXP(-A4(JS)*T*T)
 C     &		+ A5(JS)*EXP(-A6(JS)*T**3) + A7(JS)*EXP(-A8(JS)*T**4)
 
@@ -463,8 +536,15 @@ C     &		+ A5(JS)*EXP(-A6(JS)*T**3) + A7(JS)*EXP(-A8(JS)*T**4)
      2	+ PJ(6,id)*EXP(-PJ(7,id)*T**3)
      3	+ PJ(8,id)*EXP(-PJ(9,id)*T**4)
      4	+ PJ(10,id)*EXP(-PJ(11,id)*T**5)
+
+     	SPECT = SPECT/SPECT1(id)
+     
+		else		! ispec = 2     		
+     	
+	call spectrum (WL, XTOF(id), NAVG_RANGE, SPECT1(id), SPECT)
+	
+		end if
  
-	SPECT = SPECT/SPECT1(id)
 C+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
@@ -907,3 +987,37 @@ C------------------------------------------------------------
 C------------------------------------------------------------
 C------------------------------------------------------------
 
+	SUBROUTINE SPECTRUM (WL, XTOF, NAVG_RANGE, SPECT1, SPECT)
+	
+!  Obtain spectral correction from counts vs. time data.
+!  A. J. Schultz, July, 2009
+	
+	dimension xtime(1700), counts(1700)
+	
+	common /spect_data/ xtime, counts
+	
+c++	TOF = WL * XTOF
+	TOF = WL * XTOF
+	T = TOF			! T is in units of microseconds
+	
+	
+	do j=1,1700
+	  if (xtime(j) .gt. T) then
+	    sum = 0.0
+	    do jj=-NAVG_RANGE,NAVG_RANGE,1	! average +/-AVG_RANGE channels
+	      sum = sum + counts(j+jj)
+	    end do
+	    spect = sum/(2*(NAVG_RANGE)+1)
+	    go to 200
+	  end if
+	end do
+
+200	spect = spect/spect1
+
+
+	return
+	end
+	
+C------------------------------------------------------------
+C------------------------------------------------------------
+C------------------------------------------------------------
