@@ -7,6 +7,7 @@ public class LoadEventsCmd
    private String specFile;
    private String detEffFile;
    private String matFile;
+   private float  maxQValue;
    private long   availableEvents;
    private long   firstEvent;
    private long   eventsToLoad;
@@ -18,6 +19,7 @@ public class LoadEventsCmd
                          String specFile, 
                          String detEffFile, 
                          String matFile, 
+                         float  maxQValue,
                          long   availableEvents, 
                          long   firstEvent, 
                          long   eventsToLoad, 
@@ -29,6 +31,7 @@ public class LoadEventsCmd
       this.specFile        = specFile;
       this.detEffFile      = detEffFile;
       this.matFile         = matFile;
+      this.maxQValue         = maxQValue;
       this.availableEvents = availableEvents;
       this.firstEvent      = firstEvent;
       this.eventsToLoad    = eventsToLoad;
@@ -76,6 +79,15 @@ public class LoadEventsCmd
       return matFile;
    }
 
+   
+   public float getMaxQValue()
+   {
+      if (Float.isNaN( maxQValue )|| maxQValue <=0 )
+        return Float.NaN;
+
+      return maxQValue;
+   }
+   
    public long getAvailableEvents()
    {
       return availableEvents;
@@ -108,6 +120,7 @@ public class LoadEventsCmd
              "\nSpec File   : " + getIncSpectrumFile() +
              "\nDet Eff File: " + getDetEffFile()      +
              "\nMatrix File : " + getMatFile()         +
+             "\nMax Q Value : " + getMaxQValue()         +
              "\nNum Events  : " + getAvailableEvents() +
              "\nFirst Event : " + getFirstEvent()      +
              "\nNum to load : " + getEventsToLoad()    +

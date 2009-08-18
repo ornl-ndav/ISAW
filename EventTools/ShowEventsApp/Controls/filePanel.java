@@ -36,6 +36,7 @@ public class filePanel //extends JPanel
    private JTextField         incFileName;
    private JTextField         detEffFileName;
    private JTextField         matFileName;
+   private JTextField         maxQValue;
    private JTextField         numThreads;
    private JTextField         availableEvents;
    private JTextField         firstEvent;
@@ -48,6 +49,7 @@ public class filePanel //extends JPanel
    private String             Incfilename;// Remember last file chosen
    private String             DetEfffilename;// Remember last file chosen
    private String             Matfilename;// Remember last file chosen
+   private float              MaxQValue;//Remember last MaxQValue
    public filePanel(MessageCenter message_center)
    {
       this.message_center = message_center;
@@ -57,6 +59,7 @@ public class filePanel //extends JPanel
       Detfilename =  System.getProperty( "InstrumentInfoDirectory");
       Incfilename = DetEfffilename =Detfilename;
       Matfilename = Datafilename;
+      MaxQValue = Float.NaN;
       buildPanel();
       //this.add(panel);
    }
@@ -121,7 +124,8 @@ public class filePanel //extends JPanel
       sub_panel.add(buildDetPanel());
       sub_panel.add(buildIncPanel());
       sub_panel.add(buildDetEffPanel());
-      sub_panel.add(buildMatPanel());
+      //sub_panel.add(buildMatPanel());
+      sub_panel.add(buildMaxQPanel());
       sub_panel.add(buildThreadPanel());
       sub_panel.add(loadFiles);
    }
@@ -291,6 +295,27 @@ public class filePanel //extends JPanel
       matPanel.add(matFileName);
       
       return matPanel;
+   }
+   /**
+    * Builds the maxQPanel which consists of label and a 
+    * textfield to contain the Value.
+    * 
+    * @return JPanel
+    */
+   private JPanel buildMaxQPanel()
+   {
+      JPanel maxQPanel = new JPanel();
+      maxQPanel.setLayout(new GridLayout(1,2));
+      
+      JLabel maxQButton = new JLabel("Max Q to load");
+      
+      maxQValue = new JTextField();
+      maxQValue.addActionListener( new button());
+      maxQPanel.add(maxQButton);
+      maxQPanel.add(maxQValue);
+      //maxQPanel.add(matFileName);
+      
+      return maxQPanel;
    }
    
    private JPanel buildThreadPanel()
@@ -544,7 +569,8 @@ public class filePanel //extends JPanel
                                 detFileName.getText(),
                                 incFileName.getText(),
                                 detEffFileName.getText(),
-                                matFileName.getText(),
+                                null,
+                                MaxQValue,
                                 nf.parse(availableEvents.getText()).longValue(),
                                 nf.parse(firstEvent.getText()).longValue(),
                                 nf.parse(eventsToLoad.getText()).longValue(),
@@ -563,6 +589,20 @@ public class filePanel //extends JPanel
             //   String error = "There is file information not completely filled out or invalid!!";
             //   JOptionPane.showMessageDialog(null, error, "Invalid Input", JOptionPane.ERROR_MESSAGE);
             //}
+         }
+         else if( e.getSource() == maxQValue)
+         {
+            String Sval = maxQValue.getText();
+            if( Sval == null || Sval.trim().length() < 1)
+               return;
+            try
+            {
+               MaxQValue = Float.parseFloat(  maxQValue.getText().trim() );
+            }catch( Exception s)
+            {
+               maxQValue.setText( "" );
+            }
+            return;
          }
          else
          {
