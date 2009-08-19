@@ -3,10 +3,12 @@ package EventTools.ShowEventsApp.DataHandlers;
 
 import java.util.Vector;
 
+import gov.anl.ipns.MathTools.LinearAlgebra;
 import gov.anl.ipns.Operator.IOperator;
 import gov.anl.ipns.Operator.Threads.ParallelExecutor;
 import gov.anl.ipns.Operator.Threads.ExecFailException;
 
+import DataSetTools.operator.Generic.TOF_SCD.IPeak;
 import DataSetTools.operator.Generic.TOF_SCD.Peak_new;
 import DataSetTools.operator.Generic.TOF_SCD.Peak_new_IO;
 import DataSetTools.operator.Generic.TOF_SCD.PeakQ;
@@ -134,6 +136,7 @@ public class PeakListHandler implements IReceiveMessage
                                                       cmd.getAlpha(),
                                                       cmd.getBeta(),
                                                       cmd.getGamma() );
+        indexAllPeaks( peakNew_list, UB);
         Util.sendInfo( message_center, "Finished Indexing" );
       }
       catch ( Exception ex )
@@ -168,8 +171,7 @@ public class PeakListHandler implements IReceiveMessage
     }else if( message.getName().equals( Commands.INDEX_PEAKS_WITH_ORIENTATION_MATRIX ))
     {
        float[][] orientationMatrix = (float[][])message.getValue();
-       for( int i=0; i< peakNew_list.size(); i++)
-          peakNew_list.elementAt(i).UB( orientationMatrix );
+        indexAllPeaks( peakNew_list, orientationMatrix);
        Message set_peaks = new Message( Commands.SET_PEAK_NEW_LIST,
                 peakNew_list,
                 true );
@@ -181,4 +183,18 @@ public class PeakListHandler implements IReceiveMessage
     return false;
   }
 
+   private void indexAllPeaks( Vector Peaks, float[][]UBT)
+   {
+      float[][]UB = LinearAlgebra.getTranspose( UBT );
+      for( int i=0; i<Peaks.size(); i++)
+      {  Object peak = Peaks.elementAt(i);
+         if(peak != null && peak instanceof IPeak)
+           { ((IPeak)peak).sethkl( 0f,0f,0f);
+            ((IPeak)peak).UB( UB );
+            ((IPeak)peak).UB( null );
+            
+           
+           }
+      }
+   }
 }
