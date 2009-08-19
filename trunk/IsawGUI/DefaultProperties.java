@@ -350,10 +350,8 @@ public class DefaultProperties{
         rs.append(defstr).append("Data_Directory=").append(IsawHome)
           .append(separator).append("SampleRuns").append(eol);
         rs.append(eol);
-        
-        if ( current_props.getProperty("InstrumentInfoDirectory") != null )           
-           rs.append("#");
-         rs.append(defstr).append("InstrumentInfoDirectory=").append(IsawHome)
+       
+         rs.append(defstr).append("#InstrumentInfoDirectory=").append(IsawHome)
            .append(separator).append("InstrumentInfo").append(eol);
          rs.append(eol);
          
