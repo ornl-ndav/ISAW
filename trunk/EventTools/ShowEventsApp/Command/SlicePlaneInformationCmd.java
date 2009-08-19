@@ -11,7 +11,7 @@ public class SlicePlaneInformationCmd
    private float        width;
    private float        height;
    private float        thickness;
-   private int          sliceNumber;
+   //private int          sliceNumber;
    
    public SlicePlaneInformationCmd(int sliceMode,
                                 SlicePlane3D slicePlane,
@@ -19,8 +19,8 @@ public class SlicePlaneInformationCmd
                                 float depth,
                                 float width,
                                 float height,
-                                float thickness,
-                                int sliceNumber)
+                                float thickness)
+                                //int sliceNumber)
    {
       this.sliceMode = sliceMode;
       this.slicePlane = slicePlane;
@@ -28,7 +28,7 @@ public class SlicePlaneInformationCmd
       this.width = width;
       this.height = height;
       this.thickness = thickness;
-      this.sliceNumber = sliceNumber;
+      //this.sliceNumber = sliceNumber;
    }
 
    public int getSliceMode()
@@ -61,10 +61,10 @@ public class SlicePlaneInformationCmd
       return thickness;
    }
 
-   public int getSliceNumber()
-   {
-      return sliceNumber;
-   }
+   //public int getSliceNumber()
+   //{
+   //   return sliceNumber;
+   //}
    
    public String toString()
    {
@@ -73,7 +73,7 @@ public class SlicePlaneInformationCmd
              "\nDepth: "       + getDepth()      +
              "\nWidth: "       + getWidth()      +
              "\nHeight: "      + getHeight()     +
-             "\nThickness: "   + getThickness()  + 
-             "\nSliceNumber: " + getSliceNumber();
+             "\nThickness: "   + getThickness();//  + 
+             //"\nSliceNumber: " + getSliceNumber();
    }
 }
