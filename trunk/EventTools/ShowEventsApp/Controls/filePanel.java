@@ -150,7 +150,7 @@ public class filePanel //extends JPanel
       evFileButton.addActionListener(new button());
       
       
-      String default_evFileName = Datafilename;
+      String default_evFileName = "";//Datafilename;
                            // "/usr2/SNAP_2/EVENTS/SNAP_240_neutron_event.dat";
       
       evFileName = new JTextField( default_evFileName );
