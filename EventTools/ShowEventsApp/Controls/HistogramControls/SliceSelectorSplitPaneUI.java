@@ -30,7 +30,7 @@ public class SliceSelectorSplitPaneUI extends    ActiveJPanel
   private HKLorQ_SelectorUI slice_mode;
   private SlicePlane3D_UI   plane_selector;
   private SliceImageUI      image_selector;
-  private FrameController   frame_control;
+  //private FrameController   frame_control;
   private JButton           apply;
 
   private JCheckBox         sliceOneCbx;
@@ -60,10 +60,11 @@ public class SliceSelectorSplitPaneUI extends    ActiveJPanel
     slice_mode     = new HKLorQ_SelectorUI( "Select  in " );
     plane_selector = new SlicePlane3D_UI( mode );
     image_selector = new SliceImageUI( "Select Plane Size" );
-    frame_control  = new FrameController();
+    //frame_control  = new FrameController();
     
     JPanel button  = new JPanel();
     apply  = new JButton( "Apply" );
+    button.setLayout(new GridLayout(1,1));
     button.add(apply);
 
     setDisplayMode( mode, true );
@@ -75,7 +76,7 @@ public class SliceSelectorSplitPaneUI extends    ActiveJPanel
     box.add( plane_selector );
     box.add( image_selector );
     box.add( button );
-    box.add( buildSlicePanel() );
+    //box.add( buildSlicePanel() );
     //box.add( frame_control );
 
     setLayout( new GridLayout(1,1) );
@@ -85,7 +86,7 @@ public class SliceSelectorSplitPaneUI extends    ActiveJPanel
     slice_mode.addActionListener(value_listener);
     apply.addActionListener(value_listener);
     
-    frame_control.addActionListener( new StepListener() );
+    //frame_control.addActionListener( new StepListener() );
   }
 
   private JPanel buildSlicePanel()
@@ -129,7 +130,7 @@ public class SliceSelectorSplitPaneUI extends    ActiveJPanel
      Box box = new Box( BoxLayout.Y_AXIS );
      box.add( slicePanel );
      box.add( selectSlicePanel );
-     box.add( frame_control );
+     //box.add( frame_control );
      
      outerPanel.add(box);
      
@@ -349,10 +350,10 @@ public class SliceSelectorSplitPaneUI extends    ActiveJPanel
 
   }
 
-  public int getSliceNumber()
-  {
-     return frame_control.getFrameNumber();
-  }
+  //public int getSliceNumber()
+  //{
+  //   return frame_control.getFrameNumber();
+  //}
   
   /* ----------------------------- toString ------------------------------ */
   /**
@@ -361,8 +362,8 @@ public class SliceSelectorSplitPaneUI extends    ActiveJPanel
   public String toString()
   {
     return "" + plane_selector.toString() + "\n" 
-              + image_selector.toString() + "\n" 
-              + frame_control.getFrameNumber() + "\n";
+              + image_selector.toString() + "\n" ;
+              //+ frame_control.getFrameNumber() + "\n";
   }
 
 

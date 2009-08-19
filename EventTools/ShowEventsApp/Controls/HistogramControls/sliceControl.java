@@ -62,8 +62,7 @@ public class sliceControl extends JPanel
                                       scUI.getStepSize(),
                                       scUI.getSliceWidth(),
                                       scUI.getSliceHeight(),
-                                      scUI.getSliceThickness(),
-                                      scUI.getSliceNumber());
+                                      scUI.getSliceThickness());
 
          sendMessage(command, spi);
       }

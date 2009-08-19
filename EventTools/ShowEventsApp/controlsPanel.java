@@ -22,30 +22,32 @@ import EventTools.ShowEventsApp.Controls.HistogramControls.*;
 
 public class controlsPanel extends JPanel
 {
-   public static final long   serialVersionUID = 1L;
-   private MessageCenter      messageCenter;
+   public static final long     serialVersionUID = 1L;
+   private MessageCenter        messageCenter;
    
-   private JButton            loadFileBtn;
-   private JButton            findPeaksBtn;
-   private JButton            filterPeaksBtn;
-   private JButton            indexPeaksBtn;
-   private JButton            integrateBtn;
+   private JButton              loadFileBtn;
+   private JButton              findPeaksBtn;
+   private JButton              filterPeaksBtn;
+   private JButton              indexPeaksBtn;
+   private JButton              integrateBtn;
    
-   private JButton            selectedPoint;
-   private JButton            orientationBtn;
-   private JButton            peakInfoBtn;
-   private JButton            colorScaleBtn;
-   private JButton            planeBtn;
-   private JButton            drawOptions;
+   private JButton              selectedPoint;
+   private JButton              orientationBtn;
+   private JButton              peakInfoBtn;
+   private JButton              colorScaleBtn;
+   private JButton              planeBtn;
+   private JButton              sliceBtn;
+   private JButton              drawOptions;
    
-   private filePanel          filepanel;
-   private displayColorEditor colorEditPanel;
-   private peakOptionsPanel   peakPanel;
-   private indexPeaksPanel    indexPeakPanel;
-   private positionInfoPanel  positionPanel;
-   private peaksStatPanel     peakInfoPanel;
-   private sliceControl       slicePanel;
-   private drawingOptions     drawoptions;
+   private filePanel            filepanel;
+   private displayColorEditor   colorEditPanel;
+   private peakOptionsPanel     peakPanel;
+   private indexPeaksPanel      indexPeakPanel;
+   private positionInfoPanel    positionPanel;
+   private peaksStatPanel       peakInfoPanel;
+   private sliceControl         slicePanel;
+   private sliceDisplayControls sliceControlsPanel;
+   private drawingOptions       drawoptions;
    
 //   private final Color background_color = new Color( 220, 230, 235 );
    private final Color background_color = new Color( 230, 232, 250 );
@@ -82,6 +84,7 @@ public class controlsPanel extends JPanel
       peakInfoPanel = new peaksStatPanel( messageCenter);
      
       slicePanel = new sliceControl(messageCenter);
+      sliceControlsPanel = new sliceDisplayControls(messageCenter);
       drawoptions = new drawingOptions(messageCenter);
       
       //Rectangle bounds = new Rectangle(100,100,400,500);
@@ -136,7 +139,7 @@ public class controlsPanel extends JPanel
    
    private JPanel buildControlsPanel()
    {
-      int npanels =5;//Change when add or delete a button
+      int npanels =6;//Change when add or delete a button
       JPanel panel = new JPanel();
       panel.setBorder(new TitledBorder("Controls/Info"));
       panel.setLayout(new GridLayout(npanels,1));
@@ -149,7 +152,6 @@ public class controlsPanel extends JPanel
       orientationBtn.setBackground( background_color );
       orientationBtn.addActionListener(new buttonListener());
       
-      
       peakInfoBtn = new JButton("Peaks Info.");
       peakInfoBtn.setBackground( background_color );
       peakInfoBtn.addActionListener(new buttonListener());
@@ -158,9 +160,13 @@ public class controlsPanel extends JPanel
       colorScaleBtn.setBackground( background_color );
       colorScaleBtn.addActionListener(new buttonListener());
       
-      planeBtn = new JButton("Plane/Histogram");
+      planeBtn = new JButton("Histogram Orientation");
       planeBtn.setBackground( background_color );
       planeBtn.addActionListener(new buttonListener());
+      
+      sliceBtn = new JButton("Slice Controls");
+      sliceBtn.setBackground( background_color );
+      sliceBtn.addActionListener(new buttonListener());
       
       drawOptions = new JButton("Draw Options");
       drawOptions.setBackground(background_color);
@@ -171,6 +177,7 @@ public class controlsPanel extends JPanel
       panel.add( peakInfoBtn );
       panel.add(colorScaleBtn);
       panel.add(planeBtn);
+      panel.add(sliceBtn);
       panel.add(drawOptions);
       
       return panel;
@@ -197,7 +204,8 @@ public class controlsPanel extends JPanel
          if (e.getSource().equals(integrateBtn))
          {   value = notImplementedPanel();
              Test();
-         }if (e.getSource().equals(selectedPoint))
+         }
+         if (e.getSource().equals(selectedPoint))
             value = positionPanel;
 
          if (e.getSource().equals(orientationBtn))
@@ -205,6 +213,9 @@ public class controlsPanel extends JPanel
 
          if (e.getSource().equals(peakInfoBtn))
             value = peakInfoPanel;
+         
+         if (e.getSource().equals(sliceBtn))
+            value = sliceControlsPanel;
          
          if (e.getSource().equals(colorScaleBtn))
             value = colorEditPanel.getColorPanel();
