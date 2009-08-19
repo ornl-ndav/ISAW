@@ -38,6 +38,7 @@ public class OrientationMatrixHandler implements IReceiveMessage
 {
   private MessageCenter message_center;
   private float[][] orientation_matrix = null;
+  private boolean changed = false;//To determine if an orientation matrix was acceppted
 
   public OrientationMatrixHandler( MessageCenter message_center )
   {
@@ -87,7 +88,7 @@ public class OrientationMatrixHandler implements IReceiveMessage
              orientation_matrix[row][col] = new_mat[row][col];
              d_arr[row][col] = new_mat[row][col] * 2 * Math.PI;
            }
-
+         changed = true;
          System.out.println("Orientation Matrix : " );
          LinearAlgebra.print( orientation_matrix );
          LinearAlgebra.invert( d_arr );
@@ -127,8 +128,10 @@ public class OrientationMatrixHandler implements IReceiveMessage
           return false;
        }
        float[][] orientSav = orientation_matrix;
-          receive( new Message(Commands.SET_ORIENTATION_MATRIX, Res, false));
-         if( orientation_matrix != orientSav)
+       float[][] orMat = LinearAlgebra.getTranspose( (float[][]) Res );
+       changed = false;
+          receive( new Message(Commands.SET_ORIENTATION_MATRIX, orMat, false));
+         if( changed)
            return receive( new Message(Commands.GET_ORIENTATION_MATRIX,null,false));
       
        
