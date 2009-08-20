@@ -19,11 +19,13 @@ import EventTools.ShowEventsApp.Command.DisplaySliceCmd.moveSlice;
 import EventTools.ShowEventsApp.Controls.HistogramControls.FrameController;
 import MessageTools.*;
 
-public class sliceDisplayControls extends JPanel
+public class additionalViewControls extends JPanel
 {
    public static final long  serialVersionUID = 1L;
    private MessageCenter     messageCenter;
    private FrameController   frame_control;
+   private JCheckBox         showQGraph;
+   private JCheckBox         showDGraph;
    private JCheckBox         showImageOne;
    private JCheckBox         showImageTwo;
    private JCheckBox         showImageThree;
@@ -34,17 +36,43 @@ public class sliceDisplayControls extends JPanel
    private JRadioButton      moveSliceTwo;
    private JRadioButton      moveSliceThree;
    
-   public sliceDisplayControls(MessageCenter messageCenter)
+   public additionalViewControls(MessageCenter messageCenter)
    {
       this.messageCenter = messageCenter;
-      this.setBorder(new TitledBorder("3D Slice Control"));
+      this.setBorder(new TitledBorder("Additional View Options"));
       this.setLayout(new GridLayout(1,1));
       
       Box box = new Box( BoxLayout.Y_AXIS );
+      box.add(buildGraphOptions());
+      box.add(buildSliceOptions());
+      
+      this.add(box);
+   }
+   
+   private JPanel buildGraphOptions()
+   {
+      JPanel panel = new JPanel();
+      panel.setLayout(new GridLayout(1,2));
+      panel.setBorder(new TitledBorder("Graph Views"));
+      
+      showQGraph = new JCheckBox("Show Q Graph");
+      showQGraph.addActionListener(new graphListener());
+      showDGraph = new JCheckBox("Show D Graph");
+      showDGraph.addActionListener(new graphListener());
+      
+      panel.add(showQGraph);
+      panel.add(showDGraph);
+      
+      return panel;
+   }
+   private Box buildSliceOptions()
+   {
+      Box box = new Box( BoxLayout.Y_AXIS );
+      box.setBorder(new TitledBorder("Slice Views/Controls"));
       box.add(buildSliceDisplayOptions());
       box.add(buildSliceMoveOptions());
       
-      this.add(box);
+      return box;
    }
    
    private JPanel buildSliceDisplayOptions()
@@ -53,22 +81,22 @@ public class sliceDisplayControls extends JPanel
       panel.setLayout(new GridLayout(2,3));
       
       showImageOne = new JCheckBox("Show Image X");
-      showImageOne.addActionListener(new actionListener());
+      showImageOne.addActionListener(new sliceListener());
       
       showImageTwo = new JCheckBox("Show Image Y");
-      showImageTwo.addActionListener(new actionListener());
+      showImageTwo.addActionListener(new sliceListener());
       
       showImageThree = new JCheckBox("Show Image Z");
-      showImageThree.addActionListener(new actionListener());
+      showImageThree.addActionListener(new sliceListener());
       
-      sliceOneCbx = new JCheckBox("Slice X");
-      sliceOneCbx.addActionListener(new actionListener());
+      sliceOneCbx = new JCheckBox("Show 3D Slice X");
+      sliceOneCbx.addActionListener(new sliceListener());
       
-      sliceTwoCbx = new JCheckBox("Slice Y");
-      sliceTwoCbx.addActionListener(new actionListener());
+      sliceTwoCbx = new JCheckBox("Show 3D Slice Y");
+      sliceTwoCbx.addActionListener(new sliceListener());
       
-      sliceThreeCbx = new JCheckBox("Slice Z");
-      sliceThreeCbx.addActionListener(new actionListener());
+      sliceThreeCbx = new JCheckBox("Show 3D Slice Z");
+      sliceThreeCbx.addActionListener(new sliceListener());
 
       panel.add(showImageOne);
       panel.add(showImageTwo);
@@ -104,7 +132,7 @@ public class sliceDisplayControls extends JPanel
       panel.add(moveSliceThree);
       
       frame_control  = new FrameController();
-      frame_control.addActionListener(new actionListener());
+      frame_control.addActionListener(new sliceListener());
       
       Box box = new Box( BoxLayout.Y_AXIS );
       box.add(panel);
@@ -122,7 +150,7 @@ public class sliceDisplayControls extends JPanel
       messageCenter.receive(message);
    }
    
-   private class actionListener implements ActionListener
+   private class sliceListener implements ActionListener
    {
       public void actionPerformed(ActionEvent ae)
       {
@@ -150,17 +178,48 @@ public class sliceDisplayControls extends JPanel
       }
    }
    
+   private class graphListener implements ActionListener
+   {
+      public void actionPerformed(ActionEvent ae)
+      {
+         String command = null;
+         JCheckBox tmpBox = ((JCheckBox)(ae.getSource()));
+         
+         if (tmpBox.equals(showQGraph))
+         {
+            if (tmpBox.isSelected())
+               command = Commands.SHOW_Q_GRAPH;
+            else
+               command = Commands.HIDE_Q_GRAPH;
+         }
+            
+         if (tmpBox.equals(showDGraph))
+         {
+            if (tmpBox.isSelected())
+               command = Commands.SHOW_D_GRAPH;
+            else
+               command = Commands.HIDE_D_GRAPH;
+         }
+         
+         sendMessage(command, null);
+      }
+   }
+   
    public static void main(String[] args)
    {
       MessageCenter mc = new MessageCenter("Testing MessageCenter");
       TestReceiver tc = new TestReceiver("Slice Panel TestingMessages");
       mc.addReceiver(tc, Commands.SET_SLICE_1);
+      mc.addReceiver(tc, Commands.SHOW_D_GRAPH);
+      mc.addReceiver(tc, Commands.SHOW_Q_GRAPH);
+      mc.addReceiver(tc, Commands.HIDE_D_GRAPH);
+      mc.addReceiver(tc, Commands.HIDE_Q_GRAPH);
       
-      sliceDisplayControls sdc = new sliceDisplayControls(mc);
+      additionalViewControls sdc = new additionalViewControls(mc);
       
       JFrame View = new JFrame( "Test Slice Panel" );
       View.setDefaultCloseOperation( WindowConstants.EXIT_ON_CLOSE );
-      View.setBounds(10,10, 375, 375);
+      View.setBounds(10,10, 400, 375);
       View.setVisible(true);
       
       View.add(sdc);
