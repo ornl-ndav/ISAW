@@ -33,6 +33,11 @@ public class MainApp
     new OrientationMatrixHandler( message_center );
 
     new StatusMessageHandler( message_center, null);
+    
+    new DQDataHandler( message_center );
+    
+    new DViewHandler( message_center );
+    new QViewHandler( message_center );
   }
 
 
