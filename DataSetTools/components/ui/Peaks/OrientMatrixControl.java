@@ -1342,7 +1342,16 @@ public class OrientMatrixControl extends JButton
             men.setToolTipText( "Use 3 peaks,their hkl vals" );
          }
 
-         pop.show( comp , 0 , 0 );
+         int x = 0;
+         int y = 0;
+         
+         if( comp != null)
+         {
+            x = (int)(comp.getWidth()*.8);
+            y = (int)(comp.getHeight()*.8);
+         }
+         
+         pop.show( comp , x , y );
 
       }
 
