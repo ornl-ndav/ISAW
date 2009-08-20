@@ -1,15 +1,12 @@
 package EventTools.ShowEventsApp.Controls.Peaks;
 
+import gov.anl.ipns.MathTools.LinearAlgebra;
 import gov.anl.ipns.Util.Sys.WindowShower;
 
 import javax.swing.*;
 import javax.swing.border.*;
 import java.awt.event.*;
 import java.awt.*;
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.util.Scanner;
 
 import MessageTools.*;
 import EventTools.ShowEventsApp.Command.*;
@@ -33,7 +30,6 @@ public class indexPeaksPanel extends JPanel
    private JButton          applyBtn;
    private JButton          MatFileBtn;  
    private JTextField       MatFileName;
-   private String           fileName;
    private JButton          ViewMatBtn;
    private JButton          WriteMatBtn;
    private float[][]        currentOrientationMatrix;
@@ -46,7 +42,9 @@ public class indexPeaksPanel extends JPanel
       this.messageCenter = messageCenter;
       messageCenter.addReceiver( this , Commands.SET_ORIENTATION_MATRIX );
       currentOrientationMatrix = null;
+      
       doShow = doIndex = false;
+      
       this.setBorder(new TitledBorder("Index Peaks"));
       this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
        
@@ -97,7 +95,6 @@ public class indexPeaksPanel extends JPanel
       panel.setLayout( new GridLayout(1,2));
       MatFileBtn = new JButton("Matrix filename");
       MatFileBtn.addActionListener( new buttonListener());
-      fileName = "";
       panel.add( MatFileBtn );
       MatFileName = new JTextField(10);
       MatFileName.setText( "" );
@@ -331,10 +328,13 @@ public class indexPeaksPanel extends JPanel
       if( message.getName().equals( Commands.SET_ORIENTATION_MATRIX ))
       {
          currentOrientationMatrix = (float[][])message.getValue();
+         
+         LinearAlgebra.print(currentOrientationMatrix);
          if( doShow)
          {
             String ShowText = subs.ShowOrientationInfo( null , 
-                          currentOrientationMatrix , null , null ,true );
+                        LinearAlgebra.getTranspose( currentOrientationMatrix) ,
+                        null , null ,true );
          
             JFrame jf = new JFrame( "Orientation Matrix");
             jf.setSize( 400,200 );
@@ -404,7 +404,7 @@ public class indexPeaksPanel extends JPanel
                            Float.parseFloat(toleranceTxt.getText()), 
                            Integer.parseInt(fixedPeakTxt.getText()), 
                            Float.parseFloat(requiredFractionTxt.getText()));
-         
+           
             sendMessage(Commands.INDEX_PEAKS, indexCmd);
                }
          }else if(cmd.startsWith("Write"))

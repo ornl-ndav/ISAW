@@ -110,7 +110,8 @@ public class OrientationMatrixHandler implements IReceiveMessage
     }  else if ( message.getName().equals(Commands.WRITE_ORIENTATION_MATRIX))
     {
        String filename = (String)message.getValue();
-       ErrorString Res = DataSetTools.operator.Generic.TOF_SCD.Util.WriteMatrix( filename, orientation_matrix);
+       float[][] UB = LinearAlgebra.getTranspose(orientation_matrix);
+       ErrorString Res = DataSetTools.operator.Generic.TOF_SCD.Util.WriteMatrix( filename, UB);
        if( Res == null)
           return true;
        Util.sendError(  message_center , "Write Orientation Error:"+Res.toString() );
@@ -131,6 +132,7 @@ public class OrientationMatrixHandler implements IReceiveMessage
        float[][] orMat = LinearAlgebra.getTranspose( (float[][]) Res );
        changed = false;
           receive( new Message(Commands.SET_ORIENTATION_MATRIX, orMat, false));
+          
          if( changed)
            return receive( new Message(Commands.GET_ORIENTATION_MATRIX,null,false));
       
