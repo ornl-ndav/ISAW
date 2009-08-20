@@ -136,6 +136,8 @@ public class PeakListHandler implements IReceiveMessage
                                                       cmd.getAlpha(),
                                                       cmd.getBeta(),
                                                       cmd.getGamma() );
+        
+        UB= LinearAlgebra.getTranspose(UB);
         indexAllPeaks( peakNew_list, UB);
         Util.sendInfo( message_center, "Finished Indexing" );
       }
@@ -171,6 +173,7 @@ public class PeakListHandler implements IReceiveMessage
     }else if( message.getName().equals( Commands.INDEX_PEAKS_WITH_ORIENTATION_MATRIX ))
     {
        float[][] orientationMatrix = (float[][])message.getValue();
+       
         indexAllPeaks( peakNew_list, orientationMatrix);
        Message set_peaks = new Message( Commands.SET_PEAK_NEW_LIST,
                 peakNew_list,
@@ -196,5 +199,6 @@ public class PeakListHandler implements IReceiveMessage
            
            }
       }
+     
    }
 }
