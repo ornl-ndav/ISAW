@@ -1,5 +1,7 @@
 package EventTools.ShowEventsApp.ViewHandlers;
 
+import java.awt.GridLayout;
+
 import javax.swing.*;
 
 import EventTools.ShowEventsApp.Command.Commands;
@@ -23,18 +25,36 @@ public class QViewHandler implements IReceiveMessage
       this.messageCenter.addReceiver(this, Commands.SHOW_Q_GRAPH);
       this.messageCenter.addReceiver(this, Commands.HIDE_Q_GRAPH);
       this.messageCenter.addReceiver(this, Commands.SET_Q_VALUES);
-      sendMessage(Commands.GET_Q_VALUES, null);
+      this.messageCenter.addReceiver(this, Commands.ADD_EVENTS_TO_VIEW);
    }
    
    private void displayQFrame()
    {
       qDisplayFrame = new JFrame("Q View");
+      qDisplayFrame.setLayout(new GridLayout(1,1));
       qDisplayFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
       qDisplayFrame.setBounds(0, 0, 500, 300);
       qDisplayFrame.setVisible(true);
       
-      qDisplayFrame.add(graphPanel);
+      if (graphPanel != null)
+         qDisplayFrame.add(graphPanel);
+      else
+        qDisplayFrame.add(placeholderPanel());
+      
       qDisplayFrame.repaint();
+   }
+   
+   private JPanel placeholderPanel()
+   {
+      JPanel placeholderpanel = new JPanel();
+      placeholderpanel.setLayout(new GridLayout(1,1));
+      
+      JLabel label = new JLabel("No Data Loaded Yet!");
+      label.setHorizontalAlignment(JLabel.CENTER);
+      
+      placeholderpanel.add(label);
+      
+      return placeholderpanel;
    }
    
    private void setPanelInformation(float[][] xyValues)
@@ -43,15 +63,15 @@ public class QViewHandler implements IReceiveMessage
       float[] y_values = xyValues[1];
       float[] errors = null;
 
+      if(qDisplayFrame != null)
+         qDisplayFrame.getContentPane().removeAll();  
       
       graphPanel = 
          FunctionViewComponent.ShowGraphWithAxes(x_values, y_values, errors, 
                Title, x_units, y_units, x_label, y_label);
-   }
-   
-   private void hideQFrame()
-   {
-      qDisplayFrame.dispose();
+      
+      if(qDisplayFrame != null)
+         qDisplayFrame.add(graphPanel);
    }
    
    private void sendMessage(String command, Object value)
@@ -65,15 +85,19 @@ public class QViewHandler implements IReceiveMessage
    {
       if (message.getName().equals(Commands.SHOW_Q_GRAPH))
       {
-         sendMessage(Commands.GET_Q_VALUES, null);
          displayQFrame();
          
          return true;
       }
       
+      if (message.getName().equals(Commands.ADD_EVENTS_TO_VIEW))
+      {
+         sendMessage(Commands.GET_Q_VALUES, null);
+      }
+      
       if (message.getName().equals(Commands.HIDE_Q_GRAPH))
       {
-         hideQFrame();
+         qDisplayFrame.dispose();
          
          return true;
       }
@@ -81,6 +105,9 @@ public class QViewHandler implements IReceiveMessage
       if (message.getName().equals(Commands.SET_Q_VALUES))
       {
          setPanelInformation(((float[][])message.getValue()));
+         
+         if(qDisplayFrame != null)
+            qDisplayFrame.validate();
          
          return true;
       }
