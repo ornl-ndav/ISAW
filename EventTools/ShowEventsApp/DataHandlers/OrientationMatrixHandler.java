@@ -86,7 +86,7 @@ public class OrientationMatrixHandler implements IReceiveMessage
            for ( int col = 0; col < 3; col++ )
            {
              orientation_matrix[row][col] = new_mat[row][col];
-             d_arr[row][col] = new_mat[row][col] * 2 * Math.PI;
+             d_arr[col][row] = new_mat[row][col] * 2 * Math.PI;
            }
          changed = true;
          System.out.println("Orientation Matrix : " );
