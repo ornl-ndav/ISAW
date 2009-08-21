@@ -65,9 +65,25 @@ public class XtalLatticeControl extends Object
 
    /**
     * This is the actionCommand of an ActionEvent for a listener.
+    * Value ="Lattice Parameters"
     * @see #getListener()
     */
    public static String CRYSTAL_LAT_INPUT_TEXT = "Lattice Parameters";
+   
+   /**
+    * This is the String this class uses as the type in
+    * InfoHandler.addInfoHandler for the possible hkl values for selected 
+    * peak 1. Its value is "Peak1(Crystal Params)"
+    */
+   public static String INFO_PEAK1_HKL  ="Peak1(Crystal Params)";
+   
+   
+   /**
+    * This is the String this class uses as the type in
+    * InfoHandler.addInfoHandler for the possible hkl values for selected 
+    * peak 2, given selected peak 1. It value is "Peak2(Crystal Params)".
+    */
+   public static String INFO_PEAK2_HKL  ="Peak2(Crystal Params)";
 
    // Default inputs for peaks of interest
    SetPeaks             PeakSetter;
@@ -258,8 +274,8 @@ public class XtalLatticeControl extends Object
          Peak1Info = new SetPeak1InfoHandler( PeakSetter , BMat );
          Peak2Info = new SetPeak2InfoHandler( PeakSetter , Peak1Info , BMat );
 
-         OutInfo.addInfoHandler( "Peak1(Crystal Params" , Peak1Info );
-         OutInfo.addInfoHandler( "Peak2(Crystal Params" , Peak2Info );
+         OutInfo.addInfoHandler( INFO_PEAK1_HKL , Peak1Info );
+         OutInfo.addInfoHandler( INFO_PEAK2_HKL , Peak2Info );
 
       }
       else
@@ -367,7 +383,11 @@ public class XtalLatticeControl extends Object
 
    /**
     * Can be used without a GUI element
-    * @return The Component that can be used to get Crystal Lattice Parameters 
+    * @return The Component that can be used to get rystal Lattice Parameters
+    * 
+    *  NOTE: Can also cause a pop up to get parameters by using the 
+    *   CRYSTAL_LAT_INPUT_TEXT action command to this classes ActionListener.
+    *   @see #getListener()
     */
    public JButton getGUIinputElement()
    {

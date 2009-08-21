@@ -76,45 +76,123 @@ public class OrientMatrixControl extends JButton
    // JButton Text 
    public static String ORIENT_MAT              = "Orientation Matrix";
 
-   //--------- sub menu options of ORIENT_MAT
+   //--------- sub menu options & command names of ORIENT_MAT
+   /**
+    * Menu option and command name for loading an orientation matrix
+    */
    public static String LOAD_ORIENT1            = "Load Orientation matrix";
 
-   public static String ENTER_ORIENT1           = "Enter Orientation matrix";
+   /**
+    * Menu option and command name for Entering an orientation matrix
+    */
+   public static String ENTER_ORIENT1           = "Enter Orientation matrix"; 
 
+   /**
+    * Menu option and command name for saving an orientation matrix
+    */
    public static String SAVE_ORIENT1            = "Save Orientation matrix";
 
-   public static String SHOW_SEL_MAT            = "Show/Select Matrix from Set";
    
+   /**
+    * Menu option and command name for showing a set of orientation matrices
+    */
+   public static String SHOW_SEL_MAT            = "Show/Select Matrix from Set";
+ 
+   //---- ADJUST_OR_MAT isNot a command name has sub menu options
    public static String ADJUST_OR_MAT           ="Adjust Orientation Matrix";
 
    //------------------------------------------------------
    public static String VIEWS                   = "View in QViewer";
 
-   //---------- sub menu options for VIEW ---------------
+   //---------- sub menu options & command names for VIEW ---------------
+
+   
+   /**
+    * Menu option and command name to View Orientation matrix in 3D View"
+    */
    public static String VIEW_ORIENT             = "View Orientation matrix";
 
+   
+   /**
+    * Menu option and command name to View Plane Family a*b* in 3D View"
+    */
    public static String VIEW_PLANEab            = "View Plane Family a*b*";
 
+   
+   /**
+    * Menu option and command name to View Plane Family a*c* in 3D View"
+    */
    public static String VIEW_PLANEac            = "View Plane Family a*c*";
 
+   /**
+    * Menu option and command name to View Plane Family b *c* in 3D View"
+    */
    public static String VIEW_PLANEbc            = "View Plane Family b*c*";
-   
+
+   /**
+    * Menu option and command name to View Predicted Peaks in 3D View"
+    */
    public static String  VIEW_PRED_PEAKS        = "View Predicted Peaks";
 
    //---------------------------------------------------------
    public static String CALC_ORIENT             = "Calculate Orientation matrix(s)";
 
-   //--------------- sub menu options for CALC_ORIENT ---------------
+   //--------------- sub menu options and command names for CALC_ORIENT ---------------
+
+   /**
+    * Menu option and command name Calculate the Orientation Matrix using 
+    * Blind"
+    */
    public static String BLIND                   = "Blind";
 
+   /**
+    * Menu option and command name Calculate the Orientation Matrix using 
+    * an Automatic method
+    */
    public static String AUTOMATIC               = "Automatic";
 
+   /**
+    * Menu option and command name Calculate the Orientation Matrix From
+    *  4 Peaks
+    */
    public static String FOUR_PEAK               = "From 4 Peaks";
 
+   /**
+    * Menu option and command name Calculate the Orientation Matrix From
+    * 2 Peaks with hkls
+    */
    public static String TWO_PEAK                = "From 2 Peaks with hkls";
 
+   /**
+    * Menu option and command name Calculate the Orientation Matrix From
+    *  3 Peaks with hkls
+    */
    public static String THREE_PEAK              = "From 3 Peaks with hkls";
+   
+//----------------- InfoHandler Type names --------------------
+ /**
+  * Key that this class uses to add the view of the orientation matrix
+  * in InfoHandler.addInfo method
+  */ 
+ public static String  SHOW_ORIENT_MAT  =  "Orientation Matrix.matrix";
+ 
+ /**
+  * Key that this class uses to add the view of the offsets from an
+  * integer for h in InfoHandler.addInfo method
+  */ 
+ public static String  SHOW_H_OFFSET  =   "Orientation Matrix.h offset";
 
+ /**
+  * Key that this class uses to add the view of the offsets from an
+  * integer for k in InfoHandler.addInfo method
+  */ 
+ public static String  SHOW_K_OFFSET = "Orientation Matrix.k offset";
+
+ /**
+  * Key that this class uses to add the view of the offsets from an
+  * integer for l in InfoHandler.addInfo method
+  */ 
+ public static String  SHOW_L_OFFSET  = "Orientation Matrix.l offset";
    //------------------------------------------
    int                  NMillerOffsetBins       = 50;
 
@@ -171,6 +249,9 @@ public class OrientMatrixControl extends JButton
    //-------------- Notification Messages --------------------
    
    public static String  INPUT_FILE_CHANGE  ="Input File Has Changed";
+   
+   public static String  ORIENT_MATRIX_CHANGED = 
+                                     "Orientation Matrix has Changed";
    /**
     * Constructor
     * 
@@ -219,18 +300,40 @@ public class OrientMatrixControl extends JButton
          ((ActionListener)OrientControlListeners.elementAt( i )).actionPerformed(  
                   new ActionEvent(this, ActionEvent.ACTION_PERFORMED, message));
    }
+   
+   /**
+    * Use this to perform operations on an instance of this class without a
+    * GUI or using an alternative GUI
+    * 
+    * @return  The action listener for this  class
+    * 
+    * NOTE: to perform operations call this ActionListener's actionPerformed 
+    *   method with command name String listed as a field above. 
+    */
+   public ActionListener  getActionListener()
+   {
+      return Listener;
+   }
+   
+   
    public void addOrientationMatrixListener( ActionListener evt)
    {
       if( evt == null)
          return;
+      
       if( OrientControlListeners.contains( evt ))
          return;
+      
       OrientControlListeners.add( evt);
    }
+   
+   
+   
    public void removeOrientationMatrixListener( ActionListener evt)
    {
       if( evt == null)
          return;
+      
       if( !OrientControlListeners.contains( evt ))
          return;
       OrientControlListeners.remove( evt);
@@ -288,7 +391,7 @@ public class OrientMatrixControl extends JButton
       float[] lyvals = subs.getMillerOffsets( Peaks , omittedPeakIndex ,
                OrientMat , xvals , false , 'l' );
 
-
+      
       if( orientationMatrix == null )
          if( OrientMat == null ) //old one null so everything should have been removed
             return;
@@ -299,7 +402,7 @@ public class OrientMatrixControl extends JButton
             {
                OrientMatInfHandler = new OrientMatInfoHandler( res );
 
-               textInfo.addInfoHandler( "Orientation Matrix.matrix" ,
+               textInfo.addInfoHandler( SHOW_ORIENT_MAT ,
                         OrientMatInfHandler );
 
                h_offsetInfHandler = new MillerOffsetInfoHandler( 'h' , xvals ,
@@ -311,14 +414,11 @@ public class OrientMatrixControl extends JButton
                l_offsetInfHandler = new MillerOffsetInfoHandler( 'l' , xvals ,
                         lyvals );
 
-               textInfo.addInfoHandler( "Orientation Matrix.h offset" ,
-                        h_offsetInfHandler );
+               textInfo.addInfoHandler( SHOW_H_OFFSET , h_offsetInfHandler );
 
-               textInfo.addInfoHandler( "Orientation Matrix.k offset" ,
-                        k_offsetInfHandler );
+               textInfo.addInfoHandler( SHOW_K_OFFSET , k_offsetInfHandler );
 
-               textInfo.addInfoHandler( "Orientation Matrix.l offset" ,
-                        l_offsetInfHandler );
+               textInfo.addInfoHandler( SHOW_L_OFFSET , l_offsetInfHandler );
 
             }
          }
@@ -355,7 +455,7 @@ public class OrientMatrixControl extends JButton
       Listener.do3DView();
       
 
-      fireOrientationMatrixListeners( INPUT_FILE_CHANGE);
+      fireOrientationMatrixListeners( ORIENT_MATRIX_CHANGED);
       
    }
 
@@ -792,7 +892,7 @@ public class OrientMatrixControl extends JButton
 
       String            lastFileName;
 
-      CalculateListener CalcListener = null;
+      CalculateListener CalcListener = new CalculateListener();
 
       int               planeNum     = - 1;
       
@@ -861,7 +961,10 @@ public class OrientMatrixControl extends JButton
          
       }
       
-      /* (non-Javadoc)
+      /*
+       * Executes the operation specified by the event's action command.
+       * See
+       *  (non-Javadoc)
        * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
        */
       @Override
@@ -869,6 +972,7 @@ public class OrientMatrixControl extends JButton
       {
 
          String evt = e.getActionCommand();
+         
          if( evt == ORIENT_MAT )
          {
             Menu.show( button , 0 , 0 );
@@ -1279,6 +1383,14 @@ public class OrientMatrixControl extends JButton
                          orientationMatrix , omittedPeakIndex ) );
             return;
          }
+         
+         if( evt.equals( BLIND ) || 
+             evt .equals( AUTOMATIC )||
+             evt.equals( FOUR_PEAK )||
+             evt.equals( THREE_PEAK )||
+             evt.equals( FOUR_PEAK ))
+            CalcListener.actionPerformed(  e );
+         
 
       }
 
@@ -1370,7 +1482,10 @@ public class OrientMatrixControl extends JButton
          {
             blind BLIND = new blind();
             int nPeaksSet = NsetQ();
-
+            
+            if( nPeaksSet <4)
+               return;
+            
             if( evtString == FOUR_PEAK && nPeaksSet > 4 )
                nPeaksSet = 4;
 
@@ -1381,6 +1496,7 @@ public class OrientMatrixControl extends JButton
             for( int i = 0 ; i < nPeaksSet ; i++ )
             {
                float[] f = selectedPeaks.getSetPeakQ( i );
+               
                xx[ i ] = f[ 0 ];
                yy[ i ] = f[ 1 ];
                zz[ i ] = f[ 2 ];
