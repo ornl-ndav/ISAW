@@ -65,15 +65,34 @@ public class View3DItems extends JButton
     */
    public static String     DETECTOR_NUMS  = "Detectors";
 
-   public static String     SEQUENCE_NUMS  = "Sequence Numbers";
+   private static String     SEQUENCE_NUMS  = "Sequence Numbers";
 
+   /**
+    * Value="Clear View". Clears out the highlighted sequence numbers specified by the GUI
+    * or by the showSeqNums method.
+    */
    public static String     CLEAR_SEQ_NUMS = "Clear View";
 
+   /**
+    * Value ="One Plane on three peaks". This command to the listener's
+    *    actionPerformed method will show a plane through the first 3
+    *    selected peaks.
+    */
    public static String     SHOW1PLANE     = "One Plane on three peaks";
 
-   public static String     SHOW_PLANES    = " Family of planes";
+   /**
+    * Value =""Family of planes". This command to the listener's
+    *    actionPerformed method will show a plane through the first 3
+    *    selected peaks and a family of parallel planes where the
+    *    fourth selected point is on the first parallel plane( determines
+    *    the distance between planes)
+    */
+   public static String     SHOW_PLANES    = "Family of planes";
 
 
+   private View3D           view;
+   
+   private Vector< Integer > SeqNums_shown;
    /**
     * Help String in html
     */
@@ -195,10 +214,31 @@ public class View3DItems extends JButton
 
       listener = new MyActionListener( view , nPeaks , peakSetter );
       addActionListener( listener );
+      this.view = view;
    }
  
+   /**
+    * Method to programmatically show sequence numbeers
+    * @param seqNums  The sequence numbers to show in addition to those
+    *                 now showing
+    */
+   public void showSeqNums(int[] seqNums)
+   {
+      view.HighlightSeqNums( seqNums , true );
+      if( seqNums != null)
+      for( int i=0; i< seqNums.length; i++)
+         if( !SeqNums_shown.contains( seqNums[i]))
+            SeqNums_shown.add( seqNums[i]);
+      return;
+   }
 
    String               OmittedMenuItems;
+   /**
+    * Determines which menu items to display(not implemented yet)
+    * @param MenuItem   The name on the menu item
+    * @param show       if true it will show otherwise it will not
+    *                   be displayed.
+    */
    public void ManageShownMenus( String MenuItem, boolean show)
    {
       if( MenuItem == null)
@@ -249,8 +289,6 @@ public class View3DItems extends JButton
       SetPeaks          PeakSetter;
 
       boolean           runs , dets;
-
-      Vector< Integer > SeqNums_shown;
 
 
       public MyActionListener( View3D view, int nPeaks, SetPeaks peakSetter )

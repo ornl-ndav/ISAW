@@ -49,7 +49,12 @@ import DataSetTools.operator.Generic.TOF_SCD.IPeak;
 
 
 /**
- * This Handles the image display of data around the selected peak
+ * This Handles the image display of data around the selected peak. These
+ * images can be created using the the first form of InitialPeaksWizard_SNS or 
+ * InitialPeaksWizard_SNS1. The option to save the image must be set and
+ * the IsawProps.dat file has the key "KeepPeakImageFiles" is set ( currently
+ * to anything) to "yes". These images should be  copied to another folder
+ * because the temp folder's contents are quite often erased.
  * 
  * @author Ruth
  * 

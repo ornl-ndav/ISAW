@@ -60,8 +60,19 @@ public class Info extends JPanel implements ActionListener ,
          IRotatePeaksHandler , ISelectPeakHandler
 {
 
-
-
+   /**
+    * String("Selected Peak Information") that, when sent into actionPerformed 
+    * method, emulates selecting theSelect Peak information choice.
+    */
+   public static String               SELECT_PEAK_INFO     = 
+                                                  "Selected Peak Information";
+   /**
+    * String("Rotation Information") that, when sent into actionPerformed 
+    * method, emulates selecting theRotate Peak information choice.
+    */
+   public static String              ROTATE_PEAK_INFO      = 
+                                                  "Rotation Information";   
+   
    JComboBox                         Choices;
 
    Vector< String >                  ChoiceItems;
@@ -125,6 +136,17 @@ public class Info extends JPanel implements ActionListener ,
 
    }
 
+   /**
+    * Use this if you want to eliminate seeing the combo box
+    * with commands to produce informational information
+    * 
+    * @return  The display panel without the choices combo box.
+    * 
+    */
+   public JPanel getDisplayPanel()
+   {
+      return viewPanel;
+   }
 
    // Makes the choice combo box
    private void MakeChoiceBox()
@@ -181,16 +203,35 @@ public class Info extends JPanel implements ActionListener ,
 
    }
 
-
+   /**
+    *  Performs indicated operation described by the ActionEvent's command.
+    *  
+    *  @param e  The action Event either from this method's Combo box
+    *       of actions or passed from outside with a null source and one of
+    *       the commands entered via the addInfoHandler. 
+    *       
+    *  @see #SELECT_PEAK_INFO   "Selected Peak Information"
+    *  @see #ROTATE_PEAK_INFO   "Rotate Information"  
+    */
    @Override
    public void actionPerformed( ActionEvent e )
    {
 
-      if( e.getSource() != Choices )
-         return;
+      //if( e.getSource() != Choices )
+      //   return;
 
 
-      String viewType = (String) Choices.getSelectedItem();
+      String viewType = null ;
+      if( Choices != null && 
+          e.getSource() != null && 
+          e.getSource() == Choices)
+         
+            viewType = (String) Choices.getSelectedItem();
+      
+      else if( e != null)
+         
+         viewType = e.getActionCommand();
+      
       if( viewType == null )
          return;
 
@@ -199,7 +240,9 @@ public class Info extends JPanel implements ActionListener ,
 
       if( CurrentHandler != null )
       {
-         CurrentHandler.show( currentPeak , currentTransformation , viewPanel );
+         CurrentHandler.show( currentPeak , 
+                              currentTransformation , 
+                              viewPanel );
          validate();
          invalidate();
       }
