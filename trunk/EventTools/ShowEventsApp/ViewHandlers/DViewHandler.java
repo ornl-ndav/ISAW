@@ -1,7 +1,8 @@
 package EventTools.ShowEventsApp.ViewHandlers;
 
-import javax.swing.JFrame;
-import javax.swing.JPanel;
+import java.awt.GridLayout;
+
+import javax.swing.*;
 
 import EventTools.ShowEventsApp.Command.Commands;
 import gov.anl.ipns.ViewTools.Components.OneD.FunctionViewComponent;
@@ -24,7 +25,36 @@ public class DViewHandler implements IReceiveMessage
       this.messageCenter.addReceiver(this, Commands.SHOW_D_GRAPH);
       this.messageCenter.addReceiver(this, Commands.HIDE_D_GRAPH);
       this.messageCenter.addReceiver(this, Commands.SET_D_VALUES);
-      sendMessage(Commands.GET_D_VALUES, null);
+      this.messageCenter.addReceiver(this, Commands.ADD_EVENTS_TO_VIEW);
+   }
+   
+   private void displayDFrame()
+   {
+      dDisplayFrame = new JFrame("d-spacing View");
+      dDisplayFrame.setLayout(new GridLayout(1,1));
+      dDisplayFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+      dDisplayFrame.setBounds(0, 0, 500, 300);
+      dDisplayFrame.setVisible(true);
+      
+      if (graphPanel != null)
+         dDisplayFrame.add(graphPanel);
+      else
+         dDisplayFrame.add(placeholderPanel());
+      
+      dDisplayFrame.repaint();
+   }
+   
+   private JPanel placeholderPanel()
+   {
+      JPanel placeholderpanel = new JPanel();
+      placeholderpanel.setLayout(new GridLayout(1,1));
+      
+      JLabel label = new JLabel("No Data Loaded Yet!");
+      label.setHorizontalAlignment(JLabel.CENTER);
+      
+      placeholderpanel.add(label);
+      
+      return placeholderpanel;
    }
    
    private void setPanelInformation(float[][] xyValues)
@@ -33,26 +63,14 @@ public class DViewHandler implements IReceiveMessage
       float[] y_values = xyValues[1];
       float[] errors = null;
 
-      
-      graphPanel = 
-         FunctionViewComponent.ShowGraphWithAxes(x_values, y_values, errors, 
+      if(dDisplayFrame != null)
+         dDisplayFrame.getContentPane().removeAll();
+
+      graphPanel = FunctionViewComponent.ShowGraphWithAxes(x_values, y_values, errors, 
                Title, x_units, y_units, x_label, y_label);
-   }
-   
-   private void displayDFrame()
-   {
-      dDisplayFrame = new JFrame("Q View");
-      dDisplayFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-      dDisplayFrame.setBounds(0, 0, 500, 300);
-      dDisplayFrame.setVisible(true);
       
-      dDisplayFrame.add(graphPanel);
-      dDisplayFrame.repaint();
-   }
-   
-   private void hideDFrame()
-   {
-      dDisplayFrame.dispose();
+      if (dDisplayFrame != null)
+         dDisplayFrame.add(graphPanel);
    }
    
    private void sendMessage(String command, Object value)
@@ -66,15 +84,19 @@ public class DViewHandler implements IReceiveMessage
    {
       if (message.getName().equals(Commands.SHOW_D_GRAPH))
       {
-         sendMessage(Commands.GET_D_VALUES, null);
          displayDFrame();
          
          return true;
       }
       
+      if (message.getName().equals(Commands.ADD_EVENTS_TO_VIEW))
+      {
+         sendMessage(Commands.GET_D_VALUES, null);
+      }
+      
       if (message.getName().equals(Commands.HIDE_D_GRAPH))
       {
-         hideDFrame();
+         dDisplayFrame.dispose();
          
          return true;
       }
@@ -83,8 +105,12 @@ public class DViewHandler implements IReceiveMessage
       {
          setPanelInformation(((float[][])message.getValue()));
          
+         if (dDisplayFrame != null)
+            dDisplayFrame.validate();
+         
          return true;
       }
+      
       return false;
    }
 }
