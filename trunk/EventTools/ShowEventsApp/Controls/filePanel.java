@@ -362,23 +362,26 @@ public class filePanel //extends JPanel
    
    private void setEventData(File inFile)
    {
-      long file_size = inFile.length();
-      String size = String.valueOf((file_size / 8));
+      NumberFormat nf = NumberFormat.getInstance();
       
-      evFileName.setText(inFile.getPath());
-      availableEvents.setText(size);
-      firstEvent.setText("1");
-      eventsToLoad.setText(size);
+      long file_size = inFile.length();
+      long size = file_size / 8;
+      
       try
       {
-         if (Integer.parseInt(size) > 5000000)
-            eventsToShow.setText("5000000");
+         evFileName.setText(inFile.getPath());
+         availableEvents.setText(nf.getInstance().format(size));
+         firstEvent.setText("1");
+         eventsToLoad.setText(nf.getInstance().format(size));
+      
+         if (size > 5000000)
+            eventsToShow.setText("5,000,000");
          else
-            eventsToShow.setText(size);
+            eventsToShow.setText(nf.getInstance().format(size));
       }
-      catch (NumberFormatException nf)
+      catch (NumberFormatException nfe)
       {
-         System.out.println(nf.getStackTrace());
+         System.out.println(nfe.getStackTrace());
          return;
       }
    }
