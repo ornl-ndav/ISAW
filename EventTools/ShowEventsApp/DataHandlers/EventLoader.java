@@ -297,9 +297,10 @@ public class EventLoader implements IReceiveMessage
     if ( num_available > 0 )
     {
       message_center.receive(
-                        new Message( Commands.CLEAR_HISTOGRAM, null, true) );
+                       new Message( Commands.CLEAR_HISTOGRAM, null, true) );
       message_center.receive( 
-                        new Message( Commands.CLEAR_EVENTS_VIEW, null, true) );
+                       new Message( Commands.CLEAR_EVENTS_VIEW, null, true) );
+      message_center.receive( new Message( Commands.CLEAR_DQ, null, true) );
     }
     else
     {
@@ -415,6 +416,7 @@ public class EventLoader implements IReceiveMessage
           System.out.println("ERROR: null list in EventLoader");
         else
         { 
+/*
           int n_printed = Math.min( 10, list.numEntries());
           System.out.println("EventLoader, First " + n_printed + 
                              " events-------------------------");
@@ -423,7 +425,7 @@ public class EventLoader implements IReceiveMessage
                                            list.eventY(k) + " " +
                                            list.eventZ(k) + " " +
                                 "weight = " + list.eventWeight(k) );
-
+*/
           if ( num_viewed < num_to_show )
           {
             show_lists.add( event_lists.elementAt(i) );
