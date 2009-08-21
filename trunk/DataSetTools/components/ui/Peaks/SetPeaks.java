@@ -775,7 +775,12 @@ public class SetPeaks extends JButton
                text.setEnabled( false );
          }
 
-         String S = JOptionPane.showInputDialog( men , message , InitVal );
+         String Title ="Input Q Values";
+         if( !SpecifyPeak)
+            Title ="Input hkl Values";
+         
+         String S = (String)JOptionPane.showInputDialog( men , message ,Title,
+                   JOptionPane.QUESTION_MESSAGE, null,null,InitVal );
 
          if( S == null )
             return;
