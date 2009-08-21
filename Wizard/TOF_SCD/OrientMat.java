@@ -226,10 +226,15 @@ public class OrientMat extends Form implements ActionListener , IObserver ,
 
    private static String[] XtalTypes        =
                                             {
-            "P" , "A" , "B" , "C" , "F" , "I" , "R"
+                                    "P" , "A" , "B" , "C" ,
+                                    "F" , "I" , "R"
                                             };
 
    JFrame                  QViewFrame;
+   
+   boolean                 NewOrientMatrixSet;  
+   
+   boolean                 DisableGraphicsOutput;
 
 
    /**
@@ -242,6 +247,8 @@ public class OrientMat extends Form implements ActionListener , IObserver ,
       orientMat = null;
       QViewFrame = null;
       setDefaultParameters();
+      NewOrientMatrixSet = false;
+      DisableGraphicsOutput= false;
 
    }
 
@@ -428,13 +435,22 @@ public class OrientMat extends Form implements ActionListener , IObserver ,
       // ----------- internal values change -------------------
       Vector VRes = (Vector)((ArrayPG)getParameter( ORIENT_MAT )).getValue();
       float[][] Res = Convert2floatAA( VRes);
+      
       if( Res == null || Res.length !=3 || Res[0].length!=3 ||
                Res[1].length!= 3|| Res[2].length !=3 )
          Res = null;
       Orient.setOrientationMatrix( Res );
-      
+      NewOrientMatrixSet = false;
       Orient.addOrientationMatrixListener( this );
 
+      
+      String orFileName = getParameter(IN_FILE).getValue().toString();
+      if( orFileName != null && orFileName.length()>0 &&
+                  (new File(orFileName)).exists())
+      {
+         Orient.LoadOrientMatrix( orFileName);
+      }
+      
       Vector V = (Vector) getParameter( OMITTED ).getValue();
       int[] seq = ConvertTointArray( V );
       Orient.SetOmittedPeaks( seq );
@@ -634,6 +650,21 @@ public class OrientMat extends Form implements ActionListener , IObserver ,
    public Object getResult()
    {
 
+      if( !NewOrientMatrixSet)//No new orientation matrix has been calculated
+      {
+         
+         
+         Orient.getActionListener().actionPerformed( new ActionEvent( this,
+                                 ActionEvent.ACTION_PERFORMED,
+                                 OrientMatrixControl.AUTOMATIC));
+        
+         NewOrientMatrixSet = false;
+        
+        
+      }
+      if( Orient.getInputFileName() == null)
+         getParameter(IN_FILE).setValue( "" );
+      
       float[][] orMat = Orient.getOrientationMatrix( - 1 );
 
       String fileName = gov.anl.ipns.Util.File.FileIO.appendPath( getParameter(
@@ -648,6 +679,9 @@ public class OrientMat extends Form implements ActionListener , IObserver ,
       gov.anl.ipns.Util.Sys.SharedMessages.addmsg( Res );
       for( int i=0; i<=ORIENT_MAT; i++)
          ((IParameterGUI)getParameter(i)).setValidFlag( true );
+      
+      NewOrientMatrixSet = false;
+      
       return Res;
    }
 
@@ -674,7 +708,7 @@ public class OrientMat extends Form implements ActionListener , IObserver ,
          
          getParameter( ORIENT_MAT )
                   .setValue( Orient.getOrientationMatrix( - 1 ) );
-         
+        
          return;
       }
       
@@ -757,6 +791,9 @@ public class OrientMat extends Form implements ActionListener , IObserver ,
          WindowShower.show( QViewFrame );
 
       }
+      
+      if( ActionCommand.equals( OrientMatrixControl.ORIENT_MATRIX_CHANGED ))
+         NewOrientMatrixSet = true;
 
    }
 
