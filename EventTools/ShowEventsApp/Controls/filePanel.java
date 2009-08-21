@@ -123,7 +123,7 @@ public class filePanel //extends JPanel
       sub_panel.setLayout( new GridLayout(6,1) );
       sub_panel.add(buildDetPanel());
       sub_panel.add(buildIncPanel());
-      sub_panel.add(buildDetEffPanel());
+      //sub_panel.add(buildDetEffPanel());
       //sub_panel.add(buildMatPanel());
       sub_panel.add(buildMaxQPanel());
       sub_panel.add(buildThreadPanel());
@@ -568,7 +568,7 @@ public class filePanel //extends JPanel
                      new LoadEventsCmd(evFileName.getText(),
                                 detFileName.getText(),
                                 incFileName.getText(),
-                                detEffFileName.getText(),
+                                null,                   //detEffFileName.getText(),
                                 null,
                                 MaxQValue,
                                 nf.parse(availableEvents.getText()).longValue(),
