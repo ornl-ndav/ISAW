@@ -1554,7 +1554,7 @@ public class OrientMatrixControl extends JButton
                 return;
              }
                             
-             
+             return;
           }else
          {
             
