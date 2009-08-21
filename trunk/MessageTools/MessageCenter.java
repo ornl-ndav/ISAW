@@ -121,15 +121,19 @@ public class MessageCenter implements IReceiveMessage
   private boolean debug_receive = false;
 
   private String    center_name;
-  private Hashtable<Object,Vector<Message>> message_table;
   private Hashtable<Object,Vector<IReceiveMessage>> receiver_table;
+  private Hashtable<Object,Vector<Message>> message_table;
+  private Hashtable<Object,Vector<Message>> sender_message_table;
    
-  private static long  tag_count = 0;
-  public final static Message PROCESS_MESSAGES = 
+  private static long  tag_count   = 0;
+  private boolean      sender_busy = false;
+
+  public final static Message PROCESS_MESSAGES =
                                              new Message( null, null, false );
 
-  public final static Message MESSAGES_PROCESSED = 
+  public final static Message MESSAGES_PROCESSED =
                                              new Message( DONE, null, true );
+
 
   /* ------------------------- constructor ------------------------------- */
   /**
@@ -140,9 +144,13 @@ public class MessageCenter implements IReceiveMessage
    */
   public MessageCenter( String name )
   {
-    message_table  = new Hashtable<Object,Vector<Message>>();
-    receiver_table = new Hashtable<Object,Vector<IReceiveMessage>>();
+    receiver_table        = new Hashtable<Object,Vector<IReceiveMessage>>();
+    message_table         = new Hashtable<Object,Vector<Message>>();
+    sender_message_table  = null;
     center_name = name;
+
+    MessageSenderThread sender = new MessageSenderThread();
+    sender.start();
   }
 
 
@@ -167,12 +175,15 @@ public class MessageCenter implements IReceiveMessage
   {
     if ( message == PROCESS_MESSAGES )
     {
-       int num_processed = sendAll();
+       if ( sender_busy )                   // wait for later update triggers
+         return false;                      // to process more messages
 
-       if ( num_processed > 0 )
-         return true;
+       sender_message_table = message_table;
+       sender_busy = true;                  // trip flag so the sender thread
+                                            // will process messages
+       message_table = new Hashtable<Object,Vector<Message>>();
        
-       return false;
+       return true;
     }
 
     if ( debug_receive )
@@ -378,11 +389,11 @@ public class MessageCenter implements IReceiveMessage
    *           processed only if there was actually at least one receiver to 
    *           receive that message.
    */
-  private int sendAll()
+  private int sendAll( Hashtable<Object,Vector<Message>> my_message_table )
   {                                  // get all messages from the message table
                                      // in an array, and sort based on time
     int num_messages = 0;
-    Enumeration<Vector<Message>> lists = message_table.elements();
+    Enumeration<Vector<Message>> lists = my_message_table.elements();
     Vector<Message> list;
     while ( lists.hasMoreElements() )
     {
@@ -391,7 +402,7 @@ public class MessageCenter implements IReceiveMessage
     }
 
     Message messages[] = new Message[ num_messages ];
-    lists = message_table.elements();
+    lists = my_message_table.elements();
     int index = 0;
     while ( lists.hasMoreElements() )
     {
@@ -403,7 +414,7 @@ public class MessageCenter implements IReceiveMessage
       }
       list.clear();
     }
-    message_table.clear();
+    my_message_table.clear();
 
     Arrays.sort( messages, new MessageComparator() );
 
@@ -464,6 +475,41 @@ public class MessageCenter implements IReceiveMessage
     }
 
     return some_processed;
+  }
+
+
+  private class MessageSenderThread extends Thread
+  {
+    public void run()
+    {
+      while ( true )                       // keep looping forever
+      {
+        if ( sender_busy )
+        {
+          int num_sent = 0;
+          try
+          {
+            sendAll( sender_message_table );
+          }
+          catch ( Throwable ex )
+          {
+            System.out.println("Exception processing messages : " + ex );
+            ex.printStackTrace();
+          }
+          if ( num_sent > 0 )
+            System.out.println("sender sent " + num_sent + " messages");
+          sender_busy = false;
+        }
+        try
+        {
+          Thread.sleep(30);
+        }
+        catch ( Exception ex )
+        {
+          System.out.println("Exception sleeping in MessageCenter.sender");
+        }
+      }
+    }
   }
 
 
