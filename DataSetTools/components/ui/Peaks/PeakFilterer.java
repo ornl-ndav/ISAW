@@ -146,7 +146,13 @@ public class PeakFilterer extends JButton implements ActionListener
 
 
    /**
-    * Constructor
+    * Constructor:
+    * Field Names are row, col, channel, intensity, time, h, k, l, reflag,
+    *    h int offset, k int offset, l int offset, 
+    *     d-spacing, qx, qy, qz, seq nums(*), run nums(*), det nums(*)
+    *  Those field names followed by (*) need a list of integer as
+    *  arguments.  All other need a range of values to omit or to not omit
+    *     
     * @param Peaks  The Vector of Peaks
     */
    public PeakFilterer( Vector< Peak_new > Peaks )
@@ -961,7 +967,8 @@ public class PeakFilterer extends JButton implements ActionListener
                boolean isModal, int FieldIndex )
       {
 
-         super( getJFrame( message ) , message , true );
+         super( getJFrame( "OMIT "+message +" Values" ) , 
+                      "OMIT "+message +" Values" , isModal );
          
          IsModal = isModal;
          fieldIndex = FieldIndex;
@@ -979,7 +986,10 @@ public class PeakFilterer extends JButton implements ActionListener
          buttonPanel.setLayout( blayout );
 
          inside = new JCheckBox( "Inside interval" , false );
-         inside.setToolTipText( "False-outside of interval, otherwise inside" );
+         
+         inside.setToolTipText( "<html><body>False-omit peaks whose values are"+
+                  " outside interval<BR> otherwise omit peaks whose values are"+
+                  " inside the interval" );
          buttonPanel.add( inside );
          if( !IsModal)
             inside.addActionListener(  this  );
