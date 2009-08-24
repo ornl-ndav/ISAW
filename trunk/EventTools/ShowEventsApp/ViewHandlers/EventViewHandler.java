@@ -76,13 +76,14 @@ public class EventViewHandler implements IReceiveMessage
     }
     else if ( message.getName().equals(Commands.SET_FILTER_OPTIONS) )
     {
-       DrawingOptionsCmd filter_options = (DrawingOptionsCmd)message.getValue();
-      events_panel.setDrawingOptions( filter_options.getFilterMax(),
-                                      filter_options.getFilterMin(),
-                                      filter_options.getPointSize(),
-                                      filter_options.getAlpha(),
-                                      filter_options.getAlphaValue(),
-                                      filter_options.getOrthographic() );
+       DrawingOptionsCmd draw_options = (DrawingOptionsCmd)message.getValue();
+      events_panel.setDrawingOptions( draw_options.getFilterMax(),
+                                      draw_options.getFilterMin(),
+                                      draw_options.getShowAxes(),
+                                      draw_options.getPointSize(),
+                                      draw_options.getAlpha(),
+                                      draw_options.getAlphaValue(),
+                                      draw_options.getOrthographic() );
       events_panel.updateDisplay();
 
     }
