@@ -1,5 +1,5 @@
 /* 
- * File: MainApp.java
+ * File: IsawEV.java
  *
  * Copyright (C) 2009, Dennis Mikkelson
  *
@@ -46,12 +46,14 @@ import EventTools.ShowEventsApp.ViewHandlers.*;
  *  Data and View handlers that communicate via messages to carry out
  *  the work of the application.
  */
-public class MainApp 
+public class IsawEV 
 {
   public  static final int NUM_BINS = 512;
 
-
-  public MainApp()
+  /**
+   *  Construct an instance of the IsawEV application.
+   */
+  public IsawEV()
   {
     MessageCenter message_center = new MessageCenter("Test");
     message_center.setDebugReceive( true );
@@ -90,7 +92,7 @@ public class MainApp
   {
     public void run()
     {
-      new MainApp();
+      new IsawEV();
     }  
   }
 
