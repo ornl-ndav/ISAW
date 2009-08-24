@@ -52,8 +52,8 @@ public class HistogramHandler implements IReceiveMessage
 
   public boolean receive( Message message )
   {
-    System.out.println("***HistogramHandler in thread " 
-                       + Thread.currentThread());
+//    System.out.println("***HistogramHandler in thread " 
+//                       + Thread.currentThread());
 
     if ( message.getName().equals(Commands.ADD_EVENTS) )
     {
