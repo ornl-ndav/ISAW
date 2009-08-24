@@ -124,6 +124,7 @@ public class SlicedEventsPanel
     camera.setVUV( new Vector3D(   0, 0,  1 ) );
     camera.setVRP( new Vector3D(  -7, 0,  0 ) );
     camera.setCOP( new Vector3D( -20, 0, 10 ) );
+    camera.SetViewVolume( 0.25f, 250, 60 );
 
     jogl_panel.setBackgroundColor( Color.GRAY );
     new MouseArcBall( jogl_panel );
