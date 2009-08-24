@@ -61,6 +61,7 @@ import SSG_Tools.SSG_Nodes.StateControls.glDisableNode;
 import SSG_Tools.SSG_Nodes.SimpleShapes.*;
 import SSG_Tools.SSG_Nodes.*;
 import SSG_Tools.SSG_Nodes.Groups.Transforms.*;
+import SSG_Tools.SSG_Nodes.Groups.Switches.*;
 import SSG_Tools.Cameras.*;
 import SSG_Tools.Viewers.*;
 import SSG_Tools.Viewers.Controls.*;
@@ -77,6 +78,7 @@ public class SlicedEventsPanel
 {
   private Group           points_group;
   private Group           marker_group;
+  private OnOff           axis_group;
   private SimpleShape     marker_shape;
   private Color[]         colors;
   private int[]           color_tran;
@@ -104,18 +106,19 @@ public class SlicedEventsPanel
     Axis y_axis = Axis.getInstance( ymin, ymax, "Y-Axis", Color.GREEN );
     Axis z_axis = Axis.getInstance( zmin, zmax, "Z-Axis", Color.BLUE );
 
+    axis_group = new OnOff( true );
+    axis_group.addChild( x_axis );
+    axis_group.addChild( y_axis );
+    axis_group.addChild( z_axis );
+
     points_group = new Group();
     marker_group = new Group();
 
     Group root = new Group();
     root.addChild( new glDisableNode(GL.GL_LIGHTING) );
-    root.addChild( x_axis );
-    root.addChild( y_axis );
-    root.addChild( z_axis );
-//    root.addChild( new glEnableNode(GL.GL_BLEND) );
+    root.addChild( axis_group );
     root.addChild( points_group );
     root.addChild( marker_group );
-//    root.addChild( new glDisableNode(GL.GL_BLEND) );
 
 //  jogl_panel = new JoglPanel( root, true, JoglPanel.DEBUG_MODE );
     jogl_panel = new JoglPanel( root, true, JoglPanel.NORMAL_MODE );
@@ -277,6 +280,7 @@ public class SlicedEventsPanel
 
   public void setDrawingOptions( boolean filter_above_max,
                                  boolean filter_below_min,
+                                 boolean show_axes,
                                  float   point_size,
                                  boolean use_alpha,
                                  float   alpha,
@@ -296,7 +300,7 @@ public class SlicedEventsPanel
                                          point_size,
                                          use_alpha,
                                          alpha );
-
+    axis_group.set( show_axes );
     setOrthographicView( orthographic );
   }
 
