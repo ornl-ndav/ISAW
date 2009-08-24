@@ -70,7 +70,6 @@ public class EventViewHandler implements IReceiveMessage
     if ( message.getName().equals(Commands.ADD_EVENTS_TO_VIEW) )
     {
       IEventList3D events = (IEventList3D)message.getValue();
-      System.out.println("ASKED TO ADD EVENTS " + events.numEntries() );
       events_panel.addEvents( events );
       events_panel.updateDisplay();
     }

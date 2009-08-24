@@ -51,7 +51,7 @@ public class EventLoader implements IReceiveMessage
 
   public boolean receive( Message message )
   {
-    System.out.println("***EventLoader in thread " + Thread.currentThread());
+//  System.out.println("***EventLoader in thread " + Thread.currentThread());
 
     long   start;
     double run_time;
