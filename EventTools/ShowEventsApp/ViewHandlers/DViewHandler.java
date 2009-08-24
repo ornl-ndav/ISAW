@@ -49,7 +49,7 @@ public class DViewHandler implements IReceiveMessage
       JPanel placeholderpanel = new JPanel();
       placeholderpanel.setLayout(new GridLayout(1,1));
       
-      JLabel label = new JLabel("No Data Loaded Yet!");
+      JLabel label = new JLabel("No Data Loaded!");
       label.setHorizontalAlignment(JLabel.CENTER);
       
       placeholderpanel.add(label);
