@@ -194,7 +194,7 @@ public class drawingOptions extends JPanel
                            useAlpha.isSelected(),
                            Float.parseFloat(alphaValue.getText()));
             
-            sendMessage(Commands.SET_FILTER_OPTIONS, filters);
+            sendMessage(Commands.SET_DRAWING_OPTIONS, filters);
          }
       }
    }
@@ -203,7 +203,7 @@ public class drawingOptions extends JPanel
    {
       MessageCenter mc = new MessageCenter("Testing MessageCenter");
       TestReceiver tc = new TestReceiver("FilePanel TestingMessages");
-      mc.addReceiver(tc, Commands.SET_FILTER_OPTIONS);
+      mc.addReceiver(tc, Commands.SET_DRAWING_OPTIONS);
       
       drawingOptions draw = new drawingOptions(mc);
 
