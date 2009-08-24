@@ -44,7 +44,7 @@ public class filePanel //extends JPanel
    private JTextField         firstEventToShow;
    private JTextField         eventsToShow;
    private String             Datafilename;// Remember last file chosen
-
+  
    private String             Detfilename;// Remember last file chosen
    private String             Incfilename;// Remember last file chosen
    private String             DetEfffilename;// Remember last file chosen
@@ -215,7 +215,7 @@ public class filePanel //extends JPanel
       
       String default_detector_file =Detfilename;
          // /usr2/SNS_SCD_TEST_3/SNAP_1_Panel.DetCal";
-      detFileName = new JTextField( default_detector_file);
+      detFileName = new JTextField( "");
       detFileName.addMouseListener(new mouse());
       detFileName.setEditable(false);
       
