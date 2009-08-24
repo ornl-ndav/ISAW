@@ -70,7 +70,7 @@ public class Commands
 
   public static final String CHANGE_PANEL = "CHANGE_PANEL";
   public static final String SET_COLOR_SCALE = "SET_COLOR_SCALE";
-  public static final String SET_FILTER_OPTIONS = "SET_FILTER_OPTIONS";
+  public static final String SET_DRAWING_OPTIONS = "SET_DRAWING_OPTIONS";
 
   public static final String CLEAR_ORIENTATION_MATRIX
                                                   = "CLEAR_ORIENTATION_MATRIX";

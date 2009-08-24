@@ -43,7 +43,7 @@ public class EventViewHandler implements IReceiveMessage
     this.message_center = message_center;
     message_center.addReceiver( this, Commands.ADD_EVENTS_TO_VIEW );
     message_center.addReceiver( this, Commands.CLEAR_EVENTS_VIEW );
-    message_center.addReceiver( this, Commands.SET_FILTER_OPTIONS );
+    message_center.addReceiver( this, Commands.SET_DRAWING_OPTIONS );
     message_center.addReceiver( this, Commands.SET_COLOR_SCALE );
     message_center.addReceiver( this, Commands.LOAD_FILE );
     message_center.addReceiver( this, Commands.MARK_PEAKS );
@@ -73,7 +73,7 @@ public class EventViewHandler implements IReceiveMessage
       events_panel.addEvents( events );
       events_panel.updateDisplay();
     }
-    else if ( message.getName().equals(Commands.SET_FILTER_OPTIONS) )
+    else if ( message.getName().equals(Commands.SET_DRAWING_OPTIONS) )
     {
        DrawingOptionsCmd draw_options = (DrawingOptionsCmd)message.getValue();
       events_panel.setDrawingOptions( draw_options.getFilterMax(),
