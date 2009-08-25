@@ -64,14 +64,27 @@ public class multiPanel implements IReceiveMessage
    {
       JMenuBar jmenBar= new JMenuBar();
       JMenu FileMen = new JMenu("File");
+      JMenu helpMenu = new JMenu("Help");
       
       jmenBar.add(FileMen);
       JMenuItem closeMenItem= new JMenuItem( "Exit"); 
       FileMen.add( closeMenItem);
       closeMenItem.addActionListener(  
                new CloseAppActionListener( C, true) );
+      
+      jmenBar.add(helpMenu);
+      JMenuItem isawHelp = new JMenuItem("Using IsawEV");
+      isawHelp.addActionListener(new helpListener());
+      
+      JMenuItem aboutHelp = new JMenuItem("Help About");
+      aboutHelp.addActionListener(new helpListener());
+      
+      helpMenu.add(isawHelp);
+      helpMenu.add(aboutHelp);
+            
       return jmenBar;
    }
+   
    public boolean receive(Message message)
    {
       // System.out.println(message.getName() + " " + message.getValue());
@@ -87,8 +100,16 @@ public class multiPanel implements IReceiveMessage
       
       return false;
    }
-   
 }
+
+class helpListener implements ActionListener
+{
+   public void actionPerformed(ActionEvent e)
+   {
+
+   }
+}
+
 class CloseAppActionListener implements java.awt.event.ActionListener
 {
    JComponent comp;
