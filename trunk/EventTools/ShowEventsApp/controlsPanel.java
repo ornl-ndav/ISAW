@@ -112,6 +112,7 @@ public class controlsPanel extends JPanel
       filterPeaksBtn = new JButton("Filter Peaks");
       filterPeaksBtn.setBackground( background_color );
       filterPeaksBtn.addActionListener(new buttonListener());
+      filterPeaksBtn.setEnabled(false);
       
       indexPeaksBtn = new JButton("Index Peaks");
       indexPeaksBtn.setBackground( background_color );
@@ -120,6 +121,7 @@ public class controlsPanel extends JPanel
       integrateBtn = new JButton("Integrate");
       integrateBtn.setBackground( background_color );
       integrateBtn.addActionListener(new buttonListener());
+      integrateBtn.setEnabled(false);
       
       panel.add(loadFileBtn);
       panel.add(findPeaksBtn);
