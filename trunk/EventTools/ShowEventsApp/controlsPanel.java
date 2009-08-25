@@ -1,7 +1,39 @@
-package EventTools.ShowEventsApp;
+/* 
+ * File: controlsPanel.java
+ *
+ * Copyright (C) 2009, Paul Fischer
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
+ *           Department of Mathematics, Statistics and Computer Science
+ *           University of Wisconsin-Stout
+ *           Menomonie, WI 54751, USA
+ *
+ * This work was supported by the National Science Foundation under grant
+ * number DMR-0800276 and by the Spallation Neutron Source Division
+ * of Oak Ridge National Laboratory, Oak Ridge TN, USA.
+ *
+ *  Last Modified:
+ * 
+ *  $Author$
+ *  $Date$            
+ *  $Revision$
+ */
 
-import gov.anl.ipns.Util.Sys.WindowShower;
-import gov.anl.ipns.ViewTools.Components.ViewControls.ColorScaleControl.*;
+package EventTools.ShowEventsApp;
 
 import javax.swing.*;
 import javax.swing.border.*;
@@ -19,8 +51,6 @@ import EventTools.ShowEventsApp.Command.*;
 import EventTools.ShowEventsApp.Controls.*;
 import EventTools.ShowEventsApp.Controls.Peaks.*;
 import EventTools.ShowEventsApp.Controls.HistogramControls.*;
-import EventTools.ShowEventsApp.ViewHandlers.DViewHandler;
-import EventTools.ShowEventsApp.ViewHandlers.QViewHandler;
 
 public class controlsPanel extends JPanel
 {
@@ -71,11 +101,12 @@ public class controlsPanel extends JPanel
       this.add(buildControlsPanel());
    }
    
-   public ColorScaleInfo getColorScaleInfo()
-   {
-      return colorEditPanel.getColorScaleInfo();
-   }
-   
+   /**
+    * Builds all the panels to be displayed on the display side
+    * of the splitpane.  This class uses these panels to pass
+    * along with the message system where they displayPanel
+    * class then just displays the panel it was sent.
+    */
    private void buildPanels()
    {
       filepanel = new filePanel(messageCenter);
@@ -95,6 +126,12 @@ public class controlsPanel extends JPanel
             Commands.SET_COLOR_SCALE, 15, 1000, true);
    }
    
+   /**
+    * Builds the first set of buttons which are all operations
+    * to be done such as load an event file, find peaks, etc.
+    * 
+    * @return Panel containing a button list of operations.
+    */
    private JPanel buildOperationsPanel()
    {
       JPanel panel = new JPanel();
@@ -132,6 +169,12 @@ public class controlsPanel extends JPanel
       return panel;
    }
    
+   /**
+    * Builds the second set of buttons which are all information
+    * buttons or controls such as color of data or drawing options.
+    * 
+    * @return Panel containing a button list of controls/info.
+    */
    private JPanel buildControlsPanel()
    {
       int npanels =6;//Change when add or delete a button
@@ -178,6 +221,12 @@ public class controlsPanel extends JPanel
       return panel;
    }
    
+   /**
+    * Listens to all of the buttons and sends a message of
+    * CHANGE_PANEL along with the corresponding panel.
+    * 
+    * @author fischerp
+    */
    private class buttonListener implements ActionListener
    {
       public void actionPerformed(ActionEvent e)
@@ -197,9 +246,11 @@ public class controlsPanel extends JPanel
             value = indexPeakPanel;
          
          if (e.getSource().equals(integrateBtn))
-         {   value = notImplementedPanel();
-             Test();
+         {   
+            value = notImplementedPanel();
+            //Test();
          }
+         
          if (e.getSource().equals(selectedPoint))
             value = positionPanel;
 
@@ -221,12 +272,12 @@ public class controlsPanel extends JPanel
          if (e.getSource().equals(drawOptions))
             value = drawoptions;
          
-         //if (value != null)
          sendMessage(Commands.CHANGE_PANEL, value);
       }
    }
+   
    //Creates message to test new modules
-   private void Test()
+   /*private void Test()
    {
       String filename = "C:\\ISAW\\SampleRuns\\SNS\\Snap\\QuartzRunsFixed\\quartz.peaks";
       Vector< Peak_new > peaks = null;
@@ -238,12 +289,18 @@ public class controlsPanel extends JPanel
       {
         return;
       }
-      MessageCenter msgC =messageCenter;
+      MessageCenter msgC = messageCenter;
     
       Message mmm = new Message( Commands.SET_PEAK_NEW_LIST , peaks , false );
       msgC.receive( mmm );
       msgC.receive( MessageCenter.PROCESS_MESSAGES );
-   }
+   }*/
+   
+   /**
+    * Placeholder for unimplemented features.
+    * 
+    * @return Panel
+    */
    private JPanel notImplementedPanel()
    {
       JPanel panel = new JPanel();
@@ -257,6 +314,12 @@ public class controlsPanel extends JPanel
       return panel;
    }
    
+   /**
+    * Send message to MessageCenter.
+    * 
+    * @param command
+    * @param value
+    */
    private void sendMessage(String command, Object value)
    {
       Message message = new Message(command,
@@ -266,6 +329,12 @@ public class controlsPanel extends JPanel
       messageCenter.receive(message);
    }
    
+   /**
+    * Main method to test and make sure displays 
+    * and sends messages correctly
+    * 
+    * @param args
+    */
    public static void main(String[] args)
    {
       MessageCenter mc = new MessageCenter("Testing MessageCenter");
