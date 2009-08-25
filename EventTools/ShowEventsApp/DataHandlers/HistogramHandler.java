@@ -260,7 +260,7 @@ public class HistogramHandler implements IReceiveMessage
 
   
   /**
-   * Add the histogram counts at the selected point to the 
+   * Add the selected point's histogram counts and page number to the 
    * select_info_command. 
    */
   private void AddHistogramInfo( SelectionInfoCmd select_info_cmd,
@@ -268,11 +268,16 @@ public class HistogramHandler implements IReceiveMessage
   {
     Vector3D Qxyz = select_info_cmd.getQxyz();
 
-    float counts = histogram.valueAt( (float)(Qxyz.getX() * 2 * Math.PI), 
-                                      (float)(Qxyz.getY() * 2 * Math.PI),
-                                      (float)(Qxyz.getZ() * 2 * Math.PI) );
+    float x = (float)(Qxyz.getX() * 2 * Math.PI);
+    float y = (float)(Qxyz.getY() * 2 * Math.PI);
+    float z = (float)(Qxyz.getZ() * 2 * Math.PI);
+
+    float counts = histogram.valueAt( x, y, z );
     select_info_cmd.setCounts( counts );
-                                              // TODO MUST ALSO SET PAGE
+
+    IProjectionBinner3D z_binner = histogram.zBinner();
+    int page = z_binner.index( x, y, z );
+    select_info_cmd.setHistPage( page );
   }
 
 
