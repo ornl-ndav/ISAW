@@ -1,3 +1,38 @@
+/* 
+ * File: indexPeaksPanel.java
+ *
+ * Copyright (C) 2009, Paul Fischer
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
+ *           Department of Mathematics, Statistics and Computer Science
+ *           University of Wisconsin-Stout
+ *           Menomonie, WI 54751, USA
+ *
+ * This work was supported by the National Science Foundation under grant
+ * number DMR-0800276 and by the Spallation Neutron Source Division
+ * of Oak Ridge National Laboratory, Oak Ridge TN, USA.
+ *
+ *  Last Modified:
+ * 
+ *  $Author$
+ *  $Date$            
+ *  $Revision$
+ */
+
 package EventTools.ShowEventsApp.Controls.Peaks;
 
 import gov.anl.ipns.MathTools.LinearAlgebra;
@@ -12,6 +47,13 @@ import MessageTools.*;
 import EventTools.ShowEventsApp.Command.*;
 import DataSetTools.components.ui.Peaks.*;
 
+/**
+ * Panel that displays information about the index peaks
+ * and orientation matrix which can be changed
+ * to what the user specifically wants.  Also has the ability to load
+ * an orientation matrix, index peaks, show orientation matrix,
+ * and write an orientation matrix.
+ */
 public class indexPeaksPanel extends JPanel 
                                     implements IReceiveMessage
                                 
@@ -40,6 +82,11 @@ public class indexPeaksPanel extends JPanel
    private static String   NoOrientationText="<html><body> There is no "+
                   "Orientation matrix </body></html>";
    
+   /**
+    * Builds the indexPanel and sets the message center.
+    * 
+    * @param messageCenter
+    */
    public indexPeaksPanel(MessageCenter messageCenter)
    {
       this.messageCenter = messageCenter;
@@ -56,30 +103,12 @@ public class indexPeaksPanel extends JPanel
       //this.add( buildButtonsPanel());
    }
    
-   /*private void getDefaultData()
-   {
-      try
-      {
-         String defaultFile = "/home/fischerp/Desktop/IsawProps.dat";
-         FileReader     f_in        = new FileReader( defaultFile );
-         BufferedReader buff_reader = new BufferedReader( f_in );
-         Scanner        sc          = new Scanner( buff_reader );
-         
-         aTxt.setText(sc.next());
-         bTxt.setText(sc.next());
-         cTxt.setText(sc.next());
-         alphaTxt.setText(sc.next());
-         betaTxt.setText(sc.next());
-         gammaTxt.setText(sc.next());
-         toleranceTxt.setText(sc.next());
-         fixedPeakTxt.setText(sc.next());
-         requiredFractionTxt.setText(sc.next());
-      }
-      catch (FileNotFoundException e)
-      {
-         e.printStackTrace();
-      }   
-   }*/
+   /**
+    * Builds three panels, the from file panel, calcmatpanel, and
+    * the buttons panel and adds them to a new panel to be displayed.
+    *  
+    * @return panel with the three panels.
+    */
    private JPanel buildPanel()
    {
       JPanel panel = new JPanel();
@@ -90,6 +119,12 @@ public class indexPeaksPanel extends JPanel
       return panel;
    }
    
+   /**
+    * Builds the panel with the matrix filename and button to load
+    * a file.
+    * 
+    * @return panel
+    */
    private JPanel buildFromFilePanel()
    {
       JPanel panel = new JPanel();
@@ -105,6 +140,13 @@ public class indexPeaksPanel extends JPanel
       return panel;
       
    }
+   
+   /**
+    * Builds the panel to display information that can also
+    * be changed by the user.
+    * 
+    * @return panel
+    */
    private JPanel buildCalcMatPanel()
    {
       JPanel panel = buildPanel1();
@@ -112,6 +154,13 @@ public class indexPeaksPanel extends JPanel
                "Calculate Matrix") );
       return panel;
    }
+   
+   /**
+    * Builds the panel with the index peaks,
+    * show matrix and write matrix buttons.
+    * 
+    * @return panel
+    */
    private JPanel buildButtonsPanel()
    {  
       JPanel panel = new JPanel();
@@ -135,6 +184,12 @@ public class indexPeaksPanel extends JPanel
       return panel;
       
    }
+   
+   /**
+    * Builds a panel with the information.
+    * 
+    * @return panel
+    */
    private JPanel buildPanel1()
    {
       JPanel panel = new JPanel();
@@ -207,6 +262,12 @@ public class indexPeaksPanel extends JPanel
       return panel;
    }
    
+   /**
+    * Sends a message to the message center
+    * 
+    * @param command
+    * @param value
+    */
    private void sendMessage(String command, Object value)
    {
       Message message = new Message(command, value, true);
@@ -214,6 +275,14 @@ public class indexPeaksPanel extends JPanel
       messageCenter.receive(message);
    }
 
+   /**
+    * Checks that all the information has been
+    * inputed is in the correct form.
+    * 
+    * @return false if the information is missing
+    *       pieces or is in the incorrect format.
+    *       true otherwise.
+    */
    private boolean valid()
    {
       try
@@ -320,11 +389,12 @@ public class indexPeaksPanel extends JPanel
       return true;
    }
    
-   
-   /* (non-Javadoc)
-    * @see MessageTools.IReceiveMessage#receive(MessageTools.Message)
+   /**
+    * Listens for SET_ORIENTATION_MATRIX and displays
+    * the orientation matrix if doShow is true.
+    * Will also send a message of INDEX_PEAKS_WITH_ORIENTATION_MATRIX
+    * if doIndex is true.
     */
-   @Override
    public boolean receive( Message message )
    {
 
@@ -362,7 +432,13 @@ public class indexPeaksPanel extends JPanel
       return false;
    }
 
-
+   /**
+    * Button listener for the buttons that sends message of 
+    * READ_ORIENTATION_MATRIX or INDEX_PEAKS of type IndexPeaksCmd if Index
+    * Peaks button is pressed.  WRITE_ORIENTATION_MATRIX if the write
+    * matrix button is press. GET_ORIENTATION_MATRIX if show matrix is 
+    * pressed. 
+    */
    private class buttonListener implements ActionListener
    {
       String lastWriteFileName = System.getProperty("Data_Directory","");
