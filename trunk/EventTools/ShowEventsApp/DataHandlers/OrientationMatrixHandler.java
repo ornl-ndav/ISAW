@@ -3,6 +3,8 @@ package EventTools.ShowEventsApp.DataHandlers;
 
 import java.util.Vector;
 
+import javax.swing.JOptionPane;
+
 import gov.anl.ipns.Operator.IOperator;
 import gov.anl.ipns.Operator.Threads.ParallelExecutor;
 import gov.anl.ipns.Operator.Threads.ExecFailException;
@@ -100,16 +102,22 @@ public class OrientationMatrixHandler implements IReceiveMessage
 
     else if ( message.getName().equals(Commands.GET_ORIENTATION_MATRIX) )
     {
-      if ( orientation_matrix == null )
-        return false;
-
       Message mat_message = new Message( Commands.SET_ORIENTATION_MATRIX,
                                         orientation_matrix,
                                         true );
       message_center.receive( mat_message );
+
+      if ( orientation_matrix == null )
+        return false;
+
     }  else if ( message.getName().equals(Commands.WRITE_ORIENTATION_MATRIX))
     {
        String filename = (String)message.getValue();
+       if( orientation_matrix == null)
+       {
+          Util.sendError(  message_center , "There is no Orientation matrix to save" );
+          return false;
+       }
        float[][] UB = LinearAlgebra.getTranspose(orientation_matrix);
        ErrorString Res = DataSetTools.operator.Generic.TOF_SCD.Util.WriteMatrix( filename, UB);
        if( Res == null)
