@@ -172,6 +172,7 @@ public class findPeaksPanel extends JPanel
          if (valid())
          {
             FindPeaksCmd findPeaksCmd = new FindPeaksCmd(
+                  false,
                   markPeaksCbx.isSelected(),
                   Integer.parseInt(maxPeaksTxt.getText()), 
                   Integer.parseInt(minPeakTxt.getText()),
