@@ -37,6 +37,9 @@ public class indexPeaksPanel extends JPanel
    private boolean          doIndex;//Index peaks with next incoming 
                                     //orientation matrix
    
+   private static String   NoOrientationText="<html><body> There is no "+
+                  "Orientation matrix </body></html>";
+   
    public indexPeaksPanel(MessageCenter messageCenter)
    {
       this.messageCenter = messageCenter;
@@ -329,12 +332,16 @@ public class indexPeaksPanel extends JPanel
       {
          currentOrientationMatrix = (float[][])message.getValue();
          
-         LinearAlgebra.print(currentOrientationMatrix);
+        
          if( doShow)
          {
-            String ShowText = subs.ShowOrientationInfo( null , 
-                        LinearAlgebra.getTranspose( currentOrientationMatrix) ,
-                        null , null ,true );
+            String ShowText =null;
+            if( currentOrientationMatrix != null)
+               ShowText = subs.ShowOrientationInfo( null , 
+                          LinearAlgebra.getTranspose( currentOrientationMatrix) ,
+                          null , null ,true );
+            else
+               ShowText = NoOrientationText;
          
             JFrame jf = new JFrame( "Orientation Matrix");
             jf.setSize( 400,200 );
