@@ -14,7 +14,6 @@ public class findPeaksPanel extends JPanel
    private static final long  serialVersionUID = 1L;
    private MessageCenter      message_center;
    private JButton            findPeaksButton;
-   private JCheckBox          smoothCbx;
    private JCheckBox          markPeaksCbx;
    private JTextField         maxPeaksTxt;
    private JTextField         minPeakTxt;
@@ -38,17 +37,14 @@ public class findPeaksPanel extends JPanel
       JPanel panel = new JPanel();
       panel.setLayout(new GridLayout(1,2));
       
-      smoothCbx = new JCheckBox("Smooth Data");
-      smoothCbx.setSelected(false);
-      smoothCbx.setHorizontalAlignment(JCheckBox.CENTER);
-      smoothCbx.setEnabled( false );
+      JLabel filler = new JLabel();
       
       markPeaksCbx = new JCheckBox("Mark Peaks");
       markPeaksCbx.setSelected(true);
       markPeaksCbx.addActionListener(new peaksListener());
       markPeaksCbx.setHorizontalAlignment(JCheckBox.CENTER);
       
-      panel.add(smoothCbx);
+      panel.add(filler);
       panel.add(markPeaksCbx);
       
       return panel;
@@ -176,7 +172,6 @@ public class findPeaksPanel extends JPanel
          if (valid())
          {
             FindPeaksCmd findPeaksCmd = new FindPeaksCmd(
-                  smoothCbx.isSelected(),
                   markPeaksCbx.isSelected(),
                   Integer.parseInt(maxPeaksTxt.getText()), 
                   Integer.parseInt(minPeakTxt.getText()),
