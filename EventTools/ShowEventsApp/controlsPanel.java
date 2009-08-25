@@ -41,17 +41,20 @@ import javax.swing.border.*;
 import java.awt.Color;
 import java.awt.event.*;
 import java.awt.GridLayout;
-import java.util.Vector;
 
 import MessageTools.*;
 
-import DataSetTools.operator.Generic.TOF_SCD.Peak_new;
-import DataSetTools.operator.Generic.TOF_SCD.Peak_new_IO;
 import EventTools.ShowEventsApp.Command.*;
 import EventTools.ShowEventsApp.Controls.*;
 import EventTools.ShowEventsApp.Controls.Peaks.*;
 import EventTools.ShowEventsApp.Controls.HistogramControls.*;
 
+/**
+ * This class creates a pre determined set of buttons for a
+ * control panel as well as the actual JPanel.  When the 
+ * button is pressed, it sends a message of CHANGE_PANEL
+ * along with the appropriate JPanel.
+ */
 public class controlsPanel extends JPanel
 {
    public static final long       serialVersionUID = 1L;
