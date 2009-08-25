@@ -1,3 +1,36 @@
+/* 
+ * File: HistogramHandler.java
+ *
+ * Copyright (C) 2009, Dennis Mikkelson
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
+ *           Department of Mathematics, Statistics and Computer Science
+ *           University of Wisconsin-Stout
+ *           Menomonie, WI 54751, USA
+ *
+ * This work was supported by the Spallation Neutron Source Division
+ * of Oak Ridge National Laboratory, Oak Ridge, TN, USA.
+ *
+ *  Last Modified:
+ * 
+ *  $Author: eu7 $
+ *  $Date: 2009-08-07 00:06:43 -0500 (Fri, 07 Aug 2009) $            
+ *  $Revision: 19810 $
+ */
 
 package EventTools.ShowEventsApp.DataHandlers;
 
@@ -28,6 +61,14 @@ import EventTools.ShowEventsApp.Command.FindPeaksCmd;
 import EventTools.ShowEventsApp.Command.Util;
 
 
+/**
+ *  This class manages the 3D histogram that accumulates the events
+ *  in reciprocal space.  It processes messages that clear and add
+ *  events to the histogram, and adjusts the region of reciprocal space
+ *  that is binned when the instrument type is changed.  It also provides
+ *  information from the histogram, such as the max value in the histogram,
+ *  the number of counts at a point and finds peaks in the histogram.
+ */
 public class HistogramHandler implements IReceiveMessage
 {
   private static int    NUM_THREADS = 6;
@@ -50,21 +91,46 @@ public class HistogramHandler implements IReceiveMessage
   }
 
 
+ /**
+  *  Receive and process messages: 
+  *      ADD_EVENTS, 
+  *      CLEAR_HISTOGRAM, 
+  *      SET_NEW_INSTRUMENT, 
+  *      SET_WEIGHTS_FROM_HISTOGRAM, 
+  *      ADD_HISTOGRAM_INFO,
+  *      GET_HISTOGRAM_MAX,
+  *      FIND_PEAKS.
+  *
+  *  @param message  The message to be processed.
+  *
+  *  @return true If processing the message has altered something that
+  *               requires a redraw of any updateable objects.
+  */
   public boolean receive( Message message )
   {
 //    System.out.println("***HistogramHandler in thread " 
 //                       + Thread.currentThread());
 
+     if ( histogram == null && 
+         !(message.getName().equals(Commands.SET_NEW_INSTRUMENT)))
+     {
+       Util.sendError( message_center, "WARNING: Histogram not created. " +
+                       "Can't " + message.getName() );
+       return false;
+     }
+
     if ( message.getName().equals(Commands.ADD_EVENTS) )
     {
       IEventList3D events = (IEventList3D)message.getValue();
       histogram.addEvents( events );
+      return false;
     }
 
     else if (  message.getName().equals(Commands.CLEAR_HISTOGRAM) )
     {
       histogram.clear();
       Util.sendInfo( message_center, "CLEARED HISTOGRAM");
+      return false;
     }
 
     else if (  message.getName().equals(Commands.SET_NEW_INSTRUMENT) )
@@ -81,15 +147,21 @@ public class HistogramHandler implements IReceiveMessage
       else if ( inst.equals("ARCS") )
         histogram = DefaultARCS_Histogram( num_bins );
       else
-        histogram = DefaultSNAP_Histogram( num_bins );
+      {
+        Util.sendWarning( message_center, inst + " not supported yet. " +
+                          "Detector position info needed." );
+        return false;
+      }
 
       Util.sendInfo( message_center, "Set histogram for " + inst );
+      return false;
     }
 
     else if ( message.getName().equals(Commands.SET_WEIGHTS_FROM_HISTOGRAM))
     {
       IEventList3D events = (IEventList3D)message.getValue();
       SetWeightsFromHistogram( events, histogram );
+      return false;
     }
 
     else if ( message.getName().equals(Commands.ADD_HISTOGRAM_INFO))
@@ -104,9 +176,9 @@ public class HistogramHandler implements IReceiveMessage
         Message info_message = new Message( Commands.ADD_HISTOGRAM_INFO_ACK, 
                                             select_info_cmd, 
                                             true );
-        System.out.println("SET COUNT FROM HISTOGRAM");
         message_center.receive( info_message );
       }
+      return false;
     }
 
     else if ( message.getName().equals(Commands.FIND_PEAKS) )
@@ -115,7 +187,6 @@ public class HistogramHandler implements IReceiveMessage
       if ( val instanceof FindPeaksCmd )  
       {
         FindPeaksCmd cmd = (FindPeaksCmd)message.getValue();
-        System.out.println( "HistogramHandler processing: " +cmd.toString() );
         
         Vector<PeakQ> peakQs = FindPeaks( histogram,
                                           cmd.getSmoothData(),
@@ -123,22 +194,25 @@ public class HistogramHandler implements IReceiveMessage
                                           cmd.getMinPeakIntensity(),
                                           cmd.getLogFileName() );
 
-        System.out.println( "Back from find peaks, size = " + peakQs.size() );
-        if ( peakQs != null && peakQs.size() > 0 || cmd.getMarkPeaks() )
-        {                                                // mark the peaks
-          Message mark_peaks  = new Message( Commands.MARK_PEAKS,
-                                             peakQs,
-                                             true );
-          message_center.receive( mark_peaks );
-
+        if ( peakQs != null && peakQs.size() > 0 )       // send out the peaks
+        { 
           Message set_peak_Q_list = new Message( Commands.SET_PEAK_Q_LIST,
                                                  peakQs,
                                                  true );
           message_center.receive( set_peak_Q_list );
 
           Util.sendInfo( message_center, "Found " + peakQs.size() + " Peaks");
+
+          if ( cmd.getMarkPeaks() )                     // mark the peaks
+          {
+             Message mark_peaks  = new Message( Commands.MARK_PEAKS,
+                                                peakQs,
+                                                true );
+             message_center.receive( mark_peaks );
+          }
         }
       }
+      return false;
     }
     
     else if ( message.getName().equals(Commands.GET_HISTOGRAM_MAX) )
@@ -147,14 +221,20 @@ public class HistogramHandler implements IReceiveMessage
                                        new Float( histogram.maxVal() ),
                                        true );
        message_center.receive( hist_max );
+       return false;
     }
 
     return false;
   }
 
 
-  public static void SetWeightsFromHistogram( IEventList3D events, 
-                                              Histogram3D histogram )
+  /**
+   *  Set the weight value of the specified events to the value of
+   *  the histogram bin that contains the event.  The histogram bin
+   *  values are used to control the color map for the 3D event viewer.
+   */
+  private void SetWeightsFromHistogram( IEventList3D events, 
+                                        Histogram3D histogram )
   {
     int n_events = events.numEntries();
 
@@ -179,8 +259,12 @@ public class HistogramHandler implements IReceiveMessage
   }
 
   
-  public static void AddHistogramInfo( SelectionInfoCmd select_info_cmd,
-                                       Histogram3D      histogram )
+  /**
+   * Add the histogram counts at the selected point to the 
+   * select_info_command. 
+   */
+  private void AddHistogramInfo( SelectionInfoCmd select_info_cmd,
+                                 Histogram3D      histogram )
   {
     Vector3D Qxyz = select_info_cmd.getQxyz();
 
@@ -192,11 +276,19 @@ public class HistogramHandler implements IReceiveMessage
   }
 
 
-  public Histogram3D DefaultSNAP_Histogram( int num_bins )
+  /**
+   *  Set histogram to be a new empty histogram covering a region
+   *  of reciprocal space appropriate for the SNAP instrument at the
+   *  SNS.
+   *
+   *  @param num_bins  The number of bins to use in each direction
+   *                   for the histogram.
+   */
+  private Histogram3D DefaultSNAP_Histogram( int num_bins )
   {
     // Just make default histogram aligned with coord axes.
 
-    long start_time = System.nanoTime();
+//    long start_time = System.nanoTime();
     Vector3D xVec = new Vector3D(1,0,0);
     Vector3D yVec = new Vector3D(0,1,0);
     Vector3D zVec = new Vector3D(0,0,1);
@@ -212,18 +304,26 @@ public class HistogramHandler implements IReceiveMessage
     Histogram3D histogram = new Histogram3D( x_binner,
                                              y_binner,
                                              z_binner );
-    long run_time = System.nanoTime() - start_time;
-    System.out.println("Time(ms) to allocate default histogram = " +
-                        run_time/1.e6);
+//    long run_time = System.nanoTime() - start_time;
+//    System.out.println("Time(ms) to allocate SNAP histogram = " +
+//                        run_time/1.e6);
     return histogram;
   }
 
 
-  public Histogram3D DefaultARCS_Histogram( int num_bins )
+  /**
+   *  Set histogram to be a new empty histogram covering a region
+   *  of reciprocal space appropriate for the ARCS instrument at the
+   *  SNS.
+   *
+   *  @param num_bins  The number of bins to use in each direction
+   *                   for the histogram.
+   */
+  private Histogram3D DefaultARCS_Histogram( int num_bins )
   {
     // Just make default histogram aligned with coord axes.
 
-    long start_time = System.nanoTime();
+//    long start_time = System.nanoTime();
     Vector3D xVec = new Vector3D(1,0,0);
     Vector3D yVec = new Vector3D(0,1,0);
     Vector3D zVec = new Vector3D(0,0,1);
@@ -239,22 +339,38 @@ public class HistogramHandler implements IReceiveMessage
     Histogram3D histogram = new Histogram3D( x_binner,
                                              y_binner,
                                              z_binner );
-    long run_time = System.nanoTime() - start_time;
-    System.out.println("Time(ms) to allocate default histogram = " +
-                        run_time/1.e6);
+//    long run_time = System.nanoTime() - start_time;
+//    System.out.println("Time(ms) to allocate ARCS histogram = " +
+//                        run_time/1.e6);
 
     return histogram;
   }
 
 
-  public Vector<PeakQ> FindPeaks( Histogram3D histogram,
+  /**
+   *  Find the peaks in the specified histogram, using the specified
+   *  search parameters.
+   *
+   *  @param  histogram        The histogram to scan for peaks
+   *  @param  smooth_data      Flag indicating whether or not to smooth the
+   *                           the data first.  This should be FALSE since
+   *                           the data is already smoothed and the smoothing
+   *                           process takes a lot of time and space.
+   *  @param  num_peaks        The number of peaks to return
+   *  @param  min_intensity    The minimum intensity to consider in the peak
+   *                           search
+   *  @param  log_file         The name of the file to write the logging
+   *                           information to.
+   */
+  private Vector<PeakQ> FindPeaks( Histogram3D histogram,
                                   boolean     smooth_data,
                                   int         num_peaks,
                                   float       min_intensity,
                                   String      log_file )
  
   {
-     System.out.println("START OF FindPeaks");
+     // System.out.println("START OF FindPeaks");
+   
      int num_pages = histogram.zBinner().numBins();
      int num_rows  = histogram.yBinner().numBins();
      int num_cols  = histogram.xBinner().numBins();
@@ -306,8 +422,10 @@ public class HistogramHandler implements IReceiveMessage
     }
     catch ( Exception ex )
     {
-      System.out.println("Exception writing log file " + log_file );
-      ex.printStackTrace();
+      Util.sendWarning( message_center, 
+                     "Can't write Find Peaks log file: " + log_file );
+//      System.out.println("Exception writing log file " + log_file );
+//      ex.printStackTrace();
     }
 
     IProjectionBinner3D x_binner = histogram.xEdgeBinner();
@@ -355,9 +473,9 @@ public class HistogramHandler implements IReceiveMessage
     }
 
     if ( q_peaks == null )
-      System.out.println("FOUND 0 PEAKS " );
+      Util.sendInfo( message_center, "FOUND 0 PEAKS" );
     else
-      System.out.println("FOUND " + q_peaks.size() + " PEAKS " );
+      Util.sendInfo( message_center, "FOUND " + q_peaks.size() + " PEAKS " );
 
     return q_peaks;
   }                         
