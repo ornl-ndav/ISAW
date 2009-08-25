@@ -1,7 +1,41 @@
+/* 
+ * File: findPeaksPanel.java
+ *
+ * Copyright (C) 2009, Paul Fischer
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
+ *           Department of Mathematics, Statistics and Computer Science
+ *           University of Wisconsin-Stout
+ *           Menomonie, WI 54751, USA
+ *
+ * This work was supported by the National Science Foundation under grant
+ * number DMR-0800276 and by the Spallation Neutron Source Division
+ * of Oak Ridge National Laboratory, Oak Ridge TN, USA.
+ *
+ *  Last Modified:
+ * 
+ *  $Author$
+ *  $Date$            
+ *  $Revision$
+ */
+
 package EventTools.ShowEventsApp.Controls.Peaks;
 
 import javax.swing.*;
-import java.io.File;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -9,6 +43,11 @@ import java.awt.event.*;
 import EventTools.ShowEventsApp.Command.*;
 import MessageTools.*;
 
+/**
+ * Creates a panel that displays the max number of peaks
+ * to find, the minimum peak intensity as well as a
+ * log file. Also sends a message of FindPeaksCmd.
+ */
 public class findPeaksPanel extends JPanel
 {
    private static final long  serialVersionUID = 1L;
@@ -19,6 +58,11 @@ public class findPeaksPanel extends JPanel
    private JTextField         minPeakTxt;
    private JTextField         logFileTxt;
    
+   /**
+    * Builds the panel as well as sets the messagecenter.
+    * 
+    * @param message_center
+    */
    public findPeaksPanel(MessageCenter message_center)
    {
       this.message_center = message_center;
@@ -32,6 +76,11 @@ public class findPeaksPanel extends JPanel
       this.add(buildButtonPanel());
    }
    
+   /**
+    * Builds the panel holding mark peaks checkbox.
+    * 
+    * @return panel with mark peaks checkbox
+    */
    public JPanel buildCheckInfo()
    {
       JPanel panel = new JPanel();
@@ -50,6 +99,11 @@ public class findPeaksPanel extends JPanel
       return panel;
    }
    
+   /**
+    * Builds the panel holding max # of peaks.
+    * 
+    * @return panel with label and textfield for max # peaks.
+    */
    public JPanel buildMaxPeaks()
    {
       JPanel panel = new JPanel();
@@ -66,6 +120,11 @@ public class findPeaksPanel extends JPanel
       return panel;
    }
    
+   /**
+    * Builds the panel holding min peak intensity.
+    * 
+    * @return panel with label and textfield for min peak intensity.
+    */
    public JPanel buildMinPeaks()
    {
       JPanel panel = new JPanel();
@@ -82,6 +141,11 @@ public class findPeaksPanel extends JPanel
       return panel;
    }
    
+   /**
+    * Builds the panel holding log file name.
+    * 
+    * @return panel with label and textfield for log file.
+    */
    public JPanel buildLogPanel()
    {
       JPanel panel = new JPanel();
@@ -97,6 +161,11 @@ public class findPeaksPanel extends JPanel
       return panel;
    }
    
+   /**
+    * Builds the panel holding find peaks button.
+    * 
+    * @return panel with button for find peaks.
+    */
    public JPanel buildButtonPanel()
    {
       JPanel panel = new JPanel();
@@ -110,6 +179,14 @@ public class findPeaksPanel extends JPanel
       return panel;
    }
    
+   /**
+    * Called when find peaks button is pressed.  Checks to make
+    * sure that the information entered for max # of peaks and
+    * min peak intensity is of the right format.
+    * 
+    * @return false if there is information that is incorrect,
+    *          true otherwise.
+    */
    private boolean valid()
    {
       try
@@ -165,6 +242,11 @@ public class findPeaksPanel extends JPanel
       return true;
    }
    
+   /**
+    * ActionListener for the findpeaks button that calls
+    * valid() to make sure the input is valid and then sends
+    * a message of FIND_PEAKS and of type FindPeaksCmd.
+    */
    private class buttonListener implements ActionListener
    {
       public void actionPerformed(ActionEvent e)
@@ -186,6 +268,10 @@ public class findPeaksPanel extends JPanel
       }
    }
    
+   /**
+    * ActionListener for markpeaks and sends either true
+    * or false depending on if its checked or not.
+    */
    private class peaksListener implements ActionListener
    {
       public void actionPerformed(ActionEvent e)
@@ -194,6 +280,12 @@ public class findPeaksPanel extends JPanel
       }
    }
    
+   /**
+    * Sends a message to the message center.
+    * 
+    * @param command
+    * @param value
+    */
    private void sendMessage(String command, Object value)
    {
       Message message = new Message( command,
