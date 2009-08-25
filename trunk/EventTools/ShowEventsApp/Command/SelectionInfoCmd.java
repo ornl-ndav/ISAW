@@ -77,6 +77,11 @@ public class SelectionInfoCmd
       return page;
    }
 
+   public void setHistPage( int page )
+   {
+      this.page = page;
+   }
+
    public Vector3D getHKL()
    {
       return new Vector3D( hkl );
