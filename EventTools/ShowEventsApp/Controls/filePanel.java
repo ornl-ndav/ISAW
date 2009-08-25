@@ -73,35 +73,6 @@ public class filePanel //extends JPanel
    {
       panel.setVisible(visible);
    }
-
-   /*private void getDefaultData()
-   {
-      try
-      {
-         String defaultFile = "/home/fischerp/Desktop/IsawProps.dat";
-         FileReader     f_in        = new FileReader( defaultFile );
-         BufferedReader buff_reader = new BufferedReader( f_in );
-         Scanner        sc          = new Scanner( buff_reader );
-         
-         detFileName.setText(sc.next());
-         incFileName.setText(sc.next());
-         detEffFileName.setText(sc.next());
-         matFileName.setText(sc.next());
-         
-         if (sc.hasNextLine())
-         {
-            availableEvents.setText(sc.next());
-            firstEvent.setText(sc.next());
-            eventsToLoad.setText(sc.next());
-            firstEventToShow.setText(sc.next());
-            eventsToShow.setText(sc.next());
-         }
-      }
-      catch (FileNotFoundException e)
-      {
-         e.printStackTrace();
-      }   
-   }*/
    
    /**
     * Builds the panel to contain the EventPanel, DetPanel and MatPanel.
@@ -468,6 +439,24 @@ public class filePanel //extends JPanel
       try
       {
          num = nf.parse(eventsToLoad.getText()).longValue();
+      }
+      catch (ParseException pe)
+      {
+         String error = "Number of events to load must be of type Integer!";
+         JOptionPane.showMessageDialog( null, error, "Invalid Input", 
+                                        JOptionPane.ERROR_MESSAGE );
+         return false;
+      }
+      
+      try
+      {
+         if (nf.parse(eventsToLoad.getText()).longValue() > 25000000)
+         {
+            String error = "Number of events to load must be 25,000,000 or less!";
+            JOptionPane.showMessageDialog( null, error, "Invalid Input", 
+                                           JOptionPane.ERROR_MESSAGE );
+            return false;
+         }
       }
       catch (ParseException pe)
       {
