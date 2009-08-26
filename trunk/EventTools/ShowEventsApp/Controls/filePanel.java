@@ -1,3 +1,38 @@
+/* 
+ * File: filePanel.java
+ *
+ * Copyright (C) 2009, Paul Fischer
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
+ *           Department of Mathematics, Statistics and Computer Science
+ *           University of Wisconsin-Stout
+ *           Menomonie, WI 54751, USA
+ *
+ * This work was supported by the National Science Foundation under grant
+ * number DMR-0800276 and by the Spallation Neutron Source Division
+ * of Oak Ridge National Laboratory, Oak Ridge TN, USA.
+ *
+ *  Last Modified:
+ * 
+ *  $Author$
+ *  $Date$            
+ *  $Revision$
+ */
+
 package EventTools.ShowEventsApp.Controls;
 
 import java.awt.GridLayout;
@@ -20,6 +55,13 @@ import DataSetTools.util.SharedData;
 import EventTools.ShowEventsApp.Command.*;
 import MessageTools.*;
 
+/**
+ * Creates a panel to load an event file.
+ * Displays how many events are in the event file, first event
+ * to load, how many events to load, and how many events to show.
+ * Also has fields for a detector file, incident spectrum file,
+ * max Q to load and the number of threads to use.
+ */
 public class filePanel //extends JPanel
 {
    private static final long  serialVersionUID = 1L;
@@ -41,7 +83,7 @@ public class filePanel //extends JPanel
    private JTextField         availableEvents;
    private JTextField         firstEvent;
    private JTextField         eventsToLoad;
-   private JTextField         firstEventToShow;
+   //private JTextField         firstEventToShow;
    private JTextField         eventsToShow;
    private String             Datafilename;// Remember last file chosen
   
@@ -50,6 +92,13 @@ public class filePanel //extends JPanel
    private String             DetEfffilename;// Remember last file chosen
    private String             Matfilename;// Remember last file chosen
    private float              MaxQValue;//Remember last MaxQValue
+   
+   /**
+    * Creates file panel as well as sets up default
+    * properties for the file load locations.
+    * 
+    * @param message_center
+    */
    public filePanel(MessageCenter message_center)
    {
       this.message_center = message_center;
@@ -64,15 +113,25 @@ public class filePanel //extends JPanel
       //this.add(panel);
    }
    
+   /**
+    * Returns the panel containing all the load information
+    * 
+    * @return JPanel
+    */
    public JPanel getPanel()
    {
       return panel;
    }
    
-   public void setVisible(boolean visible)
-   {
-      panel.setVisible(visible);
-   }
+   /**
+    * Sets the panel to be visible or not.
+    * 
+    * @param visible true makes it visible, false hides it.
+    */
+   //public void setVisible(boolean visible)
+   //{
+   //   panel.setVisible(visible);
+   //}
    
    /**
     * Builds the panel to contain the EventPanel, DetPanel and MatPanel.
@@ -91,7 +150,7 @@ public class filePanel //extends JPanel
       JPanel sub_panel = new JPanel();
       panel.add( sub_panel );
 
-      sub_panel.setLayout( new GridLayout(6,1) );
+      sub_panel.setLayout( new GridLayout(5,1) );
       sub_panel.add(buildDetPanel());
       sub_panel.add(buildIncPanel());
       //sub_panel.add(buildDetEffPanel());
@@ -115,9 +174,9 @@ public class filePanel //extends JPanel
       NumberFormat nf = NumberFormat.getInstance();
       
       JPanel eventPanel = new JPanel();
-      eventPanel.setLayout(new GridLayout(6,2));
+      eventPanel.setLayout(new GridLayout(5,2));
 
-      evFileButton = new JButton("Event File...");
+      evFileButton = new JButton("Neutron Event File...");
       evFileButton.addActionListener(new button());
       
       
@@ -129,28 +188,28 @@ public class filePanel //extends JPanel
       evFileName.setEditable(false);
       
       String default_availableEvents = nf.getInstance().format(10000000);
-      JLabel available = new JLabel("# of Events Available: ");
+      JLabel available = new JLabel("Number of Events in File: ");
       availableEvents = new JTextField( default_availableEvents );
       availableEvents.setEditable(false);
       availableEvents.setHorizontalAlignment(JTextField.RIGHT);
       
       String default_firstEvent = "1";
-      JLabel first = new JLabel("First Event: ");
+      JLabel first = new JLabel("First Event to Load: ");
       firstEvent = new JTextField( default_firstEvent );
       firstEvent.setHorizontalAlignment(JTextField.RIGHT);
       
       String default_numLoad = nf.getInstance().format(10000000);
-      JLabel numLoad = new JLabel("Num. to Load: ");
+      JLabel numLoad = new JLabel("Number to Load: ");
       eventsToLoad = new JTextField( default_numLoad );
       eventsToLoad.setHorizontalAlignment(JTextField.RIGHT);
       
-      String default_firstToShow = "1";
+      /*String default_firstToShow = "1";
       JLabel firstEventToShowLbl = new JLabel("First Event to Show: ");
       firstEventToShow = new JTextField( default_firstToShow );
-      firstEventToShow.setHorizontalAlignment(JTextField.RIGHT);
+      firstEventToShow.setHorizontalAlignment(JTextField.RIGHT);*/
       
       String default_eventsToShow = nf.getInstance().format(5000000);
-      JLabel maxEvents = new JLabel("# of Events to Show: ");
+      JLabel maxEvents = new JLabel("Number to Show in 3D: ");
       eventsToShow = new JTextField( default_eventsToShow );
       eventsToShow.setHorizontalAlignment(JTextField.RIGHT);
       
@@ -162,8 +221,8 @@ public class filePanel //extends JPanel
       eventPanel.add(firstEvent);
       eventPanel.add(numLoad);
       eventPanel.add(eventsToLoad);
-      eventPanel.add(firstEventToShowLbl);
-      eventPanel.add(firstEventToShow);
+      //eventPanel.add(firstEventToShowLbl);
+      //eventPanel.add(firstEventToShow);
       eventPanel.add(maxEvents);
       eventPanel.add(eventsToShow);
       
@@ -181,7 +240,7 @@ public class filePanel //extends JPanel
       JPanel detPanel = new JPanel();
       detPanel.setLayout(new GridLayout(1,2));
       
-      detFileButton = new JButton("Det. File...");
+      detFileButton = new JButton("Detector Position File...");
       detFileButton.addActionListener(new button());
       
       String default_detector_file =Detfilename;
@@ -207,7 +266,7 @@ public class filePanel //extends JPanel
       JPanel incPanel = new JPanel();
       incPanel.setLayout(new GridLayout(1,2));
       
-      incFileButton = new JButton("Inc. Spect. File...");
+      incFileButton = new JButton("Incident Spectrum File...");
       incFileButton.addActionListener(new button());
       
       incFileName = new JTextField();
@@ -224,14 +283,14 @@ public class filePanel //extends JPanel
     * Builds the Detector Efficiency panel which consists of a load button
     * to load the file as well as a textfield to contain the path.
     * 
-    * @return
+    * @return JPanel
     */
    private JPanel buildDetEffPanel()
    {
       JPanel detEffPanel = new JPanel();
       detEffPanel.setLayout(new GridLayout(1,2));
       
-      detEffFileButton = new JButton("Det. Effic. File...");
+      detEffFileButton = new JButton("Detector Efficiency File...");
       detEffFileButton.addActionListener(new button());
       
       detEffFileName = new JTextField();
@@ -255,7 +314,7 @@ public class filePanel //extends JPanel
       JPanel matPanel = new JPanel();
       matPanel.setLayout(new GridLayout(1,2));
       
-      matFileButton = new JButton("Mat. File...");
+      matFileButton = new JButton("Matrix File...");
       matFileButton.addActionListener(new button());
       
       matFileName = new JTextField();
@@ -267,6 +326,7 @@ public class filePanel //extends JPanel
       
       return matPanel;
    }
+   
    /**
     * Builds the maxQPanel which consists of label and a 
     * textfield to contain the Value.
@@ -289,6 +349,12 @@ public class filePanel //extends JPanel
       return maxQPanel;
    }
    
+   /**
+    * Builds the panel holding the field to enter
+    * the number of threads to use.
+    * 
+    * @return JPanel
+    */
    private JPanel buildThreadPanel()
    {
       JPanel panel = new JPanel();
@@ -305,32 +371,75 @@ public class filePanel //extends JPanel
       return panel;
    }
    
+   /**
+    * Takes the pathname of a file and 
+    * calls setEventData(file) to set the
+    * information on the panel according to 
+    * the file.
+    * 
+    * @param inFile Path name for the event file to load.
+    */
    public void setEventFile(String inFile)
    {
       File file = new File(inFile);
       setEventData(file);
    }
    
+   /**
+    * Takes the pathname of a file for the 
+    * detector file and sets the textbox with the path.
+    * 
+    * @param inFile Path name for the detector file.
+    */
    public void setDetectorFile(String inFile)
    {
       detFileName.setText(inFile);
    }
    
+   /**
+    * Takes the pathname of a file for the 
+    * incident spectrum file and sets the textbox 
+    * with the path.
+    * 
+    * @param inFile Path name for the incident spectrum file.
+    */
    public void setIncSpecFile(String inFile)
    {
       incFileName.setText(inFile);
    }
    
+   /**
+    * Takes the pathname of a file for the 
+    * detector efficiency file and sets the textbox 
+    * with the path.
+    * 
+    * @param inFile Path name for the detector efficiency file.
+    */
    public void setDetEffFile(String inFile)
    {
       detEffFileName.setText(inFile);
    }
    
+   /**
+    * Takes the pathname of a file for the 
+    * matrix file and sets the textbox 
+    * with the path.
+    * 
+    * @param inFile Path name for the matrix file.
+    */
    public void setMatrixFile(String inFile)
    {
       matFileName.setText(inFile);
    }
    
+   /**
+    * Takes a file and populates the information pertaining to it
+    * such as how many events in the file, and how many events to
+    * load as well a show unless the number to show is more than 
+    * 5,000,000 it defaults to that.
+    * 
+    * @param inFile File of the event file to get information from.
+    */
    private void setEventData(File inFile)
    {
       NumberFormat nf = NumberFormat.getInstance();
@@ -343,7 +452,11 @@ public class filePanel //extends JPanel
          evFileName.setText(inFile.getPath());
          availableEvents.setText(nf.getInstance().format(size));
          firstEvent.setText("1");
-         eventsToLoad.setText(nf.getInstance().format(size));
+         
+         if (size > 25000000)
+            eventsToLoad.setText("25,000,000");
+         else
+            eventsToLoad.setText(nf.getInstance().format(size));
       
          if (size > 5000000)
             eventsToShow.setText("5,000,000");
@@ -448,25 +561,7 @@ public class filePanel //extends JPanel
          return false;
       }
       
-      try
-      {
-         if (nf.parse(eventsToLoad.getText()).longValue() > 25000000)
-         {
-            String error = "Number of events to load must be 25,000,000 or less!";
-            JOptionPane.showMessageDialog( null, error, "Invalid Input", 
-                                           JOptionPane.ERROR_MESSAGE );
-            return false;
-         }
-      }
-      catch (ParseException pe)
-      {
-         String error = "Number of events to load must be of type Integer!";
-         JOptionPane.showMessageDialog( null, error, "Invalid Input", 
-                                        JOptionPane.ERROR_MESSAGE );
-         return false;
-      }
-      
-      if (firstEventToShow.getText().equals(""))
+      /*if (firstEventToShow.getText().equals(""))
       {
          String error = "You have not specified the first event to display!";
          JOptionPane.showMessageDialog( null, error, "Invalid Input", 
@@ -484,7 +579,7 @@ public class filePanel //extends JPanel
          JOptionPane.showMessageDialog( null, error, "Invalid Input", 
                                         JOptionPane.ERROR_MESSAGE );
          return false;
-      }
+      }*/
       
       if (eventsToShow.getText().equals(""))
       {
@@ -555,6 +650,14 @@ public class filePanel //extends JPanel
                try
                {
                   NumberFormat nf = NumberFormat.getInstance();
+                  long startEvent = nf.parse(firstEvent.getText()).longValue();
+                  if (startEvent <= 0)
+                  {
+                     startEvent = 0;
+                     firstEvent.setText(Long.toString(startEvent));
+                  }
+                  else
+                     startEvent -= 1;
                   
                   LoadEventsCmd fileInfo = 
                      new LoadEventsCmd(evFileName.getText(),
@@ -564,7 +667,7 @@ public class filePanel //extends JPanel
                                 null,
                                 MaxQValue,
                                 nf.parse(availableEvents.getText()).longValue(),
-                                nf.parse(firstEvent.getText()).longValue(),
+                                startEvent,        //nf.parse(firstEvent.getText()).longValue(),
                                 nf.parse(eventsToLoad.getText()).longValue(),
                                 nf.parse(eventsToShow.getText()).longValue(),
                                 Integer.parseInt(numThreads.getText()));
@@ -707,6 +810,12 @@ public class filePanel //extends JPanel
       }
    }
    
+   /**
+    * Sends a message to the message center
+    * 
+    * @param command Command Name for others to listen to.
+    * @param value Object to send to the listener.
+    */
    private void sendMessage(String command, Object value)
    {
       Message message = new Message( command,
