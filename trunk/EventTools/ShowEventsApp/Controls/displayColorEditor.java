@@ -47,8 +47,8 @@ public class displayColorEditor implements IReceiveMessage
 
   public boolean receive( Message message )
   {
-    System.out.println("***displayColorEditor in thread "
-                       + Thread.currentThread());
+    //System.out.println("***displayColorEditor in thread "
+    //                   + Thread.currentThread());
 
     if ( message.getName().equals(Commands.SET_HISTOGRAM_MAX) )
     {
@@ -68,7 +68,7 @@ public class displayColorEditor implements IReceiveMessage
        if ( max < min + 9 )
          max = min + 9;
 
-      System.out.println("Setting Color range to " + min + " to " + max );
+      //System.out.println("Setting Color range to " + min + " to " + max );
       colorEditPanel.setControlValue( 0.0001f, colorEditPanel.MINSET ); 
       colorEditPanel.setControlValue( max, colorEditPanel.MAXSET ); 
       colorEditPanel.setControlValue( min, colorEditPanel.MINSET ); 
@@ -115,8 +115,8 @@ public class displayColorEditor implements IReceiveMessage
          table[i] = (byte)(i/2);
       
      colorEditPanel.
-      setControlValue(new ColorScaleInfo(min, max, 1, "Heat 1", 
-                                       true, 127, table, true));
+      setControlValue(new ColorScaleInfo(Math.round(min), Math.round(max),
+                                       1, "Heat 1", true, 127, table, true));
   }
   
   private class ColorListener implements ActionListener
