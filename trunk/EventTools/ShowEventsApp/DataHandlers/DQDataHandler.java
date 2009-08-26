@@ -35,6 +35,8 @@
 
 package EventTools.ShowEventsApp.DataHandlers;
 
+import gov.anl.ipns.Util.Numeric.ClosedInterval;
+import DataSetTools.dataset.*;
 import EventTools.ShowEventsApp.Command.Commands;
 import EventTools.ShowEventsApp.Command.Util;
 import EventTools.EventList.IEventList3D;
@@ -71,6 +73,8 @@ public class DQDataHandler implements IReceiveMessage
       this.messageCenter.addReceiver(this, Commands.CLEAR_DQ);
       this.messageCenter.addReceiver(this, Commands.GET_D_VALUES);
       this.messageCenter.addReceiver(this, Commands.GET_Q_VALUES);
+      this.messageCenter.addReceiver(this, Commands.SAVE_Q_VALUES);
+      this.messageCenter.addReceiver(this, Commands.SAVE_D_VALUES);
 
       setXs();
       clearYs();
@@ -203,6 +207,107 @@ public class DQDataHandler implements IReceiveMessage
          return true;
       }
       
+      if( message.getName().equals(Commands.SAVE_D_VALUES))
+      {
+         DataSet D = MakeDataSet( d_values,"D Graph","Angstrom");
+         String fileName = (String)message.getValue();
+         return SaveDataSetASCII(D , fileName);
+      }
+      
+      if( message.getName().equals(Commands.SAVE_Q_VALUES))
+      {
+         DataSet D = MakeDataSet( q_values,"Q Graph", "Inv Angstrom");
+         String fileName = (String)message.getValue();
+         return SaveDataSetASCII(D , fileName);
+      }
+      
+      
       return false;
+   }
+   
+   private boolean SaveDataSetASCII( DataSet D, String fileName)
+   {
+
+      UniformXScale sc = D.getXRange();
+      ClosedInterval intv = D.getYRange();
+      String fmt= getCFormat( sc.getStart_x(), sc.getEnd_x(),sc.getNum_x());
+      fmt += " "+getCFormat(intv.getStart_x(), intv.getEnd_x(), 2*sc.getNum_x());
+      try{
+         Operators.Generic.Save.SaveASCII_calc.SaveASCII( D, false,fmt, fileName);
+      }catch( Exception ss)
+      {
+         return false;
+      }
+      return true;
+   }
+   //attempts to have 6 digits showing and each entry from start to end in nSteps
+   //  shows a different String
+   public static String getCFormat( float start, float end, int nSteps)
+   {
+      if( start > end)
+      {
+         float save = start;
+         start = end;
+         end = save;
+         
+      }else if( start == end && start == 0)
+         return "%6.1f";
+      
+      if( nSteps <= 0)
+         nSteps = 1;
+      
+      //Extra digit for (-)
+      int x = 0;
+      if( start < 0 || end < 0)
+         x = 1;
+      
+      int nDigits2Left= 
+            (int)( Math.log10( Math.max( Math.abs(start) , Math.abs( end ) ))) +1;
+      if( nDigits2Left < 0)
+         nDigits2Left = 0;
+      
+      int nDigits2Right =0;
+      
+      if( start < end )
+      {
+         double dd= Math.log10( ( end - start)/nSteps );
+         if( dd < 0)
+            nDigits2Right = -(int)Math.floor(dd) +1;
+      }
+      
+      
+      if( nDigits2Left > 6)
+          if(nDigits2Right == 0)
+             return "%"+(nDigits2Left+x)+".0f";
+          else 
+             return "%"+(nDigits2Left+x)+"."+nDigits2Right+"f";
+      else
+      {
+         nDigits2Right =6-nDigits2Left-x;
+         return "%"+(nDigits2Left+x)+"."+nDigits2Right+"f";
+      }
+             
+          
+         
+      
+   }
+   
+   
+   
+   private DataSet MakeDataSet( float[][] vals, String Title,String xUnits)
+   {
+      DataSet D = new DataSet( );
+      D.setTitle( Title );
+      D.setX_units( xUnits);
+      Data Db = new FunctionTable( new VariableXScale(vals[0]), vals[1],1);
+      D.addData_entry( Db );
+      Db.setSelected( true );
+      return D;
+      
+   }
+   public static void main( String[] args)
+   {
+      System.out.println( 
+               DQDataHandler.getCFormat(Float.parseFloat( args[0] ), Float.parseFloat( args[1]), 1000 ));
    }
 }
