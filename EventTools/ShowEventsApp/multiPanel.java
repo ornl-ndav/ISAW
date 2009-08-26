@@ -1,19 +1,24 @@
 package EventTools.ShowEventsApp;
 
 import javax.swing.*;
+
 import java.awt.GridLayout;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import gov.anl.ipns.Util.Sys.WindowShower;
 import gov.anl.ipns.ViewTools.UI.SplitPaneWithState;
 
 import EventTools.ShowEventsApp.Command.*;
+import EventTools.ShowEventsApp.ViewHandlers.StatusMessageHandler;
 
 import MessageTools.*;
 import SSG_Tools.Viewers.Controls.MouseArcBall;
 
 public class multiPanel implements IReceiveMessage
 {
+   public static Rectangle    PANEL_BOUNDS =  new Rectangle(10, 10, 570, 510) ;
    private final int          INTERVAL       = 30;
    private JFrame             mainView;
    private controlsPanel      controlpanel;
@@ -34,7 +39,6 @@ public class multiPanel implements IReceiveMessage
       
       controlpanel = new controlsPanel(messageCenter);
       displayPanel = new displayPanel(messageCenter);
-      
       buildMainFrame();
    }
 
@@ -42,7 +46,7 @@ public class multiPanel implements IReceiveMessage
    {
       mainView = new JFrame("Reciprocal Space Event Viewer");
       mainView.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-      mainView.setBounds(10, 10, 570, 480);
+      mainView.setBounds(PANEL_BOUNDS);
       mainView.setVisible(true);
      
       
@@ -58,6 +62,16 @@ public class multiPanel implements IReceiveMessage
       mainView.add(splitPane);
       mainView.setJMenuBar( getJMenuBar( controlpanel) );
       mainView.validate();
+      
+      JFrame StatusFrame = new JFrame( " Messages" );
+      StatusFrame.setDefaultCloseOperation( WindowConstants.DO_NOTHING_ON_CLOSE );
+      StatusFrame.setBounds( PANEL_BOUNDS.x,
+                            PANEL_BOUNDS.y+PANEL_BOUNDS.height,
+                            PANEL_BOUNDS.width,
+                            PANEL_BOUNDS.height/2 );
+      new StatusMessageHandler( messageCenter, StatusFrame.getContentPane());
+      StatusFrame.validate();
+      WindowShower.show(  StatusFrame );
    }
    
    private JMenuBar getJMenuBar( JComponent C)
