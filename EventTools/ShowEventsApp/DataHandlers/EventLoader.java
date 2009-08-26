@@ -312,8 +312,9 @@ public class EventLoader implements IReceiveMessage
                                            // in this vector
     Vector<IEventList3D> show_lists = new Vector<IEventList3D>();
 
-    if ( num_to_load > num_available )     // can load more than exist
-      num_to_load = num_available;
+    long num_remaining = num_available - first;
+    if ( num_to_load > num_remaining )     // can't load more than remain 
+      num_to_load = num_remaining;
 
     if ( num_to_show > num_to_load )       // can't show more than are loaded
       num_to_show = num_to_load; 
@@ -333,12 +334,13 @@ public class EventLoader implements IReceiveMessage
       int n_threads = 0;
       while ( n_threads < num_threads && num_loaded < num_to_load )
       {
+        if ( num_to_load - num_loaded < seg_size )
+          seg_size = num_to_load - num_loaded;
+
         System.out.println("FIRST = " + first + " SEG_SIZE = " + seg_size );
         ops.add( new EventSegmentLoadOp( event_file_name, first, seg_size ) );
         first      += seg_size;
         num_loaded += seg_size;
-        if ( num_to_load - num_loaded < seg_size )
-          seg_size = num_to_load - num_loaded;
         n_threads++;     
       }
 
