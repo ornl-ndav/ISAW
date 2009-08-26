@@ -19,6 +19,7 @@ import MessageTools.MessageCenter;
 import EventTools.Viewers.SlicedEventsPanel;
 import EventTools.Histogram.Histogram3D;
 import EventTools.EventList.IEventList3D;
+import EventTools.ShowEventsApp.multiPanel;
 import EventTools.ShowEventsApp.Command.Commands;
 import EventTools.ShowEventsApp.Command.DrawingOptionsCmd;
 import EventTools.ShowEventsApp.Command.SelectPointCmd;
@@ -57,7 +58,13 @@ public class EventViewHandler implements IReceiveMessage
     jogl_panel.getDisplayComponent().addMouseListener(
                                     new MouseClickListener( jogl_panel ));
     frame3D = new JFrame( "Reciprocal Space Events" );
-    frame3D.setSize(750,750);
+    //------------------------
+    Rectangle R = multiPanel.PANEL_BOUNDS;
+    R.x +=R.width;
+    R.width = R.height = 750;
+    //-----------------------------
+    frame3D.setBounds(R);
+    
     frame3D.setDefaultCloseOperation( JFrame.DO_NOTHING_ON_CLOSE );
     Component component = events_panel.getJoglPanel().getDisplayComponent();
     frame3D.getContentPane().add( component );
