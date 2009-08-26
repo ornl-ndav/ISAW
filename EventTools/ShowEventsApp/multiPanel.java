@@ -7,6 +7,7 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import gov.anl.ipns.Util.Sys.ShowHelpActionListener;
 import gov.anl.ipns.Util.Sys.WindowShower;
 import gov.anl.ipns.ViewTools.UI.SplitPaneWithState;
 
@@ -88,10 +89,16 @@ public class multiPanel implements IReceiveMessage
       
       jmenBar.add(helpMenu);
       JMenuItem isawHelp = new JMenuItem("Using IsawEV");
-      isawHelp.addActionListener(new helpListener());
+      String isawHelpDir = System.getProperty("ISAW_HOME");
+      isawHelpDir += "/IsawHelp/About.html";
+      isawHelp.addActionListener(
+            new ShowHelpActionListener(isawHelpDir));
       
       JMenuItem aboutHelp = new JMenuItem("Help About");
-      aboutHelp.addActionListener(new helpListener());
+      String aboutHelpDir = System.getProperty("ISAW_HOME");
+      aboutHelpDir += "/IsawHelp/About.html";
+      aboutHelp.addActionListener(
+            new ShowHelpActionListener(aboutHelpDir));
       
       helpMenu.add(isawHelp);
       helpMenu.add(aboutHelp);
@@ -113,14 +120,6 @@ public class multiPanel implements IReceiveMessage
       }*/
       
       return false;
-   }
-}
-
-class helpListener implements ActionListener
-{
-   public void actionPerformed(ActionEvent e)
-   {
-
    }
 }
 
