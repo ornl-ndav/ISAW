@@ -82,6 +82,15 @@ public class multiPanel implements IReceiveMessage
       JMenu helpMenu = new JMenu("Help");
       
       jmenBar.add(FileMen);
+      JMenuItem SaveQGraph = new JMenuItem("Save Q Graph");
+      JMenuItem SaveDGraph = new JMenuItem("Save D Graph");
+      SaveQGraph.addActionListener( 
+                new SaveActionListener( messageCenter , "Q"));
+      SaveDGraph.addActionListener(  
+               new SaveActionListener( messageCenter ,"D") );
+
+      FileMen.add( SaveQGraph);
+      FileMen.add(SaveDGraph);
       JMenuItem closeMenItem= new JMenuItem( "Exit"); 
       FileMen.add( closeMenItem);
       closeMenItem.addActionListener(  
@@ -150,4 +159,30 @@ class CloseAppActionListener implements java.awt.event.ActionListener
      System.exit( 0); 
    }
    
+}
+class SaveActionListener implements ActionListener
+{
+   String Sv;
+   String Command;
+   MessageCenter message_center;
+   
+   public SaveActionListener( MessageCenter message_center, String Sv)
+   {
+      this.Sv = Sv;
+      if( Sv =="Q")
+         Command = Commands.SAVE_Q_VALUES;
+      else
+         Command = Commands.SAVE_D_VALUES;
+      
+      this.message_center = message_center;
+   }
+   
+   public void actionPerformed( ActionEvent evt)
+   {
+      JFileChooser jf = new JFileChooser();
+      if( jf.showSaveDialog( null ) != JFileChooser.APPROVE_OPTION)
+         return;
+      message_center.receive(  new Message( Command, 
+               jf.getSelectedFile().toString(), false) );
+   }
 }
