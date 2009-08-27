@@ -1130,6 +1130,8 @@ public class Isaw
     LansceWizard.add( LansceInitPeaksWItem );
     LansceWizard.add( LansceDailyPeaksWItem );
     SADMenu.add( ReduceWItem );
+    JMenuItem IsawEV = new  JMenuItem( "IsawEV");
+    wizardMenu.add( IsawEV);
     wizardMenu.add( SADMenu );
     wizardMenu.add( SCDMenu );
     wizardMenu.add(LansceWizard);
@@ -1140,6 +1142,7 @@ public class Isaw
     LansceInitPeaksWItem.addActionListener( menu_item_handler );
     LansceDailyPeaksWItem.addActionListener( menu_item_handler );
     ReduceWItem.addActionListener( menu_item_handler );
+    IsawEV.addActionListener(  menu_item_handler );
     //***************************************************end create Wizard menu
 
     JMenu hMenu               = new JMenu( HELP_M );
@@ -1706,7 +1709,9 @@ public class Isaw
         new Wizard.TOF_SCD.InitialPeaksWizard_new( false ).wizardLoader( null );
       } else if( s == LANSCE_DPW_MI ) {
         new Wizard.TOF_SCD.DailyPeaksWizard_new( false ).wizardLoader( null );
-    }  
+      } else if( s == "IsawEV"){
+         EventTools.ShowEventsApp.IsawEV.main(  null );
+      }
                     
       if( s.equals( SAVE_ISAW_DATA_MI ))
       {
