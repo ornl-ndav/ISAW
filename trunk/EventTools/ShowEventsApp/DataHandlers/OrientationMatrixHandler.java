@@ -37,16 +37,23 @@ package EventTools.ShowEventsApp.DataHandlers;
 import java.util.Vector;
 
 import javax.swing.JOptionPane;
+import javax.swing.JEditorPane;
+import javax.swing.JFrame;
 
 import gov.anl.ipns.Operator.IOperator;
 import gov.anl.ipns.Operator.Threads.ParallelExecutor;
 import gov.anl.ipns.Operator.Threads.ExecFailException;
 import gov.anl.ipns.Util.SpecialStrings.ErrorString;
+import gov.anl.ipns.Util.Sys.WindowShower;
 import gov.anl.ipns.MathTools.LinearAlgebra;
+import gov.anl.ipns.MathTools.Geometry.Vector3D;
 
 import DataSetTools.operator.Generic.TOF_SCD.Peak_new;
 import DataSetTools.operator.Generic.TOF_SCD.Peak_new_IO;
 import DataSetTools.operator.Generic.TOF_SCD.PeakQ;
+import DataSetTools.math.tof_calc;
+import DataSetTools.components.ui.Peaks.subs;
+
 
 import Operators.TOF_SCD.IndexJ;
 import Operators.TOF_SCD.IndexPeaks_Calc;
@@ -59,6 +66,7 @@ import EventTools.EventList.IEventList3D;
 import EventTools.EventList.SNS_Tof_to_Q_map;
 import EventTools.ShowEventsApp.Command.Commands;
 import EventTools.ShowEventsApp.Command.IndexPeaksCmd;
+import EventTools.ShowEventsApp.Command.SelectionInfoCmd;
 import EventTools.ShowEventsApp.Command.Util;
 
 /**
@@ -75,16 +83,17 @@ public class OrientationMatrixHandler implements IReceiveMessage
 
   private MessageCenter message_center;
   private float[][]     orientation_matrix = null;
-  private boolean       changed = false;  // Flag to determine if an 
-                                          // orientation matrix was acceppted
 
   public OrientationMatrixHandler( MessageCenter message_center )
   {
     this.message_center = message_center;
     message_center.addReceiver( this, Commands.SET_ORIENTATION_MATRIX );
     message_center.addReceiver( this, Commands.GET_ORIENTATION_MATRIX );
-    message_center.addReceiver( this, Commands.WRITE_ORIENTATION_MATRIX );
 
+    message_center.addReceiver( this, Commands.ADD_ORIENTATION_MATRIX_INFO );
+
+    message_center.addReceiver( this, Commands.SHOW_ORIENTATION_MATRIX );
+    message_center.addReceiver( this, Commands.WRITE_ORIENTATION_MATRIX );
     message_center.addReceiver( this, Commands.READ_ORIENTATION_MATRIX );
   }
 
@@ -97,28 +106,10 @@ public class OrientationMatrixHandler implements IReceiveMessage
     if ( message.getName().equals(Commands.SET_ORIENTATION_MATRIX) )
     {
       Object obj = message.getValue();
-
       if ( obj == orientation_matrix )         // this is just my message
         return false;                          // coming back to me.
 
-      String matrix_status = isValidMatrix( obj );
-      if ( !matrix_status.equals( OK_STRING ) )
-      {
-        Util.sendError( message_center, matrix_status );
-        return false;
-      }
- 
-      float[][] new_mat = (float[][])obj;
-
-      if ( orientation_matrix == null )
-        orientation_matrix = new float[3][3];
-
-      for ( int row = 0; row < 3; row++ )
-        for ( int col = 0; col < 3; col++ )
-          orientation_matrix[row][col] = new_mat[row][col];
-
-       ShowLatticeParams( orientation_matrix );
-         changed = true;
+      SetNewOrientationMatrix( obj );
     }
 
     else if ( message.getName().equals(Commands.GET_ORIENTATION_MATRIX) )
@@ -128,6 +119,15 @@ public class OrientationMatrixHandler implements IReceiveMessage
                                         true );
       message_center.receive( mat_message );
     } 
+
+    else if ( message.getName().equals(Commands.SHOW_ORIENTATION_MATRIX))
+    {
+       if ( orientation_matrix != null )
+         ShowOrientationMatrix( orientation_matrix );
+       else
+         Util.sendError( message_center,
+                        "There is no Orientation matrix to Show" );
+    }
 
     else if ( message.getName().equals(Commands.WRITE_ORIENTATION_MATRIX))
     {
@@ -165,18 +165,62 @@ public class OrientationMatrixHandler implements IReceiveMessage
        }
        float[][] orientSav = orientation_matrix;
        float[][] orMat = LinearAlgebra.getTranspose( (float[][]) Res );
-       changed = false;
-       receive( new Message(Commands.SET_ORIENTATION_MATRIX, orMat, false) );
-          
-       if( changed )
-       {
-         Message get_mess = new Message( Commands.GET_ORIENTATION_MATRIX,
-                                         null,
-                                         false );
-         return receive( get_mess );
-       }
+       SetNewOrientationMatrix( orMat );
     }
+
+    else if ( message.getName().equals(Commands.ADD_ORIENTATION_MATRIX_INFO) )
+    {
+      Object val = message.getValue();
+      if ( val instanceof SelectionInfoCmd )         // fill in counts field
+      {
+        SelectionInfoCmd select_info_cmd = (SelectionInfoCmd)val;
+        if ( orientation_matrix != null )
+        {
+          Vector3D qxyz = select_info_cmd.getQxyz();
+          Vector3D hkl  = Calc_hkl( qxyz.get(), orientation_matrix );
+          select_info_cmd.setHKL( hkl );
+        }
+        Message new_mess = new Message( Commands.SHOW_SELECTED_POINT_INFO,
+                                        select_info_cmd,
+                                        true );
+        message_center.receive( new_mess );
+        return false;
+      }
+      else
+        Util.sendError( message_center, "WRONG TYPE VALUE IN " +
+                                        Commands.ADD_ORIENTATION_MATRIX_INFO );
+    }
+
     return false;
+  }
+
+
+  private boolean SetNewOrientationMatrix( Object obj )
+  {
+     String matrix_status = isValidMatrix( obj );
+     if ( !matrix_status.equals( OK_STRING ) )
+     {
+       Util.sendError( message_center, matrix_status );
+       return false;
+     }
+
+     float[][] new_mat = (float[][])obj;
+
+     if ( orientation_matrix == null )
+       orientation_matrix = new float[3][3];
+
+     for ( int row = 0; row < 3; row++ )
+       for ( int col = 0; col < 3; col++ )
+         orientation_matrix[row][col] = new_mat[row][col];
+
+     ShowLatticeParams( orientation_matrix );
+     
+     Message new_message = new Message( Commands.SET_ORIENTATION_MATRIX, 
+                                        orientation_matrix, 
+                                        false );
+     message_center.receive( new_message );
+
+     return true;
   }
 
 
@@ -212,6 +256,22 @@ public class OrientationMatrixHandler implements IReceiveMessage
   }
 
 
+  private void ShowOrientationMatrix( float[][] matrix )
+  {
+    String ShowText = subs.ShowOrientationInfo( 
+                      null, 
+                      LinearAlgebra.getTranspose( matrix ),
+                      null, null, true );
+         
+    JFrame jf = new JFrame( "Orientation Matrix");
+    jf.setSize( 400,200 );
+    jf.getContentPane().add( new JEditorPane("text/html", ShowText) );
+    jf.setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
+            
+    WindowShower.show(jf);
+  }
+
+
   /**
    *  Calculate the lattice paramaters from the specified matrix and
    *  send a message with the lattice parameters to the status pane.
@@ -222,14 +282,43 @@ public class OrientationMatrixHandler implements IReceiveMessage
   private void ShowLatticeParams( float[][] matrix )
   {
      double[][] d_arr = LinearAlgebra.float2double( matrix );
-      
-     System.out.println("Orientation Matrix : " );
-     LinearAlgebra.print( orientation_matrix );
-
-     LinearAlgebra.invert( d_arr );
-     String lat_con = IndexPeaks_Calc.getLatticeParams( d_arr );
-
-     Util.sendInfo( message_center, lat_con );
+     d_arr = LinearAlgebra.getTranspose( d_arr );
+     double[] abc = DataSetTools.operator.Generic.TOF_SCD.Util.abc( d_arr );
+     
+     if ( abc != null )
+     {
+       String lat_con = String.format(
+           "%5.3f  %5.3f  %5.3f    %5.3f  %5.3f  %5.3f    %6.2f",
+            abc[0], abc[1], abc[2], abc[3], abc[4], abc[5], abc[6] );
+        
+       Util.sendInfo( message_center, lat_con );
+     }
+     else
+       Util.sendInfo( message_center, "NO LATTICE PARAMETERS CALCULATED" );
   }
+
+
+  private Vector3D Calc_hkl(float[] Q, float[][] orientation_mat )
+  {
+     float[][] real_orientation_mat = 
+                             LinearAlgebra.getTranspose( orientation_mat );
+     float[][] OrientationMatrixInv = 
+                             LinearAlgebra.getInverse( real_orientation_mat );
+     if( OrientationMatrixInv == null)
+        return new Vector3D(0f,0f,0f);
+     System.out.println("++++++++++++++Q+++++++++++++++++++");
+     LinearAlgebra.print( Q );
+     System.out.println("     - -- - - UBnv- - - - -- -");
+     LinearAlgebra.print( OrientationMatrixInv );
+     System.out.println("++++++++++++++++++++++++++++");
+     float[]hkl = new float[3];
+     java.util.Arrays.fill( hkl , 0f );
+     for( int i=0;i<3;i++)
+        for( int j=0; j< 3; j++)
+            hkl[i] +=OrientationMatrixInv[i][j]*Q[j];
+
+     return new Vector3D(hkl);
+  }
+
 
 }

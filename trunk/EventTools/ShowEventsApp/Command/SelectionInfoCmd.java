@@ -87,6 +87,11 @@ public class SelectionInfoCmd
       return new Vector3D( hkl );
    }
 
+   public void setHKL( Vector3D hkl )
+   {
+     this.hkl = new Vector3D( hkl );
+   }
+
    public Vector3D getQxyz()
    {
       return new Vector3D( Qxyz );

@@ -39,7 +39,8 @@ public class PeakListHandler implements IReceiveMessage
     message_center.addReceiver( this, Commands.SET_PEAK_NEW_LIST );
     message_center.addReceiver( this, Commands.WRITE_PEAK_FILE );
     message_center.addReceiver( this, Commands.INDEX_PEAKS );
-    message_center.addReceiver( this, Commands.INDEX_PEAKS_WITH_ORIENTATION_MATRIX); ;
+    message_center.addReceiver( this, 
+                                Commands.INDEX_PEAKS_WITH_ORIENTATION_MATRIX);
   }
 
 
@@ -169,18 +170,19 @@ public class PeakListHandler implements IReceiveMessage
       Util.sendInfo( message_center, "Indexed " + count + 
                                       " of " + total_peaks + 
                                       " within " + tolerance );
-      return true;
-    }else if( message.getName().equals( Commands.INDEX_PEAKS_WITH_ORIENTATION_MATRIX ))
+      return false;
+    }
+    else if( message.getName().equals( 
+             Commands.INDEX_PEAKS_WITH_ORIENTATION_MATRIX ))
     {
        float[][] orientationMatrix = (float[][])message.getValue();
        
-        indexAllPeaks( peakNew_list, orientationMatrix);
+       indexAllPeaks( peakNew_list, orientationMatrix);
        Message set_peaks = new Message( Commands.SET_PEAK_NEW_LIST,
-                peakNew_list,
-                true );
+                                        peakNew_list,
+                                        true );
         message_center.receive( set_peaks );
-        return true;
-       
+        return false;
     }
 
     return false;
