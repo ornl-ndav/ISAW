@@ -1,3 +1,38 @@
+/* 
+ * File: additionalViewControls.java
+ *
+ * Copyright (C) 2009, Paul Fischer
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
+ *           Department of Mathematics, Statistics and Computer Science
+ *           University of Wisconsin-Stout
+ *           Menomonie, WI 54751, USA
+ *
+ * This work was supported by the National Science Foundation under grant
+ * number DMR-0800276 and by the Spallation Neutron Source Division
+ * of Oak Ridge National Laboratory, Oak Ridge TN, USA.
+ *
+ *  Last Modified:
+ * 
+ *  $Author$
+ *  $Date$            
+ *  $Revision$
+ */
+
 package EventTools.ShowEventsApp.Controls;
 
 import javax.swing.*;
@@ -6,13 +41,16 @@ import java.awt.*;
 
 import MessageTools.*;
 import EventTools.ShowEventsApp.Command.*;
-import SSG_Tools.SSG_Nodes.Group;
 
+/**
+ * Displays information about the point selected on the jogl
+ * panel.
+ */
 public class positionInfoPanel extends JPanel
                                implements IReceiveMessage
 {
    public static final long    serialVersionUID = 1L;
-   private MessageCenter       messageCenter;
+   //private MessageCenter       messageCenter;
    private JTextField          countsTxt;
    private JTextField          detectorNumTxt;
    private JTextField          ColRowTxt;
@@ -28,15 +66,27 @@ public class positionInfoPanel extends JPanel
    private char                ANG = '\u00c5';
    private char                MU = '\u03bc';
    
+   /**
+    * Builds the panel and adds everything to itself.
+    * 
+    * @param messageCenter
+    */
    public positionInfoPanel(MessageCenter messageCenter)
    {
-      this.messageCenter = messageCenter;
+      //this.messageCenter = messageCenter;
       this.setLayout(new GridLayout(1,1));
       this.add(buildPanel());
       //this.add(buildZoomedPanel());
       messageCenter.addReceiver(this, Commands.SHOW_SELECTED_POINT_INFO);
    }
 
+   /**
+    * TO BE IMPLEMENTED LATER.
+    * Will build a jogl panel to add to the panel that will show 
+    * a zoomed in view of the point selected.
+    * 
+    * @return JPanel
+    */
    private JPanel buildZoomedPanel()
    {
       JPanel panel = new JPanel();
@@ -45,7 +95,12 @@ public class positionInfoPanel extends JPanel
       return panel;
    }
    
-   
+   /**
+    * Builds the entire panel containing all the information
+    * labels about the point selected.
+    * 
+    * @return JPanel
+    */
    private JPanel buildPanel()
    {
       JPanel panel = new JPanel();
@@ -64,8 +119,6 @@ public class positionInfoPanel extends JPanel
       JTextField ColRowLbl = new JTextField("Column,Row");
       ColRowLbl.setEditable(false);
       ColRowLbl.setBackground(Color.WHITE);
-      
-    
       
       JTextField histogramLbl = new JTextField("Histogram Page");
       histogramLbl.setEditable(false);
@@ -185,6 +238,14 @@ public class positionInfoPanel extends JPanel
       return panel;
    }
    
+   /**
+    * Takes in a SelectionInfoCmd and fills out the
+    * panel with all the information that was passed to 
+    * it.
+    * 
+    * @param selection A SelectionInfoCmd object containing
+    *       all the information about the selected point.
+    */
    private void setFields(SelectionInfoCmd selection)
    {
       countsTxt.setText( "" + String.format( "%4.2f" , selection.getCounts() ));
@@ -204,14 +265,16 @@ public class positionInfoPanel extends JPanel
       wavelengthTxt.setText( String.format("%8.6f", selection.getWavelength()) );
    }
    
+   /**
+    * Listen for SHOW_SELECTED_POINT_INFO and call
+    * setField(selection) to display all the information.
+    */
    public boolean receive(Message message)
    {
       if (message.getName().equals(Commands.SHOW_SELECTED_POINT_INFO))
       {
          SelectionInfoCmd selection = (SelectionInfoCmd)message.getValue();
          setFields(selection);
-         
-         System.out.println(selection);
          
          return true;
       }
