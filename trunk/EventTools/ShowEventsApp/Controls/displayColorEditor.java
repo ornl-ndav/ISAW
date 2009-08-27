@@ -38,6 +38,7 @@ package EventTools.ShowEventsApp.Controls;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.DecimalFormat;
 
 import gov.anl.ipns.ViewTools.Components.ViewControls.ColorScaleControl.*;
 
@@ -121,6 +122,10 @@ public class displayColorEditor implements IReceiveMessage
 
        if ( max < min + 9 )
          max = min + 9;
+       
+       DecimalFormat dc = new DecimalFormat("############.#");
+       min = Float.parseFloat(dc.format(min));
+       max = Float.parseFloat(dc.format(max));
 
       //System.out.println("Setting Color range to " + min + " to " + max );
       colorEditPanel.setControlValue( 0.0001f, colorEditPanel.MINSET ); 
@@ -151,11 +156,22 @@ public class displayColorEditor implements IReceiveMessage
      return colorEditPanel.getMax();
   }*/
     
+  /**
+   * Gets the ColorScaleInfo object from the ColorEditPanel
+   * and returns it.
+   * 
+   * @return ColorScaleInfo object.
+   */
   private ColorScaleInfo getColorScaleInfo()
   {
      return (ColorScaleInfo)colorEditPanel.getControlValue();
   }   
   
+  /**
+   * Returns the colorEditPanel.
+   * 
+   * @return JPanel
+   */
   public JPanel getColorPanel()
   {
      return colorEditPanel;
