@@ -85,7 +85,7 @@ public class DViewHandler implements IReceiveMessage
       dDisplayFrame = new JFrame("d-spacing View");
       dDisplayFrame.setLayout(new GridLayout(1,1));
       dDisplayFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-      dDisplayFrame.setBounds(0, 0, 500, 300);
+      dDisplayFrame.setBounds(0, 0, 1000, 300);
       dDisplayFrame.setVisible(true);
       
       if (graphPanel != null)
