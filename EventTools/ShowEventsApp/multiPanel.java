@@ -1,3 +1,38 @@
+/* 
+ * File: titleScreen.java
+ *
+ * Copyright (C) 2009, Paul Fischer
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
+ *           Department of Mathematics, Statistics and Computer Science
+ *           University of Wisconsin-Stout
+ *           Menomonie, WI 54751, USA
+ *
+ * This work was supported by the National Science Foundation under grant
+ * number DMR-0800276 and by the Spallation Neutron Source Division
+ * of Oak Ridge National Laboratory, Oak Ridge TN, USA.
+ *
+ *  Last Modified:
+ * 
+ *  $Author$
+ *  $Date$            
+ *  $Revision$
+ */
+
 package EventTools.ShowEventsApp;
 
 import javax.swing.*;
@@ -17,6 +52,11 @@ import EventTools.ShowEventsApp.ViewHandlers.StatusMessageHandler;
 import MessageTools.*;
 import SSG_Tools.Viewers.Controls.MouseArcBall;
 
+/**
+ * Creates a JFrame containing a SplitPaneWithState
+ * which holds the controls panel on the left side and the
+ * display panels on the right.
+ */
 public class multiPanel implements IReceiveMessage
 {
    public static Rectangle    PANEL_BOUNDS =  new Rectangle(10, 10, 570, 510) ;
@@ -28,11 +68,8 @@ public class multiPanel implements IReceiveMessage
    private MessageCenter      messageCenter;
    
    /**
-    * Creates three frames.
-    * One frame is a splitpane with control buttons that bring up the
-    * corresponding panel in the second area of the split.
-    * The other two are a 3D display of the data and a 2D image of
-    * the corresponding slice.
+    * Creates the controlsPanel and the displayPanel
+    * to be added to the SplitPane and then creates the JFrame.
     */
    public multiPanel( MessageCenter messageCenter )
    {
@@ -43,6 +80,12 @@ public class multiPanel implements IReceiveMessage
       buildMainFrame();
    }
 
+   /**
+    * Builds the main window that holds the controls panel
+    * on the left side of the JFrame and the display panel on 
+    * the right that will show the corresponding panel according
+    * to which button is pressed.
+    */
    private void buildMainFrame()
    {
       mainView = new JFrame("Reciprocal Space Event Viewer");
@@ -75,6 +118,14 @@ public class multiPanel implements IReceiveMessage
       WindowShower.show(  StatusFrame );
    }
    
+   /**
+    * Builds the menu bar for the app containing file and help
+    * options.
+    * 
+    * @param C The parent component to be used for the 
+    *          CloseAppActionListener
+    * @return JMenuBar
+    */
    private JMenuBar getJMenuBar( JComponent C)
    {
       JMenuBar jmenBar= new JMenuBar();
@@ -117,21 +168,16 @@ public class multiPanel implements IReceiveMessage
    
    public boolean receive(Message message)
    {
-      // System.out.println(message.getName() + " " + message.getValue());
-      
-      /*if (message.getName().equals(Commands.LOAD_FILE))
-      {
-         LoadEventsCmd loadEvents = ((LoadEventsCmd)message.getValue());
-         
-         oModel.setFile(loadEvents.getEventFile(), loadEvents.getDetFile(),
-                   loadEvents.getFirstEvent(), loadEvents.getEventsToLoad());
-         oVisual.buildDisplay(oModel, controlpanel.getColorScale(), true);
-      }*/
-      
+    
       return false;
    }
 }
 
+/**
+ * Catches the user when they select File->Exit
+ * and double checks that that is what the user wants to do
+ * so they don't lose information by closing on accident.
+ */
 class CloseAppActionListener implements java.awt.event.ActionListener
 {
    JComponent comp;
@@ -160,6 +206,12 @@ class CloseAppActionListener implements java.awt.event.ActionListener
    }
    
 }
+
+/**
+ * When Save Q or Save D is selected it pops up it pops up a
+ * JFileChooser for the user to save a file and then sends out a message
+ * of SAVE_Q/D_VALUES with the file name
+ */
 class SaveActionListener implements ActionListener
 {
    String Sv;
