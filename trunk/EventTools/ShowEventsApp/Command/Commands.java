@@ -95,13 +95,13 @@ public class Commands
   public static final String HIDE_Q_GRAPH = "HIDE_Q_GRAPH";
   public static final String GET_Q_VALUES = "GET_Q_VALUES";
   public static final String SET_Q_VALUES = "SET_Q_VALUES";
-  public static final String SAVE_Q_VALUES ="SAVE_Q_VALUES",
+  public static final String SAVE_Q_VALUES ="SAVE_Q_VALUES";
   
   public static final String SHOW_D_GRAPH = "SHOW_D_GRAPH";
   public static final String HIDE_D_GRAPH = "HIDE_D_GRAPH";
   public static final String GET_D_VALUES = "GET_D_VALUES";
   public static final String SET_D_VALUES = "SET_D_VALUES";
-  public static final String SAVE_D_VALUES ="SAVE_D_VALUES",
+  public static final String SAVE_D_VALUES ="SAVE_D_VALUES";
   /*
 //  public static final String SET_POSITION_INFO = "SET_POSITION_INFO";
   public static final String SET_SLICE_2 = "Set Slice 2";
