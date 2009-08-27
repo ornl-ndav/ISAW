@@ -85,7 +85,7 @@ public class QViewHandler implements IReceiveMessage
       qDisplayFrame = new JFrame("Q View");
       qDisplayFrame.setLayout(new GridLayout(1,1));
       qDisplayFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-      qDisplayFrame.setBounds(0, 0, 500, 300);
+      qDisplayFrame.setBounds(0, 0, 1000, 300);
       qDisplayFrame.setVisible(true);
       
       if (graphPanel != null)
