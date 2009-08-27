@@ -1,3 +1,38 @@
+/* 
+ * File: displayColorEditor.java
+ *
+ * Copyright (C) 2009, Paul Fischer
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
+ *           Department of Mathematics, Statistics and Computer Science
+ *           University of Wisconsin-Stout
+ *           Menomonie, WI 54751, USA
+ *
+ * This work was supported by the National Science Foundation under grant
+ * number DMR-0800276 and by the Spallation Neutron Source Division
+ * of Oak Ridge National Laboratory, Oak Ridge TN, USA.
+ *
+ *  Last Modified:
+ * 
+ *  $Author$
+ *  $Date$            
+ *  $Revision$
+ */
+
 package EventTools.ShowEventsApp.Controls;
 
 import java.awt.Rectangle;
@@ -13,15 +48,31 @@ import MessageTools.*;
 
 import EventTools.ShowEventsApp.Command.*;
 
-
+/**
+ * Contains ColorEditPanel and handles sending and receiving
+ * of messages as well as creation of the ColorEditPanel.
+ */
 public class displayColorEditor implements IReceiveMessage
 {
-  private JFrame         cEditPanel;
+  private JFrame          cEditPanel;
   private ColorEditPanel  colorEditPanel;
   private Rectangle       bounds          = new Rectangle(100,100,400,500);
-  private MessageCenter  message_center;
-  private String         command;
+  private MessageCenter   message_center;
+  private String          command;
   
+  /**
+   * Creates colorEditPanel as well as stores the message center and 
+   * the command name to be used when sending messages.
+   * 
+   * @param inMessage_Center Message Center to be used.
+   * @param inCommand Command name to be used to send messages.
+   * @param min The minimum data value which is used on the 
+   *        ColorEditPanel to build the color image and color table.
+   * @param max The maximum data value which is used on the 
+   *        ColorEditPanel to build the color image and color table.
+   * @param addListener The option whether or not to add an 
+   *        actionListener to the ColorEditPanel
+   */
   public displayColorEditor(MessageCenter inMessage_Center,
                   String inCommand, int min, int max, 
                   boolean addListener)
@@ -44,7 +95,10 @@ public class displayColorEditor implements IReceiveMessage
     message_center.addReceiver( this, Commands.SET_HISTOGRAM_MAX );
   }
 
-
+  /**
+   * Listens for SET_HISTOGRAM_MAX message and when received
+   * sets the new min and max values on the ColorEditPanel
+   */
   public boolean receive( Message message )
   {
     //System.out.println("***displayColorEditor in thread "
@@ -80,8 +134,7 @@ public class displayColorEditor implements IReceiveMessage
 
   }
 
-  
-  private displayColorEditor(MessageCenter inMessage_Center,
+  /*private displayColorEditor(MessageCenter inMessage_Center,
       String inCommand)
   {
     message_center = inMessage_Center;
@@ -96,9 +149,9 @@ public class displayColorEditor implements IReceiveMessage
   public float getDataMax()
   {
      return colorEditPanel.getMax();
-  }
+  }*/
     
-  public ColorScaleInfo getColorScaleInfo()
+  private ColorScaleInfo getColorScaleInfo()
   {
      return (ColorScaleInfo)colorEditPanel.getControlValue();
   }   
@@ -108,7 +161,7 @@ public class displayColorEditor implements IReceiveMessage
      return colorEditPanel;
   }
   
-  public void setColorScale(float min, float max)
+  /*public void setColorScale(float min, float max)
   {
      byte[] table = new byte[256];
       for(int i = 0; i < table.length-2; i++)
@@ -117,13 +170,18 @@ public class displayColorEditor implements IReceiveMessage
      colorEditPanel.
       setControlValue(new ColorScaleInfo(Math.round(min), Math.round(max),
                                        1, "Heat 1", true, 127, table, true));
-  }
+  }*/
   
+  /**
+   * Listens to the ColorEditPanel and sends out a message with 
+   * a command name that is passed into displayColorEditor and a value
+   * or ColorScaleInfo.
+   */
   private class ColorListener implements ActionListener
   {
     public void actionPerformed (ActionEvent ae)
     {      
-      if( ae.getActionCommand().equals(ColorEditPanel.cancelMessage))
+      /*if( ae.getActionCommand().equals(ColorEditPanel.cancelMessage))
       {
          if (cEditPanel != null)
             cEditPanel.dispose();
@@ -134,7 +192,7 @@ public class displayColorEditor implements IReceiveMessage
         sendMessage(command, getColorScaleInfo());
         if (cEditPanel != null)
            cEditPanel.dispose();
-      }
+      }*/
       
       if (ae.getActionCommand().equals(ColorEditPanel.updateMessage))
       {
@@ -143,6 +201,12 @@ public class displayColorEditor implements IReceiveMessage
     }
   }
   
+  /**
+   * Sends a message to the message center
+   * 
+   * @param command Command Name for others to listen to.
+   * @param value Object to send to the listener.
+   */
   private void sendMessage(String command, Object value)
   {
      Message message = new Message( command,
@@ -152,6 +216,11 @@ public class displayColorEditor implements IReceiveMessage
      message_center.receive( message );
   }
   
+  /**
+   * Mainly for testing purposes.
+   * Creates a JFrame to put the ColorEditPanel onto
+   * so that the class can be tested.
+   */
   public void createColorEditor()
   {
     cEditPanel = new JFrame("Color Editor");
