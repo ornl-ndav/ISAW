@@ -35,9 +35,6 @@
 
 package EventTools.ShowEventsApp.Controls.Peaks;
 
-import gov.anl.ipns.MathTools.LinearAlgebra;
-import gov.anl.ipns.Util.Sys.WindowShower;
-
 import javax.swing.*;
 import javax.swing.border.*;
 import java.awt.event.*;
@@ -45,7 +42,6 @@ import java.awt.*;
 
 import MessageTools.*;
 import EventTools.ShowEventsApp.Command.*;
-import DataSetTools.components.ui.Peaks.*;
 
 /**
  * Panel that displays information about the index peaks
@@ -54,8 +50,7 @@ import DataSetTools.components.ui.Peaks.*;
  * an orientation matrix, index peaks, show orientation matrix,
  * and write an orientation matrix.
  */
-public class indexPeaksPanel extends JPanel 
-                                    implements IReceiveMessage
+public class indexPeaksPanel extends    JPanel 
                                 
 {
    public static final long serialVersionUID = 1L;
@@ -74,10 +69,6 @@ public class indexPeaksPanel extends JPanel
    private JTextField       MatFileName;
    private JButton          ViewMatBtn;
    private JButton          WriteMatBtn;
-   private float[][]        currentOrientationMatrix;
-   private boolean          doShow;  //Show next incoming orientation matrix
-   private boolean          doIndex;//Index peaks with next incoming 
-                                    //orientation matrix
    
    private static String   NoOrientationText="<html><body> There is no "+
                   "Orientation matrix </body></html>";
@@ -90,10 +81,6 @@ public class indexPeaksPanel extends JPanel
    public indexPeaksPanel(MessageCenter messageCenter)
    {
       this.messageCenter = messageCenter;
-      messageCenter.addReceiver( this , Commands.SET_ORIENTATION_MATRIX );
-      currentOrientationMatrix = null;
-      
-      doShow = doIndex = false;
       
       this.setBorder(new TitledBorder("Index Peaks"));
       this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -182,8 +169,8 @@ public class indexPeaksPanel extends JPanel
       panel.add( WriteMatBtn );
       panel.add( ViewMatBtn );
       return panel;
-      
    }
+
    
    /**
     * Builds a panel with the information.
@@ -292,7 +279,8 @@ public class indexPeaksPanel extends JPanel
       catch (NumberFormatException e)
       {
          String error = "a must be of type Float!";
-         JOptionPane.showMessageDialog(null, error, "Invalid Input", JOptionPane.ERROR_MESSAGE);
+         JOptionPane.showMessageDialog(null, error, "Invalid Input", 
+                                       JOptionPane.ERROR_MESSAGE);
          return false;
       } 
       
@@ -303,7 +291,8 @@ public class indexPeaksPanel extends JPanel
       catch (NumberFormatException e)
       {
          String error = "b must be of type Float!";
-         JOptionPane.showMessageDialog(null, error, "Invalid Input", JOptionPane.ERROR_MESSAGE);
+         JOptionPane.showMessageDialog(null, error, "Invalid Input", 
+                                       JOptionPane.ERROR_MESSAGE);
          return false;
       } 
       
@@ -314,7 +303,8 @@ public class indexPeaksPanel extends JPanel
       catch (NumberFormatException e)
       {
          String error = "c must be of type Float!";
-         JOptionPane.showMessageDialog(null, error, "Invalid Input", JOptionPane.ERROR_MESSAGE);
+         JOptionPane.showMessageDialog(null, error, "Invalid Input", 
+                                       JOptionPane.ERROR_MESSAGE);
          return false;
       }
       
@@ -325,7 +315,8 @@ public class indexPeaksPanel extends JPanel
       catch (NumberFormatException e)
       {
          String error = "Alpha must be of type Float!";
-         JOptionPane.showMessageDialog(null, error, "Invalid Input", JOptionPane.ERROR_MESSAGE);
+         JOptionPane.showMessageDialog(null, error, "Invalid Input", 
+                                       JOptionPane.ERROR_MESSAGE);
          return false;
       } 
       
@@ -336,7 +327,8 @@ public class indexPeaksPanel extends JPanel
       catch (NumberFormatException e)
       {
          String error = "Beta must be of type Float!";
-         JOptionPane.showMessageDialog(null, error, "Invalid Input", JOptionPane.ERROR_MESSAGE);
+         JOptionPane.showMessageDialog(null, error, "Invalid Input", 
+                                       JOptionPane.ERROR_MESSAGE);
          return false;
       }
       
@@ -347,7 +339,8 @@ public class indexPeaksPanel extends JPanel
       catch (NumberFormatException e)
       {
          String error = "Gamma must be of type Float!";
-         JOptionPane.showMessageDialog(null, error, "Invalid Input", JOptionPane.ERROR_MESSAGE);
+         JOptionPane.showMessageDialog(null, error, "Invalid Input", 
+                                       JOptionPane.ERROR_MESSAGE);
          return false;
       } 
       
@@ -358,7 +351,8 @@ public class indexPeaksPanel extends JPanel
       catch (NumberFormatException e)
       {
          String error = "Tolerance must be of type Float!";
-         JOptionPane.showMessageDialog(null, error, "Invalid Input", JOptionPane.ERROR_MESSAGE);
+         JOptionPane.showMessageDialog(null, error, "Invalid Input", 
+                                       JOptionPane.ERROR_MESSAGE);
          return false;
       }
       
@@ -369,7 +363,8 @@ public class indexPeaksPanel extends JPanel
       catch (NumberFormatException e)
       {
          String error = "Required Fraction must be of type Float!";
-         JOptionPane.showMessageDialog(null, error, "Invalid Input", JOptionPane.ERROR_MESSAGE);
+         JOptionPane.showMessageDialog(null, error, "Invalid Input", 
+                                       JOptionPane.ERROR_MESSAGE);
          return false;
       }
       
@@ -381,7 +376,8 @@ public class indexPeaksPanel extends JPanel
       catch (NumberFormatException nfe)
       {
          String error = "Fixed Peaks must be of type Integer!";
-         JOptionPane.showMessageDialog(null, error, "Invalid Input", JOptionPane.ERROR_MESSAGE);
+         JOptionPane.showMessageDialog(null, error, "Invalid Input", 
+                                       JOptionPane.ERROR_MESSAGE);
          return false;
       }
       
@@ -389,48 +385,6 @@ public class indexPeaksPanel extends JPanel
       return true;
    }
    
-   /**
-    * Listens for SET_ORIENTATION_MATRIX and displays
-    * the orientation matrix if doShow is true.
-    * Will also send a message of INDEX_PEAKS_WITH_ORIENTATION_MATRIX
-    * if doIndex is true.
-    */
-   public boolean receive( Message message )
-   {
-
-      if( message.getName().equals( Commands.SET_ORIENTATION_MATRIX ))
-      {
-         currentOrientationMatrix = (float[][])message.getValue();
-         
-        
-         if( doShow)
-         {
-            String ShowText =null;
-            if( currentOrientationMatrix != null)
-               ShowText = subs.ShowOrientationInfo( null , 
-                          LinearAlgebra.getTranspose( currentOrientationMatrix) ,
-                          null , null ,true );
-            else
-               ShowText = NoOrientationText;
-         
-            JFrame jf = new JFrame( "Orientation Matrix");
-            jf.setSize( 400,200 );
-            jf.getContentPane().add( new JEditorPane("text/html", ShowText) );
-            jf.setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
-            
-            WindowShower.show(jf);
-            doShow = false;
-         }
-         if( doIndex)
-         {
-            sendMessage( Commands.INDEX_PEAKS_WITH_ORIENTATION_MATRIX,
-                     currentOrientationMatrix);
-            doIndex = false;
-         }
-         return true;
-      }
-      return false;
-   }
 
    /**
     * Button listener for the buttons that sends message of 
@@ -471,8 +425,8 @@ public class indexPeaksPanel extends JPanel
             if( getText(MatFileName).length() > 0)
          
             {
-               sendMessage(  Commands.READ_ORIENTATION_MATRIX , getText(MatFileName) );
-               doIndex = true;
+               sendMessage( Commands.READ_ORIENTATION_MATRIX, 
+                            getText(MatFileName) );
                return;
             }
             else if (valid())
@@ -490,32 +444,30 @@ public class indexPeaksPanel extends JPanel
            
             sendMessage(Commands.INDEX_PEAKS, indexCmd);
                }
-         }else if(cmd.startsWith("Write"))
+         }
+         else if(cmd.startsWith("Write"))
          {
             JFileChooser jfc = new JFileChooser( Directory(lastWriteFileName));
             if( jfc.showSaveDialog( null )== JFileChooser.APPROVE_OPTION)
             {
                lastWriteFileName = jfc.getSelectedFile().toString();
                messageCenter.receive( 
-                         new Message( Commands.WRITE_ORIENTATION_MATRIX, lastWriteFileName, false) );
-               
+                         new Message( Commands.WRITE_ORIENTATION_MATRIX,
+                                      lastWriteFileName, false) );
             }
-         }else if( cmd.startsWith( "Show" ) )
+         }
+         else if( cmd.startsWith( "Show" ) )
          {
-
-            sendMessage(  Commands.GET_ORIENTATION_MATRIX ,"" );
-            doShow = true;
-           
-         }else if( cmd.startsWith("Matrix") )
+            sendMessage(  Commands.SHOW_ORIENTATION_MATRIX ,"" );
+         }
+         else if( cmd.startsWith("Matrix") )
          {
-
             JFileChooser jfc = new JFileChooser( Directory(lastInpMatFileName));
             if( jfc.showOpenDialog( null )== JFileChooser.APPROVE_OPTION)
             {
                lastInpMatFileName = jfc.getSelectedFile().toString();
                
                MatFileName.setText( lastInpMatFileName);
-               
             }
          }
       }

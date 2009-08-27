@@ -172,10 +172,11 @@ public class HistogramHandler implements IReceiveMessage
         SelectionInfoCmd select_info_cmd = (SelectionInfoCmd)val;
 
         AddHistogramInfo( select_info_cmd, histogram );
+        Message info_message = new Message( 
+                                       Commands.ADD_ORIENTATION_MATRIX_INFO, 
+                                       select_info_cmd, 
+                                       true );
 
-        Message info_message = new Message( Commands.ADD_HISTOGRAM_INFO_ACK, 
-                                            select_info_cmd, 
-                                            true );
         message_center.receive( info_message );
       }
       return false;

@@ -34,7 +34,7 @@ public class positionInfoPanel extends JPanel
       this.setLayout(new GridLayout(1,1));
       this.add(buildPanel());
       //this.add(buildZoomedPanel());
-      messageCenter.addReceiver(this, Commands.SELECTED_POINT_INFO);
+      messageCenter.addReceiver(this, Commands.SHOW_SELECTED_POINT_INFO);
    }
 
    private JPanel buildZoomedPanel()
@@ -206,7 +206,7 @@ public class positionInfoPanel extends JPanel
    
    public boolean receive(Message message)
    {
-      if (message.getName().equals(Commands.SELECTED_POINT_INFO))
+      if (message.getName().equals(Commands.SHOW_SELECTED_POINT_INFO))
       {
          SelectionInfoCmd selection = (SelectionInfoCmd)message.getValue();
          setFields(selection);
@@ -223,7 +223,7 @@ public class positionInfoPanel extends JPanel
    {
       MessageCenter mc = new MessageCenter("Testing MessageCenter");
       TestReceiver tc = new TestReceiver("Position Info TestingMessages");
-      mc.addReceiver(tc, Commands.SELECTED_POINT_INFO);
+      mc.addReceiver(tc, Commands.SHOW_SELECTED_POINT_INFO);
       
       positionInfoPanel pip = new positionInfoPanel(mc);
       

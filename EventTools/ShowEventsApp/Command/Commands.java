@@ -15,9 +15,6 @@ public class Commands
   public static final String SET_WEIGHTS_FROM_HISTOGRAM_ACK = 
                                               "SET_WEIGHTS_FROM_HISTOGRAM_ACK";
 
-  public static final String SELECT_POINT = "SELECT_POINT";
-  public static final String SELECTED_POINT_INFO = "SELECTED_POINT_INFO";
-
  /**
   *  When a new data file is about to be loaded, this message should
   *  be sent with the instrument name as it's value, so other objects
@@ -26,18 +23,27 @@ public class Commands
   public static final String SET_NEW_INSTRUMENT = "SET_NEW_INSTRUMENT";
 
   /**
-   *  An ADD_HISTOGRAM_INFO message will be sent to request that some class 
-   *  (HistogramHandler) should find the histogram intensity at each
-   *  Qxyz point in a Vector of IPeak objects, and set that intensity
-   *  in the IPeak objects.  
-   *  The class doing this (HistogramHandler) should a send an 
-   *  acknowlegement, ADD_HISTOGRAM_INFO_ACK, and return the modified Vector 
-   *  of IPeak objects, when it has finished.
-   *  This can also be applied to ONE SelectionInfoCmd object, in which
-   *  case it sets the counts field and the histogram page.
+   *  The data flow for gathering all of the required information to display
+   *  regarding a selected point is as follows.  The initial message,
+   *  SELECT_POINT comes from the EventViewHandler, when the user selects
+   *  a point.  The class maintaining the SNS_TOF_to_Q_Map object 
+   *  receives this message, and fills out most of the required information.
+   *  It then sends an ADD_HISTOGRAM_INFO message to request that the 
+   *  HistogramHandler add the histogram intensity at that point.
+   *  The HistogramHandler should pass the select_info_cmd 
+   *  on to the OrientationMatrixHandler by sending an ADD_ORIENTAION_INFO
+   *  message.  The OrientationMatrixHandler then adds the hkl values
+   *  and sends the info to be displayed in a SHOW_SELECTED_POINT_INFO
+   *  command.
    */
+  public static final String SELECT_POINT = "SELECT_POINT";
   public static final String ADD_HISTOGRAM_INFO = "ADD_HISTOGRAM_INFO";
-  public static final String ADD_HISTOGRAM_INFO_ACK = "ADD_HISTOGRAM_INFO_ACK";
+//  public static final String ADD_HISTOGRAM_INFO_ACK = "ADD_HISTOGRAM_INFO_ACK";
+  public static final String ADD_ORIENTATION_MATRIX_INFO =
+                                                 "ADD_ORIENTATION_MATRIX_INFO";
+  public static final String SHOW_SELECTED_POINT_INFO =
+                                                 "SHOW_SELECTED_POINT_INFO";
+
   public static final String GET_HISTOGRAM_MAX = "GET_HISTOGRAM_MAX";
   public static final String SET_HISTOGRAM_MAX = "SET_HISTOGRAM_MAX";
 
@@ -58,8 +64,6 @@ public class Commands
   public static final String SET_PEAK_NEW_LIST = "SET_PEAK_NEW_LIST";
   public static final String CLEAR_PEAK_LISTS = "CLEAR_PEAK_LISTS";
 
-  
-  public static final String INDEX_PEAKS = "INDEX_PEAKS";
 
   /**
    * MARK_PEAKS has value Boolean OR a vector of PeakQ objects
@@ -84,10 +88,18 @@ public class Commands
   public static final String DISPLAY_ERROR = "DISPLAY_ERROR";
   public static final String DISPLAY_WARNING = "DISPLAY_WARNING";
   public static final String DISPLAY_CLEAR = "DISPLAY_CLEAR";
-  public static final String WRITE_ORIENTATION_MATRIX = "WRITE_ORIENTATION_MATRIX";
-  public static final String READ_ORIENTATION_MATRIX = "READ_ORIENTATION_MATRIX";
+
+  public static final String WRITE_ORIENTATION_MATRIX = 
+                                                  "WRITE_ORIENTATION_MATRIX";
+  public static final String SHOW_ORIENTATION_MATRIX = 
+                                                  "SHOW_ORIENTATION_MATRIX";
+  public static final String READ_ORIENTATION_MATRIX = 
+                                                  "READ_ORIENTATION_MATRIX";
+
+  public static final String INDEX_PEAKS = "INDEX_PEAKS";
+
   public static final String INDEX_PEAKS_WITH_ORIENTATION_MATRIX =
-                         "INDEX_PEAKS_WITH_ORIENTATION_MATRIX";
+                                         "INDEX_PEAKS_WITH_ORIENTATION_MATRIX";
   
   public static final String CLEAR_DQ = "CLEAR_DQ";
   

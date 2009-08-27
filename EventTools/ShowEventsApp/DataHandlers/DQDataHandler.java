@@ -69,7 +69,10 @@ public class DQDataHandler implements IReceiveMessage
    public DQDataHandler(MessageCenter messageCenter)
    {
       this.messageCenter = messageCenter;
+
       this.messageCenter.addReceiver(this, Commands.ADD_EVENTS_TO_VIEW);
+//    this.messageCenter.addReceiver(this, Commands.ADD_EVENTS);
+
       this.messageCenter.addReceiver(this, Commands.CLEAR_DQ);
       this.messageCenter.addReceiver(this, Commands.GET_D_VALUES);
       this.messageCenter.addReceiver(this, Commands.GET_Q_VALUES);
@@ -181,6 +184,7 @@ public class DQDataHandler implements IReceiveMessage
    public boolean receive(Message message)
    {
       if (message.getName().equals(Commands.ADD_EVENTS_TO_VIEW))
+//    if (message.getName().equals(Commands.ADD_EVENTS))
       {
         Object obj = message.getValue();
 
