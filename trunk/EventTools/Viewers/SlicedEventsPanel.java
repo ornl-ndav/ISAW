@@ -85,7 +85,7 @@ public class SlicedEventsPanel
   private float           min = 10f;
   private float           max = 500;
   private boolean         filter_above_max = false;
-  private float           point_size = 1;
+  private float           point_size = 3;
   private boolean         filter_below_min = true;
   private boolean         use_alpha        = false;
   private float           alpha            = 1;
