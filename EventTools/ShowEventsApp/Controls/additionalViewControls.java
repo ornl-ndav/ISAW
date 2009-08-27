@@ -1,3 +1,38 @@
+/* 
+ * File: additionalViewControls.java
+ *
+ * Copyright (C) 2009, Paul Fischer
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
+ *           Department of Mathematics, Statistics and Computer Science
+ *           University of Wisconsin-Stout
+ *           Menomonie, WI 54751, USA
+ *
+ * This work was supported by the National Science Foundation under grant
+ * number DMR-0800276 and by the Spallation Neutron Source Division
+ * of Oak Ridge National Laboratory, Oak Ridge TN, USA.
+ *
+ *  Last Modified:
+ * 
+ *  $Author: fischerp $
+ *  $Date: 2009-08-25 11:05:06 -0500 (Tue, 25 Aug 2009) $            
+ *  $Revision: 19932 $
+ */
+
 package EventTools.ShowEventsApp.Controls;
 
 import java.awt.GridLayout;
@@ -19,6 +54,10 @@ import EventTools.ShowEventsApp.Command.DisplaySliceCmd.moveSlice;
 import EventTools.ShowEventsApp.Controls.HistogramControls.FrameController;
 import MessageTools.*;
 
+/**
+ * Builds the panel to control and display other views such as the
+ * Q and d-spacing graphs and the slice controls.
+ */
 public class additionalViewControls extends JPanel
 {
    public static final long  serialVersionUID = 1L;
@@ -36,6 +75,12 @@ public class additionalViewControls extends JPanel
    private JRadioButton      moveSliceTwo;
    private JRadioButton      moveSliceThree;
    
+   /**
+    * Builds the panel and adds the items to itself
+    * as well as stores the message center.
+    * 
+    * @param messageCenter
+    */
    public additionalViewControls(MessageCenter messageCenter)
    {
       this.messageCenter = messageCenter;
@@ -49,6 +94,11 @@ public class additionalViewControls extends JPanel
       this.add(box);
    }
    
+   /**
+    * Build two checkboxs to display Q graph or d-spacing graph.
+    * 
+    * @return JPanel
+    */
    private JPanel buildGraphOptions()
    {
       JPanel panel = new JPanel();
@@ -65,6 +115,13 @@ public class additionalViewControls extends JPanel
       
       return panel;
    }
+   
+   /**
+    * Creates a box container with the slice options.
+    * 
+    * @return Box containing the slice display options
+    *       as well as the slice move options.
+    */
    private Box buildSliceOptions()
    {
       Box box = new Box( BoxLayout.Y_AXIS );
@@ -75,6 +132,12 @@ public class additionalViewControls extends JPanel
       return box;
    }
    
+   /**
+    * Creates the options for showing the different slices and
+    * also their respective images.
+    * 
+    * @return JPanel
+    */
    private JPanel buildSliceDisplayOptions()
    {
       JPanel panel = new JPanel();
@@ -109,6 +172,13 @@ public class additionalViewControls extends JPanel
       return panel;
    }
    
+   /**
+    * Creates the option to select which slice the
+    * frame controller will actually move when the user
+    * selects to increment/decrement the slice.
+    * 
+    * @return JPanel
+    */
    private JPanel buildSliceMoveOptions()
    {
       JPanel outerPanel = new JPanel();
@@ -143,6 +213,12 @@ public class additionalViewControls extends JPanel
       return outerPanel;
    }
    
+   /**
+    * Sends a message to the message center
+    * 
+    * @param command Command Name for others to listen to.
+    * @param value Object to send to the listener.
+    */
    private void sendMessage(String command, Object value)
    {
       Message message = new Message(command, value, true);
@@ -150,6 +226,12 @@ public class additionalViewControls extends JPanel
       messageCenter.receive(message);
    }
    
+   /**
+    * Listens to the slice display selection checkboxs as well
+    * as to the frame controller.  When they change it
+    * sends a message of SET_SLICE_1 and of type
+    * DisplaySliceCmd.
+    */
    private class sliceListener implements ActionListener
    {
       public void actionPerformed(ActionEvent ae)
@@ -178,6 +260,11 @@ public class additionalViewControls extends JPanel
       }
    }
    
+   /**
+    * Listens to the two options for Q/d-spacing graphs
+    * and sends a message of either SHOW_Q/D_GRAPH or 
+    * HIDE_Q/D_GRAPH.
+    */
    private class graphListener implements ActionListener
    {
       public void actionPerformed(ActionEvent ae)
