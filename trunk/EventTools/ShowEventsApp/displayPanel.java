@@ -38,9 +38,6 @@ package EventTools.ShowEventsApp;
 import javax.swing.*;
 
 import java.awt.*;
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
 
 import MessageTools.*;
 import EventTools.ShowEventsApp.Command.*;
