@@ -38,15 +38,8 @@ package EventTools.ShowEventsApp.Controls;
 import java.awt.GridLayout;
 import java.text.NumberFormat;
 import java.text.ParseException;
-import java.util.Scanner;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
-import java.io.BufferedReader;
+import java.awt.event.*;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -465,7 +458,9 @@ public class filePanel //extends JPanel
       }
       catch (NumberFormatException nfe)
       {
-         System.out.println(nfe.getStackTrace());
+         //System.out.println(nfe.getStackTrace());
+         String error = "Error formatting data!";
+         JOptionPane.showMessageDialog(null, error, "Invalid Input", JOptionPane.ERROR_MESSAGE);
          return;
       }
    }
@@ -676,7 +671,10 @@ public class filePanel //extends JPanel
                }
                catch (ParseException pe)
                {
-                  System.out.println(pe.getStackTrace());
+                  //System.out.println(pe.getStackTrace());
+                  String error = "Error parsing data to correct data types.";
+                  JOptionPane.showMessageDialog(null, error, "Invalid Input", JOptionPane.ERROR_MESSAGE);
+                  return;
                }
             }
             //else
@@ -721,23 +719,23 @@ public class filePanel //extends JPanel
             if (returnVal == JFileChooser.APPROVE_OPTION) 
             {
                file = fc.getSelectedFile();
-               if (file.exists())
-                  System.out.println("Selected: " + file.getPath());
-               else
+               if (!file.exists())
                {
                   String error = "File does not exist!";
                   JOptionPane.showMessageDialog(null, error, "Invalid Input", JOptionPane.ERROR_MESSAGE);
                   return;
                }
+               //else
+               //   System.out.println("Selected: " + file.getPath());
             } 
             else if (returnVal == JFileChooser.CANCEL_OPTION)
             {
-               System.out.println("Open command cancelled by user.");
+               //System.out.println("Open command cancelled by user.");
                return;
             }
             else if (returnVal == JFileChooser.ERROR_OPTION)
             {
-               System.out.println("Error with file chooser.");
+               //System.out.println("Error with file chooser.");
                JOptionPane.showMessageDialog( null, 
                                              "Error opening file", 
                                              "Error Opening File!", 
