@@ -1710,7 +1710,8 @@ public class Isaw
       } else if( s == LANSCE_DPW_MI ) {
         new Wizard.TOF_SCD.DailyPeaksWizard_new( false ).wizardLoader( null );
       } else if( s == "IsawEV"){
-         EventTools.ShowEventsApp.IsawEV.main(  null );
+//         EventTools.ShowEventsApp.IsawEV.main(  null );
+           RunIsawEV();
       }
                     
       if( s.equals( SAVE_ISAW_DATA_MI ))
@@ -2809,6 +2810,24 @@ public class Isaw
     }
 
     return new_ds;
+  }
+
+
+  public static void RunIsawEV()
+  {
+    Thread thread =  new IsawEVRunner();
+    thread.start();
+  }
+
+
+  private static class IsawEVRunner extends Thread 
+  {
+    public void run()
+    {
+      String command =
+                 "java -XX:+AggressiveHeap EventTools.ShowEventsApp.IsawEV";
+      SimpleExec.Exec( command );
+    }
   }
 
 
