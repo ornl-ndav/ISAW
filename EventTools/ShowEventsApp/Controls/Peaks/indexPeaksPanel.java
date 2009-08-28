@@ -35,10 +35,14 @@
 
 package EventTools.ShowEventsApp.Controls.Peaks;
 
+import gov.anl.ipns.Parameters.FilteredPG_TextField;
+import gov.anl.ipns.Parameters.FloatFilter;
+
 import javax.swing.*;
 import javax.swing.border.*;
 import java.awt.event.*;
 import java.awt.*;
+import java.util.Vector;
 
 import MessageTools.*;
 import EventTools.ShowEventsApp.Command.*;
@@ -53,22 +57,53 @@ import EventTools.ShowEventsApp.Command.*;
 public class indexPeaksPanel extends    JPanel 
                                 
 {
-   public static final long serialVersionUID = 1L;
-   private MessageCenter    messageCenter;
-   private JTextField       aTxt;
-   private JTextField       bTxt;
-   private JTextField       cTxt;
-   private JTextField       alphaTxt;
-   private JTextField       betaTxt;
-   private JTextField       gammaTxt;
-   private JTextField       toleranceTxt;
-   private JTextField       fixedPeakTxt;
-   private JTextField       requiredFractionTxt;
-   private JButton          applyBtn;
-   private JButton          MatFileBtn;  
-   private JTextField       MatFileName;
-   private JButton          ViewMatBtn;
-   private JButton          WriteMatBtn;
+   
+   public static final long     serialVersionUID  = 1L;
+
+   private MessageCenter        messageCenter;
+
+   private JTextField           aTxt;
+
+   private JTextField           bTxt;
+
+   private JTextField           cTxt;
+
+   private JTextField           alphaTxt;
+
+   private JTextField           betaTxt;
+
+   private JTextField           gammaTxt;
+
+   private JTextField           toleranceTxt;
+
+   private JTextField           fixedPeakTxt;
+
+   private JTextField           requiredFractionTxt;
+
+   private JButton              applyBtn;
+
+   private JButton              MatFileBtn;
+
+   private JTextField           MatFileName;
+
+   private FilteredPG_TextField Dmin;
+
+   private FilteredPG_TextField Dmax;
+
+   private JButton              ViewMatBtn;
+
+   private JButton              WriteMatBtn;
+
+   private JTabbedPane          middlePanel; 
+
+   //Tab pane indices for orientation matrix "calculation"
+
+   private static int           FROM_FILE         = 2;  
+
+   private static int           AUTO_WPARAMS      = 0;
+
+   private static int           AUTO_ROSS         = 1;
+   
    
    private static String   NoOrientationText="<html><body> There is no "+
                   "Orientation matrix </body></html>";
@@ -100,8 +135,11 @@ public class indexPeaksPanel extends    JPanel
    {
       JPanel panel = new JPanel();
       panel.setLayout(  new BorderLayout() );
-      panel.add(  buildFromFilePanel(),BorderLayout.NORTH );
-      panel.add( buildCalcMatPanel(), BorderLayout.CENTER);
+      middlePanel = new JTabbedPane();
+      middlePanel.addTab( "AutoIndex(w.Xtal Params)",buildCalcMatPanel());
+      middlePanel.addTab( "AutoIndex", buildCalcMat2Panel());
+      middlePanel.addTab( "Read UB fr File", buildFromFilePanel() );
+      panel.add( middlePanel );
       panel.add( buildButtonsPanel(), BorderLayout.SOUTH );
       return panel;
    }
@@ -114,9 +152,10 @@ public class indexPeaksPanel extends    JPanel
     */
    private JPanel buildFromFilePanel()
    {
+      JPanel MainPanel = new JPanel();
       JPanel panel = new JPanel();
       panel.setBorder( new TitledBorder( new LineBorder(Color.black),
-                 "Matrix from File") );
+                 "Orientation Matrix in File") );
       panel.setLayout( new GridLayout(1,2));
       MatFileBtn = new JButton("Matrix filename");
       MatFileBtn.addActionListener( new buttonListener());
@@ -124,13 +163,15 @@ public class indexPeaksPanel extends    JPanel
       MatFileName = new JTextField(10);
       MatFileName.setText( "" );
       panel.add(MatFileName );
-      return panel;
+      MainPanel.setLayout(new BorderLayout()) ;
+      MainPanel.add( panel , BorderLayout.NORTH);
+      return MainPanel;
       
    }
    
    /**
-    * Builds the panel to display information that can also
-    * be changed by the user.
+    * Builds the panel to display information for auto indexing with Crystal
+    * parameters. These parameters and tolerances can be changed by the user.
     * 
     * @return panel
     */
@@ -138,10 +179,40 @@ public class indexPeaksPanel extends    JPanel
    {
       JPanel panel = buildPanel1();
       panel.setBorder(  new TitledBorder( new LineBorder(Color.black),
-               "Calculate Matrix") );
+               "Calculate Matrix using Crystal Parameters") );
       return panel;
    }
    
+   /**
+    * Builds the panel to display information for auto indexing without Crystal
+    * parameters. Max and Min d-spacing can be specified.
+    * 
+    * @return panel
+    */
+   private JPanel buildCalcMat2Panel()
+   {
+      JPanel MainPanel = new JPanel();
+      JPanel panel = new JPanel();
+      panel.setBorder( new TitledBorder( new LineBorder(Color.black),
+                 "AutoIndex w no Crystal Parameters") );
+      
+      panel.setLayout( new GridLayout(2,2));
+      JLabel  DMinLabel= new JLabel("Min d-spacing");
+      Dmin = new FilteredPG_TextField(new FloatFilter());
+      Dmin.setText( "2.0" );
+      panel.add( DMinLabel );
+      panel.add(  Dmin );
+      JLabel  DMaxLabel= new JLabel("Max d-spacing");
+      Dmax = new FilteredPG_TextField(new FloatFilter());
+      Dmax.setText( "12.0" );
+      panel.add( DMaxLabel );
+      panel.add( Dmax );
+      MainPanel.setLayout(new BorderLayout()) ;
+      MainPanel.add( panel , BorderLayout.NORTH);
+      
+      return MainPanel;
+      
+   }
    /**
     * Builds the panel with the index peaks,
     * show matrix and write matrix buttons.
@@ -418,60 +489,98 @@ public class indexPeaksPanel extends    JPanel
       }
       
       
-      public void actionPerformed(ActionEvent e)
-      {  String cmd = e.getActionCommand();
-         if (cmd.startsWith( "Index" ))
+      public void actionPerformed( ActionEvent e )
+      {
+
+         String cmd = e.getActionCommand();
+         if( cmd.startsWith( "Index" ) )
          {
-            if( getText(MatFileName).length() > 0)
-         
-            {
-               sendMessage( Commands.READ_ORIENTATION_MATRIX, 
-                            getText(MatFileName) );
+            if( middlePanel == null )
                return;
-            }
-            else if (valid())
+            if( middlePanel.getSelectedIndex() == FROM_FILE )
+            {
+               if( getText( MatFileName ).length() > 0 )
+
                {
-            IndexPeaksCmd indexCmd 
-               = new IndexPeaksCmd(Float.parseFloat(aTxt.getText()), 
-                           Float.parseFloat(bTxt.getText()), 
-                           Float.parseFloat(cTxt.getText()),
-                           Float.parseFloat(alphaTxt.getText()), 
-                           Float.parseFloat(betaTxt.getText()), 
-                           Float.parseFloat(gammaTxt.getText()), 
-                           Float.parseFloat(toleranceTxt.getText()), 
-                           Integer.parseInt(fixedPeakTxt.getText()), 
-                           Float.parseFloat(requiredFractionTxt.getText()));
-           
-            sendMessage(Commands.INDEX_PEAKS, indexCmd);
+                  sendMessage( Commands.READ_ORIENTATION_MATRIX ,
+                           getText( MatFileName ) );
+                  return;
                }
+            }
+            else if( middlePanel.getSelectedIndex() == AUTO_WPARAMS )
+            {
+               if( valid() )
+               {
+                  IndexPeaksCmd indexCmd = new IndexPeaksCmd( Float
+                           .parseFloat( aTxt.getText() ) , Float
+                           .parseFloat( bTxt.getText() ) , Float
+                           .parseFloat( cTxt.getText() ) , Float
+                           .parseFloat( alphaTxt.getText() ) , Float
+                           .parseFloat( betaTxt.getText() ) , Float
+                           .parseFloat( gammaTxt.getText() ) , Float
+                           .parseFloat( toleranceTxt.getText() ) , Integer
+                           .parseInt( fixedPeakTxt.getText() ) , Float
+                           .parseFloat( requiredFractionTxt.getText() ) );
+
+                  sendMessage( Commands.INDEX_PEAKS , indexCmd );
+               }
+            }
+            else if( middlePanel.getSelectedIndex() == AUTO_ROSS )
+            {
+               ProcessAutoRoss( Dmin.getText(), Dmax.getText());
+            }
          }
-         else if(cmd.startsWith("Write"))
+         else if( cmd.startsWith( "Write" ) )
          {
-            JFileChooser jfc = new JFileChooser( Directory(lastWriteFileName));
-            if( jfc.showSaveDialog( null )== JFileChooser.APPROVE_OPTION)
+            JFileChooser jfc = new JFileChooser( Directory( lastWriteFileName ) );
+            if( jfc.showSaveDialog( null ) == JFileChooser.APPROVE_OPTION )
             {
                lastWriteFileName = jfc.getSelectedFile().toString();
-               messageCenter.receive( 
-                         new Message( Commands.WRITE_ORIENTATION_MATRIX,
-                                      lastWriteFileName, false) );
+               messageCenter.receive( new Message(
+                        Commands.WRITE_ORIENTATION_MATRIX , lastWriteFileName ,
+                        false ) );
             }
          }
          else if( cmd.startsWith( "Show" ) )
          {
-            sendMessage(  Commands.SHOW_ORIENTATION_MATRIX ,"" );
+            sendMessage( Commands.SHOW_ORIENTATION_MATRIX , "" );
          }
-         else if( cmd.startsWith("Matrix") )
+         else if( cmd.startsWith( "Matrix" ) )
          {
-            JFileChooser jfc = new JFileChooser( Directory(lastInpMatFileName));
-            if( jfc.showOpenDialog( null )== JFileChooser.APPROVE_OPTION)
+            JFileChooser jfc = new JFileChooser( Directory( lastInpMatFileName ) );
+            if( jfc.showOpenDialog( null ) == JFileChooser.APPROVE_OPTION )
             {
                lastInpMatFileName = jfc.getSelectedFile().toString();
-               
-               MatFileName.setText( lastInpMatFileName);
+
+               MatFileName.setText( lastInpMatFileName );
             }
          }
       }
    }
+   
+   // Sends messages for autoIndexing
+   private void  ProcessAutoRoss( String Dmin , String Dmax)
+   {
+      float dmin = -1;
+      float dmax = -1;
+      try
+      {
+         dmin = Float.parseFloat( Dmin );
+         dmax = Float.parseFloat( Dmax );
+      }catch( Exception ss)
+      {
+         messageCenter.receive(  new Message( Commands.DISPLAY_ERROR,
+                  "Min or Max d-spacing are not set for autoindexing", false) );
+         return;
+      }
+      float[] data = new float[2];
+      data[0] = dmin;
+      data[1] = dmax;
+      
+      messageCenter.receive(  new Message( Commands.INDEX_PEAKS_ROSS,
+               data, false) );
+   }
+   
    
    public static void main(String[] args)
    {

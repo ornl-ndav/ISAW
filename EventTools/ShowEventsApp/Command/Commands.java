@@ -104,6 +104,8 @@ public class Commands
   public static final String INDEX_PEAKS_WITH_ORIENTATION_MATRIX =
                                          "INDEX_PEAKS_WITH_ORIENTATION_MATRIX";
   
+  public static final String INDEX_PEAKS_ROSS = "INDEX_PEAKS_ROSS";
+  
   public static final String CLEAR_DQ = "CLEAR_DQ";
   
   public static final String SHOW_Q_GRAPH = "SHOW_Q_GRAPH";
