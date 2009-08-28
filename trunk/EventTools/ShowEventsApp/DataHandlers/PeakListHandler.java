@@ -8,10 +8,8 @@ import gov.anl.ipns.Operator.IOperator;
 import gov.anl.ipns.Operator.Threads.ParallelExecutor;
 import gov.anl.ipns.Operator.Threads.ExecFailException;
 
-import DataSetTools.operator.Generic.TOF_SCD.IPeak;
-import DataSetTools.operator.Generic.TOF_SCD.Peak_new;
-import DataSetTools.operator.Generic.TOF_SCD.Peak_new_IO;
-import DataSetTools.operator.Generic.TOF_SCD.PeakQ;
+import DataSetTools.components.ui.Peaks.OrientMatrixControl;
+import DataSetTools.operator.Generic.TOF_SCD.*;
 
 import Operators.TOF_SCD.IndexPeaks_Calc;
 
@@ -39,6 +37,7 @@ public class PeakListHandler implements IReceiveMessage
     message_center.addReceiver( this, Commands.SET_PEAK_NEW_LIST );
     message_center.addReceiver( this, Commands.WRITE_PEAK_FILE );
     message_center.addReceiver( this, Commands.INDEX_PEAKS );
+    message_center.addReceiver( this, Commands.INDEX_PEAKS_ROSS );
     message_center.addReceiver( this, 
                                 Commands.INDEX_PEAKS_WITH_ORIENTATION_MATRIX);
   }
@@ -183,9 +182,57 @@ public class PeakListHandler implements IReceiveMessage
                                         true );
         message_center.receive( set_peaks );
         return false;
+    } else if( message.getName().equals(  Commands.INDEX_PEAKS_ROSS ))
+    {
+       float[] value = (float[])message.getValue();
+       if( value == null || value.length < 2)
+          return false;
+         
+       message_center.receive(  new Message( Commands.DISPLAY_INFO, 
+                "Starting long calculation. Wait", false) );
+        
+        Vector<float[][]> OrientationMatrices =
+                GetUB.getAllOrientationMatrices( peakNew_list , null , 
+                                                .02f , value[1] );
+        if( OrientationMatrices == null)
+        {
+           message_center.receive( new Message( Commands.DISPLAY_ERROR,
+                    "No Orientation Matrix found in Auto no Crystal Parameters",
+                    false));
+           return true;
+        }
+        Vector<IPeak> Peaks = Convert2IPeak(peakNew_list);
+        float[][]UB = OrientMatrixControl.showCurrentOrientationMatrices(
+                 Peaks , OrientationMatrices );
+        
+        if( UB == null)
+        {
+           message_center.receive( new Message( Commands.DISPLAY_ERROR,
+                    "No Orientation Matrix was selected",
+                    false));
+           return true;
+        }
+        
+        message_center.receive( new Message( Commands.SET_ORIENTATION_MATRIX,
+                 LinearAlgebra.getTranspose( UB ), false));
+        return true;
+           
+        
     }
 
     return false;
+  }
+  
+  private Vector<IPeak> Convert2IPeak( Vector<Peak_new> Peaks)
+  {
+     if( Peaks == null)
+        return null;
+     
+     Vector<IPeak> Res = new Vector<IPeak>( Peaks.size());
+     for( int i=0; i< Peaks.size(); i++)
+        Res.add( (IPeak )Peaks.elementAt(i));
+     
+     return Res;
   }
 
    private void indexAllPeaks( Vector Peaks, float[][]UBT)
