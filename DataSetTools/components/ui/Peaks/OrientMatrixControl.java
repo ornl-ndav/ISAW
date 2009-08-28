@@ -42,18 +42,18 @@ import gov.anl.ipns.Util.SpecialStrings.ErrorString;
 import gov.anl.ipns.ViewTools.Components.OneD.DataArray1D;
 import gov.anl.ipns.ViewTools.Components.OneD.FunctionViewComponent;
 import gov.anl.ipns.ViewTools.Components.OneD.VirtualArrayList1D;
-import gov.anl.ipns.ViewTools.Components.*;
+//import gov.anl.ipns.ViewTools.Components.*;
 
 import javax.swing.*;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.filechooser.FileFilter;
+//import javax.swing.filechooser.FileFilter;
 
 import DataSetTools.operator.Generic.TOF_SCD.GetUB;
 import DataSetTools.operator.Generic.TOF_SCD.IPeak;
-import DataSetTools.operator.Generic.TOF_SCD.Peak_new;
+//import DataSetTools.operator.Generic.TOF_SCD.Peak_new;
 import IPNSSrc.blind;
 
 import java.awt.*;
@@ -297,7 +297,7 @@ public class OrientMatrixControl extends JButton
    private void fireOrientationMatrixListeners( String message)
    {
       for( int i=0; i< OrientControlListeners.size(); i++)
-         ((ActionListener)OrientControlListeners.elementAt( i )).actionPerformed(  
+         (OrientControlListeners.elementAt( i )).actionPerformed(  
                   new ActionEvent(this, ActionEvent.ACTION_PERFORMED, message));
    }
    
@@ -686,10 +686,28 @@ public class OrientMatrixControl extends JButton
    public void showCurrentOrientationMatrix( boolean WithSelectPoint )
    {
 
-      JOptionPane.showMessageDialog( null , ShowMatString( true , false ,
-               orientationMatrix ) );
+      JOptionPane.showMessageDialog( null , ShowMatString( 
+               orientationMatrix,Peaks, omittedPeakIndex, selectedPeaks ) );
    }
 
+   /**
+    * Shows information on a list of orientation matrices and allows for 
+    * selecting one of the options
+    * 
+    * @param Peaks        The list of peaks
+    * @param OrMatrices   A Vector of orientation matrices
+    * @return
+    */
+   public static float[][] showCurrentOrientationMatrices( Vector<IPeak>Peaks,
+            Vector<float[][]> OrMatrices)
+   {
+      SetPeaks Setpks = null;
+      boolean SelectMatrix = true;
+      OrientMatListHandler handler = new OrientMatListHandler( OrMatrices , Setpks ,
+               Peaks, SelectMatrix );
+      float[][] M = ( handler ).run();
+      return M;
+   }
 
    /**
     * Shows information about the current orientation matrices in an option 
@@ -709,7 +727,7 @@ public class OrientMatrixControl extends JButton
          Setpks = selectedPeaks;
 
       float[][] M = ( new OrientMatListHandler( OrMatrices , Setpks ,
-               SelectMatrix ) ).run();
+               Peaks, SelectMatrix ) ).run();
       
       this.InputFileName = null;
       
@@ -719,16 +737,36 @@ public class OrientMatrixControl extends JButton
    }
 
 
-   // Shows string information about a UB matrix
-   private String ShowMatString( boolean WithSelectPoints ,
-            boolean WithPeaksInfo , float[][] UB )
+   /**
+    * Creates a String( text/plain) that presents information on one 
+    * orientation matrix. More information is given with the more information
+    * that is given.
+    * 
+  
+    * @param UB                      The orientation matrix
+    * @param peaks                   The Vector of Peaks or null to not show
+    *                                   h,k,l integer offsets at various levels
+    * @param omittedPeakIndex        the omitted peaks
+    * @param selectedPeaks           The selected peaks or null to not show
+    *                                   information on these peaks      
+    * @return
+    */
+  public static String ShowMatString( float[][] UB, Vector<IPeak> peaks,
+            boolean[] omittedPeakIndex, SetPeaks selectedPeaks)
    {
 
       String Text1;
       Vector< IPeak > pks = null;
-
+      boolean WithSelectPoints = true;
+      boolean WithPeaksInfo = true;
       if( WithPeaksInfo )
-         pks = Peaks;
+         if( peaks != null)
+            pks = peaks;
+         else 
+            WithPeaksInfo = false;
+      
+      if( selectedPeaks == null || selectedPeaks.getSetPeakQ( 0 )== null)
+         WithSelectPoints = false;
 
       Text1 = subs.ShowOrientationInfo( pks , UB , omittedPeakIndex , null ,
                false );
@@ -750,7 +788,7 @@ public class OrientMatrixControl extends JButton
       Text1 += "Seq \n";
       Text1 += "Num    qx     qy    qz     h    k     l\n";
 
-      for( int i = 0 ; i < Peaks.size() ; i++ )
+      for( int i = 0 ; i < peaks.size() ; i++ )
       {
 
          float[] Qs = selectedPeaks.getSetPeakQ( i );
@@ -2127,7 +2165,7 @@ public class OrientMatrixControl extends JButton
     * @author Ruth
     *
     */
-   class OrientMatListHandler implements ActionListener , ChangeListener
+  static class OrientMatListHandler implements ActionListener , ChangeListener
    {
 
 
@@ -2144,6 +2182,8 @@ public class OrientMatrixControl extends JButton
 
       JTextArea           text;
 
+      Vector<IPeak>       Peaks;
+ 
 
       /**
        * Constructor
@@ -2153,13 +2193,26 @@ public class OrientMatrixControl extends JButton
        *                     will be included
        */
       public OrientMatListHandler( Vector< float[][] > OrMatrices,
-               SetPeaks Setpks, boolean SelectMatrix )
+               SetPeaks Setpks,  boolean SelectMatrix )
+      {
+         this( OrMatrices, Setpks, null, SelectMatrix);
+      }
+      /**
+       * Constructor
+       * @param OrMatrices  The Vector of orientation matrices
+       * @param Setpks      The SetPeaks object with the set peak information
+       * @param Peaks       The Vector of peaks
+       * @param SelectMatrix  If true, an option to select one of the matrices 
+       *                     will be included
+       */
+      public OrientMatListHandler( Vector< float[][] > OrMatrices,
+               SetPeaks Setpks, Vector<IPeak> Peaks, boolean SelectMatrix )
       {
 
          orMatrices = OrMatrices;
          setpks = Setpks;
          selectMatrix = SelectMatrix;
-
+         this.Peaks = Peaks;
          selectedMatNum = - 1;
          spinner = null;
          text = null;
@@ -2200,8 +2253,8 @@ public class OrientMatrixControl extends JButton
 
          text = new JTextArea( 15 , 45 );
          text
-                  .setText( ShowMatString( true , true , orMatrices
-                           .elementAt( 0 ) ) );
+                  .setText( ShowMatString(  orMatrices
+                           .elementAt( 0 ),Peaks, null, null ) );
 
          jp.add(  text  , BorderLayout.CENTER );
 
@@ -2244,8 +2297,8 @@ public class OrientMatrixControl extends JButton
          if( MatNum < 0 || MatNum >= orMatrices.size() )
             return;
 
-         text.setText( ShowMatString( true , true , orMatrices
-                  .elementAt( MatNum ) ) );
+         text.setText( ShowMatString(  orMatrices
+                  .elementAt( MatNum ),Peaks,null,null ) );
 
 
       }
