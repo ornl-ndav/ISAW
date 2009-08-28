@@ -93,6 +93,9 @@ public class Commands
                                                   "WRITE_ORIENTATION_MATRIX";
   public static final String SHOW_ORIENTATION_MATRIX = 
                                                   "SHOW_ORIENTATION_MATRIX";
+  /**
+   * Will currently get the PeakList indexed with the read orientation matrix
+   */
   public static final String READ_ORIENTATION_MATRIX = 
                                                   "READ_ORIENTATION_MATRIX";
 

@@ -166,6 +166,9 @@ public class OrientationMatrixHandler implements IReceiveMessage
        float[][] orientSav = orientation_matrix;
        float[][] orMat = LinearAlgebra.getTranspose( (float[][]) Res );
        SetNewOrientationMatrix( orMat );
+       message_center.receive( new Message( 
+                Commands.INDEX_PEAKS_WITH_ORIENTATION_MATRIX, 
+                orientation_matrix, false) );
     }
 
     else if ( message.getName().equals(Commands.ADD_ORIENTATION_MATRIX_INFO) )
