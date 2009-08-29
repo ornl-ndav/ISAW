@@ -112,6 +112,8 @@ public class GetUB {
 
    public static float[]    xixj     = null;
    
+   public static float      DMIN    = 1f;
+   
   // private static float[] line = new float[61];
 
    /**
@@ -575,7 +577,7 @@ public class GetUB {
      if( Nelements < 1)
         return MRes;
      float FitMax = List[Nelements-1][FIT1]+List[Nelements-1][CORR];
-     FitMax = .65f*FitMax;
+     FitMax = .50f*FitMax;
      System.out.println("Through initial find directions,nelets, FitMax= "+Nelements+
               ","+FitMax);
      int n=Nelements-1;
@@ -590,32 +592,21 @@ public class GetUB {
      n = Nelements - 10;
      float[] weights = new float[7];
      Arrays.fill( weights , 0f );
-     weights[LEN]= -1;
-     weights[FIT1]=-.2f;
-     weights[CORR]=-.2f;
+     weights[LEN] = -1;
+     weights[FIT1] = -.2f;
+     weights[CORR] = -.2f;
      
      ListComparator comp = new ListComparator( List, n, Nelements-1,weights );
      comp.sort();
      Integer[] sortList = comp.getRangList();
- //    for( int i=Nelements-1; i>=n; i--)
-//        for( int j=i-1; j>= n; j--)
-//           for( int k=j-1; k >= n; k--)
-       /* for( int i=0; i< sortList.length-2;i++)
-           for( int j=i+1; j<sortList.length-1; j++ )
-              for( int k=j+1; k<sortList.length; k++ )
-           {
-             float[][]UB = List2UBinv( sortList[i],sortList[j],
-                      sortList[k]);
-             if( UB != null)
-                MRes.add( LinearAlgebra.copy( UB) );
-           }
-           */
-       MRes=GetUBs(  sortList,null);
+      
+       MRes=GetUBs(  sortList,null,Peaks);
        System.out.println( "Through finding UB's");
        return MRes;
    }
    
-   private static Vector<float[][]> GetUBs( Integer[] sortList,int[] elts)
+  
+   private static Vector<float[][]> GetUBs( Integer[] sortList,int[] elts, Vector Peaks)
    {
       Vector<float[][]> Res = new Vector<float[][]>();
       int[] tuple = new int[3];
@@ -627,8 +618,11 @@ public class GetUB {
          int i1 = sortList[tuple[0]];
          int i2 = sortList[tuple[1]];
          int i3 = sortList[tuple[2]];
-         float[][]UB = List2UBinv( i1, i2, i3);
-         if(UB != null)
+         float[][]UB = List2UBinv( Peaks,i1, i2, i3);
+        
+        
+         
+         if(UB != null && isDifferentFrom( Res, UB) )
          {
             Res.add(UB);
             if( elts != null && elts.length ==3)
@@ -656,7 +650,66 @@ public class GetUB {
       return Res;
       
    }
-   private static float[][] List2UBinv( int i1, int i2, int i3)
+   
+   //returns true if can add to Res otherwise false
+  private static boolean isDifferentFrom( Vector<float[][]> Res, float[][]UB)
+  {
+     if( UB == null || UB.length !=3)
+        return false;
+     
+     if( !DspaceMinOK( UB, DMIN))
+        return false;
+     
+     if( Res == null || Res.size() < 1)
+        return true;
+     
+     float mx = Math.abs( UB[0][0]);
+     for( int j=0; j< 3; j++)
+     { 
+        for( int i=0; i<3;i++)
+        {  
+           
+           if( Math.abs(UB[i][j]) > mx)
+              mx= Math.abs( UB[i][j] );
+        }
+       
+     }
+     
+     if( mx ==0)
+        return false;
+    
+     for( int k=0; k< Res.size(); k++)
+     {
+       float[][]UB1 = Res.elementAt( k );
+       boolean res = false;
+        for( int i=0; i < 3; i++)
+           for( int j=0; j<3; j++)
+           {
+              if( Math.abs( UB1[i][j]-UB[i][j] )/mx>.001 )           
+                 res = true;
+           }
+        if( !res)
+           return false;
+     }
+     return true; 
+     
+  }
+  
+  private static boolean DspaceMinOK( float[][]UB, float Dmin)
+  {
+     float[][] UBinv = LinearAlgebra.getInverse( UB );
+     if( UB == null || UBinv == null)
+        return false;
+     float dsq = Dmin*Dmin;
+     for( int i=0; i<3;i++)
+        if( UBinv[i][0]*UBinv[i][0] +
+                 UBinv[i][1]*UBinv[i][1] +
+                 UBinv[i][2]*UBinv[i][2]<dsq )
+           return false;
+     return true;
+     
+  }
+   private static float[][] List2UBinv( Vector Peaks,int i1, int i2, int i3)
    {
       if( i1 <0 || i2<0|| i3 <0)
          return null;
@@ -666,7 +719,7 @@ public class GetUB {
       Dirs[0] = PlaneNormal( i1);
       Dirs[1] = PlaneNormal( i2);
       Dirs[2] = PlaneNormal( i3);
-      float[][] Res = UBMatrixFrPlanes( Dirs, null,null,null,1);
+      float[][] Res = UBMatrixFrPlanes( Dirs, Peaks,null,null,4);
       if( Res == null)
          return null;
       float Max = Float.MIN_VALUE;
@@ -686,10 +739,10 @@ public class GetUB {
                < Max*Max*Max/1000)
          return null;
       //Nigglify
-      blind B = new blind();
-      B.blaue( Res  );
+     // blind B = new blind();
+     // B.blaue( Res  );
       
-      return LinearAlgebra.double2float( B.UB );
+      return Res;
       
    }
   private static float[] PlaneNormal( int i1){
@@ -866,7 +919,7 @@ public class GetUB {
        for( int i=0; i< sortList.length; i++)
           System.out.print( sortList[i]+",");
        int[] poss = new int[3];
-       Vector<float[][]> OO = GetUBs( sortList, poss);
+       Vector<float[][]> OO = GetUBs( sortList, poss, Peaks);
        if( OO == null || OO.size() < 1)
           return null;
        else
@@ -1235,7 +1288,7 @@ public class GetUB {
     *              within 30%, etc.
     * @param stop   if 1, gets UB corresponding to dirs only
     *               if 2, gets UB after optimization
-    *               otherwise the UB matrix is optimized and goes throug
+    *               otherwise the UB matrix is optimized and goes through
     *               blind.
     * @return  The UB matrix for the Peaks
     */
@@ -1266,6 +1319,8 @@ public class GetUB {
       }
       if( stop ==1)
          return UpdateStats(LinearAlgebra.getInverse( UB),Peaks,Stats) ;
+      if( Singular(UB))
+         return null;
       int k = Peaks.size();
       double q[][] = new double[ k ][ 3 ];
       double hkl[][] = new double[ k ][ 3 ];
@@ -1292,8 +1347,11 @@ public class GetUB {
       double M[][] = new double[ 3 ][ 3 ];
       double q1[][] = new double[ k ][ 3 ];
       double hkl1[][] = new double[ k ][ 3 ];
-      System.arraycopy( q , 0 , q1 , 0 , k );
-      System.arraycopy( hkl , 0 , hkl1 , 0 , k );
+      for( int j=0; j < k; j++)
+      {
+          System.arraycopy( q[j] , 0 , q1[j] , 0 , 3 );
+          System.arraycopy( hkl[j] , 0 , hkl1[j] , 0 , 3 );
+      }
       double std_dev = LinearAlgebra.BestFitMatrix( M , hkl1 , q1 );
       if( debug)
          System.out.println(" Best fit UB has an error of "+ std_dev);
@@ -1316,6 +1374,31 @@ public class GetUB {
       }
 
       return null;
+   }
+   
+   /**
+    * Determines if the matrix is singular or nearly singular.
+    * @param UB  The 3x3 matrix to test
+    * @return   true if |determinant| < .1/M^3 where M is the max
+    *         of the absolute values of the entries in the matrix UB
+    */
+   public static boolean Singular( float[][] UB)
+   {
+      if( UB == null)
+         return true;
+      if( UB.length != 3)
+         return true;
+      float mx = Math.abs( UB[0][0] );
+      for( int i=0; i < 3; i++)
+         for( int j=0; j<3;j++)
+            if(Math.abs( UB[i][j] )> mx)
+               mx= Math.abs( UB[i][j] );
+      if( mx ==0)
+         return true;
+      if( LinearAlgebra.determinant( LinearAlgebra.float2double( UB ) )
+                <= .25*(mx*mx*mx))
+         return true;
+      return false;
    }
 
    /**
