@@ -5,6 +5,7 @@ public class Commands
   public static final String LOAD_FILE = "LOAD_FILE";
 
   public static final String ADD_EVENTS = "ADD_EVENTS";
+  public static final String MAP_EVENTS_TO_Q = "MAP_EVENTS_TO_Q";
   public static final String CLEAR_HISTOGRAM = "CLEAR_HISTOGRAM";
   
   public static final String ADD_EVENTS_TO_VIEW = "ADD_EVENTS_TO_VIEW";

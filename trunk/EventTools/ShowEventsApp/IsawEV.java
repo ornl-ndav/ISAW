@@ -67,6 +67,8 @@ public class IsawEV
 
     new EventLoader( message_center );
 
+    new QMapperHandler( message_center );
+
     new HistogramHandler( message_center, NUM_BINS );
 
     new PeakListHandler( message_center );
