@@ -114,7 +114,7 @@ public class HistogramHandler implements IReceiveMessage
      if ( histogram == null && 
          !(message.getName().equals(Commands.SET_NEW_INSTRUMENT)))
      {
-       Util.sendError( message_center, "WARNING: Histogram not created. " +
+       Util.sendError( "WARNING: Histogram not created. " +
                        "Can't " + message.getName() );
        return false;
      }
@@ -129,7 +129,7 @@ public class HistogramHandler implements IReceiveMessage
     else if (  message.getName().equals(Commands.CLEAR_HISTOGRAM) )
     {
       histogram.clear();
-      Util.sendInfo( message_center, "CLEARED HISTOGRAM");
+      Util.sendInfo( "CLEARED HISTOGRAM");
       return false;
     }
 
@@ -148,12 +148,12 @@ public class HistogramHandler implements IReceiveMessage
         histogram = DefaultARCS_Histogram( num_bins );
       else
       {
-        Util.sendWarning( message_center, inst + " not supported yet. " +
+        Util.sendWarning( inst + " not supported yet. " +
                           "Detector position info needed." );
         return false;
       }
 
-      Util.sendInfo( message_center, "Set histogram for " + inst );
+      Util.sendInfo( "Set histogram for " + inst );
       return false;
     }
 
@@ -202,7 +202,7 @@ public class HistogramHandler implements IReceiveMessage
                                                  true );
           message_center.receive( set_peak_Q_list );
 
-          Util.sendInfo( message_center, "Found " + peakQs.size() + " Peaks");
+          Util.sendInfo("Found " + peakQs.size() + " Peaks");
 
           if ( cmd.getMarkPeaks() )                     // mark the peaks
           {
@@ -428,8 +428,7 @@ public class HistogramHandler implements IReceiveMessage
     }
     catch ( Exception ex )
     {
-      Util.sendWarning( message_center, 
-                     "Can't write Find Peaks log file: " + log_file );
+      Util.sendWarning( "Can't write Find Peaks log file: " + log_file );
 //      System.out.println("Exception writing log file " + log_file );
 //      ex.printStackTrace();
     }
@@ -479,9 +478,9 @@ public class HistogramHandler implements IReceiveMessage
     }
 
     if ( q_peaks == null )
-      Util.sendInfo( message_center, "FOUND 0 PEAKS" );
+      Util.sendInfo( "FOUND 0 PEAKS" );
     else
-      Util.sendInfo( message_center, "FOUND " + q_peaks.size() + " PEAKS " );
+      Util.sendInfo( "FOUND " + q_peaks.size() + " PEAKS " );
 
     return q_peaks;
   }                         

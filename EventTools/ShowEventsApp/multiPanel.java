@@ -113,9 +113,12 @@ public class multiPanel implements IReceiveMessage
                             PANEL_BOUNDS.y+PANEL_BOUNDS.height,
                             PANEL_BOUNDS.width,
                             PANEL_BOUNDS.height/2 );
-      new StatusMessageHandler( messageCenter, StatusFrame.getContentPane());
+
+      MessageCenter status_message_center = Util.getStatusMessageCenter();
+      new StatusMessageHandler( status_message_center, 
+                                StatusFrame.getContentPane());
       StatusFrame.validate();
-      WindowShower.show(  StatusFrame );
+      WindowShower.show( StatusFrame );
    }
    
    /**

@@ -93,7 +93,7 @@ public class PeakListHandler implements IReceiveMessage
     {
       if ( peakNew_list == null || peakNew_list.size() <= 0 )
       {
-        Util.sendError( message_center, "ERROR: No Peaks to write" );
+        Util.sendError( "ERROR: No Peaks to write" );
       }
       
       String file_name = (String)message.getValue();
@@ -103,8 +103,7 @@ public class PeakListHandler implements IReceiveMessage
       }
       catch ( Exception ex )
       {
-        Util.sendError( message_center, 
-                       "ERROR: could not write peaks to file " +
+        Util.sendError( "ERROR: could not write peaks to file " +
                         file_name );
         return false;
       }
@@ -118,7 +117,7 @@ public class PeakListHandler implements IReceiveMessage
 
       if ( peakNew_list == null || peakNew_list.size() <= 0 )
       {
-        Util.sendError( message_center, "ERROR: No Peaks Found Yet ");
+        Util.sendError( "ERROR: No Peaks Found Yet ");
         return false;
       }
 
@@ -139,11 +138,11 @@ public class PeakListHandler implements IReceiveMessage
         
         UB= LinearAlgebra.getTranspose(UB);
         indexAllPeaks( peakNew_list, UB);
-        Util.sendInfo( message_center, "Finished Indexing" );
+        Util.sendInfo( "Finished Indexing" );
       }
       catch ( Exception ex )
       {
-        Util.sendError( message_center, "ERROR: Failed to index Peaks ");
+        Util.sendError( "ERROR: Failed to index Peaks ");
         return false;
       } 
 
@@ -166,9 +165,9 @@ public class PeakListHandler implements IReceiveMessage
         if ( peak.h() != 0 || peak.k() != 0 || peak.l() != 0 )
           count++;
       }       
-      Util.sendInfo( message_center, "Indexed " + count + 
-                                      " of " + total_peaks + 
-                                      " within " + tolerance );
+      Util.sendInfo( "Indexed " + count + 
+                     " of " + total_peaks + 
+                     " within " + tolerance );
       return false;
     }
     else if( message.getName().equals( 
