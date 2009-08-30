@@ -162,11 +162,20 @@ public class subs
       Res += "Percent Peaks where h,k, and l are within .1,.2,.. of an integer";
       Res += u.indentEnd();
       Res += u.table()+u.row();
-      Res += "closeness "+u.col()+" Used  "+u.col()+"   All" +u.rowEnd();
-         Res += u.row();
-      Res += "to int "+u.col()+"   Peaks "+u.col()+"   Peaks" + u.rowEnd();
+      Res += "closeness "+u.col();
+      if( omittedPeakIndex != null)
+         Res +=" Used  "+u.col();
+      Res +="   All"+u.rowEnd();
+      Res += u.row();
+      Res += "to int "+u.col()+"   Peaks "+u.col();
+      if( omittedPeakIndex != null)
+         Res +="   Peaks";
+      Res += u.rowEnd();
       
-      Res += u.row()+"---------"+u.col()+"-----"+u.col()+"------"+u.rowEnd();
+      Res += u.row()+"---------"+u.col()+"-----";
+      if( omittedPeakIndex != null)
+         Res +=u.col()+"------";
+       Res +=u.rowEnd();
       
       if( AllPerc !=null &&  Perc != null && AllPerc.length >=4 &&
                Perc.length >=4)
@@ -180,10 +189,14 @@ public class subs
 
             Res += " "
                   + String.format( "%2.1f" , .1 + i * .1  ) +  u.col();
+            if( omittedPeakIndex != null)
             Res += 
                 String.format( "%14.3f" , Perc[ i ] * 100  ) +  u.col();
-            Res +=
-                String.format( "%11.3f" , AllPerc[ i ] * 100 ) + u.rowEnd();
+
+           
+               Res += String.format( "%11.3f" , AllPerc[ i ] * 100 );
+            
+            Res += u.rowEnd();
          }
       }
       Res += u.tableEnd();
