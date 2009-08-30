@@ -34,38 +34,21 @@
 
 package EventTools.ShowEventsApp.DataHandlers;
 
-import java.util.Vector;
-
-import javax.swing.JOptionPane;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 
-import gov.anl.ipns.Operator.IOperator;
-import gov.anl.ipns.Operator.Threads.ParallelExecutor;
-import gov.anl.ipns.Operator.Threads.ExecFailException;
 import gov.anl.ipns.Util.SpecialStrings.ErrorString;
 import gov.anl.ipns.Util.Sys.WindowShower;
 import gov.anl.ipns.MathTools.LinearAlgebra;
 import gov.anl.ipns.MathTools.Geometry.Vector3D;
 
-import DataSetTools.operator.Generic.TOF_SCD.Peak_new;
-import DataSetTools.operator.Generic.TOF_SCD.Peak_new_IO;
-import DataSetTools.operator.Generic.TOF_SCD.PeakQ;
-import DataSetTools.math.tof_calc;
 import DataSetTools.components.ui.Peaks.subs;
-
-
-import Operators.TOF_SCD.IndexJ;
-import Operators.TOF_SCD.IndexPeaks_Calc;
 
 import MessageTools.IReceiveMessage;
 import MessageTools.Message;
 import MessageTools.MessageCenter;
 
-import EventTools.EventList.IEventList3D;
-import EventTools.EventList.SNS_Tof_to_Q_map;
 import EventTools.ShowEventsApp.Command.Commands;
-import EventTools.ShowEventsApp.Command.IndexPeaksCmd;
 import EventTools.ShowEventsApp.Command.SelectionInfoCmd;
 import EventTools.ShowEventsApp.Command.Util;
 

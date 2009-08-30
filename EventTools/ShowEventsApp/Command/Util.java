@@ -66,7 +66,7 @@ public class Util
    {
       if( message_center == null || Command == null )
          return;
-      javax.swing.SwingUtilities.invokeLater(  
+      SwingUtilities.invokeLater(  
                new AWTThreadRun(new Message(Command,value,replace), 
                         message_center));
    }

@@ -38,13 +38,9 @@ import java.util.Vector;
 import java.io.FileWriter;
 import java.io.BufferedWriter;
 
-import gov.anl.ipns.Operator.IOperator;
-import gov.anl.ipns.Operator.Threads.ParallelExecutor;
-import gov.anl.ipns.Operator.Threads.ExecFailException;
 import gov.anl.ipns.MathTools.Geometry.Vector3D;
 
 import DataSetTools.operator.Generic.TOF_SCD.PeakQ;
-import DataSetTools.operator.Generic.TOF_SCD.Peak_new;
 import DataSetTools.operator.Generic.TOF_SCD.BasicPeakInfo;
 import DataSetTools.operator.Generic.TOF_SCD.FindPeaksViaSort;
 
@@ -54,7 +50,6 @@ import MessageTools.MessageCenter;
 import EventTools.Histogram.*;
 
 import EventTools.EventList.IEventList3D;
-import EventTools.EventList.SNS_Tof_to_Q_map;
 import EventTools.ShowEventsApp.Command.Commands;
 import EventTools.ShowEventsApp.Command.SelectionInfoCmd;
 import EventTools.ShowEventsApp.Command.FindPeaksCmd;
@@ -71,10 +66,8 @@ import EventTools.ShowEventsApp.Command.Util;
  */
 public class HistogramHandler implements IReceiveMessage
 {
-  private static int    NUM_THREADS = 6;
   private MessageCenter message_center;
   private Histogram3D   histogram = null;
-  private String        instrument_name;
   private int           num_bins;
 
   public HistogramHandler( MessageCenter message_center, int num_bins )
@@ -202,8 +195,6 @@ public class HistogramHandler implements IReceiveMessage
                                                  true );
           message_center.receive( set_peak_Q_list );
 
-          Util.sendInfo("Found " + peakQs.size() + " Peaks");
-
           if ( cmd.getMarkPeaks() )                     // mark the peaks
           {
              Message mark_peaks  = new Message( Commands.MARK_PEAKS,
@@ -222,6 +213,11 @@ public class HistogramHandler implements IReceiveMessage
                                        new Float( histogram.maxVal() ),
                                        true );
        message_center.receive( hist_max );
+
+       String max_message = String.format("Max Histogram Value : %4.2f",
+                                           histogram.maxVal() );
+       Util.sendInfo( max_message );
+
        return false;
     }
 

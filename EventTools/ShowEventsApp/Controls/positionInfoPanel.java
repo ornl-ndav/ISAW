@@ -54,7 +54,6 @@ public class positionInfoPanel extends JPanel
    private JTextField          countsTxt;
    private JTextField          detectorNumTxt;
    private JTextField          ColRowTxt;
-   private JTextField          rowTxt;
    private JTextField          histogramPageTxt;
    private JTextField          hklTxt;
    private JTextField          qxyzTxt;
@@ -87,6 +86,7 @@ public class positionInfoPanel extends JPanel
     * 
     * @return JPanel
     */
+/* Not used yet
    private JPanel buildZoomedPanel()
    {
       JPanel panel = new JPanel();
@@ -94,6 +94,7 @@ public class positionInfoPanel extends JPanel
       
       return panel;
    }
+*/
    
    /**
     * Builds the entire panel containing all the information

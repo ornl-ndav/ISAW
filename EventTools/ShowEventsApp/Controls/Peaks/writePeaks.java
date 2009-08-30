@@ -38,7 +38,6 @@ package EventTools.ShowEventsApp.Controls.Peaks;
 import javax.swing.*;
 
 import java.awt.event.*;
-import java.io.File;
 import java.awt.GridLayout;
 
 import MessageTools.*;
