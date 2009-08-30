@@ -577,7 +577,7 @@ public class GetUB {
      if( Nelements < 1)
         return MRes;
      float FitMax = List[Nelements-1][FIT1]+List[Nelements-1][CORR];
-     FitMax = .50f*FitMax;
+     FitMax = .65f*FitMax;
      System.out.println("Through initial find directions,nelets, FitMax= "+Nelements+
               ","+FitMax);
      int n=Nelements-1;
@@ -589,7 +589,7 @@ public class GetUB {
         optimize( List[i],Peaks,omit,MaxXtalLengthReal);
      
      System.out.println("Through with optimize of first " + n );
-     n = Nelements - 10;
+     //n = Nelements - 10;
      float[] weights = new float[7];
      Arrays.fill( weights , 0f );
      weights[LEN] = -1;
@@ -644,7 +644,7 @@ public class GetUB {
           N++;
            tuple[2]=N;
          }
-         done = tuple[2] >=sortList.length;
+         done = tuple[2] >=sortList.length || Res.size()>200;
         
       }
       return Res;
@@ -1396,7 +1396,7 @@ public class GetUB {
       if( mx ==0)
          return true;
       if( LinearAlgebra.determinant( LinearAlgebra.float2double( UB ) )
-                <= .25*(mx*mx*mx))
+                <= .1*(mx*mx*mx))
          return true;
       return false;
    }
