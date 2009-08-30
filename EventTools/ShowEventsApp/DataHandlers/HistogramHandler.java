@@ -52,6 +52,7 @@ import EventTools.Histogram.*;
 import EventTools.EventList.IEventList3D;
 import EventTools.ShowEventsApp.Command.Commands;
 import EventTools.ShowEventsApp.Command.SelectionInfoCmd;
+import EventTools.ShowEventsApp.Command.SetNewInstrumentCmd;
 import EventTools.ShowEventsApp.Command.FindPeaksCmd;
 import EventTools.ShowEventsApp.Command.Util;
 
@@ -67,6 +68,8 @@ import EventTools.ShowEventsApp.Command.Util;
 public class HistogramHandler implements IReceiveMessage
 {
   private MessageCenter message_center;
+
+  private String        current_instrument = "";
   private Histogram3D   histogram = null;
   private int           num_bins;
 
@@ -130,15 +133,32 @@ public class HistogramHandler implements IReceiveMessage
     {
       Object obj = message.getValue();
 
-      if ( obj == null || ! (obj instanceof String) )
+      if ( obj == null || ! (obj instanceof SetNewInstrumentCmd) )
         return false;
 
-      String inst = (String)obj;
+      SetNewInstrumentCmd cmd = (SetNewInstrumentCmd)obj;
 
+      String inst = cmd.getInstrumentName();
+
+      if ( inst == null || inst.trim().length() <= 0 )
+      {
+        Util.sendError("ERROR: SET_NEW_INSTRUMENT name is " + inst );
+        return false;
+      }
+  
+      if ( inst.equals( current_instrument ) )
+        return false;
+ 
       if ( inst.equals("SNAP") )
+      {
         histogram = DefaultSNAP_Histogram( num_bins );
+        current_instrument = inst;
+      }
       else if ( inst.equals("ARCS") )
+      {
         histogram = DefaultARCS_Histogram( num_bins );
+        current_instrument = inst;
+      }
       else
       {
         Util.sendWarning( inst + " not supported yet. " +
@@ -146,7 +166,7 @@ public class HistogramHandler implements IReceiveMessage
         return false;
       }
 
-      Util.sendInfo( "Set histogram for " + inst );
+      Util.sendInfo( "Default histogram set up for " + inst );
       return false;
     }
 
