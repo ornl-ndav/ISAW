@@ -17,7 +17,6 @@ import MessageTools.Message;
 import MessageTools.MessageCenter;
 
 import EventTools.Viewers.SlicedEventsPanel;
-import EventTools.Histogram.Histogram3D;
 import EventTools.EventList.IEventList3D;
 import EventTools.ShowEventsApp.multiPanel;
 import EventTools.ShowEventsApp.Command.Commands;

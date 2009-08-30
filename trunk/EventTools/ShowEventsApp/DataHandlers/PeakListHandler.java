@@ -4,9 +4,6 @@ package EventTools.ShowEventsApp.DataHandlers;
 import java.util.Vector;
 
 import gov.anl.ipns.MathTools.LinearAlgebra;
-import gov.anl.ipns.Operator.IOperator;
-import gov.anl.ipns.Operator.Threads.ParallelExecutor;
-import gov.anl.ipns.Operator.Threads.ExecFailException;
 
 import DataSetTools.components.ui.Peaks.OrientMatrixControl;
 import DataSetTools.operator.Generic.TOF_SCD.*;
@@ -17,8 +14,6 @@ import MessageTools.IReceiveMessage;
 import MessageTools.Message;
 import MessageTools.MessageCenter;
 
-import EventTools.EventList.IEventList3D;
-import EventTools.EventList.SNS_Tof_to_Q_map;
 import EventTools.ShowEventsApp.Command.Commands;
 import EventTools.ShowEventsApp.Command.IndexPeaksCmd;
 import EventTools.ShowEventsApp.Command.Util;

@@ -6,7 +6,6 @@ import java.util.Vector;
 import gov.anl.ipns.Operator.IOperator;
 import gov.anl.ipns.Operator.Threads.ParallelExecutor;
 import gov.anl.ipns.Operator.Threads.ExecFailException;
-import gov.anl.ipns.MathTools.LinearAlgebra;
 import gov.anl.ipns.MathTools.Geometry.Vector3D;
 
 import MessageTools.IReceiveMessage;
@@ -200,16 +199,6 @@ public class EventLoader implements IReceiveMessage
       }
     }
 
-    else if ( message.getName().equals(Commands.SET_HISTOGRAM_MAX) )
-    {                                       // All we do  is display the
-      Object obj = message.getValue();      // max value
-      if ( obj == null )
-        return false;
-
-      if ( obj instanceof Float )
-        Util.sendInfo( "Max Histogram Value : " + obj );
-    }
-
     return false;
   }
 
@@ -282,6 +271,7 @@ public class EventLoader implements IReceiveMessage
         if ( num_to_load - num_loaded < seg_size )
           seg_size = num_to_load - num_loaded;
 
+        Util.sendInfo( "Loading " + seg_size + " starting with " + first );
         System.out.println("FIRST = " + first + " SEG_SIZE = " + seg_size );
         ops.add( new EventSegmentLoadOp( event_file_name, first, seg_size ) );
         first      += seg_size;

@@ -161,7 +161,7 @@ public class StatusMessageHandler implements IReceiveMessage
    public static void main( String[] args )
    {
       MessageCenter msgC = new MessageCenter( "Test" );
-      StatusMessageHandler statPane = new StatusMessageHandler( msgC , null );
+      new StatusMessageHandler( msgC , null );
 
       Message msg = new Message( Commands.DISPLAY_INFO , "Hi There" , false );
       SwingUtilities.invokeLater( new AWTQueueOP( msgC , msg ) );

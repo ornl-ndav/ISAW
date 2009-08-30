@@ -120,7 +120,7 @@ public class DQDataHandler implements IReceiveMessage
    private void AddEvents( IEventList3D events )
    {
      float xyz[] = events.eventVals();
-     float weights[] = events.eventWeights();
+//   float weights[] = events.eventWeights();
      int   n_events = events.numEntries();
      int   index = 0;
      int   bin_num;
