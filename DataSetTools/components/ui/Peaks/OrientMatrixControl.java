@@ -2224,7 +2224,7 @@ public class OrientMatrixControl extends JButton
          setpks = Setpks;
          selectMatrix = SelectMatrix;
          this.Peaks = Peaks;
-         selectedMatNum = - 1;
+         selectedMatNum = 0;
          spinner = null;
          text = null;
       }
