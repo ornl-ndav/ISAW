@@ -46,38 +46,30 @@ import MessageTools.MessageCenter;
 import javax.swing.*;
 import EventTools.ShowEventsApp.Command.Commands;
 
-
 /**
- * Handler of messages for the StatusPane( with the save and clear buttons)
+ * Handler of messages for the StatusPane (with the save and clear buttons)
  * 
  * @author Ruth
  * 
  */
 public class StatusMessageHandler implements IReceiveMessage
 {
-
-
-
    StatusPane    statPane;
-
    String        filename;
-
    MessageCenter message_center;
-
 
    /**
     * Constructor
     * 
-    * @param message_center
-    *           The message center
+    * @param message_center the MessageCenter that the status pane
+    *                       listens too.
     * @param container
     *           The container to add the status pane. If null a JFrame is
     *           created for the status pane.
     */
-   public StatusMessageHandler( MessageCenter message_center,
-            Container container )
+   public StatusMessageHandler( MessageCenter message_center, 
+                                Container     container )
    {
-
       statPane = gov.anl.ipns.Util.Sys.SharedMessages.getStatusPane();
       this.message_center = message_center;
 
@@ -91,8 +83,9 @@ public class StatusMessageHandler implements IReceiveMessage
          JFrame jf = new JFrame( " Messages" );
          jf.setDefaultCloseOperation( WindowConstants.DO_NOTHING_ON_CLOSE );
          Dimension D = jf.getToolkit().getScreenSize();
-         jf.setBounds( 0 , (int) ( D.getHeight() * .7f ) ,
-                  (int) ( D.getWidth() * .3 ) , (int) ( D.getHeight() * .3 ) );
+         jf.setBounds( 0, (int)( D.getHeight() * .7 ),
+                          (int)( D.getWidth()  * .3 ), 
+                          (int)( D.getHeight() * .3 ) );
          container = jf.getContentPane();
          WindowShower.show( jf );
       }
@@ -108,7 +101,6 @@ public class StatusMessageHandler implements IReceiveMessage
    @Override
    public boolean receive( Message message )
    {
-
       if( message == null )
          return true;
       
@@ -116,35 +108,58 @@ public class StatusMessageHandler implements IReceiveMessage
       
       if( name == null )
          return false;
-
+                                  // eventually we may treat Errors,
+                                  // warnings and info messages in
+                                  // different ways.                     
       if( Commands.DISPLAY_INFO.equals( name ) )
-      {
-         statPane.add( message.getValue() );
-      }
-      else if( Commands.DISPLAY_WARNING.equals( name ) )
-      {
-         statPane.add( message.getValue() );
-      }
-      else if( Commands.DISPLAY_ERROR.equals( name ) )
-      {
-         statPane.add( message.getValue() );
-      }
-      else if( Commands.DISPLAY_CLEAR.equals( name ) )
-      {
-         statPane.Clearr();
-      }
-      else
-         return false;
+         show( message.getValue() );
       
-      return true;
+      else if( Commands.DISPLAY_WARNING.equals( name ) )
+         show( message.getValue() );
+      
+      else if( Commands.DISPLAY_ERROR.equals( name ) )
+         show( message.getValue() );
+      
+      else if( Commands.DISPLAY_CLEAR.equals( name ) )
+         show( name );
+      
+      return false;
+   }
 
 
+   private void show( Object value )
+   {
+     String str = value.toString();
+     AddToStatusPane runner = new AddToStatusPane( str );
+     SwingUtilities.invokeLater( runner );
+   }
+
+
+   /**
+    *  This class is used to add a string to the status
+    *  pane using the AWT event thread.
+    */
+   class AddToStatusPane extends Thread
+   {
+     String string_to_display;
+
+     public AddToStatusPane( String string_to_display )
+     {
+       this.string_to_display = string_to_display;
+     }
+
+     public void run()
+     {
+       if ( Commands.DISPLAY_CLEAR.equals( string_to_display ) )
+         statPane.Clearr();
+       else
+         statPane.add( string_to_display );
+     }
    }
 
 
    public static void main( String[] args )
    {
-
       MessageCenter msgC = new MessageCenter( "Test" );
       StatusMessageHandler statPane = new StatusMessageHandler( msgC , null );
 
@@ -161,8 +176,7 @@ public class StatusMessageHandler implements IReceiveMessage
       SwingUtilities.invokeLater( new AWTQueueOP( msgC , msg ) );
       
       SwingUtilities.invokeLater( new AWTQueueOP( msgC ,
-               MessageCenter.PROCESS_MESSAGES ) );
-
+                                  MessageCenter.PROCESS_MESSAGES ) );
    }
 }
 
@@ -174,24 +188,17 @@ public class StatusMessageHandler implements IReceiveMessage
  */
 class AWTQueueOP extends Thread
 {
-
    MessageCenter msgC;
-
    Message       msg;
-
 
    public AWTQueueOP( MessageCenter msgC, Message msg )
    {
-
       this.msgC = msgC;
       this.msg = msg;
-
    }
-
 
    public void run()
    {
-
       msgC.receive( msg );
    }
 }

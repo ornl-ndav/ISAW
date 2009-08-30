@@ -70,8 +70,7 @@ public class EventLoader implements IReceiveMessage
  
       else
       {
-        Util.sendError( message_center, "ERROR: UNSUPPORTED INSTRUMENT " +
-                                         event_file_name );
+        Util.sendError( "ERROR: UNSUPPORTED INSTRUMENT " + event_file_name );
         return false;
       }
                                          // if this is a new instrument, get
@@ -97,8 +96,7 @@ public class EventLoader implements IReceiveMessage
         }
         catch ( Exception ex )
         {
-          Util.sendError( message_center,
-                         "ERROR: Could not make Q mapper for "+ det_file );
+          Util.sendError( "ERROR: Could not make Q mapper for "+ det_file );
           return false;
         }
 
@@ -120,14 +118,14 @@ public class EventLoader implements IReceiveMessage
       }
       catch ( Exception ex )
       {
-        Util.sendError( message_center, "ERROR: Failed to Load File :" +
+        Util.sendError( "ERROR: Failed to Load File :" +
                         event_file_name + "\n" + ex );
         return false;
       }
 
       run_time = (System.nanoTime() - start)/1.0e6;
       String load_str = String.format( "Loaded file in %5.1f ms\n", run_time );
-      Util.sendInfo( message_center, load_str );
+      Util.sendInfo( load_str );
       return false;
 
     }
@@ -135,7 +133,7 @@ public class EventLoader implements IReceiveMessage
     {
       if ( mapper == null )
       {
-         Util.sendError( message_center, "NO DATA YET" );
+         Util.sendError( "NO DATA YET" );
          return false;
       }
       SelectPointCmd   cmd = (SelectPointCmd)message.getValue();
@@ -209,7 +207,7 @@ public class EventLoader implements IReceiveMessage
         return false;
 
       if ( obj instanceof Float )
-        Util.sendInfo( message_center, "Max Histogram Value : " + obj );
+        Util.sendInfo( "Max Histogram Value : " + obj );
     }
 
     return false;
@@ -304,11 +302,9 @@ public class EventLoader implements IReceiveMessage
         results = fail_exception.getPartialResults();
         System.out.println("ExecFailException while loading events: " +
                             fail_exception.getFailureStatus() );
-        Util.sendError( message_center,
-                   "Failed to load events from " + event_file_name );
+        Util.sendError( "Failed to load events from " + event_file_name );
 
-        Util.sendError( message_center,
-                        fail_exception.getFailureStatus().toString() );
+        Util.sendError( fail_exception.getFailureStatus().toString() );
         return;
       }
       long run_time = System.nanoTime() - start_time;
@@ -340,15 +336,13 @@ public class EventLoader implements IReceiveMessage
       catch ( ExecFailException fail_exception )
       {
         results = fail_exception.getPartialResults();
-        Util.sendError( message_center,
-                   "Failed to convert events to Q " + event_file_name );
+        Util.sendError( "Failed to convert events to Q " + event_file_name );
 
-        Util.sendError( message_center, 
-                        fail_exception.getFailureStatus().toString() );
+        Util.sendError( fail_exception.getFailureStatus().toString() );
         return;
       }
       run_time = System.nanoTime() - start_time;
-      Util.sendInfo( message_center, 
+      Util.sendInfo(  
             String.format("PARALLEL CONVERTED %d EVENTS TO Q IN %5.1f ms\n",
                            num_loaded, (run_time/1.0e6) ) );
 
@@ -387,8 +381,7 @@ public class EventLoader implements IReceiveMessage
         done = true; 
     }
 
-    Util.sendInfo( message_center, "Loaded " + num_loaded + 
-                                   " from "  + event_file_name );
+    Util.sendInfo( "Loaded " + num_loaded + " from "  + event_file_name );
 
     for ( int i = 0; i < show_lists.size(); i++ )
       message_center.receive(new Message(Commands.SET_WEIGHTS_FROM_HISTOGRAM,

@@ -125,8 +125,7 @@ public class OrientationMatrixHandler implements IReceiveMessage
        if ( orientation_matrix != null )
          ShowOrientationMatrix( orientation_matrix );
        else
-         Util.sendError( message_center,
-                        "There is no Orientation matrix to Show" );
+         Util.sendError( "There is no Orientation matrix to Show" );
     }
 
     else if ( message.getName().equals(Commands.WRITE_ORIENTATION_MATRIX))
@@ -134,8 +133,7 @@ public class OrientationMatrixHandler implements IReceiveMessage
        String filename = (String)message.getValue();
        if( orientation_matrix == null)
        {
-          Util.sendError( message_center, 
-                          "There is no Orientation matrix to save" );
+          Util.sendError( "There is no Orientation matrix to save" );
           return false;
        }
        float[][] UB = LinearAlgebra.getTranspose(orientation_matrix);
@@ -144,11 +142,9 @@ public class OrientationMatrixHandler implements IReceiveMessage
         DataSetTools.operator.Generic.TOF_SCD.Util.WriteMatrix( filename, UB );
 
        if( Res == null)
-         Util.sendInfo( message_center, 
-                       "Wrote Orientation matrix to " + filename );
+         Util.sendInfo( "Wrote Orientation matrix to " + filename );
        else
-         Util.sendError( message_center, 
-                       "Write Orientation Error:"+Res.toString() );
+         Util.sendError( "Write Orientation Error:"+Res.toString() );
     } 
 
     else if ( message.getName().equals(Commands.READ_ORIENTATION_MATRIX))
@@ -159,8 +155,7 @@ public class OrientationMatrixHandler implements IReceiveMessage
        {
           if( Res == null )
              Res ="";
-          Util.sendError( message_center, 
-                          "Read Orientation Matrix Error:"+Res.toString() );
+          Util.sendError( "Read Orientation Matrix Error:"+Res.toString() );
           return false;
        }
        float[][] orientSav = orientation_matrix;
@@ -187,7 +182,7 @@ public class OrientationMatrixHandler implements IReceiveMessage
         return false;
       }
       else
-        Util.sendError( message_center, "WRONG TYPE VALUE IN " +
+        Util.sendError( "WRONG TYPE VALUE IN " +
                                         Commands.ADD_ORIENTATION_MATRIX_INFO );
     }
 
@@ -200,7 +195,7 @@ public class OrientationMatrixHandler implements IReceiveMessage
      String matrix_status = isValidMatrix( obj );
      if ( !matrix_status.equals( OK_STRING ) )
      {
-       Util.sendError( message_center, matrix_status );
+       Util.sendError( matrix_status );
        return false;
      }
 
@@ -298,10 +293,10 @@ public class OrientationMatrixHandler implements IReceiveMessage
            "%5.3f  %5.3f  %5.3f    %5.3f  %5.3f  %5.3f    %6.2f",
             abc[0], abc[1], abc[2], abc[3], abc[4], abc[5], abc[6] );
         
-       Util.sendInfo( message_center, lat_con );
+       Util.sendInfo( lat_con );
      }
      else
-       Util.sendInfo( message_center, "NO LATTICE PARAMETERS CALCULATED" );
+       Util.sendInfo( "NO LATTICE PARAMETERS CALCULATED" );
   }
 
 

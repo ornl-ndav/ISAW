@@ -71,7 +71,7 @@ public class DQDataHandler implements IReceiveMessage
       this.messageCenter = messageCenter;
 
       this.messageCenter.addReceiver(this, Commands.ADD_EVENTS_TO_VIEW);
-//    this.messageCenter.addReceiver(this, Commands.ADD_EVENTS);
+      this.messageCenter.addReceiver(this, Commands.ADD_EVENTS);
 
       this.messageCenter.addReceiver(this, Commands.CLEAR_DQ);
       this.messageCenter.addReceiver(this, Commands.GET_D_VALUES);
@@ -139,14 +139,14 @@ public class DQDataHandler implements IReceiveMessage
 
        bin_num = (int)(NUM_BINS * mag_q/MAX_Q); 
        if ( bin_num <= NUM_BINS )
-         q_arr[bin_num] += weights[i];
+         q_arr[bin_num] += 1; //weights[i];
 
        if ( mag_q > 0 )
        {
          d_val = (float)(2 * Math.PI / mag_q);
          bin_num = (int)(NUM_BINS * d_val/MAX_D);
          if ( bin_num <= NUM_BINS )
-           d_arr[bin_num] += weights[i];
+           d_arr[bin_num] += 1;  //weights[i];
        }
      }
 /*
@@ -183,14 +183,13 @@ public class DQDataHandler implements IReceiveMessage
     */
    public boolean receive(Message message)
    {
-      if (message.getName().equals(Commands.ADD_EVENTS_TO_VIEW))
-//    if (message.getName().equals(Commands.ADD_EVENTS))
+//    if (message.getName().equals(Commands.ADD_EVENTS_TO_VIEW))
+      if (message.getName().equals(Commands.ADD_EVENTS))
       {
         Object obj = message.getValue();
 
         if ( obj == null || !(obj instanceof IEventList3D) )
-          Util.sendError( messageCenter, 
-                         "NULL or Empty EventList in DQHandler");
+          Util.sendError( "NULL or Empty EventList in DQHandler");
         AddEvents( (IEventList3D)obj );
       }
       
