@@ -1577,9 +1577,17 @@ public class OrientMatrixControl extends JButton
              float[][]UB= null;
              try
              {
+                Vector<IPeak> peaks = new Vector<IPeak>();
+                for( int i=0;i< Peaks.size();i++)
+                {
+                   if( omittedPeakIndex == null || omittedPeakIndex.length <i
+                            || !omittedPeakIndex[i])
+                      peaks.add( Peaks.elementAt( i ));
+                }
+                
                 UB =Operators.TOF_SCD.IndexPeaks_Calc.
             
-                 IndexPeaksWithOptimizer( Peaks , Params[0] , 
+                 IndexPeaksWithOptimizer( peaks , Params[0] , 
                           Params[1], Params[2] , Params[3] , Params[4] ,
                           Params[5] );
                 setOrientationMatrix(UB );
@@ -1624,12 +1632,15 @@ public class OrientMatrixControl extends JButton
             setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             
             OrMatrices = GetUB. getAllOrientationMatrices( Peaks , omittedPeakIndex ,
-                     .02f , MaxXtalLengthReal );
+                     .01f , MaxXtalLengthReal );
             
             setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 
             if( OrMatrices == null || OrMatrices.size() < 1 )
+            {
+               DataSetTools.util.SharedData.addmsg( "No orientation methods found" );
                return;
+            }
 
             setOrientationMatrix( OrMatrices.elementAt( 0 ) );
 
@@ -2229,8 +2240,8 @@ public class OrientMatrixControl extends JButton
          jp.setLayout( new BorderLayout() );
 
          int n = 2;
-         if( selectMatrix )
-            n++ ;
+        // if( selectMatrix )
+        //    n++ ;
 
          JPanel jp1 = new JPanel();
          jp1.setLayout( new GridLayout( 1 , n ) );
@@ -2239,19 +2250,19 @@ public class OrientMatrixControl extends JButton
                   .size()  , 1 ) );
          spinner.addChangeListener( this );
 
-         jp1.add( new JLabel( "Mat Num" ) );
+         jp1.add( new JLabel( "Mat Num" ,JLabel.RIGHT) );
          jp1.add( spinner );
 
-         JButton button = new JButton( "Select" );
+         //JButton button = new JButton( "Select" );
 
-         button.addActionListener( this );
+        // button.addActionListener( this );
 
-         if( n > 2 )
-            jp1.add( button );
+         //if( n > 2 )
+         //   jp1.add( button );
 
          jp.add( jp1 , BorderLayout.NORTH );
 
-         text = new JTextArea( 15 , 45 );
+         text = new JTextArea( 15 , 35 );
          text
                   .setText( ShowMatString(  orMatrices
                            .elementAt( 0 ),Peaks, null, null ) );
@@ -2296,7 +2307,9 @@ public class OrientMatrixControl extends JButton
 
          if( MatNum < 0 || MatNum >= orMatrices.size() )
             return;
-
+         
+         selectedMatNum = MatNum;
+         
          text.setText( ShowMatString(  orMatrices
                   .elementAt( MatNum ),Peaks,null,null ) );
 
