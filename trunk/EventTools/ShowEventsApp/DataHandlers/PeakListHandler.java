@@ -71,6 +71,7 @@ public class PeakListHandler implements IReceiveMessage
                              " #Peak_new = " + peakNew_list.size() );
       } 
     }
+
     else if ( message.getName().equals(Commands.SET_PEAK_NEW_LIST) )
     {
       Object obj = message.getValue();
@@ -89,6 +90,7 @@ public class PeakListHandler implements IReceiveMessage
                              " #Peak_new = " + peakNew_list.size() );
       }
     }
+
     else if ( message.getName().equals(Commands.WRITE_PEAK_FILE ) )
     {
       if ( peakNew_list == null || peakNew_list.size() <= 0 )
@@ -124,7 +126,6 @@ public class PeakListHandler implements IReceiveMessage
       IndexPeaksCmd cmd = (IndexPeaksCmd)obj;
       float tolerance = .12f;                    // TODO: use tolerance for
                                                  //       Index w/optimizer
- 
       float[][] UB = null;
       try
       {
@@ -135,7 +136,6 @@ public class PeakListHandler implements IReceiveMessage
                                                       cmd.getAlpha(),
                                                       cmd.getBeta(),
                                                       cmd.getGamma() );
-        
         UB= LinearAlgebra.getTranspose(UB);
         indexAllPeaks( peakNew_list, UB);
         Util.sendInfo( "Finished Indexing" );
@@ -158,18 +158,15 @@ public class PeakListHandler implements IReceiveMessage
       System.out.println("Indexing results are: " );
 
       int total_peaks = peakNew_list.size();
-      int count = 0;
-      for ( int i = 0; i < total_peaks; i++ )
-      {
-        Peak_new peak = peakNew_list.elementAt(i);
-        if ( peak.h() != 0 || peak.k() != 0 || peak.l() != 0 )
-          count++;
-      }       
+
+      int count = numIndexed( peakNew_list, tolerance );
+
       Util.sendInfo( "Indexed " + count + 
                      " of " + total_peaks + 
                      " within " + tolerance );
       return false;
     }
+
     else if( message.getName().equals( 
              Commands.INDEX_PEAKS_WITH_ORIENTATION_MATRIX ))
     {
@@ -179,9 +176,11 @@ public class PeakListHandler implements IReceiveMessage
        Message set_peaks = new Message( Commands.SET_PEAK_NEW_LIST,
                                         peakNew_list,
                                         true );
-        message_center.receive( set_peaks );
-        return false;
-    } else if( message.getName().equals(  Commands.INDEX_PEAKS_ROSS ))
+       message_center.receive( set_peaks );
+       return false;
+    } 
+
+    else if( message.getName().equals(  Commands.INDEX_PEAKS_ROSS ))
     {
        float[] value = (float[])message.getValue();
        if( value == null || value.length < 2)
@@ -215,12 +214,11 @@ public class PeakListHandler implements IReceiveMessage
         message_center.receive( new Message( Commands.SET_ORIENTATION_MATRIX,
                  LinearAlgebra.getTranspose( UB ), false));
         return true;
-           
-        
     }
 
     return false;
   }
+
   
   private Vector<IPeak> Convert2IPeak( Vector<Peak_new> Peaks)
   {
@@ -234,19 +232,49 @@ public class PeakListHandler implements IReceiveMessage
      return Res;
   }
 
-   private void indexAllPeaks( Vector Peaks, float[][]UBT)
-   {
-      float[][]UB = LinearAlgebra.getTranspose( UBT );
-      for( int i=0; i<Peaks.size(); i++)
-      {  Object peak = Peaks.elementAt(i);
-         if(peak != null && peak instanceof IPeak)
-           { ((IPeak)peak).sethkl( 0f,0f,0f);
-            ((IPeak)peak).UB( UB );
-            ((IPeak)peak).UB( null );
-            
-           
-           }
-      }
-     
-   }
+
+  private void indexAllPeaks( Vector Peaks, float[][]UBT )
+  {
+    float[][]UB = LinearAlgebra.getTranspose( UBT );
+    for( int i=0; i<Peaks.size(); i++)
+    { 
+       Object peak = Peaks.elementAt(i);
+       if(peak != null && peak instanceof IPeak)
+         {
+           ((IPeak)peak).sethkl( 0f,0f,0f);
+           ((IPeak)peak).UB( UB );
+           ((IPeak)peak).UB( null );
+         }
+    }
+  }
+
+
+  private int numIndexed( Vector peaks, float tolerance )
+  {
+    if ( peaks == null )
+      return 0;
+    
+    if ( tolerance <= 0 )
+      return 0;
+
+    int total_peaks = peaks.size();
+    int count = 0;
+    for ( int i = 0; i < total_peaks; i++ )
+    {
+      IPeakQ peak = peakNew_list.elementAt(i);
+      if ( distanceToInt( peak.h() ) <= tolerance &&
+           distanceToInt( peak.k() ) <= tolerance &&
+           distanceToInt( peak.l() ) <= tolerance  )
+        count++;
+    }
+    return count;
+  }
+
+
+  private float distanceToInt( float val )
+  {
+    float rounded = Math.round(val);
+    return Math.abs( val - rounded );
+  }
+
 }
