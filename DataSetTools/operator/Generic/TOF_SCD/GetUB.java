@@ -582,19 +582,18 @@ public class GetUB {
               ","+FitMax);
      int n=Nelements-1;
      for( int i=Nelements-1; i>0 && (List[i][FIT1]+List[i][CORR])> FitMax; i--)
-        n=i;
-     n = Math.max(  n , Nelements-1-70 );
-     
+        n=i;     
      for( int i=Nelements-1; i>= n; i--)
         optimize( List[i],Peaks,omit,MaxXtalLengthReal);
+     EliminateDuplicates( List,n,gridLength,MaxXtalLengthReal);
+     n = Math.max(  n , Nelements-1-30 );
      
-     System.out.println("Through with optimize of first " + n );
      //n = Nelements - 10;
      float[] weights = new float[7];
      Arrays.fill( weights , 0f );
      weights[LEN] = -1;
-     weights[FIT1] = -.2f;
-     weights[CORR] = -.2f;
+     weights[FIT1] = -.3f;
+     weights[CORR] = -.3f;
      
      ListComparator comp = new ListComparator( List, n, Nelements-1,weights );
      comp.sort();
@@ -605,7 +604,47 @@ public class GetUB {
        return MRes;
    }
    
-  
+   /**
+    * Eliminates directions that are essentially the same( dist < gridLength/3) than a
+    * better one
+    * @param List      The list of directions,etc
+    * @param start     start index to consider
+    * @param end       # elements in List
+    * @param gridLength The dist(proj to x-y plane) between adjacent tested unit
+    *                    directions
+    */
+   private static void EliminateDuplicates( float[][] List, int start, 
+                float gridLength, float MaxXtalLength)
+   {
+      if( List == null || start <0 || gridLength < 0)
+         return;
+      int end= Nelements;
+      //if( end > List.length)end = List.length;
+      if( start >= end)
+         return;
+      int top =start;
+      for( int i=start; i < end-1; i++)
+      {
+         float[] L = List[i];
+         boolean same = false;
+         for( int j=i+1; j< end && !same ; j++)
+         {
+            float[] L2 = List[j];
+            if( Math.abs( L2[X]-L[X] )< gridLength/3)
+               if( Math.abs( L2[Y]-L[Y] )< gridLength/3)
+                  if( Math.abs( L2[LEN]-L[LEN] )< .5/MaxXtalLength )
+                     same = true;
+                  
+         }
+         if( !same)
+        
+            List[top++]= List[i];
+        
+      }
+      System.out.println(" duplicates elim prev/next"+ Nelements+"/"+top);
+      List[top++] = List[ Nelements-1];
+      Nelements = top; 
+   }
    private static Vector<float[][]> GetUBs( Integer[] sortList,int[] elts, Vector Peaks)
    {
       Vector<float[][]> Res = new Vector<float[][]>();
@@ -811,6 +850,8 @@ public class GetUB {
      len = (float)Math.sqrt( Res[0]*Res[0]+Res[1]*Res[1]+Res[2]*Res[2]);
      if( len <=0)
         return false;
+     if( Res[2] < 0)
+        len = -len;
      float[] Listt = doOneDirection( Peaks ,Res[0]/len ,Res[1]/len ,
               omit , MaxXtalLengthReal, new float[100] );
      if( Listt == null)
