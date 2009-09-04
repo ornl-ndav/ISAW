@@ -119,6 +119,14 @@ public class HistogramHandler implements IReceiveMessage
     {
       IEventList3D events = (IEventList3D)message.getValue();
       histogram.addEvents( events );
+      Util.sendInfo( "ADDED " + events.numEntries() + " to HISTOGRAM");
+
+      SetWeightsFromHistogram( events, histogram );
+      Message add_to_view = new Message( Commands.ADD_EVENTS_TO_VIEW,
+                                         events,
+                                         false );
+      Util.sendInfo( "SENDING MESSGE, ADD TO VIEW");
+      message_center.receive( add_to_view );
       return false;
     }
 
