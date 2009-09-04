@@ -185,12 +185,15 @@ public class QMapperHandler implements IReceiveMessage
        if ( obj != null && obj instanceof ITofEventList )
        {
          ITofEventList ev_list = (ITofEventList)obj;
-         IEventList3D q_events = MapToQ( ev_list );
+         IEventList3D[] event_lists = MapToQ( ev_list );
 
-         if ( q_events != null )
-           message_center.receive( new Message( Commands.ADD_EVENTS,
-                                                q_events,
-                                                false ));
+         if ( event_lists != null )
+         {
+           for ( int i = 0; i < event_lists.length; i++ )
+             message_center.receive( new Message( Commands.ADD_EVENTS,
+                                                  event_lists[i],
+                                                  false ));
+         }
        }
        
        return false;
@@ -251,8 +254,10 @@ public class QMapperHandler implements IReceiveMessage
   }  
 
 
-  private IEventList3D MapToQ( ITofEventList ev_list )
+  private IEventList3D[] MapToQ( ITofEventList ev_list )
   {
+    int N_THREADS = 4;
+
     if ( ev_list == null )
       return null;
 
@@ -260,12 +265,59 @@ public class QMapperHandler implements IReceiveMessage
     if ( num_ev <= 0 )
       return null;
 
+    long start = System.nanoTime();
+
     int[] tofs = ev_list.eventTof( 0, num_ev );
     int[] ids  = ev_list.eventPixelID( 0, num_ev );
 
-    IEventList3D q_events = mapper.MapEventsToQ( tofs, ids );
+    IEventList3D[] event_lists = null;
 
-    return q_events;
+    if ( tofs.length > 400000 )          // split into separate threads
+    {
+      Object results    = null;
+      int    first      = 0;
+      int    num_to_map = tofs.length/N_THREADS;
+
+      Vector<IOperator> toQ_ops = new Vector<IOperator>();
+      for ( int i = 0; i < N_THREADS; i++ )
+      {
+        if ( i == N_THREADS - 1 )
+          num_to_map = tofs.length - first;       // bring in the rest
+
+        toQ_ops.add( new MapEventsToQ_Op( tofs, 
+                                          ids, 
+                                          first, 
+                                          num_to_map,  
+                                          mapper ) );
+        first += num_to_map;
+      }
+      try
+      {
+        ParallelExecutor exec =
+                           new ParallelExecutor( toQ_ops, N_THREADS, 600000 );
+        results = exec.runOperators();
+      }
+      catch ( ExecFailException fail_exception )
+      {
+        results = fail_exception.getPartialResults();
+        System.out.println("ExecFailException while converting to Q: " +
+                            fail_exception.getFailureStatus() );
+      }
+
+      event_lists = new IEventList3D[N_THREADS];
+
+      for ( int i = 0; i < N_THREADS; i++ )
+        event_lists[i] = (IEventList3D)(((Vector)results).elementAt(i));
+    }
+    else
+    {
+      event_lists = new IEventList3D[1];
+      event_lists[0] = mapper.MapEventsToQ( tofs, ids );
+    }
+
+    Util.sendInfo("Converted to Q in " + ((System.nanoTime()-start)/1e6) +
+                  " ms" );
+    return event_lists;
   }
 
 }
