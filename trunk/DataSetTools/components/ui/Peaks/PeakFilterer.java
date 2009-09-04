@@ -42,6 +42,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.EventQueue;
+import java.awt.GridLayout;
 import java.awt.Point;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -572,6 +573,32 @@ public class PeakFilterer extends JButton implements ActionListener
          
    }
 
+   /**
+    * Finds the point on the screen where the given component is
+    * @param comp   The component
+    * @return  the absolute position on the screen of the top left corner
+    *              of this component.
+    */
+   public static Point getScreenLoc( Component comp )
+   {
+     
+      if( comp == null )
+         return null;
+
+      Point P = comp.getLocation();
+   
+      if( comp instanceof Window )
+
+         return P;
+
+      Point P1 = getScreenLoc( comp.getParent() );
+      
+      if( P1 == null)
+         return new Point( P.x,P.y);
+      
+      return new Point( P.x + P1.x , P.y + P1.y );
+   }
+
    String               OmittedMenuItems;
    public void ManageShownMenus( String MenuItem, boolean show)
    {
@@ -708,7 +735,7 @@ public class PeakFilterer extends JButton implements ActionListener
          {
 
             IntervalDialog filtElt = new IntervalDialog( Fields[ k ] ,
-                     Mins[ k ] , Maxs[ k ], !interactive, k );
+                     Mins[ k ] , Maxs[ k ], !interactive, k, but );
 
             if( filtElt.MinVal() == Mins[ k ] && filtElt.MaxVal() == Maxs[ k ] )
 
@@ -769,7 +796,7 @@ public class PeakFilterer extends JButton implements ActionListener
          {
 
             IntervalDialog filtElt = new IntervalDialog( Fields[ k ] ,
-                     Mins[ k ] , Maxs[ k ] );
+                     Mins[ k ] , Maxs[ k ],true,-1, but );
             if( filtElt.MinVal() == Mins[ k ] && filtElt.MaxVal() == Maxs[ k ] )
                F = null;
             else
@@ -824,7 +851,7 @@ public class PeakFilterer extends JButton implements ActionListener
 
 
          Pop = PopupFactory.getSharedInstance().getPopup( (Component) obj ,
-                  list , P.x , P.y );
+                  list , P.x+comp.getWidth()*3/4 , P.y+comp.getHeight()/2 );
 
          Pop.show();
 
@@ -832,23 +859,7 @@ public class PeakFilterer extends JButton implements ActionListener
       }
 
 
-      private Point getScreenLoc( Component comp )
-      {
-
-         if( comp == null )
-            return null;
-
-         Point P = comp.getLocation();
-
-         if( comp instanceof Window )
-
-            return P;
-
-         Point P1 = getScreenLoc( comp.getParent() );
-
-         return new Point( P.x + P1.x , P.y + P1.y );
-      }
-
+     
 
       
       private void MakeMenu( Component comp )
@@ -886,7 +897,7 @@ public class PeakFilterer extends JButton implements ActionListener
 
          popUp.add( item ).addActionListener( this );
 
-         popUp.show( comp , 0 , 0 );
+         popUp.show( comp , comp.getWidth()*3/4 , comp.getHeight()/2 );
       }
 
    }
@@ -903,11 +914,17 @@ public class PeakFilterer extends JButton implements ActionListener
    }
     */
    //Creates a frame with a message in it.
-   private static JFrame getJFrame( String Message )
+   private static JFrame getJFrame( String Message ,Component comp)
    {
+     
+      Point P = getScreenLoc( comp);
+      if( P == null)
+         P = new Point(0,0);
 
       JFrame jf = new JFrame( Message );
-      jf.setSize( 200 , 300 );
+     
+      jf.setBounds(new java.awt.Rectangle( P.x/2,P.y/2, 200 , 300 ));
+     
       jf.setVisible( false );
       jf.setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
       return jf;
@@ -934,6 +951,8 @@ public class PeakFilterer extends JButton implements ActionListener
       String           Message;
 
       JCheckBox        inside;
+      
+      JCheckBox        outside;
 
       StretchTopBottom sliders;
       
@@ -951,7 +970,7 @@ public class PeakFilterer extends JButton implements ActionListener
       public IntervalDialog( String message, float minVal, float maxVal )
       {
 
-         this( message , minVal , maxVal , true ,-1);
+         this( message , minVal , maxVal , true ,-1, null);
       }
 
 
@@ -964,10 +983,10 @@ public class PeakFilterer extends JButton implements ActionListener
        * @param FieldIndex  the index of field if not modal.
        */
       public IntervalDialog( String message, float minVal, float maxVal,
-               boolean isModal, int FieldIndex )
+               boolean isModal, int FieldIndex, Component comp )
       {
 
-         super( getJFrame( "OMIT "+message +" Values" ) , 
+         super( getJFrame( "OMIT "+message +" Values", comp ) , 
                       "OMIT "+message +" Values" , isModal );
          
          IsModal = isModal;
@@ -985,12 +1004,19 @@ public class PeakFilterer extends JButton implements ActionListener
          BoxLayout blayout = new BoxLayout( buttonPanel , BoxLayout.X_AXIS );
          buttonPanel.setLayout( blayout );
 
-         inside = new JCheckBox( "Inside interval" , false );
-         
-         inside.setToolTipText( "<html><body>False-omit peaks whose values are"+
-                  " outside interval<BR> otherwise omit peaks whose values are"+
-                  " inside the interval" );
-         buttonPanel.add( inside );
+         inside = new JCheckBox( "Omit Peaks inside interval" , false );
+         outside = new JCheckBox("Omit Peaks outside interval", true);
+         inside.setToolTipText( "Omits peaks whose "+message +
+                  " values are BETWEEN the 2 values below" );
+         outside.setToolTipText( "Omits peaks whose "+message +
+                 " values are OUTSIDE the 2 values below" );
+         ButtonGroup bg = new ButtonGroup();
+         bg.add( inside );
+         bg.add( outside);
+         JPanel pan = new JPanel( new GridLayout(2,1));
+         pan.add( inside);
+         pan.add( outside );
+         buttonPanel.add( pan );
          if( !IsModal)
             inside.addActionListener(  this  );
 
@@ -1016,7 +1042,17 @@ public class PeakFilterer extends JButton implements ActionListener
          contentPane.add( sliders , BorderLayout.CENTER );
 
          setContentPane( contentPane );
-         setSize( 300 , 400 );
+         Point P = getScreenLoc( comp);
+         if( P == null)
+            P = new Point(0,0);
+         int w =0,
+             h=0;
+         if( comp != null)
+         {
+            w = comp.getWidth()*3/4;
+            h= comp.getHeight()/2;
+         }
+         setBounds( P.x+w, P.y+h,500 , 300 );
          setVisible( true );
 
       }
