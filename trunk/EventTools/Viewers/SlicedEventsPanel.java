@@ -186,6 +186,7 @@ public class SlicedEventsPanel
                            alpha );
 
     points_group.addChild( points );
+    System.out.println("REMOVED JOGL PANEL DRAW()");
     jogl_panel.Draw();
   }
 

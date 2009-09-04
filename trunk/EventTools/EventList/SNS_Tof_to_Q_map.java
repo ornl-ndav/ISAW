@@ -177,7 +177,42 @@ public class SNS_Tof_to_Q_map
    *  @return an array of floats containing values (Qx,Qy,Qz) for each 
    *          event, interleaved in the array. 
    */
-  public FloatArrayEventList3D_2 MapEventsToQ( int[] tofs, int[] ids )
+  public FloatArrayEventList3D_2 MapEventsToQ( int[] tofs, 
+                                               int[] ids  )
+  {
+    if ( tofs == null )
+      throw new IllegalArgumentException( "Time-of-flight array is null" );
+
+    int first = 0;
+    int num_to_map = tofs.length;
+    return MapEventsToQ( tofs, ids, first, num_to_map );
+  }
+
+
+  /**
+   *  Map the specified sub-list of time-of-flight events to a packed 
+   *  array of events in reciprocal space, listing Qx,Qy,Qz for each event, 
+   *  interleaved in one array.  NOTE: due to array size limitations in Java,
+   *  at most (2^31-1)/3 = 715.8 million events can be processed in one
+   *  batch by this method. 
+   *
+   *  @param tofs        List of integer time-of-flight values, giving the 
+   *                     number of 100ns clock ticks since t0 for this event.
+   *
+   *  @param ids         List of detector pixel ids corresponding to the listed
+   *                     tofs.
+   *
+   *  @param first       The index of the first event to map to Q
+   *
+   *  @param num_to_map  The number of events to map to Q
+   *
+   *  @return an array of floats containing values (Qx,Qy,Qz) for each 
+   *          event, interleaved in the array. 
+   */
+  public FloatArrayEventList3D_2 MapEventsToQ( int[] tofs, 
+                                               int[] ids,
+                                               int   first,
+                                               int   num_to_map )
   {
      if ( tofs == null )
        throw new IllegalArgumentException( "Time-of-flight array is null" );
@@ -192,14 +227,17 @@ public class SNS_Tof_to_Q_map
      if ( tofs.length > Integer.MAX_VALUE/3 )
        throw new IllegalArgumentException("TOF array length " + tofs.length +
                                          " exceeds " + Integer.MAX_VALUE/3 );
+
+     if ( first < 0 || first >= tofs.length )
+       throw new IllegalArgumentException("First index: " + first +
+                                         " < 0 or >= " + tofs.length );
+
      if ( tofs.length == 0 )
      {
        float[] empty_Qxyz = new float[0];
        return new FloatArrayEventList3D_2( null, empty_Qxyz );
      }
 
-     float[] Qxyz    = new float[ 3 * tofs.length ];
-     float[] weights = new float[ tofs.length ];
      int     id;
      int     id_offset;
      int     index;
@@ -212,12 +250,24 @@ public class SNS_Tof_to_Q_map
 //   float   inv_lamda_4;                     // 1/lamda^4
      float   lamda;
      int     lamda_index;
-     for ( int i = 0; i < tofs.length; i++ )
+     int     last;
+     int     num_mapped;
+
+     last = first + num_to_map - 1;
+     if ( last >= tofs.length )
+       last = tofs.length - 1;
+
+     num_mapped = last - first + 1;
+
+     float[] Qxyz    = new float[ 3 * num_mapped ];
+     float[] weights = new float[ num_mapped ];
+
+     for ( int i = 0; i < num_mapped; i++ )
      {
-       id = ids[i];
+       id = ids[i + first];
        if ( id > 0 && id < tof_to_MagQ.length )
        {
-         tof_chan = t0 + tofs[i];
+         tof_chan = t0 + tofs[i + first];
          magQ = tof_to_MagQ[id]/tof_chan;
 
          id_offset = 3*id;

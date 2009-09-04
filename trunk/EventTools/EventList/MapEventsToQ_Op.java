@@ -44,10 +44,14 @@ public class MapEventsToQ_Op implements IOperator
 {
   private int[]            tofs;
   private int[]            ids;
+  private int              first;
+  private int              num_to_map;
   private SNS_Tof_to_Q_map mapper;
 
+
  /**
-  *  Create an operator to map the specified events to Q.
+  *  Create an operator to map all of the events defined by the tofs and ids
+  *  arrays, to Q.
   *
   *  @param  tofs    The list of times-of-flight for the events
   *  @param  ids     The list of pixel ids for the events
@@ -56,9 +60,37 @@ public class MapEventsToQ_Op implements IOperator
   */
   public MapEventsToQ_Op( int[] tofs, int[] ids, SNS_Tof_to_Q_map mapper )
   {
-     this.tofs   = tofs;
-     this.ids    = ids;
-     this.mapper = mapper;
+     this.tofs       = tofs;
+     this.ids        = ids;
+     this.first      = 0;
+     this.num_to_map = tofs.length;
+     this.mapper     = mapper;
+  }
+
+
+ /**
+  *  Create an operator to map the specified events in the tofs and ids
+  *  arrays, to Q.
+  *
+  *  @param  tofs       The list of times-of-flight for the events
+  *  @param  ids        The list of pixel ids for the events
+  *  @param  first      The index of the first event to map to Q
+  *  @param  num_to_map The number of events to map to Q
+  *  @param  mapper     The SNS_Tof_to_Q_map object that contains the 
+  *                     information and method to map the specified
+  *                      events to Q
+  */
+  public MapEventsToQ_Op( int[] tofs, 
+                          int[] ids, 
+                          int   first,
+                          int   num_to_map,
+                          SNS_Tof_to_Q_map mapper )
+  {
+     this.tofs       = tofs;
+     this.ids        = ids;
+     this.first      = first;
+     this.num_to_map = num_to_map;
+     this.mapper     = mapper;
   }
 
 
@@ -68,7 +100,7 @@ public class MapEventsToQ_Op implements IOperator
    */
   public Object getResult()
   {
-     return mapper.MapEventsToQ(tofs, ids ); 
+     return mapper.MapEventsToQ( tofs, ids, first, num_to_map ); 
   }
 
 } 

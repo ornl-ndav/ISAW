@@ -56,8 +56,8 @@ public class IsawEV
   public IsawEV()
   {
     MessageCenter message_center = new MessageCenter("Test");
-    message_center.setDebugReceive( true );
-    message_center.setDebugSend( true );
+//    message_center.setDebugReceive( true );
+//    message_center.setDebugSend( true );
 
     int update_time_ms = 30;
     new UpdateManager(message_center, null, update_time_ms );
