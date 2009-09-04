@@ -48,6 +48,7 @@ import MessageTools.MessageCenter;
 import EventTools.EventList.IEventList3D;
 import EventTools.EventList.SNS_Tof_to_Q_map;
 import EventTools.EventList.SNS_TofEventList;
+import EventTools.EventList.ITofEventList;
 import EventTools.EventList.MapEventsToQ_Op;
 import EventTools.EventList.EventSegmentLoadOp;
 import EventTools.ShowEventsApp.Command.Commands;
@@ -177,6 +178,24 @@ public class QMapperHandler implements IReceiveMessage
         message_center.receive( add_hist_info_message );
     }
 
+    else if ( message.getName().equals(Commands.MAP_EVENTS_TO_Q) )
+    {
+       Object obj = message.getValue();
+
+       if ( obj != null && obj instanceof ITofEventList )
+       {
+         ITofEventList ev_list = (ITofEventList)obj;
+         IEventList3D q_events = MapToQ( ev_list );
+
+         if ( q_events != null )
+           message_center.receive( new Message( Commands.ADD_EVENTS,
+                                                q_events,
+                                                false ));
+       }
+       
+       return false;
+    }
+
     else if ( message.getName().equals(Commands.GET_PEAK_NEW_LIST) )
     {
       Object obj = message.getValue();
@@ -230,5 +249,23 @@ public class QMapperHandler implements IReceiveMessage
 
     return new_peaks;
   }  
+
+
+  private IEventList3D MapToQ( ITofEventList ev_list )
+  {
+    if ( ev_list == null )
+      return null;
+
+    int num_ev = (int)(ev_list.numEntries());
+    if ( num_ev <= 0 )
+      return null;
+
+    int[] tofs = ev_list.eventTof( 0, num_ev );
+    int[] ids  = ev_list.eventPixelID( 0, num_ev );
+
+    IEventList3D q_events = mapper.MapEventsToQ( tofs, ids );
+
+    return q_events;
+  }
 
 }

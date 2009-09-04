@@ -70,12 +70,13 @@ public class DQDataHandler implements IReceiveMessage
    {
       this.messageCenter = messageCenter;
 
-      this.messageCenter.addReceiver(this, Commands.ADD_EVENTS_TO_VIEW);
       this.messageCenter.addReceiver(this, Commands.ADD_EVENTS);
 
       this.messageCenter.addReceiver(this, Commands.CLEAR_DQ);
+
       this.messageCenter.addReceiver(this, Commands.GET_D_VALUES);
       this.messageCenter.addReceiver(this, Commands.GET_Q_VALUES);
+
       this.messageCenter.addReceiver(this, Commands.SAVE_Q_VALUES);
       this.messageCenter.addReceiver(this, Commands.SAVE_D_VALUES);
 
@@ -156,6 +157,8 @@ public class DQDataHandler implements IReceiveMessage
        System.out.printf("x = %5.2f  y = %5.2f \n", 
                           q_values[0][i], q_values[1][i] );
 */
+     sendMessage(Commands.SET_Q_VALUES, q_values );
+     sendMessage(Commands.SET_D_VALUES, d_values );
    }
 
 
@@ -175,7 +178,7 @@ public class DQDataHandler implements IReceiveMessage
    
    
    /**
-    *  Process messages: ADD_EVENTS_TO_VIEW, CLEAR_DQ, GET_D_VALUES
+    *  Process messages: ADD_EVENTS, CLEAR_DQ, GET_D_VALUES
     *  and GET_Q_VALUES.  
     *
     *  @param message The message containing the command to be 
@@ -183,7 +186,6 @@ public class DQDataHandler implements IReceiveMessage
     */
    public boolean receive(Message message)
    {
-//    if (message.getName().equals(Commands.ADD_EVENTS_TO_VIEW))
       if (message.getName().equals(Commands.ADD_EVENTS))
       {
         Object obj = message.getValue();
@@ -243,6 +245,7 @@ public class DQDataHandler implements IReceiveMessage
       }
       return true;
    }
+
    //attempts to have 6 digits showing and each entry from start to end in nSteps
    //  shows a different String
    public static String getCFormat( float start, float end, int nSteps)
@@ -278,7 +281,6 @@ public class DQDataHandler implements IReceiveMessage
             nDigits2Right = -(int)Math.floor(dd) +1;
       }
       
-      
       if( nDigits2Left > 6)
           if(nDigits2Right == 0)
              return "%"+(nDigits2Left+x)+".0f";
@@ -289,12 +291,7 @@ public class DQDataHandler implements IReceiveMessage
          nDigits2Right =6-nDigits2Left-x;
          return "%"+(nDigits2Left+x)+"."+nDigits2Right+"f";
       }
-             
-          
-         
-      
    }
-   
    
    
    private DataSet MakeDataSet( float[][] vals, String Title,String xUnits)
@@ -308,9 +305,12 @@ public class DQDataHandler implements IReceiveMessage
       return D;
       
    }
+
+
    public static void main( String[] args)
    {
       System.out.println( 
                DQDataHandler.getCFormat(Float.parseFloat( args[0] ), Float.parseFloat( args[1]), 1000 ));
    }
+
 }

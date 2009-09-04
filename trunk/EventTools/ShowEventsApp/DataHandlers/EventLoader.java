@@ -46,8 +46,9 @@ import MessageTools.Message;
 import MessageTools.MessageCenter;
 
 import EventTools.EventList.IEventList3D;
-import EventTools.EventList.SNS_Tof_to_Q_map;
 import EventTools.EventList.SNS_TofEventList;
+import EventTools.EventList.SNS_Tof_to_Q_map;
+import EventTools.EventList.TofEventList;
 import EventTools.EventList.MapEventsToQ_Op;
 import EventTools.EventList.EventSegmentLoadOp;
 import EventTools.ShowEventsApp.Command.Commands;
@@ -66,13 +67,12 @@ public class EventLoader implements IReceiveMessage
 {
   private MessageCenter    message_center;
   private String           instrument_name = null;
-  private SNS_Tof_to_Q_map mapper;
+
 
   public EventLoader( MessageCenter message_center )
   {
     this.message_center = message_center;
     message_center.addReceiver( this, Commands.LOAD_FILE );
-//    message_center.addReceiver( this, Commands.GET_PEAK_NEW_LIST );
   }
 
 
@@ -102,33 +102,10 @@ public class EventLoader implements IReceiveMessage
         Util.sendError( "ERROR: UNSUPPORTED INSTRUMENT " + event_file_name );
         return false;
       }
-                                         // if this is a new instrument, get
-                                         // a new mapper.
+
       if ( instrument_name == null ||
            !new_instrument.equals( instrument_name ) )
       {
-        String det_file = cmd.getDetFile();
-
-        if ( det_file == null || det_file.trim().length() == 0 )
-        {
-          String isaw_home = System.getProperty( "ISAW_HOME" ) + "/";
-          det_file = isaw_home + "InstrumentInfo/SNS/" +
-                     new_instrument + ".DetCal";
-        }
-
-        try
-        {
-          start    = System.nanoTime();
-          mapper   = new SNS_Tof_to_Q_map( det_file, new_instrument );
-          run_time = (System.nanoTime() - start)/1.0e6;
-          System.out.printf("Made Q mapper in %5.1f ms\n", run_time  );
-        }
-        catch ( Exception ex )
-        {
-          Util.sendError( "ERROR: Could not make Q mapper for "+ det_file );
-          return false;
-        }
-
         instrument_name = new_instrument; 
 
         SetNewInstrumentCmd new_inst_cmd = 
@@ -166,6 +143,7 @@ public class EventLoader implements IReceiveMessage
     return false;
   }
   
+
   private void LoadEvents( String event_file_name, 
                            long   first, 
                            long   num_to_load,
@@ -195,9 +173,6 @@ public class EventLoader implements IReceiveMessage
                           event_file_name );
       return;
     }
-                                           // we'll save the events we'll view
-                                           // in this vector
-    Vector<IEventList3D> show_lists = new Vector<IEventList3D>();
 
     long num_remaining = num_available - first;
     if ( num_to_load > num_remaining )     // can't load more than remain 
@@ -264,86 +239,18 @@ public class EventLoader implements IReceiveMessage
         ids[i]  = (int[])array_vec.elementAt(1);
       }
 
-      ops.clear();
-      for ( int i = 0; i < n_threads; i++ )
-        ops.add( new MapEventsToQ_Op( tofs[i], ids[i], mapper ) );
-
-      start_time = System.nanoTime();
-
-      try
+      for ( int i = 0; i < num_segs; i++ )
       {
-        ParallelExecutor exec =
-                           new ParallelExecutor( ops, n_threads, 600000 );
-        results = exec.runOperators();
-      }
-      catch ( ExecFailException fail_exception )
-      {
-        results = fail_exception.getPartialResults();
-        Util.sendError( "Failed to convert events to Q " + event_file_name );
-
-        Util.sendError( fail_exception.getFailureStatus().toString() );
-        return;
-      }
-      run_time = System.nanoTime() - start_time;
-      Util.sendInfo(  
-            String.format("PARALLEL CONVERTED %d EVENTS TO Q IN %5.1f ms\n",
-                           num_loaded, (run_time/1.0e6) ) );
-
-      Vector<IEventList3D> event_lists = (Vector<IEventList3D>)results;
-
-      for ( int i = 0; i < event_lists.size(); i++ )
-      {
-        message_center.receive( new Message( Commands.ADD_EVENTS, 
-                                             event_lists.elementAt(i),
-                                             false ));
-
-        IEventList3D list = event_lists.elementAt(i);
-        if ( list == null )
-          System.out.println("ERROR: null list in EventLoader");
-        else
-        { 
-/*
-          int n_printed = Math.min( 10, list.numEntries());
-          System.out.println("EventLoader, First " + n_printed + 
-                             " events-------------------------");
-          for ( int k = 0; k < n_printed; k++ )
-            System.out.println( "xyz = " + list.eventX(k) + " " +
-                                           list.eventY(k) + " " +
-                                           list.eventZ(k) + " " +
-                                "weight = " + list.eventWeight(k) );
-*/
-          if ( num_viewed < num_to_show )
-          {
-            show_lists.add( event_lists.elementAt(i) );
-            num_viewed += event_lists.elementAt(i).numEntries();
-          }
-        }
+        TofEventList tof_evl = new TofEventList( tofs[i], ids[i] );
+        Message map_to_Q_cmd = new Message( Commands.MAP_EVENTS_TO_Q,
+                                            tof_evl,
+                                            false );
+        message_center.receive( map_to_Q_cmd );
       }
 
       if ( num_loaded >= num_to_load )
-        done = true; 
+        done = true;
     }
-
-    Util.sendInfo( "Loaded and Histogrammed " + num_loaded +
-                   " events\n from "  + event_file_name );
-
-                                          // Now that we've added the events,
-                                          // ask the histogram to announce
-                                          // the max value it has.
-    message_center.receive( new Message( Commands.GET_HISTOGRAM_MAX,
-                                         null,
-                                         true ));
-
-
-    for ( int i = 0; i < show_lists.size(); i++ )
-      message_center.receive(new Message(Commands.SET_WEIGHTS_FROM_HISTOGRAM,
-                                         show_lists.elementAt(i),
-                                         false ));
-
-    for ( int i = 0; i < show_lists.size(); i++ )
-      message_center.receive( new Message( Commands.ADD_EVENTS_TO_VIEW,
-                                           show_lists.elementAt(i),
-                                           false ));
   }
 
 }
