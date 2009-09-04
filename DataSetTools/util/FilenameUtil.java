@@ -341,7 +341,7 @@ public class FilenameUtil
                               +") not found. Using version at "+URLDIR);
 	    S = URLDIR+helpFile;
 	}else{ 
-	    S = "file:///" + S; 
+	    S = "file:///" + S.replace( '\\' , '/' ); 
 	}
 
 
