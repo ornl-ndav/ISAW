@@ -72,7 +72,6 @@ public class DViewHandler implements IReceiveMessage
       this.messageCenter.addReceiver(this, Commands.SHOW_D_GRAPH);
       this.messageCenter.addReceiver(this, Commands.HIDE_D_GRAPH);
       this.messageCenter.addReceiver(this, Commands.SET_D_VALUES);
-      this.messageCenter.addReceiver(this, Commands.ADD_EVENTS_TO_VIEW);
    }
    
    /**
@@ -163,11 +162,6 @@ public class DViewHandler implements IReceiveMessage
          displayDFrame();
          
          return true;
-      }
-      
-      if (message.getName().equals(Commands.ADD_EVENTS_TO_VIEW))
-      {
-         sendMessage(Commands.GET_D_VALUES, null);
       }
       
       if (message.getName().equals(Commands.HIDE_D_GRAPH))

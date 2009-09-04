@@ -72,7 +72,6 @@ public class QViewHandler implements IReceiveMessage
       this.messageCenter.addReceiver(this, Commands.SHOW_Q_GRAPH);
       this.messageCenter.addReceiver(this, Commands.HIDE_Q_GRAPH);
       this.messageCenter.addReceiver(this, Commands.SET_Q_VALUES);
-      this.messageCenter.addReceiver(this, Commands.ADD_EVENTS_TO_VIEW);
    }
    
    /**
@@ -164,11 +163,6 @@ public class QViewHandler implements IReceiveMessage
          displayQFrame();
          
          return true;
-      }
-      
-      if (message.getName().equals(Commands.ADD_EVENTS_TO_VIEW))
-      {
-         sendMessage(Commands.GET_Q_VALUES, null);
       }
       
       if (message.getName().equals(Commands.HIDE_Q_GRAPH))
