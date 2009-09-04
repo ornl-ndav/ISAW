@@ -625,7 +625,7 @@ public class SetPeaks extends JButton
 
          update( pop , CLEAR_SET_PEAKS , "Clears all settings" );
 
-         pop.show( BUT , 0 , 0 );
+         pop.show( BUT , BUT.getWidth()*3/4 , BUT.getHeight()/2 );
 
       }
 

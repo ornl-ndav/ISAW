@@ -80,7 +80,7 @@ public class OrientMatrixControl extends JButton
    /**
     * Menu option and command name for loading an orientation matrix
     */
-   public static String LOAD_ORIENT1            = "Load Orientation matrix";
+   public static String LOAD_ORIENT1            = "*Load Orientation matrix";
 
    /**
     * Menu option and command name for Entering an orientation matrix
@@ -99,7 +99,7 @@ public class OrientMatrixControl extends JButton
    public static String SHOW_SEL_MAT            = "Show/Select Matrix from Set";
  
    //---- ADJUST_OR_MAT isNot a command name has sub menu options
-   public static String ADJUST_OR_MAT           ="Adjust Orientation Matrix";
+   public static String ADJUST_OR_MAT           ="*Adjust Orientation Matrix";
 
    //------------------------------------------------------
    public static String VIEWS                   = "View in QViewer";
@@ -135,7 +135,7 @@ public class OrientMatrixControl extends JButton
    public static String  VIEW_PRED_PEAKS        = "View Predicted Peaks";
 
    //---------------------------------------------------------
-   public static String CALC_ORIENT             = "Calculate Orientation matrix(s)";
+   public static String CALC_ORIENT             = "*Calculate Orientation matrix(s)";
 
    //--------------- sub menu options and command names for CALC_ORIENT ---------------
 
@@ -270,7 +270,8 @@ public class OrientMatrixControl extends JButton
       Peaks = peaks;
       textInfo = TextInf;
 
-      
+      setToolTipText("<html><body>*Only First two and last items<br>"+
+               "can create an orientation matrix</body></html)");
       omittedPeakIndex = null;
       View = view;
       V3DControl = v3DControl;
@@ -820,8 +821,10 @@ public class OrientMatrixControl extends JButton
 
       ( Menu.add( LOAD_ORIENT1 ) ).addActionListener( Listener );
 
-      ( Menu.add( ENTER_ORIENT1 ) ).addActionListener( Listener );
-
+      ( Menu.add( CALC_ORIENT ) ).addActionListener( Listener );
+      
+      //( Menu.add( ENTER_ORIENT1 ) ).addActionListener( Listener );
+       Menu.addSeparator();
       if( showLatinOrientMenu && LatControl != null )
       {
 
@@ -835,10 +838,11 @@ public class OrientMatrixControl extends JButton
       
 
       ( Menu.add( VIEWS ) ).addActionListener( Listener );
+
+       Menu.addSeparator();
       ( Menu.add( ADJUST_OR_MAT ) ).addActionListener( Listener );
       
 
-      ( Menu.add( CALC_ORIENT ) ).addActionListener( Listener );
 
 
    }
@@ -1013,7 +1017,7 @@ public class OrientMatrixControl extends JButton
          
          if( evt == ORIENT_MAT )
          {
-            Menu.show( button , 0 , 0 );
+            Menu.show( button , button.getWidth()*3/4 , button.getHeight()/2);
             return;
          }
          if( evt == LOAD_ORIENT1 )
@@ -1086,7 +1090,7 @@ public class OrientMatrixControl extends JButton
               (pop.add( "Niggli(experimental" )).addActionListener( this);
               (pop.add( "Optimize" )).addActionListener( this );
               if( e.getSource() instanceof AbstractButton)
-                   pop.show( button, 0,0);
+                   pop.show( button, button.getWidth()*3/4,button.getHeight()/2);
               else
                  pop.show( null, 100,100);
               

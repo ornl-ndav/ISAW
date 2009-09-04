@@ -451,7 +451,7 @@ public class View3DItems extends JButton
                   this );
          popUpMenu.add( new JMenuItem( "Help" ) ).addActionListener( this );
 
-         popUpMenu.show( comp , 0 , 0 );
+         popUpMenu.show( comp , comp.getWidth()*3/4 , comp.getHeight()/2 );
 
       }
 
