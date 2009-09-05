@@ -60,7 +60,7 @@ public class EventViewHandler implements IReceiveMessage
     //------------------------
     Rectangle R = multiPanel.PANEL_BOUNDS;
     R.x +=R.width;
-    R.width = R.height = 750;
+    R.width = R.height = 765;
     //-----------------------------
     frame3D.setBounds(R);
     

@@ -35,29 +35,15 @@
 
 package EventTools.ShowEventsApp.ViewHandlers;
 
-import java.awt.GridLayout;
-
-import javax.swing.*;
-
 import EventTools.ShowEventsApp.Command.Commands;
-import gov.anl.ipns.ViewTools.Components.OneD.FunctionViewComponent;
 import MessageTools.*;
 
 /**
  * Builds and Displays a graph of d-spacing. Updates
  * automatically when data is loaded and displayed on the screen.
  */
-public class DViewHandler implements IReceiveMessage
+public class DViewHandler extends GraphViewHandler 
 {
-   private MessageCenter messageCenter;
-   private JFrame        dDisplayFrame;
-   private JPanel        graphPanel;
-   private String        Title = "d-spacing";
-   private String        x_units = "" + '\u00c5';
-   private String        y_units = "weighted";
-   private String        x_label = "d-spacing";
-   private String        y_label = "Intensity";
-   
    /**
     * Sets the message center for the DViewHandler but does
     * not display or create anything else.  The class relies mainly
@@ -68,88 +54,19 @@ public class DViewHandler implements IReceiveMessage
     */
    public DViewHandler(MessageCenter messageCenter)
    {
-      this.messageCenter = messageCenter;
+      super( messageCenter );
       this.messageCenter.addReceiver(this, Commands.SHOW_D_GRAPH);
       this.messageCenter.addReceiver(this, Commands.HIDE_D_GRAPH);
       this.messageCenter.addReceiver(this, Commands.SET_D_VALUES);
-   }
-   
-   /**
-    * Creates a new JFrame to display the graph every time
-    * it is called.  Will display a graph if its been built
-    * or will display a placeholder saying no data loaded.
-    */
-   private void displayDFrame()
-   {
-      dDisplayFrame = new JFrame("d-spacing View");
-      dDisplayFrame.setLayout(new GridLayout(1,1));
-      dDisplayFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-      dDisplayFrame.setBounds(0, 0, 1000, 300);
-      dDisplayFrame.setVisible(true);
-      
-      if (graphPanel != null)
-         dDisplayFrame.add(graphPanel);
-      else
-         dDisplayFrame.add(placeholderPanel());
-      
-      dDisplayFrame.repaint();
-   }
-   
-   /**
-    * Placeholder to put in the frame if no data is loaded.
-    * 
-    * @return Panel
-    */
-   private JPanel placeholderPanel()
-   {
-      JPanel placeholderpanel = new JPanel();
-      placeholderpanel.setLayout(new GridLayout(1,1));
-      
-      JLabel label = new JLabel("No Data Loaded!");
-      label.setHorizontalAlignment(JLabel.CENTER);
-      
-      placeholderpanel.add(label);
-      
-      return placeholderpanel;
-   }
-   
-   /**
-    * Takes the data and creates an instance of
-    * FunctionViewComponent and adds it to the graphPanel
-    * and then to the frame if the frame has been created.
-    * This allows for the graph to be updated while the frame 
-    * is displayed.
-    * 
-    * @param xyValues X,Y values of the data for the graph.
-    */
-   private void setPanelInformation(float[][] xyValues)
-   {
-      float[] x_values = xyValues[0];
-      float[] y_values = xyValues[1];
-      float[] errors = null;
 
-      if(dDisplayFrame != null)
-         dDisplayFrame.getContentPane().removeAll();
-
-      graphPanel = FunctionViewComponent.ShowGraphWithAxes(x_values, y_values, errors, 
-               Title, x_units, y_units, x_label, y_label);
-      
-      if (dDisplayFrame != null)
-         dDisplayFrame.add(graphPanel);
+      frame_title = "d-spacing View";
+      title       = "d-spacing";
+      x_units     = "" + '\u00c5';
+      y_units     = "weighted";
+      x_label     = "d-spacing";
+      y_label     = "Intensity";
    }
    
-   /**
-    * Send a message to the messagecenter
-    * 
-    * @param command
-    * @param value
-    */
-   private void sendMessage(String command, Object value)
-   {
-      Message message = new Message(command, value, true);
-      
-      messageCenter.receive(message);
-   }
 
    /**
     * Receive messages to display the frame, hide the frame,
@@ -159,26 +76,23 @@ public class DViewHandler implements IReceiveMessage
    {
       if (message.getName().equals(Commands.SHOW_D_GRAPH))
       {
-         displayDFrame();
+         super.ShowGraph();
          
-         return true;
+         return false;
       }
       
       if (message.getName().equals(Commands.HIDE_D_GRAPH))
       {
-         dDisplayFrame.dispose();
+         super.HideGraph();
          
-         return true;
+         return false;
       }
       
       if (message.getName().equals(Commands.SET_D_VALUES))
       {
-         setPanelInformation(((float[][])message.getValue()));
-         
-         if (dDisplayFrame != null)
-            dDisplayFrame.validate();
-         
-         return true;
+         super.setInfo( (float[][])(message.getValue()) );
+
+         return false;
       }
       
       return false;
