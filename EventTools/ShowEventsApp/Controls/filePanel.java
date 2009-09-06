@@ -46,6 +46,7 @@ import javax.swing.border.TitledBorder;
 
 import DataSetTools.util.SharedData;
 import EventTools.ShowEventsApp.Command.*;
+import EventTools.EventList.SNS_Tof_to_Q_map;
 import MessageTools.*;
 
 /**
@@ -236,7 +237,7 @@ public class filePanel //extends JPanel
       detFileButton = new JButton("Detector Position File...");
       detFileButton.addActionListener(new button());
       
-      String default_detector_file =Detfilename;
+//      String default_detector_file =Detfilename;
          // /usr2/SNS_SCD_TEST_3/SNAP_1_Panel.DetCal";
       detFileName = new JTextField( "");
       detFileName.addMouseListener(new mouse());
@@ -278,6 +279,7 @@ public class filePanel //extends JPanel
     * 
     * @return JPanel
     */
+/*
    private JPanel buildDetEffPanel()
    {
       JPanel detEffPanel = new JPanel();
@@ -295,13 +297,14 @@ public class filePanel //extends JPanel
       
       return detEffPanel;
    }
-   
+*/   
    /**
     * Builds the MatPanel which consists of button to load the 
     * det file and a textfield to contain path.
     * 
     * @return JPanel
     */
+/*
    private JPanel buildMatPanel()
    {
       JPanel matPanel = new JPanel();
@@ -319,7 +322,7 @@ public class filePanel //extends JPanel
       
       return matPanel;
    }
-   
+*/   
    /**
     * Builds the maxQPanel which consists of label and a 
     * textfield to contain the Value.
@@ -644,6 +647,40 @@ public class filePanel //extends JPanel
             {
                try
                {
+                  String ev_file = evFileName.getText();
+                  String instrument_name = "UNKNOWN";
+
+                  if ( ev_file.indexOf("SNAP") >= 0 )
+                    instrument_name = SNS_Tof_to_Q_map.SNAP;
+
+                  else if ( ev_file.indexOf("ARCS") >= 0 )
+                    instrument_name = SNS_Tof_to_Q_map.ARCS;
+
+                  else if ( ev_file.indexOf("SEQ") >= 0 )
+                    instrument_name = SNS_Tof_to_Q_map.SEQ;
+
+                  else if ( ev_file.indexOf("TOPAZ") >= 0 )
+                    instrument_name = SNS_Tof_to_Q_map.TOPAZ;
+
+                  String det_file = detFileName.getText();
+                  if ( det_file != null && det_file.trim().length() <= 0 )
+                    det_file = null;
+
+                  String inc_spec_file = incFileName.getText();
+                  if ( inc_spec_file != null &&
+                       inc_spec_file.trim().length() <= 0 )
+                    inc_spec_file = null;
+
+                  SetNewInstrumentCmd new_inst_cmd = 
+                           new SetNewInstrumentCmd( instrument_name, 
+                                                    det_file, 
+                                                    inc_spec_file );
+                  sendMessage( Commands.SET_NEW_INSTRUMENT, new_inst_cmd );
+                  // The SET_NEW_INSTRUMENT command needs to be done before
+                  // loading the event file, so that the histogram and
+                  // mapping to Q are set up by the time we start sending
+                  // in events.
+
                   NumberFormat nf = NumberFormat.getInstance();
                   long startEvent = nf.parse(firstEvent.getText()).longValue();
                   if (startEvent <= 0)
@@ -655,19 +692,26 @@ public class filePanel //extends JPanel
                      startEvent -= 1;
                   
                   LoadEventsCmd fileInfo = 
-                     new LoadEventsCmd(evFileName.getText(),
-                                detFileName.getText(),
-                                incFileName.getText(),
-                                null,                   //detEffFileName.getText(),
+                     new LoadEventsCmd(
+                                ev_file,
+                                det_file,
+                                inc_spec_file,
+                                null,            //detEffFileName.getText(),
                                 null,
                                 MaxQValue,
                                 nf.parse(availableEvents.getText()).longValue(),
-                                startEvent,        //nf.parse(firstEvent.getText()).longValue(),
+                                startEvent, 
                                 nf.parse(eventsToLoad.getText()).longValue(),
                                 nf.parse(eventsToShow.getText()).longValue(),
                                 Integer.parseInt(numThreads.getText()));
                   
-                  sendMessage(Commands.LOAD_FILE, fileInfo);
+                  boolean collapse_messages   = true;
+                  boolean use_separate_thread = true;
+                  Message load_message = new Message( Commands.LOAD_FILE,
+                                                      fileInfo,
+                                                      collapse_messages,
+                                                      use_separate_thread );
+                  message_center.receive( load_message );
                }
                catch (ParseException pe)
                {

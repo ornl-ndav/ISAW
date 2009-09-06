@@ -141,7 +141,6 @@ public class OrientationMatrixHandler implements IReceiveMessage
           Util.sendError( "Read Orientation Matrix Error:"+Res.toString() );
           return false;
        }
-       float[][] orientSav = orientation_matrix;
        float[][] orMat = LinearAlgebra.getTranspose( (float[][]) Res );
        SetNewOrientationMatrix( orMat );
     }

@@ -39,34 +39,21 @@ import java.util.Vector;
 import gov.anl.ipns.Operator.IOperator;
 import gov.anl.ipns.Operator.Threads.ParallelExecutor;
 import gov.anl.ipns.Operator.Threads.ExecFailException;
-import gov.anl.ipns.MathTools.Geometry.Vector3D;
 
 import MessageTools.IReceiveMessage;
 import MessageTools.Message;
 import MessageTools.MessageCenter;
 
-import EventTools.EventList.IEventList3D;
 import EventTools.EventList.SNS_TofEventList;
-import EventTools.EventList.SNS_Tof_to_Q_map;
 import EventTools.EventList.TofEventList;
-import EventTools.EventList.MapEventsToQ_Op;
 import EventTools.EventList.EventSegmentLoadOp;
 import EventTools.ShowEventsApp.Command.Commands;
 import EventTools.ShowEventsApp.Command.LoadEventsCmd;
-import EventTools.ShowEventsApp.Command.SetNewInstrumentCmd;
-import EventTools.ShowEventsApp.Command.SelectPointCmd;
-import EventTools.ShowEventsApp.Command.SelectionInfoCmd;
 import EventTools.ShowEventsApp.Command.Util;
-
-import DataSetTools.math.tof_calc;
-import DataSetTools.operator.Generic.TOF_SCD.Peak_new;
-import DataSetTools.operator.Generic.TOF_SCD.IPeakQ;
-import DataSetTools.operator.Generic.TOF_SCD.PeakQ;
 
 public class EventLoader implements IReceiveMessage
 {
   private MessageCenter    message_center;
-  private String           instrument_name = null;
 
 
   public EventLoader( MessageCenter message_center )
@@ -86,37 +73,6 @@ public class EventLoader implements IReceiveMessage
       LoadEventsCmd cmd = (LoadEventsCmd)message.getValue();
       
       String event_file_name = cmd.getEventFile();
-      String new_instrument = null;
-                                         // figure out the instrument name
-      if ( event_file_name.indexOf( "ARCS") >= 0 )
-        new_instrument = SNS_Tof_to_Q_map.ARCS;
-     
-      else if  ( event_file_name.indexOf( "SNAP") >= 0 )
-        new_instrument = SNS_Tof_to_Q_map.SNAP;
-
-      else if ( event_file_name.indexOf( "SEQ") >= 0 )
-        new_instrument = SNS_Tof_to_Q_map.SEQ;
- 
-      else
-      {
-        Util.sendError( "ERROR: UNSUPPORTED INSTRUMENT " + event_file_name );
-        return false;
-      }
-
-      if ( instrument_name == null ||
-           !new_instrument.equals( instrument_name ) )
-      {
-        instrument_name = new_instrument; 
-
-        SetNewInstrumentCmd new_inst_cmd = 
-                    new SetNewInstrumentCmd( new_instrument,
-                                             cmd.getDetFile(),
-                                             cmd.getIncSpectrumFile() );
-
-        Message new_inst_mess = new Message( Commands.SET_NEW_INSTRUMENT,
-                                             new_inst_cmd, true );
-        message_center.receive( new_inst_mess );
-      }
 
       start = System.nanoTime();
       try
@@ -162,10 +118,14 @@ public class EventLoader implements IReceiveMessage
     if ( num_available > 0 )
     {
       message_center.receive(
-                       new Message( Commands.CLEAR_HISTOGRAM, null, true) );
+            new Message( Commands.CLEAR_HISTOGRAM, null, true ) );
+
       message_center.receive( 
-                       new Message( Commands.CLEAR_EVENTS_VIEW, null, true) );
-      message_center.receive( new Message( Commands.CLEAR_DQ, null, true) );
+
+            new Message( Commands.CLEAR_EVENTS_VIEW, null, true ) );
+      message_center.receive( 
+
+            new Message( Commands.CLEAR_DQ, null, true ) );
     }
     else
     {
@@ -188,7 +148,6 @@ public class EventLoader implements IReceiveMessage
 
     boolean done       = false;
     long    num_loaded = 0;
-    long    num_viewed = 0;
     Vector<IOperator> ops = new Vector<IOperator>();
     while ( !done )
     {
@@ -244,7 +203,8 @@ public class EventLoader implements IReceiveMessage
         TofEventList tof_evl = new TofEventList( tofs[i], ids[i] );
         Message map_to_Q_cmd = new Message( Commands.MAP_EVENTS_TO_Q,
                                             tof_evl,
-                                            false );
+                                            false,
+                                            true );
         message_center.receive( map_to_Q_cmd );
       }
 

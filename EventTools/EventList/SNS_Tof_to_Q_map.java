@@ -60,9 +60,10 @@ public class SNS_Tof_to_Q_map
   public static final float  ANGST_PER_US_PER_M = 
                                         (float)tof_calc.ANGST_PER_US_PER_M;
 
-  public static final String SNAP = "SNAP";
-  public static final String ARCS = "ARCS";
-  public static final String SEQ  = "SEQ";
+  public static final String SNAP  = "SNAP";
+  public static final String ARCS  = "ARCS";
+  public static final String SEQ   = "SEQ";
+  public static final String TOPAZ = "TOPAZ";
   public static final int    NUM_TOF_WEIGHTS = 166666/10;  // 1us tof bins
 
   private IDataGrid[]  grid_arr; 

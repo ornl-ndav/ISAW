@@ -47,12 +47,9 @@ import MessageTools.MessageCenter;
 
 import EventTools.EventList.IEventList3D;
 import EventTools.EventList.SNS_Tof_to_Q_map;
-import EventTools.EventList.SNS_TofEventList;
 import EventTools.EventList.ITofEventList;
 import EventTools.EventList.MapEventsToQ_Op;
-import EventTools.EventList.EventSegmentLoadOp;
 import EventTools.ShowEventsApp.Command.Commands;
-import EventTools.ShowEventsApp.Command.LoadEventsCmd;
 import EventTools.ShowEventsApp.Command.SetNewInstrumentCmd;
 import EventTools.ShowEventsApp.Command.SelectPointCmd;
 import EventTools.ShowEventsApp.Command.SelectionInfoCmd;
@@ -130,6 +127,7 @@ public class QMapperHandler implements IReceiveMessage
           start    = System.nanoTime();
           mapper   = new SNS_Tof_to_Q_map( det_file, new_instrument );
           run_time = (System.nanoTime() - start)/1.0e6;
+          instrument_name = new_instrument;
           System.out.printf("Made Q mapper in %5.1f ms\n", run_time  );
         }
         catch ( Exception ex )
@@ -138,6 +136,8 @@ public class QMapperHandler implements IReceiveMessage
           return false;
         }
       }
+
+       Util.sendInfo( "QMapper set up for " + instrument_name );
     }
 
     else if ( message.getName().equals(Commands.SELECT_POINT) )
@@ -190,7 +190,7 @@ public class QMapperHandler implements IReceiveMessage
                                            // correct histogram page and
                                            // correct ipkobs!
         Message add_hist_info_message =
-                     new Message( Commands.ADD_HISTOGRAM_INFO, info, true );
+                new Message( Commands.ADD_HISTOGRAM_INFO, info, true, true );
         message_center.receive( add_hist_info_message );
     }
 
@@ -208,7 +208,8 @@ public class QMapperHandler implements IReceiveMessage
            for ( int i = 0; i < event_lists.length; i++ )
              message_center.receive( new Message( Commands.ADD_EVENTS,
                                                   event_lists[i],
-                                                  false ));
+                                                  false,
+                                                  true ));
          }
        }
        
@@ -226,7 +227,7 @@ public class QMapperHandler implements IReceiveMessage
         Vector<Peak_new> peak_new_list =
                                   ConvertPeakQToPeakNew( mapper, (Vector)obj );
         Message peak_new_message =
-               new Message( Commands.SET_PEAK_NEW_LIST, peak_new_list, true );
+          new Message( Commands.SET_PEAK_NEW_LIST, peak_new_list, true, true );
 
         message_center.receive( peak_new_message );
       }

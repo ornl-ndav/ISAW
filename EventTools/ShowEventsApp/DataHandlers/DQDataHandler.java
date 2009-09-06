@@ -158,8 +158,6 @@ public class DQDataHandler implements IReceiveMessage
        System.out.printf("x = %5.2f  y = %5.2f \n", 
                           q_values[0][i], q_values[1][i] );
 */
-     sendMessage(Commands.SET_Q_VALUES, q_values );
-     sendMessage(Commands.SET_D_VALUES, d_values );
    }
 
 
@@ -172,7 +170,7 @@ public class DQDataHandler implements IReceiveMessage
     */
    private void sendMessage(String command, Object value)
    {
-      Message message = new Message(command, value, true);
+      Message message = new Message(command, value, true, true);
       
       messageCenter.receive(message);
    }
@@ -192,8 +190,15 @@ public class DQDataHandler implements IReceiveMessage
         Object obj = message.getValue();
 
         if ( obj == null || !(obj instanceof IEventList3D) )
+        {
           Util.sendError( "NULL or Empty EventList in DQHandler");
+          return false;
+        }
+
         AddEvents( (IEventList3D)obj );
+
+        sendMessage(Commands.SET_Q_VALUES, q_values );
+        sendMessage(Commands.SET_D_VALUES, d_values );
       }
       
       if (message.getName().equals(Commands.CLEAR_DQ))
