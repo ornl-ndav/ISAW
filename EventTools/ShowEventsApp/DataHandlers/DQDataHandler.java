@@ -37,6 +37,7 @@ package EventTools.ShowEventsApp.DataHandlers;
 
 import gov.anl.ipns.Util.Numeric.ClosedInterval;
 import DataSetTools.dataset.*;
+import Operators.Generic.Save.SaveASCII_calc;
 import EventTools.ShowEventsApp.Command.Commands;
 import EventTools.ShowEventsApp.Command.Util;
 import EventTools.EventList.IEventList3D;
@@ -88,7 +89,7 @@ public class DQDataHandler implements IReceiveMessage
   /**
    *  Clear the list of Y values for the D and Q histograms.
    */
-   private void clearYs()
+   synchronized private void clearYs()
    {
      for ( int i = 0; i <= NUM_BINS; i++ )
        d_values[1][i] = 0;
@@ -101,7 +102,7 @@ public class DQDataHandler implements IReceiveMessage
   /**
    *  Set up the array of X-values for the D and Q histograms.
    */
-   private void setXs()
+   synchronized private void setXs()
    {
      for ( int i = 0; i <= NUM_BINS; i++ )
        d_values[0][i] = i * MAX_D / NUM_BINS;
@@ -118,7 +119,7 @@ public class DQDataHandler implements IReceiveMessage
    * @param events  The IEventList3D object containing the events.
    *                This MUST have the weights set.
    */
-   private void AddEvents( IEventList3D events )
+   synchronized private void AddEvents( IEventList3D events )
    {
      float xyz[] = events.eventVals();
 //   float weights[] = events.eventWeights();
@@ -226,19 +227,19 @@ public class DQDataHandler implements IReceiveMessage
          return SaveDataSetASCII(D , fileName);
       }
       
-      
       return false;
    }
    
+      
    private boolean SaveDataSetASCII( DataSet D, String fileName)
    {
-
       UniformXScale sc = D.getXRange();
       ClosedInterval intv = D.getYRange();
       String fmt= getCFormat( sc.getStart_x(), sc.getEnd_x(),sc.getNum_x());
-      fmt += " "+getCFormat(intv.getStart_x(), intv.getEnd_x(), 2*sc.getNum_x());
-      try{
-         Operators.Generic.Save.SaveASCII_calc.SaveASCII( D, false,fmt, fileName);
+      fmt += " "+getCFormat( intv.getStart_x(), 
+                             intv.getEnd_x(), 
+                             2*sc.getNum_x());
+      try{ SaveASCII_calc. SaveASCII( D, false,fmt, fileName);
       }catch( Exception ss)
       {
          return false;
@@ -246,8 +247,9 @@ public class DQDataHandler implements IReceiveMessage
       return true;
    }
 
-   //attempts to have 6 digits showing and each entry from start to end in nSteps
-   //  shows a different String
+
+   // attempts to have 6 digits showing and each entry from start to end 
+   // in nSteps.  shows a different String
    public static String getCFormat( float start, float end, int nSteps)
    {
       if( start > end)
@@ -267,8 +269,8 @@ public class DQDataHandler implements IReceiveMessage
       if( start < 0 || end < 0)
          x = 1;
       
-      int nDigits2Left= 
-            (int)( Math.log10( Math.max( Math.abs(start) , Math.abs( end ) ))) +1;
+      int nDigits2Left= (int)( Math.log10( Math.max( Math.abs(start) , 
+                                           Math.abs( end ) ))) +1;
       if( nDigits2Left < 0)
          nDigits2Left = 0;
       
@@ -303,14 +305,14 @@ public class DQDataHandler implements IReceiveMessage
       D.addData_entry( Db );
       Db.setSelected( true );
       return D;
-      
    }
 
 
    public static void main( String[] args)
    {
       System.out.println( 
-               DQDataHandler.getCFormat(Float.parseFloat( args[0] ), Float.parseFloat( args[1]), 1000 ));
+               DQDataHandler.getCFormat( Float.parseFloat( args[0] ),
+                                         Float.parseFloat( args[1]), 1000 ));
    }
 
 }
