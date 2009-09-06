@@ -66,6 +66,7 @@ public class Message
   private Object  name;
   private Object  value;
   private boolean replace_flag;
+  private boolean use_new_thread;
   private double  time_stamp;
   private long    tag;
 
@@ -87,11 +88,43 @@ public class Message
    */
   public Message( Object name, Object value, boolean replace_flag )
   {
-    this.name         = name;
-    this.value        = value;
-    this.replace_flag = replace_flag;
-    this.time_stamp   = System.nanoTime()/1.0E6;
-    this.tag          = 0;
+    this( name, value, replace_flag, false );
+  }
+
+
+  /* ---------------------------- constructor ---------------------------- */
+  /** 
+   *  Construct a new message to be placed in the specified message queue, 
+   *  with the specified value.  NOTE: If the use_new_thread flag is set
+   *  then the MessageCenter will NOT keep track of the boolean value 
+   *  returned by the destinations IReceiveMessages receive() method.
+   *
+   *  @param name          The "name" of the message queue in which the 
+   *                       message is to be placed.  This will usually be a 
+   *                       String.
+   *  @param value         Object containing the "value" sent by this message.
+   *                       Value objects MUST be of the type expected by 
+   *                       receivers for this message.
+   *  @param replace_flag  Set this flag to true if this message is to 
+   *                       replace all previous messages in the named 
+   *                       queue.
+   *  @param use_new_thead Flag indicating whether or not the MessageCenter
+   *                       should pass this message out using a separate
+   *                       thread.  This provides an easy way to do multi-
+   *                       threading, provided the work to be done can be
+   *                       done asynchronously and no return value is required.
+   */
+  public Message( Object  name, 
+                  Object  value, 
+                  boolean replace_flag, 
+                  boolean use_new_thread )
+  {
+    this.name           = name;
+    this.value          = value;
+    this.replace_flag   = replace_flag;
+    this.use_new_thread = use_new_thread;
+    this.time_stamp     = System.nanoTime()/1.0E6;
+    this.tag            = 0;
   }
 
 
@@ -130,6 +163,21 @@ public class Message
   public boolean replace()
   {
     return replace_flag;
+  }
+
+
+  /* -------------------------- useNewThread -------------------------- */
+  /**
+   *  Get the value of the use_new_thread flag for this message.
+   *
+   *  @return  true if this message should be passed out to the receivers
+   *           in a separate thread to allow the work to be done in that
+   *           thread.  This is most useful for long-running calculations
+   *           that can be performed asynchronously. 
+   */
+  public boolean useNewThread()
+  {
+    return use_new_thread;
   }
 
 
