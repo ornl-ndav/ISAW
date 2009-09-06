@@ -84,8 +84,8 @@ public class controlsPanel extends JPanel
    private additionalViewControls sliceControlsPanel;
    private drawingOptions         drawoptions;
    
-//   private final Color background_color = new Color( 220, 230, 235 );
-   private final Color background_color = new Color( 230, 232, 250 );
+// private final Color background_color = new Color( 221, 232, 243 );
+   private final Color background_color = new Color( 187, 209, 230 );
 
    /**
     * Builds the side panel in the splitpane for all the controls.

@@ -118,7 +118,8 @@ public class HistogramHandler implements IReceiveMessage
     if ( message.getName().equals(Commands.ADD_EVENTS) )
     {
       IEventList3D events = (IEventList3D)message.getValue();
-      histogram.addEvents( events );
+//      histogram.addEvents( events );
+      AddEventsToHistogram( events );
       Util.sendInfo( "ADDED " + events.numEntries() + " to HISTOGRAM");
 
       SetWeightsFromHistogram( events, histogram );
@@ -508,5 +509,11 @@ public class HistogramHandler implements IReceiveMessage
 
     return q_peaks;
   }                         
+
+
+  synchronized public void AddEventsToHistogram( IEventList3D events )
+  {
+    histogram.addEvents( events );
+  }
 
 }

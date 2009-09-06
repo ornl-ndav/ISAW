@@ -66,11 +66,27 @@ import DataSetTools.operator.Generic.TOF_SCD.PeakQ;
 public class QMapperHandler implements IReceiveMessage
 {
   private MessageCenter    message_center;
-  private String           instrument_name = null;
-  private SNS_Tof_to_Q_map mapper = null;
+  private String           instrument_name;
+  private SNS_Tof_to_Q_map mapper;
 
   public QMapperHandler( MessageCenter message_center )
   {
+    instrument_name = SNS_Tof_to_Q_map.SNAP;
+    String isaw_home = System.getProperty( "ISAW_HOME" ) + "/";
+    String det_file  = isaw_home + "InstrumentInfo/SNS/" +
+                       instrument_name + ".DetCal";
+    
+    try
+    {
+       mapper = new SNS_Tof_to_Q_map( det_file, instrument_name );
+    }
+    catch ( Exception ex )
+    {
+      System.out.println( "ERROR: Could not find default detector\n" +
+                          "position info for " + instrument_name );
+      System.out.println( "File is not in " + det_file );
+    }
+
     this.message_center = message_center;
     message_center.addReceiver( this, Commands.SET_NEW_INSTRUMENT );
     message_center.addReceiver( this, Commands.MAP_EVENTS_TO_Q );
