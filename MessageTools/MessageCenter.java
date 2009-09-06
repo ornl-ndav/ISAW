@@ -165,11 +165,8 @@ public class MessageCenter implements IReceiveMessage
    *  @param message  The message that is to be added to the queue.
    *
    *  @return  Returns true if the message was a valid "normal" message that
-   *           was added to the queue, OR if the message was the "special"
-   *           PROCESS_MESSAGES object, and a positive number of messages
-   *           were actually processed.  Returns false if the message was
-   *           invalid, or if the message was the "special" PROCESS_MESSAGES
-   *           object, and there were no messages to process. 
+   *           was added to the queue.  Returns false if the message was
+   *           invalid, or if the message was the "special" PROCESS_MESSAGES.
    */
   public synchronized boolean receive( Message message )
   {
@@ -178,12 +175,15 @@ public class MessageCenter implements IReceiveMessage
        if ( sender_busy )                   // wait for later update triggers
          return false;                      // to process more messages
 
+       if ( message_table.size() <= 0 )
+         return false;
+
        sender_message_table = message_table;
        sender_busy = true;                  // trip flag so the sender thread
                                             // will process messages
        message_table = new Hashtable<Object,Vector<Message>>();
        
-       return true;
+       return false;
     }
 
     if ( debug_receive )
@@ -385,9 +385,10 @@ public class MessageCenter implements IReceiveMessage
    *  @return  The number of messages that were successfully processed.  
    *           NOTE: if no messages were actually processed, then the system 
    *           state did not change, so further processing may not be needed 
-   *           at this time.  A message is considered to be successfully 
-   *           processed only if there was actually at least one receiver to 
-   *           receive that message.
+   *           at this time.  If a receiver returns the value true, then 
+   *           this indicates that something was changed that will require
+   *           IUpdatable objects to be redrawn.  Messages run in a separate
+   *           thread cannot return any value so the do not return true.
    */
   private int sendAll( Hashtable<Object,Vector<Message>> my_message_table )
   {                                  // get all messages from the message table
@@ -444,8 +445,11 @@ public class MessageCenter implements IReceiveMessage
    *  @param message  The message to send to receivers registered to get
    *                  messages with that name.
    *
-   *  @return True if some messages were successfully processed by some
-   *          receivers of this message.
+   *  @return True if some receiver objects returned true, indicating that
+   *          the receiver altered something that will require any 
+   *          IUpdateable objects to be redrawn.  The value returned by
+   *          any messages that were delivered in a separate thread WILL 
+   *          NOT be tracked or affect the value returned by this method.
    */
   private boolean sendMessage( Message message )
   {
@@ -469,7 +473,14 @@ public class MessageCenter implements IReceiveMessage
         if ( debug_send )
           System.out.println("SENT TO -->" + listeners.elementAt(j));
 
-        if ( listeners.elementAt(j).receive( message ) )
+        if ( message.useNewThread() )               // launch a new Thread
+        {
+          IReceiveMessage receiver = listeners.elementAt(j);
+          Thread sender = new SendOneMessageThread( message, receiver );
+          sender.start();
+        }
+                                                    // just call receive()
+        else if ( listeners.elementAt(j).receive( message ) )
           some_processed = true;
       }
     }
@@ -509,6 +520,24 @@ public class MessageCenter implements IReceiveMessage
           System.out.println("Exception sleeping in MessageCenter.sender");
         }
       }
+    }
+  }
+
+
+  private class SendOneMessageThread extends Thread
+  {
+    private Message         message;
+    private IReceiveMessage receiver;
+
+    private SendOneMessageThread( Message message, IReceiveMessage receiver )
+    {
+      this.message  = message;
+      this.receiver = receiver;
+    }
+
+    public void run()
+    {
+      receiver.receive( message );
     }
   }
 
