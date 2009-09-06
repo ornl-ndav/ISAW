@@ -50,6 +50,7 @@ import MessageTools.MessageCenter;
 import EventTools.Histogram.*;
 
 import EventTools.EventList.IEventList3D;
+import EventTools.EventList.SNS_Tof_to_Q_map;
 import EventTools.ShowEventsApp.Command.Commands;
 import EventTools.ShowEventsApp.Command.SelectionInfoCmd;
 import EventTools.ShowEventsApp.Command.SetNewInstrumentCmd;
@@ -118,14 +119,15 @@ public class HistogramHandler implements IReceiveMessage
     if ( message.getName().equals(Commands.ADD_EVENTS) )
     {
       IEventList3D events = (IEventList3D)message.getValue();
-//      histogram.addEvents( events );
       AddEventsToHistogram( events );
+
       Util.sendInfo( "ADDED " + events.numEntries() + " to HISTOGRAM");
 
       SetWeightsFromHistogram( events, histogram );
       Message add_to_view = new Message( Commands.ADD_EVENTS_TO_VIEW,
                                          events,
-                                         false );
+                                         false,
+                                         true );
       Util.sendInfo( "SENDING MESSGE, ADD TO VIEW");
       message_center.receive( add_to_view );
       return false;
@@ -156,14 +158,17 @@ public class HistogramHandler implements IReceiveMessage
       }
   
       if ( inst.equals( current_instrument ) )
+      {
+        Util.sendInfo( "Histogram set up for " + current_instrument );
         return false;
+      }
  
-      if ( inst.equals("SNAP") )
+      if ( inst.equals(SNS_Tof_to_Q_map.SNAP) )
       {
         histogram = DefaultSNAP_Histogram( num_bins );
         current_instrument = inst;
       }
-      else if ( inst.equals("ARCS") )
+      else if ( inst.equals(SNS_Tof_to_Q_map.ARCS) )
       {
         histogram = DefaultARCS_Histogram( num_bins );
         current_instrument = inst;
@@ -175,7 +180,7 @@ public class HistogramHandler implements IReceiveMessage
         return false;
       }
 
-      Util.sendInfo( "Default histogram set up for " + inst );
+      Util.sendInfo( "Histogram set up for " + current_instrument );
       return false;
     }
 
@@ -197,6 +202,7 @@ public class HistogramHandler implements IReceiveMessage
         Message info_message = new Message( 
                                        Commands.ADD_ORIENTATION_MATRIX_INFO, 
                                        select_info_cmd, 
+                                       true,
                                        true );
 
         message_center.receive( info_message );
@@ -221,6 +227,7 @@ public class HistogramHandler implements IReceiveMessage
         { 
           Message set_peak_Q_list = new Message( Commands.SET_PEAK_Q_LIST,
                                                  peakQs,
+                                                 true,
                                                  true );
           message_center.receive( set_peak_Q_list );
 
@@ -228,6 +235,7 @@ public class HistogramHandler implements IReceiveMessage
           {
              Message mark_peaks  = new Message( Commands.MARK_PEAKS,
                                                 peakQs,
+                                                true,
                                                 true );
              message_center.receive( mark_peaks );
           }
@@ -240,6 +248,7 @@ public class HistogramHandler implements IReceiveMessage
     {
        Message hist_max = new Message( Commands.SET_HISTOGRAM_MAX,
                                        new Float( histogram.maxVal() ),
+                                       true,
                                        true );
        message_center.receive( hist_max );
 
