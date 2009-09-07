@@ -17,7 +17,6 @@ import DataSetTools.operator.Generic.Special.ViewASCII;
 import DataSetTools.operator.Generic.TOF_SCD.IPeak;
 import DataSetTools.operator.Generic.TOF_SCD.Peak_new;
 import DataSetTools.operator.Generic.TOF_SCD.Peak_new_IO;
-import DataSetTools.operator.Generic.TOF_SCD.WritePeaks_new;
 import EventTools.ShowEventsApp.Command.Commands;
 import MessageTools.IReceiveMessage;
 import MessageTools.Message;
@@ -26,11 +25,7 @@ import MessageTools.MessageCenter;
 
 public class peaksStatPanel extends JPanel implements IReceiveMessage
 {
-
-
-
    MessageCenter message_center;
-
    JPanel        Info;
 
 
@@ -42,7 +37,6 @@ public class peaksStatPanel extends JPanel implements IReceiveMessage
       this.message_center = message_center;
       message_center.addReceiver( this , Commands.SET_PEAK_NEW_LIST );
       add( new JTextArea( "No Indexed Peaks Available" ) );
-
    }
 
 
@@ -87,16 +81,11 @@ public class peaksStatPanel extends JPanel implements IReceiveMessage
       messageThread mmm = new messageThread( msgC , peaks );
       SwingUtilities.invokeLater( mmm );
    }
-
-
 }
 
 
 class MyThread extends Thread implements ActionListener
 {
-
-
-
    Vector< Peak_new > Peaks;
 
    JPanel             panel;
@@ -108,11 +97,9 @@ class MyThread extends Thread implements ActionListener
 
    public MyThread( Vector< Peak_new > Peaks, JPanel panel )
    {
-
       this.Peaks = Peaks;
       this.panel = panel;
       hGraph = kGraph = lGraph = null;
-
    }
 
 
@@ -124,7 +111,6 @@ class MyThread extends Thread implements ActionListener
    @Override
    public void run()
    {
-
       int NIndexedPeaks = 0;
 
       float[] h_offset = new float[ 49 ];
@@ -221,7 +207,6 @@ class MyThread extends Thread implements ActionListener
       panel.add( BottomPanel, BorderLayout.SOUTH );
       panel.invalidate();
       panel.validate();
-
    }
 
 
@@ -233,7 +218,6 @@ class MyThread extends Thread implements ActionListener
    @Override
    public void actionPerformed( ActionEvent arg0 )
    {
-     
       if( arg0.getSource() instanceof JButton )
       {   //JOptionPane.showMessageDialog( null , "Not implemented yet" );
          String filename = gov.anl.ipns.Util.File.FileIO.appendPath( 
@@ -271,14 +255,11 @@ class MyThread extends Thread implements ActionListener
          holder.validate();
          holder.repaint();
       }
-
-
    }
 
 
    private int Index( float h )
    {
-
       float offset = h - (int) Math.floor( h );
 
       if( offset > .5 )
@@ -291,8 +272,6 @@ class MyThread extends Thread implements ActionListener
          index = 48;
       return index;
    }
-
-
 }
 
 
@@ -300,17 +279,12 @@ class MyThread extends Thread implements ActionListener
 
 class messageThread extends Thread
 {
-
-
-
    MessageCenter      msg;
 
    Vector< Peak_new > Peaks;
 
-
    public messageThread( MessageCenter msg, Vector< Peak_new > Peaks )
    {
-
       this.msg = msg;
       this.Peaks = Peaks;
    }
@@ -324,10 +298,9 @@ class messageThread extends Thread
    @Override
    public void run()
    {
-
       Message mmm = new Message( Commands.SET_PEAK_NEW_LIST , Peaks , false );
-      msg.receive( mmm );
-      msg.receive( MessageCenter.PROCESS_MESSAGES );
+      msg.send( mmm );
+      msg.dispatchMessages();
    }
 
 }

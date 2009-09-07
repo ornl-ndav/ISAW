@@ -172,7 +172,7 @@ public class DQDataHandler implements IReceiveMessage
    {
       Message message = new Message(command, value, true, true);
       
-      messageCenter.receive(message);
+      messageCenter.send(message);
    }
    
    

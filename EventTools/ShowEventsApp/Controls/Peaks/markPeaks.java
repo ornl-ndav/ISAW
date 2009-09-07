@@ -95,7 +95,7 @@ public class markPeaks extends JPanel
                                      value,
                                      true );
       
-      message_center.receive( message );
+      message_center.send( message );
    }
    
    public static void main(String[] args)

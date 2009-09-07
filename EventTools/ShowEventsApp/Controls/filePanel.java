@@ -711,7 +711,7 @@ public class filePanel //extends JPanel
                                                       fileInfo,
                                                       collapse_messages,
                                                       use_separate_thread );
-                  message_center.receive( load_message );
+                  message_center.send( load_message );
                }
                catch (ParseException pe)
                {
@@ -864,7 +864,7 @@ public class filePanel //extends JPanel
                                      value,
                                      true );
       
-      message_center.receive( message );
+      message_center.send( message );
    }
    
    public static void main(String[] args)

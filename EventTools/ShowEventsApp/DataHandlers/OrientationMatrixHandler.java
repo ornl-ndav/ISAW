@@ -100,7 +100,7 @@ public class OrientationMatrixHandler implements IReceiveMessage
       Message mat_message = new Message( Commands.SET_ORIENTATION_MATRIX,
                                         orientation_matrix,
                                         true );
-      message_center.receive( mat_message );
+      message_center.send( mat_message );
     } 
 
     else if ( message.getName().equals(Commands.SHOW_ORIENTATION_MATRIX))
@@ -160,7 +160,7 @@ public class OrientationMatrixHandler implements IReceiveMessage
         Message new_mess = new Message( Commands.SHOW_SELECTED_POINT_INFO,
                                         select_info_cmd,
                                         true );
-        message_center.receive( new_mess );
+        message_center.send( new_mess );
         return false;
       }
       else
@@ -196,10 +196,10 @@ public class OrientationMatrixHandler implements IReceiveMessage
                                         orientation_matrix, 
                                         false );
      
-     message_center.receive( new_message );
+     message_center.send( new_message );
      
 
-     message_center.receive( new Message( 
+     message_center.send( new Message( 
                            Commands.INDEX_PEAKS_WITH_ORIENTATION_MATRIX, 
                            orientation_matrix, 
                            false) );

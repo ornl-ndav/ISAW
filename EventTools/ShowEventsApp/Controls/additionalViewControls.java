@@ -223,7 +223,7 @@ public class additionalViewControls extends JPanel
    {
       Message message = new Message(command, value, true);
       
-      messageCenter.receive(message);
+      messageCenter.send(message);
    }
    
    /**

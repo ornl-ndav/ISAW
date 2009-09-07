@@ -329,7 +329,7 @@ public class controlsPanel extends JPanel
                                     value,
                                     true);
       
-      messageCenter.receive(message);
+      messageCenter.send(message);
    }
    
    /**

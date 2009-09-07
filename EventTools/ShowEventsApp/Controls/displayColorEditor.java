@@ -229,7 +229,7 @@ public class displayColorEditor implements IReceiveMessage
                                     value,
                                     false );
      
-     message_center.receive( message );
+     message_center.send( message );
   }
   
   /**

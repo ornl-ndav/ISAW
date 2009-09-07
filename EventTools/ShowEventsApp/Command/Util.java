@@ -45,7 +45,7 @@ public class Util
    {
       if( Command == null )
          return;
-      status_message_center.receive( new Message(Command,value,replace) );
+      status_message_center.send( new Message(Command,value,replace) );
    }
    
    /**
@@ -130,7 +130,7 @@ class AWTThreadRun extends Thread
    public void run()
    {
       if( message_center != null)
-         message_center.receive( message );
+         message_center.send( message );
    }
    
 }

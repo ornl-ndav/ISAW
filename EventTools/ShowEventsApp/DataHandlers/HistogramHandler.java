@@ -129,7 +129,7 @@ public class HistogramHandler implements IReceiveMessage
                                          false,
                                          true );
       Util.sendInfo( "SENDING MESSGE, ADD TO VIEW");
-      message_center.receive( add_to_view );
+      message_center.send( add_to_view );
       return false;
     }
 
@@ -205,7 +205,7 @@ public class HistogramHandler implements IReceiveMessage
                                        true,
                                        true );
 
-        message_center.receive( info_message );
+        message_center.send( info_message );
       }
       return false;
     }
@@ -229,7 +229,7 @@ public class HistogramHandler implements IReceiveMessage
                                                  peakQs,
                                                  true,
                                                  true );
-          message_center.receive( set_peak_Q_list );
+          message_center.send( set_peak_Q_list );
 
           if ( cmd.getMarkPeaks() )                     // mark the peaks
           {
@@ -237,7 +237,7 @@ public class HistogramHandler implements IReceiveMessage
                                                 peakQs,
                                                 true,
                                                 true );
-             message_center.receive( mark_peaks );
+             message_center.send( mark_peaks );
           }
         }
       }
@@ -250,7 +250,7 @@ public class HistogramHandler implements IReceiveMessage
                                        new Float( histogram.maxVal() ),
                                        true,
                                        true );
-       message_center.receive( hist_max );
+       message_center.send( hist_max );
 
        String max_message = String.format("Max Histogram Value : %4.2f",
                                            histogram.maxVal() );

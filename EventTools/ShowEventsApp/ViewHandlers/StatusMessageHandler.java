@@ -42,6 +42,7 @@ import gov.anl.ipns.Util.Sys.WindowShower;
 import MessageTools.IReceiveMessage;
 import MessageTools.Message;
 import MessageTools.MessageCenter;
+import MessageTools.UpdateManager;
 
 import javax.swing.*;
 import EventTools.ShowEventsApp.Command.Commands;
@@ -175,8 +176,7 @@ public class StatusMessageHandler implements IReceiveMessage
       msg = new Message( Commands.DISPLAY_INFO , "Too bad" , false );
       SwingUtilities.invokeLater( new AWTQueueOP( msgC , msg ) );
       
-      SwingUtilities.invokeLater( new AWTQueueOP( msgC ,
-                                  MessageCenter.PROCESS_MESSAGES ) );
+      new UpdateManager( msgC, null, 100 );
    }
 }
 
@@ -199,6 +199,6 @@ class AWTQueueOP extends Thread
 
    public void run()
    {
-      msgC.receive( msg );
+      msgC.send( msg );
    }
 }
