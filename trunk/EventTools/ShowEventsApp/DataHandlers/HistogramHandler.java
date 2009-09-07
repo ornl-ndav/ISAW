@@ -77,6 +77,9 @@ public class HistogramHandler implements IReceiveMessage
   public HistogramHandler( MessageCenter message_center, int num_bins )
   {
     this.num_bins = num_bins;
+    this.histogram = DefaultSNAP_Histogram( num_bins );
+    this.current_instrument = SNS_Tof_to_Q_map.SNAP;
+
     this.message_center = message_center;
     message_center.addReceiver( this, Commands.ADD_EVENTS );
     message_center.addReceiver( this, Commands.CLEAR_HISTOGRAM );
@@ -105,9 +108,6 @@ public class HistogramHandler implements IReceiveMessage
   */
   public boolean receive( Message message )
   {
-//    System.out.println("***HistogramHandler in thread " 
-//                       + Thread.currentThread());
-
      if ( histogram == null && 
          !(message.getName().equals(Commands.SET_NEW_INSTRUMENT)))
      {
@@ -163,18 +163,21 @@ public class HistogramHandler implements IReceiveMessage
         return false;
       }
  
-      if ( inst.equals(SNS_Tof_to_Q_map.SNAP) )
+      if ( inst.equals(SNS_Tof_to_Q_map.SNAP) || 
+           inst.equals(SNS_Tof_to_Q_map.TOPAZ ) )
       {
-        histogram = DefaultSNAP_Histogram( num_bins );
+        SetHistogramForSNAP();
         current_instrument = inst;
       }
       else if ( inst.equals(SNS_Tof_to_Q_map.ARCS) )
       {
-        histogram = DefaultARCS_Histogram( num_bins );
+        SetHistogramForARCS();
         current_instrument = inst;
       }
       else
       {
+        histogram.clear();                 // at least clear the histogram
+                                           // if starting a new file
         Util.sendWarning( inst + " not supported yet. " +
                           "Detector position info needed." );
         return false;
@@ -326,9 +329,6 @@ public class HistogramHandler implements IReceiveMessage
    */
   private Histogram3D DefaultSNAP_Histogram( int num_bins )
   {
-    // Just make default histogram aligned with coord axes.
-
-//    long start_time = System.nanoTime();
     Vector3D xVec = new Vector3D(1,0,0);
     Vector3D yVec = new Vector3D(0,1,0);
     Vector3D zVec = new Vector3D(0,0,1);
@@ -344,10 +344,36 @@ public class HistogramHandler implements IReceiveMessage
     Histogram3D histogram = new Histogram3D( x_binner,
                                              y_binner,
                                              z_binner );
-//    long run_time = System.nanoTime() - start_time;
-//    System.out.println("Time(ms) to allocate SNAP histogram = " +
-//                        run_time/1.e6);
     return histogram;
+  }
+
+
+  /**
+   *  Set up the histogram to be new empty histogram covering a region
+   *  of reciprocal space appropriate for the SNAP instrument at the
+   *  SNS, WITHOUT reallocating memory, if possible.
+   */
+  private void SetHistogramForSNAP()
+  {
+    if ( histogram == null )
+      histogram = DefaultSNAP_Histogram( num_bins );
+    else
+    {
+      Vector3D xVec = new Vector3D(1,0,0);
+      Vector3D yVec = new Vector3D(0,1,0);
+      Vector3D zVec = new Vector3D(0,0,1);
+
+      IEventBinner x_bin1D = new UniformEventBinner( -16.0f,  0,   num_bins );
+      IEventBinner y_bin1D = new UniformEventBinner( -16.0f,  0,   num_bins );
+      IEventBinner z_bin1D = new UniformEventBinner( - 8.0f, 8.0f, num_bins );
+
+      ProjectionBinner3D x_binner = new ProjectionBinner3D(x_bin1D, xVec);
+      ProjectionBinner3D y_binner = new ProjectionBinner3D(y_bin1D, yVec);
+      ProjectionBinner3D z_binner = new ProjectionBinner3D(z_bin1D, zVec);
+
+      histogram.setHistogramPosition( x_binner, y_binner, z_binner );
+      histogram.clear();
+    }
   }
 
 
@@ -361,9 +387,6 @@ public class HistogramHandler implements IReceiveMessage
    */
   private Histogram3D DefaultARCS_Histogram( int num_bins )
   {
-    // Just make default histogram aligned with coord axes.
-
-//    long start_time = System.nanoTime();
     Vector3D xVec = new Vector3D(1,0,0);
     Vector3D yVec = new Vector3D(0,1,0);
     Vector3D zVec = new Vector3D(0,0,1);
@@ -379,11 +402,36 @@ public class HistogramHandler implements IReceiveMessage
     Histogram3D histogram = new Histogram3D( x_binner,
                                              y_binner,
                                              z_binner );
-//    long run_time = System.nanoTime() - start_time;
-//    System.out.println("Time(ms) to allocate ARCS histogram = " +
-//                        run_time/1.e6);
-
     return histogram;
+  }
+
+
+  /**
+   *  Set up the histogram to be new empty histogram covering a region
+   *  of reciprocal space appropriate for the ARCS instrument at the
+   *  SNS, WITHOUT reallocating memory, if possible.
+   */
+  private void SetHistogramForARCS()
+  {
+    if ( histogram == null )
+      histogram = DefaultARCS_Histogram( num_bins );
+    else
+    {
+      Vector3D xVec = new Vector3D(1,0,0);
+      Vector3D yVec = new Vector3D(0,1,0);
+      Vector3D zVec = new Vector3D(0,0,1);
+
+      IEventBinner x_bin1D = new UniformEventBinner( -50.0f,    0,  num_bins );
+      IEventBinner y_bin1D = new UniformEventBinner( -10.0f, 40.0f, num_bins );
+      IEventBinner z_bin1D = new UniformEventBinner( -25.0f, 25.0f, num_bins );
+
+      ProjectionBinner3D x_binner = new ProjectionBinner3D(x_bin1D, xVec);
+      ProjectionBinner3D y_binner = new ProjectionBinner3D(y_bin1D, yVec);
+      ProjectionBinner3D z_binner = new ProjectionBinner3D(z_bin1D, zVec);
+
+      histogram.setHistogramPosition( x_binner, y_binner, z_binner );
+      histogram.clear();
+    }
   }
 
 
@@ -520,7 +568,7 @@ public class HistogramHandler implements IReceiveMessage
   }                         
 
 
-  synchronized public void AddEventsToHistogram( IEventList3D events )
+  public void AddEventsToHistogram( IEventList3D events )
   {
     histogram.addEvents( events );
   }

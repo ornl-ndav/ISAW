@@ -60,7 +60,7 @@ public class IsawEV
 //    message_center.setDebugSend( true );
 
     int update_time_ms = 30;
-    new UpdateManager(message_center, null, update_time_ms );
+    new TimedTrigger(message_center, update_time_ms );
 
     new multiPanel( message_center );
 

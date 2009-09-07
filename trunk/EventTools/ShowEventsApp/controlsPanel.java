@@ -352,6 +352,6 @@ public class controlsPanel extends JPanel
       View.setVisible(true);
       
       View.add(op);
-      new UpdateManager(mc, null, 100);
+      new TimedTrigger(mc, 100);
    }
 }

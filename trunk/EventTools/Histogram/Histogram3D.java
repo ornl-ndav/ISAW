@@ -77,6 +77,12 @@ public class Histogram3D
                                              // These are normal to the planes 
                                              // that form the histogram bin
                                              // boundaries.
+
+  private int cur_num_x = -1;                // keep track of current array
+  private int cur_num_y = -1;                // sizes, so we don't spend
+  private int cur_num_z = -1;                // time allocating a new array
+                                             // if we already have one.
+
   private IProjectionBinner3D x_binner,
                               y_binner,
                               z_binner;
@@ -122,7 +128,10 @@ public class Histogram3D
   }
 
 
-
+  /**
+   *  Calculate the dual binners and make sure we have an cleared histogram
+   *  of the correct size.
+   */
   private void init_histogram()
   {
     IProjectionBinner3D[] dual_binners =
@@ -136,13 +145,27 @@ public class Histogram3D
     int num_x = x_binner.numBins();
     int num_y = y_binner.numBins();
     int num_z = z_binner.numBins();
-    histogram = new float[num_z][num_y][];
+    if ( cur_num_x == num_x  &&
+         cur_num_y == num_y  &&
+         cur_num_z == num_z  )
+    {
+      clear();                                   // just clear current array
+    } 
+    else
+    {                                            // get one the right size
+      histogram = new float[num_z][num_y][];
 
-    for ( int iz = 0; iz < num_z; iz++ )       // it's about 30% faster to
-      for ( int iy = 0; iy < num_y; iy++ )     // allocate the rows ourselves
-        histogram[iz][iy] = new float[num_x];  // than to just declare one 
-                                               // large 3D array on opteron
-                                               // system with 4 cores!
+      for ( int iz = 0; iz < num_z; iz++ )       // it's about 30% faster to
+        for ( int iy = 0; iy < num_y; iy++ )     // allocate the rows ourselves
+          histogram[iz][iy] = new float[num_x];  // than to just declare one 
+                                                 // large 3D array on opteron
+                                                 // system with 4 cores!
+
+      cur_num_x = num_x;                         // record sizes for next time
+      cur_num_y = num_y;
+      cur_num_z = num_z;
+    }
+
     max = Float.NEGATIVE_INFINITY;
     min = Float.POSITIVE_INFINITY;
     sum = 0;
@@ -309,15 +332,17 @@ public class Histogram3D
    */
   public void clear()
   {
-    SplitPages();
+    synchronized(histogram)
+    {
+      SplitPages();
 
-    Vector  ops = new Vector();
-    for ( int i = 0; i < n_segments; i++ )
-      ops.add( new ClearPages( histogram, page_1[i], page_2[i] ) );
+      Vector  ops = new Vector();
+      for ( int i = 0; i < n_segments; i++ )
+        ops.add( new ClearPages( histogram, page_1[i], page_2[i] ) );
 
-    ParallelExecutor pe = new ParallelExecutor( ops, n_threads, max_time );
-    pe.runOperators();
-
+      ParallelExecutor pe = new ParallelExecutor( ops, n_threads, max_time );
+      pe.runOperators();
+    }
     min = 0;
     max = 0;
     sum = 0;
@@ -337,20 +362,23 @@ public class Histogram3D
    */
   public double addEvents( IEventList3D events )
   {
-    SplitPages();
+    synchronized(histogram)
+    {
+      SplitPages();
 
-    Vector  ops = new Vector();
-    for ( int i = 0; i < n_segments; i++ )
-      ops.add( new BinEvents( histogram, min, max, page_1[i], page_2[i], 
-                              x_binner, y_binner, z_binner,  events ) );
+      Vector  ops = new Vector();
+      for ( int i = 0; i < n_segments; i++ )
+        ops.add( new BinEvents( histogram, min, max, page_1[i], page_2[i], 
+                                x_binner, y_binner, z_binner,  events ) );
 
-    ParallelExecutor pe = new ParallelExecutor( ops, n_threads, max_time );
-    Vector results = pe.runOperators();
+      ParallelExecutor pe = new ParallelExecutor( ops, n_threads, max_time );
+      Vector results = pe.runOperators();
 
-    double old_sum = sum;
-    extract_scan_info( results, old_sum );
+      double old_sum = sum;
+      extract_scan_info( results, old_sum );
 
-    return sum - old_sum;
+      return sum - old_sum;
+    }
   }
 
 
@@ -419,20 +447,23 @@ public class Histogram3D
    */
   public Vector getEventLists( IEventBinner binner )
   {
-    SplitPages();
+    synchronized(histogram)
+    {
+      SplitPages();
 
-    Vector  ops = new Vector();
-    for ( int i = 0; i < n_segments; i++ )
-      ops.add( new GetEventLists( histogram, 
-                                  page_1[i], page_2[i],
-                                  x_edge_binner,
-                                  y_edge_binner,
-                                  z_edge_binner,
-                                  binner ) );
+      Vector  ops = new Vector();
+      for ( int i = 0; i < n_segments; i++ )
+        ops.add( new GetEventLists( histogram, 
+                                    page_1[i], page_2[i],
+                                    x_edge_binner,
+                                    y_edge_binner,
+                                    z_edge_binner,
+                                    binner ) );
 
-    ParallelExecutor pe = new ParallelExecutor( ops, n_threads, max_time );
-    Vector results = pe.runOperators();
-    return results;
+      ParallelExecutor pe = new ParallelExecutor( ops, n_threads, max_time );
+      Vector results = pe.runOperators();
+      return results;
+    }
   }
 
 
@@ -480,16 +511,19 @@ public class Histogram3D
    */
   public void scanHistogram()
   {
-    SplitPages();
+    synchronized(histogram)
+    {
+      SplitPages();
 
-    Vector  ops = new Vector();
-    for ( int i = 0; i < n_segments; i++ )
-      ops.add( new ScanHistogram3D( histogram, page_1[i], page_2[i] ) );
+      Vector  ops = new Vector();
+      for ( int i = 0; i < n_segments; i++ )
+        ops.add( new ScanHistogram3D( histogram, page_1[i], page_2[i] ) );
 
-    ParallelExecutor pe = new ParallelExecutor( ops, n_threads, max_time );
-    Vector results = pe.runOperators();
+      ParallelExecutor pe = new ParallelExecutor( ops, n_threads, max_time );
+      Vector results = pe.runOperators();
 
-    extract_scan_info( results, 0 );
+      extract_scan_info( results, 0 );
+    }
   }
 
 
