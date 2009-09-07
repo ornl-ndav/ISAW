@@ -58,6 +58,7 @@ public class PeakListHandler implements IReceiveMessage
 
          Message get_peak_new_list = new Message( Commands.GET_PEAK_NEW_LIST,
                                                  peakQ_list,
+                                                 true,
                                                  true );
          message_center.send( get_peak_new_list );
 
@@ -181,18 +182,16 @@ public class PeakListHandler implements IReceiveMessage
        if( value == null || value.length < 2)
           return false;
          
-       message_center.send(  new Message( Commands.DISPLAY_INFO, 
-                "Starting long calculation. Wait", false) );
+       Util.sendInfo( "Starting long calculation. Please wait..." );
         
         Vector<float[][]> OrientationMatrices =
                 GetUB.getAllOrientationMatrices( peakNew_list , null , 
                                                 .02f , value[1] );
         if( OrientationMatrices == null)
         {
-           message_center.send( new Message( Commands.DISPLAY_ERROR,
-                    "No Orientation Matrix found in Auto no Crystal Parameters",
-                    false));
-           return true;
+           Util.sendError( 
+                 "No Orientation Matrix found in Auto no Crystal Parameters" );
+           return false;
         }
         Vector<IPeak> Peaks = Convert2IPeak(peakNew_list);
         float[][]UB = OrientMatrixControl.showCurrentOrientationMatrices(
@@ -200,15 +199,13 @@ public class PeakListHandler implements IReceiveMessage
         
         if( UB == null)
         {
-           message_center.send( new Message( Commands.DISPLAY_ERROR,
-                    "No Orientation Matrix was selected",
-                    false));
-           return true;
+           Util.sendError( "No Orientation Matrix was selected" );
+           return false;
         }
         
         message_center.send( new Message( Commands.SET_ORIENTATION_MATRIX,
                  LinearAlgebra.getTranspose( UB ), false));
-        return true;
+        return false;
     }
 
     return false;

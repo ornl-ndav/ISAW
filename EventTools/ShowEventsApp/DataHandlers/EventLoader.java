@@ -118,14 +118,14 @@ public class EventLoader implements IReceiveMessage
     if ( num_available > 0 )
     {
       message_center.send(
-            new Message( Commands.CLEAR_HISTOGRAM, null, true ) );
+            new Message( Commands.CLEAR_HISTOGRAM, null, true, true ) );
 
       message_center.send( 
 
-            new Message( Commands.CLEAR_EVENTS_VIEW, null, true ) );
+            new Message( Commands.CLEAR_EVENTS_VIEW, null, true, true ) );
       message_center.send( 
 
-            new Message( Commands.CLEAR_DQ, null, true ) );
+            new Message( Commands.CLEAR_DQ, null, true, true ) );
     }
     else
     {

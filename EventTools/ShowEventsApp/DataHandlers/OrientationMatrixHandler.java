@@ -192,9 +192,11 @@ public class OrientationMatrixHandler implements IReceiveMessage
 
      ShowLatticeParams( orientation_matrix );
      
+     // NOTE: we don't use a separate thread for setting the orientation matrix
+     //       since we want it done BEFORE indexing.
      Message new_message = new Message( Commands.SET_ORIENTATION_MATRIX, 
                                         orientation_matrix, 
-                                        false );
+                                        false ); 
      
      message_center.send( new_message );
      
@@ -202,7 +204,8 @@ public class OrientationMatrixHandler implements IReceiveMessage
      message_center.send( new Message( 
                            Commands.INDEX_PEAKS_WITH_ORIENTATION_MATRIX, 
                            orientation_matrix, 
-                           false) );
+                           false,
+                           true ) );
 
      return true;
   }
