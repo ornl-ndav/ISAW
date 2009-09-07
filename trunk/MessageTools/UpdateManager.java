@@ -48,6 +48,7 @@ public class UpdateManager
   private  MessageCenter  message_center;
   private  IUpdate[]      updateables = null;
   private  Timer          timer;
+  private  boolean        call_dispatch;
 
   /* ------------------------ constructor ------------------------------ */
   /**
@@ -83,6 +84,10 @@ public class UpdateManager
 
     timer = new Timer( time_in_ms, new TimerListener() );
     timer.start();
+
+    call_dispatch = false;
+    Thread dispatch_thread = new CallDispatchThread();
+    dispatch_thread.start();
   }
 
 
@@ -90,19 +95,64 @@ public class UpdateManager
   /**
    *  When the timer fires, the actionPerformed method in this internal
    *  class will trigger message delivery by the message center, and 
-   *  redraw all JoglPanels, if some messages were actually delivered. 
+   *  update any Updateables, if some messages were delivered in the
+   *  call dispatch thread and and returned true. 
    */
   private class TimerListener implements ActionListener
   {
      public void actionPerformed( ActionEvent e )
      {
-       if ( message_center.dispatchMessages() )
-       {
-         if ( updateables != null )
-           for ( int i = 0; i < updateables.length; i++ )
-             updateables[i].Update();
-       }
-     }
+        if ( !call_dispatch )            // if we're not already working on 
+          call_dispatch = true;          // it, trip the call_dispatch flag
+     }                                   // to start processing messages
   }
   
+
+  /* ----------------------- CallDispatchThread ------------------------ */
+  /**
+   *  This class is the Thread that actually calls dispatchMessages().  
+   *  We run this in a separate thread to avoid tying up the AWT Event
+   *  thread.  This thread will run as long as the application is running.
+   *  Whenever the timer trips the "call_dispatch" flag, this thread
+   *  thread calls the dispatchMessages() method on the MessageCenter. 
+   *  If dispatchMessages() returns true, then the Update() methods will
+   *  be called for all IUpdate objects passed to the constructor.
+   */
+  protected class CallDispatchThread extends Thread
+  {
+    public void run()
+    {
+      while ( true )                       // keep looping forever
+      {
+        if ( call_dispatch )
+        {
+          try
+          {
+            boolean changed = message_center.dispatchMessages();
+            if ( changed && updateables != null )
+              for ( int i = 0; i < updateables.length; i++ )
+                updateables[i].Update();
+          }
+          catch ( Throwable ex )
+          {
+            System.out.println("Exception processing messages : " + ex );
+            ex.printStackTrace();
+          }
+          finally
+          {
+            call_dispatch = false;
+          }
+        }
+        try
+        {
+          Thread.sleep(30);
+        }
+        catch ( Exception ex )
+        {
+          System.out.println("Exception sleeping in CallDispatchThread");
+        }
+      }
+    }
+  }
+
 } 

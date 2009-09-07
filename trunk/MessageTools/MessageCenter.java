@@ -85,7 +85,6 @@ public class MessageCenter
   private Hashtable<Object,Vector<Message>> sender_message_table;
    
   private static long  tag_count   = 0;
-  private boolean      sender_busy = false;
   private Object       lists_lock = new Object();  // lock for message_table
                                                    // and receiver_table
 
@@ -107,9 +106,6 @@ public class MessageCenter
     sender_receiver_table = null;
     sender_message_table  = null;
     center_name = name;
-
-    MessageSenderThread sender = new MessageSenderThread();
-    sender.start();
   }
 
 
@@ -175,26 +171,32 @@ public class MessageCenter
 
  /* --------------------------- dispatchMessages ------------------------ */
   /**
-   * Send out all messages currently in the message table.
+   * Send out all messages currently in the message table.  NOTE: This
+   * method should generally NOT be called from the AWT Event thread, since
+   * some messages may take a long time to process.  If messages that take
+   * a long time to process aren't run in a separate thread (by setting the
+   * use_new_thead option on the message) calling this from the AWT Event
+   * thread will prevent Swing components from being updated properly.
    * 
-   * @return false if the mesage table is empty, or the messages
-   *               can't currently be sent out because the message sending
-   *               thread is busy.
+   * @return true if at least one receiver returned true when a message
+   *              was dispatched to that receiver, and that message was NOT
+   *              sent out in a separate thread.  THis returns false if the 
+   *              message table was empty, or if all receive methods returned
+   *              false for messages not sent out from separate threads.
    */
-  public boolean dispatchMessages()
+  public synchronized boolean dispatchMessages()
   {                                
     synchronized(lists_lock)
     {
-       if ( sender_busy )                   // wait for later update triggers
-         return false;                      // to process more messages
-
        if ( message_table.size() <= 0 )     // nothing to send
          return false;
-                                            // grab all current messages
+                                            // grab all current messages and
+                                            // replace master table of messgaes
+                                            // with a new empty table
        sender_message_table = message_table;
        message_table = new Hashtable<Object,Vector<Message>>();
 
-                                            // get copy of lists of receivers
+                                            // get copy of table of receivers
        sender_receiver_table = new Hashtable<Object,Vector<IReceiveMessage>>();
 
        Vector<IReceiveMessage> list;
@@ -209,10 +211,12 @@ public class MessageCenter
            new_list.add( list.elementAt(i) );
          sender_receiver_table.put( key, new_list );
        }
-       
-       sender_busy = true;                  // trip flag so the sender thread
-                                            // will process messages
-       return false;
+
+       int n_changed = sendAll( sender_message_table, sender_receiver_table );
+       if ( n_changed > 0 )
+         return true;
+       else
+         return false;
     }
   }
   
@@ -223,7 +227,7 @@ public class MessageCenter
    *  the named queue does not already exist, it will be created.  The same
    *  receiver object cannot be added to one queue more than one time.
    *
-   *  @param  receiver  The receiver object to be removed.
+   *  @param  receiver  The receiver object to be added.
    *  @param  name      The message queue to which the receiver is to
    *                    be added.
    *
@@ -321,15 +325,17 @@ public class MessageCenter
 
   /* --------------------- getProcessCompleteQueueName ------------------- */
   /**
-   *  Get the name of the queue for the special MESSAGE_PROCESSING_COMPLETE 
-   *  message.  Subscribers to this message queue will be sent a 
-   *  MESSAGE_PROCESSING_COMPLETE message whenever the message center has
-   *  processed all pending messages.  IReceiveMessage objects should 
+   *  Get the name of the queue for notifying receivers when message 
+   *  processing has been completed for a batch of messages.  Subscribers 
+   *  to this message queue will be sent a  message whenever the 
+   *  message center has processed all pending messages and at least one
+   *  receive method returned true.  IReceiveMessage objects should 
    *  subscribe to this queue (using the addReceiver() method), if they
-   *  need to be informed when a message processing cycle is complete.
+   *  need to be informed when a message processing cycle is complete,
+   *  and some recieve method that was not run in a separate thread,
+   *  returned true.
    *
-   *  @return the name of the queue for MESSAGE_PROCESSING_COMPLETE
-   *          messages.
+   *  @return the name of the queue for processing complete messages.
    */
   public String getProcessCompleteQueueName()
   {
@@ -493,50 +499,6 @@ public class MessageCenter
     }
 
     return some_changed;
-  }
-
-
-  /**
-   *  This class is the Thread that actually sends out the messages.  
-   *  It will run as long as the application is running.  Whenever the
-   *  dispatchMessages() method trips the "sender_busy" flag, this
-   *  thread will send out all messages currently in the 
-   *  "sender_message_table" to appropriate receivers, as listed in the
-   *  "sender_receiver_table".
-   */
-  private class MessageSenderThread extends Thread
-  {
-    public void run()
-    {
-      while ( true )                       // keep looping forever
-      {
-        if ( sender_busy )
-        {
-          int num_sent = 0;
-          try
-          {
-            sendAll( sender_message_table, sender_receiver_table );
-          }
-          catch ( Throwable ex )
-          {
-            System.out.println("Exception processing messages : " + ex );
-            ex.printStackTrace();
-          }
-          finally
-          {
-            sender_busy = false;
-          }
-        }
-        try
-        {
-          Thread.sleep(30);
-        }
-        catch ( Exception ex )
-        {
-          System.out.println("Exception sleeping in MessageCenter.sender");
-        }
-      }
-    }
   }
 
 
