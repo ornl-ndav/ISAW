@@ -168,7 +168,7 @@ public class EventViewHandler implements IReceiveMessage
         Vector3D size = new Vector3D( 1, 1, 1 );
         SelectPointCmd value = new SelectPointCmd( point, size );
         Message message = new Message( Commands.SELECT_POINT, value, true );
-        message_center.receive( message );
+        message_center.send( message );
       }
     }
   }

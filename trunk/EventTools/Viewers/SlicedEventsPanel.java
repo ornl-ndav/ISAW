@@ -129,8 +129,8 @@ public class SlicedEventsPanel
     camera.setCOP( new Vector3D( -20, 0, 10 ) );
     camera.SetViewVolume( 0.25f, 250, 60 );
 
-//    jogl_panel.setBackgroundColor( Color.GRAY );
-    Color background_color = new Color( 238, 238, 238 );
+    Color background_color = Color.GRAY;
+//    Color background_color = new Color( 238, 238, 238 );
     jogl_panel.setBackgroundColor( background_color );
 
     new MouseArcBall( jogl_panel );

@@ -1,7 +1,7 @@
 /*
  * File:  UpdateManager.java
  *
- * Copyright (C) 2005 Dennis Mikkelson
+ * Copyright (C) 2005-2009 Dennis Mikkelson
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -24,13 +24,9 @@
  *
  * Modified:
  *
- *  $Log: UpdateManager.java,v $
- *  Revision 1.2  2007/08/26 20:17:43  dennis
- *  Removed redundant "instanceof" test.
- *
- *  Revision 1.1  2006/10/30 03:09:58  dennis
- *  Generalized utility for triggering a MessageCenter to process
- *  messages, then updating some objects to reflect their new state.
+ *  $Author$
+ *  $Date$            
+ *  $Revision$
  *
  */
 
@@ -100,7 +96,7 @@ public class UpdateManager
   {
      public void actionPerformed( ActionEvent e )
      {
-       if ( message_center.receive( MessageCenter.PROCESS_MESSAGES ) )
+       if ( message_center.dispatchMessages() )
        {
          if ( updateables != null )
            for ( int i = 0; i < updateables.length; i++ )

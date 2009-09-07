@@ -330,7 +330,7 @@ public class indexPeaksPanel extends    JPanel
    {
       Message message = new Message(command, value, true);
       
-      messageCenter.receive(message);
+      messageCenter.send(message);
    }
 
    /**
@@ -536,7 +536,7 @@ public class indexPeaksPanel extends    JPanel
             if( jfc.showSaveDialog( null ) == JFileChooser.APPROVE_OPTION )
             {
                lastWriteFileName = jfc.getSelectedFile().toString();
-               messageCenter.receive( new Message(
+               messageCenter.send( new Message(
                         Commands.WRITE_ORIENTATION_MATRIX , lastWriteFileName ,
                         false ) );
             }
@@ -569,7 +569,7 @@ public class indexPeaksPanel extends    JPanel
          dmax = Float.parseFloat( Dmax );
       }catch( Exception ss)
       {
-         messageCenter.receive(  new Message( Commands.DISPLAY_ERROR,
+         messageCenter.send(  new Message( Commands.DISPLAY_ERROR,
                   "Min or Max d-spacing are not set for autoindexing", false) );
          return;
       }
@@ -577,7 +577,7 @@ public class indexPeaksPanel extends    JPanel
       data[0] = dmin;
       data[1] = dmax;
       
-      messageCenter.receive(  new Message( Commands.INDEX_PEAKS_ROSS,
+      messageCenter.send(  new Message( Commands.INDEX_PEAKS_ROSS,
                data, false) );
    }
    

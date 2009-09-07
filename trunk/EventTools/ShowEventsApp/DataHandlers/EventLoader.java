@@ -117,13 +117,13 @@ public class EventLoader implements IReceiveMessage
 
     if ( num_available > 0 )
     {
-      message_center.receive(
+      message_center.send(
             new Message( Commands.CLEAR_HISTOGRAM, null, true ) );
 
-      message_center.receive( 
+      message_center.send( 
 
             new Message( Commands.CLEAR_EVENTS_VIEW, null, true ) );
-      message_center.receive( 
+      message_center.send( 
 
             new Message( Commands.CLEAR_DQ, null, true ) );
     }
@@ -205,7 +205,7 @@ public class EventLoader implements IReceiveMessage
                                             tof_evl,
                                             false,
                                             true );
-        message_center.receive( map_to_Q_cmd );
+        message_center.send( map_to_Q_cmd );
       }
 
       if ( num_loaded >= num_to_load )

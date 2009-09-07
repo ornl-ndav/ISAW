@@ -237,7 +237,7 @@ class SaveActionListener implements ActionListener
       JFileChooser jf = new JFileChooser();
       if( jf.showSaveDialog( null ) != JFileChooser.APPROVE_OPTION)
          return;
-      message_center.receive(  new Message( Command, 
+      message_center.send(  new Message( Command, 
                jf.getSelectedFile().toString(), false) );
    }
 }

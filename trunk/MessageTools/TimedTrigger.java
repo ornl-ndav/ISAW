@@ -24,13 +24,9 @@
  *
  * Modified:
  *
- *  $Log$
- *  Revision 1.1  2007/08/14 00:09:01  dennis
- *  Added MessageTools files from UW-Stout repository.
- *
- *  Revision 1.1  2006/10/30 00:55:35  dennis
- *  Initial version of simple "trigger" class to trigger the
- *  processing of messages, by a MessageCenter.
+ *  $Author$
+ *  $Date$            
+ *  $Revision$
  *
  */
 
@@ -79,7 +75,7 @@ public class TimedTrigger
   {
      public void actionPerformed( ActionEvent e )
      {
-        message_center.receive( MessageCenter.PROCESS_MESSAGES ); 
+        message_center.dispatchMessages(); 
      }
   }
   

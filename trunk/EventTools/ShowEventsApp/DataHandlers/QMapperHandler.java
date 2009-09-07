@@ -191,7 +191,7 @@ public class QMapperHandler implements IReceiveMessage
                                            // correct ipkobs!
         Message add_hist_info_message =
                 new Message( Commands.ADD_HISTOGRAM_INFO, info, true, true );
-        message_center.receive( add_hist_info_message );
+        message_center.send( add_hist_info_message );
     }
 
     else if ( message.getName().equals(Commands.MAP_EVENTS_TO_Q) )
@@ -206,7 +206,7 @@ public class QMapperHandler implements IReceiveMessage
          if ( event_lists != null )
          {
            for ( int i = 0; i < event_lists.length; i++ )
-             message_center.receive( new Message( Commands.ADD_EVENTS,
+             message_center.send( new Message( Commands.ADD_EVENTS,
                                                   event_lists[i],
                                                   false,
                                                   true ));
@@ -229,7 +229,7 @@ public class QMapperHandler implements IReceiveMessage
         Message peak_new_message =
           new Message( Commands.SET_PEAK_NEW_LIST, peak_new_list, true, true );
 
-        message_center.receive( peak_new_message );
+        message_center.send( peak_new_message );
       }
     }
 

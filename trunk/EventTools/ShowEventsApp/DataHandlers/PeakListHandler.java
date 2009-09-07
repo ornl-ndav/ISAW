@@ -59,7 +59,7 @@ public class PeakListHandler implements IReceiveMessage
          Message get_peak_new_list = new Message( Commands.GET_PEAK_NEW_LIST,
                                                  peakQ_list,
                                                  true );
-         message_center.receive( get_peak_new_list );
+         message_center.send( get_peak_new_list );
 
          System.out.println("IN PeakListHandler set PEAK Q, #PeakQ = " + 
                              peakQ_list.size() +
@@ -144,11 +144,11 @@ public class PeakListHandler implements IReceiveMessage
       Message set_peaks = new Message( Commands.SET_PEAK_NEW_LIST,
                                        peakNew_list,
                                        true );
-      message_center.receive( set_peaks );
+      message_center.send( set_peaks );
 
       Message set_or = new Message( Commands.SET_ORIENTATION_MATRIX,
                                     UB, true );
-      message_center.receive( set_or );
+      message_center.send( set_or );
 
       System.out.println("Indexing results are: " );
 
@@ -171,7 +171,7 @@ public class PeakListHandler implements IReceiveMessage
        Message set_peaks = new Message( Commands.SET_PEAK_NEW_LIST,
                                         peakNew_list,
                                         true );
-       message_center.receive( set_peaks );
+       message_center.send( set_peaks );
        return false;
     } 
 
@@ -181,7 +181,7 @@ public class PeakListHandler implements IReceiveMessage
        if( value == null || value.length < 2)
           return false;
          
-       message_center.receive(  new Message( Commands.DISPLAY_INFO, 
+       message_center.send(  new Message( Commands.DISPLAY_INFO, 
                 "Starting long calculation. Wait", false) );
         
         Vector<float[][]> OrientationMatrices =
@@ -189,7 +189,7 @@ public class PeakListHandler implements IReceiveMessage
                                                 .02f , value[1] );
         if( OrientationMatrices == null)
         {
-           message_center.receive( new Message( Commands.DISPLAY_ERROR,
+           message_center.send( new Message( Commands.DISPLAY_ERROR,
                     "No Orientation Matrix found in Auto no Crystal Parameters",
                     false));
            return true;
@@ -200,13 +200,13 @@ public class PeakListHandler implements IReceiveMessage
         
         if( UB == null)
         {
-           message_center.receive( new Message( Commands.DISPLAY_ERROR,
+           message_center.send( new Message( Commands.DISPLAY_ERROR,
                     "No Orientation Matrix was selected",
                     false));
            return true;
         }
         
-        message_center.receive( new Message( Commands.SET_ORIENTATION_MATRIX,
+        message_center.send( new Message( Commands.SET_ORIENTATION_MATRIX,
                  LinearAlgebra.getTranspose( UB ), false));
         return true;
     }

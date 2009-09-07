@@ -82,7 +82,7 @@ public class writePeaks extends JPanel
                                     value,
                                     true);
       
-      message_center.receive(message);
+      message_center.send(message);
    }
    
    /**
