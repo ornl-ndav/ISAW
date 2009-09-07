@@ -46,6 +46,7 @@ public class TimedTrigger
 {
   private  MessageCenter  message_center;
   private  Timer          timer;
+  private  boolean        call_dispatch;
 
   /* ------------------------ constructor ------------------------------ */
   /**
@@ -63,6 +64,10 @@ public class TimedTrigger
 
     timer = new Timer( time_in_ms, new TimerListener() );
     timer.start();
+
+    call_dispatch = false;
+    Thread dispatch_thread = new CallDispatchThread();
+    dispatch_thread.start(); 
   }
 
 
@@ -75,8 +80,52 @@ public class TimedTrigger
   {
      public void actionPerformed( ActionEvent e )
      {
-        message_center.dispatchMessages(); 
-     }
+        if ( !call_dispatch )            // if we're not already working on 
+          call_dispatch = true;          // it, trip the call_dispatch flag
+     }                                   // to start processing messages
+  }
+
+
+  /* ----------------------- CallDispatchThread ------------------------ */
+  /**
+   *  This class is the Thread that actually calls dispatchMessages().  
+   *  We run this in a separate thread to avoid tying up the AWT Event
+   *  thread.  This thread will run as long as the application is running.
+   *  Whenever the timer trips the "call_dispatch" flag, this thread
+   *  thread calls the dispatchMessages() method on the MessageCenter. 
+   */
+  protected class CallDispatchThread extends Thread
+  {
+    public void run()
+    {
+      while ( true )                       // keep looping forever
+      {
+        if ( call_dispatch )
+        {
+          try
+          {
+            message_center.dispatchMessages();
+          }
+          catch ( Throwable ex )
+          {
+            System.out.println("Exception processing messages : " + ex );
+            ex.printStackTrace();
+          }
+          finally
+          {
+            call_dispatch = false;
+          }
+        }
+        try
+        {
+          Thread.sleep(30);
+        }
+        catch ( Exception ex )
+        {
+          System.out.println("Exception sleeping in CallDispatchThread");
+        }
+      }
+    }
   }
   
 } 
