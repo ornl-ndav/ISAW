@@ -463,7 +463,8 @@ public class filePanel //extends JPanel
       {
          //System.out.println(nfe.getStackTrace());
          String error = "Error formatting data!";
-         JOptionPane.showMessageDialog(null, error, "Invalid Input", JOptionPane.ERROR_MESSAGE);
+         JOptionPane.showMessageDialog(null, error, "Invalid Input", 
+                                       JOptionPane.ERROR_MESSAGE);
          return;
       }
    }
@@ -670,12 +671,28 @@ public class filePanel //extends JPanel
                   if ( inc_spec_file != null &&
                        inc_spec_file.trim().length() <= 0 )
                     inc_spec_file = null;
+/*
+                  message_center.send(
+                  new Message(Commands.CLEAR_HISTOGRAM, null, true, true));
+*/
+                  message_center.send(
+                  new Message(Commands.CLEAR_EVENTS_VIEW, null, true, true));
+
+                  message_center.send(
+                  new Message( Commands.CLEAR_DQ, null, true, true ) );
 
                   SetNewInstrumentCmd new_inst_cmd = 
                            new SetNewInstrumentCmd( instrument_name, 
                                                     det_file, 
                                                     inc_spec_file );
-                  sendMessage( Commands.SET_NEW_INSTRUMENT, new_inst_cmd );
+                  Message new_inst_message = 
+                           new Message( Commands.SET_NEW_INSTRUMENT,
+                                        new_inst_cmd,
+                                        true,
+                                        true );
+
+                  message_center.send( new_inst_message ); 
+                  // sendMessage( Commands.SET_NEW_INSTRUMENT, new_inst_cmd );
                   // The SET_NEW_INSTRUMENT command needs to be done before
                   // loading the event file, so that the histogram and
                   // mapping to Q are set up by the time we start sending
@@ -717,14 +734,17 @@ public class filePanel //extends JPanel
                {
                   //System.out.println(pe.getStackTrace());
                   String error = "Error parsing data to correct data types.";
-                  JOptionPane.showMessageDialog(null, error, "Invalid Input", JOptionPane.ERROR_MESSAGE);
+                  JOptionPane.showMessageDialog(null, error, "Invalid Input",
+                                                JOptionPane.ERROR_MESSAGE);
                   return;
                }
             }
             //else
             //{
-            //   String error = "There is file information not completely filled out or invalid!!";
-            //   JOptionPane.showMessageDialog(null, error, "Invalid Input", JOptionPane.ERROR_MESSAGE);
+            //   String error = "There is file information not completely 
+            //   filled out or invalid!!";
+            //   JOptionPane.showMessageDialog(null, error, "Invalid Input", 
+            //                                 JOptionPane.ERROR_MESSAGE);
             //}
          }
          else if( e.getSource() == maxQValue)
@@ -766,7 +786,8 @@ public class filePanel //extends JPanel
                if (!file.exists())
                {
                   String error = "File does not exist!";
-                  JOptionPane.showMessageDialog(null, error, "Invalid Input", JOptionPane.ERROR_MESSAGE);
+                  JOptionPane.showMessageDialog(null, error, "Invalid Input",
+                                                JOptionPane.ERROR_MESSAGE);
                   return;
                }
                //else
@@ -817,7 +838,8 @@ public class filePanel //extends JPanel
                //if ( file.toString().indexOf("grid") < 0)
                //{
                //   String error = file.getName() + "is not an event file";
-               //   JOptionPane.showMessageDialog(null, error, "Error", JOptionPane.ERROR_MESSAGE);
+               //   JOptionPane.showMessageDialog(null, error, "Error", 
+               //                                 JOptionPane.ERROR_MESSAGE);
                //}
                //else
                //{
@@ -840,7 +862,8 @@ public class filePanel //extends JPanel
                //if (file.toString().indexOf("mat") < 0)
                //{
                //   String error = file.getName() + "is not a matrix file";
-               //   JOptionPane.showMessageDialog(null, error, "Error", JOptionPane.ERROR_MESSAGE);
+               //   JOptionPane.showMessageDialog(null, error, "Error", 
+               //                                 JOptionPane.ERROR_MESSAGE);
                //}
                //else
                //{
@@ -862,6 +885,7 @@ public class filePanel //extends JPanel
    {
       Message message = new Message( command,
                                      value,
+                                     true,
                                      true );
       
       message_center.send( message );

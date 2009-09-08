@@ -197,8 +197,11 @@ public class DQDataHandler implements IReceiveMessage
 
         AddEvents( (IEventList3D)obj );
 
-        sendMessage(Commands.SET_Q_VALUES, q_values );
-        sendMessage(Commands.SET_D_VALUES, d_values );
+        synchronized( q_values )
+        {
+          sendMessage(Commands.SET_Q_VALUES, q_values );
+          sendMessage(Commands.SET_D_VALUES, d_values );
+        }
       }
       
       if (message.getName().equals(Commands.CLEAR_DQ))

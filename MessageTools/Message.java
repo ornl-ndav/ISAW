@@ -88,7 +88,7 @@ public class Message
    */
   public Message( Object name, Object value, boolean replace_flag )
   {
-    this( name, value, replace_flag, false );
+    this( name, value, replace_flag, true );
   }
 
 

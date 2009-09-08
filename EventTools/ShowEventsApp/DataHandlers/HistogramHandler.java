@@ -119,6 +119,9 @@ public class HistogramHandler implements IReceiveMessage
     if ( message.getName().equals(Commands.ADD_EVENTS) )
     {
       IEventList3D events = (IEventList3D)message.getValue();
+      if ( events == null )
+        return false;
+
       AddEventsToHistogram( events );
 
       Util.sendInfo( "ADDED " + events.numEntries() + " to HISTOGRAM");
@@ -159,6 +162,7 @@ public class HistogramHandler implements IReceiveMessage
   
       if ( inst.equals( current_instrument ) )
       {
+        histogram.clear();
         Util.sendInfo( "Histogram set up for " + current_instrument );
         return false;
       }
@@ -271,7 +275,7 @@ public class HistogramHandler implements IReceiveMessage
    *  the histogram bin that contains the event.  The histogram bin
    *  values are used to control the color map for the 3D event viewer.
    */
-  private void SetWeightsFromHistogram( IEventList3D events, 
+  synchronized private void SetWeightsFromHistogram( IEventList3D events, 
                                         Histogram3D histogram )
   {
     int n_events = events.numEntries();
@@ -301,7 +305,7 @@ public class HistogramHandler implements IReceiveMessage
    * Add the selected point's histogram counts and page number to the 
    * select_info_command. 
    */
-  private void AddHistogramInfo( SelectionInfoCmd select_info_cmd,
+  synchronized private void AddHistogramInfo( SelectionInfoCmd select_info_cmd,
                                  Histogram3D      histogram )
   {
     Vector3D Qxyz = select_info_cmd.getQxyz();
@@ -327,7 +331,7 @@ public class HistogramHandler implements IReceiveMessage
    *  @param num_bins  The number of bins to use in each direction
    *                   for the histogram.
    */
-  private Histogram3D DefaultSNAP_Histogram( int num_bins )
+  synchronized private Histogram3D DefaultSNAP_Histogram( int num_bins )
   {
     Vector3D xVec = new Vector3D(1,0,0);
     Vector3D yVec = new Vector3D(0,1,0);
@@ -353,7 +357,7 @@ public class HistogramHandler implements IReceiveMessage
    *  of reciprocal space appropriate for the SNAP instrument at the
    *  SNS, WITHOUT reallocating memory, if possible.
    */
-  private void SetHistogramForSNAP()
+  synchronized private void SetHistogramForSNAP()
   {
     if ( histogram == null )
       histogram = DefaultSNAP_Histogram( num_bins );
@@ -385,7 +389,7 @@ public class HistogramHandler implements IReceiveMessage
    *  @param num_bins  The number of bins to use in each direction
    *                   for the histogram.
    */
-  private Histogram3D DefaultARCS_Histogram( int num_bins )
+  synchronized private Histogram3D DefaultARCS_Histogram( int num_bins )
   {
     Vector3D xVec = new Vector3D(1,0,0);
     Vector3D yVec = new Vector3D(0,1,0);
@@ -411,7 +415,7 @@ public class HistogramHandler implements IReceiveMessage
    *  of reciprocal space appropriate for the ARCS instrument at the
    *  SNS, WITHOUT reallocating memory, if possible.
    */
-  private void SetHistogramForARCS()
+  synchronized private void SetHistogramForARCS()
   {
     if ( histogram == null )
       histogram = DefaultARCS_Histogram( num_bins );
@@ -450,7 +454,7 @@ public class HistogramHandler implements IReceiveMessage
    *  @param  log_file         The name of the file to write the logging
    *                           information to.
    */
-  private Vector<PeakQ> FindPeaks( Histogram3D histogram,
+  synchronized private Vector<PeakQ> FindPeaks( Histogram3D histogram,
                                   boolean     smooth_data,
                                   int         num_peaks,
                                   float       min_intensity,
@@ -568,7 +572,7 @@ public class HistogramHandler implements IReceiveMessage
   }                         
 
 
-  public void AddEventsToHistogram( IEventList3D events )
+  synchronized public void AddEventsToHistogram( IEventList3D events )
   {
     histogram.addEvents( events );
   }
