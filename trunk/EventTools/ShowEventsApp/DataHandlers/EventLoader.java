@@ -100,11 +100,11 @@ public class EventLoader implements IReceiveMessage
   }
   
 
-  private void LoadEvents( String event_file_name, 
-                           long   first, 
-                           long   num_to_load,
-                           long   num_to_show,
-                           int    num_threads  )
+  synchronized private void LoadEvents( String event_file_name, 
+                                        long   first, 
+                                        long   num_to_load,
+                                        long   num_to_show,
+                                        int    num_threads  )
   {
     System.out.println("FIRST = " + first );
     System.out.println("NUM_TO_LOAD = " + num_to_load );
@@ -115,19 +115,7 @@ public class EventLoader implements IReceiveMessage
     long num_available = check_file.numEntries();
     check_file = null;
 
-    if ( num_available > 0 )
-    {
-      message_center.send(
-            new Message( Commands.CLEAR_HISTOGRAM, null, true, true ) );
-
-      message_center.send( 
-
-            new Message( Commands.CLEAR_EVENTS_VIEW, null, true, true ) );
-      message_center.send( 
-
-            new Message( Commands.CLEAR_DQ, null, true, true ) );
-    }
-    else
+    if ( num_available <= 0 )
     {
       System.out.println("ERROR: No events in, or can't open " + 
                           event_file_name );

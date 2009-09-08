@@ -76,32 +76,43 @@ public class EventViewHandler implements IReceiveMessage
     if ( message.getName().equals(Commands.ADD_EVENTS_TO_VIEW) )
     {
       IEventList3D events = (IEventList3D)message.getValue();
-      events_panel.addEvents( events );
-      events_panel.updateDisplay();
+      synchronized ( events_panel )
+      {
+        events_panel.addEvents( events );
+        events_panel.updateDisplay();
+      }
     }
     else if ( message.getName().equals(Commands.SET_DRAWING_OPTIONS) )
     {
-       DrawingOptionsCmd draw_options = (DrawingOptionsCmd)message.getValue();
-      events_panel.setDrawingOptions( draw_options.getFilterMax(),
-                                      draw_options.getFilterMin(),
-                                      draw_options.getShowAxes(),
-                                      draw_options.getPointSize(),
-                                      draw_options.getAlpha(),
-                                      draw_options.getAlphaValue(),
-                                      draw_options.getOrthographic() );
-      events_panel.updateDisplay();
-
+      DrawingOptionsCmd draw_options = (DrawingOptionsCmd)message.getValue();
+      synchronized ( events_panel )
+      {
+        events_panel.setDrawingOptions( draw_options.getFilterMax(),
+                                        draw_options.getFilterMin(),
+                                        draw_options.getShowAxes(),
+                                        draw_options.getPointSize(),
+                                        draw_options.getAlpha(),
+                                        draw_options.getAlphaValue(),
+                                        draw_options.getOrthographic() );
+        events_panel.updateDisplay();
+      }
     }
     else if ( message.getName().equals(Commands.SET_COLOR_SCALE ) )
     {
       ColorScaleInfo color_info = (ColorScaleInfo)message.getValue();
-      events_panel.setColors( color_info );
-      events_panel.updateDisplay();
+      synchronized ( events_panel )
+      {
+        events_panel.setColors( color_info );
+        events_panel.updateDisplay();
+      }
     }
     else if ( message.getName().equals(Commands.CLEAR_EVENTS_VIEW ) )
     {
-      events_panel.clear();
-      events_panel.updateDisplay();
+      synchronized ( events_panel )
+      {
+        events_panel.clear();
+        events_panel.updateDisplay();
+      }
     }
     else if( message.getName().equals( Commands.LOAD_FILE ) )
     {
@@ -114,29 +125,31 @@ public class EventViewHandler implements IReceiveMessage
        if ( val == null )
          return(false);
 
-       if ( val instanceof Vector )
+       synchronized ( events_panel )
        {
-         events_panel.ClearMarkers();
-         Vector<PeakQ> q_peaks = (Vector<PeakQ>)val;
-         Vector3D[] verts = new Vector3D[ q_peaks.size() ];
-         for ( int i = 0; i < verts.length; i++ )
+         if ( val instanceof Vector )
          {
-           float[] q_arr = q_peaks.elementAt(i).getUnrotQ();
-           float qx = (float)(q_arr[0] * 2 * Math.PI);
-           float qy = (float)(q_arr[1] * 2 * Math.PI);
-           float qz = (float)(q_arr[2] * 2 * Math.PI);
-           verts[i] = new Vector3D( qx, qy, qz );
+           events_panel.ClearMarkers();
+           Vector<PeakQ> q_peaks = (Vector<PeakQ>)val;
+           Vector3D[] verts = new Vector3D[ q_peaks.size() ];
+           for ( int i = 0; i < verts.length; i++ )
+           {
+             float[] q_arr = q_peaks.elementAt(i).getUnrotQ();
+             float qx = (float)(q_arr[0] * 2 * Math.PI);
+             float qy = (float)(q_arr[1] * 2 * Math.PI);
+             float qz = (float)(q_arr[2] * 2 * Math.PI);
+             verts[i] = new Vector3D( qx, qy, qz );
+           }
+           events_panel.addMarkers( verts, 6, Polymarker.BOX, Color.WHITE );
+           events_panel.updateDisplay();
          }
-         events_panel.addMarkers( verts, 6, Polymarker.BOX, Color.WHITE );
-         events_panel.updateDisplay();
+         else if ( val instanceof Boolean )
+         {
+           boolean on_off = (Boolean)val;
+           events_panel.SetMarkersOnOff( on_off );
+           events_panel.updateDisplay();
+         }
        }
-       else if ( val instanceof Boolean )
-       {
-         boolean on_off = (Boolean)val;
-         events_panel.SetMarkersOnOff( on_off );
-         events_panel.updateDisplay();
-       }
-       
     }
 
     return false;

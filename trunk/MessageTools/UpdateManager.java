@@ -102,8 +102,7 @@ public class UpdateManager
   {
      public void actionPerformed( ActionEvent e )
      {
-        if ( !call_dispatch )            // if we're not already working on 
-          call_dispatch = true;          // it, trip the call_dispatch flag
+       call_dispatch = true;             // trip the call_dispatch flag
      }                                   // to start processing messages
   }
   
@@ -132,15 +131,29 @@ public class UpdateManager
             if ( changed && updateables != null )
               for ( int i = 0; i < updateables.length; i++ )
                 updateables[i].Update();
+            call_dispatch = false;
           }
-          catch ( Throwable ex )
+          catch ( Exception ex )
           {
             System.out.println("Exception processing messages : " + ex );
             ex.printStackTrace();
-          }
-          finally
-          {
+            JOptionPane.showMessageDialog( null,
+                                          "Will try to continue after " + ex, 
+                                          "Exception", 
+                                           JOptionPane.ERROR_MESSAGE );
             call_dispatch = false;
+          }
+          catch ( Throwable th )
+          {
+            System.out.println("Exception processing messages : " + th );
+            th.printStackTrace();
+            System.out.println("Fatal error, exiting program...");
+            System.out.println("Restart due to " + th);
+            JOptionPane.showMessageDialog( null,
+                                          "Restart due to " + th, 
+                                          "FATAL ERROR", 
+                                           JOptionPane.ERROR_MESSAGE );
+            System.exit(1);
           }
         }
         try

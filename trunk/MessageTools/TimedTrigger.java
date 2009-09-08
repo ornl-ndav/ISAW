@@ -47,6 +47,7 @@ public class TimedTrigger
   private  MessageCenter  message_center;
   private  Timer          timer;
   private  boolean        call_dispatch;
+//  private  long           time_counter = 0;       // for debugging
 
   /* ------------------------ constructor ------------------------------ */
   /**
@@ -80,9 +81,14 @@ public class TimedTrigger
   {
      public void actionPerformed( ActionEvent e )
      {
-        if ( !call_dispatch )            // if we're not already working on 
-          call_dispatch = true;          // it, trip the call_dispatch flag
-     }                                   // to start processing messages
+       /*  Debug print ....
+       time_counter++;
+       if ( time_counter % 30 == 0 )
+         System.out.println("TimedTrigger Received timer event ");
+       */
+
+       call_dispatch = true;            // trip the call_dispatch flag
+     }                                  // to start processing messages
   }
 
 
@@ -96,6 +102,8 @@ public class TimedTrigger
    */
   protected class CallDispatchThread extends Thread
   {
+//    long counter = 0;                    // for debugging
+
     public void run()
     {
       while ( true )                       // keep looping forever
@@ -104,16 +112,35 @@ public class TimedTrigger
         {
           try
           {
+            /* Debug print ...
+            counter++;
+            if ( counter % 30 == 0 )
+              System.out.println("CALLING dispatchMessages() in TimedTrigger");
+            */
             message_center.dispatchMessages();
+            call_dispatch = false;
           }
-          catch ( Throwable ex )
+          catch ( Exception ex )
           {
             System.out.println("Exception processing messages : " + ex );
             ex.printStackTrace();
-          }
-          finally
-          {
+            JOptionPane.showMessageDialog( null,
+                                          "Will try to continue after " + ex,
+                                          "Exception",
+                                           JOptionPane.ERROR_MESSAGE );
             call_dispatch = false;
+          }
+          catch ( Throwable th )
+          {
+            System.out.println("Exception processing messages : " + th );
+            th.printStackTrace();
+            System.out.println("Fatal error, exiting program...");
+            System.out.println("Restart due to " + th);
+            JOptionPane.showMessageDialog( null,
+                                          "Restart due to " + th,
+                                          "FATAL ERROR",
+                                           JOptionPane.ERROR_MESSAGE );
+            System.exit(1);
           }
         }
         try

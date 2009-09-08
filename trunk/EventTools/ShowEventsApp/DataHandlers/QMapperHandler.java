@@ -271,7 +271,7 @@ public class QMapperHandler implements IReceiveMessage
   }  
 
 
-  private IEventList3D[] MapToQ( ITofEventList ev_list )
+  synchronized private IEventList3D[] MapToQ( ITofEventList ev_list )
   {
     int N_THREADS = 4;
 

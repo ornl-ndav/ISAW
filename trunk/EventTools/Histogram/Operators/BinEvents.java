@@ -102,6 +102,9 @@ public class BinEvents implements IOperator
                     IEventList3D events    )
   {
     this.histogram  = histogram;
+
+    this.max        = max;
+    this.min        = min;
     this.first_page = first_page;
     this.last_page  = last_page;
 
@@ -134,49 +137,60 @@ public class BinEvents implements IOperator
             y_index,
             z_index;
 
-    int     num_x_bins = x_binner.numBins();
-    int     num_y_bins = y_binner.numBins();
-    
-    int     num_events = events.numEntries();
-    float[] event_xyz  = events.eventVals();
-    int     event_index = 0;
-
-    for ( int i = 0; i <  num_events; i++ )
+    try
     {
-       x = event_xyz[event_index++];   
-       y = event_xyz[event_index++];   
-       z = event_xyz[event_index++];   
+      int     num_x_bins = x_binner.numBins();
+      int     num_y_bins = y_binner.numBins();
+    
+      int     num_events = events.numEntries();
+      float[] event_xyz  = events.eventVals();
+      int     event_index = 0;
 
-       z_index = z_binner.index( x, y, z );
+      for ( int i = 0; i <  num_events; i++ )
+      {
+         x = event_xyz[event_index++];   
+         y = event_xyz[event_index++];   
+         z = event_xyz[event_index++];   
 
-       if ( z_index >= first_page && z_index <= last_page )
-       {
-         x_index = x_binner.index( x, y, z );
-         y_index = y_binner.index( x, y, z );
+         z_index = z_binner.index( x, y, z );
 
-         if ( x_index >= 0 && x_index < num_x_bins &&
-              y_index >= 0 && y_index < num_y_bins  )
+         if ( z_index >= first_page && z_index <= last_page )
          {
-           count = events.eventWeight( i );
-           val = histogram[z_index][y_index][x_index];
-           val += count;
-           histogram[z_index][y_index][x_index] = val;
+           x_index = x_binner.index( x, y, z );
+           y_index = y_binner.index( x, y, z );
 
-           if ( val > max )
-             max = val;
-           if ( val < min )
-             min = val;
+           if ( x_index >= 0 && x_index < num_x_bins &&
+                y_index >= 0 && y_index < num_y_bins  )
+           {
+             count = events.eventWeight( i );
+             val = histogram[z_index][y_index][x_index];
+             val += count;
+             histogram[z_index][y_index][x_index] = val;
 
-           sum += count;
+             if ( val > max )
+               max = val;
+             if ( val < min )
+              min = val;
+
+             sum += count;
+           }
          }
-       }
-    }
+      }
 
-    Vector results = new Vector(3);
-    results.add( new Double( sum ) );
-    results.add( new Double( min ) );
-    results.add( new Double( max ) );
-    return results;
+      Vector results = new Vector(3);
+      results.add( new Double( sum ) );
+      results.add( new Double( min ) );
+      results.add( new Double( max ) );
+      return results;
+    }
+    catch ( Exception ex )      // if something goes wrong, no change
+    {
+      Vector results = new Vector(3);
+      results.add( new Double( 0 ) );
+      results.add( new Double( min ) );
+      results.add( new Double( max ) );
+      return results;
+    }
   }
 
 }
