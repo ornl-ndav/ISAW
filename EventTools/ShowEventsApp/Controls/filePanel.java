@@ -46,7 +46,6 @@ import javax.swing.border.TitledBorder;
 
 import DataSetTools.util.SharedData;
 import EventTools.ShowEventsApp.Command.*;
-import EventTools.EventList.SNS_Tof_to_Q_map;
 import MessageTools.*;
 
 /**
@@ -97,7 +96,7 @@ public class filePanel //extends JPanel
    {
       this.message_center = message_center;
       //this.setSize(300, 265);
-      SharedData sd = new SharedData();//Will read in IsawProps.dat
+      new SharedData();//Will read in IsawProps.dat
       Datafilename = System.getProperty("Data_Directory");
       Detfilename =  System.getProperty( "InstrumentInfoDirectory");
       Incfilename = DetEfffilename =Detfilename;
@@ -510,8 +509,7 @@ public class filePanel //extends JPanel
    private boolean valid()
    {
       NumberFormat nf = NumberFormat.getInstance();
-      long num;
-      
+       
       if (evFileName.getText().equals(""))
       {
          String error = "You have not specified an event file!";
@@ -530,7 +528,7 @@ public class filePanel //extends JPanel
 
       try
       {
-         num = nf.parse(firstEvent.getText()).longValue();
+         nf.parse(firstEvent.getText()).longValue();
       }
       catch (ParseException pe)
       {
@@ -550,7 +548,7 @@ public class filePanel //extends JPanel
       
       try
       {
-         num = nf.parse(eventsToLoad.getText()).longValue();
+         nf.parse(eventsToLoad.getText()).longValue();
       }
       catch (ParseException pe)
       {
@@ -570,7 +568,7 @@ public class filePanel //extends JPanel
       
       try
       {
-         num = nf.parse(firstEventToShow.getText()).longValue();
+         nf.parse(firstEventToShow.getText()).longValue();
       }
       catch (ParseException pe)
       {
@@ -591,7 +589,7 @@ public class filePanel //extends JPanel
       
       try
       {
-         num = nf.parse(eventsToShow.getText()).longValue();
+         nf.parse(eventsToShow.getText()).longValue();
       }
       catch (ParseException pe)
       {
@@ -649,20 +647,6 @@ public class filePanel //extends JPanel
                try
                {
                   String ev_file = evFileName.getText();
-                  String instrument_name = "UNKNOWN";
-
-                  if ( ev_file.indexOf("SNAP") >= 0 )
-                    instrument_name = SNS_Tof_to_Q_map.SNAP;
-
-                  else if ( ev_file.indexOf("ARCS") >= 0 )
-                    instrument_name = SNS_Tof_to_Q_map.ARCS;
-
-                  else if ( ev_file.indexOf("SEQ") >= 0 )
-                    instrument_name = SNS_Tof_to_Q_map.SEQ;
-
-                  else if ( ev_file.indexOf("TOPAZ") >= 0 )
-                    instrument_name = SNS_Tof_to_Q_map.TOPAZ;
-
                   String det_file = detFileName.getText();
                   if ( det_file != null && det_file.trim().length() <= 0 )
                     det_file = null;
@@ -671,27 +655,6 @@ public class filePanel //extends JPanel
                   if ( inc_spec_file != null &&
                        inc_spec_file.trim().length() <= 0 )
                     inc_spec_file = null;
-/*
-                  message_center.send(
-                  new Message(Commands.CLEAR_HISTOGRAM, null, true, true));
-*/
-                  message_center.send(
-                  new Message(Commands.CLEAR_EVENTS_VIEW, null, true, true));
-
-                  message_center.send(
-                  new Message( Commands.CLEAR_DQ, null, true, true ) );
-
-                  SetNewInstrumentCmd new_inst_cmd = 
-                           new SetNewInstrumentCmd( instrument_name, 
-                                                    det_file, 
-                                                    inc_spec_file );
-                  Message new_inst_message = 
-                           new Message( Commands.SET_NEW_INSTRUMENT,
-                                        new_inst_cmd,
-                                        true,
-                                        true );
-
-                  message_center.send( new_inst_message ); 
                   // sendMessage( Commands.SET_NEW_INSTRUMENT, new_inst_cmd );
                   // The SET_NEW_INSTRUMENT command needs to be done before
                   // loading the event file, so that the histogram and

@@ -62,6 +62,7 @@ public class additionalViewControls extends JPanel
 {
    public static final long  serialVersionUID = 1L;
    private MessageCenter     messageCenter;
+   private MessageCenter     viewMessageCenter;
    private FrameController   frame_control;
    private JCheckBox         showQGraph;
    private JCheckBox         showDGraph;
@@ -81,9 +82,11 @@ public class additionalViewControls extends JPanel
     * 
     * @param messageCenter
     */
-   public additionalViewControls(MessageCenter messageCenter)
+   public additionalViewControls( MessageCenter messageCenter,
+                                  MessageCenter viewMessageCenter )
    {
-      this.messageCenter = messageCenter;
+      this.messageCenter     = messageCenter;
+      this.viewMessageCenter = viewMessageCenter;
       this.setBorder(new TitledBorder("Additional View Options"));
       this.setLayout(new GridLayout(1,1));
       
@@ -226,6 +229,21 @@ public class additionalViewControls extends JPanel
       messageCenter.send(message);
    }
    
+
+   /**
+    * Sends a message to the view message center
+    * 
+    * @param command Command Name for others to listen to.
+    * @param value Object to send to the listener.
+    */
+   private void sendViewMessage(String command, Object value)
+   {
+      Message message = new Message(command, value, true);
+
+      viewMessageCenter.send(message);
+   }
+
+
    /**
     * Listens to the slice display selection checkboxs as well
     * as to the frame controller.  When they change it
@@ -288,21 +306,22 @@ public class additionalViewControls extends JPanel
                command = Commands.HIDE_D_GRAPH;
          }
          
-         sendMessage(command, null);
+         sendViewMessage(command, null);
       }
    }
    
    public static void main(String[] args)
    {
-      MessageCenter mc = new MessageCenter("Testing MessageCenter");
+      MessageCenter mc  = new MessageCenter("Testing MessageCenter");
+      MessageCenter vmc = new MessageCenter("Testing ViewMessageCenter");
       TestReceiver tc = new TestReceiver("Slice Panel TestingMessages");
       mc.addReceiver(tc, Commands.SET_SLICE_1);
       mc.addReceiver(tc, Commands.SHOW_D_GRAPH);
       mc.addReceiver(tc, Commands.SHOW_Q_GRAPH);
-      mc.addReceiver(tc, Commands.HIDE_D_GRAPH);
-      mc.addReceiver(tc, Commands.HIDE_Q_GRAPH);
+      vmc.addReceiver(tc, Commands.HIDE_D_GRAPH);
+      vmc.addReceiver(tc, Commands.HIDE_Q_GRAPH);
       
-      additionalViewControls sdc = new additionalViewControls(mc);
+      additionalViewControls sdc = new additionalViewControls(mc, vmc);
       
       JFrame View = new JFrame( "Test Slice Panel" );
       View.setDefaultCloseOperation( WindowConstants.EXIT_ON_CLOSE );
@@ -311,5 +330,6 @@ public class additionalViewControls extends JPanel
       
       View.add(sdc);
       new UpdateManager(mc, null, 100);
+      new UpdateManager(vmc, null, 100);
    }
 }

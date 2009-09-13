@@ -50,7 +50,8 @@ public class DViewHandler extends GraphViewHandler
     * on the message center.  It will display the jframe when it
     * receives SHOW_D_GRAPH message.
     * 
-    * @param messageCenter
+    * @param messageCenter  The message center that is used for handling
+    *                       this D-space viewer.
     */
    public DViewHandler(MessageCenter messageCenter)
    {

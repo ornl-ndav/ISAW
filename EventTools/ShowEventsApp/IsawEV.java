@@ -55,34 +55,50 @@ public class IsawEV
    */
   public IsawEV()
   {
-    MessageCenter message_center = new MessageCenter("Test");
-//    message_center.setDebugReceive( true );
-//    message_center.setDebugSend( true );
-
+                                        // The main message center is a "fast"
+                                        // running message center that handles
+                                        // most of the initial data flow
+                                        // messages.
+    MessageCenter message_center = new MessageCenter("MAIN MESSAGE CENTER");
     int update_time_ms = 30;
-    new TimedTrigger(message_center, update_time_ms );
+    new TimedTrigger( message_center, update_time_ms );
 
-    new multiPanel( message_center );
+    message_center.setDebugReceive( true );
+    message_center.setDebugSend( true );
 
+                                        // The view message center is a "slow"
+                                        // running message center that handles
+                                        // periodic updates to the D & A graphs
+                                        // and the 3D event viewer
+    MessageCenter view_message_center = 
+                                   new MessageCenter("VIEW MESSAGE CENTER");
+    int view_update_time_ms = 2000;
+    new TimedTrigger(view_message_center, view_update_time_ms );
+
+
+    new multiPanel( message_center, view_message_center );
+
+
+    new InitializationHandler( message_center );
 
     new EventLoader( message_center );
 
     new QMapperHandler( message_center );
 
-    new HistogramHandler( message_center, NUM_BINS );
+    new HistogramHandler( message_center, view_message_center, NUM_BINS );
 
     new PeakListHandler( message_center );
 
     new OrientationMatrixHandler( message_center );
 
-    new DQDataHandler( message_center );
 
+    new DQDataHandler( message_center, view_message_center );
 
-    new EventViewHandler(message_center);
+    new EventViewHandler( message_center, view_message_center );
     
-    new DViewHandler( message_center );
+    new DViewHandler( view_message_center );
 
-    new QViewHandler( message_center );
+    new QViewHandler( view_message_center );
   }
 
 

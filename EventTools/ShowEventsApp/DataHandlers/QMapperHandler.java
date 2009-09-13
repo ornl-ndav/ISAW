@@ -85,7 +85,7 @@ public class QMapperHandler implements IReceiveMessage
     }
 
     this.message_center = message_center;
-    message_center.addReceiver( this, Commands.SET_NEW_INSTRUMENT );
+    message_center.addReceiver( this, Commands.INIT_NEW_INSTRUMENT );
     message_center.addReceiver( this, Commands.MAP_EVENTS_TO_Q );
     message_center.addReceiver( this, Commands.SELECT_POINT );
     message_center.addReceiver( this, Commands.GET_PEAK_NEW_LIST );
@@ -97,12 +97,14 @@ public class QMapperHandler implements IReceiveMessage
     long   start;
     double run_time;
 
-    if ( message.getName().equals(Commands.SET_NEW_INSTRUMENT) )
+    if ( message.getName().equals(Commands.INIT_NEW_INSTRUMENT) )
     {
       Object obj = message.getValue();
       if ( obj == null || !(obj instanceof SetNewInstrumentCmd) )
       {
-        Util.sendError( "Wrong type value in SENT_NEW_INSTRUMENT command" );
+        Util.sendError( "Wrong type value in INIT_NEW_INSTRUMENT command" );
+        message_center.send( new Message( Commands.LOAD_FAILED,
+                                          null, true, true ) );
       }
 
       SetNewInstrumentCmd cmd = (SetNewInstrumentCmd)obj;
@@ -133,11 +135,18 @@ public class QMapperHandler implements IReceiveMessage
         catch ( Exception ex )
         {
           Util.sendError( "ERROR: Could not make Q mapper for "+ det_file );
+          message_center.send( new Message( Commands.LOAD_FAILED,
+                                            null, true, true ) );
           return false;
         }
       }
 
        Util.sendInfo( "QMapper set up for " + instrument_name );
+       Message new_inst_done = new Message( Commands.INIT_NEW_INSTRUMENT_DONE,
+                                            null,
+                                            true,
+                                            true );
+       message_center.send( new_inst_done );
     }
 
     else if ( message.getName().equals(Commands.SELECT_POINT) )
@@ -206,10 +215,10 @@ public class QMapperHandler implements IReceiveMessage
          if ( event_lists != null )
          {
            for ( int i = 0; i < event_lists.length; i++ )
-             message_center.send( new Message( Commands.ADD_EVENTS,
-                                                  event_lists[i],
-                                                  false,
-                                                  true ));
+             message_center.send(new Message(Commands.ADD_EVENTS_TO_HISTOGRAMS,
+                                              event_lists[i],
+                                              false,
+                                              true ));
          }
        }
        
