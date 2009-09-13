@@ -2,19 +2,38 @@ package EventTools.ShowEventsApp.Command;
 
 public class Commands 
 {
-  public static final String LOAD_FILE = "LOAD_FILE";
+  public static final String LOAD_FILE      = "LOAD_FILE";
+  public static final String LOAD_FAILED    = "LOAD_FAILED";
+  public static final String LOAD_FILE_DATA = "LOAD_FILE_DATA";
+  public static final String LOAD_FILE_DONE = "LOAD_FILE_DONE";
 
-  public static final String ADD_EVENTS = "ADD_EVENTS";
+
   public static final String MAP_EVENTS_TO_Q = "MAP_EVENTS_TO_Q";
-  public static final String CLEAR_HISTOGRAM = "CLEAR_HISTOGRAM";
+
+  public static final String ADD_EVENTS_TO_HISTOGRAMS
+                                             = "ADD_EVENTS_TO_HISTOGRAMS";
+
+  public static final String NUMBER_HISTOGRAMED = "NUMBER_HISTOGRAMED";
   
   public static final String ADD_EVENTS_TO_VIEW = "ADD_EVENTS_TO_VIEW";
-  public static final String CLEAR_EVENTS_VIEW = "CLEAR_EVENTS_VIEW";
+
+  public static final String INIT_HISTOGRAM  = "INIT_HISTOGRAM";
+
+  /**
+   * CAUTION: The following "DONE" messages should only be sent back once
+   * by the handlers for the DQ, 3D_Histogram and Q_Mapper, in response to
+   * requests to initialize these structures.  If sent back multiple times,
+   * there will be multiple requests to begin loading the actual file data.
+   */
+  public static final String INIT_DQ_DONE        = "INIT_DQ_DONE";
+  public static final String INIT_HISTOGRAM_DONE = "INIT_HISTOGRAM_DONE";
+  public static final String INIT_NEW_INSTRUMENT_DONE 
+                                                = "SET_NEW_INSTRUMENT_DONE";
+
+  public static final String INIT_EVENTS_VIEW = "INIT_EVENTS_VIEW";
 
   public static final String SET_WEIGHTS_FROM_HISTOGRAM = 
                                               "SET_WEIGHTS_FROM_HISTOGRAM";
-  public static final String SET_WEIGHTS_FROM_HISTOGRAM_ACK = 
-                                              "SET_WEIGHTS_FROM_HISTOGRAM_ACK";
 
  /**
   *  When a new data file is about to be loaded, this message should
@@ -22,6 +41,7 @@ public class Commands
   *  can start to re-configure themselves.  e.g. make a new default histogram
   */
   public static final String SET_NEW_INSTRUMENT = "SET_NEW_INSTRUMENT";
+  public static final String INIT_NEW_INSTRUMENT = "INIT_NEW_INSTRUMENT";
 
   /**
    *  The data flow for gathering all of the required information to display
@@ -39,7 +59,6 @@ public class Commands
    */
   public static final String SELECT_POINT = "SELECT_POINT";
   public static final String ADD_HISTOGRAM_INFO = "ADD_HISTOGRAM_INFO";
-//  public static final String ADD_HISTOGRAM_INFO_ACK = "ADD_HISTOGRAM_INFO_ACK";
   public static final String ADD_ORIENTATION_MATRIX_INFO =
                                                  "ADD_ORIENTATION_MATRIX_INFO";
   public static final String SHOW_SELECTED_POINT_INFO =
@@ -107,7 +126,7 @@ public class Commands
   
   public static final String INDEX_PEAKS_ROSS = "INDEX_PEAKS_ROSS";
   
-  public static final String CLEAR_DQ = "CLEAR_DQ";
+  public static final String INIT_DQ = "INIT_DQ";
   
   public static final String SHOW_Q_GRAPH = "SHOW_Q_GRAPH";
   public static final String HIDE_Q_GRAPH = "HIDE_Q_GRAPH";

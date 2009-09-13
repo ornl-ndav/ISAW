@@ -38,15 +38,19 @@ public class EventViewHandler implements IReceiveMessage
   private SlicedEventsPanel  events_panel; 
   private JFrame             frame3D;
 
-  public EventViewHandler( MessageCenter message_center )
+  public EventViewHandler( MessageCenter message_center,
+                           MessageCenter view_message_center )
   {
-    this.message_center = message_center;
-    message_center.addReceiver( this, Commands.ADD_EVENTS_TO_VIEW );
-    message_center.addReceiver( this, Commands.CLEAR_EVENTS_VIEW );
+    this.message_center      = message_center;
+ 
+    message_center.addReceiver( this, Commands.LOAD_FILE_DATA );
+
+    message_center.addReceiver( this, Commands.INIT_EVENTS_VIEW );
     message_center.addReceiver( this, Commands.SET_DRAWING_OPTIONS );
     message_center.addReceiver( this, Commands.SET_COLOR_SCALE );
-    message_center.addReceiver( this, Commands.LOAD_FILE );
     message_center.addReceiver( this, Commands.MARK_PEAKS );
+
+    view_message_center.addReceiver( this, Commands.ADD_EVENTS_TO_VIEW );
     events_panel = new SlicedEventsPanel();
                                                 // Is there a better way to do
                                                 // this?  It would be nice to
@@ -71,7 +75,7 @@ public class EventViewHandler implements IReceiveMessage
   }
 
 
-  public boolean receive( Message message )
+  synchronized public boolean receive( Message message )
   {
     if ( message.getName().equals(Commands.ADD_EVENTS_TO_VIEW) )
     {
@@ -106,7 +110,7 @@ public class EventViewHandler implements IReceiveMessage
         events_panel.updateDisplay();
       }
     }
-    else if ( message.getName().equals(Commands.CLEAR_EVENTS_VIEW ) )
+    else if ( message.getName().equals(Commands.INIT_EVENTS_VIEW ) )
     {
       synchronized ( events_panel )
       {
@@ -114,7 +118,7 @@ public class EventViewHandler implements IReceiveMessage
         events_panel.updateDisplay();
       }
     }
-    else if( message.getName().equals( Commands.LOAD_FILE ) )
+    else if( message.getName().equals( Commands.LOAD_FILE_DATA ) )
     {
       LoadEventsCmd info = (LoadEventsCmd)message.getValue();
       frame3D.setTitle( "Reciprocal Space Events for "+info.getEventFile() );

@@ -54,6 +54,7 @@ import EventTools.EventList.SNS_Tof_to_Q_map;
 import EventTools.ShowEventsApp.Command.Commands;
 import EventTools.ShowEventsApp.Command.SelectionInfoCmd;
 import EventTools.ShowEventsApp.Command.SetNewInstrumentCmd;
+import EventTools.ShowEventsApp.Command.LoadEventsCmd;
 import EventTools.ShowEventsApp.Command.FindPeaksCmd;
 import EventTools.ShowEventsApp.Command.Util;
 
@@ -65,25 +66,39 @@ import EventTools.ShowEventsApp.Command.Util;
  *  that is binned when the instrument type is changed.  It also provides
  *  information from the histogram, such as the max value in the histogram,
  *  the number of counts at a point and finds peaks in the histogram.
+ *
+ *  @param message_center       The message center from which events to
+ *                              process data are received.
+ *  @param view_message_center  The message center to which messages 
+ *                              about data to viewed is sent.
+ *  @param num_bins             The number of bins to use in each direction
+ *                              for the histogram in reciprocal space.
  */
 public class HistogramHandler implements IReceiveMessage
 {
   private MessageCenter message_center;
+  private MessageCenter view_message_center;
 
   private String        current_instrument = "";
   private Histogram3D   histogram = null;
   private int           num_bins;
+  private long          num_to_load;
 
-  public HistogramHandler( MessageCenter message_center, int num_bins )
+  public HistogramHandler( MessageCenter message_center, 
+                           MessageCenter view_message_center,
+                           int           num_bins )
   {
     this.num_bins = num_bins;
     this.histogram = DefaultSNAP_Histogram( num_bins );
     this.current_instrument = SNS_Tof_to_Q_map.SNAP;
+    this.num_to_load = 0;
 
-    this.message_center = message_center;
-    message_center.addReceiver( this, Commands.ADD_EVENTS );
-    message_center.addReceiver( this, Commands.CLEAR_HISTOGRAM );
-    message_center.addReceiver( this, Commands.SET_NEW_INSTRUMENT );
+    this.message_center      = message_center;
+    this.view_message_center = view_message_center;
+
+    message_center.addReceiver( this, Commands.LOAD_FILE_DATA );
+    message_center.addReceiver( this, Commands.ADD_EVENTS_TO_HISTOGRAMS );
+    message_center.addReceiver( this, Commands.INIT_HISTOGRAM );
     message_center.addReceiver( this, Commands.SET_WEIGHTS_FROM_HISTOGRAM );
     message_center.addReceiver( this, Commands.ADD_HISTOGRAM_INFO );
     message_center.addReceiver( this, Commands.GET_HISTOGRAM_MAX );
@@ -93,7 +108,7 @@ public class HistogramHandler implements IReceiveMessage
 
  /**
   *  Receive and process messages: 
-  *      ADD_EVENTS, 
+  *      ADD_EVENTS_TO_HISTOGRAMS, 
   *      CLEAR_HISTOGRAM, 
   *      SET_NEW_INSTRUMENT, 
   *      SET_WEIGHTS_FROM_HISTOGRAM, 
@@ -108,15 +123,8 @@ public class HistogramHandler implements IReceiveMessage
   */
   public boolean receive( Message message )
   {
-     if ( histogram == null && 
-         !(message.getName().equals(Commands.SET_NEW_INSTRUMENT)))
-     {
-       Util.sendError( "WARNING: Histogram not created. " +
-                       "Can't " + message.getName() );
-       return false;
-     }
 
-    if ( message.getName().equals(Commands.ADD_EVENTS) )
+    if ( message.getName().equals(Commands.ADD_EVENTS_TO_HISTOGRAMS) )
     {
       IEventList3D events = (IEventList3D)message.getValue();
       if ( events == null )
@@ -124,22 +132,50 @@ public class HistogramHandler implements IReceiveMessage
 
       AddEventsToHistogram( events );
 
-      Util.sendInfo( "ADDED " + events.numEntries() + " to HISTOGRAM");
+//      Util.sendInfo( "ADDED " + events.numEntries() + " to HISTOGRAM");
+      Util.sendInfo( "TOTAL ADDED = " + histogram.numAdded() );
 
       SetWeightsFromHistogram( events, histogram );
       Message add_to_view = new Message( Commands.ADD_EVENTS_TO_VIEW,
                                          events,
                                          false,
                                          true );
-      Util.sendInfo( "SENDING MESSGE, ADD TO VIEW");
-      message_center.send( add_to_view );
+//      Util.sendInfo( "SENDING MESSGE, ADD TO VIEW");
+      view_message_center.send( add_to_view );
+
+      if ( histogram.numAdded() >= num_to_load )
+      {
+        Message done_loading = new Message( Commands.LOAD_FILE_DONE,
+                                            null,
+                                            true,
+                                            true );
+       message_center.send( done_loading );
+      }
       return false;
     }
 
-    else if (  message.getName().equals(Commands.CLEAR_HISTOGRAM) )
+    else if ( message.getName().equals(Commands.LOAD_FILE_DATA) )
     {
-      histogram.clear();
-      Util.sendInfo( "CLEARED HISTOGRAM");
+      LoadEventsCmd cmd = (LoadEventsCmd)message.getValue();
+      num_to_load = cmd.getEventsToLoad(); 
+    }
+
+    else if (  message.getName().equals(Commands.INIT_HISTOGRAM) )
+    {
+      boolean set_ok = SetNewInstrument( message.getValue() );
+      if ( set_ok )
+      {
+        num_to_load = 0; 
+        Message init_hist_done = new Message( Commands.INIT_HISTOGRAM_DONE,
+                                              null,
+                                              true,
+                                              true );
+        message_center.send( init_hist_done );
+      }
+      else
+        message_center.send( new Message( Commands.LOAD_FAILED,
+                                          null, true, true ) );
+
       return false;
     }
 
@@ -147,45 +183,7 @@ public class HistogramHandler implements IReceiveMessage
     {
       Object obj = message.getValue();
 
-      if ( obj == null || ! (obj instanceof SetNewInstrumentCmd) )
-        return false;
-
-      SetNewInstrumentCmd cmd = (SetNewInstrumentCmd)obj;
-
-      String inst = cmd.getInstrumentName();
-
-      if ( inst == null || inst.trim().length() <= 0 )
-      {
-        Util.sendError("ERROR: SET_NEW_INSTRUMENT name is " + inst );
-        return false;
-      }
-  
-      if ( inst.equals( current_instrument ) )
-      {
-        histogram.clear();
-        Util.sendInfo( "Histogram set up for " + current_instrument );
-        return false;
-      }
- 
-      if ( inst.equals(SNS_Tof_to_Q_map.SNAP) || 
-           inst.equals(SNS_Tof_to_Q_map.TOPAZ ) )
-      {
-        SetHistogramForSNAP();
-        current_instrument = inst;
-      }
-      else if ( inst.equals(SNS_Tof_to_Q_map.ARCS) )
-      {
-        SetHistogramForARCS();
-        current_instrument = inst;
-      }
-      else
-      {
-        histogram.clear();                 // at least clear the histogram
-                                           // if starting a new file
-        Util.sendWarning( inst + " not supported yet. " +
-                          "Detector position info needed." );
-        return false;
-      }
+      SetNewInstrument( obj );
 
       Util.sendInfo( "Histogram set up for " + current_instrument );
       return false;
@@ -267,6 +265,53 @@ public class HistogramHandler implements IReceiveMessage
     }
 
     return false;
+  }
+
+
+
+  private boolean SetNewInstrument( Object obj )
+  {
+    if ( obj == null || ! (obj instanceof SetNewInstrumentCmd) )
+      return false;
+
+    SetNewInstrumentCmd cmd = (SetNewInstrumentCmd)obj;
+
+    String inst = cmd.getInstrumentName();
+
+    if ( inst == null || inst.trim().length() <= 0 )
+    {
+      Util.sendError("ERROR: SET_NEW_INSTRUMENT name is " + inst );
+      return false;
+    }
+
+    if ( inst.equals( current_instrument ) )
+    {
+      histogram.clear();
+      Util.sendInfo( "Histogram set up for " + current_instrument );
+      return true;
+    }
+
+    if ( inst.equals(SNS_Tof_to_Q_map.SNAP) ||
+         inst.equals(SNS_Tof_to_Q_map.TOPAZ ) )
+    {
+      SetHistogramForSNAP();
+      current_instrument = inst;
+      return true;
+    }
+    else if ( inst.equals(SNS_Tof_to_Q_map.ARCS) )
+    {
+      SetHistogramForARCS();
+      current_instrument = inst;
+      return true;
+    }
+    else
+    {
+      histogram.clear();                 // at least clear the histogram
+                                         // if starting a new file
+      Util.sendWarning( inst + " not supported yet. " +
+                        "Detector position info needed." );
+      return false;
+    }
   }
 
 

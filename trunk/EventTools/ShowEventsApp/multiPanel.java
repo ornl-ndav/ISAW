@@ -50,7 +50,6 @@ import EventTools.ShowEventsApp.Command.*;
 import EventTools.ShowEventsApp.ViewHandlers.StatusMessageHandler;
 
 import MessageTools.*;
-import SSG_Tools.Viewers.Controls.MouseArcBall;
 
 /**
  * Creates a JFrame containing a SplitPaneWithState
@@ -60,7 +59,7 @@ import SSG_Tools.Viewers.Controls.MouseArcBall;
 public class multiPanel implements IReceiveMessage
 {
    public static Rectangle    PANEL_BOUNDS =  new Rectangle(10, 10, 570, 510) ;
-   private final int          INTERVAL       = 30;
+
    private JFrame             mainView;
    private controlsPanel      controlpanel;
    private displayPanel       displayPanel;
@@ -71,11 +70,12 @@ public class multiPanel implements IReceiveMessage
     * Creates the controlsPanel and the displayPanel
     * to be added to the SplitPane and then creates the JFrame.
     */
-   public multiPanel( MessageCenter messageCenter )
+   public multiPanel( MessageCenter messageCenter,
+                      MessageCenter viewMessageCenter )
    {
-      this.messageCenter = messageCenter;
+      this.messageCenter     = messageCenter;
       
-      controlpanel = new controlsPanel(messageCenter);
+      controlpanel = new controlsPanel( messageCenter, viewMessageCenter );
       displayPanel = new displayPanel(messageCenter);
       buildMainFrame();
    }

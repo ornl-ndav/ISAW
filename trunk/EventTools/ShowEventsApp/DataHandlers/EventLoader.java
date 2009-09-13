@@ -59,7 +59,7 @@ public class EventLoader implements IReceiveMessage
   public EventLoader( MessageCenter message_center )
   {
     this.message_center = message_center;
-    message_center.addReceiver( this, Commands.LOAD_FILE );
+    message_center.addReceiver( this, Commands.LOAD_FILE_DATA );
   }
 
 
@@ -68,7 +68,7 @@ public class EventLoader implements IReceiveMessage
     long   start;
     double run_time;
 
-    if ( message.getName().equals(Commands.LOAD_FILE) )
+    if ( message.getName().equals(Commands.LOAD_FILE_DATA) )
     {
       LoadEventsCmd cmd = (LoadEventsCmd)message.getValue();
       

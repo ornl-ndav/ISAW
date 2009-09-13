@@ -51,7 +51,8 @@ public class QViewHandler extends GraphViewHandler
     * on the message center.  It will display the jframe when it
     * receives SHOW_Q_GRAPH message.
     * 
-    * @param messageCenter
+    * @param messageCenter The MessageCenter that is used for handling this
+    *                      Q value viewer.
     */
    public QViewHandler(MessageCenter messageCenter)
    {

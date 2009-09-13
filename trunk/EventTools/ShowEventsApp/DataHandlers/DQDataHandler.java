@@ -56,6 +56,8 @@ public class DQDataHandler implements IReceiveMessage
    public static final float MAX_D = 10;
  
    private MessageCenter messageCenter;
+   private MessageCenter viewMessageCenter;
+
    private float[][] d_values = new float[2][NUM_BINS+1];
    private float[][] q_values = new float[2][NUM_BINS+1]; 
 
@@ -64,16 +66,19 @@ public class DQDataHandler implements IReceiveMessage
    *  Construct a DQDataHandler to get and receive messages from the
    *  specified MessageCenter.
    *
-   *  @param  messageCenter  The messge center to listen to for comands
-   *                         and to which the D and Q arrays will be sent.
+   *  @param  messageCenter     The message center to listen to for comands
+   *  @param  viewMessageCenter The message center to which the D and Q 
+   *                            arrays will be sent.
    */
-   public DQDataHandler(MessageCenter messageCenter)
+   public DQDataHandler( MessageCenter messageCenter,
+                         MessageCenter viewMessageCenter )
    {
       this.messageCenter = messageCenter;
+      this.viewMessageCenter = viewMessageCenter;
 
-      this.messageCenter.addReceiver(this, Commands.ADD_EVENTS);
+      this.messageCenter.addReceiver(this, Commands.ADD_EVENTS_TO_HISTOGRAMS);
 
-      this.messageCenter.addReceiver(this, Commands.CLEAR_DQ);
+      this.messageCenter.addReceiver(this, Commands.INIT_DQ);
 
       this.messageCenter.addReceiver(this, Commands.GET_D_VALUES);
       this.messageCenter.addReceiver(this, Commands.GET_Q_VALUES);
@@ -162,22 +167,22 @@ public class DQDataHandler implements IReceiveMessage
 
 
    /**
-    * Convenience method to send a message to the message center
+    * Convenience method to send a message to the VIEW message center
     * used by this class.
     *
     * @param command  The command name (i.e. queue) for this message.
     * @param value    The value object for this message.
     */
-   private void sendMessage(String command, Object value)
+   private void sendViewMessage(String command, Object value)
    {
       Message message = new Message(command, value, true, true);
       
-      messageCenter.send(message);
+      viewMessageCenter.send(message);
    }
    
    
    /**
-    *  Process messages: ADD_EVENTS, CLEAR_DQ, GET_D_VALUES
+    *  Process messages: ADD_EVENTS_TO_HISTOGRAMS, CLEAR_DQ, GET_D_VALUES
     *  and GET_Q_VALUES.  
     *
     *  @param message The message containing the command to be 
@@ -185,7 +190,7 @@ public class DQDataHandler implements IReceiveMessage
     */
    public boolean receive(Message message)
    {
-      if (message.getName().equals(Commands.ADD_EVENTS))
+      if (message.getName().equals(Commands.ADD_EVENTS_TO_HISTOGRAMS))
       {
         Object obj = message.getValue();
 
@@ -199,25 +204,31 @@ public class DQDataHandler implements IReceiveMessage
 
         synchronized( q_values )
         {
-          sendMessage(Commands.SET_Q_VALUES, q_values );
-          sendMessage(Commands.SET_D_VALUES, d_values );
+          sendViewMessage(Commands.SET_Q_VALUES, q_values );
+          sendViewMessage(Commands.SET_D_VALUES, d_values );
         }
       }
       
-      if (message.getName().equals(Commands.CLEAR_DQ))
+      if (message.getName().equals(Commands.INIT_DQ))
       {
         clearYs();
+        Message init_dq_done = new Message( Commands.INIT_DQ_DONE,
+                                            null,
+                                            true,
+                                            true );
+        messageCenter.send( init_dq_done );
+
       }
       
       if (message.getName().equals(Commands.GET_D_VALUES))
       {
-        sendMessage(Commands.SET_D_VALUES, d_values );
+        sendViewMessage(Commands.SET_D_VALUES, d_values );
         return true;
       }
       
       if (message.getName().equals(Commands.GET_Q_VALUES))
       {
-         sendMessage(Commands.SET_Q_VALUES, q_values );
+         sendViewMessage(Commands.SET_Q_VALUES, q_values );
          return true;
       }
       

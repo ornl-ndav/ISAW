@@ -59,6 +59,7 @@ public class controlsPanel extends JPanel
 {
    public static final long       serialVersionUID = 1L;
    private MessageCenter          messageCenter;
+   private MessageCenter          viewMessageCenter;
    
    private JButton                loadFileBtn;
    private JButton                findPeaksBtn;
@@ -94,9 +95,11 @@ public class controlsPanel extends JPanel
     * 
     * @param messageCenter
     */
-   public controlsPanel(MessageCenter messageCenter)
+   public controlsPanel( MessageCenter messageCenter,
+                         MessageCenter viewMessageCenter )
    {
-      this.messageCenter = messageCenter;
+      this.messageCenter     = messageCenter;
+      this.viewMessageCenter = viewMessageCenter;
       buildPanels();
       
       this.setLayout(new GridLayout(2,1));
@@ -119,7 +122,8 @@ public class controlsPanel extends JPanel
       peakInfoPanel = new peaksStatPanel( messageCenter);
      
       slicePanel = new sliceControl(messageCenter);
-      sliceControlsPanel = new additionalViewControls(messageCenter);
+      sliceControlsPanel = new additionalViewControls( messageCenter,
+                                                       viewMessageCenter );
       drawoptions = new drawingOptions(messageCenter);
       
       //new DViewHandler( messageCenter );
@@ -340,11 +344,12 @@ public class controlsPanel extends JPanel
     */
    public static void main(String[] args)
    {
-      MessageCenter mc = new MessageCenter("Testing MessageCenter");
+      MessageCenter mc  = new MessageCenter("Testing MessageCenter");
+      MessageCenter vmc = new MessageCenter("Testing ViewMessageCenter");
       TestReceiver tc = new TestReceiver("controlsPanel TestingMessages");
       mc.addReceiver(tc, Commands.CHANGE_PANEL);
       
-      controlsPanel op = new controlsPanel(mc);
+      controlsPanel op = new controlsPanel(mc, vmc);
       
       JFrame View = new JFrame( "Test Controls Panel" );
       View.setDefaultCloseOperation( WindowConstants.EXIT_ON_CLOSE );
@@ -352,6 +357,8 @@ public class controlsPanel extends JPanel
       View.setVisible(true);
       
       View.add(op);
+
       new TimedTrigger(mc, 100);
+      new TimedTrigger(vmc, 100);
    }
 }
