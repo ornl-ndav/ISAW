@@ -65,9 +65,12 @@ import gov.anl.ipns.Operator.Threads.*;
  */
 public class Histogram3D
 {
-  private float  max;
-  private float  min;
-  private double sum;
+  private float  max;                        // max bin value (weighted)
+  private float  min;                        // min bin value (weighted)
+  private double sum;                        // sum of weighted events added
+  private long   num_added;                  // total number of events added
+                                             // to histogram (NOT weighted)
+
                                              // These determine the edges of
                                              // the parallelepipeds that are
                                              // the histogram bins
@@ -296,6 +299,18 @@ public class Histogram3D
 
 
   /**
+   * Get the number of distinct events that were added to the histogram,
+   * NOT counting the weight of the events.
+   *
+   * @return  The total number of distinct events added to the histogram.
+   */
+  public long numAdded()
+  {
+    return num_added;
+  }
+
+
+  /**
    * Change the Histogram3D position to cover a new parallelepiped region 
    * of 3-dimensional real space.  The shape and number of subdivision 
    * of the region covered is determined by the direction vectors and
@@ -319,11 +334,14 @@ public class Histogram3D
                                     IProjectionBinner3D y_edge_binner,
                                     IProjectionBinner3D z_edge_binner )
   {
-    this.x_edge_binner = x_edge_binner;
-    this.y_edge_binner = y_edge_binner;
-    this.z_edge_binner = z_edge_binner;
+    synchronized(histogram)
+    {
+      this.x_edge_binner = x_edge_binner;
+      this.y_edge_binner = y_edge_binner;
+      this.z_edge_binner = z_edge_binner;
 
-    init_histogram();
+      init_histogram();
+    }
   }
 
   
@@ -342,6 +360,7 @@ public class Histogram3D
 
       ParallelExecutor pe = new ParallelExecutor( ops, n_threads, max_time );
       pe.runOperators();
+      num_added = 0;
     }
     min = 0;
     max = 0;
@@ -377,6 +396,7 @@ public class Histogram3D
       double old_sum = sum;
       extract_scan_info( results, old_sum );
 
+      num_added += events.numEntries();
       return sum - old_sum;
     }
   }
