@@ -63,8 +63,8 @@ public class IsawEV
     int update_time_ms = 30;
     new TimedTrigger( message_center, update_time_ms );
 
-    message_center.setDebugReceive( true );
-    message_center.setDebugSend( true );
+//    message_center.setDebugReceive( true );
+//    message_center.setDebugSend( true );
 
                                         // The view message center is a "slow"
                                         // running message center that handles
@@ -72,7 +72,7 @@ public class IsawEV
                                         // and the 3D event viewer
     MessageCenter view_message_center = 
                                    new MessageCenter("VIEW MESSAGE CENTER");
-    int view_update_time_ms = 2000;
+    int view_update_time_ms = 1000;
     new TimedTrigger(view_message_center, view_update_time_ms );
 
 

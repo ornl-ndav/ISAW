@@ -65,16 +65,17 @@ public class EventLoader implements IReceiveMessage
 
   public boolean receive( Message message )
   {
+/*
     long   start;
     double run_time;
-
+*/
     if ( message.getName().equals(Commands.LOAD_FILE_DATA) )
     {
       LoadEventsCmd cmd = (LoadEventsCmd)message.getValue();
       
       String event_file_name = cmd.getEventFile();
 
-      start = System.nanoTime();
+//      start = System.nanoTime();
       try
       {
         LoadEvents( event_file_name, 
@@ -89,10 +90,11 @@ public class EventLoader implements IReceiveMessage
                         event_file_name + "\n" + ex );
         return false;
       }
-
+/*
       run_time = (System.nanoTime() - start)/1.0e6;
       String load_str = String.format( "Loaded file in %5.1f ms\n", run_time );
       Util.sendInfo( load_str );
+*/
       return false;
     }
 
@@ -106,11 +108,12 @@ public class EventLoader implements IReceiveMessage
                                         long   num_to_show,
                                         int    num_threads  )
   {
+/*
     System.out.println("FIRST = " + first );
     System.out.println("NUM_TO_LOAD = " + num_to_load );
     System.out.println("NUM_TO_SHOW = " + num_to_show );
     System.out.println("NUM_THREADS = " + num_threads );
-
+*/
     SNS_TofEventList check_file = new SNS_TofEventList( event_file_name );
     long num_available = check_file.numEntries();
     check_file = null;
@@ -129,10 +132,13 @@ public class EventLoader implements IReceiveMessage
     if ( num_to_show > num_to_load )       // can't show more than are loaded
       num_to_show = num_to_load; 
 
-    long MAX_SEG_SIZE = 10000000;
+    long MAX_SEG_SIZE = 5000000;
     long seg_size = num_to_load / num_threads;
     if ( seg_size > MAX_SEG_SIZE )
       seg_size = MAX_SEG_SIZE;
+
+    Util.sendInfo( "Loading " + event_file_name );
+    Util.sendInfo( "Please WAIT... " );
 
     boolean done       = false;
     long    num_loaded = 0;
@@ -146,7 +152,7 @@ public class EventLoader implements IReceiveMessage
         if ( num_to_load - num_loaded < seg_size )
           seg_size = num_to_load - num_loaded;
 
-        Util.sendInfo( "Loading " + seg_size + " starting with " + first );
+//      Util.sendInfo( "Loading " + seg_size + " starting with " + first );
         System.out.println("FIRST = " + first + " SEG_SIZE = " + seg_size );
         ops.add( new EventSegmentLoadOp( event_file_name, first, seg_size ) );
         first      += seg_size;

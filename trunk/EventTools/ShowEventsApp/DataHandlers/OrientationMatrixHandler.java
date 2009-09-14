@@ -83,8 +83,6 @@ public class OrientationMatrixHandler implements IReceiveMessage
 
   public boolean receive( Message message )
   {
-    System.out.println("***OrientationMatrixHandler in thread " 
-                       + Thread.currentThread());
 
     if ( message.getName().equals(Commands.SET_ORIENTATION_MATRIX) )
     {

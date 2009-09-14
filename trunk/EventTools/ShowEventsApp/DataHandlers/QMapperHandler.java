@@ -280,7 +280,7 @@ public class QMapperHandler implements IReceiveMessage
   }  
 
 
-  synchronized private IEventList3D[] MapToQ( ITofEventList ev_list )
+  private IEventList3D[] MapToQ( ITofEventList ev_list )
   {
     int N_THREADS = 4;
 
@@ -341,8 +341,8 @@ public class QMapperHandler implements IReceiveMessage
       event_lists[0] = mapper.MapEventsToQ( tofs, ids );
     }
 
-    Util.sendInfo("Converted to Q in " + ((System.nanoTime()-start)/1e6) +
-                  " ms" );
+//    Util.sendInfo("Converted to Q in " + ((System.nanoTime()-start)/1e6) +
+//                  " ms" );
     return event_lists;
   }
 

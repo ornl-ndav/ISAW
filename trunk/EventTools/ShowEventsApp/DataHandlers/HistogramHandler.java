@@ -83,6 +83,7 @@ public class HistogramHandler implements IReceiveMessage
   private Histogram3D   histogram = null;
   private int           num_bins;
   private long          num_to_load;
+  private double        max_hist_value_sent;
 
   public HistogramHandler( MessageCenter message_center, 
                            MessageCenter view_message_center,
@@ -92,6 +93,7 @@ public class HistogramHandler implements IReceiveMessage
     this.histogram = DefaultSNAP_Histogram( num_bins );
     this.current_instrument = SNS_Tof_to_Q_map.SNAP;
     this.num_to_load = 0;
+    this.max_hist_value_sent = 0;
 
     this.message_center      = message_center;
     this.view_message_center = view_message_center;
@@ -133,7 +135,7 @@ public class HistogramHandler implements IReceiveMessage
       AddEventsToHistogram( events );
 
 //      Util.sendInfo( "ADDED " + events.numEntries() + " to HISTOGRAM");
-      Util.sendInfo( "TOTAL ADDED = " + histogram.numAdded() );
+//      Util.sendInfo( "TOTAL ADDED = " + histogram.numAdded() );
 
       SetWeightsFromHistogram( events, histogram );
       Message add_to_view = new Message( Commands.ADD_EVENTS_TO_VIEW,
@@ -150,6 +152,21 @@ public class HistogramHandler implements IReceiveMessage
                                             true,
                                             true );
        message_center.send( done_loading );
+
+       double max = histogram.maxVal();
+       if ( max > max_hist_value_sent )
+       {
+         max_hist_value_sent = max;
+         Message hist_max = new Message( Commands.SET_HISTOGRAM_MAX,
+                                         new Float( max ),
+                                         true,
+                                         true );
+         message_center.send( hist_max );
+
+         String max_message = String.format("Max Histogram Value : %4.2f",
+                                             histogram.maxVal() );
+         Util.sendInfo( max_message );
+       }
       }
       return false;
     }
@@ -166,6 +183,7 @@ public class HistogramHandler implements IReceiveMessage
       if ( set_ok )
       {
         num_to_load = 0; 
+        max_hist_value_sent = 0;
         Message init_hist_done = new Message( Commands.INIT_HISTOGRAM_DONE,
                                               null,
                                               true,
@@ -221,6 +239,8 @@ public class HistogramHandler implements IReceiveMessage
       if ( val instanceof FindPeaksCmd )  
       {
         FindPeaksCmd cmd = (FindPeaksCmd)message.getValue();
+
+        Util.sendInfo("Searching for peaks, PLEASE WAIT ...");
         
         Vector<PeakQ> peakQs = FindPeaks( histogram,
                                           cmd.getSmoothData(),
@@ -245,6 +265,8 @@ public class HistogramHandler implements IReceiveMessage
              message_center.send( mark_peaks );
           }
         }
+        else
+          Util.sendInfo("Failed to find any peaks!");
       }
       return false;
     }
@@ -320,7 +342,7 @@ public class HistogramHandler implements IReceiveMessage
    *  the histogram bin that contains the event.  The histogram bin
    *  values are used to control the color map for the 3D event viewer.
    */
-  synchronized private void SetWeightsFromHistogram( IEventList3D events, 
+  private void SetWeightsFromHistogram( IEventList3D events, 
                                         Histogram3D histogram )
   {
     int n_events = events.numEntries();
@@ -350,7 +372,7 @@ public class HistogramHandler implements IReceiveMessage
    * Add the selected point's histogram counts and page number to the 
    * select_info_command. 
    */
-  synchronized private void AddHistogramInfo( SelectionInfoCmd select_info_cmd,
+  private void AddHistogramInfo( SelectionInfoCmd select_info_cmd,
                                  Histogram3D      histogram )
   {
     Vector3D Qxyz = select_info_cmd.getQxyz();
@@ -499,7 +521,7 @@ public class HistogramHandler implements IReceiveMessage
    *  @param  log_file         The name of the file to write the logging
    *                           information to.
    */
-  synchronized private Vector<PeakQ> FindPeaks( Histogram3D histogram,
+  private Vector<PeakQ> FindPeaks( Histogram3D histogram,
                                   boolean     smooth_data,
                                   int         num_peaks,
                                   float       min_intensity,
@@ -508,6 +530,8 @@ public class HistogramHandler implements IReceiveMessage
   {
      // System.out.println("START OF FindPeaks");
    
+     smooth_data = false;                  // NOTE: Don't smooth the data!!!!
+
      int num_pages = histogram.zBinner().numBins();
      int num_rows  = histogram.yBinner().numBins();
      int num_cols  = histogram.xBinner().numBins();
