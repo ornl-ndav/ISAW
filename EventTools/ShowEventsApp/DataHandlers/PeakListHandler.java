@@ -111,11 +111,14 @@ public class PeakListHandler implements IReceiveMessage
     {
       Object obj = message.getValue();
       if ( obj == null || !(obj instanceof IndexPeaksCmd) )
+      {
+        Util.sendError("ERROR: wrong value object in INDEX_PEAKS command");
         return false;
+      }
 
       if ( peakNew_list == null || peakNew_list.size() <= 0 )
       {
-        Util.sendError( "ERROR: No Peaks Found Yet ");
+        Util.sendError( "ERROR: No peaks found... can't index yet");
         return false;
       }
 
@@ -125,6 +128,7 @@ public class PeakListHandler implements IReceiveMessage
       float[][] UB = null;
       try
       {
+        Util.sendInfo("Starting to index peaks, PLEASE WAIT...");
         UB = IndexPeaks_Calc.IndexPeaksWithOptimizer( peakNew_list,
                                                       cmd.getA(),
                                                       cmd.getB(),

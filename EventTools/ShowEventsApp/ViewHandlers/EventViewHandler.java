@@ -37,11 +37,15 @@ public class EventViewHandler implements IReceiveMessage
   private MessageCenter      message_center;
   private SlicedEventsPanel  events_panel; 
   private JFrame             frame3D;
+  private long               num_to_show;
+  private long               num_shown;
 
   public EventViewHandler( MessageCenter message_center,
                            MessageCenter view_message_center )
   {
-    this.message_center      = message_center;
+    this.message_center = message_center;
+    this.num_shown      = 0;
+    this.num_to_show    = 1000000;
  
     message_center.addReceiver( this, Commands.LOAD_FILE_DATA );
 
@@ -80,6 +84,14 @@ public class EventViewHandler implements IReceiveMessage
     if ( message.getName().equals(Commands.ADD_EVENTS_TO_VIEW) )
     {
       IEventList3D events = (IEventList3D)message.getValue();
+
+      long num_new = events.numEntries();
+
+      if ( num_new + num_shown > num_to_show )      // limit the number shown
+        return false;                               // TODO: use a queue.
+      else
+        num_shown += num_new;
+
       synchronized ( events_panel )
       {
         events_panel.addEvents( events );
@@ -114,6 +126,7 @@ public class EventViewHandler implements IReceiveMessage
     {
       synchronized ( events_panel )
       {
+        num_shown = 0;
         events_panel.clear();
         events_panel.updateDisplay();
       }
@@ -121,7 +134,10 @@ public class EventViewHandler implements IReceiveMessage
     else if( message.getName().equals( Commands.LOAD_FILE_DATA ) )
     {
       LoadEventsCmd info = (LoadEventsCmd)message.getValue();
+
       frame3D.setTitle( "Reciprocal Space Events for "+info.getEventFile() );
+
+      num_to_show = info.getEventsToShow();
     }
     else if ( message.getName().equals( Commands.MARK_PEAKS ) )
     {
