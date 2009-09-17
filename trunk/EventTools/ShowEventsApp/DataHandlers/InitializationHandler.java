@@ -41,6 +41,7 @@ import MessageTools.MessageCenter;
 import EventTools.EventList.SNS_Tof_to_Q_map;
 import EventTools.ShowEventsApp.Command.Commands;
 import EventTools.ShowEventsApp.Command.LoadEventsCmd;
+import EventTools.ShowEventsApp.Command.LoadUDPEventsCmd;
 import EventTools.ShowEventsApp.Command.SetNewInstrumentCmd;
 import EventTools.ShowEventsApp.Command.Util;
 
@@ -66,6 +67,10 @@ public class InitializationHandler implements IReceiveMessage
   private boolean          loading_file;
   private boolean          load_failed;
   private LoadEventsCmd    load_file_cmd;
+  private boolean          udpLoadStarted;// no fail/no end unless loading_file is true
+  private SocketEventLoader socket;
+  private LoadUDPEventsCmd  UDPcmd;
+  
 
   public InitializationHandler( MessageCenter message_center )
   {
@@ -76,15 +81,38 @@ public class InitializationHandler implements IReceiveMessage
     instrument_ok = false;
     loading_file  = false;
     load_failed   = false;
-
+    socket = null;
+    
     message_center.addReceiver( this, Commands.LOAD_FILE );
     message_center.addReceiver( this, Commands.LOAD_FAILED );
     message_center.addReceiver( this, Commands.LOAD_FILE_DONE );
     message_center.addReceiver( this, Commands.INIT_HISTOGRAM_DONE );
     message_center.addReceiver( this, Commands.INIT_DQ_DONE );
     message_center.addReceiver( this, Commands.INIT_NEW_INSTRUMENT_DONE);
+    message_center.addReceiver( this, Commands.LOAD_UDP_EVENTS);
   }
+  
+ // for a reload, all data must be reinitialized 
+  private void InitData( SetNewInstrumentCmd new_inst_cmd )
+   {
+      Message init_view = new Message( Commands.INIT_EVENTS_VIEW , null , true ,
+               true );
+      message_center.send( init_view );
+      Message new_inst = new Message( Commands.INIT_NEW_INSTRUMENT ,
+               new_inst_cmd , true , true );
+      message_center.send( new_inst );
 
+
+      Message clear_hist = new Message( Commands.INIT_HISTOGRAM , new_inst_cmd ,
+               true , true );
+      message_center.send( clear_hist );
+
+
+      Message clear_dq = new Message( Commands.INIT_DQ , null , true , true );
+      message_center.send( clear_dq );
+   }
+  
+  
   public boolean receive( Message message )
   {
     if ( message.getName().equals(Commands.LOAD_FILE) )
@@ -92,11 +120,14 @@ public class InitializationHandler implements IReceiveMessage
       if ( loading_file && !load_failed )
       {
         Util.sendInfo( "Still Loading File " + load_file_cmd.getEventFile() );
-        Util.sendInfo( "IGNORING EXTRA LOAD REQUEST" );
+        Util.sendInfo( "IGNORING EXTRA LOAD REQUEST" );       
         return false; 
       }
+    
 
       loading_file  = true;
+      if( udpLoadStarted )
+         killUDP();
       load_failed   = false;
       histogram_ok  = false;
       dq_ok         = false;
@@ -112,28 +143,15 @@ public class InitializationHandler implements IReceiveMessage
                       " FROM FILE " + load_file_cmd.getEventFile() );
         return false;
       }  
-
-      Message init_view = new Message( Commands.INIT_EVENTS_VIEW, 
-                                       null, true, true );
-      message_center.send( init_view );
-
       SetNewInstrumentCmd new_inst_cmd = 
-        new SetNewInstrumentCmd( inst_name,
-                                 load_file_cmd.getDetFile(),
-                                 load_file_cmd.getIncSpectrumFile() );
+         new SetNewInstrumentCmd( inst_name,
+                                  load_file_cmd.getDetFile(),
+                                  load_file_cmd.getIncSpectrumFile() );
+      InitData( new_inst_cmd );
 
-      Message new_inst = new Message( Commands.INIT_NEW_INSTRUMENT,
-                                      new_inst_cmd, true, true );
-      message_center.send( new_inst );
+  
 
-
-      Message clear_hist = new Message( Commands.INIT_HISTOGRAM,
-                                        new_inst_cmd, true, true );
-      message_center.send( clear_hist );
-
-
-      Message clear_dq = new Message( Commands.INIT_DQ, null, true, true );
-      message_center.send( clear_dq );
+     
 
       return false;
     }
@@ -169,6 +187,36 @@ public class InitializationHandler implements IReceiveMessage
       histogram_ok  = false;
       dq_ok         = false;
       instrument_ok = false;
+    }else if( message.getName().equals(Commands.LOAD_UDP_EVENTS))
+    {
+       if ( loading_file && !load_failed )
+       {
+         Util.sendInfo( "Still Loading File " + load_file_cmd.getEventFile() );
+         Util.sendInfo( "IGNORING EXTRA LOAD REQUEST" );       
+         return false; 
+       }
+       
+       killUDP();
+       loading_file  =false;
+       load_failed   = false;//so will not go through LoadifPossible 
+       histogram_ok  = false;
+       dq_ok         = false;
+       instrument_ok = false;
+       udpLoadStarted = true;
+       
+       UDPcmd =(LoadUDPEventsCmd) message.getValue();
+       
+       SetNewInstrumentCmd new_inst_cmd = 
+          new SetNewInstrumentCmd( UDPcmd.getInstrument(),
+                   UDPcmd.getDetFile(),
+                   UDPcmd.getIncSpectrumFile() );
+       InitData( new_inst_cmd );
+       
+       
+       
+       return false;
+       
+       
     }
 
     return false;
@@ -197,17 +245,32 @@ public class InitializationHandler implements IReceiveMessage
     return instrument_name;
   }
   
+  public void killUDP()
+  {
+     udpLoadStarted = false;
+     if( socket != null)
+     {
+        socket.interrupt();
+        socket = null;
+     }
+  }
 
   private void LoadIfPossible()
   {
     if ( histogram_ok && 
                 dq_ok && 
         instrument_ok &&
-        !load_failed  )
+        !load_failed)
+      if( !udpLoadStarted)
     {
       Message load = new Message( Commands.LOAD_FILE_DATA, 
                                   load_file_cmd, true, true );
       message_center.send( load );
+      
+    }else
+    {
+      socket = new SocketEventLoader( UDPcmd.getPort(), message_center, null);
+      socket.start();
     }
   }
 }

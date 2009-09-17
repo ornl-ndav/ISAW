@@ -161,7 +161,7 @@ public class HistogramHandler implements IReceiveMessage
                                          new Float( max ),
                                          true,
                                          true );
-         message_center.send( hist_max );
+         view_message_center.send( hist_max );
 
          String max_message = String.format("Max Histogram Value : %4.2f",
                                              histogram.maxVal() );
@@ -277,7 +277,7 @@ public class HistogramHandler implements IReceiveMessage
                                        new Float( histogram.maxVal() ),
                                        true,
                                        true );
-       message_center.send( hist_max );
+       view_message_center.send( hist_max );
 
        String max_message = String.format("Max Histogram Value : %4.2f",
                                            histogram.maxVal() );
