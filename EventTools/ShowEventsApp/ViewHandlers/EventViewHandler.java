@@ -39,6 +39,7 @@ public class EventViewHandler implements IReceiveMessage
   private JFrame             frame3D;
   private long               num_to_show;
   private long               num_shown;
+  private Object             eventPanelMonitor = new Object();
 
   public EventViewHandler( MessageCenter message_center,
                            MessageCenter view_message_center )
@@ -79,7 +80,7 @@ public class EventViewHandler implements IReceiveMessage
   }
 
 
-  synchronized public boolean receive( Message message )
+   public boolean receive( Message message )
   {
     if ( message.getName().equals(Commands.ADD_EVENTS_TO_VIEW) )
     {
@@ -92,7 +93,7 @@ public class EventViewHandler implements IReceiveMessage
       else
         num_shown += num_new;
 
-      synchronized ( events_panel )
+      synchronized ( eventPanelMonitor )
       {
         events_panel.addEvents( events );
         events_panel.updateDisplay();
@@ -101,7 +102,7 @@ public class EventViewHandler implements IReceiveMessage
     else if ( message.getName().equals(Commands.SET_DRAWING_OPTIONS) )
     {
       DrawingOptionsCmd draw_options = (DrawingOptionsCmd)message.getValue();
-      synchronized ( events_panel )
+      synchronized ( eventPanelMonitor )
       {
         events_panel.setDrawingOptions( draw_options.getFilterMax(),
                                         draw_options.getFilterMin(),
@@ -116,7 +117,7 @@ public class EventViewHandler implements IReceiveMessage
     else if ( message.getName().equals(Commands.SET_COLOR_SCALE ) )
     {
       ColorScaleInfo color_info = (ColorScaleInfo)message.getValue();
-      synchronized ( events_panel )
+      synchronized ( eventPanelMonitor )
       {
         events_panel.setColors( color_info );
         events_panel.updateDisplay();
@@ -124,7 +125,7 @@ public class EventViewHandler implements IReceiveMessage
     }
     else if ( message.getName().equals(Commands.INIT_EVENTS_VIEW ) )
     {
-      synchronized ( events_panel )
+      synchronized ( eventPanelMonitor )
       {
         num_shown = 0;
         events_panel.clear();
@@ -145,7 +146,7 @@ public class EventViewHandler implements IReceiveMessage
        if ( val == null )
          return(false);
 
-       synchronized ( events_panel )
+       synchronized ( eventPanelMonitor )
        {
          if ( val instanceof Vector )
          {
