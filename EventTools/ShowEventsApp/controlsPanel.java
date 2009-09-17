@@ -129,7 +129,7 @@ public class controlsPanel extends JPanel
       //new DViewHandler( messageCenter );
       //new QViewHandler( messageCenter );
       
-      colorEditPanel = new displayColorEditor(messageCenter,
+      colorEditPanel = new displayColorEditor(messageCenter,viewMessageCenter,
             Commands.SET_COLOR_SCALE, 15, 1000, true);
    }
    
@@ -145,7 +145,7 @@ public class controlsPanel extends JPanel
       panel.setBorder(new TitledBorder("Operations"));
       panel.setLayout(new GridLayout(5,1));
       
-      loadFileBtn = new JButton("Load Files");
+      loadFileBtn = new JButton("Load Data");
       loadFileBtn.setBackground( background_color );
       loadFileBtn.addActionListener(new buttonListener());
       

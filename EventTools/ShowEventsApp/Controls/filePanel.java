@@ -35,6 +35,8 @@
 
 package EventTools.ShowEventsApp.Controls;
 
+import gov.anl.ipns.Parameters.*;
+
 import java.awt.GridLayout;
 import java.text.NumberFormat;
 import java.text.ParseException;
@@ -60,6 +62,7 @@ public class filePanel //extends JPanel
    private static final long  serialVersionUID = 1L;
    private MessageCenter      message_center;
    private JPanel             panel;
+   private JTabbedPane        tabPane;
    private JButton            evFileButton;
    private JButton            detFileButton;
    private JButton            incFileButton;
@@ -85,6 +88,8 @@ public class filePanel //extends JPanel
    private String             DetEfffilename;// Remember last file chosen
    private String             Matfilename;// Remember last file chosen
    private float              MaxQValue;//Remember last MaxQValue
+   private FilteredPG_TextField Port;
+   private JTextField         Instrument;
    
    /**
     * Creates file panel as well as sets up default
@@ -132,14 +137,15 @@ public class filePanel //extends JPanel
    private void buildPanel()
    {
       panel = new JPanel();
-      panel.setBorder(new TitledBorder("File Selection Options"));
+      panel.setBorder(new TitledBorder("Load Data"));
       panel.setLayout(new GridLayout(2,1));
-    
+      tabPane = new JTabbedPane();
       loadFiles = new JButton("Load");
       loadFiles.addActionListener(new button());
       
-      panel.add(buildEventPanel());
-      
+      tabPane.addTab("From File", buildEventPanel());
+      tabPane.addTab("From Live Data", buildUDPPanel());
+      panel.add( tabPane);
       JPanel sub_panel = new JPanel();
       panel.add( sub_panel );
 
@@ -220,6 +226,30 @@ public class filePanel //extends JPanel
       eventPanel.add(eventsToShow);
       
       return eventPanel;
+   }
+   
+   public JPanel  buildUDPPanel()
+   {
+      JPanel Res = new JPanel();
+      BoxLayout BL = new BoxLayout( Res, BoxLayout.Y_AXIS);
+      Res.setLayout( BL );
+      JPanel subPanel = new JPanel();
+      
+      subPanel.setLayout(  new GridLayout(1,2) );
+      subPanel.add( new JLabel("Port"));
+      Port = new FilteredPG_TextField( new IntegerFilter());
+      subPanel.add( Port);
+      Res.add( subPanel);
+      
+      subPanel = new JPanel();
+      subPanel.setLayout(  new GridLayout(1,2) );
+      subPanel.add( new JLabel("Instrument"));
+      Instrument = new JTextField(8);
+      subPanel.add( Instrument);
+      Res.add(  subPanel );
+      Res.add( Box.createVerticalGlue());
+      return Res;
+      
    }
    
    /**
@@ -641,20 +671,47 @@ public class filePanel //extends JPanel
       public void actionPerformed(ActionEvent e)
       {
          if (e.getSource() == loadFiles)
-         {
-            if(valid())
+         {  
+            String det_file = detFileName.getText();
+            if ( det_file != null && det_file.trim().length() <= 0 )
+              det_file = null;
+
+            String inc_spec_file = incFileName.getText();
+            if ( inc_spec_file != null &&
+                 inc_spec_file.trim().length() <= 0 )
+              inc_spec_file = null;
+            
+            if(tabPane.getSelectedIndex() ==1)
             {
                try
                {
+                  LoadUDPEventsCmd cmd =new LoadUDPEventsCmd( Instrument.getText(),
+                           Integer.parseInt( Port.getText()), 
+                           det_file,
+                         inc_spec_file,
+                          null,            //detEffFileName.getText(),
+                            null,
+                          MaxQValue  );
+                  Message mess = new Message( Commands.LOAD_UDP_EVENTS,
+                           cmd,
+                           true, 
+                           true);
+                  message_center.send(mess);
+                  return;
+               }catch(Exception ss)
+               {
+                  
+               }
+               
+               return;
+            }
+            if(valid())
+            {
+               
+               try
+               {
                   String ev_file = evFileName.getText();
-                  String det_file = detFileName.getText();
-                  if ( det_file != null && det_file.trim().length() <= 0 )
-                    det_file = null;
-
-                  String inc_spec_file = incFileName.getText();
-                  if ( inc_spec_file != null &&
-                       inc_spec_file.trim().length() <= 0 )
-                    inc_spec_file = null;
+                 
                   // sendMessage( Commands.SET_NEW_INSTRUMENT, new_inst_cmd );
                   // The SET_NEW_INSTRUMENT command needs to be done before
                   // loading the event file, so that the histogram and

@@ -59,7 +59,9 @@ public class displayColorEditor implements IReceiveMessage
   private ColorEditPanel  colorEditPanel;
   private Rectangle       bounds          = new Rectangle(100,100,400,500);
   private MessageCenter   message_center;
+  private MessageCenter   view_message_center;
   private String          command;
+  private Object          ColorEdPanMonitor = new Object();
   
   /**
    * Creates colorEditPanel as well as stores the message center and 
@@ -75,10 +77,12 @@ public class displayColorEditor implements IReceiveMessage
    *        actionListener to the ColorEditPanel
    */
   public displayColorEditor(MessageCenter inMessage_Center,
+                  MessageCenter view_message_center,
                   String inCommand, int min, int max, 
                   boolean addListener)
   {
     message_center = inMessage_Center;
+    this.view_message_center = view_message_center;
     command = inCommand;
     
     colorEditPanel = new ColorEditPanel(min, max, false, false);
@@ -93,7 +97,7 @@ public class displayColorEditor implements IReceiveMessage
     if (addListener)
        colorEditPanel.addActionListener( new ColorListener() );
 
-    message_center.addReceiver( this, Commands.SET_HISTOGRAM_MAX );
+    view_message_center.addReceiver( this, Commands.SET_HISTOGRAM_MAX );
   }
 
   /**
@@ -102,8 +106,8 @@ public class displayColorEditor implements IReceiveMessage
    */
   public boolean receive( Message message )
   {
-    //System.out.println("***displayColorEditor in thread "
-    //                   + Thread.currentThread());
+   // System.out.println("***displayColorEditor in thread "
+   //                    + Thread.currentThread());
 
     if ( message.getName().equals(Commands.SET_HISTOGRAM_MAX) )
     {
@@ -128,10 +132,12 @@ public class displayColorEditor implements IReceiveMessage
        max = Float.parseFloat(dc.format(max));
 
       //System.out.println("Setting Color range to " + min + " to " + max );
+       synchronized(ColorEdPanMonitor)
+       {
       colorEditPanel.setControlValue( 0.0001f, colorEditPanel.MINSET ); 
       colorEditPanel.setControlValue( max, colorEditPanel.MAXSET ); 
       colorEditPanel.setControlValue( min, colorEditPanel.MINSET ); 
-
+       }
       sendMessage(Commands.SET_COLOR_SCALE, getColorScaleInfo()); 
     }
 
@@ -227,7 +233,7 @@ public class displayColorEditor implements IReceiveMessage
   {
      Message message = new Message( command,
                                     value,
-                                    false );
+                                    true ,true);
      
      message_center.send( message );
   }
@@ -250,10 +256,11 @@ public class displayColorEditor implements IReceiveMessage
   public static void main(String[] args) 
   {
     MessageCenter messageC = new MessageCenter("ColorEditor Center");
+    MessageCenter messageV= new MessageCenter("SlowColorEditor Center");
     TestReceiver tr = new TestReceiver("Test ColorEditor");
     messageC.addReceiver(tr, Commands.SET_COLOR_SCALE);
     
-    displayColorEditor display = new displayColorEditor(messageC, 
+    displayColorEditor display = new displayColorEditor(messageC, messageV,
                     Commands.SET_COLOR_SCALE, 15, 1000, false);
     display.createColorEditor();
     
