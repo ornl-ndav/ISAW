@@ -315,8 +315,11 @@ public class InitializationHandler implements IReceiveMessage
        if( socket == null)
          {socket = new SocketEventLoader( UDPcmd.getPort(), message_center, null);
           socket.start();
-         }else
-            socket.setPause( false );
+         }
+       if( Clearing)
+          socket.setPause( true );
+       else
+          socket.setPause(false);
        InitDone = true;
        Clearing = false;
     }
