@@ -61,6 +61,10 @@ public class SocketEventLoader extends UDPReceive
    public static int SEND_MINIMUM  = 2000;
 
    public static int SEND_MIN_TIME = 1500; // ms
+   
+   public static thisIUDPUser  user;
+   public thisIUDPUser User;
+   
 
 
    /**
@@ -77,9 +81,21 @@ public class SocketEventLoader extends UDPReceive
             String Instrument )
    {
 
-      super( port , new thisIUDPUser( message_center , Instrument ) );
+      super( port , getUDPUser( message_center , Instrument ) );
+      User = user;
+   }
+   
+   
+   private static thisIUDPUser getUDPUser( MessageCenter message_center , String Instrument )
+   {
+      user =new thisIUDPUser( message_center , Instrument );
+      return user;
    }
 
+   public void setPause( boolean doPause)
+   {
+      User.setPause( doPause);
+   }
 
    /**
     * Test program using port 8002 and the SNAP instrument
@@ -118,6 +134,8 @@ class thisIUDPUser implements IUDPUser
    int                Buffstart = 0;
 
    long               timeStamp = - 1;
+   
+   boolean           pause = false;
 
    private static int Nshown    = 0;
 
@@ -146,6 +164,10 @@ class thisIUDPUser implements IUDPUser
       ( new timerThread( this ) ).start();
    }
 
+   public void setPause( boolean doPause)
+   {
+      pause = doPause;
+   }
 
    /**
     * Processes one data packet
@@ -158,6 +180,11 @@ class thisIUDPUser implements IUDPUser
    public void ProcessData( byte[] data , int length )
    {
 
+      if( pause)
+      {
+         Buffstart =0;
+         return;
+      }
       Nshown = 0;
       if( length < 28 || data == null || data.length < length )
          return;

@@ -18,7 +18,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
  *
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
- *           Department of Mathematics, Statistics and Computer Science
+ *           Departmet of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
  *           Menomonie, WI 54751, USA
  *
@@ -43,8 +43,7 @@ import EventTools.ShowEventsApp.Command.Commands;
 import EventTools.ShowEventsApp.Command.LoadEventsCmd;
 import EventTools.ShowEventsApp.Command.LoadUDPEventsCmd;
 import EventTools.ShowEventsApp.Command.SetNewInstrumentCmd;
-import EventTools.ShowEventsApp.Command.Util;
-
+import EventTools.ShowEventsApp.Command.*;
 
 /**
  *  This class processes messages to load a file, or initialize the
@@ -68,9 +67,11 @@ public class InitializationHandler implements IReceiveMessage
   private boolean          load_failed;
   private LoadEventsCmd    load_file_cmd;
   private boolean          udpLoadStarted;// no fail/no end unless loading_file is true
+  private boolean          InitDone;
+  private boolean          Clearing;
   private SocketEventLoader socket;
   private LoadUDPEventsCmd  UDPcmd;
-  
+  private String            currentUDPInstrument = null;
 
   public InitializationHandler( MessageCenter message_center )
   {
@@ -90,11 +91,15 @@ public class InitializationHandler implements IReceiveMessage
     message_center.addReceiver( this, Commands.INIT_DQ_DONE );
     message_center.addReceiver( this, Commands.INIT_NEW_INSTRUMENT_DONE);
     message_center.addReceiver( this, Commands.LOAD_UDP_EVENTS);
+    message_center.addReceiver( this, Commands.PAUSE_UDP);
+    message_center.addReceiver( this, Commands.CLEAR_UDP);
+    message_center.addReceiver( this, Commands.CONTINUE_UDP);
   }
   
  // for a reload, all data must be reinitialized 
   private void InitData( SetNewInstrumentCmd new_inst_cmd )
    {
+     InitDone = false;
       Message init_view = new Message( Commands.INIT_EVENTS_VIEW , null , true ,
                true );
       message_center.send( init_view );
@@ -110,6 +115,7 @@ public class InitializationHandler implements IReceiveMessage
 
       Message clear_dq = new Message( Commands.INIT_DQ , null , true , true );
       message_center.send( clear_dq );
+      InitDone = false;
    }
   
   
@@ -132,7 +138,7 @@ public class InitializationHandler implements IReceiveMessage
       histogram_ok  = false;
       dq_ok         = false;
       instrument_ok = false;
-
+     
       load_file_cmd = (LoadEventsCmd)message.getValue();
 
       String inst_name = getInstrumentName( load_file_cmd.getEventFile() );
@@ -205,7 +211,7 @@ public class InitializationHandler implements IReceiveMessage
        udpLoadStarted = true;
        
        UDPcmd =(LoadUDPEventsCmd) message.getValue();
-       
+       currentUDPInstrument= UDPcmd.getInstrument();
        SetNewInstrumentCmd new_inst_cmd = 
           new SetNewInstrumentCmd( UDPcmd.getInstrument(),
                    UDPcmd.getDetFile(),
@@ -217,7 +223,43 @@ public class InitializationHandler implements IReceiveMessage
        return false;
        
        
+    }else if( message.getName().equals( Commands.PAUSE_UDP))
+    {
+       if( !udpLoadStarted && socket == null && !InitDone)
+          return false;
+       if( Clearing)
+          return false;
+       socket.setPause( true);
+       
+    }else if( message.getName().equals(Commands.CLEAR_UDP))
+    {
+       if( !udpLoadStarted && socket == null&& !InitDone)
+          return false;
+       
+       Clearing = true;
+      socket.setPause( true);
+
+      instrument_ok = false;
+      load_failed = false;
+            
+      dq_ok =false;
+
+       SetNewInstrumentCmd new_inst_cmd = 
+          new SetNewInstrumentCmd( currentUDPInstrument,
+                   null,
+                   null );
+       
+      (new InitDataThread( new_inst_cmd )).start();
+    }else if( message.getName().equals( Commands.CONTINUE_UDP))
+    {
+
+       if( !udpLoadStarted && socket == null && !InitDone)
+          return false;
+       if( Clearing)
+          return false;
+       socket.setPause( false);
     }
+ 
 
     return false;
   }
@@ -250,13 +292,13 @@ public class InitializationHandler implements IReceiveMessage
      udpLoadStarted = false;
      if( socket != null)
      {
-        socket.interrupt();
-        socket = null;
+        socket.setPause( true );
      }
   }
 
   private void LoadIfPossible()
   {
+     InitDone = false;
     if ( histogram_ok && 
                 dq_ok && 
         instrument_ok &&
@@ -266,11 +308,39 @@ public class InitializationHandler implements IReceiveMessage
       Message load = new Message( Commands.LOAD_FILE_DATA, 
                                   load_file_cmd, true, true );
       message_center.send( load );
-      
+      socket.setPause( true );
+      InitDone = true;
     }else
     {
-      socket = new SocketEventLoader( UDPcmd.getPort(), message_center, null);
-      socket.start();
+       if( socket == null)
+         {socket = new SocketEventLoader( UDPcmd.getPort(), message_center, null);
+          socket.start();
+         }else
+            socket.setPause( false );
+       InitDone = true;
+       Clearing = false;
     }
+    
+  }
+  
+  class InitDataThread extends Thread
+  {
+     SetNewInstrumentCmd cmd;
+     public InitDataThread( SetNewInstrumentCmd cmd)
+     {
+        this.cmd = cmd;
+     }
+     
+     public void run()
+     {
+        try{
+        Thread.sleep( 1000);
+       
+        }catch(Exception s)
+        {
+           
+        }
+        InitData( cmd);
+     }
   }
 }

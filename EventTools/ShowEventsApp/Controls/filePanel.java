@@ -81,6 +81,8 @@ public class filePanel //extends JPanel
    private JTextField         eventsToLoad;
    //private JTextField         firstEventToShow;
    private JTextField         eventsToShow;
+
+   private JTextField         eventsToShowUDP;
    private String             Datafilename;// Remember last file chosen
   
    private String             Detfilename;// Remember last file chosen
@@ -89,7 +91,8 @@ public class filePanel //extends JPanel
    private String             Matfilename;// Remember last file chosen
    private float              MaxQValue;//Remember last MaxQValue
    private FilteredPG_TextField Port;
-   private JTextField         Instrument;
+   private JComboBox         Instrument;
+   private static String[]  InstrumentList={"SNAP","ARCS","TOPAZ","SEQUOIA??"};
    
    /**
     * Creates file panel as well as sets up default
@@ -230,6 +233,8 @@ public class filePanel //extends JPanel
    
    public JPanel  buildUDPPanel()
    {
+      NumberFormat nf = NumberFormat.getInstance();
+      
       JPanel Res = new JPanel();
       BoxLayout BL = new BoxLayout( Res, BoxLayout.Y_AXIS);
       Res.setLayout( BL );
@@ -238,15 +243,45 @@ public class filePanel //extends JPanel
       subPanel.setLayout(  new GridLayout(1,2) );
       subPanel.add( new JLabel("Port"));
       Port = new FilteredPG_TextField( new IntegerFilter());
+      Port.setText("8002");
       subPanel.add( Port);
       Res.add( subPanel);
       
       subPanel = new JPanel();
       subPanel.setLayout(  new GridLayout(1,2) );
       subPanel.add( new JLabel("Instrument"));
-      Instrument = new JTextField(8);
+      Instrument = new JComboBox( InstrumentList);
+      Instrument.setSelectedIndex( 0 );
+      
       subPanel.add( Instrument);
       Res.add(  subPanel );
+      
+      String default_eventsToShow = nf.getInstance().format(5000000);
+      JLabel maxEvents = new JLabel("Number to Show in 3D: ");
+      eventsToShowUDP = new JTextField( default_eventsToShow );
+      eventsToShowUDP.setHorizontalAlignment(JTextField.RIGHT);
+      subPanel = new JPanel();
+      subPanel.setLayout( new GridLayout(1,2));
+      subPanel.add(  maxEvents );
+      subPanel.add(  eventsToShowUDP );
+      Res.add(  subPanel );
+      
+      ActionListener list = new UDPActionListener();
+      subPanel= new JPanel( new GridLayout(1,3));
+      JButton Pause = new JButton( "Pause");
+      subPanel.add( Pause );
+      Pause.addActionListener( list );
+      
+
+      Pause = new JButton( "Continue");
+      subPanel.add( Pause );
+      Pause.addActionListener( list );
+      
+      Pause = new JButton( "Pause & Clear");
+      subPanel.add( Pause );
+      Pause.addActionListener( list );
+      
+      Res.add( subPanel);
       Res.add( Box.createVerticalGlue());
       return Res;
       
@@ -660,6 +695,26 @@ public class filePanel //extends JPanel
       return true;
    }
    
+   private class UDPActionListener implements ActionListener
+   {
+      public void actionPerformed( ActionEvent evt)
+      {
+         String command = evt.getActionCommand();
+         if( command.equals( "Pause" ))
+         {
+            message_center.send(  new Message( Commands.PAUSE_UDP, null,true, true) );
+         }else if( command.equals( "Continue" ))
+         {
+
+            message_center.send(  new Message( Commands.CONTINUE_UDP, null,true, true) );
+         }else if( command.equals("Pause & Clear"))
+         {
+
+            message_center.send(  new Message( Commands.CLEAR_UDP, null,true, true) );
+         }
+      }
+   }
+   
    /**
     * Used for each button to load the files if Event File, Det file,
     * or Mat File button is pressed.  Also to send a message if Load
@@ -680,18 +735,20 @@ public class filePanel //extends JPanel
             if ( inc_spec_file != null &&
                  inc_spec_file.trim().length() <= 0 )
               inc_spec_file = null;
-            
+            NumberFormat nf = NumberFormat.getInstance();
             if(tabPane.getSelectedIndex() ==1)
             {
                try
                {
-                  LoadUDPEventsCmd cmd =new LoadUDPEventsCmd( Instrument.getText(),
+                  LoadUDPEventsCmd cmd =new LoadUDPEventsCmd( 
+                           Instrument.getSelectedItem().toString(),
                            Integer.parseInt( Port.getText()), 
                            det_file,
                          inc_spec_file,
                           null,            //detEffFileName.getText(),
                             null,
-                          MaxQValue  );
+                          MaxQValue,
+                          nf.parse( eventsToShowUDP.getText()).longValue());
                   Message mess = new Message( Commands.LOAD_UDP_EVENTS,
                            cmd,
                            true, 
@@ -718,7 +775,7 @@ public class filePanel //extends JPanel
                   // mapping to Q are set up by the time we start sending
                   // in events.
 
-                  NumberFormat nf = NumberFormat.getInstance();
+                  
                   long startEvent = nf.parse(firstEvent.getText()).longValue();
                   if (startEvent <= 0)
                   {
