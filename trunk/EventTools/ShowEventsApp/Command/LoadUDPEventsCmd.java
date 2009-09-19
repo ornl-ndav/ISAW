@@ -42,6 +42,7 @@ public class LoadUDPEventsCmd
    private String detEffFile;
    private String matFile;
    private float  maxQValue;
+   private long   nEventsToShow;
    
    /**
     *  Construct
@@ -52,6 +53,7 @@ public class LoadUDPEventsCmd
     * @param detEffFile  The name of the detector efficiency file
     * @param matFile     The name of a matrix file
     * @param maxQValue   The maximum Q value to load
+    * @pram nEventsToShow The number of events to show in the 3D view
     */
    public LoadUDPEventsCmd( String Instrument, 
                             int port,
@@ -59,7 +61,8 @@ public class LoadUDPEventsCmd
                             String specFile, 
                             String detEffFile, 
                             String matFile, 
-                            float  maxQValue)
+                            float  maxQValue,
+                            long nEventsToShow)
    {
       this.Instrument      = Instrument;
       this.port            = port;
@@ -68,6 +71,7 @@ public class LoadUDPEventsCmd
       this.detEffFile      = detEffFile;
       this.matFile         = matFile;
       this.maxQValue         = maxQValue;
+      this.nEventsToShow  = nEventsToShow;
    }
 
   
@@ -122,8 +126,11 @@ public class LoadUDPEventsCmd
       return maxQValue;
    }
    
+  public long getNEventsToShow()
+  {
+     return nEventsToShow;
+  }
   
-   
    public String toString()
    {
       return "\nInstrument  : " + getInstrument()      +
@@ -132,7 +139,8 @@ public class LoadUDPEventsCmd
              "\nSpec File   : " + getIncSpectrumFile() +
              "\nDet Eff File: " + getDetEffFile()      +
              "\nMatrix File : " + getMatFile()         +
-             "\nMax Q Value : " + getMaxQValue() ;
+             "\nMax Q Value : " + getMaxQValue()       +
+             "\n#Events to Show"+ getNEventsToShow();
    }
 
 }
