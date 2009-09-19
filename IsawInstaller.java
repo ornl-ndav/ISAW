@@ -660,7 +660,7 @@ public class IsawInstaller extends JFrame
 		+ newline
 		+"rem --"+newline
 		+"rem java -mx256m -cp Isaw.jar;sgt_v2.jar;gov.jar;IPNS.jar;ISIS.jar;jnexus.jar;sdds.jar;SSG_Tools.jar;jogl.jar;gluegen-rt.jar;"
-		+"jhall.jar;jython.jar;.\" IsawGUI.Isaw"+newline;
+		+"jhall.jar;jython.jar;.\" -Dsun.awt.noerasebackground=true -Dsun.java2d.noddraw=true -Dsun.java2d.opengl=true IsawGUI.Isaw"+newline;
 	}else if(operating_system.equals(LIN_ID)){
 	    content="#!/bin/sh"+newline
 		+"ISAW="+isaw_home+newline
@@ -669,7 +669,7 @@ public class IsawInstaller extends JFrame
 		+"cd $ISAW"+newline
 		+"$JAVA -mx256m -server -cp $ISAW:$ISAW/Isaw.jar:$ISAW/gov.jar:$ISAW/IPNS.jar:$ISAW/ISIS.jar:"+
 		"$ISAW/jnexus.jar:$ISAW/sgt_v2.jar:$ISAW/sdds.jar:$ISAW/SSG_Tools.jar:$ISAW/jogl.jar:$ISAW/gluegen-rt.jar:"
-		+"$ISAW/jhall.jar:$ISAW/jython.jar:. IsawGUI.Isaw"+newline;
+		+"$ISAW/jhall.jar:$ISAW/jython.jar:. -Dsun.awt.noerasebackground=true IsawGUI.Isaw"+newline;
 	}else if(operating_system.equals(SUN_ID)){
 	    content="#!/bin/sh"+newline
 		+"ISAW="+isaw_home+newline
@@ -678,7 +678,7 @@ public class IsawInstaller extends JFrame
 		+"cd $ISAW"+newline
 		+"$JAVA -mx256m -cp $ISAW:$ISAW/Isaw.jar:$ISAW/gov.jar:$ISAW/IPNS.jar:$ISAW/ISIS.jar:"+
 		"$ISAW/jnexus.jar:$ISAW/sgt_v2.jar:$ISAW/sdds.jar:$ISAW/SSG_Tools.jar:$ISAW/jogl.jar:$ISAW/gluegen-rt.jar:"
-		+"$ISAW/jhall.jar:$ISAW/jython.jar:. IsawGUI.Isaw"+newline;
+		+"$ISAW/jhall.jar:$ISAW/jython.jar:. -Dsun.awt.noerasebackground=true  IsawGUI.Isaw"+newline;
         }else if(operating_system.equals(MAC_ID)){
             content="tell application \"Terminal\""+newline
                 +"      do script with command \"java -mx256m -cp "
@@ -694,7 +694,7 @@ public class IsawInstaller extends JFrame
                 +isaw_home+"/jogl.jar:"
                 +isaw_home+"/gluegen-rt.jar:"
                 +isaw_home+"/jython.jar:"
-                +isaw_home+"/jhall.jar:. IsawGUI.Isaw\""+newline
+                +isaw_home+"/jhall.jar:. -Dsun.awt.noerasebackground=true IsawGUI.Isaw\""+newline
                 +"end tell"+newline;
 	}else{
 	    System.err.println("Unknown operating system: "+operating_system);
