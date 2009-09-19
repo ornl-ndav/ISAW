@@ -72,7 +72,7 @@ public class IsawEV
                                         // and the 3D event viewer
     MessageCenter view_message_center = 
                                    new MessageCenter("VIEW MESSAGE CENTER");
-    int view_update_time_ms = 1000;
+    int view_update_time_ms = 2500;
     new TimedTrigger(view_message_center, view_update_time_ms );
 
 
