@@ -34,6 +34,8 @@
 
 package EventTools.ShowEventsApp.ViewHandlers;
 
+import java.awt.Point;
+import java.awt.Dimension;
 import java.awt.GridLayout;
 
 import javax.swing.*;
@@ -58,8 +60,9 @@ abstract public class GraphViewHandler implements IReceiveMessage
 
    private   JPanel        place_holder_panel;
    private   JFrame        display_frame;
-   private FunctionViewComponent  fvc;
-   //private   JPanel        graphPanel;
+   private   Dimension     size = new Dimension( 900, 300 );
+   private   Point         location = new Point( 200, 300 );
+   private   FunctionViewComponent  fvc;
    
 
    /**
@@ -75,7 +78,7 @@ abstract public class GraphViewHandler implements IReceiveMessage
       this.place_holder_panel = placeholderPanel();
    }
 
-   
+
    /**
     * Creates a new JFrame to display the graph every time
     * it is called.  Will display a graph if its been built
@@ -84,22 +87,18 @@ abstract public class GraphViewHandler implements IReceiveMessage
    protected void ShowGraph()
    {
       display_frame = new JFrame(frame_title);
-      display_frame.getContentPane().setLayout(new GridLayout(1,1));
       display_frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-      display_frame.setBounds(0, 0, 1000, 500);
-      display_frame.setVisible(true);
-      
+
       if (fvc != null)
          display_frame.getContentPane().add(fvc.getDisplayPanel());
       else
          display_frame.getContentPane().add(place_holder_panel);
-      
-     
-      display_frame.repaint();
-      display_frame.validate();
-      display_frame.getContentPane().repaint();
-      if( fvc != null)
-         fvc.paintComponents();
+
+      display_frame.setVisible(true);
+      display_frame.setBounds( location.x,
+                               location.y,
+                               (int)(size.getWidth()),
+                               (int)(size.getHeight()) );
    }
 
 
@@ -108,7 +107,14 @@ abstract public class GraphViewHandler implements IReceiveMessage
     */
    protected void HideGraph()
    {
-      display_frame.dispose();
+      if ( display_frame != null )
+      {
+        location = display_frame.getLocation();
+        size     = display_frame.getSize();
+        display_frame.setVisible(false);
+        display_frame.dispose();
+        display_frame = null;
+      }
    }
 
    
@@ -140,50 +146,47 @@ abstract public class GraphViewHandler implements IReceiveMessage
     * 
     * @param xyValues X,Y values of the data for the graph.
     */
-   private synchronized void  setPanelInformation(float[][] xyValues)
+   private synchronized void  setPanelInformation( float[][] xyValues )
    {
       float[] x_values = xyValues[0];
       float[] y_values = xyValues[1];
       float[] errors = null;
 
-      if(display_frame != null)
-         display_frame.getContentPane().removeAll();
       if( fvc == null)
       {
          String prop_str = System.getProperty("ShowWCToolTip");
          System.setProperty("ShowWCToolTip","true");
         
-         fvc = FunctionViewComponent.getInstance(       
-             x_values, y_values, errors, title, x_units, y_units, x_label, y_label);
-         
+         fvc = FunctionViewComponent.getInstance( x_values, y_values, errors, 
+                                                  title, 
+                                                  x_units, y_units, 
+                                                  x_label, y_label);
          if(prop_str == null)
             System.clearProperty( "ShowWCToolTip" );
          else
             System.setProperty(  "ShowWCToolTip" , prop_str );
-         
-      }else
+
+         if ( display_frame != null )
+         {
+           display_frame.getContentPane().removeAll();
+           display_frame.getContentPane().add(fvc.getDisplayPanel());
+         }
+      }
+      else
       {  
-         VirtualArrayList1D varr =new VirtualArrayList1D( new DataArray1D(x_values,y_values,errors,title,false,false));
-         AxisInfo xAxis= varr.getAxisInfo( AxisInfo.X_AXIS );
-         AxisInfo yAxis =varr.getAxisInfo( AxisInfo.Y_AXIS );
-         varr.setAxisInfo( AxisInfo.X_AXIS , xAxis );
-         varr.setAxisInfo( AxisInfo.Y_AXIS , yAxis );
+         VirtualArrayList1D varr = 
+            new VirtualArrayList1D(
+                new DataArray1D(x_values,y_values,errors,title,false,false));
+
+         varr.setTitle( title );
          fvc.dataChanged( varr );
       }
-      if (display_frame != null)
+
+      if ( display_frame != null )
       {
-         display_frame.getContentPane().removeAll();
-         display_frame.getContentPane().add(fvc.getDisplayPanel());
-         if (display_frame != null)
-         {  
-            
-            display_frame.getContentPane().validate();
-            if( fvc != null)
-            { fvc.getDisplayPanel().invalidate();
-              fvc.paintComponents();
-            }
-           
-         }
+         display_frame.invalidate();
+         display_frame.validate();
+         display_frame.repaint();
       }
    }
    
