@@ -83,6 +83,8 @@ public class InitializationHandler implements IReceiveMessage
     loading_file  = false;
     load_failed   = false;
     socket = null;
+    Clearing = false;
+    udpLoadStarted = false;
     
     message_center.addReceiver( this, Commands.LOAD_FILE );
     message_center.addReceiver( this, Commands.LOAD_FAILED );
@@ -115,7 +117,7 @@ public class InitializationHandler implements IReceiveMessage
 
       Message clear_dq = new Message( Commands.INIT_DQ , null , true , true );
       message_center.send( clear_dq );
-      InitDone = false;
+     
    }
   
   
@@ -123,11 +125,16 @@ public class InitializationHandler implements IReceiveMessage
   {
     if ( message.getName().equals(Commands.LOAD_FILE) )
     {
-      if ( loading_file && !load_failed )
+      if ( loading_file && !load_failed  )
       {
         Util.sendInfo( "Still Loading File " + load_file_cmd.getEventFile() );
         Util.sendInfo( "IGNORING EXTRA LOAD REQUEST" );       
         return false; 
+      }else if( Clearing)
+      {
+         Util.sendInfo( "Still Clearing Data"  );
+         Util.sendInfo( "IGNORING EXTRA LOAD REQUEST" );       
+         return false; 
       }
     
 
@@ -201,22 +208,31 @@ public class InitializationHandler implements IReceiveMessage
          Util.sendInfo( "IGNORING EXTRA LOAD REQUEST" );       
          return false; 
        }
-       
+       if( Clearing)
+       { 
+          Util.sendInfo( "Still Clearing Data "  );
+         Util.sendInfo( "IGNORING EXTRA LOAD REQUEST" );       
+         return false; 
+          
+       }
        killUDP();
+       
+      
        loading_file  =false;
        load_failed   = false;//so will not go through LoadifPossible 
        histogram_ok  = false;
        dq_ok         = false;
        instrument_ok = false;
        udpLoadStarted = true;
-       
+
+      
        UDPcmd =(LoadUDPEventsCmd) message.getValue();
        currentUDPInstrument= UDPcmd.getInstrument();
        SetNewInstrumentCmd new_inst_cmd = 
           new SetNewInstrumentCmd( UDPcmd.getInstrument(),
                    UDPcmd.getDetFile(),
                    UDPcmd.getIncSpectrumFile() );
-       InitData( new_inst_cmd );
+       (new InitDataThread( new_inst_cmd )).start();
        
        
        
@@ -235,7 +251,10 @@ public class InitializationHandler implements IReceiveMessage
     {
        if( !udpLoadStarted && socket == null&& !InitDone)
           return false;
-       
+       if( Clearing)
+       {
+          return false;
+       }
        Clearing = true;
       socket.setPause( true);
 
@@ -257,6 +276,7 @@ public class InitializationHandler implements IReceiveMessage
           return false;
        if( Clearing)
           return false;
+       
        socket.setPause( false);
     }
  
@@ -303,12 +323,13 @@ public class InitializationHandler implements IReceiveMessage
                 dq_ok && 
         instrument_ok &&
         !load_failed)
-      if( !udpLoadStarted)
+      if( !udpLoadStarted)//was reading from a file
     {
       Message load = new Message( Commands.LOAD_FILE_DATA, 
                                   load_file_cmd, true, true );
       message_center.send( load );
-      socket.setPause( true );
+      if( socket != null)
+         socket.setPause( true );
       InitDone = true;
     }else
     {
