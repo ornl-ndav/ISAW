@@ -245,7 +245,10 @@ public class Util {
           if ( max_processes < 1 )                   // we need at least one
             max_processes = 1;
         }
-
+        if(!(new File( fin_name)).exists())
+           SharedMessages.addmsg( "Could not retrieve " + fin_name );
+        else
+        {
         FindPeaksProcessCaller s_caller =
                  new FindPeaksProcessCaller( cmd,
                                              fin_name,
@@ -271,6 +274,7 @@ public class Util {
                                              show_peaks_view,
                                              num_slices );
         ops.add( s_caller );
+        }
       }
 
     int max_time = ops.size() * 120000 + 600000;
@@ -383,6 +387,9 @@ public class Util {
             }
       }
 
+      if( all_peaks == null || all_peaks.size() < 1)
+         SharedMessages.addmsg( "THERE ARE NO PEAKS" );
+      else
       try
       {
         Peak_new_IO.WritePeaks_new( out_file_name, all_peaks, false );
@@ -663,6 +670,9 @@ public class Util {
          String filename = rawpath+fileNamePrefix+Runs[ i ]+extension;
          ClearFiles( fileNamePrefix+Runs[i]);
          Retriever retriever = null;
+         if( !(new File( filename)).exists())
+            SharedMessages.addmsg( "Could not retrieve " + filename );
+         else
          try {
             retriever = Command.ScriptUtil.getRetriever( filename );
        
@@ -818,6 +828,9 @@ public class Util {
        
        Peak1.addAll(  ResultPeaks );
        ResultPeaks = Peak1;
+       if(  ResultPeaks == null ||  ResultPeaks.size() < 1)
+         SharedMessages.addmsg( "NO PEAKS FOUND" );
+       else
        Peak_new_IO.WritePeaks_new( PeakFileName, 
                                    ResultPeaks, 
                                    append1 );
