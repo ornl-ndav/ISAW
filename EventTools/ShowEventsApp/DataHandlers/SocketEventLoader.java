@@ -53,19 +53,15 @@ import NetComm.UDPReceive;
  */
 public class SocketEventLoader extends UDPReceive
 {
+   public static int BUFF_SIZE     = 10000;
 
+   public static int SEND_MINIMUM  = BUFF_SIZE - 4000;
 
-
-   public static int BUFF_SIZE     = 3000;
-
-   public static int SEND_MINIMUM  = 2000;
-
-   public static int SEND_MIN_TIME = 1500; // ms
+   public static int SEND_MIN_TIME = 2000; // ms
    
    public static thisIUDPUser  user;
    public thisIUDPUser User;
    
-
 
    /**
     * Constructor
@@ -80,13 +76,13 @@ public class SocketEventLoader extends UDPReceive
    public SocketEventLoader( int port, MessageCenter message_center,
             String Instrument )
    {
-
       super( port , getUDPUser( message_center , Instrument ) );
       User = user;
    }
    
    
-   private static thisIUDPUser getUDPUser( MessageCenter message_center , String Instrument )
+   private static thisIUDPUser getUDPUser( MessageCenter message_center , 
+                                           String Instrument )
    {
       user =new thisIUDPUser( message_center , Instrument );
       return user;
@@ -104,7 +100,6 @@ public class SocketEventLoader extends UDPReceive
     */
    public static void main( String[] args )
    {
-
       MessageCenter message_center = new MessageCenter( "TTest" );
       new TimedTrigger( message_center , 30 );
       SocketEventLoader ev = new SocketEventLoader( 8002 , message_center ,
@@ -122,8 +117,7 @@ public class SocketEventLoader extends UDPReceive
  */
 class thisIUDPUser implements IUDPUser
 {
-
-
+   Object             buffer_lock = new Object();
 
    MessageCenter      message_center;
 
@@ -137,10 +131,11 @@ class thisIUDPUser implements IUDPUser
    
    boolean           pause = false;
 
-   private static int Nshown    = 0;
+   private        int Nshown    = 0;
 
-   private static int NReceived = 0;
+   private        int NReceived = 0;
 
+   private        int total_received = 0;
 
    /**
     * Constructor
@@ -154,7 +149,6 @@ class thisIUDPUser implements IUDPUser
     */
    public thisIUDPUser( MessageCenter message_center, String Instrument )
    {
-
       this.message_center = message_center;
       if( Instrument != null )
          message_center
@@ -179,25 +173,31 @@ class thisIUDPUser implements IUDPUser
     */
    public void ProcessData( byte[] data , int length )
    {
-
-      if( pause)
+     synchronized (buffer_lock)
+     {
+      if ( pause )
       {
          Buffstart =0;
          return;
       }
+
       Nshown = 0;
       if( length < 28 || data == null || data.length < length )
          return;
 
-      if( length > 23 )
-         if( data[ 0 ] == (byte) 0 && data[ 1 ] == (byte) ( 2 )
-                  && data[ 2 ] == (byte) 0 && data[ 3 ] == (byte) 0 )
-            if( data[ 27 ] > 0 && ( ( data[ 27 ] & 0x80 ) > 0 ) )
+      if( length > 27 )
+         if( data[ 0 ] == (byte) 0  &&
+             data[ 1 ] == (byte) 2  && 
+             data[ 2 ] == (byte) 0  && 
+             data[ 3 ] == (byte) 0  &&
+             data[ 27 ] > 0         && 
+            (data[ 27 ] & 0x80 ) > 0   ) 
                return;
 
       NReceived++ ;
 
       int NEvents = Cvrt2Int( data , 20 );
+      total_received += NEvents;
 
       int[] ids = new int[ NEvents ];
       int[] tofs = new int[ NEvents ];
@@ -230,7 +230,7 @@ class thisIUDPUser implements IUDPUser
          // System.out.print( "PrcessDat2" );
          SendMessage( 0 );
       }
-
+    }
       // if( NReceived % 200 == 0 )
       // System.out.println( "Received packets =" + NReceived );
    }
@@ -238,17 +238,24 @@ class thisIUDPUser implements IUDPUser
 
    // Sends a message if enough info has been buffered or enough time has
    // passed
-   protected synchronized void SendMessage( int NEvents )
+   protected void SendMessage( int NEvents )
    {
-
+     synchronized ( buffer_lock )
+     {
       long currTime = System.currentTimeMillis();
 
-      if( ( Buffstart < SocketEventLoader.SEND_MINIMUM && Buffstart + NEvents < SocketEventLoader.BUFF_SIZE ) )
-         if( currTime - timeStamp < SocketEventLoader.SEND_MIN_TIME )
-            return;
-
+      if(  Buffstart < SocketEventLoader.SEND_MINIMUM            && 
+           Buffstart + NEvents < SocketEventLoader.BUFF_SIZE     &&
+           currTime - timeStamp < SocketEventLoader.SEND_MIN_TIME )
+          return;
+ 
       if( Buffstart == 0 )
+      {
+//       System.out.println("NO EVENTS NOW, Total sent = " + total_received );
          return;
+      }
+      
+//    System.out.println("Total number of events sent = " + total_received );
 
       int[] tofs = new int[ Buffstart ];
       int[] ids = new int[ Buffstart ];
@@ -261,18 +268,19 @@ class thisIUDPUser implements IUDPUser
                new TofEventList( tofs , ids ) , false , true ) );
 
       timeStamp = System.currentTimeMillis();
+/*
       if( NEvents >= SocketEventLoader.BUFF_SIZE)
       {
-         tofBuff= new int[ NEvents+10];
-         idBuff =new int[ NEvents+10];
+         tofBuff= new int[ NEvents+10 ];
+         idBuff = new int[ NEvents+10 ];
          SocketEventLoader.BUFF_SIZE = NEvents+10;
       }
+*/  }
    }
 
 
    private int Cvrt2Int( byte[] B , int start )
    {
-
       int NEvents = 0;
 
       for( int i = start + 3 ; i >= start ; i-- )
@@ -280,7 +288,6 @@ class thisIUDPUser implements IUDPUser
          NEvents |= B[ i ] & 0xFF;
          if( i > start )
             NEvents <<= 8;
-
       }
       return NEvents;
    }
@@ -296,35 +303,31 @@ class thisIUDPUser implements IUDPUser
  */
 class timerThread extends Thread
 {
-
-
-
    thisIUDPUser user;
-
 
    public timerThread( thisIUDPUser user )
    {
-
       this.user = user;
    }
 
-
    public void run()
    {
-
       try
       {
          if( user == null )
             return;
-         while( 3 == 3 )
+         while( true )
          {
             Thread.sleep( SocketEventLoader.SEND_MIN_TIME );          
+//          System.out.println("Timer calling SendMessage(0)");
             user.SendMessage( 0 );
          }
       }
       catch( Exception s )
       {
-
+        System.out.println("This catch block should not have been empty");
+        System.out.println( s );
+        s.printStackTrace();
       }
    }
 }
