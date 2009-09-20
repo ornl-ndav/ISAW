@@ -135,7 +135,6 @@ public class HistogramHandler implements IReceiveMessage
       AddEventsToHistogram( events );
 
 //      Util.sendInfo( "ADDED " + events.numEntries() + " to HISTOGRAM");
-//      Util.sendInfo( "TOTAL ADDED = " + histogram.numAdded() );
 
       SetWeightsFromHistogram( events, histogram );
       Message add_to_view = new Message( Commands.ADD_EVENTS_TO_VIEW,
@@ -154,7 +153,7 @@ public class HistogramHandler implements IReceiveMessage
        message_center.send( done_loading );
 
        double max = histogram.maxVal();
-       if ( max > max_hist_value_sent )
+       if ( max > 2 * max_hist_value_sent )
        {
          max_hist_value_sent = max;
          Message hist_max = new Message( Commands.SET_HISTOGRAM_MAX,
@@ -163,8 +162,9 @@ public class HistogramHandler implements IReceiveMessage
                                          true );
          view_message_center.send( hist_max );
 
-         String max_message = String.format("Max Histogram Value : %4.2f",
-                                             histogram.maxVal() );
+         String max_message = String.format(
+               "Max Histogram Value : %4.2f,  Total Events: %d",
+                histogram.maxVal(), histogram.numAdded()  );
          Util.sendInfo( max_message );
        }
       }
@@ -239,14 +239,18 @@ public class HistogramHandler implements IReceiveMessage
       if ( val instanceof FindPeaksCmd )  
       {
         FindPeaksCmd cmd = (FindPeaksCmd)message.getValue();
-
         Util.sendInfo("Searching for peaks, PLEASE WAIT ...");
-        
-        Vector<PeakQ> peakQs = FindPeaks( histogram,
-                                          cmd.getSmoothData(),
-                                          cmd.getMaxNumberPeaks(),
-                                          cmd.getMinPeakIntensity(),
-                                          cmd.getLogFileName() );
+
+        Vector<PeakQ> peakQs = null; 
+                                     // don't search for peaks and change
+        synchronized ( histogram )   // the histogram at the same time !
+        { 
+          peakQs = FindPeaks( histogram,
+                              cmd.getSmoothData(),
+                              cmd.getMaxNumberPeaks(),
+                              cmd.getMinPeakIntensity(),
+                              cmd.getLogFileName() );
+        }
 
         if ( peakQs != null && peakQs.size() > 0 )       // send out the peaks
         { 
@@ -320,7 +324,8 @@ public class HistogramHandler implements IReceiveMessage
       current_instrument = inst;
       return true;
     }
-    else if ( inst.equals(SNS_Tof_to_Q_map.ARCS) )
+    else if ( inst.equals(SNS_Tof_to_Q_map.ARCS) ||
+              inst.equals(SNS_Tof_to_Q_map.SEQ)  )
     {
       SetHistogramForARCS();
       current_instrument = inst;
@@ -643,7 +648,11 @@ public class HistogramHandler implements IReceiveMessage
 
   synchronized public void AddEventsToHistogram( IEventList3D events )
   {
-    histogram.addEvents( events );
+                                     // don't search for peaks and change
+    synchronized( histogram )        // the histogram at the same time
+    {
+      histogram.addEvents( events );
+    }
   }
 
 }
