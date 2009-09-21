@@ -1,0 +1,176 @@
+<HTML><HEAD><TITLE>Untitled Document</TITLE>
+<BODY>
+<BR>
+<CENTER><B><FONT size=+2>Using IsawEV (Please Read)</FONT></B></CENTER>
+<BR>
+<HR align=left>
+
+<P>
+IsawEV provides a 3D scatter plot of detected neutrons, mapped to reciprocal
+space, and conventional line graphs of intensity vs |Q| and intensity vs
+d-spacing.  The data may come from SNS raw event files, or from live data
+on the instrument computer.  IsawEV requires additional geometry information about the
+instrument to be able to map events to reciprocal space.  Currently, only TOPAZ,
+SNAP and ARCS are supported.  The geometry information for SEQUOIA in IsawEV is
+probably not entirely correct, but support for SEQUOIA and other instruments is
+in progress.  IsawEV also supports finding and indexing peaks in single crystal
+data.
+</P>
+
+<P>
+<FONT size=+1>Loading a File</FONT>
+<BR>
+<BR>
+To load a file, press the "Load Data" button on the left side of the control
+panel.  Make sure the "From File" tab is at the front, then press the 
+"Neutron Event File" button to select the raw event data file to load.
+The directory .../ISAW/InstrumentInfo/SNS/ contains detector geometry 
+for the supported instruments.  If a more recent calibration file (.DetCal)
+is available, you can specify it by pressing the "Detector Position File"
+button.  For SNAP, an incident spectrum file is also in the same 
+directory.  If a newer version is available, it may be specified by
+pressing the incident spectrum button.  NOTE: The event file is the only 
+file that needs to be specified, if the default geometry is OK.  When the
+file(s) have been specified, press the "Load" button at the bottom of the
+form to actually load the file.  Events should start to show up in the
+3D viewer, within a few seconds of starting to load the data.  The number
+of events to show in 3D must be limited to avoid overloading the graphics
+hardware.
+</P>
+
+<P>
+<FONT size=+1>Viewing Live Data</FONT>
+<BR>
+<BR>
+To view live data on the instrument computer, select the "From Live Data"
+tab, instead of the "From File" tap.  The port should be 8002, unless the
+DAS changes to use a different port.  Select the instrument name from the
+drop down menu.  To start listening for events, press the Load button at
+the bottom of the panel.  In order to inspect the D or Q graphs ore the
+3D view more closely, it may be helpful to temporarily stop listening for
+events.  This can be done by pressing the "Pause" button.  To resume
+listening for events, press the "Continue" button.  To clear out all 
+loaded events and stop listening for new events, press the
+"Pause & Clear" button.  Press "Continue" to start listening for and
+accumulating new events.
+</P>
+
+<P>
+<FONT size=+1>Using the 3D View</FONT>
+<BR>
+<BR>
+The 3D window shows a scatter plot of the events mapped to reciprocal
+space.  You can interact with this view in several ways.
+<BR>
+<BR>
+1. Press the left mouse button and drag the mouse to rotate the view
+the current view reference point.
+<BR>
+<BR>
+2. Press the middle mouse button and drag up/down on the screen to move
+in and out of the scene.  
+<BR>
+<BR>
+3. Press the right mouse button and drag to pan across the 3D scene.
+<BR>
+<BR>
+NOTE: Operations 1. and 2. also move the view reference point
+in and out of the screen, so the center point of rotations changes.
+<BR>
+<BR>
+You can also click on an event in the 3D view and see information 
+about that event, such as the detector pixel, Q, time-of-flight, etc.
+This information is displayed in a panel that is made visible by
+pressing the "Selected Point" panel on the left side of the 
+display. 
+</P>
+
+<P>
+<FONT size=+1>Color Scale (IMPORTANT)</FONT>
+<BR>
+<BR>
+The color of the events displayed is based on the histogram value for
+that position in reciprocal space, and a color scale controlled from 
+a panel activated by pressing the "Color Scale" button.  The most
+IMPORTANT role of the color scale is to provide a threshold below
+which events will NOT be marked in 3D.  If all events are shown, the
+3D space fills with events and it is difficult to see any patterns
+present in the data.  The "Data Min" on the Color Edit Panel should
+be set high enough so that excessive background noise s not shown, 
+and low enough to see patterns in the data such as diffraction rings
+or isolated peaks.  
+</P>
+
+<P>
+<FONT size=+1>Q and D graphs</FONT>
+<BR>
+<BR>
+Graphs of intensity vs |Q| and intensity vs d-spacing can be
+displayed from the "Additional Views" panel.  The graphs can be
+"popped up" or "popped down" using the "Show Q Graph" and 
+"Show D Graph" check boxes.  The graphs are dynamically updated
+when loading live data.  Slice views through reciprocal space
+will be supported in the future, but are not yet in this version.
+</P>
+<P>
+<FONT size=+1>Drawing Options</FONT>
+<BR>
+<BR>
+Some drawing options may be useful and are controlled from the
+"Draw Options" panel.  The most useful options are changing to
+an Orthographic View (instead of than the default perspective view)
+and changing the point size.  For example, if the scatter plot 
+is very full of points it may help to set the Point Size down to 1.
+After altering some draw options, press the Apply button at the
+bottom of the panel to make them effective.
+</P>
+
+<P>
+<FONT size=+1>Finding Peaks</FONT>
+<BR>
+<BR>
+IsawEV maintains an underlying histogram of events in reciprocal
+space.  The Find Peaks panel can be used to search through this
+512 megabyte histogram for local maxima.  This is useful for 
+finding peaks in SCD data.  
+</P>
+
+<P>
+<FONT size=+1>Indexing Peaks</FONT>
+<BR>
+<BR>
+Once peaks have been found, they can be indexed.  In particular,
+two indexing methods are currently supported in IsawEV.  One method
+requires good estimates of the lattice parameters.  This method 
+is quite robust.  The other method attempts to index the 
+peaks automatically.  It produces a (possibly long) list of 
+orientation matrices to choose from.  In either case the quality
+of the indexing can be assessed by looking at the Peaks Info panel.
+This panel shows how many peaks were indexed, and provides histograms
+showing deviations of the indexed peaks from integer h, k and l values.
+The list of peaks can also be displayed from this panel.  This information
+can be written to a file using the "Write Peaks File" button on the 
+"Find Peaks" panel.
+</P>
+
+<P>
+<FONT size=+1>Example Files</FONT>
+<BR>
+<BR>
+It may be helpful to work with a couple of "nice" example data files
+to get more comfortable using IsawEV.  
+<BR>
+<BR>
+The file SNAP_240_neutron_event.dat has data from a quartz crystal on SNAP.
+The lattice parameters should be approximately a=b=4.913, c=5.40,
+alpha=beta=90, gamma=120.
+
+<BR>
+<BR>
+The file ARCS_419_neutron_event.dat has data from a silicon crystal on ARCS.
+The lattice parameters should be approximately a=b=c=5.431, alpha=beta=gamma=90.
+
+</P>
+
+
+</BODY></HTML>
