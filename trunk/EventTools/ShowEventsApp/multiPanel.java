@@ -153,13 +153,13 @@ public class multiPanel implements IReceiveMessage
       jmenBar.add(helpMenu);
       JMenuItem isawHelp = new JMenuItem("Using IsawEV");
       String isawHelpDir = System.getProperty("ISAW_HOME");
-      isawHelpDir += "/IsawHelp/About.html";
+      isawHelpDir += "/IsawHelp/UsingIsawEV.html";
       isawHelp.addActionListener(
             new ShowHelpActionListener(isawHelpDir));
       
       JMenuItem aboutHelp = new JMenuItem("Help About");
       String aboutHelpDir = System.getProperty("ISAW_HOME");
-      aboutHelpDir += "/IsawHelp/About.html";
+      aboutHelpDir += "/IsawHelp/AboutIsawEV.html";
       aboutHelp.addActionListener(
             new ShowHelpActionListener(aboutHelpDir));
       

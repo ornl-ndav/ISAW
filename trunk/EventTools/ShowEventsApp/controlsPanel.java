@@ -208,6 +208,7 @@ public class controlsPanel extends JPanel
       planeBtn = new JButton("Histogram Orientation");
       planeBtn.setBackground( background_color );
       planeBtn.addActionListener(new buttonListener());
+      planeBtn.setEnabled(false);
       
       additionalViewsBtn = new JButton("Additional Views");
       additionalViewsBtn.setBackground( background_color );

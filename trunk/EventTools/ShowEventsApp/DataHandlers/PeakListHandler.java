@@ -40,8 +40,8 @@ public class PeakListHandler implements IReceiveMessage
 
   public boolean receive( Message message )
   {
-    System.out.println("***PeakListHandler in thread " 
-                       + Thread.currentThread());
+//    System.out.println("***PeakListHandler in thread " 
+//                       + Thread.currentThread());
 
     if ( message.getName().equals(Commands.SET_PEAK_Q_LIST) )
     {
