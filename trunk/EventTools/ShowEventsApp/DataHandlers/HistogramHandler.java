@@ -317,10 +317,15 @@ public class HistogramHandler implements IReceiveMessage
       return true;
     }
 
-    if ( inst.equals(SNS_Tof_to_Q_map.SNAP) ||
-         inst.equals(SNS_Tof_to_Q_map.TOPAZ ) )
+    if ( inst.equals(SNS_Tof_to_Q_map.SNAP) )
     {
       SetHistogramForSNAP();
+      current_instrument = inst;
+      return true;
+    }
+    else if ( inst.startsWith("TOP") ) 
+    {
+      SetHistogramForTOPAZ();
       current_instrument = inst;
       return true;
     }
@@ -442,6 +447,35 @@ public class HistogramHandler implements IReceiveMessage
       IEventBinner x_bin1D = new UniformEventBinner( -16.0f,  0,   num_bins );
       IEventBinner y_bin1D = new UniformEventBinner( -16.0f,  0,   num_bins );
       IEventBinner z_bin1D = new UniformEventBinner( - 8.0f, 8.0f, num_bins );
+
+      ProjectionBinner3D x_binner = new ProjectionBinner3D(x_bin1D, xVec);
+      ProjectionBinner3D y_binner = new ProjectionBinner3D(y_bin1D, yVec);
+      ProjectionBinner3D z_binner = new ProjectionBinner3D(z_bin1D, zVec);
+
+      histogram.setHistogramPosition( x_binner, y_binner, z_binner );
+      histogram.clear();
+    }
+  }
+
+
+/**
+ * Set up the histogram to be new empty histogram covering a region
+ * of reciprocal space appropriate for the TOPAZ instrument at the
+ * SNS, WITHOUT reallocating memory, if possible.
+ */
+  synchronized private void SetHistogramForTOPAZ()
+  {
+    if ( histogram == null )
+      histogram = DefaultSNAP_Histogram( num_bins );
+    else
+    {
+      Vector3D xVec = new Vector3D(1,0,0);
+      Vector3D yVec = new Vector3D(0,1,0);
+      Vector3D zVec = new Vector3D(0,0,1);
+
+      IEventBinner x_bin1D = new UniformEventBinner( -36.0f,  0,   num_bins );
+      IEventBinner y_bin1D = new UniformEventBinner( -24.0f,  0,   num_bins );
+      IEventBinner z_bin1D = new UniformEventBinner( -18.0f, 6.0f, num_bins );
 
       ProjectionBinner3D x_binner = new ProjectionBinner3D(x_bin1D, xVec);
       ProjectionBinner3D y_binner = new ProjectionBinner3D(y_bin1D, yVec);
