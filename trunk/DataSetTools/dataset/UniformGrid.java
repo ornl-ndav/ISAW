@@ -344,10 +344,14 @@ public class UniformGrid implements IDataGrid
     }
   }
 
-
-  public IDataGrid clone(){
-     return new UniformGrid( this, true);
+  /**
+   *  Make a deep copy of the current UniformGrid grid.
+   */
+  public IDataGrid clone()
+  {
+     return new UniformGrid( this, true );
   }
+
   /**
    *  Get the ID of the current data grid (i.e. detector).  This ID should be 
    *  unique within the set of all detectors on an instrument.
