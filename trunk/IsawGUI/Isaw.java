@@ -2824,8 +2824,19 @@ public class Isaw
   {
     public void run()
     {
+      String cp = System.getProperty( "java.class.path" );
+      if ( cp == null )
+        cp = "";
+      else
+        cp = " -cp " + cp;
+
       String command =
-                 "java -XX:+AggressiveHeap EventTools.ShowEventsApp.IsawEV";
+                 "java " + cp +
+                 " -XX:+AggressiveHeap " +
+                 " -XX:+DisableExplicitGC " +
+                 " -XX:ParallelGCThreads=4 " +
+                 " EventTools.ShowEventsApp.IsawEV";
+
       SimpleExec.Exec( command );
     }
   }
