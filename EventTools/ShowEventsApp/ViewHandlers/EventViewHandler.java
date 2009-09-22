@@ -142,6 +142,7 @@ public class EventViewHandler implements IReceiveMessage
     }
     else if ( message.getName().equals( Commands.MARK_PEAKS ) )
     {
+       int MARK_SIZE = 10;
        Object val = message.getValue();
        if ( val == null )
          return(false);
@@ -161,7 +162,8 @@ public class EventViewHandler implements IReceiveMessage
              float qz = (float)(q_arr[2] * 2 * Math.PI);
              verts[i] = new Vector3D( qx, qy, qz );
            }
-           events_panel.addMarkers( verts, 6, Polymarker.BOX, Color.WHITE );
+           events_panel.addMarkers( verts, MARK_SIZE, 
+                                    Polymarker.BOX, Color.WHITE );
            events_panel.updateDisplay();
          }
          else if ( val instanceof Boolean )
