@@ -977,7 +977,6 @@ public class IndexPeaks_Calc
     * write the unindexed peaks to another file so that they can be (possibly)
     * indexed latter. This allows indexing twins or more complicated samples
     * with several crystalites.
-    * @see WriteNotIndexedPeaks
     *
     * @param  all_peaks             Vector of all peaks
     * @param  a                     Lattice parameter 'a'

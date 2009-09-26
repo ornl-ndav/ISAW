@@ -51,7 +51,7 @@ public class SetNewInstrumentCmd
    *  Create a new set instrument command object, containing the specified
    *  information.
    *
-   *  @param insturment_name  The name of the instrument, as listed in 
+   *  @param instrument_name  The name of the instrument, as listed in 
    *                          SNS_Tof_to_Q_map.java
    *  @param detector_file_name  The name of the file containing the 
    *                             detector mapping information.  This file

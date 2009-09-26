@@ -53,7 +53,7 @@ public class LoadUDPEventsCmd
     * @param detEffFile  The name of the detector efficiency file
     * @param matFile     The name of a matrix file
     * @param maxQValue   The maximum Q value to load
-    * @pram nEventsToShow The number of events to show in the 3D view
+    * @param nEventsToShow The number of events to show in the 3D view
     */
    public LoadUDPEventsCmd( String Instrument, 
                             int port,
