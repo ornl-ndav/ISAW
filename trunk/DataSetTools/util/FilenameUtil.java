@@ -265,89 +265,137 @@ public class FilenameUtil
      * @return A string containing a link to either the local helpfile
      *         or one on the web.
      */
-    public static String helpDir( String helpFile ){
-	// define the location of the URL version
-	final String URLDIR="http://www.pns.anl.gov/isaw/IsawHelp/";
+    public static String helpDir( String helpFile )
+   {
+
+      // define the location of the URL version
+      final String URLDIR = null;//"http://www.pns.anl.gov/isaw/IsawHelp/";
 
 
-	// start the string as being the value of helpdirectory
-	String S = SharedData.getProperty("Help_Directory");
-        if(S!=null){
-            S=S.trim();
-        }
+      // start the string as being the value of helpdirectory
+      String S = SharedData.getProperty( "Help_Directory" );
+      if( S != null )
+      {
+         S = S.trim();
+         if( S.length() < 1)
+            S = null;
+         else if( "\\/".indexOf( S.charAt( S.length() - 1 ) ) < 0 )
+            S = S + File.separator;
 
-	//System.out.println("1: Source is "+S); 
+      }
 
-	// fix the string up and check that helpFile exists there
-	if(S != null ){
-	    S = StringUtil.setFileSeparator(S);
-	    if( S.length()<1 ){ S=null; 
-	    }else if("\\/".indexOf(S.charAt(S.length()-1))<0){
-		S=S+File.separator; }
+      S = SharedData.getProperty( "ISAW_HOME" );
+      if( S != null )
+      {
+         S = S.trim();
+         if( S.length() < 1)
+            S = null;
+         else if( "\\/".indexOf( S.charAt( S.length() - 1 ) ) < 0 )
+            S = S + File.separator;
+         S = S + "IsawHelp/";
 
-	    if( new File(S+helpFile).exists()){
-	    }else{ S=null; }
-	}
+      }
+      // System.out.println("1: Source is "+S);
 
-	//System.out.println("2: Source is "+S); 
+      // fix the string up and check that helpFile exists there
+      if( S != null )
+      {
+         S = StringUtil.setFileSeparator( S );
+         if( S.length() < 1 )
+         {
+            S = null;
+         }
+         else if( "\\/".indexOf( S.charAt( S.length() - 1 ) ) < 0 )
+         {
+            S = S + File.separator;
+         }
 
-	// if helpFile is not in help_file then try in $HOME
-	if( S == null ){
-	    S=SharedData.getProperty("user.dir").trim();
-	    if( S.length()>0 ){
-		if( "\\/".indexOf(S.charAt(S.length()-1)) < 0 ){
-		    S=S+File.separator;
-		}
-	    }
-	    S=StringUtil.setFileSeparator(S);
-	    if(!new File(S+"IsawHelp"+File.separator+helpFile).exists()){
-		S=null;
-	    }else{ 
-		S=S+"IsawHelp"+File.separator;
-	    }
-	}
-
-	//System.out.println("3: Source is "+S); 
-
-	
-	// if helpFile still hasn't been found look throughout the classpath
-	if( S != null ){
-	    S = S + helpFile;
-        }else{
-	    String CP = SharedData.getProperty("java.class.path").replace( '\\','/');
-	    int s, t ;
-            for( s = 0; (s < CP.length()) && (S == null); s++){
-		t = CP.indexOf( File.pathSeparator, s+1);
-		if( t < 0){ t = CP.length(); }
-		S = CP.substring(s,t) .trim();
-		if( S.length() > 0 ){
-		    if ( S.charAt( S.length() -1) != File.separatorChar){ 
-			S = S + File.separator;
-		    }
-		}
-		if(new File(S+"IsawHelp"+File.separator+helpFile).exists()){
-		    S= S + "IsawHelp"+File.separator+helpFile;
-		}else{
-		    S = null;
-		}
-	    }
-	}
-	
-	//System.out.println("4: Source is "+S); 
-
-	// either it has been found or just give the URL
-	if( S == null ){
-            SharedData.addmsg("File ("+helpFile
-                              +") not found. Using version at "+URLDIR);
-	    S = URLDIR+helpFile;
-	}else{ 
-	    S = "file:///" + S.replace( '\\' , '/' ); 
-	}
+         if( new File( S + helpFile ).exists() )
+         {}
+         else
+         {
+            S = null;
+         }
+      }
 
 
-	//System.out.println("5: Source is "+S); 
-    
-	return S;
-    }
+      if( S == null )
+      {
+         S = SharedData.getProperty( "user.dir" ).trim();
+         if( S.length() > 0 )
+         {
+            if( "\\/".indexOf( S.charAt( S.length() - 1 ) ) < 0 )
+            {
+               S = S + File.separator;
+            }
+         }
+         S = StringUtil.setFileSeparator( S );
+         if( ! new File( S + "IsawHelp" + File.separator + helpFile ).exists() )
+         {
+            S = null;
+         }
+         else
+         {
+            S = S + "IsawHelp" + File.separator;
+         }
+      }
+
+      // System.out.println("3: Source is "+S);
+
+
+      // if helpFile still hasn't been found look throughout the classpath
+      if( S != null )
+      {
+         S = S + helpFile;
+      }
+      else
+      {
+         String CP = SharedData.getProperty( "java.class.path" ).replace( '\\' ,
+                  '/' );
+         int s , t;
+         for( s = 0 ; ( s < CP.length() ) && ( S == null ) ; s++ )
+         {
+            t = CP.indexOf( File.pathSeparator , s + 1 );
+            if( t < 0 )
+            {
+               t = CP.length();
+            }
+            S = CP.substring( s , t ).trim();
+            if( S.length() > 0 )
+            {
+               if( S.charAt( S.length() - 1 ) != File.separatorChar )
+               {
+                  S = S + File.separator;
+               }
+            }
+            if( new File( S + "IsawHelp" + File.separator + helpFile ).exists() )
+            {
+               S = S + "IsawHelp" + File.separator + helpFile;
+            }
+            else
+            {
+               S = null;
+            }
+         }
+      }
+
+      //System.out.println("4: Source is "+S); 
+
+      // either it has been found or just give the URL
+      if( S == null )
+      {
+         SharedData.addmsg( "File (" + helpFile + ") not found. " );
+         // S = URLDIR+helpFile;
+      }
+      else
+      {
+         S = "file:///" + S.replace( '\\' , '/' );
+      }
+
+
+      //System.out.println("5: Source is "+S); 
+
+      return S;
+   }
 
 }
