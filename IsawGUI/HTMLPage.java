@@ -105,6 +105,7 @@ import java.io.IOException;
 import java.net.*;
 import Command.*;
 import DataSetTools.operator.*;
+import DataSetTools.util.SharedData;
 import gov.anl.ipns.Parameters.IParameter;
 import gov.anl.ipns.Util.Sys.WindowShower;
 
@@ -138,6 +139,7 @@ class HTMLPage extends JFrame
     */
    public
    HTMLPage( String url ){
+      super("EditorPane");
       Container contentPane = getContentPane ();
       if(SH==null)
         SH = new Script_Class_List_Handler();
@@ -218,11 +220,12 @@ class HTMLPage extends JFrame
    }
 
   /**
-   * Override Component's default method.
+   * 
    */
-  public boolean isValid(){
+  public boolean isSetUp(){
     return this.isValid;
   }
+
 
    private
    void SetText( JEditorPane JP, String ref ) {
@@ -418,7 +421,18 @@ class HTMLPage extends JFrame
 
    public static
    void main( String args[] ) {
-      GJApp.launch ( new HTMLPage( "http://www.pns.anl.gov/gppd/index.htm" ), 
+      
+      SharedData sd = new SharedData();
+      String filename = System.getProperty( "Help_Directory" );
+      
+      filename= filename.replace('\\','/');
+      
+      if( !filename.endsWith("/"))
+         filename +="/";
+     
+      filename = "file:///"+filename+"About.html";
+      
+      GJApp.launch ( new HTMLPage( filename),//"http://www.pns.anl.gov/gppd/index.htm" ), 
          "JEditorPane", 300, 300, 450, 300 );
 
    }

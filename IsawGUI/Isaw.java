@@ -1859,7 +1859,7 @@ public class Isaw
       {
         String S=DataSetTools.util.FilenameUtil.helpDir("About.html");
 	HTMLPage H = new HTMLPage( S ) ;
-        if(! H.isValid()) return;
+        if(! H.isSetUp()) return;
 	Dimension D = getToolkit().getScreenSize();
 	// make the help window pop up centered and 60% of screen size
 	H.setSize((int)(.6*4*D.height/3) , (int)(.6*D.height) ); 
