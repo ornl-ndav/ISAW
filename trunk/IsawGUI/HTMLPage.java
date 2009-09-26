@@ -423,14 +423,7 @@ class HTMLPage extends JFrame
    void main( String args[] ) {
       
       SharedData sd = new SharedData();
-      String filename = System.getProperty( "Help_Directory" );
-      
-      filename= filename.replace('\\','/');
-      
-      if( !filename.endsWith("/"))
-         filename +="/";
-     
-      filename = "file:///"+filename+"About.html";
+      String filename = DataSetTools.util.FilenameUtil.helpDir( "About.html");
       
       GJApp.launch ( new HTMLPage( filename),//"http://www.pns.anl.gov/gppd/index.htm" ), 
          "JEditorPane", 300, 300, 450, 300 );
