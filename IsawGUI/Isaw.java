@@ -1951,7 +1951,7 @@ public class Isaw
           DataSetTools.util.FilenameUtil.helpDir("Command/CommandPane.html");
 
 	HTMLPage H = new HTMLPage( S ) ;
-        if(! H.isValid()) return;
+        if(! H.isSetUp()) return;
 	Dimension D = getToolkit().getScreenSize();
 
 	// make the help window pop up centered and 60% of screen size
