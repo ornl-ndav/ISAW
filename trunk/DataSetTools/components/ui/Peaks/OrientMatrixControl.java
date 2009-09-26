@@ -697,7 +697,8 @@ public class OrientMatrixControl extends JButton
     * 
     * @param Peaks        The list of peaks
     * @param OrMatrices   A Vector of orientation matrices
-    * @return
+    *
+    * @return A 3x3 array containing the selected orientation matrix.
     */
    public static float[][] showCurrentOrientationMatrices( Vector<IPeak>Peaks,
             Vector<float[][]> OrMatrices)
@@ -750,7 +751,8 @@ public class OrientMatrixControl extends JButton
     * @param omittedPeakIndex        the omitted peaks
     * @param selectedPeaks           The selected peaks or null to not show
     *                                   information on these peaks      
-    * @return
+    * @return A String giving the orientation matrix, lattice parameters
+    *         and statistics about the quality of the indexing.
     */
   public static String ShowMatString( float[][] UB, Vector<IPeak> peaks,
             boolean[] omittedPeakIndex, SetPeaks selectedPeaks)

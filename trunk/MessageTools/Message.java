@@ -108,11 +108,12 @@ public class Message
    *  @param replace_flag  Set this flag to true if this message is to 
    *                       replace all previous messages in the named 
    *                       queue.
-   *  @param use_new_thead Flag indicating whether or not the MessageCenter
-   *                       should pass this message out using a separate
-   *                       thread.  This provides an easy way to do multi-
-   *                       threading, provided the work to be done can be
-   *                       done asynchronously and no return value is required.
+   *  @param use_new_thread Flag indicating whether or not the MessageCenter
+   *                        should pass this message out using a separate
+   *                        thread.  This provides an easy way to do multi-
+   *                        threading, provided the work to be done can be
+   *                        done asynchronously and no return value is 
+   *                        required.
    */
   public Message( Object  name, 
                   Object  value, 
