@@ -1010,7 +1010,7 @@ public class Isaw
         String val="";
 
         if(SharedData.VERSION.equals("Unknown_Version"))
-          version="1.9.1_b1";
+          version="1.9.1_b2";
         else
           version=SharedData.VERSION;
 
@@ -2835,6 +2835,9 @@ public class Isaw
                  " -XX:+AggressiveHeap " +
                  " -XX:+DisableExplicitGC " +
                  " -XX:ParallelGCThreads=4 " +
+                 " -Dsun.awt.noerasebackground=true " +
+                 " -Dsun.java2d.noddraw=true " +
+                 " -Dsun.java2d.opengl=true " +
                  " EventTools.ShowEventsApp.IsawEV";
 
       SimpleExec.Exec( command );
