@@ -2828,16 +2828,16 @@ public class Isaw
       if ( cp == null )
         cp = "";
       else
-        cp = " -cp " + cp;
+        cp = " -cp " + " \"" + cp + "\" ";
 
       String command =
-                 "java " + cp +
+                 "java " + cp + 
                  " -XX:+AggressiveHeap " +
                  " -XX:+DisableExplicitGC " +
                  " -XX:ParallelGCThreads=4 " +
                  " -Dsun.awt.noerasebackground=true " +
                  " -Dsun.java2d.noddraw=true " +
-                 " -Dsun.java2d.opengl=true " +
+   //            " -Dsun.java2d.opengl=true " +      // NO! Fails on 64-bit Vista
                  " EventTools.ShowEventsApp.IsawEV";
 
       SimpleExec.Exec( command );
