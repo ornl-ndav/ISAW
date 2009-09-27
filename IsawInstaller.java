@@ -660,7 +660,7 @@ public class IsawInstaller extends JFrame
 		+ newline
 		+"rem --"+newline
 		+"rem java -mx256m -cp Isaw.jar;sgt_v2.jar;gov.jar;IPNS.jar;ISIS.jar;jnexus.jar;sdds.jar;SSG_Tools.jar;jogl.jar;gluegen-rt.jar;"
-		+"jhall.jar;jython.jar;.\" -Dsun.awt.noerasebackground=true -Dsun.java2d.noddraw=true -Dsun.java2d.opengl=true IsawGUI.Isaw"+newline;
+		+"jhall.jar;jython.jar;.\" -Dsun.awt.noerasebackground=true -Dsun.java2d.noddraw=true IsawGUI.Isaw"+newline;
 	}else if(operating_system.equals(LIN_ID)){
 	    content="#!/bin/sh"+newline
 		+"ISAW="+isaw_home+newline
