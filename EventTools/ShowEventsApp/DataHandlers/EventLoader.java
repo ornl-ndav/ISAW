@@ -88,6 +88,12 @@ public class EventLoader implements IReceiveMessage
       {
         Util.sendError( "ERROR: Failed to Load File :" +
                         event_file_name + "\n" + ex );
+        Message done_loading = new Message( Commands.LOAD_FAILED,
+                                            null,
+                                            true,
+                                            true );
+        message_center.send( done_loading );
+
         return false;
       }
 /*
