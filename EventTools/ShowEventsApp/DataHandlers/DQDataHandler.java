@@ -163,6 +163,11 @@ public class DQDataHandler implements IReceiveMessage
        System.out.printf("x = %5.2f  y = %5.2f \n", 
                           q_values[0][i], q_values[1][i] );
 */
+     for ( int i = 0; i < 2; i++ )           // set values at low Q and D
+     {                                       // to zero.  TODO: why was this
+       q_arr[i] = 0;                         // needed when dealing with
+       d_arr[i] = 0;                         // simulated TOPAZ data?
+     }
    }
 
 
