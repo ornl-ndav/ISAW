@@ -72,28 +72,34 @@ public class Test_2_SNS_Events
 
 //   String file_name = "/usr2/SEQUOIA/EVENTS/SEQ_328_neutron_event.dat";
 
-     String instrument = null;
      String det_file   = null;
+     String spec_file  = null;
+     String instrument = null;
 
      if ( file_name.indexOf( "ARCS") >= 0 )
      {
-       instrument = SNS_Tof_to_Q_map.ARCS;
        det_file   = "/usr2/ARCS_SCD/ARCS_419.grids";
+       spec_file  = null;
+       instrument = SNS_Tof_to_Q_map.ARCS;
      }
      else if  ( file_name.indexOf( "SNAP") >= 0 )
      {
-       instrument = SNS_Tof_to_Q_map.SNAP;
        det_file   = "/usr2/SNS_SCD_TEST_3/SNAP_1_Panel.DetCal";
+       spec_file  = null;
+       instrument = SNS_Tof_to_Q_map.SNAP;
      }
      else if  ( file_name.indexOf( "SEQ") >= 0 )
      {
-       instrument = SNS_Tof_to_Q_map.SEQ;
        det_file   = "/usr2/SEQUOIA/SEQ_328.grids";
+       spec_file  = null;
+       instrument = SNS_Tof_to_Q_map.SEQ;
      }
 
      long start_time = System.nanoTime();
 
-     SNS_Tof_to_Q_map mapper = new SNS_Tof_to_Q_map( det_file, instrument );
+     SNS_Tof_to_Q_map mapper = new SNS_Tof_to_Q_map( det_file, 
+                                                     spec_file,
+                                                     instrument );
 
      long run_time = System.nanoTime() - start_time;
      System.out.printf("MADE To Q map in %5.1f ms\n" , (run_time/1.0e6) );
