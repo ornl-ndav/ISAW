@@ -64,7 +64,7 @@ public class writePeaks extends JPanel
       this.message_center = message_center;
 
       this.setLayout(new GridLayout(1,1));
-      savePeaks = new JButton("Write Peaks File...");
+      savePeaks = new JButton("Write Peaks File");
       savePeaks.addActionListener(new buttonListener());
       
       this.add(savePeaks);

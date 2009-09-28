@@ -47,6 +47,7 @@ import javax.swing.*;
 import javax.swing.border.TitledBorder;
 
 import DataSetTools.util.SharedData;
+import EventTools.EventList.SNS_Tof_to_Q_map;
 import EventTools.ShowEventsApp.Command.*;
 import MessageTools.*;
 
@@ -92,7 +93,10 @@ public class filePanel //extends JPanel
    private float              MaxQValue;//Remember last MaxQValue
    private FilteredPG_TextField Port;
    private JComboBox         Instrument;
-   private static String[]  InstrumentList={"SNAP","ARCS","TOPAZ","SEQUOIA??"};
+   private static String[]  InstrumentList={ SNS_Tof_to_Q_map.SNAP,
+                                             SNS_Tof_to_Q_map.ARCS,
+                                             SNS_Tof_to_Q_map.TOPAZ,
+                                             SNS_Tof_to_Q_map.SEQ };
    
    /**
     * Creates file panel as well as sets up default
@@ -178,7 +182,7 @@ public class filePanel //extends JPanel
       JPanel eventPanel = new JPanel();
       eventPanel.setLayout(new GridLayout(5,2));
 
-      evFileButton = new JButton("Neutron Event File...");
+      evFileButton = new JButton("Neutron Event File");
       evFileButton.addActionListener(new button());
       
       
@@ -187,7 +191,7 @@ public class filePanel //extends JPanel
       
       evFileName = new JTextField( default_evFileName );
       evFileName.addMouseListener(new mouse());
-      evFileName.setEditable(false);
+//    evFileName.setEditable(false);
       
       String default_availableEvents = nf.getInstance().format(10000000);
       JLabel available = new JLabel("Number of Events in File: ");
@@ -298,14 +302,13 @@ public class filePanel //extends JPanel
       JPanel detPanel = new JPanel();
       detPanel.setLayout(new GridLayout(1,2));
       
-      detFileButton = new JButton("Detector Position File...");
+      detFileButton = new JButton("Detector Position File");
       detFileButton.addActionListener(new button());
       
-//      String default_detector_file =Detfilename;
-         // /usr2/SNS_SCD_TEST_3/SNAP_1_Panel.DetCal";
+//    String default_detector_file =Detfilename;
       detFileName = new JTextField( "");
       detFileName.addMouseListener(new mouse());
-      detFileName.setEditable(false);
+//    detFileName.setEditable(false);
       
       detPanel.add(detFileButton);
       detPanel.add(detFileName);
@@ -324,12 +327,12 @@ public class filePanel //extends JPanel
       JPanel incPanel = new JPanel();
       incPanel.setLayout(new GridLayout(1,2));
       
-      incFileButton = new JButton("Incident Spectrum File...");
+      incFileButton = new JButton("Incident Spectrum File");
       incFileButton.addActionListener(new button());
       
       incFileName = new JTextField();
       incFileName.addMouseListener(new mouse());
-      incFileName.setEditable(false);
+//      incFileName.setEditable(false);
       
       incPanel.add(incFileButton);
       incPanel.add(incFileName);
