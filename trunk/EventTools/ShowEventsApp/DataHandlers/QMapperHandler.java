@@ -75,7 +75,7 @@ public class QMapperHandler implements IReceiveMessage
     
     try
     {
-       mapper = new SNS_Tof_to_Q_map( det_file, instrument_name );
+       mapper = new SNS_Tof_to_Q_map( det_file, null, instrument_name );
     }
     catch ( Exception ex )
     {
@@ -123,20 +123,28 @@ public class QMapperHandler implements IReceiveMessage
           det_file = isaw_home + "InstrumentInfo/SNS/" +
                      new_instrument + ".DetCal";
         }
+
+        String spec_file = cmd.getIncidentSpectrumFileName();
+
                                                // TODO add the incident 
         try                                    // spectrum as a parameter to
         {                                      // SNS_Tof_to_Q_map
           start    = System.nanoTime();
-          mapper   = new SNS_Tof_to_Q_map( det_file, new_instrument );
+          mapper   = new SNS_Tof_to_Q_map( det_file, 
+                                           spec_file, 
+                                           new_instrument );
           run_time = (System.nanoTime() - start)/1.0e6;
           instrument_name = new_instrument;
           System.out.printf("Made Q mapper in %5.1f ms\n", run_time  );
         }
         catch ( Exception ex )
         {
-          Util.sendError( "ERROR: Could not make Q mapper for "+ det_file );
+          Util.sendError( "ERROR: Could not make Q mapper from: "+ det_file +
+                          " with Spectrum File: " + spec_file +
+                          " for instrument name: " + new_instrument );
           message_center.send( new Message( Commands.LOAD_FAILED,
                                             null, true, true ) );
+          ex.printStackTrace();
           return false;
         }
       }
