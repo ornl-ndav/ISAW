@@ -63,8 +63,10 @@ public class SNS_Tof_to_Q_map
   public static final String SNAP  = "SNAP";
   public static final String ARCS  = "ARCS";
   public static final String SEQ   = "SEQ";
-  public static final String TOPAZ = "TOPAZ";
+  public static final String TOPAZ = "TOP";
   public static final int    NUM_TOF_WEIGHTS = 166666/10;  // 1us tof bins
+
+  private boolean     debug = true;
 
   private IDataGrid[]  grid_arr; 
   private VecQMapper[] inverse_mapper;
@@ -93,10 +95,23 @@ public class SNS_Tof_to_Q_map
    *                    position information about EVERY detector and
    *                    L1 and t0 values.
    *
+   *  @param  spectrum_filename Name of file containing incident spectrum
+   *                            for this instrument.  The spectrum file
+   *                            must be an ASCII file giving the 500 
+   *                            values for the incident spectrum, for 
+   *                            wavelengths from 0 to 5 Angstroms in steps
+   *                            of 0.01 Angstroms.  The form of the file
+   *                            is as in InstrumentInfo/SNS/SNAP_Spectrum.dat
+   *                            If no spectrum file is available, pass in null.
+   *                            The SNAP spectrum file will be used by default
+   *                            for SNAP.
+   *
    *  @param  instrument_name  Name of the instrument, used to determine
    *                           pixel orderings for event file.
    */
-  public SNS_Tof_to_Q_map( String filename, String instrument_name )  
+  public SNS_Tof_to_Q_map( String filename, 
+                           String spectrum_filename,
+                           String instrument_name )  
          throws IOException
   {
      this.instrument_name = instrument_name;
@@ -112,8 +127,8 @@ public class SNS_Tof_to_Q_map
        version_title = sc.next();
      }
 
-     float[]   L1_t0          = Peak_new_IO.Read_L1_T0( sc );
-     Hashtable grids          = Peak_new_IO.Read_Grids( sc );
+     float[]   L1_t0 = Peak_new_IO.Read_L1_T0( sc );
+     Hashtable grids = Peak_new_IO.Read_Grids( sc );
      sc.close();
 
      L1 = L1_t0[0];
@@ -124,20 +139,29 @@ public class SNS_Tof_to_Q_map
                                                   // Sort the grids on ID
      Object[] obj_arr = (grids.values()).toArray();
      Arrays.sort( obj_arr, new GridID_Comparator() );
-/*                        
-     System.out.println("Working with " + obj_arr.length + " GRIDS " );
-*/
+                        
+     if ( debug )
+     {
+       System.out.println("Instrument name " + instrument_name );
+       System.out.println("Loaded detectors from " + filename );
+       System.out.println("Working with " + obj_arr.length + " GRIDS " );
+       System.out.println("Spectrum file name " + spectrum_filename );
+     }
+
                                                   // and record them in our
                                                   // local list.
      grid_arr = new IDataGrid[ obj_arr.length ];
      for ( int i = 0; i < grid_arr.length; i++ )
        grid_arr[i] = (IDataGrid)obj_arr[i]; 
 
+     if ( instrument_name.equalsIgnoreCase(TOPAZ) )
+       grid_arr = ReorderTOPAZ_grids( grid_arr );
+
      if ( instrument_name.equalsIgnoreCase(SNAP) )
-       ReorderSNAP_grids( grid_arr );
+       grid_arr = ReorderSNAP_grids( grid_arr );
 
      if ( instrument_name.equalsIgnoreCase(ARCS) )
-       ReorderARCS_grids( grid_arr );
+       grid_arr = ReorderARCS_grids( grid_arr );
 
      if ( instrument_name.equalsIgnoreCase(SEQ) )
        grid_arr = ReorderSEQ_grids( grid_arr );
@@ -149,11 +173,16 @@ public class SNS_Tof_to_Q_map
 
      
      BuildMaps();
-     String isaw_home = System.getProperty("ISAW_HOME");
-     String spectrum_file_name = isaw_home +
+     if ( ( spectrum_filename == null ||
+            spectrum_filename.trim().length() == 0 )  &&
+            instrument_name.equals( SNAP )             )
+     {                                                       // use default
+       String isaw_home = System.getProperty("ISAW_HOME");
+       spectrum_filename = isaw_home +
                                  "/InstrumentInfo/SNS/SNAP_Spectrum.dat";
+     }
 
-     BuildLamdaWeights( spectrum_file_name );
+     BuildLamdaWeights( spectrum_filename );
      BuildPixWeights();
 /*
      System.out.println( "L1 = " + L1 );
@@ -299,7 +328,8 @@ public class SNS_Tof_to_Q_map
          //   sin^2(theta) / eff  
          //
          // depends only on the pixel and can be pre-calculated 
-         // for each pixel.  It is saved in array pix_weight[]
+         // for each pixel.  It can be saved in array pix_weight[].
+         // For now, pix_weight[] just holds the sin^2(theta) values.
          //
          // The time-of-flight is converted to wave length by multiplying
          // by tof_to_lamda[id], then (int)100*lamda gives an index into
@@ -308,7 +338,17 @@ public class SNS_Tof_to_Q_map
          //   1/(lamda^4 * spec(lamda))
          //
          // which are pre-calculated for each lamda.  These values are
-         // saved in array lamda_weight[].
+         // saved in array lamda_weight[].  Currently, the values:
+         //
+         //   1/(lamda^3 * spec(lamda))  
+         //
+         // is used, which gives better qualitative results overall for SNAP.
+         //
+         // If no spectrum is specified, currently, the values:
+         //
+         //   1/(lamda^2.4))  
+         //
+         // are used, which gives better qualitative results overall for SNAP. 
          //
          // trans depends on both lamda and the pixel.  This is a fairly
          // expensive calculation and is omitted for now.
@@ -512,14 +552,21 @@ public class SNS_Tof_to_Q_map
     int     DEFAULT_NUM_WAVELENGTHS = 500;
     float   MIN_SPECTRUM_VALUE      = 0.15f;
     float   lamda; 
-                                              // first try to load the file
+                                               // first try to load the file
     boolean build_from_file = true;
     int     num_bins = DEFAULT_NUM_WAVELENGTHS;
     float[] spectrum = null;
-                                                  //  TODO
-    if ( instrument_name.equals( "ARCS" )  ||     // no incident spectrum yet
-         instrument_name.equals( "SEQ" )    )
+
+    if ( spectrum_file_name == null  ||       // no incident spectrum yet
+         spectrum_file_name.trim().length() == 0 ) 
       build_from_file = false;
+
+    if ( build_from_file )                    // make sure the file exists
+    {
+      File spec_file = new File( spectrum_file_name );
+      if ( !spec_file.exists() )
+        build_from_file = false;
+    }
 
     if ( build_from_file )
     {
@@ -552,7 +599,10 @@ public class SNS_Tof_to_Q_map
       }
       catch ( Exception ex )
       {
-        System.out.println("EXCEPTION = " + ex + "\n" + "USING DEFAULT" );
+        System.out.println("FAILED TO LOAD SPECTRUM: " + spectrum_file_name );
+        System.out.println("EXCEPTION = " + ex + "\n" + 
+                           "NOT WEIGHTING BY INCIDENT SPECTRUM!" );
+
         build_from_file = false;
 /*
       ex.printStackTrace();
@@ -564,7 +614,8 @@ public class SNS_Tof_to_Q_map
 
     if ( build_from_file )
     {
-      System.out.println("Building using spectrum file " );
+      System.out.println("Building using spectrum file: " +
+                          spectrum_file_name );
                                                       // normalize spectrum
       float max = 0;
       for ( int i = 0; i < num_bins; i++ )
@@ -594,7 +645,7 @@ public class SNS_Tof_to_Q_map
 
     if ( !build_from_file )                   // make rough approximation
     {
-      System.out.println("Building using weighting " );
+      System.out.println("Building using approximate weighting(no spectrum)");
       
       lamda_weight = new float[ DEFAULT_NUM_WAVELENGTHS ];
       for ( int i = 0; i < lamda_weight.length; i++ )
@@ -605,7 +656,6 @@ public class SNS_Tof_to_Q_map
 //      lamda_weight[i] = 1.0f;
       }
     }
-
   }
 
 
@@ -667,7 +717,6 @@ public class SNS_Tof_to_Q_map
         }
     }
   }
-
 
 
   /**
@@ -767,6 +816,62 @@ public class SNS_Tof_to_Q_map
 
 
   /**
+   *  Rearrange the TOPAZ grids so that there is a "dummy" grid zero,
+   *  since the TOPAZ grids are numbered starting at 1 instead of at zero.
+   *
+   *  @param grid_arr  The original list of actual grids.
+   *
+   *  @return an new array of grids with a dummy grid zero at the start
+   *          of the array, followed by the actual grids, in order.
+   */
+  private IDataGrid[] ReorderTOPAZ_grids( IDataGrid[] grid_arr )
+  {
+    if ( debug )
+      System.out.println("Reorder TOPAZ grids");
+
+    IDataGrid[] temp = new IDataGrid[ grid_arr.length + 1 ];
+
+    temp[0] = MakeDummyTOPAZDetector();
+    for ( int i = 0; i < grid_arr.length; i++ )
+      temp[i+1] = grid_arr[i];
+
+    return temp;
+  }
+
+
+  /**
+   *  Make a "dummy" detector to fill in position zero of the array of
+   *  detectors for TOPAZ.  This is needed since the events coming to 
+   *  TOPAZ from the DAS will start with ID = 1+65,536, not with 1 :-(
+   *  The detector is 1/10 the size of an actual detector and is placed
+   *  above the sample, so if events come in with ID's starting at 1, 
+   *  the counts should show up.  No actual detector will be at this
+   *  position.
+   */
+  private IDataGrid  MakeDummyTOPAZDetector()
+  {
+    float DET_WIDTH  = 0.015f;        // make this 1/10 the size of a real
+    float DET_HEIGHT = 0.015f;        // detector.  If it gets counts we
+    float DET_DEPTH  = 0.002f;        // should see them!
+    int   N_ROWS     = 256;
+    int   N_COLS     = 256;
+    int   ID         = 0;
+
+    Vector<UniformGrid> grids = new Vector<UniformGrid>();
+
+    Vector3D center    = new Vector3D(0, 0, 0.5f);    // IPNS coords
+    Vector3D base_vec  = new Vector3D(1, 0, 0);
+    Vector3D up_vec    = new Vector3D(0, 1, 0);
+
+    UniformGrid grid = new UniformGrid( ID, "m",
+                                        center, base_vec, up_vec,
+                                        DET_WIDTH, DET_HEIGHT, DET_DEPTH,
+                                        N_ROWS, N_COLS );
+    return grid;
+  }
+
+
+  /**
    *  Reorder the SNAP grids, so that they appear in the array of grids in the
    *  order that corresponds to the DAS pixel numbering.
    *  Looking at the face of the detector array from the sample position,
@@ -799,8 +904,11 @@ public class SNS_Tof_to_Q_map
    *  @param grid_arr  List of IDataGrids in order of increasing
    *                   detector number (according to ISAW/NeXus).
    */
-  private void ReorderSNAP_grids( IDataGrid[] grid_arr )
+  private IDataGrid[] ReorderSNAP_grids( IDataGrid[] grid_arr )
   {
+    if ( debug )
+      System.out.println("Reorder SNAP grids");
+
     if ( grid_arr.length != 9 )
       System.out.println("WARNING: SNAP configuration changed. \n" +
                          "Update SNS_Tof_to_Q_map.ReorderSNAP_grids!" );
@@ -819,6 +927,8 @@ public class SNS_Tof_to_Q_map
     grid_arr[6] = temp[6];
     grid_arr[7] = temp[3];
     grid_arr[8] = temp[0];
+
+    return grid_arr;
   }
 
 
@@ -832,8 +942,11 @@ public class SNS_Tof_to_Q_map
    *  @param grid_arr  List of IDataGrids in order of increasing
    *                   detector number (according to ISAW/NeXus).
    */
-  private void ReorderARCS_grids( IDataGrid[] grid_arr )
+  private IDataGrid[] ReorderARCS_grids( IDataGrid[] grid_arr )
   {
+    if ( debug )
+      System.out.println("Reorder ARCS grids");
+
     if ( grid_arr.length != 115 )
       System.out.println("WARNING: ARCS configuration changed. \n" +
                          "Update SNS_Tof_to_Q_map.ReorderARCS_grids!" );
@@ -859,6 +972,8 @@ public class SNS_Tof_to_Q_map
     for ( int i = 0; i < grid_arr.length; i++ )
       System.out.println( Peak_new_IO.GridString(grid_arr[i]) );
 */
+
+    return grid_arr;
   }
 
 
@@ -888,6 +1003,9 @@ public class SNS_Tof_to_Q_map
    */
   private IDataGrid[]  ReorderSEQ_grids( IDataGrid[] grid_arr )
   {
+    if ( debug )
+      System.out.println("Reorder SEQ grids");
+
     int N_SEQUOIA_GRIDS = 187;      // total projected number of Data grids
                                     // eventually in SEQUOIA
 

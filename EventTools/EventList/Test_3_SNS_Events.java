@@ -271,7 +271,9 @@ public class Test_3_SNS_Events
 
      long start_time = System.nanoTime();
 
-     SNS_Tof_to_Q_map mapper = new SNS_Tof_to_Q_map( det_file, instrument );
+     SNS_Tof_to_Q_map mapper = new SNS_Tof_to_Q_map( det_file, 
+                                                     null, 
+                                                     instrument );
 
      long run_time = System.nanoTime() - start_time;
      System.out.printf("MADE To Q map in %5.1f ms\n" , (run_time/1.0e6) );
