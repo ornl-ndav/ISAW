@@ -2824,11 +2824,26 @@ public class Isaw
   {
     public void run()
     {
+      boolean use_quotes = false;             // quotes on cp hurt in Linux!
+      String os = System.getProperty("os.name");
+
+      if ( os != null )
+      {
+        os = os.trim().toUpperCase();
+        if ( os.startsWith( "W" ) )          // use quotes in Windows since
+          use_quotes = true;                 // they may have spaces in name
+      }
+
       String cp = System.getProperty( "java.class.path" );
       if ( cp == null )
         cp = "";
       else
-        cp = " -cp " + "\"" + cp + "\"";
+      {
+        if ( use_quotes )
+          cp = " -cp " + "\"" + cp + "\"";
+        else
+          cp = " -cp " + cp;
+      }
 
       String command =
                  "java " + cp + 
