@@ -2828,7 +2828,7 @@ public class Isaw
       if ( cp == null )
         cp = "";
       else
-        cp = " -cp " + " \"" + cp + "\" ";
+        cp = " -cp " + "\"" + cp + "\"";
 
       String command =
                  "java " + cp + 
@@ -2840,6 +2840,8 @@ public class Isaw
    //            " -Dsun.java2d.opengl=true " +      // NO! Fails on 64-bit Vista
                  " EventTools.ShowEventsApp.IsawEV";
 
+      System.out.println("LAUNCHING IsawEV with command:");
+      System.out.println(command);
       SimpleExec.Exec( command );
     }
   }
