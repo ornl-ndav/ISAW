@@ -23,6 +23,8 @@
 #  A. J. Schultz, July, 2009
 ###################################################################
 
+$ Category = Macros, Single Crystal
+
 $  path		DataDirectoryString(/SNS/users/ajschultz/SNAP/TiZr_2009-06)	Raw Data Path
 $  runNum_1	INTEGER(732)		Run Number of Data File
 $  runNum_2	INTEGER(730)		Run Number of Background File
