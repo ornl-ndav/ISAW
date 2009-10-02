@@ -2,6 +2,7 @@
 # number of required observations.
 # A. Schultz, June, 2009
 
+$ Category = Macros, Single Crystal
 
 #
 $ Volume	Float(245)		Enter unit cell volume, Angstroms^3
