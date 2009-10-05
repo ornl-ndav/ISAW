@@ -1026,7 +1026,7 @@ public class CommandPane extends JPanel implements PropertyChangeListener,
           return;
         }
         
-        if( ( indx ==1 ) && !( SP instanceof DataSetTools.operator.PyScriptOperator ) ) {
+        if( ( indx ==1 ) && ( SP instanceof DataSetTools.operator.PyScriptOperator ) ) {
           return;
         }
         
