@@ -77,7 +77,6 @@ public class InterActiveExec extends GenericOperator{
       DirName +="bin/";
       DirName = DirName.replace( '/' , java.io.File.separatorChar );
       
-      System.out.println("DirName= "+ DirName);
       addParameter( new LoadFilePG("Executable Filename",DirName));
       addParameter( new StringPG("Short Name","short name"));
       addParameter( new ArrayPG("Command line args",new java.util.Vector()));
