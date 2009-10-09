@@ -173,6 +173,7 @@ class thisIUDPUser implements IUDPUser
     */
    public void ProcessData( byte[] data , int length )
    {
+     
      synchronized (buffer_lock)
      {
       if ( pause )
@@ -182,26 +183,38 @@ class thisIUDPUser implements IUDPUser
       }
 
       Nshown = 0;
-      if( length < 28 || data == null || data.length < length )
+      if(  data == null || data.length < length )
          return;
-
-      if( length > 27 )
-         if( data[ 0 ] == (byte) 0  &&
-             data[ 1 ] == (byte) 2  && 
-             data[ 2 ] == (byte) 0  && 
-             data[ 3 ] == (byte) 0  &&
-             data[ 27 ] > 0         && 
-            (data[ 27 ] & 0x80 ) > 0   ) 
+      if( NReceived <0)
+      {String S ="";
+         for( int i=0;i<Math.min( length , 24 );i++)
+             S += String.format("%02x,",data[i]);
+	     System.out.println("---"+length+"||"+ S);
+      }
+      if( length > 24 )
+         if( data[ 4 ] == (byte) 0  &&
+             data[ 5 ] == (byte) 2  && 
+             data[ 6 ] == (byte) 0  && 
+             data[ 7 ] == (byte) 0  &&
+             
+            (data[ 23 ] & 0x80 ) != 0   ) 
+			{  if( NReceived <-5)
+			     System.out.println("Header Packet ignored");
                return;
+			}
 
       NReceived++ ;
 
       int NEvents = Cvrt2Int( data , 20 );
+	  NEvents = length/8;
+	  if( NEvents <=0 || (data[ 23 ] & 0x80 ) != 0 )
+	     return;
+	 
       total_received += NEvents;
 
       int[] ids = new int[ NEvents ];
       int[] tofs = new int[ NEvents ];
-      int start = 24;
+      int start = 0;
       // start=0; NEvents = length/2 with Dennis' interpretation
       if( Buffstart + NEvents >= SocketEventLoader.BUFF_SIZE )
       {
@@ -213,11 +226,10 @@ class thisIUDPUser implements IUDPUser
          tofBuff[ i ] = Cvrt2Int( data , start );
          idBuff[ i ] = Cvrt2Int( data , start + 4 );
 
-         if( Nshown < 0 && NReceived % 20 == 0 )
+         if( Nshown < 0 )
          {
-            System.out.println( String.format( "%8x,%8x,%2x,%2x,%2x,%2x" ,
-                     tofs[ i ] , ids[ i ] , data[ start ] , data[ start + 1 ] ,
-                     data[ start + 2 ] , data[ start + 3 ] ) );
+            System.out.println( String.format( "%08x,%08x," ,
+                     tofBuff[ i ] , idBuff[ i ]  ));
             Nshown++ ;
          }
          start += 8;
