@@ -84,7 +84,9 @@ public class SocketServerTest extends UDPSend
       int[] all_tofs = eventList.eventTof( 0L, totNevents );
       int[] all_ids  = eventList.eventPixelID( 0L, totNevents );
       int[] ids, tof;
-
+      System.out.println(String.format("tof=%4d,%4d,%4d,%4d, ids=%4d,%4d,%4d,%4d",
+               all_tofs[0],all_tofs[1],all_tofs[2],all_tofs[3],all_ids[0],all_ids[1],
+               all_ids[2],all_ids[3],all_ids[4]));
       int NPacketsSent = 0;
 
       if ( events_per_pulse > MAX_PER_PULSE )       // limit rate to about 5 
@@ -129,21 +131,27 @@ public class SocketServerTest extends UDPSend
            firstEvent += packet_size;
                                                     // push header and data 
                                                     // into one byte array
-           byte[] packet = new byte[ 24 + ids.length * 8 ];
-           java.util.Arrays.fill( packet , 0 , 24 , (byte) 0 );
+           // byte[] packet = new byte[ 24 + ids.length * 8 ];
+           byte[] packet = new byte[  ids.length * 8 ];
+           //java.util.Arrays.fill( packet , 0 , 24 , (byte) 0 );
            int L = ids.length;
-           packet[ 20 ] = LoByte( L );
-           packet[ 21 ] = HiByte( L );
+          //packet[ 20 ] = LoByte( L );
+          // packet[ 21 ] = HiByte( L );
 
-           int start = 24;
+           int start = 0;//24
            for( int i = 0 ; i < ids.length ; i++ )
            {
               assign( tof[ i ] , packet , start );
               assign( ids[ i ] , packet , start + 4 );
-
+              if( NPacketsSent ==0 && i< 0 )
+                 System.out.println( "--"+tof[i]+","+ids[i]);
+                 //System.out.println(String.format("%2x%2x%2x%2x,%2x%2x%2x%2x", packet[start], packet[start+1],
+                          //packet[start+2],packet[start+3],packet[start+4],packet[start+5],packet[start+6],packet[start+7]));
               start += 8;
            }                                   
-                                                     // save the byte array
+        
+          
+           // System.out.write( packet );                                        // save the byte array
            packets.add( packet );
          }
 
@@ -153,10 +161,9 @@ public class SocketServerTest extends UDPSend
             {
               byte[] packet = packets.elementAt(i);
 
-              // System.out.write( packet );
+             
               send( packet , packet.length );
               NPacketsSent++ ;
-
               if( NPacketsSent % 200 == 0 )
                  System.out.println( "sent packets =" + NPacketsSent );
             }
