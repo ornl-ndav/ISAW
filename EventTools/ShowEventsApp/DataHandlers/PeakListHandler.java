@@ -231,17 +231,32 @@ public class PeakListHandler implements IReceiveMessage
 
   private void indexAllPeaks( Vector Peaks, float[][]UBT )
   {
+     float tolerance = .12f;
     float[][]UB = LinearAlgebra.getTranspose( UBT );
+    int n=0;
     for( int i=0; i<Peaks.size(); i++)
     { 
        Object peak = Peaks.elementAt(i);
+      
        if(peak != null && peak instanceof IPeak)
          {
-           ((IPeak)peak).sethkl( 0f,0f,0f);
-           ((IPeak)peak).UB( UB );
-           ((IPeak)peak).UB( null );
+            IPeak pk = (IPeak)peak;
+            pk.sethkl( 0f,0f,0f);
+            pk.UB( UB );
+            pk.UB( null );
+            if( distanceToInt(pk.h())> tolerance ||
+                     distanceToInt(pk.k())> tolerance ||
+                     distanceToInt(pk.l())> tolerance )
+            {
+               pk.sethkl( 0f , 0f , 0f );
+               n++; 
+            }
+           
          }
     }
+    n = Peaks.size() -n;
+    Util.sendInfo( "Indexed "+n+" out of "+Peaks.size()+ " peaks to within .12" );
+    
   }
 
 
