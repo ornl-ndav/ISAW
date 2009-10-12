@@ -121,6 +121,7 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
   public static Vector<NexWriteNode> PosWriter = null;
   NexWriteNode TheEntryNode = null;
   static int SlabSize = -1;
+  NXlink linkName = null;
 
   /**
    * @param filename the name of a file written in the Nexus API
@@ -432,7 +433,7 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
    * @param handleName the name that will be used to refer to this
    * linked information
    */
-  public void setLinkHandle( String handleName ){
+  public void setLinkHandle(String handleName ){
     errormessage = "";
     if( nf == null ){
       errormessage = "Not initialized yes";
@@ -469,7 +470,9 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
      
   }
   
-  
+  //posiions the internal nexus file pointer to the parent of the 
+  //   place where this  the current node should be written
+  //PosWriter should parallel the internal nexus file pointer.
   private boolean Position( NexWriteNode to){
      Vector<NexWriteNode> V = new Vector<NexWriteNode>();
      V.add( this);
@@ -484,6 +487,11 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
         else
            i++;
      
+        
+     if( i== V.size())//must point to parent. V.size()-1 entry is this
+         i--;
+      if( i < 0)
+         i=0;
      for( int k = PosWriter.size()-1; k >= i; k--)
        try{
         NexWriteNode elt = PosWriter.elementAt(k);
@@ -491,14 +499,15 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
            nf.closedata();
         else if( !elt.classname.equals("File"))
            nf.closegroup();
-        PosWriter.remove(PosWriter.size()-1);
+        if(  !elt.classname.equals("File"))
+             PosWriter.remove(PosWriter.size()-1);
       }catch(Exception s1){
          errormessage+="Nexus file out of kilter;";
          return true;
       }
       
     
-     NexWriteNode elt = V.elementAt(i-1);
+     NexWriteNode elt ;//= V.elementAt(i-1);
      Hashtable tab = null;
      try{
      
@@ -591,13 +600,17 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
                try{
                nf.makelink((NXlink) R);
                written = true;
+               LinkedName = null;
                return;
               }catch(Exception ss){
                  errormessage += ss.toString()+" in makeLink for "+ nodename+"("+
                      classname+"):";
                  return;
               }
-         } else {
+              //TODO: CASE:If add to node after it is written
+             //  and the node was written some other place?? in
+              // Nexus file?? Automatic???
+         } else if( attributes.size()< 1 && children.size() < 1){
             //errormessage = "already written;";
             return;
          }
@@ -638,12 +651,24 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
          
           nf.opendata( nodename );
           PosWriter.add(this);
+
+          try{
+             Kids = nf.groupdir();
+          }catch(Exception s3){
+             Kids = new Hashtable();
+          }
            //nf.compress( NexusFile.NX_COMP_LZW);
           
         }else if(( ! classname.equals( "File" ) ) ){
           if(! Kids.containsKey(nodename))
              nf.makegroup( nodename , classname );
           nf.opengroup( nodename , classname );
+
+          try{
+             Kids = nf.groupdir();
+          }catch(Exception s3){
+             Kids = new Hashtable();
+          }
           PosWriter.add(this);
         }
       }catch( NexusException s ){
@@ -800,25 +825,39 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
              } else if (!(X instanceof NexWriteNode))
                      errormessage += "Linking not correct for " + S+ "in "+ nodename+"("+
                      classname+"):";
-               else {
+               else {//error nf is NOT pointing at this point
                   NexWriteNode newNode = (NexWriteNode) X;
-                  NexWriteNode par = newNode.parent;
-                  newNode.parent= this;
-                  newNode.write();
-                  newNode.parent = par;
+
                   NXlink lnk;
                   if (newNode.classname.equals("SDS")) {
+
+                     int[]rranks = fixRankArray( newNode.ranks );
+                     int ttype = newNode.type;
+                     if(! Kids.containsKey(newNode.nodename)){
+                        if( Okay2Compress(ttype ,rranks))
+                            nf.compmakedata(newNode.nodename,TypeConv.convertFrom(ttype),rranks.length,rranks,
+                                 NexusFile.NX_COMP_LZW, rranks);
+                        else nf.makedata(newNode.nodename,TypeConv.convertFrom(ttype),rranks.length,rranks);
+                     }
                      nf.opendata(newNode.nodename);
-                     
+                     //PosWriter.add( this ); //closed immediately afterwards
                      lnk = nf.getdataID();
                      nf.closedata();
                   } else {
+                     if(! Kids.containsKey(newNode.nodename))
+                        nf.makegroup( newNode.getNodeName() ,newNode.classname );
                      nf.opengroup(newNode.nodename, newNode.classname);
+                     
                      lnk = nf.getgroupID();
+
+                     //PosWriter.add( this );//closed immediately afterwards
                      nf.closegroup();
                  }
 
-                  //PosWriter.remove(PosWriter.size()-1);
+                  NexWriteNode par = newNode.parent;
+                  newNode.parent= this;
+                  newNode.write();
+                  newNode.parent= par;
                   linkInfo.put(S, lnk);
                   newNode.LinkedName = S;
                }
@@ -848,7 +887,7 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
      }
      childrenAdded = false;
      children.clear();
-     
+     written = true;
      try{
        
        if( !classname.equals( "SDS" ) )
@@ -962,7 +1001,7 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
 
   private boolean Okay2Compress( int Nextype, int[] ranks1){
 
-     if( !System.getProperty( "Nexus_Write_Compress","YES" ).toUpperCase().equals( "YES" ))
+     if( !System.getProperty( "Nexus_Write_Compress","NO" ).toUpperCase().equals( "YES" ))
         return false;
      if( Nextype == NexusFile.NX_CHAR)
         return false;
@@ -1037,8 +1076,14 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
     if( Children.size() < 1 )
       return;
     Object O = Children.elementAt( 0 );
-    if( O instanceof Vector ){
-      String ident = ( String )(( (Vector )O ).firstElement() );
+    if( O instanceof Vector ||O instanceof String){
+       
+      String ident;
+      if( O instanceof Vector)
+         ident = ( String )(( (Vector )O ).firstElement() );
+      else
+         ident = (String)O;
+      
       NXlink nl = null;
       try{
         nl = nexf.getdataID();
