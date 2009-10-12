@@ -263,7 +263,9 @@ public class NxWriter{
 
           if( nmon.processDS(nmonitor, Monitors[0], k)){
             errormessage += ";"+nmon.getErrorMessage();
+           
           }
+          Write( nmonitor);
         }
       }
     for( int i = 0; i < n ; i++ ){     
@@ -271,9 +273,11 @@ public class NxWriter{
         
            
         NxWriteData nxd = new NxWriteData(instrType);
+        nxd.write = true;
         if( nxd.processDS( nxentry ,nxInstr , Histogram[i] , true ) ){
           errormessage += ";" +  nxd.getErrorMessage();
         }
+       
       }
     }//For each histogram
     
@@ -286,8 +290,16 @@ public class NxWriter{
     NxWriteSample ns = new NxWriteSample(instrType);
     if( ns.processDS( nxentry ,DS ) )
       errormessage +=  ";" + ns.getErrorMessage();
+   
+    Write( nxentry);
+  }
+  
+  private void Write(NxWriteNode Node)
+   {
 
-    
+      Node.write();
+      if( Node.getErrorMessage() != null && Node.getErrorMessage().length() > 0 )
+         errormessage += ";"+Node.getErrorMessage();
   }
 
   /**
