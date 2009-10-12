@@ -1189,9 +1189,12 @@ public class NxWriteData {
 
         tofnode.setNodeValue( xvals , NexIO.Types.Float , NexIO.Inst_Type.
                            makeRankArray( xvals.length , -1 , -1 , -1 , -1 ) );
-           
-        tofnode.setLinkHandle( "NXdata_" + GridNum );
-        Nxdata.addLink( "NXdata_" + GridNum, tofnode );
+        
+         //TODO have entry name so no mixup  
+        tofnode.setLinkHandle( Nxdetector.getNodeName()+",NXdata_" 
+                                                + GridNum );
+        Nxdata.addLink( Nxdetector.getNodeName()+",NXdata_" + GridNum, 
+                                                    tofnode );
 
         //----------------------- axis 1 ------------------------------
         NxWriteNode xoffset = Nxdata.newChildNode( "x_offset" , "SDS" );
