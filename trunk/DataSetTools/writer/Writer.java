@@ -75,5 +75,8 @@ public abstract class Writer implements Serializable
      * DataSet for histograms H3 and H4.
      */
     public abstract void writeDataSets( DataSet ds[] );
+    
+    
+    public abstract String getErrorMessage();
 
 }

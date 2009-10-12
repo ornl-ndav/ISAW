@@ -54,6 +54,8 @@ import java.util.zip.*;
 */
 public class XmlDWriter extends Writer
  {String extension;
+ 
+  String errorMessage ="";
 
   /**
   * Constructor for this writer
@@ -70,6 +72,11 @@ public class XmlDWriter extends Writer
      else
        extension = data_destination_name.substring( i+1 );
    }
+  
+  public String getErrorMessage()
+  {
+     return errorMessage;
+  }
 
   /**
   * Writes out the datasets in either an xml or in a zipped form of the
@@ -79,6 +86,7 @@ public class XmlDWriter extends Writer
   */ 
   public void writeDataSets( DataSet DS[])
    { try{
+     errorMessage ="";
      File ff = new File( data_destination_name );
      FileOutputStream fi = new FileOutputStream(ff);
      OutputStream fo = fi;
@@ -122,6 +130,8 @@ public class XmlDWriter extends Writer
      catch( Exception s)
       { DataSetTools.util.SharedData.addmsg( "Exception="+
              s.getClass()+":"+s.getMessage());
+      errorMessage ="Exception="+
+      s.getClass()+":"+s.getMessage();
         return;
       }
     }//writeDataSets

@@ -68,6 +68,10 @@ public class GsasWriter extends Writer
         this(data_destination_name,true,false);
     }
 
+    public String getErrorMessage()
+    {
+       return "";
+    }
     /**
      * Construct the Writer for the specified destination name.
      *

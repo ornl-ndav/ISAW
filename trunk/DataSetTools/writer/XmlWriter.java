@@ -68,6 +68,10 @@ public class XmlWriter extends Writer
       
     }
 
+    public String getErrorMessage()
+    {
+       return "";
+    }
     
     /**
      * Send the specified array of data sets to the current data destination.
