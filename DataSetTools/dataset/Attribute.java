@@ -576,6 +576,12 @@ abstract public class Attribute implements Serializable,
   public static final String  PRESSURE          = "Pressure";
   
   /**
+   * PROTON_CHARGE = "proton_charge" is the name of a float Attribute giving 
+   * the protons on target in a spallation source( in picoCoulomb's).
+   */    
+  public static final String  PROTON_CHARGE          = "proton_charge";
+  
+  /**
    * MAGNETIC_FIELD = "Magnetic Field" is the name of a float array Attribute 
    * giving the Magnetic Field vector.
    */   
