@@ -2420,7 +2420,84 @@ public class ExtGetDS
 
    }
 
-
+   private int getBankNum( String Name)
+   {
+      int k= Name.indexOf( ";" );
+      if( k >0)
+         Name = Name.substring( 0,k );
+      int c;
+      for( c = Name.length() - 1 ; c >= 0
+               && Character.isDigit( Name.charAt( c ) ) ; c-- )
+      {}
+      if( c >= Name.length() - 1)
+         return -1;
+      int bankNum = -1;
+      try
+      {
+         bankNum =Integer.parseInt(  Name.substring(c+1).trim() );
+      }catch( Exception ss)
+      {
+         bankNum =-1;
+      }
+      return bankNum;
+      
+   }
+   
+   private int Next( int bankNum,int numBanks, Vector<int[]>List1, 
+                 Vector<int[]> List2)
+   {
+      if( bankNum < 0 || numBanks <=0)
+         return -1;
+      int i1=0;
+      int i2 = 0;
+      while( i1 < List1.size() || i2 < List2.size())
+      {
+         int[] elt;
+         boolean bankOK =false;
+         if( i1 < List1.size())
+         {
+           elt = List1.elementAt( i1 );
+           if( bankNum > elt[1] ) 
+           {
+             i1++;
+           }else if( bankNum < elt[0] && bankNum+numBanks-1<elt[0])
+           {
+              //OK possibility
+              bankOK = true;
+              if( i2 >= List2.size())
+                 return bankNum;
+           }else
+           {
+              bankNum = elt[1]+1;
+              i1++;
+           }
+              
+              
+           
+         }
+         
+         if( i2 < List2.size())
+         {
+           elt = List2.elementAt( i2 );
+           if( bankNum > elt[1] ) 
+           {
+             i2++;
+           }else if( bankNum < elt[0] && bankNum+numBanks-1<elt[0])
+           {
+              
+              if(bankOK || i1 >= List1.size() )
+                 return bankNum;
+              
+           }else
+           {
+              bankNum = elt[1]+1;
+              i2++;
+           }
+              
+         }
+      }
+      return bankNum;
+   }
    /**
     * Set defaults omitting those id's already set
     * 
@@ -2481,8 +2558,30 @@ public class ExtGetDS
       
       int DetectorElt = 0;
       int startDetectorID = 1;
-      
-      for( int im = 0 ; im < EntryToDSs.size() ; im++ )
+      Vector<int[]> AssignedDetectorIDs = new Vector<int[]>();
+     for( int im=0; im < EntryToDSs.size() ; im++ )
+      {
+            DataSetInfo DatInf = (DataSetInfo) EntryToDSs.elementAt( im );
+           int ndetectors = Math.max(  1,DatInf.ndetectors );
+           if( DatInf.NxentryNode == nn && ndetectors ==1 &&
+                    DatInf.startDetectorID < 0)
+              if( DatInf.NxdataNode != null)
+           {
+              int bankNum = getBankNum( DatInf.NxdataNode.getNodeName());
+              if(bankNum > 0 && bankNum ==
+                    Next(bankNum,1,AssignedDetectorIDs,SetGroupIDRanges))
+              {
+                 DatInf.startDetectorID = bankNum;
+                 DatInf.endDetectorID = bankNum;
+                 int[] xx = new int[2];
+                 xx[0]=xx[1]= bankNum;
+                 Insert( AssignedDetectorIDs,xx);
+                
+              }
+           }
+      }
+   
+      for( int  im = 0 ; im < EntryToDSs.size() ; im++ )
       {
          DataSetInfo DatInf = (DataSetInfo) EntryToDSs.elementAt( im );
          
@@ -2517,7 +2616,19 @@ public class ExtGetDS
                }
             
             if( DatInf.startDetectorID < 0 )
-               if( DetectorElt >= SetDetectorIDRanges.size()
+               {
+              startDetectorID = Next( startDetectorID, 
+                                      Math.max( 1 , DatInf.ndetectors ),
+                                      SetDetectorIDRanges,
+                                      AssignedDetectorIDs);
+               
+               DatInf.startDetectorID =startDetectorID;
+               DatInf.endDetectorID = startDetectorID+ 
+                                     Math.max( 1 , DatInf.ndetectors ) - 1;
+               startDetectorID++;
+               
+             }
+             /*  if( DetectorElt >= SetDetectorIDRanges.size()
                         || startDetectorID + DatInf.ndetectors - 1 < 
                                 ( (int[]) SetDetectorIDRanges
                                  .elementAt( DetectorElt ) )[ 0 ] )
@@ -2546,6 +2657,8 @@ public class ExtGetDS
 
 
                }
+               */
+               
          }
       }
 
