@@ -228,6 +228,21 @@ public class ProcessNxEntry  implements IProcessNxEntry {
             if (!X.isNaN())
                 DS.setAttribute(new FloatAttribute(Attribute.NUMBER_OF_PULSES,
                         X.floatValue() * 30.f));
+        
+        //------- protons on charge ---------
+        float protonCharge = Float.NaN;
+        NxNode NX = NxEntryNode.getChildNode( "proton_charge" );
+        if (NX != null)
+        {    X = ConvertDataTypes.floatValue( NX.getNodeValue() );
+             String units = ConvertDataTypes.StringValue( NX.getAttrValue( "units" ));
+             if (!X.isNaN())
+             {
+                X = X*ConvertDataTypes.getUnitMultiplier( units , "picoCoulomb");
+                protonCharge = X;
+                DS.setAttribute(new FloatAttribute(Attribute.PROTON_CHARGE,
+                        X.floatValue() ));
+             }
+        }
 
             //--------------Attributes from other NXentry children -----------
         /*       boolean checkedSample = false,
@@ -320,7 +335,7 @@ public class ProcessNxEntry  implements IProcessNxEntry {
                 initial_path = ((Number) X1).floatValue();
                 initialPathSet = true;
             }
-       {
+       
          if( States.xmlDoc != null){
             Node NN = NexIO.Util.Util.getNXInfo( States.xmlDoc , "NXentry.NXsource.distance",
                          null , null , null );
@@ -334,7 +349,7 @@ public class ProcessNxEntry  implements IProcessNxEntry {
              }
             
          }
-       }
+      
         for (int i = 0; i < DS.getNum_entries(); i++) {
       
             Data DB = DS.getData_entry(i);
@@ -350,6 +365,10 @@ public class ProcessNxEntry  implements IProcessNxEntry {
             if (initialPathSet)
                 DB.setAttribute(new FloatAttribute(
                         Attribute.INITIAL_PATH, initial_path));
+            
+            if( !Float.isNaN( protonCharge ))
+                DB.setAttribute(new FloatAttribute(
+                        Attribute.PROTON_CHARGE, protonCharge));
         }
   
         //Now fixup LANSCE SCD data
