@@ -531,7 +531,7 @@ public class ConvertDataTypes{
    * @param  OldUnits  the units that are non ISAW units
    * 
    * @param StdUnits  the ISAW units. Must be radians, meters,Kelvin,us,grams,
-   *                   Mev,or steradian
+   *                   Mev,steradian, picoCoulomb
    *                   
    * @return the factor to multiply a quantity in old units to get to the new units
    
@@ -561,6 +561,9 @@ public class ConvertDataTypes{
 
     if( NewUnits.equals("steradian" ) )  //"sr is another symbol but if not this
        return 1.0f;                    //??????????????????????????????????
+    
+    if( NewUnits.toLowerCase().equals("picocoulomb"))
+       return ChargeConversionFactor( OldUnits.trim());
     
     else return 1.0f;
   }
@@ -1128,6 +1131,62 @@ public class ConvertDataTypes{
      return 1.0f;
   }
 
+  private static float ChargeConversionFactor( String OldUnits)
+  {
+     if( OldUnits == null)
+        return 1f;
+     OldUnits = OldUnits.toLowerCase();
+     
+     int n = getNumericStart( OldUnits );
+     float factor = 1;
+     if( n > 0 )
+        try{
+           factor = ( new Float( OldUnits.substring( 0 , n ) ) ).floatValue();
+ 
+        }catch( Exception ss ){
+           factor = 1;
+        }
+     OldUnits = OldUnits.substring( n );
+     
+     if( "pc;pcoulomb;picoc;picocoulomb".indexOf( OldUnits+";" )>=0)
+        return factor*1f;
+
+     if( "uc;ucoulomb;microc;microcoulomb;".indexOf( OldUnits+";" )>=0)
+        return factor*1000f;
+     if( "mpc;mcoulomb;millic;millicoulomb;".indexOf( OldUnits+";" )>=0)
+        return factor*1000000f;
+     if( "cc;ccoulomb;centic;centicoulomb;".indexOf( OldUnits+";" )>=0)
+        return factor*10000000f;
+     if("f;farad;".indexOf( OldUnits+";" )>=0)
+        return factor*96485.3399f*.000000000001f;
+     if("pf;pfarad;picof;picofarad;".indexOf( OldUnits+";" )>=0)
+        return factor*96485.3399f;
+     if("uf;ufarad;microf;microfarad;".indexOf( OldUnits+";" )>=0)
+        return factor*96485.3399f*1000;
+     if("mf;mfarad;millif;millifarad;".indexOf( OldUnits+";" )>=0)
+        return factor*96485.3399f*1000000;
+     if("cf;cfarad;centif;centifarad;".indexOf( OldUnits+";" )>=0)
+        return factor*96485.3399f*10000000;
+     
+     if("amp-hr;ah;a h;".indexOf( OldUnits+";" )>=0)
+        return factor*3600*1000000000000f;
+     if("pamp-hr;pah;pa h;picoamp-hr;picoah;picoa h;".indexOf( OldUnits+";" )>=0)
+        return factor*3600;
+
+     if("uamp-hr;uah;ua h;microamp-hr;microah;microa h;".indexOf( OldUnits+";" )>=0)
+        return factor*3600*1000f;
+
+     if("mamp-hr;mah;ma h;milliamp-hr;milliah;millia h;".indexOf( OldUnits+";" )>=0)
+        return factor*3600*1000000f;
+
+     if("camp-hr;cah;ca h;centiamp-hr;centiah;centia h;".indexOf( OldUnits+";" )>=0)
+        return factor*3600*10000000f;
+        
+     return 1;
+     
+     
+     
+  }
  private static int getNumericStart( String S ){
     
      boolean decimalDone = false, 
