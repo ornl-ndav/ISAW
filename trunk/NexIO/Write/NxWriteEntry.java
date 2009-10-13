@@ -80,6 +80,7 @@
 package NexIO.Write;
 
 import NexIO.*;
+import NexIO.Util.*;
 import DataSetTools.dataset.*;
 import java.util.*;
 import java.text.*;
@@ -184,7 +185,21 @@ public class NxWriteEntry{
       }
     }
     
-
+    float F = ConvertDataTypes.floatValue( DS.getAttributeValue(  
+               Attribute.PROTON_CHARGE) ) ;
+    if( !Float.isNaN( F ))
+    {
+       n1= node.newChildNode( "proton_charge" , "SDS" );
+       ranks = new int[1];
+       ranks[0]= 1;
+       float[] Val = new float[1];
+       Val[0] = F;
+       n1.setNodeValue( Val , Types.Float , ranks );
+       ranks = new int[1];
+       ranks[0]= 3;
+       n1.addAttribute( "units" , ("pC"+cc).getBytes() , 
+                Types.Char , ranks );
+       }
     int instr_type = instrType;
     NexIO.Inst_Type it = new NexIO.Inst_Type();
     
