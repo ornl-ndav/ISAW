@@ -2460,6 +2460,7 @@ public class ExtGetDS
            if( bankNum > elt[1] ) 
            {
              i1++;
+             bankOK = false;
            }else if( bankNum < elt[0] && bankNum+numBanks-1<elt[0])
            {
               //OK possibility
@@ -2469,6 +2470,7 @@ public class ExtGetDS
            }else
            {
               bankNum = elt[1]+1;
+              bankOK = false;
               i1++;
            }
               
