@@ -132,8 +132,8 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
   public NexWriteNode( String filename ){
     errormessage = "";
     nf = null;
-    if( PosWriter == null)
-       PosWriter = new Vector<NexWriteNode>();
+    //if( PosWriter == null)
+    PosWriter = new Vector<NexWriteNode>();
     PosWriter.add( this );
     childrenAdded = attributesAdded = false;
     int open_mode = NexusFile.NXACC_CREATE5;
@@ -149,7 +149,18 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
       errormessage= "CANNOT WRITE";
       System.out.println(filename+" cannot write");
       return;
-    }    
+    } 
+    this.filename = filename;
+    children = new Vector();
+    attributes = new Vector();
+    classname = "File";
+    nodename = "File";
+    written = false;
+    value = ranks = null;
+    type = -1;
+    linkInfo = new Hashtable();
+    parent = null;
+    errormessage = "";
     try{
        nxf = new NxFileOpenThread( filename,open_mode);
        nxf.start(); 
@@ -192,17 +203,7 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
       nf = null;
     }
      
-    this.filename = filename;
-    children = new Vector();
-    attributes = new Vector();
-    classname = "File";
-    nodename = "File";
-    written = false;
-    value = ranks = null;
-    type = -1;
-    linkInfo = new Hashtable();
-    parent = null;
-    errormessage = "";
+    
     try{
        SlabSize = Integer.parseInt( System.getProperty( "NexusSlabSize" ,"80000").trim());
     }catch(Exception s){
