@@ -69,6 +69,10 @@
 */
 package NexIO.Write;
 
+import java.io.File;
+import java.util.Vector;
+
+import gov.anl.ipns.Util.SpecialStrings.ErrorString;
 import NexIO.Write.NexApi.*;
 import NexIO.*;
 import DataSetTools.dataset.*;
@@ -327,6 +331,100 @@ public class NxWriter{
   }
   
   /**
+   * Writes DataSets to part of a NeXus file under the  entry with the
+   * given name
+   * @param filename  Name of new or existent Nexus file
+   * @param EntryName Name of new or old entry name in the Nexus file
+   * @param DS        Vector of DataSets to save
+   * @param append    Append to/insert into existing file if true, otherwise
+   *                  the file will be deleted first.
+   * @return          "Success" or an ErrorString
+   */
+  public static Object SaveNxData( String filename, String EntryName, Vector DS,
+         boolean append  )
+  {
+     String errorMessage="";
+     if( filename == null || EntryName == null || DS == null)
+     {
+        return new ErrorString("Improper Inputs to SaveNxData");
+     }
+     
+     if( !append)
+     {
+        File f = new File( filename);
+        if( f.exists())
+           if( !f.delete())
+              return new ErrorString("Cannot Delete "+ filename);
+     }
+     NexWriteNode nxwr = new NexWriteNode( filename);
+     if( nxwr.getErrorMessage()!= null && nxwr.getErrorMessage().length()>0)
+     {
+        String err = nxwr.getErrorMessage();
+        nxwr.close();
+        return new ErrorString( err);
+     }
+     DataSet[] DSS = new DataSet[ DS.size()];
+     
+     for( int i=0; i< DS.size(); i++)
+        DSS[i] = (DataSet)DS.elementAt(i);
+     
+     int type = NxWriter.getInstrumentType( null ,DSS );
+     
+     
+     NxWriteNode entryNode = nxwr.newChildNode( EntryName , "NXentry" );
+     NxWriteNode instNode = entryNode.newChildNode( "instrument" , "NXinstrument" );
+     NxWriteInstrument wrInstr = new NxWriteInstrument( type );
+     
+     if( wrInstr.processDS(instNode,DSS[0])){
+        errorMessage +=";"+wrInstr.getErrorMessage();
+      }
+     for( int i=0; i< DSS.length; i++)
+     {
+        String S =(String) DSS[i].getAttributeValue( Attribute.DS_TYPE );
+        if( S.equals( Attribute.MONITOR_DATA ))
+        {
+           NxWriteMonitor wrMon = new NxWriteMonitor( type );
+           for( int m=0; m< DSS[i].getNum_entries(); m++)
+           {
+              NxWriteNode monNode = entryNode.newChildNode( 
+                       (new NexIO.Inst_Type()).getMonitorName( type, m) , 
+                       "NXmonitor" );
+              if( wrMon.processDS( monNode , DSS[i] , m ))
+              {
+                 errorMessage +=";"+ wrMon.getErrorMessage();
+              }
+           }
+        }else
+        { 
+           NxWriteData nxd = new NxWriteData(type);
+           
+           if( nxd.processDS( entryNode ,instNode , DSS[i] , true ) ){
+             errorMessage += ";" +  nxd.getErrorMessage();
+           }
+        }
+     }
+     
+     NxWriteEntry ne = null;
+     ne = new NxWriteEntry(type); 
+ 
+    if( ne.processDS(entryNode ,DSS[0] ))
+       errorMessage +=  ";" + ne.getErrorMessage();
+ 
+    NxWriteSample ns = new NxWriteSample(type);
+    if( ns.processDS( entryNode ,DSS[0] ) )
+       errorMessage +=  ";" + ns.getErrorMessage();
+     nxwr.write();
+     nxwr.close();
+
+     if( nxwr.getErrorMessage() != null && nxwr.getErrorMessage().length()>0)
+        errorMessage +=";"+nxwr.getErrorMessage();
+     
+     if( errorMessage == null || errorMessage.length()>0)
+        return new ErrorString( errorMessage);
+     return "Success";
+     
+  }
+  /**
    * Closes the file: The file may not be written if this is not
    * called
    */ 
@@ -348,7 +446,7 @@ public class NxWriter{
     return "monitor"+MonitorNum;
   }
 */
-  private int getInstrumentType( DataSet[] Monitors, DataSet[] Histograms){
+  private static int getInstrumentType( DataSet[] Monitors, DataSet[] Histograms){
     int type = InstrumentType.UNKNOWN;
    
     if( Monitors != null)
@@ -382,7 +480,31 @@ public class NxWriter{
       return type;
     return IPNS.Runfile.InstrumentType.UNKNOWN;
   }
+  
+  public static void main( String args[])
+  {
+     String filename = "C:\\ISAW\\SampleRuns\\scd06496";
 
+     Util UT = new Util();
+     
+     DataSet[] DSS = UT.loadRunfile( filename+".run" );
+     boolean append = false;
+     for( int i=0; i < DSS.length; i++)
+     {
+        Vector V = new Vector();
+        V.add( DSS[i]);
+        System.out.println(i+":"+NxWriter.SaveNxData( filename+".nxs" , "entry3" , V ,append ));
+        append = true;
+     }
+     for( int i=0; i<3;i++)
+     {
+      DSS[1].setTitle( "x"+i );
+      Vector V = new Vector();
+      V.add( DSS[1]);
+      System.out.println((i+2)+":"+NxWriter.SaveNxData( filename+".nxs" , "entry3" , V ,append ));
+      
+     }
+  }
   /**
    * Test program for this NxWriter module
    * A new file with an extension .nxs will be created from
@@ -390,7 +512,7 @@ public class NxWriter{
    *
    * @param  args  The filename sans extension
    */
-  public static void main( String args[] ){
+  public static void main1( String args[] ){
     DataSet DSS[], DSH[], DSM[];
     Util UT = new Util();
     int i;
