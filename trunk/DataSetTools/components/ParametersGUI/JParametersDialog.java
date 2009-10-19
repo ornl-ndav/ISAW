@@ -259,6 +259,8 @@ import java.awt.event.*;
 import java.awt.*;
 import java.util.*;
 import java.io.*;
+import java.lang.ref.WeakReference;
+
 import DataSetTools.util.*;
 import javax.swing.text.*;
 import javax.swing.text.html.*;
@@ -270,12 +272,12 @@ public class JParametersDialog implements Serializable,
     
     public static final String OPERATION_THROUGH = "OPERATION THROUGH";
     public static final String NOT_THROUGH = "NOT THROUGH";
-    private Operator op;
-    private IObserver io;
+    protected Operator op;
+    protected IObserver io;
     IsawGUI.Util util = new IsawGUI.Util();
     Document sessionLog;  
     Vector vparamGUI = new Vector();
-    JDialog opDialog;
+    FinishJDialog opDialog;
     int Width = 0;
     FinishJFrame jf ;
     Object Result = NOT_THROUGH;
@@ -291,8 +293,8 @@ public class JParametersDialog implements Serializable,
     JButton exit = null;
     private boolean modal;
     int ncharsLabel=40;
-  private static int screenwidth=0; // for help dialog
-  private static int screenheight=0;
+  protected static int screenwidth=0; // for help dialog
+  protected static int screenheight=0;
     
   private static final String APPLY="Apply";
   private static final String HALT="Halt";
@@ -360,7 +362,7 @@ public class JParametersDialog implements Serializable,
       int x = screenSize.width - size.width;
       // opDialog.setSize(570,450);
       opDialog.setLocation( x , y );
-      opDialog.addWindowListener( new ExitButtonHandler() );
+      opDialog.addWindowListener( new ExitButtonHandler( this) );
 
       int num_param = op.getNum_parameters();
 
@@ -583,10 +585,10 @@ public class JParametersDialog implements Serializable,
       apply.addActionListener( APH );
 
       buttonpanel.add( exit );
-      exit.addActionListener( new ExitButtonHandler() );
+      exit.addActionListener( new ExitButtonHandler( this) );
 
       buttonpanel.add( help );
-      help.addActionListener( new HelpButtonListener() );
+      help.addActionListener( new HelpButtonListener( this) );
 
       Size1 = buttonpanel.getPreferredSize().height;
 
@@ -992,156 +994,212 @@ public class JParametersDialog implements Serializable,
      Res +=text+"</body></html>";
      return Res;
   }
-  public class ExitButtonHandler implements ActionListener,
-                                            WindowListener
-  {
-     private void clearVars(){
-        
-        io=null;
-       util = null;
-       sessionLog=null ; 
-      if( vparamGUI != null)
-         vparamGUI.clear();
-       vparamGUI=null;
-      
-       
-       jf =null;
-       if( Result != null)
-         System.out.println("Result in clear "+Result.hashCode());
-       Result = null;
-       resultsLabel = null;
-       ObjectParameters =null;
-   
-       ds_src=null;
-       if( apply != null){
-          if( APH != null)
-             apply.removeActionListener( APH );
-          apply.removeAll();
-       }
-
-       APH=null;  
-       apply = null;
-       exit = null;
-       opDialog = null;
-       op = null;
-       if( Action_list != null)
-          Action_list.clear();
-       Action_list = null;
-       s = null;
-     }
-    public void actionPerformed(ActionEvent ev) 
-    {  
-       
-       if( opDialog != null)
-          destroyGUIs();
-       clearVars();
-     }
-    public void windowOpened(WindowEvent e){
-      
-    }
-    
-    
-    public void windowClosing(WindowEvent e){
-      
-       if( opDialog != null)
-          destroyGUIs();
-       clearVars();
-       
-    }
-    
-    
-    public void windowClosed(WindowEvent e){
-     
-       if( opDialog != null)
-          destroyGUIs();
-       clearVars();
-    }
-    
-    
-    public void windowIconified(WindowEvent e){
-       
-    }
-    
-    
-    public void windowDeiconified(WindowEvent e){
-       
-    }
-    
-    
-    public void windowActivated(WindowEvent e){
-     
-       
-    }
-    
-    
-    public void windowDeactivated(WindowEvent e){
-       
-       
-    }
-  }
-  
+ 
   
   public void dispose(){
      if( opDialog != null)
+     {
         opDialog.dispose();
-     if( jf !=null)
-     jf.dispose();
-  }
-  public class HelpButtonListener implements ActionListener{
-
-    public void actionPerformed(ActionEvent ev){
-      if(screenwidth==0 && screenheight==0){
-        Dimension screensize=Toolkit.getDefaultToolkit().getScreenSize();
-        screenheight=screensize.height;
-        screenwidth=(screenheight*4/3);
-      }
-      
-      FinishJFrame Hframe = new FinishJFrame( "operator "+op.getCommand());
-      JMenuBar jmenBar= new JMenuBar();
-      Hframe.setJMenuBar(jmenBar);
-      
-      JEditorPane jedPane = new JEditorPane();
-      jedPane.setEditable(false);
-      jedPane.setEditorKit( new HTMLEditorKit() );
-      
-      // Add the text to the JEditorPane
-      jedPane.setText(SharedData.HTMLPageMaker.createHTML(op));
-      
-      //Add the action listener for printing
-      gov.anl.ipns.Util.Sys.PrintComponentActionListener.setUpMenuItem(jmenBar, jedPane);
-      
-      //Add Jeditor pane to the JFrame
-      JScrollPane scroll =new JScrollPane( jedPane);
-      Hframe.getContentPane().add( scroll );
-      Hframe.setSize( (screenwidth/2), (3*screenheight/4) );
-      
-      WindowShower.show(Hframe);
-    } 
-  }
-  
-  
- /**
-  *  A dialog box that automatically executes the finish metho
-  *  on dispose.
-  * 
-  * @author mikkelsonr
-  *
-  *
-  */ 
- public class FinishJDialog extends JDialog implements IFinish{
-
-    public FinishJDialog( JFrame jf, String Title, boolean modal){
-       super( jf, Title, modal);
-       this.addWindowListener( new FinishWindowListener());
-    }
-    
-    public void finish(){
-     
-      try{
-         this.finalize();
-     }catch( Throwable ss){
+        opDialog.finish();
      }
-    }
+     if( jf !=null)
+     {
+       jf.dispose();
+     }
   }
  
+  
+  
+ 
+}
+
+class HelpButtonListener implements ActionListener{
+
+   WeakReference<JParametersDialog>  jPar;
+   public HelpButtonListener( JParametersDialog  jPar)
+   {
+      this.jPar = new WeakReference<JParametersDialog>(jPar);
+   }
+  public void actionPerformed(ActionEvent ev){
+    if(JParametersDialog.screenwidth==0 && JParametersDialog.screenheight==0){
+      Dimension screensize=Toolkit.getDefaultToolkit().getScreenSize();
+      JParametersDialog.screenheight=screensize.height;
+      JParametersDialog.screenwidth=(JParametersDialog.screenheight*4/3);
+    }
+    
+    FinishJFrame Hframe = new FinishJFrame( "operator "+jPar.get().op.getCommand());
+    JMenuBar jmenBar= new JMenuBar();
+    Hframe.setJMenuBar(jmenBar);
+    
+    JEditorPane jedPane = new JEditorPane();
+    jedPane.setEditable(false);
+    jedPane.setEditorKit( new HTMLEditorKit() );
+    
+    // Add the text to the JEditorPane
+    jedPane.setText(SharedData.HTMLPageMaker.createHTML(jPar.get().op));
+    
+    //Add the action listener for printing
+    gov.anl.ipns.Util.Sys.PrintComponentActionListener.setUpMenuItem(jmenBar, jedPane);
+    
+    //Add Jeditor pane to the JFrame
+    JScrollPane scroll =new JScrollPane( jedPane);
+    Hframe.getContentPane().add( scroll );
+    Hframe.setSize( (JParametersDialog.screenwidth/2), (3*JParametersDialog.screenheight/4) );
+    
+    WindowShower.show(Hframe);
+  } 
+}
+/**
+ *  A dialog box that automatically executes the finish metho
+ *  on dispose.
+ * 
+ * @author mikkelsonr
+ *
+ *
+ */ 
+ class FinishJDialog extends JDialog implements IFinish{
+
+   FinishWindowListener  winList;
+   public FinishJDialog( JFrame jf, String Title, boolean modal){
+      super( jf, Title, modal);
+      winList =new FinishWindowListener();
+      this.addWindowListener( winList );
+   }
+   
+   public void finish(){
+      
+     if( winList == null)
+        return;
+     try{
+
+        removeWindowListener( winList);
+        removeAll();
+        this.finalize();
+        winList = null;
+    }catch( Throwable ss){
+    }
+   }
+ }
+ 
+
+
+class ExitButtonHandler implements ActionListener , WindowListener
+{
+
+
+
+   WeakReference< JParametersDialog > RjPar;
+
+
+   public ExitButtonHandler( JParametersDialog jPar )
+   {
+
+      this.RjPar = new WeakReference< JParametersDialog >( jPar );
+   }
+
+
+   private void clearVars()
+   {
+
+      JParametersDialog jPar = RjPar.get();
+      jPar.io = null;
+      jPar.util = null;
+      jPar.sessionLog = null;
+      if( jPar.vparamGUI != null )
+         jPar.vparamGUI.clear();
+      jPar.vparamGUI = null;
+
+       if( jPar.jf != null)
+          jPar.jf.dispose();
+      jPar.jf = null;
+      if( jPar.Result != null )
+         System.out.println( "Result in clear " + jPar.Result.hashCode() );
+      jPar.Result = null;
+      jPar.resultsLabel = null;
+      jPar.ObjectParameters = null;
+
+      jPar.ds_src = null;
+      if( jPar.apply != null )
+      {
+         if( jPar.APH != null )
+            jPar.apply.removeActionListener( jPar.APH );
+         jPar.apply.removeAll();
+      }
+
+      jPar.APH = null;
+      jPar.apply = null;
+      jPar.exit = null;
+      if( jPar.opDialog != null)
+      {
+        
+        jPar.dispose();
+      }
+      jPar.opDialog = null;
+      jPar.op = null;
+      if( jPar.Action_list != null )
+         jPar.Action_list.clear();
+      jPar.Action_list = null;
+      jPar.s = null;
+   }
+
+
+   public void actionPerformed( ActionEvent ev )
+   {
+
+      JParametersDialog jPar = RjPar.get();
+      if( jPar.opDialog != null )
+         jPar.destroyGUIs();
+      clearVars();
+   }
+
+
+   public void windowOpened( WindowEvent e )
+   {
+
+   }
+
+
+   public void windowClosing( WindowEvent e )
+   {
+
+      if( RjPar.get().opDialog != null )
+         RjPar.get().destroyGUIs();
+      clearVars();
+
+   }
+
+
+   public void windowClosed( WindowEvent e )
+   {
+
+      if( RjPar.get().opDialog != null )
+         RjPar.get().destroyGUIs();
+      clearVars();
+   }
+
+
+   public void windowIconified( WindowEvent e )
+   {
+
+   }
+
+
+   public void windowDeiconified( WindowEvent e )
+   {
+
+   }
+
+
+   public void windowActivated( WindowEvent e )
+   {
+
+
+   }
+
+
+   public void windowDeactivated( WindowEvent e )
+   {
+
+
+   }
 }
