@@ -99,7 +99,15 @@ public class View3DControl implements ActionListener
 
    }
 
-
+   public void kill()
+   {
+      view = null;
+      Peaks = null;
+      SelectPeakHandlers.clear();
+      RotatePeaksHandlers.clear();
+      SelectPeakHandlers = null;
+      RotatePeaksHandlers = null;
+   }
    /**
     * Sets the mouse input mode in the 3D view of peaks in reciprocal space
     * 

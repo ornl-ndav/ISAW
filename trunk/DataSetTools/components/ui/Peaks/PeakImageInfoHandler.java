@@ -69,6 +69,10 @@ public class PeakImageInfoHandler implements InfoHandler
    String Directory;
 
 
+   public void kill()
+   {
+      fileNamePrefix =Directory = null;
+   }
    /**
     * Constructor
     * 

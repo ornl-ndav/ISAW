@@ -77,7 +77,7 @@ public class Info extends JPanel implements ActionListener ,
 
    Vector< String >                  ChoiceItems;
 
-   Hashtable< String , InfoHandler > table;
+   WeakHashMap< String , InfoHandler > table;
 
    IPeak                             currentPeak           = null;
 
@@ -111,7 +111,7 @@ public class Info extends JPanel implements ActionListener ,
 
       Choices = new JComboBox();
       Choices.addActionListener( this );
-      table = new Hashtable< String , InfoHandler >();
+      table = new WeakHashMap< String , InfoHandler >();
 
       addInfoHandler( "Selected Peak Information" , new SelPeakInfoHandler() );
       addInfoHandler( "Rotation Information" , new RotatePeaksInfoHandler() );
@@ -134,6 +134,22 @@ public class Info extends JPanel implements ActionListener ,
       this.setBorder( new TitledBorder( new LineBorder( Color.black ) ,
                "Information" ) );
 
+   }
+   
+   public void kill()
+   {
+      ChoiceItems.clear();
+      ChoiceItems = null;
+      Choices = null;
+      currentPeak = null;
+      if( viewPanel != null)
+         viewPanel.removeAll();
+      viewPanel = null;
+      CurrentHandler = null;
+      currentTransformation = null;
+      table.clear();
+      table = null;
+      
    }
 
    /**

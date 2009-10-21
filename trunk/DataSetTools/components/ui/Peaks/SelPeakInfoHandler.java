@@ -60,6 +60,10 @@ public class SelPeakInfoHandler implements InfoHandler
 
    }
 
+   public void kill()
+   {
+      
+   }
 
    /**
     * Shows information about the selected peak. This includes run number,

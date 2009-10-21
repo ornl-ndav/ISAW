@@ -56,4 +56,6 @@ public interface ISelectPeakHandler
     *           The peak to be selected
     */
    public void SelectPeak( IPeak Peak );
+   
+   public void kill();
 }

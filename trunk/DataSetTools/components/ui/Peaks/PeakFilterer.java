@@ -50,6 +50,7 @@ import java.awt.event.ActionListener;
 //import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.lang.ref.WeakReference;
 import java.util.Vector;
 
 import javax.swing.*;
@@ -162,7 +163,7 @@ public class PeakFilterer extends JButton implements ActionListener
       super( "Peak Filterer" );
       peaks = Peaks;
 
-      listener = new MyActionListener();
+      listener = new MyActionListener( this);
       addActionListener( listener );
 
       omittedSeqNums = null;
@@ -218,6 +219,27 @@ public class PeakFilterer extends JButton implements ActionListener
       OmitRule = new Vector< Vector< OneFilterElement >>();
    }
 
+   public ActionListener getActionListener()
+   {
+      return listener;
+   }
+   public void kill()
+   {
+      FilterListeners.clear();
+      FilterListeners = null;
+      removeActionListener( listener);
+      peaks = null;
+      Mins = Maxs = null;
+      list.removeAll();
+      list = null;
+      CurrentAndList.clear();
+      OmitRule.clear();
+      CurrentAndList= null;
+      OmitRule = null;
+      listener.kill();
+      listener = null;
+      
+   }
 
    /**
     *
@@ -648,15 +670,29 @@ public class PeakFilterer extends JButton implements ActionListener
       Popup         Pop         = null;
       
       boolean     interactive  = false;
-
-
+      
+      WeakReference<PeakFilterer> WpFilt;
+      
+      public MyActionListener( PeakFilterer pFilt)
+      {
+         this.WpFilt = new WeakReference<PeakFilterer>(pFilt);
+      }
+       public void kill()
+       {
+          but = null;
+       
+          Pop = null;
+          WpFilt =null;
+       }
       /* (non-Javadoc)
        * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
        */
       @Override
       public void actionPerformed( ActionEvent e )
       {
-
+         PeakFilterer pFilt = WpFilt.get();
+         if(pFilt == null)
+            return;
          if( e.getSource() instanceof JButton )
          {
             MakeMenu( (Component) e.getSource() );
@@ -675,10 +711,10 @@ public class PeakFilterer extends JButton implements ActionListener
          interactive = false;
          if( evtString == START_AND )
          {
-            if( CurrentAndList.size() > 0 )
-               OmitRule.addElement( CurrentAndList );
+            if( pFilt.CurrentAndList.size() > 0 )
+               pFilt.OmitRule.addElement( pFilt.CurrentAndList );
 
-            CurrentAndList = new Vector< OneFilterElement >();
+            pFilt.CurrentAndList = new Vector< OneFilterElement >();
             interactive = false;
             MakeFieldMenu( "START" , but );
 
@@ -696,24 +732,24 @@ public class PeakFilterer extends JButton implements ActionListener
 
          if( evtString == CALC_FILTER )
          {
-            if( CurrentAndList.size() > 0 )
+            if( pFilt.CurrentAndList.size() > 0 )
 
-               OmitRule.addElement( new Vector< OneFilterElement >(
-                        CurrentAndList ) );
+               pFilt.OmitRule.addElement( new Vector< OneFilterElement >(
+                        pFilt.CurrentAndList ) );
 
-            CurrentAndList = new Vector< OneFilterElement >();
-            omittedSeqNums = CalcOmits( OmitRule );
+            pFilt.CurrentAndList = new Vector< OneFilterElement >();
+            pFilt.omittedSeqNums = pFilt.CalcOmits( pFilt.OmitRule );
 
-            fireFilterListeners();
-            OmitRule.clear();
+            pFilt.fireFilterListeners();
+            pFilt.OmitRule.clear();
             return;
          }
 
 
          if( evtString == CLEAR_OMITS )
          {
-            CurrentAndList = new Vector< OneFilterElement >();
-            OmitRule = new Vector< Vector< OneFilterElement >>();
+            pFilt.CurrentAndList = new Vector< OneFilterElement >();
+            pFilt.OmitRule = new Vector< Vector< OneFilterElement >>();
          }
 
 
@@ -722,22 +758,24 @@ public class PeakFilterer extends JButton implements ActionListener
 
       public void mouseClicked( MouseEvent e )
       {
-
-         if( e.getSource() != list )
+         PeakFilterer pFilt = WpFilt.get();
+         if(pFilt == null)
+            return;
+         if( e.getSource() != pFilt.list )
             return;
 
-         int k = list.locationToIndex( e.getPoint() );
+         int k = pFilt.list.locationToIndex( e.getPoint() );
 
          OneFilterElement F;
          Pop.hide();
 
-         if( k <= LastIntervalIndex )
+         if( k <= pFilt.LastIntervalIndex )
          {
 
-            IntervalDialog filtElt = new IntervalDialog( Fields[ k ] ,
-                     Mins[ k ] , Maxs[ k ], !interactive, k, but );
+            IntervalDialog filtElt = new IntervalDialog( pFilt.Fields[ k ] ,
+                     pFilt.Mins[ k ] , pFilt.Maxs[ k ], !interactive, k, but );
 
-            if( filtElt.MinVal() == Mins[ k ] && filtElt.MaxVal() == Maxs[ k ] )
+            if( filtElt.MinVal() == pFilt.Mins[ k ] && filtElt.MaxVal() == pFilt.Maxs[ k ] )
 
                F = null;
 
@@ -749,7 +787,7 @@ public class PeakFilterer extends JButton implements ActionListener
          }
          else
          {
-            String res = JOptionPane.showInputDialog( "Enter " + Fields[ k ]
+            String res = JOptionPane.showInputDialog( "Enter " + pFilt.Fields[ k ]
                      + " list" );
             int[] listt = null;
             if( res == null )
@@ -764,13 +802,13 @@ public class PeakFilterer extends JButton implements ActionListener
                         false );
             }
             if( interactive)
-               InterActiveDo(k,Float.NaN,Float.NaN, listt,false);
+               pFilt.InterActiveDo(k,Float.NaN,Float.NaN, listt,false);
                
          }
 
          if( F != null )
 
-            CurrentAndList.addElement( F );
+            pFilt.CurrentAndList.addElement( F );
 
 
          if( Pop != null )
@@ -787,17 +825,19 @@ public class PeakFilterer extends JButton implements ActionListener
 
       public void valueChanged( ListSelectionEvent e )
       {
-
+         PeakFilterer pFilt = WpFilt.get();
+         if(pFilt == null)
+            return;
          int k = e.getLastIndex();
          System.out.println( "k=" + k + "," + e.getLastIndex() );
          OneFilterElement F;
          Pop.hide();
-         if( k <= LastIntervalIndex )
+         if( k <= pFilt.LastIntervalIndex )
          {
 
-            IntervalDialog filtElt = new IntervalDialog( Fields[ k ] ,
-                     Mins[ k ] , Maxs[ k ],true,-1, but );
-            if( filtElt.MinVal() == Mins[ k ] && filtElt.MaxVal() == Maxs[ k ] )
+            IntervalDialog filtElt = new IntervalDialog( pFilt.Fields[ k ] ,
+                     pFilt.Mins[ k ] , pFilt.Maxs[ k ],true,-1, but );
+            if( filtElt.MinVal() == pFilt.Mins[ k ] && filtElt.MaxVal() == pFilt.Maxs[ k ] )
                F = null;
             else
                F = new OneFilterElement( k , filtElt.MinVal() , filtElt
@@ -806,7 +846,7 @@ public class PeakFilterer extends JButton implements ActionListener
          }
          else
          {
-            String res = JOptionPane.showInputDialog( "Enter " + Fields[ k ]
+            String res = JOptionPane.showInputDialog( "Enter " + pFilt.Fields[ k ]
                      + " list" );
             if( res == null )
                F = null;
@@ -821,7 +861,7 @@ public class PeakFilterer extends JButton implements ActionListener
 
          }
          if( F != null )
-            CurrentAndList.addElement( F );
+            pFilt.CurrentAndList.addElement( F );
 
          // list.removeListSelectionListener( listener );
          if( Pop != null )
@@ -832,6 +872,9 @@ public class PeakFilterer extends JButton implements ActionListener
       private void MakeFieldMenu( String message , Object obj )
       {
 
+         PeakFilterer pFilt = WpFilt.get();
+         if(pFilt == null)
+            return;
          if( Pop != null )
             Pop.hide();
 
@@ -841,17 +884,17 @@ public class PeakFilterer extends JButton implements ActionListener
 
             Title = "Start AND Seq";
 
-         ( (TitledBorder) ( list.getBorder() ) ).setTitle( Title );
+         ( (TitledBorder) ( pFilt.list.getBorder() ) ).setTitle( Title );
 
          Component comp = (Component) obj;
 
-         Point P = getScreenLoc( comp );
+         Point P = pFilt.getScreenLoc( comp );
 
-         list.clearSelection();
+         pFilt.list.clearSelection();
 
 
          Pop = PopupFactory.getSharedInstance().getPopup( (Component) obj ,
-                  list , P.x+comp.getWidth()*3/4 , P.y+comp.getHeight()/2 );
+                  pFilt.list , P.x+comp.getWidth()*3/4 , P.y+comp.getHeight()/2 );
 
          Pop.show();
 

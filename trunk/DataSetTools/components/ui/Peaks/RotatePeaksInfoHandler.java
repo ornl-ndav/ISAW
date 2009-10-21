@@ -68,7 +68,10 @@ public class RotatePeaksInfoHandler implements InfoHandler
 
    }
 
-
+    public void kill()
+    {
+       
+    }
    /**
     * Shows information on the transformation in a 3D viewer. Assumes the
     * transformation is orthonormal.
