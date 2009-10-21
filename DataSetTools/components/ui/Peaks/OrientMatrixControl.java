@@ -59,6 +59,7 @@ import IPNSSrc.blind;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.lang.ref.WeakReference;
 import java.util.Vector;
 
 
@@ -73,7 +74,9 @@ public class OrientMatrixControl extends JButton
 
 
 
-   // JButton Text 
+   /**
+    * Text on JButton and command to display Orient matrix operations.
+    */
    public static String ORIENT_MAT              = "Orientation Matrix";
 
    //--------- sub menu options & command names of ORIENT_MAT
@@ -197,14 +200,14 @@ public class OrientMatrixControl extends JButton
    int                  NMillerOffsetBins       = 50;
 
    //Initial Data
-   View3D               View;
+   WeakReference<View3D>               View;
 
-   Vector< IPeak >      Peaks;
+   WeakReference<Vector< IPeak >>      WPeaks;
 
    //Other controls
-   View3DControl        V3DControl;
+   WeakReference<View3DControl>        V3DControl;
 
-   Info                 textInfo;
+   WeakReference<Info>                 textInfo;
 
    //Calculated variables
    boolean[]            omittedPeakIndex;
@@ -231,11 +234,11 @@ public class OrientMatrixControl extends JButton
                         l_offsetInfHandler;
 
    // Other input objects
-   PeakFilterer         peakFilter;
+   WeakReference<PeakFilterer>         peakFilter;
 
-   SetPeaks             selectedPeaks;
+   WeakReference<SetPeaks>             selectedPeaks;
 
-   XtalLatticeControl   LatControl;
+   WeakReference<XtalLatticeControl>   LatControl;
 
    //Utilities 
    MyActionListener     Listener;
@@ -244,7 +247,7 @@ public class OrientMatrixControl extends JButton
 
    String               InputFileName = null;//
    
-   Vector<ActionListener>  OrientControlListeners;
+   Vector<WeakReference<ActionListener>>  OrientControlListeners;
    
    //-------------- Notification Messages --------------------
    
@@ -267,14 +270,14 @@ public class OrientMatrixControl extends JButton
    {
 
       super( ORIENT_MAT );
-      Peaks = peaks;
-      textInfo = TextInf;
+      WPeaks = new WeakReference<Vector< IPeak >> (peaks);
+      textInfo = new WeakReference<Info>(TextInf);
 
       setToolTipText("<html><body>*Only First two and last items<br>"+
                "can create an orientation matrix</body></html)");
       omittedPeakIndex = null;
-      View = view;
-      V3DControl = v3DControl;
+      View = new WeakReference<View3D>(view);
+      V3DControl = new WeakReference<View3DControl>(v3DControl);
 
       Listener = new MyActionListener( this );
       Menu = new JPopupMenu( ORIENT_MAT );
@@ -291,14 +294,69 @@ public class OrientMatrixControl extends JButton
       
       OrMatrices = new Vector< float[][] >();
       
-      OrientControlListeners = new Vector<ActionListener>();
+      OrientControlListeners = new Vector<WeakReference<ActionListener>>();
 
    }
 
+   public void kill()
+   {
+      OrientControlListeners.clear();
+      OrientControlListeners = null;
+      removeActionListener( Listener );
+      WPeaks = null;
+      OrMatrices.clear();
+      OrMatrices = null;
+      orientationMatrix = null;
+      View = null;
+      TranspOrientationMatrix = null;
+      if( OrientMatInfHandler != null)
+      {
+         if( textInfo != null && textInfo.get()!= null)
+            textInfo.get().removeInfoHandler( OrientMatrixControl.SHOW_ORIENT_MAT );
+         OrientMatInfHandler.kill();
+      
+      }
+      if( h_offsetInfHandler != null)
+      {
+         h_offsetInfHandler.kill();
+      }
+      if( k_offsetInfHandler != null)
+      {
+         k_offsetInfHandler.kill();
+      }
+      if( l_offsetInfHandler != null)
+         l_offsetInfHandler.kill();
+      OrientMatInfHandler = h_offsetInfHandler = k_offsetInfHandler =
+            l_offsetInfHandler = null;
+      OrientMatInfHandler = h_offsetInfHandler = l_offsetInfHandler =
+              k_offsetInfHandler;
+      textInfo.get().removeInfoHandler( SHOW_H_OFFSET );
+
+      textInfo.get().removeInfoHandler( SHOW_K_OFFSET );
+      textInfo.get().removeInfoHandler( SHOW_L_OFFSET );
+      h_offsetInfHandler = k_offsetInfHandler =l_offsetInfHandler = null;
+      textInfo = null;
+      if( peakFilter.get() != null)
+          peakFilter.get().removeFilterListener( Listener );
+      peakFilter = null;
+      
+      selectedPeaks = null;
+      LatControl = null;
+      Listener.kill();
+      Listener = null;
+      Menu = null;
+      if( OrientControlListeners != null)
+          OrientControlListeners.clear();
+      OrientControlListeners = null;
+      V3DControl = null;
+      
+      
+   }
    private void fireOrientationMatrixListeners( String message)
    {
       for( int i=0; i< OrientControlListeners.size(); i++)
-         (OrientControlListeners.elementAt( i )).actionPerformed(  
+         if( OrientControlListeners.elementAt( i ).get() != null)
+         (OrientControlListeners.elementAt( i )).get().actionPerformed(  
                   new ActionEvent(this, ActionEvent.ACTION_PERFORMED, message));
    }
    
@@ -322,10 +380,14 @@ public class OrientMatrixControl extends JButton
       if( evt == null)
          return;
       
-      if( OrientControlListeners.contains( evt ))
-         return;
+     for( int i=0; i< OrientControlListeners.size(); i++)
+     {
+        ActionListener E = OrientControlListeners.elementAt( i ).get();
+        if( E != null && (E == evt))
+           return;
+     }
       
-      OrientControlListeners.add( evt);
+      OrientControlListeners.add( new WeakReference<ActionListener>(evt));
    }
    
    
@@ -335,9 +397,16 @@ public class OrientMatrixControl extends JButton
       if( evt == null)
          return;
       
-      if( !OrientControlListeners.contains( evt ))
-         return;
-      OrientControlListeners.remove( evt);
+      for( int i=0; i< OrientControlListeners.size(); i++)
+      {
+         ActionListener E = OrientControlListeners.elementAt( i ).get();
+         if( E != null && (E == evt))
+         {
+            OrientControlListeners.remove( i);
+            return;
+         }
+      }
+      
       
    }
    public void removeAllOrientationMatrixListener( )
@@ -371,7 +440,8 @@ public class OrientMatrixControl extends JButton
                || OrientMat[ 2 ].length != 3 )
 
          OrientMat = null;
-
+      Vector<IPeak>Peaks = null;
+      Peaks = WPeaks.get();
       String res = subs.ShowOrientationInfo( Peaks , OrientMat ,
                omittedPeakIndex , err , false );
 
@@ -399,11 +469,11 @@ public class OrientMatrixControl extends JButton
 
          else
          {
-            if( textInfo != null )
+            if( textInfo != null && textInfo.get() != null )
             {
                OrientMatInfHandler = new OrientMatInfoHandler( res );
 
-               textInfo.addInfoHandler( SHOW_ORIENT_MAT ,
+               textInfo.get().addInfoHandler( SHOW_ORIENT_MAT ,
                         OrientMatInfHandler );
 
                h_offsetInfHandler = new MillerOffsetInfoHandler( 'h' , xvals ,
@@ -415,23 +485,23 @@ public class OrientMatrixControl extends JButton
                l_offsetInfHandler = new MillerOffsetInfoHandler( 'l' , xvals ,
                         lyvals );
 
-               textInfo.addInfoHandler( SHOW_H_OFFSET , h_offsetInfHandler );
+               textInfo.get().addInfoHandler( SHOW_H_OFFSET , h_offsetInfHandler );
 
-               textInfo.addInfoHandler( SHOW_K_OFFSET , k_offsetInfHandler );
+               textInfo.get().addInfoHandler( SHOW_K_OFFSET , k_offsetInfHandler );
 
-               textInfo.addInfoHandler( SHOW_L_OFFSET , l_offsetInfHandler );
+               textInfo.get().addInfoHandler( SHOW_L_OFFSET , l_offsetInfHandler );
 
             }
          }
       else if( OrientMat == null ) //remove items from menus
       {
-         textInfo.removeInfoHandler( "Orientation Matrix.matrix" );
+         textInfo.get().removeInfoHandler( "Orientation Matrix.matrix" );
 
-         textInfo.removeInfoHandler( "Orientation Matrix.h offset" );
+         textInfo.get().removeInfoHandler( "Orientation Matrix.h offset" );
 
-         textInfo.removeInfoHandler( "Orientation Matrix.k offset" );
+         textInfo.get().removeInfoHandler( "Orientation Matrix.k offset" );
 
-         textInfo.removeInfoHandler( "Orientation Matrix.l offset" );
+         textInfo.get().removeInfoHandler( "Orientation Matrix.l offset" );
 
          return;
 
@@ -534,7 +604,7 @@ public class OrientMatrixControl extends JButton
                                          boolean showInOrientMenu )
    {
 
-      this.LatControl = LatControl;
+      this.LatControl = new WeakReference<XtalLatticeControl>(LatControl);
       showLatinOrientMenu = showInOrientMenu;
 
       Menu = new JPopupMenu( ORIENT_MAT );
@@ -550,7 +620,7 @@ public class OrientMatrixControl extends JButton
    public void setPeakSelector( SetPeaks SelPeaks )
    {
 
-      selectedPeaks = SelPeaks;
+      selectedPeaks = new WeakReference<SetPeaks>(SelPeaks);
    }
 
 
@@ -561,7 +631,7 @@ public class OrientMatrixControl extends JButton
    public void setPeakFilterer( PeakFilterer pkFilt )
    {
 
-      this.peakFilter = pkFilt;
+      this.peakFilter = new WeakReference<PeakFilterer>(pkFilt);
       pkFilt.addFilterListener( Listener );
 
    }
@@ -599,10 +669,10 @@ public class OrientMatrixControl extends JButton
          for( int i = 0 ; i < SeqsInt.length ; i++ )
             SeqsInt[ i ] = Seqs.elementAt( i ).intValue();
 
-         View.IncludeSeqNums( SeqsInt );
+         View.get().IncludeSeqNums( SeqsInt );
       }
 
-      omittedPeakIndex = new boolean[ Peaks.size() ];
+      omittedPeakIndex = new boolean[ WPeaks.get().size() ];
 
       java.util.Arrays.fill( omittedPeakIndex , false );
 
@@ -614,7 +684,7 @@ public class OrientMatrixControl extends JButton
       else
          omittedPeakIndex = null;
 
-      View.omitSeqNums( seqNums );
+      View.get().omitSeqNums( seqNums );
 
       updateInf_OrientMat( seqNums );
 
@@ -635,7 +705,7 @@ public class OrientMatrixControl extends JButton
       if( omittedPeakIndex == null )
          omittedPeakIndex = new boolean[0];
 
-      int[] list = new int[ Peaks.size() ];
+      int[] list = new int[ WPeaks.get().size() ];
 
       int k = 0;
       
@@ -645,7 +715,7 @@ public class OrientMatrixControl extends JButton
 
             list[ k++ ] = i + 1;
       
-      for( int j= omittedPeakIndex.length; j< Peaks.size(); j++)
+      for( int j= omittedPeakIndex.length; j< WPeaks.get().size(); j++)
          
          if( false == omitted)
             
@@ -688,7 +758,7 @@ public class OrientMatrixControl extends JButton
    {
 
       JOptionPane.showMessageDialog( null , ShowMatString( 
-               orientationMatrix,Peaks, omittedPeakIndex, selectedPeaks ) );
+               orientationMatrix,WPeaks.get(), omittedPeakIndex, selectedPeaks.get() ) );
    }
 
    /**
@@ -726,10 +796,10 @@ public class OrientMatrixControl extends JButton
       SetPeaks Setpks = null;
 
       if( WithSelectPeaks )
-         Setpks = selectedPeaks;
+         Setpks = selectedPeaks.get();
 
       float[][] M = ( new OrientMatListHandler( OrMatrices , Setpks ,
-               Peaks, SelectMatrix ) ).run();
+               WPeaks.get(), SelectMatrix ) ).run();
       
       this.InputFileName = null;
       
@@ -790,7 +860,7 @@ public class OrientMatrixControl extends JButton
       Text1 += " Selected Peak Indices \n";
       Text1 += "Seq \n";
       Text1 += "Num    qx     qy    qz     h    k     l\n";
-
+      if( selectedPeaks != null)
       for( int i = 0 ; i < peaks.size() ; i++ )
       {
 
@@ -831,7 +901,7 @@ public class OrientMatrixControl extends JButton
       {
 
          ( Menu.add( XtalLatticeControl.CRYSTAL_LAT_INPUT_TEXT ) )
-                  .addActionListener( LatControl.getListener() );
+                  .addActionListener( LatControl.get().getListener() );
       }
 
       ( Menu.add( SAVE_ORIENT1 ) ).addActionListener( Listener );
@@ -857,7 +927,7 @@ public class OrientMatrixControl extends JButton
       if( OrientMatInfHandler == null )
          return;
 
-      String res = subs.ShowOrientationInfo( Peaks , orientationMatrix ,
+      String res = subs.ShowOrientationInfo( WPeaks.get() , orientationMatrix ,
                omittedPeakIndex , err , false );
 
       OrientMatInfHandler.setNewData( res );
@@ -871,7 +941,9 @@ public class OrientMatrixControl extends JButton
    {
 
       float[] xvals = new float[ NMillerOffsetBins + 1 ];
-
+      Vector<IPeak>Peaks = null;
+      if( WPeaks != null )
+         Peaks = WPeaks.get();
       xvals[ 0 ] = - .5f;
       float delta = 1f / NMillerOffsetBins;
 
@@ -932,9 +1004,9 @@ public class OrientMatrixControl extends JButton
 
 
 
-      JButton           button;
+      Component           button;
 
-      String            lastFileName;
+      String           lastFileName;
 
       CalculateListener CalcListener = new CalculateListener();
 
@@ -945,12 +1017,27 @@ public class OrientMatrixControl extends JButton
       JMenuItem  None3DView;
 
       float[]  zero = new float[]{0f,0f,0f};
+      
+      
+      WeakReference<OrientMatrixControl> WorMat;
+      
       public MyActionListener( JButton but )
       {
-
+         WorMat = new WeakReference<OrientMatrixControl>((OrientMatrixControl) but);
          button = but;
          lastFileName = System.getProperty( "ISAW_HOME" );
          None3DView= null;
+      }
+      
+      public void kill()
+      {
+        // button = null;
+         CalcListener = null;
+         zero = null;
+         None3DView = null;
+         lastFileName = null;
+         WorMat = null;         
+         
       }
 
       /**
@@ -960,51 +1047,62 @@ public class OrientMatrixControl extends JButton
        */
       public void do3DView(  )
       {
-         if( !SelView3DItem.equals( VIEW_PRED_PEAKS ))
-            View.showOrientPeaks( null);
+         OrientMatrixControl orMat = WorMat.get();
+         if( !SelView3DItem.equals( OrientMatrixControl.VIEW_PRED_PEAKS ))
+            orMat.View.get().showOrientPeaks( null);
          
          if( SelView3DItem.equals(  "None" ) ) 
          {  
-            View.showPlanes( null , null , null , null );
+            orMat.View.get().showPlanes( null , null , null , null );
             
-         }else if( SelView3DItem == VIEW_ORIENT)
+         }else if( SelView3DItem == OrientMatrixControl.VIEW_ORIENT)
          {
 
-            View.showOrientation( orientationMatrix , View.getLastSelectedSeqNum() );
-            ( (OrientMatInfoHandler) OrientMatInfHandler ).setOrientationInfo(
-                     View , orientationMatrix );
-            V3DControl.addSelectPeakHandler((ISelectPeakHandler) OrientMatInfHandler );
+            orMat.View.get().showOrientation( orMat.orientationMatrix , orMat.View.get().getLastSelectedSeqNum() );
+            ( (OrientMatInfoHandler) orMat.OrientMatInfHandler ).setOrientationInfo(
+                     orMat.View.get() , orMat.orientationMatrix );
+            orMat.V3DControl.get().addSelectPeakHandler((ISelectPeakHandler) orMat.OrientMatInfHandler );
 
-         }else if(  SelView3DItem == VIEW_PLANEab)
+         }else if(  SelView3DItem == OrientMatrixControl.VIEW_PLANEab)
          {
 
-            View.showPlanes( zero , TranspOrientationMatrix[ 0 ] ,
-                     TranspOrientationMatrix[ 1 ] ,
-                     TranspOrientationMatrix[ 2 ] );
+            orMat.View.get().showPlanes( zero , orMat.TranspOrientationMatrix[ 0 ] ,
+                     orMat.TranspOrientationMatrix[ 1 ] ,
+                     orMat.TranspOrientationMatrix[ 2 ] );
 
-         }else if(  SelView3DItem == VIEW_PLANEac)
+         }else if(  SelView3DItem == OrientMatrixControl.VIEW_PLANEac)
          {
-            View.showPlanes( zero , TranspOrientationMatrix[ 0 ] ,
-                     TranspOrientationMatrix[ 2 ] ,
-                     TranspOrientationMatrix[ 1 ] );
+            orMat.View.get().showPlanes( zero , orMat.TranspOrientationMatrix[ 0 ] ,
+                     orMat.TranspOrientationMatrix[ 2 ] ,
+                     orMat.TranspOrientationMatrix[ 1 ] );
 
             
-         }else if(  SelView3DItem == VIEW_PLANEbc)
+         }else if(  SelView3DItem == OrientMatrixControl.VIEW_PLANEbc)
          {
 
-            View.showPlanes( zero , TranspOrientationMatrix[ 1 ] ,
-                     TranspOrientationMatrix[ 2 ] ,
-                     TranspOrientationMatrix[ 0 ] );
+            orMat.View.get().showPlanes( zero , orMat.TranspOrientationMatrix[ 1 ] ,
+                     orMat.TranspOrientationMatrix[ 2 ] ,
+                     orMat.TranspOrientationMatrix[ 0 ] );
 
-         }else if( SelView3DItem == VIEW_PRED_PEAKS)
+         }else if( SelView3DItem == OrientMatrixControl.VIEW_PRED_PEAKS)
          {
-            View.showOrientPeaks( orientationMatrix);
+            orMat.View.get().showOrientPeaks( orMat.orientationMatrix);
          }
 
  
          
       }
       
+      private Component GetVisible( Component kid)
+      {
+         
+         if( kid.isShowing())
+            return kid;
+         if( kid.getParent() != null)
+            return GetVisible( kid.getParent());
+         else
+            return kid;
+      }
       /*
        * Executes the operation specified by the event's action command.
        * See
@@ -1015,14 +1113,19 @@ public class OrientMatrixControl extends JButton
       public void actionPerformed( ActionEvent e )
       {
 
-         String evt = e.getActionCommand();
+          OrientMatrixControl orMat = WorMat.get();
          
-         if( evt == ORIENT_MAT )
+          String evt = e.getActionCommand();
+         
+         
+         
+         if( evt == OrientMatrixControl.ORIENT_MAT )
          {
-            Menu.show( button , button.getWidth()*3/4 , button.getHeight()/2);
+            button =GetVisible( (Component)e.getSource());
+            orMat.Menu.show( button , button .getWidth()*3/4 ,button.getHeight()/2);
             return;
          }
-         if( evt == LOAD_ORIENT1 )
+         if( evt == OrientMatrixControl.LOAD_ORIENT1 )
          {
 
             JFileChooser jf = new JFileChooser( lastFileName );
@@ -1037,20 +1140,20 @@ public class OrientMatrixControl extends JButton
 
             lastFileName = filename;
 
-            LoadOrientMatrix( filename );
+            orMat.LoadOrientMatrix( filename );
 
             return;
          }
 
-         if( evt == ENTER_ORIENT1 ) 
+         if( evt == OrientMatrixControl.ENTER_ORIENT1 ) 
          {
 
             return; 
          }
 
-         if( evt == SAVE_ORIENT1 )
+         if( evt == OrientMatrixControl.SAVE_ORIENT1 )
          {
-            if( orientationMatrix == null)
+            if( orMat.orientationMatrix == null)
             {
                JOptionPane.showMessageDialog( null , 
                             "There is no orientation matrix to save" );
@@ -1069,22 +1172,22 @@ public class OrientMatrixControl extends JButton
             lastFileName = filename;
 
             Object Res= DataSetTools.operator.Generic.TOF_SCD.Util.WriteMatrix(
-                     filename , orientationMatrix );
+                     filename , orMat.orientationMatrix );
             if( Res != null)
                JOptionPane.showMessageDialog(null, Res);
 
             return;
             
             
-         }if( evt ==  SHOW_SEL_MAT )
+         }if( evt ==  OrientMatrixControl.SHOW_SEL_MAT )
          {
-            showCurrentOrientationMatrices( true, true );
+            orMat.showCurrentOrientationMatrices( true, true );
             
             return; 
          }  
          
          
-         if( evt ==  ADJUST_OR_MAT )
+         if( evt ==  OrientMatrixControl.ADJUST_OR_MAT )
          {
               JPopupMenu pop = new JPopupMenu("Adjust Orient Matrix");
               (pop.add( "Index Peaks" )).addActionListener(this);
@@ -1101,36 +1204,36 @@ public class OrientMatrixControl extends JButton
          } 
         
          
-         if( evt == VIEWS )
+         if( evt == OrientMatrixControl.VIEWS )
          {
-            if( orientationMatrix == null )
+            if( orMat.orientationMatrix == null )
                return;
 
             JPopupMenu pop = new JPopupMenu();
             ButtonGroup grp = new ButtonGroup();
 
-            JMenuItem men = pop.add( new JCheckBoxMenuItem( VIEW_ORIENT ,planeNum == 0) );
+            JMenuItem men = pop.add( new JCheckBoxMenuItem( OrientMatrixControl.VIEW_ORIENT ,planeNum == 0) );
             men.addActionListener( this );
             grp.add( men );
 
             men = pop
-                .add( new JCheckBoxMenuItem( VIEW_PLANEab , planeNum == 1 ) );
+                .add( new JCheckBoxMenuItem( OrientMatrixControl.VIEW_PLANEab , planeNum == 1 ) );
             men.addActionListener( this );
             grp.add( men );
 
             men = pop
-                 .add( new JCheckBoxMenuItem( VIEW_PLANEac , planeNum == 2 ) );
+                 .add( new JCheckBoxMenuItem( OrientMatrixControl.VIEW_PLANEac , planeNum == 2 ) );
             men.addActionListener( this );
             grp.add( men );
 
             men = pop
-                 .add( new JCheckBoxMenuItem( VIEW_PLANEbc , planeNum == 3 ) );
+                 .add( new JCheckBoxMenuItem( OrientMatrixControl.VIEW_PLANEbc , planeNum == 3 ) );
             men.addActionListener( this );
             grp.add( men );
 
 
             men = pop
-               .add( new JCheckBoxMenuItem( VIEW_PRED_PEAKS , planeNum == 4 ) );
+               .add( new JCheckBoxMenuItem(OrientMatrixControl.VIEW_PRED_PEAKS , planeNum == 4 ) );
             men.addActionListener( this );
             grp.add( men );
 
@@ -1143,19 +1246,19 @@ public class OrientMatrixControl extends JButton
             return;
          }
 
-         if( evt != VIEW_ORIENT)
+         if( evt != OrientMatrixControl.VIEW_ORIENT)
          {
-            V3DControl.removeSelectPeakHandler( 
-                     (ISelectPeakHandler )OrientMatInfHandler);
-            View.showOrientation( null , -1 );
+            orMat.V3DControl.get().removeSelectPeakHandler( 
+                     (ISelectPeakHandler )orMat.OrientMatInfHandler);
+            orMat.View.get().showOrientation( null , -1 );
          }
-         if( evt == VIEW_ORIENT )
+         if( evt == OrientMatrixControl.VIEW_ORIENT )
          {
             boolean isSelected = true;
             if( planeNum ==0)
                isSelected = false;
             JCheckBoxMenuItem men = (JCheckBoxMenuItem) e.getSource();
-            if( orientationMatrix == null || View == null )
+            if( orMat.orientationMatrix == null || orMat.View == null )
             {
                men.setState( false );
                planeNum = -1;
@@ -1165,26 +1268,26 @@ public class OrientMatrixControl extends JButton
             float[][] mat = null;
 
             if(isSelected )
-               mat = orientationMatrix;
+               mat = orMat.orientationMatrix;
             
             if( mat != null )
             {
-               SelView3DItem = VIEW_ORIENT;
-               ((OrientMatInfoHandler) OrientMatInfHandler ).setOrientationInfo(
-                        View , orientationMatrix );
-               V3DControl.addSelectPeakHandler( 
-                        (ISelectPeakHandler )OrientMatInfHandler);
+               SelView3DItem = OrientMatrixControl.VIEW_ORIENT;
+               ((OrientMatInfoHandler) orMat.OrientMatInfHandler ).setOrientationInfo(
+                        orMat.View.get() , orMat.orientationMatrix );
+               orMat.V3DControl.get().addSelectPeakHandler( 
+                        (ISelectPeakHandler )orMat.OrientMatInfHandler);
             }
             else
             {
                SelView3DItem = "None";
-               V3DControl.removeSelectPeakHandler( 
-                        (ISelectPeakHandler )OrientMatInfHandler);
+               orMat.V3DControl.get().removeSelectPeakHandler( 
+                        (ISelectPeakHandler )orMat.OrientMatInfHandler);
                
             }
 
-            View.showOrientation( mat , View.getLastSelectedSeqNum() );
-            View.showOrientPeaks( null );
+            orMat.View.get().showOrientation( mat , orMat.View.get().getLastSelectedSeqNum() );
+            orMat.View.get().showOrientPeaks( null );
             if( mat == null)
             {
                planeNum =-1;
@@ -1209,28 +1312,28 @@ public class OrientMatrixControl extends JButton
                   0f , 0f , 0f
          };
 
-         if( evt == VIEW_PLANEab )
+         if( evt == OrientMatrixControl.VIEW_PLANEab )
          {
             if( planeNum == 1)
                isSelected =false;
             
             if( isSelected )
 
-               View.showPlanes( zero , TranspOrientationMatrix[ 0 ] ,
-                        TranspOrientationMatrix[ 1 ] ,
-                        TranspOrientationMatrix[ 2 ] );
+               orMat.View.get().showPlanes( zero , orMat.TranspOrientationMatrix[ 0 ] ,
+                        orMat.TranspOrientationMatrix[ 1 ] ,
+                        orMat.TranspOrientationMatrix[ 2 ] );
 
             else
 
-               View.showPlanes( null , null , null , null );
+               orMat.View.get().showPlanes( null , null , null , null );
             
 
-            View.showOrientPeaks( null );
+            orMat.View.get().showOrientPeaks( null );
 
             planeNum = 1;
             
             if( isSelected )
-               SelView3DItem = VIEW_PLANEab;
+               SelView3DItem = OrientMatrixControl.VIEW_PLANEab;
             else
             {
                SelView3DItem="None";
@@ -1242,22 +1345,22 @@ public class OrientMatrixControl extends JButton
 
          }
 
-         if( evt == VIEW_PLANEac )
+         if( evt == OrientMatrixControl.VIEW_PLANEac )
          {
 
             if( planeNum == 2)
                isSelected = false;
             if( isSelected )
 
-               View.showPlanes( zero , TranspOrientationMatrix[ 0 ] ,
-                        TranspOrientationMatrix[ 2 ] ,
-                        TranspOrientationMatrix[ 1 ] );
+               orMat.View.get().showPlanes( zero ,orMat.TranspOrientationMatrix[ 0 ] ,
+                        orMat.TranspOrientationMatrix[ 2 ] ,
+                        orMat.TranspOrientationMatrix[ 1 ] );
 
             else
 
-               View.showPlanes( null , null , null , null );
+               orMat.View.get().showPlanes( null , null , null , null );
 
-            View.showOrientPeaks( null );
+            orMat.View.get().showOrientPeaks( null );
             if( isSelected)
                planeNum = 2;
             else 
@@ -1271,7 +1374,7 @@ public class OrientMatrixControl extends JButton
 
          }
 
-         if( evt == VIEW_PLANEbc )
+         if( evt == OrientMatrixControl.VIEW_PLANEbc )
          {
             if( planeNum == 3)
                isSelected = false;
@@ -1279,20 +1382,20 @@ public class OrientMatrixControl extends JButton
             if( isSelected )
 
 
-               View.showPlanes( zero , TranspOrientationMatrix[ 1 ] ,
-                        TranspOrientationMatrix[ 2 ] ,
-                        TranspOrientationMatrix[ 0 ] );
+               orMat.View.get().showPlanes( zero , orMat.TranspOrientationMatrix[ 1 ] ,
+                        orMat.TranspOrientationMatrix[ 2 ] ,
+                        orMat.TranspOrientationMatrix[ 0 ] );
 
             else
 
-               View.showPlanes( null , null , null , null );
+               orMat.View.get().showPlanes( null , null , null , null );
 
-            View.showOrientPeaks( null );
+            orMat.View.get().showOrientPeaks( null );
             planeNum = 3;
 
             
             if( isSelected )
-               SelView3DItem = VIEW_PLANEbc;
+               SelView3DItem = OrientMatrixControl.VIEW_PLANEbc;
             else
             {
 
@@ -1305,16 +1408,16 @@ public class OrientMatrixControl extends JButton
             return;
 
          }
-         if( evt == VIEW_PRED_PEAKS)
+         if( evt == OrientMatrixControl.VIEW_PRED_PEAKS)
          {
             if( planeNum == 4)
                isSelected = false;
                
             planeNum =4;
-            float[][] O = orientationMatrix;
+            float[][] O = orMat.orientationMatrix;
             if( !isSelected)
                 O= null;
-            View.showOrientPeaks( O);
+            orMat.View.get().showOrientPeaks( O);
             if( O == null){
                planeNum = -1;
 
@@ -1324,15 +1427,15 @@ public class OrientMatrixControl extends JButton
 
          if( evt.equals( "None" ) )
          {
-            View.showPlanes( null , null , null , null );
+            orMat.View.get().showPlanes( null , null , null , null );
 
-            View.showOrientPeaks( null );
+            orMat.View.get().showOrientPeaks( null );
             planeNum = -1;
             SelView3DItem = "None";
             None3DView.setSelected( true );
          }
 
-         if( evt == CALC_ORIENT )
+         if( evt == OrientMatrixControl.CALC_ORIENT )
          {
             if( CalcListener == null )
                CalcListener = new CalculateListener();
@@ -1346,9 +1449,11 @@ public class OrientMatrixControl extends JButton
 
          if( evt == PeakFilterer.OMITTED_PEAKS_CHANGED )
          {
-            int[] omitted = peakFilter.getOmittedSequenceNumbers();
+            if(orMat.peakFilter==null ||  orMat.peakFilter.get() == null)
+               return;
+            int[] omitted = orMat.peakFilter.get().getOmittedSequenceNumbers();
 
-            SetOmittedPeaks( omitted );
+            orMat.SetOmittedPeaks( omitted );
 
          }
          
@@ -1364,14 +1469,14 @@ public class OrientMatrixControl extends JButton
             try
             {
             String[] Data = S.split( "," );
-            Res =( new  Operators.TOF_SCD.IndexJ_base( Peaks, orientationMatrix,
+            Res =( new  Operators.TOF_SCD.IndexJ_base( orMat.WPeaks.get(), orMat.orientationMatrix,
                      "", Float.parseFloat( Data[0].trim() ), Float.parseFloat( Data[1].trim() ),
                      Float.parseFloat( Data[2].trim() ))).getResult();
              if( !(Res instanceof ErrorString))
              {
                 gov.anl.ipns.Util.Sys.SharedMessages.addmsg(   Res );
-                if( peakFilter != null )
-                   peakFilter.set_hklMinMax();
+                if( orMat.peakFilter != null && orMat.peakFilter.get() != null )
+                   orMat.peakFilter.get().set_hklMinMax();
                 return;
              }
                 
@@ -1385,25 +1490,25 @@ public class OrientMatrixControl extends JButton
 
          if( evt.equals("Niggli with Blind" ))
          {
-            if( orientationMatrix == null)
+            if( orMat.orientationMatrix == null)
             {
                gov.anl.ipns.Util.Sys.SharedMessages.addmsg(  "There is no orientation matrix");
                return;
             }
             blind Blind = new blind();
-            Object Res = Blind.blaue( orientationMatrix);
+            Object Res = Blind.blaue( orMat.orientationMatrix);
             if( Res != null)
             {
                JOptionPane.showMessageDialog( null, "Error=="+Res );
                return;
             }
-            setOrientationMatrix( LinearAlgebra.double2float( Blind.UB ));
+            orMat.setOrientationMatrix( LinearAlgebra.double2float( Blind.UB ));
             return;
          }
 
          if( evt.equals("Niggli(experimental" ))
          {
-            setOrientationMatrix( subs.Nigglify( orientationMatrix ));
+            orMat.setOrientationMatrix( subs.Nigglify( orMat.orientationMatrix ));
             return;
          }
 
@@ -1412,27 +1517,27 @@ public class OrientMatrixControl extends JButton
             String filename =FileIO.appendPath( System.getProperty( "user.home"),"ISAW/tmp" );
             filename +="Lsqrs.mat";
             
-            Object Res = Operators.TOF_SCD.LsqrsJ_base.LsqrsJ1(  Peaks,null, 
-                     getOmittedSeqNums( false),  null,filename, 0,null,"triclinic");
+            Object Res = Operators.TOF_SCD.LsqrsJ_base.LsqrsJ1(  orMat.WPeaks.get(),null, 
+                     orMat.getOmittedSeqNums( false),  null,filename, 0,null,"triclinic");
             if( Res != null  && (Res instanceof ErrorString))
             {
                JOptionPane.showMessageDialog( null , "Error Least Squares "+ Res );
                return;
             }
             
-            LoadOrientMatrix( filename );
+            orMat.LoadOrientMatrix( filename );
 
-            if( OrientMatInfHandler != null)
-                OrientMatInfHandler.setNewData( subs.GetPeakFitInfo( Peaks ,
-                         orientationMatrix , omittedPeakIndex ) );
+            if( orMat.OrientMatInfHandler != null)
+               orMat.OrientMatInfHandler.setNewData( subs.GetPeakFitInfo( orMat.WPeaks.get() ,
+                        orMat.orientationMatrix , orMat.omittedPeakIndex ) );
             return;
          }
          
-         if( evt.equals( BLIND ) || 
-             evt .equals( AUTOMATIC )||
-             evt.equals( FOUR_PEAK )||
-             evt.equals( THREE_PEAK )||
-             evt.equals( FOUR_PEAK ))
+         if( evt.equals( OrientMatrixControl.BLIND ) || 
+             evt .equals( OrientMatrixControl.AUTOMATIC )||
+             evt.equals( OrientMatrixControl.FOUR_PEAK )||
+             evt.equals( OrientMatrixControl.THREE_PEAK )||
+             evt.equals( OrientMatrixControl.FOUR_PEAK ))
             CalcListener.actionPerformed(  e );
          
 
@@ -1454,7 +1559,7 @@ public class OrientMatrixControl extends JButton
        * Makes the calculation menu items
        * @param comp
        */
-      public void MakeMenus( JComponent comp )
+      public void MakeMenus( Component comp )
       {
 
          JPopupMenu pop = new JPopupMenu( "Calc Methods" );
@@ -1536,10 +1641,10 @@ public class OrientMatrixControl extends JButton
             double[] xx = new double[ nPeaksSet + 3 ];
             double[] yy = new double[ nPeaksSet + 3 ];
             double[] zz = new double[ nPeaksSet + 3 ];
-
+            if( selectedPeaks != null && selectedPeaks.get() != null)
             for( int i = 0 ; i < nPeaksSet ; i++ )
             {
-               float[] f = selectedPeaks.getSetPeakQ( i );
+               float[] f = selectedPeaks.get().getSetPeakQ( i );
                
                xx[ i ] = f[ 0 ];
                yy[ i ] = f[ 1 ];
@@ -1577,18 +1682,18 @@ public class OrientMatrixControl extends JButton
 
 
          if( evtString == AUTOMATIC )
-          if(LatControl.XtalParams != null)
+          if(LatControl != null && LatControl.get() != null && LatControl.get().XtalParams != null)
           {
-             float[] Params = LatControl.XtalParams;
+             float[] Params = LatControl.get().XtalParams;
              float[][]UB= null;
              try
              {
                 Vector<IPeak> peaks = new Vector<IPeak>();
-                for( int i=0;i< Peaks.size();i++)
+                for( int i=0;i< WPeaks.get().size();i++)
                 {
                    if( omittedPeakIndex == null || omittedPeakIndex.length <i
                             || !omittedPeakIndex[i])
-                      peaks.add( Peaks.elementAt( i ));
+                      peaks.add( WPeaks.get().elementAt( i ));
                 }
                 
                 UB =Operators.TOF_SCD.IndexPeaks_Calc.
@@ -1637,7 +1742,7 @@ public class OrientMatrixControl extends JButton
             }
             setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             
-            OrMatrices = GetUB. getAllOrientationMatrices( Peaks , omittedPeakIndex ,
+            OrMatrices = GetUB. getAllOrientationMatrices( WPeaks.get() , omittedPeakIndex ,
                      .01f , MaxXtalLengthReal );
             
             setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
@@ -1663,9 +1768,10 @@ public class OrientMatrixControl extends JButton
                return;
 
             OrMatrices.clear();
-
-            float[] q1 = selectedPeaks.getSetPeakQ( 0 );
-            float[] q2 = selectedPeaks.getSetPeakQ( 1 );
+            if( selectedPeaks == null || selectedPeaks.get() == null)
+               return;
+            float[] q1 = selectedPeaks.get().getSetPeakQ( 0 );
+            float[] q2 = selectedPeaks.get().getSetPeakQ( 1 );
 
             if( q1 == null || q2 == null )
                return;
@@ -1674,10 +1780,10 @@ public class OrientMatrixControl extends JButton
 
             boolean peak1HKLset = false;
 
-            if( selectedPeaks.getSetPeak_hkl( 0 ) != null )
+            if( selectedPeaks.get().getSetPeak_hkl( 0 ) != null )
             {
                hklList = new int[ 1 ][ 3 ];
-               float[] F = selectedPeaks.getSetPeak_hkl( 0 );
+               float[] F = selectedPeaks.get().getSetPeak_hkl( 0 );
 
                for( int i = 0 ; i < 3 ; i++ )
                   hklList[ 0 ][ i ] = (int) F[ i ];
@@ -1687,9 +1793,9 @@ public class OrientMatrixControl extends JButton
             }
             else
             {
-               hklList = subs.FindPossibleHKLs( LatControl.BMat , q1 ,
-                        LatControl.Delta1 , LatControl.Delta2 ,
-                        LatControl.Centering );
+               hklList = subs.FindPossibleHKLs( LatControl.get().BMat , q1 ,
+                        LatControl.get().Delta1 , LatControl.get().Delta2 ,
+                        LatControl.get().Centering );
 
             }
 
@@ -1703,14 +1809,14 @@ public class OrientMatrixControl extends JButton
                return;
 
             }
-
+            if( selectedPeaks != null && selectedPeaks.get() != null)
             for( int i = 0 ; i < hklList.length ; i++ )
             {
                int[][] hklList2;
 
-               if( peak1HKLset && selectedPeaks.getSetPeak_hkl( 1 ) != null )
+               if( peak1HKLset && selectedPeaks.get().getSetPeak_hkl( 1 ) != null )
                {
-                  float[] F = selectedPeaks.getSetPeak_hkl( 1 );
+                  float[] F = selectedPeaks.get().getSetPeak_hkl( 1 );
                   hklList2 = new int[ 1 ][ 3 ];
 
                   for( int k = 0 ; k < 3 ; k++ )
@@ -1719,15 +1825,15 @@ public class OrientMatrixControl extends JButton
                }
                else
 
-                  hklList2 = subs.FindPossibleHKLs( LatControl.BMat , q1 , q2 ,
-                           hklList[ i ] , LatControl.Delta1 ,
-                           LatControl.Delta2 , LatControl.Centering );
+                  hklList2 = subs.FindPossibleHKLs( LatControl.get().BMat , q1 , q2 ,
+                           hklList[ i ] , LatControl.get().Delta1 ,
+                           LatControl.get().Delta2 , LatControl.get().Centering );
 
                if( hklList2 != null )
 
                   for( int j = 0 ; j < hklList2.length ; j++ )
                   {
-                     float[][] UB = LatControl.CalcUB( q1 , subs
+                     float[][] UB = LatControl.get().CalcUB( q1 , subs
                               .cvrt2float( hklList[ i ] ) , q2 , subs
                               .cvrt2float( hklList2[ j ] ) );
 
@@ -1749,11 +1855,13 @@ public class OrientMatrixControl extends JButton
 
          if( evtString == THREE_PEAK )
          {
-            float[][] UB = subs.CalcUB( selectedPeaks.getSetPeakQ( 0 ) ,
-                     selectedPeaks.getSetPeak_hkl( 0 ) , selectedPeaks
-                              .getSetPeakQ( 1 ) , selectedPeaks
-                              .getSetPeak_hkl( 1 ) , selectedPeaks
-                              .getSetPeakQ( 2 ) , selectedPeaks
+            if( selectedPeaks == null || selectedPeaks.get() == null)
+               return;
+            float[][] UB = subs.CalcUB( selectedPeaks.get().getSetPeakQ( 0 ) ,
+                     selectedPeaks.get().getSetPeak_hkl( 0 ) , selectedPeaks.get()
+                              .getSetPeakQ( 1 ) , selectedPeaks.get()
+                              .getSetPeak_hkl( 1 ) , selectedPeaks.get()
+                              .getSetPeakQ( 2 ) , selectedPeaks.get()
                               .getSetPeak_hkl( 2 ) );
 
             setOrientationMatrix( UB );
@@ -1777,9 +1885,10 @@ public class OrientMatrixControl extends JButton
       {
 
          int nPeaksSet = 0;
-
-         for( int i = 0 ; ( i < Peaks.size() ) && nPeaksSet == i ; i++ )
-            if( selectedPeaks.getSetPeakQ( i ) != null )
+         if( selectedPeaks == null || selectedPeaks.get() == null)
+            return 0;
+         for( int i = 0 ; ( i < WPeaks.get().size() ) && nPeaksSet == i ; i++ )
+            if( selectedPeaks.get().getSetPeakQ( i ) != null )
 
                nPeaksSet++ ;
 
@@ -1791,9 +1900,10 @@ public class OrientMatrixControl extends JButton
       {
 
          int nPeaksSet = 0;
-
+         if( selectedPeaks == null || selectedPeaks.get() == null)
+            return 0;
          for( int i = 0 ; ( i < 4 ) && nPeaksSet == i ; i++ )
-            if( selectedPeaks.getSetPeak_hkl( i ) != null )
+            if( selectedPeaks.get().getSetPeak_hkl( i ) != null )
 
                nPeaksSet++ ;
 
@@ -1843,9 +1953,9 @@ public class OrientMatrixControl extends JButton
       JPanel    Panel;
 
       //-------SelectPeak Handler
-      View3D    View;
+      WeakReference<View3D>   WView;
 
-      float[][] OrientationMatrix;
+      WeakReference<float[][]> WOrientationMatrix;
 
 
       /**
@@ -1857,10 +1967,17 @@ public class OrientMatrixControl extends JButton
 
          OrientMatInfo = OrientationMatrix;
          text = null;
-         View = null;
-         OrientationMatrix = null;
+         WView = null;
+         WOrientationMatrix = null;
       }
 
+      public void kill()
+      {
+         text = null;
+         Panel = null;
+         WView = null;
+         WOrientationMatrix = null;
+      }
 
       /**
        * Sets orientation information for SelectPeakHandler
@@ -1871,8 +1988,8 @@ public class OrientMatrixControl extends JButton
       public void setOrientationInfo( View3D view , float[][] orientationMatrix )
       {
 
-         View = view;
-         OrientationMatrix = orientationMatrix;
+         WView = new WeakReference<View3D>(view);
+         WOrientationMatrix = new WeakReference<float[][]>(orientationMatrix);
       }
 
 
@@ -1948,10 +2065,11 @@ public class OrientMatrixControl extends JButton
       public void SelectPeak( IPeak Peak )
       {
 
-         if( View == null || OrientationMatrix == null )
+         if( WView == null || WOrientationMatrix == null|| WView.get() == null  ||
+                  WOrientationMatrix.get() == null)
             return;
 
-         View.showOrientation( OrientationMatrix , Peak.seqnum() );
+         WView.get().showOrientation( WOrientationMatrix.get() , Peak.seqnum() );
 
 
       }
@@ -1993,7 +2111,7 @@ public class OrientMatrixControl extends JButton
 
 
       /**
-       *   Used to call the show method if non in the swing thread
+       *   Used to call the show method if not in the swing thread
        */
       public void run()
       {
@@ -2044,6 +2162,17 @@ public class OrientMatrixControl extends JButton
          list = null;
       }
 
+      public void kill()
+      {
+         X = Y = null;
+         list = null;
+         if( Panel != null)
+            Panel.removeAll();
+         Panel = null;
+         if( view != null)
+         view.kill();
+         view = null;
+      }
 
       /* 
        * Used to show info if not running in Swing thread
@@ -2166,10 +2295,7 @@ public class OrientMatrixControl extends JButton
       @Override
       public void ancestorRemoved( AncestorEvent event )
       {
-
-         view = null;
-         list = null;
-
+         kill();
 
       }
 
@@ -2187,9 +2313,9 @@ public class OrientMatrixControl extends JButton
 
 
 
-      Vector< float[][] > orMatrices;
+      WeakReference<Vector< float[][] >> WorMatrices;
 
-      SetPeaks            setpks;
+      WeakReference<SetPeaks>            Wsetpks;
 
       boolean             selectMatrix;
 
@@ -2199,7 +2325,7 @@ public class OrientMatrixControl extends JButton
 
       JTextArea           text;
 
-      Vector<IPeak>       Peaks;
+      WeakReference<Vector<IPeak> >      WPeaks;
  
 
       /**
@@ -2226,19 +2352,30 @@ public class OrientMatrixControl extends JButton
                SetPeaks Setpks, Vector<IPeak> Peaks, boolean SelectMatrix )
       {
 
-         orMatrices = OrMatrices;
-         setpks = Setpks;
+         WorMatrices =new WeakReference<Vector< float[][] >> (OrMatrices);
+         Wsetpks =new WeakReference< SetPeaks>( Setpks);
          selectMatrix = SelectMatrix;
-         this.Peaks = Peaks;
+         this.WPeaks = new WeakReference<Vector<IPeak>>(Peaks);
          selectedMatNum = 0;
          spinner = null;
          text = null;
       }
-
+      public void kill()
+      {
+         
+         WorMatrices.get().clear();
+         WorMatrices = null;
+         Wsetpks = null;
+         spinner = null;
+         text = null;
+         WPeaks = null;
+      }
 
       public float[][] run()
       {
-
+         Vector< float[][] > orMatrices =WorMatrices.get();
+         if( orMatrices == null)
+            return null;
          if( orMatrices == null || orMatrices.size() < 1 )
             return null;
 
@@ -2271,7 +2408,7 @@ public class OrientMatrixControl extends JButton
          text = new JTextArea( 15 , 35 );
          text
                   .setText( ShowMatString(  orMatrices
-                           .elementAt( 0 ),Peaks, null, null ) );
+                           .elementAt( 0 ),WPeaks.get(), null, null ) );
 
          jp.add(  text  , BorderLayout.CENTER );
 
@@ -2305,6 +2442,9 @@ public class OrientMatrixControl extends JButton
       @Override
       public void stateChanged( ChangeEvent e )
       {
+         Vector< float[][] > orMatrices =WorMatrices.get();
+         if( orMatrices == null)
+            return ;
 
          if( spinner == null || text == null )
             return;
@@ -2317,7 +2457,7 @@ public class OrientMatrixControl extends JButton
          selectedMatNum = MatNum;
          
          text.setText( ShowMatString(  orMatrices
-                  .elementAt( MatNum ),Peaks,null,null ) );
+                  .elementAt( MatNum ),WPeaks.get(),null,null ) );
 
 
       }

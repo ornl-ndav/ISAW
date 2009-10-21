@@ -145,6 +145,29 @@ public class XtalLatticeControl extends Object
       Centering = 'x';
    }
 
+   public void kill()
+   {
+      PeakSetter = null;
+      OutInfo.removeInfoHandler( "Peak1(Crystal Params"  );
+      OutInfo.removeInfoHandler( "Peak2(Crystal Params"  );
+      OutInfo = null;
+      if( inpButton != null)
+         inpButton.removeActionListener( listener );
+      inpButton = null;
+      listener = null;
+      XtalParams= null;
+      BMat = null;
+      if( Peak1Info != null)
+         Peak1Info.kill();
+
+      if( Peak2Info != null)
+         Peak2Info.kill();
+      Peak1Info = null;
+      Peak2Info= null;
+   }
+      
+      
+  
 
    /**
     * Sets the Delta1 and Delta2
@@ -569,6 +592,14 @@ public class XtalLatticeControl extends Object
       }
 
 
+      public void kill()
+      {
+         SelectedPeaks = null;
+         B_mat = null;
+         Panel = null;
+         Choices = null;
+         jt = null;
+      }
       /**
        * Used when input material matrix has changed. Will update displayed
        * information if it is showing.
@@ -889,6 +920,17 @@ public class XtalLatticeControl extends Object
          NcorrespTo = null;
       }
 
+      public void kill()
+      {
+       selectedPeaks = null;
+       Panel = null;
+       peak1 = null;
+       Choices =null;
+       NcorrespTo = null;
+       BMat = null;
+       jt= null;
+       
+      }
 
       /**
        * Used when input material matrix has changed. Will update displayed

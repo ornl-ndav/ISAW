@@ -67,4 +67,6 @@ public interface InfoHandler
     *           The JPanel where the information is to be displayed
     */
    public void show( IPeak pk , Tran3D transformation , JPanel panel );
+   
+   public void kill();
 }

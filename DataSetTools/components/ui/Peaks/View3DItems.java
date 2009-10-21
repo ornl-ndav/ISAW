@@ -216,6 +216,16 @@ public class View3DItems extends JButton
       addActionListener( listener );
       this.view = view;
    }
+   
+   public void kill()
+   {
+      view = null;
+      SeqNums_shown.clear();
+      SeqNums_shown = null;
+      removeActionListener( listener );
+      listener.kill();
+      listener = null;
+   }
  
    /**
     * Method to programmatically show sequence numbeers
@@ -290,8 +300,8 @@ public class View3DItems extends JButton
 
       boolean           runs , dets;
 
-
-      public MyActionListener( View3D view, int nPeaks, SetPeaks peakSetter )
+     
+      public MyActionListener( View3D view, int nPeaks, SetPeaks peakSetter)
       {
 
          View = view;
@@ -299,8 +309,14 @@ public class View3DItems extends JButton
          runs = dets = false;
          SeqNums_shown = new Vector< Integer >();
          PeakSetter = peakSetter;
+        
       }
-
+      public void kill()
+      {
+         View = null;
+         PeakSetter = null;
+         
+      }
 
       /*
        * (non-Javadoc)
@@ -321,21 +337,21 @@ public class View3DItems extends JButton
          String evtString = e.getActionCommand();
          JMenuItem source = (JMenuItem) e.getSource();
 
-         if( evtString == RUN_NUMS )
+         if( evtString == View3DItems.RUN_NUMS )
          {
             runs = ( (JCheckBoxMenuItem) source ).getState();
             View.ColorRunsDetectors( runs , dets );
             return;
 
          }
-         if( evtString == DETECTOR_NUMS )
+         if( evtString == View3DItems.DETECTOR_NUMS )
          {
             dets = ( (JCheckBoxMenuItem) source ).getState();
             View.ColorRunsDetectors( runs , dets );
             return;
 
          }
-         if( evtString == SEQUENCE_NUMS )
+         if( evtString == View3DItems.SEQUENCE_NUMS )
          {
 
             String res = JOptionPane.showInputDialog( source ,
@@ -380,7 +396,7 @@ public class View3DItems extends JButton
          }
 
 
-         if( evtString == CLEAR_SEQ_NUMS )
+         if( evtString == View3DItems.CLEAR_SEQ_NUMS )
          {
             int[] seqNums = new int[ SeqNums_shown.size() ];
 
@@ -394,7 +410,7 @@ public class View3DItems extends JButton
             return;
          }
 
-         if( evtString == SHOW1PLANE )
+         if( evtString == View3DItems.SHOW1PLANE )
          {
             View.showPlane( PeakSetter.getSetPeakQ( 0 ) , PeakSetter
                      .getSetPeakQ( 1 ) , PeakSetter.getSetPeakQ( 2 ) );
@@ -403,7 +419,7 @@ public class View3DItems extends JButton
          }
 
 
-         if( evtString == SHOW_PLANES )
+         if( evtString == View3DItems.SHOW_PLANES )
          {
 
             View.showPlanes( PeakSetter.getSetPeakQ( 0 ) , PeakSetter
@@ -427,11 +443,11 @@ public class View3DItems extends JButton
 
          JPopupMenu popUpMenu = new JPopupMenu( "3D Items" );
 
-         popUpMenu.add( new JCheckBoxMenuItem( RUN_NUMS , runs ) )
+         popUpMenu.add( new JCheckBoxMenuItem( View3DItems.RUN_NUMS , runs ) )
                   .addActionListener( this );
-         popUpMenu.add( new JCheckBoxMenuItem( DETECTOR_NUMS , dets ) )
+         popUpMenu.add( new JCheckBoxMenuItem( View3DItems.DETECTOR_NUMS , dets ) )
                   .addActionListener( this );
-         popUpMenu.add( new JMenuItem( SEQUENCE_NUMS ) ).addActionListener(
+         popUpMenu.add( new JMenuItem( View3DItems.SEQUENCE_NUMS ) ).addActionListener(
                   this );
 
          if( PeakSetter != null )
@@ -440,14 +456,14 @@ public class View3DItems extends JButton
             for( int i = 0 ; i < 4 && PeakSetter.getSetPeakQ( i ) != null ; i++ )
                nset++ ;
             if( nset >= 3 )
-               popUpMenu.add( new JMenuItem( SHOW1PLANE ) ).addActionListener(
+               popUpMenu.add( new JMenuItem( View3DItems.SHOW1PLANE ) ).addActionListener(
                         this );
             if( nset >= 4 )
-               popUpMenu.add( new JMenuItem( SHOW_PLANES ) ).addActionListener(
+               popUpMenu.add( new JMenuItem( View3DItems.SHOW_PLANES ) ).addActionListener(
                         this );
          }
 
-         popUpMenu.add( new JMenuItem( CLEAR_SEQ_NUMS ) ).addActionListener(
+         popUpMenu.add( new JMenuItem( View3DItems.CLEAR_SEQ_NUMS ) ).addActionListener(
                   this );
          popUpMenu.add( new JMenuItem( "Help" ) ).addActionListener( this );
 

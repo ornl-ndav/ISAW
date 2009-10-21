@@ -57,4 +57,7 @@ public interface IRotatePeaksHandler
     *           The current transformation in the 3D View of the peaks in Q
     */
    public void RotatePeaks( Tran3D transformation );
+   
+   
+   public void kill();
 }

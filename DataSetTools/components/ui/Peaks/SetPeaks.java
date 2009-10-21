@@ -55,7 +55,7 @@ import DataSetTools.operator.Generic.TOF_SCD.IPeak;
  */
 public class SetPeaks extends JButton
 {
-
+ 
 
 
    /**
@@ -142,7 +142,7 @@ public class SetPeaks extends JButton
       View = view;
       Peaks = peaks;
 
-      listener = new MyActionListener();
+      listener = new MyActionListener( this);
       addActionListener( listener );
 
       disable = false;
@@ -154,8 +154,28 @@ public class SetPeaks extends JButton
 
       Clear();
    }
+   
+   public ActionListener getActionListener()
+   {
+      return listener;
+   }
 
-
+   public void kill()
+   {
+      SelectedPeaks=hklVals = null;
+      seqNums = null;
+      removeActionListener(listener );
+      SAV_SelectedPeaks=SAV_hklVals = null;
+      SAV_seqNums = null;
+      View = null;
+      Peaks = null;
+      removeActionListener( listener);
+      listener.kill();
+      listener = null;
+      if( SetPeakListeners != null)
+        SetPeakListeners.clear();
+      SetPeakListeners = null;
+   }
    /*
     * @return the Q values associated with PeakNum. 0 is the first set peak
     *          and null is returned if not set.
@@ -432,6 +452,17 @@ public class SetPeaks extends JButton
 
       boolean specifyPeak = true;
 
+      SetPeaks stPks;
+      public MyActionListener( SetPeaks stPks)
+      {
+         this.stPks = stPks;
+      }
+      
+      public void kill()
+      {
+         but = null;
+         stPks = null;
+      }
 
       /* (non-Javadoc)
        * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
@@ -440,12 +471,12 @@ public class SetPeaks extends JButton
       public void actionPerformed( ActionEvent e )
       {
 
-         if( disable )
+         if( stPks.disable )
             return;
 
          String evtString = e.getActionCommand();
 
-         if( evtString == SELECT_PEAK_BUT
+         if( evtString == SetPeaks.SELECT_PEAK_BUT
                   && ( e.getSource() instanceof JButton ) )
          {
             but = (JButton) e.getSource();
@@ -453,58 +484,58 @@ public class SetPeaks extends JButton
             return;
 
          }
-         if( evtString == SET_PEAK )
+         if( evtString == SetPeaks.SET_PEAK )
          {
             specifyPeak = true;
             MakePopUpMenu1( but );
             return;
 
          }
-         if( evtString == SET_HKL )
+         if( evtString == SetPeaks.SET_HKL )
          {
             specifyPeak = false;
             MakePopUpMenu1( but );
             return;
 
          }
-         if( evtString == CLEAR_SET_PEAKS )
+         if( evtString == SetPeaks.CLEAR_SET_PEAKS )
          {
             specifyPeak = true;
-            Clear();
+            stPks.Clear();
             return;
          }
 
 
-         if( evtString == SET_PEAK1 )
+         if( evtString == SetPeaks.SET_PEAK1 )
          {
             MakeMenu2( specifyPeak , 0 , but );
             return;
          }
-         if( evtString == SET_PEAK2 )
+         if( evtString == SetPeaks.SET_PEAK2 )
          {
             MakeMenu2( specifyPeak , 1 , but );
 
             return;
          }
-         if( evtString == SET_PEAK3 )
+         if( evtString == SetPeaks.SET_PEAK3 )
          {
             MakeMenu2( specifyPeak , 2 , but );
 
             return;
          }
-         if( evtString == SET_PEAK4 )
+         if( evtString == SetPeaks.SET_PEAK4 )
          {
             MakeMenu2( specifyPeak , 3 , but );
 
             return;
          }
-         if( evtString == SET_PEAKN )
+         if( evtString == SetPeaks.SET_PEAKN )
          {
             MakeMenu2( specifyPeak , 4 , but );
 
             return;
          }
-         if( evtString == SET_PEAK_LIST )
+         if( evtString == SetPeaks.SET_PEAK_LIST )
          {
             String S = JOptionPane
                      .showInputDialog( but ,
@@ -531,34 +562,34 @@ public class SetPeaks extends JButton
             int[] SNums =IntList.ToArray(S );
             if( SNums == null || SNums.length < 1 )
             {
-               SelectedPeaks = new float[ MAX_SEL_PEAKS ][ 3 ];
-               seqNums = new int[ MAX_SEL_PEAKS ];
-               Arrays.fill( seqNums , - 1 );
-               Arrays.fill( SelectedPeaks , undef );
-               fireSetPeakListeners( SET_PEAK_INFO_CHANGED );
+               stPks.SelectedPeaks = new float[ SetPeaks.MAX_SEL_PEAKS ][ 3 ];
+               stPks.seqNums = new int[ SetPeaks.MAX_SEL_PEAKS ];
+               Arrays.fill( stPks.seqNums , - 1 );
+               Arrays.fill( stPks.SelectedPeaks , undef );
+               stPks.fireSetPeakListeners( SetPeaks.SET_PEAK_INFO_CHANGED );
                return;
             }
             
             int i = - 1;
             
-            if( SNums.length > MAX_SEL_PEAKS )
+            if( SNums.length > SetPeaks.MAX_SEL_PEAKS )
             {
-               SelectedPeaks = new float[ SNums.length ][ 3 ];
-               seqNums = new int[ SNums.length ];
+               stPks.SelectedPeaks = new float[ SNums.length ][ 3 ];
+               stPks.seqNums = new int[ SNums.length ];
             }
             for( i = 0 ; i < SNums.length ; i++ )
             {
-               seqNums[ i ] = SNums[ i ];
-               SelectedPeaks[ i ] = Peaks.elementAt( SNums[ i ] ).getUnrotQ();
+               stPks.seqNums[ i ] = SNums[ i ];
+               stPks.SelectedPeaks[ i ] = Peaks.elementAt( SNums[ i ] ).getUnrotQ();
             }
-            if( SNums.length < MAX_SEL_PEAKS )
+            if( SNums.length < SetPeaks.MAX_SEL_PEAKS )
             {
-               Arrays.fill( SelectedPeaks , SNums.length ,
-                        SelectedPeaks.length , undef );
-               Arrays.fill( seqNums , SNums.length , seqNums.length , - 1 );
+               Arrays.fill( stPks.SelectedPeaks , SNums.length ,
+                        stPks.SelectedPeaks.length , undef );
+               Arrays.fill( stPks.seqNums , SNums.length , stPks.seqNums.length , - 1 );
             }
 
-            fireSetPeakListeners( SET_PEAK_INFO_CHANGED );
+            stPks.fireSetPeakListeners( SetPeaks.SET_PEAK_INFO_CHANGED );
             return;
          }
          if( evtString.equals( "Help" ) )
@@ -617,13 +648,13 @@ public class SetPeaks extends JButton
 
          JPopupMenu pop = new JPopupMenu();
 
-         update( pop , SET_PEAK , "Sets the Q vals and seq num for a peak" );
+         update( pop , SetPeaks.SET_PEAK , "Sets the Q vals and seq num for a peak" );
 
-         update( pop , SET_HKL , "Sets the hkl vals for a peak" );
+         update( pop , SetPeaks.SET_HKL , "Sets the hkl vals for a peak" );
          
-         update(pop, SET_PEAK_LIST,"Sets a list of Peak Sequence nums");
+         update(pop, SetPeaks.SET_PEAK_LIST,"Sets a list of Peak Sequence nums");
 
-         update( pop , CLEAR_SET_PEAKS , "Clears all settings" );
+         update( pop , SetPeaks.CLEAR_SET_PEAKS , "Clears all settings" );
 
          pop.show( BUT , BUT.getWidth()*3/4 , BUT.getHeight()/2 );
 
@@ -638,15 +669,15 @@ public class SetPeaks extends JButton
 
          JPopupMenu pop = new JPopupMenu();
 
-         pop.add( SET_PEAK1 ).addActionListener( this );
+         pop.add( SetPeaks.SET_PEAK1 ).addActionListener( this );
 
-         pop.add( SET_PEAK2 ).addActionListener( this );
+         pop.add( SetPeaks.SET_PEAK2 ).addActionListener( this );
 
-         pop.add( SET_PEAK3 ).addActionListener( this );
+         pop.add( SetPeaks.SET_PEAK3 ).addActionListener( this );
 
-         pop.add( SET_PEAK4 ).addActionListener( this );
+         pop.add( SetPeaks.SET_PEAK4 ).addActionListener( this );
 
-         pop.add( SET_PEAKN ).addActionListener( this );
+         pop.add( SetPeaks.SET_PEAKN ).addActionListener( this );
 
          pop.add( "Help" ).addActionListener( this );
 
@@ -670,9 +701,9 @@ public class SetPeaks extends JButton
 
          int seqNum = - 1;
 
-         if( View != null )
+         if( stPks.View != null )
 
-            seqNum = View.getLastSelectedSeqNum();
+            seqNum = stPks.View.getLastSelectedSeqNum();
 
          JPanel message = new JPanel();
 
@@ -698,7 +729,7 @@ public class SetPeaks extends JButton
          if( PeakNum > 3 )
 
             spin = new JSpinner( new SpinnerNumberModel( 5 , 5 ,
-                     MAX_SEL_PEAKS + 1 , 1 ) );
+                     SetPeaks.MAX_SEL_PEAKS + 1 , 1 ) );
 
          if( spin != null )
          {
@@ -724,7 +755,7 @@ public class SetPeaks extends JButton
             pp.setLayout( new GridLayout( 1 , 2 ) );
 
             pp.add( new JLabel( "Sequence Number" ) );
-            text = new JTextField( "" + seqNums[ PeakNum ] );
+            text = new JTextField( "" + stPks.seqNums[ PeakNum ] );
 
             pp.add( text );
 
@@ -744,20 +775,20 @@ public class SetPeaks extends JButton
          {
             lab = "Enter h,k,l value";
 
-            if( PeakNum < 3 && ! Float.isNaN( hklVals[ PeakNum ][ 0 ] )
-                     && ! Float.isNaN( hklVals[ PeakNum ][ 1 ] )
-                     && ! Float.isNaN( hklVals[ PeakNum ][ 2 ] ) )
-               InitVal = hklVals[ PeakNum ][ 0 ] + "," + hklVals[ PeakNum ][ 1 ]
-                        + "," + hklVals[ PeakNum ][ 2 ];
+            if( PeakNum < 3 && ! Float.isNaN( stPks.hklVals[ PeakNum ][ 0 ] )
+                     && ! Float.isNaN( stPks.hklVals[ PeakNum ][ 1 ] )
+                     && ! Float.isNaN( stPks.hklVals[ PeakNum ][ 2 ] ) )
+               InitVal = stPks.hklVals[ PeakNum ][ 0 ] + "," + stPks.hklVals[ PeakNum ][ 1 ]
+                        + "," + stPks.hklVals[ PeakNum ][ 2 ];
 
          }
-         else if( ! Float.isNaN( SelectedPeaks[ PeakNum ][ 0 ] )
-                  && ! Float.isNaN( SelectedPeaks[ PeakNum ][ 1 ] )
-                  && ! Float.isNaN( SelectedPeaks[ PeakNum ][ 2 ] ) )
+         else if( ! Float.isNaN( stPks.SelectedPeaks[ PeakNum ][ 0 ] )
+                  && ! Float.isNaN( stPks.SelectedPeaks[ PeakNum ][ 1 ] )
+                  && ! Float.isNaN( stPks.SelectedPeaks[ PeakNum ][ 2 ] ) )
 
-            InitVal = SelectedPeaks[ PeakNum ][ 0 ] + ","
-                     + SelectedPeaks[ PeakNum ][ 1 ] + ","
-                     + SelectedPeaks[ PeakNum ][ 2 ];
+            InitVal = stPks.SelectedPeaks[ PeakNum ][ 0 ] + ","
+                     + stPks.SelectedPeaks[ PeakNum ][ 1 ] + ","
+                     + stPks.SelectedPeaks[ PeakNum ][ 2 ];
 
          p.add( new JLabel( lab ) );
          message.add( p );
@@ -807,16 +838,16 @@ public class SetPeaks extends JButton
             if( SpecifyPeak )
                seqNums[ PeakNum ] = SNum;
 
-            IPeak pk = Peaks.elementAt( SNum - 1 );
+            IPeak pk = stPks.Peaks.elementAt( SNum - 1 );
             q = pk.getUnrotQ();
 
          }
          else if( seqNum > 0 && inView != null && inView.isSelected() )
          {
             if( SpecifyPeak )
-               seqNums[ PeakNum ] = seqNum;
+               stPks.seqNums[ PeakNum ] = seqNum;
 
-            IPeak pk = Peaks.elementAt( seqNum - 1 );
+            IPeak pk = stPks.Peaks.elementAt( seqNum - 1 );
             q = pk.getUnrotQ();
 
          }
@@ -824,7 +855,7 @@ public class SetPeaks extends JButton
          {
 
             if( SpecifyPeak )
-               seqNums[ PeakNum ] = - 1;
+               stPks.seqNums[ PeakNum ] = - 1;
 
             String[] SS = S.split( "," );
             if( SS.length != 3 )
@@ -846,21 +877,21 @@ public class SetPeaks extends JButton
 
          if( SpecifyPeak )
 
-            SelectedPeaks[ PeakNum ] = q;
+            stPks.SelectedPeaks[ PeakNum ] = q;
 
          else
 
-            hklVals[ PeakNum ] = q;
+            stPks.hklVals[ PeakNum ] = q;
 
-         if( SpecifyPeak && PeakNum == MaxPksSet )
+         if( SpecifyPeak && PeakNum == stPks.MaxPksSet )
 
-            MaxPksSet = FindLastSet( PeakNum , MaxPksSet , SelectedPeaks );
+            stPks.MaxPksSet = FindLastSet( PeakNum , stPks.MaxPksSet , stPks.SelectedPeaks );
 
-         else if( ! SpecifyPeak && PeakNum == MaxhklSet )
+         else if( ! SpecifyPeak && PeakNum == stPks.MaxhklSet )
 
-            MaxhklSet = FindLastSet( PeakNum , MaxhklSet , hklVals );
+            stPks.MaxhklSet = FindLastSet( PeakNum , stPks.MaxhklSet , stPks.hklVals );
          
-         fireSetPeakListeners( SET_PEAK_INFO_CHANGED );
+         stPks.fireSetPeakListeners( SetPeaks.SET_PEAK_INFO_CHANGED );
 
       }
 
