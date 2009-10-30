@@ -45,6 +45,7 @@ public class SetNewInstrumentCmd
                                            // listed in SNS_Tof_to_Q_map.java
    private String detector_file_name;
    private String incident_spectrum_file_name;
+   private float scale_factor;
 
    
   /**
@@ -70,16 +71,31 @@ public class SetNewInstrumentCmd
    *                             ISAW/InstrumentInfo/SNS will be used, if 
    *                             it is present.  Otherwise, no correction
    *                             for the incident spectrum will be used.
+   *                             
+   *  @param scale_factor        if positive, value to multiply d-graphs and
+   *                             q-graphs. Usually 1/protons_on_target.
    */
    public SetNewInstrumentCmd( String instrument_name, 
                                String detector_file_name,
-                               String incident_spectrum_file_name )
+                               String incident_spectrum_file_name,
+                               float  scale_factor)
    {
       this.instrument_name = instrument_name; 
       this.detector_file_name = detector_file_name; 
       this.incident_spectrum_file_name = incident_spectrum_file_name; 
+      this.scale_factor = scale_factor;
    }
 
+
+   /**
+    * @see #SetNewInstrumentCmd(String, String, String, float) Full Constructor
+    */
+   public SetNewInstrumentCmd( String instrument_name, 
+                               String detector_file_name,
+                               String incident_spectrum_file_name)
+   {
+      this( instrument_name, detector_file_name, incident_spectrum_file_name, -1f);
+   }
 
    public String getDetectorFileName()
    {
@@ -108,12 +124,17 @@ public class SetNewInstrumentCmd
       return incident_spectrum_file_name;
    }
 
+   public float getScaleFactor()
+   {
+      return scale_factor;
+   }
    
    public String toString()
    {
       return "\nInstrument Name    : " + getInstrumentName()   +
              "\nDetector File Name : " + getDetectorFileName() +
-             "\nIncident Spectrum File Name : " +getIncidentSpectrumFileName();
+             "\nIncident Spectrum File Name : " +getIncidentSpectrumFileName()+
+             "\nscale factor       :"+ getScaleFactor();
    }
 
 }

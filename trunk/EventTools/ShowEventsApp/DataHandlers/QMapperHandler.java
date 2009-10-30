@@ -65,6 +65,7 @@ public class QMapperHandler implements IReceiveMessage
   private MessageCenter    message_center;
   private String           instrument_name;
   private SNS_Tof_to_Q_map mapper;
+  private float            scale_factor;
 
   public QMapperHandler( MessageCenter message_center )
   {
@@ -72,6 +73,7 @@ public class QMapperHandler implements IReceiveMessage
     String isaw_home = System.getProperty( "ISAW_HOME" ) + "/";
     String det_file  = isaw_home + "InstrumentInfo/SNS/" +
                        instrument_name + ".DetCal";
+    scale_factor = -1;
     
     try
     {
@@ -109,7 +111,7 @@ public class QMapperHandler implements IReceiveMessage
 
       SetNewInstrumentCmd cmd = (SetNewInstrumentCmd)obj;
       String new_instrument = cmd.getInstrumentName();
-
+      scale_factor = cmd.getScaleFactor();
                                          // if this is a new instrument, get
                                          // a new mapper.
       if ( instrument_name == null ||
@@ -217,6 +219,7 @@ public class QMapperHandler implements IReceiveMessage
 
        if ( obj != null && obj instanceof ITofEventList )
        {
+         
          ITofEventList ev_list = (ITofEventList)obj;
          IEventList3D[] event_lists = MapToQ( ev_list );
 
