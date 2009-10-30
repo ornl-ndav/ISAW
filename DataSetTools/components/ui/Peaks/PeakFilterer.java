@@ -36,6 +36,8 @@ package DataSetTools.components.ui.Peaks;
 
 import gov.anl.ipns.MathTools.Geometry.Vector3D;
 import gov.anl.ipns.Util.Numeric.IntList;
+import gov.anl.ipns.Util.Sys.FinishJFrame;
+import gov.anl.ipns.Util.Sys.WindowShower;
 import gov.anl.ipns.ViewTools.Components.ViewControls.ColorScaleControl.StretchTopBottom;
 
 import java.awt.BorderLayout;
@@ -47,6 +49,8 @@ import java.awt.Point;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 //import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -590,6 +594,7 @@ public class PeakFilterer extends JButton implements ActionListener
          
          OmitRule.clear();
          CurrentAndList.clear();
+         omittedSeqNums = new int[0];
          
       }
          
@@ -650,7 +655,8 @@ public class PeakFilterer extends JButton implements ActionListener
     * @author Ruth
     *
     */
-   class MyActionListener extends MouseAdapter implements ActionListener
+   class MyActionListener extends MouseAdapter implements ActionListener,
+                                                          WindowListener
    // ,ListSelectionListener
 
    {
@@ -663,7 +669,12 @@ public class PeakFilterer extends JButton implements ActionListener
 
       public String CALC_FILTER = "Set Filter";
 
-      public String CLEAR_OMITS = "Clear omitted Peaks";
+      public String CLEAR_OMITS = "Clear";
+      public String ADD_OMIT1 = "OK";
+
+      public String ADD_OMIT2 = "And to Prev";
+      public String SUBMIT = "Submit";
+      public String CLEAR_ALL ="Clear All Omitted Peaks";
 
       JButton       but;                                // Needed for an anchor for pop up menus
 
@@ -671,11 +682,24 @@ public class PeakFilterer extends JButton implements ActionListener
       
       boolean     interactive  = false;
       
-      WeakReference<PeakFilterer> WpFilt;
+      JPanel      IntervalPanel;
+      JButton     AndButton;
+      JButton SubmitButton;
+      JButton ClearButton;
+      JTextArea   Information;
+      int LastSelectedFieldIndex ;
+      JCheckBox   Inside, Outside, interActive; 
+      StretchTopBottom sliders;
+      JTextField  ListFieldVals;
+      FinishJFrame jf = null;
       
+      WeakReference<PeakFilterer> WpFilt;
+      String LLL = ADD_OMIT1+";"+ ADD_OMIT2+";"+ SUBMIT+";"+ CLEAR_ALL+";";
       public MyActionListener( PeakFilterer pFilt)
       {
          this.WpFilt = new WeakReference<PeakFilterer>(pFilt);
+         LastSelectedFieldIndex = -1;
+         jf = null;
       }
        public void kill()
        {
@@ -683,6 +707,8 @@ public class PeakFilterer extends JButton implements ActionListener
        
           Pop = null;
           WpFilt =null;
+
+          interactive = false;
        }
       /* (non-Javadoc)
        * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
@@ -693,22 +719,51 @@ public class PeakFilterer extends JButton implements ActionListener
          PeakFilterer pFilt = WpFilt.get();
          if(pFilt == null)
             return;
-         if( e.getSource() instanceof JButton )
-         {
-            MakeMenu( (Component) e.getSource() );
-            but = (JButton) e.getSource();
-            return;
-         }
 
          String evtString = e.getActionCommand();
+         if( e.getSource() instanceof JButton  && LLL.indexOf( evtString+";" ) < 0 )
+         {
+            MakeForm((Component)( e.getSource()));
+           /* MakeMenu( (Component) e.getSource() );
+            but = (JButton) e.getSource();
+            return;
+            */
+         }
+
+        
          
          if( evtString == INTERACTIVE)
          {
-            interactive = true;
-            MakeFieldMenu( "Interactive", but);
+            if( interactive != interActive.isSelected() &&
+                     WpFilt != null && WpFilt.get() != null)
+            {
+               
+               WpFilt.get().CalcClear( false , true);
+               WpFilt.get().fireFilterListeners();
+               Information.setText( "" );
+            }
+            interactive = interActive.isSelected();
+            if( interactive)
+            {
+               AndButton.setEnabled(false);
+               SubmitButton.setEnabled( false);
+               ClearButton.setEnabled( false);
+
+               if( ListFieldVals != null)
+                  ListFieldVals.addActionListener( this );
+               
+            }else
+            {
+               AndButton.setEnabled(true);
+               SubmitButton.setEnabled( true);
+               ClearButton.setEnabled( true);
+               if( ListFieldVals != null)
+                  ListFieldVals.removeActionListener( this );
+               
+            }
+            //MakeFieldMenu( "Interactive", but);
             return;
          }
-         interactive = false;
          if( evtString == START_AND )
          {
             if( pFilt.CurrentAndList.size() > 0 )
@@ -720,7 +775,80 @@ public class PeakFilterer extends JButton implements ActionListener
 
             return;
          }
+         if( evtString .equals( ADD_OMIT1 )|| evtString.equals( ADD_OMIT2 ))
+         {
+            if( LastSelectedFieldIndex <0 || LastSelectedFieldIndex >=Fields.length)
+               return;
+            OneFilterElement F = null;
+            if( sliders != null)
+            {
 
+               F = new OneFilterElement( LastSelectedFieldIndex , sliders.getBottomValue() , sliders
+                        .getTopValue() , null , Inside.isSelected());
+               
+            }else if( ListFieldVals != null)
+            {
+               String res = ListFieldVals.getText();
+               int[] listt = null;
+               if( res == null )
+
+                  F = null;
+
+               else
+               {
+                  listt = IntList.ToArray( res );
+
+                  F = new OneFilterElement( LastSelectedFieldIndex , Float.NaN , Float.NaN , listt ,
+                           false );
+               }
+            }
+            if( F == null)
+               return;
+           
+
+            pFilt.CurrentAndList.addElement( F );
+            String S="";
+            if( !evtString.equals( "OK" ))
+               S =" AND ";
+            String field = Fields[LastSelectedFieldIndex];
+            if( ListFieldVals != null)
+               S+=field +"=["+ListFieldVals.getText()+"]";
+            else
+            {
+               if( F.inside)
+                  S +=field +=">="+F.min+" AND "+field +"<="+F.max;
+               else
+                  S +="("+field +"<"+F.min+" OR "+field +">"+F.max+")";
+            }
+            
+            Information.append( S );
+            AndButton.setText( ADD_OMIT2);
+            return;
+            
+         }
+         if( evtString.equals(SUBMIT))
+         {
+            if( pFilt.CurrentAndList.size() > 0 )
+
+               pFilt.OmitRule.addElement( new Vector< OneFilterElement> (
+                        pFilt.CurrentAndList ) );
+
+            pFilt.CurrentAndList = new Vector< OneFilterElement >();
+            pFilt.omittedSeqNums = pFilt.CalcOmits( pFilt.OmitRule );
+            Information.append( "\n" );
+            pFilt.fireFilterListeners();
+            AndButton.setText( ADD_OMIT1 );
+            return;
+         }
+         if( evtString.equals(CLEAR_ALL))
+         {
+            pFilt.CurrentAndList = new Vector< OneFilterElement >();
+            pFilt.OmitRule = new Vector< Vector< OneFilterElement >>();
+            omittedSeqNums = null;
+            pFilt.fireFilterListeners();
+            Information.setText( "" );
+            
+         }
 
          if( evtString == AND_PREV )
          {
@@ -750,13 +878,109 @@ public class PeakFilterer extends JButton implements ActionListener
          {
             pFilt.CurrentAndList = new Vector< OneFilterElement >();
             pFilt.OmitRule = new Vector< Vector< OneFilterElement >>();
+            return;
          }
-
+         if( e.getSource() instanceof StretchTopBottom )
+         {
+            StretchTopBottom str = (StretchTopBottom) ( e.getSource() );
+            if( str.getTopValue() < str.getBottomValue() )
+            {
+               float val = str.getTopValue();
+               str.setControlValue( val , StretchTopBottom.BOTTOM_VALUE );
+               repaint();
+            }
+            
+         }
+         if( interActive.isSelected() && (e.getSource()== Inside || e.getSource()== sliders))
+         {
+            if( sliders != null)
+            {  
+            sliders.checkValues();
+            float MinVal = sliders.getBottomValue();
+            float MaxVal = sliders.getTopValue();
+            boolean inside = Inside.isSelected();
+        
+            InterActiveDo( LastSelectedFieldIndex, MinVal, 
+                     MaxVal, null, inside);
+            }else if( interActive.isSelected() && e.getSource() == ListFieldVals)
+            {
+               int[] elts = IntList.ToArray( ListFieldVals.getText() );
+               
+               InterActiveDo(LastSelectedFieldIndex, -1, 
+                     -1, elts, false );
+            }
+         }
 
       }
 
+      public void mouseClicked( MouseEvent e)
+      {
+         PeakFilterer pFilt = WpFilt.get();
+         if(pFilt == null)
+            return;
+         if( e.getSource() != pFilt.list )
+            return;
 
-      public void mouseClicked( MouseEvent e )
+         int k = pFilt.list.locationToIndex( e.getPoint() );
+
+         LastSelectedFieldIndex = k;
+         if( k < 0 || k >= Fields.length)
+            return;
+         IntervalPanel.removeAll();
+         String field = Fields[k];
+        ((TitledBorder)IntervalPanel.getBorder()).setTitle( Fields[k] );
+
+        JPanel panel = new JPanel();
+        BoxLayout bl = new BoxLayout( panel, BoxLayout.Y_AXIS);
+        panel.setLayout(  bl );
+         if( k <= pFilt.LastIntervalIndex )
+         {
+            ListFieldVals = null;
+           Inside = new JCheckBox("Omit Peaks with "+field+" values BETWEEN values");
+
+           Outside = new JCheckBox("Omit Peaks with "+field+" values OUTSIDE values");
+           ButtonGroup bg = new ButtonGroup();
+           bg.add(Inside);
+           bg.add(Outside);
+           Outside.setSelected( true );
+           panel.add( Inside );
+           panel.add(Outside);
+           Inside.addActionListener(  this );
+           sliders = new StretchTopBottom( 
+                    Mins[k] , Maxs[k] );
+           sliders.addActionListener( this );
+           panel.add( sliders);
+           
+         }else
+         {  Inside = Outside = null;
+            sliders = null;
+           JPanel pan = new JPanel();
+           pan.setLayout( new GridLayout( 1,2));
+           pan.add(  new JLabel("Enter list of "+field+ "values to OMIT") );
+           ListFieldVals = new JTextField(20);
+           pan.add( ListFieldVals);
+           panel.add(pan);
+           panel.add( Box.createVerticalGlue());
+           if( interActive.isSelected())
+              ListFieldVals.addActionListener(  this );
+            
+         }
+         IntervalPanel.setLayout( new GridLayout(1,1));
+         IntervalPanel.add(panel);
+         IntervalPanel.repaint();
+         panel.repaint();
+         IntervalPanel.invalidate();
+         jf.getContentPane().validate();
+         if( interactive && WpFilt != null && WpFilt.get() != null)
+         {
+           
+            WpFilt.get().CalcClear( false , true );
+            WpFilt.get().fireFilterListeners();
+         }
+         
+      }
+      // deprecated
+      public void mouseClicked1( MouseEvent e )
       {
          PeakFilterer pFilt = WpFilt.get();
          if(pFilt == null)
@@ -869,6 +1093,103 @@ public class PeakFilterer extends JButton implements ActionListener
       }
 
 
+      private void MakeForm( Component hanger)
+      {
+         if( jf != null)
+            return;
+         JPanel panel = new JPanel();
+         BoxLayout bl = new BoxLayout( panel, BoxLayout.X_AXIS);
+         panel.setLayout( bl);
+         JPanel FieldPanel = new JPanel();
+         FieldPanel.setLayout( new GridLayout(1,1));
+         FieldPanel.add(new JScrollPane( list));
+         panel.add( FieldPanel);
+         JPanel panelMid = new JPanel();
+         panelMid.setLayout(  new GridLayout(2,1) );
+         IntervalPanel = new JPanel();
+         IntervalPanel.setLayout(  new GridLayout(1,1) );
+         IntervalPanel.setBorder(  new TitledBorder(
+                  new LineBorder(Color.black,2,true),"Field Name") );
+         panelMid.add(  IntervalPanel );
+         JPanel panelMid1 = new JPanel();
+         panelMid1.setLayout(  new GridLayout( 3,1) );
+         AndButton = new JButton( ADD_OMIT1);
+         interActive = new JCheckBox(INTERACTIVE);
+         interActive.setSelected( false );
+         interActive.addActionListener(  this );
+         JPanel FirstPanel = new JPanel();
+         FirstPanel.setLayout(  new GridLayout( 1,2) );
+         FirstPanel.add( AndButton);
+         FirstPanel.add( interActive);
+         panelMid1.add( FirstPanel);
+         AndButton.addActionListener( this );
+         AndButton.setToolTipText( "<html><body> And's this condition to previous <BR>"+ 
+                  "conditions, or starts a new AND sequence if there are no <Br>"+
+                  "previous conditions</body></html>");
+         
+         SubmitButton = new JButton(SUBMIT);
+         SubmitButton.addActionListener( this );
+         SubmitButton.setToolTipText(
+                  "<html><body> These conditions will be submitted to<BR>"+
+                  "all listeners. The 3D display should change. These <BR>"+
+                  "will be added(or'd) to the previous AND sequences</body></html>");
+         panelMid1.add(SubmitButton);
+;
+         
+         
+
+         ClearButton = new JButton(CLEAR_ALL);
+         ClearButton.addActionListener( this );
+         ClearButton.setToolTipText(
+                  "<html><body> Clears out all omitted peaks </body></html>");
+         panelMid1.add(ClearButton);
+         
+         panelMid.add( panelMid1 );
+         panel.add( panelMid);
+         
+         
+         JPanel panelR = new JPanel();
+         bl = new BoxLayout( panelR, BoxLayout.Y_AXIS);
+         
+         panelR.setLayout(  bl );
+         Information = new JTextArea(10,25);
+         Information.setEditable( false );
+         Information.setBorder(  new TitledBorder( 
+                  new LineBorder(Color.black,4),"Information") );
+         
+         panelR.add( new JScrollPane(Information) );
+         panelR.add(  Box.createVerticalGlue() );
+         panel.add( panelR);
+         
+         
+        jf = new FinishJFrame( "Filter Out Peaks");
+        jf.getContentPane().setLayout( new GridLayout(1,1));
+        jf.getContentPane().add( panel );
+        java.awt.Dimension D = jf.getToolkit().getScreenSize();
+        jf.setSize(D.width/2, D.height/2 );
+        Point p = getAbsPosition( hanger);
+        
+        jf.setLocation( new Point( p.x+hanger.getWidth(),Math.max( 0 , p.y-D.height/4)) );
+        jf.addWindowListener(  this  );
+        WindowShower.show(jf);
+         
+         
+         
+      }
+      public Point getAbsPosition( Component hanger)
+      {
+         if( hanger == null)
+            return new Point(0,0);
+         java.awt.Rectangle R = hanger.getBounds();
+         if( hanger instanceof Window)
+         {  
+            return new Point( R.x, R.y);
+         }
+         Point Pp= getAbsPosition( hanger.getParent());
+         return new Point( Pp.x+R.x, Pp.y+R.y);
+         
+      }
+      //deprecated
       private void MakeFieldMenu( String message , Object obj )
       {
 
@@ -942,6 +1263,71 @@ public class PeakFilterer extends JButton implements ActionListener
 
          popUp.show( comp , comp.getWidth()*3/4 , comp.getHeight()/2 );
       }
+      /* (non-Javadoc)
+       * @see java.awt.event.WindowListener#windowActivated(java.awt.event.WindowEvent)
+       */
+      @Override
+      public void windowActivated( WindowEvent arg0 )
+      {
+
+         
+         
+      }
+      /* (non-Javadoc)
+       * @see java.awt.event.WindowListener#windowClosed(java.awt.event.WindowEvent)
+       */
+      @Override
+      public void windowClosed( WindowEvent arg0 )
+      {
+
+        jf = null;
+      }
+      /* (non-Javadoc)
+       * @see java.awt.event.WindowListener#windowClosing(java.awt.event.WindowEvent)
+       */
+      @Override
+      public void windowClosing( WindowEvent arg0 )
+      {
+
+         
+      }
+      /* (non-Javadoc)
+       * @see java.awt.event.WindowListener#windowDeactivated(java.awt.event.WindowEvent)
+       */
+      @Override
+      public void windowDeactivated( WindowEvent arg0 )
+      {
+
+         
+      }
+      /* (non-Javadoc)
+       * @see java.awt.event.WindowListener#windowDeiconified(java.awt.event.WindowEvent)
+       */
+      @Override
+      public void windowDeiconified( WindowEvent arg0 )
+      {
+       
+      }
+      /* (non-Javadoc)
+       * @see java.awt.event.WindowListener#windowIconified(java.awt.event.WindowEvent)
+       */
+      @Override
+      public void windowIconified( WindowEvent arg0 )
+      {
+
+         
+      }
+      /* (non-Javadoc)
+       * @see java.awt.event.WindowListener#windowOpened(java.awt.event.WindowEvent)
+       */
+      @Override
+      public void windowOpened( WindowEvent arg0 )
+      {
+
+         
+      }
+      
+      
 
    }
 
@@ -1162,7 +1548,7 @@ public class PeakFilterer extends JButton implements ActionListener
        */
       private void updateVals()
       {
-
+        
          minimum = sliders.getBottomValue();
          maximum = sliders.getTopValue();
          Inside = inside.isSelected();
