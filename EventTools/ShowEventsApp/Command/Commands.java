@@ -10,7 +10,8 @@ public class Commands
   public static final String PAUSE_UDP       ="PAUSE_UDP";
   public static final String CLEAR_UDP       ="CLEAR_UDP";
   public static final String CONTINUE_UDP       ="CONTINUE_UDP";
-
+  public static final String SCALE_FACTOR       ="SCALE_FACTOR";
+  public static final String NORMALIZE_QD_GRAPHS       ="NORMALIZE_QD_GRAPHS";
 
   public static final String MAP_EVENTS_TO_Q = "MAP_EVENTS_TO_Q";
 

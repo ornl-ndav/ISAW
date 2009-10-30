@@ -82,6 +82,7 @@ public class filePanel //extends JPanel
    private JTextField         eventsToLoad;
    //private JTextField         firstEventToShow;
    private JTextField         eventsToShow;
+   private JTextField         protonsOnTarget;
 
    private JTextField         eventsToShowUDP;
    private String             Datafilename;// Remember last file chosen
@@ -180,7 +181,7 @@ public class filePanel //extends JPanel
       NumberFormat nf = NumberFormat.getInstance();
       
       JPanel eventPanel = new JPanel();
-      eventPanel.setLayout(new GridLayout(5,2));
+      eventPanel.setLayout(new GridLayout(6,2));
 
       evFileButton = new JButton("Neutron Event File");
       evFileButton.addActionListener(new button());
@@ -218,6 +219,8 @@ public class filePanel //extends JPanel
       JLabel maxEvents = new JLabel("Number to Show in 3D: ");
       eventsToShow = new JTextField( default_eventsToShow );
       eventsToShow.setHorizontalAlignment(JTextField.RIGHT);
+
+      protonsOnTarget = new JTextField(15);
       
       eventPanel.add(evFileButton);
       eventPanel.add(evFileName);
@@ -231,7 +234,8 @@ public class filePanel //extends JPanel
       //eventPanel.add(firstEventToShow);
       eventPanel.add(maxEvents);
       eventPanel.add(eventsToShow);
-      
+      eventPanel.add( new JLabel("Protons On Target"));
+      eventPanel.add( protonsOnTarget);
       return eventPanel;
    }
    
@@ -787,7 +791,17 @@ public class filePanel //extends JPanel
                   }
                   else
                      startEvent -= 1;
-                  
+                  float scale_factor = -1;
+                  try
+                  {
+                     scale_factor = Float.parseFloat( protonsOnTarget.getText().trim() );
+                     scale_factor = 1/scale_factor;
+                     if( scale_factor < 0)
+                        scale_factor = -1;
+                  }catch( Exception sx)
+                  {
+                     scale_factor = -1;
+                  }
                   LoadEventsCmd fileInfo = 
                      new LoadEventsCmd(
                                 ev_file,
@@ -800,7 +814,8 @@ public class filePanel //extends JPanel
                                 startEvent, 
                                 nf.parse(eventsToLoad.getText()).longValue(),
                                 nf.parse(eventsToShow.getText()).longValue(),
-                                Integer.parseInt(numThreads.getText()));
+                                Integer.parseInt(numThreads.getText()),
+                                scale_factor);
                   
                   boolean collapse_messages   = true;
                   boolean use_separate_thread = true;

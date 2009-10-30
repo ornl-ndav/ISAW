@@ -13,6 +13,7 @@ public class LoadEventsCmd
    private long   eventsToLoad;
    private long   eventsToShow;
    private int    numThreads;
+   private float  scale_factor;
    
    public LoadEventsCmd( String eventFile, 
                          String detFile,
@@ -24,7 +25,8 @@ public class LoadEventsCmd
                          long   firstEvent, 
                          long   eventsToLoad, 
                          long   eventsToShow,
-                         int    numThreads)
+                         int    numThreads,
+                         float  scale_factor)
    {
       this.eventFile       = eventFile;
       this.detFile         = detFile;
@@ -37,8 +39,34 @@ public class LoadEventsCmd
       this.eventsToLoad    = eventsToLoad;
       this.eventsToShow    = eventsToShow;
       this.numThreads      = numThreads;
+      this.scale_factor    = scale_factor;
    }
+   public LoadEventsCmd( String eventFile, 
+            String detFile,
+            String specFile, 
+            String detEffFile, 
+            String matFile, 
+            float  maxQValue,
+            long   availableEvents, 
+            long   firstEvent, 
+            long   eventsToLoad, 
+            long   eventsToShow,
+            int    numThreads)
+{
+      this( eventFile, 
+             detFile,
+            specFile, 
+            detEffFile, 
+             matFile, 
+            maxQValue,
+            availableEvents, 
+            firstEvent, 
+            eventsToLoad, 
+            eventsToShow,
+            numThreads,
+            -1f);
 
+}
    public String getEventFile()
    {
       if (eventFile == null || eventFile.trim().equals(""))
@@ -113,6 +141,11 @@ public class LoadEventsCmd
       return numThreads;
    }
    
+   public float getScaleFactor()
+   {
+      return scale_factor;
+   }
+   
    public String toString()
    {
       return "\nEvent File  : " + getEventFile()       +
@@ -125,7 +158,8 @@ public class LoadEventsCmd
              "\nFirst Event : " + getFirstEvent()      +
              "\nNum to load : " + getEventsToLoad()    +
              "\nNum to show : " + getEventsToShow()    +
-             "\nNum Threads : " + getNumThreads();
+             "\nNum Threads : " + getNumThreads() +
+             "\nScale Factor: " + getScaleFactor();
    }
 
 }

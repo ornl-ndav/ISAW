@@ -35,10 +35,15 @@
 
 package EventTools.ShowEventsApp.DataHandlers;
 
+import java.util.Vector;
+
 import gov.anl.ipns.Util.Numeric.ClosedInterval;
+import gov.anl.ipns.Util.SpecialStrings.ErrorString;
 import DataSetTools.dataset.*;
+import DataSetTools.util.SharedData;
 import Operators.Generic.Save.SaveASCII_calc;
 import EventTools.ShowEventsApp.Command.Commands;
+import EventTools.ShowEventsApp.Command.SetNewInstrumentCmd;
 import EventTools.ShowEventsApp.Command.Util;
 import EventTools.EventList.IEventList3D;
 import MessageTools.*;
@@ -57,9 +62,22 @@ public class DQDataHandler implements IReceiveMessage
  
    private MessageCenter messageCenter;
    private MessageCenter viewMessageCenter;
-
+   
+   boolean normalizeQ,    // if true send normalized Q data
+           normalizeD;    // if true send normalized D data
+   float scale_factor;
+   
+   String incidentSpectraFileName;
+   float[] Wl_list;       //incident spectrum values
+   float minWL,maxWL, MM; // parameters to find correct entry in the list
+   int nWL;               // The number of wavelengths in Wl_list
+   
    private float[][] d_values = new float[2][NUM_BINS+1];
    private float[][] q_values = new float[2][NUM_BINS+1]; 
+   private float[] dn_values = new float[NUM_BINS+1];
+   private float[] qn_values = new float[NUM_BINS+1]; 
+   float[][] Q_values = new float[2][], //will hold the info sent
+             D_values = new float[2][];
 
 
   /**
@@ -86,6 +104,14 @@ public class DQDataHandler implements IReceiveMessage
       this.messageCenter.addReceiver(this, Commands.SAVE_Q_VALUES);
       this.messageCenter.addReceiver(this, Commands.SAVE_D_VALUES);
 
+      this.messageCenter.addReceiver(this, Commands.SCALE_FACTOR);
+      this.viewMessageCenter.addReceiver(this, Commands.NORMALIZE_QD_GRAPHS);
+   
+      scale_factor = -1;
+      incidentSpectraFileName = null;
+      normalizeQ = normalizeD = false;
+      Q_values[1] = q_values[1];
+      D_values[1] = d_values[1];
       setXs();
       clearYs();
    }
@@ -101,8 +127,92 @@ public class DQDataHandler implements IReceiveMessage
 
      for ( int i = 0; i <= NUM_BINS; i++ )
        q_values[1][i] = 0;
+     
+     java.util.Arrays.fill( dn_values , 0f );
+     java.util.Arrays.fill( qn_values , 0f );
+     
    }
 
+   public void setUpIncidentSpectrum( String filename, String InstrumentName)
+   {
+      if( filename== null || filename.length() < 1 ||
+               !( new java.io.File( filename)).exists())
+      {
+        
+        filename = SharedData.getProperty( "ISAW_HOME" ,"" ).trim();
+        if( !filename.endsWith( "/" ) || !filename.endsWith( "\\" ))
+           filename +="/";
+        filename += "InstrumentInfo/SNS/"+InstrumentName+"_Spectrum.dat";
+        if( !( new java.io.File(filename).exists()))
+        {
+
+          Wl_list = null;
+          minWL= maxWL=Float.NaN;
+          nWL = 0;
+          return; 
+        }
+        }
+      DataSet DS = Util.ReadDSFile( filename );
+      if( DS == null || DS.getNum_entries()<1)
+      {
+         Wl_list = null;
+         minWL= maxWL=Float.NaN;
+         nWL = 0;
+        return; 
+      }
+      Data D = DS.getData_entry( 0 );
+      XScale xscl = D.getX_scale();
+      float start = xscl.getStart_x();
+      float end = xscl.getEnd_x();
+      int nxs = xscl.getNum_x();
+      if( end <= start || nxs <=0 || start < 0 || end <=.1f)
+      {
+         Wl_list = null;
+         minWL= maxWL=Float.NaN;
+         nWL = 0;
+        return; 
+      }
+
+      nWL =(int) ( (end-start)/end/.02f +.5f);
+      nWL = Math.max(  nWL, xscl.getNum_x() );
+      xscl =new UniformXScale(start, end,nWL);
+      D.resample(xscl  , 0);
+      float[] ys=   D.getY_values();
+      int i=0;
+      for( i=0; i < ys.length && ys[i] <=0 ;i++)
+      {}
+      if( i == ys.length)
+      {
+         Wl_list = null;
+         minWL= maxWL=Float.NaN;
+         nWL = 0;
+        return; 
+      }
+      int j=0;
+      for( j=ys.length-1; j>=0 && ys[j] <=0 ; j--){}
+
+      if( j < 0 || (j==0 && ys[j]<=0) || ((j-i+1)<12))
+      {
+         Wl_list = null;
+         minWL= maxWL=Float.NaN;
+         nWL = 0;
+        return; 
+      }
+      Wl_list = new float[ j-i+1];
+      System.arraycopy( ys,i , Wl_list ,0,j-i+1 );
+      
+      minWL= xscl.getX( i );
+      if( j+1 < xscl.getNum_x())
+         maxWL =xscl.getX( j+1 );
+      else
+         maxWL = xscl.getEnd_x();
+      
+      nWL = j-i+1;
+      MM = nWL/(maxWL-minWL);
+      
+      
+         
+   }
 
   /**
    *  Set up the array of X-values for the D and Q histograms.
@@ -114,6 +224,9 @@ public class DQDataHandler implements IReceiveMessage
 
      for ( int i = 0; i <= NUM_BINS; i++ )
        q_values[0][i] = i * MAX_Q / NUM_BINS;
+     
+      Q_values[0]= q_values[0];
+      D_values[0] = d_values[0];
    }
 
 
@@ -142,18 +255,37 @@ public class DQDataHandler implements IReceiveMessage
        x = xyz[index++];
        y = xyz[index++];
        z = xyz[index++];
-       mag_q = (float)Math.sqrt( x*x + y*y + z*z );
-
+       float Qsq =x*x + y*y + z*z;
+       mag_q = (float)Math.sqrt( Qsq );
+       d_val = (float)(2 * Math.PI / mag_q);
+       
+       //------ calculate weight for normalized values
+       float wl = 2*d_val*(float)Math.sqrt( .5+2*x*x/(Qsq*Qsq) );
+       float weight =0;
+       if( wl >= minWL && wl < maxWL && wl >0)
+          weight = Wl_list[(int)( (wl-minWL)*MM)];
+       if( weight !=0)
+          weight = 1/weight;
+       else if( Wl_list == null)
+          weight = 1;
+       //  --------------------------------
+       
        bin_num = (int)(NUM_BINS * mag_q/MAX_Q); 
        if ( bin_num <= NUM_BINS )
-         q_arr[bin_num] += 1; //weights[i];
+         {
+          q_arr[bin_num] += 1; //weights[i];
+          qn_values[bin_num] +=weight;
+         }
 
        if ( mag_q > 0 )
        {
-         d_val = (float)(2 * Math.PI / mag_q);
+         
          bin_num = (int)(NUM_BINS * d_val/MAX_D);
          if ( bin_num <= NUM_BINS )
-           d_arr[bin_num] += 1;  //weights[i];
+           {
+            d_arr[bin_num] += 1;  //weights[i];
+            dn_values[ bin_num] +=weight;
+           }
        }
      }
 /*
@@ -206,17 +338,22 @@ public class DQDataHandler implements IReceiveMessage
         }
 
         AddEvents( (IEventList3D)obj );
-
+        float[][] q1_vals = Scale( Q_values, normalizeQ);
+        float[][] d1_vals = Scale( D_values, normalizeD);
         synchronized( q_values )
         {
-          sendViewMessage(Commands.SET_Q_VALUES, q_values );
-          sendViewMessage(Commands.SET_D_VALUES, d_values );
+          sendViewMessage(Commands.SET_Q_VALUES, q1_vals );
+          sendViewMessage(Commands.SET_D_VALUES, d1_vals );
         }
       }
       
       if (message.getName().equals(Commands.INIT_DQ))
       {
         clearYs();
+        SetNewInstrumentCmd cmd =(SetNewInstrumentCmd) message.getValue();
+        scale_factor = cmd.getScaleFactor();
+        incidentSpectraFileName = (String)cmd.getIncidentSpectrumFileName();
+        setUpIncidentSpectrum( incidentSpectraFileName, cmd.getInstrumentName() );
         Message init_dq_done = new Message( Commands.INIT_DQ_DONE,
                                             null,
                                             true,
@@ -227,28 +364,69 @@ public class DQDataHandler implements IReceiveMessage
       
       if (message.getName().equals(Commands.GET_D_VALUES))
       {
-        sendViewMessage(Commands.SET_D_VALUES, d_values );
+        sendViewMessage(Commands.SET_D_VALUES, Scale(D_values, normalizeD) );
         return true;
       }
       
       if (message.getName().equals(Commands.GET_Q_VALUES))
       {
-         sendViewMessage(Commands.SET_Q_VALUES, q_values );
+         
+         sendViewMessage(Commands.SET_Q_VALUES, Scale(Q_values, normalizeQ) );
          return true;
       }
       
       if( message.getName().equals(Commands.SAVE_D_VALUES))
       {
-         DataSet D = MakeDataSet( d_values,"D Graph","Angstrom");
+         DataSet D = MakeDataSet( D_values,"D Graph","Angstrom");
          String fileName = (String)message.getValue();
          return SaveDataSetASCII(D , fileName);
       }
       
       if( message.getName().equals(Commands.SAVE_Q_VALUES))
       {
-         DataSet D = MakeDataSet( q_values,"Q Graph", "Inv Angstrom");
+         DataSet D = MakeDataSet( Q_values,"Q Graph", "Inv Angstrom");
          String fileName = (String)message.getValue();
          return SaveDataSetASCII(D , fileName);
+      }
+      
+      if( message.getName().equals(  Commands.SCALE_FACTOR ))
+      {
+         scale_factor =((Float) message.getValue()).floatValue();
+      }
+      
+      if( message.getName().equals(  Commands.NORMALIZE_QD_GRAPHS ))
+      {
+         Vector res = (Vector)( message.getValue());
+         boolean show = ((Boolean)res.firstElement()).booleanValue();
+         String D_Q   =((String)res.lastElement()).toString();
+         if(  D_Q =="Q")
+            if( show == normalizeQ )
+               return false;
+             else
+             {
+               normalizeQ = show;
+               if( show)
+                  Q_values[1] = qn_values;
+               else
+                  Q_values[1] = q_values[1];
+             }
+         if(  D_Q =="D")
+            if( show == normalizeD )
+               return false;
+            else 
+            {
+               normalizeD = show;
+               if( show)
+                  D_values[1] = dn_values;
+               else
+                  D_values[1] =d_values[1];
+            }
+         if( D_Q =="D")
+            sendViewMessage(Commands.SET_D_VALUES, Scale(D_values, normalizeD) );
+         else if( D_Q =="Q")
+            sendViewMessage(Commands.SET_Q_VALUES, Scale(Q_values, normalizeQ) );
+         
+         
       }
       
       return false;
@@ -331,7 +509,31 @@ public class DQDataHandler implements IReceiveMessage
       return D;
    }
 
-
+   private float[][] Scale( float[][] qvals, boolean normalize)
+   {
+      if(  qvals == null)
+         return qvals;
+      if( scale_factor < 0 || !normalize)
+         return qvals;
+      
+      float[][] Res = new float[2][qvals[1].length];
+      Res[0] = qvals[0];
+      for( int i=0; i < qvals[1].length; i++)
+      {
+         float m=1;
+         if( scale_factor > 0)
+            m= scale_factor;
+         
+         Res[1][i] =m* qvals[1][i];           
+         
+      }
+      return Res;
+      
+      
+      
+   }
+   
+  
    public static void main( String[] args)
    {
       System.out.println( 

@@ -37,11 +37,26 @@ package EventTools.ShowEventsApp.ViewHandlers;
 import java.awt.Point;
 import java.awt.Dimension;
 import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Vector;
 
 import javax.swing.*;
 
+import gov.anl.ipns.Util.Sys.FinishJFrame;
+import gov.anl.ipns.Util.Sys.WindowShower;
 import gov.anl.ipns.ViewTools.Components.AxisInfo;
+import gov.anl.ipns.ViewTools.Components.IVirtualArrayList1D;
+import gov.anl.ipns.ViewTools.Components.ObjectState;
 import gov.anl.ipns.ViewTools.Components.OneD.*;
+import gov.anl.ipns.ViewTools.Components.ViewControls.*;
+import gov.anl.ipns.ViewTools.Components.ViewControls.LabelCombobox;
+import gov.anl.ipns.ViewTools.Components.ViewControls.ViewControl;
+import DataSetTools.dataset.Data;
+import DataSetTools.dataset.DataSet;
+import DataSetTools.util.SharedData;
+import EventTools.ShowEventsApp.Command.Commands;
+import EventTools.ShowEventsApp.Command.Util;
 import MessageTools.*;
 
 /**
@@ -57,12 +72,13 @@ abstract public class GraphViewHandler implements IReceiveMessage
    protected String        y_units;
    protected String        x_label;
    protected String        y_label;
-
+   protected  boolean      normalize;
    private   JPanel        place_holder_panel;
    private   JFrame        display_frame;
    private   Dimension     size = new Dimension( 900, 300 );
    private   Point         location = new Point( 200, 300 );
    private   FunctionViewComponent  fvc;
+   DataArray1D  CompareGraph  = null;
    
 
    /**
@@ -76,6 +92,7 @@ abstract public class GraphViewHandler implements IReceiveMessage
    {
       this.messageCenter = messageCenter;
       this.place_holder_panel = placeholderPanel();
+      normalize= false;
    }
 
 
@@ -87,6 +104,9 @@ abstract public class GraphViewHandler implements IReceiveMessage
    protected void ShowGraph()
    {
       display_frame = new JFrame(frame_title);
+      String D_Q ="D";
+      if( frame_title.indexOf( "Q" )>=0)
+         D_Q="Q";
       display_frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 
       if (fvc != null)
@@ -99,6 +119,22 @@ abstract public class GraphViewHandler implements IReceiveMessage
                                location.y,
                                (int)(size.getWidth()),
                                (int)(size.getHeight()) );
+      JMenuBar menBar = new JMenuBar();
+      JMenu opts = new JMenu("Options");
+      menBar.add(opts);
+      JCheckBoxMenuItem normalize = new JCheckBoxMenuItem("Normalize", false);
+      opts.add( normalize);
+      normalize.addActionListener( new MenuListener( this, D_Q) );
+      JMenuItem Load = new JMenuItem("Compare to Data in File");
+      Load.addActionListener(  new MenuListener( this ,D_Q) );
+      opts.add( Load );
+
+      JMenuItem Clear = new JMenuItem("Clear Compare Data");
+      Clear.addActionListener(  new MenuListener( this ,D_Q) );
+      opts.add( Clear );
+      
+      display_frame.setJMenuBar( menBar );
+      
    }
 
 
@@ -117,7 +153,83 @@ abstract public class GraphViewHandler implements IReceiveMessage
       }
    }
 
+   public void setOtherGraph( String fileName, float ScaleFactor)
+   {
+      if( fileName == null)
+      {
+         CompareGraph = null;
+         AddGraph();
+         return;
+      }
+      if( Float.isNaN(ScaleFactor) || ScaleFactor <=0 )
+         ScaleFactor = 1;
+      DataSet DS = Util.ReadDSFile( fileName );
+      if( DS == null)
+         return;
+      Data D = DS.getData_entry( 0 );
+      CompareGraph =  new DataArray1D(D.getX_values(),D.getY_values(),
+                           D.getErrors(),"External Graph",true,false);
+       AddGraph();
+    
+   }
    
+   private void AddGraph( )
+   {
+      boolean redraw = false;
+      if( fvc != null && CompareGraph != null)
+      {
+         IVirtualArrayList1D data = fvc.getArray();
+         DataArray1D data1 = new DataArray1D( data.getXValues( 0 ), data.getYValues( 0 ));
+         data1.setTitle( data.getGraphTitle( 0 ));
+         Vector V = new Vector();
+         V.add(  data1 );
+         if( CompareGraph != null)
+            V.add(  CompareGraph );
+         fvc.dataChanged( new VirtualArrayList1D( V));
+         StateChange( fvc);
+         redraw = true;
+         
+      }else if( fvc != null)
+      {
+         if( fvc.getArray().getNumGraphs() > 1)
+         {
+            IVirtualArrayList1D data = fvc.getArray();
+            DataArray1D data1 = new DataArray1D( data.getXValues( 0 ), data.getYValues( 0 ));
+            data1.setTitle( data.getGraphTitle( 0 ));
+            fvc.dataChanged( new VirtualArrayList1D( data1));
+            StateChange( fvc);
+            redraw = true;
+         }
+      }
+      
+
+      if( display_frame != null && redraw)
+      {
+
+         display_frame.invalidate();
+         display_frame.validate();
+         fvc.paintComponents();
+         display_frame.repaint();
+         fvc.paintComponents();
+      }
+       
+      
+   }
+   private void StateChange( FunctionViewComponent fvc)
+   {
+
+      if( CompareGraph == null)
+         return;
+      ViewControl[] controlList = fvc.getControlList();
+      ((LabelCombobox)(controlList[FunctionControls.VC_SHIFT])).setSelectedIndex( 0 );
+      ((LabelCombobox)(controlList[FunctionControls.VC_LINE_SELECTED])).setSelectedIndex( 1 );
+      ((LabelCombobox)(controlList[FunctionControls.VC_LINE_STYLE])).setSelectedIndex( 1 );
+      ObjectState Ostate = fvc.getObjectState( false );
+      if( !Ostate.reset("Graph JPanel.Graph Data2.Line Color", java.awt.Color.green));
+         if(!Ostate.insert("Graph JPanel.Graph Data1.Line Color", java.awt.Color.green))
+            System.out.println("Could not set color");
+       fvc.setObjectState( Ostate );
+   }
    /**
     * Placeholder to put in the frame if no data is loaded.
     * 
@@ -166,6 +278,7 @@ abstract public class GraphViewHandler implements IReceiveMessage
          else
             System.setProperty(  "ShowWCToolTip" , prop_str );
 
+         AddGraph();
          if ( display_frame != null )
          {
            display_frame.getContentPane().removeAll();
@@ -174,14 +287,22 @@ abstract public class GraphViewHandler implements IReceiveMessage
       }
       else
       {  
+         Vector V = new Vector();
+         V.add(new DataArray1D(x_values,y_values,errors,title,true,false));
+         if( CompareGraph != null)
+            V.add( new DataArray1D(CompareGraph.getXArray(), CompareGraph.getYArray(),
+                     CompareGraph.getErrorArray(), CompareGraph.getTitle(), true, false));
          VirtualArrayList1D varr = 
             new VirtualArrayList1D(
-                new DataArray1D(x_values,y_values,errors,title,false,false));
+                V);
 
          varr.setTitle( title );
          fvc.dataChanged( varr );
       }
 
+      if( CompareGraph != null)
+         StateChange(fvc);
+      
       if ( display_frame != null )
       {
          display_frame.invalidate();
@@ -220,4 +341,94 @@ abstract public class GraphViewHandler implements IReceiveMessage
     */
    abstract public boolean receive(Message message);
 
+}
+class MenuListener implements ActionListener
+{
+   GraphViewHandler gv;
+   JTextField textField;
+   String D_Q;
+   String fileName ;
+   public MenuListener( GraphViewHandler gv, String D_Q)
+   {
+      this.gv = gv;
+      fileName = null;
+      textField = null;
+      this.D_Q = D_Q;
+   }
+   
+   private Vector  ConCat( Boolean TF, String D_Q)
+   {
+      Vector V = new Vector(2);
+      V.add( TF);
+      V.add( D_Q);
+      return V;
+   }
+   /* (non-Javadoc)
+    * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+    */
+   @Override
+   public void actionPerformed( ActionEvent evt )
+   {
+    if( evt.getActionCommand().equals( "Normalize"))
+       gv.messageCenter.send(  new Message( Commands.NORMALIZE_QD_GRAPHS,
+                  ConCat(((JCheckBoxMenuItem)(evt.getSource())).isSelected(),
+                               D_Q),true,true) );
+    
+    else if( evt.getActionCommand().equals( "Compare to Data in File"))
+    {
+       FinishJFrame jf = new FinishJFrame("Enter FileName");
+       jf.getContentPane().setLayout(  new GridLayout(3,1) );
+       JButton but = new JButton("FileName");
+       jf.getContentPane().add(  but );
+       but.addActionListener( this );
+       
+       JPanel pan = new JPanel();
+       pan.setLayout( new GridLayout(1,2));
+       pan.add(  new JLabel("Scale Factor") );
+       textField = new JTextField( 10);
+       pan.add( textField);
+       jf.getContentPane().add( pan);
+       
+       JButton OK = new JButton("OK");
+       jf.getContentPane().add( OK );
+       OK.addActionListener( this);
+       jf.setSize(  300,400 );
+       jf.setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
+       WindowShower.show(  jf );
+       
+       
+    }else if( evt.getActionCommand().equals( "FileName"))
+    {
+       JFileChooser jfc = new JFileChooser();
+       if( jfc.showOpenDialog( null )!= JFileChooser.APPROVE_OPTION)
+          return;
+       try
+       {
+          fileName = jfc.getSelectedFile().getCanonicalPath();
+       }catch(Exception s)
+       {
+          SharedData.addmsg( "Error in filename "+s );
+       }
+    }else if( evt.getActionCommand().equals( "OK"))
+    {
+       if( fileName == null)
+          return;
+       float scale_factor =1;
+       try
+       {
+          scale_factor = Float.parseFloat( textField.getText().trim());
+       }catch( Exception s)
+       {
+          scale_factor =1;
+       }
+       gv.setOtherGraph( fileName, scale_factor);
+    }else if( evt.getActionCommand().equals( "Clear Compare Data" ))
+    {
+       gv.setOtherGraph(  null , -1);
+    }
+      
+      // TODO Auto-generated method stub
+      
+   }
+   
 }

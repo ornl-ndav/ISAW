@@ -114,7 +114,7 @@ public class InitializationHandler implements IReceiveMessage
                                         new_inst_cmd , true , true );
       message_center.send( clear_hist );
 
-      Message clear_dq = new Message( Commands.INIT_DQ , null , true , true );
+      Message clear_dq = new Message( Commands.INIT_DQ , new_inst_cmd , true , true );
       message_center.send( clear_dq );
    }
   
@@ -158,7 +158,8 @@ public class InitializationHandler implements IReceiveMessage
       SetNewInstrumentCmd new_inst_cmd = 
          new SetNewInstrumentCmd( inst_name,
                                   load_file_cmd.getDetFile(),
-                                  load_file_cmd.getIncSpectrumFile() );
+                                  load_file_cmd.getIncSpectrumFile(),
+                                  load_file_cmd.getScaleFactor() );
       InitData( new_inst_cmd );
 
       return false;

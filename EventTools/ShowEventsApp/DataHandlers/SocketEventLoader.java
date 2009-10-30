@@ -74,17 +74,24 @@ public class SocketEventLoader extends UDPReceive
     *           The Instrument producing the UDP packets, or null
     */
    public SocketEventLoader( int port, MessageCenter message_center,
-            String Instrument )
+            String Instrument, String detInfFile, String IncidSpectraFile )
    {
-      super( port , getUDPUser( message_center , Instrument ) );
+      super( port , getUDPUser( message_center , Instrument, detInfFile,IncidSpectraFile ) );
       User = user;
    }
    
-   
-   private static thisIUDPUser getUDPUser( MessageCenter message_center , 
-                                           String Instrument )
+
+   public SocketEventLoader( int port, MessageCenter message_center,
+            String Instrument)
    {
-      user =new thisIUDPUser( message_center , Instrument );
+      this( port, message_center, Instrument, null, null);
+   }
+   private static thisIUDPUser getUDPUser( MessageCenter message_center , 
+                                           String Instrument, 
+                                           String detInfFile, 
+                                           String IncidSpectraFile )
+   {
+      user =new thisIUDPUser( message_center , Instrument,detInfFile ,IncidSpectraFile );
       return user;
    }
 
@@ -136,6 +143,8 @@ class thisIUDPUser implements IUDPUser
    private        int NReceived = 0;
 
    private        int total_received = 0;
+   
+   private      int TotalProtonsOnTarget =0;
 
    /**
     * Constructor
@@ -145,22 +154,53 @@ class thisIUDPUser implements IUDPUser
     * @param Instrument
     *           The intrument. If non null an INIT_NEW_INSTRUMENT message will
     *           be sent.
+    * @param detector_file_name
+    *           The name of the file with the detector information or null for
+    *           the default based on the instrument name.
+    * @param incident_spectra_filename
+    *           The name of the file with the incident specta or null for
+    *           default
     * 
     */
-   public thisIUDPUser( MessageCenter message_center, String Instrument )
+   public thisIUDPUser( MessageCenter message_center, String Instrument, 
+                         String detector_file_name,String incident_spectra_filename )
    {
       this.message_center = message_center;
+     
       if( Instrument != null )
          message_center
                   .send( new Message( Commands.INIT_NEW_INSTRUMENT ,
-                           new SetNewInstrumentCmd( Instrument , null , null ) ,
+                           new SetNewInstrumentCmd( Instrument , 
+                                   querieFile(detector_file_name) ,
+                                   querieFile( incident_spectra_filename)) ,
                            false ) );
       ( new timerThread( this ) ).start();
    }
 
+   private String querieFile( String fileName)
+   {
+      if( fileName == null || fileName.trim().length()<1)
+         return null;
+     if( !(new java.io.File( fileName)).exists())
+        return null;
+     return fileName;
+   }
+
+   public thisIUDPUser( MessageCenter message_center, String Instrument )
+   {
+      this(message_center, Instrument, null, null);
+   }
    public void setPause( boolean doPause)
    {
       pause = doPause;
+   }
+   
+   /**
+    * Resets the counter for the total protons on target.
+    */
+   public void resetAccumulator()
+   {
+      TotalProtonsOnTarget =0;
    }
 
    /**
@@ -280,6 +320,7 @@ class thisIUDPUser implements IUDPUser
                new TofEventList( tofs , ids ) , false , true ) );
 
       timeStamp = System.currentTimeMillis();
+     //Testing only--> message_center.send( new Message( Commands.SCALE_FACTOR, 1f/total_received, true, true));
 /*
       if( NEvents >= SocketEventLoader.BUFF_SIZE)
       {
