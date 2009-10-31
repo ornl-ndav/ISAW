@@ -90,8 +90,9 @@ focused_ds = TimeFocusGID( ds, id_range, middle_2_theta, middle_L2, true )
 #Display focused_ds
 
 grouped_ds = GroupDiffract( focused_ds, id_range, ds_index, true )
-SetField( grouped_ds, "Title", "Focused and Summed Bank #" & ds_index )
-SetDataLabel(grouped_ds,"Bank "& ds_index & " Sum","")
+title = GetField( ds, "Title" )
+SetField( grouped_ds, "Title", "Focused and Summed " & title )
+SetDataLabel(grouped_ds, title & " Sum","")
 SetAttr( grouped_ds, 0, "Group ID", ds_index )
 send grouped_ds
 #Display grouped_ds
