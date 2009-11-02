@@ -264,7 +264,7 @@ public class DQDataHandler implements IReceiveMessage
        float weight =0;
        if( wl >= minWL && wl < maxWL && wl >0)
           weight = Wl_list[(int)( (wl-minWL)*MM)];
-       if( weight !=0)
+       if( weight !=0) 
           weight = 1/weight;
        else if( Wl_list == null)
           weight = 1;
