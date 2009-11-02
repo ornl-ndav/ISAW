@@ -255,12 +255,12 @@ public class DQDataHandler implements IReceiveMessage
        x = xyz[index++];
        y = xyz[index++];
        z = xyz[index++];
-       float Qsq =x*x + y*y + z*z;
-       mag_q = (float)Math.sqrt( Qsq );
+       
+       mag_q = (float)Math.sqrt( x*x + y*y + z*z );
        d_val = (float)(2 * Math.PI / mag_q);
        
        //------ calculate weight for normalized values
-       float wl = 2*d_val*(float)Math.sqrt( .5+2*x*x/(Qsq*Qsq) );
+       float wl = -2*d_val*x/mag_q;;
        float weight =0;
        if( wl >= minWL && wl < maxWL && wl >0)
           weight = Wl_list[(int)( (wl-minWL)*MM)];
