@@ -219,7 +219,7 @@ public class IsawInstaller extends JFrame
     // button and label stuff
     private static final String UNPACK_ARCH = "Unpack Archive:";
     private static final String INSTALL_LOC = "Install Directory:";
-    private static final String BATCH_FILE  = "Batch File:";
+    private static final String BATCH_FILE  = "Isaw Batch File:";
     private static final String JAVA_LOC    = "Java Location:";
     private static final String CANCEL_BUT  = "Cancel";
     private static final String CHANGE      = "Change";
@@ -437,9 +437,9 @@ public class IsawInstaller extends JFrame
      * false, otherwise will invoke either "noBatch" or "yesBatch".
      */
     private boolean makeBatch(){
-	String msg = "Create a batch file?";
+	String msg = "Create a batch files?";
 	switch(JOptionPane.showConfirmDialog(IsawInstaller.this,msg,
-			     "Batch File",JOptionPane.YES_NO_CANCEL_OPTION)){
+			     "Batch Files",JOptionPane.YES_NO_CANCEL_OPTION)){
 	case JOptionPane.CANCEL_OPTION:
 	    if((batch.getText()).equals(NO_BATCH)){
 		return false;
@@ -500,7 +500,7 @@ public class IsawInstaller extends JFrame
 	    return null;
 	}
 
-	filename=ISAWgetFile("Select Name of Batch File",filename);
+	filename=ISAWgetFile("Select Name of Isaw Batch File",filename);
 
 	if(filename==null) return null;
 
@@ -597,12 +597,31 @@ public class IsawInstaller extends JFrame
     }
 
     /**
-     * Writes out the system dependent batch file.
+     * Writes out the system dependent batch files.
      */
-    private void writeBatch(){
+    private void writeBatch()
+    {
+       writeBatch(null);
+       writeBatch("EventTools.ShowEventsApp.IsawEV");
+       writeBatch("Wizard.TOF_SCD.InitialPeaksWizard_SNS");
+       writeBatch("Wizard.TOF_SCD.InitialPeaksWizard_SNS1");
+       writeBatch("Wizard.TOF_SCD.DailyPeaksWizard_SNS");
+    }
+    
+    private void writeBatch( String className){
 	String filename=batch.getText();
         if((filename==null)||(filename.equals(NO_BATCH)))return;
-
+   if( className != null )
+      {
+         int k = filename.lastIndexOf( "Isaw" );
+         if( k < 0 )
+            return;
+         String Subs = className.substring( 1 + className.lastIndexOf( '.' ) );
+         filename = filename.substring( 0 , k ) + Subs
+                  + filename.substring( k + 4 );
+      }else
+         className = "IsawGUI.Isaw";
+   
 	File batchF=new File(filename);
 	if(batchF.exists()){
 	    int last=filename.lastIndexOf(".");
@@ -654,13 +673,13 @@ public class IsawInstaller extends JFrame
 		+"path ./lib;%PATH%"+newline
 		+"java -mx256m -cp \""+fixSeparator(isaw_home)
                 +";Isaw.jar;sgt_v2.jar;gov.jar;IPNS.jar;ISIS.jar;jnexus.jar;sdds.jar;SSG_Tools.jar;jogl.jar;gluegen-rt.jar;"
-                +"jhall.jar;jython.jar;.\" IsawGUI.Isaw"+newline
+                +"jhall.jar;jython.jar;.\" "+ className+newline
 		+"rem --"+newline
  		+"rem The following command is used to run from Isaw folder"
 		+ newline
 		+"rem --"+newline
 		+"rem java -mx256m -cp Isaw.jar;sgt_v2.jar;gov.jar;IPNS.jar;ISIS.jar;jnexus.jar;sdds.jar;SSG_Tools.jar;jogl.jar;gluegen-rt.jar;"
-		+"jhall.jar;jython.jar;.\" -Dsun.awt.noerasebackground=true -Dsun.java2d.noddraw=true IsawGUI.Isaw"+newline;
+		+"jhall.jar;jython.jar;.\" -Dsun.awt.noerasebackground=true -Dsun.java2d.noddraw=true -Dsun.java2d.opengl=true "+className+newline;
 	}else if(operating_system.equals(LIN_ID)){
 	    content="#!/bin/sh"+newline
 		+"ISAW="+isaw_home+newline
@@ -669,7 +688,7 @@ public class IsawInstaller extends JFrame
 		+"cd $ISAW"+newline
 		+"$JAVA -mx256m -server -cp $ISAW:$ISAW/Isaw.jar:$ISAW/gov.jar:$ISAW/IPNS.jar:$ISAW/ISIS.jar:"+
 		"$ISAW/jnexus.jar:$ISAW/sgt_v2.jar:$ISAW/sdds.jar:$ISAW/SSG_Tools.jar:$ISAW/jogl.jar:$ISAW/gluegen-rt.jar:"
-		+"$ISAW/jhall.jar:$ISAW/jython.jar:. -Dsun.awt.noerasebackground=true IsawGUI.Isaw"+newline;
+		+"$ISAW/jhall.jar:$ISAW/jython.jar:. -Dsun.awt.noerasebackground=true "+className+newline;
 	}else if(operating_system.equals(SUN_ID)){
 	    content="#!/bin/sh"+newline
 		+"ISAW="+isaw_home+newline
@@ -678,7 +697,7 @@ public class IsawInstaller extends JFrame
 		+"cd $ISAW"+newline
 		+"$JAVA -mx256m -cp $ISAW:$ISAW/Isaw.jar:$ISAW/gov.jar:$ISAW/IPNS.jar:$ISAW/ISIS.jar:"+
 		"$ISAW/jnexus.jar:$ISAW/sgt_v2.jar:$ISAW/sdds.jar:$ISAW/SSG_Tools.jar:$ISAW/jogl.jar:$ISAW/gluegen-rt.jar:"
-		+"$ISAW/jhall.jar:$ISAW/jython.jar:. -Dsun.awt.noerasebackground=true  IsawGUI.Isaw"+newline;
+		+"$ISAW/jhall.jar:$ISAW/jython.jar:. -Dsun.awt.noerasebackground=true  "+className+newline;
         }else if(operating_system.equals(MAC_ID)){
             content="tell application \"Terminal\""+newline
                 +"      do script with command \"java -mx256m -cp "
@@ -694,7 +713,7 @@ public class IsawInstaller extends JFrame
                 +isaw_home+"/jogl.jar:"
                 +isaw_home+"/gluegen-rt.jar:"
                 +isaw_home+"/jython.jar:"
-                +isaw_home+"/jhall.jar:. -Dsun.awt.noerasebackground=true IsawGUI.Isaw\""+newline
+                +isaw_home+"/jhall.jar:. -Dsun.awt.noerasebackground=true "+className+"\""+newline
                 +"end tell"+newline;
 	}else{
 	    System.err.println("Unknown operating system: "+operating_system);
@@ -893,7 +912,7 @@ public class IsawInstaller extends JFrame
 	installDir=new JButton(CHANGE);
 	// ========== stuff for batch file frame
 	JPanel batchP = new JPanel(new GridBagLayout());
-	batchP.setBorder(BorderFactory.createTitledBorder("Create Batch File"));
+	batchP.setBorder(BorderFactory.createTitledBorder("Create Batch Files"));
 	// ========== cancel button
 	cancelBut=new JButton(CANCEL_BUT);
 	cancelBut.setForeground(Color.red);
