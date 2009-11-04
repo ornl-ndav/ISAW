@@ -611,6 +611,7 @@ public class IsawInstaller extends JFrame
     private void writeBatch( String className){
 	String filename=batch.getText();
         if((filename==null)||(filename.equals(NO_BATCH)))return;
+   String memory ="256";
    if( className != null )
       {
          int k = filename.lastIndexOf( "Isaw" );
@@ -619,6 +620,8 @@ public class IsawInstaller extends JFrame
          String Subs = className.substring( 1 + className.lastIndexOf( '.' ) );
          filename = filename.substring( 0 , k ) + Subs
                   + filename.substring( k + 4 );
+         if( Subs.equals("IsawEV"))
+           memory ="1000";
       }else
          className = "IsawGUI.Isaw";
    
@@ -671,14 +674,14 @@ public class IsawInstaller extends JFrame
 		+"rem --"+newline
 		+"cd "+isaw_home+newline
 		+"path ./lib;%PATH%"+newline
-		+"java -mx256m -cp \""+fixSeparator(isaw_home)
+		+"java -mx"+memory+"m -cp \""+fixSeparator(isaw_home)
                 +";Isaw.jar;sgt_v2.jar;gov.jar;IPNS.jar;ISIS.jar;jnexus.jar;sdds.jar;SSG_Tools.jar;jogl.jar;gluegen-rt.jar;"
                 +"jhall.jar;jython.jar;.\" "+ className+newline
 		+"rem --"+newline
  		+"rem The following command is used to run from Isaw folder"
 		+ newline
 		+"rem --"+newline
-		+"rem java -mx256m -cp Isaw.jar;sgt_v2.jar;gov.jar;IPNS.jar;ISIS.jar;jnexus.jar;sdds.jar;SSG_Tools.jar;jogl.jar;gluegen-rt.jar;"
+		+"rem java -mx"+memory+"m -cp Isaw.jar;sgt_v2.jar;gov.jar;IPNS.jar;ISIS.jar;jnexus.jar;sdds.jar;SSG_Tools.jar;jogl.jar;gluegen-rt.jar;"
 		+"jhall.jar;jython.jar;.\" -Dsun.awt.noerasebackground=true -Dsun.java2d.noddraw=true -Dsun.java2d.opengl=true "+className+newline;
 	}else if(operating_system.equals(LIN_ID)){
 	    content="#!/bin/sh"+newline
@@ -686,7 +689,7 @@ public class IsawInstaller extends JFrame
 		+"JAVA="+java_home+newline
 		+"export LD_LIBRARY_PATH="+lib_home+newline
 		+"cd $ISAW"+newline
-		+"$JAVA -mx256m -server -cp $ISAW:$ISAW/Isaw.jar:$ISAW/gov.jar:$ISAW/IPNS.jar:$ISAW/ISIS.jar:"+
+		+"$JAVA -mx"+memory+"m -server -cp $ISAW:$ISAW/Isaw.jar:$ISAW/gov.jar:$ISAW/IPNS.jar:$ISAW/ISIS.jar:"+
 		"$ISAW/jnexus.jar:$ISAW/sgt_v2.jar:$ISAW/sdds.jar:$ISAW/SSG_Tools.jar:$ISAW/jogl.jar:$ISAW/gluegen-rt.jar:"
 		+"$ISAW/jhall.jar:$ISAW/jython.jar:. -Dsun.awt.noerasebackground=true "+className+newline;
 	}else if(operating_system.equals(SUN_ID)){
@@ -695,12 +698,12 @@ public class IsawInstaller extends JFrame
 		+"JAVA="+java_home+newline
 		+"LD_LIBRARY_PATH="+lib_home+newline
 		+"cd $ISAW"+newline
-		+"$JAVA -mx256m -cp $ISAW:$ISAW/Isaw.jar:$ISAW/gov.jar:$ISAW/IPNS.jar:$ISAW/ISIS.jar:"+
+		+"$JAVA -mx"+memory+"m -cp $ISAW:$ISAW/Isaw.jar:$ISAW/gov.jar:$ISAW/IPNS.jar:$ISAW/ISIS.jar:"+
 		"$ISAW/jnexus.jar:$ISAW/sgt_v2.jar:$ISAW/sdds.jar:$ISAW/SSG_Tools.jar:$ISAW/jogl.jar:$ISAW/gluegen-rt.jar:"
 		+"$ISAW/jhall.jar:$ISAW/jython.jar:. -Dsun.awt.noerasebackground=true  "+className+newline;
         }else if(operating_system.equals(MAC_ID)){
             content="tell application \"Terminal\""+newline
-                +"      do script with command \"java -mx256m -cp "
+                +"      do script with command \"java -mx"+memory+"m -cp "
                 +isaw_home+":"
                 +isaw_home+"/Isaw.jar:"
                 +isaw_home+"/sgt_v2.jar:"
