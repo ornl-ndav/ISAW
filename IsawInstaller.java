@@ -606,6 +606,7 @@ public class IsawInstaller extends JFrame
        writeBatch("Wizard.TOF_SCD.InitialPeaksWizard_SNS");
        writeBatch("Wizard.TOF_SCD.InitialPeaksWizard_SNS1");
        writeBatch("Wizard.TOF_SCD.DailyPeaksWizard_SNS");
+       writeBatch("devTools.Method2OperatorWizard");
     }
     
     private void writeBatch( String className){
@@ -621,7 +622,7 @@ public class IsawInstaller extends JFrame
          filename = filename.substring( 0 , k ) + Subs
                   + filename.substring( k + 4 );
          if( Subs.equals("IsawEV"))
-           memory ="1000";
+           memory ="1200";
       }else
          className = "IsawGUI.Isaw";
    
