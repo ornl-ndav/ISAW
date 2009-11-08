@@ -64,14 +64,15 @@ public class QMapperHandler implements IReceiveMessage
 {
   private MessageCenter    message_center;
   private String           instrument_name;
+  private String           det_file;
   private SNS_Tof_to_Q_map mapper;
+  private String isaw_home = System.getProperty( "ISAW_HOME" ) + "/";
   private float            scale_factor;
 
   public QMapperHandler( MessageCenter message_center )
   {
     instrument_name = SNS_Tof_to_Q_map.SNAP;
-    String isaw_home = System.getProperty( "ISAW_HOME" ) + "/";
-    String det_file  = isaw_home + "InstrumentInfo/SNS/" +
+    det_file  = isaw_home + "InstrumentInfo/SNS/" +
                        instrument_name + ".DetCal";
     scale_factor = -1;
     
@@ -117,11 +118,10 @@ public class QMapperHandler implements IReceiveMessage
       if ( instrument_name == null ||
            !new_instrument.equals( instrument_name ) )
       {
-        String det_file = cmd.getDetectorFileName();
+        det_file = cmd.getDetectorFileName();
 
         if ( det_file == null )
         {
-          String isaw_home = System.getProperty( "ISAW_HOME" ) + "/";
           det_file = isaw_home + "InstrumentInfo/SNS/" +
                      new_instrument + ".DetCal";
         }
@@ -151,7 +151,8 @@ public class QMapperHandler implements IReceiveMessage
         }
       }
 
-       Util.sendInfo( "QMapper set up for " + instrument_name );
+       Util.sendInfo( "QMapper set up for " + instrument_name +
+                      "\nUsing Detector File: " + det_file );
        Message new_inst_done = new Message( Commands.INIT_NEW_INSTRUMENT_DONE,
                                             null,
                                             true,
