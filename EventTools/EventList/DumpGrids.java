@@ -51,9 +51,12 @@ public class DumpGrids
   public static void main( String args[] ) throws Exception
   {
     Vector<IDataGrid> grids = new Vector<IDataGrid>();
+    float   initial_path = 0;
+    boolean have_initial_path = false;
 
 //  String filename = "/usr2/ARCS_SCD/ARCS_419.nxs";
-    String filename = "/usr2/SEQUOIA/SEQ_328.nxs";
+//  String filename = "/usr2/SEQUOIA/SEQ_328.nxs";
+    String filename = "/usr2/POWGEN/PG3_293.nxs";
 
     NexusRetriever nr = new NexusRetriever( filename );
     nr.RetrieveSetUpInfo( null );
@@ -70,6 +73,17 @@ public class DumpGrids
       else
       {
         Data data = ds.getData_entry(0);
+
+        if ( !have_initial_path )
+        {
+          float temp = AttrUtil.getInitialPath(data);
+          if ( !Float.isNaN(temp) )
+          {
+            initial_path = temp;
+            have_initial_path = true;
+          }
+        }
+
         PixelInfoList pil = AttrUtil.getPixelInfoList( data );
         if ( pil == null )
           System.out.println("NO PIXEL INFO IN " + ds.getTitle() ); 
@@ -92,6 +106,23 @@ public class DumpGrids
 
     String outfilename = filename + ".grids";
     PrintStream out = new PrintStream( outfilename );
+
+    out.println("#");
+    out.println("# Detector Position Information Extracted From NeXus file: ");
+    out.println("# " + filename );
+    out.println("#");
+    out.println("# Lengths are in centimeters."); 
+    out.println("# Base and up give directions of unit vectors for a local");
+    out.println("# x,y coordinate system on the face of the detector.");
+    out.println("#");
+    out.println("#");
+    out.println("# " + (new Date()).toString() ); 
+    out.println("6         L1     T0_SHIFT");
+    out.printf ("7 %10.4f            0\n", initial_path);
+    out.println("4 DETNUM  NROWS  NCOLS  WIDTH   HEIGHT   DEPTH   DETD   " +
+                "CenterX   CenterY   CenterZ    BaseX    BaseY    BaseZ    " +
+                "  UpX      UpY      UpZ" );
+
     for ( int i = 0; i < grids.size(); i++ )
       out.println( Peak_new_IO.GridString(grids.elementAt(i)) );
     out.close();
