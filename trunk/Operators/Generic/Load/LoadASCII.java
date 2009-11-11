@@ -73,7 +73,8 @@ import DataSetTools.operator.*;
 import DataSetTools.operator.Generic.Load.*;
 import DataSetTools.dataset.*;
 import DataSetTools.viewer.*;
-import gov.anl.ipns.Util.File.*;
+//import gov.anl.ipns.Util.File.*;
+import java.io.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
 import java.util.*;
@@ -177,7 +178,7 @@ public class LoadASCII extends GenericLoad
     s.append("@overview  This operator provides an example of an operator ");
     s.append("that reads data for one histogram from an ASCII text file ");
     s.append("and stores the data in a DataSet.  The data format that is ");
-    s.append("read is basically just (x, y) pairs in columns with some ");
+    s.append("read is basically just (x, y) pairs with some ");
     s.append("preliminary information lines.");
     s.append("\n\n Specifically, the file format is as follows: \n\n ");
     s.append("#1. Five lines of text listing a title, units and labels in ");
@@ -192,16 +193,21 @@ public class LoadASCII extends GenericLoad
     s.append("units for the x and y axes MUST BE THE SAME as for the ");
     s.append("other DataSet.\n\n");
     s.append("#2. One line containing the number of bins in this histogram\n");
-    s.append("\n#3. The list of (x, y) values.  The list should alternate, ");
-    s.append("starting with one x value on a line, then one y value on its ");
+    s.append("\n#3. The list of (x, y) values.");
+    s.append("The list of values may be given with the x and y values ");
+    s.append("alternating.  This could most naturally be done by either ");
+    s.append("having one value per line, or by having one pair per line. ");
+    s.append("If done with one value per line, it would ");
+    s.append("start with one x value on a line, then one y value on its ");
     s.append("own line, then an x value, etc.  So it looks like this: \n");
     s.append("(x value)\n(y value)\n(x value)\n (etc.) \n\n There must be ");
-    s.append("one more x value than y value.  To load data for a 'tabulated ");
-    s.append("function' instead of for a histogram, change the size of the ");
-    s.append("array of x values to be equal to the size of the array of y ");
-    s.append("values, and remove the line that reads in the last bin boundary.");                                                                        //     
+    s.append("one more x value than y value.  ");
+    s.append("If done with one pair per line, all but the last line ");
+    s.append("should contain the x value(left bin boundary) and y value ");
+    s.append("of a bin.  The last line should just ");
+    s.append("contain the right bin boundary of the last histogram bin. " );
     s.append("@assumptions The given file 'file_name' is an ASCII text file, ");
-    s.append("and is EXACTLY formatted as discussed in the 'Overview' section.");                                                                       //                                                              
+    s.append("and is formatted as discussed in the 'Overview' section.");                                                                       //                                                              
     s.append("@algorithm The file 'user_name' is opened and the title, x ");
     s.append("units, x label, y units, and y label (all of these are String ");
     s.append("objects) are obtained from the file. \n\n The operator obtains ");
@@ -243,24 +249,29 @@ public class LoadASCII extends GenericLoad
 
     try
     {
-      TextFileReader f = new TextFileReader( file_name );
+      FileReader f_in = new FileReader( file_name );
+      BufferedReader buffered_reader = new BufferedReader( f_in );
+      Scanner sc = new Scanner( buffered_reader );
 
-      String title   = f.read_line();
-      String x_units = f.read_line();
-      String x_label = f.read_line();
-      String y_units = f.read_line();
-      String y_label = f.read_line();
+      String title   = sc.nextLine();
+      String x_units = sc.nextLine();
+      String x_label = sc.nextLine();
+      String y_units = sc.nextLine();
+      String y_label = sc.nextLine();
 
-      int n_bins = f.read_int();
+      int n_bins = sc.nextInt();
       float y[] = new float[ n_bins ];
       float x[] = new float[ n_bins+1 ]; // histogram, so one extra bin boundary
       for ( int i = 0; i < n_bins; i++ )
       {
-        x[i] = f.read_float();
-        y[i] = f.read_float();
+        x[i] = sc.nextFloat();
+        y[i] = sc.nextFloat();
       }
-      x[n_bins] = f.read_float();        // read the last bin boundary value
+      x[n_bins] = sc.nextFloat();        // read the last bin boundary value
 
+      sc.close();
+      buffered_reader.close();
+      f_in.close();
                                          // Using a DataSetFactory to build the
                                          // DataSet will give the DataSet a
                                          // set of operators.
@@ -273,6 +284,7 @@ public class LoadASCII extends GenericLoad
     }
     catch ( Exception E )
     {
+      E.printStackTrace();
       return new ErrorString( E.toString() );
     } 
                                            // The file was loaded ok, so now
@@ -306,6 +318,7 @@ public class LoadASCII extends GenericLoad
                                                  // make and run the operator
                                                  // to load the data
     Operator op  = new LoadASCII("LoadASCII.dat");
+//    Operator op  = new LoadASCII("/home/dennis/Event_D.txt");
     Object   obj = op.getResult();
                                                  // display any message string
                                                  // that might be returned
