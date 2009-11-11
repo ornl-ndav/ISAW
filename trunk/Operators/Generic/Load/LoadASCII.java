@@ -276,7 +276,7 @@ public class LoadASCII extends GenericLoad
                                          // DataSet will give the DataSet a
                                          // set of operators.
       DataSetFactory ds_factory = 
-            new DataSetFactory( "Sample", x_units, x_label, y_units, y_label );
+            new DataSetFactory( title, x_units, x_label, y_units, y_label );
       ds = ds_factory.getDataSet();
       
       Data d = Data.getInstance( new VariableXScale(x), y, 1 );
