@@ -56,7 +56,8 @@ public class DumpGrids
 
 //  String filename = "/usr2/ARCS_SCD/ARCS_419.nxs";
 //  String filename = "/usr2/SEQUOIA/SEQ_328.nxs";
-    String filename = "/usr2/POWGEN/PG3_293.nxs";
+//  String filename = "/usr2/POWGEN/PG3_293.nxs";
+    String filename = "/usr2/DEMO/SNAP_767.nxs";
 
     NexusRetriever nr = new NexusRetriever( filename );
     nr.RetrieveSetUpInfo( null );
@@ -118,7 +119,7 @@ public class DumpGrids
     out.println("#");
     out.println("# " + (new Date()).toString() ); 
     out.println("6         L1     T0_SHIFT");
-    out.printf ("7 %10.4f            0\n", initial_path);
+    out.printf ("7 %10.4f            0\n", initial_path * 100 );
     out.println("4 DETNUM  NROWS  NCOLS  WIDTH   HEIGHT   DEPTH   DETD   " +
                 "CenterX   CenterY   CenterZ    BaseX    BaseY    BaseZ    " +
                 "  UpX      UpY      UpZ" );
