@@ -36,8 +36,10 @@ package DataSetTools.components.ui.Peaks;
 
 import java.util.Vector;
 
+import DataSetTools.components.ui.*;
 import DataSetTools.operator.Generic.TOF_SCD.IPeak;
 import gov.anl.ipns.MathTools.Geometry.Tran3D;
+import gov.anl.ipns.Util.Numeric.floatPoint2D;
 import gov.anl.ipns.Util.Sys.SharedMessages;
 import gov.anl.ipns.ViewTools.Panels.Image.IndexColorMaker;
 import gov.anl.ipns.ViewTools.Panels.ThreeD.*;
@@ -46,14 +48,11 @@ import gov.anl.ipns.ViewTools.Panels.Transforms.CoordJPanel;
 import gov.anl.ipns.ViewTools.Panels.Transforms.CoordTransform;
 import gov.anl.ipns.MathTools.Geometry.*;
 import gov.anl.ipns.ViewTools.UI.*;
-import java.awt.*; // import java.awt.event.KeyAdapter;
-// import java.awt.event.KeyEvent;
-// import java.awt.event.KeyListener;
+import java.awt.*; 
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 
-// import javax.swing.JFileChooser;
 import javax.swing.*;
 
 
@@ -69,7 +68,7 @@ import javax.swing.*;
  * NOTE: It is assumed throughout that the sequence number of a peak is one more
  * than the index of the peak in the peaks vector.
  */
-public class View3D extends ThreeD_JPanel
+public class View3D extends ThreeD_JPanel implements IMotion3D
 {
 
 
@@ -136,7 +135,10 @@ public class View3D extends ThreeD_JPanel
    Tran3D               currentTransformation;  // The current transformation from points to the
                                                 // 2D display
 
-   MyMouseListener      MouseListener;  // Mouse listener
+  // MyMouseListener      MouseListener;  // Mouse listener
+   iMouse_MotionListener      MouseListener;
+   int                  lastPickID;
+   float  ScaleZ =1;//  scaling to convert Qz values to a nice pixel range
 
    // Help String for this view
    public static String Help                  = "<html><body> *The green axis is Vertical<BR>*The red axis is in "
@@ -156,7 +158,7 @@ public class View3D extends ThreeD_JPanel
       this.Peaks = peaks;
       if( peaks == null )
          return;
-      
+      lastPickID = -1;
       omittedSeqNums = new Vector< Integer >();
       
       MinQ = MinIntensity = Float.POSITIVE_INFINITY;
@@ -216,11 +218,12 @@ public class View3D extends ThreeD_JPanel
       currentTransformation.setRotation(-90, new Vector3D(1f,0f,0f));
       SetViewing( currentTransformation );
       
-      MouseListener = new MyMouseListener( this );
+      MouseListener = new MyMouseListener( this );// new MouseListener3D( this);
       addMouseMotionListener( MouseListener );
       addMouseListener( MouseListener );
-      
-      MouseListener.setMode( RotateMode );
+     
+      if( MouseListener instanceof MyMouseListener)
+           ((MyMouseListener)MouseListener).setMode( RotateMode );
       
       CJP_handle_arrow_keys = false;//Do not let CoordJPanel handle the mouse
    }
@@ -235,8 +238,8 @@ public class View3D extends ThreeD_JPanel
     */
    public void setMouseMode( int newMode )
    {
-
-      MouseListener.setMode( newMode );
+      if( MouseListener instanceof MyMouseListener)
+         ((MyMouseListener)MouseListener).setMode( newMode );
 
    }
 
@@ -261,7 +264,7 @@ public class View3D extends ThreeD_JPanel
    public int getLastSelectedSeqNum()
    {
 
-      int id = MouseListener.getPickedID();
+      int id = lastPickID;// MouseListener.getPickedID();
       
       if( id > 0 && id <= Peaks.size() )
          
@@ -1155,6 +1158,163 @@ public class View3D extends ThreeD_JPanel
       setObjects( "R" + runNum + "D" + detNum , objs );
    }
 
+   
+
+  
+
+   /* (non-Javadoc)
+    * @see DataSetTools.components.ui.IMotion3D#getSelPixZ(int, int)
+    */
+   @Override
+   public int getSelPixZ( int PixelX , int PixelY )
+   {
+
+     int id = this.pickID( PixelX , PixelY , 6 );
+     if( id < 1)
+        return 0;
+     float[] Qs = null;
+      if( id <= Peaks.size())
+      {
+          Qs =Peaks.elementAt( id ).getUnrotQ();
+      }else
+        return 0;
+      Vector3D res = new Vector3D();
+      currentTransformation.apply_to( new Vector3D(Qs) ,res );
+      CoordTransform trans = this.getLocal_transform();
+      CoordBounds cns =trans.getSource();
+      CoordBounds cnd =trans.getDestination();
+      float DPix = Math.max(  Math.abs(cnd.getY2()-cnd.getY1()) ,  
+                        Math.abs( cnd.getX2()-cnd.getX1() ));
+      float DQ = Math.max(  Math.abs(cns.getY2()-cns.getY1()) ,  
+               Math.abs( cns.getX2()-cns.getX1() ));
+      
+      ScaleZ = DPix/DQ;;
+      
+      return -(int)((res.get()[2])*ScaleZ+.5);
+   }
+
+
+   /* (non-Javadoc)
+    * @see DataSetTools.components.ui.IMotion3D#setCenter(float, float, float)
+    */
+   @Override
+   public void setCenter( float right , float up , float infront, boolean relative )
+   {
+    
+      
+      CoordTransform trans = this.getLocal_transform();
+      CoordBounds cns =trans.getSource();
+      CoordBounds cnd =trans.getDestination();
+      float DPix = Math.max(  Math.abs(cnd.getY2()-cnd.getY1()) ,  
+                        Math.abs( cnd.getX2()-cnd.getX1() ));
+      float DQ = Math.max(  Math.abs(cns.getY2()-cns.getY1()) ,  
+               Math.abs( cns.getX2()-cns.getX1() ));
+      
+      ScaleZ = DQ/DPix;
+      floatPoint2D pts = null;
+      if( !relative)
+         pts = trans.MapFrom( new floatPoint2D( right,up) );
+      else
+    
+         pts = new floatPoint2D( -ScaleZ*right, ScaleZ*up);
+      
+      
+      Tran3D tr = new Tran3D();
+      tr.setTranslation( new Vector3D( -pts.x,-pts.y,infront*ScaleZ) );
+      tr.multiply_by( currentTransformation );
+      this.SetViewing(tr );
+      invalidate();
+      validate();
+      repaint();
+      this.send_message( ROTATED_DISPLAY);
+   }
+
+
+   /* (non-Javadoc)
+    * @see DataSetTools.components.ui.IMotion3D#setRotate(float, float)
+    */
+   @Override
+   public void setRotate( float dx , float dy )
+   {
+
+     if( dx ==0 && dy ==0)
+        return;
+     float sq = dx*dx+dy*dy;
+     //Convert pixel dx,dy to world coordinates
+     CoordTransform tt = getGlobal_transform();
+     CoordBounds cb = tt.getDestination();
+     float MM = Math.max( Math.abs( cb.getX2()-cb.getX1()), Math.abs(cb.getY2()-cb.getY1()) );
+     cb = tt.getSource();
+     
+     float Mwld = Math.max( Math.abs( cb.getX2()-cb.getX1()), Math.abs(cb.getY2()-cb.getY1()) );
+     dx = dx*Mwld/MM;
+     dy = dy*Mwld/MM;
+     float z = dx*dx+dy*dy;
+     if( z > Mwld*Mwld)
+        Mwld=2*(float)Math.sqrt( z );
+     
+     z = (float)Math.sqrt( Mwld*Mwld-z);
+     Vector3D pt1 = new Vector3D( 0,0,Mwld);
+     Vector3D pt2 = new Vector3D( dx,dy,z);
+     
+   
+     Vector3D norm = new Vector3D();
+     norm.cross(  pt2, pt1 );
+     
+     double angle = -Math.acos( pt2.dot( pt1 ) / pt2.length()
+              / pt1.length())* 180 / Math.PI;
+     
+     Tran3D trans = new Tran3D();
+     trans.setRotation( (float) angle , norm );
+     
+     trans.multiply_by( currentTransformation );
+     currentTransformation = trans;
+     SetViewing( currentTransformation);
+     send_message( this.ROTATED_DISPLAY);
+     repaint();
+   }
+
+
+   /* (non-Javadoc)
+    * @see DataSetTools.components.ui.IMotion3D#SetSelectID(int)
+    */
+   @Override
+   public void SetSelectID( int id )
+   {
+
+     lastPickID = id;
+     if( id != IThreeD_Object.INVALID_PICK_ID )
+     {
+        showSelectedPeak(id, false);
+        send_message( SELECTED_PEAK_CHANGED );
+     }
+    
+   }
+
+
+   /* (non-Javadoc)
+    * @see DataSetTools.components.ui.IMotion3D#setZoomRelative(float)
+    */
+   @Override
+   public void setZoomRelative( float up )
+   {
+     if( up ==1 || up <=0)
+        return;
+     up = (float)Math.sqrt( up );
+     CoordTransform cTrans = this.getLocal_transform();
+     CoordBounds bds = cTrans.getSource();
+     float Cx = (bds.getX1()+bds.getX2())/2;
+     float Cy = (bds.getY1()+bds.getY2())/2;
+     float Lx = up*(-bds.getX1()+bds.getX2())/2;
+     float Ly = up* (-bds.getY1()+bds.getY2())/2;
+     bds = new CoordBounds( Cx-Lx,Cy-Ly,Cx+Lx,Cy+Ly);
+     this.setLocalWorldCoords( bds );
+     repaint();
+     
+      
+   }
+
+
 
    /**
     * Handles all mouse event actions. Keyboard actions have not been been
@@ -1164,7 +1324,7 @@ public class View3D extends ThreeD_JPanel
     * @author Ruth
     * 
     */
-   class MyMouseListener implements MouseListener , MouseMotionListener
+   class MyMouseListener implements iMouse_MotionListener
    {
 
 
@@ -1343,7 +1503,7 @@ public class View3D extends ThreeD_JPanel
                   zQ = MaxQ / 1000;
          }
          // Now get a transformation from old PosPicked to Qx,Qy,Qz and apply it
-         // ti
+         // to
          // the currenttransformation.
 
          Vector3D vpos2 = new Vector3D( xQ , yQ , zQ );
@@ -1431,6 +1591,7 @@ public class View3D extends ThreeD_JPanel
             Point P = panel.getCurrent_pixel_point();
 
             id = panel.pickID( P.x , P.y , 13 );
+            SetSelectID( id);
             if( id != IThreeD_Object.INVALID_PICK_ID )
             {
                showSelectedPeak(id, false);
