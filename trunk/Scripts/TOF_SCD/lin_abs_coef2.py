@@ -2,11 +2,6 @@
 #           lin_abs_coeff2.py
 #-----------------------------------
 
-# @overview This script will load a list of SCD runs into the SCD Reciprocal plane viewer.
-#           Any SCD instrument whose data can be read by ISAW should work.  Currently that
-#           is the IPNS SCD and the LANSCE SCD. 
-
-
 # Program to calculate linear absorption coefficients.
 # ISAW gui version in Jython.
 
