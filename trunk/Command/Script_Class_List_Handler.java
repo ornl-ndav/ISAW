@@ -316,6 +316,7 @@ public class Script_Class_List_Handler  implements OperatorHandler{
            init();
            restored = true;
            RestoredFileNames = null;
+           CreateBaseDirectories();
     }
     
   static public String[] getPathArray(String PathList){
@@ -1589,7 +1590,56 @@ public class Script_Class_List_Handler  implements OperatorHandler{
 	    return false;
     }
     
-    
+    /**
+     * Creates user.home/ISAW/ and user.home/ISAW/tmp/ directories if
+     * they do not exist.
+     */
+             
+    public static void CreateBaseDirectories()
+    {
+       String S = System.getProperty("user.home");
+       if(S == null){ 
+         JOptionPane.showMessageDialog( null, "There is no User Home directory");
+         return;
+       }
+       if( !S.endsWith(File.separator))
+         S+=File.separator;
+       if( !(new File(S)).exists()){
+          JOptionPane.showMessageDialog(null,"The User HOME directory does not exist");
+          return;
+       }
+       
+       String filename= S+"ISAW"+File.separator;
+       if( !(new File(filename)).exists()){
+         
+          try{ 
+            if(!(new File(filename)).mkdir()){
+              JOptionPane.showMessageDialog( null , "Cannot Create ISAW directory in your home directory");
+              return;
+             }
+          }catch(Exception ss){
+             JOptionPane.showMessageDialog( null, "Cannot create ISAW directory in your home directory:"+
+                      ss.toString());
+             return;
+          }
+       }
+       
+       filename = filename+"tmp"+File.separator;
+       if( !(new File(filename)).exists()){
+          
+          try{ 
+            if(!(new File(filename)).mkdir()){
+              JOptionPane.showMessageDialog( null , "Cannot Create ISAW/tmp directory in your home directory");
+              return;
+             }
+          }catch(Exception ss){
+             JOptionPane.showMessageDialog( null, "Cannot create ISAW/tmp directory in your home directory:"+
+                      ss.toString());
+             return;
+          }
+       }
+       
+    }
     
     /**
      * This method will save the static information from this class to the file
