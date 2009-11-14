@@ -5,29 +5,18 @@
 # Program to calculate linear absorption coefficients.
 # ISAW gui version in Jython.
 
-# A. J. Schultz     first version: November, 2009
-
-
-# print '======================================================================\n'
-# print 'Input the molecular formula.'
-# print 'For example, for oxalic acid dihydrate, C2O4H2.2H2O, or C2O6H6, input'
-# print 'C 2 O 4 H 2 H 4 O 2    or    C 2 O 6 H 6'
-# print 'For deuterated oxalic acid dihydrate, input'
-# print 'C 2 O 6 D 6   or   C 2 O 6 2H 6'
-# print 'For La2NiO4.2, input'
-# print 'La 2 Ni 1 O 4.2\n'
-# print '======================================================================\n'
+# A. J. Schultz      first version: November, 2009
+# R. Mikkelson -- gui construction  November, 2009
 
 class lin_abs_coef2(GenericTOF_SCD):
     def setDefaultParameters(self):
         self.super__clearParametersVector()
-        self.addParameter(StringPG("Chemical formula:", None))
+        self.addParameter(StringPG("Chemical formula (click Help for examples):", None))
         self.addParameter(FloatPG("Number of formula units in the unit cell (Z):", 0))
         self.addParameter(FloatPG("Unit cell volume (A^3):", 0))
         
     def getResult(self):
     
-        print 'This is a message'
         # formulaString = raw_input('Input formula: ')
         formulaString = self.getParameter(0).value
         formulaList = formulaString.split()
@@ -88,6 +77,29 @@ class lin_abs_coef2(GenericTOF_SCD):
         print 'The linear absorption coefficent for total scattering is %f cm^-1' % muScat
         print 'The linear absorption coefficent for true absorption is %f cm^-1' % muAbs
 
+
+    def  getDocumentation( self):
+        S =StringBuffer()
+        S.append("Sample Inputs of molecular formula\n")
+        S.append(" For example, for oxalic acid dihydrate, C2O4H2.2H2O, or C2O6H6, input\n")
+        S.append("C 2 O 4 H 2 H 4 O 2    or    C 2 O 6 H 6\n")
+        S.append("For deuterated oxalic acid dihydrate, input\n")
+        S.append("C 2 O 6 D 6   or   C 2 O 6 2H 6\n")
+        S.append("For La2NiO4.2, input\n")
+        S.append("La 2 Ni 1 O 4.2\n")
+        S.append("@param  formula  The chemical formula input as described above")
+        S.append("@param   Z number of formula units")
+        S.append("@param  UnitVolume  the unit cell volume")
+        S.append("@return a float array with 2 entries, the total scattering and the true absorption")
+        return S.toString()
+
+    def getCategoryList( self):
+        S = String[3]
+        S[0]="Macros"
+        S[1] ="Instrument Type"
+        S[2] = "TOF_NSD"
+        return S
+        
     def __init__(self):
         Operator.__init__(self,"lin_abs_coef2")
 
