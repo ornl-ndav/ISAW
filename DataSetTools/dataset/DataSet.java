@@ -307,6 +307,7 @@ public class DataSet implements IAttributeList,
 
   private AttributeList attr_list;
   private OperationLog  op_log;
+  private static boolean   first = false;
 
   /**
    * Constructs an empty DataSet with the specified title, initial log
@@ -352,6 +353,11 @@ public class DataSet implements IAttributeList,
     this.ds_tag           = current_ds_tag++;   // record tag and advance to 
                                                 // the next tag value. 
     setTitle( title );
+    if( first)
+    {
+       first = false;
+       Command.Script_Class_List_Handler.CreateBaseDirectories();
+    }
   }
 
 

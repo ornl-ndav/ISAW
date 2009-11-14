@@ -300,6 +300,7 @@ abstract public class Operator implements Serializable, gov.anl.ipns.Operator.IO
    
    private static String[] categoryList=null;
 
+   public static boolean first       = true;
    public static final String DEFAULT_DOCS =  "This is the placeholder "
      +"documentation. The full documentation needs to be written using the "
      +"following options in a manner consistent with JavaDocs\n\n"
@@ -324,6 +325,11 @@ abstract public class Operator implements Serializable, gov.anl.ipns.Operator.IO
       this.title = title;
       parameters = null;
       setDefaultParameters();
+      if( first)
+      {
+         first = false;
+         Command.Script_Class_List_Handler.CreateBaseDirectories();
+      }
    } 
 
 
@@ -651,6 +657,7 @@ abstract public class Operator implements Serializable, gov.anl.ipns.Operator.IO
    * setDefaultParameters.
    */
   protected final void clearParametersVector(  ) {
+     
     parameters = new Vector(  );
   }
   
