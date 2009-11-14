@@ -269,7 +269,7 @@ public class FilenameUtil
    {
 
       // define the location of the URL version
-      final String URLDIR = null;//"http://www.pns.anl.gov/isaw/IsawHelp/";
+    //  final String URLDIR = null;//"http://www.pns.anl.gov/isaw/IsawHelp/";
 
 
       // start the string as being the value of helpdirectory
