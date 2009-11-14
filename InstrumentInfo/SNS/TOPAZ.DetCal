@@ -1,0 +1,14 @@
+# NEW CALIBRATION FILE FORMAT (in NeXus/SNS coordinates):
+# Lengths are in centimeters.
+# Base and up give directions of unit vectors for a local
+# x,y coordinate system on the face of the detector.
+#
+# Sat Nov 14 14:51:41 CST 2009
+#
+6         L1     T0_SHIFT
+7  1807.0116       26.288
+4 DETNUM  NROWS  NCOLS    WIDTH   HEIGHT   DEPTH   DETD   CenterX   CenterY   CenterZ    BaseX    BaseY    BaseZ      UpX      UpY      UpZ
+5      1    256    256  15.0000  15.0000  0.2000  19.00  -13.4350    0.0000   13.4350 -0.70711  0.00000 -0.70711  0.00000  1.00000  0.00000
+5      2    256    256  14.6058  14.7704  0.2000  18.79  -18.5036    2.5972   -1.9547 -0.00646 -0.01118 -0.99992  0.11080  0.99377 -0.01182
+5      3    256    256  14.8382  14.9397  0.2000  20.40  -13.1773    1.7577  -15.4697  0.69809 -0.10211 -0.70869  0.14722  0.98910  0.00251
+5      4    256    256  15.0000  15.0000  0.2000  19.00  -13.4350  -13.4350   -0.0001  0.00000  0.00000 -1.00000 -0.70711  0.70711  0.00000
