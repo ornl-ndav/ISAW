@@ -614,6 +614,7 @@ public class Wizard implements PropertyChangeListener, Serializable {
   private transient URL wizardHelpURL = null;
   private boolean IamRemote   = false;
   private IWizardFrontEnd frontEnd;
+  private static boolean first = true;
 
   //~ Constructors *************************************************************
 
@@ -639,6 +640,9 @@ public class Wizard implements PropertyChangeListener, Serializable {
     form_num          = -1;
     this.standalone   = standalone;
     tryToLoadProjectsDir(  );
+    if( first)
+       Command.Script_Class_List_Handler.CreateBaseDirectories();
+    first = false;
   }
 
   //~ Methods ******************************************************************
