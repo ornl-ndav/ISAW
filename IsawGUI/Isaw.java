@@ -577,8 +577,8 @@
  *  Removed a diagnostic print statement.
  *
  *  Revision 1.122  2003/01/20 17:26:16  pfpeterson
- *  Added method for having a default file filter. Currently allows 'nxs', 'nexus', 
- *  'sdds', 'ipns', 'run', 'gsas', 'gsa', and 'gda'.
+ *  Added method for having a default file filter. Currently allows 'nxs', 
+ *  'nexus', 'sdds', 'ipns', 'run', 'gsas', 'gsa', and 'gda'.
  *
  *  Revision 1.121  2002/12/10 20:39:27  pfpeterson
  *  More gracefully errors when JavaHelp is not present.
@@ -1010,7 +1010,7 @@ public class Isaw
         String val="";
 
         if(SharedData.VERSION.equals("Unknown_Version"))
-          version="1.9.1_b2";
+          version="1.9.1_b3";
         else
           version=SharedData.VERSION;
 
