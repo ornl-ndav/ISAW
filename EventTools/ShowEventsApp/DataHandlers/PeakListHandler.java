@@ -137,7 +137,6 @@ public class PeakListHandler implements IReceiveMessage
                                                       cmd.getBeta(),
                                                       cmd.getGamma() );
         UB= LinearAlgebra.getTranspose(UB);
-        indexAllPeaks( peakNew_list, UB);
         Util.sendInfo( "Finished Indexing" );
       }
       catch ( Exception ex )
@@ -155,15 +154,6 @@ public class PeakListHandler implements IReceiveMessage
                                     UB, true );
       message_center.send( set_or );
 
-      System.out.println("Indexing results are: " );
-
-      int total_peaks = peakNew_list.size();
-
-      int count = numIndexed( peakNew_list, tolerance );
-
-      Util.sendInfo( "Indexed " + count + 
-                     " of " + total_peaks + 
-                     " within " + tolerance );
       return false;
     }
 
@@ -231,7 +221,7 @@ public class PeakListHandler implements IReceiveMessage
 
   private void indexAllPeaks( Vector Peaks, float[][]UBT )
   {
-     float tolerance = .12f;
+    float tolerance = .12f;
     float[][]UB = LinearAlgebra.getTranspose( UBT );
     int n=0;
     for( int i=0; i<Peaks.size(); i++)
@@ -244,19 +234,19 @@ public class PeakListHandler implements IReceiveMessage
             pk.sethkl( 0f,0f,0f);
             pk.UB( UB );
             pk.UB( null );
-            if( distanceToInt(pk.h())> tolerance ||
-                     distanceToInt(pk.k())> tolerance ||
-                     distanceToInt(pk.l())> tolerance )
+            if( distanceToInt(pk.h()) > tolerance ||
+                distanceToInt(pk.k()) > tolerance ||
+                distanceToInt(pk.l()) > tolerance )
             {
                pk.sethkl( 0f , 0f , 0f );
                n++; 
             }
-           
          }
     }
     n = Peaks.size() -n;
-    Util.sendInfo( "Indexed "+n+" out of "+Peaks.size()+ " peaks to within .12" );
-    
+    Util.sendInfo( "Indexed " + n + 
+                   " out of " + Peaks.size() + 
+                   " peaks to within .12" );
   }
 
 
@@ -275,7 +265,8 @@ public class PeakListHandler implements IReceiveMessage
       IPeakQ peak = peakNew_list.elementAt(i);
       if ( distanceToInt( peak.h() ) <= tolerance &&
            distanceToInt( peak.k() ) <= tolerance &&
-           distanceToInt( peak.l() ) <= tolerance  )
+           distanceToInt( peak.l() ) <= tolerance &&
+           ( peak.h() != 0 || peak.k() != 0 || peak.l() != 0 ) )
         count++;
     }
     return count;
