@@ -1277,6 +1277,8 @@ public class Script_Class_List_Handler  implements OperatorHandler{
             if( !((PyScriptOperator)op).isInstallableOperator())
                op = null;
           // add it to the proper lists
+          try
+          {
           if(op!=null){
             if(op instanceof GenericOperator){
               OpnInfo opn= new OpnInfo( op);
@@ -1293,6 +1295,10 @@ public class Script_Class_List_Handler  implements OperatorHandler{
             if(LoadDebug) System.out.println( "OK" );
           }else{
             if(LoadDebug) System.out.println("NO");
+          }
+          }catch( Throwable thr)
+          {
+             if(LoadDebug) System.out.println("NO " + thr);
           }
         }else if(Extension.equalsIgnoreCase("class")){ // it is a class
             boolean isgeneric=!(opList==dsOpList);
