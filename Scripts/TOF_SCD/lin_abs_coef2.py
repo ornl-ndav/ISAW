@@ -41,9 +41,12 @@ class lin_abs_coef2(GenericTOF_SCD):
         # Hydrogen cross-sections are from:
         # Howard, J. A. K.; Johnson, O.; Schultz, A. J.; Stringer, A. M.
         #	J. Appl. Cryst. 1987, 20, 120-122.
-
-        filename = 'C:\ISAW\Databases\NIST_cross-sections.dat'
-
+        S = System.getProperty("ISAW_HOME")
+        if( not S.endswith('/')):
+            if(not S.endswith('\\')):
+                S=S+'/'
+        filename = S+'Scripts/TOF_SCD/NIST_cross-sections.dat'
+        
         # begin loop through each atom in the formula
         for i in range(numberOfIsotopes):
             j = 2*i
@@ -94,11 +97,8 @@ class lin_abs_coef2(GenericTOF_SCD):
         return S.toString()
 
     def getCategoryList( self):
-        S = String[3]
-        S[0]="Macros"
-        S[1] ="Instrument Type"
-        S[2] = "TOF_NSD"
-        return S
+       
+        return ["Macros","Instrument Type","TOF_NSCD"]
         
     def __init__(self):
         Operator.__init__(self,"lin_abs_coef2")
