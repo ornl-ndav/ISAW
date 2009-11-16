@@ -1,3 +1,23 @@
+#
+# Except for hydrogen, cross-section values are from the NIST web site:
+# http://www.ncnr.nist.gov/resources/n-lengths/list.html
+# which contains values from:
+# V. F. Sears, Neutron News, Vol. 3, No. 3, 1992, pp. 29-37.
+#
+# Hydrogen cross-sections are from:
+# Howard, J. A. K.; Johnson, O.; Schultz, A. J.; Stringer, A. M.
+#	J. Appl. Cryst. 1987, 20, 120-122.
+#
+# The table contains the following:
+#
+# Column  Unit  Quantity  
+# ------  ----  --------
+#      1  ---   Isotope  
+#      2  barn  total bound scattering cross section  
+#      3  barn  absorption cross section for 2200 m/s neutrons (wavelength = 1.8 A)
+#
+# Note: 1 barn = 1E-24 cm^2
+#
 H	20.6	34.56
 1H	20.6	34.56
 2H	7.64	0.000519
