@@ -2,18 +2,18 @@
 #           lin_abs_coeff2.py
 #-----------------------------------
 
-# Program to calculate linear absorption coefficients.
+# Program to calculate linear absorption coefficients and density.
 # ISAW gui version in Jython.
 
-# A. J. Schultz      first version: November, 2009
-# R. Mikkelson -- gui construction  November, 2009
+# A. J. Schultz --  November, 2009
+# R. Mikkelson -- gui construction:  November, 2009
 
 class lin_abs_coef2(GenericTOF_SCD):
     def setDefaultParameters(self):
         self.super__clearParametersVector()
-        self.addParameter(StringPG("Chemical formula (click Help for examples):", None))
-        self.addParameter(FloatPG("Number of formula units in the unit cell (Z):", 0))
-        self.addParameter(FloatPG("Unit cell volume (A^3):", 0))
+        self.addParameter(StringPG("Chemical formula (click Help for examples):", "C 2 O 6 H 6"))
+        self.addParameter(FloatPG("Number of formula units in the unit cell (Z):", 2))
+        self.addParameter(FloatPG("Unit cell volume (A^3):", 253))
         
     def getResult(self):
     
@@ -30,6 +30,7 @@ class lin_abs_coef2(GenericTOF_SCD):
 
         sumScatXs = 0.0
         sumAbsXs = 0.0
+        sumAtWt = 0.0
 
         print '\nAtom      ScatXs      AbsXs'	# print headings
         print   '----      ------      -----'
@@ -41,21 +42,20 @@ class lin_abs_coef2(GenericTOF_SCD):
         # Hydrogen cross-sections are from:
         # Howard, J. A. K.; Johnson, O.; Schultz, A. J.; Stringer, A. M.
         #	J. Appl. Cryst. 1987, 20, 120-122.
+        
         S = System.getProperty("ISAW_HOME")
         if( not S.endswith('/')):
             if(not S.endswith('\\')):
                 S=S+'/'
         filename = S+'Databases/NIST_cross-sections.dat'
-        
+
         # begin loop through each atom in the formula
         for i in range(numberOfIsotopes):
             j = 2*i
             input = open(filename, 'r')			# this has the effect of rewinding the file
             lineString = input.readline()		# read the first comment line
-            
             while lineString[0] == '#':         # search for the end of the comments block
                 lineString = input.readline()
- 
             # Begin to search the table for element/isotope match.
             
             lineList = lineString.split()       # this should be the H atom
@@ -66,12 +66,14 @@ class lin_abs_coef2(GenericTOF_SCD):
 
             scatteringXs = float(lineList[1])	# the total scattering cross section
             absorptionXs = float(lineList[2])	# the true absorption cross section at 1.8 A
+            atomicWeight = float(lineList[4])   # atomic weight
             number = float(formulaList[j+1])	# the number of this nuclei in the formula
             
             print '%-5s %10.5f %10.5f' % (lineList[0], scatteringXs, absorptionXs)
             
             sumScatXs = sumScatXs + ( number * scatteringXs )
             sumAbsXs = sumAbsXs + ( number * absorptionXs )
+            sumAtWt = sumAtWt + ( number * atomicWeight )
             
             input.close()
         # end loop
@@ -79,12 +81,17 @@ class lin_abs_coef2(GenericTOF_SCD):
         # Calculate the linear absorption coefficients in units of cm^-1
         muScat = sumScatXs * zParameter / unitCellVolume
         muAbs = sumAbsXs * zParameter / unitCellVolume
+        
+        # Calculate the density of the crystal in g/cc
+        density = (sumAtWt / 0.6022) * zParameter / unitCellVolume
 
         # Print the results.
         print '\n'
-        print 'The linear absorption coefficent for total scattering is %f cm^-1' % muScat
-        print 'The linear absorption coefficent for true absorption is %f cm^-1' % muAbs
-
+        print 'The linear absorption coefficent for total scattering is %6.3f cm^-1' % muScat
+        print 'The linear absorption coefficent for true absorption is %6.3f cm^-1' % muAbs
+        print 'The calculated density is %6.3f grams/cm^3' % density
+        
+        return muScat, muAbs, density
 
     def  getDocumentation( self):
         S =StringBuffer()
@@ -98,12 +105,13 @@ class lin_abs_coef2(GenericTOF_SCD):
         S.append("@param  formula  The chemical formula input as described above")
         S.append("@param   Z number of formula units")
         S.append("@param  UnitVolume  the unit cell volume")
-        S.append("@return a float array with 2 entries, the total scattering and the true absorption")
+        S.append("@return a float array with 3 entries, the total scattering and the true absorption\
+        linear absorption coefficients, and the density")
         return S.toString()
 
     def getCategoryList( self):
        
-        return ["Macros","Instrument Type","TOF_NSCD"]
+        return ["Macros","Single Crystal"]
         
     def __init__(self):
         Operator.__init__(self,"lin_abs_coef2")
