@@ -45,16 +45,21 @@ class lin_abs_coef2(GenericTOF_SCD):
         if( not S.endswith('/')):
             if(not S.endswith('\\')):
                 S=S+'/'
-        filename = S+'Scripts/TOF_SCD/NIST_cross-sections.dat'
+        filename = S+'Databases/NIST_cross-sections.dat'
         
         # begin loop through each atom in the formula
         for i in range(numberOfIsotopes):
             j = 2*i
             input = open(filename, 'r')			# this has the effect of rewinding the file
-            lineString = input.readline()		# read the first line for H atoms
-            lineList = lineString.split()
+            lineString = input.readline()		# read the first comment line
+            
+            while lineString[0] == '#':         # search for the end of the comments block
+                lineString = input.readline()
+ 
+            # Begin to search the table for element/isotope match.
+            
+            lineList = lineString.split()       # this should be the H atom
 
-            # Search table for element/isotope.
             while formulaList[j] != lineList[0]:
                 lineString = input.readline()
                 lineList = lineString.split()
