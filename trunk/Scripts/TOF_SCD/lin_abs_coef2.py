@@ -17,15 +17,12 @@ class lin_abs_coef2(GenericTOF_SCD):
         
     def getResult(self):
     
-        # formulaString = raw_input('Input formula: ')
         formulaString = self.getParameter(0).value
         formulaList = formulaString.split()
         numberOfIsotopes = len(formulaList)/2	# the number of elements or isotopes in the formula
 
-        # zParameter = int(raw_input('Input the number of formula units in the unit cell (Z): '))
-        zParameter = self.getParameter(1).value
+        zParameter = self.getParameter(1).value # number if formulas in the unit cell
 
-        # unitCellVolume = float(raw_input('Input the unit cell volume (A^3): '))
         unitCellVolume = self.getParameter(2).value
 
         sumScatXs = 0.0
@@ -56,6 +53,7 @@ class lin_abs_coef2(GenericTOF_SCD):
             lineString = input.readline()		# read the first comment line
             while lineString[0] == '#':         # search for the end of the comments block
                 lineString = input.readline()
+
             # Begin to search the table for element/isotope match.
             
             lineList = lineString.split()       # this should be the H atom
