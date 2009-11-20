@@ -88,6 +88,7 @@ public class IntegrateMultipleRuns extends GenericOperator{
       addParameter( new ChoiceListPG("Peak Algorithm",new String[]{"MaxIToSigI","Shoe Box", "MaxIToSigI-old","TOFINT","EXPERIMENTAL"}));
       addParameter( new IntArrayPG("Box Delta x (col) Range","-2:2"));
       addParameter( new IntArrayPG("Box Delta y (row) Range","-2:2"));
+      addParameter( new FloatPG("Use Shoe Box integration for peaks below this size",0));
       addParameter( new IntegerPG("Max running threads",1));
       addParameter( new BooleanPG("Pop Up Log Info",new Boolean(false)));
       addParameter( new BooleanPG("Pop Up integrate file",new Boolean(false)));
@@ -146,6 +147,8 @@ public class IntegrateMultipleRuns extends GenericOperator{
       S.append("@param   ");
       S.append("Box Delta y (row) Range (-2:2)");
       S.append("@param   ");
+      S.append("maximum peak for Shoe box intgration");
+      S.append("@param   ");
       S.append("The maximum number of threads to run");
       S.append("@param   ");
       S.append("Pop up the log file");
@@ -197,12 +200,13 @@ public class IntegrateMultipleRuns extends GenericOperator{
          java.lang.String PeakAlg = getParameter(14).getValue().toString();
          java.lang.String Xrange = (java.lang.String)(getParameter(15).getValue());
          java.lang.String Yrange = (java.lang.String)(getParameter(16).getValue());
-         int MaxThreads = ((IntegerPG)(getParameter(17))).getintValue();
-         boolean ShowLog = ((BooleanPG)(getParameter(18))).getbooleanValue();
-         boolean ShowPeaks = ((BooleanPG)(getParameter(19))).getbooleanValue();
+         float max_shoebox = ((FloatPG)(getParameter(17))).getfloatValue();
+         int MaxThreads = ((IntegerPG)(getParameter(18))).getintValue();
+         boolean ShowLog = ((BooleanPG)(getParameter(19))).getbooleanValue();
+         boolean ShowPeaks = ((BooleanPG)(getParameter(20))).getbooleanValue();
          java.lang.Object Xres=Wizard.TOF_SCD.Util.IntegrateMultipleRuns(path,outpath,run_numbers,DataSetNums,expName,
                   centering,useCalibFile,calibfile,line2use,time_slcie_range,increase,instr,FileExt,d_min,PeakAlg,
-                  Xrange,Yrange,MaxThreads,ShowLog, ShowPeaks );
+                  Xrange,Yrange,max_shoebox,MaxThreads,ShowLog, ShowPeaks );
 
          return Xres;
        }catch( Throwable XXX){

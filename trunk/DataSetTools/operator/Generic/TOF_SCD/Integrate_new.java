@@ -331,8 +331,7 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
    * integration range in y
    */
   private              int[] rowYrange={-2,2};   
-  
-  
+
   private String PeakAlg = "MaxItoSigI";
   
   //private  IntegratePt opIntPt = new IntegratePt();
@@ -385,6 +384,7 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
    *                    peak position
    * @param box_y_range The range of y (delta row) values to use around the 
    *                    peak position
+   * @param max_shoebox Maximum for shoebox integration
    */
   public Integrate_new( DataSet ds, 
                      String  integfile, 
@@ -395,7 +395,8 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
                      boolean append,
                      String  PeakAlg,
                      String  box_x_range,
-                     String  box_y_range )
+                     String  box_y_range, 
+                     float   max_shoebox )
   {
     this(ds); 
 
@@ -408,6 +409,7 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
     getParameter(9).setValue(new String( PeakAlg));
     getParameter(10).setValue(box_x_range);
     getParameter(11).setValue(box_y_range);
+    getParameter(12).setValue(max_shoebox);
   }
 
   /** 
@@ -433,6 +435,7 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
    *                    peak position
    * @param box_y_range The range of y (delta row) values to use around the
    *                    peak position
+   * @param max_shoebox Maximum for shoebox integration
    */
   public Integrate_new( DataSet ds, 
                      String  integfile, 
@@ -445,7 +448,8 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
                      boolean append,
                      String  PeakAlg,
                      String  box_x_range,
-                     String  box_y_range )
+                     String  box_y_range, 
+                     float   max_shoebox )
   {
     this(ds,
          integfile, matfile, 
@@ -453,7 +457,7 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
          lognum, 
          append, 
          PeakAlg,
-         box_x_range, box_y_range ); 
+         box_x_range, box_y_range, max_shoebox ); 
     getParameter(3).setValue(choices.elementAt(choice));
     getParameter(6).setValue( new Float(d_min) );
   }
@@ -528,6 +532,9 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
 
     // parameter(11)
     addParameter(new IntArrayPG("Box Delta y (row) Range","-2:2"));
+
+    // parameter(12)
+    addParameter(new FloatPG("min for shoebox integration",0));
   }
   
   /**
@@ -693,6 +700,7 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
         return new ErrorString("Invalid Y range specified");
       }
     }
+    float max_shoebox = ((FloatPG)getParameter(12)).getfloatValue();      // Param 12 **
 
    if ( DEBUG )
    {
@@ -750,7 +758,7 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
     LinearAlgebra.print( UB );
    
     Object Res = integrate( ds,centering,timeZrange,incrSlice,
-        d_min,listNthPeak,PeakAlg,colXrange,rowYrange,10000, logBuffer);
+        d_min,listNthPeak,PeakAlg,colXrange,rowYrange,max_shoebox,10000, logBuffer);
     
     if( Res == null || !(Res instanceof Vector))
        return Res;
@@ -798,6 +806,7 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
                                   String  PeakAlg, 
                                   int[]   colXrange, 
                                   int[]   rowYrange, 
+                                  float   max_shoebox,
                                   float   monCount,
                                   Object  logbuffer)
   {
@@ -861,6 +870,7 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
                                             PeakAlg,
                                             timeZrange, 
                                             colXrange,rowYrange,
+                                            max_shoebox,
                                             incrSlice,
                                             opIntPt,
                                             logbuffer) ;
@@ -894,11 +904,12 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
                                         int[]       timeZrange, 
                                         int[]       colXrange,
                                         int[]       rowYrange,
+                                        float       max_shoebox,
                                         int         incrSlice,
                                         IntegratePt opIntPt,
                                         Object      logbuffer)
   {
-    if(DEBUG) System.out.println("Integrating detector "+detnum);
+    if(DEBUG) System.out.println("Integrating detector new "+detnum);
     StringBuffer logBuffer = new StringBuffer();
     
     int dX=2, 
@@ -1245,11 +1256,21 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
                                             ds, ids,
                                             colXrange, rowYrange, timeZrange,
                                             logBuffer ); 
-        else if( PeakAlg.equals(NEW_INTEGRATE))
+        else if( PeakAlg.equals(NEW_INTEGRATE)){
           IntegrateUtils.integratePeak( (IPeak)peaks.elementAt(i),
                                          ds, ids, 
                                          timeZrange, incrSlice,
                                          logBuffer) ;
+          if(DEBUG) System.out.println("Integrating shoebox new "+max_shoebox);
+          peak = (IPeak)(peaks.elementAt(i));
+          if(DEBUG) System.out.println("Integrating intensity   "+peak.inti());
+          if(DEBUG) System.out.println("Integrating sigI        "+peak.sigi());
+          if( peak.inti()<=peak.sigi()*max_shoebox)
+          IntegrateUtils.integrateShoebox( (IPeak)peaks.elementAt(i),
+                                            ds, ids,
+                                            colXrange, rowYrange, timeZrange,
+                                            logBuffer ); 
+         }
        else 
           integratePeakExp((IPeak)peaks.elementAt(i),
                             ds, ids,
@@ -1263,11 +1284,21 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
                                             ds, ids,
                                             colXrange, rowYrange, timeZrange,
                                             logBuffer );
-        else if(PeakAlg.equals(NEW_INTEGRATE))
+        else if(PeakAlg.equals(NEW_INTEGRATE)){
           IntegrateUtils.integratePeak( (IPeak)peaks.elementAt(i),
                                          ds, ids,
                                          timeZrange,incrSlice,
                                          logBuffer);
+          if(DEBUG) System.out.println("Integrating shoebox new "+max_shoebox);
+          peak = (IPeak)(peaks.elementAt(i));
+          if(DEBUG) System.out.println("Integrating intensity   "+peak.inti());
+          if(DEBUG) System.out.println("Integrating sigI        "+peak.sigi());
+          if( peak.inti()<=peak.sigi()*max_shoebox)
+          IntegrateUtils.integrateShoebox( (IPeak)peaks.elementAt(i),
+                                            ds, ids,
+                                            colXrange, rowYrange, timeZrange,
+                                            logBuffer ); 
+         }
         else
         integratePeakExp( (IPeak)peaks.elementAt(i),
                            ds, ids,

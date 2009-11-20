@@ -74,6 +74,7 @@ public class IntegratePeaksProcessCaller implements IOperator
   int      minus_row_offset;
   int      plus_row_offset;
 
+  float    max_shoebox;
 
   /**
    *  Construct an object to integrate the peaks in the specified detector,
@@ -103,7 +104,8 @@ public class IntegratePeaksProcessCaller implements IOperator
                                       int      plus_col_offset,
 
                                       int      minus_row_offset,
-                                      int      plus_row_offset
+                                      int      plus_row_offset,
+                                      float    max_shoebox
                                     )
   {
     this.cmd_name           = cmd_name;
@@ -131,6 +133,7 @@ public class IntegratePeaksProcessCaller implements IOperator
 
     this.minus_row_offset   = minus_row_offset;
     this.plus_row_offset    = plus_row_offset;
+    this.max_shoebox        = max_shoebox;
   }
 
 
@@ -183,7 +186,8 @@ public class IntegratePeaksProcessCaller implements IOperator
                 plus_col_offset        + " " + 
 
                 minus_row_offset       + " " + 
-                plus_row_offset;
+                plus_row_offset       + " " + 
+                max_shoebox;
 
       System.out.println("EXECUTING: " + command );
  

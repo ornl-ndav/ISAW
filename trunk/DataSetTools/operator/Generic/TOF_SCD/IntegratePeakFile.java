@@ -229,6 +229,7 @@ import DataSetTools.retriever.RunfileRetriever;
 import gov.anl.ipns.Parameters.BooleanPG;
 import gov.anl.ipns.Parameters.IntArrayPG;
 import gov.anl.ipns.Parameters.IntegerPG;
+import gov.anl.ipns.Parameters.FloatPG;
 import gov.anl.ipns.Parameters.LoadFilePG;
 import gov.anl.ipns.Parameters.SaveFilePG;
 import gov.anl.ipns.Util.SpecialStrings.*;
@@ -332,7 +333,7 @@ public class IntegratePeakFile extends GenericTOF_SCD  {
                             boolean append,
                             boolean use_shoebox,
                             String  box_x_range,
-                            String  box_y_range )
+                            String  box_y_range, float max_shoebox )
   {
     this(ds); 
 
@@ -345,6 +346,7 @@ public class IntegratePeakFile extends GenericTOF_SCD  {
     getParameter(7).setValue(new Boolean(use_shoebox));
     getParameter(8).setValue(box_x_range);
     getParameter(9).setValue(box_y_range);
+    getParameter(10).setValue(max_shoebox);
   }
 
   /* --------------------------- getCommand ------------------------------- */ 
@@ -399,6 +401,9 @@ public class IntegratePeakFile extends GenericTOF_SCD  {
 
     // parameter(9)
     addParameter(new IntArrayPG("Box Delta y (row) Range","-2:2"));
+
+    // parameter(10)
+    addParameter(new FloatPG("max for shoebox integration",0));
   }
   
   /**

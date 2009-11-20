@@ -128,6 +128,7 @@ public class IntegratePeaksProcess
 
     int     minus_row_offset   = Integer.parseInt( args[16] );
     int     plus_row_offset    = Integer.parseInt( args[17] );
+    float   max_shoebox        = Float.parseFloat( args[18] );
 
     System.out.println( "LOADING " + fin_name + " #" + ds_num );
     System.out.println( "WRITING " + fout_base );
@@ -155,6 +156,7 @@ public class IntegratePeaksProcess
 
     System.out.println( "minus_row_offset  = " + minus_row_offset );
     System.out.println( "plus_row_offset   = " + plus_row_offset );
+    System.out.println( "max_shoebox   = " + max_shoebox );
 
 
     boolean is_IPNS_file = fin_name.toUpperCase().endsWith( "RUN" );
@@ -269,6 +271,7 @@ public class IntegratePeaksProcess
                                   peak_algorithm,
                                   col_range,
                                   row_range,
+                                  max_shoebox,
                                   monct,
                                   log_buffer );
 
