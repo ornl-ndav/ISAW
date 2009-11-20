@@ -84,6 +84,7 @@ public class integrate extends GenericOperator{
       addParameter( choice );
       addParameter( new PlaceHolderPG("Min/Max col change",new int[]{-1,3}));
       addParameter( new PlaceHolderPG("Min/Max row change",new int[]{-1,3}));
+      addParameter( new FloatPG("max shoebox",0));
       addParameter( new FloatPG("Monitor Count", 10000));
       addParameter( new PlaceHolderPG("Log buffer",null));
    }
@@ -126,6 +127,8 @@ public class integrate extends GenericOperator{
       S.append("left and   right offset around Peak column to consider");
       S.append("@param   ");
       S.append("left and right offset around Peak row  to consider");
+      S.append("@param   ");
+      S.append("the maximum for shoe_box integration");
       S.append( "@param monCount  the monitor Count" );
       S.append("@param   ");
       S.append("if this a non-null StringBuffer, the log informationwill be appended to it.");
@@ -171,10 +174,11 @@ public class integrate extends GenericOperator{
          java.lang.String PeakAlg = getParameter(6).getValue().toString();
          int[] colXrange = (int[])(getParameter(7).getValue());
          int[] rowYrange = (int[])(getParameter(8).getValue());
-         float monCount = ((FloatPG)getParameter(9)).getfloatValue();
-         java.lang.Object logbuffer = (java.lang.Object)(getParameter(10).getValue());
+         float max_shoebox = ((FloatPG)(getParameter(9))).getfloatValue();
+         float monCount = ((FloatPG)getParameter(10)).getfloatValue();
+         java.lang.Object logbuffer = (java.lang.Object)(getParameter(11).getValue());
          java.lang.Object Xres=DataSetTools.operator.Generic.TOF_SCD.Integrate_new.integrate(ds,centering,timeZrange,incrSlice,dmin,listNthPeak,PeakAlg,colXrange,rowYrange,
-                       monCount,logbuffer );
+                       max_shoebox,monCount,logbuffer );
          ds.removeAllOperators();
          ds.removeAll_data_entries();
          ds = null;

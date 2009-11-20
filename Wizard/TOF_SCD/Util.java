@@ -1951,6 +1951,7 @@ public class Util {
     *                                  x value(-1:3)
     * @param Yrange               Range of offsets around a peak's
     *                                  y value(-1:3)
+    * @param max_shoebox          maximum for shoebox
     * @param ShowLog              Pop up the log file
     * @param ShowPeaks            Pop up the Peaks file
     * @param slurm_queue_name     The name of the slurm queue to use, or
@@ -1979,6 +1980,7 @@ public class Util {
            String  peak_algorithm,
            String  Xrange,
            String  Yrange,
+           float   max_shoebox,
 
            boolean ShowLog,
            boolean ShowPeaks,
@@ -2106,7 +2108,8 @@ public class Util {
                                                     colXrange[1],
                             
                                                     rowYrange[0],
-                                                    rowYrange[1]
+                                                    rowYrange[1],
+                                                    max_shoebox
                                                    );
           ops.add( s_caller );
        }
@@ -2296,6 +2299,7 @@ public class Util {
     *                                  x value(-1:3)
     * @param Yrange               Range of offsets around a peak's
     *                                  y value(-1:3)
+    * @param max_shoebox          maximum for shoebox
     * @param maxThreads           The maximum number of threads to run
     * @param ShowLog              Pop up the log file
     * @param ShowPeaks            Pop up the Peaks file
@@ -2319,6 +2323,7 @@ public class Util {
            String  PeakAlg,
            String  Xrange,
            String  Yrange,
+           float   max_shoebox,
            int     maxThreads,
            boolean ShowLog,
            boolean ShowPeaks
@@ -2356,6 +2361,7 @@ public class Util {
            PeakAlg,
            Xrange,
            Yrange,
+           max_shoebox,
 
            ShowLog,
            ShowPeaks,
@@ -2460,7 +2466,7 @@ public class Util {
               
               OperatorThread opThrd = getIntegOpThread( ds, centering,
                        timeZrange, increase, d_min, 1, PeakAlg, colXrange,
-                       rowYrange, monCount, sbuff );
+                       rowYrange, max_shoebox, monCount, sbuff );
               
               opThrd.setName( filename + " ds num=" + DSnums[ dsIndx ] );//For error reporting
               
@@ -2569,7 +2575,7 @@ public class Util {
    //Sets up the operator thread
    private static OperatorThread getIntegOpThread( DataSet ds , int centering ,
             int[] timeZrange , int increase , float d_min , int listNthPeak ,
-            String PeakAlg , int[] colXrange , int[] rowYrange ,
+            String PeakAlg , int[] colXrange , int[] rowYrange , float max_shoebox,
             float monCount , StringBuffer sbuff ) {
 
       integrate Int = new integrate();
@@ -2582,8 +2588,9 @@ public class Util {
       Int.getParameter( 6 ).setValue( PeakAlg );
       Int.getParameter( 7 ).setValue( colXrange );
       Int.getParameter( 8 ).setValue( rowYrange );
-      Int.getParameter( 9 ).setValue( monCount );
-      Int.getParameter( 10 ).setValue( sbuff );
+      Int.getParameter( 9 ).setValue( max_shoebox );
+      Int.getParameter( 10 ).setValue( monCount );
+      Int.getParameter( 11 ).setValue( sbuff );
       OperatorThread Res = new OperatorThread( Int );
       
       return Res;

@@ -28,6 +28,9 @@
  * number DMR-0218882.
  * 
  * $Log$
+ * Revision 1.47  2009/09/28 23:21:48  vickie
+ * Use Shoebox integration for small peaks < max_shoebox
+ *
  * Revision 1.46  2006/09/28 23:21:48  rmikk
  * Specifically set forward slashes on all filenames
  *
@@ -340,16 +343,17 @@ public class IntegrateMultiRunsForm extends Form {
 
     addParameter( new IntArrayPG( "Box Delta x (col) Range", "-2:2" ) );  //12
     addParameter( new IntArrayPG( "Box Delta y (row) Range", "-2:2" ) );  //13
+    addParameter( new FloatPG( "Use Shoe Box integration for peaks below this size", new Float(0) ) );      //15
     setResultParam( new LoadFilePG( "Integrated Peaks File ", " " ) );    //14
 
     if( HAS_CONSTANTS ) {
       setParamTypes( 
         new int[]{ 0, 1, 3, 5, 9 }, new int[]{ 2, 4, 6, 7, 8, 10, 11, 12, 13 },
-        new int[]{ 14 } );
+        new int[]{ 14, 15 } );
     } else {
       setParamTypes( 
         null, new int[]{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13 },
-        new int[]{ 14 } );
+        new int[]{ 14, 15 } );
     }
   }
 
@@ -428,6 +432,7 @@ public class IntegrateMultiRunsForm extends Form {
     int[]   runsArray;
     String  boxDeltaX;
     String  boxDeltaY;
+    float   max_shoebox;
     String  IntegMethod;
     //get raw data directory
     param            = ( IParameterGUI )super.getParameter( 0 );
@@ -488,6 +493,10 @@ public class IntegrateMultiRunsForm extends Form {
     param            = ( IParameterGUI )super.getParameter( 13 );
     boxDeltaY        = ( ( IntArrayPG )param ).getStringValue(  );
 
+    //get maximum size peak for Shoe box integration
+    param            = ( IParameterGUI )getParameter( 14 );
+    max_shoebox         = ( ( Float )param.getValue(  ) ).floatValue(  );
+
     //the name for the saved *.integrate file
     integName        = outputDir + expName + ".integrate";
 
@@ -499,7 +508,7 @@ public class IntegrateMultiRunsForm extends Form {
  
     createIntegrateOperators( 
       calibFile, SCDline, integName, sliceRange, timeSliceDelta, d_min,
-      append, centerType, IntegMethod, boxDeltaX, boxDeltaY );
+      append, centerType, IntegMethod, boxDeltaX, boxDeltaY, max_shoebox );
 
     //validate the parameters and set the progress bar variables
     Object validCheck = validateSelf(  );
@@ -565,7 +574,7 @@ public class IntegrateMultiRunsForm extends Form {
     SharedData.addmsg( "Peaks are listed in " + integName );
 
     //set the integrate file name for the result
-    param = ( IParameterGUI )getParameter( 14 );
+    param = ( IParameterGUI )getParameter( 15 );
     param.setValue( integName.toString(  ) );
     param.setValidFlag( true );
 
@@ -592,6 +601,7 @@ public class IntegrateMultiRunsForm extends Form {
    *                       around the peak position
    * @param boxDeltaY      The range of y (delta row) values to use 
    *                       around the peak position
+   * @param max_shoebox       Maximum size peak for Shoe box integration
    */
   private void createIntegrateOperators( 
       String  calibFile, 
@@ -604,7 +614,8 @@ public class IntegrateMultiRunsForm extends Form {
       String  centerType, 
       String  IntegMethod,
       String  boxDeltaX, 
-      String  boxDeltaY ) {
+      String  boxDeltaY,
+      float   max_shoebox ) {
     loadHist    = new LoadOneHistogramDS(  );
     integrate   = new Integrate1(  );
     loadSCD     = new LoadSCDCalib(  );
@@ -632,6 +643,7 @@ public class IntegrateMultiRunsForm extends Form {
     integrate.getParameter( 9 ).setValue( IntegMethod);
     integrate.getParameter( 10 ).setValue( boxDeltaX );
     integrate.getParameter( 11 ).setValue( boxDeltaY );
+    integrate.getParameter( 12 ).setValue( new Float( max_shoebox ) );
 
     //LoadSCDCalib
     loadSCD.getParameter( 0 ).setValue( calibFile );
