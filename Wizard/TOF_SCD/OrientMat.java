@@ -236,7 +236,10 @@ public class OrientMat extends Form implements ActionListener , IObserver ,
    
    boolean                 DisableGraphicsOutput;
 
-
+   JPanel_UnOptiimized jp;
+   TabPane_UnOptimized tab;
+   JPanel ControlPanel;
+   JPanel_UnOptiimized Opns  ;
    /**
     * Constructor
     */
@@ -392,7 +395,74 @@ public class OrientMat extends Form implements ActionListener , IObserver ,
       this.setParamTypes( ConstParams , VarParams , ResParm );
    }
 
+   /**
+    * For Non Wizard use of the panel
+    * @return  A JPanel displaying the elements of this wizard form
+    */
+   public JPanel MakePanel()
+   {
+      makeGUI();
+      return getPanel();
+   }
 
+   /**
+    * Releases all stored structures. Do not kill this Form until after 
+    */
+   public void kill()
+   {
+      if( Orient != null)
+         Orient.kill();
+      Orient = null;
+      if( setPeaks != null)
+         setPeaks.kill();
+      setPeaks= null;
+      if( XtalLat != null)
+         XtalLat.kill();
+      XtalLat = null;
+      if( PeakFilter != null)
+         PeakFilter.kill();
+      PeakFilter = null;
+      if( V3DControl != null)
+         V3DControl.kill();
+      V3DControl = null;
+      if( OutInfo != null)
+         OutInfo.kill();
+      OutInfo = null;
+      if( PeakImg != null)
+         PeakImg.kill();
+      PeakImg = null;
+     
+      orientMat = null;
+      if( QViewFrame != null)
+         QViewFrame.dispose();
+      QViewFrame = null;
+      V3d = null;
+      
+      if( V3DItems != null)
+         V3DItems.kill();
+      V3DItems = null;
+      ShowQViewer = null;
+      if( jp != null)
+         jp.removeAll();
+      if( tab != null)
+         tab.removeAll();
+            
+      jp =  null;
+      tab = null;
+      JPanel pan = getPanel();
+      if( pan != null)
+      {
+         pan.removeAncestorListener( this );
+         pan.removeAll();
+      }
+      if( ControlPanel != null)
+         ControlPanel.removeAll();
+      if( Opns != null)
+         Opns.removeAll();
+      ControlPanel = null;
+      Opns = null;
+      
+   }
    /*
     * (non-Javadoc) Will display some GUI's(Others will be invisible only for
     * wizard save file). Will add other buttons like to show QView Some GUI's
@@ -498,9 +568,9 @@ public class OrientMat extends Form implements ActionListener , IObserver ,
       panel.removeAll();
       panel.setLayout( new GridLayout( 1 , 1 ) );
 
-      TabPane_UnOptimized tab = new TabPane_UnOptimized();
+      tab = new TabPane_UnOptimized();
 
-      JPanel ControlPanel = new JPanel();
+      ControlPanel = new JPanel();
       BoxLayout bx = new BoxLayout( ControlPanel , BoxLayout.Y_AXIS );
       ControlPanel.setLayout( bx );
       ControlPanel.add( ( (ParameterGUI) getParameter( OUT_FILE ) )
@@ -517,6 +587,7 @@ public class OrientMat extends Form implements ActionListener , IObserver ,
                .getGUIPanel( true ) );
       ControlPanel.add( ( (ParameterGUI) getParameter( DMAX ) )
                .getGUIPanel( true ) );
+      ControlPanel.add( Box.createVerticalGlue() );
       ShowQViewer = new JButton( "Show QView" );
 
       ShowQViewer.addActionListener( this );
@@ -530,18 +601,18 @@ public class OrientMat extends Form implements ActionListener , IObserver ,
       ControlPanel.add( ResParam.getGUIPanel( true ) );
       ResParam.setEnabled( false );
 
-      JPanel_UnOptiimized jp = new JPanel_UnOptiimized();
+      jp = new JPanel_UnOptiimized();
 
       jp.setLayout( new GridLayout( 1 , 1 ) );
       jp.add( ControlPanel );
       tab.addTab( "Operations" , jp );
 
       // Next Tab
-      jp = new JPanel_UnOptiimized();
+      Opns = new JPanel_UnOptiimized();
 
-      jp.setLayout( new GridLayout( 1 , 1 ) );
-      jp.add( OutInfo );
-      tab.addTab( "Information" , jp );
+      Opns.setLayout( new GridLayout( 1 , 1 ) );
+      Opns.add( OutInfo );
+      tab.addTab( "Information" , Opns );
 
       panel.add( tab );
       
@@ -927,34 +998,37 @@ public class OrientMat extends Form implements ActionListener , IObserver ,
    {
      if( QViewFrame == null)
         return;
-     
+    
      QViewFrame.dispose();
      QViewFrame = null;
+     getPanel().removeAll();
+     
       
    }
 
-   //------------------- UnOptimimized JPanel and JTabbedPane----------------
-   class JPanel_UnOptiimized extends JPanel
+  
+}
+//------------------- UnOptimimized JPanel and JTabbedPane----------------
+class JPanel_UnOptiimized extends JPanel
+{
+
+
+
+   public boolean isOptimizedDrawingEnabled()
    {
 
-
-
-      public boolean isOptimizedDrawingEnabled()
-      {
-
-         return false;
-      }
+      return false;
    }
+}
 
-   class TabPane_UnOptimized extends JTabbedPane
+class TabPane_UnOptimized extends JTabbedPane
+{
+
+
+
+   public boolean isOptimizedDrawingEnabled()
    {
 
-
-
-      public boolean isOptimizedDrawingEnabled()
-      {
-
-         return false;
-      }
+      return false;
    }
 }
