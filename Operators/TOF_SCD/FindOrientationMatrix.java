@@ -82,11 +82,14 @@ public class FindOrientationMatrix extends GenericOperator
    Info inf;
    FinishJFrame QViewer;
    FinishJFrame InfoViewer;
+   float MinD, MaxD;
+   float Delta1,Delta2;
    public FindOrientationMatrix(  )
    {
       super( "New Initial Orientation Matrix");
     
-     
+      MinD = MaxD = -1;
+      Delta1 = Delta2 = -1;
       setDefaultParameters();
       Peaks = null;
       view = null;
@@ -127,9 +130,9 @@ public class FindOrientationMatrix extends GenericOperator
 
       addParameter( new StringPG( "Prefix on file" , "" ) );//8
 
-      addParameter( new FloatPG( "Minimum d-spacing" , -1 ) );
+      addParameter( new FloatPG( "Minimum d-spacing" , -1 ) );//9
 
-      addParameter( new FloatPG( "Maximum d-spacing" , -1) );
+      addParameter( new FloatPG( "Maximum d-spacing" , -1) );//10
       
        ((ParameterGUI)getParameter(0)).addIObserver( this );
       addParameter( new ButtonPG( "Show Q view"));    //11
@@ -310,11 +313,11 @@ public class FindOrientationMatrix extends GenericOperator
                update1( (ParameterGUI) observed_obj );
             }
 
-            ((ButtonPG)getParameter(12)).addActionListener( orientMatCtrl.getActionListener());
+           // ((ButtonPG)getParameter(12)).addActionListener( orientMatCtrl.getActionListener());
             ((ButtonPG)getParameter(13)).addActionListener( ViewIn3D.getListener());
             ((ButtonPG)getParameter(14)).addActionListener( pkfilter.getActionListener());
             ((ButtonPG)getParameter(15)).addActionListener(setPeaks.getActionListener());
-            
+            ((ButtonPG)getParameter(12)).addActionListener( this);
             ((ButtonPG)getParameter(16)).addActionListener(this);
 
             ((ButtonPG)getParameter(11)).addActionListener(this);
@@ -374,13 +377,13 @@ public class FindOrientationMatrix extends GenericOperator
          Xtal.setCentering( param.getValue().toString().charAt( 0 ) );
       }else
       if( prompt.equals( "Length Tol(Crystal Params)" ) )
-      {
-          Xtal.setDeltas( ((FloatPG)param).getfloatValue() , -1 );
+      {   Delta1 = ((FloatPG)param).getfloatValue();
+          Xtal.setDeltas(Delta1  , Delta2 );
       }else
       if( prompt.equals( "Dot Prod Tol(Crystal Params)" ) )
       {
-
-         Xtal.setDeltas( -1,((FloatPG)param).getfloatValue()  );
+         Delta2 = ((FloatPG)param).getfloatValue();
+         Xtal.setDeltas(Delta1  , Delta2 );
       }else
       if( prompt.equals( "Show Peaks" ) )
       {
@@ -391,12 +394,14 @@ public class FindOrientationMatrix extends GenericOperator
 
       }else
       if( prompt.equals( "Minimum d-spacing" ) )
-      {
-         orientMatCtrl.setDMin_Max( ((FloatPG)param).getfloatValue() , -1 );
+      { 
+         MinD = ((FloatPG)param).getfloatValue();
+         orientMatCtrl.setDMin_Max( MinD, MaxD );
       }else
       if( prompt.equals( "Maximum d-spacing" ) )
       {
-         orientMatCtrl.setDMin_Max( -1, ((FloatPG)param).getfloatValue()  );
+         MaxD = ((FloatPG)param).getfloatValue();
+         orientMatCtrl.setDMin_Max( MinD, MaxD );
       }
    }
    
@@ -428,6 +433,14 @@ public class FindOrientationMatrix extends GenericOperator
          InfoViewer.addWindowListener(  this );
          InfoViewer.setSize(  800,800 );
          WindowShower.show(InfoViewer);
+      }else if( evt.getActionCommand().equals( OrientMatrixControl.ORIENT_MAT) )
+      {
+         for( int i = 3 ; i < 11 ; i++ )
+         {
+            
+            update1( (ParameterGUI) getParameter(i));
+         }
+         orientMatCtrl.getActionListener().actionPerformed( evt );
       }
              
    }
