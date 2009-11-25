@@ -586,7 +586,7 @@ public class GetUB {
      for( int i=Nelements-1; i>= n; i--)
         optimize( List[i],Peaks,omit,MaxXtalLengthReal);
      EliminateDuplicates( List,n,gridLength,MaxXtalLengthReal);
-     n = Math.max(  n , Nelements-1-30 );
+     n = Math.max(  n , Nelements-1-70 );
      
      //n = Nelements - 10;
      float[] weights = new float[7];
