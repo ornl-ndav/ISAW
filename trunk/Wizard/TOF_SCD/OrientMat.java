@@ -593,13 +593,17 @@ public class OrientMat extends Form implements ActionListener , IObserver ,
       ShowQViewer.addActionListener( this );
       ControlPanel.add( ShowQViewer );
       ControlPanel.add( V3DItems );
-      ControlPanel.add( Orient );
+      JButton butt = new JButton(OrientMatrixControl.ORIENT_MAT );
+      ControlPanel.add( butt );
+      butt.addActionListener( this);
       ControlPanel.add( PeakFilter );
       ControlPanel.add( setPeaks );
       ControlPanel.add( Box.createVerticalGlue() );
       IParameterGUI ResParam = getResultParam();
       ControlPanel.add( ResParam.getGUIPanel( true ) );
       ResParam.setEnabled( false );
+      
+     
 
       jp = new JPanel_UnOptiimized();
 
@@ -865,6 +869,28 @@ public class OrientMat extends Form implements ActionListener , IObserver ,
       
       if( ActionCommand.equals( OrientMatrixControl.ORIENT_MATRIX_CHANGED ))
          NewOrientMatrixSet = true;
+      
+      if( ActionCommand.equals(OrientMatrixControl.ORIENT_MAT ))
+      {
+         if(Orient == null )
+            return;
+                 
+         update( (  getParameter( XTAL_PARAMS )) ,ParameterGUI.VALUE_CHANGED );
+               
+         update( (  getParameter( XTAL_TYPE ) ),ParameterGUI.VALUE_CHANGED );
+                 
+         update( (  getParameter( XTAL_PARAMS_ERR1 ) ),ParameterGUI.VALUE_CHANGED );
+                  
+         update( (  getParameter( XTAL_PARAMS_ERR2 ) ),ParameterGUI.VALUE_CHANGED );
+                 
+         update( (  getParameter( DMIN ) ),ParameterGUI.VALUE_CHANGED );
+                 
+         update( (  getParameter( DMAX ) ),ParameterGUI.VALUE_CHANGED );
+         
+        Orient.getActionListener().actionPerformed( e );
+       
+         
+      }
 
    }
 
@@ -907,6 +933,8 @@ public class OrientMat extends Form implements ActionListener , IObserver ,
       if( ! ( observed_obj instanceof ParameterGUI ) )
          return;
       
+     
+      
       if( observed_obj == getParameter( XTAL_PARAMS ) )
       {
          Vector V = (Vector) ( (ArrayPG) getParameter( XTAL_PARAMS ) )
@@ -921,8 +949,9 @@ public class OrientMat extends Form implements ActionListener , IObserver ,
          float[] params = new float[ 6 ];
          for( int i = 0 ; i < 6 ; i++ )
             try
-            {
-               params[ i ] = ( (Number) V.elementAt( i ) ).floatValue();
+            {  
+               if( V != null)
+                  params[ i ] = ( (Number) V.elementAt( i ) ).floatValue();
             }
             catch( Exception s )
             {
