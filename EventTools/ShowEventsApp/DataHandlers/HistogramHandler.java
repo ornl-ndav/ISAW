@@ -84,6 +84,7 @@ public class HistogramHandler implements IReceiveMessage
   private int           num_bins;
   private long          num_to_load;
   private double        max_hist_value_sent;
+  private long          lastTimeShown;
 
   public HistogramHandler( MessageCenter message_center, 
                            MessageCenter view_message_center,
@@ -105,6 +106,8 @@ public class HistogramHandler implements IReceiveMessage
     message_center.addReceiver( this, Commands.ADD_HISTOGRAM_INFO );
     message_center.addReceiver( this, Commands.GET_HISTOGRAM_MAX );
     message_center.addReceiver( this, Commands.FIND_PEAKS );
+    
+    lastTimeShown = System.currentTimeMillis();
   }
 
 
@@ -153,6 +156,15 @@ public class HistogramHandler implements IReceiveMessage
        message_center.send( done_loading );
 
        double max = histogram.maxVal();
+       long time =  System.currentTimeMillis();
+       if( time - lastTimeShown > 15000)
+       {
+       String max_message = String.format(
+                "Max Histogram Value : %4.2f,  Total Events: %d",
+                 histogram.maxVal(), histogram.numAdded()  );
+          Util.sendInfo( max_message );
+          lastTimeShown = time;
+       }
        if ( max > 2 * max_hist_value_sent )
        {
          max_hist_value_sent = max;
@@ -162,10 +174,7 @@ public class HistogramHandler implements IReceiveMessage
                                          true );
          view_message_center.send( hist_max );
 
-         String max_message = String.format(
-               "Max Histogram Value : %4.2f,  Total Events: %d",
-                histogram.maxVal(), histogram.numAdded()  );
-         Util.sendInfo( max_message );
+        
        }
       }
       return false;
