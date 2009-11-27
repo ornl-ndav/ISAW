@@ -54,7 +54,7 @@ $Max_dSpacing  Float(12)         Maximum d-Spacing
 $LatParams   Array([4.9,4.9, 5.4,90.,90.,120.0000 ])           Enter Lattice Parameters(Auto w Lat..)
 $file     String                 Output Orientation Matrix File ( .mat ) 
 
-$ShowLog  Boolean( false)        Pop Up blind.log 
+$ShowLog  Boolean( false)        Pop Up log info 
 
 $path     DataDirectoryString(${Data_Directory})    Output Data Path 
 
@@ -66,6 +66,9 @@ if useFile
 
   X= readOrient( file1 )
   WriteMatrix( file, X)
+  if ShowLog
+     ViewASCII( file)
+  endif
   return X
   
 endif
@@ -87,6 +90,8 @@ elseif method =="Automatic"
 
 elseif method =="from Q Viewer"
    X = GetUBFrRecipLatPlanes( Peaks,MaxXTalLength,Status)
+   
+  WriteMatrix( file, X)
   
 elseif method =="Auto w Lattice Params"
    ClearFiles("xxx","peaks")
@@ -100,7 +105,12 @@ elseif method =="Auto w Lattice Params"
    Res =IndexPeaksWithOptimizer( PkFile,matPath,Out1File,LatParams[0],LatParams[1],LatParams[2],LatParams[3],LatParams[4],LatParams[5])
    Display Res
     X= readOrient( matPath )
-    return X
+    
+    WriteMatrix( file, X)
+   
+    if showLog
+       ViewASCII(file)
+    endif
 endif
 
 if method =="Blind"
