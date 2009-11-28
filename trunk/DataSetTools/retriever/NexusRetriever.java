@@ -66,9 +66,47 @@ public class NexusRetriever extends Retriever implements hasInformation
 {ExtGetDS ext ;
  String errormessage ;
  NxNode node ;
+ /**
+  * Mode argument for FixUpDataSet to reset NXDetector values. 
+  * This mode can be added to other Modes
+  */
  public static final int INexDetector   = 1;
+ 
+ /**
+  * Mode argument for FixUpDataSet to reset NXSample values. 
+  * This mode can be added to other Modes
+  */
  public static final int INexSample   = 2;
+
+ /**
+  * Mode argument for FixUpDataSet to reset NXBeam values. 
+  * This mode can be added to other Modes
+  */
  public static final int INexBeam   = 4;
+ 
+
+ /**
+  * Mode argument for FixUpDataSet to reset NXentry global attributes. 
+  * This mode can be added to other Modes
+  */
+ public static final int INexAttrGlobal   = 8;
+ 
+
+ /**
+  * Mode argument for FixUpDataSet to reset NXInstrument values that are 
+  * not NXdetector values. 
+  * This mode can be added to other Modes
+  */
+ public static final int INexInstrument  =16; // Non NXdetector entries
+ 
+
+ /**
+  * Mode argument for FixUpDataSet to reset NXEntry values that are 
+  * not NXinstrument, NXbeam, NXsample, or global attribute values
+  * This mode can be added to other Modes
+  * NOTE: Not implemented yet.
+  */
+ public static final int INexEntry       =32;// only SDS entries
  
 
     /**
@@ -194,10 +232,25 @@ public class NexusRetriever extends Retriever implements hasInformation
    public String[] getDataSetInfo( int data_set_num){
       if( ext == null)
          return new String[0];
-      return ext.getDataSetInfo( data_set_num);
+      return ext.getDataSetInfoString( data_set_num);
    }
 
 
+   /**
+    * Returns a DataSetInfo structure corresponding to the given data set
+    * 
+    * @param data_set_num  the data set number 
+    * @return DataSetInfo structure corresponding to the given data set
+    * 
+    * @see NexIO.DataSetInfo
+    */
+   public DataSetInfo getInfoForDataSet( int data_set_num)
+   {
+     if( ext == null)
+        return null;
+     return ext.getDataSetInfo( data_set_num);
+      
+   }
    
   /**
   * Returns any errormessages or "" if there are no errors or warnings
@@ -291,6 +344,12 @@ public class NexusRetriever extends Retriever implements hasInformation
     * @param Mode   Sum of the INex constants corresponding to the Nexus classes to be redone
     * @param CacheFilename  Name of the fast load Cache for this type of NeXus files or null
     * @return  true if there is and error( check errormessage) or false if there is no error
+    * 
+    * @see #INexDetector
+    * @see  #INexSample
+    * @see  #INexBeam
+    * @see  #INexAttrGlobal
+    * @see #INexInstrument
     */
    public boolean FixUpDataSet( DataSet DS, int dsNum,int Mode, 
             String CacheFilename){
