@@ -112,7 +112,9 @@ public class GetUB {
 
    public static float[]    xixj     = null;
    
-   public static float      DMIN    = 1f;
+   public static float      DMIN    = Float.NaN;
+   
+   public static boolean   ELIM_EQ_CRYSTAL_PARAMS  = false;
    
   // private static float[] line = new float[61];
 
@@ -600,6 +602,7 @@ public class GetUB {
      Integer[] sortList = comp.getRangList();
       
        MRes=GetUBs(  sortList,null,Peaks);
+       MRes = ReSort( MRes, Peaks, MaxXtalLengthReal, ELIM_EQ_CRYSTAL_PARAMS);
        System.out.println( "Through finding UB's");
        return MRes;
    }
@@ -747,6 +750,91 @@ public class GetUB {
            return false;
      return true;
      
+  }
+  
+  private static  Vector<float[][]> ReSort( Vector<float[][]> UBvec, Vector Peaks, 
+           float MaxXtalLength,  boolean ElimEqXtalParams)
+  {
+     if( UBvec == null || Peaks==null || MaxXtalLength <=0)
+        return null;
+     if( Peaks.size() < 2)
+        return UBvec;
+     
+    float[][][] MRes2= new float[UBvec.size()][4][];
+     for( int i=0; i< UBvec.size(); i++)
+     {
+        
+        float[][] elt = UBvec.elementAt( i );
+        float[] sortVec = new float[7];
+        sortVec[0]= 1- GetUB.IndexStat( elt, Peaks, .2f, null);
+        sortVec[0] = (int)(100*sortVec[0]+.5f);
+        sortVec[0] = 5*(int)(sortVec[0]/5);
+        double[] Xtals = Util.abc( LinearAlgebra.float2double( 
+                                                  elt));
+        //sort this 
+        SortXtals( Xtals);
+        for( int j=1; j< 7; j++)
+           sortVec[j]= (float) Xtals[j-1];
+        
+        MRes2[i][0]= sortVec;
+        
+        MRes2[i][1] = elt[0]; 
+        MRes2[i][2] = elt[1]; 
+        MRes2[i][3] = elt[2];
+        
+     }
+     UBvec.clear();
+     java.util.Arrays.sort( MRes2 , new MultiArrayComparator());
+     Vector<float[][]> Res = new Vector<float[][]>();
+     float[] prev = null;
+     for( int i=0; i < MRes2.length; i++)
+     {
+        boolean use = prev == null || !ElimEqXtalParams;
+        float[] ordering = (MRes2[i])[0];
+        
+        if( prev == null || !ElimEqXtalParams)
+           prev = ordering;
+        else
+        for( int j=0; j < 7 && !use ; j++)
+           if( Math.abs( ordering[j]-prev[j]) >.1f)
+           {
+              use = true;
+              prev = ordering;
+           }
+          
+              
+        if( use && (Float.isNaN( DMIN )|| MRes2[i][0][1] >= DMIN) && 
+                 MRes2[i][0][3] <= MaxXtalLength )
+        {
+           float[][] subArray = new float[3][];
+           subArray[0]= MRes2[i][1];
+           subArray[1]= MRes2[i][2];
+           subArray[2]= MRes2[i][3];
+          
+           Res.addElement( subArray  );
+        }
+     }
+     return Res;
+  }
+  
+  private static void SortXtals( double[] Xtals)
+  {
+    
+     for( int j=0; j<2;j++)
+     for( int i=0; i<2;i++)
+     {
+        if( Xtals[i] > Xtals[i+1])
+        {
+           double sav = Xtals[i];
+           Xtals[i]= Xtals[i+1];
+           Xtals[i+1] = sav;
+           sav= Xtals[3+i];
+           Xtals[3+i]= Xtals[4+i];
+           Xtals[4+i]= sav;
+           
+           
+        }
+     }
   }
    private static float[][] List2UBinv( Vector Peaks,int i1, int i2, int i3)
    {
@@ -1938,7 +2026,61 @@ public class GetUB {
    
    
 }
+class MultiArrayComparator implements Comparator
+{
 
+   /* (non-Javadoc)
+    * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
+    */
+   @Override
+   public int compare( Object arg0 , Object arg1 )
+   {
+
+      if( arg0 == null ||!(arg0 instanceof float[][]))
+         if( arg1 == null || !(arg1 instanceof float[][]))
+            return 0;
+         else
+            return 1;
+      
+      if( arg1 == null || !(arg1 instanceof float[][]))
+         return -1;
+      float[] arg11 = ((float[][])arg0)[0];
+      float[] arg21 = ((float[][])arg1)[0];
+      if( arg11 == null || arg11.length < 7)
+         if( arg21 == null || arg21.length < 7)
+            return 0;
+         else
+            return 1;
+
+      if( arg21 == null || arg21.length < 7)
+         return -1;
+      int x ;
+      if(arg11[0]==0f && Math.abs( arg11[1]-7.2958)<.01 &&
+               Math.abs( arg11[2]-7.3156)<.01 && Math.abs( arg11[3]-9.8411)<.01)
+         x= 1;
+      if(arg21[0]==0f && Math.abs( arg21[1]-7.2958)<.01 &&
+               Math.abs( arg21[2]-7.3156)<.01 && Math.abs( arg21[3]-9.8411)<.01)
+         x= 1;
+     
+      for( int i=0; i<7;i++)
+      { 
+         float xx = arg11[i]-arg21[i];
+         if( xx <.01 && xx > -.01)
+         {
+            
+         }else  if(xx <.01f)
+             
+            return -1;
+         else if( xx > -.01f)
+            return 1;
+      }
+      
+      return 0;
+         
+    
+   }
+   
+}
 class ListComparator implements Comparator<Integer>
 {
    float[][] list;
@@ -2020,6 +2162,8 @@ class ListComparator implements Comparator<Integer>
    {
       return sortInfo;
    }
+   
+  
    
 }
 
