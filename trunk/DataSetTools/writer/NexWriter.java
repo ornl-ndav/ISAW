@@ -177,6 +177,7 @@ public class NexWriter extends Writer
      if(! nwr.getErrorMessage().equals(""))
             { System.out.println("Could not Create File");
               errorMessage +="Could not Create NeXus File";
+              nwr.close();
               return;
             } 
       NxWriter Writer = new NxWriter( (NxWriteNode)nwr  );
@@ -184,7 +185,7 @@ public class NexWriter extends Writer
         if( !Writer.getErrorMessage().equals(""))
            {  System.out.println("Could not Create File");
            errorMessage +="Could not Create NeXus File";
-             
+              Writer.close();
               return;
            }
       DataSet Hist[], Monit[];
@@ -258,6 +259,7 @@ public class NexWriter extends Writer
          if( Writer.getErrorMessage()!= null && Writer.getErrorMessage().length()>0)
          {
             errorMessage = Writer.getErrorMessage();
+            Writer.close();
             return;
          }
          kMon = k1Hist+1;
@@ -301,51 +303,59 @@ public class NexWriter extends Writer
    public static Object SaveDataSets( String filename , 
             Vector DatSets, boolean append )
    {
-      
-      int n=0;
-      if( !append)
+
+      int n = 0;
+      if( ! append )
       {
-         File f = new File(filename);
-         if(f.exists())
+         File f = new File( filename );
+         if( f.exists() )
             try
-         {
-               if(!f.delete())
-                  return new ErrorString("could not delete file");
-         }catch( Exception ss)
-         {
-            return new ErrorString("could not delete file");
-         }
-         
+            {
+               if( ! f.delete() )
+                  return new ErrorString( "could not delete file" );
+
+            }
+            catch( Exception ss )
+            {
+               return new ErrorString( "could not delete file" );
+            }
+
       }
-      
-      if( DatSets != null)
+
+      if( DatSets != null )
          n += DatSets.size();
-      if( n <=0)
-         return new ErrorString("No DataSets to Save");
-      DataSet[] DSS = new DataSet[n ];
-      int k=0;
-      try{
-     
-      if( DatSets != null)
-         for( int i=0; i< DatSets.size(); i++)
-            DSS[k++]= (DataSet)DatSets.elementAt( i );
-      Writer nxWr = null;
-      if( filename.toUpperCase().endsWith( ".NXS" ))
-               nxWr = new NexWriter( filename);
-      else if( filename.toUpperCase().endsWith( ".XML" ))
-               nxWr = new XmlDWriter( filename);
-      else if( filename.toUpperCase().endsWith( ".ZIP" ))
-               nxWr = new XmlDWriter( filename);
-      else
-         return new ErrorString("Improper extension for filename");
-      
-      nxWr.writeDataSets( DSS );
-      if( nxWr.getErrorMessage() != null && nxWr.getErrorMessage().length()>0)
-         return new ErrorString( nxWr.getErrorMessage());
-      
-      }catch( Exception s)
+      if( n <= 0 )
+         return new ErrorString( "No DataSets to Save" );
+      DataSet[] DSS = new DataSet[ n ];
+      int k = 0;
+      try
       {
-         return new ErrorString( s.getMessage());
+
+         if( DatSets != null )
+            for( int i = 0 ; i < DatSets.size() ; i++ )
+               DSS[ k++ ] = (DataSet) DatSets.elementAt( i );
+         Writer nxWr = null;
+         if( filename.toUpperCase().endsWith( ".NXS" ) )
+            nxWr = new NexWriter( filename );
+         else if( filename.toUpperCase().endsWith( ".XML" ) )
+            nxWr = new XmlDWriter( filename );
+         else if( filename.toUpperCase().endsWith( ".ZIP" ) )
+            nxWr = new XmlDWriter( filename );
+         else
+            return new ErrorString( "Improper extension for filename" );
+
+         nxWr.writeDataSets( DSS );
+         if( nxWr.getErrorMessage() != null
+                  && nxWr.getErrorMessage().length() > 0 )
+         {
+            String err = nxWr.getErrorMessage();
+
+            return new ErrorString( err );
+         }
+      }
+      catch( Exception s )
+      {
+         return new ErrorString( s.getMessage() );
       }
       return "Success";
    }
@@ -361,7 +371,11 @@ public class NexWriter extends Writer
       Vector DSS = new Vector();
       DSS.addElement(  DS[0] );
       for( int i=1;i< DS.length; i++)
+      {  
+         DS[i].setAttribute( new FloatAttribute(Attribute.PROTON_CHARGE,23.5f) );
          DSS.addElement(  DS[i] );
+      
+      }
       DataSet D = (DataSet)DS[1].clone();
       D.setTitle( "x1");
       DSS.addElement( D )
@@ -370,6 +384,7 @@ public class NexWriter extends Writer
       DSS.addElement( D );
       D = (DataSet)DS[1].clone();
       D.setTitle( "x3");
+      
       DSS.addElement( D );
      System.out.println("Result="+ NexWriter.SaveDataSets( filename+"B.nxs", DSS,false));
       //NexWriter W = new NexWriter( filename + ".nxs" );
