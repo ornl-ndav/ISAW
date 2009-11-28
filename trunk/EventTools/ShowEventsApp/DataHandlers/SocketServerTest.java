@@ -264,7 +264,7 @@ public class SocketServerTest extends UDPSend
        panel.add(jfc);
        
        JPanel panel1 = new JPanel();
-       panel1.setLayout(  new GridLayout( 2,1) );
+       panel1.setLayout(  new GridLayout( 2,2) );
        JTextField  TextNEvents = new JTextField("450");
        JTextField TextIP = new JTextField("");
        
