@@ -33,7 +33,16 @@
  */
 package EventTools.ShowEventsApp.DataHandlers;
 
+import gov.anl.ipns.Util.File.RobustFileFilter;
+
 import java.util.*;
+import javax.swing.*;
+import javax.swing.border.LineBorder;
+import javax.swing.border.TitledBorder;
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.GridLayout;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 
@@ -238,12 +247,89 @@ public class SocketServerTest extends UDPSend
    {
      if( args == null || args.length < 1)
      {
-       System.out.println("You must at least specify an event file to use");
-       System.out.println("as the source of events sent to IsawEV.");
-
-        System.exit(0);
-     }
+       DataSetTools.util.SharedData sd = new DataSetTools.util.SharedData();
+       JFileChooser jfc = new JFileChooser( System.getProperty( "Data_Directory","" ));
+       jfc.setDialogType( JFileChooser.CUSTOM_DIALOG );
+       RobustFileFilter filter = new RobustFileFilter();
+       filter.addExtension( "dat" );
+       filter.setDescription( "Raw Event File" );
+       jfc.setFileFilter( filter );
+       JPanel panel = new JPanel();
+       BoxLayout blay = new BoxLayout( panel,BoxLayout.Y_AXIS);
+       panel.setLayout( blay );
+       
+       jfc.setBorder(  new TitledBorder( new LineBorder( Color.black,2),
+                "EVENT FILE NAME", TitledBorder.CENTER, TitledBorder.TOP ) );
+       
+       panel.add(jfc);
+       
+       JPanel panel1 = new JPanel();
+       panel1.setLayout(  new GridLayout( 2,1) );
+       JTextField  TextNEvents = new JTextField("450");
+       JTextField TextIP = new JTextField("");
+       
+       panel1.add( new JLabel("Max Number of events per pulse"));
+       panel1.add(  TextNEvents );
+       
+      
+       
+       panel1.add( new JLabel("Blank or the recipient node name or IP"+
+                      " address "));
+       panel1.add(  TextIP );
+       panel1.setBorder(  new TitledBorder( new LineBorder( Color.black,2),
+                "OTHER PARAMETERS(opt)", TitledBorder.CENTER,TitledBorder.TOP));
+       panel.add(  panel1);
+      
+       
+       String filename = null;
+       JOptionPane jopt = new JOptionPane();
+       int Res =jopt.showConfirmDialog( null , panel,"Inputs to Test program", JOptionPane.OK_CANCEL_OPTION );
      
+       
+       if(   Res    == JOptionPane.OK_OPTION && jfc.getSelectedFile()!= null)
+       {
+          
+           filename = jfc.getSelectedFile().getPath(); 
+           System.out.println("filename = "+filename);
+          
+       } 
+       else
+       {
+          System.out.println(" Need to specify an Event file");
+          System.out.println(" In addition the number of events to send for each pulse");
+          System.out.println(" and the name or IP address to send packets to");
+          System.exit( 0 );
+       }
+       int MaxEvents = -1;
+       try
+       {
+          MaxEvents = Integer.parseInt(  TextNEvents.getText().trim() );
+       }catch(Exception s1)
+       {
+          MaxEvents =-1;
+       }
+       
+       String IP = TextIP.getText();
+       int n=3;
+       if( IP == null || IP.trim().length() < 1)
+          n=2;
+       if( n < 3 )
+          {
+          if( MaxEvents <0)
+          
+             MaxEvents =450;
+          }
+       else if( MaxEvents < 0)
+          n = 1;
+       args= new String[n];
+       args[0]= filename;
+       if( n>1)
+          args[1] = ""+MaxEvents;
+       if( n>2)
+          args[2] = IP;
+       
+     }
+    
      int NEvents = 450;
      
      if ( args.length > 1)
