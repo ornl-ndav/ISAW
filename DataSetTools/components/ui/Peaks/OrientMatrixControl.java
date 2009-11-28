@@ -1741,9 +1741,12 @@ public class OrientMatrixControl extends JButton
                }
             }
             setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-            
+            GetUB.DMIN = Dmin;
+            GetUB.ELIM_EQ_CRYSTAL_PARAMS = false;
             OrMatrices = GetUB. getAllOrientationMatrices( WPeaks.get() , omittedPeakIndex ,
                      .01f , MaxXtalLengthReal );
+            
+            GetUB.DMIN = 1f;
             
             setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 
