@@ -786,7 +786,7 @@ public class ExtGetDS
          EInfo.Push( DInfo );
 
       }
-      else
+      else//may be absent 
       {// monitor ??? may be a bunch
       }
 
@@ -795,7 +795,7 @@ public class ExtGetDS
 
       FInfo.Push( InstInfo );
 
-      if( Mode % 2 >= 0 )
+      if( Mode % 2 > 0 )// add NxDetector Information
       {
          NexUtils nxUt = new NexUtils();
 
@@ -823,7 +823,16 @@ public class ExtGetDS
             return false;// Monitor has no NXdetector stuff
          }
       }
-
+      if( Mode % NexusRetriever.INexAttrGlobal >0)
+      {
+         AttributeList AL = getGlobalAttributes( dsInf.NxentryNode );
+         DS.setAttributeList( AL );
+         
+      }
+      if( Mode % NexusRetriever.INexSample >0)
+      {
+         
+      }
       return false;
    }
 
@@ -897,17 +906,29 @@ public class ExtGetDS
 
 
    /**
-    * Sets the id's of a data set that are to be retrieved
+    * Returns a DataSetInfo structure corresponding to the given data set
     * 
-    * @param ids
-    *           the list of id's to be retrieved. If null all are to be
-    *           retrieved
+    * @param data_set_num  the data set number 
+    * @return DataSetInfo structure corresponding to the given data set
+    * 
+    * @see DataSetInfo
     */
-   public void setIDs( int[] ids )
+   public DataSetInfo getDataSetInfo( int data_set_num)
    {
+      if( ! setupDSs )
+         setUpDataSetList();
 
+      if( data_set_num < 0 )
+         return null;
+
+      if( data_set_num >= EntryToDSs.size() )
+         return null;
+
+      DataSetInfo dsInf = ( (DataSetInfo) ( EntryToDSs.elementAt( data_set_num ) ) );
+      
+      return dsInf;
+      
    }
-
 
    /**
     * Returns a string describing the given data set
@@ -916,7 +937,7 @@ public class ExtGetDS
     *           the index of the data set to be retrieved
     * @return a String with the name and type of data set this is
     */
-   public String[] getDataSetInfo( int data_set_num )
+   public String[] getDataSetInfoString( int data_set_num )
    {
 
       if( ! setupDSs )
@@ -2809,7 +2830,7 @@ public class ExtGetDS
       while( 3 == 3 )
       {
          for( int i = 0 ; i < X.numDataSets() ; i++ )
-            System.out.println( i + ":" + X.getDataSetInfo( i ) );
+            System.out.println( i + ":" + X.getDataSetInfoString( i ) );
          c = 0;
          try
          {
