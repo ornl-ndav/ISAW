@@ -177,10 +177,13 @@ public class PeakListHandler implements IReceiveMessage
           return false;
          
        Util.sendInfo( "Starting long calculation. Please wait..." );
-        
+        GetUB.DMIN = value[0];
+        GetUB.ELIM_EQ_CRYSTAL_PARAMS = true;
         Vector<float[][]> OrientationMatrices =
                 GetUB.getAllOrientationMatrices( peakNew_list , null , 
-                                                .02f , value[1] );
+                                                .01f , value[1] );
+        GetUB.DMIN = 1f;
+        GetUB.ELIM_EQ_CRYSTAL_PARAMS = false;
         if( OrientationMatrices == null)
         {
            Util.sendError( 
