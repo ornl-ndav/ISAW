@@ -123,7 +123,7 @@ if method =="Blind"
       Display "the file blind.log has the log information"
     
   endif
-elseif method <>"Automatic w Lat Params"
+elseif method <>"Auto w Lattice Params"
   WriteMatrix(matPath, X )
   Display "Fit Stats for Result"
   n=ArrayLength(Status)-1
