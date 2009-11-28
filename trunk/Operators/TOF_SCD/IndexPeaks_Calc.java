@@ -168,7 +168,7 @@ public class IndexPeaks_Calc
     *                      set false to sort from smallest to largest.
     */
    public static void SortPeaksMagQ( Vector<IPeakQ> peaks, 
-                                     boolean          decreasing )
+                                     boolean        decreasing )
    {
       IPeakQ[] peak_arr = new IPeakQ[ peaks.size() ];
       for ( int i = 0; i < peak_arr.length; i++ )
@@ -262,7 +262,8 @@ public class IndexPeaks_Calc
        *  @param  peak_1   The first  peak
        *  @param  peak_2   The second peak 
        *
-       *  @return A positive integer if peak_1's run number is greater than
+       *  @return -1, 0 or 1, depending on whether peak_1's intensity is
+       *          less, equal or more than peak_2's intensity. 
        */
        public int compare( Object peak_1, Object peak_2 )
        {
@@ -301,7 +302,8 @@ public class IndexPeaks_Calc
        *  @param  peak_1   The first  peak
        *  @param  peak_2   The second peak 
        *
-       *  @return A positive integer if peak_1's run number is greater than
+       *  @return -1, 0 or 1, depending on how the magnitudes of the Q
+       *          values of the two peaks compare. 
        */
        public int compare( Object peak_1, Object peak_2 )
        {
@@ -347,7 +349,9 @@ public class IndexPeaks_Calc
        *  @param  peak_1   The first  peak
        *  @param  peak_2   The second peak 
        *
-       *  @return A positive integer if peak_1's run number is greater than
+       *  @return -1, 0 or 1 depending on whether peak_1 or peak_2 is
+       *          closer to the fixed peak specified in
+       *          the constructor for this comparator. 
        */
        public int compare( Object peak_1, Object peak_2 )
        {
@@ -355,7 +359,7 @@ public class IndexPeaks_Calc
          float distance_2 = distance( (IPeakQ)peak_2 );
          if ( distance_1 < distance_2 )
            return -1;
-         else if  ( distance_1 < distance_2 )
+         else if  ( distance_1 == distance_2 )
            return 0;
            
           return 1;
@@ -399,7 +403,9 @@ public class IndexPeaks_Calc
        *  @param  peak_1   The first  peak
        *  @param  peak_2   The second peak 
        *
-       *  @return A positive integer if peak_1's run number is greater than
+       *  @return -1, 0 or 1 depending on whether peak_1 or peak_2 is
+       *          closer to one of the two fixed peaks specified in
+       *          the constructor for this comparator. 
        */
        public int compare( Object peak_1, Object peak_2 )
        {
@@ -407,7 +413,7 @@ public class IndexPeaks_Calc
          float distance_2 = distance( (IPeakQ)peak_2 );
          if ( distance_1 < distance_2 )
            return -1;
-         else if  ( distance_1 < distance_2 )
+         else if  ( distance_1 == distance_2 )
            return 0;
 
           return 1;
@@ -620,7 +626,8 @@ public class IndexPeaks_Calc
      int num_bad = 0;
      for ( int row = 0; row < hkl_vals.length; row++ )
      {
-       if ( DistanceToInts( hkl_vals[ row ] ) < tolerance )
+       if ( DistanceToInts( hkl_vals[ row ] ) < tolerance &&
+            !is_000( hkl_vals[row] ) )
        {
          for ( int col = 0; col < 3; col++ )
            hkl_vals[row][col] = Math.round( hkl_vals[row][col]);
@@ -805,7 +812,10 @@ public class IndexPeaks_Calc
      if ( peaks_file_name == null || peaks_file_name.length() <= 0 )
        throw new IllegalArgumentException("Invalid peaks file name " +
                                            peaks_file_name );
-     double hkl_tol    = 0.12;
+     float hkl_tol           = 0.12f;
+     float required_fraction = 0.4f;
+     int   fixed_index       = 0;
+
      Vector all_peaks  = new Vector();
      float[][] floatUB = null;
      String return_msg = "INDEXING FAILED:";
@@ -815,7 +825,10 @@ public class IndexPeaks_Calc
 
        floatUB = IndexPeaksWithOptimizer( all_peaks, 
                                           a, b, c, 
-                                          alpha, beta, gamma );
+                                          alpha, beta, gamma,
+                                          hkl_tol,
+                                          required_fraction,
+                                          fixed_index );
      }
      catch (IllegalArgumentException ex )
      {
@@ -901,6 +914,17 @@ public class IndexPeaks_Calc
     * @param  alpha                 Lattice parameter alpha 
     * @param  beta                  Lattice parameter beta 
     * @param  gamma                 Lattice parameter gamma
+    * @param  tolerance             Max allowed distance between calculated
+    *                               hkl values and integer values.
+    * @param  required_fraction     Fraction of peaks in a region that need
+    *                               to be indexed before proceeding to
+    *                               optimize the matrix and grow the region.
+    *                               This must be more than 0 and less than 1.
+    *                               Recommeded value is 0.4.
+    * @param  fixed_peak_index      Index of a fixed peak that together with
+    *                               a randomly chosen peak will determine the
+    *                               initial region of peaks for finding UB.
+    *                               Recommended value is 0.
     */
    public static float[][] IndexPeaksWithOptimizer( Vector all_peaks,
                                                  float a,
@@ -908,10 +932,26 @@ public class IndexPeaks_Calc
                                                  float c,
                                                  float alpha,
                                                  float beta,
-                                                 float gamma)
+                                                 float gamma,
+                                                 float tolerance,
+                                                 float required_fraction,
+                                                 int   fixed_peak_index )
                                                  throws IOException
    {
-     int MAX_STRONG     = 40;
+     double hkl_tol = tolerance;
+
+     if ( required_fraction > 1 )
+       required_fraction = 1;
+     else if ( required_fraction < 0 )
+       required_fraction = 0;
+
+     double REQUIRED_FRACTION = required_fraction;
+                                      // NOTE: This is critical.  IF too low
+                                      //       (say .3) quartz many fails
+
+
+     int MAX_STRONG     = 40;            // initially work with up to 40 
+                                         // of the strongest peaks
      int MAX_ATTEMPTS   = 25;
      int NUM_NEIGHBORS  = 20;
 
@@ -922,30 +962,32 @@ public class IndexPeaks_Calc
      lattice_params[3] = alpha;
      lattice_params[4] = beta;
      lattice_params[5] = gamma;
-
     
      clearIndexes( all_peaks );
-                                                // now sort by ipkobs
-     SortPeaks( all_peaks );
-
+     SortPeaks( all_peaks );              // first sort by ipkobs then work on
+                                          // the strongest peaks
      Vector strong_peaks = new Vector();
      int num_strong = all_peaks.size();
-                                          // just look at 40 strongest peaks
      if ( num_strong > MAX_STRONG )
        num_strong = MAX_STRONG;
+                                          // make sure the fixed_peak_index 
+                                          // is valid
+     if ( fixed_peak_index < 0 )
+       fixed_peak_index = 0;
+     else if ( fixed_peak_index >= num_strong )
+       fixed_peak_index = num_strong - 1;
 
      for ( int i = 0; i < num_strong; i++ )
        strong_peaks.add( all_peaks.elementAt(i) );
-                                         // sort in increasing order of |Q|
+
+                                         // sort the strongest peaks in 
+                                         // increasing order of |Q|
      SortPeaksMagQ( strong_peaks, false );
 
      double[][] UBinverse = new double[3][3];
      double[][] newUBinverse = new double[3][3];
      double[][] hkls;
 
-     double REQUIRED_FRACTION = 0.4;  // NOTE: This is critical.  IF too low
-                                      //       (say .3) quartz many fails
-     double hkl_tol        = 0.12;
      int    num_attempts   = 0;
      int    num_indexed    = 0;
      int    second_peak    = 0;
@@ -954,26 +996,32 @@ public class IndexPeaks_Calc
        NUM_NEIGHBORS = strong_peaks.size();
  
                                    // Initial indexing -------------------
-    Vector peaks = new Vector();
+    Vector peaks     = new Vector();
+    Vector neighbors = new Vector();
     Random random = new Random();
     while ( num_indexed  < REQUIRED_FRACTION * NUM_NEIGHBORS &&
             num_attempts < MAX_ATTEMPTS )
     {
       System.out.println(" ===================== AUTO INDEXING, ATTEMPT # "
                          + (num_attempts + 1) );
-      peaks.clear();
 
       SortPeaksMagQ( strong_peaks, false );
-      peaks.add( strong_peaks.elementAt(0) );
-      second_peak = 1+(int)( (strong_peaks.size()/2) * random.nextDouble());
+
+                                            // use one fixed, one random peak
+                                            // and choose neighbors of those
+      peaks.clear();
+      peaks.add( strong_peaks.elementAt(fixed_peak_index) );
+      second_peak = (int)( strong_peaks.size() * random.nextDouble());
       peaks.add( strong_peaks.elementAt( second_peak ) );
 
+                                            // order strong_peaks based on 
+                                            // distance to two choosen peaks
       SortPeaks( (IPeakQ)peaks.elementAt(0), 
                  (IPeakQ)peaks.elementAt(1), 
                  strong_peaks );
 
-      Vector<IPeakQ> neighbors = new Vector<IPeakQ>();
-      for ( int i = 2; i < Math.min(NUM_NEIGHBORS, strong_peaks.size()); i++ )
+      neighbors.clear();
+      for ( int i = 0; i < Math.min(NUM_NEIGHBORS, strong_peaks.size()); i++ )
         neighbors.add( (IPeakQ)strong_peaks.elementAt(i) );
 
       int retries = 0;
@@ -993,6 +1041,7 @@ public class IndexPeaks_Calc
         retries++;
       }
     }
+
                                          // Refine UB -----------------------
     String return_msg = "FAILED";
     if ( num_attempts < MAX_ATTEMPTS )
