@@ -492,7 +492,11 @@ public class IndexPeaks_Calc
 
    /**
     * Index the specified list of peaks using the specified UBinverse
-    * matrix.
+    * matrix.  Any peak whose float indexes are further away from integer
+    * values than the specified tolerance will have it's indexes set to 0,0,0.
+    * Also, any peak whose indexes round to 0,0,0 will be set to 0,0,0
+    * exactly, so that 0,0,0 can serve as a flag to mark not indexed
+    * peaks.
     *
     * @param peaks     The list of peaks to index
     * @param UBinverse The inverse of the UB matrix
@@ -508,7 +512,7 @@ public class IndexPeaks_Calc
      double[][] hkls = SCD_OrientationErrorF.get_hkls( peaks, UBinverse );
      for ( int i = 0; i < hkls.length; i++ )
      {
-       if ( DistanceToInts( hkls[i] ) < tolerance )
+       if ( DistanceToInts( hkls[i] ) < tolerance && !is_000( hkls[i]) )
          peaks.elementAt(i).sethkl( (float)hkls[i][0],
                                     (float)hkls[i][1],
                                     (float)hkls[i][2]  );
@@ -522,7 +526,7 @@ public class IndexPeaks_Calc
     * Find the largest distance from the specified h,k,l values to the
     * nearest integers.
     *
-    * @param hkl  Array of three floats representing an approximate h,k,l
+    * @param hkl  Array of three doubles representing an approximate h,k,l
     *             indexing
     * @return the largest of the distances (h-Ih), (k-Ik) and (l-Il) where
     *         Ih, Ik and Il are the integers nearest to h, k and l 
@@ -544,6 +548,23 @@ public class IndexPeaks_Calc
      return dist;
    }
 
+   
+   /**
+    * Check whether or not the nearest integers to the hkl values are (0,0,0).
+    *
+    * @param hkl  Array of three doubles representing an approximate h,k,l
+    *             indexing
+    */
+   public static boolean is_000( double[] hkl )
+   {
+     if ( Math.round( hkl[0] ) != 0 || 
+          Math.round( hkl[1] ) != 0 || 
+          Math.round( hkl[2] ) != 0 ) 
+       return false;
+
+     return true;
+   }
+
 
   /**
    *  Calculate how many of the specified peaks are indexed to within
@@ -562,7 +583,8 @@ public class IndexPeaks_Calc
      double hkl_vals[][] = SCD_OrientationErrorF.get_hkls( peaks, UBinverse );
      int num_indexed = 0;
      for ( int row = 0; row < hkl_vals.length; row++ )
-       if ( DistanceToInts( hkl_vals[ row ] ) < tolerance )
+       if ( DistanceToInts( hkl_vals[ row ] ) < tolerance &&
+            !is_000( hkl_vals[ row ] ) )
          num_indexed++;
      return num_indexed;
   }
@@ -733,7 +755,7 @@ public class IndexPeaks_Calc
 
      double[][] hkls = SCD_OrientationErrorF.get_hkls( peaks, UBinverse );
      for( int i = 0; i < hkls.length; i++ )
-       if ( DistanceToInts( hkls[ i ] ) >= tolerance )
+       if ( DistanceToInts( hkls[ i ] ) >= tolerance || is_000( hkls[i] ) )
          not_indexed.add( peaks.elementAt(i) );       
 
      if ( not_indexed.size() > 0 &&
@@ -780,185 +802,79 @@ public class IndexPeaks_Calc
                                                  float gamma ) 
                                                  throws IOException
    {
-     int MAX_STRONG     = 40;
-     int MAX_ATTEMPTS   = 25;
-     int NUM_NEIGHBORS  = 20;
-
-     double lattice_params[] = new double[6];
-     lattice_params[0] = a;
-     lattice_params[1] = b;
-     lattice_params[2] = c;
-     lattice_params[3] = alpha;
-     lattice_params[4] = beta;
-     lattice_params[5] = gamma;
-
      if ( peaks_file_name == null || peaks_file_name.length() <= 0 )
        throw new IllegalArgumentException("Invalid peaks file name " +
                                            peaks_file_name );
-
-     Vector<Peak_new> peaks_new = Peak_new_IO.ReadPeaks_new( peaks_file_name );
-
-     Vector<IPeakQ> all_peaks = new Vector<IPeakQ>();
-     for ( int i = 0; i < peaks_new.size(); i++ )
-       all_peaks.add( peaks_new.elementAt(i) );
-
-     clearIndexes( all_peaks );
-                                                // now sort by ipkobs
-     SortPeaks( all_peaks );
-
-     Vector<IPeakQ> strong_peaks = new Vector<IPeakQ>();
-     int num_strong = all_peaks.size();
-                                          // just look at 40 strongest peaks
-     if (num_strong > MAX_STRONG )
-       num_strong = MAX_STRONG;
-
-     for ( int i = 0; i < num_strong; i++ )
-       strong_peaks.add( all_peaks.elementAt(i) );
-                                         // sort in increasing order of |Q|
-     SortPeaksMagQ( strong_peaks, false );
-
-     double[][] UBinverse = new double[3][3];
-     double[][] newUBinverse = new double[3][3];
-     double[][] hkls;
-
-     double REQUIRED_FRACTION = 0.4;  // NOTE: This is critical.  IF too low
-                                      //       (say .3) quartz many fails
-     double hkl_tol        = 0.12;
-     int    num_attempts   = 0;
-     int    num_indexed    = 0;
-     int    second_peak    = 0;
-
-     if ( NUM_NEIGHBORS > strong_peaks.size() )
-       NUM_NEIGHBORS = strong_peaks.size();
- 
-                                   // Initial indexing -------------------
-    Vector<IPeakQ> peaks = new Vector<IPeakQ>();
-    Random random = new Random();
-    while ( num_indexed  < REQUIRED_FRACTION * NUM_NEIGHBORS &&
-            num_attempts < MAX_ATTEMPTS )
-    {
-      System.out.println(" ===================== AUTO INDEXING, ATTEMPT # "
-                         + (num_attempts + 1) );
-      peaks.clear();
-
-      SortPeaksMagQ( strong_peaks, false );
-      peaks.add( strong_peaks.elementAt(0) );
-      second_peak = 1+(int)( (strong_peaks.size()/2) * random.nextDouble());
-      peaks.add( strong_peaks.elementAt( second_peak ) );
-
-      SortPeaks( peaks.elementAt(0), peaks.elementAt(1), strong_peaks );
-      Vector<IPeakQ> neighbors = new Vector<IPeakQ>();
-      for ( int i = 2; i < Math.min(NUM_NEIGHBORS, strong_peaks.size()); i++ )
-        neighbors.add( strong_peaks.elementAt(i) );
-
-      int retries = 0;
-      while ( num_indexed  < REQUIRED_FRACTION * NUM_NEIGHBORS &&
-              num_attempts < MAX_ATTEMPTS                      &&
-              retries      < 3 )
-      {
-        IndexByOptimizing(peaks,lattice_params,UBinverse);
-        System.out.println("After Optimize");
-        ShowLatticeParams( UBinverse );
-
-        num_indexed = NumIndexed( neighbors, UBinverse, hkl_tol );
-        System.out.println("---------- NUM INDEXED = " + num_indexed +
-                           " OUT OF " + neighbors.size() +
-                           " WITH TOLERANCE = " + hkl_tol );
-        num_attempts++;
-        retries++;
-      }
-    }
-                                         // Refine UB -----------------------
-    String return_msg = "FALIED";
-    if ( num_attempts < MAX_ATTEMPTS )
-    {
-     peaks.clear();
-     int next_peak = 0;
-     int num_to_add = NUM_NEIGHBORS;
-     while ( next_peak < strong_peaks.size() )
+     double hkl_tol    = 0.12;
+     Vector all_peaks  = new Vector();
+     float[][] floatUB = null;
+     String return_msg = "INDEXING FAILED:";
+     try 
      {
-       int count = 0;
-       while ( next_peak < strong_peaks.size() && count < num_to_add )
-       {
-         peaks.add( strong_peaks.elementAt(next_peak) );
-         next_peak++;
-         count++;
-       }
-       num_to_add = (int)( .1 * peaks.size() );
-       System.out.println("NUM INDEXED = " +
-                           NumIndexed( peaks, UBinverse, hkl_tol ) +
-                          " OUT OF " + peaks.size() +
-                          " WITH TOLERANCE = " + hkl_tol );
+       all_peaks = Peak_new_IO.ReadPeaks_new(peaks_file_name);
 
-
-       hkls = OptimizeUB( peaks, UBinverse, newUBinverse, hkl_tol );
-       if ( hkls == null )
-       {
-          System.out.println("FAILED**********************");
-          num_attempts = MAX_ATTEMPTS + 1;
-          next_peak = strong_peaks.size() + 1;
-       }
-       else
-       {
-         UBinverse = LinearAlgebra.copy( newUBinverse );
-         ShowLatticeParams( newUBinverse );
-       }
+       floatUB = IndexPeaksWithOptimizer( all_peaks, 
+                                          a, b, c, 
+                                          alpha, beta, gamma );
+     }
+     catch (IllegalArgumentException ex )
+     {
+       return return_msg + " Could not INDEX"; 
+     }
+     catch (IOException ex )
+     {
+       return return_msg + " Could not read " + peaks_file_name; 
      }
 
-     if ( num_attempts <= MAX_ATTEMPTS )
+     if ( floatUB == null )
+       return return_msg + " UB matrix is null"; 
+
+     double[][] UB = new double[3][3];
+     for ( int i = 0; i < 3; i++ )
+       for ( int j = 0; j < 3; j++ )
+         UB[i][j] = floatUB[i][j] * 2 * Math.PI;
+
+     double[][] UBinverse = LinearAlgebra.copy( UB );
+     LinearAlgebra.invert( UBinverse );
+
+     return_msg = "INDEXED: " +
+                   NumIndexed( all_peaks, UBinverse, hkl_tol ) +
+                  " OF " + all_peaks.size() +
+                  " WITHIN " + hkl_tol;
+
+     return_msg += "  LATTICE CONSTANTS:" + getLatticeParams( UBinverse );
+
+                                                // NOW, write out the files
+                                                // Not Indexed
+                                                // Peaks File, now indexed
+                                                // Matrix File     
+     try
      {
-                                        // Iterate on all peaks -------------
-       for ( int i = 0; i < 5; i++ )
+       if ( not_indexed_file_name != null &&
+            not_indexed_file_name.length() > 0 )
+         WriteNotIndexedPeaks( all_peaks, 
+                               UBinverse, 
+                               hkl_tol, 
+                               not_indexed_file_name );
+
+       if ( all_peaks.size() > 0 &&                      // assume all peaks
+            all_peaks.elementAt(0) instanceof Peak_new ) // are same type
        {
-         UBinverse = LinearAlgebra.copy( newUBinverse );
-         hkls = OptimizeUB( all_peaks, UBinverse, newUBinverse, hkl_tol );
-         ShowLatticeParams( newUBinverse );
+         Vector write_peaks = new Vector();
+         for ( int i = 0; i < all_peaks.size(); i++ )
+           write_peaks.add( all_peaks.elementAt(i) );
+         Peak_new_IO.WritePeaks_new( peaks_file_name, write_peaks, false );
        }
-       UBinverse = LinearAlgebra.copy( newUBinverse );
 
-        return_msg = "INDEXED: " +
-                      NumIndexed( all_peaks, UBinverse, hkl_tol ) +
-                     " OF " + all_peaks.size() +
-                     " WITHIN " + hkl_tol;
+       if ( matrix_file_name != null && matrix_file_name.length() > 0 )
+         Util.WriteMatrix( matrix_file_name, floatUB );
+     }
+     catch ( Exception ex )
+     {
+       System.out.println("Failed to write file " + ex );
+     }
 
-        return_msg += "  LATTICE CONSTANTS:" + getLatticeParams( UBinverse );
-       
-        WriteNotIndexedPeaks( all_peaks, 
-                              newUBinverse, 
-                              hkl_tol, 
-                              not_indexed_file_name );
-
-        Index( all_peaks, UBinverse, hkl_tol );
-        if ( peaks_file_name.length() > 0 )
-          if ( all_peaks.size() > 0 &&                      // assume all peaks
-               all_peaks.elementAt(0) instanceof Peak_new ) // are same type
-          {
-            Vector write_peaks = new Vector();
-            for ( int i = 0; i < all_peaks.size(); i++ )
-              write_peaks.add( all_peaks.elementAt(i) );
-            Peak_new_IO.WritePeaks_new( peaks_file_name, write_peaks, false );
-          }
-
-                                         // standardize the unit cell
-        double[][] UB = LinearAlgebra.copy( newUBinverse );
-        LinearAlgebra.invert( UB );
-        float[][]  floatUB = new float[3][3];
-        for ( int row = 0; row < 3; row++ )
-          for ( int col = 0; col < 3; col++ )
-            floatUB[row][col] = (float)(UB[row][col] / (Math.PI * 2));
-                                          // NOTE: Transpose and factor of 2PI
-        blind my_blind = new blind();
-        my_blind.blaue( floatUB );
-        for ( int row = 0; row < 3; row++ )
-          for ( int col = 0; col < 3; col++ )
-            floatUB[row][col] = (float)(my_blind.UB[row][col]);
-
-        if ( matrix_file_name != null && matrix_file_name.length() > 0 )
-          Util.WriteMatrix( matrix_file_name, floatUB );
-      }
-    }
-
-    return return_msg;
+     return return_msg;
   }
 
  
@@ -1130,22 +1046,15 @@ public class IndexPeaks_Calc
                      " OUT OF " + all_peaks.size() +
                      " WITH TOLERANCE = " + hkl_tol;
        
-       
-
-        Index( all_peaks, UBinverse, hkl_tol );
                                          // standardize the unit cell
         double[][] UB = LinearAlgebra.copy( newUBinverse );
         LinearAlgebra.invert( UB );
-        float[][]  floatUB = new float[3][3];
-        for ( int row = 0; row < 3; row++ )
-          for ( int col = 0; col < 3; col++ )
-            floatUB[row][col] = (float)(UB[row][col] / (Math.PI * 2));
-                                          // NOTE: Transpose and factor of 2PI
-        blind my_blind = new blind();
-        my_blind.blaue( floatUB );
-        for ( int row = 0; row < 3; row++ )
-          for ( int col = 0; col < 3; col++ )
-            floatUB[row][col] = (float)(my_blind.UB[row][col]);
+
+        float[][] floatUB = NiglifyAndGetFloatUB_over2PI(UB, UBinverse );
+
+                                        // NOTE: Now indexed with matrix after
+                                        //       usin blind to Niglify
+        Index( all_peaks, UBinverse, hkl_tol );
 
         System.out.println(return_msg);
         return floatUB ;
@@ -1154,6 +1063,58 @@ public class IndexPeaks_Calc
     
     throw new IllegalArgumentException("Could not find orientation matrix");
   }
+
+
+  /**
+   *  Adjust the specified double precision UB matrix so the corresponding 
+   *  unit cell is a Nigli cell.  Put the inverse of the new UB matrix in
+   *  the parameter UBinverse and return a single precision version of
+   *  the new UB matrix (divided by 2 PI) as the value of this function.
+   *
+   *  @param UB         Double precision array containing the current UB 
+   *                    matrix.  This WILL BE ALTERED to contain the new
+   *                    UB matrix.
+   *  @param UBinverse  Double precision array that WILL BE FILLED OUT with
+   *                    the inverse of the new UB matrix.
+   *
+   *  @return a single precision version of the new UB matrix 
+   *          (divided by 2PI).
+   */
+  private static float[][] NiglifyAndGetFloatUB_over2PI( double[][] UB,
+                                                         double[][] UBinverse )
+  {
+                                               // first get float[][] versiom
+                                               // and use blind
+                                               // NOTE: division by 2PI
+    float[][]  floatUB = new float[3][3];
+    for ( int row = 0; row < 3; row++ )
+      for ( int col = 0; col < 3; col++ )
+        floatUB[row][col] = (float)(UB[row][col] / (Math.PI * 2));
+
+                                               // do the blind.blaue to niglify
+    blind my_blind = new blind();
+    my_blind.blaue( floatUB );
+                                               // Now put blind.UB into
+                                               // our double[][] for UB,
+                                               // UBinverse and floatUB.
+                                               // NOTE: multiply and div by 2PI
+    for ( int row = 0; row < 3; row++ )
+      for ( int col = 0; col < 3; col++ )
+        UB[row][col] = my_blind.UB[row][col] * Math.PI * 2;
+
+    double[][] temp = LinearAlgebra.copy( UB );
+    LinearAlgebra.invert( temp );
+    for ( int row = 0; row < 3; row++ )
+      for ( int col = 0; col < 3; col++ )
+        UBinverse[row][col] = temp[row][col];
+
+    for ( int row = 0; row < 3; row++ )
+      for ( int col = 0; col < 3; col++ )
+        floatUB[row][col] = (float)(UB[row][col] / (Math.PI * 2));
+
+    return floatUB;
+  }
+
 
    public static void main( String args[] ) throws IOException
    {
