@@ -1696,11 +1696,14 @@ public class OrientMatrixControl extends JButton
                       peaks.add( WPeaks.get().elementAt( i ));
                 }
                 
-                UB =Operators.TOF_SCD.IndexPeaks_Calc.
-            
-                 IndexPeaksWithOptimizer( peaks , Params[0] , 
-                          Params[1], Params[2] , Params[3] , Params[4] ,
-                          Params[5] );
+                float initial_tolerance = 0.12f;
+                float required_fraction = 0.4f;
+                int   fixed_peak_index  = 0;
+                UB = Operators.TOF_SCD.IndexPeaks_Calc.             
+                    IndexPeaksWithOptimizer( peaks , 
+                          Params[0] , Params[1], Params[2] , 
+                          Params[3] , Params[4] ,Params[5], 
+                          initial_tolerance, required_fraction, fixed_peak_index );
                 setOrientationMatrix(UB );
                 showCurrentOrientationMatrix( false);
                 

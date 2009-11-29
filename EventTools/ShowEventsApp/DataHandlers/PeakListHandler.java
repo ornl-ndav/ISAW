@@ -129,13 +129,18 @@ public class PeakListHandler implements IReceiveMessage
       try
       {
         Util.sendInfo("Starting to index peaks, PLEASE WAIT...");
-        UB = IndexPeaks_Calc.IndexPeaksWithOptimizer( peakNew_list,
-                                                      cmd.getA(),
-                                                      cmd.getB(),
-                                                      cmd.getC(),
-                                                      cmd.getAlpha(),
-                                                      cmd.getBeta(),
-                                                      cmd.getGamma() );
+        UB = IndexPeaks_Calc.IndexPeaksWithOptimizer( 
+                                                  peakNew_list,
+                                                  cmd.getA(),
+                                                  cmd.getB(),
+                                                  cmd.getC(),
+                                                  cmd.getAlpha(),
+                                                  cmd.getBeta(),
+                                                  cmd.getGamma(),
+                                                  cmd.getTolerance(),
+                                                  cmd.getRequiredFraction(),
+                                                  cmd.getFixedPeakIndex() );
+
         UB= LinearAlgebra.getTranspose(UB);
         Util.sendInfo( "Finished Indexing" );
       }
