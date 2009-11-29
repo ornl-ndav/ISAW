@@ -63,8 +63,12 @@ public class SNS_Tof_to_Q_map
   public static final String SNAP  = "SNAP";
   public static final String ARCS  = "ARCS";
   public static final String SEQ   = "SEQ";
-  public static final String TOPAZ = "TOP";
-  public static final int    NUM_TOF_WEIGHTS = 166666/10;  // 1us tof bins
+  public static final String TOPAZ = "TOPAZ";
+
+  private final float MAX_WAVELENGTH = 50.0f;    // max in lamda_weight table
+  private final float STEPS_PER_ANGSTROM = 100;  // resolution of lamda table 
+  private final int   NUM_WAVELENGTHS = 
+                             Math.round( MAX_WAVELENGTH * STEPS_PER_ANGSTROM );
 
   private boolean     debug = true;
 
@@ -76,9 +80,10 @@ public class SNS_Tof_to_Q_map
   private float[]      QUxyz;          // unit vector in Q direction for pixel
   private float[]      tof_to_MagQ;    // magQ is tof_to_MagQ[id] / tof
   private float[]      tof_to_lamda;   // lamda is tof_to_lamda[id] * tof
-  private float[]      lamda_weight;   // 1/(lamda^4 * spec(lamda)) indexed by
-                                       // 100 * lamda
+  private float[]      lamda_weight;   // 1/(lamda^3 * spec(lamda)) indexed by
+                                       // STEPS_PER_ANGSTROM * lamda
   private float[]      pix_weight;     // sin^2(theta(pix_id)) / eff(pix_id)
+  private int[]        counts_per_det = new int[6];
 
   private String            instrument_name = "NO_NAME";
   private int               run_num         = 0;
@@ -97,11 +102,9 @@ public class SNS_Tof_to_Q_map
    *
    *  @param  spectrum_filename Name of file containing incident spectrum
    *                            for this instrument.  The spectrum file
-   *                            must be an ASCII file giving the 500 
-   *                            values for the incident spectrum, for 
-   *                            wavelengths from 0 to 5 Angstroms in steps
-   *                            of 0.01 Angstroms.  The form of the file
-   *                            is as in InstrumentInfo/SNS/SNAP_Spectrum.dat
+   *                            must be an ASCII file giving values for the
+   *                            incident spectrum.  The file must be the same
+   *                            form as InstrumentInfo/SNS/SNAP_Spectrum.dat
    *                            If no spectrum file is available, pass in null.
    *                            The SNAP spectrum file will be used by default
    *                            for SNAP.
@@ -276,8 +279,9 @@ public class SNS_Tof_to_Q_map
      float   qx,qy,qz;
      int     minus_id_count = 0;
      int     large_id_count = 0;
+     int     skip_det_count = 0;
+     int     grid_id = 0;
 //   int     test_count = 0;
-//   float   inv_lamda_4;                     // 1/lamda^4
      float   lamda;
      int     lamda_index;
      int     last;
@@ -294,8 +298,21 @@ public class SNS_Tof_to_Q_map
 
      for ( int i = 0; i < num_mapped; i++ )
      {
+       weights[i] = 0;
        id = ids[i + first];
-       if ( id > 0 && id < tof_to_MagQ.length )
+       grid_id = id / 65536;
+       if ( grid_id >= 0 && grid_id < counts_per_det.length )
+         counts_per_det[grid_id]++;      
+      
+       if ( id < 0 )
+         minus_id_count++;
+       else if ( id >= tof_to_MagQ.length )
+         large_id_count++;
+
+//     else if ( grid_id == 1 )                   // discard grid_id 1 
+//       skip_det_count++;
+
+       else
        {
          tof_chan = t0 + tofs[i + first];
          magQ = tof_to_MagQ[id]/tof_chan;
@@ -325,15 +342,16 @@ public class SNS_Tof_to_Q_map
          //
          // NOTE:
          //
-         //   sin^2(theta) / eff  
+         //   sin^2(theta) / eff 
          //
          // depends only on the pixel and can be pre-calculated 
          // for each pixel.  It can be saved in array pix_weight[].
          // For now, pix_weight[] just holds the sin^2(theta) values.
          //
          // The time-of-flight is converted to wave length by multiplying
-         // by tof_to_lamda[id], then (int)100*lamda gives an index into
-         // the table lamda_weight[] which contains 500 values for:
+         // by tof_to_lamda[id], then (int)STEPS_PER_ANGSTROM * lamda
+         // gives an index into the table lamda_weight[] which contains 
+         // values for:
          //   
          //   1/(lamda^4 * spec(lamda))
          //
@@ -344,21 +362,11 @@ public class SNS_Tof_to_Q_map
          //
          // is used, which gives better qualitative results overall for SNAP.
          //
-         // If no spectrum is specified, currently, the values:
-         //
-         //   1/(lamda^2.4))  
-         //
-         // are used, which gives better qualitative results overall for SNAP. 
-         //
          // trans depends on both lamda and the pixel.  This is a fairly
          // expensive calculation and is omitted for now.
-/*
-         inv_lamda_4 = 1.0f / ( tof_chan/10.0f * tof_to_lamda[id] );
-         inv_lamda_4 = inv_lamda_4 * inv_lamda_4 * inv_lamda_4;
-         weights[i] = pix_weight[id] * inv_lamda_4;
-*/
+
          lamda = tof_chan/10.0f * tof_to_lamda[id];
-         lamda_index = (int)(100*lamda);
+         lamda_index = (int)( STEPS_PER_ANGSTROM * lamda );
 
 /*
          if ( i < 100 )
@@ -370,14 +378,10 @@ public class SNS_Tof_to_Q_map
 */
          if ( lamda_index < 0 )
            lamda_index = 0;
-         if ( lamda_index > lamda_weight.length )
+         if ( lamda_index >= lamda_weight.length )
            lamda_index = lamda_weight.length - 1;
   
          weights[i] = pix_weight[id] * lamda_weight[ lamda_index ];
-//       weights[i] = pix_weight[id] * tof_weight[ (int)(tof_chan/10.0f) ];
-//       weights[i] = tof_weight[ (int)(tof_chan/10.0f) ];
-
-//       weights[i] = magQ * magQ * magQ/1000;   // TODO remove temporary hack
 
 /*       // TEST map from qx,
          test_count++;
@@ -404,11 +408,8 @@ public class SNS_Tof_to_Q_map
          } 
 */
        }
-       else if ( id < 0 )
-         minus_id_count++;
-       else if ( id >= tof_to_MagQ.length )
-         large_id_count++;
      } 
+
 /*
      System.out.println("tof_to_MagQ.length = " + tof_to_MagQ.length );
      System.out.println("NUMBER OF EVENTS WITH -ID      = " + minus_id_count );
@@ -420,6 +421,10 @@ public class SNS_Tof_to_Q_map
                         (tofs[i]/10.0), ids[i], 
                         Qxyz[3*i], Qxyz[3*i+1], Qxyz[3*i+2]);
 */
+
+//     for ( int i = 0; i < counts_per_det.length; i++ )
+//       System.out.println( "" + i + "   " + counts_per_det[i] );
+
      return new FloatArrayEventList3D_2( weights, Qxyz );
   }
 
@@ -520,142 +525,139 @@ public class SNS_Tof_to_Q_map
 
 
   /**
-   *  Build the list of weights corresponding to different times-of-flight.
-   *  NOT COMPLETE.  Currently this method just makes a rough approximation
-   *  to the correct weight factor. (TODO)
-   */
-/*
-  private void BuildTofWeights()
-  {
-    tof_weight = new float[ NUM_TOF_WEIGHTS ];
-    for ( int i = 0; i < tof_weight.length; i++ )
-      tof_weight[i] = 1.0e10f/((float)Math.pow(i,2.7));
-  }
-*/
-
-  /**
    *  Build the list of weights corresponding to different wavelengths.
    *  NOTE: Although the spectrum file need not have a fixed numbe of
-   *  points, it MUST have the spectrum recorded in steps of 0.01 angstrom
-   *  starting at 0 out to the number of bins.  The resulting table will
-   *  allow (int)100*lamda to be used as an index into the table to 
-   *  find the weight to use for the specified lamda in Angstroms.
-   *  The entries in the table are:
+   *  points, it MUST have the spectrum recorded in steps of
+   *  one angstrom/STEPS_PER_ANGSTROM  starting at 0 out to the number of bins.
+   *  The resulting table will allow 
+   *        (int)STEPS_PER_ANGSTROM *lamda 
+   *  to be used as an index into the table to find the weight to use for 
+   *  the specified lamda in Angstroms.  The entries in the table are:
    *
-   *     1/( lamda^4 * spec(lamda) )
+   *     1/( lamda^3 * spec(lamda) )
    *
    *  The spectrum values will be normalized so that the MAXIMUM value is
    *  1 and the minimum value is .05.
    */
   private void BuildLamdaWeights( String spectrum_file_name )
   {
-    int     DEFAULT_NUM_WAVELENGTHS = 500;
-    float   MIN_SPECTRUM_VALUE      = 0.15f;
+    float   MIN_SPECTRUM_VALUE = 0.1f;
     float   lamda; 
-                                               // first try to load the file
-    boolean build_from_file = true;
-    int     num_bins = DEFAULT_NUM_WAVELENGTHS;
-    float[] spectrum = null;
+    float[] spec_val   = null;
+    float[] spec_lamda = null;
 
-    if ( spectrum_file_name == null  ||       // no incident spectrum yet
+                                              // build in dependence on lamda
+    System.out.println("Building approximate weighting (no spectrum)");
+
+    lamda_weight = new float[ NUM_WAVELENGTHS ];
+    for ( int i = 0; i < lamda_weight.length; i++ )
+    {
+      lamda = i / STEPS_PER_ANGSTROM;
+//    lamda_weight[i] = 1f/(lamda*lamda*lamda);
+      lamda_weight[i] = (float)(1/Math.pow(lamda,2.4));
+    }
+
+
+    if ( spectrum_file_name == null  ||       // no incident spectrum 
          spectrum_file_name.trim().length() == 0 ) 
-      build_from_file = false;
+      return;
 
-    if ( build_from_file )                    // make sure the file exists
+                                             // make sure the file exists
+    File spec_file = new File( spectrum_file_name );
+    if ( !spec_file.exists() )
     {
-      File spec_file = new File( spectrum_file_name );
-      if ( !spec_file.exists() )
-        build_from_file = false;
+      System.out.println("File Doesn't Exist " + spectrum_file_name);
+      return;
     }
+                                             // now try to load the file
+    int num_bins = 0;
+    try
+    { 
+      FileReader     f_in        = new FileReader( spectrum_file_name );
+      BufferedReader buff_reader = new BufferedReader( f_in );
+      Scanner        sc          = new Scanner( buff_reader );
 
-    if ( build_from_file )
-    {
-      try
-      { 
-        FileReader     f_in        = new FileReader( spectrum_file_name );
-        BufferedReader buff_reader = new BufferedReader( f_in );
-        Scanner        sc          = new Scanner( buff_reader );
+      for ( int i = 0; i < 6; i++ )                // skip info lines
+        sc.nextLine();
 
-        for ( int i = 0; i < 6; i++ )                // skip info lines
-          sc.nextLine();
+      String num_y_line = sc.nextLine().trim();
 
-        String num_y_line = sc.nextLine().trim();
+      int blank_index = num_y_line.lastIndexOf(" ");
 
-        int blank_index = num_y_line.lastIndexOf(" ");
+      num_y_line = num_y_line.substring(blank_index);
+      num_y_line = num_y_line.trim();
 
-        num_y_line = num_y_line.substring(blank_index);
-        num_y_line = num_y_line.trim();
-
-        Integer NUM_BINS = new Integer( num_y_line );
-        num_bins = NUM_BINS;
-
-        spectrum = new float[ num_bins ];
-        for ( int i = 0; i < num_bins; i++ )
-        {
-          sc.nextDouble();
-          spectrum[i] = (float)sc.nextDouble();
-        }
-        build_from_file = true;
-      }
-      catch ( Exception ex )
+      Integer NUM_BINS = new Integer( num_y_line );
+      num_bins = NUM_BINS;
+      if ( num_bins <= 0 )
       {
-        System.out.println("FAILED TO LOAD SPECTRUM: " + spectrum_file_name );
-        System.out.println("EXCEPTION = " + ex + "\n" + 
-                           "NOT WEIGHTING BY INCIDENT SPECTRUM!" );
-
-        build_from_file = false;
-/*
-      ex.printStackTrace();
-      System.out.println("Failed to read spectrum file "+spectrum_file_name);
-      System.out.println("Using default approximate correcton" );
-*/
+        System.out.println("NEGATIVE NUMBER OF BINS IN " + spectrum_file_name);
+        return;
       }
-    }
 
-    if ( build_from_file )
-    {
-      System.out.println("Building using spectrum file: " +
-                          spectrum_file_name );
-                                                      // normalize spectrum
-      float max = 0;
+      spec_lamda = new float[ num_bins+1 ];
+      spec_val   = new float[ num_bins ];
       for ( int i = 0; i < num_bins; i++ )
-        if ( spectrum[i] > max )
-          max = spectrum[i];
-
-      if ( max <= 0 )
-        build_from_file = false;
-      else
-      {      
-        for ( int i = 0; i < num_bins; i++ )
-          spectrum[i] /= max;
-
-        for ( int i = 0; i < num_bins; i++ )          // clamp to be > 0
-          if ( spectrum[i] < MIN_SPECTRUM_VALUE )
-            spectrum[i] = MIN_SPECTRUM_VALUE;
-                                                      // compute weights
-        lamda_weight = new float[ num_bins ];
-        for ( int i = 0; i < num_bins; i++ )
-        {
-          lamda = i/100f;
-//        lamda_weight[i] = 1f/(lamda*lamda*lamda*lamda * spectrum[i]);
-          lamda_weight[i] = 1f/(lamda*lamda*lamda * spectrum[i]);
-        }
-      }
-    }
-
-    if ( !build_from_file )                   // make rough approximation
-    {
-      System.out.println("Building using approximate weighting(no spectrum)");
-      
-      lamda_weight = new float[ DEFAULT_NUM_WAVELENGTHS ];
-      for ( int i = 0; i < lamda_weight.length; i++ )
       {
-        lamda = i/100f;
-        lamda_weight[i] = (float)(1.0/Math.pow(lamda,2.4));
-//      lamda_weight[i] = (float)(1.0/lamda);
-//      lamda_weight[i] = 1.0f;
+        spec_lamda[i] = sc.nextFloat();
+        spec_val[i]   = (float)sc.nextFloat();
       }
     }
+    catch ( Exception ex )
+    {
+      System.out.println("FAILED TO LOAD SPECTRUM: " + spectrum_file_name );
+      System.out.println("EXCEPTION = " + ex + "\n" + 
+                         "NOT WEIGHTING BY INCIDENT SPECTRUM!" );
+      return;
+    }
+
+    System.out.println("Setting lamda weights from spectrum file: " +
+                        spectrum_file_name );
+                                                      // normalize spectrum
+    float max = spec_val[0];
+    for ( int i = 0; i < num_bins; i++ )
+      if ( spec_val[i] > max )
+        max = spec_val[i];
+
+    if ( max <= 0 )
+    {
+      System.out.println("ERROR: Spectrum file had no positive entries");
+      return;
+    }
+                                                  // set so max value == 1
+    for ( int i = 0; i < num_bins; i++ )
+      spec_val[i] /= max;
+
+    for ( int i = 0; i < num_bins; i++ )          // clamp to be > 0
+      if ( spec_val[i] < MIN_SPECTRUM_VALUE )
+        spec_val[i] = MIN_SPECTRUM_VALUE;
+                                                  // now adjust weights based
+                                                  // on incident spectru,
+    int   index;
+    float val;
+    float lamda_min  = spec_lamda[0];
+    float lamda_max  = spec_lamda[num_bins - 2]; 
+    float spec_first = spec_val[0];
+    float spec_last  = spec_val[num_bins - 1]; 
+    for ( int i = 0; i < lamda_weight.length; i++ )
+    {
+      lamda = i / STEPS_PER_ANGSTROM;
+      if ( lamda <= lamda_min )
+        val = spec_first; 
+      else if ( lamda >= lamda_max )
+        val = spec_last;
+      else
+      {
+        index = Arrays.binarySearch( spec_lamda, lamda ); 
+        if ( index < 0 )
+          index = -index - 1; 
+        if ( index > num_bins - 1 )
+          index = num_bins - 1;
+        val = spec_val[index];
+      }
+      lamda_weight[i] = lamda_weight[i] / val;
+    }
+
   }
 
 
