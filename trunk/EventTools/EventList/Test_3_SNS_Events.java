@@ -491,10 +491,15 @@ public class Test_3_SNS_Events
                                              90, 90, 120 );
 */
     // OXALIC ACID  [6.094,3.601,11.915,90.0,103.2,90.0]
-  
+    float initial_tolerance = 0.12f;
+    float required_fraction = 0.4f;
+    int   fixed_peak_index  = 0;
     IndexPeaks_Calc.IndexPeaksWithOptimizer( q_peaks,
                                              6.094f,3.601f,11.915f,
-                                             90, 103.2f, 90 );
+                                             90, 103.2f, 90,
+                                             initial_tolerance, 
+                                             required_fraction, 
+                                             fixed_peak_index );
 
     System.out.println("AFTER INDEXING PEAKS" );
     for  ( int k = 0; k < q_peaks.size(); k++ )

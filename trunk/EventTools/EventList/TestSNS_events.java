@@ -501,9 +501,15 @@ public class TestSNS_events
 
 /*  // QUARTZ
 */
+    float initial_tolerance = 0.12f;
+    float required_fraction = 0.4f;
+    int   fixed_peak_index  = 0;
     IndexPeaks_Calc.IndexPeaksWithOptimizer( q_peaks,
                                              4.915f, 4.915f, 5.4f,
-                                             90, 90, 120 );
+                                             90, 90, 120,
+                                             initial_tolerance,
+                                             required_fraction,
+                                             fixed_peak_index );
 
     // OXALIC ACID  [6.094,3.601,11.915,90.0,103.2,90.0]
 /*  
