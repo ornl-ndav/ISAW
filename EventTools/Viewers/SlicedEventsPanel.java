@@ -123,6 +123,8 @@ public class SlicedEventsPanel
 //  jogl_panel = new JoglPanel( root, true, JoglPanel.DEBUG_MODE );
     jogl_panel = new JoglPanel( root, true, JoglPanel.NORMAL_MODE );
 
+    jogl_panel.setCursor( makeAxisCursor() );
+
     Camera camera = jogl_panel.getCamera();
     camera.setVUV( new Vector3D(   0, 0,  1 ) );
     camera.setVRP( new Vector3D(  -7, 0,  0 ) );
@@ -141,9 +143,26 @@ public class SlicedEventsPanel
       color_tran[i] = i;
   }
 
+  
+  /**
+   *  Get the JoglPanel for this viewer.
+   */
   public JoglPanel getJoglPanel()
   {
     return jogl_panel;
+  }
+
+
+  /**
+   *  Make a callibrated axis system for the cursor
+   */
+  private OrientationTransform makeAxisCursor()
+  {
+    float size = 2;
+    return new CalibratedAxes( null, null, null,
+                               null, -size, size, Color.RED,
+                               null, -size, size, Color.GREEN,
+                               null, -size, size, Color.BLUE );
   }
 
 
