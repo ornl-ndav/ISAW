@@ -133,12 +133,15 @@ public class indexPeaksPanel extends    JPanel
    private JPanel buildPanel()
    {
       JPanel panel = new JPanel();
-      panel.setLayout(  new BorderLayout() );
+      BoxLayout blayout = new BoxLayout( panel, BoxLayout.Y_AXIS );
+      panel.setLayout(  blayout );
       middlePanel = new JTabbedPane();
       middlePanel.addTab( "AutoIndex(w.Xtal Params)",buildCalcMatPanel());
       middlePanel.addTab( "AutoIndex", buildCalcMat2Panel());
       middlePanel.addTab( "Read UB fr File", buildFromFilePanel() );
       panel.add( middlePanel );
+      panel.add( buildTolerancePanel());
+      this.add(panel );
       panel.add( buildButtonsPanel(), BorderLayout.SOUTH );
       return panel;
    }
@@ -281,21 +284,18 @@ public class indexPeaksPanel extends    JPanel
       String defaultGamma = "120";
       gammaTxt = new JTextField(defaultGamma);
       gammaTxt.setHorizontalAlignment(JTextField.RIGHT);
-      
-      JLabel toleranceLbl = new JLabel("Tolerance:");
-      String defaultTolerance = ".12";
-      toleranceTxt = new JTextField(defaultTolerance);
-      toleranceTxt.setHorizontalAlignment(JTextField.RIGHT);
+     
       
       JLabel fixedPeakLbl = new JLabel("Fixed Peak Index:");
       String defaultFindPeaks = "1";
       fixedPeakTxt = new JTextField(defaultFindPeaks);
       fixedPeakTxt.setHorizontalAlignment(JTextField.RIGHT);
+  
       
-      JLabel requiredFractionLbl = new JLabel("Required Fraction:");
-      String defaultRequiredFraction = ".4";
-      requiredFractionTxt = new JTextField(defaultRequiredFraction);
-      requiredFractionTxt.setHorizontalAlignment(JTextField.RIGHT);
+      JLabel toleranceLbl = new JLabel("Tolerance:");
+      String defaultTolerance = ".12";
+      toleranceTxt = new JTextField(defaultTolerance);
+      toleranceTxt.setHorizontalAlignment(JTextField.RIGHT);
       
       panel.add(aLbl);
       panel.add(aTxt);
@@ -313,9 +313,22 @@ public class indexPeaksPanel extends    JPanel
       panel.add(toleranceTxt);
       panel.add(fixedPeakLbl);
       panel.add(fixedPeakTxt);
+      
+      return panel;
+   }
+   
+   private JPanel buildTolerancePanel()
+   {
+      JPanel panel = new JPanel();
+      panel.setLayout(  new GridLayout( 1,2) );
+      
+      JLabel requiredFractionLbl = new JLabel("Required Fraction:");
+      String defaultRequiredFraction = ".4";
+      requiredFractionTxt = new JTextField(defaultRequiredFraction);
+      requiredFractionTxt.setHorizontalAlignment(JTextField.RIGHT);
+
       panel.add(requiredFractionLbl);
       panel.add(requiredFractionTxt);
-      
       return panel;
    }
    
@@ -501,15 +514,25 @@ public class indexPeaksPanel extends    JPanel
                if( getText( MatFileName ).length() > 0 )
 
                {
+                  java.util.Vector Messge = new java.util.Vector(2);
+                  Messge.add( getText(MatFileName));
+                  try
+                  {
+                  Messge.add( Float.parseFloat(
+                           requiredFractionTxt.getText().trim())  );
+                  }catch(Exception s3)
+                  {
+                     Messge.add(.12f);
+                  }
                   sendMessage( Commands.READ_ORIENTATION_MATRIX ,
-                           getText( MatFileName ) );
+                           Messge );
                   return;
                }
             }
             else if( middlePanel.getSelectedIndex() == AUTO_WPARAMS )
             {
                if( valid() )
-               {
+               {  
                   IndexPeaksCmd indexCmd = new IndexPeaksCmd( Float
                            .parseFloat( aTxt.getText() ) , Float
                            .parseFloat( bTxt.getText() ) , Float
@@ -526,7 +549,7 @@ public class indexPeaksPanel extends    JPanel
             }
             else if( middlePanel.getSelectedIndex() == AUTO_ROSS )
             {
-               ProcessAutoRoss( Dmin.getText(), Dmax.getText());
+               ProcessAutoRoss( Dmin.getText(), Dmax.getText(), requiredFractionTxt.getText());
             }
          }
          else if( cmd.startsWith( "Write" ) )
@@ -558,23 +581,27 @@ public class indexPeaksPanel extends    JPanel
    }
    
    // Sends messages for autoIndexing
-   private void  ProcessAutoRoss( String Dmin , String Dmax)
+   private void  ProcessAutoRoss( String Dmin , String Dmax, String Fraction)
    {
       float dmin = -1;
       float dmax = -1;
+      float fract = -1;
       try
       {
          dmin = Float.parseFloat( Dmin );
          dmax = Float.parseFloat( Dmax );
+         fract = Float.parseFloat( Fraction );
       }catch( Exception ss)
       {
          messageCenter.send(  new Message( Commands.DISPLAY_ERROR,
-                  "Min or Max d-spacing are not set for autoindexing", false) );
+                  "Min,Max d-spacing or Max distance from integer "+
+                  "are not set for autoindexing", false) );
          return;
       }
-      float[] data = new float[2];
+      float[] data = new float[3];
       data[0] = dmin;
       data[1] = dmax;
+      data[2] = fract;
       
       messageCenter.send(  new Message( Commands.INDEX_PEAKS_ROSS,
                data, false) );
