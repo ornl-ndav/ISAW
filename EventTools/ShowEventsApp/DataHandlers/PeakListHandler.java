@@ -16,6 +16,7 @@ import MessageTools.MessageCenter;
 
 import EventTools.ShowEventsApp.Command.Commands;
 import EventTools.ShowEventsApp.Command.IndexPeaksCmd;
+import EventTools.ShowEventsApp.Command.UBwTolCmd;
 import EventTools.ShowEventsApp.Command.Util;
 
 
@@ -158,6 +159,10 @@ public class PeakListHandler implements IReceiveMessage
       Message set_or = new Message( Commands.SET_ORIENTATION_MATRIX,
                                     UB, true );
       message_center.send( set_or );
+      
+      message_center.send(  new Message( 
+               Commands.INDEX_PEAKS_WITH_ORIENTATION_MATRIX,
+               new UBwTolCmd( UB, cmd.getRequiredFraction()),false) );
 
       return false;
     }
@@ -165,9 +170,10 @@ public class PeakListHandler implements IReceiveMessage
     else if( message.getName().equals( 
              Commands.INDEX_PEAKS_WITH_ORIENTATION_MATRIX ))
     {
-       float[][] orientationMatrix = (float[][])message.getValue();
        
-       indexAllPeaks( peakNew_list, orientationMatrix);
+       UBwTolCmd UBB = (UBwTolCmd)message.getValue();
+       
+       indexAllPeaks( peakNew_list, UBB.getUB(), UBB.getOffIntMax());
        Message set_peaks = new Message( Commands.SET_PEAK_NEW_LIST,
                                         peakNew_list,
                                         true );
@@ -178,7 +184,7 @@ public class PeakListHandler implements IReceiveMessage
     else if( message.getName().equals(  Commands.INDEX_PEAKS_ROSS ))
     {
        float[] value = (float[])message.getValue();
-       if( value == null || value.length < 2)
+       if( value == null || value.length < 3)
           return false;
          
        Util.sendInfo( "Starting long calculation. Please wait..." );
@@ -205,8 +211,12 @@ public class PeakListHandler implements IReceiveMessage
            return false;
         }
         
+        float[][] UBT = LinearAlgebra.getTranspose( UB );
         message_center.send( new Message( Commands.SET_ORIENTATION_MATRIX,
-                 LinearAlgebra.getTranspose( UB ), false));
+                 UBT, false));
+        
+        message_center.send(  new Message(Commands.INDEX_PEAKS_WITH_ORIENTATION_MATRIX,
+                 new UBwTolCmd(UBT,value[2]) ,false) );
         return false;
     }
 
@@ -227,9 +237,9 @@ public class PeakListHandler implements IReceiveMessage
   }
 
 
-  private void indexAllPeaks( Vector Peaks, float[][]UBT )
+  private void indexAllPeaks( Vector Peaks, float[][]UBT, float tolerance )
   {
-    float tolerance = .12f;
+    
     float[][]UB = LinearAlgebra.getTranspose( UBT );
     int n=0;
     for( int i=0; i<Peaks.size(); i++)
@@ -254,7 +264,7 @@ public class PeakListHandler implements IReceiveMessage
     n = Peaks.size() -n;
     Util.sendInfo( "Indexed " + n + 
                    " out of " + Peaks.size() + 
-                   " peaks to within .12" );
+                   " peaks to within "+tolerance );
   }
 
 

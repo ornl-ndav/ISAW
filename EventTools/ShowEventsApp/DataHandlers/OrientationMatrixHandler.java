@@ -34,6 +34,8 @@
 
 package EventTools.ShowEventsApp.DataHandlers;
 
+import java.util.Vector;
+
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 
@@ -50,6 +52,7 @@ import MessageTools.MessageCenter;
 
 import EventTools.ShowEventsApp.Command.Commands;
 import EventTools.ShowEventsApp.Command.SelectionInfoCmd;
+import EventTools.ShowEventsApp.Command.UBwTolCmd;
 import EventTools.ShowEventsApp.Command.Util;
 
 /**
@@ -130,7 +133,9 @@ public class OrientationMatrixHandler implements IReceiveMessage
 
     else if ( message.getName().equals(Commands.READ_ORIENTATION_MATRIX))
     {
-       String filename = (String)message.getValue();
+       Vector V =(Vector)message.getValue();
+       String filename = (String)V.firstElement();
+       float OffInt =((Float)V.lastElement()).floatValue();
        Object Res = Operators.TOF_SCD.IndexJ.readOrient( filename );
        if( Res == null || !(Res instanceof float[][]) )
        {
@@ -141,6 +146,7 @@ public class OrientationMatrixHandler implements IReceiveMessage
        }
        float[][] orMat = LinearAlgebra.getTranspose( (float[][]) Res );
        SetNewOrientationMatrix( orMat );
+       IndexPeakWithOrientationMat( orMat, OffInt);
     }
 
     else if ( message.getName().equals(Commands.ADD_ORIENTATION_MATRIX_INFO) )
@@ -189,19 +195,18 @@ public class OrientationMatrixHandler implements IReceiveMessage
          orientation_matrix[row][col] = new_mat[row][col];
 
      ShowLatticeParams( orientation_matrix );
-     
+     return true;
+  }
+  
+  private boolean IndexPeakWithOrientationMat( float[][]UB, float offInt)
+  { 
      // NOTE: we don't use a separate thread for setting the orientation matrix
      //       since we want it done BEFORE indexing.
-     Message new_message = new Message( Commands.SET_ORIENTATION_MATRIX, 
-                                        orientation_matrix, 
-                                        false ); 
+   
      
-     message_center.send( new_message );
-     
-
      message_center.send( new Message( 
                            Commands.INDEX_PEAKS_WITH_ORIENTATION_MATRIX, 
-                           orientation_matrix, 
+                           new UBwTolCmd(UB, offInt),
                            false,
                            true ) );
 
