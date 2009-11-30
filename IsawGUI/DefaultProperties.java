@@ -383,7 +383,8 @@ public class DefaultProperties{
                 .append( eol );
         rs.append( "#" ).append( eol );
         rs.append( "#Slurm_Queue_Name=snapq" ).append( eol );
-        rs.append( "#Find_Peaks_Process_Memory=1500" ).append( eol );
+        rs.append( "#Find_Peaks_Process_Memory=2000" ).append( eol );
+        rs.append( "#Integrate_Peaks_Process_Memory=2000" ).append( eol );
         rs.append(eol);
         
 
