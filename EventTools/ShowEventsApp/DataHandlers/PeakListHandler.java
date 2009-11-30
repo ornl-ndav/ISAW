@@ -162,7 +162,7 @@ public class PeakListHandler implements IReceiveMessage
       
       message_center.send(  new Message( 
                Commands.INDEX_PEAKS_WITH_ORIENTATION_MATRIX,
-               new UBwTolCmd( UB, cmd.getRequiredFraction()),false) );
+               new UBwTolCmd( UB, cmd.getTolerance()),false) );
 
       return false;
     }

@@ -291,11 +291,12 @@ public class indexPeaksPanel extends    JPanel
       fixedPeakTxt = new JTextField(defaultFindPeaks);
       fixedPeakTxt.setHorizontalAlignment(JTextField.RIGHT);
   
+      JLabel requiredFractionLbl = new JLabel("Pass 1 Required Fraction:");
+      String defaultRequiredFraction = ".4";
+      requiredFractionTxt = new JTextField(defaultRequiredFraction);
+      requiredFractionTxt.setHorizontalAlignment(JTextField.RIGHT);
       
-      JLabel toleranceLbl = new JLabel("Tolerance:");
-      String defaultTolerance = ".12";
-      toleranceTxt = new JTextField(defaultTolerance);
-      toleranceTxt.setHorizontalAlignment(JTextField.RIGHT);
+     
       
       panel.add(aLbl);
       panel.add(aTxt);
@@ -308,9 +309,9 @@ public class indexPeaksPanel extends    JPanel
       panel.add(betaLbl);
       panel.add(betaTxt);
       panel.add(gammaLbl);
-      panel.add(gammaTxt);
-      panel.add(toleranceLbl);
-      panel.add(toleranceTxt);
+      panel.add(gammaTxt);  
+      panel.add(requiredFractionLbl);
+      panel.add(requiredFractionTxt);
       panel.add(fixedPeakLbl);
       panel.add(fixedPeakTxt);
       
@@ -322,13 +323,14 @@ public class indexPeaksPanel extends    JPanel
       JPanel panel = new JPanel();
       panel.setLayout(  new GridLayout( 1,2) );
       
-      JLabel requiredFractionLbl = new JLabel("Required Fraction:");
-      String defaultRequiredFraction = ".4";
-      requiredFractionTxt = new JTextField(defaultRequiredFraction);
-      requiredFractionTxt.setHorizontalAlignment(JTextField.RIGHT);
+      JLabel toleranceLbl = new JLabel("hkl Tolerance:");
+      String defaultTolerance = ".12";
+      toleranceTxt = new JTextField(defaultTolerance);
+      toleranceTxt.setHorizontalAlignment(JTextField.RIGHT);
 
-      panel.add(requiredFractionLbl);
-      panel.add(requiredFractionTxt);
+      panel.add(toleranceLbl);
+      panel.add(toleranceTxt);
+    
       return panel;
    }
    
@@ -519,7 +521,7 @@ public class indexPeaksPanel extends    JPanel
                   try
                   {
                   Messge.add( Float.parseFloat(
-                           requiredFractionTxt.getText().trim())  );
+                           toleranceTxt.getText().trim())  );
                   }catch(Exception s3)
                   {
                      Messge.add(.12f);
@@ -549,7 +551,7 @@ public class indexPeaksPanel extends    JPanel
             }
             else if( middlePanel.getSelectedIndex() == AUTO_ROSS )
             {
-               ProcessAutoRoss( Dmin.getText(), Dmax.getText(), requiredFractionTxt.getText());
+               ProcessAutoRoss( Dmin.getText(), Dmax.getText(), toleranceTxt.getText());
             }
          }
          else if( cmd.startsWith( "Write" ) )
