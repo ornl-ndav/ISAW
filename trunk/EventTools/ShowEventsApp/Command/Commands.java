@@ -88,7 +88,7 @@ public class Commands
    */
   public static final String SET_PEAK_NEW_LIST = "SET_PEAK_NEW_LIST";
   public static final String CLEAR_PEAK_LISTS = "CLEAR_PEAK_LISTS";
-
+  public static final String FILTER_PEAKS = "FILTER_PEAKS";
 
   /**
    * MARK_PEAKS has value Boolean OR a vector of PeakQ objects
