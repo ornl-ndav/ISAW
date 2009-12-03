@@ -84,6 +84,7 @@ public class controlsPanel extends JPanel
    private sliceControl           slicePanel;
    private additionalViewControls sliceControlsPanel;
    private drawingOptions         drawoptions;
+   private filterPeaksPanel       filterPeaks;
    
 // private final Color background_color = new Color( 221, 232, 243 );
    private final Color background_color = new Color( 187, 209, 230 );
@@ -120,7 +121,8 @@ public class controlsPanel extends JPanel
       indexPeakPanel = new indexPeaksPanel(messageCenter);
       positionPanel = new positionInfoPanel(messageCenter);
       peakInfoPanel = new peaksStatPanel( messageCenter);
-     
+      filterPeaks = new filterPeaksPanel(messageCenter);
+      
       slicePanel = new sliceControl(messageCenter);
       sliceControlsPanel = new additionalViewControls( messageCenter,
                                                        viewMessageCenter );
@@ -156,7 +158,7 @@ public class controlsPanel extends JPanel
       filterPeaksBtn = new JButton("Filter Peaks");
       filterPeaksBtn.setBackground( background_color );
       filterPeaksBtn.addActionListener(new buttonListener());
-      filterPeaksBtn.setEnabled(false);
+      //filterPeaksBtn.setEnabled(false);
       
       indexPeaksBtn = new JButton("Index Peaks");
       indexPeaksBtn.setBackground( background_color );
@@ -248,7 +250,7 @@ public class controlsPanel extends JPanel
             value = peakPanel;
          
          if (e.getSource().equals(filterPeaksBtn))
-            value = notImplementedPanel();
+            value = filterPeaks;//notImplementedPanel();
          
          if (e.getSource().equals(indexPeaksBtn))
             value = indexPeakPanel;
