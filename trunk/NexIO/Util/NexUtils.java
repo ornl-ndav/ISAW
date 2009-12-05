@@ -247,6 +247,9 @@ public class NexUtils implements INexUtils {
     public  boolean setUpNXdetectorAttributes( DataSet DS , NxNode NxDataNode ,
             NxNode NxDetector , int startDSindex , NxfileStateInfo States ) {
 
+      ConvertDataTypes.addAttribute(DS, 
+    		 ConvertDataTypes.CreateStringAttribute(Attribute.LOCAL_NAME,
+    				 NexUtils.getStringFieldValue(NxDetector, "local_name")) );
       NxDataStateInfo dataState = NexUtils.getDataStateInfo( States );  
       if( dataState == null )
          return setErrorMessage( " No state for NXdata "
