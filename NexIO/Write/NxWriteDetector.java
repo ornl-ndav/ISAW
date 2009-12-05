@@ -92,6 +92,7 @@ package NexIO.Write;
 import gov.anl.ipns.MathTools.Geometry.*;
 import DataSetTools.dataset.*;
 import NexIO.*;
+import NexIO.Util.ConvertDataTypes;
 
 /**
  * A Class that is responsible for writing information from data sets
@@ -155,6 +156,10 @@ public class NxWriteDetector{
     NxData_Gen ng = new NxData_Gen ();
     //NXData_util nu = new NXData_util();
     Object XX;
+    
+    String locName =  ConvertDataTypes.StringValue(DS.getAttributeValue( Attribute.LOCAL_NAME));
+    if( locName != null )
+    	util.writeStringAttr(node, Attribute.LOCAL_NAME, locName);
 
     int array_length   = endIndex-startIndex;
 
