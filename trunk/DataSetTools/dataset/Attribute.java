@@ -293,7 +293,14 @@ abstract public class Attribute implements Serializable,
    * Title.
    */   
   public static final String  RUN_TITLE         = "Run Title";
+ 
   
+  /**
+   * LOCAL_NAME = "local name" is the name of a String Attribute giving a local
+   * name for a data set.
+   */   
+  public static final String  LOCAL_NAME         = "local name";
+ 
   /**
    * RUN_NUM = "Run Number" is the name of an integer array Attribute giving the
    * Run Number.
