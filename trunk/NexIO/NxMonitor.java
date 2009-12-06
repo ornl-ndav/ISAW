@@ -171,6 +171,11 @@ public class NxMonitor{
     if( ( xvals == null ) ||(  yvals==null ) ) 
       return setErrorMessage( "Cannot convert data to float array in NxMonitor");
     
+    float TotalCount =0;
+    for( int i=0; i< yvals.length; i++)
+    	TotalCount +=yvals[i];
+    
+    DS.setAttribute(new FloatAttribute( Attribute.TOTAL_COUNT, TotalCount));
     
     String Xlabel = NexUtils.getStringAttributeValue( ntof, "long_name");
     if( Xlabel != null)
