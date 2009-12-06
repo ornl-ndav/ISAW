@@ -1292,7 +1292,7 @@ public class ExtGetDS
 
             java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat();
             
-            sdf.applyPattern( "MMM dd,yyyy" );
+            sdf.applyPattern( "dd-MMM-yy" );
             
             Res.setAttribute( new StringAttribute( Attribute.END_DATE , sdf
                      .format( D ) ) );
