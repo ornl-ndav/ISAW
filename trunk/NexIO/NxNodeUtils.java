@@ -115,6 +115,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.Vector;
 
 //import neutron.nexus.NexusFile;
 import org.nexusformat.*;
@@ -149,7 +150,7 @@ public class NxNodeUtils {
      */
     public static Date parse(String DateString)
     {
-       return parse(DateString," ");
+       return parse1(DateString,' ');
     }
     
     /**
@@ -158,19 +159,20 @@ public class NxNodeUtils {
      * @param  DateString  a String that represents a data
      * @return The Date object corresponding to the DateString
      */
-    private static Date parse(String DateString, String dateTimeSeparator) {
+    private static Date parse1(String DateString, String dateTimeSeparator) {
         Date Result;
         SimpleDateFormat fmt = new SimpleDateFormat();
     
         fmt.setLenient(true);
-    
-        String Date_formats[] = {"yyyy", "yyyy-MM", "yyyy-MM-dd", 
-                "yyyy.MM.dd",//"yyyy-MMM-dd" , "yyyy.MMM.dd" , 
+       //yyyy matches with yy
+        String Date_formats[] = { "yyyy","yyyy-MM", "yyyy-MM-dd", 
+                "yyyy.MM.dd","yy-MMM-dd",//"yyyy-MMM-dd" , "yyyy.MMM.dd" , 
                 "yyyy-M-d", "yyyy.M.d", "yy.MM.dd", "yy.N.d",
                 "MM/dd/yyyy", "MM/dd/yy", "M/d/yyyy", "M/d/yy",
                 "MMM/dd/yyyy", "MMM/d/yyyy", "MMM/dd/yy", "MMM/d/yy",
+                "MMM dd/yyyy", "MMM d/yyyy", "MMM dd/yy", "MMM d/yy",
                 "dd-MMM-yyyy", "dd/MMM/yyyy", "dd-MMM-yy", "d/MMM/yy",
-                "MMM dd,yyyy"};
+                "MMM dd,yy"};
     
         String Time_formats[] = { "HH:mm:ss", "HH:mm", "hh:mm a", "hh:mma",
                 "H:mm:ss", "H:mm", "h:mm a", "h:mma",
@@ -199,6 +201,226 @@ public class NxNodeUtils {
     
     }
     
+    static String[] Months={"JAN","FEB","MAR","APR","MAY","JUN",
+   		             "JUL","AUG","SEP","OCT","NOV","DEC"};
+    /**
+     * Attempts to parse a date string with various formats including
+     * "- ,/, and ." separators for month,year,day specifiers.
+     * @param  DateString  a String that represents a data
+     * @return The Date object corresponding to the DateString
+     */
+    private static Date parse(String DateString, char dateTimeSeparator) {
+    	
+   	if( DateString == null || DateString.length() < 1)
+   		return null;
+   	int k = DateString.indexOf(  dateTimeSeparator );
+   	if( k < 0)
+   		k = DateString.length( );
+   	
+    	String[] Splits = SplitUpString( DateString.substring( 0,k ), " ,/-");
+    	if( Splits == null || Splits.length < 1)
+    		return null;
+    	int monthIndx, yearIndx, dayIndx;
+    	monthIndx = yearIndx =  dayIndx = -1;  	
+    	if( !Character.isDigit( Splits[0].charAt( 0 ) ))
+    		monthIndx = 0;
+    	else if( Splits.length > 2 && !Character.isDigit(  Splits[2].charAt( 0 ) ))
+    		monthIndx = 2;
+    	
+    	if( monthIndx !=0)
+    		yearIndx =0;
+    	else if( monthIndx ==0 )
+    		yearIndx = Splits.length-1;
+    	
+    	if( yearIndx < 0)
+    	if( Splits[0].length() >=3 && monthIndx !=0 )
+    		yearIndx =0;
+    	else if( monthIndx != Splits.length-1 && Splits[ Splits.length-1].length() >=3)
+    		yearIndx = Splits.length-1;
+    	
+    	if( Splits.length < 2)
+    		yearIndx =0;
+    	//defaults for yearIndx for 2 digit yearsif no Jan
+    	if( yearIndx  < 0 )
+    		if( "/ ".indexOf( Splits[1].charAt(0) ) >=0)
+             yearIndx = Splits.length-1;
+    		else
+    			yearIndx = 0;
+    			
+    	
+    	
+    	if( yearIndx == 0)
+    		if( monthIndx == 2)
+    			dayIndx =4;
+    		else if( monthIndx == 4)
+    			dayIndx = 2;
+    		else if( Splits.length >= 2)
+    		   if( Splits[1].equals( "/" ) || Splits[1].equals( " " ))
+    		   {
+    		   	monthIndx =2;
+    		   	dayIndx = 4;
+    		   }else
+    		   {
+
+    		   	monthIndx =4;
+    		   	dayIndx = 2;
+    		   	
+    		   }
+    	if( yearIndx > 0)
+    		if( monthIndx ==0)
+    		{
+    			if( yearIndx >2)
+    				dayIndx =2;
+    		}else if( monthIndx > 0)
+    		{
+    			dayIndx =0;
+    		}else if (Splits.length >=2)
+    			 if( Splits[1].equals( "/" ) || Splits[1].equals( " " ))
+    			 {
+    				 monthIndx =0;
+    				 if( yearIndx >2)
+    					 dayIndx = 2;
+    			 }else if( yearIndx >2)
+    			 {
+    				dayIndx =0;
+    				monthIndx =2;
+    				
+    			 }else
+    			 {
+    				 monthIndx =0;
+    			 }
+    	int year,day;
+    	int month;
+    	try
+    	{
+    		year = Integer.parseInt(  Splits[yearIndx] );
+    	}catch(Exception s)
+    	{
+    		return null;
+    	}
+    	if( year < 1000)
+          if( year < 30 )
+         	 year +=2000;
+          else
+       
+         	year  +=1900;
+    	
+    	year = year -1900;
+    	try
+    	{
+    		 month = Integer.parseInt( Splits[ monthIndx] );
+    		;
+    		
+    	}catch( Exception s1)
+    	{
+    		month = -1;
+    		if( monthIndx >=0 && monthIndx < Splits.length &&
+    				Splits[monthIndx].length()>=3)
+    		{
+    			String Mnth = Splits[monthIndx].toUpperCase( ).substring( 0,3 );
+    			for( int i=0; i< 11 && month < 0; i++)
+    				if( Mnth.equals( Months[i] ))
+    					month = i+1;
+    		}
+    		
+    	}
+    	month = month -1;
+      try
+      {
+      	day = Integer.parseInt( Splits[dayIndx] );
+      }catch( Exception s2)
+      {
+      	day =1;
+      }
+      
+      //------------------ Now do hours minutes and seconds
+      String SS = DateString.substring( k );
+      if( SS != null)
+      	SS = SS.trim( );
+      Splits = SplitUpString( SS, " :");
+      int hours, minutes;
+      float seconds;
+      hours = minutes =-1;
+      seconds = -1;
+      boolean done = false;
+      try
+      {
+      	hours = Integer.parseInt( Splits[0] );
+      }catch( Exception s2)
+      {
+      	hours = -1;
+      }
+    	if( hours >=0 && Splits.length >2 && Splits[1].equals( ":"))
+    		try
+    	{
+    			minutes = Integer.parseInt( Splits[2] );
+    	}catch( Exception s3)
+    	{
+    		minutes = -1;
+    	}
+    	
+    	if( minutes >=0 && Splits.length >4 && Splits[3].equals( ":"))
+    		try
+    	{
+    			seconds = Float.parseFloat( Splits[4] );
+    	}catch( Exception s3)
+    	{
+    		seconds = -1;
+    	}
+    	
+    	int kk= Splits.length-1;
+    	if( hours >=0 && kk -1 >0  && Splits[kk-1] ==" ")
+    		if( Splits[kk].toUpperCase( ).charAt( 0 )=='P')
+    			hours +=12;
+    	if( hours < 0)
+    		hours =0;
+    	if( minutes < 0)
+    		minutes =0;
+    	if( seconds < 0 )
+    		seconds =0;
+    		
+    	
+    	return new Date( year, month, day, hours, minutes, (int)(seconds +.5));
+    	
+    }
+    
+    // Split up toBsplit with single characters in SplitChars.
+    // 2 consecutive spaces = 1 space if space is in SplitChars
+    private static String[] SplitUpString( String toBsplit, String SplitChars)
+    {
+    	Vector<String> Res = new Vector<String>();
+    	String CurrentLetters= null;
+    	if( toBsplit == null || toBsplit.length() < 1)
+    		return null;
+    	for( int i=0; i < toBsplit.length(); i++)
+    	{  
+    		char c = toBsplit.charAt(i);
+    		if( SplitChars.indexOf( c )>=0)
+    		{
+    			if( CurrentLetters != null)
+    				Res.add( CurrentLetters);
+    			CurrentLetters = null;
+    			if( Res.size()>0 && c==' ' && Res.lastElement() ==" ")
+    			{
+    				
+    			}else
+    				Res.add( ""+c );
+    			
+    		}else
+    		{
+    			if( CurrentLetters == null)
+    				CurrentLetters = ""+c;
+    			else
+    				CurrentLetters +=c;
+    		}
+    			
+    	}
+    	if( CurrentLetters != null)
+    		Res.add(CurrentLetters);
+    	return Res.toArray(new String[0]);
+    
+    }
+    
     /**
      * Attempts to parse the date string and create a Date object describing 
      * the date listed in the string.  This method is specifically made to 
@@ -209,7 +431,7 @@ public class NxNodeUtils {
      */
     public static Date parseISO8601(String dateString)
     {
-       return parse(dateString,"T");
+       return parse(dateString,'T');
     }
     /*
        String strToUse = dateString;
