@@ -1,0 +1,14 @@
+# NEW CALIBRATION FILE FORMAT (in NeXus/SNS coordinates):
+# Lengths are in centimeters.
+# Base and up give directions of unit vectors for a local
+# x,y coordinate system on the face of the detector.
+#
+#  Sun Sep 20, 2009 (First estimate of initial TOPAZ configuration)
+#
+6         L1     T0_SHIFT
+7       1800        0.0
+4 DETNUM  NROWS  NCOLS    WIDTH   HEIGHT   DEPTH   DETD   CenterX   CenterY   CenterZ    BaseX    BaseY    BaseZ      UpX      UpY      UpZ
+5      1    256    256 15.0000 15.0000  0.2000  19.00  -13.4350    0.0000   13.4350 -0.70711  0.00000 -0.70711  0.00000  1.00000  0.00000
+5      2    256    256 15.0000 15.0000  0.2000  19.00  -19.0000    0.0000   -0.0001  0.00000  0.00000 -1.00000  0.00000  1.00000  0.00000
+5      3    256    256 15.0000 15.0000  0.2000  19.00  -13.4351    0.0000  -13.4350  0.70710  0.00000 -0.70711  0.00000  1.00000  0.00000
+5      4    256    256 15.0000 15.0000  0.2000  19.00  -13.4350  -13.4350   -0.0001  0.00000  0.00000 -1.00000 -0.70711  0.70711  0.00000
