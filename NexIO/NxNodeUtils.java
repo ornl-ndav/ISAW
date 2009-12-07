@@ -150,7 +150,7 @@ public class NxNodeUtils {
      */
     public static Date parse(String DateString)
     {
-       return parse1(DateString,' ');
+       return parse1(DateString," ");
     }
     
     /**
