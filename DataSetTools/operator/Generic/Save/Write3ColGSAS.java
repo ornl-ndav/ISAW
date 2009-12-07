@@ -184,11 +184,20 @@ public class Write3ColGSAS extends GenericSave{
         this.run_file=(String)ds.getAttributeValue(Attribute.FILE_NAME);
         String x_units=ds.getX_units();
 
-        Data d, mon_data;
+        Data   d, 
+               mon_data = null;
         String bankfile;
-        int bankNum;
+        int    bankNum;
 
-        mon_data = mon_ds.getData_entry(1);
+       if ( mon_ds != null )                  // NOTE: User should probably
+       {                                      //       specify which monitor
+        int num_monitors = mon_ds.getNum_entries();
+        if ( num_monitors > 1 ) 
+          mon_data = mon_ds.getData_entry(1);  // For compatibility with
+        else                                   // previous version...
+          mon_data = mon_ds.getData_entry(0);  // If only one monitor,
+       }                                       // get it.
+
        if(this.openFile(filename))
        {   
             int banknum = 1;     
@@ -284,7 +293,6 @@ public class Write3ColGSAS extends GenericSave{
 
          int startline=1, endline=5; // must have 6 lines
 
-
         // set up a string buffer to allow faster writting
         StringBuffer header=new StringBuffer(80*6);
 
@@ -295,9 +303,24 @@ public class Write3ColGSAS extends GenericSave{
         }
 
         // add the monitor count
-        if( this.run_file!=null && this.run_file.length()>0 && banknum==1 ){
+        if( this.run_file!=null && this.run_file.length()>0 && banknum==1 )
+        {
+            float count = AttrUtil.getTotalCount( mon_data );
+            if ( Float.isNaN( count ) || count <= 0 )  // try to calculate it
+            {
+              if ( mon_data != null )
+              {
+                count = 0;
+                float[] ys = mon_data.getY_values();
+                if ( ys != null )
+                  for ( int i = 0; i < ys.length; i++ ) 
+                    count += ys[i];
+              }
+            }
 
-          	Float count = (Float)mon_data.getAttributeList().getAttributeValue(Attribute.TOTAL_COUNT);
+            if ( Float.isNaN( count ) || count <= 0 )  // use 1 by default
+              count = 1;
+
             header.append( Format.string("# Monitor: "+count,80,false) +"\r"+"\n");
             startline++;
         }
