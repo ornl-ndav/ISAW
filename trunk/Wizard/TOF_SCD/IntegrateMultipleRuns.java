@@ -88,7 +88,7 @@ public class IntegrateMultipleRuns extends GenericOperator{
       addParameter( new ChoiceListPG("Peak Algorithm",new String[]{"MaxIToSigI","Shoe Box", "MaxIToSigI-old","TOFINT","EXPERIMENTAL"}));
       addParameter( new IntArrayPG("Box Delta x (col) Range","-2:2"));
       addParameter( new IntArrayPG("Box Delta y (row) Range","-2:2"));
-      addParameter( new FloatPG("Use Shoe Box integration for peaks below this size",0));
+      addParameter( new FloatPG("Use Shoe Box integration for peaks below this I/sig(I) ratio",0));
       addParameter( new IntegerPG("Max running threads",1));
       addParameter( new BooleanPG("Pop Up Log Info",new Boolean(false)));
       addParameter( new BooleanPG("Pop Up integrate file",new Boolean(false)));
