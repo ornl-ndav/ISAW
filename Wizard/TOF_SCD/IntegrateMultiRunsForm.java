@@ -343,7 +343,7 @@ public class IntegrateMultiRunsForm extends Form {
 
     addParameter( new IntArrayPG( "Box Delta x (col) Range", "-2:2" ) );  //12
     addParameter( new IntArrayPG( "Box Delta y (row) Range", "-2:2" ) );  //13
-    addParameter( new FloatPG( "Use Shoe Box integration for peaks below this size", new Float(0) ) );      //15
+    addParameter( new FloatPG( "Use Shoe Box integration for peaks below this I/sig(I) ratio", new Float(0) ) );      //15
     setResultParam( new LoadFilePG( "Integrated Peaks File ", " " ) );    //14
 
     if( HAS_CONSTANTS ) {
