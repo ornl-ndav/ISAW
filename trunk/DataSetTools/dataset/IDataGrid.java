@@ -71,7 +71,7 @@ import java.io.*;
  * information about the positions.  That is, it organizes the positions 
  * into 2-D arrays of 3D positions.  The interface is implemented by class 
  * UniformGrid, class describing a collection of positions arranged to 
- * form a uniform grid, such a many area detetors or LPSDs.  Other classes 
+ * form a uniform grid, such a many area detectors or LPSDs.  Other classes 
  * can implement this interface, as needed, to describe a non-uniform grid.
  */  
 
@@ -189,7 +189,7 @@ public interface IDataGrid extends Serializable
   public int num_cols();
 
   /**
-   *  Find the offset in the directon of "x_vec()", from the center of the 
+   *  Find the offset in the direction of "x_vec()", from the center of the 
    *  grid to the specified position.  If row and col are integers, this 
    *  will be the offset to the center of the specified "box".  
    *
@@ -199,7 +199,7 @@ public interface IDataGrid extends Serializable
   public float x( float row, float col );
 
   /**
-   *  Find the offset in the directon of "y_vec()", from the center of the 
+   *  Find the offset in the direction of "y_vec()", from the center of the 
    *  grid to the specified position.  If row and col are integers, this 
    *  will be the offset to the center of the specified "box".  
    *
@@ -250,7 +250,7 @@ public interface IDataGrid extends Serializable
   /**
    *  Get the width of the specified grid "box".  If row and col are not
    *  integers, they will be rounded to obtain integer values that 
-   *  specifiy a particular grid "box".
+   *  specify a particular grid "box".
    *
    *  @return The width of the specified grid "box" in the direction of 
    *          the "x_vec(row,col)".
@@ -260,7 +260,7 @@ public interface IDataGrid extends Serializable
   /**
    *  Get the height of the specified grid "box".  If row and col are not
    *  integers, they will be rounded to obtain integer values that 
-   *  specifiy a particular grid "box".
+   *  specify a particular grid "box".
    *
    *  @return The height of the specified grid "box" in the direction of 
    *          the "y_vec(row,col)".
@@ -270,7 +270,7 @@ public interface IDataGrid extends Serializable
   /**
    *  Get the depth of the specified grid "box".  If row and col are not
    *  integers, they will be rounded to obtain integer values that 
-   *  specifiy a particular grid "box".
+   *  specify a particular grid "box".
    *
    *  @return The depth of the specified grid "box" in the direction of 
    *          the "z_vec(row,col)".
@@ -333,7 +333,7 @@ public interface IDataGrid extends Serializable
    *  @param  col   the column number of the Data block
    *
    *  @return  The Data block corresponding to the specified row and column.
-   *           If no Data entriew have been set, or if row, col are out of
+   *           If no Data entries have been set, or if row, col are out of
    *           bounds, this returns null.
    */
   public Data getData_entry( int row, int col );
