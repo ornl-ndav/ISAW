@@ -48,19 +48,30 @@ import DataSetTools.operator.Generic.TOF_SCD.*;
 public class DumpGrids
 {
   
+  /**
+   * Dump out a file with Detector Position information from the specified
+   * NeXus file.  The file that is written will have the name of the input
+   * .NeXus file plus the extension ".grids".  This file has the form of
+   * Detector Calibration file (.DetCal), but just has the geometry info
+   * from the NeXus, and a T0_SHIFT value of 0.
+   *
+   * @param args    Array of command line arguments.
+   *                args[0] must be the fully qualified name of the .nxs
+   *                file that has the required geometry information.
+   */
   public static void main( String args[] ) throws Exception
   {
     Vector<IDataGrid> grids = new Vector<IDataGrid>();
     float   initial_path = 0;
     boolean have_initial_path = false;
 
-//  String filename = "/usr2/ARCS_SCD/ARCS_419.nxs";
-//  String filename = "/usr2/SEQUOIA/SEQ_328.nxs";
-//  String filename = "/usr2/POWGEN/PG3_293.nxs";
-    String filename = "/usr2/DEMO/SNAP_767.nxs";
+    if ( args.length <= 0 )
+      throw new IllegalArgumentException(
+                                   "First argument must be the file name");
+    String filename = args[0];
 
     NexusRetriever nr = new NexusRetriever( filename );
-    nr.RetrieveSetUpInfo( null );
+//  nr.RetrieveSetUpInfo( null );
 
     int num_ds = nr.numDataSets();
     System.out.println("Number of DataSets = " + num_ds );
