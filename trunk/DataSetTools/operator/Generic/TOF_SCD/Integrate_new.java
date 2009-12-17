@@ -1265,7 +1265,7 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
           peak = (IPeak)(peaks.elementAt(i));
           if(DEBUG) System.out.println("Integrating intensity   "+peak.inti());
           if(DEBUG) System.out.println("Integrating sigI        "+peak.sigi());
-          if( peak.inti()<=peak.sigi()*max_shoebox)
+          if( peak.inti()<peak.sigi()*max_shoebox)
           IntegrateUtils.integrateShoebox( (IPeak)peaks.elementAt(i),
                                             ds, ids,
                                             colXrange, rowYrange, timeZrange,
@@ -1293,7 +1293,7 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
           peak = (IPeak)(peaks.elementAt(i));
           if(DEBUG) System.out.println("Integrating intensity   "+peak.inti());
           if(DEBUG) System.out.println("Integrating sigI        "+peak.sigi());
-          if( peak.inti()<=peak.sigi()*max_shoebox)
+          if( peak.inti()<peak.sigi()*max_shoebox)
           IntegrateUtils.integrateShoebox( (IPeak)peaks.elementAt(i),
                                             ds, ids,
                                             colXrange, rowYrange, timeZrange,
