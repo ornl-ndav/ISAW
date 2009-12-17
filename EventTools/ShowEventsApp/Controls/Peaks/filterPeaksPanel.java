@@ -13,7 +13,7 @@ import EventTools.ShowEventsApp.Command.*;
 import MessageTools.*;
 import gov.anl.ipns.Parameters.IParameterGUI;
 import gov.anl.ipns.Parameters.IntArrayPG;
-import gov.anl.ipns.Util.Numeric.IntList;
+import gov.anl.ipns.Util.Numeric.ClosedInterval;
 import gov.anl.ipns.ViewTools.UI.FontUtil;
 import gov.anl.ipns.ViewTools.UI.TextRangeUI;
 
@@ -23,28 +23,19 @@ public class filterPeaksPanel extends JPanel
 	private MessageCenter message_center;
 	
 	private JTabbedPane tabPane;
-	private JTextField belowThreshold;
 	private TextRangeUI dIntervals;
 	private TextRangeUI qIntervals;
-	//private JTextField dIntervals;
-	//private JTextField qIntervals;
-	private IntArrayPG detNumbers;
-	private IntArrayPG rowRange;
-	private IntArrayPG colRange;
-	//private JTextField detNumbers;
-	//private TextRangeUI rowRange;
-	//private TextRangeUI colRange;
-	//private JTextField rowRange;
-	//private JTextField colRange;
-	private JButton    indexedFile;
-	private JTextField indexed;
-	private JCheckBox  notIndexed;
-	private JButton    clearBtn;
-	private JButton    applyBtn;
-	private JButton    saveBtn;
-	private int        OFFSET;
-	private int        OFFSETQ;
-	private int        OFFSETD;
+	private IntArrayPG  detNumbers;
+	private IntArrayPG  rowRange;
+	private IntArrayPG  colRange;
+	private JButton     indexedFile;
+	private JTextField  indexed;
+	private JCheckBox   notIndexed;
+	private JButton     clearBtn;
+	private JButton     applyBtn;
+	private JButton     saveBtn;
+	private int         OFFSETQ;
+	private int         OFFSETD;
 	
 	public filterPeaksPanel(MessageCenter mc)
 	{
@@ -72,32 +63,18 @@ public class filterPeaksPanel extends JPanel
 	{
 		JPanel panel = new JPanel(new GridLayout(3,1));
 		
-		JPanel detPanel = new JPanel(new GridLayout(1,2));
-		
 		JLabel detectorLbl = new JLabel("Discard by Det. Number(s)");
-		detNumbers = new IntArrayPG(detectorLbl.getText(), 0);//new JTextField();
-		//detNumbers.setHorizontalAlignment(JTextField.RIGHT);
-		
-		//detPanel.add(detectorLbl);
-		//detPanel
+		detNumbers = new IntArrayPG(detectorLbl.getText(), 0);
 		panel.add(((IParameterGUI)detNumbers).getGUIPanel(false));
-		
-		JPanel rangePanel = new JPanel(new GridLayout(2,1));
 		
 		String row = "Discard by Row Number(s):";
 		String col = "Discard by Col Number(s):";
-		rowRange = new IntArrayPG(row, "0:0");//new TextRangeUI(row, 0,0);
-		colRange = new IntArrayPG(col, "0:0");//new TextRangeUI(col, 0,0);
+		rowRange = new IntArrayPG(row, "0:0");
+		colRange = new IntArrayPG(col, "0:0");
 		
-		OFFSET = row.length();
-		
-		//rangePanel
 		panel.add(((IParameterGUI)rowRange).getGUIPanel(false));
-		//rangePanel
 		panel.add(((IParameterGUI)colRange).getGUIPanel(false));;
 		
-		//panel.add(detPanel);
-		//panel.add(rangePanel);
 		return panel;
 	}
 	
@@ -107,7 +84,7 @@ public class filterPeaksPanel extends JPanel
 		
 		String qInt = "Discard by q-value Range:";
 		OFFSETQ = qInt.length();
-		qIntervals = new TextRangeUI(qInt, 0, 10);
+		qIntervals = new TextRangeUI(qInt, 0.1f, 1.5f);
 		qIntervals.setTextFont(FontUtil.LABEL_FONT2);
 
 		panel.add(qIntervals);
@@ -120,7 +97,7 @@ public class filterPeaksPanel extends JPanel
 		
 		String dInt = "Discard by d-value Range:";
 		OFFSETD = dInt.length();
-		dIntervals = new TextRangeUI(dInt, 0, 10);
+		dIntervals = new TextRangeUI(dInt, 0.3f, 1.7f);
 		dIntervals.setTextFont(FontUtil.LABEL_FONT2);
 		
 		panel.add(dIntervals);
@@ -174,7 +151,7 @@ public class filterPeaksPanel extends JPanel
 		{
 			if(e.getSource() == clearBtn)
 			{
-				
+				ResetFields();
 			}
 			
 			if(e.getSource() == applyBtn)
@@ -187,13 +164,18 @@ public class filterPeaksPanel extends JPanel
 				QDFilterCmd qdCmd
 				    = new QDFilterCmd(buildQVec(), buildDVec());
 				
-				System.out.println(detCmd.toString());
-				System.out.println(qdCmd.toString());
+				IndexedPeaksFilterCmd indCmd =
+				    new IndexedPeaksFilterCmd(indexed.getText(),
+				                            notIndexed.isSelected());
+				
+				sendMessage(Commands.FILTER_DETECTOR, detCmd);
+				sendMessage(Commands.FILTER_QD, qdCmd);
+				sendMessage(Commands.FILTER_PEAKS, indCmd);
 			}
 			
 			if(e.getSource() == saveBtn)
 			{
-	            final JFileChooser fc = new JFileChooser();
+	            /*final JFileChooser fc = new JFileChooser();
 	            File file = null;
 	            int returnVal = fc.showSaveDialog(null);
 	            
@@ -212,7 +194,7 @@ public class filterPeaksPanel extends JPanel
 	            {
 	               //System.out.println("Open command cancelled by user.");
 	               return;
-	            }*/
+	            }
 	            else if (returnVal == JFileChooser.ERROR_OPTION)
 	            {
 	               JOptionPane.showMessageDialog( null, 
@@ -220,34 +202,36 @@ public class filterPeaksPanel extends JPanel
 	                                             "Error Opening File!", 
 	                                              JOptionPane.ERROR_MESSAGE);
 	               return;
-	            }
+	            }*/
 			}
 		}
 	}
+	
+   /**
+    * Sends a message to the messagecenter
+    * 
+    * @param command
+    * @param value
+    */
+   private void sendMessage(String command, Object value)
+   {
+      Message message = new Message( command,
+                                     value,
+                                     true );
+      
+      message_center.send( message );
+   }
 	
 	private Vector buildDetVec()
 	{
 	    Vector vec = new Vector();
 	    
 	    int[] values = detNumbers.getArrayValue();
-	    for(int i = 0; i < values.length; i++)
-        {
-	        System.out.println(values[i]);
-        }
-	    
-	    System.out.println(((IParameterGUI)detNumbers).getValue());
         
         for(int i = 0; i < values.length; i++)
         {
             vec.add(values[i]);
         }
-        
-        /*StringTokenizer st = new StringTokenizer(detNumbers.getText());
-        
-        while(st.hasMoreTokens())
-        {
-            vec.add(st.nextToken());
-        }*/
 	        
 	    return vec;
 	}
@@ -263,24 +247,6 @@ public class filterPeaksPanel extends JPanel
             vec.add(values[i]);
         }
         
-	    /*try
-        {	        
-            int length = rowRange.getText().length();
-            StringTokenizer st
-                = new StringTokenizer(rowRange.
-                        
-                        //rowRange.getText(OFFSET,(length - OFFSET)), ",");
-            
-            while(st.hasMoreTokens())
-            {
-                vec.add(st.nextToken());
-            }  
-        } 
-	    catch (BadLocationException e)
-        {
-            e.printStackTrace();
-        }*/
-        
         return vec;
 	}
 	
@@ -295,42 +261,34 @@ public class filterPeaksPanel extends JPanel
             vec.add(values[i]);
         }
         
-        /*try
-        {
-            int length = colRange.getText().length();
-            StringTokenizer st
-                = new StringTokenizer(
-                        colRange.getText(OFFSET, (length - OFFSET)), ",");
-            
-            while(st.hasMoreTokens())
-            {
-                vec.add(st.nextToken());
-            }   
-        } 
-        catch (BadLocationException e)
-        {
-            e.printStackTrace();
-        }*/
-        
         return vec;
     }
 	
-   private Vector buildQVec()
+   private Vector<ClosedInterval> buildQVec()
     {
-        Vector vec = new Vector();
+        Vector<ClosedInterval> vec = new Vector<ClosedInterval>();
         
         try
         {
             int length = qIntervals.getText().length();
+           
             StringTokenizer st
                 = new StringTokenizer(
                         qIntervals.getText(OFFSETQ, (length - OFFSETQ)), ",");
             
-            //int[] values = IntList.ToArray(st.toString());
-            
             while(st.hasMoreTokens())
             {
-                vec.add(IntList.ToArray(st.nextToken()));//st.nextToken());
+                String[] tempInput = st.nextToken().split("[:]");
+                for (int x=0; x<tempInput.length; x++)
+                {
+                    tempInput[x] = tempInput[x].replace('[', ' ');
+                    tempInput[x] = tempInput[x].replace(']', ' ');
+                    tempInput[x] = tempInput[x].replace(';', ' ');
+                }
+                
+                float a = Float.parseFloat(tempInput[0]);
+                float b = Float.parseFloat(tempInput[1]);
+                vec.add(new ClosedInterval(a,b));
             }   
         } 
         catch (BadLocationException e)
@@ -341,9 +299,9 @@ public class filterPeaksPanel extends JPanel
         return vec;
     }
    
-    private Vector buildDVec()
+    private Vector<ClosedInterval> buildDVec()
     {
-        Vector vec = new Vector();
+        Vector<ClosedInterval> vec = new Vector<ClosedInterval>();
         
         try
         {
@@ -352,12 +310,20 @@ public class filterPeaksPanel extends JPanel
                 = new StringTokenizer(
                         dIntervals.getText(OFFSETD, (length - OFFSETD)), ",");
             
-            //int[] values = IntList.ToArray(st.toString());
-            
             while(st.hasMoreTokens())
             {
-                vec.add(IntList.ToArray(st.nextToken()));//st.nextToken());
-            }   
+                String[] tempInput = st.nextToken().split("[:]");
+                for (int x=0; x<tempInput.length; x++)
+                {
+                    tempInput[x] = tempInput[x].replace('[', ' ');
+                    tempInput[x] = tempInput[x].replace(']', ' ');
+                    tempInput[x] = tempInput[x].replace(';', ' ');
+                }
+                
+                float a = Float.parseFloat(tempInput[0]);
+                float b = Float.parseFloat(tempInput[1]);
+                vec.add(new ClosedInterval(a,b));
+            }  
         } 
         catch (BadLocationException e)
         {
@@ -366,11 +332,26 @@ public class filterPeaksPanel extends JPanel
         
         return vec;
     }
+    
+    private void ResetFields()
+    {
+        detNumbers.setValue("0");
+        rowRange.setValue("0:0");
+        colRange.setValue("0:0");
+        dIntervals.setMin(0.0f);
+        dIntervals.setMax(1.0f);
+        qIntervals.setMin(0.0f);
+        qIntervals.setMax(1.0f);
+        indexed.setText("");
+    }
+    
 	public static void main(String[] args) 
 	{
 	      MessageCenter mc = new MessageCenter("Test Peak Filters");
 	      TestReceiver tr = new TestReceiver("Testing Peak Filters");
 	      
+	      mc.addReceiver(tr, Commands.FILTER_DETECTOR);
+	      mc.addReceiver(tr, Commands.FILTER_QD);
 	      mc.addReceiver(tr, Commands.FILTER_PEAKS);
 	      
 	      filterPeaksPanel fp = new filterPeaksPanel(mc);
