@@ -88,6 +88,8 @@ public class Commands
    */
   public static final String SET_PEAK_NEW_LIST = "SET_PEAK_NEW_LIST";
   public static final String CLEAR_PEAK_LISTS = "CLEAR_PEAK_LISTS";
+  public static final String FILTER_DETECTOR = "FILTER_DETECTOR";
+  public static final String FILTER_QD = "FILTER_QD";
   public static final String FILTER_PEAKS = "FILTER_PEAKS";
 
   /**
