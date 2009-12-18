@@ -102,12 +102,14 @@ public class IntegrateUtils
      if ( cenZ + timeZrange[0] < minZ )  // too close to time channel 0
      {
        peak.reflag(0);
+       log.append("Shoebox: NOT INTEGRATED BECAUSE TOO CLOSE TO TIME CHANNEL 0");
        return;
      }
 
      if ( cenZ + timeZrange[1] > maxZ )  // too close to max time channel
      {
        peak.reflag(0);
+       log.append("Shoebox: NOT INTEGRATED BECAUSE TOO CLOSE TO TIME CHANNEL MAX");
        return;
      }
 
@@ -117,12 +119,14 @@ public class IntegrateUtils
      if ( cenX + colXrange[0] < minX + 1 )
      {
        peak.reflag(0);
+       log.append("Shoebox: NOT INTEGRATED BECAUSE TOO CLOSE TO X MIN");
        return;
      }
 
      if ( cenX + colXrange[1] > maxX - 1 )
      {
        peak.reflag(0);
+       log.append("Shoebox: NOT INTEGRATED BECAUSE TOO CLOSE TO X MAX");
        return;
      }
 
@@ -132,12 +136,14 @@ public class IntegrateUtils
      if ( cenY + rowYrange[0] < minY + 1 )
      {
        peak.reflag(0);
+       log.append("Shoebox: NOT INTEGRATED BECAUSE TOO CLOSE TO Y MIN");
        return;
      }
 
      if ( cenY + rowYrange[1] > maxY - 1 )
      {
        peak.reflag(0);
+       log.append("Shoebox: NOT INTEGRATED BECAUSE TOO CLOSE TO Y MAX");
        return;
      }
 
@@ -276,12 +282,14 @@ public class IntegrateUtils
       if ( cenZ + minChan < minZ )  // too close to time channel 0
       {
         peak.reflag(0);
+        log.append("Shoebox: NOT INTEGRATED BECAUSE TOO CLOSE TO TIME CHANNEL 0");
         return;
       }
 
       if ( cenZ + maxChan > maxZ )  // too close to max time channel
       {
         peak.reflag(0);
+        log.append("Shoebox: NOT INTEGRATED BECAUSE TOO CLOSE TO TIME CHANNEL MAX");
         return;
       }
 
@@ -291,12 +299,14 @@ public class IntegrateUtils
       if ( cenX + minDX < minX + 1 )
       {
         peak.reflag(0);
+        log.append("Shoebox: NOT INTEGRATED BECAUSE TOO CLOSE TO X MIN");
         return;
       }
 
       if ( cenX + maxDX > maxX - 1 )
       {
         peak.reflag(0);
+        log.append("Shoebox: NOT INTEGRATED BECAUSE TOO CLOSE TO X MAX");
         return;
       }
 
@@ -306,12 +316,14 @@ public class IntegrateUtils
       if ( cenY + minDY < minY + 1 )
       {
         peak.reflag(0);
+        log.append("Shoebox: NOT INTEGRATED BECAUSE TOO CLOSE TO Y MIN");
         return;
       }
 
       if ( cenY + maxDY > maxY - 1 )
       {
         peak.reflag(0);
+        log.append("Shoebox: NOT INTEGRATED BECAUSE TOO CLOSE TO Y MAX");
         return;
       }
 
