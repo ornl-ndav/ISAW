@@ -4,13 +4,13 @@
 #              ? depends on the operating system
 #
 #@param ExpName         The Name of the Experiment
-#@param DataDir         Directory with Input files
-#@param OutputDir       Directory for output files
+#@param DataDir         Working directory with input and output files
 #@param IntegrateFile   The Integrated peaks file
 #@param OutputFile      Output reflection file 
 #@param ISPEC		= 1 for fitted incident spectrum, = 2 for unfitted spectrum 
 #@param SpecFileName    File with spectrum coefficients 
 #@param Range		Number of time channels (+/-) to average for unfitted spectrum
+#@param initBankNo	The first (initial) detector Bank number
 #@param SMU             Linear abs coeff( Tot Scat)
 #@param AMU             Linear abs coeff( True Abs)ection)
 #@param radius          Radius of Sphere in cm(Spherical correction only)
@@ -31,20 +31,17 @@
 $ Category = Macros, Single Crystal
 
 $ ExpName         String("exp_name")			The Name of the Experiment
-$ DataDir         DataDir(${Data_Directory})		Directory with Input files
-$ OutputDir       DataDir(${Data_Directory})		Directory for output files
-$ IntegrateFile   String("exp_name.integrate")		The Integrated peaks file
-$ OutputFile      String("exp_name.hkl")			Output reflection file  
-$ SMU             Float(0.0)				Linear abs coeff in cm^-1 (Total Scattering)
-$ AMU             Float(0.0)				Linear abs coeffin cm^-1 (True Absorption)
+$ DataDir         DataDir(${Data_Directory})		Working directory with input and output files
+$ SMU             Float(0.0)				Linear abs coefficient in cm^-1 (Total Scattering)
+$ AMU             Float(0.0)				Linear abs coefficient in cm^-1 (True Absorption)
 $ radius          float(0.1)				Radius of sphere in cm
-$ ISPEC		int(1)				Incident spectrum, ISPEC = 1 fitted; = 2 data
-$ SpecFileName    LoadFile(${Data_Directory})	If ISPEC = 1, file with spectrum coefficients
-$ Range		int(5)		If ISPCE = 2, input averaging range +/-
+$ ISPEC		  int(1)				Incident spectrum type. ISPEC = 1 fitted; = 2 unfitted data
+$ SpecFileName    LoadFile(${Data_Directory})		If ISPEC = 1, file with spectrum coefficients
+$ Range		  int(5)				If ISPEC = 2, input averaging range +/-
+$ initBankNo      int(1)                        	If ISPEC = 2, the number of the first detector bank
 $ ISIG            int(0)				The minimum I/sig(I)
 $ NBCH            int(5)				Peaks within NBCH channels from the border will be rejected
-$ JREF            Choice(["Yes","No"])		Reject peaks for which the centroid calculation failed
-$ IPKMIN          int(0)				Minimum peak count
+$ IPKMIN          int(5)				Minimum peak count
 $ DMIN            float(.5)				Minimum d-spacing (Angstroms)
 $ IQ              int(1)				Assign scale factors (1) per setting or (2) per detector
 $ SCALEFACTOR     float(.1)				Multiply FSQ and sig(FSQ) by SCALEFACTOR
@@ -53,14 +50,13 @@ $ SCALEFACTOR     float(.1)				Multiply FSQ and sig(FSQ) by SCALEFACTOR
 # RalpS        float(262656) or float(ngaus(1)*ngaus(2)*ngaus(3)) ngaus starts at 1
 
 Scratch = getSysProp("user.home")
-#Scratch = Scratch &"/ISAW/input.dat"
-Scratch = OutputDir & "anvred.input"
+Scratch = DataDir & "anvred.input"
 
 OpenLog( Scratch, false)
 
-  LogMsg( ExpName &"\n")
-  LogMsg(  DataDir &IntegrateFile &"\n")
-  LogMsg(  OutputFile &"\n")
+  LogMsg( ExpName & "\n")
+  LogMsg(  ExpName & ".integrate\n")
+  LogMsg(  ExpName & ".hkl\n")
   LogMsg( "y\n")
   LogMsg( SMU &" "& AMU &"\n")
   LogMsg( "y\n")
@@ -71,16 +67,11 @@ OpenLog( Scratch, false)
 	LogMsg(SpecFileName&"\n")
     else
 	LogMsg( Range &"\n" )
+        LogMsg( initBankNo &"\n" )
     endif
   
   LogMsg( ISig &"\n")
   LogMsg( NBCH &"\n")
-
-   if  JREF == "Yes"
-      LogMsg("y\n");
-   else
-      LogMsg("n\n")
-   endif
 
   LogMsg( IPKMIN&"\n")
   LogMsg(DMIN &"\n")
@@ -91,7 +82,7 @@ CloseLog()
 
   IsawHome = getSysProp("ISAW_HOME")
   Anvred = CreateExecFileName(IsawHome, "bin/anvred", true)
-  Exec( Anvred, Scratch, OutputDir )
+  Exec( Anvred, Scratch, DataDir )
 
 
 
