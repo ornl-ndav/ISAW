@@ -208,7 +208,7 @@ C
 9010	format(/,'Is the incident spectrum correction based on'/,
      1          '   (1) coefficients of a fitted equation'/,
      2          'or (2) the actual spectral data?'/,
-     3          'Input 1 or 2: ',$)
+     3          'Input 1 or 2 <1>: ',$)
      	CALL READANS (NCHRS, ANS)
 	  IF (NCHRS.EQ.0) THEN
 		ispec = 1
@@ -218,46 +218,64 @@ C
 	WRITE (16, 9010)
 	WRITE (16, *) ispec
 
-			if (ispec .eq. 1) then
+	if (ispec .eq. 1) then  !!!!!!!!!!
 
-	WRITE (*, 1330) 
+        WRITE (*, 1330) 
 1330	FORMAT(' Enter the spectrum file name: ',$)
-	READ (*, 100) SpecNam
+        READ (*, 100) SpecNam
 
 
-	OPEN(UNIT=21,STATUS='OLD',FILE=SpecNam)
-	WRITE (*, *) ' '
-	WRITE (*, 6290) SpecNam
+        OPEN(UNIT=21,STATUS='OLD',FILE=SpecNam)
+        WRITE (*, *) ' '
+        WRITE (*, 6290) SpecNam
 6290	FORMAT(
-     1' Incident spectrum coefficients in ',A)
-	WRITE (16,6290)
-	WRITE (*, *) ' '
+     1  ' Incident spectrum coefficients in ',A)
+        WRITE (16,6290)
+        WRITE (*, *) ' '
 
 		do ii=1,nod	! 4-13-09
 	
-	read (21,100) ALINE
-	read (21,*) (PJ(J,ii),J=1,11)
-	write (*,100) ALINE
-	write (*,*) (PJ(J,ii),J=1,11)
+            read (21,100) ALINE
+            read (21,*) (PJ(J,ii),J=1,11)
+            write (*,100) ALINE
+            write (*,*) (PJ(J,ii),J=1,11)
 
 		end do
 		
-			end if
+	end if                  !!!!!!!!!!
 			
-		if (ispec .eq. 2) then
+	if (ispec .eq. 2) then  !*********
 			
-	write (*, 789)
-789	format(/,'Input averaging range +/- (<5>): ',$)
-	CALL READANS (NCHRS, ANS)
-          IF (NCHRS.EQ.0) THEN
-		navg_range = 5
-	  ELSE
-		READ (ANS, *) navg_range
-	  END IF
-	write (16, 789)
-	write (16, *) navg_range
-	
-		end if
+        write (*, 789)
+789	    format(/,'Input averaging range +/- (<5>): ',$)
+        CALL READANS (NCHRS, ANS)
+ 
+        IF (NCHRS.EQ.0) THEN
+            navg_range = 5
+        ELSE
+            READ (ANS, *) navg_range
+        END IF
+        
+        write (16, 789)
+        write (16, *) navg_range
+        
+        write (*, 810)
+810     format(/,'Input first detector bank number.'/,
+     1           'At this time, for SNAP, input 10.'/,
+     2           'For TOPAZ, input 1.'/,
+     3           'Initial Bank number (<1>): ',$)
+        call readans (nchrs, ans)
+        
+        IF (NCHRS.EQ.0) THEN
+            initBankNo = 1
+        ELSE
+            READ (ANS, *) initBankNo
+        END IF
+        
+        write (16, 810)
+        write (16, *) initBankNo
+        
+	end if                  !*********
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -401,7 +419,7 @@ C     &		+ A5(JS)*EXP(-A6(JS)*T**3) + A7(JS)*EXP(-A8(JS)*T**4)
 	else	! ispec = 2
 !!!!!!!!!!!! July 2009
 
-	  ibank = id + 9
+	  ibank = id + initBankNo - 1
 	  write (ans, '(I2)') ibank
 	  LCS = LNBLNK(ans)
 	  SpecNam = 'Bank'//ans(1:LCS)//'_spectrum.asc'
