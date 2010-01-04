@@ -137,6 +137,8 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
     PosWriter.add( this );
     childrenAdded = attributesAdded = false;
     int open_mode = NexusFile.NXACC_CREATE5;
+    if( filename.toUpperCase( ).endsWith( ".XML" ))
+   	 open_mode = NexusFile.NXACC_CREATEXML;
     num_nxEntries = 0;     
     if( filename == null){
       errormessage = " no Such File "+filename;
