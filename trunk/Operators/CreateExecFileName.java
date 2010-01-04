@@ -103,7 +103,18 @@ public class CreateExecFileName extends GenericOperator{
       S.append("");
       S.append(" current architecture or null.");
       S.append("@error ");
-      S.append("");
+      S.append( "\n" );S.append( "\n" );
+     
+      S.append("The exec extensions corresponding to op systems and op archi are:");
+      S.append("<table border=1><tr><th>Op System</th><th>architecure</th><th>Tail added to name</th></tr>");
+      S.append("<tr><td>Windows *</td><td>x86</td><td>_w.exe</td></tr>");
+      S.append(" <tr><td>Windows *</td><td>contains 64</td><td>_w64.exe</td></tr>");
+      S.append("<tr><td>Linux *</td><td>x86</td><td>_l</td></tr>");
+      S.append(" <tr><td>Linux *</td><td>contains 64</td><td>_l64</td></tr>");
+      S.append("<tr><td>FreeBSD</td><td>x86</td><td>_bsd</td></tr>");
+      S.append("<tr><td>Mac OS X</td><td>ppc</td><td>_m</td></tr>");
+      S.append("</table>");
+      
       return S.toString();
    }
 
