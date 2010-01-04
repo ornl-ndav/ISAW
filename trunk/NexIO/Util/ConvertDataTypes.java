@@ -633,7 +633,7 @@ public class ConvertDataTypes{
      return dp;
   }
 
-
+ 
   /**
    *  @see NexIO.NxNodeUtils#parse(String )
   */
@@ -662,22 +662,10 @@ public class ConvertDataTypes{
   private static String pattern = "(("+Year+")[ \\-:/\\\\]("+MonthDay+"))(([ T]"+Time+")("+Zone+")?)?";
   
   
-  private static long parse_neww( String DateString ){
-     
-     Matcher M = Pattern.compile( pattern ).matcher( DateString );
-     if( !M.find() )
-        return -1;
-     
-     for( int i = 0; i <= M.groupCount(); i++ )
-        System.out.println( i + "::"  + M.group( i ) );
-     
-     return 0;
-     
-  }
   /**
    * parses ISO dates only. They can have fractional seconds
    * 
-   * @param DateString  The String representing the Date
+   * @param DateString  The String representing the Date in ISO format
    * 
    * @return  The time in milliseconds (GMT)
    */
@@ -1222,16 +1210,6 @@ public class ConvertDataTypes{
      
      return S.length();
   }
- 
- public static void main( String[] args ){
-    long T = ConvertDataTypes.parse_neww( args[ 0 ]);
-    
-    System.out.println( "Time in milliseconds is " + T );
-    //GregorianCalendar calendar = new GregorianCalendar();
-    //calendar.setTimeInMillis(T);
-    //System.out.println("YEAR: " + calendar.get(Calendar.YEAR)); System.out.println("MONTH: " + calendar.get(Calendar.MONTH)); System.out.println("WEEK_OF_YEAR: " + calendar.get(Calendar.WEEK_OF_YEAR)); System.out.println("WEEK_OF_MONTH: " + calendar.get(Calendar.WEEK_OF_MONTH)); System.out.println("DATE: " + calendar.get(Calendar.DATE)); System.out.println("DAY_OF_MONTH: " + calendar.get(Calendar.DAY_OF_MONTH)); System.out.println("DAY_OF_YEAR: " + calendar.get(Calendar.DAY_OF_YEAR)); System.out.println("DAY_OF_WEEK: " + calendar.get(Calendar.DAY_OF_WEEK)); System.out.println("DAY_OF_WEEK_IN_MONTH: " + calendar.get(Calendar.DAY_OF_WEEK_IN_MONTH)); System.out.println("AM_PM: " + calendar.get(Calendar.AM_PM)); System.out.println("HOUR: " + calendar.get(Calendar.HOUR)); System.out.println("HOUR_OF_DAY: " + calendar.get(Calendar.HOUR_OF_DAY)); System.out.println("MINUTE: " + calendar.get(Calendar.MINUTE)); System.out.println("SECOND: " + calendar.get(Calendar.SECOND)); System.out.println("MILLISECOND: " + calendar.get(Calendar.MILLISECOND));
-    
- }
  
 }
   
