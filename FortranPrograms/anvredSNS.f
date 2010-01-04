@@ -75,7 +75,7 @@ C
      3	BaseZ(100), UpX(100), UpY(100), UpZ(100), nod
      
 ! Labelled common for the incident spectrum	July, 2009
-	common /spect_data/ xtime(1700), counts(1700)
+	common /spect_data/ xtime(5000), counts(5000), numTimeChannels
      
 	COMMON    /PEAKS/  col, row, chan, L2, twoth, az, dsp
 	COMMON    /INSPAR/ L1, TZERO
@@ -104,7 +104,7 @@ C
 
 C--------------------------------------------------------------------
 
-	OPEN(UNIT=16,FILE='anvred.log')
+	OPEN(UNIT=16, FILE='anvred.lst', status='replace')
 
 	WRITE (*, *) ' '
 	WRITE (*, *) '*** anvredSNS ***'
@@ -220,18 +220,18 @@ C
 
 	if (ispec .eq. 1) then  !!!!!!!!!!
 
-        WRITE (*, 1330) 
-1330	FORMAT(' Enter the spectrum file name: ',$)
-        READ (*, 100) SpecNam
+            WRITE (*, 1330) 
+1330	    FORMAT(' Enter the spectrum file name: ',$)
+            READ (*, 100) SpecNam
 
 
-        OPEN(UNIT=21,STATUS='OLD',FILE=SpecNam)
-        WRITE (*, *) ' '
-        WRITE (*, 6290) SpecNam
-6290	FORMAT(
-     1  ' Incident spectrum coefficients in ',A)
-        WRITE (16,6290)
-        WRITE (*, *) ' '
+            OPEN(UNIT=21,STATUS='OLD',FILE=SpecNam)
+            WRITE (*, *) ' '
+            WRITE (*, 6290) SpecNam
+6290	    FORMAT(
+     1      ' Incident spectrum coefficients in ',A)
+            WRITE (16,6290)
+            WRITE (*, *) ' '
 
 		do ii=1,nod	! 4-13-09
 	
@@ -246,34 +246,34 @@ C
 			
 	if (ispec .eq. 2) then  !*********
 			
-        write (*, 789)
+            write (*, 789)
 789	    format(/,'Input averaging range +/- (<5>): ',$)
-        CALL READANS (NCHRS, ANS)
+            CALL READANS (NCHRS, ANS)
  
-        IF (NCHRS.EQ.0) THEN
-            navg_range = 5
-        ELSE
-            READ (ANS, *) navg_range
-        END IF
+            IF (NCHRS.EQ.0) THEN
+                navg_range = 5
+            ELSE
+                READ (ANS, *) navg_range
+            END IF
         
-        write (16, 789)
-        write (16, *) navg_range
+            write (16, 789)
+            write (16, *) navg_range
         
-        write (*, 810)
-810     format(/,'Input first detector bank number.'/,
+            write (*, 810)
+810         format(/,'Input first detector bank number.'/,
      1           'At this time, for SNAP, input 10.'/,
      2           'For TOPAZ, input 1.'/,
      3           'Initial Bank number (<1>): ',$)
-        call readans (nchrs, ans)
+            call readans (nchrs, ans)
         
-        IF (NCHRS.EQ.0) THEN
-            initBankNo = 1
-        ELSE
-            READ (ANS, *) initBankNo
-        END IF
+            IF (NCHRS.EQ.0) THEN
+                initBankNo = 1
+            ELSE
+                READ (ANS, *) initBankNo
+            END IF
         
-        write (16, 810)
-        write (16, *) initBankNo
+            write (16, 810)
+            write (16, *) initBankNo
         
 	end if                  !*********
 
@@ -400,17 +400,17 @@ C  from SEPD_SPEC.
 				! coefficients
 
 	
-	  xtof(id) = (L1 + dist(id)) / hom
+	    xtof(id) = (L1 + dist(id)) / hom
 	
 c++	TOF = WLMIN * XTOF
 c++  Normalize to a wavelength of 1.0 Angstroms
-	  TOF = 1.0 * XTOF(id)
-	  T = TOF/1000.
+	    TOF = 1.0 * XTOF(id)
+	    T = TOF/1000.
 
 C	SPECT1 = A1(JS)*EXP(-A2(JS)/T**2)/T**5 + A3(JS)*EXP(-A4(JS)*T*T)
 C     &		+ A5(JS)*EXP(-A6(JS)*T**3) + A7(JS)*EXP(-A8(JS)*T**4) 
 ! TYPE 2 function in GSAS.
-	  SPECT1(id) = PJ(1,id) + PJ(2,id)*EXP(-PJ(3,id)/T**2)/T**5
+	    SPECT1(id) = PJ(1,id) + PJ(2,id)*EXP(-PJ(3,id)/T**2)/T**5
      1	+ PJ(4,id)*EXP(-PJ(5,id)*T**2)
      2	+ PJ(6,id)*EXP(-PJ(7,id)*T**3)
      3	+ PJ(8,id)*EXP(-PJ(9,id)*T**4)
@@ -419,33 +419,40 @@ C     &		+ A5(JS)*EXP(-A6(JS)*T**3) + A7(JS)*EXP(-A8(JS)*T**4)
 	else	! ispec = 2
 !!!!!!!!!!!! July 2009
 
-	  ibank = id + initBankNo - 1
-	  write (ans, '(I2)') ibank
-	  LCS = LNBLNK(ans)
-	  SpecNam = 'Bank'//ans(1:LCS)//'_spectrum.asc'
-	 
-	  open(unit=22, file=SpecNam, status='old')
+	    ibank = id + initBankNo - 1
+            if (ibank .lt. 10) then
+              write (ans, '(I1)') ibank
+              SpecNam = 'Bank'//ans(1:1)//'_spectrum.asc'
+              open(unit=22, file=SpecNam, status='old')
+            else
+              write (ans, '(I2)') ibank
+              SpecNam = 'Bank'//ans(1:2)//'_spectrum.asc'
+              open(unit=22, file=SpecNam, status='old')
+            end if
 	
-	  do j=1,7		! Skip the first 7 lines.
-	    read (22, 100) aline
-	  end do
+	    do j=1,6		! Skip the first 7 lines.
+	      read (22, 100) aline
+	    end do
 	
-	  do j=1,1700
-	    read (22, *) xtime(j), counts(j)
-	  end do
+            read (22, '(19X,I4)') numTimeChannels !read the number of 
+                                   !TOF channels in the spectrum file
+    
+	    do j=1,numTimeChannels !read the spectrum
+	      read (22, *) xtime(j), counts(j)
+	    end do
 	
-	  close(unit=22)
+	    close(unit=22)
 
-	  xtof(id) = (L1 + dist(id)) / hom
+	    xtof(id) = (L1 + dist(id)) / hom
 	
-	  wl = 1.0
-	  spect1(id) = 1.0
-	  call spectrum (WL, XTOF(id), NAVG_RANGE, spect1(id), SPECT)
-	  spect1(id) = spect
+	    wl = 1.0
+	    spect1(id) = 1.0
+	    call spectrum (WL, XTOF(id), NAVG_RANGE, spect1(id), SPECT)
+	    spect1(id) = spect
 	  
 !!!!!!!!!!!!!!!
 	end if
-		end do
+		end do !end of do loop through the detectors
 
 
 C-----------------------------------------------------------------------
@@ -1011,16 +1018,16 @@ C------------------------------------------------------------
 !  Obtain spectral correction from counts vs. time data.
 !  A. J. Schultz, July, 2009
 	
-	dimension xtime(1700), counts(1700)
+	dimension xtime(5000), counts(5000)
 	
-	common /spect_data/ xtime, counts
+	common /spect_data/ xtime, counts, numTimeChannels
 	
 c++	TOF = WL * XTOF
 	TOF = WL * XTOF
 	T = TOF			! T is in units of microseconds
 	
 	
-	do j=1,1700
+	do j=1,numTimeChannels
 	  if (xtime(j) .gt. T) then
 	    sum = 0.0
 	    do jj=-NAVG_RANGE,NAVG_RANGE,1	! average +/-AVG_RANGE channels
