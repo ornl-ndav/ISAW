@@ -99,7 +99,7 @@ public class getPeakInfo extends GenericOperator{
       S.append("@assumptions    "); 
       S.append("The field is either  \"x\",\"y\",\"z\"(time chan),\"h\",\"k\",\"l\",\"xcm\",\"ycm\",\"wl\",");
       S.append(" \"ipkobs\",\"inti\",\"sigi\",\"monct\",\"detA\",\"detD\",\"detA2\",");
-      S.append(" \"L1\",\"chi\",\"Phi\",\"omega\"");
+      S.append(" \"L1\",\"chi\",\"Phi\",\"omega\",\"detnum\"");
       S.append("@param   ");
       S.append("The peak object");
       S.append("@param   ");
@@ -141,6 +141,8 @@ public class getPeakInfo extends GenericOperator{
                return new ErrorString( " the peak is null");
             if( descriptor == null )
                return new Float(Float.NaN );
+            if( descriptor.compareTo( "detnum" )==0)
+               return new Float(pk.detnum( ));
             if( descriptor.compareTo( "l" ) <= 0 )
                if( descriptor.compareTo( "h" ) <= 0 )
                   if( descriptor.compareTo( "detA2" ) <= 0 )
