@@ -105,11 +105,11 @@ public class IntegrateMultipleRuns extends GenericOperator{
       StringBuffer S = new StringBuffer();
       S.append("@overview    "); 
       S.append("For each detector in multiple files,finds theoretical positions of peaks");
-      S.append(" and integrates them. Uses threads to integrate on data set");
+      S.append(" and integrates them. Uses threads to integrate different data set\n");
       S.append("@algorithm    "); 
       S.append("Several integrate algorithms are available.");
       S.append("@assumptions    "); 
-      S.append("The matrix files are already created and in outpath +\"ls\"+expName+runnum+\".mat\"");
+      S.append("The orientation matrix files are already created and in outpath +\"ls\"+expName+runnum+\".mat\"");
       S.append("@param   ");
       S.append("The path where the multiple data set files are stored");
       S.append("@param   ");
