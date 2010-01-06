@@ -742,14 +742,16 @@ public class OrientMat extends Form implements ActionListener , IObserver ,
       
       float[][] orMat = Orient.getOrientationMatrix( - 1 );
 
-      String fileName = gov.anl.ipns.Util.File.FileIO.appendPath( getParameter(
-               OUT_FILE_PATH ).getValue().toString() , getParameter( OUT_FILE )
-               .getValue().toString() );
+      String fileName = gov.anl.ipns.Util.File.FileIO.CreateExecFileName(  getParameter(
+               OUT_FILE_PATH ).getValue().toString() ,getParameter( OUT_FILE )
+               .getValue().toString(),false) ;
 
       Object Res = Util.WriteMatrix( fileName , orMat );
 
       if( Res == null )
          Res = "Success ";
+      else
+         JOptionPane.showMessageDialog( null , "Could not save file "+ fileName );
      
       gov.anl.ipns.Util.Sys.SharedMessages.addmsg( Res );
       for( int i=0; i<=ORIENT_MAT; i++)
@@ -757,7 +759,7 @@ public class OrientMat extends Form implements ActionListener , IObserver ,
       
       NewOrientMatrixSet = false;
       
-      return Res;
+      return orMat;
    }
 
 
