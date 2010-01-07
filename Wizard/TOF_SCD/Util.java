@@ -47,6 +47,8 @@ import Operators.Special.Calib;
 import java.io.*;
 import java.util.*;
 
+import javax.swing.JOptionPane;
+
 import gov.anl.ipns.Util.SpecialStrings.*;
 import gov.anl.ipns.Util.File.FileIO;
 import gov.anl.ipns.Util.Numeric.*;
@@ -62,7 +64,10 @@ public class Util {
    
    public static final String Delim = getDelimiter();
    public static final String ISAW_SCRATCH_DIRECTORY = 
-                              System.getProperty("user.home") + "/ISAW/tmp/";
+                              System.getProperty("user.home") + 
+                              File.separator+"ISAW"+
+                              File.separator+"tmp"+
+                              File.separator;
    public static final String SLURM_RETURN_SUFFIX = "_returned.txt";
 
    public static final String[] CenteringNames = {"primitive" , "a centered" ,
@@ -211,6 +216,8 @@ public class Util {
                         SLURM_RETURN_SUFFIX;
         fin_name= Delim+fin_name+Delim;
         fout_base =Delim+fout_base+Delim;
+        fin_name = StringUtil.setFileSeparator( fin_name );
+        fout_base = StringUtil.setFileSeparator( fout_base );
         String cp = System.getProperty( "java.class.path" );
         if ( cp == null )
           cp = " ";
@@ -250,7 +257,8 @@ public class Util {
           if ( max_processes < 1 )                   // we need at least one
             max_processes = 1;
         }
-        if(!(new File( fin_name)).exists())
+        
+        if(!(new File(ElimQuotes( fin_name))).exists())
            SharedMessages.addmsg( "Could not retrieve " + fin_name );
         else
         {
@@ -487,6 +495,27 @@ public class Util {
 
     return all_peaks; 
   }
+   
+   /**
+    * Used to eliminate leading and trailing quotes around a filename.
+    * These quotes are introduced so filenames with spaces can be placed
+    * on a command line.  Filenames with these quotes may not be understood
+    * by the underlying operating system
+    * 
+    * @param S  Original string for a filename
+    * @return   The String with the one set of leading and trailing quotes removed.
+    */
+   public static String ElimQuotes( String S)
+   {
+      if( S == null)
+         return S;
+      if(S.length() < 2)
+         return S;
+      if( S.startsWith( "\"" ) && S.endsWith("\""))
+         return S.substring( 1,S.length()-1 );
+      return S;
+      
+   }
    
    public static String getDelimiter( )
    {
@@ -1991,7 +2020,8 @@ public class Util {
            boolean ShowPeaks,
 
            String  slurm_queue_name,
-           int     max_processes
+           int     max_processes,
+           boolean append
             )
    {
       boolean use_slurm = ( slurm_queue_name != null );
@@ -2053,6 +2083,11 @@ public class Util {
           String result = fout_prefix + run_num + "_" + 
                           ds_num + SLURM_RETURN_SUFFIX;
 
+          fin_name = StringUtil.setFileSeparator( fin_name );
+          fout_base = StringUtil.setFileSeparator( fout_base );
+          orientation_file = StringUtil.setFileSeparator( orientation_file );
+          result = StringUtil.setFileSeparator( result );
+          
           String cp = System.getProperty( "java.class.path" );
           if ( cp == null )
             cp = " ";
@@ -2210,7 +2245,7 @@ public class Util {
          }
 
          all_peaks = filtered_peaks;
-
+         all_peaks = Append( all_peaks, out_file_name, append);
          try
          {
            Peak_new_IO.WritePeaks_new(out_file_name, all_peaks, false);
@@ -2314,6 +2349,7 @@ public class Util {
     * @param maxThreads           The maximum number of threads to run
     * @param ShowLog              Pop up the log file
     * @param ShowPeaks            Pop up the Peaks file
+    * @param append               Append to previous integrate file
     * @return  nothing though a .integrate and a .log file are created.
     */
    public static Object IntegrateMultipleRuns(
@@ -2337,7 +2373,8 @@ public class Util {
            float   max_shoebox,
            int     maxThreads,
            boolean ShowLog,
-           boolean ShowPeaks
+           boolean ShowPeaks,
+           boolean append
             ){
 
       String slurm_queue_name = System.getProperty( "Slurm_Queue_Name" );
@@ -2378,7 +2415,8 @@ public class Util {
            ShowPeaks,
 
            slurm_queue_name,
-           maxThreads
+           maxThreads,
+           append
             );
  
 
@@ -2552,8 +2590,12 @@ public class Util {
           filtered_peaks.add( peak );
       }
       Peaks = filtered_peaks;
-      
+
       String integfile = outpath + expname + ".integrate";
+      Peaks = Append( Peaks, integfile, append);
+     
+      
+      
       if( cacheFilename != null )
       ( new File( cacheFilename)).delete();
       try
@@ -2582,7 +2624,75 @@ public class Util {
    
       // END WITH THREADS  
   }
-
+   
+   private static Vector<Peak_new> Append( Vector<Peak_new>Peaks,
+                                            String integfile,
+                                            boolean append)
+   {                                      
+      append = append && (new File(integfile)).exists();
+      if( append )
+      {    
+         try
+         {
+             Vector<Peak_new> Peak1 = Peak_new_IO.ReadPeaks_new( integfile );
+             if( Peak1 == null || Peak1.size() < 1)
+                return Peaks;
+             //Testing for duplicates is too slow
+             /*Vector<int[]>  V = new Vector();
+             for( int i=0;i< Peak1.size( ); i++)
+             {
+                Peak_new P = Peak1.elementAt( i );
+                int[] elt = new int[2];
+                elt[0]= P.nrun( );
+                elt[1]= P.detnum( );
+                int[] V1 = V.lastElement();
+                if( V1 != null && (V1[0]!=elt[0] || V1[1] != elt[1]))
+                   V.addElement(  elt );
+                
+             }
+             boolean error = false;
+             for( int i=0;i< Peaks.size( ) && !error; i++)
+             {
+                Peak_new P = Peaks.elementAt( i );
+                int[] elt = new int[2];
+                elt[0]= P.nrun( );
+                elt[1]= P.detnum( );
+                if( Contains(V,elt))
+                {
+                   JOptionPane.showMessageDialog( null , 
+                   "Could NOT append previous integrate file. Already contains "+
+                      "run "+ elt[0] +" and detector "+ elt[1]);
+                   return Peaks;
+                }
+                   
+             }
+             */   
+             Peaks.addAll( Peak1 );
+             
+         }catch( Throwable s)
+         {
+            JOptionPane.showMessageDialog( null , 
+                  "Could NOT append previous integrate file:"+s );
+         }
+         
+      }
+      return Peaks;
+   }
+   
+   private static boolean Contains( Vector<int[]> V, int[] elt)
+   {
+      if( V== null || V.size() < 1 )
+         return false;
+      if( elt == null || elt.length !=2)
+         return true;
+      for( int i=0;i< V.size();i++)
+      {
+         int[] R = V.elementAt( i );
+         if( R[0]==elt[0] && R[1] == elt[1])
+            return true;
+      }
+      return false;
+   }
    //Sets up the operator thread
    private static OperatorThread getIntegOpThread( DataSet ds , int centering ,
             int[] timeZrange , int increase , float d_min , int listNthPeak ,
