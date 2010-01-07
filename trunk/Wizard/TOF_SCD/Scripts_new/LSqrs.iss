@@ -32,25 +32,29 @@ $ShowLog     Boolean(false)       Pop Up lsqrs.log
 
 N=ArrayLength(Peaks)
 OpenLog( SaveDir&"lsqrs.log")
-for i in runnums
-   filename=SaveDir&"ls"&expName&i&".mat"
-   Pk1=[]
-   for j in [0:N-1]
-      Pk1[j]= Peaks[j]
+if ArrayLength(runnums)>0
+  for i in runnums
+     filename=SaveDir&"ls"&expName&i&".mat"
+     Pk1=[]
+     for j in [0:N-1]
+        Pk1[j]= Peaks[j]
+     endfor
+    
+     JLsqrs(Pk1,""&i,RestrSeq,"[[1,0,0],[0,1,0],[0,0,1]]", filename, MinIntens,RowColKeep,Constr)
+     LogMsg( "-----------After run num "& i&"-----------------------\n")
    endfor
-   
-   JLsqrs(Pk1,""&i,RestrSeq,"[[1,0,0],[0,1,0],[0,0,1]]", filename, MinIntens,RowColKeep,Constr)
-   LogMsg( "-----------After run num "& i&"-----------------------\n")
-endfor
+
+endif
 
 S=""
-N1=ArrayLength(runnums)
-for i in [1:N1]
-  S=S&runnums[i-1]
-  if i<N1
-    S=S&","
-  endif
-endfor
+#The overall matrix always uses all peaks
+#N1=ArrayLength(runnums)
+#for i in [1:N1]
+#  S=S&runnums[i-1]
+#  if i<N1
+#    S=S&","
+#  endif
+#endfor
 
 filename=SaveDir&"ls"&expName&".mat"
 
