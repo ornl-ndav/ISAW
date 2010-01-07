@@ -92,6 +92,7 @@ public class IntegrateMultipleRuns extends GenericOperator{
       addParameter( new IntegerPG("Max running threads",1));
       addParameter( new BooleanPG("Pop Up Log Info",new Boolean(false)));
       addParameter( new BooleanPG("Pop Up integrate file",new Boolean(false)));
+      addParameter( new BooleanPG("Append to prev integrate file",new Boolean(false)));
    }
 
 
@@ -154,6 +155,8 @@ public class IntegrateMultipleRuns extends GenericOperator{
       S.append("Pop up the log file");
       S.append("@param   ");
       S.append("Pop up the Peaks file");
+      S.append("@param   ");
+      S.append("append to previous integrate file");
       S.append("@error ");
       S.append("No Data Seets to integrate");
       S.append(" No span around a peak to integrate");
@@ -204,9 +207,10 @@ public class IntegrateMultipleRuns extends GenericOperator{
          int MaxThreads = ((IntegerPG)(getParameter(18))).getintValue();
          boolean ShowLog = ((BooleanPG)(getParameter(19))).getbooleanValue();
          boolean ShowPeaks = ((BooleanPG)(getParameter(20))).getbooleanValue();
+         boolean append    =(( BooleanPG)(getParameter(21))).getbooleanValue( );
          java.lang.Object Xres=Wizard.TOF_SCD.Util.IntegrateMultipleRuns(path,outpath,run_numbers,DataSetNums,expName,
                   centering,useCalibFile,calibfile,line2use,time_slcie_range,increase,instr,FileExt,d_min,PeakAlg,
-                  Xrange,Yrange,max_shoebox,MaxThreads,ShowLog, ShowPeaks );
+                  Xrange,Yrange,max_shoebox,MaxThreads,ShowLog, ShowPeaks, append );
 
          return Xres;
        }catch( Throwable XXX){
