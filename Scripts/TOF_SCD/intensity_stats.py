@@ -33,6 +33,7 @@ class intensity_stats(GenericTOF_SCD):
 
         sumTotal = sig3Total = sig5Total = sig10Total = 0
         sum = sig3 = sig5 = sig10 = 0
+        sumAll = 0      # total number of peaks in the file
         nrun = nrunCurrent = 0
         dminObs = 999.0
         
@@ -77,6 +78,7 @@ class intensity_stats(GenericTOF_SCD):
             
             elif formatFlag == 3:
                 
+                sumAll = sumAll + 1
                 seqnum = int(lineList[1])        # get number of all peaks
                 dspacing = float(lineList[12])
                 if dspacing < dminObs: dminObs = dspacing   # get observed dmin
@@ -113,7 +115,7 @@ class intensity_stats(GenericTOF_SCD):
         output.write('\n\n    TOTALS')
         output.write('%10d'*4 % (sumTotal, sig3Total, sig5Total, sig10Total))
         output.write('\n\nTotal number of peaks with dmin of %5.3f is %d.'\
-        % (dminObs, seqnum))
+        % (dminObs, sumAll))
         
         input.close()
         output.close()
