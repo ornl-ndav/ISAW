@@ -26,9 +26,9 @@
 
 $ Category = Macros, Single Crystal
 
-$  path		DataDirectoryString(/SNS/users/ajschultz/spectrum/)	Raw Data Path
-$  runNum_1	INTEGER(265)		Run Number of Data File
-$  runNum_2	INTEGER(277)		Run Number of Background File
+$  path           DataDirectoryString(/SNS/users/ajschultz/spectrum/TOPAZ_240/)   Raw Data Path
+$  runNum_1       INTEGER(240)    Run Number of Data File
+$  runNum_2       INTEGER(246)    Run Number of Background File
 $  column_length  INTEGER(256)    Number of Pixels in one column
 $  first_col      INTEGER(10)     First Col of Region (min X)
 $  last_col       INTEGER(245)    Last  Col of Region (max X)
@@ -38,17 +38,17 @@ $  last_row       INTEGER(245)    Last  Row of Region (max Y)
 
 #  Obtain scaling factor from beam monitor data
 
-#ds_1 = OneDS(path & "SNAP_" & runNum_1 & ".nxs", 0, "")
-#Send ds_1
-#monitorSum1 = IntegGrp(ds_1, 1, 1000.0, 16000.0)
-#Display "monitorSum1 = " & monitorSum1
+ds_1 = OneDS(path & "TOPAZ_" & runNum_1 & ".nxs", 0, "")
+Send ds_1
+monitorSum1 = IntegGrp(ds_1, 2, 1000.0, 16000.0)
+Display "monitorSum1 = " & monitorSum1
 
-#ds_2 = OneDS(path & "SNAP_" & runNum_2 & ".nxs", 0, "")
-#monitorSum2 = IntegGrp(ds_2, 1, 1000.0, 16000.0)
-#Display "monitorSum2 = " & monitorSum2
+ds_2 = OneDS(path & "TOPAZ_" & runNum_2 & ".nxs", 0, "")
+monitorSum2 = IntegGrp(ds_2, 2, 1000.0, 16000.0)
+Display "monitorSum2 = " & monitorSum2
 
-#scale = monitorSum1 / monitorSum2
-scale = 3.045e11 / 1.396e13
+scale = monitorSum1 / monitorSum2
+
 Display "scale = " & scale
 
 
