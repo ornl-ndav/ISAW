@@ -167,7 +167,7 @@ public class Util {
       System.err.println("Entry not integer in runnums Vector");
       return null;
     }
-
+ 
     min_row = Math.max( 1, min_row );
     max_row = Math.max( max_row, min_row );
 
@@ -701,7 +701,10 @@ public class Util {
          cacheFilename = null;
       for( int i = 0; i < Runs.length; i++ ){
          //Replace by FindNexus operator in Operators/Generic/System/findnexus static method.
-         String filename = rawpath+fileNamePrefix+Runs[ i ]+extension;
+         String filename =Operators.Generic.System.findnexus.findNeXus(""+Runs[i],"",
+                 "","","",false,rawpath,extension,8); 
+         if(filename == null || filename.length()<4)
+             filename = rawpath+fileNamePrefix+Runs[ i ]+extension;
          ClearFiles( fileNamePrefix+Runs[i]);
          Retriever retriever = null;
          if( !(new File( filename)).exists())
