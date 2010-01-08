@@ -35,6 +35,9 @@
  *  $Revision$
  *
  *  $Log: Isaw.java,v $
+ *  Revision 1.1  2010/01/06 14:56:41  dennis
+ *  Initial revision
+ *
  *  Revision 1.280  2008/01/31 19:22:07  dennis
  *  Changed version number to 1.8.1
  *
@@ -1010,7 +1013,7 @@ public class Isaw
         String val="";
 
         if(SharedData.VERSION.equals("Unknown_Version"))
-          version="1.9.1_b4";
+          version="1.9.1_b5";
         else
           version=SharedData.VERSION;
 
