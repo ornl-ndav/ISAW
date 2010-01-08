@@ -44,6 +44,7 @@ import gov.anl.ipns.MathTools.Geometry.*;
 
 import DataSetTools.trial.*;
 import DataSetTools.operator.Generic.TOF_SCD.*;
+import DataSetTools.components.ui.Peaks.subs;
 
 public class IndexPeaks_Calc
 {
@@ -668,6 +669,12 @@ public class IndexPeaks_Calc
                           q_vals[row][2] );
      }
 */
+     if ( hkl_vals.length < 4 )
+     {
+       System.out.println("ERROR too few peaks indexed: " + hkl_vals.length );
+       return null;    
+     }
+
      double residual = LinearAlgebra.BestFitMatrix( UB, hkl_vals, q_vals );
      System.out.println("RESIDUAL = " + residual );
 
@@ -1044,7 +1051,7 @@ public class IndexPeaks_Calc
 
                                          // Refine UB -----------------------
     String return_msg = "FAILED";
-    if ( num_attempts < MAX_ATTEMPTS )
+    if ( num_attempts < MAX_ATTEMPTS && num_indexed > 3 )
     {
      peaks.clear();
      int next_peak = 0;
@@ -1060,16 +1067,18 @@ public class IndexPeaks_Calc
        }
        num_to_add = (int)( .1 * peaks.size() );
 
-       System.out.println("NUM INDEXED = " +
-                           NumIndexed( peaks, UBinverse, hkl_tol ) +
+       num_indexed = NumIndexed( peaks, UBinverse, hkl_tol );
+       System.out.println("NUM INDEXED = " + num_indexed +
                           " OUT OF " + peaks.size() +
                           " WITH TOLERANCE = " + hkl_tol );
 
+       if ( num_indexed > 3 ) 
+         hkls = OptimizeUB( peaks, UBinverse, newUBinverse, hkl_tol );
+       else
+         hkls = null;
 
-       hkls = OptimizeUB( peaks, UBinverse, newUBinverse, hkl_tol );
        if ( hkls == null )
        {
-          System.out.println("FAILED**********************");
           num_attempts = MAX_ATTEMPTS + 1;
           next_peak = strong_peaks.size() + 1;
        }
@@ -1080,15 +1089,17 @@ public class IndexPeaks_Calc
        }
      }
 
-     if ( num_attempts <= MAX_ATTEMPTS )
+     if ( num_attempts <= MAX_ATTEMPTS && num_indexed > 3 )
      {
                                         // Iterate on all peaks -------------
        for ( int i = 0; i < 5; i++ )
        {
-         UBinverse = LinearAlgebra.copy( newUBinverse );
-         hkls = OptimizeUB( all_peaks, UBinverse, newUBinverse, hkl_tol );
-         ShowLatticeParams( newUBinverse );
-
+          if ( newUBinverse == null )
+             throw new IllegalArgumentException(
+                   "Could not find orientation matrix, newUBinverse is null");
+          UBinverse = LinearAlgebra.copy( newUBinverse );
+          hkls = OptimizeUB( all_peaks, UBinverse, newUBinverse, hkl_tol );
+          ShowLatticeParams( newUBinverse );
         }
         return_msg = "NUM INDEXED = " +
                       NumIndexed( all_peaks, UBinverse, hkl_tol ) +
@@ -1099,7 +1110,7 @@ public class IndexPeaks_Calc
         double[][] UB = LinearAlgebra.copy( newUBinverse );
         LinearAlgebra.invert( UB );
 
-        float[][] floatUB = NiglifyAndGetFloatUB_over2PI(UB, UBinverse );
+        float[][] floatUB = RNiglifyAndGetFloatUB_over2PI(UB, UBinverse );
 
                                         // NOTE: Now indexed with matrix after
                                         //       usin blind to Niglify
@@ -1112,6 +1123,54 @@ public class IndexPeaks_Calc
     
     throw new IllegalArgumentException("Could not find orientation matrix");
   }
+
+
+  /**
+   *  Adjust the specified double precision UB matrix so the corresponding 
+   *  unit cell is a Nigli cell.  Put the inverse of the new UB matrix in
+   *  the parameter UBinverse and return a single precision version of
+   *  the new UB matrix (divided by 2 PI) as the value of this function.
+   *
+   *  @param UB         Double precision array containing the current UB 
+   *                    matrix.  This WILL BE ALTERED to contain the new
+   *                    UB matrix.
+   *  @param UBinverse  Double precision array that WILL BE FILLED OUT with
+   *                    the inverse of the new UB matrix.
+   *
+   *  @return a single precision version of the new UB matrix 
+   *          (divided by 2PI).
+   */
+  private static float[][] RNiglifyAndGetFloatUB_over2PI( double[][] UB,
+                                                          double[][] UBinverse )
+  {
+                                               // first get float[][] versiom
+                                               // and use Ruth's Niglify
+                                               // NOTE: division by 2PI
+    float[][]  floatUB = new float[3][3];
+    for ( int row = 0; row < 3; row++ )
+      for ( int col = 0; col < 3; col++ )
+        floatUB[row][col] = (float)(UB[row][col] / (Math.PI * 2));
+
+                                               // do Ruth's Niglify 
+    float[][] tempUB = subs.Nigglify( floatUB );
+
+    for ( int row = 0; row < 3; row++ )
+      for ( int col = 0; col < 3; col++ )
+        UB[row][col] = tempUB[row][col] * Math.PI * 2;
+
+    double[][] temp = LinearAlgebra.copy( UB );
+    LinearAlgebra.invert( temp );
+    for ( int row = 0; row < 3; row++ )
+      for ( int col = 0; col < 3; col++ )
+        UBinverse[row][col] = temp[row][col];
+
+    for ( int row = 0; row < 3; row++ )
+      for ( int col = 0; col < 3; col++ )
+        floatUB[row][col] = (float)(UB[row][col] / (Math.PI * 2));
+
+    return floatUB;
+  }
+
 
 
   /**
@@ -1147,6 +1206,9 @@ public class IndexPeaks_Calc
                                                // our double[][] for UB,
                                                // UBinverse and floatUB.
                                                // NOTE: multiply and div by 2PI
+    if (my_blind.UB == null )
+      throw new IllegalArgumentException("blind.blaue failed to get UB");
+
     for ( int row = 0; row < 3; row++ )
       for ( int col = 0; col < 3; col++ )
         UB[row][col] = my_blind.UB[row][col] * Math.PI * 2;
