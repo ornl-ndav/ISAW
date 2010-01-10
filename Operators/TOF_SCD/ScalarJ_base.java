@@ -897,6 +897,10 @@ public class ScalarJ_base extends GenericTOF_SCD implements
     
   }  // ==================== end of mark02
 
+  public StringBuffer getLogInfo()
+  {
+     return logBuffer;
+  }
   /**
    * This runs if the following conditions exist:
    * <UL><LI>has a free pass from mark02</LI>
@@ -1191,7 +1195,7 @@ public class ScalarJ_base extends GenericTOF_SCD implements
                            +"beta      gamma     cellvol\n");
         for( int ii=0 ; ii<abc.length ; ii++ )
           logBuffer.append(Format.real(abc[ii],10,3)+" ");
-        logBuffer.append("\n");
+        logBuffer.append("\n         ----------------------------------------\n");
         SharedMessages.LOGaddmsg(logBuffer.substring(start));
         SharedMessages.LOGaddmsg("------------- End Scalar ---------------\n\n\n");
         SharedMessages.addmsg(logBuffer.substring(start));
