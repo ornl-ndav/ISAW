@@ -401,6 +401,9 @@ public class DefaultProperties{
         rs.append("IsawFileServer1_Name=Test:( UW-Stout ISAW File Server )")
           .append(eol);
         rs.append("IsawFileServer1_Path=isaw.mscs.uwstout.edu;6089")
+          .append(eol).append(eol);
+
+        rs.append("#Scale With=PROTONS ON TARGET(or MONITOR)")
           .append(eol);
         rs.append("#").append(eol);
         rs.append("# Screen Size in percentage (<=1) or pixels (>1)")
