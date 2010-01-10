@@ -83,6 +83,7 @@ public class SocketServerTest extends UDPSend
    public void runTest( String EventFileName, int events_per_pulse )
    {
       Random ran_gen = new Random();
+      int NsentAftCommandPacket = 0;
 
       SNS_TofEventList eventList = new SNS_TofEventList( EventFileName );
       long totNevents = eventList.numEntries();
@@ -172,10 +173,12 @@ public class SocketServerTest extends UDPSend
 
              
               send( packet , packet.length );
+              NsentAftCommandPacket +=packet.length;
               NPacketsSent++ ;
               if( NPacketsSent % 200 == 0 )
                  System.out.println( "sent packets =" + NPacketsSent );
             }
+            
                                                    // send about 60 times/sec
             curr_time = System.currentTimeMillis();
             elapsed_time = (int)(curr_time - last_time);
@@ -184,6 +187,13 @@ public class SocketServerTest extends UDPSend
               Thread.sleep( 16 - elapsed_time );
             else
               Thread.sleep(1);                    // give the system a break
+            if( NsentAftCommandPacket > 48000)
+            {
+               byte[] packet= MakeCommandPacket( NsentAftCommandPacket);
+               send( packet , packet.length );//should be sent before but ????
+
+               NsentAftCommandPacket=0;
+            }
          }
          catch( Exception s )
          {
@@ -193,7 +203,20 @@ public class SocketServerTest extends UDPSend
       }
    }
    
-
+   
+   private byte[] MakeCommandPacket( int N2Bsent)
+   {
+      byte[] Res = new byte[SocketEventLoader.START_CMD_INDX_TARTG_PROTO+32];
+      Arrays.fill( Res , (byte)0 );
+      Res[2] = (byte)2;
+      assign(N2Bsent/8,Res,12);
+      assign(N2Bsent, Res,16);
+      Res[25]=(byte)8;
+      assign(N2Bsent,Res,SocketEventLoader.START_CMD_INDX_TARTG_PROTO);
+      return Res;
+      
+      
+   }
    /**
     * Returns the hi(most significant) byte for the given number. Takes into 
     * account of negative numbers
