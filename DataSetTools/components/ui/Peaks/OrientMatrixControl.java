@@ -53,8 +53,10 @@ import javax.swing.event.ChangeListener;
 
 import DataSetTools.operator.Generic.TOF_SCD.GetUB;
 import DataSetTools.operator.Generic.TOF_SCD.IPeak;
+import DataSetTools.util.SharedData;
 //import DataSetTools.operator.Generic.TOF_SCD.Peak_new;
 import IPNSSrc.blind;
+import Operators.TOF_SCD.ScalarJ_base;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -1193,6 +1195,8 @@ public class OrientMatrixControl extends JButton
               (pop.add( "Index Peaks" )).addActionListener(this);
               (pop.add( "Niggli with Blind" )).addActionListener( this);
               (pop.add( "Niggli(experimental" )).addActionListener( this);
+              (pop.add( "Show conventional cells" )).addActionListener( this);
+              
               (pop.add( "Optimize" )).addActionListener( this );
               if( e.getSource() instanceof AbstractButton)
                    pop.show( button, button.getWidth()*3/4,button.getHeight()/2);
@@ -1532,7 +1536,15 @@ public class OrientMatrixControl extends JButton
                         orMat.orientationMatrix , orMat.omittedPeakIndex ) );
             return;
          }
-         
+         if( evt.equals( "Show conventional cells" ))
+         {
+            ScalarJ_base Scalar = new ScalarJ_base( orMat.orientationMatrix,.1f,0);
+            if(Scalar.getResult( ) instanceof ErrorString)
+               SharedData.addmsg( "Error in Scalar " );
+            else
+                JOptionPane.showMessageDialog( null , Scalar.getLogInfo( ).toString() );
+            return;
+         }
          if( evt.equals( OrientMatrixControl.BLIND ) || 
              evt .equals( OrientMatrixControl.AUTOMATIC )||
              evt.equals( OrientMatrixControl.FOUR_PEAK )||
