@@ -59,6 +59,9 @@ public class SocketEventLoader extends UDPReceive
 
    public static int SEND_MIN_TIME = 2000; // ms
    
+   public static int START_CMD_INDX_TARTG_PROTO;
+   public static int NUM_CMD_TARTG_PROTO = 4;
+   
    public static thisIUDPUser  user;
    public thisIUDPUser User;
    
@@ -78,6 +81,14 @@ public class SocketEventLoader extends UDPReceive
    {
       super( port , getUDPUser( message_center , Instrument, detInfFile,IncidSpectraFile ) );
       User = user;
+      try
+      {
+      START_CMD_INDX_TARTG_PROTO = 
+         Integer.parseInt( System.getProperty( "Command Packet Index Protons On Target","40"  ));
+      }catch( Exception s)
+      {
+         START_CMD_INDX_TARTG_PROTO = 40;
+      }
    }
    
 
@@ -86,6 +97,8 @@ public class SocketEventLoader extends UDPReceive
    {
       this( port, message_center, Instrument, null, null);
    }
+   
+   
    private static thisIUDPUser getUDPUser( MessageCenter message_center , 
                                            String Instrument, 
                                            String detInfFile, 
@@ -145,6 +158,10 @@ class thisIUDPUser implements IUDPUser
    private        int total_received = 0;
    
    private      int TotalProtonsOnTarget =0;
+   
+   private      boolean SendScale =
+                      System.getProperty( "Scale With","" ).toUpperCase( )
+                                  .equals( "PROTONS ON TARGET" ) ;
 
    /**
     * Constructor
@@ -240,6 +257,7 @@ class thisIUDPUser implements IUDPUser
             (data[ 23 ] & 0x80 ) != 0   ) 
 			{  if( NReceived <-5)
 			     System.out.println("Header Packet ignored");
+			     ProcessCommandPacket( data );
                return;
 			}
 
@@ -288,6 +306,18 @@ class thisIUDPUser implements IUDPUser
    }
 
 
+   private void ProcessCommandPacket( byte[] data)
+   {
+      if( !SendScale || SocketEventLoader.START_CMD_INDX_TARTG_PROTO <20 )
+         return;
+      if( Cvrt2Int(data,16) <= 0)
+         return;
+      
+     
+      TotalProtonsOnTarget += Cvrt2Int( data, SocketEventLoader.START_CMD_INDX_TARTG_PROTO);
+      message_center.send( new Message( Commands.SCALE_FACTOR, 
+                      1f/TotalProtonsOnTarget, true, true));
+   }
    // Sends a message if enough info has been buffered or enough time has
    // passed
    protected void SendMessage( int NEvents )
