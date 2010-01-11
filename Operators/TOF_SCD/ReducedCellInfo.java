@@ -48,6 +48,8 @@ import gov.anl.ipns.MathTools.LinearAlgebra;
  */
 public class ReducedCellInfo
 {
+  public static boolean debug = false;
+
   /**
    * Number of actual rows in Table 2, 1..44.
    */
@@ -794,8 +796,9 @@ public class ReducedCellInfo
     for ( int i = 0; i < scalars.length; i++ )
     {
       double difference = Math.abs( info.scalars[i] - scalars[i] );
-      System.out.printf( "difference %d = %8.5f\n",
-                          i, difference );
+      if ( debug )
+        System.out.printf( "difference %d = %8.5f\n",
+                            i, difference );
       if ( difference > max )
         max = difference;
     }
@@ -825,8 +828,9 @@ public class ReducedCellInfo
     for ( int i = 0; i < vals_1.length; i++ )
     {
       double difference = Math.abs( vals_1[i] - vals_2[i] );
-      System.out.printf( "weighted difference %d = %8.5f\n",
-                          i, difference );
+      if ( debug )
+        System.out.printf( "weighted difference %d = %8.5f\n",
+                            i, difference );
       if ( difference > max )
         max = difference;
     }
@@ -873,44 +877,56 @@ public class ReducedCellInfo
    */
   public static void main( String args[] )
   {
-                            // experimental values:
-     double a = 4.9215;
-     double b = 4.9128;
-     double c = 5.4003;
-     double alpha = 90.0893;
-     double beta  = 90.0578;
-     double gamma = 120.0390;
+    double a      = 4.913, 
+           b      = 4.913, 
+           c      = 5.40, 
+           alpha  = 90, 
+           beta   = 90, 
+           gamma  = 120,
+           cutoff = 0.2;
+    try
+    {
+      a      = Double.parseDouble( args[0] );
+      b      = Double.parseDouble( args[1] );
+      c      = Double.parseDouble( args[2] );
+      alpha  = Double.parseDouble( args[3] );
+      beta   = Double.parseDouble( args[4] );
+      gamma  = Double.parseDouble( args[5] );
+      cutoff = Double.parseDouble( args[6] );
+    }
+    catch (Exception ex)
+    {
+      System.out.println("You must specify the six lattice parameters");
+      System.out.println("and a threshold, such as 0.2 on the command line.");
+      System.out.println("USING DEFAULT PARAMETERS FOR QUARTZ......");
+    }
 
-     // info_0 = measured quartz
-     ReducedCellInfo info_0  = new ReducedCellInfo( 0, a, b, c,
-                                                    alpha, beta, gamma );
-     System.out.println("Using Measured Lattice parameters: ");
+     System.out.println("Using Lattice parameters: ");
      System.out.printf("%5.3f  %5.3f  %5.3f   %7.2f  %7.2f  %7.2f\n\n",
                            a,    b,    c, alpha, beta, gamma );
 
-     // info_12 = theoretical quartz
-     // theoretical values:
-     a = 4.913;
-     b = 4.913;
-     c = 5.40;
-     alpha = 90;
-     beta  = 90;
-     gamma = 120;
-     System.out.println("Using Theoretical Lattice parameters: ");
-     System.out.printf("%5.2f  %5.2f  %5.2f   %7.2f  %7.2f  %7.2f\n\n",
-                           a,    b,    c, alpha, beta, gamma );
-     ReducedCellInfo info_12 = new ReducedCellInfo( 12, a, b, c,
-                                                    alpha, beta, gamma );
+     ReducedCellInfo[] list = new ReducedCellInfo[45];
+     for ( int i = 0; i <= 44; i++ )
+       list[i] = new ReducedCellInfo( i, a, b, c, alpha, beta, gamma );
 
-     System.out.println( "Measured:\n"+ info_0.toString() );
+     System.out.println( "list[0] is:\n"+ list[0].toString() );
 
-     System.out.println( "\nTheoretical:\n" + info_12.toString() );
+     System.out.println("");
+     System.out.println("Weighted Distances for entries 1 to 44");
+     for ( int i = 1; i <= 44; i++ )
+       if ( list[i].weighted_distance(list[0]) < cutoff )
+         System.out.printf("%2d  %9.6f  %-14s  %-14s\n",
+                            i, list[i].weighted_distance(list[0]), 
+                               list[i].cell_type,
+                               list[i].centering );
 
-     System.out.printf( "\nDistance          = %8.6f\n",
-                         info_12.distance(info_0) );
-
-     System.out.printf( "\nWeighted Distance = %8.6f\n",
-                         info_12.weighted_distance(info_0) );
+     System.out.println("Distances for entries 1 to 44");
+     for ( int i = 1; i <= 44; i++ )
+       if ( list[i].weighted_distance(list[0]) < cutoff )
+         System.out.printf("%2d  %9.6f  %-14s  %-14s\n",
+                            i, list[i].distance(list[0]), 
+                               list[i].cell_type,
+                               list[i].centering );
   }
 
 }
