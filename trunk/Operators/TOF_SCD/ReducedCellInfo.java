@@ -286,9 +286,9 @@ public class ReducedCellInfo
    *  @param  a         Real space unit cell length "a".
    *  @param  b         Real space unit cell length "b".
    *  @param  c         Real space unit cell length "c".
-   *  @param  alpha     Resl space unit cell angle "alpha".
-   *  @param  beta      Resl space unit cell angle "beta".
-   *  @param  gamma     Resl space unit cell angle "gamma".
+   *  @param  alpha     Resl space unit cell angle "alpha", in degrees.
+   *  @param  beta      Resl space unit cell angle "beta", in degrees.
+   *  @param  gamma     Resl space unit cell angle "gamma", in degrees.
    */
   public ReducedCellInfo ( int    form_num, 
                            double a,     double b,    double c,
@@ -299,12 +299,12 @@ public class ReducedCellInfo
          "Lattice lengths a, b, c must be positive: " +
          "a = " + a + " b = " + b + " c = " + c );
 
-    if ( alpha <= 0 || alpha >= Math.PI ||
-         beta  <= 0 || beta  >= Math.PI ||
-         gamma <= 0 || gamma >= Math.PI )
+    if ( alpha <= 0 || alpha >= 180 ||
+         beta  <= 0 || beta  >= 180 ||
+         gamma <= 0 || gamma >= 180 )
       throw new IllegalArgumentException(
-         "Lattice angles alpha, beta, gamma must be positive: " +
-         "alpha = " + alpha + " beta = " + beta + " gamma = " + gamma );
+        "Lattice angles alpha, beta, gamma must be between 0 and 180 degrees "+
+        "alpha = " + alpha + " beta = " + beta + " gamma = " + gamma );
 
     alpha = alpha * Math.PI / 180;
     beta  = beta  * Math.PI / 180;
@@ -715,29 +715,6 @@ public class ReducedCellInfo
 
 
   /**
-   * Get the maximum absolute difference between the scalars (columns of table 
-   * 2) for the specifed ReducedCellInfo object and this ReducedCellInfo.
-   *
-   * @param info  The ReducedCellInfo object to compare with the current
-   *              object.
-   *
-   * @return  The maximum absolute difference between the scalars.
-   */
-  public double distance( ReducedCellInfo info )
-  {
-    double max = 0;
-
-    for ( int i = 0; i < scalars.length; i++ )
-    {
-      double difference = Math.abs( info.scalars[i] - scalars[i] );
-      if ( difference > max )
-        max = difference; 
-    }
-    return max;
-  }
-
-
-  /**
    * Get the string representing the centering type for this row of Table 2.
    *
    * @return one of the Strings representing the centering types.
@@ -802,14 +779,138 @@ public class ReducedCellInfo
 
 
   /**
+   * Get the maximum absolute difference between the scalars (columns of table 
+   * 2) for the specifed ReducedCellInfo object and this ReducedCellInfo.
+   *
+   * @param info  The ReducedCellInfo object to compare with the current
+   *              object.
+   *
+   * @return  The maximum absolute difference between the scalars.
+   */
+  public double distance( ReducedCellInfo info )
+  {
+    double max = 0;
+
+    for ( int i = 0; i < scalars.length; i++ )
+    {
+      double difference = Math.abs( info.scalars[i] - scalars[i] );
+      System.out.printf( "difference %d = %8.5f\n",
+                          i, difference );
+      if ( difference > max )
+        max = difference;
+    }
+    return max;
+  }
+
+
+  /**
+   * Get the maximum absolute weighted difference between the scalars 
+   * for the specifed ReducedCellInfo object and this ReducedCellInfo.
+   * A fairly complicated weighting is used to make the effect of a
+   * difference in cell edge length on lattice corner positions is 
+   * comparable to the effect of a difference in the angles.
+   *
+   * @param info  The ReducedCellInfo object to compare with the current
+   *              object.
+   *
+   * @return  The maximum absolute difference between the scalars.
+   */
+  public double weighted_distance( ReducedCellInfo info )
+  {
+    double[] vals_1 = getNormVals( this );
+    double[] vals_2 = getNormVals( info );
+
+    double max = 0;
+
+    for ( int i = 0; i < vals_1.length; i++ )
+    {
+      double difference = Math.abs( vals_1[i] - vals_2[i] );
+      System.out.printf( "weighted difference %d = %8.5f\n",
+                          i, difference );
+      if ( difference > max )
+        max = difference;
+    }
+    return max;
+  }
+
+
+  /**
+   * Get array of six values, related to the six scalars, but adjusted so
+   * that changes in these values represent changes of positions of the 
+   * lattice corners of approximately the same magnitude.  This is useful
+   * when comparing how close the lattice for one cell is to the lattice 
+   * for another cell.
+   */
+  private double[] getNormVals( ReducedCellInfo info )
+  {
+    double[] vals = new double[6];
+
+    double a = Math.sqrt( info.scalars[0] );
+    double b = Math.sqrt( info.scalars[1] );
+    double c = Math.sqrt( info.scalars[2] );
+
+                // Use the side lengths themselves, instead of squares of sides.
+    vals[0] = a;
+    vals[1] = b; 
+    vals[2] = c;
+                // Since b.c = b c cos(alpha) changes in b.c correspond to 
+                // changes in alpha via the arccos() function.  If the side
+                // lengths are assumed to be correct, since changes in position
+                // vary as s = r * theta, we scale this by the average of 
+                // the sides affected (b+c)/2.
+                // Each of the dot products, b.c, a.c and a.b are treated
+                // analogously.
+    vals[3] = Math.acos( info.scalars[3] / ( b * c ) ) * ( b + c ) / 2;
+    vals[4] = Math.acos( info.scalars[4] / ( a * c ) ) * ( a + c ) / 2;
+    vals[5] = Math.acos( info.scalars[5] / ( a * b ) ) * ( a + b ) / 2;
+
+    return vals;
+  }
+
+
+  /**
    * Basic test of constructor and toString method.
    */
   public static void main( String args[] )
   {
-     ReducedCellInfo info = new ReducedCellInfo( 12, 
-                                                 4.913, 4.913, 5.40,
-                                                 90, 90, 120 );
-     System.out.println( info.toString() );
+                            // experimental values:
+     double a = 4.9215;
+     double b = 4.9128;
+     double c = 5.4003;
+     double alpha = 90.0893;
+     double beta  = 90.0578;
+     double gamma = 120.0390;
+
+     // info_0 = measured quartz
+     ReducedCellInfo info_0  = new ReducedCellInfo( 0, a, b, c,
+                                                    alpha, beta, gamma );
+     System.out.println("Using Measured Lattice parameters: ");
+     System.out.printf("%5.3f  %5.3f  %5.3f   %7.2f  %7.2f  %7.2f\n\n",
+                           a,    b,    c, alpha, beta, gamma );
+
+     // info_12 = theoretical quartz
+     // theoretical values:
+     a = 4.913;
+     b = 4.913;
+     c = 5.40;
+     alpha = 90;
+     beta  = 90;
+     gamma = 120;
+     System.out.println("Using Theoretical Lattice parameters: ");
+     System.out.printf("%5.2f  %5.2f  %5.2f   %7.2f  %7.2f  %7.2f\n\n",
+                           a,    b,    c, alpha, beta, gamma );
+     ReducedCellInfo info_12 = new ReducedCellInfo( 12, a, b, c,
+                                                    alpha, beta, gamma );
+
+     System.out.println( "Measured:\n"+ info_0.toString() );
+
+     System.out.println( "\nTheoretical:\n" + info_12.toString() );
+
+     System.out.printf( "\nDistance          = %8.6f\n",
+                         info_12.distance(info_0) );
+
+     System.out.printf( "\nWeighted Distance = %8.6f\n",
+                         info_12.weighted_distance(info_0) );
   }
 
 }
