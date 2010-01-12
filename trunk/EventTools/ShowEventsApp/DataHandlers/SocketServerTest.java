@@ -64,6 +64,8 @@ public class SocketServerTest extends UDPSend
     *  pulse.
     */
    public static final int MAX_PER_PULSE = 83333;   // 5 million events/sec
+   
+   public static int START_CMD_INDX_TARTG_PROTO;
 
    /**
     * Constructor. The data is sent to port 8002 on the specified host.
@@ -78,6 +80,15 @@ public class SocketServerTest extends UDPSend
                             throws UnknownHostException , SocketException
    {
       super( destination_node, 8002 );
+      try
+      {
+      START_CMD_INDX_TARTG_PROTO = 
+         Integer.parseInt( System.getProperty( "Command Packet Index Protons On Target","40"  ));
+      }catch( Exception s)
+      {
+         START_CMD_INDX_TARTG_PROTO = 40;
+      }
+      System.out.println("POT start="+START_CMD_INDX_TARTG_PROTO);
    }
 
    public void runTest( String EventFileName, int events_per_pulse )
@@ -208,11 +219,12 @@ public class SocketServerTest extends UDPSend
    {
       byte[] Res = new byte[SocketEventLoader.START_CMD_INDX_TARTG_PROTO+32];
       Arrays.fill( Res , (byte)0 );
-      Res[2] = (byte)2;
+      Res[5] = (byte)2;
       assign(N2Bsent/8,Res,12);
       assign(N2Bsent, Res,16);
-      Res[25]=(byte)8;
+      Res[23]=(byte)0x80;
       assign(N2Bsent,Res,SocketEventLoader.START_CMD_INDX_TARTG_PROTO);
+      
       return Res;
       
       
