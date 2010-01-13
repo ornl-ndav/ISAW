@@ -391,7 +391,13 @@ public class DQDataHandler implements IReceiveMessage
       
       if( message.getName().equals(  Commands.SCALE_FACTOR ))
       {
-         scale_factor =((Float) message.getValue()).floatValue();
+        
+         String S = System.getProperty( "Scale With" , "" );
+
+         if ( !S.equals( "PROTONS ON TARGET" ) && !S.equals( "MONITOR" ) )
+            scale_factor = -1;
+         else
+            scale_factor = ( ( Float ) message.getValue( ) ).floatValue( );
       }
       
       if( message.getName().equals(  Commands.NORMALIZE_QD_GRAPHS ))

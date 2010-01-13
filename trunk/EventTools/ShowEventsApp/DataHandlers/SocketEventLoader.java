@@ -308,15 +308,16 @@ class thisIUDPUser implements IUDPUser
 
    private void ProcessCommandPacket( byte[] data)
    {
-      if( !SendScale || SocketEventLoader.START_CMD_INDX_TARTG_PROTO <20 )
+      if(  SocketEventLoader.START_CMD_INDX_TARTG_PROTO <20 )
          return;
       if( Cvrt2Int(data,16) <= 0)
          return;
       
      
       TotalProtonsOnTarget += Cvrt2Int( data, SocketEventLoader.START_CMD_INDX_TARTG_PROTO);
-      message_center.send( new Message( Commands.SCALE_FACTOR, 
-                      1f/TotalProtonsOnTarget, true, true));
+      if(  SendScale  )
+            message_center.send( new Message( Commands.SCALE_FACTOR, 
+                                     1f/TotalProtonsOnTarget, true, true));
    }
    // Sends a message if enough info has been buffered or enough time has
    // passed
