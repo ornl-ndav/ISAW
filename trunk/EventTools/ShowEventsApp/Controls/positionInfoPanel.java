@@ -41,7 +41,7 @@ import java.awt.*;
 
 import MessageTools.*;
 import EventTools.ShowEventsApp.Command.*;
-
+import gov.anl.ipns.ViewTools.UI.*;
 /**
  * Displays information about the point selected on the jogl
  * panel.
@@ -59,6 +59,7 @@ public class positionInfoPanel extends JPanel
    private JTextField          qxyzTxt;
    private JTextField          qTxt;
    private JTextField          dSpacingTxt;
+   private JTextField          twoThetaTxt;
    private JTextField          timeTxt;
    private JTextField          eTxt;
    private JTextField          wavelengthTxt;
@@ -106,7 +107,7 @@ public class positionInfoPanel extends JPanel
    {
       JPanel panel = new JPanel();
       
-      panel.setLayout(new GridLayout(11, 2));
+      panel.setLayout(new GridLayout(12, 2));
       panel.setBorder(new TitledBorder("Position Info."));
       
       JTextField countLbl = new JTextField("Counts");
@@ -139,7 +140,13 @@ public class positionInfoPanel extends JPanel
       
       JTextField dSpacingLbl = new JTextField("d-Spacing(" + ANG + ")");
       dSpacingLbl.setEditable(false);
-      dSpacingLbl.setBackground(Color.WHITE);
+      dSpacingLbl.setBackground(Color.WHITE);   
+      
+      JTextField twoThetaLbl = new JTextField("2"+
+            FontUtil.THETA+"(\u2109"  + ")");
+      twoThetaLbl.setEditable(false);
+      twoThetaLbl.setBackground(Color.WHITE);
+      
       
       JTextField timeLbl = new JTextField("Time(" + MU + "s)");
       timeLbl.setEditable(false);
@@ -198,6 +205,12 @@ public class positionInfoPanel extends JPanel
       dSpacingTxt.setBackground(Color.WHITE);
       dSpacingTxt.setHorizontalAlignment(JTextField.RIGHT);
       
+      twoThetaTxt = new JTextField(" 0.0000000");
+      twoThetaTxt.setEditable(false);
+      twoThetaTxt.setBackground(Color.WHITE);
+      twoThetaTxt.setHorizontalAlignment(JTextField.RIGHT);
+      
+      
       timeTxt = new JTextField("   0.0");
       timeTxt.setEditable(false);
       timeTxt.setBackground(Color.WHITE);
@@ -229,6 +242,8 @@ public class positionInfoPanel extends JPanel
       panel.add(qTxt);
       panel.add(dSpacingLbl);
       panel.add(dSpacingTxt);
+      panel.add(twoThetaLbl);
+      panel.add(twoThetaTxt);
       panel.add(timeLbl);
       panel.add(timeTxt);
       panel.add(eLbl);
@@ -261,6 +276,7 @@ public class positionInfoPanel extends JPanel
             selection.getQxyz().getZ()) );
       qTxt.setText( String.format("%7.4f", selection.getRaw_Q()) );
       dSpacingTxt.setText( String.format("%8.6f", selection.getD_spacing()) );
+      twoThetaTxt.setText( String.format("%8.6f", selection.getTwo_theta( )*180/Math.PI) );
       timeTxt.setText( String.format("%6.1f", selection.getTof()) );
       eTxt.setText( String.format("%7.4f", selection.getE_mev()) );
       wavelengthTxt.setText( String.format("%8.6f", selection.getWavelength()) );
