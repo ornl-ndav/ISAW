@@ -37,6 +37,7 @@ import java.util.*;
 import java.io.*;
 
 import gov.anl.ipns.Operator.*;
+import gov.anl.ipns.Util.Sys.InputStreamReporter;
 
 
 /**
@@ -201,10 +202,11 @@ public class IntegratePeaksProcessCaller implements IOperator
       InputStream process_err = process.getErrorStream();
       InputStreamReader process_err_reader = new InputStreamReader(process_err);
       BufferedReader process_err_buff = new BufferedReader( process_err_reader);
-
+      (new InputStreamReporter( process_in, "Process Results")).start( );
       String line;
       boolean first_time = true;
-      while ((line = process_err_buff.readLine()) != null)
+      while (( process_err_buff.ready( )&& 
+                 (line = process_err_buff.readLine()) != null))
       {
         if ( first_time )
         {
