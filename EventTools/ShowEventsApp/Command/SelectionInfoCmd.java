@@ -15,6 +15,7 @@ public class SelectionInfoCmd
 
    private float raw_Q;
    private float d_spacing;
+   private float two_theta;
    private float tof;
    private float e_mev;
    private float wavelength;
@@ -28,6 +29,7 @@ public class SelectionInfoCmd
                             Vector3D Qxyz,
                             float    raw_Q,
                             float    d_spacing,
+                            float    two_theta,
                             float    tof,
                             float    e_mev,
                             float    wavelength )
@@ -41,6 +43,7 @@ public class SelectionInfoCmd
       this.Qxyz       = new Vector3D( Qxyz );
       this.raw_Q      = raw_Q;
       this.d_spacing  = d_spacing;
+      this.two_theta  = two_theta;
       this.tof        = tof;
       this.e_mev      = e_mev;
       this.wavelength = wavelength;
@@ -106,6 +109,12 @@ public class SelectionInfoCmd
    {
       return d_spacing;
    }
+   
+
+   public float getTwo_theta()
+   {
+      return two_theta;
+   }
 
    public float getTof()
    {
@@ -132,6 +141,7 @@ public class SelectionInfoCmd
              "\nQxyz        : " + getQxyz() + 
              "\nRaw Q       : " + getRaw_Q() + 
              "\nD Spacing   : " + getD_spacing() + 
+             "\n2 theta     : " + getTwo_theta() + 
              "\nTOF         : " + getTof() + 
              "\nE(mev)      : " + getE_mev() + 
              "\nWavelength  : " + getWavelength(); 
