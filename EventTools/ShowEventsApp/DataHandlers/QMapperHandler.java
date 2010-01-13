@@ -39,6 +39,7 @@ import java.util.Vector;
 import gov.anl.ipns.Operator.IOperator;
 import gov.anl.ipns.Operator.Threads.ParallelExecutor;
 import gov.anl.ipns.Operator.Threads.ExecFailException;
+import gov.anl.ipns.MathTools.Geometry.DetectorPosition;
 import gov.anl.ipns.MathTools.Geometry.Vector3D;
 
 import MessageTools.IReceiveMessage;
@@ -182,7 +183,7 @@ public class QMapperHandler implements IReceiveMessage
         info = new SelectionInfoCmd( 0, 0, 0, 0, 0, 
                    new Vector3D(),
                    new Vector3D(),
-                   0, 0, 0, 0, 0 );
+                   0, 0, 0,0, 0, 0 );
       }
       else
       {
@@ -191,7 +192,8 @@ public class QMapperHandler implements IReceiveMessage
         Vector3D Qxyz     = new Vector3D( Q[0], Q[1], Q[2] );
         float magnitude_Q = Qxyz.length();
         float Energy      = Calc_energy( peak);
-
+        float two_theta   = (new DetectorPosition( new Vector3D(peak.x( ),peak.y( ),peak.z()))).
+                                getScatteringAngle( );
         info = new SelectionInfoCmd(
                    peak.ipkobs(),
                    peak.detnum(),
@@ -202,6 +204,7 @@ public class QMapperHandler implements IReceiveMessage
                    Qxyz,
                    magnitude_Q,
                    peak.d(),
+                   two_theta,
                    peak.time(),
                    Energy, 
                    peak.wl()  );
