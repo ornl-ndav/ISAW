@@ -243,6 +243,8 @@ public class Util {
                                                    // the basic command.
           cmd = " srun -p " + slurm_queue_name +     
                 " --mem-per-cpu=" + mem +
+                " --time=" + 1200 +                // no more than 20 minutes
+                                                   // to find peaks in 1 det
                 " -J SCD_Find_Peaks -o " + result +  
                 cmd;                              
         }
@@ -2117,8 +2119,10 @@ public class Util {
                                                     // the basic command.
             cmd = " srun -p " + slurm_queue_name +  
                 " --mem-per-cpu=" + mem +
-               " -J SCD_Find_Peaks -o " + result +  
-               cmd;    
+                " --time=" + 1200 +                // no more than 20 minutes
+                                                   // to find peaks in 1 det
+                " -J SCD_Find_Peaks -o " + result +  
+                cmd;    
           }
           else
           { 
