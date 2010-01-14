@@ -42,6 +42,7 @@ import java.awt.*;
 import MessageTools.*;
 import EventTools.ShowEventsApp.Command.*;
 import gov.anl.ipns.ViewTools.UI.*;
+
 /**
  * Displays information about the point selected on the jogl
  * panel.
@@ -63,8 +64,10 @@ public class positionInfoPanel extends JPanel
    private JTextField          timeTxt;
    private JTextField          eTxt;
    private JTextField          wavelengthTxt;
-   private char                ANG = '\u00c5';
-   private char                MU = '\u03bc';
+   private static String       ANG   = FontUtil.ANGSTROM;
+   private static String       MU    = FontUtil.MU;
+   private static String       DEG   = FontUtil.DEGREE; 
+   private static String       THETA = FontUtil.THETA;
    
    /**
     * Builds the panel and adds everything to itself.
@@ -142,8 +145,7 @@ public class positionInfoPanel extends JPanel
       dSpacingLbl.setEditable(false);
       dSpacingLbl.setBackground(Color.WHITE);   
       
-      JTextField twoThetaLbl = new JTextField("2"+
-            FontUtil.THETA+"(\u2109"  + ")");
+      JTextField twoThetaLbl = new JTextField("2"+THETA+"("+DEG+")");
       twoThetaLbl.setEditable(false);
       twoThetaLbl.setBackground(Color.WHITE);
       
