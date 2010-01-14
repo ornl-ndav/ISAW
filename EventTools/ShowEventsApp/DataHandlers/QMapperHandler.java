@@ -192,8 +192,11 @@ public class QMapperHandler implements IReceiveMessage
         Vector3D Qxyz     = new Vector3D( Q[0], Q[1], Q[2] );
         float magnitude_Q = Qxyz.length();
         float Energy      = Calc_energy( peak);
-        float two_theta   = (new DetectorPosition( new Vector3D(peak.x( ),peak.y( ),peak.z()))).
-                                getScatteringAngle( );
+        double off_axis   = Math.sqrt( Q[1]*Q[1] + Q[2]*Q[2] );
+        double beam_comp  = Q[0];
+        float alpha       = (float)Math.atan2(off_axis,beam_comp);
+        float two_theta   = (float)(2*Math.abs(alpha) - Math.PI); 
+                        
         info = new SelectionInfoCmd(
                    peak.ipkobs(),
                    peak.detnum(),
