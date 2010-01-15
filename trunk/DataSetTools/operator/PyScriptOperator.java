@@ -295,6 +295,27 @@ public class PyScriptOperator extends GenericOperator
       //will catch the exception and print a message.
       System.out.println( "Error in setDefaultParameters in PyScriptOperator " +
         ie.getMessage(  ) );
+    }catch( PyException s ) {
+       //cannot get line number. May have to go in an use
+       // interp on s.type to get line number.Check Python dealing with
+       //exceptions
+       
+       errormessage   = "ERROR1:" + s.toString(  );
+       errLineNum     = s.traceback.tb_lineno - 1;
+       SharedData.addmsg( reformatPythonError( s.value.toString(  ) ) );
+    }catch( Throwable s)
+    {
+       Throwable s1 = s.fillInStackTrace( );
+       StackTraceElement[] SS = s1.getStackTrace( );
+       if( SS.length < 1)
+       {
+          errormessage = s.toString( );
+          errLineNum =-1;
+          return;
+       }
+       errormessage= SS[0].toString( );
+       errLineNum = SS[0].getLineNumber( );
+       return;
     }
    
   }
@@ -538,17 +559,29 @@ public class PyScriptOperator extends GenericOperator
         return result;
         }
       } catch( PyException s ) {
-        //hit some sort of Python syntax error
+        //cannot get line number. May have to go in an use
+        // interp on s.type to get line number.Check Python dealing with
+        //exceptions
+        System.out.println("In PyException "+ s.getClass());
         errormessage   = "ERROR1:" + s.toString(  );
         errLineNum     = s.traceback.tb_lineno - 1;
         SharedData.addmsg( reformatPythonError( s.value.toString(  ) ) );
+       
 
         return new ErrorString( errormessage );
-      } catch( Exception s ) {
-        //some other exception-hopefully we don't ever hit this.
-        errormessage = "ERROR2:" + s.toString(  );
-
-        return new ErrorString( errormessage );
+      } catch( Throwable s ) {
+            Throwable s1 = s.fillInStackTrace( );
+            StackTraceElement[] SS = s1.getStackTrace( );
+            if( SS.length < 1)
+            {
+               errormessage = s.toString( );
+               errLineNum =-1;
+               return new ErrorString( errormessage );
+            }
+            errormessage= SS[0].toString( );
+            errLineNum = SS[0].getLineNumber( );
+        
+            return new ErrorString( errormessage );
       }
     } else {
        synchronized(  syncObj){
@@ -961,9 +994,11 @@ public class PyScriptOperator extends GenericOperator
     initPySystem();
     resetInterpreter(  );
   }
-  private final void initPySystem(){
+  private final void initPySystem()
+  {
     if( PySystemInitted)
        return;
+    
     PySystemInitted = true;
     Properties postProps = new Properties(  );
     Properties sysProps = System.getProperties(  );
@@ -971,18 +1006,43 @@ public class PyScriptOperator extends GenericOperator
     // put systemProperties (those set with -D) in postProps
     Enumeration e = sysProps.propertyNames(  );
 
+    boolean homeSet= false;
     while( e.hasMoreElements(  ) ) {
       String name = ( String )e.nextElement(  );
-
-      if( name.startsWith( "python." ) ) {
+      name = name.trim();
+      if( name.startsWith( "python." ) )
+       
+      { 
+        if( name.equals( "python.home" )) 
+           homeSet=true;
+        if( name.equals( "python.path" ))
+           System.setProperty( name , FixFileName(System.getProperty(name)) );
         postProps.put( name, System.getProperty( name ) );
       }
     }
+
+    String home = 
+          System.getProperty("ISAW_HOME")+"/jython";
+   
+    if( !homeSet)
+       postProps.put( "python.home" , FixFileName(home) );
+    
     postProps.put( "internalTablesImpl" , "weak" );
+    
     // here's the initialization step
     PythonInterpreter.initialize( sysProps, postProps, null );
+    
   }
-
+  
+ //Fixes file names and lists of filenames so they work when set as jython
+  // properties
+  private String FixFileName( String fileName)
+  {
+    fileName = StringUtil.setFileSeparator( fileName );
+    fileName = fileName.replace( ';' , File.pathSeparatorChar );
+    return StringUtil.replace( fileName , "\\" , "\\\\" );
+    
+  }
   /**
    * Sets the internal IAmOperator variable, as well as calling reset(  ) to
    * reset the interpreter variables and call setDefaultParameters if the
