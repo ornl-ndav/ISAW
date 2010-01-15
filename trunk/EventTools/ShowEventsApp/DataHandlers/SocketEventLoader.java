@@ -35,6 +35,9 @@
 package EventTools.ShowEventsApp.DataHandlers;
 
 
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+
 import EventTools.EventList.TofEventList;
 import EventTools.ShowEventsApp.Command.Commands;
 import EventTools.ShowEventsApp.Command.SetNewInstrumentCmd;
@@ -59,7 +62,7 @@ public class SocketEventLoader extends UDPReceive
 
    public static int SEND_MIN_TIME = 2000; // ms
    
-   public static int START_CMD_INDX_TARTG_PROTO;
+   public static int START_CMD_INDX_TARTG_PROTO = 40;
    public static int NUM_CMD_TARTG_PROTO = 4;
    
    public static thisIUDPUser  user;
@@ -157,7 +160,7 @@ class thisIUDPUser implements IUDPUser
 
    private        int total_received = 0;
    
-   private      int TotalProtonsOnTarget =0;
+   private      double TotalProtonsOnTarget =0;
    
    private      boolean SendScale =
                       System.getProperty( "Scale With","" ).toUpperCase( )
@@ -308,16 +311,39 @@ class thisIUDPUser implements IUDPUser
 
    private void ProcessCommandPacket( byte[] data)
    {
+      
       if(  SocketEventLoader.START_CMD_INDX_TARTG_PROTO <20 )
          return;
-      if( Cvrt2Int(data,16) <= 0)
+
+           if( Cvrt2Int(data,16) <= 0)
          return;
-      
+
      
-      TotalProtonsOnTarget += Cvrt2Int( data, SocketEventLoader.START_CMD_INDX_TARTG_PROTO);
-      if(  SendScale  )
+     
+      TotalProtonsOnTarget += Cvrt2dbl( data, SocketEventLoader.START_CMD_INDX_TARTG_PROTO);
+      if(  SendScale && TotalProtonsOnTarget !=0 )
             message_center.send( new Message( Commands.SCALE_FACTOR, 
                                      1f/TotalProtonsOnTarget, true, true));
+   }
+   
+   private double Cvrt2dbl( byte[] data , int start)
+   {
+      if( data == null || start <0|| data.length < start+8)
+         return 0.;
+      try
+      {
+         ByteArrayInputStream bStream = new ByteArrayInputStream(data,start,8);
+         DataInputStream dStream = new DataInputStream( bStream );
+         double x= dStream.readDouble( );
+         
+         return x;
+      }catch(Exception s)
+      {
+         System.out.println("Socket Loader error="+s);
+         return 0;
+      }
+      
+      
    }
    // Sends a message if enough info has been buffered or enough time has
    // passed
