@@ -43,6 +43,8 @@ import javax.swing.border.TitledBorder;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.GridLayout;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 
@@ -65,7 +67,7 @@ public class SocketServerTest extends UDPSend
     */
    public static final int MAX_PER_PULSE = 83333;   // 5 million events/sec
    
-   public static int START_CMD_INDX_TARTG_PROTO;
+   public static int START_CMD_INDX_TARTG_PROTO = 40;
 
    /**
     * Constructor. The data is sent to port 8002 on the specified host.
@@ -201,6 +203,7 @@ public class SocketServerTest extends UDPSend
             if( NsentAftCommandPacket > 48000)
             {
                byte[] packet= MakeCommandPacket( NsentAftCommandPacket);
+               
                send( packet , packet.length );//should be sent before but ????
 
                NsentAftCommandPacket=0;
@@ -220,10 +223,28 @@ public class SocketServerTest extends UDPSend
       byte[] Res = new byte[SocketEventLoader.START_CMD_INDX_TARTG_PROTO+32];
       Arrays.fill( Res , (byte)0 );
       Res[5] = (byte)2;
-      assign(N2Bsent/8,Res,12);
+      
+      assign(N2Bsent/8,Res,12);//woops packets 
       assign(N2Bsent, Res,16);
       Res[23]=(byte)0x80;
-      assign(N2Bsent,Res,SocketEventLoader.START_CMD_INDX_TARTG_PROTO);
+      try
+      {
+         ByteArrayOutputStream bStream = new ByteArrayOutputStream(10);
+         DataOutputStream dStream = new DataOutputStream( bStream);
+         dStream.writeDouble( (double ) N2Bsent);
+         byte[] res = bStream.toByteArray( );
+         if( res.length < 8)
+            return null;
+         System.arraycopy( res,0,Res,START_CMD_INDX_TARTG_PROTO,8);
+         
+         
+      }catch(Exception s)
+      {
+         return null;
+      }
+      
+      //assign(N2Bsent,Res,SocketEventLoader.START_CMD_INDX_TARTG_PROTO);
+      
       
       return Res;
       
