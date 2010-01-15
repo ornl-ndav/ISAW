@@ -57,6 +57,32 @@ public class  UDPReceive extends Thread
   private DatagramSocket sock;
   private IUDPUser       user;  
 
+
+  /**
+   *  Construct a UDPReceive object to listen for UDP packets on the specified
+   *  port and IP address, and call the ProcessData routine of the given 
+   *  IUDPUser object. 
+   *
+   *  @param  port   The port on which to listen for UDP packets.
+   *  @param  laddr  The local ip address on which to listen for UDP packets.
+   *  @param  user   The object whose ProcessData method is called when
+   *                 this object receives a UDP packet.
+   */
+  public UDPReceive( int port, InetAddress laddr, IUDPUser user )
+  {
+    try
+    {
+      sock = new DatagramSocket( port, laddr );
+    }
+    catch( Exception ex )
+    {
+      ex.printStackTrace();
+      System.exit( 1 );
+    }
+    this.user = user;
+  }
+
+
   /**
    *  Construct a UDPReceive object to listen for UDP packets on the specified
    *  port and call the ProcessData routine of the given IUDPUser object. 
@@ -69,11 +95,11 @@ public class  UDPReceive extends Thread
   { 
     try
     {
-      sock=new DatagramSocket(port);
+      sock = new DatagramSocket( port );
     }
-    catch( SocketException se )
+    catch( Exception ex )
     { 
-      se.printStackTrace();
+      ex.printStackTrace();
       System.exit( 1 );
     }
     this.user = user;
