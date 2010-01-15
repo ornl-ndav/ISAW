@@ -122,12 +122,19 @@ abstract public class GraphViewHandler implements IReceiveMessage
       JMenuBar menBar = new JMenuBar();
       JMenu opts = new JMenu("Options");
       menBar.add(opts);
+      
       JCheckBoxMenuItem normalize = new JCheckBoxMenuItem("Normalize", false);
       opts.add( normalize);
       normalize.addActionListener( new MenuListener( this, D_Q) );
+      
       JMenuItem Load = new JMenuItem("Compare to Data in File");
       Load.addActionListener(  new MenuListener( this ,D_Q) );
       opts.add( Load );
+      
+      
+      JMenuItem Help = new JMenuItem("Help");
+      Help.addActionListener(  new MenuListener( this ,D_Q) );
+      opts.add( Help );
 
       JMenuItem Clear = new JMenuItem("Clear Compare Data");
       Clear.addActionListener(  new MenuListener( this ,D_Q) );
@@ -348,6 +355,15 @@ class MenuListener implements ActionListener
    JTextField textField;
    String D_Q;
    String fileName ;
+
+   private static String OPT_MESSAGE =
+       "Normalize normalizes with the incident spectrum and Protons on Target,"+
+       " if present, on the \n"+
+       "Load form in IsawEV.\n\n "+
+       "If loading from live data, the System property \"Scale With\"(case sensitive)"+
+       "must be\n"+
+       "set to \"Protons on Target\"(not case sensitive) to scale with the current "+
+       "Total Protons on Target";
    public MenuListener( GraphViewHandler gv, String D_Q)
    {
       this.gv = gv;
@@ -425,9 +441,11 @@ class MenuListener implements ActionListener
     }else if( evt.getActionCommand().equals( "Clear Compare Data" ))
     {
        gv.setOtherGraph(  null , -1);
+    }else if( evt.getActionCommand().equals( "Help" ))
+    {
+       JOptionPane.showMessageDialog( null , new JTextArea( OPT_MESSAGE) );
     }
       
-      // TODO Auto-generated method stub
       
    }
    
