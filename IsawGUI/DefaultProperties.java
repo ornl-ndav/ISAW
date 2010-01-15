@@ -350,6 +350,13 @@ public class DefaultProperties{
         rs.append(defstr).append("Data_Directory=").append(IsawHome)
           .append(separator).append("SampleRuns").append(eol);
         rs.append(eol);
+        
+        rs.append( "#jython.path=" ).append( "MyDirectory").append( eol );
+        rs.append( "# python.home will be set to a default if not present." ).
+                    append(eol).append("# Redefine only if you wish to replace").
+                    append("the distributed Libs.See ReadMe").append( eol );
+        rs.append( "#python.home="+IsawHome+separator+"jython" ).append( eol );
+        		
        
          rs.append(defstr).append("#InstrumentInfoDirectory=").append(IsawHome)
            .append(separator).append("InstrumentInfo").append(eol);
@@ -461,6 +468,7 @@ public class DefaultProperties{
         DefaultProperties newguy = new DefaultProperties( null );
         //System.out.println(newguy.defaultString());
         String propsFile = System.getProperty("user.home")+"/IsawProps.dat";
-        newguy.write( propsFile );
+        System.out.println( newguy.defaultString(  new Properties() ));
+        //newguy.write( propsFile );
     }
 }
