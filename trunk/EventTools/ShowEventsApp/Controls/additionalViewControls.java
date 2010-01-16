@@ -58,7 +58,7 @@ import MessageTools.*;
  * Builds the panel to control and display other views such as the
  * Q and d-spacing graphs and the slice controls.
  */
-public class additionalViewControls extends JPanel
+public class additionalViewControls extends JPanel implements IReceiveMessage
 {
    public static final long  serialVersionUID = 1L;
    private MessageCenter     messageCenter;
@@ -75,6 +75,7 @@ public class additionalViewControls extends JPanel
    private JRadioButton      moveSliceOne;
    private JRadioButton      moveSliceTwo;
    private JRadioButton      moveSliceThree;
+   private graphListener    GraphListener;
    
    /**
     * Builds the panel and adds the items to itself
@@ -93,6 +94,13 @@ public class additionalViewControls extends JPanel
       Box box = new Box( BoxLayout.Y_AXIS );
       box.add(buildGraphOptions());
       box.add(buildSliceOptions());
+
+      viewMessageCenter.addReceiver(this, Commands.SHOW_D_GRAPH);
+      viewMessageCenter.addReceiver(this, Commands.HIDE_D_GRAPH);
+
+
+      viewMessageCenter.addReceiver(this, Commands.SHOW_Q_GRAPH);
+      viewMessageCenter.addReceiver(this, Commands.HIDE_Q_GRAPH);
       
       this.add(box);
    }
@@ -107,11 +115,11 @@ public class additionalViewControls extends JPanel
       JPanel panel = new JPanel();
       panel.setLayout(new GridLayout(1,2));
       panel.setBorder(new TitledBorder("Graph Views"));
-      
+      GraphListener = new graphListener();
       showQGraph = new JCheckBox("Show Q Graph");
-      showQGraph.addActionListener(new graphListener());
+      showQGraph.addActionListener( GraphListener);
       showDGraph = new JCheckBox("Show D Graph");
-      showDGraph.addActionListener(new graphListener());
+      showDGraph.addActionListener( GraphListener);
       
       panel.add(showQGraph);
       panel.add(showDGraph);
@@ -242,6 +250,71 @@ public class additionalViewControls extends JPanel
 
       viewMessageCenter.send(message);
    }
+
+   
+ /**
+  * Only occurs
+  */
+   @Override
+   public boolean receive(Message message)
+   {
+
+      if (message.getName().equals(Commands.SHOW_D_GRAPH))
+      {
+         if(showDGraph.isSelected( )) 
+            return false;
+         
+         showDGraph.removeActionListener( GraphListener );
+         showDGraph.setSelected( true );
+         showDGraph.addActionListener( GraphListener);
+         return false;
+      }
+      
+      if (message.getName().equals(Commands.HIDE_D_GRAPH))
+      {
+         if(!showDGraph.isSelected())
+            return false;
+
+         showDGraph.removeActionListener( GraphListener );
+         showDGraph.setSelected( false );
+         showDGraph.addActionListener( GraphListener);
+         
+         
+         return false;
+      }
+
+      if (message.getName().equals(Commands.SHOW_Q_GRAPH))
+      {
+
+         if(showQGraph.isSelected( )) 
+            return false;
+         
+
+         showQGraph.removeActionListener( GraphListener );
+         showQGraph.setSelected( true );
+         showQGraph.addActionListener( GraphListener);
+         
+         
+         return false;
+      }
+      
+      if (message.getName().equals(Commands.HIDE_Q_GRAPH))
+      {
+
+         if(!showQGraph.isSelected( )) 
+            return false;
+       
+
+         showQGraph.removeActionListener( GraphListener );
+         showQGraph.setSelected( false );
+         showQGraph.addActionListener( GraphListener);
+         
+         return false;
+      }
+
+      return false;
+   }
+
 
 
    /**
