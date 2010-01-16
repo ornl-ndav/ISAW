@@ -146,6 +146,9 @@ public class Commands
   public static final String GET_D_VALUES = "GET_D_VALUES";
   public static final String SET_D_VALUES = "SET_D_VALUES";
   public static final String SAVE_D_VALUES ="SAVE_D_VALUES";
+  
+  public static final String SHOW_MESSAGE_PANE ="SHOW_MESSAGE_PANE";
+  public static final String SHOW_DISPLAY_PANE ="SHOW_DISPLAY_PANE";
   /*
 //  public static final String SET_POSITION_INFO = "SET_POSITION_INFO";
   public static final String SET_SLICE_2 = "Set Slice 2";
