@@ -42,9 +42,12 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import gov.anl.ipns.Util.Sys.FinishJFrame;
 import gov.anl.ipns.Util.Sys.ShowHelpActionListener;
 import gov.anl.ipns.Util.Sys.WindowShower;
 import gov.anl.ipns.ViewTools.UI.SplitPaneWithState;
+import gov.anl.ipns.Util.Sys.IndirectWindowCloseListener;
+import gov.anl.ipns.Util.Sys.IhasWindowClosed;
 
 import EventTools.ShowEventsApp.Command.*;
 import EventTools.ShowEventsApp.ViewHandlers.StatusMessageHandler;
@@ -56,15 +59,18 @@ import MessageTools.*;
  * which holds the controls panel on the left side and the
  * display panels on the right.
  */
-public class multiPanel implements IReceiveMessage
+public class multiPanel implements IReceiveMessage, IhasWindowClosed
 {
-   public static Rectangle    PANEL_BOUNDS =  new Rectangle(10, 10, 570, 510) ;
+   public static Rectangle    PANEL_BOUNDS 
+   =  new Rectangle(10, 10, 570, 510) ;
 
    private JFrame             mainView;
    private controlsPanel      controlpanel;
    private displayPanel       displayPanel;
    private SplitPaneWithState splitPane;
-   private MessageCenter      messageCenter;
+   private MessageCenter      messageCenter,
+                              viewMessageCenter;
+   private boolean            statusShowing;
    
    /**
     * Creates the controlsPanel and the displayPanel
@@ -74,9 +80,10 @@ public class multiPanel implements IReceiveMessage
                       MessageCenter viewMessageCenter )
    {
       this.messageCenter     = messageCenter;
-      
+      this.viewMessageCenter = viewMessageCenter;
       controlpanel = new controlsPanel( messageCenter, viewMessageCenter );
       displayPanel = new displayPanel(messageCenter);
+      viewMessageCenter.addReceiver( this ,Commands.SHOW_MESSAGE_PANE );
       buildMainFrame();
    }
 
@@ -89,10 +96,12 @@ public class multiPanel implements IReceiveMessage
    private void buildMainFrame()
    {
       mainView = new JFrame("Reciprocal Space Event Viewer");
-      mainView.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+      mainView.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
       mainView.setBounds(PANEL_BOUNDS);
       mainView.setVisible(true);
-     
+      mainView.addWindowListener( new IndirectWindowCloseListener( this,
+                                            "MAIN" ));
+      
       
       JPanel panel = new JPanel();
       panel.setLayout(new GridLayout(1,1));
@@ -107,16 +116,19 @@ public class multiPanel implements IReceiveMessage
       mainView.setJMenuBar( getJMenuBar( controlpanel) );
       mainView.validate();
       
-      JFrame StatusFrame = new JFrame( " Messages" );
-      StatusFrame.setDefaultCloseOperation( WindowConstants.DO_NOTHING_ON_CLOSE );
+      FinishJFrame StatusFrame = new FinishJFrame( " Messages" );
+      StatusFrame.setDefaultCloseOperation( WindowConstants.DISPOSE_ON_CLOSE );
       StatusFrame.setBounds( PANEL_BOUNDS.x,
                             PANEL_BOUNDS.y+PANEL_BOUNDS.height,
                             PANEL_BOUNDS.width,
                             PANEL_BOUNDS.height/2 );
-
+      StatusFrame.addWindowListener( new IndirectWindowCloseListener( this,
+                                            "MESSAGE") );
+      
       MessageCenter status_message_center = Util.getStatusMessageCenter();
       new StatusMessageHandler( status_message_center, 
                                 StatusFrame.getContentPane());
+      statusShowing = true;
       StatusFrame.validate();
       WindowShower.show( StatusFrame );
    }
@@ -133,6 +145,7 @@ public class multiPanel implements IReceiveMessage
    {
       JMenuBar jmenBar= new JMenuBar();
       JMenu FileMen = new JMenu("File");
+      JMenu ViewMenu = new JMenu("View");
       JMenu helpMenu = new JMenu("Help");
       
       jmenBar.add(FileMen);
@@ -142,6 +155,8 @@ public class multiPanel implements IReceiveMessage
                 new SaveActionListener( messageCenter , "Q"));
       SaveDGraph.addActionListener(  
                new SaveActionListener( messageCenter ,"D") );
+      
+      
 
       FileMen.add( SaveQGraph);
       FileMen.add(SaveDGraph);
@@ -150,6 +165,20 @@ public class multiPanel implements IReceiveMessage
       closeMenItem.addActionListener(  
                new CloseAppActionListener( C, true) );
       
+ //----------------View Menu --------------
+
+      JMenuItem ShowMessages = new JMenuItem("Show Messages");
+      JMenuItem ShowDisplay  = new JMenuItem("Show Display");
+
+      ShowMessages.addActionListener( 
+          new SaveActionListener( viewMessageCenter , Commands.SHOW_MESSAGE_PANE));
+      ShowDisplay.addActionListener( 
+          new SaveActionListener(viewMessageCenter , Commands.SHOW_DISPLAY_PANE));
+      ViewMenu.add( ShowDisplay );
+      ViewMenu.add(  ShowMessages );
+      jmenBar.add( ViewMenu );
+      
+  //-------- Help Menu --------------------
       jmenBar.add(helpMenu);
       JMenuItem isawHelp = new JMenuItem("Using IsawEV");
       String isawHelpDir = System.getProperty("ISAW_HOME");
@@ -172,8 +201,35 @@ public class multiPanel implements IReceiveMessage
    public boolean receive(Message message)
    {
     
+      //Show message window
+      if( statusShowing)
+          return false;
+      FinishJFrame StatusFrame = new FinishJFrame( " Messages" );
+      StatusFrame.setDefaultCloseOperation( WindowConstants.DISPOSE_ON_CLOSE );
+      StatusFrame.setBounds( PANEL_BOUNDS.x,
+                            PANEL_BOUNDS.y+PANEL_BOUNDS.height,
+                            PANEL_BOUNDS.width,
+                            PANEL_BOUNDS.height/2 );
+      StatusMessageHandler.setNewMessageContainer(  StatusFrame.getContentPane( ) );
+      statusShowing = true;
+      WindowShower.show( StatusFrame );
+      StatusFrame.addWindowListener(  new IndirectWindowCloseListener( this,"ABS") );
       return false;
    }
+
+   @Override
+   public void WindowClose(String ID)
+   {
+      if( ID.equals( "MESSAGE" ))
+       statusShowing = false;
+      else// Close all Windows
+      {
+         System.exit( 0 );
+      }
+      
+   }
+   
+   
 }
 
 /**
@@ -226,14 +282,22 @@ class SaveActionListener implements ActionListener
       this.Sv = Sv;
       if( Sv =="Q")
          Command = Commands.SAVE_Q_VALUES;
-      else
+      else if( Sv == "D")
          Command = Commands.SAVE_D_VALUES;
+      else
+         this.Sv = this.Command = Sv;
       
       this.message_center = message_center;
    }
    
    public void actionPerformed( ActionEvent evt)
    {
+      
+      if( Sv.length() >1)
+      {
+         message_center.send( new Message( Command, null, true) );
+         return;
+      }
       JFileChooser jf = new JFileChooser();
       if( jf.showSaveDialog( null ) != JFileChooser.APPROVE_OPTION)
          return;
