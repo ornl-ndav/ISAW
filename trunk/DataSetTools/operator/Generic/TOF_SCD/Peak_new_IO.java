@@ -230,6 +230,62 @@ public class Peak_new_IO
      out.close();
   }
 
+  /**
+   * Writes typical header information that appears at the top of
+   * DetCal files. It can be used to write peaks but some extra information
+   * will appear.
+   * 
+   * @param out         The output stream to write this header to.
+   * @param CreateInfo  The information that appears after 
+   *                     " Detector Position Information " on the same line.
+   *                     "\n" in the string will be translated to another line 
+   *                     that starts with "# ".
+   */
+  public static void WriteHeaderInfo( OutputStream out, String CreateInfo, 
+           String Version, String Facility, String Instrument,
+           float initial_path, int T0)
+                                                  throws IOException
+  {
+     if( out == null)
+        return;
+     if( Version != null)
+     {
+        if( Facility == null) Facility="";
+        if( Instrument == null) Instrument ="";
+        out.write( (VERSION_TITLE+" "+Version +"   "+ 
+                    FACILITY_TITLE+" "+Facility+"   "+
+                    INSTRUMENT_TITLE+" "+Instrument+"\n").getBytes());
+     }
+      
+     out.write("#\n".getBytes());
+     String Create = " Detector Position Information "+CreateInfo;
+     int start =0;
+     for( int k = Create.indexOf( '\n' ); k >=start  ; 
+          )
+     {
+        out.write( ("# "+ Create.substring( start, k+1 ) ).getBytes( ));
+        start = k+1;
+        k = Create.indexOf( '\n',start );
+        
+     }
+     if( start < Create.length())
+        out.write( ("# "+Create.substring(start)+"\n" ).getBytes());
+        
+     
+     out.write("#\n".getBytes());
+     out.write("# Lengths are in centimeters.\n".getBytes()); 
+     out.write("# Base and up give directions of unit vectors for a local\n".getBytes());
+     out.write("# x,y coordinate system on the face of the detector.\n".getBytes());
+     out.write("#\n".getBytes());
+     out.write("#\n".getBytes());
+     out.write(("# " + (new Date()).toString()+"\n").getBytes() ); 
+     out.write("6         L1     T0_SHIFT\n".getBytes());
+     out.write (String.format( "7 %10.4f     %8d\n", initial_path * 100, T0 ).getBytes());
+     out.write(("4 DETNUM  NROWS  NCOLS  WIDTH   HEIGHT   DEPTH   DETD   " +
+                 "CenterX   CenterY   CenterZ    BaseX    BaseY    BaseZ    " +
+                 "  UpX      UpY      UpZ\n").getBytes() );
+   
+  }
 
  /**
   *  Get a String listing the calibrated L1 and T0_shift values
@@ -723,11 +779,23 @@ public class Peak_new_IO
     return peaks;
   }
 
+   public static void main( String args[] )
+   {
+      try
+      {
+      Peak_new_IO.WriteHeaderInfo( System.out, "is Extracted from a NeXus file abc,nxs\n"+
+             "and is rotated",null,null,null, 350f,0);
+      }catch(Exception s)
+      {
+         
+      }
+      
+   }
 
   /**
    *  Basic functionality test of peak I/O
    */
-  public static void main( String args[] )
+  public static void main1( String args[] )
   {
     int   id    = 17;
     Vector3D center = new Vector3D(  0.064748f, -.253230f,  -0.011417f );
