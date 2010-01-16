@@ -34,6 +34,7 @@
  */
 
 package Operators.TOF_SCD;
+import DataSetTools.components.ParametersGUI.JParametersDialog;
 import DataSetTools.operator.*;
 import DataSetTools.operator.Generic.*;
 import gov.anl.ipns.Parameters.*;
@@ -149,6 +150,13 @@ public class RotateDetectors extends GenericOperator{
         return new ErrorString( XXX.toString()+":"
              +mess);
                 }
+   }
+   
+   public static void main( String[] args)
+   {
+      RotateDetectors op = new RotateDetectors();
+      JParametersDialog x =(new JParametersDialog( op, null,null,null,false));
+      System.out.println("Result = "+x.getLastResult( ));
    }
 }
 
