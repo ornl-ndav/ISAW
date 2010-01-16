@@ -68,6 +68,12 @@ public class DViewHandler extends GraphViewHandler
       y_label     = "Intensity";
    }
    
+   public  void WindowClose( String ID)
+   {
+      super.messageCenter.send(  new Message( Commands.HIDE_D_GRAPH,null,true));
+      super.HideGraph( );
+   }
+   
 
    /**
     * Receive messages to display the frame, hide the frame,
@@ -77,6 +83,7 @@ public class DViewHandler extends GraphViewHandler
    {
       if (message.getName().equals(Commands.SHOW_D_GRAPH))
       {
+         
          super.ShowGraph();
          
          return false;
