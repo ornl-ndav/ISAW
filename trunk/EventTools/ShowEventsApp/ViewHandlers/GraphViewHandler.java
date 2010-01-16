@@ -52,6 +52,7 @@ import gov.anl.ipns.ViewTools.Components.OneD.*;
 import gov.anl.ipns.ViewTools.Components.ViewControls.*;
 import gov.anl.ipns.ViewTools.Components.ViewControls.LabelCombobox;
 import gov.anl.ipns.ViewTools.Components.ViewControls.ViewControl;
+import gov.anl.ipns.Util.Sys.*;
 import DataSetTools.dataset.Data;
 import DataSetTools.dataset.DataSet;
 import DataSetTools.util.SharedData;
@@ -63,7 +64,8 @@ import MessageTools.*;
  * Abstract base class for classes that display a graph of x,y values
  * in response to messages.  
  */
-abstract public class GraphViewHandler implements IReceiveMessage
+abstract public class GraphViewHandler implements IReceiveMessage,
+                                                  IhasWindowClosed
 {
    protected MessageCenter messageCenter;
    protected String        frame_title;
@@ -95,6 +97,8 @@ abstract public class GraphViewHandler implements IReceiveMessage
       normalize= false;
    }
 
+   public abstract void WindowClose( String ID);
+        
 
    /**
     * Creates a new JFrame to display the graph every time
@@ -103,12 +107,16 @@ abstract public class GraphViewHandler implements IReceiveMessage
     */
    protected void ShowGraph()
    {
-      display_frame = new JFrame(frame_title);
+      if( display_frame != null)
+         return;
+      
+      display_frame = new FinishJFrame(frame_title);
       String D_Q ="D";
       if( frame_title.indexOf( "Q" )>=0)
          D_Q="Q";
-      display_frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+      display_frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
+      display_frame.addWindowListener( new IndirectWindowCloseListener(this,D_Q));
       if (fvc != null)
          display_frame.getContentPane().add(fvc.getDisplayPanel());
       else

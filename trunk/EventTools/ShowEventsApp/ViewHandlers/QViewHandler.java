@@ -69,7 +69,13 @@ public class QViewHandler extends GraphViewHandler
       y_label     = "Intensity";
    }
    
-   
+   public  void WindowClose( String ID)
+   {
+      super.messageCenter.send(  new Message( Commands.HIDE_Q_GRAPH,null,true));
+      super.HideGraph( );
+
+   }
+ 
    /**
     * Receive messages to display the frame, hide the frame,
     * get the xy values, and set the values/create the graph.

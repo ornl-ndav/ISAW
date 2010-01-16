@@ -36,6 +36,7 @@ package EventTools.ShowEventsApp.ViewHandlers;
 
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.GridLayout;
 
 import gov.anl.ipns.Util.Sys.StatusPane;
 import gov.anl.ipns.Util.Sys.WindowShower;
@@ -78,6 +79,7 @@ public class StatusMessageHandler implements IReceiveMessage
       message_center.addReceiver( this , Commands.DISPLAY_ERROR );
       message_center.addReceiver( this , Commands.DISPLAY_WARNING );
       message_center.addReceiver( this , Commands.DISPLAY_CLEAR );
+      message_center.addReceiver(  this , Commands.SHOW_MESSAGE_PANE  );
 
       if( container == null )
       {
@@ -95,6 +97,14 @@ public class StatusMessageHandler implements IReceiveMessage
       filename = System.getProperty( "user.home" );
    }
 
+   public static void setNewMessageContainer( Container container)
+   {
+      if( container == null)
+         return;
+      container.removeAll( );
+      container.setLayout( new GridLayout(1,1));
+      container.add(  gov.anl.ipns.Util.Sys.SharedMessages.getStatusPane());
+   }
 
    /**
     * Received messages from the message center

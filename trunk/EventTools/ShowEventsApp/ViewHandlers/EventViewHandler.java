@@ -8,7 +8,10 @@ import java.awt.event.*;
 import javax.swing.*;
 
 import gov.anl.ipns.MathTools.Geometry.*;
+import gov.anl.ipns.Util.Sys.FinishJFrame;
 import gov.anl.ipns.ViewTools.Components.ViewControls.ColorScaleControl.*;
+import gov.anl.ipns.Util.Sys.IhasWindowClosed;
+import gov.anl.ipns.Util.Sys.IndirectWindowCloseListener;
 
 import DataSetTools.operator.Generic.TOF_SCD.PeakQ;
 
@@ -32,19 +35,23 @@ import SSG_Tools.SSG_Nodes.SimpleShapes.*;
  *  This class handles the messaging interface for the 3D event viewer
  *  panel.
  */ 
-public class EventViewHandler implements IReceiveMessage
+public class EventViewHandler implements IReceiveMessage, IhasWindowClosed
 {
-  private MessageCenter      message_center;
+  private MessageCenter      message_center,
+                             view_message_center;
   private SlicedEventsPanel  events_panel; 
-  private JFrame             frame3D;
+  private FinishJFrame       frame3D;
   private long               num_to_show;
   private long               num_shown;
   private Object             eventPanelMonitor = new Object();
+  Component component;
+  Rectangle PanelOrig;
 
   public EventViewHandler( MessageCenter message_center,
                            MessageCenter view_message_center )
   {
     this.message_center = message_center;
+    this.view_message_center = view_message_center;
     this.num_shown      = 0;
     this.num_to_show    = 1000000;
  
@@ -56,6 +63,7 @@ public class EventViewHandler implements IReceiveMessage
     message_center.addReceiver( this, Commands.MARK_PEAKS );
 
     view_message_center.addReceiver( this, Commands.ADD_EVENTS_TO_VIEW );
+    view_message_center.addReceiver( this , Commands.SHOW_DISPLAY_PANE );
     events_panel = new SlicedEventsPanel();
                                                 // Is there a better way to do
                                                 // this?  It would be nice to
@@ -65,19 +73,34 @@ public class EventViewHandler implements IReceiveMessage
     JoglPanel jogl_panel = events_panel.getJoglPanel();
     jogl_panel.getDisplayComponent().addMouseListener(
                                     new MouseClickListener( jogl_panel ));
-    frame3D = new JFrame( "Reciprocal Space Events" );
+    frame3D = new FinishJFrame( "Reciprocal Space Events" );
     //------------------------
-    Rectangle R = multiPanel.PANEL_BOUNDS;
+    Rectangle R1 = multiPanel.PANEL_BOUNDS;
+    Rectangle R = new Rectangle( R1.x,R1.y, R1.width, R1.height);
     R.x +=R.width;
     R.width = R.height = 765;
+    this.PanelOrig = new Rectangle( R1.x,R1.y, R1.width, R1.height);
+   
     //-----------------------------
     frame3D.setBounds(R);
     
-    frame3D.setDefaultCloseOperation( JFrame.DO_NOTHING_ON_CLOSE );
-    Component component = events_panel.getJoglPanel().getDisplayComponent();
+    frame3D.setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
+    frame3D.addWindowListener( new IndirectWindowCloseListener(this,"3D") );
+    component = events_panel.getJoglPanel().getDisplayComponent();
     frame3D.getContentPane().add( component );
     frame3D.setVisible( true );
   }
+
+  
+
+   @Override
+public void WindowClose(String ID)
+{
+
+   frame3D = null;
+   
+}
+
 
 
    public boolean receive( Message message )
@@ -173,6 +196,27 @@ public class EventViewHandler implements IReceiveMessage
            events_panel.updateDisplay();
          }
        }
+    }else if( message.getName().equals(Commands.SHOW_DISPLAY_PANE) )
+    {
+       
+       if( frame3D != null)
+          return false;
+       frame3D = new FinishJFrame( "Reciprocal Space Events" );
+       //------------------------
+       Rectangle R = new Rectangle(PanelOrig.x,PanelOrig.y,PanelOrig.width,
+                      PanelOrig.height);
+       R.x +=R.width;
+       R.width = R.height = 765;
+       
+       //-----------------------------
+       frame3D.setBounds(R);
+       frame3D.setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
+       frame3D.addWindowListener( new IndirectWindowCloseListener(this,"3D") );
+       component = events_panel.getJoglPanel().getDisplayComponent();
+       frame3D.getContentPane().add( component );
+       frame3D.setVisible( true );
+       
+       
     }
 
     return false;
@@ -199,7 +243,7 @@ public class EventViewHandler implements IReceiveMessage
         int y = e.getY();
 
         Vector3D point = my_panel.pickedPoint( x, y );
-        System.out.println("3D point = " + point );
+       // System.out.println("3D point = " + point );
 
         Vector3D size = new Vector3D( 1, 1, 1 );
         SelectPointCmd value = new SelectPointCmd( point, size );
