@@ -87,7 +87,6 @@ C
 	COMMON    /DATA12/ SEQNUM, H, K, L, X, Y, WL,
      1			   IPKOBS, INTI, SIGI, REFLAG
 
-	DATA	HOM /0.39559974/
 
 	INTEGER CURHST
 	integer today(3), now(3)
@@ -102,6 +101,7 @@ C
        DATA IQ/1/
        DATA DN/1/
 
+       DATA HOM /0.39559974/
 C--------------------------------------------------------------------
 
 	OPEN(UNIT=16, FILE='anvred.lst', status='replace')
@@ -117,6 +117,7 @@ C  REQUEST THE DATA NEEDED TO DEFINE THE FILE NEEDED
 C
 	WRITE (*, 11)
 11	format(' Experiment name (EXPNAM)? ',$)
+        call flush(6)
 	READ (*, 100) EXPNAM
 100	FORMAT (A) 
 	LCS = LNBLNK(EXPNAM)
@@ -134,6 +135,7 @@ C
 552	FORMAT(/,
      1' Input the name of the input reflection file <',A,
      2'>: ',$)
+        call flush(6)
 	CALL READANS (NCHRS, NAM1)	
 	IF (nchrs.eq.0) nam1=defnam
 	  OPEN(UNIT=9,STATUS='OLD',FILE=NAM1,
@@ -153,6 +155,7 @@ C
 60	FORMAT(/,
      1' Input the name of the output reflection file <',A,
      2'>: ',$)
+        call flush(6)
 	CALL READANS (NCHRS, BNAM)
 	if (nchrs.eq.0) bnam=defnam
 
@@ -161,13 +164,14 @@ C
 
 	OPEN(UNIT=4,STATUS='OLD',FILE=BNAM,ERR=610)
 	WRITE (*, *) ' ***Output will be appended to existing file.***'
-605	READ (4,100,END=400) ALINE
+605	call flush(6)
+        READ (4,100,END=400) ALINE
 	GO TO 605
 
 610	WRITE (*,*)
      1' ***New output reflection file is being created.***'
 	OPEN(UNIT=4,STATUS='NEW',FILE=BNAM,ERR=5004)
-
+        call flush(6)
 400	CONTINUE
 
 C
@@ -184,6 +188,7 @@ C
 9613	FORMAT(//,
      1' Do you wish to do an absorption correction ',
      1'(Y,<N>)? ',$)
+        call flush(6)
 	CALL READANS (NCHRS, ANS)
 	if (nchrs.eq.0) ans='N'
 	IABS = 0
@@ -192,6 +197,7 @@ C
         WRITE (16, 198)
 198     FORMAT(//,' ***** ABSORPTION CORRECTION APPLIED ******')
         IABS = 1
+        call flush(6)
       END IF
 
 C
@@ -209,10 +215,12 @@ C
      1          '   (1) coefficients of a fitted equation'/,
      2          'or (2) the actual spectral data?'/,
      3          'Input 1 or 2 <1>: ',$)
+        call flush(6)
      	CALL READANS (NCHRS, ANS)
 	  IF (NCHRS.EQ.0) THEN
 		ispec = 1
 	  ELSE
+                call flush(6)
 		READ (ANS, *) ispec
 	  END IF
 	WRITE (16, 9010)
@@ -222,6 +230,7 @@ C
 
             WRITE (*, 1330) 
 1330	    FORMAT(' Enter the spectrum file name: ',$)
+            call flush(6)
             READ (*, 100) SpecNam
 
 
@@ -232,7 +241,7 @@ C
      1      ' Incident spectrum coefficients in ',A)
             WRITE (16,6290)
             WRITE (*, *) ' '
-
+            call flush(6)
 		do ii=1,nod	! 4-13-09
 	
             read (21,100) ALINE
@@ -241,13 +250,14 @@ C
             write (*,*) (PJ(J,ii),J=1,11)
 
 		end do
-		
+            call flush(6)
 	end if                  !!!!!!!!!!
 			
 	if (ispec .eq. 2) then  !*********
 			
             write (*, 789)
 789	    format(/,'Input averaging range +/- (<5>): ',$)
+            call flush(6)
             CALL READANS (NCHRS, ANS)
  
             IF (NCHRS.EQ.0) THEN
@@ -264,6 +274,7 @@ C
      1           'At this time, for SNAP, input 10.'/,
      2           'For TOPAZ, input 1.'/,
      3           'Initial Bank number (<1>): ',$)
+            call flush(6)
             call readans (nchrs, ans)
         
             IF (NCHRS.EQ.0) THEN
@@ -282,6 +293,7 @@ C
 !  Permit only data above a I/sig(I) threshold to be saved.
 	WRITE (*, 5360)
 5360	FORMAT(//,' Input minimum I/sig(I) (<0>): ',$)
+        call flush(6)
 	CALL READANS (NCHRS, ANS)
           IF (NCHRS.EQ.0) THEN
 		ISIG = 0
@@ -295,6 +307,7 @@ C
 	WRITE (*, 6360)
 6360	FORMAT(//,' Reject peaks within N channels of the border.'/,
      1' Input a value for N (<5>): ',$)
+        call flush(6)
 	CALL READANS (NCHRS, ANS)
 	  IF (NCHRS.EQ.0) THEN
 		NBCH = 10
@@ -303,7 +316,7 @@ C
 	  END IF
 	WRITE (16, 6360)
 	WRITE (16, *) NBCH
-
+        call flush(6)
 !	Removed, ajs 10/28/09	
 !  Reject peaks for which CENTROID failed (REFLAG .NE. 10)
 ! 	WRITE (*, 7360)
@@ -328,6 +341,7 @@ C
 	WRITE (*, 8360)
 8360	FORMAT(//,
      1' Input mininum peak count (<10>): ',$)
+        call flush(6)
 	CALL READANS (NCHRS, ANS)
 	  IF (NCHRS.EQ.0) THEN
 		IPKMIN = 0
@@ -342,6 +356,7 @@ C
 	WRITE (*, 8370)
 8370	FORMAT(//,
      1' Input mininum d-spacing (<0.5>): ',$)
+        call flush(6)
 	CALL READANS (NCHRS, ANS)
 	  IF (NCHRS.EQ.0) THEN
 		DMIN = 0.0
@@ -359,6 +374,7 @@ C
      2'      1 = for each crystal setting (fewer scale factors)'/,
      3'   or 2 = for each detector in each crystal setting'/,
      4' Input 1 or 2 (<1>): ',$)
+        call flush(6)
 	CALL READANS (NCHRS, ANS)
 	  IF (NCHRS.EQ.0) THEN
 		IIQ = 1
@@ -371,6 +387,7 @@ C
 
 !  Multiply by a scale factor.
 	WRITE (*, 5370)
+        call flush(6)
 5370	FORMAT(//,
      1' If integrated counts are very large, one may wish to multiply'/,
      2' by a factor, such as 0.1 or less.'/,
@@ -386,7 +403,7 @@ C
 	WRITE (16, *) SCALEFACTOR 
 	
 	write (*, *) ' '
-
+        call flush(6)
 
 C-----------------------------------------------------------------------
 C  Calculate spectral correction at 1.0 Angstrom to normalize
@@ -429,14 +446,15 @@ C     &		+ A5(JS)*EXP(-A6(JS)*T**3) + A7(JS)*EXP(-A8(JS)*T**4)
               SpecNam = 'Bank'//ans(1:2)//'_spectrum.asc'
               open(unit=22, file=SpecNam, status='old')
             end if
-	
+	    call flush(6)
 	    do j=1,6		! Skip the first 7 lines.
 	      read (22, 100) aline
 	    end do
 	
-            read (22, '(19X,I4)') numTimeChannels !read the number of 
+            read (22, '(19X,I5)') numTimeChannels !read the number of 
                                    !TOF channels in the spectrum file
     
+        
 	    do j=1,numTimeChannels !read the spectrum
 	      read (22, *) xtime(j), counts(j)
 	    end do
@@ -470,6 +488,7 @@ C
 C   SET UP LOOP TO PROCESS THE REFLECTION DATA
 C
 	write (*, *) ' '
+        call flush(6)
 
 4000	CONTINUE
 
@@ -521,7 +540,7 @@ C
      2'     SIG   SPECT  DET_EFF SINSQT',
      3'  ABTRANS   TBAR'/)
 
-
+        call flush(6)
 1100	CONTINUE
 
 
@@ -614,7 +633,7 @@ C LRF 7/96
      2    EFF,trans
  1160 FORMAT(3I4,2F8.2,I4,F8.4,F7.4,2I7,2F7.4)
 
-
+       call flush(6)
        GO TO 4000
 
 C
@@ -634,9 +653,11 @@ C
       WRITE (*, 20) NCNTR
 	WRITE (16, 20) NCNTR
    20 FORMAT(1X,I6,' REFLECTIONS PROCESSED',/)
+      call flush(6)
       STOP
  5004 WRITE (*, 5104)
  5104 FORMAT(1X,18A1,' FILE DOES NOT EXIST')
+      call flush(6)
       STOP
       END
 !!!!!!!!!!! END OF PROGRAM !!!!!!!!!!!
@@ -666,6 +687,7 @@ C------------------------------------------------------------
   101 write(*,1002) 
      1   '(Free Format) (a)Mu(scattering); (b)Mu(absorption): '
  1002 format(a,$)
+        call flush(6)
 	CALL READANS (NCHRS, ANS)
       if (nCHRS.eq.0) go to 101
       READ (ANS, *) smu, amu
@@ -674,6 +696,7 @@ C------------------------------------------------------------
       write(*,1001) 'Mu(scattering), Mu(absorption),'
      1 //' reciprocal centimeters: ',smu,amu
       write(*,1002) '(Answer with <Y>, N, y, or n) OK? '
+      call flush(6)
 	call readans (nchrs, ans)
        if (nchrs.eq.0) ans='Y'
        if (ans.eq.'N' .or. ans.eq.'n') go to 101
@@ -702,7 +725,7 @@ C Spherical absorption correction.
 
 	write(16,1001) 'Spherical Absorption Correction --'
 	write(16,1002) 'Enter radius of sphere, in cm.: '
-
+        call flush(6)
 	CALL READANS (NCHRS, ANS)
       if (nCHRS.eq.0) go to 151
       read (ANS, *) radius
@@ -890,7 +913,7 @@ C------------------------------------------------------------
                   RETURN
           END IF
 
-	write (*, 100) TEXT
+!	write (*, 100) TEXT
           
 	  nod = nod + 1
 	  i = nod
