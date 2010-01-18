@@ -354,7 +354,7 @@ public class DefaultProperties{
         rs.append( "#jython.path=" ).append( "MyDirectory").append( eol );
         rs.append( "# python.home will be set to a default if not present." ).
                     append(eol).append("# Redefine only if you wish to replace").
-                    append("the distributed Libs.See ReadMe").append( eol );
+                    append(" the distributed Libs.See ReadMe").append( eol );
         rs.append( "#python.home="+IsawHome+separator+"jython" ).append( eol );
         		
        
