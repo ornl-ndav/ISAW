@@ -282,6 +282,7 @@ public class JParametersDialog implements Serializable,
     FinishJFrame jf ;
     Object Result = NOT_THROUGH;
     JLabel resultsLabel = new JLabel("    Result");
+    JScrollPane ResultScroller = new JScrollPane( resultsLabel);
     ApplyButtonHandler APH;
     Vector ObjectParameters ;
                                  //allows acess to a dynamic list
@@ -564,7 +565,7 @@ public class JParametersDialog implements Serializable,
       BB.add(  new JLabel("         ") );
       JPanel resultsPanel = new JPanel( new GridLayout( 1 , 1 ) );
       resultsLabel.setForeground( Color.black );
-      resultsPanel.add( resultsLabel );
+      resultsPanel.add( ResultScroller );
      
       BB.add( resultsPanel );
       Size1 = resultsLabel.getPreferredSize().height;
@@ -900,7 +901,8 @@ public class JParametersDialog implements Serializable,
         String S = StringUtil.toString( result);
         if( S == null)
            S ="(null)";
-        resultsLabel.setText(MakeMultLineLabelText("Result ="+ S,jp));
+        
+        resultsLabel.setText(MakeMultLineLabelText("Result ="+ S,5,jp));
         util.appendDoc(sessionLog,  "DS[]="+op.getCommand()+"(" +s +")");      
        } 
 
@@ -913,22 +915,25 @@ public class JParametersDialog implements Serializable,
      else if (result instanceof String)
      {
         String value = (String)result;
-        resultsLabel.setText(MakeMultLineLabelText("Result:  " +value ,jp));
+                
+        resultsLabel.setText(MakeMultLineLabelText("Result:  " +value,5 ,jp));
         util.appendDoc(sessionLog, op.getCommand()+"(" +s +")");
 
      }
      else if (result instanceof ErrorString)
      {
         ErrorString value = (ErrorString)result;
-       
-        resultsLabel.setText(MakeMultLineLabelText("Operation failed:"+value.toString(),jp) );
+
+        
+        resultsLabel.setText(MakeMultLineLabelText("Operation failed:"+value.toString(),5,jp) );
         util.appendDoc(sessionLog, op.getCommand()+"(" +s +")");
      }
      else if( result instanceof int[])
      { 
         int X[] = (int[]) result;
         String SS = IntList.ToString( X );
-        resultsLabel.setText(MakeMultLineLabelText(SS,jp));
+
+        resultsLabel.setText(MakeMultLineLabelText(SS,5,jp));
         util.appendDoc(sessionLog, op.getCommand()+"(" +s +")");
      }
    
@@ -938,35 +943,54 @@ public class JParametersDialog implements Serializable,
           if( V.elementAt(i) instanceof DataSet)
             OL.notifyIObservers( this, V.elementAt(i) );
         
+        String S =StringUtil.toString( result);
+        
         resultsLabel.setText(MakeMultLineLabelText("Result ="+ 
-                              StringUtil.toString( result),jp));
+                              S,5,jp));
         
         util.appendDoc(sessionLog, op.getCommand()+"(" +s +")");
      }
 
      else
      {
-        resultsLabel.setText(MakeMultLineLabelText("Result ="+ StringUtil.toString( result),jp));
+        String S =StringUtil.toString( result);
+        resultsLabel.setText(MakeMultLineLabelText("Result ="+ S,5,jp));
         util.appendDoc(sessionLog, op.getCommand()+"(" +s +")");
      }
      result = null;
    }
   } 
-  public static String MakeMultLineLabelText( String text, JDialog label){
+  /**
+   * Breaks up a string to fit the width of label. It will be truncate after 
+   * nlinesMax if positive. The new string will be in html form.
+   * 
+   * @param text   The text to be wrapped
+   * @param nliinesMax  The maximum number of lines (-1 means all) to keep
+   * @param label   The GUI element that deterrmines the width and char width
+   * 
+   * @return  The new String, in html
+   */
+  public static String MakeMultLineLabelText( String text,int nlinesMax ,JDialog label){
      if( label == null || text == null)
         return "";
      if( text.length() <10)
         return text;
-     int W = label.getWidth();
+     int W = label.getWidth()-2*label.getInsets( ).left-16;
      Font fnt = label.getFont();
      FontMetrics fmet = label.getFontMetrics( fnt );
      int nchars= (int)(7*W/(float)fmet.stringWidth( "abc def" ));//(int)(W/(float)dpi*72f/(float)FSize);
      //(int)(.5f*7*W/(float)fmet.stringWidth( "abc def" ));//
+     nchars -=6;
+     char[] Str = new char[nchars];
+     Arrays.fill( Str , 'a' );
+     int W1 = fmet.charsWidth( Str , 0 , nchars );
+     
+     nchars = (int)( nchars*W/W1-2);
      if( text.length() <nchars)
         return text;
      String Res ="<html><body>";
-     
-     while( text.length()> 0){
+     boolean moreLines = true;
+     while( text.length()> 0  && moreLines){
         int k  = nchars;
         if( text.length() < k){
            Res += text+"</body></html>";
@@ -984,9 +1008,13 @@ public class JParametersDialog implements Serializable,
         if( k1 >= text.length())
            k1= text.length();
         
-        System.out.println("&&&& "+fmet.stringWidth( text.substring( 0,k1 ))+
-                 ",,"+W);
+       // System.out.println("&&&& "+fmet.stringWidth( text.substring( 0,k1 ))+
+       //          ",,"+W);
         Res += text.substring(0,k1)+"<br>";
+        if( nlinesMax > 0)
+           nlinesMax --;
+        else if( nlinesMax ==0)
+           return Res +"....</body></html>";
         text = text.substring( k1 );
         
         
