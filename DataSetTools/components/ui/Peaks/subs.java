@@ -1041,12 +1041,14 @@ public class subs
                if( sgn*Tensor[0][2] <= 0) kk = 1;
                if( sgn*Tensor[1][2] <= 0)kk = 0;
                // off sign. change common of the two with same signs
-               ident[kk][kk] = -1;
+               ident[(kk+1)%3][(kk+1)%3] = -1;
+               ident[(kk+2)%3][(kk+2)%3] = -1;
                UB1 =LinearAlgebra.mult( UB1,ident);
                Tensor = LinearAlgebra.mult( ident , Tensor );
                Tensor=  LinearAlgebra.mult( Tensor, ident );
-               ident[kk][kk] = 1;
-               showNig( Tensor, UB1, NiggReal);
+               ident[(kk+1)%3][(kk+1)%3] = 1;
+               ident[(kk+2)%3][(kk+2)%3] = 1;
+               //showNig( Tensor, UB1, NiggReal);
             }  
             
             // now check for C -a-b
@@ -1088,7 +1090,7 @@ public class subs
       
       return UB1;
    }
-   public static void main( String[] args )
+   public static void main1( String[] args )
    {
 
       //System.out.println( subs.getCoordinateInformation( false ) );
@@ -1111,23 +1113,21 @@ public class subs
 
    }
    //Tests new nigglify for = cases
-   public static void main1( String[] args )
+   public static void main( String[] args )
    {
       
       //Test results: cannot get === so gave up on testing
       // This tests 
-     double dot1 = -Math.cos( 75*Math.PI/180 )*4;
-     double dot2 = dot1/2*3;
-     System.out.println("dots="+dot1+","+dot2);
-     double[][] RealTensor = {{ 4,   2  , 3 },
-                              { 2   ,4  , 6 },
-                              {3 ,  6   , 9 }
-                        };
+     double[] LatConsts = new double[]{5.454 , 5.455 , 5.455  ,  89.017 , 70.512,  90.456 ,   162.28};
+
+     double[][] RealTensor = lattice_calc.A_matrix( LatConsts );
+                        
                                //{{4  ,.4f  ,.2f},{.4f  ,4  ,.3f}, {.2f , .3f  ,9}};
-     double[]LatParams = lattice_calc.LatticeParamsOfG( RealTensor );
+     double[]LatParams = lattice_calc.LatticeParamsOfA( RealTensor );
      System.out.println("Lat params=");
      LinearAlgebra.print( LatParams );
-     double[][] RealUB =  lattice_calc.A_matrix( LatParams );
+     
+     double[][] RealUB =   RealTensor;
      System.out.println("RealUB=");
      LinearAlgebra.print( RealUB );
      System.out.println("Real Tensor");
@@ -1138,17 +1138,20 @@ public class subs
      System.out.println(" Real tensor again??");
      LinearAlgebra.print( LinearAlgebra.getInverse( DD) );
      float[][] UB = LinearAlgebra.double2float( UB1);// LinearAlgebra.mult( UB1 , T));
-     
-     LinearAlgebra.print( subs.Nigglify( UB ));
-    
-     blind B = new blind();
+     UB=subs.Nigglify( UB );
+     LinearAlgebra.print( UB);
+     System.out.println("New UB lattice parameters");
+     LinearAlgebra.print( lattice_calc.LatticeParamsOfA( 
+           LinearAlgebra.float2double( 
+           LinearAlgebra.getInverse( ( UB )) )));
+     /*blind B = new blind();
      B.blaue( LinearAlgebra.double2float( UB1 ) );
      System.out.println("From blind");
      LinearAlgebra.print( B.UB );
      System.out.println("Recip tensor");
      LinearAlgebra.print(  LinearAlgebra.getInverse( LinearAlgebra.mult(LinearAlgebra.getTranspose( B.UB ),B.UB) ) );
      
-
+*/
 
    }
 }
