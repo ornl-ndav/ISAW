@@ -63,7 +63,8 @@ public class SocketEventLoader extends UDPReceive
    public static int SEND_MIN_TIME = 2000; // ms
    
    public static int START_CMD_INDX_TARTG_PROTO = 40;
-   public static int NUM_CMD_TARTG_PROTO = 4;
+   public static int NUM_CMD_TARTG_PROTO = 8;
+   public static int HEADER_PACKET_2POS = 6;
    
    public static thisIUDPUser  user;
    public thisIUDPUser User;
@@ -92,6 +93,9 @@ public class SocketEventLoader extends UDPReceive
       {
          START_CMD_INDX_TARTG_PROTO = 40;
       }
+      
+      HEADER_PACKET_2POS = DataSetTools.util.SharedData.getintProperty( 
+            "Header_Packet_2_Position" , "6" );
    }
    
 
@@ -252,10 +256,10 @@ class thisIUDPUser implements IUDPUser
 	     System.out.println("---"+length+"||"+ S);
       }
       if( length > 24 )
-         if( data[ 4 ] == (byte) 0  &&
-             data[ 5 ] == (byte) 2  && 
-             data[ 6 ] == (byte) 0  && 
-             data[ 7 ] == (byte) 0  &&
+         if( //data[ 4 ] == (byte) 0  &&
+             //data[ 5 ] == (byte) 2  && 
+             //data[ 6 ] == (byte) 0  && 
+            // data[ 7 ] == (byte) 0  &&
              
             (data[ 23 ] & 0x80 ) != 0   ) 
 			{  if( NReceived <-5)
@@ -315,11 +319,19 @@ class thisIUDPUser implements IUDPUser
       if(  SocketEventLoader.START_CMD_INDX_TARTG_PROTO <20 )
          return;
 
-           if( Cvrt2Int(data,16) <= 0)
+      int commandPacket = SocketEventLoader.HEADER_PACKET_2POS %4;
+      
+      if( data[4+commandPacket] != (byte)2)
          return;
-
-     
-     
+      
+      for( int i= 1; i<4; i++ )
+      {
+        if( data[4+ (commandPacket+i) % 4] !=0) 
+           return;
+      }
+     if( Cvrt2Int(data,16) <= 0)
+         return;
+          
       TotalProtonsOnTarget += Cvrt2dbl( data, SocketEventLoader.START_CMD_INDX_TARTG_PROTO);
       if(  SendScale && TotalProtonsOnTarget !=0 )
             message_center.send( new Message( Commands.SCALE_FACTOR, 
