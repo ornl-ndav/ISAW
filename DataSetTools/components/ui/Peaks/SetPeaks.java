@@ -182,6 +182,7 @@ public class SetPeaks extends JButton
     */
    public float[] getSetPeakQ( int PeakNum )
    {
+      
       if( PeakNum < 0 || PeakNum >= SelectedPeaks.length )
          return null;
 
@@ -199,7 +200,7 @@ public class SetPeaks extends JButton
     */
    public float[] getSetPeak_hkl( int PeakNum )
    {
-
+      
       if( PeakNum < 0 || PeakNum >= 3 )
          return null;
 
@@ -217,7 +218,7 @@ public class SetPeaks extends JButton
     */
    public int getSetPeakSeqNum( int PeakNum )
    {
-
+     
       if( PeakNum < 0 || PeakNum >= seqNums.length )
          return - 1;
 
@@ -580,7 +581,7 @@ public class SetPeaks extends JButton
             for( i = 0 ; i < SNums.length ; i++ )
             {
                stPks.seqNums[ i ] = SNums[ i ];
-               stPks.SelectedPeaks[ i ] = Peaks.elementAt( SNums[ i ] ).getUnrotQ();
+               stPks.SelectedPeaks[ i ] = Peaks.elementAt( SNums[ i ]-1 ).getUnrotQ();
             }
             if( SNums.length < SetPeaks.MAX_SEL_PEAKS )
             {
