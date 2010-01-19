@@ -34,6 +34,8 @@
 
 package EventTools.ShowEventsApp.ViewHandlers;
 
+import java.awt.Component;
+import java.awt.FontMetrics;
 import java.awt.Point;
 import java.awt.Dimension;
 import java.awt.GridLayout;
@@ -44,15 +46,15 @@ import java.util.Vector;
 import javax.swing.*;
 
 import gov.anl.ipns.Util.Sys.FinishJFrame;
+import gov.anl.ipns.Util.Sys.IhasWindowClosed;
 import gov.anl.ipns.Util.Sys.WindowShower;
 import gov.anl.ipns.ViewTools.Components.AxisInfo;
 import gov.anl.ipns.ViewTools.Components.IVirtualArrayList1D;
 import gov.anl.ipns.ViewTools.Components.ObjectState;
 import gov.anl.ipns.ViewTools.Components.OneD.*;
 import gov.anl.ipns.ViewTools.Components.ViewControls.*;
-import gov.anl.ipns.ViewTools.Components.ViewControls.LabelCombobox;
-import gov.anl.ipns.ViewTools.Components.ViewControls.ViewControl;
 import gov.anl.ipns.Util.Sys.*;
+import gov.anl.ipns.Parameters.*;
 import DataSetTools.dataset.Data;
 import DataSetTools.dataset.DataSet;
 import DataSetTools.util.SharedData;
@@ -81,6 +83,8 @@ abstract public class GraphViewHandler implements IReceiveMessage,
    private   Point         location = new Point( 200, 300 );
    private   FunctionViewComponent  fvc;
    DataArray1D  CompareGraph  = null;
+
+   FileChooserPanel but = null;// for loading in file for comparison
    
 
    /**
@@ -357,13 +361,14 @@ abstract public class GraphViewHandler implements IReceiveMessage,
    abstract public boolean receive(Message message);
 
 }
-class MenuListener implements ActionListener
+class MenuListener implements ActionListener, IhasWindowClosed
 {
    GraphViewHandler gv;
    JTextField textField;
    String D_Q;
    String fileName ;
-
+   FileChooserPanel but;
+   FinishJFrame jf;
    private static String OPT_MESSAGE =
        "Normalize normalizes with the incident spectrum and Protons on Target,"+
        " if present, on the \n"+
@@ -378,6 +383,7 @@ class MenuListener implements ActionListener
       fileName = null;
       textField = null;
       this.D_Q = D_Q;
+      but = null;
    }
    
    private Vector  ConCat( Boolean TF, String D_Q)
@@ -387,12 +393,24 @@ class MenuListener implements ActionListener
       V.add( D_Q);
       return V;
    }
+   
+   private Dimension getFrameSize( int ncharsWidth, int ncharsHeight, 
+         Component component)
+   {
+      FontMetrics Fmt = component.getFontMetrics( component.getFont( ) );
+      Dimension Res = new Dimension();
+      Res.width = ncharsWidth*(Fmt.getMaxAdvance( )+3);
+      Res.height = ncharsHeight*(Fmt.getMaxAscent( )+ Fmt.getMaxDescent( )+3);
+      return Res;
+   }
    /* (non-Javadoc)
     * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
     */
    @Override
    public void actionPerformed( ActionEvent evt )
    {
+    
+    
     if( evt.getActionCommand().equals( "Normalize"))
        gv.messageCenter.send(  new Message( Commands.NORMALIZE_QD_GRAPHS,
                   ConCat(((JCheckBoxMenuItem)(evt.getSource())).isSelected(),
@@ -400,11 +418,13 @@ class MenuListener implements ActionListener
     
     else if( evt.getActionCommand().equals( "Compare to Data in File"))
     {
-       FinishJFrame jf = new FinishJFrame("Enter FileName");
+       jf = new FinishJFrame("Enter FileName");
+       jf.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE  );
        jf.getContentPane().setLayout(  new GridLayout(3,1) );
-       JButton but = new JButton("FileName");
+       jf.addWindowListener( new IndirectWindowCloseListener(this,"but") );
+       but = new FileChooserPanel(
+               FileChooserPanel.LOAD_FILE,"File Name");
        jf.getContentPane().add(  but );
-       but.addActionListener( this );
        
        JPanel pan = new JPanel();
        pan.setLayout( new GridLayout(1,2));
@@ -414,9 +434,19 @@ class MenuListener implements ActionListener
        jf.getContentPane().add( pan);
        
        JButton OK = new JButton("OK");
-       jf.getContentPane().add( OK );
+       JPanel panOK = new JPanel();
+       BoxLayout bl = new BoxLayout( panOK, BoxLayout.X_AXIS);
+       panOK.setLayout( bl );
+       panOK.add( Box.createHorizontalGlue( ) );
+       panOK.add(OK);
+       panOK.add( Box.createHorizontalGlue( ) );
+       
+       jf.getContentPane().add( panOK );
        OK.addActionListener( this);
-       jf.setSize(  300,400 );
+       
+       Dimension size= getFrameSize( 20,4, jf.getContentPane( ));
+       size.height +=30;//Top and bottom borders
+       jf.setSize( size);
        jf.setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
        WindowShower.show(  jf );
        
@@ -435,8 +465,20 @@ class MenuListener implements ActionListener
        }
     }else if( evt.getActionCommand().equals( "OK"))
     {
-       if( fileName == null)
+       if( but == null)
           return;
+       
+       fileName = but.getTextField( ).getText( );
+       
+       if( fileName != null)
+          fileName = fileName.trim( );
+       
+       if(fileName == null ||  fileName.length() < 1)
+       {
+          jf.dispose( );
+          return;
+       }
+          
        float scale_factor =1;
        try
        {
@@ -445,10 +487,15 @@ class MenuListener implements ActionListener
        {
           scale_factor =1;
        }
+       
        gv.setOtherGraph( fileName, scale_factor);
+       jf.dispose( );
+       
+       
     }else if( evt.getActionCommand().equals( "Clear Compare Data" ))
     {
        gv.setOtherGraph(  null , -1);
+       
     }else if( evt.getActionCommand().equals( "Help" ))
     {
        JOptionPane.showMessageDialog( null , new JTextArea( OPT_MESSAGE) );
@@ -456,5 +503,15 @@ class MenuListener implements ActionListener
       
       
    }
+
+   @Override
+   public void WindowClose(String ID)
+   {
+
+      but = null;
+      
+   }
+
+   
    
 }
