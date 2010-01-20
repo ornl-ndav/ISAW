@@ -35,6 +35,7 @@
 package Operators.TOF_SCD;
 
 import gov.anl.ipns.MathTools.LinearAlgebra;
+import gov.anl.ipns.MathTools.lattice_calc;
 
 /**
  *  Instances of this class represent information about reduced cell types
@@ -328,6 +329,17 @@ public class ReducedCellInfo
                      double a_a, double b_b, double c_c,
                      double b_c, double a_c, double a_b )
   {
+                            // The mixed dot products should be > 0 for + cell
+                            // types and always appear inside absolute value
+                            // for - cell types, therefore we can deal with
+                            // the absolute value for all rows in the table.
+    if ( form_num > 0 )
+    {
+      b_c = Math.abs( b_c );
+      a_c = Math.abs( a_c );
+      a_b = Math.abs( a_b );
+    }
+
     if ( form_num < 0 || form_num > 44 )
       throw new IllegalArgumentException(
          "Reduced form number must be between 0 and 44");
@@ -873,6 +885,27 @@ public class ReducedCellInfo
 
 
   /**
+   *  This method calculates cell parameters for a transformed cell
+   *  using the specified tranformation.
+   */
+  private static double[] modifyLatticeParameters( double a,
+                                                   double b,
+                                                   double c,
+                                                   double alpha,
+                                                   double beta,
+                                                   double gamma,
+                                                   double[][] T )
+  {
+    double[] lattice_params = { a, b, c, alpha, beta, gamma };
+    double[][] G = lattice_calc.G_matrix( lattice_params );
+    G = LinearAlgebra.mult( T, G );
+    double[][] T_transpose = LinearAlgebra.getTranspose( T );
+    G = LinearAlgebra.mult( G, T_transpose );
+    return lattice_calc.LatticeParamsOfG( G );
+  }
+
+
+  /**
    * Basic test of constructor and toString method.
    */
   public static void main( String args[] )
@@ -896,37 +929,108 @@ public class ReducedCellInfo
     }
     catch (Exception ex)
     {
+      ex.printStackTrace();
       System.out.println("You must specify the six lattice parameters");
       System.out.println("and a threshold, such as 0.2 on the command line.");
       System.out.println("USING DEFAULT PARAMETERS FOR QUARTZ......");
     }
 
-     System.out.println("Using Lattice parameters: ");
-     System.out.printf("%5.3f  %5.3f  %5.3f   %7.2f  %7.2f  %7.2f\n\n",
+     System.out.println("\n\nUsing ORIGINAL angles.................. \n");
+     System.out.printf("%5.3f  %5.3f  %5.3f   %7.2f  %7.2f  %7.2f\n",
                            a,    b,    c, alpha, beta, gamma );
 
      ReducedCellInfo[] list = new ReducedCellInfo[45];
      for ( int i = 0; i <= 44; i++ )
        list[i] = new ReducedCellInfo( i, a, b, c, alpha, beta, gamma );
 
-     System.out.println( "list[0] is:\n"+ list[0].toString() );
+     System.out.println("");
+     System.out.println("Weighted Distances for entries 1 to 44");
+     for ( int i = 1; i <= 44; i++ )
+       if ( list[i].weighted_distance(list[0]) < cutoff )
+       {
+         System.out.printf("%2d  %9.6f  %-14s  %-14s",
+                            i, list[i].weighted_distance(list[0]), 
+                               list[i].cell_type,
+                               list[i].centering );
+         double[] lpar = modifyLatticeParameters( a, b, c, alpha, beta, gamma,
+                                                  list[i].getTransformation()); 
+         System.out.printf("  %6.3f  %6.3f  %6.3f   %8.2f  %8.2f  %8.2f\n",
+                       lpar[0], lpar[1], lpar[2], lpar[3], lpar[4], lpar[5] );
+       }
+/*
+     System.out.println("Distances for entries 1 to 44");
+     for ( int i = 1; i <= 44; i++ )
+       if ( list[i].distance(list[0]) < 9 * cutoff )
+       {
+         System.out.printf("%2d  %9.6f  %-14s  %-14s",
+                            i, list[i].distance(list[0]), 
+                               list[i].cell_type,
+                               list[i].centering );
+         double[] lpar = modifyLatticeParameters( a, b, c, alpha, beta, gamma,
+                                                  list[i].getTransformation());
+         System.out.printf("  %6.3f  %6.3f  %6.3f   %8.2f  %8.2f  %8.2f\n",
+                       lpar[0], lpar[1], lpar[2], lpar[3], lpar[4], lpar[5] );
+       }
+*/
+
+     // try changing two angles to their supplementary values.
+     double d_alpha = Math.abs(90 - alpha);
+     double d_beta  = Math.abs(90 - beta );
+     double d_gamma = Math.abs(90 - gamma);
+     if ( d_alpha < d_beta && d_alpha < d_gamma )      // get supplement
+     {                                                 // of beta and gamma
+       beta  = 180 - beta;
+       gamma = 180 - gamma;
+     }
+     else if ( d_beta < d_alpha && d_beta < d_gamma )  // get supplement
+     {                                                 // of alpha and gamma
+       alpha = 180 - alpha;
+       gamma = 180 - gamma;
+     }
+     else if ( d_gamma < d_alpha && d_gamma < d_beta)  // get supplement
+     {                                                 // of alpha and beta
+       alpha = 180 - alpha;
+       beta  = 180 - beta;
+     }
+
+     System.out.println("\n\nUsing SUPPLEMENTARY angles.................. \n");
+     for ( int i = 0; i <= 44; i++ )
+       list[i] = new ReducedCellInfo( i, a, b, c, alpha, beta, gamma );
+
+     System.out.printf("%5.3f  %5.3f  %5.3f   %7.2f  %7.2f  %7.2f\n",
+                           a,    b,    c, alpha, beta, gamma );
 
      System.out.println("");
      System.out.println("Weighted Distances for entries 1 to 44");
      for ( int i = 1; i <= 44; i++ )
        if ( list[i].weighted_distance(list[0]) < cutoff )
-         System.out.printf("%2d  %9.6f  %-14s  %-14s\n",
-                            i, list[i].weighted_distance(list[0]), 
+       {
+         System.out.printf("%2d  %9.6f  %-14s  %-14s",
+                            i, list[i].weighted_distance(list[0]),
                                list[i].cell_type,
                                list[i].centering );
+         double[] lpar = modifyLatticeParameters( a, b, c, alpha, beta, gamma,
+                                                  list[i].getTransformation());
+         System.out.printf("  %6.3f  %6.3f  %6.3f   %8.2f  %8.2f  %8.2f\n",
+                       lpar[0], lpar[1], lpar[2], lpar[3], lpar[4], lpar[5] );
+       }
 
+/*
      System.out.println("Distances for entries 1 to 44");
      for ( int i = 1; i <= 44; i++ )
-       if ( list[i].weighted_distance(list[0]) < cutoff )
-         System.out.printf("%2d  %9.6f  %-14s  %-14s\n",
-                            i, list[i].distance(list[0]), 
+       if ( list[i].distance(list[0]) < 9 * cutoff )
+       {
+         System.out.printf("%2d  %9.6f  %-14s  %-14s",
+                            i, list[i].distance(list[0]),
                                list[i].cell_type,
                                list[i].centering );
+         double[] lpar = modifyLatticeParameters( a, b, c, alpha, beta, gamma,
+                                                  list[i].getTransformation());
+         System.out.printf("  %6.3f  %6.3f  %6.3f   %8.2f  %8.2f  %8.2f\n",
+                       lpar[0], lpar[1], lpar[2], lpar[3], lpar[4], lpar[5] );
+       }
+*/
+
   }
 
 }
