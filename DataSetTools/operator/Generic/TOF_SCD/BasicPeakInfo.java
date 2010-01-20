@@ -866,7 +866,7 @@ public class BasicPeakInfo
 
 
   /**
-   *  Get the fractional row mean for this peak, including bacground.
+   *  Get the fractional row mean for this peak, including background.
    *  NOTE: This should be valid if set_centroid_and_extent() has
    *         been called.
    *
@@ -915,6 +915,43 @@ public class BasicPeakInfo
   public float getChanCenter()
   {
     return chan_cent;
+  }
+
+
+  /**
+   *  Get the approximate height of the peak. 
+   *
+   *  @return An estimate of the standard deviation of the peak in the
+   *          vertical direction.
+   */
+  public float RowSigma()
+  {
+    return delta_row;
+  }
+
+
+  /**
+   *  Get the approximate width of the peak. 
+   *
+   *  @return An estimate of the standard deviation of the peak in the
+   *          horizontal direction.
+   */
+  public float ColSigma()
+  {
+    return delta_col;
+  }
+
+
+  /**
+   *  Get the approximate extent of the peak in the channel direction. 
+   *  NOTE: Currently this always returns 1.
+   *
+   *  @return An estimate of the standard deviation of the peak in the
+   *          channel direction (currently always 1).
+   */
+  public float ChanSigma()
+  {
+    return delta_chan;
   }
 
  
