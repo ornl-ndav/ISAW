@@ -489,7 +489,9 @@ public class FindPeaksViaSort
    *  @param  do_smoothing    If true, the data will be smoothed by 
    *                          replacing the value at each bin by the sum
    *                          of the 3x3 neighborhood of the bin on the
-   *                          time slice.
+   *                          time slice.  NOTE: This will alter the values
+   *                          in the array, so a copy of the data should be
+   *                          passed in if do_smoothing is set true.
    *  @param  num_requested   The maximum number of peaks that should be
    *                          returned.
    *  @param  threshold       Value that must be exceeded to consider a
