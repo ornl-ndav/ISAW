@@ -39,6 +39,8 @@ import gov.anl.ipns.MathTools.*;
 import gov.anl.ipns.Util.File.FileIO;
 import gov.anl.ipns.Util.File.RobustFileFilter;
 import gov.anl.ipns.Util.SpecialStrings.ErrorString;
+import gov.anl.ipns.Util.Sys.FinishJFrame;
+import gov.anl.ipns.Util.Sys.WindowShower;
 import gov.anl.ipns.ViewTools.Components.OneD.DataArray1D;
 import gov.anl.ipns.ViewTools.Components.OneD.FunctionViewComponent;
 import gov.anl.ipns.ViewTools.Components.OneD.VirtualArrayList1D;
@@ -1540,9 +1542,16 @@ public class OrientMatrixControl extends JButton
          {
             ScalarJ_base Scalar = new ScalarJ_base( orMat.orientationMatrix,.1f,0);
             if(Scalar.getResult( ) instanceof ErrorString)
-               SharedData.addmsg( "Error in Scalar " );
+               SharedData.addmsg( "Error in Scalar: "+Scalar.getResult() );
             else
-                JOptionPane.showMessageDialog( null , Scalar.getLogInfo( ).toString() );
+            {
+                JTextArea info = new JTextArea(Scalar.getLogInfo().toString());
+                FinishJFrame jf = new FinishJFrame("Conventional Cells");
+                jf.getContentPane( ).add(new JScrollPane(info));
+                jf.setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
+                jf.setSize( 500,800 );
+                WindowShower.show( jf );
+            }
             return;
          }
          if( evt.equals( OrientMatrixControl.BLIND ) || 
