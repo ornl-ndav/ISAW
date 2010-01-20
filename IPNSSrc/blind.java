@@ -158,7 +158,7 @@ import gov.anl.ipns.MathTools.LinearAlgebra;
 import gov.anl.ipns.Util.File.*;
 import gov.anl.ipns.Util.Numeric.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
-
+import DataSetTools.components.ui.Peaks.subs;
 import java.util.*;
 import DataSetTools.operator.Generic.TOF_SCD.*;
 import DataSetTools.dataset.*;
@@ -191,8 +191,21 @@ public class blind {
    * @return  An error message if something went wrong, or null otherwise.
    *      You must use the resultant UB variable to see the result.
    */
-  public ErrorString blaue( float[][] orientMat){
-     double[] Qx,Qy,Qz;
+  public ErrorString blaue( float[][] orientMat)
+  {
+     UB = null;
+     try
+     {     
+       float[][]ub = subs.Nigglify( orientMat );
+       UB = LinearAlgebra.float2double(  ub );
+       
+     }catch (Exception s)
+     {
+        UB = null;
+        return new ErrorString("Cannot Nigglify:"+s);
+     }
+     return null;
+     /*double[] Qx,Qy,Qz;
      Qx= new double[7];
      Qy= new double[7];
      Qz= new double[7];
@@ -225,6 +238,8 @@ public class blind {
      if( error != null)
         return error;
      return null;
+     
+     */
   }
   
   /**
