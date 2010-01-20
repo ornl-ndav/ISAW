@@ -801,6 +801,31 @@ public class BasicPeakInfo
 
 
   /**
+   * Get String giving peak position and peak deltas, in the raw_data array.
+   * NOTE: The row and column numbers are indexed starting at 0, so we need
+   * to add 1 to the values displayed, to get the detector row and column
+   * numbers.
+   */
+  public String toString()
+  {
+    String result =  String.format(
+           "%8.2f %8.2f %8.2f   %6d   %5.2f %5.2f %5.2f",
+           col_cent,
+           row_cent,
+           chan_cent,
+           ipk,
+           delta_col,
+           delta_row,
+           delta_chan ) ;
+
+     if ( isValid() )
+       result += "  VALID";
+
+     return result;
+  }
+
+
+  /**
    *  Get the intensity at the point at which this peak was 
    *  constructed.  NOTE: If smoothed data was used, this will not
    *  be the same as the intensity in the raw data at that point.
