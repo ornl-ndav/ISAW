@@ -160,7 +160,11 @@ public class Omit_SCD_Peaks_Calc
       throw new IllegalArgumentException(
                                     "Could not find area detector in " + ds );
 
+    int num_rows = ref_grids[0].num_rows();
+    int num_cols = ref_grids[0].num_cols();
+
                                     // select the Data blocks near peak
+    int num_dropped = 0;
     ds.clearSelections();
     for ( int i = 0; i < peaks.size(); i++ )
     {
@@ -173,9 +177,6 @@ public class Omit_SCD_Peaks_Calc
       int min_row = Math.max( 1, (int)(row_center - row_sigma * 2) );
       int min_col = Math.max( 1, (int)(col_center - col_sigma * 2) );
       
-      int num_rows = ref_grids[0].num_rows();
-      int num_cols = ref_grids[0].num_cols();
-
       int max_row = Math.min( num_rows, (int)(row_center + row_sigma * 2) );
       int max_col = Math.min( num_cols, (int)(col_center + col_sigma * 2) );
       
@@ -184,10 +185,17 @@ public class Omit_SCD_Peaks_Calc
         {
           IData data = ref_grids[0].getData_entry( row, col );
           if ( data != null )
+          {
             data.setSelected(true);
+            num_dropped++;
+          }
         }
     }
-    
+
+    float percent = 100 * num_dropped/(float)(num_rows * num_cols);
+    System.out.printf( "Removing %5.2f percent of pixels from %s\n", 
+                        percent, ds );    
+
     ds.removeSelected( true );
   }
 
