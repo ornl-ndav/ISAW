@@ -566,7 +566,7 @@ public class OrientMatrixControl extends JButton
    public float[][] getOrientationMatrix( int matNum )
    {
 
-      if( matNum < 0 )
+      if( matNum < 0 && orientationMatrix != null  )
          return gov.anl.ipns.MathTools.LinearAlgebra.copy( orientationMatrix );
 
       return null;
