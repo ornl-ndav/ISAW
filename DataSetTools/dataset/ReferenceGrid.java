@@ -53,9 +53,10 @@ import DataSetTools.viewer.*;
 import Operators.Generic.Load.*;
 
 /**
- *   A ReferenceGrid is a two dimensional array (with indicies starting at 1)
+ *   A ReferenceGrid is a wrapper around a two dimensional array that 
  * containing references to Data blocks that is intended to hold references 
- * to all of the Data blocks for particular detector.  
+ * to all of the Data blocks for particular detector.  The row and column
+ * numbers used to access the Data blocks start at 1. 
  *   If the detector is an area detector, it will actually be two dimensional.
  * If the detector is an LPSD, there will be only one column and multiple rows
  * or one row and multiple columns.  If the detector is a single tube, there
