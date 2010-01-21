@@ -78,8 +78,11 @@ public class RotateDetectors extends GenericOperator{
       addParameter( new IntegerPG("ID Center Bank",14));
       addParameter( new SaveFilePG("New Detector Calibration File",System.getProperty("Data_Directory","")));
       addParameter( new FloatPG("New Angle of Center(degr)",0));
+      addParameter( new FloatPG("Sample x-offset(m)",0));
+      addParameter( new FloatPG("Sample beam offset(m)",0));
    }
 
+   
 
    /**
     * Writes a string for the documentation of the operator provided by
@@ -105,6 +108,10 @@ public class RotateDetectors extends GenericOperator{
       S.append(" The name of the new DetCal file where the   rotated detector information is stored.");
       S.append("@param   ");
       S.append("The angle in degrees where the new center will  rotate to along a vertical axis.");
+      S.append( "@param " );
+      S.append( " the sample offset in the x direction(back is positive)");
+      S.append(" @param Sample offset in beam direction");
+      
       S.append("@error ");
       S.append("");
       return S.toString();
@@ -137,8 +144,13 @@ public class RotateDetectors extends GenericOperator{
          int CentID = ((IntegerPG)(getParameter(1))).getintValue();
          java.lang.String CalibNew = getParameter(2).getValue().toString();
          float CentAngle = ((FloatPG)(getParameter(3))).getfloatValue();
-         java.lang.Object Xres=Operators.TOF_SCD.General_Utils.RotateDetectors(CalibOr,CentID,CalibNew,CentAngle );
-
+         float xOffset = ((FloatPG)(getParameter(4))).getfloatValue( );
+         float SampOffset = ((FloatPG)(getParameter(5))).getfloatValue( );
+         java.lang.Object Xres=Operators.TOF_SCD.General_Utils.
+         RotateDetectors(CalibOr,CentID,CalibNew,CentAngle,xOffset,SampOffset );
+         
+         
+         
          return Xres;
        }catch( Throwable XXX){
         String[]Except = ScriptUtil.
