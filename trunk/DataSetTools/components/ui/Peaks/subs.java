@@ -711,6 +711,7 @@ public class subs
    /**
     * Calculates the orientation matrix with the given information
     * 
+    * 
     * @param q1
     *           First q vector
     * @param hkl1
@@ -766,6 +767,9 @@ public class subs
       Qy.cross( Q_n );
       qy.cross( q_n );
 
+     // Q0.normalize( );
+      //Qy.normalize( );
+     // Q_n.normalize( );
       float[][] M2I = new float[ 3 ][ 3 ];
       M2I[ 0 ] = Q0.get();
       M2I[ 1 ] = Qy.get();
@@ -776,7 +780,9 @@ public class subs
       if( ! M_to_I.invert() )
          return null;
       
-
+     // q0.normalize( );
+     // qy.normalize( );
+     // q_n.normalize( );
       float[][] m2I = new float[ 3 ][ 3 ];
       m2I[ 0 ] = q0.get();
       m2I[ 1 ] = qy.get();
@@ -976,6 +982,14 @@ public class subs
      
   }
   
+  /**
+   * Returns a new matrix whose columns are the basis with minimum length
+   * and form a RIGHT HANDED SYSTEM
+   * 
+   * @param UB  A UB matrix, whose columns form a basis in 3D
+   * @return  a new matrix whose columns are the basis with minimum length
+   * and form a RIGHT HANDED SYSTEM
+   */
    public static float[][] Nigglify( float[][]UB)
    {
        boolean NiggReal = true;
@@ -1024,6 +1038,15 @@ public class subs
                }
             }
          
+         if( !isRightHanded( UB1 ))
+         {
+            ident[2][2] = -1;
+            Tensor = LinearAlgebra.mult( ident , Tensor );
+            Tensor = LinearAlgebra.mult( Tensor, ident );
+            UB1 = LinearAlgebra.mult( UB1 , ident );
+            ident[2][2] = 1;
+            changed = true;
+         }
          done = !changed;
          if( !changed )// Currently Assumes no two are equal.
          {
@@ -1051,6 +1074,7 @@ public class subs
                //showNig( Tensor, UB1, NiggReal);
             }  
             
+           
             // now check for C -a-b
             
             float sgn = 1;
@@ -1084,9 +1108,11 @@ public class subs
            
             }//!changed
          }
+         done = done || Sortt(Tensor, UB1, NiggReal);
       }//while not done
       if( Sortt( Tensor, UB1, NiggReal))
          showNig( Tensor, UB1, NiggReal);
+      
       
       return UB1;
    }
@@ -1112,6 +1138,42 @@ public class subs
 
 
    }
+   
+   /**
+    * Determines whether the vectors in the 3 by 3 UB matrix represents a right
+    * handed system.
+    * 
+    * @param UB   3 by 3 matrix considered as row(column) vectors.
+    * 
+    * @return  true if the rows( or columns) in UB represent a right handed
+    *           system, otherwise false is returned
+    */
+   public static boolean isRightHanded( float[][]UB)
+   {
+      float MaxAbs = Float.NEGATIVE_INFINITY;
+      if( UB == null || UB.length < 3)
+         return false;
+      
+      for( int i=0; i< 3; i++)
+         if( UB[i].length < 3)
+            return false;
+         else
+            for( int j=0;j < 3; j++)
+            {
+               if( Math.abs( UB[i][j] )> MaxAbs)
+                  MaxAbs = Math.abs( UB[i][j] );
+            }
+      double det = LinearAlgebra.determinant( 
+                                 LinearAlgebra.float2double( UB ) );
+      
+      if( !Double.isNaN( det ) && det > 0)
+         return true;
+      
+      return false;
+      
+   }
+   
+  
    //Tests new nigglify for = cases
    public static void main( String[] args )
    {
@@ -1144,6 +1206,9 @@ public class subs
      LinearAlgebra.print( lattice_calc.LatticeParamsOfA( 
            LinearAlgebra.float2double( 
            LinearAlgebra.getInverse( ( UB )) )));
+     
+     System.out.println("det ="+ LinearAlgebra.determinant(
+              LinearAlgebra.float2double( UB )));
      /*blind B = new blind();
      B.blaue( LinearAlgebra.double2float( UB1 ) );
      System.out.println("From blind");
