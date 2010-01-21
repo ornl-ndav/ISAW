@@ -1143,7 +1143,8 @@ public class XtalLatticeControl extends Object
             Choices1 = peak1.getChoices();
 
          if( peak1 != null && Choices1 != null
-                  && peak1.getSelectedChoiceIndex() >= 0 )
+                  && peak1.getSelectedChoiceIndex() >= 0 &&
+                  peak1.getSelectedChoiceIndex( )<Choices1.length)
          {
             int[] C = Choices1[ peak1.getSelectedChoiceIndex() ];
             Choices1 = new int[ 1 ][ 3 ];
