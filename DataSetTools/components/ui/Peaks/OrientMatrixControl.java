@@ -2431,11 +2431,13 @@ public class OrientMatrixControl extends JButton
          //   jp1.add( button );
 
          jp.add( jp1 , BorderLayout.NORTH );
-
+         SetPeaks stPks = null;
+         if( Wsetpks != null)
+            stPks = Wsetpks.get();
          text = new JTextArea( 15 , 35 );
          text
                   .setText( ShowMatString(  orMatrices
-                           .elementAt( 0 ),WPeaks.get(), null, null ) );
+                           .elementAt( 0 ),WPeaks.get(), null, stPks ) );
 
          jp.add(  text  , BorderLayout.CENTER );
 
@@ -2482,9 +2484,13 @@ public class OrientMatrixControl extends JButton
             return;
          
          selectedMatNum = MatNum;
+
+         SetPeaks stPks = null;
+         if( Wsetpks != null)
+            stPks = Wsetpks.get();
          
          text.setText( ShowMatString(  orMatrices
-                  .elementAt( MatNum ),WPeaks.get(),null,null ) );
+                  .elementAt( MatNum ),WPeaks.get(),null,stPks ) );
 
 
       }
