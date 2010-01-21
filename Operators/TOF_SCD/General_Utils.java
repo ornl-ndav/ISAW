@@ -45,6 +45,7 @@ import java.util.regex.Pattern;
 
 import javax.swing.JOptionPane;
 
+import DataSetTools.components.ParametersGUI.JParametersDialog;
 import DataSetTools.dataset.UniformGrid;
 import DataSetTools.operator.Generic.TOF_SCD.Peak_new_IO;
 import gov.anl.ipns.MathTools.Geometry.Tran3D;
@@ -72,6 +73,12 @@ public class General_Utils
     *                          
     * @param newCenterAngle    The angle in degrees where the new center will 
     *                          rotate to along a vertical axis.
+    *                          
+    *  @param xoffset         The distance in meters the sample is from the
+    *                         center of rotation
+    *                         
+    *  @param beamOffset       The distance the sample is from the center of
+    *                          rotation in the beam direction.
     * 
     * @return null for success or an ErrorString describing the problem
     * 
@@ -80,7 +87,9 @@ public class General_Utils
    public static Object RotateDetectors( String OrigDetCalFilename, 
                                        int    CenterBankID,
                                        String NewDetCalFilename,
-                                       float  newCenterAngle)
+                                       float  newCenterAngle,
+                                       float  xoffset,
+                                       float  beamOffset)
    {
       
       newCenterAngle *= (float)(Math.PI/180);
@@ -144,7 +153,9 @@ public class General_Utils
       //Now get Transformation and apply it to all detectors
       Tran3D transformation = new Tran3D();
       transformation.setRotation( (float)(RotationAngle/Math.PI*180) , new Vector3D(0,0,1)  );
-      
+      Vector3D Xlate = new Vector3D( beamOffset, xoffset,0 );
+      transformation.apply_to( new Vector3D(beamOffset, xoffset,0 ) , Xlate );
+      System.out.println("Xlate rotated ="+ Xlate.toString( ));
       for( int i=0; i< VGrids.size( );i++)
       {
          UniformGrid G = VGrids.get(i);
@@ -154,6 +165,7 @@ public class General_Utils
          transformation.apply_to( G.position() , center );
          transformation.apply_to( G.x_vec( ) ,xvec );
          transformation.apply_to( G.y_vec( )  , yvec);
+         center.add( Xlate );
          UniformGrid newG = new UniformGrid( G.ID( ),G.units( ),
               center, xvec , yvec , G.width( ), G.height( ), G.depth( ),
               G.num_rows( ), G.num_cols( ));
@@ -173,7 +185,8 @@ public class General_Utils
        //          "  Instrument:"+headerInfo[2]+"\n").getBytes());
       
          String CreateInfo ="created by rotation\n of the detector information" +
-            " in the file "+OrigDetCalFilename.trim()+ " \n to "+newCenterAngle+" degrees";;
+            " in the file "+OrigDetCalFilename.trim()+ " \n to "+
+            (newCenterAngle*Math.PI/180)+" degrees";;
          Peak_new_IO.WriteHeaderInfo( out , CreateInfo ,
                 headerInfo[0], headerInfo[1],headerInfo[2],L1_T0[0] , (int)L1_T0[1] );
        
@@ -251,13 +264,67 @@ public class General_Utils
        
    }
    /**
+    * Runs RotateDetectors in various modes.  
+    *   -Command line arguments
+    *   -JParametersDialog if there are no arguments
+    *   - Shows help if there are fewer than 3 arguments and
+    *      the first argument has the sequence of letters help
+    *      
     * @param args
     */
    public static void main(String[] args)
    {
-      System.out.println("Result="+
-      General_Utils.RotateDetectors( "C:/ISAW/InstrumentInfo/SNS/SNAP.DetCal" ,
-      		14,"C:/ISAW/InstrumentInfo/SNS/SNAP1.DetCal",35.2f));
+      String fileName1 = "C:/ISAW/InstrumentInfo/SNS/SNAP.DetCal";
+      String fileName2 ="C:/ISAW/InstrumentInfo/SNS/SNAP1.DetCal";
+      int CenterDetID = 14;
+      float newAngle = 35.2f;
+      float xoffset = .1f;
+      float beamOffset =.2f;
+      if( args.length >2)
+      try
+      {
+         fileName1 = args[0];
+         CenterDetID = Integer.parseInt(args[1].trim( ));
+         fileName2 = args[2];
+         newAngle = Float.parseFloat( args[3].trim() );
+         if( args.length >4)
+            xoffset = Float.parseFloat( args[4] .trim());
+         if( args.length > 5)
+            beamOffset= Float.parseFloat( args[5].trim() );
+         args = new String[2];
+         
+      }catch(Exception s)
+      {
+         args = null;
+      }
+      if( args == null || args.length < 1)
+      {
+         JParametersDialog jp = new JParametersDialog( 
+                          new RotateDetectors(), null, null, null);
+      }else if( args.length < 3 || args[0].toUpperCase().indexOf("help")< 0)
+      {
+          System.out.println("Result="+
+              General_Utils.RotateDetectors( fileName1 ,
+            CenterDetID,fileName2,newAngle,xoffset,beamOffset) );
+      }else if( args.length < 3 ||  args[0].toUpperCase().indexOf("help") >= 0)
+      {
+         
+      }else
+      {
+         System.out.println(" This program takes one detector calibration"); 
+         System.out.println("   rotates the system so the center of the");
+         System.out.println("   detector is at the specified angle, then");
+         System.out.println("   a new corresponding DetCal file. Arguments are");
+         System.out.println(" 1) Original DetCal calibration file");
+         System.out.println(" 2) The ID of the detector considered as "+
+                             "the center");
+         System.out.println(" 3) The name of the new DetCal filename");
+         System.out.println(" 4) The new Angle( in degrees) the center "+
+               "detector will go to ");
+         System.out.println(" 5)(Optional) Sample x offset from beam(m)");
+         System.out.println(" 6)(Optional) The sample beam offset(m)");
+         
+      }
 
    }
 
