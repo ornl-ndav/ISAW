@@ -987,6 +987,7 @@ public class subs
    * and form a RIGHT HANDED SYSTEM
    * 
    * @param UB  A UB matrix, whose columns form a basis in 3D
+   * 
    * @return  a new matrix whose columns are the basis with minimum length
    * and form a RIGHT HANDED SYSTEM
    */
@@ -1023,8 +1024,9 @@ public class subs
                   oth = (oth+1)%3;
                
                if(  Tensor[i][i]/2 < sgn*Tensor[i][j] ||
-                        (Tensor[i][i]/2 == sgn*Tensor[i][j] &&
-                           Tensor[oth][i] > 2*Tensor[oth][j]     ))
+                        (Tensor[i][i]/2 == Tensor[i][j] &&   //must be pos.
+                           Tensor[oth][i] > 2*Tensor[oth][j] //
+                           ))
                {
                   changed = true;
                   ident[j][i]= -sgn;
@@ -1036,6 +1038,21 @@ public class subs
                   Tensor = LinearAlgebra.mult( Tensor, ident);
                   
                   ident[i][j]=0;
+               } else if( Tensor[i][i]/2 == -Tensor[i][j] && Tensor[j][oth] !=0)
+               {
+                  //replace c by c+b(for exampe) --> positive case
+                  int oth1= oth;
+                  if( oth > j)
+                     oth1 = i;
+                  ident[j][oth1] =1;
+                  Tensor = LinearAlgebra.mult( ident , Tensor );
+                  ident[j][oth] = invSgn;
+                  UB1 = LinearAlgebra.mult( UB1 , ident  );
+                  ident[j][oth]= 0;
+                  ident[oth][j] = 1;
+                  Tensor = LinearAlgebra.mult( Tensor, ident);
+                  ident[oth][j] = 0;
+                  changed = true;
                }
             }
          
@@ -1082,7 +1099,7 @@ public class subs
             float sgn = 1;
             if( Tensor[0][1] < 0) sgn =-1; // All should have same sign
             float x = sgn*Tensor[0][1] +sgn*Tensor[0][2] +sgn*Tensor[1][2] ;
-            if( x >= .5*(Tensor[0][0]+ Tensor[1][1]) && sgn < 0 )
+            if( x > .5*(Tensor[0][0]+ Tensor[1][1]) && sgn < 0 )
             {
                 boolean xchanged = true;
                
@@ -1108,7 +1125,24 @@ public class subs
                 }
                   
            
-            }//!changed
+            }else if (  x == .5*(Tensor[0][0]+ Tensor[1][1]) && sgn < 0 &&
+                  Tensor[0][0]>(2*Tensor[0][2]+ Tensor[0][1]))
+            {
+               //may be circular if get into this case NOPE just barely
+               ident[2][0]=ident[2][1] = 1;
+               Tensor = LinearAlgebra.mult(  ident , Tensor );
+               ident[2][0]=ident[2][1] = invSgn;
+               UB1 = LinearAlgebra.mult( UB1 , ident );
+               ident[2][0]=ident[2][1] = 0;
+               ident[0][2] = ident[1][2] = 1;
+               Tensor = LinearAlgebra.mult( Tensor , ident );
+               ident[0][2] = ident[1][2] = 0;
+               changed = true;
+               
+               
+            }
+            
+            //!changed
          }
          done =done && !changed;
          done = done && !Sortt(Tensor, UB1, NiggReal);
@@ -1119,6 +1153,8 @@ public class subs
       
       return UB1;
    }
+   
+   
    public static void main1( String[] args )
    {
 
