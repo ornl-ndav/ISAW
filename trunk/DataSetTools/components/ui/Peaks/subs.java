@@ -1008,8 +1008,9 @@ public class subs
       boolean done = false;
       while( !done)
       { 
-         Sortt( Tensor, UB1, NiggReal);
-         boolean changed = false;
+         done = true;
+         boolean changed = Sortt( Tensor, UB1, NiggReal);
+        
          for( int i=0; i<2 && !changed; i++)
             for(  int j=i+1; j< 3 && !changed; j++)
             { 
@@ -1071,6 +1072,7 @@ public class subs
                Tensor=  LinearAlgebra.mult( Tensor, ident );
                ident[(kk+1)%3][(kk+1)%3] = 1;
                ident[(kk+2)%3][(kk+2)%3] = 1;
+               changed = true;
                //showNig( Tensor, UB1, NiggReal);
             }  
             
@@ -1082,16 +1084,16 @@ public class subs
             float x = sgn*Tensor[0][1] +sgn*Tensor[0][2] +sgn*Tensor[1][2] ;
             if( x >= .5*(Tensor[0][0]+ Tensor[1][1]) && sgn < 0 )
             {
-                changed = true;
-                done = false;
+                boolean xchanged = true;
+               
                 if( x == .5*(Tensor[0][0]+ Tensor[1][1]))
                  if( Tensor[0][0] <=2*(sgn*Tensor[0][2] +sgn*Tensor[0][1] ) 
                                                        || sgn > 0 ) {
-                    changed = false;
-                    done = true;
+                    xchanged = false;
+                   
                  }
                 
-                if( changed)
+                if( xchanged)
                 {
                    ident[2][1] = ident[2][0] = -sgn;
                    Tensor = LinearAlgebra.mult(  ident , Tensor );
@@ -1102,13 +1104,14 @@ public class subs
                    ident[1][2] = ident[0][2] = -sgn;
                    Tensor = LinearAlgebra.mult( Tensor , ident );
                    ident[1][2] = ident[0][2] = 0;  // inverse
-
+                   changed = true;
                 }
                   
            
             }//!changed
          }
-         done = done || Sortt(Tensor, UB1, NiggReal);
+         done =done && !changed;
+         done = done && !Sortt(Tensor, UB1, NiggReal);
       }//while not done
       if( Sortt( Tensor, UB1, NiggReal))
          showNig( Tensor, UB1, NiggReal);
@@ -1175,7 +1178,7 @@ public class subs
    
   
    //Tests new nigglify for = cases
-   public static void main( String[] args )
+   public static void main2( String[] args )
    {
       
       //Test results: cannot get === so gave up on testing
@@ -1218,5 +1221,16 @@ public class subs
      
 */
 
+   }
+   
+   public static void main( String[] args)
+   {
+      float[][]UB={{ 0.1221567f,-0.0058656f,-0.1454910f},
+                   {0.1622174f , 0.0039880f , 0.1131304f},
+                   {  -0.1181297f , -0.2347778f,  0.0060742f }
+                    };
+      
+      float[][] UB1 = subs.Nigglify( UB );
+      
    }
 }
