@@ -37,7 +37,7 @@ import java.util.*;
 import java.io.*;
 
 import gov.anl.ipns.Operator.*;
-import gov.anl.ipns.Util.Sys.InputStreamReporter;
+import gov.anl.ipns.Util.Sys.SimpleExec;
 
 
 /**
@@ -191,48 +191,9 @@ public class IntegratePeaksProcessCaller implements IOperator
                 max_shoebox;
 
       System.out.println("EXECUTING: " + command );
- 
                                                      // Execute the command
                                                      // possibly on remote node
-      Process process = Runtime.getRuntime().exec( command );
-
-      OutputStream process_out = process.getOutputStream();
-      InputStream  process_in  = process.getInputStream();
-
-      InputStream process_err = process.getErrorStream();
-      InputStreamReader process_err_reader = new InputStreamReader(process_err);
-      BufferedReader process_err_buff = new BufferedReader( process_err_reader);
-      (new InputStreamReporter( process_in, "Process Results")).start( );
-      String line;
-      boolean first_time = true;
-      while (( process_err_buff.ready( )&& 
-                 (line = process_err_buff.readLine()) != null))
-      {
-        if ( first_time )
-        {
-          System.out.println("ERRORS FOR COMMAND: " + command );
-          first_time = false;
-        }
-        System.out.println(line);
-      }  
-      try 
-      {
-        if (process.waitFor() != 0) 
-          System.out.println("exit value = " + process.exitValue() );
-      }
-      catch (InterruptedException e) 
-      {
-        System.err.println(e);
-      }
-
-      process_err_buff.close();
-      process_err_reader.close();
-      process_err.close();
-
-      process_out.close();
-      process_in.close();
-
-      process.destroy();                       // get rid of the process 
+      SimpleExec.Exec( command ); 
     }
     catch( Exception ex )
     {
@@ -242,6 +203,7 @@ public class IntegratePeaksProcessCaller implements IOperator
                           " on server " + cmd_name );
       ex.printStackTrace();
     }
+
 
     System.out.println( "Integrate file written for run " + fin_name +
                         " ds_num " + ds_num );
