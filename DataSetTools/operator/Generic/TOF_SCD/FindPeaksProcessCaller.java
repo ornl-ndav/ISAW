@@ -37,7 +37,7 @@ import java.util.*;
 import java.io.*;
 
 import gov.anl.ipns.Operator.*;
-import gov.anl.ipns.Util.Sys.InputStreamReporter;
+import gov.anl.ipns.Util.Sys.SimpleExec;
 
 /**
  *  The getResult() method of this class will execute the FindPeaksProcess
@@ -143,7 +143,6 @@ public class FindPeaksProcessCaller implements IOperator
                                                      // NOTE: The same command
                                                      // must work on all 
                                                      // systems.
-
       String exe_path = "DataSetTools.operator.Generic.TOF_SCD.";
 
       command = cmd_name           + " " +
@@ -175,50 +174,9 @@ public class FindPeaksProcessCaller implements IOperator
 
       System.out.println("EXECUTING: " + command );
  
-                                                     // Execute the command
-                                                     // possibly on remote node
-      Process process = Runtime.getRuntime().exec( command );
-
-      OutputStream process_out = process.getOutputStream();
-      InputStream  process_in  = process.getInputStream();
-
-      InputStream process_err = process.getErrorStream();
-      InputStreamReader process_err_reader = new InputStreamReader(process_err);
-      BufferedReader process_err_buff = new BufferedReader( process_err_reader);
-      (new InputStreamReporter( process_in, "Process Results")).start( );
-      
-      String line;
-      boolean first_time = true;
-   
-      while (  process_err_buff.ready( )&&
-             (line = process_err_buff.readLine()) != null)
-      {
-        if ( first_time )
-        {
-          System.out.println("ERRORS FOR COMMAND: " + command );
-          first_time = false;
-        }
-        System.out.println(line);
-      }  
-      try 
-      {
-        if (process.waitFor() != 0) 
-          System.out.println("exit value = " + process.exitValue() );
-      }
-      catch (InterruptedException e) 
-      {
-        System.err.println(e);
-      }
-
-      process_err_buff.close();
-      process_err_reader.close();
-      process_err.close();
-
-      process_out.close();
-      process_in.close();
-
-      process.destroy();                       // get rid of the process 
+      SimpleExec.Exec( command );
     }
+
     catch( Exception ex )
     {
       System.out.println( "EXCEPTION executing command " + command +
