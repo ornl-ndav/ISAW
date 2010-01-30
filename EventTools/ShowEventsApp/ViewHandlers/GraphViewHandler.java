@@ -144,13 +144,15 @@ abstract public class GraphViewHandler implements IReceiveMessage,
       opts.add( Load );
       
       
-      JMenuItem Help = new JMenuItem("Help");
-      Help.addActionListener(  new MenuListener( this ,D_Q) );
-      opts.add( Help );
 
       JMenuItem Clear = new JMenuItem("Clear Compare Data");
       Clear.addActionListener(  new MenuListener( this ,D_Q) );
       opts.add( Clear );
+      
+
+      JMenuItem Help = new JMenuItem("Help");
+      Help.addActionListener(  new MenuListener( this ,D_Q) );
+      opts.add( Help );
       
       display_frame.setJMenuBar( menBar );
       
@@ -373,7 +375,7 @@ class MenuListener implements ActionListener, IhasWindowClosed
        "Normalize normalizes with the incident spectrum and Protons on Target,"+
        " if present, on the \n"+
        "Load form in IsawEV.\n\n "+
-       "If loading from live data, the System property \"Scale With\"(case sensitive)"+
+       "If loading from live data, the System property \"ScaleWith\"(case sensitive)"+
        "must be\n"+
        "set to \"Protons on Target\"(not case sensitive) to scale with the current "+
        "Total Protons on Target";
