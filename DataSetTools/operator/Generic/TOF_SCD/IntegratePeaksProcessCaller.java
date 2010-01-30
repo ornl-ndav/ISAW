@@ -229,7 +229,8 @@ public class IntegratePeaksProcessCaller implements IOperator
       ex.printStackTrace();
     }
 
-    System.out.println( "Returning peaks for run " + fin_name +
+    System.out.println( "Returning " + peaks.size() + 
+                        " peaks for run " + fin_name +
                         " ds_num " + ds_num );
     return peaks;
   }
