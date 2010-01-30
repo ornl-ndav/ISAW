@@ -392,8 +392,8 @@ public class DQDataHandler implements IReceiveMessage
       if( message.getName().equals(  Commands.SCALE_FACTOR ))
       {
         
-         String S = System.getProperty( "Scale With" , "" );
-
+         String S = System.getProperty( "ScaleWith" , "" );
+         S = S.toUpperCase();
          if ( !S.equals( "PROTONS ON TARGET" ) && !S.equals( "MONITOR" ) )
             scale_factor = -1;
          else
