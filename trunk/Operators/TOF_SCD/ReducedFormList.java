@@ -55,7 +55,7 @@ public class ReducedFormList
     * Constructor. The algorithm used to determine transformation is described
     * in the class ReducedCellInfo
     * 
-    * @param ReducedCellInfoExp  The array of lattice constants
+    * @param LatticeParamsExp  The array of lattice constants
     * 
     * @see ReducedCellInfo
     */
