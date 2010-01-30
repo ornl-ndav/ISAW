@@ -522,8 +522,8 @@ public class Util {
    public static String getDelimiter( )
    {
       
-      if( System.getProperty("os.name"," ").toUpperCase().indexOf("WINDOW")>=0)
-         return "\"";
+      //if( System.getProperty("os.name"," ").toUpperCase().indexOf("WINDOW")>=0)
+      //   return "\"";
       return "";
       
    }
