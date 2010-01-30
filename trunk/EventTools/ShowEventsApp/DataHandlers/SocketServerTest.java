@@ -124,6 +124,7 @@ public class SocketServerTest extends UDPSend
 
       while ( firstEvent < totNevents )  
       {                        
+         int NbytesSent =0;
                                                     // Determine number of 
                                                     // events for this pulse
          int  n_to_send = (int)
@@ -147,7 +148,7 @@ public class SocketServerTest extends UDPSend
 
            System.arraycopy( all_tofs, firstEvent, tof, 0, packet_size );
            System.arraycopy( all_ids,  firstEvent, ids, 0, packet_size );
-
+           NbytesSent += packet_size;
                                                     // adjust the number to
                                                     // send and firstEvent
            n_to_send   = n_to_send - packet_size;
@@ -161,12 +162,13 @@ public class SocketServerTest extends UDPSend
           //packet[ 20 ] = LoByte( L );
           // packet[ 21 ] = HiByte( L );
 
-           int start = 0;//24
+           int start = 0;
+          
            for( int i = 0 ; i < ids.length ; i++ )
            {
               assign( tof[ i ] , packet , start );
               assign( ids[ i ] , packet , start + 4 );
-              if( NPacketsSent ==0 && i< 0 )
+              if( NPacketsSent >=0 && i< 0 )
                  System.out.println( "--"+tof[i]+","+ids[i]);
                  //System.out.println(String.format("%2x%2x%2x%2x,%2x%2x%2x%2x", packet[start], packet[start+1],
                           //packet[start+2],packet[start+3],packet[start+4],packet[start+5],packet[start+6],packet[start+7]));
@@ -178,15 +180,20 @@ public class SocketServerTest extends UDPSend
            packets.add( packet );
          }
 
-         try                                         // now try to actually 
-         {                                           // send each packet
-            for ( int i = 0; i < packets.size(); i++ )
+         try 
+         {  
+              byte[] packet1= MakeCommandPacket( NbytesSent );
+         
+              send( packet1 , packet1.length );
+              //showwpacket( packet1,"command"+ NbytesSent);
+                                                        //
+            for ( int i = 0; i < packets.size(); i++ ) // send each packet
             {
               byte[] packet = packets.elementAt(i);
-
+              packet1 = MakeEventPacket( packet);
              
-              send( packet , packet.length );
-              NsentAftCommandPacket +=packet.length;
+              send( packet1 , packet1.length );
+              //showwpacket( packet1,"events");
               NPacketsSent++ ;
               if( NPacketsSent % 200 == 0 )
                  System.out.println( "sent packets =" + NPacketsSent );
@@ -200,14 +207,7 @@ public class SocketServerTest extends UDPSend
               Thread.sleep( 16 - elapsed_time );
             else
               Thread.sleep(1);                    // give the system a break
-            if( NsentAftCommandPacket > 48000)
-            {
-               byte[] packet= MakeCommandPacket( NsentAftCommandPacket);
-               
-               send( packet , packet.length );//should be sent before but ????
-
-               NsentAftCommandPacket=0;
-            }
+           
          }
          catch( Exception s )
          {
@@ -216,9 +216,67 @@ public class SocketServerTest extends UDPSend
          }
       }
    }
-   
+   private void showwpacket( byte[] packet, String message)
+   {
+    System.out.println( message);
+    int k=0;
+    for( int i=0; i+4<packet.length;i+=4)
+    {
+     System.out.print( String.format( "%2x%2x%2x%2x " , packet[i],packet[i+1],packet[i+2],packet[i+3] ) );
+     k=i+4;
+     
+    }
+    for(int i=k; i < packet.length ;i++)
+       System.out.print(  String.format( "%2x" , packet[i] ));
+    System.out.println("");
+    try{
+    System.in.read( );
+    }catch(Exception ss)
+    {
+       
+    }
+   }
+   private byte[] MakeEventPacket( byte[] eventData)
+   {
+     byte[] Result = new byte[6*4+6*4+eventData.length];
+     Arrays.fill( Result , (byte)0 );
+     Result[6]= (byte)2;
+     assign( eventData.length+24, Result,8);
+     assign( 24, Result, 12);
+     System.arraycopy( eventData , 0 , Result , 48 , eventData.length );
+     return Result;
+     
+   }
    
    private byte[] MakeCommandPacket( int N2Bsent)
+   {
+      byte[] Res = new byte[48];
+      Arrays.fill( Res , (byte)0 );
+      Res[6] = (byte)6;
+      
+      assign(24,Res,8);
+      
+      
+      try
+      {
+         ByteArrayOutputStream bStream = new ByteArrayOutputStream(10);
+         DataOutputStream dStream = new DataOutputStream( bStream);
+         dStream.writeDouble( (double ) N2Bsent);
+         byte[] res = bStream.toByteArray( );
+         if( res.length < 8)
+            return null;
+         System.arraycopy( res,0,Res,40,8);
+         
+         
+      }catch(Exception s)
+      {
+         return null;
+      }
+      return Res;
+      
+      
+   }
+   private byte[] MakeCommandPacket0( int N2Bsent)
    {
       byte[] Res = new byte[SocketEventLoader.START_CMD_INDX_TARTG_PROTO+32];
       Arrays.fill( Res , (byte)0 );

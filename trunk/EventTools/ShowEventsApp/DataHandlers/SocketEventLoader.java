@@ -167,7 +167,7 @@ class thisIUDPUser implements IUDPUser
    private      double TotalProtonsOnTarget =0;
    
    private      boolean SendScale =
-                      System.getProperty( "Scale With","" ).toUpperCase( )
+                      System.getProperty( "ScaleWith","" ).toUpperCase( )
                                   .equals( "PROTONS ON TARGET" ) ;
 
    /**
@@ -187,7 +187,8 @@ class thisIUDPUser implements IUDPUser
     * 
     */
    public thisIUDPUser( MessageCenter message_center, String Instrument, 
-                         String detector_file_name,String incident_spectra_filename )
+                         String detector_file_name,
+                         String incident_spectra_filename )
    {
       this.message_center = message_center;
      
@@ -199,6 +200,7 @@ class thisIUDPUser implements IUDPUser
                                    querieFile( incident_spectra_filename)) ,
                            false ) );
       ( new timerThread( this ) ).start();
+    
    }
 
    private String querieFile( String fileName)
@@ -247,39 +249,53 @@ class thisIUDPUser implements IUDPUser
       }
 
       Nshown = 0;
-      if(  data == null || data.length < length )
+         if ( data == null || data.length < length )
+            return;
+         if ( NReceived < 0 )
+         {
+            String S = "";
+            for( int i = 0 ; i < Math.min( length , 24 ) ; i++ )
+               S += String.format( "%02x," , data[i] );
+            System.out.println( "---" + length + "||" + S );
+         }
+         if ( isCommandPacket( data, length ) )
+         {
+            ProcessCommandPacket( data, length );
+            return;
+         }else
+            ProcessDataPacket( data, length );
          return;
-      if( NReceived <0)
-      {String S ="";
-         for( int i=0;i<Math.min( length , 24 );i++)
-             S += String.format("%02x,",data[i]);
-	     System.out.println("---"+length+"||"+ S);
-      }
-      if( length > 24 )
-         if( //data[ 4 ] == (byte) 0  &&
-             //data[ 5 ] == (byte) 2  && 
-             //data[ 6 ] == (byte) 0  && 
-            // data[ 7 ] == (byte) 0  &&
-             
-            (data[ 23 ] & 0x80 ) != 0   ) 
-			{  if( NReceived <-5)
-			     System.out.println("Header Packet ignored");
-			     ProcessCommandPacket( data );
-               return;
-			}
+     }
+   }
+     
+   private boolean isCommandPacket( byte[] data, int length)
+   {
+      if( length <44)
+         return false;
+      if( data[4]!=0 ||data[5]!=0 ||data[6]!=6 ||data[4]!=0 )
+         return false;
+      return true;
+   }
+   
+   
+     private void ProcessDataPacket( byte[] data, int length )
+     {
 
       NReceived++ ;
-
-      int NEvents = Cvrt2Int( data , 20 );
+      if( length <52)
+         return;
+      if( data[6]!=2|| data[5]!=0 ||data[7]!=0)
+         return;
+      int NEvents = Cvrt2Int( data , 8)- Cvrt2Int( data , 12);
 	  NEvents = length/8;
-	  if( NEvents <=0 || (data[ 23 ] & 0x80 ) != 0 )
+	  if( NEvents <=0  )
 	     return;
 	 
       total_received += NEvents;
 
       int[] ids = new int[ NEvents ];
       int[] tofs = new int[ NEvents ];
-      int start = 0;
+      int start = 48;
       // start=0; NEvents = length/2 with Dennis' interpretation
       if( Buffstart + NEvents >= SocketEventLoader.BUFF_SIZE )
       {
@@ -299,7 +315,7 @@ class thisIUDPUser implements IUDPUser
          }
          start += 8;
       }
-
+    
       Buffstart += NEvents;
 
       if( Buffstart > SocketEventLoader.SEND_MINIMUM )
@@ -310,10 +326,21 @@ class thisIUDPUser implements IUDPUser
     }
       // if( NReceived % 200 == 0 )
       // System.out.println( "Received packets =" + NReceived );
-   }
+ 
 
-
-   private void ProcessCommandPacket( byte[] data)
+     private void ProcessCommandPacket( byte[] data, int length)
+     {
+                 
+        TotalProtonsOnTarget += Cvrt2dbl( data, 40);
+       
+        if(  SendScale && TotalProtonsOnTarget !=0 )
+              message_center.send( new Message( Commands.SCALE_FACTOR, 
+                                      (float)( 1f/TotalProtonsOnTarget), true, true));
+     }
+     
+     
+  // First version
+   private void ProcessCommandPacket0( byte[] data, int length)
    {
       
       if(  SocketEventLoader.START_CMD_INDX_TARTG_PROTO <20 )
