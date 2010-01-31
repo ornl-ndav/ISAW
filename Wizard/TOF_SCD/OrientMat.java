@@ -870,7 +870,11 @@ public class OrientMat extends Form implements ActionListener , IObserver ,
       }
       
       if( ActionCommand.equals( OrientMatrixControl.ORIENT_MATRIX_CHANGED ))
-         NewOrientMatrixSet = true;
+      {  
+           NewOrientMatrixSet = true;
+           getParameter( ORIENT_MAT )
+           .setValue( Orient.getOrientationMatrix( - 1 ) );
+      }
       
       if( ActionCommand.equals(OrientMatrixControl.ORIENT_MAT ))
       {
