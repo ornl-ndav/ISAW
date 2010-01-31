@@ -147,9 +147,10 @@ public class IntegratePeaksProcess
                                // get rid of any quotes that were placed around
                                // file names to allow names with spaces to be
                                // passed as command line parameters.  
-    fin_name   = StringUtil.replace( fin_name, "\"", "" );
-    fout_base  = StringUtil.replace( fout_base, "\"", "" );
-    calib_file = StringUtil.replace( calib_file, "\"", "" );
+    fin_name         = StringUtil.replace( fin_name, "\"", "" );
+    fout_base        = StringUtil.replace( fout_base, "\"", "" );
+    calib_file       = StringUtil.replace( calib_file, "\"", "" );
+    orientation_file = StringUtil.replace( orientation_file, "\"", "" );
 
     System.out.println( "LOADING " + fin_name + " #" + ds_num );
     System.out.println( "WRITING " + fout_base );

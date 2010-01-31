@@ -171,7 +171,7 @@ public class IntegratePeaksProcessCaller implements IOperator
          "\""+  calib_file +"\""       + " " + 
                 calib_file_line        + " " + 
 
-                orientation_file       + " " + 
+         "\""+  orientation_file +"\"" + " " + 
 
                 centering              + " " + 
 
