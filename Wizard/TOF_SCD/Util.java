@@ -2241,13 +2241,14 @@ public class Util {
            }
          }
 
-         int n_peaks = all_peaks.size();      // Only use peaks with reflag = 10
+         int n_peaks = all_peaks.size();      // Only use peaks with 
+                                              // reflag % 100 == 10
          Peak_new peak;
          Vector filtered_peaks = new Vector();
          for (int i = 0; i < n_peaks; i++ )
          {
            peak = (Peak_new)all_peaks.elementAt(i);
-           if ( peak.reflag() == 10 )
+           if ( peak.reflag() % 100 == 10 )
              filtered_peaks.add( peak );
          }
 
@@ -2587,13 +2588,14 @@ public class Util {
          SharedMessages.addmsg( "Could not write out the integrate.log file" );
       }
 
-      int n_peaks = Peaks.size();           // Only use peaks with reflag = 10
+      int n_peaks = Peaks.size();           // Only use peaks with 
+                                            // reflag % 100 == 10 
       Peak_new peak;
       Vector filtered_peaks = new Vector();
       for (int i = 0; i < n_peaks; i++ )
       {
         peak = (Peak_new)Peaks.elementAt(i);
-        if ( peak.reflag() == 10 )
+        if ( peak.reflag() % 100 == 10 )
           filtered_peaks.add( peak );
       }
       Peaks = filtered_peaks;
