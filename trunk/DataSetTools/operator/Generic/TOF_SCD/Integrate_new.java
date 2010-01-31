@@ -318,7 +318,7 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
   /**
    * uncertainty in the peak location
    */
-  private              int dX=2, dY=2, dZ=1;
+  private static       int dX=2, dY=2, dZ=1;
   /**
    * integration range in z
    */
@@ -912,10 +912,6 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
     if(DEBUG) System.out.println("Integrating detector new "+detnum);
     StringBuffer logBuffer = new StringBuffer();
     
-    int dX=2, 
-        dY=2, 
-        dZ=1;
-
     // get the run number
     int nrun=0;
     int[] run_numbers = AttrUtil.getRunNumber(ds);
@@ -1247,66 +1243,70 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
     //System.out.println("Integration Method: " + PeakAlg );
 
     // integrate the peaks
+    StringBuffer dummy_buffer = new StringBuffer();
+    StringBuffer my_buffer = dummy_buffer;
+    String       my_method = null;
     for( int i=peaks.size()-1 ; i>=0 ; i-- )
     {
       if( i%listNthPeak == 0 )                   // integrate with logging
+        my_buffer = logBuffer;
+      else 
+        my_buffer = dummy_buffer;
+      
+      if ( PeakAlg.equals(SHOE_BOX) )
       {
-        if ( PeakAlg.equals(SHOE_BOX) )
-          IntegrateUtils.integrateShoebox( (IPeak)peaks.elementAt(i),
-                                            ds, ids,
-                                            colXrange, rowYrange, timeZrange,
-                                            logBuffer ); 
-        else if( PeakAlg.equals(NEW_INTEGRATE)){
-          IntegrateUtils.integratePeak( (IPeak)peaks.elementAt(i),
-                                         ds, ids, 
-                                         timeZrange, incrSlice,
-                                         logBuffer) ;
-          if(DEBUG) System.out.println("Integrating shoebox new "+max_shoebox);
-          peak = (IPeak)(peaks.elementAt(i));
-          if(DEBUG) System.out.println("Integrating intensity   "+peak.inti());
-          if(DEBUG) System.out.println("Integrating sigI        "+peak.sigi());
-          if( peak.inti()<peak.sigi()*max_shoebox)
-          IntegrateUtils.integrateShoebox( (IPeak)peaks.elementAt(i),
-                                            ds, ids,
-                                            colXrange, rowYrange, timeZrange,
-                                            logBuffer ); 
-         }
-       else 
-          integratePeakExp((IPeak)peaks.elementAt(i),
-                            ds, ids,
-                            timeZrange, incrSlice,
-                            opIntPt,logBuffer);    
+        my_method = SHOE_BOX;
+        IntegrateUtils.integrateShoebox( (IPeak)peaks.elementAt(i),
+                                          ds, ids,
+                                          colXrange, rowYrange, timeZrange,
+                                          my_buffer ); 
       }
-      else                                      // integrate but don't log
+      else if( PeakAlg.equals(NEW_INTEGRATE))
       {
-        if ( PeakAlg.equals( SHOE_BOX ) )
+        my_method = NEW_INTEGRATE; 
+        IntegrateUtils.integratePeak( (IPeak)peaks.elementAt(i),
+                                       ds, ids, 
+                                       timeZrange, incrSlice,
+                                       my_buffer) ;
+        peak = (IPeak)(peaks.elementAt(i));
+                                              // use shoe box for small peaks
+                                              // (small peaks may have had 
+                                              //  inti and sigi set to 0.0)
+        if ( (max_shoebox > 0 && peak.sigi() <= 0 ) ||
+              peak.inti() < peak.sigi() * max_shoebox )
+        {
+          my_method = SHOE_BOX; 
           IntegrateUtils.integrateShoebox( (IPeak)peaks.elementAt(i),
                                             ds, ids,
                                             colXrange, rowYrange, timeZrange,
-                                            logBuffer );
-        else if(PeakAlg.equals(NEW_INTEGRATE)){
-          IntegrateUtils.integratePeak( (IPeak)peaks.elementAt(i),
-                                         ds, ids,
-                                         timeZrange,incrSlice,
-                                         logBuffer);
-          if(DEBUG) System.out.println("Integrating shoebox new "+max_shoebox);
-          peak = (IPeak)(peaks.elementAt(i));
-          if(DEBUG) System.out.println("Integrating intensity   "+peak.inti());
-          if(DEBUG) System.out.println("Integrating sigI        "+peak.sigi());
-          if( peak.inti()<peak.sigi()*max_shoebox)
-          IntegrateUtils.integrateShoebox( (IPeak)peaks.elementAt(i),
-                                            ds, ids,
-                                            colXrange, rowYrange, timeZrange,
-                                            logBuffer ); 
-         }
-        else
-        integratePeakExp( (IPeak)peaks.elementAt(i),
-                           ds, ids,
-                           timeZrange, incrSlice,
-                           opIntPt,logBuffer);  
+                                            my_buffer ); 
+        }
+      }
+      else 
+      {
+        my_method = EXPERIMENTAL; 
+        integratePeakExp((IPeak)peaks.elementAt(i),
+                          ds, ids,
+                          timeZrange, incrSlice,
+                          opIntPt,
+                          my_buffer );    
       }
 
+      peak = (IPeak)(peaks.elementAt(i));
+
+      if ( my_method.equals( SHOE_BOX ) )
+        peak.reflag( 100 + peak.reflag() );
+      else if ( my_method.equals( EXPERIMENTAL ) )
+        peak.reflag( 200 + peak.reflag() );
+      
+      if( DEBUG )
+      {
+        System.out.println("Integrating with " + my_method);
+        System.out.println("Integrating intensity   " + peak.inti());
+        System.out.println("Integrating sigI        " + peak.sigi());
+      }
     }
+
     if( logbuffer != null && logbuffer instanceof StringBuffer)
        ((StringBuffer)logbuffer).append(logBuffer);
     else
