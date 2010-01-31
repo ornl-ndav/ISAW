@@ -163,12 +163,12 @@ public class IntegratePeaksProcessCaller implements IOperator
       command = cmd_name               + " " +
                 exe_path               +
                "IntegratePeaksProcess" + " " + 
-                fin_name               + " " +                  
-                fout_base              + " " +
+         "\""+  fin_name  +"\""        + " " +        // Need quotes in case
+         "\""+  fout_base +"\""        + " " +        // spaces in file names
                 ds_num                 + " " +
 
                 use_calib_file         + " " + 
-                calib_file             + " " + 
+         "\""+  calib_file +"\""       + " " + 
                 calib_file_line        + " " + 
 
                 orientation_file       + " " + 
