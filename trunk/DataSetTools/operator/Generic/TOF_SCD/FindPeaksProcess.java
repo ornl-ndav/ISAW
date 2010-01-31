@@ -38,6 +38,8 @@ import DataSetTools.retriever.*;
 import DataSetTools.dataset.*;
 import DataSetTools.operator.Generic.TOF_SCD.Peak_new_IO;
 
+import gov.anl.ipns.Util.Sys.StringUtil;
+
 import java.io.*;
 import java.util.*;
 
@@ -53,6 +55,8 @@ public class FindPeaksProcess
 {
   public static final String LOG_SUFFIX   = "find_peaks.log";
   public static final String PEAKS_SUFFIX = ".peaks";
+
+  public static boolean debug = false;
 
   /**
    *  Read the specified detector data from the specified file, find the
@@ -95,6 +99,16 @@ public class FindPeaksProcess
    */
   public static void main( String args[] )
   {
+    if ( debug )
+    {
+      System.out.println("------------------------------------------------");
+      System.out.println("Raw command line arguments to Find Peaks Process");
+      System.out.println("------------------------------------------------");
+      for ( int i = 0; i < args.length; i++ )
+        System.out.println( args[i] );
+      System.out.println("------------------------------------------------");
+    }
+
     String  fin_name           = args[0];
     String  fout_base          = args[1];
     int     ds_num             = Integer.parseInt( args[2] );
@@ -117,6 +131,13 @@ public class FindPeaksProcess
     boolean do_centroid        = Boolean.parseBoolean( args[17] );
     boolean show_peaks_view    = Boolean.parseBoolean( args[18] );
     int     num_slices         = Integer.parseInt( args[19] );
+
+                               // get rid of any quotes that were placed around
+                               // file names to allow names with spaces to be
+                               // passed as command line parameters.  
+    fin_name   = StringUtil.replace( fin_name, "\"", "" );
+    fout_base  = StringUtil.replace( fout_base, "\"", "" );
+    calib_file = StringUtil.replace( calib_file, "\"", "" );
 
     System.out.println( "LOADING " + fin_name + " #" + ds_num );
     System.out.println( "WRITING " + fout_base );

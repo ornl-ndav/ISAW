@@ -39,6 +39,8 @@ import DataSetTools.dataset.*;
 import DataSetTools.operator.Generic.TOF_SCD.Peak_new_IO;
 import DataSetTools.operator.DataSet.Attribute.LoadOrientation;
 
+import gov.anl.ipns.Util.Sys.StringUtil;
+
 import java.util.*;
 import java.io.*;
 
@@ -56,6 +58,8 @@ public class IntegratePeaksProcess
   public static final String INTEGRATE_SUFFIX = ".integrate";
 
   public static final float DEFAULT_MONITOR_COUNT = 10000;
+
+  public static boolean debug = false;
 
   /**
    *  Read the specified detector data from the specified file, integrate the
@@ -101,6 +105,16 @@ public class IntegratePeaksProcess
    */
   public static void main( String args[] )
   {
+    if ( debug )
+    {
+      System.out.println("------------------------------------------------");
+      System.out.println("Raw command line args to Integrate Peaks Process");
+      System.out.println("------------------------------------------------");
+      for ( int i = 0; i < args.length; i++ )
+        System.out.println( args[i] );
+      System.out.println("------------------------------------------------");
+    }
+
     String  fin_name           = args[0];
     String  fout_base          = args[1];
     int     ds_num             = Integer.parseInt( args[2] );
@@ -129,6 +143,13 @@ public class IntegratePeaksProcess
     int     minus_row_offset   = Integer.parseInt( args[16] );
     int     plus_row_offset    = Integer.parseInt( args[17] );
     float   max_shoebox        = Float.parseFloat( args[18] );
+
+                               // get rid of any quotes that were placed around
+                               // file names to allow names with spaces to be
+                               // passed as command line parameters.  
+    fin_name   = StringUtil.replace( fin_name, "\"", "" );
+    fout_base  = StringUtil.replace( fout_base, "\"", "" );
+    calib_file = StringUtil.replace( calib_file, "\"", "" );
 
     System.out.println( "LOADING " + fin_name + " #" + ds_num );
     System.out.println( "WRITING " + fout_base );

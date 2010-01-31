@@ -222,7 +222,7 @@ public class Util {
         if ( cp == null )
           cp = " ";
         else 
-          cp = " -cp " + cp + " ";
+          cp = " -cp " + "\"" + cp + "\"" + " ";
 
         String mem = System.getProperty( "Find_Peaks_Process_Memory" );
         if ( mem == null )
@@ -2097,7 +2097,7 @@ public class Util {
           if ( cp == null )
             cp = " ";
           else
-            cp = " -cp " + cp + " ";
+            cp = " -cp " + "\"" + cp + "\"" + " ";
 
           String mem = System.getProperty( "Integrate_Peaks_Process_Memory" );
           if ( mem == null )
