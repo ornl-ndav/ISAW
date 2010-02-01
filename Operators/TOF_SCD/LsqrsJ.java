@@ -391,6 +391,10 @@ public class LsqrsJ extends GenericTOF_SCD {
         } catch( NumberFormatException e ) {
           return new ErrorString( "Improper format in matrix" );
         }
+
+        if( LinearAlgebra.determinant( matrix ) <= 0)
+           return new ErrorString(
+                 "Transformation Matrix has Negative Determinant");
       }
     }
 
