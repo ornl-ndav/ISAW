@@ -289,6 +289,9 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
         } catch( NumberFormatException e ) {
           return new ErrorString( "Improper format in matrix" );
         }
+        if( LinearAlgebra.determinant( matrix ) <= 0)
+           return new ErrorString(
+                 "Transformation Matrix has Negative Determinant");
       }
      String matfile = getParameter( 4 )
                                .getValue(  )
@@ -301,11 +304,450 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
        return new ErrorString(xx);
     }
   }
+
+  /**
+   * Public static method for the base Least Squares operators and forms.
+   * Finds the least square matrix mapping the hkl values to the qx,qy,qz
+   * values. Returns this matrix or an error message
+   * 
+   * @param peaksPar  The Vector of Peaks( will not be changed)
+   * @param  run_nums The run numbers to use 
+   * @param seq_nums The sequence numbers to use. 
+   * @param matrix The transformation matrix to use. 
+   * @param threshold The minimum peak intensity threshold to 
+   *          use.
+   * @param keepRange The detector pixel range to keep.
+   * @param cellType  The type of cell to be used if the 
+   *              least squares optimization is to be constrained
+   *             to a particular unit cel1 l type
+  
+   * @return  the optimized orientation matrix or an errormessage.
+   */
+  public static Object LsqrsJ( Vector peaksPar, int[] run_nums, int[] seq_nums,
+                 float[][] matrix ,String logfile,int threshold, int[] keepRange,
+                 String cellType)
+  {
+     Vector peaks =new Vector();
+     for( int i=0; i< peaksPar.size(); i++)
+     {
+       IPeak old_peak = (IPeak)peaksPar.elementAt(i);
+       IPeak new_peak = old_peak.createNewPeakxyz( old_peak.x(), 
+                                                   old_peak.y(),
+                                                   old_peak.z(), 
+                                                   old_peak.time() );
+       peaks.addElement( new_peak );
+     }  
+     
+     if ( run_nums != null && run_nums.length < 1 )
+        run_nums = null;
+      if ( seq_nums != null && seq_nums.length < 1 )
+        seq_nums = null;
+      
+     int lowerLimit;
+     int upperLimit;
+     double[] sig_abc = null;
+     if( keepRange != null ) {
+       lowerLimit   = keepRange[0];  //lower limit of range
+
+       //upper limit of range
+       upperLimit = keepRange[keepRange.length - 1];
+     } else {  //shouldn't happen, but default to 0:MAX_VALUE
+       lowerLimit   = 0;
+       upperLimit   = Integer.MAX_VALUE;
+     }
+
+     
+     //-------------------cut
+     StringBuffer logBuffer = new StringBuffer(  );
+
+     //logBuffer.append( "Peaks file  = " + peaksfile + "\n" );
+    
+     logBuffer.append( "run#        = " + arrayToString( run_nums ) + "\n" );
+     logBuffer.append( "seq#        = " + arrayToString( seq_nums ) + "\n" );
+
+     if( matrix != null ) {
+       logBuffer.append( "     " );
+
+       for( int i = 0; i < 3; i++ ) {
+         logBuffer.append( Format.real( matrix[0][i], 3 ) + " " );
+       }
+
+       logBuffer.append( "\n" + "Tr = " );
+
+       for( int i = 0; i < 3; i++ ) {
+         logBuffer.append( Format.real( matrix[1][i], 3 ) + " " );
+       }
+
+       logBuffer.append( "\n" + "     " );
+
+       for( int i = 0; i < 3; i++ ) {
+         logBuffer.append( Format.real( matrix[2][i], 3 ) + " " );
+       }
+
+       logBuffer.append( "\n" );
+     } else {
+       logBuffer.append( "UB = identity\n" );
+     }
+
+     logBuffer.append( "------------------------------\n" );
+
+     // read in the reflections from the peaks file
+     
+      IPeak peak = null;
+     int[] keep = new int[peaks.size()];
+     java.util.Arrays.fill(keep ,0);
+     int nargs= peaks.size();
+     // trim out the peaks that are not in the list of selected sequence numbers
+     if( seq_nums != null ) {
+       for( int i = peaks.size(  ) - 1; i >= 0; i-- ) {
+         peak = ( IPeak )peaks.elementAt( i );
+
+         if( binsearch( seq_nums, peak.seqnum(  ) ) == -1 ) {
+            
+           keep[i] = -1;
+           nargs--;           
+         }
+       }
+     }
+
+     // trim out the peaks without hkl listed
+     for( int i = peaks.size(  ) - 1; i >= 0; i-- ) {
+       peak = ( IPeak )peaks.elementAt( i );
+       //peak.UB(matrix);
+       if(keep[i] ==0)
+       if( ( peak.h(  ) == 0 ) && ( peak.k(  ) == 0 ) && ( peak.l(  ) == 0 ) ) {
+        
+           keep[i] = -1;
+           nargs--;
+       }
+     }
+
+     // trim out the ones that are not in the selected histograms
+     if( run_nums != null ) {
+       for( int i = peaks.size(  ) - 1; i >= 0; i-- ) {
+         peak = ( IPeak )peaks.elementAt( i );
+         if(keep[i] ==0)
+         if( binsearch( run_nums, peak.nrun(  ) ) == -1 ) {          
+           
+             keep[i] = -1;
+             nargs--;         
+         }
+       }
+     }
+
+     // trim out small peaks (defined by the threshold parameter)
+     if( threshold >= 0 ) {
+       for( int i = peaks.size(  ) - 1; i >= 0; i-- ) {
+         peak = ( IPeak )peaks.elementAt( i );
+         if(keep[i] ==0)
+         if( peak.ipkobs(  ) < threshold ) {
+         
+             keep[i] = -1;
+             nargs--;
+         }
+       }
+     }
+
+     // trim out edge peaks (defined by the "pixels to keep" parameter)
+     for( int i = peaks.size(  ) - 1; i >= 0; i-- ) {
+       peak = ( IPeak )peaks.elementAt( i );
+
+       //see if the peak pixels are within the user defined array.  We are
+       //assuming a SQUARE detector, so we'll reject it if the x or y position
+       //is not within our range
+       if(keep[i] ==0)
+       if( ( peak.x(  ) > upperLimit ) || ( peak.x(  ) < lowerLimit ) ||
+           ( peak.y(  ) > upperLimit ) || ( peak.y(  ) < lowerLimit ) ) {
+         
+               keep[i] = -1;
+               nargs--;
+       }
+     }
+
+     // can't refine nothing
+     if( nargs<= 0 ) {
+       return new ErrorString( "No peaks to refine" );
+     }
+
+     // can't do a least squares fit without at least 3 points
+     if( nargs < 3 ) {
+       return new ErrorString( "Only " + peaks.size() + " peaks to fit in " +
+                               "LsqrsJ, need at least 3" );
+     }
+
+
+     // create the hkl-matrix and q-matrix (q=1/d)
+     double[][] q      = new double[ nargs ][ 3 ];
+     double[][] hkl    = new double[ nargs ][ 3 ];
+     float[]    unrotQ = new float[3];
+     int k=0;
+     for( int i = 0; i < peaks.size(); i++ ) 
+     if( keep[i]==0){
+       peak        = ( IPeak )peaks.elementAt( i );
+       hkl[k][0]   = Math.round( peak.h(  ) );
+       hkl[k][1]   = Math.round( peak.k(  ) );
+       hkl[k][2]   = Math.round( peak.l(  ) );
+       unrotQ      = peak.getUnrotQ();
+       for ( int component = 0; component < 3; component++ )
+         q[k][component] = unrotQ[component];
+       k++;
+     }else{
+        peak =( IPeak )peaks.elementAt( i );
+        peak.UB(null);
+        if( peak instanceof Peak)
+          ((Peak)peak).sethkl(0f,0f,0f,false);
+        else
+           peak.sethkl(0f,0f,0f);
+     }
+
+     // apply the transformation matrix
+     if( matrix != null ) {
+       float[] myhkl = new float[3];
+
+       for( int i = 0; i < hkl.length; i++ ) {
+         // zero out the temp values
+         for( int j = 0; j < 3; j++ ) {
+           myhkl[j] = 0f;
+         }
+
+         // multiply by the transformation matrix
+         for( int j = 0; j < 3; j++ ) {
+           for(  k = 0; k < 3; k++ ) {
+             myhkl[k] = myhkl[k] + ( matrix[k][j] * ( float )hkl[i][j] );
+           }
+         }
+
+         // copy back the temp values
+         for( int j = 0; j < 3; j++ ) {
+           hkl[i][j] = Math.round( myhkl[j] );
+         }
+       }
+     }
+
+     // set the new transformed hkl values back into the peaks objects. D.M.
+     k=0;
+     for( int i = 0; i < peaks.size(); i++ )
+     if(keep[i]==0) {
+       peak = ( IPeak )peaks.elementAt( i );
+      
+       peak.UB(null);
+       if( peak instanceof Peak)
+        ((Peak) peak).sethkl((float)hkl[k][0], (float)hkl[k][1], (float)hkl[k][2]
+                  );
+       else
+          peak.sethkl((float)hkl[k][0], (float)hkl[k][1], (float)hkl[k][2]);
+       k++;
+     }
+
+     // calculate ub
+     double[][] UB = new double[3][3];
+     double chisq  = 0.;
+     
+       double[][] Thkl = new double[peaks.size(  )][3];
+       double[][] Tq   = new double[peaks.size(  )][3];
+
+       for( int i = 0; i < hkl.length; i++ ) {
+         for( int j = 0; j < 3; j++ ) {
+           Thkl[i][j]   = hkl[i][j];
+           Tq[i][j]     = q[i][j];
+         }
+       }
+
+       System.out.println("CellType is "+cellType);
+       if ( cellType.startsWith( "Tri" ) )
+         chisq = LinearAlgebra.BestFitMatrix( UB, Thkl, Tq );
+       else{
+          sig_abc= new double[7];
+         chisq = SCD_util.BestFitMatrix( cellType, UB, Thkl, Tq ,sig_abc);
+       }
+
+
+       if ( Double.isNaN( chisq ) )
+         return new ErrorString( "ERROR in LsqrsJ: " + 
+                                 " BestFitMatrix calculation failed" );
+       chisq   = 0.;  // reset chisq
+       Thkl    = new double[3][nargs];
+
+       for( int i = 0; i < hkl.length; i++ ) {
+         for( int j = 0; j < 3; j++ ) {
+           Thkl[j][i] = hkl[i][j];
+         }
+       }
+
+       Tq     = LinearAlgebra.mult( UB, Thkl );
+       Thkl   = LinearAlgebra.mult( LinearAlgebra.getInverse( UB ), Tq );
+
+                                 // the "observed" hkl corresponding to measured
+                                 // q values.
+       double obs_q[][] = LinearAlgebra.getTranspose( q );
+       double obs_hkl[][];          
+       obs_hkl = LinearAlgebra.mult( LinearAlgebra.getInverse( UB ), obs_q );
+
+       // write information to the log file
+       logBuffer.append( 
+         " seq#   h     k     l      x      y       z      " +
+         "xcm    ycm      wl  Iobs    Qx     Qy     Qz\n" );
+       k=0;
+       for( int i = 0; i < peaks.size(  ); i++ ) 
+       if(keep[i]==0){
+         peak = (IPeak)peaks.elementAt(i);
+   
+                         // The first line logged for a peak has the observered
+                         // values for the peak, 'indexed' by integer hkl values.
+         logBuffer.append( Format.integer( peak.seqnum(), 5)+" " +
+                           Format.integer( peak.h(), 3 )+" " +
+                           Format.integer( peak.k(), 5 )+" " +
+                           Format.integer( peak.l(), 5 )+" " +
+                           Format.real( peak.x(),   8, 2 )+" " +
+                           Format.real( peak.y(),   6, 2 )+" " +
+                           Format.real( peak.z(),   7, 2 )+" " +
+                           Format.real( peak.xcm(), 6, 2 )+" " +
+                           Format.real( peak.ycm(), 6, 2 )+" " +
+                           Format.real( peak.wl(),  7, 4 )+" " +
+                           Format.integer(  peak.ipkobs(), 5 )+" " +
+                           Format.real( peak.getUnrotQ()[0], 7, 3 )+" " +
+                           Format.real( peak.getUnrotQ()[1], 6, 3 )+" " + 
+                           Format.real( peak.getUnrotQ()[2], 6, 3 )+"\n" );
+
+                   logBuffer.append( Format.string("",73) +
+                           Format.real( Tq[0][k], 6, 3 )+" " + 
+                           Format.real( Tq[1][k], 6, 3 )+" " +
+                           Format.real( Tq[2][k], 6, 3 ) + "\n" );
+
+                           // The third line logged has the fractional hkl
+                           // values observed for a peak, together with the
+                           // difference in theoretical and observed hkl
+         logBuffer.append( "      " + 
+                           Format.real( obs_hkl[0][k], 6, 2 )+" " +
+                           Format.real( obs_hkl[1][k], 5, 2 )+" " + 
+                           Format.real( obs_hkl[2][k], 5, 2 )+" "  );
+
+         double error = Math.abs( obs_hkl[0][k] - peak.h() ) +
+                        Math.abs( obs_hkl[1][k] - peak.k() ) +
+                        Math.abs( obs_hkl[2][k] - peak.l() );
+
+         logBuffer.append( "   Del =" + Format.real( error, 6, 3 ) + " " ); 
+
+                                               // show one "*" for each .1 error
+         int n_stars = (int)( error / 0.1 );   // in hkl, up to 10.
+         if ( n_stars > 10 )
+           n_stars = 10;
+         while ( n_stars > 0 )     
+         {
+           logBuffer.append( "*" ); 
+           n_stars--;
+         } 
+         logBuffer.append( "\n" );
+         k++;
+       }
+
+       // calculate 
+       for( int i = 0; i < nargs; i++ ) {
+         for( int j = 0; j < 3; j++ ) {
+           chisq = chisq + ( ( q[i][j] - Tq[j][i] ) * ( q[i][j] - Tq[j][i] ) );
+         }
+       }
+     
+
+     // add chisq to the logBuffer
+     logBuffer.append( 
+       "\nchisq[Qobs-Qexp]: " + Format.real( chisq, 8, 5 ) + "\n" );
+
+     // calculate lattice parameters and cell volume
+     double[] abc = Util.abc( UB );
+
+     // determine uncertainties
+    
+     if(sig_abc == null){
+        sig_abc = new double[7];
+     
+       double numFreedom      = 3. * ( nargs - 3. );
+       double[] temp_abc      = null;
+       double[][] derivatives = new double[3][7];
+       double[][] VC          = generateVC( peaks ,keep);
+
+       for( int i = 0; i < 3; i++ ) {
+         // determine derivatives
+         for( int j = 0; j < 3; j++ ) {
+           UB[i][j]   = UB[i][j] + SMALL;
+           temp_abc   = Util.abc( UB );
+           UB[i][j]   = UB[i][j] - SMALL;
+
+           for(  k = 0; k < 7; k++ ) {
+             derivatives[j][k] = ( temp_abc[k] - abc[k] ) / SMALL;
+           }
+         }
+
+         // accumulate sigmas
+         for( int l = 0; l < 7; l++ ) {
+           for( int m = 0; m < 3; m++ ) {
+             for( int n = 0; n < 3; n++ ) {
+               sig_abc[l] += (derivatives[m][l] * VC[m][n] * derivatives[n][l]);
+             }
+           }
+         }
+       }
+
+       // turn the 'sigmas' into actual sigmas
+       double delta = chisq / numFreedom;
+
+       for( int i = 0; i < sig_abc.length; i++ ) {
+         sig_abc[i] = Math.sqrt( delta * sig_abc[i] );
+       }
+     }
+
+     // finish up the log buffer
+     logBuffer.append( "\nOrientation matrix:\n" );
+
+     for( int i = 0; i < 3; i++ ) {
+       for( int j = 0; j < 3; j++ ) {
+         logBuffer.append( Format.real( UB[j][i], 9, 6 ) +" ");
+       }
+
+       logBuffer.append( "\n" );
+     }
+
+     logBuffer.append( "\n" );
+     logBuffer.append( "Lattice parameters:\n" );
+
+     for( int i = 0; i < 7; i++ ) {
+       logBuffer.append( Format.real( abc[i], 9, 3 )+" " );
+     }
+
+     logBuffer.append( "\n" );
+
+     for( int i = 0; i < 7; i++ ) {
+       logBuffer.append( Format.real( sig_abc[i], 9, 3 )+" " );
+     }
+
+     logBuffer.append( "\n" );
+
+     // print out the results
+     toConsole( UB, abc, sig_abc );
+
+     // write the log file
+     if( logfile == null)
+       logfile = null;
+     
+     
+       String warn = writeLog( logfile, logBuffer.toString(  ) );
+
+       if( ( warn != null ) && ( warn.length(  ) > 0 ) ) {
+         SharedData.addmsg( "JLsqrs(WARN) while writting lsqrs.log: " + warn );
+       } else {
+         SharedData.addmsg( "Wrote log file: " + logfile + "." );
+       }
+     
+
+       float[][] F_UB=LinearAlgebra.double2float( UB );
+       return F_UB;
+   //-----cut
+  }
   
     /**
      * Public static method for the base Least Squares operators and forms.
      * Finds the least square matrix mapping the hkl values to the qx,qy,qz
-     * values
+     * values. Writes the optimized matrix to a file.
      * 
      * @param peaksPar  The Vector of Peaks( will not be changed)
      * @param  run_nums The run numbers to use 
