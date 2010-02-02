@@ -132,6 +132,8 @@ import DataSetTools.dataset.PixelInfoListAttribute;
 import DataSetTools.dataset.XScale;
 import DataSetTools.operator.Generic.TOF_SCD.*;
 public class Util{
+   
+   public static float[][] ChgAxis ={{0,0,1},{1,0,0},{0,1,0}};
   /**
    * Don't let anyone try to instantiate the class
    */
@@ -1148,6 +1150,7 @@ public class Util{
   public static ErrorString writeMatrix( String filename, float[][] UB,
                                          float[] abc, float[] sig){
     StringBuffer sb;
+   
     if(filename.endsWith(".x")){ // writing an experiment file
       sb=new StringBuffer(81*8);
       TextFileReader tfr=null;
@@ -1208,12 +1211,42 @@ public class Util{
         }
       }
     }else{ // writing a matrix file
+       int[]Form = getForm( filename);
       sb= new StringBuffer(10*3+1);
-
-      // the UB matrix
+      float[][] UB1 = UB;
+      String STranspInv ="Transpose ";
+      String Column ="column";
+      String Row ="row";
+      String twoPi ="1";
+      String beam ="x";
+      String up ="z";
+      if( Form[0] == 1)
+      {  
+         STranspInv="";
+         Column="row";
+         Row ="column";
+         UB1 = LinearAlgebra.getTranspose( UB );
+      }
+      if( Form[2] ==1)
+      {  
+         twoPi="2PI";
+         UB1 = LinearAlgebra.mult( UB1 , 2*(float)Math.PI );
+      }
+      if( Form[1] ==1)
+      {
+         STranspInv +="Inverse ";
+         UB1 = LinearAlgebra.getInverse( UB1 );
+      }
+     if( Form[3] ==1 )
+     {
+        beam ="z";
+        up ="y";
+        UB1 = LinearAlgebra.mult(UB1 , ChgAxis );
+     }
+      // the matrix
       for( int i=0 ; i<3 ; i++ ){
         for (int j=0 ; j<3 ;j++ )
-          sb.append(Format.real(UB[j][i],11,8)+" ");
+          sb.append(Format.real(UB1[j][i],11,8)+" ");
         sb.append("\n");
       }
 
@@ -1225,14 +1258,33 @@ public class Util{
       for( int i=0 ; i<7 ; i++)
         sb.append(Format.real(sig[i],11,4)+" ");
       sb.append("\n\n\n");
-      sb.append("The above matrix is the TRANSPOSE of the UB Matrix that ");
+      
+      if( STranspInv.length()>=1)
+         STranspInv="the "+STranspInv+"of ";
+      
+      sb.append("The above matrix is "+STranspInv +"the UB Matrix. The UB matrix ");
       sb.append( "maps the column \n");
       sb.append( "vector (h,k,l ) to the column vector (q'x,q'y,q'z).\n");
-      sb.append( "|Q'|=1/dspacing and its coordinates are \"currently\" " );
-      sb.append( "relative to IPNS's \n");
-      sb.append( "right-hand coordinate system where x is the beam ");
-      sb.append( "direction and z is \n");
-      sb.append( "vertically upward.\n" );
+      sb.append( "|Q'|="+twoPi+"/dspacing and its coordinates are a " );
+      sb.append( "right-hand coordinate system where \n "+beam+" is the beam ");
+      sb.append( "direction and "+up+" is ");
+      sb.append( "vertically upward." );
+      
+      if( Form[3] ==0)
+         sb.append("(IPNS convention)\n");
+      else
+         sb.append( "\n" );
+      
+      if( Form[4] !=0 )
+      {
+         sb.append("\n The inverse of the top matrix is \n");
+         UB1 = LinearAlgebra.getInverse(UB1);
+         for( int i=0 ; i<3 ; i++ ){
+            for (int j=0 ; j<3 ;j++ )
+              sb.append(Format.real(UB1[j][i],11,8)+" ");
+            sb.append("\n");
+          }
+      }
     }
     //Write results to the matrix file
     FileWriter fw=null;
@@ -1254,6 +1306,32 @@ public class Util{
     return null;
   }
 
+  /**
+   * Codes for  orientation matrix file  output
+   * 
+   * @param filename  The filename to write/read the orientation matrix from
+   * 
+   * @return  5 integers(0 or 1) where old IPNS has all 0's.
+   *     [0]:Not Transposed=1,
+   *     [1]:Inverted =1
+   *     [2]:with 2pi =1
+   *     [3]:SNS coord=1, 2=??
+   *     [4]:Show both UB and UB inv =1
+   */
+  public static int[] getForm( String filename)
+  {
+     int[] Res = new int[5];
+     Arrays.fill( Res , 0 );
+     if( filename == null)
+        return Res;
+     if( filename.toUpperCase( ).endsWith( "AMAT" ))
+     {
+        Res[1]=1;
+        Res[4]=1;
+        return Res;
+     }
+     return Res;
+  }
   /**
    * Method to calculate the lattice parameters from a given UB matrix
    */
