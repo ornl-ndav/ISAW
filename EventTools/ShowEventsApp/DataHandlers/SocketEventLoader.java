@@ -282,20 +282,23 @@ class thisIUDPUser implements IUDPUser
      {
 
       NReceived++ ;
+     
       if( length <52)
          return;
       if( data[6]!=2|| data[5]!=0 ||data[7]!=0)
          return;
+      
       int NEvents = Cvrt2Int( data , 8)- Cvrt2Int( data , 12);
-	  NEvents = length/8;
+	  NEvents = NEvents/8;//8 bytes per event packet
+	  
 	  if( NEvents <=0  )
 	     return;
 	 
       total_received += NEvents;
-
+    
       int[] ids = new int[ NEvents ];
       int[] tofs = new int[ NEvents ];
-      int start = 48;
+      int start = 24 + Cvrt2Int( data , 12);
       // start=0; NEvents = length/2 with Dennis' interpretation
       if( Buffstart + NEvents >= SocketEventLoader.BUFF_SIZE )
       {
@@ -400,6 +403,8 @@ class thisIUDPUser implements IUDPUser
       if( Buffstart == 0 )
       {
 //       System.out.println("NO EVENTS NOW, Total sent = " + total_received );
+//        System.out.println("N Events Received,packets="+total_received+","+
+//               NReceived);
          return;
       }
       
