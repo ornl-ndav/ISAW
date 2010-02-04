@@ -97,7 +97,7 @@ public class SocketServerTest extends UDPSend
    {
       Random ran_gen = new Random();
       int NsentAftCommandPacket = 0;
-
+      int TotalEventsSent =0;
       SNS_TofEventList eventList = new SNS_TofEventList( EventFileName );
       long totNevents = eventList.numEntries();
 
@@ -191,7 +191,9 @@ public class SocketServerTest extends UDPSend
             {
               byte[] packet = packets.elementAt(i);
               packet1 = MakeEventPacket( packet);
-             
+            
+
+              TotalEventsSent += packet.length/8;
               send( packet1 , packet1.length );
               //showwpacket( packet1,"events");
               NPacketsSent++ ;
@@ -215,6 +217,7 @@ public class SocketServerTest extends UDPSend
             System.exit( 0 );
          }
       }
+ 
    }
    private void showwpacket( byte[] packet, String message)
    {
