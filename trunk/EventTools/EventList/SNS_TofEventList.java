@@ -262,42 +262,29 @@ public class SNS_TofEventList implements ITofEventList
    * sequence: b0, b1, b2, b3, with the lowest order byte, b0, first
    * and the the highest order byte, b3, last.
    * 
-   * @param byte_index  The index of the first byte in the
-   *                    buffer
+   * @param i  The index of the first byte in the buffer
    *                    
    * @return The integer value represented by four successive bytes from
    *         the file. 
    */
-  private int getValue_32( byte[] buffer, int byte_index )
+  private int getValue_32( byte[] buffer, int i )
   {
-    byte_index += 3;                    // go to high order byte for
-                                        // this integer, put it in a int
-    int byte_v = buffer[byte_index--];  // variable, and make it positive
-    if ( byte_v < 0 )                   // in case the "signed byte" was <0
-      byte_v += 256;
+    int val = 0;
 
-    int val = byte_v;                   // store high order byte in val and
-                                        // proceed to build up the total val
-    byte_v = buffer[byte_index--];      // by combining with the lower order
-    if ( byte_v < 0 )                   // three bytes.
-      byte_v += 256;
+    i += 3;
+                                   // NOTE: When the signed byte is
+    val |= buffer[ i-- ] & 0xFF;   // converted to int, it is sign
+    val <<= 8;                     // extended, so the $0xFF is
+                                   // needed.
+    val |= buffer[ i-- ] & 0xFF;
+    val <<= 8;
 
-    val = val * 256 + byte_v;
+    val |= buffer[ i-- ] & 0xFF;
+    val <<= 8;
 
-    byte_v = buffer[byte_index--];
-    if ( byte_v < 0 )
-      byte_v += 256;
-
-    val = val * 256 + byte_v;
-
-    byte_v = buffer[byte_index];
-    if ( byte_v < 0 )
-      byte_v += 256;
-
-    val = val * 256 + byte_v;
-
+    val |= buffer[ i ] & 0xFF;
     return val;
-  }
+   }
 
 
   /**
