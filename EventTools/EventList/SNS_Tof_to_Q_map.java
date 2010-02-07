@@ -174,16 +174,11 @@ public class SNS_Tof_to_Q_map
      for ( int i = 0; i < grid_arr.length; i++ )
        inverse_mapper[i] = new VecQMapper( grid_arr[i], L1, t0/10, orient );
 
-     
+     System.out.println("In constructor, spectrum file = " + spectrum_filename);
+
      BuildMaps();
-     if ( ( spectrum_filename == null ||
-            spectrum_filename.trim().length() == 0 )  &&
-            instrument_name.equals( SNAP )             )
-     {                                                       // use default
-       String isaw_home = System.getProperty("ISAW_HOME");
-       spectrum_filename = isaw_home +
-                                 "/InstrumentInfo/SNS/SNAP_Spectrum.dat";
-     }
+     if ( spectrum_filename == null || spectrum_filename.trim().length() == 0 ) 
+       spectrum_filename = null;
 
      BuildLamdaWeights( spectrum_filename );
      BuildPixWeights();
@@ -455,6 +450,8 @@ public class SNS_Tof_to_Q_map
       float[] recalc = inverse_mapper[k].QtoRowColTOF( q_vec );
       if ( recalc != null )
       {
+//      recalc[2] = recalc[2] - t0/10;      // switch from "theoretical" tof to
+                                            // measured tof, in microseconds?
         float[] result = { recalc[0], recalc[1], recalc[2], grid_arr[k].ID() };
         return result;
       }
@@ -558,6 +555,7 @@ public class SNS_Tof_to_Q_map
     }
 
 
+    System.out.println("Spectrum file specified as: " + spectrum_file_name );
     if ( spectrum_file_name == null  ||       // no incident spectrum 
          spectrum_file_name.trim().length() == 0 ) 
       return;

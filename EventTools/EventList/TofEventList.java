@@ -41,12 +41,15 @@ package EventTools.EventList;
  */
 public class TofEventList implements ITofEventList
 {
-  int[] tofs = null;
-  int[] ids  = null;
-
+  int[] events = null;   // list of events stored interleaved in this array.
+                         // This array MAY be just a reference to the array
+                         // of events that was passed in when this was 
+                         // constructed.
 
   /**
-   *  Record a reference to the specifed arrays of tofs and ids.
+   *  Construct a TofEventList object from separate arrays of tofs and ids.
+   *  NOTE: This constructor is MUCH less efficient that the constructor that
+   *  takes one array containg the TOFs and IDs interleaved.
    *  
    *  @param tofs  Array of times-of-flight for this event list.
    *  @param ids   Array of pixel ids for this event list.
@@ -54,26 +57,64 @@ public class TofEventList implements ITofEventList
    */
   public TofEventList( int[] tofs, int[] ids )
   {
-    this.tofs = tofs;
-    this.ids  = ids;
+    if ( tofs == null || ids == null )
+      throw new IllegalArgumentException(
+                           "null array passed to TofEventList constructor 1");
+
+    int num_entries = Math.min( tofs.length, ids.length );
+
+    events = new int[ 2 * num_entries ];
+    int index = 0;
+    for ( int i = 0; i < num_entries; i++ )
+    {
+      events[index++] = tofs[i]; 
+      events[index++] = ids[i]; 
+    }
+  }
+  
+
+  /**
+   *  Construct a TofEventList object from an array of interleaved tofs and
+   *  ids.
+   *  
+   *  @param raw_events  Array with interleaved times-of-flight and ids
+   *                     for this event list.
+   *  @param make_copy   If true, the raw_event array will be copied into
+   *                     a new internal array; If false, a reference to the
+   *                     raw_events array will be kept, instead of making a
+   *                     copy. 
+   */
+  public TofEventList( int[] raw_events, boolean make_copy )
+  {
+    if ( raw_events == null )
+      throw new IllegalArgumentException( 
+                           "null array passed to TofEventList constructor 2");
+
+    if ( make_copy )
+    {
+      events = new int[ raw_events.length ]; 
+      System.arraycopy( raw_events, 0, events, 0, raw_events.length );
+    }
+    else
+      events = raw_events;
   }
 
 
   @Override
   public long numEntries()
   {
-    if ( tofs != null )
-      return tofs.length;
+    if ( events != null )
+      return events.length / 2;
 
     return 0;
   }
 
-  
+
   @Override
-  public int[] eventTof( long first_event, long num_events )
+  public int[] rawEvents( long first_event, long num_events )
   {
     long num_available = numEntries();
-    if ( num_available <= 0 || num_available > Integer.MAX_VALUE )
+    if ( num_available <= 0 || num_available > MAX_LIST_SIZE )
       return null;
 
     if ( num_events  <= 0 ||
@@ -86,13 +127,35 @@ public class TofEventList implements ITofEventList
       num_events = num_possible;
 
     if ( first_event == 0 && num_events == num_available )
-      return tofs;
+      return events;
+
+    int[] raw_events = new int[ (int)num_events ];
+    System.arraycopy(events, (int)first_event, raw_events, 0, (int)num_events);
+    return raw_events;
+  }
+
+
+  
+  @Override
+  public int[] eventTof( long first_event, long num_events )
+  {
+    long num_available = numEntries();
+    if ( num_available <= 0 || num_available > MAX_LIST_SIZE )
+      return null;
+
+    if ( num_events  <= 0 ||
+         first_event <  0 ||
+         first_event >= num_available )
+      return null;
+
+    long num_possible = num_available - first_event;
+    if ( num_events > num_possible )
+      num_events = num_possible;
 
     int[] tof_array = new int[ (int)num_events ]; 
-    System.arraycopy( tofs, (int)first_event, tof_array, 0, (int)num_events );
-
-    System.out.println("COPIED tofs ARRAY *******************************");
     
+    for ( int i = 0; i < num_events; i++ ) 
+      tof_array[i] = events[ 2*i ];
     return tof_array;
   }
 
@@ -113,13 +176,10 @@ public class TofEventList implements ITofEventList
     if ( num_events > num_possible )
       num_events = num_possible;
 
-    if ( first_event == 0 && num_events == num_available )
-      return ids;
-
     int[] ids_array = new int[ (int)num_events ];
-    System.arraycopy( ids, (int)first_event, ids_array, 0, (int)num_events );
 
-    System.out.println("COPIED ids ARRAY *******************************");
+    for ( int i = 0; i < num_events; i++ )
+      ids_array[i] = events[ 2*i + 1 ];
 
     return ids_array;
   }

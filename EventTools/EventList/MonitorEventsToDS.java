@@ -69,8 +69,8 @@ public class  MonitorEventsToDS
     int[] histogram = new int[ BUFFER_SIZE/4 ];
 
     int index = 0;
-    for ( int i = 0; i < bytes_read-4; i += 4 )
-      histogram[index++] = getValue_32( buffer, i+4 );
+    for ( int i = 0; i < bytes_read; i += 4 )
+      histogram[index++] = SNS_TofEventList.getValue_32( buffer, i );
 
     return histogram;
   }
@@ -105,57 +105,12 @@ public class  MonitorEventsToDS
 
 
   /**
-   * Decode the integer value stored in a sequence of 
-   * two bytes in the buffer.  The four bytes determining
-   * the Integer value are stored in the file and buffer in the 
-   * sequence: b0, b1, b2, b3, with the lowest order byte, b0, first
-   * and the the highest order byte, b3, last.
-   * 
-   * @param byte_index  The index of the first byte in the
-   *                    buffer
-   *                    
-   * @return The integer value represented by four successive bytes from
-   *         the file. 
-   */
-  private static int getValue_32( byte[] buffer, int byte_index )
-  {
-    byte_index += 3;                    // go to high order byte for
-                                        // this integer, put it in a int
-    int byte_v = buffer[byte_index--];  // variable, and make it positive
-    if ( byte_v < 0 )                   // in case the "signed byte" was <0
-      byte_v += 256;
-
-    int val = byte_v;                   // store high order byte in val and
-                                        // proceed to build up the total val
-    byte_v = buffer[byte_index--];      // by combining with the lower order
-    if ( byte_v < 0 )                   // three bytes.
-      byte_v += 256;
-
-    val = val * 256 + byte_v;
-
-    byte_v = buffer[byte_index--];
-    if ( byte_v < 0 )
-      byte_v += 256;
-
-    val = val * 256 + byte_v;
-
-    byte_v = buffer[byte_index];
-    if ( byte_v < 0 )
-      byte_v += 256;
-
-    val = val * 256 + byte_v;
-
-    return val;
-  }
-
-
-  /**
    *  main program providing basic test for this class
    */
   public static void main(String[] args) throws IOException
   {
-//  String file_name = "/usr2/SNAP_4/EVENTS/SNAP_732_bmon_histo.dat";
-    String file_name = "/usr2/SNAP_5/SNAP_875_bmon_histo.dat";
+    String file_name = "/usr2/SNAP_4/EVENTS/SNAP_732_bmon_histo.dat";
+//  String file_name = "/usr2/SNAP_5/SNAP_875_bmon_histo.dat";
     int[]  histogram = getMonitorHistogram( file_name );
 
     for ( int i = 0; i < 10; i++ )
