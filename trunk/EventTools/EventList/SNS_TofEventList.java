@@ -43,13 +43,6 @@ import java.io.*;
 public class SNS_TofEventList implements ITofEventList
 {
   /**
-   *  The maximum array size that is a multiple of 8.  This is needed to
-   *  step through the SNS event file in steps that are a multiple of 8.
-   */
-  public static final long MAX_ARRAY_SIZE = 
-                             (((long)Integer.MAX_VALUE) / 8) * 8;
-
-  /**
    *  Size of byte buffer used when getting a sequence of bytes from
    *  the disk.  NOTE: The size must be a multiple of 8.
    */ 
@@ -59,8 +52,7 @@ public class SNS_TofEventList implements ITofEventList
   private long   file_size;  
   private long   first_event;   // index of the first event that was loaded
   private long   num_events;    // number of events that were loaded
-  private int[]  tofs;          // list of times-of-flight for loaded events
-  private int[]  pixel_ids;     // list of pixel IDs for loaded events
+  private int[]  events;        // list of interleaved TOF and pixel ID values
 
   /**
    * Construct an SNS_TofEventList wrapper around the specified file,
@@ -80,8 +72,7 @@ public class SNS_TofEventList implements ITofEventList
     this.filename = filename;
     first_event   = 0;
     num_events    = 0;
-    tofs          = new int[0];
-    pixel_ids     = new int[0];
+    events        = new int[0];
 
     file_size = ev_file.length();
     if ( file_size % 8 != 0 )
@@ -89,42 +80,57 @@ public class SNS_TofEventList implements ITofEventList
   }
 
 
-  /**
-   * Get the total number of events available in this event list.  
-   * 
-   * @return  a long giving the total number of entries in this event list.
-   */
+  @Override
   public long numEntries()
   {
     return file_size/8;
   }
 
-  
-  /** 
-   * Get an array of times-of-flight for a  subset of the list of events, 
-   * starting with the specified first event number.
-   *
-   * @param   first_event  The index of the first event whose time-of-flight
-   *                       should be returned.
-   * 
-   * @param   num_events   The number of events whose times-of-flight
-   *                       should be returned.
-   *
-   * @return an array of integers giving the times-of-flight for the
-   *         specified sublist of events. 
-   */
-  public int[] eventTof( long first_event, long num_events )
+  @Override
+  public int[] rawEvents( long first_event, long num_events )
   {
-
     if ( this.first_event == first_event &&         // use loaded tof array
          this.num_events  == num_events   )
-      return tofs;
+      return events;
                                                     // load requested events
     CheckEventRange( first_event, num_events );
     LoadEvents( this.first_event, this.num_events );
+    return events;
+  }
+
+  
+  @Override
+  public int[] eventTof( long first_event, long num_events )
+  {
+    if ( this.first_event != first_event ||         // must load a different
+         this.num_events  != num_events   )         // segment
+      rawEvents( first_event, num_events );
+
+    num_events = this.num_events;                   // loading may have lowered
+                                                    // num_events;
+    int[] tofs = new int[ (int)num_events ];
+    for ( int i = 0; i < num_events; i++ )
+      tofs[i] = events[ 2*i ];
+
     return tofs; 
   }
 
+
+  @Override
+  public int[] eventPixelID( long first_event, long num_events )
+  {
+    if ( this.first_event != first_event ||         // must load a different
+         this.num_events  != num_events   )         // segment
+      rawEvents( first_event, num_events );
+
+    num_events = this.num_events;                   // loading may have lowered
+                                                    // num_events;
+    int[] ids = new int[ (int)num_events ];
+    for ( int i = 0; i < num_events; i++ )
+      ids[i] = events[ 2*i + 1 ];
+
+    return ids;
+  }
 
   /**
    *  Reset this object's state to no events read and zero length arrays
@@ -135,41 +141,16 @@ public class SNS_TofEventList implements ITofEventList
   {
     this.first_event = 0;
     this.num_events  = 0;
- 
-    tofs      = new int[0];
-    pixel_ids = new int[0];
-  }
 
-
-  /** 
-   * Get an array of pixel IDs for a  subset of the list of events, 
-   * starting with the specified first event number.
-   *
-   * @param   first_event  The index of the first event whose pixel ID 
-   *                       should be returned.
-   * 
-   * @param   num_events   The number of events whose pixel IDs 
-   *                       should be returned.
-   *
-   * @return an array of integers giving the pixel IDs for the
-   *         specified sublist of events. 
-   */
-  public int[] eventPixelID( long first_event, long num_events )
-  {
-
-    if ( this.first_event == first_event &&         // use loaded tof array
-         this.num_events  == num_events   )
-      return pixel_ids;
-                                                    // load requested events
-    CheckEventRange( first_event, num_events );
-    LoadEvents( this.first_event, this.num_events );
-    return pixel_ids;
+    events = new int[0];
   }
 
 
   /**
-   *  Actually load the specified range of events into the tofs[] and
-   *  pixel_ids[] arrays.
+   *  Actually load the specified range of events into the packed event
+   *  array, events[].  NOTE: CheckEventRange() must be called before 
+   *  calling this method, to make sure that the first_event and number of
+   *  events is valid.
    *
    *  @param first_event  The index of the first event to load from the file.
    *  @param num_events   The number of successive events to load from the
@@ -184,8 +165,7 @@ public class SNS_TofEventList implements ITofEventList
 //                       " num_events = " + num_events );
       RandomAccessFile r_file = new RandomAccessFile( filename, "r" );
 
-      tofs      = new int[(int)num_events];
-      pixel_ids = new int[(int)num_events];
+      events = new int[2 * (int)num_events];
 //    System.out.println( "Array sizes = " + tofs.length );
 
       r_file.seek( 8*first_event );    // move to first requested event in
@@ -201,9 +181,17 @@ public class SNS_TofEventList implements ITofEventList
         num_left   = num_events - num_loaded;
         seg_size   = Math.min( BUFFER_SIZE, 8*num_left );
         bytes_read = r_file.read( buffer );
+/*
+        System.out.println("\nfirst_event = " + first_event +
+                           "\nnum_events  = " + num_events +
+                           "\nnum_loaded  = " + num_loaded +
+                           "\nnum_left    = " + num_left +
+                           "\nseg_size    = " + seg_size +
+                           "\nbytes_read  = " + bytes_read );
+*/
         if ( bytes_read > 0 )
         {
-          UnpackBuffer( buffer, seg_size, num_loaded );
+          UnpackBuffer( buffer, bytes_read, num_loaded );
           num_loaded += bytes_read/8;
         }
         else
@@ -216,7 +204,7 @@ public class SNS_TofEventList implements ITofEventList
           num_loaded = num_events;
         }
       }
-//    System.out.println("num_loaded = " + num_loaded );
+//      System.out.println("num_loaded = " + num_loaded );
       r_file.close();
     }
     catch ( IOException ex )
@@ -233,23 +221,24 @@ public class SNS_TofEventList implements ITofEventList
 
   /**
    *  Get the integer values stored in the input file buffer and put the
-   *  values into the proper positions in the tofs[] and pixel_ids[] arrays.  
+   *  values into the proper positions in the event[] array.  
    *
    *  @param buffer      The array of bytes as read in one segment from the
    *                     event data file.
    *  @param bytes_read  The number of bytes that were read in from the file
-   *                     and are to be extracted and placed in the tofs[]
-   *                     and pixel_ids[].
-   *  @param num_loaded  The number of events that have been loaded.  This
-   *                     provides the position where the first tof and
+   *                     and are to be extracted and placed in the events[]
+   *                     array.
+   *  @param num_loaded  The number of events that have already been loaded. 
+   *                     This provides the position where the first tof and
    *                     pixel id from the buffer should be stored.
    */
   private void UnpackBuffer( byte[] buffer, long bytes_read, long num_loaded )
   {
+    int index = (int)num_loaded;
     for ( int i = 0; i < bytes_read; i += 8 )
     {
-      tofs     [(int)num_loaded] = getValue_32( buffer, i   );
-      pixel_ids[(int)num_loaded] = getValue_32( buffer, i+4 );
+      events[ index++ ] = getValue_32( buffer, i   );
+      events[ index++ ] = getValue_32( buffer, i+4 );
       num_loaded++; 
     } 
   }
@@ -267,7 +256,7 @@ public class SNS_TofEventList implements ITofEventList
    * @return The integer value represented by four successive bytes from
    *         the file. 
    */
-  private int getValue_32( byte[] buffer, int i )
+  public static int getValue_32( byte[] buffer, int i )
   {
     int val = 0;
 
@@ -315,10 +304,10 @@ public class SNS_TofEventList implements ITofEventList
                                           Integer.MAX_VALUE  );
 
     long requested_num = Math.min( num_events, numEntries() - first_event );
-    if ( requested_num > MAX_ARRAY_SIZE )
+    if ( requested_num > MAX_LIST_SIZE )
       throw new IllegalArgumentException("Num events " + num_events +
                                          " invalid, limited to the maximum " +
-                                         " array size " + MAX_ARRAY_SIZE );
+                                         " array size " + MAX_LIST_SIZE );
     this.num_events = requested_num;
   }
 
