@@ -72,7 +72,9 @@ public class QMapperHandler implements IReceiveMessage
 
   public QMapperHandler( MessageCenter message_center )
   {
-    instrument_name = SNS_Tof_to_Q_map.SNAP;
+    instrument_name = "UNSPECIFIED";
+    det_file = "NONE";
+/*
     det_file  = isaw_home + "InstrumentInfo/SNS/" +
                        instrument_name + ".DetCal";
     scale_factor = -1;
@@ -87,7 +89,7 @@ public class QMapperHandler implements IReceiveMessage
                           "position info for " + instrument_name );
       System.out.println( "File is not in " + det_file );
     }
-
+*/
     this.message_center = message_center;
     message_center.addReceiver( this, Commands.INIT_NEW_INSTRUMENT );
     message_center.addReceiver( this, Commands.MAP_EVENTS_TO_Q );
@@ -128,10 +130,9 @@ public class QMapperHandler implements IReceiveMessage
         }
 
         String spec_file = cmd.getIncidentSpectrumFileName();
-
-                                               // TODO add the incident 
-        try                                    // spectrum as a parameter to
-        {                                      // SNS_Tof_to_Q_map
+        System.out.println("Spectrum file from cmd = " + spec_file );
+        try 
+        { 
           start    = System.nanoTime();
           mapper   = new SNS_Tof_to_Q_map( det_file, 
                                            spec_file, 
