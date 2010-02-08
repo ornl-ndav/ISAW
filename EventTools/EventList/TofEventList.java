@@ -46,6 +46,12 @@ public class TofEventList implements ITofEventList
                          // of events that was passed in when this was 
                          // constructed.
 
+  int num_entries = 0;   // NOTE: This may NOT be the same as the length of
+                         //       the interleaved events array.  The events 
+                         //       array might be a reference to an external
+                         //       buffer array that is only partially filled,
+                         //       starting in position 0.
+
   /**
    *  Construct a TofEventList object from separate arrays of tofs and ids.
    *  NOTE: This constructor is MUCH less efficient that the constructor that
@@ -61,7 +67,14 @@ public class TofEventList implements ITofEventList
       throw new IllegalArgumentException(
                            "null array passed to TofEventList constructor 1");
 
-    int num_entries = Math.min( tofs.length, ids.length );
+    int num_given = Math.min( tofs.length, ids.length );
+
+    if ( num_given > MAX_LIST_SIZE )
+      throw new IllegalArgumentException(
+            "Number of events passed to TofEventList constructor 2, " +
+             num_given + " must not exceed " + MAX_LIST_SIZE );
+
+    num_entries = num_given;
 
     events = new int[ 2 * num_entries ];
     int index = 0;
@@ -79,82 +92,72 @@ public class TofEventList implements ITofEventList
    *  
    *  @param raw_events  Array with interleaved times-of-flight and ids
    *                     for this event list.
+   *
+   *  @param num_events  The number of events stored in the initial portion
+   *                     of this array.
+   *
    *  @param make_copy   If true, the raw_event array will be copied into
    *                     a new internal array; If false, a reference to the
    *                     raw_events array will be kept, instead of making a
    *                     copy. 
    */
-  public TofEventList( int[] raw_events, boolean make_copy )
+  public TofEventList( int[] raw_events, int num_events, boolean make_copy )
   {
     if ( raw_events == null )
       throw new IllegalArgumentException( 
                            "null array passed to TofEventList constructor 2");
 
+    if ( num_events < 0 )
+      throw new IllegalArgumentException( 
+            "Negative number of events passed to TofEventList constructor 2");
+
+    if ( num_events > MAX_LIST_SIZE )
+      throw new IllegalArgumentException( 
+            "Number of events passed to TofEventList constructor 2, " +
+             num_events + " must not exceed " + MAX_LIST_SIZE );
+
     if ( make_copy )
     {
-      events = new int[ raw_events.length ]; 
-      System.arraycopy( raw_events, 0, events, 0, raw_events.length );
+      events = new int[ num_events ]; 
+      System.arraycopy( raw_events, 0, events, 0, num_events );
     }
     else
       events = raw_events;
+
+    num_entries = num_events;   // record the number of events to use from
+                                     // the interleaved event array.
   }
 
 
   @Override
   public long numEntries()
   {
-    if ( events != null )
-      return events.length / 2;
-
-    return 0;
+    return this.num_entries;
   }
 
 
   @Override
   public int[] rawEvents( long first_event, long num_events )
   {
-    long num_available = numEntries();
-    if ( num_available <= 0 || num_available > MAX_LIST_SIZE )
-      return null;
+    int num_to_get = adjust_num_events( first_event, num_events );
 
-    if ( num_events  <= 0 ||
-         first_event <  0 ||
-         first_event >= num_available )
-      return null;
-
-    long num_possible = num_available - first_event;
-    if ( num_events > num_possible )
-      num_events = num_possible;
-
-    if ( first_event == 0 && num_events == num_available )
+    if ( first_event == 0 && num_to_get == num_entries )
       return events;
 
-    int[] raw_events = new int[ (int)num_events ];
-    System.arraycopy(events, (int)first_event, raw_events, 0, (int)num_events);
+    int[] raw_events = new int[ num_to_get ];
+    System.arraycopy( events, 2*(int)first_event, raw_events, 0, 2*num_to_get );
     return raw_events;
   }
-
 
   
   @Override
   public int[] eventTof( long first_event, long num_events )
   {
-    long num_available = numEntries();
-    if ( num_available <= 0 || num_available > MAX_LIST_SIZE )
-      return null;
+    int num_to_get = adjust_num_events( first_event, num_events );
 
-    if ( num_events  <= 0 ||
-         first_event <  0 ||
-         first_event >= num_available )
-      return null;
-
-    long num_possible = num_available - first_event;
-    if ( num_events > num_possible )
-      num_events = num_possible;
-
-    int[] tof_array = new int[ (int)num_events ]; 
+    int[] tof_array = new int[ num_to_get ]; 
     
-    for ( int i = 0; i < num_events; i++ ) 
+    for ( int i = 0; i < num_to_get; i++ ) 
       tof_array[i] = events[ 2*i ];
     return tof_array;
   }
@@ -163,26 +166,42 @@ public class TofEventList implements ITofEventList
   @Override
   public int[] eventPixelID( long first_event, long num_events )
   {
-    long num_available = numEntries();
-    if ( num_available <= 0 || num_available > Integer.MAX_VALUE )
-      return null;
+    int num_to_get = adjust_num_events( first_event, num_events );
 
-    if ( num_events  <= 0 ||
-         first_event <  0 ||
-         first_event >= num_available )
-      return null;
+    int[] ids_array = new int[ num_to_get ];
 
-    long num_possible = num_available - first_event;
-    if ( num_events > num_possible )
-      num_events = num_possible;
-
-    int[] ids_array = new int[ (int)num_events ];
-
-    for ( int i = 0; i < num_events; i++ )
+    for ( int i = 0; i < num_to_get; i++ )
       ids_array[i] = events[ 2*i + 1 ];
 
     return ids_array;
   }
 
+  /**
+   *  Adjust the number of events to return based on the number of
+   *  events available and the maximum number that can be returned.
+   *  If 0 is returned by this method, the number of events requested
+   *  was not valid, so no events can be returned.
+   *
+   *  @param num_events  The number of events requested.
+   *
+   *  @return An integer giving the number of events that can actually
+   *          be returned.  This is less than or equal to the number
+   *          requested.
+   */
+  private int adjust_num_events( long first_event, long num_events )
+  {
+    if ( num_entries <= 0 )
+      return 0;
 
+    if ( num_events  <= 0 ||
+         first_event <  0 ||
+         first_event >= num_entries )
+      return 0;
+
+    long num_possible = num_entries - first_event;
+    if ( num_events > num_possible )
+      num_events = num_possible;
+
+    return (int)num_events;
+  }
 }
