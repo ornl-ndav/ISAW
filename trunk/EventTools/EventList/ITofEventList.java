@@ -66,6 +66,9 @@ public interface ITofEventList
    *       in this event list.  In that case this method just returns a 
    *       reference to the internal array of integers, and the calling 
    *       code should NOT alter the values in the array that is returned.
+   * NOTE: The array returned may be longer than needed to store the events.
+   *       The array should only be used to access events numbered from 0
+   *       to numEntries()-1.
    *
    * @param   first_event  The event number of the first event to be returned
    *                       in the array.
