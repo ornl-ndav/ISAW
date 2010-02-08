@@ -1326,7 +1326,7 @@ public class Util{
         return Res;
      if( filename.toUpperCase( ).endsWith( "AMAT" ))
      {
-        Res[1]=1;
+       
         Res[4]=1;
         return Res;
      }
