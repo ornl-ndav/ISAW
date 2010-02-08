@@ -1330,7 +1330,7 @@ public class GetUB {
                GetUB.showDirs( Dirs );
                
             }
-            System.out.println("-------------------------------------------");
+            //System.out.println("-------------------------------------------");
             if( code[ 6 ] < 100 || Dirs== null || Dirs.length < 3){
                gridLength = gridLength / 2f;
                
