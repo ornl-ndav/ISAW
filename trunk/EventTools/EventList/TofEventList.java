@@ -118,8 +118,8 @@ public class TofEventList implements ITofEventList
 
     if ( make_copy )
     {
-      events = new int[ num_events ]; 
-      System.arraycopy( raw_events, 0, events, 0, num_events );
+      events = new int[ 2*num_events ]; 
+      System.arraycopy( raw_events, 0, events, 0, 2*num_events );
     }
     else
       events = raw_events;
