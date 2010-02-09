@@ -266,6 +266,110 @@ public class SNS_Tof_to_Q_map
 
 
   /**
+   *  Map the specified sub-list of time-of-flight events to a packed
+   *  array of events in reciprocal space, listing Qx,Qy,Qz for each event,
+   *  interleaved in one array.  The weight field will be set to 0 for
+   *  events with invalid ids.  For events with valid ids, the weight
+   *  field is set to the product of a weight based on the pixel id, and
+   *  a weight based on the neutron wavelength corresponding that event.
+   *  NOTE: Since the resulting Qxyz values are packed in a one-dimensional
+   *        array, at most (2^31-1)/12 = 178.9 million events can be processed
+   *        in one batch by this method.
+   *
+   *  @param event_list  List of (tof,id) specifying detected neutrons.
+   *
+   *  @param first       The index of the first event to map to Q
+   *
+   *  @param num_to_map  The number of events to map to Q
+   *
+   *  @return an array of floats containing values (Qx,Qy,Qz) for each
+   *          event, interleaved in the array.
+   */
+  public FloatArrayEventList3D_2 MapEventsToQ( ITofEventList event_list,
+                                               int   first,
+                                               int   num_to_map )
+  {
+     if ( event_list == null )
+       throw new IllegalArgumentException( "event_list is null" );
+
+     int num_events = (int)event_list.numEntries();
+
+     if ( first < 0 || first >= num_events )
+       throw new IllegalArgumentException("First index: " + first +
+                 " < 0 or >= number of events in list: " + num_events );
+
+     int     id;
+     int     id_offset;
+     int     index;
+     float   tof_chan;
+     float   magQ;
+     float   qx,qy,qz;
+     int     minus_id_count = 0;
+     int     large_id_count = 0;
+     int     skip_det_count = 0;
+     int     grid_id = 0;
+     float   lamda;
+     int     lamda_index;
+     int     last;
+     int     num_mapped;
+
+     last = first + num_to_map - 1;
+     if ( last >= num_events )
+       last = num_events - 1;
+
+     num_mapped = last - first + 1;
+
+     int[]   events  = event_list.rawEvents( first, num_to_map );
+     float[] Qxyz    = new float[ 3 * num_mapped ];
+     float[] weights = new float[ num_mapped ];
+
+     for ( int i = 0; i < num_mapped; i++ )
+     {
+       weights[i] = 0;
+       id = events[2*(i + first) + 1];
+       grid_id = id / 65536;
+
+//     if ( grid_id >= 0 && grid_id < counts_per_det.length )
+//       counts_per_det[grid_id]++;
+
+       if ( id <= 0 )
+         minus_id_count++;
+
+       else if ( id >= tof_to_MagQ.length )
+         large_id_count++;
+
+       else
+       {
+         tof_chan = t0 + events[2*(i + first)];
+         magQ = tof_to_MagQ[id]/tof_chan;
+
+         id_offset = 3*id;
+         qx = magQ * QUxyz[id_offset++];
+         qy = magQ * QUxyz[id_offset++];
+         qz = magQ * QUxyz[id_offset  ];
+
+         index = i * 3;
+         Qxyz[index++] = qx;
+         Qxyz[index++] = qy;
+         Qxyz[index  ] = qz;
+
+         lamda = tof_chan/10.0f * tof_to_lamda[id];
+         lamda_index = (int)( STEPS_PER_ANGSTROM * lamda );
+
+         if ( lamda_index < 0 )
+           lamda_index = 0;
+         if ( lamda_index >= lamda_weight.length )
+           lamda_index = lamda_weight.length - 1;
+
+         weights[i] = pix_weight[id] * lamda_weight[ lamda_index ];
+       }
+     }
+
+     return new FloatArrayEventList3D_2( weights, Qxyz );
+  }
+
+
+  /**
    *  Map the specified sub-list of time-of-flight events to a packed 
    *  array of events in reciprocal space, listing Qx,Qy,Qz for each event, 
    *  interleaved in one array.  NOTE: due to array size limitations in Java,
@@ -300,9 +404,9 @@ public class SNS_Tof_to_Q_map
        throw new IllegalArgumentException("TOF array length " + tofs.length +
                                          " != id array length " + ids.length);
 
-     if ( tofs.length > Integer.MAX_VALUE/3 )
+     if ( tofs.length > Integer.MAX_VALUE/12 )
        throw new IllegalArgumentException("TOF array length " + tofs.length +
-                                         " exceeds " + Integer.MAX_VALUE/3 );
+                                         " exceeds " + Integer.MAX_VALUE/12 );
 
      if ( first < 0 || first >= tofs.length )
        throw new IllegalArgumentException("First index: " + first +
@@ -314,122 +418,23 @@ public class SNS_Tof_to_Q_map
        return new FloatArrayEventList3D_2( null, empty_Qxyz );
      }
 
-     int     id;
-     int     id_offset;
-     int     index;
-     float   tof_chan;
-     float   magQ;
-     float   qx,qy,qz;
-     int     minus_id_count = 0;
-     int     large_id_count = 0;
-     int     grid_id = 0;
-     float   lamda;
-     int     lamda_index;
-     int     last;
-     int     num_mapped;
-
-     last = first + num_to_map - 1;
-     if ( last >= tofs.length )
-       last = tofs.length - 1;
-
-     num_mapped = last - first + 1;
-
-     float[] Qxyz    = new float[ 3 * num_mapped ];
-     float[] weights = new float[ num_mapped ];
-
-     for ( int i = 0; i < num_mapped; i++ )
+     if ( first == 0 )
      {
-       weights[i] = 0;
-       id = ids[i + first];
-       grid_id = id / 65536;
+       ITofEventList raw_events = new TofEventList( tofs, ids );
+       return MapEventsToQ( raw_events, 0, num_to_map );
+     }
+     else                        // construct TofEventList from part of tofs[] and ids[] 
+     {
+       int[] new_tofs = new int[ num_to_map ];
+       int[] new_ids  = new int[ num_to_map ];
 
-//     if ( grid_id >= 0 && grid_id < counts_per_det.length )
-//       counts_per_det[grid_id]++;      
-      
-       if ( id < 0 )
-         minus_id_count++;
-       else if ( id >= tof_to_MagQ.length )
-         large_id_count++;
+       System.arraycopy( tofs, first, new_tofs, 0, num_to_map );
+       System.arraycopy( ids,  first, new_ids,  0, num_to_map );
 
-//     else if ( grid_id == 1 )                   // discard grid_id 1 
-//       skip_det_count++;
+       ITofEventList raw_events = new TofEventList( new_tofs, new_ids );
+       return MapEventsToQ( raw_events, 0, num_to_map );
+     }
 
-       else
-       {
-         tof_chan = t0 + tofs[i + first];
-         magQ = tof_to_MagQ[id]/tof_chan;
-
-         id_offset = 3*id;
-         qx = magQ * QUxyz[id_offset++];
-         qy = magQ * QUxyz[id_offset++];
-         qz = magQ * QUxyz[id_offset  ];
-
-         index = i * 3;
-         Qxyz[index++] = qx;
-         Qxyz[index++] = qy;
-         Qxyz[index  ] = qz;
-
-         lamda = tof_chan/10.0f * tof_to_lamda[id];
-         lamda_index = (int)( STEPS_PER_ANGSTROM * lamda );
-
-/*
-         if ( i < 100 )
-           System.out.println( "i, lamda, lamda_index, lamda_weight = " +
-                                i + ", " 
-                                + lamda + ", " + 
-                                + lamda_index + ", " + 
-                                + lamda_weight[ lamda_index ] );
-*/
-         if ( lamda_index < 0 )
-           lamda_index = 0;
-         if ( lamda_index >= lamda_weight.length )
-           lamda_index = lamda_weight.length - 1;
-  
-         weights[i] = pix_weight[id] * lamda_weight[ lamda_index ];
-
-/*       // TEST map from qx,
-         test_count++;
-         if ( test_count % 10000 == 0 )
-         {
-           int   row = (id-1) % 256 + 1;
-           int   col = ((id-1) / 256 ) % 256 + 1;
-           float tof = (tofs[i] + t0)/10f;
-
-           int det_id = id / (256 * 256);
-           Vector3D q_vec = new Vector3D( qx, qy, qz );
-
-           System.out.println("ID: " + det_id);
-           System.out.printf( "Original  col = %5d  row = %5d  chan = %8.1f\n",
-                               col, row, tof );
-
-           float[] rctofid = QtoRowColTOF_ID( qx, qy, qz );
-           if ( rctofid != null )
-             System.out.printf( 
-               "Re-mapped col = %5.0f  row = %5.0f  tof  = %8.0f  ID = %2.0f\n",
-                      rctofid[1], rctofid[0], rctofid[2], rctofid[3] );
-           else
-             System.out.println("ERROR FAILED TO MAP Q TO ROW COL TOF ID");
-         } 
-*/
-       }
-     } 
-
-/*
-     System.out.println("tof_to_MagQ.length = " + tof_to_MagQ.length );
-     System.out.println("NUMBER OF EVENTS WITH -ID      = " + minus_id_count );
-     System.out.println("NUMBER OF EVENTS WITH LARGE ID = " + large_id_count );
-
-     for ( int i = 0; i < 10; i++ )
-      System.out.printf("tof: %8.1f  id: %7d " +
-                        "  Qx: %6.2f  Qy: %6.2f  Qz: %6.2f\n",
-                        (tofs[i]/10.0), ids[i], 
-                        Qxyz[3*i], Qxyz[3*i+1], Qxyz[3*i+2]);
-*/
-
-//     for ( int i = 0; i < counts_per_det.length; i++ )
-//       System.out.println( "" + i + "   " + counts_per_det[i] );
-
-     return new FloatArrayEventList3D_2( weights, Qxyz );
   }
 
 
