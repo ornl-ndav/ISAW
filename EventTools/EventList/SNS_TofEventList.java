@@ -179,10 +179,10 @@ public class SNS_TofEventList implements ITofEventList
       while ( num_loaded < num_events )
       {
         num_left   = num_events - num_loaded;
-        seg_size   = Math.min( BUFFER_SIZE, 8*num_left );
         bytes_read = r_file.read( buffer );
-/*
-        System.out.println("\nfirst_event = " + first_event +
+        seg_size   = Math.min( BUFFER_SIZE, 8*num_left );
+        seg_size   = Math.min( seg_size, bytes_read );
+/*       System.out.println("\nfirst_event = " + first_event +
                            "\nnum_events  = " + num_events +
                            "\nnum_loaded  = " + num_loaded +
                            "\nnum_left    = " + num_left +
@@ -191,7 +191,7 @@ public class SNS_TofEventList implements ITofEventList
 */
         if ( bytes_read > 0 )
         {
-          UnpackBuffer( buffer, bytes_read, num_loaded );
+          UnpackBuffer( buffer,seg_size, num_loaded );
           num_loaded += bytes_read/8;
         }
         else
@@ -234,12 +234,11 @@ public class SNS_TofEventList implements ITofEventList
    */
   private void UnpackBuffer( byte[] buffer, long bytes_read, long num_loaded )
   {
-    int index = (int)num_loaded;
+    int index = (int)(2*num_loaded);
     for ( int i = 0; i < bytes_read; i += 8 )
     {
       events[ index++ ] = getValue_32( buffer, i   );
-      events[ index++ ] = getValue_32( buffer, i+4 );
-      num_loaded++; 
+      events[ index++ ] = getValue_32( buffer, i+4 );       
     } 
   }
 
