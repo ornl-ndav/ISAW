@@ -47,14 +47,56 @@ import DataSetTools.instruments.*;
 
 /** 
  *  This class constructs the time-of-flight to vector Q mapping information
- *  needed to efficiently process raw SNS event data into reciprocal space.
+ *  needed to efficiently map raw SNS event data into reciprocal space.
  *  The information can be constructed from an ISAW .DetCal file, or from
  *  the detector position information at the start of a peaks file for the 
  *  instrument.  NOTE: The order and size of the detectors listed in the 
  *  .DetCal or .Peaks file MUST be the same as in the *neutron_event.dat
  *  file and ids must be stored by column in order of increasing row number,
  *  so that the pixel ids match.
+ *    The MapEventToQ() method does the actual mapping from (tof,id) to vector
+ *  Q. The result is a list of events in Q along with a corresponding list
+ *  of weight factors.
+ *
+ *  Following A.J.Schultz's anvred, the weight factors should be:
+ * 
+ *    sin^2(theta) / (lamda^4 * spec * eff * trans)
+ *
+ *  where theta = scattering_angle/2
+ *        lamda = wavelength (in angstroms?)
+ *        spec  = incident spectrum correction
+ *        eff   = pixel efficiency
+ *        trans = absorption correction
+ *  
+ *  The quantity:
+ *
+ *    sin^2(theta) / eff 
+ *
+ *  depends only on the pixel and can be pre-calculated 
+ *  for each pixel.  It could be saved in array pix_weight[].
+ *  For now, pix_weight[] is calculated by the method:
+ *  BuildPixWeights() and just holds the sin^2(theta) values.
+ *
+ *  The wavelength dependent portion of the correction is saved in
+ *  the array lamda_weight[].
+ *  The time-of-flight is converted to wave length by multiplying
+ *  by tof_to_lamda[id], then (int)STEPS_PER_ANGSTROM * lamda
+ *  gives an index into the table lamda_weight[].
+ *
+ *  The lamda_weight[] array contains values like:
+ *
+ *      1/(lamda^power * spec(lamda))
+ *   
+ *  which are pre-calculated for each lamda.  These values are
+ *  saved in the array lamda_weight[].  The optimal value to use
+ *  for the power should be determined when a good incident spectrum
+ *  has been determined.
+ *
+ *  The pixel efficiency and absorption correction are NOT CURRENTLY USED.
+ *  The absorption correction, trans, depends on both lamda and the pixel,
+ *  Which is a fairly expensive calulation when done for each event.
  */
+
 public class SNS_Tof_to_Q_map 
 {
   public static final float  ANGST_PER_US_PER_M = 
@@ -75,14 +117,20 @@ public class SNS_Tof_to_Q_map
   private IDataGrid[]  grid_arr; 
   private VecQMapper[] inverse_mapper;
 
-  private float        L1;             // L1 in meters.
-  private float        t0;             // t0 shift in 100ns units
-  private float[]      QUxyz;          // unit vector in Q direction for pixel
-  private float[]      tof_to_MagQ;    // magQ is tof_to_MagQ[id] / tof
-  private float[]      tof_to_lamda;   // lamda is tof_to_lamda[id] * tof
-  private float[]      lamda_weight;   // 1/(lamda^3 * spec(lamda)) indexed by
-                                       // STEPS_PER_ANGSTROM * lamda
-  private float[]      pix_weight;     // sin^2(theta(pix_id)) / eff(pix_id)
+  private float        L1;               // L1 in meters.
+  private float        t0;               // t0 shift in 100ns units
+
+  private float[]      QUxyz;            // unit vector in Q direction for pixel
+  private float[]      tof_to_MagQ;      // magQ is tof_to_MagQ[id] / tof
+  private float[]      tof_to_lamda;     // lamda is tof_to_lamda[id] * tof
+  private int          first_offset = 1; // ids start at 1, so we waste one
+                                         // position (#0) in our arrays to try
+                                         // to avoid some off by one errors
+
+  private float[]      lamda_weight;     // 1/(lamda^power*spec(lamda)) indexed
+                                         // by STEPS_PER_ANGSTROM * lamda
+  private float[]      pix_weight;       // sin^2(theta(pix_id)) / eff(pix_id)
+
   private int[]        counts_per_det = new int[6];
 
   private String            instrument_name = "NO_NAME";
@@ -274,9 +322,7 @@ public class SNS_Tof_to_Q_map
      float   qx,qy,qz;
      int     minus_id_count = 0;
      int     large_id_count = 0;
-     int     skip_det_count = 0;
      int     grid_id = 0;
-//   int     test_count = 0;
      float   lamda;
      int     lamda_index;
      int     last;
@@ -296,8 +342,9 @@ public class SNS_Tof_to_Q_map
        weights[i] = 0;
        id = ids[i + first];
        grid_id = id / 65536;
-       if ( grid_id >= 0 && grid_id < counts_per_det.length )
-         counts_per_det[grid_id]++;      
+
+//     if ( grid_id >= 0 && grid_id < counts_per_det.length )
+//       counts_per_det[grid_id]++;      
       
        if ( id < 0 )
          minus_id_count++;
@@ -321,44 +368,6 @@ public class SNS_Tof_to_Q_map
          Qxyz[index++] = qx;
          Qxyz[index++] = qy;
          Qxyz[index  ] = qz;
-
-         //
-         // TODO
-         //
-         // following A.J.Schultz's anvred, weight factor should be:
-         //
-         //  sin^2(theta) / (lamda^4 * spec * eff * trans)
-         //
-         // where theta = scattering_angle/2
-         //       lamda = wavelength (in angstroms?)
-         //       spec  = incident spectrum correction
-         //       eff   = pixel efficiency
-         //       trans = absorption correction
-         //
-         // NOTE:
-         //
-         //   sin^2(theta) / eff 
-         //
-         // depends only on the pixel and can be pre-calculated 
-         // for each pixel.  It can be saved in array pix_weight[].
-         // For now, pix_weight[] just holds the sin^2(theta) values.
-         //
-         // The time-of-flight is converted to wave length by multiplying
-         // by tof_to_lamda[id], then (int)STEPS_PER_ANGSTROM * lamda
-         // gives an index into the table lamda_weight[] which contains 
-         // values for:
-         //   
-         //   1/(lamda^4 * spec(lamda))
-         //
-         // which are pre-calculated for each lamda.  These values are
-         // saved in array lamda_weight[].  Currently, the values:
-         //
-         //   1/(lamda^3 * spec(lamda))  
-         //
-         // is used, which gives better qualitative results overall for SNAP.
-         //
-         // trans depends on both lamda and the pixel.  This is a fairly
-         // expensive calculation and is omitted for now.
 
          lamda = tof_chan/10.0f * tof_to_lamda[id];
          lamda_index = (int)( STEPS_PER_ANGSTROM * lamda );
@@ -523,22 +532,23 @@ public class SNS_Tof_to_Q_map
 
   /**
    *  Build the list of weights corresponding to different wavelengths.
-   *  NOTE: Although the spectrum file need not have a fixed numbe of
-   *  points, it MUST have the spectrum recorded in steps of
-   *  one angstrom/STEPS_PER_ANGSTROM  starting at 0 out to the number of bins.
-   *  The resulting table will allow 
-   *        (int)STEPS_PER_ANGSTROM *lamda 
-   *  to be used as an index into the table to find the weight to use for 
-   *  the specified lamda in Angstroms.  The entries in the table are:
+   *  Although the spectrum file need not have a fixed number of
+   *  points, it MUST have the spectrum recorded as a histogram with one
+   *  more bin boundary than the number of bins.
+   *    The entries in the table produced are:
    *
-   *     1/( lamda^3 * spec(lamda) )
+   *     1/( lamda^power * spec(lamda) )
    *
-   *  The spectrum values will be normalized so that the MAXIMUM value is
-   *  1 and the minimum value is .05.
+   *  Where power was chosen to give a relatively uniform intensity display
+   *  in 3D.  The power is currently 2.4.
+   *  The spectrum values are first normalized so that the MAXIMUM value is
+   *  1 and the minimum value is 0.1.
    */
   private void BuildLamdaWeights( String spectrum_file_name )
   {
     float   MIN_SPECTRUM_VALUE = 0.1f;
+    float   power = 2.4f;
+
     float   lamda; 
     float[] spec_val   = null;
     float[] spec_lamda = null;
@@ -550,24 +560,22 @@ public class SNS_Tof_to_Q_map
     for ( int i = 0; i < lamda_weight.length; i++ )
     {
       lamda = i / STEPS_PER_ANGSTROM;
-//    lamda_weight[i] = 1f/(lamda*lamda*lamda);
-      lamda_weight[i] = (float)(1/Math.pow(lamda,2.4));
+      lamda_weight[i] = (float)(1/Math.pow(lamda,power));
     }
 
-
     System.out.println("Spectrum file specified as: " + spectrum_file_name );
-    if ( spectrum_file_name == null  ||       // no incident spectrum 
-         spectrum_file_name.trim().length() == 0 ) 
+    if ( spectrum_file_name == null  ||
+         spectrum_file_name.trim().length() == 0 )    // no incident spectrum 
       return;
 
-                                             // make sure the file exists
+                                                      // check if file exists
     File spec_file = new File( spectrum_file_name );
     if ( !spec_file.exists() )
     {
       System.out.println("File Doesn't Exist " + spectrum_file_name);
       return;
     }
-                                             // now try to load the file
+                                                      // now load the file
     int num_bins = 0;
     try
     { 
@@ -575,7 +583,7 @@ public class SNS_Tof_to_Q_map
       BufferedReader buff_reader = new BufferedReader( f_in );
       Scanner        sc          = new Scanner( buff_reader );
 
-      for ( int i = 0; i < 6; i++ )                // skip info lines
+      for ( int i = 0; i < 6; i++ )                   // skip info lines
         sc.nextLine();
 
       String num_y_line = sc.nextLine().trim();
@@ -655,18 +663,15 @@ public class SNS_Tof_to_Q_map
       }
       lamda_weight[i] = lamda_weight[i] / val;
     }
-
   }
 
 
   /**
-   *  Build the list of weights corresponding to different pixels. 
-   *  NOT COMPLETE.  Currently this method just makes a rough approximation
-   *  to the correct weight factor. (TODO)
+   *  Build the pix_weight[] factors, corresponding to different pixels.  
+   *  The pix_weight[] factor is just sin^2(theta).
    */
   private void BuildPixWeights()
   {
-    int first_offset = 1;
     int pix_count = 0;                             // first count the pixels
     for ( int  i = 0; i < grid_arr.length; i++ )
     {
@@ -675,14 +680,12 @@ public class SNS_Tof_to_Q_map
     }
 
     pix_weight   =  new float[ (pix_count + first_offset) ];
-    tof_to_lamda =  new float[ (pix_count + first_offset) ];
 
     Vector3D  pix_pos;                             // using IPNS coords 
     Vector3D  beam_vec = new Vector3D( 1, 0, 0 );  // internally
     double    cos_2_theta;
     double    theta;
     double    sine_theta;
-    float     L2;
     IDataGrid grid;
     int       n_rows;
     int       n_cols;
@@ -698,41 +701,34 @@ public class SNS_Tof_to_Q_map
         for ( int row = 1; row <= n_rows; row++ )
         {
            pix_pos = grid.position( row, col );
-           L2 = pix_pos.length();
            pix_pos.normalize();
 
            cos_2_theta = pix_pos.dot( beam_vec );
            theta = Math.acos( cos_2_theta ) / 2;
            sine_theta = Math.sin( theta );
 
-           tof_to_lamda[ index ] = ANGST_PER_US_PER_M /(L1 + L2);
            pix_weight[ index++ ] = (float)(sine_theta * sine_theta);
-/*
-           if ( row == 1 && col == 1 )
-           {
-             System.out.println("TOTAL PATH   = " + (L1+L2) );
-             System.out.println("tof_to_lamda = " + tof_to_lamda[index-1] );
-           }
-*/
         }
     }
   }
 
 
   /**
-   *  Build the tables giving the unit vector in the direction of Q and
-   *  the conversion constant from time of flight to magnitude of Q for
+   *  Build the tables giving the unit vector in the direction of Q,
+   *  the conversion constant from time-of-flight to magnitude of Q and
+   *  the conversion constant for time-of-flight to lamda. 
    *  each pixel in the detector.
    */
   private void BuildMaps()
   {
-    int first_offset = 1;
     int pix_count = 0;                             // first count the pixels
     for ( int  i = 0; i < grid_arr.length; i++ )
     {
       IDataGrid grid = grid_arr[i];
       pix_count += grid.num_rows() * grid.num_cols(); 
     }                                          
+
+    tof_to_lamda =  new float[ (pix_count + first_offset) ];
                                                    // NOTE: the pixel IDs 
                                                    // start at 1 in the file
                                                    // so to avoid shifting we
@@ -788,8 +784,12 @@ public class SNS_Tof_to_Q_map
            QUxyz[ index + 2 ] = unit_qvec.getZ();
 
            two_theta   = (float)Math.acos( pix_pos.getX() / L2 );
+
            tof_to_MagQ[pix_count] = 
                           (float)(part * (L1 + L2) * Math.sin(two_theta/2));
+
+           tof_to_lamda[pix_count] = ANGST_PER_US_PER_M /(L1 + L2);
+
            pix_count++; 
         }
     }
@@ -856,8 +856,6 @@ public class SNS_Tof_to_Q_map
     int   N_ROWS     = 256;
     int   N_COLS     = 256;
     int   ID         = 0;
-
-    Vector<UniformGrid> grids = new Vector<UniformGrid>();
 
     Vector3D center    = new Vector3D(0, 0, 0.5f);    // IPNS coords
     Vector3D base_vec  = new Vector3D(1, 0, 0);
