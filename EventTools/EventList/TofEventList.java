@@ -116,6 +116,9 @@ public class TofEventList implements ITofEventList
             "Number of events passed to TofEventList constructor 2, " +
              num_events + " must not exceed " + MAX_LIST_SIZE );
 
+    if ( num_events > 2*raw_events.length )   // keep num_events in valid range
+      num_events = 2*raw_events.length;
+
     if ( make_copy )
     {
       events = new int[ 2*num_events ]; 
@@ -124,7 +127,7 @@ public class TofEventList implements ITofEventList
     else
       events = raw_events;
 
-    num_entries = num_events;   // record the number of events to use from
+    num_entries = num_events;        // record the number of events to use from
                                      // the interleaved event array.
   }
 
@@ -144,7 +147,7 @@ public class TofEventList implements ITofEventList
     if ( first_event == 0 && num_to_get == num_entries )
       return events;
 
-    int[] raw_events = new int[ num_to_get ];
+    int[] raw_events = new int[ 2*num_to_get ];
     System.arraycopy( events, 2*(int)first_event, raw_events, 0, 2*num_to_get );
     return raw_events;
   }
