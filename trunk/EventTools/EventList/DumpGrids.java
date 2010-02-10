@@ -43,7 +43,7 @@ import DataSetTools.operator.Generic.TOF_SCD.*;
 
 /**
  * Write out the detector grid information from a NeXus file, in the
- * for required by the QMapper (.DetCal).
+ * form required by the QMapper (.DetCal).
  */
 public class DumpGrids
 {
