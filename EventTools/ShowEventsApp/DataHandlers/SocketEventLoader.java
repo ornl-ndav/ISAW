@@ -36,7 +36,7 @@ package EventTools.ShowEventsApp.DataHandlers;
 
 
 import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
+import java.io.*;
 
 import EventTools.EventList.TofEventList;
 import EventTools.ShowEventsApp.Command.Commands;
@@ -54,7 +54,7 @@ import NetComm.UDPReceive;
  * @author Ruth
  * 
  */
-public class SocketEventLoader extends UDPReceive
+public class SocketEventLoader
 {
    public static int BUFF_SIZE     = 10000;
 
@@ -64,11 +64,14 @@ public class SocketEventLoader extends UDPReceive
    
    public static int START_CMD_INDX_TARTG_PROTO = 40;
    public static int NUM_CMD_TARTG_PROTO = 8;
-   public static int HEADER_PACKET_2POS = 6;
+   public static int HEADER_PACKET_2POS = 6; 
    
-   public static thisIUDPUser  user;
    public thisIUDPUser User;
+   private UDPReceive  udpReceiver;
+   private boolean udpReceiverStarted;
    
+   public static int debug = 0;
+
 
    /**
     * Constructor
@@ -83,8 +86,10 @@ public class SocketEventLoader extends UDPReceive
    public SocketEventLoader( int port, MessageCenter message_center,
             String Instrument, String detInfFile, String IncidSpectraFile )
    {
-      super( port , getUDPUser( message_center , Instrument, detInfFile,IncidSpectraFile ) );
-      User = user;
+     // super( port , getUDPUser( message_center , Instrument, detInfFile,IncidSpectraFile ) );
+      User = new thisIUDPUser( message_center , Instrument,detInfFile ,IncidSpectraFile );
+      udpReceiver = new UDPReceive( port,User);
+      udpReceiverStarted = false;
       try
       {
       START_CMD_INDX_TARTG_PROTO = 
@@ -96,6 +101,7 @@ public class SocketEventLoader extends UDPReceive
       
       HEADER_PACKET_2POS = DataSetTools.util.SharedData.getintProperty( 
             "Header_Packet_2_Position" , "6" );
+            
    }
    
 
@@ -105,19 +111,23 @@ public class SocketEventLoader extends UDPReceive
       this( port, message_center, Instrument, null, null);
    }
    
-   
-   private static thisIUDPUser getUDPUser( MessageCenter message_center , 
-                                           String Instrument, 
-                                           String detInfFile, 
-                                           String IncidSpectraFile )
-   {
-      user =new thisIUDPUser( message_center , Instrument,detInfFile ,IncidSpectraFile );
-      return user;
-   }
-
+  
    public void setPause( boolean doPause)
    {
       User.setPause( doPause);
+   }
+   
+   public void start()
+   {
+      if( udpReceiverStarted)
+         return;
+      udpReceiverStarted = true;
+      udpReceiver.start();
+   }
+   
+   public void interrupt()
+   {
+      udpReceiver.interrupt( );
    }
 
    /**
@@ -169,6 +179,12 @@ class thisIUDPUser implements IUDPUser
    private      boolean SendScale =
                       System.getProperty( "ScaleWith","" ).toUpperCase( )
                                   .equals( "PROTONS ON TARGET" ) ;
+   
+   private     FileOutputStream   fsave;
+   
+
+   private int TotalEventDataSent2IsawEV  =   0;// debugging aids
+   private int[] SavedEventsBuff;              //debugging aids
 
    /**
     * Constructor
@@ -199,6 +215,24 @@ class thisIUDPUser implements IUDPUser
                                    querieFile(detector_file_name) ,
                                    querieFile( incident_spectra_filename)) ,
                            false ) );
+      if ( SocketEventLoader.debug == 5 )
+      {
+         try
+         {
+            fsave = new FileOutputStream( "C:/Users/ruth/eventDat.dat" );
+
+         } catch( Exception s )
+         {
+            fsave = null;
+         }
+         SavedEventsBuff = new int[ 20000000 ];
+      } else
+      {
+         fsave = null;
+         SavedEventsBuff = null;
+      }
+      
+      
       ( new timerThread( this ) ).start();
     
    }
@@ -251,19 +285,29 @@ class thisIUDPUser implements IUDPUser
       Nshown = 0;
          if ( data == null || data.length < length )
             return;
-         if ( NReceived < 0 )
+         if ( NReceived < 100 && SocketEventLoader.debug==1 )
          {
-            String S = "";
-            for( int i = 0 ; i < Math.min( length , 24 ) ; i++ )
-               S += String.format( "%02x," , data[i] );
-            System.out.println( "---" + length + "||" + S );
+            System.out.print( "data packet length="+data.length+","+length);
+           //SocketServerTest.showwpacket( data ,65, "packet in" );
+            System.out.println( String.format("%02x%02x%02x%02x",
+                        data[0],data[1],data[2],data[3]));
+            
+         }
+         if( (NReceived+1) % 200 < 0 )
+         {
+            String firstData = String.format( "%02x%02x%02x%02x %02x%02x%02x%02x %02x%02x%02x%02x" , 
+                  data[48],data[49],data[50],data[51],
+                  data[52],data[53],data[54],data[55],
+                  data[0],data[1],data[2],data[3]);
+            System.out.println( "received packets =" + NReceived+",data="+firstData );
+            //  SocketServerTest.showwpacket( data ,65, "received packets =" + NReceived );
          }
          if ( isCommandPacket( data, length ) )
          {
             ProcessCommandPacket( data, length );
             return;
          }else
-            ProcessDataPacket( data, length );
+           System.out.println("Stray Packet");
          return;
      }
    }
@@ -272,22 +316,22 @@ class thisIUDPUser implements IUDPUser
    {
       if( length <44)
          return false;
-      if( data[4]!=0 ||data[5]!=0 ||data[6]!=6 ||data[4]!=0 )
+      if( data[4]!=0 ||data[5]!=0 ||data[6]!=2 ||data[4]!=0 )
          return false;
       return true;
    }
    
    
-     private void ProcessDataPacket( byte[] data, int length )
+     private void ProcessDataPacket0( byte[] data, int length )
      {
 
       NReceived++ ;
-     
+      
       if( length <52)
          return;
       if( data[6]!=2|| data[5]!=0 ||data[7]!=0)
          return;
-      
+  
       int NEvents = Cvrt2Int( data , 8)- Cvrt2Int( data , 12);
 	  NEvents = NEvents/8;//8 bytes per event packet
 	  
@@ -295,16 +339,18 @@ class thisIUDPUser implements IUDPUser
 	     return;
 	 
       total_received += NEvents;
+      
     
-      int[] ids = new int[ NEvents ];
-      int[] tofs = new int[ NEvents ];
+      //int[] ids = new int[ NEvents ];
+     // int[] tofs = new int[NEvents ];
       int start = 24 + Cvrt2Int( data , 12);
       // start=0; NEvents = length/2 with Dennis' interpretation
-      if( Buffstart + NEvents >= SocketEventLoader.BUFF_SIZE )
+      if( Buffstart + 2*NEvents >= SocketEventLoader.BUFF_SIZE )
       {
          // System.out.print( "PrcessDat1" );
          SendMessage( NEvents );
       }
+
       for( int i = Buffstart ; i < Buffstart + NEvents ; i++ )
       {
          tofBuff[ i ] = Cvrt2Int( data , start );
@@ -319,6 +365,7 @@ class thisIUDPUser implements IUDPUser
          start += 8;
       }
     
+    
       Buffstart += NEvents;
 
       if( Buffstart > SocketEventLoader.SEND_MINIMUM )
@@ -329,12 +376,86 @@ class thisIUDPUser implements IUDPUser
     }
       // if( NReceived % 200 == 0 )
       // System.out.println( "Received packets =" + NReceived );
- 
+     private void ProcessDataPacket( byte[] data, int length )
+     {
+
+      NReceived++ ;
+     
+    
+  
+      int NEvents = Cvrt2Int( data , 8)- Cvrt2Int( data , 12);
+      NEvents = NEvents/8;//8 bytes per event packet
+      
+      if( NEvents <=0  )
+         return;
+      
+      int start = 24 + Cvrt2Int( data , 12);
+      if( SocketEventLoader.debug ==2)
+      { 
+         System.out.print("NEvents="+NEvents+", first data=");
+         System.out.print( String.format( "%02x%02x%02x%02x " , 
+               data[start+0],data[start+1],data[start+2],data[start+3] ) );
+         System.out.print( String.format( "%02x%02x%02x%02x " , 
+           data[start+4],data[start+5],data[start+6],data[start+7] ) );
+         System.out.print( String.format( "%02x%02x%02x%02x " , 
+                 data[start+8],data[start+9],data[start+10],data[start+11] ) );
+         System.out.print( String.format( "%02x%02x%02x%02x " , 
+           data[start+12],data[start+13],data[start+14],data[start+15] ) );
+          System.out.println( );
+      }
+         
+      total_received += NEvents;
+    
+     
+      // start=0; NEvents = length/2 with Dennis' interpretation
+      if( Buffstart + NEvents >= SocketEventLoader.BUFF_SIZE )
+      {
+         // System.out.print( "PrcessDat1" );
+         SendMessage( NEvents );
+      }
+      
+      
+      // start=0; NEvents = length/2 with Dennis' interpretation
+      if( Buffstart + 2*NEvents >= SocketEventLoader.BUFF_SIZE )
+      {
+         // System.out.print( "PrcessDat1" );
+         SendMessage( NEvents );
+      }
+      
+      for( int i = Buffstart ; i < Buffstart + 2*NEvents ; i++)
+      {
+         idBuff[i]= Cvrt2Int( data,start);
+         start +=4;
+      }
+     if( SocketEventLoader.debug==2)
+        System.out.println("first float Data="+idBuff[Buffstart]+","+
+              idBuff[Buffstart+1]+","+idBuff[Buffstart+2]+","+idBuff[Buffstart+3]);
+      if( total_received < 0)
+      {
+         for( int i=0; i< Math.min( 2*total_received ,80 );i++)
+            System.out.print(idBuff[i]+",");
+          System.out.println("");
+      }
+    
+    
+      Buffstart += 2*NEvents;
+
+      if( Buffstart > SocketEventLoader.SEND_MINIMUM )
+      {
+         // System.out.print( "PrcessDat2" );
+         SendMessage( 0 );
+      }
+    }
+      // if( NReceived % 200 == 0 )
+      // System.out.println( "Received packets =" + NReceived );
+
 
      private void ProcessCommandPacket( byte[] data, int length)
      {
-                 
-        TotalProtonsOnTarget += Cvrt2dbl( data, 40);
+        ProcessDataPacket( data,length);
+        int nPulseIDs = Cvrt2Int( data,12)/24;
+        for( int i=0;i<nPulseIDs; i++)
+             TotalProtonsOnTarget += Cvrt2dbl( data, 40 +i*24);
        
         if(  SendScale && TotalProtonsOnTarget !=0 )
               message_center.send( new Message( Commands.SCALE_FACTOR, 
@@ -389,49 +510,61 @@ class thisIUDPUser implements IUDPUser
    }
    // Sends a message if enough info has been buffered or enough time has
    // passed
-   protected void SendMessage( int NEvents )
+   protected void SendMessage(int NEvents)
    {
-     synchronized ( buffer_lock )
-     {
-      long currTime = System.currentTimeMillis();
 
-      if(  Buffstart < SocketEventLoader.SEND_MINIMUM            && 
-           Buffstart + NEvents < SocketEventLoader.BUFF_SIZE     &&
-           currTime - timeStamp < SocketEventLoader.SEND_MIN_TIME )
-          return;
- 
-      if( Buffstart == 0 )
+      synchronized( buffer_lock )
       {
-//       System.out.println("NO EVENTS NOW, Total sent = " + total_received );
-//        System.out.println("N Events Received,packets="+total_received+","+
-//               NReceived);
-         return;
+         long currTime = System.currentTimeMillis( );
+
+         if ( Buffstart < SocketEventLoader.SEND_MINIMUM
+               && Buffstart + 2 * NEvents < SocketEventLoader.BUFF_SIZE
+               && currTime - timeStamp < SocketEventLoader.SEND_MIN_TIME )
+            return;
+
+         if ( Buffstart == 0 )
+         {
+            if ( SocketEventLoader.debug != 0 )
+               System.out.println( "Total events received=" + total_received
+                     + "total sent =" + ( TotalEventDataSent2IsawEV / 2.0 ) );
+
+            if ( fsave != null && TotalEventDataSent2IsawEV > 300000
+                  && SocketEventLoader.debug == 5 )
+               try
+               {
+
+                  System.out.println( "Start writing file. Don't exit" );
+                  for( int i = 0 ; i < TotalEventDataSent2IsawEV ; i += 2 )
+                  {
+                     fsave.write( String.format( "%5d %5d \n" ,
+                           SavedEventsBuff[i] , SavedEventsBuff[i + 1] )
+                           .getBytes( ) );
+                     if ( ( i + 1 ) % 10000 == 0 )
+                        fsave.flush( );
+                  }
+                  fsave.close( );
+                  System.out.println( "Finished writing file. You can exit" );
+                  fsave = null;
+               } catch( Exception s )
+               {
+                  fsave = null;
+               }
+
+            return;
+         }
+
+         message_center
+               .send( new Message( Commands.MAP_EVENTS_TO_Q , new TofEventList(
+                     idBuff , Buffstart / 2 , true ) , false , true ) );
+         if( SocketEventLoader.debug == 5)
+            System.arraycopy( idBuff , 0 , SavedEventsBuff ,
+                  TotalEventDataSent2IsawEV , Buffstart );
+
+         TotalEventDataSent2IsawEV += Buffstart;
+         Buffstart = 0;// Handle the buffers here
+         timeStamp = System.currentTimeMillis( );
       }
-      
-//    System.out.println("Total number of events sent = " + total_received );
-
-      int[] tofs = new int[ Buffstart ];
-      int[] ids = new int[ Buffstart ];
-
-      System.arraycopy( tofBuff , 0 , tofs , 0 , Buffstart );
-      System.arraycopy( idBuff , 0 , ids , 0 , Buffstart );
-      Buffstart = 0;
-     
-      message_center.send( new Message( Commands.MAP_EVENTS_TO_Q ,
-               new TofEventList( tofs , ids ) , false , true ) );
-
-      timeStamp = System.currentTimeMillis();
-     //Testing only--> message_center.send( new Message( Commands.SCALE_FACTOR, 1f/total_received, true, true));
-/*
-      if( NEvents >= SocketEventLoader.BUFF_SIZE)
-      {
-         tofBuff= new int[ NEvents+10 ];
-         idBuff = new int[ NEvents+10 ];
-         SocketEventLoader.BUFF_SIZE = NEvents+10;
-      }
-*/  }
    }
-
 
    private int Cvrt2Int( byte[] B , int start )
    {

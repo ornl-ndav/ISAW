@@ -45,6 +45,7 @@ import java.awt.Color;
 import java.awt.GridLayout;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
+import java.io.FileOutputStream;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 
@@ -67,7 +68,8 @@ public class SocketServerTest extends UDPSend
     */
    public static final int MAX_PER_PULSE = 83333;   // 5 million events/sec
    
-   public static int START_CMD_INDX_TARTG_PROTO = 40;
+   public static int START_CMD_INDX_TARTG_PROTO = 40;//Not used anymore
+   public static int debug = 0;
 
    /**
     * Constructor. The data is sent to port 8002 on the specified host.
@@ -82,7 +84,7 @@ public class SocketServerTest extends UDPSend
                             throws UnknownHostException , SocketException
    {
       super( destination_node, 8002 );
-      try
+      /*try
       {
       START_CMD_INDX_TARTG_PROTO = 
          Integer.parseInt( System.getProperty( "Command Packet Index Protons On Target","40"  ));
@@ -90,14 +92,15 @@ public class SocketServerTest extends UDPSend
       {
          START_CMD_INDX_TARTG_PROTO = 40;
       }
-      System.out.println("POT start="+START_CMD_INDX_TARTG_PROTO);
+      */
+    
    }
 
    public void runTest( String EventFileName, int events_per_pulse )
    {
       Random ran_gen = new Random();
-      int NsentAftCommandPacket = 0;
       int TotalEventsSent =0;
+      
       SNS_TofEventList eventList = new SNS_TofEventList( EventFileName );
       long totNevents = eventList.numEntries();
 
@@ -106,10 +109,14 @@ public class SocketServerTest extends UDPSend
 
       int[] all_tofs = eventList.eventTof( 0L, totNevents );
       int[] all_ids  = eventList.eventPixelID( 0L, totNevents );
+  
       int[] ids, tof;
-      System.out.println(String.format("tof=%4d,%4d,%4d,%4d, ids=%4d,%4d,%4d,%4d",
+      
+      if( debug ==1)
+         System.out.println(String.format("tof=%4d,%4d,%4d,%4d, ids=%4d,%4d,%4d,%4d",
                all_tofs[0],all_tofs[1],all_tofs[2],all_tofs[3],all_ids[0],all_ids[1],
                all_ids[2],all_ids[3],all_ids[4]));
+      
       int NPacketsSent = 0;
 
       if ( events_per_pulse > MAX_PER_PULSE )       // limit rate to about 5 
@@ -124,7 +131,7 @@ public class SocketServerTest extends UDPSend
 
       while ( firstEvent < totNevents )  
       {                        
-         int NbytesSent =0;
+         int NbytesSentInPacket =0;
                                                     // Determine number of 
                                                     // events for this pulse
          int  n_to_send = (int)
@@ -148,59 +155,60 @@ public class SocketServerTest extends UDPSend
 
            System.arraycopy( all_tofs, firstEvent, tof, 0, packet_size );
            System.arraycopy( all_ids,  firstEvent, ids, 0, packet_size );
-           NbytesSent += packet_size;
+           
+           NbytesSentInPacket += packet_size;
                                                     // adjust the number to
                                                     // send and firstEvent
            n_to_send   = n_to_send - packet_size;
            firstEvent += packet_size;
                                                     // push header and data 
                                                     // into one byte array
-           // byte[] packet = new byte[ 24 + ids.length * 8 ];
-           byte[] packet = new byte[  ids.length * 8 ];
-           //java.util.Arrays.fill( packet , 0 , 24 , (byte) 0 );
-           int L = ids.length;
-          //packet[ 20 ] = LoByte( L );
-          // packet[ 21 ] = HiByte( L );
-
-           int start = 0;
           
+           byte[] packet = new byte[  ids.length * 8 ];
+           
+           int L = ids.length;
+           int start = 0;
+           
+           if( debug ==2 && packets.size()<1 && ids.length >2)
+              System.out.println("float vals="+tof[0]+","+ids[0]+","
+                    +tof[1]+","+ids[1]);
+           
            for( int i = 0 ; i < ids.length ; i++ )
            {
               assign( tof[ i ] , packet , start );
               assign( ids[ i ] , packet , start + 4 );
-              if( NPacketsSent >=0 && i< 0 )
-                 System.out.println( "--"+tof[i]+","+ids[i]);
-                 //System.out.println(String.format("%2x%2x%2x%2x,%2x%2x%2x%2x", packet[start], packet[start+1],
-                          //packet[start+2],packet[start+3],packet[start+4],packet[start+5],packet[start+6],packet[start+7]));
+             
               start += 8;
            }                                   
         
-          
-           // System.out.write( packet );                                        // save the byte array
+                                               // save the byte array
            packets.add( packet );
+           TotalEventsSent += ids.length;
          }
 
          try 
          {  
-              byte[] packet1= MakeCommandPacket( NbytesSent );
-         
+              byte[] packet1= MakeCommandPacket( NbytesSentInPacket,packets );
+              assign(NPacketsSent+1, packet1,0);
               send( packet1 , packet1.length );
-              //showwpacket( packet1,"command"+ NbytesSent);
-                                                        //
-            for ( int i = 0; i < packets.size(); i++ ) // send each packet
-            {
-              byte[] packet = packets.elementAt(i);
-              packet1 = MakeEventPacket( packet);
-            
-
-              TotalEventsSent += packet.length/8;
-              send( packet1 , packet1.length );
-              //showwpacket( packet1,"events");
               NPacketsSent++ ;
-              if( NPacketsSent % 200 == 0 )
-                 System.out.println( "sent packets =" + NPacketsSent );
-            }
-            
+              
+              if( NPacketsSent <10 && debug == 1)
+                 showwpacket(packet1,packet1.length,"Whole packet");
+              
+              if( NPacketsSent % 200 == 0  )
+              {
+                 String firstData ="";
+                 if(debug == 4)
+                    firstData=",data="+String.format( "%02x%02x%02x%02x %02x%02x%02x%02x %02x%02x%02x%02x" , 
+                       packet1[48],packet1[49],packet1[50],packet1[51],
+                       packet1[52],packet1[53],packet1[54],packet1[55],
+                       packet1[0],packet1[1],packet1[2],packet1[3]);
+                // packet1[0]=(byte)( NPacketsSent/200);
+                // showwpacket( packet1,65,"sent packets =" + NPacketsSent);
+                 System.out.println( "sent packets =" + NPacketsSent+firstData);
+              }
+       
                                                    // send about 60 times/sec
             curr_time = System.currentTimeMillis();
             elapsed_time = (int)(curr_time - last_time);
@@ -217,15 +225,44 @@ public class SocketServerTest extends UDPSend
             System.exit( 0 );
          }
       }
- 
+      
+      System.out.println("Total events sent="+ TotalEventsSent);
+      if ( debug == 10 )
+      {
+         try
+         {
+            System.out.println( "Saving to file, totNEvents=" + totNevents );
+            FileOutputStream fout = new FileOutputStream(
+                  "C:/Users/ruth/event2.dat" );
+            
+            for( int i = 0 ; i < totNevents ; i++ )
+               fout.write( String.format( "%5d %5d \n" , all_tofs[i] ,
+                     all_ids[i] ).getBytes( ) );
+            fout.close( );
+         } catch( Exception s )
+         {
+
+         }
+         System.out.println( "File throught" );
+      }
+    
    }
-   private void showwpacket( byte[] packet, String message)
+   public static void showwpacket( byte[] packet,int length, String message)
    {
     System.out.println( message);
     int k=0;
-    for( int i=0; i+4<packet.length;i+=4)
+    if( packet == null || packet.length < 1)
+       return;
+    if( length <=0)
+       length = packet.length;
+    length = Math.min( length , packet.length );
+    
+    for( int i=0; i+4<length;i+=4)
     {
-     System.out.print( String.format( "%2x%2x%2x%2x " , packet[i],packet[i+1],packet[i+2],packet[i+3] ) );
+
+       if( i%32 == 0)
+          System.out.println( );
+     System.out.print( String.format( "%02x%02x%02x%02x " , packet[i],packet[i+1],packet[i+2],packet[i+3] ) );
      k=i+4;
      
     }
@@ -239,6 +276,7 @@ public class SocketServerTest extends UDPSend
        
     }
    }
+   //deprecated
    private byte[] MakeEventPacket( byte[] eventData)
    {
      byte[] Result = new byte[6*4+6*4+eventData.length];
@@ -251,34 +289,72 @@ public class SocketServerTest extends UDPSend
      
    }
    
-   private byte[] MakeCommandPacket( int N2Bsent)
+   private byte[] MakeCommandPacket( int N2Bsent, Vector<byte[]> eventData)
    {
-      byte[] Res = new byte[48];
+      int eventLength=0;
+      if( eventData != null)
+         for( int i=0; i< eventData.size();i++)
+            eventLength = eventData.elementAt(i).length;
+      
+      byte[] Res = new byte[48 + eventLength];
       Arrays.fill( Res , (byte)0 );
-      Res[6] = (byte)6;
       
-      assign(24,Res,8);
+      Res[6] = (byte)2;      
+      assign(24,Res,12);
       
+      assign( 24+eventLength, Res,8);
       
+      if( debug == 2 )
+         System.out.print( "NEvents="+eventLength/8+", first data=");
       try
       {
          ByteArrayOutputStream bStream = new ByteArrayOutputStream(10);
          DataOutputStream dStream = new DataOutputStream( bStream);
-         dStream.writeDouble( (double ) N2Bsent);
+         dStream.writeDouble( (double ) eventLength);
          byte[] res = bStream.toByteArray( );
          if( res.length < 8)
             return null;
+         
          System.arraycopy( res,0,Res,40,8);
          
+         int start = 48;
+         
+         if( eventLength > 0)
+            for( int i = 0 ; i < eventData.size( ) ; i++ )
+            {
+               byte[] eventList = eventData.elementAt( i );
+               System
+                     .arraycopy( eventList , 0 , Res , start , eventList.length );
+               start += eventList.length;
+               if ( debug == 2 && i == 0 )
+               {
+                  System.out.print( String.format( "%02x%02x%02x%02x " ,
+                        eventList[0] , eventList[1] , eventList[2] ,
+                        eventList[3] ) );
+                  System.out.print( String.format( "%02x%02x%02x%02x " ,
+                        eventList[4] , eventList[5] , eventList[6] ,
+                        eventList[7] ) );
+                  System.out.print( String.format( "%02x%02x%02x%02x " ,
+                        eventList[8] , eventList[9] , eventList[10] ,
+                        eventList[11] ) );
+                  System.out.print( String.format( "%02x%02x%02x%02x " ,
+                        eventList[12] , eventList[13] , eventList[14] ,
+                        eventList[15] ) );
+                  System.out.println( );
+               }
+            }
          
       }catch(Exception s)
       {
+         System.out.println( );
          return null;
       }
       return Res;
       
       
    }
+   
+   //old command packet ere 2/1/2010
    private byte[] MakeCommandPacket0( int N2Bsent)
    {
       byte[] Res = new byte[SocketEventLoader.START_CMD_INDX_TARTG_PROTO+32];
@@ -371,6 +447,7 @@ public class SocketServerTest extends UDPSend
        filter.addExtension( "dat" );
        filter.setDescription( "Raw Event File" );
        jfc.setFileFilter( filter );
+       
        JPanel panel = new JPanel();
        BoxLayout blay = new BoxLayout( panel,BoxLayout.Y_AXIS);
        panel.setLayout( blay );
@@ -417,10 +494,12 @@ public class SocketServerTest extends UDPSend
           System.out.println(" and the name or IP address to send packets to");
           System.exit( 0 );
        }
+       
        int MaxEvents = -1;
        try
        {
           MaxEvents = Integer.parseInt(  TextNEvents.getText().trim() );
+          
        }catch(Exception s1)
        {
           MaxEvents =-1;
@@ -428,8 +507,10 @@ public class SocketServerTest extends UDPSend
        
        String IP = TextIP.getText();
        int n=3;
+       
        if( IP == null || IP.trim().length() < 1)
           n=2;
+       
        if( n < 3 )
           {
           if( MaxEvents <0)
@@ -438,6 +519,7 @@ public class SocketServerTest extends UDPSend
           }
        else if( MaxEvents < 0)
           n = 1;
+       
        args= new String[n];
        args[0]= filename;
        if( n>1)
@@ -453,6 +535,7 @@ public class SocketServerTest extends UDPSend
         NEvents = Integer.parseInt( args[1] );
 
      String destination_node = "localhost";
+     
      if (args.length > 2 )
        destination_node = args[2];
      
