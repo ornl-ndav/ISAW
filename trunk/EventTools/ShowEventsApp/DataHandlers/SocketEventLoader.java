@@ -130,6 +130,14 @@ public class SocketEventLoader
    {
       udpReceiver.interrupt( );
    }
+   
+   /**
+    * Resets the counter for the total protons on target.
+    */
+   public void resetAccumulator()
+   {
+      User.resetAccumulator( );
+   }
 
    /**
     * Test program using port 8002 and the SNAP instrument
@@ -267,6 +275,11 @@ class thisIUDPUser implements IUDPUser
    public void resetAccumulator()
    {
       TotalProtonsOnTarget =0;
+      NReceived =0;
+      Buffstart =0;
+      total_received = 0;
+      TotalEventDataSent2IsawEV = 0;
+      
    }
 
    /**

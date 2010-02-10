@@ -255,7 +255,10 @@ public class InitializationHandler implements IReceiveMessage
 
        Clearing = true;
        if ( socket != null )
-         socket.setPause( true);
+         {
+          socket.setPause( true);
+          socket.resetAccumulator( );
+         }
 
       instrument_ok = false;
       load_failed = false;
@@ -313,6 +316,8 @@ public class InitializationHandler implements IReceiveMessage
      if( socket != null)
      {
         socket.setPause( true );
+        socket.resetAccumulator( );
+        
      }
   }
 
