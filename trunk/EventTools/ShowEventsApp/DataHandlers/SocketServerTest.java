@@ -200,17 +200,7 @@ public class SocketServerTest extends UDPSend
               if( NPacketsSent <10 && debug == 1)
                  showwpacket(packet1,packet1.length,"Whole packet");
               
-              if( firstEvent >= totNevents && i+1==packets.size())
-              {
-                 System.out.println("Last packet="+String.format( "%02x%02x%02x%02x " ,
-                       packet1[0],packet1[1],packet1[2],packet1[3]));
-                 String firstData=",data="+String.format( "%02x%02x%02x%02x %02x%02x%02x%02x %02x%02x%02x%02x" , 
-                       packet1[48],packet1[49],packet1[50],packet1[51],
-                       packet1[52],packet1[53],packet1[54],packet1[55],
-                       packet1[0],packet1[1],packet1[2],packet1[3]);
-            
-                 System.out.println( "sent packets =" + NPacketsSent+firstData);
-              }
+             
               if( NPacketsSent % 200 == 0  )
               {
                  String firstData ="";
