@@ -56,12 +56,13 @@ import NetComm.UDPReceive;
  */
 public class SocketEventLoader
 {
-   public static int BUFF_SIZE     = 10000;
+   public static int BUFF_SIZE     = 200000;
 
    public static int SEND_MINIMUM  = BUFF_SIZE - 4000;
 
    public static int SEND_MIN_TIME = 2000; // ms
    
+   //deprecated by new format
    public static int START_CMD_INDX_TARTG_PROTO = 40;
    public static int NUM_CMD_TARTG_PROTO = 8;
    public static int HEADER_PACKET_2POS = 6; 
@@ -158,9 +159,15 @@ class thisIUDPUser implements IUDPUser
 
    MessageCenter      message_center;
 
-   int[]              tofBuff   = new int[ SocketEventLoader.BUFF_SIZE ];
+   //deprecated for non interlaced form of event messages
+   int[]              tofBuff   = new int[0];// SocketEventLoader.BUFF_SIZE ];
+   
+   //deprecated for non interlaced form of event messages
+   int[]              idBuff    =new int[0];// SocketEventLoader.BUFF_SIZE ];
 
-   int[]              idBuff    = new int[ SocketEventLoader.BUFF_SIZE ];
+   int[]              sendBuff ;   
+   int[][]            BuffPool  = new int[10][ SocketEventLoader.BUFF_SIZE ];
+   int                currentBuffPage = 0;
 
    int                Buffstart = 0;
 
@@ -185,7 +192,6 @@ class thisIUDPUser implements IUDPUser
 
    private int TotalEventDataSent2IsawEV  =   0;// debugging aids
    private int[] SavedEventsBuff;              //debugging aids
-
    /**
     * Constructor
     * 
@@ -232,7 +238,7 @@ class thisIUDPUser implements IUDPUser
          SavedEventsBuff = null;
       }
       
-      
+      sendBuff = BuffPool[ currentBuffPage ];
       ( new timerThread( this ) ).start();
     
    }
@@ -397,10 +403,10 @@ class thisIUDPUser implements IUDPUser
                data[start+0],data[start+1],data[start+2],data[start+3] ) );
          System.out.print( String.format( "%02x%02x%02x%02x " , 
            data[start+4],data[start+5],data[start+6],data[start+7] ) );
+         System.out.println( String.format( "%02x%02x%02x%02x " , 
+                 data[0],data[1],data[2],data[3] ) );
          System.out.print( String.format( "%02x%02x%02x%02x " , 
-                 data[start+8],data[start+9],data[start+10],data[start+11] ) );
-         System.out.print( String.format( "%02x%02x%02x%02x " , 
-           data[start+12],data[start+13],data[start+14],data[start+15] ) );
+           data[4],data[5],data[6],data[7] ) );
           System.out.println( );
       }
          
@@ -424,16 +430,16 @@ class thisIUDPUser implements IUDPUser
       
       for( int i = Buffstart ; i < Buffstart + 2*NEvents ; i++)
       {
-         idBuff[i]= Cvrt2Int( data,start);
+         sendBuff[i]= Cvrt2Int( data,start);
          start +=4;
       }
      if( SocketEventLoader.debug==2)
-        System.out.println("first float Data="+idBuff[Buffstart]+","+
-              idBuff[Buffstart+1]+","+idBuff[Buffstart+2]+","+idBuff[Buffstart+3]);
+        System.out.println("first float Data="+sendBuff[Buffstart]+","+
+              sendBuff[Buffstart+1]+","+sendBuff[Buffstart+2]+","+sendBuff[Buffstart+3]);
       if( total_received < 0)
       {
          for( int i=0; i< Math.min( 2*total_received ,80 );i++)
-            System.out.print(idBuff[i]+",");
+            System.out.print(sendBuff[i]+",");
           System.out.println("");
       }
     
@@ -525,9 +531,14 @@ class thisIUDPUser implements IUDPUser
          if ( Buffstart == 0 )
          {
             if ( SocketEventLoader.debug != 0 )
+            {
                System.out.println( "Total events received=" + total_received
+            
                      + "total sent =" + ( TotalEventDataSent2IsawEV / 2.0 ) );
-
+               System.out.println("Total protons on target="+TotalProtonsOnTarget);
+            }
+            
+         
             if ( fsave != null && TotalEventDataSent2IsawEV > 300000
                   && SocketEventLoader.debug == 5 )
                try
@@ -555,13 +566,20 @@ class thisIUDPUser implements IUDPUser
 
          message_center
                .send( new Message( Commands.MAP_EVENTS_TO_Q , new TofEventList(
-                     idBuff , Buffstart / 2 , true ) , false , true ) );
+                     sendBuff , Buffstart / 2 , false ) , false , true ) );
          if( SocketEventLoader.debug == 5)
-            System.arraycopy( idBuff , 0 , SavedEventsBuff ,
+            System.arraycopy( sendBuff , 0 , SavedEventsBuff ,
                   TotalEventDataSent2IsawEV , Buffstart );
 
          TotalEventDataSent2IsawEV += Buffstart;
-         Buffstart = 0;// Handle the buffers here
+         Buffstart = 0;
+         
+         //--------------------------Will check first & 2nd entry if neg
+         //                           can reuse
+         currentBuffPage++;
+         currentBuffPage = currentBuffPage % 10;
+         sendBuff = BuffPool[ currentBuffPage ];
+         //------------------------------
          timeStamp = System.currentTimeMillis( );
       }
    }
