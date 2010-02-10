@@ -188,7 +188,11 @@ public class SocketServerTest extends UDPSend
 
          try 
          {  
-              byte[] packet1= MakeCommandPacket( NbytesSentInPacket,packets );
+            for( int i=0; i< packets.size( ); i++)
+            { 
+               
+               byte[] packet1= MakeCommandPacket( NbytesSentInPacket, packets.elementAt( i ) );
+          
               assign(NPacketsSent+1, packet1,0);
               send( packet1 , packet1.length );
               NPacketsSent++ ;
@@ -196,6 +200,17 @@ public class SocketServerTest extends UDPSend
               if( NPacketsSent <10 && debug == 1)
                  showwpacket(packet1,packet1.length,"Whole packet");
               
+              if( firstEvent >= totNevents && i+1==packets.size())
+              {
+                 System.out.println("Last packet="+String.format( "%02x%02x%02x%02x " ,
+                       packet1[0],packet1[1],packet1[2],packet1[3]));
+                 String firstData=",data="+String.format( "%02x%02x%02x%02x %02x%02x%02x%02x %02x%02x%02x%02x" , 
+                       packet1[48],packet1[49],packet1[50],packet1[51],
+                       packet1[52],packet1[53],packet1[54],packet1[55],
+                       packet1[0],packet1[1],packet1[2],packet1[3]);
+            
+                 System.out.println( "sent packets =" + NPacketsSent+firstData);
+              }
               if( NPacketsSent % 200 == 0  )
               {
                  String firstData ="";
@@ -217,7 +232,7 @@ public class SocketServerTest extends UDPSend
               Thread.sleep( 16 - elapsed_time );
             else
               Thread.sleep(1);                    // give the system a break
-           
+            }
          }
          catch( Exception s )
          {
@@ -289,12 +304,13 @@ public class SocketServerTest extends UDPSend
      
    }
    
-   private byte[] MakeCommandPacket( int N2Bsent, Vector<byte[]> eventData)
+   private byte[] MakeCommandPacket( int N2Bsent,byte[] eventData)
    {
-      int eventLength=0;
-      if( eventData != null)
-         for( int i=0; i< eventData.size();i++)
-            eventLength = eventData.elementAt(i).length;
+    
+      if( eventData == null)
+         return null;
+
+      int eventLength = eventData.length;
       
       byte[] Res = new byte[48 + eventLength];
       Arrays.fill( Res , (byte)0 );
@@ -320,13 +336,13 @@ public class SocketServerTest extends UDPSend
          int start = 48;
          
          if( eventLength > 0)
-            for( int i = 0 ; i < eventData.size( ) ; i++ )
+           
             {
-               byte[] eventList = eventData.elementAt( i );
+               byte[] eventList = eventData;
                System
                      .arraycopy( eventList , 0 , Res , start , eventList.length );
                start += eventList.length;
-               if ( debug == 2 && i == 0 )
+               if ( debug == 2  )
                {
                   System.out.print( String.format( "%02x%02x%02x%02x " ,
                         eventList[0] , eventList[1] , eventList[2] ,
