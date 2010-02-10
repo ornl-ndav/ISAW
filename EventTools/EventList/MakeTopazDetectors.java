@@ -114,7 +114,6 @@ public class MakeTopazDetectors
     Vector3D beam_axis     = new Vector3D( 1, 0, 0 ); 
     Vector3D translation   = new Vector3D( 0.19f, 0, 0 );
 
-    float[] radius = { 0, 19, 19, 19, 19 };
     float[] theta  = { 0,  0,  0,  0, .785398f };
     float[] phi    = { 0, -.785398f, -1.5708f, -2.35619f, -1.5708f };
     for ( int ID = 1; ID <=4; ID++ )
