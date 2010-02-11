@@ -202,8 +202,9 @@ public class NxDataStateInfo extends StateInfo{
                    axisName[ j ] = SS[ SS.length - j ];
             }
               
-          }else if( child.getNodeName().equals( "id" ) || child.getNodeName().
-            equals( "detector_number" ) ){
+          }else if( child.getNodeName().equals( "pixel_id" ) ||
+                    child.getNodeName().equals( "id" )       ||
+                    child.getNodeName().equals( "detector_number" ) ){
                  
             Object O = child.getNodeValue();
             if( O != null )
