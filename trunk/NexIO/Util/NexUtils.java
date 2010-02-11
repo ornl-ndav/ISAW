@@ -446,12 +446,14 @@ public class NexUtils implements INexUtils {
       int NGroups = getNGroups( dataState.dimensions );
    
       int[] ids = NexUtils.getIntArrayFieldValue( NxDetector ,
-              "id" );
+              "pixel_id" );
       if( ids == null){
          ids = NexUtils.getIntArrayFieldValue( NxDetector ,
-         "detector_number" );
+         "id" );
         if( ids != null && ids.length< NGroups)
-            ids = null;
+           ids = NexUtils.getIntArrayFieldValue( NxDetector ,
+           "detector_number" );
+        else ids = null;
       }
 
       
