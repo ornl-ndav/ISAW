@@ -2,15 +2,28 @@ package EventTools.ShowEventsApp.Command;
 
 public class Commands 
 {
+
+  public static final String UPDATE      = "UPDATE";
+   
   public static final String LOAD_FILE      = "LOAD_FILE";
+  
   public static final String LOAD_FAILED    = "LOAD_FAILED";
+  
+  
   public static final String LOAD_FILE_DATA = "LOAD_FILE_DATA";
+  
   public static final String LOAD_FILE_DONE = "LOAD_FILE_DONE";
+  
   public static final String LOAD_UDP_EVENTS = "LOAD_UDP_EVENTS";
+  
   public static final String PAUSE_UDP       ="PAUSE_UDP";
+  
   public static final String CLEAR_UDP       ="CLEAR_UDP";
+  
   public static final String CONTINUE_UDP       ="CONTINUE_UDP";
+  
   public static final String SCALE_FACTOR       ="SCALE_FACTOR";
+  
   public static final String NORMALIZE_QD_GRAPHS       ="NORMALIZE_QD_GRAPHS";
 
   public static final String MAP_EVENTS_TO_Q = "MAP_EVENTS_TO_Q";
