@@ -1456,7 +1456,10 @@ public class ExtGetDS
       dsInf.NxBeamNode = beamNode;
    }
 
-
+  /**
+   * Browses through NeXus file and sets up the list of DataSet Info
+   * that describe names,ID's etc for data sets by number
+   */
    private void setUpDataSetList()
    {
 
@@ -1864,7 +1867,10 @@ public class ExtGetDS
       if( detNode == null )
          return Res;
 
-      int[] ids = NexUtils.getIntArrayFieldValue( detNode , "id" );
+      int[] ids = NexUtils.getIntArrayFieldValue( detNode , "pixel_id" );
+
+      if( ids == null)
+          ids = NexUtils.getIntArrayFieldValue( detNode , "id" );
       
       int[] detNums = NexUtils.getIntArrayFieldValue( detNode ,
                                                       "detector_number" );
@@ -1874,7 +1880,7 @@ public class ExtGetDS
          ids = detNums;
          detNums = null;
       }
-
+      
       Res[ 2 ] = 0;
       if( detNums != null )
          if( detNums.length <= NGroups )
