@@ -643,7 +643,12 @@ public class IntegrateMultiRunsForm extends Form {
     integrate.getParameter( 9 ).setValue( IntegMethod);
     integrate.getParameter( 10 ).setValue( boxDeltaX );
     integrate.getParameter( 11 ).setValue( boxDeltaY );
-    integrate.getParameter( 12 ).setValue( new Float( max_shoebox ) );
+//
+//  integrate.getParameter( 12 ).setValue( new Float( max_shoebox ) );
+//
+//  NOTE integrate is an instance of the "old" IPNS Integrate1 class
+//       and does not have a parameter 12. 
+//
 
     //LoadSCDCalib
     loadSCD.getParameter( 0 ).setValue( calibFile );
