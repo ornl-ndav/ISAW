@@ -70,7 +70,7 @@ public class UDPSend
     this.port = port;
 
     sock = new DatagramSocket();
-//    sock.connect( address, port );     // Not available in jdk 1.1.7
+    sock.connect( address, port );     // Not available in jdk 1.1.7
   }
  
   /**
@@ -89,8 +89,8 @@ public class UDPSend
     DatagramPacket pack = null;
     try
     {
-//    pack = new DatagramPacket( data, length );                 // java 1.2&1.3
-      pack = new DatagramPacket( data, length, address, port );  // jdk 1.1.7
+      pack = new DatagramPacket( data, length );                 // java 1.2&1.3
+//    pack = new DatagramPacket( data, length, address, port );  // jdk 1.1.7
       sock.send( pack );
     }
     catch ( Exception e )
@@ -98,4 +98,22 @@ public class UDPSend
       System.out.println("ERROR: can't send UDP packet to " +pack.getAddress());
     }
   }
+
+  /**
+   *  Make sure the socket gets closed when this object is no longer used.
+   */
+  protected void finalize() throws Throwable 
+  {
+    try 
+    {
+      sock.disconnect();
+      if ( !sock.isClosed() )
+        sock.close(); 
+    } 
+    finally 
+    {
+      super.finalize();
+    }
+  }
+
 }
