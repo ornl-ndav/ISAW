@@ -84,7 +84,10 @@ public class HistogramHandler implements IReceiveMessage
   private int           num_bins;
   private long          num_to_load;
   private double        max_hist_value_sent;
+  private long          max_num_added_sent;
   private long          lastTimeShown;
+  private int           UpdateCounter; //used to update every 3rd,5th,etc
+                                       // time the UPDATE message is received
 
   public HistogramHandler( MessageCenter message_center, 
                            MessageCenter view_message_center,
@@ -95,10 +98,11 @@ public class HistogramHandler implements IReceiveMessage
     this.current_instrument = SNS_Tof_to_Q_map.SNAP;
     this.num_to_load = 0;
     this.max_hist_value_sent = 0;
+    this.max_num_added_sent = 0;
 
     this.message_center      = message_center;
     this.view_message_center = view_message_center;
-
+    
     message_center.addReceiver( this, Commands.LOAD_FILE_DATA );
     message_center.addReceiver( this, Commands.ADD_EVENTS_TO_HISTOGRAMS );
     message_center.addReceiver( this, Commands.INIT_HISTOGRAM );
@@ -107,6 +111,8 @@ public class HistogramHandler implements IReceiveMessage
     message_center.addReceiver( this, Commands.GET_HISTOGRAM_MAX );
     message_center.addReceiver( this, Commands.FIND_PEAKS );
     
+    view_message_center.addReceiver( this, Commands.UPDATE);
+    UpdateCounter =0;
     lastTimeShown = System.currentTimeMillis();
   }
 
@@ -154,7 +160,7 @@ public class HistogramHandler implements IReceiveMessage
                                             true,
                                             true );
        message_center.send( done_loading );
-
+/*
        double max = histogram.maxVal();
        long time =  System.currentTimeMillis();
        if( time - lastTimeShown > 15000)
@@ -176,6 +182,7 @@ public class HistogramHandler implements IReceiveMessage
 
         
        }
+       */
       }
       return false;
     }
@@ -193,6 +200,7 @@ public class HistogramHandler implements IReceiveMessage
       {
         num_to_load = 0; 
         max_hist_value_sent = 0;
+        max_num_added_sent  = 0;
         Message init_hist_done = new Message( Commands.INIT_HISTOGRAM_DONE,
                                               null,
                                               true,
@@ -297,6 +305,39 @@ public class HistogramHandler implements IReceiveMessage
        Util.sendInfo( max_message );
 
        return false;
+    }
+    else if( message.getName().equals( Commands.UPDATE))
+    {
+       UpdateCounter++;
+       
+       if( UpdateCounter < 6 )
+          return false;
+       UpdateCounter =0;
+       double max = histogram.maxVal();
+       long time =  System.currentTimeMillis();
+       
+       //if( time - lastTimeShown > 15000)
+       if( histogram.numAdded()> max_num_added_sent || 
+             max > max_hist_value_sent )
+       {
+        max_num_added_sent= histogram.numAdded( );
+       String max_message = String.format(
+                "Max Histogram Value : %4.2f,  Total Events: %d",
+                 histogram.maxVal(), histogram.numAdded()  );
+          Util.sendInfo( max_message );
+          lastTimeShown = time;
+       }
+       if ( max >  max_hist_value_sent )
+       {
+         max_hist_value_sent = max;
+         Message hist_max = new Message( Commands.SET_HISTOGRAM_MAX,
+                                         new Float( max ),
+                                         true,
+                                         true );
+         view_message_center.send( hist_max );
+
+        
+       }
     }
 
     return false;
