@@ -27,9 +27,9 @@
  *
  *  Last Modified:
  * 
- *  $Author$:
- *  $Date$:            
- *  $Rev$:
+ *  $Author:$
+ *  $Date:$            
+ *  $Rev:$
  */
 package EventTools.ShowEventsApp.DataHandlers;
 
@@ -66,7 +66,11 @@ public class SocketServerTest extends UDPSend
     *  Limit on the maximum number of events to send for each 1/60 second
     *  pulse.
     */
-   public static final int MAX_PER_PULSE = 83333;   // 5 million events/sec
+   public static final int MAX_PER_PULSE = 200000;   // 200,000 events/pulse
+                                                     // is about max for 1Gb 
+                                                     // network connection
+
+   public static final int UDP_BUFFER_SIZE = 655360;
    
    public static int START_CMD_INDX_TARTG_PROTO = 40;//Not used anymore
    public static int debug = 0;
@@ -84,16 +88,27 @@ public class SocketServerTest extends UDPSend
                             throws UnknownHostException , SocketException
    {
       super( destination_node, 8002 );
+
+      try
+      {
+        setSendBufferSize( UDP_BUFFER_SIZE );
+      }
+      catch ( Exception ex )
+      {
+        System.out.println("EXCEPTION setting UDP receive buffer size");
+      }
+
+
       /*try
       {
       START_CMD_INDX_TARTG_PROTO = 
-         Integer.parseInt( System.getProperty( "Command Packet Index Protons On Target","40"  ));
+         Integer.parseInt( System.getProperty( 
+                           "Command Packet Index Protons On Target","40"));
       }catch( Exception s)
       {
          START_CMD_INDX_TARTG_PROTO = 40;
       }
       */
-    
    }
 
    public void runTest( String EventFileName, int events_per_pulse )
@@ -113,14 +128,15 @@ public class SocketServerTest extends UDPSend
       int[] ids, tof;
       
       if( debug ==1)
-         System.out.println(String.format("tof=%4d,%4d,%4d,%4d, ids=%4d,%4d,%4d,%4d",
-               all_tofs[0],all_tofs[1],all_tofs[2],all_tofs[3],all_ids[0],all_ids[1],
-               all_ids[2],all_ids[3],all_ids[4]));
+         System.out.println(
+               String.format("tof = %4d,%4d,%4d,%4d, ids = %4d,%4d,%4d,%4d",
+               all_tofs[0], all_tofs[1], all_tofs[2], all_tofs[3],
+               all_ids[0],  all_ids[1],  all_ids[2],  all_ids[3])  );
       
       int NPacketsSent = 0;
 
-      if ( events_per_pulse > MAX_PER_PULSE )       // limit rate to about 5 
-        events_per_pulse = MAX_PER_PULSE;           // million per second
+      if ( events_per_pulse > MAX_PER_PULSE )       // limit rate  
+        events_per_pulse = MAX_PER_PULSE; 
 
       int firstEvent = 0;
       Vector<byte[]> packets  = new Vector<byte[]>(10);
@@ -129,7 +145,7 @@ public class SocketServerTest extends UDPSend
       long curr_time;
       int  elapsed_time;
 
-      while ( firstEvent < totNevents )  
+      while ( firstEvent < totNevents )    // While more pulses
       {                        
          int NbytesSentInPacket =0;
                                                     // Determine number of 
@@ -143,7 +159,8 @@ public class SocketServerTest extends UDPSend
            n_to_send = (int)(totNevents - firstEvent);
 
          packets.clear();
-         while ( n_to_send > 0 )
+         while ( n_to_send > 0 )      // split events for this pulse 
+                                      // across multiple packets
          {                                          // determine number to
            int packet_size = n_to_send;             // send in this packet
 
@@ -164,7 +181,7 @@ public class SocketServerTest extends UDPSend
                                                     // push header and data 
                                                     // into one byte array
           
-           byte[] packet = new byte[  ids.length * 8 ];
+           byte[] packet = new byte[ ids.length * 8 ];
            
            int L = ids.length;
            int start = 0;
@@ -180,7 +197,6 @@ public class SocketServerTest extends UDPSend
              
               start += 8;
            }                                   
-        
                                                // save the byte array
            packets.add( packet );
            TotalEventsSent += ids.length;
@@ -190,39 +206,45 @@ public class SocketServerTest extends UDPSend
          {  
             for( int i=0; i< packets.size( ); i++)
             { 
-               
-               byte[] packet1= MakeCommandPacket( NbytesSentInPacket, packets.elementAt( i ) );
+              byte[] packet1 = MakeCommandPacket( NbytesSentInPacket, 
+                                                  packets.elementAt( i ) );
           
               assign(NPacketsSent+1, packet1,0);
               send( packet1 , packet1.length );
+ 
               NPacketsSent++ ;
               
               if( NPacketsSent <10 && debug == 1)
                  showwpacket(packet1,packet1.length,"Whole packet");
-              
              
-              if( NPacketsSent % 200 == 0  )
+              if( NPacketsSent % 193 < 0  )
               {
                  String firstData ="";
                  if(debug == 4)
-                    firstData=",data="+String.format( "%02x%02x%02x%02x %02x%02x%02x%02x %02x%02x%02x%02x" , 
+                    firstData =",data="+ String.format( 
+                    "%02x%02x%02x%02x %02x%02x%02x%02x %02x%02x%02x%02x" , 
                        packet1[48],packet1[49],packet1[50],packet1[51],
                        packet1[52],packet1[53],packet1[54],packet1[55],
-                       packet1[0],packet1[1],packet1[2],packet1[3]);
+                       packet1[0], packet1[1], packet1[2], packet1[3]);
                 // packet1[0]=(byte)( NPacketsSent/200);
                 // showwpacket( packet1,65,"sent packets =" + NPacketsSent);
-                 System.out.println( "sent packets =" + NPacketsSent+firstData);
+
+                 System.out.println("sent packets =" + NPacketsSent+firstData );
+                 System.out.println(" packet length =" + packet1.length );
+                 System.out.println(" events in packet =" + 
+                                                      (packet1.length-48)/8  );
+                 System.out.println(" total events sent =" + TotalEventsSent );
               }
-       
-                                                   // send about 60 times/sec
+            }
+
             curr_time = System.currentTimeMillis();
             elapsed_time = (int)(curr_time - last_time);
             last_time = curr_time;
+
             if ( elapsed_time < 16 )
               Thread.sleep( 16 - elapsed_time );
             else
-              Thread.sleep(1);                    // give the system a break
-            }
+              Thread.sleep(0,1000);                // give the system a break
          }
          catch( Exception s )
          {
@@ -231,27 +253,27 @@ public class SocketServerTest extends UDPSend
          }
       }
       
-      System.out.println("Total events sent="+ TotalEventsSent);
+      System.out.println("Total events sent= "+ TotalEventsSent);
       if ( debug == 10 )
       {
+         String dump_file = "C:/Users/ruth/event2.dat";
          try
          {
             System.out.println( "Saving to file, totNEvents=" + totNevents );
-            FileOutputStream fout = new FileOutputStream(
-                  "C:/Users/ruth/event2.dat" );
-            
+            FileOutputStream fout = new FileOutputStream( dump_file );
             for( int i = 0 ; i < totNevents ; i++ )
                fout.write( String.format( "%5d %5d \n" , all_tofs[i] ,
                      all_ids[i] ).getBytes( ) );
             fout.close( );
          } catch( Exception s )
          {
-
+            System.out.println( "Exception dumping events to " + dump_file );
          }
          System.out.println( "File throught" );
       }
-    
    }
+
+
    public static void showwpacket( byte[] packet,int length, String message)
    {
     System.out.println( message);
@@ -264,23 +286,27 @@ public class SocketServerTest extends UDPSend
     
     for( int i=0; i+4<length;i+=4)
     {
-
-       if( i%32 == 0)
+       if( i%32 == 0 )
           System.out.println( );
-     System.out.print( String.format( "%02x%02x%02x%02x " , packet[i],packet[i+1],packet[i+2],packet[i+3] ) );
-     k=i+4;
-     
+       System.out.print( String.format( "%02x%02x%02x%02x " , 
+                             packet[i],packet[i+1],packet[i+2],packet[i+3] ) );
+       k=i+4;
     }
+
     for(int i=k; i < packet.length ;i++)
        System.out.print(  String.format( "%2x" , packet[i] ));
     System.out.println("");
-    try{
-    System.in.read( );
-    }catch(Exception ss)
+    try
     {
-       
+      System.in.read( );
+    }
+    catch(Exception ss)
+    {
+      System.out.println("Exception reading from System.in");    
     }
    }
+
+
    //deprecated
    private byte[] MakeEventPacket( byte[] eventData)
    {
@@ -291,12 +317,11 @@ public class SocketServerTest extends UDPSend
      assign( 24, Result, 12);
      System.arraycopy( eventData , 0 , Result , 48 , eventData.length );
      return Result;
-     
    }
+
    
    private byte[] MakeCommandPacket( int N2Bsent,byte[] eventData)
    {
-    
       if( eventData == null)
          return null;
 
@@ -329,8 +354,7 @@ public class SocketServerTest extends UDPSend
            
             {
                byte[] eventList = eventData;
-               System
-                     .arraycopy( eventList , 0 , Res , start , eventList.length );
+               System.arraycopy(eventList , 0 , Res , start , eventList.length);
                start += eventList.length;
                if ( debug == 2  )
                {
@@ -356,9 +380,8 @@ public class SocketServerTest extends UDPSend
          return null;
       }
       return Res;
-      
-      
    }
+
    
    //old command packet ere 2/1/2010
    private byte[] MakeCommandPacket0( int N2Bsent)
@@ -379,8 +402,6 @@ public class SocketServerTest extends UDPSend
          if( res.length < 8)
             return null;
          System.arraycopy( res,0,Res,START_CMD_INDX_TARTG_PROTO,8);
-         
-         
       }catch(Exception s)
       {
          return null;
@@ -388,11 +409,10 @@ public class SocketServerTest extends UDPSend
       
       //assign(N2Bsent,Res,SocketEventLoader.START_CMD_INDX_TARTG_PROTO);
       
-      
       return Res;
-      
-      
    }
+
+
    /**
     * Returns the hi(most significant) byte for the given number. Takes into 
     * account of negative numbers
@@ -447,7 +467,8 @@ public class SocketServerTest extends UDPSend
      if( args == null || args.length < 1)
      {
        DataSetTools.util.SharedData sd = new DataSetTools.util.SharedData();
-       JFileChooser jfc = new JFileChooser( System.getProperty( "Data_Directory","" ));
+       JFileChooser jfc = new JFileChooser( 
+                                   System.getProperty( "Data_Directory","" ));
        jfc.setDialogType( JFileChooser.CUSTOM_DIALOG );
        RobustFileFilter filter = new RobustFileFilter();
        filter.addExtension( "dat" );
@@ -469,13 +490,11 @@ public class SocketServerTest extends UDPSend
        JTextField TextIP = new JTextField("");
        
        panel1.add( new JLabel("Max Number of events per pulse"));
-       panel1.add(  TextNEvents );
-       
-      
+       panel1.add( TextNEvents );
        
        panel1.add( new JLabel("Blank or the recipient node name or IP"+
                       " address "));
-       panel1.add(  TextIP );
+       panel1.add( TextIP );
        panel1.setBorder(  new TitledBorder( new LineBorder( Color.black,2),
                 "OTHER PARAMETERS(opt)", TitledBorder.CENTER,TitledBorder.TOP));
        panel.add(  panel1);
@@ -483,20 +502,20 @@ public class SocketServerTest extends UDPSend
        
        String filename = null;
        JOptionPane jopt = new JOptionPane();
-       int Res =jopt.showConfirmDialog( null , panel,"Inputs to Test program", JOptionPane.OK_CANCEL_OPTION );
+       int Res =jopt.showConfirmDialog( null, panel, "Inputs to Test program",
+                                        JOptionPane.OK_CANCEL_OPTION );
      
        
-       if(   Res    == JOptionPane.OK_OPTION && jfc.getSelectedFile()!= null)
+       if( Res == JOptionPane.OK_OPTION && jfc.getSelectedFile()!= null)
        {
-          
            filename = jfc.getSelectedFile().getPath(); 
            System.out.println("filename = "+filename);
-          
        } 
        else
        {
           System.out.println(" Need to specify an Event file");
-          System.out.println(" In addition the number of events to send for each pulse");
+          System.out.println(
+                  " In addition the number of events to send for each pulse");
           System.out.println(" and the name or IP address to send packets to");
           System.exit( 0 );
        }
@@ -505,8 +524,8 @@ public class SocketServerTest extends UDPSend
        try
        {
           MaxEvents = Integer.parseInt(  TextNEvents.getText().trim() );
-          
-       }catch(Exception s1)
+       }
+       catch(Exception s1)
        {
           MaxEvents =-1;
        }
@@ -518,11 +537,10 @@ public class SocketServerTest extends UDPSend
           n=2;
        
        if( n < 3 )
-          {
-          if( MaxEvents <0)
-          
-             MaxEvents =450;
-          }
+       {
+         if( MaxEvents <0)
+           MaxEvents =450;
+       }
        else if( MaxEvents < 0)
           n = 1;
        
@@ -532,7 +550,6 @@ public class SocketServerTest extends UDPSend
           args[1] = ""+MaxEvents;
        if( n>2)
           args[2] = IP;
-       
      }
     
      int NEvents = 450;
@@ -546,15 +563,15 @@ public class SocketServerTest extends UDPSend
        destination_node = args[2];
      
      try
-      {
-         SocketServerTest ss = new SocketServerTest( destination_node );
-         ss.runTest( args[ 0 ] , NEvents );
-      }
-      catch( Exception s )
-      {
-         s.printStackTrace();
-         System.exit( 0 );
-      }
+     {
+       SocketServerTest ss = new SocketServerTest( destination_node );
+       ss.runTest( args[ 0 ] , NEvents );
+     }
+     catch( Exception s )
+     {
+       s.printStackTrace();
+       System.exit( 0 );
+     }
    }
 
 }
