@@ -99,6 +99,8 @@ public class IsawEV
     new DViewHandler( view_message_center );
 
     new QViewHandler( view_message_center );
+    
+    new UpDateTrigger( view_message_center );
   }
 
 
