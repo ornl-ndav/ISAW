@@ -70,8 +70,23 @@ public class UDPSend
     this.port = port;
 
     sock = new DatagramSocket();
+
     sock.connect( address, port );     // Not available in jdk 1.1.7
   }
+
+
+  /**
+   * Specify the size of the UDP buffer for sending packets.  NOTE: The
+   * underlying OS may not actually allocate a buffer of the specified 
+   * size.
+   *
+   * @param size  The requested size of the send buffer, in bytes.
+   */
+  public void setSendBufferSize( int size ) throws SocketException
+  {
+    sock.setSendBufferSize( size );
+  }
+
  
   /**
    *   Make a UDP packet from the specified data[] and send it to the host

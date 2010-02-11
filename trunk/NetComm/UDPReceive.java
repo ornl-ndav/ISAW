@@ -105,6 +105,20 @@ public class  UDPReceive extends Thread
     this.user = user;
   }
 
+
+  /**
+   * Specify the size of the UDP buffer for sending packets.  NOTE: The
+   * underlying OS may not actually allocate a buffer of the specified 
+   * size.
+   *
+   * @param size  The requested size of the send buffer, in bytes.
+   */
+  public void setReceiveBufferSize( int size ) throws SocketException
+  {
+    sock.setReceiveBufferSize( size );
+  }
+
+
   /** 
    *  The "run" method for this thread.  This is called by the java system
    *  when the thread is started.  When a UDP packet is recieved, the 
