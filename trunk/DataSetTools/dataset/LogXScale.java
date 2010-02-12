@@ -94,7 +94,7 @@ public class LogXScale extends VariableXScale
     x = new float[ this.num_x ];
     double temp_x = start_x * 10;
 
-    if ( mode.equalsIgnoreCase(IPNS_SCD) )
+    if ( mode != null && mode.equalsIgnoreCase(IPNS_SCD) )
       for ( int i = 0; i < num_x; i++ )
       {                                 // round temp_x to nearest step of 0.1
         temp_x = (int)(temp_x + 0.499); // this approximate rounding operation
