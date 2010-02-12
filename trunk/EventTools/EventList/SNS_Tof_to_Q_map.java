@@ -123,9 +123,7 @@ public class SNS_Tof_to_Q_map
   private float[]      QUxyz;            // unit vector in Q direction for pixel
   private float[]      tof_to_MagQ;      // magQ is tof_to_MagQ[id] / tof
   private float[]      tof_to_lamda;     // lamda is tof_to_lamda[id] * tof
-  private int          first_offset = 1; // ids start at 1, so we waste one
-                                         // position (#0) in our arrays to try
-                                         // to avoid some off by one errors
+  private int          first_offset = 0; // ids start at 0
 
   private float[]      lamda_weight;     // 1/(lamda^power*spec(lamda)) indexed
                                          // by STEPS_PER_ANGSTROM * lamda
@@ -332,7 +330,7 @@ public class SNS_Tof_to_Q_map
 //     if ( grid_id >= 0 && grid_id < counts_per_det.length )
 //       counts_per_det[grid_id]++;
 
-       if ( id <= 0 )
+       if ( id < 0 )
          minus_id_count++;
 
        else if ( id >= tof_to_MagQ.length )
@@ -364,6 +362,9 @@ public class SNS_Tof_to_Q_map
          weights[i] = pix_weight[id] * lamda_weight[ lamda_index ];
        }
      }
+
+//   System.out.println("<  0   id count = " + minus_id_count );
+//   System.out.println(">= max id count = " + large_id_count );
 
      return new FloatArrayEventList3D_2( weights, Qxyz );
   }
@@ -423,7 +424,7 @@ public class SNS_Tof_to_Q_map
        ITofEventList raw_events = new TofEventList( tofs, ids );
        return MapEventsToQ( raw_events, 0, num_to_map );
      }
-     else                        // construct TofEventList from part of tofs[] and ids[] 
+     else              // construct TofEventList from part of tofs[] and ids[] 
      {
        int[] new_tofs = new int[ num_to_map ];
        int[] new_ids  = new int[ num_to_map ];
