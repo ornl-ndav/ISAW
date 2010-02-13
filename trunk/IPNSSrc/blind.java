@@ -180,7 +180,7 @@ public class blind {
     logBuffer=new StringBuffer(50*19);
     int start=logBuffer.length();
     logBuffer.append("\n  *******LAUE INDEXER*******\n\n");
-    System.out.print(logBuffer.substring(start));
+    //System.out.print(logBuffer.substring(start));
   }
 
   /**
@@ -247,14 +247,14 @@ public class blind {
    * The basis is manipulated so that B*Transpose(B) is "about" a
    * diagonal.
    * NOTE: If xx,yy,and zz are set to the q vals of the peaks with
-   * three extra places at the top. Use abid then bias to have the rsult
+   * three extra places at the top. Use abid then bias to have the result
    * in UB
    */ 
   public ErrorString blaue (Vector peaks, double[] xx, double[] yy,
                             double[] zz, int[] seq) {
     float[] angle= new float[ xx.length*3];
     int length=peaks.size();
-
+    logBuffer.append("\n  *******LAUE INDEXER*******\n\n");
     if(DEBUG) System.out.println("peaks size="+peaks.size());
 
     // set up the Q-vector arrays (xx,yy,zz)
