@@ -294,7 +294,7 @@ public class ScalarHandlePanel implements IReceiveMessage
       Res.setLayout( bl );
       SortOn = new JComboBox( SortChoices );
 
-      Res.add( new JLabel( "Sort On" ) , BorderLayout.WEST );
+      Res.add( new JLabel( " Sort On  " ) , BorderLayout.WEST );
       Res.add( SortOn , BorderLayout.CENTER );
       Res.add( Box.createHorizontalGlue( ) );
 
@@ -431,14 +431,14 @@ public class ScalarHandlePanel implements IReceiveMessage
                latParams1[1] , latParams1[2] , latParams1[3] , latParams1[4] ,
                latParams1[5] );
          
-         double dist = redCell.distance( SrcRedCell1 );
+         double dist = redCell.weighted_distance( SrcRedCell1 );
          
          if ( dist < delta )
             ScalarOpts.add( new ReducedCellPlus( redCell , -1 , dist ) );
 
          redCell = new ReducedCellInfo( i , latParams2[0] , latParams2[1] ,
                latParams2[2] , latParams2[3] , latParams2[4] , latParams2[5] );
-         dist = redCell.distance( SrcRedCell2 );
+         dist = redCell.weighted_distance(  SrcRedCell2 );
          
          if ( dist < delta )
             ScalarOpts.add( new ReducedCellPlus( redCell , side , dist ) );
@@ -581,10 +581,11 @@ public class ScalarHandlePanel implements IReceiveMessage
       String Res = ut.start( );
       
       Res += "Form Num:" + RedCell.redCell.getFormNum( );
-      Res += "       error:" + String.format( "%6.4f" , RedCell.distance )
+      Res += "     Error:" + String.format( "%6.4f" , RedCell.distance )
             + ut.eol( );
       ;
       double[][] UB1 = NewUB( RedCell , UB );
+      
       Res += String.format( "%-14s" , RedCell.redCell.getCellType( ) ) + "  "
             + RedCell.redCell.getCentering( ) + "  ";
       
@@ -639,6 +640,8 @@ public class ScalarHandlePanel implements IReceiveMessage
             
             Res += ut.rowEnd( );
       }
+      
+      Res += "Vol:"+ String.format("%8.3f",LatticeParams[6])+ut.eol();
     
       return Res;
 
