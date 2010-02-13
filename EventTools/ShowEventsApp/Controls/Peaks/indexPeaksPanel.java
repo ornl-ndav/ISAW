@@ -35,6 +35,7 @@
 
 package EventTools.ShowEventsApp.Controls.Peaks;
 
+import gov.anl.ipns.MathTools.LinearAlgebra;
 import gov.anl.ipns.Parameters.FilteredPG_TextField;
 import gov.anl.ipns.Parameters.FloatFilter;
 
@@ -53,7 +54,7 @@ import EventTools.ShowEventsApp.Command.*;
  * an orientation matrix, index peaks, show orientation matrix,
  * and write an orientation matrix.
  */
-public class indexPeaksPanel extends    JPanel 
+public class indexPeaksPanel extends    JPanel  implements IReceiveMessage
                                 
 {
    
@@ -94,6 +95,8 @@ public class indexPeaksPanel extends    JPanel
    private JButton              WriteMatBtn;
 
    private JTabbedPane          middlePanel; 
+   
+   private JTextArea            OrientMatDispl;
 
    //Tab pane indices for orientation matrix "calculation"
 
@@ -103,7 +106,9 @@ public class indexPeaksPanel extends    JPanel
 
    private static int           AUTO_ROSS         = 1;
    
+   private static int           FROM_UB            = 3;
    
+   private float[][]            UBT = null;
    private static String   NoOrientationText="<html><body> There is no "+
                   "Orientation matrix </body></html>";
    
@@ -121,6 +126,7 @@ public class indexPeaksPanel extends    JPanel
        
       this.add(buildPanel());
       
+      messageCenter.addReceiver( this, Commands.SET_ORIENTATION_MATRIX);
       //this.add( buildButtonsPanel());
    }
    
@@ -139,6 +145,7 @@ public class indexPeaksPanel extends    JPanel
       middlePanel.addTab( "AutoIndex(w.Xtal Params)",buildCalcMatPanel());
       middlePanel.addTab( "AutoIndex", buildCalcMat2Panel());
       middlePanel.addTab( "Read UB fr File", buildFromFilePanel() );
+      middlePanel.addTab( "Index from Current UB" , buildCalcMat3Panel() );
       panel.add( middlePanel );
       panel.add( buildTolerancePanel());
       this.add(panel );
@@ -214,6 +221,13 @@ public class indexPeaksPanel extends    JPanel
       
       return MainPanel;
       
+   }
+   
+   private JTextArea buildCalcMat3Panel()
+   {
+      OrientMatDispl = new JTextArea(20, 8);
+      OrientMatDispl.setText( "No Matrix available" );
+      return OrientMatDispl;
    }
    /**
     * Builds the panel with the index peaks,
@@ -471,6 +485,23 @@ public class indexPeaksPanel extends    JPanel
    }
    
 
+   @Override
+   public boolean receive(Message message)
+   {
+
+      UBT = (float[][])message.getValue( );
+      if( UBT == null)
+         OrientMatDispl.setText( "null UB" );
+      else
+      {
+         String S = DataSetTools.components.ui.Peaks.subs.ShowOrientationInfo(
+               null , LinearAlgebra.getTranspose( UBT) , null , null , false );
+         OrientMatDispl.setText( S );
+      }
+      return false;
+   }
+
+
    /**
     * Button listener for the buttons that sends message of 
     * READ_ORIENTATION_MATRIX or INDEX_PEAKS of type IndexPeaksCmd if Index
@@ -552,6 +583,20 @@ public class indexPeaksPanel extends    JPanel
             else if( middlePanel.getSelectedIndex() == AUTO_ROSS )
             {
                ProcessAutoRoss( Dmin.getText(), Dmax.getText(), toleranceTxt.getText());
+               
+            }else if( middlePanel.getSelectedIndex() == FROM_UB)
+            {
+               if( UBT == null)
+                  JOptionPane.showMessageDialog( null ,
+                        "There is NO Orientation Matrix" );
+               else
+               {
+                  messageCenter.send( new Message( 
+                        Commands.INDEX_PEAKS_WITH_ORIENTATION_MATRIX, 
+                        new UBwTolCmd(UBT, .12f),
+                        false,
+                        true ) );
+               }
             }
          }
          else if( cmd.startsWith( "Write" ) )
