@@ -312,8 +312,6 @@ public class ScalarHandlePanel implements IReceiveMessage
       JButton Apply = new JButton( APPLY_CENTERINGS );
       Apply.addActionListener( new ThisActionListener( 0 ) );
 
-      Apply.addActionListener( new ThisActionListener( 0 ) );
-
       JPanel panel = new JPanel( );
       BoxLayout layout = new BoxLayout( panel , BoxLayout.X_AXIS );
       panel.setLayout( layout );
