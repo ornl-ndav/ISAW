@@ -65,6 +65,7 @@ public class controlsPanel extends JPanel
    private JButton                findPeaksBtn;
    private JButton                filterPeaksBtn;
    private JButton                indexPeaksBtn;
+   private JButton                scalarOrientBtn;
    private JButton                integrateBtn;
    
    private JButton                selectedPoint;
@@ -79,6 +80,7 @@ public class controlsPanel extends JPanel
    private displayColorEditor     colorEditPanel;
    private peakOptionsPanel       peakPanel;
    private indexPeaksPanel        indexPeakPanel;
+   private JPanel                 scalarOrientPanel;
    private positionInfoPanel      positionPanel;
    private peaksStatPanel         peakInfoPanel;
    private sliceControl           slicePanel;
@@ -119,6 +121,8 @@ public class controlsPanel extends JPanel
       filepanel = new filePanel(messageCenter);
       peakPanel = new peakOptionsPanel(messageCenter);
       indexPeakPanel = new indexPeaksPanel(messageCenter);
+      scalarOrientPanel = (new ScalarHandlePanel( messageCenter)).
+                              getPanel( );
       positionPanel = new positionInfoPanel(messageCenter);
       peakInfoPanel = new peaksStatPanel( messageCenter);
       filterPeaks = new filterPeaksPanel(messageCenter);
@@ -145,7 +149,7 @@ public class controlsPanel extends JPanel
    {
       JPanel panel = new JPanel();
       panel.setBorder(new TitledBorder("Operations"));
-      panel.setLayout(new GridLayout(5,1));
+      panel.setLayout(new GridLayout(6,1));
       
       loadFileBtn = new JButton("Load Data");
       loadFileBtn.setBackground( background_color );
@@ -164,6 +168,10 @@ public class controlsPanel extends JPanel
       indexPeaksBtn.setBackground( background_color );
       indexPeaksBtn.addActionListener(new buttonListener());
       
+      scalarOrientBtn = new JButton("Cell Type");
+      scalarOrientBtn.setBackground( background_color );
+      scalarOrientBtn.addActionListener(new buttonListener());
+      
       integrateBtn = new JButton("Integrate");
       integrateBtn.setBackground( background_color );
       integrateBtn.addActionListener(new buttonListener());
@@ -173,6 +181,7 @@ public class controlsPanel extends JPanel
       panel.add(findPeaksBtn);
       panel.add(filterPeaksBtn);
       panel.add(indexPeaksBtn);
+      panel.add(scalarOrientBtn);
       panel.add(integrateBtn);
       
       return panel;
@@ -254,6 +263,9 @@ public class controlsPanel extends JPanel
          
          if (e.getSource().equals(indexPeaksBtn))
             value = indexPeakPanel;
+         
+         if (e.getSource().equals(scalarOrientBtn))
+            value = scalarOrientPanel;
          
          if (e.getSource().equals(integrateBtn))
          {   
