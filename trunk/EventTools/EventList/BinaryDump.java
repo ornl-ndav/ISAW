@@ -24,16 +24,19 @@ public class BinaryDump
     int val    = 0;
     int hits   = 0;
     int misses = 0;
-    int MAX_TO_SHOW = 40;
+    int MAX_TO_SHOW = 4000;
 
     for ( int i = 0; i < num_bytes; i++ )
     {
+      if ( i % 4 == 0 && i < MAX_TO_SHOW )
+        System.out.printf( " i/4 = %5d   ", i/4 );
+
       int byte_1 = buffer[i];
       if ( byte_1 < 0 )
         byte_1 += 256;
 
       if ( i < MAX_TO_SHOW )
-        System.out.printf( " %4d" , byte_1 );
+        System.out.printf( " %4d ", byte_1 );
 
       if ( (i+1) % 4 == 0 )
       {

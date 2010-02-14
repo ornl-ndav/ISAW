@@ -1,7 +1,7 @@
 /* 
  * File: FloatArrayEventList3D.java
  *
- * Copyright (C) 2008, Dennis Mikkelson
+ * Copyright (C) 2008-2010, Dennis Mikkelson
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -34,71 +34,108 @@
 
 package EventTools.EventList;
 
-import java.util.*;
+import java.util.Vector;
 import EventTools.Histogram.IEventBinner;
 import EventTools.Histogram.UniformEventBinner;
 
 /**
  * This class uses arrays of floats to record the x,y,z
- * coordinates of a list of events, and an array of floats 
+ * coordinates of a list of events, and an array of floats
  * to record the corresponding weights for the events.
  */
 public class FloatArrayEventList3D implements IEventList3D 
 {
-  private float[] weights;
-  private float[] x_vals;
-  private float[] y_vals;
-  private float[] z_vals;
+  private float[] weights = null;
+  private float[] xyz_vals;
 
   private IEventBinner x_extent = null;
   private IEventBinner y_extent = null;
   private IEventBinner z_extent = null;
 
+
   /**
    * Construct an event list using the specified arrays of weights and
-   * x,y,z coordinates.  All of the array parameters must have the same
-   * length and must be non-empty.
-   * 
-   * @param weights Array of weights for the events.
-   * @param x_vals  Array of x-coordinates for the events.
-   * @param y_vals  Array of y-coordinates for the events.
-   * @param z_vals  Array of z-coordinates for the events.
+   * x,y,z coordinates.  The xyz_vals array must be three times longer
+   * than the array of weights, if the array of weights is non-null.
+   * The xyz_vals array must be non-empty.
+   *  
+   * @param xyz_vals  Array of interleaved xyz-coordinates for the events.
+   * @param weights   Array of weights for the events. May be null.
    */
   public FloatArrayEventList3D( float[] weights,
-                                float[] x_vals,
-                                float[] y_vals,
-                                float[] z_vals  ) 
+                                  float[] xyz_vals )
   {
-    if ( weights == null || x_vals == null || y_vals == null || z_vals == null )
+    if ( xyz_vals == null )
       throw new IllegalArgumentException( "array null" );
+
+    int num_events = xyz_vals.length / 3;
+    if ( num_events <= 0 )
+      throw new IllegalArgumentException( "zero length weight array" );
+
+    this.weights  = weights;
+    this.xyz_vals = xyz_vals;
+  }
+
+
+  /**
+   * Construct an event list using the specified arrays of weights and
+   * x,y,z coordinates.  If the array of weights is non-null, then the
+   * arrays of x, y and z values must also be non-empty.
+   *  
+   * @param x_vals    Array of x-coordinates for the events.
+   * @param y_vals    Array of y-coordinates for the events.
+   * @param z_vals    Array of z-coordinates for the events.
+   * @param weights   Array of weights for the events. May be null.
+   */
+  public FloatArrayEventList3D( float[] weights,
+                                  float[] x_vals,
+                                  float[] y_vals,
+                                  float[] z_vals   )
+  {
+    if ( x_vals == null )
+      throw new IllegalArgumentException( "x array null" );
+
+    if ( y_vals == null )
+      throw new IllegalArgumentException( "y array null" );
+
+    if ( z_vals == null )
+      throw new IllegalArgumentException( "z array null" );
+
+    if ( x_vals.length != y_vals.length ||
+         y_vals.length != z_vals.length ||
+         z_vals.length != x_vals.length )
+      throw new IllegalArgumentException( "x,y,z arrays of differnt lengths" );
 
     int num_events = x_vals.length;
     if ( num_events <= 0 )
-      throw new IllegalArgumentException( "zero length weights array" );
-
-    if ( x_vals.length != num_events ||
-         y_vals.length != num_events ||
-         z_vals.length != num_events  )
-      throw new IllegalArgumentException( "wrong length of ?_vals array" );
+      throw new IllegalArgumentException( "zero length weight array" );
 
     this.weights = weights;
-    this.x_vals  = x_vals;
-    this.y_vals  = y_vals;
-    this.z_vals  = z_vals;
+    xyz_vals = new float[ num_events * 3 ];
+    
+    int index = 0;
+    for ( int i = 0; i < num_events; i++ )
+    {
+      xyz_vals[index++] = x_vals[i];
+      xyz_vals[index++] = y_vals[i];
+      xyz_vals[index++] = z_vals[i];
+    }
   }
 
 
   @Override
   public int numEntries()
   {
-    return x_vals.length;
+    return xyz_vals.length / 3;
   }
 
 
   @Override
   public float eventWeight( int i )
   {
-    return weights[i];
+    if ( weights != null )
+      return weights[i];
+    return 0;
   }
 
 
@@ -119,45 +156,38 @@ public class FloatArrayEventList3D implements IEventList3D
   @Override
   public void eventVals( int i, double[] values )
   {
-    values[0] = x_vals[i];
-    values[1] = y_vals[i];
-    values[2] = z_vals[i];
+    int index = 3*i;
+    values[0] = xyz_vals[ index     ];
+    values[1] = xyz_vals[ index + 1 ];
+    values[2] = xyz_vals[ index + 2 ];
   }
 
 
   @Override
   public float[] eventVals()
   {
-    float[] vals = new float[ 3*x_vals.length ];
-    int index = 0;
-    for ( int i = 0; i < x_vals.length; i++ )
-    {
-      vals[index++] = x_vals[i];
-      vals[index++] = y_vals[i];
-      vals[index++] = z_vals[i];
-    }
-    return vals;
+    return xyz_vals;
   }
 
 
   @Override
   public double eventX( int i )
   {
-    return x_vals[i];
+    return xyz_vals[3*i];
   }
 
 
   @Override
   public double eventY( int i )
   {
-    return y_vals[i];
+    return xyz_vals[3*i+1];
   }
 
 
   @Override
   public double eventZ( int i )
   {
-    return z_vals[i];
+    return xyz_vals[3*i+2];
   }
 
 
@@ -165,7 +195,7 @@ public class FloatArrayEventList3D implements IEventList3D
   public IEventBinner xExtent()
   {
     if ( x_extent == null )
-      x_extent = min_max( x_vals );
+      x_extent = min_max( 0 );
         
     return x_extent;
   }
@@ -175,7 +205,7 @@ public class FloatArrayEventList3D implements IEventList3D
   public IEventBinner yExtent()
   {
     if ( y_extent == null )
-      y_extent = min_max( y_vals );
+      y_extent = min_max( 1 );
         
     return y_extent;
   }
@@ -185,7 +215,7 @@ public class FloatArrayEventList3D implements IEventList3D
   public IEventBinner zExtent()
   {
     if ( z_extent == null )
-      z_extent = min_max( z_vals );
+      z_extent = min_max( 2 );
       
     return z_extent;
   }
@@ -206,24 +236,24 @@ public class FloatArrayEventList3D implements IEventList3D
 
   /**
    * Construct an event binner that spans the extent of the
-   * values stored in the specified array.
+   * x, y or z values stored in the specified array.
    *  
-   * @param vals Array of values that is scanned to find the 
-   *             min and max.
+   * @param offset  Must be 0, 1 or 2 to select x, y or z
+   *                respectively.
    *             
    * @return An event binner whose min and max specify a half
    * open interval, [min,max) that contains the values in the
    * array.
    */
-  private IEventBinner min_max( float[] vals )
+  private IEventBinner min_max( int offset )
   {
-    float min = vals[0];
-    float max = vals[0];
+    float min = xyz_vals[offset];
+    float max = xyz_vals[offset];
     float val;
 
-    for ( int i = 1; i < vals.length; i++ )
+    for ( int i = 3+offset; i < xyz_vals.length/3; i += 3 )
     {
-      val = vals[i];
+      val = xyz_vals[i];
       if ( val < min )
         min = val;
       else if ( val > max )
@@ -264,11 +294,11 @@ public class FloatArrayEventList3D implements IEventList3D
        total_size += list.numEntries();
      }
 
-     float[] all_x       = new float[total_size];
-     float[] all_y       = new float[total_size];
-     float[] all_z       = new float[total_size];
-     float[] all_weights = new float[total_size];
-     int index = 0;
+     float[] all_xyz     = new float[total_size * 3];
+     float[] all_weights = new float[total_size    ];
+
+     int index     = 0;
+     int xyz_index = 0;
      for ( int i = 0; i < lists.size(); i++ )
      {
        list = lists.elementAt(i);
@@ -276,15 +306,15 @@ public class FloatArrayEventList3D implements IEventList3D
        if ( length > 0 )
          for ( int k = 0; k < length; k++ )
          {
-           all_x[index] = (float)list.eventX(k);
-           all_y[index] = (float)list.eventY(k);
-           all_z[index] = (float)list.eventZ(k);
-           all_weights[index] = list.eventWeight(k);
-           index++;        
+           xyz_index = 3 * index;
+           all_xyz[xyz_index++] = (float)list.eventX(k);
+           all_xyz[xyz_index++] = (float)list.eventY(k);
+           all_xyz[xyz_index  ] = (float)list.eventZ(k);
+           all_weights[index++] = list.eventWeight(k);
          }
      }
 
-     return new FloatArrayEventList3D( all_weights, all_x, all_y, all_z );
+     return new FloatArrayEventList3D( all_weights, all_xyz );
   }
 
 }

@@ -179,7 +179,7 @@ public class Test_2_SNS_Events
        float[] weights = new float[ list.length/3 ];
        for ( int k = 0; k < weights.length; k++ )
          weights[k] = 1;
-       event_lists[i] = new FloatArrayEventList3D_2( weights, list ); 
+       event_lists[i] = new FloatArrayEventList3D( weights, list ); 
      }
 
      // Now make histogram
