@@ -2,6 +2,7 @@ package EventTools.ShowEventsApp.Command;
 
 public class Commands 
 {
+  public static final String DQLOG_SCALE  ="DQLOG_SCALE";//arg boolean  
 
   public static final String UPDATE      = "UPDATE";
    
