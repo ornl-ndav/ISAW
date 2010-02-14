@@ -57,13 +57,17 @@ public class FloatArrayEventList3D implements IEventList3D
    * Construct an event list using the specified arrays of weights and
    * x,y,z coordinates.  The xyz_vals array must be three times longer
    * than the array of weights, if the array of weights is non-null.
-   * The xyz_vals array must be non-empty.
+   * The xyz_vals array must be non-empty.  
+   *
+   * NOTE: This constructor just records references to the arrays passed
+   *       in as parameters.  Calling code MUST copy the arrays if the
+   *       arrays will be reused in the calling code.
    *  
    * @param xyz_vals  Array of interleaved xyz-coordinates for the events.
    * @param weights   Array of weights for the events. May be null.
    */
   public FloatArrayEventList3D( float[] weights,
-                                  float[] xyz_vals )
+                                float[] xyz_vals )
   {
     if ( xyz_vals == null )
       throw new IllegalArgumentException( "array null" );
@@ -86,11 +90,15 @@ public class FloatArrayEventList3D implements IEventList3D
    * @param y_vals    Array of y-coordinates for the events.
    * @param z_vals    Array of z-coordinates for the events.
    * @param weights   Array of weights for the events. May be null.
+   *
+   * @deprecated  This constructor is much less efficient thatn the 
+   *              constructor that accepts a list of interleaved xyz
+   *              coordinates.
    */
   public FloatArrayEventList3D( float[] weights,
-                                  float[] x_vals,
-                                  float[] y_vals,
-                                  float[] z_vals   )
+                                float[] x_vals,
+                                float[] y_vals,
+                                float[] z_vals )
   {
     if ( x_vals == null )
       throw new IllegalArgumentException( "x array null" );
