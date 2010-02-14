@@ -66,6 +66,7 @@ public class additionalViewControls extends JPanel implements IReceiveMessage
    private FrameController   frame_control;
    private JCheckBox         showQGraph;
    private JCheckBox         showDGraph;
+   private JCheckBox         LogScale;
    private JCheckBox         showImageOne;
    private JCheckBox         showImageTwo;
    private JCheckBox         showImageThree;
@@ -113,16 +114,19 @@ public class additionalViewControls extends JPanel implements IReceiveMessage
    private JPanel buildGraphOptions()
    {
       JPanel panel = new JPanel();
-      panel.setLayout(new GridLayout(1,2));
+      panel.setLayout(new GridLayout(1,3));
       panel.setBorder(new TitledBorder("Graph Views"));
       GraphListener = new graphListener();
       showQGraph = new JCheckBox("Show Q Graph");
       showQGraph.addActionListener( GraphListener);
       showDGraph = new JCheckBox("Show D Graph");
       showDGraph.addActionListener( GraphListener);
+      LogScale = new JCheckBox("Use Log Scale");
+      LogScale.addActionListener( GraphListener);
       
       panel.add(showQGraph);
       panel.add(showDGraph);
+      panel.add(LogScale);
       
       return panel;
    }
@@ -379,6 +383,15 @@ public class additionalViewControls extends JPanel implements IReceiveMessage
                command = Commands.HIDE_D_GRAPH;
          }
          
+         if( tmpBox.equals( LogScale))
+         {
+            boolean log = false;
+            if (tmpBox.isSelected())
+               log = true;
+            sendViewMessage( Commands.DQLOG_SCALE, new Boolean(log));
+            return;
+           
+         }
          sendViewMessage(command, null);
       }
    }
