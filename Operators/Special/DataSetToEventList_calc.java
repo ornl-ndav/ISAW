@@ -186,24 +186,24 @@ public class DataSetToEventList_calc
        }         
      } 
     
-     float[] weights = new float[ counts.size() ]; 
-     float[] x_vals  = new float[ q_vectors.size() ];
-     float[] y_vals  = new float[ q_vectors.size() ];
-     float[] z_vals  = new float[ q_vectors.size() ];
+     float[] weights  = new float[ counts.size() ]; 
+     float[] xyz_vals = new float[ counts.size() * 3 ];
      
+     int index = 0;
      for ( int i = 0; i < weights.length; i++ )
      {
         weights[i] = counts.elementAt(i);
 
         vec = q_vectors.elementAt(i);
-        x_vals[i] = vec.getX();
-        y_vals[i] = vec.getY();
-        z_vals[i] = vec.getZ();
+        index = 3 * i;
+        xyz_vals[index++] = vec.getX();
+        xyz_vals[index++] = vec.getY();
+        xyz_vals[index++] = vec.getZ();
      }
      System.out.println("Found events # " + weights.length );
 
      if ( weights.length > 0 )
-       return new FloatArrayEventList3D(weights, x_vals, y_vals, z_vals);
+       return new FloatArrayEventList3D( weights, xyz_vals );
      else
        return null; 
   }

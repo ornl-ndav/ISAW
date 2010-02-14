@@ -180,10 +180,8 @@ public class GetEventLists implements IOperator
       }
     }
 
-    float[][] weights = new float[n_bins+1][] ;
-    float[][] x_vals  = new float[n_bins+1][];
-    float[][] y_vals  = new float[n_bins+1][];
-    float[][] z_vals  = new float[n_bins+1][];
+    float[][] weights  = new float[n_bins+1][] ;
+    float[][] xyz_vals = new float[3*(n_bins+1)][];
 
     Vector result = new Vector( n_bins );
     int n_events;
@@ -192,10 +190,8 @@ public class GetEventLists implements IOperator
       n_events = bin_count[i];
       if ( n_events > 0 )
       { 
-        weights[i] = new float[ n_events ];
-        x_vals[i]  = new float[ n_events ]; 
-        y_vals[i]  = new float[ n_events ]; 
-        z_vals[i]  = new float[ n_events ]; 
+        weights[i]  = new float[ n_events ];
+        xyz_vals[i] = new float[ n_events * 3 ]; 
       }
     }
                                      // Since the x,y,z- binners use direction
@@ -205,6 +201,7 @@ public class GetEventLists implements IOperator
     float[] coords = new float[3];   // be set to that vector sum
 
     int[] ilist = new int[n_bins+1];
+    int   i_index;
     for ( int page = first_page; page <= last_page; page++ )
     {
       one_page = histogram[page];
@@ -224,9 +221,10 @@ public class GetEventLists implements IOperator
                                             y_edge_binner, 
                                             z_edge_binner,
                                             coords );
-            x_vals[index][ ilist[index] ] = coords[0];
-            y_vals[index][ ilist[index] ] = coords[1];
-            z_vals[index][ ilist[index] ] = coords[2];
+            i_index = 3 * ilist[index];
+            xyz_vals[index][ i_index++ ] = coords[0];
+            xyz_vals[index][ i_index++ ] = coords[1];
+            xyz_vals[index][ i_index   ] = coords[2];
             ilist[index]++;
           }
         }
@@ -239,7 +237,7 @@ public class GetEventLists implements IOperator
       if ( n_events > 0 )
       {
         IEventList3D events = new
-         FloatArrayEventList3D( weights[i], x_vals[i], y_vals[i], z_vals[i] );
+         FloatArrayEventList3D( weights[i], xyz_vals[i] );
 
         result.add( events );
       }
