@@ -46,6 +46,9 @@ import EventTools.ShowEventsApp.Command.Commands;
 import EventTools.ShowEventsApp.Command.SetNewInstrumentCmd;
 import EventTools.ShowEventsApp.Command.Util;
 import EventTools.EventList.IEventList3D;
+import EventTools.Histogram.IEventBinner;
+import EventTools.Histogram.UniformEventBinner;
+import EventTools.Histogram.LogEventBinner;
 import MessageTools.*;
 
 /**
@@ -56,29 +59,38 @@ import MessageTools.*;
  */
 public class DQDataHandler implements IReceiveMessage
 {
-   public static final int   NUM_BINS = 10000;
-   public static final float MAX_Q = 20;
-   public static final float MAX_D = 10;
+  private IEventBinner q_binner; // set to uniform or log binner for Q
+  private IEventBinner d_binner; // set to uniform or log binner for d 
  
-   private MessageCenter messageCenter;
-   private MessageCenter viewMessageCenter;
+  private MessageCenter messageCenter;
+  private MessageCenter viewMessageCenter;
    
-   boolean normalizeQ,    // if true send normalized Q data
-           normalizeD;    // if true send normalized D data
-   float scale_factor;
-   
-   String incidentSpectraFileName;
-   float[] Wl_list;       //incident spectrum values
-   float minWL,maxWL, MM; // parameters to find correct entry in the list
-   int nWL;               // The number of wavelengths in Wl_list
-   
-   private float[][] d_values = new float[2][NUM_BINS+1];
-   private float[][] q_values = new float[2][NUM_BINS+1]; 
-   private float[] dn_values = new float[NUM_BINS+1];
-   private float[] qn_values = new float[NUM_BINS+1]; 
-   float[][] Q_values = new float[2][], //will hold the info sent
-             D_values = new float[2][];
+  private boolean normalizeQ,    // if true send normalized Q data
+                  normalizeD;    // if true send normalized D data
 
+  private float   scale_factor;
+
+  private String  incidentSpectraFileName;
+
+  private float[] Wl_list;       // incident spectrum values
+
+  private float minWL,           // parameters to find correct entry in the
+                maxWL, 
+                MM;
+  private int   nWL;             // The number of wavelengths in Wl_list
+   
+  private float[][] d_values;
+  private float[][] q_values; 
+
+  private float[] dn_values;     // d vals, nomalized
+                                 // by incident spectrum
+  private float[] qn_values;     // q vals, normalized
+                                 // by incident spectrum
+
+  private float[][] Q_values,    // these switch to point to "plain" or 
+                    D_values;    // or normailzed arrays, depending on
+                                 // wheter graphs are to be normalized 
+                                 // to the incident spectrum.
 
   /**
    *  Construct a DQDataHandler to get and receive messages from the
@@ -110,35 +122,115 @@ public class DQDataHandler implements IReceiveMessage
       scale_factor = -1;
       incidentSpectraFileName = null;
       normalizeQ = normalizeD = false;
-      Q_values[1] = q_values[1];
-      D_values[1] = d_values[1];
-      setXs();
-      clearYs();
+
+      boolean is_log = false;
+      q_binner = getQBinner( is_log );
+      d_binner = getDBinner( is_log );
+
+      init_arrays();
    }
    
+
+  /*
+   *  Get a "binner" of the requested type, uniform or log scale, to use 
+   *  for binning events in Q. 
+   *
+   *  CAUTION: The method init_arrays() method MUST be called after
+   *           assigning the new binner to q_binner, and any state that
+   *           depended on the number and content of the histogram bins
+   *           must be cleared.
+   *
+   *  @param is_log   Pass in true to bin on a log scale, instead of a 
+   *                  linear scale.
+   *
+   *  @return a new binner covering the default Q range.
+   */
+  private IEventBinner getQBinner( boolean is_log )
+  {
+    int     n_unif_bins = 9800;
+    double  min_q       = 0.2;
+    double  max_q       = 20;
+    double  q_step      = 0.0002;
+
+    if ( is_log )
+      return new LogEventBinner( min_q, max_q, q_step );
+    else
+      return new UniformEventBinner( min_q, max_q, n_unif_bins );
+  }
+
+
+  /*
+   *  Get a "binner" of the requested type, uniform or log scale, to use 
+   *  for binning events in d. 
+   *
+   *  CAUTION: The method init_arrays() method MUST be called after
+   *           assigning the new binner to d_binner, and any state that
+   *           depended on the number and content of the histogram bins
+   *           must be cleared.
+   *
+   *  @param is_log   Pass in true to bin on a log scale, instead of a 
+   *                  linear scale.
+   *
+   *  @return a new binner covering the default Q range.
+   */
+  private IEventBinner getDBinner( boolean is_log )
+  {
+    int     n_unif_bins = 9800;
+    double  min_d       = 0.2;
+    double  max_d       = 10;
+    double  d_step      = 0.0002;
+
+    if ( is_log )
+      return new  LogEventBinner( min_d, max_d, d_step );
+    else
+      return new UniformEventBinner( min_d, max_d, n_unif_bins );
+  }
+
+
+   private void init_arrays()
+   {
+     int num_d_bins = d_binner.numBins();
+     int num_q_bins = q_binner.numBins();
+
+     d_values = new float[2][num_d_bins + 1];
+     q_values = new float[2][num_q_bins + 1];
+
+     dn_values = new float[num_d_bins + 1];       // d vals, nomalized
+                                                  // by incident spectrum
+     qn_values = new float[num_q_bins + 1];       // q vals, normalized
+                                                  // by incident spectrum
+
+     Q_values = new float[2][];     // these switch to point to q_values
+                                    // or qn_values if normalized 
+     D_values = new float[2][];     // these switch to point to q_values
+                                    // or qn_values if normalized 
+
+     Q_values[1] = q_values[1];     // initially point to the non-normalized
+     D_values[1] = d_values[1];     // versions of q and d arrays.
+
+     setXs();
+     clearYs();
+  }
+
 
   /**
    *  Clear the list of Y values for the D and Q histograms.
    */
    synchronized private void clearYs()
    {
-     for ( int i = 0; i <= NUM_BINS; i++ )
-       d_values[1][i] = 0;
-
-     for ( int i = 0; i <= NUM_BINS; i++ )
-       q_values[1][i] = 0;
+     java.util.Arrays.fill( d_values[1], 0f );
+     java.util.Arrays.fill( q_values[1], 0f );
      
      java.util.Arrays.fill( dn_values , 0f );
      java.util.Arrays.fill( qn_values , 0f );
-     
    }
 
-   public void setUpIncidentSpectrum( String filename, String InstrumentName)
+
+   private void setUpIncidentSpectrum( String filename, String InstrumentName )
    {
       if( filename== null || filename.length() < 1 ||
                !( new java.io.File( filename)).exists())
       {
-        
         filename = SharedData.getProperty( "ISAW_HOME" ,"" ).trim();
         if( !filename.endsWith( "/" ) || !filename.endsWith( "\\" ))
            filename +="/";
@@ -160,6 +252,7 @@ public class DQDataHandler implements IReceiveMessage
          nWL = 0;
         return; 
       }
+
       Data D = DS.getData_entry( 0 );
       XScale xscl = D.getX_scale();
       float start = xscl.getStart_x();
@@ -173,14 +266,16 @@ public class DQDataHandler implements IReceiveMessage
         return; 
       }
 
-      nWL =(int) ( (end-start)/end/.02f +.5f);
-      nWL = Math.max(  nWL, xscl.getNum_x() );
-      xscl =new UniformXScale(start, end,nWL);
-      D.resample(xscl  , 0);
-      float[] ys=   D.getY_values();
+      nWL  = (int)( (end-start)/end/.02f +.5f);
+      nWL  = Math.max( nWL, xscl.getNum_x() );
+      xscl = new UniformXScale( start, end, nWL );
+      D.resample( xscl, 0 );
+      float[] ys= D.getY_values();
       int i=0;
-      for( i=0; i < ys.length && ys[i] <=0 ;i++)
+
+      for( i = 0; i < ys.length && ys[i] <= 0; i++ )
       {}
+
       if( i == ys.length)
       {
          Wl_list = null;
@@ -188,8 +283,10 @@ public class DQDataHandler implements IReceiveMessage
          nWL = 0;
         return; 
       }
+
       int j=0;
-      for( j=ys.length-1; j>=0 && ys[j] <=0 ; j--){}
+      for( j = ys.length-1; j >= 0 && ys[j] <= 0 ; j--)
+      {}
 
       if( j < 0 || (j==0 && ys[j]<=0) || ((j-i+1)<12))
       {
@@ -198,6 +295,7 @@ public class DQDataHandler implements IReceiveMessage
          nWL = 0;
         return; 
       }
+
       Wl_list = new float[ j-i+1];
       System.arraycopy( ys,i , Wl_list ,0,j-i+1 );
       
@@ -209,23 +307,23 @@ public class DQDataHandler implements IReceiveMessage
       
       nWL = j-i+1;
       MM = nWL/(maxWL-minWL);
-      
-      
-         
    }
+
 
   /**
    *  Set up the array of X-values for the D and Q histograms.
    */
    synchronized private void setXs()
    {
-     for ( int i = 0; i <= NUM_BINS; i++ )
-       d_values[0][i] = i * MAX_D / NUM_BINS;
+     int num_d_bins = d_binner.numBins();
+     for ( int i = 0; i <= num_d_bins; i++ )
+       d_values[0][i] = (float)d_binner.minVal(i);
 
-     for ( int i = 0; i <= NUM_BINS; i++ )
-       q_values[0][i] = i * MAX_Q / NUM_BINS;
+     int num_q_bins = q_binner.numBins();
+     for ( int i = 0; i <= num_q_bins; i++ )
+       q_values[0][i] = (float)q_binner.minVal(i);
      
-      Q_values[0]= q_values[0];
+      Q_values[0] = q_values[0];
       D_values[0] = d_values[0];
    }
 
@@ -247,8 +345,12 @@ public class DQDataHandler implements IReceiveMessage
      float mag_q,
            d_val;
      float x, y, z;
-     float[] q_arr = q_values[1];
-     float[] d_arr = d_values[1];
+
+     float[] q_arr = q_values[1];    // local name for q_values, y's
+     float[] d_arr = d_values[1];    // local name for d_values, y's
+
+     int num_d_bins = d_binner.numBins();
+     int num_q_bins = q_binner.numBins();
 
      for ( int i = 0; i < n_events; i++ )
      {
@@ -260,32 +362,31 @@ public class DQDataHandler implements IReceiveMessage
        d_val = (float)(2 * Math.PI / mag_q);
        
        //------ calculate weight for normalized values
-       float wl = -2*d_val*x/mag_q;;
-       float weight =0;
-       if( wl >= minWL && wl < maxWL && wl >0)
-          weight = Wl_list[(int)( (wl-minWL)*MM)];
+       float wl = -2*d_val*x/mag_q;
+       float weight = 0;
+       if( wl >= minWL && wl < maxWL && wl > 0 )
+         weight = Wl_list[(int)( (wl-minWL )*MM)];
        if( weight !=0) 
-          weight = 1/weight;
-       else if( Wl_list == null)
-          weight = 1;
+         weight = 1/weight;
+       else if( Wl_list == null )
+         weight = 1;
        //  --------------------------------
        
-       bin_num = (int)(NUM_BINS * mag_q/MAX_Q); 
-       if ( bin_num <= NUM_BINS )
-         {
-          q_arr[bin_num] += 1; //weights[i];
-          qn_values[bin_num] +=weight;
-         }
+       bin_num = q_binner.index( mag_q );
+       if ( bin_num >= 0 && bin_num <= num_q_bins )
+       {
+         q_arr[bin_num] += 1; 
+         qn_values[bin_num] += weight;
+       }
 
        if ( mag_q > 0 )
        {
-         
-         bin_num = (int)(NUM_BINS * d_val/MAX_D);
-         if ( bin_num <= NUM_BINS )
-           {
-            d_arr[bin_num] += 1;  //weights[i];
-            dn_values[ bin_num] +=weight;
-           }
+         bin_num = d_binner.index( d_val );
+         if ( bin_num >= 0 && bin_num <= num_d_bins )
+         {
+           d_arr[bin_num] += 1; 
+           dn_values[ bin_num ] += weight;
+         }
        }
      }
 /*
@@ -338,8 +439,9 @@ public class DQDataHandler implements IReceiveMessage
         }
 
         AddEvents( (IEventList3D)obj );
-        float[][] q1_vals = Scale( Q_values, normalizeQ);
-        float[][] d1_vals = Scale( D_values, normalizeD);
+        float[][] q1_vals = Scale( Q_values, normalizeQ );
+        float[][] d1_vals = Scale( D_values, normalizeD );
+
         synchronized( q_values )
         {
           sendViewMessage(Commands.SET_Q_VALUES, q1_vals );
@@ -353,13 +455,14 @@ public class DQDataHandler implements IReceiveMessage
         SetNewInstrumentCmd cmd =(SetNewInstrumentCmd) message.getValue();
         scale_factor = cmd.getScaleFactor();
         incidentSpectraFileName = (String)cmd.getIncidentSpectrumFileName();
-        setUpIncidentSpectrum( incidentSpectraFileName, cmd.getInstrumentName() );
+        setUpIncidentSpectrum( incidentSpectraFileName, 
+                               cmd.getInstrumentName() );
+
         Message init_dq_done = new Message( Commands.INIT_DQ_DONE,
                                             null,
                                             true,
                                             true );
         messageCenter.send( init_dq_done );
-
       }
       
       if (message.getName().equals(Commands.GET_D_VALUES))
@@ -400,55 +503,61 @@ public class DQDataHandler implements IReceiveMessage
             scale_factor = ( ( Float ) message.getValue( ) ).floatValue( );
       }
       
-      if( message.getName().equals(  Commands.NORMALIZE_QD_GRAPHS ))
+      if( message.getName().equals( Commands.NORMALIZE_QD_GRAPHS ))
       {
-         Vector res = (Vector)( message.getValue());
+         Vector res   = (Vector)( message.getValue());
          boolean show = ((Boolean)res.firstElement()).booleanValue();
          String D_Q   =((String)res.lastElement()).toString();
-         if(  D_Q =="Q")
-            if( show == normalizeQ )
+         if( D_Q =="Q" )
+         {
+            if( show == normalizeQ )     // state didn't change
                return false;
-             else
-             {
-               normalizeQ = show;
-               if( show)
-                  Q_values[1] = qn_values;
-               else
-                  Q_values[1] = q_values[1];
-             }
-         if(  D_Q =="D")
-            if( show == normalizeD )
-               return false;
+            else
+            {
+              normalizeQ = show;
+              if ( show )
+                Q_values[1] = qn_values;
+              else
+                Q_values[1] = q_values[1];
+            }
+         }
+         if(  D_Q == "D" )
+         {
+            if ( show == normalizeD )     // state didn't change
+              return false;
             else 
             {
-               normalizeD = show;
-               if( show)
-                  D_values[1] = dn_values;
-               else
-                  D_values[1] =d_values[1];
+              normalizeD = show;
+              if( show)
+                 D_values[1] = dn_values;
+              else
+                 D_values[1] =d_values[1];
             }
-         if( D_Q =="D")
-            sendViewMessage(Commands.SET_D_VALUES, Scale(D_values, normalizeD) );
-         else if( D_Q =="Q")
-            sendViewMessage(Commands.SET_Q_VALUES, Scale(Q_values, normalizeQ) );
-         
-         
+         }
+
+         if( D_Q == "D" )
+            sendViewMessage(Commands.SET_D_VALUES, Scale(D_values, normalizeD));
+         else if( D_Q == "Q" )
+            sendViewMessage(Commands.SET_Q_VALUES, Scale(Q_values, normalizeQ));
       }
       
       return false;
    }
    
       
-   private boolean SaveDataSetASCII( DataSet D, String fileName)
+   private boolean SaveDataSetASCII( DataSet D, String fileName )
    {
       UniformXScale sc = D.getXRange();
       ClosedInterval intv = D.getYRange();
-      String fmt= getCFormat( sc.getStart_x(), sc.getEnd_x(),sc.getNum_x());
-      fmt += " "+getCFormat( intv.getStart_x(), 
-                             intv.getEnd_x(), 
-                             2*sc.getNum_x());
-      try{ SaveASCII_calc. SaveASCII( D, false,fmt, fileName);
-      }catch( Exception ss)
+      String fmt= getCFormat( sc.getStart_x(), sc.getEnd_x(),sc.getNum_x() );
+      fmt += " " + getCFormat( intv.getStart_x(), 
+                               intv.getEnd_x(), 
+                               2*sc.getNum_x());
+      try
+      { 
+        SaveASCII_calc.SaveASCII( D, false, fmt, fileName );
+      }
+      catch( Exception ss)
       {
          return false;
       }
@@ -458,15 +567,15 @@ public class DQDataHandler implements IReceiveMessage
 
    // attempts to have 6 digits showing and each entry from start to end 
    // in nSteps.  shows a different String
-   public static String getCFormat( float start, float end, int nSteps)
+   public static String getCFormat( float start, float end, int nSteps )
    {
       if( start > end)
       {
          float save = start;
          start = end;
          end = save;
-         
-      }else if( start == end && start == 0)
+      }
+      else if( start == end && start == 0)
          return "%6.1f";
       
       if( nSteps <= 0)
@@ -491,7 +600,7 @@ public class DQDataHandler implements IReceiveMessage
             nDigits2Right = -(int)Math.floor(dd) +1;
       }
       
-      if( nDigits2Left > 6)
+      if( nDigits2Left > 6 )
           if(nDigits2Right == 0)
              return "%"+(nDigits2Left+x)+".0f";
           else 
@@ -515,28 +624,25 @@ public class DQDataHandler implements IReceiveMessage
       return D;
    }
 
-   private float[][] Scale( float[][] qvals, boolean normalize)
+
+   private float[][] Scale( float[][] qvals, boolean normalize )
    {
       if(  qvals == null)
          return qvals;
-      if( scale_factor < 0 || !normalize)
+      if( scale_factor < 0 || !normalize )
          return qvals;
       
       float[][] Res = new float[2][qvals[1].length];
       Res[0] = qvals[0];
       for( int i=0; i < qvals[1].length; i++)
       {
-         float m=1;
+         float m = 1;
          if( scale_factor > 0)
-            m= scale_factor;
+            m = scale_factor;
          
-         Res[1][i] =m* qvals[1][i];           
-         
+         Res[1][i] = m * qvals[1][i];           
       }
       return Res;
-      
-      
-      
    }
    
   
