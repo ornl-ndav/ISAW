@@ -496,13 +496,15 @@ class thisIUDPUser implements IUDPUser
      {
         ProcessDataPacket( data, length );
         int nPulseIDs = Cvrt2Int( data, 12 ) / 24;
-
+        double protonsThisPacket =0;
         for( int i=0; i<nPulseIDs; i++)
-             TotalProtonsOnTarget += Cvrt2dbl( data, 40 +i*24 );
+           protonsThisPacket += Cvrt2dbl( data, 40 +i*24 );
+        
+        TotalProtonsOnTarget +=protonsThisPacket;
        
-        if(  SendScale && TotalProtonsOnTarget !=0 )
+        if(  SendScale && protonsThisPacket !=0 )
               message_center.send( new Message( Commands.SCALE_FACTOR, 
-                              (float)(1f/TotalProtonsOnTarget), true, true));
+                              (float)(protonsThisPacket), false, false));
      }
      
      

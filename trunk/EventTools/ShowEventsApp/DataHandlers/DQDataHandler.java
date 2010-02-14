@@ -61,14 +61,14 @@ public class DQDataHandler implements IReceiveMessage
 {
   private IEventBinner q_binner; // set to uniform or log binner for Q
   private IEventBinner d_binner; // set to uniform or log binner for d 
- 
+  private boolean  isLog = false;
   private MessageCenter messageCenter;
   private MessageCenter viewMessageCenter;
    
   private boolean normalizeQ,    // if true send normalized Q data
                   normalizeD;    // if true send normalized D data
 
-  private float   scale_factor;
+  private float   scale_factor;//divide by this scale_factor
 
   private String  incidentSpectraFileName;
 
@@ -118,15 +118,15 @@ public class DQDataHandler implements IReceiveMessage
 
       this.messageCenter.addReceiver(this, Commands.SCALE_FACTOR);
       this.viewMessageCenter.addReceiver(this, Commands.NORMALIZE_QD_GRAPHS);
+      this.viewMessageCenter.addReceiver(this, Commands.DQLOG_SCALE);
    
-      scale_factor = -1;
       incidentSpectraFileName = null;
       normalizeQ = normalizeD = false;
 
-      boolean is_log = false;
-      q_binner = getQBinner( is_log );
-      d_binner = getDBinner( is_log );
-
+     
+      q_binner = getQBinner( isLog );
+      d_binner = getDBinner( isLog );
+      scale_factor = 1;
       init_arrays();
    }
    
@@ -454,6 +454,10 @@ public class DQDataHandler implements IReceiveMessage
         clearYs();
         SetNewInstrumentCmd cmd =(SetNewInstrumentCmd) message.getValue();
         scale_factor = cmd.getScaleFactor();
+        if( scale_factor == 0)
+           scale_factor =1;
+        else
+           scale_factor = 1/scale_factor;
         incidentSpectraFileName = (String)cmd.getIncidentSpectrumFileName();
         setUpIncidentSpectrum( incidentSpectraFileName, 
                                cmd.getInstrumentName() );
@@ -495,12 +499,16 @@ public class DQDataHandler implements IReceiveMessage
       if( message.getName().equals(  Commands.SCALE_FACTOR ))
       {
         
-         String S = System.getProperty( "ScaleWith" , "" );
+         /*String S = System.getProperty( "ScaleWith" , "" );
          S = S.toUpperCase();
          if ( !S.equals( "PROTONS ON TARGET" ) && !S.equals( "MONITOR" ) )
             scale_factor = -1;
+         else*/
+         float scale =( ( Float ) message.getValue( ) ).floatValue( );
+         if( scale >=0)
+            scale_factor += ( ( Float ) message.getValue( ) ).floatValue( );
          else
-            scale_factor = ( ( Float ) message.getValue( ) ).floatValue( );
+            scale_factor = 1;
       }
       
       if( message.getName().equals( Commands.NORMALIZE_QD_GRAPHS ))
@@ -539,6 +547,19 @@ public class DQDataHandler implements IReceiveMessage
             sendViewMessage(Commands.SET_D_VALUES, Scale(D_values, normalizeD));
          else if( D_Q == "Q" )
             sendViewMessage(Commands.SET_Q_VALUES, Scale(Q_values, normalizeQ));
+      }
+      if( message.getName( ).equals(  Commands.DQLOG_SCALE ))
+      {
+         boolean useLog = ((Boolean) message.getValue()).booleanValue( );
+         if( isLog == useLog)
+            return false;
+         isLog = useLog;
+         q_binner = getQBinner( isLog );
+         d_binner = getDBinner( isLog );
+         scale_factor = 0;
+         init_arrays();
+         
+         
       }
       
       return false;
@@ -629,7 +650,7 @@ public class DQDataHandler implements IReceiveMessage
    {
       if(  qvals == null)
          return qvals;
-      if( scale_factor < 0 || !normalize )
+      if( scale_factor <= 0 || !normalize )
          return qvals;
       
       float[][] Res = new float[2][qvals[1].length];
@@ -640,7 +661,7 @@ public class DQDataHandler implements IReceiveMessage
          if( scale_factor > 0)
             m = scale_factor;
          
-         Res[1][i] = m * qvals[1][i];           
+         Res[1][i] =  qvals[1][i]/ m;           
       }
       return Res;
    }
