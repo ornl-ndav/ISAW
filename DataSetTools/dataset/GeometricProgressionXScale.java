@@ -79,6 +79,8 @@ public class GeometricProgressionXScale extends XScale implements Serializable
                                              // readObject() CAN FIX ANY
                                              // COMPATIBILITY PROBLEMS
   private double ratio; 
+  private double LOG_RATIO;                  // Store this to save time in
+                                             // getI() method.
 
   /**
    *   Constructs a GeometricProgressionXScale object by specifying the 
@@ -127,7 +129,9 @@ public class GeometricProgressionXScale extends XScale implements Serializable
      if ( ((float)ratio) <= 1 )
        throw new IllegalArgumentException( "ratio not greater than 1: "+ratio);
 
-     double num_vals = (Math.log(end_x/(double)start_x) / Math.log( ratio ));
+     LOG_RATIO = Math.log(ratio);
+
+     double num_vals = (Math.log(end_x/(double)start_x) / LOG_RATIO );
      num_x = (int)Math.ceil( num_vals ) + 1;
 
      this.end_x = getX( num_x - 1 );
@@ -232,7 +236,7 @@ public class GeometricProgressionXScale extends XScale implements Serializable
                                              // non-degenerate scale with x
                                              // strictly between end points.
 
-    position = (int)Math.ceil( Math.log(x/(double)start_x)/Math.log(ratio) ); 
+    position = (int)Math.ceil( Math.log(x/(double)start_x)/LOG_RATIO ); 
 
     if ( x > getX(position) )                // this can happed due to rounding
       position++;                            // errors
