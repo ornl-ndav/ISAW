@@ -239,7 +239,7 @@ public class GetEventLists implements IOperator
       if ( n_events > 0 )
       {
         IEventList3D events = new
-           FloatArrayEventList3D( weights[i], x_vals[i], y_vals[i], z_vals[i] );
+         FloatArrayEventList3D( weights[i], x_vals[i], y_vals[i], z_vals[i] );
 
         result.add( events );
       }
@@ -250,4 +250,3 @@ public class GetEventLists implements IOperator
     return result;
   }
 }
-

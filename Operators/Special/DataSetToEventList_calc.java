@@ -105,7 +105,7 @@ public class DataSetToEventList_calc
    *  @return A list of the events in reciprocal space, or null if all of the
    *          bins of the DataSet have zero counts.
    */
-  public static FloatArrayEventList3D 
+  public static FloatArrayEventList3D
                     MakeDiffractometerQEventList( DataSet       ds,
                                                   BeamDirection dir )
   {

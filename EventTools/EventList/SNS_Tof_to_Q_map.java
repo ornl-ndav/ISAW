@@ -251,7 +251,7 @@ public class SNS_Tof_to_Q_map
    *  @return an array of floats containing values (Qx,Qy,Qz) for each 
    *          event, interleaved in the array. 
    */
-  public FloatArrayEventList3D_2 MapEventsToQ( int[] tofs, 
+  public FloatArrayEventList3D MapEventsToQ( int[] tofs, 
                                                int[] ids  )
   {
     if ( tofs == null )
@@ -283,7 +283,7 @@ public class SNS_Tof_to_Q_map
    *  @return an array of floats containing values (Qx,Qy,Qz) for each
    *          event, interleaved in the array.
    */
-  public FloatArrayEventList3D_2 MapEventsToQ( ITofEventList event_list,
+  public FloatArrayEventList3D MapEventsToQ( ITofEventList event_list,
                                                int   first,
                                                int   num_to_map )
   {
@@ -366,7 +366,7 @@ public class SNS_Tof_to_Q_map
 //   System.out.println("<  0   id count = " + minus_id_count );
 //   System.out.println(">= max id count = " + large_id_count );
 
-     return new FloatArrayEventList3D_2( weights, Qxyz );
+     return new FloatArrayEventList3D( weights, Qxyz );
   }
 
 
@@ -390,7 +390,7 @@ public class SNS_Tof_to_Q_map
    *  @return an array of floats containing values (Qx,Qy,Qz) for each 
    *          event, interleaved in the array. 
    */
-  public FloatArrayEventList3D_2 MapEventsToQ( int[] tofs, 
+  public FloatArrayEventList3D MapEventsToQ( int[] tofs, 
                                                int[] ids,
                                                int   first,
                                                int   num_to_map )
@@ -416,7 +416,7 @@ public class SNS_Tof_to_Q_map
      if ( tofs.length == 0 )
      {
        float[] empty_Qxyz = new float[0];
-       return new FloatArrayEventList3D_2( null, empty_Qxyz );
+       return new FloatArrayEventList3D( null, empty_Qxyz );
      }
 
      if ( first == 0 )
