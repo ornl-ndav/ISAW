@@ -443,6 +443,8 @@ public class ScalarHandlePanel implements IReceiveMessage
 
       }
 
+      EliminateDuplicates( ScalarOpts);
+      
       for( int i = 0 ; i < SymmetryChoices.length ; i++ )
          if ( !SymmetryChoices[i].isSelected( ) )
             FilterOutSymmetry( ScalarOpts , ChoicesString[i] );
@@ -509,6 +511,22 @@ public class ScalarHandlePanel implements IReceiveMessage
       return false;
    }
 
+   private void EliminateDuplicates(Vector< ReducedCellPlus > ScalarOpts ) 
+   {
+      if( ScalarOpts == null || ScalarOpts.size() < 1)
+         return;
+      ReducedCellPlus[] R=ScalarOpts.toArray( new ReducedCellPlus[0]);
+      Arrays.sort( R, new FormSort() );
+      ScalarOpts.clear( );
+      int lastFormNum = -1;
+      for( int i = 0; i < R.length; i++)
+         if( R[i].redCell.getFormNum( ) != lastFormNum)
+         {
+            ScalarOpts.add( R[i] );
+            lastFormNum = R[i].redCell.getFormNum( );
+         }
+      
+   }
    
    private void FilterOutSymmetry(Vector< ReducedCellPlus > ScalarOpts,
          String symm)
