@@ -71,21 +71,19 @@ public class EventSegmentLoadOp implements IOperator
   }
 
 
+ /**
+  * Get the requested portion of the event file, in an SNS_TofEventList
+  * object.
+  *
+  * @return a new SNS_TofEventList object containing the requested events.
+  */
   public Object getResult()
   {
      SNS_TofEventList eventlist = new SNS_TofEventList( filename );
 
-     int[] tofs = eventlist.eventTof( first, num );
-     int[] ids  = eventlist.eventPixelID( first, num );
-     eventlist.free_storage();
+     int[] events = eventlist.rawEvents( first, num );
 
-     eventlist = null;
-
-     Vector result = new Vector();
-     result.add( tofs );
-     result.add( ids );
-
-     return result;
+     return new TofEventList( events, events.length/2, false );
   }
 
 
@@ -115,15 +113,15 @@ public class EventSegmentLoadOp implements IOperator
 
      long start_time = System.nanoTime();
 
-     Object results;
+     Vector results;
      try
      {
        ParallelExecutor exec = new ParallelExecutor( ops, n_threads, 60000 );
-       results = exec.runOperators();
+       results = (Vector)exec.runOperators();
      }
      catch ( ExecFailException fail_exception )
      {
-       results = fail_exception.getPartialResults();
+       results = (Vector)fail_exception.getPartialResults();
        System.out.println("ExecFailException: " +
                            fail_exception.getFailureStatus() );
      }
@@ -134,16 +132,15 @@ public class EventSegmentLoadOp implements IOperator
      first = 0;
      for ( int i = 0; i < n_threads; i++ )
      {
-       Vector array_vec = (Vector)((Vector)results).elementAt(i);
-       int[] tofs = (int[])array_vec.elementAt(0);
-       int[] ids  = (int[])array_vec.elementAt(1);
+       ITofEventList ev_list = (ITofEventList)results.elementAt(i);
+       long num_events = ev_list.numEntries();
+       int[] raw_ev = ev_list.rawEvents(0,num_events);
        System.out.println("Values from segment " + i + " --------------");
        for ( int j = 0; j < 10; j++ )
-         System.out.printf( "%6d    %8d    %8d\n", j+first, tofs[j], ids[j] );
+         System.out.printf( "%6d    %8d    %8d\n", 
+                            j+first, raw_ev[2*j], raw_ev[2*j+1] );
        first += seg_size;
      }
-
   }
 
 } 
-

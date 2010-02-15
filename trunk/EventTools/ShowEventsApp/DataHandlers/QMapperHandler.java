@@ -39,7 +39,7 @@ import java.util.Vector;
 import gov.anl.ipns.Operator.IOperator;
 import gov.anl.ipns.Operator.Threads.ParallelExecutor;
 import gov.anl.ipns.Operator.Threads.ExecFailException;
-import gov.anl.ipns.MathTools.Geometry.DetectorPosition;
+//import gov.anl.ipns.MathTools.Geometry.DetectorPosition;
 import gov.anl.ipns.MathTools.Geometry.Vector3D;
 
 import MessageTools.IReceiveMessage;
@@ -306,31 +306,26 @@ public class QMapperHandler implements IReceiveMessage
     if ( ev_list == null )
       return null;
 
-    int num_ev = (int)(ev_list.numEntries());
-    if ( num_ev <= 0 )
+
+    int num_events = (int)(ev_list.numEntries());
+    if ( num_events <= 0 )
       return null;
-
-    long start = System.nanoTime();
-
-    int[] tofs = ev_list.eventTof( 0, num_ev );
-    int[] ids  = ev_list.eventPixelID( 0, num_ev );
 
     IEventList3D[] event_lists = null;
 
-    if ( tofs.length > 400000 )          // split into separate threads
+    if ( num_events > 400000 )          // split into separate threads
     {
       Object results    = null;
       int    first      = 0;
-      int    num_to_map = tofs.length/N_THREADS;
+      int    num_to_map = num_events/N_THREADS;
 
       Vector<IOperator> toQ_ops = new Vector<IOperator>();
       for ( int i = 0; i < N_THREADS; i++ )
       {
         if ( i == N_THREADS - 1 )
-          num_to_map = tofs.length - first;       // bring in the rest
+          num_to_map = num_events - first;       // bring in the rest
 
-        toQ_ops.add( new MapEventsToQ_Op( tofs, 
-                                          ids, 
+        toQ_ops.add( new MapEventsToQ_Op( ev_list, 
                                           first, 
                                           num_to_map,  
                                           mapper ) );
@@ -357,7 +352,8 @@ public class QMapperHandler implements IReceiveMessage
     else
     {
       event_lists = new IEventList3D[1];
-      event_lists[0] = mapper.MapEventsToQ( tofs, ids );
+      int num_to_map = (int)ev_list.numEntries();
+      event_lists[0] = mapper.MapEventsToQ( ev_list, 0, num_to_map );
     }
 
 //    Util.sendInfo("Converted to Q in " + ((System.nanoTime()-start)/1e6) +
