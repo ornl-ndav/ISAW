@@ -652,10 +652,10 @@ public class IndexPeaks_Calc
      for ( int index = 0; index < good_peaks.size(); index++ )
        hkl_vals[index] = good_hkl.elementAt(index);
 
-     System.out.println( "NUM INDEXED = " +  hkl_vals.length +
+     /*    System.out.println( "NUM INDEXED = " +  hkl_vals.length +
                          "  NUM NOT = " + num_bad +
                          " WITH TOLERANCE = " + tolerance );
-/*
+
      System.out.println("   H       K       L          qx      qy      qz");
      for ( int row = 0; row < good_peaks.size(); row++ )
      {
@@ -676,7 +676,7 @@ public class IndexPeaks_Calc
      }
 
      double residual = LinearAlgebra.BestFitMatrix( UB, hkl_vals, q_vals );
-     System.out.println("RESIDUAL = " + residual );
+//     System.out.println("RESIDUAL = " + residual );
 
      if ( Double.isNaN(residual) )
        return null;
@@ -1099,8 +1099,9 @@ public class IndexPeaks_Calc
                    "Could not find orientation matrix, newUBinverse is null");
           UBinverse = LinearAlgebra.copy( newUBinverse );
           hkls = OptimizeUB( all_peaks, UBinverse, newUBinverse, hkl_tol );
-          ShowLatticeParams( newUBinverse );
+          
         }
+        ShowLatticeParams( newUBinverse );
         return_msg = "NUM INDEXED = " +
                       NumIndexed( all_peaks, UBinverse, hkl_tol ) +
                      " OUT OF " + all_peaks.size() +
