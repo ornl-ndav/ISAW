@@ -383,6 +383,10 @@ public class SNS_Tof_to_Q_map
    *
    *  @return an array of floats containing values (Qx,Qy,Qz) for each 
    *          event, interleaved in the array. 
+   *
+   *  @deprecated The method using an interleaved array of (tof,id) pairs
+   *              is more efficient than this method, and should be used
+   *              whenever possible.
    */
   public FloatArrayEventList3D MapEventsToQ( int[] tofs, 
                                              int[] ids,

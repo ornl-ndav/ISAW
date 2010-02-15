@@ -52,7 +52,9 @@ import gov.anl.ipns.MathTools.Geometry.Tran3D;
 import Operators.Special.*;
 
 /**
- * This class contains utilities that besides the integrate utilities
+ * This class contains utilities such as rotating the detectors
+ * in a .DetCal file.
+ * 
  * @author ruth 
  *
  */
@@ -91,7 +93,6 @@ public class General_Utils
                                        float  xoffset,
                                        float  beamOffset)
    {
-      
       newCenterAngle *= (float)(Math.PI/180);
       Scanner sc = null;
       try
@@ -109,16 +110,11 @@ public class General_Utils
       FileOutputStream out = null;
       try
       {
-         
-         
          headerInfo = ReadFirstLine( sc );
          
          L1_T0 = Peak_new_IO.Read_L1_T0( sc );
          Grids = Peak_new_IO.Read_Grids( sc ).elements( );
          out = new FileOutputStream( NewDetCalFilename );
-         
-         
-         
       }catch( Exception ss)
       {
          ss.printStackTrace();
@@ -170,7 +166,6 @@ public class General_Utils
               center, xvec , yvec , G.width( ), G.height( ), G.depth( ),
               G.num_rows( ), G.num_cols( ));
          VGrids.set( i , newG );
-         
       }
       
       if( headerInfo == null)
@@ -223,12 +218,10 @@ public class General_Utils
       
       Res = new String[3];
       
-      
       Arrays.fill( Res , "" );
       Res[0] = line.substring( 0,k );
       line=line.substring( k ).trim( );
       
-     
       if( line.length() <=0 )
          return Res;
       
@@ -242,7 +235,6 @@ public class General_Utils
             line = line.substring(k).trim();
          else
             line ="";
-            
       }
 
       if( line.length() <=0 )
@@ -258,7 +250,6 @@ public class General_Utils
             line = line.substring(k);
          else
             line ="";
-            
       }
       return Res;
        
@@ -274,8 +265,8 @@ public class General_Utils
     */
    public static void main(String[] args)
    {
-      String fileName1 = "C:/ISAW/InstrumentInfo/SNS/SNAP.DetCal";
-      String fileName2 ="C:/ISAW/InstrumentInfo/SNS/SNAP1.DetCal";
+      String fileName1 = "C:/ISAW/InstrumentInfo/SNS/SNAP/SNAP.DetCal";
+      String fileName2 ="C:/ISAW/InstrumentInfo/SNS/SNAP/SNAP1.DetCal";
       int CenterDetID = 14;
       float newAngle = 35.2f;
       float xoffset = .1f;

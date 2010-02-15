@@ -66,7 +66,7 @@ public class SetNewInstrumentCmd
    *                             The name of the file containing the incident
    *                             spectrum information.  This file is a simple
    *                             ASCII file with some basic header information
-   *                             as in ISAW/InstrumentInfo/SNAP_Spectrum.dat
+   *                             as in ISAW/InstrumentInfo/SNAP/SNAP_Spectrum.dat
    *                             If none is specified the default file in 
    *                             ISAW/InstrumentInfo/SNS will be used, if 
    *                             it is present.  Otherwise, no correction

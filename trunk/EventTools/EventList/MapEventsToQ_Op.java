@@ -118,8 +118,8 @@ public class MapEventsToQ_Op implements IOperator
 
     ITofEventList ev_list = new TofEventList( list, 2000000, false );
 
-    String det_cal_file = "/home/dennis/SNS_ISAW/ISAW_ALL/InstrumentInfo/SNS/"+
-                          "SNAP.DetCal";                          
+    String det_cal_file = 
+      "/home/dennis/SNS_ISAW/ISAW_ALL/InstrumentInfo/SNS/SNAP/SNAP.DetCal";                          
     String inst_name = "SNAP";
     SNS_Tof_to_Q_map mapper = new SNS_Tof_to_Q_map(det_cal_file,null,inst_name);
 
