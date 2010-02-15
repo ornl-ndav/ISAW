@@ -18,6 +18,8 @@ C-------------------------------------------------------------------------------
 !	Modified for SNS:
 !	A. J. Schultz		February, 2009
 !
+!       Modified to include a DELTA3*VOL1 test of the unit cells.
+!       A. J. Schultz           January, 2010
 
 	INTEGER H
 	INTEGER REFLAG,SEQNUM
@@ -108,11 +110,19 @@ C   crystal cartesian system.
 	print *
 	print *,' DELTA2 is used to select possible pairs of peaks with'
 	print *,' abs(d(obs_1) - d(obs_2)) less than DELTA2.'
+        print *
+        print *,' Delta3 is used to test of the unit cell volume from'
+        print *,' the input matrix file (VOL1) and the unit cell volume'
+        print *,' MATRIX2 matrix (VOL2) agree.'
+        print *,' ABS(VOL1 - VOL2) less than DELTA3'
+        print *
+        
 	  
 	write (*, 35)
-35	format(/,' Input delta1, delta2 (e.g., 0.01, 0.03): ',$)
-	read (*, *) DELTA1, DELTA2
-	print "(2F7.3)", delta1, delta2	
+35	format(/,
+     1    ' Input delta1, delta2, delta3 (e.g., 0.01 0.03 0.1): ',$)
+	read (*, *) DELTA1, DELTA2, DELTA3
+	print "(2F7.3)", delta1, delta2, delta3
 
         write (*, 200)
 200     format(/,' Reflection file name? ',$)
@@ -280,6 +290,7 @@ C   based in the known unit cell parameters.
 
 C   Test if observed and calculated distances are in agreement.
 	DIFF12 = DO12 - DC12
+        write (*,*) 'DIFF12 = ', DIFF12, '   DO12 =', DO12
 	IF (ABS(DIFF12)/do12 .LE. DELTA2) THEN			! ***
 
 C		Calculate an orientation matrix based on 2 reflections
@@ -331,7 +342,7 @@ C   Calculate volume and test for right handed unit cell.
 		CALL TSTVOL (U, VOL2)
 
 C   Test if calculated and observed unit cell volumes agree within 10%.
-		IF (ABS(VOL1-VOL2)/VOL1 .LE. 0.1) THEN		!$$$$$$$$$$
+		IF (ABS(VOL1-VOL2)/VOL1 .LE. DELTA3) THEN		!$$$$$$$$$$
 
 	write (*, 210)
 210	FORMAT(' '//,' **********')
@@ -398,12 +409,14 @@ C   Calculate hkl's for all reflections.
 
 	        ELSE						!$$$$$$$$$$
 
-C   ABS(VOL1-VOL2)/VOL1 is greater than 0.1
+C   ABS(VOL1-VOL2)/VOL1 is greater than DELTA3
 
-!	    	write (*, 255) I,ISEQ(I),(H1(M),M=1,3)
-!	    	write (*, 256) II,ISEQ(II),(H2(M),M=1,3)
-!		write (*, 260) VOL1,VOL2
-!260		FORMAT('      VOL1 = ',F8.2,'     VOL2 = ',F8.2)
+	    	write (*, 255) I,ISEQ(I),(H1(M),M=1,3)
+	    	write (*, 256) II,ISEQ(II),(H2(M),M=1,3)
+		write (*, 260) VOL1, VOL2
+260		FORMAT('      VOL1 = ',F8.2,'     VOL2 = ',F8.2/,
+     1           '***** Difference in unit cell volumes is greater',
+     2           ' than DELTA3*VOL1'/)
 
 		END IF						!$$$$$$$$$$
 
@@ -412,14 +425,14 @@ C   ABS(VOL1-VOL2)/VOL1 is greater than 0.1
 C  ABS(DO12-DC12) is greater than DELTA.
 
 !	    write (*, 255) I,ISEQ(I),(H1(M),M=1,3)
-!255	    FORMAT(/,' *** No. ',I2,'     SEQNUM = ',I3,
-!     1               '     hkl = ',3F5.0)
+255	    FORMAT(/,' *** No. ',I2,'     SEQNUM = ',I3,
+     1               '     hkl = ',3F5.0)
 !	    write (*, 256) II,ISEQ(II),(H2(M),M=1,3)
-!256	    FORMAT('     No. ',I2,'     SEQNUM = ',I3,
-!     1             '     hkl = ',3F5.0)
+256	    FORMAT('     No. ',I2,'     SEQNUM = ',I3,
+     1             '     hkl = ',3F5.0)
 !	    write (*, 257) DO12,DC12,DIFF12
 !257	    FORMAT('     DO12 = ',F8.5,'     DC12 = ',F8.5,
-!     1             '     DIFF = ',F8.5)
+!     1             '     DIFF = ',F8.5/)
 
 	    continue
 
@@ -433,3 +446,4 @@ C  ABS(DO12-DC12) is greater than DELTA.
 	STOP
 	END
 	
+!	include 'subs.f'
