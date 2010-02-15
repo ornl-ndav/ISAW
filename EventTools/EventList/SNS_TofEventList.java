@@ -46,7 +46,7 @@ public class SNS_TofEventList implements ITofEventList
    *  Size of byte buffer used when getting a sequence of bytes from
    *  the disk.  NOTE: The size must be a multiple of 8.
    */ 
-  public static final int BUFFER_SIZE = 16384;
+  public static final int BUFFER_SIZE = 65536;
 
   private String filename;      // name of the SNS raw event data file
   private long   file_size;  
