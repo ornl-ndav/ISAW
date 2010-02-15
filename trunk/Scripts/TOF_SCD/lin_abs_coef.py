@@ -57,6 +57,7 @@ class lin_abs_coef(GenericTOF_SCD):
             
             lineList = lineString.split()       # this should be the H atom
             lenSymbol = len(lineList[0])        # number of characters in the isotope name or symbol
+            print lenSymbol
 
             while formulaList[i][0:lenSymbol] != lineList[0]:
                 lineString = input.readline()
