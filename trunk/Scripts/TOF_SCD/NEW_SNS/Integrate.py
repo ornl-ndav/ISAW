@@ -113,7 +113,7 @@ class Integrate(GenericTOF_SCD):
       S.append("@param   ")
       S.append("Box Delta y (row) Range (-2:2)")
       S.append("@param   ")
-      S.append("maximum peak for Shoe box intgration")
+      S.append("maximum peak for Shoe box integration")
       S.append("@param   ")
       S.append("The maximum number of threads to run")
       S.append("@param   ")
