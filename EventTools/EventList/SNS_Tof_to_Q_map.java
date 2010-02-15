@@ -106,9 +106,12 @@ public class SNS_Tof_to_Q_map
   public static final String ARCS  = "ARCS";
   public static final String SEQ   = "SEQ";
   public static final String TOPAZ = "TOPAZ";
+  public static final String PG3   = "PG3";
 
   private final float MAX_WAVELENGTH = 50.0f;    // max in lamda_weight table
+
   private final float STEPS_PER_ANGSTROM = 100;  // resolution of lamda table 
+
   private final int   NUM_WAVELENGTHS = 
                              Math.round( MAX_WAVELENGTH * STEPS_PER_ANGSTROM );
 
@@ -118,15 +121,43 @@ public class SNS_Tof_to_Q_map
   private VecQMapper[] inverse_mapper;
 
   private float        L1;               // L1 in meters.
+
   private float        t0;               // t0 shift in 100ns units
 
-  private float[]      QUxyz;            // unit vector in Q direction for pixel
-  private float[]      tof_to_MagQ;      // magQ is tof_to_MagQ[id] / tof
-  private float[]      tof_to_lamda;     // lamda is tof_to_lamda[id] * tof
-  private int          first_offset = 0; // ids start at 0
+  private float[]      QUxyz;            // Array giving a unit vector in the 
+                                         // direction of "Q" corresponding to
+                                         // each DAS pixel ID.  The 3D vector
+                                         // Q value is obtained by multiplying
+                                         // a unit vector time |Q|
+
+  private float[]      tof_to_MagQ;      // Array giving conversion factor from
+                                         // time of flight to |Q| for each
+                                         // DAS pixel ID. 
+                                         // |Q| is tof_to_MagQ[id] / tof
+
+  private float[]      tof_to_lamda;     // Array giving conversion factor from
+                                         // time of flight to wavelength for
+                                         // each DAS pixel ID.
+                                         // lamda is tof_to_lamda[id] * tof
+
+  private float[]      recipLaSinTa;     // Array giving time-focusing values
+                                         // for each DAS pixel ID.  Contains 
+                                         // 1/(La*Sin(Ta)) values where La
+                                         // is the actual total path length and
+                                         // Ta is the actual theta value.  This
+                                         // table is used for time-focusing
+                                         // events to a "virtual" path length
+                                         // Lv and "virtual" angle Tv.
+
+  private int[]        bank_num;         // Array giving the SNS bank number
+                                         // for each DAS pixel ID.  This is
+                                         // used for forming a default
+                                         // collection of histograms from 
+                                         // the raw events 
 
   private float[]      lamda_weight;     // 1/(lamda^power*spec(lamda)) indexed
                                          // by STEPS_PER_ANGSTROM * lamda
+
   private float[]      pix_weight;       // sin^2(theta(pix_id)) / eff(pix_id)
 
   private String            instrument_name = "NO_NAME";
@@ -683,7 +714,7 @@ public class SNS_Tof_to_Q_map
       pix_count += grid.num_rows() * grid.num_cols();
     }
 
-    pix_weight   =  new float[ (pix_count + first_offset) ];
+    pix_weight   =  new float[ pix_count ];
 
     Vector3D  pix_pos;                             // using IPNS coords 
     Vector3D  beam_vec = new Vector3D( 1, 0, 0 );  // internally
@@ -694,7 +725,7 @@ public class SNS_Tof_to_Q_map
     int       n_rows;
     int       n_cols;
 
-    int index = first_offset;                       // pixel index starts at 1
+    int index = 0; 
     for ( int  i = 0; i < grid_arr.length; i++ )
     {
       grid = grid_arr[i];
@@ -732,27 +763,32 @@ public class SNS_Tof_to_Q_map
       pix_count += grid.num_rows() * grid.num_cols(); 
     }                                          
 
-    tof_to_lamda =  new float[ (pix_count + first_offset) ];
-                                                   // NOTE: the pixel IDs 
+    tof_to_lamda =  new float[ pix_count ];        // NOTE: the pixel IDs 
                                                    // start at 1 in the file
                                                    // so to avoid shifting we
                                                    // will also start at 1
-    tof_to_MagQ = new float[  (pix_count + first_offset)]; 
-                                                   // Scale factor to convert
+
+    tof_to_MagQ = new float[ pix_count ];          // Scale factor to convert
                                                    // tof to Magnitude of Q
-    QUxyz       = new float[3*(pix_count + first_offset)];
-                                                   // Interleaved components
+
+    QUxyz       = new float[ 3*pix_count ];        // Interleaved components
                                                    // of unit vector in the
                                                    // direction of Q for this
                                                    // pixel.
 
+    recipLaSinTa = new float[ pix_count ];         // 1/(Lsin(theta)) table for
+                                                   // time focusing
+ 
+    bank_num = new int[ pix_count ];               // bank number for each 
+                                                   // DAS pixel ID
+
+    float     part = (float)(10 * 4 * Math.PI / tof_calc.ANGST_PER_US_PER_M);
                                                    // Since SNS tofs are in
                                                    // units of 100ns, we need
                                                    // the factor of 10 in this
                                                    // partial constant
-    float     part = (float)(10 * 4 * Math.PI / tof_calc.ANGST_PER_US_PER_M);
-                                                   
-    float     two_theta;
+    double    two_theta;
+    float     sin_theta;
     float     L2;
     Vector3D  pix_pos;
     Vector3D  unit_qvec;
@@ -760,13 +796,16 @@ public class SNS_Tof_to_Q_map
               n_cols;
     float[]   coords;
     IDataGrid grid;
+    int       grid_ID;
     int       index;
-    pix_count = first_offset;                       // pixel index starts at 1
+    pix_count = 0;
+
     for ( int  i = 0; i < grid_arr.length; i++ )
     {
-      grid = grid_arr[i];
-      n_rows = grid.num_rows();
-      n_cols = grid.num_cols();
+      grid    = grid_arr[i];
+      grid_ID = grid.ID();
+      n_rows  = grid.num_rows();
+      n_cols  = grid.num_cols();
 
       for ( int col = 1; col <= n_cols; col++ )
         for ( int row = 1; row <= n_rows; row++ )
@@ -787,12 +826,16 @@ public class SNS_Tof_to_Q_map
            QUxyz[ index + 1 ] = unit_qvec.getY();
            QUxyz[ index + 2 ] = unit_qvec.getZ();
 
-           two_theta   = (float)Math.acos( pix_pos.getX() / L2 );
+           two_theta = Math.acos( pix_pos.getX() / L2 );
+           sin_theta = (float)Math.sin(two_theta/2);
 
-           tof_to_MagQ[pix_count] = 
-                          (float)(part * (L1 + L2) * Math.sin(two_theta/2));
+           tof_to_MagQ[pix_count] = part * (L1 + L2) * sin_theta;
 
            tof_to_lamda[pix_count] = ANGST_PER_US_PER_M /(L1 + L2);
+
+           recipLaSinTa[pix_count] = 1/( (L1 + L2) * sin_theta ); 
+
+           bank_num[pix_count] = grid_ID;
 
            pix_count++; 
         }
@@ -1088,6 +1131,22 @@ public class SNS_Tof_to_Q_map
       else 
         return -1;
     }
+  }
+
+
+  /**
+   *  Basic tests during develepment.
+   */
+  public static void main( String args[] )
+  {
+    String info_dir = "/home/dennis/SNS_ISAW/ISAW_ALL/InstrumentInfo/SNS/";
+    String map_file = info_dir + "ARCS/ARCS_TS.dat";
+    SNS_TofEventList loader = new SNS_TofEventList( map_file );
+    
+    System.out.println("NUMBER OF INTEGERS = " + loader.numEntries() * 2);
+    int[] raw_ints = loader.rawEvents(0,130);
+    for ( int i = 0; i < raw_ints.length; i++ )
+      System.out.printf("i = %6d,  val = %6d\n", i, raw_ints[i] );
   }
 
 } 
