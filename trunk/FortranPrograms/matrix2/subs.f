@@ -302,9 +302,9 @@ C
 	READ (TEXT,150) ISENT
           IF (ISENT.NE.5) THEN	!End of reading detector parameters
                   BACKSPACE (IUNIT)
-                  write (*, *) ' '
-                  write (*, *) 'There are ',nod,' detectors.'
-                  write (*, *)
+!                  write (*, *) ' '
+!                  write (*, *) 'There are ',nod,' detectors.'
+!                  write (*, *)
                   RETURN
           END IF
 
