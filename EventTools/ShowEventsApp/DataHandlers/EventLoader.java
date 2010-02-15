@@ -44,8 +44,10 @@ import MessageTools.IReceiveMessage;
 import MessageTools.Message;
 import MessageTools.MessageCenter;
 
+import EventTools.EventList.ITofEventList;
 import EventTools.EventList.SNS_TofEventList;
 import EventTools.EventList.TofEventList;
+
 import EventTools.EventList.EventSegmentLoadOp;
 import EventTools.ShowEventsApp.Command.Commands;
 import EventTools.ShowEventsApp.Command.LoadEventsCmd;
@@ -159,7 +161,7 @@ public class EventLoader implements IReceiveMessage
           seg_size = num_to_load - num_loaded;
 
 //      Util.sendInfo( "Loading " + seg_size + " starting with " + first );
-        System.out.println("FIRST = " + first + " SEG_SIZE = " + seg_size );
+//      System.out.println("FIRST = " + first + " SEG_SIZE = " + seg_size );
         ops.add( new EventSegmentLoadOp( event_file_name, first, seg_size ) );
         first      += seg_size;
         num_loaded += seg_size;
@@ -189,18 +191,9 @@ public class EventLoader implements IReceiveMessage
                          num_loaded, (run_time/1.0e6) );
 
       int num_segs = ((Vector)results).size();
-      int[][] tofs = new int[num_segs][];
-      int[][] ids  = new int[num_segs][];
       for ( int i = 0; i < num_segs; i++ )
       {
-        Vector array_vec = (Vector)((Vector)results).elementAt(i);
-        tofs[i] = (int[])array_vec.elementAt(0);
-        ids[i]  = (int[])array_vec.elementAt(1);
-      }
-
-      for ( int i = 0; i < num_segs; i++ )
-      {
-        TofEventList tof_evl = new TofEventList( tofs[i], ids[i] );
+        ITofEventList tof_evl = (ITofEventList)((Vector)results).elementAt(i);
         Message map_to_Q_cmd = new Message( Commands.MAP_EVENTS_TO_Q,
                                             tof_evl,
                                             false,

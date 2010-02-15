@@ -140,18 +140,14 @@ public class Test_2_SNS_Events
      start_time = System.nanoTime();
 
      first = 0;
-     int[][] tofs = new int[n_threads][];
-     int[][] ids  = new int[n_threads][];
+
+     ITofEventList[] ev_lists = new ITofEventList[n_threads];
      for ( int i = 0; i < n_threads; i++ )
-     {
-       Vector array_vec = (Vector)((Vector)results).elementAt(i);
-       tofs[i] = (int[])array_vec.elementAt(0);
-       ids[i]  = (int[])array_vec.elementAt(1);
-     }
+       ev_lists[i] = (ITofEventList)((Vector)results).elementAt(i);
 
      Vector<IOperator> toQ_ops = new Vector<IOperator>();
      for ( int i = 0; i < n_threads; i++ )
-       toQ_ops.add( new MapEventsToQ_Op( tofs[i], ids[i], mapper ) );
+       toQ_ops.add( new MapEventsToQ_Op( ev_lists[i], mapper ) );
 
      start_time = System.nanoTime();
 

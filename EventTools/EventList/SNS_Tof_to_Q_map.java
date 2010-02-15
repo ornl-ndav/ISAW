@@ -251,8 +251,7 @@ public class SNS_Tof_to_Q_map
    *  @return an array of floats containing values (Qx,Qy,Qz) for each 
    *          event, interleaved in the array. 
    */
-  public FloatArrayEventList3D MapEventsToQ( int[] tofs, 
-                                               int[] ids  )
+  public FloatArrayEventList3D MapEventsToQ( int[] tofs, int[] ids  )
   {
     if ( tofs == null )
       throw new IllegalArgumentException( "Time-of-flight array is null" );
@@ -284,8 +283,8 @@ public class SNS_Tof_to_Q_map
    *          event, interleaved in the array.
    */
   public FloatArrayEventList3D MapEventsToQ( ITofEventList event_list,
-                                               int   first,
-                                               int   num_to_map )
+                                             int   first,
+                                             int   num_to_map )
   {
      if ( event_list == null )
        throw new IllegalArgumentException( "event_list is null" );
@@ -295,6 +294,10 @@ public class SNS_Tof_to_Q_map
      if ( first < 0 || first >= num_events )
        throw new IllegalArgumentException("First index: " + first +
                  " < 0 or >= number of events in list: " + num_events );
+
+     if ( first + num_to_map > num_events )
+       throw new IllegalArgumentException( "first + num_to_map exceeds size "
+              + first + ", " + num_to_map + ", " + num_events );
 
      int     id;
      int     id_offset;
@@ -316,15 +319,18 @@ public class SNS_Tof_to_Q_map
        last = num_events - 1;
 
      num_mapped = last - first + 1;
-
+                                        // NOTE: Currently rawEvents() returns
+                                        //       a new array starting at 0,
+                                        //       if first != 0
      int[]   events  = event_list.rawEvents( first, num_to_map );
+
      float[] Qxyz    = new float[ 3 * num_mapped ];
      float[] weights = new float[ num_mapped ];
 
      for ( int i = 0; i < num_mapped; i++ )
      {
        weights[i] = 0;
-       id = events[2*(i + first) + 1];
+       id = events[2*i + 1];        // TODO: get from full list to avoid copy
        grid_id = id / 65536;
 
 //     if ( grid_id >= 0 && grid_id < counts_per_det.length )
@@ -338,7 +344,7 @@ public class SNS_Tof_to_Q_map
 
        else
        {
-         tof_chan = t0 + events[2*(i + first)];
+         tof_chan = t0 + events[2*i];       // TODO: get from whole list
          magQ = tof_to_MagQ[id]/tof_chan;
 
          id_offset = 3*id;
@@ -391,9 +397,9 @@ public class SNS_Tof_to_Q_map
    *          event, interleaved in the array. 
    */
   public FloatArrayEventList3D MapEventsToQ( int[] tofs, 
-                                               int[] ids,
-                                               int   first,
-                                               int   num_to_map )
+                                             int[] ids,
+                                             int   first,
+                                             int   num_to_map )
   {
      if ( tofs == null )
        throw new IllegalArgumentException( "Time-of-flight array is null" );

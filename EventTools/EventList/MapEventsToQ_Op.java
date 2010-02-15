@@ -42,52 +42,48 @@ import gov.anl.ipns.Operator.*;
  */
 public class MapEventsToQ_Op implements IOperator
 {
-  private int[]            tofs;
-  private int[]            ids;
+  private ITofEventList    tof_events;
   private int              first;
   private int              num_to_map;
   private SNS_Tof_to_Q_map mapper;
 
 
  /**
-  *  Create an operator to map all of the events defined by the tofs and ids
-  *  arrays, to Q.
+  *  Create an operator to map all of the events defined by the 
+  *  tof_events object, to Q.
   *
-  *  @param  tofs    The list of times-of-flight for the events
-  *  @param  ids     The list of pixel ids for the events
-  *  @param  mapper  The SNS_Tof_to_Q_map object that contains the 
-  *                  information and method to map the specified events to Q
+  *  @param  tof_events  The ITofEventList of TOF events to map to Q
+  *  @param  mapper      The SNS_Tof_to_Q_map object that contains the 
+  *                      information and method to map the specified 
+  *                      events to Q
   */
-  public MapEventsToQ_Op( int[] tofs, int[] ids, SNS_Tof_to_Q_map mapper )
+  public MapEventsToQ_Op( ITofEventList tof_events, 
+                          SNS_Tof_to_Q_map mapper )
   {
-     this.tofs       = tofs;
-     this.ids        = ids;
+     this.tof_events = tof_events;
      this.first      = 0;
-     this.num_to_map = tofs.length;
+     this.num_to_map = (int)tof_events.numEntries();
      this.mapper     = mapper;
   }
 
 
  /**
-  *  Create an operator to map the specified events in the tofs and ids
-  *  arrays, to Q.
+  *  Create an operator to map a sub list of the specified events
+  *  defined by the tof_events object, to Q.
   *
-  *  @param  tofs       The list of times-of-flight for the events
-  *  @param  ids        The list of pixel ids for the events
+  *  @param  tof_events  The ITofEventList of TOF events to map to Q
   *  @param  first      The index of the first event to map to Q
   *  @param  num_to_map The number of events to map to Q
   *  @param  mapper     The SNS_Tof_to_Q_map object that contains the 
   *                     information and method to map the specified
   *                      events to Q
   */
-  public MapEventsToQ_Op( int[] tofs, 
-                          int[] ids, 
-                          int   first,
-                          int   num_to_map,
+  public MapEventsToQ_Op( ITofEventList    tof_events,
+                          int              first,
+                          int              num_to_map,
                           SNS_Tof_to_Q_map mapper )
   {
-     this.tofs       = tofs;
-     this.ids        = ids;
+     this.tof_events = tof_events;
      this.first      = first;
      this.num_to_map = num_to_map;
      this.mapper     = mapper;
@@ -100,7 +96,50 @@ public class MapEventsToQ_Op implements IOperator
    */
   public Object getResult()
   {
-     return mapper.MapEventsToQ( tofs, ids, first, num_to_map ); 
+     return mapper.MapEventsToQ( tof_events, first, num_to_map ); 
+  }
+
+  /**
+   *  Basic test program for map operator
+   */
+  public static void main( String args[] ) throws Exception
+  {
+    String file_name = "/usr2/DEMO/SNAP_240_neutron_event.dat";
+
+    SNS_TofEventList loader = new SNS_TofEventList( file_name );
+
+    long tot_num = loader.numEntries();
+
+    System.out.println("Number of events in file = " + tot_num );
+
+    int[] list = loader.rawEvents( 2000000, 2000000 );
+
+    System.out.println("Number of events loaded =  " + list.length/2 );
+
+    ITofEventList ev_list = new TofEventList( list, 2000000, false );
+
+    String det_cal_file = "/home/dennis/SNS_ISAW/ISAW_ALL/InstrumentInfo/SNS/"+
+                          "SNAP.DetCal";                          
+    String inst_name = "SNAP";
+    SNS_Tof_to_Q_map mapper = new SNS_Tof_to_Q_map(det_cal_file,null,inst_name);
+
+    int num_mapped = 1000000;
+    int first      = 1000000;
+    IOperator op = new MapEventsToQ_Op( ev_list, first, num_mapped, mapper ); 
+    Object result = op.getResult();    
+
+    FloatArrayEventList3D q_list = (FloatArrayEventList3D)result; 
+    float[] qxyz = q_list.eventVals();
+
+    System.out.println("Mapped " + num_mapped + " starting at " + first );
+    System.out.println("First 4 = ");
+    for ( int i = 0; i < 4; i++ )
+      System.out.printf(" %5.2f  %5.2f  %5.2f\n", 
+                          qxyz[3*i], qxyz[3*i+1], qxyz[3*i+2] );
+    System.out.println("Last 4 = ");
+    for ( int i = num_mapped-4; i < num_mapped; i++ )
+      System.out.printf(" %5.2f  %5.2f  %5.2f\n", 
+                          qxyz[3*i], qxyz[3*i+1], qxyz[3*i+2] );
   }
 
 } 
