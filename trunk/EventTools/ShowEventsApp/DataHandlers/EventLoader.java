@@ -46,7 +46,6 @@ import MessageTools.MessageCenter;
 
 import EventTools.EventList.ITofEventList;
 import EventTools.EventList.SNS_TofEventList;
-import EventTools.EventList.TofEventList;
 
 import EventTools.EventList.EventSegmentLoadOp;
 import EventTools.ShowEventsApp.Command.Commands;

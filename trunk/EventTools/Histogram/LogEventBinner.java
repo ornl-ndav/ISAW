@@ -180,8 +180,6 @@ public class LogEventBinner implements IEventBinner
            center_i,
            center_2_i;
 
-    int first = binner.numBins() - 30;
-    int last  = first + 30;
     for ( int i = 0; i < 40; i++ )
     {
       left     = binner.minVal(i);

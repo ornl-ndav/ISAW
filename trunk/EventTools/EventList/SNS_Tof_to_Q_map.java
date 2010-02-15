@@ -129,8 +129,6 @@ public class SNS_Tof_to_Q_map
                                          // by STEPS_PER_ANGSTROM * lamda
   private float[]      pix_weight;       // sin^2(theta(pix_id)) / eff(pix_id)
 
-  private int[]        counts_per_det = new int[6];
-
   private String            instrument_name = "NO_NAME";
   private int               run_num         = 0;
   private float             monitor_count   = 100000;
@@ -307,8 +305,6 @@ public class SNS_Tof_to_Q_map
      float   qx,qy,qz;
      int     minus_id_count = 0;
      int     large_id_count = 0;
-     int     skip_det_count = 0;
-     int     grid_id = 0;
      float   lamda;
      int     lamda_index;
      int     last;
@@ -319,22 +315,18 @@ public class SNS_Tof_to_Q_map
        last = num_events - 1;
 
      num_mapped = last - first + 1;
-                                        // NOTE: Currently rawEvents() returns
-                                        //       a new array starting at 0,
-                                        //       if first != 0
-     int[]   events  = event_list.rawEvents( first, num_to_map );
+     long  total_num  = event_list.numEntries();
+     int[] all_events = event_list.rawEvents( 0, total_num );
 
      float[] Qxyz    = new float[ 3 * num_mapped ];
      float[] weights = new float[ num_mapped ];
 
+     int all_index = 2*first;
      for ( int i = 0; i < num_mapped; i++ )
      {
        weights[i] = 0;
-       id = events[2*i + 1];        // TODO: get from full list to avoid copy
-       grid_id = id / 65536;
-
-//     if ( grid_id >= 0 && grid_id < counts_per_det.length )
-//       counts_per_det[grid_id]++;
+       tof_chan = all_events[ all_index++ ] + t0; 
+       id       = all_events[ all_index++ ]; 
 
        if ( id < 0 )
          minus_id_count++;
@@ -344,7 +336,6 @@ public class SNS_Tof_to_Q_map
 
        else
        {
-         tof_chan = t0 + events[2*i];       // TODO: get from whole list
          magQ = tof_to_MagQ[id]/tof_chan;
 
          id_offset = 3*id;
@@ -368,9 +359,6 @@ public class SNS_Tof_to_Q_map
          weights[i] = pix_weight[id] * lamda_weight[ lamda_index ];
        }
      }
-
-//   System.out.println("<  0   id count = " + minus_id_count );
-//   System.out.println(">= max id count = " + large_id_count );
 
      return new FloatArrayEventList3D( weights, Qxyz );
   }
