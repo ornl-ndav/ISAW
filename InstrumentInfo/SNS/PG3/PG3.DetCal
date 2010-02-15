@@ -1,0 +1,17 @@
+#
+# Detector Position Information Extracted From NeXus file: 
+# /usr2/POWGEN/PG3_293.nxs
+#
+# Lengths are in centimeters.
+# Base and up give directions of unit vectors for a local
+# x,y coordinate system on the face of the detector.
+#
+#
+# Sun Oct 25 12:53:04 CDT 2009
+6         L1     T0_SHIFT
+7    60.0000            0
+4 DETNUM  NROWS  NCOLS  WIDTH   HEIGHT   DEPTH   DETD   CenterX   CenterY   CenterZ    BaseX    BaseY    BaseZ      UpX      UpY      UpZ
+5     49      8    154 77.0000 38.0000  0.2000 344.87  312.0850   -0.0000  146.7550 -0.15488  0.00005  0.98793  0.00000  1.00000  0.00000
+5     56      8    154 77.0001 38.0000  0.2000 366.95  291.6250   -0.0000  222.7250 -0.36226 -0.00003  0.93208  0.00000  1.00000  0.00000
+5     62      8    154 77.0000 38.0000  0.2000 388.93  255.8750    0.0000  292.9050 -0.54088 -0.00006  0.84110 -0.00001  1.00000  0.00000
+5     67      8    154 76.9999 38.0000  0.2000 410.90  207.1550   -0.0000  354.8650 -0.68983  0.00004  0.72397  0.00001  1.00000  0.00000
