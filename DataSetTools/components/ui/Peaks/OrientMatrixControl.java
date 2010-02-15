@@ -2414,12 +2414,14 @@ public class OrientMatrixControl extends JButton
         //    n++ ;
 
          JPanel jp1 = new JPanel();
-         jp1.setLayout( new GridLayout( 1 , n ) );
+         jp1.setLayout( new GridLayout( 1 , n+1 ) );
 
          spinner = new JSpinner( new SpinnerNumberModel( 1 , 1 , orMatrices
                   .size()  , 1 ) );
          spinner.addChangeListener( this );
-
+         
+         jp1.add( new JLabel("List Size:"+orMatrices.size()+"    ", 
+                           SwingConstants.LEFT));
          jp1.add( new JLabel( "Mat Num" ,JLabel.RIGHT) );
          jp1.add( spinner );
 
