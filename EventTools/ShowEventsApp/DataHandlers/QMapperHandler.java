@@ -75,7 +75,7 @@ public class QMapperHandler implements IReceiveMessage
     instrument_name = "UNSPECIFIED";
     det_file = "NONE";
 /*
-    det_file  = isaw_home + "InstrumentInfo/SNS/" +
+    det_file  = isaw_home + "InstrumentInfo/SNS/" + instrument_name + "/"+
                        instrument_name + ".DetCal";
     scale_factor = -1;
     
@@ -125,7 +125,7 @@ public class QMapperHandler implements IReceiveMessage
 
         if ( det_file == null )
         {
-          det_file = isaw_home + "InstrumentInfo/SNS/" +
+          det_file = isaw_home + "InstrumentInfo/SNS/" + new_instrument +"/"+
                      new_instrument + ".DetCal";
         }
 

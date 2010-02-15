@@ -234,7 +234,8 @@ public class DQDataHandler implements IReceiveMessage
         filename = SharedData.getProperty( "ISAW_HOME" ,"" ).trim();
         if( !filename.endsWith( "/" ) || !filename.endsWith( "\\" ))
            filename +="/";
-        filename += "InstrumentInfo/SNS/"+InstrumentName+"_Spectrum.dat";
+        filename += "InstrumentInfo/SNS/"+InstrumentName+"/"+
+                     InstrumentName+"_Spectrum.dat";
         if( !( new java.io.File(filename).exists()))
         {
 
