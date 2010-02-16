@@ -46,6 +46,7 @@ import DataSetTools.trial.*;
 import DataSetTools.instruments.*;
 import EventTools.Histogram.IEventBinner;
 import EventTools.Histogram.LogEventBinner;
+import EventTools.Histogram.UniformEventBinner;
 
 /** 
  *  This class constructs the time-of-flight to vector Q mapping information
@@ -466,14 +467,14 @@ public class SNS_Tof_to_Q_map
 
 
   /**
-   *  Map the specified sub-list of time-of-flight events to a "d-spacing"
-   *  histogram.
+   *  Map the specified sub-list of time-of-flight events to a 
+   *  list of "d-spacing" histogram.
    *
    *  @param event_list  List of (tof,id) specifying detected neutrons.
    *
-   *  @param first       The index of the first event to map to Q
+   *  @param first       The index of the first event to map to d
    *
-   *  @param num_to_map  The number of events to map to Q
+   *  @param num_to_map  The number of events to map to d
    *
    *  @param binner      The IEventBinner object that defines the bin
    *                     boundaries for the histogram bins
@@ -519,7 +520,7 @@ public class SNS_Tof_to_Q_map
       {
         d_value = two_pi * tof_chan / tof_to_MagQ[id];
         index   = binner.index( d_value );
-        if ( index > 0 && index < num_bins )
+        if ( index >= 0 && index < num_bins )
         {
           grid_id = bank_num[ id ];
           histogram[ grid_id ][ index ]++;
@@ -531,7 +532,87 @@ public class SNS_Tof_to_Q_map
   }
 
 
-  
+  /**
+   *  Map the specified sub-list of time-of-flight events to a list of
+   *  time-focused  histograms.
+   *
+   *  @param event_list  List of (tof,id) specifying detected neutrons.
+   *
+   *  @param first       The index of the first event to be histogrammed
+   *
+   *  @param num_to_map  The number of events to map to be histogrammed
+   *
+   *  @param binner      The IEventBinner object that defines the bin
+   *                     boundaries for the histogram bins
+   *
+   *  @param angle_deg   The "virtual" scattering angle, two theta, 
+   *                     (in degrees) to which the data should be focused
+   *
+   *  @param final_L_m   The final flight path length (in meters) to which
+   *                     the data should be focused
+   *                     
+   *  @return A two dimensional array of integers.  The kth row of this 
+   *          array contains the histogram values for detector bank k.
+   *          If detector bank k does not exist, that row will be null.
+   */
+  public int[][] Make_Time_Focused_Histograms( ITofEventList event_list,
+                                               int           first,
+                                               int           num_to_map,
+                                               IEventBinner  binner,
+                                               float         angle_deg,
+                                               float         final_L_m )
+  {
+    CheckEventRange( event_list, first, num_to_map );
+
+    if ( final_L_m <= 0 )
+      throw new IllegalArgumentException( "Final flight path must be > 0 " +
+                                           final_L_m );
+
+    int[][] histogram = getEmptyHistogram( binner );
+
+    int num_events = (int)event_list.numEntries();
+    int last       = first + num_to_map - 1;
+    if ( last >= num_events )
+      last = num_events - 1;
+
+    int   num_mapped = last - first + 1;
+    long  total_num  = event_list.numEntries();
+    int[] all_events = event_list.rawEvents( 0, total_num );
+
+    float  tof_chan;
+    int    id;
+    float  focused_tof;
+    float  scale = (float)
+                   ((L1+final_L_m) * Math.sin(angle_deg * Math.PI/360) / 10);
+                                              // since SNS event TOF values are
+                                              // in 100 ns units, we need to
+                                              // divide by 10 to get micro-secs
+
+    int ev_index = 2*first;                   // index into event array
+    int    index;                             // index into histogram bin
+    int    num_bins = binner.numBins();
+    int    grid_id;
+
+    for ( int i = 0; i < num_mapped; i++ )
+    {
+      tof_chan = all_events[ ev_index++ ] + t0;
+      id       = all_events[ ev_index++ ];
+
+      if ( id >= 0 && id < recipLaSinTa.length )
+      {
+        focused_tof = tof_chan * scale * recipLaSinTa[id];
+        index       = binner.index( focused_tof );
+        if ( index >= 0 && index < num_bins )
+        {
+          grid_id = bank_num[ id ];
+          histogram[ grid_id ][ index ]++;
+        }
+      }
+    }
+
+    return histogram;
+  }
+
 
   /**
    *  Map a specified qx,qy,qz back to a detectors row, col, tof and ID, if
@@ -1269,7 +1350,8 @@ public class SNS_Tof_to_Q_map
     String map_file  = info_dir + inst_name + "_TS.dat";
     String bank_file = info_dir + inst_name + "_bank.xml";
 //  String ev_file   = "/usr2/DEMO/ARCS_1250_neutron_event.dat";
-    String ev_file   = "/usr2/DEMO/SNAP_240_neutron_event.dat";
+//  String ev_file   = "/usr2/DEMO/SNAP_240_neutron_event.dat";
+    String ev_file   = "/usr2/DEMO/SNAP_767_neutron_event.dat";
 
     long start = System.nanoTime();
     SNS_Tof_to_Q_map mapper = new  SNS_Tof_to_Q_map( det_file, null, inst_name);
@@ -1289,7 +1371,6 @@ public class SNS_Tof_to_Q_map
                                                   0, 
                                                   (int)loader.numEntries(), 
                                                   d_binner );
-
     time = (System.nanoTime()-start)/1e6;
     System.out.printf("Time to make d histogram = %5.2f ms\n", time );
 
@@ -1308,6 +1389,29 @@ public class SNS_Tof_to_Q_map
         sum += histogram[id][i];
       System.out.printf( "%6.5f %3.2f\n", d_binner.minVal(i), sum );
     }
+*/
+
+    float angle_deg = 90;
+    float final_L_m = .4956f; 
+
+    float min_tof   = 0;
+    float max_tof   = 17000;
+    int   num_tof   = 1700;
+    IEventBinner tof_binner = new UniformEventBinner(min_tof,max_tof,num_tof);
+    start = System.nanoTime();
+    histogram = mapper.Make_Time_Focused_Histograms( loader, 
+                                                      0,
+                                                      (int)loader.numEntries(),
+                                                      tof_binner,
+                                                      angle_deg,
+                                                      final_L_m   );
+    time = (System.nanoTime()-start)/1e6;
+    System.out.println("Number of bins in binner = " + tof_binner.numBins() );
+    System.out.printf("Time to make focused_tof histogram = %5.2f ms\n", time);
+/*
+    for ( int i = 0; i < histogram[14].length; i++ )
+      System.out.printf("%6.5f %3.2f\n", tof_binner.minVal(i), 
+                                         (float)histogram[14][i]);
 */
   }
 
