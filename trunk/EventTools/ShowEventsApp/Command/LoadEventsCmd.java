@@ -5,7 +5,9 @@ public class LoadEventsCmd
    private String eventFile;
    private String detFile;
    private String specFile;
-   private String detEffFile;
+   private String detEffFile; 
+   private String bankFile;
+   private String IDmapFile;
    private String matFile;
    private float  maxQValue;
    private long   availableEvents;
@@ -19,6 +21,8 @@ public class LoadEventsCmd
                          String detFile,
                          String specFile, 
                          String detEffFile, 
+                         String bankFile,
+                         String IDmapFile,
                          String matFile, 
                          float  maxQValue,
                          long   availableEvents, 
@@ -32,6 +36,9 @@ public class LoadEventsCmd
       this.detFile         = detFile;
       this.specFile        = specFile;
       this.detEffFile      = detEffFile;
+      
+      this.bankFile        = bankFile ;
+      this.IDmapFile       = IDmapFile ;
       this.matFile         = matFile;
       this.maxQValue         = maxQValue;
       this.availableEvents = availableEvents;
@@ -44,7 +51,9 @@ public class LoadEventsCmd
    public LoadEventsCmd( String eventFile, 
             String detFile,
             String specFile, 
-            String detEffFile, 
+            String detEffFile,  
+            String bankFile,
+            String IDmapFile,
             String matFile, 
             float  maxQValue,
             long   availableEvents, 
@@ -56,7 +65,9 @@ public class LoadEventsCmd
       this( eventFile, 
              detFile,
             specFile, 
-            detEffFile, 
+            detEffFile,
+            bankFile,
+            IDmapFile,
              matFile, 
             maxQValue,
             availableEvents, 
@@ -99,6 +110,23 @@ public class LoadEventsCmd
       return detEffFile;
    }
    
+
+   public String getBankFile()
+   {
+      if (bankFile == null || bankFile.trim().equals(""))
+        return null;
+
+      return bankFile;
+   }
+   
+
+   public String getIDMapFile()
+   {
+      if (IDmapFile == null || IDmapFile.trim().equals(""))
+        return null;
+
+      return IDmapFile;
+   }
    public String getMatFile()
    {
       if (matFile == null || matFile.trim().equals(""))
@@ -152,6 +180,8 @@ public class LoadEventsCmd
              "\nDet. File   : " + getDetFile()         +
              "\nSpec File   : " + getIncSpectrumFile() +
              "\nDet Eff File: " + getDetEffFile()      +
+             "\nBank File   : " + getBankFile()      +
+             "\nID map File : " + getIDMapFile()      +
              "\nMatrix File : " + getMatFile()         +
              "\nMax Q Value : " + getMaxQValue()         +
              "\nNum Events  : " + getAvailableEvents() +
