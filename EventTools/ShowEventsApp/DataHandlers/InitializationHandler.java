@@ -154,11 +154,12 @@ public class InitializationHandler implements IReceiveMessage
                       " FROM FILE " + load_file_cmd.getEventFile() );
         return false;
       }  
-
       SetNewInstrumentCmd new_inst_cmd = 
          new SetNewInstrumentCmd( inst_name,
                                   load_file_cmd.getDetFile(),
                                   load_file_cmd.getIncSpectrumFile(),
+                                  load_file_cmd.getBankFile( ),
+                                  load_file_cmd.getIDMapFile( ),
                                   load_file_cmd.getScaleFactor() );
       InitData( new_inst_cmd );
 
@@ -226,7 +227,10 @@ public class InitializationHandler implements IReceiveMessage
        SetNewInstrumentCmd new_inst_cmd = 
           new SetNewInstrumentCmd( UDPcmd.getInstrument(),
                    UDPcmd.getDetFile(),
-                   UDPcmd.getIncSpectrumFile() );
+                   UDPcmd.getIncSpectrumFile(),
+                   UDPcmd.getBankFile(),
+                   UDPcmd.getIDMapFile() );
+
        (new InitDataThread( new_inst_cmd )).start();
        
        return false;
@@ -268,7 +272,7 @@ public class InitializationHandler implements IReceiveMessage
        SetNewInstrumentCmd new_inst_cmd = 
           new SetNewInstrumentCmd( currentUDPInstrument,
                    null,
-                   null );
+                   null, null,null );
        
       (new InitDataThread( new_inst_cmd )).start();
     }
@@ -344,6 +348,10 @@ public class InitializationHandler implements IReceiveMessage
         { 
           socket = new SocketEventLoader( UDPcmd.getPort(), 
                                           message_center, 
+                                          UDPcmd.getDetFile( ),
+                                          UDPcmd.getIncSpectrumFile( ),
+                                          UDPcmd.getBankFile( ),
+                                          UDPcmd.getIDMapFile( ),
                                           null);
           socket.start();
         }
