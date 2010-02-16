@@ -68,12 +68,16 @@ public class filePanel //extends JPanel
    private JButton            detFileButton;
    private JButton            incFileButton;
    private JButton            detEffFileButton;
+   private JButton            bankFileButton;
+   private JButton            IDmapFileButton;
    private JButton            matFileButton;
    private JButton            loadFiles;
    private JTextField         evFileName;
    private JTextField         detFileName;
    private JTextField         incFileName;
    private JTextField         detEffFileName;
+   private JTextField         bankFileName;
+   private JTextField         IDmapFileName;
    private JTextField         matFileName;
    private JTextField         maxQValue;
    private JTextField         numThreads;
@@ -90,6 +94,8 @@ public class filePanel //extends JPanel
    private String             Detfilename;// Remember last file chosen
    private String             Incfilename;// Remember last file chosen
    private String             DetEfffilename;// Remember last file chosen
+   private String             Bankfilename_l;// Remember last file chosen
+   private String             IDMapfilename_l;// Remember last file chosen
    private String             Matfilename;// Remember last file chosen
    private float              MaxQValue;//Remember last MaxQValue
    private FilteredPG_TextField Port;
@@ -112,7 +118,7 @@ public class filePanel //extends JPanel
       new SharedData();//Will read in IsawProps.dat
       Datafilename = System.getProperty("Data_Directory");
       Detfilename =  System.getProperty( "InstrumentInfoDirectory");
-      Incfilename = DetEfffilename =Detfilename;
+      Incfilename = DetEfffilename = Bankfilename_l =IDMapfilename_l = Detfilename;
       Matfilename = Datafilename;
       MaxQValue = Float.NaN;
       buildPanel();
@@ -157,9 +163,12 @@ public class filePanel //extends JPanel
       JPanel sub_panel = new JPanel();
       panel.add( sub_panel );
 
-      sub_panel.setLayout( new GridLayout(5,1) );
+      sub_panel.setLayout( new GridLayout(7,1) );
       sub_panel.add(buildDetPanel());
       sub_panel.add(buildIncPanel());
+      sub_panel.add( buildBankPanel() );
+      sub_panel.add( buildIDMapPanel() );
+      
       //sub_panel.add(buildDetEffPanel());
       //sub_panel.add(buildMatPanel());
       sub_panel.add(buildMaxQPanel());
@@ -306,7 +315,7 @@ public class filePanel //extends JPanel
       JPanel detPanel = new JPanel();
       detPanel.setLayout(new GridLayout(1,2));
       
-      detFileButton = new JButton("Detector Position File");
+      detFileButton = new JButton("Detector Position File(.DetCal?)");
       detFileButton.addActionListener(new button());
       
 //    String default_detector_file =Detfilename;
@@ -339,7 +348,42 @@ public class filePanel //extends JPanel
 //      incFileName.setEditable(false);
       
       incPanel.add(incFileButton);
-      incPanel.add(incFileName);
+      incPanel.add(incFileName);   
+
+      return incPanel;
+   }
+   
+   private JPanel buildBankPanel()
+   {  
+      JPanel incPanel = new JPanel();
+      incPanel.setLayout(new GridLayout(1,2));
+      
+     bankFileButton = new JButton("Bank File (_bank_.xml)");
+     bankFileButton.addActionListener(new button());
+     
+     bankFileName = new JTextField();
+     bankFileName.addMouseListener(new mouse());
+     
+     incPanel.add(bankFileButton);
+     incPanel.add(bankFileName);
+     return incPanel;
+   }
+   
+   
+   private JPanel buildIDMapPanel()
+   {  
+      JPanel incPanel = new JPanel();
+      incPanel.setLayout(new GridLayout(1,2));
+     IDmapFileButton = new JButton("ID Map File (_TS_.dat) ");
+     IDmapFileButton.addActionListener(new button());
+     
+     IDmapFileName = new JTextField();
+     IDmapFileName.addMouseListener(new mouse());
+     
+     
+     incPanel.add(IDmapFileButton);
+     incPanel.add(IDmapFileName);
+ 
       
       return incPanel;
    }
@@ -742,7 +786,9 @@ public class filePanel //extends JPanel
             if ( inc_spec_file != null &&
                  inc_spec_file.trim().length() <= 0 )
               inc_spec_file = null;
+            
             NumberFormat nf = NumberFormat.getInstance();
+            
             if(tabPane.getSelectedIndex() ==1)
             {
                try
@@ -751,15 +797,20 @@ public class filePanel //extends JPanel
                            Instrument.getSelectedItem().toString(),
                            Integer.parseInt( Port.getText()), 
                            det_file,
-                         inc_spec_file,
-                          null,            //detEffFileName.getText(),
-                            null,
-                          MaxQValue,
-                          nf.parse( eventsToShowUDP.getText()).longValue());
+                           inc_spec_file,
+                           null,            //detEffFileName.getText(),
+                           bankFileName.getText(),
+                           IDmapFileName.getText(),
+                           null,
+                           MaxQValue,
+                           nf.parse( eventsToShowUDP.getText()).longValue()
+                                                            );
+                  
                   Message mess = new Message( Commands.LOAD_UDP_EVENTS,
-                           cmd,
-                           true, 
-                           true);
+                                              cmd,
+                                              true, 
+                                              true
+                                              );
                   message_center.send(mess);
                   return;
                }catch(Exception ss)
@@ -807,7 +858,9 @@ public class filePanel //extends JPanel
                                 ev_file,
                                 det_file,
                                 inc_spec_file,
-                                null,            //detEffFileName.getText(),
+                                null,               //detEffFileName.getText(),
+                                bankFileName.getText(),
+                                IDmapFileName.getText(),         
                                 null,
                                 MaxQValue,
                                 nf.parse(availableEvents.getText()).longValue(),
@@ -867,6 +920,10 @@ public class filePanel //extends JPanel
               filename = Incfilename;
            else if( e.getSource() == detEffFileButton)
               filename = DetEfffilename;
+           else if( e.getSource() == bankFileButton)
+              filename = Bankfilename_l;
+           else if( e.getSource() == IDmapFileButton)
+              filename = IDMapfilename_l;
            else if( e.getSource() == matFileButton)
               filename = Matfilename;
            
@@ -951,6 +1008,16 @@ public class filePanel //extends JPanel
             {
                detEffFileName.setText(file.getPath());
                DetEfffilename = detEffFileName.getText();
+            }
+            else if (e.getSource() == bankFileButton)
+            {
+               bankFileName.setText(file.getPath());
+               Bankfilename_l = bankFileName.getText();
+            }
+            else if (e.getSource() == IDmapFileButton)
+            {
+               IDmapFileName.setText(file.getPath());
+               IDMapfilename_l = IDmapFileName.getText();
             }
             else if (e.getSource() == matFileButton)
             {
