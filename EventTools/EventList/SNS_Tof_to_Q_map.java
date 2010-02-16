@@ -44,6 +44,8 @@ import DataSetTools.dataset.*;
 import DataSetTools.math.*;
 import DataSetTools.trial.*;
 import DataSetTools.instruments.*;
+import EventTools.Histogram.IEventBinner;
+import EventTools.Histogram.LogEventBinner;
 
 /** 
  *  This class constructs the time-of-flight to vector Q mapping information
@@ -160,6 +162,8 @@ public class SNS_Tof_to_Q_map
 
   private float[]      pix_weight;       // sin^2(theta(pix_id)) / eff(pix_id)
 
+  private int          max_grid_ID = 0;
+
   private String            instrument_name = "NO_NAME";
   private int               run_num         = 0;
   private float             monitor_count   = 100000;
@@ -265,33 +269,6 @@ public class SNS_Tof_to_Q_map
 
 
   /**
-   *  Map the specified time-of-flight events to a packed array of events
-   *  in reciprocal space, listing Qx,Qy,Qz for each event, interleaved
-   *  in one array.  NOTE: due to array size limitations in Java,
-   *  at most (2^31-1)/3 = 715.8 million events can be processed in one
-   *  batch by this method. 
-   *
-   *  @param tofs  List of integer time-of-flight values, giving the number
-   *               of 100ns clock ticks since t0 for this event.
-   *
-   *  @param ids   List of detector pixel ids corresponding to the listed
-   *               tofs.
-   *
-   *  @return an array of floats containing values (Qx,Qy,Qz) for each 
-   *          event, interleaved in the array. 
-   */
-  public FloatArrayEventList3D MapEventsToQ( int[] tofs, int[] ids  )
-  {
-    if ( tofs == null )
-      throw new IllegalArgumentException( "Time-of-flight array is null" );
-
-    int first = 0;
-    int num_to_map = tofs.length;
-    return MapEventsToQ( tofs, ids, first, num_to_map );
-  }
-
-
-  /**
    *  Map the specified sub-list of time-of-flight events to a packed
    *  array of events in reciprocal space, listing Qx,Qy,Qz for each event,
    *  interleaved in one array.  The weight field will be set to 0 for
@@ -315,19 +292,9 @@ public class SNS_Tof_to_Q_map
                                              int   first,
                                              int   num_to_map )
   {
-     if ( event_list == null )
-       throw new IllegalArgumentException( "event_list is null" );
+     CheckEventRange( event_list, first, num_to_map );
 
-     int num_events = (int)event_list.numEntries();
-
-     if ( first < 0 || first >= num_events )
-       throw new IllegalArgumentException("First index: " + first +
-                 " < 0 or >= number of events in list: " + num_events );
-
-     if ( first + num_to_map > num_events )
-       throw new IllegalArgumentException( "first + num_to_map exceeds size "
-              + first + ", " + num_to_map + ", " + num_events );
-
+     int     num_events = (int)event_list.numEntries();
      int     id;
      int     id_offset;
      int     index;
@@ -464,9 +431,107 @@ public class SNS_Tof_to_Q_map
        ITofEventList raw_events = new TofEventList( new_tofs, new_ids );
        return MapEventsToQ( raw_events, 0, num_to_map );
      }
-
   }
 
+
+  /**
+   *  Map the specified time-of-flight events to a packed array of events
+   *  in reciprocal space, listing Qx,Qy,Qz for each event, interleaved
+   *  in one array.  NOTE: due to array size limitations in Java,
+   *  at most (2^31-1)/3 = 715.8 million events can be processed in one
+   *  batch by this method. 
+   *
+   *  @param tofs  List of integer time-of-flight values, giving the number
+   *               of 100ns clock ticks since t0 for this event.
+   *
+   *  @param ids   List of detector pixel ids corresponding to the listed
+   *               tofs.
+   *
+   *  @return an array of floats containing values (Qx,Qy,Qz) for each 
+   *          event, interleaved in the array. 
+   *
+   *  @deprecated The method using an interleaved array of (tof,id) pairs
+   *              is more efficient than this method, and should be used
+   *              whenever possible.
+   */
+  public FloatArrayEventList3D MapEventsToQ( int[] tofs, int[] ids  )
+  {
+    if ( tofs == null || ids == null )
+      throw new IllegalArgumentException( "Time-of-flight array is null" );
+
+    int first = 0;
+    int num_to_map = tofs.length;
+    return MapEventsToQ( tofs, ids, first, num_to_map );
+  }
+
+
+  /**
+   *  Map the specified sub-list of time-of-flight events to a "d-spacing"
+   *  histogram.
+   *
+   *  @param event_list  List of (tof,id) specifying detected neutrons.
+   *
+   *  @param first       The index of the first event to map to Q
+   *
+   *  @param num_to_map  The number of events to map to Q
+   *
+   *  @param binner      The IEventBinner object that defines the bin
+   *                     boundaries for the histogram bins
+   *                     
+   *  @return A two dimensional array of integers.  The kth row of this 
+   *          array contains the histogram values for detector bank k.
+   *          If detector bank k does not exist, that row will be null.
+   */
+  public int[][] Make_d_Histograms( ITofEventList event_list,
+                                    int           first,
+                                    int           num_to_map,
+                                    IEventBinner  binner )
+  {
+    CheckEventRange( event_list, first, num_to_map );
+
+    int[][] histogram = getEmptyHistogram( binner );
+
+    int num_events = (int)event_list.numEntries();
+    int last       = first + num_to_map - 1;
+    if ( last >= num_events )
+      last = num_events - 1;
+
+    int   num_mapped = last - first + 1;
+    long  total_num  = event_list.numEntries();
+    int[] all_events = event_list.rawEvents( 0, total_num );
+
+    float  tof_chan;
+    int    id;
+    float  two_pi = (float)Math.PI * 2;
+    float  d_value;
+
+    int ev_index = 2*first;                   // index into event array
+    int    index;                             // index into histogram bin
+    int    num_bins = binner.numBins();
+    int    grid_id;
+
+    for ( int i = 0; i < num_mapped; i++ )
+    {
+      tof_chan = all_events[ ev_index++ ] + t0;
+      id       = all_events[ ev_index++ ];
+
+      if ( id >= 0 && id < tof_to_MagQ.length )
+      {
+        d_value = two_pi * tof_chan / tof_to_MagQ[id];
+        index   = binner.index( d_value );
+        if ( index > 0 && index < num_bins )
+        {
+          grid_id = bank_num[ id ];
+          histogram[ grid_id ][ index ]++;
+        }
+      }
+    }
+
+    return histogram;
+  }
+
+
+  
 
   /**
    *  Map a specified qx,qy,qz back to a detectors row, col, tof and ID, if
@@ -562,6 +627,59 @@ public class SNS_Tof_to_Q_map
     peak.setInstrument(  instrument_name );
     
     return peak;
+  }
+
+
+  /**
+   * Check that the specified event list and range of events is valid,
+   * and throw an IllegalArgumentException if the events or range is not
+   * valid.
+   */
+  private void CheckEventRange( ITofEventList event_list,
+                                int           first,
+                                int           num_to_map )
+  {
+     if ( event_list == null )
+       throw new IllegalArgumentException( "event_list is null" );
+
+     int num_events = (int)event_list.numEntries();
+
+     if ( first < 0 || first >= num_events )
+       throw new IllegalArgumentException("First index: " + first +
+                 " < 0 or >= number of events in list: " + num_events );
+
+     if ( first + num_to_map > num_events )
+       throw new IllegalArgumentException( "first + num_to_map exceeds size "
+              + first + ", " + num_to_map + ", " + num_events );
+  }
+
+
+  /**
+   *  Get a two dimensional "ragged array" to hold a histogram.  Row k
+   *  will be an array of ints to hold the histogram for bank ID k.  If
+   *  bank k is empty, row k is null.
+   *
+   *  @param binner the binner that determines the histogram size and 
+   *                bin boundaries.
+   *
+   *  @return emtpy two-dimensional array of ints, with null rows for
+   *          for rows corresponding to missing detector banks.
+   */
+  private int[][] getEmptyHistogram( IEventBinner binner )
+  {
+    int[][] result = new int[ max_grid_ID + 1 ][];
+
+    for ( int i = 0; i < result.length; i++ )
+      result[i] = null;
+
+    int num_bins = binner.numBins();
+    for ( int  i = 0; i < grid_arr.length; i++ )
+    {
+      int grid_ID = grid_arr[i].ID();
+      result[ grid_ID ] = new int[ num_bins ];
+    }
+
+    return result;
   }
 
 
@@ -800,10 +918,15 @@ public class SNS_Tof_to_Q_map
     int       index;
     pix_count = 0;
 
+    max_grid_ID = 0;
     for ( int  i = 0; i < grid_arr.length; i++ )
     {
       grid    = grid_arr[i];
       grid_ID = grid.ID();
+
+      if ( grid_ID > max_grid_ID )
+        max_grid_ID = grid_ID;
+
       n_rows  = grid.num_rows();
       n_cols  = grid.num_cols();
 
@@ -1137,16 +1260,55 @@ public class SNS_Tof_to_Q_map
   /**
    *  Basic tests during develepment.
    */
-  public static void main( String args[] )
+  public static void main( String args[] ) throws Exception
   {
-    String info_dir = "/home/dennis/SNS_ISAW/ISAW_ALL/InstrumentInfo/SNS/";
-    String map_file = info_dir + "ARCS/ARCS_TS.dat";
-    SNS_TofEventList loader = new SNS_TofEventList( map_file );
+    String inst_name = "SNAP";
+    String info_dir = "/home/dennis/SNS_ISAW/ISAW_ALL/InstrumentInfo/SNS/"
+                      + inst_name + "/";
+    String det_file  = info_dir + inst_name + ".DetCal";
+    String map_file  = info_dir + inst_name + "_TS.dat";
+    String bank_file = info_dir + inst_name + "_bank.xml";
+//  String ev_file   = "/usr2/DEMO/ARCS_1250_neutron_event.dat";
+    String ev_file   = "/usr2/DEMO/SNAP_240_neutron_event.dat";
+
+    long start = System.nanoTime();
+    SNS_Tof_to_Q_map mapper = new  SNS_Tof_to_Q_map( det_file, null, inst_name);
+    double time = (System.nanoTime()-start)/1e6;
+    System.out.printf("Time to make mapper = %5.2f ms\n", time );
+
+    ITofEventList loader = new SNS_TofEventList( ev_file );
     
-    System.out.println("NUMBER OF INTEGERS = " + loader.numEntries() * 2);
-    int[] raw_ints = loader.rawEvents(0,130);
-    for ( int i = 0; i < raw_ints.length; i++ )
-      System.out.printf("i = %6d,  val = %6d\n", i, raw_ints[i] );
+    double  min_d      =  0.2;
+    double  max_d      =  10;
+    double  first_step = .0002;
+    IEventBinner d_binner = new LogEventBinner( min_d, max_d, first_step );
+    System.out.println("Number of bins in binner = " + d_binner.numBins() );
+
+    start = System.nanoTime();
+    int[][] histogram = mapper.Make_d_Histograms( loader, 
+                                                  0, 
+                                                  (int)loader.numEntries(), 
+                                                  d_binner );
+
+    time = (System.nanoTime()-start)/1e6;
+    System.out.printf("Time to make d histogram = %5.2f ms\n", time );
+
+    for ( int i = 0; i < histogram.length; i++ )
+      if ( histogram[i] == null )
+        System.out.println( "histogram " + i + " null" );
+      else
+        System.out.println( "histogram " + i + " length "+histogram[i].length);
+
+/*
+    float sum;
+    for ( int i = 0; i < histogram[14].length; i++ )
+    {
+      sum = 0;
+      for ( int id = 10; id <= 18; id++ )
+        sum += histogram[id][i];
+      System.out.printf( "%6.5f %3.2f\n", d_binner.minVal(i), sum );
+    }
+*/
   }
 
 } 
