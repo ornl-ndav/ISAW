@@ -2447,7 +2447,7 @@ public class ExtGetDS
 
    }
 
-   private int getBankNum( String Name)
+   public static  int getBankNum( String Name)
    {
       int k= Name.indexOf( ";" );
       if( k >0)
@@ -2594,6 +2594,7 @@ public class ExtGetDS
            int ndetectors = Math.max(  1,DatInf.ndetectors );
            if( DatInf.NxentryNode == nn && ndetectors ==1 &&
                     DatInf.startDetectorID < 0)
+              
               if( DatInf.NxdataNode != null)
            {
               int bankNum = getBankNum( DatInf.NxdataNode.getNodeName());
