@@ -39,7 +39,9 @@ public class LoadUDPEventsCmd
    private int    port;
    private String detFile;
    private String specFile;
-   private String detEffFile;
+   private String detEffFile; 
+   private String bankFile;
+   private String IDMapFile;
    private String matFile;
    private float  maxQValue;
    private long   nEventsToShow;
@@ -48,9 +50,11 @@ public class LoadUDPEventsCmd
     *  Construct
     * @param Instrument  The name of the instrument
     * @param port        The port where the UDP packets come in on
-    * @param detFile     The detectorFile
+    * @param detFile     The detectorFile(DETCAL)
     * @param specFile    The name of the spec File
-    * @param detEffFile  The name of the detector efficiency file
+    * @param detEffFile  The name of the detector efficiency file private 
+    * @param bankFile    The name of the file with bank vs pixel_id's
+    * @param IDMapFile   The name of the file that maps DAS ID's to NeXus ID's
     * @param matFile     The name of a matrix file
     * @param maxQValue   The maximum Q value to load
     * @param nEventsToShow The number of events to show in the 3D view
@@ -60,6 +64,8 @@ public class LoadUDPEventsCmd
                             String detFile,
                             String specFile, 
                             String detEffFile, 
+                            String bankFile,
+                            String IDMapFile,
                             String matFile, 
                             float  maxQValue,
                             long nEventsToShow)
@@ -68,10 +74,12 @@ public class LoadUDPEventsCmd
       this.port            = port;
       this.detFile         = detFile;
       this.specFile        = specFile;
-      this.detEffFile      = detEffFile;
+      this.detEffFile      = detEffFile; 
+      this.bankFile        = bankFile; 
+      this.IDMapFile       = IDMapFile; 
       this.matFile         = matFile;
-      this.maxQValue         = maxQValue;
-      this.nEventsToShow  = nEventsToShow;
+      this.maxQValue       = maxQValue;
+      this.nEventsToShow   = nEventsToShow;
    }
 
   
@@ -108,6 +116,24 @@ public class LoadUDPEventsCmd
 
       return detEffFile;
    }
+
+   
+   public String getBankFile()
+   {
+      if (bankFile == null || bankFile.trim().equals(""))
+        return null;
+
+      return bankFile;
+   }
+   
+   public String getIDMapFile()
+   {
+      if (IDMapFile == null || IDMapFile.trim().equals(""))
+        return null;
+
+      return IDMapFile;
+   } 
+   
    
    public String getMatFile()
    {
@@ -138,6 +164,8 @@ public class LoadUDPEventsCmd
              "\nDet. File   : " + getDetFile()         +
              "\nSpec File   : " + getIncSpectrumFile() +
              "\nDet Eff File: " + getDetEffFile()      +
+             "\nBank File   : " + getBankFile()        +
+             "\nID Map File : " + getIDMapFile()       +
              "\nMatrix File : " + getMatFile()         +
              "\nMax Q Value : " + getMaxQValue()       +
              "\n#Events to Show"+ getNEventsToShow();
