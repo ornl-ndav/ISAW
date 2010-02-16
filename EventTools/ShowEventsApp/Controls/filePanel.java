@@ -165,9 +165,9 @@ public class filePanel //extends JPanel
 
       sub_panel.setLayout( new GridLayout(7,1) );
       sub_panel.add(buildDetPanel());
-      sub_panel.add(buildIncPanel());
       sub_panel.add( buildBankPanel() );
       sub_panel.add( buildIDMapPanel() );
+      sub_panel.add(buildIncPanel());
       
       //sub_panel.add(buildDetEffPanel());
       //sub_panel.add(buildMatPanel());
@@ -315,7 +315,7 @@ public class filePanel //extends JPanel
       JPanel detPanel = new JPanel();
       detPanel.setLayout(new GridLayout(1,2));
       
-      detFileButton = new JButton("Detector Position File(.DetCal?)");
+      detFileButton = new JButton("Cal File(.DetCal)");
       detFileButton.addActionListener(new button());
       
 //    String default_detector_file =Detfilename;
