@@ -90,13 +90,17 @@ public class SocketEventLoader
    public SocketEventLoader( int           port, 
                              MessageCenter message_center,
                              String        Instrument, 
-                             String        detInfFile, 
-                             String        IncidSpectraFile )
+                             String        detInfFile,
+                             String        IncidSpectraFile, 
+                             String        bankFile,
+                             String        ID_MapFile )
    {
       User = new thisIUDPUser( message_center, 
                                Instrument,
                                detInfFile,
-                               IncidSpectraFile );
+                               IncidSpectraFile,
+                               bankFile,
+                               ID_MapFile );
       udpReceiver = new UDPReceive( port, User );
 
       try
@@ -128,7 +132,7 @@ public class SocketEventLoader
    public SocketEventLoader( int port, MessageCenter message_center,
             String Instrument)
    {
-      this( port, message_center, Instrument, null, null);
+      this( port, message_center, Instrument, null, null,null, null);
    }
    
   
@@ -239,9 +243,12 @@ class thisIUDPUser implements IUDPUser
     *           default
     * 
     */
-   public thisIUDPUser( MessageCenter message_center, String Instrument, 
-                         String detector_file_name,
-                         String incident_spectra_filename )
+   public thisIUDPUser( MessageCenter message_center, 
+                        String        Instrument, 
+                        String        detector_file_name,
+                        String        incident_spectra_filename,
+                        String        bankFile,
+                        String        ID_MapFile )
    {
       this.message_center = message_center;
      
@@ -250,7 +257,9 @@ class thisIUDPUser implements IUDPUser
                   .send( new Message( Commands.INIT_NEW_INSTRUMENT ,
                            new SetNewInstrumentCmd( Instrument , 
                                    querieFile(detector_file_name) ,
-                                   querieFile( incident_spectra_filename)) ,
+                                   querieFile( incident_spectra_filename),
+                                   querieFile( bankFile),
+                                   querieFile( ID_MapFile) ) ,
                            false ) );
       if ( SocketEventLoader.debug == 5 )
       {
@@ -285,7 +294,7 @@ class thisIUDPUser implements IUDPUser
 
    public thisIUDPUser( MessageCenter message_center, String Instrument )
    {
-      this(message_center, Instrument, null, null);
+      this(message_center, Instrument, null, null,null,null);
    }
 
 
