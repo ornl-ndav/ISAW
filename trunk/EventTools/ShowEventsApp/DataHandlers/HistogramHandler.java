@@ -160,6 +160,7 @@ public class HistogramHandler implements IReceiveMessage
                                             true,
                                             true );
        message_center.send( done_loading );
+       UpdateCounter = 10;
 /*
        double max = histogram.maxVal();
        long time =  System.currentTimeMillis();
