@@ -198,44 +198,21 @@ public class SNS_Tof_to_Q_map
          throws IOException
   {
      this.instrument_name = instrument_name;
-                                                  // Bring in the grids
-     FileReader     f_in        = new FileReader( filename );
-     BufferedReader buff_reader = new BufferedReader( f_in );
-     Scanner        sc          = new Scanner( buff_reader );
 
-     String version_title = sc.next();
-     while ( version_title.startsWith("#") )      // Skip any comment lines
-     {                                            // and the version info
-       sc.nextLine();
-       version_title = sc.next();
-     }
-
-     float[]   L1_t0 = Peak_new_IO.Read_L1_T0( sc );
-     Hashtable grids = Peak_new_IO.Read_Grids( sc );
-     sc.close();
-
-     L1 = L1_t0[0];
-     t0 = L1_t0[1] * 10;                          // Need factor of 10, since
+     Vector file_info = FileUtil.LoadDetCal( filename );
+     grid_arr = (IDataGrid[])(file_info.elementAt(0));
+     L1       = (Float)(file_info.elementAt(1));                       
+     t0       = 10*(Float)(file_info.elementAt(2));                       
+                                                  // Need factor of 10, since
                                                   // SNS data is in terms of
                                                   // 100ns clock ticks.
-
-                                                  // Sort the grids on ID
-     Object[] obj_arr = (grids.values()).toArray();
-     Arrays.sort( obj_arr, new GridID_Comparator() );
-                        
      if ( debug )
      {
        System.out.println("Instrument name " + instrument_name );
        System.out.println("Loaded detectors from " + filename );
-       System.out.println("Working with " + obj_arr.length + " GRIDS " );
+       System.out.println("Working with " + grid_arr.length + " GRIDS " );
        System.out.println("Spectrum file name " + spectrum_filename );
      }
-
-                                                  // and record them in our
-                                                  // local list.
-     grid_arr = new IDataGrid[ obj_arr.length ];
-     for ( int i = 0; i < grid_arr.length; i++ )
-       grid_arr[i] = (IDataGrid)obj_arr[i]; 
 
      if ( instrument_name.equalsIgnoreCase(TOPAZ) )
        grid_arr = ReorderTOPAZ_grids( grid_arr );
@@ -921,10 +898,11 @@ public class SNS_Tof_to_Q_map
 
   /**
    *  Build the following tables, indexed by the DAS ID:
-   *  tof_to_lamda[]
-   *  tof_to_MagQ[]
+   *  tof_to_lamda[],
+   *  tof_to_MagQ[],
    *  QUxyz[],
-   *  recipLaSinTa[]
+   *  recipLaSinTa[],
+   *  pix_weight[],
    *  bank_num[].
    *  This version requires a complete set of detector grids, corresponding
    *  to ALL DAS IDs, ordered according to increasing DAS ID.
@@ -1286,32 +1264,6 @@ public class SNS_Tof_to_Q_map
                                          width, height, depth,
                                          n_rows, n_cols );
     return dummy;
-  }
-
-
-  public class  GridID_Comparator implements Comparator
-  {
-   /**
-    *  Compare two IDataGrid objects based on their IDs.
-    *
-    *  @param  obj_1   The first grid 
-    *  @param  obj_2   The second grid 
-    *
-    *  @return An integer indicating whether grid_1's ID is greater than,
-    *          equal to or less than grid_2's ID.
-    */
-    public int compare( Object obj_1, Object obj_2 )
-    {
-      int id_1 = ((IDataGrid)obj_1).ID();
-      int id_2 = ((IDataGrid)obj_2).ID();
-
-      if ( id_1 > id_2 )
-        return 1;
-      else if ( id_1 == id_2 )
-        return 0;
-      else 
-        return -1;
-    }
   }
 
 

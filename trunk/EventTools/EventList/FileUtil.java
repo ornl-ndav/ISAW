@@ -35,7 +35,7 @@
 package EventTools.EventList;
 
 import java.io.*;
-import java.util.Vector;
+import java.util.*;
 
 import java.io.File;
 import javax.xml.parsers.DocumentBuilder;
@@ -45,6 +45,9 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import DataSetTools.operator.Generic.TOF_SCD.*;
+import DataSetTools.dataset.*;
+
 
 /**
  * This class contains static methods to read files containing information
@@ -53,6 +56,82 @@ import org.w3c.dom.NodeList;
 public class FileUtil 
 {
   private static int BUFFER_SIZE = 32768;
+
+
+  /**
+   *  Load the specified .DetCal file and return a Vector containing the 
+   *  array of grids, L1 and T0 values.  The array of grids is sorted based
+   *  on the grid ID.
+   *
+   *  @param det_cal_file_name  Fully qualified name of a .DetCal file containing
+   *                            the geometric information about the detector grids.
+   *
+   *  @return A vector with three elements, the sorted array of detector grids,
+   *          L1 and T0, respectively.
+   */
+  public static Vector LoadDetCal( String det_cal_file_name ) throws IOException
+  {
+                                                  // Bring in the grids
+     FileReader     f_in        = new FileReader( det_cal_file_name );
+     BufferedReader buff_reader = new BufferedReader( f_in );
+     Scanner        sc          = new Scanner( buff_reader );
+
+     String version_title = sc.next();
+     while ( version_title.startsWith("#") )      // Skip any comment lines
+     {                                            // and the version info
+       sc.nextLine();
+       version_title = sc.next();
+     }
+
+     float[]   L1_t0 = Peak_new_IO.Read_L1_T0( sc );
+     Hashtable grids = Peak_new_IO.Read_Grids( sc );
+     sc.close();
+
+     float L1 = L1_t0[0];
+     float t0 = L1_t0[1]; 
+
+                                                  // Sort the grids on ID
+     Object[] obj_arr = (grids.values()).toArray();
+
+     IDataGrid[] grid_arr = new IDataGrid[ obj_arr.length ];
+     for ( int i = 0; i < obj_arr.length; i++ )
+       grid_arr[i] = (IDataGrid)obj_arr[i];
+
+     Arrays.sort( grid_arr, new GridID_Comparator() );
+
+     Vector result = new Vector();
+     result.add( grid_arr );
+     result.add( new Float(L1) );
+     result.add( new Float(t0) );
+
+     return result;
+  }
+
+
+  public static class  GridID_Comparator implements Comparator
+  {
+   /**
+    *  Compare two IDataGrid objects based on their IDs.
+    *
+    *  @param  obj_1   The first grid 
+    *  @param  obj_2   The second grid 
+    *
+    *  @return An integer indicating whether grid_1's ID is greater than,
+    *          equal to or less than grid_2's ID.
+    */
+    public int compare( Object obj_1, Object obj_2 )
+    {
+      int id_1 = ((IDataGrid)obj_1).ID();
+      int id_2 = ((IDataGrid)obj_2).ID();
+
+      if ( id_1 > id_2 )
+        return 1;
+      else if ( id_1 == id_2 )
+        return 0;
+      else
+        return -1;
+    }
+  }
 
 
   /**
