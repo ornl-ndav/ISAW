@@ -261,11 +261,6 @@ public class SNS_Tof_to_Q_map
        spectrum_filename = null;
 
      BuildLamdaWeights( spectrum_filename );
-     BuildPixWeights();
-/*
-     System.out.println( "L1 = " + L1 );
-     System.out.println( "t0 = " + t0 );
-*/
   }
 
 
@@ -925,57 +920,14 @@ public class SNS_Tof_to_Q_map
 
 
   /**
-   *  Build the pix_weight[] factors, corresponding to different pixels.  
-   *  The pix_weight[] factor is just sin^2(theta).
-   */
-  private void BuildPixWeights()
-  {
-    int pix_count = 0;                             // first count the pixels
-    for ( int  i = 0; i < grid_arr.length; i++ )
-    {
-      IDataGrid grid = grid_arr[i];
-      pix_count += grid.num_rows() * grid.num_cols();
-    }
-
-    pix_weight   =  new float[ pix_count ];
-
-    Vector3D  pix_pos;                             // using IPNS coords 
-    Vector3D  beam_vec = new Vector3D( 1, 0, 0 );  // internally
-    double    cos_2_theta;
-    double    theta;
-    double    sine_theta;
-    IDataGrid grid;
-    int       n_rows;
-    int       n_cols;
-
-    int index = 0; 
-    for ( int  i = 0; i < grid_arr.length; i++ )
-    {
-      grid = grid_arr[i];
-      n_rows = grid.num_rows();
-      n_cols = grid.num_cols();
-
-      for ( int col = 1; col <= n_cols; col++ )
-        for ( int row = 1; row <= n_rows; row++ )
-        {
-           pix_pos = grid.position( row, col );
-           pix_pos.normalize();
-
-           cos_2_theta = pix_pos.dot( beam_vec );
-           theta = Math.acos( cos_2_theta ) / 2;
-           sine_theta = Math.sin( theta );
-
-           pix_weight[ index++ ] = (float)(sine_theta * sine_theta);
-        }
-    }
-  }
-
-
-  /**
-   *  Build the tables giving the unit vector in the direction of Q,
-   *  the conversion constant from time-of-flight to magnitude of Q and
-   *  the conversion constant for time-of-flight to lamda. 
-   *  each pixel in the detector.
+   *  Build the following tables, indexed by the DAS ID:
+   *  tof_to_lamda[]
+   *  tof_to_MagQ[]
+   *  QUxyz[],
+   *  recipLaSinTa[]
+   *  bank_num[].
+   *  This version requires a complete set of detector grids, corresponding
+   *  to ALL DAS IDs, ordered according to increasing DAS ID.
    */
   private void BuildMaps()
   {
@@ -991,18 +943,20 @@ public class SNS_Tof_to_Q_map
                                                    // so to avoid shifting we
                                                    // will also start at 1
 
-    tof_to_MagQ = new float[ pix_count ];          // Scale factor to convert
+    tof_to_MagQ  = new float[ pix_count ];         // Scale factor to convert
                                                    // tof to Magnitude of Q
 
-    QUxyz       = new float[ 3*pix_count ];        // Interleaved components
+    QUxyz        = new float[ 3*pix_count ];       // Interleaved components
                                                    // of unit vector in the
                                                    // direction of Q for this
                                                    // pixel.
 
     recipLaSinTa = new float[ pix_count ];         // 1/(Lsin(theta)) table for
                                                    // time focusing
+
+    pix_weight   = new float[ pix_count ];         // sin^2(theta) weight 
  
-    bank_num = new int[ pix_count ];               // bank number for each 
+    bank_num     = new int[ pix_count ];           // bank number for each 
                                                    // DAS pixel ID
 
     float     part = (float)(10 * 4 * Math.PI / tof_calc.ANGST_PER_US_PER_M);
@@ -1040,10 +994,7 @@ public class SNS_Tof_to_Q_map
         {
            pix_pos    = grid.position( row, col );
            L2         = pix_pos.length();
-/*
-           if ( row == 1 && col == 1 )
-             System.out.println("L2 = " + L2);
-*/
+
            coords     = pix_pos.get();
            coords[0] -= L2;                        // internally using IPNS
                                                    // coordinates
@@ -1062,6 +1013,8 @@ public class SNS_Tof_to_Q_map
            tof_to_lamda[pix_count] = ANGST_PER_US_PER_M /(L1 + L2);
 
            recipLaSinTa[pix_count] = 1/( (L1 + L2) * sin_theta ); 
+
+           pix_weight[pix_count] = sin_theta * sin_theta;
 
            bank_num[pix_count] = grid_ID;
 
