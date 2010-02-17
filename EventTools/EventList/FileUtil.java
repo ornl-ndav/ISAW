@@ -27,9 +27,9 @@
  *
  *  Last Modified:
  * 
- *  $Author: ehx $
- *  $Date: 2010-02-09 11:56:45 -0500 (Tue, 09 Feb 2010) $            
- *  $Revision: 20289 $
+ *  $Author:$
+ *  $Date:$            
+ *  $Revision:$
  */
 
 package EventTools.EventList;
@@ -55,6 +55,10 @@ public class FileUtil
   private static int BUFFER_SIZE = 32768;
 
 
+  /**
+   *  Convenience method to get the first String value with a particular
+   *  tag name in an XML document element. 
+   */
   private static String getText( Element element, String name )
   {
     NodeList node_list = element.getElementsByTagName( name );
@@ -142,6 +146,14 @@ public class FileUtil
   }
 
 
+  /**
+   * Convenience method to print out the banking information from an SNS
+   * detector bank XML file.
+   *
+   * @param bank_file_name  The fully qualified name of the XML file containing
+   *                        the banking information in the form currently used
+   *                        at the SNS. (2/15/2010).
+   */
   public static void ShowBankFile( String bank_file_name )
   {
     try
