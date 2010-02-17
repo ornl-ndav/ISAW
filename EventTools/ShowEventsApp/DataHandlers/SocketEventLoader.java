@@ -177,6 +177,7 @@ public class SocketEventLoader
       new TimedTrigger( message_center , 30 );
       SocketEventLoader ev = new SocketEventLoader( 8002 , message_center ,
                "SNAP" );
+      ev.debug = 20;
       ev.start();
    }
 }
@@ -510,7 +511,8 @@ class thisIUDPUser implements IUDPUser
            protonsThisPacket += Cvrt2dbl( data, 40 +i*24 );
         
         TotalProtonsOnTarget +=protonsThisPacket;
-       
+        if( SocketEventLoader.debug ==20)
+               System.out.println("   prot on targ="+ protonsThisPacket);
         if(  SendScale && protonsThisPacket !=0 )
               message_center.send( new Message( Commands.SCALE_FACTOR, 
                               (float)(protonsThisPacket), false, false));
@@ -612,6 +614,14 @@ class thisIUDPUser implements IUDPUser
 
          TofEventList raw_events = 
                           new TofEventList( sendBuff, Buffstart / 2, false );
+         if(SocketEventLoader.debug ==20)
+            for( int i=0; i< Buffstart; i+=2)
+            {
+               System.out.print( "("+sendBuff[i] +","+sendBuff[i+1]+")   ");
+               if( i%20 ==0)
+                  System.out.println( );
+            }
+            
          message_center.send( 
              new Message( Commands.MAP_EVENTS_TO_Q, raw_events, false, true ) );
 
