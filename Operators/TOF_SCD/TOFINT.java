@@ -1,4 +1,5 @@
 package Operators.TOF_SCD;
+import java.util.*;
 
 import DataSetTools.operator.*;
 import Command.JavaCC.Fortran.*;
@@ -126,8 +127,8 @@ public class TOFINT implements Wrappable,HiddenOperator{
     MAXX=(int)((X+2));
     MINY=(int)((Y-2));
     MAXY=(int)((Y+2));
-    if((((((((MINZ)<(1)||(MAXZ)>(WLNUM))||(MINX)<(1))||(MAXX)>(85))||(MINY)<(1))
-      ||(MAXY)>(85)))){
+    if((((((((MINZ)<(1)||(MAXZ)>(WLNUM))||(MINX)<(1))||(MINY)<(1))
+      )))){
       REFLAG=(float)((401));
       return null;
           }
@@ -188,6 +189,55 @@ public class TOFINT implements Wrappable,HiddenOperator{
     SIG3=(float)(((float)Math.sqrt((double)(((PKCTS+RATIO*RATIO*BKCTS))))));
     RIS3=(float)((INTI3/SIG3));
 //      TYPE *,'INTI3,SIG3,RIS3',INTI3,SIG3,RIS3
+    if(((IPFLAG)==(0))){
+        util.WRITESTRING(((0)),((" Center T   MaxX MaxY IPK    dX        dY  ")));
+        util.WRITESTRING(((0)),((
+          "     Ihkl       sigI          I/sigI   ")));
+        util.WRITELN(((0)));
+        util.WRITEINT(((0)),((3)),(("I4")));
+        util.WRITEINT(((0)),((MAXZ)),(("I6")));
+        util.WRITEINT(((0)),((MAXX)),(("I5")));
+        util.WRITEINT(((0)),((MAXY)),(("I5")));
+        util.WRITEINT(((0)),((MAXP1)),(("I6")));
+        util.WRITEINT(((0)),((MINX)),(("I5")));
+        util.WRITEINT(((0)),((MAXX)),(("I5")));
+        util.WRITEINT(((0)),((MINY)),(("I5")));
+        util.WRITEINT(((0)),((MAXY)),(("I5")));
+        util.WRITEFLOAT(((0)),((INTI1)),(("F10.2")));
+        util.WRITEFLOAT(((0)),((SIG1)),(("F10.2")));
+        util.WRITEFLOAT(((0)),((RIS1)),(("F10.2")));
+        util.WRITESTRING(((0)),(("          ")));
+        util.WRITELN(((0)));
+        util.WRITEINT(((0)),((4)),(("I4")));
+        util.WRITEINT(((0)),((MAXZ)),(("I6")));
+        util.WRITEINT(((0)),((MAXX)),(("I5")));
+        util.WRITEINT(((0)),((MAXY)),(("I5")));
+        util.WRITEINT(((0)),((MAXP1)),(("I6")));
+        util.WRITEINT(((0)),((MINX)),(("I5")));
+        util.WRITEINT(((0)),((MAXX)),(("I5")));
+        util.WRITEINT(((0)),((MINY)),(("I5")));
+        util.WRITEINT(((0)),((MAXY)),(("I5")));
+        util.WRITEFLOAT(((0)),((INTI2)),(("F10.2")));
+        util.WRITEFLOAT(((0)),((SIG2)),(("F10.2")));
+        util.WRITEFLOAT(((0)),((RIS2)),(("F10.2")));
+        util.WRITESTRING(((0)),(("          ")));
+        util.WRITELN(((0)));
+        util.WRITEINT(((0)),((5)),(("I4")));
+        util.WRITEINT(((0)),((MAXZ)),(("I6")));
+        util.WRITEINT(((0)),((MAXX)),(("I5")));
+        util.WRITEINT(((0)),((MAXY)),(("I5")));
+        util.WRITEINT(((0)),((MAXP1)),(("I6")));
+        util.WRITEINT(((0)),((MINX)),(("I5")));
+        util.WRITEINT(((0)),((MAXX)),(("I5")));
+        util.WRITEINT(((0)),((MINY)),(("I5")));
+        util.WRITEINT(((0)),((MAXY)),(("I5")));
+        util.WRITEFLOAT(((0)),((INTI3)),(("F10.2")));
+        util.WRITEFLOAT(((0)),((SIG3)),(("F10.2")));
+        util.WRITEFLOAT(((0)),((RIS3)),(("F10.2")));
+        util.WRITESTRING(((0)),(("          ")));
+        util.WRITELN(((0)));
+        util.WRITELN(((0)));
+    }
 //  Find maximum I/Sig(I)
     if((((RIS2)>(RIS1)&&(RIS2)>(RIS3)))){
 //            GO TO 500
@@ -211,7 +261,6 @@ public class TOFINT implements Wrappable,HiddenOperator{
     ITOT=(int)((INTI2));
     SIGITOT=(float)((SIG2));
     REFLAG=(float)((100));
-
     return null;
 
   }
