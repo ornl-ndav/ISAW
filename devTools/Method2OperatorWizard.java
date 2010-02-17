@@ -385,6 +385,8 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
           return "int"+Res;
         if( S.equals("F"))
           return "float"+Res;
+        if( S.equals("L"))
+           return "long"+Res;
         if(S.equals("J"))
           return "long"+Res;
         if( S.equals("B"))
@@ -457,7 +459,7 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 			return "";
 		if (!C.isPrimitive())
 			return "(" + FixUpClassName(C) + ")(";
-		if (";Float;Boolean;Integer;".indexOf(paramGUIName) >= 0)
+		if (";Float;Boolean;BooleanEnable;Integer;Long;".indexOf(paramGUIName) >= 0)
 			return "((" + paramGUIName + "PG)(";
 		return "";
 	}
@@ -480,13 +482,15 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 			return ".getValue().toString()";
 		if (!C.isPrimitive())
 			return ".getValue())";
-		if (";Float;Boolean;Integer;".indexOf(paramGUIName) >= 0) {
+		if (";Float;Boolean;BooleanEnable;Integer;Long;".indexOf(paramGUIName) >= 0) {
 			String S = ")).";
 
 			if (paramGUIName.startsWith("Float"))
 				S += "getfloatValue()";
 			else if (paramGUIName.startsWith("Int"))
 				S += "getintValue()";
+			else if (paramGUIName.startsWith("Long"))
+               S += "getlongValue()";
 			else
 				S += "getbooleanValue()";
 			return S;
