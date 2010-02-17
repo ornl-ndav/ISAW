@@ -77,13 +77,13 @@ public class Util
                                          String DetCalFileName,
                                          String bankInfoFileName,
                                          String MappingFileName,
-                                         int firstEvent,
-                                         int NumEventsToLoad,
+                                         long firstEvent,
+                                         long NumEventsToLoad,
                                          float min,
                                          float max,
                                          boolean  isLog,
-                                         int nUniformbins,
-                                         float first_logStep
+                                         float first_logStep,
+                                         int nUniformbins
                                          )
    {
       try
@@ -179,15 +179,15 @@ public class Util
                                          String DetCalFileName,
                                          String bankInfoFileName,
                                          String MappingFileName,
-                                         int firstEvent,
-                                         int NumEventsToLoad,
+                                         long firstEvent,
+                                         long NumEventsToLoad,
                                          float  angle_deg,
                                          float  final_L_m, 
                                          float min,
                                          float max,
                                          boolean  isLog,
-                                         int nUniformbins,
-                                         float first_logStep
+                                         float first_logStep,
+                                         int nUniformbins
                                          )
    {
       try
@@ -298,7 +298,7 @@ public class Util
       float first_logStep=.0002f;
       DataSet D = Util.Make_d_DataSet( Instrument , EventFileName , DetCalFileName ,
             bankInfoFileName , MappingFileName , firstEvent , NumEventsToLoad , 
-             min , max ,isLog , nUniformbins , first_logStep );
+             min , max ,isLog , first_logStep , nUniformbins );
       Command.ScriptUtil.display( D );
      
 
@@ -320,7 +320,7 @@ public class Util
       float first_logStep=.0002f;
       DataSet D = Util.MakeTimeFocusedDataSet( Instrument , EventFileName , DetCalFileName ,
             bankInfoFileName , MappingFileName, firstEvent , NumEventsToLoad ,90f,.5f , 
-             min , max ,isLog , nUniformbins , first_logStep );
+             min , max ,isLog , first_logStep , nUniformbins );
       Command.ScriptUtil.display( D);
      
 

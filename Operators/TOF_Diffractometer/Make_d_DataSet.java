@@ -74,17 +74,17 @@ public class Make_d_DataSet extends GenericOperator{
    public void setDefaultParameters(){
       clearParametersVector();
       addParameter( new StringPG("Instrument","SNAP"));
-      addParameter( new LoadFilePG("Even tFile Name",System.getProperty("Data_Directory","")));
-      addParameter( new LoadFilePG("DetCa lFile Name",System.getProperty("ISAW_HOME","")+"/InstrumentInfo/SNS"));
-      addParameter( new LoadFilePG("bank File Name",System.getProperty("ISAW_HOME","")+"/InstrumentInfo/SNS"));
+      addParameter( new LoadFilePG("Event File Name",System.getProperty("ISAW_HOME","")));
+      addParameter( new LoadFilePG("DetCal FileName",System.getProperty("ISAW_HOME","")+"/InstrumentInfo/SNS"));
+      addParameter( new LoadFilePG("Bank File Name",System.getProperty("ISAW_HOME","")+"/InstrumentInfo/SNS"));
       addParameter( new LoadFilePG("Mapping File Name",System.getProperty("ISAW_HOME","")+"/InstrumentInfo/SNS"));
-      addParameter( new IntegerPG("first Event to load",1));
-      addParameter( new IntegerPG("Num Events to Load",null));
-      addParameter( new FloatPG("Min d-spacing",.2f));
-      addParameter( new FloatPG("Max d-spacing",10));
-      addParameter( new BooleanPG("log d binning?",false));
-      addParameter( new IntegerPG("# of uniform bins",10000));
-      addParameter( new FloatPG("first log bin length",.0002));
+      addParameter( new LongPG("first Event",1));
+      addParameter( new LongPG("Nu mEvents To Load",8000000));
+      addParameter( new FloatPG("min d-spacing",.0f));
+      addParameter( new FloatPG("max d-spacing",10));
+      addParameter( new BooleanEnablePG("Log binning?","[false,1,1]"));
+      addParameter( new FloatPG("lenght 1st interval",.0002));
+      addParameter( new IntegerPG("# bins(uniform)",10000));
    }
 
 
@@ -107,7 +107,7 @@ public class Make_d_DataSet extends GenericOperator{
       S.append("@param   ");
       S.append("The name of the file with events");
       S.append("@param   ");
-      S.append("he name of the file with the detector  calibrations");
+      S.append("The name of the file with the detector  calibrations");
       S.append("@param   ");
       S.append("The name of the file with bank and pixelID(nex)   info");
       S.append("@param   ");
@@ -121,11 +121,11 @@ public class Make_d_DataSet extends GenericOperator{
       S.append("@param   ");
       S.append("The maximum d-spacing to consider");
       S.append("@param   ");
-      S.append("If true use log binning, otherwise use uniform  binnings");
-      S.append("@param   ");
-      S.append("The number of uniform bins( isLog=false )");
+      S.append("If true use log binning, otherwise use uniform   binnings");
       S.append("@param   ");
       S.append("The length of first interval( isLog = true )");
+      S.append("@param   ");
+      S.append("he number of uniform bins( isLog=false )");
       S.append("@error ");
       S.append("");
       return S.toString();
@@ -159,14 +159,14 @@ public class Make_d_DataSet extends GenericOperator{
          java.lang.String DetCalFileName = getParameter(2).getValue().toString();
          java.lang.String bankInfoFileName = getParameter(3).getValue().toString();
          java.lang.String MappingFileName = getParameter(4).getValue().toString();
-         int firstEvent = ((IntegerPG)(getParameter(5))).getintValue();
-         int NumEventsToLoad = ((IntegerPG)(getParameter(6))).getintValue();
+         long firstEvent = ((LongPG)(getParameter(5))).getlongValue();
+         long NumEventsToLoad = ((LongPG)(getParameter(6))).getlongValue();
          float min = ((FloatPG)(getParameter(7))).getfloatValue();
          float max = ((FloatPG)(getParameter(8))).getfloatValue();
-         boolean isLog = ((BooleanPG)(getParameter(9))).getbooleanValue();
-         int nUniformbins = ((IntegerPG)(getParameter(10))).getintValue();
-         float first_logStep = ((FloatPG)(getParameter(11))).getfloatValue();
-         DataSetTools.dataset.DataSet Xres=Operators.TOF_Diffractometer.Util.Make_d_DataSet(Instrument,EventFileName,DetCalFileName,bankInfoFileName,MappingFileName,firstEvent,NumEventsToLoad,min,max,isLog,nUniformbins,first_logStep );
+         boolean isLog = ((BooleanEnablePG)(getParameter(9))).getbooleanValue();
+         float first_logStep = ((FloatPG)(getParameter(10))).getfloatValue();
+         int nUniformbins = ((IntegerPG)(getParameter(11))).getintValue();
+         DataSetTools.dataset.DataSet Xres=Operators.TOF_Diffractometer.Util.Make_d_DataSet(Instrument,EventFileName,DetCalFileName,bankInfoFileName,MappingFileName,firstEvent,NumEventsToLoad,min,max,isLog,first_logStep,nUniformbins );
 
          return Xres;
        }catch( Throwable XXX){
