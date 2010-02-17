@@ -269,6 +269,28 @@ public class SNS_Tof_to_Q_map
   }
 
 
+ /**
+  * Get the L1 value (in meters) read from the .DetCal file.
+  *
+  * @return the L1 value converted to meters, read from the .DetCal file
+  */
+  public float getL1()
+  {
+    return L1;
+  }
+
+
+ /**
+  * Get the T_zero shift value (in microseconds)  read from the .DetCal file.
+  *
+  * @return the T_zero shift value as read from the .DetCal file
+  */
+  public float getT0()
+  {
+    return t0/10;
+  }
+
+
   /**
    *  Map the specified sub-list of time-of-flight events to a packed
    *  array of events in reciprocal space, listing Qx,Qy,Qz for each event,
@@ -697,15 +719,17 @@ public class SNS_Tof_to_Q_map
                                   monitor_count,
                                   row_col_tof_ID[1],
                                   row_col_tof_ID[0],
-                                  row_col_tof_ID[2]/10,   // use tof since not
-                                                          // histogrammed
+                                  row_col_tof_ID[2]/10, // use tof to make a
+                                                        // psuedo-channel num
+                                                        // since the events 
+                                                        // aren't histogrammed
                                   grid,
                                   orientation,
                                   row_col_tof_ID[2],
                                   L1,
-                                  t0  );
-    
-    peak.setInstrument(  instrument_name );
+                                  t0 / 10  );             // Convert t0 shift 
+                                                          // to microseconds 
+    peak.setInstrument( instrument_name );
     
     return peak;
   }
@@ -1413,6 +1437,9 @@ public class SNS_Tof_to_Q_map
       System.out.printf("%6.5f %3.2f\n", tof_binner.minVal(i), 
                                          (float)histogram[14][i]);
 */
+
+   System.out.println("L1 = " + mapper.getL1() );
+   System.out.println("t0 = " + mapper.getT0() );
   }
 
 } 
