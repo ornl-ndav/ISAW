@@ -287,9 +287,8 @@ public class SNS_Tof_to_Q_map
                                              int   first,
                                              int   num_to_map )
   {
-     CheckEventRange( event_list, first, num_to_map );
+     int last = CheckAndFixEventRange( event_list, first, num_to_map );
 
-     int     num_events = (int)event_list.numEntries();
      int     id;
      int     id_offset;
      int     index;
@@ -300,12 +299,7 @@ public class SNS_Tof_to_Q_map
      int     large_id_count = 0;
      float   lamda;
      int     lamda_index;
-     int     last;
      int     num_mapped;
-
-     last = first + num_to_map - 1;
-     if ( last >= num_events )
-       last = num_events - 1;
 
      num_mapped = last - first + 1;
      long  total_num  = event_list.numEntries();
@@ -482,14 +476,9 @@ public class SNS_Tof_to_Q_map
                                     int           num_to_map,
                                     IEventBinner  binner )
   {
-    CheckEventRange( event_list, first, num_to_map );
+    int last = CheckAndFixEventRange( event_list, first, num_to_map );
 
     int[][] histogram = getEmptyHistogram( binner );
-
-    int num_events = (int)event_list.numEntries();
-    int last       = first + num_to_map - 1;
-    if ( last >= num_events )
-      last = num_events - 1;
 
     int   num_mapped = last - first + 1;
     long  total_num  = event_list.numEntries();
@@ -556,18 +545,13 @@ public class SNS_Tof_to_Q_map
                                                float         angle_deg,
                                                float         final_L_m )
   {
-    CheckEventRange( event_list, first, num_to_map );
+    int last = CheckAndFixEventRange( event_list, first, num_to_map );
 
     if ( final_L_m <= 0 )
       throw new IllegalArgumentException( "Final flight path must be > 0 " +
                                            final_L_m );
 
     int[][] histogram = getEmptyHistogram( binner );
-
-    int num_events = (int)event_list.numEntries();
-    int last       = first + num_to_map - 1;
-    if ( last >= num_events )
-      last = num_events - 1;
 
     int   num_mapped = last - first + 1;
     long  total_num  = event_list.numEntries();
@@ -709,12 +693,14 @@ public class SNS_Tof_to_Q_map
 
   /**
    * Check that the specified event list and range of events is valid,
-   * and throw an IllegalArgumentException if the events or range is not
-   * valid.
+   * and throw an IllegalArgumentException if the event list or range is not
+   * valid.  The index of the last event that can be requested within the
+   * specified event list and range is returned as the value of this 
+   * method.
    */
-  private void CheckEventRange( ITofEventList event_list,
-                                int           first,
-                                int           num_to_map )
+  private int CheckAndFixEventRange( ITofEventList event_list,
+                                     int           first,
+                                     int           num_to_map )
   {
      if ( event_list == null )
        throw new IllegalArgumentException( "event_list is null" );
@@ -725,9 +711,11 @@ public class SNS_Tof_to_Q_map
        throw new IllegalArgumentException("First index: " + first +
                  " < 0 or >= number of events in list: " + num_events );
 
-     if ( first + num_to_map > num_events )
-       throw new IllegalArgumentException( "first + num_to_map exceeds size "
-              + first + ", " + num_to_map + ", " + num_events );
+     int last = first + num_to_map - 1;
+     if ( last >= num_events )
+       last = num_events - 1;
+
+     return last;
   }
 
 
