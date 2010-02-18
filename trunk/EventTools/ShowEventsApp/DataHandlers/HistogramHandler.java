@@ -389,11 +389,9 @@ public class HistogramHandler implements IReceiveMessage
     }
     else
     {
-      histogram.clear();                 // at least clear the histogram
-                                         // if starting a new file
-      Util.sendWarning( inst + " not supported yet. " +
-                        "Detector position info needed." );
-      return false;
+      SetGeneric_Histogram();
+      current_instrument = inst;
+      return true;
     }
   }
 
@@ -449,7 +447,7 @@ public class HistogramHandler implements IReceiveMessage
     int page = z_binner.index( x, y, z );
     select_info_cmd.setHistPage( page );
   }
-
+ 
 
   /**
    *  Set histogram to be a new empty histogram covering a region
@@ -527,6 +525,63 @@ public class HistogramHandler implements IReceiveMessage
       IEventBinner x_bin1D = new UniformEventBinner( -36.0f,  0,   num_bins );
       IEventBinner y_bin1D = new UniformEventBinner( -24.0f,  0,   num_bins );
       IEventBinner z_bin1D = new UniformEventBinner( -18.0f, 6.0f, num_bins );
+
+      ProjectionBinner3D x_binner = new ProjectionBinner3D(x_bin1D, xVec);
+      ProjectionBinner3D y_binner = new ProjectionBinner3D(y_bin1D, yVec);
+      ProjectionBinner3D z_binner = new ProjectionBinner3D(z_bin1D, zVec);
+
+      histogram.setHistogramPosition( x_binner, y_binner, z_binner );
+      histogram.clear();
+    }
+  }
+
+
+  /**
+   *  Set histogram to be a new empty histogram covering a region
+   *  of reciprocal space adeqiate for most instruments at the SNS.
+   *
+   *  @param num_bins  The number of bins to use in half of the region
+   *                   for the histogram.
+   */
+  synchronized private Histogram3D DefaultGeneric_Histogram( int num_bins )
+  {
+    Vector3D xVec = new Vector3D(1,0,0);
+    Vector3D yVec = new Vector3D(0,1,0);
+    Vector3D zVec = new Vector3D(0,0,1);
+
+    IEventBinner x_bin1D = new UniformEventBinner( -30.0f,    0,  num_bins );
+    IEventBinner y_bin1D = new UniformEventBinner( -30.0f, 30.0f, num_bins );
+    IEventBinner z_bin1D = new UniformEventBinner( -15.0f, 15.0f, num_bins );
+
+    ProjectionBinner3D x_binner = new ProjectionBinner3D(x_bin1D, xVec);
+    ProjectionBinner3D y_binner = new ProjectionBinner3D(y_bin1D, yVec);
+    ProjectionBinner3D z_binner = new ProjectionBinner3D(z_bin1D, zVec);
+
+    Histogram3D histogram = new Histogram3D( x_binner,
+                                             y_binner,
+                                             z_binner );
+    return histogram;
+  }
+
+
+  /**
+   *  Set up the histogram to be new empty histogram covering a region
+   *  of reciprocal space appropriate for most instruments at the
+   *  SNS, WITHOUT reallocating memory, if possible.
+   */
+  synchronized private void SetGeneric_Histogram()
+  {
+    if ( histogram == null )
+      histogram = DefaultGeneric_Histogram( num_bins );
+    else
+    {
+      Vector3D xVec = new Vector3D(1,0,0);
+      Vector3D yVec = new Vector3D(0,1,0);
+      Vector3D zVec = new Vector3D(0,0,1);
+
+     IEventBinner x_bin1D = new UniformEventBinner(-30.0f,    0,  num_bins);
+     IEventBinner y_bin1D = new UniformEventBinner(-30.0f, 30.0f, num_bins);
+     IEventBinner z_bin1D = new UniformEventBinner(-15.0f, 15.0f, num_bins);
 
       ProjectionBinner3D x_binner = new ProjectionBinner3D(x_bin1D, xVec);
       ProjectionBinner3D y_binner = new ProjectionBinner3D(y_bin1D, yVec);
@@ -632,7 +687,6 @@ public class HistogramHandler implements IReceiveMessage
 
      int[] val_histogram = new int[10000];
 
-   
      int[] row_list = new int[num_rows];
      for ( int k = 0; k < num_rows; k++ )
        row_list[k] = k + 1;
