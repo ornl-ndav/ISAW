@@ -171,7 +171,7 @@ public class DQDataHandler implements IReceiveMessage
    *  @param is_log   Pass in true to bin on a log scale, instead of a 
    *                  linear scale.
    *
-   *  @return a new binner covering the default Q range.
+   *  @return a new binner covering the default D range.
    */
   private IEventBinner getDBinner( boolean is_log )
   {
@@ -338,13 +338,13 @@ public class DQDataHandler implements IReceiveMessage
    */
    synchronized private void AddEvents( IEventList3D events )
    {
-     float xyz[] = events.eventVals();
-//   float weights[] = events.eventWeights();
-     int   n_events = events.numEntries();
-     int   index = 0;
-     int   bin_num;
-     float mag_q,
-           d_val;
+     float  xyz[] = events.eventVals();
+//   float  weights[] = events.eventWeights();
+     int    n_events = events.numEntries();
+     int    index = 0;
+     int    bin_num;
+     double mag_q,
+            d_val;
      float x, y, z;
 
      float[] q_arr = q_values[1];    // local name for q_values, y's
@@ -359,11 +359,11 @@ public class DQDataHandler implements IReceiveMessage
        y = xyz[index++];
        z = xyz[index++];
        
-       mag_q = (float)Math.sqrt( x*x + y*y + z*z );
-       d_val = (float)(2 * Math.PI / mag_q);
+       mag_q = Math.sqrt( x*x + y*y + z*z );
+       d_val = 2 * Math.PI / mag_q;
        
        //------ calculate weight for normalized values
-       float wl = -2*d_val*x/mag_q;
+       float wl = (float)(-2*d_val*x/mag_q);
        float weight = 0;
        if( wl >= minWL && wl < maxWL && wl > 0 )
          weight = Wl_list[(int)( (wl-minWL )*MM)];
