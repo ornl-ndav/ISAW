@@ -44,6 +44,7 @@ import EventTools.ShowEventsApp.Command.LoadEventsCmd;
 import EventTools.ShowEventsApp.Command.LoadUDPEventsCmd;
 import EventTools.ShowEventsApp.Command.SetNewInstrumentCmd;
 import EventTools.ShowEventsApp.Command.*;
+import gov.anl.ipns.Util.File.FileIO;
 
 /**
  *  This class processes messages to load a file, or initialize the
@@ -299,18 +300,13 @@ public class InitializationHandler implements IReceiveMessage
   {
     String instrument_name = UNKNOWN_INSTRUMENT;
 
-    if ( file_name.indexOf("SNAP") >= 0 )
-      instrument_name = SNS_Tof_to_Q_map.SNAP;
+    String file_inst   = FileIO.getSNSInstrumentName( file_name );
+    String[] supported = SNS_Tof_to_Q_map.supported_instruments;
 
-    else if ( file_name.indexOf("ARCS") >= 0 )
-      instrument_name = SNS_Tof_to_Q_map.ARCS;
+    for ( int i = 0; i < supported.length; i++ )
+      if ( file_inst.equalsIgnoreCase( supported[i] ) )
+        instrument_name = supported[i];
 
-    else if ( file_name.indexOf("SEQ") >= 0 )
-      instrument_name = SNS_Tof_to_Q_map.SEQ;
-
-    else if ( file_name.indexOf("TOP") >= 0 )
-      instrument_name = SNS_Tof_to_Q_map.TOPAZ;
- 
     return instrument_name;
   }
   
