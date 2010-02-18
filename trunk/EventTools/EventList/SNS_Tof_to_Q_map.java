@@ -38,11 +38,13 @@ import java.util.*;
 import java.io.*;
 
 import gov.anl.ipns.MathTools.Geometry.*;
+import gov.anl.ipns.Util.File.*;
 
 import DataSetTools.operator.Generic.TOF_SCD.*;
 import DataSetTools.dataset.*;
 import DataSetTools.math.*;
 import DataSetTools.trial.*;
+import DataSetTools.util.SharedData;
 import DataSetTools.instruments.*;
 import EventTools.Histogram.IEventBinner;
 import EventTools.Histogram.LogEventBinner;
@@ -106,10 +108,12 @@ public class SNS_Tof_to_Q_map
                                         (float)tof_calc.ANGST_PER_US_PER_M;
 
   public static final String SNAP  = "SNAP";
-  public static final String ARCS  = "ARCS";
-  public static final String SEQ   = "SEQ";
   public static final String TOPAZ = "TOPAZ";
   public static final String PG3   = "PG3";
+  public static final String ARCS  = "ARCS";
+  public static final String SEQ   = "SEQ";
+  public static final String CNCS  = "CNCS";
+
 
   private final float MAX_WAVELENGTH = 50.0f;    // max in lamda_weight table
 
@@ -170,9 +174,122 @@ public class SNS_Tof_to_Q_map
   private float             monitor_count   = 100000;
   private SampleOrientation orientation     = new SNS_SampleOrientation(0,0,0);
 
+
   /**
-   *  Construct the mapping from (tof,id) to Qxyz from the information at
-   *  the start of a .peaks file or .DetCal file.  NOTE: There MUST be an
+   *  Construct the mapping from (tof,id) to Qxyz, d and time-focused 
+   *  spectra from the information at the start of a .peaks file or .DetCal 
+   *  file, an SNS bank file, an SNS mapping file and an incident spectrum 
+   *  file.  NOTE: There MUST be an entry for each detector in the instrument,
+   *  so a .peaks file may not work, if some detectors are missing. 
+   *  The instrument name is required, and will be used to find default
+   *  det cal, bank, map and incident spectrum files, if these files are
+   *  not specified.
+   *  An exception will be thrown if specified files are missing or can't 
+   *  be read and no default files are found.  If the files are specified,
+   *  the files must be consistent and describe the same instrument 
+   *  configuration as was in place when the neutron event file(s) that 
+   *  will be mapped were written.  The initial spectrum file is optional.
+   *
+   *  @param  inst_name         The name of the instrument, such as "TOPAZ".
+   *
+   *  @param  det_cal_filename  The name of the .DetCal or .peaks file with 
+   *                            position information about EVERY detector and
+   *                            L1 and t0 values.
+   *
+   *  @param  bank_filename     The name of the _bank_ XML file containing the 
+   *                            SNS detector bank information.
+   *
+   *  @param  map_filename      The name of the _TS_ binary file containing 
+   *                            DAS pixel ID to NeXus pixel ID mapping.
+   *
+   *  @param  spectrum_filename Name of file containing incident spectrum
+   *                            for this instrument.  The spectrum file
+   *                            must be an ASCII file giving values for the
+   *                            incident spectrum.  The file must be the same
+   *                            form as InstrumentInfo/SNS/SNAP_Spectrum.dat
+   *                            If no spectrum file is available, pass in null.
+   *                            The SNAP spectrum file will be used by default
+   *                            for SNAP.
+   */
+  public SNS_Tof_to_Q_map( String instrument_name,
+                           String det_cal_filename,
+                           String bank_filename,
+                           String map_filename,
+                           String spectrum_filename )
+         throws IOException
+  {
+    String default_dir = SharedData.getProperty("ISAW_HOME","")+
+                         "/InstrumentInfo/SNS/" + instrument_name + "/";
+    try
+    {
+      CheckFile ( det_cal_filename );
+    }
+    catch ( Exception ex )
+    {
+      det_cal_filename = default_dir + instrument_name + ".DetCal";
+      CheckFile ( det_cal_filename );
+    }
+
+    try
+    {
+      CheckFile ( bank_filename );
+    }
+    catch ( Exception ex )
+    {
+      bank_filename = default_dir + instrument_name + "_bank.xml";
+      CheckFile ( bank_filename );
+    }
+
+    try
+    {
+      CheckFile ( map_filename );
+    }
+    catch ( Exception ex )
+    {
+      map_filename = default_dir + instrument_name + "_TS.dat";
+      CheckFile ( map_filename );
+    }
+
+    this.instrument_name = instrument_name;
+
+    int[] das_to_nex_id = FileUtil.LoadIntFile( map_filename );
+
+    Vector file_info = FileUtil.LoadDetCal( det_cal_filename );
+    grid_arr = (IDataGrid[])(file_info.elementAt(0));
+
+    L1 = (Float)(file_info.elementAt(1));
+    t0 = 10*(Float)(file_info.elementAt(2));
+
+    int[][] bank_info = FileUtil.LoadBankFile( bank_filename );
+
+    System.out.println("Mapping File has " + das_to_nex_id.length + " IDs");
+    for ( int i = 0; i < 10; i++ )
+      System.out.println("i = " + i + ",  map[i] = " + das_to_nex_id[i] );
+    System.out.println("DetCal  File has " + grid_arr.length + " Grids");
+    System.out.println("Bank    File has " + bank_info[0].length+ " Banks");
+
+
+    BuildMaps( das_to_nex_id, grid_arr, bank_info );
+
+    SampleOrientation orient = new SNS_SampleOrientation( 0, 0, 0 );
+    inverse_mapper = new VecQMapper[ grid_arr.length ];
+    for ( int i = 0; i < grid_arr.length; i++ )
+      inverse_mapper[i] = new VecQMapper( grid_arr[i], L1, t0/10, orient );
+
+    System.out.println("In constructor, spectrum file = " + spectrum_filename);
+
+    if ( spectrum_filename == null || spectrum_filename.trim().length() == 0 )
+      spectrum_filename = null;
+
+    BuildLamdaWeights( spectrum_filename );
+  }
+
+
+
+  /**
+   *  Construct the mapping from (tof,id) to Qxyz, d and time-focused 
+   *  spectra from the information at the start of a .peaks file or .DetCal 
+   *  file, and an incident spectrum file.  NOTE: There MUST be an
    *  entry for each detector in the instrument, so a .peaks file may not 
    *  work, if some detectors are missing.
    *
@@ -197,6 +314,21 @@ public class SNS_Tof_to_Q_map
                            String instrument_name )  
          throws IOException
   {
+    this( instrument_name, filename, null, null, spectrum_filename );
+
+//    InitFromReorderedDetCal( filename, spectrum_filename, instrument_name );
+  }
+
+
+  /**
+   *  This method initialized the tables using ONLY the informaition in
+   *  re-ordered .DetCal file, as was originally done for SNAP and ARCS.
+   */
+  private void InitFromReorderedDetCal( String filename,
+                                        String spectrum_filename,
+                                        String instrument_name )
+               throws IOException
+  {
      this.instrument_name = instrument_name;
 
      Vector file_info = FileUtil.LoadDetCal( filename );
@@ -206,13 +338,6 @@ public class SNS_Tof_to_Q_map
                                                   // Need factor of 10, since
                                                   // SNS data is in terms of
                                                   // 100ns clock ticks.
-     if ( debug )
-     {
-       System.out.println("Instrument name " + instrument_name );
-       System.out.println("Loaded detectors from " + filename );
-       System.out.println("Working with " + grid_arr.length + " GRIDS " );
-       System.out.println("Spectrum file name " + spectrum_filename );
-     }
 
      if ( instrument_name.equalsIgnoreCase(TOPAZ) )
        grid_arr = ReorderTOPAZ_grids( grid_arr );
@@ -229,7 +354,8 @@ public class SNS_Tof_to_Q_map
      SampleOrientation orient = new SNS_SampleOrientation( 0, 0, 0 );
      inverse_mapper = new VecQMapper[ grid_arr.length ];
      for ( int i = 0; i < grid_arr.length; i++ )
-       inverse_mapper[i] = new VecQMapper( grid_arr[i], L1, t0/10, orient );
+       if ( grid_arr[i] != null )
+         inverse_mapper[i] = new VecQMapper( grid_arr[i], L1, t0/10, orient );
 
      System.out.println("In constructor, spectrum file = " + spectrum_filename);
 
@@ -692,6 +818,29 @@ public class SNS_Tof_to_Q_map
 
 
   /**
+   * Check that the specified file exists and can be read.
+   *
+   * @param filename
+   *
+   * @throws IllegalArgumentException if the file name is null, the 
+   *         file doesn't exist, or the file can't be read. 
+   */
+  private void CheckFile( String filename )
+  {
+    if ( filename == null )
+      throw new IllegalArgumentException("Filename String is NULL");
+
+    File file = new File( filename );
+
+    if ( !file.exists() )
+      throw new IllegalArgumentException("File doesn't exist: " + filename );
+
+    if ( !file.canRead() )
+      throw new IllegalArgumentException("File can't be read: " + filename );
+  }
+
+
+  /**
    * Check that the specified event list and range of events is valid,
    * and throw an IllegalArgumentException if the event list or range is not
    * valid.  The index of the last event that can be requested within the
@@ -880,6 +1029,173 @@ public class SNS_Tof_to_Q_map
         val = spec_val[index];
       }
       lamda_weight[i] = lamda_weight[i] / val;
+    }
+  }
+
+
+  /**
+   *  Build the following tables, indexed by the DAS ID:
+   *  tof_to_lamda[],
+   *  tof_to_MagQ[],
+   *  QUxyz[],
+   *  recipLaSinTa[],
+   *  pix_weight[],
+   *  bank_num[].
+   *  This version requires the information from .DetCal, mapping and bank
+   *  files for SNS instruemnts.
+   */
+  private void BuildMaps( int[]       das_to_nex_id, 
+                          IDataGrid[] datagrid_arr,
+                          int[][]     bank_info ) 
+  {
+                            // make table of IDataGrids indexed by the grid ID 
+                            // missing grids are marked with a null
+    int max_grid_id = 0;     
+    int val;
+    for ( int i = 0; i < datagrid_arr.length; i++ )
+    {
+      val = datagrid_arr[i].ID();
+      if ( val > max_grid_id )
+        max_grid_id = val;
+    }
+
+    IDataGrid[] all_grids = new IDataGrid[ max_grid_id + 1 ];
+    
+    for ( int i = 0; i < all_grids.length; i++ )
+      all_grids[i] = null;
+
+    IDataGrid grid;
+    for ( int i = 0; i < datagrid_arr.length; i++ )
+    {
+      grid = datagrid_arr[i];
+      all_grids[ grid.ID() ] = grid;
+    }
+                                               // make tables to map NeXus ID
+                                               // to gridID, row and column
+                                               // missing entries marked by -1
+    int pix_count  = das_to_nex_id.length;
+    int max_nex_id = 0; 
+    for ( int i = 0; i < das_to_nex_id.length; i++ )
+    {
+      val = das_to_nex_id[i];
+      if ( val > max_nex_id )
+        max_nex_id = val;
+    }
+
+    int[] nex_to_gridID = new int[ max_nex_id + 1 ];
+    int[] nex_to_row    = new int[ max_nex_id + 1 ];
+    int[] nex_to_col    = new int[ max_nex_id + 1 ];
+
+    Arrays.fill( nex_to_gridID, -1 );
+    Arrays.fill( nex_to_row,    -1 );
+    Arrays.fill( nex_to_col,    -1 );
+                                              // now use bank info to fill out
+                                              // nex_to_* arrays....
+    int grid_id;
+    int x_size,
+        y_size,
+        first_id,
+        last_id,
+        id;
+    for ( int k = 0; k < bank_info[0].length; k++ )
+    {
+      grid_id  = bank_info[0][k];
+      x_size   = bank_info[1][k];
+      y_size   = bank_info[2][k];
+      first_id = bank_info[3][k];
+      last_id  = bank_info[4][k];
+      if ( grid_id < 0                 || 
+           grid_id >= all_grids.length || 
+           all_grids[ grid_id ] == null )
+        System.out.println("ERROR: Missing grid " + grid_id + " in .DetCsl");
+      else
+      {
+        grid     = all_grids[ grid_id ];
+        if ( y_size != grid.num_rows() || x_size != grid.num_cols() )
+          System.out.println("ERROR: Grid size wrong for " + grid_id + 
+              ", " +  y_size + " != " + grid.num_rows() + " OR " + 
+              " "  +  x_size + " != " + grid.num_cols() ); 
+        else
+        {
+          id = first_id;
+          for ( int col = 1; col <= x_size; col++ )     // NOTE: In ISAW the 
+            for ( int row = 1; row <= y_size; row++ )   // IDataGrid rows and
+            {                                           // columns start at 1
+              nex_to_gridID[ id ] = grid_id;
+              nex_to_row   [ id ] = row;
+              nex_to_col   [ id ] = col;
+              id++;
+            } 
+          if ( id - 1 != last_id )
+            System.out.println("Didn't end with last id: " + (id-1) + 
+                               " != " + last_id );
+        }
+      }  
+    }
+                               // now that the temporary tables are built
+                               // proceed to build the maps
+    tof_to_lamda = new float[ pix_count ];  
+    tof_to_MagQ  = new float[ pix_count ]; 
+    QUxyz        = new float[ 3*pix_count ];
+    recipLaSinTa = new float[ pix_count ];
+    pix_weight   = new float[ pix_count ]; 
+    bank_num     = new int[ pix_count ]; 
+
+    float     part = (float)(10 * 4 * Math.PI / tof_calc.ANGST_PER_US_PER_M);
+                                                   // partial constant
+    double    two_theta;
+    float     sin_theta;
+    float     L2;
+    Vector3D  pix_pos;
+    Vector3D  unit_qvec;
+    int       n_rows,
+              n_cols;
+    float[]   coords;
+    int       grid_ID;
+    int       index;
+    int       nex_i;
+    int       row,
+              col;
+
+    for ( int das_i = 0; das_i < pix_count; das_i++ )
+    {
+      nex_i   = das_to_nex_id[ das_i ];
+
+      grid_ID = nex_to_gridID[ nex_i ];
+      row     = nex_to_row   [ nex_i ];
+      col     = nex_to_col   [ nex_i ];
+
+      if ( grid_ID >= 0 )
+      {
+        grid    = all_grids[ grid_ID ];
+
+        pix_pos    = grid.position( row, col );
+        L2         = pix_pos.length();
+
+        coords     = pix_pos.get();
+        coords[0] -= L2;                        // internally using IPNS
+                                                // coordinates
+        unit_qvec = new Vector3D(coords);
+        unit_qvec.normalize();
+
+        index = das_i * 3;
+        QUxyz[ index     ] = unit_qvec.getX();
+        QUxyz[ index + 1 ] = unit_qvec.getY();
+        QUxyz[ index + 2 ] = unit_qvec.getZ();
+
+        two_theta = Math.acos( pix_pos.getX() / L2 );
+        sin_theta = (float)Math.sin(two_theta/2);
+
+        tof_to_MagQ [das_i] = part * (L1 + L2) * sin_theta;
+
+        tof_to_lamda[das_i] = ANGST_PER_US_PER_M /(L1 + L2);
+
+        recipLaSinTa[das_i] = 1/( (L1 + L2) * sin_theta );
+
+        pix_weight  [das_i] = sin_theta * sin_theta;
+
+        bank_num    [das_i] = grid_ID;
+      }
     }
   }
 
@@ -1330,6 +1646,11 @@ public class SNS_Tof_to_Q_map
       System.out.printf("%6.5f %3.2f\n", tof_binner.minVal(i), 
                                          (float)histogram[14][i]);
 */
+
+   start = System.nanoTime();
+   mapper = new SNS_Tof_to_Q_map( "SNAP", null, null, null, null );
+   time = (System.nanoTime()-start)/1e6;
+   System.out.printf("Time to make new mapper = %5.2f ms\n", time);
 
    System.out.println("L1 = " + mapper.getL1() );
    System.out.println("t0 = " + mapper.getT0() );
