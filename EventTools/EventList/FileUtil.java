@@ -374,12 +374,32 @@ public class FileUtil
    */
   public static void main(String[] args)
   {
-    String inst_name = "SEQ";
+
+    String inst_name = "PG3";
     String info_dir  = "/home/dennis/SNS_ISAW/ISAW_ALL/InstrumentInfo/SNS/";
            info_dir += inst_name + "/";
     String map_file  = info_dir + inst_name +"_TS.dat";
     String bank_file = info_dir + inst_name +"_bank.xml";
 
+
+    int[]   map = LoadIntFile( map_file );
+    boolean all_match = true;
+    int     num_dont = 0;
+    for ( int i = 0; i < map.length; i++ )
+      if ( i != map[i] )
+      {
+        all_match = false;
+        num_dont++;
+      }
+
+    System.out.println("ALL MATCH = " + all_match );
+    System.out.println("NUM NOT MATCHING = " + num_dont );
+    System.out.println("FILE SIZE = " + map.length );
+
+    for ( int i = 0; i < 20; i++ )
+      System.out.println("i, map[i] = " + i + ", " + map[i] );
+
+/*
     long start = System.nanoTime();
     int[] raw_ints = FileUtil.LoadIntFile( map_file );
     double time = (System.nanoTime() - start) / 1e6;
@@ -406,6 +426,7 @@ public class FileUtil
       System.out.printf(" id range = %7s : %7s\n",
                           bank_data[3][i], bank_data[4][i] );
     }
+*/
   }
 
 }

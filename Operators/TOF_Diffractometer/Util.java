@@ -38,6 +38,7 @@ import gov.anl.ipns.MathTools.Geometry.Vector3D;
 import DataSetTools.dataset.*;
 import EventTools.EventList.*;
 import EventTools.Histogram.*;
+import DataSetTools.instruments.*;
 
 /**
  * This class contains utility methods and some static methods that are
@@ -134,8 +135,15 @@ public class Util
             }
          }
          
-         DataSetFactory.addOperators( DS );
-         
+         DataSetFactory.addOperators( DS, InstrumentType.TOF_DIFFRACTOMETER );
+         float L1 = SMap.getL1( );
+         float T0 = SMap.getT0( );
+         Attribute L1Attr = new FloatAttribute( Attribute.INITIAL_PATH, L1);
+         Attribute T0Attr = new FloatAttribute( Attribute.T0_SHIFT, T0);
+
+         DS.setAttribute( L1Attr );
+         DS.setAttribute( T0Attr );
+
          return DS;
       }catch(Exception s)
       {
@@ -266,10 +274,11 @@ public class Util
             }
          }
          
-         DataSetFactory.addOperators( DS );
-         DS.setAttribute(  L1Attr );
-         DS.setAttribute(T0Attr); 
-         
+         DataSetFactory.addOperators( DS, InstrumentType.TOF_DIFFRACTOMETER );
+
+         DS.setAttribute( L1Attr );
+         DS.setAttribute( T0Attr ); 
+          
          return DS;
       }catch(Exception s)
       {

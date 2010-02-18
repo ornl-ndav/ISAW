@@ -389,12 +389,13 @@ public class SNS_Tof_to_Q_map
 
     int[][] bank_info = FileUtil.LoadBankFile( bank_filename );
 
+/*
     System.out.println("Mapping File has " + das_to_nex_id.length + " IDs");
     for ( int i = 0; i < 10; i++ )
       System.out.println("i = " + i + ",  map[i] = " + das_to_nex_id[i] );
     System.out.println("DetCal  File has " + grid_arr.length + " Grids");
     System.out.println("Bank    File has " + bank_info[0].length+ " Banks");
-
+*/
 
     BuildMaps( das_to_nex_id, grid_arr, bank_info );
 
@@ -478,6 +479,10 @@ public class SNS_Tof_to_Q_map
 
      float[] Qxyz    = new float[ 3 * num_mapped ];
      float[] weights = new float[ num_mapped ];
+/*
+     int[] used_ids = new int[ QUxyz.length ];   // this is 3 times larger
+                                                 // than should be needed.
+*/
 
      int all_index = 2*first;
      for ( int i = 0; i < num_mapped; i++ )
@@ -485,7 +490,10 @@ public class SNS_Tof_to_Q_map
        weights[i] = 0;
        tof_chan = all_events[ all_index++ ] + t0; 
        id       = all_events[ all_index++ ]; 
-
+/*
+       if ( id > 0 && id < used_ids.length )
+         used_ids[id]++;
+*/
        if ( id < 0 )
          minus_id_count++;
 
@@ -517,6 +525,20 @@ public class SNS_Tof_to_Q_map
          weights[i] = pix_weight[id] * lamda_weight[ lamda_index ];
        }
      }
+/*
+     int[] bank_nums_used = new int[500];
+     for ( int i = 0; i < used_ids.length; i++ )
+     {
+      if ( used_ids[i] > 100 )
+        bank_nums_used[ i/1250 ]++;
+     }
+
+     for ( int i = 0; i < bank_nums_used.length; i++ )
+     {
+      if ( bank_nums_used[i] > 0 )
+        System.out.println( "" + i + "      " + bank_nums_used[i] );
+     }
+*/
 
      return new FloatArrayEventList3D( weights, Qxyz );
   }
@@ -1104,6 +1126,10 @@ public class SNS_Tof_to_Q_map
         max_grid_id = val;
     }
 
+    max_grid_ID = max_grid_id;                // TODO: replace max_grid_id
+                                              //       by max_grid_ID and
+                                              //       add method to find it.
+
     IDataGrid[] all_grids = new IDataGrid[ max_grid_id + 1 ];
     
     for ( int i = 0; i < all_grids.length; i++ )
@@ -1142,6 +1168,7 @@ public class SNS_Tof_to_Q_map
         first_id,
         last_id,
         id;
+    int missing_grid_count = 0;
     for ( int k = 0; k < bank_info[0].length; k++ )
     {
       grid_id  = bank_info[0][k];
@@ -1152,7 +1179,10 @@ public class SNS_Tof_to_Q_map
       if ( grid_id < 0                 || 
            grid_id >= all_grids.length || 
            all_grids[ grid_id ] == null )
-        System.out.println("ERROR: Missing grid " + grid_id + " in .DetCsl");
+      {
+//        System.out.println("ERROR: Missing grid " + grid_id + " in .DetCsl");
+        missing_grid_count++;
+      }
       else
       {
         grid     = all_grids[ grid_id ];

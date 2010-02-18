@@ -73,18 +73,18 @@ public class Make_d_DataSet extends GenericOperator{
     */
    public void setDefaultParameters(){
       clearParametersVector();
-      addParameter( new StringPG("Instrument","SNAP"));
-      addParameter( new LoadFilePG("Event File Name",System.getProperty("ISAW_HOME","")));
-      addParameter( new LoadFilePG("DetCal FileName",System.getProperty("ISAW_HOME","")+"/InstrumentInfo/SNS"));
-      addParameter( new LoadFilePG("Bank File Name",System.getProperty("ISAW_HOME","")+"/InstrumentInfo/SNS"));
-      addParameter( new LoadFilePG("Mapping File Name",System.getProperty("ISAW_HOME","")+"/InstrumentInfo/SNS"));
-      addParameter( new LongPG("first Event",1));
-      addParameter( new LongPG("Nu mEvents To Load",8000000));
-      addParameter( new FloatPG("min d-spacing",.0f));
-      addParameter( new FloatPG("max d-spacing",10));
+      addParameter( new StringPG("Instrument","PG3"));
+      addParameter( new LoadFilePG("Event File Name",System.getProperty("Data_Directory","")));
+      addParameter( new LoadFilePG("DetCal FileName",""));
+      addParameter( new LoadFilePG("Bank File Name",""));
+      addParameter( new LoadFilePG("Mapping File Name",""));
+      addParameter( new LongPG("First Event to Load",1));
+      addParameter( new LongPG("Number of Events To Load",10000000));
+      addParameter( new FloatPG("Min d-spacing",.2f));
+      addParameter( new FloatPG("Max d-spacing",10));
       addParameter( new BooleanEnablePG("Log binning?","[false,1,1]"));
-      addParameter( new FloatPG("lenght 1st interval",.0002));
-      addParameter( new IntegerPG("# bins(uniform)",10000));
+      addParameter( new FloatPG("Length of 1st Interval",.0002));
+      addParameter( new IntegerPG("Number of Bins(uniform)",10000));
    }
 
 
