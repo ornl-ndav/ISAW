@@ -114,6 +114,19 @@ public class SNS_Tof_to_Q_map
   public static final String SEQ   = "SEQ";
   public static final String CNCS  = "CNCS";
 
+  /**
+   *  To add support for a new instrument, add the name of the instrument
+   *  as a String (above) and add it to the list of supported instruments,
+   *  below.  The .../ISAW/InstrumentInfo/SNS/ directory should also include
+   *  a directory for that instrument, containing the .DetCal, *_bank.xml
+   *  and *_TS.dat mapping file, that will be used as defaults.
+   */
+  public static final String[] supported_instruments = { SNAP, 
+                                                         TOPAZ, 
+                                                         PG3,
+                                                         ARCS,
+                                                         SEQ,
+                                                         CNCS };
 
   private final float MAX_WAVELENGTH = 50.0f;    // max in lamda_weight table
 
@@ -218,6 +231,120 @@ public class SNS_Tof_to_Q_map
                            String spectrum_filename )
          throws IOException
   {
+    InitFromSNS_Maps( instrument_name, 
+                      det_cal_filename, 
+                      bank_filename,
+                      map_filename,
+                      spectrum_filename );
+
+  }
+
+
+
+  /**
+   *  Construct the mapping from (tof,id) to Qxyz, d and time-focused 
+   *  spectra from the information at the start of a .peaks file or .DetCal 
+   *  file, and an incident spectrum file.  NOTE: There MUST be an
+   *  entry for each detector in the instrument, so a .peaks file may not 
+   *  work, if some detectors are missing.
+   *
+   *  @param  det_cal_filename  The name of the .DetCal or .peaks file with 
+   *                            position information about EVERY detector and
+   *                            L1 and t0 values.
+   *
+   *  @param  spectrum_filename Name of file containing incident spectrum
+   *                            for this instrument.  The spectrum file
+   *                            must be an ASCII file giving values for the
+   *                            incident spectrum.  The file must be the same
+   *                            form as InstrumentInfo/SNS/SNAP_Spectrum.dat
+   *                            If no spectrum file is available, pass in null.
+   *                            The SNAP spectrum file will be used by default
+   *                            for SNAP.
+   *
+   *  @param  instrument_name  Name of the instrument, used to determine
+   *                           pixel orderings for event file.
+   */
+  public SNS_Tof_to_Q_map( String det_cal_filename, 
+                           String spectrum_filename,
+                           String instrument_name )  
+         throws IOException
+  {
+    boolean new_init = true;
+    if ( new_init )
+    {
+      System.out.println("USING NEW BANK/MAPPING FILE METHOD");
+      InitFromSNS_Maps( instrument_name, det_cal_filename, 
+                        null, null, spectrum_filename );
+    }
+    else
+    {
+      System.out.println("USING OLD .DetCal ONLY METHOD");
+      InitFromReorderedDetCal( det_cal_filename, spectrum_filename, 
+                               instrument_name );
+    }
+  }
+
+
+  /**
+   *  This method initialized the tables using ONLY the informaition in
+   *  re-ordered .DetCal file, as was originally done for SNAP and ARCS.
+   */
+  private void InitFromReorderedDetCal( String filename,
+                                        String spectrum_filename,
+                                        String instrument_name )
+               throws IOException
+  {
+     this.instrument_name = instrument_name;
+
+     Vector file_info = FileUtil.LoadDetCal( filename );
+     grid_arr = (IDataGrid[])(file_info.elementAt(0));
+     L1       = (Float)(file_info.elementAt(1));                       
+     t0       = 10*(Float)(file_info.elementAt(2));                       
+                                                  // Need factor of 10, since
+                                                  // SNS data is in terms of
+                                                  // 100ns clock ticks.
+
+     if ( instrument_name.equalsIgnoreCase(TOPAZ) )
+       grid_arr = ReorderTOPAZ_grids( grid_arr );
+
+     if ( instrument_name.equalsIgnoreCase(SNAP) )
+       grid_arr = ReorderSNAP_grids( grid_arr );
+
+     if ( instrument_name.equalsIgnoreCase(ARCS) )
+       grid_arr = ReorderARCS_grids( grid_arr );
+
+     if ( instrument_name.equalsIgnoreCase(SEQ) )
+       grid_arr = ReorderSEQ_grids( grid_arr );
+
+     SampleOrientation orient = new SNS_SampleOrientation( 0, 0, 0 );
+     inverse_mapper = new VecQMapper[ grid_arr.length ];
+     for ( int i = 0; i < grid_arr.length; i++ )
+       if ( grid_arr[i] != null )
+         inverse_mapper[i] = new VecQMapper( grid_arr[i], L1, t0/10, orient );
+
+     System.out.println("In constructor, spectrum file = " + spectrum_filename);
+
+     BuildMaps();
+     if ( spectrum_filename == null || spectrum_filename.trim().length() == 0 ) 
+       spectrum_filename = null;
+
+     BuildLamdaWeights( spectrum_filename );
+  }
+
+
+  /**
+   *  This method initialized the tables using information from 
+   *  a .DetCal file, an SNS "bank" file and an SNS "mapping" file.
+   *  This should work for SNS diffractometers and spectrometers, provided
+   *  the required files are available.
+   */
+  private void InitFromSNS_Maps( String instrument_name,
+                                 String det_cal_filename,
+                                 String bank_filename,
+                                 String map_filename,
+                                 String spectrum_filename )
+         throws IOException
+  {
     String default_dir = SharedData.getProperty("ISAW_HOME","")+
                          "/InstrumentInfo/SNS/" + instrument_name + "/";
     try
@@ -282,88 +409,6 @@ public class SNS_Tof_to_Q_map
       spectrum_filename = null;
 
     BuildLamdaWeights( spectrum_filename );
-  }
-
-
-
-  /**
-   *  Construct the mapping from (tof,id) to Qxyz, d and time-focused 
-   *  spectra from the information at the start of a .peaks file or .DetCal 
-   *  file, and an incident spectrum file.  NOTE: There MUST be an
-   *  entry for each detector in the instrument, so a .peaks file may not 
-   *  work, if some detectors are missing.
-   *
-   *  @param  filename  The name of the .DetCal or .peaks file with 
-   *                    position information about EVERY detector and
-   *                    L1 and t0 values.
-   *
-   *  @param  spectrum_filename Name of file containing incident spectrum
-   *                            for this instrument.  The spectrum file
-   *                            must be an ASCII file giving values for the
-   *                            incident spectrum.  The file must be the same
-   *                            form as InstrumentInfo/SNS/SNAP_Spectrum.dat
-   *                            If no spectrum file is available, pass in null.
-   *                            The SNAP spectrum file will be used by default
-   *                            for SNAP.
-   *
-   *  @param  instrument_name  Name of the instrument, used to determine
-   *                           pixel orderings for event file.
-   */
-  public SNS_Tof_to_Q_map( String filename, 
-                           String spectrum_filename,
-                           String instrument_name )  
-         throws IOException
-  {
-    this( instrument_name, filename, null, null, spectrum_filename );
-
-//    InitFromReorderedDetCal( filename, spectrum_filename, instrument_name );
-  }
-
-
-  /**
-   *  This method initialized the tables using ONLY the informaition in
-   *  re-ordered .DetCal file, as was originally done for SNAP and ARCS.
-   */
-  private void InitFromReorderedDetCal( String filename,
-                                        String spectrum_filename,
-                                        String instrument_name )
-               throws IOException
-  {
-     this.instrument_name = instrument_name;
-
-     Vector file_info = FileUtil.LoadDetCal( filename );
-     grid_arr = (IDataGrid[])(file_info.elementAt(0));
-     L1       = (Float)(file_info.elementAt(1));                       
-     t0       = 10*(Float)(file_info.elementAt(2));                       
-                                                  // Need factor of 10, since
-                                                  // SNS data is in terms of
-                                                  // 100ns clock ticks.
-
-     if ( instrument_name.equalsIgnoreCase(TOPAZ) )
-       grid_arr = ReorderTOPAZ_grids( grid_arr );
-
-     if ( instrument_name.equalsIgnoreCase(SNAP) )
-       grid_arr = ReorderSNAP_grids( grid_arr );
-
-     if ( instrument_name.equalsIgnoreCase(ARCS) )
-       grid_arr = ReorderARCS_grids( grid_arr );
-
-     if ( instrument_name.equalsIgnoreCase(SEQ) )
-       grid_arr = ReorderSEQ_grids( grid_arr );
-
-     SampleOrientation orient = new SNS_SampleOrientation( 0, 0, 0 );
-     inverse_mapper = new VecQMapper[ grid_arr.length ];
-     for ( int i = 0; i < grid_arr.length; i++ )
-       if ( grid_arr[i] != null )
-         inverse_mapper[i] = new VecQMapper( grid_arr[i], L1, t0/10, orient );
-
-     System.out.println("In constructor, spectrum file = " + spectrum_filename);
-
-     BuildMaps();
-     if ( spectrum_filename == null || spectrum_filename.trim().length() == 0 ) 
-       spectrum_filename = null;
-
-     BuildLamdaWeights( spectrum_filename );
   }
 
 
