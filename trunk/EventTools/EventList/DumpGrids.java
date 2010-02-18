@@ -97,6 +97,7 @@ public class DumpGrids
          for( int child = 0 ; !found ; )
          {
             NxNode node = nex.getChildNode( child );
+           // System.out.println("class-name:"+node.getNodeClass()+"-"+node.getNodeName());
             if ( node == null )
             {
                found = true;
@@ -118,8 +119,7 @@ public class DumpGrids
             {
                if ( SourceNode == null )
                   SourceNode = node;
-               if ( InstrNode != null && SourceNode != null )
-                  found = true;
+               
                child++ ;
 
             } else if ( node.getNodeClass( ).equals( "NXmoderator" ) )
@@ -147,6 +147,7 @@ public class DumpGrids
          return RetClose( new ErrorString( "Cannot open file:" + s ) , topNode );
       }
       // InstrNode is an NXinstrument Node
+
       float L1 = ConvertDataTypes.floatValue( NexUtils.getFloatFieldValue(
             SourceNode , "distance" ) );
 
