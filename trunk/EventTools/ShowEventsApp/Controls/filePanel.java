@@ -101,8 +101,10 @@ public class filePanel //extends JPanel
    private FilteredPG_TextField Port;
    private JComboBox         Instrument;
    private static String[]  InstrumentList={ SNS_Tof_to_Q_map.SNAP,
-                                             SNS_Tof_to_Q_map.ARCS,
                                              SNS_Tof_to_Q_map.TOPAZ,
+                                             SNS_Tof_to_Q_map.PG3,
+                                             SNS_Tof_to_Q_map.ARCS,
+                                             SNS_Tof_to_Q_map.CNCS,
                                              SNS_Tof_to_Q_map.SEQ };
    
    /**

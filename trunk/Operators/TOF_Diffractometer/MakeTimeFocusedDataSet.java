@@ -73,20 +73,20 @@ public class MakeTimeFocusedDataSet extends GenericOperator{
     */
    public void setDefaultParameters(){
       clearParametersVector();
-      addParameter( new StringPG("Instrument","SNAP"));
+      addParameter( new StringPG("Instrument","PG3"));
       addParameter( new LoadFilePG("Event File Name",System.getProperty("Data_Directory","")));
-      addParameter( new LoadFilePG("DetCal File Name",System.getProperty("ISAW_HOME","")+"/InstrumentInfo/SNS"));
-      addParameter( new LoadFilePG("Bank FileName",System.getProperty("ISAW_HOME","")+"/InstrumentInfo/SNS"));
-      addParameter( new LoadFilePG("Mapping File Name",System.getProperty("ISAW_HOME","")+"/InstrumentInfo/SNS"));
-      addParameter( new LongPG("firs Event",1));
-      addParameter( new LongPG("Num Events To Load",800000));
-      addParameter( new FloatPG("focusing angle(degrees0",90));
-      addParameter( new FloatPG("Focusing flight path(m)",.5f));
-      addParameter( new FloatPG("min time to focus",1000));
-      addParameter( new FloatPG("max time to focus",30000));
+      addParameter( new LoadFilePG("DetCal File Name",""));
+      addParameter( new LoadFilePG("Bank FileName",""));
+      addParameter( new LoadFilePG("Mapping File Name",""));
+      addParameter( new LongPG("First Event",1));
+      addParameter( new LongPG("Number of Events To Load",10000000));
+      addParameter( new FloatPG("Focused Angle(degrees0",90));
+      addParameter( new FloatPG("Focused Secondary Flight Path(m)",.5f));
+      addParameter( new FloatPG("Min time to focus",1000));
+      addParameter( new FloatPG("Max time to focus",30000));
       addParameter( new BooleanEnablePG("Logarithmic binning?","[false,1,1]"));
-      addParameter( new FloatPG("Length first interval(log binning)",.7));
-      addParameter( new IntegerPG("# buns(uniform)",10000));
+      addParameter( new FloatPG("Length first interval(log binning)",.2));
+      addParameter( new IntegerPG("Number of Bin(uniform)",10000));
    }
 
 
