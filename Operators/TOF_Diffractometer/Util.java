@@ -35,10 +35,12 @@ package Operators.TOF_Diffractometer;
 
 import gov.anl.ipns.MathTools.Geometry.DetectorPosition;
 import gov.anl.ipns.MathTools.Geometry.Vector3D;
+import gov.anl.ipns.Util.File.*;
 import DataSetTools.dataset.*;
 import EventTools.EventList.*;
 import EventTools.Histogram.*;
 import DataSetTools.instruments.*;
+
 
 /**
  * This class contains utility methods and some static methods that are
@@ -49,11 +51,9 @@ import DataSetTools.instruments.*;
  */
 public class Util
 {
-
    /**
     * Makes a DataSet in d-spacing for each detector from Event Data
     * 
-    * @param Instrument       The name of the instrument
     * @param EventFileName    The name of the file with events
     * @param DetCalFileName   The name of the file with the detector 
     *                            calibrations
@@ -73,8 +73,7 @@ public class Util
     * @return  A DataSet in d-spacing whose spectra are the summed d-spacing
     *           for a detector.
     */
-   public static DataSet Make_d_DataSet( String Instrument,
-                                         String EventFileName,
+   public static DataSet Make_d_DataSet( String EventFileName,
                                          String DetCalFileName,
                                          String bankInfoFileName,
                                          String MappingFileName,
@@ -86,10 +85,12 @@ public class Util
                                          float first_logStep,
                                          int nUniformbins
                                          )
+                         throws Exception
    {
-      try
-      {
-         SNS_Tof_to_Q_map SMap = new SNS_Tof_to_Q_map( DetCalFileName,null,Instrument);
+         String Instrument = FileIO.getSNSInstrumentName( EventFileName );
+         SNS_Tof_to_Q_map SMap = 
+                     new SNS_Tof_to_Q_map( DetCalFileName, null, Instrument);
+
          SNS_TofEventList STOF = new  SNS_TofEventList(EventFileName);
          
          IEventBinner binner;
@@ -114,7 +115,6 @@ public class Util
          float[] xs = new float[ binner.numBins( )+1];
          for( int i=0; i< xs.length;i++)
             xs[i]=(float)binner.minVal( i );
-         
          
          xs[xs.length-1]=(float)binner.maxVal( xs.length-1 );
          
@@ -145,20 +145,12 @@ public class Util
          DS.setAttribute( T0Attr );
 
          return DS;
-      }catch(Exception s)
-      {
-         s.printStackTrace( );
-         return null;
-      }
-      
-    
    }
    
 
    /**
     * Makes a DataSet from Event Data where each detector is time focused
     * 
-    * @param Instrument       The name of the instrument
     * @param EventFileName    The name of the file with events
     * @param DetCalFileName   The name of the file with the detector 
     *                            calibrations
@@ -172,7 +164,7 @@ public class Util
     *                     (in degrees) to which the data should be focused
     *
     * @param  final_L_m       The final flight path length (in meters) to which
-   *                     the data should be focused
+    *                     the data should be focused
     * @param min              The minimum time to consider
     * @param max              The maximum time to consider
     * @param isLog            If true use log binning, otherwise use uniform
@@ -182,7 +174,7 @@ public class Util
     * 
     * @return a DataSet from Event Data where each detector is time focused
     */
-   public static DataSet MakeTimeFocusedDataSet( String Instrument,
+   public static DataSet MakeTimeFocusedDataSet( 
                                          String EventFileName,
                                          String DetCalFileName,
                                          String bankInfoFileName,
@@ -197,11 +189,13 @@ public class Util
                                          float first_logStep,
                                          int nUniformbins
                                          )
+                         throws Exception
    {
-      try
-      {
-         SNS_Tof_to_Q_map SMap = new SNS_Tof_to_Q_map( DetCalFileName,null,Instrument);
-         SNS_TofEventList STOF = new  SNS_TofEventList(EventFileName);
+         String Instrument = FileIO.getSNSInstrumentName( EventFileName );
+         SNS_Tof_to_Q_map SMap =
+                    new SNS_Tof_to_Q_map( DetCalFileName, null, Instrument);
+
+         SNS_TofEventList STOF = new SNS_TofEventList(EventFileName);
          
          IEventBinner binner;
          if( isLog)
@@ -227,7 +221,6 @@ public class Util
          float[] xs = new float[ binner.numBins( )+1];
          for( int i=0; i< xs.length;i++)
             xs[i]=(float)binner.minVal( i );
-         
          
          xs[xs.length-1]=(float)binner.maxVal( xs.length-1 );
          
@@ -264,8 +257,9 @@ public class Util
                D.setAttribute(  L1Attr );
                D.setAttribute(T0Attr);
                
-               UniformGrid grid = new UniformGrid(i,"m",pos, new Vector3D(1,0,0),
-                     new Vector3D(0,1,0),.2f,.2f,.2f,1,1);
+               UniformGrid grid = 
+                       new UniformGrid(i,"m",pos, new Vector3D(1,0,0),
+                                        new Vector3D(0,1,0),.2f,.2f,.2f,1,1);
                DetectorPixelInfo pix = new DetectorPixelInfo(pixelNum,(short)1,
                      (short)1,grid);
                D.setAttribute(  new PixelInfoListAttribute( 
@@ -280,21 +274,18 @@ public class Util
          DS.setAttribute( T0Attr ); 
           
          return DS;
-      }catch(Exception s)
-      {
-         s.printStackTrace( );
-         return null;
-      }
-      
-    
    }
+
+
    /**
     * @param args
     */
-   public static void main_Make_dDS(String[] args)
+   public static void main_Make_dDS(String[] args) throws Exception
    {
       String Instrument ="SNAP";
-      String EventFileName="C:/Users/ruth/SNS/EventData/Snap_240_neutron_event.dat";
+      String EventFileName=
+                "C:/Users/ruth/SNS/EventData/Snap_240_neutron_event.dat";
+
       String DetCalFileName="C:/ISAW/InstrumentInfo/SNS/SNAP/SNAP.DetCal";
       String bankInfoFileName=null;
       String MappingFileName=null;
@@ -305,18 +296,25 @@ public class Util
       float max=10;
       int nUniformbins=10000;
       float first_logStep=.0002f;
-      DataSet D = Util.Make_d_DataSet( Instrument , EventFileName , DetCalFileName ,
-            bankInfoFileName , MappingFileName , firstEvent , NumEventsToLoad , 
-             min , max ,isLog , first_logStep , nUniformbins );
+      DataSet D = Util.Make_d_DataSet( EventFileName,  
+                                       DetCalFileName,
+                                       bankInfoFileName, 
+                                       MappingFileName, 
+                                       firstEvent, 
+                                       NumEventsToLoad, 
+                                       min, 
+                                       max,
+                                       isLog,  
+                                       first_logStep, 
+                                       nUniformbins );
       Command.ScriptUtil.display( D );
-     
-
    }
    
-   public static void main(String[] args)
+   public static void main(String[] args) throws Exception
    {
-      String Instrument ="SNAP";
-      String EventFileName="C:/Users/ruth/SNS/EventData/Snap_240_neutron_event.dat";
+      String EventFileName=
+                 "C:/Users/ruth/SNS/EventData/Snap_240_neutron_event.dat";
+
       String DetCalFileName="C:/ISAW/InstrumentInfo/SNS/SNAP/SNAP.DetCal";
       String bankInfoFileName=null;
       String MappingFileName=null;
@@ -327,12 +325,20 @@ public class Util
       float max=20000;
       int nUniformbins=1000;
       float first_logStep=.0002f;
-      DataSet D = Util.MakeTimeFocusedDataSet( Instrument , EventFileName , DetCalFileName ,
-            bankInfoFileName , MappingFileName, firstEvent , NumEventsToLoad ,90f,.5f , 
-             min , max ,isLog , first_logStep , nUniformbins );
-      Command.ScriptUtil.display( D);
-     
-
+      DataSet D = Util.MakeTimeFocusedDataSet( EventFileName, 
+                                               DetCalFileName,
+                                               bankInfoFileName, 
+                                               MappingFileName, 
+                                               firstEvent, 
+                                               NumEventsToLoad,
+                                               90f,
+                                               .5f, 
+                                               min, 
+                                               max,
+                                               isLog, 
+                                               first_logStep, 
+                                               nUniformbins );
+      Command.ScriptUtil.display( D );
    }
 
 }
