@@ -203,7 +203,7 @@ public class SNS_Tof_to_Q_map
    *  configuration as was in place when the neutron event file(s) that 
    *  will be mapped were written.  The initial spectrum file is optional.
    *
-   *  @param  inst_name         The name of the instrument, such as "TOPAZ".
+   *  @param  instrument_name   The name of the instrument, such as "TOPAZ".
    *
    *  @param  det_cal_filename  The name of the .DetCal or .peaks file with 
    *                            position information about EVERY detector and

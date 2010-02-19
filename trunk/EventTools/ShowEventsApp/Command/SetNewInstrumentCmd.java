@@ -96,7 +96,8 @@ public class SetNewInstrumentCmd
 
 
    /**
-    * @see #SetNewInstrumentCmd(String, String, String, float) Full Constructor
+    * @see #SetNewInstrumentCmd(String, String, String, String, String, float)
+    *       Full Constructor
     */
    public SetNewInstrumentCmd( String instrument_name, 
                                String detector_file_name,

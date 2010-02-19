@@ -100,13 +100,8 @@ public class filePanel //extends JPanel
    private float              MaxQValue;//Remember last MaxQValue
    private FilteredPG_TextField Port;
    private JComboBox         Instrument;
-   private static String[]  InstrumentList={ SNS_Tof_to_Q_map.SNAP,
-                                             SNS_Tof_to_Q_map.TOPAZ,
-                                             SNS_Tof_to_Q_map.PG3,
-                                             SNS_Tof_to_Q_map.ARCS,
-                                             SNS_Tof_to_Q_map.CNCS,
-                                             SNS_Tof_to_Q_map.SEQ };
-   
+   private static String[]   InstrumentList = 
+                                 SNS_Tof_to_Q_map.supported_instruments;
    /**
     * Creates file panel as well as sets up default
     * properties for the file load locations.
@@ -197,9 +192,7 @@ public class filePanel //extends JPanel
       evFileButton = new JButton("Neutron Event File");
       evFileButton.addActionListener(new button());
       
-      
-      String default_evFileName = "";//Datafilename;
-                           // "/usr2/SNAP_2/EVENTS/SNAP_240_neutron_event.dat";
+      String default_evFileName = "";
       
       evFileName = new JTextField( default_evFileName );
       evFileName.addMouseListener(new mouse());
