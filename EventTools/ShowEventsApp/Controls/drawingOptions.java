@@ -173,7 +173,7 @@ public class drawingOptions extends JPanel
       panel.setLayout(new GridLayout(1,1));
 
       JLabel label = new JLabel("Point Size");
-      String defaultSize = "3";
+      String defaultSize = "1";
       pointSize = new JTextField(defaultSize);
       pointSize.setHorizontalAlignment(JTextField.RIGHT);
 
