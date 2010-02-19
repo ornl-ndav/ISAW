@@ -669,8 +669,7 @@ public class ScalarHandlePanel implements IReceiveMessage
     */
    public static void main(String[] args)
    {
-
-      String filename = args[0];//"C:/ISAW/SampleRuns/SNS/SNAP/WSF/235_46/quartzTest.mat";
+      String filename = args[0];
       
       float[][] UB = ( float[][] ) Operators.TOF_SCD.IndexJ
             .readOrient( filename );
@@ -688,9 +687,8 @@ public class ScalarHandlePanel implements IReceiveMessage
       jf.setSize( 400 , 600 );
       
       WindowShower.show( jf );
-      
-
    }
+
 
    /**
     * This class handles the action listening for the class ScalarHandlePanel
@@ -699,12 +697,10 @@ public class ScalarHandlePanel implements IReceiveMessage
     */
    class ThisActionListener implements ActionListener
    {
-
       int category;
 
       public ThisActionListener(int category)
       {
-
          this.category = category;
       }
 
@@ -774,12 +770,10 @@ public class ScalarHandlePanel implements IReceiveMessage
             for( int i = 0 ; i < Centerings.length ; i++ )
                
                Centerings[i].setSelected( state );
-
          }
-
       }
-
    }
+
 
    /**
     * This class is a wrapper around ReducedCellInfo with other information
@@ -789,7 +783,6 @@ public class ScalarHandlePanel implements IReceiveMessage
     */
    class ReducedCellPlus
    {
-
       int             flipUBRow;
 
       double          distance;
