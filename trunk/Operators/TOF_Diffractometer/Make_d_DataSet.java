@@ -73,8 +73,8 @@ public class Make_d_DataSet extends GenericOperator{
     */
    public void setDefaultParameters(){
       clearParametersVector();
-      addParameter( new StringPG("Instrument","PG3"));
-      addParameter( new LoadFilePG("Event File Name",System.getProperty("Data_Directory","")));
+      addParameter( new LoadFilePG("Event File Name",
+                    System.getProperty("Data_Directory","")));
       addParameter( new LoadFilePG("DetCal FileName",""));
       addParameter( new LoadFilePG("Bank File Name",""));
       addParameter( new LoadFilePG("Mapping File Name",""));
@@ -102,8 +102,6 @@ public class Make_d_DataSet extends GenericOperator{
       S.append("");
       S.append("@assumptions    "); 
       S.append("");
-      S.append("@param   ");
-      S.append("The name of the instrument");
       S.append("@param   ");
       S.append("The name of the file with events");
       S.append("@param   ");
@@ -154,19 +152,18 @@ public class Make_d_DataSet extends GenericOperator{
    public Object getResult(){
       try{
 
-         java.lang.String Instrument = getParameter(0).getValue().toString();
-         java.lang.String EventFileName = getParameter(1).getValue().toString();
-         java.lang.String DetCalFileName = getParameter(2).getValue().toString();
-         java.lang.String bankInfoFileName = getParameter(3).getValue().toString();
-         java.lang.String MappingFileName = getParameter(4).getValue().toString();
-         long firstEvent = ((LongPG)(getParameter(5))).getlongValue();
-         long NumEventsToLoad = ((LongPG)(getParameter(6))).getlongValue();
-         float min = ((FloatPG)(getParameter(7))).getfloatValue();
-         float max = ((FloatPG)(getParameter(8))).getfloatValue();
-         boolean isLog = ((BooleanEnablePG)(getParameter(9))).getbooleanValue();
-         float first_logStep = ((FloatPG)(getParameter(10))).getfloatValue();
-         int nUniformbins = ((IntegerPG)(getParameter(11))).getintValue();
-         DataSetTools.dataset.DataSet Xres=Operators.TOF_Diffractometer.Util.Make_d_DataSet(Instrument,EventFileName,DetCalFileName,bankInfoFileName,MappingFileName,firstEvent,NumEventsToLoad,min,max,isLog,first_logStep,nUniformbins );
+         java.lang.String EventFileName = getParameter(0).getValue().toString();
+         java.lang.String DetCalFileName = getParameter(1).getValue().toString();
+         java.lang.String bankInfoFileName = getParameter(2).getValue().toString();
+         java.lang.String MappingFileName = getParameter(3).getValue().toString();
+         long firstEvent = ((LongPG)(getParameter(4))).getlongValue();
+         long NumEventsToLoad = ((LongPG)(getParameter(5))).getlongValue();
+         float min = ((FloatPG)(getParameter(6))).getfloatValue();
+         float max = ((FloatPG)(getParameter(7))).getfloatValue();
+         boolean isLog = ((BooleanEnablePG)(getParameter(8))).getbooleanValue();
+         float first_logStep = ((FloatPG)(getParameter(9))).getfloatValue();
+         int nUniformbins = ((IntegerPG)(getParameter(10))).getintValue();
+         DataSetTools.dataset.DataSet Xres=Operators.TOF_Diffractometer.Util.Make_d_DataSet(EventFileName,DetCalFileName,bankInfoFileName,MappingFileName,firstEvent,NumEventsToLoad,min,max,isLog,first_logStep,nUniformbins );
 
          return Xres;
        }catch( Throwable XXX){

@@ -73,7 +73,6 @@ public class MakeTimeFocusedDataSet extends GenericOperator{
     */
    public void setDefaultParameters(){
       clearParametersVector();
-      addParameter( new StringPG("Instrument","PG3"));
       addParameter( new LoadFilePG("Event File Name",System.getProperty("Data_Directory","")));
       addParameter( new LoadFilePG("DetCal File Name",""));
       addParameter( new LoadFilePG("Bank FileName",""));
@@ -104,8 +103,6 @@ public class MakeTimeFocusedDataSet extends GenericOperator{
       S.append("");
       S.append("@assumptions    "); 
       S.append("");
-      S.append("@param   ");
-      S.append("The name of the instrument");
       S.append("@param   ");
       S.append("The name of the file with events");
       S.append("@param   ");
@@ -160,21 +157,20 @@ public class MakeTimeFocusedDataSet extends GenericOperator{
    public Object getResult(){
       try{
 
-         java.lang.String Instrument = getParameter(0).getValue().toString();
-         java.lang.String EventFileName = getParameter(1).getValue().toString();
-         java.lang.String DetCalFileName = getParameter(2).getValue().toString();
-         java.lang.String bankInfoFileName = getParameter(3).getValue().toString();
-         java.lang.String MappingFileName = getParameter(4).getValue().toString();
-         long firstEvent = ((LongPG)(getParameter(5))).getlongValue();
-         long NumEventsToLoad = ((LongPG)(getParameter(6))).getlongValue();
-         float angle_deg = ((FloatPG)(getParameter(7))).getfloatValue();
-         float final_L_m = ((FloatPG)(getParameter(8))).getfloatValue();
-         float min = ((FloatPG)(getParameter(9))).getfloatValue();
-         float max = ((FloatPG)(getParameter(10))).getfloatValue();
-         boolean isLog = ((BooleanEnablePG)(getParameter(11))).getbooleanValue();
-         float first_logStep = ((FloatPG)(getParameter(12))).getfloatValue();
-         int nUniformbins = ((IntegerPG)(getParameter(13))).getintValue();
-         DataSetTools.dataset.DataSet Xres=Operators.TOF_Diffractometer.Util.MakeTimeFocusedDataSet(Instrument,EventFileName,DetCalFileName,bankInfoFileName,MappingFileName,firstEvent,NumEventsToLoad,angle_deg,final_L_m,min,max,isLog,first_logStep,nUniformbins );
+         java.lang.String EventFileName = getParameter(0).getValue().toString();
+         java.lang.String DetCalFileName = getParameter(1).getValue().toString();
+         java.lang.String bankInfoFileName = getParameter(2).getValue().toString();
+         java.lang.String MappingFileName = getParameter(3).getValue().toString();
+         long firstEvent = ((LongPG)(getParameter(4))).getlongValue();
+         long NumEventsToLoad = ((LongPG)(getParameter(5))).getlongValue();
+         float angle_deg = ((FloatPG)(getParameter(6))).getfloatValue();
+         float final_L_m = ((FloatPG)(getParameter(7))).getfloatValue();
+         float min = ((FloatPG)(getParameter(8))).getfloatValue();
+         float max = ((FloatPG)(getParameter(9))).getfloatValue();
+         boolean isLog = ((BooleanEnablePG)(getParameter(10))).getbooleanValue();
+         float first_logStep = ((FloatPG)(getParameter(11))).getfloatValue();
+         int nUniformbins = ((IntegerPG)(getParameter(12))).getintValue();
+         DataSetTools.dataset.DataSet Xres=Operators.TOF_Diffractometer.Util.MakeTimeFocusedDataSet(EventFileName,DetCalFileName,bankInfoFileName,MappingFileName,firstEvent,NumEventsToLoad,angle_deg,final_L_m,min,max,isLog,first_logStep,nUniformbins );
 
          return Xres;
        }catch( Throwable XXX){
