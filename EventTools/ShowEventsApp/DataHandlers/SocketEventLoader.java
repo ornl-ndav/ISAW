@@ -551,7 +551,12 @@ class thisIUDPUser implements IUDPUser
          return 0.;
       try
       {
-         ByteArrayInputStream bStream = new ByteArrayInputStream(data,start,8);
+         byte[]D = new byte[10];
+         for( int i=0;i < 8; i++)
+         {
+            D[i] = data[start+7-i];
+         }
+         ByteArrayInputStream bStream = new ByteArrayInputStream(D,0,8);
          DataInputStream dStream = new DataInputStream( bStream );
          double x= dStream.readDouble( );
          
