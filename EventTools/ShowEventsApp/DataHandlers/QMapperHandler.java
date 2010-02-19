@@ -134,9 +134,12 @@ public class QMapperHandler implements IReceiveMessage
         try 
         { 
           start    = System.nanoTime();
-          mapper   = new SNS_Tof_to_Q_map( det_file, 
-                                           spec_file, 
-                                           new_instrument );
+          mapper   = new SNS_Tof_to_Q_map(  new_instrument,
+                                           det_file, 
+                                           cmd.getBankFileName( ),
+                                           cmd.getIDMapFileName( ),
+                                           spec_file
+                                           );
           run_time = (System.nanoTime() - start)/1.0e6;
           instrument_name = new_instrument;
           System.out.printf("Made Q mapper in %5.1f ms\n", run_time  );
