@@ -27,9 +27,9 @@
  *
  *  Last Modified:
  * 
- *  $Author$:
- *  $Date$:            
- *  $Rev$:
+ *  $Author:$
+ *  $Date:$            
+ *  $Rev:$
  */
 package Operators.TOF_Diffractometer;
 
@@ -56,34 +56,34 @@ public class Util
     * 
     * @param EventFileName    The name of the file with events
     * @param DetCalFileName   The name of the file with the detector 
-    *                            calibrations
+    *                         calibrations
     * @param bankInfoFileName The name of the file with bank and pixelID(nex) 
-    *                              info
+    *                         info
     * @param MappingFileName  The name of the file that maps DAS pixel_id's
-    *                            to NeXus pixel_id's
-    * @param firstEvent       The first Event to load
-    * @param NumEventsToLoad  The number of events to load
+    *                         to NeXus pixel_id's
+    * @param firstToLoad      The first Event to load
+    * @param numToLoad        The number of events to load
     * @param min              The minimum d-spacing to consider
     * @param max              The maximum d-spacing to consider
     * @param isLog            If true use log binning, otherwise use uniform
-    *                            binnings           
+    *                         binnings           
     * @param nUniformbins     The number of uniform bins( isLog=false )
     * @param first_logStep    The length of first interval( isLog = true )
     * 
     * @return  A DataSet in d-spacing whose spectra are the summed d-spacing
     *           for a detector.
     */
-   public static DataSet Make_d_DataSet( String EventFileName,
-                                         String DetCalFileName,
-                                         String bankInfoFileName,
-                                         String MappingFileName,
-                                         long firstEvent,
-                                         long NumEventsToLoad,
-                                         float min,
-                                         float max,
-                                         boolean  isLog,
-                                         float first_logStep,
-                                         int nUniformbins
+   public static DataSet Make_d_DataSet( String  EventFileName,
+                                         String  DetCalFileName,
+                                         String  bankInfoFileName,
+                                         String  MappingFileName,
+                                         float   firstToLoad,
+                                         float   numToLoad,
+                                         float   min,
+                                         float   max,
+                                         boolean isLog,
+                                         float   first_logStep,
+                                         int     nUniformbins
                                          )
                          throws Exception
    {
@@ -98,14 +98,64 @@ public class Util
             binner = new LogEventBinner( min, max, first_logStep);
          else
             binner = new UniformEventBinner( min,max,nUniformbins);
-         
-         int[][]Histograms = SMap.Make_d_Histograms( STOF , 
-                                                     (int)firstEvent , 
-                                                     (int)NumEventsToLoad , 
-                                                     binner );
+
+         long firstEvent = (long)firstToLoad;
+         long NumEventsToLoad = (long)numToLoad;
+
+         if ( firstEvent >= STOF.numEntries() )
+           throw new IllegalArgumentException("first event " + firstEvent +
+                    " exceeds number of events in file " + STOF.numEntries());
+
+                                                       // keep events in range
+         long last = firstEvent + NumEventsToLoad - 1;
+         if ( last >= STOF.numEntries() )
+           last =  STOF.numEntries() - 1;
+
+         long num_to_load = last - firstEvent + 1;
+                                                       // keep each segment
+                                                       // small enough for int
+         long seg_size   = 10000000;
+         seg_size = Math.min( seg_size, Integer.MAX_VALUE / 2 );
+
+         long num_segments = num_to_load / seg_size + 1;
+         seg_size = num_to_load / num_segments;
+
+         int[][] Histograms = null;
+         boolean first_time = true;
+         long num_loaded = 0;
+         for ( int i = 0; i < num_segments; i ++ )
+         {
+           seg_size = Math.min( seg_size, num_to_load - num_loaded );
+
+           int[] buffer = STOF.rawEvents( firstEvent, seg_size );
+
+           TofEventList sublist = new TofEventList(buffer,buffer.length,false);
+
+           int[][]temp = SMap.Make_d_Histograms( sublist, 
+                                                 0, 
+                                                (int)seg_size, 
+                                                 binner );
+           if ( first_time && temp != null )
+           {
+             Histograms = temp;
+             first_time = false;
+           }
+           else if ( temp != null )          // add in the new histogram data
+           {
+             for ( int row = 0; row < Histograms.length; row++ )
+               if ( temp[row] != null && Histograms[row] != null )
+               for ( int col = 0; col < Histograms[row].length; col++ )
+                 Histograms[row][col] += temp[row][col];
+           }
+           num_loaded += seg_size;
+           firstEvent += seg_size;
+         }
+
+         System.out.println("NUMBER OF EVENTS LOADED = " + num_loaded );
+
          if( Histograms == null)
             return null;
-         
+
          DataSet DS = new DataSet( "d Graphs","Converted Each detector to d");
          DS.setX_units( "Angstroms");
          DS.setX_label( "d-Spacing" );
@@ -153,18 +203,18 @@ public class Util
     * 
     * @param EventFileName    The name of the file with events
     * @param DetCalFileName   The name of the file with the detector 
-    *                            calibrations
+    *                         calibrations
     * @param bankInfoFileName The name of the file with bank and pixelID(nex) 
-    *                              info
+    *                         info
     * @param MappingFileName  The name of the file that maps DAS pixel_id's
-    *                            to NeXus pixel_id's
-    * @param firstEvent       The first Event to load
-    * @param NumEventsToLoad  The number of events to load
-    * @param angle_deg         The "virtual" scattering angle, two theta, 
-    *                     (in degrees) to which the data should be focused
+    *                         to NeXus pixel_id's
+    * @param firstToLoad      The first Event to load
+    * @param numToLoad        The number of events to load
+    * @param angle_deg        The "virtual" scattering angle, two theta, 
+    *                         (in degrees) to which the data should be focused
     *
-    * @param  final_L_m       The final flight path length (in meters) to which
-    *                     the data should be focused
+    * @param final_L_m        The final flight path length (in meters) to which
+    *                         the data should be focused
     * @param min              The minimum time to consider
     * @param max              The maximum time to consider
     * @param isLog            If true use log binning, otherwise use uniform
@@ -175,19 +225,19 @@ public class Util
     * @return a DataSet from Event Data where each detector is time focused
     */
    public static DataSet MakeTimeFocusedDataSet( 
-                                         String EventFileName,
-                                         String DetCalFileName,
-                                         String bankInfoFileName,
-                                         String MappingFileName,
-                                         long firstEvent,
-                                         long NumEventsToLoad,
-                                         float  angle_deg,
-                                         float  final_L_m, 
-                                         float min,
-                                         float max,
-                                         boolean  isLog,
-                                         float first_logStep,
-                                         int nUniformbins
+                                         String  EventFileName,
+                                         String  DetCalFileName,
+                                         String  bankInfoFileName,
+                                         String  MappingFileName,
+                                         float   firstToLoad,
+                                         float   numToLoad,
+                                         float   angle_deg,
+                                         float   final_L_m, 
+                                         float   min,
+                                         float   max,
+                                         boolean isLog,
+                                         float   first_logStep,
+                                         int     nUniformbins
                                          )
                          throws Exception
    {
@@ -202,13 +252,63 @@ public class Util
             binner = new LogEventBinner( min, max, first_logStep);
          else
             binner = new UniformEventBinner( min,max,nUniformbins);
-         
-         int[][]Histograms = SMap.Make_Time_Focused_Histograms( STOF ,   
-                                                     (int)firstEvent , 
-                                                     (int)NumEventsToLoad , 
-                                                     binner ,
-                                                     angle_deg , 
-                                                     final_L_m);
+
+         long firstEvent = (long)firstToLoad;
+         long NumEventsToLoad = (long)numToLoad;
+
+         if ( firstEvent >= STOF.numEntries() )
+           throw new IllegalArgumentException("first event " + firstEvent +
+                    " exceeds number of events in file " + STOF.numEntries());
+
+                                                       // keep events in range
+         long last = firstEvent + NumEventsToLoad - 1;
+         if ( last >= STOF.numEntries() )
+           last =  STOF.numEntries() - 1;
+  
+         long num_to_load = last - firstEvent + 1;        
+                                                       // keep each segment 
+                                                       // small enough for int
+         long seg_size   = 10000000;
+         seg_size = Math.min( seg_size, Integer.MAX_VALUE / 2 );  
+
+         long num_segments = num_to_load / seg_size + 1;
+         seg_size = num_to_load / num_segments;
+ 
+         int[][] Histograms = null;
+         boolean first_time = true;
+         long num_loaded = 0;
+         for ( int i = 0; i < num_segments; i ++ )
+         {
+           seg_size = Math.min( seg_size, num_to_load - num_loaded );
+
+           int[] buffer = STOF.rawEvents( firstEvent, seg_size );
+          
+           TofEventList sublist = new TofEventList(buffer,buffer.length,false);
+
+           int[][]temp = SMap.Make_Time_Focused_Histograms( sublist,   
+                                                            0, 
+                                                           (int)seg_size, 
+                                                            binner ,
+                                                            angle_deg , 
+                                                            final_L_m );
+           if ( first_time && temp != null )
+           {
+             Histograms = temp;
+             first_time = false;
+           }
+           else if ( temp != null )          // add in the new histogram data
+           {
+             for ( int row = 0; row < Histograms.length; row++ )
+               if ( temp[row] != null && Histograms[row] != null )
+               for ( int col = 0; col < Histograms[row].length; col++ )
+                 Histograms[row][col] += temp[row][col];
+           }
+           num_loaded += seg_size;
+           firstEvent += seg_size;
+         }
+
+         System.out.println("NUMBER OF EVENTS LOADED = " + num_loaded );
+
          if( Histograms == null)
             return null;
          

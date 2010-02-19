@@ -28,9 +28,9 @@
  *
  * Last Modified:
  *
- * $ Author: $
- * $Date: 2009-06-01 10:26:25 -0500 (Mon, 01 Jun 2009) $$
- * $Revision: 19721 $
+ * $Author:$
+ * $Date:$
+ * $Revision:$
  */
 
 package Operators.TOF_Diffractometer;
@@ -78,11 +78,11 @@ public class Make_d_DataSet extends GenericOperator{
       addParameter( new LoadFilePG("DetCal FileName",""));
       addParameter( new LoadFilePG("Bank File Name",""));
       addParameter( new LoadFilePG("Mapping File Name",""));
-      addParameter( new LongPG("First Event to Load",1));
-      addParameter( new LongPG("Number of Events To Load",10000000));
+      addParameter( new FloatPG("First Event to Load",0));
+      addParameter( new FloatPG("Number of Events To Load",1E7));
       addParameter( new FloatPG("Min d-spacing",.2f));
       addParameter( new FloatPG("Max d-spacing",10));
-      addParameter( new BooleanEnablePG("Log binning?","[false,1,1]"));
+      addParameter( new BooleanEnablePG("Log binning?","[true,1,1]"));
       addParameter( new FloatPG("Length of 1st Interval",.0002));
       addParameter( new IntegerPG("Number of Bins(uniform)",10000));
    }
@@ -156,8 +156,8 @@ public class Make_d_DataSet extends GenericOperator{
          java.lang.String DetCalFileName = getParameter(1).getValue().toString();
          java.lang.String bankInfoFileName = getParameter(2).getValue().toString();
          java.lang.String MappingFileName = getParameter(3).getValue().toString();
-         long firstEvent = ((LongPG)(getParameter(4))).getlongValue();
-         long NumEventsToLoad = ((LongPG)(getParameter(5))).getlongValue();
+         float firstEvent = ((FloatPG)(getParameter(4))).getfloatValue();
+         float NumEventsToLoad = ((FloatPG)(getParameter(5))).getfloatValue();
          float min = ((FloatPG)(getParameter(6))).getfloatValue();
          float max = ((FloatPG)(getParameter(7))).getfloatValue();
          boolean isLog = ((BooleanEnablePG)(getParameter(8))).getbooleanValue();
