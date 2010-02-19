@@ -331,7 +331,7 @@ public class SocketServerTest extends UDPSend
       byte[] Res = new byte[48 + eventLength];
       Arrays.fill( Res , (byte)0 );
       
-      Res[6] = (byte)2;      
+      Res[5] = (byte)2;      
       assign(24,Res,12);
       
       assign( 24+eventLength, Res,8);
