@@ -91,19 +91,15 @@ public class EventViewHandler implements IReceiveMessage, IhasWindowClosed
     frame3D.setVisible( true );
   }
 
-  
 
-   @Override
-public void WindowClose(String ID)
-{
-
-   frame3D = null;
-   
-}
+  @Override
+  public void WindowClose(String ID)
+  {
+    frame3D = null;
+  }
 
 
-
-   public boolean receive( Message message )
+  public boolean receive( Message message )
   {
     if ( message.getName().equals(Commands.ADD_EVENTS_TO_VIEW) )
     {
@@ -196,9 +192,9 @@ public void WindowClose(String ID)
            events_panel.updateDisplay();
          }
        }
-    }else if( message.getName().equals(Commands.SHOW_DISPLAY_PANE) )
+    }
+    else if( message.getName().equals(Commands.SHOW_DISPLAY_PANE) )
     {
-       
        if( frame3D != null)
           return false;
        frame3D = new FinishJFrame( "Reciprocal Space Events" );
@@ -215,8 +211,6 @@ public void WindowClose(String ID)
        component = events_panel.getJoglPanel().getDisplayComponent();
        frame3D.getContentPane().add( component );
        frame3D.setVisible( true );
-       
-       
     }
 
     return false;

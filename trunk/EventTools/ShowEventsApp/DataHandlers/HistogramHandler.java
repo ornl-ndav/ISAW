@@ -93,9 +93,11 @@ public class HistogramHandler implements IReceiveMessage
                            MessageCenter view_message_center,
                            int           num_bins )
   {
-    this.num_bins = num_bins;
-    this.histogram = DefaultSNAP_Histogram( num_bins );
+    this.num_bins = num_bins;    
+                                                  // set up for SNAP by default
+    Set_Histogram( num_bins, -25.0f, 0, -16.0f, 16.0f, -8.0f, 8.0f );
     this.current_instrument = SNS_Tof_to_Q_map.SNAP;
+
     this.num_to_load = 0;
     this.max_hist_value_sent = 0;
     this.max_num_added_sent = 0;
@@ -368,32 +370,61 @@ public class HistogramHandler implements IReceiveMessage
       return true;
     }
 
-    if ( inst.equals(SNS_Tof_to_Q_map.SNAP) )
-    {
-      SetHistogramForSNAP();
-      current_instrument = inst;
-      return true;
-    }
-    else if ( inst.startsWith("TOP") ) 
-    {
-      SetHistogramForTOPAZ();
-      current_instrument = inst;
-      return true;
-    }
+    if ( inst.equals(SNS_Tof_to_Q_map.SNAP) ||
+         inst.equals(SNS_Tof_to_Q_map.TOPAZ) )
+      Set_Histogram( num_bins, -25.0f, 0, -16.0f, 16.0f, -8.0f, 8.0f );
+
     else if ( inst.equals(SNS_Tof_to_Q_map.ARCS) ||
               inst.equals(SNS_Tof_to_Q_map.SEQ)  )
-    {
-      SetHistogramForARCS();
-      current_instrument = inst;
-      return true;
-    }
+      Set_Histogram( num_bins, -50.0f, 0, -10.0f, 40.0f, -25.0f, 25.0f );
+
+    else
+      Set_Histogram( num_bins, -24.0f, 0, -12.0f, 12.0f, -12.0f, 12.0f );
+
+    current_instrument = inst;
+    return true;
+  }
+
+
+  /**
+   *  Set histogram to be a new empty histogram covering a the specified
+   *  region of reciprocal space.
+   *
+   *  @param num_bins  The number of bins to use in half of the region
+   *                   for the histogram.
+   *  @param qx_min    The minimum qx value
+   *  @param qx_max    The maximum qx value
+   *  @param qy_min    The minimum qy value
+   *  @param qy_max    The maximum qy value
+   *  @param qz_min    The minimum qz value
+   *  @param qz_max    The maximum qz value
+   */
+  synchronized private void Set_Histogram( int num_bins,
+                                           float qx_min,  float qx_max,
+                                           float qy_min,  float qy_max,
+                                           float qz_min,  float qz_max  )
+  {
+    Vector3D xVec = new Vector3D(1,0,0);
+    Vector3D yVec = new Vector3D(0,1,0);
+    Vector3D zVec = new Vector3D(0,0,1);
+
+    IEventBinner x_bin1D = new UniformEventBinner( qx_min, qx_max, num_bins );
+    IEventBinner y_bin1D = new UniformEventBinner( qy_min, qy_max, num_bins );
+    IEventBinner z_bin1D = new UniformEventBinner( qz_min, qz_max, num_bins );
+
+    ProjectionBinner3D x_binner = new ProjectionBinner3D(x_bin1D, xVec);
+    ProjectionBinner3D y_binner = new ProjectionBinner3D(y_bin1D, yVec);
+    ProjectionBinner3D z_binner = new ProjectionBinner3D(z_bin1D, zVec);
+
+    if ( histogram == null )
+      histogram = new Histogram3D( x_binner, y_binner, z_binner );
     else
     {
-      SetGeneric_Histogram();
-      current_instrument = inst;
-      return true;
+      histogram.setHistogramPosition( x_binner, y_binner, z_binner );
+      histogram.clear();
     }
   }
+
 
 
   /**
@@ -448,208 +479,6 @@ public class HistogramHandler implements IReceiveMessage
     select_info_cmd.setHistPage( page );
   }
  
-
-  /**
-   *  Set histogram to be a new empty histogram covering a region
-   *  of reciprocal space appropriate for the SNAP instrument at the
-   *  SNS.
-   *
-   *  @param num_bins  The number of bins to use in each direction
-   *                   for the histogram.
-   */
-  synchronized private Histogram3D DefaultSNAP_Histogram( int num_bins )
-  {
-    Vector3D xVec = new Vector3D(1,0,0);
-    Vector3D yVec = new Vector3D(0,1,0);
-    Vector3D zVec = new Vector3D(0,0,1);
-
-    IEventBinner x_bin1D = new UniformEventBinner( -16.0f,  0,   num_bins );
-    IEventBinner y_bin1D = new UniformEventBinner( -16.0f,  0,   num_bins );
-    IEventBinner z_bin1D = new UniformEventBinner( - 8.0f, 8.0f, num_bins );
-
-    ProjectionBinner3D x_binner = new ProjectionBinner3D(x_bin1D, xVec);
-    ProjectionBinner3D y_binner = new ProjectionBinner3D(y_bin1D, yVec);
-    ProjectionBinner3D z_binner = new ProjectionBinner3D(z_bin1D, zVec);
-
-    Histogram3D histogram = new Histogram3D( x_binner,
-                                             y_binner,
-                                             z_binner );
-    return histogram;
-  }
-
-
-  /**
-   *  Set up the histogram to be new empty histogram covering a region
-   *  of reciprocal space appropriate for the SNAP instrument at the
-   *  SNS, WITHOUT reallocating memory, if possible.
-   */
-  synchronized private void SetHistogramForSNAP()
-  {
-    if ( histogram == null )
-      histogram = DefaultSNAP_Histogram( num_bins );
-    else
-    {
-      Vector3D xVec = new Vector3D(1,0,0);
-      Vector3D yVec = new Vector3D(0,1,0);
-      Vector3D zVec = new Vector3D(0,0,1);
-
-      IEventBinner x_bin1D = new UniformEventBinner( -16.0f,  0,   num_bins );
-      IEventBinner y_bin1D = new UniformEventBinner( -16.0f,  0,   num_bins );
-      IEventBinner z_bin1D = new UniformEventBinner( - 8.0f, 8.0f, num_bins );
-
-      ProjectionBinner3D x_binner = new ProjectionBinner3D(x_bin1D, xVec);
-      ProjectionBinner3D y_binner = new ProjectionBinner3D(y_bin1D, yVec);
-      ProjectionBinner3D z_binner = new ProjectionBinner3D(z_bin1D, zVec);
-
-      histogram.setHistogramPosition( x_binner, y_binner, z_binner );
-      histogram.clear();
-    }
-  }
-
-
-/**
- * Set up the histogram to be new empty histogram covering a region
- * of reciprocal space appropriate for the TOPAZ instrument at the
- * SNS, WITHOUT reallocating memory, if possible.
- */
-  synchronized private void SetHistogramForTOPAZ()
-  {
-    if ( histogram == null )
-      histogram = DefaultSNAP_Histogram( num_bins );
-    else
-    {
-      Vector3D xVec = new Vector3D(1,0,0);
-      Vector3D yVec = new Vector3D(0,1,0);
-      Vector3D zVec = new Vector3D(0,0,1);
-
-      IEventBinner x_bin1D = new UniformEventBinner( -36.0f,  0,   num_bins );
-      IEventBinner y_bin1D = new UniformEventBinner( -24.0f,  0,   num_bins );
-      IEventBinner z_bin1D = new UniformEventBinner( -18.0f, 6.0f, num_bins );
-
-      ProjectionBinner3D x_binner = new ProjectionBinner3D(x_bin1D, xVec);
-      ProjectionBinner3D y_binner = new ProjectionBinner3D(y_bin1D, yVec);
-      ProjectionBinner3D z_binner = new ProjectionBinner3D(z_bin1D, zVec);
-
-      histogram.setHistogramPosition( x_binner, y_binner, z_binner );
-      histogram.clear();
-    }
-  }
-
-
-  /**
-   *  Set histogram to be a new empty histogram covering a region
-   *  of reciprocal space adeqiate for most instruments at the SNS.
-   *
-   *  @param num_bins  The number of bins to use in half of the region
-   *                   for the histogram.
-   */
-  synchronized private Histogram3D DefaultGeneric_Histogram( int num_bins )
-  {
-    Vector3D xVec = new Vector3D(1,0,0);
-    Vector3D yVec = new Vector3D(0,1,0);
-    Vector3D zVec = new Vector3D(0,0,1);
-
-    IEventBinner x_bin1D = new UniformEventBinner( -30.0f,    0,  num_bins );
-    IEventBinner y_bin1D = new UniformEventBinner( -30.0f, 30.0f, num_bins );
-    IEventBinner z_bin1D = new UniformEventBinner( -15.0f, 15.0f, num_bins );
-
-    ProjectionBinner3D x_binner = new ProjectionBinner3D(x_bin1D, xVec);
-    ProjectionBinner3D y_binner = new ProjectionBinner3D(y_bin1D, yVec);
-    ProjectionBinner3D z_binner = new ProjectionBinner3D(z_bin1D, zVec);
-
-    Histogram3D histogram = new Histogram3D( x_binner,
-                                             y_binner,
-                                             z_binner );
-    return histogram;
-  }
-
-
-  /**
-   *  Set up the histogram to be new empty histogram covering a region
-   *  of reciprocal space appropriate for most instruments at the
-   *  SNS, WITHOUT reallocating memory, if possible.
-   */
-  synchronized private void SetGeneric_Histogram()
-  {
-    if ( histogram == null )
-      histogram = DefaultGeneric_Histogram( num_bins );
-    else
-    {
-      Vector3D xVec = new Vector3D(1,0,0);
-      Vector3D yVec = new Vector3D(0,1,0);
-      Vector3D zVec = new Vector3D(0,0,1);
-
-     IEventBinner x_bin1D = new UniformEventBinner(-30.0f,    0,  num_bins);
-     IEventBinner y_bin1D = new UniformEventBinner(-30.0f, 30.0f, num_bins);
-     IEventBinner z_bin1D = new UniformEventBinner(-15.0f, 15.0f, num_bins);
-
-      ProjectionBinner3D x_binner = new ProjectionBinner3D(x_bin1D, xVec);
-      ProjectionBinner3D y_binner = new ProjectionBinner3D(y_bin1D, yVec);
-      ProjectionBinner3D z_binner = new ProjectionBinner3D(z_bin1D, zVec);
-
-      histogram.setHistogramPosition( x_binner, y_binner, z_binner );
-      histogram.clear();
-    }
-  }
-
-
-  /**
-   *  Set histogram to be a new empty histogram covering a region
-   *  of reciprocal space appropriate for the ARCS instrument at the
-   *  SNS.
-   *
-   *  @param num_bins  The number of bins to use in each direction
-   *                   for the histogram.
-   */
-  synchronized private Histogram3D DefaultARCS_Histogram( int num_bins )
-  {
-    Vector3D xVec = new Vector3D(1,0,0);
-    Vector3D yVec = new Vector3D(0,1,0);
-    Vector3D zVec = new Vector3D(0,0,1);
-
-    IEventBinner x_bin1D = new UniformEventBinner( -50.0f,    0,  num_bins );
-    IEventBinner y_bin1D = new UniformEventBinner( -10.0f, 40.0f, num_bins );
-    IEventBinner z_bin1D = new UniformEventBinner( -25.0f, 25.0f, num_bins );
-
-    ProjectionBinner3D x_binner = new ProjectionBinner3D(x_bin1D, xVec);
-    ProjectionBinner3D y_binner = new ProjectionBinner3D(y_bin1D, yVec);
-    ProjectionBinner3D z_binner = new ProjectionBinner3D(z_bin1D, zVec);
-
-    Histogram3D histogram = new Histogram3D( x_binner,
-                                             y_binner,
-                                             z_binner );
-    return histogram;
-  }
-
-
-  /**
-   *  Set up the histogram to be new empty histogram covering a region
-   *  of reciprocal space appropriate for the ARCS instrument at the
-   *  SNS, WITHOUT reallocating memory, if possible.
-   */
-  synchronized private void SetHistogramForARCS()
-  {
-    if ( histogram == null )
-      histogram = DefaultARCS_Histogram( num_bins );
-    else
-    {
-      Vector3D xVec = new Vector3D(1,0,0);
-      Vector3D yVec = new Vector3D(0,1,0);
-      Vector3D zVec = new Vector3D(0,0,1);
-
-      IEventBinner x_bin1D = new UniformEventBinner( -50.0f,    0,  num_bins );
-      IEventBinner y_bin1D = new UniformEventBinner( -10.0f, 40.0f, num_bins );
-      IEventBinner z_bin1D = new UniformEventBinner( -25.0f, 25.0f, num_bins );
-
-      ProjectionBinner3D x_binner = new ProjectionBinner3D(x_bin1D, xVec);
-      ProjectionBinner3D y_binner = new ProjectionBinner3D(y_bin1D, yVec);
-      ProjectionBinner3D z_binner = new ProjectionBinner3D(z_bin1D, zVec);
-
-      histogram.setHistogramPosition( x_binner, y_binner, z_binner );
-      histogram.clear();
-    }
-  }
-
 
   /**
    *  Find the peaks in the specified histogram, using the specified
