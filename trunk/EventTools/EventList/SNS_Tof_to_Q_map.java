@@ -389,13 +389,14 @@ public class SNS_Tof_to_Q_map
 
     int[][] bank_info = FileUtil.LoadBankFile( bank_filename );
 
-/*
-    System.out.println("Mapping File has " + das_to_nex_id.length + " IDs");
-    for ( int i = 0; i < 10; i++ )
-      System.out.println("i = " + i + ",  map[i] = " + das_to_nex_id[i] );
-    System.out.println("DetCal  File has " + grid_arr.length + " Grids");
-    System.out.println("Bank    File has " + bank_info[0].length+ " Banks");
-*/
+    if ( debug )
+    {
+      System.out.println("Mapping File has " + das_to_nex_id.length + " IDs");
+      for ( int i = 0; i < 10; i++ )
+        System.out.println("i = " + i + ",  map[i] = " + das_to_nex_id[i] );
+      System.out.println("DetCal  File has " + grid_arr.length + " Grids");
+      System.out.println("Bank    File has " + bank_info[0].length+ " Banks");
+    }
 
     BuildMaps( das_to_nex_id, grid_arr, bank_info );
 
