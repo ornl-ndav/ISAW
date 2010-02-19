@@ -73,6 +73,7 @@ import gov.anl.ipns.Parameters.IntArrayPG;
 import gov.anl.ipns.Parameters.IntegerPG;
 import gov.anl.ipns.Parameters.LoadFileArrayPG;
 import gov.anl.ipns.Parameters.LoadFilePG;
+import gov.anl.ipns.Parameters.LongPG;
 import gov.anl.ipns.Parameters.MaterialPG;
 import gov.anl.ipns.Parameters.PlaceHolderPG;
 import gov.anl.ipns.Parameters.PrinterNamePG;
@@ -97,7 +98,7 @@ public class ParameterInfo {
     static String[] Type ={
       "Array",
       "Boolean",
-      //"Browse",
+      "BooleanEnable",
       "ChoiceList",
       //"Chooser",
       "DataDir",
@@ -111,9 +112,10 @@ public class ParameterInfo {
       "IntArray",
       "IntegerArray",
       "Integer",
-      //"IXScale",
+      "Long",
       "LoadFileArray",
       "LoadFile",
+      "Long",
       "Material",
       "MonitorDataSet",
       "PlaceHolder",
@@ -126,7 +128,6 @@ public class ParameterInfo {
       "SampleDataSet",
       "SaveFile",
       "StringArray",
-      //"StringEntry",
       "String",
       "UniformXScale",
       "VariableXScale"
@@ -135,7 +136,7 @@ public class ParameterInfo {
       
       ArrayPG.class,
       BooleanPG.class,
-      //BrowsePG.class,
+      BooleanPG.class,
       ChoiceListPG.class,
       //ChooserPG.class,
       DataDirPG.class,
@@ -149,7 +150,7 @@ public class ParameterInfo {
       IntArrayPG.class,
       IntegerArrayPG.class,
       IntegerPG.class,
-      //IXScalePG.class,
+      LongPG.class,
       LoadFileArrayPG.class,
       LoadFilePG.class,
       MaterialPG.class,
@@ -171,7 +172,7 @@ public class ParameterInfo {
     static String[] Classes = {
       "Vector",//ArrayPG
       "Boolean",
-       //BrowsePG
+       "BooleanEnable",
       "String",//ChoiceListPG.java
       //"String",//ChooserPG.java
       "String",//DataDirPG.java
@@ -185,7 +186,7 @@ public class ParameterInfo {
       "String form of list of int",//IntArrayPG.java
       "Vector of Integer",//IntegerArrayPG.java
       "Integer",//IntegerPG.java
-      //IXScalePG.java
+      "Long",//LongPG
       "String[]",//LoadFileArrayPG.java
       "String",//LoadFilePG.java
       "String",//MaterialPG.java
@@ -211,7 +212,7 @@ public class ParameterInfo {
       
       true,//ArrayPG.class,
       true,//BooleanPG.class,
-      //true,//BrowsePG.class,
+      true,//BooleanEnablePG.class,
       true,//ChoiceListPG.class,
       //false,//ChooserPG.class,
       true,//DataDirPG.class,
@@ -225,7 +226,7 @@ public class ParameterInfo {
       true,//IntArrayPG.class,
       true,//IntegerArrayPG.class,
       true,//IntegerPG.class,
-      //false,//IXScalePG.class,
+      true,//LongPG.class,
       true,//LoadFileArrayPG.class,
       true,//LoadFilePG.class,
       true,//MaterialPG.class,
@@ -249,7 +250,7 @@ public class ParameterInfo {
  
       "JTextField",//ArrayPG.class,
       "JCheckBox",//BooleanPG.class,
-      //"JFileBrowser",//BrowsePG.class,
+      "JCheckBox",//BooleanEnablePG.class,
       "JComboBox",//ChoiceListPG.class,
       //"JComboBox",//ChooserPG.class,
       "JFileChooser",//DataDirPG.class,
@@ -263,9 +264,9 @@ public class ParameterInfo {
       "JTextField",//IntArrayPG.class,
       "JTextField,JList,JButtons",//IntegerArrayPG.class,
       "JTextField",//IntegerPG.class,
-      //"",//IXScalePG.class,
+      "JTextField",//LongPG.class,
       "JFileBrowser,JList,JButtons",//LoadFileArrayPG.class,
-      "JFileChhoser",//LoadFilePG.class,
+      "JFileChoser",//LoadFilePG.class,
       "JTextField",//MaterialPG.class,
       "JComboBox",//MonitorDataSetPG.class,
       "JLabel",//PlaceHolderPG.class,
@@ -288,6 +289,7 @@ public class ParameterInfo {
     static String[] OtherInfo={
       "Entry :[1,3,\"abc\",[2,4]]",//ArrayPG.class,
       "",//BooleanPG.class,
+      "[true,3,1]=init val,#enabled if true,#enable(after 3) if false", //BooleanEnablePG
      //"",//BrowsePG.class,
       "",//ChoiceListPG.class,
       //"",//ChooserPG.class,
@@ -302,7 +304,7 @@ public class ParameterInfo {
       "This is the old intList, the string form for a set of integers",//IntArrayPG.class,
       "Press Enter Integer, then enter data then return(addItem).\nFor medium sized lists",//IntegerArrayPG.class,
       "",//IntegerPG.class,
-      //"",//IXScalePG.class,
+      "This is Long",//LongPG.class,
       "Press Enter File to Load, then keep selecting files with Browser \nthen addItem(or return).For medium sized lists",
                                      //LoadFileArrayPG.class,
       "",//LoadFilePG.class,
@@ -517,6 +519,12 @@ public class ParameterInfo {
 
             else if(O instanceof Integer)
                if(val.equals(int.class))
+                return true;
+               else 
+                 return false;
+
+            else if(O instanceof Long)
+               if(val.equals(long.class))
                 return true;
                else 
                  return false;
