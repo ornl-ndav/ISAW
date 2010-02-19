@@ -173,9 +173,12 @@ public class SocketEventLoader
     */
    public static void main( String[] args )
    {
+      int port = 8002;
+      if( args!= null && args.length > 0)
+           port = Integer.parseInt( args[0]);
       MessageCenter message_center = new MessageCenter( "TTest" );
       new TimedTrigger( message_center , 30 );
-      SocketEventLoader ev = new SocketEventLoader( 8002 , message_center ,
+      SocketEventLoader ev = new SocketEventLoader( port , message_center ,
                "SNAP" );
       ev.debug = 20;
       ev.start();
@@ -378,7 +381,7 @@ class thisIUDPUser implements IUDPUser
    {
       if( length <44)
          return false;
-      if( data[4]!=0 ||data[5]!=0 ||data[6]!=2 ||data[4]!=0 )
+      if( data[4]!=0 ||data[5]!=2 ||data[6]!=0 ||data[4]!=0 )
          return false;
       return true;
    }
