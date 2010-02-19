@@ -74,6 +74,7 @@ public class SocketServerTest extends UDPSend
    
    public static int START_CMD_INDX_TARTG_PROTO = 40;//Not used anymore
    public static int debug = 0;
+   int nTimes =0;
 
    /**
     * Constructor. The data is sent to port 8002 on the specified host.
@@ -343,9 +344,15 @@ public class SocketServerTest extends UDPSend
          DataOutputStream dStream = new DataOutputStream( bStream);
          dStream.writeDouble( (double ) eventLength);
          byte[] res = bStream.toByteArray( );
+         
          if( res.length < 8)
             return null;
-         
+         for( int i = 0; i < 4 ; i++ )
+         {
+            byte save = res[i];
+            res[i] =res[7-i];
+            res[7-i] = save;
+         }
          System.arraycopy( res,0,Res,40,8);
          
          int start = 48;
