@@ -28,9 +28,9 @@
  *
  * Last Modified:
  *
- * $ Author: $
- * $Date: 2009-06-01 10:26:25 -0500 (Mon, 01 Jun 2009) $$
- * $Revision: 19721 $
+ * $Author:$
+ * $Date:$
+ * $Revision:$
  */
 
 package Operators.TOF_Diffractometer;
@@ -77,13 +77,13 @@ public class MakeTimeFocusedDataSet extends GenericOperator{
       addParameter( new LoadFilePG("DetCal File Name",""));
       addParameter( new LoadFilePG("Bank FileName",""));
       addParameter( new LoadFilePG("Mapping File Name",""));
-      addParameter( new LongPG("First Event",1));
-      addParameter( new LongPG("Number of Events To Load",10000000));
+      addParameter( new FloatPG("First Event",0));
+      addParameter( new FloatPG("Number of Events To Load", 1E7));
       addParameter( new FloatPG("Focused Angle(degrees0",90));
       addParameter( new FloatPG("Focused Secondary Flight Path(m)",.5f));
       addParameter( new FloatPG("Min time to focus",1000));
       addParameter( new FloatPG("Max time to focus",30000));
-      addParameter( new BooleanEnablePG("Logarithmic binning?","[false,1,1]"));
+      addParameter( new BooleanEnablePG("Logarithmic binning?","[true,1,1]"));
       addParameter( new FloatPG("Length first interval(log binning)",.2));
       addParameter( new IntegerPG("Number of Bin(uniform)",10000));
    }
@@ -161,8 +161,8 @@ public class MakeTimeFocusedDataSet extends GenericOperator{
          java.lang.String DetCalFileName = getParameter(1).getValue().toString();
          java.lang.String bankInfoFileName = getParameter(2).getValue().toString();
          java.lang.String MappingFileName = getParameter(3).getValue().toString();
-         long firstEvent = ((LongPG)(getParameter(4))).getlongValue();
-         long NumEventsToLoad = ((LongPG)(getParameter(5))).getlongValue();
+         float firstEvent = ((FloatPG)(getParameter(4))).getfloatValue();
+         float NumEventsToLoad = ((FloatPG)(getParameter(5))).getfloatValue();
          float angle_deg = ((FloatPG)(getParameter(6))).getfloatValue();
          float final_L_m = ((FloatPG)(getParameter(7))).getfloatValue();
          float min = ((FloatPG)(getParameter(8))).getfloatValue();
