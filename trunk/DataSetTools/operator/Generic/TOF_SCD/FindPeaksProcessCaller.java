@@ -148,8 +148,8 @@ public class FindPeaksProcessCaller implements IOperator
       command = cmd_name           + " " +
                 exe_path           +
                "FindPeaksProcess"  + " " + 
-          "\""+ fin_name  +"\""    + " " +        // Need quotes in case there
-          "\""+ fout_base +"\""    + " " +        // are spaces in file names
+                fin_name           + " " +  
+                fout_base          + " " +
                 ds_num             + " " +
                 num_peaks          + " " +
                 min_intensity      + " " +
@@ -158,7 +158,7 @@ public class FindPeaksProcessCaller implements IOperator
                                                    // NOTE: Append to file
                                                    //       is NOT passed down
                 use_calib_file     + " " + 
-          "\""+ calib_file +"\""   + " " + 
+                calib_file         + " " + 
                 calib_file_line    + " " + 
 
                 pixel_row          + " " + 
