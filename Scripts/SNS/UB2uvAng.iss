@@ -16,7 +16,7 @@
 $filename      LoadFile(${Data_Directory})   Enter file with orientation matrix
 
 $hkl1          Array([1,0,0])                Enter hkl values that will correspond to u
-$hkl2          Array([0,1,0])                Enter hkl values that will correspond to u
+$hkl2          Array([0,1,0])                Enter hkl values that will correspond to v
 
 UB = readOrient( filename)
 UB1 = ToVec(UB)
