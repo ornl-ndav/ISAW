@@ -245,7 +245,7 @@ public class SNS_TofEventList implements ITofEventList
 
   /**
    * Decode the integer value stored in a sequence of 
-   * two bytes in the buffer.  The four bytes determining
+   * four bytes in the buffer.  The four bytes determining
    * the Integer value are stored in the file and buffer in the 
    * sequence: b0, b1, b2, b3, with the lowest order byte, b0, first
    * and the the highest order byte, b3, last.
