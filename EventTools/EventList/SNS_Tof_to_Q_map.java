@@ -787,6 +787,53 @@ public class SNS_Tof_to_Q_map
 
 
   /**
+   *  Map the specified sub-list of time-of-flight events to a list of
+   *  time-focused "ghost" histograms.  A reference to arrays containing
+   *  the ghost ids and weights must be passed in to this array as a 
+   *  parameter.  These arrays can be read from a file, using the method:
+   *  FileUtil.LoadGhostMapFile()
+   *
+   *  @param event_list    List of (tof,id) specifying detected neutrons.
+   *
+   *  @param first         The index of the first event to be histogrammed
+   *
+   *  @param num_to_map    The number of events to map to be histogrammed
+   *
+   *  @param binner        The IEventBinner object that defines the bin
+   *                       boundaries for the histogram bins
+   *
+   *  @param angle_deg     The "virtual" scattering angle, two theta, 
+   *                       (in degrees) to which the data should be focused
+   *
+   *  @param final_L_m     The final flight path length (in meters) to which
+   *                       the data should be focused
+   *
+   *  @param ghost_ids     Two dimensional array of DAS ids.  The kth row
+   *                       specifies the list of DAS ids affected by an
+   *                       event in row k.
+   *                     
+   *  @param ghost_weights Two dimensional array of doubles.  The kth row
+   *                       specifies the list of fractional weights added
+   *                       to the affected bins of the ghost histograms.
+   *                     
+   *  @return A two dimensional array of floats.  The kth row of this 
+   *          array contains the histogram values for detector bank k.
+   *          If detector bank k does not exist, that row will be null.
+   */
+  public float[][] Make_Time_Focused_Histograms( ITofEventList event_list,
+                                                 int           first,
+                                                 int           num_to_map,
+                                                 IEventBinner  binner,
+                                                 float         angle_deg,
+                                                 float         final_L_m,
+                                                 int[][]       ghost_ids,
+                                                 double[][]    ghost_weights )
+  {
+    return null;  // NOT YET IMPLEMENTED
+  }
+
+
+  /**
    *  Map a specified qx,qy,qz back to a detectors row, col, tof and ID, if
    *  possible.  NOTE: Currently this does not use the sample orientation
    *  information, but assumes that the sample orientation angles are all 
