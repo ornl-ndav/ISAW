@@ -413,11 +413,17 @@ public class Util
       if( intArray == null)
          return null;
       float [][] Res = new float[intArray.length][];
-      for( int i= 0; i< Res.length; i++)
+      for( int i = 0 ; i < Res.length ; i++ )
       {
-         Res[i] = new float[ intArray[i].length];
-         for( int j=0; j< Res[i].length; i++)
-            Res[i][j] = (float)intArray[i][j];
+         if ( intArray[i] == null )
+            Res[i] = null;
+         else
+         {
+
+            Res[i] = new float[ intArray[i].length ];
+            for( int j = 0 ; j < Res[i].length ; j++ )
+               Res[i][j] = ( float ) intArray[i][j];
+         }
       }
       
       return Res;
