@@ -86,6 +86,9 @@ public class MakeTimeFocusedDataSet extends GenericOperator{
       addParameter( new BooleanEnablePG("Logarithmic binning?","[true,1,1]"));
       addParameter( new FloatPG("Length first interval(log binning)",.2));
       addParameter( new IntegerPG("Number of Bin(uniform)",10000));
+      addParameter( new LoadFilePG("Ghost information File Name", ""));
+      addParameter( new IntegerPG(" Number of Ghost ID's", 0));
+      addParameter( new IntegerPG(" Number of Ghosts per ID", 0));
    }
 
 
@@ -129,6 +132,12 @@ public class MakeTimeFocusedDataSet extends GenericOperator{
       S.append("The length of first interval( isLog = true");
       S.append("@param   ");
       S.append(")The number of uniform bins( isLog=false )");
+      S.append("@param   ");
+      S.append("The Name of the file with the ghosting information");
+      S.append("@param   ");
+      S.append("The number of ghost ID's");
+      S.append("@param   ");
+      S.append(")The number ghosts per ID");
       S.append("@error ");
       S.append("");
       return S.toString();
@@ -170,7 +179,27 @@ public class MakeTimeFocusedDataSet extends GenericOperator{
          boolean isLog = ((BooleanEnablePG)(getParameter(10))).getbooleanValue();
          float first_logStep = ((FloatPG)(getParameter(11))).getfloatValue();
          int nUniformbins = ((IntegerPG)(getParameter(12))).getintValue();
-         DataSetTools.dataset.DataSet Xres=Operators.TOF_Diffractometer.Util.MakeTimeFocusedDataSet(EventFileName,DetCalFileName,bankInfoFileName,MappingFileName,firstEvent,NumEventsToLoad,angle_deg,final_L_m,min,max,isLog,first_logStep,nUniformbins );
+         String GhostFileName = getParameter(13).getValue( ).toString( );
+         int nghostIDs =  ((IntegerPG)(getParameter(14))).getintValue();
+         int nghosts   = ((IntegerPG)(getParameter(15))).getintValue();
+         DataSetTools.dataset.DataSet Xres=
+             Operators.TOF_Diffractometer.Util.MakeTimeFocusedDataSet(
+                           EventFileName,
+                           DetCalFileName,
+                           bankInfoFileName,
+                           MappingFileName,
+                           firstEvent,
+                           NumEventsToLoad,
+                           angle_deg,
+                           final_L_m,
+                           min,
+                           max,
+                           isLog,
+                           first_logStep,
+                           nUniformbins,
+                           GhostFileName,
+                           nghostIDs,
+                           nghosts);
 
          return Xres;
        }catch( Throwable XXX){

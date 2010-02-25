@@ -33,6 +33,9 @@
  */
 package Operators.TOF_Diffractometer;
 
+import java.io.File;
+import java.util.Vector;
+
 import gov.anl.ipns.MathTools.Geometry.DetectorPosition;
 import gov.anl.ipns.MathTools.Geometry.Vector3D;
 import gov.anl.ipns.Util.File.*;
@@ -237,7 +240,11 @@ public class Util
                                          float   max,
                                          boolean isLog,
                                          float   first_logStep,
-                                         int     nUniformbins
+                                         int     nUniformbins,
+                                         String  GhostInformationFileName,
+                                         int     nGhostIDs,
+                                         int     nGhosts
+                                         
                                          )
                          throws Exception
    {
@@ -247,6 +254,19 @@ public class Util
 
          SNS_TofEventList STOF = new SNS_TofEventList(EventFileName);
          
+         int[][]       ghost_ids = null;
+         double[][]    ghost_weights = null;
+         
+         if( nGhostIDs > 0 && nGhosts >0 && GhostInformationFileName != null
+                && (new File(GhostInformationFileName)).exists())
+         {
+            Vector V = FileUtil.LoadGhostMapFile( GhostInformationFileName , 
+                                                  nGhostIDs, 
+                                                  nGhosts );
+            ghost_ids =(int[][]) V.firstElement( );
+            ghost_weights =(double[][]) V.lastElement( );
+         }else
+            nGhostIDs = 0;
          IEventBinner binner;
          if( isLog)
             binner = new LogEventBinner( min, max, first_logStep);
@@ -274,7 +294,7 @@ public class Util
          long num_segments = num_to_load / seg_size + 1;
          seg_size = num_to_load / num_segments;
  
-         int[][] Histograms = null;
+         float[][] Histograms = null;
          boolean first_time = true;
          long num_loaded = 0;
          for ( int i = 0; i < num_segments; i ++ )
@@ -285,12 +305,24 @@ public class Util
           
            TofEventList sublist = new TofEventList(buffer,buffer.length,false);
 
-           int[][]temp = SMap.Make_Time_Focused_Histograms( sublist,   
+           float[][]temp = null;
+           
+           if(nGhostIDs<=0)
+              temp =ConvertTo2DfloatArray(SMap.Make_Time_Focused_Histograms( sublist,   
                                                             0, 
                                                            (int)seg_size, 
                                                             binner ,
                                                             angle_deg , 
-                                                            final_L_m );
+                                                            final_L_m ));
+           else
+              temp = SMap.Make_Time_Focused_Histograms( sublist , 
+                                                        0 , 
+                                                        (int)seg_size ,
+                                                        binner , 
+                                                        angle_deg , 
+                                                        final_L_m , 
+                                                        ghost_ids , 
+                                                        ghost_weights );
            if ( first_time && temp != null )
            {
              Histograms = temp;
@@ -376,6 +408,20 @@ public class Util
          return DS;
    }
 
+   private static float[][] ConvertTo2DfloatArray( int[][] intArray)
+   {
+      if( intArray == null)
+         return null;
+      float [][] Res = new float[intArray.length][];
+      for( int i= 0; i< Res.length; i++)
+      {
+         Res[i] = new float[ intArray[i].length];
+         for( int j=0; j< Res[i].length; i++)
+            Res[i][j] = (float)intArray[i][j];
+      }
+      
+      return Res;
+   }
 
    /**
     * @param args
@@ -428,7 +474,7 @@ public class Util
       DataSet D = Util.MakeTimeFocusedDataSet( EventFileName, 
                                                DetCalFileName,
                                                bankInfoFileName, 
-                                               MappingFileName, 
+                                               MappingFileName,
                                                firstEvent, 
                                                NumEventsToLoad,
                                                90f,
@@ -437,7 +483,10 @@ public class Util
                                                max,
                                                isLog, 
                                                first_logStep, 
-                                               nUniformbins );
+                                               nUniformbins , 
+                                               null,
+                                               0,
+                                               0);
       Command.ScriptUtil.display( D );
    }
 
