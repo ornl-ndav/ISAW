@@ -63,8 +63,9 @@ public class FileUtil
    *  array of grids, L1 and T0 values.  The array of grids is sorted based
    *  on the grid ID.
    *
-   *  @param det_cal_file_name  Fully qualified name of a .DetCal file containing
-   *                            the geometric information about the detector grids.
+   *  @param det_cal_file_name  Fully qualified name of a .DetCal file 
+   *                            containing the geometric information 
+   *                            about the detector grids.
    *
    *  @return A vector with three elements, the sorted array of detector grids,
    *          L1 and T0, respectively.
@@ -367,6 +368,39 @@ public class FileUtil
     for ( int i = 0; i < bytes_read; i += 4 )
       list[ index++ ] = SNS_TofEventList.getValue_32( buffer, i );
   }
+
+
+  /**
+   *  Get the table of (id,weight) pairs from the specified file.  The
+   *  information is returned as two, two dimensional arrays in a Vector.  
+   *  The first array is an NxM array of ints and the second array is an NxM
+   *  array of doubles.  N is the number of detector pixels for which the
+   *  ghost mapping table was made.  M is the number of affected pixels 
+   *  for each event.  The kth row of the array of ints lists the DAS
+   *  ID numbers of pixels that affected when an event is detected in 
+   *  DAS pixel k.  The kth row of the array of doubles lists the fractional
+   *  weight of the event to be added to the histogram for that DAS ID.
+   *
+   *  @param filename  The name of the binary file containing the ghost
+   *                   mapping table.  The file MUST be stored in little
+   *                   endian format as written by PYTHON on a PC.  This
+   *                   is NOT the form of a JAVA binary file, so this 
+   *                   method reverses the bytes before converting to
+   *                   int and double values. 
+   *
+   *  @return A vector containing a two dimensional array of ints in the
+   *          first entry and a two-dimensional array of doubles in the
+   *          second entry.  The arrays have the number of rows specified
+   *          by n_ids and the number of columns specified by n_ghosts.
+   */
+  public static Vector LoadGhostMapFile( String filename, 
+                                         int    n_ids,
+                                         int    n_ghosts )
+  {
+    // NOT YET IMPLEMENTED:
+    return null;
+  }
+
 
 
   /**
