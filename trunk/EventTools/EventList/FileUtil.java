@@ -388,6 +388,15 @@ public class FileUtil
    *                   method reverses the bytes before converting to
    *                   int and double values. 
    *
+   *  @param n_ids     The number of ids listed in the file.  NOTE: the
+   *                   file must contain information for all ids from
+   *                   0 to n_ids-1.  The information for each id must
+   *                   be n_ghosts pairs of (int,double) in that order.
+   *
+   *  @param n_ghosts  The number of DAS ids that are affected by each
+   *                   event.  This corresponds to the number of "columns"
+   *                   of ghost histograms in Jason Hodges Python code.
+   *
    *  @return A vector containing a two dimensional array of ints in the
    *          first entry and a two-dimensional array of doubles in the
    *          second entry.  The arrays have the number of rows specified
@@ -397,10 +406,112 @@ public class FileUtil
                                          int    n_ids,
                                          int    n_ghosts )
   {
-    // NOT YET IMPLEMENTED:
-    return null;
+    int bytes_per_record = n_ghosts * 12;       // assuming each pair
+                                                // is a 4-byte int and
+                                                // an 8-byte double
+    File ghost_file = new File( filename );
+    if ( !ghost_file.exists() )
+      throw new IllegalArgumentException( filename + " does not exist.");
+
+    long file_size = ghost_file.length();
+    if ( file_size % bytes_per_record != 0 )
+      throw new IllegalArgumentException( filename + " is not a ghost map.");
+
+    if ( file_size < bytes_per_record * n_ghosts )
+      throw new IllegalArgumentException( filename + " only has records for " +
+                 file_size / bytes_per_record + " but needs records for " +
+                 n_ids + " detectors" );
+
+    byte[]     buffer  = new byte[(int)file_size];
+
+    int   [][] ids     = new int   [n_ids][n_ghosts];
+    double[][] weights = new double[n_ids][n_ghosts];
+
+    try
+    {
+      RandomAccessFile r_file = new RandomAccessFile( filename, "r" );
+      r_file.seek( 0 );
+      long bytes_read = r_file.read( buffer );
+      if ( bytes_read != file_size )
+        throw new IllegalArgumentException( filename + " NOT read properly.");
+    }
+    catch ( Exception ex )
+    {
+      throw  new IllegalArgumentException("Error loading Ghosts: " +filename);
+    }
+
+    int index = 0;
+    for ( int id = 0; id < ids.length; id++ )   
+      for ( int ghost = 0; ghost < n_ghosts; ghost++ )
+      {
+        ids[ id ][ ghost ] = getInt_32( buffer, index );
+        index += 4;
+        
+        weights[ id ][ ghost ] = getDouble_64( buffer, index );
+        index += 8;
+      }
+    
+    Vector result = new Vector();
+    result.add( ids );
+    result.add( weights );
+
+    return result;
   }
 
+
+  /**
+   * Decode the double value stored in a sequence of eight bytes in 
+   * the buffer.  The eight bytes determining the double value are 
+   * stored in the file and buffer in the sequence: b0, ... b7, with 
+   * the lowest order byte, b0, first and the the highest order byte, 
+   * b7, last.
+   * 
+   * @param i  The index of the first byte in the buffer
+   *                    
+   * @return The double value represented by eight successive bytes from
+   *         the file. 
+   */
+  public static double getDouble_64( byte[] buffer, int i )
+  {
+    long long_val = 0;
+
+    for ( int shift = 0; shift < 64; shift += 8)
+      long_val |= ((long)buffer[ i++ ] & 0xFF) << shift;  
+
+    return Double.longBitsToDouble( long_val );
+  }
+
+
+  /**
+   * Decode the integer value stored in a sequence of 
+   * four bytes in the buffer.  The four bytes determining
+   * the Integer value are stored in the file and buffer in the 
+   * sequence: b0, b1, b2, b3, with the lowest order byte, b0, first
+   * and the the highest order byte, b3, last.
+   * 
+   * @param i  The index of the first byte in the buffer
+   *                    
+   * @return The integer value represented by four successive bytes from
+   *         the file. 
+   */
+  public static int getInt_32( byte[] buffer, int i )
+  {
+    int val = 0;
+
+    i += 3;
+                                   // NOTE: When the signed byte is
+    val |= buffer[ i-- ] & 0xFF;   // converted to int, it is sign
+    val <<= 8;                     // extended, so the $0xFF is
+                                   // needed.
+    val |= buffer[ i-- ] & 0xFF;
+    val <<= 8;
+
+    val |= buffer[ i-- ] & 0xFF;
+    val <<= 8;
+
+    val |= buffer[ i ] & 0xFF;
+    return val;
+   }
 
 
   /**
@@ -408,14 +519,14 @@ public class FileUtil
    */
   public static void main(String[] args)
   {
-
     String inst_name = "PG3";
     String info_dir  = "/home/dennis/SNS_ISAW/ISAW_ALL/InstrumentInfo/SNS/";
            info_dir += inst_name + "/";
     String map_file  = info_dir + inst_name +"_TS.dat";
     String bank_file = info_dir + inst_name +"_bank.xml";
 
-
+    long start = System.nanoTime();
+/*
     int[]   map = LoadIntFile( map_file );
     boolean all_match = true;
     int     num_dont = 0;
@@ -432,9 +543,9 @@ public class FileUtil
 
     for ( int i = 0; i < 20; i++ )
       System.out.println("i, map[i] = " + i + ", " + map[i] );
+*/
 
 /*
-    long start = System.nanoTime();
     int[] raw_ints = FileUtil.LoadIntFile( map_file );
     double time = (System.nanoTime() - start) / 1e6;
     System.out.printf( "\nMapping file load time = %6.3f ms\n", time );
@@ -461,6 +572,25 @@ public class FileUtil
                           bank_data[3][i], bank_data[4][i] );
     }
 */
+
+    start = System.nanoTime();
+    int n_ghosts = 16;
+    int n_ids    = 300000;
+    String ghost_file = info_dir + "PG3_GhostPks.dat";
+    Vector ghost_info = LoadGhostMapFile( ghost_file, n_ids, n_ghosts ); 
+    double time = (System.nanoTime() - start) / 1e6;
+    System.out.printf( "\nGhost file load time = %6.3f ms\n", time );
+
+    int[][] ids        = (int[][])(ghost_info.elementAt(0));
+    double[][] weights = (double[][])(ghost_info.elementAt(1));
+
+    for ( int i = 55600; i < 55630; i++ )
+    {
+      for ( int g = 0; g < 16; g++ )
+        System.out.printf("%5d  %6.2e | ", ids[i][g], weights[i][g] );
+      System.out.println();
+    }   
+
   }
 
 }
