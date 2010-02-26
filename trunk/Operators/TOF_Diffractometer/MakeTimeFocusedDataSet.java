@@ -86,6 +86,7 @@ public class MakeTimeFocusedDataSet extends GenericOperator{
       addParameter( new BooleanEnablePG("Logarithmic binning?","[true,1,1]"));
       addParameter( new FloatPG("Length first interval(log binning)",.2));
       addParameter( new IntegerPG("Number of Bin(uniform)",10000));
+      addParameter( new BooleanEnablePG("Use ghosting", "[false,3,0]"));
       addParameter( new LoadFilePG("Ghost information File Name", ""));
       addParameter( new IntegerPG(" Number of Ghost ID's", 0));
       addParameter( new IntegerPG(" Number of Ghosts per ID", 0));
@@ -133,6 +134,8 @@ public class MakeTimeFocusedDataSet extends GenericOperator{
       S.append("@param   ");
       S.append(")The number of uniform bins( isLog=false )");
       S.append("@param   ");
+      S.append("Use ghosting corrections");
+      S.append("@param   ");
       S.append("The Name of the file with the ghosting information");
       S.append("@param   ");
       S.append("The number of ghost ID's");
@@ -179,9 +182,10 @@ public class MakeTimeFocusedDataSet extends GenericOperator{
          boolean isLog = ((BooleanEnablePG)(getParameter(10))).getbooleanValue();
          float first_logStep = ((FloatPG)(getParameter(11))).getfloatValue();
          int nUniformbins = ((IntegerPG)(getParameter(12))).getintValue();
-         String GhostFileName = getParameter(13).getValue( ).toString( );
-         int nghostIDs =  ((IntegerPG)(getParameter(14))).getintValue();
-         int nghosts   = ((IntegerPG)(getParameter(15))).getintValue();
+         boolean useGhosting = ((BooleanEnablePG)(getParameter(13))).getbooleanValue();
+         String GhostFileName = getParameter(14).getValue( ).toString( );
+         int nghostIDs =  ((IntegerPG)(getParameter(15))).getintValue();
+         int nghosts   = ((IntegerPG)(getParameter(16))).getintValue();
          DataSetTools.dataset.DataSet Xres=
              Operators.TOF_Diffractometer.Util.MakeTimeFocusedDataSet(
                            EventFileName,
@@ -197,6 +201,7 @@ public class MakeTimeFocusedDataSet extends GenericOperator{
                            isLog,
                            first_logStep,
                            nUniformbins,
+                           useGhosting,
                            GhostFileName,
                            nghostIDs,
                            nghosts);
