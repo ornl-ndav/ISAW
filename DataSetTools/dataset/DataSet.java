@@ -35,8 +35,9 @@
  *
  *  Revision 1.58  2008/01/02 19:25:57  rmikk
  *  Added a method that Fixes the grid to a new reference in the PixelInfoList
- *    Attribute. The data pointers in this new grid point to data in the new data set,
- *    and the data pointers in the old grid point to the data in the old data set
+ *  Attribute. The data pointers in this new grid point to data in the new 
+ *  data set, and the data pointers in the old grid point to the data in 
+ *  the old data set.
  *
  *  Revision 1.57  2007/07/06 20:30:27  dennis
  *  Added convenience method: getIndex_of_data_with_id( id ), to find

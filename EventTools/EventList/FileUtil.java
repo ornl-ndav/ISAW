@@ -388,7 +388,43 @@ public class FileUtil
    */
   public static double[] LoadDspaceMapFile( String filename )
   {
-    return null;
+    int bytes_per_record = 8;                      // one double per DAS ID
+
+    CheckFile( filename );
+
+    File map_file = new File( filename );
+    long file_size = map_file.length();
+    if ( file_size % bytes_per_record != 0 )
+      throw new IllegalArgumentException( filename + " is not a d-space map.");
+
+    long n_ids = file_size / bytes_per_record;
+
+    byte[] buffer  = new byte[(int)file_size];
+
+    double[] map = new double[(int)n_ids];
+
+    try
+    {
+      RandomAccessFile r_file = new RandomAccessFile( filename, "r" );
+      r_file.seek( 0 );
+      long bytes_read = r_file.read( buffer );
+      if ( bytes_read != file_size )
+        throw new IllegalArgumentException( filename + " NOT read properly.");
+    }
+    catch ( Exception ex )
+    {
+      throw  new IllegalArgumentException("Error loading dspace map: " 
+                                           + filename);
+    }
+
+    int index = 0;
+    for ( int id = 0; id < n_ids; id++ )
+    {
+      map[ id ] = getDouble_64( buffer, index );
+      index += 8;
+    }
+
+    return map;
   }   
 
 
@@ -430,9 +466,9 @@ public class FileUtil
     int bytes_per_record = n_ghosts * 12;       // assuming each pair
                                                 // is a 4-byte int and
                                                 // an 8-byte double
+    CheckFile( filename );
+
     File ghost_file = new File( filename );
-    if ( !ghost_file.exists() )
-      throw new IllegalArgumentException( filename + " does not exist.");
 
     long file_size = ghost_file.length();
     if ( file_size % bytes_per_record != 0 )
@@ -462,7 +498,7 @@ public class FileUtil
     }
 
     int index = 0;
-    for ( int id = 0; id < ids.length; id++ )   
+    for ( int id = 0; id < n_ids; id++ )   
       for ( int ghost = 0; ghost < n_ghosts; ghost++ )
       {
         ids[ id ][ ghost ] = getInt_32( buffer, index );

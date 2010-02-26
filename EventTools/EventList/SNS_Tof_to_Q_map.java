@@ -705,7 +705,7 @@ public class SNS_Tof_to_Q_map
       if ( id >= 0 && id < tof_to_MagQ.length )
       {
         if ( use_d_map )
-          d_value = 0.1 * tof_chan * d_map[ id ];
+          d_value = tof_chan * d_map[ id ];
         else
           d_value = two_pi * tof_chan / tof_to_MagQ[id];
 
@@ -803,7 +803,7 @@ public class SNS_Tof_to_Q_map
         if ( id >= 0 && id < tof_to_MagQ.length )
         {
           if ( use_d_map )
-            d_value = 0.1 * tof_chan * d_map[ event_id ];
+            d_value = tof_chan * d_map[ event_id ];
           else
             d_value = two_pi * tof_chan / tof_to_MagQ[id];
 
