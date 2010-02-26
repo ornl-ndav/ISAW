@@ -515,6 +515,31 @@ public class FileUtil
 
 
   /**
+   * Check that the specified name is the name of a file that exists and
+   * can be read by the user.  Throw an exception if the file can't be
+   * read.
+   *
+   * @param filename
+   *
+   * @throws IllegalArgumentException if the file name is null, the 
+   *         file doesn't exist, or the file can't be read. 
+   */
+  public static void CheckFile( String filename )
+  {
+    if ( filename == null )
+      throw new IllegalArgumentException("Filename String is NULL");
+
+    File file = new File( filename );
+
+    if ( !file.exists() )
+      throw new IllegalArgumentException("File doesn't exist: " + filename );
+
+    if ( !file.canRead() )
+      throw new IllegalArgumentException("File can't be read: " + filename );
+  }
+
+
+  /**
    *  main program providing basic test for this class
    */
   public static void main(String[] args)
