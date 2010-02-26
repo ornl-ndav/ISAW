@@ -224,6 +224,11 @@ public class Util
     *                            binnings           
     * @param nUniformbins     The number of uniform bins( isLog=false )
     * @param first_logStep    The length of first interval( isLog = true )
+    * @param useGhosting      Perform ghosting corrections
+    * @param GhostInformationFileName  The name of the file with ghost 
+    *                               information
+    * @param nGhostIDs        The number of DAS pixel id's to use
+    * @param nGhosts         The number of ghost corrections per is 
     * 
     * @return a DataSet from Event Data where each detector is time focused
     */
@@ -241,6 +246,7 @@ public class Util
                                          boolean isLog,
                                          float   first_logStep,
                                          int     nUniformbins,
+                                         boolean useGhosting,
                                          String  GhostInformationFileName,
                                          int     nGhostIDs,
                                          int     nGhosts
@@ -490,6 +496,7 @@ public class Util
                                                isLog, 
                                                first_logStep, 
                                                nUniformbins , 
+                                               false,
                                                null,
                                                0,
                                                0);
