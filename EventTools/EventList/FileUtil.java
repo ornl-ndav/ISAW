@@ -371,6 +371,28 @@ public class FileUtil
 
 
   /**
+   *  Get the array of diffractometer constants to map from time-of-flight to 
+   *  d-spacing, for each DAS ID.   The file must contain constants for each 
+   *  pixel ID to be mapped, as a contiguous sequence of values.  The kth 
+   *  double in the file is interpreted as the diffractometer constant for 
+   *  DAS pixel ID k. 
+   *  The file MUST be stored in little endian format as written by PYTHON 
+   *  on a PC.  This is NOT the form of a JAVA binary file, so this 
+   *  method reverses the bytes before converting double values. 
+   *
+   *  @param filename  The name of the binary file containing the  
+   *                   diffractometer constants.  
+   *
+   *  @return An array of doubles containing the diffractometer constants
+   *          for each pixel on the instrument.
+   */
+  public static double[] LoadDspaceMapFile( String filename )
+  {
+    return null;
+  }   
+
+
+  /**
    *  Get the table of (id,weight) pairs from the specified file.  The
    *  information is returned as two, two dimensional arrays in a Vector.  
    *  The first array is an NxM array of ints and the second array is an NxM
@@ -380,13 +402,12 @@ public class FileUtil
    *  ID numbers of pixels that affected when an event is detected in 
    *  DAS pixel k.  The kth row of the array of doubles lists the fractional
    *  weight of the event to be added to the histogram for that DAS ID.
+   *  The file MUST be stored in little endian format as written by PYTHON 
+   *  on a PC.  This is NOT the form of a JAVA binary file, so this 
+   *  method reverses the bytes before converting to int and double values. 
    *
    *  @param filename  The name of the binary file containing the ghost
-   *                   mapping table.  The file MUST be stored in little
-   *                   endian format as written by PYTHON on a PC.  This
-   *                   is NOT the form of a JAVA binary file, so this 
-   *                   method reverses the bytes before converting to
-   *                   int and double values. 
+   *                   mapping table. 
    *
    *  @param n_ids     The number of ids listed in the file.  NOTE: the
    *                   file must contain information for all ids from
@@ -609,10 +630,14 @@ public class FileUtil
     int[][] ids        = (int[][])(ghost_info.elementAt(0));
     double[][] weights = (double[][])(ghost_info.elementAt(1));
 
-    for ( int i = 55600; i < 55630; i++ )
+    for ( int i = 82500; i <= 83731; i++ )
     {
       for ( int g = 0; g < 16; g++ )
+      {
         System.out.printf("%5d  %6.2e | ", ids[i][g], weights[i][g] );
+        if ( ids[i][g] != 0 || weights[i][g] != 0 )
+          System.out.print("<-NON ZERO ");
+      }
       System.out.println();
     }   
 
