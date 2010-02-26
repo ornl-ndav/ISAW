@@ -188,7 +188,7 @@ public class Util
             }
          }
          
-         DataSetFactory.addOperators( DS, InstrumentType.TOF_DIFFRACTOMETER );
+         DataSetFactory.addOperators( DS );
          float L1 = SMap.getL1( );
          float T0 = SMap.getT0( );
          Attribute L1Attr = new FloatAttribute( Attribute.INITIAL_PATH, L1);
@@ -406,6 +406,7 @@ public class Util
             }
          }
          
+         DataSetFactory.addOperators( DS );
          DataSetFactory.addOperators( DS, InstrumentType.TOF_DIFFRACTOMETER );
 
          DS.setAttribute( L1Attr );
