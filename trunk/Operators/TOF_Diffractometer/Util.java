@@ -87,7 +87,13 @@ public class Util
                                          float   max,
                                          boolean isLog,
                                          float   first_logStep,
-                                         int     nUniformbins
+                                         int     nUniformbins,
+                                         boolean useDspaceMap,
+                                         String  DspaceMapFile,
+                                         boolean useGhosting,
+                                         String  GhostInfoFile,
+                                         int     nGhostIDs,
+                                         int     nGhosts
                                          )
                          throws Exception
    {
@@ -96,6 +102,39 @@ public class Util
                      new SNS_Tof_to_Q_map( DetCalFileName, null, Instrument);
 
          SNS_TofEventList STOF = new  SNS_TofEventList(EventFileName);
+         
+         
+         int[][]    ghost_ids = null;
+         double[][] ghost_weights = null;
+         if ( useGhosting )
+         {
+           if ( nGhostIDs <= 0 )
+             throw new IllegalArgumentException(
+                  "Specify correct number of DAS IDs, not " + nGhostIDs );
+
+           if ( nGhosts <= 0 )
+             throw new IllegalArgumentException(
+                  "Specify correct ghost levels(16?), not " + nGhosts );
+           try
+           {
+             System.out.println("FIRST Checking file " + GhostInfoFile );
+             FileUtil.CheckFile( GhostInfoFile );
+           }
+           catch ( Exception ex )
+           {
+             String default_dir = SharedData.getProperty("ISAW_HOME","") +
+                                  "/InstrumentInfo/SNS/" + Instrument + "/";
+             GhostInfoFile = default_dir + Instrument + "_GhostPks.dat";
+             System.out.println("NOW Checking file " + GhostInfoFile );
+             FileUtil.CheckFile ( GhostInfoFile );
+           }
+
+           Vector V = FileUtil.LoadGhostMapFile( GhostInfoFile, 
+                                                 nGhostIDs, 
+                                                 nGhosts );
+           ghost_ids =(int[][]) V.firstElement( );
+           ghost_weights =(double[][]) V.lastElement( );
+         }
          
          IEventBinner binner;
          if( isLog)
@@ -124,9 +163,16 @@ public class Util
          long num_segments = num_to_load / seg_size + 1;
          seg_size = num_to_load / num_segments;
 
-         int[][] Histograms = null;
+         float[][] Histograms = null;
          boolean first_time = true;
          long num_loaded = 0;
+         double[] d_map = null;
+         
+         if( useDspaceMap)
+         {
+            d_map = FileUtil.LoadDspaceMapFile( DspaceMapFile);
+         }
+         
          for ( int i = 0; i < num_segments; i ++ )
          {
            seg_size = Math.min( seg_size, num_to_load - num_loaded );
@@ -135,10 +181,21 @@ public class Util
 
            TofEventList sublist = new TofEventList(buffer,buffer.length,false);
 
-           int[][]temp = SMap.Make_d_Histograms( sublist, 
+           float[][]temp = null;
+           if( useGhosting)
+              temp = SMap.Make_d_Histograms( sublist, 
                                                  0, 
                                                 (int)seg_size, 
-                                                 binner );
+                                                 binner,
+                                                 d_map,
+                                                 ghost_ids,
+                                                 ghost_weights);
+           else
+              temp = ConvertTo2DfloatArray( SMap.Make_d_Histograms( sublist, 
+                                                 0, 
+                                                (int)seg_size, 
+                                                 binner, 
+                                                 d_map ));
            if ( first_time && temp != null )
            {
              Histograms = temp;
@@ -466,7 +523,7 @@ public class Util
    /**
     * @param args
     */
-   public static void main_Make_dDS(String[] args) throws Exception
+   public static void main(String[] args) throws Exception
    {
       String Instrument ="SNAP";
       String EventFileName=
@@ -492,11 +549,17 @@ public class Util
                                        max,
                                        isLog,  
                                        first_logStep, 
-                                       nUniformbins );
+                                       nUniformbins,
+                                       false,
+                                       null,
+                                       false, 
+                                       null,
+                                       0,
+                                       0);
       Command.ScriptUtil.display( D );
    }
    
-   public static void main(String[] args) throws Exception
+   public static void mainMakeTimeFocus(String[] args) throws Exception
    {
       String EventFileName=
                  "C:/Users/ruth/SNS/EventData/Snap_240_neutron_event.dat";
@@ -523,7 +586,7 @@ public class Util
                                                max,
                                                isLog, 
                                                first_logStep, 
-                                               nUniformbins , 
+                                               nUniformbins ,
                                                false,
                                                null,
                                                0,

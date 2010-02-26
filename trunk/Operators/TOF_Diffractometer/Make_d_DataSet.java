@@ -85,6 +85,13 @@ public class Make_d_DataSet extends GenericOperator{
       addParameter( new BooleanEnablePG("Log binning?","[true,1,1]"));
       addParameter( new FloatPG("Length of 1st Interval",.0002));
       addParameter( new IntegerPG("Number of Bins(uniform)",10000));
+
+      addParameter( new BooleanEnablePG("Use D Map file?","[false,1,0]"));
+      addParameter( new LoadFilePG("dspace Mapping file",""));
+      addParameter( new BooleanEnablePG("Use Ghosting?","[false,3,0]"));
+      addParameter( new LoadFilePG("Ghost File Name",""));
+      addParameter( new IntegerPG("Number of Ghost IDs",300000));
+      addParameter( new IntegerPG("Number of Ghosts per ID",16));
    }
 
 
@@ -123,7 +130,19 @@ public class Make_d_DataSet extends GenericOperator{
       S.append("@param   ");
       S.append("The length of first interval( isLog = true )");
       S.append("@param   ");
-      S.append("he number of uniform bins( isLog=false )");
+      S.append("The number of uniform bins( isLog=false )");
+      S.append("@param   ");
+      S.append("Use D space Map file vs geometry?");
+      S.append("@param   ");
+      S.append("dspace Mapping file");
+      S.append("@param   ");
+      S.append("Use Ghosting?");
+      S.append("@param   ");
+      S.append("Ghost File Name");
+      S.append("@param   ");
+      S.append("Number of Ghost IDs");
+      S.append("@param   ");
+      S.append("Number of Ghosts per ID");
       S.append("@error ");
       S.append("");
       return S.toString();
@@ -163,7 +182,32 @@ public class Make_d_DataSet extends GenericOperator{
          boolean isLog = ((BooleanEnablePG)(getParameter(8))).getbooleanValue();
          float first_logStep = ((FloatPG)(getParameter(9))).getfloatValue();
          int nUniformbins = ((IntegerPG)(getParameter(10))).getintValue();
-         DataSetTools.dataset.DataSet Xres=Operators.TOF_Diffractometer.Util.Make_d_DataSet(EventFileName,DetCalFileName,bankInfoFileName,MappingFileName,firstEvent,NumEventsToLoad,min,max,isLog,first_logStep,nUniformbins );
+
+         boolean useDMap = ((BooleanEnablePG)(getParameter(11))).getbooleanValue(); 
+         String DMapfileName = getParameter(12).getValue().toString();
+         boolean useGhosting = ((BooleanEnablePG)(getParameter(13))).getbooleanValue();
+         String GhostFileName = getParameter(14).getValue().toString();
+         int nIds = ((IntegerPG)(getParameter(15))).getintValue();
+         int nGhosts = ((IntegerPG)(getParameter(16))).getintValue();
+         DataSetTools.dataset.DataSet Xres=
+            Operators.TOF_Diffractometer.Util.Make_d_DataSet(
+                  EventFileName,
+                  DetCalFileName,
+                  bankInfoFileName,
+                  MappingFileName,
+                  firstEvent,
+                  NumEventsToLoad,
+                  min,
+                  max,
+                  isLog,
+                  first_logStep,
+                  nUniformbins,
+                  useDMap,
+                  DMapfileName,
+                  useGhosting,
+                  GhostFileName,
+                  nIds,
+                  nGhosts);
 
          return Xres;
        }catch( Throwable XXX){
