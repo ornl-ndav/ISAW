@@ -39,6 +39,7 @@ import java.util.Vector;
 import gov.anl.ipns.MathTools.Geometry.DetectorPosition;
 import gov.anl.ipns.MathTools.Geometry.Vector3D;
 import gov.anl.ipns.Util.File.*;
+import DataSetTools.util.SharedData;
 import DataSetTools.dataset.*;
 import EventTools.EventList.*;
 import EventTools.Histogram.*;
@@ -225,8 +226,7 @@ public class Util
     * @param nUniformbins     The number of uniform bins( isLog=false )
     * @param first_logStep    The length of first interval( isLog = true )
     * @param useGhosting      Perform ghosting corrections
-    * @param GhostInformationFileName  The name of the file with ghost 
-    *                               information
+    * @param GhostInfoFile    The name of the file with ghost information
     * @param nGhostIDs        The number of DAS pixel id's to use
     * @param nGhosts         The number of ghost corrections per is 
     * 
@@ -247,7 +247,7 @@ public class Util
                                          float   first_logStep,
                                          int     nUniformbins,
                                          boolean useGhosting,
-                                         String  GhostInformationFileName,
+                                         String  GhostInfoFile,
                                          int     nGhostIDs,
                                          int     nGhosts
                                          
@@ -260,19 +260,39 @@ public class Util
 
          SNS_TofEventList STOF = new SNS_TofEventList(EventFileName);
          
-         int[][]       ghost_ids = null;
-         double[][]    ghost_weights = null;
+         int[][]    ghost_ids = null;
+         double[][] ghost_weights = null;
          
-         if( nGhostIDs > 0 && nGhosts >0 && GhostInformationFileName != null
-                && (new File(GhostInformationFileName)).exists())
+         if ( useGhosting )
          {
-            Vector V = FileUtil.LoadGhostMapFile( GhostInformationFileName , 
-                                                  nGhostIDs, 
-                                                  nGhosts );
-            ghost_ids =(int[][]) V.firstElement( );
-            ghost_weights =(double[][]) V.lastElement( );
-         }else
-            nGhostIDs = 0;
+           if ( nGhostIDs <= 0 )
+             throw new IllegalArgumentException(
+                  "Specify correct number of DAS IDs, not " + nGhostIDs );
+
+           if ( nGhosts <= 0 )
+             throw new IllegalArgumentException(
+                  "Specify correct ghost levels(16?), not " + nGhosts );
+           try
+           {
+             System.out.println("FIRST Checking file " + GhostInfoFile );
+             FileUtil.CheckFile( GhostInfoFile );
+           }
+           catch ( Exception ex )
+           {
+             String default_dir = SharedData.getProperty("ISAW_HOME","") +
+                                  "/InstrumentInfo/SNS/" + Instrument + "/";
+             GhostInfoFile = default_dir + Instrument + "_GhostPks.dat";
+             System.out.println("NOW Checking file " + GhostInfoFile );
+             FileUtil.CheckFile ( GhostInfoFile );
+           }
+
+           Vector V = FileUtil.LoadGhostMapFile( GhostInfoFile, 
+                                                 nGhostIDs, 
+                                                 nGhosts );
+           ghost_ids =(int[][]) V.firstElement( );
+           ghost_weights =(double[][]) V.lastElement( );
+         }
+
          IEventBinner binner;
          if( isLog)
             binner = new LogEventBinner( min, max, first_logStep);
@@ -313,22 +333,27 @@ public class Util
 
            float[][]temp = null;
            
-           if(nGhostIDs<=0)
-              temp =ConvertTo2DfloatArray(SMap.Make_Time_Focused_Histograms( sublist,   
-                                                            0, 
-                                                           (int)seg_size, 
-                                                            binner ,
-                                                            angle_deg , 
-                                                            final_L_m ));
-           else
-              temp = SMap.Make_Time_Focused_Histograms( sublist , 
-                                                        0 , 
+           if( useGhosting )
+              temp = SMap.Make_Time_Focused_Histograms( sublist ,
+                                                        0 ,
                                                         (int)seg_size ,
-                                                        binner , 
-                                                        angle_deg , 
-                                                        final_L_m , 
-                                                        ghost_ids , 
+                                                        binner ,
+                                                        angle_deg ,
+                                                        final_L_m ,
+                                                        ghost_ids ,
                                                         ghost_weights );
+           else
+           {
+             int[][] int_hist = SMap.Make_Time_Focused_Histograms( 
+                                                            sublist,
+                                                            0,
+                                                           (int)seg_size,
+                                                            binner ,
+                                                            angle_deg ,
+                                                            final_L_m );
+             temp = ConvertTo2DfloatArray( int_hist );
+           }
+
            if ( first_time && temp != null )
            {
              Histograms = temp;
@@ -350,7 +375,9 @@ public class Util
          if( Histograms == null)
             return null;
          
-         DataSet DS = new DataSet( "TimeFocused","Time Focused Each detecot");
+         DataSet DS = new DataSet( Instrument + "_TimeFocused",
+                      "Loaded Events into time focused DataSet," +
+                      " one Data block per detector bank.");
          DS.setX_units( "us");
          DS.setX_label( "time" );
          DS.setY_units( "Counts" );
@@ -505,3 +532,4 @@ public class Util
    }
 
 }
+

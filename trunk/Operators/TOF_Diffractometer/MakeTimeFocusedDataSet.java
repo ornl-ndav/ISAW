@@ -86,10 +86,10 @@ public class MakeTimeFocusedDataSet extends GenericOperator{
       addParameter( new BooleanEnablePG("Logarithmic binning?","[true,1,1]"));
       addParameter( new FloatPG("Length first interval(log binning)",.2));
       addParameter( new IntegerPG("Number of Bin(uniform)",10000));
-      addParameter( new BooleanEnablePG("Use ghosting", "[false,3,0]"));
+      addParameter( new BooleanEnablePG("Get Ghost Histogram", "[false,3,0]"));
       addParameter( new LoadFilePG("Ghost information File Name", ""));
-      addParameter( new IntegerPG(" Number of Ghost ID's", 0));
-      addParameter( new IntegerPG(" Number of Ghosts per ID", 0));
+      addParameter( new IntegerPG(" Number of Ghost ID's", 300000));
+      addParameter( new IntegerPG(" Number of Ghosts per ID", 16));
    }
 
 
