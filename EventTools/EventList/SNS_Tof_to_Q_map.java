@@ -135,7 +135,7 @@ public class SNS_Tof_to_Q_map
   private final int   NUM_WAVELENGTHS = 
                              Math.round( MAX_WAVELENGTH * STEPS_PER_ANGSTROM );
 
-  private boolean     debug = true;
+  private boolean     debug = false;
 
   private IDataGrid[]  grid_arr; 
   private VecQMapper[] inverse_mapper;
@@ -345,36 +345,36 @@ public class SNS_Tof_to_Q_map
                                  String spectrum_filename )
          throws IOException
   {
-    String default_dir = SharedData.getProperty("ISAW_HOME","")+
+    String default_dir = SharedData.getProperty("ISAW_HOME","") +
                          "/InstrumentInfo/SNS/" + instrument_name + "/";
     try
     {
-      CheckFile ( det_cal_filename );
+      FileUtil.CheckFile ( det_cal_filename );
     }
     catch ( Exception ex )
     {
       det_cal_filename = default_dir + instrument_name + ".DetCal";
-      CheckFile ( det_cal_filename );
+      FileUtil.CheckFile ( det_cal_filename );
     }
 
     try
     {
-      CheckFile ( bank_filename );
+      FileUtil.CheckFile ( bank_filename );
     }
     catch ( Exception ex )
     {
       bank_filename = default_dir + instrument_name + "_bank.xml";
-      CheckFile ( bank_filename );
+      FileUtil.CheckFile ( bank_filename );
     }
 
     try
     {
-      CheckFile ( map_filename );
+      FileUtil.CheckFile ( map_filename );
     }
     catch ( Exception ex )
     {
       map_filename = default_dir + instrument_name + "_TS.dat";
-      CheckFile ( map_filename );
+      FileUtil.CheckFile ( map_filename );
     }
 
     this.instrument_name = instrument_name;
@@ -989,29 +989,6 @@ public class SNS_Tof_to_Q_map
     peak.setInstrument( instrument_name );
     
     return peak;
-  }
-
-
-  /**
-   * Check that the specified file exists and can be read.
-   *
-   * @param filename
-   *
-   * @throws IllegalArgumentException if the file name is null, the 
-   *         file doesn't exist, or the file can't be read. 
-   */
-  private void CheckFile( String filename )
-  {
-    if ( filename == null )
-      throw new IllegalArgumentException("Filename String is NULL");
-
-    File file = new File( filename );
-
-    if ( !file.exists() )
-      throw new IllegalArgumentException("File doesn't exist: " + filename );
-
-    if ( !file.canRead() )
-      throw new IllegalArgumentException("File can't be read: " + filename );
   }
 
 
