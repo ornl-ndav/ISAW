@@ -661,6 +661,10 @@ public class SNS_Tof_to_Q_map
    *  @param binner      The IEventBinner object that defines the bin
    *                     boundaries for the histogram bins
    *                     
+   *  @param d_map       List of diffractometer constants.  If this is 
+   *                     null, the instrument geometry will determine the
+   *                     mapping from time-of-flight to d.
+   *
    *  @return A two dimensional array of integers.  The kth row of this 
    *          array contains the histogram values for detector bank k.
    *          If detector bank k does not exist, that row will be null.
@@ -668,7 +672,8 @@ public class SNS_Tof_to_Q_map
   public int[][] Make_d_Histograms( ITofEventList event_list,
                                     int           first,
                                     int           num_to_map,
-                                    IEventBinner  binner )
+                                    IEventBinner  binner,
+                                    double[]      d_map )
   {
     int last = CheckAndFixEventRange( event_list, first, num_to_map );
 
@@ -678,10 +683,14 @@ public class SNS_Tof_to_Q_map
     long  total_num  = event_list.numEntries();
     int[] all_events = event_list.rawEvents( 0, total_num );
 
+    boolean  use_d_map = true;
+    if (d_map == null || d_map.length < tof_to_MagQ.length )
+      use_d_map = false;
+
     float  tof_chan;
     int    id;
-    float  two_pi = (float)Math.PI * 2;
-    float  d_value;
+    double two_pi = Math.PI * 2;
+    double d_value;
 
     int ev_index = 2*first;                   // index into event array
     int    index;                             // index into histogram bin
@@ -695,8 +704,13 @@ public class SNS_Tof_to_Q_map
 
       if ( id >= 0 && id < tof_to_MagQ.length )
       {
-        d_value = two_pi * tof_chan / tof_to_MagQ[id];
+        if ( use_d_map )
+          d_value = 0.1 * tof_chan * d_map[ id ];
+        else
+          d_value = two_pi * tof_chan / tof_to_MagQ[id];
+
         index   = binner.index( d_value );
+
         if ( index >= 0 && index < num_bins )
         {
           grid_id = bank_num[ id ];
@@ -707,6 +721,112 @@ public class SNS_Tof_to_Q_map
 
     return histogram;
   }
+
+
+  /**
+   *  Map the specified sub-list of time-of-flight events to a list
+   *  of "d-spacing" "ghost" histogram.  A reference to arrays containing
+   *  the ghost ids and weights must be passed in to this array as a
+   *  parameter.  These arrays can be read from a file, using the method:
+   *  FileUtil.LoadGhostMapFile()
+   *
+   *  @param event_list    List of (tof,id) specifying detected neutrons.
+   *
+   *  @param first         The index of the first event to map to d
+   *
+   *  @param num_to_map    The number of events to map to d
+   *
+   *  @param binner        The IEventBinner object that defines the bin
+   *                       boundaries for the histogram bins
+   *
+   *  @param d_map         List of diffractometer constants.  If this is 
+   *                       null, the instrument geometry will determine the
+   *                       mapping from time-of-flight to d.
+   *                     
+   *  @param ghost_ids     Two dimensional array of DAS ids.  The kth row
+   *                       specifies the list of DAS ids affected by an
+   *                       event in row k.
+   *
+   *  @param ghost_weights Two dimensional array of doubles.  The kth row
+   *                       specifies the list of fractional weights added
+   *                       to the affected bins of the ghost histograms.
+   *
+   *  @return A two dimensional array of floats.  The kth row of this 
+   *          array contains the histogram values for detector bank k.
+   *          If detector bank k does not exist, that row will be null.
+   */
+  public float[][] Make_d_Histograms( ITofEventList event_list,
+                                      int           first,
+                                      int           num_to_map,
+                                      IEventBinner  binner,
+                                      double[]      d_map,
+                                      int[][]       ghost_ids,
+                                      double[][]    ghost_weights )
+  {
+    int last = CheckAndFixEventRange( event_list, first, num_to_map );
+
+    double[][] d_histogram = getEmptyDoubleHistogram( binner );
+
+    int   num_mapped = last - first + 1;
+    long  total_num  = event_list.numEntries();
+    int[] all_events = event_list.rawEvents( 0, total_num );
+
+    boolean  use_d_map = true;
+    if (d_map == null || d_map.length < tof_to_MagQ.length )
+      use_d_map = false;
+
+    float    tof_chan;
+    int      event_id;                        // the DAS id of actual event
+    int      num_ghosts = ghost_ids[0].length;
+    int      id;                              // the DAS id of "ghost" events
+    int[]    cur_ids;                         // current array of "ghost" ids
+    double[] cur_ws;                          // current array of "weights"
+    double   two_pi = Math.PI * 2;
+    double   d_value;
+
+    int      ev_index = 2*first;              // index into event array
+    int      index;                           // index into histogram bin
+    int      num_bins = binner.numBins();
+    int      grid_id;
+
+    for ( int i = 0; i < num_mapped; i++ )
+    {
+      tof_chan = all_events[ ev_index++ ] + t0;
+      event_id = all_events[ ev_index++ ];
+
+      cur_ids = ghost_ids[ event_id ];       // just point to current DAS id
+      cur_ws  = ghost_weights[ event_id ];   // info to simplify array indexing
+
+      for ( int ghost_num = 0; ghost_num < num_ghosts; ghost_num++ )
+      {
+        id = cur_ids[ ghost_num ];
+        if ( id >= 0 && id < tof_to_MagQ.length )
+        {
+          if ( use_d_map )
+            d_value = 0.1 * tof_chan * d_map[ event_id ];
+          else
+            d_value = two_pi * tof_chan / tof_to_MagQ[id];
+
+          index = binner.index( d_value );
+
+          if ( index >= 0 && index < num_bins )
+          {
+            grid_id = bank_num[ id ];
+            d_histogram[ grid_id ][ index ] += cur_ws[ ghost_num ];
+          }
+        }
+      }
+    }
+                                             // now copy histogram to float[][]
+    float[][] f_histogram = getEmptyFloatHistogram( binner );
+    for ( int row = 0; row < d_histogram.length; row++ )
+      if ( d_histogram[row] != null )
+        for ( int col = 0; col < d_histogram[row].length; col++ )
+           f_histogram[row][col] = (float)(d_histogram[row][col]);
+
+    return f_histogram;
+  }
+
 
 
   /**
@@ -1821,7 +1941,8 @@ public class SNS_Tof_to_Q_map
     int[][] histogram = mapper.Make_d_Histograms( loader, 
                                                   0, 
                                                   (int)loader.numEntries(), 
-                                                  d_binner );
+                                                  d_binner,
+                                                  null );
     time = (System.nanoTime()-start)/1e6;
     System.out.printf("Time to make d histogram = %5.2f ms\n", time );
 
