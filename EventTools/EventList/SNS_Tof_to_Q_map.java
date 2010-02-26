@@ -672,7 +672,7 @@ public class SNS_Tof_to_Q_map
   {
     int last = CheckAndFixEventRange( event_list, first, num_to_map );
 
-    int[][] histogram = getEmptyHistogram( binner );
+    int[][] histogram = getEmptyIntHistogram( binner );
 
     int   num_mapped = last - first + 1;
     long  total_num  = event_list.numEntries();
@@ -745,7 +745,7 @@ public class SNS_Tof_to_Q_map
       throw new IllegalArgumentException( "Final flight path must be > 0 " +
                                            final_L_m );
 
-    int[][] histogram = getEmptyHistogram( binner );
+    int[][] histogram = getEmptyIntHistogram( binner );
 
     int   num_mapped = last - first + 1;
     long  total_num  = event_list.numEntries();
@@ -829,7 +829,67 @@ public class SNS_Tof_to_Q_map
                                                  int[][]       ghost_ids,
                                                  double[][]    ghost_weights )
   {
-    return null;  // NOT YET IMPLEMENTED
+    int last = CheckAndFixEventRange( event_list, first, num_to_map );
+
+    if ( final_L_m <= 0 )
+      throw new IllegalArgumentException( "Final flight path must be > 0 " +
+                                           final_L_m );
+
+    double[][] d_histogram = getEmptyDoubleHistogram( binner );
+
+    int   num_mapped = last - first + 1;
+    long  total_num  = event_list.numEntries();
+    int[] all_events = event_list.rawEvents( 0, total_num );
+
+    float    tof_chan;
+    int      event_id;                        // the DAS id of actual event
+    int      num_ghosts = ghost_ids[0].length;
+    int      id;                              // the DAS id of "ghost" events
+    int[]    cur_ids;                         // current array of "ghost" ids
+    double[] cur_ws;                          // current array of "weights"
+    float    focused_tof;
+    float    scale = (float)
+                   ((L1+final_L_m) * Math.sin(angle_deg * Math.PI/360) / 10);
+                                              // since SNS event TOF values are
+                                              // in 100 ns units, we need to
+                                              // divide by 10 to get micro-secs
+
+    int ev_index = 2*first;                   // index into event array
+    int    index;                             // index into histogram bin
+    int    num_bins = binner.numBins();
+    int    grid_id;
+
+    for ( int i = 0; i < num_mapped; i++ )
+    {
+      tof_chan = all_events[ ev_index++ ] + t0;
+      event_id = all_events[ ev_index++ ];
+
+      cur_ids = ghost_ids[ event_id ];       // just point to current DAS id
+      cur_ws  = ghost_weights[ event_id ];   // info to simplify array indexing
+
+      for ( int ghost_num = 0; ghost_num < num_ghosts; ghost_num++ )
+      {
+        id = cur_ids[ ghost_num ];
+        if ( id > 0 && id < recipLaSinTa.length )
+        {
+          focused_tof = tof_chan * scale * recipLaSinTa[id];
+          index       = binner.index( focused_tof );
+          if ( index >= 0 && index < num_bins )
+          {
+            grid_id = bank_num[ id ];
+            d_histogram[ grid_id ][ index ] += cur_ws[ ghost_num ];
+          }
+        }
+      }
+    }
+                                             // now copy histogram to float[][]
+    float[][] f_histogram = getEmptyFloatHistogram( binner );
+    for ( int row = 0; row < d_histogram.length; row++ )
+      if ( d_histogram[row] != null )
+        for ( int col = 0; col < d_histogram[row].length; col++ )
+           f_histogram[row][col] = (float)(d_histogram[row][col]);
+
+    return f_histogram;
   }
 
 
@@ -984,9 +1044,9 @@ public class SNS_Tof_to_Q_map
 
 
   /**
-   *  Get a two dimensional "ragged array" to hold a histogram.  Row k
-   *  will be an array of ints to hold the histogram for bank ID k.  If
-   *  bank k is empty, row k is null.
+   *  Get a two dimensional "ragged array" to hold an integer valued
+   *  histogram.  Row k will be an array of ints to hold the histogram 
+   *  for bank ID k.  If bank k is empty, row k is null.
    *
    *  @param binner the binner that determines the histogram size and 
    *                bin boundaries.
@@ -994,7 +1054,7 @@ public class SNS_Tof_to_Q_map
    *  @return emtpy two-dimensional array of ints, with null rows for
    *          for rows corresponding to missing detector banks.
    */
-  private int[][] getEmptyHistogram( IEventBinner binner )
+  private int[][] getEmptyIntHistogram( IEventBinner binner )
   {
     int[][] result = new int[ max_grid_ID + 1 ][];
 
@@ -1006,6 +1066,64 @@ public class SNS_Tof_to_Q_map
     {
       int grid_ID = grid_arr[i].ID();
       result[ grid_ID ] = new int[ num_bins ];
+    }
+
+    return result;
+  }
+
+
+  /**
+   *  Get a two dimensional "ragged array" to hold a float valued
+   *  histogram.  Row k will be an array of floats to hold the histogram 
+   *  for bank ID k.  If bank k is empty, row k is null.
+   *
+   *  @param binner the binner that determines the histogram size and 
+   *                bin boundaries.
+   *
+   *  @return emtpy two-dimensional array of floats, with null rows for
+   *          for rows corresponding to missing detector banks.
+   */
+  private float[][] getEmptyFloatHistogram( IEventBinner binner )
+  {
+    float[][] result = new float[ max_grid_ID + 1 ][];
+
+    for ( int i = 0; i < result.length; i++ )
+      result[i] = null;
+
+    int num_bins = binner.numBins();
+    for ( int  i = 0; i < grid_arr.length; i++ )
+    {
+      int grid_ID = grid_arr[i].ID();
+      result[ grid_ID ] = new float[ num_bins ];
+    }
+
+    return result;
+  }
+
+
+  /**
+   *  Get a two dimensional "ragged array" to hold a double valued
+   *  histogram.  Row k will be an array of doubles to hold the histogram 
+   *  for bank ID k.  If bank k is empty, row k is null.
+   *
+   *  @param binner the binner that determines the histogram size and 
+   *                bin boundaries.
+   *
+   *  @return emtpy two-dimensional array of doubles, with null rows for
+   *          for rows corresponding to missing detector banks.
+   */
+  private double[][] getEmptyDoubleHistogram( IEventBinner binner )
+  {
+    double[][] result = new double[ max_grid_ID + 1 ][];
+
+    for ( int i = 0; i < result.length; i++ )
+      result[i] = null;
+
+    int num_bins = binner.numBins();
+    for ( int  i = 0; i < grid_arr.length; i++ )
+    {
+      int grid_ID = grid_arr[i].ID();
+      result[ grid_ID ] = new double[ num_bins ];
     }
 
     return result;
