@@ -34,6 +34,7 @@
 package Operators.TOF_Diffractometer;
 
 import java.io.File;
+import java.util.Date;
 import java.util.Vector;
 
 import gov.anl.ipns.MathTools.Geometry.DetectorPosition;
@@ -254,6 +255,7 @@ public class Util
 
          DS.setAttribute( L1Attr );
          DS.setAttribute( T0Attr );
+         AddDateTimeAttribute( DS, (new File( EventFileName)).lastModified( ));
 
          return DS;
    }
@@ -495,6 +497,7 @@ public class Util
 
          DS.setAttribute( L1Attr );
          DS.setAttribute( T0Attr ); 
+         AddDateTimeAttribute( DS, (new File( EventFileName)).lastModified( ));
           
          return DS;
    }
@@ -520,6 +523,31 @@ public class Util
       return Res;
    }
 
+   public static void AddDateTimeAttribute( DataSet DS,  Date date)
+   {
+      java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat();
+      
+      sdf.applyPattern( "dd-MMM-yy" );
+      
+      DS.setAttribute( new StringAttribute( Attribute.END_DATE , sdf
+               .format( date ) ) );
+      
+      sdf.applyPattern( "HH:mm:ss" );
+      
+      DS.setAttribute( new StringAttribute( Attribute.END_TIME , sdf
+               .format( date ) ) );
+   }
+   
+   
+   public static void AddDateTimeAttribute( DataSet DS,  long date)
+   {
+     if( date <= 0)
+        date = System.currentTimeMillis( );
+     
+     AddDateTimeAttribute( DS,  new Date( date ));
+      
+   }
+   
    /**
     * @param args
     */
