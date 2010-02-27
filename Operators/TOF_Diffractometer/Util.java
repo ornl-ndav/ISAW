@@ -169,9 +169,23 @@ public class Util
          long num_loaded = 0;
          double[] d_map = null;
          
-         if( useDspaceMap)
+         if ( useDspaceMap )
          {
-            d_map = FileUtil.LoadDspaceMapFile( DspaceMapFile);
+             try
+           {
+             System.out.println("FIRST Checking file " + DspaceMapFile );
+             FileUtil.CheckFile( DspaceMapFile );
+           }
+           catch ( Exception ex )
+           {
+             String default_dir = SharedData.getProperty("ISAW_HOME","") +
+                                  "/InstrumentInfo/SNS/" + Instrument + "/";
+             DspaceMapFile = default_dir + Instrument + "_dspacemap.dat";
+             System.out.println("NOW Checking file " + DspaceMapFile );
+             FileUtil.CheckFile ( DspaceMapFile );
+           }
+
+           d_map = FileUtil.LoadDspaceMapFile( DspaceMapFile );
          }
          
          for ( int i = 0; i < num_segments; i ++ )
