@@ -765,7 +765,7 @@ public class SNS_Tof_to_Q_map
   {
     int last = CheckAndFixEventRange( event_list, first, num_to_map );
 
-    double[][] d_histogram = getEmptyDoubleHistogram( binner );
+    double[][] histogram = getEmptyDoubleHistogram( binner );
 
     int   num_mapped = last - first + 1;
     long  total_num  = event_list.numEntries();
@@ -803,7 +803,7 @@ public class SNS_Tof_to_Q_map
         if ( id >= 0 && id < tof_to_MagQ.length )
         {
           if ( use_d_map )
-            d_value = tof_chan * d_map[ event_id ];
+            d_value = tof_chan * d_map[ id ];
           else
             d_value = two_pi * tof_chan / tof_to_MagQ[id];
 
@@ -812,17 +812,17 @@ public class SNS_Tof_to_Q_map
           if ( index >= 0 && index < num_bins )
           {
             grid_id = bank_num[ id ];
-            d_histogram[ grid_id ][ index ] += cur_ws[ ghost_num ];
+            histogram[ grid_id ][ index ] += cur_ws[ ghost_num ];
           }
         }
       }
     }
                                              // now copy histogram to float[][]
     float[][] f_histogram = getEmptyFloatHistogram( binner );
-    for ( int row = 0; row < d_histogram.length; row++ )
-      if ( d_histogram[row] != null )
-        for ( int col = 0; col < d_histogram[row].length; col++ )
-           f_histogram[row][col] = (float)(d_histogram[row][col]);
+    for ( int row = 0; row < histogram.length; row++ )
+      if ( histogram[row] != null )
+        for ( int col = 0; col < histogram[row].length; col++ )
+           f_histogram[row][col] = (float)(histogram[row][col]);
 
     return f_histogram;
   }
@@ -955,7 +955,7 @@ public class SNS_Tof_to_Q_map
       throw new IllegalArgumentException( "Final flight path must be > 0 " +
                                            final_L_m );
 
-    double[][] d_histogram = getEmptyDoubleHistogram( binner );
+    double[][] histogram = getEmptyDoubleHistogram( binner );
 
     int   num_mapped = last - first + 1;
     long  total_num  = event_list.numEntries();
@@ -997,17 +997,17 @@ public class SNS_Tof_to_Q_map
           if ( index >= 0 && index < num_bins )
           {
             grid_id = bank_num[ id ];
-            d_histogram[ grid_id ][ index ] += cur_ws[ ghost_num ];
+            histogram[ grid_id ][ index ] += cur_ws[ ghost_num ];
           }
         }
       }
     }
                                              // now copy histogram to float[][]
     float[][] f_histogram = getEmptyFloatHistogram( binner );
-    for ( int row = 0; row < d_histogram.length; row++ )
-      if ( d_histogram[row] != null )
-        for ( int col = 0; col < d_histogram[row].length; col++ )
-           f_histogram[row][col] = (float)(d_histogram[row][col]);
+    for ( int row = 0; row < histogram.length; row++ )
+      if ( histogram[row] != null )
+        for ( int col = 0; col < histogram[row].length; col++ )
+           f_histogram[row][col] = (float)(histogram[row][col]);
 
     return f_histogram;
   }
