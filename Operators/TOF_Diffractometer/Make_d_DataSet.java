@@ -82,14 +82,14 @@ public class Make_d_DataSet extends GenericOperator{
       addParameter( new FloatPG("Number of Events To Load",1E7));
       addParameter( new FloatPG("Min d-spacing",.2f));
       addParameter( new FloatPG("Max d-spacing",10));
-      addParameter( new BooleanEnablePG("Log binning?","[true,1,1]"));
-      addParameter( new FloatPG("Length of 1st Interval",.0002));
-      addParameter( new IntegerPG("Number of Bins(uniform)",10000));
+      addParameter( new BooleanEnablePG("Logarithmic Binning?","[true,1,1]"));
+      addParameter( new FloatPG("Length of First Interval",.0002));
+      addParameter( new IntegerPG("Number of Bins",10000));
 
-      addParameter( new BooleanEnablePG("Use D Map file?","[false,1,0]"));
-      addParameter( new LoadFilePG("dspace Mapping file",""));
-      addParameter( new BooleanEnablePG("Use Ghosting?","[false,3,0]"));
-      addParameter( new LoadFilePG("Ghost File Name",""));
+      addParameter( new BooleanEnablePG("Use d Map File?","[false,1,0]"));
+      addParameter( new LoadFilePG("d-space Mapping File",""));
+      addParameter( new BooleanEnablePG("Get Ghost Histogram?","[false,3,0]"));
+      addParameter( new LoadFilePG("Ghost Information File Name",""));
       addParameter( new IntegerPG("Number of Ghost IDs",300000));
       addParameter( new IntegerPG("Number of Ghosts per ID",16));
    }
