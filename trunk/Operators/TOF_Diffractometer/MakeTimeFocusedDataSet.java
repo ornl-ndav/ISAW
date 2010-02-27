@@ -77,18 +77,18 @@ public class MakeTimeFocusedDataSet extends GenericOperator{
       addParameter( new LoadFilePG("DetCal File Name",""));
       addParameter( new LoadFilePG("Bank FileName",""));
       addParameter( new LoadFilePG("Mapping File Name",""));
-      addParameter( new FloatPG("First Event",0));
+      addParameter( new FloatPG("First Event to Load",0));
       addParameter( new FloatPG("Number of Events To Load", 1E7));
-      addParameter( new FloatPG("Focused Angle(degrees0",90));
+      addParameter( new FloatPG("Focused Angle(degrees)",90));
       addParameter( new FloatPG("Focused Secondary Flight Path(m)",.5f));
-      addParameter( new FloatPG("Min time to focus",1000));
-      addParameter( new FloatPG("Max time to focus",30000));
-      addParameter( new BooleanEnablePG("Logarithmic binning?","[true,1,1]"));
-      addParameter( new FloatPG("Length first interval(log binning)",.2));
-      addParameter( new IntegerPG("Number of Bin(uniform)",10000));
-      addParameter( new BooleanEnablePG("Get Ghost Histogram", "[false,3,0]"));
-      addParameter( new LoadFilePG("Ghost information File Name", ""));
-      addParameter( new IntegerPG(" Number of Ghost ID's", 300000));
+      addParameter( new FloatPG("Min Time to Focus",1000));
+      addParameter( new FloatPG("Max Time to Focus",30000));
+      addParameter( new BooleanEnablePG("Logarithmic Binning?","[true,1,1]"));
+      addParameter( new FloatPG("Length of First Interval",.2));
+      addParameter( new IntegerPG("Number of Bins",10000));
+      addParameter( new BooleanEnablePG("Get Ghost Histogram?", "[false,3,0]"));
+      addParameter( new LoadFilePG("Ghost Information File Name", ""));
+      addParameter( new IntegerPG(" Number of Ghost IDs", 300000));
       addParameter( new IntegerPG(" Number of Ghosts per ID", 16));
    }
 

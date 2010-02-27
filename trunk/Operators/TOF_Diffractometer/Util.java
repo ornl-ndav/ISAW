@@ -232,7 +232,22 @@ public class Util
          if( Histograms == null)
             return null;
 
-         DataSet DS = new DataSet( "d Graphs","Converted Each detector to d");
+         String title = Instrument + "_d-spacing";
+         if ( useGhosting)
+           title += "(Ghost)";
+
+         String log_message = "Mapped events to d ";
+         if ( useDspaceMap )
+           log_message += "using d-space map\n";
+         else
+           log_message += "using instrument geometry\n";
+
+         if ( useGhosting )
+           log_message += "formed GHOST histogram one Data block per bank.";
+         else
+           log_message += "formed histogram one Data block per bank.";
+
+         DataSet DS = new DataSet( title, log_message ); 
          DS.setX_units( "Angstroms");
          DS.setX_label( "d-Spacing" );
          DS.setY_units( "Counts" );
@@ -448,9 +463,19 @@ public class Util
          if( Histograms == null)
             return null;
          
-         DataSet DS = new DataSet( Instrument + "_TimeFocused",
-                      "Loaded Events into time focused DataSet," +
-                      " one Data block per detector bank.");
+         String title = Instrument + "_TimeFocused";
+         if ( useGhosting)
+           title += "(Ghost)";
+
+         String log_message = "Time-Focused Events and ";
+
+         if ( useGhosting )
+           log_message += "formed GHOST histogram one Data block per bank.";
+         else
+           log_message += "formed histogram one Data block per bank.";
+
+
+         DataSet DS = new DataSet( title, log_message );
          DS.setX_units( "us");
          DS.setX_label( "time" );
          DS.setY_units( "Counts" );
