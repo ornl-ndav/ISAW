@@ -27,7 +27,11 @@
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
- * Modified:
+ * Last Modified:
+ * 
+ * $Author$
+ * $Date$            
+ * $Revision$
  *
  * $Log$
  * Revision 1.3  2005/08/24 20:22:01  dennis
@@ -178,13 +182,23 @@ public class LowPassFilterDS0 extends GenericSpecial
 
     s.append("@overview This operator smoothes all Data blocks in a ");
     s.append("          DataSet using Fourier Filtering. ");
+    s.append("          In particular, a Butterworth Low-Pass filter ");
+    s.append("          is applied to a segment of the list of values. ");
+    s.append("          The segment of values used starts at the first ");
+    s.append("          non-zero value and ends with the last non-zero ");
+    s.append("          value.  If all values are zero in some Data ");
+    s.append("          block, that Data block is left unchanged. ");
 
     s.append("@assumptions Since the Data blocks in the DataSet are ");
     s.append("             in-place, the Data blocks must be ");
     s.append("             TablulatedData objects.");
 
-    s.append("@algorithm A Butterworth Low Pass filter is used.  The " );
-    s.append("           sequence of y values is first extended to ");
+    s.append("@algorithm A Butterworth Low Pass filter is used.  ");
+    s.append("           For each Data block, this operator scans for ");
+    s.append("           the first and last non-zero values, and only ");
+    s.append("           applies the filter to that non-zero portion ");
+    s.append("           of the Data.  If there is a non-zero entry, the " );
+    s.append("           non-zero sequence of y values is first extended to ");
     s.append("           twice it's original length, by repeating the ");
     s.append("           original sequence of y values in reverse order. ");
     s.append("           This forms an even, periodic function.  Next ");
@@ -228,6 +242,9 @@ public class LowPassFilterDS0 extends GenericSpecial
  /* ------------------------------ getResult ------------------------------- */
  /** 
   *  Replaces all y values of all Data blocks by lowpass filtered values.
+  *  The non-zero portion of the spectrum is first identified, then a
+  *  Butterworth low-pass filter of the specified order is applied to 
+  *  all spectra in the DataSet.
   *
   *  @return  This returns a string indicating that the DataSet was altered.
   */
@@ -268,19 +285,25 @@ public class LowPassFilterDS0 extends GenericSpecial
     for ( int i = 0; i < ds.getNum_entries(); i++ )
     {
       spectrum = ds.getData_entry( i );        // get REFERENCE to a spectrum
-      yvals    = spectrum.getY_values();           // then get REFERENCE to array of y_values
+      yvals    = spectrum.getY_values();       // then get REFERENCE to array 
+                                               // of y_values
+                                               // find the first none zero 
+                                               // y value
       istart = 0;
-      iend = yvals.length-1;
+      while ( istart < yvals.length && yvals[istart] == 0.0f ) 
+        istart++;                      
 
-      while (yvals[istart] == 0.0f) {
-        istart++;
-      }                                                                //find the first none zero y value;
-      while (yvals[iend] == 0.0f) {
+      if ( istart >= yvals.length )            // all y_values == 0
+        continue;
+                                               // find the last none zero y 
+                                               // value
+      iend = yvals.length-1;
+      while ( yvals[iend] == 0.0f ) 
         iend--;
-      }                                                               //find the last none zero y value;
-      y = new float[iend-istart+1];                
-      
-      System.arraycopy(yvals, istart, y, 0, iend-istart+1);  //y is the none zero subarray of yvals;
+
+      y = new float[iend-istart+1];            // y is the non-zero subarray 
+                                               // of yvals
+      System.arraycopy(yvals, istart, y, 0, iend-istart+1); 
 
       if ( y.length != N )                     // we need a new arrays 
       {                                        // and fft calculator
