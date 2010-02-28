@@ -27,7 +27,11 @@
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
- * Modified:
+ * Last Modified:
+ * 
+ * $Author$
+ * $Date$            
+ * $Revision$
  *
  * $Log$
  * Revision 1.2  2005/08/24 20:22:01  dennis
@@ -165,6 +169,8 @@ public class LowPassFilterDS extends GenericSpecial
 
     s.append("@overview This operator smoothes all Data blocks in a ");
     s.append("          DataSet using Fourier Filtering. ");
+    s.append("          In particular, a Butterworth Low-Pass filter ");
+    s.append("          is applied to the entire list of values. ");
 
     s.append("@assumptions Since the Data blocks in the DataSet are ");
     s.append("             in-place, the Data blocks must be ");
