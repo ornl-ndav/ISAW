@@ -564,6 +564,9 @@ public class Util
 
    public static void AddDateTimeAttribute( DataSet DS,  Date date)
    {
+      if( date == null )
+         date = new Date( System.currentTimeMillis( ));
+      
       java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat();
       
       sdf.applyPattern( "dd-MMM-yy" );
