@@ -965,7 +965,7 @@ public class JParametersDialog implements Serializable,
    * nlinesMax if positive. The new string will be in html form.
    * 
    * @param text   The text to be wrapped
-   * @param nliinesMax  The maximum number of lines (-1 means all) to keep
+   * @param nlinesMax  The maximum number of lines (-1 means all) to keep
    * @param label   The GUI element that deterrmines the width and char width
    * 
    * @return  The new String, in html
