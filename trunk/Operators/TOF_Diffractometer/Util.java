@@ -104,6 +104,11 @@ public class Util
 
          SNS_TofEventList STOF = new  SNS_TofEventList(EventFileName);
          
+         float L1 = SMap.getL1( );
+         float T0 = SMap.getT0( );
+         Attribute L1Attr = new FloatAttribute( Attribute.INITIAL_PATH, L1);
+         Attribute T0Attr = new FloatAttribute( Attribute.T0_SHIFT, T0);
+         
          
          int[][]    ghost_ids = null;
          double[][] ghost_weights = null;
@@ -232,7 +237,13 @@ public class Util
          if( Histograms == null)
             return null;
 
-         String title = Instrument + "_d-spacing";
+         int[] RunNums = new int[1];
+         RunNums[0] = getRunNumber( EventFileName);
+         
+         String S ="";
+         if( RunNums[0] > 0)
+            S ="_"+RunNums[0];
+         String title = Instrument + S + "_d-spacing";
          if ( useGhosting)
            title += "(Ghost)";
 
@@ -247,6 +258,11 @@ public class Util
          else
            log_message += "formed histogram one Data block per bank.";
 
+       
+         
+         String Instr = Instrument;
+        
+         
          DataSet DS = new DataSet( title, log_message ); 
          DS.setX_units( "Angstroms");
          DS.setX_label( "d-Spacing" );
@@ -260,31 +276,59 @@ public class Util
          xs[xs.length-1]=(float)binner.maxVal( xs.length-1 );
          
          VariableXScale xscl = new VariableXScale( xs );
-         
+         float TotTotCount =0;
          for( int i=0; i < Histograms.length; i++)
          {
             if( Histograms[i] != null)
             {
                float[] yvals = new float[Histograms[i].length];
+               float TotCount =0;
                for( int j=0; j<yvals.length; j++)
+               {
                   yvals[j] = Histograms[i][j];
-               
+                  TotCount +=yvals[j];
+               }
+               TotTotCount +=TotCount;
                HistogramTable D = new  HistogramTable( xscl,
                      yvals,i) ;
                
                DS.addData_entry( D );
+               D.setAttribute( new IntListAttribute( Attribute.RUN_NUM, 
+                     RunNums) );
+               D.setAttribute( new FloatAttribute( Attribute.TOTAL_COUNT, 
+                               TotCount));
+               D.setAttribute( L1Attr );
+               D.setAttribute( T0Attr);
+               
             }
          }
          
+         DS.setAttribute(  new FloatAttribute(Attribute.TOTAL_COUNT, TotTotCount ));
          DataSetFactory.addOperators( DS );
-         float L1 = SMap.getL1( );
-         float T0 = SMap.getT0( );
-         Attribute L1Attr = new FloatAttribute( Attribute.INITIAL_PATH, L1);
-         Attribute T0Attr = new FloatAttribute( Attribute.T0_SHIFT, T0);
+      
 
          DS.setAttribute( L1Attr );
          DS.setAttribute( T0Attr );
+
+         DS.setAttribute( new StringAttribute( Attribute.FILE_NAME,
+                             EventFileName) );
+         DS.setAttribute( new StringAttribute( Attribute.FACILITY_NAME,
+               "SNS"));
+         
+     
+         if( RunNums[0] > 0)
+            DS.setAttribute( new IntListAttribute( Attribute.RUN_NUM, RunNums));
+         
+  
+         if( Instr != null && Instr.length()>2)
+            DS.setAttribute( new StringAttribute(Attribute.INST_NAME, Instr));
+         
+         DS.setAttribute( new StringAttribute( Attribute.DS_TYPE,
+                  Attribute.SAMPLE_DATA));
+         
          AddDateTimeAttribute( DS, (new File( EventFileName)).lastModified( ));
+
+         
 
          return DS;
    }
@@ -463,7 +507,16 @@ public class Util
          if( Histograms == null)
             return null;
          
-         String title = Instrument + "_TimeFocused";
+         int[] RunNums = new int[1];
+         RunNums[0] = getRunNumber( EventFileName);
+         String S ="";
+         if( RunNums[0] <=0)
+            S="";
+         else
+            S ="_"+RunNums[0];
+        
+         
+         String title = Instrument+S + "_TimeFocused";
          if ( useGhosting)
            title += "(Ghost)";
 
@@ -474,12 +527,30 @@ public class Util
          else
            log_message += "formed histogram one Data block per bank.";
 
+  
+         
+         String Instr = Instrument;
+         
+         
+        
 
          DataSet DS = new DataSet( title, log_message );
+      
+         if( RunNums[0] > 0)
+            DS.setAttribute( new IntListAttribute( Attribute.RUN_NUM, RunNums));
+         
+
+         if( Instr != null && Instr.length()>2)
+            DS.setAttribute( new StringAttribute(Attribute.INST_NAME, Instr));
+            
          DS.setX_units( "us");
          DS.setX_label( "time" );
          DS.setY_units( "Counts" );
          DS.setY_label("Intensity");
+         DS.setAttribute( new StringAttribute( Attribute.FILE_NAME,
+                             EventFileName) );
+         DS.setAttribute( new StringAttribute( Attribute.FACILITY_NAME,
+               "SNS"));
          
          float[] xs = new float[ binner.numBins( )+1];
          for( int i=0; i< xs.length;i++)
@@ -501,18 +572,23 @@ public class Util
          Attribute L1Attr = new FloatAttribute( Attribute.INITIAL_PATH, L1);
          Attribute T0Attr = new FloatAttribute( Attribute.T0_SHIFT, T0);
          int pixelNum = 0;
-         
+         float TotTotCount =0;
          for( int i=0; i < Histograms.length; i++)
          {
             if( Histograms[i] != null)
             {
+               float TotCount =0;
                float[] yvals = new float[Histograms[i].length];
                for( int j=0; j<yvals.length; j++)
+               {
                   yvals[j] = Histograms[i][j];
-               
+                  TotCount +=yvals[j];
+               }
+               TotTotCount +=TotCount;
                HistogramTable D = new  HistogramTable( xscl,
                      yvals, i ) ;
-               
+               D.setAttribute( new FloatAttribute( Attribute.TOTAL_COUNT, TotCount));
+               D.setAttribute(  new IntListAttribute( Attribute.RUN_NUM, RunNums) );
                Vector3D pos = new Vector3D(position[0],position[1],
                      position[2]);
                D.setAttribute(  new DetPosAttribute(Attribute.DETECTOR_POS,
@@ -530,14 +606,18 @@ public class Util
                DS.addData_entry( D );
             }
          }
-         
+
+         DS.setAttribute(  new FloatAttribute(Attribute.TOTAL_COUNT, TotTotCount ));
          DataSetFactory.addOperators( DS );
          DataSetFactory.addOperators( DS, InstrumentType.TOF_DIFFRACTOMETER );
-
+         
+         DS.setAttribute( new StringAttribute( Attribute.DS_TYPE,
+                  Attribute.SAMPLE_DATA));
+         
          DS.setAttribute( L1Attr );
          DS.setAttribute( T0Attr ); 
          AddDateTimeAttribute( DS, (new File( EventFileName)).lastModified( ));
-          
+      
          return DS;
    }
 
@@ -589,6 +669,50 @@ public class Util
      AddDateTimeAttribute( DS,  new Date( date ));
       
    }
+   
+   /**
+    * Returns the number corresponding to the digits to the left of
+    * the "." in the filename.
+    * 
+    * @param FileName  The filename
+    * 
+    * @return the number corresponding to the digits to the left of
+    * the "." in the filename or -1 if it is not possible to find these digits
+    */
+   public static int getRunNumber( String FileName)
+   {
+      if( FileName == null)
+         return -1;
+      int k= FileName.lastIndexOf( '.' );
+      if( k < 0)
+         k = FileName.length( );
+      String S ="";
+      boolean done = false;
+      int i;
+      for(  i=k-1; i > 0  && !done; )
+         if( Character.isDigit( FileName.charAt( i )))
+              done = true;
+         else
+            i--;
+      
+      k=i;
+      done = false;
+      for(  i=k; i > 0  && !done; i--)
+         if( Character.isDigit( FileName.charAt( i )))
+              S = FileName.charAt( i )+S;
+         else
+             done = true;
+      try
+      {
+         return Integer.parseInt(  S.trim() );
+      }catch(Exception s)
+      {
+         return -1;
+      }
+         
+   }
+  
+
    
    /**
     * @param args
