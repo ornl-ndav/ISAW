@@ -9,25 +9,30 @@
 IsawEV provides a 3D scatter plot of detected neutrons, mapped to reciprocal
 space, and conventional line graphs of intensity vs |Q| and intensity vs
 d-spacing.  The data may come from SNS raw event files, or from live data
-on the instrument computer.  IsawEV requires additional geometry information about the
-instrument to be able to map events to reciprocal space.  Currently, only TOPAZ,
-SNAP and ARCS are supported.  The geometry information for SEQUOIA in IsawEV is
-probably not entirely correct, but support for SEQUOIA and other instruments is
-in progress.  IsawEV also supports finding and indexing peaks in single crystal
-data.
+on the instrument computer.  IsawEV also supports finding and indexing peaks
+in single crystal data.
+</P>
+
+<P>
+IsawEV requires additional geometry information about the instrument to 
+be able to map events to reciprocal space.  Currently, default geometry 
+information is provided for TOPAZ, SNAP, PG3, ARCS, SEQUOIA and CNCS by
+files in the InstrumentInfo/SNS/<instrument name> sub-directory of the
+ISAW distribution directory.  The needed geometry files can also be specified 
+on the Load Data form, if the default files are not provided for an 
+instrument, or if it is necessary to load data from an event file made with
+an updated (or previous) instrument geometry.
 </P>
 
 <P>
 <FONT size=+1>Loading a File</FONT>
 <BR>
 <BR>
-To load a file, press the "Load Data" button on the left side of the control
-panel.  Make sure the "From File" tab is at the front, then press the 
+To load data from a *neutron_event.dat FILE, press the "Load Data" button 
+on the left side of the control panel.  
+Make sure the "From File" tab is at the front, then press the 
 "Neutron Event File" button to select the raw event data file to load.
-The directory .../ISAW/InstrumentInfo/SNS/ contains detector geometry 
-for the supported instruments.  If a more recent calibration file (.DetCal)
-is available, you can specify it by pressing the "Detector Position File"
-button.  For SNAP, an incident spectrum file is also in the same 
+For SNAP, an incident spectrum file is also in the same 
 directory.  If a newer version is available, it may be specified by
 pressing the incident spectrum button.  NOTE: The event file is the only 
 file that needs to be specified, if the default geometry is OK.  When the
@@ -38,18 +43,19 @@ of events to show in 3D must be limited to avoid overloading the graphics
 hardware.
 </P>
 
+
 <P>
 <FONT size=+1>Viewing Live Data</FONT>
 <BR>
 <BR>
 To view live data on the instrument computer, select the "From Live Data"
 tab, instead of the "From File" tap.  The port should be 8002, unless the
-DAS changes to use a different port.  Select the instrument name from the
-drop down menu.  To start listening for events, press the Load button at
-the bottom of the panel.  In order to inspect the D or Q graphs ore the
-3D view more closely, it may be helpful to temporarily stop listening for
-events.  This can be done by pressing the "Pause" button.  To resume
-listening for events, press the "Continue" button.  To clear out all 
+source of live events changes to use a different port.  Select the 
+instrument name from the drop down menu.  To start listening for live events, 
+press the Load button at the bottom of the panel.  In order to adjust the 
+3D view temporarily stop 
+listening for events by pressing the "Pause" button.  To resume
+listening for live events, press the "Continue" button.  To clear out all 
 loaded events and stop listening for new events, press the
 "Pause & Clear" button.  Press "Continue" to start listening for and
 accumulating new events.
@@ -60,7 +66,8 @@ accumulating new events.
 <BR>
 <BR>
 The 3D window shows a scatter plot of the events mapped to reciprocal
-space.  You can interact with this view in several ways.
+space.  When the 3D view is NOT being updated with new live data, you can 
+interact with this view in several ways.
 <BR>
 <BR>
 1. Press the left mouse button and drag the mouse to rotate the view
@@ -75,14 +82,17 @@ in and out of the scene.
 <BR>
 <BR>
 NOTE: Operations 1. and 2. also move the view reference point
-in and out of the screen, so the center point of rotations changes.
+in and out of the screen, so the center point of rotations changes.  The
+center point for rotation is marked by a small set of coordinate axes.
 <BR>
 <BR>
 You can also click on an event in the 3D view and see information 
 about that event, such as the detector pixel, Q, time-of-flight, etc.
 This information is displayed in a panel that is made visible by
 pressing the "Selected Point" panel on the left side of the 
-display. 
+display.  It may be easier to select points if the point size is 
+increased from 1 to 3  using the Point Size control on the Drawing Options
+form.
 </P>
 
 <P>
@@ -109,8 +119,12 @@ Graphs of intensity vs |Q| and intensity vs d-spacing can be
 displayed from the "Additional Views" panel.  The graphs can be
 "popped up" or "popped down" using the "Show Q Graph" and 
 "Show D Graph" check boxes.  The graphs are dynamically updated
-when loading live data.  Slice views through reciprocal space
-will be supported in the future, but are not yet in this version.
+when loading live data.  The graphs can use uniform bin sizes,
+or bin sizes that keep delta_x/x constant, i.e. a "Log" scale.
+The choice of using uniform or log binning must be made before 
+events are loaded.  If this option is changed, the data file must be
+reloaded, or the live event stream must be paused, cleared and restarted
+to use the new binning scheme.
 </P>
 <P>
 <FONT size=+1>Drawing Options</FONT>
@@ -129,10 +143,19 @@ bottom of the panel to make them effective.
 <FONT size=+1>Finding Peaks</FONT>
 <BR>
 <BR>
-IsawEV maintains an underlying histogram of events in reciprocal
-space.  The Find Peaks panel can be used to search through this
-512 megabyte histogram for local maxima.  This is useful for 
-finding peaks in SCD data.  
+IsawEV maintains an underlying 512 megabyte histogram of events in 
+reciprocal space.  The Find Peaks panel can be used to search through 
+this histogram for local maxima.  The maximum number of peaks
+to find and the minimum peak intensity can be specified to control the
+find peaks process.  The peaks that are found will be marked on the
+3D scatter plot.  By examining the 3D scatter plot it is possible to
+see whether or not the peaks that were found form a lattice pattern.
+Lowering the threshold, or increasing
+the Max number of peaks will increase the number of points identified
+as peaks.  If too many "noise" peaks are present (often at high |Q|)
+the threshold should be raised and/or the number of peaks should be 
+lowered.  This is useful for finding an appropriate set peaks for 
+indexing SCD data.  
 </P>
 
 <P>
@@ -140,12 +163,18 @@ finding peaks in SCD data.
 <BR>
 <BR>
 Once peaks have been found, they can be indexed.  In particular,
-two indexing methods are currently supported in IsawEV.  One method
-requires good estimates of the lattice parameters.  This method 
-is quite robust.  The other method attempts to index the 
-peaks automatically.  It produces a (possibly long) list of 
-orientation matrices to choose from.  In either case the quality
-of the indexing can be assessed by looking at the Peaks Info panel.
+two basic methods to get an initial orientation matrix and indexing 
+are currently supported in IsawEV.  
+One method requires good estimates of all six lattice parameters. 
+This method is quite robust.  The other method attempts to index the 
+peaks automatically.  The automatic method often produces better results
+if reasonable estimates of the min and max for primitive cell edge lengths
+are specified.  For example if the crystal should be cubic with a=b=c=5,
+entering a min of 4 and a max of 6 should work well.  The autoindexing
+method produces a (possibly long) list of orientation matrices to choose from.
+If an orientation matrix is available in a file, the peaks can also be
+indexed using that matrix.  For any of the indexing methods the 
+quality of the indexing can be assessed by looking at the Peaks Info panel.
 This panel shows how many peaks were indexed, and provides histograms
 showing deviations of the indexed peaks from integer h, k and l values.
 The list of peaks can also be displayed from this panel.  This information
@@ -154,11 +183,37 @@ can be written to a file using the "Write Peaks File" button on the
 </P>
 
 <P>
+<FONT size=+1>Choosing Conventional Cell Type</FONT>
+<BR>
+<BR>
+Once a reduced cell has been determined, the "Cell Type" form can be used
+to determine the conventional cell.  This is done by matching the current
+reduced cell with entries from
+Table 2 from the paper:  "Lattice Symmetry and Identification -- The 
+Fundamental Role of Reduced Cells in Materials Characterization", Alan D. 
+Mighell, Vol. 106, Number 6, Nov-Dec 2001, Journal of Research of the National 
+Institute of Standards and Technology.  The error tolerance for matches
+that will be listed can be specified using the "Max Error" field at the top 
+of the form.  The types of cells and centering to be included can also 
+be specified.  After changing the error tolerance or cell type restrictions,
+press the "Update List" button to adjust the list of possible matches 
+using the new error and/or cell type restrictions.  A possible choice can
+be selected by entering the choice number on the form, or by stepping through
+the list until the desired choice is visible.  Pressing the 
+"Apply Displayed Cell" will transform the current orientation matrix to
+correspond to the chosen conventional cell, and will index the peaks
+using the new orientation matrix.
+ 
+</P>
+
+
+
+<P>
 <FONT size=+1>Example Files</FONT>
 <BR>
 <BR>
 It may be helpful to work with a couple of "nice" example data files
-to get more comfortable using IsawEV.  
+to get comfortable using IsawEV.  
 <BR>
 <BR>
 The file SNAP_240_neutron_event.dat has data from a quartz crystal on SNAP.
