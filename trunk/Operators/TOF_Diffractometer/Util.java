@@ -123,7 +123,6 @@ public class Util
                   "Specify correct ghost levels(16?), not " + nGhosts );
            try
            {
-             System.out.println("FIRST Checking file " + GhostInfoFile );
              FileUtil.CheckFile( GhostInfoFile );
            }
            catch ( Exception ex )
@@ -131,7 +130,6 @@ public class Util
              String default_dir = SharedData.getProperty("ISAW_HOME","") +
                                   "/InstrumentInfo/SNS/" + Instrument + "/";
              GhostInfoFile = default_dir + Instrument + "_GhostPks.dat";
-             System.out.println("NOW Checking file " + GhostInfoFile );
              FileUtil.CheckFile ( GhostInfoFile );
            }
 
@@ -178,7 +176,6 @@ public class Util
          {
              try
            {
-             System.out.println("FIRST Checking file " + DspaceMapFile );
              FileUtil.CheckFile( DspaceMapFile );
            }
            catch ( Exception ex )
@@ -186,7 +183,6 @@ public class Util
              String default_dir = SharedData.getProperty("ISAW_HOME","") +
                                   "/InstrumentInfo/SNS/" + Instrument + "/";
              DspaceMapFile = default_dir + Instrument + "_dspacemap.dat";
-             System.out.println("NOW Checking file " + DspaceMapFile );
              FileUtil.CheckFile ( DspaceMapFile );
            }
 
@@ -231,8 +227,6 @@ public class Util
            num_loaded += seg_size;
            firstEvent += seg_size;
          }
-
-         System.out.println("NUMBER OF EVENTS LOADED = " + num_loaded );
 
          if( Histograms == null)
             return null;
@@ -406,7 +400,6 @@ public class Util
                   "Specify correct ghost levels(16?), not " + nGhosts );
            try
            {
-             System.out.println("FIRST Checking file " + GhostInfoFile );
              FileUtil.CheckFile( GhostInfoFile );
            }
            catch ( Exception ex )
@@ -414,7 +407,6 @@ public class Util
              String default_dir = SharedData.getProperty("ISAW_HOME","") +
                                   "/InstrumentInfo/SNS/" + Instrument + "/";
              GhostInfoFile = default_dir + Instrument + "_GhostPks.dat";
-             System.out.println("NOW Checking file " + GhostInfoFile );
              FileUtil.CheckFile ( GhostInfoFile );
            }
 
@@ -501,8 +493,6 @@ public class Util
            num_loaded += seg_size;
            firstEvent += seg_size;
          }
-
-         System.out.println("NUMBER OF EVENTS LOADED = " + num_loaded );
 
          if( Histograms == null)
             return null;
