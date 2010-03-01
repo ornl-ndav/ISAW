@@ -272,13 +272,13 @@ public class SNS_Tof_to_Q_map
     boolean new_init = true;
     if ( new_init )
     {
-      System.out.println("USING NEW BANK/MAPPING FILE METHOD");
+//    System.out.println("USING NEW BANK/MAPPING FILE METHOD");
       InitFromSNS_Maps( instrument_name, det_cal_filename, 
                         null, null, spectrum_filename );
     }
     else
     {
-      System.out.println("USING OLD .DetCal ONLY METHOD");
+//    System.out.println("USING OLD .DetCal ONLY METHOD");
       InitFromReorderedDetCal( det_cal_filename, spectrum_filename, 
                                instrument_name );
     }
@@ -321,8 +321,6 @@ public class SNS_Tof_to_Q_map
      for ( int i = 0; i < grid_arr.length; i++ )
        if ( grid_arr[i] != null )
          inverse_mapper[i] = new VecQMapper( grid_arr[i], L1, t0/10, orient );
-
-     System.out.println("In constructor, spectrum file = " + spectrum_filename);
 
      BuildMaps();
      if ( spectrum_filename == null || spectrum_filename.trim().length() == 0 ) 
@@ -404,8 +402,6 @@ public class SNS_Tof_to_Q_map
     inverse_mapper = new VecQMapper[ grid_arr.length ];
     for ( int i = 0; i < grid_arr.length; i++ )
       inverse_mapper[i] = new VecQMapper( grid_arr[i], L1, t0/10, orient );
-
-    System.out.println("In constructor, spectrum file = " + spectrum_filename);
 
     if ( spectrum_filename == null || spectrum_filename.trim().length() == 0 )
       spectrum_filename = null;
@@ -1251,8 +1247,6 @@ public class SNS_Tof_to_Q_map
     float[] spec_lamda = null;
 
                                               // build in dependence on lamda
-    System.out.println("Building approximate weighting (no spectrum)");
-
     lamda_weight = new float[ NUM_WAVELENGTHS ];
     for ( int i = 0; i < lamda_weight.length; i++ )
     {
@@ -1260,7 +1254,6 @@ public class SNS_Tof_to_Q_map
       lamda_weight[i] = (float)(1/Math.pow(lamda,power));
     }
 
-    System.out.println("Spectrum file specified as: " + spectrum_file_name );
     if ( spectrum_file_name == null  ||
          spectrum_file_name.trim().length() == 0 )    // no incident spectrum 
       return;
