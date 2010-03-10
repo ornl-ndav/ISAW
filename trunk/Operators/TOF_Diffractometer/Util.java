@@ -40,11 +40,14 @@ import java.util.Vector;
 import gov.anl.ipns.MathTools.Geometry.DetectorPosition;
 import gov.anl.ipns.MathTools.Geometry.Vector3D;
 import gov.anl.ipns.Util.File.*;
+
 import DataSetTools.util.SharedData;
 import DataSetTools.dataset.*;
+import DataSetTools.instruments.*;
+import DataSetTools.operator.DataSet.Conversion.XAxis.DiffractometerDToQ;
+
 import EventTools.EventList.*;
 import EventTools.Histogram.*;
-import DataSetTools.instruments.*;
 
 
 /**
@@ -299,6 +302,7 @@ public class Util
          
          DS.setAttribute(  new FloatAttribute(Attribute.TOTAL_COUNT, TotTotCount ));
          DataSetFactory.addOperators( DS );
+         DS.addOperator( new DiffractometerDToQ() );
       
 
          DS.setAttribute( L1Attr );
@@ -533,7 +537,7 @@ public class Util
          if( Instr != null && Instr.length()>2)
             DS.setAttribute( new StringAttribute(Attribute.INST_NAME, Instr));
             
-         DS.setX_units( "us");
+         DS.setX_units( "Time(us)");
          DS.setX_label( "time" );
          DS.setY_units( "Counts" );
          DS.setY_label("Intensity");
@@ -575,8 +579,7 @@ public class Util
                   TotCount +=yvals[j];
                }
                TotTotCount +=TotCount;
-               HistogramTable D = new  HistogramTable( xscl,
-                     yvals, i ) ;
+               HistogramTable D = new  HistogramTable( xscl, yvals, i ) ;
                D.setAttribute( new FloatAttribute( Attribute.TOTAL_COUNT, TotCount));
                D.setAttribute(  new IntListAttribute( Attribute.RUN_NUM, RunNums) );
                Vector3D pos = new Vector3D(position[0],position[1],
@@ -611,6 +614,7 @@ public class Util
          return DS;
    }
 
+
    private static float[][] ConvertTo2DfloatArray( int[][] intArray)
    {
       if( intArray == null)
@@ -622,7 +626,6 @@ public class Util
             Res[i] = null;
          else
          {
-
             Res[i] = new float[ intArray[i].length ];
             for( int j = 0 ; j < Res[i].length ; j++ )
                Res[i][j] = ( float ) intArray[i][j];
@@ -631,6 +634,7 @@ public class Util
       
       return Res;
    }
+
 
    public static void AddDateTimeAttribute( DataSet DS,  Date date)
    {
@@ -653,13 +657,13 @@ public class Util
    
    public static void AddDateTimeAttribute( DataSet DS,  long date)
    {
-     if( date <= 0)
+     if( date <= 0 )
         date = System.currentTimeMillis( );
      
      AddDateTimeAttribute( DS,  new Date( date ));
-      
    }
    
+
    /**
     * Returns the number corresponding to the digits to the left of
     * the "." in the filename.
