@@ -484,7 +484,6 @@ public static float DSpacingofWavelength(float angle_radians,float wavelength){
  *   @param path_len_m      The distance from the moderator to the detector
  *                          in meters.
  *   @param d_A             The "D" value in Angstroms.
- *                          the distance.
  *   
  *   @return The time in microseconds for the neutron to travel the distance 
  *           from the moderator to the detector.
