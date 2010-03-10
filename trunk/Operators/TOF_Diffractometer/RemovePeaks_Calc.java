@@ -27,24 +27,27 @@
  *
  *  Last Modified:
  * 
- *  $Author:$
- *  $Date:$            
- *  $Revision:$
+ *  $Author$
+ *  $Date$            
+ *  $Revision$
  */
 package Operators.TOF_Diffractometer;
 
 import java.util.*;
 import java.io.*;
 import gov.anl.ipns.Util.File.TextFileReader;
+import gov.anl.ipns.MathTools.Geometry.DetectorPosition;
 
 import EventTools.EventList.FileUtil;
 
 import DataSetTools.operator.Operator;
 import DataSetTools.operator.DataSet.Math.DataSet.DataSetSubtract;
+import DataSetTools.dataset.AttrUtil;
 import DataSetTools.dataset.DataSet;
 import DataSetTools.dataset.Data;
 import DataSetTools.dataset.IData;
 import DataSetTools.dataset.XScale;
+import DataSetTools.math.tof_calc;
 import DataSetTools.viewer.ViewManager;
 import DataSetTools.viewer.IViewManager;
 
@@ -66,7 +69,7 @@ public class RemovePeaks_Calc
    *                          Angstroms, for the peaks that are to be removed
    *                          from the spectra.  Each line of the file must
    *                          have at least the four values.  Only the 
-   *                          d-spacing value is currently used, but the i
+   *                          d-spacing value is currently used, but the
    *                          first three numbers (representing h,k,l) must 
    *                          be present, since they are read and skipped 
    *                          to get to the d-space value.  Lines starting 
@@ -99,28 +102,11 @@ public class RemovePeaks_Calc
                                     int     num_to_average )
                      throws Exception 
   {
-    if ( ds == null )
-      throw new IllegalArgumentException("DataSet null");
-
-    if ( ds.getNum_entries() <= 0 )
-      throw new IllegalArgumentException("DataSet is empty");
+    CheckParameters(ds, peak_file, delta_d_over_d, replace_dist, num_to_average);
 
     if ( ! ds.getX_units().equals( "Angstroms" ) )
       throw new IllegalArgumentException("DataSet must have X-units Angstroms");
 
-    if ( ! ds.getData_entry(0).isHistogram() )
-      throw new IllegalArgumentException("Data in DataSet must be histogram");
-
-    if ( num_to_average < 1 || num_to_average > 100 )
-      throw new IllegalArgumentException("Number to average = " + 
-                             num_to_average + " must be between 1 and 100" );
-
-    if ( replace_dist < 1 || replace_dist > 20 )
-      throw new IllegalArgumentException("The replace distance = " + 
-                             replace_dist + " must be between 1 and 20" );
-
-    FileUtil.CheckFile( peak_file );
- 
     float[] peak_d_vals = load_peak_data( peak_file ); 
 
     for ( int i = 0; i < ds.getNum_entries(); i++ )
@@ -141,6 +127,144 @@ public class RemovePeaks_Calc
     }
   }
 
+  /**
+   *  Replace small intervals of spectra that have a peak that should not
+   *  be included, with a linear interpolation of average values below and
+   *  above the peak extent.  One use of this method is to remove peaks in
+   *  a vanadium spectrum, before smoothing the spectrum.
+   *
+   *  @param  ds              DataSet with spectra from which isolated peaks
+   *                          will be removed.  The spectra in this DataSet
+   *                          must be interms of time-of-flight and the
+   *                          Data blocks MUST have the effective position
+   *                          and initial path attributes.
+   *  @param  peak_file       ASCII file listing the h,k,l and d-spacing in
+   *                          Angstroms, for the peaks that are to be removed
+   *                          from the spectra.  Each line of the file must
+   *                          have at least the four values.  Only the 
+   *                          d-spacing value is currently used, but the
+   *                          first three numbers (representing h,k,l) must 
+   *                          be present, since they are read and skipped 
+   *                          to get to the d-space value.  Lines starting 
+   *                          with a '#' symbol are ignored.
+   *  @param  delta_d_over_d  Estimate of the width of the peaks specified
+   *                          by delta_d/d.  The actual width used will
+   *                          depend on the d_value as width = d*delta_d_over_d.
+   *  @param  replace_dist    Fractional number of peak widths, left and
+   *                          right of the nominal position, that defines the 
+   *                          interval over which values will be replaced by
+   *                          interpolated values.  This is restricted to be 
+   *                          between 1 and 20, so the values on the interval
+   *                          [d-replace_dist*width,d+replace_dist*width]
+   *                          will be replaced by linearly interpolated values.
+   *                          This interval is considered to be the peak
+   *                          extent.
+   *  @param  num_to_average  The number of channels below and above the
+   *                          peak extent that will be averaged to obtain
+   *                          values left and right of the peak postion.
+   *                          The actual values of the histogram will be
+   *                          replaced by values that are linearly 
+   *                          interpolated between these average values.
+   *                          This is restricted to be between 1 and 100.
+   *                           
+   */
+  public static void RemovePeaks_tof( DataSet ds,
+                                      String  peak_file,
+                                      float   delta_d_over_d,
+                                      float   replace_dist,
+                                      int     num_to_average )
+                     throws Exception
+  {
+    CheckParameters(ds, peak_file, delta_d_over_d, replace_dist, num_to_average);
+
+    if ( ! ds.getX_units().equals( "Time(us)" ) )
+      throw new IllegalArgumentException(
+                        "DataSet must have X-units microseconds, Time(us)");
+
+    float[] peak_d_vals = load_peak_data( peak_file );
+
+    DetectorPosition det_pos = null;
+    float l1, 
+          l2, 
+          angle_radians;
+
+    for ( int i = 0; i < ds.getNum_entries(); i++ )
+    {
+      IData  data   = ds.getData_entry( i );
+      XScale xscale = data.getX_scale();
+
+      det_pos = AttrUtil.getDetectorPosition( data );
+      if ( det_pos == null )
+        throw new IllegalArgumentException(
+                        "Data must have DetectorPosition attribute");
+
+      l1 = AttrUtil.getInitialPath( data );
+
+      if ( Float.isNaN( l1 ) )
+        l1 = AttrUtil.getInitialPath( ds );
+
+      if ( Float.isNaN( l1 ) )
+        throw new IllegalArgumentException(
+                        "Data must have initial flight path attribute");
+
+      l2            = det_pos.getDistance();
+      angle_radians = det_pos.getScatteringAngle();
+  
+      for ( int j = 0; j < peak_d_vals.length; j++ )
+      {
+        float d_val    = peak_d_vals[j];
+        float d_width  = delta_d_over_d * d_val;
+
+        float min_d    = d_val - d_width * replace_dist;
+        float max_d    = d_val + d_width * replace_dist;
+
+        float min_tof  = tof_calc.TOFofDSpacing( angle_radians, l1+l2, min_d );
+        float max_tof  = tof_calc.TOFofDSpacing( angle_radians, l1+l2, max_d );
+
+        int min_index  = xscale.getI_GLB( min_tof );
+        int max_index  = xscale.getI_GLB( max_tof );
+
+        float[] x_vals = xscale.getXs();
+        float[] y_vals = data.getY_values();
+
+        if ( min_index != max_index )
+          Interpolate( x_vals, y_vals, min_index, max_index, num_to_average );
+      }
+    }
+  }
+
+
+  private static void CheckParameters( DataSet ds, 
+                                       String  peak_file,
+                                       float   delta_d_over_d,
+                                       float   replace_dist,
+                                       int     num_to_average )
+  {
+    if ( ds == null )
+      throw new IllegalArgumentException("DataSet null");
+
+    if ( ds.getNum_entries() <= 0 )
+      throw new IllegalArgumentException("DataSet is empty");
+
+    if ( ! ds.getData_entry(0).isHistogram() )
+      throw new IllegalArgumentException("Data in DataSet must be histogram");
+
+    FileUtil.CheckFile( peak_file );
+
+    if ( delta_d_over_d <= 0 )
+      throw new IllegalArgumentException(
+           "Peak width factor, delta_d_over_d " + delta_d_over_d +
+           " MUST be > 0" );
+
+    if ( replace_dist < 1 || replace_dist > 20 )
+      throw new IllegalArgumentException("The replace distance = " +
+                             replace_dist + " must be between 1 and 20" );
+
+    if ( num_to_average < 1 || num_to_average > 100 )
+      throw new IllegalArgumentException("Number to average = " +
+                             num_to_average + " must be between 1 and 100" );
+  } 
+
 
   /**
    *  Replace the y_values in positions between min and max with interpolated
@@ -154,10 +278,13 @@ public class RemovePeaks_Calc
                                    int     max, 
                                    int     num )
   {
-    if ( min < 0 )                 // no bins to the left to average
+    if ( min <= 0 )                 // no bins to the left to average
       return;
 
-    if ( max > x_vals.length-1 )   // no bins to the right to average
+    if ( max >= x_vals.length-1 )   // no bins to the right to average
+      return;
+
+    if ( min == max )               // no interior of peak extent
       return;
                                                    // find average to LEFT
     int   start   = Math.max( 0, min - num + 1 );
@@ -259,41 +386,74 @@ public class RemovePeaks_Calc
     for ( int i = 0; i < peak_d_vals.length; i++ )
       System.out.println("d = " + peak_d_vals[i] );
 */ 
-      String Instrument = "PG3";
-      String EventFileName = "/usr2/PG3/PG3_539_neutron_event.dat";
+    String Instrument = "PG3";
+    String EventFileName = "/usr2/PG3/PG3_539_neutron_event.dat";
 
-      String   DetCalFileName   = null;
-      String   bankInfoFileName = null;
-      String   MappingFileName  = null;
-      float    firstEvent = 1;
-      float    NumEventsToLoad = 1e12f;
-      boolean  isLog = true;
+    String   DetCalFileName   = null;
+    String   bankInfoFileName = null;
+    String   MappingFileName  = null;
+    float    firstEvent = 1;
+    float    NumEventsToLoad = 1e12f;
+    boolean  isLog = true;
+    int      nUniformbins  = 10000;
+
+    DataSet  original_ds = null;
+    boolean  test_d_version = false;
+    if ( test_d_version )
+    {
       float    min = 0.2f;
       float    max = 4.5f;
-      int      nUniformbins  = 10000;
       float    first_logStep = 1e-4f;
-      DataSet original_ds = Util.Make_d_DataSet( EventFileName,
-                                        DetCalFileName,
-                                        bankInfoFileName,
-                                        MappingFileName,
-                                        firstEvent,
-                                        NumEventsToLoad,
-                                        min,
-                                        max,
-                                        isLog,
-                                        first_logStep,
-                                        nUniformbins,
-                                        false,
-                                        null,
-                                        false,
-                                        null,
-                                        0,
-                                        0  );
+      original_ds = Util.Make_d_DataSet( EventFileName,
+                                         DetCalFileName,
+                                         bankInfoFileName,
+                                         MappingFileName,
+                                         firstEvent,
+                                         NumEventsToLoad,
+                                         min,
+                                         max,
+                                         isLog,
+                                         first_logStep,
+                                         nUniformbins,
+                                         false,
+                                         null,
+                                         false,
+                                         null,
+                                         0,
+                                         0  );
+     }
+     else
+     {
+       float min = 100;
+       float max = 32000;
+       float first_logStep = .1f;
+       original_ds = Util.MakeTimeFocusedDataSet( EventFileName,
+                                               DetCalFileName,
+                                               bankInfoFileName,
+                                               MappingFileName,
+                                               firstEvent,
+                                               NumEventsToLoad,
+                                               90f,
+                                               .5f,
+                                               min,
+                                               max,
+                                               isLog,
+                                               first_logStep,
+                                               nUniformbins ,
+                                               false,
+                                               null,
+                                               0,
+                                               0);
+     }
 
      DataSet combined_ds = (DataSet)original_ds.clone();
 
      DataSet ds = (DataSet)original_ds.clone();
-     RemovePeaks_d( ds, peak_file_name, 0.005f, 2, 10 );
+
+     if ( test_d_version )
+       RemovePeaks_d( ds, peak_file_name, 0.005f, 2, 10 );
+     else
+       RemovePeaks_tof( ds, peak_file_name, 0.005f, 2, 10 );
 
      for ( int i = 0; i < ds.getNum_entries(); i++ )
      {
