@@ -113,6 +113,20 @@ public class SNS_Tof_to_Q_map
   public static final String ARCS  = "ARCS";
   public static final String SEQ   = "SEQ";
   public static final String CNCS  = "CNCS";
+  public static final float radtodeg_half = 180.f/(float)Math.PI/2.f;
+  public static final float[][] pc = new float[][] {
+        {0.9369f, 0.9490f, 0.9778f, 1.0083f, 1.0295f, 1.0389f, 1.0392f, 1.0338f,
+         1.0261f, 1.0180f, 1.0107f, 1.0046f, 0.9997f, 0.9957f, 0.9929f, 0.9909f,
+         0.9896f, 0.9888f, 0.9886f},
+        {2.1217f, 2.0149f, 1.7559f, 1.4739f, 1.2669f, 1.1606f, 1.1382f, 1.1724f,
+         1.2328f, 1.3032f, 1.3706f, 1.4300f, 1.4804f, 1.5213f, 1.5524f, 1.5755f,
+         1.5913f, 1.6005f, 1.6033f},
+        {-0.1304f, 0.0423f, 0.4664f, 0.9427f, 1.3112f, 1.5201f, 1.5844f, 1.5411f,
+         1.4370f, 1.2998f, 1.1543f, 1.0131f, 0.8820f, 0.7670f, 0.6712f, 0.5951f,
+         0.5398f, 0.5063f, 0.4955f},
+        {1.1717f, 1.0872f, 0.8715f, 0.6068f, 0.3643f, 0.1757f, 0.0446f, -0.0375f,
+        -0.0853f, -0.1088f, -0.1176f, -0.1177f, -0.1123f, -0.1051f, -0.0978f,
+        -0.0914f, -0.0868f, -0.0840f, -0.0833f}};
 
   /**
    *  To add support for a new instrument, add the name of the instrument
@@ -572,7 +586,7 @@ public class SNS_Tof_to_Q_map
   public FloatArrayEventList3D MapEventsToQ( int[] tofs, 
                                              int[] ids,
                                              int   first,
-                                             int   num_to_map , float radius, float smu, float amu )
+                                             int   num_to_map, float radius, float smu, float amu )
   {
      if ( tofs == null )
        throw new IllegalArgumentException( "Time-of-flight array is null" );
@@ -601,7 +615,7 @@ public class SNS_Tof_to_Q_map
      if ( first == 0 )
      {
        ITofEventList raw_events = new TofEventList( tofs, ids );
-       return MapEventsToQ( raw_events, 0, num_to_map , radius, smu, amu );
+       return MapEventsToQ( raw_events, 0, num_to_map, radius, smu, amu );
      }
      else              // construct TofEventList from part of tofs[] and ids[] 
      {
@@ -612,7 +626,7 @@ public class SNS_Tof_to_Q_map
        System.arraycopy( ids,  first, new_ids,  0, num_to_map );
 
        ITofEventList raw_events = new TofEventList( new_tofs, new_ids );
-       return MapEventsToQ( raw_events, 0, num_to_map , radius, smu, amu );
+       return MapEventsToQ( raw_events, 0, num_to_map, radius, smu, amu );
      }
   }
 
@@ -637,14 +651,14 @@ public class SNS_Tof_to_Q_map
    *              is more efficient than this method, and should be used
    *              whenever possible.
    */
-  public FloatArrayEventList3D MapEventsToQ( int[] tofs, int[] ids  , float radius, float smu, float amu )
+  public FloatArrayEventList3D MapEventsToQ( int[] tofs, int[] ids, float radius, float smu, float amu)
   {
     if ( tofs == null || ids == null )
       throw new IllegalArgumentException( "Time-of-flight array is null" );
 
     int first = 0;
     int num_to_map = tofs.length;
-    return MapEventsToQ( tofs, ids, first, num_to_map , radius, smu, amu );
+    return MapEventsToQ( tofs, ids, first, num_to_map, radius, smu, amu );
   }
 
 
@@ -1390,31 +1404,18 @@ private float absor_sphere(float smu, float amu, float radius, float twoth, floa
 //      order polynomial in excel. these values are given below in the
 //      data statement.
       //polynomial coefficients
-        float[][] pc = new float[][] {
-        {0.9369f, 0.9490f, 0.9778f, 1.0083f, 1.0295f, 1.0389f, 1.0392f, 1.0338f,
-         1.0261f, 1.0180f, 1.0107f, 1.0046f, 0.9997f, 0.9957f, 0.9929f, 0.9909f,
-         0.9896f, 0.9888f, 0.9886f},
-        {2.1217f, 2.0149f, 1.7559f, 1.4739f, 1.2669f, 1.1606f, 1.1382f, 1.1724f,
-         1.2328f, 1.3032f, 1.3706f, 1.4300f, 1.4804f, 1.5213f, 1.5524f, 1.5755f,
-         1.5913f, 1.6005f, 1.6033f},
-        {-0.1304f, 0.0423f, 0.4664f, 0.9427f, 1.3112f, 1.5201f, 1.5844f, 1.5411f,
-         1.4370f, 1.2998f, 1.1543f, 1.0131f, 0.8820f, 0.7670f, 0.6712f, 0.5951f,
-         0.5398f, 0.5063f, 0.4955f},
-        {1.1717f, 1.0872f, 0.8715f, 0.6068f, 0.3643f, 0.1757f, 0.0446f, -0.0375f,
-        -0.0853f, -0.1088f, -0.1176f, -0.1177f, -0.1123f, -0.1051f, -0.0978f,
-        -0.0914f, -0.0868f, -0.0840f, -0.0833f}};
 
 
         mu = smu + (amu/1.8f)*wl;
 
         mur = mu*radius;
 
-        theta = (twoth*180.f/(float)Math.PI)/2.f;
+        theta = twoth*radtodeg_half;
 
 //      using the polymial coefficients, calulate astar (= 1/transmission) at
 //      theta values below and above the actual theta value.
 
-        i = (int)(theta/5.f) + 1;
+        i = (int)(theta/5.f);
         astar1 = pc[0][i] + mur * (pc[1][i] + mur * (pc[2][i] + pc[3][i] * mur));
 
         i = i+1;
