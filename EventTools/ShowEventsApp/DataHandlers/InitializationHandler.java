@@ -351,11 +351,11 @@ public class InitializationHandler implements IReceiveMessage
         { 
           socket = new SocketEventLoader( UDPcmd.getPort(), 
                                           message_center, 
+                                          UDPcmd.getInstrument( ),
                                           UDPcmd.getDetFile( ),
                                           UDPcmd.getIncSpectrumFile( ),
                                           UDPcmd.getBankFile( ),
                                           UDPcmd.getIDMapFile( ),
-                                          null,
                                           UDPcmd.getAbsorptionRadius(),
                                           UDPcmd.getTotalAbsorption(),
                                           UDPcmd.getAbsorptionTrue());
