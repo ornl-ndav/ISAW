@@ -43,6 +43,9 @@ public class LoadUDPEventsCmd
    private String bankFile;
    private String IDMapFile;
    private String matFile;
+   private float  AbsorptionRadius;
+   private float  TotalAbsorption;
+   private float  AbsorptionTrue;
    private float  maxQValue;
    private long   nEventsToShow;
    
@@ -56,6 +59,9 @@ public class LoadUDPEventsCmd
     * @param bankFile    The name of the file with bank vs pixel_id's
     * @param IDMapFile   The name of the file that maps DAS ID's to NeXus ID's
     * @param matFile     The name of a matrix file
+    * @param AbsorptionRadius   The radius for the absorption correction
+    * @param TotalAbsorption The total scattering for absorption correction
+    * @param AbsorptionTrue  True absorption at lambda = 1.8 Angstoms
     * @param maxQValue   The maximum Q value to load
     * @param nEventsToShow The number of events to show in the 3D view
     */
@@ -67,6 +73,9 @@ public class LoadUDPEventsCmd
                             String bankFile,
                             String IDMapFile,
                             String matFile, 
+                            float  AbsorptionRadius,
+                            float  TotalAbsorption,
+                            float  AbsorptionTrue,
                             float  maxQValue,
                             long nEventsToShow)
    {
@@ -78,6 +87,9 @@ public class LoadUDPEventsCmd
       this.bankFile        = bankFile; 
       this.IDMapFile       = IDMapFile; 
       this.matFile         = matFile;
+      this.AbsorptionRadius= AbsorptionRadius;
+      this.TotalAbsorption = TotalAbsorption;
+      this.AbsorptionTrue  = AbsorptionTrue;
       this.maxQValue       = maxQValue;
       this.nEventsToShow   = nEventsToShow;
    }
@@ -144,6 +156,30 @@ public class LoadUDPEventsCmd
    }
 
    
+   public float getAbsorptionRadius()
+   {
+      if (Float.isNaN( AbsorptionRadius )|| AbsorptionRadius < 0 )
+        return Float.NaN;
+
+      return AbsorptionRadius;
+   }
+   
+   public float getTotalAbsorption()
+   {
+      if (Float.isNaN( TotalAbsorption )|| TotalAbsorption < 0 )
+        return Float.NaN;
+
+      return TotalAbsorption;
+   }
+   
+   public float getAbsorptionTrue()
+   {
+      if (Float.isNaN( AbsorptionTrue )|| AbsorptionTrue < 0 )
+        return Float.NaN;
+
+      return AbsorptionTrue;
+   }
+   
    public float getMaxQValue()
    {
       if (Float.isNaN( maxQValue )|| maxQValue <=0 )
@@ -167,6 +203,9 @@ public class LoadUDPEventsCmd
              "\nBank File   : " + getBankFile()        +
              "\nID Map File : " + getIDMapFile()       +
              "\nMatrix File : " + getMatFile()         +
+             "\nAbsorptionRadius: " + getAbsorptionRadius()+
+             "\nTotalAbsorption : " + getTotalAbsorption() +
+             "\nAbsorptionTrue  : " + getAbsorptionTrue()  +
              "\nMax Q Value : " + getMaxQValue()       +
              "\n#Events to Show"+ getNEventsToShow();
    }

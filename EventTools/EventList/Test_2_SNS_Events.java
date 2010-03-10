@@ -146,8 +146,11 @@ public class Test_2_SNS_Events
        ev_lists[i] = (ITofEventList)((Vector)results).elementAt(i);
 
      Vector<IOperator> toQ_ops = new Vector<IOperator>();
+     float radius   = 0.17f;
+     float smu      = 1.302f;
+     float amu      = 1.686f;
      for ( int i = 0; i < n_threads; i++ )
-       toQ_ops.add( new MapEventsToQ_Op( ev_lists[i], mapper ) );
+       toQ_ops.add( new MapEventsToQ_Op( ev_lists[i], radius, smu, amu, mapper ) );
 
      start_time = System.nanoTime();
 

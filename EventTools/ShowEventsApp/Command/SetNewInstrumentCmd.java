@@ -48,7 +48,7 @@ public class SetNewInstrumentCmd
 
    String bank_file_name;
    String ID_Map_file_name;
-   private float scale_factor;
+   private float scale_factor, radius, smu, amu;
 
    
   /**
@@ -83,7 +83,7 @@ public class SetNewInstrumentCmd
                                String incident_spectrum_file_name,
                                String bank_file_name,
                                String ID_Map_file_name,
-                               float  scale_factor)
+                               float  scale_factor, float radius, float smu, float amu)
    {
       this.instrument_name = instrument_name; 
       this.detector_file_name = detector_file_name; 
@@ -92,25 +92,29 @@ public class SetNewInstrumentCmd
       this.bank_file_name = bank_file_name;
       this.ID_Map_file_name = ID_Map_file_name;
       this.scale_factor = scale_factor;
+      this.radius = radius;
+      this.smu = smu;
+      this.amu = amu;
    }
 
 
    /**
-    * @see #SetNewInstrumentCmd(String, String, String, String, String, float)
+    * @see #SetNewInstrumentCmd(String, String, String, String, String, float, float, float, float)
     *       Full Constructor
     */
    public SetNewInstrumentCmd( String instrument_name, 
                                String detector_file_name,
                                String incident_spectrum_file_name,
                                String bank_file_name,
-                               String ID_Map_file_name)
+                               String ID_Map_file_name,
+                               float radius, float smu, float amu)
    {
       this( instrument_name, 
             detector_file_name, 
             incident_spectrum_file_name,
             bank_file_name,
             ID_Map_file_name,
-            -1f);
+            -1f, radius, smu, amu);
    }
 
    public String getDetectorFileName()
@@ -160,6 +164,21 @@ public class SetNewInstrumentCmd
       return ID_Map_file_name;
    }
    
+   public float getAbsorptionRadius()
+   {
+      return radius;
+   }
+   
+   public float getTotalAbsorption()
+   {
+      return smu;
+   }
+   
+   public float getAbsorptionTrue()
+   {
+      return amu;
+   }
+   
    public float getScaleFactor()
    {
       return scale_factor;
@@ -170,7 +189,10 @@ public class SetNewInstrumentCmd
       return "\nInstrument Name    : " + getInstrumentName()   +
              "\nDetector File Name : " + getDetectorFileName() +
              "\nIncident Spectrum File Name : " +getIncidentSpectrumFileName()+
-             "\nscale factor       :"+ getScaleFactor();
+             "\nscale factor       :"+ getScaleFactor() +
+             "\nAbsorption Radius  :"+ getAbsorptionRadius() +
+             "\nTotal Absorption   :"+ getTotalAbsorption() +
+             "\nAbsorption True    :"+ getAbsorptionTrue();
    }
 
 }

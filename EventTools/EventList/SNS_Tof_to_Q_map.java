@@ -178,6 +178,7 @@ public class SNS_Tof_to_Q_map
   private float[]      lamda_weight;     // 1/(lamda^power*spec(lamda)) indexed
                                          // by STEPS_PER_ANGSTROM * lamda
 
+  private float[]      two_theta_map;        // 2*theta(pix_id)
   private float[]      pix_weight;       // sin^2(theta(pix_id)) / eff(pix_id)
 
   private int          max_grid_ID = 0;
@@ -454,7 +455,7 @@ public class SNS_Tof_to_Q_map
    */
   public FloatArrayEventList3D MapEventsToQ( ITofEventList event_list,
                                              int   first,
-                                             int   num_to_map )
+                                             int   num_to_map, float radius, float smu, float amu )
   {
      int last = CheckAndFixEventRange( event_list, first, num_to_map );
 
@@ -469,6 +470,7 @@ public class SNS_Tof_to_Q_map
      float   lamda;
      int     lamda_index;
      int     num_mapped;
+     float   transinv = 1.0f;
 
      num_mapped = last - first + 1;
      long  total_num  = event_list.numEntries();
@@ -519,7 +521,9 @@ public class SNS_Tof_to_Q_map
          if ( lamda_index >= lamda_weight.length )
            lamda_index = lamda_weight.length - 1;
 
-         weights[i] = pix_weight[id] * lamda_weight[ lamda_index ];
+         if ( radius > 0 )
+           transinv = absor_sphere(smu, amu, radius, two_theta_map[id], lamda);
+         weights[i] = pix_weight[id] * lamda_weight[ lamda_index ] * transinv;
        }
      }
 /*
@@ -568,7 +572,7 @@ public class SNS_Tof_to_Q_map
   public FloatArrayEventList3D MapEventsToQ( int[] tofs, 
                                              int[] ids,
                                              int   first,
-                                             int   num_to_map )
+                                             int   num_to_map , float radius, float smu, float amu )
   {
      if ( tofs == null )
        throw new IllegalArgumentException( "Time-of-flight array is null" );
@@ -597,7 +601,7 @@ public class SNS_Tof_to_Q_map
      if ( first == 0 )
      {
        ITofEventList raw_events = new TofEventList( tofs, ids );
-       return MapEventsToQ( raw_events, 0, num_to_map );
+       return MapEventsToQ( raw_events, 0, num_to_map , radius, smu, amu );
      }
      else              // construct TofEventList from part of tofs[] and ids[] 
      {
@@ -608,7 +612,7 @@ public class SNS_Tof_to_Q_map
        System.arraycopy( ids,  first, new_ids,  0, num_to_map );
 
        ITofEventList raw_events = new TofEventList( new_tofs, new_ids );
-       return MapEventsToQ( raw_events, 0, num_to_map );
+       return MapEventsToQ( raw_events, 0, num_to_map , radius, smu, amu );
      }
   }
 
@@ -633,14 +637,14 @@ public class SNS_Tof_to_Q_map
    *              is more efficient than this method, and should be used
    *              whenever possible.
    */
-  public FloatArrayEventList3D MapEventsToQ( int[] tofs, int[] ids  )
+  public FloatArrayEventList3D MapEventsToQ( int[] tofs, int[] ids  , float radius, float smu, float amu )
   {
     if ( tofs == null || ids == null )
       throw new IllegalArgumentException( "Time-of-flight array is null" );
 
     int first = 0;
     int num_to_map = tofs.length;
-    return MapEventsToQ( tofs, ids, first, num_to_map );
+    return MapEventsToQ( tofs, ids, first, num_to_map , radius, smu, amu );
   }
 
 
@@ -1233,20 +1237,22 @@ public class SNS_Tof_to_Q_map
    *     1/( lamda^power * spec(lamda) )
    *
    *  Where power was chosen to give a relatively uniform intensity display
-   *  in 3D.  The power is currently 2.4.
+   *  in 3D.  The power is currently 4. (Dennis used 2.4)
    *  The spectrum values are first normalized so that the MAXIMUM value is
    *  1 and the minimum value is 0.1.
    */
   private void BuildLamdaWeights( String spectrum_file_name )
   {
     float   MIN_SPECTRUM_VALUE = 0.1f;
-    float   power = 2.4f;
+    float   power = 4.0f;
 
     float   lamda; 
     float[] spec_val   = null;
     float[] spec_lamda = null;
 
                                               // build in dependence on lamda
+    System.out.println("Building approximate weighting (no spectrum)");
+
     lamda_weight = new float[ NUM_WAVELENGTHS ];
     for ( int i = 0; i < lamda_weight.length; i++ )
     {
@@ -1254,6 +1260,7 @@ public class SNS_Tof_to_Q_map
       lamda_weight[i] = (float)(1/Math.pow(lamda,power));
     }
 
+    System.out.println("Spectrum file specified as: " + spectrum_file_name );
     if ( spectrum_file_name == null  ||
          spectrum_file_name.trim().length() == 0 )    // no incident spectrum 
       return;
@@ -1354,6 +1361,79 @@ public class SNS_Tof_to_Q_map
       lamda_weight[i] = lamda_weight[i] / val;
     }
   }
+/**
+*       subroutine to calculate a spherical absorption correction
+*       and tbar. based on values in:
+*
+*       c. w. dwiggins, jr., acta cryst. a31, 395 (1975).
+*
+*       in this paper, a is the transmission and a* = 1/a is
+*       the absorption correction.
+
+*       input are the smu (scattering) and amu (absorption at 1.8 ang.)
+*       linear absorption coefficients, the radius r of the sample
+*       the theta angle and wavelength.
+*       the absorption (absn) and tbar are returned.
+
+*       a. j. schultz, june, 2008
+*/
+private float absor_sphere(float smu, float amu, float radius, float twoth, float wl)
+{
+
+        int i;
+        float trans, mu, mur;   //mu is the linear absorption coefficient,
+                       //r is the radius of the spherical sample.
+        float theta,astar1,astar2,frac,astar,tbar;
+
+//      for each of the 19 theta values in dwiggins (theta = 0.0 to 90.0
+//      in steps of 5.0 deg.), the astar values vs.mur were fit to a third
+//      order polynomial in excel. these values are given below in the
+//      data statement.
+      //polynomial coefficients
+        float[][] pc = new float[][] {
+        {0.9369f, 0.9490f, 0.9778f, 1.0083f, 1.0295f, 1.0389f, 1.0392f, 1.0338f,
+         1.0261f, 1.0180f, 1.0107f, 1.0046f, 0.9997f, 0.9957f, 0.9929f, 0.9909f,
+         0.9896f, 0.9888f, 0.9886f},
+        {2.1217f, 2.0149f, 1.7559f, 1.4739f, 1.2669f, 1.1606f, 1.1382f, 1.1724f,
+         1.2328f, 1.3032f, 1.3706f, 1.4300f, 1.4804f, 1.5213f, 1.5524f, 1.5755f,
+         1.5913f, 1.6005f, 1.6033f},
+        {-0.1304f, 0.0423f, 0.4664f, 0.9427f, 1.3112f, 1.5201f, 1.5844f, 1.5411f,
+         1.4370f, 1.2998f, 1.1543f, 1.0131f, 0.8820f, 0.7670f, 0.6712f, 0.5951f,
+         0.5398f, 0.5063f, 0.4955f},
+        {1.1717f, 1.0872f, 0.8715f, 0.6068f, 0.3643f, 0.1757f, 0.0446f, -0.0375f,
+        -0.0853f, -0.1088f, -0.1176f, -0.1177f, -0.1123f, -0.1051f, -0.0978f,
+        -0.0914f, -0.0868f, -0.0840f, -0.0833f}};
+
+
+        mu = smu + (amu/1.8f)*wl;
+
+        mur = mu*radius;
+
+        theta = (twoth*180.f/(float)Math.PI)/2.f;
+
+//      using the polymial coefficients, calulate astar (= 1/transmission) at
+//      theta values below and above the actual theta value.
+
+        i = (int)(theta/5.f) + 1;
+        astar1 = pc[0][i] + mur * (pc[1][i] + mur * (pc[2][i] + pc[3][i] * mur));
+
+        i = i+1;
+        astar2 = pc[0][i] + mur * (pc[1][i] + mur * (pc[2][i] + pc[3][i] * mur));
+
+//      do a linear interpolation between theta values.
+
+        frac = (theta%5.f)/5.f;
+
+        astar = astar1*(1-frac) + astar2*frac;          //astar is the correction
+//        trans = 1.f/astar;     //trans is the transmission
+                               //trans = exp(-mu*tbar)
+
+//      calculate tbar as defined by coppens.
+
+//        tbar = -(float)Math.log(trans)/mu;
+
+        return astar;
+}
 
 
   /**
@@ -1465,6 +1545,7 @@ public class SNS_Tof_to_Q_map
     }
                                // now that the temporary tables are built
                                // proceed to build the maps
+    two_theta_map = new float[ pix_count ];  
     tof_to_lamda = new float[ pix_count ];  
     tof_to_MagQ  = new float[ pix_count ]; 
     QUxyz        = new float[ 3*pix_count ];
@@ -1515,6 +1596,7 @@ public class SNS_Tof_to_Q_map
         QUxyz[ index + 2 ] = unit_qvec.getZ();
 
         two_theta = Math.acos( pix_pos.getX() / L2 );
+        two_theta_map [das_i] = (float)two_theta;
         sin_theta = (float)Math.sin(two_theta/2);
 
         tof_to_MagQ [das_i] = part * (L1 + L2) * sin_theta;
@@ -1537,6 +1619,7 @@ public class SNS_Tof_to_Q_map
    *  tof_to_MagQ[],
    *  QUxyz[],
    *  recipLaSinTa[],
+   *  two_theta_map[],
    *  pix_weight[],
    *  bank_num[].
    *  This version requires a complete set of detector grids, corresponding
@@ -1566,7 +1649,8 @@ public class SNS_Tof_to_Q_map
 
     recipLaSinTa = new float[ pix_count ];         // 1/(Lsin(theta)) table for
                                                    // time focusing
-
+    two_theta_map    = new float[ pix_count ];         // 2* theta
+ 
     pix_weight   = new float[ pix_count ];         // sin^2(theta) weight 
  
     bank_num     = new int[ pix_count ];           // bank number for each 
@@ -1619,6 +1703,7 @@ public class SNS_Tof_to_Q_map
            QUxyz[ index + 2 ] = unit_qvec.getZ();
 
            two_theta = Math.acos( pix_pos.getX() / L2 );
+           two_theta_map [pix_count] = (float)two_theta;
            sin_theta = (float)Math.sin(two_theta/2);
 
            tof_to_MagQ[pix_count] = part * (L1 + L2) * sin_theta;

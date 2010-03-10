@@ -79,6 +79,9 @@ public class filePanel //extends JPanel
    private JTextField         bankFileName;
    private JTextField         IDmapFileName;
    private JTextField         matFileName;
+   private JTextField         absorptionRadius;
+   private JTextField         totalAbsorption;
+   private JTextField         absorptionTrue;
    private JTextField         maxQValue;
    private JTextField         numThreads;
    private JTextField         availableEvents;
@@ -97,6 +100,9 @@ public class filePanel //extends JPanel
    private String             Bankfilename_l;// Remember last file chosen
    private String             IDMapfilename_l;// Remember last file chosen
    private String             Matfilename;// Remember last file chosen
+   private float              AbsorptionRadius;
+   private float              TotalAbsorption;
+   private float              AbsorptionTrue;
    private float              MaxQValue;//Remember last MaxQValue
    private FilteredPG_TextField Port;
    private JComboBox         Instrument;
@@ -117,6 +123,9 @@ public class filePanel //extends JPanel
       Detfilename =  System.getProperty( "InstrumentInfoDirectory");
       Incfilename = DetEfffilename = Bankfilename_l =IDMapfilename_l = Detfilename;
       Matfilename = Datafilename;
+      AbsorptionRadius = Float.NaN;
+      TotalAbsorption = Float.NaN;
+      AbsorptionTrue = Float.NaN;
       MaxQValue = Float.NaN;
       buildPanel();
       //this.add(panel);
@@ -160,7 +169,7 @@ public class filePanel //extends JPanel
       JPanel sub_panel = new JPanel();
       panel.add( sub_panel );
 
-      sub_panel.setLayout( new GridLayout(7,1) );
+      sub_panel.setLayout( new GridLayout(10,1) );
       sub_panel.add(buildDetPanel());
       sub_panel.add( buildBankPanel() );
       sub_panel.add( buildIDMapPanel() );
@@ -169,6 +178,9 @@ public class filePanel //extends JPanel
       //sub_panel.add(buildDetEffPanel());
       //sub_panel.add(buildMatPanel());
       sub_panel.add(buildMaxQPanel());
+      sub_panel.add(buildAbsorptionPanel1());
+      sub_panel.add(buildAbsorptionPanel2());
+      sub_panel.add(buildAbsorptionPanel3());
       sub_panel.add(buildThreadPanel());
       sub_panel.add(loadFiles);
    }
@@ -453,6 +465,72 @@ public class filePanel //extends JPanel
       //maxQPanel.add(matFileName);
       
       return maxQPanel;
+   }
+   /**
+    * Build the absorptionPanel. 
+    * Radius of the sample for the absorption correction is loaded into appropriate 
+    * textfields.
+    * 
+    * @return JPanel
+    */
+   private JPanel buildAbsorptionPanel1()
+   {
+      JPanel absorptionPanel = new JPanel();
+      absorptionPanel.setLayout(new GridLayout(1,2));
+
+      String default_absorptionRadius  = "0.0";
+      JLabel radAbsorption = new JLabel("Absorption Corr. Radius(cm): ");
+      absorptionRadius = new JTextField( default_absorptionRadius );
+      absorptionRadius.setHorizontalAlignment(JTextField.RIGHT);
+
+      absorptionPanel.add(radAbsorption);
+      absorptionPanel.add(absorptionRadius);
+
+      return absorptionPanel;
+   }
+   /**
+    * Build the absorptionPanel. 
+    * Total absorption for the absorption correction is loaded into appropriate 
+    * textfields.
+    * 
+    * @return JPanel
+    */
+   private JPanel buildAbsorptionPanel2()
+   {
+      JPanel absorptionPanel = new JPanel();
+      absorptionPanel.setLayout(new GridLayout(1,2));
+
+      String default_totalAbsorption = "0.0";
+      JLabel total = new JLabel("Mu scattering(cm): ");
+      totalAbsorption = new JTextField( default_totalAbsorption );
+      totalAbsorption.setHorizontalAlignment(JTextField.RIGHT);
+      
+      absorptionPanel.add(total);
+      absorptionPanel.add(totalAbsorption);
+
+      return absorptionPanel;
+   }
+   /**
+    * Build the absorptionPanel. 
+    * True absorption for the absorption correction is loaded into appropriate 
+    * textfields.
+    * 
+    * @return JPanel
+    */
+   private JPanel buildAbsorptionPanel3()
+   {
+      JPanel absorptionPanel = new JPanel();
+      absorptionPanel.setLayout(new GridLayout(1,2));
+
+      String default_trueAbs = "0.0";
+      JLabel trueAbs = new JLabel("Mu absorption(cm): ");
+      absorptionTrue = new JTextField( default_trueAbs );
+      absorptionTrue.setHorizontalAlignment(JTextField.RIGHT);
+      
+      absorptionPanel.add(trueAbs);
+      absorptionPanel.add(absorptionTrue);
+
+      return absorptionPanel;
    }
    
    /**
@@ -788,6 +866,30 @@ public class filePanel //extends JPanel
             {
                try
                {
+                  float AbsorptionRadius = 0.0f;
+                  try
+                  {
+                     AbsorptionRadius = Float.parseFloat(  absorptionRadius.getText().trim() );
+                  }catch( Exception s)
+                  {
+                     AbsorptionRadius = 0.0f;
+                  }
+                  float TotalAbsorption = 0.0f;
+                  try
+                  {
+                     TotalAbsorption = Float.parseFloat(  totalAbsorption.getText().trim() );
+                  }catch( Exception s)
+                  {
+                     TotalAbsorption = 0.0f;
+                  }
+                  AbsorptionTrue = 0.0f;
+                  try
+                  {
+                     AbsorptionTrue = Float.parseFloat(  absorptionTrue.getText().trim() );
+                  }catch( Exception s)
+                  {
+                     AbsorptionTrue = 0.0f;
+                  }
                   LoadUDPEventsCmd cmd =new LoadUDPEventsCmd( 
                            Instrument.getSelectedItem().toString(),
                            Integer.parseInt( Port.getText()), 
@@ -797,6 +899,9 @@ public class filePanel //extends JPanel
                            bankFileName.getText(),
                            IDmapFileName.getText(),
                            null,
+                           AbsorptionRadius,
+                           TotalAbsorption,
+                           AbsorptionTrue,
                            MaxQValue,
                            nf.parse( eventsToShowUDP.getText()).longValue()
                                                             );
@@ -848,6 +953,30 @@ public class filePanel //extends JPanel
                   {
                      scale_factor = -1;
                   }
+                  float AbsorptionRadius = 0.0f;
+                  try
+                  {
+                     AbsorptionRadius = Float.parseFloat(  absorptionRadius.getText().trim() );
+                  }catch( Exception s)
+                  {
+                     AbsorptionRadius = 0.0f;
+                  }
+                  float TotalAbsorption = 0.0f;
+                  try
+                  {
+                     TotalAbsorption = Float.parseFloat(  totalAbsorption.getText().trim() );
+                  }catch( Exception s)
+                  {
+                     TotalAbsorption = 0.0f;
+                  }
+                  AbsorptionTrue = 0.0f;
+                  try
+                  {
+                     AbsorptionTrue = Float.parseFloat(  absorptionTrue.getText().trim() );
+                  }catch( Exception s)
+                  {
+                     AbsorptionTrue = 0.0f;
+                  }
                   LoadEventsCmd fileInfo = 
                      new LoadEventsCmd(
                                 ev_file,
@@ -857,6 +986,9 @@ public class filePanel //extends JPanel
                                 bankFileName.getText(),
                                 IDmapFileName.getText(),         
                                 null,
+                                AbsorptionRadius,
+                                TotalAbsorption,
+                                AbsorptionTrue,
                                 MaxQValue,
                                 nf.parse(availableEvents.getText()).longValue(),
                                 startEvent, 
