@@ -9,6 +9,9 @@ public class LoadEventsCmd
    private String bankFile;
    private String IDmapFile;
    private String matFile;
+   private float  AbsorptionRadius;
+   private float  TotalAbsorption;
+   private float  AbsorptionTrue;
    private float  maxQValue;
    private long   availableEvents;
    private long   firstEvent;
@@ -24,6 +27,9 @@ public class LoadEventsCmd
                          String bankFile,
                          String IDmapFile,
                          String matFile, 
+                         float  AbsorptionRadius,
+                         float  TotalAbsorption,
+                         float  AbsorptionTrue,
                          float  maxQValue,
                          long   availableEvents, 
                          long   firstEvent, 
@@ -40,6 +46,9 @@ public class LoadEventsCmd
       this.bankFile        = bankFile ;
       this.IDmapFile       = IDmapFile ;
       this.matFile         = matFile;
+      this.AbsorptionRadius= AbsorptionRadius;
+      this.TotalAbsorption = TotalAbsorption;
+      this.AbsorptionTrue  = AbsorptionTrue;
       this.maxQValue         = maxQValue;
       this.availableEvents = availableEvents;
       this.firstEvent      = firstEvent;
@@ -55,6 +64,9 @@ public class LoadEventsCmd
             String bankFile,
             String IDmapFile,
             String matFile, 
+            float  AbsorptionRadius,
+            float  TotalAbsorption,
+            float  AbsorptionTrue,
             float  maxQValue,
             long   availableEvents, 
             long   firstEvent, 
@@ -69,6 +81,9 @@ public class LoadEventsCmd
             bankFile,
             IDmapFile,
              matFile, 
+            AbsorptionRadius,
+            TotalAbsorption,
+            AbsorptionTrue,
             maxQValue,
             availableEvents, 
             firstEvent, 
@@ -136,6 +151,31 @@ public class LoadEventsCmd
    }
 
    
+   public float getAbsorptionRadius()
+   {
+      if (Float.isNaN( AbsorptionRadius )|| AbsorptionRadius < 0 )
+        return Float.NaN;
+
+      return AbsorptionRadius;
+   }
+
+   public float getTotalAbsorption()
+   {
+      if (Float.isNaN( TotalAbsorption )|| TotalAbsorption < 0 )
+        return Float.NaN;
+
+      return TotalAbsorption;
+   }
+
+   public float getAbsorptionTrue()
+   {
+      if (Float.isNaN( AbsorptionTrue )|| AbsorptionTrue < 0 )
+        return Float.NaN;
+
+      return AbsorptionTrue;
+   }
+
+
    public float getMaxQValue()
    {
       if (Float.isNaN( maxQValue )|| maxQValue <=0 )
@@ -183,6 +223,9 @@ public class LoadEventsCmd
              "\nBank File   : " + getBankFile()      +
              "\nID map File : " + getIDMapFile()      +
              "\nMatrix File : " + getMatFile()         +
+             "\nAbsorpRadius: " + getAbsorptionRadius()+
+             "\nTotalAbsorp : " + getTotalAbsorption() +
+             "\nAbsorpTrue  : " + getAbsorptionTrue()  +
              "\nMax Q Value : " + getMaxQValue()         +
              "\nNum Events  : " + getAvailableEvents() +
              "\nFirst Event : " + getFirstEvent()      +

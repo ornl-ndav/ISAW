@@ -161,7 +161,11 @@ public class InitializationHandler implements IReceiveMessage
                                   load_file_cmd.getIncSpectrumFile(),
                                   load_file_cmd.getBankFile( ),
                                   load_file_cmd.getIDMapFile( ),
-                                  load_file_cmd.getScaleFactor() );
+                                  load_file_cmd.getScaleFactor(),
+                                  load_file_cmd.getAbsorptionRadius(),
+                                  load_file_cmd.getTotalAbsorption(),
+                                  load_file_cmd.getAbsorptionTrue()  );
+
       InitData( new_inst_cmd );
 
       return false;
@@ -230,7 +234,10 @@ public class InitializationHandler implements IReceiveMessage
                    UDPcmd.getDetFile(),
                    UDPcmd.getIncSpectrumFile(),
                    UDPcmd.getBankFile(),
-                   UDPcmd.getIDMapFile() );
+                   UDPcmd.getIDMapFile(),
+                   UDPcmd.getAbsorptionRadius(),
+                   UDPcmd.getTotalAbsorption(),
+                   UDPcmd.getAbsorptionTrue()  );
 
        (new InitDataThread( new_inst_cmd )).start();
        
@@ -273,7 +280,7 @@ public class InitializationHandler implements IReceiveMessage
        SetNewInstrumentCmd new_inst_cmd = 
           new SetNewInstrumentCmd( currentUDPInstrument,
                    null,
-                   null, null,null );
+                   null, null,null ,1.0f,1.0f,1.0f);
        
       (new InitDataThread( new_inst_cmd )).start();
     }
@@ -348,7 +355,10 @@ public class InitializationHandler implements IReceiveMessage
                                           UDPcmd.getIncSpectrumFile( ),
                                           UDPcmd.getBankFile( ),
                                           UDPcmd.getIDMapFile( ),
-                                          null);
+                                          null,
+                                          UDPcmd.getAbsorptionRadius(),
+                                          UDPcmd.getTotalAbsorption(),
+                                          UDPcmd.getAbsorptionTrue());
           socket.start();
         }
         if( Clearing)
