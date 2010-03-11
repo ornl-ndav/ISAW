@@ -95,14 +95,18 @@ public class RemovePeaks_Calc
    *                          This is restricted to be between 1 and 100.
    *                           
    */
-  public static void RemovePeaks_d( DataSet ds, 
-                                    String  peak_file,
-                                    float   delta_d_over_d,
-                                    float   replace_dist,
-                                    int     num_to_average )
+  public static String RemovePeaks_d( DataSet ds, 
+                                      String  peak_file,
+                                      float   delta_d_over_d,
+                                      float   replace_dist,
+                                      int     num_to_average )
                      throws Exception 
   {
-    CheckParameters(ds, peak_file, delta_d_over_d, replace_dist, num_to_average);
+    CheckParameters( ds, 
+                     peak_file, 
+                     delta_d_over_d, 
+                     replace_dist, 
+                     num_to_average);
 
     if ( ! ds.getX_units().equals( "Angstroms" ) )
       throw new IllegalArgumentException("DataSet must have X-units Angstroms");
@@ -125,7 +129,18 @@ public class RemovePeaks_Calc
         Interpolate( x_vals, y_vals, min_index, max_index, num_to_average );
       } 
     }
+
+    String log_message = "Removed specified peaks from all Data blocks\n" +
+                         "using RemovePeaks_d() method with paramters:\n " + 
+                         "peak_file = " + peak_file + "\n" +
+                         "delta_d_over_d = " + delta_d_over_d + "\n" +
+                         "replace_dist = " + replace_dist + "\n" +
+                         "num_to_average " + num_to_average;
+    ds.addLog_entry( log_message );
+
+    return "Removed Peaks";
   }
+
 
   /**
    *  Replace small intervals of spectra that have a peak that should not
@@ -141,7 +156,7 @@ public class RemovePeaks_Calc
    *  @param  peak_file       ASCII file listing the h,k,l and d-spacing in
    *                          Angstroms, for the peaks that are to be removed
    *                          from the spectra.  Each line of the file must
-   *                          have at least the four values.  Only the 
+   *                          have at least those four values.  Only the 
    *                          d-spacing value is currently used, but the
    *                          first three numbers (representing h,k,l) must 
    *                          be present, since they are read and skipped 
@@ -149,13 +164,15 @@ public class RemovePeaks_Calc
    *                          with a '#' symbol are ignored.
    *  @param  delta_d_over_d  Estimate of the width of the peaks specified
    *                          by delta_d/d.  The actual width used will
-   *                          depend on the d_value as width = d*delta_d_over_d.
+   *                          depend on the d_value as width = 
+   *                          d*delta_d_over_d.  This width is converted to 
+   *                          be in terms of time-of-flight.
    *  @param  replace_dist    Fractional number of peak widths, left and
    *                          right of the nominal position, that defines the 
    *                          interval over which values will be replaced by
    *                          interpolated values.  This is restricted to be 
    *                          between 1 and 20, so the values on the interval
-   *                          [d-replace_dist*width,d+replace_dist*width]
+   *                          [tof-replace_dist*width,tof+replace_dist*width]
    *                          will be replaced by linearly interpolated values.
    *                          This interval is considered to be the peak
    *                          extent.
@@ -168,14 +185,18 @@ public class RemovePeaks_Calc
    *                          This is restricted to be between 1 and 100.
    *                           
    */
-  public static void RemovePeaks_tof( DataSet ds,
-                                      String  peak_file,
-                                      float   delta_d_over_d,
-                                      float   replace_dist,
-                                      int     num_to_average )
+  public static String RemovePeaks_tof( DataSet ds,
+                                        String  peak_file,
+                                        float   delta_d_over_d,
+                                        float   replace_dist,
+                                        int     num_to_average )
                      throws Exception
   {
-    CheckParameters(ds, peak_file, delta_d_over_d, replace_dist, num_to_average);
+    CheckParameters( ds, 
+                     peak_file, 
+                     delta_d_over_d, 
+                     replace_dist, 
+                     num_to_average );
 
     if ( ! ds.getX_units().equals( "Time(us)" ) )
       throw new IllegalArgumentException(
@@ -231,9 +252,23 @@ public class RemovePeaks_Calc
           Interpolate( x_vals, y_vals, min_index, max_index, num_to_average );
       }
     }
+    String log_message = "Removed specified peaks from all Data blocks\n" +
+                         "using RemovePeaks_d() method with paramters:\n " +
+                         "peak_file = " + peak_file + "\n" +
+                         "delta_d_over_d = " + delta_d_over_d + "\n" +
+                         "replace_dist = " + replace_dist + "\n" +
+                         "num_to_average " + num_to_average;
+    ds.addLog_entry( log_message );
+
+    return "Removed Peaks";
   }
 
 
+  /**
+   * Check that the parameters seem to be valid and
+   * throw an appropriate illegal argument exception
+   * if they are not.
+   */
   private static void CheckParameters( DataSet ds, 
                                        String  peak_file,
                                        float   delta_d_over_d,
