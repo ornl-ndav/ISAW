@@ -93,17 +93,14 @@ public class SocketEventLoader
                              String        detInfFile,
                              String        IncidSpectraFile, 
                              String        bankFile,
-                             String        ID_MapFile ,
-                             float         radius,
-                             float         smu,
-                             float         amu)
+                             String        ID_MapFile )
    {
       User = new thisIUDPUser( message_center, 
                                Instrument,
                                detInfFile,
                                IncidSpectraFile,
                                bankFile,
-                               ID_MapFile ,radius, smu, amu);
+                               ID_MapFile );
       udpReceiver = new UDPReceive( port, User );
 
       try
@@ -135,7 +132,7 @@ public class SocketEventLoader
    public SocketEventLoader( int port, MessageCenter message_center,
             String Instrument)
    {
-      this( port, message_center, Instrument, null, null,null, null, 1.0f, 1.0f, 1.0f);
+      this( port, message_center, Instrument, null, null,null, null);
    }
    
   
@@ -255,10 +252,7 @@ class thisIUDPUser implements IUDPUser
                         String        detector_file_name,
                         String        incident_spectra_filename,
                         String        bankFile,
-                        String        ID_MapFile,
-                        float         radius,
-                        float         smu,
-                        float         amu)
+                        String        ID_MapFile)
    {
       this.message_center = message_center;
      
@@ -269,7 +263,7 @@ class thisIUDPUser implements IUDPUser
                                    querieFile(detector_file_name) ,
                                    querieFile( incident_spectra_filename),
                                    querieFile( bankFile),
-                                   querieFile( ID_MapFile) ,radius, smu, amu) ,
+                                   querieFile( ID_MapFile) ) ,
                            false ) );
       if ( SocketEventLoader.debug == 5 )
       {
@@ -304,7 +298,7 @@ class thisIUDPUser implements IUDPUser
 
    public thisIUDPUser( MessageCenter message_center, String Instrument )
    {
-      this(message_center, Instrument, null, null,null,null,1.0f,1.0f,1.0f);
+      this(message_center, Instrument, null, null,null,null);
    }
 
 

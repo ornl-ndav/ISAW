@@ -48,7 +48,7 @@ public class SetNewInstrumentCmd
 
    String bank_file_name;
    String ID_Map_file_name;
-   private float scale_factor, radius, smu, amu;
+   private float scale_factor, radius=0.0f, smu=0.0f, amu=0.0f;
 
    
   /**
@@ -96,6 +96,21 @@ public class SetNewInstrumentCmd
       this.smu = smu;
       this.amu = amu;
    }
+   public SetNewInstrumentCmd( String instrument_name, 
+                               String detector_file_name,
+                               String incident_spectrum_file_name,
+                               String bank_file_name,
+                               String ID_Map_file_name,
+                               float  scale_factor)
+   {
+      this.instrument_name = instrument_name; 
+      this.detector_file_name = detector_file_name; 
+      this.incident_spectrum_file_name = incident_spectrum_file_name; 
+
+      this.bank_file_name = bank_file_name;
+      this.ID_Map_file_name = ID_Map_file_name;
+      this.scale_factor = scale_factor;
+   }
 
 
    /**
@@ -115,6 +130,23 @@ public class SetNewInstrumentCmd
             bank_file_name,
             ID_Map_file_name,
             -1f, radius, smu, amu);
+   }
+   /**
+    * @see #SetNewInstrumentCmd(String, String, String, String, String, float, float, float, float)
+    *       Full Constructor
+    */
+   public SetNewInstrumentCmd( String instrument_name, 
+                               String detector_file_name,
+                               String incident_spectrum_file_name,
+                               String bank_file_name,
+                               String ID_Map_file_name)
+   {
+      this( instrument_name, 
+            detector_file_name, 
+            incident_spectrum_file_name,
+            bank_file_name,
+            ID_Map_file_name,
+            -1f);
    }
 
    public String getDetectorFileName()
