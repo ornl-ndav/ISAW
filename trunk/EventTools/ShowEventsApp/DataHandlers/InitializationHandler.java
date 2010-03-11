@@ -355,10 +355,7 @@ public class InitializationHandler implements IReceiveMessage
                                           UDPcmd.getDetFile( ),
                                           UDPcmd.getIncSpectrumFile( ),
                                           UDPcmd.getBankFile( ),
-                                          UDPcmd.getIDMapFile( ),
-                                          UDPcmd.getAbsorptionRadius(),
-                                          UDPcmd.getTotalAbsorption(),
-                                          UDPcmd.getAbsorptionTrue());
+                                          UDPcmd.getIDMapFile( ));
           socket.start();
         }
         if( Clearing)

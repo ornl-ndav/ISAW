@@ -201,6 +201,9 @@ public class SNS_Tof_to_Q_map
   private int               run_num         = 0;
   private float             monitor_count   = 100000;
   private SampleOrientation orientation     = new SNS_SampleOrientation(0,0,0);
+  private float radius;
+  private float smu;
+  private float amu;
 
 
   /**
@@ -251,6 +254,63 @@ public class SNS_Tof_to_Q_map
                       bank_filename,
                       map_filename,
                       spectrum_filename );
+     this.radius = 0.0f;
+     this.smu = 0.0f;
+     this.amu = 0.0f;
+
+  }
+  /**
+   *  Construct the mapping from (tof,id) to Qxyz, d and time-focused 
+   *  spectra from the information at the start of a .peaks file or .DetCal 
+   *  file, an SNS bank file, an SNS mapping file and an incident spectrum 
+   *  file.  NOTE: There MUST be an entry for each detector in the instrument,
+   *  so a .peaks file may not work, if some detectors are missing. 
+   *  The instrument name is required, and will be used to find default
+   *  det cal, bank, map and incident spectrum files, if these files are
+   *  not specified.
+   *  An exception will be thrown if specified files are missing or can't 
+   *  be read and no default files are found.  If the files are specified,
+   *  the files must be consistent and describe the same instrument 
+   *  configuration as was in place when the neutron event file(s) that 
+   *  will be mapped were written.  The initial spectrum file is optional.
+   *
+   *  @param  instrument_name   The name of the instrument, such as "TOPAZ".
+   *
+   *  @param  det_cal_filename  The name of the .DetCal or .peaks file with 
+   *                            position information about EVERY detector and
+   *                            L1 and t0 values.
+   *
+   *  @param  bank_filename     The name of the _bank_ XML file containing the 
+   *                            SNS detector bank information.
+   *
+   *  @param  map_filename      The name of the _TS_ binary file containing 
+   *                            DAS pixel ID to NeXus pixel ID mapping.
+   *
+   *  @param  spectrum_filename Name of file containing incident spectrum
+   *                            for this instrument.  The spectrum file
+   *                            must be an ASCII file giving values for the
+   *                            incident spectrum.  The file must be the same
+   *                            form as InstrumentInfo/SNS/SNAP_Spectrum.dat
+   *                            If no spectrum file is available, pass in null.
+   *                            The SNAP spectrum file will be used by default
+   *                            for SNAP.
+   */
+  public SNS_Tof_to_Q_map( String instrument_name,
+                           String det_cal_filename,
+                           String bank_filename,
+                           String map_filename,
+                           String spectrum_filename, 
+                           float radius, float smu, float amu)
+         throws IOException
+  {
+    InitFromSNS_Maps( instrument_name, 
+                      det_cal_filename, 
+                      bank_filename,
+                      map_filename,
+                      spectrum_filename );
+     this.radius = radius;
+     this.smu = smu;
+     this.amu = amu;
 
   }
 
@@ -297,6 +357,9 @@ public class SNS_Tof_to_Q_map
       InitFromReorderedDetCal( det_cal_filename, spectrum_filename, 
                                instrument_name );
     }
+     this.radius = 0.0f;
+     this.smu = 0.0f;
+     this.amu = 0.0f;
   }
 
 
@@ -469,7 +532,7 @@ public class SNS_Tof_to_Q_map
    */
   public FloatArrayEventList3D MapEventsToQ( ITofEventList event_list,
                                              int   first,
-                                             int   num_to_map, float radius, float smu, float amu )
+                                             int   num_to_map )
   {
      int last = CheckAndFixEventRange( event_list, first, num_to_map );
 
@@ -536,7 +599,7 @@ public class SNS_Tof_to_Q_map
            lamda_index = lamda_weight.length - 1;
 
          if ( radius > 0 )
-           transinv = absor_sphere(smu, amu, radius, two_theta_map[id], lamda);
+           transinv = absor_sphere(two_theta_map[id], lamda);
          weights[i] = pix_weight[id] * lamda_weight[ lamda_index ] * transinv;
        }
      }
@@ -586,7 +649,7 @@ public class SNS_Tof_to_Q_map
   public FloatArrayEventList3D MapEventsToQ( int[] tofs, 
                                              int[] ids,
                                              int   first,
-                                             int   num_to_map, float radius, float smu, float amu )
+                                             int   num_to_map )
   {
      if ( tofs == null )
        throw new IllegalArgumentException( "Time-of-flight array is null" );
@@ -615,7 +678,7 @@ public class SNS_Tof_to_Q_map
      if ( first == 0 )
      {
        ITofEventList raw_events = new TofEventList( tofs, ids );
-       return MapEventsToQ( raw_events, 0, num_to_map, radius, smu, amu );
+       return MapEventsToQ( raw_events, 0, num_to_map );
      }
      else              // construct TofEventList from part of tofs[] and ids[] 
      {
@@ -626,7 +689,7 @@ public class SNS_Tof_to_Q_map
        System.arraycopy( ids,  first, new_ids,  0, num_to_map );
 
        ITofEventList raw_events = new TofEventList( new_tofs, new_ids );
-       return MapEventsToQ( raw_events, 0, num_to_map, radius, smu, amu );
+       return MapEventsToQ( raw_events, 0, num_to_map );
      }
   }
 
@@ -651,14 +714,14 @@ public class SNS_Tof_to_Q_map
    *              is more efficient than this method, and should be used
    *              whenever possible.
    */
-  public FloatArrayEventList3D MapEventsToQ( int[] tofs, int[] ids, float radius, float smu, float amu)
+  public FloatArrayEventList3D MapEventsToQ( int[] tofs, int[] ids)
   {
     if ( tofs == null || ids == null )
       throw new IllegalArgumentException( "Time-of-flight array is null" );
 
     int first = 0;
     int num_to_map = tofs.length;
-    return MapEventsToQ( tofs, ids, first, num_to_map, radius, smu, amu );
+    return MapEventsToQ( tofs, ids, first, num_to_map );
   }
 
 
@@ -1391,7 +1454,7 @@ public class SNS_Tof_to_Q_map
 
 *       a. j. schultz, june, 2008
 */
-private float absor_sphere(float smu, float amu, float radius, float twoth, float wl)
+private float absor_sphere(float twoth, float wl)
 {
 
         int i;

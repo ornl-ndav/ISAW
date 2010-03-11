@@ -46,9 +46,6 @@ public class MapEventsToQ_Op implements IOperator
   private int              first;
   private int              num_to_map;
   private SNS_Tof_to_Q_map mapper;
-  private float            radius;
-  private float            smu;
-  private float            amu;
 
 
  /**
@@ -61,18 +58,12 @@ public class MapEventsToQ_Op implements IOperator
   *                      events to Q
   */
   public MapEventsToQ_Op( ITofEventList tof_events, 
-                          float            radius,
-                          float            smu,
-                          float            amu,
                           SNS_Tof_to_Q_map mapper )
   {
      this.tof_events = tof_events;
      this.first      = 0;
      this.num_to_map = (int)tof_events.numEntries();
      this.mapper     = mapper;
-     this.radius     = radius;
-     this.smu        = smu;
-     this.amu        = amu;
   }
 
 
@@ -90,18 +81,12 @@ public class MapEventsToQ_Op implements IOperator
   public MapEventsToQ_Op( ITofEventList    tof_events,
                           int              first,
                           int              num_to_map,
-                          float            radius,
-                          float            smu,
-                          float            amu,
                           SNS_Tof_to_Q_map mapper )
   {
      this.tof_events = tof_events;
      this.first      = first;
      this.num_to_map = num_to_map;
      this.mapper     = mapper;
-     this.radius     = radius;
-     this.smu        = smu;
-     this.amu        = amu;
   }
 
 
@@ -111,7 +96,7 @@ public class MapEventsToQ_Op implements IOperator
    */
   public Object getResult()
   {
-     return mapper.MapEventsToQ( tof_events, first, num_to_map, radius, smu, amu); 
+     return mapper.MapEventsToQ( tof_events, first, num_to_map); 
   }
 
   /**
@@ -140,10 +125,7 @@ public class MapEventsToQ_Op implements IOperator
 
     int num_mapped = 1000000;
     int first      = 1000000;
-    float radius   = 0.17f;
-    float smu      = 1.302f;
-    float amu      = 1.686f;
-    IOperator op = new MapEventsToQ_Op( ev_list, first, num_mapped, radius, smu, amu, mapper ); 
+    IOperator op = new MapEventsToQ_Op( ev_list, first, num_mapped, mapper ); 
     Object result = op.getResult();    
 
     FloatArrayEventList3D q_list = (FloatArrayEventList3D)result; 

@@ -69,7 +69,6 @@ public class QMapperHandler implements IReceiveMessage
   private SNS_Tof_to_Q_map mapper;
   private String isaw_home = System.getProperty( "ISAW_HOME" ) + "/";
   private float            scale_factor;
-  private float            radius, smu, amu;
 
   public QMapperHandler( MessageCenter message_center )
   {
@@ -135,14 +134,14 @@ public class QMapperHandler implements IReceiveMessage
         try 
         { 
           start    = System.nanoTime();
-          radius = cmd.getAbsorptionRadius();
-          smu    = cmd.getTotalAbsorption();
-          amu    = cmd.getAbsorptionTrue();
           mapper   = new SNS_Tof_to_Q_map(  new_instrument,
                                            det_file, 
                                            cmd.getBankFileName( ),
                                            cmd.getIDMapFileName( ),
-                                           spec_file
+                                           spec_file,
+                                           cmd.getAbsorptionRadius(),
+                                           cmd.getTotalAbsorption(),
+                                           cmd.getAbsorptionTrue() 
                                            );
           run_time = (System.nanoTime() - start)/1.0e6;
           instrument_name = new_instrument;
@@ -335,7 +334,6 @@ public class QMapperHandler implements IReceiveMessage
         toQ_ops.add( new MapEventsToQ_Op( ev_list, 
                                           first, 
                                           num_to_map,  
-                                          radius, smu, amu,
                                           mapper ) );
         first += num_to_map;
       }
@@ -361,7 +359,7 @@ public class QMapperHandler implements IReceiveMessage
     {
       event_lists = new IEventList3D[1];
       int num_to_map = (int)ev_list.numEntries();
-      event_lists[0] = mapper.MapEventsToQ( ev_list, 0, num_to_map ,radius, smu, amu);
+      event_lists[0] = mapper.MapEventsToQ( ev_list, 0, num_to_map );
     }
 
 //    Util.sendInfo("Converted to Q in " + ((System.nanoTime()-start)/1e6) +
