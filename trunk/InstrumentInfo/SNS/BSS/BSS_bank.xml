@@ -1,0 +1,35 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<banking xmlns='http://neutrons.ornl.gov/SNS/ASG/Banking'>
+  <facility>SNS</facility>
+  <instrument>BSS</instrument>
+  <date>2009-07-01</date>
+  <bank>
+    <number>1</number>
+    <x_size>64</x_size>
+    <y_size>64</y_size>
+    <continuous_list>
+      <start>0</start>
+      <stop>4095</stop>
+    </continuous_list>
+  </bank>
+  <bank>
+    <number>2</number>
+    <x_size>64</x_size>
+    <y_size>64</y_size>
+    <continuous_list>
+      <start>4096</start>
+      <stop>8191</stop>
+    </continuous_list>
+  </bank>
+  <bank>
+    <number>3</number>
+    <entry>entry-diff</entry>
+    <x_size>8</x_size>
+    <y_size>128</y_size>
+    <continuous_list>
+      <start>8192</start>
+      <stop>9215</stop>
+    </continuous_list>
+  </bank>
+  <total_pixel_number>9216</total_pixel_number>
+</banking>
