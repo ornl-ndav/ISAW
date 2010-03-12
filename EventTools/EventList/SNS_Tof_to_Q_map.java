@@ -107,13 +107,39 @@ public class SNS_Tof_to_Q_map
   public static final float  ANGST_PER_US_PER_M = 
                                         (float)tof_calc.ANGST_PER_US_PER_M;
 
-  public static final String SNAP  = "SNAP";
-  public static final String TOPAZ = "TOPAZ";
-  public static final String PG3   = "PG3";
-  public static final String ARCS  = "ARCS";
-  public static final String SEQ   = "SEQ";
-  public static final String CNCS  = "CNCS";
+  public static final String ARCS   = "ARCS";
+  public static final String BSS    = "BSS";
+  public static final String CNCS   = "CNCS";
+  public static final String EQSANS = "EQSANS";
+  public static final String PG3    = "PG3";
+  public static final String REF_L  = "REF_L";
+  public static final String REF_M  = "REF_M";
+  public static final String SEQ    = "SEQ";
+  public static final String SNAP   = "SNAP";
+  public static final String TOPAZ  = "TOPAZ";
+  public static final String VULCAN = "VULCAN";
+
+  /**
+   *  To add support for a new instrument, add the name of the instrument
+   *  as a String (above) and add it to the list of supported instruments,
+   *  below.  The .../ISAW/InstrumentInfo/SNS/ directory should also include
+   *  a directory for that instrument, containing the .DetCal, *_bank.xml
+   *  and *_TS.dat mapping file, that will be used as defaults.
+   */
+  public static final String[] supported_instruments = { ARCS,
+                                                         BSS,
+                                                         CNCS,
+                                                         EQSANS,
+                                                         PG3,
+                                                         REF_L,
+                                                         REF_M,
+                                                         SEQ,
+                                                         SNAP,
+                                                         TOPAZ,
+                                                         VULCAN };
+
   public static final float radtodeg_half = 180.f/(float)Math.PI/2.f;
+
   public static final float[][] pc = new float[][] {
         {0.9369f, 0.9490f, 0.9778f, 1.0083f, 1.0295f, 1.0389f, 1.0392f, 1.0338f,
          1.0261f, 1.0180f, 1.0107f, 1.0046f, 0.9997f, 0.9957f, 0.9929f, 0.9909f,
@@ -127,20 +153,6 @@ public class SNS_Tof_to_Q_map
         {1.1717f, 1.0872f, 0.8715f, 0.6068f, 0.3643f, 0.1757f, 0.0446f, -0.0375f,
         -0.0853f, -0.1088f, -0.1176f, -0.1177f, -0.1123f, -0.1051f, -0.0978f,
         -0.0914f, -0.0868f, -0.0840f, -0.0833f}};
-
-  /**
-   *  To add support for a new instrument, add the name of the instrument
-   *  as a String (above) and add it to the list of supported instruments,
-   *  below.  The .../ISAW/InstrumentInfo/SNS/ directory should also include
-   *  a directory for that instrument, containing the .DetCal, *_bank.xml
-   *  and *_TS.dat mapping file, that will be used as defaults.
-   */
-  public static final String[] supported_instruments = { SNAP, 
-                                                         TOPAZ, 
-                                                         PG3,
-                                                         ARCS,
-                                                         SEQ,
-                                                         CNCS };
 
   private final float MAX_WAVELENGTH = 50.0f;    // max in lamda_weight table
 
