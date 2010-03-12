@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<banking xmlns='http://neutrons.ornl.gov/SNS/ASG/Banking'>
+  <facility>SNS</facility>
+  <instrument>REF_M</instrument>
+  <date>2009-09-17</date>
+  <bank>
+    <number>1</number>
+    <x_size>304</x_size>
+    <y_size>256</y_size>
+    <continuous_list>
+      <start>0</start>
+      <stop>77823</stop>
+    </continuous_list>
+  </bank>
+  <total_pixel_number>77824</total_pixel_number>
+</banking>

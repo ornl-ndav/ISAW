@@ -1,0 +1,14 @@
+#
+# Detector Position Information Extracted From NeXus file: 
+# /usr2/REF_M/REF_M_6308.nxs
+#
+# Lengths are in centimeters.
+# Base and up give directions of unit vectors for a local
+# x,y coordinate system on the face of the detector.
+#
+#
+# Thu Mar 11 17:15:27 EST 2010
+6         L1     T0_SHIFT
+7  1870.2999            0
+4 DETNUM  NROWS  NCOLS  WIDTH   HEIGHT   DEPTH   DETD   CenterX   CenterY   CenterZ    BaseX    BaseY    BaseZ      UpX      UpY      UpZ
+5      1    256    304 21.2800 17.9200  0.2000 270.03  -81.0809    0.0000  257.5745  0.95381  0.00000  0.30042 -0.00017  1.00000  0.00000
