@@ -69,6 +69,8 @@ public class DQDataHandler implements IReceiveMessage
                   normalizeD;    // if true send normalized D data
 
   private float   scale_factor;//divide by this scale_factor
+  
+  private float   MaxScaleFactor;
 
   private String  incidentSpectraFileName;
 
@@ -128,6 +130,18 @@ public class DQDataHandler implements IReceiveMessage
       d_binner = getDBinner( isLog );
       scale_factor = 1;
       init_arrays();
+      scale_factor = MaxScaleFactor = 0;
+      Object O = System.getProperty("ScaleWith");
+      if( O != null && (O instanceof String)&& ((String)O).startsWith( "MAX_" ))
+      try
+      {
+         MaxScaleFactor = Float.parseFloat( ((String)O ).substring( 4 ).trim());
+         
+      }catch( Exception s)
+      {
+         MaxScaleFactor =0;
+      }
+      
    }
    
 
@@ -651,19 +665,33 @@ public class DQDataHandler implements IReceiveMessage
    {
       if(  qvals == null)
          return qvals;
-      if( scale_factor <= 0 || !normalize )
+      if( (scale_factor <= 0 && MaxScaleFactor <=0) || !normalize  )
          return qvals;
       
       float[][] Res = new float[2][qvals[1].length];
       Res[0] = qvals[0];
-      for( int i=0; i < qvals[1].length; i++)
-      {
-         float m = 1;
-         if( scale_factor > 0)
-            m = scale_factor;
+      float m = 1;
+      
+      if( scale_factor > 0)
          
-         Res[1][i] =  qvals[1][i]/ m;           
+         m = scale_factor;
+      
+      else if( MaxScaleFactor > 0)
+      {
+         float max = qvals[1][0];
+         
+         for( int i=0; i< qvals[1].length; i++)
+            if( qvals[1][i] > max)
+               max = qvals[1][i];
+         
+         if( max > 0)
+            m = max/MaxScaleFactor;
       }
+      
+      for( int i=0; i < qvals[1].length; i++)
+     
+         Res[1][i] =  qvals[1][i]/ m;   
+      
       return Res;
    }
    

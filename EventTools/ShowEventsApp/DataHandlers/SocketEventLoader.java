@@ -65,15 +65,10 @@ public class SocketEventLoader
 
    public static int SEND_MIN_TIME = 2000; // ms
    
-   //deprecated by new format
-   public static int START_CMD_INDX_TARTG_PROTO = 40;
-   public static int NUM_CMD_TARTG_PROTO = 8;
-   public static int HEADER_PACKET_2POS = 6; 
    
    public thisIUDPUser User;
    private UDPReceive  udpReceiver;
    private boolean udpReceiverStarted;
-   
    public static int debug = 0;
 
 
@@ -113,19 +108,8 @@ public class SocketEventLoader
       }
 
       udpReceiverStarted = false;
-      try
-      {
-        START_CMD_INDX_TARTG_PROTO = 
-          Integer.parseInt( 
-            System.getProperty("Command Packet Index Protons On Target","40"));
-      }
-      catch( Exception s)
-      {
-         START_CMD_INDX_TARTG_PROTO = 40;
-      }
-      
-      HEADER_PACKET_2POS = DataSetTools.util.SharedData.getintProperty( 
-            "Header_Packet_2_Position" , "6" );
+         
+     
    }
    
 
@@ -221,10 +205,9 @@ class thisIUDPUser implements IUDPUser
    private        int total_received = 0;
    
    private      double TotalProtonsOnTarget =0;
-   
-   private      boolean SendScale =
-                      System.getProperty( "ScaleWith","" ).toUpperCase( )
-                                  .equals( "PROTONS ON TARGET" ) ;
+
+   protected boolean sendProtOnCharge = false;
+   protected boolean sendNEvents = false;
    
    private     FileOutputStream   fsave;
    
@@ -281,9 +264,24 @@ class thisIUDPUser implements IUDPUser
          fsave = null;
          SavedEventsBuff = null;
       }
+   
       
-      sendBuff = BuffPool[ currentBuffPage ];
-      ( new timerThread( this ) ).start();
+      Object Scaling = System.getProperty( "ScaleWith" );
+      
+     if( Scaling != null && Scaling.equals( "Protons on target" ))
+         
+         sendProtOnCharge = true;
+      
+      
+      else if( Scaling != null && Scaling.equals( "NumEvents" ))
+         
+         sendNEvents = true;
+     
+     
+     sendBuff = BuffPool[ currentBuffPage ];
+     ( new timerThread( this ) ).start();
+     
+      
    }
 
 
@@ -386,7 +384,7 @@ class thisIUDPUser implements IUDPUser
       return true;
    }
 
-   
+   //deprecated
      private void ProcessDataPacket0( byte[] data, int length )
      {
       NReceived++ ;
@@ -516,38 +514,21 @@ class thisIUDPUser implements IUDPUser
         TotalProtonsOnTarget +=protonsThisPacket;
         if( SocketEventLoader.debug ==20)
                System.out.println("   prot on targ="+ protonsThisPacket);
-        if(  SendScale && protonsThisPacket !=0 )
+        if(  sendProtOnCharge && protonsThisPacket !=0 )
               message_center.send( new Message( Commands.SCALE_FACTOR, 
                               (float)(protonsThisPacket), false, false));
+        if( !sendNEvents)
+           return;
+        
+        int NEvents = Cvrt2Int( data , 8 )- Cvrt2Int( data , 12 );
+        NEvents = NEvents/8;//8 bytes per event packet
+        
+        message_center.send( new Message( Commands.SCALE_FACTOR, 
+              (float)(NEvents), false, false));
      }
      
      
-  // First version
-   private void ProcessCommandPacket0( byte[] data, int length)
-   {
-      if(  SocketEventLoader.START_CMD_INDX_TARTG_PROTO <20 )
-         return;
-
-      int commandPacket = SocketEventLoader.HEADER_PACKET_2POS %4;
-      
-      if( data[4+commandPacket] != (byte)2)
-         return;
-      
-      for( int i= 1; i<4; i++ )
-      {
-        if( data[4+ (commandPacket+i) % 4] !=0) 
-           return;
-      }
-     if( Cvrt2Int(data,16) <= 0)
-         return;
-          
-      TotalProtonsOnTarget += Cvrt2dbl( data, 
-                                 SocketEventLoader.START_CMD_INDX_TARTG_PROTO);
-      if(  SendScale && TotalProtonsOnTarget !=0 )
-            message_center.send( new Message( Commands.SCALE_FACTOR, 
-                                     1f/TotalProtonsOnTarget, true, true));
-   }
-   
+  
    private double Cvrt2dbl( byte[] data , int start)
    {
       if( data == null || start <0|| data.length < start+8)
