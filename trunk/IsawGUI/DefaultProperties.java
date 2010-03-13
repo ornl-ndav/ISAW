@@ -396,6 +396,12 @@ public class DefaultProperties{
         
 
         rs.append("#").append(eol);
+        rs.append("#").append(eol);
+        rs.append( "# ScaleWith should have values of Protons on target, ");
+        rs.append( eol );rs.append( "#NumEvents,or MAX_xxxx where xxxx can be" );
+        rs.append( " any number" ); rs.append(eol);rs.append( eol );
+        rs.append( "#ScaleWith=Protons on target" );rs.append( eol );
+        
         rs.append("# Live Data Server Options").append(eol);
         rs.append("#").append(eol);
         rs.append("Inst1_Name=Test:( UW-Stout Live Data Simulator )")
