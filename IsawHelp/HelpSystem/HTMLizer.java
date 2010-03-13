@@ -219,6 +219,8 @@ public class HTMLizer {
                    //  .toString(  );
     title        = op.getTitle(  );
     v            = this.getParameterInfoList( op );
+    String catList     = Collapse(op.getCategoryList( ), op);
+    
     docs         = cleanDocumentation( op.getDocumentation(  ) );
     num_params   = v[0].size(  );
 
@@ -256,7 +258,7 @@ public class HTMLizer {
     html.append( "<b>"+opType+"</b> " );
     html.append( class_name );
     html.append( "<br>\n" );
-
+    html.append( "<b>Menu Position: </b>" +catList+"<br><br>\n" );
     html.append( "<b>Command:</b> " );
     html.append( op.getCommand(  ) );
 
@@ -291,6 +293,21 @@ public class HTMLizer {
     html.append( "</html>" );
 
     return html.toString(  );
+  }
+  
+  String Collapse( String[] opList, Operator op)
+  {
+     if( opList == null || opList.length <1 || (op instanceof HiddenOperator))
+        return "Not in List";
+     
+     if( opList[0].toUpperCase( ).equals( "HIDDENOPERATOR" ))
+        return "Not in List";
+     
+     String Res ="";
+     for( int i=1;i< opList.length; i++)
+        Res += opList[i]+",";
+     
+     return Res.substring( 0,Res.length()-1 );
   }
 
   /**
