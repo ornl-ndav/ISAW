@@ -391,7 +391,7 @@ public class SocketServerTest extends UDPSend
 
    
    //old command packet ere 2/1/2010
-   private byte[] MakeCommandPacket0( int N2Bsent)
+  /* private byte[] MakeCommandPacket0( int N2Bsent)
    {
       byte[] Res = new byte[SocketEventLoader.START_CMD_INDX_TARTG_PROTO+32];
       Arrays.fill( Res , (byte)0 );
@@ -418,7 +418,7 @@ public class SocketServerTest extends UDPSend
       
       return Res;
    }
-
+*/
 
    /**
     * Returns the hi(most significant) byte for the given number. Takes into 
