@@ -828,7 +828,7 @@ public class JDataTreeRingmaster
         for( int i=0;  i<tps.length;  i++ )
         {
           listener_node =(DataSetMutableTreeNode)tps[i].getLastPathComponent();
-          listener_dss[i] = (DataSet)listener_node.getUserObject();
+          listener_dss[i] =(DataSet) ((DataSet)listener_node.getUserObject()).clone( );
         }
 
         if(  !tree.addExperiment( listener_dss, name )  )
