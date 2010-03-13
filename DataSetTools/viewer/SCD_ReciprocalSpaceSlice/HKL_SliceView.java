@@ -124,6 +124,7 @@ import gov.anl.ipns.ViewTools.UI.*;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.io.FileOutputStream;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.border.*;
@@ -156,6 +157,7 @@ public class HKL_SliceView extends DataSetViewer
   // the ivc must be reconstructed whenever the rows and colums change.
 
   private ImageViewComponent ivc = null;
+  IVirtualArray2D  v2d = null;
   private DataSetXConversionsTable image_table = null;
 
   // the Q_SliceExtractor, orientation matrix and valid flag must be 
@@ -172,6 +174,7 @@ public class HKL_SliceView extends DataSetViewer
   private final  Vector3D J_VEC = new Vector3D( 0, 1, 0 );
   private final  Vector3D K_VEC = new Vector3D( 0, 0, 1 );
 
+  JMenuBar menuBar;
   private final double THRESHOLD = 0.9999; // if dot products are this close to
                                            //  +- 1 then we assume the plane is
                                            // aligned with the coordinate axes.
@@ -241,7 +244,8 @@ public class HKL_SliceView extends DataSetViewer
     control_panel.add( tabbed_pane, BorderLayout.CENTER ); 
     control_panel.add( common_controls, BorderLayout.NORTH );
 
-    ivc = new ImageViewComponent( new VirtualArray2D( 1, 1 ) );
+    v2d=new VirtualArray2D( 1, 1 );
+    ivc = new ImageViewComponent( v2d );
     ivc.preserveAspectRatio( true );
     ivc.addActionListener( new ImageListener() );
 
@@ -273,6 +277,14 @@ public class HKL_SliceView extends DataSetViewer
     split_pane.validate();
 
     setDataSet( data_set );
+    
+    
+    menuBar= super.getMenuBar();
+    
+    JMenu men = menuBar.getMenu(  DataSetViewer.FILE_MENU_ID );
+    JMenuItem menItem = new JMenuItem("Save as ASCII");
+    menItem.addActionListener( new SaveAscIIActionListener()) ;
+    men.add( menItem );
   }
 
   /* -----------------------------------------------------------------------
@@ -317,7 +329,10 @@ public class HKL_SliceView extends DataSetViewer
 
     IVirtualArray2D va2D = extractSlice();
     if ( va2D != null )
+    {
+      v2d = va2D;
       ivc.dataChanged( va2D );
+    }
     else
       System.out.println("ERROR: null slice in HKL_SliceView.java");
   }
@@ -1002,7 +1017,105 @@ public class HKL_SliceView extends DataSetViewer
     }
   }
 
+  
+  
+  /**
+   * Saves the data in a slice to a file
+   * 
+   * @author ruth
+   *
+   */
+   class SaveAscIIActionListener implements ActionListener
+   {
 
+      @Override
+      public void actionPerformed(ActionEvent arg0)
+      {
+
+         if ( v2d == null || v2d.getAxisInfo( AxisInfo.X_AXIS ) == null
+               || v2d.getAxisInfo( AxisInfo.Y_AXIS ) == null )
+         {
+            JOptionPane.showMessageDialog( null , "No data yet" );
+            return;
+         }
+
+         java.io.File filename = null;
+
+         JFileChooser jf = new JFileChooser( System
+               .getProperty( "Data_Directory" ) );
+
+         if ( jf.showOpenDialog( null ) == JFileChooser.APPROVE_OPTION )
+         {
+            filename = jf.getSelectedFile( );
+
+         } else
+
+            return;
+
+         try
+         {
+            FileOutputStream fout = new FileOutputStream( filename );
+            fout
+                  .write( "# This file was created by data from the HKL slice viewer\n"
+                        .getBytes( ) );
+            String S = "HKL";
+            if ( slice_selector.getDisplayMode( ) == ISlicePlaneSelector.QXYZ_MODE )
+               S = "Qxyz";
+
+            fout.write( ( "# Slices are in " + S + " with corresp units\n" )
+                  .getBytes( ) );
+
+            fout.write( ( "# plane Normal and center are "
+                  + slice_selector.getPlane( ).getNormal( ).toString( )
+                  + " and "
+                  + slice_selector.getPlane( ).getOrigin( ).toString( ) + "\n" )
+                  .getBytes( ) );
+
+            int nrows = v2d.getNumRows( );
+            int ncols = v2d.getNumColumns( );
+
+            AxisInfo xAxis = v2d.getAxisInfo( AxisInfo.X_AXIS );
+            AxisInfo yAxis = v2d.getAxisInfo( AxisInfo.Y_AXIS );
+
+            float[][] data = v2d
+                  .getRegionValues( 0 , nrows - 1 , 0 , ncols - 1 );
+
+            float deltaRow = ( yAxis.getMax( ) - yAxis.getMin( ) ) / nrows;
+            float startRow = yAxis.getMin( ) + deltaRow / 2;
+
+            for( int i = 0 ; i < data.length ; i++ )
+            {
+               float deltaCol = ( xAxis.getMax( ) - xAxis.getMin( ) ) / ncols;
+               float startCol = xAxis.getMin( ) + deltaCol / 2;
+
+               for( int j = 0 ; j < data[i].length ; j++ )
+               {
+                  fout.write( String.format( "%8.3f %8.3f %8.3f \n" , startRow ,
+                        startCol , data[i][j] ).getBytes( ) );
+
+                  startCol += deltaCol;
+               }
+
+               startRow += deltaRow;
+            }
+
+            fout.close( );
+
+         } catch( Exception s )
+         {
+
+            JOptionPane.showMessageDialog( null , "Error in saving:" + s );
+
+         }
+
+      }
+
+   }
+ 
+  public JMenuBar getMenuBar()
+  {
+     return menuBar;
+  }
   /* ----------------------------- main ------------------------------------ */
   /*
    *  For testing purposes only
