@@ -377,8 +377,10 @@ class MenuListener implements ActionListener, IhasWindowClosed
        "Load form in IsawEV.\n\n "+
        "If loading from live data, the System property \"ScaleWith\"(case sensitive)"+
        "must be\n"+
-       "set to \"Protons on Target\"(not case sensitive) to scale with the current "+
-       "Total Protons on Target";
+       "set to \"Protons on target\"(case sensitive) to scale with the current "+
+       "Total Protons on Target\n or NumEvents, or Max_xxxx where xxxx can be"+
+       " any float or integer number";
+   
    public MenuListener( GraphViewHandler gv, String D_Q)
    {
       this.gv = gv;
