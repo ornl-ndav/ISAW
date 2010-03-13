@@ -1,7 +1,7 @@
 /* 
  * File: SNS_Tof_to_Q_map.java
  *
- * Copyright (C) 2009, Dennis Mikkelson
+ * Copyright (C) 2009,2010 Dennis Mikkelson
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -204,7 +204,7 @@ public class SNS_Tof_to_Q_map
   private float[]      lamda_weight;     // 1/(lamda^power*spec(lamda)) indexed
                                          // by STEPS_PER_ANGSTROM * lamda
 
-  private float[]      two_theta_map;        // 2*theta(pix_id)
+  private float[]      two_theta_map;    // 2*theta(pix_id)
   private float[]      pix_weight;       // sin^2(theta(pix_id)) / eff(pix_id)
 
   private int          max_grid_ID = 0;
@@ -378,7 +378,11 @@ public class SNS_Tof_to_Q_map
   /**
    *  This method initialized the tables using ONLY the informaition in
    *  re-ordered .DetCal file, as was originally done for SNAP and ARCS.
+   *
+   *  This method will not be needed when all instruments have been shifted
+   *  to using the "bank", "map" and ".DetCal" initialization information.
    */
+  @Deprecated
   private void InitFromReorderedDetCal( String filename,
                                         String spectrum_filename,
                                         String instrument_name )
@@ -658,6 +662,7 @@ public class SNS_Tof_to_Q_map
    *              is more efficient than this method, and should be used
    *              whenever possible.
    */
+  @Deprecated
   public FloatArrayEventList3D MapEventsToQ( int[] tofs, 
                                              int[] ids,
                                              int   first,
@@ -726,6 +731,7 @@ public class SNS_Tof_to_Q_map
    *              is more efficient than this method, and should be used
    *              whenever possible.
    */
+  @Deprecated
   public FloatArrayEventList3D MapEventsToQ( int[] tofs, int[] ids)
   {
     if ( tofs == null || ids == null )
@@ -1333,12 +1339,14 @@ public class SNS_Tof_to_Q_map
   private void BuildLamdaWeights( String spectrum_file_name )
   {
     float   MIN_SPECTRUM_VALUE = 0.1f;
-    float   power = 4.0f;
 
+//  float   power = 4.0f;                    // Theoretically correct value
+    float   power = 2.4f;                    // lower power needed to find
+                                             // peaks in ARCS data with no
+                                             // incident spectrum
     float   lamda; 
     float[] spec_val   = null;
     float[] spec_lamda = null;
-
                                               // build in dependence on lamda
     System.out.println("Building approximate weighting (no spectrum)");
 
@@ -1450,66 +1458,64 @@ public class SNS_Tof_to_Q_map
       lamda_weight[i] = lamda_weight[i] / val;
     }
   }
-/**
-*       subroutine to calculate a spherical absorption correction
-*       and tbar. based on values in:
-*
-*       c. w. dwiggins, jr., acta cryst. a31, 395 (1975).
-*
-*       in this paper, a is the transmission and a* = 1/a is
-*       the absorption correction.
 
-*       input are the smu (scattering) and amu (absorption at 1.8 ang.)
-*       linear absorption coefficients, the radius r of the sample
-*       the theta angle and wavelength.
-*       the absorption (absn) and tbar are returned.
 
-*       a. j. schultz, june, 2008
-*/
-private float absor_sphere(float twoth, float wl)
-{
-
-        int i;
-        float trans, mu, mur;   //mu is the linear absorption coefficient,
+ /**
+  *       subroutine to calculate a spherical absorption correction
+  *       and tbar. based on values in:
+  *
+  *       c. w. dwiggins, jr., acta cryst. a31, 395 (1975).
+  *
+  *       in this paper, a is the transmission and a* = 1/a is
+  *       the absorption correction.
+  *
+  *       input are the smu (scattering) and amu (absorption at 1.8 ang.)
+  *       linear absorption coefficients, the radius r of the sample
+  *       the theta angle and wavelength.
+  *       the absorption (absn) and tbar are returned.
+  *
+  *       a. j. schultz, june, 2008
+  */
+  private float absor_sphere(float twoth, float wl)
+  {
+    int i;
+    float trans, mu, mur;   //mu is the linear absorption coefficient,
                        //r is the radius of the spherical sample.
-        float theta,astar1,astar2,frac,astar,tbar;
+    float theta,astar1,astar2,frac,astar,tbar;
 
-//      for each of the 19 theta values in dwiggins (theta = 0.0 to 90.0
-//      in steps of 5.0 deg.), the astar values vs.mur were fit to a third
-//      order polynomial in excel. these values are given below in the
-//      data statement.
-      //polynomial coefficients
+//  For each of the 19 theta values in dwiggins (theta = 0.0 to 90.0
+//  in steps of 5.0 deg.), the astar values vs.mur were fit to a third
+//  order polynomial in excel. these values are given in the static array
+//  pc[][]
 
+    mu = smu + (amu/1.8f)*wl;
 
-        mu = smu + (amu/1.8f)*wl;
+    mur = mu*radius;
 
-        mur = mu*radius;
+    theta = twoth*radtodeg_half;
 
-        theta = twoth*radtodeg_half;
+//  using the polymial coefficients, calulate astar (= 1/transmission) at
+//  theta values below and above the actual theta value.
 
-//      using the polymial coefficients, calulate astar (= 1/transmission) at
-//      theta values below and above the actual theta value.
+    i = (int)(theta/5.f);
+    astar1 = pc[0][i] + mur * (pc[1][i] + mur * (pc[2][i] + pc[3][i] * mur));
 
-        i = (int)(theta/5.f);
-        astar1 = pc[0][i] + mur * (pc[1][i] + mur * (pc[2][i] + pc[3][i] * mur));
+    i = i+1;
+    astar2 = pc[0][i] + mur * (pc[1][i] + mur * (pc[2][i] + pc[3][i] * mur));
 
-        i = i+1;
-        astar2 = pc[0][i] + mur * (pc[1][i] + mur * (pc[2][i] + pc[3][i] * mur));
+//  do a linear interpolation between theta values.
 
-//      do a linear interpolation between theta values.
+    frac = (theta%5.f)/5.f;
 
-        frac = (theta%5.f)/5.f;
+    astar = astar1*(1-frac) + astar2*frac;       // astar is the correction
+//  trans = 1.f/astar;                           // trans is the transmission
+                                                 // trans = exp(-mu*tbar)
 
-        astar = astar1*(1-frac) + astar2*frac;          //astar is the correction
-//        trans = 1.f/astar;     //trans is the transmission
-                               //trans = exp(-mu*tbar)
+//  calculate tbar as defined by coppens.
+//  tbar = -(float)Math.log(trans)/mu;
 
-//      calculate tbar as defined by coppens.
-
-//        tbar = -(float)Math.log(trans)/mu;
-
-        return astar;
-}
+    return astar;
+  }
 
 
   /**
@@ -1700,7 +1706,11 @@ private float absor_sphere(float twoth, float wl)
    *  bank_num[].
    *  This version requires a complete set of detector grids, corresponding
    *  to ALL DAS IDs, ordered according to increasing DAS ID.
+   *
+   *  NOTE: This version should not be needed after all instruments have
+   *        be set up to use the new "bank", "map" and ".DetCal" information
    */
+  @Deprecated
   private void BuildMaps()
   {
     int pix_count = 0;                             // first count the pixels
@@ -1825,7 +1835,11 @@ private float absor_sphere(float twoth, float wl)
    *
    *  @return an new array of grids with a dummy grid zero at the start
    *          of the array, followed by the actual grids, in order.
+   * 
+   *  NOTE: This should not be needed after all instruments have
+   *        be set up to use the new "bank", "map" and ".DetCal" information
    */
+  @Deprecated
   private IDataGrid[] ReorderTOPAZ_grids( IDataGrid[] grid_arr )
   {
     if ( debug )
@@ -1849,7 +1863,11 @@ private float absor_sphere(float twoth, float wl)
    *  above the sample, so if events come in with ID's starting at 1, 
    *  the counts should show up.  No actual detector will be at this
    *  position.
+   *
+   *  NOTE: This should not be needed after all instruments have
+   *        be set up to use the new "bank", "map" and ".DetCal" information
    */
+  @Deprecated
   private IDataGrid  MakeDummyTOPAZDetector()
   {
     float DET_WIDTH  = 0.015f;        // make this 1/10 the size of a real
@@ -1903,7 +1921,11 @@ private float absor_sphere(float twoth, float wl)
    *
    *  @param grid_arr  List of IDataGrids in order of increasing
    *                   detector number (according to ISAW/NeXus).
+   *
+   *  NOTE: This should not be needed after all instruments have
+   *        be set up to use the new "bank", "map" and ".DetCal" information
    */
+  @Deprecated
   private IDataGrid[] ReorderSNAP_grids( IDataGrid[] grid_arr )
   {
     if ( debug )
@@ -1941,7 +1963,11 @@ private float absor_sphere(float twoth, float wl)
    *
    *  @param grid_arr  List of IDataGrids in order of increasing
    *                   detector number (according to ISAW/NeXus).
+   *
+   *  NOTE: This should not be needed after all instruments have
+   *        be set up to use the new "bank", "map" and ".DetCal" information
    */
+  @Deprecated
   private IDataGrid[] ReorderARCS_grids( IDataGrid[] grid_arr )
   {
     if ( debug )
@@ -2000,7 +2026,11 @@ private float absor_sphere(float twoth, float wl)
    *
    *  @param grid_arr  List of IDataGrids in order of increasing
    *                   detector number (according to ISAW/NeXus).
+   *
+   *  NOTE: This should not be needed after all instruments have
+   *        be set up to use the new "bank", "map" and ".DetCal" information
    */
+  @Deprecated
   private IDataGrid[]  ReorderSEQ_grids( IDataGrid[] grid_arr )
   {
     if ( debug )
@@ -2042,6 +2072,11 @@ private float absor_sphere(float twoth, float wl)
   }
 
 
+ /**
+   *  NOTE: This should not be needed after all instruments have
+   *        be set up to use the new "bank", "map" and ".DetCal" information
+   */
+  @Deprecated
   private IDataGrid  makeDummyGrid()
   {
     int      id       =  1;
@@ -2150,4 +2185,3 @@ private float absor_sphere(float twoth, float wl)
   }
 
 } 
-
