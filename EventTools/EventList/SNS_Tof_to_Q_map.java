@@ -205,8 +205,16 @@ public class SNS_Tof_to_Q_map
                                          // by STEPS_PER_ANGSTROM * lamda
 
   private float[]      two_theta_map;    // 2*theta(pix_id)
+
   private float[]      pix_weight;       // sin^2(theta(pix_id)) / eff(pix_id)
 
+  private boolean[]    use_id;           // Array of flags used to mask off
+                                         // certain detector pixels.  The
+                                         // DAS pixel ID is the index into this
+                                         // array
+
+  private float        max_q_to_map;     // Discard all events with Q more 
+                                         // than this value
   private int          max_grid_ID = 0;
 
   private String            instrument_name = "NO_NAME";
@@ -266,11 +274,13 @@ public class SNS_Tof_to_Q_map
                       bank_filename,
                       map_filename,
                       spectrum_filename );
-     this.radius = 0.0f;
-     this.smu = 0.0f;
-     this.amu = 0.0f;
 
+     this.radius = 0.0f;
+     this.smu    = 0.0f;
+     this.amu    = 0.0f;
   }
+
+
   /**
    *  Construct the mapping from (tof,id) to Qxyz, d and time-focused 
    *  spectra from the information at the start of a .peaks file or .DetCal 
@@ -285,6 +295,11 @@ public class SNS_Tof_to_Q_map
    *  the files must be consistent and describe the same instrument 
    *  configuration as was in place when the neutron event file(s) that 
    *  will be mapped were written.  The initial spectrum file is optional.
+   *
+   *  A spherical absorption correction will be made if the radius is 
+   *  specified to be greater than 0.  The absorption correction the
+   *  same correction as currently done in the ANVRED program, based on 
+   *  the paper: C. Q. Dwiggins, jr., Acta Cryst. a31, 395 (1975).
    *
    *  @param  instrument_name   The name of the instrument, such as "TOPAZ".
    *
@@ -306,13 +321,18 @@ public class SNS_Tof_to_Q_map
    *                            If no spectrum file is available, pass in null.
    *                            The SNAP spectrum file will be used by default
    *                            for SNAP.
+   *  @param  radius            Radius of the sample in centimeters
+   *  @param  smu               Linear scattering coefficient at 1.8 Angstroms.
+   *  @param  amu               Linear absorption coefficient at 1.8 Angstroms.
    */
   public SNS_Tof_to_Q_map( String instrument_name,
                            String det_cal_filename,
                            String bank_filename,
                            String map_filename,
                            String spectrum_filename, 
-                           float radius, float smu, float amu)
+                           float  radius, 
+                           float  smu, 
+                           float  amu)
          throws IOException
   {
     InitFromSNS_Maps( instrument_name, 
@@ -320,10 +340,10 @@ public class SNS_Tof_to_Q_map
                       bank_filename,
                       map_filename,
                       spectrum_filename );
-     this.radius = radius;
-     this.smu = smu;
-     this.amu = amu;
 
+     this.radius = radius;
+     this.smu    = smu;
+     this.amu    = amu;
   }
 
 
@@ -421,6 +441,8 @@ public class SNS_Tof_to_Q_map
        spectrum_filename = null;
 
      BuildLamdaWeights( spectrum_filename );
+
+     max_q_to_map = 1000000;       // by default huge value, so map all Qs
   }
 
 
@@ -501,6 +523,8 @@ public class SNS_Tof_to_Q_map
       spectrum_filename = null;
 
     BuildLamdaWeights( spectrum_filename );
+
+    max_q_to_map = 1000000;       // by default huge value, so map all Qs
   }
 
 
@@ -523,6 +547,38 @@ public class SNS_Tof_to_Q_map
   public float getT0()
   {
     return t0/10;
+  }
+
+
+ /**
+  * Set the maximum |Q| value of events that should be mapped to vector Q
+  * by the MapEventsToQ() methods.
+  *
+  * @param max_q  The maximum magnitude that the Q value of an event can
+  *               have to be mapped to Q.  Events with a larger |Q| will 
+  *               just be ignored.
+  */
+  public void setMaxQ( float max_q )
+  {
+    if ( max_q_to_map > 0 )
+      max_q_to_map = max_q;
+  }
+
+
+ /**
+  *  Set the parameters that control the absorption correcdtion calculation.
+  *  If any of the parameters are negative, the corresponding value will be 
+  *  set to 0.
+  *
+  *  @param  radius  Radius of the sample in centimeters
+  *  @param  smu     Linear scattering coefficient at 1.8 Angstroms.
+  *  @param  amu     Linear absorption coefficient at 1.8 Angstroms.
+  */
+  public void setAbsorptionParameters( float  radius, float  smu, float  amu )
+  {
+     this.radius = radius;
+     this.smu    = smu;
+     this.amu    = amu;
   }
 
 
@@ -555,6 +611,7 @@ public class SNS_Tof_to_Q_map
      int     id;
      int     id_offset;
      int     index;
+     int     mapped_index;
      float   tof_chan;
      float   magQ;
      float   qx,qy,qz;
@@ -562,24 +619,45 @@ public class SNS_Tof_to_Q_map
      int     large_id_count = 0;
      float   lamda;
      int     lamda_index;
-     int     num_mapped;
      float   transinv = 1.0f;
 
-     num_mapped = last - first + 1;
+     num_to_map = last - first + 1;
      long  total_num  = event_list.numEntries();
      int[] all_events = event_list.rawEvents( 0, total_num );
-
-     float[] Qxyz    = new float[ 3 * num_mapped ];
-     float[] weights = new float[ num_mapped ];
 /*
      int[] used_ids = new int[ QUxyz.length ];   // this is 3 times larger
                                                  // than should be needed.
 */
-
      int all_index = 2*first;
-     for ( int i = 0; i < num_mapped; i++ )
+     mapped_index = 0;
+                                                 // First scan for how many
+                                                 // events pass the filter
+                                                 // so we only need to  
+                                                 // allocate new arrays once 
+     int ok_counter = 0;
+     for ( int i = 0; i < num_to_map; i++ )
      {
-       weights[i] = 0;
+       tof_chan = all_events[ all_index++ ] + t0; 
+       id       = all_events[ all_index++ ]; 
+       if ( id >= 0 && id < tof_to_MagQ.length )
+       {
+         if ( use_id[ id ] )
+         {
+           magQ = tof_to_MagQ[id]/tof_chan;
+           if ( magQ <= max_q_to_map )
+             ok_counter++;
+         }
+       }
+     }
+                                                  // Now allocate right-size
+                                                  // arrays and process events
+     float[] Qxyz    = new float[ 3 * ok_counter ];
+     float[] weights = new float[ ok_counter ];
+
+     all_index = 2*first;                         // start over a start of
+                                                  // the part we're mapping
+     for ( int i = 0; i < num_to_map; i++ )
+     {
        tof_chan = all_events[ all_index++ ] + t0; 
        id       = all_events[ all_index++ ]; 
 /*
@@ -592,31 +670,42 @@ public class SNS_Tof_to_Q_map
        else if ( id >= tof_to_MagQ.length )
          large_id_count++;
 
-       else
+       else if ( use_id[ id ] )
        {
          magQ = tof_to_MagQ[id]/tof_chan;
 
-         id_offset = 3*id;
-         qx = magQ * QUxyz[id_offset++];
-         qy = magQ * QUxyz[id_offset++];
-         qz = magQ * QUxyz[id_offset  ];
+         if ( magQ <= max_q_to_map )
+         {
+           id_offset = 3*id;
+           qx = magQ * QUxyz[id_offset++];
+           qy = magQ * QUxyz[id_offset++];
+           qz = magQ * QUxyz[id_offset  ];
 
-         index = i * 3;
-         Qxyz[index++] = qx;
-         Qxyz[index++] = qy;
-         Qxyz[index  ] = qz;
+           index = mapped_index * 3;
+           Qxyz[index++] = qx;
+           Qxyz[index++] = qy;
+           Qxyz[index  ] = qz;
 
-         lamda = tof_chan/10.0f * tof_to_lamda[id];
-         lamda_index = (int)( STEPS_PER_ANGSTROM * lamda );
+           lamda = tof_chan/10.0f * tof_to_lamda[id];
+           lamda_index = (int)( STEPS_PER_ANGSTROM * lamda );
 
-         if ( lamda_index < 0 )
-           lamda_index = 0;
-         if ( lamda_index >= lamda_weight.length )
-           lamda_index = lamda_weight.length - 1;
+           if ( lamda_index < 0 )
+             lamda_index = 0;
+           if ( lamda_index >= lamda_weight.length )
+             lamda_index = lamda_weight.length - 1;
 
-         if ( radius > 0 )
-           transinv = absor_sphere(two_theta_map[id], lamda);
-         weights[i] = pix_weight[id] * lamda_weight[ lamda_index ] * transinv;
+           if ( radius > 0 )
+           {
+             transinv = absor_sphere(two_theta_map[id], lamda);
+             weights[mapped_index] =
+                   pix_weight[id] * lamda_weight[ lamda_index ] * transinv;
+           }
+           else
+             weights[mapped_index] =
+                     pix_weight[id] * lamda_weight[ lamda_index ];
+
+           mapped_index++;
+         }
        }
      }
 /*
@@ -633,7 +722,6 @@ public class SNS_Tof_to_Q_map
         System.out.println( "" + i + "      " + bank_nums_used[i] );
      }
 */
-
      return new FloatArrayEventList3D( weights, Qxyz );
   }
 
@@ -1525,6 +1613,7 @@ public class SNS_Tof_to_Q_map
    *  QUxyz[],
    *  recipLaSinTa[],
    *  pix_weight[],
+   *  use_id[],
    *  bank_num[].
    *  This version requires the information from .DetCal, mapping and bank
    *  files for SNS instruemnts.
@@ -1598,12 +1687,12 @@ public class SNS_Tof_to_Q_map
            grid_id >= all_grids.length || 
            all_grids[ grid_id ] == null )
       {
-//        System.out.println("ERROR: Missing grid " + grid_id + " in .DetCsl");
+//      System.out.println("ERROR: Missing grid " + grid_id + " in .DetCsl");
         missing_grid_count++;
       }
       else
       {
-        grid     = all_grids[ grid_id ];
+        grid = all_grids[ grid_id ];
         if ( y_size != grid.num_rows() || x_size != grid.num_cols() )
           System.out.println("ERROR: Grid size wrong for " + grid_id + 
               ", " +  y_size + " != " + grid.num_rows() + " OR " + 
@@ -1627,13 +1716,14 @@ public class SNS_Tof_to_Q_map
     }
                                // now that the temporary tables are built
                                // proceed to build the maps
-    two_theta_map = new float[ pix_count ];  
-    tof_to_lamda = new float[ pix_count ];  
-    tof_to_MagQ  = new float[ pix_count ]; 
-    QUxyz        = new float[ 3*pix_count ];
-    recipLaSinTa = new float[ pix_count ];
-    pix_weight   = new float[ pix_count ]; 
-    bank_num     = new int[ pix_count ]; 
+    two_theta_map = new float  [ pix_count ];  
+    tof_to_lamda  = new float  [ pix_count ];  
+    tof_to_MagQ   = new float  [ pix_count ]; 
+    QUxyz         = new float  [ 3*pix_count ];
+    recipLaSinTa  = new float  [ pix_count ];
+    pix_weight    = new float  [ pix_count ]; 
+    use_id        = new boolean[ pix_count ];
+    bank_num      = new int    [ pix_count ]; 
 
     float     part = (float)(10 * 4 * Math.PI / tof_calc.ANGST_PER_US_PER_M);
                                                    // partial constant
@@ -1678,18 +1768,21 @@ public class SNS_Tof_to_Q_map
         QUxyz[ index + 2 ] = unit_qvec.getZ();
 
         two_theta = Math.acos( pix_pos.getX() / L2 );
-        two_theta_map [das_i] = (float)two_theta;
         sin_theta = (float)Math.sin(two_theta/2);
 
-        tof_to_MagQ [das_i] = part * (L1 + L2) * sin_theta;
+        two_theta_map [das_i] = (float)two_theta;
 
-        tof_to_lamda[das_i] = ANGST_PER_US_PER_M /(L1 + L2);
+        tof_to_MagQ   [das_i] = part * (L1 + L2) * sin_theta;
 
-        recipLaSinTa[das_i] = 1/( (L1 + L2) * sin_theta );
+        tof_to_lamda  [das_i] = ANGST_PER_US_PER_M /(L1 + L2);
 
-        pix_weight  [das_i] = sin_theta * sin_theta;
+        recipLaSinTa  [das_i] = 1/( (L1 + L2) * sin_theta );
 
-        bank_num    [das_i] = grid_ID;
+        pix_weight    [das_i] = sin_theta * sin_theta;
+
+        use_id        [das_i] = true;            // initially assume all pixels
+                                                 // will be used.
+        bank_num      [das_i] = grid_ID;
       }
     }
   }
@@ -1703,6 +1796,7 @@ public class SNS_Tof_to_Q_map
    *  recipLaSinTa[],
    *  two_theta_map[],
    *  pix_weight[],
+   *  use_id[],
    *  bank_num[].
    *  This version requires a complete set of detector grids, corresponding
    *  to ALL DAS IDs, ordered according to increasing DAS ID.
@@ -1720,26 +1814,28 @@ public class SNS_Tof_to_Q_map
       pix_count += grid.num_rows() * grid.num_cols(); 
     }                                          
 
-    tof_to_lamda =  new float[ pix_count ];        // NOTE: the pixel IDs 
+    tof_to_lamda =  new float   [ pix_count ];     // NOTE: the pixel IDs 
                                                    // start at 1 in the file
                                                    // so to avoid shifting we
                                                    // will also start at 1
 
-    tof_to_MagQ  = new float[ pix_count ];         // Scale factor to convert
+    tof_to_MagQ  = new float   [ pix_count ];      // Scale factor to convert
                                                    // tof to Magnitude of Q
 
-    QUxyz        = new float[ 3*pix_count ];       // Interleaved components
+    QUxyz        = new float   [ 3*pix_count ];    // Interleaved components
                                                    // of unit vector in the
                                                    // direction of Q for this
                                                    // pixel.
 
-    recipLaSinTa = new float[ pix_count ];         // 1/(Lsin(theta)) table for
+    recipLaSinTa  = new float  [ pix_count ];      // 1/(Lsin(theta)) table for
                                                    // time focusing
-    two_theta_map    = new float[ pix_count ];         // 2* theta
+    two_theta_map = new float  [ pix_count ];      // 2* theta
+
+    pix_weight    = new float  [ pix_count ];      // sin^2(theta) weight 
  
-    pix_weight   = new float[ pix_count ];         // sin^2(theta) weight 
- 
-    bank_num     = new int[ pix_count ];           // bank number for each 
+    use_id        = new boolean[ pix_count ];
+
+    bank_num      = new int    [ pix_count ];      // bank number for each 
                                                    // DAS pixel ID
 
     float     part = (float)(10 * 4 * Math.PI / tof_calc.ANGST_PER_US_PER_M);
@@ -1789,18 +1885,21 @@ public class SNS_Tof_to_Q_map
            QUxyz[ index + 2 ] = unit_qvec.getZ();
 
            two_theta = Math.acos( pix_pos.getX() / L2 );
-           two_theta_map [pix_count] = (float)two_theta;
            sin_theta = (float)Math.sin(two_theta/2);
 
-           tof_to_MagQ[pix_count] = part * (L1 + L2) * sin_theta;
+           two_theta_map[pix_count] = (float)two_theta;
 
-           tof_to_lamda[pix_count] = ANGST_PER_US_PER_M /(L1 + L2);
+           tof_to_MagQ  [pix_count] = part * (L1 + L2) * sin_theta;
 
-           recipLaSinTa[pix_count] = 1/( (L1 + L2) * sin_theta ); 
+           tof_to_lamda [pix_count] = ANGST_PER_US_PER_M /(L1 + L2);
 
-           pix_weight[pix_count] = sin_theta * sin_theta;
+           recipLaSinTa [pix_count] = 1/( (L1 + L2) * sin_theta ); 
 
-           bank_num[pix_count] = grid_ID;
+           pix_weight   [pix_count] = sin_theta * sin_theta;
+
+           use_id       [pix_count] = true;     // initially assume all pixels
+                                                // will be used.
+           bank_num     [pix_count] = grid_ID;
 
            pix_count++; 
         }
