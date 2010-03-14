@@ -67,7 +67,8 @@ public class InitializationHandler implements IReceiveMessage
   private boolean          loading_file;
   private boolean          load_failed;
   private LoadEventsCmd    load_file_cmd;
-  private boolean          udpLoadStarted;// no fail/no end unless loading_file is true
+  private boolean          udpLoadStarted;  // no fail/no end unless 
+                                            // loading_file is true
   private boolean          InitDone;
   private boolean          Clearing;
   private SocketEventLoader socket;
@@ -90,21 +91,25 @@ public class InitializationHandler implements IReceiveMessage
     message_center.addReceiver( this, Commands.LOAD_FILE );
     message_center.addReceiver( this, Commands.LOAD_FAILED );
     message_center.addReceiver( this, Commands.LOAD_FILE_DONE );
+
     message_center.addReceiver( this, Commands.INIT_HISTOGRAM_DONE );
     message_center.addReceiver( this, Commands.INIT_DQ_DONE );
     message_center.addReceiver( this, Commands.INIT_NEW_INSTRUMENT_DONE);
+
     message_center.addReceiver( this, Commands.LOAD_UDP_EVENTS);
     message_center.addReceiver( this, Commands.PAUSE_UDP);
     message_center.addReceiver( this, Commands.CLEAR_UDP);
     message_center.addReceiver( this, Commands.CONTINUE_UDP);
   }
+
   
  // for a reload, all data must be reinitialized 
   private void InitData( SetNewInstrumentCmd new_inst_cmd )
    {
       InitDone = false;
-      Message init_view = new Message( Commands.INIT_EVENTS_VIEW , null , true ,
-               true );
+
+      Message init_view = new Message( Commands.INIT_EVENTS_VIEW, 
+                                       null, true, true );
       message_center.send( init_view );
 
       Message new_inst = new Message( Commands.INIT_NEW_INSTRUMENT ,
@@ -115,7 +120,8 @@ public class InitializationHandler implements IReceiveMessage
                                         new_inst_cmd , true , true );
       message_center.send( clear_hist );
 
-      Message clear_dq = new Message( Commands.INIT_DQ , new_inst_cmd , true , true );
+      Message clear_dq = new Message( Commands.INIT_DQ, 
+                                      new_inst_cmd, true, true );
       message_center.send( clear_dq );
    }
   
@@ -137,7 +143,7 @@ public class InitializationHandler implements IReceiveMessage
          return false; 
       }
     
-      loading_file  = true;
+      loading_file = true;
       if( udpLoadStarted )
          killUDP();
       load_failed   = false;
@@ -197,8 +203,8 @@ public class InitializationHandler implements IReceiveMessage
 
     else if ( message.getName().equals(Commands.LOAD_FILE_DONE ) )
     {
-      load_failed  = false;
-      loading_file = false;
+      load_failed   = false;
+      loading_file  = false;
       histogram_ok  = false;
       dq_ok         = false;
       instrument_ok = false;
@@ -214,13 +220,13 @@ public class InitializationHandler implements IReceiveMessage
        }
        if( Clearing)
        { 
-          Util.sendInfo( "Still Clearing Data "  );
+         Util.sendInfo( "Still Clearing Data "  );
          Util.sendInfo( "IGNORING EXTRA LOAD REQUEST" );       
          return false; 
        }
        killUDP();
       
-       loading_file  =false;
+       loading_file = false;
        load_failed   = false;//so will not go through LoadifPossible 
        histogram_ok  = false;
        dq_ok         = false;
@@ -314,6 +320,13 @@ public class InitializationHandler implements IReceiveMessage
       if ( file_inst.equalsIgnoreCase( supported[i] ) )
         instrument_name = supported[i];
 
+    System.out.println("In getInstrumentName()");
+    System.out.println("file_name = " + file_name );
+    System.out.println("file_inst = " + file_inst );
+    System.out.println("instrument_name = " + instrument_name );
+    for ( int i = 0; i < supported.length; i++ )
+      System.out.println(supported[i]);
+
     return instrument_name;
   }
   
@@ -367,7 +380,8 @@ public class InitializationHandler implements IReceiveMessage
   class InitDataThread extends Thread
   {
      SetNewInstrumentCmd cmd;
-     public InitDataThread( SetNewInstrumentCmd cmd)
+
+     public InitDataThread( SetNewInstrumentCmd cmd )
      {
         this.cmd = cmd;
      }
