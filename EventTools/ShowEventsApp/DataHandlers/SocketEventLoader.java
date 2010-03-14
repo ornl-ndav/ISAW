@@ -35,9 +35,9 @@
 package EventTools.ShowEventsApp.DataHandlers;
 
 
-import java.io.ByteArrayInputStream;
 import java.io.*;
 
+import EventTools.EventList.FileUtil;
 import EventTools.EventList.TofEventList;
 import EventTools.ShowEventsApp.Command.Commands;
 import MessageTools.Message;
@@ -62,10 +62,7 @@ public class SocketEventLoader implements IUDPUser
    public static int UDP_BUFFER_SIZE = 655360;   // enough buffer space for
                                                  // 10 max size UDP packets
 
-   public static int SEND_MIN_TIME = 2000; // ms   
-
-   public static int debug = 0;
-   
+   public static int SEND_MIN_TIME = 2000; // ms      
    UDPReceive         udpReceiver;
    
    boolean            udpReceiverStarted;
@@ -73,12 +70,6 @@ public class SocketEventLoader implements IUDPUser
    Object             buffer_lock      = new Object();//for synchronization
 
    MessageCenter      message_center;
-
-   //deprecated for non interlaced form of event messages
-   int[]              tofBuff         = new int[0];// SocketEventLoader.BUFF_SIZE ];
-   
-   //deprecated for non interlaced form of event messages
-   int[]              idBuff           =new int[0];// SocketEventLoader.BUFF_SIZE ];
 
    int[]              sendBuff ;   
    
@@ -99,15 +90,17 @@ public class SocketEventLoader implements IUDPUser
 
 
    //------------------- debug info -------------------
-   
+
+
+   public static int  debug = 0;
+
    int                NReceived = 0;
 
    int                total_received = 0;
    
    double             TotalProtonsOnTarget =0;
    
-   FileOutputStream   fsave;
-   
+   FileOutputStream   fsave;   
 
    int                TotalEventDataSent2IsawEV  =   0;
    
@@ -127,18 +120,10 @@ public class SocketEventLoader implements IUDPUser
     */
    public SocketEventLoader( int           port, 
                              MessageCenter message_center,
-                             String        Instrument, 
-                             String        detInfFile,
-                             String        IncidSpectraFile, 
-                             String        bankFile,
-                             String        ID_MapFile )
+                             String        Instrument )
    {
-      init( message_center, 
-                               Instrument,
-                               detInfFile,
-                               IncidSpectraFile,
-                               bankFile,
-                               ID_MapFile );
+      init( message_center, Instrument);
+      
       udpReceiver = new UDPReceive( port, this );
 
       try
@@ -155,12 +140,6 @@ public class SocketEventLoader implements IUDPUser
      
    }
    
-
-   public SocketEventLoader( int port, MessageCenter message_center,
-            String Instrument)
-   {
-      this( port, message_center, Instrument, null, null,null, null);
-   }
    /**
     * Constructor
     * 
@@ -181,11 +160,7 @@ public class SocketEventLoader implements IUDPUser
     * 
     */
    public void init( MessageCenter message_center, 
-                        String        Instrument, 
-                        String        detector_file_name,
-                        String        incident_spectra_filename,
-                        String        bankFile,
-                        String        ID_MapFile)
+                        String        Instrument)
    {
       this.message_center = message_center;
           
@@ -229,11 +204,7 @@ public class SocketEventLoader implements IUDPUser
    }
 
 
-   public void init( MessageCenter message_center, String Instrument )
-   {
-      init(message_center, Instrument, null, null,null,null);
-   }
-
+  
 
    public void start()
    {
@@ -354,6 +325,8 @@ public class SocketEventLoader implements IUDPUser
       }
    }     
 
+   
+   
    private boolean isCommandPacket( byte[] data, int length)
    {
       if( length <44)
@@ -364,6 +337,8 @@ public class SocketEventLoader implements IUDPUser
       
       return true;
    }
+   
+   
      private void ProcessDataPacket( byte[] data, int length )
      {
       NReceived++ ;
@@ -375,6 +350,7 @@ public class SocketEventLoader implements IUDPUser
          return;
       
       int start = 24 + Cvrt2Int( data , 12);
+      
       if( SocketEventLoader.debug == 2 )
       { 
          System.out.print("NEvents="+NEvents+", first data=");
@@ -442,7 +418,7 @@ public class SocketEventLoader implements IUDPUser
         double protonsThisPacket =0;
         
         for( int i=0; i<nPulseIDs; i++)
-           protonsThisPacket += Cvrt2dbl( data, 40 +i*24 );
+           protonsThisPacket += FileUtil.getDouble_64(  data, 40 +i*24 );
         
         TotalProtonsOnTarget +=protonsThisPacket;
         
@@ -482,6 +458,7 @@ public class SocketEventLoader implements IUDPUser
          double x= dStream.readDouble( );
          
          return x;
+         
       }catch(Exception s)
       {
          System.out.println("Socket Loader error="+s);
@@ -570,9 +547,10 @@ public class SocketEventLoader implements IUDPUser
       }
    }
 
-   private int Cvrt2Int( byte[] B , int start )
+   private int Cvrt2Int(byte[] B, int start)
    {
-      int NEvents = 0;
+
+      /*int NEvents = 0;
 
       for( int i = start + 3 ; i >= start ; i-- )
       {
@@ -580,44 +558,51 @@ public class SocketEventLoader implements IUDPUser
          if( i > start )
             NEvents <<= 8;
       }
+      
       return NEvents;
-   }
-//}
-
-
-/**
- * Used to send messages after a given period of time has elapsed
- * 
- * @author Ruth
- * 
- */
-class timerThread extends Thread
-{
-   SocketEventLoader user;
-
-   public timerThread( SocketEventLoader user )
-   {
-      this.user = user;
+      */
+      return FileUtil.getInt_32( B , start );
    }
 
-   public void run()
+   // }
+
+   /**
+    * Used to send messages after a given period of time has elapsed
+    * 
+    * @author Ruth
+    * 
+    */
+   class timerThread extends Thread
    {
-      try
+
+      SocketEventLoader user;
+
+      public timerThread(SocketEventLoader user)
       {
-         if( user == null )
-            return;
-         while( true )
+
+         this.user = user;
+      }
+
+      
+      public void run()
+      {
+
+         try
          {
-            Thread.sleep( SocketEventLoader.SEND_MIN_TIME ); 
-            user.SendMessage( 0 );
+            if ( user == null )
+               return;
+            
+            while( true )
+            {
+               Thread.sleep( SocketEventLoader.SEND_MIN_TIME );
+               user.SendMessage( 0 );
+            }
+         } catch( Exception s )
+         {
+            System.out.println( "This catch block should not have been empty" );
+            System.out.println( s );
+            s.printStackTrace( );
          }
       }
-      catch( Exception s )
-      {
-        System.out.println("This catch block should not have been empty");
-        System.out.println( s );
-        s.printStackTrace();
-      }
    }
-}
 }
