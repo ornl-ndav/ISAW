@@ -37,11 +37,15 @@ import EventTools.ShowEventsApp.Command.Commands;
 import MessageTools.*;
 
 /**
- * This class creates update messages to a message center at a rate 
- * determined by the message sender. The message sender should be 
- * triggered to send out its messages every so often
+ * This class sends UPDATE messages to a message center whenever it
+ * receives an UPDATE message.  As a result the message center 
+ * ALWAYS has another UPDATE message to send out each time it processes
+ * messages.  Consequently, this forces UPDATE messages to be sent out
+ * at the rate at which the message center processes messages.
+ * In most cases, this should only be used with a message center that
+ * processes messages quite slowly, such as the "view_messages_center"
+ * for IsawEV, which is only sends messages several seconds.
  * @author ruth
- *
  */
 public class UpDateTrigger implements IReceiveMessage
 {
@@ -50,32 +54,29 @@ public class UpDateTrigger implements IReceiveMessage
    /**
     * Constructor
     * 
-    * @param messageCenter The message center that is to receive
-    *            the UPDATE command. This also receives the command
-    *            back, which will cause another UDATE command to be 
-    *            given. 
+    * @param messageCenter The message center that is to receive the UPDATE 
+    *                      command. This class also receives the command
+    *                      back, which causes another UPDATE command to be 
+    *                      given. 
     *            
-    * NOTE: The message center should be triggered to send out all
-    *       messages every so often
+    * NOTE: This assumes that the message center is already being triggered 
+    *       to processes all received messages at a steady rate.
     */
    
-   public UpDateTrigger( MessageCenter messageCenter)
+   public UpDateTrigger( MessageCenter messageCenter )
    {
       this.messageCenter = messageCenter;
-      messageCenter.addReceiver( this, Commands.UPDATE  );
-      messageCenter.send(  new Message( Commands.UPDATE, null, true) );
-      
-      
+      messageCenter.addReceiver( this, Commands.UPDATE );
+      messageCenter.send( new Message( Commands.UPDATE, null, true) );
    }
-   
    
    @Override
    public boolean receive(Message message)
    {
-      
-      messageCenter.send(  new Message( Commands.UPDATE, null, true) );
+      messageCenter.send( new Message( Commands.UPDATE, null, true) );
       return false;
    }
+
 
 /**
  * Test program 
@@ -84,13 +85,8 @@ public class UpDateTrigger implements IReceiveMessage
  */
    public static void main(String[] args)
    {
-
      MessageCenter messageCenter = new MessageCenter("XXX");
-     
      UpDateTrigger trig = new UpDateTrigger( messageCenter);
      TimedTrigger t = new TimedTrigger( messageCenter, 2500);
-    
-
    }
-
 }
