@@ -40,7 +40,6 @@ import java.io.*;
 
 import EventTools.EventList.TofEventList;
 import EventTools.ShowEventsApp.Command.Commands;
-import EventTools.ShowEventsApp.Command.SetNewInstrumentCmd;
 import MessageTools.Message;
 import MessageTools.MessageCenter;
 import MessageTools.TimedTrigger;
@@ -54,7 +53,7 @@ import NetComm.UDPReceive;
  * @author Ruth
  * 
  */
-public class SocketEventLoader
+public class SocketEventLoader implements IUDPUser
 {
    public static int BUFF_SIZE     = 200000;
 
@@ -63,13 +62,57 @@ public class SocketEventLoader
    public static int UDP_BUFFER_SIZE = 655360;   // enough buffer space for
                                                  // 10 max size UDP packets
 
-   public static int SEND_MIN_TIME = 2000; // ms
-   
-   
-   public thisIUDPUser User;
-   private UDPReceive  udpReceiver;
-   private boolean udpReceiverStarted;
+   public static int SEND_MIN_TIME = 2000; // ms   
+
    public static int debug = 0;
+   
+   UDPReceive         udpReceiver;
+   
+   boolean            udpReceiverStarted;
+   
+   Object             buffer_lock      = new Object();//for synchronization
+
+   MessageCenter      message_center;
+
+   //deprecated for non interlaced form of event messages
+   int[]              tofBuff         = new int[0];// SocketEventLoader.BUFF_SIZE ];
+   
+   //deprecated for non interlaced form of event messages
+   int[]              idBuff           =new int[0];// SocketEventLoader.BUFF_SIZE ];
+
+   int[]              sendBuff ;   
+   
+   int[][]            BuffPool         = new int[10]
+                                              [ SocketEventLoader.BUFF_SIZE ];
+
+   int                currentBuffPage  = 0;
+
+   int                Buffstart        = 0;
+
+   long               timeStamp        = - 1;
+   
+   boolean            pause            = false;
+
+   boolean            sendProtOnCharge = false;
+   
+   boolean            sendNEvents      = false;
+
+
+   //------------------- debug info -------------------
+   
+   int                NReceived = 0;
+
+   int                total_received = 0;
+   
+   double             TotalProtonsOnTarget =0;
+   
+   FileOutputStream   fsave;
+   
+
+   int                TotalEventDataSent2IsawEV  =   0;
+   
+   int[]              SavedEventsBuff;              
+
 
 
    /**
@@ -90,13 +133,13 @@ public class SocketEventLoader
                              String        bankFile,
                              String        ID_MapFile )
    {
-      User = new thisIUDPUser( message_center, 
+      init( message_center, 
                                Instrument,
                                detInfFile,
                                IncidSpectraFile,
                                bankFile,
                                ID_MapFile );
-      udpReceiver = new UDPReceive( port, User );
+      udpReceiver = new UDPReceive( port, this );
 
       try
       {
@@ -118,13 +161,79 @@ public class SocketEventLoader
    {
       this( port, message_center, Instrument, null, null,null, null);
    }
-   
-  
-   public void setPause( boolean doPause)
+   /**
+    * Constructor
+    * 
+    * @param message_center
+    *           The message center to receive messages
+    *           
+    * @param Instrument
+    *           The intrument. If non null an INIT_NEW_INSTRUMENT message will
+    *           be sent.
+    *           
+    * @param detector_file_name
+    *           The name of the file with the detector information or null for
+    *           the default based on the instrument name.
+    *           
+    * @param incident_spectra_filename
+    *           The name of the file with the incident specta or null for
+    *           default
+    * 
+    */
+   public void init( MessageCenter message_center, 
+                        String        Instrument, 
+                        String        detector_file_name,
+                        String        incident_spectra_filename,
+                        String        bankFile,
+                        String        ID_MapFile)
    {
-      User.setPause( doPause);
-   }
+      this.message_center = message_center;
+          
+      if ( SocketEventLoader.debug == 5 )
+      {
+         try
+         {
+            fsave = new FileOutputStream( "C:/Users/ruth/eventDat.dat" );
+
+         } catch( Exception s )
+         {
+            fsave = null;
+         }
+         
+         SavedEventsBuff = new int[ 20000000 ];
+         
+      } else
+      {
+         fsave = null;
+         SavedEventsBuff = null;
+      }
    
+      
+     Object Scaling = System.getProperty( "ScaleWith" );
+      
+     if( Scaling != null && Scaling.equals( "Protons on target" ))
+         
+         sendProtOnCharge = true;
+      
+      
+      else if( Scaling != null && Scaling.equals( "NumEvents" ))
+         
+         sendNEvents = true;
+     
+     
+     sendBuff = BuffPool[ currentBuffPage ];
+     
+     ( new timerThread( this ) ).start();
+     
+      
+   }
+
+
+   public void init( MessageCenter message_center, String Instrument )
+   {
+      init(message_center, Instrument, null, null,null,null);
+   }
+
 
    public void start()
    {
@@ -141,15 +250,7 @@ public class SocketEventLoader
    }
 
    
-   /**
-    * Resets the counter for the total protons on target.
-    */
-   public void resetAccumulator()
-   {
-      User.resetAccumulator( );
-   }
-
-
+ 
    /**
     * Test program using port 8002 and the SNAP instrument
     * 
@@ -158,145 +259,20 @@ public class SocketEventLoader
    public static void main( String[] args )
    {
       int port = 8002;
+      
       if( args!= null && args.length > 0)
            port = Integer.parseInt( args[0]);
+      
       MessageCenter message_center = new MessageCenter( "TTest" );
+      
       new TimedTrigger( message_center , 30 );
+      
       SocketEventLoader ev = new SocketEventLoader( port , message_center ,
                "SNAP" );
-      ev.debug = 20;
+      
+      SocketEventLoader.debug = 20;
+      
       ev.start();
-   }
-}
-
-
-/**
- * Class for the user to process the UDP packets
- * 
- * @author Ruth
- * 
- */
-class thisIUDPUser implements IUDPUser
-{
-   Object             buffer_lock = new Object();
-
-   MessageCenter      message_center;
-
-   //deprecated for non interlaced form of event messages
-   int[]              tofBuff   = new int[0];// SocketEventLoader.BUFF_SIZE ];
-   
-   //deprecated for non interlaced form of event messages
-   int[]              idBuff    =new int[0];// SocketEventLoader.BUFF_SIZE ];
-
-   int[]              sendBuff ;   
-   int[][]            BuffPool  = new int[10][ SocketEventLoader.BUFF_SIZE ];
-   int                currentBuffPage = 0;
-
-   int                Buffstart = 0;
-
-   long               timeStamp = - 1;
-   
-   boolean           pause = false;
-
-   private        int Nshown    = 0;
-
-   private        int NReceived = 0;
-
-   private        int total_received = 0;
-   
-   private      double TotalProtonsOnTarget =0;
-
-   protected boolean sendProtOnCharge = false;
-   protected boolean sendNEvents = false;
-   
-   private     FileOutputStream   fsave;
-   
-
-   private int TotalEventDataSent2IsawEV  =   0;// debugging aids
-   private int[] SavedEventsBuff;              //debugging aids
-   /**
-    * Constructor
-    * 
-    * @param message_center
-    *           The message center to receive messages
-    * @param Instrument
-    *           The intrument. If non null an INIT_NEW_INSTRUMENT message will
-    *           be sent.
-    * @param detector_file_name
-    *           The name of the file with the detector information or null for
-    *           the default based on the instrument name.
-    * @param incident_spectra_filename
-    *           The name of the file with the incident specta or null for
-    *           default
-    * 
-    */
-   public thisIUDPUser( MessageCenter message_center, 
-                        String        Instrument, 
-                        String        detector_file_name,
-                        String        incident_spectra_filename,
-                        String        bankFile,
-                        String        ID_MapFile)
-   {
-      this.message_center = message_center;
-     
-      if( Instrument != null )
-         message_center
-                  .send( new Message( Commands.INIT_NEW_INSTRUMENT ,
-                           new SetNewInstrumentCmd( Instrument , 
-                                   querieFile(detector_file_name) ,
-                                   querieFile( incident_spectra_filename),
-                                   querieFile( bankFile),
-                                   querieFile( ID_MapFile) ) ,
-                           false ) );
-      if ( SocketEventLoader.debug == 5 )
-      {
-         try
-         {
-            fsave = new FileOutputStream( "C:/Users/ruth/eventDat.dat" );
-
-         } catch( Exception s )
-         {
-            fsave = null;
-         }
-         SavedEventsBuff = new int[ 20000000 ];
-      } else
-      {
-         fsave = null;
-         SavedEventsBuff = null;
-      }
-   
-      
-      Object Scaling = System.getProperty( "ScaleWith" );
-      
-     if( Scaling != null && Scaling.equals( "Protons on target" ))
-         
-         sendProtOnCharge = true;
-      
-      
-      else if( Scaling != null && Scaling.equals( "NumEvents" ))
-         
-         sendNEvents = true;
-     
-     
-     sendBuff = BuffPool[ currentBuffPage ];
-     ( new timerThread( this ) ).start();
-     
-      
-   }
-
-
-   private String querieFile( String fileName)
-   {
-      if( fileName == null || fileName.trim().length()<1)
-         return null;
-     if( !(new java.io.File( fileName)).exists())
-        return null;
-     return fileName;
-   }
-
-   public thisIUDPUser( MessageCenter message_center, String Instrument )
-   {
-      this(message_center, Instrument, null, null,null,null);
    }
 
 
@@ -311,9 +287,13 @@ class thisIUDPUser implements IUDPUser
    public void resetAccumulator()
    {
       TotalProtonsOnTarget =0;
-      NReceived =0;
+      
+      NReceived =0;      
+      
       Buffstart =0;
+      
       total_received = 0;
+      
       TotalEventDataSent2IsawEV = 0;
    }
 
@@ -326,116 +306,64 @@ class thisIUDPUser implements IUDPUser
     * @param length
     *           The number of bytes in the data
     */
-   public void ProcessData( byte[] data , int length )
+   public void ProcessData(byte[] data, int length)
    {
-     synchronized (buffer_lock)
-     {
-      if ( pause )
-      {
-         Buffstart =0;
-         return;
-      }
 
-      Nshown = 0;
+      synchronized( buffer_lock )
+      {
+         if ( pause )
+         {
+            Buffstart = 0;
+            return;
+         }
 
          if ( data == null || data.length < length )
             return;
 
-         if ( NReceived < 100 && SocketEventLoader.debug==1 )
+         if ( NReceived < 100 && SocketEventLoader.debug == 1 )
          {
-            System.out.print( "data packet length="+data.length+","+length);
-           //SocketServerTest.showwpacket( data ,65, "packet in" );
-            System.out.println( String.format("%02x%02x%02x%02x",
-                        data[0],data[1],data[2],data[3]));
+            System.out.print( "data packet length=" + data.length + ","
+                  + length );
+            
+            System.out.println( String.format( "%02x%02x%02x%02x" , data[0] ,
+                  data[1] , data[2] , data[3] ) );
          }
 
-         if( (NReceived+1) % 200 < 0 )
+         if ( ( NReceived + 1 ) % 200 < 0 )
          {
-            String firstData = String.format( 
-                  "%02x%02x%02x%02x %02x%02x%02x%02x %02x%02x%02x%02x" , 
-                  data[48],data[49],data[50],data[51],
-                  data[52],data[53],data[54],data[55],
-                  data[0], data[1], data[2], data[3]);
-            System.out.println( "received packets =" + NReceived +
-                                ",data=" + firstData );
-            //  SocketServerTest.showwpacket( data, 65, 
-            //                             "received packets =" + NReceived );
+            String firstData = String.format(
+                  "%02x%02x%02x%02x %02x%02x%02x%02x %02x%02x%02x%02x" ,
+                  data[48] , data[49] , data[50] , data[51] , data[52] ,
+                  data[53] , data[54] , data[55] , data[0] , data[1] , data[2] ,
+                  data[3] );
+            System.out.println( "received packets =" + NReceived + ",data="
+                  + firstData );
+            
          }
 
-         if ( isCommandPacket( data, length ) )
+         if ( isCommandPacket( data , length ) )
          {
-            ProcessCommandPacket( data, length );
+            ProcessCommandPacket( data , length );
             return;
-         }
-         else
-           System.out.println("Stray Packet");
+            
+         } else
+            
+            System.out.println( "Stray Packet" );
 
          return;
-     }
-   }
-     
+      }
+   }     
 
    private boolean isCommandPacket( byte[] data, int length)
    {
       if( length <44)
          return false;
+      
       if( data[4]!=0 ||data[5]!=2 ||data[6]!=0 ||data[4]!=0 )
          return false;
+      
       return true;
    }
-
-   //deprecated
-     private void ProcessDataPacket0( byte[] data, int length )
-     {
-      NReceived++ ;
-      
-      if( length <52)
-         return;
-      if( data[6]!=2|| data[5]!=0 ||data[7]!=0)
-         return;
-  
-      int NEvents = Cvrt2Int( data , 8)- Cvrt2Int( data , 12);
-	  NEvents = NEvents/8;//8 bytes per event packet
-	  
-	  if( NEvents <=0  )
-	     return;
-	 
-      total_received += NEvents;
-    
-      //int[] ids = new int[ NEvents ];
-     // int[] tofs = new int[NEvents ];
-      int start = 24 + Cvrt2Int( data , 12);
-      // start=0; NEvents = length/2 with Dennis' interpretation
-      if( Buffstart + 2*NEvents >= SocketEventLoader.BUFF_SIZE )
-      {
-         // System.out.print( "PrcessDat1" );
-         SendMessage( NEvents );
-      }
-
-      for( int i = Buffstart ; i < Buffstart + NEvents ; i++ )
-      {
-         tofBuff[ i ] = Cvrt2Int( data , start );
-         idBuff[ i ] = Cvrt2Int( data , start + 4 );
-
-         if( Nshown < 0 )
-         {
-            System.out.println( String.format( "%08x,%08x," ,
-                     tofBuff[ i ] , idBuff[ i ]  ));
-            Nshown++ ;
-         }
-         start += 8;
-      }
-    
-      Buffstart += NEvents;
-
-      if( Buffstart > SocketEventLoader.SEND_MINIMUM )
-      {
-         // System.out.print( "PrcessDat2" );
-         SendMessage( 0 );
-      }
-    }
-
-
      private void ProcessDataPacket( byte[] data, int length )
      {
       NReceived++ ;
@@ -463,17 +391,17 @@ class thisIUDPUser implements IUDPUser
          
       total_received += NEvents;
      
-      // start=0; NEvents = length/2 with Dennis' interpretation
+
       if( Buffstart + NEvents >= SocketEventLoader.BUFF_SIZE )
       {
-         // System.out.print( "PrcessDat1" );
+
          SendMessage( NEvents );
       }
       
-      // start=0; NEvents = length/2 with Dennis' interpretation
+
       if( Buffstart + 2*NEvents >= SocketEventLoader.BUFF_SIZE )
       {
-         // System.out.print( "PrcessDat1" );
+
          SendMessage( NEvents );
       }
       
@@ -482,14 +410,17 @@ class thisIUDPUser implements IUDPUser
          sendBuff[i]= Cvrt2Int( data, start );
          start +=4;
       }
-     if( SocketEventLoader.debug==2)
+
+      if( SocketEventLoader.debug==2)
         System.out.println("first float Data="
               +sendBuff[Buffstart  ]+","+ sendBuff[Buffstart+1]+","
               +sendBuff[Buffstart+2]+","+ sendBuff[Buffstart+3]);
+
       if( total_received < 0)
       {
          for( int i=0; i< Math.min( 2*total_received ,80 );i++)
             System.out.print(sendBuff[i]+",");
+         
           System.out.println("");
       }
     
@@ -497,7 +428,7 @@ class thisIUDPUser implements IUDPUser
 
       if( Buffstart > SocketEventLoader.SEND_MINIMUM )
       {
-         // System.out.print( "PrcessDat2" );
+         
          SendMessage( 0 );
       }
     }
@@ -507,13 +438,17 @@ class thisIUDPUser implements IUDPUser
      {
         ProcessDataPacket( data, length );
         int nPulseIDs = Cvrt2Int( data, 12 ) / 24;
+        
         double protonsThisPacket =0;
+        
         for( int i=0; i<nPulseIDs; i++)
            protonsThisPacket += Cvrt2dbl( data, 40 +i*24 );
         
         TotalProtonsOnTarget +=protonsThisPacket;
+        
         if( SocketEventLoader.debug ==20)
                System.out.println("   prot on targ="+ protonsThisPacket);
+        
         if(  sendProtOnCharge && protonsThisPacket !=0 )
               message_center.send( new Message( Commands.SCALE_FACTOR, 
                               (float)(protonsThisPacket), false, false));
@@ -525,6 +460,7 @@ class thisIUDPUser implements IUDPUser
         
         message_center.send( new Message( Commands.SCALE_FACTOR, 
               (float)(NEvents), false, false));
+        
      }
      
      
@@ -533,6 +469,7 @@ class thisIUDPUser implements IUDPUser
    {
       if( data == null || start <0|| data.length < start+8)
          return 0.;
+      
       try
       {
          byte[]D = new byte[10];
@@ -603,6 +540,7 @@ class thisIUDPUser implements IUDPUser
 
          TofEventList raw_events = 
                           new TofEventList( sendBuff, Buffstart / 2, false );
+ 
          if(SocketEventLoader.debug ==20)
             for( int i=0; i< Buffstart; i+=2)
             {
@@ -644,7 +582,7 @@ class thisIUDPUser implements IUDPUser
       }
       return NEvents;
    }
-}
+//}
 
 
 /**
@@ -655,9 +593,9 @@ class thisIUDPUser implements IUDPUser
  */
 class timerThread extends Thread
 {
-   thisIUDPUser user;
+   SocketEventLoader user;
 
-   public timerThread( thisIUDPUser user )
+   public timerThread( SocketEventLoader user )
    {
       this.user = user;
    }
@@ -670,8 +608,7 @@ class timerThread extends Thread
             return;
          while( true )
          {
-            Thread.sleep( SocketEventLoader.SEND_MIN_TIME );          
-//          System.out.println("Timer calling SendMessage(0)");
+            Thread.sleep( SocketEventLoader.SEND_MIN_TIME ); 
             user.SendMessage( 0 );
          }
       }
@@ -682,4 +619,5 @@ class timerThread extends Thread
         s.printStackTrace();
       }
    }
+}
 }
