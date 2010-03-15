@@ -994,8 +994,7 @@ public class filePanel //extends JPanel
                                 startEvent, 
                                 nf.parse(eventsToLoad.getText()).longValue(),
                                 nf.parse(eventsToShow.getText()).longValue(),
-                                Integer.parseInt(numThreads.getText()),
-                                scale_factor);
+                                Integer.parseInt(numThreads.getText()));
                   
                   boolean collapse_messages   = true;
                   boolean use_separate_thread = true;

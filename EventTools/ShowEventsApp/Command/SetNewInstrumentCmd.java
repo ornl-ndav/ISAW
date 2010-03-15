@@ -46,10 +46,13 @@ public class SetNewInstrumentCmd
    private String detector_file_name;
    private String incident_spectrum_file_name;
 
-   String bank_file_name;
-   String ID_Map_file_name;
-   private float scale_factor, radius=0.0f, smu=0.0f, amu=0.0f;
-
+   private String bank_file_name;
+   private String ID_Map_file_name;
+   private float  scale_factor, 
+                  maxQValue,
+                  radius = 0.0f, 
+                  smu    = 0.0f, 
+                  amu    = 0.0f;
    
   /**
    *  Create a new set instrument command object, containing the specified
@@ -69,7 +72,8 @@ public class SetNewInstrumentCmd
    *                             The name of the file containing the incident
    *                             spectrum information.  This file is a simple
    *                             ASCII file with some basic header information
-   *                             as in ISAW/InstrumentInfo/SNAP/SNAP_Spectrum.dat
+   *                             as in 
+   *                             ISAW/InstrumentInfo/SNAP/SNAP_Spectrum.dat
    *                             If none is specified the default file in 
    *                             ISAW/InstrumentInfo/SNS will be used, if 
    *                             it is present.  Otherwise, no correction
@@ -77,77 +81,34 @@ public class SetNewInstrumentCmd
    *                             
    *  @param scale_factor        if positive, value to multiply d-graphs and
    *                             q-graphs. Usually 1/protons_on_target.
+   *  @param radius              Radius of the sample in centimeters
+   *  @param smu                 Linear scattering coefficient at 1.8 Angstroms.
+   *  @param amu                 Linear absorption coefficient at 1.8 Angstroms.
    */
    public SetNewInstrumentCmd( String instrument_name, 
                                String detector_file_name,
                                String incident_spectrum_file_name,
                                String bank_file_name,
                                String ID_Map_file_name,
-                               float  scale_factor, float radius, float smu, float amu)
+                               float  scale_factor, 
+                               float  maxQValue,
+                               float  radius, 
+                               float  smu, 
+                               float  amu )
    {
       this.instrument_name = instrument_name; 
       this.detector_file_name = detector_file_name; 
       this.incident_spectrum_file_name = incident_spectrum_file_name; 
 
-      this.bank_file_name = bank_file_name;
+      this.bank_file_name   = bank_file_name;
       this.ID_Map_file_name = ID_Map_file_name;
-      this.scale_factor = scale_factor;
-      this.radius = radius;
-      this.smu = smu;
-      this.amu = amu;
-   }
-   public SetNewInstrumentCmd( String instrument_name, 
-                               String detector_file_name,
-                               String incident_spectrum_file_name,
-                               String bank_file_name,
-                               String ID_Map_file_name,
-                               float  scale_factor)
-   {
-      this.instrument_name = instrument_name; 
-      this.detector_file_name = detector_file_name; 
-      this.incident_spectrum_file_name = incident_spectrum_file_name; 
-
-      this.bank_file_name = bank_file_name;
-      this.ID_Map_file_name = ID_Map_file_name;
-      this.scale_factor = scale_factor;
+      this.scale_factor     = scale_factor;
+      this.maxQValue        = maxQValue;
+      this.radius           = radius;
+      this.smu              = smu;
+      this.amu              = amu;
    }
 
-
-   /**
-    * @see #SetNewInstrumentCmd(String, String, String, String, String, float, float, float, float)
-    *       Full Constructor
-    */
-   public SetNewInstrumentCmd( String instrument_name, 
-                               String detector_file_name,
-                               String incident_spectrum_file_name,
-                               String bank_file_name,
-                               String ID_Map_file_name,
-                               float radius, float smu, float amu)
-   {
-      this( instrument_name, 
-            detector_file_name, 
-            incident_spectrum_file_name,
-            bank_file_name,
-            ID_Map_file_name,
-            -1f, radius, smu, amu);
-   }
-   /**
-    * @see #SetNewInstrumentCmd(String, String, String, String, String, float, float, float, float)
-    *       Full Constructor
-    */
-   public SetNewInstrumentCmd( String instrument_name, 
-                               String detector_file_name,
-                               String incident_spectrum_file_name,
-                               String bank_file_name,
-                               String ID_Map_file_name)
-   {
-      this( instrument_name, 
-            detector_file_name, 
-            incident_spectrum_file_name,
-            bank_file_name,
-            ID_Map_file_name,
-            -1f);
-   }
 
    public String getDetectorFileName()
    {
@@ -196,6 +157,16 @@ public class SetNewInstrumentCmd
       return ID_Map_file_name;
    }
    
+
+   public float getMaxQValue()
+   {
+      if ( Float.isNaN( maxQValue ) || maxQValue <= 0 )
+        return 1000000;                                 // use all Q's
+
+      return maxQValue;
+   }
+
+
    public float getAbsorptionRadius()
    {
       return radius;
@@ -210,7 +181,7 @@ public class SetNewInstrumentCmd
    {
       return amu;
    }
-   
+
    public float getScaleFactor()
    {
       return scale_factor;
@@ -221,10 +192,11 @@ public class SetNewInstrumentCmd
       return "\nInstrument Name    : " + getInstrumentName()   +
              "\nDetector File Name : " + getDetectorFileName() +
              "\nIncident Spectrum File Name : " +getIncidentSpectrumFileName()+
-             "\nscale factor       :"+ getScaleFactor() +
-             "\nAbsorption Radius  :"+ getAbsorptionRadius() +
-             "\nTotal Absorption   :"+ getTotalAbsorption() +
-             "\nAbsorption True    :"+ getAbsorptionTrue();
+             "\nscale factor       : "+ getScaleFactor() +
+             "\nmaxQValue          : " + getMaxQValue() +
+             "\nAbsorption Radius  : "+ getAbsorptionRadius() +
+             "\nTotal Absorption   : "+ getTotalAbsorption() +
+             "\nAbsorption True    : "+ getAbsorptionTrue();
    }
 
 }
