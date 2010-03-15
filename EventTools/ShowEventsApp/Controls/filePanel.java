@@ -126,7 +126,7 @@ public class filePanel //extends JPanel
       AbsorptionRadius = Float.NaN;
       TotalAbsorption = Float.NaN;
       AbsorptionTrue = Float.NaN;
-      MaxQValue = Float.NaN;
+      MaxQValue = 1000000;           // use all Q values by default
       buildPanel();
       //this.add(panel);
    }
@@ -869,7 +869,8 @@ public class filePanel //extends JPanel
                   float AbsorptionRadius = 0.0f;
                   try
                   {
-                     AbsorptionRadius = Float.parseFloat(  absorptionRadius.getText().trim() );
+                     AbsorptionRadius =
+                         Float.parseFloat( absorptionRadius.getText().trim() );
                   }catch( Exception s)
                   {
                      AbsorptionRadius = 0.0f;
@@ -877,7 +878,8 @@ public class filePanel //extends JPanel
                   float TotalAbsorption = 0.0f;
                   try
                   {
-                     TotalAbsorption = Float.parseFloat(  totalAbsorption.getText().trim() );
+                     TotalAbsorption = 
+                         Float.parseFloat( totalAbsorption.getText().trim() );
                   }catch( Exception s)
                   {
                      TotalAbsorption = 0.0f;
@@ -885,10 +887,19 @@ public class filePanel //extends JPanel
                   AbsorptionTrue = 0.0f;
                   try
                   {
-                     AbsorptionTrue = Float.parseFloat(  absorptionTrue.getText().trim() );
+                     AbsorptionTrue = 
+                          Float.parseFloat( absorptionTrue.getText().trim() );
                   }catch( Exception s)
                   {
                      AbsorptionTrue = 0.0f;
+                  }
+                  try
+                  {
+                     MaxQValue = Float.parseFloat( maxQValue.getText().trim() );
+                  }
+                  catch( Exception s)
+                  {
+                     MaxQValue = 1000000;      // use all Q's by default
                   }
                   LoadUDPEventsCmd cmd =new LoadUDPEventsCmd( 
                            Instrument.getSelectedItem().toString(),
@@ -977,6 +988,14 @@ public class filePanel //extends JPanel
                   {
                      AbsorptionTrue = 0.0f;
                   }
+                  try
+                  {
+                     MaxQValue = Float.parseFloat( maxQValue.getText().trim() );
+                  }catch( Exception s)
+                  {
+                     MaxQValue = 1000000;      // use all Q's by default
+                  }
+
                   LoadEventsCmd fileInfo = 
                      new LoadEventsCmd(
                                 ev_file,
