@@ -532,7 +532,8 @@ public class IsawLite{
     // show usage information if there are not enough parameters
     if( (args==null) || (args.length<1) )
       printHelp(0);
-
+    DataSetTools.util.SharedData  d = new DataSetTools.util.SharedData(); 
+    
     // useful variables
     Operator operator  = null;
     String   command   = null;
