@@ -105,6 +105,7 @@ public class QMapperHandler implements IReceiveMessage
 
     if ( message.getName().equals(Commands.INIT_NEW_INSTRUMENT) )
     {
+
       Object obj = message.getValue();
       if ( obj == null || !(obj instanceof SetNewInstrumentCmd) )
       {
@@ -116,6 +117,7 @@ public class QMapperHandler implements IReceiveMessage
       SetNewInstrumentCmd cmd = (SetNewInstrumentCmd)obj;
       String new_instrument = cmd.getInstrumentName();
       scale_factor = cmd.getScaleFactor();
+
                                          // if this is a new instrument, get
                                          // a new mapper.
       if ( instrument_name == null ||
@@ -133,16 +135,15 @@ public class QMapperHandler implements IReceiveMessage
         System.out.println("Spectrum file from cmd = " + spec_file );
         try 
         { 
-          start    = System.nanoTime();
-          mapper   = new SNS_Tof_to_Q_map(  new_instrument,
-                                           det_file, 
-                                           cmd.getBankFileName( ),
-                                           cmd.getIDMapFileName( ),
-                                           spec_file,
-                                           cmd.getAbsorptionRadius(),
-                                           cmd.getTotalAbsorption(),
-                                           cmd.getAbsorptionTrue() 
-                                           );
+          start  = System.nanoTime();
+          mapper = new SNS_Tof_to_Q_map( new_instrument,
+                                         det_file, 
+                                         cmd.getBankFileName( ),
+                                         cmd.getIDMapFileName( ),
+                                         spec_file,
+                                         cmd.getAbsorptionRadius(),
+                                         cmd.getTotalAbsorption(),
+                                         cmd.getAbsorptionTrue()   );
           run_time = (System.nanoTime() - start)/1.0e6;
           instrument_name = new_instrument;
           System.out.printf("Made Q mapper in %5.1f ms\n", run_time  );
@@ -159,13 +160,18 @@ public class QMapperHandler implements IReceiveMessage
         }
       }
 
-       Util.sendInfo( "QMapper set up for " + instrument_name +
-                      "\nUsing Detector File: " + det_file );
-       Message new_inst_done = new Message( Commands.INIT_NEW_INSTRUMENT_DONE,
-                                            null,
-                                            true,
-                                            true );
-       message_center.send( new_inst_done );
+      mapper.setMaxQ( cmd.getMaxQValue() );
+      mapper.setAbsorptionParameters( cmd.getAbsorptionRadius(),
+                                      cmd.getTotalAbsorption(),
+                                      cmd.getAbsorptionTrue()  );
+
+      Util.sendInfo( "QMapper set up for " + instrument_name +
+                     "\nUsing Detector File: " + det_file );
+      Message new_inst_done = new Message( Commands.INIT_NEW_INSTRUMENT_DONE,
+                                           null,
+                                           true,
+                                           true );
+      message_center.send( new_inst_done );
     }
 
     else if ( message.getName().equals(Commands.SELECT_POINT) )

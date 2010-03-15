@@ -49,7 +49,7 @@ public class LoadEventsCmd
       this.AbsorptionRadius= AbsorptionRadius;
       this.TotalAbsorption = TotalAbsorption;
       this.AbsorptionTrue  = AbsorptionTrue;
-      this.maxQValue         = maxQValue;
+      this.maxQValue       = maxQValue;
       this.availableEvents = availableEvents;
       this.firstEvent      = firstEvent;
       this.eventsToLoad    = eventsToLoad;
@@ -57,6 +57,7 @@ public class LoadEventsCmd
       this.numThreads      = numThreads;
       this.scale_factor    = scale_factor;
    }
+
    public LoadEventsCmd( String eventFile, 
             String detFile,
             String specFile, 
@@ -91,8 +92,8 @@ public class LoadEventsCmd
             eventsToShow,
             numThreads,
             -1f);
-
 }
+
    public String getEventFile()
    {
       if (eventFile == null || eventFile.trim().equals(""))
@@ -178,8 +179,8 @@ public class LoadEventsCmd
 
    public float getMaxQValue()
    {
-      if (Float.isNaN( maxQValue )|| maxQValue <=0 )
-        return Float.NaN;
+      if ( Float.isNaN( maxQValue ) || maxQValue <= 0 )
+        return 1000000;                                 // use all Q's
 
       return maxQValue;
    }

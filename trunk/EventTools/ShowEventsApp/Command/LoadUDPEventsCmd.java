@@ -77,7 +77,7 @@ public class LoadUDPEventsCmd
                             float  TotalAbsorption,
                             float  AbsorptionTrue,
                             float  maxQValue,
-                            long nEventsToShow)
+                            long   nEventsToShow)
    {
       this.Instrument      = Instrument;
       this.port            = port;
@@ -183,7 +183,7 @@ public class LoadUDPEventsCmd
    public float getMaxQValue()
    {
       if (Float.isNaN( maxQValue )|| maxQValue <=0 )
-        return Float.NaN;
+        return 1000000;                               // use all Q's
 
       return maxQValue;
    }

@@ -168,6 +168,7 @@ public class InitializationHandler implements IReceiveMessage
                                   load_file_cmd.getBankFile( ),
                                   load_file_cmd.getIDMapFile( ),
                                   load_file_cmd.getScaleFactor(),
+                                  load_file_cmd.getMaxQValue(),
                                   load_file_cmd.getAbsorptionRadius(),
                                   load_file_cmd.getTotalAbsorption(),
                                   load_file_cmd.getAbsorptionTrue()  );
@@ -241,6 +242,8 @@ public class InitializationHandler implements IReceiveMessage
                    UDPcmd.getIncSpectrumFile(),
                    UDPcmd.getBankFile(),
                    UDPcmd.getIDMapFile(),
+                   -1,
+                   UDPcmd.getMaxQValue(),
                    UDPcmd.getAbsorptionRadius(),
                    UDPcmd.getTotalAbsorption(),
                    UDPcmd.getAbsorptionTrue()  );
@@ -283,10 +286,10 @@ public class InitializationHandler implements IReceiveMessage
             
       dq_ok =false;
 
-       SetNewInstrumentCmd new_inst_cmd = 
+      SetNewInstrumentCmd new_inst_cmd = 
           new SetNewInstrumentCmd( currentUDPInstrument,
-                   null,
-                   null, null,null ,1.0f,1.0f,1.0f);
+                                   null, null, null,null, 
+                                   -1, 1000000, 0, 0, 0 );
        
       (new InitDataThread( new_inst_cmd )).start();
     }
@@ -319,13 +322,6 @@ public class InitializationHandler implements IReceiveMessage
     for ( int i = 0; i < supported.length; i++ )
       if ( file_inst.equalsIgnoreCase( supported[i] ) )
         instrument_name = supported[i];
-
-    System.out.println("In getInstrumentName()");
-    System.out.println("file_name = " + file_name );
-    System.out.println("file_inst = " + file_inst );
-    System.out.println("instrument_name = " + instrument_name );
-    for ( int i = 0; i < supported.length; i++ )
-      System.out.println(supported[i]);
 
     return instrument_name;
   }
