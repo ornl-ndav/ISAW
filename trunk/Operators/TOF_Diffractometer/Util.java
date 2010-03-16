@@ -177,7 +177,7 @@ public class Util
          
          if ( useDspaceMap )
          {
-             try
+           try
            {
              FileUtil.CheckFile( DspaceMapFile );
            }
@@ -254,11 +254,8 @@ public class Util
            log_message += "formed GHOST histogram one Data block per bank.";
          else
            log_message += "formed histogram one Data block per bank.";
-
-       
          
          String Instr = Instrument;
-        
          
          DataSet DS = new DataSet( title, log_message ); 
          DS.setX_units( "Angstroms");
@@ -286,8 +283,8 @@ public class Util
                   TotCount +=yvals[j];
                }
                TotTotCount +=TotCount;
-               HistogramTable D = new  HistogramTable( xscl,
-                     yvals,i) ;
+               HistogramTable D = new HistogramTable( xscl, yvals,i) ;
+               D.setSqrtErrors( true );
                
                DS.addData_entry( D );
                D.setAttribute( new IntListAttribute( Attribute.RUN_NUM, 
@@ -296,14 +293,14 @@ public class Util
                                TotCount));
                D.setAttribute( L1Attr );
                D.setAttribute( T0Attr);
-               
             }
          }
          
-         DS.setAttribute(  new FloatAttribute(Attribute.TOTAL_COUNT, TotTotCount ));
+         DS.setAttribute( 
+                      new FloatAttribute(Attribute.TOTAL_COUNT, TotTotCount ));
+
          DataSetFactory.addOperators( DS );
          DS.addOperator( new DiffractometerDToQ() );
-      
 
          DS.setAttribute( L1Attr );
          DS.setAttribute( T0Attr );
@@ -312,7 +309,6 @@ public class Util
                              EventFileName) );
          DS.setAttribute( new StringAttribute( Attribute.FACILITY_NAME,
                "SNS"));
-         
      
          if( RunNums[0] > 0)
             DS.setAttribute( new IntListAttribute( Attribute.RUN_NUM, RunNums));
@@ -325,8 +321,6 @@ public class Util
                   Attribute.SAMPLE_DATA));
          
          AddDateTimeAttribute( DS, (new File( EventFileName)).lastModified( ));
-
-         
 
          return DS;
    }
@@ -521,18 +515,12 @@ public class Util
          else
            log_message += "formed histogram one Data block per bank.";
 
-  
-         
          String Instr = Instrument;
-         
-         
-        
 
          DataSet DS = new DataSet( title, log_message );
       
          if( RunNums[0] > 0)
             DS.setAttribute( new IntListAttribute( Attribute.RUN_NUM, RunNums));
-         
 
          if( Instr != null && Instr.length()>2)
             DS.setAttribute( new StringAttribute(Attribute.INST_NAME, Instr));
@@ -579,9 +567,13 @@ public class Util
                   TotCount +=yvals[j];
                }
                TotTotCount +=TotCount;
-               HistogramTable D = new  HistogramTable( xscl, yvals, i ) ;
-               D.setAttribute( new FloatAttribute( Attribute.TOTAL_COUNT, TotCount));
-               D.setAttribute(  new IntListAttribute( Attribute.RUN_NUM, RunNums) );
+               HistogramTable D = new HistogramTable( xscl, yvals, i ) ;
+               D.setSqrtErrors( true );
+
+               D.setAttribute( 
+                       new FloatAttribute( Attribute.TOTAL_COUNT, TotCount));
+               D.setAttribute(  
+                       new IntListAttribute( Attribute.RUN_NUM, RunNums) );
                Vector3D pos = new Vector3D(position[0],position[1],
                      position[2]);
                D.setAttribute(  new DetPosAttribute(Attribute.DETECTOR_POS,
@@ -600,7 +592,8 @@ public class Util
             }
          }
 
-         DS.setAttribute(  new FloatAttribute(Attribute.TOTAL_COUNT, TotTotCount ));
+         DS.setAttribute( 
+                      new FloatAttribute(Attribute.TOTAL_COUNT, TotTotCount ));
          DataSetFactory.addOperators( DS );
          DataSetFactory.addOperators( DS, InstrumentType.TOF_DIFFRACTOMETER );
          
@@ -631,7 +624,6 @@ public class Util
                Res[i][j] = ( float ) intArray[i][j];
          }
       }
-      
       return Res;
    }
 
@@ -703,9 +695,7 @@ public class Util
       {
          return -1;
       }
-         
    }
-  
 
    
    /**
@@ -783,4 +773,3 @@ public class Util
    }
 
 }
-
