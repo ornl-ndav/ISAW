@@ -1613,10 +1613,18 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 					"import gov.anl.ipns.Util.SpecialStrings.*;\r\n\r\n".getBytes());
 				fout.write("import Command.*;\r\n\r\n".getBytes());
 
+				String MethodHTMLPage =methPanel.meth.getClass( ).toString( ).trim();
+				if( MethodHTMLPage.endsWith( ".class" ))
+				   MethodHTMLPage = MethodHTMLPage.trim( ).substring(0, MethodHTMLPage.length()-6 );
+				MethodHTMLPage += "."+ methPanel.meth.getName( );
+				String ThisHTMLPage = W.opPanel.fileName.getText().trim( );
+				String MethPage = GetMethodPageHTMLRef( MethodHTMLPage, ThisHTMLPage);
 				// Documentation for the getResult method
 				fout.write("/**\r\n".getBytes());
 				fout.write(" * This class has been dynamically created using the Method2OperatorWizard\r\n".getBytes());
 				fout.write(" * and usually should not be edited.\r\n".getBytes());
+				fout.write((" * This operator is a wrapper around \r\n"+MethPage+"\r\n").getBytes());
+						
 				fout.write(" */\r\n".getBytes());				
 				
 				//Write out the class header
@@ -1873,6 +1881,25 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 			}
 		}
 
+		private String GetMethodPageHTMLRef( String MethodHTMLPage, String ThisHTMLPage)
+		{
+		   Method Meth = methPanel.meth;
+		   String Package = Meth.getDeclaringClass( ).toString( ).trim();
+		   if( Package.endsWith(".class)"))
+		      Package = Package.substring(0, Package.length() -6);
+		   Package +="."+Meth.getName( )+"(";
+		   Class[] parms = Meth.getParameterTypes( );
+		   if( parms != null && parms.length >0)
+		   {for( int i=0; i< parms.length; i++)
+		      Package += parms[i].getName( )+",";
+		   Package =Package.substring( 0,Package.length()-1)+")" ;
+		   }else
+		      Package +=")";
+		   
+		   String Res ="@see "+Package;
+		   return Res;
+		}
+		
         /** 
          * Breaks up a line and fixes comments to be placed in Java code between quotes
          * @param text  The text to be printed/broken up along lines
