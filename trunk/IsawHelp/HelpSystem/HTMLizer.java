@@ -306,7 +306,8 @@ public class HTMLizer {
      String Res ="";
      for( int i=1;i< opList.length; i++)
         Res += opList[i]+",";
-     
+     if( Res == null || Res.length() < 1)
+        return "Not in List";
      return Res.substring( 0,Res.length()-1 );
   }
 
