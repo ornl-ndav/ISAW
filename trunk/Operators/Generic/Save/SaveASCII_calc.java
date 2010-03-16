@@ -158,7 +158,25 @@ public class SaveASCII_calc
 
      if ( out_file_name == null )
        throw new IllegalArgumentException("ERROR: null file name");
- 
+
+     for ( int index = 0; index < indices_to_print.length; index++ )
+     {
+       Data data = ds.getData_entry( indices_to_print[ index ] );
+
+       if ( data == null )
+         throw new IllegalArgumentException("ERROR: No Data with index: " +
+                                             indices_to_print[ index ] );
+
+       if ( include_errors && !data.isSqrtErrors() )   // check further to be
+       {                                               // sure data blocks 
+         float[] errs = data.getErrors();              // have error estimates
+         if ( errs == null )
+           throw new IllegalArgumentException(
+                "ERROR: Data block at index " + indices_to_print[ index ] +
+                " doesn't have error estimates" );
+       }
+     } 
+
      if ( format == null || format.trim().length() == 0 )
        if ( include_errors )   
          format = "%12.7E  %12.7E  %12.7E";
@@ -167,12 +185,9 @@ public class SaveASCII_calc
         
      PrintStream out = new PrintStream( out_file_name );
      for ( int index = 0; index < indices_to_print.length; index++ )
+
      {
        Data data = ds.getData_entry( indices_to_print[ index ] );
-
-       if ( data == null )
-         throw new IllegalArgumentException("ERROR: No  Data with index: " +
-                                             indices_to_print[ index ] );
 
        float[] xs   = data.getX_scale().getXs();
        float[] ys   = data.getY_values();
@@ -189,7 +204,7 @@ public class SaveASCII_calc
        if ( include_errors )
          errs = data.getErrors();
        for ( int i = 0; i < ys.length; i++ )
-         if ( include_errors )
+         if ( include_errors && errs != null )
          {
            out.printf( format, xs[i], ys[i], errs[i] );
            out.println(); 
