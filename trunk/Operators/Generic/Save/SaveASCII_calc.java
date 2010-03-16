@@ -156,6 +156,9 @@ public class SaveASCII_calc
      if ( ds == null || ds.getNum_entries() <= 0 )
        throw new IllegalArgumentException("ERROR: null or empty DataSet" );
 
+     if ( indices_to_print.length <= 0 )
+       throw new IllegalArgumentException("ERROR: No Data blocks selected" );
+
      if ( out_file_name == null )
        throw new IllegalArgumentException("ERROR: null file name");
 
@@ -185,7 +188,6 @@ public class SaveASCII_calc
         
      PrintStream out = new PrintStream( out_file_name );
      for ( int index = 0; index < indices_to_print.length; index++ )
-
      {
        Data data = ds.getData_entry( indices_to_print[ index ] );
 
