@@ -36,6 +36,7 @@ package DataSetTools.components.View;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -43,6 +44,8 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import gov.anl.ipns.MathTools.Geometry.DetectorPosition;
+import gov.anl.ipns.MathTools.Geometry.Vector3D;
 import gov.anl.ipns.Parameters.*;
 import gov.anl.ipns.Util.File.FileIO;
 import gov.anl.ipns.Util.Messaging.IObserver;
@@ -70,7 +73,11 @@ import javax.swing.border.TitledBorder;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 
+import org.python.core.*;
+import org.python.util.PythonInterpreter;
+
 import DataSetTools.dataset.*;
+import DataSetTools.math.tof_calc;
 import DataSetTools.operator.DataSet.Attribute.DS_Attribute;
 import DataSetTools.operator.DataSet.Attribute.GetPixelInfo_op;
 import DataSetTools.operator.DataSet.Conversion.XAxis.*;
@@ -141,6 +148,11 @@ public class GroupSelector implements IObserver, ActionListener
    int[]                      rowPixel;
 
    int[]                      colPixel;
+   
+   float[]                    d;
+   float[]                    q;
+   float[]                    wl;
+   float[]                    ang;
 
    int                        startPixel;
 
@@ -165,6 +177,8 @@ public class GroupSelector implements IObserver, ActionListener
    ButtonControl              GroupEditor;
 
    ViewControl                GroupSelectorControl;
+   
+   PythonInterpreter         pinterp                 =null;
 
    /**
     * Reads in starting info from a NeXus file. Note if the Nexus files do not
@@ -470,6 +484,10 @@ public class GroupSelector implements IObserver, ActionListener
       detectorIDPixel = new int[ pixelGroup.length ];
       rowPixel = new int[ pixelGroup.length ];
       colPixel = new int[ pixelGroup.length ];
+      q = new float[ pixelGroup.length ];
+      wl = new float[ pixelGroup.length ];
+      ang = new float[ pixelGroup.length ];
+      d = new float[ pixelGroup.length ];
 
       DS.setX_units( "us" );
       DS.setX_label( "Time" );
@@ -511,8 +529,21 @@ public class GroupSelector implements IObserver, ActionListener
             colPixel[pixel - startPixel] = col;
             
             detectorIDPixel[pixel - startPixel] = det;
+ 
+            Vector3D V = pinf.DataGrid( ).position( row , col );
+            float pathLength = V.length()+AttrUtil.getInitialPath( D );
+            float ScatAng =(new DetectorPosition(V)).getScatteringAngle( ) ;
+            d[pixel - startPixel]= tof_calc.DSpacing(
+                  ScatAng, 
+                  pathLength , 
+                  1000 );
+            q[pixel - startPixel]=1/d[pixel -startPixel];
+            wl[pixel - startPixel]= tof_calc.Wavelength( pathLength , 
+                  1000 );
+            ang[pixel - startPixel]= ScatAng;           
 
          }
+         
 
       }
 
@@ -641,6 +672,7 @@ public class GroupSelector implements IObserver, ActionListener
       MidMid.add( new JLabel( "Formula" ) );
 
       formula = new JComboBox( );
+      formula.setEditable( true );
       MidMid.add( formula );
       formula
             .setToolTipText( "<html><body>Use variable d,q,wl,row,col,det,pix. <BR>"
@@ -804,6 +836,7 @@ public class GroupSelector implements IObserver, ActionListener
       SelectionEditor = ( ControlCheckboxButton ) VC[5];// disabled at times
       GroupSelectorControl = VC[7];
       GroupEditor = ( ButtonControl ) VC[8];
+      
       GroupEditor.setToolTipText(  "Only Group names that represent Integers are used" );
       
       SplitPaneWithState splitPane = new SplitPaneWithState(
@@ -867,6 +900,156 @@ public class GroupSelector implements IObserver, ActionListener
 
    }
 
+   private void ExecuteFormula( int Group,
+                                int[] detectors,
+                                String formula) 
+                                   throws IllegalArgumentException
+   {
+      if( detectors != null && detectors.length < 1)
+         detectors = null;
+      
+      if( formula == null || formula.trim( ).length() < 1)
+         throw new IllegalArgumentException("No formula");
+      
+      
+     
+      try
+      {
+         if( pinterp == null)
+         {
+            pinterp = new PythonInterpreter();
+            pinterp.set( "DET" , detectorIDPixel );
+            pinterp.set( "ROW" , rowPixel );
+            pinterp.set( "COL" , colPixel );
+            pinterp.set( "D" , d );
+            pinterp.set( "Q" , q );
+            pinterp.set( "WL" , wl );
+            pinterp.set( "ANG" , ang );
+            pinterp.set( "StartPix" ,startPixel );
+            pinterp.set( "Len" , pixelGroup.length );
+            
+            String code ="def assign(self,group):\n"+
+            
+            "   for i in range(0,Len):\n"+
+            "      pix=i+StartPix\n"+
+            "      det=DET[i]\n"+
+            "      row=ROW[i]\n"+
+            "      col=COL[i]\n"+
+            "      d=D[i]\n"+
+            "      q=Q[i]\n"+
+            "      wl=WL[i]\n"+
+            "      ang=ANG[i]\n"+
+            "      x=eval(CD)\n"+
+            "      if  x:\n"+
+            "         PIX[i]=int(group)\n";
+            pinterp.exec( code );
+         }
+         
+         pinterp.set( "PIX" , pixelGroup );
+         
+         PyCode codep =Py.compile( new ByteArrayInputStream(formula.getBytes( )),
+                "<string>","eval" );
+         
+         pinterp.set( "CD" , codep );
+         
+         String CD ="assign(None,"+Group+")";
+         
+         pinterp.exec( CD );
+         PyObject pyResult = pinterp.get( "PIX" );
+         Object   result = null;
+       
+         if( pyResult != null ) {
+           result = pyResult.__tojava__( Object.class );
+           if( result != null && result.getClass( ).isArray() &&
+                 (java.lang.reflect.Array.getLength( result )==
+                                      pixelGroup.length)&&
+             result.getClass( ).getComponentType( )==Integer.TYPE)
+           {
+              pixelGroup =(int[])result;           
+              addGroup( Group, true );
+           } else
+              throw new IllegalArgumentException(
+                    "Result not of correct Data Type");
+             
+                                      
+         }else
+            throw new IllegalArgumentException("Internal Jython Error");
+         
+      }catch(Exception ss){
+         ss.printStackTrace( );
+         throw new IllegalArgumentException(" Error in formula :"+ss);
+      }
+      
+         
+   }
+   
+   private static boolean InArray(  int[] detectors,int detNum)
+   {
+      if( detectors == null)
+         return true;
+      
+      for( int i=0; i< detectors.length; i++)
+         
+         if( detectors[i]== detNum)
+            
+            return true;
+      
+      
+      return false;
+   }
+   
+   
+   private static String Subst( String formula,int val, String varName)
+   {
+      String S = new String(formula);
+      int varLen = varName.length();
+      for( int i=S.indexOf( varName ); i>=0 && i < S.length();  )
+      {
+         char cB =0;
+         if(  i > 0 && i-1 < S.length())
+            cB =S.charAt( i-1 );
+         
+         char cA = 0;
+         if( i >=0 && i+1 +varLen < S.length())
+            cA = S.charAt(  i+varLen );
+         
+         if( cB==0 || (!Character.isDigit( cB )&& (cB <'A'|| cB > 'Z')) )
+            if( cA==0 || (!Character.isDigit( cA )&&( cA <'A'|| cA >'Z')) )
+            { 
+               S = S.substring( 0,i )+val+S.substring( i+varLen );
+             
+            }
+         i++;
+         i=S.indexOf( varName );
+      }
+      return S;
+   }
+   private static String Subst( String formula,float val, String varName)
+   {
+      String S = new String(formula);
+      int varLen = varName.length();
+      for( int i=S.indexOf( varName ); i>=0 && i < S.length();)
+      {
+         char cB =0;
+         if(  i > 0 && i-1 < S.length())
+            cB =S.charAt( i-1 );
+         
+         char cA = 0;
+         if( i >=0 && i+1 +varLen < S.length())
+            cA = S.charAt(  i+varLen );
+         
+         if( cB==0 || (!Character.isDigit( cB )&& (cB <'A'|| cB > 'Z')) )
+            if( cA==0 || (!Character.isDigit( cA )&&( cA <'A'|| cA >'Z')) )
+            { 
+               S = S.substring( 0,i )+val+S.substring( i+varLen );
+             
+            }
+
+         i++;
+         i=S.indexOf( varName );
+      }
+      return S;
+   }
    @Override
    public void actionPerformed(ActionEvent arg0)
    {
@@ -1023,7 +1206,24 @@ public class GroupSelector implements IObserver, ActionListener
 
       if ( arg0.getActionCommand( ) == FORMULA_ASSIGN )
       {
-         return;
+
+        try
+        {
+         int k= formula.getSelectedIndex( ); System.out.println("Selected indes="+k);
+         String formulaStr =formula.getSelectedItem( ).toString();
+         if( k < 0)
+            formula.addItem( formulaStr);
+         
+         ExecuteFormula( Integer.parseInt( FormulaGroup.getText( ).trim( ) ),
+               IntList.ToArray( Detectors_Gr.getText( ).trim( ) ),
+               formulaStr);
+        }catch(Exception S)
+        {
+           JOptionPane.showMessageDialog( null , "Could Not AssignGroups:"+ 
+                 S.toString());
+           return;
+        }
+               
       }
 
       if ( arg0.getActionCommand( ) == VIEW_GROUPS )
@@ -1580,6 +1780,17 @@ public class GroupSelector implements IObserver, ActionListener
       return null;
    }
    
+  
+   public static void main1( String[] args)
+   {
+      String formula = "(pix<542144)*( pix >54200)".toUpperCase();
+      System.out.println("formula 1="+formula);
+      formula = GroupSelector.Subst( formula , 12f , "PIX" );
+      System.out.println("formula 2="+formula);
+      formula = GroupSelector.Subst( formula , 4 , "UV" );
+      System.out.println("formula 3="+formula);
+      
+   }
    /**
     * @param args
     */
@@ -1628,11 +1839,11 @@ public class GroupSelector implements IObserver, ActionListener
                false );
 
          FileChooserPanel NexFile = new FileChooserPanel(
-               FileChooserPanel.LOAD_FILE );
+               FileChooserPanel.LOAD_FILE, null, NeXusFile );
          FileChooserPanel DetCalFileC = new FileChooserPanel(
-               FileChooserPanel.LOAD_FILE );
+               FileChooserPanel.LOAD_FILE, null, DetCalFile );
          FileChooserPanel BankFileC = new FileChooserPanel(
-               FileChooserPanel.LOAD_FILE );
+               FileChooserPanel.LOAD_FILE, null, BankFile );
 
          pan.add( UseNexFile );
          pan.add( new JLabel( ) );
@@ -1653,7 +1864,7 @@ public class GroupSelector implements IObserver, ActionListener
                JOptionPane.OK_CANCEL_OPTION ) == JOptionPane.OK_OPTION )
          {
             NeXusFile = NexFile.getTextField( ).getText( );
-            DetCalFile = NexFile.getTextField( ).getText( );
+            DetCalFile = DetCalFileC.getTextField( ).getText( );
             BankFile = BankFileC.getTextField( ).getText( );
             if ( UseNexFile.isSelected( ) )
                DetCalFile = null;
@@ -1691,7 +1902,7 @@ public class GroupSelector implements IObserver, ActionListener
       public AssignGroupInfo()
       {
 
-         super( "Group" );
+         super( "Group/Scat Ang" );
       }
 
       public String getCommand()
@@ -1742,10 +1953,18 @@ public class GroupSelector implements IObserver, ActionListener
             return "NaN";
 
          Float V = ( Float ) DS.getAttributeValue( "GroupIntesityMult" );
+         
+         Data D = DS.getData_entry( i );
+         
+         DetectorPosition dp = AttrUtil.getDetectorPosition(D);
+         float ang = Float.NaN;
+         if( dp != null)
+            ang = dp.getScatteringAngle()*180/(float)Math.PI;
+         
          if ( V == null || V.floatValue( ) == 0 )
-            return "" + DS.getData_entry( i ).getY_values( )[1];
+            return "" + DS.getData_entry( i ).getY_values( )[1]+","+ang;
 
-         return "" + DS.getData_entry( i ).getY_values( )[1] / V.floatValue( );
+         return "" + D.getY_values( )[1] / V.floatValue( )+","+ang;
 
       }
 
@@ -1753,7 +1972,7 @@ public class GroupSelector implements IObserver, ActionListener
       public String DataInfoLabel(int i)
       {
 
-         return "Group";
+         return "Group/Scatt Ang(deg)";
       }
 
    }
