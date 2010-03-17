@@ -142,10 +142,11 @@ public class indexPeaksPanel extends    JPanel  implements IReceiveMessage
       BoxLayout blayout = new BoxLayout( panel, BoxLayout.Y_AXIS );
       panel.setLayout(  blayout );
       middlePanel = new JTabbedPane();
-      middlePanel.addTab( "AutoIndex(w.Xtal Params)",buildCalcMatPanel());
+      middlePanel.addTab( "AutoIndex(with Lattice Parameters)",
+                           buildCalcMatPanel());
       middlePanel.addTab( "AutoIndex", buildCalcMat2Panel());
-      middlePanel.addTab( "Read UB fr File", buildFromFilePanel() );
-      middlePanel.addTab( "Index from Current UB" , buildCalcMat3Panel() );
+      middlePanel.addTab( "Read UB From File", buildFromFilePanel() );
+      middlePanel.addTab( "Index Using Current UB" , buildCalcMat3Panel() );
       panel.add( middlePanel );
       panel.add( buildTolerancePanel());
       this.add(panel );
@@ -188,7 +189,7 @@ public class indexPeaksPanel extends    JPanel  implements IReceiveMessage
    {
       JPanel panel = buildPanel1();
       panel.setBorder(  new TitledBorder( new LineBorder(Color.black),
-               "Calculate Matrix using Crystal Parameters") );
+               "Find Matrix Using Lattice Parameters") );
       return panel;
    }
    
@@ -203,15 +204,15 @@ public class indexPeaksPanel extends    JPanel  implements IReceiveMessage
       JPanel MainPanel = new JPanel();
       JPanel panel = new JPanel();
       panel.setBorder( new TitledBorder( new LineBorder(Color.black),
-                 "AutoIndex w no Crystal Parameters") );
+                 "AutoIndex, Bounds on Lattice Parameters") );
       
       panel.setLayout( new GridLayout(2,2));
-      JLabel  DMinLabel= new JLabel("Min d-spacing");
+      JLabel  DMinLabel= new JLabel("Min Unit Cell Edge");
       Dmin = new FilteredPG_TextField(new FloatFilter());
       Dmin.setText( "2.0" );
       panel.add( DMinLabel );
       panel.add(  Dmin );
-      JLabel  DMaxLabel= new JLabel("Max d-spacing");
+      JLabel  DMaxLabel= new JLabel("Max Unit Cell Edge");
       Dmax = new FilteredPG_TextField(new FloatFilter());
       Dmax.setText( "12.0" );
       panel.add( DMaxLabel );
