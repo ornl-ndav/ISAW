@@ -43,26 +43,26 @@ public class LoadUDPEventsCmd
    private String bankFile;
    private String IDMapFile;
    private String matFile;
-   private float  AbsorptionRadius;
-   private float  TotalAbsorption;
-   private float  AbsorptionTrue;
+   private float  absorption_radius;
+   private float  absorption_smu;
+   private float  absorption_amu;
    private float  maxQValue;
    private long   nEventsToShow;
    
    /**
-    *  Construct
-    * @param Instrument  The name of the instrument
-    * @param port        The port where the UDP packets come in on
-    * @param detFile     The detectorFile(DETCAL)
-    * @param specFile    The name of the spec File
-    * @param detEffFile  The name of the detector efficiency file private 
-    * @param bankFile    The name of the file with bank vs pixel_id's
-    * @param IDMapFile   The name of the file that maps DAS ID's to NeXus ID's
-    * @param matFile     The name of a matrix file
-    * @param AbsorptionRadius   The radius for the absorption correction
-    * @param TotalAbsorption The total scattering for absorption correction
-    * @param AbsorptionTrue  True absorption at lambda = 1.8 Angstoms
-    * @param maxQValue   The maximum Q value to load
+    *  Constructor 
+    * @param Instrument   The name of the instrument
+    * @param port         The port where the UDP packets come in on
+    * @param detFile      The detectorFile(DETCAL)
+    * @param specFile     The name of the spec File
+    * @param detEffFile   The name of the detector efficiency file private 
+    * @param bankFile     The name of the file with bank vs pixel_id's
+    * @param IDMapFile    The name of the file that maps DAS ID's to NeXus ID's
+    * @param matFile      The name of a matrix file
+    * @param radius       The radius for the absorption correction
+    * @param smu          The total scattering for absorption correction
+    * @param amu          True absorption at lambda = 1.8 Angstoms
+    * @param maxQValue    The maximum Q value to load
     * @param nEventsToShow The number of events to show in the 3D view
     */
    public LoadUDPEventsCmd( String Instrument, 
@@ -73,9 +73,9 @@ public class LoadUDPEventsCmd
                             String bankFile,
                             String IDMapFile,
                             String matFile, 
-                            float  AbsorptionRadius,
-                            float  TotalAbsorption,
-                            float  AbsorptionTrue,
+                            float  radius,
+                            float  smu,
+                            float  amu,
                             float  maxQValue,
                             long   nEventsToShow)
    {
@@ -87,9 +87,9 @@ public class LoadUDPEventsCmd
       this.bankFile        = bankFile; 
       this.IDMapFile       = IDMapFile; 
       this.matFile         = matFile;
-      this.AbsorptionRadius= AbsorptionRadius;
-      this.TotalAbsorption = TotalAbsorption;
-      this.AbsorptionTrue  = AbsorptionTrue;
+      this.absorption_radius= radius;
+      this.absorption_smu = smu;
+      this.absorption_amu  = amu;
       this.maxQValue       = maxQValue;
       this.nEventsToShow   = nEventsToShow;
    }
@@ -158,26 +158,26 @@ public class LoadUDPEventsCmd
    
    public float getAbsorptionRadius()
    {
-      if (Float.isNaN( AbsorptionRadius )|| AbsorptionRadius < 0 )
+      if (Float.isNaN( absorption_radius )|| absorption_radius < 0 )
         return Float.NaN;
 
-      return AbsorptionRadius;
+      return absorption_radius;
    }
    
-   public float getTotalAbsorption()
+   public float getAbsorptionSMU()
    {
-      if (Float.isNaN( TotalAbsorption )|| TotalAbsorption < 0 )
+      if (Float.isNaN( absorption_smu )|| absorption_smu < 0 )
         return Float.NaN;
 
-      return TotalAbsorption;
+      return absorption_smu;
    }
    
-   public float getAbsorptionTrue()
+   public float getAbsorptionAMU()
    {
-      if (Float.isNaN( AbsorptionTrue )|| AbsorptionTrue < 0 )
+      if (Float.isNaN( absorption_amu )|| absorption_amu < 0 )
         return Float.NaN;
 
-      return AbsorptionTrue;
+      return absorption_amu;
    }
    
    public float getMaxQValue()
@@ -204,8 +204,8 @@ public class LoadUDPEventsCmd
              "\nID Map File : " + getIDMapFile()       +
              "\nMatrix File : " + getMatFile()         +
              "\nAbsorptionRadius: " + getAbsorptionRadius()+
-             "\nTotalAbsorption : " + getTotalAbsorption() +
-             "\nAbsorptionTrue  : " + getAbsorptionTrue()  +
+             "\nTotalAbsorption : " + getAbsorptionSMU() +
+             "\nAbsorptionTrue  : " + getAbsorptionAMU()  +
              "\nMax Q Value : " + getMaxQValue()       +
              "\n#Events to Show"+ getNEventsToShow();
    }
