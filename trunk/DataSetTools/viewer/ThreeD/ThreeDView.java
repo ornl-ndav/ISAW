@@ -201,6 +201,7 @@ public class ThreeDView extends DataSetViewer
   private String  group_draw_mode     = GROUP_MARKER_SMALL;
   private String  detector_draw_mode  = DETECTOR_NONE;
   private float   last_pointed_at_x   = Float.NaN;
+  private float   last_pointed_at_index = -1;
   private boolean redraw_cursor       = true;
   private boolean notify_ds_observers = true;
 
@@ -231,6 +232,8 @@ public class ThreeDView extends DataSetViewer
 
   private boolean debug = false;
 
+
+  int last_index = IThreeD_Object.INVALID_PICK_ID;//last picked object
 
 /* --------------------------------------------------------------------------
  *
@@ -283,7 +286,7 @@ public void redraw( String reason )
     // This will be called by the "outside world" if the contents of the
     // DataSet are changed and it is necesary to redraw the graphs using the
     // current DataSet.
-
+  
    if ( !validDataSet() )
      return;
 
@@ -291,11 +294,12 @@ public void redraw( String reason )
      return;
 
    else if ( reason.equals(IObserver.POINTED_AT_CHANGED) )
-   {
+   { 
       if ( threeD_panel.isDoingBox() )           // don't interrupt the zoom in 
         return;                                  // process 
-
+     
       DataSet ds = getDataSet();
+      boolean changed = false;
 
       if ( debug )
       {
@@ -305,8 +309,16 @@ public void redraw( String reason )
       }
 
       int index = ds.getPointedAtIndex();
+     // if( Math.abs( index - last_pointed_at_index) <2 && Math.abs( last_pointed_at_x -
+     //       ds.getPointedAtX( )) <.2)
+    //  {
+         
+    //     return;
+    //  }
+      
       if (index != DataSet.INVALID_INDEX && ! Float.isNaN( last_pointed_at_x ))
       {
+        
         float y_val = rebinner.getY_valueAtX( index, last_pointed_at_x );
         conv_table.showConversions( last_pointed_at_x, y_val, index );
       }
@@ -314,17 +326,23 @@ public void redraw( String reason )
       if ( !Float.isNaN( ds.getPointedAtX() )   &&
            ds.getPointedAtX() != last_pointed_at_x )
       {
+        
         last_pointed_at_x = ds.getPointedAtX();
         frame_control.setFrameValue( last_pointed_at_x );
         redraw_cursor = false;
       }
 
+    //  if( !changed )
+    //     return;
+     // redraw_cursor = changed;
       Vector3D detector_location = group_location( ds.getPointedAtIndex() );
       Point   pixel_point;
       if ( detector_location != null && redraw_cursor )
       {
         pixel_point = threeD_panel.project( detector_location );
         threeD_panel.set_crosshair( pixel_point );
+        //SwingUtilities.invokeLater(
+        //      new ThreeDsetCrossHair(threeD_panel,pixel_point) );
       }
 
       notify_ds_observers = false;            // since we are setting the
@@ -1213,14 +1231,71 @@ private void init()
 
   threeD_panel.addMouseMotionListener( new ViewMouseMotionAdapter() );
   frame_control.addActionListener( new FrameControlListener() );
+  threeD_panel.addMouseListener( new ViewMouseAdapter() );
 }
 
+
+   private void processMouseClickEvent(MouseEvent e)
+   {
+
+      int index = threeD_panel.pickID( e.getX( ) , e.getY( ) , 15 );
+      
+      if ( index != last_index )
+      {
+         last_index = index;
+         DataSet ds = getDataSet( );
+         if ( index >= 0 && index < ds.getNum_entries( ) )
+         {
+            ds.setPointedAtIndex( index );
+            redraw_cursor = false;
+            ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );
+            float frame_val = frame_control.getFrameValue( );
+            if ( !Float.isNaN( frame_val ) )
+            {              
+               float y_val = rebinner.getY_valueAtX( index , frame_val );
+               conv_table.showConversions( frame_val , y_val , index );
+            }
+
+         }
+      }
+   }
 
 /* -------------------------------------------------------------------------
  *
  *  INTERNAL CLASSES
  *
  */
+private class ViewMouseAdapter extends MouseAdapter
+{
+
+   @Override
+   public void mouseClicked(MouseEvent e)
+   {
+      
+      processMouseClickEvent( e );
+     /* int index = threeD_panel.pickID( e.getX(), e.getY(), 15 );
+      if ( index != last_index )
+      {
+        last_index = index;
+        DataSet ds = getDataSet();
+        if ( index >= 0 && index < ds.getNum_entries() ) 
+        {
+          ds.setPointedAtIndex( index );
+          redraw_cursor = false;
+          ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );
+         float frame_val = frame_control.getFrameValue();
+          if ( !Float.isNaN( frame_val ) )
+          {
+            float y_val = rebinner.getY_valueAtX( index, frame_val );
+            conv_table.showConversions( frame_val, y_val, index );
+          }
+          
+        }
+      }
+     */ 
+   }
+   
+}
 
 /* ------------------------- ViewMouseMotionAdapter ----------------------- */
 /**
@@ -1229,12 +1304,14 @@ private void init()
  */
 private class ViewMouseMotionAdapter extends MouseMotionAdapter
 {
-   int last_index = IThreeD_Object.INVALID_PICK_ID;
+   
 
    public void mouseDragged( MouseEvent e )
    {
-     // System.out.println("Mouse moved at: " + e.getPoint() );
-     int index = threeD_panel.pickID( e.getX(), e.getY(), 15 );
+     
+      processMouseClickEvent( e );
+     //System.out.println("Mouse moved at: " + e.getPoint() );
+     /*int index = threeD_panel.pickID( e.getX(), e.getY(), 15 );
      if ( index != last_index )
      {
        last_index = index;
@@ -1244,14 +1321,16 @@ private class ViewMouseMotionAdapter extends MouseMotionAdapter
          ds.setPointedAtIndex( index );
          redraw_cursor = false;
          ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );
-         float frame_val = frame_control.getFrameValue();
+        float frame_val = frame_control.getFrameValue();
          if ( !Float.isNaN( frame_val ) )
          {
            float y_val = rebinner.getY_valueAtX( index, frame_val );
            conv_table.showConversions( frame_val, y_val, index );
          }
+         
        }
      }
+     */
    }
 }
 
@@ -1412,18 +1491,65 @@ private class FrameControlListener implements ActionListener
   private class AltAzControlListener implements ActionListener,
                                                 Serializable
   {
+   
+     
      public void actionPerformed(ActionEvent e)
      {                                             // just update the values
                                                    // in the state object
        float altitude = view_control.getAltitudeAngle(); 
        float azimuth  = view_control.getAzimuthAngle(); 
        float distance = view_control.getDistance(); 
-
+       
        getState().set_float( ViewerState.V_AZIMUTH,  azimuth );
        getState().set_float( ViewerState.V_ALTITUDE, altitude );
        getState().set_float( ViewerState.V_DISTANCE, distance );
-     }
+      
+       }
   }
 
+   class ThreeDsetCrossHair extends Thread
+   {
+
+      Object        synchrObject = new Object();
+      ThreeD_JPanel View3D;
+
+      Point         pt;
+      
+      Point       done;
+
+      public ThreeDsetCrossHair(ThreeD_JPanel View3D, Point pt)
+      {
+
+         this.View3D = View3D;
+         this.pt = pt;
+         done = null;
+      }
+      
+      public void setPoint( Point pt)
+      {
+         synchronized(synchrObject)
+         {
+         this.pt = pt;
+         }
+      }
+      
+      public Point getPoint()
+      {
+         return done;
+      }
+
+      @Override
+      public void run()
+      {
+        synchronized(synchrObject)
+        {
+         View3D.set_crosshair( pt );
+         done = pt;
+         pt = null;
+        }
+
+      }
+
+   }
 
 }
