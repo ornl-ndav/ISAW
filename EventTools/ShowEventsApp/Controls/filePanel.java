@@ -111,9 +111,9 @@ public class filePanel //extends JPanel
 
    private float              scale_factor;    // 1/protons_on_target 0 to skip
    private float              MaxQValue;
-   private float              radius_absorption;
-   private float              smu_absorption;
-   private float              amu_absorption;
+   private float              absorption_radius;
+   private float              absorption_smu;
+   private float              absorption_amu;
 
    private FilteredPG_TextField Port;
    private JComboBox            Instrument;
@@ -151,9 +151,9 @@ public class filePanel //extends JPanel
       idmap_filename    = "";
 
       MaxQValue = 1000000;           // use all Q values by default
-      radius_absorption = 0;          // 0 means don't do absorption correction
-      smu_absorption  = 1;
-      amu_absorption   = 1;
+      absorption_radius = 0;          // 0 means don't do absorption correction
+      absorption_smu  = 1;
+      absorption_amu   = 1;
 
       buildPanel();
    }
@@ -429,9 +429,9 @@ public class filePanel //extends JPanel
       JPanel absorptionPanel = new JPanel();
       absorptionPanel.setLayout(new GridLayout(1,2));
 
-      radius_absorption = 0.0f; 
+      absorption_radius = 0.0f; 
       JLabel radAbsorption = new JLabel("Absorption Corr. Radius(cm): ");
-      absorptionRadius = new JTextField( ""+radius_absorption );
+      absorptionRadius = new JTextField( ""+absorption_radius );
       absorptionRadius.setHorizontalAlignment(JTextField.RIGHT);
 
       absorptionPanel.add(radAbsorption);
@@ -452,9 +452,9 @@ public class filePanel //extends JPanel
       JPanel absorptionPanel = new JPanel();
       absorptionPanel.setLayout(new GridLayout(1,2));
 
-      smu_absorption = 1.0f;
+      absorption_smu = 1.0f;
       JLabel total = new JLabel("smu scattering(1/cm): ");
-      smuAbsorption = new JTextField( ""+smu_absorption );
+      smuAbsorption = new JTextField( ""+absorption_smu );
       smuAbsorption.setHorizontalAlignment(JTextField.RIGHT);
       
       absorptionPanel.add(total);
@@ -475,9 +475,9 @@ public class filePanel //extends JPanel
       JPanel absorptionPanel = new JPanel();
       absorptionPanel.setLayout(new GridLayout(1,2));
 
-      amu_absorption = 1.0f;
+      absorption_amu = 1.0f;
       JLabel trueAbs = new JLabel("amu absorption(1/cm): ");
-      amuAbsorption = new JTextField( ""+amu_absorption );
+      amuAbsorption = new JTextField( ""+absorption_amu );
       amuAbsorption.setHorizontalAlignment(JTextField.RIGHT);
       
       absorptionPanel.add(trueAbs);
@@ -700,14 +700,14 @@ public class filePanel //extends JPanel
 
      try
      {
-       radius_absorption =
+       absorption_radius =
                          Float.parseFloat( absorptionRadius.getText().trim() );
      }
      catch( Exception s)
      {
        exception = true;
      }
-     if ( exception || radius_absorption < 0 )
+     if ( exception || absorption_radius < 0 )
      {
        ShowError(" Sample radius must be at least 0 (0 to skip) " + 
                    absorptionRadius.getText() );
@@ -716,13 +716,13 @@ public class filePanel //extends JPanel
 
      try
      {
-       smu_absorption = Float.parseFloat( smuAbsorption.getText().trim() );
+       absorption_smu = Float.parseFloat( smuAbsorption.getText().trim() );
      }
      catch( Exception s)
      {
        exception = true;
      }
-     if ( exception || smu_absorption <= 0 )
+     if ( exception || absorption_smu <= 0 )
      {
        ShowError(" Sample scattering mu must be a positive number " + 
                    smuAbsorption.getText() );
@@ -731,13 +731,13 @@ public class filePanel //extends JPanel
 
      try
      {
-       amu_absorption = Float.parseFloat( amuAbsorption.getText().trim() );
+       absorption_amu = Float.parseFloat( amuAbsorption.getText().trim() );
      }
      catch( Exception s)
      {
        exception = true;
      }
-     if ( exception || amu_absorption <= 0 )
+     if ( exception || absorption_amu <= 0 )
      {
        ShowError(" Sample absorption mu must be a positive number " + 
                    amuAbsorption.getText() );
@@ -802,8 +802,6 @@ public class filePanel //extends JPanel
     */
    private boolean file_info_valid()
    {
-      NumberFormat nf = NumberFormat.getInstance();
-       
       try
       {
         String name = evFileName.getText().trim();
@@ -828,9 +826,9 @@ public class filePanel //extends JPanel
 
       try
       {
-         firstToLoad = nf.parse(firstEvent.getText().trim()).longValue();
+         firstToLoad = Long.parseLong(firstEvent.getText().trim());
       }
-      catch (ParseException pe)
+      catch (Exception ex)
       {
          ShowError( "First event must be of type Integer!" );
          return false;
@@ -838,9 +836,9 @@ public class filePanel //extends JPanel
       
       try
       {
-         num_to_load = nf.parse(eventsToLoad.getText().trim()).longValue();
+         num_to_load = Long.parseLong(eventsToLoad.getText().trim());
       }
-      catch (ParseException pe)
+      catch (Exception ex)
       {
          ShowError( "Number of events to load must be of type Integer!" );
          return false;
@@ -848,9 +846,9 @@ public class filePanel //extends JPanel
       
       try
       {
-         num_to_show = nf.parse(eventsToShow.getText().trim()).longValue();
+         num_to_show = Long.parseLong(eventsToShow.getText().trim());
       }
-      catch (ParseException pe)
+      catch (Exception ex)
       {
          ShowError( "Number of events to show must be of type Integer!" );
          return false;
@@ -873,7 +871,7 @@ public class filePanel //extends JPanel
 
       try
       {
-        numAvailable = nf.parse(availableEvents.getText().trim()).longValue();
+        numAvailable = Long.parseLong(availableEvents.getText().trim());
       }
       catch( Exception sx )
       {
@@ -933,9 +931,9 @@ public class filePanel //extends JPanel
                            bank_filename,
                            IDmapFileName.getText().trim(),
                            null,
-                           radius_absorption,
-                           smu_absorption,
-                           amu_absorption,
+                           absorption_radius,
+                           absorption_smu,
+                           absorption_amu,
                            MaxQValue,
                            num_to_show_UDP );
               
@@ -957,9 +955,9 @@ public class filePanel //extends JPanel
                                   bank_filename,
                                   IDmapFileName.getText().trim(),         
                                   null,
-                                  radius_absorption,
-                                  smu_absorption,
-                                  amu_absorption,
+                                  absorption_radius,
+                                  absorption_smu,
+                                  absorption_amu,
                                   MaxQValue,
                                   numAvailable,
                                   firstToLoad, 
