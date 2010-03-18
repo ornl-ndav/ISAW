@@ -138,12 +138,9 @@ abstract public class GraphViewHandler implements IReceiveMessage,
       Load.addActionListener(  new MenuListener( this ,D_Q) );
       opts.add( Load );
       
-      
-
       JMenuItem Clear = new JMenuItem("Clear Compare Data");
       Clear.addActionListener(  new MenuListener( this ,D_Q) );
       opts.add( Clear );
-      
 
       JMenuItem Help = new JMenuItem("Help");
       Help.addActionListener(  new MenuListener( this ,D_Q) );
@@ -156,7 +153,6 @@ abstract public class GraphViewHandler implements IReceiveMessage,
                                (int)(size.getHeight()) );
   
       WindowShower.show( display_frame );
-      
    }
 
 
@@ -175,6 +171,7 @@ abstract public class GraphViewHandler implements IReceiveMessage,
       }
    }
 
+
    public void setOtherGraph( String fileName, float ScaleFactor)
    {
       if( fileName == null)
@@ -192,8 +189,8 @@ abstract public class GraphViewHandler implements IReceiveMessage,
       CompareGraph =  new DataArray1D(D.getX_values(),D.getY_values(),
                            D.getErrors(),"External Graph",true,false);
        AddGraph();
-    
    }
+
    
    private void AddGraph( )
    {
@@ -210,33 +207,31 @@ abstract public class GraphViewHandler implements IReceiveMessage,
          fvc.dataChanged( new VirtualArrayList1D( V));
          StateChange( fvc);
          redraw = true;
-         
-      }else if( fvc != null)
+      }
+      else if( fvc != null)
       {
          if( fvc.getArray().getNumGraphs() > 1)
          {
             IVirtualArrayList1D data = fvc.getArray();
-            DataArray1D data1 = new DataArray1D( data.getXValues( 0 ), data.getYValues( 0 ));
+            DataArray1D data1 = new DataArray1D( data.getXValues( 0 ), 
+                                                 data.getYValues( 0 ));
             data1.setTitle( data.getGraphTitle( 0 ));
             fvc.dataChanged( new VirtualArrayList1D( data1));
             StateChange( fvc);
             redraw = true;
          }
       }
-      
 
       if( display_frame != null && redraw)
       {
-
          display_frame.invalidate();
          display_frame.validate();
          fvc.paintComponents();
          display_frame.repaint();
          fvc.paintComponents();
       }
-       
-      
    }
+
    private void StateChange( FunctionViewComponent fvc)
    {
 
@@ -252,6 +247,8 @@ abstract public class GraphViewHandler implements IReceiveMessage,
             System.out.println("Could not set color");
        fvc.setObjectState( Ostate );
    }
+
+
    /**
     * Placeholder to put in the frame if no data is loaded.
     * 
@@ -295,10 +292,11 @@ abstract public class GraphViewHandler implements IReceiveMessage,
                                                   title, 
                                                   x_units, y_units, 
                                                   x_label, y_label);
+
          if(prop_str == null)
             System.clearProperty( "ShowWCToolTip" );
          else
-            System.setProperty(  "ShowWCToolTip" , prop_str );
+            System.setProperty( "ShowWCToolTip" , prop_str );
 
          AddGraph();
          if ( display_frame != null )
@@ -312,8 +310,10 @@ abstract public class GraphViewHandler implements IReceiveMessage,
          Vector V = new Vector();
          V.add(new DataArray1D(x_values,y_values,errors,title,true,false));
          if( CompareGraph != null)
-            V.add( new DataArray1D(CompareGraph.getXArray(), CompareGraph.getYArray(),
-                     CompareGraph.getErrorArray(), CompareGraph.getTitle(), true, false));
+            V.add( new DataArray1D( CompareGraph.getXArray(), 
+                                    CompareGraph.getYArray(),
+                                    CompareGraph.getErrorArray(), 
+                                    CompareGraph.getTitle(), true, false));
          VirtualArrayList1D varr = 
             new VirtualArrayList1D(
                 V);
@@ -364,6 +364,8 @@ abstract public class GraphViewHandler implements IReceiveMessage,
    abstract public boolean receive(Message message);
 
 }
+
+
 class MenuListener implements ActionListener, IhasWindowClosed
 {
    GraphViewHandler gv;
@@ -414,8 +416,6 @@ class MenuListener implements ActionListener, IhasWindowClosed
    @Override
    public void actionPerformed( ActionEvent evt )
    {
-    
-    
     if( evt.getActionCommand().equals( "Normalize"))
        gv.messageCenter.send(  new Message( Commands.NORMALIZE_QD_GRAPHS,
                   ConCat(((JCheckBoxMenuItem)(evt.getSource())).isSelected(),
@@ -453,10 +453,9 @@ class MenuListener implements ActionListener, IhasWindowClosed
        size.height +=30;//Top and bottom borders
        jf.setSize( size);
        jf.setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
-       WindowShower.show(  jf );
-       
-       
-    }else if( evt.getActionCommand().equals( "FileName"))
+       WindowShower.show( jf );
+    }
+    else if( evt.getActionCommand().equals( "FileName"))
     {
        JFileChooser jfc = new JFileChooser();
        if( jfc.showOpenDialog( null )!= JFileChooser.APPROVE_OPTION)
@@ -468,7 +467,8 @@ class MenuListener implements ActionListener, IhasWindowClosed
        {
           SharedData.addmsg( "Error in filename "+s );
        }
-    }else if( evt.getActionCommand().equals( "OK"))
+    }
+    else if( evt.getActionCommand().equals( "OK"))
     {
        if( but == null)
           return;
@@ -495,28 +495,22 @@ class MenuListener implements ActionListener, IhasWindowClosed
        
        gv.setOtherGraph( fileName, scale_factor);
        jf.dispose( );
-       
-       
-    }else if( evt.getActionCommand().equals( "Clear Compare Data" ))
+    }
+    else if( evt.getActionCommand().equals( "Clear Compare Data" ))
     {
        gv.setOtherGraph(  null , -1);
-       
-    }else if( evt.getActionCommand().equals( "Help" ))
+    }
+    else if( evt.getActionCommand().equals( "Help" ))
     {
        JOptionPane.showMessageDialog( null , new JTextArea( OPT_MESSAGE) );
     }
-      
       
    }
 
    @Override
    public void WindowClose(String ID)
    {
-
       but = null;
-      
    }
 
-   
-   
 }
