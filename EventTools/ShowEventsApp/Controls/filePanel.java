@@ -48,6 +48,7 @@ import javax.swing.border.TitledBorder;
 
 import DataSetTools.util.SharedData;
 import EventTools.EventList.SNS_Tof_to_Q_map;
+import EventTools.EventList.FileUtil;
 import EventTools.ShowEventsApp.Command.*;
 import MessageTools.*;
 
@@ -80,34 +81,44 @@ public class filePanel //extends JPanel
    private JTextField         IDmapFileName;
    private JTextField         matFileName;
    private JTextField         absorptionRadius;
-   private JTextField         totalAbsorption;
-   private JTextField         absorptionTrue;
+   private JTextField         smuAbsorption;
+   private JTextField         amuAbsorption;
    private JTextField         maxQValue;
    private JTextField         numThreads;
    private JTextField         availableEvents;
    private JTextField         firstEvent;
    private JTextField         eventsToLoad;
-   //private JTextField         firstEventToShow;
    private JTextField         eventsToShow;
    private JTextField         protonsOnTarget;
-
    private JTextField         eventsToShowUDP;
-   private String             Datafilename;// Remember last file chosen
-  
-   private String             Detfilename;// Remember last file chosen
-   private String             Incfilename;// Remember last file chosen
-   private String             DetEfffilename;// Remember last file chosen
-   private String             Bankfilename_l;// Remember last file chosen
-   private String             IDMapfilename_l;// Remember last file chosen
-   private String             Matfilename;// Remember last file chosen
-   private float              AbsorptionRadius;
-   private float              TotalAbsorption;
-   private float              AbsorptionTrue;
-   private float              MaxQValue;//Remember last MaxQValue
+   private String             Datafilename;
+
+   private long               numAvailable;
+   private long               firstToLoad; 
+   private long               num_to_load;
+   private long               num_to_show;
+   private long               num_to_show_UDP;
+   private int                num_threads;
+
+   private int                udp_port;
+
+   private String             detcal_filename;
+   private String             inc_spec_filename;
+   private String             DetEfffilename;
+   private String             bank_filename; 
+   private String             idmap_filename;
+   private String             Matfilename; 
+
+   private float              scale_factor;    // 1/protons_on_target 0 to skip
+   private float              MaxQValue;
+   private float              radius_absorption;
+   private float              smu_absorption;
+   private float              amu_absorption;
+
    private FilteredPG_TextField Port;
-   private JComboBox         Instrument;
-   private static String[]   InstrumentList = 
-                                 SNS_Tof_to_Q_map.supported_instruments;
+   private JComboBox            Instrument;
+   private static String[]      InstrumentList = 
+                                    SNS_Tof_to_Q_map.supported_instruments;
    /**
     * Creates file panel as well as sets up default
     * properties for the file load locations.
@@ -119,16 +130,32 @@ public class filePanel //extends JPanel
       this.message_center = message_center;
       //this.setSize(300, 265);
       new SharedData();//Will read in IsawProps.dat
+
       Datafilename = System.getProperty("Data_Directory");
-      Detfilename =  System.getProperty( "InstrumentInfoDirectory");
-      Incfilename = DetEfffilename = Bankfilename_l =IDMapfilename_l = Detfilename;
-      Matfilename = Datafilename;
-      AbsorptionRadius = Float.NaN;
-      TotalAbsorption = Float.NaN;
-      AbsorptionTrue = Float.NaN;
+      Matfilename  = Datafilename;
+
+      numAvailable    = 10000000;
+      firstToLoad     = 1; 
+      num_to_load     = 25000000;
+      num_to_show     =  5000000;
+
+      udp_port        = 8002;
+      num_to_show_UDP = 5000000;
+
+      scale_factor = -1;
+
+      detcal_filename   = "";
+      inc_spec_filename = "";
+      DetEfffilename    = "";
+      bank_filename     = "";
+      idmap_filename    = "";
+
       MaxQValue = 1000000;           // use all Q values by default
+      radius_absorption = 0;          // 0 means don't do absorption correction
+      smu_absorption  = 1;
+      amu_absorption   = 1;
+
       buildPanel();
-      //this.add(panel);
    }
    
    /**
@@ -141,15 +168,6 @@ public class filePanel //extends JPanel
       return panel;
    }
    
-   /**
-    * Sets the panel to be visible or not.
-    * 
-    * @param visible true makes it visible, false hides it.
-    */
-   //public void setVisible(boolean visible)
-   //{
-   //   panel.setVisible(visible);
-   //}
    
    /**
     * Builds the panel to contain the EventPanel, DetPanel and MatPanel.
@@ -161,7 +179,7 @@ public class filePanel //extends JPanel
       panel.setLayout(new GridLayout(2,1));
       tabPane = new JTabbedPane();
       loadFiles = new JButton("Load");
-      loadFiles.addActionListener(new button());
+      loadFiles.addActionListener(new LoadListener());
       
       tabPane.addTab("From File", buildEventPanel());
       tabPane.addTab("From Live Data", buildUDPPanel());
@@ -196,8 +214,6 @@ public class filePanel //extends JPanel
     */
    private JPanel buildEventPanel()
    {
-      NumberFormat nf = NumberFormat.getInstance();
-      
       JPanel eventPanel = new JPanel();
       eventPanel.setLayout(new GridLayout(6,2));
 
@@ -207,12 +223,11 @@ public class filePanel //extends JPanel
       String default_evFileName = "";
       
       evFileName = new JTextField( default_evFileName );
+      evFileName.addActionListener( new EventFileTextListener() );
       evFileName.addMouseListener(new mouse());
-//    evFileName.setEditable(false);
       
-      String default_availableEvents = nf.getInstance().format(10000000);
       JLabel available = new JLabel("Number of Events in File: ");
-      availableEvents = new JTextField( default_availableEvents );
+      availableEvents = new JTextField( ""+numAvailable );
       availableEvents.setEditable(false);
       availableEvents.setHorizontalAlignment(JTextField.RIGHT);
       
@@ -221,22 +236,16 @@ public class filePanel //extends JPanel
       firstEvent = new JTextField( default_firstEvent );
       firstEvent.setHorizontalAlignment(JTextField.RIGHT);
       
-      String default_numLoad = nf.getInstance().format(10000000);
       JLabel numLoad = new JLabel("Number to Load: ");
-      eventsToLoad = new JTextField( default_numLoad );
+      eventsToLoad = new JTextField( ""+num_to_load );
       eventsToLoad.setHorizontalAlignment(JTextField.RIGHT);
       
-      /*String default_firstToShow = "1";
-      JLabel firstEventToShowLbl = new JLabel("First Event to Show: ");
-      firstEventToShow = new JTextField( default_firstToShow );
-      firstEventToShow.setHorizontalAlignment(JTextField.RIGHT);*/
-      
-      String default_eventsToShow = nf.getInstance().format(5000000);
       JLabel maxEvents = new JLabel("Number to Show in 3D: ");
-      eventsToShow = new JTextField( default_eventsToShow );
+      eventsToShow = new JTextField( ""+num_to_show );
       eventsToShow.setHorizontalAlignment(JTextField.RIGHT);
 
-      protonsOnTarget = new JTextField(15);
+      protonsOnTarget = new JTextField( "0" );
+      protonsOnTarget.setHorizontalAlignment(JTextField.RIGHT);
       
       eventPanel.add(evFileButton);
       eventPanel.add(evFileName);
@@ -246,30 +255,26 @@ public class filePanel //extends JPanel
       eventPanel.add(firstEvent);
       eventPanel.add(numLoad);
       eventPanel.add(eventsToLoad);
-      //eventPanel.add(firstEventToShowLbl);
-      //eventPanel.add(firstEventToShow);
       eventPanel.add(maxEvents);
       eventPanel.add(eventsToShow);
       eventPanel.add( new JLabel("Protons On Target"));
-      eventPanel.add( protonsOnTarget);
+      eventPanel.add( protonsOnTarget );
       return eventPanel;
    }
    
-   public JPanel  buildUDPPanel()
+   public JPanel buildUDPPanel()
    {
-      NumberFormat nf = NumberFormat.getInstance();
-      
       JPanel Res = new JPanel();
       BoxLayout BL = new BoxLayout( Res, BoxLayout.Y_AXIS);
       Res.setLayout( BL );
       JPanel subPanel = new JPanel();
       
-      subPanel.setLayout(  new GridLayout(1,2) );
-      subPanel.add( new JLabel("Port"));
-      Port = new FilteredPG_TextField( new IntegerFilter());
-      Port.setText("8002");
-      subPanel.add( Port);
-      Res.add( subPanel);
+      subPanel.setLayout( new GridLayout(1,2) );
+      subPanel.add( new JLabel("Port") );
+      Port = new FilteredPG_TextField( new IntegerFilter() );
+      Port.setText( ""+udp_port );
+      subPanel.add( Port );
+      Res.add( subPanel );
       
       subPanel = new JPanel();
       subPanel.setLayout(  new GridLayout(1,2) );
@@ -280,22 +285,20 @@ public class filePanel //extends JPanel
       subPanel.add( Instrument);
       Res.add(  subPanel );
       
-      String default_eventsToShow = nf.getInstance().format(5000000);
       JLabel maxEvents = new JLabel("Number to Show in 3D: ");
-      eventsToShowUDP = new JTextField( default_eventsToShow );
+      eventsToShowUDP = new JTextField( ""+num_to_show_UDP );
       eventsToShowUDP.setHorizontalAlignment(JTextField.RIGHT);
       subPanel = new JPanel();
       subPanel.setLayout( new GridLayout(1,2));
-      subPanel.add(  maxEvents );
-      subPanel.add(  eventsToShowUDP );
-      Res.add(  subPanel );
+      subPanel.add( maxEvents );
+      subPanel.add( eventsToShowUDP );
+      Res.add( subPanel );
       
       ActionListener list = new UDPActionListener();
-      subPanel= new JPanel( new GridLayout(1,3));
-      JButton Pause = new JButton( "Pause");
+      subPanel= new JPanel( new GridLayout(1,3) );
+      JButton Pause = new JButton( "Pause" );
       subPanel.add( Pause );
       Pause.addActionListener( list );
-      
 
       Pause = new JButton( "Continue");
       subPanel.add( Pause );
@@ -308,7 +311,6 @@ public class filePanel //extends JPanel
       Res.add( subPanel);
       Res.add( Box.createVerticalGlue());
       return Res;
-      
    }
    
    /**
@@ -325,10 +327,8 @@ public class filePanel //extends JPanel
       detFileButton = new JButton("Cal File(.DetCal)");
       detFileButton.addActionListener(new button());
       
-//    String default_detector_file =Detfilename;
-      detFileName = new JTextField( "");
+      detFileName = new JTextField( detcal_filename );
       detFileName.addMouseListener(new mouse());
-//    detFileName.setEditable(false);
       
       detPanel.add(detFileButton);
       detPanel.add(detFileName);
@@ -379,72 +379,20 @@ public class filePanel //extends JPanel
    
    private JPanel buildIDMapPanel()
    {  
-      JPanel incPanel = new JPanel();
-      incPanel.setLayout(new GridLayout(1,2));
+     JPanel incPanel = new JPanel();
+     incPanel.setLayout(new GridLayout(1,2));
      IDmapFileButton = new JButton("ID Map File (_TS_.dat) ");
      IDmapFileButton.addActionListener(new button());
      
      IDmapFileName = new JTextField();
      IDmapFileName.addMouseListener(new mouse());
      
-     
      incPanel.add(IDmapFileButton);
      incPanel.add(IDmapFileName);
- 
-      
-      return incPanel;
+     
+     return incPanel;
    }
    
-   /**
-    * Builds the Detector Efficiency panel which consists of a load button
-    * to load the file as well as a textfield to contain the path.
-    * 
-    * @return JPanel
-    */
-/*
-   private JPanel buildDetEffPanel()
-   {
-      JPanel detEffPanel = new JPanel();
-      detEffPanel.setLayout(new GridLayout(1,2));
-      
-      detEffFileButton = new JButton("Detector Efficiency File...");
-      detEffFileButton.addActionListener(new button());
-      
-      detEffFileName = new JTextField();
-      detEffFileName.addMouseListener(new mouse());
-      detEffFileName.setEditable(false);
-      
-      detEffPanel.add(detEffFileButton);
-      detEffPanel.add(detEffFileName);
-      
-      return detEffPanel;
-   }
-*/   
-   /**
-    * Builds the MatPanel which consists of button to load the 
-    * det file and a textfield to contain path.
-    * 
-    * @return JPanel
-    */
-/*
-   private JPanel buildMatPanel()
-   {
-      JPanel matPanel = new JPanel();
-      matPanel.setLayout(new GridLayout(1,2));
-      
-      matFileButton = new JButton("Matrix File...");
-      matFileButton.addActionListener(new button());
-      
-      matFileName = new JTextField();
-      matFileName.addMouseListener(new mouse());
-      matFileName.setEditable(false);
-      
-      matPanel.add(matFileButton);
-      matPanel.add(matFileName);
-      
-      return matPanel;
-   }
-*/   
    /**
     * Builds the maxQPanel which consists of label and a 
     * textfield to contain the Value.
@@ -458,7 +406,9 @@ public class filePanel //extends JPanel
       
       JLabel maxQButton = new JLabel("Max Q to load");
       
-      maxQValue = new JTextField();
+      MaxQValue = 20;
+      maxQValue = new JTextField( "" + MaxQValue );
+      maxQValue.setHorizontalAlignment(JTextField.RIGHT);
       maxQValue.addActionListener( new button());
       maxQPanel.add(maxQButton);
       maxQPanel.add(maxQValue);
@@ -466,10 +416,11 @@ public class filePanel //extends JPanel
       
       return maxQPanel;
    }
+
    /**
     * Build the absorptionPanel. 
-    * Radius of the sample for the absorption correction is loaded into appropriate 
-    * textfields.
+    * Radius of the sample for the absorption correction is loaded into 
+    * appropriate textfields.
     * 
     * @return JPanel
     */
@@ -478,9 +429,9 @@ public class filePanel //extends JPanel
       JPanel absorptionPanel = new JPanel();
       absorptionPanel.setLayout(new GridLayout(1,2));
 
-      String default_absorptionRadius  = "0.0";
+      radius_absorption = 0.0f; 
       JLabel radAbsorption = new JLabel("Absorption Corr. Radius(cm): ");
-      absorptionRadius = new JTextField( default_absorptionRadius );
+      absorptionRadius = new JTextField( ""+radius_absorption );
       absorptionRadius.setHorizontalAlignment(JTextField.RIGHT);
 
       absorptionPanel.add(radAbsorption);
@@ -488,10 +439,11 @@ public class filePanel //extends JPanel
 
       return absorptionPanel;
    }
+
    /**
     * Build the absorptionPanel. 
-    * Total absorption for the absorption correction is loaded into appropriate 
-    * textfields.
+    * Scattering absorption mu for the absorption correction is loaded 
+    * into appropriate textfields.
     * 
     * @return JPanel
     */
@@ -500,20 +452,21 @@ public class filePanel //extends JPanel
       JPanel absorptionPanel = new JPanel();
       absorptionPanel.setLayout(new GridLayout(1,2));
 
-      String default_totalAbsorption = "0.0";
-      JLabel total = new JLabel("Mu scattering(cm): ");
-      totalAbsorption = new JTextField( default_totalAbsorption );
-      totalAbsorption.setHorizontalAlignment(JTextField.RIGHT);
+      smu_absorption = 1.0f;
+      JLabel total = new JLabel("smu scattering(1/cm): ");
+      smuAbsorption = new JTextField( ""+smu_absorption );
+      smuAbsorption.setHorizontalAlignment(JTextField.RIGHT);
       
       absorptionPanel.add(total);
-      absorptionPanel.add(totalAbsorption);
+      absorptionPanel.add(smuAbsorption);
 
       return absorptionPanel;
    }
+
    /**
     * Build the absorptionPanel. 
-    * True absorption for the absorption correction is loaded into appropriate 
-    * textfields.
+    * Linear absorption coefficient for the absorption correction is 
+    * loaded into appropriate textfields.
     * 
     * @return JPanel
     */
@@ -522,13 +475,13 @@ public class filePanel //extends JPanel
       JPanel absorptionPanel = new JPanel();
       absorptionPanel.setLayout(new GridLayout(1,2));
 
-      String default_trueAbs = "0.0";
-      JLabel trueAbs = new JLabel("Mu absorption(cm): ");
-      absorptionTrue = new JTextField( default_trueAbs );
-      absorptionTrue.setHorizontalAlignment(JTextField.RIGHT);
+      amu_absorption = 1.0f;
+      JLabel trueAbs = new JLabel("amu absorption(1/cm): ");
+      amuAbsorption = new JTextField( ""+amu_absorption );
+      amuAbsorption.setHorizontalAlignment(JTextField.RIGHT);
       
       absorptionPanel.add(trueAbs);
-      absorptionPanel.add(absorptionTrue);
+      absorptionPanel.add(amuAbsorption);
 
       return absorptionPanel;
    }
@@ -544,9 +497,9 @@ public class filePanel //extends JPanel
       JPanel panel = new JPanel();
       panel.setLayout(new GridLayout(1,2));
       
-      String default_numThreads = "4";
+      num_threads = 4;
       JLabel numThreadsLbl = new JLabel("Number of Threads");
-      numThreads = new JTextField(default_numThreads);
+      numThreads = new JTextField(""+num_threads);
       numThreads.setHorizontalAlignment(JTextField.RIGHT);
       
       panel.add(numThreadsLbl);
@@ -563,10 +516,10 @@ public class filePanel //extends JPanel
     * 
     * @param inFile Path name for the event file to load.
     */
-   public void setEventFile(String inFile)
+   public boolean setEventFile(String inFile)
    {
       File file = new File(inFile);
-      setEventData(file);
+      return setEventData(file);
    }
    
    /**
@@ -624,7 +577,7 @@ public class filePanel //extends JPanel
     * 
     * @param inFile File of the event file to get information from.
     */
-   private void setEventData(File inFile)
+   private boolean setEventData(File inFile)
    {
       NumberFormat nf = NumberFormat.getInstance();
       
@@ -646,14 +599,14 @@ public class filePanel //extends JPanel
             eventsToShow.setText("5,000,000");
          else
             eventsToShow.setText(nf.getInstance().format(size));
+
+         return true;
       }
       catch (NumberFormatException nfe)
       {
          //System.out.println(nfe.getStackTrace());
-         String error = "Error formatting data!";
-         JOptionPane.showMessageDialog(null, error, "Invalid Input", 
-                                       JOptionPane.ERROR_MESSAGE);
-         return;
+         ShowError( "Error parsing number of events to load or show" );
+         return false;
       }
    }
    
@@ -669,153 +622,265 @@ public class filePanel //extends JPanel
       public void mouseEntered(MouseEvent e)
       {
          if (e.getSource() == evFileName)
-            evFileName.setToolTipText(evFileName.getText());
+            evFileName.setToolTipText(evFileName.getText().trim());
          
          if (e.getSource() == detFileName)
-            detFileName.setToolTipText(detFileName.getText());
+            detFileName.setToolTipText(detFileName.getText().trim());
          
          if (e.getSource() == incFileName)
-            incFileName.setToolTipText(incFileName.getText());
+            incFileName.setToolTipText(incFileName.getText().trim());
          
          if (e.getSource() == detEffFileName)
-            detEffFileName.setToolTipText(detEffFileName.getText());
+            detEffFileName.setToolTipText(detEffFileName.getText().trim());
          
          if (e.getSource() == matFileName)
-            matFileName.setToolTipText(matFileName.getText());
+            matFileName.setToolTipText(matFileName.getText().trim());
       }
 
       public void mouseExited(MouseEvent e){}
       public void mousePressed(MouseEvent e){}
       public void mouseReleased(MouseEvent e){}
    }
+
+
+   /**
+    * Check whether each field needed by both the load file and UDP
+    * load operations are usable, and have values set in the 
+    * file level variables.
+    * 
+    * @return True if every field is valid, false if not.
+    */
+   private boolean common_info_valid()
+   {
+     boolean exception = false;
+                                     // if we specify .DetCal, it must exist
+     detcal_filename = detFileName.getText().trim();
+     if ( detcal_filename != null && detcal_filename.trim().length() > 0 )
+     {
+       if ( !CheckFileExists(detcal_filename, ".DetCal file doesn't exist ") )
+         return false;
+     }
+
+     bank_filename = bankFileName.getText().trim();
+     if ( bank_filename != null && bank_filename.trim().length() > 0 )
+     {
+       if ( !CheckFileExists(bank_filename, "Banking file doesn't exist ") )
+         return false;
+     }
+
+     idmap_filename = IDmapFileName.getText().trim();
+     if ( idmap_filename != null && idmap_filename.trim().length() > 0 )
+     {
+       if ( !CheckFileExists(idmap_filename, "ID Map file doesn't exist ") )
+         return false;
+     }
+
+     inc_spec_filename = incFileName.getText().trim();
+     if ( inc_spec_filename != null && inc_spec_filename.trim().length() > 0 )
+     {
+       if ( !CheckFileExists(inc_spec_filename, 
+                             "Incident Spectrum file doesn't exits" ) )
+       return false;
+     }
+
+     try
+     {
+       MaxQValue = Float.parseFloat( maxQValue.getText().trim() );
+     }
+     catch( Exception s)
+     {
+       exception = true;
+     }
+     if ( exception || MaxQValue <= 0 )
+     {
+       ShowError(" maxQValue must be a positive number " + 
+                   maxQValue.getText() );
+       return false;
+     }
+
+     try
+     {
+       radius_absorption =
+                         Float.parseFloat( absorptionRadius.getText().trim() );
+     }
+     catch( Exception s)
+     {
+       exception = true;
+     }
+     if ( exception || radius_absorption < 0 )
+     {
+       ShowError(" Sample radius must be at least 0 (0 to skip) " + 
+                   absorptionRadius.getText() );
+       return false;
+     }
+
+     try
+     {
+       smu_absorption = Float.parseFloat( smuAbsorption.getText().trim() );
+     }
+     catch( Exception s)
+     {
+       exception = true;
+     }
+     if ( exception || smu_absorption <= 0 )
+     {
+       ShowError(" Sample scattering mu must be a positive number " + 
+                   smuAbsorption.getText() );
+       return false;
+     }
+
+     try
+     {
+       amu_absorption = Float.parseFloat( amuAbsorption.getText().trim() );
+     }
+     catch( Exception s)
+     {
+       exception = true;
+     }
+     if ( exception || amu_absorption <= 0 )
+     {
+       ShowError(" Sample absorption mu must be a positive number " + 
+                   amuAbsorption.getText() );
+       return false;
+     }
+
+     try
+     {
+       num_threads = Integer.parseInt(numThreads.getText().trim());
+     }
+     catch ( Exception s )
+     {
+       exception = true;
+     }
+     if ( exception || num_threads <= 0 )
+     {
+        ShowError( "Number of threads to show must be an Integer >= 0!" );
+        num_threads = 4;
+        return false;
+     }
+
+     return true;
+   }
+
+
+   /**
+    * Check whether each value needed to get live UDP events 
+    * seems valid, and set fields from the GUI components.
+    *
+    * @return True if every field is valid, false if not.
+    */
+   private boolean udp_load_info_valid()
+   {
+      try
+      {
+        udp_port = Integer.parseInt( Port.getText().trim() );
+      }
+      catch ( Exception ex )
+      {
+        ShowError("UDP port must be valid Integer!" );
+        return false;
+      }
+
+      try
+      {
+        num_to_show_UDP = Long.parseLong(eventsToShowUDP.getText().trim());
+      }
+      catch ( Exception ex )
+      {
+         ShowError("Number of UDP events to show must be of type Integer!" );
+         return false;
+      }
+
+      return true;
+   }
    
    /**
-    * Check whether each field needed to load the files
-    * is valid information and the files can then be loaded.
+    * Check whether each value needed to load the files
+    * seems valid, and set fields from the GUI components.
     * 
-    * @return True if every field is valid or false if not.
+    * @return True if every field is valid, false if not.
     */
-   private boolean valid()
+   private boolean file_info_valid()
    {
       NumberFormat nf = NumberFormat.getInstance();
        
-      if (evFileName.getText().equals(""))
+      try
       {
-         String error = "You have not specified an event file!";
-         JOptionPane.showMessageDialog( null, error, "Invalid Input", 
-                                        JOptionPane.ERROR_MESSAGE );
+        String name = evFileName.getText().trim();
+        if ( CheckFileExists( name, "Event file can't be read: ") )
+        {
+          if ( !name.equals(Datafilename) )    // update file size info
+          {
+            if ( setEventFile(name) )
+              Datafilename = name;
+            else
+              return false;
+          }
+        }
+        else
+          return false;
+      }
+      catch ( Exception ex )
+      {
+         ShowError( "First event must be of type Integer!" );
          return false;
       }
 
-      if (firstEvent.getText().equals(""))
+      try
       {
-         String error = "You have not specified the first event to load!";
-         JOptionPane.showMessageDialog( null, error, "Invalid Input", 
-                                        JOptionPane.ERROR_MESSAGE );
+         firstToLoad = nf.parse(firstEvent.getText().trim()).longValue();
+      }
+      catch (ParseException pe)
+      {
+         ShowError( "First event must be of type Integer!" );
+         return false;
+      }
+      
+      try
+      {
+         num_to_load = nf.parse(eventsToLoad.getText().trim()).longValue();
+      }
+      catch (ParseException pe)
+      {
+         ShowError( "Number of events to load must be of type Integer!" );
+         return false;
+      }
+      
+      try
+      {
+         num_to_show = nf.parse(eventsToShow.getText().trim()).longValue();
+      }
+      catch (ParseException pe)
+      {
+         ShowError( "Number of events to show must be of type Integer!" );
          return false;
       }
 
       try
       {
-         nf.parse(firstEvent.getText()).longValue();
+        float protons_on_target =
+                          Float.parseFloat( protonsOnTarget.getText().trim() );
+        if ( protons_on_target <= 0 )
+          scale_factor = -1;
+        scale_factor = 1/protons_on_target;
       }
-      catch (ParseException pe)
+      catch( Exception sx )
       {
-         String error = "First event must be of type Integer!";
-         JOptionPane.showMessageDialog( null, error, "Invalid Input", 
-                                        JOptionPane.ERROR_MESSAGE );
-         return false;
+        ShowError( "Protons On Target must be > 0 (or 0 to skip)" );
+        scale_factor = -1;
+        return false;
       }
-      
-      if (eventsToLoad.getText().equals(""))
-      {
-         String error = "You have not specified the number of events to load!";
-         JOptionPane.showMessageDialog( null, error, "Invalid Input", 
-                                        JOptionPane.ERROR_MESSAGE );
-         return false;
-      }
-      
+
       try
       {
-         nf.parse(eventsToLoad.getText()).longValue();
+        numAvailable = nf.parse(availableEvents.getText().trim()).longValue();
       }
-      catch (ParseException pe)
+      catch( Exception sx )
       {
-         String error = "Number of events to load must be of type Integer!";
-         JOptionPane.showMessageDialog( null, error, "Invalid Input", 
-                                        JOptionPane.ERROR_MESSAGE );
-         return false;
+        ShowError( "Number of Events available must be >= 0" );
+        numAvailable = 0;
+        return false;
       }
-      
-      /*if (firstEventToShow.getText().equals(""))
-      {
-         String error = "You have not specified the first event to display!";
-         JOptionPane.showMessageDialog( null, error, "Invalid Input", 
-                                        JOptionPane.ERROR_MESSAGE );
-         return false;
-      }
-      
-      try
-      {
-         nf.parse(firstEventToShow.getText()).longValue();
-      }
-      catch (ParseException pe)
-      {
-         String error = "First event to display must be of type Integer!";
-         JOptionPane.showMessageDialog( null, error, "Invalid Input", 
-                                        JOptionPane.ERROR_MESSAGE );
-         return false;
-      }*/
-      
-      if (eventsToShow.getText().equals(""))
-      {
-         String error = 
-                   "You have not specified the number of events to display!";
-         JOptionPane.showMessageDialog( null, error, "Invalid Input", 
-                                        JOptionPane.ERROR_MESSAGE );
-         return false;
-      }
-      
-      try
-      {
-         nf.parse(eventsToShow.getText()).longValue();
-      }
-      catch (ParseException pe)
-      {
-         String error = "Number of events to show must be of type Integer!";
-         JOptionPane.showMessageDialog( null, error, "Invalid Input", 
-                                        JOptionPane.ERROR_MESSAGE );
-         return false;
-      }
-/*
-      if (detFileName.getText().equals(""))
-      {
-         String error = "You have not specified a detector file!";
-         JOptionPane.showMessageDialog( null, error, "Invalid Input", 
-                                        JOptionPane.ERROR_MESSAGE );
-         return false;
-      }
-*/      
-      if (numThreads.getText().equals(""))
-      {
-         String error = "You have not specified the number of threads to use!";
-         JOptionPane.showMessageDialog( null, error, "Invalid Input", 
-                                        JOptionPane.ERROR_MESSAGE );
-         return false;
-      }
-      
-      try
-      {
-         Integer.parseInt(numThreads.getText());
-      }
-      catch (NumberFormatException nfe)
-      {
-         String error = "Number of threads to show must be of type Integer!";
-         JOptionPane.showMessageDialog( null, error, "Invalid Input", 
-                                        JOptionPane.ERROR_MESSAGE );
-         return false;
-      }
-      
       return true;
    }
    
@@ -826,15 +891,17 @@ public class filePanel //extends JPanel
          String command = evt.getActionCommand();
          if( command.equals( "Pause" ))
          {
-            message_center.send(  new Message( Commands.PAUSE_UDP, null,true, true) );
+            message_center.send( 
+                          new Message( Commands.PAUSE_UDP, null,true, true) );
          }else if( command.equals( "Continue" ))
          {
 
-            message_center.send(  new Message( Commands.CONTINUE_UDP, null,true, true) );
+            message_center.send( 
+                        new Message( Commands.CONTINUE_UDP, null,true, true) );
          }else if( command.equals("Pause & Clear"))
          {
-
-            message_center.send(  new Message( Commands.CLEAR_UDP, null,true, true) );
+            message_center.send( 
+                          new Message( Commands.CLEAR_UDP, null,true, true) );
          }
       }
    }
@@ -845,204 +912,103 @@ public class filePanel //extends JPanel
     * is pressed containing all the file names as well as the first event,
     * number of events to load, and number of events to load.
     */
-   private class button implements ActionListener
+   private class LoadListener implements ActionListener
    {
       public void actionPerformed(ActionEvent e)
       {
-         if (e.getSource() == loadFiles)
-         {  
-            String det_file = detFileName.getText();
-            if ( det_file != null && det_file.trim().length() <= 0 )
-              det_file = null;
+         boolean collapse_messages   = true;
+         boolean use_separate_thread = true;
 
-            String inc_spec_file = incFileName.getText();
-            if ( inc_spec_file != null &&
-                 inc_spec_file.trim().length() <= 0 )
-              inc_spec_file = null;
-            
-            NumberFormat nf = NumberFormat.getInstance();
-            
-            if(tabPane.getSelectedIndex() ==1)
-            {
-               try
-               {
-                  float AbsorptionRadius = 0.0f;
-                  try
-                  {
-                     AbsorptionRadius =
-                         Float.parseFloat( absorptionRadius.getText().trim() );
-                  }catch( Exception s)
-                  {
-                     AbsorptionRadius = 0.0f;
-                  }
-                  float TotalAbsorption = 0.0f;
-                  try
-                  {
-                     TotalAbsorption = 
-                         Float.parseFloat( totalAbsorption.getText().trim() );
-                  }catch( Exception s)
-                  {
-                     TotalAbsorption = 0.0f;
-                  }
-                  AbsorptionTrue = 0.0f;
-                  try
-                  {
-                     AbsorptionTrue = 
-                          Float.parseFloat( absorptionTrue.getText().trim() );
-                  }catch( Exception s)
-                  {
-                     AbsorptionTrue = 0.0f;
-                  }
-                  try
-                  {
-                     MaxQValue = Float.parseFloat( maxQValue.getText().trim() );
-                  }
-                  catch( Exception s)
-                  {
-                     MaxQValue = 1000000;      // use all Q's by default
-                  }
-                  LoadUDPEventsCmd cmd =new LoadUDPEventsCmd( 
-                           Instrument.getSelectedItem().toString(),
-                           Integer.parseInt( Port.getText()), 
-                           det_file,
-                           inc_spec_file,
-                           null,            //detEffFileName.getText(),
-                           bankFileName.getText(),
-                           IDmapFileName.getText(),
-                           null,
-                           AbsorptionRadius,
-                           TotalAbsorption,
-                           AbsorptionTrue,
-                           MaxQValue,
-                           nf.parse( eventsToShowUDP.getText()).longValue()
-                                                            );
-                  
-                  Message mess = new Message( Commands.LOAD_UDP_EVENTS,
-                                              cmd,
-                                              true, 
-                                              true
-                                              );
-                  message_center.send(mess);
-                  return;
-               }catch(Exception ss)
-               {
-                  
-               }
-               
-               return;
-            }
-            if(valid())
-            {
-               
-               try
-               {
-                  String ev_file = evFileName.getText();
-                 
-                  // sendMessage( Commands.SET_NEW_INSTRUMENT, new_inst_cmd );
-                  // The SET_NEW_INSTRUMENT command needs to be done before
-                  // loading the event file, so that the histogram and
-                  // mapping to Q are set up by the time we start sending
-                  // in events.
-
-                  
-                  long startEvent = nf.parse(firstEvent.getText()).longValue();
-                  if (startEvent <= 0)
-                  {
-                     startEvent = 0;
-                     firstEvent.setText(Long.toString(startEvent));
-                  }
-                  else
-                     startEvent -= 1;
-                  float scale_factor = -1;
-                  try
-                  {
-                     scale_factor = Float.parseFloat( protonsOnTarget.getText().trim() );
-                     scale_factor = 1/scale_factor;
-                     if( scale_factor < 0)
-                        scale_factor = -1;
-                  }catch( Exception sx)
-                  {
-                     scale_factor = -1;
-                  }
-                  float AbsorptionRadius = 0.0f;
-                  try
-                  {
-                     AbsorptionRadius = Float.parseFloat(  absorptionRadius.getText().trim() );
-                  }catch( Exception s)
-                  {
-                     AbsorptionRadius = 0.0f;
-                  }
-                  float TotalAbsorption = 0.0f;
-                  try
-                  {
-                     TotalAbsorption = Float.parseFloat(  totalAbsorption.getText().trim() );
-                  }catch( Exception s)
-                  {
-                     TotalAbsorption = 0.0f;
-                  }
-                  AbsorptionTrue = 0.0f;
-                  try
-                  {
-                     AbsorptionTrue = Float.parseFloat(  absorptionTrue.getText().trim() );
-                  }catch( Exception s)
-                  {
-                     AbsorptionTrue = 0.0f;
-                  }
-                  try
-                  {
-                     MaxQValue = Float.parseFloat( maxQValue.getText().trim() );
-                  }catch( Exception s)
-                  {
-                     MaxQValue = 1000000;      // use all Q's by default
-                  }
-
-                  LoadEventsCmd fileInfo = 
-                     new LoadEventsCmd(
-                                ev_file,
-                                det_file,
-                                inc_spec_file,
-                                null,               //detEffFileName.getText(),
-                                bankFileName.getText(),
-                                IDmapFileName.getText(),         
-                                null,
-                                AbsorptionRadius,
-                                TotalAbsorption,
-                                AbsorptionTrue,
-                                MaxQValue,
-                                nf.parse(availableEvents.getText()).longValue(),
-                                startEvent, 
-                                nf.parse(eventsToLoad.getText()).longValue(),
-                                nf.parse(eventsToShow.getText()).longValue(),
-                                Integer.parseInt(numThreads.getText()));
-                  
-                  boolean collapse_messages   = true;
-                  boolean use_separate_thread = true;
-                  Message load_message = new Message( Commands.LOAD_FILE,
-                                                      fileInfo,
-                                                      collapse_messages,
-                                                      use_separate_thread );
-                  message_center.send( load_message );
-               }
-               catch (ParseException pe)
-               {
-                  //System.out.println(pe.getStackTrace());
-                  String error = "Error parsing data to correct data types.";
-                  JOptionPane.showMessageDialog(null, error, "Invalid Input",
-                                                JOptionPane.ERROR_MESSAGE);
-                  return;
-               }
-            }
-            //else
-            //{
-            //   String error = "There is file information not completely 
-            //   filled out or invalid!!";
-            //   JOptionPane.showMessageDialog(null, error, "Invalid Input", 
-            //                                 JOptionPane.ERROR_MESSAGE);
-            //}
-         }
-         else if( e.getSource() == maxQValue)
+         if( tabPane.getSelectedIndex() == 1 )
          {
-            String Sval = maxQValue.getText();
+           if ( common_info_valid() && udp_load_info_valid() )
+           {
+              LoadUDPEventsCmd cmd =
+                new LoadUDPEventsCmd( 
+                           Instrument.getSelectedItem().toString(),
+                           udp_port,
+                           detcal_filename,
+                           inc_spec_filename,
+                           null,                    // detector Eff filename 
+                           bank_filename,
+                           IDmapFileName.getText().trim(),
+                           null,
+                           radius_absorption,
+                           smu_absorption,
+                           amu_absorption,
+                           MaxQValue,
+                           num_to_show_UDP );
+              
+              Message mess = new Message( Commands.LOAD_UDP_EVENTS,
+                                          cmd,
+                                          collapse_messages, 
+                                          use_separate_thread );
+              message_center.send(mess);
+            }
+          }
+
+          else if( file_info_valid() && common_info_valid() )
+          {
+            LoadEventsCmd fileInfo = 
+              new LoadEventsCmd(  Datafilename,
+                                  detcal_filename,
+                                  inc_spec_filename,
+                                  null,               // detector Eff filename
+                                  bank_filename,
+                                  IDmapFileName.getText().trim(),         
+                                  null,
+                                  radius_absorption,
+                                  smu_absorption,
+                                  amu_absorption,
+                                  MaxQValue,
+                                  numAvailable,
+                                  firstToLoad, 
+                                  num_to_load,
+                                  num_to_show,
+                                  num_threads,
+                                  scale_factor );
+                 
+            Message load_message = new Message( Commands.LOAD_FILE,
+                                                fileInfo,
+                                                collapse_messages,
+                                                use_separate_thread );
+            message_center.send( load_message );
+          }
+      }
+   }
+
+  /**
+   *  Listens for changes in text field specifying the event data file
+   */
+   private class EventFileTextListener implements ActionListener
+   {
+     public void actionPerformed(ActionEvent e)
+     {
+       if (e.getSource() == evFileName )
+       {
+         String name = evFileName.getText().trim();
+         if ( CheckFileExists( name, "Can't Read Specified Event File : " ) )
+           if ( setEventFile( name ) )
+             Datafilename = name;
+       }
+     }
+   }
+
+
+   /**
+    * Used for most buttons, except the Load and event file name.
+    * In particular it is called if Event File, Det file,
+    * or Mat File button is pressed.  Also to send a message if Load
+    * is pressed containing all the file names as well as the first event,
+    * number of events to load, and number of events to load.
+    */
+   private class button implements ActionListener
+   {
+     public void actionPerformed(ActionEvent e)
+     {
+         if( e.getSource() == maxQValue)
+         {
+            String Sval = maxQValue.getText().trim();
             if( Sval == null || Sval.trim().length() < 1)
                return;
             try
@@ -1060,20 +1026,19 @@ public class filePanel //extends JPanel
            if( e.getSource() == evFileButton)
               filename = Datafilename;
            else if( e.getSource() == detFileButton)
-               filename = Detfilename;
+               filename = detcal_filename;
            else if( e.getSource() == incFileButton)
-              filename = Incfilename;
+              filename = inc_spec_filename;
            else if( e.getSource() == detEffFileButton)
               filename = DetEfffilename;
            else if( e.getSource() == bankFileButton)
-              filename = Bankfilename_l;
+              filename = bank_filename;
            else if( e.getSource() == IDmapFileButton)
-              filename = IDMapfilename_l;
+              filename = idmap_filename;
            else if( e.getSource() == matFileButton)
               filename = Matfilename;
            
-           
-            final JFileChooser fc = new JFileChooser(  filename);
+            final JFileChooser fc = new JFileChooser( filename );
             File file = null;
             int returnVal = fc.showOpenDialog(null);
             
@@ -1082,9 +1047,7 @@ public class filePanel //extends JPanel
                file = fc.getSelectedFile();
                if (!file.exists())
                {
-                  String error = "File does not exist!";
-                  JOptionPane.showMessageDialog(null, error, "Invalid Input",
-                                                JOptionPane.ERROR_MESSAGE);
+                  ShowError( "File does not exist! : " + filename );
                   return;
                }
                //else
@@ -1098,89 +1061,98 @@ public class filePanel //extends JPanel
             else if (returnVal == JFileChooser.ERROR_OPTION)
             {
                //System.out.println("Error with file chooser.");
-               JOptionPane.showMessageDialog( null, 
-                                             "Error opening file", 
-                                             "Error Opening File!", 
-                                              JOptionPane.ERROR_MESSAGE);
+               ShowError( "Error opening file: " + filename );
                return;
             }
             
             if (e.getSource() == evFileButton && file != null)
             {
                long file_size = file.length();
-               if ( file_size % 8 != 0 )//|| file.toString().indexOf(".dat") < 0)
+               if (file_size % 8 != 0 ) //|| file.toString().indexOf(".dat")<0)
                {
                   evFileName.setText("");
                   availableEvents.setText("");
                   firstEvent.setText("");
                   eventsToLoad.setText("");
                   eventsToShow.setText("");
-                  
-                  String error = file.getName() + "is not an event file";
-                  JOptionPane.showMessageDialog( null, 
-                                                 error, 
-                                                "Error", 
-                                                 JOptionPane.ERROR_MESSAGE);
+                  ShowError( file.getName() + "is not an event file" );
                }
                else
                {
                   setEventData(file);
-                 
-                  Datafilename =file.getPath();
-                
+                  Datafilename = file.getPath();
                }
             }
             else if (e.getSource() == detFileButton)
             {
-               //if ( file.toString().indexOf("grid") < 0)
-               //{
-               //   String error = file.getName() + "is not an event file";
-               //   JOptionPane.showMessageDialog(null, error, "Error", 
-               //                                 JOptionPane.ERROR_MESSAGE);
-               //}
-               //else
-               //{
-                  detFileName.setText(file.getPath());
-                  Detfilename = detFileName.getText();
-               //}
+               detFileName.setText(file.getPath());
+               detcal_filename = detFileName.getText().trim();
             }
             else if (e.getSource() == incFileButton)
             {
                incFileName.setText(file.getPath());
-               Incfilename = incFileName.getText();
+               inc_spec_filename = incFileName.getText().trim();
             }
             else if (e.getSource() == detEffFileButton)
             {
                detEffFileName.setText(file.getPath());
-               DetEfffilename = detEffFileName.getText();
+               DetEfffilename = detEffFileName.getText().trim();
             }
             else if (e.getSource() == bankFileButton)
             {
                bankFileName.setText(file.getPath());
-               Bankfilename_l = bankFileName.getText();
+               bank_filename = bankFileName.getText().trim();
             }
             else if (e.getSource() == IDmapFileButton)
             {
                IDmapFileName.setText(file.getPath());
-               IDMapfilename_l = IDmapFileName.getText();
+               idmap_filename = IDmapFileName.getText().trim();
             }
             else if (e.getSource() == matFileButton)
             {
-               //if (file.toString().indexOf("mat") < 0)
-               //{
-               //   String error = file.getName() + "is not a matrix file";
-               //   JOptionPane.showMessageDialog(null, error, "Error", 
-               //                                 JOptionPane.ERROR_MESSAGE);
-               //}
-               //else
-               //{
-                  matFileName.setText(file.getPath());
-                  Matfilename = matFileName.getText();
-               //}
+               matFileName.setText(file.getPath());
+               Matfilename = matFileName.getText().trim();
             }
          }
       }
    }
+
+
+   /**
+    *  Check that the specified file exists and can be read.  If NOT, 
+    *  popup an error dialog with the specified message.
+    *
+    *  @param filename The name of the file to check
+    *  @param messge   The error message to display if the file
+    *                  can't be read.
+    *  @return true if the file exists and is readable, false otherwise
+    */
+   private boolean CheckFileExists( String filename, String message )
+   {
+     try
+     {
+       FileUtil.CheckFile( filename );
+     }
+     catch (Exception ex)
+     {
+       ShowError( message + filename );
+       return false;
+     }
+     return true;
+   }
+
+
+   /**
+    *  Pop up an error dialog box with the specified message
+    */
+   private void ShowError( String message )
+   {
+     JOptionPane.showMessageDialog( null,
+                                    message,
+                                   "Error",
+                                    JOptionPane.ERROR_MESSAGE);
+   }
+
    
    /**
     * Sends a message to the message center
@@ -1194,7 +1166,6 @@ public class filePanel //extends JPanel
                                      value,
                                      true,
                                      true );
-      
       message_center.send( message );
    }
    
