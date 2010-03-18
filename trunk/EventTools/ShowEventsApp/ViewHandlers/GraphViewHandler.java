@@ -126,11 +126,6 @@ abstract public class GraphViewHandler implements IReceiveMessage,
       else
          display_frame.getContentPane().add(place_holder_panel);
 
-      display_frame.setVisible(true);
-      display_frame.setBounds( location.x,
-                               location.y,
-                               (int)(size.getWidth()),
-                               (int)(size.getHeight()) );
       JMenuBar menBar = new JMenuBar();
       JMenu opts = new JMenu("Options");
       menBar.add(opts);
@@ -155,6 +150,12 @@ abstract public class GraphViewHandler implements IReceiveMessage,
       opts.add( Help );
       
       display_frame.setJMenuBar( menBar );
+      display_frame.setBounds( location.x,
+                               location.y,
+                               (int)(size.getWidth()),
+                               (int)(size.getHeight()) );
+  
+      WindowShower.show( display_frame );
       
    }
 
