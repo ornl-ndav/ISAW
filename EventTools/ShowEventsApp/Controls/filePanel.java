@@ -824,6 +824,18 @@ public class filePanel //extends JPanel
          return false;
       }
 
+      NumberFormat nf = NumberFormat.getInstance();
+      try
+      {
+        numAvailable = nf.parse(availableEvents.getText().trim()).longValue();
+      }
+      catch( Exception sx )
+      {
+        ShowError( "Number of Events available must be >= 0" );
+        numAvailable = 0;
+        return false;
+      }
+
       try
       {
          firstToLoad = Long.parseLong(firstEvent.getText().trim());
@@ -836,7 +848,7 @@ public class filePanel //extends JPanel
       
       try
       {
-         num_to_load = Long.parseLong(eventsToLoad.getText().trim());
+         num_to_load = nf.parse(eventsToLoad.getText().trim()).longValue();
       }
       catch (Exception ex)
       {
@@ -846,7 +858,7 @@ public class filePanel //extends JPanel
       
       try
       {
-         num_to_show = Long.parseLong(eventsToShow.getText().trim());
+         num_to_show = nf.parse(eventsToShow.getText().trim()).longValue();
       }
       catch (Exception ex)
       {
@@ -869,16 +881,6 @@ public class filePanel //extends JPanel
         return false;
       }
 
-      try
-      {
-        numAvailable = Long.parseLong(availableEvents.getText().trim());
-      }
-      catch( Exception sx )
-      {
-        ShowError( "Number of Events available must be >= 0" );
-        numAvailable = 0;
-        return false;
-      }
       return true;
    }
    
