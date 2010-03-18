@@ -89,12 +89,14 @@ endif
 
 if useVanadium
     
-    VanDS =MakeSmoothedVanadiumSpectrum(VanEventFile,useDefFiles, DetCalFile,BankFile,MapFile,firstEvent,NEvents,false,0,0,false,"",FocAng,FocPath,MinTime,MaxTime,\
-            false,0,0,0,LogBinning,firstInt,Nbins,VanPeakFile,.01,4,10,true,.02,2,false,"",false,"",useGhost,GhostFile,NGhostIDs, NGhostsPerID)
-#MakeTimeFocusedDataSet(VanEventFile, DetCalFile,BankFile,MapFile,firstEvent,NEvents,FocAng,FocPath,MinTime,MaxTime,LogBinning,firstInt,Nbins,useGhost, NGhostIDs, NGhostsPerID)
-    VanDS = VanDS/VanEvents
+    VanDS =MakeSmoothedVanadiumSpectrum(VanEventFile,useDefFiles, DetCalFile,BankFile,MapFile,firstEvent,NEvents,false,\
+                             0,0,false,"",FocAng,FocPath,MinTime,MaxTime,false,0,0,0,LogBinning,firstInt,Nbins,VanPeakFile,\
+                            .01,4,10,true,.02,2,false,"",false,"",useGhost,GhostFile,NGhostIDs, NGhostsPerID)
+
+ 
     if useVanBack
-        VanBackDS =MakeTimeFocusedDataSet(VanBackEventfile, DetCalFile,BankFile,MapFile,firstEvent,NEvents,FocAng,FocPath,MinTime,MaxTime,LogBinning,firstInt,Nbins,useGhost,NGhostIDs, NGhostsPerID)
+        VanBackDS =MakeTimeFocusedDataSet(VanBackEventfile, DetCalFile,BankFile,MapFile,firstEvent,NEvents,FocAng,FocPath,MinTime,MaxTime,LogBinning,\
+                                          firstInt,Nbins,useGhost,NGhostIDs, NGhostsPerID)
         VanDS = VanDS - VanBackDS/VanbackEvents
 
     endif
