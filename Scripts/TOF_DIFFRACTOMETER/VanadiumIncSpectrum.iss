@@ -16,7 +16,7 @@
 
 
 $category=Macros,Instrument Type,TOF_NPD,NEW_SNS
-$title=Make Smoothed Vanadium Spectrum(PG3)
+$title=Vanadium Incident Spectra(wl))
 
 $VanEventFile    LoadFile(${Data_Directory})      Vanadium Event FileName
 $Angle           Float(24)                    New Angle of Center Detector(degrees)
