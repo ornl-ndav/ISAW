@@ -24,7 +24,7 @@
 # !	A. J. Schultz, June, 2008
 #			
 #	real mu, muR	!mu is the linear absorption coefficient,
-#			        !R is the radius of the spherical sample.
+#			!R is the radius of the spherical sample.
 #	
 # !	For each of the 19 theta values in Dwiggins (theta = 0.0 to 90.0
 # !	in steps of 5.0 deg.), the ASTAR values vs.muR were fit to a third
@@ -77,7 +77,7 @@ def absor_sphere(smu, amu, radius, twoth, wl):
 
     frac = (theta%5.0)/5.0
 
-    astar = astar1*(1-frac) + astar2*frac		# astar is the correction
+    astar = astar1*(1-frac) + astar2*frac	# astar is the correction
 
     trans = 1.0/astar	                        # trans is the transmission
                                                 # trans = exp(-mu*tbar)
