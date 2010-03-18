@@ -37,7 +37,7 @@ def readrefl_SNS(input, eof, nrun, dn, chi, phi, omega, moncnt):
 # "input" is the input peaks or integrate file which is already open.    
 # begin reading the peaks or integrate file
 
-    print eof, nrun, dn, chi, phi, omega, moncnt
+    # print eof, nrun, dn, chi, phi, omega, moncnt
 
     while True:
         lineString = input.readline()
@@ -45,8 +45,9 @@ def readrefl_SNS(input, eof, nrun, dn, chi, phi, omega, moncnt):
         lineList = lineString.split()
         # print lineList
         eof = len(lineList)
-        if eof == 0: break                    # len = 0 if EOf
-        
+        if eof == 0:                        # len = 0 if EOf
+            return nrun, dn, chi, phi, omega, moncnt, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, eof
+       
         isent = int( lineList[0] )          # test for line type
         
         if isent == 1:
@@ -85,14 +86,13 @@ def readrefl_SNS(input, eof, nrun, dn, chi, phi, omega, moncnt):
             
             break
 
+            
+            
 # finished
     # return nrun, dn, chi, phi, omega, moncnt,\    0 -> 5
         # h, k, l, col, row, chan, L2, twoth,\      6 -> 13
         # az, wl, dsp, ipkobs, inti, sigi, reflag\ 14 -> 20
         # eof                                      21
     
-    print "return a peak:"    
-    return nrun, dn, chi, phi, omega, moncnt,\
-        h, k, l, col, row, chan, L2, twoth,\
-        az, wl, dsp, ipkobs, inti, sigi, reflag,\
-        eof
+    # print "return a peak:"    
+    return nrun, dn, chi, phi, omega, moncnt, h, k, l, col, row, chan, L2, twoth, az, wl, dsp, ipkobs, inti, sigi, reflag, eof
