@@ -9,9 +9,9 @@ public class LoadEventsCmd
    private String bankFile;
    private String IDmapFile;
    private String matFile;
-   private float  AbsorptionRadius;
-   private float  TotalAbsorption;
-   private float  AbsorptionTrue;
+   private float  absorption_radius;
+   private float  absorption_smu;
+   private float  absorption_amu;
    private float  maxQValue;
    private long   availableEvents;
    private long   firstEvent;
@@ -19,7 +19,27 @@ public class LoadEventsCmd
    private long   eventsToShow;
    private int    numThreads;
    private float  scale_factor;
-   
+
+   /**
+    *  Constructor 
+    * @param eventFile    The name of the file to load 
+    * @param detFile      The detectorFile(DETCAL)
+    * @param specFile     The name of the spec File
+    * @param detEffFile   The name of the detector efficiency file private 
+    * @param bankFile     The name of the file with bank vs pixel_id's
+    * @param IDMapFile    The name of the file that maps DAS ID's to NeXus ID's
+    * @param matFile      The name of a matrix file
+    * @param radius       The radius for the absorption correction
+    * @param smu          The total scattering for absorption correction
+    * @param amu          True absorption at lambda = 1.8 Angstoms
+    * @param maxQValue    The maximum Q value to load
+    * @param availableEvents The number of events in the file
+    * @param firstEvent      The first event to load
+    * @param eventsToLoad    The number of events to load
+    * @param nEventsToShow   The number of events to show in the 3D view
+    * @param numThreads      The number of theads to use when loading the file
+    * @param scale_factor    1/protons on target, or -1 if not available
+    */
    public LoadEventsCmd( String eventFile, 
                          String detFile,
                          String specFile, 
@@ -27,9 +47,9 @@ public class LoadEventsCmd
                          String bankFile,
                          String IDmapFile,
                          String matFile, 
-                         float  AbsorptionRadius,
-                         float  TotalAbsorption,
-                         float  AbsorptionTrue,
+                         float  radius,
+                         float  smu,
+                         float  amu,
                          float  maxQValue,
                          long   availableEvents, 
                          long   firstEvent, 
@@ -43,56 +63,20 @@ public class LoadEventsCmd
       this.specFile        = specFile;
       this.detEffFile      = detEffFile;
       
-      this.bankFile        = bankFile ;
-      this.IDmapFile       = IDmapFile ;
-      this.matFile         = matFile;
-      this.AbsorptionRadius= AbsorptionRadius;
-      this.TotalAbsorption = TotalAbsorption;
-      this.AbsorptionTrue  = AbsorptionTrue;
-      this.maxQValue       = maxQValue;
-      this.availableEvents = availableEvents;
-      this.firstEvent      = firstEvent;
-      this.eventsToLoad    = eventsToLoad;
-      this.eventsToShow    = eventsToShow;
-      this.numThreads      = numThreads;
-      this.scale_factor    = scale_factor;
+      this.bankFile         = bankFile ;
+      this.IDmapFile        = IDmapFile ;
+      this.matFile          = matFile;
+      this.absorption_radius= radius;
+      this.absorption_smu   = smu;
+      this.absorption_amu   = amu;
+      this.maxQValue        = maxQValue;
+      this.availableEvents  = availableEvents;
+      this.firstEvent       = firstEvent;
+      this.eventsToLoad     = eventsToLoad;
+      this.eventsToShow     = eventsToShow;
+      this.numThreads       = numThreads;
+      this.scale_factor     = scale_factor;
    }
-
-   public LoadEventsCmd( String eventFile, 
-            String detFile,
-            String specFile, 
-            String detEffFile,  
-            String bankFile,
-            String IDmapFile,
-            String matFile, 
-            float  AbsorptionRadius,
-            float  TotalAbsorption,
-            float  AbsorptionTrue,
-            float  maxQValue,
-            long   availableEvents, 
-            long   firstEvent, 
-            long   eventsToLoad, 
-            long   eventsToShow,
-            int    numThreads)
-{
-      this( eventFile, 
-             detFile,
-            specFile, 
-            detEffFile,
-            bankFile,
-            IDmapFile,
-             matFile, 
-            AbsorptionRadius,
-            TotalAbsorption,
-            AbsorptionTrue,
-            maxQValue,
-            availableEvents, 
-            firstEvent, 
-            eventsToLoad, 
-            eventsToShow,
-            numThreads,
-            -1f);
-}
 
    public String getEventFile()
    {
@@ -154,26 +138,26 @@ public class LoadEventsCmd
    
    public float getAbsorptionRadius()
    {
-      if (Float.isNaN( AbsorptionRadius )|| AbsorptionRadius < 0 )
+      if (Float.isNaN( absorption_radius )|| absorption_radius < 0 )
         return Float.NaN;
 
-      return AbsorptionRadius;
+      return absorption_radius;
    }
 
-   public float getTotalAbsorption()
+   public float getAbsorptionSMU()
    {
-      if (Float.isNaN( TotalAbsorption )|| TotalAbsorption < 0 )
+      if (Float.isNaN( absorption_smu )|| absorption_smu < 0 )
         return Float.NaN;
 
-      return TotalAbsorption;
+      return absorption_smu;
    }
 
-   public float getAbsorptionTrue()
+   public float getAbsorptionAMU()
    {
-      if (Float.isNaN( AbsorptionTrue )|| AbsorptionTrue < 0 )
+      if (Float.isNaN( absorption_amu )|| absorption_amu < 0 )
         return Float.NaN;
 
-      return AbsorptionTrue;
+      return absorption_amu;
    }
 
 
@@ -225,8 +209,8 @@ public class LoadEventsCmd
              "\nID map File : " + getIDMapFile()      +
              "\nMatrix File : " + getMatFile()         +
              "\nAbsorpRadius: " + getAbsorptionRadius()+
-             "\nTotalAbsorp : " + getTotalAbsorption() +
-             "\nAbsorpTrue  : " + getAbsorptionTrue()  +
+             "\nTotalAbsorp : " + getAbsorptionSMU() +
+             "\nAbsorpTrue  : " + getAbsorptionAMU()  +
              "\nMax Q Value : " + getMaxQValue()         +
              "\nNum Events  : " + getAvailableEvents() +
              "\nFirst Event : " + getFirstEvent()      +
