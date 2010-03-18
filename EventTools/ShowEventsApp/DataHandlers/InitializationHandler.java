@@ -170,8 +170,8 @@ public class InitializationHandler implements IReceiveMessage
                                   load_file_cmd.getScaleFactor(),
                                   load_file_cmd.getMaxQValue(),
                                   load_file_cmd.getAbsorptionRadius(),
-                                  load_file_cmd.getTotalAbsorption(),
-                                  load_file_cmd.getAbsorptionTrue()  );
+                                  load_file_cmd.getAbsorptionSMU(),
+                                  load_file_cmd.getAbsorptionAMU()  );
 
       InitData( new_inst_cmd );
 
@@ -245,8 +245,8 @@ public class InitializationHandler implements IReceiveMessage
                    -1,
                    UDPcmd.getMaxQValue(),
                    UDPcmd.getAbsorptionRadius(),
-                   UDPcmd.getTotalAbsorption(),
-                   UDPcmd.getAbsorptionTrue()  );
+                   UDPcmd.getAbsorptionSMU(),
+                   UDPcmd.getAbsorptionAMU()  );
 
        (new InitDataThread( new_inst_cmd )).start();
        
