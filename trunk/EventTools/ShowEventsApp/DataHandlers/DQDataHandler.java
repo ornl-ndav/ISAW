@@ -91,7 +91,7 @@ public class DQDataHandler implements IReceiveMessage
 
   private float[][] Q_values,    // these switch to point to "plain" or 
                     D_values;    // or normailzed arrays, depending on
-                                 // wheter graphs are to be normalized 
+                                 // whether graphs are to be normalized 
                                  // to the incident spectrum.
 
   /**
@@ -573,8 +573,6 @@ public class DQDataHandler implements IReceiveMessage
          d_binner = getDBinner( isLog );
          scale_factor = 0;
          init_arrays();
-         
-         
       }
       
       return false;
