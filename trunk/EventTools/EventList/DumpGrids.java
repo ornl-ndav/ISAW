@@ -42,8 +42,6 @@ import gov.anl.ipns.Util.SpecialStrings.ErrorString;
 import java.util.*;
 import java.io.*;
 
-import org.nexusformat.NexusFile;
-
 import DataSetTools.retriever.*;
 import DataSetTools.dataset.*;
 import DataSetTools.operator.Generic.TOF_SCD.*;
@@ -276,7 +274,6 @@ public class DumpGrids
          if ( nex.getNodeClass( ).equals( "NXgeometry" ) )
          {
             if ( nex.getNodeName( ).equals( "geometry" ) )
-
                geomNode = nex;
 
          } else if ( nex.getNodeClass( ).equals( "SDS" ) )
