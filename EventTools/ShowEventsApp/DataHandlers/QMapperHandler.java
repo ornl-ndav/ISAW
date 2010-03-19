@@ -65,31 +65,11 @@ public class QMapperHandler implements IReceiveMessage
 {
   private MessageCenter    message_center;
   private String           instrument_name;
-  private String           det_file;
   private SNS_Tof_to_Q_map mapper;
-  private String isaw_home = System.getProperty( "ISAW_HOME" ) + "/";
-  private float            scale_factor;
 
   public QMapperHandler( MessageCenter message_center )
   {
     instrument_name = "UNSPECIFIED";
-    det_file = "NONE";
-/*
-    det_file  = isaw_home + "InstrumentInfo/SNS/" + instrument_name + "/"+
-                       instrument_name + ".DetCal";
-    scale_factor = -1;
-    
-    try
-    {
-       mapper = new SNS_Tof_to_Q_map( det_file, null, instrument_name );
-    }
-    catch ( Exception ex )
-    {
-      System.out.println( "ERROR: Could not find default detector\n" +
-                          "position info for " + instrument_name );
-      System.out.println( "File is not in " + det_file );
-    }
-*/
     this.message_center = message_center;
     message_center.addReceiver( this, Commands.INIT_NEW_INSTRUMENT );
     message_center.addReceiver( this, Commands.MAP_EVENTS_TO_Q );
@@ -115,49 +95,38 @@ public class QMapperHandler implements IReceiveMessage
       }
 
       SetNewInstrumentCmd cmd = (SetNewInstrumentCmd)obj;
+
       String new_instrument = cmd.getInstrumentName();
-      scale_factor = cmd.getScaleFactor();
-
-                                         // if this is a new instrument, get
-                                         // a new mapper.
-      if ( instrument_name == null ||
-           !new_instrument.equals( instrument_name ) )
+      String det_file  = cmd.getDetectorFileName();
+      String bank_file = cmd.getBankFileName();
+      String map_file  = cmd.getIDMapFileName();
+      String spec_file = cmd.getIncidentSpectrumFileName();
+      try 
+      { 
+        start  = System.nanoTime();
+        mapper = new SNS_Tof_to_Q_map( new_instrument,
+                                       det_file, 
+                                       bank_file,
+                                       map_file,
+                                       spec_file,
+                                       cmd.getAbsorptionRadius(),
+                                       cmd.getTotalAbsorption(),
+                                       cmd.getAbsorptionTrue()   );
+        run_time = (System.nanoTime() - start)/1.0e6;
+        instrument_name = new_instrument;
+        System.out.printf("Made Q mapper in %5.1f ms\n", run_time  );
+      }
+      catch ( Exception ex )
       {
-        det_file = cmd.getDetectorFileName();
-
-        if ( det_file == null )
-        {
-          det_file = isaw_home + "InstrumentInfo/SNS/" + new_instrument +"/"+
-                     new_instrument + ".DetCal";
-        }
-
-        String spec_file = cmd.getIncidentSpectrumFileName();
-        System.out.println("Spectrum file from cmd = " + spec_file );
-        try 
-        { 
-          start  = System.nanoTime();
-          mapper = new SNS_Tof_to_Q_map( new_instrument,
-                                         det_file, 
-                                         cmd.getBankFileName( ),
-                                         cmd.getIDMapFileName( ),
-                                         spec_file,
-                                         cmd.getAbsorptionRadius(),
-                                         cmd.getTotalAbsorption(),
-                                         cmd.getAbsorptionTrue()   );
-          run_time = (System.nanoTime() - start)/1.0e6;
-          instrument_name = new_instrument;
-          System.out.printf("Made Q mapper in %5.1f ms\n", run_time  );
-        }
-        catch ( Exception ex )
-        {
-          Util.sendError( "ERROR: Could not make Q mapper from: "+ det_file +
-                          " with Spectrum File: " + spec_file +
-                          " for instrument name: " + new_instrument );
-          message_center.send( new Message( Commands.LOAD_FAILED,
-                                            null, true, true ) );
-          ex.printStackTrace();
-          return false;
-        }
+        Util.sendError( "ERROR: Could not make Q mapper from: "+ det_file +
+                        "\n with Bank File: " + bank_file +
+                        "\n with ID Map File: " +map_file +
+                        "\n with Spectrum File: " + spec_file +
+                        "\n for instrument name: " + new_instrument );
+        message_center.send( new Message( Commands.LOAD_FAILED,
+                                          null, true, true ) );
+        ex.printStackTrace();
+        return false;
       }
 
       mapper.setMaxQ( cmd.getMaxQValue() );

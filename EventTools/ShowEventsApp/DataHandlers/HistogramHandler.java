@@ -54,7 +54,6 @@ import EventTools.EventList.SNS_Tof_to_Q_map;
 import EventTools.ShowEventsApp.Command.Commands;
 import EventTools.ShowEventsApp.Command.SelectionInfoCmd;
 import EventTools.ShowEventsApp.Command.SetNewInstrumentCmd;
-import EventTools.ShowEventsApp.Command.LoadEventsCmd;
 import EventTools.ShowEventsApp.Command.FindPeaksCmd;
 import EventTools.ShowEventsApp.Command.Util;
 
@@ -83,7 +82,6 @@ public class HistogramHandler implements IReceiveMessage
   private Histogram3D   histogram = null;
   private int           num_bins;
   private double        max_hist_value_sent;
-  private long          max_num_added_sent;
   private long          lastTimeShown;
   private boolean       receiving_events;
   private int           updates_since_events;
@@ -98,7 +96,6 @@ public class HistogramHandler implements IReceiveMessage
     this.current_instrument = SNS_Tof_to_Q_map.SNAP;
 
     this.max_hist_value_sent = 0;
-    this.max_num_added_sent = 0;
 
     this.message_center      = message_center;
     this.view_message_center = view_message_center;
@@ -184,14 +181,13 @@ public class HistogramHandler implements IReceiveMessage
       return false;
     }
 
-    else if (  message.getName().equals(Commands.INIT_HISTOGRAM) )
+    else if ( message.getName().equals(Commands.INIT_HISTOGRAM) )
     {
       boolean set_ok = SetNewInstrument( message.getValue() );
       if ( set_ok )
       {
         receiving_events = false;  // no timed update, until we get more events
         max_hist_value_sent = 0;
-        max_num_added_sent  = 0;
         Message init_hist_done = new Message( Commands.INIT_HISTOGRAM_DONE,
                                               null,
                                               true,
@@ -352,13 +348,6 @@ public class HistogramHandler implements IReceiveMessage
     {
       Util.sendError("ERROR: SET_NEW_INSTRUMENT name is " + inst );
       return false;
-    }
-
-    if ( inst.equals( current_instrument ) )
-    {
-      histogram.clear();
-      Util.sendInfo( "Histogram set up for " + current_instrument );
-      return true;
     }
 
     if ( inst.equals(SNS_Tof_to_Q_map.SNAP) ||

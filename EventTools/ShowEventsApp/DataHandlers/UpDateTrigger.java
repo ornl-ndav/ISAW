@@ -85,8 +85,10 @@ public class UpDateTrigger implements IReceiveMessage
  */
    public static void main(String[] args)
    {
+     /*
      MessageCenter messageCenter = new MessageCenter("XXX");
      UpDateTrigger trig = new UpDateTrigger( messageCenter);
      TimedTrigger t = new TimedTrigger( messageCenter, 2500);
+     */
    }
 }

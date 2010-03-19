@@ -39,7 +39,7 @@ import gov.anl.ipns.Parameters.*;
 
 import java.awt.GridLayout;
 import java.text.NumberFormat;
-import java.text.ParseException;
+
 import java.awt.event.*;
 import java.io.File;
 

@@ -38,7 +38,6 @@ package EventTools.ShowEventsApp.DataHandlers;
 import java.util.Vector;
 
 import gov.anl.ipns.Util.Numeric.ClosedInterval;
-import gov.anl.ipns.Util.SpecialStrings.ErrorString;
 import DataSetTools.dataset.*;
 import DataSetTools.util.SharedData;
 import Operators.Generic.Save.SaveASCII_calc;
