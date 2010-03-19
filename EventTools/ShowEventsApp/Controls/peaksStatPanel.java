@@ -225,6 +225,9 @@ class MyThread extends Thread implements ActionListener
          try{
             
          Peak_new_IO.WritePeaks_new(filename, Peaks, false);
+
+         JOptionPane.showMessageDialog( null , 
+               "This option will disappear. Use Menu bar" );
          
          }catch(Exception ss)
          {
