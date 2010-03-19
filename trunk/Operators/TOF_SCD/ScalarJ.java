@@ -128,9 +128,6 @@ import java.util.Vector;
 /**
  * Class designed to analyze cell scalars from BLIND to determine Laue
  * symmetry. Originally written by R. Goyette.
- *  Most of the base code is deprecated.  It uses ScalarJ_base.scalar
- *  This is a shell around ScalarJ_base starting from a file with the UB
- *  matrix instead of the UB matrix.
  */
 public class ScalarJ extends GenericTOF_SCD{
   private static final boolean DEBUG=false;
@@ -156,13 +153,11 @@ public class ScalarJ extends GenericTOF_SCD{
   private double[] sig     = new double[6];
   private double[] sigsq   = new double[6];
   private double[][] UB    = new double[3][3];
-  private int nequal= 0;//deprecated
+  private int nequal= 0;
   private int nchoice= NO_RESTRICTION;
-  private int ncell= 0;//deprecated
-  private boolean freePass=false;//deprecated
+  private int ncell= 0;
+  private boolean freePass=false;
   private int npick= 0;
-  //deprecated
-  
   private static String [] cell = {"P, CUBIC", "F, CUBIC", "R, HEXANONAL",
                         "I, CUBIC", "I, TETRAGONAL", "I, ORTHORHOMBIC",
                         "P, TETRAGONAL", "P, HEXAGONAL", "C, ORTHORHOMBIC",
@@ -231,7 +226,7 @@ public class ScalarJ extends GenericTOF_SCD{
                             1., 0., 0.,   0., 1., 0.,   0., 0., 1. };
 
   private static Vector choices=null;
-// end deprecated
+
 
   /**
    * Construct an operator with a default parameter list.
@@ -342,12 +337,12 @@ public class ScalarJ extends GenericTOF_SCD{
     
     // read in the blind logfile
     matfile=FilenameUtil.setForwardSlash(matfile);
-   {
+    {
       ErrorString error=readScalars(matfile);
       if(error!=null) return error;
     }
 
-   /* // initialize all of the other parameters
+    // initialize all of the other parameters
     if(!init())
       return new ErrorString("Failed to initialize calculation");
 
@@ -359,9 +354,7 @@ public class ScalarJ extends GenericTOF_SCD{
 
     // print the result
     printResult();
-*/
-    float[][] transf =ScalarJ_base.scalar( 
-          LinearAlgebra.double2float( UB) , (float)delta , choice , logBuffer );
+
     // print the results to the log file
     int index=matfile.lastIndexOf("/");
     if(index>=0){
@@ -777,7 +770,7 @@ public class ScalarJ extends GenericTOF_SCD{
   private boolean compare(double a, double b, double sqDa, double sqDb){
     return (abs(a-b)<(3.*sqrt(sqDa+sqDb)));
   }
-//deprecated
+
   /**
    * This runs if the following conditions exist:
    * <UL><LI>looking for symmetry (nchoice=SYMMETRIC)</LI>
@@ -871,7 +864,7 @@ public class ScalarJ extends GenericTOF_SCD{
         appendMatrix(14,6);
     }
   }  // ==================== end of mark01
-//deprecated
+
   /**
    * This runs if the following conditions exist:
    * <UL><LI>has a free pass from mark01</LI>
@@ -952,7 +945,6 @@ public class ScalarJ extends GenericTOF_SCD{
     
   }  // ==================== end of mark02
 
-//deprecated
   /**
    * This runs if the following conditions exist:
    * <UL><LI>has a free pass from mark02</LI>
@@ -1029,8 +1021,6 @@ public class ScalarJ extends GenericTOF_SCD{
     }
   }  // ==================== end of mark03
 
-  
-//deprecated
   /**
    * This runs if the following conditions exist:
    * <UL><LI>has a free pass from mark03</LI>
@@ -1168,7 +1158,6 @@ public class ScalarJ extends GenericTOF_SCD{
     }
   }  // ==================== end of mark04
 
-//deprecated
   /**
    * Prints the results of the search to STDOUT.
    */
@@ -1266,7 +1255,6 @@ public class ScalarJ extends GenericTOF_SCD{
 
   }  // ==================== end of printResult
 
-//deprecated
   /**
    * Put a new set of indices for a transformation matrix into the
    * list
