@@ -214,7 +214,7 @@ public class ScalarHandlePanel implements IReceiveMessage
    {
 
       JPanel panel = new JPanel( new BorderLayout( ) );
-      panel.add( new JLabel( "Restrict Shown to" ) , BorderLayout.NORTH );
+      panel.add( new JLabel( "Lattice Type(Conventional Cell)" ) , BorderLayout.NORTH );
       JPanel choices = new JPanel( new GridLayout( 7 , 1 ) );
       for( int i = 0 ; i < 7 ; i++ )
       {
@@ -240,7 +240,7 @@ public class ScalarHandlePanel implements IReceiveMessage
 
       JPanel CenteringPanel = new JPanel( new GridLayout( 2 , 2 ) );
       CenteringPanel.setBorder( new TitledBorder( new LineBorder( Color.black ,
-            1 ) , "Centering" ) );
+            1 ) , "Centering(Conventional Cell)" ) );
       for( int i = 0 ; i < 4 ; i++ )
       {
          Centerings[i] = new JCheckBox( CentChoiceStrings[i] , true );
@@ -251,7 +251,7 @@ public class ScalarHandlePanel implements IReceiveMessage
 
       JPanel SidesPanel = new JPanel( new GridLayout( 2 , 2 ) );
       SidesPanel.setBorder( new TitledBorder(
-            new LineBorder( Color.black , 1 ) , "Sides" ) );
+            new LineBorder( Color.black , 1 ) , "Sides(Reduced Cell)" ) );
       for( int i = 4 ; i < 8 ; i++ )
       {
          Centerings[i] = new JCheckBox( CentChoiceStrings[i] , true );
@@ -615,6 +615,7 @@ public class ScalarHandlePanel implements IReceiveMessage
          
          Res += "a <>b";
       
+      
       if ( lineNum < 9 || ( lineNum > 17 && lineNum <= 25 ) )
          
          Res += "=c";
@@ -624,6 +625,7 @@ public class ScalarHandlePanel implements IReceiveMessage
          Res += "<>c";
       
 
+      Res +="(Red. Cell)";
       Res += ut.eol( );
 
       double[] LatticeParams = lattice_calc.LatticeParamsOfUB( UB1 );
