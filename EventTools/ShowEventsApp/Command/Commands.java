@@ -113,6 +113,8 @@ public class Commands
 
   public static final String WRITE_PEAK_FILE = "WRITE_PEAK_FILE";
 
+  public static final String SHOW_PEAK_FILE = "SHOW_PEAK_FILE";
+
   public static final String CHANGE_PANEL = "CHANGE_PANEL";
   public static final String SET_COLOR_SCALE = "SET_COLOR_SCALE";
   public static final String SET_DRAWING_OPTIONS = "SET_DRAWING_OPTIONS";
