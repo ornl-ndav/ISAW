@@ -389,8 +389,6 @@ public class ScalarJ_base extends GenericTOF_SCD implements
    *     P - Monoclinic, P - Triclinic, R11 == R22 == R33, R11 == R22 != R33,
    *     R11 == R33 != R22, R11 != R22 != R33
    * @param logBuffer  buffer containing the output
-  }
-   * @param logBuffer  buffer of output
    * 
    * @return  The transformation( highest one)
    */
