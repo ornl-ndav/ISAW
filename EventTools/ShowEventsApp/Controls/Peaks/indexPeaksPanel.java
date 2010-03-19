@@ -610,10 +610,16 @@ public class indexPeaksPanel extends    JPanel  implements IReceiveMessage
                         Commands.WRITE_ORIENTATION_MATRIX , lastWriteFileName ,
                         false ) );
             }
+
+            JOptionPane.showMessageDialog( null , 
+                  "This option will disappear. Use Menu bar" );
          }
          else if( cmd.startsWith( "Show" ) )
          {
             sendMessage( Commands.SHOW_ORIENTATION_MATRIX , "" );
+
+            JOptionPane.showMessageDialog( null , 
+                  "This option will disappear. Use Menu bar" );
          }
          else if( cmd.startsWith( "Matrix" ) )
          {

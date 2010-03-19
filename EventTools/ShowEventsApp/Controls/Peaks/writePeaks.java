@@ -117,6 +117,8 @@ public class writePeaks extends JPanel
             {
                String file_name = fc.getSelectedFile().toString();
                sendMessage(Commands.WRITE_PEAK_FILE, file_name);
+               JOptionPane.showMessageDialog( null , 
+                     "This option will disappear. Use Menu bar" );
             }
          }
       }
