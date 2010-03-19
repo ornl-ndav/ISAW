@@ -92,7 +92,6 @@ import DataSetTools.operator.Generic.TOF_SCD.*;
 //import DataSetTools.util.FilenameUtil;
 import DataSetTools.util.SharedData;
 import gov.anl.ipns.MathTools.LinearAlgebra;
-import gov.anl.ipns.MathTools.lattice_calc;
 import gov.anl.ipns.Parameters.ArrayPG;
 import gov.anl.ipns.Parameters.ChoiceListPG;
 import gov.anl.ipns.Parameters.FloatPG;
@@ -329,120 +328,33 @@ public class ScalarJ_base extends GenericTOF_SCD implements
     if(!parseChoice(choice))
       return new ErrorString("Error undestanding restriction");
     
-    boolean close = false;
-    if(SharedMessages.getLogStream( ) == null)
-    {
-       SharedMessages.openLog( 
-             gov.anl.ipns.Util.File.FileIO.CreateExecFileName( System.getProperty( "user.home","" ) , 
-                      "ISAW/tmp/scalar.log" , false) );
-       close = true;
-    }
-
-/*    // read in the blind logfile
+    // read in the blind logfile
    
     {
-       scalars = new double[6];
-      ErrorString error=readScalars(UB1,scalars);
+      ErrorString error=readScalars(UB1);
       if(error!=null) return error;
     }
+
     // initialize all of the other parameters
     if(!init())
       return new ErrorString("Failed to initialize calculation");
 
     // do the mystery calculation
-    int[] ii = new int[1];
-    ii[0]=i;
-    freePass = mark01(  nequal, nchoice,scalars,  sigsq,  sig,
-           k, l, ii);
-    freePass = mark02( nequal, freePass, nchoice,scalars,  sigsq,  sig,
-          k, l, ii);
-    freePass = mark03(nequal, freePass, nchoice,scalars,  sigsq,  sig,
-          k, l, ii);
-     mark04(nequal, freePass, nchoice,scalars,  sigsq,  sig,
-          k, l, ii);
+    mark01();
+    mark02();
+    mark03();
+    mark04();
 
     // print the result
-    UB = LinearAlgebra.float2double( UB1 );
-    transf = printResult(k, l,  ii[0], logBuffer,
-          scalars, nchoice, ncell, UB);
- */
-    float[][] transf = scalar( UB1,(float)delta,choice,logBuffer);
-    if( close) SharedMessages.closeLog( );
+    printResult();
+
     //return the logfile name and print a message
     //SharedData.addmsg("See Status pane for result");
     if( transf != null)
-      return gov.anl.ipns.Util.Sys.StringUtil.toString(LinearAlgebra.getTranspose(transf));
+      return gov.anl.ipns.Util.Sys.StringUtil.toString(LinearAlgebra.getTranspose(
+                               LinearAlgebra.double2float(transf)));
     else
       return "[[1,0,0],[0,1,0],[0,0,1]]";
-  }
-  
-  /**
-   * Returns the transformation and information and prints out information
-   * to log file and to console.
-   * 
-   * @param UB    The UB matrix
-   * @param delta   error value
-   * @param nchoice    The choice in choice list(starts at 0=No Restriction,
-   *    Highest Symmetry,P - Cubic,F - Cubic,R - Hexagonal,I - Cubic,
-   *     I - Tetragonal,I - Orthorombic,P - Tetragonal,P - Hexagonal,
-   *     C - Orthorombic, C - Monoclinic,F - Orthorombic,P - Orthorombic,
-   *     P - Monoclinic, P - Triclinic, R11 == R22 == R33, R11 == R22 != R33,
-   *     R11 == R33 != R22, R11 != R22 != R33
-   * @param logBuffer  buffer containing the output
-   * 
-   * @return  The transformation( highest one)
-   */
-  public static float[][] scalar( float[][]UB , float delta , int nchoice, 
-        StringBuffer logBuffer)
-  {
-     double[] scalars =new double[6];
-     readScalars( UB, scalars);
-     int choicen = NO_RESTRICTION;
-     int ncell = 0;
-     int nequal = 0;
-
-     if(nchoice==0){ // no restrictions
-       choicen=NO_RESTRICTION;
-     }else if(nchoice==1){ // highest symmetry
-       choicen=HIGHEST_SYMMETRY;
-     }else if( nchoice>1 && nchoice<16 ){ // choose symmetry type
-       choicen=KNOWN_CELL;
-       ncell=nchoice-1;
-     }else if( nchoice>15 && nchoice<20 ){ // choice symmetric scalar equalities
-       choicen=SYMMETRIC;
-       nequal=nchoice-15;
-     }else{
-       return null;
-     }
-;
-  // initialize all of the other parameters
-     int[] k,l;
-     k = new int[60];
-     l = new int[60];
-     double[]LatParams = new double[6];
-     double[] sig = new double[6];
-     double[]  sigsq = new double[6];
-     if(!init(  scalars, delta,k, l, 
-           LatParams,sig,  sigsq, logBuffer))
-       return null;
-     boolean freePass = false;
-     int[] ii = new int[1];
-     ii[0]=1;
-     // do the mystery calculation
-    freePass = mark01(  nequal, nchoice,scalars,  sigsq,  sig,
-           k, l, ii);
-    freePass = mark02( nequal, freePass, nchoice,scalars,  sigsq,  sig,
-          k, l, ii);
-    freePass = mark03(nequal, freePass, nchoice,scalars,  sigsq,  sig,
-          k, l, ii);
-     mark04(nequal, freePass, nchoice,scalars,  sigsq,  sig,
-          k, l, ii);
-
-     // print the result
-     double[][]UBd= LinearAlgebra.float2double( UB );
-     double[][] transf = printResult(k, l,  ii[0], logBuffer,
-           scalars, choicen, ncell, UBd);
-     return LinearAlgebra.double2float( transf );
   }
 
   /**
@@ -490,7 +402,7 @@ public class ScalarJ_base extends GenericTOF_SCD implements
     choices.add("P - Orthorombic");
     choices.add("P - Monoclinic");
     choices.add("P - Triclinic");
-    choices.add("R11 == R22 == R33");//16
+    choices.add("R11 == R22 == R33");
     choices.add("R11 == R22 != R33");
     choices.add("R11 == R33 != R22");
     choices.add("R11 != R22 != R33");
@@ -554,77 +466,18 @@ public class ScalarJ_base extends GenericTOF_SCD implements
 
     return true;
   }
- 
-  private static boolean init( double[] scalars,float delta,int[]k, int[]l, 
-            double[]LatParams, double[] sig, double  sigsq[],StringBuffer logBuffer){
-    for( int i=0 ; i<60 ; i++ ){
-      k[i]=0;
-      l[i]=0;
-    }
-    double a,b,c,alpha,beta,gamma;
-
-    // lattice parameters
-    a=LatParams[0] = sqrt(scalars[0]);
-    b=LatParams[1] = sqrt(scalars[1]);
-    c=LatParams[2] = sqrt(scalars[2]);
-
-    // lattice angles
-    alpha=LatParams[3] = Math.acos(scalars[3]/(b*c));
-    beta = LatParams[4]  = Math.acos(scalars[4]/(a*c));
-    gamma = LatParams[5]= Math.acos(scalars[5]/(a*b));
-
-    {
-      int start=logBuffer.length();
-      logBuffer.append(" LATTICE PARAMETERS\n");
-      logBuffer.append(Format.real(a,10,3)+Format.real(b,10,3)+Format.real(c,10,3)+"\n");
-      logBuffer.append(Format.real(alpha*180./Math.PI,10,3)+Format.real(beta*180./Math.PI,10,3)+Format.real(gamma*180./Math.PI,10,3)+"\n");
-      logBuffer.append("\n");
-      System.out.print(logBuffer.substring(start));
-    }
-
-    sig[0] = 2.*delta*scalars[0];
-    sig[1] = 2.*delta*scalars[1];
-    sig[2] = 2.*delta*scalars[2];
-    for( int index=0 ; index<3 ; index++ )
-      sigsq[index]=sig[index]*sig[index];
-    sigsq[3]=2.*(delta*scalars[3]*delta*scalars[3])
-                              +Math.pow((b*c*Math.sin(alpha)*0.017),2);
-    sigsq[4]=2.*(delta*scalars[4]*delta*scalars[4])
-                              +Math.pow((a*c*Math.sin(beta)*0.017),2);
-    sigsq[5]=2.*(delta*scalars[5]*delta*scalars[5])
-                              +Math.pow((a*b*Math.sin(gamma)*0.017),2);
-    for( int index=3 ; index<6 ; index++ )
-      sig[index]=sqrt(sigsq[index]);
-
-    int i = 1;
-    k[i-1] = 0;
-    l[i-1] = 0;
-
-    {
-      int start=logBuffer.length();
-      logBuffer.append(" SCALARS");
-      for( int index=0 ; index<6 ; index++ ){
-        logBuffer.append(Format.real(scalars[index],10,3)
-                         +Format.real(sig[index],11,3)+"\n");
-      }
-      System.out.print(logBuffer.substring(start));
-    }
-
-    return true;
-  }
 
   /**
    * Moves information from the specified file into the scalars, r_ij.
    */
-  private static ErrorString readScalars(float[][] myUB, double[] scalars){
+  private ErrorString readScalars(float[][] myUB){
     
-    double[][] UB=LinearAlgebra.float2double(myUB);
+    this.UB=LinearAlgebra.float2double(myUB);
     // generate the scalars from it
-    double[] abc=Util.abc(UB);
+    double[] abc=Util.abc(this.UB);
     if(abc==null)
       return new ErrorString("Could not get lattice parameters from UB");
-    double[] scalars1=Util.scalars(abc);
-    System.arraycopy( scalars1,0,scalars , 0,6 );
+    scalars=Util.scalars(abc);
     if(scalars==null)
       return new ErrorString("Could not calculate scalars from "
                              +"lattice parameters");
@@ -795,7 +648,7 @@ public class ScalarJ_base extends GenericTOF_SCD implements
    * Split out the user's choice when calling the operator into all
    * the necessary values for execution.
    */
-  private  boolean parseChoice(int choice){
+  private boolean parseChoice(int choice){
     nchoice = NO_RESTRICTION;
     ncell = 0;
     nequal = 0;
@@ -856,7 +709,7 @@ public class ScalarJ_base extends GenericTOF_SCD implements
    * Compares two scalars using indices to see if they are equal
    * within uncertainties. Specify b=-1 to compare with zero.
    */
-  private static boolean compare(int a, int b, double[] scalars, double[] sigsq, double[] sig){
+  private boolean compare(int a, int b){
     if(b>0)
       return compare(scalars[a],scalars[b],sigsq[a],sigsq[b]);
     else
@@ -866,7 +719,7 @@ public class ScalarJ_base extends GenericTOF_SCD implements
   /**
    * Compares two numbers to see if they are equal within uncertainties
    */
-  private static boolean compare(double a, double b, double sqDa, double sqDb){
+  private boolean compare(double a, double b, double sqDa, double sqDb){
     return (abs(a-b)<(3.*sqrt(sqDa+sqDb)));
   }
 
@@ -879,91 +732,89 @@ public class ScalarJ_base extends GenericTOF_SCD implements
    *     automatic entrance into mark02</LI>
    * </UL>
    */
-  private static boolean mark01(  int nequal, int nchoice, double[] scalars, double[] sigsq, double[] sig,
-          int[] k, int[] l, int[] i){
+  private void mark01(){
     // are looking for symmetry OR |A|==|B|==|C|
-    if( (nchoice == SYMMETRIC) || ( compare(0,1,scalars,sigsq,sig) && compare(0,2,scalars,sigsq,sig) ) ){
+    if( (nchoice == SYMMETRIC) || ( compare(0,1) && compare(0,2) ) ){
       if(DEBUG)System.out.println("MARK01");
     }else{
-      return false;
+      return;
     }
 
     // can't look for anything other than |A|==|B|==|C|
     if (nchoice == SYMMETRIC && nequal != A_EQ_B_EQ_C){
-     
-      return true;
+      freePass=true;
+      return;
     }
 
     // BdotC=0
-    if( compare(3,-1,scalars,sigsq,sig) ){
+    if( compare(3,-1) ){
       // AdotC=0 AND AdotB=0
-      if( compare(4,-1,scalars,sigsq,sig) && compare(5,-1,scalars,sigsq,sig) )
-        i[0] = i[0]=appendMatrix(1,1,i[0],k,l);
+      if( compare(4,-1) && compare(5,-1) )
+        appendMatrix(1,1);
       // AdotC=-AdotA/2 AND AdotB=-AdotA/2
       if( compare(scalars[4],-.5*scalars[0],sigsq[4],0.25*sigsq[0])
          && compare(scalars[5],-.5*scalars[0],sigsq[5],0.25*sigsq[0]) )
-        i[0]=appendMatrix(3,2,i[0],k,l);
+        appendMatrix(3,2);
     }
 
     // BdotC=-AdotA/2
     if( compare(scalars[3],-.5*scalars[0],sigsq[3],0.25*sigsq[0]) ){
       // AdotC=BdotC AND AdotB=0
-      if( compare(4,3,scalars,sigsq,sig) && compare(5,-1,scalars,sigsq,sig) )
-        i[0]=appendMatrix(2,2,i[0],k,l);
+      if( compare(4,3) && compare(5,-1) )
+        appendMatrix(2,2);
       // AdotB=BdotC AND AdotC=0
-      if( compare(5,3,scalars,sigsq,sig) && compare(4,-1,scalars,sigsq,sig) )
-        i[0]=appendMatrix(4,2,i[0],k,l);
+      if( compare(5,3) && compare(4,-1) )
+        appendMatrix(4,2);
       // AdotC=BdotC AND AdotB=BdotC
-      if( compare(4,3,scalars,sigsq,sig) && compare(5,3,scalars,sigsq,sig) )
-        i[0]=appendMatrix(5,2,i[0],k,l);
+      if( compare(4,3) && compare(5,3) )
+        appendMatrix(5,2);
     }
 
     // BdotC==AdotA/3 AND AdotC=BdotC AND AdotB=BdotC
     if( compare(scalars[3],-scalars[0]/3.,sigsq[3],sigsq[0]/9.)
-        && compare(4,3,scalars,sigsq,sig) && compare(5,3,scalars,sigsq,sig) ){
-      i[0]=appendMatrix(8,4,i[0],k,l);
+        && compare(4,3) && compare(5,3) ){
+      appendMatrix(8,4);
     }
 
     // BdotC=(-AdotA-AdotC)/2 AND AdotB=BdotC AND AdotC<0
     if( compare(scalars[3],0.5*(-scalars[0]-scalars[4]),sigsq[3],(sigsq[0]+sigsq[4])/4.)
-        && compare(5,3,scalars,sigsq,sig) && scalars[4]<0. ){
-      i[0]=appendMatrix(10,5,i[0],k,l);
+        && compare(5,3) && scalars[4]<0. ){
+      appendMatrix(10,5);
     }
 
     // BdotC=(AdotA-AdotB)/2 AND AdotC=BdotC AND AdotB<0
     if( compare(scalars[3],-.5*(scalars[0]+scalars[5]),sigsq[3],(sigsq[0]+sigsq[5])/4.)
-        && compare(4,3,scalars,sigsq,sig) && scalars[5]<0. ){
-      i[0]=appendMatrix(11,5,i[0],k,l);
+        && compare(4,3) && scalars[5]<0. ){
+      appendMatrix(11,5);
     }
 
     // BdotC=AdotA-AdotC-AdotB AND AdotC<0 AND AdotB<0
     if( compare(scalars[3],-(scalars[0]+scalars[4]+scalars[5]),sigsq[3],sigsq[0]+sigsq[4]+sigsq[5])
         && scalars[4]<0. && scalars[5]<0.  ){
-      i[0]=appendMatrix(12,6,i[0],k,l);
+      appendMatrix(12,6);
     }
 
     // BdotC<0
     if( scalars[3]<0. ){
       // AdotC=BdotC AND AdotB=-BdotC
-      if( compare(4,3,scalars,sigsq,sig) && compare(scalars[5],-scalars[3],sigsq[5],sigsq[3]) )
-        i[0]=appendMatrix(6,3,i[0],k,l);
+      if( compare(4,3) && compare(scalars[5],-scalars[3],sigsq[5],sigsq[3]) )
+        appendMatrix(6,3);
       // AdotC=BdotC AND AdotB=BdotC
-      if( compare(4,3,scalars,sigsq,sig) && compare(5,3,scalars,sigsq,sig) )
-        i[0]=appendMatrix(7,3,i[0],k,l);
+      if( compare(4,3) && compare(5,3) )
+        appendMatrix(7,3);
       // AdotC=-(AdotA+BdotC)/2 AND AdotB=-(AdotA+BdotC)/2
       if( compare(scalars[4],-.5*(scalars[0]+scalars[3]),sigsq[4],(sigsq[0]+sigsq[3])/4.)
           && compare(scalars[5],-.5*(scalars[0]+scalars[3]),sigsq[5],(sigsq[0]+sigsq[3])/4.) )
-        i[0]=appendMatrix(9,5,i[0],k,l);
+        appendMatrix(9,5);
       // AdotC=-(AdotA+BdotC+AdotB) && AdotB<0
       if( compare(scalars[4],-(scalars[0]+scalars[3]+scalars[5]),sigsq[4],sigsq[0]+sigsq[3]+sigsq[5])
           && scalars[5]<0. )
-        i[0]=appendMatrix(13,6,i[0],k,l);
+        appendMatrix(13,6);
       // AdotB=-(AdotA+BdotC+AdotC) AND AdotC<0
       if( compare(scalars[5],-scalars[0]-scalars[3]-scalars[4],sigsq[5],sigsq[0]+sigsq[3]+sigsq[4])
           && scalars[4]<0. )
-        i[0]=appendMatrix(14,6,i[0],k,l);
+        appendMatrix(14,6);
     }
-    return false;
   }  // ==================== end of mark01
 
   /**
@@ -975,76 +826,75 @@ public class ScalarJ_base extends GenericTOF_SCD implements
    *     automatic entrance into mark03</LI>
    * </UL>
    */
-  private static boolean mark02( int nequal, boolean freePass, int nchoice, double[] scalars, double[] sigsq, double[] sig,
-        int[] k, int[] l, int[] i){
+  private void mark02(){
     // free pass OR |A|==|B| AND |A|!=|C|
-    if( freePass || ( compare(0,1,scalars,sigsq,sig) && !compare(0,2,scalars,sigsq,sig) ) ){
+    if( freePass || ( compare(0,1) && !compare(0,2) ) ){
       if(DEBUG) System.out.println("MARK02");
     }else{
-      return false;
+      return;
     }
 
     // can't look for anything other than |A|==|B|!=|C|
     freePass=false;
     if (nchoice == SYMMETRIC && nequal != A_EQ_B_NE_C){
       freePass=true;
-      return true;
+      return;
     }
 
     // BdotC=0
-    if( compare(3,-1,scalars,sigsq,sig) ){
+    if( compare(3,-1) ){
       // AdotC=0 AND AdotB=0
-      if( compare(4,-1,scalars,sigsq,sig) && compare(5,-1,scalars,sigsq,sig) )
-        i[0]=appendMatrix(15,7,i[0],k,l);
+      if( compare(4,-1) && compare(5,-1) )
+        appendMatrix(15,7);
       // AdotB=AdotA/2 AND AdotC=0
       if( compare(scalars[5],.5*scalars[0],sigsq[5],0.25*sigsq[0])
-          && compare(4,-1,scalars,sigsq,sig) )
-        i[0]=appendMatrix(16,8,i[0],k,l);
+          && compare(4,-1) )
+        appendMatrix(16,8);
       // AdotB=-AdotA/2 AND AdotC=0
       if( compare(scalars[5],-.5*scalars[0],sigsq[5],0.25*sigsq[0])
-          && compare(4,-1,scalars,sigsq,sig) )
-        i[0]=appendMatrix(17,8,i[0],k,l);
+          && compare(4,-1) )
+        appendMatrix(17,8);
       // AdotC=0 AND AdotB>0
-      if( compare(4,-1,scalars,sigsq,sig) && scalars[5]>0. )
-        i[0]=appendMatrix(18,9,i[0],k,l);
+      if( compare(4,-1) && scalars[5]>0. )
+        appendMatrix(18,9);
       // AdotC=0 and AdotB<0
-      if( compare(4,-1,scalars,sigsq,sig) && scalars[5]<0. )
-        i[0]=appendMatrix(19,9,i[0],k,l);
+      if( compare(4,-1) && scalars[5]<0. )
+        appendMatrix(19,9);
     }
 
     // BdotC=CdotC/2
     if( compare(scalars[3],-.5*scalars[2],sigsq[3],0.25*sigsq[2]) ){
       // AdotC=BdotC AND AdotB=CdotC/2
-      if( compare(4,3,scalars,sigsq,sig)
+      if( compare(4,3)
           && compare(scalars[5],0.25*scalars[2],sigsq[5],0.0625*sigsq[2]) )
-        i[0]=appendMatrix(20,5,i[0],k,l);
+        appendMatrix(20,5);
       // AdotC=BdotC AND AdotB>0
-      if( compare(4,3,scalars,sigsq,sig) && scalars[5]>0. )
-        i[0]=appendMatrix(21,6,i[0],k,l);
+      if( compare(4,3) && scalars[5]>0. )
+        appendMatrix(21,6);
       // AdotC=BdotC AND AdotB<0
-      if( compare(4,3,scalars,sigsq,sig) && scalars[5]<0. )
-        i[0]=appendMatrix(22,6,i[0],k,l);
+      if( compare(4,3) && scalars[5]<0. )
+        appendMatrix(22,6);
     }
 
     // BdotC=-CdotC/3 AND AdotC=BdotC AND AdotB=CdotC/6-AdotA/2
-    if( compare(scalars[3],-scalars[2]/3.,sigsq[3],sigsq[2]/9.) && compare(4,3,scalars,sigsq,sig)
+    if( compare(scalars[3],-scalars[2]/3.,sigsq[3],sigsq[2]/9.) && compare(4,3)
         && compare(scalars[5],-scalars[0]/2.+scalars[2]/6.,sigsq[5],sigsq[0]/4.+sigsq[2]/36.) ){
-      i[0]=appendMatrix(23,3,i[0],k,l);
+      appendMatrix(23,3);
     }
 
     // BdotC<0
     if( scalars[3]<0. ){
       // AdotC=BdotC
-      if( compare(4,3,scalars,sigsq,sig) ){
+      if( compare(4,3) ){
         // AdotB>0
         if( scalars[5]>0. )
-          i[0]=appendMatrix(24,10,i[0],k,l);
+          appendMatrix(24,10);
         // AdotB<0
         if( scalars[5]<0. )
-          i[0]=appendMatrix(25,10,i[0],k,l);
+          appendMatrix(25,10);
       }
     }
-    return false;
+    
   }  // ==================== end of mark02
 
   public StringBuffer getLogInfo()
@@ -1060,74 +910,71 @@ public class ScalarJ_base extends GenericTOF_SCD implements
    *     automatic entrance into mark04</LI>
    * </UL>
    */
-  private static boolean mark03(int nequal, boolean freePass, int nchoice, double[] scalars, double[] sigsq, double[] sig,
-        int[] k, int[] l, int[]i)
-        {
+  private void mark03(){
     // free pass OR  |A|=|C|!=|B|
-    if( freePass || ( compare(0,2,scalars,sigsq,sig) && !compare(0,1,scalars,sigsq,sig) ) ){
+    if( freePass || ( compare(0,2) && !compare(0,1) ) ){
       if(DEBUG) System.out.println("MARK03");
     }else{
-      return false;
+      return;
     }
 
     // can't look for anything other than |A|==|C|!=|B|
     freePass=false;
     if (nchoice == SYMMETRIC && nequal != A_EQ_C_NE_B){
         freePass=true;
-        return true;
+        return;
     }
 
     // BdotC=0
-    if( compare(3,-1,scalars,sigsq,sig) ){
+    if( compare(3,-1) ){
       // AdotC=0 AND AdotB=0
-      if( compare(4,-1,scalars,sigsq,sig) && compare(5,-1,scalars,sigsq,sig) )
-        i[0]=appendMatrix(26,7,i[0],k,l);
+      if( compare(4,-1) && compare(5,-1) )
+        appendMatrix(26,7);
       // AdotC=-AdotA/2 AND AdotB=0
       if( compare(scalars[4],-scalars[0]/2.,sigsq[4],sigsq[0]/4.)
-          && compare(5,-1,scalars,sigsq,sig) )
-        i[0]=appendMatrix(27,8,i[0],k,l);
+          && compare(5,-1) )
+        appendMatrix(27,8);
       // AdotC<0 and AdotB=0
-      if( scalars[4]<0 && compare(5,-1,scalars,sigsq,sig) )
-        i[0]=appendMatrix(28,9,i[0],k,l);
+      if( scalars[4]<0 && compare(5,-1) )
+        appendMatrix(28,9);
     }
 
     // BdotC=-AdotA/2
     if( compare(scalars[3],-0.50*scalars[0],sigsq[3],0.25*sigsq[0]) ){
       // AdotC=0 AND AdotB=AdotA/2
-      if( compare(4,-1,scalars,sigsq,sig)
+      if( compare(4,-1)
           && compare(scalars[5],scalars[0]/2.,sigsq[5],sigsq[0]/4.) )
-        i[0]=appendMatrix(29,5,i[0],k,l);
+        appendMatrix(29,5);
       // AdotC=0 AND AdotB=-AdotA/2
-      if( compare(4,-1,scalars,sigsq,sig)
+      if( compare(4,-1)
           && compare(scalars[5],-scalars[0]/2.,sigsq[5],sigsq[0]/4.) )
-        i[0]=appendMatrix(30,5,i[0],k,l);
+        appendMatrix(30,5);
       // AdotC=BdotC AND AdotB=-BdotC
-      if( compare(4,3,scalars,sigsq,sig)
+      if( compare(4,3)
           && compare(scalars[5],-scalars[3],sigsq[5],sigsq[3]) )
-        i[0]=appendMatrix(33,3,i[0],k,l);
+        appendMatrix(33,3);
     }
 
     // BdotC<0
     if( scalars[3]<0. ){
       // AdotC=-AdotA-2*BdotC AND AdotB=BdotC
       if( compare(scalars[4],-scalars[0]-2.*scalars[3],sigsq[4],sigsq[0]+4.*sigsq[3])
-          && compare(5,3,scalars,sigsq,sig) )
-        i[0]=appendMatrix(34,11,i[0],k,l);
+          && compare(5,3) )
+        appendMatrix(34,11);
       // AdotC=-(AdotA+BdotC+AdotB) AND AdotB<0
       if( compare(scalars[4],-scalars[0]-scalars[3]-scalars[5],sigsq[4],sigsq[0]+sigsq[3]+sigsq[5])
           && scalars[5]<0. )
-        i[0]=appendMatrix(35,10,i[0],k,l);
+        appendMatrix(35,10);
       // AdotC<0
       if( scalars[4]<0. ){
         // AdotB=-BdotC
         if( compare(scalars[5],-scalars[3],sigsq[5],sigsq[3]) )
-          i[0]=appendMatrix(31,10,i[0],k,l);
+          appendMatrix(31,10);
         // AdotB=BdotC
-        if( compare(5,3,scalars,sigsq,sig) )
-          i[0]=appendMatrix(32,10,i[0],k,l);
+        if( compare(5,3) )
+          appendMatrix(32,10);
       }
     }
-    return false;
   }  // ==================== end of mark03
 
   /**
@@ -1140,10 +987,9 @@ public class ScalarJ_base extends GenericTOF_SCD implements
    *     automatic entrance into mark05</LI>
    * </UL>
    */
-  private static void mark04( int nequal,boolean freePass, int nchoice, double[] scalars, double[] sigsq, double[] sig,
-        int[] k, int[] l,int[] i){
+  private void mark04(){
     // free pass OR |A|!=|B|!=|C|
-    if( freePass || !compare(0,1,scalars,sigsq,sig) && !compare(0,2,scalars,sigsq,sig) && !compare(1,2,scalars,sigsq,sig) ){
+    if( freePass || !compare(0,1) && !compare(0,2) && !compare(1,2) ){
       if(DEBUG) System.out.println("MARK04");
     }else{
       return;
@@ -1159,126 +1005,120 @@ public class ScalarJ_base extends GenericTOF_SCD implements
     // BdotC=0
     if( abs(scalars[3])<(3.*sig[3]) ){
       // AdotC=0 AND AdotB=0
-      if( compare(4,-1,scalars,sigsq,sig) && compare(5,-1,scalars,sigsq,sig) )
-        i[0]=appendMatrix(36,12,i[0],k,l);
+      if( compare(4,-1) && compare(5,-1) )
+        appendMatrix(36,12);
       // AdotC=0 AND AdotB=AdotA/2
-      if( compare(4,-1,scalars,sigsq,sig)
+      if( compare(4,-1)
           && compare(scalars[5],0.5*scalars[0],sigsq[5],0.25*sigsq[0]) )
-        i[0]=appendMatrix(37,9,i[0],k,l);
+        appendMatrix(37,9);
       // AdotC=0 AND AdotB=-AdotA/2
-      if( compare(4,-1,scalars,sigsq,sig)
+      if( compare(4,-1)
           && compare(scalars[5],-.5*scalars[0],sigsq[5],0.25*sigsq[0]) )
-        i[0]=appendMatrix(38,9,i[0],k,l);
+        appendMatrix(38,9);
       // AdotC=0 AND AdotB>0
-      if( compare(4,-1,scalars,sigsq,sig) && scalars[5]>0. )
-        i[0]=appendMatrix(39,13,i[0],k,l);
+      if( compare(4,-1) && scalars[5]>0. )
+        appendMatrix(39,13);
       // AdotC=0 and AdotB<0
-      if( compare(4,-1,scalars,sigsq,sig) && scalars[5]<0. )
-        i[0]=appendMatrix(40,13,i[0],k,l);
+      if( compare(4,-1) && scalars[5]<0. )
+        appendMatrix(40,13);
       // AdotC=-BdotB/2 AND AdotB=0
       if( compare(scalars[4],-scalars[2]/2.,sigsq[4],sigsq[2]/4.)
-          && compare(5,-1,scalars,sigsq,sig) )
-        i[0]=appendMatrix(41,9,i[0],k,l);
+          && compare(5,-1) )
+        appendMatrix(41,9);
       // AdotC<0 AND AdotB=0
-      if( scalars[4]<0 && compare(5,-1,scalars,sigsq,sig) )
-        i[0]=appendMatrix(42,13,i[0],k,l);
+      if( scalars[4]<0 && compare(5,-1) )
+        appendMatrix(42,13);
       // AdotC=BdotC AND AdotB>0
-      if( compare(4,3,scalars,sigsq,sig) && scalars[5]>0. )
-        i[0]=appendMatrix(43,10,i[0],k,l);
+      if( compare(4,3) && scalars[5]>0. )
+        appendMatrix(43,10);
       // AdotC=BdotC AND AdotB<0
-      if( compare(4,3,scalars,sigsq,sig) && scalars[5]<0. )
-        i[0]=appendMatrix(44,10,i[0],k,l);
+      if( compare(4,3) && scalars[5]<0. )
+        appendMatrix(44,10);
     }
 
     // BdotC=CdotC/2
     if( compare(scalars[3],.5*scalars[2],sigsq[3],0.25*sigsq[2]) ){
       // AdotC=0 AND AdotB=0
-      if( compare(4,-1,scalars,sigsq,sig) && compare(5,-1,scalars,sigsq,sig) )
-        i[0]=appendMatrix(45,9,i[0],k,l);
+      if( compare(4,-1) && compare(5,-1) )
+        appendMatrix(45,9);
       // AdotC=0 AND AdotB=-AdotA/2
-      if( compare(4,-1,scalars,sigsq,sig)
+      if( compare(4,-1)
           && compare(scalars[5],-scalars[0]/2.,sigsq[5],sigsq[0]/4) )
-        i[0]=appendMatrix(48,6,i[0],k,l);
+        appendMatrix(48,6);
     }
 
     // BdotC=-CdotC/2
     if( compare(scalars[3],-0.50*scalars[2],sigsq[3],0.25*sigsq[2]) ){
       // AdotC=0 AND AdotB=AdotA/2
-      if( compare(4,-1,scalars,sigsq,sig)
+      if( compare(4,-1)
           && compare(scalars[5],scalars[0]/2.,sigsq[5],sigsq[0]/4.) )
-        i[0]=appendMatrix(47,6,i[0],k,l);
+        appendMatrix(47,6);
       // AdotC=0 AND AdotB>0
-      if( compare(4,-1,scalars,sigsq,sig) && scalars[5] > 0. )
-        i[0]=appendMatrix(49,10,i[0],k,l);
+      if( compare(4,-1) && scalars[5] > 0. )
+        appendMatrix(49,10);
       // AdotC=0 AND AdotB<0
-      if( compare(4,-1,scalars,sigsq,sig) && scalars[5]<0. )
-        i[0]=appendMatrix(50,10,i[0],k,l);
+      if( compare(4,-1) && scalars[5]<0. )
+        appendMatrix(50,10);
       // AdotC=BdotC AND AdotB=CtodC/4
-      if( compare(4,3,scalars,sigsq,sig)
+      if( compare(4,3)
           && compare(scalars[5],0.25*scalars[2],sigsq[5],0.25*sigsq[2]) )
-        i[0]=appendMatrix(53,11,i[0],k,l);
+        appendMatrix(53,11);
       // AdotC=BdotC AND AdotB>0
-      if( compare(4,3,scalars,sigsq,sig) && scalars[5]>0. )
-        i[0]=appendMatrix(54,10,i[0],k,l);
+      if( compare(4,3) && scalars[5]>0. )
+        appendMatrix(54,10);
       // AdotC<0 AND AdotB=-AdotC/2
       if( scalars[4]<0.
           && compare(scalars[5],-.5*scalars[4],sigsq[5],0.25*sigsq[4]) )
-        i[0]=appendMatrix(55,10,i[0],k,l);
+        appendMatrix(55,10);
     }
 
     // BdotC=AdotC/2 AND AdotC<0 AND AdotB=AdotA/2
     if( compare(scalars[3],.5*scalars[4],sigsq[3],0.25*sigsq[4])
         && scalars[4]<0.
         && compare(scalars[5],.5*scalars[0],sigsq[5],0.25*sigsq[0]) ){
-      i[0]=appendMatrix(56,10,i[0],k,l);
+      appendMatrix(56,10);
     }
 
     // BdotC=-BdotB-AdotC/2 AND AdotC<0 AND AdotB=-(AdotA+AdotC)/2
     if( compare(scalars[3],-(scalars[2]+scalars[4])/2.,sigsq[3],(sigsq[2]+sigsq[4])/4.) && scalars[4]<0.
         && compare(scalars[5],-.5*(scalars[0]+scalars[4]),sigsq[5],(sigsq[0]+sigsq[4])/4.) ){
-      i[0]=appendMatrix(58,10,i[0],k,l);
+      appendMatrix(58,10);
     }
 
     // BdotC<0
     if( scalars[3]< 0. ){
       // AdotC=0 AND AdotB=0
-      if( compare(4,-1,scalars,sigsq,sig) && compare(5,-1,scalars,sigsq,sig) )
-        i[0]=appendMatrix(46,13,i[0],k,l);
+      if( compare(4,-1) && compare(5,-1) )
+        appendMatrix(46,13);
       // AdotB=AdotA/2 AND AdotC=0
       if( compare(scalars[5],scalars[0]/2.,sigsq[5],sigsq[0]/4.)
-          && compare(4,-1,scalars,sigsq,sig) )
-        i[0]=appendMatrix(51,10,i[0],k,l);
+          && compare(4,-1) )
+        appendMatrix(51,10);
       // AdotB=-AdotA/2 AND AdotC=0
       if( compare(scalars[5],-scalars[0]/2.,sigsq[5],sigsq[0]/4.)
-          && compare(4,-1,scalars,sigsq,sig) )
-        i[0]=appendMatrix(52,10,i[0],k,l);
+          && compare(4,-1) )
+        appendMatrix(52,10);
       // AdotC=-CdotC/2 AND AdotB=-BdotC/2
       if( compare(scalars[4],-.5*scalars[2],sigsq[4],sigsq[2]/4.)
           && compare(scalars[5],-.5*scalars[3],sigsq[5],sigsq[3]/4.) )
-        i[0]=appendMatrix(57,10,i[0],k,l);
+        appendMatrix(57,10);
       // AdotC<0
       if( scalars[4]<0. ){
         // AdotB>0
         if( scalars[5]>0. )
-          i[0]=appendMatrix(59,14,i[0],k,l);
+          appendMatrix(59,14);
         // AdotB<0
         if( scalars[5]<0. )
-          i[0]=appendMatrix(60,14,i[0],k,l);
+          appendMatrix(60,14);
       }
     }
   }  // ==================== end of mark04
 
   /**
-   * Prints the results to the log file if specified and to the status pane
-   *
+   * Prints the results of the search to STDOUT.
    */
-  private static double[][]  printResult( int[]k, int[]l, int i, StringBuffer logBuffer,
-                double[] scalars, int nchoice, int ncell, double[][] UB){
+  private void printResult(){
     if(DEBUG) System.out.println("MARK05");
-    boolean showLOG = true;
-    if( SharedMessages.getLogStream( )== null)
-       showLOG = false;
-    
     SharedMessages.LOGaddmsg("--- Scalar------\n");
     if( k[0] == 0 || l[0] == 0 ){
       int start=logBuffer.length();
@@ -1287,13 +1127,11 @@ public class ScalarJ_base extends GenericTOF_SCD implements
                          +scalars[0]+" "+scalars[1]+" "+scalars[2]+"\n");
       logBuffer.append("             "
                          +scalars[3]+" "+scalars[4]+" "+scalars[5]+"\n");
-      
-         SharedMessages.LOGaddmsg(logBuffer.substring(start)+"\n");
-    
-     // newmat = null;
-      return null;
+      SharedMessages.LOGaddmsg(logBuffer.substring(start)+"\n");
+      newmat = null;
+      return;
     }
-    int npick=0;
+
     i = i-1;
     int minsym = 20;
     for( int j=0 ; j<i ; j++ ){
@@ -1309,7 +1147,7 @@ public class ScalarJ_base extends GenericTOF_SCD implements
     i = 1;
 
 
-    double[][] transf=new double[3][3];
+    transf=new double[3][3];
     double[] abc=null;
     for( int n=0 ; n<imax ; n++ ){
       if( l[n]==npick || nchoice==NO_RESTRICTION || nchoice==SYMMETRIC ){
@@ -1330,10 +1168,10 @@ public class ScalarJ_base extends GenericTOF_SCD implements
         	 logBuffer.append( "Improper Transformation Matrix\n");
              SharedMessages.LOGaddmsg(logBuffer.substring(start));
              SharedMessages.LOGaddmsg("------------- End Scalar ---------------\n\n\n");
-             return null;
+             return;
 
         }
-        double[][] newmat=LinearAlgebra.mult(UB,transf_inv);
+        newmat=LinearAlgebra.mult(this.UB,transf_inv);
         for( int ii=0 ; ii<3 ; ii++ ){ // print the matrices
           for( int jj=0 ; jj<3 ; jj++ ){
             logBuffer.append(Format.real(transf[jj][ii],4)+" ");
@@ -1351,7 +1189,7 @@ public class ScalarJ_base extends GenericTOF_SCD implements
           else if( ii==1) logBuffer.append(" = UB");
           logBuffer.append("\n");
         }
-        abc=Util.abc(LinearAlgebra.mult(UB,transf_inv));
+        abc=Util.abc(LinearAlgebra.mult(this.UB,transf_inv));
         logBuffer.append("\n");
         logBuffer.append("      a          b          c        alpha       "
                            +"beta      gamma     cellvol\n");
@@ -1360,8 +1198,7 @@ public class ScalarJ_base extends GenericTOF_SCD implements
         logBuffer.append("\n         ----------------------------------------\n");
         SharedMessages.LOGaddmsg(logBuffer.substring(start));
         SharedMessages.LOGaddmsg("------------- End Scalar ---------------\n\n\n");
-        if( showLOG)
-           SharedMessages.addmsg(logBuffer.substring(start));
+        SharedMessages.addmsg(logBuffer.substring(start));
       }
     }
 
@@ -1370,7 +1207,6 @@ public class ScalarJ_base extends GenericTOF_SCD implements
       logBuffer.append(" NO MATCHES FOUND");
     logBuffer.append("\n");
     SharedData.addmsg(logBuffer.substring(start));
-    return (LinearAlgebra.getTranspose((transf)));
 
   }  // ==================== end of printResult
 
@@ -1378,10 +1214,10 @@ public class ScalarJ_base extends GenericTOF_SCD implements
    * Put a new set of indices for a transformation matrix into the
    * list
    */
-  private static int appendMatrix(int k1, int l1,int i, int[]k, int[]l){
-    k[i-1]=k1;
-    l[i-1]=l1;
-   return i+1;
+  private void appendMatrix(int k, int l){
+    this.k[this.i-1]=k;
+    this.l[this.i-1]=l;
+    this.i=this.i+1;
   }
 
   /**
