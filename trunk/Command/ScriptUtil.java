@@ -105,6 +105,7 @@ import DataSetTools.viewer.ViewManager;
 import DataSetTools.writer.*;
 import gov.anl.ipns.Parameters.IParameterGUI;
 import gov.anl.ipns.Parameters.IParameter;
+import gov.anl.ipns.Util.Messaging.IObserverList;
 import gov.anl.ipns.Util.SpecialStrings.SpecialString;
 import gov.anl.ipns.Util.Sys.StringUtil;
 
@@ -444,6 +445,22 @@ public class ScriptUtil{
     throw new AbstractMethodError("This is a method stub");
   }
 
+  /**e
+   * Send the data set to all observsers in the IObserverList
+   * 
+   * @param   ds   the data set to be sent
+   * 
+   * @param   iobs  the IObseverList with all the entities to be notified
+   */
+  public static void send(DataSet ds, IObserverList iobs){
+    if( ds == null ){
+      //do nothing-this is here to avoid code checkers flagging the 
+      //unused ds parameter
+    }
+    iobs.notifyIObservers( ds , ds );
+    
+  }
+
   /**
    * Method for finding the proper operator with the given command
    * name and list of parameter values. The operator will be
@@ -552,16 +569,31 @@ public class ScriptUtil{
       }else{
         Object value=param.getValue();
         if( value instanceof String ){
+           
           param.setValue(param_vals[i].toString());
+          
         }else if( value instanceof SpecialString ){
+           
           ((SpecialString)param.getValue()).setString(param_vals[i].toString());
+          
         }else if(value instanceof Integer){
+           
           param.setValue(new Integer(((Number)param_vals[i]).intValue()));
+          
         }else if(value instanceof Float){
+           
           param.setValue(new Float(((Number)param_vals[i]).floatValue()));
-        }else if(value instanceof Double){
+          
+        }else if(value instanceof Long){
+           
+           param.setValue(new Long(((Number)param_vals[i]).longValue()));
+           
+         }else if(value instanceof Double){
+           
           param.setValue(new Double(((Number)param_vals[i]).doubleValue()));
+          
         }else{
+           
           param.setValue(param_vals[i]);
         }
       }
@@ -572,7 +604,7 @@ public class ScriptUtil{
 
   /**
    * This compares types in an operator with the parameter values to
-   * determine which sould be used. This will return the first that
+   * determine which should be used. This will return the first that
    * has a matching signature.
    *
    * @param candidates the list of candidates should all have the same
@@ -630,6 +662,8 @@ public class ScriptUtil{
       return true;
     else if( (a instanceof Float) && (b instanceof Integer) )
       return true;
+    else if( (a instanceof Number) && (b instanceof Number))
+       return true;
     else if( a.getClass().isInstance(b) )
       return true;
     else
