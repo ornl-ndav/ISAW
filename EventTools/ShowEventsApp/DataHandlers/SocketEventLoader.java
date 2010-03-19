@@ -143,24 +143,13 @@ public class SocketEventLoader implements IUDPUser
    /**
     * Constructor
     * 
-    * @param message_center
-    *           The message center to receive messages
+    * @param message_center   The message center to receive messages
     *           
-    * @param Instrument
-    *           The intrument. If non null an INIT_NEW_INSTRUMENT message will
-    *           be sent.
-    *           
-    * @param detector_file_name
-    *           The name of the file with the detector information or null for
-    *           the default based on the instrument name.
-    *           
-    * @param incident_spectra_filename
-    *           The name of the file with the incident specta or null for
-    *           default
-    * 
+    * @param Instrument       The intrument. If non null an 
+    *                         INIT_NEW_INSTRUMENT message will be sent.
     */
    public void init( MessageCenter message_center, 
-                        String        Instrument)
+                     String        Instrument)
    {
       this.message_center = message_center;
           
