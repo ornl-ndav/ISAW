@@ -298,7 +298,7 @@ public class HistogramHandler implements IReceiveMessage
     {
        updates_since_events++;
        
-       if( updates_since_events < 4 )
+       if( updates_since_events < 2 )
           return false;
                                       // at least four updates passed since we
                                       // got events, so assume we are done

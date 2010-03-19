@@ -135,7 +135,8 @@ public class QMapperHandler implements IReceiveMessage
                                       cmd.getAbsorptionTrue()  );
 
       Util.sendInfo( "QMapper set up for " + instrument_name +
-                     "\nUsing Detector File: " + det_file );
+                     "\nUsing Detector File: " + det_file +
+                     "\nUsing Spectrum File: " + spec_file );
       Message new_inst_done = new Message( Commands.INIT_NEW_INSTRUMENT_DONE,
                                            null,
                                            true,
