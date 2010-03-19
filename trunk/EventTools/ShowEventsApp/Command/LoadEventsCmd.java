@@ -27,7 +27,7 @@ public class LoadEventsCmd
     * @param specFile     The name of the spec File
     * @param detEffFile   The name of the detector efficiency file private 
     * @param bankFile     The name of the file with bank vs pixel_id's
-    * @param IDMapFile    The name of the file that maps DAS ID's to NeXus ID's
+    * @param IDmapFile    The name of the file that maps DAS ID's to NeXus ID's
     * @param matFile      The name of a matrix file
     * @param radius       The radius for the absorption correction
     * @param smu          The total scattering for absorption correction
@@ -36,7 +36,7 @@ public class LoadEventsCmd
     * @param availableEvents The number of events in the file
     * @param firstEvent      The first event to load
     * @param eventsToLoad    The number of events to load
-    * @param nEventsToShow   The number of events to show in the 3D view
+    * @param eventsToShow    The number of events to show in the 3D view
     * @param numThreads      The number of theads to use when loading the file
     * @param scale_factor    1/protons on target, or -1 if not available
     */
