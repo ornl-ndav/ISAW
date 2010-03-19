@@ -6,6 +6,7 @@ import java.util.Vector;
 import gov.anl.ipns.MathTools.LinearAlgebra;
 
 import DataSetTools.components.ui.Peaks.OrientMatrixControl;
+import DataSetTools.operator.Generic.Special.ViewASCII;
 import DataSetTools.operator.Generic.TOF_SCD.*;
 
 import Operators.TOF_SCD.IndexPeaks_Calc;
@@ -32,6 +33,8 @@ public class PeakListHandler implements IReceiveMessage
     message_center.addReceiver( this, Commands.SET_PEAK_Q_LIST );
     message_center.addReceiver( this, Commands.SET_PEAK_NEW_LIST );
     message_center.addReceiver( this, Commands.WRITE_PEAK_FILE );
+    message_center.addReceiver( this, Commands.SHOW_PEAK_FILE );
+ 
     message_center.addReceiver( this, Commands.INDEX_PEAKS );
     message_center.addReceiver( this, Commands.INDEX_PEAKS_ROSS );
     message_center.addReceiver( this, 
@@ -107,7 +110,27 @@ public class PeakListHandler implements IReceiveMessage
         return false;
       }
     }
-
+    else if ( message.getName().equals(Commands.SHOW_PEAK_FILE ) )
+    {
+      if ( peakNew_list == null || peakNew_list.size() <= 0 )
+      {
+        Util.sendError( "ERROR: No Peaks to write" );
+      }
+      
+      String file_name = gov.anl.ipns.Util.File.FileIO.appendPath( 
+            System.getProperty( "user.home" ), "ISAW/tmp/ppp.peaks" );
+      try 
+      {
+        Peak_new_IO.WritePeaks_new( file_name, (Vector)peakNew_list, false );
+        (new ViewASCII(file_name)).getResult();
+      }
+      catch ( Exception ex )
+      {
+        Util.sendError( "ERROR: could not write peaks to file " +
+                        file_name );
+        return false;
+      }
+    }
     else if ( message.getName().equals(Commands.INDEX_PEAKS ) )
     {
       Object obj = message.getValue();
