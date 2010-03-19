@@ -183,8 +183,6 @@ public class FileUtil
       Document doc = loader.parse(file);
       doc.getDocumentElement().normalize();
 
-      Element root = doc.getDocumentElement();
-
       NodeList bank_list = doc.getElementsByTagName("bank");
 
       int num_banks = bank_list.getLength();
@@ -604,8 +602,8 @@ public class FileUtil
     String inst_name = "PG3";
     String info_dir  = "/home/dennis/SNS_ISAW/ISAW_ALL/InstrumentInfo/SNS/";
            info_dir += inst_name + "/";
-    String map_file  = info_dir + inst_name +"_TS.dat";
-    String bank_file = info_dir + inst_name +"_bank.xml";
+//  String map_file  = info_dir + inst_name +"_TS.dat";
+//  String bank_file = info_dir + inst_name +"_bank.xml";
 
     long start = System.nanoTime();
 /*

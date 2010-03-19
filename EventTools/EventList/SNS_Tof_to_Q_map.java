@@ -38,7 +38,6 @@ import java.util.*;
 import java.io.*;
 
 import gov.anl.ipns.MathTools.Geometry.*;
-import gov.anl.ipns.Util.File.*;
 
 import DataSetTools.operator.Generic.TOF_SCD.*;
 import DataSetTools.dataset.*;
@@ -95,7 +94,9 @@ import EventTools.Histogram.UniformEventBinner;
  *  which are pre-calculated for each lamda.  These values are
  *  saved in the array lamda_weight[].  The optimal value to use
  *  for the power should be determined when a good incident spectrum
- *  has been determined.
+ *  has been determined.  Currently, power=3 when used with an 
+ *  incident spectrum and power=2.4 when used without an incident
+ *  spectrum.
  *
  *  The pixel efficiency and absorption correction are NOT CURRENTLY USED.
  *  The absorption correction, trans, depends on both lamda and the pixel,
@@ -322,7 +323,7 @@ public class SNS_Tof_to_Q_map
    *                            The SNAP spectrum file will be used by default
    *                            for SNAP.
    *  @param  radius            Radius of the sample in centimeters
-   *  @param  smu               Linear scattering coefficient at 1.8 Angstroms.
+   *  @param  smu               Linear scattering coefficient.
    *  @param  amu               Linear absorption coefficient at 1.8 Angstroms.
    */
   public SNS_Tof_to_Q_map( String instrument_name,
@@ -502,6 +503,13 @@ public class SNS_Tof_to_Q_map
     t0 = 10*(Float)(file_info.elementAt(2));
 
     int[][] bank_info = FileUtil.LoadBankFile( bank_filename );
+
+    System.out.println("--------------------------------------------");
+    System.out.println("Initializing SNS_Tof_to_Q_map.java using....");
+    System.out.println("DetCal File  : " + det_cal_filename );
+    System.out.println("Bank File    : " + bank_filename );
+    System.out.println("Mapping File : " + map_filename );
+    System.out.println("--------------------------------------------");
 
     if ( debug )
     {
@@ -1420,47 +1428,76 @@ public class SNS_Tof_to_Q_map
    *     1/( lamda^power * spec(lamda) )
    *
    *  Where power was chosen to give a relatively uniform intensity display
-   *  in 3D.  The power is currently 4. (Dennis used 2.4)
-   *  The spectrum values are first normalized so that the MAXIMUM value is
-   *  1 and the minimum value is 0.1.
+   *  in 3D.  The power is currently 3 if an incident spectrum is present
+   *  and 2.4 if no incident spectrum is used.
    */
   private void BuildLamdaWeights( String spectrum_file_name )
   {
-    float   MIN_SPECTRUM_VALUE = 0.1f;
-
-//  float   power = 4.0f;                    // Theoretically correct value
-    float   power = 2.4f;                    // lower power needed to find
+    float power_th = 3.0f;                   // Theoretically correct value
+                                             // if we have an incident spectrum
+    float power_ns = 2.4f;                   // lower power needed to find
                                              // peaks in ARCS data with no
                                              // incident spectrum
     float   lamda; 
-    float[] spec_val   = null;
-    float[] spec_lamda = null;
-                                              // build in dependence on lamda
-    System.out.println("Building approximate weighting (no spectrum)");
 
-    lamda_weight = new float[ NUM_WAVELENGTHS ];
+    boolean use_incident_spectrum = true;
+    float power = power_th;
+  
+    lamda_weight = GetSpectrumWeights( spectrum_file_name );
+
+    if ( lamda_weight == null )              // loading spectrum failed so use
+    {                                        // array of 1's
+      use_incident_spectrum = false;
+      power = power_ns;
+      lamda_weight = new float[ NUM_WAVELENGTHS ];
+      for ( int i = 0; i < lamda_weight.length; i++ )
+        lamda_weight[i] = 1;
+    }
+    
     for ( int i = 0; i < lamda_weight.length; i++ )
     {
       lamda = i / STEPS_PER_ANGSTROM;
-      lamda_weight[i] = (float)(1/Math.pow(lamda,power));
+      lamda_weight[i] *= (float)(1/Math.pow(lamda,power));
     }
 
-    System.out.println("Spectrum file specified as: " + spectrum_file_name );
-    if ( spectrum_file_name == null  ||
-         spectrum_file_name.trim().length() == 0 )    // no incident spectrum 
-      return;
+    if ( use_incident_spectrum )
+      System.out.println("Built weights using incident spectrum from " +
+                          spectrum_file_name + " with wl power " + power );
+    else
+      System.out.println("Built APPROXIMATE weights with wl power " + power );
+  }
 
-                                                      // check if file exists
-    File spec_file = new File( spectrum_file_name );
-    if ( !spec_file.exists() )
+
+  /**
+   *  Build the list of weights corresponding to different wavelengths,
+   *  based solely on the incident spectrum.  The power of lamda is added
+   *  by the BuildLamdaWeights() method.
+   *  The spectrum values are first normalized so that the MAXIMUM value is
+   *  1 and the minimum value is 0.1.
+   *
+   *  @return the array of weights for the incident spectrum, if the the
+   *          spectrum file could be loaded, or null, if the spectrum
+   *          file could not be loaded.
+   */
+  private float[] GetSpectrumWeights( String spectrum_file_name )
+  {
+    float MIN_SPECTRUM_VALUE = 0.1f;
+
+    try
     {
-      System.out.println("File Doesn't Exist " + spectrum_file_name);
-      return;
+      FileUtil.CheckFile( spectrum_file_name );
     }
+    catch ( Exception ex )
+    {
+      return null;
+    }
+
+    float[] spec_val   = null;
+    float[] spec_lamda = null;
                                                       // now load the file
     int num_bins = 0;
     try
-    { 
+    {
       FileReader     f_in        = new FileReader( spectrum_file_name );
       BufferedReader buff_reader = new BufferedReader( f_in );
       Scanner        sc          = new Scanner( buff_reader );
@@ -1480,7 +1517,7 @@ public class SNS_Tof_to_Q_map
       if ( num_bins <= 0 )
       {
         System.out.println("NEGATIVE NUMBER OF BINS IN " + spectrum_file_name);
-        return;
+        return null;
       }
 
       spec_lamda = new float[ num_bins+1 ];
@@ -1494,13 +1531,10 @@ public class SNS_Tof_to_Q_map
     catch ( Exception ex )
     {
       System.out.println("FAILED TO LOAD SPECTRUM: " + spectrum_file_name );
-      System.out.println("EXCEPTION = " + ex + "\n" + 
+      System.out.println("EXCEPTION = " + ex + "\n" +
                          "NOT WEIGHTING BY INCIDENT SPECTRUM!" );
-      return;
+      return null;
     }
-
-    System.out.println("Setting lamda weights from spectrum file: " +
-                        spectrum_file_name );
                                                       // normalize spectrum
     float max = spec_val[0];
     for ( int i = 0; i < num_bins; i++ )
@@ -1510,7 +1544,7 @@ public class SNS_Tof_to_Q_map
     if ( max <= 0 )
     {
       System.out.println("ERROR: Spectrum file had no positive entries");
-      return;
+      return null;
     }
                                                   // set so max value == 1
     for ( int i = 0; i < num_bins; i++ )
@@ -1523,28 +1557,33 @@ public class SNS_Tof_to_Q_map
                                                   // on incident spectru,
     int   index;
     float val;
+    float lamda;
     float lamda_min  = spec_lamda[0];
-    float lamda_max  = spec_lamda[num_bins - 2]; 
+    float lamda_max  = spec_lamda[num_bins - 2];
     float spec_first = spec_val[0];
-    float spec_last  = spec_val[num_bins - 1]; 
+    float spec_last  = spec_val[num_bins - 1];
+    
+    lamda_weight = new float[ NUM_WAVELENGTHS ];
     for ( int i = 0; i < lamda_weight.length; i++ )
     {
       lamda = i / STEPS_PER_ANGSTROM;
       if ( lamda <= lamda_min )
-        val = spec_first; 
+        val = spec_first;
       else if ( lamda >= lamda_max )
         val = spec_last;
       else
       {
-        index = Arrays.binarySearch( spec_lamda, lamda ); 
+        index = Arrays.binarySearch( spec_lamda, lamda );
         if ( index < 0 )
-          index = -index - 1; 
+          index = -index - 1;
         if ( index > num_bins - 1 )
           index = num_bins - 1;
         val = spec_val[index];
       }
-      lamda_weight[i] = lamda_weight[i] / val;
+      lamda_weight[i] = 1 / val;
     }
+
+    return lamda_weight;
   }
 
 
@@ -1567,9 +1606,11 @@ public class SNS_Tof_to_Q_map
   private float absor_sphere(float twoth, float wl)
   {
     int i;
-    float trans, mu, mur;   //mu is the linear absorption coefficient,
-                       //r is the radius of the spherical sample.
-    float theta,astar1,astar2,frac,astar,tbar;
+    float mu, mur;         //mu is the linear absorption coefficient,
+                            //r is the radius of the spherical sample.
+    float theta,astar1,astar2,frac,astar;
+//  float trans;
+//  float tbar;
 
 //  For each of the 19 theta values in dwiggins (theta = 0.0 to 90.0
 //  in steps of 5.0 deg.), the astar values vs.mur were fit to a third
@@ -1732,8 +1773,6 @@ public class SNS_Tof_to_Q_map
     float     L2;
     Vector3D  pix_pos;
     Vector3D  unit_qvec;
-    int       n_rows,
-              n_cols;
     float[]   coords;
     int       grid_ID;
     int       index;
@@ -2206,8 +2245,8 @@ public class SNS_Tof_to_Q_map
     String info_dir = "/home/dennis/SNS_ISAW/ISAW_ALL/InstrumentInfo/SNS/"
                       + inst_name + "/";
     String det_file  = info_dir + inst_name + ".DetCal";
-    String map_file  = info_dir + inst_name + "_TS.dat";
-    String bank_file = info_dir + inst_name + "_bank.xml";
+//  String map_file  = info_dir + inst_name + "_TS.dat";
+//  String bank_file = info_dir + inst_name + "_bank.xml";
 //  String ev_file   = "/usr2/DEMO/ARCS_1250_neutron_event.dat";
 //  String ev_file   = "/usr2/DEMO/SNAP_240_neutron_event.dat";
     String ev_file   = "/usr2/DEMO/SNAP_767_neutron_event.dat";
