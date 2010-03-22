@@ -34,7 +34,7 @@ MinWL=.1
 MaxWL=20
 NWLbins= 2000
 useDefFiles=true
-DetCalFile = CreateExecFileName( getSysProp("ISAW_HOME"),"InstrumentInfo/SNS/SNAP/SNAP.DETCAL", false)
+DetCalFile = CreateExecFileName( getSysProp("ISAW_HOME"),"InstrumentInfo/SNS/SNAP/SNAP.DetCal", false)
 BankFile =""
 Mapfile  =""
 firstEvent=   0
@@ -71,7 +71,7 @@ useGhost=false
 GhostFile=""
 NGhostIDs=300000
 NGhostsPerID=16
-SaveDetCalFile = CreateExecFileName(getSysProp("user.home"),"ISAW/tmp/save.DETCAL",false)
+SaveDetCalFile = CreateExecFileName(getSysProp("user.home"),"ISAW/tmp/save.DetCal",false)
 RotateDetectors(DetCalFile,14, SaveDetCalFile,Angle,0,0)
 DetCalFile =SaveDetCalFile
 
