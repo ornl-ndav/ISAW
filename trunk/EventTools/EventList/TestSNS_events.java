@@ -41,6 +41,7 @@ import java.awt.*;
 import gov.anl.ipns.MathTools.Geometry.*;
 import gov.anl.ipns.Operator.*;
 import gov.anl.ipns.Operator.Threads.*;
+import gov.anl.ipns.Util.File.*;
 
 import DataSetTools.operator.Generic.TOF_SCD.FindPeaksViaSort;
 import DataSetTools.operator.Generic.TOF_SCD.BasicPeakInfo;
@@ -255,30 +256,11 @@ public class TestSNS_events
      String det_file   = null;
      String mat_file   = null;
 
-     if ( file_name.indexOf( "ARCS") >= 0 )
-     {
-       instrument = SNS_Tof_to_Q_map.ARCS;
-       det_file   = "/usr2/ARCS_SCD/ARCS_419.grids";
-       if ( file_name.indexOf( "419") >= 0 ) 
-         mat_file = "/usr2/ARCS_SCD/si_419_ls.mat";
-     }
-     else if  ( file_name.indexOf( "SNAP") >= 0 )
-     {
-       instrument = SNS_Tof_to_Q_map.SNAP;
-       det_file   = "/usr2/SNS_SCD_TEST_3/SNAP_1_Panel.DetCal";
-       if ( file_name.indexOf("240") >= 0 )
-         mat_file = 
-              "/usr2/SNAP_2/QUARTZ_NOT_ROTATED/quartz_240_NOT_ROTATED_ls.mat"; 
-     }
-     else if  ( file_name.indexOf( "SEQ") >= 0 )
-     {
-       instrument = SNS_Tof_to_Q_map.SEQ;
-       det_file   = "/usr2/SEQUOIA/SEQ_328.grids";
-     }
+     instrument = FileIO.getSNSInstrumentName( file_name );     
 
      long start_time = System.nanoTime();
 
-     SNS_Tof_to_Q_map mapper = new SNS_Tof_to_Q_map( det_file, 
+     SNS_Tof_to_Q_map mapper = new SNS_Tof_to_Q_map( null, 
                                                      null, 
                                                      instrument );
 

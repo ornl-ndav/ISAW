@@ -40,6 +40,7 @@ import java.io.*;
 import gov.anl.ipns.MathTools.Geometry.*;
 import gov.anl.ipns.Operator.*;
 import gov.anl.ipns.Operator.Threads.*;
+import gov.anl.ipns.Util.File.*;
 
 import EventTools.Histogram.*;
 import EventTools.Viewers.*;
@@ -76,24 +77,7 @@ public class Test_2_SNS_Events
      String spec_file  = null;
      String instrument = null;
 
-     if ( file_name.indexOf( "ARCS") >= 0 )
-     {
-       det_file   = "/usr2/ARCS_SCD/ARCS_419.grids";
-       spec_file  = null;
-       instrument = SNS_Tof_to_Q_map.ARCS;
-     }
-     else if  ( file_name.indexOf( "SNAP") >= 0 )
-     {
-       det_file   = "/usr2/SNS_SCD_TEST_3/SNAP_1_Panel.DetCal";
-       spec_file  = null;
-       instrument = SNS_Tof_to_Q_map.SNAP;
-     }
-     else if  ( file_name.indexOf( "SEQ") >= 0 )
-     {
-       det_file   = "/usr2/SEQUOIA/SEQ_328.grids";
-       spec_file  = null;
-       instrument = SNS_Tof_to_Q_map.SEQ;
-     }
+     instrument = FileIO.getSNSInstrumentName( file_name );
 
      long start_time = System.nanoTime();
 
