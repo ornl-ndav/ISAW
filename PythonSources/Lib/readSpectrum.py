@@ -9,14 +9,10 @@
 #
 #
 
-from jarray import *
-
 def readSpectrum(nod, initBankNo, directory_path):
     "Read the spectrum file for each detector bank."
 
-    # define arrays for up to 100 detectors
-    time = zeros(100, 'f')
-    counts = zeros(100, 'f')
+    spectra = []
     
     for id in range(nod):
         
@@ -32,12 +28,37 @@ def readSpectrum(nod, initBankNo, directory_path):
         lineList = lineString.split()
         numTimeChannels = int(lineList[4])
         
-        for i in range(7, numTimeChannels):
+        # set arrays to zero
+        time = []
+        counts = []
+        
+        for i in range(7, (numTimeChannels + 7)):
             lineString = input.readline()
             lineList = lineString.split()
-            time[i] = float(lineList[0])
-            counts[i] = float(lineList[1])
-
-    input.close()
+            time.append( float(lineList[0]) )
+            counts.append( float(lineList[1]) )
         
-    return time, counts
+        spectra.append( [ time, counts ] )
+        
+
+        input.close()
+        
+    # "spectra" is an array spectra[i][j] where i is the number
+    # of the detector bank starting at zero, and j = 0 for
+    # the array of times and j = 1 for the array of counts
+    
+    return spectra
+
+#--------------------------------------------------------
+# test the function
+#--------------------------------------------------------
+
+# nod = 9
+# initBankNo = 10
+# directory_path = "C:/SNS/Jython/anvred/"
+
+# spectra = readSpectrum( nod, initBankNo, directory_path)
+
+# print spectra
+
+
