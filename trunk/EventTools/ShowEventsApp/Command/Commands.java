@@ -4,6 +4,8 @@ public class Commands
 {
   public static final String DQLOG_SCALE  ="DQLOG_SCALE";//arg boolean  
 
+  public static final String EXIT_APPLICATION = "EXIT_APPLICATION";
+
   public static final String UPDATE      = "UPDATE";
    
   public static final String LOAD_FILE      = "LOAD_FILE";
