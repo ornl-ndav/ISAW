@@ -41,7 +41,8 @@ import java.awt.GridLayout;
 import java.text.NumberFormat;
 
 import java.awt.event.*;
-import java.io.File;
+import java.io.*;
+import java.net.*;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -59,7 +60,7 @@ import MessageTools.*;
  * Also has fields for a detector file, incident spectrum file,
  * max Q to load and the number of threads to use.
  */
-public class filePanel //extends JPanel
+public class filePanel implements IReceiveMessage 
 {
    private static final long  serialVersionUID = 1L;
    private MessageCenter      message_center;
@@ -101,7 +102,14 @@ public class filePanel //extends JPanel
    private int                num_threads;
 
    private int                udp_port;
-
+   private int                auto_connect_port; // TCP port to request UDP
+                                                 // port for live events 
+   private InputStream        tcp_input_stream;
+   private OutputStream       tcp_output_stream;
+   private Socket             tcp_socket;
+   private String[][]         inst_computer;     // 2D array listing instrument
+                                                 // name in col 1 and instrument
+                                                 // computer in col 2.
    private String             detcal_filename;
    private String             inc_spec_filename;
    private String             DetEfffilename;
@@ -127,11 +135,15 @@ public class filePanel //extends JPanel
    public filePanel(MessageCenter message_center)
    {
       this.message_center = message_center;
-      //this.setSize(300, 265);
-      new SharedData();//Will read in IsawProps.dat
+      message_center.addReceiver(this, Commands.EXIT_APPLICATION);
+
+      new SharedData();               // Read in IsawProps.dat
 
       Datafilename = System.getProperty("Data_Directory");
       Matfilename  = Datafilename;
+
+      auto_connect_port = 9000;
+      inst_computer     = FileUtil.LoadSupportedSNS_InstrumentInfo();
 
       numAvailable    = 10000000;
       firstToLoad     = 1; 
@@ -149,7 +161,7 @@ public class filePanel //extends JPanel
       bank_filename     = "";
       idmap_filename    = "";
 
-      MaxQValue = 1000000;           // use all Q values by default
+      MaxQValue = 1000000;            // use all Q values by default
       absorption_radius = 0;          // 0 means don't do absorption correction
       absorption_smu  = 1;
       absorption_amu   = 1;
@@ -884,15 +896,108 @@ public class filePanel //extends JPanel
    }
 
    
-   private int OpenTCP_Connection( String instrument )
+   /**
+    *  Try to get the UDP port to connect with, by closing and re-opening
+    *  a TCP port to Jim Kohl's event catcher.
+    *
+    *  @param instrument  The name of the instrument selected by the user
+    *
+    *  @return The UDP port to use, or -1 if the connection to the TCP port 
+    *          failed.
+    */
+   private int AutoGetUDP_Port( String instrument )
    {
-     int CONNECT_PORT = 9000;
-     return 1;
+      inst_computer     = FileUtil.LoadSupportedSNS_InstrumentInfo();
+
+                               // first get the name of the instrument computer
+      String node_name = "localhost";  
+      for ( int i = 0; i < inst_computer.length; i++ )
+        if ( instrument.equalsIgnoreCase( inst_computer[i][0] ) )
+          node_name = inst_computer[i][1];
+
+      if ( node_name == null )
+      {
+        System.out.println("WARNING: Failed to find " + instrument +
+                           " in list of supported instruments ");
+        System.out.println("NOT trying to auto-connect with event server...");
+        return -1;
+      }
+
+      node_name = "localhost";            // TODO: REMOVE THIS TEST CODE #####
+
+      CloseTCP_Connection();              // first close TCP connection 
+                                          // then reopen it to get the port
+      try
+      {
+        Thread.sleep( 1000 );             // give the OS some time to close it
+      }
+      catch ( Exception ex )
+      {
+      }
+                                          // now try to reopen the port
+      int new_port = -1;
+      tcp_socket  = null;
+      try
+      {
+        tcp_socket = new Socket( node_name, auto_connect_port );
+        tcp_socket.setKeepAlive( false );
+        tcp_socket.setSoLinger( false, 0 );
+        tcp_input_stream  = tcp_socket.getInputStream();
+        tcp_output_stream = tcp_socket.getOutputStream();
+        int low_byte  = tcp_input_stream.read();
+        int high_byte = tcp_input_stream.read();
+        new_port  = ((high_byte & 0xFF) << 8) + (low_byte & 0xFF);
+      }
+      catch ( IOException ex )
+      {
+        System.out.println( ex );
+        ex.printStackTrace();
+        return -1;
+      }
+
+      System.out.println("NEW UDP PORT = " + new_port );
+
+      return new_port;
    }
 
+
+   public boolean receive( Message message )
+   {
+     if ( message.getName().equals(Commands.EXIT_APPLICATION) ) 
+     {
+       CloseTCP_Connection();
+       try
+       {
+         System.out.println( "Closed TCP Connection" );
+         Thread.sleep( 1000 );
+       }
+       catch ( Exception ex ) 
+       {}
+     }
+     System.exit(0);
+     return true;
+   }
+
+
+   /**
+    *  Close the TCP port connection, if possible
+    */
    private void CloseTCP_Connection()
    {
-
+     try
+     {
+       if ( tcp_socket != null )
+       {
+         tcp_socket.shutdownInput();
+         tcp_socket.shutdownOutput();
+         tcp_input_stream.close();
+         tcp_output_stream.close();
+         tcp_socket.close();
+       }
+     }
+     catch ( Exception ex )
+     {
+     }
    }
 
    
@@ -935,9 +1040,18 @@ public class filePanel //extends JPanel
          {
            if ( common_info_valid() && udp_load_info_valid() )
            {
+              String instrument_name = Instrument.getSelectedItem().toString();
+
+              int try_port = AutoGetUDP_Port( instrument_name );
+              if ( try_port > 0 )
+                udp_port = try_port;
+
+              System.out.println("Listening for UDP messages on port: " 
+                                  + udp_port);
+
               LoadUDPEventsCmd cmd =
                 new LoadUDPEventsCmd( 
-                           Instrument.getSelectedItem().toString(),
+                           instrument_name,
                            udp_port,
                            detcal_filename,
                            inc_spec_filename,
