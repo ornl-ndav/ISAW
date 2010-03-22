@@ -50,7 +50,6 @@ import MessageTools.MessageCenter;
 import EventTools.Histogram.*;
 
 import EventTools.EventList.IEventList3D;
-import EventTools.EventList.SNS_Tof_to_Q_map;
 import EventTools.ShowEventsApp.Command.Commands;
 import EventTools.ShowEventsApp.Command.SelectionInfoCmd;
 import EventTools.ShowEventsApp.Command.SetNewInstrumentCmd;
@@ -86,6 +85,7 @@ public class HistogramHandler implements IReceiveMessage
   private boolean       receiving_events;
   private int           updates_since_events;
 
+
   public HistogramHandler( MessageCenter message_center, 
                            MessageCenter view_message_center,
                            int           num_bins )
@@ -93,7 +93,7 @@ public class HistogramHandler implements IReceiveMessage
     this.num_bins = num_bins;    
                                                   // set up for SNAP by default
     Set_Histogram( num_bins, -25.0f, 0, -16.0f, 16.0f, -8.0f, 8.0f );
-    this.current_instrument = SNS_Tof_to_Q_map.SNAP;
+    this.current_instrument = "SNAP";
 
     this.max_hist_value_sent = 0;
 
@@ -350,12 +350,12 @@ public class HistogramHandler implements IReceiveMessage
       return false;
     }
 
-    if ( inst.equals(SNS_Tof_to_Q_map.SNAP) ||
-         inst.equals(SNS_Tof_to_Q_map.TOPAZ) )
+    if ( inst.equals("SNAP") ||
+         inst.equals("TOPAZ") )
       Set_Histogram( num_bins, -25.0f, 0, -16.0f, 16.0f, -8.0f, 8.0f );
 
-    else if ( inst.equals(SNS_Tof_to_Q_map.ARCS) ||
-              inst.equals(SNS_Tof_to_Q_map.SEQ)  )
+    else if ( inst.equals("ARCS") ||
+              inst.equals("SEQ")  )
       Set_Histogram( num_bins, -50.0f, 0, -10.0f, 40.0f, -25.0f, 25.0f );
 
     else

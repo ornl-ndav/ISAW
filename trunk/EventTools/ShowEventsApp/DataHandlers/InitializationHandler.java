@@ -39,6 +39,7 @@ import MessageTools.Message;
 import MessageTools.MessageCenter;
 
 import EventTools.EventList.SNS_Tof_to_Q_map;
+import EventTools.EventList.FileUtil;
 import EventTools.ShowEventsApp.Command.Commands;
 import EventTools.ShowEventsApp.Command.LoadEventsCmd;
 import EventTools.ShowEventsApp.Command.LoadUDPEventsCmd;
@@ -74,6 +75,8 @@ public class InitializationHandler implements IReceiveMessage
   private SocketEventLoader socket;
   private LoadUDPEventsCmd  UDPcmd;
   private String            currentUDPInstrument = null;
+  private String[]          supported_inst = 
+                                           FileUtil.SupportedSNS_Instruments();
 
 
   public InitializationHandler( MessageCenter message_center )
@@ -316,13 +319,11 @@ public class InitializationHandler implements IReceiveMessage
   public String getInstrumentName( String file_name )
   {
     String instrument_name = UNKNOWN_INSTRUMENT;
+    String file_inst       = FileIO.getSNSInstrumentName( file_name );
 
-    String file_inst   = FileIO.getSNSInstrumentName( file_name );
-    String[] supported = SNS_Tof_to_Q_map.supported_instruments;
-
-    for ( int i = 0; i < supported.length; i++ )
-      if ( file_inst.equalsIgnoreCase( supported[i] ) )
-        instrument_name = supported[i];
+    for ( int i = 0; i < supported_inst.length; i++ )
+      if ( file_inst.equalsIgnoreCase( supported_inst[i] ) )
+        instrument_name = supported_inst[i];
 
     return instrument_name;
   }
