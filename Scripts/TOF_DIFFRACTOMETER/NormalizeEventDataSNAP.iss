@@ -76,8 +76,8 @@ NGhostIDs =0
 NGhostsPerID=16     
 nDetCalFileName = 
 
-DetCalFile = CreateExecFileName( getSysProp("ISAW_HOME"),"InstrumentInfo/SNS/SNAP/SNAP.DETCAL", false)
-SaveDetCalFile = CreateExecFileName(getSysProp("user.home"),"ISAW/tmp/save.DETCAL",false)
+DetCalFile = CreateExecFileName( getSysProp("ISAW_HOME"),"InstrumentInfo/SNS/SNAP/SNAP.DetCal", false)
+SaveDetCalFile = CreateExecFileName(getSysProp("user.home"),"ISAW/tmp/save.DetCalL",false)
 RotateDetectors(DetCalFile,14, SaveDetCalFile,Ang,0,0)
 DetCalFile =SaveDetCalFile
 
