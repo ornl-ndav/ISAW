@@ -47,6 +47,7 @@ import org.w3c.dom.NodeList;
 
 import DataSetTools.operator.Generic.TOF_SCD.*;
 import DataSetTools.dataset.*;
+import DataSetTools.util.SharedData;
 
 
 /**
@@ -90,7 +91,6 @@ public class FileUtil
 
      float L1 = L1_t0[0];
      float t0 = L1_t0[1]; 
-
                                                   // Sort the grids on ID
      Object[] obj_arr = (grids.values()).toArray();
 
@@ -132,6 +132,91 @@ public class FileUtil
       else
         return -1;
     }
+  }
+
+
+
+  /**
+   *  Get a list of Strings giving the names of the SNS instruments that
+   *  are supported.
+   *
+   * @return An array listing supported SNS instruments.
+   */
+  public static String[] SupportedSNS_Instruments()
+  {
+    String[][] inst_info = LoadSupportedSNS_InstrumentInfo();
+    String[]   names     = new String[ inst_info.length ];
+    for ( int i = 0; i < inst_info.length; i++ )
+      names[i] = inst_info[i][0]; 
+
+    return names;
+  }
+
+
+
+  /**
+   *  Get a two dimensional array of Strings listing information about
+   *  supported SNS instruments and the corresponding instrument computers.
+   *  Each row of the array corresponds to one SNS instrument.  The entry
+   *  in the first column is the instrument name.  The entry in the second
+   *  column is the fully qualified name of the instrument computer from
+   *  which a live event stream can be obtained.
+   *
+   * @return A two-dimensional array of strings where array[k][0] is the 
+   *         instrument name and array[k][1] is the name of the instrument
+   *         computer for that instrument.
+   */
+  public static String[][] LoadSupportedSNS_InstrumentInfo() 
+  {
+    Vector strings = new Vector();
+
+    String default_dir = SharedData.getProperty("ISAW_HOME","") +
+                         "/InstrumentInfo/SNS/";
+    String filename = default_dir + "SupportedInstruments.txt";
+
+    try
+    {
+      FileReader     f_in        = new FileReader( filename );
+      BufferedReader buff_reader = new BufferedReader( f_in );
+      Scanner        sc          = new Scanner( buff_reader );
+
+      String str = sc.next();
+      while ( str != null )                        // Skip any comment lines
+      {                                            // and the version info
+        if ( str.trim().startsWith("#") )
+        {
+          sc.nextLine();
+          str = sc.next();
+        }
+        else
+        {
+          strings.add( str );
+          str = sc.next();
+          strings.add( str );
+          str = sc.next();
+        }
+      }
+    }
+    catch ( Exception ex )
+    {
+      if ( !(ex instanceof NoSuchElementException) )
+      {
+        System.out.println("Exception while reading file " + ex );
+        ex.printStackTrace();
+      }
+    }
+
+    int num_instruments = strings.size() / 2;
+    int index = 0;
+    String[][] str_array = new String[num_instruments][2];
+    for ( int i = 0; i < str_array.length; i++ )
+    {
+      str_array[i][0] = (String)strings.elementAt( index++ );
+      if ( index < strings.size() )
+        str_array[i][1] = (String)strings.elementAt( index++ );
+    }
+
+    return str_array;
   }
 
 
@@ -599,6 +684,15 @@ public class FileUtil
    */
   public static void main(String[] args)
   {
+    String[][] sns_inst = LoadSupportedSNS_InstrumentInfo();
+    for ( int i = 0; i < sns_inst.length; i++ )
+      System.out.println( sns_inst[i][0] + "   " + sns_inst[i][1] );
+
+    String[] sns_names = SupportedSNS_Instruments();
+    for ( int i = 0; i < sns_names.length; i++ )
+      System.out.println( sns_names[i] );
+
+/*
     String inst_name = "PG3";
     String info_dir  = "/home/dennis/SNS_ISAW/ISAW_ALL/InstrumentInfo/SNS/";
            info_dir += inst_name + "/";
@@ -606,6 +700,7 @@ public class FileUtil
 //  String bank_file = info_dir + inst_name +"_bank.xml";
 
     long start = System.nanoTime();
+*/
 /*
     int[]   map = LoadIntFile( map_file );
     boolean all_match = true;
@@ -651,7 +746,6 @@ public class FileUtil
       System.out.printf(" id range = %7s : %7s\n",
                           bank_data[3][i], bank_data[4][i] );
     }
-*/
 
     start = System.nanoTime();
     int n_ghosts = 16;
@@ -674,6 +768,7 @@ public class FileUtil
       }
       System.out.println();
     }   
+*/
 
   }
 
