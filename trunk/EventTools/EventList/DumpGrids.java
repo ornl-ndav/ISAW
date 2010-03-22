@@ -424,7 +424,7 @@ public class DumpGrids
    {
 
       String NexFileName = "C:/ISAW/Sampleruns/SNS/Snap/SNAP_263.nxs";
-      String DetCalFileName = "C:/ISAW/Sampleruns/SNS/Snap/SNAP.DETCAL";
+      String DetCalFileName = "C:/ISAW/Sampleruns/SNS/Snap/SNAP.DetCal";
       System.out.println( "Done Res="
             + DumpGrids.PrintDetCalFile( NexFileName , DetCalFileName ) );
    }
