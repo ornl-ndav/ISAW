@@ -109,12 +109,16 @@ import gov.anl.ipns.Parameters.StringPG;
 import gov.anl.ipns.Util.Numeric.Format;
 import gov.anl.ipns.Util.SpecialStrings.ErrorString;
 
-import java.util.Vector;
+
+import java.util.*;
+import java.io.*;
 
 import DataSetTools.operator.Generic.TOF_SCD.GenericTOF_SCD;
 import DataSetTools.operator.Generic.TOF_SCD.MatrixFilter;
 import DataSetTools.operator.Generic.TOF_SCD.IPeak;
 import DataSetTools.operator.Generic.TOF_SCD.Peak;
+import DataSetTools.operator.Generic.TOF_SCD.Peak_new;
+import DataSetTools.operator.Generic.TOF_SCD.Peak_new_IO;
 import DataSetTools.operator.Generic.TOF_SCD.Util;
 import DataSetTools.util.FilenameUtil;
 import DataSetTools.util.SharedData;
@@ -139,6 +143,7 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
 
   private static final double SMALL    = 1.525878906E-5;
   private static final String identmat = "[[1,0,0][0,1,0][0,0,1]]";
+  private static boolean first = true;
 
   //~ Constructors *************************************************************
 
@@ -761,14 +766,28 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
      *              least squares optimization is to be constrained
      *             to a particular unit cel l type
     
-     * @return null and the the  matrix file has the orientation matrix or an
+     * @return  the  matrix file has the orientation matrix or an
      *              errormessage.
      */
-    public static Object LsqrsJ1( Vector peaksPar, int[] run_nums, int[] seq_nums,
+  public static Object LsqrsJ1( Vector peaksPar, int[] run_nums, int[] seq_nums,
+        float[][] matrix, String matfile, int threshold, int[] keepRange,
+        String cellType)
+  
+   {
+     return LsqrsJ1(peaksPar, run_nums, seq_nums,
+        matrix, matfile, threshold,  keepRange,
+        cellType, null);
+   }
+  
+     public static Object LsqrsJ1( Vector peaksPar, int[] run_nums, int[] seq_nums,
                    float[][] matrix, String matfile, int threshold, int[] keepRange,
-                   String cellType){
+                   String cellType, double[] sig_abc){
 
      Vector peaks =new Vector();
+     if( sig_abc == null || sig_abc.length < 1)
+        sig_abc = null;
+     else
+        sig_abc[0] = -1;
      for( int i=0; i< peaksPar.size(); i++)
      {
        IPeak old_peak = (IPeak)peaksPar.elementAt(i);
@@ -786,7 +805,8 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
       
      int lowerLimit;
      int upperLimit;
-     double[] sig_abc = null;
+     if( sig_abc == null)
+         sig_abc = new double[7];
      if( keepRange != null ) {
        lowerLimit   = keepRange[0];  //lower limit of range
 
@@ -1112,7 +1132,7 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
 
     // determine uncertainties
    
-    if(sig_abc == null){
+    if(sig_abc == null || sig_abc[0] < 0){
        sig_abc = new double[7];
     
       double numFreedom      = 3. * ( nargs - 3. );
@@ -1141,13 +1161,14 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
           }
         }
       }
-
+ 
       // turn the 'sigmas' into actual sigmas
       double delta = chisq / numFreedom;
 
       for( int i = 0; i < sig_abc.length; i++ ) {
         sig_abc[i] = Math.sqrt( delta * sig_abc[i] );
       }
+      
     }
 
     // finish up the log buffer
@@ -1224,7 +1245,849 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
    
     return null;
   }
+
+     
+    
+
+     private static double[] ERRmult( double[]M1, double[]errM1,
+           double[][]M2, double[][]errM2)
+     {
+         double[] Res = new double[M2[0].length];
+         for( int i=0; i< Res.length; i++)
+         {
+            for(int k=0; k<M1.length; k++ )
+            {
+               Res[i] += M1[k]*errM2[k][i]*M1[k]*errM2[k][i]+
+                    errM1[k]*M2[k][i]*errM1[k]*M2[k][i];
+            }
+            Res[i] = Math.sqrt( Res[i] );
+         }
+         return Res;
+         
+     }
+     private static double[][] ERRmult( double[][]M1, double[][]errM1,
+                                        double[][]M2, double[][]errM2)
+     {
+        double[][] Res = new double[ M1.length][];
+        for( int i=0; i< M1.length;i++)
+           Res[i] = ERRmult( M1[i],errM1[i], M2, errM2);
+        
+        return Res;
+        
+     }
+     private static double[][] errorMult( double[][]M1,double[][]M2, boolean square)
+     {
+        double[][] Res = new double[M1.length][];
+        for( int r =0; r< M1.length; r++)
+        {
+           Res[r] = new double[M2[0].length];
+           for( int c=0; c<Res.length; c++)
+           {
+              
+           for( int k=0; k< Res.length;k++)
+           {
+              double V = M1[r][k]*M2[k][c];
+              if( square)
+                 V = V*V;
+              Res[r][c] += Math.abs(V);
+           }
+           Res[r][c] = Math.sqrt( Res[r][c]);
+        }
+        }
+        return Res;
+     }
+
+     private static double[] errorMult( double[][]M1,double[]M2)
+     {
+        double[] Res = new double[M1.length];
+        for( int i=0; i< Res.length; i++)
+        {
+           for( int k=0; k < M2.length ; k++)
+              Res[i] += M1[i][k]*M2[k]*M1[i][k]*M2[k];
+           Res[i] = Math.sqrt( Res[i] );
+        }
+        return Res;
+     }
+
+     private static double[] errorMult( double[]M1,double[][]M2)
+     {
+        double[] Res = new double[M2[0].length];
+        for( int i=0; i< Res.length; i++)
+        {
+           for( int k=0; k < M2.length ; k++)
+              Res[i] += M1[k]*M2[k][i]*M1[k]*M2[k][i];
+           
+           Res[i] = Math.sqrt( Res[i] );
+        }
+        return Res;
+     }
+
+     private static double errorMult( double[]M1,double[]M2)
+     {
+        double Res=0;
+        for( int k=0; k < M2.length ; k++)
+           Res += M1[k]*M2[k]*M1[k]*M2[k];
+        Res = Math.sqrt( Res );
+        return Res;
+     }
+     
+     /**
+      * Returns a 3*peaksSize array of hkl values
+      * @param peaks
+      * @return
+      */
+     public static double[][] getHKLArrays( Vector<IPeak> peaks)
+     {
+        
+        double[][]hkl = new double[3][peaks.size()];
+        for( int i=0; i< peaks.size( );i++)
+        {
+           IPeak peak = peaks.get( i );
+           hkl[0][i]= Math.floor( .5+peak.h( ));
+           hkl[1][i]= Math.floor( .5+peak.k( ));
+           hkl[2][i]= Math.floor( .5+peak.l( ));
+           
+        }
+        return hkl;
+     }
+     
+     
+     /**
+      * Returns a 3*peaksSize array of q values
+      * @param peaks
+      * @return
+      */
+     public static double[][] getQArray( Vector<IPeak> peaks)
+     {
+       
+        double[][]q = new double[3][peaks.size()];
+        for( int i=0; i< peaks.size( );i++)
+        {
+           IPeak peak = peaks.get( i );
+        
+           float[] qi= peak.getUnrotQ( );
+           q[0][i]= qi[0];
+           q[1][i]= qi[1];
+           q[2][i]= qi[2];
+           
+        }
+        return q;
+     }
+     /**
+      * Untested
+      * @param UB
+      * @param peaks
+      * @param keep
+      * @param logBuffer
+      * @param chisq
+      * @param abc
+      * @param sig_abc
+      * @param cellType
+      * @return
+      */
+     public static Object ShowLogInfo( double[][]UB,  
+                                     Vector<Peak_new>peaks,
+                                     int[]keep, 
+                                     StringBuffer logBuffer,
+                                     double chisq, 
+                                     double[] abc, 
+                                     double[] sig_abc,
+                                     String cellType)
+     {
+        System.out.println("CellType is "+cellType);
+       
+
+        boolean hasLog = true;
+        if( logBuffer == null)
+        {
+           logBuffer = new StringBuffer();
+           hasLog = false;
+        }
+        
+        if ( Double.isNaN( chisq ) )
+          return new ErrorString( "ERROR in LsqrsJ: " + 
+                                  " BestFitMatrix calculation failed" );
+       
+        double[][]hkl = new double[3][peaks.size()];
+        double[][]q = new double[3][peaks.size()];
+        for( int i=0; i< peaks.size( );i++)
+        {
+           Peak_new peak = peaks.get( i );
+           hkl[0][i]= Math.floor( .5+peak.h( ));
+           hkl[1][i]= Math.floor( .5+peak.k( ));
+           hkl[2][i]= Math.floor( .5+peak.l( ));
+           float[] qi= peak.getUnrotQ( );
+           q[0][i]= qi[0];
+           q[1][i]= qi[1];
+           q[2][i]= qi[2];
+           
+        }
+        
+        double[][] Tq     = LinearAlgebra.mult( UB, hkl );
+       // double[][] Thkl   = LinearAlgebra.mult( LinearAlgebra.getInverse( UB ), Tq );
+
+                                  // the "observed" hkl corresponding to measured
+                                  // q values.
+        double obs_q[][] = LinearAlgebra.getTranspose( q );
+        double obs_hkl[][];          
+        obs_hkl = LinearAlgebra.mult( LinearAlgebra.getInverse( UB ), obs_q );
+
+        // write information to the log file
+        logBuffer.append( 
+          " seq#   h     k     l      x      y       z      " +
+          "xcm    ycm      wl  Iobs    Qx     Qy     Qz\n" );
+        int k=0;
+        IPeak peak;
+        for( int i = 0; i < peaks.size(  ); i++ ) 
+        if(keep[i]==0){
+          peak = (IPeak)peaks.elementAt(i);
+    
+                          // The first line logged for a peak has the observered
+                          // values for the peak, 'indexed' by integer hkl values.
+          logBuffer.append( Format.integer( peak.seqnum(), 5)+" " +
+                            Format.integer( peak.h(), 3 )+" " +
+                            Format.integer( peak.k(), 5 )+" " +
+                            Format.integer( peak.l(), 5 )+" " +
+                            Format.real( peak.x(),   8, 2 )+" " +
+                            Format.real( peak.y(),   6, 2 )+" " +
+                            Format.real( peak.z(),   7, 2 )+" " +
+                            Format.real( peak.xcm(), 6, 2 )+" " +
+                            Format.real( peak.ycm(), 6, 2 )+" " +
+                            Format.real( peak.wl(),  7, 4 )+" " +
+                            Format.integer(  peak.ipkobs(), 5 )+" " +
+                            Format.real( peak.getUnrotQ()[0], 7, 3 )+" " +
+                            Format.real( peak.getUnrotQ()[1], 6, 3 )+" " + 
+                            Format.real( peak.getUnrotQ()[2], 6, 3 )+"\n" );
+
+                    logBuffer.append( Format.string("",73) +
+                            Format.real( Tq[0][k], 6, 3 )+" " + 
+                            Format.real( Tq[1][k], 6, 3 )+" " +
+                            Format.real( Tq[2][k], 6, 3 ) + "\n" );
+
+                            // The third line logged has the fractional hkl
+                            // values observed for a peak, together with the
+                            // difference in theoretical and observed hkl
+          logBuffer.append( "      " + 
+                            Format.real( obs_hkl[0][k], 6, 2 )+" " +
+                            Format.real( obs_hkl[1][k], 5, 2 )+" " + 
+                            Format.real( obs_hkl[2][k], 5, 2 )+" "  );
+
+          double error = Math.abs( obs_hkl[0][k] - peak.h() ) +
+                         Math.abs( obs_hkl[1][k] - peak.k() ) +
+                         Math.abs( obs_hkl[2][k] - peak.l() );
+
+          logBuffer.append( "   Del =" + Format.real( error, 6, 3 ) + " " ); 
+
+                                                // show one "*" for each .1 error
+          int n_stars = (int)( error / 0.1 );   // in hkl, up to 10.
+          if ( n_stars > 10 )
+            n_stars = 10;
+          while ( n_stars > 0 )     
+          {
+            logBuffer.append( "*" ); 
+            n_stars--;
+          } 
+          logBuffer.append( "\n" );
+          k++;
+        }
+
+        // calculate 
+        for( int i = 0; i <peaks.size(); i++ ) {
+          for( int j = 0; j < 3; j++ ) {
+            chisq = chisq + ( ( q[i][j] - Tq[j][i] ) * ( q[i][j] - Tq[j][i] ) );
+          }
+        }
+      
+
+      // add chisq to the logBuffer
+      logBuffer.append( 
+        "\nchisq[Qobs-Qexp]: " + Format.real( chisq, 8, 5 ) + "\n" );
+
+      // calculate lattice parameters and cell volume
+     
+
+      // determine uncertainties
+     
+      logBuffer.append( "\nOrientation matrix:\n" );
+
+      for( int i = 0; i < 3; i++ ) {
+        for( int j = 0; j < 3; j++ ) {
+          logBuffer.append( Format.real( UB[j][i], 9, 6 ) +" ");
+        }
+
+        logBuffer.append( "\n" );
+      }
+
+      logBuffer.append( "\n" );
+      logBuffer.append( "Lattice parameters:\n" );
+
+      for( int i = 0; i < 7; i++ ) {
+        logBuffer.append( Format.real( abc[i], 9, 3 )+" " );
+      }
+
+      logBuffer.append( "\n" );
+
+      for( int i = 0; i < 7; i++ ) {
+        logBuffer.append( Format.real( sig_abc[i], 9, 3 )+" " );
+      }
+
+      logBuffer.append( "\n" );
+
+      // print out the results
+      if( !hasLog)
+         toConsole( UB, abc, sig_abc );
+
+
+      return null;
+     }
+     /**
+      * Calculates the least squares matrix that best maps all the hkl vectors to
+      * all the q vectors. 
+      * 
+      * NOTE: This finds UB*hkl_col = Q_col.
+      * 
+      * Assumes errors in hkl values is 0. See CalcSig1 and CalcSigs2 for test
+      *        cases
+      *        
+      * NOTE: The theoretical Error results conform well with experimental results
+      *       but not well with results from the previous SCD least squares
+      *       estimates.
+      *       
+      * NOTE: hkl matrix must be preTransformed to use this method and all the q 
+      *        vectors must be indexed successfully. See other Utilities to create
+      *        proper arrays.(To be done)
+      * 
+      * @param UB      a 3x3 matrix. Must be allocated by user
+      * 
+      * @param hkl    a 3 by k matrix of hkl values 
+      * 
+      * @param q      a 3 by k matrix of q values
+      * 
+      * @param abc     The scalars. Must allocated at least 7 doubles
+      *                before calling it or no data will be returned
+      *                
+      *                
+      * @param sig_abc The errors in abc. Must allocated at least 7 doubles
+      *                before calling it or no data will be returned
+      *                 
+      * @return the chi square value( sum of squares of errors in q values)
+      */
+     private static  double LeastSquaresSCD(double[][] UB, 
+                                            double[][] hkl,
+                                            double [][] q, 
+                                            double[] abc, 
+                                            double[] sig_abc)
+     {
+        if( UB == null ||hkl == null || q==null || UB.length < 3 || 
+              hkl.length<3  ||   q.length < 3 ||UB.length < 3 )
+           
+           return Double.NaN;
+        
+        for( int i=0; i< 3; i++)
+           if( q[i].length != hkl[i].length  || UB[i].length < 3)
+              return Double.NaN;
+        
+        if( abc == null || abc.length < 7 ) abc = new double[7];
+        
+        if( sig_abc==null || sig_abc.length < 7) sig_abc = new double[7];
+        
+        double[][] UBS = new double[3][3];
+        double chiSq = LinearAlgebra.BestFitMatrix( UBS ,
+              LinearAlgebra.getTranspose(hkl), LinearAlgebra.getTranspose(q) );
+       
+        if( Double.isNaN( chiSq) )
+           return Double.NaN;
+        
+        LinearAlgebra.copy( UBS,UB);
+        double[][]Tensor = LinearAlgebra.getInverse( LinearAlgebra.mult(  
+                                LinearAlgebra.getTranspose( UBS ),UBS));
+        
+        abc[0]= Math.sqrt( Tensor[0][0] );
+        abc[1]= Math.sqrt( Tensor[1][1] );
+        abc[2]= Math.sqrt( Tensor[2][2] );
+        abc[3] =(  Tensor[1][2]/abc[1]/abc[2] );
+        abc[4] =(  Tensor[0][2]/abc[0]/abc[2] );
+        abc[5] =(  Tensor[0][1]/abc[0]/abc[1] );
+        
+        if( abc.length > 6)
+           abc[6] = abc[0]*abc[1]*abc[2]*
+                       Math.sqrt(1-abc[3]*abc[3]-abc[4]*abc[4]-abc[5]*abc[5]+
+                             2*abc[3]*abc[4]*abc[5]);
+       for( int i=3; i< 6;i++)
+          abc[i]= Math.acos( abc[i])*180/Math.PI;
+       
+       double s2_q = chiSq/(3*q[0].length -6);
+       
+       
+       
+       double[][] errSqij = new double[3][3];
+       Arrays.fill( errSqij[0], 0.);  
+       Arrays.fill( errSqij[1], 0.); 
+       Arrays.fill( errSqij[2], 0.);         
+       
+       
+       double[][] HHT = LinearAlgebra.mult( hkl, LinearAlgebra.getTranspose( hkl ) );
+       double[][]HHTinv = LinearAlgebra.getInverse( HHT );
+       
+      
+       double v;
+        for( int i=0; i< q[0].length; i++)
+        {
+             
+        //partial wrt  qx_i
+        for( int r=0; r<3;r++)
+           for(int c=0;c<3;c++)
+           {  
+              v  = HHTinv[c][0]*hkl[0][i];//*HHTinv[c][0]*hkl[0][i];
+              v += HHTinv[c][1]*hkl[1][i];//*HHTinv[c][1]*hkl[1][i];
+              v += HHTinv[c][2]*hkl[2][i];//*HHTinv[c][2]*hkl[2][i];
+            
+              errSqij[r][c] += v*v;
+           }
+        }
+   
+        
+        errSqij = LinearAlgebra.mult(  errSqij ,s2_q );
+       
+        for(int i=0; i<3;i++)
+           for(int j=0; j<3;j++)
+              errSqij[i][j] =Math.sqrt( errSqij[i][j] );
+        
+     
+       
+        double[][] errUBTUB = ERRmult( UBS ,errSqij, 
+                                LinearAlgebra.getTranspose( UBS ),
+                                LinearAlgebra.getTranspose( errSqij ));
+    
+        double[][] errTens = errorMult( Tensor , errUBTUB,true );
+        errTens = errorMult( errTens , Tensor ,true);
+        
+        for(int i=0; i<3;i++)
+           for( int j=0; j<3;j++)
+              errTens[i][j]= Math.abs( errTens[j][i]);
+      
+        
+        for( int i=0; i<3;i++)
+          sig_abc[i] = errTens[i][i]/(abc[i]*2); 
+              
+        for( int i=0; i <3;i++)
+        {
+           
+           sig_abc[3+i] = errTens[(i+1)%3][(i+2)%3];
+           sig_abc[3+i]=sig_abc[3+i]*abc[(i+1)%3]*abc[(i+2)%3]+//??use sqrt sum of squares
+                         Math.abs(Tensor[(i+1)%3][(i+2)%3])*
+                           (abc[(i+1)%3]*sig_abc[(i+2)%3]+
+                            abc[(i+2)%3]*sig_abc[(i+1)%3]
+                           );
+           
+           sig_abc[3+i] /=abc[(i+1)%3]*abc[(i+1)%3]*abc[(i+2)%3]*abc[(i+2)%3]*
+                          Math.sin( abc[3+i]*Math.PI/180 );
+           sig_abc[3+i] *=180/Math.PI;
+           
+        }
+        
+        if( sig_abc.length >6)
+            sig_abc[6]=SCD_ConstrainedLsqrsError.calcVolumeError( abc , sig_abc );
+               
+               
+        return chiSq;
+     }
+          
+  /**
+   * Calculates the least squares matrix that best maps the hkl vectors to
+   * the q vectors. This is test code that is NOT used.
+   * The test code remains so that it can be reused by others for  finding
+   * least squares errors.
+   * NOTE: This finds UB*hkl = Q.
+   * Assumes errors in hkl values is 0(code for error in hkl != 0 has not been tested)
+   * 
+   * @param UB      a 3x3 matrix. Must be allocated by user
+   * @param hkl    a 3 by k matrix of hkl values 
+   * @param q      a 3 by k matrix of q values
+   * @param abc     The scalars. Must be allocated before called or it
+   *                will not be returned
+   * @param sig_abc The errors in the scalars. Must be allocated before 
+   *                 calling this routing.
+   * @return
+   */
+  private static  double CalcSigs2(double[][] UB, double[][] hkl,
+                            double [][] q, double[] abc, double[] sig_abc)
+  {
+     if( UB == null ||hkl == null || q==null || UB.length < 3 || 
+           hkl.length<3  ||   q.length < 3 ||UB.length < 3 )
+        
+        return Double.NaN;
+     
+     for( int i=0; i< 3; i++)
+        if( q[i].length != hkl[i].length  || UB[i].length < 3)
+           return Double.NaN;
+     
+     if( abc == null || abc.length < 6 ) abc = new double[7];
+     if( sig_abc==null || sig_abc.length < 6) sig_abc = new double[7];
+     
+     double[][] UBS = new double[3][3];
+     double chiSq = LinearAlgebra.BestFitMatrix( UBS ,
+           LinearAlgebra.getTranspose(hkl), LinearAlgebra.getTranspose(q) );
+     if( first)
+        System.out.println("ChiSq,nelts in CalcSigs="+chiSq+","+q[0].length);
+     if( Double.isNaN( chiSq) )
+        return Double.NaN;
+     
+     LinearAlgebra.copy( UBS,UB);
+     double[][]Tensor = LinearAlgebra.getInverse( LinearAlgebra.mult(  
+                             LinearAlgebra.getTranspose( UBS ),UBS));
+     
+     abc[0]= Math.sqrt( Tensor[0][0] );
+     abc[1]= Math.sqrt( Tensor[1][1] );
+     abc[2]= Math.sqrt( Tensor[2][2] );
+     abc[3] =(  Tensor[1][2]/abc[1]/abc[2] );
+     abc[4] =(  Tensor[0][2]/abc[0]/abc[2] );
+     abc[5] =(  Tensor[0][1]/abc[0]/abc[1] );
+     if( abc.length > 6)
+        abc[6] = abc[0]*abc[1]*abc[2]*
+                    Math.sqrt(1-abc[3]*abc[3]-abc[4]*abc[4]-abc[5]*abc[5]+
+                          2*abc[3]*abc[4]*abc[5]);
+    for( int i=3; i< 6;i++)
+       abc[i]= Math.acos( abc[i])*180/Math.PI;
+    
+    double s2_q = chiSq/(3*q[0].length -6);
+    double s2_hkl =0;
+    double[][] Thkl =LinearAlgebra.mult( LinearAlgebra.getInverse( UBS ),q);
+    for( int i=0; i < 3; i++)
+       for( int j=0; j< Thkl[i].length; j++)
+           s2_hkl+=(Thkl[i][j] - hkl[i][j])*(Thkl[i][j] - hkl[i][j]);
+    s2_hkl = s2_hkl/(3*q[0].length -6);
+    
+    double[][] errSqij = new double[3][3];
+    Arrays.fill( errSqij[0], 0.);  
+    Arrays.fill( errSqij[1], 0.); 
+    Arrays.fill( errSqij[2], 0.);         
+    
+    
+    double[][] HHT = LinearAlgebra.mult( hkl, LinearAlgebra.getTranspose( hkl ) );
+    double[][]HHTinv = LinearAlgebra.getInverse( HHT );
+    
+    double [][] Qmid= LinearAlgebra.mult( hkl , LinearAlgebra.getTranspose(q) );
+    Qmid =LinearAlgebra.mult( HHTinv, Qmid );
+    double[][]scratch = new double[3][3];
+    double qi,v;
+    double[][] res;
+    double[] savqxi= new double[q[0].length];
+     for( int i=0; i< q[0].length; i++)
+     {
+        //-----partial wrt hi
+        Arrays.fill( scratch[0] , 0. );
+        Arrays.fill( scratch[1] , 0. );
+        Arrays.fill( scratch[2] , 0. );
+        scratch[0][0]=2*hkl[0][i];
+        scratch[0][1] = scratch[1][0]= hkl[1][i];
+        scratch[0][2] =scratch[2][0]=hkl[2][i];
+        res = LinearAlgebra.mult( 
+                           LinearAlgebra.mult( HHTinv,scratch),Qmid);
+       for( int r=0; r<3;r++)
+          for(int c=0;c<3;c++)
+            
+          {  
+             qi= q[r][i];
+          
+             v= res[c][r] -qi*HHTinv[c][0] ;
+             errSqij[r][c] += 0;//v*v;
+          }
+       // partial wrt ki's
+       Arrays.fill( scratch[0] , 0. );
+       Arrays.fill( scratch[1] , 0. );
+       Arrays.fill( scratch[2] , 0. );
+       scratch[1][1]=2*hkl[1][i];
+       scratch[0][1] = scratch[1][0]= hkl[0][i];
+       scratch[1][2] =scratch[2][1]=hkl[2][i];
+       res = LinearAlgebra.mult( 
+                          LinearAlgebra.mult( HHTinv,scratch),Qmid);
+      for( int r=0; r<3;r++)
+         for(int c=0;c<3;c++)
+         {  
+            qi= q[r][i];
+            int k=1;
+            v= res[c][r] -qi*HHTinv[c][k] ;
+            errSqij[r][c] += 0;//v*v;
+         }
   
+      
+      // partial wrt q_li's
+      Arrays.fill( scratch[0] , 0. );
+      Arrays.fill( scratch[1] , 0. );
+      Arrays.fill( scratch[2] , 0. );
+      scratch[2][2]=2*hkl[2][i];
+      scratch[0][2] = scratch[2][0]= hkl[0][i];
+      scratch[1][2] =scratch[2][1]=hkl[1][i];
+      res = LinearAlgebra.mult( 
+                         LinearAlgebra.mult( HHTinv,scratch),Qmid);
+     for( int r=0; r<3;r++)
+        for(int c=0;c<3;c++)
+        {  
+           qi= q[r][i];
+           int k=1;
+           v= res[c][r] -qi*HHTinv[c][k] ;
+           errSqij[r][c] +=0;// v*v;
+        }
+    
+     
+     //partial wrt  qx_i
+     for( int r=0; r<3;r++)
+        for(int c=0;c<3;c++)
+        {  
+           v  = HHTinv[c][0]*hkl[0][i];//*HHTinv[c][0]*hkl[0][i];
+           v += HHTinv[c][1]*hkl[1][i];//*HHTinv[c][1]*hkl[1][i];
+           v += HHTinv[c][2]*hkl[2][i];//*HHTinv[c][2]*hkl[2][i];
+           if( c==0)
+              savqxi[i] = v;
+           errSqij[r][c] += v*v;
+        }
+     }
+     if( first)
+     {
+        System.out.println("Should match bottom matrix,"+s2_q);
+        LinearAlgebra.print(  errSqij);       
+           
+     }
+     errSqij = LinearAlgebra.mult(  errSqij ,s2_q );
+    
+     for(int i=0; i<3;i++)
+        for(int j=0; j<3;j++)
+           errSqij[i][j] =Math.sqrt( errSqij[i][j] );
+     
+  
+    
+     double[][] errUBTUB = ERRmult( UBS ,errSqij, 
+                             LinearAlgebra.getTranspose( UBS ),
+                             LinearAlgebra.getTranspose( errSqij ));
+    /* for(int i=0; i<3;i++)
+        for( int j=0; i<i;j++)
+           errUBTUB[i][j]= errUBTUB[j][i] =
+              Math.sqrt( errUBTUB[i][j]*errUBTUB[i][j]+
+                    errUBTUB[j][i]*errUBTUB[j][i]);
+     */
+     double[][] errTens = errorMult( Tensor , errUBTUB,true );
+     errTens = errorMult( errTens , Tensor ,true);
+     for(int i=0; i<3;i++)
+        for( int j=0; j<3;j++)
+           errTens[i][j]= Math.abs( errTens[j][i]);
+     
+     if( first)
+     {
+        first = false;
+        System.out.println("UB error in CalcSigs");
+        LinearAlgebra.print(  errSqij );
+        System.out.println("UBTUB errors=");
+        LinearAlgebra.print( errUBTUB );
+        System.out.println("Tensor errors=");
+        LinearAlgebra.print(  errTens );
+        
+     }
+     
+     for( int i=0; i<3;i++)
+       sig_abc[i] = errTens[i][i]/(abc[i]*2); 
+           
+     for( int i=0; i <3;i++)
+     {
+        
+        sig_abc[3+i] = errTens[(i+1)%3][(i+2)%3];
+        sig_abc[3+i]=sig_abc[3+i]*abc[(i+1)%3]*abc[(i+2)%3]+
+                      Math.abs(Tensor[(i+1)%3][(i+2)%3])*
+                        (abc[(i+1)%3]*sig_abc[(i+2)%3]+
+                         abc[(i+2)%3]*sig_abc[(i+1)%3]
+                        );
+        sig_abc[3+i] /=abc[(i+1)%3]*abc[(i+1)%3]*abc[(i+2)%3]*abc[(i+2)%3]*
+                       Math.sin( abc[3+i]*Math.PI/180 );
+        sig_abc[3+i] *=180/Math.PI;
+        
+     }
+     
+     if( sig_abc.length >6)
+         sig_abc[6]=SCD_ConstrainedLsqrsError.calcVolumeError( abc , sig_abc );
+            
+            
+     return chiSq;
+  }
+  
+  
+  /**
+   * Calculates the least squares matrix that best maps the hkl vectors to
+   * the q vectors. This is test code that is NOT used.
+   * The test code remains so that it can be reused by others for  finding
+   * least squares errors.
+   * NOTE: This finds UB*Q = hkl.
+   * Assumes code has not been tested much)
+   */
+   private static double CalcSigs1(double[][] UB, double[][] hkl, double[][] q,
+         double[] abc, double[] sig_abc)
+   {
+
+      if ( UB == null || hkl == null || q == null || UB.length < 3
+            || hkl.length < 3 || q.length < 3 || UB.length < 3 )
+
+         return Double.NaN;
+
+      for( int i = 0 ; i < 3 ; i++ )
+         if ( q[i].length != hkl[i].length || UB[i].length < 3 )
+            return Double.NaN;
+
+      if ( abc == null || abc.length < 6 )
+         abc = new double[ 7 ];
+      if ( sig_abc == null || sig_abc.length < 6 )
+         sig_abc = new double[ 7 ];
+
+      double[][] UBI = new double[ 3 ][ 3 ];
+      double chiSq = LinearAlgebra.BestFitMatrix( UBI , LinearAlgebra
+            .getTranspose( q ) , LinearAlgebra.getTranspose( hkl ) );
+
+      if ( Double.isNaN( chiSq ) )
+         return Double.NaN;
+
+      LinearAlgebra.copy( LinearAlgebra.getInverse( UBI ) , UB );
+      double[][] Tensor = LinearAlgebra.mult( UBI , LinearAlgebra
+            .getTranspose( UBI ) );
+
+      abc[0] = Math.sqrt( Tensor[0][0] );
+      abc[1] = Math.sqrt( Tensor[1][1] );
+      abc[2] = Math.sqrt( Tensor[2][2] );
+      abc[3] = ( Tensor[1][2] / abc[1] / abc[2] );
+      abc[4] = ( Tensor[0][2] / abc[0] / abc[2] );
+      abc[5] = ( Tensor[0][1] / abc[0] / abc[1] );
+      if ( abc.length > 6 )
+         abc[6] = abc[0]
+               * abc[1]
+               * abc[2]
+               * Math.sqrt( 1 - abc[3] * abc[3] - abc[4] * abc[4] - abc[5]
+                     * abc[5] + 2 * abc[3] * abc[4] * abc[5] );
+      ;
+      for( int i = 3 ; i < 6 ; i++ )
+         abc[i] = Math.acos( abc[i] ) * 180 / Math.PI;
+
+      double s2_hkl = chiSq / ( 3 * q[0].length - 6 );
+      double s2_q = 0;
+      double[][] Tqhkl = LinearAlgebra.mult( LinearAlgebra.getInverse( UBI ) ,
+            hkl );
+      for( int i = 0 ; i < 3 ; i++ )
+         for( int j = 0 ; j < Tqhkl[i].length ; j++ )
+            s2_q += ( Tqhkl[i][j] - q[i][j] ) * ( Tqhkl[i][j] - q[i][j] );
+      s2_q = s2_q / ( 3 * q[0].length - 6 );
+
+      double[][] errSqij = new double[ 3 ][ 3 ];
+      Arrays.fill( errSqij[0] , 0 );
+      Arrays.fill( errSqij[1] , 0 );
+      Arrays.fill( errSqij[2] , 0 );
+
+      double[][] QQT = LinearAlgebra.mult( q , LinearAlgebra.getTranspose( q ) );
+      double[][] QQTinv = LinearAlgebra.getInverse( QQT );
+
+      double[][] Qmid = LinearAlgebra.mult( q , LinearAlgebra
+            .getTranspose( hkl ) );
+      Qmid = LinearAlgebra.mult( QQTinv , Qmid );
+      double[][] scratch = new double[ 3 ][ 3 ];
+      double hkli, v;
+      double[][] res;
+      for( int i = 0 ; i < q[0].length ; i++ )
+      {
+         // -----partial wrt q_xi
+         Arrays.fill( scratch[0] ,0);
+         Arrays.fill( scratch[1] ,0);
+         Arrays.fill( scratch[2] ,0);
+         
+         scratch[0][0] = 2 * q[0][i];
+         scratch[0][1] = scratch[1][0] = q[1][i];
+         scratch[0][2] = scratch[2][0] = q[2][i];
+         res = LinearAlgebra.mult( LinearAlgebra.mult( QQTinv , scratch ) ,
+               Qmid );
+         for( int r = 0 ; r < 3 ; r++ )
+            for( int c = 0 ; c < 3 ; c++ )
+
+            {
+               hkli = hkl[r][i];
+
+               v = res[c][r] - hkli * QQTinv[c][0];
+               errSqij[r][c] += v * v;
+            }
+         // partial wrt q_yi's
+         Arrays.fill( scratch[0] ,0);
+         Arrays.fill( scratch[1] ,0);
+         Arrays.fill( scratch[2] ,0);
+         scratch[1][1] = 2 * q[1][i];
+         scratch[0][1] = scratch[1][0] = q[0][i];
+         scratch[1][2] = scratch[2][1] = q[2][i];
+         res = LinearAlgebra.mult( LinearAlgebra.mult( QQTinv , scratch ) ,
+               Qmid );
+         for( int r = 0 ; r < 3 ; r++ )
+            for( int c = 0 ; c < 3 ; c++ )
+            {
+               hkli = hkl[r][i];
+               int k = 1;
+               v = res[c][r] - hkli * QQTinv[c][k];
+               errSqij[r][c] += v * v;
+            }
+
+         // partial wrt q_zi's
+         Arrays.fill( scratch[0] ,0);
+         Arrays.fill( scratch[1] ,0);
+         Arrays.fill( scratch[2] ,0);
+         scratch[2][2] = 2 * q[2][i];
+         scratch[0][2] = scratch[2][0] = q[0][i];
+         scratch[1][2] = scratch[2][1] = q[1][i];
+         res = LinearAlgebra.mult( LinearAlgebra.mult( QQTinv , scratch ) ,
+               Qmid );
+         for( int r = 0 ; r < 3 ; r++ )
+            for( int c = 0 ; c < 3 ; c++ )
+            {
+               hkli = hkl[r][i];
+               int k = 1;
+               v = res[c][r] - hkli * QQTinv[c][k];
+               errSqij[r][c] += v * v;
+            }
+
+         // partial wrt hkl_i
+         for( int r = 0 ; r < 3 ; r++ )
+            for( int c = 0 ; c < 3 ; c++ )
+            {
+               v = QQTinv[c][0] * q[0][i] + QQTinv[c][1] * q[1][i]
+                     + QQTinv[c][2] * q[2][i];
+               errSqij[r][c] += v * v / s2_q * s2_hkl;
+            }
+      }
+      errSqij = LinearAlgebra.mult( errSqij , s2_q );
+
+      for( int i = 0 ; i < 3 ; i++ )
+         for( int j = 0 ; j < 3 ; j++ )
+            errSqij[i][j] = Math.sqrt( errSqij[i][j] );
+
+      // TODO: mult out use sq(a1*b1)+sq(a2*b2) +sq(a3*b3) as dot product
+      double[][] plMin = LinearAlgebra.mult( UB , LinearAlgebra
+            .getTranspose( errSqij ) );
+      for( int i = 0 ; i < 3 ; i++ )
+         sig_abc[i] = 2 * plMin[i][i];
+
+      for( int i = 0 ; i < 3 ; i++ )
+      {
+
+         sig_abc[3 + i] = plMin[( i + 1 ) % 3][( i + 2 ) % 3]
+               + plMin[( i + 2 ) % 3][( i + 1 ) % 3];// dot product error
+         sig_abc[3 + i] = ( sig_abc[3 + i] * abc[( i + 1 ) % 3]
+               * abc[( i + 2 ) % 3] + Math
+               .abs( Tensor[( i + 1 ) % 3][( i + 2 ) % 3] )
+               * sig_abc[3 + i] )
+               / ( abc[( i + 1 ) % 3] * abc[( i + 1 ) % 3] * abc[( i + 2 ) % 3]
+                     * abc[( i + 2 ) % 3] * Math.sin( abc[i] * Math.PI / 180 ) );// dot
+                                                                                 // prod
+                                                                                 // error
+                                                                                 // to
+                                                                                 // angle
+                                                                                 // error
+      }
+
+      if ( sig_abc.length > 6 )
+         sig_abc[6] = SCD_ConstrainedLsqrsError.calcVolumeError( abc , sig_abc );
+
+      return chiSq;
+   }
+   
   private static String Show( Object A){
     String S ="";
     S= gov.anl.ipns.Util.Sys.StringUtil.toString(A);
@@ -1251,7 +2114,7 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
   /**
    * Main method for testing purposes and running outside of ISAW.
    */
-  public static void main( String[] args ) {
+  public static void main1( String[] args ) {
     LsqrsJ_base lsqrs = new LsqrsJ_base(  );
 
     /* TEST VERSION
@@ -1276,7 +2139,139 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
       System.exit( 0 );
     }
   }
+  public static void main( String[] args )
+  {
+     try
+     {
+       Vector<Peak_new> V = Peak_new_IO.ReadPeaks_new( "c:/ISAW/SampleRuns/SNS/SNAP/WSF/235_46/quartzFx.peaks");
 
+       double[] sig_abc = new double[7];
+       System.out.println("orig="+LsqrsJ1(V,null,null,
+                   null, "C:/Users/ruth/x.mat", 8, null,
+                   "Tri", sig_abc));
+       System.out.println("original errors");
+       LinearAlgebra.print( sig_abc );
+     
+       double[][] UB = new double[3][3];
+       double[][] q = new double[3][V.size()];
+       double[][] hkl = new double[3][V.size()];
+       double[] abc = new double[7];
+       float[] qq;
+       for( int i=0; i< V.size( ); i++)
+       {
+          Peak_new pk = V.elementAt( i );
+          qq = pk.getUnrotQ( );
+          q[0][i] = qq[0];
+          q[1][i] = qq[1];
+          q[2][i] = qq[2];
+          hkl[0][i]= Math.floor(.5+pk.h( ));
+          hkl[1][i]= Math.floor(.5+pk.k( ));
+          hkl[2][i]= Math.floor(.5+pk.l( ));
+       }
+       
+       double chiSq = LeastSquaresSCD(UB,  hkl,
+             q,  abc,  sig_abc);
+       System.out.println( "new="+chiSq);
+       
+       System.out.println("new UB =");
+       LinearAlgebra.print( LinearAlgebra.getTranspose( UB) );
+       System.out.println("new abc");
+       LinearAlgebra.print(  abc );
+       System.out.println("new sigabc");
+       LinearAlgebra.print(  sig_abc );
+       //===================Experimental works
+       Scanner fin = new Scanner(new
+             File("C:/ISAW/Operators/TOF_SCD/NormZ.vals"));
+       
+       double[] zVals = new double[1534];
+       for(int i=0;i<1533;i++)
+          zVals[i] = fin.nextDouble( );
+
+       //LinearAlgebra.print(zVals);
+       double[][] UBsq = new double[3][3];
+       double[][] UBs = new double[3][3];
+       double[][] scratch1 = new double[3][3];
+       double[][] scratch2 = new double[3][3];
+       double[][] UBTUB1 = new double[3][3];
+       double[][] Tensor1 = new double[3][3];;
+       double[][] UBTUB2 = new double[3][3];
+       double[][] Tensor2 = new double[3][3];
+       double[][] UB1 = new double[3][3];
+       double[] scalarSQ = new double[7];
+       double[] scalar1 = new double[7];
+       double[] scalar  = new double[7];
+       int N=1534/3;
+       double sq = Math.sqrt( chiSq/(q[0].length-1)/3);
+       
+       int z=160;
+       
+       for( int i=0; i< N; i++)
+       {
+          q = LinearAlgebra.mult( UB,hkl );
+          for( int s=0;s<q.length;s++)
+             for( int k=0; k < q[s].length; k++)
+                {
+                 q[s][k] += zVals[z]*sq;
+                 z++;
+                 if( z >= 1534)
+                    z=0;
+                }
+               
+       
+          if( z >=1534) z=0;
+          
+          LeastSquaresSCD( UBs, hkl, q, scalar,null);
+          scratch1= LinearAlgebra.mult( LinearAlgebra.getTranspose(UBs) ,UBs  );
+          scratch2= LinearAlgebra.getInverse( scratch1 ); 
+          for( int r=0; r< 3; r++)
+          {
+             
+             for( int c=0; c< 3;c++)
+             {
+                UBsq[r][c] += UBs[r][c]*UBs[r][c];
+                UB1[r][c] += UBs[r][c];
+                UBTUB1[r][c] +=scratch1[r][c];
+
+                UBTUB2[r][c] +=scratch1[r][c]*scratch1[r][c];
+
+                Tensor1[r][c] +=scratch2[r][c];
+
+                Tensor2[r][c] +=scratch2[r][c]*scratch2[r][c];
+
+             }
+          }
+          
+          for( int s=0; s<7;s++)
+          {
+             scalarSQ[s] += scalar[s]*scalar[s];
+             scalar1[s] +=scalar[s];
+          }
+          
+       }
+       
+      
+       System.out.println("Experimental results");
+       for( int r=0;r<3;r++)
+          for(int c=0; c<3; c++)
+          {
+             UB1[r][c]= Math.sqrt((UBsq[r][c]-UB1[r][c]*UB1[r][c]/N)/(N-1));
+             UBTUB1[r][c]= Math.sqrt((UBTUB2[r][c]-UBTUB1[r][c]*UBTUB1[r][c]/N)/(N-1));
+             Tensor1[r][c]= Math.sqrt((Tensor2[r][c]-Tensor1[r][c]*Tensor1[r][c]/N)/(N-1));
+          }
+       
+       for( int s =0; s< 7; s++)
+          scalar1[s] =Math.sqrt((scalarSQ[s]-scalar1[s]*scalar1[s]/N)/(N-1));
+      
+       
+       System.out.println("Errors in abc");
+       LinearAlgebra.print( scalar1 );
+      
+     }catch(Exception ss)
+     {
+        ss.printStackTrace( );
+        System.exit( 0 );
+     }
+  }
   /**
    * Read in input from the user when not running as an operator. This is
    * currently commented out code until the real implementation is done.
