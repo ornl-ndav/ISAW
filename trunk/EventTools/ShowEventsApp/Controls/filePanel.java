@@ -117,8 +117,7 @@ public class filePanel //extends JPanel
 
    private FilteredPG_TextField Port;
    private JComboBox            Instrument;
-   private static String[]      InstrumentList = 
-                                    SNS_Tof_to_Q_map.supported_instruments;
+
    /**
     * Creates file panel as well as sets up default
     * properties for the file load locations.
@@ -267,23 +266,23 @@ public class filePanel //extends JPanel
       JPanel Res = new JPanel();
       BoxLayout BL = new BoxLayout( Res, BoxLayout.Y_AXIS);
       Res.setLayout( BL );
+
       JPanel subPanel = new JPanel();
+      subPanel.setLayout(  new GridLayout(1,2) );
+      subPanel.add( new JLabel("Instrument"));
+      Instrument = new JComboBox( FileUtil.SupportedSNS_Instruments() );
+      Instrument.setSelectedIndex( 0 );
+      subPanel.add( Instrument);
+      Res.add(  subPanel );
       
+      subPanel = new JPanel();
       subPanel.setLayout( new GridLayout(1,2) );
       subPanel.add( new JLabel("Port") );
       Port = new FilteredPG_TextField( new IntegerFilter() );
       Port.setText( ""+udp_port );
+      Port.setHorizontalAlignment(JTextField.RIGHT);
       subPanel.add( Port );
       Res.add( subPanel );
-      
-      subPanel = new JPanel();
-      subPanel.setLayout(  new GridLayout(1,2) );
-      subPanel.add( new JLabel("Instrument"));
-      Instrument = new JComboBox( InstrumentList);
-      Instrument.setSelectedIndex( 0 );
-      
-      subPanel.add( Instrument);
-      Res.add(  subPanel );
       
       JLabel maxEvents = new JLabel("Number to Show in 3D: ");
       eventsToShowUDP = new JTextField( ""+num_to_show_UDP );
@@ -883,6 +882,19 @@ public class filePanel //extends JPanel
 
       return true;
    }
+
+   
+   private int OpenTCP_Connection( String instrument )
+   {
+     int CONNECT_PORT = 9000;
+     return 1;
+   }
+
+   private void CloseTCP_Connection()
+   {
+
+   }
+
    
    private class UDPActionListener implements ActionListener
    {
@@ -976,6 +988,7 @@ public class filePanel //extends JPanel
           }
       }
    }
+
 
   /**
    *  Listens for changes in text field specifying the event data file
@@ -1185,4 +1198,5 @@ public class filePanel //extends JPanel
       View.add(fp.getPanel());
       new UpdateManager(mc, null, 100);
    }
+
 }
