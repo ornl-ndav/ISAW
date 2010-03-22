@@ -60,29 +60,22 @@ import MessageTools.*;
  */
 public class multiPanel implements IReceiveMessage, IhasWindowClosed
 {
-
-   public static Rectangle    PANEL_BOUNDS = new Rectangle( 10 , 10 , 570 , 510 );
-
+   public static Rectangle    PANEL_BOUNDS = new Rectangle( 10, 10, 570, 510 );
    private JFrame             mainView;
-
    private controlsPanel      controlpanel;
-
    private displayPanel       displayPanel;
-
    private SplitPaneWithState splitPane;
-
-   private MessageCenter      messageCenter, viewMessageCenter;
-
+   private MessageCenter      messageCenter, 
+                              viewMessageCenter;
    private boolean            statusShowing;
 
    /**
     * Creates the controlsPanel and the displayPanel to be added to the
     * SplitPane and then creates the JFrame.
     */
-   public multiPanel(MessageCenter messageCenter,
-         MessageCenter viewMessageCenter)
+   public multiPanel( MessageCenter messageCenter,
+                      MessageCenter viewMessageCenter)
    {
-
       this.messageCenter = messageCenter;
       this.viewMessageCenter = viewMessageCenter;
       controlpanel = new controlsPanel( messageCenter , viewMessageCenter );
@@ -98,13 +91,12 @@ public class multiPanel implements IReceiveMessage, IhasWindowClosed
     */
    private void buildMainFrame()
    {
-
       mainView = new JFrame( "Reciprocal Space Event Viewer" );
-      mainView.setDefaultCloseOperation( WindowConstants.DISPOSE_ON_CLOSE );
+      mainView.setDefaultCloseOperation( WindowConstants.DO_NOTHING_ON_CLOSE );
       mainView.setBounds( PANEL_BOUNDS );
       mainView.setVisible( true );
-      mainView.addWindowListener( new IndirectWindowCloseListener( this ,
-            "MAIN" ) );
+      mainView.addWindowListener( 
+                           new IndirectWindowCloseListener( this , "MAIN" ) );
 
       JPanel panel = new JPanel( );
       panel.setLayout( new GridLayout( 1 , 1 ) );
@@ -124,8 +116,8 @@ public class multiPanel implements IReceiveMessage, IhasWindowClosed
       StatusFrame.setBounds( PANEL_BOUNDS.x , PANEL_BOUNDS.y
             + PANEL_BOUNDS.height , PANEL_BOUNDS.width ,
             PANEL_BOUNDS.height / 2 );
-      StatusFrame.addWindowListener( new IndirectWindowCloseListener( this ,
-            "MESSAGE" ) );
+      StatusFrame.addWindowListener( 
+                          new IndirectWindowCloseListener( this, "MESSAGE" ) );
 
       MessageCenter status_message_center = Util.getStatusMessageCenter( );
       new StatusMessageHandler( status_message_center , StatusFrame
@@ -138,13 +130,12 @@ public class multiPanel implements IReceiveMessage, IhasWindowClosed
    /**
     * Builds the menu bar for the app containing file and help options.
     * 
-    * @param C
-    *           The parent component to be used for the CloseAppActionListener
+    * @param C  The parent component to be used for the CloseAppActionListener
+    *
     * @return JMenuBar
     */
    private JMenuBar getJMenuBar(JComponent C)
    {
-
       JMenuBar jmenBar = new JMenuBar( );
       JMenu FileMen = new JMenu( "File" );
       JMenu ViewMenu = new JMenu( "View" );
@@ -215,7 +206,6 @@ public class multiPanel implements IReceiveMessage, IhasWindowClosed
 
    public boolean receive(Message message)
    {
-
       // Show message window
       if ( statusShowing )
          return false;
@@ -228,26 +218,49 @@ public class multiPanel implements IReceiveMessage, IhasWindowClosed
             .setNewMessageContainer( StatusFrame.getContentPane( ) );
       statusShowing = true;
       WindowShower.show( StatusFrame );
-      StatusFrame.addWindowListener( new IndirectWindowCloseListener( this ,
-            "ABS" ) );
+      StatusFrame.addWindowListener( 
+                          new IndirectWindowCloseListener( this, "MESSAGE" ) );
       return false;
    }
 
    @Override
    public void WindowClose(String ID)
    {
-
+      System.out.println("WindowClose called for ID " + ID );
       if ( ID.equals( "MESSAGE" ) )
          statusShowing = false;
-      else
-      // Close all Windows
+      else if ( ID.equals("MAIN") )
       {
-         System.exit( 0 );
+        if ( ReallyExitApp( displayPanel ) )
+        {
+          System.gc();
+          try 
+          {
+            Thread.sleep(1000);
+          }
+          catch (Exception ex)
+          {
+          }
+          System.exit( 0 );
+        }
       }
-
    }
 
-}
+
+  private boolean ReallyExitApp( JComponent comp )
+  {
+    System.out.println("Started ReallyExitApp dialog");
+
+    int res = JOptionPane.showConfirmDialog( comp,
+                                            "Do you Really want to Exit",
+                                            "Exit",
+                                             JOptionPane.YES_NO_OPTION );
+    if ( res == JOptionPane.NO_OPTION )
+      return false;
+    else
+      return true; 
+  }
+
 
 /**
  * Catches the user when they select File->Exit and double checks that that is
@@ -256,38 +269,37 @@ public class multiPanel implements IReceiveMessage, IhasWindowClosed
  */
 class CloseAppActionListener implements java.awt.event.ActionListener
 {
-
    JComponent comp;
-
    boolean    check;
 
    public CloseAppActionListener(JComponent C, boolean check)
    {
-
       comp = C;
       this.check = check;
    }
 
    /* (non-Javadoc)
-    * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+    * @see 
+    * java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
     */
    @Override
    public void actionPerformed(ActionEvent e)
    {
-
-      if ( check )
+      if ( check && ReallyExitApp( comp ) )
       {
-         int res = JOptionPane.showConfirmDialog( comp ,
-               "Do you Really want to Exit" , "Exit" ,
-               JOptionPane.YES_NO_OPTION );
-         if ( res == JOptionPane.NO_OPTION )
-            return;
+        System.out.println("Now sending Exit Application Command");
+
+        Message message = new Message( Commands.EXIT_APPLICATION,
+                                       new ExitApplicationCmd(),
+                                       true,
+                                       true );
+        messageCenter.send(message);
+        viewMessageCenter.send(message);
+        // System.exit( 0 );
       }
-
-      System.exit( 0 );
    }
-
 }
+
 
 /**
  * When Save Q or Save D is selected it pops up it pops up a JFileChooser for
@@ -296,16 +308,12 @@ class CloseAppActionListener implements java.awt.event.ActionListener
  */
 class SaveActionListener implements ActionListener
 {
-
    String        Sv;
-
    String        Command;
-
    MessageCenter message_center;
 
    public SaveActionListener(MessageCenter message_center, String Sv)
    {
-
       this.Sv = Sv;
       if ( Sv == "Q" )
          Command = Commands.SAVE_Q_VALUES;
@@ -319,7 +327,6 @@ class SaveActionListener implements ActionListener
 
    public void actionPerformed(ActionEvent evt)
    {
-
       if ( Sv.length( ) > 1 )
       {
          message_center.send( new Message( Command , null , true ) );
@@ -328,10 +335,12 @@ class SaveActionListener implements ActionListener
       JFileChooser jf = new JFileChooser( );
       if ( jf.showSaveDialog( null ) != JFileChooser.APPROVE_OPTION )
          return;
-      message_center.send( new Message( Command , jf.getSelectedFile( )
-            .toString( ) , false ) );
+      message_center.send( new Message( Command, 
+                                        jf.getSelectedFile().toString(), 
+                                        false ) );
    }
 }
+
 
 class SaveInfoActionListener implements ActionListener
 {
@@ -356,7 +365,6 @@ class SaveInfoActionListener implements ActionListener
                   Command, lastWriteFileName ,
                   false ) );
       }
-      
    }
    
    private String Directory(String filename)
@@ -370,5 +378,6 @@ class SaveInfoActionListener implements ActionListener
       String res = Filename.substring( 0,i );
       return res.replace( '/' , java.io.File.separatorChar );
    }
+}
 
 }
