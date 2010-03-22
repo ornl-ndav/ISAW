@@ -1,0 +1,26 @@
+# Version 1.0
+#
+# List of instrument names and computers from which a live event stream
+# may be obtained from Jim Kohl's event catcher.  The instrument names 
+# are used in several parts of ISAW.  The computer names are currently
+# (3/22/2010) just used in IsawEV.
+#
+# This file may start with an arbitrary number of comment lines
+# that start with a '#' character.  The data in the file must have
+# precisely two contiguous sequences of characters specifying the 
+# instrument name and the computer name, separated by spaces.
+#
+# The version number is not currently used, but is included for possible
+# future uses.
+#
+ARCS     arcs2.sns.gov
+BSS      bss.sns.gov
+CNCS     cncs.sns.gov
+EQSANS   eqsans.sns.gov
+PG3      pg3.sns.gov
+REF_L    lrac.sns.gov
+REF_M    mrac.sns.gov
+SEQ      seq.sns.gov
+SNAP     snap.sns.gov
+TOPAZ    topaz.sns.gov
+VULCAN   vulcan.sns.gov
