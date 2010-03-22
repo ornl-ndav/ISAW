@@ -14,13 +14,13 @@
 # future uses.
 #
 ARCS     arcs2.sns.gov
-BSS      bss.sns.gov
-CNCS     cncs.sns.gov
+BSS      bac2.sns.gov
+CNCS     cncs2.sns.gov
 EQSANS   eqsans.sns.gov
-PG3      pg3.sns.gov
+PG3      powgen.sns.gov
 REF_L    lrac.sns.gov
 REF_M    mrac.sns.gov
-SEQ      seq.sns.gov
+SEQ      sequoia2.sns.gov
 SNAP     snap.sns.gov
 TOPAZ    topaz.sns.gov
-VULCAN   vulcan.sns.gov
+VULCAN   vulcan2.sns.gov
