@@ -111,8 +111,8 @@ public class  UDPReceive extends Thread
     }
     catch( Exception ex )
     { 
-      ex.printStackTrace();
-      System.exit( 1 );
+//    ex.printStackTrace();
+      throw new IllegalArgumentException( "UDP Socket " + port + " failed " + ex );
     }
     this.user = user;
     keep_running = true;
