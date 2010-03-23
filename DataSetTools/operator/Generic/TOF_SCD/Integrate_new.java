@@ -1287,7 +1287,7 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
         my_method = EXPERIMENTAL; 
         integratePeakExp((IPeak)peaks.elementAt(i),
                           ds, ids,
-                          timeZrange, incrSlice,
+                          colXrange, rowYrange, timeZrange, incrSlice,
                           opIntPt,
                           my_buffer );    
       }
@@ -1391,7 +1391,7 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
     *  code can be plugged into IntegratePt using the setIntgratePkOp() method.
     */
    private  static void integratePeakExp( IPeak peak, DataSet ds, int[][] ids,
-                         int[] timeZrange, int increaseSlice, 
+                         int[] colXrange, int[] rowYrange, int[] timeZrange, int increaseSlice, 
                          IntegratePt opIntPt,StringBuffer log){
 
      // set up where the peak is located
@@ -1405,12 +1405,18 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
      int indx = ds.getIndex_of_data(D);
      XScale xscl= D.getX_scale();
      float time = xscl.getX(cenZ);
+     int minx = colXrange[0];
+     int maxx = colXrange[1];
+     int miny = rowYrange[0];
+     int maxy = rowYrange[1];
+     int minz = timeZrange[0];
+     int maxz = timeZrange[1];
 
      SCD_LogUtils.addLogHeader( log, peak );
 
      // initialize variables for the slice integration
                 
-     Vector V = opIntPt.Integrate(time, indx, null);
+     Vector V = opIntPt.Integrate(time, indx, null, minx, maxx, miny, maxy, minz, maxz);
      
      try{                  
      float Itot = ((Float)(V.elementAt(0))).floatValue();

@@ -392,6 +392,135 @@ public class IntegratePt extends
     setintField(op1,"NXS",numcols) ;
     setintField(op1,"NYS",numrows) ;
     setintField(op1,"WLNUM",nchannels) ;
+    setintField(op1,"MINX",-2);
+    setintField(op1,"MAXX",2);
+    setintField(op1,"MINY",-2);
+    setintField(op1,"MAXY",2);
+    setintField(op1,"MINZ",-3);
+    setintField(op1,"MAXZ",3);
+    setfloatField(op1, "ITOT", 0f);
+    setObjField(op1 ,"JHIST", JHist);
+    setObjField(op1,"NTIME", D.getX_scale().getXs());
+
+    Object O = op.calculate();
+    if( O instanceof ErrorString){
+      DataSetTools.util.SharedData.addmsg("Integrate Error "+
+                                          ((ErrorString)O).toString());
+      return null;
+    }   
+    Vector V = new Vector();
+    V.addElement(getfloatField(op,"ITOT")); 
+    V.addElement(getfloatField(op,"SIGITOT"));                     
+
+    last_time           = time;                    // save parameters and
+    last_dataBlockIndex = dataBlockIndex;          // results so that we don't
+    last_op1            = op1;                     // keep recalculating them
+    last_result         = new Vector( V.size() );  // when this is called for
+    for ( int i = 0; i < V.size(); i++ )           // windows being uncovered
+      last_result.addElement( V.elementAt(i) ); 
+
+    return V; 
+  }
+
+ //--------------------- Base method for all interfaces -------------- 
+  /**
+    *	Applies the INTEG operator to the ith data block of the data set DS
+    *	and time x
+    *
+    *  @param time   The time of the associated peak
+    *  @param dataBlockIndex   The INDEX of the datablock where the peak is
+    *                          centered.
+    *  @param op1  The wrappable that will actually integrate the peak
+    *  @return  A Vector with two elements, ITOT, SIGI, null, or an ErrorString
+    */
+  public Vector Integrate( float time, int dataBlockIndex, Wrappable op1, int minx, int maxx, int miny, int maxy, int minz, int maxz){
+  
+    if( dataBlockIndex < 0)
+      return null;
+
+    if( Float.isNaN(time))
+      return null;
+
+    if (op1 == null)
+      if( op != null)
+         op1 = op;
+      else
+         op1 = new INTEG();
+                                                   // if this is the same time
+                                                   // data block and op, just
+                                                   // return the same value
+    if ( time == last_time                     &&
+         dataBlockIndex == last_dataBlockIndex &&
+         op1            == last_op1            )
+    {
+      if ( last_result == null )
+        return null; 
+
+      Vector saved_result = new Vector();
+      for ( int i = 0; i < last_result.size(); i++ )
+        saved_result.add( last_result.elementAt(i) );
+      return saved_result;
+    }
+
+
+    //INTGT op = new INTGT();
+   
+    Data D = DS.getData_entry( dataBlockIndex);
+    if( D == null)
+      return null;
+    int row, col;
+    PixelInfoList pilist=(PixelInfoList)D.getAttributeValue
+                                  (Attribute.PIXEL_INFO_LIST);
+    IDataGrid gr= pilist.pixel(0).DataGrid() ; 
+    row= (int)pilist.pixel(0).row();
+    col= (int)pilist.pixel(0).col(); 
+    if( (row <1)||(col<1))
+      return null;
+       
+    int numrows =gr.num_rows();
+    int numcols = gr.num_cols();
+    XScale xscl=D.getX_scale();
+    int nchannels = xscl.getNum_x()-1;
+    int channel = xscl.getI(time);
+    if( channel < 1 )
+       return null;
+    if( channel > nchannels)
+       return null;
+   
+    if( (JHist == null) ||(gr.ID()!=id)){
+     
+      JHist = new float[numrows][numcols][nchannels];
+      id = gr.ID();
+      //gr.setData_entries(DS);
+      if( gr == null)
+         return  null;
+      for( int i=1; i<= numrows;i++)
+        for( int j = 1; j <= numcols; j++)
+        {
+          if(gr.getData_entry(j,i) != null)
+          {
+            float y_vals[] = gr.getData_entry(j,i).getY_values();
+            if ( y_vals != null )
+              JHist[i-1][j-1] = y_vals;
+          }
+        }
+    }
+    setintField(op1,"ISX",ISX) ;
+    setintField(op1,"ISY",ISY) ;
+    setintField(op1,"ISZ",ISZ) ;
+    setintField(op1,"X",col) ;
+    setintField(op1,"Y",row) ; 
+    setintField(op1,"Z",channel) ;
+    setintField(op1,"NXS",numcols) ;
+    setintField(op1,"NYS",numrows) ;
+    setintField(op1,"WLNUM",nchannels) ;
+    setintField(op1,"MINX",col+minx);
+    setintField(op1,"MAXX",col+maxx);
+    setintField(op1,"MINY",row+miny);
+    setintField(op1,"MAXY",row+maxy);
+    setintField(op1,"MINZ",channel+minz);
+    setintField(op1,"MAXZ",channel+maxz);
+
     setfloatField(op1, "ITOT", 0f);
     setObjField(op1 ,"JHIST", JHist);
     setObjField(op1,"NTIME", D.getX_scale().getXs());
