@@ -56,7 +56,7 @@ public class  UDPReceive extends Thread
 
   private DatagramSocket sock;
   private IUDPUser       user;  
-
+  private boolean        keep_running;
 
   /**
    *  Construct a UDPReceive object to listen for UDP packets on the specified
@@ -80,6 +80,18 @@ public class  UDPReceive extends Thread
       System.exit( 1 );
     }
     this.user = user;
+    keep_running = true;
+  }
+
+
+  /**
+   *  Close the underlying DatagramSocket and exit the running thread
+   *  that is receiving packets from that socket.
+   */
+  public void close()
+  {
+    keep_running = false;
+    sock.close();
   }
 
 
@@ -103,6 +115,7 @@ public class  UDPReceive extends Thread
       System.exit( 1 );
     }
     this.user = user;
+    keep_running = true;
   }
 
 
@@ -132,7 +145,7 @@ public class  UDPReceive extends Thread
      
     b = new byte[BUFFER_SIZE];
 	 
-    while ( true )
+    while ( keep_running )
     { 
       try
       {
