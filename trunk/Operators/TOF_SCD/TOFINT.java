@@ -27,6 +27,18 @@ public class TOFINT implements Wrappable,HiddenOperator{
 
   public int WLNUM=0;
 
+  public int MAXX=0;
+
+  public int MAXY=0;
+
+  public int MAXZ=0;
+
+  public int MINX=0;
+
+  public int MINY=0;
+
+  public int MINZ=0;
+
   public int MAXP1=0;
 
   public int IPFLAG=0;
@@ -57,7 +69,9 @@ public class TOFINT implements Wrappable,HiddenOperator{
 
     float INTI3=0f;
 
-    int[] ISUM= new int[((7))-1+1];
+    int SEVEN=MAXZ-MINZ+1;
+ 
+    int[] ISUM= new int[((SEVEN))-1+1];
 
     int IXCALC=0;
 
@@ -67,19 +81,7 @@ public class TOFINT implements Wrappable,HiddenOperator{
 
     int J=0;
 
-    float[] JTIME= new float[((7))-1+1];
-
-    int MAXX=0;
-
-    int MAXY=0;
-
-    int MAXZ=0;
-
-    int MINX=0;
-
-    int MINY=0;
-
-    int MINZ=0;
+    float[] JTIME= new float[((SEVEN))-1+1];
 
     float PKCTS=0f;
 
@@ -121,83 +123,90 @@ public class TOFINT implements Wrappable,HiddenOperator{
     IXCALC=(int)((X));
     IYCALC=(int)((Y));
     IZCALC=(int)((Z));
-    MINZ=(int)((Z-3));
-    MAXZ=(int)((Z+3));
-    MINX=(int)((X-2));
-    MAXX=(int)((X+2));
-    MINY=(int)((Y-2));
-    MAXY=(int)((Y+2));
-    if((((((((MINZ)<(1)||(MAXZ)>(WLNUM))||(MINX)<(1))||(MINY)<(1))
-      )))){
+    if(MINZ<1||MAXZ>WLNUM||MINX<1||MAXX>NXS||MINY<1||MAXY>NYS){
       REFLAG=(float)((401));
       return null;
           }
 //-------------------------------------------------------------------------------
 //                    PROCEED TO INTEGRATE
 //-------------------------------------------------------------------------------
+    int IX,IY,IZ;
     IPK=(int)((0));
-    for(Z=(int)((MINZ));util.Sign(1)*Z<=util.Sign(1)*((MAXZ));Z+=(int)1){
-      J=(int)((Z-MINZ+1));
-      JTIME[(int)(((J))-1)]=(float)((NTIME[(int)(((Z+1))-1)]-NTIME[(int)(((Z))-
+    for(IZ=(int)((MINZ));util.Sign(1)*IZ<=util.Sign(1)*((MAXZ));IZ+=(int)1){
+      J=(int)((IZ-MINZ+1));
+      JTIME[(int)(((J))-1)]=(float)((NTIME[(int)(((IZ+1))-1)]-NTIME[(int)(((IZ))-
         1)]));
       ISUM[(int)(((J))-1)]=(int)((0));
-      for(Y=(int)((MINY));util.Sign(1)*Y<=util.Sign(1)*((MAXY));Y+=(int)1){
-        for(X=(int)((MINX));util.Sign(1)*X<=util.Sign(1)*((MAXX));X+=(int)1){
-          ISUM[(int)(((J))-1)]=(int)((ISUM[(int)(((J))-1)]+JHIST[(int)(((X))-1)]
-            [(int)(((Y))-1)][(int)(((Z))-1)]));
-          if(((IPK)<(JHIST[(int)(((X))-1)][(int)(((Y))-1)][(int)(((Z))-1)])))
-               IPK=(int)((JHIST[(int)(((X))-1)][(int)(((Y))-1)][(int)(((Z))-1)])
+      for(IY=(int)((MINY));util.Sign(1)*IY<=util.Sign(1)*((MAXY));IY+=(int)1){
+        for(IX=(int)((MINX));util.Sign(1)*IX<=util.Sign(1)*((MAXX));IX+=(int)1){
+          ISUM[(int)(((J))-1)]=(int)((ISUM[(int)(((J))-1)]+JHIST[(int)(((IX))-1)]
+            [(int)(((IY))-1)][(int)(((IZ))-1)]));
+          if(((IPK)<(JHIST[(int)(((IX))-1)][(int)(((IY))-1)][(int)(((IZ))-1)])))
+               IPK=(int)((JHIST[(int)(((IX))-1)][(int)(((IY))-1)][(int)(((IZ))-1)])
               );
 }
 }
 }
+    int ONE=1;
+    int TWO=2;
+    int THREE=3;
+    int FOUR=4;
+    int SIX=SEVEN-1;
+    int FIVE=SEVEN-2;
+    int FOURRT=SEVEN-3;
 //  Find maximum I/sig(I)
-//  Peak centered on peak time channel 3 of 7.
-    PKTIME=(float)((JTIME[(int)(((2))-1)]+JTIME[(int)(((3))-1)]+JTIME[(int)(((4)
-      )-1)]));
-    BKTIME=(float)((JTIME[(int)(((1))-1)]+JTIME[(int)(((5))-1)]));
+//  Peak centered on peak time channel THREE of SEVEN.
+    PKTIME=(float)JTIME[(int)(((TWO))-1)];
+    for(J=THREE;J<=FOURRT;J++)
+      PKTIME+=(float)JTIME[(int)(((J))-1)];
+    BKTIME=(float)((JTIME[(int)(((ONE))-1)]+JTIME[(int)(((FIVE))-1)]));
     RATIO=(float)((PKTIME/BKTIME));
-    PKCTS=(float)((ISUM[(int)(((2))-1)]+ISUM[(int)(((3))-1)]+ISUM[(int)(((4))-1)
-      ]));
-    BKCTS=(float)((ISUM[(int)(((1))-1)]+ISUM[(int)(((5))-1)]));
+    PKCTS=(float)ISUM[(int)(((TWO))-1)];
+    for(J=THREE;J<=FOURRT;J++)
+      PKCTS+=(float)ISUM[(int)(((J))-1)];
+    BKCTS=(float)((ISUM[(int)(((ONE))-1)]+ISUM[(int)(((FIVE))-1)]));
     INTI1=(float)((PKCTS-RATIO*BKCTS));
 //      TYPE *,'INTI1,PKCTS,BKCTS,RATIO',INTI1,PKCTS,BKCTS,RATIO
     SIG1=(float)(((float)Math.sqrt((double)(((PKCTS+RATIO*RATIO*BKCTS))))));
     RIS1=(float)((INTI1/SIG1));
 //      TYPE *,'INTI1,SIG1,RIS1',INTI1,SIG1,RIS1
-//  Peak centered on peak time channel 4 of 7 (calculated position).
-    PKTIME=(float)((JTIME[(int)(((3))-1)]+JTIME[(int)(((4))-1)]+JTIME[(int)(((5)
-      )-1)]));
-    BKTIME=(float)((JTIME[(int)(((2))-1)]+JTIME[(int)(((6))-1)]));
+//  Peak centered on peak time channel FOUR of SEVEN (calculated position).
+    PKTIME=(float)JTIME[(int)(((THREE))-1)];
+    for(J=FOUR;J<=FIVE;J++)
+      PKTIME+=(float)JTIME[(int)(((J))-1)];
+    BKTIME=(float)((JTIME[(int)(((TWO))-1)]+JTIME[(int)(((SIX))-1)]));
     RATIO=(float)((PKTIME/BKTIME));
-    PKCTS=(float)((ISUM[(int)(((3))-1)]+ISUM[(int)(((4))-1)]+ISUM[(int)(((5))-1)
-      ]));
-    BKCTS=(float)((ISUM[(int)(((2))-1)]+ISUM[(int)(((6))-1)]));
+    PKCTS=(float)ISUM[(int)(((THREE))-1)];
+    for(J=FOUR;J<=FIVE;J++)
+      PKCTS+=(float)ISUM[(int)(((J))-1)];
+    BKCTS=(float)((ISUM[(int)(((TWO))-1)]+ISUM[(int)(((SIX))-1)]));
     INTI2=(float)((PKCTS-RATIO*BKCTS));
     SIG2=(float)(((float)Math.sqrt((double)(((PKCTS+RATIO*RATIO*BKCTS))))));
     RIS2=(float)((INTI2/SIG2));
 //      TYPE *,'INTI2,SIG2,RIS2',INTI2,SIG2,RIS2
-//  Peak centered on peak time channel 5 of 7.
-    PKTIME=(float)((JTIME[(int)(((4))-1)]+JTIME[(int)(((5))-1)]+JTIME[(int)(((6)
-      )-1)]));
-    BKTIME=(float)((JTIME[(int)(((3))-1)]+JTIME[(int)(((7))-1)]));
+//  Peak centered on peak time channel FIVE of SEVEN.
+    PKTIME=(float)JTIME[(int)(((FOUR))-1)];
+    for(J=FIVE;J<=SIX;J++)
+      PKTIME+=(float)JTIME[(int)(((J))-1)];
+    BKTIME=(float)((JTIME[(int)(((THREE))-1)]+JTIME[(int)(((SEVEN))-1)]));
     RATIO=(float)((PKTIME/BKTIME));
-    PKCTS=(float)((ISUM[(int)(((4))-1)]+ISUM[(int)(((5))-1)]+ISUM[(int)(((6))-1)
-      ]));
-    BKCTS=(float)((ISUM[(int)(((3))-1)]+ISUM[(int)(((7))-1)]));
+    PKCTS=(float)ISUM[(int)(((FOUR))-1)];
+    for(J=FIVE;J<=SIX;J++)
+      PKCTS+=(float)ISUM[(int)(((J))-1)];
+    BKCTS=(float)((ISUM[(int)(((THREE))-1)]+ISUM[(int)(((SEVEN))-1)]));
     INTI3=(float)((PKCTS-RATIO*BKCTS));
     SIG3=(float)(((float)Math.sqrt((double)(((PKCTS+RATIO*RATIO*BKCTS))))));
     RIS3=(float)((INTI3/SIG3));
 //      TYPE *,'INTI3,SIG3,RIS3',INTI3,SIG3,RIS3
     if(((IPFLAG)==(0))){
-        util.WRITESTRING(((0)),((" Center T   MaxX MaxY IPK    dX        dY  ")));
+        util.WRITESTRING(((0)),((" Center T   X Y IPK    dX        dY  ")));
         util.WRITESTRING(((0)),((
           "     Ihkl       sigI          I/sigI   ")));
         util.WRITELN(((0)));
-        util.WRITEINT(((0)),((3)),(("I4")));
-        util.WRITEINT(((0)),((MAXZ)),(("I6")));
-        util.WRITEINT(((0)),((MAXX)),(("I5")));
-        util.WRITEINT(((0)),((MAXY)),(("I5")));
+        util.WRITEINT(((0)),((ONE+FIVE)/2),(("I4")));
+        util.WRITEINT(((0)),((Z)),(("I6")));
+        util.WRITEINT(((0)),((X)),(("I5")));
+        util.WRITEINT(((0)),((Y)),(("I5")));
         util.WRITEINT(((0)),((MAXP1)),(("I6")));
         util.WRITEINT(((0)),((MINX)),(("I5")));
         util.WRITEINT(((0)),((MAXX)),(("I5")));
@@ -208,10 +217,10 @@ public class TOFINT implements Wrappable,HiddenOperator{
         util.WRITEFLOAT(((0)),((RIS1)),(("F10.2")));
         util.WRITESTRING(((0)),(("          ")));
         util.WRITELN(((0)));
-        util.WRITEINT(((0)),((4)),(("I4")));
-        util.WRITEINT(((0)),((MAXZ)),(("I6")));
-        util.WRITEINT(((0)),((MAXX)),(("I5")));
-        util.WRITEINT(((0)),((MAXY)),(("I5")));
+        util.WRITEINT(((0)),((TWO+SIX)/2),(("I4")));
+        util.WRITEINT(((0)),((Z)),(("I6")));
+        util.WRITEINT(((0)),((X)),(("I5")));
+        util.WRITEINT(((0)),((Y)),(("I5")));
         util.WRITEINT(((0)),((MAXP1)),(("I6")));
         util.WRITEINT(((0)),((MINX)),(("I5")));
         util.WRITEINT(((0)),((MAXX)),(("I5")));
@@ -222,10 +231,10 @@ public class TOFINT implements Wrappable,HiddenOperator{
         util.WRITEFLOAT(((0)),((RIS2)),(("F10.2")));
         util.WRITESTRING(((0)),(("          ")));
         util.WRITELN(((0)));
-        util.WRITEINT(((0)),((5)),(("I4")));
-        util.WRITEINT(((0)),((MAXZ)),(("I6")));
-        util.WRITEINT(((0)),((MAXX)),(("I5")));
-        util.WRITEINT(((0)),((MAXY)),(("I5")));
+        util.WRITEINT(((0)),((THREE+SEVEN)/2),(("I4")));
+        util.WRITEINT(((0)),((Z)),(("I6")));
+        util.WRITEINT(((0)),((X)),(("I5")));
+        util.WRITEINT(((0)),((Y)),(("I5")));
         util.WRITEINT(((0)),((MAXP1)),(("I6")));
         util.WRITEINT(((0)),((MINX)),(("I5")));
         util.WRITEINT(((0)),((MAXX)),(("I5")));
