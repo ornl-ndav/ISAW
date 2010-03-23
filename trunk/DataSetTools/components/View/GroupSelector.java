@@ -1419,6 +1419,41 @@ public class GroupSelector implements IObserver, ActionListener
          
          ShowTable( GroupVsPixelList );
 
+      }else if( arg0.getActionCommand( )== SAVE_GROUPS)
+      {
+         JFileChooser jf = new JFileChooser( 
+                         System.getProperty("Data_Directory"));
+         
+         File fout = null;
+         if( jf.showOpenDialog( null )== JFileChooser.APPROVE_OPTION)
+         {
+            fout = jf.getSelectedFile( );
+         }else
+            return;
+         
+         try
+         {
+            java.io.FileOutputStream fouts= new java.io.FileOutputStream( fout);
+            String fmt ="";
+            fmt += "%"+(1+(int)Math.log10( pixelGroup.length ))+"d  ";
+            fmt +="%"+(1+(int)Math.log10( startPixel+pixelGroup.length ))+"d   ";
+            fmt +="0.00  %1d   %4d\n";
+            System.out.println("fmt="+fmt);
+            for( int i=0; i< pixelGroup.length ; i++)
+            {
+               int x=0;
+               if( pixelGroup[i] != 0)
+                  x=1;
+               fouts.write( String.format( fmt,i,            
+                                       startPixel+i,x, 
+                                       pixelGroup[i] ).getBytes() );
+            }
+            
+            fouts.close( );
+         }catch( Exception ss)
+         {
+            
+         }
       }
 
    }
