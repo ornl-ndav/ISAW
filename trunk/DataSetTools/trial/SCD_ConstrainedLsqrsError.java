@@ -263,14 +263,16 @@ abstract public class   SCD_ConstrainedLsqrsError
   }
   
   
-  private double calcVolume( double a, double b, double c, double alpha,
+  public static double calcVolume( double a, double b, double c, double alpha,
              double beta, double gamma){
-     double x1= Math.sin( beta/180.*Math.PI);
+    /* double x1= Math.sin( beta/180.*Math.PI);
      double x2=Math.cos(gamma/180*Math.PI)-Math.cos(alpha/180*Math.PI)*
                                          Math.cos(beta/180*Math.PI);
      x2 = x2/Math.sin( alpha/180*Math.PI);
      //return a*b*c*Math.sin(alpha/180.*Math.PI)*Math.sqrt(
      //      x1*x1-x2*x2  );
+      * */
+      
      double xA=Math.cos(alpha/180.*Math.PI);
      double xB=Math.cos(beta/180.*Math.PI);
      double xC=Math.cos(gamma/180.*Math.PI);
@@ -278,6 +280,52 @@ abstract public class   SCD_ConstrainedLsqrsError
               
      
     
+  }
+  public static double calcVolumeError( double[] latticeParams, 
+                                       double[] lattice_errors)
+  {
+     double xA=Math.cos(latticeParams[3]/180.*Math.PI);
+     double xB=Math.cos(latticeParams[4]/180.*Math.PI);
+     double xC=Math.cos(latticeParams[5]/180.*Math.PI);
+     double Volume = calcVolume( latticeParams[0], latticeParams[1], latticeParams[2],
+              latticeParams[3], latticeParams[4], latticeParams[5]);
+     //double[] V2 = DataSetTools.operator.Generic.TOF_SCD.Util.abc(U1_Bc) ; 
+     //if( Math.abs(V2[6]-Volume)>.000001)
+    //    System.out.println("********************error*************************");
+     double dV =0;
+     for( int i=0;i<3;i++)
+        dV+=sqr( Volume/latticeParams[i]*lattice_errors[i]);
+     Volume = Volume/2.0/(1-xA*xA-xB*xB-xC*xC+2*xA*xB*xC);
+     dV += sqr(lattice_errors[3])*sqr(Math.sin(2*latticeParams[3]/180.*Math.PI)-
+               Math.sin(latticeParams[3]/180.*Math.PI)*Math.cos(latticeParams[4]/180*Math.PI)*
+               Math.cos(latticeParams[5]/180*Math.PI));
+     dV += sqr(lattice_errors[4])*sqr(Math.sin(2*latticeParams[4]/180.*Math.PI)-
+              Math.sin(latticeParams[4]/180.*Math.PI)*Math.cos(latticeParams[3]/180*Math.PI)*
+              Math.cos(latticeParams[5]/180*Math.PI));
+     dV += sqr(lattice_errors[5])*sqr(Math.sin(2*latticeParams[5]/180.*Math.PI)-
+              Math.sin(latticeParams[5]/180.*Math.PI)*Math.cos(latticeParams[4]/180*Math.PI)*
+              Math.cos(latticeParams[3]/180*Math.PI));
+     dV = Math.sqrt(dV);
+     double MinAlpha,MinBeta,MinGamma,MaxAlpha,MaxBeta,MaxGamma;
+     MinAlpha = findMin( latticeParams[3],latticeParams[4],latticeParams[5],lattice_errors[3]);
+     MinBeta = findMin( latticeParams[4],latticeParams[3],latticeParams[5],lattice_errors[4]);
+     MinGamma = findMin( latticeParams[5],latticeParams[4],latticeParams[3],lattice_errors[5]);
+     MaxAlpha = findMax( latticeParams[3],latticeParams[4],latticeParams[5],lattice_errors[3]);
+     MaxBeta = findMax( latticeParams[4],latticeParams[3],latticeParams[5],lattice_errors[4]);
+     MaxGamma = findMax( latticeParams[5],latticeParams[4],latticeParams[3],lattice_errors[5]);
+     
+     
+   /*  System.out.println("********Error="+(calcVolume(latticeParams[0]+lattice_errors[0],
+              latticeParams[1]+lattice_errors[1],latticeParams[2]+lattice_errors[2],
+              MaxAlpha,MaxBeta,MaxGamma)-
+              calcVolume(latticeParams[0]-lattice_errors[0],
+              latticeParams[1]-lattice_errors[1],latticeParams[2]-lattice_errors[2],
+              MinAlpha,MinBeta,MinGamma))+"********"+(2*dV));
+     
+     
+     */
+   
+     return dV;
   }
    public double  calcVolumeError( double[] lattice_errors){
       
@@ -324,12 +372,12 @@ abstract public class   SCD_ConstrainedLsqrsError
     
       return dV;
    }
-   private double sqr( double x){
+   private static double sqr( double x){
       return x*x;
    }
    
    
-   private double findMin( double A1, double A2, double A3, double delta){
+   private static double findMin( double A1, double A2, double A3, double delta){
       
       if( A1-delta >90)
          return A1-delta;
@@ -339,7 +387,7 @@ abstract public class   SCD_ConstrainedLsqrsError
    }  
    
    
-   private double findMax( double A1, double A2, double A3, double delta){
+   private static double findMax( double A1, double A2, double A3, double delta){
       if( A1-delta >90)
          return A1+delta;
       if( A1-delta< 90) if( A1+delta <90)
