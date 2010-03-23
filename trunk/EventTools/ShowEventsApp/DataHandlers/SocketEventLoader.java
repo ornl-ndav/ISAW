@@ -136,9 +136,8 @@ public class SocketEventLoader implements IUDPUser
       }
 
       udpReceiverStarted = false;
-         
-     
    }
+
    
    /**
     * Constructor
@@ -188,11 +187,7 @@ public class SocketEventLoader implements IUDPUser
      sendBuff = BuffPool[ currentBuffPage ];
      
      ( new timerThread( this ) ).start();
-     
-      
    }
-
-
   
 
    public void start()
@@ -209,6 +204,11 @@ public class SocketEventLoader implements IUDPUser
       udpReceiver.interrupt( );
    }
 
+  
+   public void close()
+   {
+     udpReceiver.close();
+   }
    
  
    /**
