@@ -50,7 +50,7 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 
 import EventTools.EventList.SNS_TofEventList;
-import NetComm.UDPSend;
+import NetComm.*;
 
 
 /**
@@ -60,7 +60,7 @@ import NetComm.UDPSend;
  * @author Ruth
  *
  */
-public class SocketServerTest extends UDPSend
+public class SocketServerTest 
 {
    /**
     *  Limit on the maximum number of events to send for each 1/60 second
@@ -72,9 +72,10 @@ public class SocketServerTest extends UDPSend
 
    public static final int UDP_BUFFER_SIZE = 655360;
    
-   public static int START_CMD_INDX_TARTG_PROTO = 40;//Not used anymore
+  
    public static int debug = 0;
    int nTimes =0;
+   UDPSend udpSend;
 
    /**
     * Constructor. The data is sent to port 8002 on the specified host.
@@ -87,12 +88,27 @@ public class SocketServerTest extends UDPSend
     */
    public SocketServerTest( String destination_node )
                             throws UnknownHostException , SocketException
+      {
+        this( destination_node, 8002);
+      }
+
+   /**
+    * Constructor. The data is sent to port 8002 on the specified host.
+    *
+    * @param destination_node  The machine to which the UDP packets of events
+    *                          are sent.
+    *
+    * @throws UnknownHostException
+    * @throws SocketException
+    */
+   public SocketServerTest( String destination_node, int portNum )
+                            throws UnknownHostException , SocketException
    {
-      super( destination_node, 8002 );
+      udpSend = new UDPSend( destination_node, portNum );
 
       try
       {
-        setSendBufferSize( UDP_BUFFER_SIZE );
+         udpSend.setSendBufferSize( UDP_BUFFER_SIZE );
       }
       catch ( Exception ex )
       {
@@ -211,7 +227,7 @@ public class SocketServerTest extends UDPSend
                                                   packets.elementAt( i ) );
           
               assign(NPacketsSent+1, packet1,0);
-              send( packet1 , packet1.length );
+              udpSend.send( packet1 , packet1.length );
  
               NPacketsSent++ ;
               
@@ -467,10 +483,25 @@ public class SocketServerTest extends UDPSend
     *     args[1]  The maximum number of events to send for each pulse
     *              at approximately 1/60 sec per pulse 
     *     args[2]  The node name or IP address to which the event UDP packets
-    *              will be sent.
+    *              will be sent. If "" will be local host
+    *     args[3]  Port Num
     */
    public static void main( String[] args )
    {
+      int port = 8002;
+      
+      if( args.length >=4)
+         try
+      {   
+            port = Integer.parseInt(  args[3].trim() );
+            if( port <=0)
+               port = 8002;
+      }catch( Exception sx)
+      {
+         port = 8002;
+      }
+         
+      String destination_node ="";
      if( args == null || args.length < 1)
      {
        DataSetTools.util.SharedData sd = new DataSetTools.util.SharedData();
@@ -492,7 +523,7 @@ public class SocketServerTest extends UDPSend
        panel.add(jfc);
        
        JPanel panel1 = new JPanel();
-       panel1.setLayout(  new GridLayout( 2,2) );
+       panel1.setLayout(  new GridLayout( 3,2) );
        JTextField  TextNEvents = new JTextField("450");
        JTextField TextIP = new JTextField("");
        
@@ -502,6 +533,9 @@ public class SocketServerTest extends UDPSend
        panel1.add( new JLabel("Blank or the recipient node name or IP"+
                       " address "));
        panel1.add( TextIP );
+       JTextField Port = new JTextField( ""+port);
+       panel1.add(  new JLabel("Port Number") );
+       panel1.add( Port );
        panel1.setBorder(  new TitledBorder( new LineBorder( Color.black,2),
                 "OTHER PARAMETERS(opt)", TitledBorder.CENTER,TitledBorder.TOP));
        panel.add(  panel1);
@@ -541,7 +575,18 @@ public class SocketServerTest extends UDPSend
        int n=3;
        
        if( IP == null || IP.trim().length() < 1)
-          n=2;
+          IP= "localhost";
+       
+       try
+       {
+          port = Integer.parseInt( Port.getText( ).trim());
+          if( port <=0)
+             port = 8002;
+          
+       }catch( Exception sss)
+       {
+          port = 8002;
+       }
        
        if( n < 3 )
        {
@@ -551,12 +596,14 @@ public class SocketServerTest extends UDPSend
        else if( MaxEvents < 0)
           n = 1;
        
-       args= new String[n];
+       args= new String[n + 1];
        args[0]= filename;
        if( n>1)
           args[1] = ""+MaxEvents;
        if( n>2)
           args[2] = IP;
+       if( n > 3)
+          args[3] =""+port;
      }
     
      int NEvents = 450;
@@ -564,14 +611,15 @@ public class SocketServerTest extends UDPSend
      if ( args.length > 1)
         NEvents = Integer.parseInt( args[1] );
 
-     String destination_node = "localhost";
+     destination_node = "localhost";
      
      if (args.length > 2 )
-       destination_node = args[2];
-     
+       destination_node = args[2];     
+  
      try
      {
-       SocketServerTest ss = new SocketServerTest( destination_node );
+       SocketServerTest ss = new SocketServerTest( destination_node, port );
+    
        ss.runTest( args[ 0 ] , NEvents );
      }
      catch( Exception s )
