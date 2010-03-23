@@ -797,6 +797,7 @@
 package IsawGUI;
 
 import Command.*;
+import DataSetTools.components.View.GroupSelector;
 import DataSetTools.components.ui.*;
 import DataSetTools.dataset.*;
 import DataSetTools.operator.*;
@@ -1134,7 +1135,9 @@ public class Isaw
     LansceWizard.add( LansceDailyPeaksWItem );
     SADMenu.add( ReduceWItem );
     JMenuItem IsawEV = new  JMenuItem( "IsawEV");
+    JMenuItem GroupMk = new JMenuItem("Group Pixels");
     wizardMenu.add( IsawEV);
+    wizardMenu.add( GroupMk );
     wizardMenu.add( SADMenu );
     wizardMenu.add( SCDMenu );
     wizardMenu.add(LansceWizard);
@@ -1146,6 +1149,7 @@ public class Isaw
     LansceDailyPeaksWItem.addActionListener( menu_item_handler );
     ReduceWItem.addActionListener( menu_item_handler );
     IsawEV.addActionListener(  menu_item_handler );
+    GroupMk.addActionListener(  menu_item_handler );
     //***************************************************end create Wizard menu
 
     JMenu hMenu               = new JMenu( HELP_M );
@@ -1715,7 +1719,8 @@ public class Isaw
       } else if( s == "IsawEV"){
 //         EventTools.ShowEventsApp.IsawEV.main(  null );
            RunIsawEV();
-      }
+      }else if( s =="Group Pixels")
+         GroupSelector.main(  null );
                     
       if( s.equals( SAVE_ISAW_DATA_MI ))
       {
