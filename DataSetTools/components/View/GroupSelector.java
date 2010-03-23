@@ -942,6 +942,7 @@ public class GroupSelector implements IObserver, ActionListener
             "      x=eval(CD)\n"+
             "      if  x:\n"+
             "         PIX[i]=int(group)\n";
+            //Try to compile code for exec.
             pinterp.exec( code );
          }
          
@@ -1818,7 +1819,7 @@ public class GroupSelector implements IObserver, ActionListener
             NeXusFile = args[0];
             DetCalFile = BankFile = null;
          }
-      if( args.length ==2)
+      if( args != null && args.length ==2)
       {
          NeXusFile = null;
          DetCalFile = args[0];
