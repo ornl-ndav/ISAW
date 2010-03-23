@@ -199,6 +199,12 @@ public class TOFINT implements Wrappable,HiddenOperator{
     RIS3=(float)((INTI3/SIG3));
 //      TYPE *,'INTI3,SIG3,RIS3',INTI3,SIG3,RIS3
     if(((IPFLAG)==(0))){
+        util.WRITESTRING(((0)),((
+          "  Counts for Offsets from peak time:   ")));
+        util.WRITELN(((0)));
+        for(J=ONE;J<=SEVEN;J++)
+          util.WRITEINT(((0)),((ISUM[(int)(((J))-1)])),(("I6")));
+        util.WRITELN(((0)));
         util.WRITESTRING(((0)),((" Center T   X Y IPK    dX        dY  ")));
         util.WRITESTRING(((0)),((
           "     Ihkl       sigI          I/sigI   ")));

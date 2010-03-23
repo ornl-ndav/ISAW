@@ -481,7 +481,8 @@ public class IntegratePt extends
     int numcols = gr.num_cols();
     XScale xscl=D.getX_scale();
     int nchannels = xscl.getNum_x()-1;
-    int channel = xscl.getI(time);
+    //Time channel starts at zero, so add 1 for TOFINT 
+    int channel = xscl.getI(time)+1;
     if( channel < 1 )
        return null;
     if( channel > nchannels)
