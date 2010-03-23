@@ -119,7 +119,6 @@ public class HistogramHandler implements IReceiveMessage
   *  Receive and process messages: 
   *      ADD_EVENTS_TO_HISTOGRAMS, 
   *      CLEAR_HISTOGRAM, 
-  *      SET_NEW_INSTRUMENT, 
   *      SET_WEIGHTS_FROM_HISTOGRAM, 
   *      ADD_HISTOGRAM_INFO,
   *      GET_HISTOGRAM_MAX,
@@ -197,17 +196,6 @@ public class HistogramHandler implements IReceiveMessage
       else
         message_center.send( new Message( Commands.LOAD_FAILED,
                                           null, true, true ) );
-      return false;
-    }
-
-    else if (  message.getName().equals(Commands.SET_NEW_INSTRUMENT) )
-    {
-      Object obj = message.getValue();
-
-      receiving_events = false;  // no timed update, until we get more events
-      SetNewInstrument( obj );
-
-      Util.sendInfo( "Histogram set up for " + current_instrument );
       return false;
     }
 
