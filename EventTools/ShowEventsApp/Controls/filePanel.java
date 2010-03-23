@@ -45,6 +45,7 @@ import java.io.*;
 import java.net.*;
 
 import javax.swing.*;
+import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 
 import DataSetTools.util.SharedData;
@@ -123,6 +124,7 @@ public class filePanel implements IReceiveMessage
    private float              absorption_smu;
    private float              absorption_amu;
 
+   private JCheckBox            UseManualPort;
    private FilteredPG_TextField Port;
    private JComboBox            Instrument;
 
@@ -289,11 +291,20 @@ public class filePanel implements IReceiveMessage
       
       subPanel = new JPanel();
       subPanel.setLayout( new GridLayout(1,2) );
-      subPanel.add( new JLabel("Port") );
+      UseManualPort = new JCheckBox("Only connect to Port", false);
+      UseManualPort.setToolTipText( 
+            "<html><body> Disable Auto Connect port.<Br>"+
+               "NOTE: If LDP is out, use 8002. Otherwise <BR>"+
+               "Use the port that LDP is forwarding data packets.<P>"+
+               "Also \"enable\" PASS THROUGH DATA PORT<BR> on the LDP monitor"+
+               "</body></html>");
+      subPanel.add( UseManualPort );
       Port = new FilteredPG_TextField( new IntegerFilter() );
       Port.setText( ""+udp_port );
       Port.setHorizontalAlignment(JTextField.RIGHT);
       subPanel.add( Port );
+
+      subPanel.setBorder(  new LineBorder( java.awt.Color.black) );
       Res.add( subPanel );
       
       JLabel maxEvents = new JLabel("Number to Show in 3D: ");
