@@ -19,7 +19,7 @@ public class TOFINT implements Wrappable,HiddenOperator{
 
   public int Z=0;
 
-  public int ITOT=0;
+  public float ITOT=0;
 
   public float SIGITOT=0f;
 
@@ -259,21 +259,21 @@ public class TOFINT implements Wrappable,HiddenOperator{
       } else {
       if(((RIS1)>(RIS3))){
         if(((RIS1)>=(5.0))){
-          ITOT=(int)((INTI1));
+          ITOT=((INTI1));
           SIGITOT=(float)((SIG1));
           REFLAG=(float)((101));
           return null;
                   }
         } else {
         if(((RIS3)>=(5.0))){
-          ITOT=(int)((INTI3));
+          ITOT=((INTI3));
           SIGITOT=(float)((SIG3));
           REFLAG=(float)((101));
           return null;
                   }
               }
           }
-    ITOT=(int)((INTI2));
+    ITOT=((INTI2));
     SIGITOT=(float)((SIG2));
     REFLAG=(float)((100));
     return null;
