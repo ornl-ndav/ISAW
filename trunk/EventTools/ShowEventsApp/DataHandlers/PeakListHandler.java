@@ -115,14 +115,17 @@ public class PeakListHandler implements IReceiveMessage
       if ( peakNew_list == null || peakNew_list.size() <= 0 )
       {
         Util.sendError( "ERROR: No Peaks to write" );
+        return false;
       }
-      
+
+     
       String file_name = gov.anl.ipns.Util.File.FileIO.appendPath( 
             System.getProperty( "user.home" ), "ISAW/tmp/ppp.peaks" );
       try 
       {
         Peak_new_IO.WritePeaks_new( file_name, (Vector)peakNew_list, false );
-        (new ViewASCII(file_name)).getResult();
+        (new ViewASCII(file_name)).getResult();        
+       
       }
       catch ( Exception ex )
       {
@@ -130,6 +133,7 @@ public class PeakListHandler implements IReceiveMessage
                         file_name );
         return false;
       }
+      Wizard.TOF_SCD.Util.ClearFiles( "ppp" , "peaks" );
     }
     else if ( message.getName().equals(Commands.INDEX_PEAKS ) )
     {
