@@ -379,6 +379,8 @@ public class DefaultProperties{
         rs.append("# Set to No to get uncompressed written files").append( eol );
         rs.append("#Nexus_Write_Compress=Yes").append( eol );
         rs.append( "#" ).append( eol );
+
+        rs.append( "" ).append( eol );
         rs.append( "# SLURM Queue Info" ).append( eol );
         rs.append( "# Specify the queue name and the amount of memory" ).
                            append(eol );
@@ -391,14 +393,14 @@ public class DefaultProperties{
         rs.append( "#Find_Peaks_Process_Memory=2000" ).append( eol );
         rs.append( "#Integrate_Peaks_Process_Memory=2000" ).append( eol );
         rs.append(eol);
-        
 
         rs.append("#").append(eol);
+        rs.append("# ScaleWith should have values of Protons on target, ");
+        rs.append( eol );
+        rs.append("# NumEvents,or MAX_xxxx where xxxx can be" );
+        rs.append(" any number" ); rs.append(eol);
         rs.append("#").append(eol);
-        rs.append( "# ScaleWith should have values of Protons on target, ");
-        rs.append( eol );rs.append( "# NumEvents,or MAX_xxxx where xxxx can be" );
-        rs.append( " any number" ); rs.append(eol);
-        rs.append( "#ScaleWith=Protons on target" );rs.append( eol );
+        rs.append("#ScaleWith=Protons on target" );rs.append( eol );
         rs.append( eol );
         
         rs.append("# Live Data Server Options").append(eol);
@@ -415,8 +417,6 @@ public class DefaultProperties{
         rs.append("IsawFileServer1_Path=isaw.mscs.uwstout.edu;6089")
           .append(eol).append(eol);
 
-        rs.append("#Scale With=PROTONS ON TARGET(or MONITOR)")
-          .append(eol);
         rs.append("#").append(eol);
         rs.append("# Screen Size in percentage (<=1) or pixels (>1)")
           .append(eol);
@@ -462,6 +462,12 @@ public class DefaultProperties{
         rs.append("WIZARD_HEIGHT=600").append(eol);
         rs.append("#NSavedFiles=0").append(eol);
         rs.append("#ShortSavedFilename=false").append(eol);
+
+        rs.append("").append(eol);
+        rs.append("#").append(eol);
+        rs.append("# IsawEV Options").append(eol);
+        rs.append("#").append(eol);
+        rs.append("#ISAWEV_USE_LOCAL_PORT=true").append(eol);
             
         return rs.toString();
     }
