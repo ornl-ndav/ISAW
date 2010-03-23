@@ -118,6 +118,7 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Vector;
 
@@ -269,10 +270,12 @@ public class ViewASCII extends    GenericSpecial
             }
             mw=new gov.anl.ipns.Util.Sys.FinishJFrame(filename);
                       mw.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-           try{   
+           FileInputStream finp = null;
+           try{ 
+            finp =new FileInputStream(filename);
             StyledEditorKit edKit= new StyledEditorKit();
             Document doc = edKit.createDefaultDocument();
-            edKit.read(new java.io.FileInputStream(filename),doc,0);
+            edKit.read(finp,doc,0);
             textarea=new JTextPane((StyledDocument)doc);//doc);
             textarea.setEditable(false);
             textarea.setFont(font);
@@ -316,6 +319,13 @@ public class ViewASCII extends    GenericSpecial
             
             mw.setSize((int)(.6*screenSize.width),(int)(.85*screenSize.height));
             mw.validate();
+            try
+            {
+            finp.close( );
+            }catch(Exception s)
+            {
+               s.printStackTrace( );
+            }
         }
      /*   else
         {
