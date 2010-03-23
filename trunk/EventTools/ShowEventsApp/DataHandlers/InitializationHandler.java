@@ -288,7 +288,6 @@ public class InitializationHandler implements IReceiveMessage
       if ( !udpLoadStarted )
         return false;
 
-      System.out.println("Sending message " + new_instrument_cmd );
       (new InitDataThread( new_instrument_cmd )).start();
       SetUpUDP_Port( true );
 
@@ -336,19 +335,31 @@ public class InitializationHandler implements IReceiveMessage
           if ( socket_evl != null )      
             socket_evl.close();
 
-          socket_evl = new SocketEventLoader( requested_port,
-                                              message_center,
-                                              UDPcmd.getInstrument( ));
-          current_port = requested_port;
-          socket_evl.setPause( pause_flag );
-          socket_evl.start();
+          try
+          {
+            socket_evl = new SocketEventLoader( requested_port,
+                                                message_center,
+                                                UDPcmd.getInstrument( ));
+            current_port = requested_port;
+            socket_evl.setPause( pause_flag );
+            socket_evl.start();
+          }
+          catch ( Exception ex )
+          {
+            socket_evl = null;
+            current_port = -1;
+            Util.sendInfo( "Failed to Connect to UDP Port " + requested_port );
+          }
         }
-
-        socket_evl.setPause( pause_flag );
+        if ( socket_evl != null )
+        {
+          socket_evl.setPause( pause_flag );
+          Util.sendInfo( "Now Listening on UDP Port " + current_port );
+        }
       }
       else
       {
-        Util.sendInfo( "ERROR: FAILED INITIALIZE FOR UDP LOAD" );
+        Util.sendInfo("ERROR: TO MUCH TIME NEEDED TO INITIALIZE FOR UDP LOAD");
         loading_file = false;
       }
   }
