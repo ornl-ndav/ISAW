@@ -93,6 +93,11 @@ public class filePanel implements IReceiveMessage
    private JTextField         eventsToShow;
    private JTextField         protonsOnTarget;
    private JTextField         eventsToShowUDP;
+
+   private JCheckBox            UseManualPort;
+   private FilteredPG_TextField Port;
+   private JComboBox            Instrument;
+
    private String             Datafilename;
 
    private long               numAvailable;
@@ -102,6 +107,7 @@ public class filePanel implements IReceiveMessage
    private long               num_to_show_UDP;
    private int                num_threads;
 
+   private boolean            use_manual_port;
    private int                udp_port;
    private int                auto_connect_port; // TCP port to request UDP
                                                  // port for live events 
@@ -124,10 +130,6 @@ public class filePanel implements IReceiveMessage
    private float              absorption_smu;
    private float              absorption_amu;
 
-   private JCheckBox            UseManualPort;
-   private FilteredPG_TextField Port;
-   private JComboBox            Instrument;
-
    /**
     * Creates file panel as well as sets up default
     * properties for the file load locations.
@@ -144,6 +146,7 @@ public class filePanel implements IReceiveMessage
       Datafilename = System.getProperty("Data_Directory");
       Matfilename  = Datafilename;
 
+      use_manual_port   = false;
       auto_connect_port = 9000;
       inst_computer     = FileUtil.LoadSupportedSNS_InstrumentInfo();
 
@@ -171,6 +174,7 @@ public class filePanel implements IReceiveMessage
       buildPanel();
    }
    
+
    /**
     * Returns the panel containing all the load information
     * 
@@ -291,12 +295,12 @@ public class filePanel implements IReceiveMessage
       
       subPanel = new JPanel();
       subPanel.setLayout( new GridLayout(1,2) );
-      UseManualPort = new JCheckBox("Only connect to Port", false);
+      UseManualPort = new JCheckBox("Only Connect to Port ->",use_manual_port);
       UseManualPort.setToolTipText( 
-            "<html><body> Disable Auto Connect port.<Br>"+
-               "NOTE: If LDP is out, use 8002. Otherwise <BR>"+
-               "Use the port that LDP is forwarding data packets.<P>"+
-               "Also \"enable\" PASS THROUGH DATA PORT<BR> on the LDP monitor"+
+            "<html><body> Check box to NOT use TCP auto-connect port.<Br>"+
+               "NOTE: If LDP is off, use 8002 to listen to DAS directly,<Br>"+
+               "otherwise use the port on which LDP is forwarding events.<P>"+
+               "Also \"enable\" Pass-Thru Data Port<BR> on the LDP monitor"+
                "</body></html>");
       subPanel.add( UseManualPort );
       Port = new FilteredPG_TextField( new IntegerFilter() );
@@ -793,6 +797,8 @@ public class filePanel implements IReceiveMessage
     */
    private boolean udp_load_info_valid()
    {
+      use_manual_port = UseManualPort.isSelected();
+
       try
       {
         udp_port = Integer.parseInt( Port.getText().trim() );
@@ -934,7 +940,9 @@ public class filePanel implements IReceiveMessage
         return -1;
       }
 
-      node_name = "localhost";            // TODO: REMOVE THIS TEST CODE #####
+      String lp_property = System.getProperty( "ISAWEV_USE_LOCAL_PORT" );
+      if ( lp_property != null && lp_property.equalsIgnoreCase("true") )
+        node_name = "localhost";
 
       CloseTCP_Connection();              // first close TCP connection 
                                           // then reopen it to get the port
@@ -950,6 +958,8 @@ public class filePanel implements IReceiveMessage
       tcp_socket  = null;
       try
       {
+        Util.sendInfo("Trying TCP connect to " + node_name + 
+                      " on port " + auto_connect_port );
         tcp_socket = new Socket( node_name, auto_connect_port );
         tcp_socket.setKeepAlive( false );
         tcp_socket.setSoLinger( false, 0 );
@@ -961,8 +971,8 @@ public class filePanel implements IReceiveMessage
       }
       catch ( IOException ex )
       {
-        System.out.println( ex );
-        ex.printStackTrace();
+        Util.sendInfo( "TCP connect FAILED: " + ex + "\n" +
+                       "could not connect to " + node_name );
         return -1;
       }
 
@@ -1004,6 +1014,8 @@ public class filePanel implements IReceiveMessage
          tcp_input_stream.close();
          tcp_output_stream.close();
          tcp_socket.close();
+         System.out.println("Closed TCP connection");
+         Thread.sleep(500);
        }
      }
      catch ( Exception ex )
@@ -1053,10 +1065,14 @@ public class filePanel implements IReceiveMessage
            {
               String instrument_name = Instrument.getSelectedItem().toString();
 
-              int try_port = AutoGetUDP_Port( instrument_name );
-              if ( try_port > 0 )
-                udp_port = try_port;
+              if ( !use_manual_port )
+              {
+                int try_port = AutoGetUDP_Port( instrument_name );
+                if ( try_port > 0 )
+                  udp_port = try_port;
+              }
 
+              Util.sendInfo( "Trying to get live events on port " + udp_port );
               System.out.println("Listening for UDP messages on port: " 
                                   + udp_port);
 
