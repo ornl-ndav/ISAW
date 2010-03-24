@@ -985,17 +985,8 @@ public class filePanel implements IReceiveMessage
    public boolean receive( Message message )
    {
      if ( message.getName().equals(Commands.EXIT_APPLICATION) ) 
-     {
-       CloseTCP_Connection();
-       try
-       {
-         System.out.println( "Closed TCP Connection" );
-         Thread.sleep( 1000 );
-       }
-       catch ( Exception ex ) 
-       {}
-     }
-     System.exit(0);
+       CloseTCP_ConnectionAndExit();
+
      return true;
    }
 
@@ -1003,7 +994,7 @@ public class filePanel implements IReceiveMessage
    /**
     *  Close the TCP port connection, if possible
     */
-   private void CloseTCP_Connection()
+   private boolean CloseTCP_Connection()
    {
      try
      {
@@ -1016,12 +1007,33 @@ public class filePanel implements IReceiveMessage
          tcp_socket.close();
          System.out.println("Closed TCP connection");
          Thread.sleep(500);
+         return true;
        }
      }
      catch ( Exception ex )
      {
+       return false;
      }
+     return false;
    }
+
+
+  private void CloseTCP_ConnectionAndExit()
+  {
+    if ( !CloseTCP_Connection() )
+      System.out.println("filePanel.CloseTCP_Connection FAILED");
+
+    try
+    {
+      Thread.sleep( 1000 );
+    }
+    catch ( Exception ex )
+    {
+    }
+    System.out.println("Exit via filePanel");
+    System.exit(0);
+  }
+
 
    
    private class UDPActionListener implements ActionListener
