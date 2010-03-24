@@ -675,7 +675,7 @@ public class GroupSelector implements IObserver, ActionListener
       formula.setEditable( true );
       MidMid.add( formula );
       formula
-            .setToolTipText( "<html><body>Use variable d,q,wl,row,col,det,pix. <BR>"
+            .setToolTipText( "<html><body>Use variable d,q,wl,row,col,det,pix,ang. <BR>"
                   + "If result >0 or true, the pixel will be assigned to the Group"
                   + "</body></html>" );
       jp.add( MidMid );
@@ -943,7 +943,9 @@ public class GroupSelector implements IObserver, ActionListener
             "      if  x:\n"+
             "         PIX[i]=int(group)\n";
             //Try to compile code for exec.
-            pinterp.exec( code );
+            PyCode codeEx =Py.compile( new ByteArrayInputStream(code.getBytes( )),
+                  "<string>","exec" );
+            pinterp.exec( codeEx );
          }
          
          pinterp.set( "PIX" , pixelGroup );
@@ -961,6 +963,7 @@ public class GroupSelector implements IObserver, ActionListener
        
          if( pyResult != null ) {
            result = pyResult.__tojava__( Object.class );
+           
            if( result != null && result.getClass( ).isArray() &&
                  (java.lang.reflect.Array.getLength( result )==
                                       pixelGroup.length)&&
@@ -968,15 +971,19 @@ public class GroupSelector implements IObserver, ActionListener
            {
               pixelGroup =(int[])result;           
               addGroup( Group, true );
+              
            } else
+              
               throw new IllegalArgumentException(
                     "Result not of correct Data Type");
              
                                       
          }else
+            
             throw new IllegalArgumentException("Internal Jython Error");
          
-      }catch(Exception ss){
+      }catch(Exception ss)
+      {
          ss.printStackTrace( );
          throw new IllegalArgumentException(" Error in formula :"+ss);
       }
@@ -999,58 +1006,7 @@ public class GroupSelector implements IObserver, ActionListener
       return false;
    }
    
-   
-   private static String Subst( String formula,int val, String varName)
-   {
-      String S = new String(formula);
-      int varLen = varName.length();
-      for( int i=S.indexOf( varName ); i>=0 && i < S.length();  )
-      {
-         char cB =0;
-         if(  i > 0 && i-1 < S.length())
-            cB =S.charAt( i-1 );
-         
-         char cA = 0;
-         if( i >=0 && i+1 +varLen < S.length())
-            cA = S.charAt(  i+varLen );
-         
-         if( cB==0 || (!Character.isDigit( cB )&& (cB <'A'|| cB > 'Z')) )
-            if( cA==0 || (!Character.isDigit( cA )&&( cA <'A'|| cA >'Z')) )
-            { 
-               S = S.substring( 0,i )+val+S.substring( i+varLen );
-             
-            }
-         i++;
-         i=S.indexOf( varName );
-      }
-      return S;
-   }
-   private static String Subst( String formula,float val, String varName)
-   {
-      String S = new String(formula);
-      int varLen = varName.length();
-      for( int i=S.indexOf( varName ); i>=0 && i < S.length();)
-      {
-         char cB =0;
-         if(  i > 0 && i-1 < S.length())
-            cB =S.charAt( i-1 );
-         
-         char cA = 0;
-         if( i >=0 && i+1 +varLen < S.length())
-            cA = S.charAt(  i+varLen );
-         
-         if( cB==0 || (!Character.isDigit( cB )&& (cB <'A'|| cB > 'Z')) )
-            if( cA==0 || (!Character.isDigit( cA )&&( cA <'A'|| cA >'Z')) )
-            { 
-               S = S.substring( 0,i )+val+S.substring( i+varLen );
-             
-            }
-
-         i++;
-         i=S.indexOf( varName );
-      }
-      return S;
-   }
+     
    @Override
    public void actionPerformed(ActionEvent arg0)
    {
@@ -1210,18 +1166,23 @@ public class GroupSelector implements IObserver, ActionListener
 
         try
         {
-         int k= formula.getSelectedIndex( ); System.out.println("Selected indes="+k);
+         int k= formula.getSelectedIndex( ); System.out.println(
+                                              "Selected indes="+k);
+         
          String formulaStr =formula.getSelectedItem( ).toString();
+         
          if( k < 0)
             formula.addItem( formulaStr);
          
          ExecuteFormula( Integer.parseInt( FormulaGroup.getText( ).trim( ) ),
                IntList.ToArray( Detectors_Gr.getText( ).trim( ) ),
                formulaStr);
+         
         }catch(Exception S)
         {
            JOptionPane.showMessageDialog( null , "Could Not AssignGroups:"+ 
                  S.toString());
+           
            return;
         }
                
@@ -1234,11 +1195,24 @@ public class GroupSelector implements IObserver, ActionListener
          float mult = 0;
          float maxIntensity = 0;
 
-         if ( chBox.isSelected( ) )
-            mult = MaxIntensity / MaxGroupID;
+         if ( chBox.isSelected( )  )
+         { 
+           if( MaxGroupID >0)
+            {
+              mult = MaxIntensity / MaxGroupID;
+           
          
-         DS.setAttribute( new FloatAttribute( "GroupIntesityMult" ,
+             DS.setAttribute( new FloatAttribute( "GroupIntesityMult" ,
                MaxIntensity / MaxGroupID ) );
+            }else
+            {
+               mult = 1;
+               DS.setAttribute( new FloatAttribute( "GroupIntesityMult" ,
+                    1 ) );
+            }
+         }else 
+            DS.setAttribute( new FloatAttribute( "GroupIntesityMult" ,
+                  1 ) );
 
          boolean MaxGroupIDpresent = false;
          
@@ -1817,16 +1791,7 @@ public class GroupSelector implements IObserver, ActionListener
    }
    
   
-   public static void main1( String[] args)
-   {
-      String formula = "(pix<542144)*( pix >54200)".toUpperCase();
-      System.out.println("formula 1="+formula);
-      formula = GroupSelector.Subst( formula , 12f , "PIX" );
-      System.out.println("formula 2="+formula);
-      formula = GroupSelector.Subst( formula , 4 , "UV" );
-      System.out.println("formula 3="+formula);
-      
-   }
+  
    /**
     * @param args
     */
