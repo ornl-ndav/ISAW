@@ -102,9 +102,14 @@ public class SlicedEventsPanel
     Vector3D zmin = new Vector3D(  0,  0, -25 );
     Vector3D zmax = new Vector3D(  0,  0,  25 );
 
-    Axis x_axis = Axis.getInstance( xmin, xmax, "X-Axis", Color.RED );
-    Axis y_axis = Axis.getInstance( ymin, ymax, "Y-Axis", Color.GREEN );
-    Axis z_axis = Axis.getInstance( zmin, zmax, "Z-Axis", Color.BLUE );
+    int dull_level   = 64;
+    Color dull_red   = new Color( dull_level,          0,          0 );
+    Color dull_green = new Color(          0, dull_level,          0 );
+    Color dull_blue  = new Color(          0,          0, dull_level );
+
+    Axis x_axis = Axis.getInstance( xmin, xmax, "X-Axis", dull_red   );
+    Axis y_axis = Axis.getInstance( ymin, ymax, "Y-Axis", dull_green );
+    Axis z_axis = Axis.getInstance( zmin, zmax, "Z-Axis", dull_blue  );
 
     axis_group = new OnOff( true );
     axis_group.addChild( x_axis );
