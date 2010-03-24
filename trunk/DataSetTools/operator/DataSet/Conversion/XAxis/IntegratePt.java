@@ -433,7 +433,7 @@ public class IntegratePt extends
     *  @param op1  The wrappable that will actually integrate the peak
     *  @return  A Vector with two elements, ITOT, SIGI, null, or an ErrorString
     */
-  public Vector Integrate( float time, int dataBlockIndex, Wrappable op1, int minx, int maxx, int miny, int maxy, int minz, int maxz){
+  public Vector Integrate( float time, int dataBlockIndex, Wrappable op1, int minx, int maxx, int miny, int maxy, int minz, int maxz, StringBuffer log){
   
     if( dataBlockIndex < 0)
       return null;
@@ -525,6 +525,7 @@ public class IntegratePt extends
     setfloatField(op1, "ITOT", 0f);
     setObjField(op1 ,"JHIST", JHist);
     setObjField(op1,"NTIME", D.getX_scale().getXs());
+    setstringField(op1, "LOG", null);
 
     Object O = op.calculate();
     if( O instanceof ErrorString){
@@ -535,6 +536,7 @@ public class IntegratePt extends
     Vector V = new Vector();
     V.addElement(getfloatField(op,"ITOT")); 
     V.addElement(getfloatField(op,"SIGITOT"));                     
+    log.append(getstringField(op,"LOG"));
 
     last_time           = time;                    // save parameters and
     last_dataBlockIndex = dataBlockIndex;          // results so that we don't
@@ -571,6 +573,26 @@ public class IntegratePt extends
     try{
       Field F =  op.getClass().getField(Name);
       F.set(op,new Float(val));  
+    }catch(Exception ss){
+    }
+  }
+  
+
+  private Object getstringField( Wrappable op, String Name){
+     try{
+        Field F = op.getClass().getField(Name);
+        String f = (String)F.get( op );
+        return new String(f);
+     }catch(Exception s){
+       return null;
+     }
+  }
+
+
+  private void setstringField( Wrappable op, String Name, String val){
+    try{
+      Field F =  op.getClass().getField(Name);
+      F.set(op,new String(val));  
     }catch(Exception ss){
     }
   }

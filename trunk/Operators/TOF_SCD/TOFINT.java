@@ -39,6 +39,8 @@ public class TOFINT implements Wrappable,HiddenOperator{
 
   public int MINZ=0;
 
+  public String LOG=null;
+
   public int MAXP1=0;
 
   public int IPFLAG=0;
@@ -199,59 +201,56 @@ public class TOFINT implements Wrappable,HiddenOperator{
     RIS3=(float)((INTI3/SIG3));
 //      TYPE *,'INTI3,SIG3,RIS3',INTI3,SIG3,RIS3
     if(((IPFLAG)==(0))){
-        util.WRITESTRING(((0)),((
-          "  Counts for Offsets from peak time:   ")));
-        util.WRITELN(((0)));
+        LOG="   "+(ONE+FIVE)/2;
+        LOG+="  "+Z;
+        LOG+="  "+X;
+        LOG+="  "+Y;
+        LOG+="  "+(int)JHIST[X-1][Y-1][Z-1];
+        LOG+="  "+MINX;
+        LOG+="  "+MAXX;
+        LOG+="  "+MINY;
+        LOG+="  "+MAXY;
+        LOG+="  "+INTI1;
+        LOG+="  "+SIG1;
+        LOG+="  "+RIS1;
+        if((RIS1>RIS2)&&(RIS1>RIS3)&&(RIS1>5.0))LOG+="  Yes";
+        else LOG+="  No";
+        LOG+="  "+"\n ";
+        LOG+="  "+(TWO+SIX)/2;
+        LOG+="  "+Z;
+        LOG+="  "+X;
+        LOG+="  "+Y;
+        LOG+="  "+(int)JHIST[X-1][Y-1][Z-1];
+        LOG+="  "+MINX;
+        LOG+="  "+MAXX;
+        LOG+="  "+MINY;
+        LOG+="  "+MAXY;
+        LOG+="  "+INTI2;
+        LOG+="  "+SIG2;
+        LOG+="  "+RIS2;
+        if((RIS2>RIS1&&RIS2>RIS3)||(RIS1>RIS2&&RIS1>RIS3&&RIS1<=5.0)
+          ||(RIS3>RIS2&&RIS3>RIS1&&RIS3<=5.0))LOG+="  Yes";
+        else LOG+="  No";
+        LOG+="  "+"\n ";
+        LOG+="  "+(THREE+SEVEN)/2;
+        LOG+="  "+Z;
+        LOG+="  "+X;
+        LOG+="  "+Y;
+        LOG+="  "+(int)JHIST[X-1][Y-1][Z-1];
+        LOG+="  "+MINX;
+        LOG+="  "+MAXX;
+        LOG+="  "+MINY;
+        LOG+="  "+MAXY;
+        LOG+="  "+INTI3;
+        LOG+="  "+SIG3;
+        LOG+="  "+RIS3;
+        if((RIS3>RIS1)&&(RIS3>RIS2)&&(RIS3>5.0))LOG+="  Yes";
+        else LOG+="  No";
+        LOG+="  "+"\n ";
+        LOG+="Counts for Offsets from peak time:\n ";
         for(J=ONE;J<=SEVEN;J++)
-          util.WRITEINT(((0)),((ISUM[(int)(((J))-1)])),(("I6")));
-        util.WRITELN(((0)));
-        util.WRITESTRING(((0)),((" Center T   X Y IPK    dX        dY  ")));
-        util.WRITESTRING(((0)),((
-          "     Ihkl       sigI          I/sigI   ")));
-        util.WRITELN(((0)));
-        util.WRITEINT(((0)),((ONE+FIVE)/2),(("I4")));
-        util.WRITEINT(((0)),((Z)),(("I6")));
-        util.WRITEINT(((0)),((X)),(("I5")));
-        util.WRITEINT(((0)),((Y)),(("I5")));
-        util.WRITEINT(((0)),((MAXP1)),(("I6")));
-        util.WRITEINT(((0)),((MINX)),(("I5")));
-        util.WRITEINT(((0)),((MAXX)),(("I5")));
-        util.WRITEINT(((0)),((MINY)),(("I5")));
-        util.WRITEINT(((0)),((MAXY)),(("I5")));
-        util.WRITEFLOAT(((0)),((INTI1)),(("F10.2")));
-        util.WRITEFLOAT(((0)),((SIG1)),(("F10.2")));
-        util.WRITEFLOAT(((0)),((RIS1)),(("F10.2")));
-        util.WRITESTRING(((0)),(("          ")));
-        util.WRITELN(((0)));
-        util.WRITEINT(((0)),((TWO+SIX)/2),(("I4")));
-        util.WRITEINT(((0)),((Z)),(("I6")));
-        util.WRITEINT(((0)),((X)),(("I5")));
-        util.WRITEINT(((0)),((Y)),(("I5")));
-        util.WRITEINT(((0)),((MAXP1)),(("I6")));
-        util.WRITEINT(((0)),((MINX)),(("I5")));
-        util.WRITEINT(((0)),((MAXX)),(("I5")));
-        util.WRITEINT(((0)),((MINY)),(("I5")));
-        util.WRITEINT(((0)),((MAXY)),(("I5")));
-        util.WRITEFLOAT(((0)),((INTI2)),(("F10.2")));
-        util.WRITEFLOAT(((0)),((SIG2)),(("F10.2")));
-        util.WRITEFLOAT(((0)),((RIS2)),(("F10.2")));
-        util.WRITESTRING(((0)),(("          ")));
-        util.WRITELN(((0)));
-        util.WRITEINT(((0)),((THREE+SEVEN)/2),(("I4")));
-        util.WRITEINT(((0)),((Z)),(("I6")));
-        util.WRITEINT(((0)),((X)),(("I5")));
-        util.WRITEINT(((0)),((Y)),(("I5")));
-        util.WRITEINT(((0)),((MAXP1)),(("I6")));
-        util.WRITEINT(((0)),((MINX)),(("I5")));
-        util.WRITEINT(((0)),((MAXX)),(("I5")));
-        util.WRITEINT(((0)),((MINY)),(("I5")));
-        util.WRITEINT(((0)),((MAXY)),(("I5")));
-        util.WRITEFLOAT(((0)),((INTI3)),(("F10.2")));
-        util.WRITEFLOAT(((0)),((SIG3)),(("F10.2")));
-        util.WRITEFLOAT(((0)),((RIS3)),(("F10.2")));
-        util.WRITESTRING(((0)),(("          ")));
-        util.WRITELN(((0)));
-        util.WRITELN(((0)));
+          LOG+="  "+ISUM[J-1];
+        LOG+="  "+"\n ";
     }
 //  Find maximum I/Sig(I)
     if((((RIS2)>(RIS1)&&(RIS2)>(RIS3)))){
