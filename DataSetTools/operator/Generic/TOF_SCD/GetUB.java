@@ -585,9 +585,12 @@ public class GetUB {
      int n=Nelements-1;
      for( int i=Nelements-1; i>0 && (List[i][FIT1]+List[i][CORR])> FitMax; i--)
         n=i;     
+     
      for( int i=Nelements-1; i>= n; i--)
         optimize( List[i],Peaks,omit,MaxXtalLengthReal);
+     
      EliminateDuplicates( List,n,gridLength,MaxXtalLengthReal);
+     
      n = Math.max(  n , Nelements-1-70 );
      
      //n = Nelements - 10;
@@ -599,10 +602,13 @@ public class GetUB {
      
      ListComparator comp = new ListComparator( List, n, Nelements-1,weights );
      comp.sort();
+     
      Integer[] sortList = comp.getRangList();
       
        MRes=GetUBs(  sortList,null,Peaks);
+       
        MRes = ReSort( MRes, Peaks, MaxXtalLengthReal, ELIM_EQ_CRYSTAL_PARAMS);
+      
        System.out.println( "Through finding UB's");
        return MRes;
    }
@@ -652,9 +658,11 @@ public class GetUB {
    {
       Vector<float[][]> Res = new Vector<float[][]>();
       int[] tuple = new int[3];
+      
       tuple[0]=0; tuple[1]=1; tuple[2] =2;
       int N=2;
       boolean done = tuple[2] >=sortList.length;
+      
       while(!done)
       {
          int i1 = sortList[tuple[0]];
@@ -840,15 +848,21 @@ public class GetUB {
    {
       if( i1 <0 || i2<0|| i3 <0)
          return null;
+      
       if( i1>= List.length || i2 >= List.length || i3 >= List.length)
          return null;
+      
       float[][] Dirs = new float[3][3];
+      
       Dirs[0] = PlaneNormal( i1);
       Dirs[1] = PlaneNormal( i2);
       Dirs[2] = PlaneNormal( i3);
+      
       float[][] Res = UBMatrixFrPlanes( Dirs, Peaks,null,null,4);
+      
       if( Res == null)
          return null;
+      
       float Max = Float.MIN_VALUE;
       float Min = Float.MAX_VALUE;
       for( int i=0; i<3;i++)
@@ -1426,10 +1440,13 @@ public class GetUB {
 
       if( PlaneDirs == null )
          return null;
+      
       if( PlaneDirs.length < 3 )
          return null;
+      
       if( Peaks == null && stop !=1 )
          return null;
+      
       if( Peaks != null && Peaks.size() < 4 )
          return null;
 
@@ -1448,8 +1465,10 @@ public class GetUB {
       }
       if( stop ==1)
          return UpdateStats(LinearAlgebra.getInverse( UB),Peaks,Stats) ;
+      
       if( Singular(UB))
          return null;
+      
       int k = Peaks.size();
       double q[][] = new double[ k ][ 3 ];
       double hkl[][] = new double[ k ][ 3 ];
@@ -1481,15 +1500,19 @@ public class GetUB {
           System.arraycopy( q[j] , 0 , q1[j] , 0 , 3 );
           System.arraycopy( hkl[j] , 0 , hkl1[j] , 0 , 3 );
       }
+      
       double std_dev = LinearAlgebra.BestFitMatrix( M , hkl1 , q1 );
+      
       if( debug)
          System.out.println(" Best fit UB has an error of "+ std_dev);
       
       for( int i = 0 ; i < 3 ; i++ )
          for( int j = 0 ; j < 3 ; j++ )
             UB[ i ][ j ] = (float) M[ i ][ j ];
+      
       if( stop ==2)
          return  UpdateStats(UB,Peaks,Stats);
+      
       blind bl = new blind();
       ErrorString S = bl.blaue( UB );
 
