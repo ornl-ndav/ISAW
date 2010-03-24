@@ -1,7 +1,7 @@
 from DataSetTools.retriever  import *
 from gov.anl.ipns.Util.SpecialStrings  import *
 from DataSetTools.operator.Generic  import *
-from jarray import array 
+from jarray import array  
 from jarray import zeros 
 from gov.anl.ipns.MathTools.LinearAlgebra import *
 
