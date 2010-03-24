@@ -106,6 +106,7 @@ public class InitializationHandler implements IReceiveMessage
     message_center.addReceiver( this, Commands.PAUSE_UDP);
     message_center.addReceiver( this, Commands.CLEAR_UDP);
     message_center.addReceiver( this, Commands.CONTINUE_UDP);
+    message_center.addReceiver( this, Commands.EXIT_APPLICATION);
 
                                                             // status messages
     message_center.addReceiver( this, Commands.LOAD_FAILED );
@@ -234,7 +235,7 @@ public class InitializationHandler implements IReceiveMessage
     else if ( message.getName().equals(Commands.LOAD_FILE_DONE ) )
       loading_file  = false;
 
-    else if( message.getName().equals(Commands.LOAD_UDP_EVENTS) )
+    else if ( message.getName().equals(Commands.LOAD_UDP_EVENTS) )
     {
       if ( loading_file )
       {
@@ -271,13 +272,13 @@ public class InitializationHandler implements IReceiveMessage
       return false;
     }
 
-    else if( message.getName().equals( Commands.PAUSE_UDP ) )
+    else if ( message.getName().equals( Commands.PAUSE_UDP ) )
     {
       if ( socket_evl != null )
         socket_evl.setPause( true );
     }
 
-    else if( message.getName().equals(Commands.CLEAR_UDP) )
+    else if ( message.getName().equals(Commands.CLEAR_UDP) )
     {
       if ( socket_evl != null )
       {
@@ -294,11 +295,14 @@ public class InitializationHandler implements IReceiveMessage
       return false;
     }
 
-    else if( message.getName().equals( Commands.CONTINUE_UDP ) )
+    else if ( message.getName().equals( Commands.CONTINUE_UDP ) )
     {
       if ( socket_evl != null ) 
         socket_evl.setPause( false );
     }
+
+    else if ( message.getName().equals(Commands.EXIT_APPLICATION) )
+      CloseUDP_PortAndExit();
 
     return false;
   }
@@ -362,6 +366,36 @@ public class InitializationHandler implements IReceiveMessage
         Util.sendInfo("ERROR: TO MUCH TIME NEEDED TO INITIALIZE FOR UDP LOAD");
         loading_file = false;
       }
+  }
+
+
+  /**
+   *  Close the UDP port for events, sleep for a second, then call 
+   *  System.exit();
+   */
+  private void CloseUDP_PortAndExit()
+  {
+     try
+     {
+       if ( socket_evl != null )
+       {
+         socket_evl.close();
+         System.out.println("Closed UDP Port");
+       }
+     }
+     catch ( Exception ex )
+     {
+        System.out.println("InitializationHandler.ClosePortAndExit FAILED");
+     }
+     try
+     {
+       Thread.sleep( 1000 );
+     }
+     catch ( Exception ex )
+     {
+     }
+     System.out.println("Exit via InitializationHandler");
+     System.exit(0);
   }
 
 
