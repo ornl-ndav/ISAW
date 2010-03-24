@@ -1416,7 +1416,7 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
 
      // initialize variables for the slice integration
                 
-     Vector V = opIntPt.Integrate(time, indx, null, minx, maxx, miny, maxy, minz, maxz);
+     Vector V = opIntPt.Integrate(time, indx, null, minx, maxx, miny, maxy, minz, maxz, log);
      
      try{                  
      float Itot = ((Float)(V.elementAt(0))).floatValue();
