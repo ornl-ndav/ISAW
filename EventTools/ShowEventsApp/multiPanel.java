@@ -249,8 +249,6 @@ public class multiPanel implements IReceiveMessage, IhasWindowClosed
 
   private boolean ReallyExitApp( JComponent comp )
   {
-    System.out.println("Started ReallyExitApp dialog");
-
     int res = JOptionPane.showConfirmDialog( comp,
                                             "Do you Really want to Exit",
                                             "Exit",
@@ -287,8 +285,6 @@ class CloseAppActionListener implements java.awt.event.ActionListener
    {
       if ( check && ReallyExitApp( comp ) )
       {
-        System.out.println("Now sending Exit Application Command");
-
         Message message = new Message( Commands.EXIT_APPLICATION,
                                        new ExitApplicationCmd(),
                                        true,

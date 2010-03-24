@@ -394,7 +394,6 @@ public class InitializationHandler implements IReceiveMessage
      catch ( Exception ex )
      {
      }
-     System.out.println("Exit via InitializationHandler");
      System.exit(0);
   }
 

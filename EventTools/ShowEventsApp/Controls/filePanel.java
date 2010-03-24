@@ -1030,7 +1030,6 @@ public class filePanel implements IReceiveMessage
     catch ( Exception ex )
     {
     }
-    System.out.println("Exit via filePanel");
     System.exit(0);
   }
 
