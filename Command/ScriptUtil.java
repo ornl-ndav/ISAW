@@ -97,6 +97,7 @@ package Command;
 
 import DataSetTools.dataset.*;
 import DataSetTools.operator.Operator;
+import DataSetTools.operator.DataSet.DataSetOperator;
 import DataSetTools.operator.Generic.GenericOperator;
 import DataSetTools.retriever.*;
 import DataSetTools.util.SharedData;
@@ -106,6 +107,7 @@ import DataSetTools.writer.*;
 import gov.anl.ipns.Parameters.IParameterGUI;
 import gov.anl.ipns.Parameters.IParameter;
 import gov.anl.ipns.Util.Messaging.IObserverList;
+import gov.anl.ipns.Util.SpecialStrings.ErrorString;
 import gov.anl.ipns.Util.SpecialStrings.SpecialString;
 import gov.anl.ipns.Util.Sys.StringUtil;
 
@@ -500,7 +502,58 @@ public class ScriptUtil{
     throw new MissingResourceException("Could not find command \""+command+"\""
                                  ,"Command.Script_Class_List_Handler",command);
   }
-
+  
+  /**
+   * Executes a generic command with arguments.
+   * @param CommandName   The name of the command
+   * @param args          The arguments that are to be set into this operator
+   * @return              The result after the command/operator is run(getResult)
+   * @throws MissingResourceException
+   */
+  public static Object ExecuteCommand( String CommandName, Object[] args)
+                                   
+  {
+     GenericOperator op = ScriptUtil.getOperator( CommandName, args);
+     return op.getResult( );
+     
+  }
+  
+  
+  /**
+   * Executes a DataSet command with arguments.
+   * @param CommandName   The name of the command
+   * @param args          The arguments that are to be set into this operator
+   * @return              The result after the command/operator is run(getResult)
+   * @throws MissingResourceException
+   */
+  public static Object ExecuteDataSetCommand( DataSet DS, String CommandName,
+                          Object[] args) 
+          
+     {
+     if( DS == null  || CommandName == null || CommandName.length() < 1)
+        return new ErrorString("Cannot operate on a null DataSet");
+     
+     boolean done = false;
+     for( int index =0; index < DS.getNum_operators( ) && !done ;index++)
+     {
+         DataSetOperator opD = DS.getOperator( index );
+         if( opD.getCommand( ).equals( CommandName ))
+            if( args == null || opD.getNum_parameters( )>= args.length )
+               try
+         {
+             if( args != null)
+                for( int j=0; j< args.length; j++)
+                   opD.getParameter( j ).setValue( args[j] );
+             opD.setDataSet( DS );
+             return opD.getResult( );
+         }catch( Exception ss)
+         {
+            //try next op in list
+         }
+     }
+     return new ErrorString( "The DataSet does not contain "
+                         +CommandName);
+     }
   /**
    * Finds an operator with the appropriate signature and configures
    * it. This will return a new instance of the operator.
