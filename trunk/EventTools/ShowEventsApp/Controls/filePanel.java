@@ -37,6 +37,7 @@ package EventTools.ShowEventsApp.Controls;
 
 import gov.anl.ipns.Parameters.*;
 
+import java.util.Date;
 import java.awt.GridLayout;
 import java.text.NumberFormat;
 
@@ -49,8 +50,8 @@ import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 
 import DataSetTools.util.SharedData;
-import EventTools.EventList.SNS_Tof_to_Q_map;
 import EventTools.EventList.FileUtil;
+import EventTools.EventList.ITofEventList;
 import EventTools.ShowEventsApp.Command.*;
 import MessageTools.*;
 
@@ -93,6 +94,8 @@ public class filePanel implements IReceiveMessage
    private JTextField         eventsToShow;
    private JTextField         protonsOnTarget;
    private JTextField         eventsToShowUDP;
+   private JLabel             CurrentEventRate;
+
 
    private JCheckBox            UseManualPort;
    private FilteredPG_TextField Port;
@@ -130,6 +133,10 @@ public class filePanel implements IReceiveMessage
    private float              absorption_smu;
    private float              absorption_amu;
 
+   private String             event_rate_string = "Event Rate: ";
+   private long               last_event_count_time = 0;
+   private long               last_event_count = 0;
+
    /**
     * Creates file panel as well as sets up default
     * properties for the file load locations.
@@ -140,6 +147,7 @@ public class filePanel implements IReceiveMessage
    {
       this.message_center = message_center;
       message_center.addReceiver(this, Commands.EXIT_APPLICATION);
+      message_center.addReceiver(this, Commands.MAP_EVENTS_TO_Q);
 
       new SharedData();               // Read in IsawProps.dat
 
@@ -291,7 +299,7 @@ public class filePanel implements IReceiveMessage
       Instrument = new JComboBox( FileUtil.SupportedSNS_Instruments() );
       Instrument.setSelectedIndex( 0 );
       subPanel.add( Instrument);
-      Res.add(  subPanel );
+      Res.add( subPanel );
       
       subPanel = new JPanel();
       subPanel.setLayout( new GridLayout(1,2) );
@@ -318,6 +326,12 @@ public class filePanel implements IReceiveMessage
       subPanel.setLayout( new GridLayout(1,2));
       subPanel.add( maxEvents );
       subPanel.add( eventsToShowUDP );
+      Res.add( subPanel );
+
+      subPanel = new JPanel();
+      subPanel.setLayout( new GridLayout(1,1) ); 
+      CurrentEventRate = new JLabel( event_rate_string );
+      subPanel.add( CurrentEventRate );
       Res.add( subPanel );
       
       ActionListener list = new UDPActionListener();
@@ -984,10 +998,31 @@ public class filePanel implements IReceiveMessage
 
    public boolean receive( Message message )
    {
+     if ( message.getName().equals(Commands.MAP_EVENTS_TO_Q) )
+     {
+       ITofEventList events = (ITofEventList)message.getValue();
+       if ( events == null )
+         return false;
+
+       long elapsed = System.nanoTime() - last_event_count_time;
+       last_event_count += events.numEntries();
+       if ( elapsed > 1e9 )
+       {
+         Date date = new Date();
+         float ev_rate = (float)( last_event_count * 1.0e9 / elapsed );
+         String text = String.format( "%s      %8.1f CPS\n",
+                                        date.toString(), ev_rate );
+         SwingUtilities.invokeLater( new SetRateLabel(text) );
+         last_event_count_time = System.nanoTime();
+         last_event_count = 0;
+       }
+       return false;
+     }
+
      if ( message.getName().equals(Commands.EXIT_APPLICATION) ) 
        CloseTCP_ConnectionAndExit();
 
-     return true;
+     return false;
    }
 
 
@@ -1334,6 +1369,26 @@ public class filePanel implements IReceiveMessage
       message_center.send( message );
    }
    
+
+   /**
+    *  Runnable to set the CurrentEventRate label in the swing thread.
+    */
+   public class SetRateLabel implements Runnable
+   {
+     String text;
+     
+     public SetRateLabel( String text )
+     {
+       this.text = text;
+     } 
+
+     public void run()
+     {
+       CurrentEventRate.setText(text);
+     }
+   }
+
+
    public static void main(String[] args)
    {
       MessageCenter mc = new MessageCenter("Testing MessageCenter");
