@@ -37,13 +37,14 @@
 
 $category=Macros,Instrument Type,TOF_NPD,NEW_SNS
 $title=Normalized Event Data(PG3)
-$EventFile         LoadFile( ${Data_Directory})             Event FileName
+               
+$EventFile         LoadFile(${Data_Directory})             Event FileName
 $ProtEvents        Float(100)                              Protons on Target for Event run
 $useBackGround     BooleanEnable([true,2,0])               Use Sample Background run
 $BackEventFile     LoadFile(${Data_Directory})             Background FileName
 $BackEvents        Float(100)                              Protons on Target for Background run
 $useVanadium       BooleanEnable([true,5,0])               Normalize with Vanadium 
-$VanEventFile      LoadFile( ${Data_Directory})             Vanadium FileName
+$VanEventFile      LoadFile(${Data_Directory})             Vanadium FileName
 $VanEvents         Float(100)                              Protons on Target for Vanadium run
 $VanPeakFile       LoadFile(${ISAW_HOME}/Databases/VanadiumPeaks.dat)  File with Vanadium peaks to eliminate
 $useVanBack        BooleanEnable([true,2,0])               Use Vanadium background run
@@ -66,7 +67,7 @@ $firstInt          Float(0.2)                              Length of first Inter
 $Nbins             Integer(10000)                          Number of bins 
 
 $useGhost          BooleanEnable([false,3,0])              Subtract Ghost Histogram
-$GhostFile         LoadFile(${ISAW_HOME}/InstrumentInfo/ ) Ghost Information File Name
+$GhostFile         LoadFile(${ISAW_HOME}/InstrumentInfo/SNS/PG3/PG3_GhostPks.dat ) Ghost Information File Name
 $NGhostIDs         Integer(300000)                         Number of Ghost IDs
 $NGhostsPerID      Integer(16)                             Number of Ghosts per ID
 
