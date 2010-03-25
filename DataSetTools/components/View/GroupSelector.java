@@ -540,7 +540,7 @@ public class GroupSelector implements IObserver, ActionListener
             q[pixel - startPixel]=1/d[pixel -startPixel];
             wl[pixel - startPixel]= tof_calc.Wavelength( pathLength , 
                   1000 );
-            ang[pixel - startPixel]= ScatAng;           
+            ang[pixel - startPixel]= (float)(ScatAng*180/Math.PI);           
 
          }
          
@@ -632,9 +632,9 @@ public class GroupSelector implements IObserver, ActionListener
       // ----------------------------------------
       JPanel TopMid = new JPanel( new GridLayout( 4 , 3 ) );
       
-      TopMid.add( new JLabel( "Operation" , SwingConstants.LEFT ) );
+      TopMid.add( new JLabel( "Operation" , SwingConstants.CENTER ) );
       TopMid.add( new JLabel( "Detector(s)" , SwingConstants.CENTER ) );
-      TopMid.add( new JLabel( "Group(s)" , SwingConstants.RIGHT ) );
+      TopMid.add( new JLabel( "Group" , SwingConstants.CENTER ) );
       
       JButton but = new JButton( ASSIGN_GROUP );
       but.addActionListener( this );
@@ -657,10 +657,10 @@ public class GroupSelector implements IObserver, ActionListener
       but.addActionListener( this );
       but.setToolTipText( "Uses formula below. If >0 true,else false" );
       TopMid.add( but );
-      Detectors_Formula = new FilteredPG_TextField( new IntListFilter( ) );
-      TopMid.add( Detectors_Formula );
-      Detectors_Formula
-            .setToolTipText( "Leave blank to apply to ALL detectors" );
+  //    Detectors_Formula = new FilteredPG_TextField( new IntListFilter( ) );
+      TopMid.add( new JLabel() );
+  //    Detectors_Formula
+  //          .setToolTipText( "Leave blank to apply to ALL detectors" );
       
       FormulaGroup = new FilteredPG_TextField( new IntegerFilter( ) );
       TopMid.add( FormulaGroup );
