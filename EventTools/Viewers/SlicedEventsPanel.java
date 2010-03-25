@@ -37,10 +37,8 @@ package EventTools.Viewers;
 //import java.io.*;
 import java.util.*;
 import java.awt.*;
-import java.awt.event.*;
 import javax.swing.*;
 
-//import javax.swing.*;
 import javax.media.opengl.*;
 import gov.anl.ipns.MathTools.Geometry.*;
 import gov.anl.ipns.ViewTools.Components.ViewControls.ColorScaleControl.*;
@@ -56,7 +54,7 @@ import EventTools.Histogram.IEventBinner;
 
 import SSG_Tools.Cameras.OrthographicCamera;
 
-import SSG_Tools.SSG_Nodes.StateControls.glEnableNode;
+//import SSG_Tools.SSG_Nodes.StateControls.glEnableNode;
 import SSG_Tools.SSG_Nodes.StateControls.glDisableNode;
 import SSG_Tools.SSG_Nodes.SimpleShapes.*;
 import SSG_Tools.SSG_Nodes.*;
@@ -89,7 +87,6 @@ public class SlicedEventsPanel
   private boolean         filter_below_min = true;
   private boolean         use_alpha        = false;
   private float           alpha            = 1;
-  private boolean         orthographic     = false;
 
   private JoglPanel       jogl_panel;
 
@@ -102,7 +99,7 @@ public class SlicedEventsPanel
     Vector3D zmin = new Vector3D(  0,  0, -25 );
     Vector3D zmax = new Vector3D(  0,  0,  25 );
 
-    int dull_level   = 64;
+    int dull_level   = 100;
     Color dull_red   = new Color( dull_level,          0,          0 );
     Color dull_green = new Color(          0, dull_level,          0 );
     Color dull_blue  = new Color(          0,          0, dull_level );
@@ -318,7 +315,6 @@ public class SlicedEventsPanel
     this.point_size       = point_size;
     this.use_alpha        = use_alpha;
     this.alpha            = alpha;
-    this.orthographic     = orthographic;
 
     Vector<MultiColoredPointList> nodes = getColoredPointLists();
     for ( int i = 0; i < nodes.size(); i++ )

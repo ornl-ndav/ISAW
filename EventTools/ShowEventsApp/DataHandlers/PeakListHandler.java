@@ -151,8 +151,7 @@ public class PeakListHandler implements IReceiveMessage
       }
 
       IndexPeaksCmd cmd = (IndexPeaksCmd)obj;
-      float tolerance = .12f;                    // TODO: use tolerance for
-                                                 //       Index w/optimizer
+
       float[][] UB = null;
       try
       {

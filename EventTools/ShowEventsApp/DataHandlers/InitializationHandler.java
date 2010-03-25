@@ -38,7 +38,6 @@ import MessageTools.IReceiveMessage;
 import MessageTools.Message;
 import MessageTools.MessageCenter;
 
-import EventTools.EventList.SNS_Tof_to_Q_map;
 import EventTools.EventList.FileUtil;
 import EventTools.ShowEventsApp.Command.Commands;
 import EventTools.ShowEventsApp.Command.LoadEventsCmd;
@@ -76,7 +75,6 @@ public class InitializationHandler implements IReceiveMessage
   private LoadUDPEventsCmd    UDPcmd;
   private SetNewInstrumentCmd new_instrument_cmd;
 
-  private String   currentUDPInstrument = null;
   private String[] supported_inst       = FileUtil.SupportedSNS_Instruments();
 
   /**
@@ -252,7 +250,6 @@ public class InitializationHandler implements IReceiveMessage
       udpLoadStarted = true;
       
       UDPcmd =(LoadUDPEventsCmd) message.getValue();
-      currentUDPInstrument= UDPcmd.getInstrument();
       new_instrument_cmd = 
          new SetNewInstrumentCmd( UDPcmd.getInstrument(),
                   UDPcmd.getDetFile(),
