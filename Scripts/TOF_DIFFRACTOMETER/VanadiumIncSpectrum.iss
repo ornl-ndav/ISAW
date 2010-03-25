@@ -48,6 +48,9 @@ UseDmap=      false
 DmapFile=    ""
 
 FocAng  =     Angle
+if FocAng < 0
+  FocAng = -FocAng
+endif
 FocPath =     0.5
 MinTime =     200
 MaxTime  =    33333
