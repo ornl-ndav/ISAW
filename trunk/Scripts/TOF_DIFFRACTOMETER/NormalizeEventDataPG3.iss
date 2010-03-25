@@ -36,7 +36,7 @@
 
 
 $category=Macros,Instrument Type,TOF_NPD,NEW_SNS
-$title=Normalized Event Data
+$title=Normalized Event Data(PG3)
 $EventFile         LoadFile( ${Data_Directory})             Event FileName
 $ProtEvents        Float(100)                              Protons on Target for Event run
 $useBackGround     BooleanEnable([true,2,0])               Use Sample Background run
