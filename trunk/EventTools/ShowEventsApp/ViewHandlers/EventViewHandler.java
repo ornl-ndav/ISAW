@@ -37,8 +37,8 @@ import SSG_Tools.SSG_Nodes.SimpleShapes.*;
  */ 
 public class EventViewHandler implements IReceiveMessage, IhasWindowClosed
 {
-  private MessageCenter      message_center,
-                             view_message_center;
+  private MessageCenter      message_center;
+//                             view_message_center;
   private SlicedEventsPanel  events_panel; 
   private FinishJFrame       frame3D;
   private long               num_to_show;
@@ -51,7 +51,7 @@ public class EventViewHandler implements IReceiveMessage, IhasWindowClosed
                            MessageCenter view_message_center )
   {
     this.message_center = message_center;
-    this.view_message_center = view_message_center;
+//    this.view_message_center = view_message_center;
     this.num_shown      = 0;
     this.num_to_show    = 1000000;
  

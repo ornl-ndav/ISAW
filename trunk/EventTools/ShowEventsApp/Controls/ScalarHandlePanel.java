@@ -49,7 +49,7 @@ import javax.swing.border.*;
 import EventTools.ShowEventsApp.Command.Commands;
 import MessageTools.*;
 import Operators.TOF_SCD.ReducedCellInfo;
-import Operators.TOF_SCD.ReducedFormList;
+//import Operators.TOF_SCD.ReducedFormList;
 
 /**
  * This class becomes a panel in the application IsawEV. It handles

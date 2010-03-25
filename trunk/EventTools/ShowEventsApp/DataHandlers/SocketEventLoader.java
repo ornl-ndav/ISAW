@@ -428,34 +428,8 @@ public class SocketEventLoader implements IUDPUser
         
      }
      
-     
+   
   
-   private double Cvrt2dbl( byte[] data , int start)
-   {
-      if( data == null || start <0|| data.length < start+8)
-         return 0.;
-      
-      try
-      {
-         byte[]D = new byte[10];
-         for( int i=0;i < 8; i++)
-         {
-            D[i] = data[start+7-i];
-         }
-         ByteArrayInputStream bStream = new ByteArrayInputStream(D,0,8);
-         DataInputStream dStream = new DataInputStream( bStream );
-         double x= dStream.readDouble( );
-         
-         return x;
-         
-      }catch(Exception s)
-      {
-         System.out.println("Socket Loader error="+s);
-         return 0;
-      }
-   }
-
-
    // Sends a message if enough info has been buffered or enough time has
    // passed
    protected void SendMessage(int NEvents)

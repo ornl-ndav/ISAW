@@ -253,8 +253,6 @@ public class TestSNS_events
 //   String file_name = "/usr2/SEQUOIA/EVENTS/SEQ_328_neutron_event.dat";
 
      String instrument = null;
-     String det_file   = null;
-     String mat_file   = null;
 
      instrument = FileIO.getSNSInstrumentName( file_name );     
 

@@ -40,7 +40,6 @@ import javax.swing.*;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.GridLayout;
 import java.io.ByteArrayOutputStream;
@@ -200,7 +199,6 @@ public class SocketServerTest
           
            byte[] packet = new byte[ ids.length * 8 ];
            
-           int L = ids.length;
            int start = 0;
            
            if( debug ==2 && packets.size()<1 && ids.length >2)
@@ -504,7 +502,7 @@ public class SocketServerTest
       String destination_node ="";
      if( args == null || args.length < 1)
      {
-       DataSetTools.util.SharedData sd = new DataSetTools.util.SharedData();
+//       DataSetTools.util.SharedData sd = new DataSetTools.util.SharedData();
        JFileChooser jfc = new JFileChooser( 
                                    System.getProperty( "Data_Directory","" ));
        jfc.setDialogType( JFileChooser.CUSTOM_DIALOG );

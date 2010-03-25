@@ -48,7 +48,7 @@ import javax.swing.*;
 import gov.anl.ipns.Util.Sys.FinishJFrame;
 import gov.anl.ipns.Util.Sys.IhasWindowClosed;
 import gov.anl.ipns.Util.Sys.WindowShower;
-import gov.anl.ipns.ViewTools.Components.AxisInfo;
+//import gov.anl.ipns.ViewTools.Components.AxisInfo;
 import gov.anl.ipns.ViewTools.Components.IVirtualArrayList1D;
 import gov.anl.ipns.ViewTools.Components.ObjectState;
 import gov.anl.ipns.ViewTools.Components.OneD.*;

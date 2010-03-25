@@ -77,7 +77,6 @@ public class HistogramHandler implements IReceiveMessage
   private MessageCenter message_center;
   private MessageCenter view_message_center;
 
-  private String        current_instrument = "";
   private Histogram3D   histogram = null;
   private int           num_bins;
   private double        max_hist_value_sent;
@@ -93,7 +92,6 @@ public class HistogramHandler implements IReceiveMessage
     this.num_bins = num_bins;    
                                                   // set up for SNAP by default
     Set_Histogram( num_bins, -25.0f, 0, -16.0f, 16.0f, -8.0f, 8.0f );
-    this.current_instrument = "SNAP";
 
     this.max_hist_value_sent = 0;
 
@@ -349,8 +347,7 @@ public class HistogramHandler implements IReceiveMessage
     else
       Set_Histogram( num_bins, -24.0f, 0, -12.0f, 12.0f, -12.0f, 12.0f );
 
-    current_instrument = inst;
-    return true;
+     return true;
   }
 
 
