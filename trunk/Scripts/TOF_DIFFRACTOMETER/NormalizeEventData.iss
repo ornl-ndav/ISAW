@@ -37,13 +37,14 @@
 
 $category=Macros,Instrument Type,TOF_NPD,NEW_SNS
 $title=Normalized Event Data
-$EventFile         LoadFile( ${Data_Directory})             Event FileName
+
+$EventFile         LoadFile(${Data_Directory})             Event FileName
 $ProtEvents        Float(100)                              Protons on Target for Event run
 $useBackGround     BooleanEnable([true,2,0])               Use Sample Background run
 $BackEventFile     LoadFile(${Data_Directory})             Background FileName
 $BackEvents        Float(100)                              Protons on Target for Background run
 $useVanadium       BooleanEnable([true,5,0])               Normalize with Vanadium 
-$VanEventFile      LoadFile( ${Data_Directory})             Vanadium FileName
+$VanEventFile      LoadFile(${Data_Directory})             Vanadium FileName
 $VanEvents         Float(100)                              Protons on Target for Vanadium run
 $VanPeakFile       LoadFile(${ISAW_HOME}/Databases/VanadiumPeaks.dat)  File with Vanadium peaks to eliminate
 $useVanBack        BooleanEnable([true,2,0])               Use Vanadium background run
