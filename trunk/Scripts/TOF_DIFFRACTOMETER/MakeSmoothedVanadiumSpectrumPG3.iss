@@ -79,7 +79,7 @@ $LogBinning   BooleanEnable([false,1,1])    Logarithmic Binning?
 $firstInt     Float(0.2)                    Length of first Interval
 $Nbins        Integer(10000)                Number of bins
  
-$VanPeakFileName LoadFile(${Data_Directory})      File with Vanadium Peak info
+$VanPeakFileName LoadFile(${ISAW_HOME}/Databases/VanadiumPeaks.dat)      File with Vanadium Peak info
 $PeakWidth       Float(.01)                 Relativ(to d) Width of peak to cut out
 $NWidths         Float(4)                   "Number" of peak widths to cut(left and right)
 $NChanAve        Integer(10)                Number of Channels to Average to replace cut peaks

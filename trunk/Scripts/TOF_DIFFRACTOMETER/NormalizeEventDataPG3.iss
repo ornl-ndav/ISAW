@@ -36,7 +36,7 @@
 
 
 $category=Macros,Instrument Type,TOF_NPD,NEW_SNS
-$title=Normalized Event Data for SNAP
+$title=Normalized Event Data
 $EventFile         LoadFile( ${Data_Directory})             Event FileName
 $ProtEvents        Float(100)                              Protons on Target for Event run
 $useBackGround     BooleanEnable([true,2,0])               Use Sample Background run
@@ -48,8 +48,15 @@ $VanEvents         Float(100)                              Protons on Target for
 $VanPeakFile       LoadFile(${ISAW_HOME}/Databases/VanadiumPeaks.dat)  File with Vanadium peaks to eliminate
 $useVanBack        BooleanEnable([true,2,0])               Use Vanadium background run
 $VanBackEventfile  LoadFile(${Data_Directory})             Vanadium background FileName
-$VanbackEvents     Float(1000)                             Protons on target for Vanadium background
-$Ang               Float(90)                               New Angle of Center(degrees)
+$VanbackEvents     Float(100)                             Protons on target for Vanadium background
+
+$useDefFiles       BooleanEnable([true,0,3])               Use default DetCal,Bank, and Map files
+$DetCalFile        LoadFile(${ISAW_HOME}/InstrumentInfo/SNS/PG3/PG3.DetCal)  DetCal File Name
+$BankFile          LoadFile(${ISAW_HOME}/InstrumentInfo/SNS/PG3/PG3_bank.xml)  Bank File Name
+$Mapfile           LoadFile(${ISAW_HOME}/InstrumentInfo/SNS/PG3/PG3_TS.dat)  Mapping File Name
+$firstEvent        Float( 0)                               First Event to load
+$NEvents           Float( 10000000)                        Number of Events to load 
+
 $FocAng            Float( 90.0)                            Focused Angle(degrees)
 $FocPath           Float(0.5)                              Focused Secondary Flight Path(m)
 $MinTime           Float(1000)                             Min Time to Focus
@@ -58,28 +65,16 @@ $LogBinning        BooleanEnable([false,1,1])              Logarithmic Binning?
 $firstInt          Float(0.2)                              Length of first Interval
 $Nbins             Integer(10000)                          Number of bins 
 
-
-useDefFiles=true 
-firstEvent =0
-NEvents   = 1000000000000       
+$useGhost          BooleanEnable([false,3,0])              Subtract Ghost Histogram
+$GhostFile         LoadFile(${ISAW_HOME}/InstrumentInfo/ ) Ghost Information File Name
+$NGhostIDs         Integer(300000)                         Number of Ghost IDs
+$NGhostsPerID      Integer(16)                             Number of Ghosts per ID
 
 if useDefFiles
   BankFile =""
   DetCalFile =""
   MapFile =""
 endif 
-
-
-useGhost =false      
-GhostFile =""  
-NGhostIDs =0      
-NGhostsPerID=16     
-nDetCalFileName = 
-
-DetCalFile = CreateExecFileName( getSysProp("ISAW_HOME"),"InstrumentInfo/SNS/SNAP/SNAP.DetCal", false)
-SaveDetCalFile = CreateExecFileName(getSysProp("user.home"),"ISAW/tmp/save.DetCalL",false)
-RotateDetectors(DetCalFile,14, SaveDetCalFile,Ang,0,0)
-DetCalFile =SaveDetCalFile
 
 EvDS =MakeTimeFocusedDataSet( EventFile, DetCalFile,BankFile,MapFile,firstEvent,NEvents,FocAng, FocPath,MinTime,MaxTime,\
                              LogBinning,firstInt,Nbins,useGhost, NGhostIDs, NGhostsPerID)
