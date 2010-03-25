@@ -49,8 +49,7 @@ hardware.
 <BR>
 <BR>
 To view live data on the instrument computer, select the "From Live Data"
-tab, instead of the "From File" tap.  The port should be 8002, unless the
-source of live events changes to use a different port.  Select the 
+tab, instead of the "From File" tab.   You must also select the
 instrument name from the drop down menu.  To start listening for live events, 
 press the Load button at the bottom of the panel.  In order to adjust the 
 3D view temporarily stop 
@@ -59,13 +58,76 @@ listening for live events, press the "Continue" button.  To clear out all
 loaded events and stop listening for new events, press the
 "Pause & Clear" button.  Press "Continue" to start listening for and
 accumulating new events.
+<BR>
+<BR>
+Reasonable default values are provided for the Calibration File, Bank File,
+etc.  If any of these options are changed, the "Load" button at the bottom
+of the form must be pressed again to re-initialize the internal data
+structures with the new values.  The Continue button will not make any such
+changes.
+<BR>
+<BR>
+Live events can be obtained from the
+"Live Data Server" that should be running on all SNS instrument computers.
+IF the Live Data Server is not running, and IsawEV is running on a 
+computer that is directly connected to the DAS network, then ISAW can get
+events directly from the DAS.  NOTE: If the Live Data Server is running
+on the instrument computer, and IsawEV is running on the instrument computer
+then IsawEV will NOT be able to get events directly, but MUST get events 
+that are passed to it by the Live Data Server.
+<BR>
+<BR>
+By default, IsawEV will automatically try to get events from the Live Data 
+Server, running on the instrument computer for the specified instrument.
+Selecting the "Only Connect to Port" option will instead try to get live
+events on the specified port.  In that case either the Live Data Server
+must be manually set to send events to that specified port, OR if the 
+Live Data Server is not running then the port must be set to 8002 to get
+events directly from the DAS on the DAS network.
+<BR>
+<BR>
+NOTE: For convenience, the rate at which live events are being received is
+displayed on the "From Live Data" tab.  The value is updated every few 
+seconds and shows the average number of "Counts Per Second" during the 
+previous second.  The time of the measurement is also displayed.  If events
+are no longer being received, the time of the last count rate measurement
+is shown.
 </P>
+
+
+<P>
+<FONT size=+1>Maximum Q range</FONT>
+<BR>
+<BR>
+For either file or live data, the maximum |Q| value to be loaded can be 
+specified.  Specifying this can help omit noisy data values at large |Q|.
+This is particularly helpful when trying to find peaks in single crystal 
+data.  Eliminating the large |Q| values often allows setting a lower 
+threshold for peaks to find more valid peaks, without finding a lot of
+spurious peaks in the noisy high |Q| range.
+</P>
+
+
+<P>
+<FONT size=+1>Absorption Correction</FONT>
+<BR>
+<BR>
+The data displayed in the 3D event view consists of "fractional" events,
+obtained by applying corrections to the data similar to those carried out
+by the ANVRED program.  In particular, a spherical absorption correction
+can be applied to the data by specifying a sample radius that is greater
+than zero.  No absorption correction will be done if the radius is zero or
+negative.  In addition to the sample radius, values for the scattering mu
+and for the absorption mu coefficients can be specified.  As a first,
+rough approximation, these can be taken to be 1. 
+</P>
+
 
 <P>
 <FONT size=+1>Using the 3D View</FONT>
 <BR>
 <BR>
-The 3D window shows a scatter plot of the events mapped to reciprocal
+The 3D window shows a scatter plot of the weighted events mapped to reciprocal
 space.  When the 3D view is NOT being updated with new live data, you can 
 interact with this view in several ways.
 <BR>
@@ -75,15 +137,27 @@ the current view reference point.
 <BR>
 <BR>
 2. Press the middle mouse button and drag up/down on the screen to move
-in and out of the scene.  
+in and out of the scene.  In this mode, the center of the view volume,
+marked by the small coordinate axes, moves along with the observer.
 <BR>
 <BR>
-3. Press the right mouse button and drag to pan across the 3D scene.
+3. If you have a mouse with a middle "wheel" then rolling the wheel
+will move the observer closer to or farther from the center of the view, 
+marked by the small coordinate axes.
 <BR>
 <BR>
-NOTE: Operations 1. and 2. also move the view reference point
-in and out of the screen, so the center point of rotations changes.  The
-center point for rotation is marked by a small set of coordinate axes.
+4. Press the right mouse button and drag to pan across the 3D scene.
+<BR>
+<BR>
+5. The initial view is a perspective view.  This can be switched to an
+Orthographic view by selecting that option on the "Draw Options" panel
+and pressing "Apply".  The Orthographic view is most useful for verifying
+that diffraction peaks from a single crystal "line up" and form a lattice.
+<BR>
+<BR>
+NOTE: Since Operations 1. and 2. also move the center of the view 
+in and out of the screen, the center of rotations changes.  All rotations
+are about the center of view, marked by the small coordinate axes.
 <BR>
 <BR>
 You can also click on an event in the 3D view and see information 
@@ -183,7 +257,7 @@ can be written to a file using the "Write Peaks File" button on the
 </P>
 
 <P>
-<FONT size=+1>Choosing Conventional Cell Type</FONT>
+<FONT size=+1>Choosing a Conventional Cell Type</FONT>
 <BR>
 <BR>
 Once a reduced cell has been determined, the "Cell Type" form can be used
