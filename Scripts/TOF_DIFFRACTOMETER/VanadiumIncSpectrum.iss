@@ -21,7 +21,7 @@ $title=Vanadium Incident Spectra(wl))
 $VanEventFile    LoadFile(${Data_Directory})      Vanadium Event FileName
 $Angle           Float(24)                    New Angle of Center Detector(degrees)
 
-$VanPeakFileName LoadFile(${Data_Directory})  File with Vanadium Peak info
+$VanPeakFileName LoadFile(${ISAW_HOME}/Databases/VanadiumPeaks.dat)  File with Vanadium Peak info
 
 
 $SumGroups    Boolean( true)                Output summed groups
@@ -38,7 +38,7 @@ DetCalFile = CreateExecFileName( getSysProp("ISAW_HOME"),"InstrumentInfo/SNS/SNA
 BankFile =""
 Mapfile  =""
 firstEvent=   0
-NEvents   =     10000000 
+NEvents   =     1000000000000 
  
 Outputd  =   false
 
