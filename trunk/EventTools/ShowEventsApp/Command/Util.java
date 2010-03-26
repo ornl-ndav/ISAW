@@ -146,9 +146,9 @@ public class Util
      {
         return null;
      }
-     xvals = new float[200];
-     yvals =new float[200];
-     errs =new float[200];
+     xvals = new float[100000];
+     yvals = new float[100000];
+     errs = new float[100000];
      nx=ny=0;
      boolean done = false;
      while( !done)
@@ -160,7 +160,8 @@ public class Util
         {
            xvals[nx++]= Res[0];
            done = true;
-        }else
+        }
+        else
         {
            xvals[nx]=Res[0];
            yvals[ny]= Res[1];
@@ -177,7 +178,7 @@ public class Util
            }
            try{
               line = ReadOneLine( finp);
-              if( line == null)
+              if( line == null )
                 done = true;
            }catch(Exception s3)
            {
@@ -185,14 +186,30 @@ public class Util
               line = null;
            }
         }
-        
      }
+
+//   System.out.println("Loaded " + nx + " x-vals and " + ny + " y-vals");
+
      Data D = null;
      float[] xx = new float[nx];
      float[] yy = new float[ny];
      float[] err = new float[ny];
      System.arraycopy(  xvals , 0 , xx , 0 , nx );
      System.arraycopy(  yvals , 0 , yy , 0 , ny );
+
+     float max = 0;                             // normalize values to max = 1
+     for ( int i = 0; i < yy.length; i++ )
+      if ( max < yy[i] )
+        max = yy[i];
+
+     if ( max > 0 )
+     for ( int i = 0; i < yy.length; i++ )
+       yy[i] /= max; 
+                                               // clamp yvalues to >= 0.05
+     for ( int i = 0; i < yy.length; i++ )
+      if ( yy[i] < 0.01f )
+        yy[i] = 0.01f;
+
      if( errs != null)
         System.arraycopy(  errs , 0 , err , 0 , ny );
      else
@@ -204,7 +221,6 @@ public class Util
      DataSet DS = new DataSet();
      DS.addData_entry( D );
      return DS;
-       
    }
    
    private static float[] Copy( float[] vals)
