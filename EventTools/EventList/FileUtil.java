@@ -684,6 +684,7 @@ public class FileUtil
    */
   public static void main(String[] args)
   {
+/*
     String[][] sns_inst = LoadSupportedSNS_InstrumentInfo();
     for ( int i = 0; i < sns_inst.length; i++ )
       System.out.println( sns_inst[i][0] + "   " + sns_inst[i][1] );
@@ -691,8 +692,7 @@ public class FileUtil
     String[] sns_names = SupportedSNS_Instruments();
     for ( int i = 0; i < sns_names.length; i++ )
       System.out.println( sns_names[i] );
-
-/*
+*/
     String inst_name = "PG3";
     String info_dir  = "/home/dennis/SNS_ISAW/ISAW_ALL/InstrumentInfo/SNS/";
            info_dir += inst_name + "/";
@@ -700,7 +700,6 @@ public class FileUtil
 //  String bank_file = info_dir + inst_name +"_bank.xml";
 
     long start = System.nanoTime();
-*/
 /*
     int[]   map = LoadIntFile( map_file );
     boolean all_match = true;
@@ -747,6 +746,11 @@ public class FileUtil
                           bank_data[3][i], bank_data[4][i] );
     }
 
+*/
+
+    int first_id = Integer.parseInt( args[0] );
+    int last_id = Integer.parseInt( args[1] );
+
     start = System.nanoTime();
     int n_ghosts = 16;
     int n_ids    = 300000;
@@ -758,17 +762,21 @@ public class FileUtil
     int[][] ids        = (int[][])(ghost_info.elementAt(0));
     double[][] weights = (double[][])(ghost_info.elementAt(1));
 
-    for ( int i = 82500; i <= 83731; i++ )
+
+    System.out.println( "List of Ghost table 'rows' from row " 
+                         + first_id + " to row " + last_id );
+    System.out.println( "  ROW :   ------------ Actual Ghost Table ----------------");
+    for ( int i = first_id; i <= last_id; i++ )
     {
+      System.out.printf("%6d: ", i );
       for ( int g = 0; g < 16; g++ )
       {
-        System.out.printf("%5d  %6.2e | ", ids[i][g], weights[i][g] );
-        if ( ids[i][g] != 0 || weights[i][g] != 0 )
-          System.out.print("<-NON ZERO ");
+        System.out.printf(" %5d  %6.2e | ", ids[i][g], weights[i][g] );
+//        if ( ids[i][g] != 0 || weights[i][g] != 0 )
+//          System.out.print("<-NON ZERO ");
       }
       System.out.println();
     }   
-*/
 
   }
 
