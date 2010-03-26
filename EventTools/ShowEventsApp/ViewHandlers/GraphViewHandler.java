@@ -238,7 +238,7 @@ abstract public class GraphViewHandler implements IReceiveMessage,
       if( CompareGraph == null)
          return;
       ViewControl[] controlList = fvc.getControlList();
-      ((LabelCombobox)(controlList[FunctionControls.VC_SHIFT])).setSelectedIndex( 0 );
+      //((LabelCombobox)(controlList[FunctionControls.VC_SHIFT])).setSelectedIndex( 0 );
       ((LabelCombobox)(controlList[FunctionControls.VC_LINE_SELECTED])).setSelectedIndex( 1 );
       ((LabelCombobox)(controlList[FunctionControls.VC_LINE_STYLE])).setSelectedIndex( 1 );
       ObjectState Ostate = fvc.getObjectState( false );
