@@ -176,7 +176,9 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
    int DetNum = -1;
    int[] DetNums=null;
    IDataGrid grid = null;
+   IDataGrid[] Grids = null;
    int[][] Groups = null;
+   int[][][]AllGroups = null;
    int num_rows,num_cols;
    XScale x_scale = null;
    int firstGroup =-1;
@@ -641,12 +643,25 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
          return;
        }
          
+      Grids = new IDataGrid[ DetNums.length];
+      AllGroups = new int[DetNums.length][][];
 
-      grid = (Grid_util.getAreaGrid( DS, DetNum));
+      int SaveDetNum = DetNum;
+      for( int i=0; i< DetNums.length; i++)
+      {
+         Grids[i] = Grid_util.getAreaGrid( DS , DetNums[i] );
+         Grids[i] =Grids[0].clone( );
+         Grids[i].setData_entries( DS );
+         grid = Grids[i];
+         DetNum = DetNums[i];
+         SetUpGroups();
+         AllGroups[i]= Groups;
+         
+      }
+      grid = Grids[0];
+      DetNum = grid.ID( );
       //UniformGrid.setDataEntriesInAllGrids(DS);
-      grid = grid.clone();
-      grid.setData_entries( DS );
-      SetUpGroups();
+      Groups = AllGroups[0];
    }
    public void SetUpGroups(){
       num_rows = grid.num_rows();
@@ -698,22 +713,39 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
 
    public void setDetNum( int DetNum){
       //Check to see if it is there
+      
       if( DetNum < 0)
         return;
-      grid = Grid_util.getAreaGrid( DS, DetNum);
       
-      if( grid == null)
+      if( this.DetNum == DetNum)
+         return;
+      
+      int i=0;
+      for( i=0; i < DetNums.length && DetNums[i]!= DetNum; i++){}
+      
+      if( DetNums[i] == DetNum)
+      {
+        grid = Grids[i];
+        Groups = AllGroups[ i ];
+      }else
+         return;
+         
+      /* grid = Grid_util.getAreaGrid( DS, DetNum);
+      
+     if( grid == null)
          return;
       grid = grid.clone();
       grid.setData_entries( DS );
+       */
       this.DetNum = DetNum;
       MaxRow = grid.num_rows();
       MaxCol = grid.num_cols();
-      SetUpGroups();
+      //SetUpGroups();
       tMinrow = 0;
       tMaxrow = MaxRow - 1;
       tMincol = 0;
       tMaxcol = MaxCol - 1;
+     
       if( DataChangeListener != null)
       DataChangeListener.actionPerformed( new ActionEvent(this,
           ActionEvent.ACTION_PERFORMED,"DataChange"));
@@ -728,13 +760,25 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
     }catch( Exception ss){}
     if( choice != DetNum){
       DetNum = choice;
-      grid = Grid_util.getAreaGrid( DS, DetNum);
+      int i=0;
+      for( i=0; i< DetNums.length && DetNums[i] != DetNum; i++){}
+      
+      if( DetNums[i] == DetNum)
+      {
+         Groups = AllGroups[i];
+         grid = Grids[i];
+      }else
+         return;
+      /*grid = Grid_util.getAreaGrid( DS, DetNum);
       grid = grid.clone();
       grid.setData_entries( DS );
       //UniformGrid.setDataEntriesInAllGrids( DS );
+      
+       */
       MaxRow = grid.num_rows();
       MaxCol = grid.num_cols();
-      SetUpGroups();
+      //SetUpGroups();
+     
       tMinrow = 0;
       tMaxrow = MaxRow - 1;
       tMincol = 0;
