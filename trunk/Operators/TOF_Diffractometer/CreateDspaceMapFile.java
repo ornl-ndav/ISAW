@@ -46,7 +46,7 @@ import Command.*;
  * This class has been dynamically created using the Method2OperatorWizard
  * and usually should not be edited.
  * This operator is a wrapper around 
-@see class EventTools.EventList.FileUtil.CreateDspaceMapFile(java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String)
+@see EventTools.EventList.FileUtil.CreateDspaceMapFile(java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String)
  */
 public class CreateDspaceMapFile extends GenericOperator{
 
