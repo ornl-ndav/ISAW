@@ -496,6 +496,23 @@ public class SNS_Tof_to_Q_map
   }
 
 
+ /**
+  *  Get a double array containing a dspace mapping file corresponding to
+  *  the current instrument.
+  *
+  *  @return an array of doubles containing the diffractometer constants
+  *
+  */
+  public double[] getDspaceMapArray()
+  {
+    double[]  dspace_map = new double[ tof_to_MagQ.length ];
+    for ( int i = 0; i < dspace_map.length; i++ )
+      dspace_map[i] = 2 * Math.PI / tof_to_MagQ[i];
+
+    return dspace_map;
+  }
+
+
   /**
    *  Map the specified sub-list of time-of-flight events to a packed
    *  array of events in reciprocal space, listing Qx,Qy,Qz for each event,

@@ -231,6 +231,7 @@ public class FileUtil
     return ( element_list.item(0)).getNodeValue();
   }
 
+
   /**
    *  Return the banking information from the specified SNS bank file in
    *  a two dimensional array of ints, bank_data[][].  The array will have
@@ -454,6 +455,46 @@ public class FileUtil
 
 
   /**
+   *  Save the specified array of doubles in the specified file IN PC FORMAT.
+   *  NOTE: This writes the bytes in LITTLE ENDIAN order and is NOT the 
+   *  same as a "java" binary file.  
+   *
+   *  @param list     The array of doubles to save.
+   *  @param filename The name of the file to write.
+   *
+   */
+  public static void SaveDoubleFile( double[] list, String filename )
+  {
+    if ( list == null )
+      throw new IllegalArgumentException("Array of doubles is null");
+
+    if ( filename == null )
+      throw new IllegalArgumentException("Filename String is NULL");
+
+    byte[] buffer = new byte[ 8 * list.length ];
+
+                                             // TODO generalize this so an
+                                             // arbitrary size array of doubles
+                                             // can be written.
+    for ( int i = 0; i < list.length; i++ )      
+      setDouble_64( list[i], buffer, 8*i );
+
+    try
+    {
+      RandomAccessFile r_file = new RandomAccessFile( filename, "rw" );
+      r_file.write( buffer );
+      r_file.close();      
+    }
+    catch ( Exception ex )
+    {
+      System.out.println( ex );
+      ex.printStackTrace();
+      throw new IllegalArgumentException("Error writing file " + filename );
+    }
+  }
+
+
+  /**
    *  Get the array of diffractometer constants to map from time-of-flight to 
    *  d-spacing, for each DAS ID.   The file must contain constants for each 
    *  pixel ID to be mapped, as a contiguous sequence of values.  The kth 
@@ -509,6 +550,45 @@ public class FileUtil
 
     return map;
   }   
+
+
+  /**
+   *  Create a d-space map file for the specified instrument.  The d-space
+   *  map file is a simple file of doubles, written in little-endian (PC)
+   *  format, with the kth double being the diffractometer constant for
+   *  the pixel with DAS id k. The d-spacing corresponding to an event is
+   *  just tof * d-space_map[k].
+   *
+   *  @param instrument_name  The name of the SNS instrument for which the
+   *                          d-space map will be generated. (required)
+   *  @param det_cal_filename The .DetCal file to use.
+   *                          If not specified the default .DetCal file from
+   *                          the InstrumentInfo/SNS directory will be used.
+   *  @param bank_filename    The "banking" file to use.
+   *                          If not specified the default .DetCal file from
+   *                          the InstrumentInfo/SNS directory will be used.
+   *  @param map_filename     The DAS id "mapping" file to use.
+   *                          If not specified the default .DetCal file from
+   *                          the InstrumentInfo/SNS directory will be used.
+   *  @param dspace_map_filename  The name of the dspace_map file that will
+   *                              be written.
+   */
+  public static void CreateDspaceMapFile( String instrument_name,
+                                          String det_cal_filename,
+                                          String bank_filename,
+                                          String map_filename,
+                                          String dspace_map_filename )
+                     throws IOException
+  {
+    SNS_Tof_to_Q_map mapper = new SNS_Tof_to_Q_map( instrument_name,
+                                                    det_cal_filename,
+                                                    bank_filename,
+                                                    map_filename,
+                                                    null );
+    double[] dspace_map = mapper.getDspaceMapArray();
+    System.out.println("Number of pixels in dspace_map: " + dspace_map.length);
+    SaveDoubleFile( dspace_map, dspace_map_filename );
+  }
 
 
   /**
@@ -605,6 +685,7 @@ public class FileUtil
    * stored in the file and buffer in the sequence: b0, ... b7, with 
    * the lowest order byte, b0, first and the the highest order byte, 
    * b7, last.
+   * NOTE: This method reverses the action of setDouble_64.
    * 
    * @param i  The index of the first byte in the buffer
    *                    
@@ -615,10 +696,37 @@ public class FileUtil
   {
     long long_val = 0;
 
-    for ( int shift = 0; shift < 64; shift += 8)
+    for ( int shift = 0; shift < 64; shift += 8 )
       long_val |= ((long)buffer[ i++ ] & 0xFF) << shift;  
 
     return Double.longBitsToDouble( long_val );
+  }
+
+
+  /**
+   * Encode the double value into a sequeence of eight bytes in the buffer
+   * starting at position i.  The eight bytes determining the double value 
+   * are stored in buffer in the sequence: b0, ... b7, with the lowest 
+   * order byte, b0, first and the the highest order byte, b7, last.
+   * NOTE: This method reverses the action of getDouble_64.
+   *                    
+   * @param value  The double value to be stored in eight successive bytes
+   *               of the buffer. 
+   *
+   * @param buffer The byte buffer where the bytes are to be stored.
+   *
+   * @param i      The index in the buffer where the first byte of the 
+   *               double should stored. 
+   */
+  public static void setDouble_64( double value, byte[] buffer, int i )
+  {
+    long long_val = Double.doubleToRawLongBits( value );
+
+    for ( int count = 0; count < 8; count++ )
+    {
+      buffer[ i++ ] = (byte)(long_val & 0xFF);
+      long_val = long_val >> 8;
+    }
   }
 
 
@@ -682,8 +790,23 @@ public class FileUtil
   /**
    *  main program providing basic test for this class
    */
-  public static void main(String[] args)
+  public static void main(String[] args) throws Exception
   {
+    byte[] buffer = new byte[8];
+    setDouble_64( Math.PI, buffer, 0 );
+    System.out.println( "Value from buffer = " + getDouble_64( buffer, 0 ) );
+
+    SNS_Tof_to_Q_map mapper = new SNS_Tof_to_Q_map( null, null, "SNAP" );
+    double[] dspace_map = mapper.getDspaceMapArray();
+    System.out.println("Number of pixels in dspace_map: " + dspace_map.length);
+    SaveDoubleFile( dspace_map, "MY_SNAP_Dspace_map.dat" );
+
+    CreateDspaceMapFile( "SNAP", 
+                          null,
+                          null,
+                          null,
+                         "MY_SNAP_Dspace_map_2.dat" );
+
 /*
     String[][] sns_inst = LoadSupportedSNS_InstrumentInfo();
     for ( int i = 0; i < sns_inst.length; i++ )
@@ -747,7 +870,7 @@ public class FileUtil
     }
 
 */
-
+/*
     int first_id = Integer.parseInt( args[0] );
     int last_id = Integer.parseInt( args[1] );
 
@@ -765,7 +888,7 @@ public class FileUtil
 
     System.out.println( "List of Ghost table 'rows' from row " 
                          + first_id + " to row " + last_id );
-    System.out.println( "  ROW :   ------------ Actual Ghost Table ----------------");
+    System.out.println( "  ROW :   ---------- Actual Ghost Table -----------");
     for ( int i = first_id; i <= last_id; i++ )
     {
       System.out.printf("%6d: ", i );
@@ -777,7 +900,7 @@ public class FileUtil
       }
       System.out.println();
     }   
-
+*/
   }
 
 }
