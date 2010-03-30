@@ -1887,6 +1887,8 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 		   String Package = Meth.getDeclaringClass( ).toString( ).trim();
 		   if( Package.endsWith(".class)"))
 		      Package = Package.substring(0, Package.length() -6);
+		   if( Package.trim().toUpperCase( ).startsWith("CLASS "))
+		      Package = Package.substring(6 ).trim( );
 		   Package +="."+Meth.getName( )+"(";
 		   Class[] parms = Meth.getParameterTypes( );
 		   if( parms != null && parms.length >0)
