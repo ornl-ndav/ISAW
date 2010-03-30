@@ -102,8 +102,11 @@ public class Util
                          throws Exception
    {
          String Instrument = FileIO.getSNSInstrumentName( EventFileName );
-         SNS_Tof_to_Q_map SMap = 
-                     new SNS_Tof_to_Q_map( DetCalFileName, null, Instrument);
+         SNS_Tof_to_Q_map SMap = new SNS_Tof_to_Q_map( Instrument, 
+                                                       DetCalFileName,
+                                                       bankInfoFileName,
+                                                       MappingFileName,
+                                                       null );
 
          SNS_TofEventList STOF = new  SNS_TofEventList(EventFileName);
          
@@ -139,6 +142,7 @@ public class Util
            Vector V = FileUtil.LoadGhostMapFile( GhostInfoFile, 
                                                  nGhostIDs, 
                                                  nGhosts );
+           System.out.println("Loaded Ghost map from " + GhostInfoFile );
            ghost_ids =(int[][]) V.firstElement( );
            ghost_weights =(double[][]) V.lastElement( );
          }
@@ -190,6 +194,7 @@ public class Util
            }
 
            d_map = FileUtil.LoadDspaceMapFile( DspaceMapFile );
+           System.out.println("Loaded d-space map from " + DspaceMapFile );
          }
          
          for ( int i = 0; i < num_segments; i ++ )
@@ -379,8 +384,11 @@ public class Util
                          throws Exception
    {
          String Instrument = FileIO.getSNSInstrumentName( EventFileName );
-         SNS_Tof_to_Q_map SMap =
-                    new SNS_Tof_to_Q_map( DetCalFileName, null, Instrument);
+         SNS_Tof_to_Q_map SMap = new SNS_Tof_to_Q_map( Instrument, 
+                                                       DetCalFileName, 
+                                                       bankInfoFileName, 
+                                                       MappingFileName, 
+                                                       null );
 
          SNS_TofEventList STOF = new SNS_TofEventList(EventFileName);
          
@@ -411,6 +419,7 @@ public class Util
            Vector V = FileUtil.LoadGhostMapFile( GhostInfoFile, 
                                                  nGhostIDs, 
                                                  nGhosts );
+           System.out.println("Loaded Ghost map from " + GhostInfoFile );
            ghost_ids =(int[][]) V.firstElement( );
            ghost_weights =(double[][]) V.lastElement( );
          }
