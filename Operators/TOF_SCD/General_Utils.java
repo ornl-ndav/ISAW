@@ -151,7 +151,7 @@ public class General_Utils
       transformation.setRotation( (float)(RotationAngle/Math.PI*180) , new Vector3D(0,0,1)  );
       Vector3D Xlate = new Vector3D( beamOffset, xoffset,0 );
       transformation.apply_to( new Vector3D(beamOffset, xoffset,0 ) , Xlate );
-      System.out.println("Xlate rotated ="+ Xlate.toString( ));
+      System.out.println("Xlate  ="+ Xlate.toString( ));
       for( int i=0; i< VGrids.size( );i++)
       {
          UniformGrid G = VGrids.get(i);
@@ -181,7 +181,7 @@ public class General_Utils
       
          String CreateInfo ="created by rotation\n of the detector information" +
             " in the file "+OrigDetCalFilename.trim()+ " \n to "+
-            (newCenterAngle*Math.PI/180)+" degrees";;
+            (newCenterAngle*180/Math.PI)+" degrees";;
          Peak_new_IO.WriteHeaderInfo( out , CreateInfo ,
                 headerInfo[0], headerInfo[1],headerInfo[2],L1_T0[0] , (int)L1_T0[1] );
        
