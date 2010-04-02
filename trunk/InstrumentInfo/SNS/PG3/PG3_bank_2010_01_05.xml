@@ -2,7 +2,7 @@
 <banking xmlns='http://neutrons.ornl.gov/SNS/ASG/Banking'>
   <facility>SNS</facility>
   <instrument>PG3</instrument>
-  <date>2010-03-11</date>
+  <date>2010-01-05</date>
   <bank>
     <number>43</number>
     <x_size>154</x_size>
@@ -73,24 +73,6 @@
     <continuous_list>
       <start>82500</start>
       <stop>83731</stop>
-    </continuous_list>
-  </bank>
-  <bank>
-    <number>84</number>
-    <x_size>154</x_size>
-    <y_size>8</y_size>
-    <continuous_list>
-      <start>105000</start>
-      <stop>106231</stop>
-    </continuous_list>
-  </bank>
-  <bank>
-    <number>104</number>
-    <x_size>154</x_size>
-    <y_size>8</y_size>
-    <continuous_list>
-      <start>130000</start>
-      <stop>131231</stop>
     </continuous_list>
   </bank>
   <bank>
