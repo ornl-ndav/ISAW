@@ -110,12 +110,6 @@ public class Util
 
          SNS_TofEventList STOF = new  SNS_TofEventList(EventFileName);
          
-         float L1 = SMap.getL1( );
-         float T0 = SMap.getT0( );
-         Attribute L1Attr = new FloatAttribute( Attribute.INITIAL_PATH, L1);
-         Attribute T0Attr = new FloatAttribute( Attribute.T0_SHIFT, T0);
-         
-         
          int[][]    ghost_ids = null;
          double[][] ghost_weights = null;
          if ( useGhosting )
@@ -239,13 +233,9 @@ public class Util
          if( Histograms == null)
             return null;
 
-         int[] RunNums = new int[1];
-         RunNums[0] = getRunNumber( EventFileName);
-         
-         String S ="";
-         if( RunNums[0] > 0)
-            S ="_"+RunNums[0];
-         String title = Instrument + S + "_d-spacing";
+         int run_num = getRunNumber( EventFileName );
+
+         String title = Instrument + "_"+ run_num + "_d-spacing";
          if ( useGhosting)
            title += "(Ghost)";
 
@@ -260,72 +250,17 @@ public class Util
          else
            log_message += "formed histogram one Data block per bank.";
          
-         String Instr = Instrument;
+         DataSet DS = MakeDataSet( Histograms, binner, title, log_message );
          
-         DataSet DS = new DataSet( title, log_message ); 
          DS.setX_units( "Angstroms");
          DS.setX_label( "d-Spacing" );
          DS.setY_units( "Counts" );
          DS.setY_label("Intensity");
          
-         float[] xs = new float[ binner.numBins( )+1];
-         for( int i=0; i< xs.length;i++)
-            xs[i]=(float)binner.minVal( i );
-         
-         xs[xs.length-1]=(float)binner.maxVal( xs.length-1 );
-         
-         VariableXScale xscl = new VariableXScale( xs );
-         float TotTotCount =0;
-         for( int i=0; i < Histograms.length; i++)
-         {
-            if( Histograms[i] != null)
-            {
-               float[] yvals = new float[Histograms[i].length];
-               float TotCount =0;
-               for( int j=0; j<yvals.length; j++)
-               {
-                  yvals[j] = Histograms[i][j];
-                  TotCount +=yvals[j];
-               }
-               TotTotCount +=TotCount;
-               HistogramTable D = new HistogramTable( xscl, yvals,i) ;
-               D.setSqrtErrors( true );
-               
-               DS.addData_entry( D );
-               D.setAttribute( new IntListAttribute( Attribute.RUN_NUM, 
-                     RunNums) );
-               D.setAttribute( new FloatAttribute( Attribute.TOTAL_COUNT, 
-                               TotCount));
-               D.setAttribute( L1Attr );
-               D.setAttribute( T0Attr);
-            }
-         }
-         
-         DS.setAttribute( 
-                      new FloatAttribute(Attribute.TOTAL_COUNT, TotTotCount ));
+         AddBankDetectorPositions( DS, SMap );
+         SetAttributes( DS, EventFileName, SMap );
 
-         DataSetFactory.addOperators( DS );
          DS.addOperator( new DiffractometerDToQ() );
-
-         DS.setAttribute( L1Attr );
-         DS.setAttribute( T0Attr );
-
-         DS.setAttribute( new StringAttribute( Attribute.FILE_NAME,
-                             EventFileName) );
-         DS.setAttribute( new StringAttribute( Attribute.FACILITY_NAME,
-               "SNS"));
-     
-         if( RunNums[0] > 0)
-            DS.setAttribute( new IntListAttribute( Attribute.RUN_NUM, RunNums));
-         
-  
-         if( Instr != null && Instr.length()>2)
-            DS.setAttribute( new StringAttribute(Attribute.INST_NAME, Instr));
-         
-         DS.setAttribute( new StringAttribute( Attribute.DS_TYPE,
-                  Attribute.SAMPLE_DATA));
-         
-         AddDateTimeAttribute( DS, (new File( EventFileName)).lastModified( ));
 
          return DS;
    }
@@ -504,16 +439,9 @@ public class Util
          if( Histograms == null)
             return null;
          
-         int[] RunNums = new int[1];
-         RunNums[0] = getRunNumber( EventFileName);
-         String S ="";
-         if( RunNums[0] <=0)
-            S="";
-         else
-            S ="_"+RunNums[0];
-        
+         int run_num = getRunNumber( EventFileName);
          
-         String title = Instrument+S + "_TimeFocused";
+         String title = Instrument+"_" + run_num + "_TimeFocused";
          if ( useGhosting)
            title += "(Ghost)";
 
@@ -524,99 +452,31 @@ public class Util
          else
            log_message += "formed histogram one Data block per bank.";
 
-         String Instr = Instrument;
-
-         DataSet DS = new DataSet( title, log_message );
+         DataSet DS = MakeDataSet( Histograms, binner, title, log_message );
       
-         if( RunNums[0] > 0)
-            DS.setAttribute( new IntListAttribute( Attribute.RUN_NUM, RunNums));
-
-         if( Instr != null && Instr.length()>2)
-            DS.setAttribute( new StringAttribute(Attribute.INST_NAME, Instr));
-            
          DS.setX_units( "Time(us)");
          DS.setX_label( "time" );
          DS.setY_units( "Counts" );
          DS.setY_label("Intensity");
-         DS.setAttribute( new StringAttribute( Attribute.FILE_NAME,
-                             EventFileName) );
-         DS.setAttribute( new StringAttribute( Attribute.FACILITY_NAME,
-               "SNS"));
          
-         float[] xs = new float[ binner.numBins( )+1];
-         for( int i=0; i< xs.length;i++)
-            xs[i]=(float)binner.minVal( i );
-         
-         xs[xs.length-1]=(float)binner.maxVal( xs.length-1 );
-         
-         VariableXScale xscl = new VariableXScale( xs );
+         AddFocusedDetectorPositions( DS, angle_deg, final_L_m );
 
-         float[] position=new float[3];
-         float angleRad = (float)(angle_deg*Math.PI/180);
-         position[2] =0;
-         position[0] =(float)( final_L_m*Math.cos( angleRad ));
-         position[1] =(float)( final_L_m*Math.sin( angleRad ));
-         DetectorPosition dp = new DetectorPosition(new Vector3D(position));
-         
-         float L1 = SMap.getL1( );
-         float T0 = SMap.getT0( );
-         Attribute L1Attr = new FloatAttribute( Attribute.INITIAL_PATH, L1);
-         Attribute T0Attr = new FloatAttribute( Attribute.T0_SHIFT, T0);
-         int pixelNum = 0;
-         float TotTotCount =0;
-         for( int i=0; i < Histograms.length; i++)
-         {
-            if( Histograms[i] != null)
-            {
-               float TotCount =0;
-               float[] yvals = new float[Histograms[i].length];
-               for( int j=0; j<yvals.length; j++)
-               {
-                  yvals[j] = Histograms[i][j];
-                  TotCount +=yvals[j];
-               }
-               TotTotCount +=TotCount;
-               HistogramTable D = new HistogramTable( xscl, yvals, i ) ;
-               D.setSqrtErrors( true );
+         SetAttributes( DS, EventFileName, SMap );
 
-               D.setAttribute( 
-                       new FloatAttribute( Attribute.TOTAL_COUNT, TotCount));
-               D.setAttribute(  
-                       new IntListAttribute( Attribute.RUN_NUM, RunNums) );
-               Vector3D pos = new Vector3D(position[0],position[1],
-                     position[2]);
-               D.setAttribute(  new DetPosAttribute(Attribute.DETECTOR_POS,
-                     new DetectorPosition( pos)));
-               D.setAttribute(  L1Attr );
-               D.setAttribute(T0Attr);
-               
-               UniformGrid grid = 
-                       new UniformGrid(i,"m",pos, new Vector3D(1,0,0),
-                                        new Vector3D(0,1,0),.2f,.2f,.2f,1,1);
-               DetectorPixelInfo pix = new DetectorPixelInfo(pixelNum,(short)1,
-                     (short)1,grid);
-               D.setAttribute(  new PixelInfoListAttribute( 
-                     Attribute.PIXEL_INFO_LIST, new PixelInfoList(pix)) );
-               DS.addData_entry( D );
-            }
-         }
-
-         DS.setAttribute( 
-                      new FloatAttribute(Attribute.TOTAL_COUNT, TotTotCount ));
-         DataSetFactory.addOperators( DS );
          DataSetFactory.addOperators( DS, InstrumentType.TOF_DIFFRACTOMETER );
          
-         DS.setAttribute( new StringAttribute( Attribute.DS_TYPE,
-                  Attribute.SAMPLE_DATA));
-         
-         DS.setAttribute( L1Attr );
-         DS.setAttribute( T0Attr ); 
-         AddDateTimeAttribute( DS, (new File( EventFileName)).lastModified( ));
-      
          return DS;
    }
 
 
+  /**
+   *  Convert the integer arrays of counts from the SNS_Tof_to_Q_map
+   *  into arrays of floats.
+   *
+   *  @param intArray  The 2D array of ints from the Q-mapper
+   *
+   *  @return A 2D array of floats containing the counts from the int array.
+   */
    private static float[][] ConvertTo2DfloatArray( int[][] intArray)
    {
       if( intArray == null)
@@ -637,7 +497,221 @@ public class Util
    }
 
 
-   public static void AddDateTimeAttribute( DataSet DS,  Date date)
+  /**
+   *  Construct a DataSet containing Data blocks for each of the rows
+   *  of the given 2D array of floats.
+   *
+   *  @param  histograms  2D array of floats containing the counts 
+   *  @param  binner      The binner that was used for forming the 
+   *                      histogram of counts.  The binner defines the XScale.
+   *  @param  title       The title to place on the DataSet
+   *  @param  log_message The initial log message to use.
+   */
+  private static DataSet MakeDataSet( float[][]    histograms,
+                                      IEventBinner binner,     
+                                      String       title,     
+                                      String       log_message )
+  {
+    DataSet DS = new DataSet( title, log_message );
+
+    float[] xs = new float[ binner.numBins() + 1 ];
+    for( int i = 0; i < xs.length; i++ )
+      xs[i] = (float)binner.minVal( i );
+
+    xs[xs.length-1] = (float)binner.maxVal( xs.length-1 );
+
+    VariableXScale xscl = new VariableXScale( xs );
+
+    for( int i = 0; i < histograms.length; i++)
+    {
+      if ( histograms[i] != null )
+      {
+        float[] yvals = histograms[i];
+        HistogramTable D = new HistogramTable( xscl, yvals, i ) ;
+        D.setSqrtErrors( true );
+        DS.addData_entry( D );
+      }
+    }
+
+    DataSetFactory.addOperators( DS );
+    return DS;
+  }
+
+
+  /**
+   *  Add the effective position and pixel info list attributes corresponding
+   *  to the focused position, to all of the Data blocks in the DataSet.
+   *
+   *  @param DS         The DataSet to which detector position information 
+   *                    will be added.
+   *  @param angle_deg  The 2-theta angle to the focused detector position.
+   *  @param final_L_m  The final flight path in meters, to the focused
+   *                    detector position.
+   */
+  private static void AddFocusedDetectorPositions( DataSet DS,
+                                                   float   angle_deg,
+                                                   float   final_L_m )
+  {
+    float[] position = new float[3];
+    float   angleRad = (float)(angle_deg*Math.PI/180);
+
+    position[0] = (float)( final_L_m*Math.cos( angleRad ));
+    position[1] = (float)( final_L_m*Math.sin( angleRad ));
+    position[2] = 0;
+
+    Vector3D pos = new Vector3D(position[0], position[1], position[2]);
+
+    int pixelNum = 1;
+    for( int i = 0; i < DS.getNum_entries(); i++)
+    {
+      Data D  = DS.getData_entry(i);
+      DetectorPosition dp  = new DetectorPosition( pos );
+      D.setAttribute( new DetPosAttribute(Attribute.DETECTOR_POS, dp ));
+
+      Vector3D up_vec     = new Vector3D(0,0,1);
+      Vector3D base_vec   = new Vector3D();
+      Vector3D radial_vec = new Vector3D( pos );
+      radial_vec.normalize();
+      base_vec.cross( up_vec, radial_vec );
+      int  id = D.getGroup_ID();
+
+      UniformGrid grid = new UniformGrid( id, "m", pos, base_vec, up_vec,
+                                         .2f, .2f, .002f, 1, 1);
+      DetectorPixelInfo pix =
+                    new DetectorPixelInfo( pixelNum,(short)1, (short)1,grid );
+
+      D.setAttribute( new PixelInfoListAttribute( Attribute.PIXEL_INFO_LIST,
+                                                  new PixelInfoList(pix)) );
+    }
+  }
+
+
+  /**
+   *  Add the center position of each bank to the Data block for that bank.
+   *  Also, add a pixel info list with one pixel and one grid, corresponding
+   *  to the entire bank, for each of the Data blocks.
+   *
+   *  @param DS      The DataSet to which the bank position is added.
+   *  @param mapper  The SNS_Tof_to_Q_map mapper used to form the histograms
+   *                 from the event data.  This provides the bank position
+   *                 and size information.
+   */
+  private static void AddBankDetectorPositions( DataSet DS,
+                                                SNS_Tof_to_Q_map mapper )
+  {
+    int pixelNum = 1;
+    for( int i = 0; i < DS.getNum_entries(); i++)
+    {
+      Data D  = DS.getData_entry(i);
+      int  id = D.getGroup_ID();
+
+      IDataGrid grid = mapper.getIDataGrid( id );
+      if ( grid == null )
+      {
+        System.out.println("WARNING: Detector Grid NOT Found for Bank ID "+id);
+        return;
+      }
+
+      Vector3D pos = grid.position();
+      DetectorPosition dp  = new DetectorPosition( pos );
+      D.setAttribute( new DetPosAttribute(Attribute.DETECTOR_POS, dp ));
+
+      Vector3D up_vec   = grid.y_vec(); 
+      Vector3D base_vec = grid.x_vec();
+      String   units    = grid.units();
+      float    width    = grid.width();
+      float    height   = grid.height();
+      float    depth    = grid.depth();
+      UniformGrid new_grid = new UniformGrid( id, units, pos, base_vec, up_vec,
+                                              width, height, depth, 1, 1 );
+      DetectorPixelInfo pix =
+               new DetectorPixelInfo( pixelNum,(short)1, (short)1, new_grid );
+
+      D.setAttribute( new PixelInfoListAttribute( Attribute.PIXEL_INFO_LIST,
+                                                  new PixelInfoList(pix)) );
+    }
+  }
+
+
+  /**
+   *  Set the basic attributes that are common to both the time-focused
+   *  DataSet and the "d" DataSet.
+   *
+   *  @param ds         The DataSet for which the attributes will be set
+   *  @param filename   The name of the event file that was loaded
+   *  @param mapper     The mapper that mapped the events to histograms
+   */
+  private static void SetAttributes( DataSet ds,
+                                     String           filename,
+                                     SNS_Tof_to_Q_map mapper )
+  {
+    int[] RunNums = new int[1];
+    RunNums[0] = getRunNumber( filename );
+
+    float L1 = mapper.getL1();
+    float T0 = mapper.getT0();
+    Attribute L1Attr   = new FloatAttribute( Attribute.INITIAL_PATH, L1);
+    Attribute T0Attr   = new FloatAttribute( Attribute.T0_SHIFT, T0);
+    Attribute RunsAttr = new IntListAttribute( Attribute.RUN_NUM, RunNums );
+
+    float TotTotCount = 0;
+
+    for( int i = 0; i < ds.getNum_entries(); i++)
+    {
+      Data D = ds.getData_entry(i);
+      D.setAttribute( RunsAttr );
+      D.setAttribute( L1Attr );
+      D.setAttribute( T0Attr);
+
+      float[] yvals = D.getY_values();
+      float TotCount =0;
+      for( int j = 0; j < yvals.length; j++ )
+        TotCount +=yvals[j];
+     
+      TotTotCount +=TotCount;
+      D.setAttribute( new FloatAttribute( Attribute.TOTAL_COUNT, TotCount));
+      // TO DO: Add effective position and pixel info list
+      // TO DO: Add delta 2 theta
+      // TO DO: Add Total Solid Angle
+      // TO DO: Add list of Bank IDs
+      // TO DO: Add list of Pixel IDs
+    }
+
+    ds.setAttribute( new StringAttribute( Attribute.FILE_NAME, filename));
+
+    String instr = FileIO.getSNSInstrumentName( filename );
+    if( instr != null && instr.length()>2)
+            ds.setAttribute( new StringAttribute(Attribute.INST_NAME, instr));
+
+    ds.setAttribute( new StringAttribute( Attribute.FACILITY_NAME, "SNS"));
+
+    // TO DO: add Instrument Type
+
+    ds.setAttribute(     
+              new StringAttribute( Attribute.DS_TYPE, Attribute.SAMPLE_DATA));
+
+    // TO DO: add run title
+
+    ds.setAttribute( RunsAttr );
+
+    AddDateTimeAttribute( ds, (new File( filename )).lastModified());
+
+    ds.setAttribute( new FloatAttribute(Attribute.TOTAL_COUNT, TotTotCount ));
+    // TO DO: add number of pulses
+    // TO DO: add proton count 
+    // TO DO: add user name
+
+  }
+
+
+  /**
+   *  Add an end date and time attribute to the DataSet, corresponding
+   *  to the specified Date object.
+   *
+   *  @param DS    The DataSet to which the date information is added
+   *  @param date  The Date object with the information to add
+   */
+   public static void AddDateTimeAttribute( DataSet DS,  Date date )
    {
       if( date == null )
          date = new Date( System.currentTimeMillis( ));
@@ -655,13 +729,22 @@ public class Util
                .format( date ) ) );
    }
    
-   
+
+  /**
+   *  Add an end date and time attribute to the DataSet, corresponding
+   *  to the specified time in milliseconds.  If the specified time is
+   *  not positive, the current time will be used.
+   *
+   *  @param DS    The DataSet to which the date information is added
+   *  @param date  long specifying the time in milliseconds of the date
+   *               that should be added. 
+   */
    public static void AddDateTimeAttribute( DataSet DS,  long date)
    {
      if( date <= 0 )
         date = System.currentTimeMillis( );
      
-     AddDateTimeAttribute( DS,  new Date( date ));
+     Util.AddDateTimeAttribute( DS,  new Date( date ));
    }
    
 
@@ -712,7 +795,6 @@ public class Util
     */
    public static void main(String[] args) throws Exception
    {
-      String Instrument ="SNAP";
       String EventFileName=
                 "C:/Users/ruth/SNS/EventData/Snap_240_neutron_event.dat";
 

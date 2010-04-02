@@ -465,6 +465,32 @@ public class SNS_Tof_to_Q_map
 
 
  /**
+  * Get the detector grid with the specified bank ID.
+  *
+  * @param det_id  The grid ID of detector grid that is requested.
+  *
+  * @return A reference to the IDataGrid object with the detector information
+  *         if there is one for the specified bank_id, or null if not.
+  */
+  public IDataGrid getIDataGrid( int det_id )
+  {
+    boolean   found = false;                    // find the IDataGrid with
+    IDataGrid grid  = null;                     // the correct ID
+    int i = 0;
+    while ( !found && i < grid_arr.length )
+    {
+      grid = grid_arr[i];
+      if ( grid.ID() == det_id )
+        found = true;
+      else
+        i++;
+    }
+
+    return grid; 
+  }
+
+
+ /**
   * Set the maximum |Q| value of events that should be mapped to vector Q
   * by the MapEventsToQ() methods.
   *
@@ -1193,19 +1219,9 @@ public class SNS_Tof_to_Q_map
       return null;
 
     int det_id = (int)row_col_tof_ID[3];
-     
-    boolean   found = false;                    // find the IDataGrid with
-    IDataGrid grid  = null;                     // the correct ID
-    int i = 0;
-    while ( !found && i < grid_arr.length )
-    {
-      grid = grid_arr[i];
-      if ( grid.ID() == det_id )
-        found = true;
-      else
-        i++;
-    }
 
+    IDataGrid grid = getIDataGrid( det_id );
+     
     Peak_new peak = new Peak_new( run_num,
                                   monitor_count,
                                   row_col_tof_ID[1],
@@ -1747,144 +1763,6 @@ public class SNS_Tof_to_Q_map
         bank_num      [das_i] = grid_ID;
       }
     }
-  }
-
-
-  /**
-   *  Build the following tables, indexed by the DAS ID:
-   *  tof_to_lamda[],
-   *  tof_to_MagQ[],
-   *  QUxyz[],
-   *  recipLaSinTa[],
-   *  two_theta_map[],
-   *  pix_weight[],
-   *  use_id[],
-   *  bank_num[].
-   *  This version requires a complete set of detector grids, corresponding
-   *  to ALL DAS IDs, ordered according to increasing DAS ID.
-   *
-   *  NOTE: This version should not be needed after all instruments have
-   *        be set up to use the new "bank", "map" and ".DetCal" information
-   */
-  @Deprecated
-  private void BuildMaps()
-  {
-    int pix_count = 0;                             // first count the pixels
-    for ( int  i = 0; i < grid_arr.length; i++ )
-    {
-      IDataGrid grid = grid_arr[i];
-      pix_count += grid.num_rows() * grid.num_cols(); 
-    }                                          
-
-    tof_to_lamda =  new float   [ pix_count ];     // NOTE: the pixel IDs 
-                                                   // start at 1 in the file
-                                                   // so to avoid shifting we
-                                                   // will also start at 1
-
-    tof_to_MagQ  = new float   [ pix_count ];      // Scale factor to convert
-                                                   // tof to Magnitude of Q
-
-    QUxyz        = new float   [ 3*pix_count ];    // Interleaved components
-                                                   // of unit vector in the
-                                                   // direction of Q for this
-                                                   // pixel.
-
-    recipLaSinTa  = new float  [ pix_count ];      // 1/(Lsin(theta)) table for
-                                                   // time focusing
-    two_theta_map = new float  [ pix_count ];      // 2* theta
-
-    pix_weight    = new float  [ pix_count ];      // sin^2(theta) weight 
- 
-    use_id        = new boolean[ pix_count ];
-
-    bank_num      = new int    [ pix_count ];      // bank number for each 
-                                                   // DAS pixel ID
-
-    float     part = (float)(10 * 4 * Math.PI / tof_calc.ANGST_PER_US_PER_M);
-                                                   // Since SNS tofs are in
-                                                   // units of 100ns, we need
-                                                   // the factor of 10 in this
-                                                   // partial constant
-    double    two_theta;
-    float     sin_theta;
-    float     L2;
-    Vector3D  pix_pos;
-    Vector3D  unit_qvec;
-    int       n_rows,
-              n_cols;
-    float[]   coords;
-    IDataGrid grid;
-    int       grid_ID;
-    int       index;
-    pix_count = 0;
-
-    max_grid_ID = 0;
-    for ( int  i = 0; i < grid_arr.length; i++ )
-    {
-      grid    = grid_arr[i];
-      grid_ID = grid.ID();
-
-      if ( grid_ID > max_grid_ID )
-        max_grid_ID = grid_ID;
-
-      n_rows  = grid.num_rows();
-      n_cols  = grid.num_cols();
-
-      for ( int col = 1; col <= n_cols; col++ )
-        for ( int row = 1; row <= n_rows; row++ )
-        {
-           pix_pos    = grid.position( row, col );
-           L2         = pix_pos.length();
-
-           coords     = pix_pos.get();
-           coords[0] -= L2;                        // internally using IPNS
-                                                   // coordinates
-           unit_qvec = new Vector3D(coords);
-           unit_qvec.normalize();
-           index = pix_count * 3;
-           QUxyz[ index     ] = unit_qvec.getX();
-           QUxyz[ index + 1 ] = unit_qvec.getY();
-           QUxyz[ index + 2 ] = unit_qvec.getZ();
-
-           two_theta = Math.acos( pix_pos.getX() / L2 );
-           sin_theta = (float)Math.sin(two_theta/2);
-
-           two_theta_map[pix_count] = (float)two_theta;
-
-           tof_to_MagQ  [pix_count] = part * (L1 + L2) * sin_theta;
-
-           tof_to_lamda [pix_count] = ANGST_PER_US_PER_M /(L1 + L2);
-
-           recipLaSinTa [pix_count] = 1/( (L1 + L2) * sin_theta ); 
-
-           pix_weight   [pix_count] = sin_theta * sin_theta;
-
-           use_id       [pix_count] = true;     // initially assume all pixels
-                                                // will be used.
-           bank_num     [pix_count] = grid_ID;
-
-           pix_count++; 
-        }
-    }
-                                                   // As a check, dump out
-                                                   // QUxyz for the first pixel
-                                                   // in each detector
-    /*
-    index = 0; 
-    for ( int i = 0; i < grid_arr.length; i++ )
-    {
-      System.out.printf( "For first pixel in detector #%2d  " +
-                         "MagQ conv factor = %7.4f  " + 
-                         "Qx = %6.3f  Qy = %6.3f  Qz = %6.3f\n",
-                          i,
-                          tof_to_MagQ[i],
-                          QUxyz[ 3*index     ],  
-                          QUxyz[ 3*index + 1 ],  
-                          QUxyz[ 3*index + 2 ]  );
-      grid = grid_arr[i];
-      index += grid.num_rows() * grid.num_cols();
-    }
-    */
   }
 
 
