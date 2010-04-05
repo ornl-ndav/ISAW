@@ -1023,16 +1023,18 @@ public class ViewManager extends    JFrame
        if ( x_scale == null || use_default_conversion_range ) 
        {
          op.setDefaultParameters();
-         IParameter p = op.getParameter(2);               // 0 means use the
-         if ( p.getName().equals( Parameter.NUM_BINS ))   // number of bins
-           p.setValue( new Integer( 0 ) );                // in the DataSet
+         IParameter p = op.getParameter(2);   
+
+         if ( p != null )          // This should be the num bins parameter.
+         {                         // If so, set it to 0, which means use the
+           if ( p.getName().equals( Parameter.NUM_BINS ))   // number of bins
+             p.setValue( new Integer( 0 ) );                // in the DataSet
+         }
        }
        else
        {                                           // try to set the parameters
          IParameter p = op.getParameter(2);
-         if ( !p.getName().equals( Parameter.NUM_BINS ))
-           op.setDefaultParameters();              // fall back to defaults
-         else
+         if ( p != null && p.getName().equals( Parameter.NUM_BINS ))
          {
            p.setValue( new Integer( x_scale.getNum_x() ) );
 
@@ -1042,6 +1044,8 @@ public class ViewManager extends    JFrame
            p = op.getParameter(1);
            p.setValue( new Float( x_scale.getEnd_x() ) );
          }
+         else
+           op.setDefaultParameters();              // fall back to defaults
        }  
 
        Object result = op.getResult();
