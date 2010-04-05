@@ -300,8 +300,8 @@ public class Grouping extends GenericTOF_Diffractometer{
         
         System.out.println("END OF STITCHING, BEGIN WEIGHTING");
         float result_x[]     = d.getX_scale().getXs();
-        float result_y[]     = d.getCopyOfY_values();
-        float result_dy[]    = d.getCopyOfErrors();
+        float result_y[]     = d.getY_values();
+        float result_dy[]    = d.getErrors();
         int   num_bins       = result_y.length;
         boolean is_histogram = d.isHistogram();
                                                   // get all of the XScales
