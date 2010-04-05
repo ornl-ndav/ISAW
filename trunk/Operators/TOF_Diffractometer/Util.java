@@ -45,6 +45,7 @@ import DataSetTools.util.SharedData;
 import DataSetTools.dataset.*;
 import DataSetTools.instruments.*;
 import DataSetTools.operator.DataSet.Conversion.XAxis.DiffractometerDToQ;
+import DataSetTools.operator.DataSet.Conversion.XAxis.DiffractometerDToTof;
 
 import EventTools.EventList.*;
 import EventTools.Histogram.*;
@@ -260,7 +261,7 @@ public class Util
          AddBankDetectorPositions( DS, SMap );
          SetAttributes( DS, EventFileName, SMap );
 
-         DS.addOperator( new DiffractometerDToQ() );
+         DataSetFactory.add_d_Operators( DS );
 
          return DS;
    }

@@ -548,6 +548,26 @@ public class DataSetFactory implements Serializable
 
 
   /**
+   * Configure an existing DataSet that has been loaded or converted to
+   * "d-spacing" by adding those operators that convert from d-spacing
+   * to other x-axis scales such as TOF or Q.
+   *
+   * @param ds   The DataSet to which the operators will be added.
+   *
+   */
+  static public void add_d_Operators( DataSet ds ) 
+  {
+    String x_units = ds.getX_units();
+    if ( x_units.equalsIgnoreCase("Angstroms") )
+    {
+      ds.addOperator(new GetPixelInfo_op());
+      ds.addOperator(new DiffractometerDToTof());
+      ds.addOperator(new DiffractometerDToQ());
+    }
+  }
+
+
+  /**
    * Configure an existing DataSet by adding the set of operators
    * appropriate to the monitors on a particular instrument type,
    * to the DataSet.
@@ -555,8 +575,9 @@ public class DataSetFactory implements Serializable
    * @param  ds               The DataSet to which the operators are added.
    *
    * @param  instrument_type  Code for the type of instrument for which
-   *                          the DataSet is to be configured.  The codes
-   *                          are in DataSetTools/instrument/InstrumentType.java   
+   *                          the DataSet is to be configured.  
+   *                          The integer codes are in 
+   *                          DataSetTools/instrument/InstrumentType.java   
    *                          InstrumentType.TOF_DIFFRACTOMETER
    *                          InstrumentType.TOF_SCD
    *                          InstrumentType.TOF_SAD
