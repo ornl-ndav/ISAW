@@ -174,11 +174,11 @@ public class Omit_SCD_Peaks_Calc
       float row_sigma  = peak.RowSigma();
       float col_sigma  = peak.ColSigma();
 
-      int min_row = Math.max( 1, (int)(row_center - row_sigma * 2) );
-      int min_col = Math.max( 1, (int)(col_center - col_sigma * 2) );
+      int min_row = Math.max( 1, (int)(row_center - row_sigma * 3) );
+      int min_col = Math.max( 1, (int)(col_center - col_sigma * 3) );
       
-      int max_row = Math.min( num_rows, (int)(row_center + row_sigma * 2) );
-      int max_col = Math.min( num_cols, (int)(col_center + col_sigma * 2) );
+      int max_row = Math.min( num_rows, (int)(row_center + row_sigma * 3) );
+      int max_col = Math.min( num_cols, (int)(col_center + col_sigma * 3) );
       
       for ( int row = min_row; row <= max_row; row++ )
         for ( int col = min_col; col <= max_col; col++ )
