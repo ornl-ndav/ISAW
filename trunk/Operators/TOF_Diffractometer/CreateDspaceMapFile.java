@@ -46,7 +46,7 @@ import Command.*;
  * This class has been dynamically created using the Method2OperatorWizard
  * and usually should not be edited.
  * This operator is a wrapper around 
-@see EventTools.EventList.FileUtil.CreateDspaceMapFile(java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String)
+@see EventTools.EventList.FileUtil#CreateDspaceMapFile(java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String)
  */
 public class CreateDspaceMapFile extends GenericOperator{
 
@@ -165,7 +165,7 @@ public class CreateDspaceMapFile extends GenericOperator{
          java.lang.String map_filename = getParameter(3).getValue().toString();
          java.lang.String dspace_map_filename = getParameter(4).getValue().toString();
          EventTools.EventList.FileUtil.CreateDspaceMapFile(instrument_name,det_cal_filename,bank_filename,map_filename,dspace_map_filename );
-;
+
          return "Success";
       }catch(java.io.IOException S0){
          return new ErrorString(S0.getMessage());
