@@ -43,6 +43,7 @@ public class LoadUDPEventsCmd
    private String bankFile;
    private String IDMapFile;
    private String matFile;
+   private float  absorption_power;
    private float  absorption_radius;
    private float  absorption_smu;
    private float  absorption_amu;
@@ -59,6 +60,7 @@ public class LoadUDPEventsCmd
     * @param bankFile     The name of the file with bank vs pixel_id's
     * @param IDMapFile    The name of the file that maps DAS ID's to NeXus ID's
     * @param matFile      The name of a matrix file
+    * @param power        The power of lambda for the absorption correction
     * @param radius       The radius for the absorption correction
     * @param smu          The total scattering for absorption correction
     * @param amu          True absorption at lambda = 1.8 Angstoms
@@ -73,6 +75,7 @@ public class LoadUDPEventsCmd
                             String bankFile,
                             String IDMapFile,
                             String matFile, 
+                            float  power,
                             float  radius,
                             float  smu,
                             float  amu,
@@ -87,6 +90,7 @@ public class LoadUDPEventsCmd
       this.bankFile        = bankFile; 
       this.IDMapFile       = IDMapFile; 
       this.matFile         = matFile;
+      this.absorption_power = power;
       this.absorption_radius= radius;
       this.absorption_smu = smu;
       this.absorption_amu  = amu;
@@ -156,6 +160,14 @@ public class LoadUDPEventsCmd
    }
 
    
+   public float getAbsorptionPower()
+   {
+      if (Float.isNaN( absorption_power )|| absorption_power < 0 )
+        return Float.NaN;
+
+      return absorption_power;
+   }
+   
    public float getAbsorptionRadius()
    {
       if (Float.isNaN( absorption_radius )|| absorption_radius < 0 )
@@ -203,6 +215,7 @@ public class LoadUDPEventsCmd
              "\nBank File   : " + getBankFile()        +
              "\nID Map File : " + getIDMapFile()       +
              "\nMatrix File : " + getMatFile()         +
+             "\nAbsorptionPower : " + getAbsorptionPower()+
              "\nAbsorptionRadius: " + getAbsorptionRadius()+
              "\nTotalAbsorption : " + getAbsorptionSMU() +
              "\nAbsorptionTrue  : " + getAbsorptionAMU()  +

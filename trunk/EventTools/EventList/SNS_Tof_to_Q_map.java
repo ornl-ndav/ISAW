@@ -191,6 +191,7 @@ public class SNS_Tof_to_Q_map
   private int               run_num         = 0;
   private float             monitor_count   = 100000;
   private SampleOrientation orientation     = new SNS_SampleOrientation(0,0,0);
+  private float power_th;
   private float radius;
   private float smu;
   private float amu;
@@ -245,6 +246,7 @@ public class SNS_Tof_to_Q_map
                       map_filename,
                       spectrum_filename );
 
+     this.power_th = 3.0f;
      this.radius = 0.0f;
      this.smu    = 0.0f;
      this.amu    = 0.0f;
@@ -291,6 +293,7 @@ public class SNS_Tof_to_Q_map
    *                            If no spectrum file is available, pass in null.
    *                            The SNAP spectrum file will be used by default
    *                            for SNAP.
+   *  @param  power_th          Power of lamda in BuildLamdaWeights
    *  @param  radius            Radius of the sample in centimeters
    *  @param  smu               Linear scattering coefficient.
    *  @param  amu               Linear absorption coefficient at 1.8 Angstroms.
@@ -300,12 +303,14 @@ public class SNS_Tof_to_Q_map
                            String bank_filename,
                            String map_filename,
                            String spectrum_filename, 
+                           float  power_th,
                            float  radius, 
                            float  smu, 
                            float  amu)
          throws IOException
   {
-    InitFromSNS_Maps( instrument_name, 
+     this.power_th = power_th;
+     InitFromSNS_Maps( instrument_name, 
                       det_cal_filename, 
                       bank_filename,
                       map_filename,
@@ -347,6 +352,7 @@ public class SNS_Tof_to_Q_map
   {
      InitFromSNS_Maps( instrument_name, det_cal_filename, 
                        null, null, spectrum_filename );
+     this.power_th = 3.0f;
      this.radius = 0.0f;
      this.smu = 0.0f;
      this.amu = 0.0f;
@@ -510,12 +516,14 @@ public class SNS_Tof_to_Q_map
   *  If any of the parameters are negative, the corresponding value will be 
   *  set to 0.
   *
+  *  @param  power_th          Power of lamda in BuildLamdaWeights
   *  @param  radius  Radius of the sample in centimeters
   *  @param  smu     Linear scattering coefficient at 1.8 Angstroms.
   *  @param  amu     Linear absorption coefficient at 1.8 Angstroms.
   */
-  public void setAbsorptionParameters( float  radius, float  smu, float  amu )
+  public void setAbsorptionParameters( float  power_th, float radius, float  smu, float  amu )
   {
+     this.power_th = power_th;
      this.radius = radius;
      this.smu    = smu;
      this.amu    = amu;
@@ -1372,7 +1380,7 @@ public class SNS_Tof_to_Q_map
    */
   private void BuildLamdaWeights( String spectrum_file_name )
   {
-    float power_th = 3.0f;                   // Theoretically correct value
+                                             // Theoretically correct value 3.0;
                                              // if we have an incident spectrum
     float power_ns = 2.4f;                   // lower power needed to find
                                              // peaks in ARCS data with no

@@ -180,6 +180,7 @@ public class InitializationHandler implements IReceiveMessage
                                   load_file_cmd.getIDMapFile( ),
                                   load_file_cmd.getScaleFactor(),
                                   load_file_cmd.getMaxQValue(),
+                                  load_file_cmd.getAbsorptionPower(),
                                   load_file_cmd.getAbsorptionRadius(),
                                   load_file_cmd.getAbsorptionSMU(),
                                   load_file_cmd.getAbsorptionAMU()  );
@@ -258,6 +259,7 @@ public class InitializationHandler implements IReceiveMessage
                   UDPcmd.getIDMapFile(),
                   -1,
                   UDPcmd.getMaxQValue(),
+                  UDPcmd.getAbsorptionPower(),
                   UDPcmd.getAbsorptionRadius(),
                   UDPcmd.getAbsorptionSMU(),
                   UDPcmd.getAbsorptionAMU()  );

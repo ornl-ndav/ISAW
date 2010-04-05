@@ -50,6 +50,7 @@ public class SetNewInstrumentCmd
    private String ID_Map_file_name;
    private float  scale_factor, 
                   maxQValue,
+                  power  = 3.0f, 
                   radius = 0.0f, 
                   smu    = 0.0f, 
                   amu    = 0.0f;
@@ -81,6 +82,7 @@ public class SetNewInstrumentCmd
    *                             
    *  @param scale_factor        if positive, value to multiply d-graphs and
    *                             q-graphs. Usually 1/protons_on_target.
+   *  @param power               Power of lambda for anvred corrections
    *  @param radius              Radius of the sample in centimeters
    *  @param smu                 Linear scattering coefficient at 1.8 Angstroms.
    *  @param amu                 Linear absorption coefficient at 1.8 Angstroms.
@@ -92,6 +94,7 @@ public class SetNewInstrumentCmd
                                String ID_Map_file_name,
                                float  scale_factor, 
                                float  maxQValue,
+                               float  power, 
                                float  radius, 
                                float  smu, 
                                float  amu )
@@ -104,6 +107,7 @@ public class SetNewInstrumentCmd
       this.ID_Map_file_name = ID_Map_file_name;
       this.scale_factor     = scale_factor;
       this.maxQValue        = maxQValue;
+      this.power            = power;
       this.radius           = radius;
       this.smu              = smu;
       this.amu              = amu;
@@ -167,6 +171,11 @@ public class SetNewInstrumentCmd
    }
 
 
+   public float getAbsorptionPower()
+   {
+      return power;
+   }
+
    public float getAbsorptionRadius()
    {
       return radius;
@@ -194,6 +203,7 @@ public class SetNewInstrumentCmd
              "\nIncident Spectrum File Name : " +getIncidentSpectrumFileName()+
              "\nscale factor       : "+ getScaleFactor() +
              "\nmaxQValue          : " + getMaxQValue() +
+             "\nAbsorption Power   : "+ getAbsorptionPower() +
              "\nAbsorption Radius  : "+ getAbsorptionRadius() +
              "\nTotal Absorption   : "+ getTotalAbsorption() +
              "\nAbsorption True    : "+ getAbsorptionTrue();

@@ -109,6 +109,7 @@ public class QMapperHandler implements IReceiveMessage
                                        bank_file,
                                        map_file,
                                        spec_file,
+                                       cmd.getAbsorptionPower(),
                                        cmd.getAbsorptionRadius(),
                                        cmd.getTotalAbsorption(),
                                        cmd.getAbsorptionTrue()   );
@@ -130,7 +131,8 @@ public class QMapperHandler implements IReceiveMessage
       }
 
       mapper.setMaxQ( cmd.getMaxQValue() );
-      mapper.setAbsorptionParameters( cmd.getAbsorptionRadius(),
+      mapper.setAbsorptionParameters( cmd.getAbsorptionPower(),
+                                      cmd.getAbsorptionRadius(),
                                       cmd.getTotalAbsorption(),
                                       cmd.getAbsorptionTrue()  );
 
