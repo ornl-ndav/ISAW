@@ -334,9 +334,9 @@ public class Grouping extends GenericTOF_Diffractometer{
           num_data = num_d[i]; 
           if ( num_data > 0 )
           {
-            result_y[i] /= num_data;
+            result_y[i] *= (float)num_grouped / (float)num_data;
             if ( result_dy != null )
-              result_dy[i] /= num_data;
+              result_dy[i] *= (float)num_grouped / (float)num_data;
           }
         }
 
