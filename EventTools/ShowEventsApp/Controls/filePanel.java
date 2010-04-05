@@ -83,6 +83,7 @@ public class filePanel implements IReceiveMessage
    private JTextField         bankFileName;
    private JTextField         IDmapFileName;
    private JTextField         matFileName;
+   private JTextField         absorptionPower;
    private JTextField         absorptionRadius;
    private JTextField         smuAbsorption;
    private JTextField         amuAbsorption;
@@ -129,6 +130,7 @@ public class filePanel implements IReceiveMessage
 
    private float              scale_factor;    // 1/protons_on_target 0 to skip
    private float              MaxQValue;
+   private float              absorption_power;
    private float              absorption_radius;
    private float              absorption_smu;
    private float              absorption_amu;
@@ -175,6 +177,7 @@ public class filePanel implements IReceiveMessage
       idmap_filename    = "";
 
       MaxQValue = 1000000;            // use all Q values by default
+      absorption_power  = 3;          
       absorption_radius = 0;          // 0 means don't do absorption correction
       absorption_smu  = 1;
       absorption_amu   = 1;
@@ -212,7 +215,7 @@ public class filePanel implements IReceiveMessage
       JPanel sub_panel = new JPanel();
       panel.add( sub_panel );
 
-      sub_panel.setLayout( new GridLayout(10,1) );
+      sub_panel.setLayout( new GridLayout(11,1) );
       sub_panel.add(buildDetPanel());
       sub_panel.add( buildBankPanel() );
       sub_panel.add( buildIDMapPanel() );
@@ -221,6 +224,7 @@ public class filePanel implements IReceiveMessage
       //sub_panel.add(buildDetEffPanel());
       //sub_panel.add(buildMatPanel());
       sub_panel.add(buildMaxQPanel());
+      sub_panel.add(buildAbsorptionPanel0());
       sub_panel.add(buildAbsorptionPanel1());
       sub_panel.add(buildAbsorptionPanel2());
       sub_panel.add(buildAbsorptionPanel3());
@@ -455,6 +459,29 @@ public class filePanel implements IReceiveMessage
       //maxQPanel.add(matFileName);
       
       return maxQPanel;
+   }
+
+   /**
+    * Build the absorptionPanel. 
+    * Power of the wavelength for the absorption correction is loaded into 
+    * appropriate textfields.
+    * 
+    * @return JPanel
+    */
+   private JPanel buildAbsorptionPanel0()
+   {
+      JPanel absorptionPanel = new JPanel();
+      absorptionPanel.setLayout(new GridLayout(1,2));
+
+      absorption_power  = 3.0f; 
+      JLabel powAbsorption = new JLabel("Wavelength power(anvred): ");
+      absorptionPower = new JTextField( ""+absorption_power );
+      absorptionPower.setHorizontalAlignment(JTextField.RIGHT);
+
+      absorptionPanel.add(powAbsorption);
+      absorptionPanel.add(absorptionPower);
+
+      return absorptionPanel;
    }
 
    /**
@@ -735,6 +762,22 @@ public class filePanel implements IReceiveMessage
      {
        ShowError(" maxQValue must be a positive number " + 
                    maxQValue.getText() );
+       return false;
+     }
+
+     try
+     {
+       absorption_power =
+                         Float.parseFloat( absorptionPower.getText().trim() );
+     }
+     catch( Exception s)
+     {
+       exception = true;
+     }
+     if ( exception || absorption_power < 0 )
+     {
+       ShowError(" Lambda power must be at least 0 (0 to skip) " + 
+                   absorptionPower.getText() );
        return false;
      }
 
@@ -1132,6 +1175,7 @@ public class filePanel implements IReceiveMessage
                            bank_filename,
                            IDmapFileName.getText().trim(),
                            null,
+                           absorption_power,
                            absorption_radius,
                            absorption_smu,
                            absorption_amu,
@@ -1156,6 +1200,7 @@ public class filePanel implements IReceiveMessage
                                   bank_filename,
                                   IDmapFileName.getText().trim(),         
                                   null,
+                                  absorption_power,
                                   absorption_radius,
                                   absorption_smu,
                                   absorption_amu,
