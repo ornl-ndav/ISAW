@@ -10,19 +10,19 @@
 #
 $Category=Macros, Instrument Type, TOF_NPD
 
-$ file_name         LoadFile("/usr2/SNAP_7/SNAP_2963.nxs")   NeXus run file    
+$ file_name         LoadFile()                      NeXus run file    
 $ first_ds_index    Integer(1)                      Smallest Sample DataSet Index
 $ last_ds_index     Integer(9)                      Largest DataSet Index ( num det banks )
-$ calib_file String("/home/dennis/SNS_ISAW/ISAW_ALL/InstrumentInfo/SNS/SNAP/SNAP.DetCal")  CalibrationFile
+$ calib_file        LoadFile()                      Calibration File (.DetCal, blank for default)
 $ omit_peaks        Boolean(true)                   Discard spectra with SCD Peaks?
 $ mem_per_process   Integer(10000)                  Megabytes per process
-$ queue             String("mikkcomp")              SLURM queue name
+$ queue             String("snapq")                 SLURM queue name
 $ max_simultaneous_processes  Integer(9)            Max number of cores to use
 $ max_time                    Integer(600)          Max run time in seconds 
 $ out_prefix        String("Bank")                  Prefix for output file
 $ send_to_isaw      Boolean(true)                   Send result to ISAW "tree"
 $ write_gsas_file   BooleanEnable(false,1,0)        Write 3 column GSAS file
-$ gsas_file_name    SaveFile("/home/dennis/test.gsa") GSAS file name  
+$ gsas_file_name    SaveFile()                      GSAS file name  
 
 #
 # Build the script command names along with the necessary parameters.
@@ -42,6 +42,10 @@ base_command = script_name&" "&file_name&" "&tmp_dir&" "&out_prefix
 # NOTE: These output file names MUST be coordinated with the file names
 #       constructed in the individual script SNAP_NeXusReduceOneBank.iss.
 #
+if  calib_file = ""
+  calib_file = getSysProp( "ISAW_HOME" ) & "/InstrumentInfo/SNS/SNAP/SNAP.DetCal"
+endif
+
 ds_index = first_ds_index
 num_processes = last_ds_index - first_ds_index + 1 
 for i in [0:num_processes-1]

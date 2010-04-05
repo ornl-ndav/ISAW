@@ -4,7 +4,7 @@
 # method and appear to be single crystal peaks. This can
 # be easily run in parallel using SLUM to form a new DataSet that contains the
 # focused and summed banks from the full instrument.  See the script
-# Parallel_SNAP_Reduce.iss
+# Parallel_SNAP_NeXusReduce.iss
 #
 #  NOTE: When run using SLURM, none of the "Display" or "send" comands 
 #        will have any effect, since there is not an X-Window connection 
@@ -19,12 +19,12 @@
 #
 $Category=Macros, Instrument Type, TOF_NPD
 
-$ file_name  LoadFile("/usr2/SNAP_7/SNAP_2963.nxs")  NeXus Run File
-$ out_dir    String("/home/dennis/ISAW/tmp")     Location for Temporary Files.
-$ out_prefix String("Bank")                      Prefix for output file
-$ ds_index   Integer(5)                          DataSet Index to Load ( >= 1 )
-$ calib_file String("/home/dennis/SNS_ISAW/ISAW_ALL/InstrumentInfo/SNS/SNAP/SNAP.DetCal")  CalibrationFile
-$ omit_peaks Boolean(true)                       Discard spectra with SCD Peaks?
+$ file_name  LoadFile()        NeXus Run File
+$ out_dir    String()          Location for Temporary Files.
+$ out_prefix String("Bank")    Prefix for output file
+$ ds_index   Integer(5)        DataSet Index to Load ( >= 1 )
+$ calib_file String()          CalibrationFile
+$ omit_peaks Boolean(true)     Discard spectra with SCD Peaks?
 
 #
 # Load the specified detector data.  Detector Banks are determined by their
@@ -121,4 +121,3 @@ out_file_name = out_dir & "/" & out_prefix & ds_index & ".isd"
 Save grouped_ds, out_file_name
 
 return "Saved sum to " & out_file_name
-
