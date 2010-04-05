@@ -1688,14 +1688,15 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 				fout.write("   /**\r\n".getBytes());
 				fout.write("    * Writes a string for the documentation of the operator provided by\r\n".getBytes());
 				fout.write("    * the user.\r\n".getBytes());
-				fout.write("    *\r\n".getBytes());
+				fout.write("    *\r\n".getBytes ());
 				fout.write("    * @return  The documentation for the operator.\r\n".getBytes());
 				fout.write("    */\r\n".getBytes());
 				
 				// Write out the documentation
 				fout.write("   public String getDocumentation(){\r\n".getBytes());
 				fout.write("      StringBuffer S = new StringBuffer();\r\n".getBytes());
-				
+				fout.write( ("     S.append(\" This operator wraps the method "+
+				                      MethPage.substring( 5 ).trim()+"\");\r\n").getBytes());
 				//Write out the contents of the Documentation TextArea
 				fout.write("      S.append(\"@overview    \"); \r\n".getBytes());
 				fout.write(
@@ -1818,7 +1819,7 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 							.getBytes());
 				else
 					fout.write(
-						";\r\n         return \"Success\";\r\n      }catch(".getBytes());
+						"\r\n         return \"Success\";\r\n      }catch(".getBytes());
 				Class[] Exceptions = W.methPanel.meth.getExceptionTypes();
 				for (int kk = 0; kk < Exceptions.length; kk++) {
 					fout.write(
@@ -1889,7 +1890,7 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 		      Package = Package.substring(0, Package.length() -6);
 		   if( Package.trim().toUpperCase( ).startsWith("CLASS "))
 		      Package = Package.substring(6 ).trim( );
-		   Package +="."+Meth.getName( )+"(";
+		   Package +="#"+Meth.getName( )+"(";
 		   Class[] parms = Meth.getParameterTypes( );
 		   if( parms != null && parms.length >0)
 		   {for( int i=0; i< parms.length; i++)
