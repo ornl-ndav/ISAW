@@ -84,15 +84,14 @@ def readrefl_SNS(input, eof, nrun, dn, chi, phi, omega, moncnt):
             sigi = float( lineList[15] )
             reflag = int( lineList[16] )
             
-            break
-
-            
-            
-# finished
-    # return nrun, dn, chi, phi, omega, moncnt,\    0 -> 5
-        # h, k, l, col, row, chan, L2, twoth,\      6 -> 13
-        # az, wl, dsp, ipkobs, inti, sigi, reflag\ 14 -> 20
-        # eof                                      21
+            # return nrun, dn, chi, phi, omega, moncnt,\    0 -> 5
+                # h, k, l, col, row, chan, L2, twoth,\      6 -> 13
+                # az, wl, dsp, ipkobs, inti, sigi, reflag\ 14 -> 20
+                # eof                                      21
     
-    # print "return a peak:"    
-    return nrun, dn, chi, phi, omega, moncnt, h, k, l, col, row, chan, L2, twoth, az, wl, dsp, ipkobs, inti, sigi, reflag, eof
+            return nrun, dn, chi, phi, omega, moncnt, \
+                h, k, l, col, row, chan, L2, twoth, \
+                az, wl, dsp, ipkobs, inti, sigi, reflag, \
+                eof
+                
+# finished
