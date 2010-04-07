@@ -966,14 +966,16 @@ public class CommandPane extends JPanel implements PropertyChangeListener,
 
         if( CP.SP.getErrorCharPos(  ) >= 0 ) {
           //new Util().appendDoc( StatusLine.getDocument(), 
+         /* int errLine = CP.SP.getErrorLine(  );
+          int errPos =CP.SP.getErrorCharPos(  ) ;
           CP.PC.firePropertyChange( 
             "Display", null,
             "Error " + CP.SP.getErrorMessage(  ) + " at position " +
             CP.SP.getErrorCharPos(  ) + " on line " + CP.SP.getErrorLine(  ) );
           CP.SP.setDocument( null );
-          CP.setErrorCursor( 
-            Commands, SP.getErrorLine(  ), SP.getErrorCharPos(  ) );
-
+          CP.setErrorCursor( Commands, errLine, errPos );
+          */
+           ReportExecutionStatus();
           return;
         }
       } else if( e.getSource(  )
@@ -1193,14 +1195,20 @@ public class CommandPane extends JPanel implements PropertyChangeListener,
      * DOCUMENT ME!
      */
     private void ReportExecutionStatus(  ) {
+       
       if( CP.SP.getErrorCharPos(  ) >= 0 ) {
-        CP.PC.firePropertyChange( 
-          "Display", null,
+        int errLine = SP.getErrorLine(  );
+        int errPos = SP.getErrorCharPos( );
+        if( errPos <=0)
+           errPos = 1;
+        
+        CP.PC.firePropertyChange( "Display", null,          
           "Error " + CP.SP.getErrorMessage(  ) + " at position " +
           CP.SP.getErrorCharPos(  ) + " on line " + CP.SP.getErrorLine(  ) );
+        
         CP.SP.setDocument( null );
-        CP.setErrorCursor( 
-          Commands, SP.getErrorLine(  ), SP.getErrorCharPos(  ) );
+        
+        CP.setErrorCursor( Commands, errLine, errPos );
       }
     }
   }
