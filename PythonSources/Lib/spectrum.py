@@ -17,7 +17,6 @@ def spectrum( wavelength, xtof, averageRange, spect1, xtime, xcounts ):
 	# T = TOF			# T is in units of microseconds
 	
     numTimeChannels = len( xtime )
-    print 'In function spectrum, numTimeChannels = %d' % numTimeChannels
     
     for j in range(numTimeChannels):
         
