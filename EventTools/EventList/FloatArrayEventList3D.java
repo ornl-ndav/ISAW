@@ -228,6 +228,70 @@ public class FloatArrayEventList3D implements IEventList3D
     return z_extent;
   }
 
+
+  /**
+   *  Get a new event list, consisting of only those events in the current
+   *  list that are within the specified radius of the specified point.
+   *
+   *  @param point  The xyz coordinates of the center point of the sphere
+   *                that should be kept.
+   *  @param radius The radius of the sphere of events that should be kept.
+   *
+   *  @return a new FloatArrayEventList3D object that only contains the
+   *          events of the current list that are close to the specified point
+   *          OR null if there are no events close to the point.
+   */
+  public FloatArrayEventList3D getLocalEvents( float[] point, float radius )
+  {
+    int   count = 0;
+    float x     = point[0];
+    float y     = point[1];
+    float z     = point[2];
+    float radius_squared = radius * radius;
+    float num_events = xyz_vals.length/3;
+    float d_squared;
+    float ev_x,
+          ev_y,
+          ev_z;
+                                             // to avoid extra allocate/free
+                                             // first scan list and count
+    int index = 0;                           // number of nearby points
+    for ( int i = 0; i < num_events; i++ )
+    {
+      ev_x = xyz_vals[ index++ ];
+      ev_y = xyz_vals[ index++ ];
+      ev_z = xyz_vals[ index++ ];
+      d_squared = (x-ev_x)*(x-ev_x) + (y-ev_y)*(y-ev_y) +(z-ev_z)*(z-ev_z);
+      if ( d_squared < radius_squared )
+        count++;
+    }
+
+    if ( count == 0 )
+      return null;
+
+    float[] sub_weights = new float[count];
+    float[] sub_xyz     = new float[3*count];
+    index = 0;
+    count = 0;
+    for ( int i = 0; i < num_events; i++ )
+    {
+      ev_x = xyz_vals[ index++ ];
+      ev_y = xyz_vals[ index++ ];
+      ev_z = xyz_vals[ index++ ];
+      d_squared = (x-ev_x)*(x-ev_x) + (y-ev_y)*(y-ev_y) +(z-ev_z)*(z-ev_z);
+      if ( d_squared < radius_squared )
+      {
+        sub_weights[ count ] = weights[i];
+        sub_xyz[ 3*count     ] = xyz_vals[ 3*i     ];
+        sub_xyz[ 3*count + 1 ] = xyz_vals[ 3*i + 1 ];
+        sub_xyz[ 3*count + 2 ] = xyz_vals[ 3*i + 2 ];
+        count++;
+      }
+    }
+
+    return new FloatArrayEventList3D( sub_weights, sub_xyz );
+  }
+
   
   /**
    *  Return a string giving the number of entries, and the
