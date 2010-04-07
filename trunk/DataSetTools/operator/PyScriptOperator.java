@@ -131,6 +131,7 @@ public class PyScriptOperator extends GenericOperator
   private boolean               scriptLoaded = false;
   private boolean               ParamsSet = false;
   private int                   errLineNum  = -1;
+  private int                   errPos  = -1;
   private static boolean        PySystemInitted = false;
   private static Object        syncObj = new Object();  
 
@@ -302,6 +303,7 @@ public class PyScriptOperator extends GenericOperator
        
        errormessage   = "ERROR1:" + s.toString(  );
        errLineNum     = s.traceback.tb_lineno - 1;
+    
        SharedData.addmsg( reformatPythonError( s.value.toString(  ) ) );
     }catch( Throwable s)
     {
@@ -1007,7 +1009,9 @@ public class PyScriptOperator extends GenericOperator
     Enumeration e = sysProps.propertyNames(  );
 
     boolean homeSet= false;
-    while( e.hasMoreElements(  ) ) {
+    String pyPath="";
+    while( e.hasMoreElements(  ) ) 
+    {
       String name = ( String )e.nextElement(  );
       name = name.trim();
       if( name.startsWith( "python." ) )
@@ -1015,16 +1019,32 @@ public class PyScriptOperator extends GenericOperator
       { 
         if( name.equals( "python.home" )) 
            homeSet=true;
-        if( name.equals( "python.path" ))
-           System.setProperty( name , FixFileName(System.getProperty(name)) );
-        postProps.put( name, System.getProperty( name ) );
-      }
+        
+        else if( name.equals( "python.path" ))
+        {
+           pyPath = System.getProperty(name);
+           if( pyPath == null || pyPath.trim( ).length() <=0)
+              pyPath ="";
+       
+           
+        }else 
+           postProps.put( name, System.getProperty( name ) );
+      }else
+         postProps.put( name, System.getProperty( name ) );
     }
-
+    String pyPath1 = gov.anl.ipns.Util.File.FileIO.appendPath( 
+          System.getProperty( "ISAW_HOME"),"PythonSources/LIB/" );
+    if( pyPath.length() > 0)
+       pyPath1 =File.pathSeparatorChar+pyPath1;
+    pyPath = gov.anl.ipns.Util.File.FileIO.appendPath( pyPath , 
+              pyPath1 ) ;
+    System.setProperty( "python.path" , FixFileName(pyPath) );
+    System.out.println("python path="+FixFileName(pyPath));
+    
     String home = 
           System.getProperty("ISAW_HOME")+"/jython";
    
-    if( !homeSet)
+   // if( !homeSet)
        postProps.put( "python.home" , FixFileName(home) );
     
     postProps.put( "internalTablesImpl" , "weak" );
