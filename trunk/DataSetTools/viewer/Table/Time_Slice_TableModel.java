@@ -202,9 +202,10 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
       SetUpDetNums();
       if( DetNums == null)
           throw new IllegalArgumentException("DataSet does not have any Grids");
-
-      MaxRow = num_rows;
-      MaxCol = num_cols;
+      grid = Grids[0];
+      Groups = AllGroups[0];
+      MaxRow = grid.num_rows( );
+      MaxCol = grid.num_cols( );
       tMinrow = 0;
       tMaxrow = MaxRow - 1;
       tMincol = 0;
@@ -647,22 +648,65 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
       AllGroups = new int[DetNums.length][][];
 
       int SaveDetNum = DetNum;
+      
       for( int i=0; i< DetNums.length; i++)
       {
          Grids[i] = Grid_util.getAreaGrid( DS , DetNums[i] );
-         Grids[i] =Grids[0].clone( );
+         Grids[i] =Grids[i].clone( );
          Grids[i].setData_entries( DS );
          grid = Grids[i];
          DetNum = DetNums[i];
-         SetUpGroups();
-         AllGroups[i]= Groups;
+         //SetUpGroups();
+         //AllGroups[i]= Groups;
          
       }
       grid = Grids[0];
       DetNum = grid.ID( );
+      SetUpAllGroups();
       //UniformGrid.setDataEntriesInAllGrids(DS);
       Groups = AllGroups[0];
    }
+   public void SetUpAllGroups()
+   {
+      Hashtable<Integer,Integer> hash =
+              new Hashtable<Integer,Integer>( DetNums.length);
+      AllGroups = new int[DetNums.length][][];
+      for( int i=0; i<DetNums.length; i++)     
+         {
+            hash.put( DetNums[i] , i );
+            AllGroups[i] = new int[ 1 + Grids[i].num_rows( )]
+                                     [1 +Grids[i].num_cols( )];
+            for( int r=0; r< AllGroups[i].length;r++)
+               Arrays.fill( AllGroups[i][r] , -1 );
+         }
+      
+      int lastDetNum=-1;
+      int lastIndex =-1;
+     // Integer[] List = new Integer[DS.getNum_entries()];
+     // for( int i=0; i< DS.getNum_entries( ); i++)
+     //    List[i] = i;
+     // Arrays.sort( List , new GrIDComparator( DS ) );
+      
+      for( int i = 0; i< DS.getNum_entries( ); i++)
+      {
+         Data D = DS.getData_entry( i );
+         PixelInfoList plist = AttrUtil.getPixelInfoListValue( 
+                                     Attribute.PIXEL_INFO_LIST , D );
+         IPixelInfo pinf = plist.pixel( 0 );
+         int row = (int)(.5+ pinf.row( ));
+         int col = (int)(.5+pinf.col( ));
+         int det = pinf.gridID( );
+         if( lastDetNum != det || lastDetNum < 0 || lastIndex <0)
+         {
+            lastDetNum = det;
+            
+            lastIndex = hash.get( det ).intValue( );
+         }
+         AllGroups[lastIndex][row][col] = i;
+      }
+   }
+   
+ 
    public void SetUpGroups(){
       num_rows = grid.num_rows();
       num_cols = grid.num_cols();
