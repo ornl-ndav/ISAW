@@ -9,7 +9,7 @@
 
 
 def spectrum( wavelength, xtof, averageRange, spect1, xtime, xcounts ):
-    "Returns the relative spectrum correction."
+    "Returns the relative spectrum and detector efficiency correction."
 	
 	
 # c++	TOF = WL * XTOF
