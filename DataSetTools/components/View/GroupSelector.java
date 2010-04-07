@@ -131,8 +131,6 @@ public class GroupSelector implements IObserver, ActionListener
 
    FilteredPG_TextField       Detectors_Rmve;
 
-   FilteredPG_TextField       Detectors_Formula;
-
    FilteredPG_TextField       FormulaGroup;
 
    JComboBox                  formula;
@@ -1630,7 +1628,7 @@ public class GroupSelector implements IObserver, ActionListener
          {
             Detectors_Gr.setText( "" );
             Detectors_Rmve.setText( "" );
-            Detectors_Formula.setText( "" );
+            //Detectors_Formula.setText( "" );
 
             return;
          }
@@ -1684,7 +1682,7 @@ public class GroupSelector implements IObserver, ActionListener
          
          Append( "" + gridID , Detectors_Gr );
          Append( "" + gridID , Detectors_Rmve );
-         Append( "" + gridID , Detectors_Formula );
+        // Append( "" + gridID , Detectors_Formula );
       }
 
    }
@@ -1762,9 +1760,20 @@ public class GroupSelector implements IObserver, ActionListener
       
       S = S.trim( );
       
-      if ( S.length( ) > 0 && !S.endsWith( "," ) && !S.endsWith( ":" ) )
-         return;
-      
+      int k = S.lastIndexOf( ',' );
+      int k1 =S.lastIndexOf( ':' );
+      if( k < 0)
+         k = k1;
+      if( k1 < 0)
+         k1 = k;
+      k = Math.min(  k,k1  );
+      if( k < 0)
+      {
+         k=0;
+         S ="";
+      }else
+         S = S.substring( 0,k+1 );
+          
       txtArea.setText( S + grid );
    }
    
