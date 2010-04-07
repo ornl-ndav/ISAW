@@ -8,7 +8,7 @@
 #!  Jython version: A. J. Schultz, March, 2010
 
 
-def spectrum( wavelength, xtof, averageRange, spect1, xtime, xcounts, numTimeChannels ):
+def spectrum( wavelength, xtof, averageRange, spect1, xtime, xcounts ):
     "Returns the relative spectrum correction."
 	
 	
@@ -16,15 +16,17 @@ def spectrum( wavelength, xtof, averageRange, spect1, xtime, xcounts, numTimeCha
     TOF = wavelength * xtof
 	# T = TOF			# T is in units of microseconds
 	
-    # print numTimeChannels
+    numTimeChannels = len( xtime )
+    print 'In function spectrum, numTimeChannels = %d' % numTimeChannels
+    
     for j in range(numTimeChannels):
         
-     if xtime[j] > TOF:
-        sum = 0.0
-        for jj in range(-averageRange, averageRange):
-            sum = sum + xcounts[j + jj]
-            spect = sum / (2*(averageRange) + 1)
-        break
+        if xtime[j] > TOF:
+            sum = 0.0
+            for jj in range(-averageRange, averageRange):
+                sum = sum + xcounts[j + jj]
+                spect = sum / (2*(averageRange) + 1)
+            break
     
     spect = spect/spect1
     
