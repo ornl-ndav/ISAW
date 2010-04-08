@@ -91,7 +91,8 @@ public class HistogramHandler implements IReceiveMessage
   {
     this.num_bins = num_bins;    
                                                   // set up for SNAP by default
-    Set_Histogram( num_bins, -25.0f, 0, -16.0f, 16.0f, -8.0f, 8.0f );
+    float max_Q = 25;
+    Set_Histogram( num_bins, max_Q, -25.0f, 0, -16.0f, 16.0f, -8.0f, 8.0f );
 
     this.max_hist_value_sent = 0;
 
@@ -328,7 +329,8 @@ public class HistogramHandler implements IReceiveMessage
 
     SetNewInstrumentCmd cmd = (SetNewInstrumentCmd)obj;
 
-    String inst = cmd.getInstrumentName();
+    String inst  = cmd.getInstrumentName();
+    float  max_Q = cmd.getMaxQValue();
 
     if ( inst == null || inst.trim().length() <= 0 )
     {
@@ -338,14 +340,14 @@ public class HistogramHandler implements IReceiveMessage
 
     if ( inst.equals("SNAP") ||
          inst.equals("TOPAZ") )
-      Set_Histogram( num_bins, -25.0f, 0, -16.0f, 16.0f, -8.0f, 8.0f );
+      Set_Histogram( num_bins, max_Q, -25.0f, 0, -16.0f, 16.0f, -8.0f, 8.0f );
 
     else if ( inst.equals("ARCS") ||
               inst.equals("SEQ")  )
-      Set_Histogram( num_bins, -50.0f, 0, -10.0f, 40.0f, -25.0f, 25.0f );
+      Set_Histogram( num_bins, max_Q, -50.0f, 0, -10.0f, 40.0f, -25.0f, 25.0f );
 
     else
-      Set_Histogram( num_bins, -24.0f, 0, -12.0f, 12.0f, -12.0f, 12.0f );
+      Set_Histogram( num_bins, max_Q, -24.0f, 0, -12.0f, 12.0f, -12.0f, 12.0f );
 
      return true;
   }
@@ -357,6 +359,10 @@ public class HistogramHandler implements IReceiveMessage
    *
    *  @param num_bins  The number of bins to use in half of the region
    *                   for the histogram.
+   *  @param max_Q     The maximum Q value set by the user.  This is
+   *                   used to limit the size of the histogram, so that
+   *                   when smaller regions of Q are covered, the histogram
+   *                   will have finer resolution.
    *  @param qx_min    The minimum qx value
    *  @param qx_max    The maximum qx value
    *  @param qy_min    The minimum qy value
@@ -364,11 +370,36 @@ public class HistogramHandler implements IReceiveMessage
    *  @param qz_min    The minimum qz value
    *  @param qz_max    The maximum qz value
    */
-  synchronized private void Set_Histogram( int num_bins,
+  synchronized private void Set_Histogram( int   num_bins,
+                                           float max_Q,
                                            float qx_min,  float qx_max,
                                            float qy_min,  float qy_max,
                                            float qz_min,  float qz_max  )
   {
+    if ( max_Q < .5f )           // clamp max_Q to reasonable values
+      max_Q = .5f;
+
+    if ( max_Q > 100 )
+      max_Q = 100;
+                                // clamp bounds on histogram to be between
+    if ( qx_min < -max_Q )      // -max_Q and +max_Q
+      qx_min = -max_Q;
+
+    if ( qx_max > max_Q )
+      qx_max = max_Q;
+
+    if ( qy_min < -max_Q )
+      qy_min = -max_Q;
+
+    if ( qy_max > max_Q )
+      qy_max = max_Q;
+
+    if ( qz_min < -max_Q )
+      qz_min = -max_Q;
+
+    if ( qz_max > max_Q )
+      qz_max = max_Q;
+
     Vector3D xVec = new Vector3D(1,0,0);
     Vector3D yVec = new Vector3D(0,1,0);
     Vector3D zVec = new Vector3D(0,0,1);
