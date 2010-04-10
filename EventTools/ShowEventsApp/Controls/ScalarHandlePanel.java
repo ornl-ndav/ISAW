@@ -169,6 +169,7 @@ public class ScalarHandlePanel implements IReceiveMessage
       Choices[0] = " No Cell Types Available ";
       viewer = new StringListChoiceViewer( Choices , 4 , 25 , false );
       BuildJPanel( );
+      showChoices();
    }
 
    /**
