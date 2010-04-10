@@ -36,24 +36,11 @@ package DataSetTools.components.ui.Peaks;
 
 import gov.anl.ipns.MathTools.Geometry.Vector3D;
 import gov.anl.ipns.Util.Numeric.IntList;
-import gov.anl.ipns.Util.Sys.FinishJFrame;
-import gov.anl.ipns.Util.Sys.WindowShower;
+import gov.anl.ipns.Util.Sys.*;
 import gov.anl.ipns.ViewTools.Components.ViewControls.ColorScaleControl.StretchTopBottom;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.EventQueue;
-import java.awt.GridLayout;
-import java.awt.Point;
-import java.awt.Window;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
-//import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.*;
+import java.awt.event.*;
 import java.lang.ref.WeakReference;
 import java.util.Vector;
 
@@ -78,6 +65,11 @@ public class PeakFilterer extends JButton implements ActionListener
 {
 
 
+
+   /**
+    * 
+    */
+   private static final long serialVersionUID = 1L;
 
    /**
     *  The Action command that is sent to listeners of this class
@@ -149,7 +141,8 @@ public class PeakFilterer extends JButton implements ActionListener
 
    String                              PeakIntArrayRes       = 
                                                ";seq nums;run nums;det nums;";
-
+   JComponent DisplayComponent = null;//Used to kill all JFrames spawned by this
+                                     // class
 
    /**
     * Constructor:
@@ -226,6 +219,18 @@ public class PeakFilterer extends JButton implements ActionListener
    public ActionListener getActionListener()
    {
       return listener;
+   }
+   
+   /**
+    * This frame pops up windows.  If there is a persistent JComponent
+    * that, when gone, means these windows should disappear, use this to
+    * set this component. 
+    * @param C  The component which if not visible implies spawned windows
+    *           should disappear
+    */
+   public void setDisplayComponent( JComponent C)
+   {
+      DisplayComponent = C;
    }
    public void kill()
    {
@@ -451,7 +456,7 @@ public class PeakFilterer extends JButton implements ActionListener
          ActionEvent evt = new ActionEvent( this ,
                   ActionEvent.ACTION_PERFORMED , OMITTED_PEAKS_CHANGED );
 
-         RunInEventQueue R = ( new RunInEventQueue( evt , FilterListeners
+         RunInEventQueue R =  ( new RunInEventQueue( evt , FilterListeners
                   .elementAt( i ) ) );
       }
 
@@ -996,7 +1001,7 @@ public class PeakFilterer extends JButton implements ActionListener
          if( k <= pFilt.LastIntervalIndex )
          {
 
-            IntervalDialog filtElt = new IntervalDialog( pFilt.Fields[ k ] ,
+            IntervalDialog filtElt = new IntervalDialog( PeakFilterer.Fields[ k ] ,
                      pFilt.Mins[ k ] , pFilt.Maxs[ k ], !interactive, k, but );
 
             if( filtElt.MinVal() == pFilt.Mins[ k ] && filtElt.MaxVal() == pFilt.Maxs[ k ] )
@@ -1011,7 +1016,7 @@ public class PeakFilterer extends JButton implements ActionListener
          }
          else
          {
-            String res = JOptionPane.showInputDialog( "Enter " + pFilt.Fields[ k ]
+            String res = JOptionPane.showInputDialog( "Enter " + PeakFilterer.Fields[ k ]
                      + " list" );
             int[] listt = null;
             if( res == null )
@@ -1059,7 +1064,7 @@ public class PeakFilterer extends JButton implements ActionListener
          if( k <= pFilt.LastIntervalIndex )
          {
 
-            IntervalDialog filtElt = new IntervalDialog( pFilt.Fields[ k ] ,
+            IntervalDialog filtElt = new IntervalDialog( PeakFilterer.Fields[ k ] ,
                      pFilt.Mins[ k ] , pFilt.Maxs[ k ],true,-1, but );
             if( filtElt.MinVal() == pFilt.Mins[ k ] && filtElt.MaxVal() == pFilt.Maxs[ k ] )
                F = null;
@@ -1070,7 +1075,7 @@ public class PeakFilterer extends JButton implements ActionListener
          }
          else
          {
-            String res = JOptionPane.showInputDialog( "Enter " + pFilt.Fields[ k ]
+            String res = JOptionPane.showInputDialog( "Enter " + PeakFilterer.Fields[ k ]
                      + " list" );
             if( res == null )
                F = null;
@@ -1171,6 +1176,8 @@ public class PeakFilterer extends JButton implements ActionListener
         
         jf.setLocation( new Point( p.x+hanger.getWidth(),Math.max( 0 , p.y-D.height/4)) );
         jf.addWindowListener(  this  );
+        if( DisplayComponent != null)
+           DisplayComponent.addAncestorListener(new WindowAncestorListener(jf));
         WindowShower.show(jf);
          
          
@@ -1209,7 +1216,7 @@ public class PeakFilterer extends JButton implements ActionListener
 
          Component comp = (Component) obj;
 
-         Point P = pFilt.getScreenLoc( comp );
+         Point P = PeakFilterer.getScreenLoc( comp );
 
          pFilt.list.clearSelection();
 
@@ -1370,6 +1377,11 @@ public class PeakFilterer extends JButton implements ActionListener
    {
 
 
+
+      /**
+       * 
+       */
+      private static final long serialVersionUID = 1L;
 
       float            MinVal , MaxVal;
 

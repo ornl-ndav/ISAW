@@ -141,6 +141,8 @@ public class SetPeaks extends JButton
 
    //The vector of peaks
    Vector< IPeak >       Peaks;
+   
+   JComponent      DisplayComponent  = null;//To kill spawned windows
 
 
    /**
@@ -189,6 +191,18 @@ public class SetPeaks extends JButton
       if( SetPeakListeners != null)
         SetPeakListeners.clear();
       SetPeakListeners = null;
+   }
+   
+   /**
+    * This class spawns Windows.  If the component C being not viewable means
+    * the window(s) should disappear, set it as a DisplayComponent.
+    * 
+    * @param C  The component whose visibility is tied to the visibility of
+    *            the spawned window(s); 
+    */
+   public void setDisplayComponent( JComponent C)
+   {
+      DisplayComponent = C;
    }
    /*
     * @return the Q values associated with PeakNum. 0 is the first set peak
@@ -715,6 +729,9 @@ public class SetPeaks extends JButton
          comp.add( TableHolder  );
          jf.getContentPane( ).setLayout( new GridLayout( 1 , 1 ) );
          jf.getContentPane( ).add( comp );
+         if( DisplayComponent != null)
+            DisplayComponent.addAncestorListener( 
+                  new gov.anl.ipns.Util.Sys.WindowAncestorListener(jf));
          WindowShower.show( jf );
          jf.addWindowListener( this );
 
