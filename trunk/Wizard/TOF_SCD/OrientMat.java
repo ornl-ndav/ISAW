@@ -44,6 +44,7 @@ import javax.swing.event.AncestorListener;
 import java.util.*;
 import gov.anl.ipns.Parameters.*;
 import gov.anl.ipns.Util.Messaging.IObserver;
+import gov.anl.ipns.Util.Sys.WindowAncestorListener;
 import gov.anl.ipns.Util.Sys.WindowShower;
 import DataSetTools.operator.Generic.TOF_SCD.*;
 import DataSetTools.operator.Generic.TOF_SCD.Util;
@@ -594,10 +595,13 @@ public class OrientMat extends Form implements ActionListener , IObserver ,
       ControlPanel.add( ShowQViewer );
       ControlPanel.add( V3DItems );
       JButton butt = new JButton(OrientMatrixControl.ORIENT_MAT );
+      
       ControlPanel.add( butt );
       butt.addActionListener( this);
       ControlPanel.add( PeakFilter );
+      PeakFilter.setDisplayComponent( panel );
       ControlPanel.add( setPeaks );
+      setPeaks.setDisplayComponent( panel );
       ControlPanel.add( Box.createVerticalGlue() );
       IParameterGUI ResParam = getResultParam();
       ControlPanel.add( ResParam.getGUIPanel( true ) );
@@ -851,7 +855,8 @@ public class OrientMat extends Form implements ActionListener , IObserver ,
             return;
          
          QViewFrame = new JFrame( "Q Viewer" );
-         
+         if( panel != null)
+            panel.addAncestorListener( new WindowAncestorListener( QViewFrame) );
          QViewFrame.getContentPane().setLayout( new GridLayout( 1 , 1 ) );
          
          QViewFrame.getContentPane().add( V3d );
