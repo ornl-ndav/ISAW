@@ -39,8 +39,7 @@ import gov.anl.ipns.MathTools.*;
 import gov.anl.ipns.Util.File.FileIO;
 import gov.anl.ipns.Util.File.RobustFileFilter;
 import gov.anl.ipns.Util.SpecialStrings.ErrorString;
-import gov.anl.ipns.Util.Sys.FinishJFrame;
-import gov.anl.ipns.Util.Sys.WindowShower;
+import gov.anl.ipns.Util.Sys.*;
 import gov.anl.ipns.ViewTools.Components.OneD.DataArray1D;
 import gov.anl.ipns.ViewTools.Components.OneD.FunctionViewComponent;
 import gov.anl.ipns.ViewTools.Components.OneD.VirtualArrayList1D;
@@ -56,6 +55,7 @@ import javax.swing.event.ChangeListener;
 import DataSetTools.operator.Generic.TOF_SCD.GetUB;
 import DataSetTools.operator.Generic.TOF_SCD.IPeak;
 import DataSetTools.util.SharedData;
+import EventTools.ShowEventsApp.Controls.ScalarHandlePanel;
 //import DataSetTools.operator.Generic.TOF_SCD.Peak_new;
 import IPNSSrc.blind;
 import Operators.TOF_SCD.ScalarJ_base;
@@ -1540,7 +1540,7 @@ public class OrientMatrixControl extends JButton
          }
          if( evt.equals( "Show conventional cells" ))
          {
-            ScalarJ_base Scalar = new ScalarJ_base( orMat.orientationMatrix,.1f,0);
+           /* ScalarJ_base Scalar = new ScalarJ_base( orMat.orientationMatrix,.1f,0);
             if(Scalar.getResult( ) instanceof ErrorString)
                SharedData.addmsg( "Error in Scalar: "+Scalar.getResult() );
             else
@@ -1553,6 +1553,16 @@ public class OrientMatrixControl extends JButton
                 WindowShower.show( jf );
             }
             return;
+            */
+            ScalarHandlePanel scalarPanel = new ScalarHandlePanel( 
+                  ( orMat.orientationMatrix));
+
+            FinishJFrame jf = new FinishJFrame("Conventional Cells");
+            jf.getContentPane( ).add(new JScrollPane(scalarPanel.getPanel()));
+            jf.setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
+            jf.setSize( 500,800 );
+            WindowShower.show( jf );
+            
          }
          if( evt.equals( OrientMatrixControl.BLIND ) || 
              evt .equals( OrientMatrixControl.AUTOMATIC )||
@@ -1720,11 +1730,20 @@ public class OrientMatrixControl extends JButton
                 float initial_tolerance = 0.12f;
                 float required_fraction = 0.4f;
                 int   fixed_peak_index  = 0;
+                JFrame F = BusyDisplay.ShowBusyGUI( "Calculating" );
+                BusyDisplay.MoveFrame( F,400,300);
+                try
+                {
                 UB = Operators.TOF_SCD.IndexPeaks_Calc.             
                     IndexPeaksWithOptimizer( peaks , 
                           Params[0] , Params[1], Params[2] , 
                           Params[3] , Params[4] ,Params[5], 
                           initial_tolerance, required_fraction, fixed_peak_index );
+                }catch( Throwable thr)// Want to make sury Busy JFrame does not hang.
+                {
+                   thr.printStackTrace( );
+                }
+                BusyDisplay.KillBusyGUI( F );
                 setOrientationMatrix(UB );
                 showCurrentOrientationMatrix( false);
                 
@@ -1764,16 +1783,25 @@ public class OrientMatrixControl extends JButton
                   return;
                }
             }
-            setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            //setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+
+            JFrame F = BusyDisplay.ShowBusyGUI( "Calculating" );
+            BusyDisplay.MoveFrame( F,400,300);
             GetUB.DMIN = Dmin;
             GetUB.ELIM_EQ_CRYSTAL_PARAMS = false;
-            OrMatrices = GetUB. getAllOrientationMatrices( WPeaks.get() , omittedPeakIndex ,
+            try
+            {
+                OrMatrices = GetUB. getAllOrientationMatrices( WPeaks.get() , omittedPeakIndex ,
                      .01f , MaxXtalLengthReal );
-            
+            }catch(Throwable thr)
+            {
+               thr.printStackTrace( );
+            }
+            BusyDisplay.KillBusyGUI( F );
             GetUB.DMIN = 1f;
             
-            setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-
+            //setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR))
+            
             if( OrMatrices == null || OrMatrices.size() < 1 )
             {
                DataSetTools.util.SharedData.addmsg( "No orientation methods found" );
