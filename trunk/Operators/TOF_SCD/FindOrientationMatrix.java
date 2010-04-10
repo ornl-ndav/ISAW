@@ -66,6 +66,11 @@ public class FindOrientationMatrix extends GenericOperator
                                    
 {
 
+   /**
+    * 
+    */
+   private static final long serialVersionUID = 1L;
+
    private static String[] XtalTypes        =
    {
        "P" , "A" , "B" , "C" ,
@@ -358,6 +363,8 @@ public class FindOrientationMatrix extends GenericOperator
          {
 
             Xtal.setXtalParams(null );
+            if( V != null && V.size() > 0)
+               JOptionPane.showMessageDialog( null, "Bad Format for Crystal Parameters " );
             return;
          }
          try
@@ -366,6 +373,7 @@ public class FindOrientationMatrix extends GenericOperator
             X[i] = ((Number)V.elementAt( i )).floatValue();
          }catch( Exception s)
          {
+            JOptionPane.showMessageDialog( null, "Bad Format for Crystal Parameters " );
             X = null;
          }
          
