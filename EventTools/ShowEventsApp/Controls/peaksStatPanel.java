@@ -201,9 +201,10 @@ class MyThread extends Thread implements ActionListener
       IntegInfo.setToolTipText( "<html><body>Number of peaks where <BR> integrated"+
                      " intensity / error >= 3</body></html>" );
       BottomPanel.add( IntegInfo );
-      JButton ShowPeaks = new JButton( "Show Peaks" );
-      BottomPanel.add( ShowPeaks );
-      ShowPeaks.addActionListener( this );
+      //JButton ShowPeaks = new JButton( "Show Peaks" );
+     // BottomPanel.add( ShowPeaks );
+      //ShowPeaks.addActionListener( this );
+      BottomPanel.add(  new JLabel("               ") );
       panel.add( BottomPanel, BorderLayout.SOUTH );
       panel.invalidate();
       panel.validate();
