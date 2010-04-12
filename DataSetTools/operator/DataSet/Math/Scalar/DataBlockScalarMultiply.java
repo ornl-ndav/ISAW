@@ -40,7 +40,7 @@
 
 package DataSetTools.operator.DataSet.Math.Scalar;
 
-import gov.anl.ipns.Parameters.IParameter;
+import gov.anl.ipns.Parameters.*;
 
 import  java.io.*;
 import  java.util.Vector;
@@ -176,15 +176,15 @@ public class DataBlockScalarMultiply extends    ScalarOp
   {
     parameters = new Vector();  // must do this to clear any old parameters
 
-    Parameter parameter = new Parameter( "Scalar to Multiply by", 
+    FloatPG parameter = new FloatPG( "Scalar to Multiply by", 
                                           new Float(1.0) );
     addParameter( parameter );
 
-    parameter = new Parameter( "Index of Data block", new Integer(0) );
-    addParameter( parameter );
+    IntegerPG parameter1 = new IntegerPG( "Index of Data block", new Integer(0) );
+    addParameter( parameter1 );
 
-    parameter = new Parameter( "Create new DataSet?", new Boolean(false) );
-    addParameter( parameter );
+    BooleanPG parameter2 = new BooleanPG( "Create new DataSet?", new Boolean(false) );
+    addParameter( parameter2 );
   }
 
 
