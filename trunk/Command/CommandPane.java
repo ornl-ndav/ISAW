@@ -685,7 +685,7 @@ public class CommandPane extends JPanel implements PropertyChangeListener,
         LanguageChoices[1] = "Jython Script";
       }
       for( int i=0; i< othLang.length;i++)
-         LanguageChoices[ LanguageChoices.length -1-othLang.length+1-i] = othLang[i];
+         LanguageChoices[ LanguageChoices.length -1-othLang.length+1+i] = othLang[i];
       sp = null;
     }
 
