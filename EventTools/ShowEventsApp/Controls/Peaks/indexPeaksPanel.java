@@ -247,7 +247,7 @@ public class indexPeaksPanel extends    JPanel  implements IReceiveMessage
                "<BR> apply it to the Peaks" );
       panel.add(applyBtn);
       
-      
+     /* 
       ViewMatBtn = new JButton("Show Matrix");
       
       WriteMatBtn = new JButton("Write Matrix");
@@ -256,6 +256,7 @@ public class indexPeaksPanel extends    JPanel  implements IReceiveMessage
      
       panel.add( WriteMatBtn );
       panel.add( ViewMatBtn );
+      */
       return panel;
    }
 
