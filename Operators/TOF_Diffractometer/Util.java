@@ -256,7 +256,7 @@ public class Util
          DS.setX_units( "Angstroms");
          DS.setX_label( "d-Spacing" );
          DS.setY_units( "Counts" );
-         DS.setY_label("Intensity");
+         DS.setY_label( "Scattering Intensity" );
          
          AddBankDetectorPositions( DS, SMap );
          SetAttributes( DS, EventFileName, SMap );
@@ -456,9 +456,9 @@ public class Util
          DataSet DS = MakeDataSet( Histograms, binner, title, log_message );
       
          DS.setX_units( "Time(us)");
-         DS.setX_label( "time" );
+         DS.setX_label( "Time-of-flight" );
          DS.setY_units( "Counts" );
-         DS.setY_label("Intensity");
+         DS.setY_label( "Scattering Intensity" );
          
          AddFocusedDetectorPositions( DS, angle_deg, final_L_m );
 
