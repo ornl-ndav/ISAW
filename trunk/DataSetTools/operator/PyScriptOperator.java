@@ -1039,7 +1039,6 @@ public class PyScriptOperator extends GenericOperator
     pyPath = gov.anl.ipns.Util.File.FileIO.appendPath( pyPath , 
               pyPath1 ) ;
     System.setProperty( "python.path" , FixFileName(pyPath) );
-    System.out.println("python path="+FixFileName(pyPath));
     
     String home = 
           System.getProperty("ISAW_HOME")+"/jython";
