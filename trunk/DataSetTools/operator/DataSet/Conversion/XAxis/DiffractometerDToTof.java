@@ -207,8 +207,8 @@ public class DiffractometerDToTof extends    XAxisConversionOp
                                      // title, as the current DataSet, ds.
     DataSetFactory factory = new DataSetFactory( 
                                      ds.getTitle(),
-                                     "Time-of-flight",
                                      "Time(us)",
+                                     "Time-of-flight",
                                      "Counts",
                                      "Scattering Intensity" );
 
