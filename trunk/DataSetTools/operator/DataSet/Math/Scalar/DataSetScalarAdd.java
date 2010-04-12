@@ -70,7 +70,7 @@
 
 package DataSetTools.operator.DataSet.Math.Scalar;
 
-import gov.anl.ipns.Parameters.IParameter;
+import gov.anl.ipns.Parameters.*;
 
 import  java.io.*;
 import  java.util.Vector;
@@ -193,11 +193,11 @@ public class DataSetScalarAdd extends    ScalarOp
   {
     parameters = new Vector();  // must do this to clear any old parameters
 
-    Parameter parameter = new Parameter( "Scalar to Add", new Float(0.0) );
+    FloatPG parameter = new FloatPG( "Scalar to Add", new Float(0.0) );
     addParameter( parameter );
 
-    parameter = new Parameter( "Create new DataSet?", new Boolean(false) );
-    addParameter( parameter );
+    BooleanPG parameter1 = new BooleanPG( "Create new DataSet?", new Boolean(false) );
+    addParameter( parameter1 );
   }
 
 

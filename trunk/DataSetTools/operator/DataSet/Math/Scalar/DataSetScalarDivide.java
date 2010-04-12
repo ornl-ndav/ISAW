@@ -64,6 +64,7 @@
 
 package DataSetTools.operator.DataSet.Math.Scalar;
 
+import gov.anl.ipns.Parameters.*;
 import gov.anl.ipns.Parameters.IParameter;
 
 import  java.io.*;
@@ -194,10 +195,10 @@ public class DataSetScalarDivide extends    ScalarOp
   {
     parameters = new Vector();  // must do this to clear any old parameters
 
-    Parameter parameter = new Parameter( "Divisor", new Float(1.0) );
-    addParameter( parameter );
+    //Parameter parameter = new FloatPG( "Divisor", new Float(1.0) );
+    addParameter( new FloatPG( "Divisor", new Float(1.0) ) );
 
-    parameter = new Parameter( "Create new DataSet?", new Boolean(false) );
+    BooleanPG parameter = new BooleanPG( "Create new DataSet?", new Boolean(false) );
     addParameter( parameter );
   }
 
