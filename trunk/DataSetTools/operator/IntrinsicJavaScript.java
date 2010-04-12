@@ -260,6 +260,9 @@ public class IntrinsicJavaScript extends GenericOperator implements
          throw new IllegalArgumentException(
                   "filename does not have a good extension" );
       
+      if( ext.toLowerCase( ).equals( "py" ))
+         throw new IllegalArgumentException("python will be handles by JyScript");
+      
       ScriptEngine eng = ( new ScriptEngineManager() )
                .getEngineByExtension( ext );
       
