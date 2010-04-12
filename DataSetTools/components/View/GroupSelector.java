@@ -940,17 +940,28 @@ public class GroupSelector implements IObserver, ActionListener
             "      x=eval(CD)\n"+
             "      if  x:\n"+
             "         PIX[i]=int(group)\n";
-            //Try to compile code for exec.
-            PyCode codeEx =Py.compile( new ByteArrayInputStream(code.getBytes( )),
-                  "<string>","exec" );
+            //-------------------NOTE to eliminate compile errors--------
+            //-----------------------update to the new jython--------------
+            //-------or comment and uncomment appropriate instructions------
+            //To compile with jython2.2.1
+           // PyCode codeEx =Py.compile( new ByteArrayInputStream(code.getBytes( )),
+           //       "<string>","exec" );
+            
+            // To compile with jython 2.5.1
+            PyCode  codeEx = pinterp.compile(code);
             pinterp.exec( codeEx );
          }
          
          pinterp.set( "PIX" , pixelGroup );
          
-         PyCode codep =Py.compile( new ByteArrayInputStream(formula.getBytes( )),
-                "<string>","eval" );
          
+         //To compile witf jython2.2.1
+         //PyCode codep =Py.compile( new ByteArrayInputStream(formula.getBytes( )),
+         //       "<string>","eval" );
+         
+         
+         // //To compile with jython2.5.1
+         PyCode codep = pinterp.compile( formula );
          pinterp.set( "CD" , codep );
          
          String CD ="assign(None,"+Group+")";
@@ -1122,7 +1133,16 @@ public class GroupSelector implements IObserver, ActionListener
 
       if ( arg0.getActionCommand( ) == REMOVE_GROUP )
       {
-         int group = Integer.parseInt( RmvGroup.getText( ).trim( ) );
+         
+         int group;
+         try
+         {
+              group= Integer.parseInt( RmvGroup.getText( ).trim( ) );
+         }catch(Exception s)
+         {
+            JOptionPane.showMessageDialog( null , "Group improper format" );
+            return;
+         }
          
          int[] detectors = IntList.ToArray( Detectors_Rmve.getText( ).trim( ) );
          
