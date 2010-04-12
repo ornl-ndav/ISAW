@@ -112,6 +112,8 @@ import java.io.*;
 import java.awt.image.*;
 import DataSetTools.viewer.*;
 import DataSetTools.dataset.*;
+
+import javax.imageio.ImageIO;
 import javax.swing.*;
 
 /**
@@ -187,10 +189,28 @@ public class SaveImage  extends GenericSave{
     String extension = SaveFileName.substring( i+1).toLowerCase();
     if( extension == null) 
       return new ErrorString("Save FileName must have an extension");
+    
     if( extension.length() <2)
       return new ErrorString("Save FileName must have an extension with more than 1 character");
+    
+    String[] extensionList = ImageIO.getWriterFileSuffixes( );
+    if( extensionList == null )
+    {
+       return new ErrorString( "No File Extensions supported" );
+       
+    }
+    //Check if it is a supported extension.
+    boolean found = false;
+    for(  i=0; i< extensionList.length && !found ; i++)
+       if( extensionList[i].equals( extension ))
+          found = true;
+    
+    if( !found)
+       return new ErrorString( "File Extensions "+extension+" is not supported" );
+    
     if( width <=0) 
        width = 500;
+    
     if( height <= 0) 
        height = 500;
     
