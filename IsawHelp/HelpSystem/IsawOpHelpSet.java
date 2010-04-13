@@ -928,9 +928,13 @@ class IsawTOC  extends TOCView
 
   /**
   *  Calculated the Table of Contents(TOC) from the Script_Class_List_Handler
+  *  
   *  @param ngeneric   The number of generic operators
+  *  
   *  @param ndatasets  The number of data set operators
+  *  
   *  @param hs         the helpset that has this TOC
+  *  
   *  @param operatorsOnly  if true only the data set and generic operator help
   *                    will be displayed
   */
@@ -1027,12 +1031,19 @@ class IsawTOC  extends TOCView
              title = "";
         
         if( title.length() >= 1 ) 
-           while( title.toUpperCase().charAt(0 ) > lastletter )
+           while( title.charAt(0 ) > lastletter )
              {
               String range = ((char)( lastletter + 1 ) + "-" + (char)( lastletter + 5 ) );
+              if( lastletter + 5 >(int)'Z' && Character.isUpperCase( lastletter ))
+              {
+                 range =(char)(lastletter+1)+"-"+"Z";
+                 lastletter =(char)((int)'a'-1);
+              }else 
+                 lastletter = (char)( lastletter + 5 );
+              
               letters = addNode( Generic , range , null , null );
               
-              lastletter = (char)( lastletter + 5 ); 
+             
              }
         TOCItem ttt = (TOCItem)addNode( letters , title ,  
                      javax.help.Map.ID.create( "Gen" + i , hs ) , hs ).getUserObject();
@@ -1058,11 +1069,16 @@ class IsawTOC  extends TOCView
            title = "";
           
         if( title.length() >= 1 )
-           while( title.toUpperCase().charAt(0 ) > lastletter )
+           while( title.charAt(0 ) > lastletter )
              {
               String range = ((char)( lastletter + 1 ) + "-" + (char)( lastletter + 5 ) );
+              if( lastletter + 5 >(int)'Z' && Character.isUpperCase( lastletter ))
+              {
+                 range =(char)(lastletter+1)+"-"+"Z";
+                 lastletter =(char)((int)'a'-1);
+              }else 
+                 lastletter = (char)( lastletter + 5 );
               letters = addNode( DataSet , range , null , null );
-              lastletter = (char)( lastletter + 5 ); 
              }
         TOCItem ttt = (TOCItem)addNode(  letters , title ,  
                             javax.help.Map.ID.create( "Dat" + i ,  hs ) , hs ).getUserObject();
