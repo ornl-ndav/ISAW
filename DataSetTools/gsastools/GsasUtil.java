@@ -155,27 +155,36 @@ public class GsasUtil{
     }
 
 
-
     /**
-     * Determine if the XScale given is constant binning. If it is
-     * constant the spacing is returned, otherwise zero.
+     * Determine if the XScale given is constant binning to within
+     * 0.1%. If it is constant the spacing is returned, otherwise zero.
      */
-    public static float getStepSize(XScale xscale){
-        if(xscale instanceof UniformXScale)
-            return (float)((UniformXScale)xscale).getStep();
+    public static float getStepSize(XScale xscale)
+    {
+      if ( xscale instanceof UniformXScale )
+        return (float)((UniformXScale)xscale).getStep();
 
-        float tol=0f;
-        float dX=0f;
-        float[] x=xscale.getXs();
+      float tol=0.001f;
+      float max_tol = 1+tol;
+      float min_tol = 1-tol;
 
-        if(x.length>2) dX=x[1]-x[0];
+      float dX=0f;
+      float[] x=xscale.getXs();
 
-        for( int i=1 ; i<x.length ; i++ ){
-            if(Math.abs(x[i]-x[i-1]-dX)>tol)return 0f;
-        }
+      if ( x.length >= 2 ) 
+        dX = x[1]-x[0];
 
-        return dX;
+      float relative_change;
+      for( int i=1 ; i<x.length ; i++ )
+      {
+        relative_change = (x[i]-x[i-1]) / dX; 
+        if ( relative_change > max_tol ||
+             relative_change < min_tol )
+          return 0f;
+      }
+      return dX;
     }
+
 
     /**
      * Create a bank header line in gsas format. The result must be
