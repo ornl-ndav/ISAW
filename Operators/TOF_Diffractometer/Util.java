@@ -519,9 +519,19 @@ public class Util
     for( int i = 0; i < xs.length; i++ )
       xs[i] = (float)binner.minVal( i );
 
-    xs[xs.length-1] = (float)binner.maxVal( xs.length-1 );
+    // The following statement is not needed, since the array xs[] already
+    // contains one extra bin, and that last bin is filled by the loop above.
+    // xs[ xs.length - 1 ] = (float)binner.maxVal( xs.length - 2 );
 
     VariableXScale xscl = new VariableXScale( xs );
+
+    System.out.println("--------- IN Util.java -----------");
+    for ( int i = 0; i < 4; i++ )
+      System.out.println("i, xs[i] = " + i + ", " + xs[i] );
+
+    for ( int i = xs.length-5; i < xs.length; i++ )
+      System.out.println("i, xs[i] = " + i + ", " + xs[i] );
+
 
     for( int i = 0; i < histograms.length; i++)
     {
