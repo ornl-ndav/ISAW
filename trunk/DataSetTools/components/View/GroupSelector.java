@@ -51,7 +51,7 @@ import gov.anl.ipns.Util.File.FileIO;
 import gov.anl.ipns.Util.Messaging.IObserver;
 import gov.anl.ipns.Util.Numeric.IntList;
 import gov.anl.ipns.Util.Numeric.floatPoint2D;
-import gov.anl.ipns.Util.Sys.Browser;
+import gov.anl.ipns.Util.Sys.*;
 import gov.anl.ipns.Util.Sys.EnableDisableActionListener;
 import gov.anl.ipns.Util.Sys.FinishJFrame;
 import gov.anl.ipns.Util.Sys.WindowShower;
@@ -189,15 +189,20 @@ public class GroupSelector implements IObserver, ActionListener
    public GroupSelector(String NeXusFileName)
    {
 
-      NexusRetriever ret = new NexusRetriever( NeXusFileName );
+      JFrame jf = BusyDisplay.ShowBusyGUI( "Setting Up");
+      Dimension DD = getScreenDimensions( jf );
+      BusyDisplay.MoveFrame( jf , DD.width/3,(DD.height)*3/8 );
+      try
+      {
+         NexusRetriever ret = new NexusRetriever( NeXusFileName );
       
-      int nDataSets = ret.numDataSets( );
+          int nDataSets = ret.numDataSets( );
       
-      Vector< UniformGrid > Grids = new Vector< UniformGrid >( );
+         Vector< UniformGrid > Grids = new Vector< UniformGrid >( );
       
-      DS = new DataSet( );
+          DS = new DataSet( );
       
-      int start = 0;
+         int start = 0;
       
       if ( ret.getType( 0 ) == Retriever.MONITOR_DATA_SET )
          start = 1;
@@ -331,9 +336,18 @@ public class GroupSelector implements IObserver, ActionListener
       FinishDataSet( DS );
       
       init( );
+      }catch( Throwable ss)
+      {
+         ss.printStackTrace( );
+      }
+      BusyDisplay.KillBusyGUI( jf );
 
    }
 
+   private static Dimension getScreenDimensions( JFrame jf)
+   {
+      return jf.getToolkit( ).getScreenSize( );
+   }
    /**
     * 
     * @param DETCAlFileName
@@ -342,6 +356,9 @@ public class GroupSelector implements IObserver, ActionListener
    public GroupSelector(String DETCAlFileName, String BankMapFile)
    {
 
+      JFrame jf = BusyDisplay.ShowBusyGUI( "Setting Up" );
+      Dimension D = getScreenDimensions( jf );
+      BusyDisplay.MoveFrame( jf , D.width/3,(D.height)*3/8 );
       try
       {
          int[][] bankInfo = FileUtil.LoadBankFile( BankMapFile );
@@ -381,6 +398,9 @@ public class GroupSelector implements IObserver, ActionListener
          
          pixelGroup = new int[ max_pixelID - min_pixelID + 1 ];
          // DS add information operators etc.
+         FinishDataSet( DS );
+         
+         init( );
 
       } catch( Exception s )
       {
@@ -396,9 +416,7 @@ public class GroupSelector implements IObserver, ActionListener
          L0 = T0 = Float.NaN;
       }
 
-      FinishDataSet( DS );
-      
-      init( );
+     BusyDisplay.KillBusyGUI( jf );
    }
 
    private DataSet MakeDataSet(IDataGrid grid, int startPixelID, float L0,
