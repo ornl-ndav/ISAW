@@ -175,9 +175,9 @@ public class GsasUtil{
         dX = x[1]-x[0];
 
       float relative_change;
-      for( int i=1 ; i<x.length ; i++ )
+      for( int i = 1; i < x.length; i++ )
       {
-        relative_change = (x[i]-x[i-1]) / dX; 
+        relative_change = Math.abs( (x[i]-x[i-1]) / dX ); 
         if ( relative_change > max_tol ||
              relative_change < min_tol )
           return 0f;

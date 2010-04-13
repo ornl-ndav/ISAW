@@ -157,13 +157,21 @@ public class XInfo{
             this.coef1=xscale.getStart_x();
             int numX = xscale.getNum_x();
             
-           // this.coef2= (float)Math.pow( 1.0*xscale.getEnd_x()/xscale.getStart_x(),1.0/(xscale.getNum_x()-2));
+           // this.coef2=(float)Math.pow(xscale.getEnd_x()/xscale.getStart_x(),
+           //                              1.0/(xscale.getNum_x()-2));
             this.coef2=xscale.getX( xscale.getNum_x()-2);
-            this.coef3=0.0004f;
-            
+
+            double x0 = xscale.getX(0);
+            double x1 = xscale.getX(1);
+            if ( x0 <= 0 )
+              throw new IllegalArgumentException(
+                                    "Log Scale MUST start at x0 > 0");
+            this.coef3=(float)( (x1-x0)/x0 );
+
             this.coef1*=scale;
             this.coef2*=scale;
-            this.coef3*=scale;
+//          this.coef3*=scale;   // NOTE: Since coef3 is a ratio of times,
+                                 //       it should NOT be scaled
             this.coef4=0;
         } 
    //    if(this.type.equals(FXYE)){
