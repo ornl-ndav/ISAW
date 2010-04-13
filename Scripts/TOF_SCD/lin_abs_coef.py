@@ -103,9 +103,9 @@ class lin_abs_coef(GenericTOF_SCD):
         S.append("La2 Ni1 O4.2\n")
         S.append("For boron-11 B4C, input\n")
         S.append("11B4 C1\n")
-        S.append("@param  formula  The chemical formula input as described above")
-        S.append("@param   Z number of formula units")
-        S.append("@param  UnitVolume  the unit cell volume")
+        S.append("@param  formula: The chemical formula input as described above.")
+        S.append("@param   Z: The number of formula units in the unit cell. This can be a noninteger value.")
+        S.append("@param  UnitVolume: The unit cell volume in units of Angstroms cubed.")
         S.append("@return a float array with 3 entries, the total scattering and the true absorption\
         linear absorption coefficients, and the density")
         return S.toString()
