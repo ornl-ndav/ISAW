@@ -41,6 +41,12 @@ public class TOFINT implements Wrappable,HiddenOperator{
 
   public String LOG=null;
 
+  public String INCL1=null;
+
+  public String INCL2=null;
+
+  public String INCL3=null;
+
   public int MAXP1=0;
 
   public int IPFLAG=0;
@@ -201,52 +207,17 @@ public class TOFINT implements Wrappable,HiddenOperator{
     RIS3=(float)((INTI3/SIG3));
 //      TYPE *,'INTI3,SIG3,RIS3',INTI3,SIG3,RIS3
     if(((IPFLAG)==(0))){
-        LOG="   "+(ONE+FIVE)/2;
-        LOG+="  "+Z;
-        LOG+="  "+X;
-        LOG+="  "+Y;
-        LOG+="  "+(int)JHIST[X-1][Y-1][Z-1];
-        LOG+="  "+MINX;
-        LOG+="  "+MAXX;
-        LOG+="  "+MINY;
-        LOG+="  "+MAXY;
-        LOG+="  "+INTI1;
-        LOG+="  "+SIG1;
-        LOG+="  "+RIS1;
-        if((RIS1>RIS2)&&(RIS1>RIS3)&&(RIS1>5.0))LOG+="  Yes";
-        else LOG+="  No";
-        LOG+="  "+"\n ";
-        LOG+="  "+(TWO+SIX)/2;
-        LOG+="  "+Z;
-        LOG+="  "+X;
-        LOG+="  "+Y;
-        LOG+="  "+(int)JHIST[X-1][Y-1][Z-1];
-        LOG+="  "+MINX;
-        LOG+="  "+MAXX;
-        LOG+="  "+MINY;
-        LOG+="  "+MAXY;
-        LOG+="  "+INTI2;
-        LOG+="  "+SIG2;
-        LOG+="  "+RIS2;
+        if((RIS1>RIS2)&&(RIS1>RIS3)&&(RIS1>5.0))INCL1="         Yes";
+        else INCL1="          No";
         if((RIS2>RIS1&&RIS2>RIS3)||(RIS1>RIS2&&RIS1>RIS3&&RIS1<=5.0)
-          ||(RIS3>RIS2&&RIS3>RIS1&&RIS3<=5.0))LOG+="  Yes";
-        else LOG+="  No";
-        LOG+="  "+"\n ";
-        LOG+="  "+(THREE+SEVEN)/2;
-        LOG+="  "+Z;
-        LOG+="  "+X;
-        LOG+="  "+Y;
-        LOG+="  "+(int)JHIST[X-1][Y-1][Z-1];
-        LOG+="  "+MINX;
-        LOG+="  "+MAXX;
-        LOG+="  "+MINY;
-        LOG+="  "+MAXY;
-        LOG+="  "+INTI3;
-        LOG+="  "+SIG3;
-        LOG+="  "+RIS3;
-        if((RIS3>RIS1)&&(RIS3>RIS2)&&(RIS3>5.0))LOG+="  Yes";
-        else LOG+="  No";
-        LOG+="  "+"\n ";
+          ||(RIS3>RIS2&&RIS3>RIS1&&RIS3<=5.0))INCL2="         Yes";
+        else INCL2="          No";
+        if((RIS3>RIS1)&&(RIS3>RIS2)&&(RIS3>5.0))INCL3="         Yes";
+        else INCL3="          No";
+        LOG=String.format("%3d%5d%7d%5d%5d%4d%4d%4d%4d %9.2f%9.2f%8.2f%s\n%3d%5d%7d%5d%5d%4d%4d%4d%4d %9.2f%9.2f%8.2f%s\n%3d%5d%7d%5d%5d%4d%4d%4d%4d %9.2f%9.2f%8.2f%s\n",
+          (ONE+FIVE)/2,Z,X,Y,(int)JHIST[X-1][Y-1][Z-1],MINX,MAXX,MINY,MAXY,INTI1,SIG1,RIS1,INCL1,
+          (TWO+SIX)/2,Z,X,Y,(int)JHIST[X-1][Y-1][Z-1],MINX,MAXX,MINY,MAXY,INTI2,SIG2,RIS2,INCL2,
+          (THREE+SEVEN)/2,Z,X,Y,(int)JHIST[X-1][Y-1][Z-1],MINX,MAXX,MINY,MAXY,INTI3,SIG3,RIS3,INCL3);
         LOG+="Counts for Offsets from peak time:\n ";
         for(J=ONE;J<=SEVEN;J++)
           LOG+="  "+ISUM[J-1];
