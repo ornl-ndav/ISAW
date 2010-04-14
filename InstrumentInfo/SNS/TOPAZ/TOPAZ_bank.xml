@@ -2,7 +2,7 @@
 <banking xmlns='http://neutrons.ornl.gov/SNS/ASG/Banking'>
   <facility>SNS</facility>
   <instrument>TOPAZ</instrument>
-  <date>2009-11-24</date>
+  <date>2010-03-15</date>
   <bank>
     <number>1</number>
     <x_size>256</x_size>
@@ -30,5 +30,104 @@
       <stop>262143</stop>
     </continuous_list>
   </bank>
-  <total_pixel_number>196608</total_pixel_number>
+  <bank>
+    <number>4</number>
+    <x_size>256</x_size>
+    <y_size>256</y_size>
+    <continuous_list>
+      <start>262144</start>
+      <stop>327679</stop>
+    </continuous_list>
+  </bank>
+  <bank>
+    <number>5</number>
+    <x_size>256</x_size>
+    <y_size>256</y_size>
+    <continuous_list>
+      <start>327680</start>
+      <stop>393215</stop>
+    </continuous_list>
+  </bank>
+  <bank>
+    <number>6</number>
+    <x_size>256</x_size>
+    <y_size>256</y_size>
+    <continuous_list>
+      <start>393216</start>
+      <stop>458751</stop>
+    </continuous_list>
+  </bank>
+  <bank>
+    <number>7</number>
+    <x_size>256</x_size>
+    <y_size>256</y_size>
+    <continuous_list>
+      <start>458752</start>
+      <stop>524287</stop>
+    </continuous_list>
+  </bank>
+  <bank>
+    <number>8</number>
+    <x_size>256</x_size>
+    <y_size>256</y_size>
+    <continuous_list>
+      <start>524288</start>
+      <stop>589823</stop>
+    </continuous_list>
+  </bank>
+  <bank>
+    <number>9</number>
+    <x_size>256</x_size>
+    <y_size>256</y_size>
+    <continuous_list>
+      <start>589824</start>
+      <stop>655359</stop>
+    </continuous_list>
+  </bank>
+  <bank>
+    <number>10</number>
+    <x_size>256</x_size>
+    <y_size>256</y_size>
+    <continuous_list>
+      <start>655360</start>
+      <stop>720895</stop>
+    </continuous_list>
+  </bank>
+  <bank>
+    <number>11</number>
+    <x_size>256</x_size>
+    <y_size>256</y_size>
+    <continuous_list>
+      <start>720896</start>
+      <stop>786431</stop>
+    </continuous_list>
+  </bank>
+  <bank>
+    <number>12</number>
+    <x_size>256</x_size>
+    <y_size>256</y_size>
+    <continuous_list>
+      <start>786432</start>
+      <stop>851967</stop>
+    </continuous_list>
+  </bank>
+  <bank>
+    <number>13</number>
+    <x_size>256</x_size>
+    <y_size>256</y_size>
+    <continuous_list>
+      <start>851968</start>
+      <stop>917503</stop>
+    </continuous_list>
+  </bank>
+  <bank>
+    <number>14</number>
+    <x_size>256</x_size>
+    <y_size>256</y_size>
+    <continuous_list>
+      <start>917504</start>
+      <stop>983039</stop>
+    </continuous_list>
+  </bank>
+  <total_pixel_number>917504</total_pixel_number>
 </banking>
