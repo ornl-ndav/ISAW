@@ -2121,7 +2121,7 @@ public class Util {
                 " --mem-per-cpu=" + mem +
                 " --time=" + 20 +                  // no more than 20 minutes
                                                    // to find peaks in 1 det
-                " -J SCD_Find_Peaks -o " + result +  
+                " -J SCD_Integrate_Peaks -o " + result +  
                 cmd;    
           }
           else
