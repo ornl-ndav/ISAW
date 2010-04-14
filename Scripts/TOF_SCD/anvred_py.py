@@ -385,8 +385,24 @@ class anvred_py(GenericTOF_SCD):
         
     def getDocumentation( self):
         S =StringBuffer()
+        S.append("ANVRED reduces the raw intensities to relative structure factor amplitudes.")
         S.append("Inputs to anvred:\n")
-        S.append("@param  dMin  The minimum d-spac%ing")
+        S.append("@param directory_path: The working directory with all of the files.")
+        S.append("@param expName: The experiment name.")
+        S.append("@param  smu: The scattering linear absorption coefficient in cm^-1.")
+        S.append("@param  amu: The absorption linear absorption coefficient in cm^-1 at 1.* Angstroms. smu and amu can be 0.0 for no absorption correction;")
+        S.append("@param  radius: Radius of the spherical crystal in cm.")
+        S.append("@param  iSpec: If 1, the incident spectrum is fitted. If 2, use the raw spectrum.")
+        S.append("@param  specCoeffFile: If iSpec = 1, the file containing the fitted coefficients.")
+        S.append("@param  initBankNo: If iSpec = 2, the number of the first detector bank.")
+        S.append("@param  averageRange: If iSpec = 2, the +/- range of data points in the spectrum for averaging.")
+        S.append("@param  minIsigI: I/sigI threshold for saving a peak.")
+        S.append("@param  numBorderCh: width of border. Peaks in border are rejected.")
+        S.append("@param  ipkMin: minimum peak count at peak max.")
+        S.append("@param  dMin: The minimum d-spacing in Angstrom units.")
+        S.append("@param  iIQ: If iIQ = 1, a scale factor for each crystal setting. If iIQ = 2, a scale factor for each detector of each crystal setting.")
+        S.append("@param  scaleFactor: multiply Fsq and sigFsq by this factor.")
+        
         S.append("@return the number of peaks processed.")
         return S.toString()
 
