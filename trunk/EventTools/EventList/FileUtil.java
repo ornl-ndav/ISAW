@@ -430,6 +430,40 @@ public class FileUtil
 
 
   /**
+   *  Save the specified array of ints in the specified file IN PC FORMAT.
+   *
+   *  @param list     The array of ints to save.
+   *  @param filename The name of the file to write.
+   */
+  public static void SaveIntFile( int[] list, String filename )
+  {
+    if ( list == null )
+      throw new IllegalArgumentException("Array of doubles is null");
+
+    if ( filename == null )
+      throw new IllegalArgumentException("Filename String is NULL");
+
+    byte[] buffer = new byte[ 4 * list.length ];
+
+    for ( int i = 0; i < list.length; i++ )
+      setInt_32( list[i], buffer, 4*i );
+
+    try
+    {
+      RandomAccessFile r_file = new RandomAccessFile( filename, "rw" );
+      r_file.write( buffer );
+      r_file.close();
+    }
+    catch ( Exception ex )
+    {
+      System.out.println( ex );
+      ex.printStackTrace();
+      throw new IllegalArgumentException("Error writing file " + filename );
+    }
+  }
+
+
+  /**
    *  Get the integer values stored in the input file buffer and put the
    *  values into the proper positions in the event[] array.  
    *
@@ -706,7 +740,7 @@ public class FileUtil
   /**
    * Encode the double value into a sequeence of eight bytes in the buffer
    * starting at position i.  The eight bytes determining the double value 
-   * are stored in buffer in the sequence: b0, ... b7, with the lowest 
+   * are stored in the buffer in the sequence: b0, ... b7, with the lowest 
    * order byte, b0, first and the the highest order byte, b7, last.
    * NOTE: This method reverses the action of getDouble_64.
    *                    
@@ -763,6 +797,31 @@ public class FileUtil
 
 
   /**
+   * Encode the int value into a sequeence of fout bytes in the buffer
+   * starting at position i.  The four bytes determining the int value 
+   * are stored in buffer in the sequence: b0, ... b3, with the lowest 
+   * order byte, b0, first and the the highest order byte, b3, last.
+   *                    
+   * @param value  The int value to be stored in four successive bytes
+   *               of the buffer. 
+   *
+   * @param buffer The byte buffer where the bytes are to be stored.
+   *
+   * @param i      The index in the buffer where the first byte of the 
+   *               int should stored. 
+   */
+  public static void setInt_32( int value, byte[] buffer, int i )
+  {
+    for ( int count = 0; count < 4; count++ )
+    {
+      buffer[ i++ ] = (byte)(value & 0xFF);
+      value = value >> 8;
+    }
+  }
+
+
+
+  /**
    * Check that the specified name is the name of a file that exists and
    * can be read by the user.  Throw an exception if the file can't be
    * read.
@@ -792,6 +851,7 @@ public class FileUtil
    */
   public static void main(String[] args) throws Exception
   {
+/*
     byte[] buffer = new byte[8];
     setDouble_64( Math.PI, buffer, 0 );
     System.out.println( "Value from buffer = " + getDouble_64( buffer, 0 ) );
@@ -806,7 +866,7 @@ public class FileUtil
                           null,
                           null,
                          "MY_SNAP_Dspace_map_2.dat" );
-
+*/
 /*
     String[][] sns_inst = LoadSupportedSNS_InstrumentInfo();
     for ( int i = 0; i < sns_inst.length; i++ )
@@ -816,31 +876,46 @@ public class FileUtil
     for ( int i = 0; i < sns_names.length; i++ )
       System.out.println( sns_names[i] );
 */
-    String inst_name = "PG3";
+    String inst_name = "TOPAZ";
     String info_dir  = "/home/dennis/SNS_ISAW/ISAW_ALL/InstrumentInfo/SNS/";
            info_dir += inst_name + "/";
-//  String map_file  = info_dir + inst_name +"_TS.dat";
+    String map_file  = info_dir + inst_name +"_TS.dat";
 //  String bank_file = info_dir + inst_name +"_bank.xml";
 
     long start = System.nanoTime();
-/*
+
+    String identity_map_filename = "IdentityMapFile.dat";
+    int MAP_SIZE = 983039 + 1;
+    int[] identity_map = new int[MAP_SIZE];
+    for ( int i = 0; i < MAP_SIZE; i++ )
+      identity_map[i] = i;
+
+    SaveIntFile( identity_map, identity_map_filename );
+
+///*
     int[]   map = LoadIntFile( map_file );
     boolean all_match = true;
-    int     num_dont = 0;
+    int     num_dont    = 0;
+    int     num_shifted = 0;
+    int     shift       = 65536;
     for ( int i = 0; i < map.length; i++ )
+    {
       if ( i != map[i] )
       {
         all_match = false;
         num_dont++;
       }
-
+      if ( i+shift == map[i] )
+        num_shifted++;
+    }
     System.out.println("ALL MATCH = " + all_match );
     System.out.println("NUM NOT MATCHING = " + num_dont );
-    System.out.println("FILE SIZE = " + map.length );
+    System.out.println("NUM SHIFTED      = " + num_shifted );
+    System.out.println("FILE SIZE        = " + map.length );
 
     for ( int i = 0; i < 20; i++ )
       System.out.println("i, map[i] = " + i + ", " + map[i] );
-*/
+//*/
 
 /*
     int[] raw_ints = FileUtil.LoadIntFile( map_file );
