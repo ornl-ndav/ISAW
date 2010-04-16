@@ -51,11 +51,11 @@ public class positionInfoPanel extends JPanel
                                implements IReceiveMessage
 {
    public static final long    serialVersionUID = 1L;
-   //private MessageCenter       messageCenter;
+// private MessageCenter       messageCenter;
    private JTextField          countsTxt;
    private JTextField          detectorNumTxt;
    private JTextField          ColRowTxt;
-   private JTextField          histogramPageTxt;
+// private JTextField          histogramPageTxt;
    private JTextField          hklTxt;
    private JTextField          qxyzTxt;
    private JTextField          qTxt;
@@ -64,10 +64,15 @@ public class positionInfoPanel extends JPanel
    private JTextField          timeTxt;
    private JTextField          eTxt;
    private JTextField          wavelengthTxt;
+   private JTextField          projectedHKL_Txt;
+   private JTextField          psiTxt;
+   private JTextField          tiltTxt;
+
    private static String       ANG   = FontUtil.ANGSTROM;
    private static String       MU    = FontUtil.MU;
    private static String       DEG   = FontUtil.DEGREE; 
    private static String       THETA = FontUtil.THETA;
+   private static String       PSI   = FontUtil.PSI;
    
    /**
     * Builds the panel and adds everything to itself.
@@ -110,7 +115,7 @@ public class positionInfoPanel extends JPanel
    {
       JPanel panel = new JPanel();
       
-      panel.setLayout(new GridLayout(12, 2));
+      panel.setLayout(new GridLayout(14, 2));
       panel.setBorder(new TitledBorder("Position Info."));
       
       JTextField countLbl = new JTextField("Counts");
@@ -124,11 +129,11 @@ public class positionInfoPanel extends JPanel
       JTextField ColRowLbl = new JTextField("Column,Row");
       ColRowLbl.setEditable(false);
       ColRowLbl.setBackground(Color.WHITE);
-      
+/*      
       JTextField histogramLbl = new JTextField("Histogram Page");
       histogramLbl.setEditable(false);
       histogramLbl.setBackground(Color.WHITE);
-      
+*/      
       JTextField hklLbl = new JTextField("h,k,l");
       hklLbl.setEditable(false);
       hklLbl.setBackground(Color.WHITE);
@@ -149,7 +154,6 @@ public class positionInfoPanel extends JPanel
       twoThetaLbl.setEditable(false);
       twoThetaLbl.setBackground(Color.WHITE);
       
-      
       JTextField timeLbl = new JTextField("Time(" + MU + "s)");
       timeLbl.setEditable(false);
       timeLbl.setBackground(Color.WHITE);
@@ -161,6 +165,18 @@ public class positionInfoPanel extends JPanel
       JTextField wavelengthLbl = new JTextField("Wavelength(" + ANG + ")");
       wavelengthLbl.setEditable(false);
       wavelengthLbl.setBackground(Color.WHITE);
+
+      JTextField projectedHKL_Lbl = new JTextField("Projected HKL");
+      projectedHKL_Lbl.setEditable(false);
+      projectedHKL_Lbl.setBackground(Color.WHITE);
+
+      JTextField psiLbl = new JTextField( PSI+"("+DEG+")");
+      psiLbl.setEditable(false);
+      psiLbl.setBackground(Color.WHITE);
+
+      JTextField tiltLbl = new JTextField("Tilt(" + DEG + ")");
+      tiltLbl.setEditable(false);
+      tiltLbl.setBackground(Color.WHITE);
       
       countsTxt = new JTextField("0");
       countsTxt.setEditable(false);
@@ -181,12 +197,12 @@ public class positionInfoPanel extends JPanel
       detectorNumTxt.setEditable(false);
       detectorNumTxt.setBackground(Color.WHITE);
       detectorNumTxt.setHorizontalAlignment(JTextField.RIGHT);
-      
+/*      
       histogramPageTxt = new JTextField("0");
       histogramPageTxt.setEditable(false);
       histogramPageTxt.setBackground(Color.WHITE);
       histogramPageTxt.setHorizontalAlignment(JTextField.RIGHT);
-      
+*/      
       hklTxt = new JTextField("(  0.00,   0.00,   0.00)");
       hklTxt.setEditable(false);
       hklTxt.setBackground(Color.WHITE);
@@ -228,14 +244,30 @@ public class positionInfoPanel extends JPanel
       wavelengthTxt.setBackground(Color.WHITE);
       wavelengthTxt.setHorizontalAlignment(JTextField.RIGHT);
       
+      projectedHKL_Txt = new JTextField("(  0.000,   0.000,   0.000)");
+      projectedHKL_Txt.setEditable(false);
+      projectedHKL_Txt.setBackground(Color.WHITE);
+      projectedHKL_Txt.setHorizontalAlignment(JTextField.RIGHT);
+
+      psiTxt = new JTextField("0.000");
+      psiTxt.setEditable(false);
+      psiTxt.setBackground(Color.WHITE);
+      psiTxt.setHorizontalAlignment(JTextField.RIGHT);
+
+      tiltTxt = new JTextField("0.000");
+      tiltTxt.setEditable(false);
+      tiltTxt.setBackground(Color.WHITE);
+      tiltTxt.setHorizontalAlignment(JTextField.RIGHT);
+
+
       panel.add(countLbl);
       panel.add(countsTxt);
       panel.add(detectorLbl);
       panel.add(detectorNumTxt);
       panel.add(ColRowLbl);
       panel.add(ColRowTxt);
-      panel.add(histogramLbl);
-      panel.add(histogramPageTxt);
+//    panel.add(histogramLbl);
+//    panel.add(histogramPageTxt);
       panel.add(hklLbl);
       panel.add(hklTxt);
       panel.add(qxyzLbl);
@@ -252,6 +284,12 @@ public class positionInfoPanel extends JPanel
       panel.add(eTxt);
       panel.add(wavelengthLbl);
       panel.add(wavelengthTxt);
+      panel.add(projectedHKL_Lbl);
+      panel.add(projectedHKL_Txt);
+      panel.add(psiLbl);
+      panel.add(psiTxt);
+      panel.add(tiltLbl);
+      panel.add(tiltTxt);
       
       return panel;
    }
@@ -268,20 +306,30 @@ public class positionInfoPanel extends JPanel
    {
       countsTxt.setText( "" + String.format( "%4.2f" , selection.getCounts() ));
       detectorNumTxt.setText( "" + (int)selection.getDetNum() );
-      ColRowTxt.setText( "("+(int)selection.getCol()+", "+(int)selection.getRow()+")" );
-      histogramPageTxt.setText( "" + (int)selection.getHistPage() );
+      ColRowTxt.setText( "("+(int)selection.getCol()+
+                         ", "+(int)selection.getRow()+")" );
+//    histogramPageTxt.setText( "" + (int)selection.getHistPage() );
       hklTxt.setText( String.format("(%6.2f, %6.2f, %6.2f)",
-            selection.getHKL().getX(), selection.getHKL().getY(),
-            selection.getHKL().getZ()) );
+                                       selection.getHKL().getX(), 
+                                       selection.getHKL().getY(),
+                                       selection.getHKL().getZ()) );
       qxyzTxt.setText( String.format("(%6.2f, %6.2f, %6.2f)",
-            selection.getQxyz().getX(), selection.getQxyz().getY(),
-            selection.getQxyz().getZ()) );
+                                       selection.getQxyz().getX(), 
+                                       selection.getQxyz().getY(),
+                                       selection.getQxyz().getZ()) );
       qTxt.setText( String.format("%7.4f", selection.getRaw_Q()) );
       dSpacingTxt.setText( String.format("%8.6f", selection.getD_spacing()) );
-      twoThetaTxt.setText( String.format("%8.6f", selection.getTwo_theta( )*180/Math.PI) );
+      twoThetaTxt.setText( 
+               String.format("%8.6f", selection.getTwo_theta( )*180/Math.PI) );
       timeTxt.setText( String.format("%6.1f", selection.getTof()) );
       eTxt.setText( String.format("%7.4f", selection.getE_mev()) );
-      wavelengthTxt.setText( String.format("%8.6f", selection.getWavelength()) );
+      wavelengthTxt.setText( String.format("%8.6f", selection.getWavelength()));
+      projectedHKL_Txt.setText( String.format("(%6.3f, %6.3f, %6.3f)",
+                                       selection.getProjectedHKL().getX(), 
+                                       selection.getProjectedHKL().getY(),
+                                       selection.getProjectedHKL().getZ()) );
+      psiTxt.setText ( String.format("%7.3f", selection.getPSI()) );
+      tiltTxt.setText( String.format("%7.3f", selection.getTilt()) );
    }
    
    /**

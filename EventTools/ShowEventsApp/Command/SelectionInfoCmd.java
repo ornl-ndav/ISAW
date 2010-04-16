@@ -19,6 +19,11 @@ public class SelectionInfoCmd
    private float tof;
    private float e_mev;
    private float wavelength;
+
+   private Vector3D projected_hkl;
+   private float    psi_deg;
+   private float    tilt_deg;
+
    
    public SelectionInfoCmd( float    counts,
                             int      det_num,
@@ -47,6 +52,10 @@ public class SelectionInfoCmd
       this.tof        = tof;
       this.e_mev      = e_mev;
       this.wavelength = wavelength;
+
+      this.projected_hkl = new Vector3D();
+      this.psi_deg       = 0.0f;
+      this.tilt_deg      = 0.0f;
    }
 
    
@@ -131,6 +140,35 @@ public class SelectionInfoCmd
       return wavelength;
    }
 
+   public Vector3D getProjectedHKL()
+   {
+      return new Vector3D( projected_hkl );
+   }
+
+   public void setProjectedHKL( Vector3D projected_hkl )
+   {
+      this.projected_hkl = new Vector3D( projected_hkl ); 
+   }
+
+   public float getPSI()
+   {
+      return psi_deg;
+   }
+
+   public void setPSI( float psi_deg )
+   {
+     this.psi_deg = psi_deg;
+   }
+
+   public float getTilt()
+   {
+      return tilt_deg;
+   }
+
+   public void setTilt( float tilt_deg )
+   {
+     this.tilt_deg = tilt_deg;
+   }
 
    public String toString()
    {
@@ -144,6 +182,9 @@ public class SelectionInfoCmd
              "\n2 theta     : " + getTwo_theta() + 
              "\nTOF         : " + getTof() + 
              "\nE(mev)      : " + getE_mev() + 
-             "\nWavelength  : " + getWavelength(); 
+             "\nWavelength  : " + getWavelength() +
+             "\nProj HKL    : " + getProjectedHKL() +
+             "\nPSI(deg)    : " + getPSI() +
+             "\nTilt(deg)   : " + getTilt(); 
    }
 }

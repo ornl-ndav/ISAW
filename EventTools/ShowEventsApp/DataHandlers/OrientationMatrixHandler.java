@@ -316,9 +316,20 @@ public class OrientationMatrixHandler implements IReceiveMessage
   }
 
 
+  /**
+   *  Add information for orienting single crystals on ARCS, to the 
+   *  SelectionInfoCmd.
+   */ 
   private void set_projected_HKL_info( SelectionInfoCmd select_info_cmd )
   {
     Vector3D hkl  = select_info_cmd.getHKL();    
+    
+    if ( hkl.getX() == 0 && hkl.getY() == 0 && hkl.getZ() == 0 )
+    {
+       System.out.println("NO HKL CHOOSEN");
+       return;
+    }
+
     float[] exact_hkl = new float[3];
 
     exact_hkl[0] = Math.round(hkl.getX()); 
@@ -345,9 +356,14 @@ public class OrientationMatrixHandler implements IReceiveMessage
     System.out.printf( "Projected HKL  = %6.3f  %6.3f  %6.3f\n",
                         projected_hkl[0], projected_hkl[1], projected_hkl[2]);
 
+    select_info_cmd.setProjectedHKL( new Vector3D( projected_hkl ) );
+
     double psi = Math.atan2( projected_qxyz[1], projected_qxyz[0] );
     double psi_deg = psi * 180 / Math.PI;
+
     System.out.printf( "PSI(deg) = %9.3f\n", psi_deg );
+
+    select_info_cmd.setPSI( (float)psi_deg );
 
     Vector3D new_qxyz = new Vector3D( exact_qxyz );
     if ( last_qxyz != null )
@@ -362,6 +378,7 @@ public class OrientationMatrixHandler implements IReceiveMessage
         double tilt     = Math.acos( cross_prod.getZ() );
         double tilt_deg = tilt * 180 / Math.PI;
         System.out.printf("Tilt(deg) = %8.4f\n", tilt_deg );
+        select_info_cmd.setTilt( (float)tilt_deg );
       }
     }
     last_qxyz = new_qxyz;
