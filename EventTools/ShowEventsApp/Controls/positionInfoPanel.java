@@ -118,147 +118,38 @@ public class positionInfoPanel extends JPanel
       panel.setLayout(new GridLayout(14, 2));
       panel.setBorder(new TitledBorder("Position Info."));
       
-      JTextField countLbl = new JTextField("Counts");
-      countLbl.setEditable(false);
-      countLbl.setBackground(Color.WHITE);
-      
-      JTextField detectorLbl = new JTextField("Detector Number");
-      detectorLbl.setEditable(false);
-      detectorLbl.setBackground(Color.WHITE);
-      
-      JTextField ColRowLbl = new JTextField("Column,Row");
-      ColRowLbl.setEditable(false);
-      ColRowLbl.setBackground(Color.WHITE);
-/*      
-      JTextField histogramLbl = new JTextField("Histogram Page");
-      histogramLbl.setEditable(false);
-      histogramLbl.setBackground(Color.WHITE);
-*/      
-      JTextField hklLbl = new JTextField("h,k,l");
-      hklLbl.setEditable(false);
-      hklLbl.setBackground(Color.WHITE);
-      
-      JTextField qxyzLbl = new JTextField("Qx,Qy,Qz");
-      qxyzLbl.setEditable(false);
-      qxyzLbl.setBackground(Color.WHITE);
-      
-      JTextField qLbl = new JTextField("Q(Inv(" + ANG + "))");
-      qLbl.setEditable(false);
-      qLbl.setBackground(Color.WHITE);
-      
-      JTextField dSpacingLbl = new JTextField("d-Spacing(" + ANG + ")");
-      dSpacingLbl.setEditable(false);
-      dSpacingLbl.setBackground(Color.WHITE);   
-      
-      JTextField twoThetaLbl = new JTextField("2"+THETA+"("+DEG+")");
-      twoThetaLbl.setEditable(false);
-      twoThetaLbl.setBackground(Color.WHITE);
-      
-      JTextField timeLbl = new JTextField("Time(" + MU + "s)");
-      timeLbl.setEditable(false);
-      timeLbl.setBackground(Color.WHITE);
-      
-      JTextField eLbl = new JTextField("E(meV)");
-      eLbl.setEditable(false);
-      eLbl.setBackground(Color.WHITE);
-      
-      JTextField wavelengthLbl = new JTextField("Wavelength(" + ANG + ")");
-      wavelengthLbl.setEditable(false);
-      wavelengthLbl.setBackground(Color.WHITE);
-
+      JTextField countLbl         = new JTextField("Counts");
+      JTextField detectorLbl      = new JTextField("Detector Number");
+      JTextField ColRowLbl        = new JTextField("Column,Row");
+//    JTextField histogramLbl     = new JTextField("Histogram Page");
+      JTextField hklLbl           = new JTextField("h,k,l");
+      JTextField qxyzLbl          = new JTextField("Qx,Qy,Qz");
+      JTextField qLbl             = new JTextField("Q(Inv(" + ANG + "))");
+      JTextField dSpacingLbl      = new JTextField("d-Spacing(" + ANG + ")");
+      JTextField twoThetaLbl      = new JTextField("2"+THETA+"("+DEG+")");
+      JTextField timeLbl          = new JTextField("Time(" + MU + "s)");
+      JTextField eLbl             = new JTextField("E(meV)");
+      JTextField wavelengthLbl    = new JTextField("Wavelength(" + ANG + ")");
       JTextField projectedHKL_Lbl = new JTextField("Projected HKL");
-      projectedHKL_Lbl.setEditable(false);
-      projectedHKL_Lbl.setBackground(Color.WHITE);
-
-      JTextField psiLbl = new JTextField( PSI+"("+DEG+")");
-      psiLbl.setEditable(false);
-      psiLbl.setBackground(Color.WHITE);
-
-      JTextField tiltLbl = new JTextField("Tilt(" + DEG + ")");
-      tiltLbl.setEditable(false);
-      tiltLbl.setBackground(Color.WHITE);
+      JTextField psiLbl           = new JTextField( PSI+"("+DEG+")");
+      JTextField tiltLbl          = new JTextField("Tilt(" + DEG + ")");
       
-      countsTxt = new JTextField("0");
-      countsTxt.setEditable(false);
-      countsTxt.setBackground(Color.WHITE);
-      countsTxt.setHorizontalAlignment(JTextField.RIGHT);
-      
-      detectorNumTxt = new JTextField("0");
-      detectorNumTxt.setEditable(false);
-      detectorNumTxt.setBackground(Color.WHITE);
-      detectorNumTxt.setHorizontalAlignment(JTextField.RIGHT);
-      
-      ColRowTxt = new JTextField("(  0,  0)");
-      ColRowTxt.setEditable(false);
-      ColRowTxt.setBackground(Color.WHITE);
-      ColRowTxt.setHorizontalAlignment(JTextField.RIGHT);
-      
-      detectorNumTxt = new JTextField("0");
-      detectorNumTxt.setEditable(false);
-      detectorNumTxt.setBackground(Color.WHITE);
-      detectorNumTxt.setHorizontalAlignment(JTextField.RIGHT);
-/*      
-      histogramPageTxt = new JTextField("0");
-      histogramPageTxt.setEditable(false);
-      histogramPageTxt.setBackground(Color.WHITE);
-      histogramPageTxt.setHorizontalAlignment(JTextField.RIGHT);
-*/      
-      hklTxt = new JTextField("(  0.00,   0.00,   0.00)");
-      hklTxt.setEditable(false);
-      hklTxt.setBackground(Color.WHITE);
-      hklTxt.setHorizontalAlignment(JTextField.RIGHT);
-      
-      qxyzTxt = new JTextField("(  0.00,   0.00,   0.00)");
-      qxyzTxt.setEditable(false);
-      qxyzTxt.setBackground(Color.WHITE);
-      qxyzTxt.setHorizontalAlignment(JTextField.RIGHT);
-      
-      qTxt = new JTextField(" 0.0000");
-      qTxt.setEditable(false);
-      qTxt.setBackground(Color.WHITE);
-      qTxt.setHorizontalAlignment(JTextField.RIGHT);
-      
-      dSpacingTxt = new JTextField(" 0.0000000");
-      dSpacingTxt.setEditable(false);
-      dSpacingTxt.setBackground(Color.WHITE);
-      dSpacingTxt.setHorizontalAlignment(JTextField.RIGHT);
-      
-      twoThetaTxt = new JTextField(" 0.0000000");
-      twoThetaTxt.setEditable(false);
-      twoThetaTxt.setBackground(Color.WHITE);
-      twoThetaTxt.setHorizontalAlignment(JTextField.RIGHT);
-      
-      
-      timeTxt = new JTextField("   0.0");
-      timeTxt.setEditable(false);
-      timeTxt.setBackground(Color.WHITE);
-      timeTxt.setHorizontalAlignment(JTextField.RIGHT);
-      
-      eTxt = new JTextField(" 0.0000");
-      eTxt.setEditable(false);
-      eTxt.setBackground(Color.WHITE);
-      eTxt.setHorizontalAlignment(JTextField.RIGHT);
-      
-      wavelengthTxt = new JTextField("0.000000");
-      wavelengthTxt.setEditable(false);
-      wavelengthTxt.setBackground(Color.WHITE);
-      wavelengthTxt.setHorizontalAlignment(JTextField.RIGHT);
-      
+      countsTxt        = new JTextField("0");
+      detectorNumTxt   = new JTextField("0");
+      ColRowTxt        = new JTextField("(  0,  0)");
+      detectorNumTxt   = new JTextField("0");
+//    histogramPageTxt = new JTextField("0");
+      hklTxt           = new JTextField("(  0.00,   0.00,   0.00)");
+      qxyzTxt          = new JTextField("(  0.00,   0.00,   0.00)");
+      qTxt             = new JTextField(" 0.0000");
+      dSpacingTxt      = new JTextField(" 0.0000000");
+      twoThetaTxt      = new JTextField(" 0.0000000");
+      timeTxt          = new JTextField("   0.0");
+      eTxt             = new JTextField(" 0.0000");
+      wavelengthTxt    = new JTextField("0.000000");
       projectedHKL_Txt = new JTextField("(  0.000,   0.000,   0.000)");
-      projectedHKL_Txt.setEditable(false);
-      projectedHKL_Txt.setBackground(Color.WHITE);
-      projectedHKL_Txt.setHorizontalAlignment(JTextField.RIGHT);
-
-      psiTxt = new JTextField("0.000");
-      psiTxt.setEditable(false);
-      psiTxt.setBackground(Color.WHITE);
-      psiTxt.setHorizontalAlignment(JTextField.RIGHT);
-
-      tiltTxt = new JTextField("0.000");
-      tiltTxt.setEditable(false);
-      tiltTxt.setBackground(Color.WHITE);
-      tiltTxt.setHorizontalAlignment(JTextField.RIGHT);
-
+      psiTxt           = new JTextField("0.000");
+      tiltTxt          = new JTextField("0.000");
 
       panel.add(countLbl);
       panel.add(countsTxt);
@@ -291,6 +182,16 @@ public class positionInfoPanel extends JPanel
       panel.add(tiltLbl);
       panel.add(tiltTxt);
       
+      Component[] components = panel.getComponents();
+      for ( int i = 0; i < components.length; i++ )
+      {
+        JTextField tf = (JTextField)components[i];
+        tf.setEditable(false);
+        tf.setBackground(Color.WHITE);
+        if ( i % 2 == 1 )
+          tf.setHorizontalAlignment(JTextField.RIGHT);
+      }
+
       return panel;
    }
    
