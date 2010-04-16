@@ -108,6 +108,9 @@ public class PyScript extends Script{
     String line=null;
     for( int i=0 ; i<numLines ; i++ ){
       line=this.getLine(i);
+      /*if( line != null)
+         line = line.trim( );
+         */
       if(line==null || line.length()<=0 || line.equals("\n")){
         continue;
       }else if(line.startsWith(" ")){
@@ -210,7 +213,17 @@ public class PyScript extends Script{
   }
 
   public static ParseError generateError(PyException pyexcep, String filename){
-    String dumpStack=pyexcep.traceback.dumpStack();
+     
+    String dumpStack="empty"; 
+    int lineNo = -1;
+    if( pyexcep.traceback != null)
+    {
+       dumpStack = pyexcep.traceback.dumpStack();
+       lineNo=pyexcep.traceback.tb_lineno-1;
+    }
+    
+    
+   
     if(filename!=null && filename.length()>0){
       int index=dumpStack.indexOf("<string>");
       if(index>=0)
@@ -218,7 +231,7 @@ public class PyScript extends Script{
                                                  +dumpStack.substring(index+8);
     }
     ParseError pe=new ParseError("Err Type/String="+pyexcep.type+",value="+pyexcep.value+
-           "\nstack Dump="+dumpStack,pyexcep.traceback.tb_lineno-1);
+           "\nstack Dump="+dumpStack,lineNo);
     return pe;
   }
 
