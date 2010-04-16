@@ -893,6 +893,7 @@ public class FileUtil
     SaveIntFile( identity_map, identity_map_filename );
 
 ///*
+    System.out.println("Results for " + map_file );
     int[]   map = LoadIntFile( map_file );
     boolean all_match = true;
     int     num_dont    = 0;
