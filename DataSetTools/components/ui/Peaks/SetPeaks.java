@@ -565,7 +565,7 @@ public class SetPeaks extends JButton
                      if ( i < 3 )
                         for( int j = 0 ; j < 3 ; j++ )
                            hklVals[i][j] = Float.NaN;
-                     SelectedPeaks[i] = Peaks.elementAt( seqN[i] ).getUnrotQ( );
+                     SelectedPeaks[i] = Peaks.elementAt( seqN[i]-1 ).getUnrotQ( );
                   } else
                   {
 
