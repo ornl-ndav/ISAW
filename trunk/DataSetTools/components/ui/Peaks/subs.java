@@ -122,7 +122,7 @@ public class subs
       }
       Res +=u.table();
       Res +=u.row();
-      for( int i = 0 ; i < 6 ; i++ )
+      for( int i = 0 ; i < Math.max( XtalParams.length , 6 ) ; i++ )
       {
          
          Res += String.format( "%10.4f" , XtalParams[ i ] );
@@ -133,16 +133,16 @@ public class subs
       Res +=u.rowEnd();
      
       Res += u.row();
-      for( int i = 0 ; i < 6 ; i++ )
+      for( int i = 0 ; i < Math.max( XtalParams.length , 6 ) ; i++ )
          if( errs != null && errs.length > i )
          {   
             Res += String.format( "%10.4f" , errs[ i ] );
-            if( i < 5)
+            if( i <  Math.max( XtalParams.length , 6 )-1)
                Res +=u.col();
          }else
          {   
             Res += String.format( "%10.4f" , 0f );
-            if( i < 5)
+            if( i <  Math.max( XtalParams.length , 6 )-1)
                Res +=u.col();
             
          }
@@ -758,8 +758,8 @@ public class subs
       Q_n.cross( new Vector3D( Q2 ) );
       q_n.cross( new Vector3D( q2 ) );
       
-      //Q_n.normalize();
-     // q_n.normalize();
+    // Q_n.normalize();
+    // q_n.normalize();
       
       Vector3D Qy = new Vector3D( Q1 );
       Vector3D qy = new Vector3D( q1 );
@@ -767,8 +767,8 @@ public class subs
       Qy.cross( Q_n );
       qy.cross( q_n );
 
-     // Q0.normalize( );
-      //Qy.normalize( );
+      //Q0.normalize( );
+     // Qy.normalize( );
      // Q_n.normalize( );
       float[][] M2I = new float[ 3 ][ 3 ];
       M2I[ 0 ] = Q0.get();
@@ -780,9 +780,9 @@ public class subs
       if( ! M_to_I.invert() )
          return null;
       
-     // q0.normalize( );
-     // qy.normalize( );
-     // q_n.normalize( );
+     //q0.normalize( );
+     //qy.normalize( );
+     //q_n.normalize( );
       float[][] m2I = new float[ 3 ][ 3 ];
       m2I[ 0 ] = q0.get();
       m2I[ 1 ] = qy.get();
