@@ -254,8 +254,16 @@ public class Script extends Object{
       index=0;
       linenum[0]=0;
       for( int i=1 ; i<=linecount ; i++ ){
-        index=this.script.indexOf("\n",index+1);
-        this.linenum[i]=index+1;
+         if( script.charAt( linenum[i-1])=='\n')//blank line
+         {
+            this.linenum[i]=linenum[i-1]+1;
+            index++;
+         }
+         else
+         {
+           index=this.script.indexOf("\n",index+1);
+           this.linenum[i]=index+1;
+         }
       }
     }else{
       for( int i=0 ; i<=linecount ; i++ )
