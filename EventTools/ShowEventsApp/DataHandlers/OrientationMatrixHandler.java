@@ -69,6 +69,9 @@ public class OrientationMatrixHandler implements IReceiveMessage
 
   private MessageCenter message_center;
   private float[][]     orientation_matrix = null;
+  private Vector3D      last_qxyz = null;          // last choice of qxyz
+                                                   // "near" horizontal plane
+                                                   // for ARCS
 
   public OrientationMatrixHandler( MessageCenter message_center )
   {
@@ -99,7 +102,7 @@ public class OrientationMatrixHandler implements IReceiveMessage
     else if ( message.getName().equals(Commands.GET_ORIENTATION_MATRIX) )
     {
       Message mat_message = new Message( Commands.SET_ORIENTATION_MATRIX,
-                                        orientation_matrix,
+                                         orientation_matrix,
                                         true );
       message_center.send( mat_message );
     } 
@@ -160,6 +163,8 @@ public class OrientationMatrixHandler implements IReceiveMessage
           Vector3D qxyz = select_info_cmd.getQxyz();
           Vector3D hkl  = Calc_hkl( qxyz.get(), orientation_matrix );
           select_info_cmd.setHKL( hkl );
+
+          set_projected_HKL_info( select_info_cmd );
         }
         Message new_mess = new Message( Commands.SHOW_SELECTED_POINT_INFO,
                                         select_info_cmd,
@@ -311,4 +316,54 @@ public class OrientationMatrixHandler implements IReceiveMessage
   }
 
 
+  private void set_projected_HKL_info( SelectionInfoCmd select_info_cmd )
+  {
+    Vector3D hkl  = select_info_cmd.getHKL();    
+    float[] exact_hkl = new float[3];
+
+    exact_hkl[0] = Math.round(hkl.getX()); 
+    exact_hkl[1] = Math.round(hkl.getY()); 
+    exact_hkl[2] = Math.round(hkl.getZ()); 
+
+    System.out.printf( "Exact HKL  = %6.1f  %6.1f  %6.1f\n",
+                        exact_hkl[0], exact_hkl[1], exact_hkl[2]);
+  
+    float[][] or_mat     = LinearAlgebra.getTranspose( orientation_matrix );
+    float[][] or_mat_inv = LinearAlgebra.getInverse( or_mat );
+    
+    float[] exact_qxyz = LinearAlgebra.mult( or_mat, exact_hkl );
+
+    System.out.printf( "Exact Qxyz = %6.3f  %6.3f  %6.3f\n",
+                        exact_qxyz[0], exact_qxyz[1], exact_qxyz[2]);
+
+    float[] projected_qxyz = { exact_qxyz[0], exact_qxyz[1], 0 };
+    float[] projected_hkl  = LinearAlgebra.mult( or_mat_inv, projected_qxyz );
+
+    System.out.printf( "Projected Qxyz = %6.3f  %6.3f  %6.3f\n",
+                      projected_qxyz[0], projected_qxyz[1], projected_qxyz[2]);
+
+    System.out.printf( "Projected HKL  = %6.3f  %6.3f  %6.3f\n",
+                        projected_hkl[0], projected_hkl[1], projected_hkl[2]);
+
+    double psi = Math.atan2( projected_qxyz[1], projected_qxyz[0] );
+    double psi_deg = psi * 180 / Math.PI;
+    System.out.printf( "PSI(deg) = %9.3f\n", psi_deg );
+
+    Vector3D new_qxyz = new Vector3D( exact_qxyz );
+    if ( last_qxyz != null )
+    {
+      Vector3D cross_prod = new Vector3D();
+      cross_prod.cross( new_qxyz, last_qxyz );
+      if ( cross_prod.length() > 0 )
+      {
+        cross_prod.normalize();
+        if ( cross_prod.getZ() < 0 )
+          cross_prod.multiply( -1 );
+        double tilt     = Math.acos( cross_prod.getZ() );
+        double tilt_deg = tilt * 180 / Math.PI;
+        System.out.printf("Tilt(deg) = %8.4f\n", tilt_deg );
+      }
+    }
+    last_qxyz = new_qxyz;
+  }
 }
