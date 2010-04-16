@@ -229,6 +229,7 @@ import IsawGUI.*;
 
 import gov.anl.ipns.Util.Messaging.*;
 import gov.anl.ipns.Util.Sys.*;
+import gov.anl.ipns.ViewTools.Panels.GraphTagFrame;
 import gov.anl.ipns.ViewTools.UI.*;
 
 import java.awt.*;
@@ -273,6 +274,8 @@ public class CommandPane extends JPanel implements PropertyChangeListener,
   PropertyChangeSupport PC;
   IObserverList IObslist;
   Vector DSList;
+  OpenFileToDocListener Opn = null;
+  SaveDocToFileListener Sav  = null;
 
   //~ Constructors *************************************************************
 
@@ -280,6 +283,7 @@ public class CommandPane extends JPanel implements PropertyChangeListener,
    * Creates the JPanel for editing and executing scripts
    */
   public CommandPane(  ) {
+    super();
     PC         = new PropertyChangeSupport( this );
     IObslist   = new IObserverList(  );
     initt(  );
@@ -492,9 +496,9 @@ public class CommandPane extends JPanel implements PropertyChangeListener,
    */
   public static void main( String[] args ) {
     new SharedData(  );
-    JFrame F;
+    FinishJFrame F;
     CommandPane P;
-    F   = new JFrame( "Command Pane" );
+    F   = new FinishJFrame( "Command Pane" );
     P   = new CommandPane(  );
 
     Dimension D = P.getToolkit(  )
@@ -731,14 +735,25 @@ public class CommandPane extends JPanel implements PropertyChangeListener,
     Immediate.addKeyListener( new MyKeyListener( this ) );
     Commands.setCaret( new MyCursor(  ) );
     Immediate.setCaret( new MyCursor(  ) );
-    CommandSP = new JScrollPane( Commands );
+    JLabel LineNum = new JLabel("line number 0");
+    CommandSP = new CommandHolder( Commands , LineNum);
     CommandSP.setBorder( new TitledBorder( "Prgm Editor" ) );
 
+    JPanel CommandWstat= new JPanel();
+    CommandWstat.setLayout(  new BorderLayout() );
+    CommandWstat.add( CommandSP, BorderLayout.CENTER );
+    JPanel status = new JPanel();
+    BoxLayout bl = new BoxLayout(status, BoxLayout.X_AXIS );
+    status.setLayout( bl );
+    status.add(  Box.createHorizontalGlue( ) );
+    status.add(LineNum);
+    CommandWstat.add(  status, BorderLayout.SOUTH )
+    ;
     JScrollPane Y = new JScrollPane( Immediate );
     Y.setBorder( new TitledBorder( "Immediate" ) );
 
     SplitPaneWithState JPS = new SplitPaneWithState( 
-        JSplitPane.VERTICAL_SPLIT, CommandSP, Y, .75f );
+        JSplitPane.VERTICAL_SPLIT, CommandWstat, Y, .75f );
     add( JPS, BorderLayout.CENTER );
 
     try {
@@ -756,9 +771,9 @@ public class CommandPane extends JPanel implements PropertyChangeListener,
       }
     }
 
-    OpenFileToDocListener Opn = new OpenFileToDocListener( 
+    Opn = new OpenFileToDocListener( 
         Commands.getDocument(  ), FilePath );
-    SaveDocToFileListener Sav = new SaveDocToFileListener( 
+    Sav = new SaveDocToFileListener( 
         Commands.getDocument(  ), FilePath, Opn, "filename" );
     Opn.addPropertyChangeListener( Sav );
     Opn.addPropertyChangeListener( this );
@@ -769,6 +784,8 @@ public class CommandPane extends JPanel implements PropertyChangeListener,
     Save.addActionListener( Sav );
     DSList = new Vector(  );
   }
+  
+  
 
   //~ Inner Classes ************************************************************
 
@@ -1214,4 +1231,126 @@ public class CommandPane extends JPanel implements PropertyChangeListener,
   }
 
   //End mouseAdapter 
+  
+  class CommandHolder   extends JScrollPane implements MouseListener, MouseMotionListener
+  {
+     JTextArea comp;
+     FinishJFrame Pop = null;
+     JLabel LineNumShow;
+     boolean first = true;
+     public CommandHolder( JTextArea comp, JLabel LineNumShow)
+     {
+        super( comp);
+        this.comp = comp;
+        this.LineNumShow = LineNumShow;
+        if( LineNumShow != null )
+           first = false;
+        comp.addMouseListener( this );
+     }
+     
+    private  void removePop( )
+    {
+       if( Pop != null)
+       {
+          Pop.removeAll( );
+          Pop.dispose( );
+          Pop= null;
+       }
+    }
+   @Override
+   public void mouseClicked(MouseEvent evt)
+   {
+      if( first )
+      {
+         JOptionPane.showMessageDialog(null,
+               "Double click a line to see the line number");
+         first = false;
+         return;
+      }
+      if( evt.getClickCount( ) < 2 && LineNumShow == null)
+         return;
+      
+      Point P = evt.getPoint( );
+      int DocPos = comp.viewToModel( P );
+     
+      int p;
+      Element Eline = null;
+      Document doc  = comp.getDocument(  );
+      Element E     = doc.getDefaultRootElement(  );
+      boolean found = false;
+      int line =0;
+      for( line=0; line < E.getElementCount() && !found; )
+      {
+         Eline   = E.getElement( line );
+        
+        if( DocPos < Eline.getEndOffset(  ))
+           found = true;       
+        else
+           line++;
+         
+      }
+
+     removePop();
+         
+   
+      
+      if( LineNumShow != null)
+      {
+         LineNumShow.setText( "line number is "+(line+1) );
+         return;
+      }
+      JTextField tf = new JTextField("line number is "+(line+1));
+      Pop = new FinishJFrame();
+      Pop.getContentPane().setLayout( new GridLayout(1,1) );
+      P = GraphTagFrame.getPositionAbs( comp );
+      Dimension D = comp.getSize( );
+      System.out.println("P,D="+P+","+D);
+      Pop.setBounds(P.x+D.width/2 ,P.y+D.height/2,150,100 );
+      Pop.getContentPane( ).add(tf);
+      WindowShower.show( Pop );
+      //comp.requestFocus( );
+      
+    }
+
+   @Override
+   public void mouseEntered(MouseEvent arg0)
+   {
+      removePop();
+      }
+
+   @Override
+   public void mouseExited(MouseEvent arg0)
+   {
+      removePop();   }
+
+   @Override
+   public void mousePressed(MouseEvent arg0)
+   {
+
+      removePop();   }
+
+   @Override
+   public void mouseReleased(MouseEvent arg0)
+   {
+      removePop();   }
+
+
+   @Override
+   public void mouseDragged(MouseEvent arg0)
+   {
+      removePop();      
+   }
+
+
+   @Override
+   public void mouseMoved(MouseEvent arg0)
+   {
+
+      removePop();
+     
+      
+   }
+     
+     
+  }
 }
