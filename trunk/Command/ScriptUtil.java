@@ -513,12 +513,33 @@ public class ScriptUtil{
   public static Object ExecuteCommand( String CommandName, Object[] args)
                                    
   {
+     try
+     {
+        
      GenericOperator op = ScriptUtil.getOperator( CommandName, args);
      return op.getResult( );
+     }catch( Throwable ss)
+     {
+      String[] Exceptions = ScriptUtil.GetExceptionStackInfo( ss , true , 3 );
+      String Res = "Error "+ ss.toString( );
+      if( Exceptions != null && Exceptions.length > 0)
+      {
+         Res +="\n"+ Exceptions[0];
+      }
+      return new ErrorString( Res );  
+     }
      
   }
   
-  
+  public static Object ExecuteCommandList( String CommandName, Object ... args)
+  {
+     Object[] Args = new Object[args.length];
+     
+     for( int i=0; i< args.length; i++)
+        Args[i]= args[i];
+     
+     return ExecuteCommand( CommandName, Args);
+  }
   /**
    * Executes a DataSet command with arguments.
    * @param CommandName   The name of the command
@@ -606,6 +627,7 @@ public class ScriptUtil{
     // determine how much to copy into the operator
     int num_param=operator.getNum_parameters();
     int num_vals=0;
+    
     if(param_vals!=null) num_vals=param_vals.length;
     if(num_vals>num_param)
       throw new IndexOutOfBoundsException("too many values for the number of "
@@ -615,11 +637,17 @@ public class ScriptUtil{
     // copy over the values into the parameters
     
     IParameter param=null;
-    for( int i=0 ; i<max ; i++ ){
+    for( int i=0 ; i<max ; i++ )
+    try
+    {
       param=operator.getParameter(i);
+      
       if(param instanceof IParameterGUI){
+         
           param.setValue(param_vals[i]);
+          
       }else{
+         
         Object value=param.getValue();
         if( value instanceof String ){
            
@@ -649,8 +677,14 @@ public class ScriptUtil{
            
           param.setValue(param_vals[i]);
         }
+      
       }
-    }
+      } catch( Throwable ss)
+      {
+             throw new IllegalArgumentException("Problem with parameter "+i+
+                   " in operator "+operator.getCommand()+";"+ss.toString());   
+      }
+
     // return the configured operator
     return operator;
   }
