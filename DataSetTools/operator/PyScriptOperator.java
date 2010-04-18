@@ -566,7 +566,11 @@ public class PyScriptOperator extends GenericOperator
         //exceptions
         System.out.println("In PyException "+ s.getClass());
         errormessage   = "ERROR1:" + s.toString(  );
-        errLineNum     = s.traceback.tb_lineno - 1;
+        s.fillInStackTrace( );
+        if( s.traceback != null)
+            errLineNum     = s.traceback.tb_lineno - 1;
+        else
+           errLineNum = -1;
         SharedData.addmsg( reformatPythonError( s.value.toString(  ) ) );
        
 
@@ -885,6 +889,9 @@ public class PyScriptOperator extends GenericOperator
    * script if the script exists.
    */
   public final void reset(  ) throws InstantiationError {
+     String problem ="initing interpreter";
+     try
+     {
     if( interp == null ) {
       //initialize the system state
       initInterpreter(  );
@@ -892,9 +899,10 @@ public class PyScriptOperator extends GenericOperator
       interp.cleanup();
       resetInterpreter(  );
     }
-
+    problem = "resetVariables";
     resetVariables(  );
 
+    problem = "reloading scripts";
     //just reload the script if it already exists
     if( script != null ) {
       script.reload(  );
@@ -903,6 +911,8 @@ public class PyScriptOperator extends GenericOperator
     if( IAmOperator ) {
       // execute the file (level 0) --> this throws the PyException
       try { // one is faster, the other throws exceptions with the right filename
+
+         problem = "executing script";
         interp.exec( script.toString(  ) );
         scriptLoaded = true;
 
@@ -912,7 +922,12 @@ public class PyScriptOperator extends GenericOperator
         throw PyScript.generateError( e, scriptFile );
       }
 
+      problem = "defining innerclass to this class";
       interp.exec( "innerClass = " + script.getClassname(  ) + "(  )" );
+    }}catch(Throwable ss)
+    {
+       errormessage = "Error at" +problem+":"+ss.toString();
+       errLineNum =0;
     }
   }
 
@@ -1067,7 +1082,10 @@ public class PyScriptOperator extends GenericOperator
    * reset the interpreter variables and call setDefaultParameters if the
    * script defines an operator.
    */
-  private final void initOperator(  ) {
+  private final void initOperator(  ) 
+  {
+     try
+     {
     synchronized(  syncObj){
     initPySystem();
     if( script.isValid(  ) ) {
@@ -1081,8 +1099,18 @@ public class PyScriptOperator extends GenericOperator
     if( IAmOperator ) {
       setDefaultParameters(  );
     }
+     }catch( Throwable ss)
+     {
+        String[] SS = ScriptUtil.GetExceptionStackInfo( ss , true , 3 );
+        String message = ss.toString( );
+        if( SS != null && SS.length > 0)
+           message +="\n"+SS[0];
+        errormessage = message;
+        errLineNum=0;
+     }
+     }
    
-  }
+  
 
   /**
    * Utility method to reformat a PyException string to a friendlier value.
