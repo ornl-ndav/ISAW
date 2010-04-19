@@ -264,7 +264,8 @@ public class Write3ColGSAS extends GenericSave{
         
         float[] x  = d.getX_values();
         float[] y  = d.getCopyOfY_values();
-        d.setSqrtErrors(true);
+        if( d.getErrors( ) == null)
+             d.setSqrtErrors(true);
         float[] dy = d.getCopyOfErrors();
 
          StringBuffer data=new StringBuffer(80*y.length);
