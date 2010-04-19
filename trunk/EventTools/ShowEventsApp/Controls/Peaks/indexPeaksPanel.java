@@ -43,6 +43,7 @@ import javax.swing.*;
 import javax.swing.border.*;
 import java.awt.event.*;
 import java.awt.*;
+import java.util.Vector;
 
 import MessageTools.*;
 import EventTools.ShowEventsApp.Command.*;
@@ -90,9 +91,9 @@ public class indexPeaksPanel extends    JPanel  implements IReceiveMessage
 
    private FilteredPG_TextField Dmax;
 
-   private JButton              ViewMatBtn;
+   //private JButton              ViewMatBtn;
 
-   private JButton              WriteMatBtn;
+   //private JButton              WriteMatBtn;
 
    private JTabbedPane          middlePanel; 
    
@@ -491,15 +492,25 @@ public class indexPeaksPanel extends    JPanel  implements IReceiveMessage
    public boolean receive(Message message)
    {
 
-      UBT = (float[][])message.getValue( );
+      if( message.getValue() instanceof Vector)
+         
+         UBT = (float[][])((Vector)message.getValue()).firstElement();
+      
+      else
+         
+         UBT = (float[][])message.getValue( );
+      
       if( UBT == null)
+         
          OrientMatDispl.setText( "null UB" );
+      
       else
       {
          String S = DataSetTools.components.ui.Peaks.subs.ShowOrientationInfo(
                null , LinearAlgebra.getTranspose( UBT) , null , null , false );
          OrientMatDispl.setText( S );
       }
+      
       return false;
    }
 
