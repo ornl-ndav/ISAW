@@ -1116,8 +1116,8 @@ public class View3D extends ThreeD_JPanel implements IMotion3D
             omittedSeqNums.remove( new Integer( Pk.seqnum() ) );
             Vector3D[] marks = new Vector3D[ 1 ];
             marks[ 0 ] = new Vector3D( Pk.getUnrotQ() );
-            int size = 5 + (int) ( ( Pk.ipkobs() - MinIntensity )
-                     / ( MaxIntensity - MinIntensity ) * 15 );
+            int size = 1 + (int) ( ( Pk.ipkobs() - MinIntensity )
+                     / ( MaxIntensity - MinIntensity ) * 3 );
             RoundBall pk = new RoundBall( marks[0] , (float)size,Color.blue );
            
             
