@@ -69,9 +69,13 @@ public class OrientationMatrixHandler implements IReceiveMessage
 
   private MessageCenter message_center;
   private float[][]     orientation_matrix = null;
+
+  private float[]       sig_abc            = null;
+
   private Vector3D      last_qxyz = null;          // last choice of qxyz
                                                    // "near" horizontal plane
                                                    // for ARCS
+
 
   public OrientationMatrixHandler( MessageCenter message_center )
   {
@@ -95,14 +99,25 @@ public class OrientationMatrixHandler implements IReceiveMessage
       Object obj = message.getValue();
       if ( obj == orientation_matrix )         // this is just my message
         return false;                          // coming back to me.
-
+     if( obj instanceof Vector && ((Vector)obj).size()==2 &&
+       ((Vector)obj).lastElement() == orientation_matrix)
+       return false;
+       
       SetNewOrientationMatrix( obj );
     }
 
     else if ( message.getName().equals(Commands.GET_ORIENTATION_MATRIX) )
     {
+      Object message_value = orientation_matrix;
+      if( sig_abc != null)
+      {
+         Vector V = new Vector(2);
+         V.add(  orientation_matrix );
+         V.add( sig_abc);
+         message_value = V;
+      }
       Message mat_message = new Message( Commands.SET_ORIENTATION_MATRIX,
-                                         orientation_matrix,
+                                        message_value,
                                         true );
       message_center.send( mat_message );
     } 
@@ -110,8 +125,11 @@ public class OrientationMatrixHandler implements IReceiveMessage
     else if ( message.getName().equals(Commands.SHOW_ORIENTATION_MATRIX))
     {
        if ( orientation_matrix != null )
+          
          ShowOrientationMatrix( orientation_matrix );
+       
        else
+          
          Util.sendError( "There is no Orientation matrix to Show" );
     }
 
@@ -124,13 +142,19 @@ public class OrientationMatrixHandler implements IReceiveMessage
           return false;
        }
        float[][] UB = LinearAlgebra.getTranspose(orientation_matrix);
-
+       double[] abc = DataSetTools.operator.Generic.TOF_SCD.Util.abc(
+               LinearAlgebra.float2double( UB ));
+       
        ErrorString Res =
-        DataSetTools.operator.Generic.TOF_SCD.Util.WriteMatrix( filename, UB );
+        DataSetTools.operator.Generic.TOF_SCD.Util.writeMatrix( filename, UB,
+              LinearAlgebra.double2float( abc ), sig_abc);
 
        if( Res == null)
+          
          Util.sendInfo( "Wrote Orientation matrix to " + filename );
+       
        else
+          
          Util.sendError( "Write Orientation Error:"+Res.toString() );
     } 
 
@@ -183,10 +207,18 @@ public class OrientationMatrixHandler implements IReceiveMessage
 
   private boolean SetNewOrientationMatrix( Object obj )
   {
+     sig_abc = null;
+     Object obj1 = obj;
+     if( obj1 != null && obj instanceof Vector && ((Vector)obj1).size() == 2)
+     {
+        obj = ((Vector)obj1).firstElement( );
+        sig_abc = (float[])((Vector)obj1).lastElement( );
+     }
      String matrix_status = isValidMatrix( obj );
      if ( !matrix_status.equals( OK_STRING ) )
      {
        Util.sendError( matrix_status );
+       sig_abc = null;
        return false;
      }
 
@@ -256,7 +288,7 @@ public class OrientationMatrixHandler implements IReceiveMessage
     String ShowText = subs.ShowOrientationInfo( 
                       null, 
                       LinearAlgebra.getTranspose( matrix ),
-                      null, null, true );
+                      null, sig_abc, true );
          
     JFrame jf = new JFrame( "Orientation Matrix");
     jf.setSize( 400,200 );
@@ -316,20 +348,9 @@ public class OrientationMatrixHandler implements IReceiveMessage
   }
 
 
-  /**
-   *  Add information for orienting single crystals on ARCS, to the 
-   *  SelectionInfoCmd.
-   */ 
   private void set_projected_HKL_info( SelectionInfoCmd select_info_cmd )
   {
     Vector3D hkl  = select_info_cmd.getHKL();    
-    
-    if ( hkl.getX() == 0 && hkl.getY() == 0 && hkl.getZ() == 0 )
-    {
-       System.out.println("NO HKL CHOOSEN");
-       return;
-    }
-
     float[] exact_hkl = new float[3];
 
     exact_hkl[0] = Math.round(hkl.getX()); 
@@ -356,14 +377,9 @@ public class OrientationMatrixHandler implements IReceiveMessage
     System.out.printf( "Projected HKL  = %6.3f  %6.3f  %6.3f\n",
                         projected_hkl[0], projected_hkl[1], projected_hkl[2]);
 
-    select_info_cmd.setProjectedHKL( new Vector3D( projected_hkl ) );
-
     double psi = Math.atan2( projected_qxyz[1], projected_qxyz[0] );
     double psi_deg = psi * 180 / Math.PI;
-
     System.out.printf( "PSI(deg) = %9.3f\n", psi_deg );
-
-    select_info_cmd.setPSI( (float)psi_deg );
 
     Vector3D new_qxyz = new Vector3D( exact_qxyz );
     if ( last_qxyz != null )
@@ -378,7 +394,6 @@ public class OrientationMatrixHandler implements IReceiveMessage
         double tilt     = Math.acos( cross_prod.getZ() );
         double tilt_deg = tilt * 180 / Math.PI;
         System.out.printf("Tilt(deg) = %8.4f\n", tilt_deg );
-        select_info_cmd.setTilt( (float)tilt_deg );
       }
     }
     last_qxyz = new_qxyz;
