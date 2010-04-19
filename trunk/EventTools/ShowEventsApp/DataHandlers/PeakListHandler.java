@@ -10,6 +10,7 @@ import DataSetTools.operator.Generic.Special.ViewASCII;
 import DataSetTools.operator.Generic.TOF_SCD.*;
 
 import Operators.TOF_SCD.IndexPeaks_Calc;
+import Operators.TOF_SCD.LsqrsJ_base;
 
 import MessageTools.IReceiveMessage;
 import MessageTools.Message;
@@ -167,6 +168,8 @@ public class PeakListHandler implements IReceiveMessage
                                                   cmd.getTolerance(),
                                                   cmd.getRequiredFraction(),
                                                   cmd.getFixedPeakIndex() );
+        UB = getErrors( UB, Convert2IPeak(peakNew_list), .12f); 
+        
 
         UB= LinearAlgebra.getTranspose(UB);
         Util.sendInfo( "Finished Indexing" );
@@ -182,14 +185,14 @@ public class PeakListHandler implements IReceiveMessage
                                        true );
       message_center.send( set_peaks );
 
-      Message set_or = new Message( Commands.SET_ORIENTATION_MATRIX,
+     /* Message set_or = new Message( Commands.SET_ORIENTATION_MATRIX,
                                     UB, true );
       message_center.send( set_or );
       
       message_center.send(  new Message( 
                Commands.INDEX_PEAKS_WITH_ORIENTATION_MATRIX,
                new UBwTolCmd( UB, cmd.getTolerance()),false) );
-
+     */
       return false;
     }
 
@@ -237,12 +240,10 @@ public class PeakListHandler implements IReceiveMessage
            return false;
         }
         
-        float[][] UBT = LinearAlgebra.getTranspose( UB );
-        message_center.send( new Message( Commands.SET_ORIENTATION_MATRIX,
-                 UBT, false));
+        UB = getErrors( UB, Peaks, value[2]); 
         
-        message_center.send(  new Message(Commands.INDEX_PEAKS_WITH_ORIENTATION_MATRIX,
-                 new UBwTolCmd(UBT,value[2]) ,false) );
+      //  message_center.send(  new Message(Commands.INDEX_PEAKS_WITH_ORIENTATION_MATRIX,
+      //           new UBwTolCmd(UBT,value[2]) ,false) );
         return false;
     }
 
@@ -250,6 +251,43 @@ public class PeakListHandler implements IReceiveMessage
   }
 
   
+  private float[][] getErrors( float[][] UB, Vector<IPeak>Peaks, float tolerance )
+  {
+     indexAllPeaks( peakNew_list, LinearAlgebra.getTranspose( UB), tolerance);
+     double[][] UB2 = new double[3][3];
+     double[] abc = new double[7];
+     double[] sig_abc = new double[7];
+     if( Double.isNaN( LsqrsJ_base.LeastSquaresSCD( UB2, 
+           LsqrsJ_base.getHKLArrays( Peaks,null, -1f,null, null, -1),
+           LsqrsJ_base.getQArray( Peaks ,-1f,null, null, -1), 
+           abc, 
+           sig_abc)))
+           {
+              Util.sendError( "LeastSquares Error. No error estimates" );
+              UB2 = LinearAlgebra.float2double( UB );
+              abc= sig_abc = null;
+           }
+     
+     float[][] UBT = LinearAlgebra.double2float(
+                         LinearAlgebra.getTranspose( UB2 ));
+     Object messageValue = UBT;
+     if( sig_abc != null)
+     {
+        messageValue = new Vector(2);
+        ((Vector)messageValue).addElement( UBT);
+        ((Vector)messageValue).add(LinearAlgebra.double2float( sig_abc ));
+     }
+     message_center.send( new Message( Commands.SET_ORIENTATION_MATRIX,
+              messageValue, false));
+     
+
+     Message set_peaks = new Message( Commands.SET_PEAK_NEW_LIST,
+                                      peakNew_list,
+                                      true );
+     message_center.send( set_peaks );
+     
+     return UBT;
+  }
   private Vector<IPeak> Convert2IPeak( Vector<Peak_new> Peaks)
   {
      if( Peaks == null)
@@ -263,7 +301,7 @@ public class PeakListHandler implements IReceiveMessage
   }
 
 
-  private void indexAllPeaks( Vector Peaks, float[][]UBT, float tolerance )
+  public static void indexAllPeaks( Vector Peaks, float[][]UBT, float tolerance )
   {
     
     float[][]UB = LinearAlgebra.getTranspose( UBT );
@@ -317,7 +355,7 @@ public class PeakListHandler implements IReceiveMessage
   }
 
 
-  private float distanceToInt( float val )
+  private static float distanceToInt( float val )
   {
     float rounded = Math.round(val);
     return Math.abs( val - rounded );
