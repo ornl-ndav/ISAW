@@ -4,6 +4,7 @@ package EventTools.ShowEventsApp.DataHandlers;
 import java.util.Vector;
 
 import gov.anl.ipns.MathTools.LinearAlgebra;
+import gov.anl.ipns.MathTools.Geometry.Vector3D_d;
 
 import DataSetTools.components.ui.Peaks.OrientMatrixControl;
 import DataSetTools.operator.Generic.Special.ViewASCII;
@@ -11,6 +12,7 @@ import DataSetTools.operator.Generic.TOF_SCD.*;
 
 import Operators.TOF_SCD.IndexPeaks_Calc;
 import Operators.TOF_SCD.LsqrsJ_base;
+import Operators.TOF_SCD.ARCS_Index_Calc;
 
 import MessageTools.IReceiveMessage;
 import MessageTools.Message;
@@ -18,6 +20,7 @@ import MessageTools.MessageCenter;
 
 import EventTools.ShowEventsApp.Command.Commands;
 import EventTools.ShowEventsApp.Command.IndexPeaksCmd;
+import EventTools.ShowEventsApp.Command.IndexARCS_PeaksCmd;
 import EventTools.ShowEventsApp.Command.UBwTolCmd;
 import EventTools.ShowEventsApp.Command.Util;
 
@@ -37,6 +40,7 @@ public class PeakListHandler implements IReceiveMessage
     message_center.addReceiver( this, Commands.SHOW_PEAK_FILE );
  
     message_center.addReceiver( this, Commands.INDEX_PEAKS );
+    message_center.addReceiver( this, Commands.INDEX_PEAKS_ARCS );
     message_center.addReceiver( this, Commands.INDEX_PEAKS_ROSS );
     message_center.addReceiver( this, 
                                 Commands.INDEX_PEAKS_WITH_ORIENTATION_MATRIX);
@@ -111,6 +115,7 @@ public class PeakListHandler implements IReceiveMessage
         return false;
       }
     }
+
     else if ( message.getName().equals(Commands.SHOW_PEAK_FILE ) )
     {
       if ( peakNew_list == null || peakNew_list.size() <= 0 )
@@ -136,6 +141,7 @@ public class PeakListHandler implements IReceiveMessage
       }
       Wizard.TOF_SCD.Util.ClearFiles( "ppp" , "peaks" );
     }
+
     else if ( message.getName().equals(Commands.INDEX_PEAKS ) )
     {
       Object obj = message.getValue();
@@ -156,6 +162,7 @@ public class PeakListHandler implements IReceiveMessage
       float[][] UB = null;
       try
       {
+        float tolerance = cmd.getTolerance();
         Util.sendInfo("Starting to index peaks, PLEASE WAIT...");
         UB = IndexPeaks_Calc.IndexPeaksWithOptimizer( 
                                                   peakNew_list,
@@ -165,27 +172,28 @@ public class PeakListHandler implements IReceiveMessage
                                                   cmd.getAlpha(),
                                                   cmd.getBeta(),
                                                   cmd.getGamma(),
-                                                  cmd.getTolerance(),
+                                                  tolerance,
                                                   cmd.getRequiredFraction(),
                                                   cmd.getFixedPeakIndex() );
-        UB = getErrors( UB, Convert2IPeak(peakNew_list), .12f); 
-        
 
-        UB= LinearAlgebra.getTranspose(UB);
+        UB = getErrors( UB, Convert2IPeak(peakNew_list), tolerance ); 
+
+ //     UB = LinearAlgebra.getTranspose(UB);
         Util.sendInfo( "Finished Indexing" );
       }
       catch ( Exception ex )
       {
-        Util.sendError( "ERROR: Failed to index Peaks ");
+        Util.sendError( "ERROR: Failed to index Peaks " + ex);
         return false;
       } 
 
+     /*
       Message set_peaks = new Message( Commands.SET_PEAK_NEW_LIST,
                                        peakNew_list,
                                        true );
       message_center.send( set_peaks );
 
-     /* Message set_or = new Message( Commands.SET_ORIENTATION_MATRIX,
+      Message set_or = new Message( Commands.SET_ORIENTATION_MATRIX,
                                     UB, true );
       message_center.send( set_or );
       
@@ -195,6 +203,54 @@ public class PeakListHandler implements IReceiveMessage
      */
       return false;
     }
+
+    else if( message.getName().equals( Commands.INDEX_PEAKS_ARCS) )
+    {
+      Object obj = message.getValue();
+      System.out.println("IndexPeaksCmd = \n " + obj );
+      if ( obj == null || !(obj instanceof IndexARCS_PeaksCmd) )
+      {
+        Util.sendError("ERROR: wrong value object in INDEX_PEAKS command");
+        return false;
+      }
+
+      IndexARCS_PeaksCmd cmd = (IndexARCS_PeaksCmd)obj;
+      float  tolerance = cmd.getTolerance();
+      Vector results   = null;
+      try
+      {
+        results = ARCS_Index_Calc.index ( cmd.getLatticeParameters(),
+                                          peakNew_list,
+                                          cmd.getPSI(),
+                                          cmd.getU_hkl(),
+                                          cmd.getV_hkl(),
+                                          tolerance,
+                                          cmd.getInitialNum(),
+                                          cmd.getRequiredFraction() );
+       }
+       catch ( Exception ex )
+       {
+         Util.sendError( "ERROR: Failed to index Peaks " + ex);
+         return false;
+       }                                        
+  
+       float[][] UB          = (float[][]) results.elementAt(0);
+       double psi            = (Double)    results.elementAt(1);
+       Vector3D_d u_proj_hkl = (Vector3D_d)results.elementAt(2);
+       Vector3D_d v_proj_hkl = (Vector3D_d)results.elementAt(3);
+
+       System.out.println("UB = ");
+       LinearAlgebra.print( UB );
+       System.out.printf("PSI = %8.4f\n", psi);
+       System.out.printf( "U Projected HKL  = %6.3f  %6.3f  %6.3f\n",
+                    u_proj_hkl.getX(), u_proj_hkl.getY(), u_proj_hkl.getZ() );
+       System.out.printf( "V Projected HKL  = %6.3f  %6.3f  %6.3f\n",
+                    v_proj_hkl.getX(), v_proj_hkl.getY(), v_proj_hkl.getZ() );
+
+       UB = getErrors( UB, Convert2IPeak(peakNew_list), tolerance );
+
+       Util.sendInfo( "Finished Indexing" );
+    } 
 
     else if( message.getName().equals( 
              Commands.INDEX_PEAKS_WITH_ORIENTATION_MATRIX ))
@@ -210,41 +266,41 @@ public class PeakListHandler implements IReceiveMessage
        return false;
     } 
 
-    else if( message.getName().equals(  Commands.INDEX_PEAKS_ROSS ))
+    else if( message.getName().equals( Commands.INDEX_PEAKS_ROSS ))
     {
        float[] value = (float[])message.getValue();
        if( value == null || value.length < 3)
           return false;
          
        Util.sendInfo( "Starting long calculation. Please wait..." );
-        GetUB.DMIN = value[0];
-        GetUB.ELIM_EQ_CRYSTAL_PARAMS = true;
-        Vector<float[][]> OrientationMatrices =
+       GetUB.DMIN = value[0];
+       GetUB.ELIM_EQ_CRYSTAL_PARAMS = true;
+       Vector<float[][]> OrientationMatrices =
                 GetUB.getAllOrientationMatrices( peakNew_list , null , 
                                                 .01f , value[1] );
-        GetUB.DMIN = 1f;
-        GetUB.ELIM_EQ_CRYSTAL_PARAMS = false;
-        if( OrientationMatrices == null)
-        {
+       GetUB.DMIN = 1f;
+       GetUB.ELIM_EQ_CRYSTAL_PARAMS = false;
+       if( OrientationMatrices == null)
+       {
            Util.sendError( 
                  "No Orientation Matrix found in Auto no Crystal Parameters" );
            return false;
-        }
-        Vector<IPeak> Peaks = Convert2IPeak(peakNew_list);
-        float[][]UB = OrientMatrixControl.showCurrentOrientationMatrices(
-                 Peaks , OrientationMatrices );
+       }
+       Vector<IPeak> Peaks = Convert2IPeak(peakNew_list);
+       float[][]UB = OrientMatrixControl.showCurrentOrientationMatrices(
+                Peaks , OrientationMatrices );
         
-        if( UB == null)
-        {
+       if( UB == null)
+       {
            Util.sendError( "No Orientation Matrix was selected" );
            return false;
-        }
+       }
         
-        UB = getErrors( UB, Peaks, value[2]); 
+       UB = getErrors( UB, Peaks, value[2]); 
         
       //  message_center.send(  new Message(Commands.INDEX_PEAKS_WITH_ORIENTATION_MATRIX,
       //           new UBwTolCmd(UBT,value[2]) ,false) );
-        return false;
+       return false;
     }
 
     return false;
@@ -279,7 +335,6 @@ public class PeakListHandler implements IReceiveMessage
      }
      message_center.send( new Message( Commands.SET_ORIENTATION_MATRIX,
               messageValue, false));
-     
 
      Message set_peaks = new Message( Commands.SET_PEAK_NEW_LIST,
                                       peakNew_list,
@@ -288,6 +343,8 @@ public class PeakListHandler implements IReceiveMessage
      
      return UBT;
   }
+
+
   private Vector<IPeak> Convert2IPeak( Vector<Peak_new> Peaks)
   {
      if( Peaks == null)
