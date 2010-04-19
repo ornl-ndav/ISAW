@@ -46,8 +46,12 @@ import java.util.*;
 import javax.swing.*;
 import javax.swing.border.*;
 
+import DataSetTools.operator.Generic.TOF_SCD.IPeak;
+import DataSetTools.operator.Generic.TOF_SCD.Peak_new;
 import EventTools.ShowEventsApp.Command.Commands;
+import EventTools.ShowEventsApp.DataHandlers.PeakListHandler;
 import MessageTools.*;
+import Operators.TOF_SCD.LsqrsJ_base;
 import Operators.TOF_SCD.ReducedCellInfo;
 //import Operators.TOF_SCD.ReducedFormList;
 
@@ -72,6 +76,10 @@ public class ScalarHandlePanel implements IReceiveMessage
    MessageCenter             OrientMatMessageCenter;
 
    float[][]                 UB;
+   
+   float[]                  sig_abc;
+
+   float[][]                 UB_old;
 
    JPanel                    panel;
 
@@ -129,6 +137,7 @@ public class ScalarHandlePanel implements IReceiveMessage
                                                      + ReducedCellInfo.F_CENTERED+ ";"
                                                      + ReducedCellInfo.C_CENTERED+ ";"
                                                      + ReducedCellInfo.R_CENTERED+ ";";
+   Vector<Peak_new> Peaks                      = null;
 
    /**
     * Constructor where the orientation matrix comes from a message center
@@ -151,6 +160,8 @@ public class ScalarHandlePanel implements IReceiveMessage
       
       OrientMatMessageCenter.addReceiver( this ,
             Commands.SET_ORIENTATION_MATRIX );
+      OrientMatMessageCenter.addReceiver( this ,
+            Commands.SET_PEAK_NEW_LIST );
 
    }
    
@@ -365,8 +376,7 @@ public class ScalarHandlePanel implements IReceiveMessage
       return res;
    }
 
-   //Calculates the new UB matrix from the RedCell and UB
-   private static double[][] NewUB(ReducedCellPlus RedCell, float[][] UB)
+   private static double[][] getTransf( ReducedCellPlus RedCell)
    {
       double[][] transf = RedCell.redCell.getTransformation( );
       
@@ -388,7 +398,14 @@ public class ScalarHandlePanel implements IReceiveMessage
             ident[( k + i ) % 3][( k + i ) % 3] = -1;
          transf = LinearAlgebra.mult( transf , ident );
       }
-
+      return transf;
+   }
+   //Calculates the new UB matrix from the RedCell and UB
+   private static double[][] NewUB(ReducedCellPlus RedCell, float[][] UB)
+   {
+      double[][] transf =getTransf( RedCell);
+      System.out.println("transformation is ");
+      LinearAlgebra.print( transf);
       return LinearAlgebra.mult( LinearAlgebra.float2double( UB ) ,
             LinearAlgebra.getInverse( transf ) );
    }
@@ -497,8 +514,21 @@ public class ScalarHandlePanel implements IReceiveMessage
    @Override
    public boolean receive(Message message)
    {
-
-      UB = ( float[][] ) message.getValue( );
+      if( message.getName( ).equals( Commands.SET_PEAK_NEW_LIST ))
+      {
+         Peaks = (Vector<Peak_new>)message.getValue( );
+         return false;
+      }
+      sig_abc = null;
+      UB_old = null;
+      if( message.getValue() instanceof  Vector && ((Vector)message.getValue()).size() ==2)
+      {
+         UB =(float[][])((Vector)message.getValue()).firstElement( );
+         sig_abc =(float[])((Vector)message.getValue()).lastElement( );
+      }
+      else
+         UB = ( float[][] ) message.getValue( );
+      
       UB = LinearAlgebra.getTranspose( UB );
       if ( UB == null )
       {
@@ -512,6 +542,130 @@ public class ScalarHandlePanel implements IReceiveMessage
       return false;
    }
 
+   private float[] checkStuff( Vector PeakList, double[][] UB_new)
+   {
+      if( UB_old == null || PeakList == null || UB == null)
+         return null;
+      
+      if( !(PeakList instanceof Vector<?>))
+      
+        return null;
+      
+      Vector Peak_newList = (Vector)PeakList;
+      float[][] hklSav = new float[3][Peak_newList.size()];
+      for( int i=0; i< Peak_newList.size( ); i++)
+      {
+         IPeak P = (IPeak)Peak_newList.elementAt( i );
+         hklSav[0][i] = P.h( );
+         hklSav[1][i] = P.k( );
+         hklSav[2][i] = P.l( );
+      }
+    
+      PeakListHandler.indexAllPeaks( PeakList , 
+            LinearAlgebra.getTranspose( LinearAlgebra.double2float(UB_new) ), .12f );
+      double[][] UBD = new double[3][3];
+      double[] abc = new double[7];
+      double[] sig_abc = new double[7];
+      double chisq = LsqrsJ_base.LeastSquaresSCD( 
+            UBD ,
+            LsqrsJ_base.getHKLArrays( Peak_newList , null ,-1 ,null ,null , 1 ) , 
+            LsqrsJ_base.getQArray( Peak_newList ,-1 ,null ,null , 1 ) , 
+            abc , 
+            sig_abc );
+      if( Double.isNaN( chisq))
+      {
+         System.out.println("Least Squares did not work");
+         sig_abc=null;;
+      }
+      else
+      {
+         //Check if UB_new and UBD "same"
+         double MaxErr=0;
+         for( int r=0;r<3;r++)
+            for( int c=0; c<3;c++)
+            {
+               double x= UB_new[r][c]-UBD[r][c];
+               if( x < 0)
+                  x=-x;
+               if( x> MaxErr)
+                  MaxErr = x;
+            }
+         if( MaxErr >.01)
+            sig_abc=null;
+        
+      }
+
+      for( int i=0; i< Peak_newList.size( ); i++)
+      {
+         IPeak P = (IPeak)Peak_newList.elementAt( i );
+         P.sethkl( hklSav[0][i] , hklSav[1][i], hklSav[2][i] );
+      }
+      
+      
+      return LinearAlgebra.double2float( sig_abc );
+           
+   }
+   
+   private static double sqr( double v)
+   {
+      return v*v;
+   }
+   
+   /*
+   float[]  CalculateTransformedErrors( float[][]UB_old, float[][]Transf, float[]Errs_old)
+   {
+      if( Errs_old == null)
+         return null;
+      float [][] UB_new = LinearAlgebra.mult( UB_old , LinearAlgebra.getInverse(Transf) );
+      
+      double[] lattParams = lattice_calc.LatticeParamsOfUB( 
+                           LinearAlgebra.float2double( UB_old) ); 
+      
+      double[] lattParams_new = lattice_calc.LatticeParamsOfUB( 
+            LinearAlgebra.float2double( UB_new) );
+      
+      double[][] TensorErrors = new double[3][3];
+      
+      for( int i=0; i< 3;i++)
+         TensorErrors[i][i] = 2*lattParams[i]*Errs_old[i];
+      
+      for( int i=0; i<2; i++)
+         for( int j=i+1; j<3; j++)
+         {  
+            double a =lattParams[i];
+            double b =lattParams[j];
+            double da =Errs_old[i];
+            double db = Errs_old[j];
+            int k= (i+1)%3;
+            if( k==j)
+               k =(j+1)%3;
+            double gamma = lattParams[3+k]*Math.PI/180;
+            double dgamma = Errs_old[3+k]*Math.PI/180;
+            
+            TensorErrors[i][j] = sqr(b*Math.cos( gamma )*da);
+            TensorErrors[i][j]+= sqr(a*Math.cos( gamma )*db);
+            TensorErrors[i][j] += sqr(a*b*Math.sin( gamma )*dgamma);
+            TensorErrors[i][j] = TensorErrors[j][i] = Math.sqrt(TensorErrors[i][j]);
+         }
+      
+      double[][] transf = LinearAlgebra.float2double( Transf );
+      TensorErrors = LsqrsJ_base.errorMult( transf , TensorErrors , true );
+      TensorErrors = LsqrsJ_base.errorMult( TensorErrors, 
+                        LinearAlgebra.getTranspose( transf ), true);
+      
+      System.out.println("Tensor Errors in ScalarHandlePanel");
+      LinearAlgebra.print( TensorErrors );
+      System.out.println(" transformation");
+      LinearAlgebra.print( Transf );
+      double[] Err_new = LsqrsJ_base.LatticeErrors( lattParams_new , 
+                                                         TensorErrors );
+      
+      System.out.println("New errors Theor =");
+      LinearAlgebra.print( Err_new );
+      return LinearAlgebra.double2float( Err_new );
+   }
+   
+   */
    private void EliminateDuplicates(Vector< ReducedCellPlus > ScalarOpts ) 
    {
       if( ScalarOpts == null || ScalarOpts.size() < 1)
@@ -745,15 +899,24 @@ public class ScalarHandlePanel implements IReceiveMessage
             }
             
             double[][] UB1 = NewUB( ScalarOpts.elementAt( k ) , UB );
-            
+            UB_old = UB;
             UB = LinearAlgebra.double2float( UB1 );
+           
+            sig_abc = checkStuff( Peaks,UB1);
             
             if ( OrientMatMessageCenter != null )
-               
+            {
+               Vector V = new Vector();
+               V.add( LinearAlgebra.getTranspose( UB ));
+               V.add( sig_abc );
                OrientMatMessageCenter.send( new Message(
                                                  Commands.SET_ORIENTATION_MATRIX ,
-                                                 LinearAlgebra.getTranspose( UB ) ,
+                                                 V,//LinearAlgebra.getTranspose( UB ) ,
                                                  true ) );
+            }
+           JOptionPane.showMessageDialog( null , "<html><body>Peaks are NOT indexed.<BR> "+
+                    "The current Orientation Matrix is Changed<BR>"+
+                    "Go to the Index Peaks tab to Index Peaks</body></html>");
 
          } else if ( command.toUpperCase( ).startsWith( "SET" )
                || command.toUpperCase( ).startsWith( "CLEAR" ) )
