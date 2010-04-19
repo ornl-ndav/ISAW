@@ -404,8 +404,6 @@ public class ScalarHandlePanel implements IReceiveMessage
    private static double[][] NewUB(ReducedCellPlus RedCell, float[][] UB)
    {
       double[][] transf =getTransf( RedCell);
-      System.out.println("transformation is ");
-      LinearAlgebra.print( transf);
       return LinearAlgebra.mult( LinearAlgebra.float2double( UB ) ,
             LinearAlgebra.getInverse( transf ) );
    }
