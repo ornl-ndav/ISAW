@@ -1,7 +1,7 @@
 /* 
  * File: indexPeaksPanel.java
  *
- * Copyright (C) 2009, Paul Fischer
+ * Copyright (C) 2009,2010 Ruth Mikkelson, Paul Fischer
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -56,9 +56,7 @@ import EventTools.ShowEventsApp.Command.*;
  * and write an orientation matrix.
  */
 public class indexPeaksPanel extends    JPanel  implements IReceiveMessage
-                                
 {
-   
    public static final long     serialVersionUID  = 1L;
 
    private MessageCenter        messageCenter;
@@ -101,13 +99,17 @@ public class indexPeaksPanel extends    JPanel  implements IReceiveMessage
 
    //Tab pane indices for orientation matrix "calculation"
 
-   private static int           FROM_FILE         = 2;  
+   private final static int  AUTO_WPARAMS = 0;
 
-   private static int           AUTO_WPARAMS      = 0;
+   private final static int  AUTO_ROSS    = 1;
 
-   private static int           AUTO_ROSS         = 1;
+   private final static int  FROM_FILE    = 2;  
    
-   private static int           FROM_UB            = 3;
+   private final static int  FROM_UB      = 3;
+
+   private final static int  ARCS_INDEX   = 4;
+
+   private ARCS_IndexPanel  arcs_panel;
    
    private float[][]            UBT = null;
    private static String   NoOrientationText="<html><body> There is no "+
@@ -143,11 +145,19 @@ public class indexPeaksPanel extends    JPanel  implements IReceiveMessage
       BoxLayout blayout = new BoxLayout( panel, BoxLayout.Y_AXIS );
       panel.setLayout(  blayout );
       middlePanel = new JTabbedPane();
+
       middlePanel.addTab( "AutoIndex(with Lattice Parameters)",
                            buildCalcMatPanel());
+
       middlePanel.addTab( "AutoIndex", buildCalcMat2Panel());
+
       middlePanel.addTab( "Read UB From File", buildFromFilePanel() );
+
       middlePanel.addTab( "Index Using Current UB" , buildCalcMat3Panel() );
+
+      arcs_panel = new ARCS_IndexPanel();
+      middlePanel.addTab( "ARCS Index" , arcs_panel );
+
       panel.add( middlePanel );
       panel.add( buildTolerancePanel());
       this.add(panel );
@@ -272,48 +282,45 @@ public class indexPeaksPanel extends    JPanel  implements IReceiveMessage
       JPanel panel = new JPanel();
       panel.setLayout(new GridLayout(9, 2));
       
-      JLabel aLbl = new JLabel("a:");
+      JLabel aLbl = new JLabel(" a");
       String defaultA = "4.913";
       aTxt = new JTextField(defaultA);
       aTxt.setHorizontalAlignment(JTextField.RIGHT);
       
-      JLabel bLbl = new JLabel("b:");
+      JLabel bLbl = new JLabel(" b");
       String defaultB = "4.913";
       bTxt = new JTextField(defaultB);
       bTxt.setHorizontalAlignment(JTextField.RIGHT);
       
-      JLabel cLbl = new JLabel("c:");
+      JLabel cLbl = new JLabel(" c");
       String defaultC = "5.40";
       cTxt = new JTextField(defaultC);
       cTxt.setHorizontalAlignment(JTextField.RIGHT);
       
-      JLabel alphaLbl = new JLabel("alpha:");
+      JLabel alphaLbl = new JLabel(" alpha");
       String defaultAlpha = "90";
       alphaTxt = new JTextField(defaultAlpha);
       alphaTxt.setHorizontalAlignment(JTextField.RIGHT);
       
-      JLabel betaLbl = new JLabel("beta:");
+      JLabel betaLbl = new JLabel(" beta");
       String defaultBeta = "90";
       betaTxt = new JTextField(defaultBeta);
       betaTxt.setHorizontalAlignment(JTextField.RIGHT);
       
-      JLabel gammaLbl = new JLabel("gamma:");
+      JLabel gammaLbl = new JLabel("gamma");
       String defaultGamma = "120";
       gammaTxt = new JTextField(defaultGamma);
       gammaTxt.setHorizontalAlignment(JTextField.RIGHT);
-     
       
-      JLabel fixedPeakLbl = new JLabel("Fixed Peak Index:");
+      JLabel fixedPeakLbl = new JLabel(" Fixed Peak Index");
       String defaultFindPeaks = "1";
       fixedPeakTxt = new JTextField(defaultFindPeaks);
       fixedPeakTxt.setHorizontalAlignment(JTextField.RIGHT);
   
-      JLabel requiredFractionLbl = new JLabel("Pass 1 Required Fraction:");
+      JLabel requiredFractionLbl = new JLabel(" Pass 1 Required Fraction");
       String defaultRequiredFraction = ".4";
       requiredFractionTxt = new JTextField(defaultRequiredFraction);
       requiredFractionTxt.setHorizontalAlignment(JTextField.RIGHT);
-      
-     
       
       panel.add(aLbl);
       panel.add(aTxt);
@@ -335,12 +342,13 @@ public class indexPeaksPanel extends    JPanel  implements IReceiveMessage
       return panel;
    }
    
+
    private JPanel buildTolerancePanel()
    {
       JPanel panel = new JPanel();
       panel.setLayout(  new GridLayout( 1,2) );
       
-      JLabel toleranceLbl = new JLabel("hkl Tolerance:");
+      JLabel toleranceLbl = new JLabel("  hkl Tolerance");
       String defaultTolerance = ".12";
       toleranceTxt = new JTextField(defaultTolerance);
       toleranceTxt.setHorizontalAlignment(JTextField.RIGHT);
@@ -363,6 +371,25 @@ public class indexPeaksPanel extends    JPanel  implements IReceiveMessage
       
       messageCenter.send(message);
    }
+
+
+   private float getTolerance()
+   {
+      float tolerance = 0;
+      try
+      {
+         tolerance = Float.parseFloat(toleranceTxt.getText());
+      }
+      catch (NumberFormatException e)
+      {
+         String error = "Tolerance must be of type Float!";
+         JOptionPane.showMessageDialog(null, error, "Invalid Input",
+                                       JOptionPane.ERROR_MESSAGE);
+         return Float.NaN;
+      }
+      return tolerance;
+   }
+
 
    /**
     * Checks that all the information has been
@@ -446,17 +473,9 @@ public class indexPeaksPanel extends    JPanel  implements IReceiveMessage
          return false;
       } 
       
-      try
-      {
-         Float.parseFloat(toleranceTxt.getText());
-      }
-      catch (NumberFormatException e)
-      {
-         String error = "Tolerance must be of type Float!";
-         JOptionPane.showMessageDialog(null, error, "Invalid Input", 
-                                       JOptionPane.ERROR_MESSAGE);
-         return false;
-      }
+      float tolerance = getTolerance();
+      if ( Float.isNaN( tolerance ) )
+        return false;
       
       try
       {
@@ -482,8 +501,6 @@ public class indexPeaksPanel extends    JPanel  implements IReceiveMessage
                                        JOptionPane.ERROR_MESSAGE);
          return false;
       }
-      
-
       return true;
    }
    
@@ -558,7 +575,6 @@ public class indexPeaksPanel extends    JPanel  implements IReceiveMessage
             if( middlePanel.getSelectedIndex() == FROM_FILE )
             {
                if( getText( MatFileName ).length() > 0 )
-
                {
                   java.util.Vector Messge = new java.util.Vector(2);
                   Messge.add( getText(MatFileName));
@@ -570,8 +586,7 @@ public class indexPeaksPanel extends    JPanel  implements IReceiveMessage
                   {
                      Messge.add(.12f);
                   }
-                  sendMessage( Commands.READ_ORIENTATION_MATRIX ,
-                           Messge );
+                  sendMessage( Commands.READ_ORIENTATION_MATRIX , Messge );
                   return;
                }
             }
@@ -595,9 +610,18 @@ public class indexPeaksPanel extends    JPanel  implements IReceiveMessage
             }
             else if( middlePanel.getSelectedIndex() == AUTO_ROSS )
             {
-               ProcessAutoRoss( Dmin.getText(), Dmax.getText(), toleranceTxt.getText());
+               ProcessAutoRoss( Dmin.getText(), 
+                                Dmax.getText(), 
+                                toleranceTxt.getText());
                
-            }else if( middlePanel.getSelectedIndex() == FROM_UB)
+            }
+            else if( middlePanel.getSelectedIndex() == ARCS_INDEX )
+            {
+              float tolerance = getTolerance();
+              if ( ! Float.isNaN( tolerance ) )
+                arcs_panel.DoARCS_Indexing( messageCenter, tolerance );
+            }
+            else if( middlePanel.getSelectedIndex() == FROM_UB)
             {
                if( UBT == null)
                   JOptionPane.showMessageDialog( null ,
@@ -614,7 +638,7 @@ public class indexPeaksPanel extends    JPanel  implements IReceiveMessage
          }
          else if( cmd.startsWith( "Write" ) )
          {
-            JFileChooser jfc = new JFileChooser( Directory( lastWriteFileName ) );
+            JFileChooser jfc = new JFileChooser( Directory(lastWriteFileName) );
             if( jfc.showSaveDialog( null ) == JFileChooser.APPROVE_OPTION )
             {
                lastWriteFileName = jfc.getSelectedFile().toString();
@@ -635,7 +659,7 @@ public class indexPeaksPanel extends    JPanel  implements IReceiveMessage
          }
          else if( cmd.startsWith( "Matrix" ) )
          {
-            JFileChooser jfc = new JFileChooser( Directory( lastInpMatFileName ) );
+            JFileChooser jfc = new JFileChooser(Directory(lastInpMatFileName));
             if( jfc.showOpenDialog( null ) == JFileChooser.APPROVE_OPTION )
             {
                lastInpMatFileName = jfc.getSelectedFile().toString();
