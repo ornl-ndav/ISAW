@@ -150,6 +150,8 @@ public class Commands
                                          "INDEX_PEAKS_WITH_ORIENTATION_MATRIX";
   
   public static final String INDEX_PEAKS_ROSS = "INDEX_PEAKS_ROSS";
+
+  public static final String INDEX_PEAKS_ARCS = "INDEX_PEAKS_ARCS";
   
   public static final String INIT_DQ = "INIT_DQ";
   
