@@ -77,7 +77,7 @@ import DataSetTools.operator.Generic.TOF_SCD.*;
  *                            fraction may be adjusted to require their
  *                            product to be at least 4.
  * @return a Vector containing the required information.  Position 0 has
- * the calculated UB matrix in the form written by ISAW to a .mat file.
+ * the calculated UB matrix divided by 2*PI.
  * Position 1 has the new PSI angle, corresponding to the calculated UB.
  * Position 2 has the new values for the HKLs of the projected vector U.
  * Position 3 has the new values for the HKLs of the projected vector V.
@@ -225,7 +225,7 @@ public class ARCS_Index_Calc
 
        IndexPeaks_Calc.Index( peaks, UB_inv_mat, tol );
        num_indexed = IndexPeaks_Calc.NumIndexed( peaks, UB_inv_mat, tol );
-//     System.out.println("Number indexed in SECOND = " + num_indexed );
+       System.out.println("Number indexed in SECOND = " + num_indexed );
 
        number = (int)(number * 1.3);
      }
@@ -244,7 +244,7 @@ public class ARCS_Index_Calc
      float[][] newUB_mat = new float[3][3];
      for ( int i = 0; i < 3; i++ )
        for ( int j = 0; j < 3; j++ )
-         newUB_mat[i][j] = (float)(UB_mat[j][i] / (2*Math.PI));
+         newUB_mat[i][j] = (float)(UB_mat[i][j] / (2*Math.PI));
 
      Vector results = new Vector();
      results.add( newUB_mat );
@@ -299,8 +299,8 @@ public class ARCS_Index_Calc
 //  double[] lattice_params = { 5.45, 5.45, 5.45, 90, 120, 120 };
     Vector   peaks = Peak_new_IO.ReadPeaks_new( peaks_file );
 
-//  Vector3D_d u_hkl = new Vector3D_d( 1, 0, 0 );
-    Vector3D_d u_hkl = new Vector3D_d( 0, 0, -1 );    // det 65
+    Vector3D_d u_hkl = new Vector3D_d( 1, 0, 0 );
+//  Vector3D_d u_hkl = new Vector3D_d( 0, 0, -1 );    // det 65
     Vector3D_d v_hkl = new Vector3D_d( 1, 0, -3 );    // det 46
 
 //  Vector3D_d u_hkl = new Vector3D_d(  0, -1, -1 );
@@ -311,7 +311,7 @@ public class ARCS_Index_Calc
 
 //  double psi_deg = 20;
 //  double psi_deg = 101.446;
-    double psi_deg = 95; 
+    double psi_deg = 5; 
 //  double psi_deg = 127;
 //  double psi_deg = 105.5;
 
