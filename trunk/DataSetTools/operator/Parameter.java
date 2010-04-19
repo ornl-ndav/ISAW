@@ -55,6 +55,7 @@
 
 package  DataSetTools.operator;
 import gov.anl.ipns.Parameters.IParameter;
+import gov.anl.ipns.Util.SpecialStrings.SpecialString;
 
 import java.io.*;
 
@@ -121,10 +122,35 @@ public class Parameter extends Object implements Serializable, IParameter
    * @param object  An object of the correct type to use as the value of this
    *                parameter.
    */
-  public void setValue( Object object ) 
-  { 
-    value = object;
-  }
+   public void setValue(Object object)
+   {
+
+      try
+      {
+         if ( object != null && value instanceof SpecialString )
+            if ( !object.getClass( ).equals( value.getClass( ) ) )
+            {
+               String S = object.toString( );
+               Class C = value.getClass( );
+               
+               Object inst =  C.newInstance( );
+               ((SpecialString)inst).setString( S );
+               
+               object = inst;
+               
+               if ( !object.getClass( ).equals( inst.getClass( ) ) )
+               {
+                  return;
+               }
+
+            }
+         value = object;
+         
+      } catch( Exception ss )
+      {
+         throw new IllegalArgumentException( "Special String problem " + ss );
+      }
+   }
 
   /**
    * Return a copy of the parameter object.  Note: Currently this is not a
