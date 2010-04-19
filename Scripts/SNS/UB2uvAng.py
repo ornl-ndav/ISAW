@@ -16,11 +16,13 @@ class UB2uvAng(GenericOperator):
       u[2]=0
       v=Q2
       v[2]=0
-      
-      Ang = Math.atan2(u[1],u[0])
-       
-      return [u,v,Ang]    
 
+      Ang = Math.atan2(u[1],u[0])*180/3.14159265
+      UBI=getInverse(UB)
+      u1= mult(UBI,u)
+      v1 =mult(UBI,v)
+      return [u1,v1,Ang] 
+   
    def setDefaultParameters(self):
       self.super__clearParametersVector()
 
