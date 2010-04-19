@@ -141,9 +141,13 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
                            DataSetTools.operator.HiddenOperator{
   //~ Static fields/initializers ***********************************************
 
-  private static final double SMALL    = 1.525878906E-5;
+  /**
+    * 
+    */
+   private static final long serialVersionUID = 1L;
+private static final double SMALL    = 1.525878906E-5;
   private static final String identmat = "[[1,0,0][0,1,0][0,0,1]]";
-  private static boolean first = true;
+  private static boolean first = false;
 
   //~ Constructors *************************************************************
 
@@ -1275,7 +1279,27 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
         return Res;
         
      }
-     private static double[][] errorMult( double[][]M1,double[][]M2, boolean square)
+     public static double[][] errorAdd( double[][]M1,double[][]M2, boolean square)
+     {
+        double[][] Res = new double[M1.length][];
+        for( int r =0; r< M1.length; r++)
+        {
+           Res[r] = new double[M1[r].length];
+           for( int c =0; c< M1[r].length; c++)
+           {
+              double v;
+              if( square)
+
+                 v= Math.sqrt( M1[r][c]*M1[r][c] + M2[r][c]* M2[r][c]);
+              else
+                 v= Math.abs( M1[r][c] + M2[r][c]);
+              Res[r][c] =v;
+           }
+        
+        }
+        return Res;
+     }
+     public static double[][] errorMult( double[][]M1,double[][]M2, boolean square)
      {
         double[][] Res = new double[M1.length][];
         for( int r =0; r< M1.length; r++)
@@ -1296,7 +1320,7 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
         }
         return Res;
      }
-
+/*
      private static double[] errorMult( double[][]M1,double[]M2)
      {
         double[] Res = new double[M1.length];
@@ -1330,48 +1354,141 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
         Res = Math.sqrt( Res );
         return Res;
      }
-     
+  */   
      /**
       * Returns a 3*peaksSize array of hkl values
-      * @param peaks
+      * @param peaks The list of indexed peaks.
+      * @Transform  The matrix to transform the hkl values by.
+      * 
       * @return
       */
-     public static double[][] getHKLArrays( Vector<IPeak> peaks)
+     public static double[][] getHKLArrays( Vector<IPeak> peaks,float[][]Transform,
+           float MinIpkObs,
+           int[] OmitSeqNums, int[] OmitRunNums, int n2bEdge)
      {
         
         double[][]hkl = new double[3][peaks.size()];
+        int N=0;
         for( int i=0; i< peaks.size( );i++)
         {
            IPeak peak = peaks.get( i );
-           hkl[0][i]= Math.floor( .5+peak.h( ));
-           hkl[1][i]= Math.floor( .5+peak.k( ));
-           hkl[2][i]= Math.floor( .5+peak.l( ));
-           
+           boolean omit =omitPeak(peak, MinIpkObs,
+                    OmitSeqNums, OmitRunNums,  n2bEdge);
+           if( !omit)
+           {
+           hkl[0][N]= Math.floor( .5+peak.h( ));
+           hkl[1][N]= Math.floor( .5+peak.k( ));
+           hkl[2][N]= Math.floor( .5+peak.l( ));
+           N++;
+           }
         }
-        return hkl;
+        if( Transform == null)
+           return hkl;
+        
+        float[] myhkl = new float[3];
+
+        for( int i = 0; i < N; i++ ) {
+          // zero out the temp values
+          for( int j = 0; j < 3; j++ ) {
+            myhkl[j] = 0f;
+          }
+
+          // multiply by the transformation matrix
+          for( int j = 0; j < 3; j++ ) {
+            for( int  k = 0; k < 3; k++ ) {
+              myhkl[k] = myhkl[k] + ( Transform[k][j] * ( float )hkl[i][j] );
+            }
+          }
+        
+          // copy back the temp values
+          for( int j = 0; j < 3; j++ ) {
+            hkl[i][j] = Math.round( myhkl[j] );
+          }
+        }
+        double[][] HKL = new double[3][N];
+        System.arraycopy( hkl[0],0, HKL[0] , 0 , N );
+        System.arraycopy( hkl[1],0, HKL[1] , 0 , N );
+        System.arraycopy( hkl[2],0, HKL[2] , 0 , N );
+        
+        return      HKL;
      }
      
-     
+    
      /**
-      * Returns a 3*peaksSize array of q values
+      * Returns a 3*peaksSize array of q values that have been indexed
+      * and have a max
       * @param peaks
       * @return
       */
-     public static double[][] getQArray( Vector<IPeak> peaks)
+     public static double[][] getQArray( Vector<IPeak> peaks, float MinIpkObs,
+                    int[] OmitSeqNums, int[] OmitRunNums, int n2bEdge)
      {
        
+        if( OmitSeqNums != null)
+           Arrays.sort( OmitSeqNums );
+        else
+           OmitSeqNums = new int[0];
+        
+        if( OmitRunNums != null)
+           Arrays.sort(  OmitRunNums );
+        else
+           OmitRunNums = new int[0];
+        
+        
+        int N=0;
         double[][]q = new double[3][peaks.size()];
         for( int i=0; i< peaks.size( );i++)
         {
            IPeak peak = peaks.get( i );
-        
-           float[] qi= peak.getUnrotQ( );
-           q[0][i]= qi[0];
-           q[1][i]= qi[1];
-           q[2][i]= qi[2];
-           
+           boolean omit = omitPeak( peak,MinIpkObs,
+                     OmitSeqNums,  OmitRunNums,  n2bEdge);
+         if ( !omit )
+         {
+            float[] qi = peak.getUnrotQ( );
+            q[0][N] = qi[0];
+            q[1][N] = qi[1];
+            q[2][N] = qi[2];
+            N++ ;
+           }
         }
-        return q;
+        double[][]Resq = new double[3][N];
+        System.arraycopy( q[0] , 0 , Resq[0] , 0 , N );
+        System.arraycopy( q[1] , 0 , Resq [1], 0 , N );
+        System.arraycopy( q[2] , 0 , Resq[2] , 0 , N );
+        return Resq;
+     }
+     
+     private static boolean omitPeak( IPeak peak, float MinIpkObs,
+                    int[] OmitSeqNums, int[] OmitRunNums, int n2bEdge)
+     {
+        if( peak == null)
+           return true;
+        
+        int run = peak.nrun( );
+        int seq = peak.seqnum( );
+        
+        boolean omit = peak.ipkobs( )<MinIpkObs;
+        
+        if( !omit && peak.nearedge( )<n2bEdge)
+           omit= true;
+        
+        if( peak.h() ==0 && peak.k() == 0 && peak.l() == 0)
+           omit = true;
+        
+        if( !omit && OmitSeqNums != null)
+       
+           if( Arrays.binarySearch( OmitSeqNums , seq )>=0)
+              omit = true;
+        
+
+        if( !omit && OmitRunNums != null)
+       
+           if( Arrays.binarySearch( OmitRunNums , run )>=0)
+              omit = true;
+        
+        
+        
+        return omit;
      }
      /**
       * Untested
@@ -1572,7 +1689,7 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
       *                 
       * @return the chi square value( sum of squares of errors in q values)
       */
-     private static  double LeastSquaresSCD(double[][] UB, 
+     public static  double LeastSquaresSCD(double[][] UB, 
                                             double[][] hkl,
                                             double [][] q, 
                                             double[] abc, 
@@ -1599,6 +1716,14 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
            return Double.NaN;
         
         LinearAlgebra.copy( UBS,UB);
+        
+        double[][] HHT = LinearAlgebra.mult( hkl, LinearAlgebra.getTranspose( hkl ) );
+        double[][]HHTinv = LinearAlgebra.getInverse( HHT );
+       
+
+        double s2_q = chiSq/(3*q[0].length -6);
+        
+        
         double[][]Tensor = LinearAlgebra.getInverse( LinearAlgebra.mult(  
                                 LinearAlgebra.getTranspose( UBS ),UBS));
         
@@ -1616,8 +1741,6 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
        for( int i=3; i< 6;i++)
           abc[i]= Math.acos( abc[i])*180/Math.PI;
        
-       double s2_q = chiSq/(3*q[0].length -6);
-       
        
        
        double[][] errSqij = new double[3][3];
@@ -1625,9 +1748,6 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
        Arrays.fill( errSqij[1], 0.); 
        Arrays.fill( errSqij[2], 0.);         
        
-       
-       double[][] HHT = LinearAlgebra.mult( hkl, LinearAlgebra.getTranspose( hkl ) );
-       double[][]HHTinv = LinearAlgebra.getInverse( HHT );
        
       
        double v;
@@ -1654,43 +1774,91 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
               errSqij[i][j] =Math.sqrt( errSqij[i][j] );
         
      
-       
-        double[][] errUBTUB = ERRmult( UBS ,errSqij, 
-                                LinearAlgebra.getTranspose( UBS ),
-                                LinearAlgebra.getTranspose( errSqij ));
-    
-        double[][] errTens = errorMult( Tensor , errUBTUB,true );
-        errTens = errorMult( errTens , Tensor ,true);
+       //missed tr(errUBTUB)*errUBTUB
+        double[][] errUBTUB = LsqrsJ_base.errorAdd( 
+              LsqrsJ_base.errorMult( LinearAlgebra.getTranspose( UBS ) ,errSqij, true), 
+              LsqrsJ_base.errorMult( LinearAlgebra.getTranspose(errSqij  ) ,UBS, true)      , 
+              false );           
+         
         
-        for(int i=0; i<3;i++)
-           for( int j=0; j<3;j++)
-              errTens[i][j]= Math.abs( errTens[j][i]);
-      
+        double[][] errTens =LsqrsJ_base.errorMult( Tensor ,
+              LsqrsJ_base.errorMult(errUBTUB, Tensor, true) ,true);
         
-        for( int i=0; i<3;i++)
-          sig_abc[i] = errTens[i][i]/(abc[i]*2); 
-              
-        for( int i=0; i <3;i++)
+/*        if( first && false)
         {
-           
-           sig_abc[3+i] = errTens[(i+1)%3][(i+2)%3];
-           sig_abc[3+i]=sig_abc[3+i]*abc[(i+1)%3]*abc[(i+2)%3]+//??use sqrt sum of squares
-                         Math.abs(Tensor[(i+1)%3][(i+2)%3])*
-                           (abc[(i+1)%3]*sig_abc[(i+2)%3]+
-                            abc[(i+2)%3]*sig_abc[(i+1)%3]
-                           );
-           
-           sig_abc[3+i] /=abc[(i+1)%3]*abc[(i+1)%3]*abc[(i+2)%3]*abc[(i+2)%3]*
-                          Math.sin( abc[3+i]*Math.PI/180 );
-           sig_abc[3+i] *=180/Math.PI;
-           
-        }
+        System.out.println( "Tensor Errors in lsqrs");
+        LinearAlgebra.print( errTens );
+        
+        System.out.println( "errUB");
+        LinearAlgebra.print( errSqij );
+
+        System.out.println("errUBTUB");
+        LinearAlgebra.print(  errUBTUB );
+        first = false;
+        }      
+ */       
+        double[] sigs =LatticeErrors(abc, errTens);
+        
+        System.arraycopy( sigs,0, sig_abc , 0 , Math.min( sigs.length,sig_abc.length) );
         
         if( sig_abc.length >6)
             sig_abc[6]=SCD_ConstrainedLsqrsError.calcVolumeError( abc , sig_abc );
                
-               
+            
         return chiSq;
+     }
+     
+     private static double sqr( double x)
+     {
+        return x*x;
+     }
+     
+     /**
+      * Calculates the errors in the lattice parameters given the errors in
+      * the Tensor matrix in real space
+      * 
+      * @param abc    
+      * @param errTens
+      * @return
+      */
+     public static double[] LatticeErrors( double[] abc, double[][] errTens)
+     {
+        
+        
+        
+        double[] sig_abc = new double[7];
+        for( int i=0; i<3;i++)
+          sig_abc[i] = errTens[i][i]/(abc[i]*2); 
+              
+        for( int i=0; i <3;i++)//doing 3+i
+        {
+           double a = abc[(i+1)%3];
+           double b = abc[(i+2)%3];
+           double da = sig_abc[(i+1)%3];
+           double db = sig_abc[(i+2)%3];
+           double gamma = abc[3+(i+3)%3];
+
+           gamma = gamma*Math.PI/180;
+           double a_bErr = errTens[(i+1)%3][(i+2)%3];
+           double a_b =a*b*Math.cos( gamma );
+           
+           
+           
+           double Numsq= sqr(a_bErr*a*b)-sqr(a_b)*(sqr(a*db)+sqr(b*da));
+           if( Numsq <0)
+              Numsq = - Numsq;
+          // Numsq=x1+x3;
+           sig_abc[i+3]= Math.sqrt(Numsq)/sqr(a)/sqr(b)/Math.abs( Math.sin(gamma) );
+           sig_abc[i+3] *=180/Math.PI;
+           //formula for alpha where cos(gamma)= a.b/a/b
+           //  taking differentials  d gamme_r = d(a.b)*a*b-(a.b)*(adb+bda) divided by
+           //                     a^2c^2sin(gamma_r)
+           
+          
+           
+        }
+        sig_abc[6]=SCD_ConstrainedLsqrsError.calcVolumeError( abc , sig_abc );
+        return sig_abc;
      }
           
   /**
@@ -1843,7 +2011,7 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
            errSqij[r][c] += v*v;
         }
      }
-     if( first)
+     if( first )
      {
         System.out.println("Should match bottom matrix,"+s2_q);
         LinearAlgebra.print(  errSqij);       
@@ -2200,10 +2368,10 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
        double[] scalarSQ = new double[7];
        double[] scalar1 = new double[7];
        double[] scalar  = new double[7];
-       int N=1534/3;
+       int N=1534;
        double sq = Math.sqrt( chiSq/(q[0].length-1)/3);
        
-       int z=160;
+       int z=0150;
        
        for( int i=0; i< N; i++)
        {
@@ -2254,9 +2422,9 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
        for( int r=0;r<3;r++)
           for(int c=0; c<3; c++)
           {
-             UB1[r][c]= Math.sqrt((UBsq[r][c]-UB1[r][c]*UB1[r][c]/N)/(N-1));
-             UBTUB1[r][c]= Math.sqrt((UBTUB2[r][c]-UBTUB1[r][c]*UBTUB1[r][c]/N)/(N-1));
-             Tensor1[r][c]= Math.sqrt((Tensor2[r][c]-Tensor1[r][c]*Tensor1[r][c]/N)/(N-1));
+             UBsq[r][c]= Math.sqrt((UBsq[r][c]-UB1[r][c]*UB1[r][c]/N)/(N-1));
+             UBTUB2[r][c]= Math.sqrt((UBTUB2[r][c]-UBTUB1[r][c]*UBTUB1[r][c]/N)/(N-1));
+             Tensor2[r][c]= Math.sqrt((Tensor2[r][c]-Tensor1[r][c]*Tensor1[r][c]/N)/(N-1));
           }
        
        for( int s =0; s< 7; s++)
@@ -2265,6 +2433,57 @@ public class LsqrsJ_base extends GenericTOF_SCD implements
        
        System.out.println("Errors in abc");
        LinearAlgebra.print( scalar1 );
+       
+       //Testing again. Using error multiply routines instead of
+       //  LinearAlgebra mult routines.
+       System.out.println("------------------\n    Experimental UB");
+       LinearAlgebra.print(  LinearAlgebra.mult( UB1 ,1.0/N ) );
+       System.out.println("Real UB");
+       LinearAlgebra.print(   UB );
+          //--------------------------
+      System.out.println("-----------------------\n       Experimental errUB");
+       LinearAlgebra.print(  UBsq );
+       double [][] errUB= LinearAlgebra.mult( hkl,
+                               LinearAlgebra.getTranspose(hkl));
+       errUB = LinearAlgebra.mult(LinearAlgebra.getInverse(errUB),sq*sq);
+       for( int c=0; c<3;c++)errUB[0][c] = Math.sqrt(errUB[c][c]);
+       for( int r=1; r<3;r++)
+          for( int c=0; c<3;c++)
+             errUB[r][c]=errUB[0][c];
+
+       System.out.println("Real errUB");
+       LinearAlgebra.print(   errUB );
+       //-------UBTUB
+       System.out.println("------------------------------\n UBTUB");
+       LinearAlgebra.print( LinearAlgebra.mult( UBTUB1,1.0/N ));
+       System.out.println("Real UBTUB");
+       double[][]UBTUB = LinearAlgebra.mult( LinearAlgebra.getTranspose(UB) ,UB );
+       LinearAlgebra.print( UBTUB );
+       System.out.println("----------------------------\n errUBTUB");
+       LinearAlgebra.print( UBTUB2 );
+       double[][] errUBTUB = LsqrsJ_base.errorAdd( 
+                              LsqrsJ_base.errorMult( LinearAlgebra.getTranspose( UB ) ,errUB, true), 
+                              LsqrsJ_base.errorMult( LinearAlgebra.getTranspose(errUB  ) ,UB, true)      , 
+                              false );
+      System.out.println(" Theoretical");
+      LinearAlgebra.print(  errUBTUB );
+      System.out.println("-----------------------\n Tensor");
+      LinearAlgebra.print(  LinearAlgebra.mult( Tensor1 , 1.0/N ) );
+      System.out.println("   Real");
+      double[][]Tensor =LinearAlgebra.getInverse(UBTUB);
+      LinearAlgebra.print( Tensor  );
+    
+      System.out.println("-----------------------\n errTensor");
+      LinearAlgebra.print(  Tensor2 );
+      System.out.println("   theoretical");
+      double[][] errTensor =LsqrsJ_base.errorMult( Tensor ,
+         LsqrsJ_base.errorMult(errUBTUB, Tensor, true) ,true);
+      LinearAlgebra.print(  errTensor );
+       //NOTE: If used Tensor and Tensor+/- errors to calc alpha, beta and
+       // gamma got closer to the theoretical results than experimental
+       // results
+     
+       
       
      }catch(Exception ss)
      {
