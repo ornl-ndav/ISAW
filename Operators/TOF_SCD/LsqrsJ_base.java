@@ -1382,8 +1382,15 @@ private static final double SMALL    = 1.525878906E-5;
            N++;
            }
         }
+
+        double[][] HKL = new double[3][N];
+        System.arraycopy( hkl[0],0, HKL[0] , 0 , N );
+        System.arraycopy( hkl[1],0, HKL[1] , 0 , N );
+        System.arraycopy( hkl[2],0, HKL[2] , 0 , N );
         if( Transform == null)
-           return hkl;
+           return HKL;
+        
+        
         
         float[] myhkl = new float[3];
 
@@ -1402,13 +1409,9 @@ private static final double SMALL    = 1.525878906E-5;
         
           // copy back the temp values
           for( int j = 0; j < 3; j++ ) {
-            hkl[i][j] = Math.round( myhkl[j] );
+            HKL[i][j] = Math.round( myhkl[j] );
           }
         }
-        double[][] HKL = new double[3][N];
-        System.arraycopy( hkl[0],0, HKL[0] , 0 , N );
-        System.arraycopy( hkl[1],0, HKL[1] , 0 , N );
-        System.arraycopy( hkl[2],0, HKL[2] , 0 , N );
         
         return      HKL;
      }
