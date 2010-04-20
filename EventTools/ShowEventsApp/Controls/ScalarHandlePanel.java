@@ -570,10 +570,13 @@ public class ScalarHandlePanel implements IReceiveMessage
             LsqrsJ_base.getQArray( Peak_newList ,-1 ,null ,null , 1 ) , 
             abc , 
             sig_abc );
+      boolean RestoreHKL= false;
       if( Double.isNaN( chisq))
       {
          System.out.println("Least Squares did not work");
-         sig_abc=null;;
+         sig_abc=null;
+         RestoreHKL = true;
+         
       }
       else
       {
@@ -589,15 +592,22 @@ public class ScalarHandlePanel implements IReceiveMessage
                   MaxErr = x;
             }
          if( MaxErr >.01)
+         {
             sig_abc=null;
+            RestoreHKL = true;
+         }
+            
         
       }
 
+/*  //The new UB is transformed so the indexing should correspond   
+    if( false )
       for( int i=0; i< Peak_newList.size( ); i++)
       {
          IPeak P = (IPeak)Peak_newList.elementAt( i );
          P.sethkl( hklSav[0][i] , hklSav[1][i], hklSav[2][i] );
       }
+ */
       
       
       return LinearAlgebra.double2float( sig_abc );
@@ -901,7 +911,7 @@ public class ScalarHandlePanel implements IReceiveMessage
             UB = LinearAlgebra.double2float( UB1 );
            
             sig_abc = checkStuff( Peaks,UB1);
-            
+           
             if ( OrientMatMessageCenter != null )
             {
                Vector V = new Vector();
@@ -912,9 +922,9 @@ public class ScalarHandlePanel implements IReceiveMessage
                                                  V,//LinearAlgebra.getTranspose( UB ) ,
                                                  true ) );
             }
-           JOptionPane.showMessageDialog( null , "<html><body>Peaks are NOT indexed.<BR> "+
-                    "The current Orientation Matrix is Changed<BR>"+
-                    "Go to the Index Peaks tab to Index Peaks</body></html>");
+          // JOptionPane.showMessageDialog( null , "<html><body>Peaks are NOT indexed.<BR> "+
+          //          "The current Orientation Matrix is Changed<BR>"+
+          //          "Go to the Index Peaks tab to Index Peaks</body></html>");
 
          } else if ( command.toUpperCase( ).startsWith( "SET" )
                || command.toUpperCase( ).startsWith( "CLEAR" ) )
