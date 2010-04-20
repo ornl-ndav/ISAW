@@ -239,17 +239,24 @@ public class PeakListHandler implements IReceiveMessage
        Vector3D_d u_proj_hkl = (Vector3D_d)results.elementAt(2);
        Vector3D_d v_proj_hkl = (Vector3D_d)results.elementAt(3);
 
-       System.out.println("UB = ");
-       LinearAlgebra.print( UB );
-       System.out.printf("PSI = %8.4f\n", psi);
-       System.out.printf( "U Projected HKL  = %6.3f  %6.3f  %6.3f\n",
+       if ( UB != null )
+       {
+//       System.out.println("UB = ");
+//       LinearAlgebra.print( UB );
+         String psiStr = String.format("PSI = %8.4f\n", psi);
+         String uStr = String.format("U Projected HKL  = %6.3f  %6.3f  %6.3f\n",
                     u_proj_hkl.getX(), u_proj_hkl.getY(), u_proj_hkl.getZ() );
-       System.out.printf( "V Projected HKL  = %6.3f  %6.3f  %6.3f\n",
+         String vStr = String.format("V Projected HKL  = %6.3f  %6.3f  %6.3f\n",
                     v_proj_hkl.getX(), v_proj_hkl.getY(), v_proj_hkl.getZ() );
+      
+         Util.sendInfo( psiStr + uStr + vStr );
 
-       UB = getErrors( UB, Convert2IPeak(peakNew_list), tolerance );
+         UB = getErrors( UB, Convert2IPeak(peakNew_list), tolerance );
 
-       Util.sendInfo( "Finished Indexing" );
+         Util.sendInfo( "Finished Indexing" );
+       }
+       else
+         Util.sendInfo( "ARCS Indexing FAILED, use different U,V,PSI" );
     } 
 
     else if( message.getName().equals( 
@@ -298,7 +305,8 @@ public class PeakListHandler implements IReceiveMessage
         
        UB = getErrors( UB, Peaks, value[2]); 
         
-      //  message_center.send(  new Message(Commands.INDEX_PEAKS_WITH_ORIENTATION_MATRIX,
+      //  message_center.send(  
+      //           new Message(Commands.INDEX_PEAKS_WITH_ORIENTATION_MATRIX,
       //           new UBwTolCmd(UBT,value[2]) ,false) );
        return false;
     }
@@ -358,9 +366,8 @@ public class PeakListHandler implements IReceiveMessage
   }
 
 
-  public static void indexAllPeaks( Vector Peaks, float[][]UBT, float tolerance )
+  public static void indexAllPeaks(Vector Peaks, float[][]UBT, float tolerance)
   {
-    
     float[][]UB = LinearAlgebra.getTranspose( UBT );
     int n=0;
     for( int i=0; i<Peaks.size(); i++)
