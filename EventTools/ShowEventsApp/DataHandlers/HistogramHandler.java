@@ -344,7 +344,7 @@ public class HistogramHandler implements IReceiveMessage
 
     else if ( inst.equals("ARCS") ||
               inst.equals("SEQ")  )
-      Set_Histogram( num_bins, max_Q, -50.0f, 0, -10.0f, 40.0f, -25.0f, 25.0f );
+      Set_Histogram( num_bins, max_Q, -40.0f, 0, -15.0f, 40.0f, -15.0f, 15.0f );
 
     else
       Set_Histogram( num_bins, max_Q, -24.0f, 0, -12.0f, 12.0f, -12.0f, 12.0f );
