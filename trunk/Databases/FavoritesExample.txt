@@ -1,0 +1,48 @@
+#               Favorites File Format/Example
+#
+# Each line of the file starts with
+#          #--Comment
+#          MENU= -- The name of menu if present( Favorites if not)
+#          OPERATOR= -- The "filename" of the operator
+#          PATH=     -- A comma delimited list of path/sub path/sub path names
+#                       where the previous operator will be placed
+#          TITLE=   --If present, the Title to represent the operator on the menu
+#                      If not present, the operator Title will be used. NOTE: TITLE
+#                      should be right after OPERATOR( before PATH )
+#
+#
+# NOTES:
+#    - This menu will be place on the main menu bar of Isaw's workbench(IsawGUI.Isaw) if
+#      the favorites file is placed after "Favorites=" in IsawProps.dat. 
+#
+#    -The Operator "filename" can be found in the top line of the operator documentation
+#     For operators written in java, it is the class name( without the .class if desired)
+#         It does not include the path from root
+#     The whole file name can be used for Operators written in python or Isaw scripts.
+#         
+#     These operators do NOT need to be "installed"(i.e. accessible to the Isaw scripting
+#         language or Macros menu list). An Operator defined on a given line will be 
+#         ignored unless a PATH= line comes before the next OPERATOR= line or end of file.
+#
+#     The operators that are placed under the same menu path are added in the order they
+#         appear in the file
+#
+#     The TITLE is for the previous OPERATOR
+#
+#
+MENU=Favorites
+OPERATOR=Operators.Generic.Load.LoadASCII
+PATH=File,Load
+#
+TITLE=Load Ascii
+OPERATOR=C:\ISAW\Scripts\TOF_SCD\anvred_py.py
+PATH=SCD,Reduce
+TITLE=Anvred
+#
+OPERATOR=C:/ISAW/Scripts/ShowResults.iss
+PATH=Test,Operator,FindNeXus,Version 2
+TITLE=FindNeXus Test
+
+#If Path is absent the operator item will be placed at level 1
+
+
