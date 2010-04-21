@@ -165,7 +165,7 @@ public class QMapperHandler implements IReceiveMessage
 
       if ( peak == null )
       {
-        info = new SelectionInfoCmd( 0, 0, 0, 0, 0, 
+        info = new SelectionInfoCmd( 0, 0, 0, 0, 0, 0,
                    new Vector3D(),
                    new Vector3D(),
                    0, 0, 0,0, 0, 0 );
@@ -188,6 +188,7 @@ public class QMapperHandler implements IReceiveMessage
                    (int)(.5f+peak.x()),
                    (int)(.5f+peak.y()),
                    0, 
+                   0,
                    hkl,
                    Qxyz,
                    magnitude_Q,
