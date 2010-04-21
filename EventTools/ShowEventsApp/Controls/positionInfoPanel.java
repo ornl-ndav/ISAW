@@ -55,6 +55,7 @@ public class positionInfoPanel extends JPanel
    private JTextField          countsTxt;
    private JTextField          detectorNumTxt;
    private JTextField          ColRowTxt;
+   private JTextField          SeqNumTxt;
 // private JTextField          histogramPageTxt;
    private JTextField          hklTxt;
    private JTextField          qxyzTxt;
@@ -115,12 +116,13 @@ public class positionInfoPanel extends JPanel
    {
       JPanel panel = new JPanel();
       
-      panel.setLayout(new GridLayout(14, 2));
+      panel.setLayout(new GridLayout(15, 2));
       panel.setBorder(new TitledBorder("Position Info."));
       
       JTextField countLbl         = new JTextField("Counts");
       JTextField detectorLbl      = new JTextField("Detector Number");
       JTextField ColRowLbl        = new JTextField("Column,Row");
+      JTextField SeqNumLbl           = new JTextField("Peak Sequence Number");
 //    JTextField histogramLbl     = new JTextField("Histogram Page");
       JTextField hklLbl           = new JTextField("h,k,l");
       JTextField qxyzLbl          = new JTextField("Qx,Qy,Qz");
@@ -137,6 +139,7 @@ public class positionInfoPanel extends JPanel
       countsTxt        = new JTextField("0");
       detectorNumTxt   = new JTextField("0");
       ColRowTxt        = new JTextField("(  0,  0)");
+      SeqNumTxt           = new JTextField("0");
       detectorNumTxt   = new JTextField("0");
 //    histogramPageTxt = new JTextField("0");
       hklTxt           = new JTextField("(  0.00,   0.00,   0.00)");
@@ -157,6 +160,8 @@ public class positionInfoPanel extends JPanel
       panel.add(detectorNumTxt);
       panel.add(ColRowLbl);
       panel.add(ColRowTxt);
+      panel.add( SeqNumLbl);
+      panel.add( SeqNumTxt);
 //    panel.add(histogramLbl);
 //    panel.add(histogramPageTxt);
       panel.add(hklLbl);
@@ -210,6 +215,7 @@ public class positionInfoPanel extends JPanel
       ColRowTxt.setText( "("+(int)selection.getCol()+
                          ", "+(int)selection.getRow()+")" );
 //    histogramPageTxt.setText( "" + (int)selection.getHistPage() );
+      SeqNumTxt.setText( ""+ selection.getSeqNum( ) );
       hklTxt.setText( String.format("(%6.2f, %6.2f, %6.2f)",
                                        selection.getHKL().getX(), 
                                        selection.getHKL().getY(),
