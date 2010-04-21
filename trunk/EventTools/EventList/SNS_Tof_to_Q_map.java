@@ -587,12 +587,12 @@ public class SNS_Tof_to_Q_map
      float   transinv = 1.0f;
                                                  // get the sublist of all of
                                                  // the events we need to map
-     int[] all_events = event_list.rawEvents( first, num_mapped );
+     int[] my_events = event_list.rawEvents( first, num_mapped );
 /*
      int[] used_ids = new int[ QUxyz.length ];   // this is 3 times larger
                                                  // than should be needed.
 */
-     int all_index = 0;
+     int ev_index = 0;
      mapped_index = 0;
                                                  // First scan for how many
                                                  // events pass the filter
@@ -601,8 +601,8 @@ public class SNS_Tof_to_Q_map
      int ok_counter = 0;
      for ( int i = 0; i < num_mapped; i++ )
      {
-       tof_chan = all_events[ all_index++ ] + t0; 
-       id       = all_events[ all_index++ ]; 
+       tof_chan = my_events[ ev_index++ ] + t0; 
+       id       = my_events[ ev_index++ ]; 
        if ( id >= 0 && id < tof_to_MagQ.length )
        {
          if ( use_id[ id ] )
@@ -618,12 +618,12 @@ public class SNS_Tof_to_Q_map
      float[] Qxyz    = new float[ 3 * ok_counter ];
      float[] weights = new float[ ok_counter ];
 
-     all_index = 0;                               // start over a start of
+     ev_index = 0;                                // start over a start of
                                                   // the part we're mapping
      for ( int i = 0; i < num_mapped; i++ )
      {
-       tof_chan = all_events[ all_index++ ] + t0; 
-       id       = all_events[ all_index++ ]; 
+       tof_chan = my_events[ ev_index++ ] + t0; 
+       id       = my_events[ ev_index++ ]; 
 /*
        if ( id > 0 && id < used_ids.length )
          used_ids[id]++;
@@ -826,7 +826,7 @@ public class SNS_Tof_to_Q_map
 
     int[][] histogram = getEmptyIntHistogram( binner );
 
-    int[] all_events = event_list.rawEvents( first, num_mapped );
+    int[] my_events = event_list.rawEvents( first, num_mapped );
 
     boolean  use_d_map = true;
     if (d_map == null || d_map.length < tof_to_MagQ.length )
@@ -837,15 +837,15 @@ public class SNS_Tof_to_Q_map
     double two_pi = Math.PI * 2;
     double d_value;
 
-    int ev_index = 2*first;                   // index into event array
+    int ev_index = 0;                         // index into event array
     int    index;                             // index into histogram bin
     int    num_bins = binner.numBins();
     int    grid_id;
 
     for ( int i = 0; i < num_mapped; i++ )
     {
-      tof_chan = all_events[ ev_index++ ] + t0;
-      id       = all_events[ ev_index++ ];
+      tof_chan = my_events[ ev_index++ ] + t0;
+      id       = my_events[ ev_index++ ];
 
       if ( id >= 0 && id < tof_to_MagQ.length )
       {
@@ -912,7 +912,7 @@ public class SNS_Tof_to_Q_map
 
     double[][] histogram = getEmptyDoubleHistogram( binner );
 
-    int[] all_events = event_list.rawEvents( first, num_mapped );
+    int[] my_events = event_list.rawEvents( first, num_mapped );
 
     boolean  use_d_map = true;
     if (d_map == null || d_map.length < tof_to_MagQ.length )
@@ -927,15 +927,15 @@ public class SNS_Tof_to_Q_map
     double   two_pi = Math.PI * 2;
     double   d_value;
 
-    int      ev_index = 2*first;              // index into event array
+    int      ev_index = 0;                    // index into event array
     int      index;                           // index into histogram bin
     int      num_bins = binner.numBins();
     int      grid_id;
 
     for ( int i = 0; i < num_mapped; i++ )
     {
-      tof_chan = all_events[ ev_index++ ] + t0;
-      event_id = all_events[ ev_index++ ];
+      tof_chan = my_events[ ev_index++ ] + t0;
+      event_id = my_events[ ev_index++ ];
 
       cur_ids = ghost_ids[ event_id ];       // just point to current DAS id
       cur_ws  = ghost_weights[ event_id ];   // info to simplify array indexing
@@ -1010,7 +1010,7 @@ public class SNS_Tof_to_Q_map
 
     int[][] histogram = getEmptyIntHistogram( binner );
 
-    int[] all_events = event_list.rawEvents( first, num_mapped );
+    int[] my_events = event_list.rawEvents( first, num_mapped );
 
     float  tof_chan;
     int    id;
@@ -1021,15 +1021,15 @@ public class SNS_Tof_to_Q_map
                                               // in 100 ns units, we need to
                                               // divide by 10 to get micro-secs
 
-    int ev_index = 2*first;                   // index into event array
+    int ev_index = 0;                         // index into event array
     int    index;                             // index into histogram bin
     int    num_bins = binner.numBins();
     int    grid_id;
 
     for ( int i = 0; i < num_mapped; i++ )
     {
-      tof_chan = all_events[ ev_index++ ] + t0;
-      id       = all_events[ ev_index++ ];
+      tof_chan = my_events[ ev_index++ ] + t0;
+      id       = my_events[ ev_index++ ];
 
       if ( id >= 0 && id < recipLaSinTa.length )
       {
@@ -1098,7 +1098,7 @@ public class SNS_Tof_to_Q_map
 
     double[][] histogram = getEmptyDoubleHistogram( binner );
 
-    int[] all_events = event_list.rawEvents( first, num_mapped );
+    int[] my_events = event_list.rawEvents( first, num_mapped );
 
     float    tof_chan;
     int      event_id;                        // the DAS id of actual event
@@ -1113,15 +1113,15 @@ public class SNS_Tof_to_Q_map
                                               // in 100 ns units, we need to
                                               // divide by 10 to get micro-secs
 
-    int ev_index = 2*first;                   // index into event array
+    int ev_index = 0;                         // index into my event array
     int    index;                             // index into histogram bin
     int    num_bins = binner.numBins();
     int    grid_id;
 
     for ( int i = 0; i < num_mapped; i++ )
     {
-      tof_chan = all_events[ ev_index++ ] + t0;
-      event_id = all_events[ ev_index++ ];
+      tof_chan = my_events[ ev_index++ ] + t0;
+      event_id = my_events[ ev_index++ ];
 
       cur_ids = ghost_ids[ event_id ];       // just point to current DAS id
       cur_ws  = ghost_weights[ event_id ];   // info to simplify array indexing
