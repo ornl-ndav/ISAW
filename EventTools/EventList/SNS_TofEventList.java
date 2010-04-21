@@ -175,14 +175,14 @@ public class SNS_TofEventList implements ITofEventList
       long num_left;
       long seg_size;
       long bytes_read;
-      byte[] buffer    = new byte[ BUFFER_SIZE ];
+      byte[] buffer = new byte[ BUFFER_SIZE ];
       while ( num_loaded < num_events )
       {
         num_left   = num_events - num_loaded;
         bytes_read = r_file.read( buffer );
         seg_size   = Math.min( BUFFER_SIZE, 8*num_left );
         seg_size   = Math.min( seg_size, bytes_read );
-/*       System.out.println("\nfirst_event = " + first_event +
+/*      System.out.println("\nfirst_event = " + first_event +
                            "\nnum_events  = " + num_events +
                            "\nnum_loaded  = " + num_loaded +
                            "\nnum_left    = " + num_left +
@@ -191,7 +191,7 @@ public class SNS_TofEventList implements ITofEventList
 */
         if ( bytes_read > 0 )
         {
-          UnpackBuffer( buffer,seg_size, num_loaded );
+          UnpackBuffer( buffer, seg_size, num_loaded );
           num_loaded += bytes_read/8;
         }
         else
@@ -204,7 +204,7 @@ public class SNS_TofEventList implements ITofEventList
           num_loaded = num_events;
         }
       }
-//      System.out.println("num_loaded = " + num_loaded );
+//    System.out.println("num_loaded = " + num_loaded );
       r_file.close();
     }
     catch ( IOException ex )
@@ -277,7 +277,9 @@ public class SNS_TofEventList implements ITofEventList
 
   /**
    *  Check that the requested event range is valid and adjust the number
-   *  of events if needed.
+   *  of events if needed.  After calling this method the fields 
+   *  this.first_event and this.num_events should be properly set to load
+   *  data from the file, if no exception is thrown.
    *
    * @param   first_event  The index of the first event whose pixel ID 
    *                       should be returned.
