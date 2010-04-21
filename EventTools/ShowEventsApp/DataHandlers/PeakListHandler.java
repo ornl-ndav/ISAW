@@ -1,9 +1,11 @@
 
 package EventTools.ShowEventsApp.DataHandlers;
 
+import java.util.Arrays;
 import java.util.Vector;
 
 import gov.anl.ipns.MathTools.LinearAlgebra;
+import gov.anl.ipns.MathTools.Geometry.Vector3D;
 import gov.anl.ipns.MathTools.Geometry.Vector3D_d;
 
 import DataSetTools.components.ui.Peaks.OrientMatrixControl;
@@ -21,6 +23,7 @@ import MessageTools.MessageCenter;
 import EventTools.ShowEventsApp.Command.Commands;
 import EventTools.ShowEventsApp.Command.IndexPeaksCmd;
 import EventTools.ShowEventsApp.Command.IndexARCS_PeaksCmd;
+import EventTools.ShowEventsApp.Command.SelectionInfoCmd;
 import EventTools.ShowEventsApp.Command.UBwTolCmd;
 import EventTools.ShowEventsApp.Command.Util;
 
@@ -39,6 +42,7 @@ public class PeakListHandler implements IReceiveMessage
     message_center.addReceiver( this, Commands.WRITE_PEAK_FILE );
     message_center.addReceiver( this, Commands.SHOW_PEAK_FILE );
     message_center.addReceiver( this, Commands.INIT_HISTOGRAM );
+    message_center.addReceiver( this, Commands.ADD_PEAK_LIST_INFO );
  
     message_center.addReceiver( this, Commands.INDEX_PEAKS );
     message_center.addReceiver( this, Commands.INDEX_PEAKS_ARCS );
@@ -101,6 +105,22 @@ public class PeakListHandler implements IReceiveMessage
       peakQ_list   = new Vector<PeakQ>();
       peakNew_list = new Vector<Peak_new>();
 
+    }else if( message.getName( ).equals( Commands.ADD_PEAK_LIST_INFO ))
+    {
+       Object val = message.getValue();
+       if ( val instanceof SelectionInfoCmd )         // fill in counts field
+       {
+         SelectionInfoCmd select_info_cmd = (SelectionInfoCmd)val;
+         Peak_new[]Sav = new Peak_new[ peakNew_list.size()];
+         Copy( Sav, peakNew_list);
+         Arrays.sort( Sav, new Peak_newBasicComparator() );
+         select_info_cmd.setSeqNum( getNearestSeqNum(Sav, select_info_cmd.getQxyz( ),
+               (int)select_info_cmd.getDetNum( )) );
+         message_center.send( new Message( Commands.SHOW_SELECTED_POINT_INFO,
+               select_info_cmd, false));
+         
+         
+       }
     }
 
     else if ( message.getName().equals(Commands.WRITE_PEAK_FILE ) )
@@ -319,8 +339,40 @@ public class PeakListHandler implements IReceiveMessage
 
     return false;
   }
-
   
+  private void Copy( Peak_new[] Sav, Vector<Peak_new> PeakList)
+  {
+     if( Sav == null || PeakList== null ||Sav.length != PeakList.size())
+        throw new IllegalArgumentException("null or improper array sizes. Cannot Sort");
+     for( int i=0; i< Sav.length ; i++)
+        Sav[i]= PeakList.elementAt( i );
+  }
+
+  private int getNearestSeqNum(Peak_new[] peakNew_list, Vector3D Qxyz, int detNum)
+  {
+     if( peakNew_list == null ||  Qxyz == null)
+        return 0;
+     if( peakNew_list.length < 1)
+        return 0;
+     float minQ=Float.MAX_VALUE;
+     int seqNum =0;
+     for( int i=0; i < peakNew_list.length; i++)
+     {
+        Peak_new peak =peakNew_list[i];
+         if ( peak.detnum( ) == detNum )
+         {
+            Vector3D Q = new Vector3D( peak.getUnrotQ( ) );
+
+            float d = Qxyz.distance( Q );
+            if ( d < minQ )
+            {
+               minQ = d;
+               seqNum = i + 1;
+            }
+         }
+     }
+    return seqNum; 
+  }
   private float[][] getErrors(float[][] UB, Vector<IPeak>Peaks, float tolerance)
   {
     float[][] UBT = null;

@@ -190,7 +190,7 @@ public class OrientationMatrixHandler implements IReceiveMessage
 
           set_projected_HKL_info( select_info_cmd );
         }
-        Message new_mess = new Message( Commands.SHOW_SELECTED_POINT_INFO,
+        Message new_mess = new Message( Commands.ADD_PEAK_LIST_INFO,
                                         select_info_cmd,
                                         true );
         message_center.send( new_mess );
