@@ -178,7 +178,6 @@ public class PeakListHandler implements IReceiveMessage
 
         UB = getErrors( UB, Convert2IPeak(peakNew_list), tolerance ); 
 
- //     UB = LinearAlgebra.getTranspose(UB);
         Util.sendInfo( "Finished Indexing" );
       }
       catch ( Exception ex )
@@ -249,7 +248,7 @@ public class PeakListHandler implements IReceiveMessage
          String vStr = String.format("V Projected HKL  = %6.3f  %6.3f  %6.3f\n",
                     v_proj_hkl.getX(), v_proj_hkl.getY(), v_proj_hkl.getZ() );
       
-         Util.sendInfo( psiStr + uStr + vStr );
+         Util.sendInfo( "\n" + psiStr + uStr + vStr );
 
          UB = getErrors( UB, Convert2IPeak(peakNew_list), tolerance );
 
@@ -315,13 +314,17 @@ public class PeakListHandler implements IReceiveMessage
   }
 
   
-  private float[][] getErrors( float[][] UB, Vector<IPeak>Peaks, float tolerance )
+  private float[][] getErrors(float[][] UB, Vector<IPeak>Peaks, float tolerance)
   {
-     indexAllPeaks( peakNew_list, LinearAlgebra.getTranspose( UB), tolerance);
-     double[][] UB2 = new double[3][3];
-     double[] abc = new double[7];
-     double[] sig_abc = new double[7];
-     if( Double.isNaN( LsqrsJ_base.LeastSquaresSCD( UB2, 
+    float[][] UBT = null;
+
+    try
+    {
+      indexAllPeaks( peakNew_list, LinearAlgebra.getTranspose(UB), tolerance);
+      double[][] UB2 = new double[3][3];
+      double[] abc = new double[7];
+      double[] sig_abc = new double[7];
+      if( Double.isNaN( LsqrsJ_base.LeastSquaresSCD( UB2, 
            LsqrsJ_base.getHKLArrays( Peaks,null, -1f,null, null, -1),
            LsqrsJ_base.getQArray( Peaks ,-1f,null, null, -1), 
            abc, 
@@ -332,24 +335,28 @@ public class PeakListHandler implements IReceiveMessage
               abc= sig_abc = null;
            }
      
-     float[][] UBT = LinearAlgebra.double2float(
-                         LinearAlgebra.getTranspose( UB2 ));
-     Object messageValue = UBT;
-     if( sig_abc != null)
-     {
+      UBT = LinearAlgebra.double2float( LinearAlgebra.getTranspose( UB2 ) );
+      Object messageValue = UBT;
+      if( sig_abc != null)
+      {
         messageValue = new Vector(2);
         ((Vector)messageValue).addElement( UBT);
         ((Vector)messageValue).add(LinearAlgebra.double2float( sig_abc ));
-     }
-     message_center.send( new Message( Commands.SET_ORIENTATION_MATRIX,
-              messageValue, false));
+      }
+      message_center.send( new Message( Commands.SET_ORIENTATION_MATRIX,
+                                        messageValue, false));
 
-     Message set_peaks = new Message( Commands.SET_PEAK_NEW_LIST,
-                                      peakNew_list,
-                                      true );
-     message_center.send( set_peaks );
-     
-     return UBT;
+      Message set_peaks = new Message( Commands.SET_PEAK_NEW_LIST,
+                                       peakNew_list,
+                                       true );
+      message_center.send( set_peaks );
+    }
+    catch ( Exception ex )
+    {
+      Util.sendInfo("Indexing FAILED");
+    } 
+    return UBT;
+
   }
 
 
