@@ -38,6 +38,7 @@ public class PeakListHandler implements IReceiveMessage
     message_center.addReceiver( this, Commands.SET_PEAK_NEW_LIST );
     message_center.addReceiver( this, Commands.WRITE_PEAK_FILE );
     message_center.addReceiver( this, Commands.SHOW_PEAK_FILE );
+    message_center.addReceiver( this, Commands.INIT_HISTOGRAM );
  
     message_center.addReceiver( this, Commands.INDEX_PEAKS );
     message_center.addReceiver( this, Commands.INDEX_PEAKS_ARCS );
@@ -94,6 +95,12 @@ public class PeakListHandler implements IReceiveMessage
                              peakQ_list.size() +
                              " #Peak_new = " + peakNew_list.size() );
       }
+    }else if( message.getName( ).equals( Commands.INIT_HISTOGRAM ))
+    {
+
+      peakQ_list   = new Vector<PeakQ>();
+      peakNew_list = new Vector<Peak_new>();
+
     }
 
     else if ( message.getName().equals(Commands.WRITE_PEAK_FILE ) )
