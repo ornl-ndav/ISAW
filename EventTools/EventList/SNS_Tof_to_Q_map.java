@@ -568,10 +568,10 @@ public class SNS_Tof_to_Q_map
    *          event, interleaved in the array.
    */
   public FloatArrayEventList3D MapEventsToQ( ITofEventList event_list,
-                                             int   first,
-                                             int   num_to_map )
+                                             long  first,
+                                             long  num_to_map )
   {
-     int last = CheckAndFixEventRange( event_list, first, num_to_map );
+     int num_mapped = CheckAndGetNumToMap( event_list, first, num_to_map );
 
      int     id;
      int     id_offset;
@@ -585,22 +585,21 @@ public class SNS_Tof_to_Q_map
      float   lamda;
      int     lamda_index;
      float   transinv = 1.0f;
-
-     num_to_map = last - first + 1;
-     long  total_num  = event_list.numEntries();
-     int[] all_events = event_list.rawEvents( 0, total_num );
+                                                 // get the sublist of all of
+                                                 // the events we need to map
+     int[] all_events = event_list.rawEvents( first, num_mapped );
 /*
      int[] used_ids = new int[ QUxyz.length ];   // this is 3 times larger
                                                  // than should be needed.
 */
-     int all_index = 2*first;
+     int all_index = 0;
      mapped_index = 0;
                                                  // First scan for how many
                                                  // events pass the filter
                                                  // so we only need to  
                                                  // allocate new arrays once 
      int ok_counter = 0;
-     for ( int i = 0; i < num_to_map; i++ )
+     for ( int i = 0; i < num_mapped; i++ )
      {
        tof_chan = all_events[ all_index++ ] + t0; 
        id       = all_events[ all_index++ ]; 
@@ -619,9 +618,9 @@ public class SNS_Tof_to_Q_map
      float[] Qxyz    = new float[ 3 * ok_counter ];
      float[] weights = new float[ ok_counter ];
 
-     all_index = 2*first;                         // start over a start of
+     all_index = 0;                               // start over a start of
                                                   // the part we're mapping
-     for ( int i = 0; i < num_to_map; i++ )
+     for ( int i = 0; i < num_mapped; i++ )
      {
        tof_chan = all_events[ all_index++ ] + t0; 
        id       = all_events[ all_index++ ]; 
@@ -798,7 +797,7 @@ public class SNS_Tof_to_Q_map
 
   /**
    *  Map the specified sub-list of time-of-flight events to a 
-   *  list of "d-spacing" histogram.
+   *  list of "d-spacing" histograms.
    *
    *  @param event_list  List of (tof,id) specifying detected neutrons.
    *
@@ -823,13 +822,11 @@ public class SNS_Tof_to_Q_map
                                     IEventBinner  binner,
                                     double[]      d_map )
   {
-    int last = CheckAndFixEventRange( event_list, first, num_to_map );
+    int num_mapped = CheckAndGetNumToMap( event_list, first, num_to_map );
 
     int[][] histogram = getEmptyIntHistogram( binner );
 
-    int   num_mapped = last - first + 1;
-    long  total_num  = event_list.numEntries();
-    int[] all_events = event_list.rawEvents( 0, total_num );
+    int[] all_events = event_list.rawEvents( first, num_mapped );
 
     boolean  use_d_map = true;
     if (d_map == null || d_map.length < tof_to_MagQ.length )
@@ -873,7 +870,7 @@ public class SNS_Tof_to_Q_map
 
   /**
    *  Map the specified sub-list of time-of-flight events to a list
-   *  of "d-spacing" "ghost" histogram.  A reference to arrays containing
+   *  of "d-spacing" "ghost" histograms.  A reference to arrays containing
    *  the ghost ids and weights must be passed in to this array as a
    *  parameter.  These arrays can be read from a file, using the method:
    *  FileUtil.LoadGhostMapFile()
@@ -911,13 +908,11 @@ public class SNS_Tof_to_Q_map
                                       int[][]       ghost_ids,
                                       double[][]    ghost_weights )
   {
-    int last = CheckAndFixEventRange( event_list, first, num_to_map );
+    int num_mapped = CheckAndGetNumToMap( event_list, first, num_to_map );
 
     double[][] histogram = getEmptyDoubleHistogram( binner );
 
-    int   num_mapped = last - first + 1;
-    long  total_num  = event_list.numEntries();
-    int[] all_events = event_list.rawEvents( 0, total_num );
+    int[] all_events = event_list.rawEvents( first, num_mapped );
 
     boolean  use_d_map = true;
     if (d_map == null || d_map.length < tof_to_MagQ.length )
@@ -1007,7 +1002,7 @@ public class SNS_Tof_to_Q_map
                                                float         angle_deg,
                                                float         final_L_m )
   {
-    int last = CheckAndFixEventRange( event_list, first, num_to_map );
+    int num_mapped = CheckAndGetNumToMap( event_list, first, num_to_map );
 
     if ( final_L_m <= 0 )
       throw new IllegalArgumentException( "Final flight path must be > 0 " +
@@ -1015,9 +1010,7 @@ public class SNS_Tof_to_Q_map
 
     int[][] histogram = getEmptyIntHistogram( binner );
 
-    int   num_mapped = last - first + 1;
-    long  total_num  = event_list.numEntries();
-    int[] all_events = event_list.rawEvents( 0, total_num );
+    int[] all_events = event_list.rawEvents( first, num_mapped );
 
     float  tof_chan;
     int    id;
@@ -1097,7 +1090,7 @@ public class SNS_Tof_to_Q_map
                                                  int[][]       ghost_ids,
                                                  double[][]    ghost_weights )
   {
-    int last = CheckAndFixEventRange( event_list, first, num_to_map );
+    int num_mapped = CheckAndGetNumToMap( event_list, first, num_to_map );
 
     if ( final_L_m <= 0 )
       throw new IllegalArgumentException( "Final flight path must be > 0 " +
@@ -1105,9 +1098,7 @@ public class SNS_Tof_to_Q_map
 
     double[][] histogram = getEmptyDoubleHistogram( binner );
 
-    int   num_mapped = last - first + 1;
-    long  total_num  = event_list.numEntries();
-    int[] all_events = event_list.rawEvents( 0, total_num );
+    int[] all_events = event_list.rawEvents( first, num_mapped );
 
     float    tof_chan;
     int      event_id;                        // the DAS id of actual event
@@ -1253,28 +1244,39 @@ public class SNS_Tof_to_Q_map
   /**
    * Check that the specified event list and range of events is valid,
    * and throw an IllegalArgumentException if the event list or range is not
-   * valid.  The index of the last event that can be requested within the
-   * specified event list and range is returned as the value of this 
-   * method.
+   * valid.  The number of events to process is returned as the value of this 
+   * method.  The returned number of events will fit in one array if
+   * no exception is thrown.
    */
-  private int CheckAndFixEventRange( ITofEventList event_list,
-                                     int           first,
-                                     int           num_to_map )
+  private int CheckAndGetNumToMap( ITofEventList event_list,
+                                   long          first,
+                                   long          num_to_map )
   {
      if ( event_list == null )
        throw new IllegalArgumentException( "event_list is null" );
 
-     int num_events = (int)event_list.numEntries();
+     long num_events = event_list.numEntries();
 
      if ( first < 0 || first >= num_events )
        throw new IllegalArgumentException("First index: " + first +
                  " < 0 or >= number of events in list: " + num_events );
 
-     int last = first + num_to_map - 1;
+     long last = first + num_to_map - 1;
      if ( last >= num_events )
        last = num_events - 1;
 
-     return last;
+     num_to_map = last - first + 1;
+     if ( num_to_map > ITofEventList.MAX_LIST_SIZE )
+       throw new IllegalArgumentException( "TOO many events in sublist. " +
+             num_to_map + " exceeds " + ITofEventList.MAX_LIST_SIZE );
+/*
+     System.out.println("Maximum number of events = " +
+                                                 ITofEventList.MAX_LIST_SIZE );
+     System.out.println("Number of events in list = " + num_events );
+     System.out.println("Number of events to map  = " + num_to_map );
+     System.out.println("First event number       = " + first );
+*/
+     return (int)num_to_map;
   }
 
 
