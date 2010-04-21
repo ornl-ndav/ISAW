@@ -35,9 +35,9 @@
 package EventTools.EventList;
 
 /**
- * This class represents a list of SNS time-of-flight events as two
- * parallel arrays of ints, one for the times-of-flight and one for
- * the pixel IDs.
+ * This class represents a list of SNS time-of-flight events as an 
+ * interleaved array of ints with successive entries representing 
+ * the time-of-flight and pixel ID of an event.
  */
 public class TofEventList implements ITofEventList
 {
@@ -116,8 +116,8 @@ public class TofEventList implements ITofEventList
             "Number of events passed to TofEventList constructor 2, " +
              num_events + " must not exceed " + MAX_LIST_SIZE );
 
-    if ( num_events > 2*raw_events.length )   // keep num_events in valid range
-      num_events = 2*raw_events.length;
+    if ( num_events > raw_events.length / 2 ) // keep num_events in valid range
+      num_events = raw_events.length / 2;
 
     if ( make_copy )
     {
