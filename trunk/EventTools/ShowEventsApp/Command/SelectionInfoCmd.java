@@ -9,6 +9,7 @@ public class SelectionInfoCmd
    private int   col;
    private int   row;
    private int   page;
+   private int   seq_num;
    
    private Vector3D hkl;
    private Vector3D Qxyz;
@@ -30,6 +31,7 @@ public class SelectionInfoCmd
                             int      col,
                             int      row,
                             int      page,
+                            int      seq_num,
                             Vector3D hkl,
                             Vector3D Qxyz,
                             float    raw_Q,
@@ -44,6 +46,7 @@ public class SelectionInfoCmd
       this.col        = col;
       this.row        = row;
       this.page       = page; 
+      this.seq_num    = seq_num;
       this.hkl        = new Vector3D( hkl );
       this.Qxyz       = new Vector3D( Qxyz );
       this.raw_Q      = raw_Q;
@@ -94,6 +97,12 @@ public class SelectionInfoCmd
       this.page = page;
    }
 
+
+   public int getSeqNum()
+   {
+      return seq_num;
+   }
+   
    public Vector3D getHKL()
    {
       return new Vector3D( hkl );
@@ -159,6 +168,12 @@ public class SelectionInfoCmd
    {
      this.psi_deg = psi_deg;
    }
+   
+
+   public void setSeqNum( int seq_num )
+   {
+     this.seq_num = seq_num;
+   }
 
    public float getTilt()
    {
@@ -175,6 +190,7 @@ public class SelectionInfoCmd
       return "\nCounts      : " + getCounts() +
              "\nDet Num     : " + getDetNum() + 
              "\nPage        : " + getHistPage() + 
+             "\nSeq Num     : " + getSeqNum() + 
              "\nHKL         : " + getHKL() + 
              "\nQxyz        : " + getQxyz() + 
              "\nRaw Q       : " + getRaw_Q() + 
