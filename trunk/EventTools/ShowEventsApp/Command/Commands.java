@@ -82,6 +82,7 @@ public class Commands
   public static final String ADD_HISTOGRAM_INFO = "ADD_HISTOGRAM_INFO";
   public static final String ADD_ORIENTATION_MATRIX_INFO =
                                                  "ADD_ORIENTATION_MATRIX_INFO";
+  public static final String ADD_PEAK_LIST_INFO = "ADD_PEAK_LIST_INFO";
   public static final String SHOW_SELECTED_POINT_INFO =
                                                  "SHOW_SELECTED_POINT_INFO";
 
