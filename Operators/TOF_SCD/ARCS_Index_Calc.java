@@ -41,6 +41,10 @@ import gov.anl.ipns.MathTools.*;
 import gov.anl.ipns.MathTools.Geometry.*;
 import DataSetTools.operator.Generic.TOF_SCD.*;
 
+
+public class ARCS_Index_Calc
+{
+
 /**
  * Get a UB matrix and additional information required for orienting a
  * single crystal on ARCS, given the lattice parameters, a list of peaks
@@ -82,10 +86,6 @@ import DataSetTools.operator.Generic.TOF_SCD.*;
  * Position 2 has the new values for the HKLs of the projected vector U.
  * Position 3 has the new values for the HKLs of the projected vector V.
  */
-
-public class ARCS_Index_Calc
-{
-
   public static Vector index( double[]    lattice_params, 
                               Vector      peaks,
                               double      psi_deg,
