@@ -360,6 +360,14 @@ public class DefaultProperties{
            .append(separator).append("InstrumentInfo").append(eol);
          rs.append(eol);
          
+         rs.append( eol );
+        rs.append( "# If Favorites file is defined correctly, a new menu item in ")
+            .append( eol ).
+        append("# IsawGUI's Menu bar will be created. See the file  ").append( eol )
+                               .append( "#../Databases/FavoritesExample.txt").
+        append(eol);
+        rs.append("#Favorites='filename with favorites information").append( eol )
+                 .append(eol);
         rs.append("#").append(eol);
         rs.append("# Command to start browser for Help system").append(eol);
         rs.append("#").append(eol);
