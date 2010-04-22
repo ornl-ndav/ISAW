@@ -133,7 +133,10 @@ public class SNS_Tof_to_Q_map
 
   private boolean     debug = false;
 
-  private IDataGrid[]  grid_arr; 
+  private IDataGrid[]  grid_arr;         // list of actual grids
+  private IDataGrid[]  all_grids;        // list of possible grids, indexed by
+                                         // grid ID.  NULL if there is no grid
+                                         // with that ID.
   private VecQMapper[] inverse_mapper;
 
   private float        L1;               // L1 in meters.
@@ -817,16 +820,12 @@ public class SNS_Tof_to_Q_map
    *          If detector bank k does not exist, that row will be null.
    */
   public int[][] Make_d_Histograms( ITofEventList event_list,
-                                    int           first,
-                                    int           num_to_map,
+                                    long          first,
+                                    long          num_to_map,
                                     IEventBinner  binner,
                                     double[]      d_map )
   {
     int num_mapped = CheckAndGetNumToMap( event_list, first, num_to_map );
-
-    int[][] histogram = getEmptyIntHistogram( binner );
-
-    int[] my_events = event_list.rawEvents( first, num_mapped );
 
     boolean  use_d_map = true;
     if (d_map == null || d_map.length < tof_to_MagQ.length )
@@ -837,10 +836,13 @@ public class SNS_Tof_to_Q_map
     double two_pi = Math.PI * 2;
     double d_value;
 
-    int ev_index = 0;                         // index into event array
+    int    ev_index = 0;                      // index into event array
     int    index;                             // index into histogram bin
     int    num_bins = binner.numBins();
     int    grid_id;
+
+    int[]   my_events = event_list.rawEvents( first, num_mapped );
+    int[][] histogram = getEmptyIntHistogram( binner );
 
     for ( int i = 0; i < num_mapped; i++ )
     {
@@ -901,18 +903,14 @@ public class SNS_Tof_to_Q_map
    *          If detector bank k does not exist, that row will be null.
    */
   public float[][] Make_d_Histograms( ITofEventList event_list,
-                                      int           first,
-                                      int           num_to_map,
+                                      long          first,
+                                      long          num_to_map,
                                       IEventBinner  binner,
                                       double[]      d_map,
                                       int[][]       ghost_ids,
                                       double[][]    ghost_weights )
   {
     int num_mapped = CheckAndGetNumToMap( event_list, first, num_to_map );
-
-    double[][] histogram = getEmptyDoubleHistogram( binner );
-
-    int[] my_events = event_list.rawEvents( first, num_mapped );
 
     boolean  use_d_map = true;
     if (d_map == null || d_map.length < tof_to_MagQ.length )
@@ -931,6 +929,9 @@ public class SNS_Tof_to_Q_map
     int      index;                           // index into histogram bin
     int      num_bins = binner.numBins();
     int      grid_id;
+
+    int[]      my_events = event_list.rawEvents( first, num_mapped );
+    double[][] histogram = getEmptyDoubleHistogram( binner );
 
     for ( int i = 0; i < num_mapped; i++ )
     {
@@ -996,8 +997,8 @@ public class SNS_Tof_to_Q_map
    *          If detector bank k does not exist, that row will be null.
    */
   public int[][] Make_Time_Focused_Histograms( ITofEventList event_list,
-                                               int           first,
-                                               int           num_to_map,
+                                               long          first,
+                                               long          num_to_map,
                                                IEventBinner  binner,
                                                float         angle_deg,
                                                float         final_L_m )
@@ -1007,11 +1008,6 @@ public class SNS_Tof_to_Q_map
     if ( final_L_m <= 0 )
       throw new IllegalArgumentException( "Final flight path must be > 0 " +
                                            final_L_m );
-
-    int[][] histogram = getEmptyIntHistogram( binner );
-
-    int[] my_events = event_list.rawEvents( first, num_mapped );
-
     float  tof_chan;
     int    id;
     float  focused_tof;
@@ -1021,10 +1017,13 @@ public class SNS_Tof_to_Q_map
                                               // in 100 ns units, we need to
                                               // divide by 10 to get micro-secs
 
-    int ev_index = 0;                         // index into event array
+    int    ev_index = 0;                      // index into event array
     int    index;                             // index into histogram bin
     int    num_bins = binner.numBins();
     int    grid_id;
+
+    int[]   my_events = event_list.rawEvents( first, num_mapped );
+    int[][] histogram = getEmptyIntHistogram( binner );
 
     for ( int i = 0; i < num_mapped; i++ )
     {
@@ -1082,8 +1081,8 @@ public class SNS_Tof_to_Q_map
    *          If detector bank k does not exist, that row will be null.
    */
   public float[][] Make_Time_Focused_Histograms( ITofEventList event_list,
-                                                 int           first,
-                                                 int           num_to_map,
+                                                 long          first,
+                                                 long          num_to_map,
                                                  IEventBinner  binner,
                                                  float         angle_deg,
                                                  float         final_L_m,
@@ -1095,11 +1094,6 @@ public class SNS_Tof_to_Q_map
     if ( final_L_m <= 0 )
       throw new IllegalArgumentException( "Final flight path must be > 0 " +
                                            final_L_m );
-
-    double[][] histogram = getEmptyDoubleHistogram( binner );
-
-    int[] my_events = event_list.rawEvents( first, num_mapped );
-
     float    tof_chan;
     int      event_id;                        // the DAS id of actual event
     int      num_ghosts = ghost_ids[0].length;
@@ -1113,10 +1107,13 @@ public class SNS_Tof_to_Q_map
                                               // in 100 ns units, we need to
                                               // divide by 10 to get micro-secs
 
-    int ev_index = 0;                         // index into my event array
+    int    ev_index = 0;                      // index into my event array
     int    index;                             // index into histogram bin
     int    num_bins = binner.numBins();
     int    grid_id;
+
+    int[]      my_events = event_list.rawEvents( first, num_mapped );
+    double[][] histogram = getEmptyDoubleHistogram( binner );
 
     for ( int i = 0; i < num_mapped; i++ )
     {
@@ -1149,6 +1146,199 @@ public class SNS_Tof_to_Q_map
            f_histogram[row][col] = (float)(histogram[row][col]);
 
     return f_histogram;
+  }
+
+
+  /**
+   *  Map the specified sub-list of time-of-flight events to a 
+   *  list of |Q| histograms, one histogram for each bank.
+   *
+   *  @param event_list  List of (tof,id) specifying detected neutrons.
+   *
+   *  @param first       The index of the first event to map to |Q|
+   *
+   *  @param num_to_map  The number of events to map to |Q| 
+   *
+   *  @param binner      The IEventBinner object that defines the bin
+   *                     boundaries for the histogram bins
+   *                     
+   *  @return A two dimensional array of integers.  The kth row of this 
+   *          array contains the histogram values for detector bank k.
+   *          If detector bank k does not exist, that row will be null.
+   */
+  public int[][] Make_q_Histograms( ITofEventList event_list,
+                                    long          first,
+                                    long          num_to_map,
+                                    IEventBinner  binner  )
+  {
+    int num_mapped = CheckAndGetNumToMap( event_list, first, num_to_map );
+
+    float  tof_chan;
+    int    id;
+    double q_value;
+
+    int ev_index = 0;                         // index into event array
+    int    index;                             // index into histogram bin
+    int    num_bins = binner.numBins();
+    int    grid_id;
+
+    int[]   my_events = event_list.rawEvents( first, num_mapped );
+    int[][] histogram = getEmptyIntHistogram( binner );
+
+    for ( int i = 0; i < num_mapped; i++ )
+    {
+      tof_chan = my_events[ ev_index++ ] + t0;
+      id       = my_events[ ev_index++ ];
+
+      if ( id >= 0 && id < tof_to_MagQ.length && tof_chan > 0 )
+      {
+        q_value = tof_to_MagQ[id] / tof_chan;
+        index   = binner.index( q_value );
+        if ( index >= 0 && index < num_bins )
+        {
+          grid_id = bank_num[ id ];
+          histogram[ grid_id ][ index ]++;
+        }
+      }
+    }
+
+    return histogram;
+  }
+
+
+  /**
+   *  Map the specified sub-list of time-of-flight events to a 
+   *  list of wavelength histograms, one histogram for each bank.
+   *
+   *  @param event_list  List of (tof,id) specifying detected neutrons.
+   *
+   *  @param first       The index of the first event to map to wavelength 
+   *
+   *  @param num_to_map  The number of events to map to wavelength 
+   *
+   *  @param binner      The IEventBinner object that defines the bin
+   *                     boundaries for the histogram bins
+   *                     
+   *  @return A two dimensional array of integers.  The kth row of this 
+   *          array contains the histogram values for detector bank k.
+   *          If detector bank k does not exist, that row will be null.
+   */
+  public int[][] Make_wl_Histograms( ITofEventList event_list,
+                                     long          first,
+                                     long          num_to_map,
+                                     IEventBinner  binner  )
+  {
+    int num_mapped = CheckAndGetNumToMap( event_list, first, num_to_map );
+
+    float  tof_chan;
+    int    id;
+    double wl_value;
+
+    int    ev_index = 0;                      // index into event array
+    int    index;                             // index into histogram bin
+    int    num_bins = binner.numBins();
+    int    grid_id;
+
+    int[]   my_events = event_list.rawEvents( first, num_mapped );
+    int[][] histogram = getEmptyIntHistogram( binner );
+
+    for ( int i = 0; i < num_mapped; i++ )
+    {
+      tof_chan = my_events[ ev_index++ ] + t0;
+      id       = my_events[ ev_index++ ];
+
+      if ( id >= 0 && id < tof_to_lamda.length )
+      {
+        wl_value = tof_to_lamda[id] * tof_chan;
+        index    = binner.index( wl_value );
+        if ( index >= 0 && index < num_bins )
+        {
+          grid_id = bank_num[ id ];
+          histogram[ grid_id ][ index ]++;
+        }
+      }
+    }
+
+    return histogram;
+  }
+
+
+  /**
+   *  Map the specified sub-list of time-of-flight events to a list of
+   *  time-focused  histograms, one histogram for each bank, focused to
+   *  the center of the bank.
+   *
+   *  @param event_list  List of (tof,id) specifying detected neutrons.
+   *
+   *  @param first       The index of the first event to be histogrammed
+   *
+   *  @param num_to_map  The number of events to map to be histogrammed
+   *
+   *  @param binner      The IEventBinner object that defines the bin
+   *                     boundaries for the histogram bins
+   *
+   *  @return A two dimensional array of integers.  The kth row of this 
+   *          array contains the histogram values for detector bank k.
+   *          If detector bank k does not exist, that row will be null.
+   */
+  public int[][] Make_Time_Focused_Histograms( ITofEventList event_list,
+                                               long          first,
+                                               long          num_to_map,
+                                               IEventBinner  binner     )
+  {
+    int num_mapped = CheckAndGetNumToMap( event_list, first, num_to_map );
+
+    float   tof_chan;
+    int     id;
+    float   focused_tof;
+    float   scale;
+    float[] scale_factors = new float[ all_grids.length ];
+
+    Vector3D beam_dir = new Vector3D( 1, 0, 0 );
+    for ( int gid = 0; gid < all_grids.length; gid++ )
+    {
+      if ( all_grids[gid] == null )
+        scale_factors[gid] = 0;
+      else
+      {
+        Vector3D pos = all_grids[gid].position();
+        float final_L_m = pos.length();
+        float theta_rad = (float)Math.acos( pos.dot( beam_dir ) ) / 2;
+        scale_factors[gid] = (float)((L1+final_L_m) * Math.sin(theta_rad) / 10);
+                                              // since SNS event TOF values are
+                                              // in 100 ns units, we need to
+                                              // divide by 10 to get micro-secs
+      } 
+    }
+
+    int    ev_index = 0;                      // index into event array
+    int    index;                             // index into histogram bin
+    int    num_bins = binner.numBins();
+    int    grid_id;
+
+    int[]   my_events = event_list.rawEvents( first, num_mapped );
+    int[][] histogram = getEmptyIntHistogram( binner );
+
+    for ( int i = 0; i < num_mapped; i++ )
+    {
+      tof_chan = my_events[ ev_index++ ] + t0;
+      id       = my_events[ ev_index++ ];
+
+      if ( id >= 0 && id < recipLaSinTa.length )
+      {
+        grid_id = bank_num[ id ];
+        scale   = scale_factors[ grid_id ];
+        if ( scale > 0 )
+        {
+          focused_tof = tof_chan * scale * recipLaSinTa[id];
+          index       = binner.index( focused_tof );
+          if ( index >= 0 && index < num_bins )
+            histogram[ grid_id ][ index ]++;
+        }
+      }
+    }
+
+    return histogram;
   }
 
 
@@ -1627,7 +1817,7 @@ public class SNS_Tof_to_Q_map
                                               //       by max_grid_ID and
                                               //       add method to find it.
 
-    IDataGrid[] all_grids = new IDataGrid[ max_grid_id + 1 ];
+    all_grids = new IDataGrid[ max_grid_id + 1 ];
     
     for ( int i = 0; i < all_grids.length; i++ )
       all_grids[i] = null;
@@ -1739,7 +1929,7 @@ public class SNS_Tof_to_Q_map
 
       if ( grid_ID >= 0 )
       {
-        grid    = all_grids[ grid_ID ];
+        grid       = all_grids[ grid_ID ];
 
         pix_pos    = grid.position( row, col );
         L2         = pix_pos.length();
