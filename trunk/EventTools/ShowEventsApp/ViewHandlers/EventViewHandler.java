@@ -14,6 +14,7 @@ import gov.anl.ipns.Util.Sys.IhasWindowClosed;
 import gov.anl.ipns.Util.Sys.IndirectWindowCloseListener;
 
 import DataSetTools.operator.Generic.TOF_SCD.PeakQ;
+import DataSetTools.operator.Generic.TOF_SCD.Peak_new;
 
 import MessageTools.IReceiveMessage;
 import MessageTools.Message;
@@ -61,6 +62,7 @@ public class EventViewHandler implements IReceiveMessage, IhasWindowClosed
     message_center.addReceiver( this, Commands.SET_DRAWING_OPTIONS );
     message_center.addReceiver( this, Commands.SET_COLOR_SCALE );
     message_center.addReceiver( this, Commands.MARK_PEAKS );
+    message_center.addReceiver( this, Commands.MARK_INDEXED_PEAKS );
 
     view_message_center.addReceiver( this, Commands.ADD_EVENTS_TO_VIEW );
     view_message_center.addReceiver( this , Commands.SHOW_DISPLAY_PANE );
@@ -162,6 +164,7 @@ public class EventViewHandler implements IReceiveMessage, IhasWindowClosed
     else if ( message.getName().equals( Commands.MARK_PEAKS ) )
     {
        int MARK_SIZE = 10;
+       int INDEX_MARK_SIZE = 16;
        Object val = message.getValue();
        if ( val == null )
          return(false);
@@ -189,7 +192,48 @@ public class EventViewHandler implements IReceiveMessage, IhasWindowClosed
          {
            boolean on_off = (Boolean)val;
            events_panel.SetMarkersOnOff( on_off );
+           events_panel.SetIndexMarkersOnOff( on_off );
            events_panel.updateDisplay();
+         }
+       }
+    }
+    else if ( message.getName().equals( Commands.MARK_INDEXED_PEAKS ) )
+    {
+       int INDEX_MARK_SIZE = 18;
+       Object val = message.getValue();
+       if ( val == null )
+         return(false);
+
+       synchronized ( eventPanelMonitor )
+       {
+         if ( val instanceof Vector )         // this should always be true
+         {
+           events_panel.ClearIndexMarkers();
+           Vector<Peak_new> peaks = (Vector<Peak_new>)val;
+           Vector indexed_peaks   = new Vector();
+           for ( int i = 0; i < peaks.size(); i++ )
+           {
+             Peak_new peak = (Peak_new)peaks.elementAt(i);
+             if ( Math.round( peak.h() ) != 0  ||
+                  Math.round( peak.k() ) != 0  ||
+                  Math.round( peak.l() ) != 0  )
+               {
+                 float[] q_arr = peaks.elementAt(i).getUnrotQ();
+                 float qx = (float)(q_arr[0] * 2 * Math.PI);
+                 float qy = (float)(q_arr[1] * 2 * Math.PI);
+                 float qz = (float)(q_arr[2] * 2 * Math.PI);
+                 indexed_peaks.add( new Vector3D( qx, qy, qz ) );
+               }
+           }
+           if ( indexed_peaks.size() > 0 )
+           {
+             Vector3D[] verts = new Vector3D[ indexed_peaks.size() ];
+             for ( int i = 0; i < verts.length; i++ )
+               verts[i] = (Vector3D)indexed_peaks.elementAt(i);
+             events_panel.addIndexMarkers( verts, INDEX_MARK_SIZE,
+                                         Polymarker.PLUS, Color.YELLOW );
+             events_panel.updateDisplay();
+           }
          }
        }
     }

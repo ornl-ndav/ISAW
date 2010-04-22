@@ -157,7 +157,7 @@ public class SNS_Tof_to_Q_map
   private float[]      tof_to_lamda;     // Array giving conversion factor from
                                          // time of flight to wavelength for
                                          // each DAS pixel ID.
-                                         // lamda is tof_to_lamda[id] * tof
+                                         // lamda is tof_to_lamda[id] * tof/10
 
   private float[]      recipLaSinTa;     // Array giving time-focusing values
                                          // for each DAS pixel ID.  Contains 
@@ -1249,7 +1249,7 @@ public class SNS_Tof_to_Q_map
 
       if ( id >= 0 && id < tof_to_lamda.length )
       {
-        wl_value = tof_to_lamda[id] * tof_chan;
+        wl_value = tof_to_lamda[id] * tof_chan / 10.0f;
         index    = binner.index( wl_value );
         if ( index >= 0 && index < num_bins )
         {

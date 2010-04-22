@@ -270,9 +270,9 @@ public class PeakListHandler implements IReceiveMessage
 //       System.out.println("UB = ");
 //       LinearAlgebra.print( UB );
          String psiStr = String.format("PSI = %8.4f\n", psi);
-         String uStr = String.format("U Projected HKL  = %6.3f  %6.3f  %6.3f\n",
+         String uStr = String.format("U Projected HKL  = %7.4f  %7.4f  %7.4f\n",
                     u_proj_hkl.getX(), u_proj_hkl.getY(), u_proj_hkl.getZ() );
-         String vStr = String.format("V Projected HKL  = %6.3f  %6.3f  %6.3f\n",
+         String vStr = String.format("V Projected HKL  = %7.4f  %7.4f  %7.4f\n",
                     v_proj_hkl.getX(), v_proj_hkl.getY(), v_proj_hkl.getZ() );
       
          Util.sendInfo( "\n" + psiStr + uStr + vStr );
@@ -409,6 +409,12 @@ public class PeakListHandler implements IReceiveMessage
                                        peakNew_list,
                                        true );
       message_center.send( set_peaks );
+
+      Message mark_indexed  = new Message( Commands.MARK_INDEXED_PEAKS,
+                                           peakNew_list,
+                                           true,
+                                           true );
+      message_center.send( mark_indexed );
     }
     catch ( Exception ex )
     {
