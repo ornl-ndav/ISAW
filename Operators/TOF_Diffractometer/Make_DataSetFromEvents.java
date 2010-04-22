@@ -76,15 +76,15 @@ public class Make_DataSetFromEvents extends GenericOperator{
    public void setDefaultParameters(){
       clearParametersVector();
       addParameter( new LoadFilePG("Event File",System.getProperty("Data_Directory")));
-      addParameter( new LoadFilePG("Det Cal File",System.getProperty("ISAW_HOME")+"/InstrumentInfo/SNS/"));
-      addParameter( new LoadFilePG("Bank File",System.getProperty("ISAW_HOME")+"/InstrumentInfo/SNS/"));
-      addParameter( new LoadFilePG("Mapping File",System.getProperty("ISAW_HOME")+"/InstrumentInfo/SNS/"));
+      addParameter( new LoadFilePG("DetCal File Name",""));
+      addParameter( new LoadFilePG("Bank File Name",""));
+      addParameter( new LoadFilePG("Mapping File Name",""));
       addParameter( new FloatPG("First Event to Load",0));
-      addParameter( new FloatPG("Num Events to Load",1E10));
-      addParameter( new FloatPG("Min xAxis value",1000));
-      addParameter( new FloatPG("Max x-axis value",50000));
-      addParameter( new BooleanEnablePG("Log Binning","[true,1,1]"));
-      addParameter( new FloatPG("First Log Step",.2));
+      addParameter( new FloatPG("Num Events to Load",1E8));
+      addParameter( new FloatPG("Min xAxis value",.2));
+      addParameter( new FloatPG("Max x-axis value",10));
+      addParameter( new BooleanEnablePG("Logarithmic Binning","[true,1,1]"));
+      addParameter( new FloatPG("Length of First Interval",.0002));
       addParameter( new IntegerPG("# of Uniform bins",1000));
       addParameter( new ChoiceListPG("Type of x-axis",gov.anl.ipns.Parameters.Conversions.ToVec("[d-Spacing,\"Magnitude Q\",Wavelength,Time-of-flight]")));
    }
@@ -99,8 +99,9 @@ public class Make_DataSetFromEvents extends GenericOperator{
    public String getDocumentation(){
       StringBuffer S = new StringBuffer();
       S.append("@overview    "); 
-      S.append("Makes a DataSet containing spectra in Wavelength,|Q| or d-Spacing, with one spectrum");
-      S.append(" for each detector.");
+      S.append("Makes a DataSet containing spectra in Wavelength,|Q|, ");
+      S.append("d-Spacing or time-focused to the center of each " );
+      S.append("bank, with one spectrum for each detector bank.");
       S.append(" ");
       S.append("\r\n");
      S.append(" This operator wraps the method Operators.TOF_Diffractometer.Util#Make_DataSetFromEvents(java.lang.String,java.lang.String,java.lang.String,java.lang.String,float,float,float,float,boolean,float,int,java.lang.String)");
@@ -111,13 +112,15 @@ public class Make_DataSetFromEvents extends GenericOperator{
       S.append("@param   ");
       S.append("The name of the file with events");
       S.append("@param   ");
-      S.append("The name of the file with the detector calibrations");
+      S.append("The name of the .DetCal file with the detector calibrations");
       S.append("@param   ");
-      S.append("The name of the file with bank and pixelID(nex) info");
+      S.append("The name of the _bank.xml file with bank and ");
+      S.append("NeXus pixelID info.  ");
       S.append("@param   ");
-      S.append("The name of the file that maps DAS pixel_id's to NeXus pixel_ids");
+      S.append("The name of the _TS.dat file that contains the mapping ");
+      S.append("from DAS pixel_id's to NeXus pixel_id's");
       S.append("@param   ");
-      S.append("The first Event to load");
+      S.append("The first event to load");
       S.append("@param   ");
       S.append("The number of events to load");
       S.append("@param   ");
@@ -127,12 +130,12 @@ public class Make_DataSetFromEvents extends GenericOperator{
       S.append("@param   ");
       S.append("If true use log binning, otherwise use uniform binning");
       S.append("@param   ");
-      S.append("The llength of the first interval( if islog = true)");
+      S.append("The length of the first interval (if islog = true)");
       S.append("@param   ");
-      S.append("The number of uniform bins( if islog =false)");
+      S.append("The number of uniform bins( if islog = false)");
       S.append("@param   ");
       S.append("One of the Strings d-Spacing, Magnitude Q, Wavelength,Time-of-flight");
-      S.append("@return A DataSet in whose spectra are the histogram  for a detector bank.");
+      S.append("@return A DataSet in whose spectra are the histograms for a detector bank.");
       S.append("@error ");
       S.append("");
       return S.toString();
@@ -147,9 +150,8 @@ public class Make_DataSetFromEvents extends GenericOperator{
    public String[] getCategoryList(){
             return new String[]{
                      "Macros",
-                     "Instrument Type",
-                     "TOF_NPD",
-                     "NEW_SNS"
+                     "File",
+                     "Load"
                      };
    }
 

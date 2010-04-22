@@ -75,11 +75,11 @@ public class Make_d_DataSet extends GenericOperator{
       clearParametersVector();
       addParameter( new LoadFilePG("Event File Name",
                     System.getProperty("Data_Directory","")));
-      addParameter( new LoadFilePG("DetCal FileName",""));
+      addParameter( new LoadFilePG("DetCal File Name",""));
       addParameter( new LoadFilePG("Bank File Name",""));
       addParameter( new LoadFilePG("Mapping File Name",""));
       addParameter( new FloatPG("First Event to Load",0));
-      addParameter( new FloatPG("Number of Events To Load",1E7));
+      addParameter( new FloatPG("Number of Events To Load",1E8));
       addParameter( new FloatPG("Min d-spacing",.2f));
       addParameter( new FloatPG("Max d-spacing",10));
       addParameter( new BooleanEnablePG("Logarithmic Binning?","[true,1,1]"));

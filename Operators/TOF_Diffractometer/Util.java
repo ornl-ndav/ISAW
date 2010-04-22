@@ -66,8 +66,9 @@ public class Util
   public static final String TOF        = "Time-of-flight";
 
    /**
-    * Makes a DataSet containing spectra in Wavelength,|Q| or
-    * d-Spacing, with one spectrum for each detector.
+    * Makes a DataSet containing spectra in Wavelength,|Q|,
+    * d-Spacing or time-focused to the center of each bank,
+    * with one spectrum for each detector bank.
     *
     * @param EventFileName    The name of the file with events
     * @param DetCalFileName   The name of the file with the detector
@@ -174,9 +175,9 @@ public class Util
        else if ( x_axis_type.equalsIgnoreCase(WAVELENGTH) )
 
               temp = SMap.Make_wl_Histograms( sublist,
-                                             0,
-                                             seg_size,
-                                             binner );
+                                              0,
+                                              seg_size,
+                                              binner );
 
        else if ( x_axis_type.equalsIgnoreCase(D_SPACING) )
 
@@ -236,6 +237,13 @@ public class Util
 
      AddBankDetectorPositions( DS, SMap );
      SetAttributes( DS, EventFileName, SMap );
+
+     if ( x_axis_type.equalsIgnoreCase(MAG_Q) )
+       DataSetFactory.add_q_Operators( DS );
+     else if ( x_axis_type.equalsIgnoreCase(D_SPACING) )
+       DataSetFactory.add_d_Operators( DS );
+     else if ( x_axis_type.equalsIgnoreCase(TOF) )
+       DataSetFactory.addOperators( DS, InstrumentType.TOF_DIFFRACTOMETER );
 
      return DS;
    }
