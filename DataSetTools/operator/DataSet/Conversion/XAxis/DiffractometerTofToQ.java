@@ -439,8 +439,8 @@ public class DiffractometerTofToQ extends    XAxisConversionOp
         new_ds.addData_entry( new_data );
       }
     }
-    new_ds.addOperator(new DiffractometerQToD());
-    new_ds.addOperator(new DiffractometerQToWavelength());
+
+    DataSetFactory.add_q_Operators( new_ds );
 
     return new_ds;
   }

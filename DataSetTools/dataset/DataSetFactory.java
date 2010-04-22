@@ -568,6 +568,26 @@ public class DataSetFactory implements Serializable
 
 
   /**
+   * Configure an existing DataSet that has been loaded or converted to
+   * |Q| by adding those operators that convert from |Q|
+   * to other x-axis scales such as "d" or wavelength.
+   *
+   * @param ds   The DataSet to which the operators will be added.
+   *
+   */
+  static public void add_q_Operators( DataSet ds )
+  {
+    String x_units = ds.getX_units();
+    if ( x_units.equalsIgnoreCase("Inverse Angstroms") )
+    {
+      ds.addOperator(new GetPixelInfo_op());
+      ds.addOperator(new DiffractometerQToD());
+      ds.addOperator(new DiffractometerQToWavelength());
+    }
+  }
+
+
+  /**
    * Configure an existing DataSet by adding the set of operators
    * appropriate to the monitors on a particular instrument type,
    * to the DataSet.
