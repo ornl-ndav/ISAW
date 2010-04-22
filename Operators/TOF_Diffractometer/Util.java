@@ -60,6 +60,186 @@ import EventTools.Histogram.*;
  */
 public class Util
 {
+  public static final String D_SPACING  = "d-Spacing";
+  public static final String MAG_Q      = "Magnitude Q";
+  public static final String WAVELENGTH = "Wavelength";
+  public static final String TOF        = "Time-of-flight";
+
+   /**
+    * Makes a DataSet containing spectra in Wavelength,|Q| or
+    * d-Spacing, with one spectrum for each detector.
+    *
+    * @param EventFileName    The name of the file with events
+    * @param DetCalFileName   The name of the file with the detector
+    *                         calibrations
+    * @param bankInfoFileName The name of the file with bank and pixelID(nex)
+    *                         info
+    * @param MappingFileName  The name of the file that maps DAS pixel_id's
+    *                         to NeXus pixel_id's
+    * @param firstToLoad      The first Event to load
+    * @param numToLoad        The number of events to load
+    * @param min              The minimum x-axis value to use
+    * @param max              The maximum x-axis value to use 
+    * @param isLog            If true use log binning, otherwise use uniform
+    *                         binnings
+    * @param nUniformbins     The number of uniform bins( isLog = false )
+    * @param first_logStep    The length of first interval( isLog = true )
+    *
+    * @param x_axis_type      One of the Strings "magnitude Q", "Wavelength" 
+    *
+    * @return  A DataSet in whose spectra are the histograms
+    *          for a detector bank.
+    */
+   public static DataSet Make_DataSetFromEvents( String  EventFileName,
+                                                 String  DetCalFileName,
+                                                 String  bankInfoFileName,
+                                                 String  MappingFileName,
+                                                 float   firstToLoad,
+                                                 float   numToLoad,
+                                                 float   min,
+                                                 float   max,
+                                                 boolean isLog,
+                                                 float   first_logStep,
+                                                 int     nUniformbins,
+                                                 String  x_axis_type   )
+                                throws Exception
+   {
+     if ( ! x_axis_type.equalsIgnoreCase( MAG_Q )      &&
+          ! x_axis_type.equalsIgnoreCase( WAVELENGTH ) &&
+          ! x_axis_type.equalsIgnoreCase( D_SPACING )  && 
+          ! x_axis_type.equalsIgnoreCase( TOF )        )
+
+       throw new IllegalArgumentException( "x_axis_type MUST be one of " +
+                      MAG_Q + ", " + WAVELENGTH  + " or " + D_SPACING );
+
+     String Instrument = FileIO.getSNSInstrumentName( EventFileName );
+     SNS_Tof_to_Q_map SMap = new SNS_Tof_to_Q_map( Instrument,
+                                                   DetCalFileName,
+                                                   bankInfoFileName,
+                                                   MappingFileName,
+                                                   null );
+
+     SNS_TofEventList STOF = new  SNS_TofEventList( EventFileName );
+
+     IEventBinner binner;
+     if ( isLog )
+       binner = new LogEventBinner( min, max, first_logStep);
+     else
+       binner = new UniformEventBinner( min,max,nUniformbins);
+
+     long firstEvent = (long)firstToLoad;
+     long NumEventsToLoad = (long)numToLoad;
+
+     if ( firstEvent >= STOF.numEntries() )
+       throw new IllegalArgumentException("first event " + firstEvent +
+                    " exceeds number of events in file " + STOF.numEntries());
+
+                                                       // keep events in range
+     long last = firstEvent + NumEventsToLoad - 1;
+     if ( last >= STOF.numEntries() )
+       last =  STOF.numEntries() - 1;
+
+     long num_to_load = last - firstEvent + 1;
+                                                       // keep each segment
+                                                       // small enough for int
+     long seg_size   = 10000000;
+     seg_size = Math.min( seg_size, ITofEventList.MAX_LIST_SIZE );
+
+     long num_segments = num_to_load / seg_size + 1;
+     seg_size = num_to_load / num_segments;
+
+     int[][] Histograms = null;
+     boolean first_time = true;
+     long num_loaded = 0;
+
+     for ( int i = 0; i < num_segments; i ++ )
+     {
+       seg_size = Math.min( seg_size, num_to_load - num_loaded );
+
+       int[] buffer = STOF.rawEvents( firstEvent, seg_size );
+
+       TofEventList sublist = new TofEventList( buffer,
+                                                buffer.length/2,
+                                                false );
+       int[][]temp = null;
+
+       if ( x_axis_type.equalsIgnoreCase(MAG_Q) )
+
+              temp = SMap.Make_q_Histograms( sublist,
+                                             0,
+                                             seg_size,
+                                             binner );
+
+       else if ( x_axis_type.equalsIgnoreCase(WAVELENGTH) )
+
+              temp = SMap.Make_wl_Histograms( sublist,
+                                             0,
+                                             seg_size,
+                                             binner );
+
+       else if ( x_axis_type.equalsIgnoreCase(D_SPACING) )
+
+              temp = SMap.Make_d_Histograms( sublist,
+                                             0,
+                                             seg_size,
+                                             binner,
+                                             null );
+
+       else if ( x_axis_type.equalsIgnoreCase(TOF) )
+
+              temp = SMap.Make_Time_Focused_Histograms( sublist,
+                                                        0,
+                                                        seg_size,
+                                                        binner  );
+
+       if ( first_time && temp != null )
+       {
+         Histograms = temp;
+         first_time = false;
+       }
+       else if ( temp != null )          // add in the new histogram data
+       {
+         for ( int row = 0; row < Histograms.length; row++ )
+           if ( temp[row] != null && Histograms[row] != null )
+             for ( int col = 0; col < Histograms[row].length; col++ )
+               Histograms[row][col] += temp[row][col];
+       }
+       num_loaded += seg_size;
+       firstEvent += seg_size;
+     }
+
+     if ( Histograms == null)
+       return null;
+
+     int run_num = getRunNumber( EventFileName );
+
+     String title = Instrument + "_"+ run_num;
+
+     String log_message = "Mapped events to " + x_axis_type;
+
+     DataSet DS = MakeDataSet( ConvertTo2DfloatArray(Histograms), 
+                               binner, title, log_message );
+     String x_units = "";
+     if ( x_axis_type.equalsIgnoreCase(MAG_Q) )
+       x_units = "Inverse Angstroms";
+     else if ( x_axis_type.equalsIgnoreCase(WAVELENGTH) ||
+               x_axis_type.equalsIgnoreCase(D_SPACING) )
+       x_units = "Angstroms";
+     else if ( x_axis_type.equalsIgnoreCase(TOF) )
+       x_units = "Time(us)";
+
+     DS.setX_units( x_units );
+     DS.setX_label( x_axis_type );
+     DS.setY_units( "Counts" );
+     DS.setY_label( "Scattering Intensity" );
+
+     AddBankDetectorPositions( DS, SMap );
+     SetAttributes( DS, EventFileName, SMap );
+
+     return DS;
+   }
+
+
    /**
     * Makes a DataSet in d-spacing for each detector from Event Data
     * 
@@ -164,7 +344,7 @@ public class Util
                                                        // keep each segment
                                                        // small enough for int
          long seg_size   = 10000000;
-         seg_size = Math.min( seg_size, Integer.MAX_VALUE / 2 );
+         seg_size = Math.min( seg_size, ITofEventList.MAX_LIST_SIZE );
 
          long num_segments = num_to_load / seg_size + 1;
          seg_size = num_to_load / num_segments;
@@ -198,7 +378,9 @@ public class Util
 
            int[] buffer = STOF.rawEvents( firstEvent, seg_size );
 
-           TofEventList sublist = new TofEventList(buffer,buffer.length,false);
+           TofEventList sublist = new TofEventList( buffer, 
+                                                    buffer.length/2,
+                                                    false );
 
            float[][]temp = null;
            if( useGhosting)
@@ -382,7 +564,7 @@ public class Util
                                                        // keep each segment 
                                                        // small enough for int
          long seg_size   = 10000000;
-         seg_size = Math.min( seg_size, Integer.MAX_VALUE / 2 );  
+         seg_size = Math.min( seg_size, ITofEventList.MAX_LIST_SIZE );  
 
          long num_segments = num_to_load / seg_size + 1;
          seg_size = num_to_load / num_segments;
@@ -392,12 +574,16 @@ public class Util
          long num_loaded = 0;
          for ( int i = 0; i < num_segments; i ++ )
          {
+           System.out.println("Loading Segment # " + i + " of " + num_segments);
+           System.out.println("First Event  = " + firstEvent );
+           System.out.println("Segment Size = " + seg_size );
            seg_size = Math.min( seg_size, num_to_load - num_loaded );
 
            int[] buffer = STOF.rawEvents( firstEvent, seg_size );
           
-           TofEventList sublist = new TofEventList(buffer,buffer.length,false);
-
+           TofEventList sublist = new TofEventList( buffer,
+                                                    buffer.length/2,
+                                                    false );
            float[][]temp = null;
            
            if( useGhosting )
@@ -519,19 +705,7 @@ public class Util
     for( int i = 0; i < xs.length; i++ )
       xs[i] = (float)binner.minVal( i );
 
-    // The following statement is not needed, since the array xs[] already
-    // contains one extra bin, and that last bin is filled by the loop above.
-    // xs[ xs.length - 1 ] = (float)binner.maxVal( xs.length - 2 );
-
     VariableXScale xscl = new VariableXScale( xs );
-
-    System.out.println("--------- IN Util.java -----------");
-    for ( int i = 0; i < 4; i++ )
-      System.out.println("i, xs[i] = " + i + ", " + xs[i] );
-
-    for ( int i = xs.length-5; i < xs.length; i++ )
-      System.out.println("i, xs[i] = " + i + ", " + xs[i] );
-
 
     for( int i = 0; i < histograms.length; i++)
     {
