@@ -75,10 +75,10 @@ public class MakeTimeFocusedDataSet extends GenericOperator{
       clearParametersVector();
       addParameter( new LoadFilePG("Event File Name",System.getProperty("Data_Directory","")));
       addParameter( new LoadFilePG("DetCal File Name",""));
-      addParameter( new LoadFilePG("Bank FileName",""));
+      addParameter( new LoadFilePG("Bank File Name",""));
       addParameter( new LoadFilePG("Mapping File Name",""));
       addParameter( new FloatPG("First Event to Load",0));
-      addParameter( new FloatPG("Number of Events To Load", 1E7));
+      addParameter( new FloatPG("Number of Events To Load", 1E8));
       addParameter( new FloatPG("Focused Angle(degrees)",90));
       addParameter( new FloatPG("Focused Secondary Flight Path(m)",.5f));
       addParameter( new FloatPG("Min Time to Focus",1000));
@@ -118,8 +118,6 @@ public class MakeTimeFocusedDataSet extends GenericOperator{
       S.append("data from the GhostPks.dat file is used to generated ");
       S.append("fractional events in near by bins, given a actual event.");
 
-      S.append("@algorithm     "); 
-      S.append("");
       S.append("@assumptions    "); 
       S.append("");
       S.append("@param   ");
@@ -133,7 +131,7 @@ public class MakeTimeFocusedDataSet extends GenericOperator{
       S.append("The name of the _TS.dat file that contains the mapping ");
       S.append("from DAS pixel_id's to NeXus pixel_id's");
       S.append("@param   ");
-      S.append("The first Event to load");
+      S.append("The first event to load");
       S.append("@param   ");
       S.append("The number of events to load");
       S.append("@param   ");
@@ -149,9 +147,9 @@ public class MakeTimeFocusedDataSet extends GenericOperator{
       S.append("@param   ");
       S.append("If true use log binning, otherwise use uniform  binnings");
       S.append("@param   ");
-      S.append("The length of first interval( isLog = true");
+      S.append("The length of first interval (if isLog = true)");
       S.append("@param   ");
-      S.append(")The number of uniform bins( isLog=false )");
+      S.append(")The number of uniform bins( if isLog = false )");
       S.append("@param   ");
       S.append("Use ghosting corrections");
       S.append("@param   ");
