@@ -1695,14 +1695,15 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
 				// Write out the documentation
 				fout.write("   public String getDocumentation(){\r\n".getBytes());
 				fout.write("      StringBuffer S = new StringBuffer();\r\n".getBytes());
-				fout.write( ("     S.append(\" This operator wraps the method "+
-				                      MethPage.substring( 5 ).trim()+"\");\r\n").getBytes());
-				//Write out the contents of the Documentation TextArea
+								//Write out the contents of the Documentation TextArea
 				fout.write("      S.append(\"@overview    \"); \r\n".getBytes());
 				fout.write(
 					MultiLine_ify(W.docPanel.OverView.getText(), "      S.append(\"", "\");\r\n")
 						.getBytes());
-				
+				fout.write( ("       S.append(\"\\r\\n\");\r\n" ).getBytes());
+				fout.write( ("     S.append(\" This operator wraps the method "+
+                      MethPage.substring( 5 ).trim()+"\");\r\n").getBytes());
+
 				//Write out the contents of the Algorithm TextArea
 				fout.write("      S.append(\"@algorithm    \"); \r\n".getBytes());				
 				fout.write(
@@ -1730,7 +1731,7 @@ public class Method2OperatorWizard extends JFrame implements ActionListener {
                 
                    kz=ret.indexOf("\n");
                    if( kz<0)
-                     k=ret.length();
+                     kz=ret.length();
                 }
                 if( kz>0){
                 
