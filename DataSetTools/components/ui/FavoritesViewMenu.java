@@ -77,9 +77,9 @@ public class FavoritesViewMenu
     */
    public FavoritesViewMenu(IDataSetListHandler dataSetList)
    {
-
+      SharedData dat = new SharedData();
       Menu = "Favorites";
-      String filename = System.getProperty( "Favorites" );
+      String filename = SharedData.getProperty(  "Favorites" );
       
       if ( filename == null )
       {
