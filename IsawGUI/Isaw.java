@@ -1282,10 +1282,19 @@ public class Isaw
     OpWrite.addActionListener(menu_item_handler);   
     menuBar.add(fMenu);
     menuBar.add(eMenu);
-    menuBar.add(uvMenu);
+    menuBar.add(uvMenu);    
     menuBar.add(oMenu);
     menuBar.add(macrosMenu);
     menuBar.add( wizardMenu );
+    try
+    {
+    JMenu fav  = (new FavoritesViewMenu( jdt )).getFavoritesJMenu( );
+    if( fav != null)
+       menuBar.add( fav);
+    }catch(Exception ss)
+    {
+       ss.printStackTrace( );
+    }
     menuBar.add(hMenu);
     setJMenuBar(menuBar);
   }
