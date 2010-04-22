@@ -82,8 +82,9 @@ public class Util
     * @param max              The maximum x-axis value to use 
     * @param isLog            If true use log binning, otherwise use uniform
     *                         binnings
-    * @param nUniformbins     The number of uniform bins( isLog = false )
     * @param first_logStep    The length of first interval( isLog = true )
+    * 
+    * @param nUniformbins     The number of uniform bins( isLog = false )
     *
     * @param x_axis_type      One of the Strings "magnitude Q", "Wavelength" 
     *
@@ -255,9 +256,10 @@ public class Util
     * @param min              The minimum d-spacing to consider
     * @param max              The maximum d-spacing to consider
     * @param isLog            If true use log binning, otherwise use uniform
-    *                         binnings           
-    * @param nUniformbins     The number of uniform bins( isLog=false )
+    *                         binnings     
     * @param first_logStep    The length of first interval( isLog = true )
+    *       
+    * @param nUniformbins     The number of uniform bins( isLog=false )
     * 
     * @return  A DataSet in d-spacing whose spectra are the summed d-spacing
     *           for a detector.
@@ -469,9 +471,11 @@ public class Util
     * @param min              The minimum time to consider
     * @param max              The maximum time to consider
     * @param isLog            If true use log binning, otherwise use uniform
-    *                            binnings           
-    * @param nUniformbins     The number of uniform bins( isLog=false )
+    *                            binnings    
+    *                            
     * @param first_logStep    The length of first interval( isLog = true )
+    *        
+    * @param nUniformbins     The number of uniform bins( isLog=false )
     * @param useGhosting      Perform ghosting corrections
     * @param GhostInfoFile    The name of the file with ghost information
     * @param nGhostIDs        The number of DAS pixel id's to use
