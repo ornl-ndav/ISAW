@@ -76,8 +76,11 @@ public class SlicedEventsPanel
 {
   private Group           points_group;
   private Group           marker_group;
+  private Group           index_marker_group;
   private OnOff           axis_group;
+  private OnOff           all_markers_group;
   private SimpleShape     marker_shape;
+  private SimpleShape     index_marker_shape;
   private Color[]         colors;
   private int[]           color_tran;
   private float           min = 10f;
@@ -114,13 +117,17 @@ public class SlicedEventsPanel
     axis_group.addChild( z_axis );
 
     points_group = new Group();
+    all_markers_group = new OnOff( true );
     marker_group = new Group();
+    index_marker_group = new Group();
 
     Group root = new Group();
     root.addChild( new glDisableNode(GL.GL_LIGHTING) );
     root.addChild( axis_group );
     root.addChild( points_group );
-    root.addChild( marker_group );
+    root.addChild( all_markers_group );
+      all_markers_group.addChild( marker_group );
+      all_markers_group.addChild( index_marker_group );
 
 //  jogl_panel = new JoglPanel( root, true, JoglPanel.DEBUG_MODE );
     jogl_panel = new JoglPanel( root, true, JoglPanel.NORMAL_MODE );
@@ -218,6 +225,7 @@ public class SlicedEventsPanel
   {
     ClearEvents();
     ClearMarkers();
+    ClearIndexMarkers();
     // TODO Clear slice plane; 
   }
 
@@ -251,6 +259,7 @@ public class SlicedEventsPanel
     if ( marker_shape == null )    // nothing to do
       return;
 
+    all_markers_group.set( turn_on );
     if ( turn_on )
     {
       marker_group.Clear();
@@ -258,6 +267,41 @@ public class SlicedEventsPanel
     }
     else
       marker_group.Clear();
+  }
+
+
+  public void addIndexMarkers( Vector3D[] verts,
+                               int        size,
+                               int        type,
+                               Color      color )
+  {
+    ClearIndexMarkers();
+    index_marker_shape = new Polymarker(verts, size, type, color);
+    index_marker_group.addChild( index_marker_shape );
+  }
+
+
+  public void ClearIndexMarkers()
+  {
+    index_marker_group.Clear();
+    index_marker_shape = null;           // get rid of old markers so we can't
+                                         // show "stale" markers.
+  }
+
+
+  public void SetIndexMarkersOnOff( boolean turn_on )
+  {
+    if ( index_marker_shape == null )    // nothing to do
+      return;
+
+    all_markers_group.set( turn_on );
+    if ( turn_on )
+    {
+      index_marker_group.Clear();
+      index_marker_group.addChild( index_marker_shape );
+    }
+    else
+      index_marker_group.Clear();
   }
 
 

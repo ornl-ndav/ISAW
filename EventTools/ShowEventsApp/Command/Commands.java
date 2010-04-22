@@ -6,7 +6,7 @@ public class Commands
 
   public static final String EXIT_APPLICATION = "EXIT_APPLICATION";
 
-  public static final String UPDATE      = "UPDATE";
+  public static final String UPDATE         = "UPDATE";
    
   public static final String LOAD_FILE      = "LOAD_FILE";
   
@@ -113,6 +113,11 @@ public class Commands
    * MARK_PEAKS has value Boolean OR a vector of PeakQ objects
    */
   public static final String MARK_PEAKS = "MARK_PEAKS";
+
+  /**
+   * MARK_INDEXED_PEAKS has value Boolean OR a vector of Peak_new objects
+   */
+  public static final String MARK_INDEXED_PEAKS = "MARK_INDEXED_PEAKS";
 
   public static final String WRITE_PEAK_FILE = "WRITE_PEAK_FILE";
 
