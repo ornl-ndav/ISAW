@@ -49,6 +49,10 @@ import javax.swing.border.*;
 import DataSetTools.operator.Generic.TOF_SCD.IPeak;
 import DataSetTools.operator.Generic.TOF_SCD.Peak_new;
 import EventTools.ShowEventsApp.Command.Commands;
+import EventTools.ShowEventsApp.Command.IndexARCS_PeaksCmd;
+import EventTools.ShowEventsApp.Command.IndexPeaksCmd;
+import EventTools.ShowEventsApp.Command.UBwTolCmd;
+import EventTools.ShowEventsApp.Command.Util;
 import EventTools.ShowEventsApp.DataHandlers.PeakListHandler;
 import MessageTools.*;
 import Operators.TOF_SCD.LsqrsJ_base;
@@ -77,9 +81,11 @@ public class ScalarHandlePanel implements IReceiveMessage
 
    float[][]                 UB;
    
-   float[]                  sig_abc;
+   float[]                   sig_abc;
 
    float[][]                 UB_old;
+   
+   float                     tolerance = .12f;
 
    JPanel                    panel;
 
@@ -162,6 +168,19 @@ public class ScalarHandlePanel implements IReceiveMessage
             Commands.SET_ORIENTATION_MATRIX );
       OrientMatMessageCenter.addReceiver( this ,
             Commands.SET_PEAK_NEW_LIST );
+      
+      OrientMatMessageCenter.addReceiver( this ,
+            Commands.INDEX_PEAKS);
+
+      OrientMatMessageCenter.addReceiver( this ,
+            Commands.INDEX_PEAKS_WITH_ORIENTATION_MATRIX);
+     
+      OrientMatMessageCenter.addReceiver( this ,
+            Commands.INDEX_PEAKS_ROSS );
+      
+      OrientMatMessageCenter.addReceiver( this ,
+            Commands.INDEX_PEAKS_ARCS);
+      
 
    }
    
@@ -516,6 +535,48 @@ public class ScalarHandlePanel implements IReceiveMessage
       {
          Peaks = (Vector<Peak_new>)message.getValue( );
          return false;
+      }else if( message.getName( ).equals(Commands.INDEX_PEAKS))
+      {
+         Object obj = message.getValue();
+      if ( obj == null || !(obj instanceof IndexPeaksCmd) )
+      {
+        Util.sendError("ERROR: wrong value object in INDEX_PEAKS command");
+        return false;
+      }
+
+     
+
+      IndexPeaksCmd cmd = (IndexPeaksCmd)obj;
+      tolerance = cmd.getTolerance( );
+
+         return false;
+      }else if(message.getName( ).equals(Commands.INDEX_PEAKS_WITH_ORIENTATION_MATRIX))
+      {  
+         
+         UBwTolCmd UBB = (UBwTolCmd)message.getValue();
+      
+      
+          tolerance = UBB.getOffIntMax( );
+         return false;
+      }else if(message.getName( ).equals(Commands.INDEX_PEAKS_ROSS ))
+      {
+
+         float[] value = (float[])message.getValue();
+         tolerance = value[2];
+         return false;
+      } else if ( message.getName( ).equals( Commands.INDEX_PEAKS_ARCS ) )
+      {
+         Object obj = message.getValue();
+        
+         if ( obj == null || !(obj instanceof IndexARCS_PeaksCmd) )
+         {
+           Util.sendError("ERROR: wrong value object in INDEX_PEAKS command");
+           return false;
+         }
+
+         IndexARCS_PeaksCmd cmd = (IndexARCS_PeaksCmd)obj;
+         tolerance = cmd.getTolerance();
+         return false;
       }
       sig_abc = null;
       UB_old = null;
@@ -560,7 +621,7 @@ public class ScalarHandlePanel implements IReceiveMessage
       }
     
       PeakListHandler.indexAllPeaks( PeakList , 
-            LinearAlgebra.getTranspose( LinearAlgebra.double2float(UB_new) ), .12f );
+            LinearAlgebra.getTranspose( LinearAlgebra.double2float(UB_new) ), tolerance );
       double[][] UBD = new double[3][3];
       double[] abc = new double[7];
       double[] sig_abc = new double[7];
