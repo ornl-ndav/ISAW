@@ -1294,7 +1294,6 @@ public class SNS_Tof_to_Q_map
     float   scale;
     float[] scale_factors = new float[ all_grids.length ];
 
-    Vector3D beam_dir = new Vector3D( 1, 0, 0 );
     for ( int gid = 0; gid < all_grids.length; gid++ )
     {
       if ( all_grids[gid] == null )
@@ -1303,7 +1302,8 @@ public class SNS_Tof_to_Q_map
       {
         Vector3D pos = all_grids[gid].position();
         float final_L_m = pos.length();
-        float theta_rad = (float)Math.acos( pos.dot( beam_dir ) ) / 2;
+        float two_theta_rad = (float)( Math.acos( pos.getX() / final_L_m ) );
+        float theta_rad = two_theta_rad / 2;
         scale_factors[gid] = (float)((L1+final_L_m) * Math.sin(theta_rad) / 10);
                                               // since SNS event TOF values are
                                               // in 100 ns units, we need to
