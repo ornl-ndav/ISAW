@@ -861,7 +861,8 @@ public class SNS_Tof_to_Q_map
         if ( index >= 0 && index < num_bins )
         {
           grid_id = bank_num[ id ];
-          histogram[ grid_id ][ index ]++;
+          if ( histogram[ grid_id ] != null )
+            histogram[ grid_id ][ index ]++;
         }
       }
     }
@@ -956,7 +957,8 @@ public class SNS_Tof_to_Q_map
           if ( index >= 0 && index < num_bins )
           {
             grid_id = bank_num[ id ];
-            histogram[ grid_id ][ index ] += cur_ws[ ghost_num ];
+            if ( histogram[ grid_id ] != null )
+              histogram[ grid_id ][ index ] += cur_ws[ ghost_num ];
           }
         }
       }
@@ -1037,7 +1039,8 @@ public class SNS_Tof_to_Q_map
         if ( index >= 0 && index < num_bins )
         {
           grid_id = bank_num[ id ];
-          histogram[ grid_id ][ index ]++;
+          if ( histogram[ grid_id ] != null )
+            histogram[ grid_id ][ index ]++;
         }
       }
     }
@@ -1133,7 +1136,8 @@ public class SNS_Tof_to_Q_map
           if ( index >= 0 && index < num_bins )
           {
             grid_id = bank_num[ id ];
-            histogram[ grid_id ][ index ] += cur_ws[ ghost_num ];
+            if ( histogram[ grid_id ] != null )
+              histogram[ grid_id ][ index ] += cur_ws[ ghost_num ];
           }
         }
       }
@@ -1197,7 +1201,8 @@ public class SNS_Tof_to_Q_map
         if ( index >= 0 && index < num_bins )
         {
           grid_id = bank_num[ id ];
-          histogram[ grid_id ][ index ]++;
+          if ( histogram[ grid_id ] != null )
+            histogram[ grid_id ][ index ]++;
         }
       }
     }
@@ -1254,7 +1259,8 @@ public class SNS_Tof_to_Q_map
         if ( index >= 0 && index < num_bins )
         {
           grid_id = bank_num[ id ];
-          histogram[ grid_id ][ index ]++;
+          if ( histogram[ grid_id ] != null )
+            histogram[ grid_id ][ index ]++;
         }
       }
     }
@@ -1327,13 +1333,16 @@ public class SNS_Tof_to_Q_map
       if ( id >= 0 && id < recipLaSinTa.length )
       {
         grid_id = bank_num[ id ];
-        scale   = scale_factors[ grid_id ];
-        if ( scale > 0 )
+        if ( histogram[ grid_id ] != null )
         {
-          focused_tof = tof_chan * scale * recipLaSinTa[id];
-          index       = binner.index( focused_tof );
-          if ( index >= 0 && index < num_bins )
-            histogram[ grid_id ][ index ]++;
+          scale   = scale_factors[ grid_id ];
+          if ( scale > 0 )
+          {
+            focused_tof = tof_chan * scale * recipLaSinTa[id];
+            index       = binner.index( focused_tof );
+            if ( index >= 0 && index < num_bins )
+              histogram[ grid_id ][ index ]++;
+          }
         }
       }
     }
