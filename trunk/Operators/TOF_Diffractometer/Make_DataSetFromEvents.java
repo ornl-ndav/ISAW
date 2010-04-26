@@ -81,7 +81,7 @@ public class Make_DataSetFromEvents extends GenericOperator{
       addParameter( new LoadFilePG("Mapping File Name",""));
       addParameter( new FloatPG("First Event to Load",0));
       addParameter( new FloatPG("Num Events to Load",1E8));
-      addParameter( new FloatPG("Min xAxis value",.2));
+      addParameter( new FloatPG("Min x-axis value",.2));
       addParameter( new FloatPG("Max x-axis value",10));
       addParameter( new BooleanEnablePG("Logarithmic Binning","[true,1,1]"));
       addParameter( new FloatPG("Length of First Interval",.0002));
