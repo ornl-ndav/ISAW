@@ -171,7 +171,8 @@ public class FavoritesViewMenu
     * Returns a JMenu tree filled out with paths and with MenuItems that will
     * run operators.
     * 
-    * @return
+    * @return a JMenu tree filled out with paths and with MenuItems that will
+    * run operators.
     */
    public JMenu getFavoritesJMenu()
    {
