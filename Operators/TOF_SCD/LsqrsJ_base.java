@@ -1358,9 +1358,9 @@ private static final double SMALL    = 1.525878906E-5;
      /**
       * Returns a 3*peaksSize array of hkl values
       * @param peaks The list of indexed peaks.
-      * @Transform  The matrix to transform the hkl values by.
+      * @param Transform  The matrix to transform the hkl values by.
       * 
-      * @return
+      * @return a 3*peaksSize array of hkl values
       */
      public static double[][] getHKLArrays( Vector<IPeak> peaks,float[][]Transform,
            float MinIpkObs,
@@ -1421,7 +1421,7 @@ private static final double SMALL    = 1.525878906E-5;
       * Returns a 3*peaksSize array of q values that have been indexed
       * and have a max
       * @param peaks
-      * @return
+      * @return a 3*peaksSize array of q values that have been indexed
       */
      public static double[][] getQArray( Vector<IPeak> peaks, float MinIpkObs,
                     int[] OmitSeqNums, int[] OmitRunNums, int n2bEdge)
@@ -1503,7 +1503,7 @@ private static final double SMALL    = 1.525878906E-5;
       * @param abc
       * @param sig_abc
       * @param cellType
-      * @return
+      * @return  A logBuffer of output or ErrorString
       */
      public static Object ShowLogInfo( double[][]UB,  
                                      Vector<Peak_new>peaks,
@@ -1658,7 +1658,7 @@ private static final double SMALL    = 1.525878906E-5;
          toConsole( UB, abc, sig_abc );
 
 
-      return null;
+      return logBuffer;
      }
      /**
       * Calculates the least squares matrix that best maps all the hkl vectors to
@@ -1769,8 +1769,13 @@ private static final double SMALL    = 1.525878906E-5;
            }
         }
    
-        
+        /*for( int i=0; i< 3; i++)
+           for( int j=0; j<3;j++)
+              if( Math.abs( HHTinv[j][j]-errSqij[i][j] )>.000001)
+                 System.out.println("Error");
         errSqij = LinearAlgebra.mult(  errSqij ,s2_q );
+        //NO "Error" was printed
+        */
        
         for(int i=0; i<3;i++)
            for(int j=0; j<3;j++)
@@ -1822,7 +1827,8 @@ private static final double SMALL    = 1.525878906E-5;
       * 
       * @param abc    
       * @param errTens
-      * @return
+      * @return the errors in the lattice parameters given the errors in
+      *          the Tensor matrix in real space
       */
      public static double[] LatticeErrors( double[] abc, double[][] errTens)
      {
@@ -1879,7 +1885,8 @@ private static final double SMALL    = 1.525878906E-5;
    *                will not be returned
    * @param sig_abc The errors in the scalars. Must be allocated before 
    *                 calling this routing.
-   * @return
+   *                 
+   * @return    The chi squared value of the fit
    */
   private static  double CalcSigs2(double[][] UB, double[][] hkl,
                             double [][] q, double[] abc, double[] sig_abc)
@@ -2352,10 +2359,10 @@ private static final double SMALL    = 1.525878906E-5;
        LinearAlgebra.print(  sig_abc );
        //===================Experimental works
        Scanner fin = new Scanner(new
-             File("C:/ISAW/Operators/TOF_SCD/NormZ.vals"));
-       
-       double[] zVals = new double[1534];
-       for(int i=0;i<1533;i++)
+             File("C:/ISAW/Operators/TOF_SCD/NormZ1.vals"));
+       int N1=fin.nextInt( );
+       double[] zVals = new double[N1];
+       for(int i=0;i<N1;i++)
           zVals[i] = fin.nextDouble( );
 
        //LinearAlgebra.print(zVals);
@@ -2371,11 +2378,12 @@ private static final double SMALL    = 1.525878906E-5;
        double[] scalarSQ = new double[7];
        double[] scalar1 = new double[7];
        double[] scalar  = new double[7];
-       int N=1534;
+       
        double sq = Math.sqrt( chiSq/(q[0].length-1)/3);
        
        int z=0150;
-       
+       int N = N1/3;
+       N=500;
        for( int i=0; i< N; i++)
        {
           q = LinearAlgebra.mult( UB,hkl );
