@@ -84,7 +84,7 @@ import DataSetTools.operator.DataSet.Conversion.XAxis.*;
 import DataSetTools.retriever.*;
 import DataSetTools.viewer.SelectedData2D;
 import DataSetTools.viewer.Table.RowColTimeVirtualArray;
-import DataSetTools.viewer.ThreeD.ThreeDView;
+import DataSetTools.viewer.ThreeD.ThreeD1View;
 import EventTools.EventList.FileUtil;
 import IsawGUI.BrowserControl;
 
@@ -104,6 +104,8 @@ public class GroupSelector implements IObserver, ActionListener
    public static final String SAVE_GROUPS            = "Save";
 
    public static final String VIEW_GROUPS            = "View Groups";
+   
+   public static final String VIEW_DATA              = "View Data";
 
    public static final String SHOW_GROUPS            = "Show Groups";
 
@@ -111,17 +113,17 @@ public class GroupSelector implements IObserver, ActionListener
 
    JPanel                     CommandPanel;
 
-   ThreeDView                 ThreeDPanel;
+   ThreeD1View                 ThreeDPanel;
 
    RowColTimeVirtualArray     VirtArray2D;
 
    ImageViewComponent         DetectorPanel;
 
    JFrame                     LeftFrame, // holds ThreeDPanel
-         RightFrame;                                                      // holds
-                                                                          // DetectorPanel
-                                                                          // of
-                                                                          // VirtArray2D
+                              RightFrame; // holds
+                                          // DetectorPanel
+                                          // of
+                                          // VirtArray2D
 
    FilteredPG_TextField       Detectors_Gr;
 
@@ -136,8 +138,14 @@ public class GroupSelector implements IObserver, ActionListener
    JComboBox                  formula;
 
    JCheckBox                  ViewGroup;
+   
+   JCheckBox                  ViewData;
+   
+   boolean                    GroupShowing;
 
    IDataGrid[]                grids;
+   
+   float[]                    pixelData;
 
    int[]                      pixelGroup;
 
@@ -186,24 +194,32 @@ public class GroupSelector implements IObserver, ActionListener
     * @param NeXusFileName
     *           The name of the NeXus file
     */
-   public GroupSelector(String NeXusFileName)
+   public GroupSelector(String NeXusFileName, boolean fastLoad)
    {
 
       JFrame jf = BusyDisplay.ShowBusyGUI( "Setting Up");
       Dimension DD = getScreenDimensions( jf );
       BusyDisplay.MoveFrame( jf , DD.width/3,(DD.height)*3/8 );
+      
       try
       {
          NexusRetriever ret = new NexusRetriever( NeXusFileName );
       
-          int nDataSets = ret.numDataSets( );
+         if( fastLoad)
+            ret.RetrieveSetUpInfo( null );
+         
+         int nDataSets = ret.numDataSets( );
       
          Vector< UniformGrid > Grids = new Vector< UniformGrid >( );
       
-          DS = new DataSet( );
+         DS = new DataSet( );
       
          int start = 0;
-      
+
+         pixelData = new float[ nDataSets];
+         
+         GroupShowing = false;
+         
       if ( ret.getType( 0 ) == Retriever.MONITOR_DATA_SET )
          start = 1;
   
@@ -265,9 +281,9 @@ public class GroupSelector implements IObserver, ActionListener
                            
                            float[] ys = D.getY_values( );
                            float[] errs = D.getErrors( );
-                           float[] y_new = new float[]{ 0f , 0f };
+                           float[] y_new = new float[]{ 0f  };
                            
-                           float[] E = new float[] { 0f , 0f };
+                           float[] E = new float[] { 0f };
                           
                           
                            for( int y = 0 ; y < ys.length ; y++ )
@@ -277,6 +293,8 @@ public class GroupSelector implements IObserver, ActionListener
                               if ( errs != null )
                                  E[0] += errs[y] * errs[y];
                            }
+                           
+                           
                            
                            if ( y_new[0] > MaxIntensity )
                               MaxIntensity = y_new[0];
@@ -332,9 +350,10 @@ public class GroupSelector implements IObserver, ActionListener
       startPixel = minPixel_id;
       
       pixelGroup = new int[ maxPixel_id - minPixel_id + 1 ];
+      pixelData = new float[maxPixel_id - minPixel_id + 1 ];
       
       FinishDataSet( DS );
-      
+     
       init( );
       }catch( Throwable ss)
       {
@@ -356,6 +375,9 @@ public class GroupSelector implements IObserver, ActionListener
    public GroupSelector(String DETCAlFileName, String BankMapFile)
    {
 
+      pixelData = null;
+      ViewGroup = ViewData = null;
+      GroupShowing = true;
       JFrame jf = BusyDisplay.ShowBusyGUI( "Setting Up" );
       Dimension D = getScreenDimensions( jf );
       BusyDisplay.MoveFrame( jf , D.width/3,(D.height)*3/8 );
@@ -446,7 +468,7 @@ public class GroupSelector implements IObserver, ActionListener
          for( int r = 1 ; r <= grid.num_rows( ) ; r++ )
          {
             HistogramTable D = new HistogramTable( xscl , 
-                                                  new float[]{ 20 , 0 }
+                                                  new float[]{ 0 , 0 }
                                                   , pixelID );
             
             D.setAttribute( new FloatAttribute( Attribute.INITIAL_PATH , L0 ) );
@@ -496,7 +518,8 @@ public class GroupSelector implements IObserver, ActionListener
     */
    private void FinishDataSet(DataSet DS)
    {
-
+     
+      Arrays.fill( pixelGroup , 0 );
       detectorIDPixel = new int[ pixelGroup.length ];
       rowPixel = new int[ pixelGroup.length ];
       colPixel = new int[ pixelGroup.length ];
@@ -545,6 +568,8 @@ public class GroupSelector implements IObserver, ActionListener
             colPixel[pixel - startPixel] = col;
             
             detectorIDPixel[pixel - startPixel] = det;
+            if( pixelData != null)
+               pixelData[pixel-startPixel] = D.getY_values()[0];
  
             Vector3D V = pinf.DataGrid( ).position( row , col );
             float pathLength = V.length()+AttrUtil.getInitialPath( D );
@@ -644,6 +669,21 @@ public class GroupSelector implements IObserver, ActionListener
       Container jp = jf.getContentPane( );
       BoxLayout bl = new BoxLayout( jp , BoxLayout.Y_AXIS );
       jp.setLayout( bl );
+      if( !GroupShowing )
+      {
+         ViewGroup = new JCheckBox(VIEW_GROUPS , false);
+         ViewData = new JCheckBox( VIEW_DATA, true);
+         ButtonGroup grp = new ButtonGroup();
+         grp.add( ViewGroup );
+         grp.add( ViewData );
+         ViewGroup.addActionListener( this );
+         ViewData.addActionListener(  this );
+         JPanel jp1 = new JPanel( new GridLayout(1,2));
+         jp1.add( ViewGroup );
+         jp1.add(ViewData);
+         jp1.setBorder(  new LineBorder( Color.black) );
+         jp.add( jp1 );
+      }
       
       // ----------------------------------------
       JPanel TopMid = new JPanel( new GridLayout( 4 , 3 ) );
@@ -719,14 +759,14 @@ public class GroupSelector implements IObserver, ActionListener
       jp.add( MidMidLow );
 
       // --------------------------------------
-      JPanel MidLow = new JPanel( new GridLayout( 1 , 3 ) );
+      JPanel MidLow = new JPanel( new GridLayout( 1 , 2 ) );
       but = new JButton( SAVE_GROUPS );
       but.addActionListener( this );
       MidLow.add( but );
 
-      ViewGroup = new JCheckBox( VIEW_GROUPS , false );
-      ViewGroup.addActionListener( this );
-      MidLow.add( ViewGroup );
+     // ViewGroup = new JCheckBox( VIEW_GROUPS , false );
+      //ViewGroup.addActionListener( this );
+      //MidLow.add( ViewGroup );
 
       but = new JButton( SHOW_GROUPS );
       but.addActionListener( this );
@@ -786,7 +826,7 @@ public class GroupSelector implements IObserver, ActionListener
       
       LeftFrame.setBounds( new Rectangle( 0 , 0 , 500 , 600 ) );
       
-      ThreeDPanel = new ThreeDView( DS , null );
+      ThreeDPanel = new ThreeD1View( DS , null );
       
       LeftFrame.getContentPane( ).add( ThreeDPanel );
       
@@ -827,13 +867,15 @@ public class GroupSelector implements IObserver, ActionListener
             + ImageJPanel2.MINDATA , 0 ) )
          objState.insert( ImageViewComponent.IMAGEJPANEL + "."
                + ImageJPanel2.MINDATA , 0 );
-
-      if ( !objState.reset( ImageViewComponent.IMAGEJPANEL + "."
-            + ImageJPanel2.AUTOSCALE , false ) )
-         objState.insert( ImageViewComponent.IMAGEJPANEL + "."
-               + ImageJPanel2.AUTOSCALE , false );
-
+      
       DetectorPanel.setObjectState( objState );
+     // if ( !objState.reset( ImageViewComponent.IMAGEJPANEL + "."
+     //       + ImageJPanel2.AUTOSCALE , false ) )
+    //     objState.insert( ImageViewComponent.IMAGEJPANEL + "."
+    //           + ImageJPanel2.AUTOSCALE , false );
+      DetectorPanel.setAutoScale( false );
+      System.out.println("MaxMin intensity="+ MaxIntensity);
+     
       
       JPanel ControlPanel = new JPanel( );
       BoxLayout bl = new BoxLayout( ControlPanel , BoxLayout.Y_AXIS );
@@ -872,7 +914,7 @@ public class GroupSelector implements IObserver, ActionListener
    private void RestoreSelections(int gridID)
    {
 
-      if ( gridID == LastGrid && LastViewGroupMode == ViewGroup.isSelected( ) )
+      if ( gridID == LastGrid)// && LastViewGroupMode == ViewGroup.isSelected( ) )
          return;
 
       if ( ViewGroup.isSelected( ) )
@@ -912,14 +954,14 @@ public class GroupSelector implements IObserver, ActionListener
       
       LastGrid = gridID;
       
-      LastViewGroupMode = ViewGroup.isSelected( );
+      //LastViewGroupMode = ViewGroup.isSelected( );
 
    }
 
    private void ExecuteFormula( int Group,
                                 int[] detectors,
                                 String formula) 
-                                   throws IllegalArgumentException
+                                      throws IllegalArgumentException
    {
       if( detectors != null && detectors.length < 1)
          detectors = null;
@@ -956,6 +998,7 @@ public class GroupSelector implements IObserver, ActionListener
             "      wl=WL[i]\n"+
             "      ang=ANG[i]\n"+
             "      x=eval(CD)\n"+
+            "      PIX[i]= -1\n"+
             "      if  x:\n"+
             "         PIX[i]=int(group)\n";
             //-------------------NOTE to eliminate compile errors--------
@@ -970,7 +1013,7 @@ public class GroupSelector implements IObserver, ActionListener
             pinterp.exec( codeEx );
          }
          
-         pinterp.set( "PIX" , pixelGroup );
+         pinterp.set( "PIX" , new int[pixelGroup.length] );
          
          
          //To compile witf jython2.2.1
@@ -996,7 +1039,18 @@ public class GroupSelector implements IObserver, ActionListener
                                       pixelGroup.length)&&
              result.getClass( ).getComponentType( )==Integer.TYPE)
            {
-              pixelGroup =(int[])result;           
+              int[] Res = (int[])result;
+              IDataGrid grid = null;
+               for( int i = 0 ; i < Res.length ; i++ )
+                  if ( Res[i] >= 0 )
+                  {
+                     pixelGroup[i] = Res[i];
+                     if ( GroupShowing )
+                     {  grid = SetUpDataBlock( grid, detectorIDPixel[i],
+                           rowPixel[i], colPixel[i], Res[i]);
+                     }
+                  }
+                            
               addGroup( Group, true );
               
            } else
@@ -1044,7 +1098,7 @@ public class GroupSelector implements IObserver, ActionListener
          
          int gridID = VirtArray2D.getDetNum( );
 
-         if ( gridID == LastGrid && LastViewGroupMode == ViewGroup.isSelected( ) )
+         if ( gridID == LastGrid)// && LastViewGroupMode == ViewGroup.isSelected( ) )
             return;
 
          int k;
@@ -1053,7 +1107,7 @@ public class GroupSelector implements IObserver, ActionListener
          {
          }
 
-         if ( !ViewGroup.isSelected( ) )
+        // if ( !ViewGroup.isSelected( ) )
             if ( k >= 0 && k < grids.length )// restore selections for new grid
             {
                Hashtable table = SelectedRegionsSav[k];
@@ -1080,8 +1134,7 @@ public class GroupSelector implements IObserver, ActionListener
          
          LastGrid = gridID;
          
-         LastViewGroupMode = ViewGroup.isSelected( );
-
+        // LastViewGroupMode = ViewGroup.isSelected( );
       } else if ( arg0.getActionCommand( )
             .equals( IObserver.POINTED_AT_CHANGED ) )
       {
@@ -1128,6 +1181,7 @@ public class GroupSelector implements IObserver, ActionListener
                return;
             }
 
+            IDataGrid grid = null;
             for( int i = 0 ; i < detectors.length ; i++ )
             {
                int id = detectors[i];
@@ -1136,9 +1190,15 @@ public class GroupSelector implements IObserver, ActionListener
                   
                   if ( id == detectorIDPixel[j] )
                      
+                  {
                      pixelGroup[j] = group;
+                     if( GroupShowing)
+                        grid = SetUpDataBlock( grid, detectorIDPixel[j],
+                           rowPixel[j], colPixel[j], group);
+                     
+                  }
             }
-
+            notifyChangedData();
             addGroup( group , true );
 
          } catch( Exception s )
@@ -1165,6 +1225,7 @@ public class GroupSelector implements IObserver, ActionListener
          int[] detectors = IntList.ToArray( Detectors_Rmve.getText( ).trim( ) );
          
          boolean groupLeft = false;
+         IDataGrid grid = null;
          
          for( int i = 0 ; i < pixelGroup.length ; i++ )
             
@@ -1181,8 +1242,15 @@ public class GroupSelector implements IObserver, ActionListener
                   for( int j = 0 ; j < detectors.length ; j++ )
                      
                      if ( detectorIDPixel[i] == detectors[j] )
-                        
+                     {  
+                        int id = detectors[j];
                         pixelGroup[i] = 0;
+                        
+
+                        if( GroupShowing)
+                           grid = SetUpDataBlock( grid, detectorIDPixel[i],
+                              rowPixel[i], colPixel[i], 0);
+                     }
                   
 
                   if ( pixelGroup[i] == group )
@@ -1193,7 +1261,7 @@ public class GroupSelector implements IObserver, ActionListener
          if ( !groupLeft )
             
             addGroup( group , false );
-
+         notifyChangedData();
          return;
       }
 
@@ -1214,6 +1282,8 @@ public class GroupSelector implements IObserver, ActionListener
                IntList.ToArray( Detectors_Gr.getText( ).trim( ) ),
                formulaStr);
          
+         notifyChangedData();
+         
         }catch(Exception S)
         {
            JOptionPane.showMessageDialog( null , "Could Not AssignGroups:"+ 
@@ -1224,101 +1294,11 @@ public class GroupSelector implements IObserver, ActionListener
                
       }
 
-      if ( arg0.getActionCommand( ) == VIEW_GROUPS )
+      if ( arg0.getActionCommand( ) == VIEW_GROUPS || 
+            arg0.getActionCommand().equals( VIEW_DATA ) )
       {
-         JCheckBox chBox = ( JCheckBox ) arg0.getSource( );
-         
-         float mult = 0;
-         float maxIntensity = 0;
-
-         if ( chBox.isSelected( )  )
-         { 
-           if( MaxGroupID >0)
-            {
-              mult = MaxIntensity / MaxGroupID;
-           
-         
-             DS.setAttribute( new FloatAttribute( "GroupIntesityMult" ,
-               MaxIntensity / MaxGroupID ) );
-            }else
-            {
-               mult = 1;
-               DS.setAttribute( new FloatAttribute( "GroupIntesityMult" ,
-                    1 ) );
-            }
-         }else 
-            DS.setAttribute( new FloatAttribute( "GroupIntesityMult" ,
-                  1 ) );
-
-         boolean MaxGroupIDpresent = false;
-         
-         for( int i = 0 ; i < grids.length ; i++ )
-         {
-            int ID = grids[i].ID( );
-            
-            for( int j = 0 ; j < detectorIDPixel.length ; j++ )
-               
-               if ( detectorIDPixel[j] == ID )
-               {
-                  int row = rowPixel[j];
-                  int col = colPixel[j];
-                  
-                  int intensity = ( int ) ( pixelGroup[j] * mult );
-                  
-                  if ( pixelGroup[j] == MaxGroupID )
-                     MaxGroupIDpresent = true;
-                  
-                  Data D = grids[i].getData_entry( row , col );
-                  
-                  float[] ys = D.getY_values( );
-                  
-                  ys[1] = intensity;
-                  
-                  if ( ys[1] > maxIntensity )
-                     
-                     maxIntensity = ys[1];
-               }
-         }
-         
-         DS.setPointedAtX( 1000.5f + mult );
-         VirtArray2D.setTime( 1000.5f + mult );
-         
-         ThreeDPanel.redraw( IObserver.POINTED_AT_CHANGED );
-         
-         DetectorPanel.dataChanged( );// VirtArray2D will cause this to happen
-         
-         if ( mult <= 0 )
-            
-            RestoreSelections( VirtArray2D.getDetNum( ) );
-
-         LastViewGroupMode = mult > 0;
-         
-         if ( !MaxGroupIDpresent )
-            addGroup( MaxGroupID , false );
-         
-         int gridID = VirtArray2D.getDetNum( );
-         
-         if ( mult > 0 )// will be showing Group view
-         {
-            SaveSelections( gridID , true , true );// new ViewGroup value is th
-            // incorrect one to use
-            setEnabled( GroupEditor , false );
-            setEnabled( GroupSelectorControl , false );
-            setEnabled( SelectionEditor , false );
-
-         } else
-         // Will be showing DataView
-         {
-            RestoreSelections( gridID );
-            setEnabled( GroupEditor , true );
-            setEnabled( GroupSelectorControl , true );
-            setEnabled( SelectionEditor , true );
-         }
-
-         DetectorPanel.setAutoScale( false );
-         
-         DetectorPanel.getDisplayPanel( ).repaint( );
-         return;
+        newShowGroupsCase();   
+        return;
       }
       if ( arg0.getActionCommand( ) == SET_DETECTOR_SELECTS
             || arg0.getActionCommand( ) == CLEAR_DETECTOR_SELECTS )
@@ -1328,7 +1308,7 @@ public class GroupSelector implements IObserver, ActionListener
          if ( arg0.getActionCommand( ) == CLEAR_DETECTOR_SELECTS )
             sgn = 0;
 
-         SaveSelections( VirtArray2D.getDetNum( ) , false , false );
+         SaveSelections( VirtArray2D.getDetNum( ) , false , true );
 
         // Arrays.fill( pixelGroup , 0 );
          
@@ -1372,7 +1352,7 @@ public class GroupSelector implements IObserver, ActionListener
                         Point[] pts = oplist.getSelectedPoints( world_to_array );
 
                         
-                                              
+                        IDataGrid gridLast = null;                   
                         if ( pts != null && pts.length > 1 )
                            
                            for( int k = 0 ; k < detectorIDPixel.length ; k++ )
@@ -1389,6 +1369,10 @@ public class GroupSelector implements IObserver, ActionListener
                                  if ( p < pts.length )
                                  {
                                     pixelGroup[k] = group;
+
+                                    if( GroupShowing)
+                                       gridLast = SetUpDataBlock( gridLast, detectorIDPixel[k],
+                                          rowPixel[k], colPixel[k], group);
                                    
                                  }
                               }
@@ -1421,7 +1405,7 @@ public class GroupSelector implements IObserver, ActionListener
          if ( !MaxGroupIDUsed )
             
             addGroup( MaxGroupID , false );
-
+         notifyChangedData();
       } else if ( arg0.getActionCommand( ) == SHOW_GROUPS )
       {
          Hashtable< String , Integer > GroupVsPixelList = getHashTable(
@@ -1468,6 +1452,147 @@ public class GroupSelector implements IObserver, ActionListener
 
    }
 
+   private void newShowGroupsCase()
+   {
+      if( ViewGroup == null)
+         return;
+      
+      if( ViewGroup.isSelected( ) && GroupShowing)
+         return;
+      
+      float[] data = pixelData;
+      if( ViewGroup.isSelected())
+      {
+         data = new float[data.length];
+         for( int i=0; i< data.length; i++)
+            data[i] = pixelGroup[i];
+      }
+      
+      IDataGrid grid = null;
+      for( int i=0; i< pixelData.length; i++)
+      {
+         grid = SetUpDataBlock( grid,detectorIDPixel[i], 
+                  rowPixel[i], colPixel[i],    data[i]);
+      }
+      notifyChangedData();
+      
+   }
+   private void saveShowGroupsCase()
+   {
+      JCheckBox chBox = ViewGroup;
+      
+      float mult = 0;
+      float maxIntensity = 0;
+
+      if ( chBox.isSelected( )  )
+      { 
+        if( MaxGroupID >0)
+         {
+           mult = MaxIntensity / MaxGroupID;
+        
+      
+          DS.setAttribute( new FloatAttribute( "GroupIntesityMult" ,
+            MaxIntensity / MaxGroupID ) );
+         }else
+         {
+            mult = 1;
+            DS.setAttribute( new FloatAttribute( "GroupIntesityMult" ,
+                 1 ) );
+         }
+      }else 
+         DS.setAttribute( new FloatAttribute( "GroupIntesityMult" ,
+               1 ) );
+
+      boolean MaxGroupIDpresent = false;
+      
+      for( int i = 0 ; i < grids.length ; i++ )
+      {
+         int ID = grids[i].ID( );
+         
+         for( int j = 0 ; j < detectorIDPixel.length ; j++ )
+            
+            if ( detectorIDPixel[j] == ID )
+            {
+               int row = rowPixel[j];
+               int col = colPixel[j];
+               
+               int intensity = ( int ) ( pixelGroup[j] * mult );
+               
+               if ( pixelGroup[j] == MaxGroupID )
+                  MaxGroupIDpresent = true;
+               
+               Data D = grids[i].getData_entry( row , col );
+               
+               float[] ys = D.getY_values( );
+               
+               ys[1] = intensity;
+               
+               if ( ys[1] > maxIntensity )
+                  
+                  maxIntensity = ys[1];
+            }
+      }
+      
+      DS.setPointedAtX( 1000.5f + mult );
+      VirtArray2D.setTime( 1000.5f + mult );
+      
+      ThreeDPanel.redraw( IObserver.POINTED_AT_CHANGED );
+      
+      DetectorPanel.dataChanged( );// VirtArray2D will cause this to happen
+      
+      if ( mult <= 0 )
+         
+         RestoreSelections( VirtArray2D.getDetNum( ) );
+
+      LastViewGroupMode = mult > 0;
+      
+      if ( !MaxGroupIDpresent )
+         addGroup( MaxGroupID , false );
+      
+      int gridID = VirtArray2D.getDetNum( );
+      
+      if ( mult > 0 )// will be showing Group view
+      {
+         SaveSelections( gridID , true , true );// new ViewGroup value is th
+         // incorrect one to use
+         setEnabled( GroupEditor , false );
+         setEnabled( GroupSelectorControl , false );
+         setEnabled( SelectionEditor , false );
+
+      } else
+      // Will be showing DataView
+      {
+         RestoreSelections( gridID );
+         setEnabled( GroupEditor , true );
+         setEnabled( GroupSelectorControl , true );
+         setEnabled( SelectionEditor , true );
+      }
+
+      DetectorPanel.setAutoScale( false );
+      
+      DetectorPanel.getDisplayPanel( ).repaint( );
+      return;
+
+   }
+   private IDataGrid  SetUpDataBlock( IDataGrid gridLast, int detectorIDPixel,
+                                      int rowPixel, int colPixel, float group)
+   {
+      if( gridLast  == null || gridLast.ID() != detectorIDPixel)
+         gridLast = Grid_util.getAreaGrid(DS,detectorIDPixel);
+      
+      float[] ys= gridLast.getData_entry( rowPixel , colPixel ).getY_values( );
+      
+      ys[0]= group;
+      
+      return gridLast;
+   }
+   
+   private void notifyChangedData()
+   {
+      DS.notifyIObservers( DATA_CHANGED );
+      ThreeDPanel.setDataSet( DS );
+      DetectorPanel.dataChanged( );
+   }
    private Hashtable< String , Integer > getHashTable(int[] Groups,
          int startPixel)
    {
@@ -1696,7 +1821,7 @@ public class GroupSelector implements IObserver, ActionListener
          {
          }
          
-         if ( !ViewGroup.isSelected( ) )
+         //if (  !ViewGroup.isSelected( ) )
             
             if ( k >= 0 && k < grids.length )// Save current selections
             {
@@ -1743,7 +1868,7 @@ public class GroupSelector implements IObserver, ActionListener
       for( k = 0 ; k < grids.length && grids[k].ID( ) != LastGrid ; k++ )
       {
       }
-      if ( !ViewGroup.isSelected( ) || Save )
+     if ( Save )
          
          if ( k >= 0 && k < grids.length )// Save current selections
          {
@@ -1848,7 +1973,7 @@ public class GroupSelector implements IObserver, ActionListener
       String NeXusFile = "C:/ISAW/SampleRuns/SNS/SNAP/SNAP_240.nxs";
       String DetCalFile = "C:/ISAW/InstrumentInfo/SNS/SNAP/SNAP.DetCal";
       String BankFile = "C:/ISAW/InstrumentInfo/SNS/SNAP/SNAP_bank.xml";
-      
+      boolean  fastLoad = false;
       if ( args != null && args.length == 1 )// Use Test data if arg is 1 or 2
          
          try
@@ -1881,13 +2006,14 @@ public class GroupSelector implements IObserver, ActionListener
       if ( ( NeXusFile == null && DetCalFile == null ) || args == null
             || args.length < 1 )
       {
-         JPanel pan = new JPanel( new GridLayout( 4 , 2 ) );
+         JPanel pan = new JPanel( new GridLayout( 5 , 2 ) );
 
          JCheckBox UseNexFile = new JCheckBox( "Geometry Info in NeXus File" ,
                false );
 
          FileChooserPanel NexFile = new FileChooserPanel(
                FileChooserPanel.LOAD_FILE, null, NeXusFile );
+         JCheckBox UseFastLoad  = new JCheckBox("Use Fast load NeXus", false);
          FileChooserPanel DetCalFileC = new FileChooserPanel(
                FileChooserPanel.LOAD_FILE, null, DetCalFile );
          FileChooserPanel BankFileC = new FileChooserPanel(
@@ -1897,15 +2023,19 @@ public class GroupSelector implements IObserver, ActionListener
          pan.add( new JLabel( ) );
          pan.add( new JLabel( "NeXus file Name(if top option checked" ) );
          pan.add( NexFile );
+         pan.add(  new JLabel() );
+         pan.add(  UseFastLoad );
          pan.add( new JLabel( "Detector Position(DetCal) file" ) );
          pan.add( DetCalFileC );
          pan.add( new JLabel( "Bank Info file" ) );
          pan.add( BankFileC );
 
          UseNexFile.addActionListener( new EnableDisableActionListener(
-               EnableDisableActionListener.Add( null , NexFile ) ,
+               EnableDisableActionListener.Add(
+                     EnableDisableActionListener.Add(null , NexFile ) ,UseFastLoad),
                EnableDisableActionListener.Add( EnableDisableActionListener
                      .Add( null , DetCalFileC ) , BankFileC ) ) );
+         
          UseNexFile.doClick( );
 
          if ( JOptionPane.showConfirmDialog( null , pan , "Input File(s)" ,
@@ -1918,7 +2048,7 @@ public class GroupSelector implements IObserver, ActionListener
                DetCalFile = null;
             else
                NeXusFile = null;
-
+            fastLoad = UseFastLoad.isSelected( );
          } else
          {
             System.out.println( " No files chosen" );
@@ -1931,7 +2061,7 @@ public class GroupSelector implements IObserver, ActionListener
       //GroupSelector G;
       if ( NeXusFile != null )
 
-          new GroupSelector( NeXusFile );
+          new GroupSelector( NeXusFile, fastLoad );
 
       else
 
