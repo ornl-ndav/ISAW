@@ -1311,11 +1311,11 @@ public class ThreeD1View extends DataSetViewer
       UniformXScale x_scale = getDataSet( ).getXRange( );
       float x_min = x_scale.getStart_x( );
       float x_max = x_scale.getEnd_x( );
-      // set n_steps to 0 to default to NO REBINNING
-      x_scale_ui = new XScaleChooserUI( "X Scale" , label , x_min , x_max , 0 );
+      //set n_steps to 0 to default to NO REBINNING
+       x_scale_ui = new XScaleChooserUI( "X Scale" , label , x_min , x_max , 0 );
 
-      x_scale_ui.addActionListener( new XScaleListener( ) );
-      control_panel.add( x_scale_ui );
+      //x_scale_ui.addActionListener( new XScaleListener( ) );
+     // control_panel.add( x_scale_ui );
 
       color_scale_image = new ColorScaleImage( );
       color_scale_image.setNamedColorModel( getState( ).get_String(
@@ -1342,19 +1342,19 @@ public class ThreeD1View extends DataSetViewer
       control_panel.add( view_control );
 
       frame_control = new AnimationController( );
-      frame_control.setBorderTitle( getDataSet( ).getX_label( ) );
-      frame_control.setTextLabel( getDataSet( ).getX_units( ) );
-      control_panel.add( frame_control );
+     frame_control.setBorderTitle( getDataSet( ).getX_label( ) );
+     frame_control.setTextLabel( getDataSet( ).getX_units( ) );
+     // control_panel.add( frame_control );
 
       conv_table = new DataSetXConversionsTable( getDataSet( ) );
-      JPanel conv_panel = new JPanel( );
-      conv_panel.setLayout( new GridLayout( 1 , 1 ) );
-      conv_panel.add( conv_table.getTable( ) );
-      border = new TitledBorder( LineBorder.createBlackLineBorder( ) ,
-            "Pixel Data" );
-      border.setTitleFont( FontUtil.BORDER_FONT );
-      conv_panel.setBorder( border );
-      control_panel.add( conv_panel );
+      //JPanel conv_panel = new JPanel( );
+      //conv_panel.setLayout( new GridLayout( 1 , 1 ) );
+      //conv_panel.add( conv_table.getTable( ) );
+      //border = new TitledBorder( LineBorder.createBlackLineBorder( ) ,
+      //      "Pixel Data" );
+      //border.setTitleFont( FontUtil.BORDER_FONT );
+      //conv_panel.setBorder( border );
+     // control_panel.add( conv_panel );
 
       JPanel filler = new JPanel( );
       filler.setPreferredSize( new Dimension( 120 , 2000 ) );
@@ -1416,19 +1416,38 @@ public class ThreeD1View extends DataSetViewer
       int[][] detIndecies = DSIndices.get( DetID );
       ImageFilled3DRectangle rect = GridImages.get( DetID );
 
+      DataSet DS = getDataSet();
+      
       if ( rect == null || detIndecies == null || grid == null )
+      {
+         
+         DS.setPointedAtIndex( DataSet.INVALID_INDEX);
+         DS.notifyIObservers( IObserver.POINTED_AT_CHANGED );
          return;
+      }
 
       int[] rc = rect.getRectRowCol( e.getX( ) , e.getY( ) );
 
       if ( rc == null )
+      {
+         DS.setPointedAtIndex( DataSet.INVALID_INDEX);
+         DS.notifyIObservers( IObserver.POINTED_AT_CHANGED );
          return;
+      }
 
       if ( rc[0] < 0 || rc[1] < 0 )
+      {
+         DS.setPointedAtIndex( DataSet.INVALID_INDEX);
+         DS.notifyIObservers( IObserver.POINTED_AT_CHANGED );
          return;
+      }
 
       if ( rc[0] >= detIndecies.length || rc[1] >= detIndecies[rc[0]].length )
+      {
+         DS.setPointedAtIndex( DataSet.INVALID_INDEX);
+         DS.notifyIObservers( IObserver.POINTED_AT_CHANGED );
          return;
+      }
 
       int Index = detIndecies[rc[0]][rc[1]];
 
