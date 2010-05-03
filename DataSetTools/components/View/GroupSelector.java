@@ -36,7 +36,6 @@ package DataSetTools.components.View;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -47,14 +46,10 @@ import java.util.Vector;
 import gov.anl.ipns.MathTools.Geometry.DetectorPosition;
 import gov.anl.ipns.MathTools.Geometry.Vector3D;
 import gov.anl.ipns.Parameters.*;
-import gov.anl.ipns.Util.File.FileIO;
 import gov.anl.ipns.Util.Messaging.IObserver;
 import gov.anl.ipns.Util.Numeric.IntList;
 import gov.anl.ipns.Util.Numeric.floatPoint2D;
 import gov.anl.ipns.Util.Sys.*;
-import gov.anl.ipns.Util.Sys.EnableDisableActionListener;
-import gov.anl.ipns.Util.Sys.FinishJFrame;
-import gov.anl.ipns.Util.Sys.WindowShower;
 import gov.anl.ipns.ViewTools.Components.AxisInfo;
 import gov.anl.ipns.ViewTools.Components.IViewComponent;
 import gov.anl.ipns.ViewTools.Components.ObjectState;
@@ -65,6 +60,7 @@ import gov.anl.ipns.ViewTools.Components.ViewControls.*;
 import gov.anl.ipns.ViewTools.Panels.Image.ImageJPanel2;
 import gov.anl.ipns.ViewTools.Panels.Transforms.CoordBounds;
 import gov.anl.ipns.ViewTools.Panels.Transforms.CoordTransform;
+import gov.anl.ipns.ViewTools.UI.FontUtil;
 import gov.anl.ipns.ViewTools.UI.SplitPaneWithState;
 
 import javax.swing.*;
@@ -86,7 +82,6 @@ import DataSetTools.viewer.SelectedData2D;
 import DataSetTools.viewer.Table.RowColTimeVirtualArray;
 import DataSetTools.viewer.ThreeD.ThreeD1View;
 import EventTools.EventList.FileUtil;
-import IsawGUI.BrowserControl;
 
 public class GroupSelector implements IObserver, ActionListener
 {
@@ -97,9 +92,9 @@ public class GroupSelector implements IObserver, ActionListener
 
    public static final String FORMULA_ASSIGN         = "Formula Assign";
 
-   public static final String SET_DETECTOR_SELECTS   = "Set";
+   public static final String SET_DETECTOR_SELECTS   = "Set Selector Groups";
 
-   public static final String CLEAR_DETECTOR_SELECTS = "Clear";
+   public static final String CLEAR_DETECTOR_SELECTS = "Clear Selector Groups to 0";
 
    public static final String SAVE_GROUPS            = "Save";
 
@@ -185,6 +180,8 @@ public class GroupSelector implements IObserver, ActionListener
    ViewControl                GroupSelectorControl;
    
    PythonInterpreter         pinterp                 =null;
+   
+   JLabel[]                  PixelDat                = null;
 
    /**
     * Reads in starting info from a NeXus file. Note if the Nexus files do not
@@ -601,18 +598,103 @@ public class GroupSelector implements IObserver, ActionListener
       
       LastGrid = grids[0].ID( );
       
-      MakeMiddlePanel( );
+      JFrame jf = new JFrame( "Select Pixel Groupings" );
+      jf.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
+       
+      Container jContainer = jf.getContentPane( );
       
+      Dimension D = jf.getToolkit( ).getScreenSize( );
+      D.width = Math.min( D.width, 2000);
+      D.height = Math.min( D.height, 2000);
+      jf.setBounds(D.width/4,0,D.width/5, D.height/3 );
+      JPanel jpm =MakeMiddlePanel( );
+      jContainer.add( jpm);
+      
+      JPanel jpr = null;
+      JPanel jpl = null;
+      jContainer.setLayout(  new GridLayout(1,1) );
       if ( DS != null )
       {
          DS.addIObserver( this );
          
-         MakeLeftPanel( );
+         jpl = MakeLeftPanel( );
          
-         MakeRightPanel( );
+         jpr =MakeRightPanel( );
          
          DetectorPanel.addActionListener( this );
+         
+         JFrame LeftPanel = new JFrame("Three D View");
+         LeftPanel.setBounds( 0,0,D.width/4, D.height/3 );
+         LeftPanel.getContentPane( ).setLayout(  new GridLayout(1,1) );
+         LeftPanel.getContentPane( ).add( jpl );
+         WindowShower.show( LeftPanel );
+         
+
+         
+         JFrame RightPanel = new JFrame("1 Detector View");
+         RightPanel.setBounds( D.width/2,0,D.width/3, D.height/3 );
+         RightPanel.getContentPane( ).setLayout(  new GridLayout(1,1) );
+         RightPanel.getContentPane( ).add( jpr );
+         WindowShower.show( RightPanel);
+         
+        
+        
+      }else
+      {
+        
+         jContainer.add( jpm);
+         
       }
+
+      jContainer.add(  jpm );
+      JMenuBar jfMenBar = new JMenuBar();
+      JMenu  FileMenu = new JMenu("File");
+      JMenu  ViewMenu = new JMenu("View");
+      jfMenBar.add( FileMenu );
+      jfMenBar.add( ViewMenu);
+      JMenuItem Save = new JMenuItem(SAVE_GROUPS);
+      Save.addActionListener( this);
+      JMenuItem Exit = new JMenuItem("Exit");
+      Exit.addActionListener( this );
+      
+      JMenuItem Show = new JMenuItem(SHOW_GROUPS);
+      Show.addActionListener( this);
+      FileMenu.add( Save );
+      FileMenu.add( Exit );
+      ViewMenu.add(  Show );
+      
+      JMenu HelpMenu = new JMenu(" Help");
+      jfMenBar.add( HelpMenu);
+      HelpMenu.addMenuListener( new  MenuListener()
+      {
+         
+         @Override
+         public void menuCanceled(MenuEvent arg0)
+         {
+            
+         }
+
+         @Override
+         public void menuDeselected(MenuEvent arg0)
+         {
+
+            
+         }
+
+         @Override
+         public void menuSelected(MenuEvent arg0)
+         {
+
+           new Browser( DataSetTools.util.FilenameUtil.helpDir(
+                 "GroupSelector.html"));
+           
+         }
+      });
+      jf.setJMenuBar( jfMenBar);
+      jf.setBounds( 500 , 0 , 500 , 400 );
+      
+      WindowShower.show( jf );
+
 
    }
 
@@ -660,28 +742,35 @@ public class GroupSelector implements IObserver, ActionListener
 
    }
 
-   private void MakeMiddlePanel()
+   private JPanel MakeMiddlePanel()
    {
 
-      JFrame jf = new JFrame( "Select Pixel Groupings" );
-      jf.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
+     // JFrame jf = new JFrame( "Select Pixel Groupings" );
+     // jf.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
       
-      Container jp = jf.getContentPane( );
+      //Container jContainer = jf.getContentPane( );
+      JPanel jp = new JPanel();
       BoxLayout bl = new BoxLayout( jp , BoxLayout.Y_AXIS );
       jp.setLayout( bl );
       if( !GroupShowing )
       {
          ViewGroup = new JCheckBox(VIEW_GROUPS , false);
          ViewData = new JCheckBox( VIEW_DATA, true);
+         
          ButtonGroup grp = new ButtonGroup();
          grp.add( ViewGroup );
          grp.add( ViewData );
+         
          ViewGroup.addActionListener( this );
          ViewData.addActionListener(  this );
+         
          JPanel jp1 = new JPanel( new GridLayout(1,2));
+         
          jp1.add( ViewGroup );
          jp1.add(ViewData);
+         
          jp1.setBorder(  new LineBorder( Color.black) );
+         
          jp.add( jp1 );
       }
       
@@ -695,8 +784,10 @@ public class GroupSelector implements IObserver, ActionListener
       JButton but = new JButton( ASSIGN_GROUP );
       but.addActionListener( this );
       TopMid.add( but );
+      
       Detectors_Gr = new FilteredPG_TextField( new IntListFilter( ) );
-      TopMid.add( Detectors_Gr );      
+      TopMid.add( Detectors_Gr );   
+      
       Group = new FilteredPG_TextField( new IntegerFilter( ) );
       TopMid.add( Group );
 
@@ -705,6 +796,7 @@ public class GroupSelector implements IObserver, ActionListener
       TopMid.add( but );
       Detectors_Rmve = new FilteredPG_TextField( new IntListFilter( ) );
       TopMid.add( Detectors_Rmve );
+      
       Detectors_Rmve.setToolTipText( "Leave blank to apply to ALL detectors" );
       RmvGroup = new FilteredPG_TextField( new IntegerFilter( ) );
       TopMid.add( RmvGroup );
@@ -738,28 +830,65 @@ public class GroupSelector implements IObserver, ActionListener
       // ---------------------------------------------------
 
       jp.add( Box.createVerticalGlue( ) );
-      // ---------------------------------------
-      JPanel MidMidLow = new JPanel( );
-      bl = new BoxLayout( MidMidLow , BoxLayout.X_AXIS );
-      MidMidLow.setLayout( bl );
+      JPanel BotPan = new JPanel( );
       
-      but = new JButton( SET_DETECTOR_SELECTS );
-      MidMidLow.add( but );
-      but.addActionListener( this );
+      BoxLayout bl2 = new BoxLayout( BotPan, BoxLayout.X_AXIS);
+      BotPan.setLayout(  bl2 );
       
-      MidMidLow.add( Box.createHorizontalGlue( ) );
+      BotPan.setBorder(  new TitledBorder( new LineBorder(Color.black),
+                                    "Pointed At pixel") );
       
-      but = new JButton( CLEAR_DETECTOR_SELECTS );
-      MidMidLow.add( but );
-      but.addActionListener( this );
       
-      MidMidLow.setBorder( new TitledBorder( new LineBorder( Color.black , 1 ) ,
-            "Detector Panel Selections" ) );
-      
-      jp.add( MidMidLow );
+      if(PixelDat == null)
+      {
+         PixelDat = new JLabel[13];
+         for( int i=0; i< 13; i++)
+         {
+            PixelDat[i]= new JLabel("--");
+            PixelDat[i].setBorder(  new LineBorder( Color.black) );
+         }
+      }
+      JPanel pp = new JPanel( new GridLayout( 4,2));
+      PixelDat[0].setText( "1000(*)" );
+      pp.add(  new JLabel("time("+FontUtil.MU+"s)") );
+      pp.add(PixelDat[0]);
+      pp.add( new JLabel("Counts") );
+      pp.add( PixelDat[1]);
+      pp.add( new JLabel("column"));
+      pp.add( PixelDat[2]);
+      pp.add( new JLabel("row"));
+      pp.add(  PixelDat[3] );
+      pp.setBorder(  new LineBorder( Color.black) );
+      BotPan.add(pp);
+      BotPan.add(  Box.createHorizontalGlue( ) );
+      pp = new JPanel( new GridLayout( 4,2));
+      pp.add( new JLabel("Pixel ID"));
+      pp.add( PixelDat[4]);      
+      pp.add( new JLabel("grid ID"));
+      pp.add( PixelDat[5]);
+      pp.add(  new JLabel("Group Num") );
+      pp.add( PixelDat[6]);
+      pp.add( new JLabel("2"+FontUtil.THETA+"("+FontUtil.DEGREE+")"));
+      pp.add( PixelDat[7]);
 
-      // --------------------------------------
-      JPanel MidLow = new JPanel( new GridLayout( 1 , 2 ) );
+      pp.setBorder(  new LineBorder( Color.black) );
+      BotPan.add( pp);
+
+      BotPan.add(  Box.createHorizontalGlue( ) );
+      pp = new JPanel( new GridLayout( 4,2));
+      pp.add( new JLabel("d-spacing*("+FontUtil.ANGSTROM+")"));
+      pp.add( PixelDat[9]);
+      pp.add( new JLabel("Q*("+FontUtil.INV_ANGSTROM+")"));
+      pp.add( PixelDat[10]);
+      pp.add( new JLabel(FontUtil.LAMBDA+"*("+FontUtil.ANGSTROM+")"));
+      pp.add( PixelDat[11]);
+      pp.add( new JLabel("Energy*(MeV)" ));
+      pp.add( PixelDat[12]);
+
+      pp.setBorder(  new LineBorder( Color.black) );
+      BotPan.add( pp );
+      jp.add( BotPan );
+      /*JPanel MidLow = new JPanel( new GridLayout( 1 , 2 ) );
       but = new JButton( SAVE_GROUPS );
       but.addActionListener( this );
       MidLow.add( but );
@@ -773,79 +902,48 @@ public class GroupSelector implements IObserver, ActionListener
       MidLow.add( but );
 
       jp.add( MidLow );
-      
+      */
       //-------------------------Set up Help on JMenuBar-----------
-      
-      JMenuBar jfMenBar = new JMenuBar();
-      JMenu HelpMenu = new JMenu(" Help");
-      jfMenBar.add( HelpMenu);
-      HelpMenu.addMenuListener( new  MenuListener()
-      {
-         
-         @Override
-         public void menuCanceled(MenuEvent arg0)
-         {
-            
-         }
-
-         @Override
-         public void menuDeselected(MenuEvent arg0)
-         {
-
-            
-         }
-
-         @Override
-         public void menuSelected(MenuEvent arg0)
-         {
-
-           new Browser( DataSetTools.util.FilenameUtil.helpDir(
-                 "GroupSelector.html"));
-           
-         }
-      });
-      jf.setJMenuBar( jfMenBar);
-      jf.setBounds( 500 , 0 , 500 , 400 );
-      
-      WindowShower.show( jf );
-
+      return jp;
    }
 
-   private void MakeLeftPanel()
+   private JPanel MakeLeftPanel()
    {
 
       if ( DS == null )
       {
          LeftFrame = null;
-         return;
+         return null;
       }
 
-      LeftFrame = new JFrame( "Three D Detector View" );
+      //LeftFrame = new JFrame( "Three D Detector View" );
       
-      LeftFrame.getContentPane( ).setLayout( new GridLayout( 1 , 1 ) );
+      //LeftFrame.getContentPane( ).setLayout( new GridLayout( 1 , 1 ) );
       
-      LeftFrame.setBounds( new Rectangle( 0 , 0 , 500 , 600 ) );
+      //LeftFrame.setBounds( new Rectangle( 0 , 0 , 500 , 600 ) );
+      
       
       ThreeDPanel = new ThreeD1View( DS , null );
       
-      LeftFrame.getContentPane( ).add( ThreeDPanel );
+      //LeftFrame.getContentPane( ).add( ThreeDPanel );
       
-      WindowShower.show( LeftFrame );
+     // WindowShower.show( LeftFrame );
+      return ThreeDPanel;
 
    }
 
-   private void MakeRightPanel()
+   private JPanel MakeRightPanel()
    {
 
       if ( DS == null )
       {
          RightFrame = null;
-         return;
+         return null;
       }
 
-      RightFrame = new JFrame( "2D One Detector view" );
-      RightFrame.getContentPane( ).setLayout( new GridLayout( 1 , 1 ) );
-      RightFrame.setBounds( new Rectangle( 1000 , 0 , 600 , 400 ) );
+     // RightFrame = new JFrame( "2D One Detector view" );
+      //RightFrame.getContentPane( ).setLayout( new GridLayout( 1 , 1 ) );
+      //RightFrame.setBounds( new Rectangle( 1000 , 0 , 600 , 400 ) );
 
       VirtArray2D = new RowColTimeVirtualArray( DS , 1000f , false , false ,
             null );
@@ -903,11 +1001,32 @@ public class GroupSelector implements IObserver, ActionListener
                                         ControlPanel ,
                                         .80f );
 
-      RightFrame.getContentPane( ).add( splitPane );
+      JPanel MidMidLow = new JPanel( );
+      bl = new BoxLayout( MidMidLow , BoxLayout.X_AXIS );
+      MidMidLow.setLayout( bl );
       
-      WindowShower.show( RightFrame );
+      JButton but = new JButton( SET_DETECTOR_SELECTS );
+      MidMidLow.add( but );
+      but.setToolTipText( "Sets Selector groups for ALL DETECTORS" );
+      but.addActionListener( this );    
+     
+      
+      but = new JButton( CLEAR_DETECTOR_SELECTS );
+      MidMidLow.add( but );
+      but.setToolTipText( "Sets Selector groups for ALL DETECTORS to 0" );
+      but.addActionListener( this );
+      MidMidLow.add( Box.createHorizontalGlue( ) );
+      MidMidLow.setBorder( new TitledBorder( new LineBorder( Color.black , 1 ) ,
+            "Detector Panel Selections" ) );
+      JPanel Res = new JPanel();
+      Res.setLayout(  new BorderLayout() );
+      Res.add( splitPane, BorderLayout.CENTER );
+      Res.add( MidMidLow , BorderLayout.SOUTH);
+      
+      //WindowShower.show( RightFrame );
       
       splitPane.setDividerLocation( .80 );
+      return Res;
 
    }
 
@@ -1072,7 +1191,7 @@ public class GroupSelector implements IObserver, ActionListener
          
    }
    
-   private static boolean InArray(  int[] detectors,int detNum)
+ /*  private static boolean InArray(  int[] detectors,int detNum)
    {
       if( detectors == null)
          return true;
@@ -1087,7 +1206,7 @@ public class GroupSelector implements IObserver, ActionListener
       return false;
    }
    
-     
+  */   
    @Override
    public void actionPerformed(ActionEvent arg0)
    {
@@ -1243,7 +1362,7 @@ public class GroupSelector implements IObserver, ActionListener
                      
                      if ( detectorIDPixel[i] == detectors[j] )
                      {  
-                        int id = detectors[j];
+                        //int id = detectors[j];
                         pixelGroup[i] = 0;
                         
 
@@ -1294,12 +1413,13 @@ public class GroupSelector implements IObserver, ActionListener
                
       }
 
-      if ( arg0.getActionCommand( ) == VIEW_GROUPS || 
-            arg0.getActionCommand().equals( VIEW_DATA ) )
+      if ( arg0.getActionCommand( ) == VIEW_GROUPS ||
+            arg0.getActionCommand().equals( VIEW_DATA ))
       {
         newShowGroupsCase();   
         return;
       }
+    
       if ( arg0.getActionCommand( ) == SET_DETECTOR_SELECTS
             || arg0.getActionCommand( ) == CLEAR_DETECTOR_SELECTS )
       {
@@ -1405,8 +1525,14 @@ public class GroupSelector implements IObserver, ActionListener
          if ( !MaxGroupIDUsed )
             
             addGroup( MaxGroupID , false );
+         
          notifyChangedData();
-      } else if ( arg0.getActionCommand( ) == SHOW_GROUPS )
+         
+      }else if( arg0.getActionCommand() == "Exit")
+         
+         System.exit(0);
+      
+      else if ( arg0.getActionCommand( ) == SHOW_GROUPS )
       {
          Hashtable< String , Integer > GroupVsPixelList = getHashTable(
                pixelGroup , startPixel );
@@ -1477,7 +1603,7 @@ public class GroupSelector implements IObserver, ActionListener
       notifyChangedData();
       
    }
-   private void saveShowGroupsCase()
+ /* private void saveShowGroupsCase()
    {
       JCheckBox chBox = ViewGroup;
       
@@ -1573,7 +1699,7 @@ public class GroupSelector implements IObserver, ActionListener
       DetectorPanel.getDisplayPanel( ).repaint( );
       return;
 
-   }
+   }*/
    private IDataGrid  SetUpDataBlock( IDataGrid gridLast, int detectorIDPixel,
                                       int rowPixel, int colPixel, float group)
    {
@@ -1762,6 +1888,7 @@ public class GroupSelector implements IObserver, ActionListener
          int Group = VirtArray2D.getGroupIndex( X );
          float Time = VirtArray2D.getTime( X );
 
+         ReportData( DS.getData_entry( Group ));
          if ( Group < 0 )
             return;
          
@@ -1773,7 +1900,7 @@ public class GroupSelector implements IObserver, ActionListener
          
          DS.notifyIObservers( IObserver.POINTED_AT_CHANGED );
          ThreeDPanel.redraw( IObserver.POINTED_AT_CHANGED );
-
+        
          return;
       }
 
@@ -1787,29 +1914,39 @@ public class GroupSelector implements IObserver, ActionListener
          
          ThreeDPanel.redraw( IObserver.POINTED_AT_CHANGED );
          
-         if ( i < 0 || i >= ds.getNum_entries( ) )
+         if ( i < 0 || i >= ds.getNum_entries( ) || i== DataSet.INVALID_INDEX )
          {
             Detectors_Gr.setText( "" );
             Detectors_Rmve.setText( "" );
             //Detectors_Formula.setText( "" );
-
+            ReportData( null);
             return;
          }
-
+      
          Data D = ds.getData_entry( i );
          PixelInfoList plist = AttrUtil.getPixelInfoListValue(
                Attribute.PIXEL_INFO_LIST , D );
 
          if ( plist == null )
+            {
+            ReportData( null);
             return;
+            }
 
          IPixelInfo pinf = plist.pixel( 0 );
          
          if ( pinf == null )
+         {
+            ReportData( null);
             return;
+         }
 
          int gridID = pinf.DataGrid( ).ID( );
          
+         
+         Append( "" + gridID , Detectors_Gr );
+         Append( "" + gridID , Detectors_Rmve );
+         ReportData( D);
          if ( gridID == LastGrid )
             return;
          
@@ -1842,12 +1979,48 @@ public class GroupSelector implements IObserver, ActionListener
             }
 
          VirtArray2D.setDetNum( gridID );
-         
-         Append( "" + gridID , Detectors_Gr );
-         Append( "" + gridID , Detectors_Rmve );
+ 
         // Append( "" + gridID , Detectors_Formula );
       }
 
+   }
+   
+   private void ReportData( Data D)
+   {
+      if( D == null)
+      {
+         for( int i=1; i< 13; i++)
+         {
+            PixelDat[i].setText("---");
+           
+         }
+         return;
+      }
+      
+      PixelInfoList plist = AttrUtil.getPixelInfoListValue( 
+                                 Attribute.PIXEL_INFO_LIST , D);
+      IPixelInfo pinf = plist.pixel( 0 );
+      int pixelID = pinf.ID( );
+      int indx = pixelID- startPixel; 
+      
+      PixelDat[2].setText( ""+colPixel[indx] );
+      PixelDat[3].setText( ""+rowPixel[indx] );
+      PixelDat[4].setText( ""+pixelID );
+      PixelDat[5].setText( ""+detectorIDPixel[indx] );
+      PixelDat[6].setText( ""+pixelGroup[indx] );
+      PixelDat[7].setText( String.format( "%6.2f" , ang[indx] ));
+      PixelDat[9].setText( String.format( "%5.2f" ,d[indx] ));
+      PixelDat[10].setText( String.format( "%7.3f" , q[indx] ));
+      PixelDat[11].setText( String.format("%7.3f",wl[indx] ));
+      
+      if( pixelData != null)
+         PixelDat[1].setText(""+pixelData[indx]);
+      else
+         PixelDat[1].setText( "---" );
+      
+      float Energy = tof_calc.EnergyFromWavelength( wl[indx] );
+      
+      PixelDat[12].setText( String.format("%7.2f",Energy ));
    }
 
    /**
@@ -2326,6 +2499,7 @@ public class GroupSelector implements IObserver, ActionListener
       {
 
          text.setText( "" );
+         text.setFont( FontUtil.MONO_FONT2 );
          if ( PixList == null || Grp == null || Pix == null )
          {
             text.setText( "No Data " );
@@ -2338,6 +2512,23 @@ public class GroupSelector implements IObserver, ActionListener
          }
 
          int size = PixList.length;
+         
+         int nn =1+(int) Math.log10( startPixel + pixelGroup.length);
+         nn = 2*nn+1;
+         String format = "%"+nn+"s    %3d\n";
+         
+         if( isGroup)
+            
+            text.append( "Group    Pixel ID's\n" );
+         
+         else
+         {  
+            char[] spaces = new char[Math.max( 1 , nn-14 )];
+            Arrays.fill( spaces , ' ' );
+            text.append(" Pixel ID's  "+new String(spaces)+"   Group\n");
+         }
+        
+         
          for( int i = 0 ; i < PixList.length ; i++ )
          {
             int k = PixList[i].intValue( );
@@ -2346,9 +2537,9 @@ public class GroupSelector implements IObserver, ActionListener
                int grp = Grp.elementAt( k ).intValue( );
                String Pix1 = Pix.elementAt( k );
                if ( isGroup )
-                  text.append( String.format( "%4d  %s\n" , grp , Pix1 ) );
+                  text.append( String.format( " %4d  %s\n" , grp , Pix1 ) );
                else
-                  text.append( String.format( "%15s  %4d\n" , Pix1 , grp ) );
+                  text.append( String.format(format , Pix1 , grp ) );
             }
 
          }
