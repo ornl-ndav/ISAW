@@ -383,10 +383,10 @@ public class FileUtil
 
       long num_bytes = r_file.length();
 
-      if ( num_bytes > 4l * (long)(Integer.MAX_VALUE) )
+      if ( num_bytes >= 4l * (long)(Integer.MAX_VALUE) )
         throw new IllegalArgumentException("File has more than " +
                        Integer.MAX_VALUE + 
-                     " integer values and can't be loaded in array in array" );
+                     " integer values and can't be loaded into an array" );
 
       int   num_ints = (int)(num_bytes/4);
       int[] list     = new int[ num_ints ];
@@ -423,9 +423,34 @@ public class FileUtil
     }
     catch ( IOException ex )
     {
-      throw new IllegalArgumentException("Failed to load events from file " +
+      throw new IllegalArgumentException("Failed to load ints from file " +
                                           filename );
     }
+  }
+
+
+  /**
+   *  Get the integer values stored in the input file buffer and put the
+   *  values into the proper positions in the list[] array.  
+   *
+   *  @param buffer      The array of bytes as read in one segment from the
+   *                     integer data file.
+   *  @param bytes_read  The number of bytes that were read in from the file
+   *                     and are to be extracted and placed in the list[]
+   *                     array.
+   *  @param num_loaded  The number of ints that have already been loaded. 
+   *                     This provides the position where the first int
+   *                     from the buffer should be stored.
+   *  @param list        The list being filled with integers from the file.
+   */
+  public static void UnpackBuffer( byte[] buffer,
+                                   long   bytes_read,
+                                   long   num_loaded,
+                                   int[]  list )
+  {
+    int index = (int)(num_loaded);
+    for ( int i = 0; i < bytes_read; i += 4 )
+      list[ index++ ] = SNS_TofEventList.getValue_32( buffer, i );
   }
 
 
@@ -464,27 +489,125 @@ public class FileUtil
 
 
   /**
-   *  Get the integer values stored in the input file buffer and put the
-   *  values into the proper positions in the event[] array.  
+   *  Get an array of float values from a file of bytes, in PC order.  
+   *  The number of floats returned in the array is the integer part 
+   *  of filesize/4.
+   *
+   *  @param filename  The name of the file of binary floats to read
+   *
+   *  @return An array containing float values obtained by converting
+   *          sequences of four bytes into the corresponding float value.
+   */
+  public static float[] LoadFloatFile( String filename )
+  {
+    try
+    {
+      RandomAccessFile r_file = new RandomAccessFile( filename, "r" );
+
+      long num_bytes = r_file.length();
+
+      if ( num_bytes >= 4l * (long)(Integer.MAX_VALUE) )
+        throw new IllegalArgumentException("File has more than " +
+                       Integer.MAX_VALUE +
+                     " float values and can't be loaded into an array" );
+
+      int     num_floats = (int)(num_bytes/4);
+      float[] list       = new float[ num_floats ];
+
+      r_file.seek( 0 );
+      long num_loaded = 0;
+      long seg_size = BUFFER_SIZE;
+      long bytes_read;
+      byte[] buffer    = new byte[ BUFFER_SIZE ];
+      while ( num_loaded < num_floats )
+      {
+        bytes_read = r_file.read( buffer );
+        seg_size   = Math.min( seg_size, bytes_read );
+
+        seg_size   = (seg_size/4) * 4;      // make sure it's a multiple of 4
+
+        if ( bytes_read > 0 )
+        {
+          UnpackFloatBuffer( buffer, seg_size, num_loaded, list );
+          num_loaded += bytes_read/4;
+        }
+        else
+        {
+          System.out.println("ERROR: Unexpected end of float file: " +
+                              filename +
+                             " after reading " + num_loaded +
+                             " out of " + num_floats +
+                             " floats." );
+          num_loaded = num_floats;
+        }
+      }
+      r_file.close();
+      return list;
+    }
+    catch ( IOException ex )
+    {
+      throw new IllegalArgumentException("Failed to load floats from file " +
+                                          filename );
+    }
+  }
+
+
+  /**
+   *  Get the float values stored in the input file buffer and put the
+   *  values into the proper positions in the list[] array.  
    *
    *  @param buffer      The array of bytes as read in one segment from the
-   *                     event data file.
+   *                     float data file.
    *  @param bytes_read  The number of bytes that were read in from the file
-   *                     and are to be extracted and placed in the events[]
+   *                     and are to be extracted and placed in the list[]
    *                     array.
-   *  @param num_loaded  The number of events that have already been loaded. 
-   *                     This provides the position where the first tof and
-   *                     pixel id from the buffer should be stored.
+   *  @param num_loaded  The number of floats that have already been loaded. 
+   *                     This provides the position where the floats from 
+   *                     the buffer should be stored.
    *  @param list        The list being filled with integers from the file.
    */
-  public static void UnpackBuffer( byte[] buffer, 
-                                   long   bytes_read, 
-                                   long   num_loaded,
-                                   int[]  list )
+  public static void UnpackFloatBuffer( byte[]   buffer,
+                                        long     bytes_read,
+                                        long     num_loaded,
+                                        float[]  list )
   {
     int index = (int)(num_loaded);
     for ( int i = 0; i < bytes_read; i += 4 )
-      list[ index++ ] = SNS_TofEventList.getValue_32( buffer, i );
+      list[ index++ ] = getFloat_32( buffer, i );
+  }
+
+
+  /**
+   *  Save the specified array of float in the specified file IN PC FORMAT.
+   *
+   *  @param list     The array of floats to save.
+   *  @param filename The name of the file to write.
+   */
+  public static void SaveFloatFile( float[] list, String filename )
+  {
+    if ( list == null )
+      throw new IllegalArgumentException("Array of floats is null");
+
+    if ( filename == null )
+      throw new IllegalArgumentException("Filename String is NULL");
+
+    byte[] buffer = new byte[ 4 * list.length ];
+
+    for ( int i = 0; i < list.length; i++ )
+      setFloat_32( list[i], buffer, 4*i );
+
+    try
+    {
+      RandomAccessFile r_file = new RandomAccessFile( filename, "rw" );
+      r_file.write( buffer );
+      r_file.close();
+    }
+    catch ( Exception ex )
+    {
+      System.out.println( ex );
+      ex.printStackTrace();
+      throw new IllegalArgumentException("Error writing file " + filename );
+    }
   }
 
 
@@ -714,9 +837,60 @@ public class FileUtil
 
 
   /**
+   * Decode the float value stored in a sequence of four bytes in 
+   * the buffer.  The four bytes determining the float value are 
+   * stored in the file and buffer in the sequence: b0,...,b3, with 
+   * the lowest order byte, b0, first and the the highest order byte, 
+   * b3, last.
+   * NOTE: This method reverses the action of setFloat_32.
+   * 
+   * @param i  The index of the first byte in the buffer
+   *                    
+   * @return The float value represented by four successive bytes from
+   *         the file. 
+   */
+  public static float getFloat_32( byte[] buffer, int i )
+  {
+    int int_val = 0;
+
+    for ( int shift = 0; shift < 32; shift += 8 )
+      int_val |= ((int)buffer[ i++ ] & 0xFF) << shift;
+
+    return Float.intBitsToFloat( int_val );
+  }
+
+
+  /**
+   * Encode the float value into a sequence of four bytes in the buffer
+   * starting at position i.  The four bytes determining the float value 
+   * are stored in the buffer in the sequence: b0,...,b3, with the lowest 
+   * order byte, b0, first and the the highest order byte, b3, last.
+   * NOTE: This method reverses the action of getFloat_32.
+   *                    
+   * @param value  The float value to be stored in four successive bytes
+   *               of the buffer. 
+   *
+   * @param buffer The byte buffer where the bytes are to be stored.
+   *
+   * @param i      The index in the buffer where the first byte of the 
+   *               float should stored. 
+   */
+  public static void setFloat_32( float value, byte[] buffer, int i )
+  {
+    int int_val = Float.floatToRawIntBits( value );
+
+    for ( int count = 0; count < 4; count++ )
+    {
+      buffer[ i++ ] = (byte)(int_val & 0xFF);
+      int_val = int_val >> 8;
+    }
+  }
+
+
+  /**
    * Decode the double value stored in a sequence of eight bytes in 
    * the buffer.  The eight bytes determining the double value are 
-   * stored in the file and buffer in the sequence: b0, ... b7, with 
+   * stored in the file and buffer in the sequence: b0,...,b3, with 
    * the lowest order byte, b0, first and the the highest order byte, 
    * b7, last.
    * NOTE: This method reverses the action of setDouble_64.
@@ -738,9 +912,9 @@ public class FileUtil
 
 
   /**
-   * Encode the double value into a sequeence of eight bytes in the buffer
+   * Encode the double value into a sequence of eight bytes in the buffer
    * starting at position i.  The eight bytes determining the double value 
-   * are stored in the buffer in the sequence: b0, ... b7, with the lowest 
+   * are stored in the buffer in the sequence: b0,...,b7, with the lowest 
    * order byte, b0, first and the the highest order byte, b7, last.
    * NOTE: This method reverses the action of getDouble_64.
    *                    
@@ -851,6 +1025,13 @@ public class FileUtil
    */
   public static void main(String[] args) throws Exception
   {
+    float[] vals = { 1, 2, 3, 1.1f, 2.2f, 3.3f };
+    SaveFloatFile( vals, "test_float.dat" );
+
+    float[] new_vals = LoadFloatFile( "test_float.dat" );
+    for ( int i = 0; i < new_vals.length; i++ )
+      System.out.println("i = " + i + ", new_vals[i] = " + new_vals[i] );
+
 /*
     byte[] buffer = new byte[8];
     setDouble_64( Math.PI, buffer, 0 );
@@ -876,6 +1057,7 @@ public class FileUtil
     for ( int i = 0; i < sns_names.length; i++ )
       System.out.println( sns_names[i] );
 */
+/*
     String inst_name = "TOPAZ";
     String info_dir  = "/home/dennis/SNS_ISAW/ISAW_ALL/InstrumentInfo/SNS/";
            info_dir += inst_name + "/";
@@ -891,8 +1073,8 @@ public class FileUtil
       identity_map[i] = i;
 
     SaveIntFile( identity_map, identity_map_filename );
-
-///*
+*/
+/*
     System.out.println("Results for " + map_file );
     int[]   map = LoadIntFile( map_file );
     boolean all_match = true;
@@ -916,7 +1098,7 @@ public class FileUtil
 
     for ( int i = 0; i < 20; i++ )
       System.out.println("i, map[i] = " + i + ", " + map[i] );
-//*/
+*/
 
 /*
     int[] raw_ints = FileUtil.LoadIntFile( map_file );
