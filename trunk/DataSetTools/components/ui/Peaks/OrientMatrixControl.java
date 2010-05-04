@@ -444,8 +444,10 @@ public class OrientMatrixControl extends JButton
                || OrientMat[ 2 ].length != 3 )
 
          OrientMat = null;
+      
       Vector<IPeak>Peaks = null;
       Peaks = WPeaks.get();
+      
       String res = subs.ShowOrientationInfo( Peaks , OrientMat ,
                omittedPeakIndex , err , false );
 
@@ -1475,7 +1477,8 @@ public class OrientMatrixControl extends JButton
             try
             {
             String[] Data = S.split( "," );
-            Res =( new  Operators.TOF_SCD.IndexJ_base( orMat.WPeaks.get(), orMat.orientationMatrix,
+            float[][] UB = new float[3][3];
+            Res =( new  Operators.TOF_SCD.IndexJ_base( orMat.WPeaks.get(), UB,
                      "", Float.parseFloat( Data[0].trim() ), Float.parseFloat( Data[1].trim() ),
                      Float.parseFloat( Data[2].trim() ))).getResult();
              if( !(Res instanceof ErrorString))
@@ -1483,6 +1486,7 @@ public class OrientMatrixControl extends JButton
                 gov.anl.ipns.Util.Sys.SharedMessages.addmsg(   Res );
                 if( orMat.peakFilter != null && orMat.peakFilter.get() != null )
                    orMat.peakFilter.get().set_hklMinMax();
+                orMat.setOrientationMatrix( UB );
                 return;
              }
                 
