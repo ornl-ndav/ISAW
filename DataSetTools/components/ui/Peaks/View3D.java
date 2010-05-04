@@ -1025,7 +1025,7 @@ public class View3D extends ThreeD_JPanel implements IMotion3D
       
       for( int i = 0 ; i < seqNums.length ; i++ )
          
-         if( seqNums[ i ] >= 0 && seqNums[ i ] < Peaks.size() )
+         if( seqNums[ i ] >= 0 && seqNums[ i ]-1 < Peaks.size() )
             CseqNums.addElement( seqNums[ i ] );
 
       Vector< Integer > runs_loc = getRunNums( seqNums ) , dets_loc = getDetNums( seqNums );
@@ -1097,7 +1097,7 @@ public class View3D extends ThreeD_JPanel implements IMotion3D
       
       for( int i = 0 ; i < seqNums.length ; i++ )
       {
-         IPeak Pk = Peaks.elementAt( i );
+         IPeak Pk = Peaks.elementAt( seqNums[i]-1 );
          if( this.omittedSeqNums.contains( Pk.seqnum() ) )
          {
             if( Pk.nrun() != runNum || Pk.detnum() != detNum )
