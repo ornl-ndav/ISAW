@@ -1961,12 +1961,23 @@ public class ScriptOperator  extends  GenericOperator
 
         if( args == null)
             System.exit( 0 );
+        
         if( args.length < 1)
             System.exit( 0 );
         
         try{
+          
+         
           SO = IsawLite.fromScript( args[ 0 ] );
+          
+          if( SO == null)
+             SO = IsawLite.fromCommandName(  args[0] , -1 );
+          
+          if( SO == null)
+             SO= IsawLite.fromClassName( args[0] );
+          
         }catch(InstantiationError e){
+           
           if( args[0].toUpperCase().trim().endsWith(".PY")){
              try
               {
@@ -1983,16 +1994,35 @@ public class ScriptOperator  extends  GenericOperator
             System.exit(-1);
           }
         }
-        if( !(SO instanceof IScriptProcessor)){
+        
+        
+        if( !(SO instanceof Operator)){
            System.out.println("Impropert type of Script");
            System.exit(-1);
         }
-        if( SO!=null && ((IScriptProcessor)SO).getErrorMessage()!= null &&
+        
+        if( SO!=null && SO instanceof IScriptProcessor && 
+                  ((IScriptProcessor)SO).getErrorMessage()!= null &&
                         ((IScriptProcessor)SO).getErrorMessage().length() > 0){
             System.out.println("Error ="+args[0]+"--"+((IScriptProcessor)SO).getErrorMessage());
             System.exit(-1);
         }
         
+      if ( SO.getNum_parameters( ) == 0 || args.length > 1 )
+         try
+         {
+            for( int i = 1 ; i < args.length
+                  && ( i - 1 ) < SO.getNum_parameters( ) ; i++ )
+               SO.getParameter( i - 1 ).setValue( args[i] );
+
+            Object XX = SO.getResult( );
+            System.out.println( "Result = " + XX );
+            return;
+         } catch( Exception ss )
+         {
+            ss.printStackTrace( );
+            System.exit( 1 );
+         }
  //       boolean dialogbox=false;
         SwingWorker worker = new SwingWorker() {
          
