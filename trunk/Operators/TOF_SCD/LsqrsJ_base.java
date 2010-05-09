@@ -1035,8 +1035,10 @@ private static final double SMALL    = 1.525878906E-5;
       if ( cellType.startsWith( "Tri" ) )
         chisq = LinearAlgebra.BestFitMatrix( UB, Thkl, Tq );
       else{
-         sig_abc= new double[7];
-        chisq = SCD_util.BestFitMatrix( cellType, UB, Thkl, Tq ,sig_abc);
+         
+        double[] sig_abc1= new double[7];
+        chisq = SCD_util.BestFitMatrix( cellType, UB, Thkl, Tq ,sig_abc1);
+        System.arraycopy(  sig_abc1, 0,sig_abc, 0, sig_abc.length);
       }
 
 
@@ -1137,7 +1139,10 @@ private static final double SMALL    = 1.525878906E-5;
     // determine uncertainties
    
     if(sig_abc == null || sig_abc[0] < 0){
-       sig_abc = new double[7];
+       
+       if( sig_abc == null)
+          sig_abc = new double[7];
+       sig_abc[0]=0;
     
       double numFreedom      = 3. * ( nargs - 3. );
       double[] temp_abc      = null;
@@ -1362,7 +1367,7 @@ private static final double SMALL    = 1.525878906E-5;
       * 
       * @return a 3*peaksSize array of hkl values
       */
-     public static double[][] getHKLArrays( Vector<IPeak> peaks,float[][]Transform,
+     public static double[][] getHKLArrays( Vector peaks,float[][]Transform,
            float MinIpkObs,
            int[] OmitSeqNums, int[] OmitRunNums, int n2bEdge)
      {
@@ -1371,7 +1376,7 @@ private static final double SMALL    = 1.525878906E-5;
         int N=0;
         for( int i=0; i< peaks.size( );i++)
         {
-           IPeak peak = peaks.get( i );
+           IPeak peak = (IPeak)peaks.get( i );
            boolean omit =omitPeak(peak, MinIpkObs,
                     OmitSeqNums, OmitRunNums,  n2bEdge);
            if( !omit)
@@ -1423,7 +1428,7 @@ private static final double SMALL    = 1.525878906E-5;
       * @param peaks
       * @return a 3*peaksSize array of q values that have been indexed
       */
-     public static double[][] getQArray( Vector<IPeak> peaks, float MinIpkObs,
+     public static double[][] getQArray( Vector peaks, float MinIpkObs,
                     int[] OmitSeqNums, int[] OmitRunNums, int n2bEdge)
      {
        
@@ -1442,7 +1447,7 @@ private static final double SMALL    = 1.525878906E-5;
         double[][]q = new double[3][peaks.size()];
         for( int i=0; i< peaks.size( );i++)
         {
-           IPeak peak = peaks.get( i );
+           IPeak peak = (IPeak)peaks.get( i );
            boolean omit = omitPeak( peak,MinIpkObs,
                      OmitSeqNums,  OmitRunNums,  n2bEdge);
          if ( !omit )
@@ -1712,9 +1717,12 @@ private static final double SMALL    = 1.525878906E-5;
         if( sig_abc==null || sig_abc.length < 7) sig_abc = new double[7];
         
         double[][] UBS = new double[3][3];
+        
         double chiSq = LinearAlgebra.BestFitMatrix( UBS ,
               LinearAlgebra.getTranspose(hkl), LinearAlgebra.getTranspose(q) );
-       
+        
+        chiSq= chiSq*chiSq;
+        
         if( Double.isNaN( chiSq) )
            return Double.NaN;
         
@@ -1773,10 +1781,10 @@ private static final double SMALL    = 1.525878906E-5;
            for( int j=0; j<3;j++)
               if( Math.abs( HHTinv[j][j]-errSqij[i][j] )>.000001)
                  System.out.println("Error");
-        errSqij = LinearAlgebra.mult(  errSqij ,s2_q );
+       
         //NO "Error" was printed
         */
-       
+        errSqij = LinearAlgebra.mult(  errSqij ,s2_q );
         for(int i=0; i<3;i++)
            for(int j=0; j<3;j++)
               errSqij[i][j] =Math.sqrt( errSqij[i][j] );
@@ -1853,7 +1861,7 @@ private static final double SMALL    = 1.525878906E-5;
            
            
            
-           double Numsq= sqr(a_bErr*a*b)-sqr(a_b)*(sqr(a*db)+sqr(b*da));
+           double Numsq= sqr(a_bErr*a*b)+sqr(a_b)*(sqr(a*db)+sqr(b*da));
            if( Numsq <0)
               Numsq = - Numsq;
           // Numsq=x1+x3;
@@ -2321,35 +2329,29 @@ private static final double SMALL    = 1.525878906E-5;
   {
      try
      {
-       Vector<Peak_new> V = Peak_new_IO.ReadPeaks_new( "c:/ISAW/SampleRuns/SNS/SNAP/WSF/235_46/quartzFx.peaks");
+       Vector<Peak_new> V = Peak_new_IO.ReadPeaks_new(//"C:/Users/ruth/x.peaks");
+             "c:/ISAW/SampleRuns/SNS/SNAP/WSF/235_46/quartz.peaks");
 
+       //Use original least squares 
        double[] sig_abc = new double[7];
        System.out.println("orig="+LsqrsJ1(V,null,null,
-                   null, "C:/Users/ruth/x.mat", 8, null,
+                   null, "C:/Users/ruth/x.mat", 0, null,
                    "Tri", sig_abc));
        System.out.println("original errors");
        LinearAlgebra.print( sig_abc );
      
+       //New Least Squares
        double[][] UB = new double[3][3];
-       double[][] q = new double[3][V.size()];
-       double[][] hkl = new double[3][V.size()];
+       double[][] q = LsqrsJ_base.getQArray( V , 0 , null , null , -1 );
+       double[][] hkl = LsqrsJ_base.getHKLArrays( V , null ,0 , null , null , -1 );
        double[] abc = new double[7];
        float[] qq;
-       for( int i=0; i< V.size( ); i++)
-       {
-          Peak_new pk = V.elementAt( i );
-          qq = pk.getUnrotQ( );
-          q[0][i] = qq[0];
-          q[1][i] = qq[1];
-          q[2][i] = qq[2];
-          hkl[0][i]= Math.floor(.5+pk.h( ));
-          hkl[1][i]= Math.floor(.5+pk.k( ));
-          hkl[2][i]= Math.floor(.5+pk.l( ));
-       }
+       
+    
        
        double chiSq = LeastSquaresSCD(UB,  hkl,
              q,  abc,  sig_abc);
-       System.out.println( "new="+chiSq);
+       System.out.println( "new chiSq="+chiSq);
        
        System.out.println("new UB =");
        LinearAlgebra.print( LinearAlgebra.getTranspose( UB) );
@@ -2357,6 +2359,8 @@ private static final double SMALL    = 1.525878906E-5;
        LinearAlgebra.print(  abc );
        System.out.println("new sigabc");
        LinearAlgebra.print(  sig_abc );
+       
+       
        //===================Experimental works
        Scanner fin = new Scanner(new
              File("C:/ISAW/Operators/TOF_SCD/NormZ1.vals"));
@@ -2365,7 +2369,7 @@ private static final double SMALL    = 1.525878906E-5;
        for(int i=0;i<N1;i++)
           zVals[i] = fin.nextDouble( );
 
-       //LinearAlgebra.print(zVals);
+       // Accumulators for statistical info
        double[][] UBsq = new double[3][3];
        double[][] UBs = new double[3][3];
        double[][] scratch1 = new double[3][3];
@@ -2378,12 +2382,17 @@ private static final double SMALL    = 1.525878906E-5;
        double[] scalarSQ = new double[7];
        double[] scalar1 = new double[7];
        double[] scalar  = new double[7];
+       double   qsqerr2 =0;
+       double   qsqerr1 =0;
+       double   qq1 =0;
+       double   qq2 =0;
        
        double sq = Math.sqrt( chiSq/(q[0].length-1)/3);
+       System.out.println("new sigq="+sq);
        
        int z=0150;
        int N = N1/3;
-       N=500;
+      
        for( int i=0; i< N; i++)
        {
           q = LinearAlgebra.mult( UB,hkl );
@@ -2391,15 +2400,21 @@ private static final double SMALL    = 1.525878906E-5;
              for( int k=0; k < q[s].length; k++)
                 {
                  q[s][k] += zVals[z]*sq;
+                 qq1 +=zVals[z]*sq;
+                 qq2 += zVals[z]*sq*zVals[z]*sq ;
                  z++;
-                 if( z >= 1534)
+                 if( z >= N1)
                     z=0;
                 }
                
        
-          if( z >=1534) z=0;
+          if( z >=N1) z=0;
           
-          LeastSquaresSCD( UBs, hkl, q, scalar,null);
+          double chi = LeastSquaresSCD( UBs, hkl, q, scalar,null);
+          double ss =Math.sqrt( chi/(q[0].length-2)/3);
+          qsqerr2 +=ss*ss;
+          qsqerr1 +=ss;
+          
           scratch1= LinearAlgebra.mult( LinearAlgebra.getTranspose(UBs) ,UBs  );
           scratch2= LinearAlgebra.getInverse( scratch1 ); 
           for( int r=0; r< 3; r++)
@@ -2429,7 +2444,10 @@ private static final double SMALL    = 1.525878906E-5;
        }
        
       
-       System.out.println("Experimental results");
+       System.out.println("\nExperimental results");
+       System.out.println("chisq & stdev_chiSq="+qq1/N/3+","+ Math.sqrt((qq2-qq1*qq1/N/3)/(3*N-3)));
+       System.out.println("dq_orig, dq exp, err dq="+ sq+","+(qsqerr1/N) +","+
+               Math.sqrt( (qsqerr2 -qsqerr1*qsqerr1/N )/(N-1)) );
        for( int r=0;r<3;r++)
           for(int c=0; c<3; c++)
           {
@@ -2457,7 +2475,9 @@ private static final double SMALL    = 1.525878906E-5;
        double [][] errUB= LinearAlgebra.mult( hkl,
                                LinearAlgebra.getTranspose(hkl));
        errUB = LinearAlgebra.mult(LinearAlgebra.getInverse(errUB),sq*sq);
-       for( int c=0; c<3;c++)errUB[0][c] = Math.sqrt(errUB[c][c]);
+       for( int c=0; c<3;c++)
+           errUB[0][c] = Math.sqrt(errUB[c][c]);
+       
        for( int r=1; r<3;r++)
           for( int c=0; c<3;c++)
              errUB[r][c]=errUB[0][c];
@@ -2475,7 +2495,7 @@ private static final double SMALL    = 1.525878906E-5;
        double[][] errUBTUB = LsqrsJ_base.errorAdd( 
                               LsqrsJ_base.errorMult( LinearAlgebra.getTranspose( UB ) ,errUB, true), 
                               LsqrsJ_base.errorMult( LinearAlgebra.getTranspose(errUB  ) ,UB, true)      , 
-                              false );
+                              true );
       System.out.println(" Theoretical");
       LinearAlgebra.print(  errUBTUB );
       System.out.println("-----------------------\n Tensor");
@@ -2484,6 +2504,7 @@ private static final double SMALL    = 1.525878906E-5;
       double[][]Tensor =LinearAlgebra.getInverse(UBTUB);
       LinearAlgebra.print( Tensor  );
     
+
       System.out.println("-----------------------\n errTensor");
       LinearAlgebra.print(  Tensor2 );
       System.out.println("   theoretical");
@@ -2493,6 +2514,16 @@ private static final double SMALL    = 1.525878906E-5;
        //NOTE: If used Tensor and Tensor+/- errors to calc alpha, beta and
        // gamma got closer to the theoretical results than experimental
        // results
+      System.out.println("-----------------------------------");
+      System.out.println("            Reduced number of Error steps");
+      double[][] UBIERR = LsqrsJ_base.errorMult( 
+                            errUB , Tensor,true );
+      UBIERR = LsqrsJ_base.errorMult( LinearAlgebra.getInverse( UB ),UBIERR, true);
+      UBIERR = LsqrsJ_base.errorAdd(  UBIERR, LinearAlgebra.getTranspose( UBIERR ), true);
+      System.out.println("New Reduced steps Tensor Error");
+      LinearAlgebra.print( UBIERR );
+      System.out.println("Errors =");
+      LinearAlgebra.print(  LsqrsJ_base.LatticeErrors( abc ,UBIERR ) );
      
        
       
