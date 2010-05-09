@@ -36,6 +36,8 @@ package DataSetTools.components.View;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -50,7 +52,6 @@ import gov.anl.ipns.Util.Messaging.IObserver;
 import gov.anl.ipns.Util.Numeric.IntList;
 import gov.anl.ipns.Util.Numeric.floatPoint2D;
 import gov.anl.ipns.Util.Sys.*;
-import gov.anl.ipns.ViewTools.Components.AxisInfo;
 import gov.anl.ipns.ViewTools.Components.IViewComponent;
 import gov.anl.ipns.ViewTools.Components.ObjectState;
 import gov.anl.ipns.ViewTools.Components.Region.RegionOp;
@@ -61,7 +62,6 @@ import gov.anl.ipns.ViewTools.Panels.Image.ImageJPanel2;
 import gov.anl.ipns.ViewTools.Panels.Transforms.CoordBounds;
 import gov.anl.ipns.ViewTools.Panels.Transforms.CoordTransform;
 import gov.anl.ipns.ViewTools.UI.FontUtil;
-import gov.anl.ipns.ViewTools.UI.SplitPaneWithState;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
@@ -108,17 +108,21 @@ public class GroupSelector implements IObserver, ActionListener
 
    JPanel                     CommandPanel;
 
-   ThreeD1View                 ThreeDPanel;
+   ThreeD1View                ThreeDPanel;
 
    RowColTimeVirtualArray     VirtArray2D;
 
    ImageViewComponent         DetectorPanel;
+   
+   JFrame                     DisplayFrame; //Frame for application
 
-   JFrame                     LeftFrame, // holds ThreeDPanel
-                              RightFrame; // holds
-                                          // DetectorPanel
-                                          // of
-                                          // VirtArray2D
+   JPanel                     TwoD    // holds
+                                     // DetectorPanel
+                                    // of
+                                   // VirtArray2D
+                              ; 
+   
+   JPanel                    controlPanel;
 
    FilteredPG_TextField       Detectors_Gr;
 
@@ -371,7 +375,7 @@ public class GroupSelector implements IObserver, ActionListener
     */
    public GroupSelector(String DETCAlFileName, String BankMapFile)
    {
-
+      MaxIntensity = 1;
       pixelData = null;
       ViewGroup = ViewData = null;
       GroupShowing = true;
@@ -438,6 +442,9 @@ public class GroupSelector implements IObserver, ActionListener
      BusyDisplay.KillBusyGUI( jf );
    }
 
+ 
+   
+   
    private DataSet MakeDataSet(IDataGrid grid, int startPixelID, float L0,
          float T0)
    {
@@ -594,59 +601,70 @@ public class GroupSelector implements IObserver, ActionListener
    {
       SelectedRegionsSav = new Hashtable[ grids.length ];
       
+      controlPanel = new JPanel();
+      BoxLayout bl = new BoxLayout( controlPanel,BoxLayout.Y_AXIS );
+      controlPanel.setLayout(  bl );
       GroupList = new Vector< Integer >( );
       
       LastGrid = grids[0].ID( );
       
-      JFrame jf = new JFrame( "Select Pixel Groupings" );
-      jf.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
+      DisplayFrame = new JFrame( "Select Pixel Groupings" );
+      DisplayFrame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
        
-      Container jContainer = jf.getContentPane( );
+      Container jContainer = DisplayFrame.getContentPane( );
       
-      Dimension D = jf.getToolkit( ).getScreenSize( );
+      jContainer.addComponentListener( new DisplayFrameComponentListener(this) );
+      
+      Dimension D = DisplayFrame.getToolkit( ).getScreenSize( );
       D.width = Math.min( D.width, 2000);
       D.height = Math.min( D.height, 2000);
-      jf.setBounds(D.width/4,0,D.width/5, D.height/3 );
-      JPanel jpm =MakeMiddlePanel( );
-      jContainer.add( jpm);
       
-      JPanel jpr = null;
-      JPanel jpl = null;
-      jContainer.setLayout(  new GridLayout(1,1) );
+      
+      DisplayFrame.setSize( D.width*4/5, D.height/3 );
+      D.width= D.width*4/5;
+      D.height=D.height/3;
+      CommandPanel =MakeMiddlePanel( );
+      //jContainer.add( CommandPanel);
+      
+      JPanel TwoD = null;
+      //JPanel jpl = null;
+      BoxLayout bl2 = new BoxLayout( jContainer, BoxLayout.X_AXIS);
+      jContainer.setLayout(bl2 );
       if ( DS != null )
       {
          DS.addIObserver( this );
          
-         jpl = MakeLeftPanel( );
+         MakeLeftPanel( );//ThreeDPanel gets set Here
          
-         jpr =MakeRightPanel( );
+         TwoD =MakeRightPanel( );
          
          DetectorPanel.addActionListener( this );
          
-         JFrame LeftPanel = new JFrame("Three D View");
-         LeftPanel.setBounds( 0,0,D.width/4, D.height/3 );
-         LeftPanel.getContentPane( ).setLayout(  new GridLayout(1,1) );
-         LeftPanel.getContentPane( ).add( jpl );
-         WindowShower.show( LeftPanel );
-         
-
-         
-         JFrame RightPanel = new JFrame("1 Detector View");
-         RightPanel.setBounds( D.width/2,0,D.width/3, D.height/3 );
-         RightPanel.getContentPane( ).setLayout(  new GridLayout(1,1) );
-         RightPanel.getContentPane( ).add( jpr );
-         WindowShower.show( RightPanel);
-         
+         Box ThrdControl = ThreeDPanel.getControlPanel();
+         controlPanel.add( Box.createVerticalGlue( ) );
+         ThrdControl.setBorder(  new TitledBorder(
+                        new LineBorder(Color.black),"3D View")  );
+         controlPanel.add( ThrdControl);
         
+         setPreferredSizes();
+         
+         jContainer.add(CommandPanel);
+         jContainer.add(TwoD);
+         jContainer.add( controlPanel);
+         jContainer.add( ThreeDPanel);
+         
+      
+         DisplayFrame.pack( );
+         WindowShower.show( DisplayFrame );
         
       }else
       {
         
-         jContainer.add( jpm);
+         jContainer.add( CommandPanel);
          
       }
 
-      jContainer.add(  jpm );
+     
       JMenuBar jfMenBar = new JMenuBar();
       JMenu  FileMenu = new JMenu("File");
       JMenu  ViewMenu = new JMenu("View");
@@ -690,14 +708,24 @@ public class GroupSelector implements IObserver, ActionListener
            
          }
       });
-      jf.setJMenuBar( jfMenBar);
-      jf.setBounds( 500 , 0 , 500 , 400 );
+      DisplayFrame.setJMenuBar( jfMenBar);
       
-      WindowShower.show( jf );
+      WindowShower.show( DisplayFrame );
 
 
    }
 
+   
+   private void setPreferredSizes()
+   {
+      Dimension D = DisplayFrame.getSize( );
+      
+      CommandPanel.setPreferredSize(  new Dimension(D.width*2/7, D.height) );
+      ThreeDPanel.setPreferredSize(  new Dimension(D.width*2/7, D.height) );
+      ThreeDPanel.setPreferredSize(new Dimension(D.width*2/7, D.height) );
+      controlPanel.setPreferredSize( new Dimension(D.width*1/7, D.height) );
+   }
+   
    
    private void addGroup(int Group, boolean add)
    {
@@ -743,12 +771,7 @@ public class GroupSelector implements IObserver, ActionListener
    }
 
    private JPanel MakeMiddlePanel()
-   {
-
-     // JFrame jf = new JFrame( "Select Pixel Groupings" );
-     // jf.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
-      
-      //Container jContainer = jf.getContentPane( );
+   {      
       JPanel jp = new JPanel();
       BoxLayout bl = new BoxLayout( jp , BoxLayout.Y_AXIS );
       jp.setLayout( bl );
@@ -805,10 +828,10 @@ public class GroupSelector implements IObserver, ActionListener
       but.addActionListener( this );
       but.setToolTipText( "Uses formula below. If >0 true,else false" );
       TopMid.add( but );
-  //    Detectors_Formula = new FilteredPG_TextField( new IntListFilter( ) );
+
+
       TopMid.add( new JLabel() );
-  //    Detectors_Formula
-  //          .setToolTipText( "Leave blank to apply to ALL detectors" );
+
       
       FormulaGroup = new FilteredPG_TextField( new IntegerFilter( ) );
       TopMid.add( FormulaGroup );
@@ -848,6 +871,7 @@ public class GroupSelector implements IObserver, ActionListener
             PixelDat[i].setBorder(  new LineBorder( Color.black) );
          }
       }
+      
       JPanel pp = new JPanel( new GridLayout( 4,2));
       PixelDat[0].setText( "1000(*)" );
       pp.add(  new JLabel("time("+FontUtil.MU+"s)") );
@@ -888,22 +912,7 @@ public class GroupSelector implements IObserver, ActionListener
       pp.setBorder(  new LineBorder( Color.black) );
       BotPan.add( pp );
       jp.add( BotPan );
-      /*JPanel MidLow = new JPanel( new GridLayout( 1 , 2 ) );
-      but = new JButton( SAVE_GROUPS );
-      but.addActionListener( this );
-      MidLow.add( but );
-
-     // ViewGroup = new JCheckBox( VIEW_GROUPS , false );
-      //ViewGroup.addActionListener( this );
-      //MidLow.add( ViewGroup );
-
-      but = new JButton( SHOW_GROUPS );
-      but.addActionListener( this );
-      MidLow.add( but );
-
-      jp.add( MidLow );
-      */
-      //-------------------------Set up Help on JMenuBar-----------
+      
       return jp;
    }
 
@@ -912,22 +921,14 @@ public class GroupSelector implements IObserver, ActionListener
 
       if ( DS == null )
       {
-         LeftFrame = null;
+        
          return null;
       }
 
-      //LeftFrame = new JFrame( "Three D Detector View" );
-      
-      //LeftFrame.getContentPane( ).setLayout( new GridLayout( 1 , 1 ) );
-      
-      //LeftFrame.setBounds( new Rectangle( 0 , 0 , 500 , 600 ) );
-      
+       
       
       ThreeDPanel = new ThreeD1View( DS , null );
-      
-      //LeftFrame.getContentPane( ).add( ThreeDPanel );
-      
-     // WindowShower.show( LeftFrame );
+   
       return ThreeDPanel;
 
    }
@@ -937,25 +938,21 @@ public class GroupSelector implements IObserver, ActionListener
 
       if ( DS == null )
       {
-         RightFrame = null;
+         
          return null;
       }
 
-     // RightFrame = new JFrame( "2D One Detector view" );
-      //RightFrame.getContentPane( ).setLayout( new GridLayout( 1 , 1 ) );
-      //RightFrame.setBounds( new Rectangle( 1000 , 0 , 600 , 400 ) );
-
       VirtArray2D = new RowColTimeVirtualArray( DS , 1000f , false , false ,
             null );
+      
       VirtArray2D.ReverseY = true;
-      VirtArray2D.getSharedControls( );// So they exist and are not null
-
-      VirtArray2D.setAxisInfo( AxisInfo.Y_AXIS , 0 , 20 , "Intensity" ,
-            "Counts" , AxisInfo.LINEAR );
 
       DetectorPanel = new ImageViewComponent( VirtArray2D , new ObjectState( ) );
       VirtArray2D.addDataChangeListener( this );
-
+      
+      if( MaxIntensity < 1)
+         MaxIntensity = 1;
+      
       ObjectState objState = DetectorPanel.getObjectState( false );
       if ( !objState.reset( ImageViewComponent.IMAGEJPANEL + "."
             + ImageJPanel2.MAXDATA , MaxIntensity ) )
@@ -967,12 +964,7 @@ public class GroupSelector implements IObserver, ActionListener
                + ImageJPanel2.MINDATA , 0 );
       
       DetectorPanel.setObjectState( objState );
-     // if ( !objState.reset( ImageViewComponent.IMAGEJPANEL + "."
-     //       + ImageJPanel2.AUTOSCALE , false ) )
-    //     objState.insert( ImageViewComponent.IMAGEJPANEL + "."
-    //           + ImageJPanel2.AUTOSCALE , false );
       DetectorPanel.setAutoScale( false );
-      System.out.println("MaxMin intensity="+ MaxIntensity);
      
       
       JPanel ControlPanel = new JPanel( );
@@ -985,22 +977,23 @@ public class GroupSelector implements IObserver, ActionListener
          
          if ( !( VC[i] instanceof PanViewControl ) )
             
-            if ( ( i != 3 ) && ( i != 6 ) )
-               
+            if ( (i==0) || (i>=5 && i<=8 && i!=6)  )
+            { 
                ControlPanel.add( VC[i] );
-
+            }
+      VC[0].addActionListener( this );
       SelectionEditor = ( ControlCheckboxButton ) VC[5];// disabled at times
       GroupSelectorControl = VC[7];
       GroupEditor = ( ButtonControl ) VC[8];
       
       GroupEditor.setToolTipText(  "Only Group names that represent Integers are used" );
       
-      SplitPaneWithState splitPane = new SplitPaneWithState(
-                                        JSplitPane.HORIZONTAL_SPLIT , 
-                                        DetectorPanel.getDisplayPanel( ) ,
-                                        ControlPanel ,
-                                        .80f );
-
+      controlPanel.add( ControlPanel );
+      ControlPanel.setBorder(  new TitledBorder( new LineBorder( Color.black),
+            "2D Detector Panel") );
+      
+   
+      
       JPanel MidMidLow = new JPanel( );
       bl = new BoxLayout( MidMidLow , BoxLayout.X_AXIS );
       MidMidLow.setLayout( bl );
@@ -1012,20 +1005,25 @@ public class GroupSelector implements IObserver, ActionListener
      
       
       but = new JButton( CLEAR_DETECTOR_SELECTS );
+      
       MidMidLow.add( but );
       but.setToolTipText( "Sets Selector groups for ALL DETECTORS to 0" );
       but.addActionListener( this );
       MidMidLow.add( Box.createHorizontalGlue( ) );
+      
       MidMidLow.setBorder( new TitledBorder( new LineBorder( Color.black , 1 ) ,
-            "Detector Panel Selections" ) );
+            "2D Detector Panel Selections" ) );
+      
       JPanel Res = new JPanel();
       Res.setLayout(  new BorderLayout() );
-      Res.add( splitPane, BorderLayout.CENTER );
+      
+      JPanel det = DetectorPanel.getDisplayPanel( );
+      det.setBorder(  new TitledBorder( new LineBorder(Color.black),"2D DetectorPanel") );
+      
+      Res.add( det , BorderLayout.CENTER );
       Res.add( MidMidLow , BorderLayout.SOUTH);
       
-      //WindowShower.show( RightFrame );
-      
-      splitPane.setDividerLocation( .80 );
+   
       return Res;
 
    }
@@ -1211,6 +1209,12 @@ public class GroupSelector implements IObserver, ActionListener
    public void actionPerformed(ActionEvent arg0)
    {
 
+      if( arg0.getSource() instanceof ControlSlider)
+      {
+         ControlSlider slider = (ControlSlider)(arg0.getSource());
+         ThreeDPanel.setLogScale( (double)slider.getValue( ) );
+         return;
+      }
       if ( arg0.getActionCommand( ).equals( "DataChange" ) )
       {         
          DetectorPanel.dataChanged( VirtArray2D );// Removes Selections
@@ -1301,6 +1305,7 @@ public class GroupSelector implements IObserver, ActionListener
             }
 
             IDataGrid grid = null;
+            
             for( int i = 0 ; i < detectors.length ; i++ )
             {
                int id = detectors[i];
@@ -1317,7 +1322,7 @@ public class GroupSelector implements IObserver, ActionListener
                      
                   }
             }
-            notifyChangedData();
+            notifyChangedData( false);
             addGroup( group , true );
 
          } catch( Exception s )
@@ -1380,7 +1385,7 @@ public class GroupSelector implements IObserver, ActionListener
          if ( !groupLeft )
             
             addGroup( group , false );
-         notifyChangedData();
+         notifyChangedData( false );
          return;
       }
 
@@ -1401,7 +1406,7 @@ public class GroupSelector implements IObserver, ActionListener
                IntList.ToArray( Detectors_Gr.getText( ).trim( ) ),
                formulaStr);
          
-         notifyChangedData();
+         notifyChangedData( false );
          
         }catch(Exception S)
         {
@@ -1416,7 +1421,7 @@ public class GroupSelector implements IObserver, ActionListener
       if ( arg0.getActionCommand( ) == VIEW_GROUPS ||
             arg0.getActionCommand().equals( VIEW_DATA ))
       {
-        newShowGroupsCase();   
+         newShowGroupsCase( );   
         return;
       }
     
@@ -1526,7 +1531,7 @@ public class GroupSelector implements IObserver, ActionListener
             
             addGroup( MaxGroupID , false );
          
-         notifyChangedData();
+         notifyChangedData( false );
          
       }else if( arg0.getActionCommand() == "Exit")
          
@@ -1600,7 +1605,9 @@ public class GroupSelector implements IObserver, ActionListener
          grid = SetUpDataBlock( grid,detectorIDPixel[i], 
                   rowPixel[i], colPixel[i],    data[i]);
       }
-      notifyChangedData();
+      
+      GroupShowing = !GroupShowing;
+      notifyChangedData( true );
       
    }
  /* private void saveShowGroupsCase()
@@ -1713,11 +1720,16 @@ public class GroupSelector implements IObserver, ActionListener
       return gridLast;
    }
    
-   private void notifyChangedData()
+   private void notifyChangedData( boolean always)
    {
+      if( !always && !GroupShowing)
+         return;
+      
       DS.notifyIObservers( DATA_CHANGED );
       ThreeDPanel.setDataSet( DS );
+     
       DetectorPanel.dataChanged( );
+      
    }
    private Hashtable< String , Integer > getHashTable(int[] Groups,
          int startPixel)
@@ -2469,6 +2481,25 @@ public class GroupSelector implements IObserver, ActionListener
 
    }
 
+   class DisplayFrameComponentListener extends ComponentAdapter
+   {
+      GroupSelector grp;
+
+      public DisplayFrameComponentListener( GroupSelector grp)
+      {
+         this.grp = grp;
+      }
+      @Override
+      public void componentResized(ComponentEvent arg0)
+      {
+
+            
+         super.componentResized( arg0 );
+         grp.setPreferredSizes( );   
+         
+      }
+      
+   }
    class RankButtonListener implements ActionListener
    {
 
