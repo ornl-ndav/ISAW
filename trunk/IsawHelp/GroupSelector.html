@@ -1,0 +1,99 @@
+<html><body style="font-size:20px">
+
+<center><H1> Group Selection Application </H1></Center>
+ 
+  This application allows users to assign Group numbers to pixels in area detectors. 
+The pixels can be defined graphically or by formula. The definitions are done 
+sequentially, so the group associated with a  pixel is the last group that was assigned
+to that given pixel.  There are very limited UNDO options.
+<P>
+The inputs to this program is either a NeXus filename or both a DetCal filename, containing
+position information, and a bank filename, which maps NeXus pixel ID's to row, col, and detector.  
+If the input is from a NeXus file, the y values for
+each pixel are all summed to one value.  
+<P>
+<P>
+<ol type="A">The application consists of three separate panels and two Menus.
+<LI><UL> Command Panel:<P>
+      <LI> Allows for assigning/removing groups for whole detectors.<P>
+            <UL> Clicking the button <B>Assign to Group</b> or <b>Remove Group</b> after the information
+                  in the textboxes under <U>Detector(s)</U> and <U>Group</u> have been filled out will: <P>
+                  
+
+                  <LI> <B>Remove Group</B> just assigns the indicated pixels the group number 0<P>
+
+                  <LI> <B>Assign to Group</B> just assigns the pixels in the specified detectors 
+                         the group number in the <U>Group</u> text box. <P>
+                  <LI> If No detectors are given, all pixels in all detectors will be
+                       assigned the given group number<P>
+                  <LI><a href="#ChangeDetector">NOTE on setting Detector numbers</a>.<P>
+             </ul>
+            
+      <LI> Allows for assigning groups for pixels satisfying a given formula<P>
+            <ul> Click <B>Formual Assign</B> after the information under <U>Group</U> and the 
+                  <U>Formula</u> in the text box to the right of <B>Formula</b> is filled out.<P>
+                 <LI> The formula is in "jython". The variables( case sensitive) that can be used
+                     are d, q, wl, row, col, det, pix and ang. "ang" is the scattering angle in degrees.<P>
+                  <LI> d, q, wl represent these values at time =1000 micro seconds ONLY<P>
+             </ul>
+  
+      <LI> If the data is loaded in from a NeXus file, there are buttons to <B>View Data</b> and
+            <B>View Groups</b>. This changes the 3D View and 2D Detector Panel to show the Data or 
+             show the Group information.
+       <P>
+    </UL><P>
+
+<li> <UL><a href="Viewers/3D1_view.html">ThreeD Detector View</a>: <P>
+
+         <LI> This view contains controls to move the view around, display information
+              about the last Pointed At Pixel which is displayed at the bottom of the Command Panel<P>
+
+         <LI> When Viewing Group information, pixels assigned
+              different groups will have different colors.  The assigned group appears 
+              as the Group Num in the Pointed At Pixel information.<P>
+
+         <LI> Selecting a panel in the 3D view will
+              <ol> <li> <a name="ChangeDetector"></a>Change the detector shown in the 
+                                            2D Detector Panel<P>
+                   
+                    <li> Add this detector ID after the last comma,  colon, or ,if there is no
+                         comma or colon,at the start of the textboxes under <U>Detector(s)</u>
+                         in the Command Panel.
+                    </ol>
+                     <P>
+      </UL><P>
+
+
+<LI> <UL>2D Detector Panel:<P>
+       <LI> This contains the view of the latest <a href="#ChangeDetector">selected detector</a>.<P>
+
+       <LI> Selecting a pixel in this view will display information about that
+           pixel in the "Pointed at Pixel" information display at the bottom of the Command Panel.<P>
+
+       <LI> <a href="SelectionOverlay.html">The Selection overlay</a> can be used to select subregions of a detector.
+            For the selected pixels to be assigned to a group, the name of a selector must be an 
+            integer. This integer will be the group number assigned to the pixels associated with this
+            selection when the <B>Set Selector Groups</b> button is pressed. If the 
+                 <B>Clear Selector Groups</B> is pressed, these pixels will be assigned group number 0.<P>
+            <P><U>NOTE</U>:The regions are defined independently for each detector. 
+
+       <LI> <B>Clear Selector Groups</B> and  <B>Set Selector Groups</B>( at the bottom of the 2D DetectorPanel)
+             Clears( sets to 0) or Sets( sets the Group number of the selected pixels to the 
+             Selector Name[Integer]).<P>
+              <UL> These buttons Clear and Set the pixels associated with integer Selector names 
+                   in EVERY detectors.
+              </ul>
+             
+
+      
+
+    </UL>
+<LI> <UL> Menus
+       <LI> Save: Saves the grouping information in the Mantid format
+       <LI> View: Views the grouping information either as group vs pixel id or pixel id vs group.
+     </ul>
+</ol>
+
+</body>
+</html>
+
