@@ -1,0 +1,72 @@
+<htnl><body  style="font-size:20px">
+<Center><H1> Selection Overlay </H1></Center>
+The Selection Overlay allows for selecting regions in a 2D display. There are three contols that
+can be used to specify the regions desired.
+
+<OL type="1"> Controls
+    <LI> <B>Edit</B> Control<P>
+         <UL>Features<P>
+            <li> Disable/Enable checkbox to the left:
+               <ul> 
+                   <LI>Disable means that new areas cannot be selected AND the selector indicators 
+                       for regions are not visible. To view information hidden by the selector 
+                       indicators, have this control disabled<P>
+                   <LI> Enable means that new areas can be created, the UNDO feature can eliminate
+                        the last entry.  All data below the selected regions will be hidden by the
+                         selector indicators.<P>
+
+               </uL>
+            <li> The <B>Edit</b> button:
+                 <ul> When pressed(enabled) A box with options for areas will appear. There are two
+                      modes corresponding to the status of the <B>Edit Selected Regions</b> check box
+                      that is below and to the right of the selection regions.<P>
+                    <LI> <B>Edit Selected Regions</b> is unchecked<P>
+                        <UL> You can add new regions as follows:
+                            <li> Select region to use like Box, Circle, etc. If <B>Complement</b>, 
+                                  <B>UNDO</b>, or
+                                  <B>Clear All</b> are selected, you are finished. Otherwise follow the 
+                                  next steps <P>
+                                 
+
+                            <li> Select <B>Operation</b> to apply to the result of all previous
+                                 selections for the selected region on this 2D area <P>
+                            <li> Select Color<P>
+                            <li> Finally draw the area on the 2D display. Usually this consists of
+                                 of dragging the mouse appropriately for each figure. <P>
+                                 <OL>
+                                 <li>Box- Drag mouse from upper left to lower right corner<P>
+                                 <li>Circle, Ellipse, Ring: Drag mouse from center outwards to lower left
+                                      corner. For the Ring, you then have to click at one point inside
+                                      the larger circle to define the inner circle.<P>
+                                 <li>Line, Wedge, Double Wedge: Drag mouse from upper left point of the line
+                                    to lower right point of line. For Wedge and Double Wedge, this line
+                                    defines the "center" of the figure. Click one other point off this
+                                    line to define the wedges<P>
+                                 <li>Point-Just click one point.<P>
+                                 </Ol>
+ 
+
+                        </ul>
+                    <li> <B>Edit Selected Regions</b> is checked
+                         <UL>
+                              When in Edit mode( and the Selection Editor window is showing), select a 
+                              region. If this region is defined by the given selection, an edit window
+                              will appear. There are options to move the selection up, down, left, right
+                              or change some other parameters for the figure. The operation can also be
+                              changed<P>
+
+                              When done, select <B>Done</b><P>
+
+                         </UL>
+
+                 </ul>
+         </ul>
+    <LI> <B>Selectors</B> combo box<P>
+              <ul>
+                  Use this to change which selector you want to change/edit.<P>
+               </ul>
+    <LI> <B>Add Selector</B>  control<P>
+            <ul> Use this to add a new selector.
+            </ul>
+
+</ol>
