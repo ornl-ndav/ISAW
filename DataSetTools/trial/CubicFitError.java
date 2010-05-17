@@ -117,23 +117,32 @@ public class CubicFitError extends SCD_ConstrainedLsqrsError
     SCD_util.ResidualError( lattice_parameters, hkl, q, U1, B1, Bc );
     U1_Bc = LinearAlgebra.mult( U1, Bc );
   }
+
+
+ /* ---------------------------- ExpandErrors ---------------------------- */
   /**
    *  Expands the errors in the changing parameteers to the errors in all 7
-   *    lattice constants.  Some constraints vary fewer than 6 of the
-   *    lattice parameters.
+   *  lattice constants.  Some constraints vary fewer than 6 of the
+   *  lattice parameters.
    *    
    * @param ParamErrors  The errors in the basic lattice parameters that
-   *                      vary for the given constraint
+   *                     vary for the given constraint
+   *
    * @return   a float[7] containing the errors in the corresponding
-   *            lattice constants
+   *           lattice constants
    */
- public  double[] ExpandErrors( double[] ParamErrors ){
+ public  double[] ExpandErrors( double[] ParamErrors )
+ {
     double[] Res = new double[7];
-    Res[0] =Res[1]=Res[2]=ParamErrors[0];
-    Res[3]=Res[4]=Res[5] =0;
+
+    Res[0] = Res[1] = Res[2] = ParamErrors[0];
+    Res[3] = Res[4] = Res[5] = 0;
+
     Res[6] = super.calcVolumeError( Res );
+
     return Res;
  }
+
 
  /* -------------------------------------------------------------------------
   *
