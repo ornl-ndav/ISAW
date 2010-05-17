@@ -59,6 +59,7 @@ import gov.anl.ipns.ViewTools.Components.Region.RegionOpListWithColor;
 import gov.anl.ipns.ViewTools.Components.TwoD.ImageViewComponent;
 import gov.anl.ipns.ViewTools.Components.ViewControls.*;
 import gov.anl.ipns.ViewTools.Panels.Image.ImageJPanel2;
+import gov.anl.ipns.ViewTools.Panels.Image.IndexColorMaker;
 import gov.anl.ipns.ViewTools.Panels.Transforms.CoordBounds;
 import gov.anl.ipns.ViewTools.Panels.Transforms.CoordTransform;
 import gov.anl.ipns.ViewTools.UI.FontUtil;
@@ -948,6 +949,18 @@ public class GroupSelector implements IObserver, ActionListener
       VirtArray2D.ReverseY = true;
 
       DetectorPanel = new ImageViewComponent( VirtArray2D , new ObjectState( ) );
+      
+      ObjectState obj = DetectorPanel.getObjectState( false );
+      
+      if( !obj.insert( "Two Sided" , false ))
+         obj.reset( "Two Sided" , false );
+      if( !obj.insert( "ImageJPanel.Number of Colors" , 127 ))
+         obj.reset("ImageJPanel.Number of Colors" , 127 );
+      if( !obj.insert( "ImageJPanel.Color Model" , IndexColorMaker.HEATED_OBJECT_SCALE_2))
+         obj.reset( "ImageJPanel.Color Model" , IndexColorMaker.HEATED_OBJECT_SCALE_2);
+      
+      DetectorPanel.setObjectState(  obj );
+      
       VirtArray2D.addDataChangeListener( this );
       
       if( MaxIntensity < 1)
