@@ -1092,6 +1092,7 @@ class HelpButtonListener implements ActionListener{
       super( jf, Title, modal);
       winList =new FinishWindowListener();
       this.addWindowListener( winList );
+      setDefaultCloseOperation( JDialog.DISPOSE_ON_CLOSE);
    }
    
    public void finish(){
@@ -1102,6 +1103,7 @@ class HelpButtonListener implements ActionListener{
 
         removeWindowListener( winList);
         removeAll();
+        
         this.finalize();
         winList = null;
     }catch( Throwable ss){
