@@ -158,6 +158,7 @@ import Operators.Special.DataSetArrayMerge_calc;
 import gov.anl.ipns.MathTools.Geometry.*;
 import gov.anl.ipns.Util.Messaging.*;
 import gov.anl.ipns.ViewTools.Components.IVirtualArray2D;
+import gov.anl.ipns.ViewTools.Components.PseudoLogScaleUtil;
 import gov.anl.ipns.ViewTools.Components.VirtualArray2D;
 import gov.anl.ipns.ViewTools.Panels.Image.*;
 import gov.anl.ipns.ViewTools.Panels.ThreeD.*;
@@ -188,6 +189,11 @@ import javax.swing.event.*;
 
 public class ThreeD1View extends DataSetViewer
 {
+
+   /**
+    * 
+    */
+   private static final long serialVersionUID = 1L;
 
    private final int                                     LOG_TABLE_SIZE        = 60000;
 
@@ -223,7 +229,7 @@ public class ThreeD1View extends DataSetViewer
 
    private float                                         last_pointed_at_x     = Float.NaN;
 
-   private float                                         last_pointed_at_index = -1;
+  
 
    private boolean                                       redraw_cursor         = true;
 
@@ -244,6 +250,8 @@ public class ThreeD1View extends DataSetViewer
    private AnimationController                           frame_control         = null;
 
    private SplitPaneWithState                            split_pane            = null;
+   
+   private JPanel                                        graph_container       = null;
 
    private volatile Color                                color_table[]         = null;
 
@@ -282,7 +290,7 @@ public class ThreeD1View extends DataSetViewer
    IndexColorModel                                       color_model           = IndexColorMaker
                                                                                      .getColorModel(
                                                                                            IndexColorMaker.HEATED_OBJECT_SCALE_2 ,
-                                                                                           200 );
+                                                                                           126 );
 
    int                                                   last_index            = IThreeD_Object.INVALID_PICK_ID;                       // last
                                                                                                                                        // picked
@@ -820,11 +828,22 @@ public class ThreeD1View extends DataSetViewer
    }
 
    /* ----------------------------- setLogScale -------------------------- */
-
-   private void setLogScale(double s)
+   /**
+    * If using another log slider, use this method to set the new log scale value.
+    * @param s  the reading of the slider between 0 and 100
+    */
+   public void setLogScale(double s)
    {
-
-      if ( s > 100 ) // clamp s to [0,100]
+      //code used in ImageJPanel2 for log scaling.
+      int color_table_size = LOG_TABLE_SIZE;
+      PseudoLogScaleUtil log_scaler = new PseudoLogScaleUtil(
+                                            0f, (float)color_table_size,
+                        0f, NUM_POSITIVE_COLORS );
+      log_scale = new float[ LOG_TABLE_SIZE ];
+      for( int i = 0; i < color_table_size; i++ )
+        log_scale[i] = (byte)(log_scaler.toDest(i,s));
+      
+     /* if ( s > 100 ) // clamp s to [0,100]
          s = 100;
       if ( s < 0 )
          s = 0;
@@ -838,19 +857,20 @@ public class ThreeD1View extends DataSetViewer
       for( int i = 0 ; i < LOG_TABLE_SIZE ; i++ )
          log_scale[i] = ( byte ) ( scale * Math.log( 1.0 + ( ( s - 1.0 ) * i )
                / LOG_TABLE_SIZE ) );
+      */
       
       for(Enumeration<Integer> en = GridImages.keys( );en.hasMoreElements();)
          {
             Integer gridID = en.nextElement( );
             ImageFilled3DRectangle Rect = GridImages.get(gridID);
             if( Rect != null)
-               Rect.setColorInfo( null, log_scale,ZERO_COLOR_INDEX );
+               Rect.setColorInfo( null, log_scale, ZERO_COLOR_INDEX );
             
          }
       
      if( threeD_panel != null)
         threeD_panel.repaint( );
-     
+   
    }
 
    /* ------------------------------ draw_groups -------------------------- */
@@ -1293,10 +1313,11 @@ public class ThreeD1View extends DataSetViewer
       if ( threeD_panel != null ) // get rid of old components first
       {
          threeD_panel.removeAll( );
-         split_pane.removeAll( );
+         graph_container.removeAll( );
          control_panel.removeAll( );
          removeAll( );
-      }
+      }else
+         control_panel = new Box( BoxLayout.Y_AXIS );
 
       threeD_panel = new ThreeD_JPanel( );
       threeD_panel.setBackground( new Color( 90 , 90 , 90 ) );
@@ -1305,7 +1326,7 @@ public class ThreeD1View extends DataSetViewer
       // a 3d environment
       threeD_panel.setCoordInfoSource( null );
 
-      control_panel = new Box( BoxLayout.Y_AXIS );
+      
 
       String label = getDataSet( ).getX_units( );
       UniformXScale x_scale = getDataSet( ).getXRange( );
@@ -1320,7 +1341,7 @@ public class ThreeD1View extends DataSetViewer
       color_scale_image = new ColorScaleImage( );
       color_scale_image.setNamedColorModel( getState( ).get_String(
             ViewerState.COLOR_SCALE ) , true , true );
-      control_panel.add( color_scale_image );
+      //control_panel.add( color_scale_image );
 
       log_scale_slider.setPreferredSize( new Dimension( 120 , 50 ) );
       log_scale_slider.setValue( getState( ).get_int( ViewerState.BRIGHTNESS ) );
@@ -1334,7 +1355,7 @@ public class ThreeD1View extends DataSetViewer
       log_scale_slider.setBorder( border );
       log_scale_slider.addChangeListener( new LogScaleEventHandler( ) );
 
-      control_panel.add( log_scale_slider );
+     // control_panel.add( log_scale_slider );
 
       view_control = new AltAzController( );
       view_control.addActionListener( new AltAzControlListener( ) );
@@ -1356,9 +1377,9 @@ public class ThreeD1View extends DataSetViewer
       //conv_panel.setBorder( border );
      // control_panel.add( conv_panel );
 
-      JPanel filler = new JPanel( );
-      filler.setPreferredSize( new Dimension( 120 , 2000 ) );
-      control_panel.add( filler );
+      //JPanel filler = new JPanel( );
+      //filler.setPreferredSize( new Dimension( 120 , 2000 ) );
+      //control_panel.add( filler );
       // make a titled border around the
       // whole viewer, using an appropriate
       // title from the DataSet.
@@ -1368,7 +1389,7 @@ public class ThreeD1View extends DataSetViewer
       if ( attr != null )
          title = attr.getStringValue( );
 
-      border = new TitledBorder( LineBorder.createBlackLineBorder( ) , title );
+      border = new TitledBorder( LineBorder.createBlackLineBorder( ) , "3D View" );
       border.setTitleFont( FontUtil.BORDER_FONT );
       setBorder( border );
 
@@ -1376,7 +1397,7 @@ public class ThreeD1View extends DataSetViewer
       // JPanel and make a titled border around
       // the JPanel graph area using the last
       // message, if available
-      JPanel graph_container = new JPanel( );
+      graph_container = new JPanel( );
       OperationLog op_log = getDataSet( ).getOp_log( );
       if ( op_log.numEntries( ) <= 0 )
          title = "Graph Display Area";
@@ -1389,14 +1410,15 @@ public class ThreeD1View extends DataSetViewer
       graph_container.setLayout( new GridLayout( 1 , 1 ) );
       graph_container.add( threeD_panel );
 
-      split_pane = new SplitPaneWithState( JSplitPane.HORIZONTAL_SPLIT ,
-            graph_container , control_panel , 0.7f );
+      //split_pane = new SplitPaneWithState( JSplitPane.HORIZONTAL_SPLIT ,
+      //      graph_container , control_panel , 0.7f );
+      
 
       // Add the control area and graph
       // container to the main viewer
       // panel and draw.
       setLayout( new GridLayout( 1 , 1 ) );
-      add( split_pane );
+      add(graph_container);//split_pane );
 
       redraw( NEW_DATA_SET );
 
@@ -1405,6 +1427,12 @@ public class ThreeD1View extends DataSetViewer
       threeD_panel.addMouseListener( new ViewMouseAdapter( ) );
    }
 
+   
+   public Box getControlPanel()
+   {
+      return control_panel;
+   }
+   
    private void processMouseClickEvent(MouseEvent e)
    {
 
