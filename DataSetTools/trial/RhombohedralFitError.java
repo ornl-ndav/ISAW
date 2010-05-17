@@ -134,7 +134,7 @@ public class RhombohedralFitError extends SCD_ConstrainedLsqrsError
 
  /* ---------------------------- ExpandErrors ---------------------------- */
   /**
-   *  Expands the errors in the changing parameteers to the errors in all 7
+   *  Expands the errors in the changing parameters to the errors in all 7
    *  lattice constants.  Some constraints vary fewer than 6 of the
    *  lattice parameters.
    *    
