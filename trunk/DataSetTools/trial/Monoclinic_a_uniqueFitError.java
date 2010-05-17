@@ -124,17 +124,21 @@ public class Monoclinic_a_uniqueFitError extends SCD_ConstrainedLsqrsError
     U1_Bc = LinearAlgebra.mult( U1, Bc );
   }
 
+
+ /* ---------------------------- ExpandErrors ---------------------------- */
   /**
    *  Expands the errors in the changing parameteers to the errors in all 7
-   *    lattice constants.  Some constraints vary fewer than 6 of the
-   *    lattice parameters.
+   *  lattice constants.  Some constraints vary fewer than 6 of the
+   *  lattice parameters.
    *    
    * @param ParamErrors  The errors in the basic lattice parameters that
-   *                      vary for the given constraint
+   *                     vary for the given constraint
+   *
    * @return   a float[7] containing the errors in the corresponding
-   *            lattice constants
+   *           lattice constants
    */
- public  double[] ExpandErrors( double[] ParamErrors ){
+  public double[] ExpandErrors( double[] ParamErrors )
+  {
     double[] Res = new double[7];
     
     Res[0] = ParamErrors[0];
@@ -143,9 +147,13 @@ public class Monoclinic_a_uniqueFitError extends SCD_ConstrainedLsqrsError
     Res[3] = ParamErrors[3];
     Res[4] = 0;
     Res[5] = 0;
+
     Res[6] =super.calcVolumeError( Res );
+
     return Res;
  }
+
+
  /* -------------------------------------------------------------------------
   *
   * MAIN  ( Basic main program for testing purposes only. )
