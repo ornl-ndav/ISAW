@@ -48,25 +48,32 @@ class lin_abs_coef(GenericTOF_SCD):
 
         # begin loop through each atom in the formula
         for i in range(numberOfIsotopes):
-            input = open(filename, 'r')			# this has the effect of rewinding the file
-            lineString = input.readline()		# read the first comment line
+        
+            lenAtom = len(formulaList[i])   # length of symbol plus number in formula
+            
+            # begin test for number of characters in the isotope name or symbol
+            for j in range(lenAtom):          
+                lenSymbol = lenAtom - j - 1
+                if formulaList[i][lenSymbol].isalpha(): break
+            lenSymbol = lenSymbol + 1
+            
+            input = open(filename, 'r')         # this has the effect of rewinding the file
+            lineString = input.readline()       # read the first comment line
             while lineString[0] == '#':         # search for the end of the comments block
                 lineString = input.readline()
 
             # Begin to search the table for element/isotope match.
             
             lineList = lineString.split()       # this should be the H atom
-            lenSymbol = len(lineList[0])        # number of characters in the isotope name or symbol
-            print lenSymbol
 
             while formulaList[i][0:lenSymbol] != lineList[0]:
                 lineString = input.readline()
                 lineList = lineString.split()
 
-            scatteringXs = float(lineList[1])	# the total scattering cross section
-            absorptionXs = float(lineList[2])	# the true absorption cross section at 1.8 A
+            scatteringXs = float(lineList[1])   # the total scattering cross section
+            absorptionXs = float(lineList[2])   # the true absorption cross section at 1.8 A
             atomicWeight = float(lineList[4])   # atomic weight
-            number = float(formulaList[i][lenSymbol:])	# the number of this nuclei in the formula
+            number = float(formulaList[i][lenSymbol:])   # the number of this nuclei in the formula
             
             print '%-5s %10.5f %10.5f' % (lineList[0], scatteringXs, absorptionXs)
             
