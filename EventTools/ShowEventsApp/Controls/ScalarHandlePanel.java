@@ -202,6 +202,18 @@ public class ScalarHandlePanel implements IReceiveMessage
       showChoices();
    }
 
+   public void addActionListener( ActionListener act)
+   {
+      for( int i=0; i< Centerings.length; i++)
+         Centerings[i].addActionListener( act);
+      
+      for( int i=0; i< SymmetryChoices.length; i++)
+         SymmetryChoices[i].addActionListener( act );
+      
+      Delta.addActionListener(  act );
+      SortOn.addActionListener( act );
+      viewer.addActionListener( act);
+   }
    /**
     * Returns the JPanel with GUI elements to direct the process
     * @return the JPanel with GUI elements to direct the process
@@ -212,8 +224,143 @@ public class ScalarHandlePanel implements IReceiveMessage
       return panel;
    }
    
+   //-----------------------------------------------------------
+   //  Used to save and restore state to this form
+   /**
+    * @return Symmetry and Centering coded string
+    */
+   public String getSymmCenterings()
+   {
+      String S ="";
+      for( int i=0; i< Centerings.length; i++)
+         if(Centerings[i].isSelected())
+            S +="T";
+         else
+            S +="F";
+      
+      for( int i=0; i< SymmetryChoices.length; i++)
+         if(SymmetryChoices[i].isSelected())
+            S +="T";
+         else
+            S +="F";
+      return S;
+      
+   }
    
+   /**
+    * Sets the symmetry and centring check boxes
+    * 
+    * @param S  A string coded by getsymmCenterings
+    */
+   public void setSymmCenterings( String S)
+   {
+      int k=0;
+      
+      for( int i=0; i< Centerings.length; i++)
+         if(S.charAt( k+i )=='T')
+            Centerings[i].setSelected( true );
+      
+         else
+            Centerings[i].setSelected( false );
+      
+      k= Centerings.length;
+      for( int i=0; i< SymmetryChoices.length; i++)
+         
+         if(S.charAt( k+i )=='T')
+            
+            SymmetryChoices[i].setSelected( true );
+      
+         else
+            SymmetryChoices[i].setSelected( false );
+      
+      showChoices();
+   }
+   
+   /**
+    * Tolerance for matching the orientation matrix
+    * 
+    * @return  the Tolerance for matching the orientation matrix
+    */
+   public float getDelta()
+   {
+      try
+      {
+          return Float.parseFloat( Delta.getText().trim());
+          
+      }catch (Exception s)
+      {
+         return Float.NaN;
+      }
+   }
+   
+   /**
+    * Sets the tolerance for matching the orientation matrix
+    * 
+    * @param delta  The tolerance before being considered a match
+    */
+   public void setDelta( float delta)
+   {
+      Delta.setText(""+delta);
+      showChoices();
+   }
+   
+   /**
+    * 
+    * @return The criteria that the list of choices is sorted on
+    */
+   public String getSortOn()
+   {
+      return (String)SortOn.getSelectedItem( );
+   }
+   
+   /**
+    * Sets the criteria that the list of transformations is sorted on
+    * 
+    * @param sortMethod  The name of the sorting. "Symmetry" , "Form Number" ,or
+                                                 "Error" ,   
+    */
+   public void setSortOn( String sortMethod)
+   {
+      SortOn.setSelectedItem( sortMethod);
+      showChoices();
+   }
+   
+   /**
+    * 
+    * @return The index of the transformation selected in the viewer
+    * This is one less than the index showing on the viewer( starts at 1)
+    */
+   public int getSelectedTransfIndex()
+   {
+      int x = viewer.getSelectedChoice( );
+      
+      if( x < 0 )
+         x= viewer.getLastViewedChoice( );
+      
+      return x;
+   }
 
+   
+   /**
+    * Sets the index of the transformation showing in the viewer
+    * 
+    * @param transfIndex the index starting at 0.
+    */
+   public void setSelectedTranfIndex( int transfIndex)
+   {
+     viewer.setSelectedChoice( transfIndex );
+     showChoices();
+   }
+   
+   //----------------------- end save/restore state ------------------------
+   
+   public float[][] getTransformation()
+   {
+      ReducedCellPlus red = ScalarOpts.elementAt( getSelectedTransfIndex());
+      return LinearAlgebra.double2float( getTransf( red));
+   }
+   
+   
    private void BuildJPanel()
    {
 
@@ -660,16 +807,6 @@ public class ScalarHandlePanel implements IReceiveMessage
             
         
       }
-
-/*  //The new UB is transformed so the indexing should correspond   
-    if( false )
-      for( int i=0; i< Peak_newList.size( ); i++)
-      {
-         IPeak P = (IPeak)Peak_newList.elementAt( i );
-         P.sethkl( hklSav[0][i] , hklSav[1][i], hklSav[2][i] );
-      }
- */
-      
       
       return LinearAlgebra.double2float( sig_abc );
            
@@ -680,61 +817,7 @@ public class ScalarHandlePanel implements IReceiveMessage
       return v*v;
    }
    
-   /*
-   float[]  CalculateTransformedErrors( float[][]UB_old, float[][]Transf, float[]Errs_old)
-   {
-      if( Errs_old == null)
-         return null;
-      float [][] UB_new = LinearAlgebra.mult( UB_old , LinearAlgebra.getInverse(Transf) );
-      
-      double[] lattParams = lattice_calc.LatticeParamsOfUB( 
-                           LinearAlgebra.float2double( UB_old) ); 
-      
-      double[] lattParams_new = lattice_calc.LatticeParamsOfUB( 
-            LinearAlgebra.float2double( UB_new) );
-      
-      double[][] TensorErrors = new double[3][3];
-      
-      for( int i=0; i< 3;i++)
-         TensorErrors[i][i] = 2*lattParams[i]*Errs_old[i];
-      
-      for( int i=0; i<2; i++)
-         for( int j=i+1; j<3; j++)
-         {  
-            double a =lattParams[i];
-            double b =lattParams[j];
-            double da =Errs_old[i];
-            double db = Errs_old[j];
-            int k= (i+1)%3;
-            if( k==j)
-               k =(j+1)%3;
-            double gamma = lattParams[3+k]*Math.PI/180;
-            double dgamma = Errs_old[3+k]*Math.PI/180;
-            
-            TensorErrors[i][j] = sqr(b*Math.cos( gamma )*da);
-            TensorErrors[i][j]+= sqr(a*Math.cos( gamma )*db);
-            TensorErrors[i][j] += sqr(a*b*Math.sin( gamma )*dgamma);
-            TensorErrors[i][j] = TensorErrors[j][i] = Math.sqrt(TensorErrors[i][j]);
-         }
-      
-      double[][] transf = LinearAlgebra.float2double( Transf );
-      TensorErrors = LsqrsJ_base.errorMult( transf , TensorErrors , true );
-      TensorErrors = LsqrsJ_base.errorMult( TensorErrors, 
-                        LinearAlgebra.getTranspose( transf ), true);
-      
-      System.out.println("Tensor Errors in ScalarHandlePanel");
-      LinearAlgebra.print( TensorErrors );
-      System.out.println(" transformation");
-      LinearAlgebra.print( Transf );
-      double[] Err_new = LsqrsJ_base.LatticeErrors( lattParams_new , 
-                                                         TensorErrors );
-      
-      System.out.println("New errors Theor =");
-      LinearAlgebra.print( Err_new );
-      return LinearAlgebra.double2float( Err_new );
-   }
-   
-   */
+  
    private void EliminateDuplicates(Vector< ReducedCellPlus > ScalarOpts ) 
    {
       if( ScalarOpts == null || ScalarOpts.size() < 1)
@@ -980,12 +1063,10 @@ public class ScalarHandlePanel implements IReceiveMessage
                V.add( sig_abc );
                OrientMatMessageCenter.send( new Message(
                                                  Commands.SET_ORIENTATION_MATRIX ,
-                                                 V,//LinearAlgebra.getTranspose( UB ) ,
+                                                 V,
                                                  true ) );
             }
-          // JOptionPane.showMessageDialog( null , "<html><body>Peaks are NOT indexed.<BR> "+
-          //          "The current Orientation Matrix is Changed<BR>"+
-          //          "Go to the Index Peaks tab to Index Peaks</body></html>");
+        
 
          } else if ( command.toUpperCase( ).startsWith( "SET" )
                || command.toUpperCase( ).startsWith( "CLEAR" ) )
