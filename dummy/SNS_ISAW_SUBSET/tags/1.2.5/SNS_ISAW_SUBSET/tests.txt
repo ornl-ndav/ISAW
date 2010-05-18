@@ -1,0 +1,12 @@
+
+Some basic functionality tests.
+
+Java-based view components:
+
+java gov/anl/ipns/ViewTools/Displays/Display1D
+java gov/anl/ipns/ViewTools/Displays/Display2D
+
+OpenGL based:
+
+java gov/anl/ipns/ViewTools/Components/ThreeD/DetectorScene
+
