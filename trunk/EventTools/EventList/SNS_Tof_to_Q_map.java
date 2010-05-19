@@ -168,6 +168,10 @@ public class SNS_Tof_to_Q_map
                                          // events to a "virtual" path length
                                          // Lv and "virtual" angle Tv.
 
+  private int[][]      bank_info;        // Array giving the bank pixel ID
+                                         // and grid ID info, as in the SNS
+                                         // "banking" file.
+
   private int[]        bank_num;         // Array giving the SNS bank number
                                          // for each DAS pixel ID.  This is
                                          // used for forming a default
@@ -417,7 +421,7 @@ public class SNS_Tof_to_Q_map
     L1 = (Float)(file_info.elementAt(1));
     t0 = 10*(Float)(file_info.elementAt(2));
 
-    int[][] bank_info = FileUtil.LoadBankFile( bank_filename );
+    bank_info = FileUtil.LoadBankFile( bank_filename );
 
     System.out.println("--------------------------------------------");
     System.out.println("Initializing SNS_Tof_to_Q_map.java using....");
@@ -914,7 +918,7 @@ public class SNS_Tof_to_Q_map
     int num_mapped = CheckAndGetNumToMap( event_list, first, num_to_map );
 
     boolean  use_d_map = true;
-    if (d_map == null || d_map.length < tof_to_MagQ.length )
+    if ( d_map == null || d_map.length < tof_to_MagQ.length )
       use_d_map = false;
 
     float    tof_chan;
@@ -963,6 +967,15 @@ public class SNS_Tof_to_Q_map
         }
       }
     }
+
+    for ( int row = 0; row < histogram.length; row++ )
+      if ( histogram[row] != null )
+        DoHigherOrderCorrection( row, 
+                                 histogram[row],  
+                                 d_map, 
+                                 binner, 
+                                 ghost_weights );
+
                                              // now copy histogram to float[][]
     float[][] f_histogram = getEmptyFloatHistogram( binner );
     for ( int row = 0; row < histogram.length; row++ )
@@ -973,6 +986,151 @@ public class SNS_Tof_to_Q_map
     return f_histogram;
   }
 
+
+  /**
+   *  Adjust ghost histogram for higher order correction terms
+   */
+  private void DoHigherOrderCorrection( int          grid_id, 
+                                        double[]     ghosts, 
+                                        double[]     d_map,
+                                        IEventBinner binner,
+                                        double[][]   ghost_weights )
+  {
+    if ( d_map == null )
+    {
+      System.out.println( "Higher order ghost correction failed.  " +
+                          "d-space map is null." );
+      return;
+    }
+
+    int     first_id = 0;                 // ID of first pixel in detector
+    int     left_id  = 0;                 // ID of pixel at left detector edge
+    int     right_id = 0;                 // ID of pixel at right detector edge
+    int     j        = 0;
+    boolean found    = false;
+    while ( j < bank_info[0].length && !found )
+    {
+      if ( grid_id == bank_info[0][j] )
+      {
+        first_id = bank_info[3][j];
+        left_id  = first_id + 3;           // This is only for rows of 7 LPSDs
+        right_id = bank_info[4][j] - 3;    // arranged horizontally, like PG3 
+        found = true;
+      }
+      else
+        j++;
+    }
+    
+    if ( !found )
+    {
+      System.out.println( "Higher order ghost correction failed.  " +
+                          "Did not find module # " + grid_id );
+      return;
+    }
+                                                    // rval for detector stored
+                                                    // in ghost table, offset
+                                                    // by 1249, from first ID.
+    double rval = ghost_weights[ first_id + 1249 ][0];
+
+    if ( rval == 0 )                              // NO higher order correction
+      return;
+
+    int    n_bins = binner.numBins();
+    double d_mid  = binner.centerVal( n_bins/2 );
+    int    mid_id = (left_id + right_id) / 2;
+    double mid_tof;
+
+    if ( d_map[ mid_id ]   == 0 || 
+         d_map[ left_id ]  == 0 ||
+         d_map[ right_id ] == 0 )
+    {
+       System.out.println( "Higher order ghost correction failed.  " +
+                           "d-space map has some zero entries for module #" +
+                            grid_id );
+       return;
+    }
+
+    mid_tof = d_mid / d_map[ mid_id ];
+
+    double d1 = mid_tof * d_map[ left_id ];
+    double d2 = mid_tof * d_map[ right_id ];
+
+    int steps = Math.abs(binner.index( d2 ) - binner.index( d1 ));
+
+//  System.out.printf("ID = %3d  left_id = %6d  right_id = %6d  steps = %6d\n",
+//                     grid_id, left_id, right_id, steps );
+
+    double zcts = 0;
+    for ( int i = 0; i < ghosts.length; i++ )
+      zcts += ghosts[i];
+
+    double[] fohist = new double[ ghosts.length ];
+    double[] sohist = new double[ ghosts.length ];
+    double[] tohist = new double[ ghosts.length ];
+                                                      // get smoothed version
+    for ( int i = 0; i < ghosts.length; i++ )         // of ghost histogram
+      fohist[i] = ghosts[i];
+
+    for ( int i = 1; i < ghosts.length-1; i++ )
+    {
+      fohist[i] += 0.333 * ( fohist[i-1] + fohist[i+1] );
+      fohist[i] /= 1.666;
+    }
+
+    double focts = 0;
+    for ( int i = 0; i < ghosts.length; i++ )
+      focts += fohist[i];
+                                                     // make approximate ghost
+                                                     // peak profile, milli
+    double[] milli = new double[ 2 * steps + 1 ];
+                                                     // first make big triangle
+    int bigt  = (int)(0.85 * steps);
+    for ( int k = -bigt; k <= bigt; k++ )
+      milli[ steps + k ] = (bigt - Math.abs(k)) / (double)(bigt * bigt);
+
+                                                     // add in left triangle
+    int    Lt   = (int)( 0.10 * steps );
+    int    Loff = (int)( 0.29 * steps );
+    double LtA  = 1.0 / ( Lt * Lt );
+    for ( int k = -Lt; k <= Lt; k++ )
+      milli[ steps + k + Loff ] += 0.20 * LtA * (Lt - Math.abs(k));
+
+                                                     // add in right triangle
+    for ( int k = -Lt; k <= Lt; k++ )
+      milli[ steps + k - Loff ] += 0.20 * LtA * (Lt - Math.abs(k));
+
+    double sum_milli = 0;
+    for ( int k = 0; k < milli.length; k++ )
+      sum_milli += milli[k];
+
+    double scale = 0.4 / sum_milli;
+    for ( int k = 0; k < milli.length; k++ )         // nomalize to rval
+      milli[k] *= scale;
+                                                     // make second order hist
+                                                     // by convolution
+    for ( int k = steps; k < ghosts.length - steps; k++ )
+      for ( int i = 0; i < 2 * steps; i++ )
+        sohist[ k - steps + i ] += fohist[ k ] * milli[ i ];
+
+                                                     // make third order hist
+                                                     // by convolution again
+    for ( int k = steps; k < ghosts.length - steps; k++ )
+      for ( int i = 0; i < 2 * steps; i++ )
+        tohist[ k - steps + i ] += sohist[ k ] * milli[ i ];
+    
+    double r1 = rval;
+    double r2 = rval * rval;
+    double r3 = rval * rval * rval;
+    double r2inf = r1 / ( 1 + r1 );
+    double r2g = r2inf - r1 + r2;
+
+    for ( int i = 0; i < ghosts.length; i++ )
+      ghosts[i] = fohist[i] - sohist[i] + ( r2g / r3 ) * tohist[i]; 
+
+    for ( int i = 0; i < ghosts.length; i++ )
+      if ( ghosts[i] < 0 )
+        ghosts[i] = 0;
+  }
 
 
   /**
