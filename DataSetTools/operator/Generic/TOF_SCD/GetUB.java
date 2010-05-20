@@ -549,8 +549,9 @@ public class GetUB {
 
       List = new float[ 50 ][ 7 ];
       Nelements = 0;
+      //System.out.println("gridLength="+gridLength);
       float[] line = new float[300];
-      float[] Res = doOneDirection( Peaks , 0f , 0f , omit , MaxXtalLengthReal,
+     /* float[] Res = doOneDirection( Peaks , 0f , 0f , omit , MaxXtalLengthReal,
                line);
       if( Res != null ) {
          InsertInList(  Res );
@@ -570,11 +571,17 @@ public class GetUB {
       }
 
      Thread[] thrds = new Thread[4];
+    
      for( int i=0; i<4;i++)
         thrds[i] = new DoQuadrantDirections( Peaks, omit,  gridLength,
              MaxXtalLengthReal, i);
      Execute1( thrds);
+   
+     */
+     CreateExecuteThreads( gridLength*1.4f, MaxXtalLengthReal, line, omit,
+                                             Peaks);
      
+    // System.out.println("Nelements="+Nelements);
      Vector<float[][]> MRes = new Vector<float[][]>();
      if( Nelements < 1)
         return MRes;
@@ -585,7 +592,7 @@ public class GetUB {
      int n=Nelements-1;
      for( int i=Nelements-1; i>0 && (List[i][FIT1]+List[i][CORR])> FitMax; i--)
         n=i;     
-     
+     //System.out.println("Nelements considered="+ n);
      for( int i=Nelements-1; i>= n; i--)
         optimize( List[i],Peaks,omit,MaxXtalLengthReal);
      
@@ -650,7 +657,7 @@ public class GetUB {
             List[top++]= List[i];
         
       }
-      System.out.println(" duplicates elim prev/next"+ Nelements+"/"+top);
+     // System.out.println(" duplicates elim prev/next"+ Nelements+"/"+top);
       List[top++] = List[ Nelements-1];
       Nelements = top; 
    }
@@ -1023,23 +1030,7 @@ public class GetUB {
           InsertInList(  Res );
          
       }
- /* int k=0;
-   for( float x = - 1 + gridLength ; x < 1 - gridLength ; x += gridLength )
-         for( float y = - (float) Math.sqrt( 1 - x * x ) ; y <= (float) Math
-                  .sqrt( 1 - x * x ) ; y += gridLength ) {
-            
-            if( 1 - x * x - y * y >= 0 )
-               Res = doOneDirection( Peaks , x , y , omit , MaxXtalLengthReal,
-                        line);
-            else
-               Res = null;
-            if( Res != null ) {
-               InsertInList( Res );
-            }
-            
-         }
-      
- */   
+
 
      Thread[] thrds = new Thread[4];
        for( int i=0; i<4;i++)
@@ -1182,6 +1173,302 @@ public class GetUB {
 
 
    }
+   
+   /**
+    * Creates numerous threads to do the task.  There will be a max of 3 threads per
+    * processor.
+    * 
+    * @param gridLength     The length(arc) between two "consecutive" 
+    *                       directions on upper unit sphere
+    *                       
+    * @param MaxXtalLength  The maximum length of a side of a reduced cell in real space
+    * 
+    * @param line           Not used
+    * @param omit           The peaks to omit
+    * @param Peaks          The peaks
+    */
+   private static void CreateExecuteThreads( float gridLength, 
+                                             float MaxXtalLength, 
+                                             float[] line,
+                                             boolean[] omit,
+                                             Vector Peaks)
+   {
+      if( Float.isNaN( gridLength) || gridLength < 0)
+         gridLength = Float.POSITIVE_INFINITY;
+      
+      gridLength = Math.min( gridLength,(float) Math.PI/20);
+     
+      double ntheta = gridLength;
+      double theta = ntheta;
+      ntheta = 0;
+      double TotLength = 0;
+      boolean done = false;
+      int k=0;//level
+      
+      while(!done)
+      {
+         TotLength += Math.cos(  ntheta );
+         
+         ntheta +=theta;
+         if( ntheta > Math.PI/2)
+            done = true;
+        
+         k++;
+      }
+      
+      TotLength = TotLength*2*Math.PI;
+      
+      int Ndirections = (int)(.5+TotLength/gridLength);
+     // System.out.println("Ndirections="+ Ndirections);
+          
+      int nthreads =(Runtime.getRuntime().availableProcessors()-1)*2;//There will be thread contention
+
+      List = new float[Ndirections+ nthreads +k ][7]; 
+
+      Nelements =0;
+      //do more
+      nthreads = Math.max( nthreads , 1 );
+      nthreads = Math.min( nthreads,12);
+      
+
+      int nDirsPerThread = (int)(.5+Ndirections/(float)nthreads);
+      
+      if( nDirsPerThread <300)
+      {
+         nDirsPerThread =300;
+         nthreads = 1+ Ndirections/nDirsPerThread;
+         nDirsPerThread = (int)(.5+Ndirections/(float)nthreads);
+      }
+      
+      float startAngle = 0;
+      int startLevel =0;
+      
+      Thread[] threads = new Thread[ nthreads];
+      done = false;
+      ntheta = 0;
+      
+      int thread=0;
+      
+      while( !done)
+      {        
+         int left =nDirsPerThread;
+         float StartAngle = startAngle;// changes with level
+         
+         float r1 = (float)(Math.cos( ntheta ));
+         float endAngle = startAngle+ nDirsPerThread*gridLength/r1;
+         int endLevel = startLevel;
+         
+         if( endAngle <= Math.PI*2 )
+         { 
+            if( thread+1 >= nthreads)
+            {
+               done = true;
+               endAngle=0;
+               endLevel =  (int ) ( Math.PI / 2 / theta );
+            }
+            
+            threads[thread++]= new SubDirectionsDo( startAngle, startLevel,endAngle,
+                              endLevel, gridLength, MaxXtalLength, line, 
+                              omit, Peaks);
+            
+            startAngle = endAngle + gridLength;
+            startLevel = endLevel;
+            
+         }else
+         {
+            while( endAngle >= Math.PI * 2  && !done)
+
+            {
+               ntheta += theta;
+               if ( ntheta > Math.PI / 2 || thread+1 >=nthreads )
+               {
+                  done = true;
+                  endLevel = ( int ) (  Math.PI / 2 / theta );
+                  endAngle =0;
+                  threads[thread++] = new SubDirectionsDo( startAngle , startLevel ,
+                        endAngle , endLevel , gridLength , MaxXtalLength, line,
+                        omit, Peaks);
+
+               } else
+               {
+                  double d = ( ( 1 - .5*StartAngle/Math.PI )
+                                *2*Math.PI*Math.cos( ntheta-theta ) / gridLength );
+                  left = left-(int)d;
+                  
+                  if( left < 0)
+                     System.out.println("left is < 0");
+                  
+                  endLevel++ ;
+                 
+                  StartAngle = 0;
+
+                  r1 = (float)(Math.cos( ntheta ));
+                  endAngle = StartAngle + left * gridLength/r1;
+               }
+
+            }
+            if( !done)
+            {
+                threads[thread++] = new SubDirectionsDo( startAngle , startLevel ,
+                  endAngle , endLevel , gridLength , MaxXtalLength, line,
+                  omit, Peaks);
+
+            }
+            startAngle = endAngle+ gridLength;
+            startLevel = endLevel;
+         }//else 
+      }
+     
+      for( int i=0; i< threads.length; i++)
+         threads[i].start( );
+      
+      for( int i=0; i< threads.length; i++)
+         try
+         {
+            threads[i].join( );
+         
+         } catch( Exception s )
+         {
+            System.out.println( "Thread exception " + s );
+         }
+         
+         //Now sort the elements
+         float[] weights = new float[7];
+         Arrays.fill( weights , 0f );
+         weights[CORR] = 1;
+         weights[FIT1] = 1;
+         ListComparator lcomp = new ListComparator(List,0,Nelements, weights);
+         
+         lcomp.sort( );
+         Integer[] sortInfo = lcomp.sortInfo;
+         
+         float[][] List1 = new float[Nelements][];
+         
+         for( int i= 0; i< Nelements; i++)
+         {
+            List1[i]= List[ sortInfo[i].intValue()];
+         }
+         
+         List = List1;
+        
+   }
+   /**
+    * This class is a thread that calculates statistics on a subset of directions
+    * possible.
+    * 
+    * @author ruth
+    *
+    */
+   static class SubDirectionsDo  extends Thread
+   {
+      float  startAngle , 
+             startLevel ,
+             endAngle , 
+             endLevel , 
+             gridLength, 
+             MaxXtallength ;
+      
+      float[] line;
+      boolean[] omit;
+      Vector Peaks;
+      /**
+       * Constructor
+       * 
+       * @param startAngle    Starting angle from the x-axis at the given level
+       * @param startLevel    Starting level for the directions 
+       * @param endAngle      Ending angle from the x-axis at the given level
+       * @param endLevel      Ending level for the direction s
+       * @param gridLength    Arc distance between "consecutive" directions on unit sphere
+       * @param MaxXtallength Maximum side of a reduced cell in real space
+       * @param line          Not used except for the length
+       * @param omit          The mask for the peaks to omit
+       * @param Peaks         The peaks.
+       */
+      public SubDirectionsDo( float startAngle , 
+                         float startLevel ,
+                         float endAngle , 
+                         float endLevel , 
+                         float gridLength,
+                         float MaxXtallength, 
+                         float[] line,
+                         boolean[] omit, 
+                         Vector Peaks)
+      {
+         this.startAngle = startAngle ;
+         this.startLevel = startLevel ; 
+         this.endAngle = endAngle ;
+         this.endLevel  = endLevel;
+         this.gridLength  = gridLength ;
+         this.MaxXtallength = MaxXtallength;
+         this.line = new float[line.length];
+         this.omit = omit;
+         this.Peaks = Peaks;
+      }
+      
+      public void run()
+      {
+         boolean more = startLevel < endLevel ||(startLevel== endLevel &&
+                                   startAngle <=endAngle);
+         int k=0;
+         float StartAngle = startAngle;
+         float StartLevel = startLevel;
+         
+         float MinLevel = 0;
+         int Ndirs =1+(int)((endLevel-startLevel+1)*2*Math.PI*1/gridLength);
+         
+         float[][] Listt = new float[Ndirs][];         
+         int nListt =0;
+         
+        
+         while( more )
+         {
+            float x,y;
+            double r = Math.cos( StartLevel*gridLength);
+            
+            x = (float)(r*Math.cos( StartAngle ));
+            y = (float)(r*Math.sin( StartAngle ));
+           
+            k++;
+            float[] Res = doOneDirection( Peaks, x,y,omit, MaxXtallength, line);
+            
+            if ( Res != null )
+            {
+               float key = Res[FIT1] + Res[CORR];
+
+               if ( .5 * key > MinLevel )
+
+                  MinLevel = .5f * key;
+
+               if ( key > MinLevel )
+
+                  Listt[nListt++ ] = Res;
+            }
+            
+            if( r > 0)
+               
+              StartAngle += gridLength/r;
+            
+            else
+               
+               StartAngle =(float) Math.PI/2+1;
+            
+            if( StartAngle >Math.PI*2)
+            {
+               StartAngle = 0;
+               StartLevel++;
+            }
+            
+            more =StartLevel < endLevel ||
+                        (StartLevel==endLevel && StartAngle <= endAngle);
+            
+            more = more && ( StartLevel*gridLength <= Math.PI/2);
+         }
+         
+         GetUB.Add2List( Listt , nListt );
+//         System.out.println("Number directions in thread="+k);
+      }
+   }
+   
    
    public static void Execute( Thread[] thrds){
       for( int i=0; i<4;i++){
@@ -1685,6 +1972,16 @@ public class GetUB {
       return null;
    }
    
+   //Adds to List. Assumes List.length can hold all the directions
+   
+   private static synchronized void Add2List( float[][] Res, int nelements)
+   {
+      if( Res == null || Res.length < 1)
+         return;
+      System.arraycopy( Res , 0 , List , Nelements , nelements );
+      Nelements +=nelements;
+   }
+  
    
    static float MinKeyVal = Float.NaN;
    private static synchronized void InsertInList( float[] Res ){
@@ -1808,14 +2105,17 @@ public class GetUB {
             xend = 1 - gridLength;
             Q = Quadrant-2;
          }
+         int kk=0;
          float[] line = new float[300];
          
          for( float x = xstart ; x < xend ; x += gridLength )
             for( float y = - (float) Math.sqrt( 1 - x * x )*Q ; y <= (float) Math
                      .sqrt( 1 - x * x )*(1-Q) ; y += gridLength ) {
                if( 1 - x * x - y * y >= 0 )
-                  Res = GetUB.doOneDirection( Peaks , x , y , omit , MaxXtalLengthReal,
+               { Res = GetUB.doOneDirection( Peaks , x , y , omit , MaxXtalLengthReal,
                            line);
+               kk++;
+               }
                else
                   Res = null;
                if( Res != null ) {
@@ -1823,6 +2123,7 @@ public class GetUB {
                  GetUB.InsertInList( Res );
                }
             }
+         System.out.println("kk="+kk);
       }
    }
 
@@ -2067,6 +2368,7 @@ class MultiArrayComparator implements Comparator
       
       if( arg1 == null || !(arg1 instanceof float[][]))
          return -1;
+      
       float[] arg11 = ((float[][])arg0)[0];
       float[] arg21 = ((float[][])arg1)[0];
       if( arg11 == null || arg11.length < 7)
@@ -2077,10 +2379,12 @@ class MultiArrayComparator implements Comparator
 
       if( arg21 == null || arg21.length < 7)
          return -1;
+      
       int x ;
       if(arg11[0]==0f && Math.abs( arg11[1]-7.2958)<.01 &&
                Math.abs( arg11[2]-7.3156)<.01 && Math.abs( arg11[3]-9.8411)<.01)
          x= 1;
+      
       if(arg21[0]==0f && Math.abs( arg21[1]-7.2958)<.01 &&
                Math.abs( arg21[2]-7.3156)<.01 && Math.abs( arg21[3]-9.8411)<.01)
          x= 1;
@@ -2088,13 +2392,16 @@ class MultiArrayComparator implements Comparator
       for( int i=0; i<7;i++)
       { 
          float xx = arg11[i]-arg21[i];
+         
          if( xx <.01 && xx > -.01)
          {
             
          }else  if(xx <.01f)
              
             return -1;
+         
          else if( xx > -.01f)
+            
             return 1;
       }
       
