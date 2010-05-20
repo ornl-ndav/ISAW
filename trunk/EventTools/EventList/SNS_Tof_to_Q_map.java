@@ -970,11 +970,7 @@ public class SNS_Tof_to_Q_map
 
     for ( int row = 0; row < histogram.length; row++ )
       if ( histogram[row] != null )
-        DoHigherOrderCorrection( row, 
-                                 histogram[row],  
-                                 d_map, 
-                                 binner, 
-                                 ghost_weights );
+        DoHigherOrderCorrection( row, histogram[row], binner, ghost_weights );
 
                                              // now copy histogram to float[][]
     float[][] f_histogram = getEmptyFloatHistogram( binner );
@@ -992,17 +988,9 @@ public class SNS_Tof_to_Q_map
    */
   private void DoHigherOrderCorrection( int          grid_id, 
                                         double[]     ghosts, 
-                                        double[]     d_map,
                                         IEventBinner binner,
                                         double[][]   ghost_weights )
   {
-    if ( d_map == null )
-    {
-      System.out.println( "Higher order ghost correction failed.  " +
-                          "d-space map is null." );
-      return;
-    }
-
     int     first_id = 0;                 // ID of first pixel in detector
     int     left_id  = 0;                 // ID of pixel at left detector edge
     int     right_id = 0;                 // ID of pixel at right detector edge
@@ -1031,34 +1019,30 @@ public class SNS_Tof_to_Q_map
                                                     // in ghost table, offset
                                                     // by 1249, from first ID.
     double rval = ghost_weights[ first_id + 1249 ][0];
+    //    rval = 0; // ######
 
     if ( rval == 0 )                              // NO higher order correction
+    {
+      System.out.println("rval == 0 for grid ID " + grid_id );
       return;
+    }
 
     int    n_bins = binner.numBins();
     double d_mid  = binner.centerVal( n_bins/2 );
     int    mid_id = (left_id + right_id) / 2;
     double mid_tof;
 
-    if ( d_map[ mid_id ]   == 0 || 
-         d_map[ left_id ]  == 0 ||
-         d_map[ right_id ] == 0 )
-    {
-       System.out.println( "Higher order ghost correction failed.  " +
-                           "d-space map has some zero entries for module #" +
-                            grid_id );
-       return;
-    }
+            //// d_value = two_pi * tof_chan / tof_to_MagQ[id];
+    double two_pi = 2 * Math.PI; 
+    mid_tof = d_mid * tof_to_MagQ[ mid_id ] / two_pi;
 
-    mid_tof = d_mid / d_map[ mid_id ];
-
-    double d1 = mid_tof * d_map[ left_id ];
-    double d2 = mid_tof * d_map[ right_id ];
+    double d1 = two_pi * mid_tof / tof_to_MagQ[ left_id ];
+    double d2 = two_pi * mid_tof / tof_to_MagQ[ right_id ];
 
     int steps = Math.abs(binner.index( d2 ) - binner.index( d1 ));
 
-//  System.out.printf("ID = %3d  left_id = %6d  right_id = %6d  steps = %6d\n",
-//                     grid_id, left_id, right_id, steps );
+    System.out.printf("ID = %3d  left_id = %6d  right_id = %6d  steps = %6d\n",
+                       grid_id, left_id, right_id, steps );
 
     double zcts = 0;
     for ( int i = 0; i < ghosts.length; i++ )
@@ -1082,30 +1066,7 @@ public class SNS_Tof_to_Q_map
       focts += fohist[i];
                                                      // make approximate ghost
                                                      // peak profile, milli
-    double[] milli = new double[ 2 * steps + 1 ];
-                                                     // first make big triangle
-    int bigt  = (int)(0.85 * steps);
-    for ( int k = -bigt; k <= bigt; k++ )
-      milli[ steps + k ] = (bigt - Math.abs(k)) / (double)(bigt * bigt);
-
-                                                     // add in left triangle
-    int    Lt   = (int)( 0.10 * steps );
-    int    Loff = (int)( 0.29 * steps );
-    double LtA  = 1.0 / ( Lt * Lt );
-    for ( int k = -Lt; k <= Lt; k++ )
-      milli[ steps + k + Loff ] += 0.20 * LtA * (Lt - Math.abs(k));
-
-                                                     // add in right triangle
-    for ( int k = -Lt; k <= Lt; k++ )
-      milli[ steps + k - Loff ] += 0.20 * LtA * (Lt - Math.abs(k));
-
-    double sum_milli = 0;
-    for ( int k = 0; k < milli.length; k++ )
-      sum_milli += milli[k];
-
-    double scale = 0.4 / sum_milli;
-    for ( int k = 0; k < milli.length; k++ )         // nomalize to rval
-      milli[k] *= scale;
+    double[] milli = milli_2( steps, rval );
                                                      // make second order hist
                                                      // by convolution
     for ( int k = steps; k < ghosts.length - steps; k++ )
@@ -1130,6 +1091,89 @@ public class SNS_Tof_to_Q_map
     for ( int i = 0; i < ghosts.length; i++ )
       if ( ghosts[i] < 0 )
         ghosts[i] = 0;
+  }
+
+
+  /**
+   *  Calculate simple approximation to a single ghost peak, first version
+   */
+  private double[] milli_1( int steps, double rval )
+  {
+                                                     // make approximate ghost
+                                                     // peak profile, milli
+    double[] milli = new double[ 2 * steps + 1 ];
+                                                     // first make big triangle
+    int bigt  = (int)(0.85 * steps);
+    for ( int k = -bigt; k <= bigt; k++ )
+      milli[ steps + k ] = (bigt - Math.abs(k)) / (double)(bigt * bigt);
+
+                                                     // add in left triangle
+    int    Lt   = (int)( 0.10 * steps );
+    int    Loff = (int)( 0.29 * steps );
+    double LtA  = 1.0 / ( Lt * Lt );
+    for ( int k = -Lt; k <= Lt; k++ )
+      milli[ steps + k + Loff ] += 0.20 * LtA * (Lt - Math.abs(k));
+
+                                                     // add in right triangle
+    for ( int k = -Lt; k <= Lt; k++ )
+      milli[ steps + k - Loff ] += 0.20 * LtA * (Lt - Math.abs(k));
+
+    double sum_milli = 0;
+    for ( int k = 0; k < milli.length; k++ )
+      sum_milli += milli[k];
+
+    double scale = rval / sum_milli;
+    for ( int k = 0; k < milli.length; k++ )         // nomalize to rval
+      milli[k] *= scale;
+
+    return milli;
+  }
+
+
+  /**
+   *  Calculate simple approximation to a single ghost peak, second version
+   */
+  private double[] milli_2( int steps, double rval )
+  {
+                                                     // make approximate ghost
+                                                     // peak profile, milli
+    double[] milli = new double[ 2 * steps + 1 ];
+                                                     // first make big triangle
+    int bigt  = (int)(0.85 * steps);
+    double bigtA = 1.0 / (bigt * bigt);
+    for ( int k = -bigt; k <= bigt; k++ )
+      milli[ steps + k ] = bigtA * (bigt - Math.abs(k));
+
+    double cdo = (int)(0.05*steps);                  // central drop out
+    for ( int i = steps; i < steps + cdo; i++ )
+       milli[i] = 0.0;
+
+    int    Rgt   = (int)(0.10*steps);                // right ghost triangle
+    int    Rgoff = (int)(0.29*steps);
+    double RgtA  = 1.0 / (double)(Rgt * Rgt);
+
+    for ( int k = -Rgt; k <= Rgt; k++ )
+      milli[ steps + k + Rgoff ] += 0.60 * RgtA * (Rgt - Math.abs(k));
+
+    int    Cgt   = (int)(0.05 * steps);                // close ghost triangle
+    int    Cgoff = (int)(0.08 * steps);             
+    double CgtA  = 1.0 / (double)(Cgt * Cgt);
+
+    for ( int k = -Cgt; k <= Cgt; k++ )
+      milli[steps + k + Cgoff] += 0.15*CgtA*(Cgt - Math.abs(k));
+
+    for ( int k = 1; k < steps; k++ )      //  create left side by mirror image
+      milli[steps-k] = milli[steps+k];
+
+    double sum_milli = 0;
+    for ( int k = 0; k < milli.length; k++ )
+      sum_milli += milli[k];
+
+    double scale = rval / sum_milli;
+    for ( int k = 0; k < milli.length; k++ )         // nomalize to rval
+      milli[k] *= scale;
+
+    return milli;
   }
 
 
