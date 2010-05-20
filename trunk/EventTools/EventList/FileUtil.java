@@ -1025,13 +1025,14 @@ public class FileUtil
    */
   public static void main(String[] args) throws Exception
   {
+/*
     float[] vals = { 1, 2, 3, 1.1f, 2.2f, 3.3f };
     SaveFloatFile( vals, "test_float.dat" );
 
     float[] new_vals = LoadFloatFile( "test_float.dat" );
     for ( int i = 0; i < new_vals.length; i++ )
       System.out.println("i = " + i + ", new_vals[i] = " + new_vals[i] );
-
+*/
 /*
     byte[] buffer = new byte[8];
     setDouble_64( Math.PI, buffer, 0 );
@@ -1075,6 +1076,7 @@ public class FileUtil
     SaveIntFile( identity_map, identity_map_filename );
 */
 /*
+    String map_file = "/usr2/PG3_GHOST_WRONG_BANK_PROBLEM/PG3_TS_2009_04_17.dat";
     System.out.println("Results for " + map_file );
     int[]   map = LoadIntFile( map_file );
     boolean all_match = true;
@@ -1128,14 +1130,15 @@ public class FileUtil
     }
 
 */
-/*
+///*
     int first_id = Integer.parseInt( args[0] );
     int last_id = Integer.parseInt( args[1] );
 
-    start = System.nanoTime();
+    long start = System.nanoTime();
     int n_ghosts = 16;
     int n_ids    = 300000;
-    String ghost_file = info_dir + "PG3_GhostPks.dat";
+//    String ghost_file = info_dir + "PG3_GhostPks.dat";
+    String ghost_file = "/usr2/PG3_GHOST_WRONG_BANK_PROBLEM/PG3_D664_ghostmap_2010_03_17.dat";
     Vector ghost_info = LoadGhostMapFile( ghost_file, n_ids, n_ghosts ); 
     double time = (System.nanoTime() - start) / 1e6;
     System.out.printf( "\nGhost file load time = %6.3f ms\n", time );
@@ -1158,7 +1161,7 @@ public class FileUtil
       }
       System.out.println();
     }   
-*/
+//*/
   }
 
 }
