@@ -338,7 +338,7 @@ public class PeakListHandler implements IReceiveMessage
        
        Vector<float[][]> OrientationMatrices =
                 GetUB.getAllOrientationMatrices( peakNew_list , null , 
-                                                .01f , value[1] );
+                                                .02f , value[1] );
        GetUB.DMIN = 1f;
        GetUB.ELIM_EQ_CRYSTAL_PARAMS = false;
        if( OrientationMatrices == null)
