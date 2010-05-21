@@ -919,8 +919,10 @@ public class SNS_Tof_to_Q_map
 
     boolean  use_d_map = true;
     if ( d_map == null || d_map.length < tof_to_MagQ.length )
+    {
       use_d_map = false;
-
+      d_map = null;                           // just in case someone passed
+    }                                         // in an invalid d_map
     float    tof_chan;
     int      event_id;                        // the DAS id of actual event
     int      num_ghosts = ghost_ids[0].length;
@@ -968,10 +970,16 @@ public class SNS_Tof_to_Q_map
       }
     }
 
-    for ( int row = 0; row < histogram.length; row++ )
-      if ( histogram[row] != null )
-        DoHigherOrderCorrection( row, histogram[row], binner, ghost_weights );
-
+    if ( binner instanceof LogEventBinner )     // higher order correction is
+    {                                           // only set up for log scale
+      for ( int row = 0; row < histogram.length; row++ )
+        if ( histogram[row] != null )
+          DoHigherOrderCorrection( row, 
+                                   histogram[row], 
+                                   binner, 
+                                   ghost_weights,
+                                   d_map );
+    }
                                              // now copy histogram to float[][]
     float[][] f_histogram = getEmptyFloatHistogram( binner );
     for ( int row = 0; row < histogram.length; row++ )
@@ -984,12 +992,14 @@ public class SNS_Tof_to_Q_map
 
 
   /**
-   *  Adjust ghost histogram for higher order correction terms
+   *  Adjust ghost histogram for higher order correction terms.
+   *  (This was adapted from Jason Hodge Python code.)
    */
   private void DoHigherOrderCorrection( int          grid_id, 
                                         double[]     ghosts, 
                                         IEventBinner binner,
-                                        double[][]   ghost_weights )
+                                        double[][]   ghost_weights,
+                                        double[]     d_map )
   {
     int     first_id = 0;                 // ID of first pixel in detector
     int     left_id  = 0;                 // ID of pixel at left detector edge
@@ -1019,7 +1029,6 @@ public class SNS_Tof_to_Q_map
                                                     // in ghost table, offset
                                                     // by 1249, from first ID.
     double rval = ghost_weights[ first_id + 1249 ][0];
-    //    rval = 0; // ######
 
     if ( rval == 0 )                              // NO higher order correction
     {
@@ -1030,19 +1039,28 @@ public class SNS_Tof_to_Q_map
     int    n_bins = binner.numBins();
     double d_mid  = binner.centerVal( n_bins/2 );
     int    mid_id = (left_id + right_id) / 2;
-    double mid_tof;
 
-            //// d_value = two_pi * tof_chan / tof_to_MagQ[id];
-    double two_pi = 2 * Math.PI; 
-    mid_tof = d_mid * tof_to_MagQ[ mid_id ] / two_pi;
+    double mid_tof = 0;
+    double d1      = 0;
+    double d2      = 0;
 
-    double d1 = two_pi * mid_tof / tof_to_MagQ[ left_id ];
-    double d2 = two_pi * mid_tof / tof_to_MagQ[ right_id ];
+    if ( d_map != null )
+    {
+      mid_tof = d_mid / d_map[ mid_id ];
+      d1      = mid_tof * d_map[ left_id ];
+      d2      = mid_tof * d_map[ right_id ];
+    }
+    else
+    {
+      mid_tof = d_mid * tof_to_MagQ[ mid_id ] / (2 * Math.PI);
+      d1      = 2 * Math.PI * mid_tof / tof_to_MagQ[ left_id ];
+      d2      = 2 * Math.PI * mid_tof / tof_to_MagQ[ right_id ];
+    }
 
     int steps = Math.abs(binner.index( d2 ) - binner.index( d1 ));
 
-    System.out.printf("ID = %3d  left_id = %6d  right_id = %6d  steps = %6d\n",
-                       grid_id, left_id, right_id, steps );
+//  System.out.printf("ID = %3d  left_id = %6d  right_id = %6d  steps = %6d\n",
+//                     grid_id, left_id, right_id, steps );
 
     double zcts = 0;
     for ( int i = 0; i < ghosts.length; i++ )
@@ -1096,6 +1114,7 @@ public class SNS_Tof_to_Q_map
 
   /**
    *  Calculate simple approximation to a single ghost peak, first version
+   *  (This was adapted from Jason Hodge Python code.)
    */
   private double[] milli_1( int steps, double rval )
   {
@@ -1132,6 +1151,7 @@ public class SNS_Tof_to_Q_map
 
   /**
    *  Calculate simple approximation to a single ghost peak, second version
+   *  (This was adapted from Jason Hodge Python code.)
    */
   private double[] milli_2( int steps, double rval )
   {
@@ -1141,7 +1161,7 @@ public class SNS_Tof_to_Q_map
                                                      // first make big triangle
     int bigt  = (int)(0.85 * steps);
     double bigtA = 1.0 / (bigt * bigt);
-    for ( int k = -bigt; k <= bigt; k++ )
+    for ( int k = 0; k <= bigt; k++ )
       milli[ steps + k ] = bigtA * (bigt - Math.abs(k));
 
     double cdo = (int)(0.05*steps);                  // central drop out
