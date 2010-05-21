@@ -1796,7 +1796,7 @@ public class OrientMatrixControl extends JButton
             try
             {
                 OrMatrices = GetUB. getAllOrientationMatrices( WPeaks.get() , omittedPeakIndex ,
-                     .01f , MaxXtalLengthReal );
+                     .02f , MaxXtalLengthReal );
             }catch(Throwable thr)
             {
                thr.printStackTrace( );
