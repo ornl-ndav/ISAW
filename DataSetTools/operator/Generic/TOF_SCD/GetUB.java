@@ -587,14 +587,18 @@ public class GetUB {
         return MRes;
      float FitMax = List[Nelements-1][FIT1]+List[Nelements-1][CORR];
      FitMax = .65f*FitMax;
-     System.out.println("Through initial find directions,nelets, FitMax= "+Nelements+
-              ","+FitMax);
+    // System.out.println("Through initial find directions,nelets, FitMax= "+Nelements+
+    //          ","+FitMax);
      int n=Nelements-1;
      for( int i=Nelements-1; i>0 && (List[i][FIT1]+List[i][CORR])> FitMax; i--)
         n=i;     
      //System.out.println("Nelements considered="+ n);
      for( int i=Nelements-1; i>= n; i--)
-        optimize( List[i],Peaks,omit,MaxXtalLengthReal);
+        {
+          if( optimize( List[i],Peaks,omit,MaxXtalLengthReal))
+           if( optimize( List[i],Peaks,omit,MaxXtalLengthReal))
+             optimize( List[i],Peaks,omit,MaxXtalLengthReal);
+        }
      
      EliminateDuplicates( List,n,gridLength,MaxXtalLengthReal);
      
@@ -657,9 +661,58 @@ public class GetUB {
             List[top++]= List[i];
         
       }
-     // System.out.println(" duplicates elim prev/next"+ Nelements+"/"+top);
+      //System.out.println(" duplicates elim start,prev/next"+start+","+ Nelements+"/"+top);
       List[top++] = List[ Nelements-1];
       Nelements = top; 
+   }
+   
+   private static float[][] OptimizeUB( float[][] UB, Vector Peaks)
+   {
+
+      if( UB== null || Peaks == null|| Peaks.size() < 3|| UB.length < 3)
+           return null;
+      double[][] hkl = new double[Peaks.size()][3];
+      double[][] q =  new double[Peaks.size()][3];
+      double[][] UB1 = new double[3][3];
+      int top =0;
+      double[][] UBI = LinearAlgebra.float2double( LinearAlgebra.getInverse( UB ));
+      for( int i=0; i< Peaks.size(); i++)
+      {
+         IPeak peak = (IPeak)Peaks.elementAt( i );
+         double[]q1 = LinearAlgebra.float2double( peak.getUnrotQ( ));
+         double[] hkl1 = LinearAlgebra.mult( UBI, q1 );
+         if( hkl1 != null && IntDiff( hkl1[0]) < .1 &&
+               IntDiff( hkl1[1]) < .1 && IntDiff( hkl1[2]) < .1)
+         {
+            hkl[top][0]= Math.floor( .1f+hkl1[0]);
+            hkl[top][1]= Math.floor( .1f+hkl1[1]);
+            hkl[top][2]= Math.floor( .1f+hkl1[2]);
+            q[top++] =q1;
+         }
+         
+      }
+
+      double[][] Hkl = new double[top][3];
+      double[][] Q =  new double[top][3];
+      System.arraycopy( hkl , 0 , Hkl , 0 , top );
+      System.arraycopy(q, 0, Q, 0, top);
+      hkl=q= null;
+      double chiSq = LinearAlgebra.BestFitMatrix( UB1, Hkl, Q );
+      if( Double.isNaN( chiSq ))
+         return UB;
+      return LinearAlgebra.double2float( UB1);
+         
+      
+   }
+   
+   private static float IntDiff( double val)
+   {
+      int x = (int)Math.floor( val );
+      double dif = val -x;
+      if( dif >= .5)
+         dif = x+1-val;
+      
+      return (float)dif;
    }
    private static Vector<float[][]> GetUBs( Integer[] sortList,int[] elts, Vector Peaks)
    {
@@ -669,15 +722,15 @@ public class GetUB {
       tuple[0]=0; tuple[1]=1; tuple[2] =2;
       int N=2;
       boolean done = tuple[2] >=sortList.length;
-      
+      int kk=0;
       while(!done)
       {
          int i1 = sortList[tuple[0]];
          int i2 = sortList[tuple[1]];
          int i3 = sortList[tuple[2]];
          float[][]UB = List2UBinv( Peaks,i1, i2, i3);
-        
-        
+        //Optimizing this UB does NOT help if each direction have already been optimized.
+         
          
          if(UB != null && isDifferentFrom( Res, UB) )
          {
@@ -689,7 +742,8 @@ public class GetUB {
                elts[2] =i3;
                return Res;
             }
-         }
+         }else if( UB !=null)
+           kk++;
          //next tuple
          if( tuple[0]+1 < tuple[1] )
             tuple[0]++;
@@ -704,6 +758,7 @@ public class GetUB {
          done = tuple[2] >=sortList.length || Res.size()>200;
         
       }
+     // System.out.println("There were "+kk+ "matrices that were the same");
       return Res;
       
    }
@@ -742,7 +797,7 @@ public class GetUB {
         for( int i=0; i < 3; i++)
            for( int j=0; j<3; j++)
            {
-              if( Math.abs( UB1[i][j]-UB[i][j] )/mx>.001 )           
+              if( Math.abs( UB1[i][j]-UB[i][j] )/mx>.015 )           
                  res = true;
            }
         if( !res)
