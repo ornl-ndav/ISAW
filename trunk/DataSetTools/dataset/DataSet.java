@@ -553,6 +553,20 @@ public class DataSet implements IAttributeList,
 
 
   /**
+   *  Set error estimates to be the square root of the y-values for all 
+   *  Data blocks in this DataSet.
+   */
+  public void setSqrtErrors()
+  {
+    for ( int i = 0; i < data.size(); i++ )
+    {
+      Data d = (Data)data.elementAt(i);
+      d.setSqrtErrors( true );
+    }
+  }
+
+
+  /**
    *  Set the selected flags of all Data objects in this DataSet to false.
    *
    *  @return  true if the state of some "selected" flag was actually changed.
