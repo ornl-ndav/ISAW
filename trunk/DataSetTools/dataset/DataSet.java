@@ -567,6 +567,53 @@ public class DataSet implements IAttributeList,
 
 
   /**
+   *  Set all y-values in all Data blocks to be at least zero.
+   */
+  public void clampToZero()
+  {
+    Data    d      = null;
+    float[] y_vals = null;
+    float[] errors = null;
+
+    boolean change_errors;
+
+    for ( int i = 0; i < data.size(); i++ )
+    {
+      d = (Data)data.elementAt(i);
+      if ( d instanceof TabulatedData )
+      {
+        y_vals = d.getY_values();
+
+        if ( y_vals != null )
+        {
+          change_errors = false;
+          if ( !d.isSqrtErrors() )
+          {
+            errors = d.getErrors();
+            if ( errors != null )
+              change_errors = true;
+          }
+
+          if ( y_vals != null )
+            for ( int k = 0; k < y_vals.length; k++ )
+            {
+              if ( y_vals[k] < 0 )
+              {
+                y_vals[k] = 0;
+                if ( change_errors )
+                  errors[k] = 0; 
+              }
+            }
+
+          if ( change_errors )
+            ((TabulatedData)d).setErrors( errors );
+        }
+      }
+    }
+  }
+
+
+  /**
    *  Set the selected flags of all Data objects in this DataSet to false.
    *
    *  @return  true if the state of some "selected" flag was actually changed.
