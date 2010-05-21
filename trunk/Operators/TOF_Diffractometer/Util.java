@@ -220,7 +220,10 @@ public class Util
      String log_message = "Mapped events to " + x_axis_type;
 
      DataSet DS = MakeDataSet( ConvertTo2DfloatArray(Histograms), 
-                               binner, title, log_message );
+                               binner, 
+                               title, 
+                               log_message, 
+                               false );
      String x_units = "";
      if ( x_axis_type.equalsIgnoreCase(MAG_Q) )
        x_units = "Inverse Angstroms";
@@ -268,6 +271,19 @@ public class Util
     * @param first_logStep    The length of first interval( isLog = true )
     *       
     * @param nUniformbins     The number of uniform bins( isLog=false )
+    * @param useDspaceMap     Calculate the "d" value for each event by
+    *                         multiplying by the diffractometer constant for
+    *                         the corresponding pixel taken from a 
+    *                         dspace map file, rather than using the
+    *                         instrument geometry.
+    * @param DspaceMapFile    The name of a binary file of doubles containing
+    *                         the diffractometer constants, one for each 
+    *                         detector pixel.
+    * @param useGhosting      Get estimate of ghost spectrum, NOT the
+    *                         actual spectrum.
+    * @param GhostInfoFile    The name of the file with ghost information
+    * @param nGhostIDs        The number of DAS pixel id's to use
+    * @param nGhosts          The number of ghost corrections per is 
     * 
     * @return  A DataSet in d-spacing whose spectra are the summed d-spacing
     *           for a detector.
@@ -288,8 +304,7 @@ public class Util
                                          boolean useGhosting,
                                          String  GhostInfoFile,
                                          int     nGhostIDs,
-                                         int     nGhosts
-                                         )
+                                         int     nGhosts      )
                          throws Exception
    {
          String Instrument = FileIO.getSNSInstrumentName( EventFileName );
@@ -395,18 +410,18 @@ public class Util
            float[][]temp = null;
            if( useGhosting)
               temp = SMap.Make_d_Histograms( sublist, 
-                                                 0, 
-                                                (int)seg_size, 
-                                                 binner,
-                                                 d_map,
-                                                 ghost_ids,
-                                                 ghost_weights);
+                                             0, 
+                                             (int)seg_size, 
+                                             binner,
+                                             d_map,
+                                             ghost_ids,
+                                             ghost_weights);
            else
               temp = ConvertTo2DfloatArray( SMap.Make_d_Histograms( sublist, 
-                                                 0, 
-                                                (int)seg_size, 
-                                                 binner, 
-                                                 d_map ));
+                                            0, 
+                                            (int)seg_size, 
+                                            binner, 
+                                            d_map ));
            if ( first_time && temp != null )
            {
              Histograms = temp;
@@ -443,7 +458,11 @@ public class Util
          else
            log_message += "formed histogram one Data block per bank.";
          
-         DataSet DS = MakeDataSet( Histograms, binner, title, log_message );
+         DataSet DS = MakeDataSet( Histograms, 
+                                   binner, 
+                                   title, 
+                                   log_message,
+                                   useGhosting );
          
          DS.setX_units( "Angstroms");
          DS.setX_label( "d-Spacing" );
@@ -484,10 +503,11 @@ public class Util
     * @param first_logStep    The length of first interval( isLog = true )
     *        
     * @param nUniformbins     The number of uniform bins( isLog=false )
-    * @param useGhosting      Perform ghosting corrections
+    * @param useGhosting      Get estimate of ghost spectrum, NOT the
+    *                         actual spectrum.
     * @param GhostInfoFile    The name of the file with ghost information
     * @param nGhostIDs        The number of DAS pixel id's to use
-    * @param nGhosts         The number of ghost corrections per is 
+    * @param nGhosts          The number of ghost corrections per is 
     * 
     * @return a DataSet from Event Data where each detector is time focused
     */
@@ -651,7 +671,11 @@ public class Util
          else
            log_message += "formed histogram one Data block per bank.";
 
-         DataSet DS = MakeDataSet( Histograms, binner, title, log_message );
+         DataSet DS = MakeDataSet( Histograms, 
+                                   binner, 
+                                   title, 
+                                   log_message,
+                                   useGhosting );
       
          DS.setX_units( "Time(us)");
          DS.setX_label( "Time-of-flight" );
@@ -705,11 +729,14 @@ public class Util
    *                      histogram of counts.  The binner defines the XScale.
    *  @param  title       The title to place on the DataSet
    *  @param  log_message The initial log message to use.
+   *  @param  is_ghost    Flag indicating whether or not this is a 
+   *                      "ghost" histogram.
    */
   private static DataSet MakeDataSet( float[][]    histograms,
                                       IEventBinner binner,     
                                       String       title,     
-                                      String       log_message )
+                                      String       log_message,
+                                      boolean      is_ghost  )
   {
     DataSet DS = new DataSet( title, log_message );
 
@@ -725,7 +752,13 @@ public class Util
       {
         float[] yvals = histograms[i];
         HistogramTable D = new HistogramTable( xscl, yvals, i ) ;
-        D.setSqrtErrors( true );
+        if ( !is_ghost )
+          D.setSqrtErrors( true );
+        else
+        {
+          float[] errors = new float[ yvals.length ];
+          D.setErrors( errors );
+        }
         DS.addData_entry( D );
       }
     }
