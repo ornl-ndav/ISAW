@@ -38,7 +38,7 @@ package Operators.TOF_SCD;
 import DataSetTools.operator.*;
 import DataSetTools.operator.Generic.*;
 
-import gov.anl.ipns.Parameters.DataDirPG;
+import gov.anl.ipns.Parameters.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
 import Command.*;
@@ -64,7 +64,7 @@ public class readOrient extends GenericOperator implements HiddenOperator{
 
    public void setDefaultParameters(){
       clearParametersVector();
-      addParameter( new DataDirPG("Enter File",""));
+      addParameter( new LoadFilePG("Enter File",""));
    }
 
    public String getDocumentation(){
