@@ -202,6 +202,7 @@ public class ScalarHandlePanel implements IReceiveMessage
       showChoices();
    }
 
+   Vector<ActionListener> listener = new Vector<ActionListener>();
    public void addActionListener( ActionListener act)
    {
       for( int i=0; i< Centerings.length; i++)
@@ -213,6 +214,8 @@ public class ScalarHandlePanel implements IReceiveMessage
       Delta.addActionListener(  act );
       SortOn.addActionListener( act );
       viewer.addActionListener( act);
+      if( !listener.contains( act ))
+         listener.add( act );
    }
    /**
     * Returns the JPanel with GUI elements to direct the process
@@ -247,6 +250,18 @@ public class ScalarHandlePanel implements IReceiveMessage
       
    }
    
+   public void removeListeners( AbstractButton comp)
+   {
+      for( int i=0; i< listener.size(); i++)
+     comp.removeActionListener( listener.elementAt( i ) );
+   }
+   
+   public void addListeners( AbstractButton comp )
+   {
+
+      for( int i=0; i< listener.size(); i++)
+     comp.addActionListener( listener.elementAt( i ) );
+   }
    /**
     * Sets the symmetry and centring check boxes
     * 
@@ -255,13 +270,23 @@ public class ScalarHandlePanel implements IReceiveMessage
    public void setSymmCenterings( String S)
    {
       int k=0;
+      for( int i=0; i< Centerings.length; i++)
+         removeListeners( Centerings[i]);
       
       for( int i=0; i< Centerings.length; i++)
+     
          if(S.charAt( k+i )=='T')
             Centerings[i].setSelected( true );
       
          else
             Centerings[i].setSelected( false );
+      
+
+      for( int i=0; i< Centerings.length; i++)
+         addListeners( Centerings[i]);
+      
+      for( int i=0; i< SymmetryChoices.length; i++)
+         removeListeners( SymmetryChoices[i]);
       
       k= Centerings.length;
       for( int i=0; i< SymmetryChoices.length; i++)
@@ -272,7 +297,9 @@ public class ScalarHandlePanel implements IReceiveMessage
       
          else
             SymmetryChoices[i].setSelected( false );
-      
+
+      for( int i=0; i< SymmetryChoices.length; i++)
+         addListeners( SymmetryChoices[i]);
       showChoices();
    }
    
@@ -300,7 +327,13 @@ public class ScalarHandlePanel implements IReceiveMessage
     */
    public void setDelta( float delta)
    {
+
+      for(int i=0; i< listener.size(); i++)
+         Delta.removeActionListener(  listener.elementAt(i));
       Delta.setText(""+delta);
+
+      for(int i=0; i< listener.size(); i++)
+         Delta.addActionListener(  listener.elementAt(i));
       showChoices();
    }
    
@@ -321,7 +354,11 @@ public class ScalarHandlePanel implements IReceiveMessage
     */
    public void setSortOn( String sortMethod)
    {
+      for(int i=0; i< listener.size(); i++)
+         SortOn.removeActionListener(  listener.elementAt(i));
       SortOn.setSelectedItem( sortMethod);
+      for(int i=0; i< listener.size(); i++)
+         SortOn.addActionListener(  listener.elementAt(i));
       showChoices();
    }
    
@@ -335,7 +372,7 @@ public class ScalarHandlePanel implements IReceiveMessage
       int x = viewer.getSelectedChoice( );
       
       if( x < 0 )
-         x= viewer.getLastViewedChoice( );
+         x = viewer.getLastViewedChoice( );
       
       return x;
    }
@@ -348,8 +385,11 @@ public class ScalarHandlePanel implements IReceiveMessage
     */
    public void setSelectedTranfIndex( int transfIndex)
    {
+
+     
      viewer.setSelectedChoice( transfIndex );
-     showChoices();
+
+    // showChoices();
    }
    
    //----------------------- end save/restore state ------------------------
@@ -577,7 +617,7 @@ public class ScalarHandlePanel implements IReceiveMessage
    // make sure current UB is saved
    private void showChoices()
    {
-
+      
       double[] latParams1 = lattice_calc.LatticeParamsOfUB( LinearAlgebra
             .float2double( UB ) );
 
@@ -676,27 +716,35 @@ public class ScalarHandlePanel implements IReceiveMessage
    }
 
    @Override
+   /**
+    * Set UB matrix by placing its transpose as the value of a message  whose
+    * command is Commands.SET_ORIENTATION_MATRIX.
+    * 
+    * The message could also have a Vector value with 2 elements, the first the transpose of UB matrix 
+    * and the 2nd are the lattice errors.
+    */
    public boolean receive(Message message)
    {
       if( message.getName( ).equals( Commands.SET_PEAK_NEW_LIST ))
       {
          Peaks = (Vector<Peak_new>)message.getValue( );
          return false;
+         
       }else if( message.getName( ).equals(Commands.INDEX_PEAKS))
       {
-         Object obj = message.getValue();
-      if ( obj == null || !(obj instanceof IndexPeaksCmd) )
-      {
-        Util.sendError("ERROR: wrong value object in INDEX_PEAKS command");
-        return false;
-      }
+         Object obj = message.getValue( );
 
-     
+         if ( obj == null || !( obj instanceof IndexPeaksCmd ) )
+         {
+            Util.sendError( "ERROR: wrong value object in INDEX_PEAKS command" );
+            return false;
+         }
 
-      IndexPeaksCmd cmd = (IndexPeaksCmd)obj;
-      tolerance = cmd.getTolerance( );
+         IndexPeaksCmd cmd = ( IndexPeaksCmd ) obj;
+         tolerance = cmd.getTolerance( );
 
          return false;
+         
       }else if(message.getName( ).equals(Commands.INDEX_PEAKS_WITH_ORIENTATION_MATRIX))
       {  
          
@@ -705,12 +753,14 @@ public class ScalarHandlePanel implements IReceiveMessage
       
           tolerance = UBB.getOffIntMax( );
          return false;
+         
       }else if(message.getName( ).equals(Commands.INDEX_PEAKS_ROSS ))
       {
 
          float[] value = (float[])message.getValue();
          tolerance = value[2];
          return false;
+         
       } else if ( message.getName( ).equals( Commands.INDEX_PEAKS_ARCS ) )
       {
          Object obj = message.getValue();
@@ -724,6 +774,7 @@ public class ScalarHandlePanel implements IReceiveMessage
          IndexARCS_PeaksCmd cmd = (IndexARCS_PeaksCmd)obj;
          tolerance = cmd.getTolerance();
          return false;
+         
       }
       sig_abc = null;
       UB_old = null;
@@ -743,9 +794,12 @@ public class ScalarHandlePanel implements IReceiveMessage
          Choices[0] = "No Orientation Matrix ";
          viewer.setNewStringList( Choices );
          return false;
+         
       }
+      
       showChoices( );
       return false;
+      
    }
 
    private float[] checkStuff( Vector PeakList, double[][] UB_new)
