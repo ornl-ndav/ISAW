@@ -87,7 +87,7 @@ public class SNS_TofEventList implements ITofEventList
   }
 
   @Override
-  public int[] rawEvents( long first_event, long num_events )
+  synchronized public int[] rawEvents( long first_event, long num_events )
   {
     if ( this.first_event == first_event &&         // use loaded tof array
          this.num_events  == num_events   )
