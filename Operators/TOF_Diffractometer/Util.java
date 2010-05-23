@@ -40,14 +40,11 @@ import java.util.Vector;
 import gov.anl.ipns.MathTools.Geometry.DetectorPosition;
 import gov.anl.ipns.MathTools.Geometry.Vector3D;
 import gov.anl.ipns.Util.File.*;
-import gov.anl.ipns.Operator.IOperator;
 import gov.anl.ipns.Operator.Threads.ParallelExecutor;
 
 import DataSetTools.util.SharedData;
 import DataSetTools.dataset.*;
 import DataSetTools.instruments.*;
-import DataSetTools.operator.DataSet.Conversion.XAxis.DiffractometerDToQ;
-import DataSetTools.operator.DataSet.Conversion.XAxis.DiffractometerDToTof;
 
 import EventTools.EventList.*;
 import EventTools.Histogram.*;
@@ -71,6 +68,10 @@ public class Util
                                         // is a multiple fo the underlying
                                         // file buffer size works well.
   public static final int DEFAULT_SEG_SIZE = 64 * SNS_TofEventList.BUFFER_SIZE;
+
+  private static int n_threads = 8;
+  private static int max_time  = 1200000;   // Should not take more than 1200
+                                            // seconds (20 minutes) 
 
    /**
     * Makes a DataSet containing spectra in Wavelength,|Q|,
@@ -151,66 +152,27 @@ public class Util
      long num_to_load  = last - firstEvent + 1;
      long seg_size     = DEFAULT_SEG_SIZE;
      long num_segments = num_to_load / seg_size + 1;
+     long num_loaded   = 0;
 
-     int[][] Histograms = null;
-     boolean first_time = true;
-     long num_loaded = 0;
-
+     Vector ops = new Vector();
      for ( int i = 0; i < num_segments; i ++ )
      {
        seg_size = Math.min( seg_size, num_to_load - num_loaded );
 
-       int[] buffer = STOF.rawEvents( firstEvent, seg_size );
-
-       TofEventList sublist = new TofEventList( buffer,
-                                                buffer.length/2,
-                                                false );
-       int[][]temp = null;
-
-       if ( x_axis_type.equalsIgnoreCase(MAG_Q) )
-
-              temp = SMap.Make_q_Histograms( sublist,
-                                             0,
-                                             seg_size,
-                                             binner );
-
-       else if ( x_axis_type.equalsIgnoreCase(WAVELENGTH) )
-
-              temp = SMap.Make_wl_Histograms( sublist,
-                                              0,
-                                              seg_size,
-                                              binner );
-
-       else if ( x_axis_type.equalsIgnoreCase(D_SPACING) )
-
-              temp = SMap.Make_d_Histograms( sublist,
-                                             0,
-                                             seg_size,
-                                             binner,
-                                             null );
-
-       else if ( x_axis_type.equalsIgnoreCase(TOF) )
-
-              temp = SMap.Make_Time_Focused_Histograms( sublist,
-                                                        0,
-                                                        seg_size,
-                                                        binner  );
-
-       if ( first_time && temp != null )
-       {
-         Histograms = temp;
-         first_time = false;
-       }
-       else if ( temp != null )          // add in the new histogram data
-       {
-         for ( int row = 0; row < Histograms.length; row++ )
-           if ( temp[row] != null && Histograms[row] != null )
-             for ( int col = 0; col < Histograms[row].length; col++ )
-               Histograms[row][col] += temp[row][col];
-       }
+       Make_Histograms_Op op;
+       op = new Make_Histograms_Op( SMap,
+                                    x_axis_type,
+                                    STOF, firstEvent, seg_size,
+                                    binner );
+       ops.add( op );
        num_loaded += seg_size;
        firstEvent += seg_size;
      }
+
+     ParallelExecutor pe = new ParallelExecutor(ops, n_threads, max_time);
+     Vector results = pe.runOperators();
+
+     float[][] Histograms = CombinePartialHistograms( results );
 
      if ( Histograms == null)
        return null;
@@ -221,7 +183,7 @@ public class Util
 
      String log_message = "Mapped events to " + x_axis_type;
 
-     DataSet DS = MakeDataSet( ConvertTo2DfloatArray(Histograms), 
+     DataSet DS = MakeDataSet( Histograms, 
                                binner, 
                                title, 
                                log_message, 
@@ -389,21 +351,12 @@ public class Util
          long num_to_load  = last - firstEvent + 1;
          long seg_size     = DEFAULT_SEG_SIZE;
          long num_segments = num_to_load / seg_size + 1;
+         long num_loaded   = 0;
 
-         float[][] Histograms = null;
-         boolean first_time = true;
-         long num_loaded = 0;
-
-    boolean multithreaded    = true;
-    if ( multithreaded )
-    {
          Vector ops = new Vector();
          for ( int i = 0; i < num_segments; i ++ )
          {
            seg_size = Math.min( seg_size, num_to_load - num_loaded );
-
-           System.out.println("Making op to start load at " + firstEvent +
-                              " with seg_size = " + seg_size );
 
            Make_d_Histograms_Op op;
            op = new Make_d_Histograms_Op( SMap,
@@ -416,82 +369,10 @@ public class Util
            firstEvent += seg_size;
          }
 
-         int n_threads = 8;
-         int max_time  = 600000;
          ParallelExecutor pe = new ParallelExecutor(ops, n_threads, max_time);
          Vector results = pe.runOperators();
 
-         if ( results != null )
-         {
-           float[][]temp = null;
-           for ( int i = 0; i < results.size(); i ++ )
-           {
-             if ( results.elementAt(i) instanceof float[][] )
-               temp = (float[][])results.elementAt(i);
-             else
-             {
-               temp = null;
-               System.out.println("PE Error, returned element not float[][]:" +
-                                   results.elementAt(i) );
-             }          
-             if ( first_time && temp != null )
-             {
-               Histograms = temp;
-               first_time = false;
-             }
-             else if ( temp != null )          // add in the new histogram data
-             {
-               for ( int row = 0; row < Histograms.length; row++ )
-                 if ( temp[row] != null && Histograms[row] != null )
-                 for ( int col = 0; col < Histograms[row].length; col++ )
-                   Histograms[row][col] += temp[row][col];
-             }
-           }
-         }
-    }
-    else
-    {
-         for ( int i = 0; i < num_segments; i ++ )
-         {
-           seg_size = Math.min( seg_size, num_to_load - num_loaded );
-
-           int[] buffer = STOF.rawEvents( firstEvent, seg_size );
-
-           TofEventList sublist = new TofEventList( buffer, 
-                                                    buffer.length/2,
-                                                    false );
-
-           float[][]temp = null;
-           if( useGhosting)
-              temp = SMap.Make_d_Histograms( sublist, 
-                                             0, 
-                                             (int)seg_size, 
-                                             binner,
-                                             d_map,
-                                             ghost_ids,
-                                             ghost_weights);
-           else
-              temp = ConvertTo2DfloatArray( SMap.Make_d_Histograms( sublist, 
-                                            0, 
-                                            (int)seg_size, 
-                                            binner, 
-                                            d_map ));
-           if ( first_time && temp != null )
-           {
-             Histograms = temp;
-             first_time = false;
-           }
-           else if ( temp != null )          // add in the new histogram data
-           {
-             for ( int row = 0; row < Histograms.length; row++ )
-               if ( temp[row] != null && Histograms[row] != null )
-               for ( int col = 0; col < Histograms[row].length; col++ )
-                 Histograms[row][col] += temp[row][col];
-           }
-           num_loaded += seg_size;
-           firstEvent += seg_size;
-         }
-   }
+         float[][] Histograms = CombinePartialHistograms( results );
 
          if( Histograms == null)
             return null;
@@ -650,60 +531,29 @@ public class Util
          long num_to_load  = last - firstEvent + 1;
          long seg_size     = DEFAULT_SEG_SIZE;
          long num_segments = num_to_load / seg_size + 1;
- 
-         float[][] Histograms = null;
-         boolean first_time = true;
-         long num_loaded = 0;
+         long num_loaded   = 0;
+
+         Vector ops = new Vector();
          for ( int i = 0; i < num_segments; i ++ )
          {
-//         System.out.println("Loading Segment # " + i + " of " + num_segments);
-//         System.out.println("First Event  = " + firstEvent );
-//         System.out.println("Segment Size = " + seg_size );
            seg_size = Math.min( seg_size, num_to_load - num_loaded );
 
-           int[] buffer = STOF.rawEvents( firstEvent, seg_size );
-          
-           TofEventList sublist = new TofEventList( buffer,
-                                                    buffer.length/2,
-                                                    false );
-           float[][]temp = null;
-           
-           if( useGhosting )
-              temp = SMap.Make_Time_Focused_Histograms( sublist ,
-                                                        0 ,
-                                                        (int)seg_size ,
-                                                        binner ,
-                                                        angle_deg ,
-                                                        final_L_m ,
-                                                        ghost_ids ,
-                                                        ghost_weights );
-           else
-           {
-             int[][] int_hist = SMap.Make_Time_Focused_Histograms( 
-                                                            sublist,
-                                                            0,
-                                                           (int)seg_size,
-                                                            binner ,
-                                                            angle_deg ,
-                                                            final_L_m );
-             temp = ConvertTo2DfloatArray( int_hist );
-           }
-
-           if ( first_time && temp != null )
-           {
-             Histograms = temp;
-             first_time = false;
-           }
-           else if ( temp != null )          // add in the new histogram data
-           {
-             for ( int row = 0; row < Histograms.length; row++ )
-               if ( temp[row] != null && Histograms[row] != null )
-               for ( int col = 0; col < Histograms[row].length; col++ )
-                 Histograms[row][col] += temp[row][col];
-           }
+           Make_Time_Focused_Histograms_Op op;
+           op = new Make_Time_Focused_Histograms_Op( 
+                                          SMap,
+                                          STOF, firstEvent, seg_size,
+                                          binner,
+                                          angle_deg, final_L_m,
+                                          ghost_ids, ghost_weights );
+           ops.add( op );
            num_loaded += seg_size;
            firstEvent += seg_size;
          }
+
+         ParallelExecutor pe = new ParallelExecutor(ops, n_threads, max_time);
+         Vector results = pe.runOperators();
+
+         float[][] Histograms = CombinePartialHistograms( results );
 
          if( Histograms == null)
             return null;
@@ -740,6 +590,47 @@ public class Util
          
          return DS;
    }
+
+
+  /**
+   *  Sum up the partial histograms that were returned from the
+   *  operators that loaded parts of the files.
+   */
+  private static float[][] CombinePartialHistograms( Vector results )
+  {
+    float[][] Histograms = null;
+
+    boolean first_time = true;
+
+    if ( results != null )
+    {
+      float[][]temp = null;
+      for ( int i = 0; i < results.size(); i ++ )
+      {
+        if ( results.elementAt(i) instanceof float[][] )
+          temp = (float[][])results.elementAt(i);
+        else
+        {
+          temp = null;
+          System.out.println("Error, returned element not float[][]:" +
+                              results.elementAt(i) );
+        }
+        if ( first_time && temp != null )
+        {
+          Histograms = temp;
+          first_time = false;
+        }
+        else if ( temp != null )        // add in the new histogram data
+        {
+          for ( int row = 0; row < Histograms.length; row++ )
+            if ( temp[row] != null && Histograms[row] != null )
+              for ( int col = 0; col < Histograms[row].length; col++ )
+                Histograms[row][col] += temp[row][col];
+        }
+      }
+    }
+    return Histograms;
+  }
 
 
   /**

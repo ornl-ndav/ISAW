@@ -421,7 +421,7 @@ public class RemovePeaks_Calc
     for ( int i = 0; i < peak_d_vals.length; i++ )
       System.out.println("d = " + peak_d_vals[i] );
 */ 
-    String Instrument = "PG3";
+//    String Instrument = "PG3";
     String EventFileName = "/usr2/PG3/PG3_539_neutron_event.dat";
 
     String   DetCalFileName   = null;
