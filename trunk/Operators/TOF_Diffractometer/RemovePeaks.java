@@ -33,7 +33,7 @@
  */
 
 package Operators.TOF_Diffractometer;
-import DataSetTools.operator.*;
+
 import DataSetTools.operator.Generic.*;
 import DataSetTools.dataset.*;
 import DataSetTools.util.SharedData;
