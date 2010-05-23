@@ -66,6 +66,11 @@ public class Util
   public static final String MAG_Q      = "Magnitude Q";
   public static final String WAVELENGTH = "Wavelength";
   public static final String TOF        = "Time-of-flight";
+  
+                                        // A segment size of about 4 MB that
+                                        // is a multiple fo the underlying
+                                        // file buffer size works well.
+  public static final int DEFAULT_SEG_SIZE = 64 * SNS_TofEventList.BUFFER_SIZE;
 
    /**
     * Makes a DataSet containing spectra in Wavelength,|Q|,
@@ -143,14 +148,9 @@ public class Util
      if ( last >= STOF.numEntries() )
        last =  STOF.numEntries() - 1;
 
-     long num_to_load = last - firstEvent + 1;
-                                                       // keep each segment
-                                                       // small enough for int
-     long seg_size   = 10000000;
-     seg_size = Math.min( seg_size, ITofEventList.MAX_LIST_SIZE );
-
+     long num_to_load  = last - firstEvent + 1;
+     long seg_size     = DEFAULT_SEG_SIZE;
      long num_segments = num_to_load / seg_size + 1;
-     seg_size = num_to_load / num_segments;
 
      int[][] Histograms = null;
      boolean first_time = true;
@@ -386,14 +386,9 @@ public class Util
          if ( last >= STOF.numEntries() )
            last =  STOF.numEntries() - 1;
 
-         long num_to_load = last - firstEvent + 1;
-                                                       // keep each segment
-                                                       // small enough for int
-         long seg_size = 16 * SNS_TofEventList.BUFFER_SIZE;
-         seg_size = Math.min( seg_size, ITofEventList.MAX_LIST_SIZE );
-
+         long num_to_load  = last - firstEvent + 1;
+         long seg_size     = DEFAULT_SEG_SIZE;
          long num_segments = num_to_load / seg_size + 1;
-//       seg_size = num_to_load / num_segments;
 
          float[][] Histograms = null;
          boolean first_time = true;
@@ -652,23 +647,18 @@ public class Util
          if ( last >= STOF.numEntries() )
            last =  STOF.numEntries() - 1;
   
-         long num_to_load = last - firstEvent + 1;        
-                                                       // keep each segment 
-                                                       // small enough for int
-         long seg_size   = 10000000;
-         seg_size = Math.min( seg_size, ITofEventList.MAX_LIST_SIZE );  
-
+         long num_to_load  = last - firstEvent + 1;
+         long seg_size     = DEFAULT_SEG_SIZE;
          long num_segments = num_to_load / seg_size + 1;
-         seg_size = num_to_load / num_segments;
  
          float[][] Histograms = null;
          boolean first_time = true;
          long num_loaded = 0;
          for ( int i = 0; i < num_segments; i ++ )
          {
-           System.out.println("Loading Segment # " + i + " of " + num_segments);
-           System.out.println("First Event  = " + firstEvent );
-           System.out.println("Segment Size = " + seg_size );
+//         System.out.println("Loading Segment # " + i + " of " + num_segments);
+//         System.out.println("First Event  = " + firstEvent );
+//         System.out.println("Segment Size = " + seg_size );
            seg_size = Math.min( seg_size, num_to_load - num_loaded );
 
            int[] buffer = STOF.rawEvents( firstEvent, seg_size );
