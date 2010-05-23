@@ -1032,7 +1032,7 @@ public class SNS_Tof_to_Q_map
 
     if ( rval == 0 )                              // NO higher order correction
     {
-      System.out.println("rval == 0 for grid ID " + grid_id );
+//    System.out.println("rval == 0 for grid ID " + grid_id );
       return;
     }
 
