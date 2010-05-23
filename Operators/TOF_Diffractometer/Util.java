@@ -40,6 +40,8 @@ import java.util.Vector;
 import gov.anl.ipns.MathTools.Geometry.DetectorPosition;
 import gov.anl.ipns.MathTools.Geometry.Vector3D;
 import gov.anl.ipns.Util.File.*;
+import gov.anl.ipns.Operator.IOperator;
+import gov.anl.ipns.Operator.Threads.ParallelExecutor;
 
 import DataSetTools.util.SharedData;
 import DataSetTools.dataset.*;
@@ -313,8 +315,6 @@ public class Util
                                                        bankInfoFileName,
                                                        MappingFileName,
                                                        null );
-
-         SNS_TofEventList STOF = new  SNS_TofEventList(EventFileName);
          
          int[][]    ghost_ids = null;
          double[][] ghost_weights = null;
@@ -346,39 +346,8 @@ public class Util
            ghost_ids =(int[][]) V.firstElement( );
            ghost_weights =(double[][]) V.lastElement( );
          }
-         
-         IEventBinner binner;
-         if( isLog)
-            binner = new LogEventBinner( min, max, first_logStep);
-         else
-            binner = new UniformEventBinner( min,max,nUniformbins);
 
-         long firstEvent = (long)firstToLoad;
-         long NumEventsToLoad = (long)numToLoad;
-
-         if ( firstEvent >= STOF.numEntries() )
-           throw new IllegalArgumentException("first event " + firstEvent +
-                    " exceeds number of events in file " + STOF.numEntries());
-
-                                                       // keep events in range
-         long last = firstEvent + NumEventsToLoad - 1;
-         if ( last >= STOF.numEntries() )
-           last =  STOF.numEntries() - 1;
-
-         long num_to_load = last - firstEvent + 1;
-                                                       // keep each segment
-                                                       // small enough for int
-         long seg_size   = 10000000;
-         seg_size = Math.min( seg_size, ITofEventList.MAX_LIST_SIZE );
-
-         long num_segments = num_to_load / seg_size + 1;
-         seg_size = num_to_load / num_segments;
-
-         float[][] Histograms = null;
-         boolean first_time = true;
-         long num_loaded = 0;
          double[] d_map = null;
-         
          if ( useDspaceMap )
          {
            try
@@ -397,6 +366,96 @@ public class Util
            System.out.println("Loaded d-space map from " + DspaceMapFile );
          }
          
+         IEventBinner binner;
+         if( isLog)
+            binner = new LogEventBinner( min, max, first_logStep);
+         else
+            binner = new UniformEventBinner( min,max,nUniformbins);
+
+         SNS_TofEventList STOF = new SNS_TofEventList(EventFileName);
+
+         long firstEvent = (long)firstToLoad;
+         long NumEventsToLoad = (long)numToLoad;
+
+         if ( firstEvent >= STOF.numEntries() )
+           throw new IllegalArgumentException("first event " + firstEvent +
+                    " exceeds number of events in file " + STOF.numEntries());
+
+                                                       // keep events in range
+         long last = firstEvent + NumEventsToLoad - 1;
+         if ( last >= STOF.numEntries() )
+           last =  STOF.numEntries() - 1;
+
+         long num_to_load = last - firstEvent + 1;
+                                                       // keep each segment
+                                                       // small enough for int
+         long seg_size = 16 * SNS_TofEventList.BUFFER_SIZE;
+         seg_size = Math.min( seg_size, ITofEventList.MAX_LIST_SIZE );
+
+         long num_segments = num_to_load / seg_size + 1;
+//       seg_size = num_to_load / num_segments;
+
+         float[][] Histograms = null;
+         boolean first_time = true;
+         long num_loaded = 0;
+
+    boolean multithreaded    = true;
+    if ( multithreaded )
+    {
+         Vector ops = new Vector();
+         for ( int i = 0; i < num_segments; i ++ )
+         {
+           seg_size = Math.min( seg_size, num_to_load - num_loaded );
+
+           System.out.println("Making op to start load at " + firstEvent +
+                              " with seg_size = " + seg_size );
+
+           Make_d_Histograms_Op op;
+           op = new Make_d_Histograms_Op( SMap,
+                                          STOF, firstEvent, seg_size,
+                                          binner,
+                                          d_map,
+                                          ghost_ids, ghost_weights );
+           ops.add( op );
+           num_loaded += seg_size;
+           firstEvent += seg_size;
+         }
+
+         int n_threads = 8;
+         int max_time  = 600000;
+         ParallelExecutor pe = new ParallelExecutor(ops, n_threads, max_time);
+         Vector results = pe.runOperators();
+
+         if ( results != null )
+         {
+           float[][]temp = null;
+           for ( int i = 0; i < results.size(); i ++ )
+           {
+             if ( results.elementAt(i) instanceof float[][] )
+               temp = (float[][])results.elementAt(i);
+             else
+             {
+               temp = null;
+               System.out.println("PE Error, returned element not float[][]:" +
+                                   results.elementAt(i) );
+             }          
+             if ( first_time && temp != null )
+             {
+               Histograms = temp;
+               first_time = false;
+             }
+             else if ( temp != null )          // add in the new histogram data
+             {
+               for ( int row = 0; row < Histograms.length; row++ )
+                 if ( temp[row] != null && Histograms[row] != null )
+                 for ( int col = 0; col < Histograms[row].length; col++ )
+                   Histograms[row][col] += temp[row][col];
+             }
+           }
+         }
+    }
+    else
+    {
          for ( int i = 0; i < num_segments; i ++ )
          {
            seg_size = Math.min( seg_size, num_to_load - num_loaded );
@@ -437,6 +496,7 @@ public class Util
            num_loaded += seg_size;
            firstEvent += seg_size;
          }
+   }
 
          if( Histograms == null)
             return null;
@@ -700,7 +760,7 @@ public class Util
    *
    *  @return A 2D array of floats containing the counts from the int array.
    */
-   private static float[][] ConvertTo2DfloatArray( int[][] intArray)
+   public static float[][] ConvertTo2DfloatArray( int[][] intArray )
    {
       if( intArray == null)
          return null;
