@@ -259,21 +259,22 @@ class anvred_py(GenericTOF_SCD):
             phi = float( peak[3] )
             omega = float( peak[4] )
             moncnt = peak[5]
-            h = peak[6]
-            k = peak[7]
-            l = peak[8]
-            col = peak[9]
-            row = peak[10]
-            chan = peak[11]
-            L2 = peak[12]
-            twoth = peak[13]  # radians
-            az = peak[14]  # azimuthal angle in radians
-            wl = peak[15]
-            dsp = peak[16]
-            ipkobs = peak[17]
-            inti = peak[18]
-            sigi = peak[19]
-            reflag = peak[20]
+            seqnum = peak[6]
+            h = peak[7]
+            k = peak[8]
+            l = peak[9]
+            col = peak[10]
+            row = peak[11]
+            chan = peak[12]
+            L2 = peak[13]
+            twoth = peak[14]  # radians
+            az = peak[15]  # azimuthal angle in radians
+            wl = peak[16]
+            dsp = peak[17]
+            ipkobs = peak[18]
+            inti = peak[19]
+            sigi = peak[20]
+            reflag = peak[21]
 
 
             # set-up for new run or detector
@@ -366,8 +367,8 @@ class anvred_py(GenericTOF_SCD):
                 % (h, k, l, fsq, sigfsq, wl, inti, sigi, spect, sinsqt, trans[0], tbar))
             
             
-            hklFile.write(' %3d %3d %3d %7.2f %7.2f %3d %7.4f %6.4f %6.4f %6d %3d\n' \
-                % (h, k, l, fsq, sigfsq, hstnum, wl, tbar, trans[0], curhst, dn))
+            hklFile.write('%4d%4d%4d%8.2f%8.2f%4d%8.4f%7.4f%7d%7d%7.4%4d\n' \
+                % (h, k, l, fsq, sigfsq, hstnum, wl, tbar, curhst, seqnum, trans[0], dn))
                 
         print 'eof = %d' % eof
         
