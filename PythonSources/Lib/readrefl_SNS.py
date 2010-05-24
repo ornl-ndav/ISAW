@@ -85,12 +85,12 @@ def readrefl_SNS(input, eof, nrun, dn, chi, phi, omega, moncnt):
             reflag = int( lineList[16] )
             
             # return nrun, dn, chi, phi, omega, moncnt,\    0 -> 5
-                # h, k, l, col, row, chan, L2, twoth,\      6 -> 13
-                # az, wl, dsp, ipkobs, inti, sigi, reflag\ 14 -> 20
-                # eof                                      21
+                # seqnum, h, k, l, col, row, chan, L2, twoth,\      6 -> 14
+                # az, wl, dsp, ipkobs, inti, sigi, reflag\ 15 -> 21
+                # eof                                      22
     
             return nrun, dn, chi, phi, omega, moncnt, \
-                h, k, l, col, row, chan, L2, twoth, \
+                seqnum, h, k, l, col, row, chan, L2, twoth, \
                 az, wl, dsp, ipkobs, inti, sigi, reflag, \
                 eof
                 
