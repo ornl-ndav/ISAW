@@ -567,6 +567,33 @@ public class DataSet implements IAttributeList,
 
 
   /**
+   *  Set error estimates to be the square root of the y-values provided
+   *  the value is at least 1.  If it is less than 1, the error will be
+   *  set to 1.  NOTE: This will have no effect if called for ModelData,
+   *  rather than TabulatedData.
+   */
+  public void setSqrtErrorsAtLeast_1()
+  {
+    for ( int i = 0; i < data.size(); i++ )
+    {
+      Data d = (Data)data.elementAt(i);
+      if ( d instanceof TabulatedData )
+      {
+        float[] y_vals = d.getY_values();
+        float[] errors = new float[ y_vals.length ];
+        for ( int k = 0; k < y_vals.length; k++ )
+          if ( y_vals[k] > 1 )
+            errors[k] = (float)Math.sqrt( y_vals[k] );
+          else
+            errors[k] = 1; 
+
+         ((TabulatedData)d).setErrors( errors );
+      }
+    }
+  }
+
+
+  /**
    *  Set all y-values in all Data blocks to be at least zero.
    */
   public void clampToZero()
