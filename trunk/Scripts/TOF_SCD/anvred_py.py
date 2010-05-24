@@ -82,15 +82,15 @@ class anvred_py(GenericTOF_SCD):
     def setDefaultParameters(self):
     
         self.super__clearParametersVector()
-        self.addParameter(DataDirPG("Working directory", "C:/SNS/Jython/anvred"))
-        self.addParameter(StringPG("Experiment name", "ox1"))
-        self.addParameter(FloatPG("Total scattering linear abs coeff in cm^-1", 1.302))
-        self.addParameter(FloatPG("True absorption linear abs coeff in cm^-1", 1.686))
-        self.addParameter(FloatPG("Radius of spherical crystal in cm", 0.170))
+        self.addParameter(DataDirPG("Working directory", "C:/Users/Arthur/Desktop/Topaz/nickel"))
+        self.addParameter(StringPG("Experiment name", "Ni940"))
+        self.addParameter(FloatPG("Total scattering linear abs coeff in cm^-1", 1.693))
+        self.addParameter(FloatPG("True absorption linear abs coeff in cm^-1", 0.411))
+        self.addParameter(FloatPG("Radius of spherical crystal in cm", 0.10))
         self.addParameter(IntegerPG("Incident spectrum: iSpec = 1 fitted; = 2 data", 2))
         self.addParameter(LoadFilePG("If iSpec = 1, file with spectrum coefficients", \
         "C:/SNS/Jython/anvred/spectrum.dat"))
-        self.addParameter(IntegerPG("If iSpec = 2, the initial bank number", 10))
+        self.addParameter(IntegerPG("If iSpec = 2, the initial bank number", 2))
         self.addParameter(IntegerPG("If iSpec = 2, input averaging range +/-", 5))
         self.addParameter(IntegerPG("The minimum I/sig(I)", 0))
         self.addParameter(IntegerPG("Width of border (number of channels)", 5))
@@ -350,8 +350,9 @@ class anvred_py(GenericTOF_SCD):
             # trans[1] is tbar
             trans = absor_sphere(smu, amu, radius, twoth, wl)
             
-            if trans[0] < transmin: transmin = trans
-            if trans[0] > transmax: transmax = trans
+            transmission = trans[0]
+            if trans[0] < transmin: transmin = trans[0]
+            if trans[0] > transmax: transmax = trans[0]
             
             correc = correc / trans[0]
             
@@ -367,15 +368,21 @@ class anvred_py(GenericTOF_SCD):
                 % (h, k, l, fsq, sigfsq, wl, inti, sigi, spect, sinsqt, trans[0], tbar))
             
             
-            hklFile.write('%4d%4d%4d%8.2f%8.2f%4d%8.4f%7.4f%7d%7d%7.4%4d\n' \
-                % (h, k, l, fsq, sigfsq, hstnum, wl, tbar, curhst, seqnum, trans[0], dn))
+            # hklFile.write('%4d%4d%4d%8.2f%8.2f%4d%8.4f%7.4f%7d%7d%7.4%4d\n' \
+                # % (h, k, l, fsq, sigfsq, hstnum, wl, tbar, curhst, seqnum, trans[0], dn))
+            hklFile.write('%4d%4d%4d%8.2f%8.2f%4d%8.4f%7.4f%7d%7d%7.4f%4d\n' \
+                % (h, k, l, fsq, sigfsq, hstnum, wl, tbar, curhst, seqnum, transmission, dn))
                 
         print 'eof = %d' % eof
+        print 'Minimum and maximum transmission = %6.4f, %6.4f' % (transmin, transmax)
+        
+        logFile.write('\n\n***** Minimum and maximum transmission = %6.4f, %6.4f' \
+            % (transmin, transmax))
         
         # last record all zeros for shelx
         zero = 0
-        hklFile.write(' %3d %3d %3d %7.2f %7.2f %3d %7.4f %6.4f %6.4f %6d %3d\n' \
-            % ( zero, zero, zero, zero, zero, zero, zero, zero, zero, zero, zero ))
+        hklFile.write(' %3d %3d %3d %7.2f %7.2f %3d %7.4f %6.4f %6d %6d %6.4f %3d\n' \
+            % ( zero, zero, zero, zero, zero, zero, zero, zero, zero, zero, zero, zero ))
 
 # C-----------------------------------------------------------------------
         logFile.close()
