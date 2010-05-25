@@ -108,6 +108,12 @@ public class SNS_Tof_to_Q_map
   public static final float  ANGST_PER_US_PER_M = 
                                         (float)tof_calc.ANGST_PER_US_PER_M;
 
+                                         // These determine the extent and
+                                         // resolution of the boolean table
+                                         // that filters the regions of Q to map
+  public static final double ABSOLUTE_MAX_Q = 100;
+  public static final int    NUM_USE_Q_BINS = 100000;
+
   public static final float radtodeg_half = 180.f/(float)Math.PI/2.f;
 
   public static final float[][] pc = new float[][] {
@@ -189,6 +195,12 @@ public class SNS_Tof_to_Q_map
                                          // certain detector pixels.  The
                                          // DAS pixel ID is the index into this
                                          // array
+
+  private boolean[]    use_q;            // Array of flags used to mask of
+                                         // certain intervals of |Q|
+
+  private IEventBinner use_q_binner;     // Binner to find index of a |Q| 
+                                         // value in the use_q array.
 
   private float        max_q_to_map;     // Discard all events with Q more 
                                          // than this value
@@ -451,6 +463,11 @@ public class SNS_Tof_to_Q_map
 
     BuildLamdaWeights( spectrum_filename );
 
+    use_q_binner = new UniformEventBinner( 0, ABSOLUTE_MAX_Q, NUM_USE_Q_BINS );
+    use_q        = new boolean[ NUM_USE_Q_BINS ];
+    for ( int i = 0; i < NUM_USE_Q_BINS; i++ )
+      use_q[i] = true;
+
     max_q_to_map = 1000000;       // by default huge value, so map all Qs
   }
 
@@ -504,8 +521,9 @@ public class SNS_Tof_to_Q_map
 
 
  /**
-  * Set the maximum |Q| value of events that should be mapped to vector Q
-  * by the MapEventsToQ() methods.
+  * Set the "q filter" to keep events with |Q| less than or equal to the
+  * specified max_q, and to reject events with |Q| more than the specified
+  * max_q, when the events are processed by the MapEventsToQ() method.
   *
   * @param max_q  The maximum magnitude that the Q value of an event can
   *               have to be mapped to Q.  Events with a larger |Q| will 
@@ -513,8 +531,61 @@ public class SNS_Tof_to_Q_map
   */
   public void setMaxQ( float max_q )
   {
-    if ( max_q_to_map > 0 )
-      max_q_to_map = max_q;
+    float[] bounds = { 0, max_q };  
+    setQ_Filter( bounds );
+  }
+
+
+ /**
+  * Specify what intervals of |Q| should actually be used.  Any events with
+  * |Q| outside of these intervals will not be mapped.
+  *
+  * @param endpoints  Array of floats specifying the endpoints a0,b0,a1,b2,...
+  *                   of the intervals [a0,b0], [a1,b1], etc. that should be
+  *                   mapped to Q.  The values must be ordered so that
+  *                   ai<=bi.  If this is not satisfied for a pair of entries,
+  *                   that pair is ignored. NOTE: This method makes an array of
+  *                   boolean flags indicating whether a |Q| should be used 
+  *                   or not.  The resolution of this table is currently set
+  *                   to 0.001 inverse Angstroms, so the endpoint values are
+  *                   only used to that precision.
+  */
+  public void setQ_Filter( float[] endpoints )
+  {
+    if ( endpoints == null )
+      throw new IllegalArgumentException("Array of endpoints is null!");
+      
+    if ( endpoints.length < 2 )
+      throw new IllegalArgumentException("Need at least two endpoints, got " +
+                                          endpoints.length );
+
+    for ( int i = 0; i < NUM_USE_Q_BINS; i++ )       // first mark all |Q| as
+      use_q[i] = false;                              // NOT used.
+
+    boolean some_enabled = false;
+
+    for ( int i = 0; i < endpoints.length - 1; i += 2 )
+    {
+      float a = endpoints[ i   ];
+      float b = endpoints[ i+1 ];
+      int a_index = use_q_binner.index( a );
+      int b_index = use_q_binner.index( b );
+      if ( a <= b && a_index < NUM_USE_Q_BINS && b_index >= 0 )
+      {
+        some_enabled = true;
+        if ( a_index < 0 )
+          a_index = 0;
+        if ( b_index >= NUM_USE_Q_BINS )
+          b_index = NUM_USE_Q_BINS - 1;
+        for ( int k = a_index; k <= b_index; k++ )  // mark specified |Q|s
+          use_q[k] = true;                          // as used
+      }
+    }
+
+    if ( !some_enabled )                            // invalid set of intervals
+      for ( int k = 0; k < NUM_USE_Q_BINS; k++ )    // so reset all |Q|s to be 
+        use_q[k] = true;                            // used
+
   }
 
 
@@ -528,7 +599,10 @@ public class SNS_Tof_to_Q_map
   *  @param  smu     Linear scattering coefficient at 1.8 Angstroms.
   *  @param  amu     Linear absorption coefficient at 1.8 Angstroms.
   */
-  public void setAbsorptionParameters( float  power_th, float radius, float  smu, float  amu )
+  public void setAbsorptionParameters( float  power_th, 
+                                       float  radius, 
+                                       float  smu, 
+                                       float  amu )
   {
      this.power_th = power_th;
      this.radius = radius;
@@ -605,7 +679,8 @@ public class SNS_Tof_to_Q_map
                                                  // events pass the filter
                                                  // so we only need to  
                                                  // allocate new arrays once 
-     int ok_counter = 0;
+     int ok_counter  = 0;
+     int use_q_index = 0;
      for ( int i = 0; i < num_mapped; i++ )
      {
        tof_chan = my_events[ ev_index++ ] + t0; 
@@ -615,8 +690,13 @@ public class SNS_Tof_to_Q_map
          if ( use_id[ id ] )
          {
            magQ = tof_to_MagQ[id]/tof_chan;
-           if ( magQ <= max_q_to_map )
+           use_q_index = use_q_binner.index( magQ );
+           if ( use_q_index >= 0 && 
+                use_q_index < NUM_USE_Q_BINS && 
+                use_q[ use_q_index ]  )
              ok_counter++;
+//           if ( magQ <= max_q_to_map )
+//             ok_counter++;
          }
        }
      }
@@ -644,38 +724,40 @@ public class SNS_Tof_to_Q_map
        else if ( use_id[ id ] )
        {
          magQ = tof_to_MagQ[id]/tof_chan;
-
-         if ( magQ <= max_q_to_map )
+         use_q_index = use_q_binner.index( magQ );
+         if ( use_q_index >= 0 && 
+              use_q_index < NUM_USE_Q_BINS && 
+              use_q[ use_q_index ]  )
          {
-           id_offset = 3*id;
-           qx = magQ * QUxyz[id_offset++];
-           qy = magQ * QUxyz[id_offset++];
-           qz = magQ * QUxyz[id_offset  ];
+             id_offset = 3*id;
+             qx = magQ * QUxyz[id_offset++];
+             qy = magQ * QUxyz[id_offset++];
+             qz = magQ * QUxyz[id_offset  ];
 
-           index = mapped_index * 3;
-           Qxyz[index++] = qx;
-           Qxyz[index++] = qy;
-           Qxyz[index  ] = qz;
+             index = mapped_index * 3;
+             Qxyz[index++] = qx;
+             Qxyz[index++] = qy;
+             Qxyz[index  ] = qz;
 
-           lamda = tof_chan/10.0f * tof_to_lamda[id];
-           lamda_index = (int)( STEPS_PER_ANGSTROM * lamda );
+             lamda = tof_chan/10.0f * tof_to_lamda[id];
+             lamda_index = (int)( STEPS_PER_ANGSTROM * lamda );
 
-           if ( lamda_index < 0 )
-             lamda_index = 0;
-           if ( lamda_index >= lamda_weight.length )
-             lamda_index = lamda_weight.length - 1;
+             if ( lamda_index < 0 )
+               lamda_index = 0;
+             if ( lamda_index >= lamda_weight.length )
+               lamda_index = lamda_weight.length - 1;
 
-           if ( radius > 0 )
-           {
-             transinv = absor_sphere(two_theta_map[id], lamda);
-             weights[mapped_index] =
-                   pix_weight[id] * lamda_weight[ lamda_index ] * transinv;
-           }
-           else
-             weights[mapped_index] =
-                     pix_weight[id] * lamda_weight[ lamda_index ];
+             if ( radius > 0 )
+             {
+               transinv = absor_sphere(two_theta_map[id], lamda);
+               weights[mapped_index] =
+                     pix_weight[id] * lamda_weight[ lamda_index ] * transinv;
+             }
+             else
+               weights[mapped_index] =
+                       pix_weight[id] * lamda_weight[ lamda_index ];
 
-           mapped_index++;
+             mapped_index++;
          }
        }
      }
