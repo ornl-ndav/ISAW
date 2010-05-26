@@ -174,15 +174,36 @@ public class SNS_Tof_to_Q_map
                                          // events to a "virtual" path length
                                          // Lv and "virtual" angle Tv.
 
-  private int[][]      bank_info;        // Array giving the bank pixel ID
-                                         // and grid ID info, as in the SNS
-                                         // "banking" file.
+  private BankInfo[]    bank_info;       // Array of BankInfo objects with 
+                                         // entries ONLY for the banks that
+                                         // are present.  The information on
+                                         // on the bank with ID = k, might NOT
+                                         // be stored in position k of the list
+
+  private BankInfo[]   all_bank_infos;   // list of BankInfo objects for each
+                                         // possible detector banks.  If there
+                                         // is not an actual detector for a
+                                         // position in this list, that entry
+                                         // is null.  The information on the 
+                                         // bank with ID = k WILL BE stored
+                                         // in position k of this list.
 
   private int[]        bank_num;         // Array giving the SNS bank number
                                          // for each DAS pixel ID.  This is
                                          // used for forming a default
                                          // collection of histograms from 
                                          // the raw events 
+
+  private int[]        das_to_nex_id;    // Array giving the mapping from a
+                                         // DAS pixel id to a NeXus pixel ID.
+                                         // NOTE: For some instruments this is
+                                         //       the identity mapping
+
+  private int[]        nex_to_das_id;    // Array giving the mapping from a
+                                         // NeXus pixel id to a DAS pixel ID.
+                                         // -1 is used to mark a missing ID.
+                                         // NOTE: For some instruments this is
+                                         //       the identity mapping
 
   private float[]      lamda_weight;     // 1/(lamda^power*spec(lamda)) indexed
                                          // by STEPS_PER_ANGSTROM * lamda
@@ -425,7 +446,7 @@ public class SNS_Tof_to_Q_map
 
     this.instrument_name = instrument_name;
 
-    int[] das_to_nex_id = FileUtil.LoadIntFile( map_filename );
+    das_to_nex_id = FileUtil.LoadIntFile( map_filename );
 
     Vector file_info = FileUtil.LoadDetCal( det_cal_filename );
     grid_arr = (IDataGrid[])(file_info.elementAt(0));
@@ -433,7 +454,8 @@ public class SNS_Tof_to_Q_map
     L1 = (Float)(file_info.elementAt(1));
     t0 = 10*(Float)(file_info.elementAt(2));
 
-    bank_info = FileUtil.LoadBankFile( bank_filename );
+    bank_info = FileUtil.LoadBankInfo( bank_filename );
+    
 
     System.out.println("--------------------------------------------");
     System.out.println("Initializing SNS_Tof_to_Q_map.java using....");
@@ -448,7 +470,7 @@ public class SNS_Tof_to_Q_map
       for ( int i = 0; i < 10; i++ )
         System.out.println("i = " + i + ",  map[i] = " + das_to_nex_id[i] );
       System.out.println("DetCal  File has " + grid_arr.length + " Grids");
-      System.out.println("Bank    File has " + bank_info[0].length+ " Banks");
+      System.out.println("Bank    File has " + bank_info.length+ " Banks");
     }
 
     BuildMaps( das_to_nex_id, grid_arr, bank_info );
@@ -538,7 +560,9 @@ public class SNS_Tof_to_Q_map
 
  /**
   * Specify what intervals of |Q| should actually be used.  Any events with
-  * |Q| outside of these intervals will not be mapped.
+  * |Q| outside of these intervals will not be mapped.  NOTE: This will
+  * set the entire list of flags indicating what |Q| value should be used,
+  * so it will overwrite any previously set flags.
   *
   * @param endpoints  Array of floats specifying the endpoints a0,b0,a1,b2,...
   *                   of the intervals [a0,b0], [a1,b1], etc. that should be
@@ -585,12 +609,60 @@ public class SNS_Tof_to_Q_map
     if ( !some_enabled )                            // invalid set of intervals
       for ( int k = 0; k < NUM_USE_Q_BINS; k++ )    // so reset all |Q|s to be 
         use_q[k] = true;                            // used
-
   }
 
 
  /**
-  *  Set the parameters that control the absorption correcdtion calculation.
+  * Specify what DAS IDs should actually be used.  Any event with das_id
+  * greater than flags.length or for which flags[das_id] is false will
+  * NOT be processed on future calls to MapEventsToQ(). NOTE: This will
+  * set the entire list of ids to be used, so it will overwrite any
+  * previously set values specifying which IDs to use.
+  *
+  * @param endpoints  Array of boolean values specifying which IDs should
+  *                   be used when mapping events to Q.  In most cases,
+  *                   the list of boolean values should have an entry for
+  *                   each possible DAS id.
+  */
+  public void setDAS_ID_Filter( boolean[] flags )
+  {
+    if ( flags == null )
+      throw new IllegalArgumentException("Array of flags is null!");
+
+    int last_id = Math.min( flags.length, use_id.length ) - 1;
+
+    for ( int i = last_id; i < use_id.length; i++ )
+      use_id[i] = false;
+
+    for ( int i = 0; i < last_id; i++ )
+      use_id[i] = flags[i];
+  }
+
+
+  /**
+   *  Reset all use_id flags to true so that no events will be discarded
+   *  based on their pixel ID.
+   */
+  public void clearDAS_ID_Filter()
+  {
+    for ( int i = 0; i < use_id.length; i++ )
+      use_id[i] = true;
+  }
+
+
+ /**
+  *  Mask off all pixels in a specified detector.  The use_id flags for
+  *  all pixels in the detector will be set to false, without changing the
+  *  flag values for other detectors.  If the grid number is not a valid
+  *  module ID, this method will have no effecti.
+  */
+  public void maskOffDetector( int grid_id )
+  {
+  }
+
+
+ /**
+  *  Set the parameters that control the absorption correction calculation.
   *  If any of the parameters are negative, the corresponding value will be 
   *  set to 0.
   *
@@ -691,12 +763,11 @@ public class SNS_Tof_to_Q_map
          {
            magQ = tof_to_MagQ[id]/tof_chan;
            use_q_index = use_q_binner.index( magQ );
-           if ( use_q_index >= 0 && 
+           if ( magQ <= max_q_to_map         &&
+                use_q_index >= 0             && 
                 use_q_index < NUM_USE_Q_BINS && 
                 use_q[ use_q_index ]  )
              ok_counter++;
-//           if ( magQ <= max_q_to_map )
-//             ok_counter++;
          }
        }
      }
@@ -725,7 +796,8 @@ public class SNS_Tof_to_Q_map
        {
          magQ = tof_to_MagQ[id]/tof_chan;
          use_q_index = use_q_binner.index( magQ );
-         if ( use_q_index >= 0 && 
+         if ( magQ <= max_q_to_map         &&
+              use_q_index >= 0             && 
               use_q_index < NUM_USE_Q_BINS && 
               use_q[ use_q_index ]  )
          {
@@ -766,8 +838,8 @@ public class SNS_Tof_to_Q_map
      for ( int i = 0; i < used_ids.length; i++ )
      {
       if ( used_ids[i] > 100 )
-        bank_nums_used[ i/1250 ]++;
-     }
+        bank_nums_used[ i/1250 ]++;          // Test for PG3, to check which
+     }                                       // banks were used
 
      for ( int i = 0; i < bank_nums_used.length; i++ )
      {
@@ -1084,32 +1156,27 @@ public class SNS_Tof_to_Q_map
                                         double[]     d_map )
   {
     int     first_id = 0;                 // ID of first pixel in detector
+    int     last_id  = 0;
     int     left_id  = 0;                 // ID of pixel at left detector edge
     int     right_id = 0;                 // ID of pixel at right detector edge
     int     j        = 0;
-    boolean found    = false;
-    while ( j < bank_info[0].length && !found )
-    {
-      if ( grid_id == bank_info[0][j] )
-      {
-        first_id = bank_info[3][j];
-        left_id  = first_id + 3;           // This is only for rows of 7 LPSDs
-        right_id = bank_info[4][j] - 3;    // arranged horizontally, like PG3 
-        found = true;
-      }
-      else
-        j++;
-    }
-    
-    if ( !found )
+
+    if ( all_bank_infos[ grid_id ] == null )
     {
       System.out.println( "Higher order ghost correction failed.  " +
                           "Did not find module # " + grid_id );
       return;
     }
-                                                    // rval for detector stored
-                                                    // in ghost table, offset
-                                                    // by 1249, from first ID.
+
+    first_id = all_bank_infos[ grid_id ].first_NeXus_id();
+    last_id  = all_bank_infos[ grid_id ].last_NeXus_id();
+
+    left_id  = first_id + 3;               // This is only for rows of 7 LPSDs
+    right_id = last_id - 3;                // arranged horizontally, like PG3
+
+                                           // the rval for the detector is
+                                           // stored in ghost table, offset
+                                           // by 1249, from first ID.
     double rval = ghost_weights[ first_id + 1249 ][0];
 
     if ( rval == 0 )                              // NO higher order correction
@@ -2106,14 +2173,16 @@ public class SNS_Tof_to_Q_map
    *  QUxyz[],
    *  recipLaSinTa[],
    *  pix_weight[],
+   *  nex_to_das_id[],
    *  use_id[],
-   *  bank_num[].
+   *  bank_num[],
+   *  all_bank_infos[]
    *  This version requires the information from .DetCal, mapping and bank
    *  files for SNS instruemnts.
    */
   private void BuildMaps( int[]       das_to_nex_id, 
                           IDataGrid[] datagrid_arr,
-                          int[][]     bank_info ) 
+                          BankInfo[]  bank_info ) 
   {
                             // make table of IDataGrids indexed by the grid ID 
                             // missing grids are marked with a null
@@ -2130,10 +2199,13 @@ public class SNS_Tof_to_Q_map
                                               //       by max_grid_ID and
                                               //       add method to find it.
 
-    all_grids = new IDataGrid[ max_grid_id + 1 ];
-    
+    all_grids      = new IDataGrid[ max_grid_id + 1 ];
+    all_bank_infos = new BankInfo [ max_grid_id + 1 ]; 
     for ( int i = 0; i < all_grids.length; i++ )
-      all_grids[i] = null;
+    {
+      all_grids[i]      = null;
+      all_bank_infos[i] = null;
+    }
 
     IDataGrid grid;
     for ( int i = 0; i < datagrid_arr.length; i++ )
@@ -2169,18 +2241,21 @@ public class SNS_Tof_to_Q_map
         last_id,
         id;
     int missing_grid_count = 0;
-    for ( int k = 0; k < bank_info[0].length; k++ )
+    for ( int k = 0; k < bank_info.length; k++ )
     {
-      grid_id  = bank_info[0][k];
-      x_size   = bank_info[1][k];
-      y_size   = bank_info[2][k];
-      first_id = bank_info[3][k];
-      last_id  = bank_info[4][k];
+      int bank_id = bank_info[k].ID();
+      all_bank_infos[bank_id] = bank_info[k];
+      grid_id  = all_bank_infos[bank_id].ID();
+      x_size   = all_bank_infos[bank_id].num_cols();
+      y_size   = all_bank_infos[bank_id].num_rows();
+      first_id = all_bank_infos[bank_id].first_NeXus_id();
+      last_id  = all_bank_infos[bank_id].last_NeXus_id();
+      
       if ( grid_id < 0                 || 
            grid_id >= all_grids.length || 
            all_grids[ grid_id ] == null )
       {
-//      System.out.println("ERROR: Missing grid " + grid_id + " in .DetCsl");
+//      System.out.println("ERROR: Missing grid " + grid_id + " in .DetCal");
         missing_grid_count++;
       }
       else
@@ -2276,6 +2351,14 @@ public class SNS_Tof_to_Q_map
         bank_num      [das_i] = grid_ID;
       }
     }
+                                                 // now make the reverse table
+                                                 // that maps NeXus pixel IDs
+                                                 // to DAS pixels IDs
+    nex_to_das_id = new int[ das_to_nex_id.length ];
+    for ( int i = 0; i < nex_to_das_id.length; i++ )
+      nex_to_das_id[i] = -1;
+    for ( int i = 0; i < das_to_nex_id.length; i++ )
+      nex_to_das_id[ das_to_nex_id[i] ] = i;
   }
 
 
