@@ -139,7 +139,7 @@ public class EventLoader implements IReceiveMessage
     if ( num_to_show > num_to_load )       // can't show more than are loaded
       num_to_show = num_to_load; 
 
-    long MAX_SEG_SIZE = 5000000;
+    long MAX_SEG_SIZE = 16 * SNS_TofEventList.BUFFER_SIZE;
     long seg_size = num_to_load / num_threads;
     if ( seg_size > MAX_SEG_SIZE )
       seg_size = MAX_SEG_SIZE;
