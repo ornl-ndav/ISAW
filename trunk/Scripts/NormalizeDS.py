@@ -1,4 +1,6 @@
 from DataSetTools.dataset.DataSet   import EMPTY_DATA_SET
+from gov.anl.ipns.Util.SpecialStrings import *
+
 class NormalizeDS(GenericOperator):
 
     def setDefaultParameters(self):
@@ -23,6 +25,7 @@ class NormalizeDS(GenericOperator):
         if Sample is None:
             return ErrorString("No Sample")
 
+        Sample=Sample.clone()
         if SampleBack.equals( EMPTY_DATA_SET):
            SampleBack = None
 
