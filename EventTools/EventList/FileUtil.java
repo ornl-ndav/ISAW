@@ -233,6 +233,36 @@ public class FileUtil
 
 
   /**
+   *  Load a list of BankInfo objects from the specified SNS bank file.
+   *  This method uses the LoadBankFile() method to get the data and
+   *  then packs the data into a more convenient form, a list of
+   *  BankInfo objects.
+   *
+   *  @param bank_file_name  The fully qualified name of the XML file 
+   *                         containing the banking information in the 
+   *                         form currently used at the SNS. (2/15/2010).
+   *
+   *  @return a list of BankInfo objects holding the bank information.
+   */
+  public static BankInfo[] LoadBankInfo( String bank_file_name )
+  {
+    BankInfo[] bank_info_list = null;
+
+    int[][] bank_data = LoadBankFile( bank_file_name );
+
+    if ( bank_data != null && bank_data[0] != null )
+    {
+      bank_info_list = new BankInfo[ bank_data[0].length ];
+
+      for ( int k = 0; k < bank_data[0].length; k++ )
+        bank_info_list[k] = new BankInfo( bank_data, k ); 
+    }
+
+    return bank_info_list;
+  }
+
+
+  /**
    *  Return the banking information from the specified SNS bank file in
    *  a two dimensional array of ints, bank_data[][].  The array will have
    *  five rows with the kth entry in each row storing the information about
