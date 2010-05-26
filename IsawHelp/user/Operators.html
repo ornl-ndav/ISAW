@@ -120,6 +120,11 @@ parameter specified by the user.  A list of these means follow:
      The advantage of writing Jython scripts as an operator is that it can be used by Java and the
      ISAW scripting language.<P><P>
 
+     Jython scripts can call any Java method that Java can call.  Jython scripts can also call methods 
+     in other jython scripts if <B>python.path</B>(in IsawProps.dat) includes the directory the script is in. 
+     Currently, the scripting system does add &lt;ISAW_HOME&gt;/PythonSources/Lib to the <B>python.path</b>.
+     
+
      </ul>
 <LI><a name="ISAWScripts">Operators written using the ISAW Scripting Language</a>.
       <a href="Add2Ints4.html">Example</a>
