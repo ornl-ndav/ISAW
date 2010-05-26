@@ -24,11 +24,12 @@ class NormalizeDS(GenericOperator):
 
         if Sample is None:
             return ErrorString("No Sample")
-
+        
         Sample=Sample.clone()
         if SampleBack.equals( EMPTY_DATA_SET):
            SampleBack = None
-
+        
+        Sample = Sample.clone()
         if SampleBack  is not None:
            op = DataSetSubtract(Sample, SampleBack,0)
            X = op.getResult()
@@ -48,6 +49,7 @@ class NormalizeDS(GenericOperator):
               StandardBack = None
 
         if Standard is not None and StandardBack is not None:
+           Standard = Standard.clone()
            op = DataSetSubtract(Standard, StandardBack,0)
            X = op.getResult()
 
