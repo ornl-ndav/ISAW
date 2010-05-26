@@ -888,8 +888,8 @@ public class Isaw
   private static final String FTP_LINK_MI     = "ISAW FTP Site";
   private static final String USERMAN_LINK_MI = "User/Ref Manuals";
   private static final String HOME_LINK       = "http://www.pns.anl.gov/computing/ISAW/";
-  private static final String FTP_LINK        = "ftp://zuul.pns.anl.gov/isaw/";
-  private static final String USERMAN_LINK    = "ftp://zuul.pns.anl.gov/isaw/Documents/";
+  private static final String FTP_LINK        = "http://ftp.sns.gov/ISAW/";
+  private static final String USERMAN_LINK    = "http://ftp.sns.gov/ISAW/Documents/";
   private static final String TUTORIAL_MI     = "Tutorial";
   private static final String ISAWPROPS_MI     = "Preferences using IsawProps";
   private static final String OPERATORINFO_MI  ="Creating Operators";
@@ -1231,7 +1231,7 @@ public class Isaw
     hMenu.add( ViewHelpLink);
     JMenu Res= new JMenu("Resources on the Net");
     
-      Res.add(homeLink);
+ //     Res.add(homeLink);
       Res.add(docLink);
       Res.add( ftpLink);
       hMenu.add( Res);
@@ -1894,8 +1894,8 @@ public class Isaw
       if( s.equals(OPERATIONS_MI) )
       {
         String S=DataSetTools.util.FilenameUtil.helpDir("Help.html");
-	HTMLPage H = new HTMLPage( S ) ;
-        if(! H.isValid()) return;
+	    HTMLPage H = new HTMLPage( S ) ;
+        if(! H.isSetUp( )) return;
 	Dimension D = getToolkit().getScreenSize();
 	// make the help window pop up centered and 60% of screen size
 	H.setSize((int)(.6*4*D.height/3) , (int)(.6*D.height) ); 
