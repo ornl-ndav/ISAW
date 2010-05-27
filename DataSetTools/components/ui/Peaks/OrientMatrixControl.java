@@ -1174,7 +1174,13 @@ public class OrientMatrixControl extends JButton
                return;
 
             String filename = jf.getSelectedFile().getAbsolutePath();
-
+            
+            if( filename != null)
+            {
+               int k= filename.lastIndexOf( "." );
+               if( k <0 )
+                  filename +=".mat";
+            }
             lastFileName = filename;
 
             Object Res= DataSetTools.operator.Generic.TOF_SCD.Util.WriteMatrix(
@@ -1765,7 +1771,7 @@ public class OrientMatrixControl extends JButton
             float MaxXtalLengthReal = Dmax;
             if( Dmin < 0 || Dmax < 0 )
             {
-               String S = JOptionPane.showInputDialog( "Enter min D and MaxD" ,
+               String S = JOptionPane.showInputDialog( "Enter min/max unit cell lengths" ,
                         "3.1,12.5" );
 
                if( S == null )
@@ -2266,8 +2272,17 @@ public class OrientMatrixControl extends JButton
 
          try
          {
-            X = (float[]) V.firstElement();
-            Y = (float[]) V.lastElement();
+           
+            float[] X1 = (float[]) V.firstElement();
+            float[] Y1 = (float[]) V.lastElement();
+            
+            if( X1 == null || X1.length <1)
+               return;
+            if( Y1 == null || Y1.length < 1)
+               return;
+            
+            X = X1;
+            Y = Y1;
 
          }
          catch( Exception s )
