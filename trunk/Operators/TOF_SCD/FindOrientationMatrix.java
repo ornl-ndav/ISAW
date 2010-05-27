@@ -135,9 +135,9 @@ public class FindOrientationMatrix extends GenericOperator
 
       addParameter( new StringPG( "Prefix on file" , "" ) );//8
 
-      addParameter( new FloatPG( "Minimum d-spacing" , -1 ) );//9
+      addParameter( new FloatPG( "Minimum Unit Cell Length" , -1 ) );//9
 
-      addParameter( new FloatPG( "Maximum d-spacing" , -1) );//10
+      addParameter( new FloatPG( "Maximum Unit Cell Length" , -1) );//10
       
        ((ParameterGUI)getParameter(0)).addIObserver( this );
       addParameter( new ButtonPG( "Show Q view"));    //11
