@@ -107,7 +107,7 @@ public class filterPeaksPanel extends JPanel
         panel.setLayout( bl);
         
         JPanel unitPanel = new JPanel( new GridLayout(1,3));
-        d_unit  = new JCheckBox("d(Angst)",true);
+        d_unit  = new JCheckBox("d(Angstroms",true);
         q1_unit = new JCheckBox("1/d",false);
         q2_unit = new JCheckBox("2"+FontUtil.PI+"/d",false);
         unitPanel.add(  d_unit );
@@ -132,7 +132,7 @@ public class filterPeaksPanel extends JPanel
         ValueList = new JTextField("     ");
         dlistPanel.add( ValueList);
         
-        dlistPanel.add(  new JLabel("Dvalue/value range") );
+        dlistPanel.add(  new JLabel("Delta_Value/Value range") );
         DVbyV = new JTextField("  ");
         dlistPanel.add( DVbyV);
         for( int i=0; i< 4;i++)
