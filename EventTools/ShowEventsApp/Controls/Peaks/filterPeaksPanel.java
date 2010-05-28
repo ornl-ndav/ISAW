@@ -190,14 +190,14 @@ public class filterPeaksPanel extends JPanel
 			   Vector V = new Vector();
 			   V.add(  S );
 			   String[] Line = new String[3];
-			   for( int i=0; i<15; i++)
+			   for ( int row = 0; row < 15; row++ )
 			   {
-			      Line[0] = (String)DetectorTable.getValueAt(i,0);
-                  Line[1] = (String)DetectorTable.getValueAt(i,1);
-                  Line[2] = (String)DetectorTable.getValueAt(i,2);
-			      Vector V1 = new Vector(3);
+				Line[0] = (String)DetectorTable.getValueAt(row,0);
+				Line[1] = (String)DetectorTable.getValueAt(row,1);
+				Line[2] = (String)DetectorTable.getValueAt(row,2);
+			      int[][] id_vals = new int[3][];
 			      boolean hasData = false;
-			      for( int j=0; j < 3;j++)
+			      for( int j = 0; j < 3; j++ )
 			         if( Line[j] != null && Line[j].trim( ).length()>0)
 			         {
 			            try
@@ -206,22 +206,21 @@ public class filterPeaksPanel extends JPanel
 			               if( T == null || T.length < 1)
 			               {
 			                  JOptionPane.showMessageDialog( null ,
-	                                 " Format Error In row,col="+(i+1)+"/"+(j+1));
+	                                 " Format Error In row,col="+(row+1)+"/"+(j+1));
 			                  return;
 			               }
-			               V1.add(T);
+			               id_vals[j] = T;
 			               hasData = true;
 			            }catch(Exception s)
 			            {
 			               JOptionPane.showMessageDialog( null ,
-                                 " Format Error In row,col="+i+"/"+j);
+                                 " Format Error In row, col = " + row + "/" + j );
 			               return;
 			            }
-			            
 			         }
-
+                                   
                   if( hasData)
-                     V.add(V1);
+                     V.add( id_vals );
 			   }
 			   System.out.println(gov.anl.ipns.Util.Sys.StringUtil.toString( V ));
 			   
