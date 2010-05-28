@@ -175,6 +175,26 @@ public class Commands
   
   public static final String SHOW_MESSAGE_PANE ="SHOW_MESSAGE_PANE";
   public static final String SHOW_DISPLAY_PANE ="SHOW_DISPLAY_PANE";
+
+  /**
+   * no or null value
+   */
+  public static final String CLEAR_OMITTED_PIXELS ="CLEAR_OMITTED_PIXELS";
+
+  /*
+   * Value is a Vector of Vectors where the first vector is the filename(null) then
+   * each of the next Vector consists of 3 entries of int[] or null.
+   */
+  public static final String APPLY_OMITTED_PIXELS ="APPLY_OMITTED_PIXELS";
+  
+  /**
+   * Value is float[] where each pair is start/end of interval to omit
+   */
+  public static final String APPLY_OMITTED_DRANGE ="APPLY_OMITTED_DRANGE";
+     
+
+  public static final String CLEAR_OMITTED_DRANGE ="CLEAR_OMITTED_DRANGE";
+     
   /*
 //  public static final String SET_POSITION_INFO = "SET_POSITION_INFO";
   public static final String SET_SLICE_2 = "Set Slice 2";
