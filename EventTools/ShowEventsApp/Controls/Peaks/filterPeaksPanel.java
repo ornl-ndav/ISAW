@@ -178,6 +178,8 @@ public class filterPeaksPanel extends JPanel
 			   
 			   return;	
 			}
+			
+			
 			String  S = fileChooser.getTextField( ).getText( );
 			if( S != null && S.trim().length() < 1)
 			   S = null;
@@ -201,13 +203,19 @@ public class filterPeaksPanel extends JPanel
 			            try
 			            {
 			               int[] T = IntList.ToArray(Line[j].trim()) ;
-			               if( T != null && T.length < 1)
-			                  T = null;
+			               if( T == null || T.length < 1)
+			               {
+			                  JOptionPane.showMessageDialog( null ,
+	                                 " Format Error In row,col="+(i+1)+"/"+(j+1));
+			                  return;
+			               }
 			               V1.add(T);
 			               hasData = true;
 			            }catch(Exception s)
 			            {
-			               V1.add( null );
+			               JOptionPane.showMessageDialog( null ,
+                                 " Format Error In row,col="+i+"/"+j);
+			               return;
 			            }
 			            
 			         }
@@ -220,6 +228,7 @@ public class filterPeaksPanel extends JPanel
 			   if( V.size() > 0)
 			      message_center.send(  new Message(Commands.APPLY_OMITTED_PIXELS,
 			                                           V,true) );
+			   
                JOptionPane.showMessageDialog(  null , "<html><body><center><font size=4>"+ 
                          "This Operation has been <P>Registered<P> It will not "+
                          "take effect until<P>the next Load Events</font>"+
@@ -242,63 +251,74 @@ public class filterPeaksPanel extends JPanel
 			
 			if( e.getActionCommand( ).equals( APPLY_D ))
 			{
-			   String SS = ValueList.getText();
-			   if( SS != null && SS.length() < 1)
-			      return;
-			   String[] DD = SS.split( "," );
-			   float[] vs = new float[DD.length];
-			   String mess = "Improper input format ";
+            String SS = ValueList.getText( );
+            if ( SS != null && SS.length( ) < 1 )
+               return;
+            String[] DD = SS.split( "," );
+            float[] vs = new float[ DD.length ];
+            String mess = "Improper List Input format ";
+            int pos =-1;
             try
             {
-              
-               for( int i = 0 ; i < vs.length ; i++ )
-                  vs[i] = Float.parseFloat( DD[i].trim( ) );
 
+               for( int i = 0 ; i < vs.length ; i++ )
+               {
+                  pos=i+1;
+                  vs[i] = Float.parseFloat( DD[i].trim( ) );
+               }
+               pos = -1;
                float[] vv = new float[ vs.length * 2 ];
                mess = "Improper DV/V format";
                float ratio = Float.parseFloat( DVbyV.getText( ).trim( ) );
-               if( ratio < 0)
+               if ( ratio < 0 )
                {
-                  mess="Negative DV/v not allowed";
+                  mess = "Negative DV/v not allowed";
                   JOptionPane.showMessageDialog( null , mess );
                   return;
                }
-               for( int i=0; i< vs.length; i++)
+               for( int i = 0 ; i < vs.length ; i++ )
                {
-                  float D = vs[i]*ratio;
-                  vv[2*i]= vs[i]-D;
-                  vv[2*i+1]= vs[i]+D;
+                  float D = vs[i] * ratio;
+                  vv[2 * i] = vs[i] - D;
+                  vv[2 * i + 1] = vs[i] + D;
                }
-               
-               float mult=1;
-               
-               if(d_unit.isSelected( ) )
-                  mult = .5f/(float)Math.PI;
-               else if(q1_unit.isSelected( ) )
-                  mult= 2*(float)Math.PI;
-               for( int i=0; i< vv.length; i++)
-                  vv[i]*=mult;
-               if( d_unit.isSelected())
-                  for( int i=0;i<vv.length; i+=2)
+
+               float mult = 1;
+
+               if ( d_unit.isSelected( ) )
+                  mult = .5f / ( float ) Math.PI;
+               else if ( q1_unit.isSelected( ) )
+                  mult = 2 * ( float ) Math.PI;
+               for( int i = 0 ; i < vv.length ; i++ )
+                  vv[i] *= mult;
+               if ( d_unit.isSelected( ) )
+                  for( int i = 0 ; i < vv.length ; i += 2 )
                   {
                      float save = vv[i];
-                     vv[i]=1/vv[i+1];
-                     vv[i+1]=1/save;
+                     vv[i] = 1 / vv[i + 1];
+                     vv[i + 1] = 1 / save;
                   }
-               
-               Vector Res = new Vector( 2);
-               Res.addElement( OmitValues.isSelected( ));
-               Res.add( vv);
-               message_center.send(  new Message( Commands.APPLY_OMITTED_DRANGE,
-                     Res,true) );
 
-               JOptionPane.showMessageDialog(  null , "<html><body><center><font size=4>"+ 
-                         "This Operation has been <P>Registered<P> It will not "+
-                         "take effect until<P>the next Load Events</font>"+
-                         "</center></body></html>");
-               System.out.println( gov.anl.ipns.Util.Sys.StringUtil.toString( vv ));
+               Vector Res = new Vector( 2 );
+               Res.addElement( OmitValues.isSelected( ) );
+               Res.add( vv );
+               message_center.send( new Message( Commands.APPLY_OMITTED_DRANGE ,
+                     Res , true ) );
+
+               JOptionPane
+                     .showMessageDialog(
+                           null ,
+                           "<html><body><center><font size=4>"
+                                 + "This Operation has been <P>Registered<P> It will not "
+                                 + "take effect until<P>the next Load Events</font>"
+                                 + "</center></body></html>" );
+               
+               System.out.println( gov.anl.ipns.Util.Sys.StringUtil
+                     .toString( vv ) );
             } catch( Exception sss )
             {
+               if(pos >=0)
+                  mess +=" at "+pos;
                JOptionPane.showMessageDialog( null , mess );
                return;
             }
