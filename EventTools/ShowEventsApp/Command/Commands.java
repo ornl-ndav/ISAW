@@ -188,7 +188,9 @@ public class Commands
   public static final String APPLY_OMITTED_PIXELS ="APPLY_OMITTED_PIXELS";
   
   /**
-   * Value is float[] where each pair is start/end of interval to omit
+   * Value is a Vector with 2 elements. The first is boolean indicating whether to
+   * omit or keep the ranges and the 2nd is a float[] where each pair is start/end of interval 
+   * to omit/keep
    */
   public static final String APPLY_OMITTED_DRANGE ="APPLY_OMITTED_DRANGE";
      
