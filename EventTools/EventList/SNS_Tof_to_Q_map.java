@@ -225,6 +225,10 @@ public class SNS_Tof_to_Q_map
 
   private float        max_q_to_map;     // Discard all events with Q more 
                                          // than this value
+
+  private float        min_q_to_map;     // Discard all events with Q less 
+                                         // than this value
+
   private int          max_grid_ID = 0;
 
   private String            instrument_name = "NO_NAME";
@@ -490,7 +494,18 @@ public class SNS_Tof_to_Q_map
     for ( int i = 0; i < NUM_USE_Q_BINS; i++ )
       use_q[i] = true;
 
-    max_q_to_map = 1000000;       // by default huge value, so map all Qs
+    min_q_to_map = 0;                         // default values, to map all Qs
+    max_q_to_map = (float)ABSOLUTE_MAX_Q; 
+/*
+    int[] mask_ids = { 1, 2, 3,      6, 7, 8, 9, 10, 11, 12, 13, 14 };
+    int[] grid_4   = { 4 };
+    int[] grid_5   = { 5 };
+    int[] col_ids = { 20,21,22,23,24,25, 100,101,102,103,104,105 };
+    int[] row_ids = { 20,21,22,23,24,25, 50,51,52,53,54,55 };
+    maskOffDetectors( mask_ids );
+    maskOffDetectorColumns( grid_4, col_ids );
+    maskOffDetectorRows   ( grid_5, row_ids );
+*/
   }
 
 
@@ -543,9 +558,25 @@ public class SNS_Tof_to_Q_map
 
 
  /**
-  * Set the "q filter" to keep events with |Q| less than or equal to the
-  * specified max_q, and to reject events with |Q| more than the specified
-  * max_q, when the events are processed by the MapEventsToQ() method.
+  *  Get a list of all of the detector grid (aka bank or module) IDs used
+  *  by this mapper.
+  *
+  *  @param a list of the grid IDs used by this mapper.
+  */
+  public int[] getGridIDs()
+  {
+    int[] grid_ids = new int[ grid_arr.length ];
+
+    for ( int i = 0; i < grid_arr.length; i++ )
+      grid_ids[i] = grid_arr[i].ID();
+
+    return grid_ids;
+  }
+
+
+ /**
+  * Set the "q filter" to discard events with |Q| greater than the
+  * specified max_q.
   *
   * @param max_q  The maximum magnitude that the Q value of an event can
   *               have to be mapped to Q.  Events with a larger |Q| will 
@@ -553,28 +584,56 @@ public class SNS_Tof_to_Q_map
   */
   public void setMaxQ( float max_q )
   {
-    float[] bounds = { 0, max_q };  
-    setQ_Filter( bounds );
+    if ( max_q <= 0 || max_q >= ABSOLUTE_MAX_Q )      // fix invalid max_q
+      max_q = (float)ABSOLUTE_MAX_Q;
+
+    max_q_to_map = max_q;  
   }
 
 
  /**
-  * Specify what intervals of |Q| should actually be used.  Any events with
-  * |Q| outside of these intervals will not be mapped.  NOTE: This will
+  * Set the "q filter" to discard events with |Q| less than the
+  * specified min_q.
+  *
+  * @param min_q  The minimum magnitude that the Q value of an event can
+  *               have to be mapped to Q.  Events with a smaller |Q| will 
+  *               just be ignored.
+  */
+  public void setMinQ( float min_q )
+  {
+    if ( min_q <= 0 || min_q >= ABSOLUTE_MAX_Q )      // fix invalid min_q
+      min_q = 0;
+
+    min_q_to_map = min_q;
+  }
+
+
+ /**
+  * Specify what intervals of |Q| should be omitted.  Any events with
+  * |Q| inside of these intervals will, or will not be mapped, depending 
+  * on the value of the omit_flag.  NOTE: This will
   * set the entire list of flags indicating what |Q| value should be used,
   * so it will overwrite any previously set flags.
   *
   * @param endpoints  Array of floats specifying the endpoints a0,b0,a1,b2,...
   *                   of the intervals [a0,b0], [a1,b1], etc. that should be
-  *                   mapped to Q.  The values must be ordered so that
-  *                   ai<=bi.  If this is not satisfied for a pair of entries,
-  *                   that pair is ignored. NOTE: This method makes an array of
+  *                   omitted (or kept) when mapping events to Q.  The values 
+  *                   must be ordered so that ai<=bi.  If this is not satisfied
+  *                   for a pair of entries, that pair is ignored. 
+  *                   NOTE: This method makes an array of
   *                   boolean flags indicating whether a |Q| should be used 
   *                   or not.  The resolution of this table is currently set
   *                   to 0.001 inverse Angstroms, so the endpoint values are
   *                   only used to that precision.
+  *
+  * @param omit_flag  boolean flag indicating whether events with |Q| values
+  *                   in the specified intervals should be omitted or kept.
+  *                   If omit_flag is TRUE, Qs in the specified intervals
+  *                   will be omitted, and all other Qs will be kept.  
+  *                   If omit_flag is FALSE, Qs in the specified intervals
+  *                   will be kept and all other Qs will be omitted.  
   */
-  public void setQ_Filter( float[] endpoints )
+  public void setQ_Filter( float[] endpoints, boolean omit_flag )
   {
     if ( endpoints == null )
       throw new IllegalArgumentException("Array of endpoints is null!");
@@ -583,11 +642,10 @@ public class SNS_Tof_to_Q_map
       throw new IllegalArgumentException("Need at least two endpoints, got " +
                                           endpoints.length );
 
-    for ( int i = 0; i < NUM_USE_Q_BINS; i++ )       // first mark all |Q| as
-      use_q[i] = false;                              // NOT used.
+    for ( int i = 0; i < NUM_USE_Q_BINS; i++ )      // initialize all flags to 
+      use_q[i] = omit_flag;                         // the default state.
 
-    boolean some_enabled = false;
-
+    boolean use_flag = !omit_flag;
     for ( int i = 0; i < endpoints.length - 1; i += 2 )
     {
       float a = endpoints[ i   ];
@@ -596,19 +654,59 @@ public class SNS_Tof_to_Q_map
       int b_index = use_q_binner.index( b );
       if ( a <= b && a_index < NUM_USE_Q_BINS && b_index >= 0 )
       {
-        some_enabled = true;
         if ( a_index < 0 )
           a_index = 0;
         if ( b_index >= NUM_USE_Q_BINS )
           b_index = NUM_USE_Q_BINS - 1;
         for ( int k = a_index; k <= b_index; k++ )  // mark specified |Q|s
-          use_q[k] = true;                          // as used
+          use_q[k] = use_flag;                      // to be omitted or kept
       }
     }
+                                                    // as a sanity check, see
+    boolean some_enabled = false;                   // if any Qs would be kept
+    int index = 0;
+    while ( !some_enabled && index < NUM_USE_Q_BINS )
+      if ( use_q[ index ] )
+        some_enabled = true;
+      else
+        index++;
 
     if ( !some_enabled )                            // invalid set of intervals
       for ( int k = 0; k < NUM_USE_Q_BINS; k++ )    // so reset all |Q|s to be 
         use_q[k] = true;                            // used
+  }
+
+
+ /**
+  * Specify what NeXus IDs should actually be used.  Any event with NeXus ID
+  * greater than flags.length or for which flags[das_id] is false will
+  * NOT be processed on future calls to MapEventsToQ().  The index das_id
+  * is the pixel ID used by the Data Acquisition System that corresponds to
+  * the NeXus ID used to index the array of boolean values.  NOTE: This will
+  * set the entire list of ids to be used, so it will overwrite any
+  * previously values set by setDAS_ID_Filter() or by setNeXus_ID_Filter().
+  *
+  * @param flags  Array of boolean values specifying which NeXus IDs should
+  *               be used when mapping events to Q.  In most cases,
+  *               the list of boolean values should have an entry for
+  *               each possible NeXus id.
+  */
+  public void setNeXus_ID_Filter( boolean[] flags )
+  {
+    if ( flags == null )
+      throw new IllegalArgumentException("Array of flags is null!");
+
+    for ( int i = 0; i < use_id.length; i++ )
+      use_id[i] = false;
+
+    int das_id;
+    int last_id = Math.min( flags.length, nex_to_das_id.length ) - 1;
+    for ( int i = 0; i <= last_id; i++ )
+    {
+      das_id = nex_to_das_id[ i ];
+      if ( das_id >= 0 && das_id < use_id.length )
+        use_id[das_id] = flags[i];
+    }
   }
 
 
@@ -634,7 +732,7 @@ public class SNS_Tof_to_Q_map
     for ( int i = last_id; i < use_id.length; i++ )
       use_id[i] = false;
 
-    for ( int i = 0; i < last_id; i++ )
+    for ( int i = 0; i <= last_id; i++ )
       use_id[i] = flags[i];
   }
 
@@ -643,7 +741,7 @@ public class SNS_Tof_to_Q_map
    *  Reset all use_id flags to true so that no events will be discarded
    *  based on their pixel ID.
    */
-  public void clearDAS_ID_Filter()
+  public void clear_ID_Filter()
   {
     for ( int i = 0; i < use_id.length; i++ )
       use_id[i] = true;
@@ -651,13 +749,133 @@ public class SNS_Tof_to_Q_map
 
 
  /**
-  *  Mask off all pixels in a specified detector.  The use_id flags for
-  *  all pixels in the detector will be set to false, without changing the
-  *  flag values for other detectors.  If the grid number is not a valid
-  *  module ID, this method will have no effecti.
+  *  Mask off all pixels in specified detectors.  The use_id flags for
+  *  all pixels in all the detector will be set to false, without changing 
+  *  the flag values for other detectors pixels.  If a grid number is 
+  *  not a valid module ID, this method will have no effect.
+  *
+  *  @param grid_ids List of IDs for entire detectors that should be
+  *                  omitted from the data.
   */
-  public void maskOffDetector( int grid_id )
+  public void maskOffDetectors( int[] grid_ids )
   {
+    if ( grid_ids == null )
+      return;
+
+    for ( int k = 0; k < grid_ids.length; k++ )
+    {
+      int id = grid_ids[k];
+      if ( all_bank_infos[ id ] != null )     
+      {
+        int first_nexus_id = all_bank_infos[ id ].first_NeXus_id();
+        int last_nexus_id  = all_bank_infos[ id ].last_NeXus_id();
+
+        for ( int i = first_nexus_id; i <= last_nexus_id; i++ )
+          use_id[ nex_to_das_id[i] ] = false;
+      }
+    }
+  }
+
+
+ /**
+  *  Mask off all pixels in specified detector columns.  The use_id flags for
+  *  all pixels in the specified columns of the specified detectors will be 
+  *  set to false, without changing other flag values.
+  *  If a grid number or column number is not valid, this method will have 
+  *  no effect for that detector or column.  NOTE: SNS detectors are arranged
+  *  in column major order!
+  *
+  *  @param grid_ids List of IDs for detectors from which the specified
+  *                  columns should be omitted from the data.
+  *
+  *  @param col_ids  The list of column_ids that should be omitted from the
+  *                  specified detectors.  NOTE: column ids are assumed to
+  *                  start at ONE and increase up to and including the 
+  *                  number of columns in the detector.
+
+  */
+  public void maskOffDetectorColumns( int[] grid_ids, int[] col_ids )
+  {
+    if ( grid_ids == null || col_ids == null )
+      return;
+
+    for ( int k = 0; k < grid_ids.length; k++ )
+    {
+      int id = grid_ids[k];
+
+      if ( all_bank_infos[ id ] != null )
+      {
+        int first_nexus_id = all_bank_infos[ id ].first_NeXus_id();
+        int last_nexus_id  = all_bank_infos[ id ].last_NeXus_id();
+        int n_rows         = all_bank_infos[ id ].num_rows();
+        int n_cols         = all_bank_infos[ id ].num_cols();
+        int col_start,
+            col_num,
+            col_end;
+
+        for ( int j = 0; j < col_ids.length; j++ )
+        {
+          col_num = col_ids[j];
+          if ( col_num >= 1 && col_num <= n_cols )
+          {
+            col_start = first_nexus_id + (col_num -  1) * n_rows;
+            col_end   = col_start + n_rows - 1;
+            for ( int i = col_start; i <= col_end; i++ )
+              use_id[ nex_to_das_id[i] ] = false;
+          }
+        }
+      }
+    }
+  }
+
+
+ /**
+  *  Mask off all pixels in specified detector rows.  The use_id flags for
+  *  all pixels in the specified rows of the specified detectors will be 
+  *  set to false, without changing other flag values.
+  *  If a grid number or row number is not valid, this method will have 
+  *  no effect for that detector or row.  NOTE: SNS detectors are arranged
+  *  in column major order!
+  *
+  *  @param grid_ids List of IDs for detectors from which the specified
+  *                  columns should be omitted from the data.
+  *
+  *  @param row_ids  The list of row_ids that should be omitted from the
+  *                  specified detectors.  NOTE: row_ids are assumed to
+  *                  start at ONE and increase to and including the number 
+  *                  of rows in the detector.
+  */
+  public void maskOffDetectorRows( int[] grid_ids, int[] row_ids )
+  {
+    if ( grid_ids == null || row_ids == null )
+      return;
+
+    for ( int k = 0; k < grid_ids.length; k++ )
+    {
+      int id = grid_ids[k];
+
+      if ( all_bank_infos[ id ] != null )
+      {
+        int first_nexus_id = all_bank_infos[ id ].first_NeXus_id();
+        int last_nexus_id  = all_bank_infos[ id ].last_NeXus_id();
+        int n_rows         = all_bank_infos[ id ].num_rows();
+        int n_cols         = all_bank_infos[ id ].num_cols();
+        int row_start,
+            row_end;
+
+        for ( int j = 0; j < row_ids.length; j++ )
+        {  
+          int row_num = row_ids[j];
+          if ( row_num >= 1 && row_num <= n_rows )
+          {
+            row_start = first_nexus_id + row_num - 1;
+            row_end   = row_start + (n_cols-1) * n_rows;
+            for ( int i = row_start; i <= row_end; i+= n_rows )
+              use_id[ nex_to_das_id[i] ] = false;
+          }
+        }
+      }
+    }
   }
 
 
@@ -763,7 +981,8 @@ public class SNS_Tof_to_Q_map
          {
            magQ = tof_to_MagQ[id]/tof_chan;
            use_q_index = use_q_binner.index( magQ );
-           if ( magQ <= max_q_to_map         &&
+           if ( magQ >= min_q_to_map         &&
+                magQ <= max_q_to_map         &&
                 use_q_index >= 0             && 
                 use_q_index < NUM_USE_Q_BINS && 
                 use_q[ use_q_index ]  )
@@ -796,7 +1015,8 @@ public class SNS_Tof_to_Q_map
        {
          magQ = tof_to_MagQ[id]/tof_chan;
          use_q_index = use_q_binner.index( magQ );
-         if ( magQ <= max_q_to_map         &&
+         if ( magQ >= min_q_to_map         &&
+              magQ <= max_q_to_map         &&
               use_q_index >= 0             && 
               use_q_index < NUM_USE_Q_BINS && 
               use_q[ use_q_index ]  )
@@ -2355,10 +2575,14 @@ public class SNS_Tof_to_Q_map
                                                  // that maps NeXus pixel IDs
                                                  // to DAS pixels IDs
     nex_to_das_id = new int[ das_to_nex_id.length ];
+
     for ( int i = 0; i < nex_to_das_id.length; i++ )
-      nex_to_das_id[i] = -1;
+      nex_to_das_id[i] = -1;                     // mark unused IDs with -1
+
     for ( int i = 0; i < das_to_nex_id.length; i++ )
-      nex_to_das_id[ das_to_nex_id[i] ] = i;
+      nex_to_das_id[ das_to_nex_id[i] ] = i;     // record tranlation from 
+                                                 // NeXus ID to DAS ID for the
+                                                 // ones that are mapped.
   }
 
 
