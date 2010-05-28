@@ -35,6 +35,7 @@ public class filterPeaksPanel extends JPanel
     JCheckBox q2_unit;
     JTextField ValueList;
     JTextField DVbyV;
+    JCheckBox  OmitValues;
 	public static String CLEAR ="Clear omitted Pixels";
 	public static String APPLY ="Set as omitted Pixels";
     public static String CLEAR_D ="Clear omitted D(Q)Values";
@@ -120,14 +121,21 @@ public class filterPeaksPanel extends JPanel
         Main.add( unitPanel, BorderLayout.NORTH);
         
         JPanel dlistPanel = new JPanel( new GridLayout(5,2));
+        OmitValues = new JCheckBox( "Omit Values \u00b1 range", true);
+        JCheckBox KeepValues = new JCheckBox( "Keep Values "+"\u00b1"+" range", false);
+        dlistPanel.add( OmitValues);
+        dlistPanel.add( KeepValues);
+        ButtonGroup omit_keep = new ButtonGroup();
+        omit_keep.add( OmitValues );
+        omit_keep.add( KeepValues);
         dlistPanel.add(  new JLabel("List Values") );
-        ValueList = new JTextField("2.1,3.5,7.6");
+        ValueList = new JTextField("     ");
         dlistPanel.add( ValueList);
         
-        dlistPanel.add(  new JLabel("Dvalue/value tol") );
-        DVbyV = new JTextField(".02");
+        dlistPanel.add(  new JLabel("Dvalue/value range") );
+        DVbyV = new JTextField("  ");
         dlistPanel.add( DVbyV);
-        for( int i=0; i< 6;i++)
+        for( int i=0; i< 4;i++)
            dlistPanel.add( new JLabel("") );
         
         panel.add( dlistPanel);
@@ -162,6 +170,12 @@ public class filterPeaksPanel extends JPanel
 			             "</center></body></html>");
 			   
 			   message_center.send(  new Message( Commands.CLEAR_OMITTED_PIXELS, null,true) );
+
+		        for( int i=0;i<15;i++)
+		           for( int j=0; j<3;j++)
+		              DetectorTable.setValueAt( "   " , i , j);
+		        fileChooser.getTextField( ).setText( "       " );
+			   
 			   return;	
 			}
 			String  S = fileChooser.getTextField( ).getText( );
@@ -215,6 +229,9 @@ public class filterPeaksPanel extends JPanel
 			if( e.getActionCommand( ).equals(CLEAR_D ))
 			{
 			   message_center.send( new Message( Commands.CLEAR_OMITTED_DRANGE, null,true));
+			   
+			   ValueList.setText( "      " );
+			   
 
                JOptionPane.showMessageDialog(  null , "<html><body><center><font size=4>"+ 
                          "This Operation has been <P>Registered<P> It will not "+
@@ -270,7 +287,7 @@ public class filterPeaksPanel extends JPanel
                   }
                
                Vector Res = new Vector( 2);
-               Res.addElement( false);
+               Res.addElement( OmitValues.isSelected( ));
                Res.add( vv);
                message_center.send(  new Message( Commands.APPLY_OMITTED_DRANGE,
                      Res,true) );
