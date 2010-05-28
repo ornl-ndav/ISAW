@@ -66,6 +66,8 @@ public class QMapperHandler implements IReceiveMessage
   private MessageCenter    message_center;
   private String           instrument_name;
   private SNS_Tof_to_Q_map mapper;
+  private Vector           omit_pixels_info  = null;
+  private Vector           omit_q_range_info = null;
 
   public QMapperHandler( MessageCenter message_center )
   {
@@ -75,6 +77,11 @@ public class QMapperHandler implements IReceiveMessage
     message_center.addReceiver( this, Commands.MAP_EVENTS_TO_Q );
     message_center.addReceiver( this, Commands.SELECT_POINT );
     message_center.addReceiver( this, Commands.GET_PEAK_NEW_LIST );
+
+    message_center.addReceiver( this, Commands.CLEAR_OMITTED_PIXELS );
+    message_center.addReceiver( this, Commands.APPLY_OMITTED_PIXELS );
+    message_center.addReceiver( this, Commands.CLEAR_OMITTED_DRANGE );
+    message_center.addReceiver( this, Commands.APPLY_OMITTED_DRANGE );
   }
 
 
@@ -113,6 +120,8 @@ public class QMapperHandler implements IReceiveMessage
                                        cmd.getAbsorptionRadius(),
                                        cmd.getTotalAbsorption(),
                                        cmd.getAbsorptionTrue()   );
+        ApplyPixelFilter( mapper );
+        ApplyMagQ_Filter( mapper );
         run_time = (System.nanoTime() - start)/1.0e6;
         instrument_name = new_instrument;
         System.out.printf("Made Q mapper in %5.1f ms\n", run_time  );
@@ -246,10 +255,122 @@ public class QMapperHandler implements IReceiveMessage
       }
     }
 
+    else if ( message.getName().equals(Commands.APPLY_OMITTED_PIXELS) )
+    {
+      Object obj = message.getValue();
+      if ( obj == null || !(obj instanceof Vector))
+        return false;
+
+      omit_pixels_info = (Vector)obj;
+    }
+
+    else if ( message.getName().equals(Commands.CLEAR_OMITTED_PIXELS) )
+    {
+       omit_pixels_info = null;
+    }
+
+    else if ( message.getName().equals(Commands.APPLY_OMITTED_DRANGE ) )
+    {
+      Object obj = message.getValue();
+      if ( obj == null || !(obj instanceof Vector))
+        return false;
+
+      omit_q_range_info = (Vector)obj;
+    }
+
+    else if ( message.getName().equals(Commands.CLEAR_OMITTED_DRANGE) )
+    {
+       omit_q_range_info = null;
+    }
+
     return false;
   }
 
-  
+
+  private void ApplyPixelFilter( SNS_Tof_to_Q_map mapper )
+  {
+    if ( omit_pixels_info != null )
+    {
+                                                  // filter using filter file
+                                                  // will be implemented later
+      String filename = (String)omit_pixels_info.elementAt(0);
+      if ( filename != null )
+        System.out.println("Would load omitted PixelInfo from " + filename );
+
+      for ( int i = 1; i < omit_pixels_info.size(); i++ )
+      {
+        int[][] int_arrays = (int[][])omit_pixels_info.elementAt(i);
+        int[]   det_ids = int_arrays[0];
+        int[]   row_ids = int_arrays[1];
+        int[]   col_ids = int_arrays[2];
+
+        if ( det_ids == null )
+          det_ids = mapper.getGridIDs();
+/*
+        if ( det_ids != null )
+        {
+          System.out.print("Dets omitted: ");
+          for ( int j = 0; j < det_ids.length; j++ )
+            System.out.print( " "+det_ids[j] );
+          System.out.println();
+        }
+ 
+        if ( row_ids != null )
+        {
+          System.out.print("Rows omitted: ");
+          for ( int j = 0; j < row_ids.length; j++ )
+            System.out.print( " " + row_ids[j] );
+          System.out.println();
+        }
+
+        if ( col_ids != null )
+        {
+          System.out.print("Cols omitted: ");
+          for ( int j = 0; j < col_ids.length; j++ )
+            System.out.print( " " + col_ids[j] );
+          System.out.println();
+        } 
+*/
+        if ( row_ids == null && col_ids == null )      // skip whole detectors
+          mapper.maskOffDetectors( det_ids );
+        else
+        {
+          if ( row_ids != null )                              // skip rows
+            mapper.maskOffDetectorRows( det_ids, row_ids );
+
+          if ( col_ids != null )                              // skip columns
+            mapper.maskOffDetectorColumns( det_ids, col_ids );
+        }
+      }  
+    }
+  }
+
+
+  private void ApplyMagQ_Filter( SNS_Tof_to_Q_map mapper )
+  {
+    if ( omit_q_range_info != null )
+    {
+      try 
+      {
+        boolean omit_flag = (Boolean)omit_q_range_info.elementAt(0);
+        float[] endpoints = (float[])omit_q_range_info.elementAt(1);
+/*
+        System.out.println("Mag Q Filter omit flag is " + omit_flag );
+        System.out.println("End point array is ");
+        for ( int i = 0; i < endpoints.length; i++ )
+          System.out.printf(" %5.3f ", endpoints[i] );
+        System.out.println();
+*/
+        mapper.setQ_Filter( endpoints, omit_flag ); 
+      }
+      catch ( Exception ex )
+      {
+        System.out.println("Received Invalid message for Q-Range to omit");
+      }
+    }
+  }
+
+ 
   private float Calc_energy( Peak_new Peak)
   {
      float time = Peak.time();
