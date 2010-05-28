@@ -1,19 +1,24 @@
 package EventTools.ShowEventsApp.Controls.Peaks;
 
-import java.awt.GridLayout;
+import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
 import javax.swing.*;
+import javax.swing.border.LineBorder;
+import javax.swing.border.TitledBorder;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.text.BadLocationException;
 
 import EventTools.ShowEventsApp.Command.*;
 import MessageTools.*;
+import gov.anl.ipns.Parameters.FileChooserPanel;
 import gov.anl.ipns.Parameters.IParameterGUI;
 import gov.anl.ipns.Parameters.IntArrayPG;
 import gov.anl.ipns.Util.Numeric.ClosedInterval;
+import gov.anl.ipns.Util.Numeric.IntList;
 import gov.anl.ipns.ViewTools.UI.FontUtil;
 import gov.anl.ipns.ViewTools.UI.TextRangeUI;
 
@@ -23,27 +28,26 @@ public class filterPeaksPanel extends JPanel
 	private MessageCenter message_center;
 	
 	private JTabbedPane tabPane;
-	private TextRangeUI dIntervals;
-	private TextRangeUI qIntervals;
-	private IntArrayPG  detNumbers;
-	private IntArrayPG  rowRange;
-	private IntArrayPG  colRange;
-	private JButton     indexedFile;
-	private JTextField  indexed;
-	private JCheckBox   notIndexed;
-	private JButton     clearBtn;
-	private JButton     applyBtn;
-	private JButton     saveBtn;
-	private int         OFFSETQ;
-	private int         OFFSETD;
+	private JTable      DetectorTable;
+	private FileChooserPanel fileChooser;
+    JCheckBox d_unit ;
+    JCheckBox q1_unit;
+    JCheckBox q2_unit;
+    JTextField ValueList;
+    JTextField DVbyV;
+	public static String CLEAR ="Clear omitted Pixels";
+	public static String APPLY ="Set as omitted Pixels";
+    public static String CLEAR_D ="Clear omitted D(Q)Values";
+    public static String APPLY_D ="Set as omitted D(Q) Values";
+    
 	
 	public filterPeaksPanel(MessageCenter mc)
 	{
 		message_center = mc;
-		this.setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
+		this.setLayout(new GridLayout(1,1));
 
 		this.add(buildPanel());
-		this.add(buildButton());
+		//this.add(buildButton());
 	}
 	
 	private JPanel buildPanel()
@@ -51,9 +55,7 @@ public class filterPeaksPanel extends JPanel
 		JPanel panel = new JPanel(new GridLayout(1,1));
 		tabPane = new JTabbedPane();
 		tabPane.add("Detector", buildDetectorPanel());
-		tabPane.add("Q-Values", buildQPanel());
-		tabPane.add("D-Values", buildDPanel());
-		tabPane.add("Indexed Peaks", buildIndexedPeaks());
+		tabPane.add("D or Q", buildDQPanel());
 		
 		panel.add(tabPane);
 		return panel;
@@ -61,149 +63,229 @@ public class filterPeaksPanel extends JPanel
 	
 	private JPanel buildDetectorPanel()
 	{
-		JPanel panel = new JPanel(new GridLayout(3,1));
-		
-		JLabel detectorLbl = new JLabel("Discard by Det. Number(s)");
-		detNumbers = new IntArrayPG(detectorLbl.getText(), 0);
-		panel.add(((IParameterGUI)detNumbers).getGUIPanel(false));
-		
-		String row = "Discard by Row Number(s):";
-		String col = "Discard by Col Number(s):";
-		rowRange = new IntArrayPG(row, "0:0");
-		colRange = new IntArrayPG(col, "0:0");
-		
-		panel.add(((IParameterGUI)rowRange).getGUIPanel(false));
-		panel.add(((IParameterGUI)colRange).getGUIPanel(false));;
-		
-		return panel;
-	}
-	
-	private JPanel buildQPanel()
-	{
-		JPanel panel = new JPanel(new GridLayout(1,1));
-		
-		String qInt = "Discard by q-value Range:";
-		OFFSETQ = qInt.length();
-		qIntervals = new TextRangeUI(qInt, 0.1f, 1.5f);
-		qIntervals.setTextFont(FontUtil.LABEL_FONT2);
-
-		panel.add(qIntervals);
-		return panel;
-	}
-	
-	private JPanel buildDPanel()
-	{
-		JPanel panel = new JPanel(new GridLayout(1,1));
-		
-		String dInt = "Discard by d-value Range:";
-		OFFSETD = dInt.length();
-		dIntervals = new TextRangeUI(dInt, 0.3f, 1.7f);
-		dIntervals.setTextFont(FontUtil.LABEL_FONT2);
-		
-		panel.add(dIntervals);
-		return panel;
-	}
-	
-	private JPanel buildIndexedPeaks()
-	{
 		JPanel panel = new JPanel();
-		panel.setLayout(new GridLayout(2,2));
 		
-		indexedFile = new JButton("Discard by Indexed Peaks...");
-		indexedFile.addActionListener(new buttonListener());
-		indexed = new JTextField();
-		indexed.setHorizontalAlignment(JTextField.RIGHT);
+		panel.setLayout(  new BorderLayout() );
+
+        fileChooser = new FileChooserPanel(
+                            FileChooserPanel.LOAD_FILE, "File with Omit information");
+        panel.add( fileChooser, BorderLayout.NORTH);
+
+		String[][] Data = new String[15][3];
+		for( int i=0;i<15;i++)
+		   for( int j=0; j<3;j++)
+		      Data[i][j] = new String("   ");
+		String[] colNames = new String[]{"Detector(s)","Row(s)","Col(s)"};
+		DetectorTable = new JTable( Data, colNames);
+
+       // DetectorTable.setPreferredSize( new Dimension(100, 90) );
+		JScrollPane jscr =new JScrollPane(DetectorTable);
+
+        jscr.setBorder(  new TitledBorder( 
+             new LineBorder(Color.black), "Detectors and Rows/Cols to omit") );
+		panel.add( jscr, BorderLayout.CENTER);
+		    
+		JButton Clear = new JButton( CLEAR );
+		JButton Apply = new JButton( APPLY );
+		JPanel pp = new JPanel( new BorderLayout());
+		pp.add( Clear, BorderLayout.WEST );
+		pp.add( Apply, BorderLayout.EAST );
+		panel.add(pp, BorderLayout.SOUTH);
+		Clear.addActionListener( new buttonListener());
+		Apply.addActionListener(  new buttonListener() );
 		
-		JLabel nonIndexedLbl = new JLabel("Discard by Non-Indexed Peaks");
-		notIndexed = new JCheckBox();
-		notIndexed.setHorizontalAlignment(JCheckBox.CENTER);
 		
-		panel.add(indexedFile);
-		panel.add(indexed);
-		panel.add(nonIndexedLbl);
-		panel.add(notIndexed);
 		return panel;
 	}
 	
-	private JPanel buildButton()
+	private JPanel buildDQPanel()
 	{
-		JPanel buttonPanel = new JPanel();
-		buttonPanel.setLayout(new GridLayout(1,3));
-		
-		clearBtn = new JButton("Clear");
-		clearBtn.addActionListener(new buttonListener());
-		
-		applyBtn = new JButton("Apply");
-		applyBtn.addActionListener(new buttonListener());
-		
-		saveBtn = new JButton("Save");
-		saveBtn.addActionListener(new buttonListener());
-		
-		buttonPanel.add(clearBtn);
-		buttonPanel.add(applyBtn);
-		buttonPanel.add(saveBtn);
-		return buttonPanel;
+	    JPanel Main = new JPanel( new BorderLayout());
+		JPanel panel = new JPanel();
+        BoxLayout bl = new BoxLayout( panel, BoxLayout.Y_AXIS);
+        panel.setLayout( bl);
+        
+        JPanel unitPanel = new JPanel( new GridLayout(1,3));
+        d_unit  = new JCheckBox("d(Angst)",true);
+        q1_unit = new JCheckBox("1/d",false);
+        q2_unit = new JCheckBox("2"+FontUtil.PI+"/d",false);
+        unitPanel.add(  d_unit );
+        unitPanel.add( q1_unit);
+        unitPanel.add( q2_unit);
+        ButtonGroup BGroup = new ButtonGroup();
+        BGroup.add( d_unit );
+        BGroup.add(q1_unit);
+        BGroup.add(q2_unit);
+        unitPanel.setBorder( new TitledBorder( new LineBorder(Color.black),"Value units"));
+        Main.add( unitPanel, BorderLayout.NORTH);
+        
+        JPanel dlistPanel = new JPanel( new GridLayout(5,2));
+        dlistPanel.add(  new JLabel("List Values") );
+        ValueList = new JTextField("2.1,3.5,7.6");
+        dlistPanel.add( ValueList);
+        
+        dlistPanel.add(  new JLabel("Dvalue/value tol") );
+        DVbyV = new JTextField(".02");
+        dlistPanel.add( DVbyV);
+        for( int i=0; i< 6;i++)
+           dlistPanel.add( new JLabel("") );
+        
+        panel.add( dlistPanel);
+        
+        panel.add( Box.createVerticalGlue( ));
+        
+        Main.add( panel, BorderLayout.CENTER );
+        JPanel commPanel = new JPanel( new GridLayout(1,2));
+        JButton Clear = new JButton( CLEAR_D);
+        JButton Apply= new JButton( APPLY_D);
+        Clear.addActionListener( new buttonListener());
+
+        Apply.addActionListener( new buttonListener());
+        commPanel.add( Clear);
+        commPanel.add( Apply);
+        Main.add( commPanel, BorderLayout.SOUTH);
+        return Main;
+
 	}
+	
 	
 	private class buttonListener implements ActionListener
 	{
 		public void actionPerformed(ActionEvent e)
 		{
-			if(e.getSource() == clearBtn)
+			if(e.getActionCommand() ==  CLEAR)
 			{
-				ResetFields();
+			   
+			   JOptionPane.showMessageDialog(  null , "<html><body><center><font size=4>"+ 
+			             "This Operation has been <P>Registered<P> It will not "+
+			             "take effect until<P>the next Load Events</font>"+
+			             "</center></body></html>");
+			   
+			   message_center.send(  new Message( Commands.CLEAR_OMITTED_PIXELS, null,true) );
+			   return;	
+			}
+			String  S = fileChooser.getTextField( ).getText( );
+			if( S != null && S.trim().length() < 1)
+			   S = null;
+			
+			if(e.getActionCommand() == APPLY)
+			{
+			   
+			   Vector V = new Vector();
+			   V.add(  S );
+			   String[] Line = new String[3];
+			   for( int i=0; i<15; i++)
+			   {
+			      Line[0] = (String)DetectorTable.getValueAt(i,0);
+                  Line[1] = (String)DetectorTable.getValueAt(i,1);
+                  Line[2] = (String)DetectorTable.getValueAt(i,2);
+			      Vector V1 = new Vector(3);
+			      boolean hasData = false;
+			      for( int j=0; j < 3;j++)
+			         if( Line[j] != null && Line[j].trim( ).length()>0)
+			         {
+			            try
+			            {
+			               int[] T = IntList.ToArray(Line[j].trim()) ;
+			               if( T != null && T.length < 1)
+			                  T = null;
+			               V1.add(T);
+			               hasData = true;
+			            }catch(Exception s)
+			            {
+			               V1.add( null );
+			            }
+			            
+			         }
+
+                  if( hasData)
+                     V.add(V1);
+			   }
+			   System.out.println(gov.anl.ipns.Util.Sys.StringUtil.toString( V ));
+			   
+			   if( V.size() > 0)
+			      message_center.send(  new Message(Commands.APPLY_OMITTED_PIXELS,
+			                                           V,true) );
+               JOptionPane.showMessageDialog(  null , "<html><body><center><font size=4>"+ 
+                         "This Operation has been <P>Registered<P> It will not "+
+                         "take effect until<P>the next Load Events</font>"+
+                         "</center></body></html>");
+              return; 
+		     }
+			if( e.getActionCommand( ).equals(CLEAR_D ))
+			{
+			   message_center.send( new Message( Commands.CLEAR_OMITTED_DRANGE, null,true));
+
+               JOptionPane.showMessageDialog(  null , "<html><body><center><font size=4>"+ 
+                         "This Operation has been <P>Registered<P> It will not "+
+                         "take effect until<P>the next Load Events</font>"+
+                         "</center></body></html>");
+			   return;
 			}
 			
-			if(e.getSource() == applyBtn)
+			if( e.getActionCommand( ).equals( APPLY_D ))
 			{
-				DetectorFilterCmd detCmd 
-				    = new DetectorFilterCmd(buildDetVec(),
-				                            buildRowVec(),
-				                            buildColVec());
-				
-				QDFilterCmd qdCmd
-				    = new QDFilterCmd(buildQVec(), buildDVec());
-				
-				IndexedPeaksFilterCmd indCmd =
-				    new IndexedPeaksFilterCmd(indexed.getText(),
-				                            notIndexed.isSelected());
-				
-				sendMessage(Commands.FILTER_DETECTOR, detCmd);
-				sendMessage(Commands.FILTER_QD, qdCmd);
-				sendMessage(Commands.FILTER_PEAKS, indCmd);
+			   String SS = ValueList.getText();
+			   if( SS != null && SS.length() < 1)
+			      return;
+			   String[] DD = SS.split( "," );
+			   float[] vs = new float[DD.length];
+			   String mess = "Improper input format ";
+            try
+            {
+              
+               for( int i = 0 ; i < vs.length ; i++ )
+                  vs[i] = Float.parseFloat( DD[i].trim( ) );
+
+               float[] vv = new float[ vs.length * 2 ];
+               mess = "Improper DV/V format";
+               float ratio = Float.parseFloat( DVbyV.getText( ).trim( ) );
+               if( ratio < 0)
+               {
+                  mess="Negative DV/v not allowed";
+                  JOptionPane.showMessageDialog( null , mess );
+                  return;
+               }
+               for( int i=0; i< vs.length; i++)
+               {
+                  float D = vs[i]*ratio;
+                  vv[2*i]= vs[i]-D;
+                  vv[2*i+1]= vs[i]+D;
+               }
+               
+               float mult=1;
+               
+               if(d_unit.isSelected( ) )
+                  mult = .5f/(float)Math.PI;
+               else if(q1_unit.isSelected( ) )
+                  mult= 2*(float)Math.PI;
+               for( int i=0; i< vv.length; i++)
+                  vv[i]*=mult;
+               if( d_unit.isSelected())
+                  for( int i=0;i<vv.length; i+=2)
+                  {
+                     float save = vv[i];
+                     vv[i]=1/vv[i+1];
+                     vv[i+1]=1/save;
+                  }
+               
+               message_center.send(  new Message( Commands.APPLY_OMITTED_DRANGE,
+                     vv,true) );
+
+               JOptionPane.showMessageDialog(  null , "<html><body><center><font size=4>"+ 
+                         "This Operation has been <P>Registered<P> It will not "+
+                         "take effect until<P>the next Load Events</font>"+
+                         "</center></body></html>");
+               System.out.println( gov.anl.ipns.Util.Sys.StringUtil.toString( vv ));
+            } catch( Exception sss )
+            {
+               JOptionPane.showMessageDialog( null , mess );
+               return;
+            }
+            
+               
 			}
 			
-			if(e.getSource() == saveBtn)
-			{
-	            /*final JFileChooser fc = new JFileChooser();
-	            File file = null;
-	            int returnVal = fc.showSaveDialog(null);
-	            
-	            if (returnVal == JFileChooser.APPROVE_OPTION) 
-	            {
-	               file = fc.getSelectedFile();
-	               if (!file.exists())
-	               {
-	                  String error = "File does not exist!";
-	                  JOptionPane.showMessageDialog(null, error, "Invalid Input",
-	                                                JOptionPane.ERROR_MESSAGE);
-	                  return;
-	               }
-	            } 
-	            /*else if (returnVal == JFileChooser.CANCEL_OPTION)
-	            {
-	               //System.out.println("Open command cancelled by user.");
-	               return;
-	            }
-	            else if (returnVal == JFileChooser.ERROR_OPTION)
-	            {
-	               JOptionPane.showMessageDialog( null, 
-	                                             "Error opening file", 
-	                                             "Error Opening File!", 
-	                                              JOptionPane.ERROR_MESSAGE);
-	               return;
-	            }*/
-			}
 		}
 	}
 	
@@ -222,129 +304,6 @@ public class filterPeaksPanel extends JPanel
       message_center.send( message );
    }
 	
-	private Vector buildDetVec()
-	{
-	    Vector vec = new Vector();
-	    
-	    int[] values = detNumbers.getArrayValue();
-        
-        for(int i = 0; i < values.length; i++)
-        {
-            vec.add(values[i]);
-        }
-	        
-	    return vec;
-	}
-	
-	private Vector buildRowVec()
-	{
-	    Vector vec = new Vector();
-        
-	    int[] values = rowRange.getArrayValue();
-	    
-        for(int i = 0; i < values.length; i++)
-        {
-            vec.add(values[i]);
-        }
-        
-        return vec;
-	}
-	
-	private Vector buildColVec()
-    {
-        Vector vec = new Vector();
-        
-        int[] values = colRange.getArrayValue();
-        
-        for(int i = 0; i < values.length; i++)
-        {
-            vec.add(values[i]);
-        }
-        
-        return vec;
-    }
-	
-   private Vector<ClosedInterval> buildQVec()
-    {
-        Vector<ClosedInterval> vec = new Vector<ClosedInterval>();
-        
-        try
-        {
-            int length = qIntervals.getText().length();
-           
-            StringTokenizer st
-                = new StringTokenizer(
-                        qIntervals.getText(OFFSETQ, (length - OFFSETQ)), ",");
-            
-            while(st.hasMoreTokens())
-            {
-                String[] tempInput = st.nextToken().split("[:]");
-                for (int x=0; x<tempInput.length; x++)
-                {
-                    tempInput[x] = tempInput[x].replace('[', ' ');
-                    tempInput[x] = tempInput[x].replace(']', ' ');
-                    tempInput[x] = tempInput[x].replace(';', ' ');
-                }
-                
-                float a = Float.parseFloat(tempInput[0]);
-                float b = Float.parseFloat(tempInput[1]);
-                vec.add(new ClosedInterval(a,b));
-            }   
-        } 
-        catch (BadLocationException e)
-        {
-            e.printStackTrace();
-        }
-        
-        return vec;
-    }
-   
-    private Vector<ClosedInterval> buildDVec()
-    {
-        Vector<ClosedInterval> vec = new Vector<ClosedInterval>();
-        
-        try
-        {
-            int length = dIntervals.getText().length();
-            StringTokenizer st
-                = new StringTokenizer(
-                        dIntervals.getText(OFFSETD, (length - OFFSETD)), ",");
-            
-            while(st.hasMoreTokens())
-            {
-                String[] tempInput = st.nextToken().split("[:]");
-                for (int x=0; x<tempInput.length; x++)
-                {
-                    tempInput[x] = tempInput[x].replace('[', ' ');
-                    tempInput[x] = tempInput[x].replace(']', ' ');
-                    tempInput[x] = tempInput[x].replace(';', ' ');
-                }
-                
-                float a = Float.parseFloat(tempInput[0]);
-                float b = Float.parseFloat(tempInput[1]);
-                vec.add(new ClosedInterval(a,b));
-            }  
-        } 
-        catch (BadLocationException e)
-        {
-            e.printStackTrace();
-        }
-        
-        return vec;
-    }
-    
-    private void ResetFields()
-    {
-        detNumbers.setValue("0");
-        rowRange.setValue("0:0");
-        colRange.setValue("0:0");
-        dIntervals.setMin(0.0f);
-        dIntervals.setMax(1.0f);
-        qIntervals.setMin(0.0f);
-        qIntervals.setMax(1.0f);
-        indexed.setText("");
-    }
-    
 	public static void main(String[] args) 
 	{
 	      MessageCenter mc = new MessageCenter("Test Peak Filters");
@@ -364,5 +323,4 @@ public class filterPeaksPanel extends JPanel
 	      View.add(fp);
 	      
 	      new UpdateManager(mc, null, 100);
-	}
-}
+	}}
