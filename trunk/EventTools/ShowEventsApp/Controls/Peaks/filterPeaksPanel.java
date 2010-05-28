@@ -269,8 +269,11 @@ public class filterPeaksPanel extends JPanel
                      vv[i+1]=1/save;
                   }
                
+               Vector Res = new Vector( 2);
+               Res.addElement( false);
+               Res.add( vv);
                message_center.send(  new Message( Commands.APPLY_OMITTED_DRANGE,
-                     vv,true) );
+                     Res,true) );
 
                JOptionPane.showMessageDialog(  null , "<html><body><center><font size=4>"+ 
                          "This Operation has been <P>Registered<P> It will not "+
