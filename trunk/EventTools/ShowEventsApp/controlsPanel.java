@@ -159,10 +159,10 @@ public class controlsPanel extends JPanel
       findPeaksBtn.setBackground( background_color );
       findPeaksBtn.addActionListener(new buttonListener());
       
-      filterPeaksBtn = new JButton("Filter Peaks");
+      filterPeaksBtn = new JButton("Filter Events");
       filterPeaksBtn.setBackground( background_color );
       filterPeaksBtn.addActionListener(new buttonListener());
-      filterPeaksBtn.setEnabled(false);
+      filterPeaksBtn.setEnabled(true);
       
       indexPeaksBtn = new JButton("Index Peaks");
       indexPeaksBtn.setBackground( background_color );
