@@ -167,7 +167,7 @@ public class Util {
       System.err.println("Entry not integer in runnums Vector");
       return null;
     }
- 
+
     min_row = Math.max( 1, min_row );
     max_row = Math.max( max_row, min_row );
 
@@ -203,6 +203,8 @@ public class Util {
     int local_cores = Runtime.getRuntime().availableProcessors();
 
     int mon_count = 0;           // mon_count is not needed at this point
+
+    CheckThatRunfilesExist( run_numbers, rawpath, fileNamePrefix, extension );
 
     for (int run_index = 0; run_index < run_numbers.length; run_index++ )
       for (int ds_index = 0; ds_index < ds_numbers.length; ds_index++ )
@@ -260,10 +262,6 @@ public class Util {
             max_processes = 1;
         }
         
-        if(!(new File(ElimQuotes( fin_name))).exists())
-           SharedMessages.addmsg( "Could not retrieve " + fin_name );
-        else
-        {
         FindPeaksProcessCaller s_caller =
                  new FindPeaksProcessCaller( cmd,
                                              fin_name,
@@ -289,7 +287,6 @@ public class Util {
                                              show_peaks_view,
                                              num_slices );
         ops.add( s_caller );
-        }
       }
 
     int max_time = ops.size() * 120000 + 600000;
@@ -474,14 +471,23 @@ public class Util {
           int run_num = run_numbers[ run_index ];
           String fout_base = fout_prefix + run_num + "_DS_" + ds_num + "_";
           String logpart_name = fout_base + FindPeaksProcess.LOG_SUFFIX;
-          File in_file = new File( logpart_name );
-          int size = (int)in_file.length();          // NEED <= 2GB file size
-          byte[] buffer = new byte[ size ];
-          FileInputStream fis = new FileInputStream( in_file );
-          fis.read( buffer, 0, size );
-          fis.close();
-          in_file.delete();
-          log_buffer.append( new String(buffer) ); 
+          try
+          {
+            File in_file = new File( logpart_name );
+            int size = (int)in_file.length();         // NEED <= 2GB file size
+            byte[] buffer = new byte[ size ];
+            FileInputStream fis = new FileInputStream( in_file );
+            fis.read( buffer, 0, size );
+            fis.close();
+            in_file.delete();
+            log_buffer.append( new String(buffer) ); 
+          }
+          catch ( Exception ex )
+          {
+            System.out.println("Exception while reading FindPeaks log file " +
+                               "in Wizard/TOF_SCD/Util.java");
+            System.out.println( ex );
+          }
         }
       String log_file_name = outpath + "find_peaks_" + expname + ".log";
       FileOutputStream fos = new FileOutputStream( log_file_name );
@@ -497,6 +503,7 @@ public class Util {
 
     return all_peaks; 
   }
+
    
    /**
     * Used to eliminate leading and trailing quotes around a filename.
@@ -505,7 +512,8 @@ public class Util {
     * by the underlying operating system
     * 
     * @param S  Original string for a filename
-    * @return   The String with the one set of leading and trailing quotes removed.
+    * @return   The String with the one set of leading and trailing quotes 
+    *           removed.
     */
    public static String ElimQuotes( String S)
    {
@@ -516,17 +524,17 @@ public class Util {
       if( S.startsWith( "\"" ) && S.endsWith("\""))
          return S.substring( 1,S.length()-1 );
       return S;
-      
    }
+
    
    public static String getDelimiter( )
    {
       
-      //if( System.getProperty("os.name"," ").toUpperCase().indexOf("WINDOW")>=0)
-      //   return "\"";
+    //if( System.getProperty("os.name"," ").toUpperCase().indexOf("WINDOW")>=0)
+    //   return "\"";
       return "";
-      
    }
+
    
    /**
     *  FindCentroidedPeaks method uses threads to find and centroid
@@ -594,6 +602,10 @@ public class Util {
             boolean  ViewPeaks,
             int      maxNumThreads )  throws IOException
      {
+
+
+                                                      // Check calib file info 
+     calibfile = CheckAndFixCalibFileName( useCalib, calibfile );
 
      String slurm_queue_name = System.getProperty( "Slurm_Queue_Name" );
      System.out.println("SLURM QUEUE NAME = " + slurm_queue_name );
@@ -663,7 +675,7 @@ public class Util {
       java.util.Arrays.sort( Runs );
       
       int[] DSnums = IntList.ToArray( dataSetNums );
-      
+
       Vector<StringBuffer> LogInfo = new Vector<StringBuffer>();
       
       if( !extension.startsWith( "." ) )
@@ -671,6 +683,8 @@ public class Util {
       
       if( Runs == null || DSnums == null )
          return null;
+
+      CheckThatRunfilesExist( Runs, rawpath, fileNamePrefix, extension );
       
       if( useCalib )
          SharedMessages.addmsg( "Calibration File ="+calibfile );
@@ -2072,6 +2086,8 @@ public class Util {
       ClearFiles( inst, IntegratePeaksProcess.LOG_SUFFIX );
       ClearFiles( "", SLURM_RETURN_SUFFIX );
 
+      CheckThatRunfilesExist( run_numbers, path, inst, FileExt );
+
       int local_cores = Runtime.getRuntime().availableProcessors();
 
       for ( int run_index = 0; run_index < run_numbers.length ; run_index++ )
@@ -2299,14 +2315,24 @@ public class Util {
             int run_num = run_numbers[ run_index ];
             String fout_base = fout_prefix + run_num + "_DS_" + ds_num + "_";
             String logpart_name = fout_base + IntegratePeaksProcess.LOG_SUFFIX;
-            File in_file = new File( logpart_name );
-            int size = (int)in_file.length();          // NEED <= 2GB file size
-            byte[] buffer = new byte[ size ];
-            FileInputStream fis = new FileInputStream( in_file );
-            fis.read( buffer, 0, size );
-            fis.close();
-            in_file.delete();
-            log_buffer.append( new String(buffer) );
+            try 
+            {
+              File in_file = new File( logpart_name );
+              int size = (int)in_file.length();       // NEED <= 2GB file size
+              byte[] buffer = new byte[ size ];
+              FileInputStream fis = new FileInputStream( in_file );
+              fis.read( buffer, 0, size );
+              fis.close();
+              in_file.delete();
+              log_buffer.append( new String(buffer) );
+            }
+            catch ( Exception ex )
+            {
+              System.out.println("Exception while reading IntegratePeaks " +
+                                 "log file in Wizard/TOF_SCD/Util.java");
+              System.out.println( ex );
+            }
+
           }
         String log_file_name = outpath + "integrate_" + expname + ".log";
         FileOutputStream fos = new FileOutputStream( log_file_name );
@@ -2385,6 +2411,9 @@ public class Util {
            boolean append
             ){
 
+                                                      // Check calib file info 
+      calibfile = CheckAndFixCalibFileName( useCalibFile, calibfile );
+
       String slurm_queue_name = System.getProperty( "Slurm_Queue_Name" );
       System.out.println("SLURM QUEUE NAME = " + slurm_queue_name );
 
@@ -2449,6 +2478,8 @@ public class Util {
       }
       
       java.util.Arrays.sort( Runs );
+
+      CheckThatRunfilesExist( Runs, path, inst, FileExt );
       
       int[] DSnums = IntList.ToArray( DataSetNums );
       
@@ -2809,4 +2840,70 @@ public class Util {
       
       return null;
    }
+
+
+  /**
+   * Check that the calib_file name is non-blank, and that the file exists
+   * if a calibration file is supposed to be used.  Since a non-blank 
+   * calib file name is needed to form the command line for an external
+   * process, a non-blank name for the calib file String will be returned
+   * by this method.
+   *
+   * @param use_calib_file  Flag indicating whether or not the user wants
+   *                        to use a calibration file.
+   * @param calib_file      The characters (if any) from the calib file
+   *                        name entry on the wizard form.
+   *
+   * @return The name of the calibration file that was specified, if the
+   *         use_calib_file flag is true AND the file actually exists.
+   *         If the use_calib_file flag is true AND the specified file 
+   *         does not exist, this method throws an IllegalArgumentException.
+   *         If the use_calib_file flag is false, this will return a 
+   *         non-blank String indicating that no actual calibration file
+   *         will be used. 
+   */
+  private static String CheckAndFixCalibFileName( boolean use_calib_file,
+                                                  String  calib_file )
+  {
+                                                 // Check the calib file info:
+    if ( !use_calib_file ||  calib_file == null || calib_file.trim() == "" )
+      return "NO_CALIB_FILE";
+
+    if ( use_calib_file )
+    {
+      File file = new File( calib_file );
+      if ( !file.exists() )
+        throw new IllegalArgumentException("Specified calibration file " +
+                                            calib_file + " doesn't exist" );
+    }
+    return calib_file;
+  }
+
+
+  /**
+   *  Verify that all of the specified run files exist, and throw an
+   *  IllegalArgument exception if any of the files don't exist.
+   *
+   *  @param run_numbers      Integer array with the run numbers to process
+   *  @param raw_path         Directory path to the files to load
+   *  @param file_name_prefix Run file prefix, such as TOPAZ_
+   *  @param extension        Run file extension, such as .nxs
+   */
+  private static void CheckThatRunfilesExist( int[] run_numbers,
+                                              String raw_path,
+                                              String file_name_prefix,
+                                              String extension )
+  {
+                                 // Check that all specified Data files exist
+    for (int run_index = 0; run_index < run_numbers.length; run_index++ )
+    {
+      int run_num = run_numbers[ run_index ];
+      String fin_name  = raw_path + file_name_prefix + run_num + extension;
+      File file = new File( fin_name );
+      if ( !file.exists() )
+        throw new IllegalArgumentException(fin_name + " DOES NOT EXIST!");
+    }
+  }
+
+
 }
