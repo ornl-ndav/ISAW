@@ -87,6 +87,7 @@ public class filePanel implements IReceiveMessage
    private JTextField         absorptionRadius;
    private JTextField         smuAbsorption;
    private JTextField         amuAbsorption;
+   private JTextField         minQValue;
    private JTextField         maxQValue;
    private JTextField         numThreads;
    private JTextField         availableEvents;
@@ -129,6 +130,7 @@ public class filePanel implements IReceiveMessage
    private String             Matfilename; 
 
    private float              scale_factor;    // 1/protons_on_target 0 to skip
+   private float              MinQValue;
    private float              MaxQValue;
    private float              absorption_power;
    private float              absorption_radius;
@@ -176,7 +178,8 @@ public class filePanel implements IReceiveMessage
       bank_filename     = "";
       idmap_filename    = "";
 
-      MaxQValue = 1000000;            // use all Q values by default
+      MinQValue = 0;                  // default |Q| range [0,20]
+      MaxQValue = 20; 
       absorption_power  = 3;          
       absorption_radius = 0;          // 0 means don't do absorption correction
       absorption_smu  = 1;
@@ -215,14 +218,13 @@ public class filePanel implements IReceiveMessage
       JPanel sub_panel = new JPanel();
       panel.add( sub_panel );
 
-      sub_panel.setLayout( new GridLayout(11,1) );
+      sub_panel.setLayout( new GridLayout(12,1) );
       sub_panel.add(buildDetPanel());
       sub_panel.add( buildBankPanel() );
       sub_panel.add( buildIDMapPanel() );
       sub_panel.add(buildIncPanel());
       
-      //sub_panel.add(buildDetEffPanel());
-      //sub_panel.add(buildMatPanel());
+      sub_panel.add(buildMinQPanel());
       sub_panel.add(buildMaxQPanel());
       sub_panel.add(buildAbsorptionPanel0());
       sub_panel.add(buildAbsorptionPanel1());
@@ -437,6 +439,30 @@ public class filePanel implements IReceiveMessage
      return incPanel;
    }
    
+
+   /**
+    * Builds the minQPanel which consists of label and a 
+    * textfield to contain the Value.
+    * 
+    * @return JPanel
+    */
+   private JPanel buildMinQPanel()
+   {
+      JPanel minQPanel = new JPanel();
+      minQPanel.setLayout(new GridLayout(1,2));
+
+      JLabel minQButton = new JLabel("Min Q to load");
+
+      minQValue = new JTextField( "" + MinQValue );
+      minQValue.setHorizontalAlignment(JTextField.RIGHT);
+      minQValue.addActionListener( new button() );
+      minQPanel.add(minQButton);
+      minQPanel.add(minQValue);
+
+      return minQPanel;
+   }
+
+
    /**
     * Builds the maxQPanel which consists of label and a 
     * textfield to contain the Value.
@@ -450,13 +476,11 @@ public class filePanel implements IReceiveMessage
       
       JLabel maxQButton = new JLabel("Max Q to load");
       
-      MaxQValue = 20;
       maxQValue = new JTextField( "" + MaxQValue );
       maxQValue.setHorizontalAlignment(JTextField.RIGHT);
       maxQValue.addActionListener( new button());
       maxQPanel.add(maxQButton);
       maxQPanel.add(maxQValue);
-      //maxQPanel.add(matFileName);
       
       return maxQPanel;
    }
@@ -752,16 +776,32 @@ public class filePanel implements IReceiveMessage
 
      try
      {
+       MinQValue = Float.parseFloat( minQValue.getText().trim() );
+     }
+     catch( Exception s)
+     {
+       exception = true;
+     }
+     if ( exception || MinQValue <= 0 )
+     {
+       ShowError(" minQValue must be a positive number " +
+                   minQValue.getText() );
+       return false;
+     }
+
+     try
+     {
        MaxQValue = Float.parseFloat( maxQValue.getText().trim() );
      }
      catch( Exception s)
      {
        exception = true;
      }
-     if ( exception || MaxQValue <= 0 )
+     if ( exception || MaxQValue <= 0 || MaxQValue <= MinQValue )
      {
-       ShowError(" maxQValue must be a positive number " + 
-                   maxQValue.getText() );
+       ShowError("maxQValue, " + maxQValue.getText() + 
+                 ", must be a positive number larger than minQValue = " + 
+                  minQValue.getText() );
        return false;
      }
 
@@ -1179,6 +1219,7 @@ public class filePanel implements IReceiveMessage
                            absorption_radius,
                            absorption_smu,
                            absorption_amu,
+                           MinQValue,
                            MaxQValue,
                            num_to_show_UDP );
               
@@ -1204,6 +1245,7 @@ public class filePanel implements IReceiveMessage
                                   absorption_radius,
                                   absorption_smu,
                                   absorption_amu,
+                                  MinQValue,
                                   MaxQValue,
                                   numAvailable,
                                   firstToLoad, 
@@ -1258,7 +1300,7 @@ public class filePanel implements IReceiveMessage
                return;
             try
             {
-               MaxQValue = Float.parseFloat(  maxQValue.getText().trim() );
+               MaxQValue = Float.parseFloat( maxQValue.getText().trim() );
             }catch( Exception s)
             {
                maxQValue.setText( "" );

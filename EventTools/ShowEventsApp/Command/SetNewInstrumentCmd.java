@@ -49,6 +49,7 @@ public class SetNewInstrumentCmd
    private String bank_file_name;
    private String ID_Map_file_name;
    private float  scale_factor, 
+                  minQValue,
                   maxQValue,
                   power  = 3.0f, 
                   radius = 0.0f, 
@@ -82,6 +83,8 @@ public class SetNewInstrumentCmd
    *                             
    *  @param scale_factor        if positive, value to multiply d-graphs and
    *                             q-graphs. Usually 1/protons_on_target.
+   *  @param minQValue           The minimum |Q| value to use when loading
+   *  @param maxQValue           The maximum |Q| value to use when loading
    *  @param power               Power of lambda for anvred corrections
    *  @param radius              Radius of the sample in centimeters
    *  @param smu                 Linear scattering coefficient at 1.8 Angstroms.
@@ -93,6 +96,7 @@ public class SetNewInstrumentCmd
                                String bank_file_name,
                                String ID_Map_file_name,
                                float  scale_factor, 
+                               float  minQValue,
                                float  maxQValue,
                                float  power, 
                                float  radius, 
@@ -106,6 +110,7 @@ public class SetNewInstrumentCmd
       this.bank_file_name   = bank_file_name;
       this.ID_Map_file_name = ID_Map_file_name;
       this.scale_factor     = scale_factor;
+      this.minQValue        = minQValue;
       this.maxQValue        = maxQValue;
       this.power            = power;
       this.radius           = radius;
@@ -160,16 +165,24 @@ public class SetNewInstrumentCmd
 
       return ID_Map_file_name;
    }
-   
+
+
+   public float getMinQValue()
+   {
+      if ( Float.isNaN( minQValue ) || minQValue <= 0 )
+        return 0;                                  // use all Q's
+
+      return minQValue;
+   }
+
 
    public float getMaxQValue()
    {
       if ( Float.isNaN( maxQValue ) || maxQValue <= 0 )
-        return 1000000;                                 // use all Q's
+        return 100;                                 // use all Q's
 
       return maxQValue;
    }
-
 
    public float getAbsorptionPower()
    {
@@ -202,6 +215,7 @@ public class SetNewInstrumentCmd
              "\nDetector File Name : " + getDetectorFileName() +
              "\nIncident Spectrum File Name : " +getIncidentSpectrumFileName()+
              "\nscale factor       : "+ getScaleFactor() +
+             "\nminQValue          : " + getMinQValue() +
              "\nmaxQValue          : " + getMaxQValue() +
              "\nAbsorption Power   : "+ getAbsorptionPower() +
              "\nAbsorption Radius  : "+ getAbsorptionRadius() +

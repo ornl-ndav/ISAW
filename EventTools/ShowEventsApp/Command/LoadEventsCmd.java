@@ -13,6 +13,7 @@ public class LoadEventsCmd
    private float  absorption_radius;
    private float  absorption_smu;
    private float  absorption_amu;
+   private float  minQValue;
    private float  maxQValue;
    private long   availableEvents;
    private long   firstEvent;
@@ -34,6 +35,7 @@ public class LoadEventsCmd
     * @param radius       The radius for the absorption correction
     * @param smu          The total scattering for absorption correction
     * @param amu          True absorption at lambda = 1.8 Angstoms
+    * @param minQValue    The minimum Q value to load
     * @param maxQValue    The maximum Q value to load
     * @param availableEvents The number of events in the file
     * @param firstEvent      The first event to load
@@ -53,6 +55,7 @@ public class LoadEventsCmd
                          float  radius,
                          float  smu,
                          float  amu,
+                         float  minQValue,
                          float  maxQValue,
                          long   availableEvents, 
                          long   firstEvent, 
@@ -73,6 +76,7 @@ public class LoadEventsCmd
       this.absorption_radius= radius;
       this.absorption_smu   = smu;
       this.absorption_amu   = amu;
+      this.minQValue        = minQValue;
       this.maxQValue        = maxQValue;
       this.availableEvents  = availableEvents;
       this.firstEvent       = firstEvent;
@@ -172,11 +176,18 @@ public class LoadEventsCmd
       return absorption_amu;
    }
 
+   public float getMinQValue()
+   {
+      if ( Float.isNaN( minQValue ) || minQValue < 0 )
+        return 0;                                 // use all Q's
+
+      return minQValue;
+   }
 
    public float getMaxQValue()
    {
       if ( Float.isNaN( maxQValue ) || maxQValue <= 0 )
-        return 1000000;                                 // use all Q's
+        return 100;                                // use all Q's
 
       return maxQValue;
    }
@@ -224,6 +235,7 @@ public class LoadEventsCmd
              "\nAbsorpRadius: " + getAbsorptionRadius()+
              "\nTotalAbsorp : " + getAbsorptionSMU() +
              "\nAbsorpTrue  : " + getAbsorptionAMU()  +
+             "\nMin Q Value : " + getMinQValue()         +
              "\nMax Q Value : " + getMaxQValue()         +
              "\nNum Events  : " + getAvailableEvents() +
              "\nFirst Event : " + getFirstEvent()      +

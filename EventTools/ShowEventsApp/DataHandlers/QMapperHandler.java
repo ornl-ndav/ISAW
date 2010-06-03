@@ -139,6 +139,7 @@ public class QMapperHandler implements IReceiveMessage
         return false;
       }
 
+      mapper.setMinQ( cmd.getMinQValue() );
       mapper.setMaxQ( cmd.getMaxQValue() );
       mapper.setAbsorptionParameters( cmd.getAbsorptionPower(),
                                       cmd.getAbsorptionRadius(),
