@@ -36,10 +36,12 @@ public class filterPeaksPanel extends JPanel
     JTextField ValueList;
     JTextField DVbyV;
     JCheckBox  OmitValues;
-	public static String CLEAR ="Clear omitted Pixels";
-	public static String APPLY ="Set as omitted Pixels";
-    public static String CLEAR_D ="Clear omitted D(Q)Values";
-    public static String APPLY_D ="Set as omitted D(Q) Values";
+
+    public static String CLEAR = "Clear Pixel ID Mask";
+    public static String APPLY = "Set as Pixel ID Mask";
+
+    public static String CLEAR_D ="Clear d,|Q| Event Mask";
+    public static String APPLY_D ="Set as d, |Q| Event Mask";
     
 	
 	public filterPeaksPanel(MessageCenter mc)
@@ -56,7 +58,7 @@ public class filterPeaksPanel extends JPanel
 		JPanel panel = new JPanel(new GridLayout(1,1));
 		tabPane = new JTabbedPane();
 		tabPane.add("Detector", buildDetectorPanel());
-		tabPane.add("D or Q", buildDQPanel());
+		tabPane.add("d, |Q|", buildDQPanel());
 		
 		panel.add(tabPane);
 		return panel;
@@ -69,7 +71,7 @@ public class filterPeaksPanel extends JPanel
 		panel.setLayout(  new BorderLayout() );
 
         fileChooser = new FileChooserPanel(
-                            FileChooserPanel.LOAD_FILE, "File with Omit information");
+                            FileChooserPanel.LOAD_FILE, "File with ID Mask Information");
         panel.add( fileChooser, BorderLayout.NORTH);
 
 		String[][] Data = new String[15][3];
@@ -83,14 +85,14 @@ public class filterPeaksPanel extends JPanel
 		JScrollPane jscr =new JScrollPane(DetectorTable);
 
         jscr.setBorder(  new TitledBorder( 
-             new LineBorder(Color.black), "Detectors and Rows/Cols to omit") );
+             new LineBorder(Color.black), "Detectors, Rows and Cols to Mask Off") );
 		panel.add( jscr, BorderLayout.CENTER);
 		    
 		JButton Clear = new JButton( CLEAR );
 		JButton Apply = new JButton( APPLY );
-		JPanel pp = new JPanel( new BorderLayout());
-		pp.add( Clear, BorderLayout.WEST );
-		pp.add( Apply, BorderLayout.EAST );
+		JPanel pp = new JPanel( new GridLayout(1,2));
+		pp.add( Clear );
+		pp.add( Apply );
 		panel.add(pp, BorderLayout.SOUTH);
 		Clear.addActionListener( new buttonListener());
 		Apply.addActionListener(  new buttonListener() );
@@ -107,9 +109,9 @@ public class filterPeaksPanel extends JPanel
         panel.setLayout( bl);
         
         JPanel unitPanel = new JPanel( new GridLayout(1,3));
-        d_unit  = new JCheckBox("d(Angstroms",true);
-        q1_unit = new JCheckBox("1/d",false);
-        q2_unit = new JCheckBox("2"+FontUtil.PI+"/d",false);
+        d_unit  = new JCheckBox("d(Angstroms)",true);
+        q1_unit = new JCheckBox("|'Q'| = 1/d",false);
+        q2_unit = new JCheckBox("|Q| = 2"+FontUtil.PI+"/d",false);
         unitPanel.add(  d_unit );
         unitPanel.add( q1_unit);
         unitPanel.add( q2_unit);
@@ -161,15 +163,14 @@ public class filterPeaksPanel extends JPanel
 	{
 		public void actionPerformed(ActionEvent e)
 		{
-			if(e.getActionCommand() ==  CLEAR)
+			if(e.getActionCommand() == CLEAR)
 			{
-			   
 			   JOptionPane.showMessageDialog(  null , "<html><body><center><font size=4>"+ 
 			             "This Operation has been <P>Registered<P> It will not "+
 			             "take effect until<P>the next Load Events</font>"+
 			             "</center></body></html>");
 			   
-			   message_center.send(  new Message( Commands.CLEAR_OMITTED_PIXELS, null,true) );
+			   message_center.send( new Message( Commands.CLEAR_OMITTED_PIXELS, null,true) );
 
 		        for( int i=0;i<15;i++)
 		           for( int j=0; j<3;j++)
@@ -179,14 +180,12 @@ public class filterPeaksPanel extends JPanel
 			   return;	
 			}
 			
-			
 			String  S = fileChooser.getTextField( ).getText( );
 			if( S != null && S.trim().length() < 1)
 			   S = null;
 			
 			if(e.getActionCommand() == APPLY)
 			{
-			   
 			   Vector V = new Vector();
 			   V.add(  S );
 			   String[] Line = new String[3];
@@ -259,7 +258,6 @@ public class filterPeaksPanel extends JPanel
             int pos =-1;
             try
             {
-
                for( int i = 0 ; i < vs.length ; i++ )
                {
                   pos=i+1;
