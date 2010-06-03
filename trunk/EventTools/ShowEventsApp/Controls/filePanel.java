@@ -782,9 +782,9 @@ public class filePanel implements IReceiveMessage
      {
        exception = true;
      }
-     if ( exception || MinQValue <= 0 )
+     if ( exception || MinQValue < 0 )
      {
-       ShowError(" minQValue must be a positive number " +
+       ShowError(" minQValue must be a non-negative number " +
                    minQValue.getText() );
        return false;
      }
