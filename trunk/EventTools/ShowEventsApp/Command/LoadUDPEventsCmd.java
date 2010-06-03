@@ -47,6 +47,7 @@ public class LoadUDPEventsCmd
    private float  absorption_radius;
    private float  absorption_smu;
    private float  absorption_amu;
+   private float  minQValue;
    private float  maxQValue;
    private long   nEventsToShow;
    
@@ -64,6 +65,7 @@ public class LoadUDPEventsCmd
     * @param radius       The radius for the absorption correction
     * @param smu          The total scattering for absorption correction
     * @param amu          True absorption at lambda = 1.8 Angstoms
+    * @param minQValue    The minimum Q value to load
     * @param maxQValue    The maximum Q value to load
     * @param nEventsToShow The number of events to show in the 3D view
     */
@@ -79,6 +81,7 @@ public class LoadUDPEventsCmd
                             float  radius,
                             float  smu,
                             float  amu,
+                            float  minQValue,
                             float  maxQValue,
                             long   nEventsToShow)
    {
@@ -94,6 +97,7 @@ public class LoadUDPEventsCmd
       this.absorption_radius= radius;
       this.absorption_smu = smu;
       this.absorption_amu  = amu;
+      this.minQValue       = minQValue;
       this.maxQValue       = maxQValue;
       this.nEventsToShow   = nEventsToShow;
    }
@@ -191,11 +195,19 @@ public class LoadUDPEventsCmd
 
       return absorption_amu;
    }
+
+   public float getMinQValue()
+   {
+      if (Float.isNaN( minQValue )|| minQValue <= 0 )
+        return 0;                               // use all Q's
+
+      return minQValue;
+   }
    
    public float getMaxQValue()
    {
-      if (Float.isNaN( maxQValue )|| maxQValue <=0 )
-        return 1000000;                               // use all Q's
+      if (Float.isNaN( maxQValue )|| maxQValue <= 0 )
+        return 100;                             // use all Q's
 
       return maxQValue;
    }
@@ -215,11 +227,12 @@ public class LoadUDPEventsCmd
              "\nBank File   : " + getBankFile()        +
              "\nID Map File : " + getIDMapFile()       +
              "\nMatrix File : " + getMatFile()         +
-             "\nAbsorptionPower : " + getAbsorptionPower()+
+             "\nAbsorptionPower : " + getAbsorptionPower() +
              "\nAbsorptionRadius: " + getAbsorptionRadius()+
-             "\nTotalAbsorption : " + getAbsorptionSMU() +
-             "\nAbsorptionTrue  : " + getAbsorptionAMU()  +
-             "\nMax Q Value : " + getMaxQValue()       +
+             "\nTotalAbsorption : " + getAbsorptionSMU()   +
+             "\nAbsorptionTrue  : " + getAbsorptionAMU()   +
+             "\nMin Q Value     : " + getMinQValue()       +
+             "\nMax Q Value     : " + getMaxQValue()       +
              "\n#Events to Show"+ getNEventsToShow();
    }
 
