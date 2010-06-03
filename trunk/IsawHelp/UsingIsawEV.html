@@ -96,15 +96,68 @@ is shown.
 
 
 <P>
-<FONT size=+1>Maximum Q range</FONT>
+<FONT size=+1>Maximum/Minimum Q range</FONT>
 <BR>
 <BR>
-For either file or live data, the maximum |Q| value to be loaded can be 
-specified.  Specifying this can help omit noisy data values at large |Q|.
+For either file or live data, the maximum and minimum |Q| values to be 
+loaded can be specified.  The specified minimum !Q! must be at least zero and
+less than the specified maximum !Q!.  Restricting the !Q! range of events
+can help omit noisy data values at small or large |Q|.
 This is particularly helpful when trying to find peaks in single crystal 
 data.  Eliminating the large |Q| values often allows setting a lower 
 threshold for peaks to find more valid peaks, without finding a lot of
 spurious peaks in the noisy high |Q| range.
+</P>
+
+
+<P>
+<FONT size=+1>Filtering Events</FONT>
+<BR>
+<BR>
+For either file or live data, events can also be filtered based on 
+detector, row and column number, and based on their d or |Q| values.
+These filters are controlled by the "Filter Events" panel.  The
+"Filter Events" panel has two tabbed panes.  
+<BR>
+<BR>
+On the "Detector" tabbed pane, you can specify whole detectors, or rows and
+columns of detectors that should be masked off.  Events from any specified
+detectors, rows and columns will be omitted as the events are loaded.  For
+example, if the user enters 3:5,9 in the "Detectors" column of line one of 
+the table, and leaves the "Row(s)" and "Col(s)" columns blank, then data
+from detectors 3,4,5, and 9 will be excluded as the events are loaded.
+Similarly, if the user enters 1:5,252:256 in the "Row(s)" and "Col(s)"
+columns, of line 2 of the table, but leaves the "Detector(s)" column blank,
+then these rows and columns will also be deleted for all detectors.  Finally,
+if the user entered  17,18 in the "Detector(s)" column of line 3 and
+"1:20" in the "Row(s)" column and "150:17" in the "Col(s)" column then events
+from the specified rows and columns of detectors 17 and 18 will also
+be excluded when the events are loaded.  
+<BR>
+<BR>
+Up to 15 such conditions can be specified on the lines of the detector mask
+table. This provides a fairly flexible way to specify detectors or portions of
+detectors to be masked off.  If greater flexibility is required, a file
+specifying individual pixel IDs to mask off could be loaded.  This feature
+will be implemented in a later version of IsawEV.
+<BR>
+<BR>
+On the "d, !Q!" tabbed pane, you can mask off (or include) events based 
+on intervals around specified d or |Q| values by.  For example, the user 
+could specify a comma
+separated list of d-values for several strong aluminum peaks in the
+"List Values" text box, and specify an appropriate peak width in the 
+"Delta_Value/Value" box, in order to omit the aluminum peaks from the 
+data.  The intervals can be specified in terms of "d", or |Q| depending 
+on the choice of "Value units".  Alternatively, if only certain ranges 
+of d or |Q| are of interest, the user can specify these values and select
+"Keep Values" instead of "Omit Values".
+<BR>
+<BR>
+NOTE: To activate these filters, the "Set" button on the bottom of the 
+forms must be pressed.  The filters will then take effect for events that are 
+loaded AFTER the filters were set.  The filters will remain in effect 
+until the "Clear" buttons are pressed.
 </P>
 
 
