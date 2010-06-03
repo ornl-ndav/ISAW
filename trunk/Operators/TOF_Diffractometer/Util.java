@@ -62,6 +62,7 @@ public class Util
   public static final String D_SPACING  = "d-Spacing";
   public static final String MAG_Q      = "Magnitude Q";
   public static final String WAVELENGTH = "Wavelength";
+  public static final String RAW_TOF    = "RAW Time-of-flight";
   public static final String TOF        = "Time-of-flight";
   
                                         // A segment size of about 4 MB that
@@ -95,7 +96,9 @@ public class Util
     * 
     * @param nUniformbins     The number of uniform bins( isLog = false )
     *
-    * @param x_axis_type      One of the Strings "magnitude Q", "Wavelength" 
+    * @param x_axis_type      One of the Strings "d-Spacing", "Magnitude Q", 
+    *                         "Wavelength", "RAW Time-of-flight"
+    *                         or "Time-of-flight"
     *
     * @return  A DataSet in whose spectra are the histograms
     *          for a detector bank.
@@ -117,6 +120,7 @@ public class Util
      if ( ! x_axis_type.equalsIgnoreCase( MAG_Q )      &&
           ! x_axis_type.equalsIgnoreCase( WAVELENGTH ) &&
           ! x_axis_type.equalsIgnoreCase( D_SPACING )  && 
+          ! x_axis_type.equalsIgnoreCase( RAW_TOF )    && 
           ! x_axis_type.equalsIgnoreCase( TOF )        )
 
        throw new IllegalArgumentException( "x_axis_type MUST be one of " +

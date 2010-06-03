@@ -105,6 +105,14 @@ public class Make_Histograms_Op implements IOperator
                                                  binner, 
                                                  null );
 
+    else if ( x_axis_type.equalsIgnoreCase( Util.RAW_TOF ) )
+
+      int_histograms = mapper.Make_RAW_TOF_Histograms( ev_list,
+                                                       first_event,
+                                                       num_events,
+                                                       binner );
+
+
     else if ( x_axis_type.equalsIgnoreCase( Util.TOF ) )
 
       int_histograms = mapper.Make_Time_Focused_Histograms( ev_list, 

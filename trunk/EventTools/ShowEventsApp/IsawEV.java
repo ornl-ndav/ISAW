@@ -95,6 +95,8 @@ public class IsawEV
     new DQDataHandler( message_center, view_message_center );
 
     new EventViewHandler( message_center, view_message_center );
+
+//  new LocalEventViewHandler( message_center, view_message_center );
     
     new DViewHandler( view_message_center );
 

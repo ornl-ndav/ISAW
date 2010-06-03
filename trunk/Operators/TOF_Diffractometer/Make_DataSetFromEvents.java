@@ -85,7 +85,9 @@ public class Make_DataSetFromEvents extends GenericOperator{
       addParameter( new BooleanEnablePG("Logarithmic Binning","[true,1,1]"));
       addParameter( new FloatPG("Length of First Interval",.0002));
       addParameter( new IntegerPG("# of Uniform bins",1000));
-      addParameter( new ChoiceListPG("Type of x-axis",gov.anl.ipns.Parameters.Conversions.ToVec("[d-Spacing,\"Magnitude Q\",Wavelength,Time-of-flight]")));
+      addParameter( new ChoiceListPG("Type of x-axis",
+          gov.anl.ipns.Parameters.Conversions.ToVec(
+  "[d-Spacing,\"Magnitude Q\",Wavelength,\"RAW Time-of-flight\",Time-of-flight]")));
    }
 
 
@@ -99,8 +101,8 @@ public class Make_DataSetFromEvents extends GenericOperator{
       StringBuffer S = new StringBuffer();
       S.append("@overview    "); 
       S.append("Makes a DataSet containing spectra in Wavelength,|Q|, ");
-      S.append("d-Spacing or time-focused to the center of each " );
-      S.append("bank, with one spectrum for each detector bank.");
+      S.append("d-Spacing, RAW time-of-flight or focused time-of-flight.  ");
+      S.append("There is one spectrum for each detector bank.");
       S.append(" ");
       S.append("\r\n");
      S.append(" This operator wraps the method Operators.TOF_Diffractometer.Util#Make_DataSetFromEvents(java.lang.String,java.lang.String,java.lang.String,java.lang.String,float,float,float,float,boolean,float,int,java.lang.String)");

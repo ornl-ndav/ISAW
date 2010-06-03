@@ -561,7 +561,8 @@ public class SNS_Tof_to_Q_map
   *  Get a list of all of the detector grid (aka bank or module) IDs used
   *  by this mapper.
   *
-  *  @param a list of the grid IDs used by this mapper.
+  *  @return Array of ints containing the list of the grid IDs used by 
+  *          this mapper.
   */
   public int[] getGridIDs()
   {
@@ -717,10 +718,10 @@ public class SNS_Tof_to_Q_map
   * set the entire list of ids to be used, so it will overwrite any
   * previously set values specifying which IDs to use.
   *
-  * @param endpoints  Array of boolean values specifying which IDs should
-  *                   be used when mapping events to Q.  In most cases,
-  *                   the list of boolean values should have an entry for
-  *                   each possible DAS id.
+  * @param flags   Array of boolean values specifying which IDs should
+  *                be used when mapping events to Q.  In most cases,
+  *                the list of boolean values should have an entry for
+  *                each possible DAS id.
   */
   public void setDAS_ID_Filter( boolean[] flags )
   {
@@ -1847,6 +1848,70 @@ public class SNS_Tof_to_Q_map
       {
         wl_value = tof_to_lamda[id] * tof_chan / 10.0f;
         index    = binner.index( wl_value );
+        if ( index >= 0 && index < num_bins )
+        {
+          grid_id = bank_num[ id ];
+          if ( histogram[ grid_id ] != null )
+            histogram[ grid_id ][ index ]++;
+        }
+      }
+    }
+
+    return histogram;
+  }
+
+
+  /**
+   *  Map the specified sub-list of time-of-flight events to a 
+   *  list of RAW time-of-flight histograms, one histogram for each bank.
+   *  NOTE: The times-of-flight are NOT focused in this method.  The 
+   *        returned histograms will be essentially like the histograms
+   *        returned by Make_ws_Histograms, except the x-axis units will
+   *        be time-of-flight in microseconds, rather than wavelength in
+   *        Angstroms.
+   *
+   *  @param event_list  List of (tof,id) specifying detected neutrons.
+   *
+   *  @param first       The index of the first event to map to RAW time-
+   *                     of-flight. 
+   *
+   *  @param num_to_map  The number of events to map to RAW time-of-flight 
+   *
+   *  @param binner      The IEventBinner object that defines the bin
+   *                     boundaries for the histogram bins
+   *                     
+   *  @return A two dimensional array of integers.  The kth row of this 
+   *          array contains the histogram values for detector bank k.
+   *          If detector bank k does not exist, that row will be null.
+   */
+  public int[][] Make_RAW_TOF_Histograms( ITofEventList event_list,
+                                          long          first,
+                                          long          num_to_map,
+                                          IEventBinner  binner  )
+  {
+    int num_mapped = CheckAndGetNumToMap( event_list, first, num_to_map );
+
+    float  tof_chan;
+    float  tof_value;
+    int    id;
+
+    int    ev_index = 0;                      // index into event array
+    int    index;                             // index into histogram bin
+    int    num_bins = binner.numBins();
+    int    grid_id;
+
+    int[]   my_events = event_list.rawEvents( first, num_mapped );
+    int[][] histogram = getEmptyIntHistogram( binner );
+
+    for ( int i = 0; i < num_mapped; i++ )
+    {
+      tof_chan = my_events[ ev_index++ ] + t0;
+      id       = my_events[ ev_index++ ];
+
+      if ( id >= 0 )
+      {
+        tof_value = tof_chan / 10.0f;
+        index     = binner.index( tof_value );
         if ( index >= 0 && index < num_bins )
         {
           grid_id = bank_num[ id ];
