@@ -1,3 +1,36 @@
+/* 
+ * File: ScalarForm.java
+ *
+ * Copyright (C) 2010, Ruth Mikkelson
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * Contact : Ruth Mikkelson <mikkelsonr@uwstout.edu>
+ *           Department of Mathematics, Statistics and Computer Science
+ *           University of Wisconsin-Stout
+ *           Menomonie, WI 54751, USA
+ *
+ * This work was supported by the Spallation Neutron Source Division
+ * of Oak Ridge National Laboratory, Oak Ridge, TN, USA.
+ *
+ *  Last Modified:
+ * 
+ *  $Author:$
+ *  $Date:$            
+ *  $Rev:$
+ */
 package Wizard.TOF_SCD;
 
 import java.awt.event.ActionEvent;
@@ -33,6 +66,10 @@ public class ScalarForm extends Form
    ScalarHandlePanel ScalarPanel;
    OutSideInputListener  outListener;
    
+   /**
+    * Constructor
+    * @param title   Title
+    */
    public ScalarForm(String title)
    {
 
@@ -41,6 +78,13 @@ public class ScalarForm extends Form
     
    }
    
+   /**
+    * Constructor
+    * 
+    * @param title     Title
+    * 
+    * @param hasConstantParams   true if there are constant parameters
+    */
    public ScalarForm( String title, boolean hasConstantParams)
    {
       super( title, hasConstantParams);
@@ -65,22 +109,21 @@ public class ScalarForm extends Form
      
    }
    
+   /**
+    *  Copies parameter values to under ScalarPanel
+    */
    public void makeGUI()
    {
       outListener.update( getParameter(0) , ParameterGUI.VALUE_CHANGED  );
       super.makeGUI( );
    }
  
-   @Override
-   protected Object validateSelf()
-   {
+  
 
-     
-      return super.validateSelf( );
-   }
-
- 
-
+   
+   /**
+    * Set the parameters to save the state of the underlying ScalarPanel
+    */
    @Override
    public void setDefaultParameters()
    {
@@ -91,7 +134,7 @@ public class ScalarForm extends Form
      addParameter( new FloatPG("Tolerance", .1f));
      addParameter( new StringPG("Sort Criteria","Symmetry" ));
      addParameter( new IntegerPG("Selected Transf Indx", 0));
-     setResultParam( new ArrayPG("transformation","[[1,0,0],[0,1,0],[0,0,1]]"));
+     setResultParam( new StringPG("transformation","[[1,0,0],[0,1,0],[0,0,1]]"));
      
      setParamTypes( new int[]{UB_PARAM}, new int[]{SYM_CENT_PARAM,TOLERANCE,SORT_ON,SEL_TRANS_INDX},
            new int[]{RESULT_PARAM});
@@ -101,9 +144,17 @@ public class ScalarForm extends Form
      ((FloatPG)getParameter(2)).addIObserver(outListener);
      ((StringPG)getParameter(3)).addIObserver( outListener);
      ((IntegerPG)getParameter(4)).addIObserver(outListener);
-     ((ArrayPG)getParameter(5)).addIObserver( outListener);
+     
    }
 
+   
+   /**
+    * Sets the given parameter and add itself as an IObserver to the
+    * new parameter
+    * 
+    * @param param  The new parameter
+    * @param inds   The parameter index to be replaced
+    */
    public boolean setParameter( IParameter param, int indx )
    {
       ((ParameterGUI)getParameter(indx)).deleteIObserver( outListener );
@@ -113,7 +164,11 @@ public class ScalarForm extends Form
       return res;
    }
    
-   //setParameter  override incase the parameter is changed
+   /**
+    * Reads the selected transformation from the underlying ScalarPanel.
+    * This also sets the result parameter( StringPG) and returns the vector
+    * form of this result
+    */
    @Override
    public Object getResult()
    {
@@ -122,21 +177,23 @@ public class ScalarForm extends Form
       if( transf == null || transf.length !=3)
          return new ErrorString("No Transformation has been selected");
       
-      
-      ScriptUtil.display( "Result="+ gov.anl.ipns.Util.Sys.StringUtil.toString( transf ) );
+      String Result = gov.anl.ipns.Util.Sys.StringUtil.toString( transf ) ;
+      ScriptUtil.display( "Result="+ Result);
       
       Vector V = (Vector)Command.ScriptUtil.ToVec( transf);
       
-      getResultParam().setValue(  V );
+      getResultParam().setValue( Result );
       
-      return transf;
+      return V;
    }
    
    
   
 
    /**
-    * @param args
+    * Test program with a simple wizard
+    * 
+    * @param args     None are used
     */
    public static void main(String[] args)
    {
@@ -153,6 +210,13 @@ public class ScalarForm extends Form
 
    }
    
+   /**
+    * Listenes for changes in the underlying ScalarPanel, changing the values
+    * of the corresponding parameters that are used to save the state
+    * 
+    * @author ruth
+    *
+    */
    class ChangeInputListener implements ActionListener
    {
 
@@ -185,6 +249,13 @@ public class ScalarForm extends Form
       
    }
    
+   /**
+    * Listens for changes to the parameters from outside, translating this into the
+    * underlying ScalarPanel.
+    * 
+    * @author ruth
+    *
+    */
    class OutSideInputListener implements IObserver
    {
 
@@ -196,6 +267,7 @@ public class ScalarForm extends Form
               observedObj instanceof ParameterGUI)
         {
           Vector V = (Vector)((ArrayPG)getParameter(0)).getValue( );
+          
           if( V != null && V.size() == 3)             
           {
              float[][] Ormat = new float[3][];
@@ -210,6 +282,7 @@ public class ScalarForm extends Form
                    LinearAlgebra.getTranspose(  Ormat ), true ));
               
           }
+          
          String R = getParameter( SYM_CENT_PARAM).getValue( ).toString( );
          ScalarPanel.setSymmCenterings(R );
          
