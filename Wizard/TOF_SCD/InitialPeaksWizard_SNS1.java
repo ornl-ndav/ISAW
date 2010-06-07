@@ -128,9 +128,9 @@ public class InitialPeaksWizard_SNS1 extends Wizard {
      addForm( new OrientMat());
      addForm( new ScriptForm(path+"JIndex_Init1.iss", new StringPG("Result",""),
     		 new int[]{0,1,6,7} ));
-     
-     addForm( new ScriptForm(path +"Scalar.iss", new StringPG("Transformation from Scalar",""),
-                new int[]{0,3}));
+     addForm( new ScalarForm("Scalar"));
+   //  addForm( new ScriptForm(path +"Scalar.iss", new StringPG("Transformation from Scalar",""),
+   //             new int[]{0,3}));
      addForm( new ScriptForm(path+"LsqrsInit.iss",
                  new ArrayPG("Orientation Matrix", new Vector()),
                  new int[]{0,5,10}));
@@ -144,9 +144,9 @@ public class InitialPeaksWizard_SNS1 extends Wizard {
               {-1, 15, 1, 0,-1,-1}, //init UB matrix
               {23,12,-1,-1,-1,-1},
               {24,11,-1,-1,-1,-1},
-              {-1,-1,-1, 6, 5,-1}, //Transformation
+              {-1,-1,-1, 5, 5,-1}, //Transformation{-1,-1,-1, 6, 5,-1}
               {-1,-1,-1,-1,12, 1},  //lsqrs UB matrix
-              {1 , 1 ,6, 3,10, 6},//path
+              {1 , 1 ,6, -1,10, 6},//path{1 , 1 ,6, 3,10, 6}
               {4 ,-1 ,7,-1, -1,7}//,expname
                                 // {14,6,-1,-1,-1,-1}  //Max dSpacing
             
