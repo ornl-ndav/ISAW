@@ -387,9 +387,9 @@ public class OrientMat extends Form implements ActionListener , IObserver ,
 
       addParameter( new StringPG( "Prefix on file" , "" ) );
 
-      addParameter( new FloatPG( "Minimum d-spacing" , -1 ) );
+      addParameter( new FloatPG( "Minimum Unit Cell length" , -1 ) );
 
-      addParameter( new FloatPG( "Maximum d-spacing" , -1) );
+      addParameter( new FloatPG( "Maximum Unit Cell length" , -1) );
 
       setResultParam( new ArrayPG( "Orientation Matrix" , null ) );
 
