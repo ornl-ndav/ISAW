@@ -57,6 +57,7 @@ package Operators.TOF_SCD;
 import DataSetTools.operator.Operator;
 import DataSetTools.operator.Generic.TOF_SCD.*;
 import DataSetTools.util.SharedData;
+import gov.anl.ipns.MathTools.LinearAlgebra;
 import gov.anl.ipns.Parameters.IntArrayPG;
 import gov.anl.ipns.Parameters.PlaceHolderPG;
 import gov.anl.ipns.Parameters.SaveFilePG;
@@ -215,6 +216,12 @@ public class BlindJ_base extends  GenericTOF_SCD implements
     error=BLIND.bias(newPeaks.size()+3,xx,yy,zz,seq);
     if(error!=null) return error;
 
+    SharedData.addmsg( " Re Nigglified Blind's UB matrix. "+
+                                  "Log file may differ" );
+    
+    BLIND.UB = LinearAlgebra.float2double( 
+                  DataSetTools.components.ui.Peaks.subs.Nigglify(
+                            LinearAlgebra.double2float( BLIND.UB)));
     // write the log file
     int index= -1;
     if(matrixfile != null)
