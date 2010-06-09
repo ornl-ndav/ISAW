@@ -184,6 +184,10 @@ public class ScalarForm extends Form
       
       getResultParam().setValue( Result );
       
+      for( int i=0; i< this.getNum_parameters( ); i++)
+         ((IParameterGUI)getParameter(i)).setValidFlag( true );
+      getResultParam().setValidFlag( true );
+      
       return V;
    }
    
