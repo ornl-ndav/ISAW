@@ -1100,24 +1100,29 @@ public class GetUB {
        weights[FIT1]=-.5f;
        weights[CORR]=-.5f;
        
-       ListComparator comp = new ListComparator( List, n, Nelements-1,weights );
+       ListComparator comp = new ListComparator( List, n, Nelements-1 , 
+                                                              weights );
        comp.sort();
-       Integer[] sortList = comp.getRangList();
-       float[][] FList = new float[sortList.length][];
-       System.out.println("NElts, sortList, List ="+ sortList.length+","+Nelements);
-       for( int i=0; i< sortList.length; i++)
-          System.out.print( sortList[i]+",");
+       
+       Integer[] sortList = comp.getRangList();       
+      
+       //System.out.println("NElts, sortList, List ="+ sortList.length+","+Nelements);
+      // for( int i=0; i< sortList.length; i++)
+       //   System.out.print( sortList[i]+",");
        int[] poss = new int[3];
        Vector<float[][]> OO = GetUBs( sortList, poss, Peaks);
-       if( OO == null || OO.size() < 1)
+       
+       if( OO == null || OO.size() < 1 )
+          
           return null;
+       
        else
        {  
           Arrays.fill( code , - 1f );
           code[6] = Nelements;
           
           float[][] Res1= new float[3][3];
-          for( int ii=0;ii<3; ii++ )
+          for( int ii= 0; ii < 3; ii++ )
           {
 
              float[] listEntry = List[ poss[ii] ];
@@ -1132,14 +1137,14 @@ public class GetUB {
              Res1[ii][ 2 ] = (float) Math.sqrt( 1 - x *x - y * y ) * scale;
           }
           
-          
+          return Res1;
        }
           
           
       // List = FList;
  
    //----------end added code to sort the list------
-       if( Nelements <= 0 )
+  /*     if( Nelements <= 0 )
          return null;
       float[] q1 , q2 , q3;
       q1 = new float[ 3 ];
@@ -1225,7 +1230,7 @@ public class GetUB {
 
 
       return Res1;
-
+*/
 
    }
    
@@ -1724,7 +1729,7 @@ public class GetUB {
          if( code[0] >.92 && code[2] >  .92 && code[4] > .92) //done if most points
                done = true;                                   //are on a plane
         
-        if( (2f*Peaks.size())/Nomitted  >1.7)                 //but not if there are too
+        if( (2f*Peaks.size())/Nomitted  < 1.7)                 //but not if there are too
               done = false;                                   //many omitted points
         
          if( ( NomittedOld == Nomitted ) && ! done ) {
@@ -2178,7 +2183,7 @@ public class GetUB {
                  GetUB.InsertInList( Res );
                }
             }
-         System.out.println("kk="+kk);
+        // System.out.println("kk="+kk);
       }
    }
 
