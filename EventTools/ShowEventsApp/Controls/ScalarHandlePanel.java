@@ -214,6 +214,7 @@ public class ScalarHandlePanel implements IReceiveMessage
       Delta.addActionListener(  act );
       SortOn.addActionListener( act );
       viewer.addActionListener( act);
+      
       if( !listener.contains( act ))
          listener.add( act );
    }
@@ -654,14 +655,14 @@ public class ScalarHandlePanel implements IReceiveMessage
          double dist = redCell.weighted_distance( SrcRedCell1 );
          
          if ( dist < delta )
-            ScalarOpts.add( new ReducedCellPlus( redCell , -1 , dist ) );
+            ScalarOpts.add( new ReducedCellPlus( redCell , -1 , dist, null ) );
 
          redCell = new ReducedCellInfo( i , latParams2[0] , latParams2[1] ,
                latParams2[2] , latParams2[3] , latParams2[4] , latParams2[5] );
          dist = redCell.weighted_distance(  SrcRedCell2 );
          
          if ( dist < delta )
-            ScalarOpts.add( new ReducedCellPlus( redCell , side , dist ) );
+            ScalarOpts.add( new ReducedCellPlus( redCell , side , dist, null ) );
 
       }
 
@@ -1158,13 +1159,17 @@ public class ScalarHandlePanel implements IReceiveMessage
       double          distance;
 
       ReducedCellInfo redCell;
+      
+      int[]  rowOrder;
 
-      public ReducedCellPlus(ReducedCellInfo redCell, int flipUBRow, double dist)
+      public ReducedCellPlus(ReducedCellInfo redCell, int flipUBRow, 
+            double dist, int[] rowOrder)
       {
 
          this.redCell = redCell;
          this.flipUBRow = flipUBRow;
          this.distance = dist;
+         this.rowOrder = rowOrder;
       }
 
    }
