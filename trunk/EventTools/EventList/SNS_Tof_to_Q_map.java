@@ -137,7 +137,7 @@ public class SNS_Tof_to_Q_map
   private final int   NUM_WAVELENGTHS = 
                              Math.round( MAX_WAVELENGTH * STEPS_PER_ANGSTROM );
 
-  private boolean     debug = false;
+  private boolean     debug = true;
 
   private IDataGrid[]  grid_arr;         // list of actual grids
   private IDataGrid[]  all_grids;        // list of possible grids, indexed by
@@ -2471,11 +2471,22 @@ public class SNS_Tof_to_Q_map
   {
                             // make table of IDataGrids indexed by the grid ID 
                             // missing grids are marked with a null
-    int max_grid_id = 0;     
+
+                            // First find the largest possible ID by scanning
+                            // through the information from the .DetCal and
+                            // the Bank.xml files
     int val;
+    int max_grid_id = 0;     
     for ( int i = 0; i < datagrid_arr.length; i++ )
     {
       val = datagrid_arr[i].ID();
+      if ( val > max_grid_id )
+        max_grid_id = val;
+    }
+
+    for ( int i = 0; i < bank_info.length; i++ )
+    {
+      val = bank_info[i].ID();
       if ( val > max_grid_id )
         max_grid_id = val;
     }
@@ -2484,6 +2495,7 @@ public class SNS_Tof_to_Q_map
                                               //       by max_grid_ID and
                                               //       add method to find it.
 
+    System.out.println("**** max_grid_id = " + max_grid_ID );
     all_grids      = new IDataGrid[ max_grid_id + 1 ];
     all_bank_infos = new BankInfo [ max_grid_id + 1 ]; 
     for ( int i = 0; i < all_grids.length; i++ )
