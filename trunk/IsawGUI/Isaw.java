@@ -1014,7 +1014,7 @@ public class Isaw
         String val="";
 
         if(SharedData.VERSION.equals("Unknown_Version"))
-          version="1.9.1_03";
+          version="1.9.1_03_01";
         else
           version=SharedData.VERSION;
 
@@ -2869,7 +2869,7 @@ public class Isaw
                  " -XX:ParallelGCThreads=4 " +
                  " -Dsun.awt.noerasebackground=true " +
                  " -Dsun.java2d.noddraw=true " +
-   //            " -Dsun.java2d.opengl=true " +      // NO! Fails on 64-bit Vista
+   //            " -Dsun.java2d.opengl=true " +    // NO! Fails on 64-bit Vista
                  " EventTools.ShowEventsApp.IsawEV";
 
       System.out.println("LAUNCHING IsawEV with command:");
