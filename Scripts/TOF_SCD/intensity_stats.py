@@ -20,8 +20,8 @@ class intensity_stats(GenericTOF_SCD):
     def setDefaultParameters(self):
     
         self.super__clearParametersVector()
-        self.addParameter(DataDirPG("Directory containing the integrate file", "C:\SNS\FortranPrograms\stats"))
-        self.addParameter(StringPG("Experiment name", "ox"))
+        self.addParameter(DataDirPG("Directory containing the integrate file", ""))
+        self.addParameter(StringPG("Experiment name", ""))
         self.addParameter(FloatPG("Minimum d-spacing (Angstroms)", 0.7))
 
         
