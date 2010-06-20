@@ -35,17 +35,12 @@
 package DataSetTools.operator.DataSet.Conversion.XAxis;
 
 import gov.anl.ipns.MathTools.Geometry.*;
-import gov.anl.ipns.Parameters.IParameter;
-import gov.anl.ipns.ViewTools.UI.*;
 
 import  java.io.*;
 import  java.util.Vector;
 import  DataSetTools.dataset.*;
 import  DataSetTools.math.*;
 import  DataSetTools.instruments.*;
-import  DataSetTools.operator.Parameter;
-import  DataSetTools.gsastools.GsasCalib;
-import  DataSetTools.viewer.*;
 
 /**
  * This operator converts a neutron time-of-flight from D-spacing to
