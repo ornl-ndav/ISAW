@@ -8,6 +8,7 @@ import java.awt.event.*;
 import javax.swing.*;
 
 import gov.anl.ipns.MathTools.Geometry.*;
+import gov.anl.ipns.MathTools.LinearAlgebra;
 import gov.anl.ipns.Util.Sys.FinishJFrame;
 import gov.anl.ipns.ViewTools.Components.ViewControls.ColorScaleControl.*;
 import gov.anl.ipns.Util.Sys.IhasWindowClosed;
@@ -45,8 +46,9 @@ public class EventViewHandler implements IReceiveMessage, IhasWindowClosed
   private long               num_to_show;
   private long               num_shown;
   private Object             eventPanelMonitor = new Object();
-  Component component;
-  Rectangle PanelOrig;
+  private Component          component;
+  private Rectangle          PanelOrig;
+  private float[][]          orientation_matrix = null;
 
   public EventViewHandler( MessageCenter message_center,
                            MessageCenter view_message_center )
@@ -62,6 +64,7 @@ public class EventViewHandler implements IReceiveMessage, IhasWindowClosed
     message_center.addReceiver( this, Commands.SET_DRAWING_OPTIONS );
     message_center.addReceiver( this, Commands.SET_COLOR_SCALE );
     message_center.addReceiver( this, Commands.MARK_PEAKS );
+    message_center.addReceiver( this, Commands.SET_ORIENTATION_MATRIX );
     message_center.addReceiver( this, Commands.MARK_INDEXED_PEAKS );
 
     view_message_center.addReceiver( this, Commands.ADD_EVENTS_TO_VIEW );
@@ -222,7 +225,22 @@ public class EventViewHandler implements IReceiveMessage, IhasWindowClosed
                  float qx = (float)(q_arr[0] * 2 * Math.PI);
                  float qy = (float)(q_arr[1] * 2 * Math.PI);
                  float qz = (float)(q_arr[2] * 2 * Math.PI);
+
+                 float[] hkl = new float[3];
+                 hkl[0] = Math.round( peak.h() );
+                 hkl[1] = Math.round( peak.k() );
+                 hkl[2] = Math.round( peak.l() );
+                 float[] qxyz = LinearAlgebra.mult( orientation_matrix, hkl );
+
+/*               System.out.printf( "HKL = %4.0f %4.0f %4.0f ",
+                                    hkl[0], hkl[1], hkl[2] );
+                 System.out.printf( " Peak QXY = %6.2f  %6.2f  %6.2f ",
+                                    qx, qy, qz );
+                 System.out.printf( " Mapped QXY = %6.2f  %6.2f  %6.2f\n",
+                                    qxyz[0], qxyz[1], qxyz[2] );
+*/
                  indexed_peaks.add( new Vector3D( qx, qy, qz ) );
+                 indexed_peaks.add( new Vector3D( qxyz[0], qxyz[1], qxyz[2] ));
                }
            }
            if ( indexed_peaks.size() > 0 )
@@ -237,7 +255,25 @@ public class EventViewHandler implements IReceiveMessage, IhasWindowClosed
          }
        }
     }
-    else if( message.getName().equals(Commands.SHOW_DISPLAY_PANE) )
+
+    else if ( message.getName().equals(Commands.SET_ORIENTATION_MATRIX) ) 
+    {
+      Object val = message.getValue();
+      if ( val == null || !( val instanceof Vector ) )
+        return false;
+
+      Vector vec = (Vector)val;
+      if ( vec.size() < 1 || !( vec.elementAt(0) instanceof float[][] ) )
+        return false; 
+
+      float[][] UBT = (float[][]) vec.elementAt(0);
+      orientation_matrix = LinearAlgebra.getTranspose( UBT );
+      for ( int row = 0; row < 3; row++ )
+        for ( int col = 0; col < 3; col++ )
+           orientation_matrix[row][col] *= (float)(2*Math.PI);
+    }
+
+    else if ( message.getName().equals(Commands.SHOW_DISPLAY_PANE) )
     {
        if( frame3D != null)
           return false;
