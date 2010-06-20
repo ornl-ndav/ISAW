@@ -182,21 +182,34 @@ public class Commands
   public static final String CLEAR_OMITTED_PIXELS ="CLEAR_OMITTED_PIXELS";
 
   /*
-   * Value is a Vector of Vectors where the first vector is the filename(null) then
-   * each of the next Vector consists of 3 entries of int[] or null.
+   * Value is a Vector of Vectors where the first vector is the filename(null)
+   * then each of the next Vector elements consist of 3 entries of int[] or 
+   * null.
    */
   public static final String APPLY_OMITTED_PIXELS ="APPLY_OMITTED_PIXELS";
   
   /**
-   * Value is a Vector with 2 elements. The first is boolean indicating whether to
-   * omit or keep the ranges and the 2nd is a float[] where each pair is start/end of interval 
-   * to omit/keep
+   * Value is a Vector with 2 elements. The first is boolean indicating whether
+   * to omit or keep the ranges and the 2nd is a float[] where each pair is 
+   * start/end of interval to omit/keep
    */
   public static final String APPLY_OMITTED_DRANGE ="APPLY_OMITTED_DRANGE";
-     
 
   public static final String CLEAR_OMITTED_DRANGE ="CLEAR_OMITTED_DRANGE";
      
+
+  /**
+   * Messages for quick event integration.
+   */
+  public static final String COUNT_INTEGRATED_INTENSITIES =
+                                              "COUNT_INTEGRATED_INTENSITIES";
+  public static final String SET_INTEGRATED_INTENSITY_STATS =
+                                              "SET_INTEGRATED_INTENSITY_STATS";
+  public static final String CLEAR_INTEGRATED_INTENSITIES =
+                                              "CLEAR_INTEGRATED_INTENSITIES";
+  public static final String WRITE_INTEGRATED_INTENSITIES = 
+                                              "WRITE_INTEGRATED_INTENSITIES";
+
   /*
 //  public static final String SET_POSITION_INFO = "SET_POSITION_INFO";
   public static final String SET_SLICE_2 = "Set Slice 2";
