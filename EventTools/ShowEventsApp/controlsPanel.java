@@ -87,6 +87,8 @@ public class controlsPanel extends JPanel
    private additionalViewControls sliceControlsPanel;
    private drawingOptions         drawoptions;
    private filterPeaksPanel       filterPeaks;
+   private IntegratePeaksPanel    integratePeaks;
+
    
 // private final Color background_color = new Color( 221, 232, 243 );
    private final Color background_color = new Color( 187, 209, 230 );
@@ -118,19 +120,20 @@ public class controlsPanel extends JPanel
     */
    private void buildPanels()
    {
-      filepanel = new filePanel(messageCenter);
-      peakPanel = new peakOptionsPanel(messageCenter);
-      indexPeakPanel = new indexPeaksPanel(messageCenter);
+      filepanel = new filePanel( messageCenter );
+      peakPanel = new peakOptionsPanel( messageCenter );
+      indexPeakPanel    = new indexPeaksPanel( messageCenter );
       scalarOrientPanel = (new ScalarHandlePanel( messageCenter)).
                               getPanel( );
-      positionPanel = new positionInfoPanel(messageCenter);
-      peakInfoPanel = new peaksStatPanel( messageCenter);
-      filterPeaks = new filterPeaksPanel(messageCenter);
-      
-      slicePanel = new sliceControl(messageCenter);
+      positionPanel  = new positionInfoPanel( messageCenter );
+      peakInfoPanel  = new peaksStatPanel( messageCenter);
+      filterPeaks    = new filterPeaksPanel( messageCenter );
+      integratePeaks = new IntegratePeaksPanel( messageCenter );
+ 
+      slicePanel = new sliceControl( messageCenter );
       sliceControlsPanel = new additionalViewControls( messageCenter,
                                                        viewMessageCenter );
-      drawoptions = new drawingOptions(messageCenter);
+      drawoptions = new drawingOptions( messageCenter );
       
       //new DViewHandler( messageCenter );
       //new QViewHandler( messageCenter );
@@ -162,7 +165,6 @@ public class controlsPanel extends JPanel
       filterPeaksBtn = new JButton("Filter Events");
       filterPeaksBtn.setBackground( background_color );
       filterPeaksBtn.addActionListener(new buttonListener());
-      filterPeaksBtn.setEnabled(true);
       
       indexPeaksBtn = new JButton("Index Peaks");
       indexPeaksBtn.setBackground( background_color );
@@ -175,7 +177,7 @@ public class controlsPanel extends JPanel
       integrateBtn = new JButton("Integrate");
       integrateBtn.setBackground( background_color );
       integrateBtn.addActionListener(new buttonListener());
-      integrateBtn.setEnabled(false);
+//    integrateBtn.setEnabled(false);
       
       panel.add(loadFileBtn);
       panel.add(findPeaksBtn);
@@ -259,7 +261,7 @@ public class controlsPanel extends JPanel
             value = peakPanel;
          
          if (e.getSource().equals(filterPeaksBtn))
-            value = filterPeaks;//notImplementedPanel();
+            value = filterPeaks;
          
          if (e.getSource().equals(indexPeaksBtn))
             value = indexPeakPanel;
@@ -268,10 +270,7 @@ public class controlsPanel extends JPanel
             value = scalarOrientPanel;
          
          if (e.getSource().equals(integrateBtn))
-         {   
-            value = notImplementedPanel();
-            //Test();
-         }
+            value = integratePeaks;
          
          if (e.getSource().equals(selectedPoint))
             value = positionPanel;
