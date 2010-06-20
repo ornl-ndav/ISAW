@@ -87,6 +87,8 @@ public class IsawEV
 
     new HistogramHandler( message_center, view_message_center, NUM_BINS );
 
+    new QuickIntegrateHandler( message_center );
+
     new PeakListHandler( message_center );
 
     new OrientationMatrixHandler( message_center );
