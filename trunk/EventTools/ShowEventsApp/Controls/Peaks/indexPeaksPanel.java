@@ -628,9 +628,10 @@ public class indexPeaksPanel extends    JPanel  implements IReceiveMessage
                         "There is NO Orientation Matrix" );
                else
                {
+                  
                   messageCenter.send( new Message( 
                         Commands.INDEX_PEAKS_WITH_ORIENTATION_MATRIX, 
-                        new UBwTolCmd(UBT, .12f),
+                        new UBwTolCmd(UBT, getTolerance()),
                         false,
                         true ) );
                }
