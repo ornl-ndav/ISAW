@@ -90,8 +90,9 @@ class anvred_py(GenericTOF_SCD):
         self.addParameter(IntegerPG("Incident spectrum: iSpec = 1 fitted; = 2 data", 2))
         self.addParameter(LoadFilePG("If iSpec = 1, file with spectrum coefficients", \
         "C:/SNS/Jython/anvred/spectrum.dat"))
-        self.addParameter(IntegerPG("If iSpec = 2, the initial bank number", 2))
+        self.addParameter(IntegerPG("If iSpec = 2, the initial bank number", 1))
         self.addParameter(IntegerPG("If iSpec = 2, input averaging range +/-", 5))
+        self.addParameter(FloatPG("Wavelength to normalize to in Angstroms", 1.0))
         self.addParameter(IntegerPG("The minimum I/sig(I)", 0))
         self.addParameter(IntegerPG("Width of border (number of channels)", 5))
         self.addParameter(IntegerPG("Minimum peak count", 5))
@@ -110,12 +111,13 @@ class anvred_py(GenericTOF_SCD):
         specCoeffFile = self.getParameter(6).value
         initBankNo = self.getParameter(7).value
         averageRange = self.getParameter(8).value
-        minIsigI = self.getParameter(9).value
-        numBorderCh = self.getParameter(10).value
-        ipkMin = self.getParameter(11).value
-        dMin = self.getParameter(12).value
-        iIQ = self.getParameter(13).value
-        scaleFactor = self.getParameter(14).value
+        normToWavelength = self.getParameter(9).value
+        minIsigI = self.getParameter(10).value
+        numBorderCh = self.getParameter(11).value
+        ipkMin = self.getParameter(12).value
+        dMin = self.getParameter(13).value
+        iIQ = self.getParameter(14).value
+        scaleFactor = self.getParameter(15).value
         
         # open the anvred.log file in the working directory
         fileName = directory_path + 'anvred.log'
@@ -146,6 +148,7 @@ class anvred_py(GenericTOF_SCD):
             logFile.write('\nInitial bank number is %i \n' % initBankNo )
             logFile.write('\nSmoothing range is +/- %i channels\n' % averageRange )
         
+        logFile.write('\nNormal spectra to a wavelength of %4.2f' % normToWavelength)
         logFile.write('\nThe minimum I/sig(I) ratio: %i' % minIsigI )
         logFile.write('\nWidth of border: %i channels' % numBorderCh )
         logFile.write('\nMinimum peak count: %i' % ipkMin )
@@ -193,13 +196,13 @@ class anvred_py(GenericTOF_SCD):
             
 
         # C-----------------------------------------------------------------------
-        # C  Calculate spectral correction at 1.0 Angstrom to normalize
+        # C  Calculate spectral correction at normToWavelength to normalize
         # C  spectral correction factors later on.
-        spect1 = []     # spectrum value at 1.0 Angstrom for each detector
+        spect1 = []     # spectrum value at normToWavelength for each detector
         dist = []       # sample-to-detector distance
         xtof = []       # = (L1+dist)/hom; TOF = wl * xtof
         
-        wavelength = 1.0
+        wavelength = normToWavelength
         
         for id in range(nod):
         
@@ -212,7 +215,6 @@ class anvred_py(GenericTOF_SCD):
                 
                 dist.append(calibParam[9][id])
                 xtof.append((L1 + dist[id]) / hom)
-                one = 1.0
                 
                 # numTimeChannels = len(specBank[id][0])
                 # print 'numTimeChannels = %d' % numTimeChannels
@@ -220,7 +222,7 @@ class anvred_py(GenericTOF_SCD):
                 # specBank[id][0] are the times-of-flight
                 # specBank[id][1] are the counts
                 spect = spectrum( wavelength, xtof[id], averageRange, \
-                    one, specBank[id][0], specBank[id][1] )
+                    normToWavelength, specBank[id][0], specBank[id][1] )
                 spect1.append(spect)
                                   
 # C-----------------------------------------------------------------------
