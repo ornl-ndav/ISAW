@@ -172,7 +172,11 @@ public class OrientationMatrixHandler implements IReceiveMessage
           return false;
        }
        float[][] orMat = LinearAlgebra.getTranspose( (float[][]) Res );
-       SetNewOrientationMatrix( orMat );
+       //SetNewOrientationMatrix( orMat );
+       
+       message_center.send( new Message( Commands.SET_ORIENTATION_MATRIX,
+             orMat,
+             true ));//Must broadcast this orientation matrix
        IndexPeakWithOrientationMat( orMat, OffInt);
     }
 
