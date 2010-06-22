@@ -295,7 +295,7 @@ public class OrientationMatrixHandler implements IReceiveMessage
                       null, sig_abc, true );
          
     JFrame jf = new JFrame( "Orientation Matrix");
-    jf.setSize( 400,200 );
+    jf.setSize( 500,200 );
     jf.getContentPane().add( new JEditorPane("text/html", ShowText) );
     jf.setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
             
