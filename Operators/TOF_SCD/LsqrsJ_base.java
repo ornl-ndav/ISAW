@@ -768,10 +768,12 @@ private static final double SMALL    = 1.525878906E-5;
      * @param keepRange The detector pixel range to keep.
      * @param cellType  The type of cell to be used if the 
      *              least squares optimization is to be constrained
-     *             to a particular unit cel l type
+     *             to a particular unit cell type
     
      * @return  the  matrix file has the orientation matrix or an
-     *              errormessage.
+     *              error message. A log file will be written if a 
+     *              SharedMessages log file is being used
+     *              for logging.
      */
   public static Object LsqrsJ1( Vector peaksPar, int[] run_nums, int[] seq_nums,
         float[][] matrix, String matfile, int threshold, int[] keepRange,
@@ -783,6 +785,28 @@ private static final double SMALL    = 1.525878906E-5;
         cellType, null);
    }
   
+  /**
+   * Public static method for the base Least Squares operators and forms.
+   * Finds the least square matrix mapping the hkl values to the qx,qy,qz
+   * values. Writes the optimized matrix to a file.
+   * 
+   * @param peaksPar  The Vector of Peaks( will not be changed)
+   * @param  run_nums The run numbers to use 
+   * @param seq_nums The sequence numbers to use. 
+   * @param matrix The transformation matrix to use. 
+   * @param matfile The matrix to write to. 
+   * @param threshold The minimum peak intensity threshold to 
+   *          use.
+   * @param keepRange The detector pixel range to keep.
+   * @param cellType  The type of cell to be used if the 
+   *              least squares optimization is to be constrained
+   *             to a particular unit cell type
+   * @param sig_abc  an array(if not empty or null) that will hold the error estimates
+   * @return  the  matrix file has the orientation matrix or an
+   *              error message. A log file will be written if a 
+   *              SharedMessages log file is being used
+   *              for logging.
+   */
      public static Object LsqrsJ1( Vector peaksPar, int[] run_nums, int[] seq_nums,
                    float[][] matrix, String matfile, int threshold, int[] keepRange,
                    String cellType, double[] sig_abc){
@@ -1033,7 +1057,11 @@ private static final double SMALL    = 1.525878906E-5;
 
       System.out.println("CellType is "+cellType);
       if ( cellType.startsWith( "Tri" ) )
-        chisq = LinearAlgebra.BestFitMatrix( UB, Thkl, Tq );
+      {
+         chisq = LinearAlgebra.BestFitMatrix( UB, Thkl, Tq );
+         if( sig_abc != null )
+            sig_abc[0] = -1;
+      }
       else{
          
         double[] sig_abc1= new double[7];
@@ -1138,7 +1166,8 @@ private static final double SMALL    = 1.525878906E-5;
 
     // determine uncertainties
    
-    if(sig_abc == null || sig_abc[0] < 0){
+    if(sig_abc == null || sig_abc[0] < 0)//sig_abc[0]<0 means sig_abc not found yet
+    {
        
        if( sig_abc == null)
           sig_abc = new double[7];
@@ -1243,9 +1272,12 @@ private static final double SMALL    = 1.525878906E-5;
        SharedData.addmsg("Orientation Matrix\n"+Show(UB)+"\n"+Show(abc)+
               "\n"+Show(sig_abc));
 
-    if( error != null ) {
+    if( error != null )
+    {
       return new ErrorString( "LsqrsJ failed to update matrix file: " + error );
-    } else if (matfile != null) {
+      
+    } else if (matfile != null) 
+    {
       SharedData.addmsg( "Wrote file: " + matfile );
 
       float[][] F_UB=LinearAlgebra.double2float( UB );
@@ -2975,9 +3007,13 @@ private static final double SMALL    = 1.525878906E-5;
 
     return null;
     */
-	gov.anl.ipns.Util.Sys.SharedMessages.LOGaddmsg( log );
+   
+       
+    if(  gov.anl.ipns.Util.Sys.SharedMessages.getLogStream( )!= null)  
+	       gov.anl.ipns.Util.Sys.SharedMessages.LOGaddmsg( log );
 	
 	return null;
+	
   }
   public Object clone(){
     LsqrsJ_base Res = new LsqrsJ_base();
