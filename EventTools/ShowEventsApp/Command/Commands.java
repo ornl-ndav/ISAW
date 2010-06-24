@@ -19,15 +19,15 @@ public class Commands
   
   public static final String LOAD_UDP_EVENTS = "LOAD_UDP_EVENTS";
   
-  public static final String PAUSE_UDP       ="PAUSE_UDP";
+  public static final String PAUSE_UDP       = "PAUSE_UDP";
   
-  public static final String CLEAR_UDP       ="CLEAR_UDP";
+  public static final String CLEAR_UDP       = "CLEAR_UDP";
   
-  public static final String CONTINUE_UDP       ="CONTINUE_UDP";
+  public static final String CONTINUE_UDP    = "CONTINUE_UDP";
   
-  public static final String SCALE_FACTOR       ="SCALE_FACTOR";
+  public static final String SCALE_FACTOR    = "SCALE_FACTOR";
   
-  public static final String NORMALIZE_QD_GRAPHS       ="NORMALIZE_QD_GRAPHS";
+  public static final String NORMALIZE_QD_GRAPHS = "NORMALIZE_QD_GRAPHS";
 
   public static final String MAP_EVENTS_TO_Q = "MAP_EVENTS_TO_Q";
 
@@ -201,18 +201,18 @@ public class Commands
   /**
    * Messages for quick event integration.
    */
-  public static final String SET_MAX_Q_TO_INTEGRATE =
-                                              "SET_MAX_Q_TO_INTEGRATE";
   public static final String CLEAR_INTEGRATED_INTENSITIES =
                                               "CLEAR_INTEGRATED_INTENSITIES";
   public static final String SET_STEPS_PER_MILLER_INDEX =
                                               "SET_STEPS_PER_MILLER_INDEX";
   public static final String SET_HISTOGRAM_SPACE_MB =
                                               "SET_HISTOGRAM_SPACE_MB";
-  public static final String COUNT_INTEGRATED_INTENSITIES =
-                                              "COUNT_INTEGRATED_INTENSITIES";
-  public static final String SET_INT_I_IN_PEAKS_LIST =
-                                              "SET_INT_I_IN_PEAKS_LIST";
+  public static final String SCAN_INTEGRATED_INTENSITIES =
+                                              "SCAN_INTEGRATED_INTENSITIES";
+  public static final String MAKE_INTEGRATED_PEAK_Q_LIST =
+                                              "MAKE_INTEGRATED_PEAK_Q_LIST";
+  public static final String SET_INTEGRATED_PEAKS_LIST =
+                                              "SET_INTEGRATED_PEAKS_LIST";
   public static final String SET_INTEGRATED_INTENSITY_STATS =
                                               "SET_INTEGRATED_INTENSITY_STATS";
 

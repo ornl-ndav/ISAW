@@ -90,7 +90,6 @@ public class IntegratePeaksPanel extends JPanel implements IReceiveMessage
    private JTextField  phi_txf         = new JTextField("0");
    private JTextField  chi_txf         = new JTextField("0");
    private JTextField  omega_txf       = new JTextField("0");
-   private JTextField  max_magQ_txf    = new JTextField("0");
    private JTextField  hist_mem_txf    = new JTextField("0");
    private JTextField  num_level_0_txf = new JTextField( "" ); 
    private JTextField  num_level_1_txf = new JTextField( "" ); 
@@ -118,7 +117,7 @@ public class IntegratePeaksPanel extends JPanel implements IReceiveMessage
       clear_button.addActionListener( listener );
       to_peaks_button.addActionListener( listener );
 
-      setLayout( new GridLayout( 13, 2 ) );
+      setLayout( new GridLayout( 12, 2 ) );
      
       setBorder(new TitledBorder("Quick Integrate Options"));
 
@@ -133,9 +132,6 @@ public class IntegratePeaksPanel extends JPanel implements IReceiveMessage
 
       add( new JLabel("Omega") ); 
       add( omega_txf );
-
-      add( new JLabel("Max |Q| to Integrate") );
-      add( max_magQ_txf ); 
 
       add( clear_button );
       add( steps_selector );
@@ -228,14 +224,13 @@ public class IntegratePeaksPanel extends JPanel implements IReceiveMessage
      public void actionPerformed( ActionEvent a_event )
      {
        if ( a_event.getSource() == scan_button )
-         sendMessage( Commands.COUNT_INTEGRATED_INTENSITIES, null );
+         sendMessage( Commands.SCAN_INTEGRATED_INTENSITIES, null );
 
        else if ( a_event.getSource() == clear_button )
          sendMessage( Commands.CLEAR_INTEGRATED_INTENSITIES, null );
 
        else if ( a_event.getSource() == to_peaks_button )
-         sendMessage( Commands.SET_INT_I_IN_PEAKS_LIST,
-                      null );
+         sendMessage( Commands.MAKE_INTEGRATED_PEAK_Q_LIST, null );
      }
    }
 
