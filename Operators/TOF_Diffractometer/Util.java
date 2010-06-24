@@ -37,9 +37,14 @@ import java.io.File;
 import java.util.Date;
 import java.util.Vector;
 
+import org.w3c.dom.*;
+
 import gov.anl.ipns.MathTools.Geometry.DetectorPosition;
 import gov.anl.ipns.MathTools.Geometry.Vector3D;
 import gov.anl.ipns.Util.File.*;
+import gov.anl.ipns.Util.Numeric.IntList;
+import gov.anl.ipns.Util.SpecialStrings.ErrorString;
+import gov.anl.ipns.Util.xml.UtilSm;
 import gov.anl.ipns.Operator.Threads.ParallelExecutor;
 
 import DataSetTools.util.SharedData;
@@ -964,6 +969,92 @@ public class Util
       }
    }
 
+   /**
+    * Retrieves the rotation angle information from an SNS cvinfo file for detector groups.
+    * 
+    * @param cvinfoFilename   The name of the cvinfo file to use
+    * 
+    * @return  Information on the rotation angles or an ErrorString
+    *          if the result is not an ErrorString it is a Vector with one
+    *          element per rotation.  Each element of the resultant vector is 
+    *          also a Vector with 2 elements. The first is the rotation angle in
+    *          degrees and the second is an int[] of detector ID's for which
+    *          that rotation applies.
+    *          
+    * NOTE: So far this only applies to the SNAP instrument.
+    */
+   public static Object  getRotationAngles( String cvinfoFilename)
+   {
+      if( cvinfoFilename == null || cvinfoFilename.length() <3)
+         return new ErrorString("Could not retrieve rotations: No cvinfo File");
+      
+      String instrument = FileIO.getSNSInstrumentName( cvinfoFilename );
+      if( instrument == null ||! instrument.toUpperCase().equals( "SNAP" ))
+         return new ErrorString("Could not retrieve rotations: Only works with SNAP so far");
+      
+      
+      try
+      {
+         Document D = UtilSm.Open( cvinfoFilename );
+         Vector<String[]>attributes= UtilSm.Add( 
+                          UtilSm.Add( null , "name" , "det_arc1" ,null ),
+                          "device","Detector",null);
+         
+         Node N = UtilSm.NextChildNodeRecursive(D , null , "cvlog" , attributes );
+         if( N == null)
+            return new Vector();
+         
+         String S = UtilSm.getNodeValue( N );
+         if( S == null)
+            return new Vector();
+         
+         S = S.trim( );
+         int k= S.lastIndexOf( ' ' );
+         if( k < 0)
+            return new ErrorString("cvinfo file is in improper format");
+         float ang1 = Float.parseFloat( S.substring( k+1 ).trim());
+        
+         Vector Res = new Vector();
+         Vector Res1 = new Vector();
+         Res1.add(  ang1 );
+         Res1.add(  IntList.ToArray( "10:18" ) );
+         Res.add( Res1 );
+         
+         attributes= UtilSm.Add( 
+               UtilSm.Add( null , "name" , "det_arc2" ,null ),
+               "device","Detector",null);
+
+         N = UtilSm.NextChildNodeRecursive(D , null , "cvlog" , attributes );
+          if( N == null)
+            return Res;
+
+         S = UtilSm.getNodeValue( N );
+         if( S == null)
+            return Res;
+
+         S = S.trim( );
+         k= S.lastIndexOf( ' ' );
+         if( k < 0)
+         return new ErrorString("cvinfo file is in improper format");
+         float ang2 = Float.parseFloat( S.substring( k+1 ).trim());
+
+         Res1 = new Vector();
+         Res1.add(  ang2 );
+         Res1.add(  IntList.ToArray( "1:9" ) );
+         Res.add( Res1 ); 
+         return Res;
+         
+      }catch( NumberFormatException sn)
+      {
+
+         return new ErrorString("cvinfo file is in improper format");
+         
+      }catch( Exception s)
+      {
+         return new ErrorString("Could not retrieve rotations: "+s);
+      }
+      
+   }
    
    /**
     * @param args
