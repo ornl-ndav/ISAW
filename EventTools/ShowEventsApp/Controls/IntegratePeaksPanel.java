@@ -36,6 +36,8 @@
 package EventTools.ShowEventsApp.Controls;
 
 import java.awt.*;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -43,6 +45,7 @@ import javax.swing.*;
 import javax.swing.border.*;
 
 import EventTools.ShowEventsApp.Command.Commands;
+import EventTools.ShowEventsApp.DataHandlers.QuickIntegrateHandler;
 import MessageTools.IReceiveMessage;
 import MessageTools.Message;
 import MessageTools.MessageCenter;
@@ -50,23 +53,56 @@ import MessageTools.MessageCenter;
 
 public class IntegratePeaksPanel extends JPanel implements IReceiveMessage
 {
-   MessageCenter message_center;
+   private final float LEVEL_0 = QuickIntegrateHandler.LEVEL_0;
+   private final float LEVEL_1 = QuickIntegrateHandler.LEVEL_1;
+   private final float LEVEL_2 = QuickIntegrateHandler.LEVEL_2;
+   private final float LEVEL_3 = QuickIntegrateHandler.LEVEL_3;
+   private final float LEVEL_4 = QuickIntegrateHandler.LEVEL_4;
 
-   JTextField  run_num_txf        = new JTextField("0");
-   JTextField  phi_txf            = new JTextField("0");
-   JTextField  chi_txf            = new JTextField("0");
-   JTextField  omega_txf          = new JTextField("0");
-   JTextField  num_positive_txf   = new JTextField("0"); 
-   JTextField  num_good_isigi_txf = new JTextField("0"); 
+   private String[] step_list = { "  2 Steps per Miller Index",
+                                  "  3 Steps per Miller Index",
+                                  "  4 Steps per Miller Index",
+                                  "  5 Steps per Miller Index",
+                                  "  6 Steps per Miller Index",
+                                  "  7 Steps per Miller Index",
+                                  "  8 Steps per Miller Index",
+                                  "  9 Steps per Miller Index",
+                                  " 10 Steps per Miller Index",
+                                  " 11 Steps per Miller Index",
+                                  " 12 Steps per Miller Index",
+                                  " 13 Steps per Miller Index",
+                                  " 14 Steps per Miller Index",
+                                  " 15 Steps per Miller Index",
+                                  " 16 Steps per Miller Index",
+                                  " 17 Steps per Miller Index",
+                                  " 18 Steps per Miller Index",
+                                  " 19 Steps per Miller Index",
+                                  " 20 Steps per Miller Index",
+                                  " 21 Steps per Miller Index",
+                                  " 22 Steps per Miller Index",
+                                  " 23 Steps per Miller Index",
+                                  " 24 Steps per Miller Index",
+                                  " 25 Steps per Miller Index" };
 
-   JTextField  file_name_txf      = new JTextField(
-                                       "IsawEV_Quick.integrate");
+   private MessageCenter message_center;
 
-   JButton scan_button   = new JButton("Scan Integrate Histogram");
-   JButton clear_button  = new JButton("Clear Integ Intensities");
-   JButton write_button  = new JButton("Write .integrate File");
+   private JTextField  run_num_txf     = new JTextField("0");
+   private JTextField  phi_txf         = new JTextField("0");
+   private JTextField  chi_txf         = new JTextField("0");
+   private JTextField  omega_txf       = new JTextField("0");
+   private JTextField  max_magQ_txf    = new JTextField("0");
+   private JTextField  hist_mem_txf    = new JTextField("0");
+   private JTextField  num_level_0_txf = new JTextField( "" ); 
+   private JTextField  num_level_1_txf = new JTextField( "" ); 
+   private JTextField  num_level_2_txf = new JTextField( "" ); 
+   private JTextField  num_level_3_txf = new JTextField( "" ); 
+   private JTextField  num_level_4_txf = new JTextField( "" ); 
 
+   private JComboBox   steps_selector  = new JComboBox( step_list );
 
+   private JButton scan_button   = new JButton("Scan Integrate Histogram");
+   private JButton clear_button  = new JButton("Clear Int. Intensities");
+   private JButton to_peaks_button = new JButton("Set In Peaks List");
 
    public IntegratePeaksPanel( MessageCenter message_center )
    {
@@ -74,14 +110,15 @@ public class IntegratePeaksPanel extends JPanel implements IReceiveMessage
       this.message_center = message_center;
       message_center.addReceiver( this, 
                                   Commands.SET_INTEGRATED_INTENSITY_STATS );
+      message_center.addReceiver( this, Commands.SET_HISTOGRAM_SPACE_MB );
 
-      ControlListener listener = new ControlListener();
+      ButtonListener listener = new ButtonListener();
 
       scan_button.addActionListener( listener );
       clear_button.addActionListener( listener );
-      write_button.addActionListener( listener );
+      to_peaks_button.addActionListener( listener );
 
-      setLayout( new GridLayout( 8 , 2 ) );
+      setLayout( new GridLayout( 13, 2 ) );
      
       setBorder(new TitledBorder("Quick Integrate Options"));
 
@@ -97,17 +134,34 @@ public class IntegratePeaksPanel extends JPanel implements IReceiveMessage
       add( new JLabel("Omega") ); 
       add( omega_txf );
 
-      add( new JLabel("Number of Peaks > 0") ); 
-      add( num_positive_txf );
+      add( new JLabel("Max |Q| to Integrate") );
+      add( max_magQ_txf ); 
 
-      add( new JLabel("Number with I/sigI >= 3") ); 
-      add( num_good_isigi_txf );
+      add( clear_button );
+      add( steps_selector );
+      steps_selector.addItemListener( new StepsListener() );
+      steps_selector.setSelectedIndex(3);
+
+      add( new JLabel("Histogram Space ( MB )") );
+      add( hist_mem_txf );
 
       add( scan_button );
-      add( clear_button );
-  
-      add( write_button );
-      add( file_name_txf );
+      add( to_peaks_button );
+
+      add( new JLabel("Number of Peaks >= " + LEVEL_0) ); 
+      add( num_level_0_txf );
+
+      add( new JLabel("Number with I/sigI >= " + LEVEL_1) ); 
+      add( num_level_1_txf );
+
+      add( new JLabel("Number with I/sigI >= " + LEVEL_2 ) ); 
+      add( num_level_2_txf );
+
+      add( new JLabel("Number with I/sigI >= " + LEVEL_3 ) );
+      add( num_level_3_txf );
+
+      add( new JLabel("Number with I/sigI >= " + LEVEL_4 ) );
+      add( num_level_4_txf );
    }
 
 
@@ -120,16 +174,35 @@ public class IntegratePeaksPanel extends JPanel implements IReceiveMessage
      if ( message.getName().equals(Commands.SET_INTEGRATED_INTENSITY_STATS) )
      {
        Object obj = message.getValue();
-       if ( obj instanceof int[] )
+       if ( obj != null && obj instanceof int[] )
        {
          int[] stats = (int[])obj;
-         num_positive_txf.setText( "" + stats[0] );
-         num_good_isigi_txf.setText("" + stats[1] ); 
+         JTextField[] text_fields = { num_level_0_txf,
+                                      num_level_1_txf,
+                                      num_level_2_txf,
+                                      num_level_3_txf,
+                                      num_level_4_txf };
+         for ( int i = 0; i < text_fields.length; i++ )
+           if ( i < stats.length )
+             text_fields[i].setText( "" + stats[i] );
+           else
+             text_fields[i].setText( "0" );
        }
        else
          System.out.println("ERROR: wrong value type in IntegratePeaksPanel " +
                              Commands.SET_INTEGRATED_INTENSITY_STATS );
      }
+
+     else if ( message.getName().equals(Commands.SET_HISTOGRAM_SPACE_MB) )
+     {
+       Object obj = message.getValue();
+       if ( obj != null && obj instanceof Float )
+         hist_mem_txf.setText( String.format( "%5.1f", (Float)obj ) );
+       else
+         System.out.println("ERROR: wrong value type in IntegratePeaksPanel " +
+                             Commands.SET_INTEGRATED_INTENSITY_STATS );
+     }
+
      return false;
    }
 
@@ -150,7 +223,7 @@ public class IntegratePeaksPanel extends JPanel implements IReceiveMessage
    }
 
 
-   private class ControlListener implements ActionListener
+   private class ButtonListener implements ActionListener
    {
      public void actionPerformed( ActionEvent a_event )
      {
@@ -160,9 +233,23 @@ public class IntegratePeaksPanel extends JPanel implements IReceiveMessage
        else if ( a_event.getSource() == clear_button )
          sendMessage( Commands.CLEAR_INTEGRATED_INTENSITIES, null );
 
-       else if ( a_event.getSource() == write_button )
-         sendMessage( Commands.WRITE_INTEGRATED_INTENSITIES,
-                      file_name_txf.getText() );
+       else if ( a_event.getSource() == to_peaks_button )
+         sendMessage( Commands.SET_INT_I_IN_PEAKS_LIST,
+                      null );
+     }
+   }
+
+
+   private class StepsListener implements ItemListener
+   {
+     public void itemStateChanged( ItemEvent item_event )
+     {
+       if ( item_event.getStateChange() == ItemEvent.SELECTED )
+       {
+         int steps = 2 + steps_selector.getSelectedIndex();
+         System.out.println("Should now use " + steps );
+         sendMessage( Commands.SET_STEPS_PER_MILLER_INDEX, (Integer)steps );
+       }
      }
    }
    

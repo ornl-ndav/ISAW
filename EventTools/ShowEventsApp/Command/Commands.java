@@ -201,14 +201,20 @@ public class Commands
   /**
    * Messages for quick event integration.
    */
-  public static final String COUNT_INTEGRATED_INTENSITIES =
-                                              "COUNT_INTEGRATED_INTENSITIES";
-  public static final String SET_INTEGRATED_INTENSITY_STATS =
-                                              "SET_INTEGRATED_INTENSITY_STATS";
+  public static final String SET_MAX_Q_TO_INTEGRATE =
+                                              "SET_MAX_Q_TO_INTEGRATE";
   public static final String CLEAR_INTEGRATED_INTENSITIES =
                                               "CLEAR_INTEGRATED_INTENSITIES";
-  public static final String WRITE_INTEGRATED_INTENSITIES = 
-                                              "WRITE_INTEGRATED_INTENSITIES";
+  public static final String SET_STEPS_PER_MILLER_INDEX =
+                                              "SET_STEPS_PER_MILLER_INDEX";
+  public static final String SET_HISTOGRAM_SPACE_MB =
+                                              "SET_HISTOGRAM_SPACE_MB";
+  public static final String COUNT_INTEGRATED_INTENSITIES =
+                                              "COUNT_INTEGRATED_INTENSITIES";
+  public static final String SET_INT_I_IN_PEAKS_LIST =
+                                              "SET_INT_I_IN_PEAKS_LIST";
+  public static final String SET_INTEGRATED_INTENSITY_STATS =
+                                              "SET_INTEGRATED_INTENSITY_STATS";
 
   /*
 //  public static final String SET_POSITION_INFO = "SET_POSITION_INFO";
