@@ -49,6 +49,7 @@ import EventTools.EventList.IEventList3D;
 import EventTools.EventList.FloatArrayEventList3D;
 import EventTools.ShowEventsApp.Command.Commands;
 import EventTools.ShowEventsApp.Command.SetNewInstrumentCmd;
+import EventTools.ShowEventsApp.Command.Util;
 
 import DataSetTools.operator.Generic.TOF_SCD.PeakQ;
 
@@ -104,8 +105,7 @@ public class QuickIntegrateHandler implements IReceiveMessage
     message_center.addReceiver( this, Commands.CLEAR_INTEGRATED_INTENSITIES );
     message_center.addReceiver( this, Commands.ADD_EVENTS_TO_HISTOGRAMS );
 
-    message_center.addReceiver( this, Commands.COUNT_INTEGRATED_INTENSITIES );
-    message_center.addReceiver( this, Commands.SET_INT_I_IN_PEAKS_LIST );
+    message_center.addReceiver( this, Commands.SCAN_INTEGRATED_INTENSITIES );
   }
 
 
@@ -118,7 +118,7 @@ public class QuickIntegrateHandler implements IReceiveMessage
   *      ADD_EVENTS_TO_HISTOGRAMS, 
   *      CLEAR_INTEGRATED_INTENSITIES, 
   *
-  *      COUNT_INTEGRATED_INTENSITIES
+  *      SCAN_INTEGRATED_INTENSITIES
   *      WRITE_INTEGRATED_INTENSITIES
   *
   *  @param message  The message to be processed.
@@ -208,9 +208,9 @@ public class QuickIntegrateHandler implements IReceiveMessage
       AddEventsToHistogram( new_events );
     }
 
-    else if ( message.getName().equals(Commands.COUNT_INTEGRATED_INTENSITIES) )
+    else if ( message.getName().equals(Commands.SCAN_INTEGRATED_INTENSITIES) )
     {
-      System.out.println("QUICK INTEGRATE GOT COUNT_INTEGRATED_INTENSITIES");
+      System.out.println("QUICK INTEGRATE GOT SCAN_INTEGRATED_INTENSITIES");
       if ( histogram != null )
       {
         Vector3D h_vec = new Vector3D( orientation_matrix[0][0],
@@ -229,6 +229,9 @@ public class QuickIntegrateHandler implements IReceiveMessage
         long start = System.nanoTime();
         int[] level_counts = new int[ levels.length ];
 
+        Vector peakQs = new Vector();           // vector of peakQ / 2PI
+        float  two_PI = (float)(2 * Math.PI);
+
         for ( int h = -20; h <= 20; h++ )       // TODO, calculate range based
           for ( int k = -20; k <= 20; k++ )     // on MaxQ
             for ( int l = -20; l <= 20; l++ )
@@ -237,13 +240,29 @@ public class QuickIntegrateHandler implements IReceiveMessage
               if ( value > 0 )
               {
                 float[] int_vals = getI_and_sigI(h, k, l, h_vec, k_vec, l_vec);
-                System.out.printf("%3d  %3d  %3d   %8.2f  %8.2f  %8.2f\n", 
-                        h, k, l, value, int_vals[0], int_vals[1] );
                 for ( int i = 0; i < levels.length; i++ )
                   if ( int_vals[1] >= levels[i] )
                     level_counts[i]++;
+
+                Vector3D q_vec = q_vector( h, k, l, h_vec, k_vec, l_vec );
+                PeakQ peak = new PeakQ( q_vec.getX() / two_PI, 
+                                        q_vec.getY() / two_PI, 
+                                        q_vec.getZ() / two_PI,
+                                        (int)value );
+                peak.sethkl( h, k, l );
+                if ( int_vals[1] >= 3 )
+                  peakQs.add( peak );
+                System.out.print( peak );
+                System.out.printf("  %8.2f  %8.2f\n",int_vals[0],int_vals[1]);
               }
             } 
+
+         Message mark_peaks = new Message( Commands.MARK_PEAKS,
+                                           peakQs,
+                                           true,
+                                           true );
+         message_center.send( mark_peaks );
+
          System.out.println("************ Done Dumping Integrate Info");
          System.out.println("Used "+ steps_per_MI +" steps per Miller index");
          System.out.printf("Time to integrate = %6.0fms\n",
@@ -273,6 +292,10 @@ public class QuickIntegrateHandler implements IReceiveMessage
   }
 
 
+  /**
+   *  Get the q_vector at the specified h,k,l as a linear combination 
+   *  of the lattice basis vectors.
+   */
   private Vector3D q_vector( float h, float k, float l,
                              Vector3D h_vec, Vector3D k_vec, Vector3D l_vec )
   {
@@ -373,7 +396,9 @@ public class QuickIntegrateHandler implements IReceiveMessage
    */
   private int SetNewHistogram()
   {
-    System.out.println("QuickIntegrate now allocating histogram space....");
+    System.out.println("QuickIntegrate allocating NEW histogram space....");
+    histogram = null;
+
     if ( max_Q < .5f )           // clamp max_Q to reasonable values
       max_Q = .5f;
 
@@ -392,32 +417,75 @@ public class QuickIntegrateHandler implements IReceiveMessage
                                    orientation_matrix[1][2],
                                    orientation_matrix[2][2] );
 
-    ProjectionBinner3D h_binner = MakeBinner( h_vec );
-    ProjectionBinner3D k_binner = MakeBinner( k_vec );
-    ProjectionBinner3D l_binner = MakeBinner( l_vec );
+    float q_per_step = min_Q_per_step( h_vec, h_vec, h_vec, steps_per_MI );
+
+    ProjectionBinner3D h_binner = MakeBinner( h_vec, q_per_step );
+    ProjectionBinner3D k_binner = MakeBinner( k_vec, q_per_step );
+    ProjectionBinner3D l_binner = MakeBinner( l_vec, q_per_step );
 
     System.out.println("h_binner    = " + h_binner );
     System.out.println("k_binner    = " + k_binner );
     System.out.println("l_binner    = " + l_binner );
 
-    histogram = new Histogram3D( h_binner, k_binner, l_binner );
-    System.out.println("QuickIntegrate DONE allocating histogram space.");
-
+    try
+    {
+      histogram = new Histogram3D( h_binner, k_binner, l_binner );
+      System.out.println("QuickIntegrate DONE allocating histogram space.");
+    }
+    catch ( Exception ex )
+    {
+      Util.sendInfo("Failed to allocate Histogram! \n " +
+                    " You MUST use fewer steps per Miller Index\n " +
+                    " and/or use a smaller Max |Q|");
+      return 0;
+    }
     return h_binner.numBins() * k_binner.numBins() * l_binner.numBins();
   }
 
 
-  private ProjectionBinner3D MakeBinner( Vector3D basis_vec )
+  /**
+   *  Calculate the smallest |Q| per step for the three lattice basis
+   *  vectors.
+   */
+  private float min_Q_per_step( Vector3D h_vec, Vector3D k_vec, Vector3D l_vec,
+                                int steps_per_MI )
   {
-    float one_step = basis_vec.length() / steps_per_MI;
+    float q_step_h = h_vec.length()/steps_per_MI;
+    float q_step_k = k_vec.length()/steps_per_MI;
+    float q_step_l = l_vec.length()/steps_per_MI;
+ 
+    float min_Q_step = q_step_h;
+    if ( q_step_k < min_Q_step ) 
+      min_Q_step = q_step_k;
+
+    if ( q_step_l < min_Q_step ) 
+      min_Q_step = q_step_l;
+
+    return min_Q_step;
+  }
+
+
+  /**
+   *  Make a binner that subdivides the lattice in the specified direction
+   *  using steps that are as close to the specified q_per_step as possible
+   *  keeping an integer number of steps that is at least 2.
+   */
+  private ProjectionBinner3D MakeBinner( Vector3D basis_vec, float q_per_step )
+  {
     Vector3D unit_vec = new Vector3D( basis_vec );
     unit_vec.normalize();
+
+    int n_steps = Math.round( basis_vec.length() / q_per_step );
+    if ( n_steps < 2 )
+      n_steps = 2;
+
+    float one_step = basis_vec.length() / n_steps;
 
     int   max_index = Math.round( max_Q / one_step );
     float max_dist  = (max_index + 0.5f) * one_step;
 
     IEventBinner bin1D = new UniformEventBinner( -max_dist, max_dist, 
-                                                  2*max_index + 1 );
+                                                  2 * max_index + 1 );
 
     System.out.println("one_step  = " + one_step );
     System.out.println("max_index = " + max_index );
