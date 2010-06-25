@@ -219,6 +219,40 @@ public class IntegratePeaksPanel extends JPanel implements IReceiveMessage
    }
 
 
+   /**
+    * Get an array of floats containing run_num, phi, chi and omega
+    */
+   private float[] getRunInfo()
+   {
+     boolean exception = false;
+     float run_num = getValueFromTextField( run_num_txf );
+     float phi     = getValueFromTextField( phi_txf );
+     float chi     = getValueFromTextField( chi_txf );
+     float omega   = getValueFromTextField( omega_txf );
+
+     float[] result = { run_num, phi, chi, omega };
+     return result;
+   }
+
+
+   private float getValueFromTextField( JTextField txf )
+   {
+     float value = 0;
+     try
+     {
+       value = Float.parseFloat( txf.getText().trim() );
+     }
+     catch( Exception ex )
+     {
+       JOptionPane.showMessageDialog( null,
+                                      "Invalid Number " + txf.getText(),
+                                     "Error",
+                                     JOptionPane.ERROR_MESSAGE);
+     }
+     return value;
+   }
+
+
    private class ButtonListener implements ActionListener
    {
      public void actionPerformed( ActionEvent a_event )
@@ -230,7 +264,10 @@ public class IntegratePeaksPanel extends JPanel implements IReceiveMessage
          sendMessage( Commands.CLEAR_INTEGRATED_INTENSITIES, null );
 
        else if ( a_event.getSource() == to_peaks_button )
-         sendMessage( Commands.MAKE_INTEGRATED_PEAK_Q_LIST, null );
+       {
+         float[] run_info = getRunInfo(); 
+         sendMessage( Commands.MAKE_INTEGRATED_PEAK_Q_LIST, run_info );
+       }
      }
    }
 

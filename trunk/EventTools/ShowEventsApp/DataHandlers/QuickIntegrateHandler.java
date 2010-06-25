@@ -78,8 +78,13 @@ public class QuickIntegrateHandler implements IReceiveMessage
 
   private MessageCenter message_center;
 
-  private Histogram3D   histogram = null;
   private float[][]     orientation_matrix;
+
+  private Histogram3D   histogram = null;
+                                                // Vectors to hold integrated
+                                                // info if integration is done
+  private Vector        integrated_peaks = new Vector();
+  private Vector        peak_IsigI = new Vector();
 
   private float         max_Q = 20;
 
@@ -106,6 +111,7 @@ public class QuickIntegrateHandler implements IReceiveMessage
     message_center.addReceiver( this, Commands.ADD_EVENTS_TO_HISTOGRAMS );
 
     message_center.addReceiver( this, Commands.SCAN_INTEGRATED_INTENSITIES );
+    message_center.addReceiver( this, Commands.MAKE_INTEGRATED_PEAK_Q_LIST );
   }
 
 
@@ -119,7 +125,7 @@ public class QuickIntegrateHandler implements IReceiveMessage
   *      CLEAR_INTEGRATED_INTENSITIES, 
   *
   *      SCAN_INTEGRATED_INTENSITIES
-  *      WRITE_INTEGRATED_INTENSITIES
+  *      MAKE_INTEGRATED_PEAK_Q_LIST
   *
   *  @param message  The message to be processed.
   *
@@ -210,73 +216,106 @@ public class QuickIntegrateHandler implements IReceiveMessage
 
     else if ( message.getName().equals(Commands.SCAN_INTEGRATED_INTENSITIES) )
     {
-      System.out.println("QUICK INTEGRATE GOT SCAN_INTEGRATED_INTENSITIES");
-      if ( histogram != null )
+      MakePeakQList();
+    }
+
+    else if ( message.getName().equals(Commands.MAKE_INTEGRATED_PEAK_Q_LIST) )
+    {
+      float[] run_info = new float[4];
+
+      Object obj = message.getValue();
+      if ( obj != null && obj instanceof float[] )
+        run_info = (float[])obj;
+
+      MakePeakQList();
+
+      if ( integrated_peaks.size() > 0 )
       {
-        Vector3D h_vec = new Vector3D( orientation_matrix[0][0],
-                                       orientation_matrix[1][0],
-                                       orientation_matrix[2][0] );
-
-        Vector3D k_vec = new Vector3D( orientation_matrix[0][1],
-                                       orientation_matrix[1][1],
-                                       orientation_matrix[2][1] );
-
-        Vector3D l_vec = new Vector3D( orientation_matrix[0][2],
-                                       orientation_matrix[1][2],
-                                       orientation_matrix[2][2] );
-
-        System.out.println("************ Start Dumping Integrate Info");
-        long start = System.nanoTime();
-        int[] level_counts = new int[ levels.length ];
-
-        Vector peakQs = new Vector();           // vector of peakQ / 2PI
-        float  two_PI = (float)(2 * Math.PI);
-
-        for ( int h = -20; h <= 20; h++ )       // TODO, calculate range based
-          for ( int k = -20; k <= 20; k++ )     // on MaxQ
-            for ( int l = -20; l <= 20; l++ )
-            {
-              float value = intensity_at( h, k, l, h_vec, k_vec, l_vec );
-              if ( value > 0 )
-              {
-                float[] int_vals = getI_and_sigI(h, k, l, h_vec, k_vec, l_vec);
-                for ( int i = 0; i < levels.length; i++ )
-                  if ( int_vals[1] >= levels[i] )
-                    level_counts[i]++;
-
-                Vector3D q_vec = q_vector( h, k, l, h_vec, k_vec, l_vec );
-                PeakQ peak = new PeakQ( q_vec.getX() / two_PI, 
-                                        q_vec.getY() / two_PI, 
-                                        q_vec.getZ() / two_PI,
-                                        (int)value );
-                peak.sethkl( h, k, l );
-                if ( int_vals[1] >= 3 )
-                  peakQs.add( peak );
-                System.out.print( peak );
-                System.out.printf("  %8.2f  %8.2f\n",int_vals[0],int_vals[1]);
-              }
-            } 
-
-         Message mark_peaks = new Message( Commands.MARK_PEAKS,
-                                           peakQs,
-                                           true,
-                                           true );
-         message_center.send( mark_peaks );
-
-         System.out.println("************ Done Dumping Integrate Info");
-         System.out.println("Used "+ steps_per_MI +" steps per Miller index");
-         System.out.printf("Time to integrate = %6.0fms\n",
-                            (System.nanoTime() - start)/1e6 ); 
-         System.out.println("Integrated " + level_counts[0] + " peaks.");
-         for ( int i = 1; i < levels.length; i++ )
-           System.out.println("There were " + level_counts[i] + 
-                              " with I/sigI >= " + levels[i] );
-
-         send_stats( level_counts );
+        Vector integ_info = new Vector();
+        integ_info.add( integrated_peaks );
+        integ_info.add( peak_IsigI );
+        integ_info.add( run_info );
+        System.out.println("INTEGRATED " + integrated_peaks.size() + " PEAKS");
+        Message set_peaks = new Message( Commands.SET_INTEGRATED_PEAKS_LIST,
+                                         integ_info, true, true );
+        message_center.send( set_peaks );
       }
     }
 
     return false;
+  }
+
+
+  private void MakePeakQList()
+  {
+    if ( histogram != null )
+    {
+      Vector3D h_vec = new Vector3D( orientation_matrix[0][0],
+                                     orientation_matrix[1][0],
+                                     orientation_matrix[2][0] );
+
+      Vector3D k_vec = new Vector3D( orientation_matrix[0][1],
+                                     orientation_matrix[1][1],
+                                     orientation_matrix[2][1] );
+
+      Vector3D l_vec = new Vector3D( orientation_matrix[0][2],
+                                     orientation_matrix[1][2],
+                                     orientation_matrix[2][2] );
+
+      long start = System.nanoTime();
+      int[] level_counts = new int[ levels.length ];
+
+      integrated_peaks.clear();
+      peak_IsigI.clear();
+      Vector peakQs = new Vector();           // vector of peakQ/2PI to display
+      float  two_PI = (float)(2 * Math.PI);
+
+      for ( int h = -20; h <= 20; h++ )       // TODO, calculate range based
+        for ( int k = -20; k <= 20; k++ )     // on MaxQ
+          for ( int l = -20; l <= 20; l++ )
+          {
+            float value = intensity_at( h, k, l, h_vec, k_vec, l_vec );
+            if ( value > 0 )
+            {
+              float[] int_vals = getI_and_sigI(h, k, l, h_vec, k_vec, l_vec);
+              for ( int i = 0; i < levels.length; i++ )
+                if ( int_vals[1] >= levels[i] )
+                  level_counts[i]++;
+
+              Vector3D q_vec = q_vector( h, k, l, h_vec, k_vec, l_vec );
+              PeakQ peak = new PeakQ( q_vec.getX() / two_PI,
+                                      q_vec.getY() / two_PI,
+                                      q_vec.getZ() / two_PI,
+                                      (int)value );
+
+              peak.sethkl( h, k, l );
+
+              if ( int_vals[1] >= 3 )
+                peakQs.add( peak );
+
+              integrated_peaks.add( peak );
+
+              peak_IsigI.add( int_vals );
+
+//            System.out.print( peak );
+//            System.out.printf("  %8.2f  %8.2f\n",int_vals[0],int_vals[1]);
+            }
+          }
+
+      Message mark_peaks = new Message( Commands.MARK_PEAKS,
+                                        peakQs, true, true );
+      message_center.send( mark_peaks );
+/*
+      System.out.println("Used "+ steps_per_MI +" steps per Miller index");
+      System.out.printf("Time to integrate = %6.0fms\n",
+                         (System.nanoTime() - start)/1e6 );
+      System.out.println("Integrated " + level_counts[0] + " peaks.");
+      for ( int i = 1; i < levels.length; i++ )
+        System.out.println("There were " + level_counts[i] +
+                           " with I/sigI >= " + levels[i] );
+*/
+      send_stats( level_counts );
+    }
   }
 
 

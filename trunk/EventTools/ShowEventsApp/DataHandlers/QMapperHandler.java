@@ -77,6 +77,7 @@ public class QMapperHandler implements IReceiveMessage
     message_center.addReceiver( this, Commands.MAP_EVENTS_TO_Q );
     message_center.addReceiver( this, Commands.SELECT_POINT );
     message_center.addReceiver( this, Commands.GET_PEAK_NEW_LIST );
+    message_center.addReceiver( this, Commands.SET_INTEGRATED_PEAKS_LIST );
 
     message_center.addReceiver( this, Commands.CLEAR_OMITTED_PIXELS );
     message_center.addReceiver( this, Commands.APPLY_OMITTED_PIXELS );
@@ -171,7 +172,7 @@ public class QMapperHandler implements IReceiveMessage
       float eventx =  (float)( cmd.getQx() / (2 * Math.PI) );
       float eventy =  (float)( cmd.getQy() / (2 * Math.PI) );
       float eventz =  (float)( cmd.getQz() / (2 * Math.PI) );
-      Peak_new peak = mapper.GetPeak( eventx, eventy, eventz );
+      Peak_new peak = mapper.GetPeak( eventx, eventy, eventz, null );
 
       if ( peak == null )
       {
@@ -253,6 +254,43 @@ public class QMapperHandler implements IReceiveMessage
           new Message( Commands.SET_PEAK_NEW_LIST, peak_new_list, true, true );
 
         message_center.send( peak_new_message );
+      }
+    }
+
+    else if ( message.getName().equals(Commands.SET_INTEGRATED_PEAKS_LIST ) )
+    {
+      Object obj = message.getValue();
+      if ( obj == null )
+        return false;
+                                      // In this case, the value should be a
+      if ( obj instanceof Vector )    // Vector with two Vectors, one giving
+      {                               // PeakQ's, the other integration info
+        Vector info_vec = (Vector)obj;
+        if ( info_vec.elementAt(0) instanceof Vector &&
+             info_vec.elementAt(1) instanceof Vector )
+        {
+          Vector peakQs  = (Vector)info_vec.elementAt(0);
+          Vector i_sigis = (Vector)info_vec.elementAt(1); 
+
+          float[] run_info = new float[4];
+          if (info_vec.size() > 2 && info_vec.elementAt(2) instanceof float[] )
+          {
+            run_info = (float[])(info_vec.elementAt(2));
+            if ( run_info.length != 4 )
+              run_info = new float[4];
+          }
+
+          Vector<Peak_new> peak_new_list =
+          ConvertIntegratedPeakQToPeakNew( mapper, peakQs, i_sigis, run_info );
+
+          Message peak_new_message =
+            new Message(Commands.SET_PEAK_NEW_LIST, peak_new_list, true, true);
+
+          message_center.send( peak_new_message );
+
+//        for ( int i = 0; i < peak_new_list.size(); i++ )
+//          System.out.println( peak_new_list.elementAt(i) );
+        }
       }
     }
 
@@ -389,9 +427,9 @@ public class QMapperHandler implements IReceiveMessage
 
     for  ( int k = 0; k < q_peaks.size(); k++ )
     {
-      IPeakQ q_peak = q_peaks.elementAt(k);
-      float[] qxyz = q_peak.getUnrotQ();
-      Peak_new peak = mapper.GetPeak( qxyz[0], qxyz[1], qxyz[2] );
+      IPeakQ   q_peak = q_peaks.elementAt(k);
+      float[]  qxyz   = q_peak.getUnrotQ();
+      Peak_new peak   = mapper.GetPeak( qxyz[0], qxyz[1], qxyz[2], null );
       if ( peak != null )
       {
         peak.setFacility( "SNS" );
@@ -404,6 +442,41 @@ public class QMapperHandler implements IReceiveMessage
 
     return new_peaks;
   }  
+
+
+  public static Vector<Peak_new>ConvertIntegratedPeakQToPeakNew
+                                                 ( SNS_Tof_to_Q_map  mapper, 
+                                                   Vector<PeakQ>     q_peaks, 
+                                                   Vector<float[]>   IsigIs,
+                                                   float[]           run_info )
+  {
+    int   run_num = (int)run_info[0];
+    float phi     = run_info[1];
+    float chi     = run_info[2];
+    float omega   = run_info[3];
+
+    Vector<Peak_new> new_peaks = new Vector<Peak_new>();
+
+    for  ( int k = 0; k < q_peaks.size(); k++ )
+    {
+      IPeakQ   q_peak = q_peaks.elementAt(k);
+      float[]  i_sigi = IsigIs.elementAt(k);
+      float[]  qxyz   = q_peak.getUnrotQ();
+      Peak_new peak   = mapper.GetPeak( qxyz[0], qxyz[1], qxyz[2], run_info );
+      if ( peak != null )
+      {
+        peak.setFacility( "SNS" );
+        peak.sethkl( q_peak.h(), q_peak.k(), q_peak.l() );
+        peak.seqnum( k );
+        peak.ipkobs( q_peak.ipkobs() );
+        peak.inti( i_sigi[0] );
+        peak.sigi( i_sigi[1] );
+        new_peaks.add( peak );
+      }
+    }
+
+    return new_peaks;
+  }
 
 
   private IEventList3D[] MapToQ( ITofEventList ev_list )
