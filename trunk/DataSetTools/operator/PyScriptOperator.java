@@ -1048,7 +1048,7 @@ public class PyScriptOperator extends GenericOperator
          postProps.put( name, System.getProperty( name ) );
     }
     String pyPath1 = gov.anl.ipns.Util.File.FileIO.appendPath( 
-          System.getProperty( "ISAW_HOME"),"PythonSources/LIB/" );
+          System.getProperty( "ISAW_HOME"),"PythonSources/Lib/" );
     if( pyPath.length() > 0)
        pyPath1 =File.pathSeparatorChar+pyPath1;
     pyPath = gov.anl.ipns.Util.File.FileIO.appendPath( pyPath , 
