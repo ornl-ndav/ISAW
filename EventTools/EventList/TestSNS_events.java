@@ -502,7 +502,7 @@ public class TestSNS_events
     {
       IPeakQ q_peak = q_peaks.elementAt(k);
       float[] qxyz = q_peak.getUnrotQ(); 
-      Peak_new peak = mapper.GetPeak( qxyz[0], qxyz[1], qxyz[2] );
+      Peak_new peak = mapper.GetPeak( qxyz[0], qxyz[1], qxyz[2], null );
       peak.setFacility( "SNS" );
       peak.sethkl( q_peak.h(), q_peak.k(), q_peak.l() );
       peak.seqnum( k );

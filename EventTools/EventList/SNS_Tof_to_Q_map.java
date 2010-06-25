@@ -137,7 +137,7 @@ public class SNS_Tof_to_Q_map
   private final int   NUM_WAVELENGTHS = 
                              Math.round( MAX_WAVELENGTH * STEPS_PER_ANGSTROM );
 
-  private boolean     debug = true;
+  private boolean     debug = false;
 
   private IDataGrid[]  grid_arr;         // list of actual grids
   private IDataGrid[]  all_grids;        // list of possible grids, indexed by
@@ -460,7 +460,6 @@ public class SNS_Tof_to_Q_map
 
     bank_info = FileUtil.LoadBankInfo( bank_filename );
     
-
     System.out.println("--------------------------------------------");
     System.out.println("Initializing SNS_Tof_to_Q_map.java using....");
     System.out.println("DetCal File  : " + det_cal_filename );
@@ -2057,15 +2056,17 @@ public class SNS_Tof_to_Q_map
    *     by this method.
    *  3. Code using this should check that the result is not null     
    * 
-   *  @param   qx  The x component of the q vector
-   *  @param   qy  The y component of the q vector
-   *  @param   qz  The z component of the q vector
+   *  @param   qx        The x component of the q vector
+   *  @param   qy        The y component of the q vector
+   *  @param   qz        The z component of the q vector
+   *  @param   run_info  Array of floats containing the run_number,
+   *                     phi, chi and omega, in that order.
    *
    *  @return A Peak_new object corresponding to the specified qx,qy,qz,
    *          or null if the specified qx,qy,qz don't map back to any
    *          detector.
    */
-  public Peak_new GetPeak( float qx, float qy, float qz )
+  public Peak_new GetPeak( float qx, float qy, float qz, float[] run_info )
   {
     float[] row_col_tof_ID = QtoRowColTOF_ID( qx, qy, qz );
     
@@ -2076,7 +2077,18 @@ public class SNS_Tof_to_Q_map
 
     IDataGrid grid = getIDataGrid( det_id );
      
-    Peak_new peak = new Peak_new( run_num,
+    int run_number = 0;
+    SampleOrientation sample_orientation = new SNS_SampleOrientation(0,0,0);
+
+    if ( run_info != null && run_info.length == 4 )
+    {
+      run_number = (int)run_info[0];
+      sample_orientation = new SNS_SampleOrientation( run_info[1],
+                                                      run_info[2],
+                                                      run_info[2] );
+    }
+
+    Peak_new peak = new Peak_new( run_number,
                                   monitor_count,
                                   row_col_tof_ID[1],
                                   row_col_tof_ID[0],
@@ -2085,7 +2097,7 @@ public class SNS_Tof_to_Q_map
                                                         // since the events 
                                                         // aren't histogrammed
                                   grid,
-                                  orientation,
+                                  sample_orientation,
                                   row_col_tof_ID[2],
                                   L1,
                                   t0 / 10  );             // Convert t0 shift 
