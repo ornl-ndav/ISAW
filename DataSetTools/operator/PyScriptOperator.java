@@ -301,7 +301,7 @@ public class PyScriptOperator extends GenericOperator
        // interp on s.type to get line number.Check Python dealing with
        //exceptions
        
-       errormessage   = "ERROR1:" + s.toString(  );
+       append2error( "ERROR1:" + s.toString(  ));
        errLineNum     = s.traceback.tb_lineno - 1;
     
        SharedData.addmsg( reformatPythonError( s.value.toString(  ) ) );
@@ -311,11 +311,11 @@ public class PyScriptOperator extends GenericOperator
        StackTraceElement[] SS = s1.getStackTrace( );
        if( SS.length < 1)
        {
-          errormessage = s.toString( );
+          append2error( s.toString( ));
           errLineNum =-1;
           return;
        }
-       errormessage= SS[0].toString( );
+       append2error(SS[0].toString( ));
        errLineNum = SS[0].getLineNumber( );
        return;
     }
@@ -542,7 +542,7 @@ public class PyScriptOperator extends GenericOperator
         scriptLoaded = true;
         //interpreter hit an error when processing the document, so return it
         if( eos.size(  ) > 0 ) {
-          errormessage = "Error " + eos.toString(  );
+           append2error( "Error " + eos.toString(  ));
 
           return new ErrorString( errormessage );
         }
@@ -565,7 +565,7 @@ public class PyScriptOperator extends GenericOperator
         // interp on s.type to get line number.Check Python dealing with
         //exceptions
         System.out.println("In PyException "+ s.getClass());
-        errormessage   = "ERROR1:" + s.toString(  );
+        append2error("ERROR1:" + s.toString(  ));
         s.fillInStackTrace( );
         if( s.traceback != null)
             errLineNum     = s.traceback.tb_lineno - 1;
@@ -580,11 +580,11 @@ public class PyScriptOperator extends GenericOperator
             StackTraceElement[] SS = s1.getStackTrace( );
             if( SS.length < 1)
             {
-               errormessage = s.toString( );
+               append2error( s.toString( ));
                errLineNum =-1;
                return new ErrorString( errormessage );
             }
-            errormessage= SS[0].toString( );
+            append2error( SS[0].toString( ));
             errLineNum = SS[0].getLineNumber( );
         
             return new ErrorString( errormessage );
@@ -833,7 +833,7 @@ public class PyScriptOperator extends GenericOperator
       try {
         interp.exec( codeLine );
       } catch( Exception s ) {
-        errormessage = s.getMessage(  );
+         append2error(s.getMessage(  ));
         SharedData.addmsg( errormessage );
       }
       }
@@ -926,7 +926,7 @@ public class PyScriptOperator extends GenericOperator
       interp.exec( "innerClass = " + script.getClassname(  ) + "(  )" );
     }}catch(Throwable ss)
     {
-       errormessage = "Error at" +problem+":"+ss.toString();
+       append2error("Error at" +problem+":"+ss.toString());
        errLineNum =0;
     }
   }
@@ -1011,6 +1011,16 @@ public class PyScriptOperator extends GenericOperator
     initPySystem();
     resetInterpreter(  );
   }
+  
+  private void append2error( String newError)
+  {
+     if( errormessage !=null && errormessage.length() >0)
+        errormessage +="\n";
+     else
+        errormessage ="";
+     
+     errormessage +=newError;
+  }
   private final void initPySystem()
   {
     if( PySystemInitted)
@@ -1072,6 +1082,12 @@ public class PyScriptOperator extends GenericOperator
   // properties
   private String FixFileName( String fileName)
   {
+   
+    fileName = fileName.replace( '\\' , '/' );
+    
+    StringUtil.replace( fileName , "//" , "/" );
+    StringUtil.replace( fileName , "//" , "/" );
+    fileName.replace( '/' , '\\');
     fileName = StringUtil.setFileSeparator( fileName );
     fileName = fileName.replace( ';' , File.pathSeparatorChar );
     return StringUtil.replace( fileName , "\\" , "\\\\" );
@@ -1105,7 +1121,7 @@ public class PyScriptOperator extends GenericOperator
         String message = ss.toString( );
         if( SS != null && SS.length > 0)
            message +="\n"+SS[0];
-        errormessage = message;
+        append2error( message);
         errLineNum=0;
      }
      }
