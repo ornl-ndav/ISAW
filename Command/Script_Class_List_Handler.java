@@ -305,8 +305,10 @@ public class Script_Class_List_Handler  implements OperatorHandler{
     private   static String            jarFileName     = null;
     
     private   static Hashtable         RestoredFileNames = null;
+    
+    
     /**
-     * The System property user.home,ISAW_HOME, GROUP_HOME,
+     * The System property user.home,ISAW_HOME, Script_Path,GROUP_HOME,
      * GROUP1_HOME,..  are the paths for the operators that are to be
      * "installed"
      */
@@ -854,7 +856,19 @@ public class Script_Class_List_Handler  implements OperatorHandler{
             includeVec=addDir(ScrPaths,includeVec);
         }
         
-     
+        String ScriptPath = System.getProperty( "Script_Path");
+        if( ScriptPath != null)
+        {
+           ScriptPath = FilenameUtil.setForwardSlash( ScriptPath );
+           ScriptPath =ScriptPath.trim( );
+           
+           if( ScriptPath.endsWith( File.separator ))
+              ScriptPath = ScriptPath.substring(0,ScriptPath.length()-1);
+           
+           if( !includeVec.contains( ScriptPath ))
+              includeVec.add( ScriptPath);
+           
+        }
         
         // remove redundant listings from the path
         for( int i=0 ; i<includeVec.size() ; i++ ){
