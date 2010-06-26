@@ -363,6 +363,9 @@ public class Util {
         }
       }
 
+      float[] monitorCounts = getMonitorCounts(run_numbers, rawpath, fileNamePrefix, extension);
+      SetMonitorCountsInPeaks( all_peaks, run_numbers, monitorCounts);
+      
       if ( append )
       {                                         // read in any existing peaks
         try                                     // and add to all_peaks Vector 
@@ -504,6 +507,61 @@ public class Util {
     return all_peaks; 
   }
 
+   
+   //run_numbers will be sorted
+   private static float[] getMonitorCounts(int[] run_numbers, String rawpath, 
+                              String fileNamePrefix, String extension)
+   {
+      if( run_numbers == null || run_numbers.length < 1)
+         return null;
+      
+      Arrays.sort( run_numbers );
+      float[] Res = new float[run_numbers.length];
+      Arrays.fill( Res, 0f);
+      
+      for( int run=0;run < run_numbers.length; run++)
+      {
+         String fin_name  = rawpath + fileNamePrefix + run_numbers[run] + extension;
+         if( new File( fin_name).exists())
+         {
+            try
+            {
+               Retriever retriever = Command.ScriptUtil.getRetriever( fin_name );
+
+               Res[run] = getMonCount( retriever , 0 );
+            } catch( Exception ss )
+            {
+               Res[run] = 0;
+            }
+
+         }else
+            Res[run]=0;
+      }
+      return Res;
+   }
+   
+   
+   private static void SetMonitorCountsInPeaks( Vector all_peaks, int[] run_numbers, 
+                      float[] monitorCounts)
+   {
+      if( all_peaks == null || run_numbers == null || monitorCounts == null )
+         return;
+      
+      int lastRunNum = -1;
+      float lastMonCount = Float.NaN;
+      for( int peak =0; peak < all_peaks.size(); peak++)
+      {
+         IPeak pk = (IPeak)all_peaks.get( peak );
+         if( pk.nrun() != lastRunNum)
+         {
+            lastRunNum =Arrays.binarySearch( run_numbers , pk.nrun());
+            if( lastRunNum >=0)
+               lastMonCount = monitorCounts[lastRunNum];
+         }
+         if( lastRunNum >=0)
+            pk.monct( lastMonCount );
+      }
+   }
    
    /**
     * Used to eliminate leading and trailing quotes around a filename.
@@ -2269,6 +2327,10 @@ public class Util {
          }
 
          all_peaks = filtered_peaks;
+         
+         float[] monitorCounts = getMonitorCounts(run_numbers, path, inst, FileExt);
+         SetMonitorCountsInPeaks( all_peaks, run_numbers, monitorCounts);
+      
          all_peaks = Append( all_peaks, out_file_name, append);
          try
          {
