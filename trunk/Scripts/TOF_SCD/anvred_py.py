@@ -82,10 +82,10 @@ class anvred_py(GenericTOF_SCD):
     def setDefaultParameters(self):
     
         self.super__clearParametersVector()
-        self.addParameter(DataDirPG("Working directory", "C:/Users/Arthur/Desktop/Topaz/nickel"))
-        self.addParameter(StringPG("Experiment name", "Ni940"))
-        self.addParameter(FloatPG("Total scattering linear abs coeff in cm^-1", 1.693))
-        self.addParameter(FloatPG("True absorption linear abs coeff in cm^-1", 0.411))
+        self.addParameter(DataDirPG("Working directory", "C:/Users/Arthur/Desktop/Topaz/nickel/TOPAZ_1172/anvred_test"))
+        self.addParameter(StringPG("Experiment name", "Ni1172"))
+        self.addParameter(FloatPG("Total scattering linear abs coeff in cm^-1", 1.762))
+        self.addParameter(FloatPG("True absorption linear abs coeff in cm^-1", 0.428))
         self.addParameter(FloatPG("Radius of spherical crystal in cm", 0.10))
         self.addParameter(IntegerPG("Incident spectrum: iSpec = 1 fitted; = 2 data", 2))
         self.addParameter(LoadFilePG("If iSpec = 1, file with spectrum coefficients", \
@@ -96,7 +96,7 @@ class anvred_py(GenericTOF_SCD):
         self.addParameter(IntegerPG("The minimum I/sig(I)", 0))
         self.addParameter(IntegerPG("Width of border (number of channels)", 5))
         self.addParameter(IntegerPG("Minimum peak count", 5))
-        self.addParameter(FloatPG("Minimum d-spacing (Angstroms)", 0.5))
+        self.addParameter(FloatPG("Minimum d-spacing (Angstroms)", 0.3))
         self.addParameter(IntegerPG("Assign scale factors (1) per setting or (2) per detector", 1))
         self.addParameter(FloatPG("Multiply FSQ and sig(FSQ) by scaleFactor", 0.00001))
         
@@ -203,6 +203,7 @@ class anvred_py(GenericTOF_SCD):
         xtof = []       # = (L1+dist)/hom; TOF = wl * xtof
         
         wavelength = normToWavelength
+        one = 1.0       # denominator in spectrum to calculate spect1
         
         for id in range(nod):
         
@@ -222,7 +223,9 @@ class anvred_py(GenericTOF_SCD):
                 # specBank[id][0] are the times-of-flight
                 # specBank[id][1] are the counts
                 spect = spectrum( wavelength, xtof[id], averageRange, \
-                    normToWavelength, specBank[id][0], specBank[id][1] )
+                    one, specBank[id][0], specBank[id][1] )
+                if spect == 0.0:
+                    print '*** Wavelength for normalizing to spectrum is out of range.'
                 spect1.append(spect)
                                   
 # C-----------------------------------------------------------------------
@@ -341,6 +344,8 @@ class anvred_py(GenericTOF_SCD):
             if iSpec == 2:
                 spect = spectrum( wl, xtof[id], averageRange, \
                   spect1[id], specBank[id][0], specBank[id][1] )
+            
+            if spect == 0.0: continue
             
             sinsqt = ( wl / (2.0*dsp) )**2
             wl4 = wl**4
