@@ -549,7 +549,7 @@ public class XtalLatticeControl extends Object
 
 
    }
-
+/*
    //Handler to display information on possible hkl values for 
    // set peak number 1
    class SetPeak1InfoHandler implements InfoHandler , AncestorListener ,
@@ -574,13 +574,13 @@ public class XtalLatticeControl extends Object
 
       char      c      = 'x';
 
-
+       */
       /**
        * Constructor
        * @param selectePeaks  SetPeaks object containing the setPeak 
        *                     information
        * @param BMat           The Material matrix 
-       */
+       *//*
       public SetPeak1InfoHandler( SetPeaks selectePeaks, float[][] BMat )
       {
 
@@ -600,12 +600,13 @@ public class XtalLatticeControl extends Object
          Choices = null;
          jt = null;
       }
+      */
       /**
        * Used when input material matrix has changed. Will update displayed
        * information if it is showing.
        * 
        * @param newData  The new material matrix
-       */
+       *//*
       public void setNewData( Object newData )
       {
 
@@ -618,14 +619,14 @@ public class XtalLatticeControl extends Object
             show( null , null , Panel );
       }
 
-
+      */
       /**
        * If error and centering information change.  Will update displayed
        * information if it is showing.
        * @param Delta1  The delta 1 error in lengths of q vectors
        * @param Delta2  The delta2 error measuring the closeness of dot products
        * @param c      The centering type character P,A,B,C,F,I, or R 
-       */
+       *//*
       public void setErrData( float Delta1 , float Delta2 , char c )
       {
 
@@ -636,11 +637,11 @@ public class XtalLatticeControl extends Object
             show( null , null , Panel );
       }
 
-
+      */
       /**
        * 
        * @return  The possible choices for hkl values
-       */
+       *//*
       public int[][] getChoices()
       {
 
@@ -648,22 +649,22 @@ public class XtalLatticeControl extends Object
 
       }
 
-
+      */
       /**
        * 
        * @return  The seleced choice in the list of choices
-       */
+       *//*
       public int getSelectedChoiceIndex()
       {
 
          return pickedChoice;
       }
 
-
+      */
       /**
        * Sets the index of the selected choice
        * @param choiceIndex  The index of the selected choice
-       */
+       *//*
       public void setSelectedChoiceIndex( int choiceIndex )
       {
 
@@ -682,14 +683,14 @@ public class XtalLatticeControl extends Object
             SelectedPeaks.setPeakHKL( 0 , Float.NaN , Float.NaN , Float.NaN );
       }
 
-
+       */
       /* 
        *Displays a list of possible hkl values. A line can be selected from the table, which will
        *change the selecedChoiceIndex
        *
        * (non-Javadoc)
        * @see DataSetTools.components.ui.Peaks.InfoHandler#show(DataSetTools.operator.Generic.TOF_SCD.IPeak, gov.anl.ipns.MathTools.Geometry.Tran3D, javax.swing.JPanel)
-       */
+       *//*
       @Override
       public void show( IPeak pk , Tran3D transformation , JPanel panel )
       {
@@ -791,10 +792,10 @@ public class XtalLatticeControl extends Object
 
       }
 
-
+    */
       /* (non-Javadoc)
        * @see javax.swing.event.AncestorListener#ancestorAdded(javax.swing.event.AncestorEvent)
-       */
+       *//*
       @Override
       public void ancestorAdded( AncestorEvent event )
       {
@@ -802,10 +803,11 @@ public class XtalLatticeControl extends Object
 
       }
 
-
+      */
       /* (non-Javadoc)
        * @see javax.swing.event.AncestorListener#ancestorMoved(javax.swing.event.AncestorEvent)
        */
+      /*
       @Override
       public void ancestorMoved( AncestorEvent event )
       {
@@ -813,10 +815,11 @@ public class XtalLatticeControl extends Object
 
       }
 
-
+      */
       /* (non-Javadoc)
        * @see javax.swing.event.AncestorListener#ancestorRemoved(javax.swing.event.AncestorEvent)
        */
+      /*
       @Override
       public void ancestorRemoved( AncestorEvent event )
       {
@@ -827,12 +830,13 @@ public class XtalLatticeControl extends Object
 
       }
 
-
+      */
       /* 
        * If a row has been selected, changes the index of the  hkl choices
        * (non-Javadoc)
        * @see javax.swing.event.ListSelectionListener#valueChanged(javax.swing.event.ListSelectionEvent)
        */
+      /*
       @Override
       public void valueChanged( ListSelectionEvent e )
       {
@@ -865,9 +869,9 @@ public class XtalLatticeControl extends Object
 
 
    }
+*/
 
-
-   //Handler to display information on possible hkl values for 
+ /*  //Handler to display information on possible hkl values for 
    // set peak number 2, Given the information about set Peak number 1
 
    class SetPeak2InfoHandler implements InfoHandler , AncestorListener ,
@@ -898,14 +902,14 @@ public class XtalLatticeControl extends Object
 
       boolean             AllChoices_SelPeak1;
 
-
+*/
       /**
        * Constructor
        * @param SelectedPeaks  The SetPeak Object containing the set peaks
        * @param Peak1          The SetPeak1 info handler
        * @param B_mat          The material orientation matrix
        */
-      public SetPeak2InfoHandler( SetPeaks SelectedPeaks,
+/*      public SetPeak2InfoHandler( SetPeaks SelectedPeaks,
                SetPeak1InfoHandler Peak1, float[][] B_mat )
       {
 
@@ -938,7 +942,7 @@ public class XtalLatticeControl extends Object
        * 
        * @param newData  The new material matrix
        */
-      public void setNewData( Object newData )
+ /*     public void setNewData( Object newData )
       {
 
          if( newData == null || ! ( newData instanceof float[][] ) )
@@ -962,7 +966,7 @@ public class XtalLatticeControl extends Object
        * @param Delta2  The delta2 error measuring the closeness of dot products
        * @param c      The centering type character P,A,B,C,F,I, or R 
        */
-      public void setErrData( float Delta1 , float Delta2 , char c )
+ /*     public void setErrData( float Delta1 , float Delta2 , char c )
       {
 
          this.Delta1 = Delta1;
@@ -983,7 +987,7 @@ public class XtalLatticeControl extends Object
        * 
        * @return  The possible choices for hkl values
        */
-      public int[][] getChoices()
+ /*     public int[][] getChoices()
       {
 
          return Choices;
@@ -995,7 +999,7 @@ public class XtalLatticeControl extends Object
        * 
        * @return  The seleced choice in the list of choices
        */
-      public int getSelectedChoiceIndex()
+ /*     public int getSelectedChoiceIndex()
       {
 
          return pickedChoice;
@@ -1007,7 +1011,7 @@ public class XtalLatticeControl extends Object
        * (non-Javadoc)
        * @see javax.swing.event.ListSelectionListener#valueChanged(javax.swing.event.ListSelectionEvent)
        */
-      @Override
+/*      @Override
       public void valueChanged( ListSelectionEvent e )
       {
 
@@ -1061,7 +1065,7 @@ public class XtalLatticeControl extends Object
       /* (non-Javadoc)
        * @see javax.swing.event.AncestorListener#ancestorAdded(javax.swing.event.AncestorEvent)
        */
-      @Override
+/*      @Override
       public void ancestorAdded( AncestorEvent event )
       {
 
@@ -1072,7 +1076,7 @@ public class XtalLatticeControl extends Object
       /* (non-Javadoc)
        * @see javax.swing.event.AncestorListener#ancestorMoved(javax.swing.event.AncestorEvent)
        */
-      @Override
+/*      @Override
       public void ancestorMoved( AncestorEvent event )
       {
 
@@ -1083,7 +1087,7 @@ public class XtalLatticeControl extends Object
       /* (non-Javadoc)
        * @see javax.swing.event.AncestorListener#ancestorRemoved(javax.swing.event.AncestorEvent)
        */
-      @Override
+/*      @Override
       public void ancestorRemoved( AncestorEvent event )
       {
 
@@ -1099,7 +1103,7 @@ public class XtalLatticeControl extends Object
        *(non-Javadoc)
        * @see DataSetTools.components.ui.Peaks.InfoHandler#show(DataSetTools.operator.Generic.TOF_SCD.IPeak, gov.anl.ipns.MathTools.Geometry.Tran3D, javax.swing.JPanel)
        */
-      @Override
+/*      @Override
       public void show( IPeak pk , Tran3D transformation , JPanel panel )
       {
 
@@ -1246,4 +1250,5 @@ public class XtalLatticeControl extends Object
       }
 
    }
+   */
 }
