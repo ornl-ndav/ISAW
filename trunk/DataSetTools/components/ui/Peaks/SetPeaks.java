@@ -55,6 +55,7 @@ import javax.swing.event.*;
 import javax.swing.table.*;
 
 import DataSetTools.operator.Generic.TOF_SCD.IPeak;
+import DataSetTools.operator.Generic.TOF_SCD.Peak_new;
 
 
 /**
@@ -176,6 +177,15 @@ public class SetPeaks extends JButton
       return listener;
    }
 
+   public void setPeaks( Vector< Peak_new > peaks)
+   {
+      Peaks =new Vector<IPeak>();
+      for( int i=0; i< peaks.size( ); i++)
+         Peaks.addElement( (IPeak)peaks.elementAt(i));
+      if( seqNums != null)
+         Arrays.fill( seqNums , -1 );
+   }
+   
    public void kill()
    {
       SelectedPeaks=hklVals = null;
