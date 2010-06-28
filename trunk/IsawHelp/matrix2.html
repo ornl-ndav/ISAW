@@ -1,0 +1,92 @@
+<html><body style="font-size:20px">
+<H1><Center> Matrix 2 </Center></H1>
+User inputs unit cell parameters.  Program then tries to index
+some reflections and calculate an orientation matrix.<P><P>
+
+	For references, see W.C. Hamilton, International Tables, Vol. IV,
+	page 280.  Also, W.R. Busing and H.A. Levy, Acta Cryst. 22,
+       457 (1967).<P><P>
+
+<OL>This program requires the following <B>INPUTS</B>:<P>
+
+<LI> A Peaks file.<Br>
+     Enter via the Menu bar under <B>File Load Peaks File</B><P>
+
+<LI> Unit Cell Parameters:<BR>
+     Enter in text box to the right of <B>Lattice Parameters</b><P>
+
+<LI> Centering:<Br>
+     Enter in the text box to the right of <b>Centering</b><P>
+
+<LI> Delta 1 :<Br>
+     Enter to the right of <b>Delta 1</b>. This gives the tolerance
+     in the length of the first and second peaks from possible 
+     theoretical peaks.<P>
+
+<LI> Delta 2 :<Br>
+     Enter to the right of <b>Delta 2</b>. This is related to the tolerance
+     in the angle between the two peaks compared with some theoretical peaks. .<P>
+
+<LI> Two Peaks:<Br>
+     Enter the Sequence number of the two peaks desired.  You can view the Peaks
+     file under <I>View/Peaks File</I> from the Menubar<P>
+
+<LI> Corresponding h,k,l values(optional):<BR>
+     The format you enter these is (for example) <U>3,5,-8</U>. These values can be selected from
+     lists in the <B><U>Peak 1 HKL's</U></B> tab or the <B><U>Peak 2</U></B> HKL's tab.<P>
+</ol><P><P>
+<UL><UL>
+
+<LI>In Addition: Other sequence numbers can be added to see how close their hkl values are
+to an integer.  This appears under the <B><U>UB mats</U></B> tab in the bottom part of
+this window.<P>
+
+<LI>Also, you can specify hkl values for the two selected peaks.<P><P>
+</ul></ul><HR>
+
+
+
+<H1><Center> Program Operation </Center></H1><P>
+
+After the information is input at the top, the tabs at the bottom display results and also allow the user to select
+a choice out of any of the lists.  The operations of these tabs are expanded below:<P><P>
+
+<OL> Tab information and selection abilities<P>
+<LI> <B><U>Peak 1 HKL's</U></B> tab:
+     <UL>
+         <LI> Lists all possible hkl values whose corresponding q value's length is within <B>Delta 1</B> of the
+               first selected q value(  Under Point 1 's Seq Num at the top)<P>
+          <LI> Selecting one line in the table will select that as the desired hkl value for the first Peak.
+                if the top line is selected, all of these hkl values will be considered unless the user
+                 specified a choice in the top part of the form<P>
+     </UL><P>
+<LI> <B><U>Peak 2 HKL's</U></B> tab:
+     <UL> 
+          <LI> Lists all possible hkl values whose corresponding q value's length is within <B>Delta 1</B> of the
+               2nd selected q value(  Under Point 2 's Seq Num at the top) and whose "angle" with the first
+               selected peak is within <B>Delta 2</B> of the angle between the theoretical hkl1 peak and hkl2 peak.<P>
+          <LI> Selecting one line in the table will select that as the desired hkl values for both the 
+               first Peak and the second peak.  If the top line is selected, all of these hkl values will be
+                considered unless the user
+                 specified a choice in the top part of the form<P>
+     </UL><P>
+<LI> <B><U>UB mats</U></B> tab:
+     <UL>
+       <LI> This lists all the possible UB matrices for the selected peaks.  If more than one hkl value is selected
+        for at least one peak, a list of UB matrices will be presented.<P>
+       <LI> Other information appears on this form to indicate the goodness of fit.  The fraction of peaks indexed
+            at various levels and the indexing of the Other Seq Nums are given.<P>
+       <LI> A specific UB matrix can be selected by pressing the Select button in this form. This will be the matrix
+            that is saved( <B><U>Menubar</U>-<U>File</U>-<U>Save Orientation Matrix</U></B>)
+     </UL><P>
+</OL><P><P>
+<HR>
+<H1><CENTER> Output </CENTER></H1>
+The only output of the program is the Selected UB matrix. It must be selected from the List in the 
+    <B><U>UB mats</U></B> tab. Then saved using the option from <B><U>Menubar</U>-<U>File</U>-<U>Save Orientation Matrix</U></B>
+
+
+
+
+
+    
