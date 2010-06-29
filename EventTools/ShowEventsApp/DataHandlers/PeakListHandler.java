@@ -26,6 +26,7 @@ import EventTools.ShowEventsApp.Command.IndexARCS_PeaksCmd;
 import EventTools.ShowEventsApp.Command.SelectionInfoCmd;
 import EventTools.ShowEventsApp.Command.UBwTolCmd;
 import EventTools.ShowEventsApp.Command.Util;
+import EventTools.ShowEventsApp.Controls.ScalarHandlePanel;
 
 
 public class PeakListHandler implements IReceiveMessage
@@ -412,7 +413,7 @@ public class PeakListHandler implements IReceiveMessage
       double[][] UB2 = new double[3][3];
       double[] abc = new double[7];
       double[] sig_abc = new double[7];
-      if( Double.isNaN( LsqrsJ_base.LeastSquaresSCD( UB2, 
+     /*if( Double.isNaN( LsqrsJ_base.LeastSquaresSCD( UB2, 
            LsqrsJ_base.getHKLArrays( Peaks,null, -1f,null, null, -1),
            LsqrsJ_base.getQArray( Peaks ,-1f,null, null, -1), 
            abc, 
@@ -422,15 +423,27 @@ public class PeakListHandler implements IReceiveMessage
               UB2 = LinearAlgebra.float2double( UB );
               abc= sig_abc = null;
            }
+           
+     */
+      UB2= LinearAlgebra.float2double( ScalarHandlePanel.LSQRS( Peaks , sig_abc ));
+      if(  UB2 == null || sig_abc[0] <= 0)
+      {
+         Util.sendError( "LeastSquares Error. No error estimates" );
+         UB2 = LinearAlgebra.float2double( UB );
+         abc= sig_abc = null;
+      }
      
       UBT = LinearAlgebra.double2float( LinearAlgebra.getTranspose( UB2 ) );
-      Object messageValue = UBT;
+      /*Object messageValue = UBT;
       if( sig_abc != null)
       {
         messageValue = new Vector(2);
         ((Vector)messageValue).addElement( UBT);
         ((Vector)messageValue).add(LinearAlgebra.double2float( sig_abc ));
       }
+      */
+      Vector messageValue = Commands.MakeSET_ORIENTATION_MATRIX_arg( UBT , 
+                                       LinearAlgebra.double2float( sig_abc ) );
       message_center.send( new Message( Commands.SET_ORIENTATION_MATRIX,
                                         messageValue, false));
 
