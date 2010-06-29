@@ -1276,15 +1276,15 @@ private static final double SMALL    = 1.525878906E-5;
     {
       return new ErrorString( "LsqrsJ failed to update matrix file: " + error );
       
-    } else if (matfile != null) 
+    } else 
     {
-      SharedData.addmsg( "Wrote file: " + matfile );
+       if (matfile != null) 
+          SharedData.addmsg( "Wrote file: " + matfile );
 
       float[][] F_UB=LinearAlgebra.double2float( UB );
       return F_UB;
     }
-   
-    return null;
+  
   }
 
      
