@@ -1,5 +1,8 @@
 package EventTools.ShowEventsApp.Command;
 
+import java.util.Arrays;
+import java.util.Vector;
+
 public class Commands 
 {
   public static final String DQLOG_SCALE  ="DQLOG_SCALE";//arg boolean  
@@ -237,4 +240,25 @@ public class Commands
   public static final String WRITE_INDEX_FILE = "Write Index File";
   public static final String OMIT_PEAKS = "Omit Peaks";*/
   //*/
+  
+  public static Vector MakeSET_ORIENTATION_MATRIX_arg( float[][] UB, float[] sig)
+  {
+     if( UB == null)
+     {
+        UB = new float[3][3];
+        Arrays.fill( UB[0],0f  );
+        Arrays.fill( UB[1],0f  );
+        Arrays.fill( UB[2],0f  );
+     }
+     if( sig == null)
+     {
+        sig = new float[7];
+        Arrays.fill(  sig , 0f );
+     }
+     
+     Vector  V = new Vector(2);
+     V.add( UB );
+     V.add( sig );
+     return V;
+  }
 }
