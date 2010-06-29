@@ -820,6 +820,8 @@ import javax.swing.plaf.basic.BasicSplitPaneDivider;
 import javax.swing.text.*;
 import javax.swing.tree.*;
 
+import Wizard.TOF_SCD.Matrix2_App;
+
 //import SDDS.java.SDDSedit.*;
  
 
@@ -1136,13 +1138,14 @@ public class Isaw
     SADMenu.add( ReduceWItem );
     JMenuItem IsawEV = new  JMenuItem( "IsawEV");
     JMenuItem GroupMk = new JMenuItem("Group Pixels");
+    JMenuItem Matrix2 = new JMenuItem("Matrix 2");
     wizardMenu.add( IsawEV);
     wizardMenu.add( GroupMk );
     wizardMenu.add( SADMenu );
     wizardMenu.add( SCDMenu );
     wizardMenu.add(LansceWizard);
     wizardMenu.add(  Wizard.TOF_SCD.InitialPeaksWizard_SNS.CreateMenuItems( "SCD at SNS" ) );
-    
+    wizardMenu.add(  Matrix2 );
     InitPeaksWItem.addActionListener( menu_item_handler );
     DailyPeaksWItem.addActionListener( menu_item_handler );
     LansceInitPeaksWItem.addActionListener( menu_item_handler );
@@ -1150,6 +1153,7 @@ public class Isaw
     ReduceWItem.addActionListener( menu_item_handler );
     IsawEV.addActionListener(  menu_item_handler );
     GroupMk.addActionListener(  menu_item_handler );
+    Matrix2.addActionListener(  menu_item_handler );
     //***************************************************end create Wizard menu
 
     JMenu hMenu               = new JMenu( HELP_M );
@@ -1730,6 +1734,8 @@ public class Isaw
            RunIsawEV();
       }else if( s =="Group Pixels")
          GroupSelector.main(  null );
+      else if( s =="Matrix 2")
+         Wizard.TOF_SCD.Matrix2_App.Matrix2( null );
                     
       if( s.equals( SAVE_ISAW_DATA_MI ))
       {
