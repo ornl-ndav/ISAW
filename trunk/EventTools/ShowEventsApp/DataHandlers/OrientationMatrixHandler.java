@@ -108,14 +108,16 @@ public class OrientationMatrixHandler implements IReceiveMessage
 
     else if ( message.getName().equals(Commands.GET_ORIENTATION_MATRIX) )
     {
-      Object message_value = orientation_matrix;
+     /* Object message_value = orientation_matrix;
       if( sig_abc != null)
       {
          Vector V = new Vector(2);
          V.add(  orientation_matrix );
          V.add( sig_abc);
          message_value = V;
-      }
+      }*/
+      Vector message_value= Commands.MakeSET_ORIENTATION_MATRIX_arg( 
+                                       orientation_matrix  , sig_abc );
       Message mat_message = new Message( Commands.SET_ORIENTATION_MATRIX,
                                         message_value,
                                         true );
@@ -164,6 +166,7 @@ public class OrientationMatrixHandler implements IReceiveMessage
        String filename = (String)V.firstElement();
        float OffInt =((Float)V.lastElement()).floatValue();
        Object Res = Operators.TOF_SCD.IndexJ.readOrient( filename );
+       
        if( Res == null || !(Res instanceof float[][]) )
        {
           if( Res == null )
@@ -175,7 +178,7 @@ public class OrientationMatrixHandler implements IReceiveMessage
        //SetNewOrientationMatrix( orMat );
        
        message_center.send( new Message( Commands.SET_ORIENTATION_MATRIX,
-             orMat,
+             Commands.MakeSET_ORIENTATION_MATRIX_arg( orMat,null),
              true ));//Must broadcast this orientation matrix
        IndexPeakWithOrientationMat( orMat, OffInt);
     }
