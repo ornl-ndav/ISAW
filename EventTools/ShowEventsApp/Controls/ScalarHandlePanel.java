@@ -36,6 +36,7 @@ package EventTools.ShowEventsApp.Controls;
 import gov.anl.ipns.MathTools.LinearAlgebra;
 import gov.anl.ipns.MathTools.lattice_calc;
 import gov.anl.ipns.Util.File.TextSeparators;
+import gov.anl.ipns.Util.SpecialStrings.ErrorString;
 import gov.anl.ipns.Util.Sys.WindowShower;
 import gov.anl.ipns.ViewTools.Panels.StringListChoiceViewer;
 
@@ -827,19 +828,21 @@ public class ScalarHandlePanel implements IReceiveMessage
       double[][] UBD = new double[3][3];
       double[] abc = new double[7];
       double[] sig_abc = new double[7];
-      double chisq = LsqrsJ_base.LeastSquaresSCD( 
+      UBD = LinearAlgebra.float2double( LSQRS(  PeakList, sig_abc)); 
+         /*LsqrsJ_base.LeastSquaresSCD( 
             UBD ,
             LsqrsJ_base.getHKLArrays( Peak_newList , null ,-1 ,null ,null , 1 ) , 
             LsqrsJ_base.getQArray( Peak_newList ,-1 ,null ,null , 1 ) , 
             abc , 
             sig_abc );
-      boolean RestoreHKL= false;
-      if( Double.isNaN( chisq))
+            */
+      boolean RestoreHKL = false;
+      if(sig_abc[0] < 0 || UBD== null)
       {
          System.out.println("Least Squares did not work");
          sig_abc=null;
-         RestoreHKL = true;
          
+         RestoreHKL = true;
       }
       else
       {
@@ -856,17 +859,53 @@ public class ScalarHandlePanel implements IReceiveMessage
             }
          if( MaxErr >.01)
          {
-            sig_abc=null;
+            sig_abc=null; 
             RestoreHKL = true;
          }
             
         
       }
-      
+      if( RestoreHKL)
+      {
+
+         for( int i=0; i< Peak_newList.size( ); i++)
+         {
+            IPeak P = (IPeak)Peak_newList.elementAt( i );
+            P.sethkl(hklSav[0][i], hklSav[1][i] , hklSav[2][i] );
+         }
+         return null;
+      }
       return LinearAlgebra.double2float( sig_abc );
            
    }
    
+   /**
+    * Least Squares the indexed peaks returning the orientation matrix and 
+    * filling out sig_abc
+    * 
+    * @param Peaks      The indexed peaks
+    * @param sig_abc    The least squares errors in the lattice parameters.
+    *                   They are filled with negative numbers if there was a 
+    *                   problem.
+    * 
+    * @return   The orientation matrix or null if there was a problem.
+    */
+   public static float[][] LSQRS( Vector Peaks,  double[]sig_abc)
+   {
+
+      String dummyFile = System.getProperty("user.home");
+      dummyFile = dummyFile.replace( '\\' , '/' );
+      if( !dummyFile.endsWith( "/" ))
+         dummyFile +="/";
+      dummyFile +="ISAW/tmp/xxx.mat";
+      Object obj = LsqrsJ_base.LsqrsJ1(Peaks , null ,null , null , null , -1 ,null ,"Tri" , sig_abc );
+      if( obj == null || (obj instanceof ErrorString && sig_abc != null))
+      {
+         Arrays.fill( sig_abc , -1. );
+         return null;
+      }
+      return (float[][])obj;
+   }
    private static double sqr( double v)
    {
       return v*v;
@@ -1111,7 +1150,7 @@ public class ScalarHandlePanel implements IReceiveMessage
            
             sig_abc = checkStuff( Peaks,UB1);
            
-            if ( OrientMatMessageCenter != null )
+            if ( OrientMatMessageCenter != null && sig_abc != null )
             {
                Vector V = new Vector();
                V.add( LinearAlgebra.getTranspose( UB ));
@@ -1120,7 +1159,9 @@ public class ScalarHandlePanel implements IReceiveMessage
                                                  Commands.SET_ORIENTATION_MATRIX ,
                                                  V,
                                                  true ) );
-            }
+            }else
+               JOptionPane.showMessageDialog( null , 
+                     "Least Squares Error occurred with new \n orientation matrix" );
         
 
          } else if ( command.toUpperCase( ).startsWith( "SET" )
