@@ -925,7 +925,7 @@ public class RowColTimeVirtualArray extends
    * @see DataSetTools.viewer.IhasMarkers#getMarkers()
    */
   @Override
-  public Marker getMarkers()
+  public floatPoint2D[] getMarkers()
   {
     int indx = x_scale.getI_GLB(  Time );
     
@@ -1039,11 +1039,373 @@ public class RowColTimeVirtualArray extends
         pts[i]= new floatPoint2D( point[1],point[0]);
      }
      
-     return new Marker(Marker.BOX, pts, Color.white,1f, Marker.RESIZEABLE);
+     return pts;
     
   }
 
- 
+  /**
+   * Calculates the cells( row and col) that contain integer hkl values( all 3)
+   * If there is an integer hkl between two shells 
+   * @param hkl1
+   * @param hkl2
+   * @param rc
+   * @param tolerance  for corners to be integer 
+   * @return
+   */
+  private float[][] calcMarkers( float[][] hkl1,float[][] hkl2, float[][][]qs, float tolerance)
+  {
+    //hkl1 has min h
+    int edge =-1;
+    float[][][] HKL = new float[2][4][4];
+    HKL[0]= hkl1;
+    HKL[1] = hkl2;
+    float minh =Float.POSITIVE_INFINITY;
+    float maxh = Float.NEGATIVE_INFINITY;
+    for( int j=0;j<1;j++)
+    for( int i=0; i<4;i++)
+      
+    {
+       if( HKL[j][i][0] < minh)
+       {
+          minh =  HKL[j][i][0];
+        
+       }
+       if( HKL[j][i][0] > maxh)
+          maxh = HKL[j][i][0];
+    }
+    Vector<float[]> Qs = new Vector<float[]>();
+    for(int h = (int)(minh-tolerance); h< maxh+tolerance; h++)
+    {
+      
+       float[] shell = new float[8];
+       float[] side =  new float[8];
+       float[][]hkl  = new float[8][3];
+       float[][]qq = new float[8][3];
+       int k =0;
+       for( int s = 0; s <2; s++)
+        for( int sd =0; sd < 4; sd++)
+        {
+           float alpha = calcAlpha( h, HKL[s][sd][0],HKL[s][(sd+1)%4][0]);
+           if( alpha ==0 &&HKL[s][sd][0]==HKL[s][(sd+1)%4][0] )
+           if( alpha >=0 && alpha <=1)
+           {
+              shell[k] = s;
+              side[k] = sd;
+              hkl[k] = Ptt( alpha,HKL[s][sd],HKL[s][(sd+1)%4]);
+              qq[k]= Ptt( alpha,qs[s][sd],qs[s][(sd+1)%4]);
+              k++;
+           }
+
+           if( alpha ==0 &&HKL[s][sd][0]==HKL[s][(sd+1)%4][0] )
+           {
+              shell[k] = s;
+              side[k] = sd;
+              hkl[k] = Ptt( 1,HKL[s][sd],HKL[s][(sd+1)%4]);
+              qq[k]= Ptt( 1,qs[s][sd],qs[s][(sd+1)%4]);
+              k++;
+           }
+        }
+       for( int sd = 0; sd < 4; sd ++)
+       {
+          float alpha = calcAlpha(h,HKL[0][sd][0],HKL[1][sd][0] );
+          if( alpha >=0 && alpha <=1)
+          {
+             shell[k] = .5f;
+             side[k] = sd;
+             hkl[k] = Ptt( alpha,HKL[0][sd],HKL[1][(sd+1)%4]);
+             qq[k]= Ptt( alpha,qs[0][sd],qs[1][(sd+1)%4]);
+             k++; 
+          }
+          if( alpha ==0 &&  HKL[0][sd][0] == HKL[1][sd][0] )
+          {
+             shell[k] = .5f;
+             side[k] = sd;
+             hkl[k] = Ptt( 1,HKL[0][sd] , HKL[1][sd]);
+             qq[k]= Ptt( 1,HKL[0][sd] ,HKL[1][sd]);
+             k++;
+          }
+       }
+       
+       //Now find adjacent edges
+      int N =k;// #of points
+      
+      for( k=0; k< 6;k++)
+         for( int i=0; i+1< N; i++)
+            if( shell[i] > shell[i+1]  )
+            {    Xchange( shell, side, hkl, qq,i,i+1 );
+            }
+       int N1=0;
+       for( int i=0; i<4;i++)
+       {
+          //elim repeats
+          for( int j=1; j< N;j++)
+             if( hkl[j]!=null  && shell[j]==shell[i] && side[j]==side[i]
+                    && hkl[i][0]==hkl[j][0]&& hkl[i][1]==hkl[j][1]&& hkl[i][2]==hkl[j][2])
+                hkl[j]=null;
+          boolean done = false;
+          for( int j=1; j < N && !done; j++)
+             if( hkl[j] != null )
+                if( shell[j] == shell[i] && shell[j]!=.5f && AdjacentSides(i,j))
+                      { 
+                      Xchange( shell, side, hkl, qq,i,j );
+                       done = true;
+                   
+                      }
+                else if( shell[i] != shell[j] && Math.abs( shell[i]-shell[j] )==1 && side[i]==side[j])
+                    {
+                       Xchange( shell, side, hkl, qq,i,j );
+                       done = true;
+                    }
+                else if( shell[i] != shell[j] && Math.abs( shell[i]-shell[j] )<1 && 
+                     (side[i]==side[j]) )
+                {
+
+                   Xchange( shell, side, hkl, qq,i,j );
+                   done = true;
+                }
+                else if( shell[i] != shell[j] && shell[i]==.5f && 
+                      (side[j]==((side[i]+1)%4)) )
+                 {
+
+                   Xchange( shell, side, hkl, qq,i,j );
+                   done = true;
+                 }
+            if( !done)
+            {
+               N1=i;
+               hkl[0]=null;
+            }
+          
+       }
+
+       if( hkl[0] != null )
+          CalcMarkers2D( N1,hkl,qq,Qs);
+       
+    }
+    
+    return Qs.toArray( new float[0][0]);
+ /*   int[][][] RC = new int[2][4][2];
+    RC[0]= rc;
+    RC[1]=rc;
+    float[][] RC1 = new float[4][2];
+    float[][]hkl = new float[4][3];
+    boolean done =false;
+    while(!done)
+    {
+       int side2,side3;
+       for( int side=0; side <3;side++)
+         for( int int_h=findNextInt( HKL[shell][edge+side][0],tolerance ); 
+                int_h < HKL[shell][edge+side+1][0]+tolerance;
+                int_h = findNextInt( int_h,0))
+          for( int side1=0; side1 < 3-side; side1++)//fint int_h on this side
+          {
+                  float alpha2 = ( int_h -HKL[shell][edge + side + 1 + side1][0]  )
+                        / ( HKL[shell][edge + side + 1 + side1 + 1][0] - HKL[shell][edge
+                              + side + 1 + side1][0] );
+                  if( alpha2 >=0 && alpha2 <=1)
+                  { 
+                     float alpha1 = ( int_h -HKL[shell][edge + side][0]  )
+                          / ( HKL[shell][edge + side + 1][0] - HKL[shell][edge
+                              + side][0] );
+                     hkl[0]= Ptt( alpha1, HKL[shell][edge
+                              + side],HKL[shell][edge + side + 1]);
+                     RC1[0] =PttI( alpha1,RC[shell][edge
+                                                   + side],RC[shell][edge + side + 1]); 
+                     hkl[1] =Ptt( alpha2,HKL[shell][edge
+                                                    + side + 1 + side1],
+                                                    HKL[shell][edge + side + 1 + side1 + 1]);
+                     RC1[1] = PttI(alpha2,RC[shell][edge
+                                                    + side + 1 + side1],
+                                                    RC[shell][edge + side + 1 + side1 + 1]);
+                    side2=0;
+                    hkl[2]=null;
+                    float alpha3 =calcAlpha( int_h, HKL[shell][edge + side + 1 + side1][0],
+                          HKL[(shell%2)][edge + side + 1 + side1][0] );
+                   
+                    if( alpha3 <0 || alpha3 >1)
+                       alpha3 = calcAlpha( int_h, HKL[(shell%2)][edge + side + 1 + side1][0],
+                             HKL[(shell%2)][edge + side + 1 + side1+1][0]  );
+                    else
+                    {
+                       hkl[2] =Ptt(alpha3, HKL[shell][edge + side + 1 + side1],
+                             HKL[(shell%2)][edge + side + 1 + side1] );
+                       RC1[2] =PttI(alpha3, RC[shell][edge + side + 1 + side1],
+                             RC[(shell%2)][edge + side + 1 + side1] );
+                    }
+                    
+                   
+                    if( alpha3 <0 || alpha3 > 1)
+                       alpha3 = calcAlpha( int_h, HKL[(shell)][edge + side + 1 + side1+1][0],
+                             HKL[(shell%2)][edge + side + 1 + side1+1][0] );
+                    else
+                    {
+                       hkl[2] =Ptt(alpha3,HKL[(shell)][edge + side + 1 + side1+1],
+                             HKL[(shell%2)][edge + side + 1 + side1+1] );
+                       RC1[2] =PttI(alpha3,RC[(shell)][edge + side + 1 + side1+1],
+                             RC[(shell%2)][edge + side + 1 + side1+1] );
+                       
+                    }
+                    
+                    
+                    
+                    if( alpha3 >=0 && alpha3 <=1)
+                    {
+                       if( hkl[2] == null)
+                       {
+                          hkl[2] =Ptt(alpha3,HKL[(shell)][edge + side + 1 + side1+1],
+                                HKL[(shell%2)][edge + side + 1 + side1+1] );
+                          RC1[2] =PttI(alpha3,RC[(shell)][edge + side + 1 + side1+1],
+                                RC[(shell%2)][edge + side + 1 + side1+1] );
+                       }
+                       hkl[3] = null;
+                       float alpha4 = calcAlpha(int_h,HKL[shell][edge + side][0] ,
+                                    HKL[(shell+1)%2][edge + side][0]  );
+                       if( alpha4 < 0 || alpha4 > 1)
+                           alpha4 = calcAlpha(int_h,HKL[(shell+1)%2][edge + side][0],
+                                 HKL[(shell+1)%2][edge + side+1][0] );
+                       else 
+                       {
+                          hkl[3] = Ptt(alpha4,HKL[shell][edge + side] ,
+                                    HKL[(shell+1)%2][edge + side]  );
+                          RC1[3] = PttI(alpha4,RC[shell][edge + side] ,
+                                RC[(shell+1)%2][edge + side]  );
+                       }
+                       if( alpha4 < 0 || alpha4 > 1)
+                          alpha4 = calcAlpha(int_h,HKL[(shell+0)%2][edge + side+1][0],
+                                HKL[(shell+1)%2][edge + side+1][0] );
+                       else 
+                       {
+                          hkl[3] = Ptt(alpha4,HKL[(shell+0)%2][edge + side+1],
+                                HKL[(shell+1)%2][edge + side+1] );
+                          RC1[3] = PttI(alpha4,RC[(shell+0)%2][edge + side+1],
+                                RC[(shell+1)%2][edge + side+1] );
+                       }
+                       
+                       if( alpha4 >=0 && alpha4 <=1)
+                       {
+                          if( hkl[3] == null)
+                          {
+                             hkl[3] = Ptt(alpha4,HKL[(shell+0)%2][edge + side+1],                          
+                                   HKL[(shell+1)%2][edge + side+1] );
+                            RC1[3] = PttI(alpha4,RC[(shell+0)%2][edge + side+1],                          
+                                   RC[(shell+1)%2][edge + side+1] );
+                          }
+                          
+                          
+                          
+                          
+                          
+                       }
+                       
+                    }
+                  
+                  }
+                  
+             
+          }
+    }
+    
+   */ 
+     
+  }
+  
+  //Assumes all h values are the same
+  private void CalcMarkers2D( int N,float[][]hkl,float[][]qq, Vector<float[]>Qs)
+  {
+     if( hkl == null || qq == null || hkl.length <N || qq.length <N)
+        return;
+     float kmin = Float.POSITIVE_INFINITY;
+     float kmax = Float.NEGATIVE_INFINITY;
+     for( int i=0; i< N; i++)
+     {
+        if( hkl[i].length !=3)
+           return;
+        if( hkl[i][1] < kmin)
+           kmin =hkl[i][1];
+        if( hkl[i][1] > kmax)
+           kmax =hkl[i][1];
+        
+     }
+     
+     for( int k= (int)(kmin-.1); k < kmax+.1; k++)
+       for( int side =0;side <3; side++)
+          for( int side1 =1; side1 < 4-side; side1++)
+          {
+             float alpha1 = calcAlpha( k, hkl[side][1],hkl[side+1][1]);
+             if( alpha1 >=0 && alpha1 <=1)
+             {
+                float[]hkl1 = Ptt( alpha1,hkl[side],hkl[side+1]);
+                float[]qq1 = Ptt(alpha1,qq[side],qq[side+1]);
+                float alpha2 = calcAlpha( k, hkl[side1][1],hkl[side1+1][1]);
+                if( alpha2 >=0 && alpha2 <=1)
+                {
+                   float[] hkl2 = Ptt(alpha2,hkl[side1],hkl[side1+1]);
+                   float[] qq2 = Ptt(alpha2,qq[side1],qq[side1+1]);
+                   for( int l = (int)(Math.min( hkl2[2] , hkl1[2] )-.1);
+                       l < (int)(Math.max( hkl2[2] , hkl1[2] )+.1); l++)
+                       {
+                          float alpha3 = calcAlpha(l, hkl1[2], hkl2[2]);
+                          if( alpha3 >=0 && alpha3 <=1)
+                             Qs.addElement( Ptt(alpha3,qq1,qq2));
+                       }
+                   
+                }
+             }
+          }
+
+  }
+  private boolean AdjacentSides( int i, int j)
+  {
+     if( i-j == 1 || i-j == -1)
+        return true;
+     if( (i==0 && j==3) || (i==3 && j==0) )
+        return true;
+     return false;
+  }
+  private void Xchange( float[] shell, float[] side,float[][]hkl,  float[][]qq, int i, int j )
+  {
+     float sh = shell[i];
+     float sd  = side[i];
+     float[] hh = hkl[i];
+     float[] qr =qq[i];
+     shell[i]= shell[j];
+     side[i]= side[j];
+     hkl[i]=hkl[j];
+     qq[i] = qq[j];
+     shell[j]= sh;
+     side[j]= sd;
+     hkl[j]=hh;
+     qq[j]= qr;
+  }
+  
+  private static float[] Ptt( float alpha, float[] hkl1, float[]hkl2)
+  {
+     float[] Res = new float[3];
+     for( int i=0; i< 3;i++)
+        Res[i] = hkl1[i]*alpha+(1-alpha)*hkl2[i];
+     return Res;
+  }
+  
+
+  private static float[] PttI( float alpha, int[] hkl1, int[]hkl2)
+  {
+     float[] Res = new float[3];
+     for( int i=0; i< 3;i++)
+        Res[i] = hkl1[i]*alpha+(1-alpha)*hkl2[i];
+     return Res;
+  }
+  
+  private static float calcAlpha( int d, float start, float end)
+  {
+     if( start == end)
+        return 0;
+     return (d-start)/(end-start);
+  }
+  private static int findNextInt( int thisInt, float tolerance)
+  {
+     
+      return thisInt++;
+  }
   private float[][] Mult( float[][]mat1,float[][] subMat2)
   {
      float[][] Res =new float[3][3];
