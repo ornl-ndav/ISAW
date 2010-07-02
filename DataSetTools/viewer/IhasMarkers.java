@@ -33,6 +33,7 @@
  */
 package DataSetTools.viewer;
 
+import gov.anl.ipns.Util.Numeric.floatPoint2D;
 import gov.anl.ipns.ViewTools.Components.Transparency.Marker;
 
 
@@ -53,5 +54,5 @@ public interface IhasMarkers
     *       are at floatPoint2D (x-col,y-row) where y=1 is at the top
     *       of the display
     */
-  public Marker getMarkers();
+  public floatPoint2D[] getMarkers();
 }
