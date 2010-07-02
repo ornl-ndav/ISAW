@@ -94,6 +94,7 @@ import DataSetTools.dataset.*;
 import DataSetTools.components.View.*;
 import java.awt.event.*;
 import java.awt.*;
+
 import DataSetTools.viewer.Table.*;
 import Command.*;
 import DataSetTools.components.ui.*;
@@ -250,13 +251,25 @@ public class TwoDViewers extends DataSetViewer {
       addAncestorListener( new myAncestorListener() );
       if( viewComp instanceof ImageViewComponent  && viewArray instanceof IhasMarkers)
       {
-         Marker M = ((IhasMarkers)viewArray).getMarkers();
-         if( M != null)
-         ((ImageViewComponent)viewComp).addMarker( M );
+        
+         floatPoint2D[] pts = ((IhasMarkers)viewArray).getMarkers();
+         AdjustRows( pts, ((IVirtualArray2D)viewArray).getNumRows( ) );
+         if( pts != null)
+         ((ImageViewComponent)viewComp).addMarker( new Marker(Marker.BOX, pts, Color.white,1f, Marker.RESIZEABLE) );
       }
    }
 
-
+   // in images row =0 is at the top. others row =0 is at "bottom"
+   private void AdjustRows( floatPoint2D[] M, int nrows)
+   {
+       if( M== null)
+          return;
+       
+       for( int i=0; i< M.length; i++)
+       {
+          M[i].y = nrows - M[i].y;
+       }
+   }
    private JMenu FindTopJMenu( JMenuBar jmenBar , String header ) {
 
       if( jmenBar == null ) return null;
@@ -557,8 +570,10 @@ public class TwoDViewers extends DataSetViewer {
       
       if( viewComp instanceof ImageViewComponent  && viewArray instanceof IhasMarkers)
       {
-         Marker M = ((IhasMarkers)viewArray).getMarkers();
-         ((ImageViewComponent)viewComp).addMarker( M );
+         floatPoint2D[] pts = ((IhasMarkers)viewArray).getMarkers();
+         AdjustRows( pts, ((IVirtualArray2D)viewArray).getNumRows( ) );
+         if( pts != null)
+         ((ImageViewComponent)viewComp).addMarker( new Marker(Marker.BOX, pts, Color.white,1f, Marker.RESIZEABLE) );
       }
    }
 
@@ -788,11 +803,12 @@ public class TwoDViewers extends DataSetViewer {
          currentViewType = "Image";
          
          if( viewComp instanceof ImageViewComponent  && viewArray instanceof IhasMarkers)
-         {
-            Marker M = ((IhasMarkers)viewArray).getMarkers();
-           ((ImageViewComponent)viewComp).removeAllMarkers();
-            if( M!= null)
-            ((ImageViewComponent)viewComp).addMarker( M );
+         {  
+            ((ImageViewComponent)viewComp).removeAllMarkers();
+            floatPoint2D[] pts = ((IhasMarkers)viewArray).getMarkers();
+            AdjustRows( pts, ((IVirtualArray2D)viewArray).getNumRows( ) );
+            if( pts != null)
+            ((ImageViewComponent)viewComp).addMarker( new Marker(Marker.BOX, pts, Color.white,1f, Marker.RESIZEABLE) );
          }
          
       }
@@ -1029,11 +1045,15 @@ public class TwoDViewers extends DataSetViewer {
 
          Update2DObjectState();
          viewComp.dataChanged(  );
-         Marker M = ((IhasMarkers)viewArray).getMarkers();
-         if( M != null && viewComp instanceof ImageViewComponent)
+         
+         if( viewArray instanceof IhasMarkers && viewComp instanceof ImageViewComponent)
          {
+
             ((ImageViewComponent)viewComp).removeAllMarkers();
-            ((ImageViewComponent)viewComp).addMarker( M );
+            floatPoint2D[] pts = ((IhasMarkers)viewArray).getMarkers();
+            AdjustRows( pts, ((IVirtualArray2D)viewArray).getNumRows( ) );
+            if( pts != null)
+            ((ImageViewComponent)viewComp).addMarker( new Marker(Marker.BOX, pts, Color.white,1f, Marker.RESIZEABLE) );
          }
             
          Set2DObjectState();//Sets position of the JTable
