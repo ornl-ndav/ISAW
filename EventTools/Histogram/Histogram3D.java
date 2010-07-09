@@ -42,15 +42,17 @@ import EventTools.Histogram.Operators.ClearPages;
 import EventTools.Histogram.Operators.ScanHistogram3D;
 import EventTools.Histogram.Operators.GetEventLists;
 
+import gov.anl.ipns.MathTools.Geometry.Vector3D;
+
 import gov.anl.ipns.Operator.Threads.*;
 
 /**
  *   This class represents a 3D histogram.  Currently only a minimal set of
  * operations is provided, but some of those operations have been tuned and
  * run in multiple threads to take advantage of multi-core processors.
- * In most cases, up to four threads on a can be used with reasonable 
- * on a system with four or more cores.  Use of more than four threads will
- * probably not be very helpful.    
+ * In most cases, up to four threads on a can be used with reasonable
+ * efficiency on a system with four or more cores.  Use of more than four
+ * threads will probably not be very helpful.    
  *   The bins of the 3D histogram are determined by three ProjectionBinner3D
  * objects. Each binner object has a direction vector, and the bin number 
  * (i.e. index) is determined by the dot product of the event with that 
@@ -433,6 +435,147 @@ public class Histogram3D
 
 
   /**
+   *  Find the total counts that are enclosed within spheres with the 
+   *  specified radii around the specified point.
+   *
+   *  @param x      The x coodinate of the center of the spheres
+   *  @param y      The y coodinate of the center of the spheres
+   *  @param z      The z coodinate of the center of the spheres
+   *  @param radii  Array containing the radii of the spheres
+   *
+   *  @return A Vector containing an array of floats giving counts in 
+   *          a sphere and an array of floats giving the number of bins
+   *          contributing to the counts.  The ith entry in the array of
+   *          counts contains the total counts of the bins whose centers 
+   *          are within the ith radius of the specified (x,y,z) point.  
+   *          The ith entry in the second array contains the number of 
+   *          bins whose centers are within the ith radius.
+   */
+  public Vector sphereIntegrals( float x, float y, float z, float[] radii )
+  {
+    int center_z_index = z_binner.index(x,y,z);
+    if ( center_z_index < 0 || center_z_index >= histogram.length )
+    {
+      System.out.println("ERROR: center_z_index invalid : " + center_z_index );
+      return null;
+    }
+
+    int center_y_index = y_binner.index(x,y,z);
+    if ( center_y_index < 0 || center_y_index >= histogram[0].length )
+    {
+      System.out.println("ERROR: center_y_index invalid : " + center_y_index );
+      System.out.println("       center_z_index was :     " + center_z_index );
+      return null;
+    }
+
+    int center_x_index = x_binner.index(x,y,z);
+    if ( center_x_index < 0 || center_x_index >= histogram[0][0].length )
+    {
+      System.out.println("ERROR: center_x_index invalid : " + center_x_index );
+      System.out.println("       center_y_index was :     " + center_y_index );
+      System.out.println("       center_z_index was :     " + center_z_index );
+      return null;
+    }
+
+    Vector3D center_vec = new Vector3D( x, y, z );
+
+    float max_radius = 0;
+    for ( int i = 0; i < radii.length; i++ )
+      if ( max_radius < radii[ i ] )
+        max_radius = radii[i];
+
+    int min_max[] = getMinMaxIndex( x_binner, center_vec, max_radius );
+    int min_x_index = min_max[0];
+    int max_x_index = min_max[1];
+
+    min_max = getMinMaxIndex( y_binner, center_vec, max_radius );
+    int min_y_index = min_max[0];
+    int max_y_index = min_max[1];
+
+    min_max = getMinMaxIndex( z_binner, center_vec, max_radius );
+    int min_z_index = min_max[0];
+    int max_z_index = min_max[1];
+
+    // System.out.println("Value at = " + valueAt( x, y, z ) );
+    // System.out.println("min/max x index = " + min_x_index + ", " + max_x_index);
+    // System.out.println("min/max y index = " + min_y_index + ", " + max_y_index);
+    // System.out.println("min/max z index = " + min_z_index + ", " + max_z_index);
+
+    float[]  counts = new float[ radii.length ];
+    float[]  n_bins = new float[ radii.length ];
+    float    distance;
+    Vector3D x_vec,
+             y_vec,
+             z_vec,
+             diff_vec;
+                                         // For each bin, find it's distance
+                                         // from the center vec and add its
+                                         // value to any sphere containing it.
+                                         // NOTE: this will also work with
+                                         //       skewed axes.
+    for ( int x_index = min_x_index; x_index <= max_x_index; x_index++ )
+      for ( int y_index = min_y_index; y_index <= max_y_index; y_index++ )
+        for ( int z_index = min_z_index; z_index <= max_z_index; z_index++ )
+        {
+          x_vec = x_edge_binner.centerVec( x_index );
+          y_vec = y_edge_binner.centerVec( y_index );
+          z_vec = z_edge_binner.centerVec( z_index );
+
+          diff_vec = x_vec;
+          diff_vec.add( y_vec );
+          diff_vec.add( z_vec );
+          diff_vec.subtract( center_vec ); 
+          distance = diff_vec.length();
+
+          for ( int i = 0; i < radii.length; i++ )
+            if ( distance < radii[i] )
+            {
+              counts[i] += histogram[z_index][y_index][x_index];
+              n_bins[i] += 1;
+            }
+        }
+
+     Vector result = new Vector(2);
+     result.add( counts );
+     result.add( n_bins );
+     return result;
+  }
+
+ 
+  /**
+   *  Get the range of indexes required to cover a sphere of the specified
+   *  radius in the direction of the specified binner.
+   */
+  private int[] getMinMaxIndex( IProjectionBinner3D binner, 
+                                Vector3D            center_vec,
+                                float               radius )
+  {
+    int      n_bins = binner.numBins();
+    Vector3D d_vec  = binner.directionVec();
+    d_vec.multiply( radius );
+
+    Vector3D temp = new Vector3D( center_vec );
+    temp.add( d_vec );
+    int index_1 = binner.index( temp.getX(), temp.getY(), temp.getZ() );
+    if ( index_1 < 0 )
+      index_1 = 0;
+    if ( index_1 >= n_bins )
+      index_1 = n_bins - 1;
+
+    temp.set( center_vec );
+    temp.subtract( d_vec );
+    int index_2 = binner.index( temp.getX(), temp.getY(), temp.getZ() );
+    if ( index_2 < 0 )
+      index_2 = 0;
+    if ( index_2 >= n_bins )
+      index_2 = n_bins - 1;
+
+    int[] range = {Math.min( index_1, index_2 ), Math.max( index_1, index_2 )};
+    return range;
+  }
+
+
+  /**
    * Get event lists from bins of this histogram with values in intervals
    * determined by the specified IEventBinner.  Since the event lists are
    * obtained by multiple threads working on different sections of the 
@@ -487,11 +630,11 @@ public class Histogram3D
   }
 
 
-  // TODO remove rowSlice and instead generate a new 3D histogram
-  // from the original event list, using only events falling in the 
-  // specified row interval.
   /**
-   * Temporary code to get one row of data from this 3D histogram
+   * Temporary code to get a copy of a 2D slice from this histogram
+   * consisting of all bins with the same row number.   Since this
+   * method copies the data, it is much slower than the pageSlice()
+   * method.
    * @param row
    * @return The data from one row of this 3D histogram.
    */
@@ -502,18 +645,16 @@ public class Histogram3D
     float[][] one_row = new float[num_pages][num_cols];
     for ( int page = 0; page < num_pages; page++ )
       System.arraycopy(histogram[page][row],0,one_row[page],0,num_cols);
-/*
-      for ( int col = 0; col < num_cols; col++ )
-        one_row[page][col] = histogram[page][row][col];
-*/
+
     return one_row;
   }
 
 
-  // TODO remove pageSlice and instead generate a new 3D histogram with
-  // only one page
   /**
-   * Temporary code to get one page of data from this 3D histogram
+   * Temporary code to get a reference to one page of data from this 3D 
+   * histogram.  NOTE: Since this returns a reference to the internal 
+   * histogram array, code calling this method must NOT modify the 
+   * array.
    * @param page
    * @return A reference to one page of this 3D histogram
    */
