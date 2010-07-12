@@ -145,6 +145,8 @@ public class ScalarHandlePanel implements IReceiveMessage
                                                      + ReducedCellInfo.C_CENTERED+ ";"
                                                      + ReducedCellInfo.R_CENTERED+ ";";
    Vector<Peak_new> Peaks                      = null;
+   
+   boolean  showApplyButton = true;
 
    /**
     * Constructor where the orientation matrix comes from a message center
@@ -158,6 +160,7 @@ public class ScalarHandlePanel implements IReceiveMessage
 
       this.OrientMatMessageCenter = OrientMatMessageCenter;
       UB = null;
+      showApplyButton = true;
       ScalarOpts = null;
       Choices = new String[ 1 ];
       Choices[0] = " No Cell Types Available ";
@@ -185,16 +188,21 @@ public class ScalarHandlePanel implements IReceiveMessage
 
    }
    
-   
+   public ScalarHandlePanel(float[][] UB)
+   {
+      this( UB, true);
+   }
 /**
  * Constructor where the orientation matrix is supplied in the constructor
  *  
  * @param UB  The untransposed orientation matrix
+ * @param showApplyButton  determines whether the Apply button shows
  */
-   public ScalarHandlePanel(float[][] UB)
+   public ScalarHandlePanel(float[][] UB, boolean showApplyButton)
    {
 
       this.UB = UB;
+      this.showApplyButton = showApplyButton;
       OrientMatMessageCenter = null;
       Choices = new String[ 1 ];
       Choices[0] = " No Cell Types Available ";
@@ -416,7 +424,9 @@ public class ScalarHandlePanel implements IReceiveMessage
       viewer.setBorder( new TitledBorder( new LineBorder( Color.black , 2 ) ,
             "List of Transformed Cells" ) );
       panel.add( viewer );
-      panel.add( BuildBottomPanel( ) );
+      JPanel PP = BuildBottomPanel( );
+      if( PP != null)
+          panel.add( PP );
 
    }
 
@@ -529,6 +539,9 @@ public class ScalarHandlePanel implements IReceiveMessage
    private JPanel BuildBottomPanel()
    {
 
+      if( !showApplyButton)
+         return null;
+      
       JButton Apply = new JButton( APPLY_CENTERINGS );
       Apply.addActionListener( new ThisActionListener( 0 ) );
 
