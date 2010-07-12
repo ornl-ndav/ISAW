@@ -642,12 +642,12 @@ public class Matrix2_App extends GenericOperator
                
                else
                   JOptionPane.showMessageDialog( null ,
-                                           "Sequence 2Num not in range" );
+                                           "Sequence 2 Num not in range" );
 
             } catch( Exception s4 )
             {
                JOptionPane.showMessageDialog( null ,
-                                       "Seq21 Number not a number" );
+                                       "Seq2 Number not a number" );
                
                return;
             }
@@ -728,11 +728,13 @@ public class Matrix2_App extends GenericOperator
 
                } else
                {
-                  float[] hkl = new float[ 3 ];
-                  message = "hkl values not numeric";
-                  for( int i = 0 ; i < 3 ; i++ )
-                     hkl[i] = ( float) Float.parseFloat( dd[i].trim( ) );
-                  setPeak.setPeakHKL( 0 , hkl[0] , hkl[1] , hkl[2] );
+                
+                  for( int i = 0 ; i < dd.length ; i++ )
+                  {
+                    int seq = Integer.parseInt( dd[i].trim( ) );
+                    IPeak peak = Peaks.elementAt( seq-1 );
+                    setPeak.setPeakQ( i+2 , peak );
+                  }
 
                }
 
@@ -1019,9 +1021,24 @@ public class Matrix2_App extends GenericOperator
 
       }
 
+      private boolean TwoPeaksPicked( SetPeaks setPeak)
+      {
+         if( setPeak == null )
+            return false;
+         if( setPeak.getSetPeakQ( 0 ) == null)
+            return false;
+         
+         if( setPeak.getSetPeakQ(1) == null)
+            return false;
+         
+         return true;
+      }
+      
       private void SetUpOrientationMatrices()
       {
-
+         if( !TwoPeaksPicked( setPeak))
+            return;
+         
          Vector< String > Choices = new Vector< String >( );
          UBs = new Vector< float[][] >( );
          
