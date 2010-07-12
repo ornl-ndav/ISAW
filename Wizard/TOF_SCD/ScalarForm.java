@@ -65,6 +65,7 @@ public class ScalarForm extends Form
    private final int RESULT_PARAM  =5;
    ScalarHandlePanel ScalarPanel;
    OutSideInputListener  outListener;
+   boolean showApplyButton;
    
    /**
     * Constructor
@@ -85,13 +86,19 @@ public class ScalarForm extends Form
     * 
     * @param hasConstantParams   true if there are constant parameters
     */
-   public ScalarForm( String title, boolean hasConstantParams)
+   public ScalarForm( String title, boolean hasConstantParams, boolean showApplyButton)
    {
       super( title, hasConstantParams);
       outListener = new OutSideInputListener();
-      ScalarPanel = new ScalarHandlePanel( new float[][]{{1f,0f,0f},{0f,1f,0f},{0f,0f,1f}});
+      ScalarPanel = new ScalarHandlePanel( new float[][]{{1f,0f,0f},{0f,1f,0f},{0f,0f,1f}}, false);
       setDefaultParameters();
       ScalarPanel.addActionListener( new ChangeInputListener( this ));
+      this.showApplyButton = showApplyButton;
+   }
+   
+   public ScalarForm(String title, boolean hasConstantParams)
+   {
+      this( title, hasConstantParams, true);
    }
 
    /**
@@ -215,7 +222,7 @@ public class ScalarForm extends Form
    }
    
    /**
-    * Listenes for changes in the underlying ScalarPanel, changing the values
+    * Listens for changes in the underlying ScalarPanel, changing the values
     * of the corresponding parameters that are used to save the state
     * 
     * @author ruth
@@ -283,7 +290,8 @@ public class ScalarForm extends Form
              
             
              ScalarPanel.receive(  new Message( Commands.SET_ORIENTATION_MATRIX,
-                   LinearAlgebra.getTranspose(  Ormat ), true ));
+                   Commands.MakeSET_ORIENTATION_MATRIX_arg( 
+                         LinearAlgebra.getTranspose(  Ormat ), null), true ));
               
           }
           
