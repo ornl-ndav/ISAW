@@ -76,7 +76,7 @@ public class QMapperHandler implements IReceiveMessage
     message_center.addReceiver( this, Commands.INIT_NEW_INSTRUMENT );
     message_center.addReceiver( this, Commands.MAP_EVENTS_TO_Q );
     message_center.addReceiver( this, Commands.SELECT_POINT );
-    message_center.addReceiver( this, Commands.GET_PEAK_NEW_LIST );
+    message_center.addReceiver( this, Commands.SET_PEAK_Q_LIST );
     message_center.addReceiver( this, Commands.SET_INTEGRATED_PEAKS_LIST );
 
     message_center.addReceiver( this, Commands.CLEAR_OMITTED_PIXELS );
@@ -240,7 +240,7 @@ public class QMapperHandler implements IReceiveMessage
        return false;
     }
 
-    else if ( message.getName().equals(Commands.GET_PEAK_NEW_LIST) )
+    else if ( message.getName().equals(Commands.SET_PEAK_Q_LIST) )
     {
       Object obj = message.getValue();
       if ( obj == null )

@@ -32,7 +32,6 @@ import EventTools.ShowEventsApp.Controls.ScalarHandlePanel;
 public class PeakListHandler implements IReceiveMessage
 {
   private MessageCenter message_center;
-  private Vector<PeakQ>    peakQ_list   = new Vector<PeakQ>();
   private Vector<Peak_new> peakNew_list = new Vector<Peak_new>();
   private float[][] UB = null;
   private float tolerance =.12f;
@@ -40,7 +39,6 @@ public class PeakListHandler implements IReceiveMessage
   public PeakListHandler( MessageCenter message_center )
   {
     this.message_center = message_center;
-    message_center.addReceiver( this, Commands.SET_PEAK_Q_LIST );
     message_center.addReceiver( this, Commands.SET_ORIENTATION_MATRIX);
     message_center.addReceiver( this, Commands.SET_PEAK_NEW_LIST );
     message_center.addReceiver( this, Commands.WRITE_PEAK_FILE );
@@ -60,33 +58,7 @@ public class PeakListHandler implements IReceiveMessage
   {
 //    System.out.println("***PeakListHandler in thread " 
 //                       + Thread.currentThread());
-
-    if ( message.getName().equals(Commands.SET_PEAK_Q_LIST) )
-    {
-      Object obj = message.getValue();
-      if ( obj == null )
-        return( false );
-
-      if ( obj instanceof Vector ) 
-      {
-         Vector<PeakQ> new_peaks = (Vector<PeakQ>)obj;
-         peakQ_list = new Vector<PeakQ>();
-         for ( int i = 0; i < new_peaks.size(); i++ )
-           peakQ_list.add( new_peaks.elementAt(i) );
-
-         Message get_peak_new_list = new Message( Commands.GET_PEAK_NEW_LIST,
-                                                 peakQ_list,
-                                                 true,
-                                                 true );
-         message_center.send( get_peak_new_list );
-
-         System.out.println("IN PeakListHandler set PEAK Q, #PeakQ = " + 
-                             peakQ_list.size() +
-                             " #Peak_new = " + peakNew_list.size() );
-      } 
-    }
-
-    else if ( message.getName().equals(Commands.SET_PEAK_NEW_LIST) )
+    if ( message.getName().equals(Commands.SET_PEAK_NEW_LIST) )
     {
       Object obj = message.getValue();
       if ( obj == null )
@@ -99,16 +71,14 @@ public class PeakListHandler implements IReceiveMessage
          for ( int i = 0; i < new_peaks.size(); i++ )
            peakNew_list.add( new_peaks.elementAt(i) );
 
-         System.out.println("IN PeakListHandler set NEW PEAKS, #PeakQ = " + 
-                             peakQ_list.size() +
-                             " #Peak_new = " + peakNew_list.size() );
+//       System.out.println("IN PeakListHandler set NEW PEAKS" + 
+//                          " #Peak_new = " + peakNew_list.size() );
          if( UB != null)
             indexAllPeaks(new_peaks,UB,tolerance);
       }
       } else if ( message.getName( ).equals( Commands.INIT_HISTOGRAM ) )
       {
 
-         peakQ_list = new Vector< PeakQ >( );
          peakNew_list = new Vector< Peak_new >( );
          UB = null;
 
