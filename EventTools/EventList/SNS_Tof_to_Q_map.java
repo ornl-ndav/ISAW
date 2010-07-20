@@ -2515,12 +2515,46 @@ public class SNS_Tof_to_Q_map
       all_grids[i]      = null;
       all_bank_infos[i] = null;
     }
-
+                                             // Get complete arrays of possible
+                                             // grids and bank_infos, leaving
+                                             // null for missing items
     IDataGrid grid;
     for ( int i = 0; i < datagrid_arr.length; i++ )
     {
       grid = datagrid_arr[i];
-      all_grids[ grid.ID() ] = grid;
+      if ( grid != null )
+      {
+        int id = grid.ID();
+        if ( id >= 0 && id < all_grids.length )
+          all_grids[ id ] = grid;
+      }
+    }
+
+    for ( int k = 0; k < bank_info.length; k++ )
+    {
+      BankInfo info = bank_info[k];
+      if ( info != null )
+      {
+        int id = info.ID();
+        if ( id >= 0 && id < all_bank_infos.length )
+          all_bank_infos[ id ] = info;
+      }
+    }
+                                               // Now discard any grids that
+                                               // aren't listed in both the
+                                               // banking file and .DetCal
+    for ( int i = 0; i <= max_grid_id; i++ )
+    {
+      if ( all_grids[i] != null && all_bank_infos[i] == null )
+      {
+        all_grids[i] = null;
+        System.out.println("WARNING: Missing ID " + i + " from bank.xml file");
+      }
+      else if ( all_bank_infos[i] != null && all_grids[i] == null )
+      {
+        all_bank_infos[i] = null;
+        System.out.println("WARNING: Missing ID " + i + " from .DetCal file");
+      }
     }
                                                // make tables to map NeXus ID
                                                // to gridID, row and column
@@ -2553,22 +2587,15 @@ public class SNS_Tof_to_Q_map
     for ( int k = 0; k < bank_info.length; k++ )
     {
       int bank_id = bank_info[k].ID();
-      all_bank_infos[bank_id] = bank_info[k];
-      grid_id  = all_bank_infos[bank_id].ID();
-      x_size   = all_bank_infos[bank_id].num_cols();
-      y_size   = all_bank_infos[bank_id].num_rows();
-      first_id = all_bank_infos[bank_id].first_NeXus_id();
-      last_id  = all_bank_infos[bank_id].last_NeXus_id();
       
-      if ( grid_id < 0                 || 
-           grid_id >= all_grids.length || 
-           all_grids[ grid_id ] == null )
+      if ( all_bank_infos[bank_id] != null )
       {
-//      System.out.println("ERROR: Missing grid " + grid_id + " in .DetCal");
-        missing_grid_count++;
-      }
-      else
-      {
+        grid_id  = all_bank_infos[bank_id].ID();
+        x_size   = all_bank_infos[bank_id].num_cols();
+        y_size   = all_bank_infos[bank_id].num_rows();
+        first_id = all_bank_infos[bank_id].first_NeXus_id();
+        last_id  = all_bank_infos[bank_id].last_NeXus_id();
+
         grid = all_grids[ grid_id ];
         if ( y_size != grid.num_rows() || x_size != grid.num_cols() )
           System.out.println("ERROR: Grid size wrong for " + grid_id + 
