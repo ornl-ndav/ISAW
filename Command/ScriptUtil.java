@@ -510,14 +510,19 @@ public class ScriptUtil{
    * @return              The result after the command/operator is run(getResult)
    * @throws MissingResourceException
    */
-  public static Object ExecuteCommand( String CommandName, Object[] args)
+  public static Object ExecuteCommand( String CommandName, Object[] args) throws Exception
                                    
   {
      try
      {
         
      GenericOperator op = ScriptUtil.getOperator( CommandName, args);
-     return op.getResult( );
+     Object Result =  op.getResult( );
+     if( Result instanceof ErrorString)
+        throw new IllegalArgumentException( ((ErrorString)Result).toString() );
+     else
+        return Result;
+     
      }catch( Throwable ss)
      {
       String[] Exceptions = ScriptUtil.GetExceptionStackInfo( ss , true , 3 );
@@ -526,7 +531,8 @@ public class ScriptUtil{
       {
          Res +="\n"+ Exceptions[0];
       }
-      return new ErrorString( Res );  
+      //return new ErrorString( Res );  
+      throw new IllegalArgumentException( Res );
      }
      
   }
