@@ -235,20 +235,7 @@ public class PeakListHandler implements IReceiveMessage
         return false;
       } 
 
-     /*
-      Message set_peaks = new Message( Commands.SET_PEAK_NEW_LIST,
-                                       peakNew_list,
-                                       true );
-      message_center.send( set_peaks );
-
-      Message set_or = new Message( Commands.SET_ORIENTATION_MATRIX,
-                                    UB, true );
-      message_center.send( set_or );
-      
-      message_center.send(  new Message( 
-               Commands.INDEX_PEAKS_WITH_ORIENTATION_MATRIX,
-               new UBwTolCmd( UB, cmd.getTolerance()),false) );
-     */
+    
       return false;
     }
 
@@ -322,6 +309,12 @@ public class PeakListHandler implements IReceiveMessage
        this.UB = UBB.getUB( );
        tolerance = UBB.getOffIntMax( );
        message_center.send( set_peaks );
+       
+       Message mark_indexed  = new Message( Commands.MARK_INDEXED_PEAKS,
+             peakNew_list,
+             true,
+             true );
+       message_center.send( mark_indexed ); 
        return false;
     } 
 
@@ -361,9 +354,7 @@ public class PeakListHandler implements IReceiveMessage
         
        this.UB = getErrors( UB, Peaks, value[2]); 
         
-      //  message_center.send(  
-      //           new Message(Commands.INDEX_PEAKS_WITH_ORIENTATION_MATRIX,
-      //           new UBwTolCmd(UBT,value[2]) ,false) );
+    
        return false;
     }
 
@@ -413,18 +404,7 @@ public class PeakListHandler implements IReceiveMessage
       double[][] UB2 = new double[3][3];
       double[] abc = new double[7];
       double[] sig_abc = new double[7];
-     /*if( Double.isNaN( LsqrsJ_base.LeastSquaresSCD( UB2, 
-           LsqrsJ_base.getHKLArrays( Peaks,null, -1f,null, null, -1),
-           LsqrsJ_base.getQArray( Peaks ,-1f,null, null, -1), 
-           abc, 
-           sig_abc)))
-           {
-              Util.sendError( "LeastSquares Error. No error estimates" );
-              UB2 = LinearAlgebra.float2double( UB );
-              abc= sig_abc = null;
-           }
-           
-     */
+   
       UB2= LinearAlgebra.float2double( ScalarHandlePanel.LSQRS( Peaks , sig_abc ));
       if(  UB2 == null || sig_abc[0] <= 0)
       {
