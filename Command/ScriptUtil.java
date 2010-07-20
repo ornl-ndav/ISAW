@@ -537,7 +537,7 @@ public class ScriptUtil{
      
   }
   
-  public static Object ExecuteCommandList( String CommandName, Object ... args)
+  public static Object ExecuteCommandList( String CommandName, Object ... args) throws Exception
   {
      Object[] Args = new Object[args.length];
      
