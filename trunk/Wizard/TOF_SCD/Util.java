@@ -674,8 +674,9 @@ public class Util {
                               // available.  If available with >= 4 cores,
                               // slurm will be faster.  We assume
                               // slurm will always have at least 4 cores,
-                              // so only do threads if <= 2 cores and no slurm. 
-     if ( slurm_queue_name != null || maxNumThreads >= 3 )  
+                              // so only do threads if <= 2 cores and no slurm.
+     if( !extension.toUpperCase( ).endsWith( "RUN" ))
+     if ( slurm_queue_name != null || maxNumThreads >= 3  )  
        return findCentroidedPeaksUsingProcesses(
                        rawpath,
                        outpath,
@@ -2486,6 +2487,7 @@ public class Util {
                                  // slurm will be faster.  We assume
                                  // slurm will always have at least 4 cores,
                                  // so only do threads if 1 core and no slurm. 
+      if( !FileExt.toUpperCase( ).endsWith( "RUN" ))
       if ( slurm_queue_name != null || maxThreads >= 2 )     
         return IntegrateMultipleRunsUsingProcesses(
            path,
