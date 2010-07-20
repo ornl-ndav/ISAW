@@ -335,10 +335,10 @@ public class PeakListHandler implements IReceiveMessage
                                                 .02f , value[1] );
        GetUB.DMIN = 1f;
        GetUB.ELIM_EQ_CRYSTAL_PARAMS = false;
-       if( OrientationMatrices == null)
+       if( OrientationMatrices == null || OrientationMatrices.size() < 1)
        {
            Util.sendError( 
-                 "No Orientation Matrix found in Auto no Crystal Parameters" );
+                 "No Orientation Matrices found in Auto with no Crystal Parameters" );
            return false;
        }
        Vector<IPeak> Peaks = Convert2IPeak(peakNew_list);
