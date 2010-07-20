@@ -160,7 +160,10 @@ public class EventViewHandler implements IReceiveMessage, IhasWindowClosed
     {
       LoadEventsCmd info = (LoadEventsCmd)message.getValue();
 
-      frame3D.setTitle( "Reciprocal Space Events for "+info.getEventFile() );
+                                    // Check that the frame exists.  It won't
+                                    // if the window has been closed!
+      if ( frame3D != null )
+        frame3D.setTitle( "Reciprocal Space Events for "+info.getEventFile() );
 
       num_to_show = info.getEventsToShow();
     }
