@@ -73,32 +73,34 @@ public class PeakListHandler implements IReceiveMessage
 
 //       System.out.println("IN PeakListHandler set NEW PEAKS" + 
 //                          " #Peak_new = " + peakNew_list.size() );
-         if( UB != null)
-            indexAllPeaks(new_peaks,UB,tolerance);
+         if ( UB != null)
+           indexAllPeaks(new_peaks,UB,tolerance);
       }
-      } else if ( message.getName( ).equals( Commands.INIT_HISTOGRAM ) )
-      {
+    }
+ 
+    else if ( message.getName( ).equals( Commands.INIT_HISTOGRAM ) )
+    {
+       peakNew_list = new Vector< Peak_new >( );
+       UB = null;
+    } 
 
-         peakNew_list = new Vector< Peak_new >( );
-         UB = null;
+    else if ( message.getName( ).equals( Commands.SET_ORIENTATION_MATRIX ) )
+    {
+       Object obj = message.getValue();
 
-      } else if ( message.getName( ).equals( Commands.SET_ORIENTATION_MATRIX ) )
-      {
+       if( obj instanceof float[][])
+         UB = (float[][])obj;
         
-         Object obj = message.getValue();
-        if( obj instanceof float[][])
-           UB = (float[][])obj;
-        
-        else if( obj instanceof Vector && ((Vector)obj).size()==2 && 
-              ((Vector)obj).firstElement( ) instanceof float[][] )
-           UB= (float[][]) ((Vector)obj).firstElement( );
+        else if( obj instanceof Vector && 
+                 ((Vector)obj).size() == 2 && 
+                 ((Vector)obj).firstElement() instanceof float[][] )
+         UB = (float[][]) ((Vector)obj).firstElement( );
            
-           
-          return false;
-          
-      } else if( message.getName( ).equals( Commands.ADD_PEAK_LIST_INFO ))
-       
-       {
+        return false;
+      } 
+
+    else if( message.getName( ).equals( Commands.ADD_PEAK_LIST_INFO ))
+    {
        Object val = message.getValue();
        if ( val instanceof SelectionInfoCmd )         // fill in counts field
        {
@@ -110,8 +112,6 @@ public class PeakListHandler implements IReceiveMessage
                (int)select_info_cmd.getDetNum( )) );
          message_center.send( new Message( Commands.SHOW_SELECTED_POINT_INFO,
                select_info_cmd, false));
-         
-         
        }
     }
 
@@ -142,7 +142,6 @@ public class PeakListHandler implements IReceiveMessage
         Util.sendError( "ERROR: No Peaks to write" );
         return false;
       }
-
      
       String file_name = gov.anl.ipns.Util.File.FileIO.appendPath( 
             System.getProperty( "user.home" ), "ISAW/tmp/ppp.peaks" );
@@ -150,7 +149,6 @@ public class PeakListHandler implements IReceiveMessage
       {
         Peak_new_IO.WritePeaks_new( file_name, (Vector)peakNew_list, false );
         (new ViewASCII(file_name)).getResult();        
-       
       }
       catch ( Exception ex )
       {
@@ -204,8 +202,6 @@ public class PeakListHandler implements IReceiveMessage
         Util.sendError( "ERROR: Failed to index Peaks " + ex);
         return false;
       } 
-
-    
       return false;
     }
 
@@ -269,11 +265,10 @@ public class PeakListHandler implements IReceiveMessage
     else if( message.getName().equals( 
              Commands.INDEX_PEAKS_WITH_ORIENTATION_MATRIX ))
     {
-       
        UBwTolCmd UBB = (UBwTolCmd)message.getValue();
        
        indexAllPeaks( peakNew_list, UBB.getUB(), UBB.getOffIntMax());
-       Message set_peaks = new Message( Commands.SET_PEAK_NEW_LIST,
+       Message set_peaks = new Message( Commands.PEAK_LIST_CHANGED,
                                         peakNew_list,
                                         true );
        this.UB = UBB.getUB( );
@@ -313,7 +308,7 @@ public class PeakListHandler implements IReceiveMessage
        }
        Vector<IPeak> Peaks = Convert2IPeak(peakNew_list);
        float[][]UB = OrientMatrixControl.showCurrentOrientationMatrices(
-                Peaks , OrientationMatrices );
+                                           Peaks, OrientationMatrices );
         
        if( UB == null)
        {
@@ -323,7 +318,6 @@ public class PeakListHandler implements IReceiveMessage
        }
         
        this.UB = getErrors( UB, Peaks, value[2]); 
-        
     
        return false;
     }
@@ -364,6 +358,8 @@ public class PeakListHandler implements IReceiveMessage
      }
     return seqNum; 
   }
+
+
   private float[][] getErrors(float[][] UB, Vector<IPeak>Peaks, float tolerance)
   {
     float[][] UBT = null;
@@ -394,10 +390,11 @@ public class PeakListHandler implements IReceiveMessage
       */
       Vector messageValue = Commands.MakeSET_ORIENTATION_MATRIX_arg( UBT , 
                                        LinearAlgebra.double2float( sig_abc ) );
+
       message_center.send( new Message( Commands.SET_ORIENTATION_MATRIX,
                                         messageValue, false));
 
-      Message set_peaks = new Message( Commands.SET_PEAK_NEW_LIST,
+      Message set_peaks = new Message( Commands.PEAK_LIST_CHANGED,
                                        peakNew_list,
                                        true );
       message_center.send( set_peaks );
@@ -413,7 +410,6 @@ public class PeakListHandler implements IReceiveMessage
       Util.sendInfo("Indexing FAILED");
     } 
     return UBT;
-
   }
 
 
