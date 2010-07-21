@@ -35,7 +35,7 @@ public class peaksStatPanel extends JPanel implements IReceiveMessage
       super();
       setLayout( new GridLayout( 1 , 1 ) );
       this.message_center = message_center;
-      message_center.addReceiver( this , Commands.SET_PEAK_NEW_LIST );
+      message_center.addReceiver( this , Commands.PEAK_LIST_CHANGED );
       add( new JTextArea( "No Indexed Peaks Available" ) );
    }
 
@@ -45,7 +45,7 @@ public class peaksStatPanel extends JPanel implements IReceiveMessage
    {
 
       if( message == null
-               || ! Commands.SET_PEAK_NEW_LIST.equals( message.getName() ) )
+               || ! Commands.PEAK_LIST_CHANGED.equals( message.getName() ) )
          return true;
 
       Vector< Peak_new > val = (Vector< Peak_new >) message.getValue();
@@ -302,7 +302,7 @@ class messageThread extends Thread
    @Override
    public void run()
    {
-      Message mmm = new Message( Commands.SET_PEAK_NEW_LIST , Peaks , false );
+      Message mmm = new Message( Commands.PEAK_LIST_CHANGED , Peaks , false );
       msg.send( mmm );
       msg.dispatchMessages();
    }

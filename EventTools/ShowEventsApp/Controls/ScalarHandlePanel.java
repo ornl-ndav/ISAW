@@ -172,7 +172,7 @@ public class ScalarHandlePanel implements IReceiveMessage
       OrientMatMessageCenter.addReceiver( this ,
             Commands.SET_ORIENTATION_MATRIX );
       OrientMatMessageCenter.addReceiver( this ,
-            Commands.SET_PEAK_NEW_LIST );
+            Commands.PEAK_LIST_CHANGED );
       
       OrientMatMessageCenter.addReceiver( this ,
             Commands.INDEX_PEAKS);
@@ -819,7 +819,7 @@ public class ScalarHandlePanel implements IReceiveMessage
     */
    public boolean receive(Message message)
    {
-      if( message.getName( ).equals( Commands.SET_PEAK_NEW_LIST ))
+      if( message.getName( ).equals( Commands.PEAK_LIST_CHANGED ))
       {
          Peaks = (Vector<Peak_new>)message.getValue( );
          return false;
