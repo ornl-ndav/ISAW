@@ -82,10 +82,10 @@ class anvred_py(GenericTOF_SCD):
     def setDefaultParameters(self):
     
         self.super__clearParametersVector()
-        self.addParameter(DataDirPG("Working directory", "C:/Users/Arthur/Desktop/Topaz/nickel/TOPAZ_1172/anvred_test"))
-        self.addParameter(StringPG("Experiment name", "Ni1172"))
-        self.addParameter(FloatPG("Total scattering linear abs coeff in cm^-1", 1.762))
-        self.addParameter(FloatPG("True absorption linear abs coeff in cm^-1", 0.428))
+        self.addParameter(DataDirPG("Working directory", "C:/Users/Arthur/Desktop/Topaz/nickel/TOPAZ_1172_EV"))
+        self.addParameter(StringPG("Experiment name", "Ni1172_EV"))
+        self.addParameter(FloatPG("Total scattering linear abs coeff in cm^-1", 1.692))
+        self.addParameter(FloatPG("True absorption linear abs coeff in cm^-1", 0.411))
         self.addParameter(FloatPG("Radius of spherical crystal in cm", 0.10))
         self.addParameter(IntegerPG("Incident spectrum: iSpec = 1 fitted; = 2 data", 2))
         self.addParameter(LoadFilePG("If iSpec = 1, file with spectrum coefficients", \
@@ -95,7 +95,7 @@ class anvred_py(GenericTOF_SCD):
         self.addParameter(FloatPG("Wavelength to normalize to in Angstroms", 1.0))
         self.addParameter(IntegerPG("The minimum I/sig(I)", 0))
         self.addParameter(IntegerPG("Width of border (number of channels)", 5))
-        self.addParameter(IntegerPG("Minimum peak count", 5))
+        self.addParameter(IntegerPG("Minimum peak count", 20))
         self.addParameter(FloatPG("Minimum d-spacing (Angstroms)", 0.3))
         self.addParameter(IntegerPG("Assign scale factors (1) per setting or (2) per detector", 1))
         self.addParameter(FloatPG("Multiply FSQ and sig(FSQ) by scaleFactor", 0.00001))
@@ -254,8 +254,9 @@ class anvred_py(GenericTOF_SCD):
         
             peak = readrefl_SNS( integFile, eof, nrun, dn, chi, phi, omega,\
                 moncnt)
-                
-            eof = peak[21]
+            # print peak
+            eof = peak[22]
+            # print eof
             if eof == 0: break
             
             nrun = peak[0]
@@ -278,13 +279,12 @@ class anvred_py(GenericTOF_SCD):
             dsp = peak[17]
             ipkobs = peak[18]
             inti = peak[19]
-            sigi = peak[20]
+            sigi = abs(peak[20])
             reflag = peak[21]
-
+            
 
             # set-up for new run or detector
             if nrun != curhst or dn != idet:
-            
                 if nrun != curhst:
                     curhst = nrun
                     if iIQ == 1: hstnum = hstnum + 1
@@ -320,20 +320,47 @@ class anvred_py(GenericTOF_SCD):
                     '    SIG   SPECT  SINSQT  ABTRANS   TBAR\n')
             # end of set-up for new run or detector
                     
-            if minIsigI > 0 and inti < (minIsigI * sigi): continue            
-            if inti == 0: continue
-            if ipkobs < ipkMin: continue
+            if minIsigI > 0 and inti < (minIsigI * sigi):
+                logFile.write(' %4d%4d%4d *** inti < (minIsigI * sigi) \n' \
+                    % (h, k, l))
+                continue
+                
+            # if inti == 0: continue
+            
+            if ipkobs < ipkMin:
+                logFile.write(' %4d%4d%4d *** ipkobs < ipkMin \n' \
+                    % (h, k, l))
+                continue
             
             nRows = calibParam[4][id]
             nCols = calibParam[5][id]
             
-            if col < numBorderCh: continue
-            if col > (nCols - numBorderCh): continue
-            if row < numBorderCh: continue
-            if row > (nRows - numBorderCh): continue
-           
-            if reflag == 0: continue
-            if dsp < dMin: continue
+            if col < numBorderCh:
+                logFile.write(' %4d%4d%4d *** col < numBorderCh \n' \
+                    % (h, k, l))
+                continue
+                
+            if col > (nCols - numBorderCh):
+                logFile.write(' %4d%4d%4d *** col > (nCols - numBorderCh)\n' \
+                    % (h, k, l))
+                continue
+                
+            if row < numBorderCh:
+                logFile.write(' %4d%4d%4d *** row < numBorderCh \n' \
+                    % (h, k, l))
+                continue
+                
+            if row > (nRows - numBorderCh):
+                logFile.write(' %4d%4d%4d *** row > (nRows - numBorderCh)\n' \
+                    % (h, k, l))
+                continue
+                    
+            # if reflag == 0: continue
+            
+            if dsp < dMin:
+                logFile.write(' %4d%4d%4d *** dsp < dMin \n' \
+                    % (h, k, l))
+                continue
             
             ncntr = ncntr + 1
             
@@ -345,7 +372,10 @@ class anvred_py(GenericTOF_SCD):
                 spect = spectrum( wl, xtof[id], averageRange, \
                   spect1[id], specBank[id][0], specBank[id][1] )
             
-            if spect == 0.0: continue
+            if spect == 0.0:
+                logFile.write(' %4d%4d%4d *** spect == 0.0 \n' \
+                    % (h, k, l))
+                continue
             
             sinsqt = ( wl / (2.0*dsp) )**2
             wl4 = wl**4
