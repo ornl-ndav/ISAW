@@ -70,6 +70,7 @@ import Operators.TOF_SCD.ReducedCellInfo;
 public class ScalarHandlePanel implements IReceiveMessage
 {
 
+   private static double[][]  identity ={{1.,0.,0.},{0.,1.,0.},{0.,0.,1.}};
    private static String      SHOW_CENTERINGS   = "Update List";
 
    private static String      APPLY_CENTERINGS  = "Apply Displayed Cell";
@@ -597,11 +598,67 @@ public class ScalarHandlePanel implements IReceiveMessage
       return res;
    }
 
+   private static double[][] getFlipFudge( int flipRow)
+   {
+      if( flipRow < 0 || flipRow >= 3)
+         return identity;
+      double[][] ident = new double[3][3];
+      Arrays.fill( ident[0] , 0 );
+      Arrays.fill( ident[1] , 0 );
+      Arrays.fill( ident[2] , 0 );
+
+      int k = flipRow;
+      for( int i = 1 ; i <= 2 ; i++ )
+         ident[( k + i ) % 3][( k + i ) % 3] = -1;
+      ident[( k + 0 ) % 3][( k + 0 ) % 3] = 1;
+      return ident;
+   }
+   
+   /**
+    * Exchanges adjacent rows in currentFudge( 3 and 1 are adjacent).
+    * @param currentFudge row and row+1 mod 3 are interchanged
+    * @param row
+    * @return    Also returns the result
+    * 
+    * NOTE: Argument is changed and returned.
+    */
+   private static double[][] getRowXchgFudge( double[][] currentFudge, int row)
+   {
+      double[] sav = currentFudge[row];
+      currentFudge[row]= currentFudge[(row+1)%3];
+      currentFudge[(row+1)%3] = sav;
+      return currentFudge;
+   }
+   
+
+   /**
+    * Exchanges adjacent rows in currentFudge( 3 and 1 are adjacent).
+    * @param lattice_params corresponding to row and row+1 mod 3 
+    *                           are interchanged
+    * @param row row and row+1 mod 3 are interchanged
+    * @return    Also returns the result
+    * 
+    * NOTE: Argument is changed and returned.
+    * */
+   private static double[] getRowXchgLatParams( double[] lattice_params, int row)
+   {
+      double sav = lattice_params[row];
+      lattice_params[row]= lattice_params[(row+1)%3];
+      lattice_params[(row+1)%3] = sav;
+      
+      sav = lattice_params[3+row];
+      lattice_params[row]= lattice_params[3+(row+1)%3];
+      lattice_params[3+(row+1)%3] = sav;
+      
+      return lattice_params;
+   }
+   
+   
    private static double[][] getTransf( ReducedCellPlus RedCell)
    {
       double[][] transf = RedCell.redCell.getTransformation( );
       
-      if ( RedCell.flipUBRow >= 0 )//redo mult by self. Just chang signs in cols/rows in transf
+      /*if ( RedCell.flipUBRow >= 0 )//redo mult by self. Just chang signs in cols/rows in transf
       {
          double[][] ident = new double[ 3 ][ 3 ];
          ident[0][0] = 1;
@@ -618,7 +675,8 @@ public class ScalarHandlePanel implements IReceiveMessage
          for( int i = 1 ; i <= 2 ; i++ )
             ident[( k + i ) % 3][( k + i ) % 3] = -1;
          transf = LinearAlgebra.mult( transf , ident );
-      }
+      }*/
+      transf = LinearAlgebra.mult( transf , RedCell.Fudge );
       return transf;
    }
    //Calculates the new UB matrix from the RedCell and UB
@@ -649,7 +707,7 @@ public class ScalarHandlePanel implements IReceiveMessage
       System.arraycopy( latParams1 , 0 , latParams2 , 0 , 6 );
 
       int side = flipLatticeAngle( latParams2 );
-
+      double[][] FlipFudge = getFlipFudge( side);
       ScalarOpts = new Vector< ReducedCellPlus >( );
       
       ReducedCellInfo SrcRedCell1 = new ReducedCellInfo( 0 , latParams1[0] ,
@@ -660,23 +718,44 @@ public class ScalarHandlePanel implements IReceiveMessage
             latParams2[1] , latParams2[2] , latParams2[3] , latParams2[4] ,
             latParams2[5] );
       
-      for( int i = 1 ; i < 45 ; i++ )
+      double[][] ident = new double[3][3];
+      System.arraycopy(  identity[0] , 0 , ident[0] ,0 , 3 );
+      System.arraycopy(  identity[1] , 0 , ident[1] ,0 , 3 );
+      System.arraycopy(  identity[2] , 0 , ident[2] ,0 , 3 );
+      
+      for( int t = 0 ; t < 6 ; t++ )
       {
-         ReducedCellInfo redCell = new ReducedCellInfo( i , latParams1[0] ,
+         for( int i = 1 ; i < 45 ; i++ )
+         {
+            ReducedCellInfo redCell = new ReducedCellInfo( i , latParams1[0] ,
+                  latParams1[1] , latParams1[2] , latParams1[3] ,
+                  latParams1[4] , latParams1[5] );
+
+            double dist = redCell.weighted_distance( SrcRedCell1 );
+
+            if ( dist < delta )
+               ScalarOpts.add( new ReducedCellPlus( redCell , dist ,
+                     LinearAlgebra.mult( ident , getFlipFudge( -1 ) ) ) );
+
+            redCell = new ReducedCellInfo( i , latParams2[0] , latParams2[1] ,
+                  latParams2[2] , latParams2[3] , latParams2[4] , latParams2[5] );
+            dist = redCell.weighted_distance( SrcRedCell2 );
+
+            if ( dist < delta )
+               ScalarOpts.add( new ReducedCellPlus( redCell , dist ,
+                     LinearAlgebra.mult( ident , getFlipFudge( side ) ) ) );
+         }
+         ident = getRowXchgFudge( ident , t % 3 );
+         latParams1 = getRowXchgLatParams( latParams1 , t % 3 );
+         latParams2 = getRowXchgLatParams( latParams2 , t % 3 );
+         
+         SrcRedCell1 = new ReducedCellInfo( 0 , latParams1[0] ,
                latParams1[1] , latParams1[2] , latParams1[3] , latParams1[4] ,
                latParams1[5] );
          
-         double dist = redCell.weighted_distance( SrcRedCell1 );
-         
-         if ( dist < delta )
-            ScalarOpts.add( new ReducedCellPlus( redCell , -1 , dist, null ) );
-
-         redCell = new ReducedCellInfo( i , latParams2[0] , latParams2[1] ,
-               latParams2[2] , latParams2[3] , latParams2[4] , latParams2[5] );
-         dist = redCell.weighted_distance(  SrcRedCell2 );
-         
-         if ( dist < delta )
-            ScalarOpts.add( new ReducedCellPlus( redCell , side , dist, null ) );
+         SrcRedCell2 = new ReducedCellInfo( 0 , latParams2[0] ,
+               latParams2[1] , latParams2[2] , latParams2[3] , latParams2[4] ,
+               latParams2[5] );
 
       }
 
@@ -933,13 +1012,38 @@ public class ScalarHandlePanel implements IReceiveMessage
       Arrays.sort( R, new FormSort() );
       ScalarOpts.clear( );
       int lastFormNum = -1;
-      for( int i = 0; i < R.length; i++)
+ /*     for( int i=0; i< R.length; i++)
          if( R[i].redCell.getFormNum( ) != lastFormNum)
-         {
             ScalarOpts.add( R[i] );
-            lastFormNum = R[i].redCell.getFormNum( );
-         }
-      
+ */
+      int k= -1;
+      for( int i=0; i < R.length; i++)
+         if( i+1 < R.length)
+            if( R[i].redCell.getFormNum( )==R[i+1].redCell.getFormNum( ))
+               if( k < 0)
+                  k=i;
+               else if(R[k].distance > R[i].distance )
+                  k=i;
+               else
+                  k=k;
+            else
+            {
+               if( k < 0)
+                  ScalarOpts.add(R[i]);
+               else if( R[k].distance > R[i].distance)
+                  ScalarOpts.add(R[i]);
+               else
+                  ScalarOpts.add(R[k]);
+               k=-1;
+                  
+            }
+         else
+            if( k < 0)
+               ScalarOpts.add( R[i]);
+            else if( R[i].distance < R[k].distance)
+               ScalarOpts.add( R[i]);
+            else
+               ScalarOpts.add( R[k]);
    }
    
    private void FilterOutSymmetry(Vector< ReducedCellPlus > ScalarOpts,
@@ -1021,7 +1125,7 @@ public class ScalarHandlePanel implements IReceiveMessage
       
       int lineNum = RedCell.redCell.getFormNum( );
       
-      if ( lineNum <= 25 )
+      if ( lineNum <= 17 )
          
          Res += "a=b";
       
@@ -1208,22 +1312,25 @@ public class ScalarHandlePanel implements IReceiveMessage
     */
    class ReducedCellPlus
    {
-      int             flipUBRow;
+     // int             flipUBRow;
 
       double          distance;
 
       ReducedCellInfo redCell;
       
-      int[]  rowOrder;
+      //int[]  rowOrder;
+      
+      double[][]  Fudge;
 
-      public ReducedCellPlus(ReducedCellInfo redCell, int flipUBRow, 
-            double dist, int[] rowOrder)
+      public ReducedCellPlus(ReducedCellInfo redCell,
+            double dist, double[][] Fudge)
       {
 
          this.redCell = redCell;
-         this.flipUBRow = flipUBRow;
+        // this.flipUBRow = flipUBRow;
          this.distance = dist;
-         this.rowOrder = rowOrder;
+        // this.rowOrder = rowOrder;
+         this.Fudge = Fudge;
       }
 
    }
