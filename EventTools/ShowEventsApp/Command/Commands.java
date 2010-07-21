@@ -95,7 +95,7 @@ public class Commands
   public static final String FIND_PEAKS        = "FIND_PEAKS";
 
   /**
-   *  SET_PEAK_Q_LIST has a Vector of PeakQ objects as it's  message value.
+   *  SET_PEAK_Q_LIST has a PeakQ_cmd object as it's  message value.
    */
   public static final String SET_PEAK_Q_LIST   = "SET_PEAK_Q_LIST";
   
@@ -107,6 +107,7 @@ public class Commands
    *  SET_PEAK_NEW_LIST has a Vector of Peak_new objects as it's  message value.
    */
   public static final String SET_PEAK_NEW_LIST = "SET_PEAK_NEW_LIST";
+  public static final String PEAK_LIST_CHANGED = "PEAK_LIST_CHANGED";
   public static final String CLEAR_PEAK_LISTS = "CLEAR_PEAK_LISTS";
   public static final String FILTER_DETECTOR = "FILTER_DETECTOR";
   public static final String FILTER_QD = "FILTER_QD";
