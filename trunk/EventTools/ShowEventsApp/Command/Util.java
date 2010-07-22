@@ -203,8 +203,8 @@ public class Util
         max = yy[i];
 
      if ( max > 0 )
-     for ( int i = 0; i < yy.length; i++ )
-       yy[i] /= max; 
+    // for ( int i = 0; i < yy.length; i++ )
+    //   yy[i] /= max; 
                                                // clamp yvalues to >= 0.05
      for ( int i = 0; i < yy.length; i++ )
       if ( yy[i] < 0.01f )
