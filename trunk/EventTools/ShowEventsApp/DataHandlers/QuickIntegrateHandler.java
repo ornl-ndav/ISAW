@@ -420,7 +420,7 @@ public class QuickIntegrateHandler implements IReceiveMessage
 
   private void RebuildHistogram()
   {
-    int num_bins = SetNewHistogram();
+    long num_bins = SetNewHistogram();
     Message size_mess = new Message( Commands.SET_HISTOGRAM_SPACE_MB,
                                      (Float)( 4 * num_bins/1000000f),
                                       true, true );
@@ -433,7 +433,7 @@ public class QuickIntegrateHandler implements IReceiveMessage
    * Set up the new histogram for accumulating integrated intensities.
    * @return the total number of bins required.
    */
-  private int SetNewHistogram()
+  private long SetNewHistogram()
   {
     System.out.println("QuickIntegrate allocating NEW histogram space....");
     histogram = null;
@@ -478,7 +478,9 @@ public class QuickIntegrateHandler implements IReceiveMessage
                     " and/or use a smaller Max |Q|");
       return 0;
     }
-    return h_binner.numBins() * k_binner.numBins() * l_binner.numBins();
+    return (long)h_binner.numBins() * 
+           (long)k_binner.numBins() * 
+           (long)l_binner.numBins();
   }
 
 
