@@ -40,6 +40,7 @@ import java.io.BufferedWriter;
 
 import gov.anl.ipns.MathTools.Geometry.Vector3D;
 
+import DataSetTools.operator.Generic.TOF_SCD.IPeakQ;
 import DataSetTools.operator.Generic.TOF_SCD.PeakQ;
 import DataSetTools.operator.Generic.TOF_SCD.BasicPeakInfo;
 import DataSetTools.operator.Generic.TOF_SCD.FindPeaksViaSort;
@@ -54,6 +55,7 @@ import EventTools.ShowEventsApp.Command.Commands;
 import EventTools.ShowEventsApp.Command.SelectionInfoCmd;
 import EventTools.ShowEventsApp.Command.SetNewInstrumentCmd;
 import EventTools.ShowEventsApp.Command.FindPeaksCmd;
+import EventTools.ShowEventsApp.Command.PeakQ_Cmd;
 import EventTools.ShowEventsApp.Command.Util;
 
 
@@ -245,8 +247,19 @@ public class HistogramHandler implements IReceiveMessage
 
         if ( peakQs != null && peakQs.size() > 0 )       // send out the peaks
         { 
+          Vector regions = new Vector(peakQs.size());
+          for ( int i = 0; i < peakQs.size(); i++ )
+          {
+             float[] q_arr = peakQs.elementAt(i).getUnrotQ();
+             float qx = (float)(q_arr[0] * 2 * Math.PI);
+             float qy = (float)(q_arr[1] * 2 * Math.PI);
+             float qz = (float)(q_arr[2] * 2 * Math.PI);
+             regions.add( histogram.getRegion( qx, qy, qz, 0.5f ) );
+          }
+          PeakQ_Cmd value = new PeakQ_Cmd( peakQs, regions );
+
           Message set_peak_Q_list = new Message( Commands.SET_PEAK_Q_LIST,
-                                                 peakQs,
+                                                 value,
                                                  true,
                                                  true );
           message_center.send( set_peak_Q_list );
