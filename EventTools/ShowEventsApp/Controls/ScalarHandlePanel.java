@@ -759,7 +759,7 @@ public class ScalarHandlePanel implements IReceiveMessage
 
       }
 
-      EliminateDuplicates( ScalarOpts);
+     // EliminateDuplicates( ScalarOpts);
       
       for( int i = 0 ; i < SymmetryChoices.length ; i++ )
          if ( !SymmetryChoices[i].isSelected( ) )
