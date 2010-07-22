@@ -94,6 +94,8 @@ public class IsawEV
     new OrientationMatrixHandler( message_center );
 
 
+    new PeakViewHandler( message_center );
+
     new DQDataHandler( message_center, view_message_center );
 
     new EventViewHandler( message_center, view_message_center );

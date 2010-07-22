@@ -6,33 +6,33 @@ import java.util.Vector;
 import DataSetTools.operator.Generic.TOF_SCD.IPeakQ;
 
 /**
- * This class holds the information sent as the value of a SET_PEAK_Q_LIST
+ * This class holds the information sent as the value of a SHOW_PEAK_IMAGES 
  * command.
  */
-public class PeakQ_Cmd
+public class PeakImagesCmd
 {
    private Vector peaks;
    private Vector regions;
    
    /**
-    * Make a command object with the specified list of IPeakQ objects and
+    * Make a command object with the specified list of Peak_new objects and
     * list of regions around the peaks.
     *
-    * @param peaks   Vector of IPeakQ or Peak_new objects containing the
-    *                peak positions in reciprocal space.  The number of 
+    * @param peaks   Vector of Peak_new objects containing the peak positions
+    *                in reciprocal space, row col, etc.  The number of 
     *                peaks must match the number of regions.
     * @param regions Vector of 3D float arrays containing values from the
     *                histogram around the peaks. The number of regions
     *                must match the number of peaks.
     */
-   public PeakQ_Cmd( Vector peaks, Vector regions )
+   public PeakImagesCmd( Vector peaks, Vector regions )
    {
      this.peaks   = peaks;
      this.regions = regions;
    }
 
    /**
-    *  Get the list of IPeakQ objects.
+    *  Get the list of Peak_new objects.
     *
     *  @return a reference to the Vector of peaks for this command.
     *          The calling code must NOT modify the Vector of peaks!
