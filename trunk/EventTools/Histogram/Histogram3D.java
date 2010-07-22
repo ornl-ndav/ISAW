@@ -435,6 +435,57 @@ public class Histogram3D
 
 
   /**
+   * Get a 3D array of values in the neighborhood of the specified 
+   * point.  The array size is set to include centers of bins in
+   * a sphere of the specified radius around the specified point,
+   * BUT will be restricted to lie within the bounds of this histogram.
+   * NOTE: In general, this returned array will not have equal sizes in
+   *       all dimensions. Also, the array values will correspond to 
+   *       a parallelopiped in 3D space, since the binner directions may
+   *       not be mutually perpendicular.
+   *
+   *  @param x      The x coodinate of the center of the region
+   *  @param y      The y coodinate of the center of the region
+   *  @param z      The z coodinate of the center of the region
+   *  @param radius The radius of a sphere that determines the size
+   *                of the region that is returned.
+   */
+  public float[][][] getRegion( float x, float y, float z, float radius )
+  {
+    int[][] ranges = getIndexRanges( x, y, z, radius );
+    int min_x_index = ranges[0][0];
+    int max_x_index = ranges[0][1];
+
+    int min_y_index = ranges[1][0];
+    int max_y_index = ranges[1][1];
+
+    int min_z_index = ranges[2][0];
+    int max_z_index = ranges[2][1];
+
+    int n_x = max_x_index - min_x_index + 1;
+    int n_y = max_y_index - min_y_index + 1;
+    int n_z = max_z_index - min_z_index + 1;
+
+    float[][][] region = new float[ n_z ][ n_y ][ n_x ];
+
+    int page,
+        row,
+        col;
+    for ( int z_index = min_z_index; z_index <= max_z_index; z_index++ )
+      for ( int y_index = min_y_index; y_index <= max_y_index; y_index++ )
+        for ( int x_index = min_x_index; x_index <= max_x_index; x_index++ )
+        {
+          page = z_index - min_z_index;
+          row  = y_index - min_y_index;
+          col  = x_index - min_x_index;
+          region[page][row][col] = histogram[z_index][y_index][x_index]; 
+        }
+
+    return region;
+  }
+
+
+  /**
    *  Find the total counts that are enclosed within spheres with the 
    *  specified radii around the specified point.
    *
@@ -452,6 +503,86 @@ public class Histogram3D
    *          bins whose centers are within the ith radius.
    */
   public Vector sphereIntegrals( float x, float y, float z, float[] radii )
+  {
+    float max_radius = 0;
+    for ( int i = 0; i < radii.length; i++ )
+      if ( max_radius < radii[ i ] )
+        max_radius = radii[i];
+
+    int[][] ranges = getIndexRanges( x, y, z, max_radius );
+    int min_x_index = ranges[0][0];
+    int max_x_index = ranges[0][1];
+
+    int min_y_index = ranges[1][0];
+    int max_y_index = ranges[1][1];
+
+    int min_z_index = ranges[2][0];
+    int max_z_index = ranges[2][1];
+
+//  System.out.println("Value at = " + valueAt( x, y, z ) );
+//  System.out.println("min/max x index = " + min_x_index + ", "+max_x_index);
+//  System.out.println("min/max y index = " + min_y_index + ", "+max_y_index);
+//  System.out.println("min/max z index = " + min_z_index + ", "+max_z_index);
+
+    float[]  counts = new float[ radii.length ];
+    float[]  n_bins = new float[ radii.length ];
+    float    distance;
+    Vector3D x_vec,
+             y_vec,
+             z_vec,
+             diff_vec;
+                                         // For each bin, find it's distance
+                                         // from the center vec and add its
+                                         // value to any sphere containing it.
+                                         // NOTE: this will also work with
+                                         //       skewed axes.
+    Vector3D center_vec = new Vector3D( x, y, z );
+
+    for ( int x_index = min_x_index; x_index <= max_x_index; x_index++ )
+      for ( int y_index = min_y_index; y_index <= max_y_index; y_index++ )
+        for ( int z_index = min_z_index; z_index <= max_z_index; z_index++ )
+        {
+          x_vec = x_edge_binner.centerVec( x_index );
+          y_vec = y_edge_binner.centerVec( y_index );
+          z_vec = z_edge_binner.centerVec( z_index );
+
+          diff_vec = x_vec;
+          diff_vec.add( y_vec );
+          diff_vec.add( z_vec );
+          diff_vec.subtract( center_vec ); 
+          distance = diff_vec.length();
+
+          for ( int i = 0; i < radii.length; i++ )
+            if ( distance < radii[i] )
+            {
+              counts[i] += histogram[z_index][y_index][x_index];
+              n_bins[i] += 1;
+            }
+        }
+
+     Vector result = new Vector(2);
+     result.add( counts );
+     result.add( n_bins );
+     return result;
+  }
+
+
+  /**
+   * Get ranges of x, y and z indices that cover a sphere of the specified
+   * radius around the specified point BUT are restricted to lie withing
+   * the histogram.
+   *
+   * @param x       The x coordinate of the "center" point.
+   * @param y       The y coordinate of the "center" point.
+   * @param z       The z coordinate of the "center" point.
+   * @param radius  The radius of the sphere that the region should cover
+   *
+   * @return A 2D array of ints.  The first row has the min and max index
+   *         in the "x" direction, the second row has the min and max index
+   *         in the "y" direction and the third row has the min and max index
+   *         in the "z" direction.
+   */
+  private int[][] getIndexRanges( float x, float y, float z, float radius )
   {
     int center_z_index = z_binner.index(x,y,z);
     if ( center_z_index < 0 || center_z_index >= histogram.length )
@@ -479,66 +610,12 @@ public class Histogram3D
 
     Vector3D center_vec = new Vector3D( x, y, z );
 
-    float max_radius = 0;
-    for ( int i = 0; i < radii.length; i++ )
-      if ( max_radius < radii[ i ] )
-        max_radius = radii[i];
+    int[][] ranges = new int[3][];
+    ranges[0] = getMinMaxIndex( x_binner, center_vec, radius );
+    ranges[1] = getMinMaxIndex( y_binner, center_vec, radius );
+    ranges[2] = getMinMaxIndex( z_binner, center_vec, radius );
 
-    int min_max[] = getMinMaxIndex( x_binner, center_vec, max_radius );
-    int min_x_index = min_max[0];
-    int max_x_index = min_max[1];
-
-    min_max = getMinMaxIndex( y_binner, center_vec, max_radius );
-    int min_y_index = min_max[0];
-    int max_y_index = min_max[1];
-
-    min_max = getMinMaxIndex( z_binner, center_vec, max_radius );
-    int min_z_index = min_max[0];
-    int max_z_index = min_max[1];
-
-    // System.out.println("Value at = " + valueAt( x, y, z ) );
-    // System.out.println("min/max x index = " + min_x_index + ", " + max_x_index);
-    // System.out.println("min/max y index = " + min_y_index + ", " + max_y_index);
-    // System.out.println("min/max z index = " + min_z_index + ", " + max_z_index);
-
-    float[]  counts = new float[ radii.length ];
-    float[]  n_bins = new float[ radii.length ];
-    float    distance;
-    Vector3D x_vec,
-             y_vec,
-             z_vec,
-             diff_vec;
-                                         // For each bin, find it's distance
-                                         // from the center vec and add its
-                                         // value to any sphere containing it.
-                                         // NOTE: this will also work with
-                                         //       skewed axes.
-    for ( int x_index = min_x_index; x_index <= max_x_index; x_index++ )
-      for ( int y_index = min_y_index; y_index <= max_y_index; y_index++ )
-        for ( int z_index = min_z_index; z_index <= max_z_index; z_index++ )
-        {
-          x_vec = x_edge_binner.centerVec( x_index );
-          y_vec = y_edge_binner.centerVec( y_index );
-          z_vec = z_edge_binner.centerVec( z_index );
-
-          diff_vec = x_vec;
-          diff_vec.add( y_vec );
-          diff_vec.add( z_vec );
-          diff_vec.subtract( center_vec ); 
-          distance = diff_vec.length();
-
-          for ( int i = 0; i < radii.length; i++ )
-            if ( distance < radii[i] )
-            {
-              counts[i] += histogram[z_index][y_index][x_index];
-              n_bins[i] += 1;
-            }
-        }
-
-     Vector result = new Vector(2);
-     result.add( counts );
-     result.add( n_bins );
-     return result;
+    return ranges;
   }
 
  
