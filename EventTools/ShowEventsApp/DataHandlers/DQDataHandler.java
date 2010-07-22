@@ -119,6 +119,8 @@ public class DQDataHandler implements IReceiveMessage
 
       this.messageCenter.addReceiver(this, Commands.SCALE_FACTOR);
       this.viewMessageCenter.addReceiver(this, Commands.NORMALIZE_QD_GRAPHS);
+      this.viewMessageCenter.addReceiver(this, Commands.NORMALIZE_Q_GRAPH);
+      this.viewMessageCenter.addReceiver(this, Commands.NORMALIZE_D_GRAPH);
       this.viewMessageCenter.addReceiver(this, Commands.DQLOG_SCALE);
    
       incidentSpectraFileName = null;
@@ -523,6 +525,32 @@ public class DQDataHandler implements IReceiveMessage
             scale_factor += ( ( Float ) message.getValue( ) ).floatValue( );
          else
             scale_factor = 1;
+         return true;
+      }
+
+      if( message.getName().equals( Commands.NORMALIZE_Q_GRAPH ))
+      {
+         normalizeQ = ((Boolean)message.getValue()).booleanValue( );
+
+         if( normalizeQ)
+            Q_values[1] = qn_values;
+         else
+            Q_values[1] = q_values[1];
+         sendViewMessage(Commands.SET_Q_VALUES, Scale(Q_values, normalizeQ));
+         return true;
+      }
+
+      if( message.getName().equals( Commands.NORMALIZE_D_GRAPH ))
+      {
+
+         normalizeD = ((Boolean)message.getValue()).booleanValue( );
+         if( normalizeD)
+            D_values[1] = dn_values;
+         else
+            D_values[1] = d_values[1];
+         
+         sendViewMessage(Commands.SET_D_VALUES, Scale(D_values, normalizeD));
+         return true;         
       }
       
       if( message.getName().equals( Commands.NORMALIZE_QD_GRAPHS ))
@@ -561,6 +589,7 @@ public class DQDataHandler implements IReceiveMessage
             sendViewMessage(Commands.SET_D_VALUES, Scale(D_values, normalizeD));
          else if( D_Q == "Q" )
             sendViewMessage(Commands.SET_Q_VALUES, Scale(Q_values, normalizeQ));
+         return true;
       }
       if( message.getName( ).equals(  Commands.DQLOG_SCALE ))
       {
@@ -572,6 +601,7 @@ public class DQDataHandler implements IReceiveMessage
          d_binner = getDBinner( isLog );
          scale_factor = 0;
          init_arrays();
+         return true;
       }
       
       return false;
