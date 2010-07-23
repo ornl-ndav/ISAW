@@ -1,0 +1,118 @@
+<html><body style="font-size:20px">
+<H1><Center> D-Viewer and Q-Viewer from IsawEV</Center></H1>
+
+  These viewers show histograms of the d values or q values associated with the events from an experiment at SNS. 
+They also have the ability to normalize these graphs for comparison purposes, and also,compare with other graphs 
+ saved with very similar settings.
+
+<OL>  Table of Contents
+ <LI><a href= "#Invoking"> Invoking</a>
+ <LI> <a href= "#Settings">Normalization Settings</a>
+ <LI> <a href= "#Loading">Loading in Comparison Graphs</a>
+ <LI> <a href= "#Tweak">Display Settings</a>
+ <LI> <a href= "#Live Data">Live Data</a>
+ <LI> <a href= "#Saving">Saving Data and Images</a>
+</OL><P><P><HR>
+<a name="Invoking"><H2> Invoking the Graphs in IsawEV</H2></a><P>
+   When IsawEV is running, press <B>Additional Views</B> in the main panel.<P>
+
+   In the Additional View Panel, press the checkbox to the left of <I><U> Show D Graph</u></I> or 
+     <I><U> Show Q Graph</u></I>. Both or neither can be checked.<P><P>
+
+   There is a time lag in changes to these views so that these views can work with the live data.<P>
+
+   To <B>REMOVE</B> these views, unmark the associated checkbox in the <B>Additional Views</B> panel or just
+       click the "x" in the upper right corner of the frame with the view.<P>
+
+   Mark the <I><U>Use Log Scale</U></I> checkbox to have the histogram binned logarithmically. Changing this mark
+     will cause all previous data needed for the D-Viewer and Q-Viewer to be lost. For Live Data, this means that
+     these graphs will represent only the events that occurred after the checkbox was changed. If the data was loaded
+     in from a file, you must reload the file from the start.  
+
+<HR>
+<a name="Settings"><H2>Normalization Settings</H2> </a><P>
+   Access these from the <I>Options</I> menu from the D or Q-Viewer's menu bar.<P>
+   <UL> Options
+      <LI>  Normalize:
+            <UL> When checked, the Graph will be divided by proton's on target from the <I>Load Data</I> panel( see Live
+                 Data for variations) and the incident spectrum from the <I>Load Data</I> panel. If the incident spectrum
+                 is absent from IsawEV's <I>Load Data</I> panel, a default one will be used, if present.<P>
+                 NOTE: This incident spectra is in terms of wavelength not d-spacing or q. 
+             </UL><P>
+ 
+       <LI> Use Other File:
+        <UL> Because the incident spectra from IsawEV's <I>Load Data</I> panel is not in terms of d or q, this
+             option allows you to load in a spectra in the correct terms.  This spectrum file can be created via
+             IsawEV by loading in the Vanadium run, viewing the d or q graph, and saving these for later use. 
+              These graphs could be smoothed and fixed up with other applications<P>
+
+             <a name="SaveGraph"></a>To <B>SAVE A GRAPH</b> use the <I>File</I> Menu option in IsawEV's main Window.<P>
+
+              <I><U> Make sure the set up of the Vanadium run and Sample run MATCH</U></I><P>
+
+              <B><U>NOTE: The incident spectrum will NOT be used in normalization when "Use Other File" is set</U></B>
+          </UL>
+    </UL>
+
+<HR>
+<a name="Loading"><H2>Using Comparison Graphs</H2></a><P>
+    Access these from the <I>Add Graph</I> menu from the D or Q-Viewer's menu bar.<P>
+    <UL> Add Graph
+       <LI> New Graph:
+             <UL> Selecting this will allow you to select a file to load into the display. It allows for
+                 <LI> Browse to a fileName. The <B><U>FORMAT</U></B> of the file must be the form which these
+                      graphs are <a href="#SaveGraph">saved</a>.  It is a basic 2 or 3 column ASCII.<P>
+
+                 <LI> Specifying a name: This name will be placed in the List of Graphs. The Display Settings
+                        will use this name.<P>
+
+                 <LI> Specify a scaling so it can better be used to compare with the other graphs.  <P>
+                      <B>NOTE: Compare Graphs should correspond or be created with the same settings</b>
+             </UL>
+
+       <LI> List of Graphs:
+           <UL> This contains the names of the graphs in the D-Viewer or Q-Viewer. Selecting one of these options
+                 will <B>DELETE</b> these from the List and Graph.
+            </uL>
+
+     </ul>
+<HR>
+ <a name="Live Data"><H2>Live Data</H2></a>
+    These Views work with live data. Normalization using Protons on target, though is a little more complicated.<P>
+    To allow for normalization using Protons on Target or the other options below:
+    <UL> In the file IsawProps.dat( in your home directory) include the following line:<P>
+         <LI>ScaleWith=Protons on target<P>
+               or<P>
+         <LI>ScaleWith=NumEvents<P>
+               or<P>
+         <LI>ScaleWith=Max_xxx<P>
+            (ScaleWith=Max_25.3)<-Specific example
+     </ul>
+    
+
+
+<HR>
+<a name="Tweak"><H2>Display Settings</H2></a><P>
+    Access this facility from the <I>Controls</I> menu from the D or Q-Viewer's menu bar.<P>
+    Lines can have different colors and line styles. Marks can be place at points. A legend can
+    be displayed, etc. <P>
+    This diplay is Isaw's Selected Graph View.  
+     <a href="Viewers/Selected_graph_view.html#Function_Controls">See Documentation</a>
+<HR>
+
+
+ <a name="Saving"><H2>Saving Data and Images</H2></a>
+   <UL> 
+      <LI> <a href ="#SaveGraph">Saving Graph Data</a><P>
+      <LI> Saving an Image:
+        <UL> Access this feature from the <I>Options</I> Menu  from D-Viewer or Q-Viewer 
+                       Menu bar
+        </UL><P>
+      <LI> Print an Image:
+        <UL> Access this feature from the <I>Options</I> Menu  from D-Viewer or Q-Viewer 
+                       Menu bar
+        </UL>
+   </UL><P>
+
+ 
+</body></html>
