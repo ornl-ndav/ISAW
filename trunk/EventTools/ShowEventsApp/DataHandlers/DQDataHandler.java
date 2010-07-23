@@ -41,6 +41,7 @@ import gov.anl.ipns.Util.Numeric.ClosedInterval;
 import DataSetTools.dataset.*;
 import DataSetTools.util.SharedData;
 import Operators.Generic.Save.SaveASCII_calc;
+import Operators.Special.ClampValues_calc;
 import EventTools.ShowEventsApp.Command.Commands;
 import EventTools.ShowEventsApp.Command.SetNewInstrumentCmd;
 import EventTools.ShowEventsApp.Command.Util;
@@ -72,7 +73,13 @@ public class DQDataHandler implements IReceiveMessage
   private float   MaxScaleFactor;
 
   private String  incidentSpectraFileName;
+  
+  private String  otherNormDSpectrFileName;
+  private String  otherNormQSpectrFileName;
 
+  private float[] D_list = null;
+
+  private float[] Q_list = null; 
   private float[] Wl_list;       // incident spectrum values
 
   private float minWL,           // parameters to find correct entry in the
@@ -89,7 +96,7 @@ public class DQDataHandler implements IReceiveMessage
                                  // by incident spectrum
 
   private float[][] Q_values,    // these switch to point to "plain" or 
-                    D_values;    // or normailzed arrays, depending on
+                    D_values;    // or normalized arrays, depending on
                                  // whether graphs are to be normalized 
                                  // to the incident spectrum.
 
@@ -121,11 +128,14 @@ public class DQDataHandler implements IReceiveMessage
       this.viewMessageCenter.addReceiver(this, Commands.NORMALIZE_QD_GRAPHS);
       this.viewMessageCenter.addReceiver(this, Commands.NORMALIZE_Q_GRAPH);
       this.viewMessageCenter.addReceiver(this, Commands.NORMALIZE_D_GRAPH);
+      this.viewMessageCenter.addReceiver(this, Commands.D_GRAPH_NORMALIZER);
+      this.viewMessageCenter.addReceiver(this, Commands.Q_GRAPH_NORMALIZER);
       this.viewMessageCenter.addReceiver(this, Commands.DQLOG_SCALE);
    
       incidentSpectraFileName = null;
       normalizeQ = normalizeD = false;
-
+      otherNormDSpectrFileName = null;
+      otherNormQSpectrFileName = null;
      
       q_binner = getQBinner( isLog );
       d_binner = getDBinner( isLog );
@@ -261,6 +271,8 @@ public class DQDataHandler implements IReceiveMessage
         }
         }
       DataSet DS = Util.ReadDSFile( filename );
+      float Max = DS.getYRange( ).getEnd_x( );//To set max value to 1
+      
       if( DS == null || DS.getNum_entries()<1)
       {
          Wl_list = null;
@@ -274,6 +286,8 @@ public class DQDataHandler implements IReceiveMessage
       float start = xscl.getStart_x();
       float end = xscl.getEnd_x();
       int nxs = xscl.getNum_x();
+      if( !Float.isNaN( Max ) && Max > 0)
+         D.multiply( 1/Max , 0 );
       if( end <= start || nxs <=0 || start < 0 || end <=.1f)
       {
          Wl_list = null;
@@ -281,7 +295,7 @@ public class DQDataHandler implements IReceiveMessage
          nWL = 0;
         return; 
       }
-
+ 
       nWL  = (int)( (end-start)/end/.02f +.5f);
       nWL  = Math.max( nWL, xscl.getNum_x() );
       xscl = new UniformXScale( start, end, nWL );
@@ -339,8 +353,12 @@ public class DQDataHandler implements IReceiveMessage
      for ( int i = 0; i <= num_q_bins; i++ )
        q_values[0][i] = (float)q_binner.minVal(i);
      
+    
+     
       Q_values[0] = q_values[0];
       D_values[0] = d_values[0];
+      Q_list = getDQlist( otherNormQSpectrFileName, q_values);
+      D_list = getDQlist( otherNormDSpectrFileName,d_values);
    }
 
 
@@ -433,7 +451,39 @@ public class DQDataHandler implements IReceiveMessage
       
       viewMessageCenter.send(message);
    }
-   
+
+   /**
+    * Retrieves the Q_list or D_list y values from a file
+    * @param otherNormQSpectrFileName  The name of the 2 or 3 col ASCII file with x and
+    *                                  yvalues
+    * @param q_values   The 0th entry contains the x values for resampling
+    * @return           The new values for the Q_list or D_list
+    */
+   private float[] getDQlist(String otherNormQSpectrFileName, float[][] q_values)
+   {
+
+      if ( otherNormQSpectrFileName == null )
+      {
+
+         return null;
+      }
+      DataSet DS = Util.ReadDSFile( otherNormQSpectrFileName );
+      if ( DS == null || DS.getNum_entries( ) < 1 | q_values == null
+            || q_values.length < 2 || q_values[0] == null
+            || q_values[0].length < 3 )
+         return null;
+      Data D =DS.getData_entry( 0 );
+      D.resample( new VariableXScale( q_values[0] ) , 0 );
+      float Max = DS.getYRange( ).getEnd_x( );
+      if( Max > 0)
+         {
+           Data D1 =D.multiply( 100f/Max , 0f );
+           DS.replaceData_entry( D1 , 0 );
+           ClampValues_calc.ClampValues( DS , 1f , true );
+         }
+      
+      return DS.getData_entry( 0 ).getY_values( );
+   }
    
    /**
     *  Process messages: ADD_EVENTS_TO_HISTOGRAMS, CLEAR_DQ, GET_D_VALUES
@@ -455,8 +505,8 @@ public class DQDataHandler implements IReceiveMessage
         }
 
         AddEvents( (IEventList3D)obj );
-        float[][] q1_vals = Scale( Q_values, normalizeQ );
-        float[][] d1_vals = Scale( D_values, normalizeD );
+        float[][] q1_vals = Scale( Q_values, normalizeQ, Q_list );
+        float[][] d1_vals = Scale( D_values, normalizeD , D_list);
 
         synchronized( q_values )
         {
@@ -487,14 +537,14 @@ public class DQDataHandler implements IReceiveMessage
       
       if (message.getName().equals(Commands.GET_D_VALUES))
       {
-        sendViewMessage(Commands.SET_D_VALUES, Scale(D_values, normalizeD) );
+        sendViewMessage(Commands.SET_D_VALUES, Scale(D_values, normalizeD, D_list) );
         return true;
       }
       
       if (message.getName().equals(Commands.GET_Q_VALUES))
       {
          
-         sendViewMessage(Commands.SET_Q_VALUES, Scale(Q_values, normalizeQ) );
+         sendViewMessage(Commands.SET_Q_VALUES, Scale(Q_values, normalizeQ, Q_list) );
          return true;
       }
       
@@ -532,11 +582,13 @@ public class DQDataHandler implements IReceiveMessage
       {
          normalizeQ = ((Boolean)message.getValue()).booleanValue( );
 
-         if( normalizeQ)
+         if( normalizeQ && Q_list == null)
             Q_values[1] = qn_values;
          else
             Q_values[1] = q_values[1];
-         sendViewMessage(Commands.SET_Q_VALUES, Scale(Q_values, normalizeQ));
+         
+         sendViewMessage(Commands.SET_Q_VALUES, Scale(Q_values, normalizeQ, Q_list));
+         
          return true;
       }
 
@@ -544,15 +596,61 @@ public class DQDataHandler implements IReceiveMessage
       {
 
          normalizeD = ((Boolean)message.getValue()).booleanValue( );
-         if( normalizeD)
+         if( normalizeD && D_list == null)
             D_values[1] = dn_values;
          else
             D_values[1] = d_values[1];
          
-         sendViewMessage(Commands.SET_D_VALUES, Scale(D_values, normalizeD));
+         sendViewMessage(Commands.SET_D_VALUES, Scale(D_values, normalizeD, D_list));
+         
          return true;         
       }
-      
+
+      if( message.getName().equals( Commands.D_GRAPH_NORMALIZER))
+      {
+         otherNormDSpectrFileName = (String)message.getValue( );
+         if( otherNormDSpectrFileName == null)
+         {
+            D_list = null;
+            
+            if( normalizeD)
+               D_values[1] = dn_values;
+            
+            sendViewMessage(Commands.SET_D_VALUES, Scale(D_values, normalizeD, D_list));
+            return true;
+         }
+         
+        D_list = getDQlist(otherNormDSpectrFileName, d_values);
+        
+        if( D_list != null)
+        {
+           D_values[1] = d_values[1];        
+           sendViewMessage(Commands.SET_D_VALUES, Scale(D_values, normalizeD, D_list));
+        }
+        
+            
+      }
+      if( message.getName().equals( Commands.Q_GRAPH_NORMALIZER))
+      {
+         otherNormQSpectrFileName = (String)message.getValue( );
+         if( otherNormQSpectrFileName == null)
+         {
+            Q_list = null;
+            if( normalizeQ)
+               Q_values[1] = qn_values;
+            sendViewMessage(Commands.SET_D_VALUES, Scale(D_values, normalizeD, D_list));
+            return true;
+         }
+         
+         Q_list = getDQlist(otherNormQSpectrFileName, q_values);
+         
+         if( Q_list != null)
+         {
+            Q_values[1] = q_values[1];        
+            sendViewMessage(Commands.SET_Q_VALUES, Scale(Q_values, normalizeQ, Q_list));
+         }
+         
+      }
       if( message.getName().equals( Commands.NORMALIZE_QD_GRAPHS ))
       {
          Vector res   = (Vector)( message.getValue());
@@ -586,9 +684,9 @@ public class DQDataHandler implements IReceiveMessage
          }
 
          if( D_Q == "D" )
-            sendViewMessage(Commands.SET_D_VALUES, Scale(D_values, normalizeD));
+            sendViewMessage(Commands.SET_D_VALUES, Scale(D_values, normalizeD, D_list));
          else if( D_Q == "Q" )
-            sendViewMessage(Commands.SET_Q_VALUES, Scale(Q_values, normalizeQ));
+            sendViewMessage(Commands.SET_Q_VALUES, Scale(Q_values, normalizeQ, Q_list));
          return true;
       }
       if( message.getName( ).equals(  Commands.DQLOG_SCALE ))
@@ -688,22 +786,25 @@ public class DQDataHandler implements IReceiveMessage
    }
 
 
-   private float[][] Scale( float[][] qvals, boolean normalize )
+   private float[][] Scale( float[][] qvals, boolean normalize, float[] denomin )
    {
       if(  qvals == null)
          return qvals;
-      if( (scale_factor <= 0 && MaxScaleFactor <=0) || !normalize  )
-         return qvals;
+      if( denomin == null)
+         if( normalize && scale_factor < 0 && MaxScaleFactor < 0)
+            return qvals;
+         else if( !normalize)
+            return qvals;
       
       float[][] Res = new float[2][qvals[1].length];
       Res[0] = qvals[0];
       float m = 1;
       
-      if( scale_factor > 0)
+      if( scale_factor > 0 && normalize)
          
          m = scale_factor;
       
-      else if( MaxScaleFactor > 0)
+      else if( MaxScaleFactor > 0 && normalize)
       {
          float max = qvals[1][0];
          
@@ -716,8 +817,14 @@ public class DQDataHandler implements IReceiveMessage
       }
       
       for( int i=0; i < qvals[1].length; i++)
-     
-         Res[1][i] =  qvals[1][i]/ m;   
+      {
+         float m1 = m;
+         if( denomin != null && denomin.length > i && denomin[i] !=0)
+            m1 = m1*denomin[i];
+         
+         Res[1][i] =  qvals[1][i]/ m1;   
+        
+      };
       
       return Res;
    }
