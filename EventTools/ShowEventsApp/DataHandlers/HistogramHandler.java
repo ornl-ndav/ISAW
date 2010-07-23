@@ -627,7 +627,7 @@ public class HistogramHandler implements IReceiveMessage
                                      // don't search for peaks and change
     synchronized( histogram )        // the histogram at the same time
     {
-      histogram.addEvents( events );
+      histogram.addEvents( events, true );
     }
   }
 

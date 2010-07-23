@@ -378,10 +378,14 @@ public class Histogram3D
    * large to conveniently fit in memory, then parts of the event list
    * can be loaded and passed to addEvents(), sequentially.
    * 
-   * @param events  The list of events to be added to this histogram.
+   * @param events       The list of events to be added to this histogram.
+   * @param use_weights  Flag indicating wheter to add the event weight to
+   *                     the histogram bin, or to just add one to the 
+   *                     histogram bin, for each event.
+   *
    * @return  The total weighted event count that was added.  
    */
-  public double addEvents( IEventList3D events )
+  public double addEvents( IEventList3D events, boolean use_weights )
   {
     synchronized(histogram)
     {
@@ -389,8 +393,12 @@ public class Histogram3D
 
       Vector  ops = new Vector();
       for ( int i = 0; i < n_segments; i++ )
-        ops.add( new BinEvents( histogram, min, max, page_1[i], page_2[i], 
-                                x_binner, y_binner, z_binner,  events ) );
+        ops.add( new BinEvents( histogram, 
+                                use_weights,
+                                min, max, 
+                                page_1[i], page_2[i], 
+                                x_binner, y_binner, z_binner,  
+                                events ) );
 
       ParallelExecutor pe = new ParallelExecutor( ops, n_threads, max_time );
       Vector results = pe.runOperators();

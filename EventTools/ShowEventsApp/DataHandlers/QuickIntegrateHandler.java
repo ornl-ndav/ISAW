@@ -205,13 +205,7 @@ public class QuickIntegrateHandler implements IReceiveMessage
       if ( events == null )
         return false;
 
-      float[] new_weights = new float[ events.numEntries() ];
-      Arrays.fill( new_weights, 1 );
-
-      float[] xyz = events.eventVals();
-      IEventList3D new_events = new FloatArrayEventList3D( new_weights, xyz );
-
-      AddEventsToHistogram( new_events );
+      AddEventsToHistogram( events, true );
     }
 
     else if ( message.getName().equals(Commands.SCAN_INTEGRATED_INTENSITIES) )
@@ -537,12 +531,13 @@ public class QuickIntegrateHandler implements IReceiveMessage
   }
 
   
-  synchronized public void AddEventsToHistogram( IEventList3D events )
+  synchronized public void AddEventsToHistogram( IEventList3D events,
+                                                 boolean      use_weights )
   {
                                      // don't search for peaks and change
     synchronized( histogram )        // the histogram at the same time
     {
-      histogram.addEvents( events );
+      histogram.addEvents( events, use_weights );
     }
   }
 

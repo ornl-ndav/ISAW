@@ -174,7 +174,7 @@ public class ViewerTest
     System.out.println("Time(ms) to allocate histogram = " + elapsed/1.0E6);
 
     start = System.nanoTime();
-    hist_3D.addEvents( events );
+    hist_3D.addEvents( events, false );
     elapsed = System.nanoTime()-start;
     System.out.println("Time(ms) to fill histogram = " + elapsed/1.0E6);
     

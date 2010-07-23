@@ -49,6 +49,7 @@ import gov.anl.ipns.Operator.*;
 public class BinEvents implements IOperator
 {
   private float[][][] histogram;
+  private boolean     use_weight;
   private int         first_page,
                       last_page;
   private float       min,
@@ -71,6 +72,10 @@ public class BinEvents implements IOperator
    * by the getResult() method. 
    *  
    * @param histogram  The 3D array into which the events are binned.
+   * @param use_weight Flag indicating whether to add the event's weight to
+   *                   to a bin, or to just add one for each event, 
+   *                   regardless of the event weight.  If true, the weight
+   *                   will be added; if false, one will be added.
    * @param min        The current min count in any bin
    * @param max        The current max count in any bin
    * @param first_page The first page of the portion of the 3D histogram 
@@ -92,6 +97,7 @@ public class BinEvents implements IOperator
    *                   events occurring at the specified x,y,z.
    */
   public BinEvents( float[][][]       histogram, 
+                    boolean           use_weight,
                     float             min,
                     float             max,
                     int               first_page, 
@@ -102,6 +108,7 @@ public class BinEvents implements IOperator
                     IEventList3D events    )
   {
     this.histogram  = histogram;
+    this.use_weight = use_weight;
 
     this.max        = max;
     this.min        = min;
@@ -142,9 +149,10 @@ public class BinEvents implements IOperator
       int     num_x_bins = x_binner.numBins();
       int     num_y_bins = y_binner.numBins();
     
-      int     num_events = events.numEntries();
-      float[] event_xyz  = events.eventVals();
-      int     event_index = 0;
+      int     num_events   = events.numEntries();
+      float[] event_xyz    = events.eventVals();
+      float[] event_weight = events.eventWeights();
+      int     event_index  = 0;
 
       for ( int i = 0; i <  num_events; i++ )
       {
@@ -162,13 +170,18 @@ public class BinEvents implements IOperator
            if ( x_index >= 0 && x_index < num_x_bins &&
                 y_index >= 0 && y_index < num_y_bins  )
            {
-             count = events.eventWeight( i );
+             if ( use_weight )
+               count = event_weight[i];
+             else
+               count = 1;
+
              val = histogram[z_index][y_index][x_index];
              val += count;
              histogram[z_index][y_index][x_index] = val;
 
              if ( val > max )
                max = val;
+
              if ( val < min )
               min = val;
 

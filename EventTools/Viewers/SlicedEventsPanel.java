@@ -435,7 +435,7 @@ public class SlicedEventsPanel
     System.out.println("Time(ms) to allocate histogram = " + elapsed/1.e6);
 
     start_time = System.nanoTime();
-    histogram.addEvents( events );
+    histogram.addEvents( events, true );
 
     SlicedEventsPanel my_panel = new SlicedEventsPanel( );
 
