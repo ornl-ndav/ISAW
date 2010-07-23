@@ -608,7 +608,7 @@ public class SlicedEventsViewer
     System.out.println("Time(ms) to allocate histogram = " + elapsed/1.e6);
 
     start_time = System.nanoTime();
-    histogram.addEvents( events );
+    histogram.addEvents( events, true );
 
     SlicedEventsViewer my_viewer = new SlicedEventsViewer( histogram,
                                                            args[0] );

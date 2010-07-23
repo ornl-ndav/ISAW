@@ -111,7 +111,7 @@ public class FormHistogram3D
     //------------
     start_time = System.nanoTime();
 
-    double n_events = hist_3D.addEvents( events );
+    double n_events = hist_3D.addEvents( events, true );
 
     end_time = System.nanoTime();
     System.out.println("Time to form histogram (ms) = " +

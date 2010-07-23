@@ -189,7 +189,7 @@ public class Test_2_SNS_Events
 
      start_time = System.nanoTime();
      for ( int i = 0; i < n_threads; i++ )
-       histogram.addEvents( event_lists[i] );
+       histogram.addEvents( event_lists[i], true );
      run_time = System.nanoTime() - start_time;
      System.out.println("Time(ms) to add events to histogram = " +
                          run_time / 1.e6);

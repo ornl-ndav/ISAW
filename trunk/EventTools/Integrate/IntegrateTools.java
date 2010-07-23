@@ -596,12 +596,7 @@ public class IntegrateTools
     else
     {
       Histogram3D histogram = MakeEmptyHistogram();
-      float[] weights = Q_evl.eventWeights();   // get REFERENCE to list of
-                                                // weights and set them to 1
-      for ( int i = 0; i < weights.length; i++ )
-        weights[i] = 1;
-
-      histogram.addEvents( Q_evl );
+      histogram.addEvents( Q_evl, false );
       IntegratePeaksHistogram( peaks, peak_radius, bkg_radius, histogram );
    }
 
@@ -706,7 +701,7 @@ public class IntegrateTools
       weights[i] = 1; 
 
     System.out.println("Adding events to histogram ... ");
-    histogram.addEvents( Q_evl );
+    histogram.addEvents( Q_evl, false );
 
     System.out.println("Integrating Events in histogram ... ");
     Vector result = histogram.sphereIntegrals( q_vec[0],
