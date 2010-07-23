@@ -33,7 +33,8 @@ public class Commands
   public static final String NORMALIZE_QD_GRAPHS = "NORMALIZE_QD_GRAPHS";
   public static final String NORMALIZE_D_GRAPH = "NORMALIZE_D_GRAPH";
   public static final String NORMALIZE_Q_GRAPH = "NORMALIZE_Q_GRAPH";
-
+  public static final String Q_GRAPH_NORMALIZER ="Q_GRAPH_NORMALIZER";
+  public static final String D_GRAPH_NORMALIZER ="D_GRAPH_NORMALIZER";
   public static final String MAP_EVENTS_TO_Q = "MAP_EVENTS_TO_Q";
 
   public static final String ADD_EVENTS_TO_HISTOGRAMS
