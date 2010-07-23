@@ -44,19 +44,24 @@ import java.awt.event.ActionListener;
 import java.util.Vector;
 
 import javax.swing.*;
+import javax.swing.event.MenuEvent;
 
+import gov.anl.ipns.Util.File.FileIO;
 import gov.anl.ipns.Util.Sys.FinishJFrame;
 import gov.anl.ipns.Util.Sys.IhasWindowClosed;
 import gov.anl.ipns.Util.Sys.WindowShower;
 //import gov.anl.ipns.ViewTools.Components.AxisInfo;
 import gov.anl.ipns.ViewTools.Components.IVirtualArrayList1D;
 import gov.anl.ipns.ViewTools.Components.ObjectState;
+import gov.anl.ipns.ViewTools.Components.Menu.ViewMenuItem;
 import gov.anl.ipns.ViewTools.Components.OneD.*;
 import gov.anl.ipns.ViewTools.Components.ViewControls.*;
+import gov.anl.ipns.ViewTools.Panels.Graph.GraphJPanel;
 import gov.anl.ipns.Util.Sys.*;
 import gov.anl.ipns.Parameters.*;
 import DataSetTools.dataset.Data;
 import DataSetTools.dataset.DataSet;
+import DataSetTools.util.FilenameUtil;
 import DataSetTools.util.SharedData;
 import EventTools.ShowEventsApp.Command.Commands;
 import EventTools.ShowEventsApp.Command.Util;
@@ -77,6 +82,7 @@ abstract public class GraphViewHandler implements IReceiveMessage,
    protected String        x_label;
    protected String        y_label;
    protected  boolean      normalize;
+   protected  boolean      useOtherFile;
    private   JPanel        place_holder_panel;
    private   JFrame        display_frame;
    private   Dimension     size = new Dimension( 900, 300 );
@@ -85,6 +91,10 @@ abstract public class GraphViewHandler implements IReceiveMessage,
    DataArray1D  CompareGraph  = null;
 
    FileChooserPanel but = null;// for loading in file for comparison
+   
+   ActionListener  Menu_listener;
+   JMenu AddGraph = null;
+   JMenu FxnCtrls = null;
    
 
    /**
@@ -99,10 +109,22 @@ abstract public class GraphViewHandler implements IReceiveMessage,
       this.messageCenter = messageCenter;
       this.place_holder_panel = placeholderPanel();
       normalize= false;
+
+      useOtherFile = false;
    }
 
    public abstract void WindowClose( String ID);
-        
+    
+   public void  killFunctionWindow()
+   {
+      if( FxnCtrls == null)
+         return;
+      
+     JCheckBoxMenuItem chk = (JCheckBoxMenuItem) FxnCtrls.getMenuComponent(  0 );
+     
+     if( chk != null && chk.getState( ))
+        chk.doClick( );
+   }
 
    /**
     * Creates a new JFrame to display the graph every time
@@ -116,13 +138,20 @@ abstract public class GraphViewHandler implements IReceiveMessage,
       
       display_frame = new FinishJFrame(frame_title);
       String D_Q ="D";
+      
       if( frame_title.indexOf( "Q" )>=0)
          D_Q="Q";
+      
       display_frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
       display_frame.addWindowListener( new IndirectWindowCloseListener(this,D_Q));
+      JPanel displPanel = null;
+      
       if (fvc != null)
-         display_frame.getContentPane().add(fvc.getDisplayPanel());
+      {
+         displPanel =fvc.getDisplayPanel();
+         display_frame.getContentPane().add( displPanel);
+      }
       else
          display_frame.getContentPane().add(place_holder_panel);
 
@@ -130,21 +159,59 @@ abstract public class GraphViewHandler implements IReceiveMessage,
       JMenu opts = new JMenu("Options");
       menBar.add(opts);
       
-      JCheckBoxMenuItem normalize = new JCheckBoxMenuItem("Normalize", false);
-      opts.add( normalize);
-      normalize.addActionListener( new MenuListener( this, D_Q) );
+      JCheckBoxMenuItem Normalize = new JCheckBoxMenuItem("Normalize", normalize);
+      opts.add( Normalize);
+      Normalize.addActionListener( Menu_listener );
       
-      JMenuItem Load = new JMenuItem("Compare to Data in File");
-      Load.addActionListener(  new MenuListener( this ,D_Q) );
-      opts.add( Load );
+      JCheckBoxMenuItem NormFileName = new JCheckBoxMenuItem("Use Other File", useOtherFile);
+      NormFileName.addActionListener(  Menu_listener );
+      opts.add( NormFileName);
+      if( fvc != null)
+      {
+         opts.addSeparator( );
+         opts.add(  SaveImageActionListener.getActiveMenuItem( "Save Image" , displPanel ) );
+         opts.add(PrintComponentActionListener.getActiveMenuItem( "Print Image" , displPanel ) );
+      }
+     
+      if( AddGraph == null)
+      {
+         AddGraph = new JMenu("Add Graph");
+         JMenuItem Load = new JMenuItem("New Graph");
+         MenuListener mmm=  new MenuListener( this ,D_Q);
+         mmm.setJMenu(  AddGraph);
+         Load.addActionListener( mmm );
+         AddGraph.add( Load );
+        
+      }
       
-      JMenuItem Clear = new JMenuItem("Clear Compare Data");
-      Clear.addActionListener(  new MenuListener( this ,D_Q) );
-      opts.add( Clear );
+      menBar.add( AddGraph );
+     
+     // JMenuItem Clear = new JMenuItem("Clear Compare Data");
+     // Clear.addActionListener(  new MenuListener( this ,D_Q) );
+    //  opts.add( Clear );
 
-      JMenuItem Help = new JMenuItem("Help");
-      Help.addActionListener(  new MenuListener( this ,D_Q) );
-      opts.add( Help );
+     
+      
+      FxnCtrls = new JMenu("Controls");
+      menBar.add( FxnCtrls);
+      
+      JMenu Help = new JMenu("Help");
+      menBar.add( Help);
+      JMenuItem help = new JMenuItem("about");
+      Help.add( help);
+      help.addActionListener( new ShowHelpActionListener( 
+            FileIO.CreateExecFileName(
+                  System.getProperty( "Help_Directory" ), "IsawEVDQViewers.html",false )) );
+      
+      
+      if( fvc != null)
+      {
+         ViewMenuItem[] Mens = fvc.getMenuItems( );
+         FxnCtrls.add( Mens[0].getItem( ) );
+         
+      }else
+         EventTools.ShowEventsApp.Command.Util.sendInfo( 
+               "Function Controls not valid. Close and restart after data is available"  );
       
       display_frame.setJMenuBar( menBar );
       display_frame.setBounds( location.x,
@@ -171,8 +238,14 @@ abstract public class GraphViewHandler implements IReceiveMessage,
       }
    }
 
-
-   public void setOtherGraph( String fileName, float ScaleFactor)
+   /**
+    * Adds a Graph to the function view
+    * 
+    * @param fileName  FileName with the data to add
+    * @param ScaleFactor  Factor to multiply the data by
+    * @param GraphName    The name of this graph for later reference.
+    */
+   public void setOtherGraph( String fileName, float ScaleFactor, String GraphName )
    {
       if( fileName == null)
       {
@@ -186,8 +259,10 @@ abstract public class GraphViewHandler implements IReceiveMessage,
       if( DS == null)
          return;
       Data D = DS.getData_entry( 0 );
-      CompareGraph =  new DataArray1D(D.getX_values(),D.getY_values(),
-                           D.getErrors(),"External Graph",true,false);
+      Data D1 =D.multiply( ScaleFactor , 0 );
+      
+      CompareGraph =  new DataArray1D(D1.getX_values(),D1.getY_values(),
+                           D.getErrors(),GraphName,true,false);
        AddGraph();
    }
 
@@ -197,30 +272,19 @@ abstract public class GraphViewHandler implements IReceiveMessage,
       boolean redraw = false;
       if( fvc != null && CompareGraph != null)
       {
-         IVirtualArrayList1D data = fvc.getArray();
-         DataArray1D data1 = new DataArray1D( data.getXValues( 0 ), data.getYValues( 0 ));
-         data1.setTitle( data.getGraphTitle( 0 ));
-         Vector V = new Vector();
-         V.add(  data1 );
+        
+         Vector V = getGraphData();
+         Vector Vs = getGraphSettings();
+         
          if( CompareGraph != null)
             V.add(  CompareGraph );
-         fvc.dataChanged( new VirtualArrayList1D( V));
-         StateChange( fvc);
+         VirtualArrayList1D array =new VirtualArrayList1D( V);
+         array.setPointedAtGraph( -1 );
+         fvc.dataChanged( array);
+         setGraphSettings( Vs);
          redraw = true;
       }
-      else if( fvc != null)
-      {
-         if( fvc.getArray().getNumGraphs() > 1)
-         {
-            IVirtualArrayList1D data = fvc.getArray();
-            DataArray1D data1 = new DataArray1D( data.getXValues( 0 ), 
-                                                 data.getYValues( 0 ));
-            data1.setTitle( data.getGraphTitle( 0 ));
-            fvc.dataChanged( new VirtualArrayList1D( data1));
-            StateChange( fvc);
-            redraw = true;
-         }
-      }
+      
 
       if( display_frame != null && redraw)
       {
@@ -237,14 +301,17 @@ abstract public class GraphViewHandler implements IReceiveMessage,
 
       if( CompareGraph == null)
          return;
+      
       ViewControl[] controlList = fvc.getControlList();
       //((LabelCombobox)(controlList[FunctionControls.VC_SHIFT])).setSelectedIndex( 0 );
       ((LabelCombobox)(controlList[FunctionControls.VC_LINE_SELECTED])).setSelectedIndex( 1 );
       ((LabelCombobox)(controlList[FunctionControls.VC_LINE_STYLE])).setSelectedIndex( 1 );
       ObjectState Ostate = fvc.getObjectState( false );
+      
       if( !Ostate.reset("Graph JPanel.Graph Data2.Line Color", java.awt.Color.green));
          if(!Ostate.insert("Graph JPanel.Graph Data1.Line Color", java.awt.Color.green))
             System.out.println("Could not set color");
+         
        fvc.setObjectState( Ostate );
    }
 
@@ -362,7 +429,117 @@ abstract public class GraphViewHandler implements IReceiveMessage,
     * get the xy values, and set the values/create the graph.
     */
    abstract public boolean receive(Message message);
+   protected static Vector  ConCat( Boolean TF, String D_Q)
+   {
+      Vector V = new Vector(2);
+      V.add( TF);
+      V.add( D_Q);
+      return V;
+   }
+   
+   // In order
+   private Vector  getGraphData()
+   {
+      if( fvc != null )
+      {
+         IVirtualArrayList1D data = fvc.getArray();
+         Vector V = new Vector();
+         for( int i = 0 ; i < data.getNumGraphs( ) ; i++ )
+         {
+            DataArray1D data1 = new DataArray1D( data.getXValues( i ) , data
+                  .getYValues( i ) );
+            data1.setTitle( data.getGraphTitle( i ) );
+            V.add( data1 );
+         }
+         return V;
+      }
+      return null;
+         
+   }
+   private void setGraphData( Vector V)
+   {
+      if( fvc != null)
+        {
+         VirtualArrayList1D array = new VirtualArrayList1D( V);
+         array.setPointedAtGraph( -1 );
+         fvc.dataChanged( array);
+        }
+   }
+   
+   private Vector getGraphSettings()
+   {
+      if( fvc == null || fvc.getArray( )== null ||fvc.getArray().getNumGraphs( ) < 1)
+         return null;
+      Vector Res = new Vector();
+      ObjectState oState = fvc.getObjectState( false );
+      int NumGraphs = fvc.getArray().getNumGraphs( );
+      for( int i=0; i<NumGraphs; i++ )
+      {
+        Res.add( (ObjectState)oState.get(FunctionViewComponent.GRAPHJPANEL+"."+
+                                  GraphJPanel.GRAPH_DATA+(i+1) ));
+      }
+      
+      return Res;
+         
+   }
+   
+   private void setGraphSettings( Vector settings)
+   {
+      if( settings == null || settings.size() < 1 || fvc == null)
+         return;
 
+      ObjectState oState = fvc.getObjectState( false );
+      for( int i=0; i < settings.size( ); i++)
+      {
+         if( !oState.insert(FunctionViewComponent.GRAPHJPANEL+"."+
+                GraphJPanel.GRAPH_DATA+(i+1)  , settings.elementAt( i ) ));
+         oState.reset(FunctionViewComponent.GRAPHJPANEL+"."+
+                GraphJPanel.GRAPH_DATA+(i+1)  , settings.elementAt( i ) );
+      }
+      
+      fvc.setObjectState(  oState );
+         
+   }
+   
+   private  void showNewInfo()
+   {
+
+      if( display_frame != null )
+      {
+         display_frame.invalidate();
+         display_frame.validate();
+         fvc.paintComponents();
+         display_frame.repaint();
+         fvc.paintComponents();
+      }
+   }
+   public void RemoveGraph( String MenuName)
+   {
+      if( AddGraph == null || MenuName == null ||fvc == null)
+          return;
+      int k = -1;
+      for( int i= AddGraph.getMenuComponentCount( )-1; i>=1; i--)
+      {
+         if(AddGraph.getMenuComponent( i ) instanceof JMenuItem)
+            if( MenuName.equals( ((JMenuItem)AddGraph.getMenuComponent(i)).getText( )))
+               AddGraph.remove( i );
+         
+      }
+      
+      Vector V = getGraphData();
+      Vector Vs = getGraphSettings();
+      IVirtualArrayList1D array = fvc.getArray();
+      for( int i= array.getNumGraphs( )-1; i>=0; i--)
+         if( MenuName.equals( array.getGraphTitle( i )))
+         {
+            V.remove( i );
+            Vs.remove( i );
+         }
+      fvc.dataChanged( new VirtualArrayList1D( V));
+      setGraphSettings( Vs);
+      showNewInfo();
+      
+   }
 }
 
 
@@ -370,10 +547,13 @@ class MenuListener implements ActionListener, IhasWindowClosed
 {
    GraphViewHandler gv;
    JTextField textField;
+   JTextField nameField;
    String D_Q;
    String fileName ;
    FileChooserPanel but;
    FinishJFrame jf;
+   String NameGraph;
+   JMenu  AddGraphMen;
    private static String OPT_MESSAGE =
        "Normalize normalizes with the incident spectrum and Protons on Target,"+
        " if present, on the \n"+
@@ -391,14 +571,12 @@ class MenuListener implements ActionListener, IhasWindowClosed
       textField = null;
       this.D_Q = D_Q;
       but = null;
+      NameGraph = null;
    }
    
-   private Vector  ConCat( Boolean TF, String D_Q)
+   public void setJMenu( JMenu AddGraphMen)
    {
-      Vector V = new Vector(2);
-      V.add( TF);
-      V.add( D_Q);
-      return V;
+      this.AddGraphMen = AddGraphMen;
    }
    
    private Dimension getFrameSize( int ncharsWidth, int ncharsHeight, 
@@ -416,16 +594,25 @@ class MenuListener implements ActionListener, IhasWindowClosed
    @Override
    public void actionPerformed( ActionEvent evt )
    {
+    if( D_Q .equals( "NEW_GRAPH" ))//erase Graph
+    {
+       if( JOptionPane.showConfirmDialog( null ,
+               "Really delete "+evt.getActionCommand() ) == JOptionPane.YES_OPTION)
+           gv.RemoveGraph( evt.getActionCommand( ));
+       return;
+    }
+    
     if( evt.getActionCommand().equals( "Normalize"))
        gv.messageCenter.send(  new Message( Commands.NORMALIZE_QD_GRAPHS,
-                  ConCat(((JCheckBoxMenuItem)(evt.getSource())).isSelected(),
+                  GraphViewHandler.ConCat(((JCheckBoxMenuItem)(evt.getSource())).isSelected(),
                                D_Q),true,true) );
     
-    else if( evt.getActionCommand().equals( "Compare to Data in File"))
+    else if( evt.getActionCommand().equals( "New Graph"))
     {
+       NameGraph = null;
        jf = new FinishJFrame("Enter FileName");
        jf.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE  );
-       jf.getContentPane().setLayout(  new GridLayout(3,1) );
+       jf.getContentPane().setLayout(  new GridLayout(4,1) );
        jf.addWindowListener( new IndirectWindowCloseListener(this,"but") );
        but = new FileChooserPanel(
                FileChooserPanel.LOAD_FILE,"File Name");
@@ -436,6 +623,12 @@ class MenuListener implements ActionListener, IhasWindowClosed
        pan.add(  new JLabel("Scale Factor") );
        textField = new JTextField( 10);
        pan.add( textField);
+       jf.getContentPane().add( pan);
+       
+       pan = new JPanel( new GridLayout(1,2));
+       pan.add(  new JLabel("Graph Name") );
+       nameField = new JTextField(12);
+       pan.add(nameField );
        jf.getContentPane().add( pan);
        
        JButton OK = new JButton("OK");
@@ -474,6 +667,9 @@ class MenuListener implements ActionListener, IhasWindowClosed
           return;
        
        fileName = but.getTextField( ).getText( );
+       String GraphName = nameField.getText( );
+       if( GraphName == null || GraphName.length() <1)
+          GraphName = fileName;
        
        if( fileName != null)
           fileName = fileName.trim( );
@@ -493,12 +689,19 @@ class MenuListener implements ActionListener, IhasWindowClosed
           scale_factor =1;
        }
        
-       gv.setOtherGraph( fileName, scale_factor);
+       gv.setOtherGraph( fileName, scale_factor, GraphName);
+       if( AddGraphMen != null)
+       {
+          JMenuItem G = new JMenuItem( GraphName);
+          AddGraphMen.add( G );
+          
+          G.addActionListener(new MenuListener( gv, "NEW_GRAPH") );
+       }
        jf.dispose( );
     }
     else if( evt.getActionCommand().equals( "Clear Compare Data" ))
     {
-       gv.setOtherGraph(  null , -1);
+       gv.setOtherGraph(  null , -1,"");
     }
     else if( evt.getActionCommand().equals( "Help" ))
     {
