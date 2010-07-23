@@ -35,6 +35,12 @@
 
 package EventTools.ShowEventsApp.ViewHandlers;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JFileChooser;
+
 import EventTools.ShowEventsApp.Command.Commands;
 import MessageTools.*;
 
@@ -60,7 +66,7 @@ public class QViewHandler extends GraphViewHandler
       this.messageCenter.addReceiver(this, Commands.SHOW_Q_GRAPH);
       this.messageCenter.addReceiver(this, Commands.HIDE_Q_GRAPH);
       this.messageCenter.addReceiver(this, Commands.SET_Q_VALUES);
-
+      Menu_listener =new MenuListener();
       frame_title = "Q-values View";
       title       = "Magnitude Q";
       x_units     = "Inv(" + '\u00c5' + ")";
@@ -73,6 +79,7 @@ public class QViewHandler extends GraphViewHandler
    {
       super.messageCenter.send(  new Message( Commands.HIDE_Q_GRAPH,null,true));
       super.HideGraph( );
+      killFunctionWindow();
 
    }
  
@@ -104,4 +111,46 @@ public class QViewHandler extends GraphViewHandler
       }
       return false;
    }
+   
+   
+   class MenuListener  implements ActionListener
+   {
+      String LastFileName = null;
+      @Override
+      public void actionPerformed(ActionEvent evt)
+      {
+
+         if( evt.getActionCommand().equals( "Normalize"))
+         {
+            normalize = ((JCheckBoxMenuItem)(evt.getSource())).isSelected();
+            messageCenter.send(  new Message( Commands.NORMALIZE_Q_GRAPH,
+                  normalize, true ));
+            
+         }else if(  evt.getActionCommand().equals("Use Other File"))
+         {
+            String fileName = null;
+            if ( ( ( JCheckBoxMenuItem ) evt.getSource( ) ).isSelected( ) )
+            {
+               JFileChooser jfc = new JFileChooser( LastFileName);
+
+               if( LastFileName != null)
+                  jfc.setSelectedFile( new java.io.File(LastFileName) );
+               
+               if ( jfc.showOpenDialog( null ) == JFileChooser.APPROVE_OPTION )
+               {
+                   fileName = jfc.getSelectedFile( ).getAbsolutePath( );
+                   LastFileName = fileName;
+                   useOtherFile = true;
+               }
+            }else
+               useOtherFile = false;
+            
+            messageCenter.send( new Message( Commands.Q_GRAPH_NORMALIZER,
+                      fileName,true));
+         }
+         
+      }
+      
+   }
+
 }
