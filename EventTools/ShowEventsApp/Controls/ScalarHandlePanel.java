@@ -647,7 +647,7 @@ public class ScalarHandlePanel implements IReceiveMessage
       lattice_params[(row+1)%3] = sav;
       
       sav = lattice_params[3+row];
-      lattice_params[row]= lattice_params[3+(row+1)%3];
+      lattice_params[3+row]= lattice_params[3+(row+1)%3];
       lattice_params[3+(row+1)%3] = sav;
       
       return lattice_params;
