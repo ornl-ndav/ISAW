@@ -126,7 +126,7 @@ public class QViewHandler extends GraphViewHandler
             messageCenter.send(  new Message( Commands.NORMALIZE_Q_GRAPH,
                   normalize, true ));
             
-         }else if(  evt.getActionCommand().equals("Use Other File"))
+         }else if(  evt.getActionCommand().equals(GraphViewHandler.SPECTRA_FILE))
          {
             String fileName = null;
             if ( ( ( JCheckBoxMenuItem ) evt.getSource( ) ).isSelected( ) )
