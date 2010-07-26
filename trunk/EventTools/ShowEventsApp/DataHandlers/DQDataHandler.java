@@ -125,7 +125,7 @@ public class DQDataHandler implements IReceiveMessage
       this.messageCenter.addReceiver(this, Commands.SAVE_D_VALUES);
 
       this.messageCenter.addReceiver(this, Commands.SCALE_FACTOR);
-      this.viewMessageCenter.addReceiver(this, Commands.NORMALIZE_QD_GRAPHS);
+     // this.viewMessageCenter.addReceiver(this, Commands.NORMALIZE_QD_GRAPHS);
       this.viewMessageCenter.addReceiver(this, Commands.NORMALIZE_Q_GRAPH);
       this.viewMessageCenter.addReceiver(this, Commands.NORMALIZE_D_GRAPH);
       this.viewMessageCenter.addReceiver(this, Commands.D_GRAPH_NORMALIZER);
@@ -253,6 +253,7 @@ public class DQDataHandler implements IReceiveMessage
 
    private void setUpIncidentSpectrum( String filename, String InstrumentName )
    {
+      filename = null;//incident spectra in terms of lambda. NOT GOOD--> WILL NOT USE
       if( filename== null || filename.length() < 1 ||
                !( new java.io.File( filename)).exists())
       {
@@ -261,7 +262,7 @@ public class DQDataHandler implements IReceiveMessage
            filename +="/";
         filename += "InstrumentInfo/SNS/"+InstrumentName+"/"+
                      InstrumentName+"_Spectrum.dat";
-        if( !( new java.io.File(filename).exists()))
+       //if( !( new java.io.File(filename).exists()))
         {
 
           Wl_list = null;
@@ -651,7 +652,7 @@ public class DQDataHandler implements IReceiveMessage
          }
          
       }
-      if( message.getName().equals( Commands.NORMALIZE_QD_GRAPHS ))
+      /*if( message.getName().equals( Commands.NORMALIZE_QD_GRAPHS ))
       {
          Vector res   = (Vector)( message.getValue());
          boolean show = ((Boolean)res.firstElement()).booleanValue();
@@ -688,7 +689,7 @@ public class DQDataHandler implements IReceiveMessage
          else if( D_Q == "Q" )
             sendViewMessage(Commands.SET_Q_VALUES, Scale(Q_values, normalizeQ, Q_list));
          return true;
-      }
+      }*/
       if( message.getName( ).equals(  Commands.DQLOG_SCALE ))
       {
          boolean useLog = ((Boolean) message.getValue()).booleanValue( );
