@@ -74,6 +74,7 @@ import MessageTools.*;
 abstract public class GraphViewHandler implements IReceiveMessage,
                                                   IhasWindowClosed
 {
+   public static String SPECTRA_FILE ="Normalize with File";
    protected MessageCenter messageCenter;
    protected String        frame_title;
    protected String        title;
@@ -163,7 +164,7 @@ abstract public class GraphViewHandler implements IReceiveMessage,
       opts.add( Normalize);
       Normalize.addActionListener( Menu_listener );
       
-      JCheckBoxMenuItem NormFileName = new JCheckBoxMenuItem("Use Other File", useOtherFile);
+      JCheckBoxMenuItem NormFileName = new JCheckBoxMenuItem(SPECTRA_FILE, useOtherFile);
       NormFileName.addActionListener(  Menu_listener );
       opts.add( NormFileName);
       if( fvc != null)
