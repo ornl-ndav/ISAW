@@ -82,6 +82,15 @@ public class ProjectionBinner3D implements IProjectionBinner3D
 
 
   @Override
+  public IEventBinner getSubBinner( int min_index, int max_index )
+  {
+    IEventBinner new_binner = binner1D.getSubBinner( min_index, max_index );
+    
+    return new ProjectionBinner3D( new_binner, directionVec() );
+  }
+
+
+  @Override
   public double axisMin()
   {
     return binner1D.axisMin();

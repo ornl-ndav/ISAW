@@ -45,13 +45,10 @@ import java.util.*;
  * to be the smallest possible bin boundary that is greater than or equal to
  * the value of "b" specified in the constructor.
  */
-public class LogEventBinner implements IEventBinner
+public class LogEventBinner extends EventBinner
 {
 
-  private double min;
   private double min_inv;
-  private double max;
-  private int    num_bins;
 
   private double ratio;
   private double log_ratio_inv;
@@ -95,22 +92,15 @@ public class LogEventBinner implements IEventBinner
   }
 
   @Override
-  public double axisMin()
+  public IEventBinner getSubBinner( int min_index, int max_index )
   {
-    return min;
+    double new_min    = minVal( min_index );
+    double new_max    = centerVal( max_index + 1 );
+    double first_step = maxVal( min_index ) - new_min;
+
+    return new LogEventBinner( new_min, new_max, first_step );
   }
 
-  @Override
-  public double axisMax()
-  {
-    return max;
-  }
-
-  @Override
-  public int numBins()
-  {
-    return num_bins;
-  }
 
   @Override
   public int index( double val )
@@ -147,15 +137,6 @@ public class LogEventBinner implements IEventBinner
   {
     return min * Math.pow( ratio, fractional_index );
   }
-
-  /**
-   * Get a string specifying the min, max and number of steps used.
-   */
-  public String toString()
-  {
-    return String.format( "[ %7.2f, %7.2f ) : %4d ", min, max, num_bins );
-  }
-
   
   /**
    * Basic test program to verify that the binner behaves correctly.

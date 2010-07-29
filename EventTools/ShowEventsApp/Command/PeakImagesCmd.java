@@ -21,7 +21,7 @@ public class PeakImagesCmd
     * @param peaks   Vector of Peak_new objects containing the peak positions
     *                in reciprocal space, row col, etc.  The number of 
     *                peaks must match the number of regions.
-    * @param regions Vector of 3D float arrays containing values from the
+    * @param regions Vector of Histogram3D objects containing values from the
     *                histogram around the peaks. The number of regions
     *                must match the number of peaks.
     */
@@ -43,7 +43,7 @@ public class PeakImagesCmd
    }
 
    /**
-    *  Get the list of 3D arrays with values around the peaks. 
+    *  Get the list of Histogram3D objects with values around the peaks. 
     *
     *  @return a reference to the Vector of regions for this command.
     *          The calling code must NOT modify the Vector of regions!

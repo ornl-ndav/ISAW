@@ -443,22 +443,28 @@ public class Histogram3D
 
 
   /**
-   * Get a 3D array of values in the neighborhood of the specified 
-   * point.  The array size is set to include centers of bins in
+   * Get a new Histogram3D with values in a neighborhood of the specified 
+   * point.  The histogram size is set to include centers of bins in
    * a sphere of the specified radius around the specified point,
    * BUT will be restricted to lie within the bounds of this histogram.
-   * NOTE: In general, this returned array will not have equal sizes in
-   *       all dimensions. Also, the array values will correspond to 
-   *       a parallelopiped in 3D space, since the binner directions may
+   * NOTE: In general, the returned histogram will not have equal sizes in
+   *       all dimensions. Also, in general the new histogram will correspond
+   *       to a parallelopiped in 3D space, since the binner directions may
    *       not be mutually perpendicular.
+   * NOTE: The number of events added for this smaller histogram can not
+   *       be determined, so it is just set to the sum of the values in
+   *       the new histogram
    *
    *  @param x      The x coodinate of the center of the region
    *  @param y      The y coodinate of the center of the region
    *  @param z      The z coodinate of the center of the region
    *  @param radius The radius of a sphere that determines the size
    *                of the region that is returned.
+   *
+   *  @return a new Histogram3D containing a portion of the original
+   *          histogram.
    */
-  public float[][][] getRegion( float x, float y, float z, float radius )
+  public Histogram3D getSubHistogram( float x, float y, float z, float radius )
   {
     int[][] ranges = getIndexRanges( x, y, z, radius );
     int min_x_index = ranges[0][0];
@@ -470,15 +476,27 @@ public class Histogram3D
     int min_z_index = ranges[2][0];
     int max_z_index = ranges[2][1];
 
-    int n_x = max_x_index - min_x_index + 1;
-    int n_y = max_y_index - min_y_index + 1;
-    int n_z = max_z_index - min_z_index + 1;
+    IProjectionBinner3D new_x_binner = (IProjectionBinner3D)
+                        x_edge_binner.getSubBinner( min_x_index, max_x_index );
 
-    float[][][] region = new float[ n_z ][ n_y ][ n_x ];
+    IProjectionBinner3D new_y_binner = (IProjectionBinner3D)
+                        y_edge_binner.getSubBinner( min_y_index, max_y_index );
 
+    IProjectionBinner3D new_z_binner = (IProjectionBinner3D)
+                        z_edge_binner.getSubBinner( min_z_index, max_z_index );
+
+    Histogram3D new_histogram = new Histogram3D( new_x_binner,
+                                                 new_y_binner,
+                                                 new_z_binner );
     int page,
         row,
         col;
+
+    float value;
+
+    new_histogram.max = Float.NEGATIVE_INFINITY;
+    new_histogram.min = Float.POSITIVE_INFINITY;
+
     for ( int z_index = min_z_index; z_index <= max_z_index; z_index++ )
       for ( int y_index = min_y_index; y_index <= max_y_index; y_index++ )
         for ( int x_index = min_x_index; x_index <= max_x_index; x_index++ )
@@ -486,10 +504,23 @@ public class Histogram3D
           page = z_index - min_z_index;
           row  = y_index - min_y_index;
           col  = x_index - min_x_index;
-          region[page][row][col] = histogram[z_index][y_index][x_index]; 
+
+          value = histogram[z_index][y_index][x_index];
+
+          new_histogram.histogram[page][row][col] = value; 
+
+          if ( new_histogram.min > value )
+            new_histogram.min = value;
+
+          if ( new_histogram.max < value )
+            new_histogram.max = value;
+
+          new_histogram.sum += value;
         }
 
-    return region;
+    new_histogram.num_added = (long)new_histogram.sum;
+
+    return new_histogram;
   }
 
 
@@ -712,6 +743,23 @@ public class Histogram3D
       Vector results = pe.runOperators();
       return results;
     }
+  }
+
+
+  /** 
+   *  Get a reference to the underlying 3D array for this histogram.
+   *  This violates encapsulation, but since the arrays can be very large
+   *  it is sometimes necessary to do this for efficiency.
+   *
+   *  NOTE: This must be used carefully.  In particular, the size of the
+   *  array MUST NOT BE CHANGED, and the values in the array should not
+   *  be changed!
+   *
+   *  @return a reference to the 3D array maintained by this histogram.
+   */
+  public float[][][] getHistogramArray()
+  {
+    return histogram;
   }
 
 

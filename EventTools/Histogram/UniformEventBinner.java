@@ -40,13 +40,8 @@ package EventTools.Histogram;
  * value in [a,b) and the index, i, of the bin containing that value, and from
  * an index i to the end points or center of the bin.
  */
-public class UniformEventBinner implements IEventBinner
+public class UniformEventBinner extends EventBinner
 {
-
-  private double min;
-  private double max;
-  private int    num_bins;
-
   private double to_val_scale;
   private double to_val_shift;
 
@@ -87,21 +82,13 @@ public class UniformEventBinner implements IEventBinner
   }
 
   @Override
-  public double axisMin()
+  public IEventBinner getSubBinner( int min_index, int max_index )
   {
-    return min;
-  }
+    double new_min      = minVal( min_index );
+    double new_max      = maxVal( max_index );
+    int    new_num_bins = max_index - min_index + 1;
 
-  @Override
-  public double axisMax()
-  {
-    return max;
-  }
-
-  @Override
-  public int numBins()
-  {
-    return num_bins;
+    return new UniformEventBinner( new_min, new_max, new_num_bins );
   }
 
   @Override
@@ -137,15 +124,6 @@ public class UniformEventBinner implements IEventBinner
   public double Val( double fractional_index )
   {
     return min + fractional_index * to_val_scale; 
-  }
-
-  
-  /**
-   * Get a string specifying the min, max and number of steps used.
-   */
-  public String toString()
-  {
-    return String.format( "[ %7.2f, %7.2f ) : %4d ", min, max, num_bins );
   }
 
   
