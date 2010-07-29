@@ -19,6 +19,7 @@ import MessageTools.MessageCenter;
 
 import EventTools.ShowEventsApp.Command.Commands;
 import EventTools.ShowEventsApp.Command.PeakImagesCmd;
+import EventTools.Histogram.Histogram3D;
 
 /**
  *  This class handles the display of images of regions around peaks.
@@ -55,14 +56,14 @@ public class PeakViewHandler implements IReceiveMessage
   {
     System.out.println( images_cmd ); 
 
-    Vector<Peak_new> peaks      = images_cmd.getPeaks();
-    Vector<float[][][]> regions = images_cmd.getRegions();
+    Vector<Peak_new>    peaks      = images_cmd.getPeaks();
+    Vector<Histogram3D> histograms = images_cmd.getRegions();
 
     PeakDisplayInfo[] peak_infos = new PeakDisplayInfo[ peaks.size() ];
     for ( int i = 0; i < peaks.size(); i++ )
     {
       Peak_new peak      = peaks.elementAt(i);
-      float[][][] region = regions.elementAt(i);
+      float[][][] region = histograms.elementAt(i).getHistogramArray();
       PeakDisplayInfo peak_info = new PeakDisplayInfo( "Peak " + i,
                                                         region,
                                                         50, 50, 50, true );

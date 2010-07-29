@@ -254,7 +254,7 @@ public class HistogramHandler implements IReceiveMessage
              float qx = (float)(q_arr[0] * 2 * Math.PI);
              float qy = (float)(q_arr[1] * 2 * Math.PI);
              float qz = (float)(q_arr[2] * 2 * Math.PI);
-             regions.add( histogram.getRegion( qx, qy, qz, 0.5f ) );
+             regions.add( histogram.getSubHistogram( qx, qy, qz, 0.5f ) );
           }
           PeakQ_Cmd value = new PeakQ_Cmd( peakQs, regions );
 

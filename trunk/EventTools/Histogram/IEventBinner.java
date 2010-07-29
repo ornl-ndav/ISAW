@@ -47,6 +47,28 @@ package EventTools.Histogram;
  */
 public interface IEventBinner
 {
+
+  /**
+   *  Get a new IEventBinner that represents a contiguous, internal
+   *  portion of the current IEventBinner.  The new binner that is returned
+   *  will have bin boundaries that are a subset of the bin boundaries
+   *  for the original binner.  The indexing is shifted so that bin "0"
+   *  of the new binner corresponds to the bin with index "min_index" in
+   *  the original binner.  There will be max_index-min_index+1 bins in
+   *  the new binner and the last bin will coincide with the bin with index
+   *  max_index in the original binner.
+   *
+   *  @param min_index  The index of the first bin to use from the original
+   *                    binner.
+   *  @param max_index  The index of the last bin to use from the original
+   *                    binner.
+   *
+   *  @return a new binner of the same type as the original binner that
+   *          covers a contiguous subset of the original bins.
+   */
+  public IEventBinner getSubBinner( int min_index, int max_index );
+
+
   /**
    * Get the left hand end point, a, of the half open interval, [a,b), 
    * where an event may occur along this axis.
