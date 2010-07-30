@@ -592,12 +592,20 @@ public class IntegrateTools
 
     boolean raw_events = false;
     if ( raw_events )
+    {
+      System.out.println("Integrating using RAW EVENTS");
       IntegratePeaksEvents( peaks, peak_radius, bkg_radius, Q_evl );
+    }
     else
     {
+      System.out.println("Integrating using HISTOGRAM");
       Histogram3D histogram = MakeEmptyHistogram();
       histogram.addEvents( Q_evl, false );
+      long start = System.nanoTime();
       IntegratePeaksHistogram( peaks, peak_radius, bkg_radius, histogram );
+      long end = System.nanoTime();
+      System.out.printf("Time to integrate histogram = %5.2f ms\n",
+                         ( end-start )/1.0E6 );
    }
 
     Peak_new_IO.WritePeaks_new( out_file, peaks, false );
