@@ -443,6 +443,34 @@ public class Histogram3D
 
 
   /**
+   * Get the location in 3D space of the bin with the specified indexes.
+   * The bin indexes determine what multiples of the histograms edge vectors
+   * are combined to find the bin center.
+   *
+   * @param  x_index    The index of the requested bin, in the histograms
+   *                    local x direction.
+   * @param  y_index    The index of the requested bin, in the histograms
+   *                    local y direction.
+   * @param  z_index    The index of the requested bin, in the histograms
+   *                    local z direction.
+   *
+   * @param  A Vector3D object containing the position of the center of the
+   *         requested bin.
+   */
+  public Vector3D binLocation( int x_index, int y_index, int z_index )
+  {
+    float[] bin_center_coords = new float[3];
+
+    ProjectionBinner3D.centerPoint( x_index, y_index, z_index,
+                                    x_edge_binner, y_edge_binner, z_edge_binner,
+                                    bin_center_coords );
+    Vector3D bin_center = new Vector3D( bin_center_coords );
+
+    return bin_center;
+  }
+
+
+  /**
    * Get a new Histogram3D with values in a neighborhood of the specified 
    * point.  The histogram size is set to include centers of bins in
    * a sphere of the specified radius around the specified point,
