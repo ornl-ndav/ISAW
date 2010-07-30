@@ -187,6 +187,7 @@ public class ProjectionBinner3D implements IProjectionBinner3D
   {
     if ( coords == null )
          throw new IllegalArgumentException("Array coords is null");
+
     if ( coords.length < 3 )
          throw new IllegalArgumentException("Array coords length < 3 (" +
                                              coords.length + ")" );
@@ -235,26 +236,13 @@ public class ProjectionBinner3D implements IProjectionBinner3D
    * y_binner's direction, and the z_index determines a vector in the 
    * z_binner's direction.  The array coords[] is filled with the 
    * coordinates of the sum of these three vectors. 
-   * NOTE: If three binners with ortho-normal directions are used to
-   * for form the histogram, then the same three binners can be used
-   * in this method to reconstruct the bin centers.  HOWEVER, if the
-   * three binners don't have ortho-normal direction vectors, then a 
-   * different set of binners are needed to reconstruct the bin center.
-   * Specifically, if x_dir, y_dir and z_dir are the original three binners
-   * used to form the histogram, then three new binners, with direction
-   * vectors that are in the directions of the dual basis:
-   *     x_dir* = y_dir X z_dir 
-   *     y_dir* = z_dir X x_dir
-   *     z_dir* = x_dir X y_dir
-   * MUST be passed in to this method, instead of the original 3 binners.
-   * In addition to changes to the direction vectors, the new binners
-   * also have different length scales.  The convenience method,
-   * getDualBasis() will construct the set of 3 Projection3D binners
-   * that are necessary to reconstruct bin centers, from three indices.
    *
-   * @param  x_index   The index of the bin in the direction of the x_binner
-   * @param  y_index   The index of the bin in the direction of the y_binner
-   * @param  z_index   The index of the bin in the direction of the z_binner
+   * @param  x_index   The index of the bin in the direction of the 
+   *                   x edge binner
+   * @param  y_index   The index of the bin in the direction of the 
+                       y edge binner
+   * @param  z_index   The index of the bin in the direction of the 
+                       z edge binner
    * @param  x_binner  "Edge" Binner for the first basis direction, "x".
    * @param  y_binner  "Edge" Binner for the second basis direction, "y".
    * @param  z_binner  "Edge" Binner for the third basis direction, "z".
@@ -294,8 +282,8 @@ public class ProjectionBinner3D implements IProjectionBinner3D
    * Method to construct three new projection binners, so that
    * 3D events can be mapped to three indices (ix, iy, iz)
    * that determine the correct 3D histogram bin by projecting
-   * on these three "dual" binners.  These "dual" binners
-   * work even if the original three binners did not use
+   * on these three "dual" binners.  These "dual" binners will work to
+   * find the correct bin even if the original three binners did not use
    * orthogonal directions.  The initial set of 3D binners
    * may be thought of as dividing 3D space into a collection of
    * of parallelepipeds, with the direction vectors along the edges
