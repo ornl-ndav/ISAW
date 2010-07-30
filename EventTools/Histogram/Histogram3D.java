@@ -568,8 +568,8 @@ public class Histogram3D
     float    distance;
     Vector3D x_vec,
              y_vec,
-             z_vec,
-             diff_vec;
+             z_vec;
+    Vector3D diff_vec = new Vector3D();
                                          // For each bin, find it's distance
                                          // from the center vec and add its
                                          // value to any sphere containing it.
@@ -577,17 +577,18 @@ public class Histogram3D
                                          //       skewed axes.
     Vector3D center_vec = new Vector3D( x, y, z );
 
+    float[] bin_center_coords = new float[3];
+
     for ( int x_index = min_x_index; x_index <= max_x_index; x_index++ )
       for ( int y_index = min_y_index; y_index <= max_y_index; y_index++ )
         for ( int z_index = min_z_index; z_index <= max_z_index; z_index++ )
         {
-          x_vec = x_edge_binner.centerVec( x_index );
-          y_vec = y_edge_binner.centerVec( y_index );
-          z_vec = z_edge_binner.centerVec( z_index );
-
-          diff_vec = x_vec;
-          diff_vec.add( y_vec );
-          diff_vec.add( z_vec );
+          ProjectionBinner3D.centerPoint( x_index, y_index, z_index,
+                                          x_edge_binner, 
+                                          y_edge_binner,
+                                          z_edge_binner,
+                                          bin_center_coords );
+          diff_vec.set( bin_center_coords );
           diff_vec.subtract( center_vec ); 
           distance = diff_vec.length();
 

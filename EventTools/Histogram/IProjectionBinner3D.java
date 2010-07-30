@@ -122,7 +122,7 @@ public interface IProjectionBinner3D extends IEventBinner
 
   /**
    * Get the coordinates of the center of the interval along
-   * the direction vectorx, with the specified index.
+   * the direction vector x, with the specified index.
    *
    * @param  index   The index of the interval whose center coordinates are
    *                 needed.
