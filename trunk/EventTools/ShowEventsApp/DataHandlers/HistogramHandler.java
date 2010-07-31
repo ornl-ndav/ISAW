@@ -57,6 +57,7 @@ import EventTools.ShowEventsApp.Command.SetNewInstrumentCmd;
 import EventTools.ShowEventsApp.Command.FindPeaksCmd;
 import EventTools.ShowEventsApp.Command.PeakQ_Cmd;
 import EventTools.ShowEventsApp.Command.Util;
+import EventTools.Integrate.IntegrateTools;
 
 
 /**
@@ -485,6 +486,39 @@ public class HistogramHandler implements IReceiveMessage
     IProjectionBinner3D z_binner = histogram.zBinner();
     int page = z_binner.index( x, y, z );
     select_info_cmd.setHistPage( page );
+
+    float DEFAULT_RADIUS = 0.2f;
+    float BACKGR_RADIUS  = (float)Math.pow( DEFAULT_RADIUS, 1.0/3.0 );
+    float[] radii = { DEFAULT_RADIUS, BACKGR_RADIUS };
+    Vector result = histogram.sphereIntegrals( x, y, z, radii );
+
+    if ( result != null )
+    {
+      float[] sums    = (float[])result.elementAt(0);
+      float[] volumes = (float[])result.elementAt(1);
+
+      float peak_count = sums[0];
+      float bkg_count  = sums[1] - peak_count;
+
+      float peak_volume = volumes[0];
+      float bkg_volume  = volumes[1] - peak_volume;
+
+      float[] temp = IntegrateTools.getI_and_sigI( peak_count, peak_volume,
+                                                   bkg_count, bkg_volume );
+      float net_signal = temp[0];
+      float I_sigI     = temp[1];
+
+      float weight = select_info_cmd.getWeight();
+    
+      if ( weight > 0 )
+      {
+        net_signal /= weight;
+        I_sigI     /= (float)Math.sqrt(weight);
+
+        select_info_cmd.setIntegral( net_signal );
+        select_info_cmd.setI_sigI( I_sigI ); 
+      }
+    }
   }
  
 

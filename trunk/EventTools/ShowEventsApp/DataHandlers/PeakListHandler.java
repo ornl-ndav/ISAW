@@ -108,10 +108,12 @@ public class PeakListHandler implements IReceiveMessage
          Peak_new[]Sav = new Peak_new[ peakNew_list.size()];
          Copy( Sav, peakNew_list);
          Arrays.sort( Sav, new Peak_newBasicComparator() );
-         select_info_cmd.setSeqNum( getNearestSeqNum(Sav, select_info_cmd.getQxyz( ),
-               (int)select_info_cmd.getDetNum( )) );
+         select_info_cmd.setSeqNum( getNearestSeqNum(Sav, 
+                                    select_info_cmd.getQxyz( ),
+                               (int)select_info_cmd.getDetNum( )) );
+
          message_center.send( new Message( Commands.SHOW_SELECTED_POINT_INFO,
-               select_info_cmd, false));
+                                           select_info_cmd, false));
        }
     }
 

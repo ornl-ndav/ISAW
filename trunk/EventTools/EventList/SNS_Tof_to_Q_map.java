@@ -1031,6 +1031,9 @@ public class SNS_Tof_to_Q_map
              Qxyz[index++] = qy;
              Qxyz[index  ] = qz;
 
+                                       // NOTE: If the following calculations
+                                       //       are modified, the method
+                                       //       getEventWeight must be updated.
              lamda = tof_chan/10.0f * tof_to_lamda[id];
              lamda_index = (int)( STEPS_PER_ANGSTROM * lamda );
 
@@ -1068,6 +1071,39 @@ public class SNS_Tof_to_Q_map
      }
 */
      return new FloatArrayEventList3D( weights, Qxyz );
+  }
+
+
+ /**
+  *  Get the weight factor that would be used for an event occuring 
+  *  at the specified wavelength, with the specified two_theta value.
+  *
+  *  @param  lamda      The wavelength of an event.
+  *  @param  two_theta  The scattering angle of the event.
+  *
+  *  @return The weight factor for the specified position and wavelength.
+  */
+  public float getEventWeight( float lamda, float two_theta )
+  {
+    int   lamda_index = (int)( STEPS_PER_ANGSTROM * lamda );
+
+    if ( lamda_index < 0 )
+      lamda_index = 0;
+    else if ( lamda_index >= lamda_weight.length )
+      lamda_index = lamda_weight.length - 1;
+
+    float lamda_w     = lamda_weight[ lamda_index ];
+
+    float transinv = 1;
+    if ( radius > 0 )
+       transinv = absor_sphere(two_theta, lamda);
+
+    float sin_theta = (float)Math.sin( two_theta/2 );
+    float pix_weight = sin_theta * sin_theta;
+    
+    float event_weight = pix_weight * lamda_w * transinv;
+
+    return event_weight;
   }
 
 

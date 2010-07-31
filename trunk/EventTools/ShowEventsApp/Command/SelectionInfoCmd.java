@@ -5,6 +5,9 @@ import gov.anl.ipns.MathTools.Geometry.Vector3D;
 public class SelectionInfoCmd
 {
    private float counts;
+   private float integral;   // approximate integrated intensity
+   private float i_sigi;     // approximate I/sigI
+   private float weight;     // weight used by QMapper at this point
    private int   det_num;
    private int   col;
    private int   row;
@@ -27,6 +30,9 @@ public class SelectionInfoCmd
 
    
    public SelectionInfoCmd( float    counts,
+                            float    integral,
+                            float    i_sigi,
+                            float    weight,
                             int      det_num,
                             int      col,
                             int      row,
@@ -41,7 +47,10 @@ public class SelectionInfoCmd
                             float    e_mev,
                             float    wavelength )
    {
-      this.counts = counts;
+      this.counts     = counts;
+      this.integral   = integral;
+      this.i_sigi     = i_sigi;
+      this.weight     = weight;
       this.det_num    = det_num;
       this.col        = col;
       this.row        = row;
@@ -70,6 +79,36 @@ public class SelectionInfoCmd
    public void setCounts( float counts )
    {
       this.counts = counts;
+   }
+
+   public float getIntegral()
+   {
+     return integral;
+   }
+
+   public void setIntegral( float integral )
+   {
+     this.integral = integral;
+   }
+
+   public float getI_sigI()
+   {
+     return i_sigi;
+   }
+
+   public void setI_sigI( float i_sigi )
+   {
+     this.i_sigi = i_sigi;
+   }
+
+   public float getWeight()
+   {
+     return weight;
+   }
+
+   public void setWeight( float weight )
+   {
+     this.weight = weight;
    }
 
    public float getDetNum()
@@ -188,6 +227,9 @@ public class SelectionInfoCmd
    public String toString()
    {
       return "\nCounts      : " + getCounts() +
+             "\nIntegral    : " + getIntegral() + 
+             "\nI/SigI      : " + getI_sigI() + 
+             "\nWeight      : " + getWeight() + 
              "\nDet Num     : " + getDetNum() + 
              "\nPage        : " + getHistPage() + 
              "\nSeq Num     : " + getSeqNum() + 
