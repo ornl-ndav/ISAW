@@ -178,25 +178,28 @@ public class QMapperHandler implements IReceiveMessage
 
       if ( peak == null )
       {
-        info = new SelectionInfoCmd( 0, 0, 0, 0, 0, 0,
+        info = new SelectionInfoCmd( 0, 0, 0, 0, 0, 0, 0, 0, 0, 
                    new Vector3D(),
                    new Vector3D(),
                    0, 0, 0,0, 0, 0 );
       }
       else
       {
-        float[]  Q        = peak.getUnrotQ();
-        Vector3D hkl      = new Vector3D( peak.h(), peak.k(), peak.l() );
-        Vector3D Qxyz     = new Vector3D( Q[0], Q[1], Q[2] );
-        float magnitude_Q = Qxyz.length();
-        float Energy      = Calc_energy( peak);
-        double off_axis   = Math.sqrt( Q[1]*Q[1] + Q[2]*Q[2] );
-        double beam_comp  = Q[0];
-        float alpha       = (float)Math.atan2(off_axis,beam_comp);
-        float two_theta   = (float)(2*Math.abs(alpha) - Math.PI); 
-                        
+        float[]  Q           = peak.getUnrotQ();
+        Vector3D hkl         = new Vector3D( peak.h(), peak.k(), peak.l() );
+        Vector3D Qxyz        = new Vector3D( Q[0], Q[1], Q[2] );
+        float    magnitude_Q = Qxyz.length();
+        float    Energy      = Calc_energy( peak);
+        double   off_axis    = Math.sqrt( Q[1]*Q[1] + Q[2]*Q[2] );
+        double   beam_comp   = Q[0];
+        float    alpha       = (float)Math.atan2(off_axis,beam_comp);
+        float    two_theta   = (float)(2*Math.abs(alpha) - Math.PI); 
+        float    weight      = mapper.getEventWeight( peak.wl(), two_theta );
+                
         info = new SelectionInfoCmd(
                    peak.ipkobs(),
+                   0, 0, 
+                   weight,
                    peak.detnum(),
                    (int)(.5f+peak.x()),
                    (int)(.5f+peak.y()),

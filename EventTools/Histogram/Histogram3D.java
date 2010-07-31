@@ -554,7 +554,7 @@ public class Histogram3D
 
   /**
    *  Find the total counts that are enclosed within spheres with the 
-   *  specified radii around the specified point.
+   *  specified radii around the specified point.  
    *
    *  @param x      The x coodinate of the center of the spheres
    *  @param y      The y coodinate of the center of the spheres
@@ -568,6 +568,8 @@ public class Histogram3D
    *          are within the ith radius of the specified (x,y,z) point.  
    *          The ith entry in the second array contains the number of 
    *          bins whose centers are within the ith radius.
+   *          NOTE: If the specified point is not in the histogram, this
+   *                method will return null.
    */
   public Vector sphereIntegrals( float x, float y, float z, float[] radii )
   {
@@ -577,6 +579,9 @@ public class Histogram3D
         max_radius = radii[i];
 
     int[][] ranges = getIndexRanges( x, y, z, max_radius );
+    if ( ranges == null )
+      return null;
+
     int min_x_index = ranges[0][0];
     int max_x_index = ranges[0][1];
 

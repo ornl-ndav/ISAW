@@ -53,6 +53,8 @@ public class positionInfoPanel extends JPanel
    public static final long    serialVersionUID = 1L;
 // private MessageCenter       messageCenter;
    private JTextField          countsTxt;
+   private JTextField          integralTxt;
+   private JTextField          weightTxt;
    private JTextField          detectorNumTxt;
    private JTextField          ColRowTxt;
    private JTextField          SeqNumTxt;
@@ -116,10 +118,12 @@ public class positionInfoPanel extends JPanel
    {
       JPanel panel = new JPanel();
       
-      panel.setLayout(new GridLayout(15, 2));
+      panel.setLayout(new GridLayout(17, 2));
       panel.setBorder(new TitledBorder("Position Info."));
       
       JTextField countLbl         = new JTextField("Counts");
+      JTextField integralLbl      = new JTextField("Integral, I/sigI");
+      JTextField weightLbl        = new JTextField("Weight Factor");
       JTextField detectorLbl      = new JTextField("Detector Number");
       JTextField ColRowLbl        = new JTextField("Column,Row");
       JTextField SeqNumLbl           = new JTextField("Peak Sequence Number");
@@ -137,6 +141,8 @@ public class positionInfoPanel extends JPanel
       JTextField tiltLbl          = new JTextField("Tilt(" + DEG + ")");
       
       countsTxt        = new JTextField("0");
+      integralTxt      = new JTextField("0");
+      weightTxt        = new JTextField("0");
       detectorNumTxt   = new JTextField("0");
       ColRowTxt        = new JTextField("(  0,  0)");
       SeqNumTxt           = new JTextField("0");
@@ -156,6 +162,10 @@ public class positionInfoPanel extends JPanel
 
       panel.add(countLbl);
       panel.add(countsTxt);
+      panel.add(integralLbl);
+      panel.add(integralTxt);
+      panel.add(weightLbl);
+      panel.add(weightTxt);
       panel.add(detectorLbl);
       panel.add(detectorNumTxt);
       panel.add(ColRowLbl);
@@ -210,7 +220,11 @@ public class positionInfoPanel extends JPanel
     */
    private void setFields(SelectionInfoCmd selection)
    {
-      countsTxt.setText( "" + String.format( "%4.2f" , selection.getCounts() ));
+      countsTxt.setText( String.format( "%4.2f", selection.getCounts() ));
+      integralTxt.setText( String.format( "%10.2f, %4.2f", 
+                           selection.getIntegral(), 
+                           selection.getI_sigI() ));
+      weightTxt.setText(String.format( "%7.5f", selection.getWeight() ));
       detectorNumTxt.setText( "" + (int)selection.getDetNum() );
       ColRowTxt.setText( "("+(int)selection.getCol()+
                          ", "+(int)selection.getRow()+")" );
