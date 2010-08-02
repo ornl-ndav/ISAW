@@ -170,50 +170,60 @@ public class QMapperHandler implements IReceiveMessage
       SelectionInfoCmd info;
                               // PeakQ, Peak_new and SelectionInfCom
                               // use Q = 1/d  but the event display
-                              // and select point message use Q = 2PI/d                             
-      float eventx =  (float)( cmd.getQx() / (2 * Math.PI) );
-      float eventy =  (float)( cmd.getQy() / (2 * Math.PI) );
-      float eventz =  (float)( cmd.getQz() / (2 * Math.PI) );
-      Peak_new peak = mapper.GetPeak( eventx, eventy, eventz, null );
+                              // and select point message use Q = 2PI/d so 
+                              // must switch the convention NOW!
+      float qx = (float)( cmd.getQx() / (2 * Math.PI) );
+      float qy = (float)( cmd.getQy() / (2 * Math.PI) );
+      float qz = (float)( cmd.getQz() / (2 * Math.PI) );
+      Vector3D Qxyz = new Vector3D( qx, qy, qz );
 
-      if ( peak == null )
-      {
-        info = new SelectionInfoCmd( 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-                   new Vector3D(),
-                   new Vector3D(),
-                   0, 0, 0,0, 0, 0 );
-      }
-      else
-      {
-        float[]  Q           = peak.getUnrotQ();
-        Vector3D hkl         = new Vector3D( peak.h(), peak.k(), peak.l() );
-        Vector3D Qxyz        = new Vector3D( Q[0], Q[1], Q[2] );
-        float    magnitude_Q = Qxyz.length();
-        float    Energy      = Calc_energy( peak);
-        double   off_axis    = Math.sqrt( Q[1]*Q[1] + Q[2]*Q[2] );
-        double   beam_comp   = Q[0];
-        float    alpha       = (float)Math.atan2(off_axis,beam_comp);
-        float    two_theta   = (float)(2*Math.abs(alpha) - Math.PI); 
-        float    weight      = mapper.getEventWeight( peak.wl(), two_theta );
+      float  magnitude_Q = Qxyz.length();
+      float  d           = 1/magnitude_Q; 
+      double off_axis    = Math.sqrt( qy * qy + qz * qz );
+      double beam_comp   = qx;
+      float  alpha       = (float)Math.atan2(off_axis,beam_comp);
+      float  two_theta   = (float)(2*Math.abs(alpha) - Math.PI); 
+
+      float  wl     = (float) (2 * d * Math.sin( two_theta/2 )); 
+      float  weight = mapper.getEventWeight( wl, two_theta );
+      float  energy = tof_calc.EnergyFromWavelength( wl );
+      float  tof    = 0;         // fix this
+
+      int    detnum      = 0;
+      int    col         = 0;
+      int    row         = 0;
                 
-        info = new SelectionInfoCmd(
-                   peak.ipkobs(),
+      Peak_new peak = mapper.GetPeak( qx, qy, qz, null );
+      if ( peak != null )
+      {                                  // This info can ONLY be provided for
+        tof    = peak.time();            // points in Q that correspond to
+        detnum = peak.detnum();          // actual detector positions
+        col    = (int)(.5f+peak.x());
+        row    = (int)(.5f+peak.y());
+      }
+
+      float    ipkobs = 0;               // value will be provided by the
+                                         // HistogramHandler
+      Vector3D hkl    = new Vector3D();  // hkl value will be provided by the 
+                                         // OrientationMatrixHandler
+
+      info = new SelectionInfoCmd(
+                   ipkobs,
                    0, 0, 
                    weight,
-                   peak.detnum(),
-                   (int)(.5f+peak.x()),
-                   (int)(.5f+peak.y()),
+                   detnum,
+                   col,
+                   row,
                    0, 
                    0,
                    hkl,
                    Qxyz,
                    magnitude_Q,
-                   peak.d(),
+                   d,
                    two_theta,
-                   peak.time(),
-                   Energy, 
-                   peak.wl()  );
-      }
+                   tof,
+                   energy, 
+                   wl  );
                                            // ask histogram object to get
                                            // correct histogram page and
                                            // correct ipkobs!
@@ -424,8 +434,8 @@ public class QMapperHandler implements IReceiveMessage
   private float Calc_energy( Peak_new Peak)
   {
      float time = Peak.time();
-     float row = Peak.y();
-     float col = Peak.x();
+     float row  = Peak.y();
+     float col  = Peak.x();
      float path_length = Peak.getGrid().position(row,col).length()+Peak.L1();
      return tof_calc.Energy( path_length , time );
   }
