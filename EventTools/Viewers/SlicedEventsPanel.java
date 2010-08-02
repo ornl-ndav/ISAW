@@ -77,6 +77,7 @@ public class SlicedEventsPanel
   private Group           points_group;
   private Group           marker_group;
   private Group           index_marker_group;
+  private Group           selected_point_group;
   private OnOff           axis_group;
   private OnOff           all_markers_group;
   private SimpleShape     marker_shape;
@@ -116,16 +117,18 @@ public class SlicedEventsPanel
     axis_group.addChild( y_axis );
     axis_group.addChild( z_axis );
 
-    points_group = new Group();
-    all_markers_group = new OnOff( true );
-    marker_group = new Group();
-    index_marker_group = new Group();
+    points_group         = new Group();
+    all_markers_group    = new OnOff( true );
+    selected_point_group = new Group();
+    marker_group         = new Group();
+    index_marker_group   = new Group();
 
     Group root = new Group();
     root.addChild( new glDisableNode(GL.GL_LIGHTING) );
     root.addChild( axis_group );
     root.addChild( points_group );
     root.addChild( all_markers_group );
+      all_markers_group.addChild( selected_point_group );
       all_markers_group.addChild( marker_group );
       all_markers_group.addChild( index_marker_group );
 
@@ -232,6 +235,19 @@ public class SlicedEventsPanel
   public void ClearEvents()
   {
     points_group.Clear();
+  }
+
+
+  public void addSelectedPointMark( Vector3D point,
+                                    int      size,
+                                    int      type,
+                                    Color    color )
+  {
+    selected_point_group.Clear();
+    Vector3D[] verts = { point };
+    Polymarker point_mark = new Polymarker( verts, size, type, color );
+
+    selected_point_group.addChild( point_mark );
   }
 
 

@@ -63,8 +63,9 @@ public class EventViewHandler implements IReceiveMessage, IhasWindowClosed
     message_center.addReceiver( this, Commands.INIT_EVENTS_VIEW );
     message_center.addReceiver( this, Commands.SET_DRAWING_OPTIONS );
     message_center.addReceiver( this, Commands.SET_COLOR_SCALE );
-    message_center.addReceiver( this, Commands.MARK_PEAKS );
     message_center.addReceiver( this, Commands.SET_ORIENTATION_MATRIX );
+    message_center.addReceiver( this, Commands.SELECT_POINT );
+    message_center.addReceiver( this, Commands.MARK_PEAKS );
     message_center.addReceiver( this, Commands.MARK_INDEXED_PEAKS );
 
     view_message_center.addReceiver( this, Commands.ADD_EVENTS_TO_VIEW );
@@ -166,6 +167,24 @@ public class EventViewHandler implements IReceiveMessage, IhasWindowClosed
         frame3D.setTitle( "Reciprocal Space Events for "+info.getEventFile() );
 
       num_to_show = info.getEventsToShow();
+    }
+    else if ( message.getName().equals( Commands.SELECT_POINT ) )
+    {
+       Object val = message.getValue();
+       if ( val == null || !(val instanceof SelectPointCmd ) )
+         return(false);
+
+       synchronized ( eventPanelMonitor )
+       {
+         SelectPointCmd cmd = (SelectPointCmd)val;
+
+         Vector3D position = cmd.getQ_vec();
+         int POINT_SIZE = 50; 
+
+         events_panel.addSelectedPointMark( position, POINT_SIZE,
+                                            Polymarker.CROSS, Color.RED );
+         events_panel.updateDisplay();
+       }
     }
     else if ( message.getName().equals( Commands.MARK_PEAKS ) )
     {
@@ -301,11 +320,12 @@ public class EventViewHandler implements IReceiveMessage, IhasWindowClosed
 
   /**
    *  Listen for a mouse click on the jogl_panel, and send a SELECT_POINT
-   *  message.  For now, the size of the "box", dx, dy, dz, are fixed.
+   *  message.  For now, the size of the mark is fixed.
    */
   public class  MouseClickListener extends MouseAdapter
   {
     JoglPanel my_panel;
+    int       PMARK_SIZE = 25;
 
     public MouseClickListener( JoglPanel panel )
     {
@@ -322,7 +342,7 @@ public class EventViewHandler implements IReceiveMessage, IhasWindowClosed
         Vector3D point = my_panel.pickedPoint( x, y );
        // System.out.println("3D point = " + point );
 
-        Vector3D size = new Vector3D( 1, 1, 1 );
+        Vector3D size = new Vector3D( PMARK_SIZE, PMARK_SIZE, PMARK_SIZE );
         SelectPointCmd value = new SelectPointCmd( point, size );
         Message message = new Message( Commands.SELECT_POINT,
                                        value, true, true );
