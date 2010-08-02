@@ -665,6 +665,8 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
       SetUpAllGroups();
       //UniformGrid.setDataEntriesInAllGrids(DS);
       Groups = AllGroups[0];
+      num_rows = grid.num_rows( );
+      num_cols = grid.num_cols( );
    }
    public void SetUpAllGroups()
    {
@@ -771,6 +773,8 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
       {
         grid = Grids[i];
         Groups = AllGroups[ i ];
+        num_rows = grid.num_rows( );
+        num_cols = grid.num_cols( );
       }else
          return;
          
@@ -811,6 +815,8 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
       {
          Groups = AllGroups[i];
          grid = Grids[i];
+         num_rows = grid.num_rows( );
+         num_cols = grid.num_cols( );
       }else
          return;
       /*grid = Grid_util.getAreaGrid( DS, DetNum);
