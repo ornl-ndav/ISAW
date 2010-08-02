@@ -857,7 +857,7 @@ public class TwoDViewers extends DataSetViewer {
       validate();
       invalidate();
       repaint();
-
+      redraw("POINTED AT CHANGED");//To set up pointed at
    }
 
 
@@ -992,9 +992,10 @@ public class TwoDViewers extends DataSetViewer {
             int nrows = ( (RowColTimeVirtualArray) viewArray )
                      .getTotalNumRows();
 
-
-            floatPoint2D X2D = new floatPoint2D( 1f + X.getCol() , 1f + nrows
-                     - 1 - X.getRow() );
+            float row = X.getRow()+1;
+            if( !(viewComp instanceof TableViewComponent))
+                row = 1+nrows -row;
+            floatPoint2D X2D = new floatPoint2D( 1f + X.getCol() ,row  );
             notifyComp = false;
             viewComp.setPointedAt( X2D );
             
