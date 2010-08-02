@@ -31,6 +31,12 @@ public class SelectPointCmd
       this.dy = D.getY();
       this.dz = D.getZ();
    }
+
+
+   public Vector3D getQ_vec()
+   {
+     return new Vector3D( qx, qy, qz );
+   }
    
    public float getQx()
    {
