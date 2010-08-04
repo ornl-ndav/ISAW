@@ -474,7 +474,9 @@ public class Histogram3D
    * Get a new Histogram3D with values in a neighborhood of the specified 
    * point.  The histogram size is set to include centers of bins in
    * a sphere of the specified radius around the specified point,
-   * BUT will be restricted to lie within the bounds of this histogram.
+   * BUT will be restricted to lie within the bounds of this histogram,
+   * and to include bins that are not further away from the center bin by
+   * more than the specified offsets.
    * NOTE: In general, the returned histogram will not have equal sizes in
    *       all dimensions. Also, in general the new histogram will correspond
    *       to a parallelopiped in 3D space, since the binner directions may
@@ -483,18 +485,37 @@ public class Histogram3D
    *       be determined, so it is just set to the sum of the values in
    *       the new histogram
    *
-   *  @param x      The x coodinate of the center of the region
-   *  @param y      The y coodinate of the center of the region
-   *  @param z      The z coodinate of the center of the region
-   *  @param radius The radius of a sphere that determines the size
-   *                of the region that is returned.
+   *  @param x            The x coodinate of the center of the region
+   *  @param y            The y coodinate of the center of the region
+   *  @param z            The z coodinate of the center of the region
+   *  @param radius       The radius of a sphere that determines the size
+   *                      of the region that is returned.
+   *  @param max_x_offset The maximum allowed number of bins the index in
+   *                      the x direction can differ from the center index.
+   *                      Pass in -1 if the x-offset should not be resticted.
+   *  @param max_y_offset The maximum allowed number of bins the index in
+   *                      the y direction can differ from the center index.
+   *                      Pass in -1 if the y-offset should not be resticted.
+   *  @param max_z_offset The maximum allowed number of bins the index in
+   *                      the z direction can differ from the center index.
+   *                      Pass in -1 if the y-offset should not be resticted.
    *
    *  @return a new Histogram3D containing a portion of the original
    *          histogram.
    */
-  public Histogram3D getSubHistogram( float x, float y, float z, float radius )
+  public Histogram3D getSubHistogram( float x, 
+                                      float y, 
+                                      float z, 
+                                      float radius,
+                                      int   max_x_offset,
+                                      int   max_y_offset,
+                                      int   max_z_offset )
   {
-    int[][] ranges = getIndexRanges( x, y, z, radius );
+    int[][] ranges = getIndexRanges( x, y, z, 
+                                     radius, 
+                                     max_x_offset, 
+                                     max_y_offset,
+                                     max_z_offset );
     int min_x_index = ranges[0][0];
     int max_x_index = ranges[0][1];
 
@@ -578,7 +599,7 @@ public class Histogram3D
       if ( max_radius < radii[ i ] )
         max_radius = radii[i];
 
-    int[][] ranges = getIndexRanges( x, y, z, max_radius );
+    int[][] ranges = getIndexRanges( x, y, z, max_radius, -1, -1, -1 );
     if ( ranges == null )
       return null;
 
@@ -642,20 +663,36 @@ public class Histogram3D
 
   /**
    * Get ranges of x, y and z indices that cover a sphere of the specified
-   * radius around the specified point BUT are restricted to lie withing
-   * the histogram.
+   * radius around the specified point BUT are restricted to lie within
+   * the histogram, and restricted to be no more than the specifed number of
+   * bins from the center bin, in the x, y and z directions.
    *
-   * @param x       The x coordinate of the "center" point.
-   * @param y       The y coordinate of the "center" point.
-   * @param z       The z coordinate of the "center" point.
-   * @param radius  The radius of the sphere that the region should cover
+   * @param x            The x coordinate of the "center" point.
+   * @param y            The y coordinate of the "center" point.
+   * @param z            The z coordinate of the "center" point.
+   * @param radius       The radius of the sphere that the region should cover.
+   * @param max_x_offset The maximum allowed number of bins the index in
+   *                     the x direction can differ from the center index.
+   *                     Pass in -1 if the x-offset should not be resticted.
+   * @param max_y_offset The maximum allowed number of bins the index in
+   *                     the y direction can differ from the center index.
+   *                     Pass in -1 if the y-offset should not be resticted.
+   * @param max_z_offset The maximum allowed number of bins the index in
+   *                     the z direction can differ from the center index.
+   *                     Pass in -1 if the y-offset should not be resticted.
    *
    * @return A 2D array of ints.  The first row has the min and max index
    *         in the "x" direction, the second row has the min and max index
    *         in the "y" direction and the third row has the min and max index
    *         in the "z" direction.
    */
-  private int[][] getIndexRanges( float x, float y, float z, float radius )
+  private int[][] getIndexRanges( float x, 
+                                  float y, 
+                                  float z, 
+                                  float radius,
+                                  int   max_x_offset,
+                                  int   max_y_offset,
+                                  int   max_z_offset )
   {
     int center_z_index = z_binner.index(x,y,z);
     if ( center_z_index < 0 || center_z_index >= histogram.length )
@@ -699,9 +736,9 @@ public class Histogram3D
     Vector3D center_vec = new Vector3D( x, y, z );
 
     int[][] ranges = new int[3][];
-    ranges[0] = getMinMaxIndex( x_binner, center_vec, radius );
-    ranges[1] = getMinMaxIndex( y_binner, center_vec, radius );
-    ranges[2] = getMinMaxIndex( z_binner, center_vec, radius );
+    ranges[0] = getMinMaxIndex( x_binner, center_vec, radius, max_x_offset );
+    ranges[1] = getMinMaxIndex( y_binner, center_vec, radius, max_y_offset );
+    ranges[2] = getMinMaxIndex( z_binner, center_vec, radius, max_z_offset );
 
     return ranges;
   }
@@ -709,11 +746,24 @@ public class Histogram3D
  
   /**
    *  Get the range of indexes required to cover a sphere of the specified
-   *  radius in the direction of the specified binner.
+   *  radius in the direction of the specified binner, restricted to be
+   *  no more than "max_offset" bins away from the center bin.
+   *
+   *  @param  binner      The binner object for the required axis.
+   *  @param  center_vec  The position in 3D of the sphere center.
+   *  @param  radius      The radius of the sphere that will be included.
+   *  @param  max_offset  The maximum number of bins that the min and max
+   *                      index is allowed to differ from the index of the
+   *                      center of the sphere.  If no max_offset should
+   *                      be set, pass in a negative value.
+   *
+   *  @return  An array containing the min and max index for bins along
+   *           the binner direction that overlap the specified sphere.
    */
   private int[] getMinMaxIndex( IProjectionBinner3D binner, 
                                 Vector3D            center_vec,
-                                float               radius )
+                                float               radius,
+                                int                 max_offset )
   {
     int      n_bins = binner.numBins();
     Vector3D d_vec  = binner.directionVec();
@@ -735,9 +785,56 @@ public class Histogram3D
     if ( index_2 >= n_bins )
       index_2 = n_bins - 1;
 
+    if ( max_offset > 0 )
+    {
+      int center_index = binner.index( center_vec.getX(), 
+                                       center_vec.getY(), 
+                                       center_vec.getZ() );
+      index_1 = clampIndex( index_1, center_index, max_offset );
+      index_2 = clampIndex( index_2, center_index, max_offset );
+    }
+
+
     int[] range = {Math.min( index_1, index_2 ), Math.max( index_1, index_2 )};
     return range;
   }
+
+
+  /**
+   *  Clamp the specified index to be no more than the specified offset away
+   *  from the specified center index.
+   *
+   *  @param  index        The index to adjust if needed.
+   *  @param  center_index The index of the bin containing the center of 
+   *                       the interval.
+   *  @param  max_offset   The maximum allowed difference between the index
+   *                       and the center index.
+   *  @return a (possibly) adjusted index value that is on the same side 
+   *          of the center index, but is no more than max_offset units away
+   *          from the center index.
+   */
+  private int clampIndex( int index, 
+                          int center_index, 
+                          int max_offset )
+  {
+    int offset;
+    if ( index < center_index )
+    {
+      offset = center_index - index;
+      if ( offset > max_offset )            // index too far below center, so
+        return center_index - max_offset;   // return clamped value
+    }
+
+    if ( index > center_index )
+    {
+      offset = index - center_index;
+      if ( offset > max_offset )            // index too far above center, so
+        return center_index + max_offset;   // return clamped value
+    } 
+
+    return index;                           // index OK, so return it
+  }
+
 
 
   /**

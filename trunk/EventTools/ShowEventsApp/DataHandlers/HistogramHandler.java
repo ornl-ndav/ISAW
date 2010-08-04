@@ -42,6 +42,7 @@ import gov.anl.ipns.MathTools.Geometry.Vector3D;
 
 import DataSetTools.operator.Generic.TOF_SCD.IPeakQ;
 import DataSetTools.operator.Generic.TOF_SCD.PeakQ;
+import DataSetTools.operator.Generic.TOF_SCD.Peak_new;
 import DataSetTools.operator.Generic.TOF_SCD.BasicPeakInfo;
 import DataSetTools.operator.Generic.TOF_SCD.FindPeaksViaSort;
 
@@ -55,7 +56,7 @@ import EventTools.ShowEventsApp.Command.Commands;
 import EventTools.ShowEventsApp.Command.SelectionInfoCmd;
 import EventTools.ShowEventsApp.Command.SetNewInstrumentCmd;
 import EventTools.ShowEventsApp.Command.FindPeaksCmd;
-import EventTools.ShowEventsApp.Command.PeakQ_Cmd;
+import EventTools.ShowEventsApp.Command.PeakImagesCmd;
 import EventTools.ShowEventsApp.Command.Util;
 import EventTools.Integrate.IntegrateTools;
 
@@ -108,6 +109,7 @@ public class HistogramHandler implements IReceiveMessage
     message_center.addReceiver( this, Commands.ADD_HISTOGRAM_INFO );
     message_center.addReceiver( this, Commands.GET_HISTOGRAM_MAX );
     message_center.addReceiver( this, Commands.FIND_PEAKS );
+    message_center.addReceiver( this, Commands.ADD_PEAK_IMAGE_REGIONS );
     
     view_message_center.addReceiver( this, Commands.UPDATE );
 
@@ -248,19 +250,8 @@ public class HistogramHandler implements IReceiveMessage
 
         if ( peakQs != null && peakQs.size() > 0 )       // send out the peaks
         { 
-          Vector regions = new Vector(peakQs.size());
-          for ( int i = 0; i < peakQs.size(); i++ )
-          {
-             float[] q_arr = peakQs.elementAt(i).getUnrotQ();
-             float qx = (float)(q_arr[0] * 2 * Math.PI);
-             float qy = (float)(q_arr[1] * 2 * Math.PI);
-             float qz = (float)(q_arr[2] * 2 * Math.PI);
-             regions.add( histogram.getSubHistogram( qx, qy, qz, 0.5f ) );
-          }
-          PeakQ_Cmd value = new PeakQ_Cmd( peakQs, regions );
-
           Message set_peak_Q_list = new Message( Commands.SET_PEAK_Q_LIST,
-                                                 value,
+                                                 peakQs,
                                                  true,
                                                  true );
           message_center.send( set_peak_Q_list );
@@ -280,6 +271,29 @@ public class HistogramHandler implements IReceiveMessage
       return false;
     }
     
+    else if ( message.getName().equals(Commands.ADD_PEAK_IMAGE_REGIONS) )
+    {
+      System.out.println("HistogramHandler got ADD_PEAK_REGIONS message");
+      Object obj = message.getValue();
+      if ( obj == null || !(obj instanceof Vector) )
+        return false;
+
+      Vector<Peak_new> peaks   = (Vector<Peak_new>)obj;
+      Vector           regions = new Vector( peaks.size() );
+      for ( int i = 0; i < peaks.size(); i++ )
+      {
+        float[] q_arr = peaks.elementAt(i).getUnrotQ();
+        float qx = (float)(q_arr[0] * 2 * Math.PI);
+        float qy = (float)(q_arr[1] * 2 * Math.PI);
+        float qz = (float)(q_arr[2] * 2 * Math.PI);
+        regions.add( histogram.getSubHistogram( qx, qy, qz, 0.5f, -1, -1, 5 ) );
+      }
+      PeakImagesCmd peak_image_cmd = new PeakImagesCmd( peaks, regions );
+      Message peak_images_message =
+           new Message(Commands.SHOW_PEAK_IMAGES, peak_image_cmd, true, true);
+      message_center.send( peak_images_message );
+    }
+
     else if ( message.getName().equals(Commands.GET_HISTOGRAM_MAX) )
     {
        Message hist_max = new Message( Commands.SET_HISTOGRAM_MAX,
@@ -354,7 +368,7 @@ public class HistogramHandler implements IReceiveMessage
 
     if ( inst.equals("SNAP") ||
          inst.equals("TOPAZ") )
-      Set_Histogram( num_bins, max_Q, -25.0f, 0, -16.0f, 16.0f, -8.0f, 8.0f );
+      Set_Histogram( num_bins, max_Q, -40.0f, 0, -25.0f, 25.0f, -25.0f, 25.0f );
 
     else if ( inst.equals("ARCS") ||
               inst.equals("SEQ")  )
