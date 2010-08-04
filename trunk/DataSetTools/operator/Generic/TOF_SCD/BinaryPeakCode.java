@@ -56,7 +56,7 @@ public class BinaryPeakCode
                                             //      row   ( 8 bits)  256
                                             //      col   ( 8 bits)  256
                                             //      chan  (16 bits)  65536
-*/
+
   public static final long MAX_CODEABLE_VALUE = Integer.MAX_VALUE/2;
   public static final long MAX_NUM_ROWS = 256*2;
   public static final long MAX_NUM_COLS = 256*2;
@@ -66,6 +66,26 @@ public class BinaryPeakCode
                                             //      row   ( 9 bits)  512
                                             //      col   ( 9 bits)  512
                                             //      chan  (15 bits)  32768
+
+  public static final long MAX_CODEABLE_VALUE = Integer.MAX_VALUE/8;
+  public static final long MAX_NUM_ROWS = 256*4;
+  public static final long MAX_NUM_COLS = 256*4;
+  public static final long MAX_NUM_CHAN = 65536/2;
+                                            // code values in form
+                                            //      value (28 bits) 268 million
+                                            //      row   (10 bits) 1024 
+                                            //      col   (10 bits) 1024 
+                                            //      chan  (15 bits) 32768
+*/
+  public static final long MAX_CODEABLE_VALUE = Integer.MAX_VALUE/32;
+  public static final long MAX_NUM_ROWS = 256*8;
+  public static final long MAX_NUM_COLS = 256*8;
+  public static final long MAX_NUM_CHAN = 65536/2;
+                                            // code values in form
+                                            //      value (26 bits) 67  million
+                                            //      row   (11 bits) 2048 
+                                            //      col   (11 bits) 2048 
+                                            //      chan  (15 bits) 32768
 
 
   /**
