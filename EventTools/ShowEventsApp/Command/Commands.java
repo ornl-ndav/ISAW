@@ -105,17 +105,19 @@ public class Commands
   /**
    *  GET_PEAK_NEW_LIST has a Vector of PeakQ objects as it's  message value.
    */
+
   public static final String GET_PEAK_NEW_LIST = "GET_PEAK_NEW_LIST";
   /**
    *  SET_PEAK_NEW_LIST has a Vector of Peak_new objects as it's  message value.
    */
-  public static final String SET_PEAK_NEW_LIST = "SET_PEAK_NEW_LIST";
-  public static final String SHOW_PEAK_IMAGES  = "SHOW_PEAK_IMAGES";
-  public static final String PEAK_LIST_CHANGED = "PEAK_LIST_CHANGED";
-  public static final String CLEAR_PEAK_LISTS  = "CLEAR_PEAK_LISTS";
-  public static final String FILTER_DETECTOR   = "FILTER_DETECTOR";
-  public static final String FILTER_QD         = "FILTER_QD";
-  public static final String FILTER_PEAKS      = "FILTER_PEAKS";
+  public static final String SET_PEAK_NEW_LIST      = "SET_PEAK_NEW_LIST";
+  public static final String ADD_PEAK_IMAGE_REGIONS = "ADD_PEAK_IMAGE_REGIONS";
+  public static final String SHOW_PEAK_IMAGES       = "SHOW_PEAK_IMAGES";
+  public static final String PEAK_LIST_CHANGED      = "PEAK_LIST_CHANGED";
+  public static final String CLEAR_PEAK_LISTS       = "CLEAR_PEAK_LISTS";
+  public static final String FILTER_DETECTOR        = "FILTER_DETECTOR";
+  public static final String FILTER_QD              = "FILTER_QD";
+  public static final String FILTER_PEAKS           = "FILTER_PEAKS";
 
   /**
    * MARK_PEAKS has value Boolean OR a vector of PeakQ objects

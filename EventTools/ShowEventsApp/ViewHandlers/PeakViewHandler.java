@@ -77,7 +77,14 @@ public class PeakViewHandler implements IReceiveMessage,
     {
       Peak_new peak      = peak_array[i];
       float[][][] region = histogram_array[i].getHistogramArray();
-      PeakDisplayInfo peak_info = new PeakDisplayInfo( "Peak " + i,
+
+      int seq_num = peak.seqnum();
+      int det_num = peak.detnum();
+      int row     = (int)peak.y();
+      int col     = (int)peak.x();
+      String title = "" + seq_num + ":  " + det_num + 
+                     "  ( " + col + ", " + row + " )";
+      PeakDisplayInfo peak_info = new PeakDisplayInfo(  title,
                                                         region,
                                                         0, 0, 0, true );
       peak_infos[i] = peak_info;
@@ -115,8 +122,6 @@ public class PeakViewHandler implements IReceiveMessage,
     {
       Histogram3D histogram = histogram_array[p_index];
       Vector3D bin_center = histogram.binLocation( x_index, y_index, z_index );
-
-      //bin_center.multiply( (float)( 1 / (2*Math.Pi) ) );  
 
       Vector3D size = new Vector3D( 1, 1, 1 );
       SelectPointCmd value = new SelectPointCmd( bin_center, size );

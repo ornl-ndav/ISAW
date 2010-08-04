@@ -51,7 +51,6 @@ import EventTools.EventList.SNS_Tof_to_Q_map;
 import EventTools.EventList.ITofEventList;
 import EventTools.EventList.MapEventsToQ_Op;
 import EventTools.ShowEventsApp.Command.Commands;
-import EventTools.ShowEventsApp.Command.PeakQ_Cmd;
 import EventTools.ShowEventsApp.Command.PeakImagesCmd;
 import EventTools.ShowEventsApp.Command.SetNewInstrumentCmd;
 import EventTools.ShowEventsApp.Command.SelectPointCmd;
@@ -261,20 +260,15 @@ public class QMapperHandler implements IReceiveMessage
       if ( obj == null )
         return false;
 
-      if ( obj instanceof PeakQ_Cmd )
+      if ( obj instanceof Vector )
       {
-        PeakQ_Cmd cmd = (PeakQ_Cmd)obj;
-        Vector<Peak_new> peak_new_list =
-                         ConvertPeakQToPeakNew( mapper, cmd.getPeaks() );
+        Vector<PeakQ> peakQs = (Vector<PeakQ>)obj; 
+        Vector<Peak_new> peak_new_list = ConvertPeakQToPeakNew(mapper, peakQs);
+
         Message peak_new_message =
           new Message( Commands.SET_PEAK_NEW_LIST, peak_new_list, true, true );
-        message_center.send( peak_new_message );
 
-        PeakImagesCmd peak_image_cmd = new PeakImagesCmd( peak_new_list, 
-                                                          cmd.getRegions() );
-        Message peak_images_message =
-           new Message(Commands.SHOW_PEAK_IMAGES, peak_image_cmd, true, true);
-        message_center.send( peak_images_message );
+        message_center.send( peak_new_message );
       }
     }
 
@@ -308,9 +302,6 @@ public class QMapperHandler implements IReceiveMessage
             new Message(Commands.SET_PEAK_NEW_LIST, peak_new_list, true, true);
 
           message_center.send( peak_new_message );
-
-//        for ( int i = 0; i < peak_new_list.size(); i++ )
-//          System.out.println( peak_new_list.elementAt(i) );
         }
       }
     }
@@ -366,31 +357,7 @@ public class QMapperHandler implements IReceiveMessage
 
         if ( det_ids == null )
           det_ids = mapper.getGridIDs();
-/*
-        if ( det_ids != null )
-        {
-          System.out.print("Dets omitted: ");
-          for ( int j = 0; j < det_ids.length; j++ )
-            System.out.print( " "+det_ids[j] );
-          System.out.println();
-        }
- 
-        if ( row_ids != null )
-        {
-          System.out.print("Rows omitted: ");
-          for ( int j = 0; j < row_ids.length; j++ )
-            System.out.print( " " + row_ids[j] );
-          System.out.println();
-        }
 
-        if ( col_ids != null )
-        {
-          System.out.print("Cols omitted: ");
-          for ( int j = 0; j < col_ids.length; j++ )
-            System.out.print( " " + col_ids[j] );
-          System.out.println();
-        } 
-*/
         if ( row_ids == null && col_ids == null )      // skip whole detectors
           mapper.maskOffDetectors( det_ids );
         else
@@ -414,13 +381,7 @@ public class QMapperHandler implements IReceiveMessage
       {
         boolean omit_flag = (Boolean)omit_q_range_info.elementAt(0);
         float[] endpoints = (float[])omit_q_range_info.elementAt(1);
-/*
-        System.out.println("Mag Q Filter omit flag is " + omit_flag );
-        System.out.println("End point array is ");
-        for ( int i = 0; i < endpoints.length; i++ )
-          System.out.printf(" %5.3f ", endpoints[i] );
-        System.out.println();
-*/
+
         mapper.setQ_Filter( endpoints, omit_flag ); 
       }
       catch ( Exception ex )

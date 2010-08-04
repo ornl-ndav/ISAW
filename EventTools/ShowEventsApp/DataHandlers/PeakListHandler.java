@@ -56,8 +56,6 @@ public class PeakListHandler implements IReceiveMessage
 
   public boolean receive( Message message )
   {
-//    System.out.println("***PeakListHandler in thread " 
-//                       + Thread.currentThread());
     if ( message.getName().equals(Commands.SET_PEAK_NEW_LIST) )
     {
       Object obj = message.getValue();
@@ -67,14 +65,17 @@ public class PeakListHandler implements IReceiveMessage
       if ( obj instanceof Vector )
       {
          Vector<Peak_new> new_peaks = (Vector<Peak_new>)obj;
+         Sort( new_peaks );
          peakNew_list = new Vector<Peak_new>();
          for ( int i = 0; i < new_peaks.size(); i++ )
            peakNew_list.add( new_peaks.elementAt(i) );
 
-//       System.out.println("IN PeakListHandler set NEW PEAKS" + 
-//                          " #Peak_new = " + peakNew_list.size() );
          if ( UB != null)
            indexAllPeaks(new_peaks,UB,tolerance);
+
+         message_center.send( new Message( Commands.ADD_PEAK_IMAGE_REGIONS,
+                                           new_peaks,
+                                           true ) );
       }
     }
  
@@ -105,15 +106,13 @@ public class PeakListHandler implements IReceiveMessage
        if ( val instanceof SelectionInfoCmd )         // fill in counts field
        {
          SelectionInfoCmd select_info_cmd = (SelectionInfoCmd)val;
-         Peak_new[]Sav = new Peak_new[ peakNew_list.size()];
-         Copy( Sav, peakNew_list);
-         Arrays.sort( Sav, new Peak_newBasicComparator() );
-         select_info_cmd.setSeqNum( getNearestSeqNum(Sav, 
+         select_info_cmd.setSeqNum( getNearestSeqNum( peakNew_list, 
                                     select_info_cmd.getQxyz( ),
                                (int)select_info_cmd.getDetNum( )) );
 
          message_center.send( new Message( Commands.SHOW_SELECTED_POINT_INFO,
-                                           select_info_cmd, false));
+                                           select_info_cmd,
+                                           true ));
        }
     }
 
@@ -305,7 +304,7 @@ public class PeakListHandler implements IReceiveMessage
        if( OrientationMatrices == null || OrientationMatrices.size() < 1)
        {
            Util.sendError( 
-                 "No Orientation Matrices found in Auto with no Crystal Parameters" );
+           "No Orientation Matrices found in Auto with no Crystal Parameters" );
            return false;
        }
        Vector<IPeak> Peaks = Convert2IPeak(peakNew_list);
@@ -327,7 +326,8 @@ public class PeakListHandler implements IReceiveMessage
     return false;
   }
   
-  private void Copy( Peak_new[] Sav, Vector<Peak_new> PeakList)
+
+  private static void Copy( Peak_new[] Sav, Vector<Peak_new> PeakList)
   {
      if( Sav == null || PeakList== null ||Sav.length != PeakList.size())
         throw new IllegalArgumentException("null or improper array sizes. Cannot Sort");
@@ -335,28 +335,54 @@ public class PeakListHandler implements IReceiveMessage
         Sav[i]= PeakList.elementAt( i );
   }
 
-  private int getNearestSeqNum(Peak_new[] peakNew_list, Vector3D Qxyz, int detNum)
-  {
-     if( peakNew_list == null ||  Qxyz == null)
-        return 0;
-     if( peakNew_list.length < 1)
-        return 0;
-     float minQ=Float.MAX_VALUE;
-     int seqNum =0;
-     for( int i=0; i < peakNew_list.length; i++)
-     {
-        Peak_new peak =peakNew_list[i];
-         if ( peak.detnum( ) == detNum )
-         {
-            Vector3D Q = new Vector3D( peak.getUnrotQ( ) );
 
-            float d = Qxyz.distance( Q );
-            if ( d < minQ )
-            {
-               minQ = d;
-               seqNum = i + 1;
-            }
-         }
+  /**
+   *  Sort the specifed vector of Peak_new objects into the same order
+   *  that will be written to a file, by default.  Assign the sequence
+   *  numbers based on that order.
+   */
+  public static void Sort( Vector<Peak_new> peak_list )
+  {
+    Peak_new[] peak_array = new Peak_new[ peak_list.size()];
+
+    Copy( peak_array, peak_list );
+
+    Arrays.sort( peak_array, new Peak_newBasicComparator() );
+
+    peak_list.clear();
+
+    for ( int i = 0; i < peak_array.length; i++ )
+    {
+      peak_array[i].seqnum(i);
+      peak_list.add( peak_array[i] );
+    }
+  }
+
+
+  private int getNearestSeqNum( Vector<Peak_new> peak_list, Vector3D Qxyz, int detNum )
+  {
+     if( peak_list == null || Qxyz == null )
+        return 0;
+
+     if( peak_list.size() < 1 )
+        return 0;
+
+     float minQ = Float.MAX_VALUE;
+     int seqNum = 0;
+     for( int i = 0; i < peak_list.size(); i++ )
+     {
+        Peak_new peak = peak_list.elementAt(i);
+        if ( peak.detnum( ) == detNum )
+        {
+           Vector3D Q = new Vector3D( peak.getUnrotQ( ) );
+
+           float d = Qxyz.distance( Q );
+           if ( d < minQ )
+           {
+              minQ = d;
+              seqNum = peak.seqnum();
+           }
+        }
      }
     return seqNum; 
   }
