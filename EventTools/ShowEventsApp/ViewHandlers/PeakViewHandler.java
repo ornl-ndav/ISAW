@@ -1,3 +1,37 @@
+/* 
+ * File: PeakViewHandler.java 
+ *
+ * Copyright (C) 2010, Dennis Mikkelson
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
+ *           Department of Mathematics, Statistics and Computer Science
+ *           University of Wisconsin-Stout
+ *           Menomonie, WI 54751, USA
+ *
+ * This work was supported by the Spallation Neutron Source Division
+ * of Oak Ridge National Laboratory, Oak Ridge, TN, USA.
+ *
+ *  Last Modified:
+ * 
+ *  $Author$
+ *  $Date$            
+ *  $Revision$
+ */
+
 
 package EventTools.ShowEventsApp.ViewHandlers;
 
@@ -29,15 +63,17 @@ import EventTools.Histogram.Histogram3D;
 public class PeakViewHandler implements IReceiveMessage,
                                         ActionListener
 {
-  private MessageCenter message_center;
-  private Peak_new[]    peak_array = null;
-  private Histogram3D[] histogram_array = null;
-
+  private MessageCenter        message_center;
+  private Peak_new[]           peak_array = null;
+  private Histogram3D[]        histogram_array = null;
+  private Vector<FinishJFrame> frames;
 
   public PeakViewHandler( MessageCenter message_center )
   {
+    frames = new Vector<FinishJFrame>();
     this.message_center = message_center;
     message_center.addReceiver( this, Commands.SHOW_PEAK_IMAGES );
+    message_center.addReceiver( this, Commands.CLOSE_PEAK_IMAGES );
   }
 
 
@@ -45,19 +81,23 @@ public class PeakViewHandler implements IReceiveMessage,
   {
     if ( message.getName().equals(Commands.SHOW_PEAK_IMAGES) )
     {
-      System.out.println( "Got SHOW_PEAK_IMAGES command ");
       Object obj = message.getValue();
       if ( obj instanceof PeakImagesCmd )
         ShowImages( (PeakImagesCmd)obj );        
     }
+    else if ( message.getName().equals(Commands.CLOSE_PEAK_IMAGES) )
+    {
+      for ( int i = 0; i < frames.size(); i++ )
+        frames.elementAt(i).dispose();
+      frames.clear();
+    }
+
     return false;
   }
 
 
   private void ShowImages( PeakImagesCmd images_cmd )
   {
-    System.out.println( images_cmd ); 
-
     Vector<Peak_new>    peaks      = images_cmd.getPeaks();
     Vector<Histogram3D> histograms = images_cmd.getRegions();
 
@@ -99,8 +139,10 @@ public class PeakViewHandler implements IReceiveMessage,
     frame.setSize(500,500);
     frame.setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
     frame.setVisible( true );
-  }
 
+    frame.addWindowListener( new FrameCloseListener() );
+    frames.add( frame );
+  }
 
   public void actionPerformed( ActionEvent event )
   {
@@ -129,7 +171,24 @@ public class PeakViewHandler implements IReceiveMessage,
                                       value, true, true );
       message_center.send( message );
     }
+  }
 
+
+  /**
+   * Class that listens for a peaks view frame closing and removes it
+   * from the vector of active peaks view frames.
+   */
+  private class FrameCloseListener extends WindowAdapter
+  {
+    public void windowClosed( WindowEvent event )
+    {
+      Object source = event.getSource();
+      for ( int i = frames.size()-1; i >= 0; i-- )
+      {
+        if ( frames.elementAt(i) == source )
+          frames.remove( source );
+      }
+    }
   }
 
 }

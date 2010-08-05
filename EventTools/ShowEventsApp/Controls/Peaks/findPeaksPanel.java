@@ -36,7 +36,7 @@
 package EventTools.ShowEventsApp.Controls.Peaks;
 
 import javax.swing.*;
-
+import gov.anl.ipns.ViewTools.UI.FontUtil;
 import java.awt.*;
 import java.awt.event.*;
 
@@ -52,11 +52,21 @@ public class findPeaksPanel extends JPanel
 {
    private static final long  serialVersionUID = 1L;
    private MessageCenter      message_center;
-   private JButton            findPeaksButton;
-   private JCheckBox          markPeaksCbx;
+
    private JTextField         maxPeaksTxt;
    private JTextField         minPeakTxt;
+
+   private JCheckBox          smoothDataCbx;
+
+   private JCheckBox          markPeaksCbx;
+
+   private JCheckBox          showPeakImagesCbx;
+   private JTextField         imageSizeTxt;
+   private JTextField         maxSliceOffsetTxt;
+
    private JTextField         logFileTxt;
+
+   private JButton            findPeaksButton;
    
    /**
     * Builds the panel as well as sets the messagecenter.
@@ -67,91 +77,193 @@ public class findPeaksPanel extends JPanel
    {
       this.message_center = message_center;
       
-      this.setLayout(new GridLayout(5,1));
+      this.setLayout(new GridLayout(9,1));
 
-      this.add(buildCheckInfo());
       this.add(buildMaxPeaks());
       this.add(buildMinPeaks());
+
+      this.add(buildSmoothDataCheckBox());
+
+      this.add(buildMarkPeaksCheckBox());
+
+      this.add(buildShowPeakImageCheckBox());
+      this.add(buildPeakSizePanel());
+      this.add(buildNumSlicesPanel());
+
       this.add(buildLogPanel());
+
       this.add(buildButtonPanel());
    }
-   
-   /**
-    * Builds the panel holding mark peaks checkbox.
-    * 
-    * @return panel with mark peaks checkbox
-    */
-   public JPanel buildCheckInfo()
-   {
-      JPanel panel = new JPanel();
-      panel.setLayout(new GridLayout(1,2));
-      
-      JLabel filler = new JLabel();
-      
-      markPeaksCbx = new JCheckBox("Mark Peaks");
-      markPeaksCbx.setSelected(true);
-      markPeaksCbx.addActionListener(new peaksListener());
-      markPeaksCbx.setHorizontalAlignment(JCheckBox.CENTER);
-      
-      panel.add(filler);
-      panel.add(markPeaksCbx);
-      
-      return panel;
-   }
-   
+
+
    /**
     * Builds the panel holding max # of peaks.
     * 
     * @return panel with label and textfield for max # peaks.
     */
-   public JPanel buildMaxPeaks()
+   private JPanel buildMaxPeaks()
    {
       JPanel panel = new JPanel();
       panel.setLayout(new GridLayout(1,2));
-      
+
       JLabel maxPeaksLbl = new JLabel("Max # of Peaks");
       String defaultMaxPeaks = "50";
       maxPeaksTxt = new JTextField(defaultMaxPeaks);
       maxPeaksTxt.setHorizontalAlignment(JTextField.RIGHT);
-      
+
       panel.add(maxPeaksLbl);
       panel.add(maxPeaksTxt);
-      
+
       return panel;
    }
-   
+
    /**
     * Builds the panel holding min peak intensity.
     * 
     * @return panel with label and textfield for min peak intensity.
     */
-   public JPanel buildMinPeaks()
+   private JPanel buildMinPeaks()
    {
       JPanel panel = new JPanel();
       panel.setLayout(new GridLayout(1,2));
-      
+
       JLabel minPeakLbl = new JLabel("Min Peak Intensity");
       String defaultMinPeaks = "20";
       minPeakTxt = new JTextField(defaultMinPeaks);
       minPeakTxt.setHorizontalAlignment(JTextField.RIGHT);
-      
+
       panel.add(minPeakLbl);
       panel.add(minPeakTxt);
-      
+
       return panel;
    }
-   
+
+
+   /**
+    * Builds the panel holding the smooth data checkbox.
+    * 
+    * @return panel with smooth data checkbox
+    */
+   private JPanel buildSmoothDataCheckBox()
+   {
+      JPanel panel = new JPanel();
+      panel.setLayout(new GridLayout(1,2));
+
+      JLabel filler = new JLabel();
+
+      smoothDataCbx = new JCheckBox("Smooth Data?");
+      smoothDataCbx.setSelected(false);
+      smoothDataCbx.addActionListener(new peaksListener());
+
+      panel.add(filler);
+      panel.add(smoothDataCbx);
+
+      return panel;
+   }
+
+
+   /**
+    * Builds the panel holding mark peaks checkbox.
+    * 
+    * @return panel with mark peaks checkbox
+    */
+   private JPanel buildMarkPeaksCheckBox()
+   {
+      JPanel panel = new JPanel();
+      panel.setLayout(new GridLayout(1,2));
+
+      JLabel filler = new JLabel();
+
+      markPeaksCbx = new JCheckBox("Mark Peaks");
+      markPeaksCbx.setSelected(true);
+      markPeaksCbx.addActionListener(new peaksListener());
+
+      panel.add(filler);
+      panel.add(markPeaksCbx);
+
+      return panel;
+   }
+
+
+   /**
+    * Builds the panel holding show peak images checkbox.
+    * 
+    * @return panel with show peaks checkbox
+    */
+   private JPanel buildShowPeakImageCheckBox()
+   {
+      JPanel panel = new JPanel();
+      panel.setLayout(new GridLayout(1,2));
+
+      JLabel filler = new JLabel();
+
+      showPeakImagesCbx = new JCheckBox("Show Peak Images");
+      showPeakImagesCbx.setSelected(true);
+      showPeakImagesCbx.addActionListener(new ShowImagesListener());
+
+      panel.add(filler);
+      panel.add(showPeakImagesCbx);
+
+      return panel;
+   }
+
+
+   /**
+    * Builds the panel holding peak image region size.
+    * 
+    * @return panel with peak image region size 
+    */
+   private JPanel buildPeakSizePanel()
+   {
+      JPanel panel = new JPanel();
+      panel.setLayout(new GridLayout(1,2));
+
+      JLabel size_label = 
+                       new JLabel("Image size ( "+FontUtil.INV_ANGSTROM+" )");
+
+      imageSizeTxt = new JTextField("0.5");
+      imageSizeTxt.setHorizontalAlignment(JTextField.RIGHT);
+
+      panel.add(size_label);
+      panel.add(imageSizeTxt);
+
+      return panel;
+   }
+
+
+   /**
+    * Builds the panel holding requested number of peak slices +/-.
+    * 
+    * @return panel with maxSliceOffsetTxt 
+    */
+   private JPanel buildNumSlicesPanel()
+   {
+      JPanel panel = new JPanel();
+      panel.setLayout(new GridLayout(1,2));
+
+      JLabel slices_label = new JLabel("Number of Image Sices (+/-)");
+
+      maxSliceOffsetTxt = new JTextField("5");
+      maxSliceOffsetTxt.setHorizontalAlignment(JTextField.RIGHT);
+
+      panel.add(slices_label);
+      panel.add(maxSliceOffsetTxt);
+
+      return panel;
+   }
+
+
    /**
     * Builds the panel holding log file name.
     * 
     * @return panel with label and textfield for log file.
     */
-   public JPanel buildLogPanel()
+   private JPanel buildLogPanel()
    {
       JPanel panel = new JPanel();
       panel.setLayout(new GridLayout(1,2));
       
-      JLabel logFileLbl = new JLabel("Log File Name");
+      JLabel logFileLbl = new JLabel("Find Peaks Log File Name");
       logFileTxt = new JTextField();
       logFileTxt.setHorizontalAlignment(JTextField.RIGHT);
       
@@ -166,7 +278,7 @@ public class findPeaksPanel extends JPanel
     * 
     * @return panel with button for find peaks.
     */
-   public JPanel buildButtonPanel()
+   private JPanel buildButtonPanel()
    {
       JPanel panel = new JPanel();
       panel.setLayout(new GridLayout(1,1));
@@ -195,7 +307,7 @@ public class findPeaksPanel extends JPanel
       }
       catch (NumberFormatException nfe)
       {         
-         String error = "Max # of Peaks must be of type Integer!";
+         String error = "Max # of Peaks must be a valid integer!";
          JOptionPane.showMessageDialog( null, 
                                         error, 
                                        "Invalid Input", 
@@ -209,38 +321,45 @@ public class findPeaksPanel extends JPanel
       }
       catch (NumberFormatException nfe)
       {
-         String error = "Min Peak Intensity must be of type Integer!";
+         String error = "Min Peak Intensity must be a valid integer!";
          JOptionPane.showMessageDialog( null, 
                                         error, 
                                        "Invalid Input", 
                                         JOptionPane.ERROR_MESSAGE );
          return false;
       }
-      
-      /* if (logFileTxt.getText().equals(""))
+
+      try
       {
-         String error = "You have not specified a log file!";
-         JOptionPane.showMessageDialog( null, 
-                                        error, 
-                                       "Invalid Input", 
+         Float.parseFloat(imageSizeTxt.getText());
+      }
+      catch (NumberFormatException nfe)
+      {
+         String error = "Image size in Q must be a valid float!";
+         JOptionPane.showMessageDialog( null,
+                                        error,
+                                       "Invalid Input",
                                         JOptionPane.ERROR_MESSAGE );
          return false;
       }
-     else
+
+      try
       {
-         File file = new File(logFileTxt.getText());
-         if (!file.exists())
-         {
-            String error = logFileTxt.getText() + " does not exist!";
-            JOptionPane.showMessageDialog( null, error, 
-                                          "Invalid Input", 
-                                           JOptionPane.ERROR_MESSAGE);
-            return false;
-         }
-      }*/
+         Integer.parseInt(maxSliceOffsetTxt.getText());
+      }
+      catch (NumberFormatException nfe)
+      {
+         String error = "Number of slices must be a  valid integer!";
+         JOptionPane.showMessageDialog( null,
+                                        error,
+                                       "Invalid Input",
+                                        JOptionPane.ERROR_MESSAGE);
+         return false;
+      }
       
       return true;
    }
+
    
    /**
     * ActionListener for the findpeaks button that calls
@@ -251,13 +370,16 @@ public class findPeaksPanel extends JPanel
    {
       public void actionPerformed(ActionEvent e)
       {
-         if (valid())
+         if ( valid() )
          {
             FindPeaksCmd findPeaksCmd = new FindPeaksCmd(
-                  false,
-                  markPeaksCbx.isSelected(),
                   Integer.parseInt(maxPeaksTxt.getText()), 
                   Integer.parseInt(minPeakTxt.getText()),
+                  smoothDataCbx.isSelected(),
+                  markPeaksCbx.isSelected(),
+                  showPeakImagesCbx.isSelected(),
+                  Float.parseFloat(imageSizeTxt.getText()),
+                  Integer.parseInt(maxSliceOffsetTxt.getText()),
                   logFileTxt.getText());
          
             sendMessage(Commands.FIND_PEAKS, findPeaksCmd);
@@ -267,6 +389,7 @@ public class findPeaksPanel extends JPanel
          }
       }
    }
+
    
    /**
     * ActionListener for markpeaks and sends either true
@@ -280,6 +403,33 @@ public class findPeaksPanel extends JPanel
       }
    }
    
+
+   /**
+    * Listener for the Show Peak Images checkbox.
+    */
+   private class ShowImagesListener implements ActionListener
+   {
+      public void actionPerformed(ActionEvent e)
+      {
+        boolean show_peaks = showPeakImagesCbx.isSelected();
+       
+        if ( !show_peaks )
+          sendMessage(Commands.CLOSE_PEAK_IMAGES, show_peaks );
+ 
+        else if ( valid() ) 
+        {
+          PeaksCmd cmd = new PeaksCmd(
+                                null, 
+                                show_peaks,
+                                Float.parseFloat(imageSizeTxt.getText()),
+                                Integer.parseInt(maxSliceOffsetTxt.getText()));
+
+          sendMessage(Commands.MAKE_PEAK_IMAGES, cmd );
+        }
+      }
+   }
+
+
    /**
     * Sends a message to the message center.
     * 
@@ -291,9 +441,9 @@ public class findPeaksPanel extends JPanel
       Message message = new Message( command,
                                      value,
                                      true );
-      
       message_center.send( message );
    }
+
    
    public static void main(String[] args)
    {
