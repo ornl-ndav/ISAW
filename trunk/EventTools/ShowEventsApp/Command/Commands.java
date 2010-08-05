@@ -111,7 +111,9 @@ public class Commands
    *  SET_PEAK_NEW_LIST has a Vector of Peak_new objects as it's  message value.
    */
   public static final String SET_PEAK_NEW_LIST      = "SET_PEAK_NEW_LIST";
-  public static final String ADD_PEAK_IMAGE_REGIONS = "ADD_PEAK_IMAGE_REGIONS";
+  public static final String GET_PEAK_IMAGE_REGIONS = "GET_PEAK_IMAGE_REGIONS";
+  public static final String CLOSE_PEAK_IMAGES      = "CLOSE_PEAK_IMAGES";
+  public static final String MAKE_PEAK_IMAGES       = "MAKE_PEAK_IMAGES";
   public static final String SHOW_PEAK_IMAGES       = "SHOW_PEAK_IMAGES";
   public static final String PEAK_LIST_CHANGED      = "PEAK_LIST_CHANGED";
   public static final String CLEAR_PEAK_LISTS       = "CLEAR_PEAK_LISTS";

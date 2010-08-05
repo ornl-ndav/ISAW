@@ -21,6 +21,7 @@ import MessageTools.Message;
 import MessageTools.MessageCenter;
 
 import EventTools.ShowEventsApp.Command.Commands;
+import EventTools.ShowEventsApp.Command.PeaksCmd;
 import EventTools.ShowEventsApp.Command.IndexPeaksCmd;
 import EventTools.ShowEventsApp.Command.IndexARCS_PeaksCmd;
 import EventTools.ShowEventsApp.Command.SelectionInfoCmd;
@@ -43,6 +44,7 @@ public class PeakListHandler implements IReceiveMessage
     message_center.addReceiver( this, Commands.SET_PEAK_NEW_LIST );
     message_center.addReceiver( this, Commands.WRITE_PEAK_FILE );
     message_center.addReceiver( this, Commands.SHOW_PEAK_FILE );
+    message_center.addReceiver( this, Commands.MAKE_PEAK_IMAGES );
     message_center.addReceiver( this, Commands.INIT_HISTOGRAM );
     message_center.addReceiver( this, Commands.ADD_PEAK_LIST_INFO );
  
@@ -62,7 +64,32 @@ public class PeakListHandler implements IReceiveMessage
       if ( obj == null )
         return false;
 
-      if ( obj instanceof Vector )
+      if ( obj instanceof PeaksCmd )
+      {
+        PeaksCmd cmd = (PeaksCmd)obj;
+        Vector<Peak_new> new_peaks = cmd.getPeaks();
+        Sort( new_peaks );
+        peakNew_list = new Vector<Peak_new>();
+        for ( int i = 0; i < new_peaks.size(); i++ )
+          peakNew_list.add( new_peaks.elementAt(i) );
+
+        if ( UB != null)
+          indexAllPeaks( new_peaks, UB, tolerance );
+
+        if ( cmd.getShowImages() )
+        {
+          PeaksCmd new_cmd = new PeaksCmd( new_peaks,
+                                           cmd.getShowImages(),
+                                           cmd.getImageSize(),
+                                           cmd.getMaxOffset() );
+
+          message_center.send( new Message( Commands.GET_PEAK_IMAGE_REGIONS,
+                                            new_cmd,
+                                            true ) );
+        }
+      }
+
+      else if ( obj instanceof Vector )  // from CRUDE INTEGRATE ALL HKL's
       {
          Vector<Peak_new> new_peaks = (Vector<Peak_new>)obj;
          Sort( new_peaks );
@@ -72,14 +99,28 @@ public class PeakListHandler implements IReceiveMessage
 
          if ( UB != null)
            indexAllPeaks(new_peaks,UB,tolerance);
-
-         message_center.send( new Message( Commands.ADD_PEAK_IMAGE_REGIONS,
-                                           new_peaks,
-                                           true ) );
       }
     }
  
-    else if ( message.getName( ).equals( Commands.INIT_HISTOGRAM ) )
+    else if ( message.getName().equals( Commands.MAKE_PEAK_IMAGES ) )
+    {
+      Object obj = message.getValue();
+      if ( obj == null || peakNew_list == null || peakNew_list.size() <= 0 )
+        return false;
+
+      if ( obj instanceof PeaksCmd )
+      {
+        PeaksCmd cmd = (PeaksCmd)obj;
+        PeaksCmd new_cmd = new PeaksCmd( peakNew_list,
+                                         cmd.getShowImages(),
+                                         cmd.getImageSize(),
+                                         cmd.getMaxOffset() );
+        message_center.send( new Message( Commands.GET_PEAK_IMAGE_REGIONS,
+                                            new_cmd,
+                                            true ) );
+      }
+    }
+    else if ( message.getName().equals( Commands.INIT_HISTOGRAM ) )
     {
        peakNew_list = new Vector< Peak_new >( );
        UB = null;

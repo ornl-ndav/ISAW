@@ -60,21 +60,12 @@ public class peakOptionsPanel extends JPanel
    public peakOptionsPanel(MessageCenter message_center)
    {
       findPeaksPanel findPeaks = new findPeaksPanel(message_center);
-      //markPeaks markpeaks = new markPeaks(message_center);
-      //writePeaks writepeaks = new writePeaks(message_center);
       
-      this.setBorder(new TitledBorder("Peak Options"));
-      
-      this.setLayout(new GridLayout(5,1));
-      //this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-
-      this.add(findPeaks.buildCheckInfo());
-      this.add(findPeaks.buildMaxPeaks());
-      this.add(findPeaks.buildMinPeaks());
-      this.add(findPeaks.buildLogPanel());
-      this.add(findPeaks.buildButtonPanel());
-      //this.add(writepeaks);
+      this.setBorder(new TitledBorder("Find Peaks Options"));
+      this.setLayout( new GridLayout(1,1) );
+      this.add( findPeaks );
    }
+
    
    public static void main(String[] args)
    {

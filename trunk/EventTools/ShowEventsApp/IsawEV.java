@@ -48,7 +48,7 @@ import EventTools.ShowEventsApp.ViewHandlers.*;
  */
 public class IsawEV 
 {
-  public  static final int NUM_BINS = 512;
+  public  static final int NUM_BINS = 768;
 
   /**
    *  Construct an instance of the IsawEV application.

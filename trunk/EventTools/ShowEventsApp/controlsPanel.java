@@ -300,7 +300,8 @@ public class controlsPanel extends JPanel
    //Creates message to test new modules
    /*private void Test()
    {
-      String filename = "C:\\ISAW\\SampleRuns\\SNS\\Snap\\QuartzRunsFixed\\quartz.peaks";
+      String filename = 
+             "C:\\ISAW\\SampleRuns\\SNS\\Snap\\QuartzRunsFixed\\quartz.peaks";
       Vector< Peak_new > peaks = null;
       try
       {

@@ -51,6 +51,7 @@ import EventTools.EventList.SNS_Tof_to_Q_map;
 import EventTools.EventList.ITofEventList;
 import EventTools.EventList.MapEventsToQ_Op;
 import EventTools.ShowEventsApp.Command.Commands;
+import EventTools.ShowEventsApp.Command.PeaksCmd;
 import EventTools.ShowEventsApp.Command.PeakImagesCmd;
 import EventTools.ShowEventsApp.Command.SetNewInstrumentCmd;
 import EventTools.ShowEventsApp.Command.SelectPointCmd;
@@ -260,13 +261,23 @@ public class QMapperHandler implements IReceiveMessage
       if ( obj == null )
         return false;
 
-      if ( obj instanceof Vector )
+      if ( obj instanceof PeaksCmd )
       {
-        Vector<PeakQ> peakQs = (Vector<PeakQ>)obj; 
+        PeaksCmd peaks_cmd = (PeaksCmd)obj;
+
+        Vector<PeakQ> peakQs = peaks_cmd.getPeaks(); 
+        if ( peakQs == null )
+          return false;
+
         Vector<Peak_new> peak_new_list = ConvertPeakQToPeakNew(mapper, peakQs);
 
+        PeaksCmd new_cmd = new PeaksCmd( peak_new_list,
+                                         peaks_cmd.getShowImages(),
+                                         peaks_cmd.getImageSize(),
+                                         peaks_cmd.getMaxOffset() );
+
         Message peak_new_message =
-          new Message( Commands.SET_PEAK_NEW_LIST, peak_new_list, true, true );
+          new Message( Commands.SET_PEAK_NEW_LIST, new_cmd, true, true );
 
         message_center.send( peak_new_message );
       }

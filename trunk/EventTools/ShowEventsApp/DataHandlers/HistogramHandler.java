@@ -55,6 +55,7 @@ import EventTools.EventList.IEventList3D;
 import EventTools.ShowEventsApp.Command.Commands;
 import EventTools.ShowEventsApp.Command.SelectionInfoCmd;
 import EventTools.ShowEventsApp.Command.SetNewInstrumentCmd;
+import EventTools.ShowEventsApp.Command.PeaksCmd;
 import EventTools.ShowEventsApp.Command.FindPeaksCmd;
 import EventTools.ShowEventsApp.Command.PeakImagesCmd;
 import EventTools.ShowEventsApp.Command.Util;
@@ -109,7 +110,7 @@ public class HistogramHandler implements IReceiveMessage
     message_center.addReceiver( this, Commands.ADD_HISTOGRAM_INFO );
     message_center.addReceiver( this, Commands.GET_HISTOGRAM_MAX );
     message_center.addReceiver( this, Commands.FIND_PEAKS );
-    message_center.addReceiver( this, Commands.ADD_PEAK_IMAGE_REGIONS );
+    message_center.addReceiver( this, Commands.GET_PEAK_IMAGE_REGIONS );
     
     view_message_center.addReceiver( this, Commands.UPDATE );
 
@@ -235,6 +236,7 @@ public class HistogramHandler implements IReceiveMessage
       if ( val instanceof FindPeaksCmd )  
       {
         FindPeaksCmd cmd = (FindPeaksCmd)message.getValue();
+
         Util.sendInfo("Searching for peaks, PLEASE WAIT ...");
 
         Vector<PeakQ> peakQs = null; 
@@ -250,8 +252,12 @@ public class HistogramHandler implements IReceiveMessage
 
         if ( peakQs != null && peakQs.size() > 0 )       // send out the peaks
         { 
+          PeaksCmd peaks_cmd = new PeaksCmd( peakQs, 
+                                             cmd.getShowImages(),
+                                             cmd.getImageSize(),
+                                             cmd.getMaxOffset() );
           Message set_peak_Q_list = new Message( Commands.SET_PEAK_Q_LIST,
-                                                 peakQs,
+                                                 peaks_cmd,
                                                  true,
                                                  true );
           message_center.send( set_peak_Q_list );
@@ -271,27 +277,34 @@ public class HistogramHandler implements IReceiveMessage
       return false;
     }
     
-    else if ( message.getName().equals(Commands.ADD_PEAK_IMAGE_REGIONS) )
+    else if ( message.getName().equals(Commands.GET_PEAK_IMAGE_REGIONS) )
     {
-      System.out.println("HistogramHandler got ADD_PEAK_REGIONS message");
       Object obj = message.getValue();
-      if ( obj == null || !(obj instanceof Vector) )
+      if ( obj == null || !(obj instanceof PeaksCmd) )
         return false;
 
-      Vector<Peak_new> peaks   = (Vector<Peak_new>)obj;
-      Vector           regions = new Vector( peaks.size() );
-      for ( int i = 0; i < peaks.size(); i++ )
+      PeaksCmd cmd = (PeaksCmd)obj;
+      Vector<Peak_new> peaks   = (Vector<Peak_new>)cmd.getPeaks();
+      if ( peaks != null )
       {
-        float[] q_arr = peaks.elementAt(i).getUnrotQ();
-        float qx = (float)(q_arr[0] * 2 * Math.PI);
-        float qy = (float)(q_arr[1] * 2 * Math.PI);
-        float qz = (float)(q_arr[2] * 2 * Math.PI);
-        regions.add( histogram.getSubHistogram( qx, qy, qz, 0.5f, -1, -1, 5 ) );
-      }
+        float size       = cmd.getImageSize();
+        int   max_offset = cmd.getMaxOffset();
+
+        Vector regions = new Vector( peaks.size() );
+        for ( int i = 0; i < peaks.size(); i++ )
+        {
+          float[] q_arr = peaks.elementAt(i).getUnrotQ();
+          float qx = (float)(q_arr[0] * 2 * Math.PI);
+          float qy = (float)(q_arr[1] * 2 * Math.PI);
+          float qz = (float)(q_arr[2] * 2 * Math.PI);
+          regions.add( histogram.getSubHistogram( qx, qy, qz, 
+                                                  size, -1, -1, max_offset ) );
+        }
       PeakImagesCmd peak_image_cmd = new PeakImagesCmd( peaks, regions );
       Message peak_images_message =
            new Message(Commands.SHOW_PEAK_IMAGES, peak_image_cmd, true, true);
       message_center.send( peak_images_message );
+      }
     }
 
     else if ( message.getName().equals(Commands.GET_HISTOGRAM_MAX) )
@@ -560,8 +573,6 @@ public class HistogramHandler implements IReceiveMessage
   {
      // System.out.println("START OF FindPeaks");
    
-     smooth_data = false;                  // NOTE: Don't smooth the data!!!!
-
      int num_pages = histogram.zBinner().numBins();
      int num_rows  = histogram.yBinner().numBins();
      int num_cols  = histogram.xBinner().numBins();

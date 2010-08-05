@@ -50,7 +50,15 @@ public class IntegrateTools
     for ( int i = 0; i < peaks.size(); i++ )
     {
       Peak_new peak = peaks.elementAt(i);
-      if ( isIndexed( peak ) )
+
+      int row = Math.round(peak.y());
+      int col = Math.round(peak.x());
+
+      if ( isIndexed( peak ) && 
+           row >=  21 &&
+           row <= 236 &&
+           col >=  21 &&
+           col <= 236   )
       {
         float[] sums = IntegrateSpheres( all_Qs[i], radii, false, Q_evl );
 
@@ -81,7 +89,14 @@ public class IntegrateTools
     for ( int i = 0; i < peaks.size(); i++ )
     {
       Peak_new peak = peaks.elementAt(i);
-      if ( isIndexed( peak ) )
+      int row = Math.round(peak.y());
+      int col = Math.round(peak.x());
+
+      if ( isIndexed( peak ) &&
+           row >=  21 &&
+           row <= 236 &&
+           col >=  21 &&
+           col <= 236   )
       {
         float[] q_vec = all_Qs[i];
         Vector result = histogram.sphereIntegrals( q_vec[0],
@@ -590,11 +605,15 @@ public class IntegrateTools
     Vector peaks = Peak_new_IO.ReadPeaks_new( peaks_file );
     float[][] all_Qs = getPeakQsFromFile( peaks_file );
 
-    boolean raw_events = false;
+    boolean raw_events = true;
     if ( raw_events )
     {
       System.out.println("Integrating using RAW EVENTS");
+      long start = System.nanoTime();
       IntegratePeaksEvents( peaks, peak_radius, bkg_radius, Q_evl );
+      long end = System.nanoTime();
+      System.out.printf("Time to integrate events = %5.2f ms\n",
+                         ( end-start )/1.0E6 );
     }
     else
     {
