@@ -47,6 +47,9 @@ import Command.*;
 /**
  * This class has been dynamically created using the Method2OperatorWizard
  * and usually should not be edited.
+ * This operator is a wrapper around 
+ *@see Operators.TOF_Diffractometer.RemovePeaks_Calc#RemovePeaks_d(DataSetTools.dataset.DataSet ,java.lang.String ,float,float ,int)
+
  */
 public class RemovePeaks extends GenericOperator{
 
@@ -101,6 +104,8 @@ public class RemovePeaks extends GenericOperator{
       S.append(" above the peak extent.  One use of this");
       S.append(" method is to remove peaks in a vanadium");
       S.append(" spectrum, before smoothing the spectrum.");
+      S.append("\r\n");
+      S.append(" This operator wraps the method Operators.TOF_Diffractometer.RemovePeaks_Calc#RemovePeaks_d\n");
       S.append("@algorithm    "); 
       S.append("This can be applied to a DataSet with ");
       S.append(" x-axis time-of-flight or d-spacing.");
