@@ -44,7 +44,9 @@ import Command.*;
 
 /**
  * This class has been dynamically created using the Method2OperatorWizard
- * and usually should not be edited.
+ * and usually should not be edited. * This operator is a wrapper around 
+  *@see Operators.TOF_Diffractometer.Util#Make_d_DataSet(java.lang.String,java.lang.String,java.lang.String,java.lang.String,float ,float ,float ,float , boolean, float ,int ,boolean,String ,boolean ,String ,int ,int )
+ *
  */
 public class Make_d_DataSet extends GenericOperator{
 
@@ -109,6 +111,8 @@ public class Make_d_DataSet extends GenericOperator{
       S.append("Get Ghost Histogram is checked, then the Data returned ");
       S.append("will be an estimated ghost histogram based on the ");
       S.append("*GhostPks.dat file provided by Jason Hodge. ");
+      S.append("\r\n");
+      S.append(" This operator wraps the method Operators.TOF_Diffractometer.Util#Make_d_DataSet\n");
       S.append("@algorithm    "); 
       S.append("If the Use d Map File option is checked, then the ");
       S.append("histograms are constructed by mulitplying each ");

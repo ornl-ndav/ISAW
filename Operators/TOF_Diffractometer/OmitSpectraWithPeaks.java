@@ -46,6 +46,10 @@ import Command.*;
 /**
  * This class has been dynamically created using the Method2OperatorWizard
  * and usually should not be edited.
+ * This operator is a wrapper around 
+@see  Operators.TOF_Diffractometer.Omit_SCD_Peaks_Calc.OmitSpectraWithPeaks(DataSetTools.dataset.DataSet ,java.util.Vector)
+         java.util.Vector peaks
+
  */
 public class OmitSpectraWithPeaks extends GenericOperator{
 
@@ -91,6 +95,8 @@ public class OmitSpectraWithPeaks extends GenericOperator{
       S.append(" affected by the specified peaks.  The DataSet must only contain data");
       S.append(" from one area detector, and that must be the same as the detector in");
       S.append(" which the specified peaks were found.");
+      S.append("\r\n");
+      S.append(" This operator wraps the method Operators.TOF_Diffractometer.Omit_SCD_Peaks_Calc#OmitSpectraWithPeaks\n");
       S.append("@algorithm    "); 
       S.append("The selection flags are cleared and then any pixel within");
       S.append(" +-2 sigma of any peak is marked as selected.  When all");

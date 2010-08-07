@@ -45,6 +45,10 @@ import Command.*;
 /**
  * This class has been dynamically created using the Method2OperatorWizard
  * and usually should not be edited.
+ * This operator is a wrapper around 
+ *@see Operators.TOF_Diffractometer.Util#MakeTimeFocusedDataSet(java.lang.String,java.lang.String,java.lang.String ,java.lang.String,float,float,float ,float ,float ,float ,boolean ,float,int , boolean ,java.lang.String,int, int)
+ *
+
  */
 public class MakeTimeFocusedDataSet extends GenericOperator{
 
@@ -106,7 +110,9 @@ public class MakeTimeFocusedDataSet extends GenericOperator{
       S.append("detector bank in the instrument.  If the option ");
       S.append("Get Ghost Histogram is checked, then the Data returned ");
       S.append("will be an estimated ghost histogram based on the ");
-      S.append("*GhostPks.dat file provided by Jason Hodge. ");
+      S.append("GhostPks.dat file provided by Jason Hodge. ");
+      S.append("\r\n");
+      S.append(" This operator wraps the method Operators.TOF_Diffractometer.Util#MakeTimeFocusedDataSet\n");
       S.append("@algorithm    ");
       S.append("The instrument geometry is used to convert the measured ");
       S.append("time-of-flight reported by the DAS to a corresponding ");
