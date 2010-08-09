@@ -42,6 +42,10 @@ import gov.anl.ipns.Parameters.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
 import Command.*;
+
+/**
+* This operator is a wrapper around @see Operators.TOF_SCD.IndexJ#readOrient( java.lang.String)
+*/
 public class readOrient extends GenericOperator implements HiddenOperator{
    public readOrient(){
      super("Read Orientation");
@@ -71,6 +75,9 @@ public class readOrient extends GenericOperator implements HiddenOperator{
       StringBuffer S = new StringBuffer();
       S.append("@overview    "); 
       S.append("Read the orientation matrix out of the specified file.");
+      S.append("\r\n");
+      S.append(" This operator wraps the method "+
+               "Operators.TOF_SCD.IndexJ#readOrient( java.lang.String)\n");
       S.append("@algorithm    "); 
       S.append("");
       S.append("@assumptions    "); 
