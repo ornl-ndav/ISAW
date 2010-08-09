@@ -50,6 +50,9 @@ import Command.*;
 /**
  * This class has been dynamically created using the Method2OperatorWizard
  * and usually should not be edited.
+ * 
+ * This operator is a wrapper around 
+ *@see DataSetTools.dataset.Grid_util#getAreaGridIDs(DataSetTools.dataset.DataSet )
  */
 public class getAreaGridIDs extends GenericOperator{
 
@@ -91,6 +94,8 @@ public class getAreaGridIDs extends GenericOperator{
       StringBuffer S = new StringBuffer();
       S.append("@overview    "); 
       S.append("Get a list of all of the IDs of the all of the IDataGrids for area detectors, from a DataSet, assuming that all of the Data blocks for each detector are present and are in consecutive positions in the DataSet. This will be the case when a DataSet has just been loaded from an IPNS runfile, but may NOT be the case if Data blocks have been removed, inserted or reordered.");
+      S.append("\r\n");
+      S.append(" This operator wraps the method DataSetTools.dataset.Grid_util#getAreaGridIDs(DataSetTools.dataset.DataSet )\n");
       S.append("@algorithm    "); 
       S.append("");
       S.append("@assumptions    "); 

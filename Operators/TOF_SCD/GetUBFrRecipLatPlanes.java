@@ -44,6 +44,9 @@ import Command.*;
 /**
  * This class has been dynamically created using the Method2OperatorWizard
  * and usually should not be edited.
+ * 
+ *This operator is a wrapper around  @see DataSetTools.trial.SCDRecipLat#GetUBFrRecipLattice(java.util.Vector, float , java.util.Vector)
+ *
  */
 public class GetUBFrRecipLatPlanes extends GenericOperator{
 
@@ -91,6 +94,8 @@ public class GetUBFrRecipLatPlanes extends GenericOperator{
       S.append(" The UB matrix is optimized and passed through Blind to put the  basis Q vectors in a standard");
       S.append(" crystllographic form");
       S.append(" ");
+      S.append("\r\n");
+      S.append(" This operator wraps the method DataSetTools.trial.SCDRecipLat#GetUBFrRecipLattice\n");
       S.append("@algorithm    "); 
       S.append("Display Peaks in a reciprocal lattice viewer and let the user select three non parallel planes.");
       S.append(" Get the planes, calculate their normals, project peaks onto normals to find the best distance");
