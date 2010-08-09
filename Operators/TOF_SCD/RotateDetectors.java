@@ -34,6 +34,8 @@
  */
 
 package Operators.TOF_SCD;
+import java.util.Vector;
+
 import DataSetTools.components.ParametersGUI.JParametersDialog;
 import DataSetTools.operator.*;
 import DataSetTools.operator.Generic.*;
@@ -47,6 +49,9 @@ import Command.*;
 /**
  * This class has been dynamically created using the Method2OperatorWizard
  * and usually should not be edited.
+ *  
+ *  This operator is a wrapper around 
+ *   @see Operators.TOF_SCD.General_Utils#RotateDetectors( java.lang.String, int ,java.lang.String ,float , float ,float ,java.util.Vector)
  */
 public class RotateDetectors extends GenericOperator{
 
@@ -80,6 +85,7 @@ public class RotateDetectors extends GenericOperator{
       addParameter( new FloatPG("New Angle of Center(degr)",0));
       addParameter( new FloatPG("Sample x-offset(m)",0));
       addParameter( new FloatPG("Sample beam offset(m)",0));
+      addParameter( new ArrayPG("Detector IDs to use(blank for all)",null));
    }
 
    
@@ -94,6 +100,8 @@ public class RotateDetectors extends GenericOperator{
       StringBuffer S = new StringBuffer();
       S.append("@overview    "); 
       S.append("Creates a new DetCal file if the detectors are rotated to the specified angle in the scattering plane.");
+      S.append("\r\n");
+      S.append(" This operator wraps the method Operators.TOF_SCD.General_Utils#RotateDetectors\n");
       S.append("@algorithm    "); 
       S.append("");
       S.append("@assumptions    "); 
@@ -111,6 +119,8 @@ public class RotateDetectors extends GenericOperator{
       S.append( "@param " );
       S.append( " the sample offset in the x direction(back is positive)");
       S.append(" @param Sample offset in beam direction");
+      S.append(" @param IDs The IDs to apply the rotation to. If blank or [], all detectors "+
+               "will be rotated");
       
       S.append("@error ");
       S.append("");
@@ -146,8 +156,11 @@ public class RotateDetectors extends GenericOperator{
          float CentAngle = ((FloatPG)(getParameter(3))).getfloatValue();
          float xOffset = ((FloatPG)(getParameter(4))).getfloatValue( );
          float SampOffset = ((FloatPG)(getParameter(5))).getfloatValue( );
+         Vector IDs2Use = (Vector)((ArrayPG)getParameter(6)).getValue( );
+         if( IDs2Use != null && IDs2Use.size() < 1)
+            IDs2Use = null;
          java.lang.Object Xres=Operators.TOF_SCD.General_Utils.
-         RotateDetectors(CalibOr,CentID,CalibNew,CentAngle,xOffset,SampOffset );
+         RotateDetectors(CalibOr,CentID,CalibNew,CentAngle,xOffset,SampOffset, IDs2Use );
          
          
          
