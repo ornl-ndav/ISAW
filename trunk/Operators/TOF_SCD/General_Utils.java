@@ -37,10 +37,7 @@ import gov.anl.ipns.MathTools.Geometry.Vector3D;
 import gov.anl.ipns.Util.SpecialStrings.ErrorString;
 
 import java.io.FileOutputStream;
-import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.Scanner;
-import java.util.Vector;
+import java.util.*;
 import java.util.regex.Pattern;
 
 import javax.swing.JOptionPane;
@@ -93,6 +90,50 @@ public class General_Utils
                                        float  xoffset,
                                        float  beamOffset)
    {
+      return RotateDetectors( OrigDetCalFilename, 
+                              CenterBankID,
+                              NewDetCalFilename,
+                              newCenterAngle,
+                              xoffset,
+                              beamOffset,
+                              null);
+   }
+   /**
+    * Creates a new DetCal file if the detectors are rotated to the
+    * specified angle in the scattering plane.
+    * 
+    * @param OrigDetCalFilename   The name of the original DetCal or new Peaks
+    *                              file
+    *                              
+    * @param CenterBankID       The ID of the bank considered as the center
+    * 
+    * @param NewDetCalFilename   The name of the new DetCal file where the 
+    *                          rotated detector information is stored.
+    *                          
+    * @param newCenterAngle    The angle in degrees where the new center will 
+    *                          rotate to along a vertical axis.
+    *                          
+    *  @param xoffset         The distance in meters the sample is from the
+    *                         center of rotation
+    *                         
+    *  @param beamOffset       The distance the sample is from the center of
+    *                          rotation in the beam direction.
+    *                          
+    *  @param gridIDs         Grid ID's to apply this rotation to. Null or 
+    *                         None specified will apply to all grids
+    * 
+    * @return null for success or an ErrorString describing the problem
+    * 
+    * NOTE: The rotation is assumed to be around a vertical axis.
+    */
+   public static Object RotateDetectors( String OrigDetCalFilename, 
+                                       int    CenterBankID,
+                                       String NewDetCalFilename,
+                                       float  newCenterAngle,
+                                       float  xoffset,
+                                       float  beamOffset,
+                                       Vector  gridIDs)
+   {
       newCenterAngle *= (float)(Math.PI/180);
       Scanner sc = null;
       try
@@ -105,6 +146,7 @@ public class General_Utils
       }
       
       Enumeration<UniformGrid> Grids = null;
+      Hashtable<Integer,UniformGrid> AllGridV = null;
       float[] L1_T0 = null;
       String[] headerInfo = null;
       FileOutputStream out = null;
@@ -113,7 +155,8 @@ public class General_Utils
          headerInfo = ReadFirstLine( sc );
          
          L1_T0 = Peak_new_IO.Read_L1_T0( sc );
-         Grids = Peak_new_IO.Read_Grids( sc ).elements( );
+         AllGridV = Peak_new_IO.Read_Grids( sc );
+         Grids =AllGridV.elements( );
          out = new FileOutputStream( NewDetCalFilename );
       }catch( Exception ss)
       {
@@ -127,10 +170,12 @@ public class General_Utils
       
       UniformGrid grid = null;
       Vector<UniformGrid> VGrids = new Vector<UniformGrid>();
+      boolean useAllGrids = gridIDs == null || gridIDs.size() < 1;
       for( ; Grids.hasMoreElements( ) ; )
       {
          UniformGrid gridt =Grids.nextElement( );
-         VGrids.add( gridt );
+         if( useAllGrids || gridIDs.contains( gridt.ID() ))
+             VGrids.add( gridt );
          if( gridt.ID( ) == CenterBankID)
            grid = gridt;
       }
@@ -168,6 +213,7 @@ public class General_Utils
          VGrids.set( i , newG );
       }
       
+      updateGrids(AllGridV, VGrids);
       if( headerInfo == null)
       {
          headerInfo = new String[3];
@@ -199,6 +245,29 @@ public class General_Utils
       return null;
    }
    
+   //assume GridChanged grids in same order( missed) as GridOrig
+   private static void updateGrids( Hashtable<Integer,UniformGrid>GridOrig, Vector GridChanged)
+   {
+    if( GridOrig == null || GridChanged == null)
+       return;
+    
+    for( int i=0; i< GridChanged.size( ); i++)
+    {
+       UniformGrid grid =(UniformGrid)(GridChanged.elementAt( i ));
+       if( GridOrig.containsKey( new Integer(grid.ID()) ))
+          GridOrig.put( grid.ID() , grid );
+       
+    }
+    
+    Enumeration<UniformGrid> E = GridOrig.elements( );
+    GridChanged.clear( );
+    for(;E.hasMoreElements( );)
+    {
+       UniformGrid g = E.nextElement( );
+       GridChanged.addElement( g );
+       
+    }
+   }
    private static String[] ReadFirstLine( Scanner sc)
    {
       String[] Res = null;
