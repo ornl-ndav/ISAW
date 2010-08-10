@@ -45,6 +45,7 @@ import Command.*;
 /**
  * This class has been dynamically created using the Method2OperatorWizard
  * and usually should not be edited.
+ * This operator is a wrapper around @see Operators.TOF_DG_Spectrometer.TOF_NDGS_Calc#NDGS_t0_correction(float,float,float,float,float ,float,float )
  */
 public class NDGS_t0_correction extends GenericOperator{
 
@@ -95,6 +96,8 @@ public class NDGS_t0_correction extends GenericOperator{
       S.append(" the total time-of-flight.  The correction should be");
       S.append(" subtracted from the experimentally determined");
       S.append(" time of flight.  The correction is:");
+      S.append("\r\n");
+      S.append(" This operator wraps the method Operators.TOF_DG_Spectrometer.TOF_NDGS_Calc#NDGS_t0_correction\n");
       S.append("@algorithm    "); 
       S.append("The Neutron Delay correction, t0_shift, is calculated as:");
       S.append(" (1+tanh((Ei-a)/b))/(2*c*Ei)+(1-tanh((Ei-a)/b))/(2*d*Ei)+f+g*tanh((Ei-a)/b)");

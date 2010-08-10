@@ -42,6 +42,7 @@ import Command.*;
 /**
  * This class has been dynamically created using the Method2OperatorWizard
  * and usually should not be edited.
+ * This operator is a wrapper around @see Operators.TOF_DG_Spectrometer.TOF_NDGS_Calc#SetFinalTOF(DataSetTools.dataset.DataSet ,float ,float,float,float,float,float,float,int)
  */
 public class SetFinalTOF extends GenericOperator{
 
@@ -126,6 +127,9 @@ public class SetFinalTOF extends GenericOperator{
       S.append(" is removed.  In fact, some additional");
       S.append(" channels should be omitted, to keep the");
       S.append(" energies bounded.");
+
+      S.append("\r\n");
+     S.append(" This operator wraps the method Operators.TOF_DG_Spectrometer.TOF_NDGS_Calc#SetFinalTOF\n");
       S.append("@algorithm    "); 
       S.append("As described under overview, the total");
       S.append(" time-of-flight is adjusted for the delay");

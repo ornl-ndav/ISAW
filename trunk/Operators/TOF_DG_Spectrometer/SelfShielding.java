@@ -48,6 +48,7 @@ import Command.*;
 /**
  * This class has been dynamically created using the Method2OperatorWizard
  * and usually should not be edited.
+ * This operator is a wrapper around @see Operators.TOF_DG_Spectrometer.SelfShieldingCalc#SelfShielding(DataSetTools.dataset.DataSet,float ,float ,float,boolean)
  */
 public class SelfShielding extends GenericOperator{
 
@@ -93,7 +94,9 @@ public class SelfShielding extends GenericOperator{
       StringBuffer S = new StringBuffer();
       S.append("@overview    "); 
       S.append("This operator will correct the specified spectrometer DataSet for");
-      S.append(" self-shielding by the sample.");
+      S.append(" self-shielding by the sample."); 
+      S.append("\r\n");
+      S.append(" This operator wraps the method  Operators.TOF_DG_Spectrometer.SelfShieldingCalc#SelfShielding\n");
       S.append("@algorithm    "); 
       S.append("The incident energy, and scattering angle are obtained from");
       S.append(" the Data attributes for each Data block.  For each Data block,");

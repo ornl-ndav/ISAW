@@ -43,6 +43,7 @@ import Command.*;
 /**
  * This class has been dynamically created using the Method2OperatorWizard
  * and usually should not be edited.
+ *  This operator is a wrapper around @see Operators.TOF_DG_Spectrometer.TOF_NDGS_Calc#EnergyFromMonitors(DataSetTools.dataset.DataSet, float ,float)
  */
 public class EnergyFromMonitors extends GenericOperator{
 
@@ -93,6 +94,8 @@ public class EnergyFromMonitors extends GenericOperator{
       S.append(" centered on that incident energy, that");
       S.append(" should be used to locate the incident");
       S.append(" pulse in a monitor spectrum.");
+      S.append("\r\n");
+      S.append(" This operator wraps the method Operators.TOF_DG_Spectrometer.TOF_NDGS_Calc#EnergyFromMonitors\n");
       S.append("@algorithm    "); 
       S.append("The specified incident energy is converted");
       S.append(" to a corresponding time-of-flight for each");

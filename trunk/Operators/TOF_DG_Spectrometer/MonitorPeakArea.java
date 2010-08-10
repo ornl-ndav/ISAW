@@ -45,6 +45,7 @@ import Command.*;
 /**
  * This class has been dynamically created using the Method2OperatorWizard
  * and usually should not be edited.
+ * This operator is a wrapper around @see Operators.TOF_DG_Spectrometer.TOF_NDGS_Calc#MonitorPeakArea(DataSetTools.dataset.DataSet ,int ,float ,float,float)
  */
 public class MonitorPeakArea extends GenericOperator{
 
@@ -96,6 +97,8 @@ public class MonitorPeakArea extends GenericOperator{
       S.append(" the specified incident energy.  An estimate of");
       S.append(" a linear background is subtracted from the");
       S.append(" peak area.");
+      S.append("\r\n");
+      S.append(" This operator wraps the method Operators.TOF_DG_Spectrometer.TOF_NDGS_Calc#MonitorPeakArea\n");
       S.append("@algorithm    "); 
       S.append("The specified incident energy estimate is mapped");
       S.append(" to a time-of-flight based on the initial path length.");

@@ -45,6 +45,7 @@ import Command.*;
 /**
  * This class has been dynamically created using the Method2OperatorWizard
  * and usually should not be edited.
+ * This operator is a wrapper around @see Operators.TOF_DG_Spectrometer.TOF_NDGS_Calc#MergeQE(java.util.Vector,java.lang.String )
  */
 public class MergeQE extends GenericOperator{
 
@@ -92,6 +93,8 @@ public class MergeQE extends GenericOperator{
       S.append(" information from all of the DataSets.   The");
       S.append(" resulting combined QE DataSet");
       S.append(" can be written to a text file,");
+      S.append("\r\n");
+      S.append(" This operator wraps the method Operators.TOF_DG_Spectrometer.TOF_NDGS_Calc#MergeQE\n");
       S.append("@algorithm    "); 
       S.append("The ToQE and ToQ2E operators record");
       S.append(" an average S(Q,E) array normalized by the");
