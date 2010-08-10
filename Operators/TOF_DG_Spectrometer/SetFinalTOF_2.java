@@ -45,6 +45,7 @@ import Command.*;
 /**
  * This class has been dynamically created using the Method2OperatorWizard
  * and usually should not be edited.
+ * This operator is a wrapper around @see Operators.TOF_DG_Spectrometer.TOF_NDGS_Calc#SetFinalTOF(DataSetTools.dataset.DataSet ,float,float,int)
  */
 public class SetFinalTOF_2 extends GenericOperator{
 
@@ -108,6 +109,9 @@ public class SetFinalTOF_2 extends GenericOperator{
       S.append(" times-of-flight is removed.  In fact, some additional");
       S.append(" channels should be omitted, to keep the energies");
       S.append(" bounded.");
+
+      S.append("\r\n");
+     S.append(" This operator wraps the method perators.TOF_DG_Spectrometer.TOF_NDGS_Calc#SetFinalTOF\n");
       S.append("@assumptions    "); 
       S.append("The DataSets must not be null or empty and should be");
       S.append(" raw time-of-flight DataSets recording counts relative to");
