@@ -47,6 +47,9 @@
 
 package Operators;
 import DataSetTools.operator.Generic.*;
+/**
+ * This operator is a wrapper around @see Command.ScriptUtil#cvrt2int1D(java.lang.Object)
+ */
 
 import gov.anl.ipns.Parameters.PlaceHolderPG;
 import gov.anl.ipns.Util.SpecialStrings.*;
@@ -70,6 +73,9 @@ public class cnvrt2intArray1D extends GenericOperator{
       StringBuffer S = new StringBuffer();
       S.append("@overview    "); 
       S.append("Converts a value to an array of int's.");
+
+      S.append("\r\n");
+     S.append(" This operator wraps the method Command.ScriptUtil#cvrt2int1D\n");
       S.append("@algorithm    "); 
       S.append("");
       S.append("@assumptions    "); 
