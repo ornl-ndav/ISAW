@@ -69,13 +69,6 @@ import EventTools.Integrate.IntegrateTools;
  *  that is binned when the instrument type is changed.  It also provides
  *  information from the histogram, such as the max value in the histogram,
  *  the number of counts at a point and finds peaks in the histogram.
- *
- *  @param message_center       The message center from which events to
- *                              process data are received.
- *  @param view_message_center  The message center to which messages 
- *                              about data to viewed is sent.
- *  @param num_bins             The number of bins to use in each direction
- *                              for the histogram in reciprocal space.
  */
 public class HistogramHandler implements IReceiveMessage
 {
@@ -89,6 +82,17 @@ public class HistogramHandler implements IReceiveMessage
   private boolean       receiving_events;
   private int           updates_since_events;
 
+/**
+ *  Construct a histogram handler using the specified MessageCenters and
+ *  number of bins in each direction of the histogram.
+ *
+ *  @param message_center       The message center from which events to
+ *                              process data are received.
+ *  @param view_message_center  The message center to which messages 
+ *                              about data to viewed is sent.
+ *  @param num_bins             The number of bins to use in each direction
+ *                              for the histogram in reciprocal space.
+ */
 
   public HistogramHandler( MessageCenter message_center, 
                            MessageCenter view_message_center,
