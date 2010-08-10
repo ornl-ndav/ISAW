@@ -85,7 +85,7 @@ public class mkVariableXScale extends GenericOperator{
       S.append("@overview    "); 
       S.append("Creates a VariableXScale if possible.");
       S.append("\r\n");
-      S.append(" This operator wraps the method Operators.createVariableXScale\n");
+      S.append(" This operator wraps the method Operators.mkVariableXScale#createVariableXScale\n");
       S.append("@algorithm    "); 
       S.append("");
       S.append("@assumptions    "); 
