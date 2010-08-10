@@ -910,31 +910,17 @@ public class Histogram3D
 
 
   /**
-   * Temporary code to get a copy of a 2D slice from this histogram
-   * consisting of all bins with the same row number.   Since this
-   * method copies the data, it is much slower than the pageSlice()
-   * method.
-   * @param row
-   * @return The data from one row of this 3D histogram.
-   */
-  public float[][] rowSlice( int row )
-  {
-    int num_pages = z_binner.numBins();
-    int num_cols  = x_binner.numBins();
-    float[][] one_row = new float[num_pages][num_cols];
-    for ( int page = 0; page < num_pages; page++ )
-      System.arraycopy(histogram[page][row],0,one_row[page],0,num_cols);
-
-    return one_row;
-  }
-
-
-  /**
-   * Temporary code to get a reference to one page of data from this 3D 
-   * histogram.  NOTE: Since this returns a reference to the internal 
-   * histogram array, code calling this method must NOT modify the 
-   * array.
-   * @param page
+   * Get a reference to one page of data (ie. values at constant "z") 
+   * from this 3D histogram.  NOTE: Since this returns a reference to the 
+   * internal histogram array, code calling this method must NOT modify the 
+   * array.  Columns and rows in the slice correspond to columns and rows,
+   * respectively, in the original array, as if an observer was looking
+   * in the -z direction, with y "up".
+   *
+   * @param page The page number in the array for the slice that will 
+   *             be returned.  This must be at least 0 but less than
+   *             the number of pages (number of bins in the z-binner).  
+   *
    * @return A reference to one page of this 3D histogram
    */
   public float[][] pageSlice( int page )
@@ -942,6 +928,62 @@ public class Histogram3D
     return histogram[page];
   }
   
+
+  /**
+   * Get a copy of a 2D slice at constant "y" from this histogram
+   * consisting of all bins with the same row number.   Since this
+   * method copies the data, it is much slower than the pageSlice()
+   * method.  Columns and rows in the slice correspond to pages and
+   * columns repectively, in the original array, as if an observer was
+   * looking -y direction, with x "up"
+   *
+   * @param row The row number in the array for the slice that will be
+   *            returned.  This must be at least 0 but less than the
+   *            number of rows (number of bins in the y-binner).
+   *
+   * @return A copy of the data from one row of this 3D histogram.
+   */
+  public float[][] rowSlice( int row )
+  {
+    int num_pages = z_binner.numBins();
+    int num_cols  = x_binner.numBins();
+    float[][] row_slice = new float[num_cols][num_pages];
+
+    for ( int page = 0; page < num_pages; page++ )
+     for ( int col = 0; col < num_cols; col++ )
+       row_slice[col][page] = histogram[page][row][col];
+
+    return row_slice;
+  }
+
+
+  /**
+   * Get a copy of a 2D slice at constant "x" from this histogram
+   * consisting of all bins with the same col number.   Since this
+   * method copies the data, it is much slower than the pageSlice()
+   * method.  Columns and rows in the slice correspond to row and pages 
+   * respectively, in the original array, as if an observer was looking
+   * in the -x direction with z "up".
+   *
+   * @param col The column number in the array for the slice that will be
+   *            returned.  This must be at least 0 but less than the
+   *            number of columns (number of bins in the x-binner).
+   *
+   * @return A copy of the data from one column of this 3D histogram.
+   */
+  public float[][] colSlice( int col )
+  { 
+    int num_rows  = y_binner.numBins();
+    int num_pages = z_binner.numBins();
+    float[][] col_slice = new float[num_pages][num_rows];
+
+    for ( int page = 0; page < num_pages; page++ )
+      for ( int row = 0; row < num_rows; row++ )
+        col_slice[page][row] = histogram[page][row][col];
+
+    return col_slice;
+  }
+
   
   /**
    * Scan across ALL bins of this histogram and set the min, max and total
