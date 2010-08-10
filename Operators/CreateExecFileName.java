@@ -44,6 +44,7 @@ import Command.*;
 /**
  * This class has been dynamically created using the Method2OperatorWizard
  * and usually should not be edited.
+ * This operator is a wrapper around @see gov.anl.ipns.Util.File.FileIO#CreateExecFileName(java.lang.String ,java.lang.String ,boolean)
  */
 public class CreateExecFileName extends GenericOperator{
 
@@ -88,6 +89,9 @@ public class CreateExecFileName extends GenericOperator{
       S.append("@overview    "); 
       S.append("Creates the filename for an executable that can be used be java's Runnable.exec. The");
       S.append(" name differes for each operating system as follows:");
+
+      S.append("\r\n");
+     S.append(" This operator wraps the method gov.anl.ipns.Util.File.FileIO#CreateExecFileName\n");
       S.append("@algorithm    "); 
       S.append("");
       S.append("@assumptions    "); 

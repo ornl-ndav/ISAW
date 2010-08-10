@@ -48,6 +48,9 @@
 package Operators;
 
 import DataSetTools.operator.Generic.*;
+/**
+ *  This operator is a wrapper around @see DataSetTools.dataset.UniformXScale#createUniformXScale( float ,float,int)
+ */
 
 import gov.anl.ipns.Parameters.FloatPG;
 import gov.anl.ipns.Parameters.IntegerPG;
@@ -74,6 +77,9 @@ public class mkUniformXScale extends GenericOperator{
       StringBuffer S = new StringBuffer();
       S.append("@overview    "); 
       S.append("Creates a UniformXScale");
+
+      S.append("\r\n");
+     S.append(" This operator wraps the method DataSetTools.dataset.UniformXScale#createUniformXScale\n");
       S.append("@algorithm    "); 
       S.append("");
       S.append("@assumptions    "); 

@@ -60,7 +60,11 @@ import gov.anl.ipns.Parameters.PlaceHolderPG;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
 import Command.*;
-
+/**
+ * This operator is a wrapper around @see #createVariableXScale(java.lang.Object)
+ * @author ruth
+ *
+ */
 public class mkVariableXScale extends GenericOperator{
 
    public mkVariableXScale(){
@@ -80,6 +84,8 @@ public class mkVariableXScale extends GenericOperator{
       StringBuffer S = new StringBuffer();
       S.append("@overview    "); 
       S.append("Creates a VariableXScale if possible.");
+      S.append("\r\n");
+      S.append(" This operator wraps the method Operators.createVariableXScale\n");
       S.append("@algorithm    "); 
       S.append("");
       S.append("@assumptions    "); 
