@@ -279,7 +279,6 @@ public class IntegratePeaksPanel extends JPanel implements IReceiveMessage
        if ( item_event.getStateChange() == ItemEvent.SELECTED )
        {
          int steps = 2 + steps_selector.getSelectedIndex();
-         System.out.println("Should now use " + steps );
          sendMessage( Commands.SET_STEPS_PER_MILLER_INDEX, (Integer)steps );
        }
      }
