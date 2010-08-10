@@ -245,7 +245,7 @@ public class Absorp_MultiScatt_Correction extends GenericTOF_Diffractometer
     /** 
      * Get the name of this operator to use in scripts
      * 
-     * @return "Abs_MS_Correction", the command used to invoke this
+     * @return "Abs_MScatt_Correction", the command used to invoke this
      * operator in Scripts
      */
     public String getCommand(){
