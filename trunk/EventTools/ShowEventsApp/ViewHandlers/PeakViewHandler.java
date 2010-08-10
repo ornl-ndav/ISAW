@@ -188,6 +188,9 @@ public class PeakViewHandler implements IReceiveMessage,
         if ( frames.elementAt(i) == source )
           frames.remove( source );
       }
+      if ( frames.size() == 0 )
+        message_center.send( 
+                      new Message(Commands.CLOSE_PEAK_IMAGES, false, true) );
     }
   }
 
