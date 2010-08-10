@@ -48,7 +48,8 @@ import MessageTools.*;
  * to find, the minimum peak intensity as well as a
  * log file. Also sends a message of FindPeaksCmd.
  */
-public class findPeaksPanel extends JPanel
+public class findPeaksPanel extends    JPanel
+                            implements IReceiveMessage
 {
    private static final long  serialVersionUID = 1L;
    private MessageCenter      message_center;
@@ -93,6 +94,17 @@ public class findPeaksPanel extends JPanel
       this.add(buildLogPanel());
 
       this.add(buildButtonPanel());
+
+      message_center.addReceiver( this, Commands.CLOSE_PEAK_IMAGES );
+   }
+
+   
+   public boolean receive( Message message )
+   {
+     if ( message.getName().equals(Commands.CLOSE_PEAK_IMAGES) )
+        showPeakImagesCbx.setSelected( false );
+
+     return false;
    }
 
 
