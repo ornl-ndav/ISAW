@@ -552,7 +552,9 @@ public class TwoDViewers extends DataSetViewer {
       if( viewComp instanceof CoordJPanel)
          ((CoordJPanel)viewComp).setPreserveAspectRatio( true);
       DisplayPanel = viewComp.getDisplayPanel();
+      int indx = ds.getPointedAtIndex( );
       Set2DObjectState();
+      ds.setPointedAtIndex(indx);
       ViewHolder.add( DisplayPanel );
      
       ActiveJPanel JoverlayPanel = MarkOverLayJPanels( DisplayPanel );
@@ -1819,6 +1821,7 @@ public class TwoDViewers extends DataSetViewer {
      ObjectState O= ((IPreserveState)jp).getObjectState( false);
      if( O == null)
         return;
+     
      
      if( !O.reset( "TableJPanel.Viewport_Position", TableTopLeft))
         O.insert( "TableJPanel.Viewport_Position", TableTopLeft);
