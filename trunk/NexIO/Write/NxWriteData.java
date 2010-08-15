@@ -196,18 +196,25 @@ public class NxWriteData {
         
          
         //----- process Gridded data  --------------------------
-        int nNXdatas = processDSgrid( nodeEntr , nxInstr , DS , makelinks, useLabel );
+        int nNXdatas =0;
+        if( DS.getNum_entries( ) > MIN_GRID_SIZE)
+           
+             nNXdatas = processDSgrid( nodeEntr , nxInstr , DS , makelinks, useLabel );
 
         //--------process pixels as singleton's in one NXdata per XScale----------
     
         int k = nNXdatas;
+        boolean OneDataBlock = false;
+        if( DS.getNum_entries() <=1)
+           OneDataBlock = true;
 
         for ( j = 0 ; j < DS.getNum_entries() ; j++ ) {
       
             Data DBM = DS.getData_entry( j );
             XScale xsc = DBM.getX_scale();
             IDataGrid grid1 = getDataGrid( DBM );
-      
+            if( OneDataBlock)
+               grid1=null;
             boolean already = false;   // flag to jump out of blank 
                                        //       do loop faster
             int ny_s = DBM.getY_values().length;
@@ -239,7 +246,8 @@ public class NxWriteData {
                     Data DB = DS.getData_entry( i );
                     XScale XX = DB.getX_scale();
                     IDataGrid grid2 = getDataGrid( DB );
-
+                    if( OneDataBlock)
+                       grid2 = null;
                     if ( ( grid2 == null ) || ( grid2.num_rows() * 
                              grid2.num_cols()  < MIN_GRID_SIZE ) )
                         if ( xsc == XX )
@@ -400,42 +408,54 @@ public class NxWriteData {
                     dnode = util.writeFA_SDS( detnode , "polar" , polar , 
                            NexIO.Inst_Type.makeRankArray( polar.length , -1 , 
                            -1 , -1 , -1 ) );
-                    util.writeStringAttr( dnode , "units" , "radian" );
+               util.writeStringAttr( dnode , "units" , "radian" );
 
-                    dnode = util.writeFA_SDS( detnode , "solid_angle" , 
-                             solidAngle , NexIO.Inst_Type.makeRankArray
-                             ( solidAngle.length , -1 , -1 , -1 , -1 ) );
-          
-                    dnode = util.writeFA_SDS( detnode , "raw_angle" , rawAngle ,
-                           NexIO.Inst_Type.makeRankArray( rawAngle.length , -1 ,
-                            -1 , -1 , -1 ) );
-                    util.writeStringAttr( dnode , "units" , "degree" );
-
+                     if ( solidAngle != null )
+                        dnode = util.writeFA_SDS( detnode , "solid_angle" ,
+                              solidAngle , NexIO.Inst_Type.makeRankArray(
+                                    solidAngle.length , -1 , -1 , -1 , -1 ) );
+                     if ( rawAngle != null )
+                     {
+                        dnode = util.writeFA_SDS( detnode , "raw_angle" , rawAngle ,
+                            NexIO.Inst_Type.makeRankArray( rawAngle.length , -1 ,
+                                   -1 , -1 , -1 ) );
+                        util.writeStringAttr( dnode , "units" , "degree" );
+                     }
+                   
+                    if( slot != null)
                     dnode = util.writeIA_SDS( detnode , "slot" , slot , NexIO.
                        Inst_Type.makeRankArray( slot.length , -1 , -1 ,
                        -1 , -1 ) );
-
+                    if( crate != null)
                     dnode = util.writeIA_SDS( detnode , "crate" , crate , NexIO.
                        Inst_Type.makeRankArray( crate.length , -1 , -1 , 
                        -1 , -1 ) );
-         
+           
+                    if( input != null )
                     dnode = util.writeIA_SDS( detnode , "input" , input , NexIO.
                        Inst_Type.makeRankArray( input.length , -1 , -1 , 
                        -1 , -1 ) );
          
-                    dnode = util.writeFA_SDS( detnode , "total_count" ,  
+                    if( TotCount != null)
+                    {
+                       dnode = util.writeFA_SDS( detnode , "total_count" ,  
+                    
                              TotCount , NexIO.Inst_Type.makeRankArray( 
                              TotCount.length , -1 , -1 , -1 , -1 ) );
                     
-                    util.writeStringAttr( dnode , "units" , "count" );
-       
-                    int[] rank = NexIO.Inst_Type.makeRankArray( 
-                            DeltToTheta.length , -1 , -1 , -1 , -1 );
-             
-                    dnode = util.writeFA_SDS( detnode , "delta_to_theta" ,
-                                DeltToTheta , rank );
-                    util.writeStringAttr( dnode , "units" , "radian" );
+                       util.writeStringAttr( dnode , "units" , "count" );
+                    }
                     
+                    if( DeltToTheta != null)
+                   {
+                      int[] rank = NexIO.Inst_Type.makeRankArray( 
+ 
+                          DeltToTheta.length , -1 , -1 , -1 , -1 ); 
+
+                      dnode = util.writeFA_SDS( detnode , "delta_to_theta" ,
+                                DeltToTheta , rank );
+                      util.writeStringAttr( dnode , "units" , "radian" );
+                   }
                     k++;
           
                 }
