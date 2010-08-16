@@ -2287,7 +2287,7 @@ public class SNS_Tof_to_Q_map
   {
                                              // Theoretically correct value 3.0;
                                              // if we have an incident spectrum
-    float power_ns = 2.4f;                   // lower power needed to find
+//  float power_ns = 2.4f;                   // lower power needed to find
                                              // peaks in ARCS data with no
                                              // incident spectrum
     float   lamda; 
@@ -2300,7 +2300,9 @@ public class SNS_Tof_to_Q_map
     if ( lamda_weight == null )              // loading spectrum failed so use
     {                                        // array of 1's
       use_incident_spectrum = false;
-      power = power_ns;
+//    power = power_ns;                      // This is commented out, so we
+                                             // don't override user specified 
+                                             // value.
       lamda_weight = new float[ NUM_WAVELENGTHS ];
       for ( int i = 0; i < lamda_weight.length; i++ )
         lamda_weight[i] = 1;

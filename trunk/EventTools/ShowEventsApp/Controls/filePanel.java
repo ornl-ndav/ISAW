@@ -497,7 +497,7 @@ public class filePanel implements IReceiveMessage
       JPanel absorptionPanel = new JPanel();
       absorptionPanel.setLayout(new GridLayout(1,2));
 
-      absorption_power  = 3.0f; 
+      absorption_power  = 2.4f; 
       JLabel powAbsorption = new JLabel("Wavelength power(anvred): ");
       absorptionPower = new JTextField( ""+absorption_power );
       absorptionPower.setHorizontalAlignment(JTextField.RIGHT);
