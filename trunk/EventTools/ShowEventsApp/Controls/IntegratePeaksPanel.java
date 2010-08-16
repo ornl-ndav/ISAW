@@ -86,10 +86,6 @@ public class IntegratePeaksPanel extends JPanel implements IReceiveMessage
 
    private MessageCenter message_center;
 
-   private JTextField  run_num_txf     = new JTextField("0");
-   private JTextField  phi_txf         = new JTextField("0");
-   private JTextField  chi_txf         = new JTextField("0");
-   private JTextField  omega_txf       = new JTextField("0");
    private JTextField  hist_mem_txf    = new JTextField("0");
    private JTextField  num_level_0_txf = new JTextField( "" ); 
    private JTextField  num_level_1_txf = new JTextField( "" ); 
@@ -120,18 +116,6 @@ public class IntegratePeaksPanel extends JPanel implements IReceiveMessage
       setLayout( new GridLayout( 12, 2 ) );
      
       setBorder(new TitledBorder("Quick Integrate Options"));
-
-      add( new JLabel("Run Number") ); 
-      add( run_num_txf );
-
-      add( new JLabel("Phi") ); 
-      add( phi_txf );
-
-      add( new JLabel("Chi") ); 
-      add( chi_txf );
-
-      add( new JLabel("Omega") ); 
-      add( omega_txf );
 
       add( clear_button );
       add( steps_selector );
@@ -219,22 +203,6 @@ public class IntegratePeaksPanel extends JPanel implements IReceiveMessage
    }
 
 
-   /**
-    * Get an array of floats containing run_num, phi, chi and omega
-    */
-   private float[] getRunInfo()
-   {
-     boolean exception = false;
-     float run_num = getValueFromTextField( run_num_txf );
-     float phi     = getValueFromTextField( phi_txf );
-     float chi     = getValueFromTextField( chi_txf );
-     float omega   = getValueFromTextField( omega_txf );
-
-     float[] result = { run_num, phi, chi, omega };
-     return result;
-   }
-
-
    private float getValueFromTextField( JTextField txf )
    {
      float value = 0;
@@ -265,8 +233,7 @@ public class IntegratePeaksPanel extends JPanel implements IReceiveMessage
 
        else if ( a_event.getSource() == to_peaks_button )
        {
-         float[] run_info = getRunInfo(); 
-         sendMessage( Commands.MAKE_INTEGRATED_PEAK_Q_LIST, run_info );
+         sendMessage( Commands.MAKE_INTEGRATED_PEAK_Q_LIST, null );
        }
      }
    }
