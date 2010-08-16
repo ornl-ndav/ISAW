@@ -4,11 +4,14 @@ package EventTools.ShowEventsApp.DataHandlers;
 import java.util.Arrays;
 import java.util.Vector;
 
+import javax.swing.JOptionPane;
+
 import gov.anl.ipns.MathTools.LinearAlgebra;
 import gov.anl.ipns.MathTools.Geometry.Vector3D;
 import gov.anl.ipns.MathTools.Geometry.Vector3D_d;
 
 import DataSetTools.components.ui.Peaks.OrientMatrixControl;
+import DataSetTools.instruments.SNS_SampleOrientation;
 import DataSetTools.operator.Generic.Special.ViewASCII;
 import DataSetTools.operator.Generic.TOF_SCD.*;
 
@@ -21,6 +24,7 @@ import MessageTools.Message;
 import MessageTools.MessageCenter;
 
 import EventTools.ShowEventsApp.Command.Commands;
+import EventTools.ShowEventsApp.Command.ConfigLoadCmd;
 import EventTools.ShowEventsApp.Command.PeaksCmd;
 import EventTools.ShowEventsApp.Command.IndexPeaksCmd;
 import EventTools.ShowEventsApp.Command.IndexARCS_PeaksCmd;
@@ -36,6 +40,12 @@ public class PeakListHandler implements IReceiveMessage
   private Vector<Peak_new> peakNew_list = new Vector<Peak_new>();
   private float[][] UB = null;
   private float tolerance =.12f;
+  int runNumber =0;
+  int nbins =0;
+  float phi=0;
+  float chi=0;
+  float omega =0;
+  
 
   public PeakListHandler( MessageCenter message_center )
   {
@@ -47,7 +57,7 @@ public class PeakListHandler implements IReceiveMessage
     message_center.addReceiver( this, Commands.MAKE_PEAK_IMAGES );
     message_center.addReceiver( this, Commands.INIT_HISTOGRAM );
     message_center.addReceiver( this, Commands.ADD_PEAK_LIST_INFO );
- 
+    message_center.addReceiver( this, Commands.LOAD_CONFIG_INFO ); 
     message_center.addReceiver( this, Commands.INDEX_PEAKS );
     message_center.addReceiver( this, Commands.INDEX_PEAKS_ARCS );
     message_center.addReceiver( this, Commands.INDEX_PEAKS_ROSS );
@@ -156,6 +166,19 @@ public class PeakListHandler implements IReceiveMessage
                                            true ));
        }
     }
+    else if( message.getName( ).equals( Commands.LOAD_CONFIG_INFO ))
+    {
+       Object val = message.getValue();
+       if( val instanceof ConfigLoadCmd)
+       {
+          ConfigLoadCmd conf = (ConfigLoadCmd)val;
+          runNumber = conf.getRunNumber( );
+          nbins = conf.getNbins( );
+          phi = conf.getPhi( );
+          chi = conf.getChi( );
+          omega = conf.getOmega();
+       }
+    }
 
     else if ( message.getName().equals(Commands.WRITE_PEAK_FILE ) )
     {
@@ -167,7 +190,15 @@ public class PeakListHandler implements IReceiveMessage
       String file_name = (String)message.getValue();
       try 
       {
-        Peak_new_IO.WritePeaks_new( file_name, (Vector)peakNew_list, false );
+        UpdateOrig( peakNew_list);
+        
+        boolean append = false;
+        
+        if( JOptionPane.showConfirmDialog( null , "Append to prev Peaks file")==
+             JOptionPane.YES_OPTION)
+           append = true;
+        System.out.println("append =="+append);
+        Peak_new_IO.WritePeaks_new( file_name, (Vector)peakNew_list, append );
       }
       catch ( Exception ex )
       {
@@ -188,7 +219,8 @@ public class PeakListHandler implements IReceiveMessage
       String file_name = gov.anl.ipns.Util.File.FileIO.appendPath( 
             System.getProperty( "user.home" ), "ISAW/tmp/ppp.peaks" );
       try 
-      {
+      { 
+        UpdateOrig( peakNew_list);
         Peak_new_IO.WritePeaks_new( file_name, (Vector)peakNew_list, false );
         (new ViewASCII(file_name)).getResult();        
       }
@@ -547,7 +579,20 @@ public class PeakListHandler implements IReceiveMessage
     return count;
   }
 
-
+ private void UpdateOrig( Vector<Peak_new> peaks)
+ {
+    if( peaks == null )
+       return;
+    SNS_SampleOrientation orientation = new SNS_SampleOrientation( phi,chi,omega);
+    for( int i=0; i< peaks.size();i++)
+    {
+       Peak_new P = peaks.elementAt( i );
+       Peak_new Pn= new Peak_new( runNumber,P.monct( ),P.x( ),P.y( ),P.z( ),
+             P.getGrid(),orientation,P.time(),P.L1( ),P.T0( ));
+       peaks.setElementAt(Pn,i);
+       
+    }
+ }
   private static float distanceToInt( float val )
   {
     float rounded = Math.round(val);

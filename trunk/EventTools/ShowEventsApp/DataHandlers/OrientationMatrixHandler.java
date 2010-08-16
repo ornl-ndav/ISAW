@@ -45,12 +45,14 @@ import gov.anl.ipns.MathTools.LinearAlgebra;
 import gov.anl.ipns.MathTools.Geometry.Vector3D;
 
 import DataSetTools.components.ui.Peaks.subs;
+import DataSetTools.instruments.SNS_SampleOrientation;
 
 import MessageTools.IReceiveMessage;
 import MessageTools.Message;
 import MessageTools.MessageCenter;
 
 import EventTools.ShowEventsApp.Command.Commands;
+import EventTools.ShowEventsApp.Command.ConfigLoadCmd;
 import EventTools.ShowEventsApp.Command.SelectionInfoCmd;
 import EventTools.ShowEventsApp.Command.UBwTolCmd;
 import EventTools.ShowEventsApp.Command.Util;
@@ -76,6 +78,12 @@ public class OrientationMatrixHandler implements IReceiveMessage
                                                    // "near" horizontal plane
                                                    // for ARCS
 
+  int runNumber =0;
+  int nbins =0;
+  float phi=0;
+  float chi=0;
+  float omega =0;
+
 
   public OrientationMatrixHandler( MessageCenter message_center )
   {
@@ -87,6 +95,7 @@ public class OrientationMatrixHandler implements IReceiveMessage
 
     message_center.addReceiver( this, Commands.SHOW_ORIENTATION_MATRIX );
     message_center.addReceiver( this, Commands.WRITE_ORIENTATION_MATRIX );
+    message_center.addReceiver( this, Commands.LOAD_CONFIG_INFO );
     message_center.addReceiver( this, Commands.READ_ORIENTATION_MATRIX );
   }
 
@@ -106,6 +115,19 @@ public class OrientationMatrixHandler implements IReceiveMessage
       SetNewOrientationMatrix( obj );
     }
 
+    else if( message.getName( ).equals( Commands.LOAD_CONFIG_INFO ))
+    {
+       Object val = message.getValue();
+       if( val instanceof ConfigLoadCmd)
+       {
+          ConfigLoadCmd conf = (ConfigLoadCmd)val;
+          runNumber = conf.getRunNumber( );
+          nbins = conf.getNbins( );
+          phi = conf.getPhi( );
+          chi = conf.getChi( );
+          omega = conf.getOmega();
+       }
+    }
     else if ( message.getName().equals(Commands.GET_ORIENTATION_MATRIX) )
     {
      /* Object message_value = orientation_matrix;
@@ -143,18 +165,21 @@ public class OrientationMatrixHandler implements IReceiveMessage
           Util.sendError( "There is no Orientation matrix to save" );
           return false;
        }
-       float[][] UB = LinearAlgebra.getTranspose(orientation_matrix);
+       float[][] UBo = UpdateUB(orientation_matrix,true);
+       float[][] UB = LinearAlgebra.getTranspose(UBo);
        double[] abc = DataSetTools.operator.Generic.TOF_SCD.Util.abc(
                LinearAlgebra.float2double( UB ));
        
        ErrorString Res =
-        DataSetTools.operator.Generic.TOF_SCD.Util.writeMatrix( filename, UB,
+        DataSetTools.operator.Generic.TOF_SCD.Util.writeMatrix( filename, 
+              UB,
               LinearAlgebra.double2float( abc ), sig_abc);
 
        if( Res == null)
-          
+       {  
          Util.sendInfo( "Wrote Orientation matrix to " + filename );
-       
+         Util.sendInfo( "The Sample phi,chi and omega have been applied" );
+       }
        else
           
          Util.sendError( "Write Orientation Error:"+Res.toString() );
@@ -171,15 +196,20 @@ public class OrientationMatrixHandler implements IReceiveMessage
        {
           if( Res == null )
              Res ="";
+          
           Util.sendError( "Read Orientation Matrix Error:"+Res.toString() );
           return false;
        }
        float[][] orMat = LinearAlgebra.getTranspose( (float[][]) Res );
+       orMat = UpdateUB(orMat,false);
        //SetNewOrientationMatrix( orMat );
        
        message_center.send( new Message( Commands.SET_ORIENTATION_MATRIX,
              Commands.MakeSET_ORIENTATION_MATRIX_arg( orMat,null),
              true ));//Must broadcast this orientation matrix
+       
+       Util.sendInfo( "The orientation matrix has been read in " );
+       Util.sendInfo( "The Sample phi,chi and omega have been applied to this matrix" );
        IndexPeakWithOrientationMat( orMat, OffInt);
     }
 
@@ -421,5 +451,22 @@ public class OrientationMatrixHandler implements IReceiveMessage
       }
     }
     last_qxyz = new_qxyz;
+  }
+  
+  private float[][] UpdateUB( float[][] UBT, boolean to_out)
+  {
+     SNS_SampleOrientation Sorient = new SNS_SampleOrientation( phi,chi,omega);
+     float[][] mat ;
+     if( to_out)
+        mat = Sorient.getGoniometerRotationInverse( ).get( );
+     else
+        mat = Sorient.getGoniometerRotation( ).get( );
+     float[][] MatT = new float[3][3];
+     for( int r=0; r< 3;r++)
+        for( int c=0; c<3;c++)
+           MatT[r][c]= mat[c][r];
+     
+     return LinearAlgebra.mult( UBT, MatT) ;
+   
   }
 }
