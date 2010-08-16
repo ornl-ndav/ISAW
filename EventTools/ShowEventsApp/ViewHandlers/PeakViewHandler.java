@@ -46,6 +46,7 @@ import gov.anl.ipns.MathTools.Geometry.Vector3D;
 import gov.anl.ipns.ViewTools.Panels.PeakArrayPanel.PeakDisplayInfo;
 import gov.anl.ipns.ViewTools.Panels.PeakArrayPanel.PeaksDisplayPanel;
 import gov.anl.ipns.ViewTools.Panels.PeakArrayPanel.PeakArrayPanels;
+
 import DataSetTools.operator.Generic.TOF_SCD.Peak_new;
 
 import MessageTools.IReceiveMessage;
@@ -55,6 +56,8 @@ import MessageTools.MessageCenter;
 import EventTools.ShowEventsApp.Command.Commands;
 import EventTools.ShowEventsApp.Command.PeakImagesCmd;
 import EventTools.ShowEventsApp.Command.SelectPointCmd;
+import EventTools.ShowEventsApp.Command.Util;
+
 import EventTools.Histogram.Histogram3D;
 
 /**
@@ -101,29 +104,43 @@ public class PeakViewHandler implements IReceiveMessage,
     Vector<Peak_new>    peaks      = images_cmd.getPeaks();
     Vector<Histogram3D> histograms = images_cmd.getRegions();
 
-    if ( peaks.size() != histograms.size() )
+    if ( peaks        != null && 
+         histograms   != null &&
+         peaks.size() != histograms.size() )
+    {
+      Util.sendError("ERROR: Number of peaks doesn't match number of regions");
       return;
+    }
 
-    peak_array     = new Peak_new[ peaks.size() ];
+    if ( peaks != null )
+      peak_array = new Peak_new[ peaks.size() ];
+    else
+      peak_array = null;
+
     histogram_array = new Histogram3D[ histograms.size() ];
     for ( int i = 0; i < histograms.size(); i++ )
     {
-      peak_array[i] = peaks.elementAt(i);
+      if ( peak_array != null ) 
+        peak_array[i] = peaks.elementAt(i);
       histogram_array[i] = histograms.elementAt(i);
     }
 
-    PeakDisplayInfo[] peak_infos = new PeakDisplayInfo[ peak_array.length ];
-    for ( int i = 0; i < peaks.size(); i++ )
+    PeakDisplayInfo[] peak_infos = new PeakDisplayInfo[histogram_array.length];
+    for ( int i = 0; i < peak_infos.length; i++ )
     {
-      Peak_new peak      = peak_array[i];
       float[][][] region = histogram_array[i].getHistogramArray();
 
-      int seq_num = peak.seqnum();
-      int det_num = peak.detnum();
-      int row     = (int)peak.y();
-      int col     = (int)peak.x();
-      String title = "" + seq_num + ":  " + det_num + 
+      String title = "SLICES";
+      if ( peak_array != null )
+      {
+        Peak_new peak = peak_array[i];
+        int seq_num   = peak.seqnum();
+        int det_num   = peak.detnum();
+        int row       = (int)peak.y();
+        int col       = (int)peak.x();
+        title = "" + seq_num + ":  " + det_num + 
                      "  ( " + col + ", " + row + " )";
+      }
       PeakDisplayInfo peak_info = new PeakDisplayInfo(  title,
                                                         region,
                                                         0, 0, 0, true );
