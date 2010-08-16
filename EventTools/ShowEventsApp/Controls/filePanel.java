@@ -83,6 +83,11 @@ public class filePanel implements IReceiveMessage
    private JTextField         bankFileName;
    private JTextField         IDmapFileName;
    private JTextField         matFileName;
+   private JTextField         runNumber;
+   private JTextField         chi;
+   private JTextField         phi;
+   private JTextField         omega;
+   private JTextField         Nbins;
    private JTextField         absorptionPower;
    private JTextField         absorptionRadius;
    private JTextField         smuAbsorption;
@@ -214,6 +219,7 @@ public class filePanel implements IReceiveMessage
       
       tabPane.addTab("From File", buildEventPanel());
       tabPane.addTab("From Live Data", buildUDPPanel());
+      tabPane.addTab( "Configure" , buildConfigPanel() );
       panel.add( tabPane);
       JPanel sub_panel = new JPanel();
       panel.add( sub_panel );
@@ -293,6 +299,33 @@ public class filePanel implements IReceiveMessage
       return eventPanel;
    }
    
+   public JPanel buildConfigPanel()
+   {
+      JPanel Res = new JPanel();
+      Res.setLayout(  new GridLayout( 5,2) );
+      
+      Res.add(  new JLabel("RunNumber") );
+      runNumber = new JTextField("");
+      Res.add( runNumber );
+      
+      Res.add(  new JLabel("Phi") );
+      phi = new JTextField("");
+      Res.add( phi );
+      
+      
+      Res.add(  new JLabel("Chi") );
+      chi = new JTextField("");
+      Res.add( chi );
+      Res.add(  new JLabel("Omega") );
+      omega = new JTextField("");
+      Res.add( omega);
+      
+      Res.add(  new JLabel("# of Bins") );
+      Nbins = new JTextField("");
+      Res.add( Nbins );
+      
+      return Res;
+   }
    public JPanel buildUDPPanel()
    {
       JPanel Res = new JPanel();
@@ -1230,7 +1263,66 @@ public class filePanel implements IReceiveMessage
               message_center.send(mess);
             }
           }
+         else if( tabPane.getSelectedIndex() == 2 )
+         {
+            int runNum, nbins1;
+            float phi1,chi1,omega1;
 
+        
+            try
+            {
+               
+               runNum = Integer.parseInt(runNumber.getText( ).trim());
+            }catch(Exception s1)
+            {
+               runNum = 0;
+            }
+            try
+            {
+               
+               chi1 = Float.parseFloat( chi.getText( ).trim());
+            }catch(Exception s1)
+            {
+               chi1 = 0;
+            }
+
+            try
+            {
+               
+               phi1 = Float.parseFloat( phi.getText( ).trim());
+            }catch(Exception s1)
+            {
+               phi1 = 0;
+            }
+
+            try
+            {
+               
+               omega1 = Float.parseFloat( omega.getText( ).trim());
+            }catch(Exception s1)
+            {
+               omega1 = 0;
+            }
+
+            try
+            {
+               
+               nbins1 = Integer.parseInt(Nbins.getText( ).trim());
+            }catch(Exception s1)
+            {
+               nbins1 = 0;
+            }
+            
+            ConfigLoadCmd message = new ConfigLoadCmd( runNum, phi1, 
+                                                   chi1,omega1, nbins1);
+            Message load_message = new Message( Commands.LOAD_CONFIG_INFO,
+                  message,
+                  collapse_messages,
+                  use_separate_thread );
+            
+            message_center.send( load_message);
+
+         }
           else if( file_info_valid() && common_info_valid() )
           {
             LoadEventsCmd fileInfo = 
