@@ -43,12 +43,13 @@ import gov.anl.ipns.MathTools.Geometry.Vector3D;
 import MessageTools.IReceiveMessage;
 import MessageTools.Message;
 import MessageTools.MessageCenter;
-import EventTools.Histogram.*;
 
+import EventTools.Histogram.*;
 import EventTools.EventList.IEventList3D;
 import EventTools.EventList.FloatArrayEventList3D;
 import EventTools.ShowEventsApp.Command.Commands;
 import EventTools.ShowEventsApp.Command.SetNewInstrumentCmd;
+import EventTools.ShowEventsApp.Command.PeakImagesCmd;
 import EventTools.ShowEventsApp.Command.Util;
 
 import DataSetTools.operator.Generic.TOF_SCD.PeakQ;
@@ -205,6 +206,7 @@ public class QuickIntegrateHandler implements IReceiveMessage
       if ( events == null )
         return false;
 
+//    AddEventsToHistogram( events, false );
       AddEventsToHistogram( events, true );
     }
 
@@ -215,6 +217,9 @@ public class QuickIntegrateHandler implements IReceiveMessage
 
     else if ( message.getName().equals(Commands.MAKE_INTEGRATED_PEAK_Q_LIST) )
     {
+      if ( histogram == null )
+        return false;
+
       float[] run_info = new float[4];
 
       Object obj = message.getValue();
@@ -234,6 +239,13 @@ public class QuickIntegrateHandler implements IReceiveMessage
                                          integ_info, true, true );
         message_center.send( set_peaks );
       }
+ 
+      Vector regions = new Vector();
+      regions.add( histogram );
+      PeakImagesCmd peak_image_cmd = new PeakImagesCmd( null, regions );
+      Message peak_images_message =
+           new Message(Commands.SHOW_PEAK_IMAGES, peak_image_cmd, true, true);
+      message_center.send( peak_images_message );
     }
 
     return false;
@@ -429,6 +441,12 @@ public class QuickIntegrateHandler implements IReceiveMessage
    */
   private long SetNewHistogram()
   {
+    if ( orientation_matrix == null )
+    {
+      Util.sendError( "ERROR: NO ORIENTATION MATRIX SPECIFIED" );
+      return 0;
+    }
+
     System.out.println("QuickIntegrate allocating NEW histogram space....");
     histogram = null;
 
