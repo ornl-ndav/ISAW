@@ -22,6 +22,8 @@ public class Commands
   
   public static final String LOAD_UDP_EVENTS = "LOAD_UDP_EVENTS";
   
+  public static final String LOAD_CONFIG_INFO ="LOAD_CONFIG_INFO";
+  
   public static final String PAUSE_UDP       = "PAUSE_UDP";
   
   public static final String CLEAR_UDP       = "CLEAR_UDP";
