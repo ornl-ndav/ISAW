@@ -50,15 +50,23 @@ import MessageTools.IReceiveMessage;
 import MessageTools.Message;
 import MessageTools.MessageCenter;
 
+import gov.anl.ipns.ViewTools.UI.FontUtil;
+
 
 public class IntegratePeaksPanel extends JPanel implements IReceiveMessage
 {
-   private final float LEVEL_0 = QuickIntegrateHandler.LEVEL_0;
-   private final float LEVEL_1 = QuickIntegrateHandler.LEVEL_1;
-   private final float LEVEL_2 = QuickIntegrateHandler.LEVEL_2;
-   private final float LEVEL_3 = QuickIntegrateHandler.LEVEL_3;
-   private final float LEVEL_4 = QuickIntegrateHandler.LEVEL_4;
+   private MessageCenter message_center;
+                                            // Sphere integrate controls
+   private JTextField   radius_txf      = new JTextField("0.2");
+   private JRadioButton found_peaks_ckb = new JRadioButton("Current Peaks");
+   private JRadioButton all_peaks_ckb  = new JRadioButton("All Possible Peaks");
+   private JButton      sphere_stats_button = new JButton("Show Statistics");
+   private JButton      set_in_peaks_button = new JButton("Update Peaks List");
 
+                                            // Histogram integrate controls
+
+   private final String NO_HISTOGRAM    = "NO HISTOGRAM";
+   private final String HISTOGRAM_READY = "READY TO ADD EVENTS";
    private String[] step_list = { "  2 Steps per Miller Index",
                                   "  3 Steps per Miller Index",
                                   "  4 Steps per Miller Index",
@@ -83,21 +91,27 @@ public class IntegratePeaksPanel extends JPanel implements IReceiveMessage
                                   " 23 Steps per Miller Index",
                                   " 24 Steps per Miller Index",
                                   " 25 Steps per Miller Index" };
+   private JComboBox   steps_selector = new JComboBox( step_list );
+   private JTextField  hist_mem_txf   = new JTextField("0");
+   private JButton init_hist_button   = new JButton("Initialize Histogram");
+   private JButton free_hist_button   = new JButton("Free Histogram Memory");
+   private JTextField hist_status_txf = new JTextField( NO_HISTOGRAM );
+   private JButton hist_stats_button  = new JButton("Show Statistics");
+   private JButton to_peaks_button    = new JButton("Update Peaks List");
 
-   private MessageCenter message_center;
+                                            // Integration Stats Controls
+   private final float LEVEL_0 = QuickIntegrateHandler.LEVEL_0;
+   private final float LEVEL_1 = QuickIntegrateHandler.LEVEL_1;
+   private final float LEVEL_2 = QuickIntegrateHandler.LEVEL_2;
+   private final float LEVEL_3 = QuickIntegrateHandler.LEVEL_3;
+   private final float LEVEL_4 = QuickIntegrateHandler.LEVEL_4;
 
-   private JTextField  hist_mem_txf    = new JTextField("0");
-   private JTextField  num_level_0_txf = new JTextField( "" ); 
-   private JTextField  num_level_1_txf = new JTextField( "" ); 
-   private JTextField  num_level_2_txf = new JTextField( "" ); 
-   private JTextField  num_level_3_txf = new JTextField( "" ); 
-   private JTextField  num_level_4_txf = new JTextField( "" ); 
+   private JTextField  num_level_0_txf = new JTextField( "" );
+   private JTextField  num_level_1_txf = new JTextField( "" );
+   private JTextField  num_level_2_txf = new JTextField( "" );
+   private JTextField  num_level_3_txf = new JTextField( "" );
+   private JTextField  num_level_4_txf = new JTextField( "" );
 
-   private JComboBox   steps_selector  = new JComboBox( step_list );
-
-   private JButton scan_button   = new JButton("Scan Integrate Histogram");
-   private JButton clear_button  = new JButton("Clear Int. Intensities");
-   private JButton to_peaks_button = new JButton("Set In Peaks List");
 
    public IntegratePeaksPanel( MessageCenter message_center )
    {
@@ -106,44 +120,120 @@ public class IntegratePeaksPanel extends JPanel implements IReceiveMessage
       message_center.addReceiver( this, 
                                   Commands.SET_INTEGRATED_INTENSITY_STATS );
       message_center.addReceiver( this, Commands.SET_HISTOGRAM_SPACE_MB );
+      message_center.addReceiver( this, Commands.INTEGRATE_HISTOGRAM_READY );
+      message_center.addReceiver( this, Commands.INTEGRATE_HISTOGRAM_FREED );
 
-      ButtonListener listener = new ButtonListener();
+      setBorder( new TitledBorder("Quick Integrate Options") );
+      setLayout( new GridLayout( 2, 1 ) );
 
-      scan_button.addActionListener( listener );
-      clear_button.addActionListener( listener );
-      to_peaks_button.addActionListener( listener );
-
-      setLayout( new GridLayout( 12, 2 ) );
-     
-      setBorder(new TitledBorder("Quick Integrate Options"));
-
-      add( clear_button );
-      add( steps_selector );
-      steps_selector.addItemListener( new StepsListener() );
-      steps_selector.setSelectedIndex(3);
-
-      add( new JLabel("Histogram Space ( MB )") );
-      add( hist_mem_txf );
-
-      add( scan_button );
-      add( to_peaks_button );
-
-      add( new JLabel("Number of Peaks >= " + LEVEL_0) ); 
-      add( num_level_0_txf );
-
-      add( new JLabel("Number with I/sigI >= " + LEVEL_1) ); 
-      add( num_level_1_txf );
-
-      add( new JLabel("Number with I/sigI >= " + LEVEL_2 ) ); 
-      add( num_level_2_txf );
-
-      add( new JLabel("Number with I/sigI >= " + LEVEL_3 ) );
-      add( num_level_3_txf );
-
-      add( new JLabel("Number with I/sigI >= " + LEVEL_4 ) );
-      add( num_level_4_txf );
+      JTabbedPane tabbed_pane = new JTabbedPane();
+      tabbed_pane.addTab("Sphere Method", 
+                          buildSphereIntegratePanel() );
+      tabbed_pane.addTab("Aligned Histogram Method",
+                          buildHistogramIntegratePanel() );
+      add( tabbed_pane );
+      add( buildStatsPanel() );
    }
 
+
+   private JPanel buildSphereIntegratePanel()
+   {
+      JPanel sphere_panel = new JPanel();
+
+      sphere_panel.setLayout( new GridLayout( 5, 2 ) );
+
+      sphere_panel.add( new JLabel(" Sphere Radius " + FontUtil.INV_ANGSTROM));
+      sphere_panel.add( radius_txf );
+        radius_txf.setHorizontalAlignment( JTextField.RIGHT );
+
+      sphere_panel.add( found_peaks_ckb );
+      sphere_panel.add( all_peaks_ckb );
+      found_peaks_ckb.setSelected(true);
+      ButtonGroup group = new ButtonGroup();
+      group.add( found_peaks_ckb );
+      group.add( all_peaks_ckb ); 
+
+      sphere_panel.add( sphere_stats_button );
+      sphere_panel.add( set_in_peaks_button );
+
+      for ( int i = 0; i < 4; i++ )                  // add filler panels
+        sphere_panel.add( new JPanel() );
+
+      return sphere_panel;
+   }
+
+
+   private JPanel buildHistogramIntegratePanel()
+   {
+      JPanel hist_panel = new JPanel();
+
+      hist_panel.setLayout( new GridLayout( 5, 2 ) );
+
+      hist_panel.add( new JLabel("Histogram Resolution") );
+      hist_panel.add( steps_selector );
+        steps_selector.addItemListener( new StepsListener() );
+        steps_selector.setSelectedIndex(3);
+
+      hist_panel.add( new JLabel("Required Histogram Size(MB)") );
+      hist_panel.add( hist_mem_txf );
+        hist_mem_txf.setHorizontalAlignment( JTextField.RIGHT );
+        hist_mem_txf.setEditable( false );
+
+      hist_panel.add( new JLabel("Histogram Status") );
+      hist_panel.add( hist_status_txf );
+        hist_status_txf.setHorizontalAlignment( JTextField.RIGHT );
+        hist_status_txf.setEditable( false );
+
+      hist_panel.add( init_hist_button );
+      hist_panel.add( free_hist_button );
+
+      hist_panel.add( hist_stats_button );
+      hist_panel.add( to_peaks_button );
+
+      HistButtonListener listener = new HistButtonListener();
+      init_hist_button.addActionListener( listener );
+      free_hist_button.addActionListener( listener );
+      hist_stats_button.addActionListener( listener );
+      to_peaks_button.addActionListener( listener );
+
+      return hist_panel;
+   }
+
+
+   private JPanel buildStatsPanel()
+   {
+      JPanel stats_panel = new JPanel();
+      stats_panel.setBorder(new TitledBorder("Integration Statistics"));
+      stats_panel.setLayout( new GridLayout(5,2) );
+
+      stats_panel.add( new JLabel("Number of Peaks    >=  " + LEVEL_0) );
+      stats_panel.add( num_level_0_txf );
+
+      stats_panel.add( new JLabel("Number with I/sigI >=  " + LEVEL_1) );
+      stats_panel.add( num_level_1_txf );
+
+      stats_panel.add( new JLabel("Number with I/sigI >=  " + LEVEL_2 ) );
+      stats_panel.add( num_level_2_txf );
+
+      stats_panel.add( new JLabel("Number with I/sigI >=  " + LEVEL_3 ) );
+      stats_panel.add( num_level_3_txf );
+
+      stats_panel.add( new JLabel("Number with I/sigI >= " + LEVEL_4 ) );
+      stats_panel.add( num_level_4_txf );
+
+      for ( int i = 0; i < 5; i++ )
+      {
+        Component comp = stats_panel.getComponent( 2 * i + 1 );
+        if ( comp instanceof JTextField )
+        {
+          JTextField txf = (JTextField)comp;
+          txf.setHorizontalAlignment( JTextField.RIGHT );
+          txf.setEditable( false );
+        }
+      }
+
+      return stats_panel;
+   }
 
    @Override
    public boolean receive( Message message )
@@ -183,6 +273,12 @@ public class IntegratePeaksPanel extends JPanel implements IReceiveMessage
                              Commands.SET_INTEGRATED_INTENSITY_STATS );
      }
 
+     else if ( message.getName().equals(Commands.INTEGRATE_HISTOGRAM_READY))
+       hist_status_txf.setText( HISTOGRAM_READY );
+
+     else if ( message.getName().equals(Commands.INTEGRATE_HISTOGRAM_FREED))
+       hist_status_txf.setText( NO_HISTOGRAM );
+
      return false;
    }
 
@@ -221,20 +317,23 @@ public class IntegratePeaksPanel extends JPanel implements IReceiveMessage
    }
 
 
-   private class ButtonListener implements ActionListener
+   private class HistButtonListener implements ActionListener
    {
      public void actionPerformed( ActionEvent a_event )
      {
-       if ( a_event.getSource() == scan_button )
+       if ( a_event.getSource() == init_hist_button )
+         sendMessage( Commands.INIT_INTEGRATE_HISTOGRAM, null );
+
+       else if ( a_event.getSource() == free_hist_button )
+       {
+         sendMessage( Commands.FREE_INTEGRATE_HISTOGRAM, null );
+         hist_status_txf.setText( NO_HISTOGRAM );         
+       }
+       else if ( a_event.getSource() == hist_stats_button )
          sendMessage( Commands.SCAN_INTEGRATED_INTENSITIES, null );
 
-       else if ( a_event.getSource() == clear_button )
-         sendMessage( Commands.CLEAR_INTEGRATED_INTENSITIES, null );
-
        else if ( a_event.getSource() == to_peaks_button )
-       {
          sendMessage( Commands.MAKE_INTEGRATED_PEAK_Q_LIST, null );
-       }
      }
    }
 
@@ -247,6 +346,7 @@ public class IntegratePeaksPanel extends JPanel implements IReceiveMessage
        {
          int steps = 2 + steps_selector.getSelectedIndex();
          sendMessage( Commands.SET_STEPS_PER_MILLER_INDEX, (Integer)steps );
+         hist_status_txf.setText( NO_HISTOGRAM );         
        }
      }
    }
