@@ -104,13 +104,13 @@ public class QuickIntegrateHandler implements IReceiveMessage
   {
     this.message_center = message_center;
     
-    message_center.addReceiver( this, Commands.SET_ORIENTATION_MATRIX );
-    message_center.addReceiver( this, Commands.SET_STEPS_PER_MILLER_INDEX );
-
     message_center.addReceiver( this, Commands.INIT_HISTOGRAM );
-    message_center.addReceiver( this, Commands.CLEAR_INTEGRATED_INTENSITIES );
     message_center.addReceiver( this, Commands.ADD_EVENTS_TO_HISTOGRAMS );
+    message_center.addReceiver( this, Commands.SET_ORIENTATION_MATRIX );
 
+    message_center.addReceiver( this, Commands.SET_STEPS_PER_MILLER_INDEX );
+    message_center.addReceiver( this, Commands.FREE_INTEGRATE_HISTOGRAM );
+    message_center.addReceiver( this, Commands.INIT_INTEGRATE_HISTOGRAM );
     message_center.addReceiver( this, Commands.SCAN_INTEGRATED_INTENSITIES );
     message_center.addReceiver( this, Commands.MAKE_INTEGRATED_PEAK_Q_LIST );
   }
@@ -123,7 +123,7 @@ public class QuickIntegrateHandler implements IReceiveMessage
   *      SET_ORIENTATION_MATRIX,
   *
   *      ADD_EVENTS_TO_HISTOGRAMS, 
-  *      CLEAR_INTEGRATED_INTENSITIES, 
+  *      INIT_INTEGRATE_HISTOGRAM, 
   *
   *      SCAN_INTEGRATED_INTENSITIES
   *      MAKE_INTEGRATED_PEAK_Q_LIST
@@ -163,7 +163,18 @@ public class QuickIntegrateHandler implements IReceiveMessage
         for ( int col = 0; col < 3; col++ )
            orientation_matrix[row][col] *= (float)(2*Math.PI);
 
-      RebuildHistogram();
+      histogram = null;
+      Message freed = new Message( Commands.INTEGRATE_HISTOGRAM_FREED,
+                                   null, true, true );
+      message_center.send( freed );
+    }
+
+    else if ( message.getName().equals(Commands.FREE_INTEGRATE_HISTOGRAM ))
+    {
+      histogram = null;
+      Message freed = new Message( Commands.INTEGRATE_HISTOGRAM_FREED,
+                                   null, true, true );
+      message_center.send( freed );
     }
 
     else if ( message.getName().equals(Commands.SET_STEPS_PER_MILLER_INDEX ) )
@@ -189,10 +200,12 @@ public class QuickIntegrateHandler implements IReceiveMessage
       SetMaxQ( message.getValue() );
     }
 
-    else if ( message.getName().equals(Commands.CLEAR_INTEGRATED_INTENSITIES) )
+    else if ( message.getName().equals(Commands.INIT_INTEGRATE_HISTOGRAM) )
     {
       if ( histogram != null )
         histogram.clear();
+      else
+        RebuildHistogram();
 
       send_stats( ZEROS );
     }
@@ -206,8 +219,7 @@ public class QuickIntegrateHandler implements IReceiveMessage
       if ( events == null )
         return false;
 
-//    AddEventsToHistogram( events, false );
-      AddEventsToHistogram( events, true );
+      AddEventsToHistogram( events, false );
     }
 
     else if ( message.getName().equals(Commands.SCAN_INTEGRATED_INTENSITIES) )
@@ -482,6 +494,10 @@ public class QuickIntegrateHandler implements IReceiveMessage
     {
       histogram = new Histogram3D( h_binner, k_binner, l_binner );
       System.out.println("QuickIntegrate DONE allocating histogram space.");
+      
+      Message allocated = new Message( Commands.INTEGRATE_HISTOGRAM_READY,
+                                       null, true, true );
+      message_center.send( allocated );
     }
     catch ( Exception ex )
     {

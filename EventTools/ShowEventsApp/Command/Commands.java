@@ -215,8 +215,14 @@ public class Commands
   /**
    * Messages for quick event integration.
    */
-  public static final String CLEAR_INTEGRATED_INTENSITIES =
-                                              "CLEAR_INTEGRATED_INTENSITIES";
+  public static final String INIT_INTEGRATE_HISTOGRAM =
+                                              "INIT_INTEGRATE_HISTOGRAM";
+  public static final String FREE_INTEGRATE_HISTOGRAM =
+                                              "FREE_INTEGRATE_HISTOGRAM";
+  public static final String INTEGRATE_HISTOGRAM_READY =
+                                              "INTEGRATE_HISTOGRAM_READY";
+  public static final String INTEGRATE_HISTOGRAM_FREED =
+                                              "INTEGRATE_HISTOGRAM_FREED";
   public static final String SET_STEPS_PER_MILLER_INDEX =
                                               "SET_STEPS_PER_MILLER_INDEX";
   public static final String SET_HISTOGRAM_SPACE_MB =
