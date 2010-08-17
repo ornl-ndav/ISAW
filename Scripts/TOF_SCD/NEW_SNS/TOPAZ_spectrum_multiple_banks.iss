@@ -9,6 +9,9 @@
 #  A. J. Schultz, July 2009
 #  TOPAZ version: December 2009
 
+#  Added Savitzky-Golay Filter for smoothing
+#  A. J. Schultz, August 2010
+
 
 ########## Comments from SumXYvsT_SNS_multiple_banks.iss ##########
 #  Script to sum the pixels from a rectangular region of
@@ -26,14 +29,19 @@
 
 $ Category = Macros, Single Crystal
 
-$  path           DataDirectoryString(/SNS/users/ajschultz/spectrum/TOPAZ_240/)   Raw Data Path
-$  runNum_1       INTEGER(240)    Run Number of Data File
-$  runNum_2       INTEGER(246)    Run Number of Background File
+$  path           DataDirectoryString(/SNS/users/ajschultz/spectrum/TOPAZ_1268_nxs/Savitzky-Golay/)   Raw Data Path
+$  runNum_1       INTEGER(1268)    Run Number of Data File
+$  runNum_2       INTEGER(1270)    Run Number of Background File
 $  column_length  INTEGER(256)    Number of Pixels in one column
 $  first_col      INTEGER(10)     First Col of Region (min X)
 $  last_col       INTEGER(245)    Last  Col of Region (max X)
 $  first_row      INTEGER(10)     First Row of Region (min Y)
 $  last_row       INTEGER(245)    Last  Row of Region (max Y)
+$  number_of_detectors INTEGER(14) Number of detectors
+$  doSmoothing    BooleanEnable([true,3,0])   Apply Savitzky-Golay smoothing filter
+$  points_left    INTEGER(10)     Smoothing filter: Number of points left of center
+$  points_right   INTEGER(10)     Smoothing filter: Number of points right of center
+$  poly_degree    INTEGER(3)      Smoothing filter: Degree of smoothing polynomial
 
 
 #  Obtain scaling factor from beam monitor data
@@ -54,11 +62,11 @@ Display "scale = " & scale
 
 # Begin for loop for each detector.
 
-	for bank in [1:3]
+	for bank in [1:number_of_detectors]
 	  Display "Detector Bank = " & bank
 	  DSnum = bank
-	  ds_1 = OneDS(path & "TOPAZ_" & runNum_1 & ".nxs", DSnum, "")
-	  ds_2 = OneDS(path & "TOPAZ_" & runNum_2 & ".nxs", DSnum, "")
+	  ds_1 = OneDS( path & "TOPAZ_" & runNum_1 & ".nxs", DSnum, "" )
+	  ds_2 = OneDS( path & "TOPAZ_" & runNum_2 & ".nxs", DSnum, "" )
 
 #
 #  Select the pixels that were requested
@@ -98,12 +106,25 @@ spectrum = Sub( sum_ds_1, sum_ds_2_scaled, true)
 #  Convert counts to counts per microsecond
 newspec = DivideByDeltaX( spectrum, true )
 
+if doSmoothing
+#  Apply Savitzky-Golay Filter
+    GroupID = GetAttr( newspec, 0, "Group ID" )
+    Display "Group ID = " & GroupID
+    #points_left = 10
+    #points_right = 10
+    #poly_degree = 3
+    Display "*** Applying Savitzky-Golay Filter with points_left = " & points_left & "; points_right = " & points_right & "; poly_degree = " & poly_degree
+    SavitzkyGolayFilter( newspec, points_left, points_right, poly_degree, ""&GroupID , 0., 20000., false, false )
+endif
+
+Send newspec
+Display newspec, "Selected Graph View"
+
 #
 #  Save spectrum to an ASCII text file
 #
 SaveASCII(newspec, false, "%12.3f %12.3f", path & "Bank" & bank & "_spectrum.asc")
-Display "after SaveASCII"
-Display newspec, "Selected Graph View"
+
 #
 #
 # End of for loop for each of 9 detectors.
