@@ -169,14 +169,6 @@ public class QuickIntegrateHandler implements IReceiveMessage
       message_center.send( freed );
     }
 
-    else if ( message.getName().equals(Commands.FREE_INTEGRATE_HISTOGRAM ))
-    {
-      histogram = null;
-      Message freed = new Message( Commands.INTEGRATE_HISTOGRAM_FREED,
-                                   null, true, true );
-      message_center.send( freed );
-    }
-
     else if ( message.getName().equals(Commands.SET_STEPS_PER_MILLER_INDEX ) )
     {
       Object obj = message.getValue();
@@ -184,11 +176,13 @@ public class QuickIntegrateHandler implements IReceiveMessage
         return false;
  
       int new_steps = (Integer)obj;
-      if ( new_steps == steps_per_MI )         // no change needed
-        return false;
-  
-      steps_per_MI = new_steps;
-      RebuildHistogram();
+      if ( new_steps != steps_per_MI ) 
+      {
+        steps_per_MI = new_steps;
+        histogram = null;
+        send_stats( ZEROS );
+        send_required_size();
+      }
     }
 
     else if ( message.getName().equals(Commands.INIT_HISTOGRAM) )
@@ -210,6 +204,15 @@ public class QuickIntegrateHandler implements IReceiveMessage
       send_stats( ZEROS );
     }
 
+    else if ( message.getName().equals(Commands.FREE_INTEGRATE_HISTOGRAM ))
+    {
+      histogram = null;
+      Message freed = new Message( Commands.INTEGRATE_HISTOGRAM_FREED,
+                                   null, true, true );
+      send_stats( ZEROS );
+      message_center.send( freed );
+    }
+
     else if ( message.getName().equals(Commands.ADD_EVENTS_TO_HISTOGRAMS) )
     {
       if ( histogram == null )             // orientation matrix not set,
@@ -224,7 +227,10 @@ public class QuickIntegrateHandler implements IReceiveMessage
 
     else if ( message.getName().equals(Commands.SCAN_INTEGRATED_INTENSITIES) )
     {
-      MakePeakQList();
+      if ( histogram != null )
+        MakePeakQList();
+      else
+        send_stats( ZEROS );
     }
 
     else if ( message.getName().equals(Commands.MAKE_INTEGRATED_PEAK_Q_LIST) )
@@ -251,10 +257,11 @@ public class QuickIntegrateHandler implements IReceiveMessage
                                          integ_info, true, true );
         message_center.send( set_peaks );
       }
- 
+
       Vector regions = new Vector();
       regions.add( histogram );
       PeakImagesCmd peak_image_cmd = new PeakImagesCmd( null, regions );
+      
       Message peak_images_message =
            new Message(Commands.SHOW_PEAK_IMAGES, peak_image_cmd, true, true);
       message_center.send( peak_images_message );
@@ -266,19 +273,12 @@ public class QuickIntegrateHandler implements IReceiveMessage
 
   private void MakePeakQList()
   {
-    if ( histogram != null )
+    if ( orientation_matrix != null && histogram != null )
     {
-      Vector3D h_vec = new Vector3D( orientation_matrix[0][0],
-                                     orientation_matrix[1][0],
-                                     orientation_matrix[2][0] );
-
-      Vector3D k_vec = new Vector3D( orientation_matrix[0][1],
-                                     orientation_matrix[1][1],
-                                     orientation_matrix[2][1] );
-
-      Vector3D l_vec = new Vector3D( orientation_matrix[0][2],
-                                     orientation_matrix[1][2],
-                                     orientation_matrix[2][2] );
+      Vector3D[] basis_vecs = getLatticeBasisVectors( orientation_matrix );
+      Vector3D   h_vec = basis_vecs[0];
+      Vector3D   k_vec = basis_vecs[1];
+      Vector3D   l_vec = basis_vecs[2];
 
       long start = System.nanoTime();
       int[] level_counts = new int[ levels.length ];
@@ -468,23 +468,11 @@ public class QuickIntegrateHandler implements IReceiveMessage
     if ( max_Q > MAX_Q_ALLOWED )
       max_Q = MAX_Q_ALLOWED;
 
-    Vector3D h_vec = new Vector3D( orientation_matrix[0][0], 
-                                   orientation_matrix[1][0],
-                                   orientation_matrix[2][0] );
+    ProjectionBinner3D[] binners = getLatticeBinners(orientation_matrix);
 
-    Vector3D k_vec = new Vector3D( orientation_matrix[0][1],
-                                   orientation_matrix[1][1],
-                                   orientation_matrix[2][1] );
-
-    Vector3D l_vec = new Vector3D( orientation_matrix[0][2],
-                                   orientation_matrix[1][2],
-                                   orientation_matrix[2][2] );
-
-    float q_per_step = min_Q_per_step( h_vec, h_vec, h_vec, steps_per_MI );
-
-    ProjectionBinner3D h_binner = MakeBinner( h_vec, q_per_step );
-    ProjectionBinner3D k_binner = MakeBinner( k_vec, q_per_step );
-    ProjectionBinner3D l_binner = MakeBinner( l_vec, q_per_step );
+    ProjectionBinner3D h_binner = binners[0];
+    ProjectionBinner3D k_binner = binners[1];
+    ProjectionBinner3D l_binner = binners[2];
 
     System.out.println("h_binner    = " + h_binner );
     System.out.println("k_binner    = " + k_binner );
@@ -509,6 +497,104 @@ public class QuickIntegrateHandler implements IReceiveMessage
     return (long)h_binner.numBins() * 
            (long)k_binner.numBins() * 
            (long)l_binner.numBins();
+  }
+
+
+  /** 
+   *  Send a message giving the size of the histogram required, given
+   *  the current orientation matrix, number of steps per Miller index
+   *  and maximum Q.
+   */
+  private void send_required_size()
+  {
+    long size = 0;
+    if ( orientation_matrix == null )
+      Util.sendError( "ERROR: NO ORIENTATION MATRIX SPECIFIED" );
+    else
+    {
+      if ( max_Q < .5f )           // clamp max_Q to reasonable values
+        max_Q = .5f;
+
+      if ( max_Q > MAX_Q_ALLOWED )
+        max_Q = MAX_Q_ALLOWED;
+
+      ProjectionBinner3D[] binners = getLatticeBinners( orientation_matrix );
+
+      size = (long)binners[0].numBins() * 
+             (long)binners[1].numBins() * 
+             (long)binners[2].numBins();
+    }
+    Message size_mess = new Message( Commands.SET_HISTOGRAM_SPACE_MB,
+                                     (Float)( 4 * size/1000000f),
+                                      true, true );
+    message_center.send( size_mess );
+  }
+
+ 
+  /**
+   *  Get the basis vectors in the direction of a*, b* and c* from the
+   *  specified orientation matrix.
+   *
+   *  @param orientation_mat  A 2-D array containing the orientation matrix
+   *                          in the first 3 rows and first three columns.
+   *                          NOTE: This matrix should be the transpose of
+   *                          orientation matrix.  That is, it is in the 
+   *                          form that is stored in an ISAW matrix file,
+   *                          but multiplied by 2*PI.
+   *
+   *  @return an array with three vectors consisting of the columns of the
+   *          specified orientation matrix.
+   */
+  public static Vector3D[] getLatticeBasisVectors( float[][] orientation_mat )
+  {
+    Vector3D h_vec = new Vector3D( orientation_mat[0][0],
+                                   orientation_mat[1][0],
+                                   orientation_mat[2][0] );
+
+    Vector3D k_vec = new Vector3D( orientation_mat[0][1],
+                                   orientation_mat[1][1],
+                                   orientation_mat[2][1] );
+
+    Vector3D l_vec = new Vector3D( orientation_mat[0][2],
+                                   orientation_mat[1][2],
+                                   orientation_mat[2][2] );
+
+    Vector3D[] result = { h_vec, k_vec, l_vec };
+    return result;
+  }
+
+
+  /**
+   *  Get the "binners" that divide reciprocal space into a collection
+   *  of parallelopipedes aligned with the reciprocal lattice determined
+   *  by the given orientation matrix.
+   *
+   *  @param orientation_mat  A 2-D array containing the orientation matrix
+   *                          in the first 3 rows and first three columns.
+   *                          NOTE: This matrix should be the transpose of
+   *                          orientation matrix.  That is, it is in the 
+   *                          form that is stored in an ISAW matrix file,
+   *                          but multiplied by 2*PI.
+   *
+   *  @return an array with three ProjectionBinner3D objects in the
+   *          directions of the reciprocal lattice basis vectors a*, b*, c*
+   *          respectively. 
+   */
+  public ProjectionBinner3D[] getLatticeBinners( float[][] orientation_mat )
+  {
+    Vector3D[] basis_vecs = getLatticeBasisVectors( orientation_mat );
+    Vector3D   h_vec = basis_vecs[0];
+    Vector3D   k_vec = basis_vecs[1];
+    Vector3D   l_vec = basis_vecs[2];
+
+    float q_per_step = min_Q_per_step( h_vec, h_vec, h_vec, steps_per_MI );
+
+    ProjectionBinner3D h_binner = MakeBinner( h_vec, q_per_step );
+    ProjectionBinner3D k_binner = MakeBinner( k_vec, q_per_step );
+    ProjectionBinner3D l_binner = MakeBinner( l_vec, q_per_step );
+
+    ProjectionBinner3D[] result = { h_binner, k_binner, l_binner };
+    return result;
   }
 
 
