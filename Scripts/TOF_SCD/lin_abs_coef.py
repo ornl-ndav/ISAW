@@ -8,22 +8,27 @@
 # A. J. Schultz --  November, 2009
 # R. Mikkelson -- gui construction:  November, 2009
 
+import math
+
 class lin_abs_coef(GenericTOF_SCD):
     def setDefaultParameters(self):
         self.super__clearParametersVector()
         self.addParameter(StringPG("Chemical formula (click Help for examples):", "C2 O6 H6"))
         self.addParameter(FloatPG("Number of formula units in the unit cell (Z):", 2))
         self.addParameter(FloatPG("Unit cell volume (A^3):", 253))
+ #       self.addParameter(BooleanEnable("Calculate the radius of a sphere?","[false, 1, 0]")
+        self.addParameter(FloatPG("Weight of the crystal in milligrams:", 1.0))
         
     def getResult(self):
     
         formulaString = self.getParameter(0).value
         formulaList = formulaString.split()
         numberOfIsotopes = len(formulaList)     # the number of elements or isotopes in the formula
-
+        
         zParameter = self.getParameter(1).value # number if formulas in the unit cell
-
         unitCellVolume = self.getParameter(2).value # unit cell volume in A^3
+#        calcRadius = self.getParameter(3).value
+        weight = self.getParameter(3).value
 
         sumScatXs = 0.0
         sumAbsXs = 0.0
@@ -97,6 +102,14 @@ class lin_abs_coef(GenericTOF_SCD):
         print 'The linear absorption coefficent for true absorption is %6.3f cm^-1' % muAbs
         print 'The calculated density is %6.3f grams/cm^3' % density
         
+        if True:
+            crystalVolume = weight / (density)   # sample volume in mm^3
+            print 'The crystal volume is %6.3f mm^3' % crystalVolume
+            crystalRadius = ( crystalVolume / ((4.0/3.0)*math.pi) )**(1.0/3.0)   # radius in mm
+            print 'The crystal radius is %6.3f mm, or %6.4f cm' % (crystalRadius, crystalRadius/10.)
+#            volCalc = (4.0/3.0) * math.pi * crystalRadius**3
+#            print 'volCalc = %6.3f' % volCalc
+        
         return muScat, muAbs, density
 
     def  getDocumentation( self):
@@ -111,8 +124,9 @@ class lin_abs_coef(GenericTOF_SCD):
         S.append("For boron-11 B4C, input\n")
         S.append("11B4 C1\n")
         S.append("@param  formula: The chemical formula input as described above.")
-        S.append("@param   Z: The number of formula units in the unit cell. This can be a noninteger value.")
+        S.append("@param  Z: The number of formula units in the unit cell. This can be a noninteger value.")
         S.append("@param  UnitVolume: The unit cell volume in units of Angstroms cubed.")
+        S.append("@param  weight: Crystal weight in milligrams.")
         S.append("@return a float array with 3 entries, the total scattering and the true absorption\
         linear absorption coefficients, and the density")
         return S.toString()
