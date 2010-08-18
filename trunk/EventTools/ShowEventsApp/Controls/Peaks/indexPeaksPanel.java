@@ -146,18 +146,21 @@ public class indexPeaksPanel extends    JPanel  implements IReceiveMessage
       panel.setLayout(  blayout );
       middlePanel = new JTabbedPane();
       
-      middlePanel.addTab( "AutoIndex", buildCalcMat2Panel());
-
       middlePanel.addTab( "AutoIndex(with Lattice Parameters)",
                            buildCalcMatPanel());
+      
+
+      middlePanel.addTab( "AutoIndex", buildCalcMat2Panel());
+
 
       middlePanel.addTab( "Read UB From File", buildFromFilePanel() );
 
       middlePanel.addTab( "Index Using Current UB" , buildCalcMat3Panel() );
-
+    
       arcs_panel = new ARCS_IndexPanel();
       middlePanel.addTab( "ARCS Index" , arcs_panel );
-
+   
+      middlePanel.setSelectedIndex( 1 );
       panel.add( middlePanel );
       panel.add( buildTolerancePanel());
       this.add(panel );
