@@ -197,8 +197,17 @@ public class PeakListHandler implements IReceiveMessage
         if( JOptionPane.showConfirmDialog( null , "Append to prev Peaks file")==
              JOptionPane.YES_OPTION)
            append = true;
-        System.out.println("append =="+append);
-        Peak_new_IO.WritePeaks_new( file_name, (Vector)peakNew_list, append );
+        Vector<Peak_new> WPeaks = new Vector();
+        if( append)
+           try
+        {
+              WPeaks = Peak_new_IO.ReadPeaks_new( file_name );
+        }catch(Exception ss)
+        {
+           WPeaks = new Vector();
+        }
+        WPeaks.addAll( peakNew_list );
+        Peak_new_IO.WritePeaks_new( file_name, (Vector)WPeaks, append );
       }
       catch ( Exception ex )
       {
@@ -589,6 +598,16 @@ public class PeakListHandler implements IReceiveMessage
        Peak_new P = peaks.elementAt( i );
        Peak_new Pn= new Peak_new( runNumber,P.monct( ),P.x( ),P.y( ),P.z( ),
              P.getGrid(),orientation,P.time(),P.L1( ),P.T0( ));
+       Pn.sethkl( P.h() , P.k() , P.l() );
+       Pn.UB( P.UB());
+       Pn.setFacility( P.getFacility( ) );
+       Pn.setInstrument( P.getInstrument( ) );
+       Pn.inti(P.inti());
+       Pn.ipkobs( P.ipkobs());
+       Pn.sigi( P.sigi());
+       Pn.reflag( P.reflag());
+       Pn.seqnum( i+1 );
+    
        peaks.setElementAt(Pn,i);
        
     }
