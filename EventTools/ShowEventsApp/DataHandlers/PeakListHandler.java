@@ -190,7 +190,7 @@ public class PeakListHandler implements IReceiveMessage
       String file_name = (String)message.getValue();
       try 
       {
-        UpdateOrig( peakNew_list);
+        Vector<Peak_new>  VP = UpdateOrig( peakNew_list);
         
         boolean append = false;
         
@@ -206,7 +206,7 @@ public class PeakListHandler implements IReceiveMessage
         {
            WPeaks = new Vector();
         }
-        WPeaks.addAll( peakNew_list );
+        WPeaks.addAll( VP );
         Peak_new_IO.WritePeaks_new( file_name, (Vector)WPeaks, append );
       }
       catch ( Exception ex )
@@ -229,8 +229,8 @@ public class PeakListHandler implements IReceiveMessage
             System.getProperty( "user.home" ), "ISAW/tmp/ppp.peaks" );
       try 
       { 
-        UpdateOrig( peakNew_list);
-        Peak_new_IO.WritePeaks_new( file_name, (Vector)peakNew_list, false );
+         Vector<Peak_new>  VP = UpdateOrig( peakNew_list);
+        Peak_new_IO.WritePeaks_new( file_name, (Vector)VP, false );
         (new ViewASCII(file_name)).getResult();        
       }
       catch ( Exception ex )
@@ -588,10 +588,13 @@ public class PeakListHandler implements IReceiveMessage
     return count;
   }
 
- private void UpdateOrig( Vector<Peak_new> peaks)
+ private Vector<Peak_new> UpdateOrig( Vector<Peak_new> peaks)
  {
     if( peaks == null )
-       return;
+       return  null;
+    
+    Vector<Peak_new> Result = new Vector<Peak_new>();
+    
     SNS_SampleOrientation orientation = new SNS_SampleOrientation( phi,chi,omega);
     for( int i=0; i< peaks.size();i++)
     {
@@ -608,9 +611,10 @@ public class PeakListHandler implements IReceiveMessage
        Pn.reflag( P.reflag());
        Pn.seqnum( i+1 );
     
-       peaks.setElementAt(Pn,i);
+       Result.add( Pn );
        
     }
+    return Result;
  }
   private static float distanceToInt( float val )
   {
