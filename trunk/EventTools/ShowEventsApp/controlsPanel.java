@@ -178,10 +178,10 @@ public class controlsPanel extends JPanel
       integrateBtn.setBackground( background_color );
       integrateBtn.addActionListener(new buttonListener());
 //    integrateBtn.setEnabled(false);
-      
+
+      panel.add(filterPeaksBtn);
       panel.add(loadFileBtn);
       panel.add(findPeaksBtn);
-      panel.add(filterPeaksBtn);
       panel.add(indexPeaksBtn);
       panel.add(scalarOrientBtn);
       panel.add(integrateBtn);
