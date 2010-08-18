@@ -16,7 +16,7 @@ class lin_abs_coef(GenericTOF_SCD):
         self.addParameter(StringPG("Chemical formula (click Help for examples):", "C2 O6 H6"))
         self.addParameter(FloatPG("Number of formula units in the unit cell (Z):", 2))
         self.addParameter(FloatPG("Unit cell volume (A^3):", 253))
- #       self.addParameter(BooleanEnable("Calculate the radius of a sphere?","[false, 1, 0]")
+        self.addParameter(BooleanEnablePG("Calculate the radius of a sphere?","[False, 1, 0]"))
         self.addParameter(FloatPG("Weight of the crystal in milligrams:", 1.0))
         
     def getResult(self):
@@ -27,8 +27,8 @@ class lin_abs_coef(GenericTOF_SCD):
         
         zParameter = self.getParameter(1).value # number if formulas in the unit cell
         unitCellVolume = self.getParameter(2).value # unit cell volume in A^3
-#        calcRadius = self.getParameter(3).value
-        weight = self.getParameter(3).value
+        calcRadius = self.getParameter(3).value
+        weight = self.getParameter(4).value
 
         sumScatXs = 0.0
         sumAbsXs = 0.0
@@ -102,15 +102,15 @@ class lin_abs_coef(GenericTOF_SCD):
         print 'The linear absorption coefficent for true absorption is %6.3f cm^-1' % muAbs
         print 'The calculated density is %6.3f grams/cm^3' % density
         
-        if True:
+        if calcRadius:
             crystalVolume = weight / (density)   # sample volume in mm^3
-            print 'The crystal volume is %6.3f mm^3' % crystalVolume
+            print 'For a weight of %6.3f mg, the crystal volume is %6.3f mm^3' % (weight, crystalVolume)
             crystalRadius = ( crystalVolume / ((4.0/3.0)*math.pi) )**(1.0/3.0)   # radius in mm
             print 'The crystal radius is %6.3f mm, or %6.4f cm' % (crystalRadius, crystalRadius/10.)
 #            volCalc = (4.0/3.0) * math.pi * crystalRadius**3
 #            print 'volCalc = %6.3f' % volCalc
         
-        return muScat, muAbs, density
+        return 'All done!'
 
     def  getDocumentation( self):
         S =StringBuffer()
