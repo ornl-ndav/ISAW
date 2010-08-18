@@ -18,6 +18,7 @@ class lin_abs_coef(GenericTOF_SCD):
         self.addParameter(FloatPG("Unit cell volume (A^3):", 253))
         self.addParameter(BooleanEnablePG("Calculate the radius of a sphere?","[False, 1, 0]"))
         self.addParameter(FloatPG("Weight of the crystal in milligrams:", 1.0))
+        self.addParameter(DataDirPG("Directory for log file:", "C:\Users\Arthur\Desktop"))
         
     def getResult(self):
     
@@ -29,13 +30,24 @@ class lin_abs_coef(GenericTOF_SCD):
         unitCellVolume = self.getParameter(2).value # unit cell volume in A^3
         calcRadius = self.getParameter(3).value
         weight = self.getParameter(4).value
+        logDirectory = self.getParameter(5).value
 
         sumScatXs = 0.0
         sumAbsXs = 0.0
         sumAtWt = 0.0
+        
+        logFileName = logDirectory + 'lin_abs_coef.log'
+        logFile = open( logFileName, 'w' )
+        logFile.write('Output from lin_abs_coef.py script:\n\n')
+        
+        logFile.write('Chemical formula: ' + formulaString + '\n')
+        logFile.write('Number of formula units in the unit cell (Z): %6.3f\n' % zParameter)
+        logFile.write('Unit cell volume (A^3): %8.2f\n' % unitCellVolume)
 
         print '\nAtom      ScatXs      AbsXs'	# print headings
         print   '----      ------      -----'
+        logFile.write('\nAtom      ScatXs      AbsXs\n')
+        logFile.write(  '----      ------      -----\n')
 
         # Except for hydrogen, cross-section values are from the NIST web site:
         # http://www.ncnr.nist.gov/resources/n-lengths/list.html
@@ -81,6 +93,7 @@ class lin_abs_coef(GenericTOF_SCD):
             number = float(formulaList[i][lenSymbol:])   # the number of this nuclei in the formula
             
             print '%-5s %10.5f %10.5f' % (lineList[0], scatteringXs, absorptionXs)
+            logFile.write('%-5s %10.5f %10.5f\n' % (lineList[0], scatteringXs, absorptionXs))
             
             sumScatXs = sumScatXs + ( number * scatteringXs )
             sumAbsXs = sumAbsXs + ( number * absorptionXs )
@@ -101,15 +114,22 @@ class lin_abs_coef(GenericTOF_SCD):
         print 'The linear absorption coefficent for total scattering is %6.3f cm^-1' % muScat
         print 'The linear absorption coefficent for true absorption is %6.3f cm^-1' % muAbs
         print 'The calculated density is %6.3f grams/cm^3' % density
-        
+        logFile.write('\n')
+        logFile.write('The linear absorption coefficent for total scattering is %6.3f cm^-1\n' % muScat)
+        logFile.write('The linear absorption coefficent for true absorption is %6.3f cm^-1\n' % muAbs)
+        logFile.write('\nThe calculated density is %6.3f grams/cm^3\n' % density)
+
         if calcRadius:
             crystalVolume = weight / (density)   # sample volume in mm^3
             print 'For a weight of %6.3f mg, the crystal volume is %6.3f mm^3' % (weight, crystalVolume)
+            logFile.write('\nFor a weight of %6.3f mg, the crystal volume is %6.3f mm^3\n' % (weight, crystalVolume))
             crystalRadius = ( crystalVolume / ((4.0/3.0)*math.pi) )**(1.0/3.0)   # radius in mm
             print 'The crystal radius is %6.3f mm, or %6.4f cm' % (crystalRadius, crystalRadius/10.)
+            logFile.write('The crystal radius is %6.3f mm, or %6.4f cm\n' % (crystalRadius, crystalRadius/10.))
 #            volCalc = (4.0/3.0) * math.pi * crystalRadius**3
 #            print 'volCalc = %6.3f' % volCalc
         
+        logFile.close()
         return 'All done!'
 
     def  getDocumentation( self):
