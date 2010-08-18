@@ -608,6 +608,7 @@ public class IsawInstaller extends JFrame
        writeBatch("Wizard.TOF_SCD.DailyPeaksWizard_SNS");
        writeBatch("devTools.Method2OperatorWizard");
        writeBatch("EventTools.ShowEventsApp.DataHandlers.SocketServerTest");
+       writeBatch("IntegrateNorm");
     }
     
     private void writeBatch( String className){
