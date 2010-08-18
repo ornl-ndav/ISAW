@@ -176,7 +176,7 @@ public class IntegrateNorm {
             
          }
          nPixels++;
-         
+         nTimes+=2;
          boolean done = false;
          //last y values is at xscl.getNum_x( )-2 on a histogram
          for ( int chan = Math.max( 0 , Chan-(nTimes-1)/2); !done && chan <= 
@@ -308,13 +308,13 @@ public class IntegrateNorm {
       if( Double.isNaN( parameters[3]  ) || Double.isNaN(  errs[3] ))
          return false;
       
-     if( parameters[3]/errs[3] <5)
+     if( parameters[3]/errs[3] <3)
         return false;
      
      
      if( parameters[3]*parameters[3]/
            (parameters[4]*parameters[5]-parameters[6]*parameters[6])
-                               < 4*4*Math.PI*Math.PI)
+                               < 2.25*Math.PI*Math.PI)
         return false;
      
      return true;
@@ -367,6 +367,7 @@ public class IntegrateNorm {
        double expCoeffx2;
        double expCoeffxy ;
        double expCoeffy2;
+       int BadEdgeRange =10;
      
        /**
         * The number of cells used in the fitting
@@ -429,15 +430,15 @@ public class IntegrateNorm {
          
          // To translate from the linear x to the corresponding
          //    row and column
-         Ncols =  Math.min( col+dcols ,grid.num_cols( ))- 
-                                       Math.max( 1,col-dcols)+1;
-         startRow= Math.max( 1,row-drows);
-         startCol =Math.max( 1,col-dcols);
+         Ncols =  Math.min( col+dcols ,grid.num_cols( )-BadEdgeRange)- 
+                                       Math.max( 1,col-dcols-BadEdgeRange)+1;
+         startRow= Math.max( BadEdgeRange,row-drows);
+         startCol =Math.max( BadEdgeRange,col-dcols);
          
          //Update totals
-         for( int r = Math.max( 1,row-drows); r <= Math.min( row+drows ,grid.num_rows( ));r++)
+         for( int r = Math.max( BadEdgeRange,row-drows); r <= Math.min( row+drows ,grid.num_rows( )-BadEdgeRange);r++)
 
-            for( int c = Math.max( 1,col-dcols); c <= Math.min( col+dcols ,grid.num_cols( ));c++)
+            for( int c = Math.max( BadEdgeRange,col-dcols); c <= Math.min( col+dcols ,grid.num_cols( )-BadEdgeRange);c++)
             {
                float Intensity = grid.getData_entry( r , c).getY_values( )[chan];
                
@@ -522,10 +523,10 @@ public class IntegrateNorm {
          if( Math.abs( parameters[2]-row )> Math.max( drows/8,1.5))
             return false;
          
-         if( parameters[1] < 1 || parameters[1] > grid.num_cols( ))
+         if( parameters[1] < BadEdgeRange || parameters[1] > grid.num_cols( )-BadEdgeRange)
             return false;
          
-         if( parameters[2] < 1 || parameters[2] > grid.num_rows( ))
+         if( parameters[2] < BadEdgeRange || parameters[2] > grid.num_rows( )-BadEdgeRange)
             return false;
          
          for( int i=4; i<=5;i++)
