@@ -6,7 +6,7 @@ from gov.anl.ipns.Util.SpecialStrings import ErrorString
 from Operators.TOF_Diffractometer import *
 from Operators.Special import *
 from Operators.TOF_SCD import *
-
+from Command import ScriptUtil
 def getIsawHome():
         
         Res = System.getProperty("ISAW_HOME")
@@ -94,8 +94,8 @@ def getRunStuff(instr, runnumber):
         event = "%s_%d_neutron_event.dat" % (instr, runnumber)
         event = os.path.join(prenxs, event)
         #print ["event",event]
-        if not os.path.exists(event):
-            raise Error, "%s does not exist" % event
+#        if not os.path.exists(event):
+#            raise Error, "%s does not exist" % event
 
         # determine the cvinfo file
         cvinfo = "%s_%d_cvinfo.xml" % (instr, runnumber)
@@ -162,16 +162,38 @@ def EventD_space2GSAS(sendData,showData,IOBS,instr,runnum,DetCalFile,BankFile,
         useD_spaceMapFile = 0
         d_spaceMapFile =""
         # do the initial load and time focus
+        import os
+
+#        if not os.path.exists(event):
+#            raise Error, "%s does not exist" % event
+        
         args= [eventFile,DetCalFile,BankFile,MapFile,firstEvent,
                                   NumEvents,d_min,d_max,useLogBinning,log_param,nbins,
                                   0,"",0,"",0,0]
-        panel_ds = Util.Make_d_DataSet( eventFile,DetCalFile,BankFile,MapFile,firstEvent,NumEvents,d_min,d_max,useLogBinning,log_param,nbins, 0,"",0,"",0,0)
+        if  os.path.exists(eventFile):
+             panel_ds = Util.Make_d_DataSet( eventFile,DetCalFile,BankFile,MapFile,firstEvent,NumEvents,d_min,d_max,useLogBinning,log_param,nbins, 0,"",0,"",0,0)
+        else:
+             L = eventFile.split('_')
+             L[len(L)-2]="neutron1"
+             eventFile1 = ""
+             for i in range(0,len(L)-1):
+                eventFile1 += L[i]+'_'
+             eventFile1 += L[len(L)-1]
+             panel_ds1 = Util.Make_d_DataSet( eventFile,DetCalFile,BankFile,MapFile,firstEvent,NumEvents,d_min,d_max,useLogBinning,log_param,nbins, 0,"",0,"",0,0)
+             eventFile2 =""
+             L[len[L]-2]="neutron2"
+             for i in range(0,len(L)-1):
+                eventFile2 += L[i]+'_'
+             eventFile2 += L[len(L)-1]
+             panel_ds2 = Util.Make_d_DataSet( eventFile,DetCalFile,BankFile,MapFile,firstEvent,NumEvents,d_min,d_max,useLogBinning,log_param,nbins, 0,"",0,"",0,0)
+             panel_ds = DataSetMerge(panel_ds1,panel_ds2).getResult()     
+
         
        
         send(panel_ds, showData, sendData,IOBS)
 
         panel_ds.setSqrtErrorsAtLeast_1()
-
+        
         
         # sum spectra together
         gsas_ds = panel_ds.clone()
@@ -253,14 +275,17 @@ def rotateDetectors( instr, runnum, DetCalFile1):
           print "No information to rotate the Detectors"
           return DetCalFile1
 
-      ang = V.firstElement().firstElement()
+      ang1 = V.firstElement().firstElement()
+      ang2 = V.elementAt(1).firstElement()
       #will only do one detector for now
       DetCal1 = System.getProperty("user.home")
       if not DetCal1.endswith("/"):
           DetCal1 +='/'
       DetCal1 += "ISAW/tmp/dummy.DetCal"
       print ["new DetCal file",DetCal1]
-      General_Utils.RotateDetectors( DetCalFile1,14,DetCal1, ang,0,0)
+#      General_Utils.RotateDetectors( DetCalFile1,14,DetCal1, ang1,0,0)
+      ScriptUtil.ExecuteCommand("RotateSnapDetectors",[DetCalFile1,DetCal1,1,ang1,1,ang2])
+
       return DetCal1
 
 
