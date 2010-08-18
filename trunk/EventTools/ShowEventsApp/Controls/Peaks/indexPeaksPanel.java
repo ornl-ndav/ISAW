@@ -145,11 +145,11 @@ public class indexPeaksPanel extends    JPanel  implements IReceiveMessage
       BoxLayout blayout = new BoxLayout( panel, BoxLayout.Y_AXIS );
       panel.setLayout(  blayout );
       middlePanel = new JTabbedPane();
+      
+      middlePanel.addTab( "AutoIndex", buildCalcMat2Panel());
 
       middlePanel.addTab( "AutoIndex(with Lattice Parameters)",
                            buildCalcMatPanel());
-
-      middlePanel.addTab( "AutoIndex", buildCalcMat2Panel());
 
       middlePanel.addTab( "Read UB From File", buildFromFilePanel() );
 
