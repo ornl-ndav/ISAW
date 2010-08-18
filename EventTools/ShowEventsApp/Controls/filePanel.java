@@ -216,10 +216,10 @@ public class filePanel implements IReceiveMessage
       tabPane = new JTabbedPane();
       loadFiles = new JButton("Load");
       loadFiles.addActionListener(new LoadListener());
-      
+
+      tabPane.addTab( "Configure" , buildConfigPanel() );
       tabPane.addTab("From File", buildEventPanel());
       tabPane.addTab("From Live Data", buildUDPPanel());
-      tabPane.addTab( "Configure" , buildConfigPanel() );
       panel.add( tabPane);
       JPanel sub_panel = new JPanel();
       panel.add( sub_panel );
