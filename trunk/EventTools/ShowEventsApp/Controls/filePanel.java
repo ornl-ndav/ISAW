@@ -301,6 +301,9 @@ public class filePanel implements IReceiveMessage
    
    public JPanel buildConfigPanel()
    {
+      JPanel ConfigPanel = new JPanel();
+      BoxLayout bl = new BoxLayout( ConfigPanel, BoxLayout.Y_AXIS);
+      ConfigPanel.setLayout(  bl );
       JPanel Res = new JPanel();
       Res.setLayout(  new GridLayout( 5,2) );
       
@@ -324,7 +327,16 @@ public class filePanel implements IReceiveMessage
       Nbins = new JTextField("");
       Res.add( Nbins );
       
-      return Res;
+      ConfigPanel.add(  Res );
+     
+      JButton ApplyButton = new JButton("Apply");
+      ConfigPanel.add(  ApplyButton );
+      ApplyButton.addActionListener( new LoadListener() );
+      
+
+      ConfigPanel.add(  Box.createVerticalGlue( ) );
+      
+      return ConfigPanel;
    }
    public JPanel buildUDPPanel()
    {
