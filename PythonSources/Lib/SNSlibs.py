@@ -283,8 +283,8 @@ def rotateDetectors( instr, runnum, DetCalFile1):
           DetCal1 +='/'
       DetCal1 += "ISAW/tmp/dummy.DetCal"
       print ["new DetCal file",DetCal1]
-#      General_Utils.RotateDetectors( DetCalFile1,14,DetCal1, ang1,0,0)
-      ScriptUtil.ExecuteCommand("RotateSnapDetectors",[DetCalFile1,DetCal1,1,ang1,1,ang2])
+      General_Utils.RotateDetectors( DetCalFile1,14,DetCal1, ang1,0,0)
+#      ScriptUtil.ExecuteCommand("RotateSnapDetectors",[DetCalFile1,DetCal1,1,ang1,1,ang2])
 
       return DetCal1
 
