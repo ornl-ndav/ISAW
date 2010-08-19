@@ -47,7 +47,7 @@ import Command.*;
  * This class has been dynamically created using the Method2OperatorWizard
  * and usually should not be edited.
  * This operator is a wrapper around 
-@see  Operators.TOF_Diffractometer.Omit_SCD_Peaks_Calc.OmitSpectraWithPeaks(DataSetTools.dataset.DataSet ,java.util.Vector)
+@see  Operators.TOF_Diffractometer.Omit_SCD_Peaks_Calc#OmitSpectraWithPeaks(DataSetTools.dataset.DataSet ,java.util.Vector)
          java.util.Vector peaks
 
  */
