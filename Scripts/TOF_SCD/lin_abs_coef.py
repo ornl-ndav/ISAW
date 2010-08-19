@@ -43,6 +43,10 @@ class lin_abs_coef(GenericTOF_SCD):
         logFile.write('Chemical formula: ' + formulaString + '\n')
         logFile.write('Number of formula units in the unit cell (Z): %6.3f\n' % zParameter)
         logFile.write('Unit cell volume (A^3): %8.2f\n' % unitCellVolume)
+        
+        logFile.write('\nCross sections in units of barns ( 1 barn = 1E-24 cm^2)\n')
+        logFile.write('Absorption cross section for 2200 m/s neutrons (wavelength = 1.8 A)\n')
+        logFile.write('For further information and references, see ...\ISAW\Databases\NIST_cross-sections.dat\n')
 
         print '\nAtom      ScatXs      AbsXs'	# print headings
         print   '----      ------      -----'
@@ -112,11 +116,11 @@ class lin_abs_coef(GenericTOF_SCD):
         # Print the results.
         print '\n'
         print 'The linear absorption coefficent for total scattering is %6.3f cm^-1' % muScat
-        print 'The linear absorption coefficent for true absorption is %6.3f cm^-1' % muAbs
+        print 'The linear absorption coefficent for true absorption at 1.8 A is %6.3f cm^-1' % muAbs
         print 'The calculated density is %6.3f grams/cm^3' % density
         logFile.write('\n')
         logFile.write('The linear absorption coefficent for total scattering is %6.3f cm^-1\n' % muScat)
-        logFile.write('The linear absorption coefficent for true absorption is %6.3f cm^-1\n' % muAbs)
+        logFile.write('The linear absorption coefficent for true absorption at 1.8 A is %6.3f cm^-1\n' % muAbs)
         logFile.write('\nThe calculated density is %6.3f grams/cm^3\n' % density)
 
         if calcRadius:
