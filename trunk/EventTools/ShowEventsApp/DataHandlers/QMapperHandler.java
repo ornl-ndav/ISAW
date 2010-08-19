@@ -361,6 +361,24 @@ public class QMapperHandler implements IReceiveMessage
           else
             peak_new_list.remove(i);
         }
+ 
+        float[] levels       = QuickIntegrateHandler.levels;
+        int[]   level_counts = new int[ levels.length ];
+        for ( int i = 0; i < peak_new_list.size(); i++ )
+        {
+          Peak_new peak = peak_new_list.elementAt(i);
+          if ( peak.inti() > levels[0] )
+          {
+            level_counts[0]++;
+            for ( int j = 1; j < levels.length; j++ )
+              if ( peak.sigi() > levels[j] )
+                level_counts[j]++;
+          }
+        }
+        Message stats_mess 
+                     = new Message( Commands.SET_INTEGRATED_INTENSITY_STATS,
+                                    level_counts, true, true );
+        message_center.send( stats_mess );
 
         if ( cmd.getRecord_as_peaks_list() )
         {

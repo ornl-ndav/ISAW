@@ -74,8 +74,10 @@ public class QuickIntegrateHandler implements IReceiveMessage
   public static final float LEVEL_3 =  5;
   public static final float LEVEL_4 = 10;
 
-  private float[] levels = { LEVEL_0, LEVEL_1, LEVEL_2, LEVEL_3, LEVEL_4 };
-  private final int[] ZEROS = new int[ levels.length ];
+  public static final float[] levels = 
+                               { LEVEL_0, LEVEL_1, LEVEL_2, LEVEL_3, LEVEL_4 };
+
+  public static final int[] ZEROS = new int[ levels.length ];
 
   private MessageCenter message_center;
 

@@ -73,6 +73,8 @@ import EventTools.Integrate.IntegrateTools;
  */
 public class HistogramHandler implements IReceiveMessage
 {
+  private float         DEFAULT_RADIUS     = 0.2f;
+  private float         MAX_DEFAULT_RADIUS = 2.0f;
   private MessageCenter message_center;
   private MessageCenter view_message_center;
 
@@ -339,6 +341,19 @@ public class HistogramHandler implements IReceiveMessage
         Vector<IPeakQ>   peaks_kept  = new Vector<IPeakQ>();
 
         float peak_radius = cmd.getSphere_radius();
+        if ( peak_radius < 0 )                       // no change if bad radius
+        {
+          peak_radius = DEFAULT_RADIUS;
+          Util.sendInfo( "Negative radius reset to " + peak_radius );
+        }
+        if ( peak_radius > MAX_DEFAULT_RADIUS )
+        {
+          peak_radius = MAX_DEFAULT_RADIUS;
+          Util.sendInfo( "Integration radius limited to " + peak_radius );
+        }
+        
+        DEFAULT_RADIUS    = peak_radius;             // update radius used for
+                                                     // selected point radius
         float bkg_radius  = 2 * peak_radius;
         float[] radii = { peak_radius, bkg_radius };
 
@@ -353,9 +368,11 @@ public class HistogramHandler implements IReceiveMessage
           {
             peaks_kept.add( peaks.elementAt(i) );
             i_isigi_vec.add( i_isigi );
+/*
             System.out.print( peaks.elementAt(i) );
             System.out.printf("I = %10.2f  IsigI = %5.1f\n", 
                                i_isigi[0], i_isigi[1] );
+*/
           }
         }
 
@@ -561,7 +578,6 @@ public class HistogramHandler implements IReceiveMessage
     int page = z_binner.index( x, y, z );
     select_info_cmd.setHistPage( page );
 
-    float DEFAULT_RADIUS = 0.2f;
     float BACKGR_RADIUS  = 2 * DEFAULT_RADIUS;
     float[] radii = { DEFAULT_RADIUS, BACKGR_RADIUS };
 

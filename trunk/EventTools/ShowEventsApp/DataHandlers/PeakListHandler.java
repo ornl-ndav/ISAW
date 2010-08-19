@@ -409,9 +409,6 @@ public class PeakListHandler implements IReceiveMessage
 
     else if ( message.getName().equals(Commands.GET_PEAKS_TO_SPHERE_INTEGRATE))
     {
-       System.out.println("\nPeaksListHandler got " + 
-                           Commands.GET_PEAKS_TO_SPHERE_INTEGRATE +
-                           message.getValue() );
        Object value = message.getValue();
        if ( value instanceof IntegratePeaksCmd )
        {
@@ -420,9 +417,6 @@ public class PeakListHandler implements IReceiveMessage
               peakNew_list != null        &&
               peakNew_list.size() > 0     )  // PeakListHandler provides list
          {
-           System.out.println("\nPeaksListHandler sending " + 
-                               Commands.SPHERE_INTEGRATE_PEAKS + 
-                               message.getValue() );
            cmd = new IntegratePeaksCmd( peakNew_list,
                                         cmd.getSphere_radius(),
                                         cmd.getCurrent_peaks_only(),
