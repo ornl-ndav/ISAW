@@ -160,7 +160,7 @@ public class ScalarForm extends Form
     * new parameter
     * 
     * @param param  The new parameter
-    * @param inds   The parameter index to be replaced
+    * @param indx   The parameter index to be replaced
     */
    public boolean setParameter( IParameter param, int indx )
    {
