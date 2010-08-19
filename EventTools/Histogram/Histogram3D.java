@@ -454,8 +454,8 @@ public class Histogram3D
    * @param  z_index    The index of the requested bin, in the histograms
    *                    local z direction.
    *
-   * @param  A Vector3D object containing the position of the center of the
-   *         requested bin.
+   * @return  A Vector3D object containing the position of the center of the
+   *          requested bin.
    */
   public Vector3D binLocation( int x_index, int y_index, int z_index )
   {
