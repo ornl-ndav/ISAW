@@ -268,8 +268,7 @@ def rotateDetectors( instr, runnum, DetCalFile1):
       cvinfo = os.path.join(prenxs, cvinfo)
       if not os.path.exists(cvinfo):
          raise Error, "%s does not exist" % cvinfo
-      print cvinfo
-     
+           
       V = Util.getRotationAngles( cvinfo)
       if V is None or V.size()< 1:
           print "No information to rotate the Detectors"
@@ -281,11 +280,17 @@ def rotateDetectors( instr, runnum, DetCalFile1):
       DetCal1 = System.getProperty("user.home")
       if not DetCal1.endswith("/"):
           DetCal1 +='/'
+      Save= DetCal1
       DetCal1 += "ISAW/tmp/dummy.DetCal"
+      DetCal2 = Save+"ISAW/tmp/dummy2.DetCal"
       print ["new DetCal file",DetCal1]
       General_Utils.RotateDetectors( DetCalFile1,14,DetCal1, ang1,0,0)
+      try:
+         General_Utils.RotateDetectors( DetCal1,5,DetCal2, ang2,0,0, ScriptUtil.ToVec([1,2,3,4,5,6,7,8,9]))
+      except:
+         return DetCal1
 #      ScriptUtil.ExecuteCommand("RotateSnapDetectors",[DetCalFile1,DetCal1,1,ang1,1,ang2])
 
-      return DetCal1
+      return DetCal2
 
 
