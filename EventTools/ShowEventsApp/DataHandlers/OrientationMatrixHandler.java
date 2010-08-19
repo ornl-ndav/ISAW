@@ -209,7 +209,8 @@ public class OrientationMatrixHandler implements IReceiveMessage
              true ));//Must broadcast this orientation matrix
        
        Util.sendInfo( "The orientation matrix has been read in " );
-       Util.sendInfo( "The Sample phi,chi and omega have been applied to this matrix" );
+       Util.sendInfo( "The Sample phi,chi and omega have been " +
+                      "applied to this matrix" );
        IndexPeakWithOrientationMat( orMat, OffInt);
     }
 

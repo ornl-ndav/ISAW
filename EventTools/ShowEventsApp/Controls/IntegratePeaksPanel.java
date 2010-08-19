@@ -45,6 +45,7 @@ import javax.swing.*;
 import javax.swing.border.*;
 
 import EventTools.ShowEventsApp.Command.Commands;
+import EventTools.ShowEventsApp.Command.IntegratePeaksCmd;
 import EventTools.ShowEventsApp.DataHandlers.QuickIntegrateHandler;
 import MessageTools.IReceiveMessage;
 import MessageTools.Message;
@@ -59,7 +60,9 @@ public class IntegratePeaksPanel extends JPanel implements IReceiveMessage
                                             // Sphere integrate controls
    private JTextField   radius_txf      = new JTextField("0.2");
    private JRadioButton found_peaks_ckb = new JRadioButton("Current Peaks");
-   private JRadioButton all_peaks_ckb  = new JRadioButton("All Possible Peaks");
+   private JRadioButton all_peaks_ckb   = 
+                                 new JRadioButton("All Predicted Positions");
+
    private JButton      sphere_stats_button = new JButton("Show Statistics");
    private JButton      set_in_peaks_button = new JButton("Update Peaks List");
 
@@ -67,6 +70,7 @@ public class IntegratePeaksPanel extends JPanel implements IReceiveMessage
 
    private final String NO_HISTOGRAM    = "NO HISTOGRAM";
    private final String HISTOGRAM_READY = "READY TO ADD EVENTS";
+   private final String EVENTS_ADDED_TO_HISTOGRAM = "EVENTS ADDED TO HISTOGRAM";
    private String[] step_list = { "  2 Steps per Miller Index",
                                   "  3 Steps per Miller Index",
                                   "  4 Steps per Miller Index",
@@ -122,6 +126,8 @@ public class IntegratePeaksPanel extends JPanel implements IReceiveMessage
       message_center.addReceiver( this, Commands.SET_HISTOGRAM_SPACE_MB );
       message_center.addReceiver( this, Commands.INTEGRATE_HISTOGRAM_READY );
       message_center.addReceiver( this, Commands.INTEGRATE_HISTOGRAM_FREED );
+      message_center.addReceiver( this, 
+                                  Commands.ADDED_EVENTS_TO_INTEGRATE_HISTOGRAM);
 
       setBorder( new TitledBorder("Quick Integrate Options") );
       setLayout( new GridLayout( 2, 1 ) );
@@ -158,6 +164,10 @@ public class IntegratePeaksPanel extends JPanel implements IReceiveMessage
 
       for ( int i = 0; i < 4; i++ )                  // add filler panels
         sphere_panel.add( new JPanel() );
+
+      SphereButtonListener listener = new SphereButtonListener();
+      sphere_stats_button.addActionListener( listener );
+      set_in_peaks_button.addActionListener( listener );
 
       return sphere_panel;
    }
@@ -279,6 +289,10 @@ public class IntegratePeaksPanel extends JPanel implements IReceiveMessage
      else if ( message.getName().equals(Commands.INTEGRATE_HISTOGRAM_FREED))
        hist_status_txf.setText( NO_HISTOGRAM );
 
+     else if ( message.getName().equals(
+                                Commands.ADDED_EVENTS_TO_INTEGRATE_HISTOGRAM))
+       hist_status_txf.setText( EVENTS_ADDED_TO_HISTOGRAM );
+
      return false;
    }
 
@@ -334,6 +348,26 @@ public class IntegratePeaksPanel extends JPanel implements IReceiveMessage
 
        else if ( a_event.getSource() == to_peaks_button )
          sendMessage( Commands.MAKE_INTEGRATED_PEAK_Q_LIST, null );
+     }
+   }
+
+
+   private class SphereButtonListener implements ActionListener
+   {
+     public void actionPerformed( ActionEvent a_event )
+     {
+       float   sphere_radius      = getValueFromTextField( radius_txf );
+       boolean current_peaks_only = found_peaks_ckb.isSelected();
+
+       boolean record_as_peaks_list = false;
+       if ( a_event.getSource() == set_in_peaks_button )
+         record_as_peaks_list = true;
+
+       IntegratePeaksCmd cmd = new IntegratePeaksCmd( null, 
+                                                      sphere_radius,
+                                                      current_peaks_only,
+                                                      record_as_peaks_list );
+       sendMessage( Commands.GET_PEAKS_TO_SPHERE_INTEGRATE, cmd );
      }
    }
 

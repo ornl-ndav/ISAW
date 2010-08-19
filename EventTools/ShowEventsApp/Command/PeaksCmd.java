@@ -57,7 +57,7 @@ public class PeaksCmd
     * @param peaks       Vector of peaks to display, or null if this
     *                    command is just setting parameters for the iamges
     *                    or turning the image display on/off.
-    * @param show_images Flag indicating wheter to show or remove the
+    * @param show_images Flag indicating whether to show or remove the
     *                    image display panel(s).
     * @param image_size  Size of the displayed image in reciprocal
     *                    Angstroms.
