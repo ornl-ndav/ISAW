@@ -215,12 +215,20 @@ public class Commands
   /**
    * Messages for quick event integration.
    */
+  public static final String GET_PEAKS_TO_SPHERE_INTEGRATE = 
+                                              "GET_PEAKS_TO_SPHERE_INTEGRATE";
+  public static final String SPHERE_INTEGRATE_PEAKS = 
+                                              "SPHERE_INTEGRATE_PEAKS";
+  public static final String REVERSE_WEIGHT_INTEGRALS = 
+                                              "REVERSE_WEIGHT_INTEGRALS"; 
   public static final String INIT_INTEGRATE_HISTOGRAM =
                                               "INIT_INTEGRATE_HISTOGRAM";
   public static final String FREE_INTEGRATE_HISTOGRAM =
                                               "FREE_INTEGRATE_HISTOGRAM";
   public static final String INTEGRATE_HISTOGRAM_READY =
                                               "INTEGRATE_HISTOGRAM_READY";
+  public static final String ADDED_EVENTS_TO_INTEGRATE_HISTOGRAM =
+                                         "ADDED_EVENTS_TO_INTEGRATE_HISTOGRAM";
   public static final String INTEGRATE_HISTOGRAM_FREED =
                                               "INTEGRATE_HISTOGRAM_FREED";
   public static final String SET_STEPS_PER_MILLER_INDEX =

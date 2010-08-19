@@ -52,6 +52,7 @@ import EventTools.EventList.ITofEventList;
 import EventTools.EventList.MapEventsToQ_Op;
 import EventTools.ShowEventsApp.Command.Commands;
 import EventTools.ShowEventsApp.Command.PeaksCmd;
+import EventTools.ShowEventsApp.Command.IntegratePeaksCmd;
 import EventTools.ShowEventsApp.Command.PeakImagesCmd;
 import EventTools.ShowEventsApp.Command.SetNewInstrumentCmd;
 import EventTools.ShowEventsApp.Command.SelectPointCmd;
@@ -80,6 +81,7 @@ public class QMapperHandler implements IReceiveMessage
     message_center.addReceiver( this, Commands.SELECT_POINT );
     message_center.addReceiver( this, Commands.SET_PEAK_Q_LIST );
     message_center.addReceiver( this, Commands.SET_INTEGRATED_PEAKS_LIST );
+    message_center.addReceiver( this, Commands.REVERSE_WEIGHT_INTEGRALS );
 
     message_center.addReceiver( this, Commands.CLEAR_OMITTED_PIXELS );
     message_center.addReceiver( this, Commands.APPLY_OMITTED_PIXELS );
@@ -168,9 +170,9 @@ public class QMapperHandler implements IReceiveMessage
       }
       SelectPointCmd   cmd = (SelectPointCmd)message.getValue();
       SelectionInfoCmd info;
-                              // PeakQ, Peak_new and SelectionInfCom
+                              // PeakQ, Peak_new and SelectionInfoCmd
                               // use Q = 1/d  but the event display
-                              // and select point message use Q = 2PI/d so 
+                              // and SelectPointCmd  use Q = 2PI/d so 
                               // must switch the convention NOW!
       float qx = (float)( cmd.getQx() / (2 * Math.PI) );
       float qy = (float)( cmd.getQy() / (2 * Math.PI) );
@@ -317,6 +319,59 @@ public class QMapperHandler implements IReceiveMessage
       }
     }
 
+    else if ( message.getName().equals( Commands.REVERSE_WEIGHT_INTEGRALS ) )
+    {
+      Object obj = message.getValue();
+      if ( obj instanceof IntegratePeaksCmd )
+      {
+        IntegratePeaksCmd cmd = (IntegratePeaksCmd)obj;
+        Vector<IPeakQ> peakQs = cmd.getPeaks();
+        Vector<float[]> i_isigis = cmd.getI_and_IsigI();
+        if ( peakQs   == null || peakQs.size() == 0 ||
+             i_isigis == null || i_isigis.size() != peakQs.size() )
+         return false;
+
+        Vector<Peak_new> peak_new_list = 
+             ConvertIntegratedPeakQToPeakNew( mapper, peakQs, i_isigis, null );
+
+        for ( int i = peak_new_list.size()-1; i >= 0; i-- )
+        {
+          Peak_new peak = peak_new_list.elementAt(i);
+          float[] q  = peak.getUnrotQ();
+          float   qx = q[0]; 
+          float   qy = q[1];
+          float   qz = q[2];
+          Vector3D Qxyz = new Vector3D( qx, qy, qz );
+
+          float  magnitude_Q = Qxyz.length();
+          float  d           = 1/magnitude_Q;
+          double off_axis    = Math.sqrt( qy * qy + qz * qz );
+          double beam_comp   = qx;
+          float  alpha       = (float)Math.atan2(off_axis,beam_comp);
+          float  two_theta   = (float)(2*Math.abs(alpha) - Math.PI);
+
+          float  wl     = (float) (2 * d * Math.sin( two_theta/2 ));
+          float  weight = mapper.getEventWeight( wl, two_theta );
+
+          if ( weight != 0 )
+          {
+            peak.inti( peak.inti() / weight );
+            peak.sigi( peak.sigi() / (float)Math.sqrt(weight) );
+          }
+          else
+            peak_new_list.remove(i);
+        }
+
+        if ( cmd.getRecord_as_peaks_list() )
+        {
+          Message peak_new_message =
+            new Message(Commands.SET_PEAK_NEW_LIST, peak_new_list, true, true);
+
+          message_center.send( peak_new_message );
+        }
+      }
+    }
+
     else if ( message.getName().equals(Commands.APPLY_OMITTED_PIXELS) )
     {
       Object obj = message.getValue();
@@ -439,15 +494,10 @@ public class QMapperHandler implements IReceiveMessage
 
   public static Vector<Peak_new>ConvertIntegratedPeakQToPeakNew
                                                  ( SNS_Tof_to_Q_map  mapper, 
-                                                   Vector<PeakQ>     q_peaks, 
+                                                   Vector<IPeakQ>    q_peaks, 
                                                    Vector<float[]>   IsigIs,
                                                    float[]           run_info )
   {
-    int   run_num = (int)run_info[0];
-    float phi     = run_info[1];
-    float chi     = run_info[2];
-    float omega   = run_info[3];
-
     Vector<Peak_new> new_peaks = new Vector<Peak_new>();
 
     for  ( int k = 0; k < q_peaks.size(); k++ )

@@ -28,6 +28,7 @@ import EventTools.ShowEventsApp.Command.ConfigLoadCmd;
 import EventTools.ShowEventsApp.Command.PeaksCmd;
 import EventTools.ShowEventsApp.Command.IndexPeaksCmd;
 import EventTools.ShowEventsApp.Command.IndexARCS_PeaksCmd;
+import EventTools.ShowEventsApp.Command.IntegratePeaksCmd;
 import EventTools.ShowEventsApp.Command.SelectionInfoCmd;
 import EventTools.ShowEventsApp.Command.UBwTolCmd;
 import EventTools.ShowEventsApp.Command.Util;
@@ -61,6 +62,7 @@ public class PeakListHandler implements IReceiveMessage
     message_center.addReceiver( this, Commands.INDEX_PEAKS );
     message_center.addReceiver( this, Commands.INDEX_PEAKS_ARCS );
     message_center.addReceiver( this, Commands.INDEX_PEAKS_ROSS );
+    message_center.addReceiver( this, Commands.GET_PEAKS_TO_SPHERE_INTEGRATE );
     message_center.addReceiver( this, 
                                 Commands.INDEX_PEAKS_WITH_ORIENTATION_MATRIX);
   }
@@ -126,8 +128,8 @@ public class PeakListHandler implements IReceiveMessage
                                          cmd.getImageSize(),
                                          cmd.getMaxOffset() );
         message_center.send( new Message( Commands.GET_PEAK_IMAGE_REGIONS,
-                                            new_cmd,
-                                            true ) );
+                                          new_cmd,
+                                          true ) );
       }
     }
     else if ( message.getName().equals( Commands.INIT_HISTOGRAM ) )
@@ -190,7 +192,7 @@ public class PeakListHandler implements IReceiveMessage
       String file_name = (String)message.getValue();
       try 
       {
-        Vector<Peak_new>  VP = UpdateOrig( peakNew_list);
+        Vector<Peak_new> VP = UpdateOrig( peakNew_list );
         
         boolean append = false;
         
@@ -229,7 +231,7 @@ public class PeakListHandler implements IReceiveMessage
             System.getProperty( "user.home" ), "ISAW/tmp/ppp.peaks" );
       try 
       { 
-         Vector<Peak_new>  VP = UpdateOrig( peakNew_list);
+         Vector<Peak_new> VP = UpdateOrig( peakNew_list);
         Peak_new_IO.WritePeaks_new( file_name, (Vector)VP, false );
         (new ViewASCII(file_name)).getResult();        
       }
@@ -403,6 +405,33 @@ public class PeakListHandler implements IReceiveMessage
        this.UB = getErrors( UB, Peaks, value[2]); 
     
        return false;
+    }
+
+    else if ( message.getName().equals(Commands.GET_PEAKS_TO_SPHERE_INTEGRATE))
+    {
+       System.out.println("\nPeaksListHandler got " + 
+                           Commands.GET_PEAKS_TO_SPHERE_INTEGRATE +
+                           message.getValue() );
+       Object value = message.getValue();
+       if ( value instanceof IntegratePeaksCmd )
+       {
+         IntegratePeaksCmd cmd = (IntegratePeaksCmd)value;
+         if ( cmd.getCurrent_peaks_only() && 
+              peakNew_list != null        &&
+              peakNew_list.size() > 0     )  // PeakListHandler provides list
+         {
+           System.out.println("\nPeaksListHandler sending " + 
+                               Commands.SPHERE_INTEGRATE_PEAKS + 
+                               message.getValue() );
+           cmd = new IntegratePeaksCmd( peakNew_list,
+                                        cmd.getSphere_radius(),
+                                        cmd.getCurrent_peaks_only(),
+                                        cmd.getRecord_as_peaks_list() );
+           Message integrate = new Message( Commands.SPHERE_INTEGRATE_PEAKS,
+                                            cmd, true, true );
+           message_center.send( integrate );
+         } 
+       }
     }
 
     return false;
@@ -595,7 +624,8 @@ public class PeakListHandler implements IReceiveMessage
     
     Vector<Peak_new> Result = new Vector<Peak_new>();
     
-    SNS_SampleOrientation orientation = new SNS_SampleOrientation( phi,chi,omega);
+    SNS_SampleOrientation orientation = 
+                              new SNS_SampleOrientation( phi,chi,omega);
     for( int i=0; i< peaks.size();i++)
     {
        Peak_new P = peaks.elementAt( i );
@@ -612,10 +642,10 @@ public class PeakListHandler implements IReceiveMessage
        Pn.seqnum( i+1 );
     
        Result.add( Pn );
-       
     }
     return Result;
  }
+
   private static float distanceToInt( float val )
   {
     float rounded = Math.round(val);

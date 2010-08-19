@@ -188,8 +188,12 @@ public class QuickIntegrateHandler implements IReceiveMessage
     else if ( message.getName().equals(Commands.INIT_HISTOGRAM) )
     {
       if ( histogram != null )
+      {
         histogram.clear();
-
+        Message allocated = new Message( Commands.INTEGRATE_HISTOGRAM_READY,
+                                         null, true, true );
+        message_center.send( allocated );
+      }
       send_stats( ZEROS );
       SetMaxQ( message.getValue() );
     }
@@ -197,7 +201,12 @@ public class QuickIntegrateHandler implements IReceiveMessage
     else if ( message.getName().equals(Commands.INIT_INTEGRATE_HISTOGRAM) )
     {
       if ( histogram != null )
+      {
         histogram.clear();
+        Message allocated = new Message( Commands.INTEGRATE_HISTOGRAM_READY,
+                                         null, true, true );
+        message_center.send( allocated );
+      }
       else
         RebuildHistogram();
 
@@ -223,6 +232,9 @@ public class QuickIntegrateHandler implements IReceiveMessage
         return false;
 
       AddEventsToHistogram( events, false );
+      Message added = new Message(Commands.ADDED_EVENTS_TO_INTEGRATE_HISTOGRAM,
+                                  null, true, true );
+      message_center.send( added );
     }
 
     else if ( message.getName().equals(Commands.SCAN_INTEGRATED_INTENSITIES) )
@@ -256,15 +268,19 @@ public class QuickIntegrateHandler implements IReceiveMessage
         Message set_peaks = new Message( Commands.SET_INTEGRATED_PEAKS_LIST,
                                          integ_info, true, true );
         message_center.send( set_peaks );
-      }
 
-      Vector regions = new Vector();
-      regions.add( histogram );
-      PeakImagesCmd peak_image_cmd = new PeakImagesCmd( null, regions );
+        boolean show_histogram_slices = true;
+        if ( show_histogram_slices )
+        {
+          Vector regions = new Vector();
+          regions.add( histogram );
+          PeakImagesCmd peak_image_cmd = new PeakImagesCmd( null, regions );
       
-      Message peak_images_message =
-           new Message(Commands.SHOW_PEAK_IMAGES, peak_image_cmd, true, true);
-      message_center.send( peak_images_message );
+          Message peak_images_message =
+            new Message(Commands.SHOW_PEAK_IMAGES, peak_image_cmd, true, true);
+          message_center.send( peak_images_message );
+        }
+      }
     }
 
     return false;

@@ -58,6 +58,7 @@ import EventTools.ShowEventsApp.Command.SetNewInstrumentCmd;
 import EventTools.ShowEventsApp.Command.PeaksCmd;
 import EventTools.ShowEventsApp.Command.FindPeaksCmd;
 import EventTools.ShowEventsApp.Command.PeakImagesCmd;
+import EventTools.ShowEventsApp.Command.IntegratePeaksCmd;
 import EventTools.ShowEventsApp.Command.Util;
 import EventTools.Integrate.IntegrateTools;
 
@@ -115,6 +116,7 @@ public class HistogramHandler implements IReceiveMessage
     message_center.addReceiver( this, Commands.GET_HISTOGRAM_MAX );
     message_center.addReceiver( this, Commands.FIND_PEAKS );
     message_center.addReceiver( this, Commands.GET_PEAK_IMAGE_REGIONS );
+    message_center.addReceiver( this, Commands.SPHERE_INTEGRATE_PEAKS );
     
     view_message_center.addReceiver( this, Commands.UPDATE );
 
@@ -326,6 +328,47 @@ public class HistogramHandler implements IReceiveMessage
        return false;
     }
 
+    else if ( message.getName().equals(Commands.SPHERE_INTEGRATE_PEAKS) )
+    {
+      Object obj = message.getValue();
+      if ( obj != null && obj instanceof IntegratePeaksCmd )
+      {
+        IntegratePeaksCmd cmd       = (IntegratePeaksCmd)obj;
+        Vector<IPeakQ>   peaks       = cmd.getPeaks();
+        Vector<float[]> i_isigi_vec = new Vector<float[]>();
+        Vector<IPeakQ>   peaks_kept  = new Vector<IPeakQ>();
+
+        float peak_radius = cmd.getSphere_radius();
+        float bkg_radius  = 2 * peak_radius;
+        float[] radii = { peak_radius, bkg_radius };
+
+        for ( int i = 0; i < peaks.size(); i++ )
+        {
+          float[] q_arr = peaks.elementAt(i).getUnrotQ();
+          float qx = (float)(q_arr[0] * 2 * Math.PI);
+          float qy = (float)(q_arr[1] * 2 * Math.PI);
+          float qz = (float)(q_arr[2] * 2 * Math.PI);
+          float[] i_isigi = getI_and_sigI( qx, qy, qz, radii );
+          if ( i_isigi != null )
+          {
+            peaks_kept.add( peaks.elementAt(i) );
+            i_isigi_vec.add( i_isigi );
+            System.out.print( peaks.elementAt(i) );
+            System.out.printf("I = %10.2f  IsigI = %5.1f\n", 
+                               i_isigi[0], i_isigi[1] );
+          }
+        }
+
+        if ( peaks_kept.size() > 0 )
+        {
+          cmd.setI_and_IsigI( i_isigi_vec );
+          Message request = new Message( Commands.REVERSE_WEIGHT_INTEGRALS, 
+                                         cmd, true, true );
+          message_center.send( request );         
+        }
+      }
+    }
+
     else if( message.getName().equals( Commands.UPDATE ) )
     {
        updates_since_events++;
@@ -519,25 +562,14 @@ public class HistogramHandler implements IReceiveMessage
     select_info_cmd.setHistPage( page );
 
     float DEFAULT_RADIUS = 0.2f;
-    float BACKGR_RADIUS  = (float)Math.pow( DEFAULT_RADIUS, 1.0/3.0 );
+    float BACKGR_RADIUS  = 2 * DEFAULT_RADIUS;
     float[] radii = { DEFAULT_RADIUS, BACKGR_RADIUS };
-    Vector result = histogram.sphereIntegrals( x, y, z, radii );
 
+    float[] result = getI_and_sigI( x, y, z, radii );
     if ( result != null )
     {
-      float[] sums    = (float[])result.elementAt(0);
-      float[] volumes = (float[])result.elementAt(1);
-
-      float peak_count = sums[0];
-      float bkg_count  = sums[1] - peak_count;
-
-      float peak_volume = volumes[0];
-      float bkg_volume  = volumes[1] - peak_volume;
-
-      float[] temp = IntegrateTools.getI_and_sigI( peak_count, peak_volume,
-                                                   bkg_count, bkg_volume );
-      float net_signal = temp[0];
-      float I_sigI     = temp[1];
+      float net_signal = result[0];
+      float I_sigI     = result[1];
 
       float weight = select_info_cmd.getWeight();
     
@@ -552,6 +584,31 @@ public class HistogramHandler implements IReceiveMessage
     }
   }
  
+
+  private float[] getI_and_sigI( float x, float y, float z, float[] radii )
+  {
+    if ( histogram == null )
+      return null;
+
+    Vector result = histogram.sphereIntegrals( x, y, z, radii );
+
+    if ( result == null )
+      return null;
+    
+    float[] sums    = (float[])result.elementAt(0);
+    float[] volumes = (float[])result.elementAt(1);
+
+    float peak_count = sums[0];
+    float bkg_count  = sums[1] - peak_count;
+
+    float peak_volume = volumes[0];
+    float bkg_volume  = volumes[1] - peak_volume;
+
+    float[] i_isigi = IntegrateTools.getI_and_sigI( peak_count, peak_volume,
+                                                    bkg_count, bkg_volume );
+    return i_isigi;
+  }
+
 
   /**
    *  Find the peaks in the specified histogram, using the specified
