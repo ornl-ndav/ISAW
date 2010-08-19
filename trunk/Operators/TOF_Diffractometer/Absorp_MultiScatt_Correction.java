@@ -52,9 +52,9 @@ public class Absorp_MultiScatt_Correction extends GenericTOF_Diffractometer
  {
     private static final String TITLE = "Abs_MS_Correction";
     private OutputStreamWriter outStream;
-    float   CONVER   = 0.0039554f;
-    float   COEFF4   = 1.1967f;
-    float   COEFF5   = -0.8667f;
+    double  CONVER   = 0.0039554f;
+    double  COEFF4   = 1.1967f;
+    double  COEFF5   = -0.8667f;
 
  /* float COEFF1   = 2.800f;
     float COEFF2   = 0.0721f;
@@ -139,7 +139,7 @@ public class Absorp_MultiScatt_Correction extends GenericTOF_Diffractometer
    *
    *  @return  the summed value of the function Z(angle_deg).
    */
-  public double[] ZSet( float angle_deg )
+  public double[] ZSet( double angle_deg )
   {
   	                     // angle_deg is "two theata" in degrees
   	                     // new_theta is theta in radians
@@ -185,7 +185,7 @@ public class Absorp_MultiScatt_Correction extends GenericTOF_Diffractometer
   *
   *  @return  the Attentuation factor.
   */
-  public double AttFac(float sigir, float sigsr)
+  public double AttFac(double sigir, double sigsr)
   {
     double facti = 1.0;
     double Att   = 0.0;
@@ -245,12 +245,12 @@ public class Absorp_MultiScatt_Correction extends GenericTOF_Diffractometer
     addParameter( new Parameter("Vanadium DataSet parameter",
                                  DataSet.EMPTY_DATA_SET) );
 
-    addParameter( new Parameter("New Angle(degrees)", new Float(147.86) ) );
+    addParameter( new Parameter("New Angle(degrees)", new Float(129.824) ) );
     addParameter( new Parameter("New Radius(cm)", new Float(0.3175) ) );
     addParameter( new Parameter("New COEFF1", new Float(2.8) ) );
-    addParameter( new Parameter("New COEFF2", new Float(0.072) ) );
-    addParameter( new Parameter("New COEFF3", new Float(4.93) ) );
-    addParameter( new Parameter("New FLTP", new Float(26.5) ) );
+    addParameter( new Parameter("New COEFF2", new Float(0.0721) ) );
+    addParameter( new Parameter("New COEFF3", new Float(5.1) ) );
+    addParameter( new Parameter("New FLTP", new Float(62.602) ) );
   }
 
  /* ----------------------------- getResult ------------------------------ */ 
@@ -263,23 +263,21 @@ public class Absorp_MultiScatt_Correction extends GenericTOF_Diffractometer
   public Object getResult()
   {
     DataSet van_ds    =  (DataSet)(getParameter(0).getValue());
-    float   angle_deg = ((Float)(getParameter(1).getValue())).floatValue();
-    float   rad       = ((Float)(getParameter(2).getValue())).floatValue();
-    float   COEFF1    = ((Float)(getParameter(3).getValue())).floatValue();
-    float   COEFF2    = ((Float)(getParameter(4).getValue())).floatValue();
-    float   COEFF3    = ((Float)(getParameter(5).getValue())).floatValue();
-    float   FLTP      = ((Float)(getParameter(6).getValue())).floatValue();
+    double  angle_deg = ((Float)(getParameter(1).getValue())).floatValue();
+    double  rad       = ((Float)(getParameter(2).getValue())).floatValue();
+    double  COEFF1    = ((Float)(getParameter(3).getValue())).floatValue();
+    double  COEFF2    = ((Float)(getParameter(4).getValue())).floatValue();
+    double  COEFF3    = ((Float)(getParameter(5).getValue())).floatValue();
+    double  FLTP      = ((Float)(getParameter(6).getValue())).floatValue();
 
-    float Q      = 0.0039554f / FLTP;
-    float Q2     = COEFF1 * COEFF2;
-    float sigsct = COEFF2 * COEFF3;
+    double Q      = 0.0039554f / FLTP;
+    double Q2     = COEFF1 * COEFF2;
+    double sigsct = COEFF2 * COEFF3;
 
     Data     data    = van_ds.getData_entry(0);
     float[]  x1_vals = data.getX_scale().getXs(); 
     float    min     = x1_vals[0], max = x1_vals[ x1_vals.length-1];
     double[] Z       = ZSet(angle_deg);
-
-    System.out.println("AttFac(1,1) = " + AttFac(1,1) );
 
     DataSet copy_ds = (DataSet)van_ds.clone();
     DiffractometerTofToWavelength op =
@@ -289,7 +287,7 @@ public class Absorp_MultiScatt_Correction extends GenericTOF_Diffractometer
     int num_data = van_ds.getNum_entries(); 
     for ( int i = 0; i < num_data; i++ )
     {
-      float delta,
+      double delta,
             sigabs;
       data           = van_ds.getData_entry(i);
       float[] x_vals = data.getX_scale().getXs();
@@ -300,8 +298,8 @@ public class Absorp_MultiScatt_Correction extends GenericTOF_Diffractometer
       for ( int j = 0; j < x_vals.length-1; j++ )
       {   
         sigabs = Q2*(x_vals[j] + x_vals[j+1])/2;  // use midpoint of x interval
-        float sigir = (sigabs + sigsct)*rad;
-        float sigsr = sigir;
+        double sigir = (sigabs + sigsct)*rad;
+        double sigsr = sigir;
         temp = AttFac(sigir, sigsr);
          
         delta = COEFF4*sigir+COEFF5*sigir*sigir;
