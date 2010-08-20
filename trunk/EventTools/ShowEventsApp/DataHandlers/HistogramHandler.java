@@ -38,6 +38,7 @@ import java.util.Vector;
 import java.io.FileWriter;
 import java.io.BufferedWriter;
 
+import gov.anl.ipns.MathTools.LinearAlgebra;
 import gov.anl.ipns.MathTools.Geometry.Vector3D;
 
 import DataSetTools.operator.Generic.TOF_SCD.IPeakQ;
@@ -85,6 +86,11 @@ public class HistogramHandler implements IReceiveMessage
   private boolean       receiving_events;
   private int           updates_since_events;
 
+  private float         max_Q         = 20;
+  private final float   MAX_Q_ALLOWED = 50;
+
+  private float[][]     orientation_matrix = null;
+
 /**
  *  Construct a histogram handler using the specified MessageCenters and
  *  number of bins in each direction of the histogram.
@@ -102,8 +108,7 @@ public class HistogramHandler implements IReceiveMessage
                            int           num_bins )
   {
     this.num_bins = num_bins;    
-                                                  // set up for SNAP by default
-    float max_Q = 25;
+
     Set_Histogram( num_bins, max_Q, -25.0f, 0, -16.0f, 16.0f, -8.0f, 8.0f );
 
     this.max_hist_value_sent = 0;
@@ -119,6 +124,8 @@ public class HistogramHandler implements IReceiveMessage
     message_center.addReceiver( this, Commands.FIND_PEAKS );
     message_center.addReceiver( this, Commands.GET_PEAK_IMAGE_REGIONS );
     message_center.addReceiver( this, Commands.SPHERE_INTEGRATE_PEAKS );
+    message_center.addReceiver( this, Commands.GET_PEAKS_TO_SPHERE_INTEGRATE );
+    message_center.addReceiver( this, Commands.SET_ORIENTATION_MATRIX );
     
     view_message_center.addReceiver( this, Commands.UPDATE );
 
@@ -330,15 +337,60 @@ public class HistogramHandler implements IReceiveMessage
        return false;
     }
 
+
+    else if ( message.getName().equals(Commands.SET_ORIENTATION_MATRIX) )
+    {
+      Object val = message.getValue();
+      if ( val == null || !( val instanceof Vector ) )
+        return false;
+
+      Vector vec = (Vector)val;
+      if ( vec.size() < 1 || !( vec.elementAt(0) instanceof float[][] ) )
+        return false;
+
+      float[][] UBT = (float[][]) vec.elementAt(0);
+      orientation_matrix = LinearAlgebra.getTranspose( UBT );
+      for ( int row = 0; row < 3; row++ )
+        for ( int col = 0; col < 3; col++ )
+           orientation_matrix[row][col] *= (float)(2*Math.PI);
+/*
+      System.out.println("HistogramHandler, orientation_matrix = " );
+      LinearAlgebra.print( orientation_matrix );
+*/
+    }
+
+    else if ( message.getName().equals(Commands.GET_PEAKS_TO_SPHERE_INTEGRATE))
+    {
+       Object value = message.getValue();
+       if ( value instanceof IntegratePeaksCmd )
+       {
+         IntegratePeaksCmd cmd = (IntegratePeaksCmd)value;
+         if ( !cmd.getCurrent_peaks_only() &&
+              histogram != null            &&
+              orientation_matrix != null     )  // HistogramHandler provides
+         {
+           Vector peaks = getPeakQsToIntegrate(histogram, orientation_matrix);
+           cmd = new IntegratePeaksCmd( peaks,
+                                        cmd.getSphere_radius(),
+                                        cmd.getCurrent_peaks_only(),
+                                        cmd.getRecord_as_peaks_list() );
+           Message integrate = new Message( Commands.SPHERE_INTEGRATE_PEAKS,
+                                            cmd, true, true );
+           message_center.send( integrate );
+         }
+       }
+    }
+
     else if ( message.getName().equals(Commands.SPHERE_INTEGRATE_PEAKS) )
     {
       Object obj = message.getValue();
       if ( obj != null && obj instanceof IntegratePeaksCmd )
       {
-        IntegratePeaksCmd cmd       = (IntegratePeaksCmd)obj;
-        Vector<IPeakQ>   peaks       = cmd.getPeaks();
+        IntegratePeaksCmd cmd = (IntegratePeaksCmd)obj;
+
+        Vector<IPeakQ>  peaks       = cmd.getPeaks();
         Vector<float[]> i_isigi_vec = new Vector<float[]>();
-        Vector<IPeakQ>   peaks_kept  = new Vector<IPeakQ>();
+        Vector<IPeakQ>  peaks_kept  = new Vector<IPeakQ>();
 
         float peak_radius = cmd.getSphere_radius();
         if ( peak_radius < 0 )                       // no change if bad radius
@@ -368,7 +420,7 @@ public class HistogramHandler implements IReceiveMessage
           {
             peaks_kept.add( peaks.elementAt(i) );
             i_isigi_vec.add( i_isigi );
-/*
+/*            
             System.out.print( peaks.elementAt(i) );
             System.out.printf("I = %10.2f  IsigI = %5.1f\n", 
                                i_isigi[0], i_isigi[1] );
@@ -378,7 +430,11 @@ public class HistogramHandler implements IReceiveMessage
 
         if ( peaks_kept.size() > 0 )
         {
-          cmd.setI_and_IsigI( i_isigi_vec );
+          cmd = new IntegratePeaksCmd( peaks_kept,
+                                       i_isigi_vec,
+                                       cmd.getSphere_radius(),
+                                       cmd.getCurrent_peaks_only(),
+                                       cmd.getRecord_as_peaks_list() );
           Message request = new Message( Commands.REVERSE_WEIGHT_INTEGRALS, 
                                          cmd, true, true );
           message_center.send( request );         
@@ -436,6 +492,10 @@ public class HistogramHandler implements IReceiveMessage
 
     String inst  = cmd.getInstrumentName();
     float  max_Q = cmd.getMaxQValue();
+    if ( max_Q < 0.5 )
+      max_Q = 0.5f;
+    if ( max_Q > MAX_Q_ALLOWED )
+      max_Q = MAX_Q_ALLOWED;
 
     if ( inst == null || inst.trim().length() <= 0 )
     {
@@ -481,11 +541,6 @@ public class HistogramHandler implements IReceiveMessage
                                            float qy_min,  float qy_max,
                                            float qz_min,  float qz_max  )
   {
-    if ( max_Q < .5f )           // clamp max_Q to reasonable values
-      max_Q = .5f;
-
-    if ( max_Q > 100 )
-      max_Q = 100;
                                 // clamp bounds on histogram to be between
     if ( qx_min < -max_Q )      // -max_Q and +max_Q
       qx_min = -max_Q;
@@ -606,6 +661,10 @@ public class HistogramHandler implements IReceiveMessage
     if ( histogram == null )
       return null;
 
+    float center_val = histogram.valueAt( x, y, z );
+    if ( center_val <= 0 )                           // skip peaks with zero
+      return null;                                   // counts at center
+
     Vector result = histogram.sphereIntegrals( x, y, z, radii );
 
     if ( result == null )
@@ -623,6 +682,56 @@ public class HistogramHandler implements IReceiveMessage
     float[] i_isigi = IntegrateTools.getI_and_sigI( peak_count, peak_volume,
                                                     bkg_count, bkg_volume );
     return i_isigi;
+  }
+
+
+  private Vector<PeakQ> getPeakQsToIntegrate( Histogram3D histogram, 
+                                              float[][]   orientation_matrix )
+  {
+    Vector peakQs = new Vector(); 
+    if ( orientation_matrix != null && histogram != null )
+    {
+      Vector3D[] basis_vecs = 
+            QuickIntegrateHandler.getLatticeBasisVectors( orientation_matrix );
+
+      Vector3D   h_vec = basis_vecs[0];
+      Vector3D   k_vec = basis_vecs[1];
+      Vector3D   l_vec = basis_vecs[2];
+
+      int max_h = (int)( max_Q / h_vec.length() );
+      int max_k = (int)( max_Q / k_vec.length() );
+      int max_l = (int)( max_Q / l_vec.length() );
+/*
+      System.out.println("Max h, k, l = " + max_h + 
+                         ", " + max_k + 
+                         ", " + max_l );
+*/
+      float  two_PI = (float)(2 * Math.PI);
+
+      for ( int h = -max_h; h <= max_h; h++ )      // TODO, calculate range 
+        for ( int k = -max_k; k <= max_k; k++ )    // on MaxQ
+          for ( int l = -max_l; l <= max_l; l++ )
+          {
+            Vector3D q_vec = 
+                QuickIntegrateHandler.q_vector( h, k, l, h_vec, k_vec, l_vec );
+ 
+            if (histogram.isPointIn(q_vec.getX(), q_vec.getY(), q_vec.getZ()))
+            {
+              int value = (int)histogram.valueAt( q_vec.getX(), 
+                                                  q_vec.getY(), 
+                                                  q_vec.getZ() );
+
+              PeakQ peak = new PeakQ( q_vec.getX() / two_PI,
+                                      q_vec.getY() / two_PI,
+                                      q_vec.getZ() / two_PI,
+                                      value );
+
+              peak.sethkl( h, k, l );
+              peakQs.add( peak );
+            }
+          }
+    }
+    return peakQs;
   }
 
 

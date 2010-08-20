@@ -142,7 +142,6 @@ public class QuickIntegrateHandler implements IReceiveMessage
 
     if ( message.getName().equals(Commands.SET_ORIENTATION_MATRIX) )
     {
-      System.out.println("GOT NEW ORIENTATION MATRIX IN QuickIntegrate");
       Object val = message.getValue();
       if ( val == null || !( val instanceof Vector ) )
       {
@@ -164,7 +163,10 @@ public class QuickIntegrateHandler implements IReceiveMessage
       for ( int row = 0; row < 3; row++ )
         for ( int col = 0; col < 3; col++ )
            orientation_matrix[row][col] *= (float)(2*Math.PI);
-
+/*
+      System.out.println("QuickIntegrateHandler, orientation_matrix = " );
+      LinearAlgebra.print( orientation_matrix );
+*/
       histogram = null;
       Message freed = new Message( Commands.INTEGRATE_HISTOGRAM_FREED,
                                    null, true, true );
@@ -266,7 +268,6 @@ public class QuickIntegrateHandler implements IReceiveMessage
         integ_info.add( integrated_peaks );
         integ_info.add( peak_IsigI );
         integ_info.add( run_info );
-        System.out.println("INTEGRATED " + integrated_peaks.size() + " PEAKS");
         Message set_peaks = new Message( Commands.SET_INTEGRATED_PEAKS_LIST,
                                          integ_info, true, true );
         message_center.send( set_peaks );
@@ -371,7 +372,7 @@ public class QuickIntegrateHandler implements IReceiveMessage
    *  Get the q_vector at the specified h,k,l as a linear combination 
    *  of the lattice basis vectors.
    */
-  private Vector3D q_vector( float h, float k, float l,
+  public static Vector3D q_vector( float h, float k, float l,
                              Vector3D h_vec, Vector3D k_vec, Vector3D l_vec )
   {
     float x = h * h_vec.getX() + k * k_vec.getX() + l * l_vec.getX();
@@ -450,7 +451,14 @@ public class QuickIntegrateHandler implements IReceiveMessage
     SetNewInstrumentCmd cmd = (SetNewInstrumentCmd)obj;
 
     max_Q = cmd.getMaxQValue();
-     return true;
+
+    if ( max_Q < .5f )           // clamp max_Q to reasonable values
+      max_Q = .5f;
+
+    if ( max_Q > MAX_Q_ALLOWED )
+      max_Q = MAX_Q_ALLOWED;
+
+    return true;
   }
 
 
@@ -477,29 +485,21 @@ public class QuickIntegrateHandler implements IReceiveMessage
       return 0;
     }
 
-    System.out.println("QuickIntegrate allocating NEW histogram space....");
     histogram = null;
-
-    if ( max_Q < .5f )           // clamp max_Q to reasonable values
-      max_Q = .5f;
-
-    if ( max_Q > MAX_Q_ALLOWED )
-      max_Q = MAX_Q_ALLOWED;
 
     ProjectionBinner3D[] binners = getLatticeBinners(orientation_matrix);
 
     ProjectionBinner3D h_binner = binners[0];
     ProjectionBinner3D k_binner = binners[1];
     ProjectionBinner3D l_binner = binners[2];
-
+/*
     System.out.println("h_binner    = " + h_binner );
     System.out.println("k_binner    = " + k_binner );
     System.out.println("l_binner    = " + l_binner );
-
+*/
     try
     {
       histogram = new Histogram3D( h_binner, k_binner, l_binner );
-      System.out.println("QuickIntegrate DONE allocating histogram space.");
       
       Message allocated = new Message( Commands.INTEGRATE_HISTOGRAM_READY,
                                        null, true, true );
@@ -530,12 +530,6 @@ public class QuickIntegrateHandler implements IReceiveMessage
       Util.sendError( "ERROR: NO ORIENTATION MATRIX SPECIFIED" );
     else
     {
-      if ( max_Q < .5f )           // clamp max_Q to reasonable values
-        max_Q = .5f;
-
-      if ( max_Q > MAX_Q_ALLOWED )
-        max_Q = MAX_Q_ALLOWED;
-
       ProjectionBinner3D[] binners = getLatticeBinners( orientation_matrix );
 
       size = (long)binners[0].numBins() * 
@@ -553,29 +547,29 @@ public class QuickIntegrateHandler implements IReceiveMessage
    *  Get the basis vectors in the direction of a*, b* and c* from the
    *  specified orientation matrix.
    *
-   *  @param orientation_mat  A 2-D array containing the orientation matrix
-   *                          in the first 3 rows and first three columns.
-   *                          NOTE: This matrix should be the transpose of
-   *                          orientation matrix.  That is, it is in the 
-   *                          form that is stored in an ISAW matrix file,
-   *                          but multiplied by 2*PI.
+   *  @param or_mat  A 2-D array containing the orientation matrix
+   *                 in the first 3 rows and first three columns.
+   *                 NOTE: This matrix should be the transpose of
+   *                 orientation matrix.  That is, it is in the 
+   *                 form that is stored in an ISAW matrix file,
+   *                 but multiplied by 2*PI.
    *
    *  @return an array with three vectors consisting of the columns of the
    *          specified orientation matrix.
    */
-  public static Vector3D[] getLatticeBasisVectors( float[][] orientation_mat )
+  public static Vector3D[] getLatticeBasisVectors( float[][] or_mat )
   {
-    Vector3D h_vec = new Vector3D( orientation_mat[0][0],
-                                   orientation_mat[1][0],
-                                   orientation_mat[2][0] );
+    Vector3D h_vec = new Vector3D( or_mat[0][0],
+                                   or_mat[1][0],
+                                   or_mat[2][0] );
 
-    Vector3D k_vec = new Vector3D( orientation_mat[0][1],
-                                   orientation_mat[1][1],
-                                   orientation_mat[2][1] );
+    Vector3D k_vec = new Vector3D( or_mat[0][1],
+                                   or_mat[1][1],
+                                   or_mat[2][1] );
 
-    Vector3D l_vec = new Vector3D( orientation_mat[0][2],
-                                   orientation_mat[1][2],
-                                   orientation_mat[2][2] );
+    Vector3D l_vec = new Vector3D( or_mat[0][2],
+                                   or_mat[1][2],
+                                   or_mat[2][2] );
 
     Vector3D[] result = { h_vec, k_vec, l_vec };
     return result;
@@ -659,12 +653,12 @@ public class QuickIntegrateHandler implements IReceiveMessage
 
     IEventBinner bin1D = new UniformEventBinner( -max_dist, max_dist, 
                                                   2 * max_index + 1 );
-
+/*
     System.out.println("one_step  = " + one_step );
     System.out.println("max_index = " + max_index );
     System.out.println("max_dist  = " + max_dist );
     System.out.println("1D binner = " + bin1D );
-
+*/
     return new ProjectionBinner3D(bin1D, unit_vec);
   }
 

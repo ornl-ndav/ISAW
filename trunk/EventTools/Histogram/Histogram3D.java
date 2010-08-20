@@ -442,6 +442,34 @@ public class Histogram3D
   }
 
 
+  /** Check whether or not the specified point (x,y,z) is in the region covered
+   *  by the histogram.
+   *
+   *  @param  x   The x-coordinate of the point
+   *  @param  y   The y-coordinate of the point
+   *  @param  z   The z-coordinate of the point
+   *
+   *  @return true if the point is in the region covered by the histogram,
+   *          and false otherwise.
+   */
+  public boolean isPointIn( float x, float y, float z )
+  {
+    int z_index = z_binner.index(x,y,z);
+    if ( z_index < 0 || z_index >= histogram.length )
+      return false;
+
+    int y_index = y_binner.index(x,y,z);
+    if ( y_index < 0 || y_index >= histogram[0].length )
+      return false;
+
+    int x_index = x_binner.index(x,y,z);
+    if ( x_index < 0 || x_index >= histogram[0][0].length )
+      return false;
+
+    return true;
+  }
+
+
   /**
    * Get the location in 3D space of the bin with the specified indexes.
    * The bin indexes determine what multiples of the histograms edge vectors

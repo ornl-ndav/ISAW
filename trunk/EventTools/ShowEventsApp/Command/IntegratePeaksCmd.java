@@ -77,6 +77,40 @@ public class IntegratePeaksCmd
 
 
    /**
+    * Make a command object with the specified control values. 
+    *
+    * @param peaks                Vector of peaks to display, or null if this
+    *                             command is just setting parameters and 
+    *                             requesting that some class set up the 
+    *                             list of peaks to process.
+    * @param i_isigi_vec          A Vector containing arrays with two floats.
+    *                             There must be one array in the vector for 
+    *                             each peak and each array must contain 
+    *                             I and I/sigI for the corresponding peak, 
+    *                             in positions 0 and 1.
+    * @param sphere_radius        Radius of the sphere to integrate, 
+    *                             specified in inverse Angstroms.
+    * @param current_peaks_only   If true, only peaks in the current list of
+    *                             peaks should be integrated. 
+    * @param record_as_peaks_list If true, the integrated peaks should be 
+    *                             recorded by the PeakListHandler as the
+    *                             current list of peaks.
+    */
+   public IntegratePeaksCmd( Vector  peaks,
+                             Vector  i_isigi_vec,
+                             float   sphere_radius,
+                             boolean current_peaks_only,
+                             boolean record_as_peaks_list )
+   {
+     this.peaks                = peaks;
+     this.i_isigi_vec          = i_isigi_vec;
+     this.sphere_radius        = sphere_radius;
+     this.current_peaks_only   = current_peaks_only;
+     this.record_as_peaks_list = record_as_peaks_list;
+   }
+
+
+   /**
     *  Get the Vector of peaks.
     *
     *  @return This will return the vector of peaks, or null if no peaks
@@ -142,11 +176,12 @@ public class IntegratePeaksCmd
     *                     each array must contain I and I/sigI for the 
     *                     corresponding peak, in positions 0 and 1.
     */
+/*
    public void setI_and_IsigI( Vector i_isigi_vec )
    {
      this.i_isigi_vec = i_isigi_vec;
    }
-
+*/
 
    /**
     * Get a string giving the number of peaks and regions in this command

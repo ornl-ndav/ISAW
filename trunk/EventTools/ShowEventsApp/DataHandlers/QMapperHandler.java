@@ -311,6 +311,12 @@ public class QMapperHandler implements IReceiveMessage
           Vector<Peak_new> peak_new_list =
           ConvertIntegratedPeakQToPeakNew( mapper, peakQs, i_sigis, run_info );
 
+          for ( int i = 0; i < peak_new_list.size(); i++ )
+          {
+            Peak_new peak = peak_new_list.elementAt(i);
+            peak.reflag(600);
+          }
+
           Message peak_new_message =
             new Message(Commands.SET_PEAK_NEW_LIST, peak_new_list, true, true);
 
@@ -367,6 +373,7 @@ public class QMapperHandler implements IReceiveMessage
         for ( int i = 0; i < peak_new_list.size(); i++ )
         {
           Peak_new peak = peak_new_list.elementAt(i);
+          peak.reflag(500);
           if ( peak.inti() > levels[0] )
           {
             level_counts[0]++;
