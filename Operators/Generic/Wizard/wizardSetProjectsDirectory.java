@@ -57,6 +57,8 @@ import Command.*;
 /**
  * This class has been dynamically created using the Method2OperatorWizard
  * and usually should not be edited.
+ * This operator is a wrapper around @see Operators.Generic.Wizard.WizardMethods#wizardSetProjectsDirectory(DataSetTools.wizard.Wizard ,java.lang.String) 
+
  */
 public class wizardSetProjectsDirectory extends GenericOperator{
 
@@ -99,6 +101,9 @@ public class wizardSetProjectsDirectory extends GenericOperator{
       StringBuffer S = new StringBuffer();
       S.append("@overview    "); 
       S.append("This Operator sets the project directory for this Wizard.");
+
+      S.append("\r\n");
+     S.append(" This operator wraps the method Operators.Generic.Wizard.WizardMethods#wizardSetProjectsDirectory\n");
       S.append("@algorithm    "); 
       S.append("Uses the Wizard setProjectDirectory method.");
       S.append("@assumptions    "); 

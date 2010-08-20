@@ -57,6 +57,7 @@ import Command.*;
 /**
  * This class has been dynamically created using the Method2OperatorWizard
  * and usually should not be edited.
+ *  This operator is a wrapper around @see Operators.Generic.Wizard.WizardMethods#wizardSetHelpMessage( DataSetTools.wizard.Wizard ,java.lang.String )
  */
 public class wizardSetHelpMessage extends GenericOperator{
 
@@ -99,6 +100,9 @@ public class wizardSetHelpMessage extends GenericOperator{
       StringBuffer S = new StringBuffer();
       S.append("@overview    "); 
       S.append("This Operator sets the help message for the Wizard to the input string.");
+
+      S.append("\r\n");
+     S.append(" This operator wraps the method Operators.Generic.Wizard.WizardMethods#wizardSetHelpMessage\n");
       S.append("@algorithm    "); 
       S.append("Use the Wizard's setHelpMessage method.");
       S.append("@assumptions    "); 

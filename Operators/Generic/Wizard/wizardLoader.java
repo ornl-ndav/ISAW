@@ -56,6 +56,8 @@ import Command.*;
 /**
  * This class has been dynamically created using the Method2OperatorWizard
  * and usually should not be edited.
+ * This operator is a wrapper around @see Operators.Generic.Wizard.WizardMethods#wizardLoader(DataSetTools.wizard.Wizard )
+
  */
 public class wizardLoader extends GenericOperator{
 
@@ -97,6 +99,8 @@ public class wizardLoader extends GenericOperator{
       StringBuffer S = new StringBuffer();
       S.append("@overview    "); 
       S.append("Causes the specified Wizard to be executed and shown.");
+      S.append("\r\n");
+      S.append(" This operator wraps the method Operators.Generic.Wizard.WizardMethods#wizardLoader\n");
       S.append("@algorithm    "); 
       S.append("Runs the Wizard wizardLoader method.");
       S.append("@assumptions    "); 
