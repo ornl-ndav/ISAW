@@ -55,6 +55,13 @@ import gov.anl.ipns.Parameters.StringPG;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
 import Command.*;
+
+
+/**
+ * This class has been dynamically created using the Method2OperatorWizard
+ * and usually should not be edited.
+ * This operator is a wrapper around @see Operators.Special.ObjectState.ObjectStateUtilities#PrintObjectState( gov.anl.ipns.ViewTools.Components.ObjectState,java.lang.String,java.lang.String ,boolean )
+ */
 public class PrintObjectState extends GenericOperator{
    public PrintObjectState(){
      super("Print an ObjectState");
@@ -85,7 +92,8 @@ public class PrintObjectState extends GenericOperator{
       S.append("This means an ObjectState has a hierarchial ");
       S.append("form.  This operator is used to print an ");
       S.append("ObjectState to a string to reflect this ");
-      S.append("hierarchial form. ");
+      S.append("hierarchial form. "); S.append("\r\n");
+      S.append(" This operator wraps the method Operators.Special.ObjectState.ObjectStateUtilities#PrintObjectState\n");
       S.append("@algorithm    "); 
       S.append("");
       S.append("@assumptions    "); 

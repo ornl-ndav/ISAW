@@ -54,6 +54,12 @@ import gov.anl.ipns.Parameters.PlaceHolderPG;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
 import Command.*;
+
+/**
+ * This class has been dynamically created using the Method2OperatorWizard
+ * and usually should not be edited.
+ * This operator is a wrapper around @see Operators.Special.ObjectState.ObjectStateUtilities#GetObjectState(gov.anl.ipns.ViewTools.Components.IPreserveState , boolean) 
+ */
 public class GetObjectState extends GenericOperator{
    public GetObjectState(){
      super("Get an ObjectState");
@@ -79,7 +85,8 @@ public class GetObjectState extends GenericOperator{
       S.append("certain parameters.  This operator is used to get the ");
       S.append("state for a given component.  Either the current state ");
       S.append("of the component or the component's default state ");
-      S.append("can be acquired.  ");
+      S.append("can be acquired.  ");      S.append("\r\n");
+      S.append(" This operator wraps the method Operators.Special.ObjectState.ObjectStateUtilities#GetObjectState\n");
       S.append("@algorithm    "); 
       S.append("");
       S.append("@assumptions    "); 
