@@ -58,7 +58,9 @@ import Command.*;
 /**
  * This class has been dynamically created using the Method2OperatorWizard
  * and usually should not be edited.
+ *  This operator is a wrapper around @see Operators.Generic.Wizard.WizardMethods#addScriptForm(DataSetTools.wizard.Wizard,java.lang.String, java.lang.String,java.lang.String ,java.lang.Object)
  */
+
 public class addScriptForm extends GenericOperator{
 
 
@@ -104,6 +106,8 @@ public class addScriptForm extends GenericOperator{
       StringBuffer S = new StringBuffer();
       S.append("@overview    "); 
       S.append("Add a script as a form to a Wizard.");
+      S.append("\r\n");
+      S.append(" This operator wraps the method Operators.Generic.Wizard.WizardMethods#addScriptForm\n");
       S.append("@algorithm    "); 
       S.append("Use Wizard's addForm method.");
       S.append("@assumptions    "); 

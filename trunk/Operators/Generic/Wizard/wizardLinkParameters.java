@@ -57,6 +57,7 @@ import Command.*;
 /**
  * This class has been dynamically created using the Method2OperatorWizard
  * and usually should not be edited.
+ * This operator is a wrapper around @see Operators.Generic.Wizard.WizardMethods#wizardLinkParameters( DataSetTools.wizard.Wizard ,java.util.Vector)
  */
 public class wizardLinkParameters extends GenericOperator{
 
@@ -99,6 +100,9 @@ public class wizardLinkParameters extends GenericOperator{
       StringBuffer S = new StringBuffer();
       S.append("@overview    "); 
       S.append("This operator creates links between parameters on Wizard forms");
+
+      S.append("\r\n");
+     S.append(" This operator wraps the method Operators.Generic.Wizard.WizardMethods#wizardLinkParameters\n");
       S.append("@algorithm    "); 
       S.append("Overall a 2D array is fed to the operator.  Each row of the array corresponds to one logical link chain.  The number of rows in the array is therefore equal to to the number of linked parameters.  Each row of the array should have the same number of elements as the number of forms that have been added to the Wizard.  Each element in the row specifies if a parameter on a given form should be linked.  If a parameter is linked with this chain then provide the parameter number for this element (numbering starts at 0).  If no parameters are linked in this sequence enter -1 into the element for that page.");
       S.append("@assumptions    "); 

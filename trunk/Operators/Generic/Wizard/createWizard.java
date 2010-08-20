@@ -57,6 +57,8 @@ import Command.*;
 /**
  * This class has been dynamically created using the Method2OperatorWizard
  * and usually should not be edited.
+ *  This operator is a wrapper around @see Operators.Generic.Wizard.WizardMethods#createWizard(  java.lang.String ,standalone)
+
  */
 public class createWizard extends GenericOperator{
 
@@ -99,6 +101,9 @@ public class createWizard extends GenericOperator{
       StringBuffer S = new StringBuffer();
       S.append("@overview    "); 
       S.append("This Operator creates an instance of a Wizard.  Combined with other wizard methods this allows a new Wizard to be created from a script.");
+
+      S.append("\r\n");
+      S.append(" This operator wraps the method Operators.Generic.Wizard.WizardMethods#createWizard\n");
       S.append("@algorithm    "); 
       S.append("Calls the Wizard constructor and returns an instance of a wizard.");
       S.append("@assumptions    "); 
