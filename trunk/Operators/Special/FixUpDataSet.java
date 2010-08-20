@@ -47,6 +47,8 @@ import Command.*;
 /**
  * This class has been dynamically created using the Method2OperatorWizard
  * and usually should not be edited.
+ * This operator is a wrapper around 
+@see DataSetTools.retriever.NexusRetriever#FixUpDataSet(DataSetTools.dataset.DataSet,int ,java.lang.String,java.lang.String,int)
  */
 public class FixUpDataSet extends GenericOperator{
 
@@ -92,6 +94,8 @@ public class FixUpDataSet extends GenericOperator{
       StringBuffer S = new StringBuffer();
       S.append("@overview    "); 
       S.append("Fixes information in a DataSet where the Fixup file is a NeXus file");
+      S.append("\r\n");
+      S.append(" This operator wraps the method DataSetTools.retriever.NexusRetriever.FixUpDataSet\n");
       S.append("@algorithm    "); 
       S.append("The retriever sends the DataSet through given parts of the NeXus retrieval code");
       S.append("@assumptions    "); 

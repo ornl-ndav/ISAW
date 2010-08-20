@@ -59,6 +59,9 @@ import Command.*;
 /**
  * This class has been dynamically created using the Method2OperatorWizard
  * and usually should not be edited.
+ * This operator is a wrapper around 
+@see Operators.Special.SetInstrumentTypeCalc#setInstrumentType( DataSetTools.dataset.DataSet ,java.lang.String)
+
  */
 public class setInstrumentType extends GenericOperator{
 
@@ -106,7 +109,9 @@ public class setInstrumentType extends GenericOperator{
       S.append(" some of the listed instrument types is NOT complete.  In addition,");
       S.append(" other methods may need to be used to set appropriate attributes.  For");
       S.append(" example, if configuring a DataSet as a direct geometry spectrometer,");
-      S.append(" it will be necessary to set the incident energy as an attribute.");
+      S.append(" it will be necessary to set the incident energy as an attribute.");S.append("\r\n");
+      S.append(" This operator wraps the method Operators.Special.SetInstrumentTypeCalc#setInstrumentType\n");
+      
       S.append("@algorithm    "); 
       S.append("All operators are first removed from the DataSet then Operators");
       S.append(" appropriate for all DataSets and for the newly specified instrument");

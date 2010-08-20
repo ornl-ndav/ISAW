@@ -51,6 +51,8 @@ import Command.*;
  * Vector of DataSets that are to be merged.  The attributes
  * of the new DataSet that is created, are copied from the
  * first DataSet in the Vector.
+ * This operator is a wrapper around @see Operators.Special.DataSetArrayMerge_calc#merge(java.util.Vector)
+
  */
 public class DSArrayMerge extends GenericOperator{
 
@@ -95,6 +97,8 @@ public class DSArrayMerge extends GenericOperator{
       S.append(" in an \"array\" of DataSets, to form a new DataSet.  This");
       S.append(" is useful if a single DataSet is to be formed from all of");
       S.append(" the NxDatas in a NeXus file.");
+      S.append("\r\n");
+      S.append(" This operator wraps the method Operators.Special.DataSetArrayMerge_calc#merge\n");
       S.append("@algorithm    "); 
       S.append("A new DataSet is created by copying the attributes of the");
       S.append(" first DataSet in the array of DataSets.  Next, references to");
