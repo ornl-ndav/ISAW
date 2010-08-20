@@ -148,7 +148,9 @@ public class IntegratePeaksPanel extends JPanel implements IReceiveMessage
 
       sphere_panel.setLayout( new GridLayout( 5, 2 ) );
 
-      sphere_panel.add( new JLabel(" Sphere Radius " + FontUtil.INV_ANGSTROM));
+      sphere_panel.add( new JLabel(" Sphere Radius ( " + 
+                       FontUtil.INV_ANGSTROM +", 2"+
+                                   FontUtil.PI + "/d )"  ) );
       sphere_panel.add( radius_txf );
         radius_txf.setHorizontalAlignment( JTextField.RIGHT );
 

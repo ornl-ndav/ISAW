@@ -231,7 +231,9 @@ public class findPeaksPanel extends    JPanel
       panel.setLayout(new GridLayout(1,2));
 
       JLabel size_label = 
-                       new JLabel("Image size ( "+FontUtil.INV_ANGSTROM+" )");
+                       new JLabel("Image Radius ( " +
+                                   FontUtil.INV_ANGSTROM+", 2"+
+                                   FontUtil.PI + "/d )");
 
       imageSizeTxt = new JTextField("0.5");
       imageSizeTxt.setHorizontalAlignment(JTextField.RIGHT);

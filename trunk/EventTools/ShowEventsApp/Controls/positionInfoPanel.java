@@ -71,11 +71,12 @@ public class positionInfoPanel extends JPanel
    private JTextField          psiTxt;
    private JTextField          tiltTxt;
 
-   private static String       ANG   = FontUtil.ANGSTROM;
-   private static String       MU    = FontUtil.MU;
-   private static String       DEG   = FontUtil.DEGREE; 
-   private static String       THETA = FontUtil.THETA;
-   private static String       PSI   = FontUtil.PSI;
+   private static String       ANG     = FontUtil.ANGSTROM;
+   private static String       INV_ANG = FontUtil.INV_ANGSTROM;
+   private static String       MU      = FontUtil.MU;
+   private static String       DEG     = FontUtil.DEGREE; 
+   private static String       THETA   = FontUtil.THETA;
+   private static String       PSI     = FontUtil.PSI;
    
    /**
     * Builds the panel and adds everything to itself.
@@ -130,7 +131,7 @@ public class positionInfoPanel extends JPanel
 //    JTextField histogramLbl     = new JTextField("Histogram Page");
       JTextField hklLbl           = new JTextField("h,k,l");
       JTextField qxyzLbl          = new JTextField("Qx,Qy,Qz");
-      JTextField qLbl             = new JTextField("Q(Inv(" + ANG + "))");
+      JTextField qLbl             = new JTextField("Q( " + INV_ANG + ", 1/d )");
       JTextField dSpacingLbl      = new JTextField("d-Spacing(" + ANG + ")");
       JTextField twoThetaLbl      = new JTextField("2"+THETA+"("+DEG+")");
       JTextField timeLbl          = new JTextField("Time(" + MU + "s)");
