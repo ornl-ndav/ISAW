@@ -56,6 +56,13 @@ import gov.anl.ipns.Parameters.StringPG;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
 import Command.*;
+
+/**
+ * This class has been dynamically created using the Method2OperatorWizard
+ * and usually should not be edited.
+ * This operator is a wrapper around 
+@see Operators.Special.ObjectState.ObjectStateUtilities#SetObjectStateValue(java.lang.String ,gov.anl.ipns.ViewTools.Components.ObjectState ,java.lang.Object)
+ */
 public class SetObjectStateValue extends GenericOperator{
    public SetObjectStateValue(){
      super("Set a Value in an ObjectState");
@@ -87,7 +94,8 @@ public class SetObjectStateValue extends GenericOperator{
       S.append("<p>");
       S.append("Given the path to an item in the ");
       S.append("ObjectState, this operator allows the ");
-      S.append("item's value to be modified. ");
+      S.append("item's value to be modified. ");     S.append("\r\n");
+      S.append(" This operator wraps the method Operators.Special.ObjectState.ObjectStateUtilities#SetObjectStateValue\n"); 
       S.append("@algorithm    ");
       S.append("");
       S.append("@assumptions    "); 

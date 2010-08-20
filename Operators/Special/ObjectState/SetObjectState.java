@@ -49,6 +49,13 @@ import gov.anl.ipns.Parameters.PlaceHolderPG;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
 import Command.*;
+
+/**
+ * This class has been dynamically created using the Method2OperatorWizard
+ * and usually should not be edited.
+ * This operator is a wrapper around 
+@see Operators.Special.ObjectState.ObjectStateUtilities#SetObjectState( gov.anl.ipns.ViewTools.Components.IPreserveState,gov.anl.ipns.ViewTools.Components.ObjectState)
+ */
 public class SetObjectState extends GenericOperator{
    public SetObjectState(){
      super("Set an ObjectState");
@@ -73,6 +80,8 @@ public class SetObjectState extends GenericOperator{
       S.append("anything from the way data is displayed to the values of ");
       S.append("certain parameters.  This operator is used to set the ");
       S.append("state on a given component.  ");
+      S.append("\r\n");
+      S.append(" This operator wraps the method Operators.Special.ObjectState.ObjectStateUtilities#SetObjectState\n");
       S.append("@algorithm    "); 
       S.append("");
       S.append("@assumptions    "); 

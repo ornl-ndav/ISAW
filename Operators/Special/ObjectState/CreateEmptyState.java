@@ -46,6 +46,13 @@ import DataSetTools.operator.Generic.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
 import Command.*;
+
+/**
+ * This class has been dynamically created using the Method2OperatorWizard
+ * and usually should not be edited.
+ * This operator is a wrapper around 
+@see Operators.Special.ObjectState.ObjectStateUtilities#CreateEmptyState();
+ */
 public class CreateEmptyState extends GenericOperator{
    public CreateEmptyState(){
      super("Create an Empty ObjectState");
@@ -67,7 +74,8 @@ public class CreateEmptyState extends GenericOperator{
       S.append("ObjectState.  This state can contain anything from ");
       S.append("the way data is displayed to the values of ");
       S.append("certain parameters.  This operator is used to ");
-      S.append("create a new empty ObjectState.  ");
+      S.append("create a new empty ObjectState.  ");   S.append("\r\n");
+      S.append(" This operator wraps the method Operators.Special.ObjectState.ObjectStateUtilities#CreateEmptyState()\n");
       S.append("@algorithm    "); 
       S.append("");
       S.append("@assumptions    "); 

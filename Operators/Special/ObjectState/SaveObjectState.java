@@ -50,6 +50,14 @@ import gov.anl.ipns.Parameters.PlaceHolderPG;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
 import Command.*;
+
+
+/**
+ * This class has been dynamically created using the Method2OperatorWizard
+ * and usually should not be edited.
+ * This operator is a wrapper around 
+@see Operators.Special.ObjectState.ObjectStateUtilities#SaveObjectState(gov.anl.ipns.ViewTools.Components.ObjectState,java.lang.String)
+ */
 public class SaveObjectState extends GenericOperator{
    public SaveObjectState(){
      super("Save an ObjectState");
@@ -77,6 +85,8 @@ public class SaveObjectState extends GenericOperator{
       S.append("Later it can be loaded and given to the component to ");
       S.append("have this component automatically conform to the ");
       S.append("state.  This operator is used to save a state to a file.  ");
+      S.append("\r\n");
+      S.append(" This operator wraps the method Operators.Special.ObjectState.ObjectStateUtilities#SaveObjectState\n");
       S.append("@algorithm    "); 
       S.append("");
       S.append("@assumptions    "); 

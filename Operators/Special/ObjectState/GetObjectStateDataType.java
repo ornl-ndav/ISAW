@@ -51,6 +51,13 @@ import gov.anl.ipns.Parameters.StringPG;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
 import Command.*;
+
+/**
+ * This class has been dynamically created using the Method2OperatorWizard
+ * and usually should not be edited.
+ * This operator is a wrapper around 
+@see Operators.Special.ObjectState.ObjectStateUtilities#GetObjectStateDataType(java.lang.String ,gov.anl.ipns.ViewTools.Components.ObjectState)
+ */
 public class GetObjectStateDataType extends GenericOperator{
    public GetObjectStateDataType(){
      super("Get the Data Type of a Value in an ObjectState");
@@ -78,7 +85,8 @@ public class GetObjectStateDataType extends GenericOperator{
       S.append("<p>");
       S.append("Given a path in the ObjectState, this ");
       S.append("operator determines the data type of ");
-      S.append("the data currently stored at the path.  ");
+      S.append("the data currently stored at the path.  "); S.append("\r\n");
+      S.append(" This operator wraps the method Operators.Special.ObjectState.ObjectStateUtilities#GetObjectStateDataType\n");
       S.append("@algorithm    "); 
       S.append("");
       S.append("@assumptions    "); 
