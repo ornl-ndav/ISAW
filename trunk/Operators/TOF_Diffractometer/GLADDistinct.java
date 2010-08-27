@@ -134,26 +134,10 @@ public class GLADDistinct implements Wrappable, IWrappableWithCategoryList {
    */
   public String getDocumentation(  ) {
     StringBuffer s = new StringBuffer( "" );
-    s.append( "@overview This operator removes detectors from a DataSet " );
-    s.append( "according to three criteria, all of which involve the total " );
-    s.append( "counts.\n" );
-    s.append( "@assumptions The specified DataSet ds is not null.\n" );
-    s.append( "@algorithm First this operator removes detectors with zero " );
-    s.append( "counts from the specified DataSet. Next it removes detectors " );
-    s.append( "below the user specified threshold. Finally the average and " );
-    s.append( "standard deviation is found for the total counts, then " );
-    s.append( "detectors outside of the user specified number of sigma are " );
-    s.append( "removed (generally too many counts).  It also appends a log " );
-    s.append( "message indicating that the Crunch operator was applied to " );
-    s.append( "the DataSet.\n" );
-    s.append( "@param ds Sample DataSet to remove dead detectors from.\n" );
-    s.append( "@param min_count Minimum counts to keep.\n" );
-    s.append( "@param width How many sigma around the average to keep.\n" );
-    s.append( "@param new_ds Whether to make a new DataSet.\n" );
-    s.append( "@return DataSet containing the the original DataSet minus the " );
-    s.append( "dead detectors.\n" );
-    s.append( "@error Returns an error if the specified DataSet ds is null.\n" );
-
+    s.append( "@overview This class subtracts the self-scattering part ");
+    s.append( "from the sample differential cross section and converts ");
+    s.append( "the vanadium calibration function to the flux function ");
+    s.append( "for weighting." );
     return s.toString(  );
   }
 
