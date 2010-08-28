@@ -12,8 +12,9 @@ from DataSetTools.operator import *
 from DataSetTools.parameter import *
 from gov.anl.ipns.Parameters import *
 from DataSetTools.operator.Generic import GenericOperator
-from DataSetTools.operator.DataSet.Attribute import *
 from DataSetTools.operator.DataSet.Math.Analyze import *
+from DataSetTools.operator.DataSet.Math.DataSet import *
+from DataSetTools.operator.DataSet.Math.Scalar import *
 from DataSetTools.operator.Generic.Batch import *
 from DataSetTools.operator.Generic.Special import ViewASCII
 from DataSetTools.operator.Generic.TOF_SCD import *
@@ -104,17 +105,41 @@ class TOPAZ_spectrum(GenericTOF_SCD):
             # area detector.
             #
             for col in range(firstCol,lastCol):
-                print 'col = %d' % col
+                # print 'col = %d' % col
                 first_index = (col-1)*numRowCol + firstRow-1
                 last_index  = (col-1)*numRowCol + lastRow-1
                 # range_string = "" & first_index & ":" & last_index
                 range_string = str(first_index) + ':' + str(last_index)
-                print range_string
-                SelectByIndex( ds_1, range_string, "Set Selected" )
-                SelectByIndex( ds_2, range_string, "Set Selected" )
+                # print range_string
+                SelectByIndex(ds_1, range_string, "Set Selected").getResult()
+                SelectByIndex(ds_2, range_string, "Set Selected").getResult()
             
+            #  Sum up the spectra from the region and send the data
+            #  to the Isaw tree
+            #
+            sum_ds_1 = SumCurrentlySelected(ds_1, 1, 1).getResult()
+            sum_ds_2 = SumCurrentlySelected(ds_2, 1, 1).getResult()
             
-            break
+            #
+            #  Scale the background spectrum
+            sum_ds_2_scaled = DataSetScalarMultiply(sum_ds_2, scale, 1).getResult()
+
+            #  Subtract the background from the TiZr or V data to 
+            #  obtain the spectrum
+            spectrum = DataSetSubtract(sum_ds_1, sum_ds_2_scaled, 1).getResult()
+
+            #  Convert counts to counts per microsecond
+            newspec = DivideByDeltaX(spectrum, 1).getResult()
+            ScriptUtil.send(newspec, IOBS)
+            ScriptUtil.display(newspec, "Selected Graph View")
+
+            #
+            #  Save spectrum to an ASCII text file
+            #
+            filename = path + "Bank" + bank + "_spectrum.asc"
+            SaveASCII(newspec, false, "%12.3f %12.3f", filename)
+
+
             
         print 'STOP!'
             
