@@ -7,6 +7,7 @@ from Operators.TOF_Diffractometer import *
 from Operators.Special import *
 from Operators.TOF_SCD import *
 from Command import ScriptUtil
+from java.lang import System
 def getIsawHome():
         
         Res = System.getProperty("ISAW_HOME")
