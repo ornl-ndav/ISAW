@@ -42,6 +42,8 @@ import gov.anl.ipns.Util.SpecialStrings.ErrorString;
 import java.util.*;
 import java.io.*;
 
+import javax.swing.JOptionPane;
+
 import DataSetTools.retriever.*;
 import DataSetTools.dataset.*;
 import DataSetTools.operator.Generic.TOF_SCD.*;
@@ -95,7 +97,7 @@ public class DumpGrids
          for( int child = 0 ; !found ; )
          {
             NxNode node = nex.getChildNode( child );
-           // System.out.println("class-name:"+node.getNodeClass()+"-"+node.getNodeName());
+          
             if ( node == null )
             {
                found = true;
@@ -293,7 +295,11 @@ public class DumpGrids
          }
       }
       if ( distNode == null || aziNode == null || polarNode == null )
-         return new ErrorString( "Not enough position info given" );
+         {
+          JOptionPane.showMessageDialog( null ,detectorNode.getNodeName( )+
+                        " has missing position info. Ignored" );
+          return null;
+         }
 
       // assume geometry = null;
       int[] dimDist = distNode.getDimension( );
