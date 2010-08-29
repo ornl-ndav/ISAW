@@ -2599,7 +2599,7 @@ public class ExtGetDS
            {
               int bankNum = getBankNum( DatInf.NxdataNode.getNodeName());
               if(bankNum > 0 && bankNum ==
-                    Next(bankNum,1,AssignedDetectorIDs,SetGroupIDRanges))
+                    Next(bankNum,1,AssignedDetectorIDs,new Vector()))
               {
                  DatInf.startDetectorID = bankNum;
                  DatInf.endDetectorID = bankNum;
@@ -2650,7 +2650,7 @@ public class ExtGetDS
               startDetectorID = Next( startDetectorID, 
                                       Math.max( 1 , DatInf.ndetectors ),
                                       SetDetectorIDRanges,
-                                      AssignedDetectorIDs);
+                                      new Vector());
                
                DatInf.startDetectorID =startDetectorID;
                DatInf.endDetectorID = startDetectorID+ 
