@@ -225,12 +225,12 @@ class SNAP_to_data(GenericLoad):
            self.BackgroundDS = EventD_space2GSAS(sendData,showData,IOBS,instr,Backrunnum,DetCalFile,BankFile,
              MapFile,firstEv,NumEvents,d_min,d_max,log_param,scale)
 
-           self.BackgroundDS.setTitle("BackGround"+BackgroundFile)
+           self.BackgroundDS.setTitle("BackGround"+str(BackgroundFile))
            self.send(self.BackgroundDS, 0, 1)
 
            import os
-           filename = os.path.join(self.outputDir, "BackGround"+BackgroundFile+".isd")
-           ScriptUtil.save( filename,self.BackGroundDS)
+           filename = os.path.join(self.outputDir, "BackGround"+str(BackgroundFile)+".isd")
+           ScriptUtil.save( filename,self.BackgroundDS)
            
         else:
            self.BackgroundDS = None
