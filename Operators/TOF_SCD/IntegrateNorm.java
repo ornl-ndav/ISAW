@@ -32,11 +32,14 @@
  *  $Rev:$
  */
 package Operators.TOF_SCD;
+import gov.anl.ipns.MathTools.LinearAlgebra;
 import gov.anl.ipns.MathTools.Functions.OneVarParameterizedFunction;
 import gov.anl.ipns.MathTools.Functions.MarquardtArrayFitter;
 import gov.anl.ipns.MathTools.Geometry.DetectorPosition;
 import gov.anl.ipns.MathTools.Geometry.Vector3D;
 import gov.anl.ipns.Parameters.FileChooserPanel;
+import gov.anl.ipns.Parameters.FilteredPG_TextField;
+import gov.anl.ipns.Parameters.IntegerFilter;
 import gov.anl.ipns.Util.Numeric.ClosedInterval;
 
 import java.awt.GridLayout;
@@ -44,7 +47,7 @@ import java.io.FileOutputStream;
 import java.util.*;
 
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
+import javax.swing.*;
 
 import DataSetTools.dataset.*;
 import DataSetTools.operator.Generic.TOF_SCD.*;
@@ -61,6 +64,14 @@ import DataSetTools.retriever.NexusRetriever;
  */
 public class IntegrateNorm {
   
+   public static int IBACK = 0;
+   public static int IXMEAN =1;
+   public static int IYMEAN =2;
+   public static int ITINTENS = 3;
+   public static int IVXX =4;
+   public static int IVYY = 5;
+   public static int IVXY =6;
+   
  
    /**
     *  This can be started with two arguments, the peaks file and the nexus 
@@ -73,6 +84,8 @@ public class IntegrateNorm {
    {
       String PeaksFile ="C:/ISAW/SampleRuns/SNS/TOPAZ/WSF/top1172/nickel.peaks";
       String NeXusFile = "C:/ISAW/SampleRuns/SNS/TOPAZ/TOPAZ_1172.nxs";
+      int BadEdgeWidth = 10;
+      float MaxCellEdge =12;
       if( args != null && args.length >0)
          {
          PeaksFile = args[0];
@@ -84,10 +97,25 @@ public class IntegrateNorm {
                   "Peaks File");
             FileChooserPanel NexFile = new FileChooserPanel(FileChooserPanel.LOAD_FILE ,
             "NeXus File");
+            JPanel BadEdgePanel = new JPanel( new GridLayout(1,2));
+            BadEdgePanel.add( new JLabel("# Bad Edge Pixels") );
+            JTextField BadEdge = new FilteredPG_TextField(  new IntegerFilter() );
+            BadEdgePanel.add(BadEdge);
+            
+
+            JPanel CellSidePanel = new JPanel( new GridLayout(1,2));
+            CellSidePanel.add( new JLabel("Max real cell side") );
+            JTextField CellSide = new FilteredPG_TextField(  new IntegerFilter() );
+            CellSidePanel.add(CellSide);
+            
+            BadEdge.setText("10");
+            CellSide.setText("12");
             JPanel panel = new JPanel();
-            panel.setLayout(  new GridLayout(2,1) );
+            panel.setLayout(  new GridLayout(4,1) );
             panel.add( Peak);
             panel.add( NexFile);
+            panel.add( BadEdgePanel);
+            panel.add( CellSidePanel);
             if( JOptionPane.showConfirmDialog( null, panel,"Input Files",
                   JOptionPane.OK_CANCEL_OPTION)== JOptionPane.OK_OPTION)
             {
@@ -125,7 +153,7 @@ public class IntegrateNorm {
       XScale xscl = null;
       int nTimeChan = -1;
       int[][] ids = null;
-      float dQ = 1f / 12f / 6f;
+      float dQ = 1f / MaxCellEdge / 6f;
       FileOutputStream fout = null;
       NexusRetriever ret = new NexusRetriever(NeXusFile );
       
@@ -220,32 +248,50 @@ public class IntegrateNorm {
             
             OneSlice slice = new OneSlice(grid, chan,(int)(.5f+Peak.y()),
                  (int)(.5f+Peak.x()), nPixels,nPixels);
-
+            slice.BadEdgeRange = BadEdgeWidth;
             double[] xs = new double[ slice.ncells( )];
             double[] ys = new double[ xs.length];
             double[]sigs = new double[ xs.length];
             Arrays.fill( ys,0 );
             Arrays.fill( sigs,1 );
-            Arrays.fill( sigs ,4,8,15. );
+            
+            //sigs[3] =.2;//Integrated intensity should be able to change faster
+                        // than other paramters. It is larger
             for( int ii=0; ii< xs.length; ii++)
                xs[ii]=ii;
-            
-            MarquardtArrayFitter fitter = new MarquardtArrayFitter( slice, xs,ys,sigs,.0001, 200);
+            double MaxErrChiSq = .00001*slice.ncells( );
+            MarquardtArrayFitter fitter = new MarquardtArrayFitter( slice, xs,ys,sigs,MaxErrChiSq, 200);
             double chiSqr = fitter.getChiSqr( );
          
-            double[] errs = fitter.getParameterSigmas_2( );//Use other for cases when params near
+            double[] errs = fitter.getParameterSigmas( );//Use other for cases when params near
                                                            //boundaries
+            
+            
             double[] DD = slice.getParameters();
+            //AdjustDD( DD, slice.startRow, slice.nrows(), slice.startCol,slice.ncols() );
+            char GoodSlicec =' ';
+            if(!Double.isNaN( chiSqr )  && 
+                   GoodSlice(  DD, errs[3]*Math.sqrt( chiSqr/slice.ncells() ),nPixels,nPixels,grid,10 ))
+               GoodSlicec ='x';
+            
+            if( chan == Chan  && GoodSlicec == 'x')
+            {
+               System.out.print((i+1)+","+(1/Peak.d())+","+
+                    new DetectorPosition( Peak.getGrid( ).position(Peak.y( ),Peak.x())).getScatteringAngle( )
+                    *180/Math.PI+","+Math.sqrt( DD[4] )+","+Math.sqrt( DD[5] ));            
+               //slice.Test( );
+            }
+           
             try
             {
               
               
               fout.write( 
-                    String.format("%5d %7.3f %8.3f %8.3f %8.3f %8.3f %6d %10.2f %10.2f"+
+                    String.format("%5d %7.3f %8.3f%c %8.3f %8.3f %8.3f %6d %10.2f %10.2f"+
                                                   " %19.3f %8.5f %8.5f %8.5f %8.5f\n",
                     chan+1,
                     DD[0],
-                    DD[3],
+                    DD[3],GoodSlicec,
                     DD[1],
                     DD[2],
                     Math.sqrt( chiSqr/slice.ncells()),
@@ -262,7 +308,7 @@ public class IntegrateNorm {
             {
                
             }
-            if ( !Double.isNaN( chiSqr )  && GoodSlice(  DD, errs,nPixels,nPixels ))
+            if ( GoodSlicec=='x')
             {
                TotIntensity += DD[3];
                double Err = errs[3];
@@ -323,6 +369,13 @@ public class IntegrateNorm {
    }
    
 
+   private static void  AdjustDD( double[] DD, int startRow, int nrows, int startCol,int ncols )
+   {
+      DD[IXMEAN] -=DD[IBACK]*(startCol +ncols/2);
+      DD[IYMEAN] -=DD[IBACK]*(startRow+nrows/2);
+      DD[IVXX]    -=DD[IBACK]*(ncols*ncols-1)/12;
+      DD[IVYY]    -=DD[IBACK]*(nrows*nrows-1)/12;      
+   }
    /**
     * Determines whether a time slice is a good slice that will contribute to the
     * Intensity and variance of a peak
@@ -333,21 +386,29 @@ public class IntegrateNorm {
     * @param dcol
     * @return
     */
-   private static boolean GoodSlice( double[] parameters, double[] errs, int drow, int dcol)
+   private static boolean GoodSlice( double[] parameters, double errs, int drow, int dcol,
+         IDataGrid grid, int BadEdgeRange)
    {
       if( parameters ==null)
          return false;
       
-      if( Double.isNaN( parameters[3]  ) || Double.isNaN(  errs[3] ))
+      if( Double.isNaN( parameters[ITINTENS]  ) || Double.isNaN(  errs ))
          return false;
       
-     if( parameters[3]/errs[3] <3)
+     if( parameters[ITINTENS]/errs <3)
         return false;
      
      
-     if( parameters[3]*parameters[3]/
-           (parameters[4]*parameters[5]-parameters[6]*parameters[6])
+     if( parameters[ITINTENS]*parameters[ITINTENS]/
+           (parameters[IVXX]*parameters[IVYY]-parameters[IVXY]*parameters[IVXY])
                                < 2.25*Math.PI*Math.PI)
+        return false;
+     
+     if( parameters[IXMEAN] <= BadEdgeRange*1.2 || parameters[IYMEAN] <= BadEdgeRange*1.2)
+        return false;
+     
+     if( parameters[IXMEAN] >=  grid.num_cols()-BadEdgeRange*1.2 ||
+           parameters[IYMEAN] >= grid.num_rows()- BadEdgeRange*1.2)
         return false;
      
      return true;
@@ -382,12 +443,15 @@ public class IntegrateNorm {
       int chan; 
       int drows;
       int dcols;
-      int Ncols;
+      int Ncols,Nrows;
       int startRow, startCol;
       double Value;//errors
 
       double TotBack = 0;
       int  nback =0;
+      double[] P; //parameters just for the Normal part of the distribution
+                  //the variable, parameters, are the corresponding entries for 
+                  //    back + normal.
       boolean goodParameters = false;
       double[] BaseValues;
       
@@ -401,7 +465,11 @@ public class IntegrateNorm {
        double expCoeffxy ;
        double expCoeffy2;
        int BadEdgeRange =10;
-     
+       double[] expVals;
+       double[] dVdmx,dVdmy,dVdsx,dVdsy,dVdsxy;
+       Deriv[] derivativeRules;
+       double BaseVxx;
+       double BaseVyy ;
        /**
         * The number of cells used in the fitting
         * @return
@@ -411,6 +479,104 @@ public class IntegrateNorm {
          return (int)BaseValues[S_1];
       }
       
+      public int nrows()
+      {
+         return Nrows;
+      }
+      
+      public int ncols()
+      {
+         return Ncols;
+      }
+      
+      public double[] AddBackground( double[] params)
+      {
+         return params;
+         /*
+         double[] Res = new double[7];
+         System.arraycopy( params,0,Res,0,7);
+         double mx = params[IXMEAN];
+         double my = params[IYMEAN];
+         double Mx = (mx*(params[ITINTENS])+
+                         params[IBACK]*BaseValues[S_x])/
+                            (params[ITINTENS]+ params[IBACK]*ncells());
+         double My =(my*(params[ITINTENS])+
+               params[IBACK]*BaseValues[S_y])/
+               (params[ITINTENS]+ params[IBACK]*ncells());
+         
+         Res[IXMEAN] = Mx;
+         Res[IYMEAN]= My;
+         
+         // ------ Change to variation from different mean -------
+         double Sxxo = params[IVXX];
+         double Sxxn = Sxxo +2*(mx-Mx)*mx -(mx*mx-Mx*Mx);
+         double Syyo = params[IVYY];
+         double Syyn = Syyo +2*(my-My)*my -(my*my-My*My);
+         double Sxyo = params[IVXY];
+         double Sxyn = Sxyo+(my-My)*mx+(mx-Mx)*my-(mx*my-Mx*My);
+         
+         //--- Now add in background ------
+         
+         double Sxx = Sxxn*(params[ITINTENS])+
+                  params[IBACK]*(BaseValues[S_x2]-2*mx*BaseValues[S_x]+mx*mx*ncells());
+
+         double Syy = Syyn*(params[ITINTENS])+
+                  params[IBACK]*(BaseValues[S_y2]-2*my*BaseValues[S_y]+my*my*ncells());
+         
+         double Sxy = Sxyn*(params[ITINTENS])+
+                       params[IBACK]*(BaseValues[S_xy]-my*BaseValues[S_x]-mx*BaseValues[S_y]+
+                               mx*my*(ncells()));
+         
+         Res[IVXX]= Sxx/(params[ITINTENS]+ params[IBACK]*ncells());
+         Res[IVYY] = Syy/(params[ITINTENS]+ params[IBACK]*ncells());
+         Res[IVXY] = Sxy/(params[ITINTENS]+ params[IBACK]*ncells());
+         
+         return Res;
+         */
+      }
+      public double[] RemoveBackground( double[] params)
+      {
+         return params;
+         /*
+         double[] Res = new double[7];
+         System.arraycopy( params,0,Res,0,7);
+         double Mx = params[IXMEAN];
+         double My = params[IYMEAN];
+         double mx = (Mx*(params[IBACK]*ncells()+params[ITINTENS])-
+                         params[IBACK]*BaseValues[S_x])/params[ITINTENS];
+         double my =(My*(params[IBACK]*ncells()+params[ITINTENS])-
+               params[IBACK]*BaseValues[S_y])/params[ITINTENS];
+         
+         Res[IXMEAN] = mx;
+         Res[IYMEAN]= my;
+         
+         // ------ Change to variation from different mean -------
+         double Sxxo = params[IVXX];
+         double Sxxn = Sxxo -2*(mx-Mx)*Mx +(mx*mx-Mx*Mx);
+         double Syyo = params[IVYY];
+         double Syyn = Syyo -2*(my-My)*My +(my*my-My*My);
+         double Sxyo = params[IVXY];
+         double Sxyn = Sxyo-(my-My)*Mx-(mx-Mx)*My+(mx*my-Mx*My);
+         
+         //--- Now subtract out background ------
+         
+         double Sxx = Sxxn*(params[ITINTENS]+params[IBACK]*ncells())-
+                  params[IBACK]*(BaseValues[S_x2]-2*mx*BaseValues[S_x]+mx*mx*ncells());
+
+         double Syy = Syyn*(params[ITINTENS]+params[IBACK]*ncells())-
+                  params[IBACK]*(BaseValues[S_y2]-2*my*BaseValues[S_y]+my*my*ncells());
+         
+         double Sxy = Sxyn*(params[ITINTENS]+params[IBACK]*ncells())-
+                       params[IBACK]*(BaseValues[S_xy]-my*BaseValues[S_x]-mx*BaseValues[S_y]+
+                               mx*my*(ncells()));
+         
+         Res[IVXX]= Sxx/params[ITINTENS];
+         Res[IVYY] = Syy/params[ITINTENS];
+         Res[IVXY] = Sxy/params[ITINTENS];
+         
+         return Res;
+         */
+      }
       /**
        * 
        * @return  The average background per cell for the boundary
@@ -418,7 +584,7 @@ public class IntegrateNorm {
        */
       public double getAvBackGroundLeft()
       {
-         return TotBack/nback -parameters[0];
+         return TotBack/nback -P[IBACK];
       }
       
       /**
@@ -464,9 +630,13 @@ public class IntegrateNorm {
          // To translate from the linear x to the corresponding
          //    row and column
          Ncols =  Math.min( col+dcols ,grid.num_cols( )-BadEdgeRange)- 
-                                       Math.max( 1,col-dcols-BadEdgeRange)+1;
+                                       Math.max( BadEdgeRange,col-dcols)+1;
+         Nrows = Math.min( row+drows ,grid.num_rows( )-BadEdgeRange)-
+                                        Math.max( BadEdgeRange,row-drows) +1;
          startRow= Math.max( BadEdgeRange,row-drows);
          startCol =Math.max( BadEdgeRange,col-dcols);
+
+         expVals = new double[Nrows*Ncols];
          
          //Update totals
          for( int r = Math.max( BadEdgeRange,row-drows); r <= Math.min( row+drows ,grid.num_rows( )-BadEdgeRange);r++)
@@ -498,33 +668,71 @@ public class IntegrateNorm {
          
          
          double[] params = new double[7];
-         params[0] = TotBack/nback;
-         params[1] = col;
-         params[2] = row;
-         params[3] = BaseValues[0] -params[0]*BaseValues[12];
-         if( params[3] < params[0])
-         {
-            params[0] =0;
-            params[3] = BaseValues[0];
-         }
+         params[IBACK] = TotBack/nback;
+         params[IXMEAN] = col;
+         params[IYMEAN] = row;
+         params[ITINTENS] = BaseValues[S_int] -params[IBACK]*BaseValues[S_1];
+         params[0]=0;
          setSigmas( params);
-         
-         if( params[4] <=0 || params[5] <=0)
+         BaseVxx= params[IVXX];
+         BaseVyy = params[IVYY];
+         params[0] = TotBack/nback;
+         setSigmas(params);
+         if( params[ITINTENS] < params[IBACK])
          {
-            params[0]=0;
+            params[IBACK] =0;
+            params[ITINTENS] = BaseValues[S_int];
+            setSigmas(params);
+         }
+         
+         
+         if( params[4] <=0 || params[5] <=0 )
+         {
+            params[IBACK]=0;
             setSigmas( params );
          }
+         P = new double[7];
+         System.arraycopy( params,0,P,0,7);
+         if(! areParametersGood())
+         {
+            params[IBACK]=0;
+            setSigmas( params );
+         }
+         derivativeRules = new Deriv[7];
+         derivativeRules[IBACK] = new Derivb();
+         derivativeRules[IXMEAN] = new DerivI(P,startRow,startCol,Nrows,Ncols);
+         derivativeRules[IYMEAN] = new Derivmx(P,startRow,startCol,Nrows,Ncols);
+         derivativeRules[ITINTENS] = new Derivmy(P,startRow,startCol,Nrows,Ncols);
+         derivativeRules[4] = new DerivSxx(P,startRow,startCol,Nrows,Ncols);
+         derivativeRules[5] = new DerivSyy(P,startRow,startCol,Nrows,Ncols);
+         derivativeRules[6] = new DerivSxy(P,startRow,startCol,Nrows,Ncols);
          
-         setParameters( params );
+         
+         
+         setParameters( AddBackground(params) );
+
+         
          
       }
     
-
+      /**
+       * Parameters are means, stdev, etc. for sum of background +  normal
+       */
       @Override
       public void setParameters(double[] params)
       {
          super.setParameters((params));
          
+         /*double background = parameters[IBACK];
+         P[IXMEAN] = parameters[IXMEAN] -background*(startCol +Ncols/2);
+         P[IYMEAN] = parameters[IYMEAN] -background*(startRow +Nrows/2);
+         P[IVXX] = parameters[IVXX] -background*(Ncols*Ncols -1)/12;
+         P[IVYY] = parameters[IVYY] -background*(Nrows*Nrows -1)/12;
+         P[IBACK]= background;
+         P[IVXY ]= parameters[IVXY];
+         P[ITINTENS]=parameters[ITINTENS];
+         */
+         System.arraycopy( RemoveBackground(params),0,P,0,7);
          goodParameters = areParametersGood();
          
          // Will return NaN if parameters are out of whack
@@ -533,43 +741,72 @@ public class IntegrateNorm {
          if(!goodParameters)
             return;
          
-         double uu = parameters[4]*parameters[5]- parameters[6]*parameters[6];
-         expCoef_z= -.5*parameters[4]*parameters[5]/uu;
+         double uu = P[IVXX]*P[IVYY]- P[IVXY]*P[IVXY];
+         //expCoef_z= -.5*P[IVXX]*P[IVYY]/uu;
          
          coeffNorm = .5/Math.PI/Math.sqrt( uu);
          
-         expCoeffx2= -parameters[5]/2/uu;
-         expCoeffxy = parameters[6]/uu;
-         expCoeffy2= -parameters[4]/2/uu;
-         //TODO Get array of exp values at @ point, so derivs and values are faster etc.
+         expCoeffx2= -P[IVYY]/2/uu;
+         expCoeffxy = P[IVXY]/uu;
+         expCoeffy2= -P[IVXX]/2/uu;
+         int x=0;
+         for( int r = startRow; r < startRow+Nrows; r++)
+            for( int c= startCol; c < startCol+Ncols; c++)
+            {
+               double dx = c-P[IXMEAN];
+               double dy = r-P[IYMEAN];
+               expVals[x]=Math.exp( expCoeffx2*dx*dx+expCoeffxy*dx*dy+expCoeffy2*dy*dy);
+               x++;
+            }
+         dVdmx = dVdmy = dVdsx = dVdsy =dVdsxy = null;
+         
+         for( int p=0; p<7; p++)
+         {
+            derivativeRules[p].setCommonData( expVals , coeffNorm , expCoeffx2 , expCoeffy2 , expCoeffxy );
+         }
+       
          
       }
       
       public boolean areParametersGood()
       {
-         if( parameters[0] < 0 || parameters[3] < 0)
+         if( P[IBACK] < 0 || P[ITINTENS] < 0)
             return false;
          
-         if( Math.abs( parameters[1]-col )> Math.max( dcols/8,1.5))
+         if( P[IYMEAN]<=startRow+Math.min( 8 , Nrows/16) || 
+               P[IXMEAN] < Math.min( 8 ,startCol+Ncols/16))
             return false;
          
-         if( Math.abs( parameters[2]-row )> Math.max( drows/8,1.5))
+         if( P[IYMEAN] >=startRow+ Nrows -Math.min(8,Nrows*.25) ||
+               P[IXMEAN] > startCol +Ncols-Math.min(8,Ncols*.25))
+            return false;
+       
+         
+         if( P[IXMEAN] < BadEdgeRange+2 || P[IXMEAN] > grid.num_cols( )-BadEdgeRange-2)
             return false;
          
-         if( parameters[1] < BadEdgeRange || parameters[1] > grid.num_cols( )-BadEdgeRange)
-            return false;
-         
-         if( parameters[2] < BadEdgeRange || parameters[2] > grid.num_rows( )-BadEdgeRange)
+         if( P[IYMEAN] < BadEdgeRange+2|| P[IYMEAN] > grid.num_rows( )-BadEdgeRange-2)
             return false;
          
          for( int i=4; i<=5;i++)
-            if( parameters[i] <=0)
+            if( P[i] <=0)
                return false;
          
-         if( parameters[4]*parameters[5]-parameters[6]*parameters[6] <=0)
+         if( P[IVXX]*P[IVYY]-P[IVXY]*P[IVXY] <=0)
+            return false;
+         
+         if( P[IVXX] >=1.2*(BaseVxx*(BaseValues[S_int])
+                      -P[IBACK]*(BaseValues[S_x2]-2*P[IXMEAN]*BaseValues[S_x]+
+                      P[IXMEAN]*P[IXMEAN]*ncells()))/
+                      (BaseValues[S_int]-P[IBACK]*ncells()))
             return false;
          
          
+         if( P[IVYY] >=1.2*(BaseVyy*(BaseValues[S_int])
+                      -P[IBACK]*(BaseValues[S_y2]-2*P[IYMEAN]*BaseValues[S_y]+
+                      P[IYMEAN]*P[IYMEAN]*ncells()))/
+                      (BaseValues[S_int]-P[IBACK]*ncells()))
+            return false;
          return true;
          
       }
@@ -607,6 +844,15 @@ public class IntegrateNorm {
          return Res;
       }
 
+      public void Test()
+      {
+         double x = (row-startRow)*Ncols +(col-startCol);
+         double[] pp = getParameters();
+         P[IBACK]=0;
+         P[ITINTENS]=0;
+         
+         System.out.println( "TTT= Int at rc=("+row+","+col+")="+getValue(x));
+      }
       @Override
       public ClosedInterval getDomain()
       {
@@ -629,14 +875,14 @@ public class IntegrateNorm {
         int c = startCol+i%Ncols;
         
         float Intensity = grid.getData_entry( r , c).getY_values( )[chan];
-        
-        double xx = (c-parameters[1]);
-        double yy = r-parameters[2];
+        /* 
+        double xx = (c-P[IXMEAN]);
+        double yy = r-P[IYMEAN];
         
         double exp = xx*xx*expCoeffx2+ xx*yy*expCoeffxy+ yy*yy*expCoeffy2;
-     
+       */
        
-        double err = parameters[0]+ parameters[3]*coeffNorm*Math.pow(Math.E, exp) -
+        double err = P[IBACK]+ P[ITINTENS]*coeffNorm*expVals[(int)x] -
                     Intensity;
         
         return err;
@@ -692,43 +938,171 @@ public class IntegrateNorm {
        * 
        * @param parameters
        */
-      private void setSigmas(double[] parameters)
+      private void setSigmas(double[] P)
       {
+         //use only full  quadrants. Get GOOD Sxx and Syy values and limits
+         
+         double Sxx = BaseValues[S_x2int] - P[IBACK] * BaseValues[S_x2]
+               - 2 * P[IXMEAN]
+               * ( BaseValues[S_xint] - P[IBACK] * BaseValues[S_x] )
+               + P[IXMEAN] * P[IXMEAN]
+               * ( BaseValues[S_int] - P[IBACK] * BaseValues[S_1] );
 
-         double Sxx = BaseValues[S_x2int] - parameters[0] * BaseValues[S_x2]
-               - 2 * parameters[1]
-               * ( BaseValues[S_xint] - parameters[0] * BaseValues[S_x] )
-               + parameters[1] * parameters[1]
-               * ( BaseValues[S_int] - parameters[0] * BaseValues[S_1] );
+         Sxx = Sxx / ( BaseValues[S_int] - P[IBACK] * BaseValues[S_1] );
 
-         Sxx = Sxx / ( BaseValues[S_int] - parameters[0] * BaseValues[S_1] );
+         double Syy = BaseValues[S_y2int] - P[IBACK] * BaseValues[S_y2]
+               - 2 * P[IYMEAN]
+               * ( BaseValues[S_yint] - P[IBACK] * BaseValues[S_y] )
+               + P[IYMEAN] * P[IYMEAN]
+               * ( BaseValues[S_int] - P[IBACK] * BaseValues[S_1] );
+         Syy = Syy / ( BaseValues[S_int] - P[IBACK] * BaseValues[S_1] );
 
-         double Syy = BaseValues[S_y2int] - parameters[0] * BaseValues[S_y2]
-               - 2 * parameters[2]
-               * ( BaseValues[S_yint] - parameters[0] * BaseValues[S_y] )
-               + parameters[2] * parameters[2]
-               * ( BaseValues[S_int] - parameters[0] * BaseValues[S_1] );
-         Syy = Syy / ( BaseValues[S_int] - parameters[0] * BaseValues[S_1] );
+         double Sxy = BaseValues[S_xyint] - P[IBACK] * BaseValues[S_xy]
+               - P[IXMEAN]
+               * ( BaseValues[S_yint] - P[IBACK] * BaseValues[S_y] )
+               - P[IYMEAN]
+               * ( BaseValues[S_xint] - P[IBACK] * BaseValues[S_x] )
+               + P[IYMEAN] * P[IXMEAN]
+               * ( BaseValues[S_int] - P[IBACK] * BaseValues[S_1] );
+         Sxy = Sxy / ( BaseValues[S_int] - P[IBACK] * BaseValues[S_1] );
+         
+         
+         P[IVXX]= Sxx;
+         P[IVYY] = Syy;
+         while( Sxx*Syy <= Sxy*Sxy  && Sxx >0  && Syy > 0)
+            Sxy/=2;
+         
+         P[IVXY]= Sxy;
+      }
+      
+      private void setSigmas1(double[] parameters)
+      {
+         double Sxx =0;
+         double Syy = 0;
+         double Sxy = 0;
+         int N, N1;
+         int[] Quad = null;
+         double[][] BaseValues = null;
+         int Nquadrants = 4;
+         N=N1=0;
+         //use only full  quadrants. Get GOOD Sxx and Syy values and limits
+         for( int i = 1; i< Nquadrants; i++)
+         {
+            
+           int q= Quad[i];
+           Sxx += BaseValues[S_x2int][q] - P[IBACK] * BaseValues[S_x2][q]
+               - 2 * P[IXMEAN]
+               * ( BaseValues[S_xint][q] - P[IBACK] * BaseValues[S_x][q] )
+               + P[IXMEAN] * P[IXMEAN]
+               * ( BaseValues[S_int][q] - P[IBACK] * BaseValues[S_1][q] );
 
-         double Sxy = BaseValues[S_xyint] - parameters[0] * BaseValues[S_xy]
-               - parameters[1]
-               * ( BaseValues[S_yint] - parameters[0] * BaseValues[S_y] )
-               - parameters[2]
-               * ( BaseValues[S_xint] - parameters[0] * BaseValues[S_x] )
-               + parameters[2] * parameters[1]
-               * ( BaseValues[S_int] - parameters[0] * BaseValues[S_1] );
-         Sxy = Sxy / ( BaseValues[S_int] - parameters[0] * BaseValues[S_1] );
-         parameters[4]= Sxx;
-         parameters[5] = Syy;
+         N+= ( BaseValues[S_int] [q]- P[IBACK] * BaseValues[S_1][q] );
+
+         Syy += BaseValues[S_y2int][q] - P[IBACK] * BaseValues[S_y2][q]
+               - 2 * P[IYMEAN]
+               * ( BaseValues[S_yint][q] - P[IBACK] * BaseValues[S_y][q] )
+               + P[IYMEAN] * P[IYMEAN]
+               * ( BaseValues[S_int][q] - P[IBACK] * BaseValues[S_1][q] );
+        
+
+         double u = BaseValues[S_xyint][q] - P[IBACK] * BaseValues[S_xy][q]
+               - P[IXMEAN]
+               * ( BaseValues[S_yint][q] - P[IBACK] * BaseValues[S_y][q] )
+               - P[IYMEAN]
+               * ( BaseValues[S_xint][q] - P[IBACK] * BaseValues[S_x][q] )
+               + P[IYMEAN] * P[IXMEAN]
+               * ( BaseValues[S_int][q] - P[IBACK] * BaseValues[S_1][q] );
+         Sxy +=u;
+         N1+= ( BaseValues[S_int] [q]- P[IBACK] * BaseValues[S_1][q] );
+         boolean hasXmirror = false;
+         boolean hasYmirror = false;
+         for( int qq =0; qq<Nquadrants; qq++)
+         {
+            if( Quad[i] != q && Math.abs( Quad[i]-q )==2)
+               hasXmirror = true;
+            if( Quad[i] != q && Math.abs( Quad[i]-q )==1)
+               hasYmirror = true;
+         }
+         if( !hasXmirror)
+         {
+            Sxy +=-u;
+            N1+=( BaseValues[S_int] [q]- P[IBACK] * BaseValues[S_1][q] );;
+         }
+
+         if( !hasYmirror)
+         {
+            Sxy +=-u;
+            N1+=( BaseValues[S_int] [q]- P[IBACK] * BaseValues[S_1][q] );;
+         }
+         
+         }
+         Sxx /=N;
+         Sxy/=N;
+         Sxy /=N1;
+         
+         P[IVXX]= Sxx;
+         P[IVYY] = Syy;
          while( Sxx*Syy < Sxy*Sxy  && Sxx >0  && Syy > 0)
             Sxy/=2;
          
-         parameters[6]= Sxy;
+         P[IVXY]= Sxy;
       }
 
+      private void updateAllDerivs( double[] x )
+      {
+         if( dVdmx == null)
+            dVdmx =derivativeRules[1].get_dFdp( x );
+         if( dVdmy == null)
+            dVdmy =derivativeRules[1].get_dFdp( x );
+         if( dVdsx == null)
+            dVdsx =derivativeRules[4].get_dFdp( x );
+         if( dVdsy == null)
+            dVdsy =derivativeRules[5].get_dFdp( x );
+         
+      }
+      
       public double[] get_dFdai( double x[], int i )
       {
-         double[] Res = new double[x.length];
+         return derivativeRules[i].get_dFdp( x );
+      }
+      
+      public double get_dFdai( double x, int i )
+      {
+         return derivativeRules[i].get_dFdp( x );
+      }
+      public float[] get_dFdai( float x[], int i )
+      {
+         return derivativeRules[i].get_dFdp( x );
+      }
+      public float get_dFdai( float x, int i )
+      {
+         return derivativeRules[i].get_dFdp( x );
+      }
+      public double[] xget_dFdai( double x[], int i )
+      {
+         
+            updateAllDerivs(x);
+            if( i ==1 )
+               return dVdmx;
+            else if( i==2 )
+               return dVdmy;
+            else if( i==4 )
+               return dVdsx;
+            else if( i==5)
+               return dVdsy;
+            else if( i !=0)
+               return derivativeRules[i].get_dFdp( x );
+         
+           double[] Res = new double[x.length];
+           for( int k=0; k< Res.length; k++)
+              Res[k]= 1+dVdmx[k]*(startCol+Ncols/2)
+                       +dVdmy[k]*(startRow+Nrows/2)+
+                       dVdsx[k]*(Ncols*Ncols-1)/12+
+                       dVdsy[k]*(Nrows*Nrows-1)/12;
+           return Res;
+         
+             
+        /* double[] Res = new double[x.length];
          if( i==0)
          {
             Arrays.fill( Res , 1.0 );
@@ -741,13 +1115,14 @@ public class IntegrateNorm {
             return Res;
          }
          return super.get_dFdai( x , i );
+         */
       }
       
 
 
-      public float[] get_dFdai( float x[], int i )
+      public float[] xget_dFdai( float x[], int i )
       {
-         float[] Res = new float[x.length];
+         /*float[] Res = new float[x.length];
          if( i==0)
          {
             Arrays.fill( Res , 1.0f );
@@ -761,14 +1136,38 @@ public class IntegrateNorm {
             return Res;
          }
          return super.get_dFdai( x , i );
+         
+         
+         return derivativeRules[i].get_dFdp( x );
+         */
+         float[] Res = new float[x.length];
+         for( int k=0; k< Res.length;k++)
+            Res[i] = get_dFdai(x[k],i);
+         
+         return Res;
       }
       
       
-      @Override
-      public double get_dFdai(double x, int i)
+     
+      public double xget_dFdai(double x, int i)
       {
+         if(i==1 && dVdmx != null)
+            return dVdmx[(int)x];
+         else if( i==2 && dVdmy != null)
+            return dVdmy[(int)x];
+         else if( i==4 && dVdsx != null)
+            return dVdsx[(int)x];
+         else if( i==5 && dVdsy != null)
+            return dVdsy[(int)x];
+         else if( i!=0)
+            return derivativeRules[i].get_dFdp( x );
+        
+         return 1+ get_dFdai(x,1)*(startCol+Ncols/2) + 
+                           get_dFdai(x,2)*(startRow+Nrows/2)+
+                           get_dFdai(x,4)*(Ncols*Ncols-1)/12+
+                           get_dFdai(x,5)*(Nrows*Nrows-1)/12;
 
-         if( i==0)
+         /*if( i==0)
             return 1.0;
          if( i !=3)
          return super.get_dFdai( x , i );
@@ -778,25 +1177,28 @@ public class IntegrateNorm {
          int r = startRow+ (int)(k/Ncols);
          int c = startCol+k%Ncols;
          float Intensity = grid.getData_entry( r , c).getY_values( )[chan];
-         double xx = (c-parameters[1]);
-         double yy = r-parameters[2];
+         double xx = (c-P[IXMEAN]);
+         double yy = r-P[IYMEAN];
          double exp = xx*xx*expCoeffx2+ xx*yy*expCoeffxy+ yy*yy*expCoeffy2;
       
         
          return coeffNorm*Math.pow(Math.E, exp);
+         */
       }
 
       
       
-      @Override
-      public float get_dFdai(float x, int i)
+      
+      public float xget_dFdai(float x, int i)
       {
-         if( i==0)
+         return (float)get_dFdai((double)x,i);
+        /* if( i==0)
             return 1f;
          if( i > 1)
          return super.get_dFdai( x , i );
          
          return (float) get_dFdai( (double)x, i);
+         */
       }
         
              
@@ -813,7 +1215,7 @@ public class IntegrateNorm {
       
    }
    
-   class Derivb implements Deriv
+   static class Derivb implements Deriv
    {
 
       @Override
@@ -862,14 +1264,14 @@ public class IntegrateNorm {
       
    }
    
-   class DerivI implements Deriv
+   static class DerivI implements Deriv
    {
       double[] parameters; 
       int startRow; 
       int startCol; 
       int Nrows;
       int Ncols;
-      double[] x;
+      double[] xx;
       double coefNorm;
        double expCoeffx2;
       double expCoeffy2;
@@ -886,8 +1288,9 @@ public class IntegrateNorm {
       @Override
       public double get_dFdp(double x)
       {
-
-         return this.x[(int)x]*coefNorm;
+         if( xx == null || x < 0 || (int)x >= xx.length)
+            return Double.NaN;
+         return xx[(int)x]*coefNorm;
       }
 
       @Override
@@ -903,7 +1306,8 @@ public class IntegrateNorm {
       @Override
       public float get_dFdp(float x)
       {
-
+         if( xx == null || x < 0 || (int)x >= xx.length)
+            return Float.NaN;
         return (float)(get_dFdp((double)x));
       }
 
@@ -919,12 +1323,12 @@ public class IntegrateNorm {
 
      
       @Override
-      public void setCommonData(double[] x, double coefNorm, double expCoeffx2,
+      public void setCommonData(double[] xx, double coefNorm, double expCoeffx2,
             double expCoeffy2, double expCoeffxy)
       {
 
 
-         this.x = x;
+         this.xx = xx;
          this.coefNorm =coefNorm;
          this.expCoeffx2 =expCoeffx2;
          this.expCoeffy2 =expCoeffy2;
@@ -934,7 +1338,7 @@ public class IntegrateNorm {
       
    }
    
-   class Derivmx extends DerivI
+   static class Derivmx extends DerivI
    {
       
       
@@ -948,22 +1352,25 @@ public class IntegrateNorm {
       {
          int r = ((int) x)/Ncols;
          int c = ((int)x) %Ncols;
-         double uu = parameters[4]*parameters[5]-parameters[6]*parameters[6];
-         return get_dFdp(x,r,c, coefNorm*parameters[3], parameters[5]/uu,-parameters[6]/uu);
+         double uu = parameters[IVXX]*parameters[IVYY]-parameters[IVXY]*parameters[IVXY];
+         return get_dFdp(x,r,c, coefNorm*parameters[ITINTENS], parameters[IVYY]/uu,-parameters[IVXY]/uu);
       }
       @Override
       public double[] get_dFdp(double[] x)
       {
-         double uu = parameters[4]*parameters[5]-parameters[6]*parameters[6];
-         double coefExp = coefNorm*parameters[3];
-         double coefx=parameters[5]/uu; 
-         double coefy=-parameters[6]/uu;
+         double uu = parameters[IVXX]*parameters[IVYY]-parameters[IVXY]*parameters[IVXY];
+         double coefExp = coefNorm*parameters[ITINTENS];
+         double coefx=parameters[IVYY]/uu; 
+         double coefy=-parameters[IVXY]/uu;
          
          double[] Res = new double[x.length];
          int k=0;
          for( int r=startRow; r < startRow+Nrows; r++)
             for( int c=startCol; c< startCol +Ncols; c++)
-               Res[k++]= get_dFdp(x[k],r,c,coefExp, coefx,coefy);
+            {
+               Res[k]= get_dFdp(x[k],r,c,coefExp, coefx,coefy);
+               k++;
+            }
                
 
          // TODO Auto-generated method stub
@@ -972,16 +1379,19 @@ public class IntegrateNorm {
       @Override
       public float[] get_dFdp(float[] x)
       {
-         double uu = parameters[4]*parameters[5]-parameters[6]*parameters[6];
-         double coefExp = coefNorm*parameters[3];
-         double coefx=parameters[5]/uu; 
-         double coefy=-parameters[6]/uu;
+         double uu = parameters[IVXX]*parameters[IVYY]-parameters[IVXY]*parameters[IVXY];
+         double coefExp = coefNorm*parameters[ITINTENS];
+         double coefx=parameters[IVYY]/uu; 
+         double coefy=-parameters[IVXY]/uu;
          
          float[] Res = new float[x.length];
          int k=0;
          for( int r=startRow; r < startRow+Nrows; r++)
             for( int c=startCol; c< startCol +Ncols; c++)
-               Res[k++]= (float)get_dFdp(x[k],r,c,coefExp, coefx,coefy);
+            {
+               Res[k]= (float)get_dFdp(x[k],r,c,coefExp, coefx,coefy);
+               k++;
+            }
          
          return Res;
       }
@@ -990,14 +1400,20 @@ public class IntegrateNorm {
       private double get_dFdp( double x, int r, int c,
             double coefExp,double coefx, double coefy)
       {
-         return coefExp*this.x[(int)x]*(coefx*(c-parameters[1])+coefy*(r-parameters[2]));
+         try
+         {
+             return coefExp*this.xx[(int)x]*(coefx*(c-parameters[IXMEAN])+coefy*(r-parameters[IYMEAN]));
+         }catch(Exception ss)
+         {
+            return Double.NaN;
+         }
       }
       
    }
 
    
    
-   class Derivmy extends DerivI
+   static class Derivmy extends DerivI
    {
       
       
@@ -1011,22 +1427,25 @@ public class IntegrateNorm {
       {
          int r = ((int) x)/Ncols;
          int c = ((int)x) %Ncols;
-         double uu = parameters[4]*parameters[5]-parameters[6]*parameters[6];
-         return get_dFdp(x,r,c, coefNorm*parameters[3], parameters[6]/uu,parameters[5]/uu);
+         double uu = parameters[IVXX]*parameters[IVYY]-parameters[IVXY]*parameters[IVXY];
+         return get_dFdp(x,r,c, coefNorm*parameters[ITINTENS], parameters[IVXY]/uu,parameters[IVYY]/uu);
       }
       @Override
       public double[] get_dFdp(double[] x)
       {
-         double uu = parameters[4]*parameters[5]-parameters[6]*parameters[6];
-         double coefExp = coefNorm*parameters[3];
-         double coefx=-parameters[6]/uu; 
-         double coefy= parameters[5]/uu;
+         double uu = parameters[IVXX]*parameters[IVYY]-parameters[IVXY]*parameters[IVXY];
+         double coefExp = coefNorm*parameters[ITINTENS];
+         double coefx=-parameters[IVXY]/uu; 
+         double coefy= parameters[IVYY]/uu;
          
          double[] Res = new double[x.length];
          int k=0;
          for( int r=startRow; r < startRow+Nrows; r++)
             for( int c=startCol; c< startCol +Ncols; c++)
-               Res[k++]= get_dFdp(x[k],r,c,coefExp, coefx,coefy);
+            {
+               Res[k]= get_dFdp(x[k],r,c,coefExp, coefx,coefy);
+               k++;
+            }
                
 
          // TODO Auto-generated method stub
@@ -1035,16 +1454,19 @@ public class IntegrateNorm {
       @Override
       public float[] get_dFdp(float[] x)
       {
-         double uu = parameters[4]*parameters[5]-parameters[6]*parameters[6];
-         double coefExp = coefNorm*parameters[3];
-         double coefx= -parameters[6]/uu; 
-         double coefy= parameters[5]/uu;
+         double uu = parameters[IVXX]*parameters[IVYY]-parameters[IVXY]*parameters[IVXY];
+         double coefExp = coefNorm*parameters[ITINTENS];
+         double coefx= -parameters[IVXY]/uu; 
+         double coefy= parameters[IVYY]/uu;
          
          float[] Res = new float[x.length];
          int k=0;
          for( int r=startRow; r < startRow+Nrows; r++)
             for( int c=startCol; c< startCol +Ncols; c++)
-               Res[k++]= (float)get_dFdp(x[k],r,c,coefExp, coefx,coefy);
+            {
+               Res[k]= (float)get_dFdp(x[k],r,c,coefExp, coefx,coefy);
+               k++;
+            }
          
          return Res;
       }
@@ -1053,12 +1475,19 @@ public class IntegrateNorm {
       private double get_dFdp( double x, int r, int c,
             double coefExp,double coefx, double coefy)
       {
-         return coefExp*this.x[(int)x]*(coefx*(c-parameters[1])+coefy*(r-parameters[2]));
+         try
+         {
+         return coefExp*this.xx[(int)x]*(coefx*(c-parameters[IXMEAN])+coefy*(r-parameters[IYMEAN]));
+         }catch( Exception s)
+         {
+            return Double.NaN;
+         }
+         
       }
       
    }
    
-   class DerivSxx extends DerivI
+   static class DerivSxx extends DerivI
    {
       
       
@@ -1072,31 +1501,34 @@ public class IntegrateNorm {
       {
          int r = ((int) x)/Ncols;
          int c = ((int)x) %Ncols;
-         double uu = parameters[4]*parameters[5]-parameters[6]*parameters[6];
-         double coefExp = coefNorm*parameters[3];
-         double coefx2=parameters[5]*parameters[5]/2/uu/uu; 
-         double coefy2=parameters[6]*parameters[6]/2/uu/uu;
-         double coefxy =-parameters[6]*parameters[5]/uu/uu;
-         double C =parameters[5]/2/uu;
+         double uu = parameters[IVXX]*parameters[IVYY]-parameters[IVXY]*parameters[IVXY];
+         double coefExp = coefNorm*parameters[ITINTENS];
+         double coefx2=parameters[IVYY]*parameters[IVYY]/2/uu/uu; 
+         double coefy2=parameters[IVXY]*parameters[IVXY]/2/uu/uu;
+         double coefxy =-parameters[IVXY]*parameters[IVYY]/uu/uu;
+         double C =parameters[IVYY]/2/uu;
          return get_dFdp(x,r,c,coefExp, C,coefx2, coefxy,
                coefy2);
       }
       @Override
       public double[] get_dFdp(double[] x)
       {
-         double uu = parameters[4]*parameters[5]-parameters[6]*parameters[6];
-         double coefExp = coefNorm*parameters[3];
-         double coefx2=parameters[5]*parameters[5]/2/uu/uu; 
-         double coefy2=parameters[6]*parameters[6]/2/uu/uu;
-         double coefxy =-parameters[6]*parameters[5]/uu/uu;
-         double C =parameters[5]/2/uu;
+         double uu = parameters[IVXX]*parameters[IVYY]-parameters[IVXY]*parameters[IVXY];
+         double coefExp = coefNorm*parameters[ITINTENS];
+         double coefx2=parameters[IVYY]*parameters[IVYY]/2/uu/uu; 
+         double coefy2=parameters[IVXY]*parameters[IVXY]/2/uu/uu;
+         double coefxy =-parameters[IVXY]*parameters[IVYY]/uu/uu;
+         double C =parameters[IVYY]/2/uu;
          
          double[] Res = new double[x.length];
          int k=0;
          for( int r=startRow; r < startRow+Nrows; r++)
             for( int c=startCol; c< startCol +Ncols; c++)
-               Res[k++]= get_dFdp(x[k],r,c,coefExp, C,coefx2, coefxy,
+            {
+               Res[k]= get_dFdp(x[k],r,c,coefExp, C,coefx2, coefxy,
                      coefy2);
+               k++;
+            }
                
 
          // TODO Auto-generated method stub
@@ -1105,19 +1537,22 @@ public class IntegrateNorm {
       @Override
       public float[] get_dFdp(float[] x)
       {
-         double uu = parameters[4]*parameters[5]-parameters[6]*parameters[6];
-         double coefExp = coefNorm*parameters[3];
-         double coefx2=parameters[5]*parameters[5]/2/uu/uu; 
-         double coefy2=parameters[6]*parameters[6]/2/uu/uu;
-         double coefxy =-parameters[6]*parameters[5]/uu/uu;
-         double C =parameters[5]/2/uu;
+         double uu = parameters[IVXX]*parameters[IVYY]-parameters[IVXY]*parameters[IVXY];
+         double coefExp = coefNorm*parameters[ITINTENS];
+         double coefx2=parameters[IVYY]*parameters[IVYY]/2/uu/uu; 
+         double coefy2=parameters[IVXY]*parameters[IVXY]/2/uu/uu;
+         double coefxy =-parameters[IVXY]*parameters[IVYY]/uu/uu;
+         double C =parameters[IVYY]/2/uu;
          
          float[] Res = new float[x.length];
          int k=0;
          for( int r=startRow; r < startRow+Nrows; r++)
-            for( int c=startCol; c< startCol +Ncols; c++)      
-               Res[k++]= (float)get_dFdp(x[k],r,c,coefExp, C,coefx2, coefxy,
+            for( int c=startCol; c< startCol +Ncols; c++)  
+            {
+               Res[k]= (float)get_dFdp(x[k],r,c,coefExp, C,coefx2, coefxy,
                   coefy2);
+               k++;
+            }
          
          return Res;
       }
@@ -1127,14 +1562,20 @@ public class IntegrateNorm {
             double coefExp,double C,double coefx2, double coefxy,
             double coefy2)
       {
-         return coefExp*this.x[(int)x]*(C+coefx2*(c-parameters[1])*(c-parameters[1])
-               +coefxy*(r-parameters[2])*(c-parameters[1])+
-               coefy2*(r-parameters[2])*(r-parameters[2]));
+         try
+         {
+         return coefExp*this.xx[(int)x]*(C+coefx2*(c-parameters[IXMEAN])*(c-parameters[IXMEAN])
+               +coefxy*(r-parameters[IYMEAN])*(c-parameters[IXMEAN])+
+               coefy2*(r-parameters[IYMEAN])*(r-parameters[IYMEAN]));
+         }catch(Exception s)
+         {
+            return Double.NaN;
+         }
       }
       
    }
    
-   class DerivSyy extends DerivI
+   static class DerivSyy extends DerivI
    {
       
       
@@ -1148,31 +1589,34 @@ public class IntegrateNorm {
       {
          int r = ((int) x)/Ncols;
          int c = ((int)x) %Ncols;
-         double uu = parameters[4]*parameters[5]-parameters[6]*parameters[6];
-         double coefExp = coefNorm*parameters[3];
-         double coefx2=parameters[6]*parameters[6]/2/uu/uu; 
-         double coefy2=parameters[4]*parameters[4]/2/uu/uu;
-         double coefxy =-parameters[6]*parameters[4]/uu/uu;
-         double C =parameters[4]/2/uu;
+         double uu = parameters[IVXX]*parameters[IVYY]-parameters[IVXY]*parameters[IVXY];
+         double coefExp = coefNorm*parameters[ITINTENS];
+         double coefx2=parameters[IVXY]*parameters[IVXY]/2/uu/uu; 
+         double coefy2=parameters[IVXX]*parameters[IVXX]/2/uu/uu;
+         double coefxy =-parameters[IVXY]*parameters[IVXX]/uu/uu;
+         double C =parameters[IVXX]/2/uu;
          return get_dFdp(x,r,c,coefExp, C,coefx2, coefxy,
                coefy2);
       }
       @Override
       public double[] get_dFdp(double[] x)
       {
-         double uu = parameters[4]*parameters[5]-parameters[6]*parameters[6];
-         double coefExp = coefNorm*parameters[3];
-         double coefx2=parameters[6]*parameters[6]/2/uu/uu; 
-         double coefy2=parameters[4]*parameters[4]/2/uu/uu;
-         double coefxy =-parameters[6]*parameters[4]/uu/uu;
-         double C =parameters[4]/2/uu;
+         double uu = parameters[IVXX]*parameters[IVYY]-parameters[IVXY]*parameters[IVXY];
+         double coefExp = coefNorm*parameters[ITINTENS];
+         double coefx2=parameters[IVXY]*parameters[IVXY]/2/uu/uu; 
+         double coefy2=parameters[IVXX]*parameters[IVXX]/2/uu/uu;
+         double coefxy =-parameters[IVXY]*parameters[IVXX]/uu/uu;
+         double C =parameters[IVXX]/2/uu;
          
          double[] Res = new double[x.length];
          int k=0;
          for( int r=startRow; r < startRow+Nrows; r++)
             for( int c=startCol; c< startCol +Ncols; c++)
-               Res[k++]= get_dFdp(x[k],r,c,coefExp, C,coefx2, coefxy,
+            {
+               Res[k]= get_dFdp(x[k],r,c,coefExp, C,coefx2, coefxy,
                      coefy2);
+               k++;
+            }
                
 
          // TODO Auto-generated method stub
@@ -1181,19 +1625,22 @@ public class IntegrateNorm {
       @Override
       public float[] get_dFdp(float[] x)
       {
-         double uu = parameters[4]*parameters[5]-parameters[6]*parameters[6];
-         double coefExp = coefNorm*parameters[3];
-         double coefx2=parameters[6]*parameters[6]/2/uu/uu; 
-         double coefy2=parameters[4]*parameters[4]/2/uu/uu;
-         double coefxy =-parameters[6]*parameters[4]/uu/uu;
-         double C =parameters[4]/2/uu;
+         double uu = parameters[IVXX]*parameters[IVYY]-parameters[IVXY]*parameters[IVXY];
+         double coefExp = coefNorm*parameters[ITINTENS];
+         double coefx2=parameters[IVXY]*parameters[IVXY]/2/uu/uu; 
+         double coefy2=parameters[IVXX]*parameters[IVXX]/2/uu/uu;
+         double coefxy =-parameters[IVXY]*parameters[IVXX]/uu/uu;
+         double C =parameters[IVXX]/2/uu;
          
          float[] Res = new float[x.length];
          int k=0;
          for( int r=startRow; r < startRow+Nrows; r++)
-            for( int c=startCol; c< startCol +Ncols; c++)      
-               Res[k++]= (float)get_dFdp(x[k],r,c,coefExp, C,coefx2, coefxy,
+            for( int c=startCol; c< startCol +Ncols; c++) 
+            {
+               Res[k]= (float)get_dFdp(x[k],r,c,coefExp, C,coefx2, coefxy,
                   coefy2);
+               k++;
+            }
          
          return Res;
       }
@@ -1203,14 +1650,20 @@ public class IntegrateNorm {
             double coefExp,double C,double coefx2, double coefxy,
             double coefy2)
       {
-         return coefExp*this.x[(int)x]*(C+coefx2*(c-parameters[1])*(c-parameters[1])
-               +coefxy*(r-parameters[2])*(c-parameters[1])+
-               coefy2*(r-parameters[2])*(r-parameters[2]));
+         try
+         {
+         return coefExp*this.xx[(int)x]*(C+coefx2*(c-parameters[IXMEAN])*(c-parameters[IXMEAN])
+               +coefxy*(r-parameters[IYMEAN])*(c-parameters[IXMEAN])+
+               coefy2*(r-parameters[IYMEAN])*(r-parameters[IYMEAN]));
+         }catch(Exception s)
+         {
+            return Double.NaN;
+         }
       }
       
    }
    
-   class DerivSxy extends DerivI
+   static class DerivSxy extends DerivI
    {
       
       
@@ -1224,31 +1677,34 @@ public class IntegrateNorm {
       {
          int r = ((int) x)/Ncols;
          int c = ((int)x) %Ncols;
-         double uu = parameters[4]*parameters[5]-parameters[6]*parameters[6];
-         double coefExp = coefNorm*parameters[3];
-         double coefx2=-parameters[5]*parameters[6]/uu/uu; 
-         double coefy2=-parameters[4]*parameters[6]/uu/uu;
-         double coefxy =2*(uu+parameters[6]*parameters[6])/uu/uu;
-         double C =-parameters[6]/uu;
+         double uu = parameters[IVXX]*parameters[IVYY]-parameters[IVXY]*parameters[IVXY];
+         double coefExp = coefNorm*parameters[ITINTENS];
+         double coefx2=-parameters[IVYY]*parameters[IVXY]/uu/uu; 
+         double coefy2=-parameters[IVXX]*parameters[IVXY]/uu/uu;
+         double coefxy =2*(uu+parameters[IVXY]*parameters[IVXY])/uu/uu;
+         double C =-parameters[IVXY]/uu;
          return get_dFdp(x,r,c,coefExp, C,coefx2, coefxy,
                coefy2);
       }
       @Override
       public double[] get_dFdp(double[] x)
       {
-         double uu = parameters[4]*parameters[5]-parameters[6]*parameters[6];
-         double coefExp = coefNorm*parameters[3];
-         double coefx2=-parameters[5]*parameters[6]/uu/uu; 
-         double coefy2=-parameters[4]*parameters[6]/uu/uu;
-         double coefxy =2*(uu+parameters[6]*parameters[6])/uu/uu;
-         double C =-parameters[6]/uu;
+         double uu = parameters[IVXX]*parameters[IVYY]-parameters[IVXY]*parameters[IVXY];
+         double coefExp = coefNorm*parameters[ITINTENS];
+         double coefx2=-parameters[IVYY]*parameters[IVXY]/uu/uu; 
+         double coefy2=-parameters[IVXX]*parameters[IVXY]/uu/uu;
+         double coefxy =2*(uu+parameters[IVXY]*parameters[IVXY])/uu/uu;
+         double C =-parameters[IVXY]/uu;
          
          double[] Res = new double[x.length];
          int k=0;
          for( int r=startRow; r < startRow+Nrows; r++)
             for( int c=startCol; c< startCol +Ncols; c++)
-               Res[k++]= get_dFdp(x[k],r,c,coefExp, C,coefx2, coefxy,
+            {
+               Res[k]= get_dFdp(x[k],r,c,coefExp, C,coefx2, coefxy,
                      coefy2);
+               k++;
+            }
                
 
          // TODO Auto-generated method stub
@@ -1257,19 +1713,22 @@ public class IntegrateNorm {
       @Override
       public float[] get_dFdp(float[] x)
       {
-         double uu = parameters[4]*parameters[5]-parameters[6]*parameters[6];
-         double coefExp = coefNorm*parameters[3];
-         double coefx2=-parameters[5]*parameters[6]/uu/uu; 
-         double coefy2=-parameters[4]*parameters[6]/uu/uu;
-         double coefxy =2*(uu+parameters[6]*parameters[6])/uu/uu;
-         double C =-parameters[6]/uu;
+         double uu = parameters[IVXX]*parameters[IVYY]-parameters[IVXY]*parameters[IVXY];
+         double coefExp = coefNorm*parameters[ITINTENS];
+         double coefx2=-parameters[IVYY]*parameters[IVXY]/uu/uu; 
+         double coefy2=-parameters[IVXX]*parameters[IVXY]/uu/uu;
+         double coefxy =2*(uu+parameters[IVXY]*parameters[IVXY])/uu/uu;
+         double C =-parameters[IVXY]/uu;
          
          float[] Res = new float[x.length];
          int k=0;
          for( int r=startRow; r < startRow+Nrows; r++)
-            for( int c=startCol; c< startCol +Ncols; c++)      
+            for( int c=startCol; c< startCol +Ncols; c++)  
+            {
                Res[k++]= (float)get_dFdp(x[k],r,c,coefExp, C,coefx2, coefxy,
                   coefy2);
+               k++;
+            }
          
          return Res;
       }
@@ -1279,9 +1738,15 @@ public class IntegrateNorm {
             double coefExp,double C,double coefx2, double coefxy,
             double coefy2)
       {
-         return coefExp*this.x[(int)x]*(C+coefx2*(c-parameters[1])*(c-parameters[1])
-               +coefxy*(r-parameters[2])*(c-parameters[1])+
-               coefy2*(r-parameters[2])*(r-parameters[2]));
+         try
+         {
+         return coefExp*this.xx[(int)x]*(C+coefx2*(c-parameters[IXMEAN])*(c-parameters[IXMEAN])
+               +coefxy*(r-parameters[IYMEAN])*(c-parameters[IXMEAN])+
+               coefy2*(r-parameters[IYMEAN])*(r-parameters[IYMEAN]));
+         }catch(Exception s)
+         {
+            return Double.NaN;
+         }
       }
       
    }
