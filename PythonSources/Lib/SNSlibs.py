@@ -7,6 +7,8 @@ from Operators.TOF_Diffractometer import *
 from Operators.Special import *
 from Operators.TOF_SCD import *
 from Command import ScriptUtil
+from NexIO import *;
+from NexIO.Util import *;
 from java.lang import System
 def getIsawHome():
         
@@ -260,6 +262,7 @@ def run5():
         0,1E12,.2,10,2E-4,9.999E10,"/SNS/users/ehx/SNS_ISAW/Databases/VanadiumPeaks.dat",.005,1.9,10,.02,2)
 
 def rotateDetectors( instr, runnum, DetCalFile1):
+     
       if DetCalFile1 is None:
           DetCalFile1 = getDefaultDetCalFile( instr)
       
@@ -281,6 +284,7 @@ def rotateDetectors( instr, runnum, DetCalFile1):
       DetCal1 = System.getProperty("user.home")
       if not DetCal1.endswith("/"):
           DetCal1 +='/'
+      Save = DetCal1
       Save= DetCal1
       DetCal1 += "ISAW/tmp/dummy.DetCal"
       DetCal2 = Save+"ISAW/tmp/dummy2.DetCal"
@@ -290,8 +294,22 @@ def rotateDetectors( instr, runnum, DetCalFile1):
          General_Utils.RotateDetectors( DetCal1,5,DetCal2, ang2,0,0, ScriptUtil.ToVec([1,2,3,4,5,6,7,8,9]))
       except:
          return DetCal1
+      try:
+         General_Utils.RotateDetectors( DetCal1,5, Save +"ISAW/tmp/dummy2.DetCal", ang2,0,0,ScriptUtil.ToVec([1,2,3,4,5,6,7,8,9]))
+      except:
+         return DetCal1
 #      ScriptUtil.ExecuteCommand("RotateSnapDetectors",[DetCalFile1,DetCal1,1,ang1,1,ang2])
 
       return DetCal2
 
-
+def getProtonsCharge( instr, runnum):
+      import os
+      (nxs, prenxs) = getRunDir(instr, runnum)
+      node = NexNode( nxs)
+      for i in range(0,node.getNChildNodes()):
+         n = node.getChildNode( i)
+         if n.getNodeClass().equals("NXentry"):
+            V = n.getNodeValue()
+            F = ConvertDataTypes.floatValue(V)
+            return Float(F).doubleValue()
+      return Double.NaN
