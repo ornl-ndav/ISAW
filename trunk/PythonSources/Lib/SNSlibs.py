@@ -7,8 +7,8 @@ from Operators.TOF_Diffractometer import *
 from Operators.Special import *
 from Operators.TOF_SCD import *
 from Command import ScriptUtil
-from NexIO import *;
-from NexIO.Util import *;
+from NexIO.NexApi import *;
+from NexIO.Util import ConvertDataTypes;
 from java.lang import System
 def getIsawHome():
         
@@ -278,8 +278,9 @@ def rotateDetectors( instr, runnum, DetCalFile1):
           print "No information to rotate the Detectors"
           return DetCalFile1
 
-      ang1 = V.firstElement().firstElement()
-      ang2 = V.elementAt(1).firstElement()
+      ang1 = -V.firstElement().firstElement()
+      ang2 = -V.elementAt(1).firstElement()
+    
       #will only do one detector for now
       DetCal1 = System.getProperty("user.home")
       if not DetCal1.endswith("/"):
@@ -288,7 +289,7 @@ def rotateDetectors( instr, runnum, DetCalFile1):
       Save= DetCal1
       DetCal1 += "ISAW/tmp/dummy.DetCal"
       DetCal2 = Save+"ISAW/tmp/dummy2.DetCal"
-      print ["new DetCal file",DetCal1]
+
       General_Utils.RotateDetectors( DetCalFile1,14,DetCal1, ang1,0,0)
       try:
          General_Utils.RotateDetectors( DetCal1,5,DetCal2, ang2,0,0, ScriptUtil.ToVec([1,2,3,4,5,6,7,8,9]))
@@ -305,11 +306,20 @@ def rotateDetectors( instr, runnum, DetCalFile1):
 def getProtonsCharge( instr, runnum):
       import os
       (nxs, prenxs) = getRunDir(instr, runnum)
-      node = NexNode( nxs)
+     
+      node = NexNode( nxs)     
       for i in range(0,node.getNChildNodes()):
-         n = node.getChildNode( i)
-         if n.getNodeClass().equals("NXentry"):
-            V = n.getNodeValue()
-            F = ConvertDataTypes.floatValue(V)
-            return Float(F).doubleValue()
+       
+         n = node.getChildNode( i)       
+        
+         if n.getNodeClass()=="NXentry":
+            
+            try:
+               V = n.getChildNode("proton_charge").getNodeValue()
+              
+               F = ConvertDataTypes.floatValue(V)
+               return Float(F).doubleValue()
+            except:
+               pass
+
       return Double.NaN
