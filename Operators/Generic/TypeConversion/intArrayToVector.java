@@ -56,6 +56,12 @@ import gov.anl.ipns.Parameters.PlaceHolderPG;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
 import Command.*;
+/**
+ * This class has been dynamically created using the Method2OperatorWizard
+ * and usually should not be edited.
+ * This operator is a wrapper around 
+@see Operators.Generic.TypeConversion.Convert#intArrayToVector(java.lang.Object)
+ */
 public class intArrayToVector extends    GenericOperator
                               implements HiddenOperator
 {
@@ -76,7 +82,8 @@ public class intArrayToVector extends    GenericOperator
       StringBuffer S = new StringBuffer();
       S.append("@overview    "); 
       S.append("Convert the integers in an array of ints to a vector of");
-      S.append("Integer objects.");
+      S.append("Integer objects."); S.append("\r\n");
+      S.append(" This operator wraps the method Operators.Generic.TypeConversion.Convert#intArrayToVector\n");
       S.append("@algorithm    "); 
       S.append("The ints in the array of ints are used to construct Integer");
       S.append("objects, which are then added to the Vector in the same");

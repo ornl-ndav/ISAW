@@ -56,6 +56,12 @@ import gov.anl.ipns.Parameters.PlaceHolderPG;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
 import Command.*;
+/**
+ * This class has been dynamically created using the Method2OperatorWizard
+ * and usually should not be edited.
+ * This operator is a wrapper around 
+@see Operators.Generic.TypeConversion.Convert#VectorToIntListString(java.lang.Object)
+ */
 public class VectorToIntListString extends    GenericOperator
                                    implements HiddenOperator
 {
@@ -80,6 +86,8 @@ public class VectorToIntListString extends    GenericOperator
       S.append("be rounded to the nearest integer.  Also, the resulting list of");
       S.append("integers will be sorted, duplicates removed and converted to a String");
       S.append("representation like  3:6,18,20:25");
+      S.append("\r\n");
+      S.append(" This operator wraps the method  Operators.Generic.TypeConversion.Convert#VectorToIntListString\n");
       S.append("@algorithm    "); 
       S.append("The Float, Integer or Double objects in the vector are rounded and");
       S.append("copied into an array of ints.  The array of ints is then sorted to be");

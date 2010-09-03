@@ -57,6 +57,8 @@ import Command.*;
 /**
  * This class has been dynamically created using the Method2OperatorWizard
  * and usually should not be edited.
+ * This operator is a wrapper around 
+@see Command.ScriptUtil#ToVec(Object)java.lang.Object)
  */
 public class ToVec extends GenericOperator{
 
@@ -97,7 +99,8 @@ public class ToVec extends GenericOperator{
    public String getDocumentation(){
       StringBuffer S = new StringBuffer();
       S.append("@overview    "); 
-      S.append("Converts object to a Vector, changing arrays to Vectors");
+      S.append("Converts object to a Vector, changing arrays to Vectors"); S.append("\r\n");
+      S.append(" This operator wraps the method Command.ScriptUtil#ToVec\n");
       S.append("@algorithm    "); 
       S.append("Recurse through all elements of the Vector or array changing them to Vectors as needed");
       S.append("@assumptions    "); 

@@ -56,6 +56,12 @@ import gov.anl.ipns.Parameters.PlaceHolderPG;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
 import Command.*;
+/**
+ * This class has been dynamically created using the Method2OperatorWizard
+ * and usually should not be edited.
+ * This operator is a wrapper around 
+@see Operators.Generic.TypeConversion.Convert#VectorTo_floatArray(java.lang.Object)
+ */
 public class VectorTo_floatArray extends    GenericOperator
                                  implements HiddenOperator
 {
@@ -76,7 +82,8 @@ public class VectorTo_floatArray extends    GenericOperator
       StringBuffer S = new StringBuffer();
       S.append("@overview    "); 
       S.append("Convert a list of numeric values in a Vector to an array");
-      S.append("of floats, in the same order the values were stored in the vector.");
+      S.append("of floats, in the same order the values were stored in the vector."); S.append("\r\n");
+      S.append(" This operator wraps the method  Operators.Generic.TypeConversion.Convert#VectorTo_floatArray\n");
       S.append("@algorithm    "); 
       S.append("The elements of the Vector are converted to type float");
       S.append("and stored in the array of floats, in the same order as");

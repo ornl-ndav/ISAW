@@ -56,6 +56,12 @@ import gov.anl.ipns.Parameters.PlaceHolderPG;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
 import Command.*;
+/**
+ * This class has been dynamically created using the Method2OperatorWizard
+ * and usually should not be edited.
+ * This operator is a wrapper around 
+@see Operators.Generic.TypeConversion.Convert#VectorTo_intArray(java.lang.Object)
+ */
 public class VectorTo_intArray extends    GenericOperator
                                implements HiddenOperator
 {
@@ -78,6 +84,8 @@ public class VectorTo_intArray extends    GenericOperator
       S.append("Convert a list of numeric values in a Vector to an array");
       S.append("of integers in the same order as the values were stored in the");
       S.append("Vector, by rounding the values stored in the Vector.");
+      S.append("\r\n");
+      S.append(" This operator wraps the method Operators.Generic.TypeConversion.Convert#VectorTo_intArray\n");
       S.append("@algorithm    "); 
       S.append("The elements of the Vector are ROUNDED to the nearest integer");
       S.append("value and the integer value is stored in the array of ints, in the");

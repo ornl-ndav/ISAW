@@ -56,6 +56,12 @@ import gov.anl.ipns.Parameters.PlaceHolderPG;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
 import Command.*;
+/**
+ * This class has been dynamically created using the Method2OperatorWizard
+ * and usually should not be edited.
+ * This operator is a wrapper around 
+@see Operators.Generic.TypeConversion.Convert#DetectorPositionToVector(java.lang.Object)
+ */
 public class DetectorPositionToVector extends GenericOperator
                                       implements HiddenOperator
 {
@@ -79,6 +85,8 @@ public class DetectorPositionToVector extends GenericOperator
       S.append("spherical coordinates, cartesian coordinates, cylinderical coordinates,");
       S.append("and the scattering angle, to a Vector, containing these ten values in");
       S.append("that order.");
+      S.append("\r\n");
+      S.append(" This operator wraps the method Operators.Generic.TypeConversion.Convert#DetectorPositionToVector\n");
       S.append("@algorithm    "); 
       S.append("The three values for the spherical coordinates, three values for cartesian");
       S.append("coordinates, three values for cylinderical coordinates, and the scattering");
