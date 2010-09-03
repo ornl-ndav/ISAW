@@ -55,6 +55,13 @@ import gov.anl.ipns.Parameters.PlaceHolderPG;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
 import Command.*;
+
+/**
+ * This class has been dynamically created using the Method2OperatorWizard
+ * and usually should not be edited.
+ * This operator is a wrapper around @see Command.ScriptUtil#cvrt2int1D(java.lang.Object)
+ */
+
 public class cnvrt2intArray1D extends GenericOperator{
    public cnvrt2intArray1D(){
      super("convert to a 1D intArray");
