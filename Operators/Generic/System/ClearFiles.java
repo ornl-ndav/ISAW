@@ -45,6 +45,8 @@ import Command.*;
 /**
  * This class has been dynamically created using the Method2OperatorWizard
  * and usually should not be edited.
+ * This operator is a wrapper around 
+@see Wizard.TOF_SCD.Util#ClearFiles(java.lang.String,java.lang.String)
  */
 public class ClearFiles extends GenericOperator{
 
@@ -92,6 +94,9 @@ public class ClearFiles extends GenericOperator{
       S.append(" create, to make sure that their computation does");
       S.append(" not accidentally bring in old files created by previous");
       S.append(" runs of the script.");
+
+      S.append("\r\n");
+      S.append(" This operator wraps the method Wizard.TOF_SCD.Util#ClearFiles\n");
       S.append("@algorithm    "); 
       S.append("The list of files in the ISAW scratch directory is");
       S.append(" checked for names that begin with the specified");

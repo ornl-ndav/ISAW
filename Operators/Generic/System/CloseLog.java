@@ -50,6 +50,12 @@ import DataSetTools.operator.Generic.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
 import Command.*;
+/**
+ * This class has been dynamically created using the Method2OperatorWizard
+ * and usually should not be edited.
+ * This operator is a wrapper around 
+@see gov.anl.ipns.Util.Sys.SharedMessages#closeLog()
+ */
 public class CloseLog extends GenericOperator{
    public CloseLog(){
      super("Close LogFile");
@@ -67,6 +73,8 @@ public class CloseLog extends GenericOperator{
       StringBuffer S = new StringBuffer();
       S.append("@overview    "); 
       S.append("Closes the log file. Subsequent LogAdd's will go to the status pane");
+      S.append("\r\n");
+      S.append(" This operator wraps the method gov.anl.ipns.Util.Sys.SharedMessages.closeLog()\n");
       S.append("@algorithm    "); 
       S.append("");
       S.append("@assumptions    "); 

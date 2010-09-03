@@ -53,6 +53,8 @@ import Command.*;
 /**
  * This class has been dynamically created using the Method2OperatorWizard
  * and usually should not be edited.
+ * This operator is a wrapper around 
+@see Operators.Generic.System.versionInfo#getVersionInfo()
  */
 public class getVersionInfo extends GenericOperator{
 
@@ -93,6 +95,8 @@ public class getVersionInfo extends GenericOperator{
       StringBuffer S = new StringBuffer();
       S.append("@overview    "); 
       S.append("This operator returns a list containing version information about ISAW and Java as well as information about the current user and which node is being used.  This is meant for adding information to log files so that version conflicts can be more easily resolved.");
+      S.append("\r\n");
+      S.append(" This operator wraps the method Operators.Generic.System.versionInfo.getVersionInfo()\n");
       S.append("@algorithm    "); 
       S.append("");
       S.append("@assumptions    "); 

@@ -46,6 +46,8 @@ import Command.*;
 /**
  * This class has been dynamically created using the Method2OperatorWizard
  * and usually should not be edited.
+ * This operator is a wrapper around 
+@see gov.anl.ipns.Operator.Processes.ProcessMethod#srunOps(java.lang.String,int,int,int,java.util.Vector)
  */
 public class srunOps extends GenericOperator{
 
@@ -101,6 +103,8 @@ public class srunOps extends GenericOperator{
       S.append(" temporary files are intended only for debugging purposes");
       S.append(" and will be erased each time the srunOps() operator is");
       S.append(" run.");
+      S.append("\r\n");
+      S.append(" This operator wraps the method gov.anl.ipns.Operator.Processes.ProcessMethod#srunOps\n");
       S.append("@algorithm    "); 
       S.append("SLURM is used to execute each of the operator/parameter");
       S.append(" command strings in parallel, using up to the specified");

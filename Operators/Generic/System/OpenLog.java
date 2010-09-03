@@ -59,6 +59,12 @@ import gov.anl.ipns.Parameters.LoadFilePG;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
 import Command.*;
+/**
+ * This class has been dynamically created using the Method2OperatorWizard
+ * and usually should not be edited.
+ * This operator is a wrapper around 
+@see gov.anl.ipns.Util.Sys.SharedMessages#openLog(java.lang.String,boolean)
+ */
 public class OpenLog extends GenericOperator{
    public OpenLog(){
      super("Open Logging File");
@@ -80,6 +86,9 @@ public class OpenLog extends GenericOperator{
       S.append("");
       S.append("Sets up the file that information will be logged to.");
       S.append("The previous log file will be updated and closed");
+
+      S.append("\r\n");
+     S.append(" This operator wraps the method gov.anl.ipns.Util.Sys.SharedMessages#openLog\n");
       S.append("@algorithm    "); 
       S.append("");
       S.append("@assumptions    "); 
