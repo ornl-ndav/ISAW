@@ -44,6 +44,8 @@ import Command.*;
 /**
  * This class has been dynamically created using the Method2OperatorWizard
  * and usually should not be edited.
+ * This operator is a wrapper around 
+@see NexIO.Write.NxWriter#SaveNxData(java.lang.String,java.lang.String,java.util.Vector,boolean)
  */
 public class SaveNxData extends GenericOperator{
 
@@ -90,6 +92,9 @@ public class SaveNxData extends GenericOperator{
       S.append("Writes DataSets to part of a NeXus file under the  entry with the  given name.");
       S.append(" Previous data in existing NXdata will be retained if append is false and none of");
       S.append(" the new datasets have the same title as an existing NXdata.");
+
+      S.append("\r\n");
+      S.append(" This operator wraps the method NexIO.Write.NxWriter#SaveNxData\n");
       S.append("@algorithm    "); 
       S.append("");
       S.append("@assumptions    "); 

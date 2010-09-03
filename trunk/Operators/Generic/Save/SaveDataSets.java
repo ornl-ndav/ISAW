@@ -44,6 +44,9 @@ import Command.*;
 /**
  * This class has been dynamically created using the Method2OperatorWizard
  * and usually should not be edited.
+ * This operator is a wrapper around 
+@see DataSetTools.writer.NexWriter#SaveDataSets( java.lang.String ,java.util.Vector , boolean)
+
  */
 public class SaveDataSets extends GenericOperator{
 
@@ -90,6 +93,8 @@ public class SaveDataSets extends GenericOperator{
       S.append(" If the only monitor datasets are the first one(s), all DataSets will be saved in one NXentry.");
       S.append(" Otherwise, each of the next blocks will be saved in separate NXentries. This can also be");
       S.append(" done using the append argument");
+      S.append("\r\n");
+      S.append(" This operator wraps the method DataSetTools.writer.NexWriter#SaveDataSets\n");
       S.append("@algorithm    "); 
       S.append("Find the first block and write. Continue finding blocks in the vector starting with monitor datasets");
       S.append(" followed by sample data sets.");

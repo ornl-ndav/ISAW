@@ -43,6 +43,8 @@ import Command.*;
 /**
  * This class has been dynamically created using the Method2OperatorWizard
  * and usually should not be edited.
+ * This operator is a wrapper around 
+@see Operators.Generic.Save.SaveASCII_calc#SaveASCII(DataSetTools.dataset.DataSet,boolean,java.lang.String,java.lang.String)
  */
 public class SaveASCII extends GenericOperator{
 
@@ -92,6 +94,9 @@ public class SaveASCII extends GenericOperator{
       S.append(" \"selected\" in the DataSet, using one of the operators");
       S.append(" that set the selected flags, such as  listed in the");
       S.append(" Operations -> Attribute -> Select Groups by Index");
+
+      S.append("\r\n");
+     S.append(" This operator wraps the method Operators.Generic.Save.SaveASCII_calc#SaveASCII\n");
       S.append("@algorithm    "); 
       S.append("The x,y or x,y,err values from each selected Data block");
       S.append(" are written in columns to the specified file.  Header");
