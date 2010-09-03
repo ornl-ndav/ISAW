@@ -46,6 +46,12 @@ import gov.anl.ipns.Parameters.StringPG;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
 import Command.*;
+/**
+ * This class has been dynamically created using the Method2OperatorWizard
+ * and usually should not be edited.
+ * This operator is a wrapper around 
+@see Operators.Generic.System.getSystemProperty#getSysProp(java.lang.String)
+ */
 public class getSysProps extends GenericOperator{
    public getSysProps(){
      super("getSysProp");
@@ -64,6 +70,8 @@ public class getSysProps extends GenericOperator{
       StringBuffer S = new StringBuffer();
       S.append("@overview    "); 
       S.append("This method returns the value (as a string) of a system property.");
+      S.append("\r\n");
+      S.append(" This operator wraps the method Operators.Generic.System.getSystemProperty#getSysProp\n"); 
       S.append("@algorithm    "); 
       S.append("This method simply passed the input string to System.getProperty.");
       S.append("@assumptions    "); 

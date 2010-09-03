@@ -56,6 +56,8 @@ import Command.*;
 /**
  * This class has been dynamically created using the Method2OperatorWizard
  * and usually should not be edited.
+ * This operator is a wrapper around 
+@see Operators.Generic.System.ParseStringMacroBase#parseMacroString(java.lang.String)
  */
 public class parseMacroString extends GenericOperator{
 
@@ -99,6 +101,9 @@ public class parseMacroString extends GenericOperator{
       S.append("This operator will parse a string for macros that need to be substututed for values stored in the");
       S.append(" system properties.  Each macro starts with the pair ${ and is terminated with a }.  The string");
       S.append(" contained in this macro must correspond to a key in the System Properties.");
+
+      S.append("\r\n");
+     S.append(" This operator wraps the method Operators.Generic.System.ParseStringMacroBase#parseMacroString\n");
       S.append("@algorithm    "); 
       S.append("First look for $.  Next character must be {.  Look for }.  Extract & trim string between these");
       S.append(" delimiters.  Use this string in System.getProperties(macroString).   Delete macro from the original");

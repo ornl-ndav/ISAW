@@ -54,6 +54,12 @@ import gov.anl.ipns.Parameters.StringPG;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
 import Command.*;
+/**
+ * This class has been dynamically created using the Method2OperatorWizard
+ * and usually should not be edited.
+ * This operator is a wrapper around 
+@see  gov.anl.ipns.Util.Sys.SharedMessages#LOGaddmsg(java.lang.String)
+ */
 public class LogMsg extends GenericOperator{
    public LogMsg(){
      super("Log a Message to the logfile");
@@ -74,6 +80,8 @@ public class LogMsg extends GenericOperator{
       S.append("Adds the message to the log file( or status pane if  the logfile has");
       S.append("not been set). NOTE: \"\n\" MUST be part of the message to get returns");
       S.append("unlike addmsg");
+      S.append("\r\n");
+      S.append(" This operator wraps the method gov.anl.ipns.Util.Sys.SharedMessages#LOGaddmsg\n");
       S.append("@algorithm    "); 
       S.append("");
       S.append("@assumptions    "); 
