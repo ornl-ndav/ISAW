@@ -61,7 +61,7 @@ import Command.*;
  * This class has been dynamically created using the Method2OperatorWizard
  * and usually should not be edited.
  * This operator is a wrapper around 
-@see Operators.Special.ObjectState.ObjectStateUtilities#SetObjectStateValue(java.lang.String ,gov.anl.ipns.ViewTools.Components.ObjectState ,java.lang.Object)
+@see Operators.Special.ObjectState.ObjectStateUtilities#SetObjectStateValue(java.lang.String ,gov.anl.ipns.ViewTools.Components.ObjectState ,java.lang.Object,boolean,boolean,boolean)
  */
 public class SetObjectStateValue extends GenericOperator{
    public SetObjectStateValue(){

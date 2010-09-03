@@ -55,7 +55,7 @@ import Command.*;
  * This class has been dynamically created using the Method2OperatorWizard
  * and usually should not be edited.
  * This operator is a wrapper around 
-@see Operators.Special.ObjectState.ObjectStateUtilities.GetObjectStateValue( java.lang.String ,gov.anl.ipns.ViewTools.Components.ObjectState)
+@see Operators.Special.ObjectState.ObjectStateUtilities#GetObjectStateValue( java.lang.String ,gov.anl.ipns.ViewTools.Components.ObjectState)
          
 
  */
