@@ -52,6 +52,8 @@ import Command.*;
 /**
  * This class has been dynamically created using the Method2OperatorWizard
  * and usually should not be edited.
+ * This operator is a wrapper around 
+@see gov.anl.ipns.DisplayDevices.Displayable#setLineAttribute(gov.anl.ipns.DisplayDevices.IDisplayable,int,java.lang.String ,java.lang.String)
  */
 public class setLineAttribute extends GenericOperator{
 
@@ -98,6 +100,8 @@ public class setLineAttribute extends GenericOperator{
       S.append("This method sets an attribute of the displayable that pertains");
       S.append(" to a particular portion of the display, such as one particular");
       S.append(" line.");
+      S.append("\r\n");
+      S.append(" This operator wraps the method gov.anl.ipns.DisplayDevices.Displayable#setLineAttribute\n");
       S.append("@algorithm    "); 
       S.append("");
       S.append("@assumptions    "); 

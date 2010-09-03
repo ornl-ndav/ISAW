@@ -44,6 +44,8 @@ import Command.*;
 /**
  * This class has been dynamically created using the Method2OperatorWizard
  * and usually should not be edited.
+ * This operator is a wrapper around 
+@see gov.anl.ipns.DisplayDevices.GraphicsDevice#close(gov.anl.ipns.DisplayDevices.GraphicsDevic)
  */
 public class close extends GenericOperator{
 
@@ -85,6 +87,8 @@ public class close extends GenericOperator{
       StringBuffer S = new StringBuffer();
       S.append("@overview    "); 
       S.append("This method will flush and close a file, flush and print a page, or just free resources for a display");
+      S.append("\r\n");
+      S.append(" This operator wraps the method gov.anl.ipns.DisplayDevices.GraphicsDevice#close\n");
       S.append("@algorithm    "); 
       S.append("");
       S.append("@assumptions    "); 

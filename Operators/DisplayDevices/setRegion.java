@@ -45,6 +45,8 @@ import Command.*;
 /**
  * This class has been dynamically created using the Method2OperatorWizard
  * and usually should not be edited.
+ * This operator is a wrapper around 
+@see gov.anl.ipns.DisplayDevices.GraphicsDevice#setRegion(gov.anl.ipns.DisplayDevices.GraphicsDevice,int,int,int,int)
  */
 public class setRegion extends GenericOperator{
 
@@ -90,6 +92,9 @@ public class setRegion extends GenericOperator{
       StringBuffer S = new StringBuffer();
       S.append("@overview    "); 
       S.append("This method specifies the region for the next viewer that is displayed");
+
+      S.append("\r\n");
+      S.append(" This operator wraps the method gov.anl.ipns.DisplayDevices.GraphicsDevice#setRegion\n");
       S.append("@algorithm    "); 
       S.append("");
       S.append("@assumptions    "); 

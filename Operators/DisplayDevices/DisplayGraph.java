@@ -54,6 +54,8 @@ import Command.*;
 /**
  * This class has been dynamically created using the Method2OperatorWizard
  * and usually should not be edited.
+ * This operator is a wrapper around 
+@see gov.anl.ipns.DisplayDevices.GraphicsDevice#display(gov.anl.ipns.DisplayDevices.GraphicsDevice, gov.anl.ipns.DisplayDevices.IDisplayable, boolean) 
  */
 public class DisplayGraph extends GenericOperator{
 
@@ -98,6 +100,8 @@ public class DisplayGraph extends GenericOperator{
       S.append("@overview    "); 
       S.append("Display the specified IDisplayable with the specified");
       S.append(" region, view type, line, and graph attributes.");
+      S.append("\r\n");
+      S.append(" This operator wraps the method  gov.anl.ipns.DisplayDevices.GraphicsDevice#display\n");
       S.append("@algorithm    "); 
       S.append("");
       S.append("@assumptions    "); 

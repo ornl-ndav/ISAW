@@ -51,6 +51,8 @@ import Command.*;
 /**
  * This class has been dynamically created using the Method2OperatorWizard
  * and usually should not be edited.
+ * This operator is a wrapper around 
+@see gov.anl.ipns.DisplayDevices.GraphicsDevice#print(gov.anl.ipns.DisplayDevices.GraphicsDevice)
  */
 public class print extends GenericOperator{
 
@@ -96,6 +98,8 @@ public class print extends GenericOperator{
       S.append(" to the file.  If the device is a printer, actually");
       S.append(" print the current display(s) to the printer.");
       S.append(" For a \"Screen\" device, this has no effect.");
+      S.append("\r\n");
+      S.append(" This operator wraps the method gov.anl.ipns.DisplayDevices.GraphicsDevice#print\n");
       S.append("@algorithm    "); 
       S.append("The Displayable objects are collected onto");
       S.append(" one panel and that panel is sent to the device.");
