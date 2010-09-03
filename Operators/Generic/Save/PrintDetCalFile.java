@@ -46,6 +46,8 @@ import Command.*;
 /**
  * This class has been dynamically created using the Method2OperatorWizard
  * and usually should not be edited.
+ * This operator is a wrapper around 
+@see EventTools.EventList.DumpGrids#PrintDetCalFile(java.lang.String,java.lang.String)
  */
 public class PrintDetCalFile extends GenericOperator{
 
@@ -90,6 +92,9 @@ public class PrintDetCalFile extends GenericOperator{
       S.append("This operator reads in a NeXus file containing area detector type data, then produces a DETCAL file");
       S.append(" describing these area detectors.  This is a shell around the method");
       S.append(" EventTools.EventList.DumpGrids.PrintDetCalFile");
+
+      S.append("\r\n");
+     S.append(" This operator wraps the method EventTools.EventList.DumpGrids#PrintDetCalFile\n");
       S.append("@algorithm    "); 
       S.append("");
       S.append(" Read through the file to find the NXinstrument and NXsource nodes( for L0)");
