@@ -55,6 +55,14 @@ import gov.anl.ipns.Parameters.LoadFilePG;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
 import Command.*;
+
+/**
+ * This class has been dynamically created using the Method2OperatorWizard
+ * and usually should not be edited.
+ * This operator is a wrapper around 
+@see Operators.Generic.Load.LoadUtil#LoadDifsGsas_lanl(DataSetTools.dataset.DataSet, java.lang.String)
+ */
+
 public class LoadGSASlanl extends GenericOperator{
    public LoadGSASlanl(){
      super("LoadGSAS  lanl form");
@@ -75,6 +83,9 @@ public class LoadGSASlanl extends GenericOperator{
       S.append("@overview    "); 
       S.append("This Loads difc, difa and T0 from a GSAS parameter file where the information");
       S.append("is given on the special lanl format lines");
+
+      S.append("\r\n");
+     S.append(" This operator wraps the method  Operators.Generic.Load.LoadUtil#LoadDifsGsas_lanl\n");
       S.append("@algorithm    "); 
       S.append("");
       S.append("@assumptions    "); 

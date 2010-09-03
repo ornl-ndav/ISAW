@@ -50,6 +50,13 @@ import gov.anl.ipns.Parameters.LoadFilePG;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
 import Command.*;
+
+/**
+ * This class has been dynamically created using the Method2OperatorWizard
+ * and usually should not be edited.
+ * This operator is a wrapper around 
+@see Operators.Generic.Load.LoadUtil#LoadDetectorInfo(DataSetTools.dataset.DataSet, java.lang.String)
+ */
 public class LoadDetectorInfo extends GenericOperator{
    public LoadDetectorInfo(){
      super("LoadDetectorInfo");
@@ -76,6 +83,8 @@ public class LoadDetectorInfo extends GenericOperator{
       S.append("area detector, LPSD or panel of single tubes may be treated");
       S.append("as a \"DataGrid\", depending on the detector information");
       S.append("file.");
+      S.append("\r\n");
+      S.append(" This operator wraps the method Operators.Generic.Load.LoadUtil#LoadDetectorInfo\n");
       S.append("@algorithm    "); 
       S.append("The detector information file is read, in sequence, and the");
       S.append("values are stored in a hashtable, based on the key word.");

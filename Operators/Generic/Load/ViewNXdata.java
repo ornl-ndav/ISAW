@@ -57,6 +57,14 @@ import gov.anl.ipns.Parameters.StringPG;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
 import Command.*;
+
+/**
+ * This class has been dynamically created using the Method2OperatorWizard
+ * and usually should not be edited.
+ * This operator is a wrapper around 
+@see NexIO.Util.NexViewUtils#getNxData(java.lang.Sring,java.lang.Sring,java.lang.Sring)
+
+ */
 public class ViewNXdata extends GenericSpecial{
    public ViewNXdata(){
      super("View a NXdata");
@@ -78,6 +86,9 @@ public class ViewNXdata extends GenericSpecial{
       S.append("@overview    "); 
       S.append("This class views an NXdata.  It uses the signal and axis attributes to");
       S.append("determine which field is data and which are  the \"time\" values");
+
+      S.append("\r\n");
+     S.append(" This operator wraps the method NexIO.Util.NexViewUtils#getNxData\n");
       S.append("@algorithm    "); 
       S.append("");
       S.append("@assumptions    "); 

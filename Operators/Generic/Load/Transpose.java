@@ -57,6 +57,13 @@ import gov.anl.ipns.Parameters.PlaceHolderPG;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
 import Command.*;
+/**
+ * This class has been dynamically created using the Method2OperatorWizard
+ * and usually should not be edited.
+ * This operator is a wrapper around 
+@see Operators.Generic.Load.LoadUtil#Transpose(DataSetTools.dataset.DataSet DS,int[],int,int,int,DataSetTools.dataset.XScal,boolean)
+ */
+
 public class Transpose extends GenericOperator{
    public Transpose(){
      super("Transpose");
@@ -81,6 +88,9 @@ public class Transpose extends GenericOperator{
       StringBuffer S = new StringBuffer();
       S.append("@overview    "); 
       S.append("Will transpose dimensions as specified in the Xlate array");
+
+      S.append("\r\n");
+     S.append(" This operator wraps the method Operators.Generic.Load.LoadUtil#Transpose\n");
       S.append("@algorithm    "); 
       S.append("Fixed_dataset.getData_entry(row,col).getY_values(time)=");
       S.append("oldDataSet(w).getY_values()[u]  where<br>");
