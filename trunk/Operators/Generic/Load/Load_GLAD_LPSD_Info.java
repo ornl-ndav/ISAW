@@ -54,6 +54,13 @@ import gov.anl.ipns.Parameters.LoadFilePG;
 import gov.anl.ipns.Util.SpecialStrings.*;
 import Command.*;
 
+/**
+ * This class has been dynamically created using the Method2OperatorWizard
+ * and usually should not be edited.
+ * This operator is a wrapper around 
+@see  Operators.Generic.Load.LoadUtil#Load_GLAD_LPSD_Info(DataSetTools.dataset.DataSet.java.lang.String)
+ */
+
 public class Load_GLAD_LPSD_Info extends GenericOperator{
    public Load_GLAD_LPSD_Info(){
      super("Load_GLAD_LPSD_Info");
@@ -84,6 +91,9 @@ public class Load_GLAD_LPSD_Info extends GenericOperator{
       S.append("of the LPSDs in the glad instrument and associate the");
       S.append("correct Data block (spectrum) with each of the pixels");
       S.append("of the Data grid.");
+
+      S.append("\r\n");
+     S.append(" This operator wraps the method Operators.Generic.Load.LoadUtil#Load_GLAD_LPSD_Info\n");
       S.append("@algorithm    "); 
       S.append("The gladdets6.par file lists the detectors in each bank");
       S.append("and the first segment ID that is associated with each of");
