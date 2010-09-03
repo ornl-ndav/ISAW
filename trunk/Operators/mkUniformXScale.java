@@ -57,6 +57,11 @@ import gov.anl.ipns.Parameters.IntegerPG;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
 import Command.*;
+/**
+ * This class has been dynamically created using the Method2OperatorWizard
+ * and usually should not be edited.
+ * This operator is a wrapper around @see DataSetTools.dataset.UniformXScale#createUniformXScale(float,float,int)
+ */
 public class mkUniformXScale extends GenericOperator{
    public mkUniformXScale(){
      super("make UniformXScale");
