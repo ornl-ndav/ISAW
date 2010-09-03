@@ -56,6 +56,12 @@ import gov.anl.ipns.Parameters.PlaceHolderPG;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
 import Command.*;
+/**
+ * This class has been dynamically created using the Method2OperatorWizard
+ * and usually should not be edited.
+ * This operator is a wrapper around 
+@see Operators.Generic.TypeConversion.Convert#IntListToVector(java.lang.Object)
+ */
 public class IntListToVector extends GenericOperator implements HiddenOperator
 {
    public IntListToVector(){
@@ -76,6 +82,8 @@ public class IntListToVector extends GenericOperator implements HiddenOperator
       S.append("@overview    "); 
       S.append("Convert a specially formatted String, or an int array to a");
       S.append("Vector of integers, for use by the ISAW scripting system.");
+      S.append("\r\n");
+      S.append(" This operator wraps the method Operators.Generic.TypeConversion.Convert#IntListToVector\n");
       S.append("@algorithm    "); 
       S.append("If the input list is an array of integers, they will be sorted and duplicates");
       S.append("will be removed when the values are placed in the Vector.");

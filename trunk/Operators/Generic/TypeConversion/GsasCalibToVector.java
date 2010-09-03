@@ -56,6 +56,12 @@ import gov.anl.ipns.Parameters.PlaceHolderPG;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
 import Command.*;
+/**
+ * This class has been dynamically created using the Method2OperatorWizard
+ * and usually should not be edited.
+ * This operator is a wrapper around 
+@see Operators.Generic.TypeConversion.Convert#GsasCalibToVector(java.lang.Object)
+ */
 public class GsasCalibToVector extends GenericOperator
                                implements HiddenOperator
 {
@@ -77,7 +83,8 @@ public class GsasCalibToVector extends GenericOperator
       S.append("@overview    "); 
       S.append("Convert an object of type GsasCalib, that contains values for");
       S.append("dif_C, dif_A and t_zero, to a Vector, containing these three values");
-      S.append("in that order.");
+      S.append("in that order."); S.append("\r\n");
+      S.append(" This operator wraps the method Operators.Generic.TypeConversion.Convert#GsasCalibToVector\n");
       S.append("@algorithm    "); 
       S.append("The values for dif_C, dif_A and t_zero are extracted from");
       S.append("the GsasCalib object and placed as Float objects in");

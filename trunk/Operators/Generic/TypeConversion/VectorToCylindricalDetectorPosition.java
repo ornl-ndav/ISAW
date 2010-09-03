@@ -56,6 +56,12 @@ import gov.anl.ipns.Parameters.PlaceHolderPG;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
 import Command.*;
+/**
+ * This class has been dynamically created using the Method2OperatorWizard
+ * and usually should not be edited.
+ * This operator is a wrapper around 
+@see Operators.Generic.TypeConversion.Convert#VectorToCylindricalDetectorPosition(java.lang.Object)
+ */
 public class VectorToCylindricalDetectorPosition extends GenericOperator
                                                  implements HiddenOperator
 {
@@ -77,6 +83,8 @@ public class VectorToCylindricalDetectorPosition extends GenericOperator
       S.append("@overview    "); 
       S.append("Convert the values from a Vector containing numeric values into a");
       S.append("DetectorPosition object.");
+      S.append("\r\n");
+      S.append(" This operator wraps the method Operators.Generic.TypeConversion.Convert#VectorToCylindricalDetectorPosition\n");
       S.append("@algorithm    "); 
       S.append("Numerical values from the Vector are used for the cylindrical radius,");
       S.append("azimuth angle, and z, and a DetectorPosition object is created from");
