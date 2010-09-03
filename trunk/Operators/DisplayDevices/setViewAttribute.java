@@ -44,6 +44,8 @@ import Command.*;
 /**
  * This class has been dynamically created using the Method2OperatorWizard
  * and usually should not be edited.
+ * This operator is a wrapper around 
+@see gov.anl.ipns.DisplayDevices.Displayable#setViewAttribute(gov.anl.ipns.DisplayDevices.IDisplayable,java.lang.String,java.lang.Object)
  */
 public class setViewAttribute extends GenericOperator{
 
@@ -87,7 +89,10 @@ public class setViewAttribute extends GenericOperator{
       StringBuffer S = new StringBuffer();
       S.append("@overview    "); 
       S.append("");
+      S.append("\r\n");
+      S.append(" This operator wraps the method gov.anl.ipns.DisplayDevices.Displayable#setViewAttribute\n");
       S.append("@algorithm    "); 
+
       S.append("");
       S.append("@assumptions    "); 
       S.append("");

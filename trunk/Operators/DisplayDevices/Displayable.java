@@ -52,6 +52,9 @@ import Command.*;
 /**
  * This class has been dynamically created using the Method2OperatorWizard
  * and usually should not be edited.
+ * 
+ *  This operator is a wrapper around 
+@see Operators.DisplayDevices.DisplayableUtil#getInstance(java.lang.Object,java.lang.String)
  */
 public class Displayable extends GenericOperator{
 
@@ -98,6 +101,8 @@ public class Displayable extends GenericOperator{
       S.append(" specified view_name. This IDisplayable object");
       S.append(" can then be passed to a DisplayDevice to actually");
       S.append(" print, display or save to a file.");
+      S.append("\r\n");
+      S.append(" This operator wraps the method Operators.DisplayDevices.DisplayableUtil#getInstance\n");
       S.append("@algorithm    "); 
       S.append("");
       S.append("@assumptions    "); 

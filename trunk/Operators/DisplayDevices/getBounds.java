@@ -44,6 +44,8 @@ import Command.*;
 /**
  * This class has been dynamically created using the Method2OperatorWizard
  * and usually should not be edited.
+ * This operator is a wrapper around 
+@see gov.anl.ipns.DisplayDevices.GraphicsDevice#getBounds(gov.anl.ipns.DisplayDevices.GraphicsDevice)
  */
 public class getBounds extends GenericOperator{
 
@@ -85,6 +87,8 @@ public class getBounds extends GenericOperator{
       StringBuffer S = new StringBuffer();
       S.append("@overview    "); 
       S.append("This method returns a Vector with two floats: width and height of a specific device.");
+      S.append("\r\n");
+      S.append(" This operator wraps the method gov.anl.ipns.DisplayDevices.GraphicsDevice#getBounds\n");
       S.append("@algorithm    "); 
       S.append("");
       S.append("@assumptions    "); 

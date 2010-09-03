@@ -48,6 +48,8 @@ import Command.*;
 /**
  * This class has been dynamically created using the Method2OperatorWizard
  * and usually should not be edited.
+ * This operator is a wrapper around 
+@see gov.anl.ipns.DisplayDevices.GraphicsDevice#setDeviceAttribute( gov.anl.ipns.DisplayDevices.GraphicsDevice ,java.lang.String,java.lang.Object)
  */
 public class setDeviceAttribute extends GenericOperator{
 
@@ -92,6 +94,8 @@ public class setDeviceAttribute extends GenericOperator{
       S.append("@overview    "); 
       S.append("This method will specify device specific attribute such as portrait/landscape,");
       S.append(" page size, file resolution, file format");
+      S.append("\r\n");
+      S.append(" This operator wraps the method gov.anl.ipns.DisplayDevices.GraphicsDevice#setDeviceAttribute\n");
       S.append("@algorithm    "); 
       S.append("");
       S.append("@assumptions    "); 

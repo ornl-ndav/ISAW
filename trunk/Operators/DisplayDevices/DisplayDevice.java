@@ -59,6 +59,8 @@ import Command.*;
 /**
  * This class has been dynamically created using the Method2OperatorWizard
  * and usually should not be edited.
+ * This operator is a wrapper around 
+@see gov.anl.ipns.DisplayDevices.GraphicsDevice#getInstance(java.lang.String,java.lang.String)
  */
 public class DisplayDevice extends GenericOperator{
 
@@ -108,6 +110,8 @@ public class DisplayDevice extends GenericOperator{
       S.append("@overview    "); 
       S.append("Open a DisplayDevice for sending graphs to a");
       S.append(" File, Printer, Screen or a Preview window.");
+      S.append("\r\n");
+      S.append(" This operator wraps the method gov.anl.ipns.DisplayDevices.GraphicsDevice#getInstance\n");
       S.append("@algorithm    "); 
       S.append("");
       S.append("@assumptions    "); 
