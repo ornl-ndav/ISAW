@@ -60,7 +60,11 @@ import gov.anl.ipns.Util.Sys.WindowShower;
 //import gov.anl.ipns.ViewTools.Components.AxisInfo;
 //import gov.anl.ipns.ViewTools.Components.IVirtualArray2D;
 import gov.anl.ipns.ViewTools.Components.VirtualArray2D;
-
+/**
+ * 
+ * @see DataSetTools.components.View.SANDWedgeViewer
+ *
+ */
 
 public class SWV2  extends GenericTOF_SAD{
 
