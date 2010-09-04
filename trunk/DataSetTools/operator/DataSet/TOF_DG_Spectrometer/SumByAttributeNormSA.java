@@ -92,6 +92,10 @@ import  DataSetTools.operator.DataSet.DSOpsImplementation;
   *  selected Data blocks with a specified attribute in a specified range
   *  with its solid angle and then summing the product and finally dividing 
   *  the resultant sum by the sum of the total solid angle in the specified range.
+  *  
+  *  @see DataSetTools.dataset.DataSet#getAttributeValue(String)
+  *  @see DataSetTools.dataset.AttrUtil
+  *  @see DataSetTools.dataset.DataSet#addData_entry(Data)
   */
 
 public class SumByAttributeNormSA extends    DS_TOF_DG_Spectrometer
