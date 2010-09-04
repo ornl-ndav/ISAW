@@ -89,6 +89,8 @@ import  DataSetTools.retriever.*;
  * must be along the x-axis.  In addition, it is assumed that the
  * XScale for the spectra represents the time-of-flight from the source to
  * the monitor.
+ * 
+ *  Basic operations are @see DataSetTools.math.tof_calc
  */
 
 public class MonitorTofToEnergy extends    XAxisConversionOp

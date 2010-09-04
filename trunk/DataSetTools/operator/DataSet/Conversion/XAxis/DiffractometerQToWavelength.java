@@ -87,6 +87,7 @@ import  DataSetTools.retriever.*;
  * This operator converts a Q DataSet for a Diffractometer, to
  * wavelength. The DataSet must contain spectra with attributes giving
  * the detector position.
+ *  Basic operations are @see DataSetTools.math.tof_calc
  */
 
 public class DiffractometerQToWavelength extends XAxisConversionOp{

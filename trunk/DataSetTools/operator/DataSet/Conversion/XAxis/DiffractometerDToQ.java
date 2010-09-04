@@ -99,6 +99,8 @@ public class DiffractometerDToQ extends XAxisConversionOp{
      * meaningful values for the parameters should be set ( using a
      * GUI ) before calling getResult() to apply the operator to the
      * DataSet this operator was added to.
+     * 
+     * Basic operations are @see DataSetTools.math.tof_calc
      */
     public DiffractometerDToQ(){
         super( "Convert to Q" );
