@@ -80,6 +80,7 @@ import java.util.Vector;
  * This operator is a small building block of an ISAW version of
  * A.J.Schultz's PEAKS program. This program takes a list of peaks and
  * calculates their centers using a centroid method.
+ * @see Util#centroid(Peak, DataSet, int[][])
  */
 public class CentroidPeaks extends GenericTOF_SCD implements HiddenOperator{
   private static final String     TITLE                 = "Centroid Peaks";

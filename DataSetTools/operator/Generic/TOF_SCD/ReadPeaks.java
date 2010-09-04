@@ -93,6 +93,7 @@ import javax.xml.parsers.*;
 /** 
  * This operator reads in an ASCII file and converts its contents into
  * a vector of Peak objects.
+ * @see Peak_new_IO#ReadPeaks_new(java.lang.String)
  */
 public class ReadPeaks extends GenericTOF_SCD implements HiddenOperator{
   private static final String TITLE       = "Read Peaks";

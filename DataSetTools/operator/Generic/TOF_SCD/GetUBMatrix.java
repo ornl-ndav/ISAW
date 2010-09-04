@@ -55,6 +55,8 @@ import Command.*;
 /**
  * This class has been dynamically created using the Method2OperatorWizard
  * and usually should not be edited.
+ * This operator is a wrapper around the  method @see DataSetTools.operator.Generic.TOF_SCD.GetUB#GetUBMatrix( java.util.Vector,float,float[])
+ * 
  */
 public class GetUBMatrix extends GenericOperator implements HiddenOperator{
 
@@ -98,6 +100,8 @@ public class GetUBMatrix extends GenericOperator implements HiddenOperator{
       StringBuffer S = new StringBuffer();
       S.append("@overview    "); 
       S.append("Automatically determines the UB matrix given a peaks file.");
+      S.append("\r\n");
+      S.append(" This operator wraps the method DataSetTools.operator.Generic.TOF_SCD.GetUB\n");
       S.append("@algorithm    "); 
       S.append("Uses a combination of autocorrelation and fraction of peaks that will fall on a plane within .2. The");
       S.append(" fraction is weighted twice the autocorrelation.");
