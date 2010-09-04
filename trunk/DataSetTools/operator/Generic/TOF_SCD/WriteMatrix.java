@@ -52,6 +52,7 @@ import Command.*;
 /**
  * This class has been dynamically created using the Method2OperatorWizard
  * and usually should not be edited.
+ * This operator is a wrapper around the  method @see DataSetTools.operator.Generic.TOF_SCD.Util#writeMatrix(String, float[][])
  */
 public class WriteMatrix extends GenericOperator implements HiddenOperator{
 
@@ -93,7 +94,8 @@ public class WriteMatrix extends GenericOperator implements HiddenOperator{
    public String getDocumentation(){
       StringBuffer S = new StringBuffer();
       S.append("@overview    "); 
-      S.append("Write out the orientation matrix and lattice parameters to the matrix file.");
+      S.append("Write out the orientation matrix and lattice parameters to the matrix file.");S.append("\r\n");
+      S.append(" This operator wraps the method DataSetTools.operator.Generic.TOF_SCD.Util#writeMatrix\n");
       S.append("@algorithm    "); 
       S.append("The lattice constants are calculated.  The errors are zero.");
       S.append("@assumptions    "); 

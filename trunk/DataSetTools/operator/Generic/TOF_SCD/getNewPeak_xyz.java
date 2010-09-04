@@ -64,6 +64,8 @@ import Command.*;
 /**
  * This class has been dynamically created using the Method2OperatorWizard
  * and usually should not be edited.
+ * 
+ * @see Peak_new
  */
 public class getNewPeak_xyz extends GenericOperator{
 

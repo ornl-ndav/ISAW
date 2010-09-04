@@ -53,6 +53,8 @@ import Command.*;
 /**
  * This class has been dynamically created using the Method2OperatorWizard
  * and usually should not be edited.
+ * This operator is a wrapper around the  method @see DataSetTools.operator.Generic.TOF_SCD.FindPeaks#findDetectorPeaks( DataSetTools.dataset.DataSet,int,int,int,int ,int,java.lang.String ,java.lang.String)
+ * 
  */
 public class findDetectorPeaks extends GenericOperator{
 
@@ -101,6 +103,8 @@ public class findDetectorPeaks extends GenericOperator{
       StringBuffer S = new StringBuffer();
       S.append("@overview    "); 
       S.append("This finds a bunch of peaks in a data set  for a given detector number.");
+      S.append("\r\n");
+      S.append(" This operator wraps the method DataSetTools.operator.Generic.TOF_SCD.FindPeaks#findDetectorPeaks\n");
       S.append("@algorithm    "); 
       S.append("");
       S.append("@assumptions    "); 

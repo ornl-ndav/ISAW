@@ -46,6 +46,7 @@ import Command.*;
 /**
  * This class has been dynamically created using the Method2OperatorWizard
  * and usually should not be edited.
+ * This operator is a wrapper around the  method @see DataSetTools.operator.Generic.TOF_SCD.Peak_new_IO#WritePeaks_new(java.lang.String,java.util.Vector, boolean)
  */
 public class WritePeaks_new extends GenericOperator implements HiddenOperator
 {
@@ -93,6 +94,8 @@ public class WritePeaks_new extends GenericOperator implements HiddenOperator
       S.append(" new SNS peaks file format, with calibration information and");
       S.append(" a table of detector position and orientation information at");
       S.append(" the start of the file.");
+      S.append("\r\n");
+      S.append(" This operator wraps the method DataSetTools.operator.Generic.TOF_SCD.Peak_new_IO.WritePeaks_new\n");
       S.append("@algorithm    "); 
       S.append("The Vector of peaks is scanned to find all detector grids");
       S.append(" used.  The list of detector grids is sorted by ID");
