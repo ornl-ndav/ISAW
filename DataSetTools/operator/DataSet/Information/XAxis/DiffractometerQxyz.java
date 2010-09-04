@@ -83,6 +83,8 @@ import  DataSetTools.retriever.*;
 /**
  *  This operator produces a string giving the values of Qx, Qy, Qz
  *  for a specific bin in a histogram, in the laboratory frame of reference.
+ *  
+ *  Basic routines are in @see DataSetTools.math.tof_calc
  */
 
 public class DiffractometerQxyz extends    XAxisInformationOp

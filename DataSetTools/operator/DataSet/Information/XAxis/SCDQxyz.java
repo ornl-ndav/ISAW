@@ -107,6 +107,9 @@ import  DataSetTools.operator.Parameter;
  *  diffractometer DataSet to produce a string giving the values of Qx, Qy, Qz
  *  for a specific bin in a histogram, in a frame of reference attached to the
  *  crystal, ( chi = 0, phi = 0 and omega = 0 ).
+ *  
+ *  
+ *  Basic routines are in @see DataSetTools.math.tof_calc
  */
 
 public class SCDQxyz extends  XAxisInformationOp 

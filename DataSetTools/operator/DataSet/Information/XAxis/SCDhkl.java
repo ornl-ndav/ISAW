@@ -84,6 +84,8 @@ import DataSetTools.retriever.*;
  *  This operator uses the Q-vector produced by SCDQxyz and the
  *  orientation matrix, UB, produced by blind to calculate the <hkl>
  *  of a given point.
+ *  
+ *  Basic routines are in @see DataSetTools.math.tof_calc
  */
 
 public class SCDhkl extends  XAxisInformationOp implements Serializable{
