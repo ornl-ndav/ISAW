@@ -82,6 +82,7 @@ import  DataSetTools.operator.Parameter;
   * in a DataSet
   *
   *  @see DS_Attribute 
+  *  @see DataSetTools.dataset.Data#setAttribute(Attribute)
   */
 
 public class SetDataAttribute extends    DS_Attribute 

@@ -48,6 +48,7 @@ import Command.*;
 /**
  * Gets a String listing the indices of all currently selected Data blocks
  * in this DataSet.
+ * @see DataSetTools.dataset.DataSet#getSelectedIndices()
  */
 
 public class GetSelectedIndices extends    DS_Attribute

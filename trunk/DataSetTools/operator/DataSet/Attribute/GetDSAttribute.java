@@ -81,6 +81,8 @@ import  DataSetTools.operator.Parameter;
   *  Allows the user to get attributes on a DataSet
   *
   *  @see DS_Attribute
+  *  @see DataSetTools.dataset.AttrUtil
+  *  @see DataSetTools.dataset.DataSet#getAttributeValue( java.lang.String)
   */
 
 public class GetDSAttribute extends  DS_Attribute 

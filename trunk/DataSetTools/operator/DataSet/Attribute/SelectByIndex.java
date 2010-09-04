@@ -72,6 +72,8 @@ import Command.*;
 /**
  * Selects or de-selects Data objects in a DataSet object based on 
  * their current position(index) in the DataSet.
+ * 
+ * @see DataSetTools.dataset.DataSet#setSelectFlagsByIndex(int[], boolean)
  */
 
 public class SelectByIndex extends    DS_Attribute

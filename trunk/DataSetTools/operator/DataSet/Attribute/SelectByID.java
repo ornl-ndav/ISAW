@@ -56,6 +56,8 @@ import Command.*;
 /**
  * Selects or de-selects Data objects in a DataSet object based on 
  * their current ID in the DataSet.
+ * 
+ * @see DataSetTools.dataset.DataSet#setSelectFlagsByID(int[],boolean)
  */
 
 public class SelectByID extends    DS_Attribute

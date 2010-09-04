@@ -81,6 +81,7 @@ import  DataSetTools.operator.Parameter;
   *  Allows the user to set attributes on a DataSet
   *
   *  @see DS_Attribute 
+  *  @see DataSetTools.dataset.DataSet#setAttribute(Attribute)
   */
 
 public class SetDSAttribute extends    DS_Attribute 
