@@ -91,6 +91,10 @@ import  DataSetTools.operator.Parameter;
   * This operator removes (or keeps) Data blocks with a specified attribute 
   * in a specified range.  The operator can either make a new DataSet, or
   * modify the current DataSet.
+  * 
+  * 
+  * @see DataSetTools.dataset.DataSet#removeData_entries(int[])
+  * @see DataSetTools.dataset.DataSet#notifyIObservers(Object)
   */
 
 public class DeleteByAttribute extends    DS_EditList 

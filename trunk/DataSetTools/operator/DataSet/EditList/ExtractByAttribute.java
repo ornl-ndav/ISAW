@@ -70,6 +70,10 @@ import  DataSetTools.operator.Parameter;
 /**
   * This operator forms a new data set by selecting Data blocks with a 
   * specified attribute in a specified range.
+  * 
+  * @see DataSetTools.dataset.DataSet#addData_entry(Data)
+  * @see DataSetTools.dataset.Data#clone()
+  * @see DataSetTools.dataset.DataSet#notifyIObservers(Object)
   */
 
 public class ExtractByAttribute extends    DS_EditList 

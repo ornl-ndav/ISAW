@@ -75,6 +75,9 @@ import  DataSetTools.operator.Parameter;
 /**
   * This operator sorts a DataSet based on multiple attributes of the Data 
   * entries.
+  * 
+  * @see DataSetTools.dataset.DataSet#Sort(String, boolean, int)
+  * @see DataSetTools.dataset.DataSet#notifyIObservers(Object)
   */
 
 public class DataSetMultiSort  extends    DS_EditList 

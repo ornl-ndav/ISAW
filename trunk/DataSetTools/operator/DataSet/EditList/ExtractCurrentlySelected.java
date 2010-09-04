@@ -63,6 +63,9 @@ import DataSetTools.operator.Parameter;
 * The Command is <B>ExtSel</b>. <P>
 *This Title refers to this operator in menu bars.  The Command refers to this
 * operator in Scripts.
+* 
+* @see DataSetTools.dataset.DataSet#addData_entry(Data)
+* @see DataSetTools.dataset.DataSet#getSelectedIndices()
 */ 
 public class ExtractCurrentlySelected extends DS_EditList
   {

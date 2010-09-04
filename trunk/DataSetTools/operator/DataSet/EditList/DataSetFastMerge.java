@@ -66,6 +66,9 @@ public class DataSetFastMerge extends DS_EditList
    * list of operators of a particular DataSet.  Also, meaningful values for
    * the parameters should be set ( using a GUI ) before calling getResult()
    * to apply the operator to the DataSet this operator was added to.
+   * 
+   * @see DataSetTools.dataset.DataSet#addData_entry(Data)
+  *   @see DataSetTools.dataset.DataSet#notifyIObservers(Object)
    */
 
   public DataSetFastMerge( )

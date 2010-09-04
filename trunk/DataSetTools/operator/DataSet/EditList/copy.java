@@ -9,7 +9,8 @@ import gov.anl.ipns.Util.Messaging.*;
 /**
  * @author MikkelsonR
  *
- *
+ *  @see DataSetTools.dataset.DataSet#copy(DataSet)
+ *  @see DataSetTools.dataset.DataSet#notifyIObservers(Object)
  */
 public class copy extends DS_EditList{
 
