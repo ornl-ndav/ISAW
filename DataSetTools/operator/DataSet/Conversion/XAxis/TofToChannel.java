@@ -81,6 +81,8 @@ import  DataSetTools.retriever.*;
  * DataSet must contain spectra with an attribute giving the detector position.
  * In addition, it is assumed that the XScale for the spectra represents the
  * time-of-flight from the sample to the detector.
+ * 
+ *  Basic operations are @see DataSetTools.math.tof_calc
  */
 
 public class TofToChannel extends  XAxisConversionOp

@@ -46,6 +46,8 @@ import  DataSetTools.instruments.*;
  * This operator converts a neutron time-of-flight from D-spacing to
  * time-of-flight.  The DataSet must contain spectra with attributes 
  * giving the detector position and source to sample distance.  
+ * 
+ * Basic operations are @see DataSetTools.math.tof_calc
  */
 
 public class DiffractometerDToTof extends    XAxisConversionOp 
