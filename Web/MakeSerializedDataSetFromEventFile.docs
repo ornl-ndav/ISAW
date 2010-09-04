@@ -1,0 +1,28 @@
+ Here are the parameters to web service for loading file:
+
+OpName     MakeSerializedDataSetFromEventFile
+
+EventFile  /SNS/PG3/2009_3_11_SCI/3/527/preNeXus/PG3_527_neutron_event.dat
+
+or InstName
+   RunNum
+   Filter
+
+AxisType   d-Spacing
+
+FirstEvent 0.0
+
+LastEvent  1.0E8
+
+MinX       0.2
+
+MaxX       3.5
+
+IsLog      true
+
+FirstStep  2.0E-4
+
+NumBins    5000
+
+Output     /SNS/users/eu7/diamond.isd
+
