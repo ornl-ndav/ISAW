@@ -93,6 +93,7 @@ import java.util.*;
  * the Save gsas File menu option in ISAW.  The Title in Menu's that refers 
  * to this is <B>Save As gsas</b>. The Command in Scripts used to refer to 
  * this operation is <B>SaveGSAS</b>.
+ * @see DataSetTools.writer.GsasWriter
  */
 public class WriteGSAS extends GenericSave{
   public WriteGSAS(){

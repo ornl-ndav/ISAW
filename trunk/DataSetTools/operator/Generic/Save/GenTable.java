@@ -56,6 +56,7 @@ import DataSetTools.dataset.*;
 
 /**
  * This operator is a wrapper around the advanced table view. 
+ * @see #calcualte(DataSetTools.dataset.DataSet, java.util.Vector,gov.anl.ipns.SpecialStrings.MediaList,gov.anl.ipns.SpecialStrings.SaveFileString, java.lang.String,gov.anl.ipns.SpecialStrings.IntListString)
  *
  */
 
@@ -109,6 +110,8 @@ public class GenTable implements Wrappable, IWrappableWithCategoryList {
     s.append("advanced table view.\n The order parameter is legitimate(starts ");
     s.append("with H, others can be F,T, G(or R and C). \",\" separates fields");
     s.append("enumerated down columns from those enumerated across columns");
+    s.append("\r\n");
+    s.append(" This operator wraps the calculate method with arguments in this class\n"); 
                                                                               //
     s.append("@algorithm Uses advanced table view methods ");
     s.append("@param DS the data set with the information ");
