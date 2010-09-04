@@ -43,6 +43,7 @@ import Command.*;
 /**
  * This class has been dynamically created using the Method2OperatorWizard
  * and usually should not be edited.
+ * This operator is a wrapper around the  method @see gov.anl.ipns.Util.Sys.RunExecInteractive#InterActiveExec( java.lang.String,java.lang.String,java.util.Vector,java.lang.String ,java.lang.String)
  */
 public class InterActiveExec extends GenericOperator{
 
@@ -95,6 +96,9 @@ public class InterActiveExec extends GenericOperator{
       StringBuffer S = new StringBuffer();
       S.append("@overview    "); 
       S.append("Creates a window to execute non-graphical applications. It displays output from the executable and sends input to the executable.");
+
+      S.append("\r\n");
+      S.append(" This operator wraps the method gov.anl.ipns.Util.Sys.RunExecInteractive#InterActiveExec\n");
       S.append("@algorithm    "); 
       S.append("Creates a process from the executable, causes text output from executable to appear in a text area.");
       S.append(" ");
