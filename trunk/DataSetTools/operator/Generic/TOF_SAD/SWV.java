@@ -61,7 +61,11 @@ import DataSetTools.components.View.*;
 import gov.anl.ipns.Parameters.LoadFilePG;
 import gov.anl.ipns.Util.Sys.WindowShower;
 
-
+/**
+ * 
+ * @see DataSetTools.components.View.SANDWedgeViewer
+ *
+ */
 public class SWV  extends GenericTOF_SAD{
 
    public static final String Title = "Sand Wedge Viewer";
