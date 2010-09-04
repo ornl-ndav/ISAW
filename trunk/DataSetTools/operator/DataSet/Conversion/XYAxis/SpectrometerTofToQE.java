@@ -150,6 +150,8 @@ import  DataSetTools.util.*;
   *  (Q,E) bins.
   *
   *  @see XYAxisConversionOp
+  *  
+  *   Basic operations are @see DataSetTools.math.tof_calc
   */
 
 public class SpectrometerTofToQE extends    XYAxisConversionOp
