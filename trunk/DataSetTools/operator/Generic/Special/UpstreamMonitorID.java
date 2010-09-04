@@ -77,6 +77,7 @@ import DataSetTools.retriever.RunfileRetriever;
 /**
  * This operator determines what the group ID of the upstream monitor
  * is for a given monitor dataset.
+ * @see    MonitorID_Calc#UpstreamMonitorID( int )
  */
 
 public class UpstreamMonitorID extends    GenericSpecial {
@@ -157,6 +158,9 @@ public class UpstreamMonitorID extends    GenericSpecial {
       s.append("to be a monitor.  An upstream monitor is assumed ");
       s.append("to be before the sample, so its position is ");
       s.append("essentially at 180 degrees from the beam direction. /n");
+      s.append("\r\n");
+      s.append(" This operator wraps the method DataSetTools.operator.Generic.Special.MonitorID_Calc#UpstreamMonitorID\n");
+
 
       s.append("@assumptions The DataSet contains only monitor Data and ");
       s.append("at least one upstream monitor exists in the DataSet. ");

@@ -71,6 +71,7 @@ import  DataSetTools.retriever.RunfileRetriever;
 /**
  * This operator determines what the group ID of the downstream monitor
  * is for a given monitor dataset.
+ * @see    MonitorID_Calc#DownstreamMonitorID( int )
  */
 
 public class DownstreamMonitorID extends GenericSpecial {
@@ -149,6 +150,8 @@ public class DownstreamMonitorID extends GenericSpecial {
       s.append("to be a monitor.  A downstream monitor is assumed ");
       s.append("to be after the sample, so its position is ");
       s.append("essentially at 0 degrees along the beam direction. /n");
+      s.append("\r\n");
+      s.append(" This operator wraps the method DataSetTools.operator.Generic.Special.MonitorID_Calc#DownstreamMonitorID\n");
 
       s.append("@assumptions The DataSet contains only monitor Data and ");
       s.append("at least one downstream monitor exists in the DataSet. ");
