@@ -76,7 +76,11 @@ import  DataSetTools.operator.*;
 
 /**
   *  Remove Data blocks that are marked as selected, or that are not marked
-  *  as selected, depending on the parameters. 
+  *  as selected, depending on the parameters.
+  *  
+  * @see DataSetTools.dataset.DataSet#getSelectedIndices() 
+  * @see DataSetTools.dataset.DataSet#removeData_entries(int[])
+  * @see DataSetTools.dataset.DataSet#notifyIObservers(Object)
   */
 
 public class DeleteCurrentlySelected  extends    DS_EditList 

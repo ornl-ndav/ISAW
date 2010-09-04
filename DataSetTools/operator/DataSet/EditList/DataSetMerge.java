@@ -85,6 +85,9 @@ import  DataSetTools.operator.*;
   * DataSets have the same X and Y units.  If a * DataSet with N Data
   * blocks is merged with a DataSet with M Data blocks, the new DataSet
   *  will have N+M Data blocks.
+  *  
+  *   @see DataSetTools.dataset.DataSet#addData_entry(Data)
+  *   @see DataSetTools.dataset.DataSet#notifyIObservers(Object)
   */
 
 public class DataSetMerge extends DS_EditList 
