@@ -89,7 +89,11 @@ import DataSetTools.viewer.*;
 
 /**
  * Operator to load specific IDs from a specific DataSet from a NeXus file
- * or IPNS runfile
+ * or IPNS runfile.
+ * 
+ * This operator uses @see Command.ScriptUtil#getRetriever(java.lang.String)
+ *    to get the retriever then @see DataSetTools.retriever.Retriever#getDataSet(int)
+ *    to retrieve the specified data set.
  *
  * @see DataSetTools.operator.Operator
  */

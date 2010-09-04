@@ -95,6 +95,8 @@ import java.awt.*;
  * Operator to load all data sets from one IPNS runfile
  *
  * @see DataSetTools.operator.Operator
+ *  @see Command.ScriptUtil#getRetriever(java.lang.String)
+ *  @see DataSetTools.retriever.Retriever#getDataSet(int) 
  */
 
 public class LoadSelDataSets extends    GenericLoad 
