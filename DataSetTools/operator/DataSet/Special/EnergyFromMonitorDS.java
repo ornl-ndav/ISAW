@@ -67,6 +67,9 @@ import  DataSetTools.retriever.*;
   *  This operator calculates the incident energy of a neutron beam for a
   *  chopper spectrometer given a DataSet containing the Data blocks from
   *  two beam monitors.
+  *  
+  *  
+ *  Basic routines are in @see DataSetTools.math.tof_calc
   */
 
 public class  EnergyFromMonitorDS  extends    DS_Special

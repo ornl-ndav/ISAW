@@ -83,6 +83,8 @@ import  DataSetTools.retriever.*;
   *  length (extent_factor * FWHM) centered on the peak.
   *  This operator just produces a numerical result that is displayed
   *  in the operator dialog box.
+  *  
+ *  Basic routines are in @see DataSetTools.math.tof_calc
   */
 
 public class MonitorPeakArea  extends    DS_Special
