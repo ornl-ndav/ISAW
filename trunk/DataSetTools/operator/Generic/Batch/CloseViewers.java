@@ -57,6 +57,8 @@ import DataSetTools.dataset.*;
 /** 
  * This operator returns a string representing the current date and
  * time.
+ * This operator is a wrapper around the method @see  DataSetTools.dataset.DataSet#notifyIObservers(java.lang.Object)
+ *   where the argument is @see  gov.anl.ipns.Util.Messaging.IObserver#CLOSE_VIEWERS
  */
 public class CloseViewers extends GenericBatch{
   private static final String     TITLE                 = "CloseViewers";
@@ -87,7 +89,10 @@ public class CloseViewers extends GenericBatch{
   {
     StringBuffer Res = new StringBuffer();
     Res.append("@overview This operator closes all of the viewers ");
-    Res.append("associated with a given data set.\n");
+    Res.append("associated with a given data set.\n");  
+    Res.append("\r\n");
+    Res.append(" This operator wraps the method DataSetTools.dataset.DataSet#notifyIObservers\n");
+    Res.append(" Use  gov.anl.ipns.Util.Messaging.IObserver.CLOSE_VIEWERS for the argument\n");
     Res.append("@algorithm Given a data set, all associated viewers ");
     Res.append("will be closed.\n");
     Res.append("@param ds\n");

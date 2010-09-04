@@ -48,6 +48,7 @@ import java.util.*;
 /** 
  * This operator returns an integer representing the time, in milliseconds,
  * since ISAW was started.
+ * This operator uses System.currentTimeMillis() to measure time.
  */
 public class GetTime extends GenericBatch
 {
