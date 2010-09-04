@@ -59,6 +59,8 @@ import  DataSetTools.operator.Generic.Batch.GenericBatch;
  * if this is the last operator executed in a script or is the argument of the 
  * script Return statement. This is equivalent to pressing the Exit button in 
  * the JParametersDialog box.
+ * 
+ * This operator is just returns an instance of @see ExitClass
  */
 
 public class ExitDialog extends  GenericBatch 
@@ -84,6 +86,7 @@ public class ExitDialog extends  GenericBatch
     StringBuffer Res = new StringBuffer();
     Res.append("@overview This operator is equivalent to pressing the Exit ");
     Res.append("button in the JParametersDialog box.\n");
+    Res.append( "This operator just returns an instance of DataSetTools.operator.Generic.Batch.ExitClass\n" );
     Res.append("@algorithm An instance of ExitClass is created ");
     Res.append("and returned.\n");
     Res.append("@return an Object containing a new ExitClass instance\n"); 

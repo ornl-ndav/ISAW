@@ -44,7 +44,11 @@ package DataSetTools.operator.Generic.Batch;
 
 import DataSetTools.operator.*;
 import java.util.Vector;
-
+/**
+ * This operator just returns the result of System.getProperty("file.separator")
+ * @author ruth
+ *
+ */
 public class fileSep extends GenericBatch{
 
   /**
