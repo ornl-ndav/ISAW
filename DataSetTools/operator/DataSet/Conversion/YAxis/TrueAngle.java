@@ -98,6 +98,7 @@ import  DataSetTools.retriever.*;
   *  to produce a new DataSet.
   *
   *  @see YAxisConversionOp
+  *  @see DataSetTools.dataset.Data#resample(XScale, int)
   *
   */
 
