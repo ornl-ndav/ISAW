@@ -83,6 +83,9 @@ import  DataSetTools.retriever.*;
   *  This operator focuses the incident spectrum from a beam monitor to a
   *  bank of detectors at a specified total flight path length and range
   *  of angles. This based on the FORTRAN SUBROUTINE inc_spec_focus from IPNS.
+  *  
+  *  
+ *  Basic routines are in @see DataSetTools.math.tof_calc
   */
 
 public class  FocusIncidentSpectrum  extends   DS_Special
