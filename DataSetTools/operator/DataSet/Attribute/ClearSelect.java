@@ -51,6 +51,8 @@ import java.util.Vector;
 /**
  *  Sets all selection flags to "false" for all Data blocks in this
  *  DataSet.
+ *  
+ *  @see DataSetTools.dataset.DataSet#clearSelections()
  */
 
 public class ClearSelect
@@ -95,6 +97,7 @@ public class ClearSelect
        StringBuffer Res = new StringBuffer();
        Res.append("@overview  This operator clears all the select flags " );
        Res.append("on all of the Data blocks of the DataSet.");
+       Res.append( "This operator invokes the method DataSetTools.dataset.DataSet#clearSelections()\n");
 
        Res.append("@param ds\n");
        

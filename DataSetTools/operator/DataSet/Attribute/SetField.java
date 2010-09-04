@@ -82,6 +82,14 @@ import  DataSetTools.operator.Parameter;
   * This operator sets a DataSet field 
   *
   *  @see DS_Attribute
+  *  
+  *  @see DataSetTools.dataset.DataSet#setTitle()
+  *  @see DataSetTools.dataset.DataSet#setX_label()
+  *  @see DataSetTools.dataset.DataSet#setX_units()
+  *  @see DataSetTools.dataset.DataSet#setY_label()
+  *  @see DataSetTools.dataset.DataSet#setY_units()
+  *  @see DataSetTools.dataset.DataSet#setPointedAtIndex(int)
+  *  @see DataSetTools.dataset.Data#setSelected(boolean)
   */
 
 public class SetField extends    DS_Attribute 

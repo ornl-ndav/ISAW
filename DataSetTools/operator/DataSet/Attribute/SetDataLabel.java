@@ -79,6 +79,8 @@ import  DataSetTools.operator.*;
   * is empty, then the label is applied for all groups in the DataSet.  If
   * the label is the name of an attribute, then the attribute's toString()
   * method will be used for the label.
+  * 
+  * @see DataSetTools.dataset.Data#setLabel(String)
   */
 
 public class SetDataLabel extends    DS_Attribute 

@@ -79,6 +79,7 @@ import  DataSetTools.operator.Parameter;
   *  Sets an attribute value on ALL Data blocks in a DataSet 
   *
   *  @see DS_Attribute
+  *  @see DataSetTools.dataset.Data#setAttribute(Attribute)
   */
 
 public class SetDSDataAttributes extends    DS_Attribute
