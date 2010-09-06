@@ -28,6 +28,7 @@ import EventTools.ShowEventsApp.Command.Commands;
 import EventTools.ShowEventsApp.Command.DrawingOptionsCmd;
 import EventTools.ShowEventsApp.Command.SelectPointCmd;
 import EventTools.ShowEventsApp.Command.LoadEventsCmd;
+import EventTools.ShowEventsApp.Command.FindPeaksCmd;
 
 import SSG_Tools.Viewers.JoglPanel;
 import SSG_Tools.SSG_Nodes.SimpleShapes.*;
@@ -50,6 +51,8 @@ public class EventViewHandler implements IReceiveMessage, IhasWindowClosed
   private Rectangle          PanelOrig;
   private float[][]          orientation_matrix = null;
 
+  private float              MARK_SIZE = .2f;
+
   public EventViewHandler( MessageCenter message_center,
                            MessageCenter view_message_center )
   {
@@ -65,6 +68,7 @@ public class EventViewHandler implements IReceiveMessage, IhasWindowClosed
     message_center.addReceiver( this, Commands.SET_COLOR_SCALE );
     message_center.addReceiver( this, Commands.SET_ORIENTATION_MATRIX );
     message_center.addReceiver( this, Commands.SELECT_POINT );
+    message_center.addReceiver( this, Commands.FIND_PEAKS );
     message_center.addReceiver( this, Commands.MARK_PEAKS );
     message_center.addReceiver( this, Commands.MARK_INDEXED_PEAKS );
 
@@ -179,17 +183,29 @@ public class EventViewHandler implements IReceiveMessage, IhasWindowClosed
          SelectPointCmd cmd = (SelectPointCmd)val;
 
          Vector3D position = cmd.getQ_vec();
-         int POINT_SIZE = 50; 
+         float point_size = 5 * MARK_SIZE; 
 
-         events_panel.addSelectedPointMark( position, POINT_SIZE,
+         events_panel.addSelectedPointMark( position, point_size,
                                             Polymarker.CROSS, Color.RED );
          events_panel.updateDisplay();
        }
     }
+    else if ( message.getName().equals( Commands.FIND_PEAKS ) )
+    {
+                                        // just record new size choice if
+                                        // requested.
+      Object val = message.getValue();
+      if ( val instanceof FindPeaksCmd )
+      {
+         FindPeaksCmd cmd = (FindPeaksCmd)val;
+         if ( cmd.getMarkPeaks() )
+           MARK_SIZE = cmd.getMarkSize();
+      }
+      return false;
+    }
     else if ( message.getName().equals( Commands.MARK_PEAKS ) )
     {
-       int MARK_SIZE = 10;
-       int INDEX_MARK_SIZE = 16;
+       float mark_size = MARK_SIZE;
        Object val = message.getValue();
        if ( val == null )
          return(false);
@@ -209,7 +225,7 @@ public class EventViewHandler implements IReceiveMessage, IhasWindowClosed
              float qz = (float)(q_arr[2] * 2 * Math.PI);
              verts[i] = new Vector3D( qx, qy, qz );
            }
-           events_panel.addMarkers( verts, MARK_SIZE, 
+           events_panel.addMarkers( verts, mark_size, 
                                     Polymarker.BOX, Color.WHITE );
            events_panel.updateDisplay();
          }
@@ -224,7 +240,7 @@ public class EventViewHandler implements IReceiveMessage, IhasWindowClosed
     }
     else if ( message.getName().equals( Commands.MARK_INDEXED_PEAKS ) )
     {
-       int INDEX_MARK_SIZE = 18;
+       float index_mark_size = 1.8f * MARK_SIZE;
        Object val = message.getValue();
        if ( val == null )
          return(false);
@@ -254,13 +270,6 @@ public class EventViewHandler implements IReceiveMessage, IhasWindowClosed
                  hkl[2] = Math.round( peak.l() );
                  float[] qxyz = LinearAlgebra.mult( orientation_matrix, hkl );
 
-/*               System.out.printf( "HKL = %4.0f %4.0f %4.0f ",
-                                    hkl[0], hkl[1], hkl[2] );
-                 System.out.printf( " Peak QXY = %6.2f  %6.2f  %6.2f ",
-                                    qx, qy, qz );
-                 System.out.printf( " Mapped QXY = %6.2f  %6.2f  %6.2f\n",
-                                    qxyz[0], qxyz[1], qxyz[2] );
-*/
                  indexed_peaks.add( new Vector3D( qx, qy, qz ) );
                  indexed_peaks.add( new Vector3D( qxyz[0], qxyz[1], qxyz[2] ));
                }
@@ -270,7 +279,7 @@ public class EventViewHandler implements IReceiveMessage, IhasWindowClosed
              Vector3D[] verts = new Vector3D[ indexed_peaks.size() ];
              for ( int i = 0; i < verts.length; i++ )
                verts[i] = (Vector3D)indexed_peaks.elementAt(i);
-             events_panel.addIndexMarkers( verts, INDEX_MARK_SIZE,
+             events_panel.addIndexMarkers( verts, index_mark_size,
                                          Polymarker.PLUS, Color.YELLOW );
              events_panel.updateDisplay();
            }
@@ -325,7 +334,7 @@ public class EventViewHandler implements IReceiveMessage, IhasWindowClosed
   public class  MouseClickListener extends MouseAdapter
   {
     JoglPanel my_panel;
-    int       PMARK_SIZE = 25;
+    float     pmark_size = 2.5f * MARK_SIZE;
 
     public MouseClickListener( JoglPanel panel )
     {
@@ -342,7 +351,7 @@ public class EventViewHandler implements IReceiveMessage, IhasWindowClosed
         Vector3D point = my_panel.pickedPoint( x, y );
        // System.out.println("3D point = " + point );
 
-        Vector3D size = new Vector3D( PMARK_SIZE, PMARK_SIZE, PMARK_SIZE );
+        Vector3D size = new Vector3D( pmark_size, pmark_size, pmark_size );
         SelectPointCmd value = new SelectPointCmd( point, size );
         Message message = new Message( Commands.SELECT_POINT,
                                        value, true, true );
