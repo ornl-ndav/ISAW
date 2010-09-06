@@ -57,9 +57,8 @@ public class findPeaksPanel extends    JPanel
    private JTextField         maxPeaksTxt;
    private JTextField         minPeakTxt;
 
-   private JCheckBox          smoothDataCbx;
-
    private JCheckBox          markPeaksCbx;
+   private JTextField         markSizeTxt;
 
    private JCheckBox          showPeakImagesCbx;
    private JTextField         imageSizeTxt;
@@ -83,12 +82,11 @@ public class findPeaksPanel extends    JPanel
       this.add(buildMaxPeaks());
       this.add(buildMinPeaks());
 
-      this.add(buildSmoothDataCheckBox());
-
       this.add(buildMarkPeaksCheckBox());
+      this.add(buildPeakMarkSizePanel());
 
       this.add(buildShowPeakImageCheckBox());
-      this.add(buildPeakSizePanel());
+      this.add(buildPeakImageSizePanel());
       this.add(buildNumSlicesPanel());
 
       this.add(buildLogPanel());
@@ -152,29 +150,6 @@ public class findPeaksPanel extends    JPanel
 
 
    /**
-    * Builds the panel holding the smooth data checkbox.
-    * 
-    * @return panel with smooth data checkbox
-    */
-   private JPanel buildSmoothDataCheckBox()
-   {
-      JPanel panel = new JPanel();
-      panel.setLayout(new GridLayout(1,2));
-
-      JLabel filler = new JLabel();
-
-      smoothDataCbx = new JCheckBox("Smooth Data?");
-      smoothDataCbx.setSelected(false);
-      smoothDataCbx.addActionListener(new peaksListener());
-
-      panel.add(filler);
-      panel.add(smoothDataCbx);
-
-      return panel;
-   }
-
-
-   /**
     * Builds the panel holding mark peaks checkbox.
     * 
     * @return panel with mark peaks checkbox
@@ -192,6 +167,30 @@ public class findPeaksPanel extends    JPanel
 
       panel.add(filler);
       panel.add(markPeaksCbx);
+
+      return panel;
+   }
+
+
+   /**
+    * Builds the panel holding the size of Marks for peaks.
+    * 
+    * @return panel with label and textfield for mark size.
+    */
+   private JPanel buildPeakMarkSizePanel()
+   {
+      JPanel panel = new JPanel();
+      panel.setLayout(new GridLayout(1,2));
+
+      JLabel peakSizeLbl = new JLabel("Mark Size ( " +
+                                   FontUtil.INV_ANGSTROM+", 2"+
+                                   FontUtil.PI + "/d )");
+      String defaultPeakSize = "0.20";
+      markSizeTxt = new JTextField(defaultPeakSize);
+      markSizeTxt.setHorizontalAlignment(JTextField.RIGHT);
+
+      panel.add(peakSizeLbl);
+      panel.add(markSizeTxt);
 
       return panel;
    }
@@ -225,7 +224,7 @@ public class findPeaksPanel extends    JPanel
     * 
     * @return panel with peak image region size 
     */
-   private JPanel buildPeakSizePanel()
+   private JPanel buildPeakImageSizePanel()
    {
       JPanel panel = new JPanel();
       panel.setLayout(new GridLayout(1,2));
@@ -343,6 +342,23 @@ public class findPeaksPanel extends    JPanel
          return false;
       }
 
+
+      try
+      {
+         Float.parseFloat(markSizeTxt.getText());
+      }
+      catch (NumberFormatException nfe)
+      {
+         String error = "Mark size in Q must be a valid float!";
+         JOptionPane.showMessageDialog( null,
+                                        error,
+                                       "Invalid Input",
+                                        JOptionPane.ERROR_MESSAGE );
+         return false;
+      }
+
+
+
       try
       {
          Float.parseFloat(imageSizeTxt.getText());
@@ -389,8 +405,9 @@ public class findPeaksPanel extends    JPanel
             FindPeaksCmd findPeaksCmd = new FindPeaksCmd(
                   Integer.parseInt(maxPeaksTxt.getText()), 
                   Integer.parseInt(minPeakTxt.getText()),
-                  smoothDataCbx.isSelected(),
+                  false,
                   markPeaksCbx.isSelected(),
+                  Float.parseFloat(markSizeTxt.getText()),
                   showPeakImagesCbx.isSelected(),
                   Float.parseFloat(imageSizeTxt.getText()),
                   Integer.parseInt(maxSliceOffsetTxt.getText()),

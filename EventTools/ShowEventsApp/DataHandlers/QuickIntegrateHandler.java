@@ -244,7 +244,7 @@ public class QuickIntegrateHandler implements IReceiveMessage
     else if ( message.getName().equals(Commands.SCAN_INTEGRATED_INTENSITIES) )
     {
       if ( histogram != null )
-        MakePeakQList();
+        MakePeakQList( false );
       else
         send_stats( ZEROS );
     }
@@ -260,7 +260,7 @@ public class QuickIntegrateHandler implements IReceiveMessage
       if ( obj != null && obj instanceof float[] )
         run_info = (float[])obj;
 
-      MakePeakQList();
+      MakePeakQList( true );
 
       if ( integrated_peaks.size() > 0 )
       {
@@ -290,7 +290,7 @@ public class QuickIntegrateHandler implements IReceiveMessage
   }
 
 
-  private void MakePeakQList()
+  private void MakePeakQList( boolean mark_integrated_peaks )
   {
     if ( orientation_matrix != null && histogram != null )
     {
@@ -333,24 +333,15 @@ public class QuickIntegrateHandler implements IReceiveMessage
               integrated_peaks.add( peak );
 
               peak_IsigI.add( int_vals );
-
-//            System.out.print( peak );
-//            System.out.printf("  %8.2f  %8.2f\n",int_vals[0],int_vals[1]);
             }
           }
 
-      Message mark_peaks = new Message( Commands.MARK_PEAKS,
-                                        peakQs, true, true );
-      message_center.send( mark_peaks );
-/*
-      System.out.println("Used "+ steps_per_MI +" steps per Miller index");
-      System.out.printf("Time to integrate = %6.0fms\n",
-                         (System.nanoTime() - start)/1e6 );
-      System.out.println("Integrated " + level_counts[0] + " peaks.");
-      for ( int i = 1; i < levels.length; i++ )
-        System.out.println("There were " + level_counts[i] +
-                           " with I/sigI >= " + levels[i] );
-*/
+      if ( mark_integrated_peaks )
+      {
+        Message mark_peaks = new Message( Commands.MARK_PEAKS,
+                                          peakQs, true, true );
+        message_center.send( mark_peaks );
+      }
       send_stats( level_counts );
     }
   }

@@ -239,7 +239,7 @@ public class SlicedEventsPanel
 
 
   public void addSelectedPointMark( Vector3D point,
-                                    int      size,
+                                    float    size,
                                     int      type,
                                     Color    color )
   {
@@ -252,7 +252,7 @@ public class SlicedEventsPanel
 
 
   public void addMarkers( Vector3D[] verts,
-                          int        size,
+                          float      size,
                           int        type,
                           Color      color )
   {
@@ -287,7 +287,7 @@ public class SlicedEventsPanel
 
 
   public void addIndexMarkers( Vector3D[] verts,
-                               int        size,
+                               float      size,
                                int        type,
                                Color      color )
   {

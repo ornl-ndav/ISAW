@@ -248,7 +248,7 @@ public class HistogramHandler implements IReceiveMessage
     else if ( message.getName().equals(Commands.FIND_PEAKS) )
     {
       Object val = message.getValue();
-      if ( val instanceof FindPeaksCmd )  
+      if ( val != null && val instanceof FindPeaksCmd )  
       {
         FindPeaksCmd cmd = (FindPeaksCmd)message.getValue();
 
