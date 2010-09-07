@@ -521,8 +521,6 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
       for ( int col = 1; col <= num_cols; col++ )
         raw_data[row-1][col-1] = grid.getData_entry( row, col ).getY_values();
 
-    int[] histogram  = new int[10000];
-
                                              // Get the list of rows to use
     if( PixelRow == null || PixelCol.trim().length() < 1 )
        PixelRow ="1:"+ num_rows;
@@ -551,7 +549,6 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
                                                              col_list,
                                                              minTimeChan,
                                                              maxTimeChan,
-                                                             histogram,
                                                              log );
 
     Vector result    = new Vector();

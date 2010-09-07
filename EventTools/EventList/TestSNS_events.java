@@ -386,8 +386,6 @@ public class TestSNS_events
      for ( int page = 0; page < NUM_BINS; page++ )
        histogram_array[page] = histogram.pageSlice( page );
 
-     int[] val_histogram = new int[10000];
-     
      int[] row_list = new int[NUM_BINS];
      int[] col_list = new int[NUM_BINS];
      for ( int k = 0; k < NUM_BINS; k++ )
@@ -405,7 +403,6 @@ public class TestSNS_events
                                                         col_list,
                                                         0,
                                                         NUM_BINS-1,
-                                                        val_histogram,
                                                         log );
 
     String        log_file = "/home/dennis/Test_" + NUM_BINS + ".log"; 

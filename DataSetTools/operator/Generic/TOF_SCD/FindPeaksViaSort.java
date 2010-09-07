@@ -36,6 +36,7 @@ package DataSetTools.operator.Generic.TOF_SCD;
 
 import java.util.*;
 import gov.anl.ipns.Util.Numeric.*;
+import EventTools.Histogram.UniformEventBinner;
 
 public class FindPeaksViaSort 
 {
@@ -482,8 +483,8 @@ public class FindPeaksViaSort
 
   /**
    *  Find the peaks in the three dimension array of SCD data.  
+
    *  NOTE: We assume data stored as raw_data[row][col][channel] !
-   *        Histogram must be allocated array of 10000 ints !
    *  
    *  @param  raw_data        The 3D array of data from one detector
    *  @param  do_smoothing    If true, the data will be smoothed by 
@@ -496,7 +497,13 @@ public class FindPeaksViaSort
    *                          returned.
    *  @param  threshold       Value that must be exceeded to consider a
    *                          bin to be a possible peak duing the initial 
-   *                          scan through the data.
+   *                          scan through the data.  If this is specified
+   *                          as a number outside of the range of values in
+   *                          the array, a threshold will be calculated to
+   *                          test roughly 0.1% of the entries as possible
+   *                          peak.  For example, if the array contains only
+   *                          non-negative values, specifying this to be -1
+   *                          will force the method to choose a threshold.
    *  @param  row_list        The list of rows to use when looking for peaks
    *                          numbered starting at 1, as on the data grid.
    *  @param  col_list        The list of columns to use when looking for peaks 
@@ -505,8 +512,6 @@ public class FindPeaksViaSort
    *                          peaks
    *  @param  max_chan        The last time channel to use when looking for 
    *                          peaks
-   *  @param  histogram       An array of 10,000 floats that will be filled
-   *                          out with the histogram of the detector data
    *  @param  log             The StringBuffer into which log messages will
    *                          be written
    *
@@ -519,12 +524,89 @@ public class FindPeaksViaSort
   public static BasicPeakInfo[] getPeaks( float[][][]  raw_data,
                                           boolean      do_smoothing,
                                           int          num_requested,
-                                          int          threshold,
+                                          float        threshold,
                                           int[]        row_list,
                                           int[]        col_list,
                                           int          min_chan,
                                           int          max_chan,
-                                          int[]        histogram,
+                                          StringBuffer log  )
+  {
+     return getPeaks( raw_data, 
+                      do_smoothing, 
+                      num_requested, 
+                      threshold,
+                      row_list, 
+                      col_list, 
+                      min_chan, 
+                      max_chan, 
+                      -1,
+                      -1,
+                      log );
+  }
+
+
+  /**
+   *  Find the peaks in the three dimension array of SCD data.  This form
+   *  of the method allows the user to specify the min and max value in 
+   *  the array, if known, to avoid one extra scan through the full array.
+
+   *  NOTE: We assume data stored as raw_data[row][col][channel] !
+   *  
+   *  @param  raw_data        The 3D array of data from one detector
+   *  @param  do_smoothing    If true, the data will be smoothed by 
+   *                          replacing the value at each bin by the sum
+   *                          of the 3x3 neighborhood of the bin on the
+   *                          time slice.  NOTE: This will alter the values
+   *                          in the array, so a copy of the data should be
+   *                          passed in if do_smoothing is set true.
+   *  @param  num_requested   The maximum number of peaks that should be
+   *                          returned.
+   *  @param  threshold       Value that must be exceeded to consider a
+   *                          bin to be a possible peak duing the initial 
+   *                          scan through the data.   If this is specified
+   *                          as a number outside of the range of values in
+   *                          the array, a threshold will be calculated to
+   *                          test roughly 0.1% of the entries as possible
+   *                          peak.  For example, if the array contains only
+   *                          non-negative values, specifying this to be -1
+   *                          will force the method to choose a threshold.
+   *  @param  row_list        The list of rows to use when looking for peaks
+   *                          numbered starting at 1, as on the data grid.
+   *  @param  col_list        The list of columns to use when looking for peaks 
+   *                          numbered starting at 1, as on the data grid.
+   *  @param  min_chan        The first time channel to use when looking for
+   *                          peaks
+   *  @param  max_chan        The last time channel to use when looking for 
+   *                          peaks
+   *  @param  array_min_val   The smallest value recorded in the 3D array.
+   *  @param  array_max_val   The largest value recorded in the 3D array.
+   *                          NOTE: If these are specified, the 3D array will
+   *                          not need to be scanned to find them.  With
+   *                          a huge array this can save some time.
+   *                          IF THESE ARE NOT AVAILABLE pass in the SAME
+   *                          VALUE for BOTH the min and the max val, to
+   *                          force a scan of the 3D array for the min/max
+   *                          values.
+   *  @param  log             The StringBuffer into which log messages will
+   *                          be written.  The calling code should write this
+   *                          to a file.
+   *
+   *  @return an array of BasicPeakInfo objects listing the peaks that were
+   *          found. NOTE: The row and column numbers in the BasicPeakInfo
+   *          objects, are numbered starting with 0, so the values returned
+   *          by the get centroid methods must be incremented by 1 to convert
+   *          them to grid coordinates.
+   */
+  public static BasicPeakInfo[] getPeaks( float[][][]  raw_data,
+                                          boolean      do_smoothing,
+                                          int          num_requested,
+                                          double       threshold,
+                                          int[]        row_list,
+                                          int[]        col_list,
+                                          int          min_chan,
+                                          int          max_chan,
+                                          float        array_min_val,
+                                          float        array_max_val,
                                           StringBuffer log  )
   {
     if ( raw_data == null )
@@ -595,85 +677,161 @@ public class FindPeaksViaSort
 
     start = System.nanoTime();
 
-    // find histogram ....
+    // find histogram of values present in 3D array
 
-    int max_histogram = histogram.length;
-    int     value;
+    int   HISTOGRAM_SIZE = 20000;
+    int[] histogram      = new int[ HISTOGRAM_SIZE ];
+    float value;
+
+    if ( Float.isNaN( array_min_val )  || 
+         Float.isNaN( array_max_val )  ||
+         array_min_val >= array_max_val )   // must find min & max
+    { 
+      array_min_val = data_arr[0][0][0];
+      array_max_val = array_min_val;
+      for ( int col = 0; col < n_cols; col++ )
+        for ( int row = 0; row < n_rows; row++ )
+          for ( int page = 0; page < n_pages; page++ )
+          {
+            value = data_arr[row][col][page];
+            if ( value > array_max_val )
+              array_max_val = value;
+            else if ( value < array_min_val )
+              array_min_val = value; 
+          }
+    }
+
+    if ( Float.isNaN( array_min_val )  ||
+         Float.isNaN( array_max_val )  ||
+         array_min_val >= array_max_val )   // NO PEAKS! 
+    {
+      log.append("NO PEAKS IN ARRAY SINCE: \n");
+      log.append("Minimum array entry = " + array_min_val + "\n" );
+      log.append("Maximum array entry = " + array_max_val + "\n" );
+      return new BasicPeakInfo[0];
+    }
+
+/*
+    System.out.println("Minimum array entry = " + array_min_val + "\n" );
+    System.out.println("Maximum array entry = " + array_max_val + "\n" );
+    System.out.println("Specified Threshold = " + threshold + "\n" );
+*/
+                                     // Now scan the array and form histogram
+                                     // of values in the array
+    UniformEventBinner binner = 
+       new UniformEventBinner( array_min_val, array_max_val, HISTOGRAM_SIZE );
+    int index;
+
     for ( int col = 0; col < n_cols; col++ )
       for ( int row = 0; row < n_rows; row++ )
         for ( int page = 0; page < n_pages; page++ )
         {
-          value = (int)data_arr[row][col][page];
-
-          if ( value >= max_histogram )
-            histogram[ max_histogram - 1 ]++;
-          else if ( value < 0 )
+          value = data_arr[row][col][page];
+          index = binner.index( value );
+          if ( index >= HISTOGRAM_SIZE )
+            histogram[ HISTOGRAM_SIZE - 1 ]++;
+          else if ( index < 0 )
             histogram[0]++; 
           else
-            histogram[ value ]++;
+            histogram[ index ]++;
         }
 
     // find cumulative distribution function of smoothed data ....
-    // cdf[k] is the number of bins with counts less than or equal to k.
-    int[] cdf = new int[max_histogram];
+    // cdf[k] is the number of bins with counts less than 
+    // binner.maxVal(k).
+    long[] cdf = new long[histogram.length];
     cdf[0] = histogram[0];
-    for ( int i = 1; i < max_histogram; i++ )
+    for ( int i = 1; i < HISTOGRAM_SIZE; i++ )
       cdf[i] = cdf[i-1] + histogram[i];
+/*
+    for ( int i = 0; i < 20; i++ )
+      System.out.printf("i = %2d, hist[i] = %10d,  cdf[i] = %10d \n", 
+                         i, histogram[i], cdf[i] ); 
+*/
+    long  num_bins = (long)n_rows * (long)n_cols * (long)n_pages;
+    long  cutoff_count;
+    if ( threshold <= array_min_val ||
+         threshold >= array_max_val  ) // If threshold not properly specified 
+    {                                  // compute one that will select 0.1% 
+                                       // of the points as possible peaks.
+      cutoff_count = (long)( num_bins * 0.999 );
+      index = 0;
+      while ( index < HISTOGRAM_SIZE && cdf[index] < cutoff_count )
+        index++;
 
-    int num_bins = n_rows * n_cols * n_pages;
-    int cutoff;
-    if ( threshold <= 0 )           // If threshold not specified compute one
-    {                               // that will select 0.1% of the points as
-                                    // possible peaks.
-      cutoff = (int)( num_bins * 0.999f );
-      threshold = 0;
-      while ( threshold < max_histogram && cdf[threshold] < cutoff )
-        threshold++;
-
+      threshold = binner.minVal(index);
       log.append("COMPUTED THRESHOLD = " + threshold + "\n" );
+//    System.out.println("COMPUTED THRESHOLD = " + threshold + "\n" );
     }
                                     // Now "tweak" the threshold, regardless
                                     // where we got it.
                                     // "Safety": don't check more than 1% of
                                     // the bins, regardless of what the user
                                     // might have requested.
-    cutoff = (int)( num_bins * 0.99f );
-    while ( threshold < max_histogram && cdf[threshold] < cutoff )
-      threshold++;
+    cutoff_count = (long)( num_bins * 0.99 );
+    index = binner.index( threshold );
+    while ( index < HISTOGRAM_SIZE && cdf[index] < cutoff_count )
+      index++;
                                     // If the number of counts is low, 
                                     // increasing threshold as above may have
                                     // set threshold so all bins are <= to it.
                                     // In this case shift down to include
                                     // some values. 
-    if ( threshold >= cdf.length )
-      threshold = cdf.length - 1;
+    if ( index >= cdf.length )
+      index = cdf.length - 1;
 
-    while ( threshold > 0 && cdf[threshold] >= num_bins )
-      threshold--;
+    while ( index > 0 && cdf[index] >= num_bins )
+      index--;
 
+    threshold = binner.minVal(index);
                                     // finally don't allow threshold to be
                                     // too low in any case.
+//  System.out.println( "CALCULATED THRESHOLD THREE = " + threshold + "\n" );
+//  System.out.println( "CALCULATED INDEX THREE     = " + index + "\n" );
+
+    if ( index < 2 )
+      index = 2;
+
+    cutoff_count = (long)( num_bins * 0.9 );
+    if ( cdf[index] < cutoff_count )
+    {
+      log.append("NO PEAKS FOUND IN ARRAY SINCE: \n");
+      log.append("threshold was reset to " + threshold + "\n" );
+      log.append("leaving more than 10% of bins above the threshold.\n" );
+      return new BasicPeakInfo[0];
+    }
+
+/*
     if ( do_smoothing )
     {
       if ( threshold < 5 )          // we don't consider a bin with less
-        threshold = 5;              // than actual 2/3 count to be a peak for
+        threshold = 5;              // than actual 5 count to be a peak for
     }                               // smoothed data.
     else
     {
       if ( threshold < 3 )          // we don't consider a bin with less than
-        threshold = 3;              // four counts to be a peak for raw data.
+        threshold = 3;              // three counts to be a peak for raw data.
     }
-    
-    int num_above_threshold = num_bins - cdf[threshold];
-    log.append( "THRESHOLD = " + threshold + "\n" );
-    log.append( "NUM_ABOVE = " + num_above_threshold + "\n" );
-    long[] temp_list = new long[ num_above_threshold ];
+*/  
 
-    int index = 0;
-    int bin_count = 0;
-    int max = 0;
+    long num_above_threshold = num_bins - cdf[index - 1];
+
+    log.append( "FINAL THRESHOLD USED = " + threshold + "\n" );
+    log.append( "FOR THIS, NUM_ABOVE  = " + num_above_threshold + "\n" );
+                                    // allow extra room in temp_list incase
+                                    // of problems with switching between
+                                    // float and double values
+    long[] temp_list = new long[ 2*(int)num_above_threshold ];  
+
+    threshold = binner.minVal(index);
+//  System.out.println("FINAL THRESHOLD USED = " + threshold + "\n");
+//  System.out.println("FOR THIS, NUM_ABOVE  = " + num_above_threshold + "\n");
                                     // step through only the rows and columns
                                     // to keep, when looking for maxima
+    int   bin_count = 0;
+    float max = 0;
+
+    index = 0;
     for ( int r_index = 0; r_index < row_list.length; r_index++ )
       for ( int c_index = 0; c_index < col_list.length; c_index++ ) 
       {
@@ -685,19 +843,20 @@ public class FindPeaksViaSort
              col >= 0 && col < n_cols  )
           for ( int chan = min_chan; chan <= max_chan; chan++ )
           {
-             value = (int)data_arr[row][col][chan];
+             value = data_arr[row][col][chan];
              bin_count++;
              if ( value > max )
                max = value;
              if ( value > threshold )
              {
-               temp_list[index] = BinaryPeakCode.Encode(value, row, col, chan);
+               temp_list[index] = BinaryPeakCode.Encode( binner.index(value),
+                                                         row, col, chan );
                index++;
              }
           }
       }
         
-    log.append("NUM BINS = " + bin_count + "\n" );
+    log.append("TOTAL NUMBER OF BINS = " + bin_count + "\n" );
     log.append("MAX = " + max + "\n" );
     count_list = new long[ index ];
     System.arraycopy( temp_list, 0, count_list, 0, index );
@@ -756,9 +915,10 @@ public class FindPeaksViaSort
       }
                                                // if it misses all previous
                                                // peaks, check if local max
+      float center_value = 0;
       if ( !bad_peak ) 
       { 
-        float center_value = data_arr[row][col][chan];
+        center_value = data_arr[row][col][chan];
         int delta_row  = 3;
         int delta_col  = 3;
         int delta_chan = 3;
@@ -803,7 +963,7 @@ public class FindPeaksViaSort
                                                 2*INITIAL_EXTENT,
                                                 2*INITIAL_EXTENT, 
                                                   INITIAL_EXTENT,
-                                                val   );
+                                                center_value   );
 
         
         log.append( "\nCHECKING POSSIBLE PEAK " + 

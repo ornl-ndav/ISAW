@@ -70,7 +70,7 @@ public class BasicPeakInfo
   private float delta_col;
   private float delta_chan;
 
-  private int   ipk;               // max count value
+  private float ipk;               // max count value
 
   private SliceStats[] slice_info_arr = new SliceStats[5]; 
                                                     // This records more
@@ -100,7 +100,7 @@ public class BasicPeakInfo
    */
   public BasicPeakInfo( float row,   float col,   float chan,
                         float d_row, float d_col, float d_chan,
-                        int   ipk  )
+                        float ipk  )
   {
     row_cent  = row + 0.5f;
     col_cent  = col + 0.5f;
@@ -525,8 +525,8 @@ public class BasicPeakInfo
       new_info.col_mean = col_sum / total;
     }
 
-    new_info.total_counts = (int)total;
-    new_info.ipk          = (int)ipk;
+    new_info.total_counts = total;
+    new_info.ipk          = ipk;
 
     float drow;                           // rounding errors can make term_1
     float term_1 = row_sum_2/total;       // < term_2, which leads to NaN
@@ -784,11 +784,11 @@ public class BasicPeakInfo
   public String col_row_chan_ipk( float counts[][][] )
   {
     String result =  String.format( 
-           "%8.2f %8.2f %8.2f %6d %5.2f %5.2f %5.2f",
+           "%8.2f %8.2f %8.2f   %6.2f   %5.2f %5.2f %5.2f",
            col_cent, 
            row_cent, 
            chan_cent,
-           (int)counts[(int)init_row][(int)init_col][(int)init_chan],
+           counts[(int)init_row][(int)init_col][(int)init_chan],
            delta_col,
            delta_row,
            delta_chan ) ;
@@ -809,7 +809,7 @@ public class BasicPeakInfo
   public String toString()
   {
     String result =  String.format(
-           "%8.2f %8.2f %8.2f   %6d   %5.2f %5.2f %5.2f",
+           "%8.2f %8.2f %8.2f   %6.2f   %5.2f %5.2f %5.2f",
            col_cent,
            row_cent,
            chan_cent,
@@ -990,9 +990,9 @@ public class BasicPeakInfo
    */
   public class SliceStats
   {
-    int   ipk;                   // set to max intensity on this slice
+    float ipk;                   // set to max intensity on this slice
     int   channel_num;
-    int   total_counts = 0;      // total counts inside region on this slice
+    float total_counts = 0;      // total counts inside region on this slice
     float row_mean;
     float col_mean;
     float row_std_dev;
@@ -1200,7 +1200,7 @@ public class BasicPeakInfo
    /**
     *  Get the maximum count on this slice.
     */
-   public int Ipk()
+   public float Ipk()
    {
       return ipk;
    }
@@ -1219,7 +1219,7 @@ public class BasicPeakInfo
     */
    public String toPartialString()
    {
-      return String.format( "%8.3f  %8.3f  %4d  %5.2f  %5.2f  %5d  %7d",
+      return String.format( "%8.3f  %8.3f  %4d  %5.2f  %5.2f  %5.2f  %7.2f",
             col_mean,
             row_mean,
             channel_num,
@@ -1250,7 +1250,7 @@ public class BasicPeakInfo
    public String toString()
    {
       return String.format(
-     "%8.3f  %8.3f  %4d  %5.2f  %5.2f  %5d  %7d  %8.3f  %8.3f "+
+     "%8.3f  %8.3f  %4d  %5.2f  %5.2f  %5.2f  %7.2f  %8.3f  %8.3f "+
      "  %3d %8.2f  %3d %7.2f %8.2f %8.2f\n",
             col_mean,
             row_mean,
