@@ -435,7 +435,8 @@ public class PeakListHandler implements IReceiveMessage
   private static void Copy( Peak_new[] Sav, Vector<Peak_new> PeakList)
   {
      if( Sav == null || PeakList== null ||Sav.length != PeakList.size())
-        throw new IllegalArgumentException("null or improper array sizes. Cannot Sort");
+        throw new IllegalArgumentException(
+                                 "null or improper array sizes. Cannot Sort");
      for( int i=0; i< Sav.length ; i++)
         Sav[i]= PeakList.elementAt( i );
   }
@@ -458,13 +459,15 @@ public class PeakListHandler implements IReceiveMessage
 
     for ( int i = 0; i < peak_array.length; i++ )
     {
-      peak_array[i].seqnum(i);
+      peak_array[i].seqnum(i+1);
       peak_list.add( peak_array[i] );
     }
   }
 
 
-  private int getNearestSeqNum( Vector<Peak_new> peak_list, Vector3D Qxyz, int detNum )
+  private int getNearestSeqNum( Vector<Peak_new> peak_list, 
+                                Vector3D         Qxyz, 
+                                int              detNum )
   {
      if( peak_list == null || Qxyz == null )
         return 0;
@@ -504,7 +507,8 @@ public class PeakListHandler implements IReceiveMessage
       double[] abc = new double[7];
       double[] sig_abc = new double[7];
    
-      UB2= LinearAlgebra.float2double( ScalarHandlePanel.LSQRS( Peaks , sig_abc ));
+      UB2= LinearAlgebra.float2double( ScalarHandlePanel.LSQRS( Peaks , 
+                                                                sig_abc ));
       if(  UB2 == null || sig_abc[0] <= 0)
       {
          Util.sendError( "LeastSquares Error. No error estimates" );
