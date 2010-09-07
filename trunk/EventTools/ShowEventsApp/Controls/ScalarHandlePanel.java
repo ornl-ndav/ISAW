@@ -47,6 +47,7 @@ import java.util.*;
 import javax.swing.*;
 import javax.swing.border.*;
 
+import DataSetTools.components.ui.Peaks.subs;
 import DataSetTools.operator.Generic.TOF_SCD.IPeak;
 import DataSetTools.operator.Generic.TOF_SCD.Peak_new;
 import EventTools.ShowEventsApp.Command.Commands;
@@ -656,6 +657,7 @@ public class ScalarHandlePanel implements IReceiveMessage
    
    private static double[][] getTransf( ReducedCellPlus RedCell)
    {
+      double[][]A ={{1,0,0},{0,-1,0},{0,0,1}};
       double[][] transf = RedCell.redCell.getTransformation( );
       
       /*if ( RedCell.flipUBRow >= 0 )//redo mult by self. Just chang signs in cols/rows in transf
@@ -677,6 +679,12 @@ public class ScalarHandlePanel implements IReceiveMessage
          transf = LinearAlgebra.mult( transf , ident );
       }*/
       transf = LinearAlgebra.mult( transf , RedCell.Fudge );
+      if( !subs.isRightHanded( LinearAlgebra.double2float( transf) ))
+      {
+         
+         transf = LinearAlgebra.mult( A , transf );
+      }
+         
       return transf;
    }
    //Calculates the new UB matrix from the RedCell and UB
