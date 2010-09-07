@@ -784,7 +784,7 @@ public class BasicPeakInfo
   public String col_row_chan_ipk( float counts[][][] )
   {
     String result =  String.format( 
-           "%8.2f %8.2f %8.2f   %6.2f   %5.2f %5.2f %5.2f",
+           "%8.2f %8.2f %8.2f   %9.2f   %5.2f %5.2f %5.2f",
            col_cent, 
            row_cent, 
            chan_cent,
@@ -809,7 +809,7 @@ public class BasicPeakInfo
   public String toString()
   {
     String result =  String.format(
-           "%8.2f %8.2f %8.2f   %6.2f   %5.2f %5.2f %5.2f",
+           "%8.2f %8.2f %8.2f   %9.2f   %5.2f %5.2f %5.2f",
            col_cent,
            row_cent,
            chan_cent,
@@ -962,7 +962,7 @@ public class BasicPeakInfo
   public static String headerString()
   {
      return String.format(
-     "%8s  %8s  %4s  %5s  %5s  %5s  %7s  %8s  %8s "+
+     "%8s  %8s  %4s  %5s  %5s  %9s  %9s  %8s  %8s "+
      "  %3s %8s  %3s %7s %8s %8s",
            "Col",
            "Row",
@@ -1219,7 +1219,7 @@ public class BasicPeakInfo
     */
    public String toPartialString()
    {
-      return String.format( "%8.3f  %8.3f  %4d  %5.2f  %5.2f  %5.2f  %7.2f",
+      return String.format( "%8.3f  %8.3f  %4d  %5.2f  %5.2f  %9.2f  %9.2f",
             col_mean,
             row_mean,
             channel_num,
@@ -1250,7 +1250,7 @@ public class BasicPeakInfo
    public String toString()
    {
       return String.format(
-     "%8.3f  %8.3f  %4d  %5.2f  %5.2f  %5.2f  %7.2f  %8.3f  %8.3f "+
+     "%8.3f  %8.3f  %4d  %5.2f  %5.2f  %9.2f  %9.2f  %8.3f  %8.3f "+
      "  %3d %8.2f  %3d %7.2f %8.2f %8.2f\n",
             col_mean,
             row_mean,
