@@ -118,7 +118,6 @@ public class Omit_SCD_Peaks_Calc
 
     int          min_chan   = 0;                    // use all channels
     int          max_chan   = num_chan;
-    int[]        histogram  = new int[10000];
     StringBuffer log_buffer = new StringBuffer();
     BasicPeakInfo[] peaks = FindPeaksViaSort.getPeaks( raw_data,
                                                        do_smoothing,
@@ -128,7 +127,6 @@ public class Omit_SCD_Peaks_Calc
                                                        col_list,
                                                        min_chan,
                                                        max_chan,
-                                                       histogram,
                                                        log_buffer );
 
     Vector vector = new Vector();

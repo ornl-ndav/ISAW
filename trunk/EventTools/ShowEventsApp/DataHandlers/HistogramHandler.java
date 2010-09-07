@@ -767,8 +767,6 @@ public class HistogramHandler implements IReceiveMessage
      for ( int page = 0; page < num_pages; page++ )
        histogram_array[page] = histogram.pageSlice( page );
 
-     int[] val_histogram = new int[10000];
-
      int[] row_list = new int[num_rows];
      for ( int k = 0; k < num_rows; k++ )
        row_list[k] = k + 1;
@@ -779,17 +777,18 @@ public class HistogramHandler implements IReceiveMessage
 
      StringBuffer log = new StringBuffer();
 
-                                    // TODO: change FindPeaksViaSort.getPeaks
-                                    //       to use a float min_intensity 
+     float min_val = (float)histogram.minVal();
+     float max_val = (float)histogram.maxVal();
      BasicPeakInfo[] peaks = FindPeaksViaSort.getPeaks( histogram_array,
                                                         smooth_data,
                                                         num_peaks,
-                                                        (int)min_intensity,
+                                                        min_intensity,
                                                         row_list,
                                                         col_list,
                                                         0,
                                                         num_pages-1,
-                                                        val_histogram,
+                                                        min_val,
+                                                        max_val,
                                                         log );
 
     if ( log_file == null || log_file.trim().length() <= 0 )
@@ -810,8 +809,8 @@ public class HistogramHandler implements IReceiveMessage
     catch ( Exception ex )
     {
       Util.sendWarning( "Can't write Find Peaks log file: " + log_file );
-//      System.out.println("Exception writing log file " + log_file );
-//      ex.printStackTrace();
+//    System.out.println("Exception writing log file " + log_file );
+//    ex.printStackTrace();
     }
 
     IProjectionBinner3D x_binner = histogram.xEdgeBinner();

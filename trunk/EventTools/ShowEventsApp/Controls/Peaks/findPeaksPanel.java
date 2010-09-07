@@ -330,11 +330,11 @@ public class findPeaksPanel extends    JPanel
       
       try
       {
-         Integer.parseInt(minPeakTxt.getText());
+         Float.parseFloat(minPeakTxt.getText());
       }
       catch (NumberFormatException nfe)
       {
-         String error = "Min Peak Intensity must be a valid integer!";
+         String error = "Min Peak Intensity must be a valid float!";
          JOptionPane.showMessageDialog( null, 
                                         error, 
                                        "Invalid Input", 
@@ -404,7 +404,7 @@ public class findPeaksPanel extends    JPanel
          {
             FindPeaksCmd findPeaksCmd = new FindPeaksCmd(
                   Integer.parseInt(maxPeaksTxt.getText()), 
-                  Integer.parseInt(minPeakTxt.getText()),
+                  Float.parseFloat(minPeakTxt.getText()),
                   false,
                   markPeaksCbx.isSelected(),
                   Float.parseFloat(markSizeTxt.getText()),
