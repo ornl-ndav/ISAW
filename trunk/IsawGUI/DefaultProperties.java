@@ -446,7 +446,7 @@ public class DefaultProperties{
         rs.append("#").append(eol);
         rs.append("Default_Instrument=HRCS").append(eol);
         rs.append("ColorScale=Heat 2").append(eol);
-        rs.append("ViewDetectors=Filled").append(eol);
+        rs.append("ViewDetectors=Hollow").append(eol);
         rs.append("#ViewGroups=Medium").append(eol);
         rs.append("#RebinFlag=false").append(eol);
         rs.append("#HScrollFlag=false").append(eol);
