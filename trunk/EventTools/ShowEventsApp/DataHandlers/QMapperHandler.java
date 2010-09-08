@@ -389,6 +389,12 @@ public class QMapperHandler implements IReceiveMessage
 
         if ( cmd.getRecord_as_peaks_list() )
         {
+          for ( int i = 0; i < peak_new_list.size(); i++ )
+          {
+            Peak_new peak = peak_new_list.elementAt(i);
+            peak.reflag(500);
+          }
+
           Message peak_new_message =
             new Message(Commands.SET_PEAK_NEW_LIST, peak_new_list, true, true);
 
