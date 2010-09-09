@@ -53,6 +53,7 @@ import DataSetTools.util.SharedData;
 import EventTools.EventList.FileUtil;
 import EventTools.EventList.ITofEventList;
 import EventTools.ShowEventsApp.Command.*;
+import EventTools.ShowEventsApp.IsawEV;
 import MessageTools.*;
 
 /**
@@ -88,6 +89,7 @@ public class filePanel implements IReceiveMessage
    private JTextField         phi;
    private JTextField         omega;
    private JTextField         Nbins;
+   private JTextField         Hist_size;
    private JTextField         absorptionPower;
    private JTextField         absorptionRadius;
    private JTextField         smuAbsorption;
@@ -306,28 +308,42 @@ public class filePanel implements IReceiveMessage
       BoxLayout bl = new BoxLayout( ConfigPanel, BoxLayout.Y_AXIS);
       ConfigPanel.setLayout(  bl );
       JPanel Res = new JPanel();
-      Res.setLayout(  new GridLayout( 5,2) );
+      Res.setLayout(  new GridLayout( 6,2) );
       
       Res.add(  new JLabel("RunNumber") );
-      runNumber = new JTextField("");
+      runNumber = new JTextField("0");
+      runNumber.setHorizontalAlignment(JTextField.RIGHT);
       Res.add( runNumber );
       
       Res.add(  new JLabel("Phi") );
-      phi = new JTextField("");
+      phi = new JTextField("0");
+      phi.setHorizontalAlignment(JTextField.RIGHT);
       Res.add( phi );
       
-      
       Res.add(  new JLabel("Chi") );
-      chi = new JTextField("");
+      chi = new JTextField("0");
+      chi.setHorizontalAlignment(JTextField.RIGHT);
       Res.add( chi );
+
       Res.add(  new JLabel("Omega") );
-      omega = new JTextField("");
+      omega = new JTextField("0");
+      omega.setHorizontalAlignment(JTextField.RIGHT);
       Res.add( omega);
       
-      Res.add(  new JLabel("# of Bins") );
-      Nbins = new JTextField("");
+      Res.add(  new JLabel("Histogram Resolution (Steps)") );
+      Nbins = new JTextField(""+IsawEV.NUM_BINS);
+      Nbins.setEnabled( false );
+      Nbins.setHorizontalAlignment(JTextField.RIGHT);
       Res.add( Nbins );
-      
+
+      Res.add( new JLabel("Histogram Size (Mega Bytes)") );
+      long size = Long.parseLong( Nbins.getText() );
+      size = size * size * size * 4 / 1000000;
+      Hist_size = new JTextField( ""+size );
+      Hist_size.setHorizontalAlignment(JTextField.RIGHT);
+      Hist_size.setEnabled( false );
+      Res.add( Hist_size );      
+
       ConfigPanel.add(  Res );
      
       JButton ApplyButton = new JButton("Apply");
