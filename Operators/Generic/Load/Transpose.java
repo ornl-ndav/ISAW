@@ -61,7 +61,7 @@ import Command.*;
  * This class has been dynamically created using the Method2OperatorWizard
  * and usually should not be edited.
  * This operator is a wrapper around 
-@see Operators.Generic.Load.LoadUtil#Transpose(DataSetTools.dataset.DataSet DS,int[],int,int,int,DataSetTools.dataset.XScal,boolean)
+@see Operators.Generic.Load.LoadUtil#Transpose(DataSetTools.dataset.DataSet,int[],int,int,int,DataSetTools.dataset.XScale,boolean)
  */
 
 public class Transpose extends GenericOperator{

@@ -58,7 +58,7 @@ import Command.*;
  * This class has been dynamically created using the Method2OperatorWizard
  * and usually should not be edited.
  * This operator is a wrapper around 
-@see  Operators.Generic.Load.LoadUtil#Load_GLAD_LPSD_Info(DataSetTools.dataset.DataSet.java.lang.String)
+@see  Operators.Generic.Load.LoadUtil#Load_GLAD_LPSD_Info(DataSetTools.dataset.DataSet,java.lang.String)
  */
 
 public class Load_GLAD_LPSD_Info extends GenericOperator{
