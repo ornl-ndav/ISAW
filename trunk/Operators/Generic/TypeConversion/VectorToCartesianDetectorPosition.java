@@ -60,8 +60,8 @@ import Command.*;
  * This class has been dynamically created using the Method2OperatorWizard
  * and usually should not be edited.
  * This operator is a wrapper around 
-@see Operators.Generic.TypeConversion.Convert#VectorToCartesianDetectorPosition(java.lang.Object)
- */
+@see Operators.Generic.TypeConversion.Convert#VectorToCartesianDetectorPostion(Object) 
+*/
 public class VectorToCartesianDetectorPosition extends GenericOperator
                                                implements HiddenOperator
 {
