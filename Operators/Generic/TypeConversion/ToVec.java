@@ -58,7 +58,7 @@ import Command.*;
  * This class has been dynamically created using the Method2OperatorWizard
  * and usually should not be edited.
  * This operator is a wrapper around 
-@see Command.ScriptUtil#ToVec(Object)java.lang.Object)
+@see Command.ScriptUtil#ToVec(java.lang.Object)
  */
 public class ToVec extends GenericOperator{
 
