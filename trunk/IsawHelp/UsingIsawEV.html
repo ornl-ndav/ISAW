@@ -7,10 +7,11 @@
 
 <P>
 IsawEV provides a 3D scatter plot of detected neutrons, mapped to reciprocal
-space, and conventional line graphs of intensity vs |Q| and intensity vs
-d-spacing.  The data may come from SNS raw event files, or from live data
-on the instrument computer.  IsawEV also supports finding and indexing peaks
-in single crystal data.
+space, conventional line graphs of intensity vs |Q| and intensity vs
+d-spacing, and images of portions of reciprocal space near Bragg peaks.
+The data may come from SNS raw event files, or from live data
+on the instrument computer.  IsawEV also supports finding, indexing and 
+integrating peaks in single crystal data.
 </P>
 
 <P>
@@ -29,14 +30,31 @@ an updated (or previous) instrument geometry.
 <BR>
 <BR>
 To load data from a *neutron_event.dat FILE, press the "Load Data" button 
-on the left side of the control panel.  
-Make sure the "From File" tab is at the front, then press the 
-"Neutron Event File" button to select the raw event data file to load.
-For SNAP, an incident spectrum file is also in the same 
-directory.  If a newer version is available, it may be specified by
-pressing the incident spectrum button.  NOTE: The event file is the only 
-file that needs to be specified, if the default geometry is OK.  When the
-file(s) have been specified, press the "Load" button at the bottom of the
+on the left side of the control panel. If the "Configure" tab is selected,
+the run number and goniometer angles can be entered. The values entered
+will be recorded in the peaks file so that peaks files from multiple runs
+can be exported to other applications.  Currently, IsawEV can only be used
+with one run at a time.
+To actually load the data from a file, select the "From File" tab, then press
+the "Neutron Event File" button to select the raw event data file to load.
+If the events are to be weighted by the incident spectrum select the 
+incident spectrum file by pressing the incident spectrum button.  
+<BR>
+<BR>
+NOTE: The event file is the only file that needs to be specified, if the 
+default geometry is OK.  If the instrument detector geometry has been change
+of if you are loading an old event file from a previous version of the
+instrument, then a .DetCal, Bank File and ID Map File that correspond to 
+the correct instrument geometry must be specified. 
+<BR>
+<BR>
+The min/max |Q| values to load can be specified before loading the data.
+In addition, parameters to apply the corrections from ANVRED to individual
+events can be specified.  The power on lamda should be 4, for the Lorentz
+correction of Bragg peaks.  However, different values of that power can be
+used to balance the apparent intensities at large and small |Q|.  This can
+help with finding peaks.  When the required file(s) and desired parameters  
+have been specified, press the "Load" button at the bottom of the
 form to actually load the file.  Events should start to show up in the
 3D viewer, within a few seconds of starting to load the data.  The number
 of events to show in 3D must be limited to avoid overloading the graphics
@@ -60,9 +78,10 @@ loaded events and stop listening for new events, press the
 accumulating new events.
 <BR>
 <BR>
-Reasonable default values are provided for the Calibration File, Bank File,
-etc.  If any of these options are changed, the "Load" button at the bottom
-of the form must be pressed again to re-initialize the internal data
+Reasonable default values are provided for the Calibration File, Bank File
+and Mapping file for supported instruments.  If any of these options, 
+min/max |Q| or absorption parameters are changed, the "Load" button at the 
+bottom of the form must be pressed again to re-initialize the internal data
 structures with the new values.  The Continue button will not make any such
 changes.
 <BR>
@@ -106,7 +125,10 @@ can help omit noisy data values at small or large |Q|.
 This is particularly helpful when trying to find peaks in single crystal 
 data.  Eliminating the large |Q| values often allows setting a lower 
 threshold for peaks to find more valid peaks, without finding a lot of
-spurious peaks in the noisy high |Q| range.
+spurious peaks in the noisy high |Q| range.  Adjusting Max |Q| also reallocates
+the underlying histogram to cover the specified range.  If Max |Q| is decreased
+the histogram bins will decrease in size correspondingly, providing a higher
+resolution histogram, with lower counts in each bin.
 </P>
 
 
@@ -116,7 +138,8 @@ spurious peaks in the noisy high |Q| range.
 <BR>
 For either file or live data, events can also be filtered based on 
 detector, row and column number, and based on their d or |Q| values.
-These filters are controlled by the "Filter Events" panel.  The
+These filters are controlled by the "Filter Events" panel.  The filtering
+must be set up BEFORE loading the file or live events. The
 "Filter Events" panel has two tabbed panes.  
 <BR>
 <BR>
@@ -270,8 +293,11 @@ bottom of the panel to make them effective.
 <FONT size=+1>Finding Peaks</FONT>
 <BR>
 <BR>
-IsawEV maintains an underlying 512 megabyte histogram of events in 
-reciprocal space.  The Find Peaks panel can be used to search through 
+IsawEV maintains an underlying histogram of events in 
+reciprocal space.  Previous versions used a 512x512x512 histogram
+requiring 500 Megabytes.  This version uses a 768x768x768 histogram
+which requires 1.8 Gigabytes.  This will be configurable by the user
+in future versions.  The Find Peaks panel can be used to search through 
 this histogram for local maxima.  The maximum number of peaks
 to find and the minimum peak intensity can be specified to control the
 find peaks process.  The peaks that are found will be marked on the
@@ -279,10 +305,31 @@ find peaks process.  The peaks that are found will be marked on the
 see whether or not the peaks that were found form a lattice pattern.
 Lowering the threshold, or increasing
 the Max number of peaks will increase the number of points identified
-as peaks.  If too many "noise" peaks are present (often at high |Q|)
+as peaks.  Since the histogram contains fractional counts 
+from weighted events, the minimum intensity can be any float value 
+greater than zero.  If zero is specified a threshold will be selected
+automatically.  If too many "noise" peaks are present (often at high |Q|)
 the threshold should be raised and/or the number of peaks should be 
 lowered.  This is useful for finding an appropriate set peaks for 
 indexing SCD data.  
+<BR>
+<BR>
+Images of peaks that are found will be displayed if the "Show Peak Images"
+option is checked.  This will display horizontal slices through the peak 
+extracted from the underlying reciprocal space histogram.  The extent of 
+the horizontal slices that are imaged around the peak can be specified as
+well as the number of slices to include above or below the peak.
+NOTE: These images are interactive in the following ways.  You can zoom in on 
+portions of the peaks, step through slices above and below the peaks and
+information about points on the image is displayed on the "Selected Point"
+form.  A large red asterisk marks the currently Selected Point on the 
+3D view of reciprocal space.
+<BR>
+<BR>
+Peaks that are found will be marked by white boxes.  The "Mark Size" 
+parameter controls the size of the boxes that will be drawn.  The Mark Size
+must be specified BEFORE finding peaks.
+
 </P>
 
 <P>
@@ -297,7 +344,7 @@ This method is quite robust.  The other method attempts to index the
 peaks automatically.  The automatic method often produces better results
 if reasonable estimates of the min and max for primitive cell edge lengths
 are specified.  For example if the crystal should be cubic with a=b=c=5,
-entering a min of 4 and a max of 6 should work well.  The autoindexing
+entering a min of 4 and a max of 6 should work well.  The auto-indexing
 method produces a (possibly long) list of orientation matrices to choose from.
 If an orientation matrix is available in a file, the peaks can also be
 indexed using that matrix.  For any of the indexing methods the 
@@ -329,10 +376,74 @@ be selected by entering the choice number on the form, or by stepping through
 the list until the desired choice is visible.  Pressing the 
 "Apply Displayed Cell" will transform the current orientation matrix to
 correspond to the chosen conventional cell, and will index the peaks
-using the new orientation matrix.
- 
+using the new orientation matrix.  The "Apply Displayed Cell" button should 
+only be pushed one time after finding peaks.  The current orientation matrix
+will be altered to one corresponding to the selected conventional cell.  In
+most cases this new cell will NOT be a reduced cell.  Consequently, the 
+options displayed will NOT be meaningful, after pressing the "Apply Displayed Cell" button.  Valid options will be presented if the peaks are first re-indexed.
 </P>
 
+<P>
+<FONT size=+1>Integrating Peaks</FONT>
+<BR>
+<BR>
+Two methods are provided for integrating peaks.  Currently, both methods 
+are just quick approximate methods, intended to give some indication of 
+integrated intensities and the number of peaks that have been measured.
+These quick integrate methods are on the "Integrate" form.
+<BR>
+<BR>
+The "Sphere Method" integrates peaks using values in the underlying histogram.
+For each peak, all histogram bins whose centers are within the specified sphere
+radius are assumed to belong to the peak.  Similarly a somewhat larger 
+spherical shell is used to estimate the background.  The net integrated 
+intensity is then calculated by subtracting the appropriately scaled background
+from the total of the bins in the peak.  This sphere integration method 
+will be applied only to the peaks in the current peak list if the
+"Current Peaks" option is selected.  If the "Current Peaks" are those peaks
+that were found using the Find Peaks form, then all of those peaks should 
+be fairly strong, accurately centroided and integrate quite well.  This option
+will only work if peaks have already been found.  The "All Predicted Positions"
+option will only work if peaks have been found AND indexed.  In that case the
+orientation matrix will be used to predict peak positions, and those
+predicted positions will be used as the centers of integration spheres.  
+After selecting the appropriate option, pressing the "Show Statistics" button
+will do the integrations and display how many peaks were integrated above 
+various I/sigI thresholds.  However, the peak list will NOT be affected.  If
+instead, the "Update Peaks List" button is pressed, then the integrated 
+intensities will be written to the list of peaks.  Choosing the menu option
+View->Show_Peaks will pop up the list of integrated peaks.
+<BR>
+<BR>
+The "Aligned Histogram" method is highly experimental and requires reloading
+all of the data after entering appropriate parameters.  This method forms
+a new histogram which has it's bin centers aligned with the reciprocal lattice.
+This can only be done after indexing peaks.  The user can specify then number
+of steps per unit Miller index as a value between 2 and 25.  The amount of
+memory required by the histogram will be displayed and it is important to 
+verify that this is not too large for the memory installed on the system.
+If say 10 steps per miller index are chosen, then the length of the shortest
+edge of a reciprocal space cell will be divided by 10.  Call this length
+a*/10.  The 3D histogram will be set up with bins of length a*/10 in the 
+direction of that edge, shifted so that lattice points are in bin centers.
+The other two edge lengths will be divided into an integer number of steps with 
+the integer chosen so that the step size in |Q| will be as close to a*/10 as
+possible.  The counts in bins containing the lattice points give the gross
+peak intensity and the counts in neighboring bins are used to determine the
+background level.  After selecting the Histogram Resolution, the 
+Histogram Status will indicate that the histogram has been allocated and is
+ready to add events.  At that point the event file must be reloaded so that
+the histogram can be populated.  After the events have been reloaded, the
+integrated intensities can either be use form a new peaks list, or the 
+statistics about the integrated intensities can just be displayed. 
+<BR>
+<BR>
+Currently, after forming this lattice-aligned histogram and reloading the 
+events, a view of slices through the histogram will be displayed.
+It will be necessary to step through these slices to move into the region
+of reciprocal space that was measured.  Choosing 5 steps per Miller index
+will give a fairly coarse histogram and images, but choosing 25 steps per
+Miller index will give a nice high resolution set of images.
 
 
 <P>
