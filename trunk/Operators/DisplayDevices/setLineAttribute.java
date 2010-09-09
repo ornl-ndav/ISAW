@@ -53,7 +53,7 @@ import Command.*;
  * This class has been dynamically created using the Method2OperatorWizard
  * and usually should not be edited.
  * This operator is a wrapper around 
-@see gov.anl.ipns.DisplayDevices.Displayable#setLineAttribute(gov.anl.ipns.DisplayDevices.IDisplayable,int,java.lang.String ,java.lang.String)
+@see gov.anl.ipns.DisplayDevices.Displayable#setLineAttribute(gov.anl.ipns.DisplayDevices.IDisplayable,int,java.lang.String ,java.lang.Object)
  */
 public class setLineAttribute extends GenericOperator{
 
