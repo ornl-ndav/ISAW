@@ -71,7 +71,7 @@ import  DataSetTools.retriever.RunfileRetriever;
 /**
  * This operator determines what the group ID of the downstream monitor
  * is for a given monitor dataset.
- * @see    MonitorID_Calc#DownstreamMonitorID( int )
+ * @see    DataSetTools.operator.Generic.Special.MonitorID_Calc#DownstreamMonitorID( DataSetTools.dataset.DataSet )
  */
 
 public class DownstreamMonitorID extends GenericSpecial {
