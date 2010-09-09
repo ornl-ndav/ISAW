@@ -67,7 +67,7 @@ import java.util.*;
  *   menu bars <P>
  * The Command Name is :<B>SaveNX</b>. This is the name that is used in
  *   Scripts to invoke this operator 
- *   @see DataSetTools.Writer#writeDataSets(DataSetTools.dataset.DataSet[])
+ *   @see DataSetTools.writer.Writer#writeDataSets(DataSetTools.dataset.DataSet[])
  */
 public class WriteNexus extends GenericSave
 {
