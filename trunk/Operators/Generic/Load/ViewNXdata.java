@@ -62,7 +62,7 @@ import Command.*;
  * This class has been dynamically created using the Method2OperatorWizard
  * and usually should not be edited.
  * This operator is a wrapper around 
-@see NexIO.Util.NexViewUtils#getNxData(java.lang.Sring,java.lang.Sring,java.lang.Sring)
+@see NexIO.Util.NexViewUtils#getNxData(java.lang.String,java.lang.String,java.lang.String)
 
  */
 public class ViewNXdata extends GenericSpecial{
