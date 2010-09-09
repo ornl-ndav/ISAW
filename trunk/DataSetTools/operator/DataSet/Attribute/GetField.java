@@ -82,7 +82,7 @@ import  DataSetTools.operator.Parameter;
   *  @see DataSetTools.dataset.DataSet#getX_units()
   *  @see DataSetTools.dataset.DataSet#getY_label()
   *  @see DataSetTools.dataset.DataSet#getY_units()
-  *  @see DataSetTools.dataset.DataSet#getXrange()
+  *  @see DataSetTools.dataset.DataSet#getXRange()
   *  @see DataSetTools.dataset.DataSet#getNumSelected()
   *  
   */
