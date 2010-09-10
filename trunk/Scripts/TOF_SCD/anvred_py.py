@@ -72,7 +72,7 @@ from readrefl_header import *
 from readrefl_SNS import *
 from readSpecCoef import *
 from spectrumCalc import *
-from spectrum import *
+from spectrum2 import *
 from readSpectrum import *
 from absor_sphere import *
 # from jarray import *
@@ -87,11 +87,16 @@ class anvred_py(GenericTOF_SCD):
         self.addParameter(FloatPG("Total scattering linear abs coeff in cm^-1", 1.692))
         self.addParameter(FloatPG("True absorption linear abs coeff in cm^-1", 0.411))
         self.addParameter(FloatPG("Radius of spherical crystal in cm", 0.10))
-        self.addParameter(IntegerPG("Incident spectrum: iSpec = 1 fitted; = 2 data", 2))
-        self.addParameter(LoadFilePG("If iSpec = 1, file with spectrum coefficients", \
+        # self.addParameter(IntegerPG("Incident spectrum: iSpec = 1 fitted; = 2 data", 2))
+        self.addParameter(BooleanEnablePG("Is the incident spectrum fitted?","[False, 1, 1]"))
+        # self.addParameter(LoadFilePG("If iSpec = 1, file with spectrum coefficients", \
+        # "C:/SNS/Jython/anvred/spectrum.dat"))
+        self.addParameter(LoadFilePG("File with spectrum coefficients", \
         "C:/SNS/Jython/anvred/spectrum.dat"))
-        self.addParameter(IntegerPG("If iSpec = 2, the initial bank number", 1))
-        self.addParameter(IntegerPG("If iSpec = 2, input averaging range +/-", 5))
+        # self.addParameter(IntegerPG("If iSpec = 2, the initial bank number", 1))
+        # self.addParameter(IntegerPG("If iSpec = 2, input averaging range +/-", 5))
+        self.addParameter(IntegerPG("The initial detector bank number", 1))
+        # self.addParameter(IntegerPG("If iSpec = 2, input averaging range +/-", 5))
         self.addParameter(FloatPG("Wavelength to normalize to in Angstroms", 1.0))
         self.addParameter(IntegerPG("The minimum I/sig(I)", 0))
         self.addParameter(IntegerPG("Width of border (number of channels)", 5))
@@ -110,14 +115,14 @@ class anvred_py(GenericTOF_SCD):
         iSpec = self.getParameter(5).value
         specCoeffFile = self.getParameter(6).value
         initBankNo = self.getParameter(7).value
-        averageRange = self.getParameter(8).value
-        normToWavelength = self.getParameter(9).value
-        minIsigI = self.getParameter(10).value
-        numBorderCh = self.getParameter(11).value
-        ipkMin = self.getParameter(12).value
-        dMin = self.getParameter(13).value
-        iIQ = self.getParameter(14).value
-        scaleFactor = self.getParameter(15).value
+        # averageRange = self.getParameter(8).value
+        normToWavelength = self.getParameter(8).value
+        minIsigI = self.getParameter(9).value
+        numBorderCh = self.getParameter(10).value
+        ipkMin = self.getParameter(11).value
+        dMin = self.getParameter(12).value
+        iIQ = self.getParameter(13).value
+        scaleFactor = self.getParameter(14).value
         
         # open the anvred.log file in the working directory
         fileName = directory_path + 'anvred.log'
@@ -138,15 +143,17 @@ class anvred_py(GenericTOF_SCD):
         
         logFile.write('\nIncident spectrum and detector efficiency correction.')
         logFile.write('\n    iSpec = 1. Spectrum fitted to 11 coefficient GSAS Type 2 function')
-        logFile.write('\n    iSpec = 2. Spectrum data read from a spectrum file.')
+        # logFile.write('\n    iSpec = 2. Spectrum data read from a spectrum file.')
+        logFile.write('\n    iSpec = 0. Spectrum data read from a spectrum file.')
         logFile.write('\niSpec: %i\n' % iSpec)
         
         if iSpec == 1:
             logFile.write('\nFile with spectrum coefficients: ' + specCoeffFile + '\n' )
             
-        if iSpec == 2:
+        # if iSpec == 2:
+        if iSpec == 0:
             logFile.write('\nInitial bank number is %i \n' % initBankNo )
-            logFile.write('\nSmoothing range is +/- %i channels\n' % averageRange )
+            # logFile.write('\nSmoothing range is +/- %i channels\n' % averageRange )
         
         logFile.write('\nNormal spectra to a wavelength of %4.2f' % normToWavelength)
         logFile.write('\nThe minimum I/sig(I) ratio: %i' % minIsigI )
@@ -159,7 +166,7 @@ class anvred_py(GenericTOF_SCD):
         logFile.write('\n     IQ = 2. Scale factor for each detector in each setting.')
         logFile.write('\nIQ: %i\n' % iIQ )
         
-        logFile.write('\nMultiply FSQ and sig(FSQ) by: %i\n' % scaleFactor )
+        logFile.write('\nMultiply FSQ and sig(FSQ) by: %f\n' % scaleFactor )
         
         # C
         # C  CHECK ON THE EXISTANCE OF THE integrate FILE
@@ -189,7 +196,8 @@ class anvred_py(GenericTOF_SCD):
             pj = readSpecCoef(specInput, logFile, nod)
             
         # Read spectrum for each detector bank if iSpec = 2
-        if iSpec == 2:
+        # if iSpec == 2:
+        if iSpec == 0:
             # specBank is an array of arrays containing the spectra in the
             # Bankxx_spectrum.asc files.
             specBank = readSpectrum(nod, initBankNo, directory_path)
@@ -222,7 +230,9 @@ class anvred_py(GenericTOF_SCD):
                 
                 # specBank[id][0] are the times-of-flight
                 # specBank[id][1] are the counts
-                spect = spectrum( wavelength, xtof[id], averageRange, \
+                # spect = spectrum( wavelength, xtof[id], averageRange, \
+                    # one, specBank[id][0], specBank[id][1] )
+                spect = spectrum2( wavelength, xtof[id], \
                     one, specBank[id][0], specBank[id][1] )
                 if spect == 0.0:
                     print '*** Wavelength for normalizing to spectrum is out of range.'
@@ -368,8 +378,11 @@ class anvred_py(GenericTOF_SCD):
                 spect = spectrumCalc(wl, calibParam, pj, id)
                 spect = spect / spect1[id]
             
-            if iSpec == 2:
-                spect = spectrum( wl, xtof[id], averageRange, \
+            # if iSpec == 2:
+            if iSpec == 0:
+                # spect = spectrum( wl, xtof[id], averageRange, \
+                  # spect1[id], specBank[id][0], specBank[id][1] )
+                spect = spectrum2( wl, xtof[id], \
                   spect1[id], specBank[id][0], specBank[id][1] )
             
             if spect == 0.0:
@@ -440,7 +453,7 @@ class anvred_py(GenericTOF_SCD):
         S.append("@param  iSpec: If 1, the incident spectrum is fitted. If 2, use the raw spectrum.")
         S.append("@param  specCoeffFile: If iSpec = 1, the file containing the fitted coefficients.")
         S.append("@param  initBankNo: If iSpec = 2, the number of the first detector bank.")
-        S.append("@param  averageRange: If iSpec = 2, the +/- range of data points in the spectrum for averaging.")
+        # S.append("@param  averageRange: If iSpec = 2, the +/- range of data points in the spectrum for averaging.")
         S.append("@param  minIsigI: I/sigI threshold for saving a peak.")
         S.append("@param  numBorderCh: width of border. Peaks in border are rejected.")
         S.append("@param  ipkMin: minimum peak count at peak max.")
