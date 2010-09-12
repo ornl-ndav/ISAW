@@ -207,7 +207,7 @@ public class SavitzkyGolayFilter extends GenericSpecial
     *                       should be used and false otherwise.
     */
    public SavitzkyGolayFilter(DataSet ds, int nL, int nR, int M, 
-         IntList dataBlockList, int xmin, int xmax, boolean useQuickMethod,
+         IntListString dataBlockList, int xmin, int xmax, boolean useQuickMethod,
             boolean createNewDS)
    {
       this();
