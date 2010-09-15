@@ -53,10 +53,10 @@ def absor_V_rod(CenterX, CenterY, CenterZ, wl):
     # From lin_abs_coef in ISAW:
     smu = 0.367  # linear absorption coeff. for total scattering in cm_1
     amu = 0.366  # linear absorption coeff. for true absorption at 1.8 A in cm^-1
+    radius = 0.407  # radius of the vanadium rod used for TOPAZ
     
     mu = smu + (amu/1.8)*wl
 
-    radius = 0.5  # radius of the vanadium rod used for TOPAZ
     muR = mu*radius
     
     angle1 = atan( CenterX / CenterZ )  # the scattering angle in the horizontal plane
