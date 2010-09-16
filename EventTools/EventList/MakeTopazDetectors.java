@@ -91,9 +91,9 @@ public class MakeTopazDetectors
     out.println("# Lengths are in centimeters.");
     out.println("# Base and up give directions of unit vectors for a local");
     out.println("# x,y coordinate system on the face of the detector.");
-    out.println();
+    out.println("#");
     out.println("# " + (new Date()).toString() );
-    out.println();
+    out.println("#");
     out.println("6         L1     T0_SHIFT");
     out.println("7    1800.00        0.000");
     out.println("4 DETNUM  NROWS  NCOLS   WIDTH  HEIGHT   DEPTH   DETD   CenterX   CenterY   CenterZ    BaseX    BaseY    BaseZ      UpX      UpY      UpZ");
