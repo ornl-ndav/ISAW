@@ -1111,16 +1111,26 @@ public class ExtGetDS
                dsInf.NxdataNode , null , dsInf.startGroupID );
       
 
-      if( dsInf.NxdataNode != null )
-      {
-         NxDataStateInfo DataState = new NxDataStateInfo( dsInf.NxdataNode ,
+      if ( dsInf.NxdataNode != null )
+         if ( dsInf.NxdataNode.getNodeClass( ).equals( "NXevent_data" ) )
+         {
+           NxEventDataStateInfo DataState = new NxEventDataStateInfo(
+                 dsInf.NxdataNode ,
+                 EntryState.InstrumentNode ) ;
+           DataState.startDetectorID = dsInf.startDetectorID;
+           
+           FileState.Push( DataState );
+           
+         } else
+         {
+            NxDataStateInfo DataState = new NxDataStateInfo( dsInf.NxdataNode ,
                   FileState.InstrumentNode , FileState , dsInf.startGroupID );
-         
-         DataState.startDetectorID = dsInf.startDetectorID;
-         
-         FileState.Push( DataState );
 
-      }
+            DataState.startDetectorID = dsInf.startDetectorID;
+
+            FileState.Push( DataState );
+
+         }
 
       boolean res = entry.processDS( DS , 
                                      EntryNode , 
@@ -1516,12 +1526,18 @@ public class ExtGetDS
                      AddOneUnMergedHistogramDataSets( nn , childNode );
                      nxLogLocator.scanForNxLogUnderNode( childNode );
                      
+                  }else if( nodeClass.equals("NXevent_data"))
+                  {
+                     AddEventDataSet(  childNode,nn );
+                     nxLogLocator.scanForNxLogUnderNode( childNode );
                   }
                   else if( ! nodeClass.equals( "SDS" ) )
                      nxLogLocator.scanForNxLogUnderNode( childNode );
                   
                }// if child node is not null
             }// for each NXentry child
+            
+            SetEventDSInfo( InstrumentNode,startEntryToDSsElement );
             if( MonitorDSinf != null )
                EntryToDSs.insertElementAt( MonitorDSinf ,
                                            startEntryToDSsElement );
@@ -1552,7 +1568,21 @@ public class ExtGetDS
        */
    }
 
-
+   private void SetEventDSInfo(NxNode InstrumentNode, int startDS )
+   {
+      for( int i= startDS; i < EntryToDSs.size(); i++)
+      {
+         DataSetInfo DSInf = (DataSetInfo)EntryToDSs.get(i);
+         if( DSInf.NxdataNode.getNodeClass( ).equals( "NXevent_data" ))
+         {
+            NxEventDataStateInfo EvState = new NxEventDataStateInfo( 
+                  DSInf.NxdataNode, InstrumentNode);
+            DSInf.startGroupID =EvState.startDetectorID;
+            DSInf.endGroupID  = EvState.nGroups+EvState.startDetectorID; 
+            
+         }
+      }
+   }
    private void SortOnDSName( int startEntryToDSsElement ,
             Vector< DataSetInfo > EntryInfo )
    {
@@ -1822,22 +1852,23 @@ public class ExtGetDS
    private int[] GetMinMaxSetGroupDetectorIDs( NxNode DataNode ,
                                                NxNode InstrumentNode )
    {
-
-      NxNode dataNode = DataNode.getChildNode( "data" );
-      
-      int[] dims = dataNode.getDimension();
-      
       int NGroups = 1;
-      
-      if( dims != null )
-         
-         for( int i = 0 ; i < dims.length - 1 ; i++ )
-            NGroups *= dims[ i ];
-      
-      else
-         
-         NGroups = 0;
+      if ( !DataNode.getNodeClass( ).equals( "NXevent_data" ) )
+      {
+         NxNode dataNode = DataNode.getChildNode( "data" );
 
+         int[] dims = dataNode.getDimension( );
+
+         if ( dims != null )
+
+            for( int i = 0 ; i < dims.length - 1 ; i++ )
+               NGroups *= dims[i];
+
+         else
+
+            NGroups = 0;
+      }
+      
       String Link = null;
       
       for( int ik = 0 ; ik < DataNode.getNChildNodes() ; ik++ )
@@ -1869,6 +1900,9 @@ public class ExtGetDS
 
       int[] ids = NexUtils.getIntArrayFieldValue( detNode , "pixel_id" );
 
+      if(DataNode.getNodeClass( ).equals( "NXevent_data" ) )
+         NGroups = ids.length;
+      
       if( ids == null)
           ids = NexUtils.getIntArrayFieldValue( detNode , "id" );
       
@@ -2283,7 +2317,14 @@ public class ExtGetDS
 
 
    }
-
+   
+   
+   private void AddEventDataSet( NxNode NXeventNode, NxNode NXentryNode)
+   {
+      //Will set start and end groupID when have the instrument Node
+      EntryToDSs.add(  new DataSetInfo(NXentryNode, NXeventNode,-1,-1,null) );
+      
+   }
 
    private void AddUnMergedHistogramDataSets( NxNode nn , Vector EntryToDSs )
    {
@@ -2317,7 +2358,7 @@ public class ExtGetDS
                            null );
                   
                   DatInf.nelts = nGroups;
-                  
+                  DatInf.ndetectors = 1;
                   EntryToDSs.addElement( DatInf );
                }
             }
@@ -2381,7 +2422,7 @@ public class ExtGetDS
       {
          DataSetInfo DatInf = (DataSetInfo) EntryToDSs.elementAt( kk );
          
-         if( DatInf.NxentryNode == nn && DatInf.NxdataNode != null )
+         if( DatInf.NxentryNode == nn && DatInf.NxdataNode != null  )
          {
             int[] dat = GetMinMaxSetGroupDetectorIDs( DatInf.NxdataNode ,
                      InstrumentNode );
@@ -2590,7 +2631,7 @@ public class ExtGetDS
       Vector<int[]> AssignedDetectorIDs = new Vector<int[]>();
      for( int im=0; im < EntryToDSs.size() ; im++ )
       {
-            DataSetInfo DatInf = (DataSetInfo) EntryToDSs.elementAt( im );
+           DataSetInfo DatInf = (DataSetInfo) EntryToDSs.elementAt( im );
            int ndetectors = Math.max(  1,DatInf.ndetectors );
            if( DatInf.NxentryNode == nn && ndetectors ==1 &&
                     DatInf.startDetectorID < 0)
