@@ -911,6 +911,8 @@ public class RowColGrid implements IDataGrid {
                
                Grid[ (int) pinf.row() - 1 ][ (int) pinf.col() - 1 ] = 
                                                            ds.getData_entry( i );
+               pixel_pos[ (int) pinf.row() - 1 ][ (int) pinf.col() - 1 ] =
+                  new Vector3D(AttrUtil.getDetectorPosition( ds.getData_entry( i ) ));
                
             }
          }
@@ -955,11 +957,13 @@ public class RowColGrid implements IDataGrid {
    public void clearData_entries() {
 
       Grid = new Data[ nrows ][ ncols ];
-      
+      pixel_pos= new Vector3D[ nrows ][ ncols ];
       for( int i = 0 ; i < nrows ; i++ )
          for( int j = 0 ; j < ncols ; j++ )
-            
+         {
             Grid[ i ][ j ] = null;
+            pixel_pos[i][j] = null;
+         }
 
       filled = false;
       NSet = 0;
