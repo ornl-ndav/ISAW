@@ -78,11 +78,13 @@ public class NxDetector{
    * Fills out an existing DataSet with information from the
    * NXdetector section of a Nexus datasource. NOT USED. Most of the
    * NXdetector field read by setOtherAttributes in NXData_util.java
-   * @param node the current node positioned to an NXdata part of a
+   * @param node the current node positioned to an NXdetector part of a
    * datasource
    * @param DS the existing DataSet that is to be filled out
    * 
    * @return error status: true if there is an error otherwise false
+   * 
+   * NOTE: Not called yet
    */
   public boolean processDS( NxNode node ,  DataSet DS ){
     errormessage = "Improper NxDetector inputs";
