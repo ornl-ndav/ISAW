@@ -244,7 +244,7 @@ public class NexUtils implements INexUtils {
      *        next dimension represent col then row, then detectors. col
      *        or row dimensions can be missing.
      */
-    public  boolean setUpNXdetectorAttributes( DataSet DS , NxNode NxDataNode ,
+    public boolean setUpNXdetectorAttributes( DataSet DS , NxNode NxDataNode ,
             NxNode NxDetector , int startDSindex , NxfileStateInfo States ) {
 
       ConvertDataTypes.addAttribute(DS, 
@@ -1847,6 +1847,25 @@ public class NexUtils implements INexUtils {
     
     }
     
+    /**
+     *   Returns the first NxEventDataStateInfo in the fileState link list of state
+     *   information
+     *   
+     *   @param fileState The starting State in the linked list
+     */
+    public static NxEventDataStateInfo getEventStateInfo( NxfileStateInfo fileState ) {
+      
+        if ( fileState == null )
+            return null;
+     
+        for ( StateInfo inf = fileState ; inf != null; inf = inf.getNext() ) {
+            if ( inf instanceof NxEventDataStateInfo )
+                return (NxEventDataStateInfo) inf;
+        }
+   
+        return null;
+    
+    }
     
     
 
