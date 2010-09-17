@@ -80,13 +80,20 @@ public class QueryNxEntry {
       if( State == null )
          return null;
       NxDataStateInfo dataState = NexUtils.getDataStateInfo( State );
+      NxEventDataStateInfo eventState = NexUtils.getEventStateInfo(State);
       NxEntryStateInfo EntryInfo = NexUtils.getEntryStateInfo( State );
       NxDetectorStateInfo detStateInfo = NexUtils.getDetectorStateInfo( State );
       NxfileStateInfo fileInfo = State;
 
       if( NxDataNode == null )
          return new ProcessNxEntry();
-      if( dataState == null ) {
+      if( dataState == null  && eventState==null )
+      if( NxDataNode.getNodeClass().equals( "NXevent_data" ))
+      {
+         eventState = new NxEventDataStateInfo( NxDataNode, NxInstrumentNode);
+         State.Push( eventState );
+      }else
+      {
          dataState = new NxDataStateInfo( NxDataNode , NxInstrumentNode ,
                   State , startGroupID );
          State.Push( dataState );
@@ -114,8 +121,13 @@ public class QueryNxEntry {
             }
 
       }
-
-      if( ( dataState.linkName == null ) && ( fileInfo.xmlDoc == null ) )
+      boolean LinkName= false;
+      if( dataState != null)
+         LinkName = dataState.linkName != null;
+      else if( eventState != null)
+         LinkName = eventState.linkName != null;
+      
+      if( !LinkName && ( fileInfo.xmlDoc == null ) )
          return new ProcessOldNxEntry();
       else
          return new ProcessNxEntry();
