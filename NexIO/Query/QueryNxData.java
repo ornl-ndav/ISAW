@@ -64,6 +64,9 @@ public class QueryNxData {
   public static IProcessNxData getNxDataProcessor(NxfileStateInfo State, 
               NxNode NxDataNode, NxNode NxInstrumentNode){
 
+     if( NxDataNode.getNodeClass( ).equals( "NXevent_data" ))
+        return new Process1NxEvent();
+     
      NxDataStateInfo DataInfo = new NxDataStateInfo( NxDataNode,
              NxInstrumentNode,State, 0);
     
