@@ -21,7 +21,7 @@
 
 from math import *
 
-def absor_V_rod(CenterX, CenterY, CenterZ, wl):
+def absor_V_rod( angleH, angleV, wl):
     "Returns the absorption correction for a vanadium cylinder."
     
     
@@ -59,9 +59,7 @@ def absor_V_rod(CenterX, CenterY, CenterZ, wl):
 
     muR = mu*radius
     
-    angle1 = atan( CenterX / CenterZ )  # the scattering angle in the horizontal plane
-    
-    theta = (angle1*180.0/pi)/2.0   # theta is the theta angle in the horizontal plane
+    theta = (angleH*180.0/pi)/2.0   # theta is the theta angle in the horizontal plane
 
     # ! Using the polymial coefficients, calulate ASTAR (= 1/transmission) at
     # ! theta values below and above the actual theta value.
@@ -83,14 +81,12 @@ def absor_V_rod(CenterX, CenterY, CenterZ, wl):
 	
     # !	Calculate TBAR as defined by Coppens.
 
-    tbar1 = -log(trans)/mu
+    tbar1 = -log(trans1)/mu
 
     # Calculate total path length and transmission for scattered
     # beam out of the horizontal plane.
     
-    diagonal = sqrt( CenterX**2 + CenterZ**2 )
-    angle2 = atan( CenterY / diagonal )  # angle out of the plane
-    tbar2 = tbar1 / cos( angle2 )  # path length
+    tbar2 = tbar1 / cos( angleV )  # path length
     trans2 = exp( -mu * tbar2 )    # transmission
     
     return trans2
