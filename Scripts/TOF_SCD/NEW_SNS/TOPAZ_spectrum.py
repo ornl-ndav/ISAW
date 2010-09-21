@@ -165,14 +165,14 @@ class TOPAZ_spectrum(GenericTOF_SCD):
             lenCounts = len( counts )
             
             # Calculate detector horizontal and vertical angles
-            diagonal = sqrt( CenterX[bank]**2 + CenterZ[bank]**2 )
-            angleH = atan( CenterX[bank] / CenterZ[bank] )  # the scattering angle in the horizontal plane
-            angleV = atan( CenterY[bank] / diagonal )  # angle out of the horizontal plane
+            diagonal = sqrt( CenterX[i]**2 + CenterZ[i]**2 )
+            angleH = atan( CenterX[i] / CenterZ[i] )  # the scattering angle in the horizontal plane
+            angleV = atan( CenterY[i] / diagonal )  # angle out of the horizontal plane
             
             # loop through the spectrum to obtain corrected counts
             outFile.write( 'Bank %d\n' % bank )
             for j in range(lenCounts):
-                wl = hom * time[j] / ( L1 + DetD[bank] )  # wavelength
+                wl = hom * time[j] / ( L1 + DetD[i] )  # wavelength
                 transmission = absor_V_rod( angleH, angleV, wl )
                 countsCorr = counts[j] / transmission
                 outFile.write( ' %12.3f %12.3f %12.4f %12.3f %12.4f\n' \
