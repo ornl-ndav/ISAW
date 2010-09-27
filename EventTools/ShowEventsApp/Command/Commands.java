@@ -56,8 +56,11 @@ public class Commands
    */
   public static final String INIT_DQ_DONE        = "INIT_DQ_DONE";
   public static final String INIT_HISTOGRAM_DONE = "INIT_HISTOGRAM_DONE";
+  public static final String HISTOGRAM_RESIZED   = "HISTOGRAM_RESIZED";
+
   public static final String INIT_NEW_INSTRUMENT_DONE 
                                                 = "SET_NEW_INSTRUMENT_DONE";
+
 
   public static final String INIT_EVENTS_VIEW = "INIT_EVENTS_VIEW";
 
