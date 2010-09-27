@@ -66,6 +66,8 @@ import MessageTools.*;
 public class filePanel implements IReceiveMessage 
 {
    private static final long  serialVersionUID = 1L;
+   public  static final int   MAX_ALLOWED_BINS = 2048;
+
    private MessageCenter      message_center;
    private JPanel             panel;
    private JTabbedPane        tabPane;
@@ -76,7 +78,9 @@ public class filePanel implements IReceiveMessage
    private JButton            bankFileButton;
    private JButton            IDmapFileButton;
    private JButton            matFileButton;
+   private JButton            applyButton;
    private JButton            loadFiles;
+   private JButton            continueButton;
    private JTextField         evFileName;
    private JTextField         detFileName;
    private JTextField         incFileName;
@@ -90,6 +94,7 @@ public class filePanel implements IReceiveMessage
    private JTextField         omega;
    private JTextField         Nbins;
    private JTextField         Hist_size;
+   private JTextField         Hist_allocated;
    private JTextField         absorptionPower;
    private JTextField         absorptionRadius;
    private JTextField         smuAbsorption;
@@ -159,6 +164,7 @@ public class filePanel implements IReceiveMessage
       this.message_center = message_center;
       message_center.addReceiver(this, Commands.EXIT_APPLICATION);
       message_center.addReceiver(this, Commands.MAP_EVENTS_TO_Q);
+      message_center.addReceiver(this, Commands.HISTOGRAM_RESIZED);
 
       new SharedData();               // Read in IsawProps.dat
 
@@ -308,7 +314,7 @@ public class filePanel implements IReceiveMessage
       BoxLayout bl = new BoxLayout( ConfigPanel, BoxLayout.Y_AXIS);
       ConfigPanel.setLayout(  bl );
       JPanel Res = new JPanel();
-      Res.setLayout(  new GridLayout( 6,2) );
+      Res.setLayout(  new GridLayout( 7,2) );
       
       Res.add(  new JLabel("RunNumber") );
       runNumber = new JTextField("0");
@@ -332,29 +338,34 @@ public class filePanel implements IReceiveMessage
       
       Res.add(  new JLabel("Histogram Resolution (Steps)") );
       Nbins = new JTextField(""+IsawEV.NUM_BINS);
-      Nbins.setEnabled( false );
       Nbins.setHorizontalAlignment(JTextField.RIGHT);
       Res.add( Nbins );
 
       Res.add( new JLabel("Histogram Size (Mega Bytes)") );
-      long size = Long.parseLong( Nbins.getText() );
-      size = size * size * size * 4 / 1000000;
-      Hist_size = new JTextField( ""+size );
+      Hist_size = new JTextField();
       Hist_size.setHorizontalAlignment(JTextField.RIGHT);
-      Hist_size.setEnabled( false );
+      Hist_size.setEditable( false );
+      setRequestedHistogramSize();
       Res.add( Hist_size );      
+
+      Res.add( new JLabel("Histogram Mem Allocated") );
+      Hist_allocated = new JTextField();
+      Hist_allocated.setHorizontalAlignment(JTextField.RIGHT);
+      Hist_allocated.setEditable( false );
+      setAllocatedHistogramSize( true );
+      Res.add( Hist_allocated );
 
       ConfigPanel.add(  Res );
      
-      JButton ApplyButton = new JButton("Apply");
-      ConfigPanel.add(  ApplyButton );
-      ApplyButton.addActionListener( new LoadListener() );
-      
+      applyButton = new JButton("Apply");
+      ConfigPanel.add(  applyButton );
+      applyButton.addActionListener( new ApplyConfigListener() );
 
       ConfigPanel.add(  Box.createVerticalGlue( ) );
-      
       return ConfigPanel;
    }
+
+
    public JPanel buildUDPPanel()
    {
       JPanel Res = new JPanel();
@@ -408,9 +419,9 @@ public class filePanel implements IReceiveMessage
       subPanel.add( Pause );
       Pause.addActionListener( list );
 
-      Pause = new JButton( "Continue");
-      subPanel.add( Pause );
-      Pause.addActionListener( list );
+      continueButton = new JButton( "Continue");
+      subPanel.add( continueButton );
+      continueButton.addActionListener( list );
       
       Pause = new JButton( "Pause & Clear");
       subPanel.add( Pause );
@@ -1164,7 +1175,22 @@ public class filePanel implements IReceiveMessage
        return false;
      }
 
-     if ( message.getName().equals(Commands.EXIT_APPLICATION) ) 
+     else if ( message.getName().equals(Commands.HISTOGRAM_RESIZED) )
+     {
+       Object obj = message.getValue();
+       if ( obj instanceof Integer )
+       {
+         int nbins = ((Integer)obj).intValue();
+         Nbins.setText(""+nbins);
+         setRequestedHistogramSize();
+         setAllocatedHistogramSize( true );
+         setLoadEnable( true );
+       }
+       else
+         System.out.println("Invalid value in HISTOGRAM_RESIZED message");
+     }
+
+     else if ( message.getName().equals(Commands.EXIT_APPLICATION) ) 
        CloseTCP_ConnectionAndExit();
 
      return false;
@@ -1238,10 +1264,8 @@ public class filePanel implements IReceiveMessage
    }
    
    /**
-    * Used for each button to load the files if Event File, Det file,
-    * or Mat File button is pressed.  Also to send a message if Load
-    * is pressed containing all the file names as well as the first event,
-    * number of events to load, and number of events to load.
+    * Sends a message to start loading data if Load is pressed when the
+    * "From File" or "From Live Data" tabs are selected.  
     */
    private class LoadListener implements ActionListener
    {
@@ -1292,66 +1316,7 @@ public class filePanel implements IReceiveMessage
               message_center.send(mess);
             }
           }
-         else if( tabPane.getSelectedIndex() == 2 )
-         {
-            int runNum, nbins1;
-            float phi1,chi1,omega1;
 
-        
-            try
-            {
-               
-               runNum = Integer.parseInt(runNumber.getText( ).trim());
-            }catch(Exception s1)
-            {
-               runNum = 0;
-            }
-            try
-            {
-               
-               chi1 = Float.parseFloat( chi.getText( ).trim());
-            }catch(Exception s1)
-            {
-               chi1 = 0;
-            }
-
-            try
-            {
-               
-               phi1 = Float.parseFloat( phi.getText( ).trim());
-            }catch(Exception s1)
-            {
-               phi1 = 0;
-            }
-
-            try
-            {
-               
-               omega1 = Float.parseFloat( omega.getText( ).trim());
-            }catch(Exception s1)
-            {
-               omega1 = 0;
-            }
-
-            try
-            {
-               
-               nbins1 = Integer.parseInt(Nbins.getText( ).trim());
-            }catch(Exception s1)
-            {
-               nbins1 = 0;
-            }
-            
-            ConfigLoadCmd message = new ConfigLoadCmd( runNum, phi1, 
-                                                   chi1,omega1, nbins1);
-            Message load_message = new Message( Commands.LOAD_CONFIG_INFO,
-                  message,
-                  collapse_messages,
-                  use_separate_thread );
-            
-            message_center.send( load_message);
-
-         }
           else if( file_info_valid() && common_info_valid() )
           {
             LoadEventsCmd fileInfo = 
@@ -1382,6 +1347,87 @@ public class filePanel implements IReceiveMessage
             message_center.send( load_message );
           }
       }
+   }
+
+   /**
+    * Sends a message to start loading data if Load is pressed when the
+    * "From File" or "From Live Data" tabs are selected.  
+    */
+   private class ApplyConfigListener implements ActionListener
+   {
+     public void actionPerformed(ActionEvent e)
+     {
+
+       int     runNum, nbins1;
+       float   phi1, chi1, omega1;
+       boolean collapse_messages   = true;
+       boolean use_separate_thread = true;
+
+       try
+       {
+         runNum = Integer.parseInt(runNumber.getText( ).trim());
+         if ( runNum < 0 )
+           throw new Exception();
+       }catch(Exception s1)
+       {
+         ShowError( "Run number must be a non-negative integer" );
+         return;
+       }
+       try
+       {
+         chi1 = Float.parseFloat( chi.getText( ).trim());
+       }catch(Exception s1)
+       {
+         ShowError( "Chi angle must be a number" );
+         return;
+       }
+
+       try
+       {
+         phi1 = Float.parseFloat( phi.getText( ).trim());
+       }catch(Exception s1)
+       {
+         ShowError( "Phi angle must be a number" );
+         return;
+       }
+
+       try
+       {
+         omega1 = Float.parseFloat( omega.getText( ).trim());
+       }catch(Exception s1)
+       {
+         ShowError( "Omega angle must be a number" );
+         return;
+       }
+
+       try
+       {
+         nbins1 = Integer.parseInt(Nbins.getText( ).trim());
+         if ( nbins1 > MAX_ALLOWED_BINS || nbins1 <= 0 )
+           throw new Exception();
+       }catch(Exception s1)
+       {
+         ShowError( "Number of steps must be a positive integer <= "
+                     + MAX_ALLOWED_BINS );
+         return;
+       }
+                                          // Temporarily disable loading to
+                                          // allow time to re-allocate the
+                                          // histogram
+       setRequestedHistogramSize();
+       setAllocatedHistogramSize( false );
+       setLoadEnable( false );
+
+       ConfigLoadCmd message = new ConfigLoadCmd( runNum, 
+                                                  phi1, chi1, omega1, 
+                                                  nbins1 );
+
+       Message load_message = new Message( Commands.LOAD_CONFIG_INFO,
+                                           message,
+                                           collapse_messages,
+                                           use_separate_thread );
+       message_center.send( load_message);
+     }
    }
 
 
@@ -1523,6 +1569,50 @@ public class filePanel implements IReceiveMessage
             }
          }
       }
+   }
+
+
+  /**
+   *  Set the enabled state for buttons that can trigger loading.  
+   *  Loading has to be disabled while a new histogram is being allocated.
+   * 
+   *  @param enable  Pass in true to enable the buttons and false to disable
+   *                 them.
+   */
+   private void setLoadEnable( boolean enable )
+   {
+     loadFiles.setEnabled( enable );
+     applyButton.setEnabled( enable );
+     continueButton.setEnabled( enable );
+   }
+
+
+   /**
+    *  Calculate and display the requested histogram size in the 
+    *  Hist_size text field.
+    */
+   private void setRequestedHistogramSize()
+   {
+      long size = Long.parseLong( Nbins.getText() );
+      size = size * size * size * 4 / 1000000;
+      Hist_size.setText( "" + size );
+   }
+
+
+   /**
+    *  Calculate and display the requested histogram size in the 
+    *  Hist_size text field.
+    *
+    *  @param valid  Pass in true if the value should just be copied
+    *                from the requested size field, and false if the
+    *                value should be zero.
+    */
+   private void setAllocatedHistogramSize( boolean valid )
+   {
+     if ( valid )
+       Hist_allocated.setText( Hist_size.getText() );
+     else
+       Hist_allocated.setText( "0" );
    }
 
 

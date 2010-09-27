@@ -56,6 +56,7 @@ import EventTools.EventList.IEventList3D;
 import EventTools.ShowEventsApp.Command.Commands;
 import EventTools.ShowEventsApp.Command.SelectionInfoCmd;
 import EventTools.ShowEventsApp.Command.SetNewInstrumentCmd;
+import EventTools.ShowEventsApp.Command.ConfigLoadCmd;
 import EventTools.ShowEventsApp.Command.PeaksCmd;
 import EventTools.ShowEventsApp.Command.FindPeaksCmd;
 import EventTools.ShowEventsApp.Command.PeakImagesCmd;
@@ -78,6 +79,8 @@ public class HistogramHandler implements IReceiveMessage
   private float         MAX_DEFAULT_RADIUS = 2.0f;
   private MessageCenter message_center;
   private MessageCenter view_message_center;
+
+  private String        current_instrument = "";
 
   private Histogram3D   histogram = null;
   private int           num_bins;
@@ -118,6 +121,7 @@ public class HistogramHandler implements IReceiveMessage
     
     message_center.addReceiver( this, Commands.ADD_EVENTS_TO_HISTOGRAMS );
     message_center.addReceiver( this, Commands.INIT_HISTOGRAM );
+    message_center.addReceiver( this, Commands.LOAD_CONFIG_INFO );
     message_center.addReceiver( this, Commands.SET_WEIGHTS_FROM_HISTOGRAM );
     message_center.addReceiver( this, Commands.ADD_HISTOGRAM_INFO );
     message_center.addReceiver( this, Commands.GET_HISTOGRAM_MAX );
@@ -198,6 +202,25 @@ public class HistogramHandler implements IReceiveMessage
        }
 
       return false;
+    }
+
+    else if ( message.getName().equals(Commands.LOAD_CONFIG_INFO) )
+    {                                          // MAY NEED TO RESIZE HISTOGRAM
+      Object obj = message.getValue();
+      if ( obj instanceof ConfigLoadCmd )
+      {
+        ConfigLoadCmd cmd = (ConfigLoadCmd)obj;
+        num_bins = cmd.getNbins();
+
+        if (histogram == null || histogram.xEdgeBinner().numBins() != num_bins)
+          Set_Histogram( current_instrument );
+
+        Message resized = new Message( Commands.HISTOGRAM_RESIZED,
+                                       new Integer(num_bins),
+                                       true,
+                                       true );    
+        message_center.send( resized );
+      }
     }
 
     else if ( message.getName().equals(Commands.INIT_HISTOGRAM) )
@@ -503,24 +526,38 @@ public class HistogramHandler implements IReceiveMessage
       return false;
     }
 
-    if ( inst.equals("SNAP") ||
-         inst.equals("TOPAZ") )
-      Set_Histogram( num_bins, max_Q, -40.0f, 0, -25.0f, 25.0f, -25.0f, 25.0f );
-
-    else if ( inst.equals("ARCS") ||
-              inst.equals("SEQ")  )
-      Set_Histogram( num_bins, max_Q, -40.0f, 0, -15.0f, 40.0f, -15.0f, 15.0f );
-
-    else
-      Set_Histogram( num_bins, max_Q, -24.0f, 0, -12.0f, 12.0f, -12.0f, 12.0f );
+    current_instrument = inst;
+    Set_Histogram( inst );
 
      return true;
   }
 
 
   /**
+   *  Adjust region of reciprocal space covered to match the requirements
+   *  of the specified instrument.
+   */
+  synchronized private void Set_Histogram( String instrument )
+  {
+    if ( instrument.equals("SNAP") ||
+         instrument.equals("TOPAZ") )
+      Set_Histogram(num_bins, max_Q, -40.0f, 0, -25.0f, 25.0f, -25.0f, 25.0f);
+
+    else if ( instrument.equals("ARCS") ||
+              instrument.equals("SEQ")  )
+      Set_Histogram(num_bins, max_Q, -40.0f, 0, -15.0f, 40.0f, -15.0f, 15.0f);
+
+    else
+      Set_Histogram(num_bins, max_Q, -40.0f, 0, -25.0f, 25.0f, -25.0f, 25.0f);
+  }
+
+
+  /**
    *  Set histogram to be a new empty histogram covering the specified
-   *  region of reciprocal space.
+   *  region of reciprocal space.  Allocate the histogram if it was not
+   *  previously allocated to have the requested size.  If allocating the
+   *  memory fails, keep trying with reduced size histograms, until the
+   *  allocation succeeds.
    *
    *  @param num_bins  The number of bins to use in half of the region
    *                   for the histogram.
@@ -572,8 +609,49 @@ public class HistogramHandler implements IReceiveMessage
     ProjectionBinner3D y_binner = new ProjectionBinner3D(y_bin1D, yVec);
     ProjectionBinner3D z_binner = new ProjectionBinner3D(z_bin1D, zVec);
 
-    if ( histogram == null )
-      histogram = new Histogram3D( x_binner, y_binner, z_binner );
+    if ( histogram == null || histogram.xEdgeBinner().numBins() != num_bins )
+    {
+      boolean allocated_OK = false;
+      while ( num_bins > 0 && !allocated_OK )
+      {
+        try
+        {
+          long size = 4L * num_bins * num_bins * num_bins / 1000000L;
+          histogram = null;         // let the original histogram be freed
+          Util.sendInfo("Allocating histogram with " + num_bins + " steps " +
+                         size + " Mega Bytes...");
+          Util.sendInfo("A large histogram may take a while...PLEASE WAIT");
+          histogram = new Histogram3D( x_binner, y_binner, z_binner );
+          allocated_OK = true;
+          Util.sendInfo( "Histogram allocated OK" );
+        }
+        catch ( Throwable ex )
+        {
+/*
+          try
+          {
+            Thread.sleep( 5000 );    // pause a bit to let the system 
+                                     // recover from trying to allocate all
+                                     // of the memory.
+          }
+          catch ( Exception sleep_exception )
+          {
+            System.out.println("Thread sleep interrupted");
+          }
+*/
+          Util.sendError( "FAILED to ALLOCATE HISTOGRAM..." );
+          num_bins /= 2;
+          x_bin1D = new UniformEventBinner( qx_min, qx_max, num_bins );
+          y_bin1D = new UniformEventBinner( qy_min, qy_max, num_bins );
+          z_bin1D = new UniformEventBinner( qz_min, qz_max, num_bins );
+
+          x_binner = new ProjectionBinner3D(x_bin1D, xVec);
+          y_binner = new ProjectionBinner3D(y_bin1D, yVec);
+          z_binner = new ProjectionBinner3D(z_bin1D, zVec);
+        }
+      }
+      this.num_bins = num_bins;
+    }
     else
     {
       histogram.setHistogramPosition( x_binner, y_binner, z_binner );
