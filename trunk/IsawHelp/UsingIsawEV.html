@@ -35,6 +35,29 @@ the run number and goniometer angles can be entered. The values entered
 will be recorded in the peaks file so that peaks files from multiple runs
 can be exported to other applications.  Currently, IsawEV can only be used
 with one run at a time.
+<BR><BR>
+The "Configure" tab also allows specifying the number of steps in the x,y and z
+directions for the 3D reciprocal space histogram that is used for finding peaks
+and for determining whether or not an event should be displayed and how the
+event is colored.  512 steps in x, y and z, for a total of slightly more than
+500 mega bytes, works well for many purposes.  If higher resolution is desired
+for image slices and the approximate spherical integration (described below) 
+this can be raised, provided the system has enough memory.  The total required 
+memory rises rapidly with the number of steps: 1024 steps requires than 4 
+giga bytes and 2048 steps requires more than 32 gigabytes.  This has been
+tested up to about 1800 steps, and is currently limited to 2048 steps. In 
+order to access such a large amount of memory, IsawEV will have to be
+started with a larger memory allocation.  On the SNS systems this can be
+done from the command line using something like:
+<BR><BR>
+isawev -mx20000m 
+<BR><BR>
+to allocate 20,000 megabytes total for all uses in IsawEV.
+Allocating such a large array takes some time.  If the allocation fails,
+the requested size will be divided by 2, until the size gets small enough so
+that the allocation can be made.  The data will need to be reloaded if the
+histogram size is changed.
+<BR><BR>
 To actually load the data from a file, select the "From File" tab, then press
 the "Neutron Event File" button to select the raw event data file to load.
 If the events are to be weighted by the incident spectrum select the 
@@ -294,10 +317,16 @@ bottom of the panel to make them effective.
 <BR>
 <BR>
 IsawEV maintains an underlying histogram of events in 
-reciprocal space.  Previous versions used a 512x512x512 histogram
-requiring 500 Megabytes.  This version uses a 768x768x768 histogram
-which requires 1.8 Gigabytes.  This will be configurable by the user
-in future versions.  The Find Peaks panel can be used to search through 
+reciprocal space.  Previous versions used a fixed 512x512x512 histogram
+requiring more than 500 Megabytes.  The default is still 512 steps, but
+this version allows the user to configure
+the histogram size.  As the histogram size increases, the intensity of the 
+peaks decreases, since the counts are split between smaller histogram bins.
+Values like 256, 512, 768 or 1024 steps should work well for many cases, 
+though processing time increases as the number of steps increases.  
+<BR>
+<BR>
+The Find Peaks panel can be used to search through 
 this histogram for local maxima.  The maximum number of peaks
 to find and the minimum peak intensity can be specified to control the
 find peaks process.  The peaks that are found will be marked on the
