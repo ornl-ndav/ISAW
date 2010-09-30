@@ -2,7 +2,7 @@
 <banking xmlns='http://neutrons.ornl.gov/SNS/ASG/Banking'>
   <facility>SNS</facility>
   <instrument>TOPAZ</instrument>
-  <date>2010-03-15</date>
+  <date>2010-09-22</date>
   <bank>
     <number>1</number>
     <x_size>256</x_size>
@@ -129,5 +129,14 @@
       <stop>983039</stop>
     </continuous_list>
   </bank>
-  <total_pixel_number>917504</total_pixel_number>
+  <bank>
+    <number>15</number>
+    <x_size>256</x_size>
+    <y_size>256</y_size>
+    <continuous_list>
+      <start>983040</start>
+      <stop>1048575</stop>
+    </continuous_list>
+  </bank>
+  <total_pixel_number>1048576</total_pixel_number>
 </banking>
