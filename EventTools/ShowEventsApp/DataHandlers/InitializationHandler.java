@@ -187,7 +187,7 @@ public class InitializationHandler implements IReceiveMessage
                                   load_file_cmd.getAbsorptionAMU()  );
       InitData( new_instrument_cmd );
 
-      int MAX_WAIT = 20;
+      int MAX_WAIT = 50;
       int wait_count = 0;
       while ( wait_count < MAX_WAIT && !InitDone() )
       {
