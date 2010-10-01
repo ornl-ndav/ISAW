@@ -48,7 +48,7 @@ import EventTools.ShowEventsApp.ViewHandlers.*;
  */
 public class IsawEV 
 {
-  public  static final int NUM_BINS = 768;
+  private static final int REQUESTED_NUM_BINS = 768;
 
   /**
    *  Construct an instance of the IsawEV application.
@@ -60,8 +60,6 @@ public class IsawEV
                                         // most of the initial data flow
                                         // messages.
     MessageCenter message_center = new MessageCenter("MAIN MESSAGE CENTER");
-    int update_time_ms = 30;
-    new TimedTrigger( message_center, update_time_ms );
 
 //    message_center.setDebugReceive( true );
 //    message_center.setDebugSend( true );
@@ -72,12 +70,12 @@ public class IsawEV
                                         // and the 3D event viewer
     MessageCenter view_message_center = 
                                    new MessageCenter("VIEW MESSAGE CENTER");
-    int view_update_time_ms = 2500;
-    new TimedTrigger(view_message_center, view_update_time_ms );
 
+    HistogramHandler histhand = 
+        new HistogramHandler( message_center, view_message_center, 
+                              REQUESTED_NUM_BINS );
 
     new multiPanel( message_center, view_message_center );
-
 
     new InitializationHandler( message_center );
 
@@ -85,14 +83,11 @@ public class IsawEV
 
     new QMapperHandler( message_center );
 
-    new HistogramHandler( message_center, view_message_center, NUM_BINS );
-
     new QuickIntegrateHandler( message_center );
 
     new PeakListHandler( message_center );
 
     new OrientationMatrixHandler( message_center );
-
 
     new PeakViewHandler( message_center );
 
@@ -107,6 +102,12 @@ public class IsawEV
     new QViewHandler( view_message_center );
     
     new UpDateTrigger( view_message_center );
+
+    int update_time_ms = 30;
+    new TimedTrigger( message_center, update_time_ms );
+
+    int view_update_time_ms = 2500;
+    new TimedTrigger(view_message_center, view_update_time_ms );
   }
 
 
