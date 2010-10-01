@@ -337,7 +337,7 @@ public class filePanel implements IReceiveMessage
       Res.add( omega);
       
       Res.add(  new JLabel("Histogram Resolution (Steps)") );
-      Nbins = new JTextField(""+IsawEV.NUM_BINS);
+      Nbins = new JTextField(""+0);
       Nbins.setHorizontalAlignment(JTextField.RIGHT);
       Res.add( Nbins );
 

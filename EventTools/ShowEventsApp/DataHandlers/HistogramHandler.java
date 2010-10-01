@@ -111,9 +111,6 @@ public class HistogramHandler implements IReceiveMessage
                            int           num_bins )
   {
     this.num_bins = num_bins;    
-
-    Set_Histogram( num_bins, max_Q, -25.0f, 0, -16.0f, 16.0f, -8.0f, 8.0f );
-
     this.max_hist_value_sent = 0;
 
     this.message_center      = message_center;
@@ -136,6 +133,14 @@ public class HistogramHandler implements IReceiveMessage
     updates_since_events = 0;
     receiving_events     = false;
     lastTimeShown        = System.currentTimeMillis();
+
+    Set_Histogram( current_instrument );
+
+    Message resized = new Message( Commands.HISTOGRAM_RESIZED,
+                                   new Integer(this.num_bins),
+                                   true,
+                                   true );
+    message_center.send( resized );
   }
 
 
