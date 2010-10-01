@@ -567,6 +567,28 @@ public class DataSet implements IAttributeList,
 
 
   /**
+   *  Set error estimates to zero for all y-values.  NOTE: This will have 
+   *  no effect if called for ModelData, rather than TabulatedData.
+   */
+  public void setErrorsToZero()
+  {
+    for ( int i = 0; i < data.size(); i++ )
+    {
+      Data d = (Data)data.elementAt(i);
+      if ( d instanceof TabulatedData )
+      {
+        float[] y_vals = d.getY_values();
+        float[] errors = new float[ y_vals.length ];
+        for ( int k = 0; k < y_vals.length; k++ )
+          errors[k] = 0;
+
+        ((TabulatedData)d).setErrors( errors );
+      }
+    }
+  }
+
+
+  /**
    *  Set error estimates to be the square root of the y-values provided
    *  the value is at least 1.  If it is less than 1, the error will be
    *  set to 1.  NOTE: This will have no effect if called for ModelData,
@@ -587,7 +609,7 @@ public class DataSet implements IAttributeList,
           else
             errors[k] = 1; 
 
-         ((TabulatedData)d).setErrors( errors );
+        ((TabulatedData)d).setErrors( errors );
       }
     }
   }
