@@ -74,6 +74,169 @@ public class IntegrateNorm {
    
  
    /**
+    * Integrates the peak by fitting the data to background + Intensity* Normal. The Marquardt
+    * algorithm is used for fitting.
+    * 
+    * @param Peak     The Peak to be integrated. Assumes nearEdge is set
+    * @param DS       The DataSet with the peak
+    * @param nPixels  The total width(height) of the data  to be used for fitting.
+    *                  It is assumed that the center is close to the Peak centroid.
+    * @param nTimeChans The total number of time channels to consider. This is also centered
+    *                    around the time associated with the peak.
+    *                    
+    * @param NBoundaryPixels  The number of bad boundary pixels to ignore in fitting
+    *                    
+    * @param logBuffer  The buffer that will contain the log information.
+    *                    
+    * @return void, but the Peak object has the inti and sigi fields set.
+    */
+   public static void IntegratePeak( Peak_new Peak, DataSet DS, int nPixels, int nTimeChans,
+        int NBoundaryPixels, StringBuffer logBuffer)
+   {
+      float TotIntensity =0;
+      float TotVariance =0;
+      
+      int i= Peak.seqnum( );
+      int run = Peak.nrun( );
+      int det = Peak.detnum( );
+      int Chan = (int) Peak.z( );
+      int nTimes = nTimeChans;
+      System.out.println("Peak num #time channels="+Peak.seqnum( )+","+nTimeChans);
+      try
+      {
+         logBuffer.append( String.format("Peak,run,det=%3d %4d %3d\n",i+1,run,det).getBytes());
+         logBuffer.append(  String.format("   Pixel width %3dchan %4d,, chanMin %4d,chanMax %4d\n",
+                        nPixels+1,Chan+1, Chan+1-(nTimes-1)/2, Chan+1+(nTimes-1)/2).getBytes() );
+         logBuffer.append( "   ----------------Slices --------------------\n".getBytes());
+         logBuffer.append((" chan    back  Intens(P)   mx       my   sigm(Cll) ncells Intens(Tot) Intens(Tot-back) errI"
+               +"     bk_res     Varx    Vary        Vxy \n").getBytes());
+         
+      }catch(Exception ss)
+      {
+         
+      }
+      boolean done = false;
+      //last y values is at xscl.getNum_x( )-2 on a histogram
+      IDataGrid grid = Peak.getGrid( );
+      
+      Data D = grid.getData_entry((int)(.5f+Peak.y()),  (int)(.5f+Peak.x()) );
+      XScale xscl = D.getX_scale( );
+      int BadEdgeWidth =NBoundaryPixels;
+      for ( int chan = Math.max( 0 , Chan-(nTimes-1)/2); !done && chan <= 
+         Math.min( Chan+(nTimes-1)/2,xscl.getNum_x( )-2); chan++)
+      {
+         
+       
+         
+         OneSlice slice = new OneSlice(grid, chan,(int)(.5f+Peak.y()),
+              (int)(.5f+Peak.x()), nPixels,nPixels);
+         slice.BadEdgeRange = BadEdgeWidth;
+         double[] xs = new double[ slice.ncells( )];
+         double[] ys = new double[ xs.length];
+         double[]sigs = new double[ xs.length];
+         Arrays.fill( ys,0 );
+         Arrays.fill( sigs,1 );
+         
+         //sigs[3] =.2;//Integrated intensity should be able to change faster
+                     // than other paramters. It is larger
+         for( int ii=0; ii< xs.length; ii++)
+            xs[ii]=ii;
+         double MaxErrChiSq = .00001*slice.ncells( );
+         MarquardtArrayFitter fitter = new MarquardtArrayFitter( slice, xs,ys,sigs,MaxErrChiSq, 200);
+         double chiSqr = fitter.getChiSqr( );
+      
+         double[] errs = fitter.getParameterSigmas( );//Use other for cases when params near
+                                                        //boundaries
+         
+         
+         double[] DD = slice.getParameters();
+         //AdjustDD( DD, slice.startRow, slice.nrows(), slice.startCol,slice.ncols() );
+         char GoodSlicec =' ';
+         if(!Double.isNaN( chiSqr )  && 
+                GoodSlice(  DD, errs[3]*Math.sqrt( chiSqr/slice.ncells() ),nPixels,nPixels,grid,10 ))
+            GoodSlicec ='x';
+         
+         if( chan == Chan  && GoodSlicec == 'x')
+         {
+            System.out.print((i+1)+","+(1/Peak.d())+","+
+                 new DetectorPosition( Peak.getGrid( ).position(Peak.y( ),Peak.x())).getScatteringAngle( )
+                 *180/Math.PI+","+Math.sqrt( DD[4] )+","+Math.sqrt( DD[5] ));            
+            //slice.Test( );
+         }
+        
+         try
+         {
+           
+           
+           logBuffer.append( 
+                 String.format("%5d %7.3f %8.3f%c %8.3f %8.3f %8.3f %6d %10.2f %10.2f"+
+                                               " %13.3f %8.5f %9.5f %9.5f %9.5f\n",
+                 chan+1,
+                 DD[0],
+                 DD[3],GoodSlicec,
+                 DD[1],
+                 DD[2],
+                 Math.sqrt( chiSqr/slice.ncells()),
+                 slice.ncells( ),
+                 slice.getInitialTotIntensity( ),
+                 (slice.getInitialTotIntensity( )-slice.getParameters( )[0]*
+                       slice.ncells( )),errs[3]*Math.sqrt( chiSqr/slice.ncells() ),
+                 slice.getAvBackGroundLeft( ),
+                 DD[4],
+                 DD[5],
+                 DD[6])
+                      .getBytes() );
+         }catch(Exception s2)
+         {
+            
+         }
+         if ( GoodSlicec=='x')
+         {
+            TotIntensity += DD[3];
+            double Err = errs[3];
+            TotVariance += Err * Err * chiSqr / slice.ncells( );
+            
+         }else if( chan < Chan)
+         {
+            TotIntensity =0;
+            TotVariance = 0;
+         }else
+            done = true;
+         
+         
+      }
+      
+      
+      float stDev = (float)Math.sqrt( TotVariance );
+      System.out.println("   I,sigI="+ TotIntensity+","+stDev);
+      try
+      {
+
+         logBuffer.append( "   ----------------End Slices --------------------\n".getBytes());
+         logBuffer.append( String.format(
+               "Tot Intensity(-back) %7.2f, stDev= %7.3f\n\n", TotIntensity, stDev).getBytes() );
+         logBuffer.append("---------------------------New Peak------------------------\n".getBytes());
+         
+      }catch(Exception sss)
+      {
+         
+      }
+      
+      if ( !Float.isNaN( TotIntensity ) && !Float.isNaN( stDev ) )
+      {
+         Peak.inti( ( float ) TotIntensity );
+         Peak.sigi( stDev );
+         
+      }else
+      {
+         Peak.inti( 0);
+         Peak.sigi(0); 
+      }
+     
+   }
+   
+ 
+   /**
     *  This can be started with two arguments, the peaks file and the nexus 
     *  file corresponding to the peak file.  The peak file must only span one
     *   run, currently, and its peaks must be in the "correct" order
@@ -230,7 +393,8 @@ public class IntegrateNorm {
             fout.write(  String.format("   Pixel width %3dchan %4d,, chanMin %4d,chanMax %4d\n",
                            nPixels+1,Chan+1, Chan+1-(nTimes-1)/2, Chan+1+(nTimes-1)/2).getBytes() );
             fout.write( "   ----------------Slices --------------------\n".getBytes());
-            fout.write(" chan    back  Intens(P)   mx       my   sigm(Cll) ncells Intens(Tot) Intens(Tot-back) errI\n".getBytes());
+            fout.write((" chan    back  Intens(P)   mx       my   sigm(Cll) ncells Intens(Tot) Intens(Tot-back) errI"
+                  +"     bk_res     Varx    Vary        Vxy \n").getBytes());
             
          }catch(Exception ss)
          {
@@ -288,7 +452,7 @@ public class IntegrateNorm {
               
               fout.write( 
                     String.format("%5d %7.3f %8.3f%c %8.3f %8.3f %8.3f %6d %10.2f %10.2f"+
-                                                  " %19.3f %8.5f %8.5f %8.5f %8.5f\n",
+                                                  " %13.3f %8.5f %9.5f %9.5f %9.5f\n",
                     chan+1,
                     DD[0],
                     DD[3],GoodSlicec,
