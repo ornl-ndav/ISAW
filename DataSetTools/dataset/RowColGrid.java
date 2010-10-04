@@ -151,8 +151,8 @@ public class RowColGrid implements IDataGrid {
       IData data;
 
       for ( row = 0; row < nrows; row++ )
-        for ( col = 0; col < ncols; col++ )
-          pixel_pos[row][col] = null;
+        for ( col = 0; col < ncols; col++ ){}
+         // pixel_pos[row][col] = null;
 
       for ( int i = 0 ; i < ds.getNum_entries() ; i++ ) 
       {
@@ -196,7 +196,10 @@ public class RowColGrid implements IDataGrid {
 
       for( int row =0; row < nrows; row++)
          for( int col=0; col<  ncols; col++)
-           Res.pixel_pos[row][col] = new Vector3D( pixel_pos[row][col] );
+            if( pixel_pos[row][col] != null)
+              Res.pixel_pos[row][col] = new Vector3D( pixel_pos[row][col] );
+            else
+               Res.pixel_pos[row][col]= null;
 
       Res.NSet = NSet;
       Res.filled = filled;
