@@ -581,6 +581,41 @@ public class ScriptUtil{
      return new ErrorString( "The DataSet does not contain "
                          +CommandName);
      }
+  
+  /**
+   * Executes the getResult method for the operator. If this method returns an 
+   * ErrorString  an exception will be thrown
+   * 
+   * @param op  The "filled out" operator. See ExecuteCommand if arguments need to
+   *            be added  * 
+   * 
+   * @return    The result from the getResult method of this operator
+   * @throws Exception  If the result is an ErrorString or if an exception occurs
+   *                  in the getResult method of this operator
+   */
+  public static Object Execute( Operator op) throws Exception
+  {
+
+      try
+      {
+         Object result = op.getResult( );
+         if ( result != null )
+            if ( result instanceof ErrorString )
+               throw new IllegalArgumentException( ( ( ErrorString ) result )
+                     .toString( ) );
+         return result;
+      } catch( Throwable ss )
+      {
+         String[] Exceptions = ScriptUtil.GetExceptionStackInfo( ss , true , 3 );
+         String Res = "Error " + ss.toString( );
+         if ( Exceptions != null && Exceptions.length > 0 )
+         {
+            Res += "\n" + Exceptions[0];
+         }
+         // return new ErrorString( Res );
+         throw new IllegalArgumentException( Res );
+      }
+  }
   /**
    * Finds an operator with the appropriate signature and configures
    * it. This will return a new instance of the operator.
