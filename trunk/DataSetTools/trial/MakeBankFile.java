@@ -1,4 +1,4 @@
-package DataSetTools.Trial;
+package DataSetTools.trial;
 
 import java.io.FileOutputStream;
 import java.text.SimpleDateFormat;
