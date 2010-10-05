@@ -16,7 +16,7 @@
 #Resample bins(for constant binning) to start at 2000 micro sec and end at 32000 micro sec with dT = 5 micro sec.
 #For dT/T binning make sure to check box so that data is not resampled
 
-$Category=Macros, Instrument Type, TOF_NPD
+$Category=Macros, Instrument Type, TOF_NPD, IPNS
 
 $Sort_d_by_Omega		Boolean(true)	Sort_d_by_Omega (Indiv detectors)
 $Standard        		Boolean(false)	Standard (5B, sum & T focus)

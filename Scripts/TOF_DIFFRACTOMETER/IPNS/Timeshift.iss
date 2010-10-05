@@ -9,7 +9,7 @@
 
 # CVS_VERSION $Date$
 
-$Category=Macros, Instrument Type, TOF_NPD
+$Category=Macros, Instrument Type, TOF_NPD, IPNS
 
 $Current Boolean(true)	Is this a Current Run ?
 

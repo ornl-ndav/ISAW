@@ -2,7 +2,7 @@
 # Define the variables for the script
 # $Date$
 #
-$Category=Macros, Instrument Type, TOF_NPD
+$Category=Macros, Instrument Type, TOF_NPD, IPNS
 
 $ filepath   DataDirectoryString(c:/gppd_newdas_runs/)      Path
 $ inst       String(gppd)           Instrument

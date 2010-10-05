@@ -16,7 +16,7 @@
 
 # Modify Date: 2005/1/18 16:03:04  : Ashfia Huq , ID's should remain the same (bad detectors are turned off using the discriminator levels
 
-$Category=Macros, Instrument Type, TOF_NPD
+$Category=Macros, Instrument Type, TOF_NPD, IPNS
 
 $Sort_d_by_Omega		Boolean(true)	Sort_d_by_Omega (Indiv detectors)
 $Standard        		Boolean(false)	Standard (5B, sum & T focus)

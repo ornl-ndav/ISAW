@@ -57,7 +57,7 @@
 # @param	GLADQMAX -default 40.0;
 
 #???@return  null or an ErrorString.   The result will be written to a file
-$ Category = Macros, Instrument Type, TOF_NGLAD
+$ Category = Macros, Instrument Type, TOF_NGLAD, IPNS
 
 #================= Parameters ======================================
 #configuration:
