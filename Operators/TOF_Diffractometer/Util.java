@@ -327,10 +327,15 @@ public class Util
            }
            catch ( Exception ex )
            {
+             throw new  IllegalArgumentException(
+               "Requested d-space map file " + DspaceMapFile +
+               " can't be read." );
+/*
              String default_dir = SharedData.getProperty("ISAW_HOME","") +
                                   "/InstrumentInfo/SNS/" + Instrument + "/";
              DspaceMapFile = default_dir + Instrument + "_dspacemap.dat";
              FileUtil.CheckFile ( DspaceMapFile );
+*/
            }
 
            d_map = FileUtil.LoadDspaceMapFile( DspaceMapFile );
