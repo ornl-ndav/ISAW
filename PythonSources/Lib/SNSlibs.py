@@ -4,12 +4,14 @@ from DataSetTools.operator.Generic.Load import GenericLoad
 from gov.anl.ipns.Parameters import * # parameters
 from gov.anl.ipns.Util.SpecialStrings import ErrorString
 from Operators.TOF_Diffractometer import *
+from DataSetTools.operator.DataSet.EditList import *
 from Operators.Special import *
 from Operators.TOF_SCD import *
 from Command import ScriptUtil
 from NexIO.NexApi import *;
 from NexIO.Util import ConvertDataTypes;
-from java.lang import System
+from java.lang import *
+
 def getIsawHome():
         
         Res = System.getProperty("ISAW_HOME")
@@ -155,6 +157,7 @@ def EventD_space2GSAS(sendData,showData,IOBS,instr,runnum,DetCalFile,BankFile,
         
         (eventFile, pcharge) = getRunStuff(instr,runnum)
         
+        pcharge = getProtonsCharge( instr, runnum)
         pcharge = pcharge/scale
         print "scale = %.2f" % pcharge
 
@@ -177,18 +180,18 @@ def EventD_space2GSAS(sendData,showData,IOBS,instr,runnum,DetCalFile,BankFile,
              panel_ds = Util.Make_d_DataSet( eventFile,DetCalFile,BankFile,MapFile,firstEvent,NumEvents,d_min,d_max,useLogBinning,log_param,nbins, 0,"",0,"",0,0)
         else:
              L = eventFile.split('_')
-             L[len(L)-2]="neutron1"
+             L[len(L)-2]="neutron0"
              eventFile1 = ""
              for i in range(0,len(L)-1):
                 eventFile1 += L[i]+'_'
              eventFile1 += L[len(L)-1]
-             panel_ds1 = Util.Make_d_DataSet( eventFile,DetCalFile,BankFile,MapFile,firstEvent,NumEvents,d_min,d_max,useLogBinning,log_param,nbins, 0,"",0,"",0,0)
+             panel_ds1 = Util.Make_d_DataSet( eventFile1,DetCalFile,BankFile,MapFile,firstEvent,NumEvents,d_min,d_max,useLogBinning,log_param,nbins, 0,"",0,"",0,0)
              eventFile2 =""
-             L[len[L]-2]="neutron2"
+             L[len(L)-2]="neutron1"
              for i in range(0,len(L)-1):
                 eventFile2 += L[i]+'_'
              eventFile2 += L[len(L)-1]
-             panel_ds2 = Util.Make_d_DataSet( eventFile,DetCalFile,BankFile,MapFile,firstEvent,NumEvents,d_min,d_max,useLogBinning,log_param,nbins, 0,"",0,"",0,0)
+             panel_ds2 = Util.Make_d_DataSet( eventFile2,DetCalFile,BankFile,MapFile,firstEvent,NumEvents,d_min,d_max,useLogBinning,log_param,nbins, 0,"",0,"",0,0)
              panel_ds = DataSetMerge(panel_ds1,panel_ds2).getResult()     
 
         
@@ -243,7 +246,7 @@ def FixVanadium( sendData,showData,IOBS,instr,runnum,DetCalFile,BankFile,
       
         send(ds.clone(), showData, sendData,IOBS)
         print ["ds?", ds.getNum_entries()]
-        RemovePeaks_Calc.RemovePeaks_tof(ds, BadPeakFile,PeakWidth_bad, PeakInterval_bad,NChanAv_bad)
+        RemovePeaks_Calc.RemovePeaks_tof(ds,BadPeakFile,PeakWidth_bad, PeakInterval_bad,NChanAv_bad)
 
         
         Res = LowPassFilterDS(ds, CutOffFilter, OrderFilter).getResult()
@@ -270,6 +273,8 @@ def rotateDetectors( instr, runnum, DetCalFile1):
       (nxs, prenxs) = getRunDir(instr, runnum)
       cvinfo = "%s_%d_cvinfo.xml" % (instr, runnum)
       cvinfo = os.path.join(prenxs, cvinfo)
+
+      print "CVinfo=",cvinfo,runnum,instr
       if not os.path.exists(cvinfo):
          raise Error, "%s does not exist" % cvinfo
            
@@ -278,10 +283,10 @@ def rotateDetectors( instr, runnum, DetCalFile1):
           print "No information to rotate the Detectors"
           return DetCalFile1
 
-      ang1 = -V.firstElement().firstElement()
-      ang2 = -V.elementAt(1).firstElement()
+      ang1 = V.firstElement().firstElement()
+      ang2 = V.elementAt(1).firstElement()
     
-      #will only do one detector for now
+      
       DetCal1 = System.getProperty("user.home")
       if not DetCal1.endswith("/"):
           DetCal1 +='/'
@@ -294,12 +299,8 @@ def rotateDetectors( instr, runnum, DetCalFile1):
       try:
          General_Utils.RotateDetectors( DetCal1,5,DetCal2, ang2,0,0, ScriptUtil.ToVec([1,2,3,4,5,6,7,8,9]))
       except:
-         return DetCal1
-      try:
-         General_Utils.RotateDetectors( DetCal1,5, Save +"ISAW/tmp/dummy2.DetCal", ang2,0,0,ScriptUtil.ToVec([1,2,3,4,5,6,7,8,9]))
-      except:
-         return DetCal1
-#      ScriptUtil.ExecuteCommand("RotateSnapDetectors",[DetCalFile1,DetCal1,1,ang1,1,ang2])
+         return DetCal1   
+
 
       return DetCal2
 
