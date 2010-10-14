@@ -23,8 +23,9 @@ class VanadiumFix(GenericLoad):
     BadNumChanAv  = 10
     FilterCutOff = 11
     FilterOrder  =12
-    toTree=13
-    show=14
+    ZeroUncertainties = 13
+    toTree=14
+    show=15
     
     
     def __init__(self):
@@ -71,11 +72,16 @@ class VanadiumFix(GenericLoad):
                                     10))                              # param 10
         self.addParameter(FloatPG("Filter Cut off",.02))              # param 11
         self.addParameter(IntegerPG("Filter order", 2))               # param 12
-        self.addParameter(BooleanPG("Send all data to tree", False))  # param 13
-        self.addParameter(BooleanPG("Show plots", False))             # param 14
+        self.addParameter(BooleanPG("Set uncertainties to zero", True)) # param 13
+        self.addParameter(BooleanPG("Send all data to tree", False))  # param 14
+        self.addParameter(BooleanPG("Show plots", False))             # param 15
 
     def getParamValue(self, index):
-        return self.getParameter(index).getValue()
+        param = self.getParameter(index)
+        if param is None:
+            raise RuntimeError("Failed to get parameter %d" % index)
+        else:
+            return param.getValue()
 
  
     def send(self, ds, showPlots, sendData):
@@ -155,6 +161,14 @@ class VanadiumFix(GenericLoad):
         Res = LowPassFilterDS( X, CutOffFilter, OrderFilter).getResult()
         if isinstance( Res, ErrorString):
            return Res
+
+        if self.getParamValue(self.ZeroUncertainties):
+            num_spectra = X.getNum_entries()
+            for i in xrange(num_spectra):
+                data = X.getData_entry(i)
+                errors = data.getErrors()
+                for j in xrange(len(errors)):
+                    errors[j] = 0.
 
         self.send(X, showData, sendData)
        
