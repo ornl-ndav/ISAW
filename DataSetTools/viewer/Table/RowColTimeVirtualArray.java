@@ -132,11 +132,11 @@ import gov.anl.ipns.ViewTools.Components.*;
 import gov.anl.ipns.ViewTools.Components.Menu.*;
 import gov.anl.ipns.ViewTools.UI.*;
 import gov.anl.ipns.ViewTools.Components.Region.*;
-import gov.anl.ipns.ViewTools.Components.Transparency.Marker;
 import gov.anl.ipns.ViewTools.Panels.Transforms.*;
 
 import java.util.*;
 import java.awt.event.*;
+
 import javax.swing.*;
 
 import DataSetTools.dataset.*;
@@ -161,7 +161,11 @@ public class RowColTimeVirtualArray extends
                           DataSetTools.viewer.Table.Time_Slice_TableModel 
                        implements IArrayMaker_DataSet, IVirtualArray2D,doesColumns,
                        IhasMarkers{
-  //DataSet DS;
+  /**
+    * 
+    */
+   private static final long serialVersionUID = 1L;
+//DataSet DS;
   String Title;
   JCheckBoxMenuItem jmErr=null; 
   JCheckBoxMenuItem jmInd=null;
@@ -719,7 +723,8 @@ public class RowColTimeVirtualArray extends
 
 
   public void SelectRegion( ISelectedRegion region){
-     if( region instanceof SelectedRegion2D){
+     if( region instanceof SelectedRegion2D)
+     {
         SelectedRegion2D Region = (SelectedRegion2D)region;
         if( Region.rows == null)
            return;
@@ -777,6 +782,7 @@ public class RowColTimeVirtualArray extends
            Box = SelectedRegions[i];
      }
      
+     
      if( Box == null){
         JOptionPane.showMessageDialog( null, "No Box region selected");
         return;
@@ -784,12 +790,14 @@ public class RowColTimeVirtualArray extends
      float[] Results = new float[2];
      CoordBounds BoxLimits = Box.getRegionBounds( Region2Array );
      if( Box instanceof TableRegion){
-        BoxLimits.setBounds( BoxLimits.getX1()+1, BoxLimits.getY1()+1,
+        BoxLimits.setBounds( BoxLimits.getX1(), BoxLimits.getY1(),
                  BoxLimits.getX2(), BoxLimits.getY2() );
      }
-     Results = GetIntegrateStats( viewArray,(int)BoxLimits.getX1(), 
-                                 (int)BoxLimits.getX2(), (int)BoxLimits.getY1(),
-                                 (int)BoxLimits.getY2());
+     //NOTE Top Bound NOT included in BoxLimits
+     Results = GetIntegrateStats( viewArray,FirstInt(BoxLimits.getX1(),true,true), 
+                                 FirstInt(BoxLimits.getX2(),false,false),
+                                 FirstInt(BoxLimits.getY1(),true, true),
+                                 FirstInt(BoxLimits.getY2(),false, false));
      String S="Intensity=" + Results[0] +"\n";
      
      S+= "(Poisson)Error = " + Results[1];
@@ -797,7 +805,20 @@ public class RowColTimeVirtualArray extends
      JOptionPane.showMessageDialog( null, S);
   }
   
-  
+  private static int FirstInt( float F, boolean moreThan, boolean orEqual)
+  {
+     int Res = (int)Math.floor( F );
+     if( Res == F && orEqual)
+        return Res;
+     if( Res <= F && moreThan)
+        return Res+1;
+     if( Res >= F && !moreThan)
+        return Res -1;
+     
+     return Res;
+     
+     
+  }
   /**
    * Calculates the sum of the intensities - background for the array elements
    * from row1,col1 to row2,col2.  The background is calculated from the
@@ -918,7 +939,161 @@ public class RowColTimeVirtualArray extends
 
   //------------------------implements IhasMarkers------------
   
+  public floatPoint2D[] getMarkers1()
+{
+   int indx = x_scale.getI_GLB(  Time );
+   
+   if( indx <0 || indx >= x_scale.getEnd_x())
+      return null;
+   
+   float minTime = x_scale.getX( indx );
+   float maxTime = x_scale.getX( indx+1 );
+   
+   IDataGrid grid = Grid_util.getAreaGrid( DS , DetNum );
+   if( grid == null)
+      return null;
+   if( grid instanceof RowColGrid)
+   {
+      grid = RowColGrid.GetDataGrid( (RowColGrid)grid , .01f );
+   }
+   SampleOrientation sampOrient = AttrUtil.getSampleOrientation( DS );
+   
+   float[][] OrientMat = null;
+   try
+   {
+      OrientMat =  AttrUtil.getOrientMatrix( DS );
+   }catch(Exception s){
+      
+   
+      return null;
+   }
+   
+   if( sampOrient == null || OrientMat == null)
+     return null;
+     
+
+   float initialPath = AttrUtil.getInitialPath( DS );
+   float[][] invOrient = LinearAlgebra.getInverse( OrientMat);
+   invOrient =Mult(  invOrient , 
+                sampOrient.getGoniometerRotationInverse().get() );
+   
+   if( invOrient == null)
+      return null; 
+    
+   float[][][] hklMinMax = getHKLMinMax( grid, minTime,maxTime,initialPath,invOrient);
+   int[][] hklList = calcMarkers( hklMinMax[0], hklMinMax[1]);
+   Vector<int[]> data = new Vector<int[]>();
+   if( hklList != null)
+      for( int i=0; i < hklList.length; i++)
+      {
+         float[] hklListF= { (float)hklList[i][0],(float)hklList[i][1],(float)hklList[i][2]};
+         float[] Qs =  LinearAlgebra.mult( OrientMat , hklListF );
+         
+         
+         //float[] rcT = Xlate.QtoRowColTOF( new Vector3D(Qs));//,sampOrient, grid, initialPath );
+         float[] rcT =Q2RCT( new Vector3D(Qs), grid,  initialPath,
+                                          sampOrient);
+         
+         
+         if( rcT != null && rcT[2]<=maxTime && rcT[2]>=minTime )
+         {
+            int[] D = new int[2];
+            D[0] =grid.num_cols()+1-(int)(rcT[0]+.5);
+            D[1] =(int)(rcT[1]+.5);
+            data.add( D );               
+         }
+      }
+   if( data.size()<1)
+      return null;
+   
+   floatPoint2D[] pts = new floatPoint2D[data.size()]; 
+   for( int i=0;i< data.size(); i++)
+   {
+      int[] point = data.elementAt( i );
+      pts[i]= new floatPoint2D( point[1],point[0]);
+   }
+   
+   return pts;
+     
+}
   
+ //invOrient includes sample orientation
+private  float[][][]  getHKLMinMax( IDataGrid grid, float minTime,float maxTime,float initialPath,
+         float[][]invOrient)
+{
+   float minDist,maxDist;
+   
+   Vector3D Pt = new Vector3D( grid.z_vec( ));
+   Pt.multiply( grid.position( ).dot( grid.z_vec( ) ) );
+   minDist = Float.POSITIVE_INFINITY;
+   maxDist = Float.NEGATIVE_INFINITY;
+   int row =0; int col =0;
+   for( int i=0; i < 4;i++)
+   {
+     float d = Pt.distance( grid.position(row*grid.num_rows( )+1,col*grid.num_cols( )+1) );
+     col++;
+     if( col >1)
+     {
+        row++;
+        col=0;
+     }
+     if( d < minDist)
+        minDist = d;
+     if( d > maxDist)
+        maxDist =d;
+   }
+   row=0; col=0;
+   for( int i=0; i<4;i++)
+   {
+      Vector3D P1 = grid.position(row*grid.num_rows( )+1,col*grid.num_cols( )+1) ;
+      col++;
+      if( col >1)
+      {
+         row++;
+         col=0;
+      }
+      Vector3D P2=grid.position(row*grid.num_rows( )+1,col*grid.num_cols( )+1) ;
+      Vector3D diff = new Vector3D(P2);
+      diff.subtract(P1);
+      float k = (Pt.dot( diff )-P1.dot( diff ))/(diff.dot( diff ));
+      if( k >=0 || k <=1)
+      {
+         Vector3D Pt2 = new Vector3D(P1);
+         diff.multiply( k );
+         Pt2.add( diff );
+         float d= Pt.distance(Pt2);
+         if( d < minDist)
+            minDist = d;
+      }
+   }
+   
+   float[][][] Res = new float[2][4][3];//2 min-max, 4 sides, 3 hval kval lval
+   row=0;col=0;
+   for( int i=0; i< 4; i++)
+   {
+      Vector3D pt = grid.position(row*grid.num_rows( )+1,col*grid.num_cols( )+1);
+      Vector3D Q = tof_calc.DiffractometerVecQ( pt , initialPath , minTime );
+      Q.multiply( .5f/(float)Math.PI*maxDist/pt.length() );
+      float[] Q3 = new float[3];
+      System.arraycopy( Q.get(),0,Q3,0,3);
+      Res[0][i]=LinearAlgebra.mult( invOrient ,Q3);
+      Q.multiply(minTime/maxTime*minDist/maxDist);
+      Q3 = new float[3];
+      System.arraycopy( Q.get(),0,Q3,0,3);
+      Res[1][i]=LinearAlgebra.mult( invOrient ,Q3 );
+      col++;
+      if( col >1)
+      {
+         row++;
+         col=0;
+      }
+      
+   }
+   return Res;
+}
+ 
+
+
   /**
    * Will produce marks where Peaks should occur. 
    * (non-Javadoc)
@@ -938,6 +1113,10 @@ public class RowColTimeVirtualArray extends
     IDataGrid grid = Grid_util.getAreaGrid( DS , DetNum );
     if( grid == null)
        return null;
+    if( grid instanceof RowColGrid)
+    {
+       grid = RowColGrid.GetDataGrid( (RowColGrid)grid , .01f );
+    }
     SampleOrientation sampOrient = AttrUtil.getSampleOrientation( DS );
     
     float[][] OrientMat = null;
@@ -1017,7 +1196,9 @@ public class RowColTimeVirtualArray extends
               float[] Qs =  LinearAlgebra.mult( OrientMat , hkl );
               
               
-              float[] rcT = Xlate.QtoRowColTOF( new Vector3D(Qs));//,sampOrient, grid, initialPath );
+              //float[] rcT = Xlate.QtoRowColTOF( new Vector3D(Qs));//,sampOrient, grid, initialPath );
+              float[] rcT =Q2RCT( new Vector3D(Qs), grid,  initialPath,
+                                               sampOrient);
               
               
               if( rcT != null && rcT[2]<=maxTime && rcT[2]>=minTime )
@@ -1025,10 +1206,10 @@ public class RowColTimeVirtualArray extends
                  int[] D = new int[2];
                  D[0] =grid.num_cols()+1-(int)(rcT[0]+.5);
                  D[1] =(int)(rcT[1]+.5);
-                 data.add( D );
+                 data.add( D );               
               }
            }
-     
+    
      if( data.size()<1)
         return null;
      
@@ -1039,8 +1220,64 @@ public class RowColTimeVirtualArray extends
         pts[i]= new floatPoint2D( point[1],point[0]);
      }
      
+    // floatPoint2D[] pts1 = getMarkers1();
+   /*  float[][] bott= new float[4][];
+     float[][] top= new float[4][];
+     Phkl = LinearAlgebra.mult( Phkl , 1f/2/(float)Math.PI );  
+     for( int i=0; i< 4;i++)
+     {
+        bott[i]=Phkl[2*i];
+        top[i] = Phkl[2*i+1];
+     }
+   */  
+    // System.out.println("hkl's="+gov.anl.ipns.Util.Sys.StringUtil.toString( calcMarkers(bott, top) ));
+     
      return pts;
     
+  }
+  //Q with 2pi, i.e.  dQ for Q= mv
+  private float[] Q2RCT( Vector3D Qs, IDataGrid grid, float initialPath,
+                                     SampleOrientation sampOrient)
+  {
+      Vector3D Q = new Vector3D();
+      sampOrient.getGoniometerRotation( ).apply_to( Qs , Q );
+     if( Q.getX() > 0)
+        return null;
+     float MQ = Q.length( );
+     float Ang0= (float)(Math.PI-Math.abs( Math.acos( Q.getX()/MQ ))); 
+     float Ang = (float)(Math.PI - 2*Ang0);
+                                       //Scat Ang in Q,beam vec plane
+     float mv = (float) Math.sqrt(  MQ*MQ/2/(1-Math.cos(Ang)) );
+     float[] Dir = new float[3];
+     Dir[0]= Q.getX()+mv;
+     Dir[1] = Q.getY( );
+     Dir[2] = Q.getZ( );
+     Vector3D DirV = new Vector3D( Dir );
+     float D = grid.position().dot( grid.z_vec( ) );
+     float k = D/DirV.dot( grid.z_vec() );
+     DirV.multiply(k);
+     Vector3D Pt = new Vector3D(DirV);
+     DirV.subtract( grid.position() );
+     float x = DirV.dot( grid.x_vec() );
+     float y = DirV.dot(  grid.y_vec( ) );
+     float row = grid.row(x,y);
+     float col = grid.col(  x , y );
+     if( row < .5 || col < .5 || Float.isNaN( row )|| Float.isNaN( col ))
+        return null;
+     if( col > grid.num_cols( )+.5 || row > grid.num_rows( )+.5)
+        return null;
+     
+     float t = tof_calc.TOFofDiffractometerQ( Ang ,initialPath+Pt.length() ,MQ );
+     
+     //float t =(float)((initialPath+DirV.length())/ mv*tof_calc.MN_KG ); 
+     float[] Res = new float[3];
+     Res[0]= row;
+     Res[1] = col;
+     Res[2] = t;
+     return Res;
+     
+     
+     
   }
 
   /**
@@ -1052,10 +1289,12 @@ public class RowColTimeVirtualArray extends
    * @param tolerance  for corners to be integer 
    * @return
    */
-  private float[][] calcMarkers( float[][] hkl1,float[][] hkl2, float[][][]qs, float tolerance)
+  private int[][] calcMarkers( float[][] hkl1,float[][] hkl2)
   {
-    //hkl1 has min h
-    int edge =-1;
+    
+     try
+     {
+
     float[][][] HKL = new float[2][4][4];
     HKL[0]= hkl1;
     HKL[1] = hkl2;
@@ -1073,239 +1312,160 @@ public class RowColTimeVirtualArray extends
        if( HKL[j][i][0] > maxh)
           maxh = HKL[j][i][0];
     }
-    Vector<float[]> Qs = new Vector<float[]>();
-    for(int h = (int)(minh-tolerance); h< maxh+tolerance; h++)
+    Vector<int[]> hkls = new Vector<int[]>();
+    for(int h = (int)Math.floor(minh+.8); h<= maxh+.2; h++)
     {
-      
-       float[] shell = new float[8];
-       float[] side =  new float[8];
-       float[][]hkl  = new float[8][3];
-       float[][]qq = new float[8][3];
-       int k =0;
-       for( int s = 0; s <2; s++)
-        for( int sd =0; sd < 4; sd++)
+      Vector<float[]> hklpt1 = new Vector<float[]>();
+      for( int  s=0; s<4; s++)
+      {
+         float alpha = calcAlpha( h,hkl1[s][0], hkl1[(s+1)%4][0] );
+         if( alpha >=0 && alpha <=1)
+            hklpt1.addElement( Ptt(alpha,hkl1[s], hkl1[(s+1)%4]));
+         if( alpha == 0 && hkl1[s][0]== hkl1[(s+1)%4][0])
+            hklpt1.addElement( Ptt(1f,hkl1[s], hkl1[(s+1)%4]));
+         alpha = calcAlpha( h,hkl2[s][0], hkl2[(s+1)%4][0] );
+         if( alpha >=0 && alpha <=1)
+            hklpt1.addElement( Ptt(alpha,hkl2[s], hkl2[(s+1)%4]));
+         if( alpha == 0 && hkl2[s][0]== hkl2[(s+1)%4][0])
+            hklpt1.addElement( Ptt(1f,hkl2[s], hkl2[(s+1)%4]));
+         
+         alpha = calcAlpha( h,hkl1[s][0],hkl2[s][0] );
+         if( alpha >=0 && alpha <=1)
+            hklpt1.addElement( Ptt(alpha,hkl1[s],hkl2[s] ));
+         if( alpha == 0 && hkl1[s][0]==hkl2[s][0])
+            hklpt1.addElement( Ptt(1f,hkl1[s],hkl2[s] ));        
+         
+      }
+       
+      float[][] Hklpt1 = EliminateRepeats( hklpt1);
+
+      float maxk = Float.NEGATIVE_INFINITY;
+      float mink = Float.POSITIVE_INFINITY;
+      if( Hklpt1 != null)
+      for( int s1 =0; s1< Hklpt1.length; s1++)
+      {
+         if( Hklpt1[s1][1] < mink)
+            mink = Hklpt1[s1][1];
+         if( Hklpt1[s1][1]>maxk)
+            maxk = Hklpt1[s1][1];
+      }
+      hklpt1 = new Vector<float[]>();
+      if( Hklpt1 != null && Hklpt1.length > 0 )
+         for( int k=(int)Math.floor( .8+mink);
+         k <=(int)Math.floor( .2+maxk); k++)
+      {
+        if( Hklpt1.length ==1)
         {
-           float alpha = calcAlpha( h, HKL[s][sd][0],HKL[s][(sd+1)%4][0]);
-           if( alpha ==0 &&HKL[s][sd][0]==HKL[s][(sd+1)%4][0] )
-           if( alpha >=0 && alpha <=1)
-           {
-              shell[k] = s;
-              side[k] = sd;
-              hkl[k] = Ptt( alpha,HKL[s][sd],HKL[s][(sd+1)%4]);
-              qq[k]= Ptt( alpha,qs[s][sd],qs[s][(sd+1)%4]);
-              k++;
-           }
 
-           if( alpha ==0 &&HKL[s][sd][0]==HKL[s][(sd+1)%4][0] )
-           {
-              shell[k] = s;
-              side[k] = sd;
-              hkl[k] = Ptt( 1,HKL[s][sd],HKL[s][(sd+1)%4]);
-              qq[k]= Ptt( 1,qs[s][sd],qs[s][(sd+1)%4]);
-              k++;
-           }
-        }
-       for( int sd = 0; sd < 4; sd ++)
-       {
-          float alpha = calcAlpha(h,HKL[0][sd][0],HKL[1][sd][0] );
-          if( alpha >=0 && alpha <=1)
-          {
-             shell[k] = .5f;
-             side[k] = sd;
-             hkl[k] = Ptt( alpha,HKL[0][sd],HKL[1][(sd+1)%4]);
-             qq[k]= Ptt( alpha,qs[0][sd],qs[1][(sd+1)%4]);
-             k++; 
-          }
-          if( alpha ==0 &&  HKL[0][sd][0] == HKL[1][sd][0] )
-          {
-             shell[k] = .5f;
-             side[k] = sd;
-             hkl[k] = Ptt( 1,HKL[0][sd] , HKL[1][sd]);
-             qq[k]= Ptt( 1,HKL[0][sd] ,HKL[1][sd]);
-             k++;
-          }
-       }
-       
-       //Now find adjacent edges
-      int N =k;// #of points
-      
-      for( k=0; k< 6;k++)
-         for( int i=0; i+1< N; i++)
-            if( shell[i] > shell[i+1]  )
-            {    Xchange( shell, side, hkl, qq,i,i+1 );
-            }
-       int N1=0;
-       for( int i=0; i<4;i++)
-       {
-          //elim repeats
-          for( int j=1; j< N;j++)
-             if( hkl[j]!=null  && shell[j]==shell[i] && side[j]==side[i]
-                    && hkl[i][0]==hkl[j][0]&& hkl[i][1]==hkl[j][1]&& hkl[i][2]==hkl[j][2])
-                hkl[j]=null;
-          boolean done = false;
-          for( int j=1; j < N && !done; j++)
-             if( hkl[j] != null )
-                if( shell[j] == shell[i] && shell[j]!=.5f && AdjacentSides(i,j))
-                      { 
-                      Xchange( shell, side, hkl, qq,i,j );
-                       done = true;
-                   
-                      }
-                else if( shell[i] != shell[j] && Math.abs( shell[i]-shell[j] )==1 && side[i]==side[j])
-                    {
-                       Xchange( shell, side, hkl, qq,i,j );
-                       done = true;
-                    }
-                else if( shell[i] != shell[j] && Math.abs( shell[i]-shell[j] )<1 && 
-                     (side[i]==side[j]) )
-                {
-
-                   Xchange( shell, side, hkl, qq,i,j );
-                   done = true;
-                }
-                else if( shell[i] != shell[j] && shell[i]==.5f && 
-                      (side[j]==((side[i]+1)%4)) )
-                 {
-
-                   Xchange( shell, side, hkl, qq,i,j );
-                   done = true;
-                 }
-            if( !done)
-            {
-               N1=i;
-               hkl[0]=null;
-            }
+           if( Math.abs( Hklpt1[0][2] -Math.floor( Hklpt1[0][2]+.1))<.08  &&
+                 Math.abs( Hklpt1[0][1] -Math.floor( Hklpt1[0][1]+.1))<.08)
+              hkls.add(  new int[]{h,(int)Math.floor( Hklpt1[0][1]+.1),
+                         (int)Math.floor( Hklpt1[0][2]+.1)} );
           
-       }
+        }
+        else 
+        {
+           for( int s1=0; s1 < Hklpt1.length -1; s1++)
+            for( int s2 = s1+1; s2 < Hklpt1.length ; s2++)
+          
+           {
+              float alpha1 = calcAlpha( k,Hklpt1[s1][1], Hklpt1[s2][1] );
+              if( alpha1 >=0 && alpha1 <=1)
+                  hklpt1.add(  Ptt( alpha1, Hklpt1[s1], Hklpt1[s2] ) );
+              if( alpha1 ==0 &&Hklpt1[s1][1]== Hklpt1[s2][1] )
+                 hklpt1.add(  Ptt( 1f, Hklpt1[s1], Hklpt1[s2] ) );
+           }
+         float[][]Hklpt2 = EliminateRepeats( hklpt1);
+         if( Hklpt2 != null)
+         if( Hklpt2.length ==1)
+         {
+            if( Math.abs( Hklpt2[0][2] -Math.floor( Hklpt2[0][2]+.1))<.08)
+               hkls.add(  new int[]{h,k,(int)Math.floor( Hklpt2[0][2]+.1)} );
+         }else
+         for( int s3=0 ; s3 < Hklpt2.length -1; s3++)
+            for( int s4 = s3+1; s4 < Hklpt2.length ; s4++)
+               for( int l= (int)Math.floor( .8+ Math.min( Hklpt2[s3][2],Hklpt2[s4][2]) );
+                     l <=.2+ Math.min( Hklpt2[s3][2] ,Hklpt2[s4][2]); l++ )
+                    hkls.add(  new int[]{h,k,l} );
+      }
+      } 
+    }
+    
+    return hkls.toArray( new int[0][3]);
+   
+     }catch(Throwable tt)
+     {
+        tt.printStackTrace( );
+        return null;
+     }
+     
+  }
+  
+  private float[][] EliminateRepeats( Vector<float[]> hklpts)
+  {
+     float[][] Res = hklpts.toArray( new float[0][0]);
+    
+     
+    
+   for( int i=0; i< Res.length ; i++)
+        for( int j=i+1; j < Res.length; j++)
+           if( Res[i] != null & Res[j] != null)
+           {  boolean nullify= true;
+              for( int indx =0; indx <3 && nullify; indx++)
+              {
+                 if( Math.floor( Res[i][indx]-.2 ) !=Math.floor( Res[j][indx]-.2 ))
+                    nullify = false;
+                 else if( Math.floor( Res[i][indx]+.2 ) !=Math.floor( Res[j][indx]+.2 ))
+                    nullify = false;
+              }
+              if( nullify)
+                 Res[j] = null;
+           }
+     int k=0;
+     for( int i=0; i < Res.length; i++)
+     {
+        if( Res[i] == null)
+           k++;
+        else
+          Res[i-k] =Res[i];
+     }
+    int N = Res.length -k;
+    float[][] RRes = new float[N][3];
+    System.arraycopy( Res , 0 , RRes , 0 , N );
+    return RRes;
+  
+  }
+  
+  class floatArrayComparator implements Comparator<float[]>
+  {
 
-       if( hkl[0] != null )
-          CalcMarkers2D( N1,hkl,qq,Qs);
-       
-    }
-    
-    return Qs.toArray( new float[0][0]);
- /*   int[][][] RC = new int[2][4][2];
-    RC[0]= rc;
-    RC[1]=rc;
-    float[][] RC1 = new float[4][2];
-    float[][]hkl = new float[4][3];
-    boolean done =false;
-    while(!done)
-    {
-       int side2,side3;
-       for( int side=0; side <3;side++)
-         for( int int_h=findNextInt( HKL[shell][edge+side][0],tolerance ); 
-                int_h < HKL[shell][edge+side+1][0]+tolerance;
-                int_h = findNextInt( int_h,0))
-          for( int side1=0; side1 < 3-side; side1++)//fint int_h on this side
-          {
-                  float alpha2 = ( int_h -HKL[shell][edge + side + 1 + side1][0]  )
-                        / ( HKL[shell][edge + side + 1 + side1 + 1][0] - HKL[shell][edge
-                              + side + 1 + side1][0] );
-                  if( alpha2 >=0 && alpha2 <=1)
-                  { 
-                     float alpha1 = ( int_h -HKL[shell][edge + side][0]  )
-                          / ( HKL[shell][edge + side + 1][0] - HKL[shell][edge
-                              + side][0] );
-                     hkl[0]= Ptt( alpha1, HKL[shell][edge
-                              + side],HKL[shell][edge + side + 1]);
-                     RC1[0] =PttI( alpha1,RC[shell][edge
-                                                   + side],RC[shell][edge + side + 1]); 
-                     hkl[1] =Ptt( alpha2,HKL[shell][edge
-                                                    + side + 1 + side1],
-                                                    HKL[shell][edge + side + 1 + side1 + 1]);
-                     RC1[1] = PttI(alpha2,RC[shell][edge
-                                                    + side + 1 + side1],
-                                                    RC[shell][edge + side + 1 + side1 + 1]);
-                    side2=0;
-                    hkl[2]=null;
-                    float alpha3 =calcAlpha( int_h, HKL[shell][edge + side + 1 + side1][0],
-                          HKL[(shell%2)][edge + side + 1 + side1][0] );
-                   
-                    if( alpha3 <0 || alpha3 >1)
-                       alpha3 = calcAlpha( int_h, HKL[(shell%2)][edge + side + 1 + side1][0],
-                             HKL[(shell%2)][edge + side + 1 + side1+1][0]  );
-                    else
-                    {
-                       hkl[2] =Ptt(alpha3, HKL[shell][edge + side + 1 + side1],
-                             HKL[(shell%2)][edge + side + 1 + side1] );
-                       RC1[2] =PttI(alpha3, RC[shell][edge + side + 1 + side1],
-                             RC[(shell%2)][edge + side + 1 + side1] );
-                    }
-                    
-                   
-                    if( alpha3 <0 || alpha3 > 1)
-                       alpha3 = calcAlpha( int_h, HKL[(shell)][edge + side + 1 + side1+1][0],
-                             HKL[(shell%2)][edge + side + 1 + side1+1][0] );
-                    else
-                    {
-                       hkl[2] =Ptt(alpha3,HKL[(shell)][edge + side + 1 + side1+1],
-                             HKL[(shell%2)][edge + side + 1 + side1+1] );
-                       RC1[2] =PttI(alpha3,RC[(shell)][edge + side + 1 + side1+1],
-                             RC[(shell%2)][edge + side + 1 + side1+1] );
-                       
-                    }
-                    
-                    
-                    
-                    if( alpha3 >=0 && alpha3 <=1)
-                    {
-                       if( hkl[2] == null)
-                       {
-                          hkl[2] =Ptt(alpha3,HKL[(shell)][edge + side + 1 + side1+1],
-                                HKL[(shell%2)][edge + side + 1 + side1+1] );
-                          RC1[2] =PttI(alpha3,RC[(shell)][edge + side + 1 + side1+1],
-                                RC[(shell%2)][edge + side + 1 + side1+1] );
-                       }
-                       hkl[3] = null;
-                       float alpha4 = calcAlpha(int_h,HKL[shell][edge + side][0] ,
-                                    HKL[(shell+1)%2][edge + side][0]  );
-                       if( alpha4 < 0 || alpha4 > 1)
-                           alpha4 = calcAlpha(int_h,HKL[(shell+1)%2][edge + side][0],
-                                 HKL[(shell+1)%2][edge + side+1][0] );
-                       else 
-                       {
-                          hkl[3] = Ptt(alpha4,HKL[shell][edge + side] ,
-                                    HKL[(shell+1)%2][edge + side]  );
-                          RC1[3] = PttI(alpha4,RC[shell][edge + side] ,
-                                RC[(shell+1)%2][edge + side]  );
-                       }
-                       if( alpha4 < 0 || alpha4 > 1)
-                          alpha4 = calcAlpha(int_h,HKL[(shell+0)%2][edge + side+1][0],
-                                HKL[(shell+1)%2][edge + side+1][0] );
-                       else 
-                       {
-                          hkl[3] = Ptt(alpha4,HKL[(shell+0)%2][edge + side+1],
-                                HKL[(shell+1)%2][edge + side+1] );
-                          RC1[3] = PttI(alpha4,RC[(shell+0)%2][edge + side+1],
-                                RC[(shell+1)%2][edge + side+1] );
-                       }
-                       
-                       if( alpha4 >=0 && alpha4 <=1)
-                       {
-                          if( hkl[3] == null)
-                          {
-                             hkl[3] = Ptt(alpha4,HKL[(shell+0)%2][edge + side+1],                          
-                                   HKL[(shell+1)%2][edge + side+1] );
-                            RC1[3] = PttI(alpha4,RC[(shell+0)%2][edge + side+1],                          
-                                   RC[(shell+1)%2][edge + side+1] );
-                          }
-                          
-                          
-                          
-                          
-                          
-                       }
-                       
-                    }
-                  
-                  }
-                  
-             
-          }
-    }
-    
-   */ 
+   @Override
+   public int compare(float[] o1, float[] o2)
+   {
+
+      if(o1 == null)
+         if( o2 ==null)
+            return 0;
+         else
+            return -1;
+      if( o2 == null)
+         return 1;
+      for( int i=0; i< Math.min( o1.length,o2.length  ); i++)
+         if( o1[i] < o2[i])
+            return -1;
+         else if( o1[i] > o2[i])
+            return 1;
+      
+      if( o1.length == o2.length)
+         return 0;
+
+      if( o1.length <o2.length)
+         return -1;
+      return 1;
+     
+   }
+
+  
      
   }
   
@@ -1382,18 +1542,11 @@ public class RowColTimeVirtualArray extends
   {
      float[] Res = new float[3];
      for( int i=0; i< 3;i++)
-        Res[i] = hkl1[i]*alpha+(1-alpha)*hkl2[i];
+        Res[i] = hkl1[i]+(hkl2[i]-hkl1[i])*alpha;
      return Res;
   }
   
 
-  private static float[] PttI( float alpha, int[] hkl1, int[]hkl2)
-  {
-     float[] Res = new float[3];
-     for( int i=0; i< 3;i++)
-        Res[i] = hkl1[i]*alpha+(1-alpha)*hkl2[i];
-     return Res;
-  }
   
   private static float calcAlpha( int d, float start, float end)
   {
@@ -1401,11 +1554,8 @@ public class RowColTimeVirtualArray extends
         return 0;
      return (d-start)/(end-start);
   }
-  private static int findNextInt( int thisInt, float tolerance)
-  {
-     
-      return thisInt++;
-  }
+  
+  
   private float[][] Mult( float[][]mat1,float[][] subMat2)
   {
      float[][] Res =new float[3][3];
@@ -1435,8 +1585,8 @@ public class RowColTimeVirtualArray extends
 
        }
     }
-  
- /**
+ 
+/**
   * Set the error values that correspond to the data. The dimensions of the
   * error values array should match the dimensions of the data array. Zeroes
   * will be used to fill undersized error arrays. Values that are in an array
