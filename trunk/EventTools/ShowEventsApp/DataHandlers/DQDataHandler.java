@@ -551,14 +551,14 @@ public class DQDataHandler implements IReceiveMessage
       
       if( message.getName().equals(Commands.SAVE_D_VALUES))
       {
-         DataSet D = MakeDataSet( D_values,"D Graph","Angstrom");
+         DataSet D = MakeDataSet( Scale(D_values, normalizeD, D_list),"D Graph","Angstrom");
          String fileName = (String)message.getValue();
          return SaveDataSetASCII(D , fileName);
       }
       
       if( message.getName().equals(Commands.SAVE_Q_VALUES))
       {
-         DataSet D = MakeDataSet( Q_values,"Q Graph", "Inv Angstrom");
+         DataSet D = MakeDataSet(  Scale(Q_values, normalizeQ, Q_list),"Q Graph", "Inv Angstrom");
          String fileName = (String)message.getValue();
          return SaveDataSetASCII(D , fileName);
       }
