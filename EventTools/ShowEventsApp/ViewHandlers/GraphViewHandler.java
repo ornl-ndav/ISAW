@@ -120,7 +120,8 @@ abstract public class GraphViewHandler implements IReceiveMessage,
    {
       if( FxnCtrls == null)
          return;
-      
+      if( FxnCtrls.getMenuComponentCount( ) < 1)
+         return;
      JCheckBoxMenuItem chk = (JCheckBoxMenuItem) FxnCtrls.getMenuComponent(  0 );
      
      if( chk != null && chk.getState( ))
@@ -297,23 +298,51 @@ abstract public class GraphViewHandler implements IReceiveMessage,
       }
    }
 
-   private void StateChange( FunctionViewComponent fvc)
+   private void StateChange( FunctionViewComponent fvc, ObjectState prevState)
    {
 
-      if( CompareGraph == null)
-         return;
-      
-      ViewControl[] controlList = fvc.getControlList();
-      //((LabelCombobox)(controlList[FunctionControls.VC_SHIFT])).setSelectedIndex( 0 );
-      ((LabelCombobox)(controlList[FunctionControls.VC_LINE_SELECTED])).setSelectedIndex( 1 );
-      ((LabelCombobox)(controlList[FunctionControls.VC_LINE_STYLE])).setSelectedIndex( 1 );
       ObjectState Ostate = fvc.getObjectState( false );
-      
-      if( !Ostate.reset("Graph JPanel.Graph Data2.Line Color", java.awt.Color.green));
-         if(!Ostate.insert("Graph JPanel.Graph Data1.Line Color", java.awt.Color.green))
-            System.out.println("Could not set color");
+      if ( CompareGraph != null )
+
+      {
+         ViewControl[] controlList = fvc.getControlList( );
+         // ((LabelCombobox)(controlList[FunctionControls.VC_SHIFT])).setSelectedIndex(
+         // 0 );
+         ( ( LabelCombobox ) ( controlList[FunctionControls.VC_LINE_SELECTED] ) )
+               .setSelectedIndex( 1 );
+         ( ( LabelCombobox ) ( controlList[FunctionControls.VC_LINE_STYLE] ) )
+               .setSelectedIndex( 1 );
+
+         if ( !Ostate.reset( "Graph JPanel.Graph Data2.Line Color" ,
+               java.awt.Color.green ) )
+            ;
+         if ( !Ostate.insert( "Graph JPanel.Graph Data1.Line Color" ,
+               java.awt.Color.green ) )
+            System.out.println( "Could not set color" );
+
          
-       fvc.setObjectState( Ostate );
+      }
+
+      boolean zoomed = false;
+      
+      //Now set states to be retained when data is changed
+      if( prevState == null  || !normalize)
+      {
+         fvc.setObjectState( Ostate );
+         return;
+      }
+     
+      Object orig = prevState.get( FunctionViewComponent.FUNCTION_CONTROLS
+            + "." + FunctionControls.GRAPH_RANGE );
+       
+      if ( orig != null )
+         if ( !Ostate.reset( FunctionViewComponent.FUNCTION_CONTROLS + "."
+               + FunctionControls.GRAPH_RANGE , orig ) )
+            if(!Ostate.insert( FunctionViewComponent.FUNCTION_CONTROLS + "."
+                  + FunctionControls.GRAPH_RANGE , orig ))
+               System.out.println("Could NOT set Graph Range");
+               
+      fvc.setObjectState( Ostate );
    }
 
 
@@ -350,7 +379,8 @@ abstract public class GraphViewHandler implements IReceiveMessage,
       float[] x_values = xyValues[0];
       float[] y_values = xyValues[1];
       float[] errors = null;
-
+      ObjectState prevState = null;
+      
       if( fvc == null)
       {
          String prop_str = System.getProperty("ShowWCToolTip");
@@ -369,12 +399,19 @@ abstract public class GraphViewHandler implements IReceiveMessage,
          AddGraph();
          if ( display_frame != null )
          {
+            
            display_frame.getContentPane().removeAll();
            display_frame.getContentPane().add(fvc.getDisplayPanel());
+           ViewMenuItem[] Mens = fvc.getMenuItems( );
+           FxnCtrls.add( Mens[0].getItem( ) );
          }
       }
       else
-      {  
+      {   
+         //Save Zooming
+         if( fvc.getLocalCoordBounds( ) != fvc.getGlobalCoordBounds( ))
+             prevState = fvc.getObjectState( false );
+         
          Vector V = new Vector();
          V.add(new DataArray1D(x_values,y_values,errors,title,true,false));
          if( CompareGraph != null)
@@ -390,8 +427,8 @@ abstract public class GraphViewHandler implements IReceiveMessage,
          fvc.dataChanged( varr );
       }
 
-      if( CompareGraph != null)
-         StateChange(fvc);
+     
+      StateChange(fvc, prevState);
       
       if ( display_frame != null )
       {
