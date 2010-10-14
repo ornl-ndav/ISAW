@@ -221,15 +221,33 @@ public class DivideByDeltaX extends    AnalyzeOp
       else
         new_data = data;
 
+      boolean set_errors = false;
+      float[] errs = new_data.getErrors();
+      if ( errs != null )
+        set_errors = true;
+
+      float scale = 1.0f;
       float y[] = new_data.getY_values();    // change y values, by reference
       float x[] = new_data.getX_values();
       for ( int i = 0; i < y.length-1; i++ )
-        y[i] /= (x[i+1] - x[i]); 
-
-      if ( new_data.isHistogram() )
-        y[y.length-1] /= (x[y.length] - x[y.length-1]);  
+      {
+        scale = (x[i+1] - x[i]);
+        y[i] /= scale;
+        if ( set_errors )
+          errs[i] /= scale;
+      }
+                                             // last bin is different if
+      if ( new_data.isHistogram() )          // histogram instead of function
+        scale = x[y.length] - x[y.length-1];  
       else
-        y[y.length-1] /= (x[y.length-1] - x[y.length-2]);  
+        scale = x[y.length-1] - x[y.length-2];  
+
+      y[y.length-1] /= scale;
+      if ( set_errors )
+      {
+        errs[y.length-1] /= scale;
+        ((TabulatedData)new_data).setErrors( errs );
+      }
 
       if ( make_new_ds )
         new_ds.addData_entry( new_data );
