@@ -41,7 +41,7 @@ class PG3_to_dspace(GenericLoad):
         self.addParameter(FloatPG("Min d-spacing", 0.2))             # param 4
         self.addParameter(FloatPG("Max d-spacing", 5.0))             # param 5
         self.addParameter(FloatPG("deltaD/D", 2e-4))                 # param 6
-        self.addParameter(FloatPG("normalize to pcharge", 1e13))        # param 7
+        self.addParameter(FloatPG("normalize to pcharge", 1e13))     # param 7
         self.addParameter(BooleanPG("Send all data to tree", False)) # param 8
         self.addParameter(BooleanPG("Show plots", False))            # param 9
 
@@ -170,7 +170,10 @@ class PG3_to_dspace(GenericLoad):
         runnum = self.getParamValue(0)
         (eventfile, pcharge) = self.getRunStuff(runnum)
         print "pcharge = %.0f" % pcharge
-        pcharge = pcharge/float(self.getParamValue(7))
+        if float(self.getParamValue(7)) > 0.:
+            pcharge = pcharge/float(self.getParamValue(7))
+        else:
+            pcharge = 1.
         print "scale = %.2f" % pcharge
 
 
@@ -247,11 +250,12 @@ class PG3_to_dspace(GenericLoad):
         self.send(gsas_tof, showData, sendData)
 
         # normalize the data
-        op = gsas_tof.getOperator("Divide by Scalar")
-        scalar = op.getParameter(0)
-        import java.lang.Float
-        scalar.setValue(java.lang.Float(pcharge))
-        op.getResult()
+        if pcharge != 1.:
+            op = gsas_tof.getOperator("Divide by Scalar")
+            scalar = op.getParameter(0)
+            import java.lang.Float
+            scalar.setValue(java.lang.Float(pcharge))
+            op.getResult()
 
         self.fixUnits(gsas_tof)
         self.removeZeros(gsas_tof)

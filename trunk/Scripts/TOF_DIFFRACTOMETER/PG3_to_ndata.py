@@ -184,8 +184,7 @@ class PG3_to_ndata(GenericLoad):
                       self.getParamValue(self.BadNumChanAv),
                       self.getParamValue(self.FilterCutOff),
                       self.getParamValue(self.FilterOrder),
-                      self.getParamValue(0),
-                      self.getParamValue(0)]
+                      True, False, False]
            X =  ScriptUtil.ExecuteCommand("VanadiumLoad", vanargs)
            if isinstance(X, ErrorString):
               return X
