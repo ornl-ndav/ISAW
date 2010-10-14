@@ -272,12 +272,19 @@ public class Write3ColGSAS extends GenericSave{
 
 
         // compile the data array
+        String line = null; 
         for( int i=0 ; i<y.length ; i++ ){
+/* Alok's old code
             data.append("  "+Format.real( x[i],10,4));
             data.append("  "+Format.real( y[i],10,4));
             data.append("  "+Format.real(dy[i],10,4));
             data.append("                                            ");
             data.append("\r"+"\n");
+*/
+            // Does GSAS expect 80 character long lines?
+            line = String.format("  %14.7e  %14.7e  %14.7e  %30s\r\n",
+                                 x[i], y[i], dy[i], " " );
+            data.append( line );
         }
 
         // write out the data
