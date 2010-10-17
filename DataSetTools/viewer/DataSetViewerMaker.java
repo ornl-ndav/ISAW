@@ -285,6 +285,7 @@ public class DataSetViewerMaker  extends DataSetViewer
       super.setDataSet(ds);
       viewArray = DataSetData.convertToVirtualArray(ds);
       viewComp.dataChanged(viewArray);
+      viewComp.paintComponents( );
       repaint();
     }
 
