@@ -2,8 +2,10 @@ package NexIO.Process;
 
 import gov.anl.ipns.MathTools.Geometry.DetectorPosition;
 import gov.anl.ipns.MathTools.Geometry.Vector3D;
+import gov.anl.ipns.Util.Sys.RankComparator;
 
 import java.util.Arrays;
+import java.util.Comparator;
 
 import DataSetTools.dataset.*;
 import DataSetTools.operator.DataSet.Attribute.GetPixelInfo_op;
@@ -81,6 +83,7 @@ public class Process1NxEvent implements IProcessNxData
          }
       int[] times = NexUtils.getIntArrayFieldValue( NxEventNode, "event_time_of_flight" );
       int[] pixs = NexUtils.getIntArrayFieldValue( NxEventNode, "event_pixel_id" );
+      
       if( times == null || pixs == null || times.length != pixs.length)
          {
            errorMessage +="Cannot find times or pixels for events";
@@ -88,7 +91,16 @@ public class Process1NxEvent implements IProcessNxData
               Params.Pop( );
            return true;
          }
+    
       int[] minMaxtimes= findMinMaxTimesChan( times);
+      int[] minMaxPixIDs = findMinMaxTimesChan( pixIDs);
+      if(minMaxPixIDs ==null)
+      {
+         errorMessage +="No times or pixels to use";
+         for( int pp=0; pp< npush; pp++)
+            Params.Pop( );
+         return true;
+      }
       double incrTimeUnit = 1;
       String units = NexUtils.getStringAttributeValue( 
                  NxEventNode.getChildNode(  "event_time_of_flight" ) ,"units" );
@@ -102,38 +114,52 @@ public class Process1NxEvent implements IProcessNxData
          minMaxtimes[1] =1;
       }else if( minMaxtimes[0] == minMaxtimes[1])
          minMaxtimes[1]++;
+      int nBins = pixs.length/pixIDs.length/4;
+      nBins = Math.max( nBins,2000 );
       XScale xscl = new UniformXScale( minMaxtimes[0]*(float)incrTimeUnit,
                                        minMaxtimes[1]*(float)incrTimeUnit,
-                                       minMaxtimes[1]-minMaxtimes[0]+1);
+                                       Math.min( nBins, minMaxtimes[1]-minMaxtimes[0]+1)) ;
+      int[] sizes = new int[minMaxPixIDs[1]-minMaxPixIDs[0]+1];
+      Arrays.fill( sizes , 0 );
+      int minPixID = minMaxPixIDs[0];
+      for( int i=0; i< pixs.length; i++)
+      {
+         if( pixs[i] >= minPixID && pixs[i] <=minMaxPixIDs[1])
+            sizes[pixs[i]-minPixID]++;
+      }
+      int[][] Data = new int[sizes.length][];
+      for( int i=0; i< Data.length; i++)
+         Data[i] = new int[sizes[i]];
+
+      Arrays.fill( sizes , 0 );
+      for( int i=0; i< pixs.length; i++)
+      {
+         int k = pixs[i]-minPixID;
+         if ( k >= 0 && k < sizes.length )
+         {
+            Data[k][sizes[k]] = times[i];
+            sizes[k]++ ;
+
+         }
+      }
+      
       float TTcount =0;
       for( int i=0; i< pixIDs.length; i++)
       {
          int p = pixIDs[i];
-         int N=0;
-         float TotCount =0;
-         for( int j=0; j<pixs.length; j++)
-            if( pixs[j] == p)
-            {
-               buff[N++] = times[j];
-               TotCount ++;
-               if( N > buff.length -10)
-               {
-                  int[] Res = new int[buff.length+2000];
-                  System.arraycopy( buff,0, Res, 0, buff.length);
-                  buff = Res;
-               }
-            }
+         int k= p-minPixID;
+         int N=sizes[k];
+         
           
-         int[] counts = new int[N];
+         int[] counts = new int[Data[k].length];
          Arrays.fill( counts , 1 );
-         int[] Bres = new int[N];
-         System.arraycopy( buff , 0 , Bres , 0 , N );
-         EventList EList = new EventList(xscl.getStart_x( ), 
+         int[] Bres = Data[k];
+         EventList EList = new EventList(0, 
                            (double)incrTimeUnit, Bres, counts);
          
          EventData data = new EventData(xscl, EList, p);
-         data.setAttribute(  new FloatAttribute(Attribute.TOTAL_COUNT, TotCount) );
-         TTcount +=TotCount;
+         data.setAttribute(  new FloatAttribute(Attribute.TOTAL_COUNT, N) );
+         TTcount += N;
          DS.addData_entry( data );
          
       }
@@ -713,5 +739,7 @@ public class Process1NxEvent implements IProcessNxData
    {
 
    }
+   
+   
 
 }
