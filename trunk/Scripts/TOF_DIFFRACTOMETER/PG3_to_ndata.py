@@ -47,9 +47,9 @@ class PG3_to_ndata(GenericLoad):
     def setDefaultParameters(self):
         self.super__clearParametersVector()
         PG3ROOT = "/SNS/PG3/"
-        self.addParameter(StringPG("PG3 run number", 666))
+        self.addParameter(StringPG("PG3 run number", 1695))
         self.addParameter(IntegerPG("PG3 background run number",-1))
-        self.addParameter(IntegerPG("PG3 vanadium run number",733))
+        self.addParameter(IntegerPG("PG3 vanadium run number",1425))
         self.addParameter(LoadFilePG("Configuration file name",
                                      "/SNS/PG3/2010_2_11A_CAL/"))
         self.addParameter(FloatPG("First event to load", 0.))
@@ -65,13 +65,21 @@ class PG3_to_ndata(GenericLoad):
         self.addParameter(IntegerPG("Filter order", 2))
         self.addParameter(BooleanPG("Send all data to tree", False))
         self.addParameter(BooleanPG("Show plots", 0))       
-        self.addParameter(DataDirPG("Save directory","/SNS/users/3ah/2010-A-data/"))
+        self.addParameter(DataDirPG("Save directory","/SNS/users/"))
         choices = ChoiceListPG("File types", "gsas and fullprof")
         choices.addItem("gsas")
         choices.addItem("fullprof")
         self.addParameter(choices)
         self.addParameter(BooleanPG("Sequential Bank Numbering",1))  
  
+    def send(self, ds, showPlots, sendData):
+        if ds is None:
+            return
+        from Command import ScriptUtil
+        if showPlots:
+            ScriptUtil.display(ds)
+        if sendData and self.IOBS is not None:
+            ScriptUtil.send(ds, self.IOBS)
 
     def getParamValue(self,index):
         return self.getParameter(index).getValue()
@@ -123,11 +131,7 @@ class PG3_to_ndata(GenericLoad):
             if isinstance(X, ErrorString):
                return X
 
-        if GsasFileName is not None and "gsas" in save_as:
-            useSeqNumbering = self.getParamValue(self.SeqNums)
-            X = ScriptUtil.ExecuteCommand("Save3ColGSAS",[None,SampleDS, GsasFileName, useSeqNumbering])
-            if isinstance(X, ErrorString):
-               return X
+        useSeqNumbering = self.getParamValue(self.SeqNums)
 
         if "fullprof" in save_as:
             filename = str(runnumber)+".dat"
@@ -136,7 +140,27 @@ class PG3_to_ndata(GenericLoad):
             X=ScriptUtil.ExecuteCommand("SaveFullProf",[SampleDS,filename,useSeqNumbering])
             if isinstance(X, ErrorString):
                return X
+            self.send(SampleDS, self.getParamValue(self.show),
+                      self.getParamValue(self.toTree))
 
+        if GsasFileName is not None and "gsas" in save_as:
+            op = SampleDS.getOperator("Multiply sample values yi, by delta_xi")
+            if op is None:
+                op = SampleDS.getOperator("MultiplyByDeltaX")
+            op.getParameter(0).setValue(True)
+            SampleDS_gsas = op.getResult()
+            if isinstance(X, ErrorString):
+                return X
+            X = ScriptUtil.ExecuteCommand("Save3ColGSAS",[None,SampleDS_gsas, GsasFileName, useSeqNumbering])
+            if isinstance(X, ErrorString):
+               return X
+            self.send(SampleDS_gsas, self.getParamValue(self.show),
+                      self.getParamValue(self.toTree))
+
+        if self.getParamValue(self.toTree):
+            return SampleDS
+        else:
+            return None
 
     def getResult(self):
         # get the configuration file and load it
@@ -196,7 +220,9 @@ class PG3_to_ndata(GenericLoad):
         self.outputDir = self.getParamValue(self.data)
 
         for runnumber in runs:
-           self.processRun(runnumber)
+            X = self.processRun(runnumber)
+            if isinstance(X, ErrorString):
+                return X
 
         return None
 
