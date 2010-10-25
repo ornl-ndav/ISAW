@@ -119,6 +119,8 @@ import NetComm.*;
  *  @see NetComm.LiveDataServer
  *  @see DataSetTools.retriever.LiveDataRetriever
  *  @see DataSetTools.retriever.LiveDataManager
+ *  
+ *  For arguments to the application  @see #main(String[])
  */
 
 public class LiveDataMonitor extends    JPanel
@@ -980,6 +982,8 @@ public class LiveDataMonitor extends    JPanel
 /* -------------------------------------------------------------------------
  *
  * MAIN 
+ * 
+ * @param args   An IP address or an instrument computer name
  *
  */
   public static void main(String[] args)
