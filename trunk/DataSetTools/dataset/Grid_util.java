@@ -95,6 +95,8 @@ import DataSetTools.viewer.*;
 /** 
  *  This class has static utility methods for manipulating DataGrids and
  *  DataSets.
+ *  
+ *  For application arguments @see #main(String[])
  */
 
 public class Grid_util
@@ -414,7 +416,7 @@ public class Grid_util
   /**
    *
    *  Basic main program for testing... shows the DataGrids from a DataSet
-   *  if the runfile is specified on the command line.
+   *  if the IPNS runfile is specified on the command line.
    *
    */
   public static void main( String args[] )
