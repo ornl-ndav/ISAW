@@ -54,6 +54,9 @@ import devTools.Hawk.classDescriptor.tools.SystemsManager;
 
 /**
  * This is the main class which contains the main method used to start Hawk.
+ * Hawk create projects that produce, save, and print class diagrams for java source code.
+ * 
+ * For arguments to the application  @see #main(String[])
  * @author Dominic Kramer
  *
  */
@@ -67,7 +70,14 @@ public class HawkMain
 	
 	/**
 	 * The main method that is used to start all of Hawk.
-	 * @param args The array of Strings passed as arguments to the main method.
+	 * @param args The array of Strings passed as arguments to the main method. Below is a list
+	 *      of possible arguments
+	 *      -V or --version     shows version
+	 *      -B or --build       build
+	 *      -A or --author      Returns author
+	 *      --logo              shows logo
+	 *      -h  or --help       help
+	 *      file.hjp            load in saved Hawk file
 	 */
 	public static void main(String args[])
 	{		
