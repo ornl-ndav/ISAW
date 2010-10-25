@@ -58,7 +58,7 @@ import Command.*;
 /**
  * This class has been dynamically created using the Method2OperatorWizard
  * and usually should not be edited.
- * This operator is a wrapper around @see Operators.Special.ObjectState.ObjectStateUtilities#GetObjectState(gov.anl.ipns.ViewTools.Components.IPreserveState , boolean) 
+ * This operator is a wrapper around @see Operators.Special.ObjectState.ObjectStateUtilities#GetObjectState(gov.anl.ipns.ViewTools.Components.IPreserveState ,boolean) 
  */
 public class GetObjectState extends GenericOperator{
    public GetObjectState(){
