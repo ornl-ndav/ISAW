@@ -583,7 +583,9 @@ public class NxNodeUtils {
       
         else if (type == NexusFile.NX_UINT8)
             X = new byte[ length];
-      
+        else if( type == 27)//NX_UINT64
+
+            X= new long[length];
         else {
             errormessage = "CAtype not supported" + type;
       
