@@ -56,6 +56,10 @@ import NetComm.*;
  * Sends UDP packets similar to the packet structure at the SNS. The
  * data comes from an Event file.
  * 
+ * To view arguments to the application @see #main(String[])
+ * 
+ * To Test this use IsawEV @see EventTools.ShowEventsApp.IsawEV
+ * 
  * @author Ruth
  *
  */
@@ -483,6 +487,8 @@ public class SocketServerTest
     *     args[2]  The node name or IP address to which the event UDP packets
     *              will be sent. If "" will be local host
     *     args[3]  Port Num
+    *     
+    * If no arguments are specified, a GUI will appear to enter appropriate inputs.
     */
    public static void main( String[] args )
    {
