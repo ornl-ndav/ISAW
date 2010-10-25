@@ -164,7 +164,7 @@ import org.w3c.dom.*;
 /**
  * @author MikkelsonR
  *  This class is used to create a full java GenericOperator shell around a 
- *  static method.
+ *  static method. The associated application is started with no arguments.
  */
 public class Method2OperatorWizard extends JFrame implements ActionListener {
 
