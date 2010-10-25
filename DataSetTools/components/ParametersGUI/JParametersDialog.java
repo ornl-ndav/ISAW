@@ -266,6 +266,15 @@ import javax.swing.text.*;
 import javax.swing.text.html.*;
 import ExtTools.SwingWorker;
 
+/**
+ * 
+ * This class along with DataSetTools.wizard.Wizard are the only automatic classes that
+ * display operator parameters and execute the operator.  This class is used for the operators
+ * in IsawGUI.Isaw's Macros menu and also the Run button in the Command Pane.
+ * 
+ * @author ruth
+ *
+ */
 public class JParametersDialog implements Serializable,
                                IObservable
 {
