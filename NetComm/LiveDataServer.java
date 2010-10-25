@@ -908,6 +908,10 @@ public class LiveDataServer extends    DataSetServer
 
   /* ------------------------------ main --------------------------------- */
 
+  /**
+   * Launches the Live Data Server.  
+   * @param    -U<port number>    
+   */
   public static void main(String args[])
   {
     System.out.println();
