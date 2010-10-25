@@ -828,6 +828,8 @@ import Wizard.TOF_SCD.Matrix2_App;
  /**
   * The main class for ISAW. It is the GUI that ties together the 
   * DataSetTools, IPNS, ChopTools and graph packages.
+  * 
+  * For application arguments @see #main(String[])
   */
 public class Isaw 
   extends JFrame 
@@ -2395,6 +2397,16 @@ public class Isaw
    *  and pop up the main Isaw window from the event queue.
    *  It also does some of the initialization of Isaw that can
    *  be done from the main thread, rather than from the event queue.
+   *  
+   *  @param args  There are several possible arguments listed 
+   *               These can be in any order, except the -F must be at the end
+   *               
+   *               
+   *               --version    Shows the version
+   *               -v           Displays the operators that are loaded
+   *                              This sets the debug for Script_Class_List_Handler
+   *               -t           Will show certain timings
+   *               -F file1 file2 file3 The name of the files with data set information to load
    */
   public static void main( String[] args )
   {
