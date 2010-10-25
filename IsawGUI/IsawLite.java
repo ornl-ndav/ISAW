@@ -102,6 +102,8 @@ import java.util.Vector;
 /**
  * Methods for loading executing an operator using a variety of
  * methods for specifying it.
+ * 
+ * For application arguments @see #main(String[])
  */
 public class IsawLite{
   public static transient boolean                   LoadDebug   = false;
@@ -526,7 +528,19 @@ public class IsawLite{
 
   /**
    * Allows running of Scripts and Operators without Isaw and/or the
-   * CommandPane
+   * CommandPane.
+   * 
+   * @param args  Below is the list of possible arguments. Not all are needed and the
+   *              options can appear in any order.
+   *            <options>
+   *              -nogui     execute without gui
+   *              -d         print debug messages
+   *              -help      print this help message
+   *              -remote    execute Operators remotely.  Only works in nogui mode.
+   *              -i <file>  use <file> for input
+   *              </options>
+   *              Number of parameters    (optional if unique command name)
+   *              Command     CommandName or Class Name or Scriptfile name.
    */
   public static void main( String args [] ){
     // show usage information if there are not enough parameters
