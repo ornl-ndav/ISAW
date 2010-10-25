@@ -83,7 +83,15 @@ import DataSetTools.viewer.SelectedData2D;
 import DataSetTools.viewer.Table.RowColTimeVirtualArray;
 import DataSetTools.viewer.ThreeD.ThreeD1View;
 import EventTools.EventList.FileUtil;
-
+/**
+ * This class encompasses a GUI to aid in specifying Group numbers to pixels in a neutron
+ * instrument.  Views of the instrument and detectors are available to select and view 
+ * the groups associated with pixels.
+ * 
+ * For arguments to the associated application @see #main(String[])
+ * @author ruth
+ *
+ */
 public class GroupSelector implements IObserver, ActionListener
 {
 
@@ -1548,7 +1556,24 @@ public class GroupSelector implements IObserver, ActionListener
          
       }else if( arg0.getActionCommand() == "Exit")
          
-         System.exit(0);
+      {
+        // System.exit(0);
+         if ( DisplayFrame != null )
+         {
+            DisplayFrame.removeAll( );
+            DisplayFrame.dispose( );
+            DisplayFrame = null;
+            DS = null;
+            CommandPanel = null;
+
+            ThreeDPanel = null;
+            VirtArray2D = null;
+
+            DetectorPanel = null;
+            TwoD = null;
+         }
+     
+      }
       
       else if ( arg0.getActionCommand( ) == SHOW_GROUPS )
       {
@@ -2163,7 +2188,15 @@ public class GroupSelector implements IObserver, ActionListener
   
   
    /**
-    * @param args
+    * Starts this application. No arguments are necessary because a dialog box will
+    *        allow you to specify the appropriate inputs.  Below are the possible arguments
+    *        
+    * @param args   The following are the list of arguments
+    *               fileName1   NeXus filename if only argument otherwise the DetCal filename
+    *               fileName2   The Bank FileName if present
+    *               
+    *   If there is only one argument and it is 1 or 2, Test data is used(1 uses NeXus file and
+    *         2 uses the DetCal and Bank file).These files most likely are not on your system
     */
    public static void main(String[] args)
    {
