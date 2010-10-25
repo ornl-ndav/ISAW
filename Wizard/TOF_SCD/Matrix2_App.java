@@ -22,6 +22,17 @@ import DataSetTools.operator.Generic.TOF_SCD.*;
 import DataSetTools.util.FilenameUtil;
 import DataSetTools.util.SharedData;
 
+/**
+ * This class supports a GUI to specify arguments and display results for the Matrix Single
+ * Crystal Diffractometer application.  
+ * 
+ * The matrix SCD application takes two peaks and lattice constants and produces an orientation
+ * matrix.  
+ * 
+ * To see application arguments @see #main(String[])
+ * @author ruth
+ *
+ */
 public class Matrix2_App extends GenericOperator
 {
 
@@ -1200,6 +1211,12 @@ public class Matrix2_App extends GenericOperator
 
    }
 
+   /**
+    * Launches the Matrix2 applications.
+    * 
+    * @param args  No arguments are used.  The GUI allows for loading the appropriate
+    *             peaks file.
+    */
    public static void main(String[] args)
    {
 
