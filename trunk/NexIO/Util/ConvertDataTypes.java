@@ -1084,7 +1084,7 @@ public class ConvertDataTypes{
                                                   indexOf( OldUnits + ";" ) >= 0 )
         return factor*1000.0f;
         
-     if( "us;usec;useconds;usecond;micros;microsec;microseconds;".
+     if( "us;usec;useconds;usecond;micros;microsec;microseconds;microsecond;".
                                                   indexOf( OldUnits + ";" ) >= 0 )
      
         return factor;
