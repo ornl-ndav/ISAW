@@ -282,6 +282,8 @@ import javax.swing.*;
  * Script_Class_List_Handler}. The effect of this is that the operatr
  * will not be added to menus, will not be found by the help system,
  * and will not be available in scripts.</P>
+ * 
+ * To see application arguments  @see #main(String[])
  */
 public class Script_Class_List_Handler  implements OperatorHandler{
     //Contains ordering for Command Names
@@ -1997,6 +1999,10 @@ public class Script_Class_List_Handler  implements OperatorHandler{
     }
     /**
      * Test program for this module.  No arguments are used 
+     * This applications loads all operators and prints out the paths and files searched 
+     * along with whether the operator was "loaded".
+     * 
+     * This is used to find problems with and test the status of stored operators.
      */
     public static void main( String args[] ){
       //load up IsawProps.dat
