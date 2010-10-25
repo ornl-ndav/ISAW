@@ -2,10 +2,7 @@ package NexIO.Process;
 
 import gov.anl.ipns.MathTools.Geometry.DetectorPosition;
 import gov.anl.ipns.MathTools.Geometry.Vector3D;
-import gov.anl.ipns.Util.Sys.RankComparator;
-
 import java.util.Arrays;
-import java.util.Comparator;
 
 import DataSetTools.dataset.*;
 import DataSetTools.operator.DataSet.Attribute.GetPixelInfo_op;
@@ -81,9 +78,10 @@ public class Process1NxEvent implements IProcessNxData
               Params.Pop( );
            return true;
          }
+     // long start = System.currentTimeMillis( );
       int[] times = NexUtils.getIntArrayFieldValue( NxEventNode, "event_time_of_flight" );
       int[] pixs = NexUtils.getIntArrayFieldValue( NxEventNode, "event_pixel_id" );
-      
+      //System.out.println("   Time(milliseconds)="+(System.currentTimeMillis( )-start));
       if( times == null || pixs == null || times.length != pixs.length)
          {
            errorMessage +="Cannot find times or pixels for events";
