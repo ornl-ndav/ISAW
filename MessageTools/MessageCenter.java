@@ -67,7 +67,12 @@ import java.util.*;
  *  getProcessCompleteQueueName() method.  If an IReceiveMessage object
  *  adds itself as a receiver for such messages, then when a sequence of
  *  messages is processed, it will be sent a MessageCenter.MESSAGES_PROCESSED 
- *  message, provided some messages were processed and returned a value true.
+ *  message.  If always_notify is false, the MESSAGES_PROCESSED message
+ *  will only be sent provided some messages were processed and returned a
+ *  value true. If always_notify is true, the MESSAGES_PROCESSED will be
+ *  sent every time the list of messages is checked, whether or not the
+ *  list was empty or any receiver processed a message and returned true.
+ *  Setting always_notify to true may be helpful for animation.
  */
 public class MessageCenter
 {
@@ -88,6 +93,7 @@ public class MessageCenter
   private Object       lists_lock = new Object();  // lock for message_table
                                                    // and receiver_table
 
+  private boolean always_notify = false;
   public final static Message MESSAGES_PROCESSED =
                                              new Message( DONE, null, true );
 
@@ -106,6 +112,20 @@ public class MessageCenter
     sender_receiver_table = null;
     sender_message_table  = null;
     center_name = name;
+  }
+
+
+  /* ------------------------- setAlwaysNotify --------------------------- */
+  /**
+   *  Set the always_notify flag to determine whether or not a 
+   *  MESSAGES_PROCESSED message will be sent every time the list of  
+   *  messages is processed, or only if the list of messages was NOT
+   *  empty and at least one message returned true.  Setting this true
+   *  can be useful for driving animations.
+   */
+  public void setAlwaysNotify( boolean onoff )
+  {
+    this.always_notify = onoff;
   }
 
 
@@ -188,8 +208,13 @@ public class MessageCenter
   {                                
     synchronized(lists_lock)
     {
+
        if ( message_table.size() <= 0 )     // nothing to send
+       {
+         if ( always_notify )
+           send( MESSAGES_PROCESSED );
          return false;
+       }
                                             // grab all current messages and
                                             // replace master table of messgaes
                                             // with a new empty table
@@ -439,7 +464,7 @@ public class MessageCenter
                                              // Send the MESSAGES_PROCESSED 
                                              // message, if sending some
                                              // messages returned true
-    if ( num_true > 0 )
+    if ( num_true > 0 || always_notify )
       sendMessage( MESSAGES_PROCESSED, my_receiver_table );
 
     return num_true;
