@@ -1,5 +1,5 @@
 /* 
- * File: additionalViewControls.java
+ * File: positionInfoPanel.java
  *
  * Copyright (C) 2009, Paul Fischer
  *
@@ -235,7 +235,7 @@ public class positionInfoPanel extends JPanel
                                        selection.getHKL().getX(), 
                                        selection.getHKL().getY(),
                                        selection.getHKL().getZ()) );
-      qxyzTxt.setText( String.format("(%6.2f, %6.2f, %6.2f)",
+      qxyzTxt.setText( String.format("(%7.3f, %7.3f, %7.3f)",
                                        selection.getQxyz().getX(), 
                                        selection.getQxyz().getY(),
                                        selection.getQxyz().getZ()) );
