@@ -5,10 +5,8 @@
 # x,y coordinate system on the face of the detector.
 # This calibration was obtained using natrolite runs
 # 1612-1620 AFTER changing CHI from -135 to +135.
-# Since there were few peaks in detector 15, detector 15
-# was left at it's design specification values.
 #
-# Thur Nov 4 09:56:23 CDT 2010
+# Wed Oct 27 23:31:52 CDT 2010
 6         L1     T0_SHIFT
 7  1806.3788       -2.437
 4 DETNUM  NROWS  NCOLS    WIDTH   HEIGHT   DEPTH   DETD   CenterX   CenterY   CenterZ    BaseX    BaseY    BaseZ      UpX      UpY      UpZ
@@ -25,5 +23,5 @@
 5     12    256    256  15.8175  15.8297  0.2000  39.55  -37.5864   -0.0642   12.3019 -0.25695  0.70779 -0.65804  0.26321  0.70649  0.65696
 5     13    256    256  15.9421  15.7806  0.2000  42.57  -40.9072  -11.7862    0.1526 -0.16045  0.68984 -0.70596 -0.15311  0.68913  0.70827
 5     14    256    256  15.8101  15.8735  0.2000  42.55  -40.9281   11.6445    0.2087  0.21226  0.67623 -0.70545  0.19746  0.67729  0.70872
-5     15    256    256  15.8190  15.8190  0.2000  42.50  -12.6245   11.7146   38.8541 -0.61231  0.67971 -0.40382  0.73272  0.67973  0.03309
+5     15    256    256  17.6056  15.9340  0.2000  42.52  -12.2833   11.1648   39.1472 -0.62173  0.69879 -0.35376  0.75389  0.65638 -0.02844
 
