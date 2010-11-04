@@ -9,6 +9,7 @@ $Title=Merge Fullprof data and Display
 $run_numbers		Array([1471:1475])		Enter run # like [1:3]
 $path			DataDirectoryString(~3ah/)	Input run path
 $Bank			Integer(1)			Input bank #
+$Num_pts        	Integer(6000)                   Number of points in file
 $One_D_plot		Boolean(false)			Draw 1D plot?
 
 #===================================================================================
@@ -18,7 +19,7 @@ for i in run_numbers
 #======================== LOAD DATA ================================================
   	file_name = path&i&"b"&Bank&".dat"
   	Echo(file_name)
-  	rds=LoadASCII(file_name,6,16100,1,2,3)
+  	rds=LoadASCII(file_name,6,Num_pts,1,2,3)
 
 #======================= Merge Data =================================================
 #  dvds = ToD(newData, dmin, dmax, 0)

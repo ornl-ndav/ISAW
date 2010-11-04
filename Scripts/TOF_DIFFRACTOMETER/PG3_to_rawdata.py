@@ -45,7 +45,7 @@ class PG3_to_rawdata(GenericLoad):
         self.addParameter(FloatPG("Number of events to load", 1e12))
         self.addParameter(FloatPG("Min d-spacing", 0.2))
         self.addParameter(FloatPG("Max d-spacing", 5.0))
-        self.addParameter(FloatPG("deltaD/D", 2e-4))
+        self.addParameter(FloatPG("deltaD/D", 4e-4))
         self.addParameter(BooleanPG("Send all data to tree", False))
         self.addParameter(BooleanPG("Show plots", 0))       
         self.addParameter(DataDirPG("Save directory","/SNS/users/"))
