@@ -56,7 +56,7 @@ class PG3_to_ndata(GenericLoad):
         self.addParameter(FloatPG("Number of events to load", 1e12))
         self.addParameter(FloatPG("Min d-spacing", 0.2))
         self.addParameter(FloatPG("Max d-spacing", 5.0))
-        self.addParameter(FloatPG("deltaD/D", 2e-4))
+        self.addParameter(FloatPG("deltaD/D", 4e-4))
         self.addParameter(FloatPG("normalize to pcharge", 1e13))
         self.addParameter(FloatPG("Estimated Peak Width( delta_d/d)",.0050))
         self.addParameter(FloatPG("Interval to Replace(Times Peak Width)",1.9))

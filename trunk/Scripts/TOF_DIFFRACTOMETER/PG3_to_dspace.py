@@ -40,7 +40,7 @@ class PG3_to_dspace(GenericLoad):
         self.addParameter(FloatPG("Number of events to load", 1e12)) # param 3
         self.addParameter(FloatPG("Min d-spacing", 0.2))             # param 4
         self.addParameter(FloatPG("Max d-spacing", 5.0))             # param 5
-        self.addParameter(FloatPG("deltaD/D", 2e-4))                 # param 6
+        self.addParameter(FloatPG("deltaD/D", 4e-4))                 # param 6
         self.addParameter(FloatPG("normalize to pcharge", 1e13))     # param 7
         self.addParameter(BooleanPG("Send all data to tree", False)) # param 8
         self.addParameter(BooleanPG("Show plots", False))            # param 9
