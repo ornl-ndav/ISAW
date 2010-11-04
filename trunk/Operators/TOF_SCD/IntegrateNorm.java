@@ -279,12 +279,23 @@ public class IntegrateNorm {
             panel.add( NexFile);
             panel.add( BadEdgePanel);
             panel.add( CellSidePanel);
-            if( JOptionPane.showConfirmDialog( null, panel,"Input Files",
-                  JOptionPane.OK_CANCEL_OPTION)== JOptionPane.OK_OPTION)
+            int OptChoice = JOptionPane.showConfirmDialog( null, panel,"Input Files",
+                  JOptionPane.OK_CANCEL_OPTION);
+            if(OptChoice == JOptionPane.OK_OPTION)
             {
                PeaksFile = Peak.getTextField( ).getText( ).trim();
                NeXusFile = NexFile.getTextField( ).getText( ).trim();
-            }
+               BadEdgeWidth = Integer.parseInt( BadEdge.getText( ).trim());
+               MaxCellEdge =Integer.parseInt(CellSide.getText( ).trim());
+               
+            }else if( OptChoice == JOptionPane.CANCEL_OPTION)
+               return;
+            
+            panel.removeAll( );
+            Peak = null;
+            NexFile = null;
+            BadEdgePanel = CellSidePanel = panel = null;
+            BadEdge= CellSide = null;
          }
       
       int k= PeaksFile.lastIndexOf( '.' );
@@ -325,7 +336,12 @@ public class IntegrateNorm {
         fout = new FileOutputStream( LogFile);
        }catch (Exception ss)
        {
-          System.exit(1);
+          ss.printStackTrace( );
+          fout= null;
+          ret = null;
+          Peaks = null;
+         PeaksFile =NeXusFile = null;
+         // System.exit(1);
        }
        
        
@@ -529,7 +545,15 @@ public class IntegrateNorm {
       JOptionPane.showMessageDialog( null , "<html><body> The integrate file is in " +
                                OutFile+"<P>  There is a log file in "+LogFile+
                                "</body></html>");
-      System.exit(0);
+      DS = null;
+
+      fout= null;
+      Peaks.clear( );
+      Peaks =  null;
+      PeaksFile =NeXusFile = null;
+      ret.close( );
+      ret = null;
+      //System.exit(0);
    }
    
 
