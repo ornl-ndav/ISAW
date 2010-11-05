@@ -149,7 +149,7 @@ public class GoniometerControls extends    JPanel
 
     JFrame frame = new JFrame( "Goniometer Controls Test" );
     frame.setSize(300,300);
-    frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
+    frame.setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
     frame.getContentPane().add( controls );
     frame.setVisible( true );
 

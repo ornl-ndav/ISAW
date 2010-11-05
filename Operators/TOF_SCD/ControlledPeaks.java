@@ -270,7 +270,7 @@ public class ControlledPeaks extends    Group
 
     JFrame frame = new JFrame( "Controlled Peaks" );
     frame.setSize(500,517);
-    frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
+    frame.setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
     frame.getContentPane().add( demo.getDisplayComponent() );
     frame.setVisible( true );
 
@@ -279,7 +279,7 @@ public class ControlledPeaks extends    Group
     
     JFrame control_frame = new JFrame( "Controls" );
     control_frame.setSize(300,300);
-    control_frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
+    control_frame.setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
     control_frame.getContentPane().add( controls );
     control_frame.setVisible( true );
 
