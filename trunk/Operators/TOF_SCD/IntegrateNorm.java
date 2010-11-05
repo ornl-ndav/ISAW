@@ -267,7 +267,7 @@ public class IntegrateNorm {
             BadEdgeWidth = Integer.parseInt( args[2].trim() );
          
          if( args.length >3 )
-            MaxCellEdge = Integer.parseInt( args[3].trim() );
+            MaxCellEdge = Float.parseFloat( args[3].trim() );
         
          }else
          {
