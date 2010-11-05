@@ -126,7 +126,7 @@ public class GoniometerControlledPeaks extends Group
 
     JFrame frame = new JFrame( "Specify Goniometer Angles to INVERT Rotation" );
     frame.setSize(300,500);
-    frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
+    frame.setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
     frame.getContentPane().setLayout( new GridLayout( 2, 1 ) );
     frame.getContentPane().add( controls1 );
     if ( controls2 != null )
@@ -163,7 +163,7 @@ public class GoniometerControlledPeaks extends Group
 
     JFrame frame = new JFrame( "Goniometer Controlled Peaks" );
     frame.setSize(500,517);
-    frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
+    frame.setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
     frame.getContentPane().add( demo.getDisplayComponent() );
     frame.setVisible( true );
 
