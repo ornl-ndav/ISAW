@@ -133,7 +133,8 @@ public abstract class Control extends JPanel
   {
      Message message = new Message( queue_name,
                                     getValue(),
-                                    replace_flag );
+                                    replace_flag,
+                                    false );
      message_center.send( message );
   }
 
