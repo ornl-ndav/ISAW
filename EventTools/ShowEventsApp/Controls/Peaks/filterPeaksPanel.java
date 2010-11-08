@@ -3,6 +3,7 @@ package EventTools.ShowEventsApp.Controls.Peaks;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
+import java.util.Arrays;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
@@ -12,9 +13,13 @@ import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.BadLocationException;
 
+import DataSetTools.operator.Generic.TOF_SCD.Peak_new;
+import DataSetTools.operator.Generic.TOF_SCD.Peak_new_IO;
 import EventTools.ShowEventsApp.Command.*;
 import MessageTools.*;
 import gov.anl.ipns.Parameters.FileChooserPanel;
+import gov.anl.ipns.Parameters.FilteredPG_TextField;
+import gov.anl.ipns.Parameters.FloatFilter;
 import gov.anl.ipns.Parameters.IParameterGUI;
 import gov.anl.ipns.Parameters.IntArrayPG;
 import gov.anl.ipns.Util.Numeric.ClosedInterval;
@@ -37,12 +42,17 @@ public class filterPeaksPanel extends JPanel
     JTextField DVbyV;
     JCheckBox  OmitValues;
 
+    FileChooserPanel PeaksFileName;
+    FilteredPG_TextField PeakSize;
+    
     public static String CLEAR = "Clear Pixel ID Mask";
     public static String APPLY = "Set as Pixel ID Mask";
 
     public static String CLEAR_D ="Clear d,|Q| Event Mask";
     public static String APPLY_D ="Set as d, |Q| Event Mask";
     
+	public static String APPLY_P="Set as Peak Mask";
+	public static String CLEAR_P = "Clear Peak Mask";
 	
 	public filterPeaksPanel(MessageCenter mc)
 	{
@@ -59,7 +69,7 @@ public class filterPeaksPanel extends JPanel
 		tabPane = new JTabbedPane();
 		tabPane.add("Detector", buildDetectorPanel());
 		tabPane.add("d, |Q|", buildDQPanel());
-		
+		tabPane.add( "Peaks",buildOmitPeakPanel() );
 		panel.add(tabPane);
 		return panel;
 	}
@@ -158,7 +168,40 @@ public class filterPeaksPanel extends JPanel
 
 	}
 	
-	
+	private  JPanel buildOmitPeakPanel()
+	{
+	   JPanel PeakPanel = new JPanel( );
+	   PeakPanel.setLayout(  new BorderLayout() );
+	   
+	   JPanel panel1 = new JPanel( new GridLayout(2,1));
+	   PeaksFileName = new FileChooserPanel( FileChooserPanel.LOAD_FILE,
+	                                         "Peak File Name",
+	                                         System.getProperty( "ISAW_HOME",null ));                       
+	   panel1.add( PeaksFileName );
+	   
+	   JPanel panel = new JPanel( new GridLayout( 1, 2 ) );
+	   PeakSize = new FilteredPG_TextField(  new FloatFilter() );
+	   PeakSize.setText( "0.1" );
+	   JLabel label = new JLabel( "Peak Size in d" );
+	   panel.add( label );
+	   panel.add( PeakSize );
+	   panel1.add( panel );
+	   
+	   PeakPanel.add( panel1, BorderLayout.NORTH );
+	   
+	   panel = new JPanel( new GridLayout(1,2));
+	   JButton Clear = new JButton(CLEAR_P);
+	   JButton Apply = new JButton(APPLY_P);
+	   Clear.addActionListener(  new buttonListener() );
+       Apply.addActionListener(  new buttonListener() );
+	   
+       panel.add(Clear);
+       panel.add(Apply);
+       
+       PeakPanel.add( panel ,BorderLayout.SOUTH);
+       
+	   return PeakPanel;
+	}
 	private class buttonListener implements ActionListener
 	{
 		public void actionPerformed(ActionEvent e)
@@ -322,6 +365,16 @@ public class filterPeaksPanel extends JPanel
             
                
 			}
+			else if( e.getActionCommand( ).equals( CLEAR_P ))
+			{
+			   sendMessage( Commands.CLEAR_OMITTED_PEAKS, null); 
+			   
+			}else if(e.getActionCommand( ).equals( APPLY_P ))
+			{
+			   sendMessage( Commands.SET_OMITTED_PEAKS,
+			         CalcOmittedPeaks(PeaksFileName.getTextField(),
+			               PeakSize));
+			}
 			
 		}
 	}
@@ -341,6 +394,49 @@ public class filterPeaksPanel extends JPanel
       message_center.send( message );
    }
 	
+   private float[][] CalcOmittedPeaks( JTextField FileName, JTextField tolerance)
+   {
+      if( FileName == null || tolerance == null)
+         return null;
+      String filename = FileName.getText( );
+      float peakSize = 12;
+      Vector<Peak_new> Peaks = null;
+      try
+      {
+         peakSize = Float.parseFloat( tolerance.getText( ).trim() );
+         Peaks =  Peak_new_IO.ReadPeaks_new( filename );
+
+      }catch(Exception s)
+      {
+         return null;
+      }
+      
+      if( Peaks == null || Peaks.size() < 1 )
+         return null;
+      
+      int N=0;
+      for( int i=0; i< Peaks.size(); i++)
+      {
+         Peak_new Peak = Peaks.get( i );
+         if( Peak.h() !=0 || Peak.k() !=0 || Peak.l() !=0 )
+            N++;
+      }
+      
+      float[][] Res = new float[N][6];
+      int k=0;
+      for( int i=0; i< Peaks.size(); i++)
+      {
+         Peak_new Peak = Peaks.get( i );
+         if( Peak.h() !=0 || Peak.k() !=0 || Peak.l() !=0 )
+         {
+            System.arraycopy( Peak.getUnrotQ( ) , 0 , Res[k] , 0 , 3 );
+            Arrays.fill( Res[k] , 3,6,peakSize );
+            k++;
+         }
+      }
+      return Res;
+            
+   }
 	public static void main(String[] args) 
 	{
 	      MessageCenter mc = new MessageCenter("Test Peak Filters");
