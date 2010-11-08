@@ -192,6 +192,10 @@ public class Commands
   
   public static final String SHOW_MESSAGE_PANE ="SHOW_MESSAGE_PANE";
   public static final String SHOW_DISPLAY_PANE ="SHOW_DISPLAY_PANE";
+  
+  public static final String CLEAR_OMITTED_PEAKS="CLEAR_OMITTED_PEAKS";
+  public static final String SET_OMITTED_PEAKS="SET_OMITTED_PEAKS";
+  
 
   /**
    * no or null value
