@@ -8,6 +8,14 @@
 #
 # Jython version:
 #    A. J. Schultz, started December 2009
+#
+# anvred_py.py
+#    Each spectrum is a separate file. The spectra files are created
+#    by "TOPAZ_spectrum_multiple_banks.iss".
+#
+# anvred2.py:
+#    This version reads one spectrum file containing spectra for
+#    each detector. The spectra are created by "TOPAZ_spectrum.py".
 # 
 # Comments from Fortran source:
 # C**************************   ANVRED  ******************************
