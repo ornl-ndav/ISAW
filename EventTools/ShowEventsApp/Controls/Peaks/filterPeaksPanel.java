@@ -40,6 +40,9 @@ public class filterPeaksPanel extends JPanel
     JCheckBox q2_unit;
     JTextField ValueList;
     JTextField DVbyV;
+    JCheckBox d_unit1 ;
+    JCheckBox q1_unit1;
+    JCheckBox q2_unit1;
     JCheckBox  OmitValues;
 
     FileChooserPanel PeaksFileName;
@@ -173,32 +176,51 @@ public class filterPeaksPanel extends JPanel
 	   JPanel PeakPanel = new JPanel( );
 	   PeakPanel.setLayout(  new BorderLayout() );
 	   
-	   JPanel panel1 = new JPanel( new GridLayout(2,1));
+	   JPanel TopPanel = new JPanel( new BorderLayout());
 	   PeaksFileName = new FileChooserPanel( FileChooserPanel.LOAD_FILE,
 	                                         "Peak File Name",
-	                                         System.getProperty( "ISAW_HOME",null ));                       
-	   panel1.add( PeaksFileName );
+	                                         System.getProperty( "ISAW_HOME",null ));
 	   
+	   TopPanel.add( PeaksFileName,BorderLayout.NORTH );
+	   
+	   JPanel TolerancePanel = new JPanel( new GridLayout(2,1));
+	   
+	   JPanel unitPanel = new JPanel( new GridLayout(1,3));
+       d_unit1  = new JCheckBox("d(Angstroms)",true);
+       q1_unit1 = new JCheckBox("|'Q'| = 1/d",false);
+       q2_unit1 = new JCheckBox("|Q| = 2"+FontUtil.PI+"/d",false);
+       unitPanel.add(  d_unit1 );
+       unitPanel.add( q1_unit1);
+       unitPanel.add( q2_unit1);
+       ButtonGroup BGroup = new ButtonGroup();
+       BGroup.add( d_unit1 );
+       BGroup.add(q1_unit1);
+       BGroup.add(q2_unit1);
+       unitPanel.setBorder( new TitledBorder( new LineBorder(Color.black),"Peak Size Units"));
+       TolerancePanel.add( unitPanel);
+       
 	   JPanel panel = new JPanel( new GridLayout( 1, 2 ) );
 	   PeakSize = new FilteredPG_TextField(  new FloatFilter() );
 	   PeakSize.setText( "0.1" );
-	   JLabel label = new JLabel( "Peak Size in d" );
+	   JLabel label = new JLabel( "Peak Size" );
 	   panel.add( label );
 	   panel.add( PeakSize );
-	   panel1.add( panel );
+	   TolerancePanel.add( panel );
+	   TolerancePanel.setBorder(  new LineBorder( Color.black) );
+	   TopPanel.add( TolerancePanel,BorderLayout.CENTER );
 	   
-	   PeakPanel.add( panel1, BorderLayout.NORTH );
+	   PeakPanel.add( TopPanel, BorderLayout.NORTH );
 	   
-	   panel = new JPanel( new GridLayout(1,2));
+	   JPanel ButtonPanel = new JPanel( new GridLayout(1,2));
 	   JButton Clear = new JButton(CLEAR_P);
 	   JButton Apply = new JButton(APPLY_P);
 	   Clear.addActionListener(  new buttonListener() );
        Apply.addActionListener(  new buttonListener() );
 	   
-       panel.add(Clear);
-       panel.add(Apply);
+       ButtonPanel.add(Clear);
+       ButtonPanel.add(Apply);
        
-       PeakPanel.add( panel ,BorderLayout.SOUTH);
+       PeakPanel.add( ButtonPanel ,BorderLayout.SOUTH);
        
 	   return PeakPanel;
 	}
@@ -373,7 +395,8 @@ public class filterPeaksPanel extends JPanel
 			{
 			   sendMessage( Commands.SET_OMITTED_PEAKS,
 			         CalcOmittedPeaks(PeaksFileName.getTextField(),
-			               PeakSize));
+			               PeakSize,d_unit1.isSelected( )
+			               ,q1_unit1.isSelected( )));
 			}
 			
 		}
@@ -394,7 +417,10 @@ public class filterPeaksPanel extends JPanel
       message_center.send( message );
    }
 	
-   private float[][] CalcOmittedPeaks( JTextField FileName, JTextField tolerance)
+   private float[][] CalcOmittedPeaks( JTextField FileName,
+                                       JTextField tolerance,
+                                       boolean dUnits,
+                                       boolean recip_dUnits)
    {
       if( FileName == null || tolerance == null)
          return null;
@@ -405,6 +431,10 @@ public class filterPeaksPanel extends JPanel
       {
          peakSize = Float.parseFloat( tolerance.getText( ).trim() );
          Peaks =  Peak_new_IO.ReadPeaks_new( filename );
+         if( recip_dUnits)
+            peakSize = 1/peakSize;
+         else if( !dUnits)
+            peakSize =(float) (2*Math.PI/peakSize);
 
       }catch(Exception s)
       {
