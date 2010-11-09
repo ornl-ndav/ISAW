@@ -18,6 +18,7 @@ import gov.anl.ipns.Parameters.FileChooserPanel;
 import gov.anl.ipns.Parameters.FilteredPG_TextField;
 import gov.anl.ipns.Parameters.FloatFilter;
 
+//import gov.anl.ipns.MathTools.LinearAlgebra;
 import gov.anl.ipns.Util.Numeric.IntList;
 import gov.anl.ipns.ViewTools.UI.FontUtil;
 
@@ -415,13 +416,13 @@ public class filterPeaksPanel extends JPanel
       }
       else if ( e.getActionCommand().equals( APPLY_P ) )
       {
-        sendMessage(
-                     Commands.SET_OMITTED_PEAKS,
-                     CalcOmittedPeaks(
+        float[][] peaks_to_omit = CalcOmittedPeaks(
                                        PeaksFileName.getTextField(),
                                        PeakSize,
                                        d_unit1.isSelected(),
-                                       q1_unit1.isSelected() ) );
+                                       q1_unit1.isSelected() );
+//      LinearAlgebra.print( peaks_to_omit );
+        sendMessage( Commands.SET_OMITTED_PEAKS, peaks_to_omit );
       }
 
     }
@@ -441,6 +442,13 @@ public class filterPeaksPanel extends JPanel
   }
 
   
+  /**
+   *  Get a two-D array of floats.  The first three columns of the array
+   *  are the UNROTATED Qxyz position of the peaks, specified 
+   *  according to the convention that |Q| = 2PI/d.  The next three
+   *  columns specifiy the extent of the peak as a box around Qxyz.
+   *  The three values are delta_Qx, delta_Qy and delta_Qz. 
+   */
   private float[][] CalcOmittedPeaks( JTextField FileName,
                                       JTextField tolerance,
                                       boolean dUnits,
@@ -449,17 +457,19 @@ public class filterPeaksPanel extends JPanel
     if ( FileName == null || tolerance == null )
       return null;
     String filename = FileName.getText();
-    float peakSize = 12;
+    float peakSize = 0.2f;
     Vector<Peak_new> Peaks = null;
     try
     {
-      peakSize = Float.parseFloat( tolerance.getText().trim() );
       Peaks = Peak_new_IO.ReadPeaks_new( filename );
-      if ( recip_dUnits )
-        peakSize = 1 / peakSize;
-      else if ( !dUnits )
-        peakSize = (float) (2 * Math.PI / peakSize);
 
+      float tol = Float.parseFloat( tolerance.getText().trim() );
+      if ( dUnits )
+        peakSize = (float)(2*Math.PI/tol);
+      else if ( recip_dUnits )
+        peakSize = (float)(2*Math.PI * tol);
+      else
+        peakSize = tol;
     }
     catch ( Exception s )
     {
@@ -469,6 +479,7 @@ public class filterPeaksPanel extends JPanel
     if ( Peaks == null || Peaks.size() < 1 )
       return null;
 
+                       // count the indexed peaks
     int N = 0;
     for ( int i = 0; i < Peaks.size(); i++ )
     {
@@ -476,7 +487,8 @@ public class filterPeaksPanel extends JPanel
       if ( Peak.h() != 0 || Peak.k() != 0 || Peak.l() != 0 )
         N++;
     }
-
+                       // record the peaks and sizes in
+                       // array Res
     float[][] Res = new float[N][6];
     int k = 0;
     for ( int i = 0; i < Peaks.size(); i++ )
@@ -484,7 +496,9 @@ public class filterPeaksPanel extends JPanel
       Peak_new Peak = Peaks.get( i );
       if ( Peak.h() != 0 || Peak.k() != 0 || Peak.l() != 0 )
       {
-        System.arraycopy( Peak.getUnrotQ(), 0, Res[k], 0, 3 );
+        float[] Qxyz = Peak.getUnrotQ();
+        for ( int j = 0; j < 3; j++ )
+           Res[k][j] = (float)( 2 * Math.PI * Qxyz[j] );
         Arrays.fill( Res[k], 3, 6, peakSize );
         k++;
       }
