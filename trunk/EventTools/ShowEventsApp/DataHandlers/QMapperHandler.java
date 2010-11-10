@@ -71,6 +71,9 @@ public class QMapperHandler implements IReceiveMessage
   private SNS_Tof_to_Q_map mapper;
   private Vector           omit_pixels_info  = null;
   private Vector           omit_q_range_info = null;
+  private float[][]        omit_peaks_array  = null; // array with six columns
+                                                     // per peak, listing
+                                                     // qx,qy,qz,d_qx,d_qy,d_qz
 
   public QMapperHandler( MessageCenter message_center )
   {
@@ -127,6 +130,8 @@ public class QMapperHandler implements IReceiveMessage
                                        cmd.getAbsorptionTrue()   );
         ApplyPixelFilter( mapper );
         ApplyMagQ_Filter( mapper );
+        ApplyOmitPeaksFilter( mapper );
+
         run_time = (System.nanoTime() - start)/1.0e6;
         instrument_name = new_instrument;
         System.out.printf("Made Q mapper in %5.1f ms\n", run_time  );
@@ -431,6 +436,20 @@ public class QMapperHandler implements IReceiveMessage
        omit_q_range_info = null;
     }
 
+    else if ( message.getName().equals(Commands.SET_OMITTED_PEAKS ) )
+    {
+      Object obj = message.getValue();
+      if ( obj == null || !(obj instanceof float[][]))
+        return false;
+
+      omit_peaks_array = (float[][])obj;
+    }
+
+    else if ( message.getName().equals(Commands.CLEAR_OMITTED_PEAKS ) )
+    {
+       omit_peaks_array = null;
+    }
+
     return false;
   }
 
@@ -486,6 +505,12 @@ public class QMapperHandler implements IReceiveMessage
         System.out.println("Received Invalid message for Q-Range to omit");
       }
     }
+  }
+
+
+  private void ApplyOmitPeaksFilter( SNS_Tof_to_Q_map mapper )
+  {
+    System.out.println("ApplOmitPeaksFilter Not Implemented Yet");
   }
 
  
