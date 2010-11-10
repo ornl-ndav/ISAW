@@ -1,5 +1,6 @@
 package EventTools.ShowEventsApp.Controls.Peaks;
 
+import java.io.*;
 import java.awt.*;
 import java.awt.event.*;
 
@@ -422,9 +423,9 @@ public class filterPeaksPanel extends JPanel
                                        d_unit1.isSelected(),
                                        q1_unit1.isSelected() );
 //      LinearAlgebra.print( peaks_to_omit );
-        sendMessage( Commands.SET_OMITTED_PEAKS, peaks_to_omit );
+        if ( peaks_to_omit != null && peaks_to_omit.length > 0 )
+          sendMessage( Commands.SET_OMITTED_PEAKS, peaks_to_omit );
       }
-
     }
   }
 
@@ -456,7 +457,9 @@ public class filterPeaksPanel extends JPanel
   {
     if ( FileName == null || tolerance == null )
       return null;
+
     String filename = FileName.getText();
+
     float peakSize = 0.2f;
     Vector<Peak_new> Peaks = null;
     try
@@ -471,37 +474,48 @@ public class filterPeaksPanel extends JPanel
       else
         peakSize = tol;
     }
+    catch ( IOException s )
+    { 
+      Util.sendError("Could not read peaks file: " + filename );
+      return null;
+    }
     catch ( Exception s )
     {
+      Util.sendError("Invalid Peak Size or other problem" );
       return null;
     }
+
+    if ( peakSize <= 0 )
+      Util.sendError("Peak Size must be > 0" );
 
     if ( Peaks == null || Peaks.size() < 1 )
+    {
+      Util.sendError("No peaks read from peaks file: " + filename );
       return null;
-
-                       // count the indexed peaks
-    int N = 0;
-    for ( int i = 0; i < Peaks.size(); i++ )
-    {
-      Peak_new Peak = Peaks.get( i );
-      if ( Peak.h() != 0 || Peak.k() != 0 || Peak.l() != 0 )
-        N++;
     }
-                       // record the peaks and sizes in
-                       // array Res
-    float[][] Res = new float[N][6];
-    int k = 0;
+                            // put the indexed peaks in a new Vector
+    Vector<Peak_new> indexedPeaks = new Vector<Peak_new>( Peaks.size() );
     for ( int i = 0; i < Peaks.size(); i++ )
     {
-      Peak_new Peak = Peaks.get( i );
-      if ( Peak.h() != 0 || Peak.k() != 0 || Peak.l() != 0 )
-      {
-        float[] Qxyz = Peak.getUnrotQ();
-        for ( int j = 0; j < 3; j++ )
-           Res[k][j] = (float)( 2 * Math.PI * Qxyz[j] );
-        Arrays.fill( Res[k], 3, 6, peakSize );
-        k++;
-      }
+      Peak_new peak = Peaks.get( i );
+      if ( peak.h() != 0 || peak.k() != 0 || peak.l() != 0 )
+        indexedPeaks.add( peak );
+    }
+
+    if ( indexedPeaks.size() < 1 )
+    {
+      Util.sendError("No peaks were indexed in peaks file: " + filename );
+      return null;
+    }
+                             // record the peaks and sizes in array Res
+    float[][] Res = new float[ indexedPeaks.size() ][6];
+    for ( int i = 0; i < indexedPeaks.size(); i++ )
+    {
+      Peak_new Peak = indexedPeaks.get( i );
+      float[] Qxyz = Peak.getUnrotQ();
+      for ( int j = 0; j < 3; j++ )
+         Res[i][j] = (float)( 2 * Math.PI * Qxyz[j] );
+      Arrays.fill( Res[i], 3, 6, peakSize );
     }
     return Res;
   }
