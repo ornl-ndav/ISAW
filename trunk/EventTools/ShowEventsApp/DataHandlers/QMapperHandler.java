@@ -90,6 +90,8 @@ public class QMapperHandler implements IReceiveMessage
     message_center.addReceiver( this, Commands.APPLY_OMITTED_PIXELS );
     message_center.addReceiver( this, Commands.CLEAR_OMITTED_DRANGE );
     message_center.addReceiver( this, Commands.APPLY_OMITTED_DRANGE );
+    message_center.addReceiver( this, Commands.CLEAR_OMITTED_PEAKS );
+    message_center.addReceiver( this, Commands.SET_OMITTED_PEAKS );
   }
 
 
@@ -438,16 +440,21 @@ public class QMapperHandler implements IReceiveMessage
 
     else if ( message.getName().equals(Commands.SET_OMITTED_PEAKS ) )
     {
+      System.out.println("QMapperHandler got message: " +
+                          Commands.SET_OMITTED_PEAKS );
       Object obj = message.getValue();
       if ( obj == null || !(obj instanceof float[][]))
         return false;
 
       omit_peaks_array = (float[][])obj;
+      System.out.println("Peak List Size = " + omit_peaks_array.length );
     }
 
     else if ( message.getName().equals(Commands.CLEAR_OMITTED_PEAKS ) )
     {
-       omit_peaks_array = null;
+      omit_peaks_array = null;
+      System.out.println("QMapperHandler got message: " +
+                          Commands.CLEAR_OMITTED_PEAKS );
     }
 
     return false;
@@ -510,7 +517,20 @@ public class QMapperHandler implements IReceiveMessage
 
   private void ApplyOmitPeaksFilter( SNS_Tof_to_Q_map mapper )
   {
-    System.out.println("ApplOmitPeaksFilter Not Implemented Yet");
+    if ( omit_peaks_array != null )
+    {
+      Util.sendInfo( "Number of peak regions omitted = " + 
+                      omit_peaks_array.length );
+
+      float[][] peak_info = omit_peaks_array;
+/*
+      for ( int i = 0; i < peak_info.length; i++ )
+        System.out.printf( "%f6.2  %f6.2  %f6.2  %f6.2  %f6.2  %f6.2\n",
+                          peak_info[i][0], peak_info[i][1], peak_info[i][2],
+                          peak_info[i][3], peak_info[i][4], peak_info[i][5] );
+*/
+       mapper.setDiscardedPeaksList( omit_peaks_array );
+    }
   }
 
  
