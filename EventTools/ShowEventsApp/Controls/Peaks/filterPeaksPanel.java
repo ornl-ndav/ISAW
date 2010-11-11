@@ -1,6 +1,7 @@
 package EventTools.ShowEventsApp.Controls.Peaks;
 
 import java.io.*;
+import java.util.*;
 import java.awt.*;
 import java.awt.event.*;
 
@@ -207,7 +208,7 @@ public class filterPeaksPanel extends JPanel
 
     JPanel panel = new JPanel( new GridLayout( 1, 2 ) );
     PeakSize = new FilteredPG_TextField( new FloatFilter() );
-    PeakSize.setText( "0.1" );
+    PeakSize.setText( "0.25" );
     JLabel label = new JLabel( "Peak Size" );
     panel.add( label );
     panel.add( PeakSize );
@@ -243,8 +244,7 @@ public class filterPeaksPanel extends JPanel
                 + "take effect until<P>the next Load Events</font>"
                 + "</center></body></html>" );
 
-        message_center.send( new Message(
-                                          Commands.CLEAR_OMITTED_PIXELS,
+        message_center.send( new Message( Commands.CLEAR_OMITTED_PIXELS,
                                           null,
                                           true ) );
 
@@ -307,8 +307,7 @@ public class filterPeaksPanel extends JPanel
         System.out.println( gov.anl.ipns.Util.Sys.StringUtil.toString( V ) );
 
         if ( V.size() > 0 )
-          message_center.send( new Message(
-                                            Commands.APPLY_OMITTED_PIXELS,
+          message_center.send( new Message( Commands.APPLY_OMITTED_PIXELS,
                                             V,
                                             true ) );
 
@@ -321,8 +320,7 @@ public class filterPeaksPanel extends JPanel
       }
       if ( e.getActionCommand().equals( CLEAR_D ) )
       {
-        message_center.send( new Message(
-                                          Commands.CLEAR_OMITTED_DRANGE,
+        message_center.send( new Message( Commands.CLEAR_OMITTED_DRANGE,
                                           null,
                                           true ) );
 
@@ -423,6 +421,8 @@ public class filterPeaksPanel extends JPanel
                                        d_unit1.isSelected(),
                                        q1_unit1.isSelected() );
 //      LinearAlgebra.print( peaks_to_omit );
+        System.out.println("CONTROL SENDING MESSAGE " +  
+                            Commands.SET_OMITTED_PEAKS );
         if ( peaks_to_omit != null && peaks_to_omit.length > 0 )
           sendMessage( Commands.SET_OMITTED_PEAKS, peaks_to_omit );
       }
@@ -507,6 +507,7 @@ public class filterPeaksPanel extends JPanel
       Util.sendError("No peaks were indexed in peaks file: " + filename );
       return null;
     }
+
                              // record the peaks and sizes in array Res
     float[][] Res = new float[ indexedPeaks.size() ][6];
     for ( int i = 0; i < indexedPeaks.size(); i++ )
