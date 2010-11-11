@@ -229,6 +229,21 @@ public class SNS_Tof_to_Q_map
   private float        min_q_to_map;     // Discard all events with Q less 
                                          // than this value
 
+                                         // The following arrays and binners
+                                         // are used to discard events in or
+                                         // near specific peaks
+
+  private int          num_peaks_discarded;
+
+  private float[]      peak_Qx_min;      // Array listing the extent of each
+  private float[]      peak_Qx_max;      // peak in the x direction
+
+  private float[]      peak_Qy_min;      // Array listing the extent of each
+  private float[]      peak_Qy_max;      // peak in the y direction
+
+  private float[]      peak_Qz_min;      // Array listing the extent of each
+  private float[]      peak_Qz_max;      // peak in the z direction
+
   private int          max_grid_ID = 0;
 
   private String            instrument_name = "NO_NAME";
@@ -495,6 +510,8 @@ public class SNS_Tof_to_Q_map
 
     min_q_to_map = 0;                         // default values, to map all Qs
     max_q_to_map = (float)ABSOLUTE_MAX_Q; 
+
+    num_peaks_discarded = 0;
 /*
     int[] mask_ids = { 1, 2, 3,      6, 7, 8, 9, 10, 11, 12, 13, 14 };
     int[] grid_4   = { 4 };
@@ -879,6 +896,94 @@ public class SNS_Tof_to_Q_map
   }
 
 
+  /**
+   *  Set the list of peak regions for which events will be discarded.
+   *  
+   *  @param peak_info  Two-dimensional array of floats, with one row
+   *                    for each peak.  Each row must contain six values,
+   *                    qx, qy, qz, delta_qx, delta_qy and delta_qz in 
+   *                    that order.
+   */
+  public boolean setDiscardedPeaksList( float[][] peak_info )
+  {
+    peak_Qx_min = new float[ peak_info.length ]; 
+    peak_Qx_max = new float[ peak_info.length ]; 
+    peak_Qy_min = new float[ peak_info.length ]; 
+    peak_Qy_max = new float[ peak_info.length ]; 
+    peak_Qz_min = new float[ peak_info.length ]; 
+    peak_Qz_max = new float[ peak_info.length ]; 
+
+    for ( int i = 0; i < peak_info.length; i++ )
+    {
+      peak_Qx_min[i] = peak_info[i][0] - peak_info[i][3];
+      peak_Qx_max[i] = peak_info[i][0] + peak_info[i][3];
+
+      peak_Qy_min[i] = peak_info[i][1] - peak_info[i][4];
+      peak_Qy_max[i] = peak_info[i][1] + peak_info[i][4];
+
+      peak_Qz_min[i] = peak_info[i][2] - peak_info[i][5];
+      peak_Qz_max[i] = peak_info[i][2] + peak_info[i][5];
+    }
+     
+    num_peaks_discarded = peak_info.length;
+    System.out.println("**** Discarding " + num_peaks_discarded );
+/*
+    for ( int i = 0; i < num_peaks_discarded; i++ )
+      System.out.printf( "%f6.2  %f6.2  %f6.2  %f6.2  %f6.2  %f6.2\n",
+                          peak_info[i][0], peak_info[i][1], peak_info[i][2],
+                          peak_info[i][3], peak_info[i][4], peak_info[i][5] );
+*/
+    return true;
+  }
+
+
+  /**
+   *  Reset the list of peak regions to discard to be empty.
+   */
+  public void clearDiscardedPeaksList()
+  {
+    num_peaks_discarded = 0;
+    peak_Qx_min = null;
+    peak_Qx_max = null;
+    peak_Qy_min = null;
+    peak_Qy_max = null;
+    peak_Qz_min = null;
+    peak_Qz_max = null;
+  }
+
+
+  /**
+   *  Check whether an event with the specified pixel id and |Q| is in
+   *  one of the peaks to be discarded.
+   *
+   *  @param  id    The pixel id where the event occurred.
+   *  @param  magQ  The |Q| for the event.
+   *
+   *  @return true if the event is in a discarded peak region and false 
+   *          otherwise.
+   */
+  private boolean EventInDiscardedPeak( int id, float magQ ) 
+  {
+    if ( num_peaks_discarded <= 0 )
+      return false;
+
+    int id_offset = 3*id;
+    float qx = magQ * QUxyz[id_offset++];
+    float qy = magQ * QUxyz[id_offset++];
+    float qz = magQ * QUxyz[id_offset  ];
+                                           // check all peaks.  If event is in
+                                           // small box around any one peak, 
+                                           // return true to discard the event 
+    for ( int i = 0; i < num_peaks_discarded; i++ )
+      if ( peak_Qx_min[i] < qx && qx < peak_Qx_max[i] &&
+           peak_Qy_min[i] < qy && qy < peak_Qy_max[i] &&
+           peak_Qz_min[i] < qz && qz < peak_Qz_max[i] )
+        return true;
+
+    return false;
+  }
+
+
  /**
   *  Set the parameters that control the absorption correction calculation.
   *  If any of the parameters are negative, the corresponding value will be 
@@ -966,7 +1071,7 @@ public class SNS_Tof_to_Q_map
      int ev_index = 0;
      mapped_index = 0;
                                                  // First scan for how many
-                                                 // events pass the filter
+                                                 // events pass the filters
                                                  // so we only need to  
                                                  // allocate new arrays once 
      int ok_counter  = 0;
@@ -986,7 +1091,11 @@ public class SNS_Tof_to_Q_map
                 use_q_index >= 0             && 
                 use_q_index < NUM_USE_Q_BINS && 
                 use_q[ use_q_index ]  )
-             ok_counter++;
+           {                 
+             if ( num_peaks_discarded <= 0  ||
+                 !EventInDiscardedPeak( id, magQ ) )
+               ok_counter++;
+           }
          }
        }
      }
@@ -1021,6 +1130,9 @@ public class SNS_Tof_to_Q_map
               use_q_index < NUM_USE_Q_BINS && 
               use_q[ use_q_index ]  )
          {
+           if ( num_peaks_discarded <= 0  ||
+               !EventInDiscardedPeak( id, magQ ) )
+           {
              id_offset = 3*id;
              qx = magQ * QUxyz[id_offset++];
              qy = magQ * QUxyz[id_offset++];
@@ -1053,8 +1165,10 @@ public class SNS_Tof_to_Q_map
                        pix_weight[id] * lamda_weight[ lamda_index ];
 
              mapped_index++;
+           }
          }
        }
+
      }
 /*
      int[] bank_nums_used = new int[500];
