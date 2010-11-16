@@ -71,7 +71,7 @@ public class IntegrateNorm {
    public static int IVXX =4;
    public static int IVYY = 5;
    public static int IVXY =6;
-   public static boolean DEBUG = true;
+   public static boolean DEBUG = false;
 
    /**
     * Integrates the peak by fitting the data to background + Intensity* Normal. The Marquardt
