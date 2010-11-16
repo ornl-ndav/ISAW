@@ -1,0 +1,175 @@
+<html><body>
+
+<OL>Contents
+  <li><a href="#Introduction"> Introduction</a>
+  <LI> <a href="#Formula"> Formula</a>
+  <LI><a href="#Conditions">Conditions </a>
+  <LI> <a href="#Derivs"> Derivs</a>
+</ol>
+<P>
+<HR>
+<H1><a name="Introduction">Introduction</a></h1>
+    This application is an attempt to model a peak on a timeslice with the formula<P>
+     <UL>  Intensity(row,col) = background + IntegIntensity* Normal( &#956<sub>x</sub>, &#956<sub>y</sub>, &#963<sub>x</sub>, 
+                                  &#963<sub>y</sub>,&#963<sub>xy</sub> )
+     </ul><P>
+    The parameters are background,&#956<sub>x</sub>, &#956<sub>y</sub>,IntegIntensity, &#963<sub>x</sub><sup>2</sup>,
+                     &#963<sub>y</sub><sup>2</sup>,and &#963<sub>xy</sub><P>
+
+    The Marquardt algorithm was used to fit these parameters. Only the IntegIntensity parameter was used, though
+         if real data is desired, the background parameter could be used to calculate the Tot intensity - backgound.<P>
+
+    The Peak should be centered at ( &#956<sub>x</sub>, &#956<sub>y</sub>) and only (large)rectangle around this center is
+    considered. 
+
+
+
+<HR>
+<H1><a name="Formula">Formula</a></h1>
+    Let uu = &#963<sub>x</sub><sup>2</sup>&#963<sub>y</sub><sup>2</sup>-&#963<sub>xy</sub><sup>2</sup>
+    <table>
+    <tr><td></td><td></td><td></td><td></td><td></td><td></td><td>
+        -&#963<sub>y</sub><sup>2</sup>(col- &#956<sub>x</sub>)<sup>2</sup>/(2*uu)+
+                   &#963<sub>xy</sub>(col- &#956<sub>x</sub>)(row-&#956<sub>y</sub>)/uu  -
+             &#963<sub>x</sub><sup>2</sup> (row-&#956<sub>y</sub>)<sup>2</sup> /(2*uu)    
+     </td></tr>
+    <tr><td>Intensity(row,col)</td><td> =</td><td>background</td><td> + </td>
+          <td><table><tr><td>IntegIntensity</td></tr>
+                     <tr><td> <hr width=100%></td></tr>
+                     <tr><td>2 &pi *
+                   sqrt(&#963<sub>x</sub><sup>2</sup>&#963<sub>y</sub><sup>2</sup>-
+                                      &#963<sub>xy</sub><sup>2</sup>   )</td></tr></table>
+          </td>
+          <td>e</td><td></td></tr>
+
+    </table>
+
+
+<HR>
+<H1><a name="Conditions">Conditions</a></h1>
+  The Marquardt algorithm has tendencies to roam around when there is not a definite minimum.<P>
+   <UL>Below are Conditions on the parameters 
+     <LI> background and IntegIntensity should be nonNegative.<P>
+     <LI>(orig_&#956<sub>x</sub>- &#956<sub>x</sub>) and (orig_&#956<sub>y</sub>-&#956<sub>y</sub>)
+            should be "small".<P>
+     <LI> &#956<sub>x</sub> and &#956<sub>y</sub> should be on the detector.<P>
+         
+     <LI> &#963<sub>x</sub> and &#963<sub>y</sub> should be positive<P>
+     <LI> &#963<sub>x</sub><sup>2</sup>&#963<sub>y</sub><sup>2</sup>-&#963<sub>xy</sub><sup>2</sup> should
+            be positive( correlation coeff is defined)<P>
+   </UL><P>
+
+   A range of time slices( channels) are used to build up the total intensity of the peak.
+   <UL> Criteria to determine good time slices
+
+      <LI> The IntegIntensity and its error are  defined for this time slice<P>
+      <LI> The IntegIntensity/ its error  > 5<P>
+      <LI>The value below(Max height of peak) is less than 2<P>
+              <table><tr><td>IntegIntensity</td></tr>
+                     <tr><td> <hr width=100%></td></tr>
+                     <tr><td>2 &pi *
+                   sqrt(&#963<sub>x</sub><sup>2</sup>&#963<sub>y</sub><sup>2</sup>-
+                                      &#963<sub>xy</sub><sup>2</sup>   )</td></tr></table><P>
+      <LI>(???)center &plusmn 2*&#963<sub>x</sub> and  center &plusmn 2*&#963<sub>y</sub> are
+          in the rectangle around the peaks center.  NOTE: using this criteria will mean that
+          peaks close to edges and overlapping peaks will not work well here.
+     
+     
+       </ul>
+     
+
+
+   </ul>
+
+
+
+
+
+<HR>
+<H1><a name="Derivs">Derivs</a></h1>
+ The Marquardt algorithm can be supplied with appropriate derivatives. If not supplied, the derivatives 
+are approximated numerically.  Supplying the derivatives has two advantages. First, the supplied deriatives
+are faster to calculate. Second,it the parameters are close to the boundaries, the numerical approximations
+commonly yield NaN or Infinity.<P>
+  <UL>Define the following:
+     <LI> uu = &#963<sub>x</sub><sup>2</sup>&#963<sub>y</sub><sup>2</sup>-&#963<sub>xy</sub><sup>2</sup><P>
+     <LI> E(row,col) = e <sup>( -&#963<sub>y</sub><sup>2</sup>(col- &#956<sub>x</sub>)<sup>2</sup>/(2*uu)+
+                   &#963<sub>xy</sub>(col- &#956<sub>x</sub>)(row-&#956<sub>y</sub>)/uu  -
+             &#963<sub>x</sub><sup>2</sup> (row-&#956<sub>y</sub>)<sup>2</sup> /(2*uu))<P>
+     <LI>
+
+  <OL>  Deiriv formulas
+     <LI> with respect to background
+           <UL> D(row,col) =1;
+           </ul><P>
+     <LI> with respect to IntegIntensity
+             <UL> D(row,col)= E(row,col)/(2 &pi;sqrt(uu))
+
+           </ul><P>
+     <LI> with respect to &#956<sub>x</sub>
+             <UL> D(row,col)= IntegIntensity*E(row,col)/(2 &pi;sqrt(uu))*
+                [ &#963<sub>y</sub><sup>2</sup>(col-&#956<sub>x</sub>)/uu-
+                 &#963<sub>xy</sub>(row-&#956<sub>y</sub>)/uu]
+
+           </ul><P>
+
+
+     <LI> with respect to &#956<sub>y</sub>
+          <UL>
+               D(row,col)=IntegIntensity* E(row,col)/(2 &pi;sqrt(uu))*
+                [ &#963<sub>x</sub><sup>2</sup>(row-&#956<sub>y</sub>)/uu-
+                 &#963<sub>xy</sub>(col-&#956<sub>x</sub>)/uu]
+           </ul><P>
+
+     <LI> with respect to &#963<sub>x</sub><sup>2</sup>
+             <UL>
+           D(row,col) =IntegIntensity* E(row,col)/(2 &pi;sqrt(uu))*
+             [
+               -&#963<sub>y</sub><sup>2</sup>/(2*uu)   +
+                &#963<sub>y</sub><sup>4</sup>(col- &#956<sub>x</sub>)<sup>2</sup>/(2*uu<sup>2</sup>)-
+                   &#963<sub>xy</sub>(col- &#956<sub>x</sub>)(row-&#956<sub>y</sub>)&#963<sub>y</sub><sup>2</sup>/uu<sup>2</sup> +
+            -( &#963<sub>y</sub><sup>4</sup>-uu) (row-&#956<sub>y</sub>)<sup>2</sup>/uu<sup>2</sup>
+                 
+              
+                 
+              ]
+
+           </ul><P>
+     <LI> with respect to &#963<sub>y</sub><sup>2</sup>
+              <UL>
+             D(row,col) =IntegIntensity* E(row,col)/(2 &pi;sqrt(uu))*
+             [
+               - &#963<sub>x</sub><sup>2</sup>/(2*uu)   +
+                (-uu+&#963<sub>x</sub><sup>2</sup>&#963<sub>y</sub><sup>2</sup>)(col- &#956<sub>x</sub>)<sup>2</sup>/(2*uu<sup>2</sup>)-
+                   &#963<sub>xy</sub>(col- &#956<sub>x</sub>)(row-&#956<sub>y</sub>)&#963<sub>x</sub><sup>2</sup>/uu<sup>2</sup> +
+             &#963<sub>xy</sub><sup>2</sup> (row-&#956<sub>y</sub>)<sup>2</sup> /(2*uu<sup>2</sup>)
+                
+              ]
+
+
+           </ul><P>
+
+     <LI> with respect to &#963<sub>xy</sub>
+        <UL>
+           D(row,col) =IntegIntensity* E(row,col)/(2 &pi;sqrt(uu))*
+             [
+                -&#963<sub>xy</sub>/uu 
+
+                 +&#963<sub>y</sub><sup>2</sup>&#963<sub>xy</sub>(col- &#956<sub>x</sub>)<sup>2</sup>/(uu<sup>2</sup>)+
+                   &#963<sub>xy</sub>&#963<sub>x</sub><sup>2</sup>(col- &#956<sub>x</sub>)(row-&#956<sub>y</sub>)/uu<sup>2</sup> -
+             &#963<sub>x</sub><sup>2</sup>&#963<sub>xy</sub>(row-&#956<sub>y</sub>)<sup>2</sup> /(uu<sup>2</sup>)
+                
+            ]
+
+           </ul><P>
+
+
+     </OL> 
+
+
+
+
+
+
+
+
