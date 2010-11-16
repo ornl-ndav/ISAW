@@ -1,4 +1,5 @@
 from Wizard.TOF_SCD.Util import IntegrateMultipleRuns
+from DataSetTools.operator.Generic.TOF_SCD import *
 from jarray import zeros, array
 
 class Integrate(GenericTOF_SCD):
@@ -25,7 +26,7 @@ class Integrate(GenericTOF_SCD):
       self.addParameter(  StringPG("Instrument","SNAP_"))
       self.addParameter(  StringPG("File extension",".nxs"))
       self.addParameter(  FloatPG("Minimum d-spacing",0))
-      Choices = array(["MaxIToSigI","Shoe Box", "MaxIToSigI-old","TOFINT","EXPERIMENTAL"],String)
+      Choices = array(["MaxIToSigI","Shoe Box", "MaxIToSigI-old","TOFINT",Integrate_new.FIT_PEAK,"EXPERIMENTAL"],String)
       self.addParameter(  ChoiceListPG("Peak Algorithm", Choices))     
       self.addParameter( IntArrayPG("Box Delta x (col) Range","-2:2"))
       self.addParameter(  IntArrayPG("Box Delta y (row) Range","-2:2"))
