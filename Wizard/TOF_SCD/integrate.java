@@ -34,6 +34,7 @@
 package Wizard.TOF_SCD;
 import DataSetTools.operator.*;
 import DataSetTools.operator.Generic.*;
+import DataSetTools.operator.Generic.TOF_SCD.Integrate_new;
 import gov.anl.ipns.Parameters.*;
 import DataSetTools.parameter.*;
 
@@ -79,7 +80,7 @@ public class integrate extends GenericOperator{
       addParameter( new IntegerPG("log every Nth peak",1));
         java.util.Vector V = new java.util.Vector();
         V.addElement( "MaxItoSigI"); V.addElement("Shoe Box"); V.addElement("MaxIToSigI-old");
-        V.addElement("TOFINT");
+        V.addElement("TOFINT");V.addElement( Integrate_new.FIT_PEAK );
       ChoiceListPG choice = new ChoiceListPG("Peak algorithm",V);
       addParameter( choice );
       addParameter( new PlaceHolderPG("Min/Max col change",new int[]{-1,3}));
