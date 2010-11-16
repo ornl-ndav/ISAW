@@ -612,7 +612,7 @@ public class ScriptUtil{
          {
             Res += "\n" + Exceptions[0];
          }
-         // return new ErrorString( Res );
+       
          throw new IllegalArgumentException( Res );
       }
   }
