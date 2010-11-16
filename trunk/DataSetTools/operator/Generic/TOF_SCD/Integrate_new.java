@@ -307,6 +307,7 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
   public static        String       OLD_INTEGRATE ="MaxIToSigI-old";
   public static        String       NEW_INTEGRATE ="MaxIToSigI";
   public static        String       TOFINT        ="TOFINT";
+  public static        String       FIT_PEAK      ="FIT_PEAKS";
   public static        String       EXPERIMENTAL  ="EXPERIMENTAL";
   public static        String       SHOE_BOX      = "Shoe Box";
     
@@ -789,7 +790,8 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
    * @param listNthPeak Log every nth peak
    * @param PeakAlg     Peak Algorithm identifier. Use only the Strings below
    *                    MaxItoSigI, Shoe Box, MaxIToSigI-old, TOFINT                  
-   * @param colXrange   left and   right offset around Peak column to consider
+   * @param colXrange   left and   right offset around Peak column to consider. For
+   *                    FIT PEAK algorithm can be used to specify range of good columns.
    * @param rowYrange   left and right offset around Peak row  to consider
    * @param monCount    Monitor Count
    * @param logbuffer   if this a non-null StringBuffer, the log information
@@ -1261,6 +1263,28 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
                                           colXrange, rowYrange, timeZrange,
                                           my_buffer ); 
       }
+      else if( PeakAlg.equals( FIT_PEAK))
+      {
+         my_method = FIT_PEAK;                
+         int nBoundaryPixels = colXrange[1]-colXrange[0];
+         if( nBoundaryPixels > ((Peak_new)peaks.elementAt(i)).getGrid( ).num_cols( )/2)
+            nBoundaryPixels = colXrange[0]-1;
+         else
+            nBoundaryPixels =0;         
+         
+         Operators.TOF_SCD.IntegrateNorm.IntegratePeak((Peak_new) peaks.elementAt(i) , 
+               ds , 12, nBoundaryPixels ,my_buffer );
+         
+         if ( (max_shoebox > 0 && peak.sigi() <= 0 ) ||
+               peak.inti() < peak.sigi() * max_shoebox )
+         {
+           my_method = SHOE_BOX; 
+           IntegrateUtils.integrateShoebox( (IPeak)peaks.elementAt(i),
+                                             ds, ids,
+                                             colXrange, rowYrange, timeZrange,
+                                             my_buffer ); 
+         }
+      }
       else if( PeakAlg.equals(NEW_INTEGRATE))
       {
         my_method = NEW_INTEGRATE; 
@@ -1314,10 +1338,42 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
               
     // centroid the peaks
     for( int i=0 ; i<peaks.size() ; i++ ){
-      peak=Util.centroid((IPeak)peaks.elementAt(i),ds,grid);
+      IPeak peak1 = (IPeak)peaks.elementAt(i);
+      float h = peak1.h( );
+      float k = peak1.k( );
+      float l = peak1.l( );
+      peak=Util.centroid(peak1,ds,grid);
       if(peak!=null){
+         
         peak.seqnum(i+1); // renumber the peaks
         peaks.set(i,peak);
+        if( my_method .equals( FIT_PEAK ))
+           if( peak.sigi()<=0 )
+              
+              peak.reflag(300);
+        
+           else if( (peak.reflag()%100) == 10)
+              
+              peak.reflag(310);
+        
+           else
+           {
+              peak.sethkl( 0 , 0 , 0 );
+              peak.UB(UB);
+              
+              if( Math.abs( h-peak.h() )<.06 && Math.abs(k-peak.k())<.06 &&
+                    Math.abs( l-peak.l() )<.06)
+                 
+                 peak.reflag(310);
+              
+              else
+                 
+                 peak.reflag(320);
+              
+              peak.UB(null);
+              peak.sethkl( h , k , l );
+              
+           }
       }else{
         peaks.remove(i);
         i--;
