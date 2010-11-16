@@ -34,6 +34,7 @@
 package Wizard.TOF_SCD;
 import DataSetTools.operator.*;
 import DataSetTools.operator.Generic.*;
+import DataSetTools.operator.Generic.TOF_SCD.Integrate_new;
 import gov.anl.ipns.Parameters.*;
 import DataSetTools.parameter.*;
 import java.util.*;
@@ -85,7 +86,7 @@ public class IntegrateMultipleRuns extends GenericOperator{
       addParameter( new StringPG("Instrument","SCD0"));
       addParameter( new StringPG("File extension",".run"));
       addParameter( new FloatPG("Minimum d-spacing",0));
-      addParameter( new ChoiceListPG("Peak Algorithm",new String[]{"MaxIToSigI","Shoe Box", "MaxIToSigI-old","TOFINT","EXPERIMENTAL"}));
+      addParameter( new ChoiceListPG("Peak Algorithm",new String[]{"MaxIToSigI","Shoe Box", "MaxIToSigI-old","TOFINT",Integrate_new.FIT_PEAK,"EXPERIMENTAL"}));
       addParameter( new IntArrayPG("Box Delta x (col) Range","-2:2"));
       addParameter( new IntArrayPG("Box Delta y (row) Range","-2:2"));
       addParameter( new FloatPG("Use Shoe Box integration for peaks below this I/sig(I) ratio",0));

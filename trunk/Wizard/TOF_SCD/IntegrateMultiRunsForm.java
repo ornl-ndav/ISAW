@@ -194,6 +194,7 @@ import DataSetTools.instruments.InstrumentType;
 import DataSetTools.operator.DataSet.Attribute.LoadSCDCalib;
 
 import DataSetTools.operator.Generic.Load.LoadOneHistogramDS;
+import DataSetTools.operator.Generic.TOF_SCD.Integrate_new;
 import DataSetTools.parameter.DataSetPG;
 
 import gov.anl.ipns.Parameters.*;
@@ -337,6 +338,7 @@ public class IntegrateMultiRunsForm extends Form {
     clPG= new ChoiceListPG("Integrate 1 peak method",Integrate1.NEW_INTEGRATE);
     clPG.addItem(Integrate1.SHOE_BOX);
     clPG.addItem(Integrate1.TOFINT);
+    clPG.addItem( Integrate_new.FIT_PEAK );
     clPG.addItem(Integrate1.EXPERIMENTAL);
     clPG.addItem( Integrate1.OLD_INTEGRATE);
     addParameter(clPG);                                                   //11
