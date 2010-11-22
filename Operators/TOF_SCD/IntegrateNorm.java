@@ -113,7 +113,7 @@ public class IntegrateNorm {
             dT_Chan ) + 1 );
       int nTimes = ( int ) ( xtimes + .5 ) + 1;
       
-      nTimes +=2;
+      nTimes +=4;
       nPixels++;
 
       nPixels = Math.min( 16 , nPixels );
@@ -163,12 +163,12 @@ public class IntegrateNorm {
          System.out.println("Peak num #time channels="+Peak.seqnum( )+","+nTimeChans);
       try
       {
-         logBuffer.append( String.format("Peak,run,det=%3d %4d %3d\n",i+1,run,det));
+         logBuffer.append( String.format("\nPeak,run,det=%3d %4d %3d\n",i+1,run,det));
          logBuffer.append(  String.format("   Pixel width %3dchan %4d,, chanMin %4d,chanMax %4d\n",
                         nPixels+1,Chan+1, Chan+1-(nTimes-1)/2, Chan+1+(nTimes-1)/2));
          logBuffer.append( "   ----------------Slices --------------------\n");
          logBuffer.append((" chan    back  Intens(P)   mx       my   sigm(Cll) ncells Intens(Tot) Intens(Tot-back) errI"
-               +"     bk_res     Varx    Vary        Vxy \n"));
+               +"     bk_res     Varx    Vary        Vxy      errI2\n"));
          
       }catch(Exception ss)
       {
@@ -196,7 +196,8 @@ public class IntegrateNorm {
          double[] DD = slice.getParameters( );
          char GoodSlicec=' ';
          double Ierr=0;
-         if ( slice.getInitialTotIntensity( ) > 1 && slice.areParametersGood( ))
+         double I_bErr= Double.NaN;
+         if ( slice.getInitialTotIntensity( ) > 3 && slice.areParametersGood( ))
          {
             double[] xs = new double[ slice.ncells( ) ];
             double[] ys = new double[ xs.length ];
@@ -215,6 +216,7 @@ public class IntegrateNorm {
 
             errs = fitter.getParameterSigmas( );// Use other for cases when
                                                 // params near
+            I_bErr= errs[IBACK];
             Ierr = errs[3];
             errs = fitter.getParameterSigmas_2( );
             if( Double.isNaN( Ierr ))
@@ -245,10 +247,11 @@ public class IntegrateNorm {
          try
          {
            
-           
+           I_bErr = I_bErr*Math.sqrt( chiSqr*slice.ncells());
+           I_bErr =I_bErr*I_bErr + slice.getInitialTotIntensity( );
            logBuffer.append( 
                  String.format("%5d %7.3f %8.3f%c %8.3f %8.3f %8.3f %6d %10.2f %10.2f"+
-                                               " %13.3f %8.5f %9.5f %9.5f %9.5f\n",
+                                               " %13.3f %8.5f %9.5f %9.5f %9.5f %9.5f\n",
                  chan+1,
                  DD[0],
                  DD[3],GoodSlicec,
@@ -262,7 +265,9 @@ public class IntegrateNorm {
                  slice.getAvBackGroundLeft( ),
                  DD[4],
                  DD[5],
-                 DD[6])
+                 DD[6],
+                 Math.sqrt( I_bErr )
+                 )
                        );
          }catch(Exception s2)
          {
@@ -271,14 +276,20 @@ public class IntegrateNorm {
          if ( GoodSlicec=='x')
          {
             TotIntensity += DD[3];
-            double Err = errs[3];
+            double Err = Ierr;
             TotVariance += Err * Err * chiSqr / slice.ncells( );
             
-         }else if( chan < Chan)
+         }else if( chan < Chan)  
          {
             TotIntensity =0;
             TotVariance = 0;
-         }else
+            
+         }else if( chan ==  Chan && TotIntensity >0 ) //to catch a time channel if off by one
+            
+            done = true;
+         
+         else if( chan > Chan) //only go one extra channel over Chan
+            
             done = true;
          
          
@@ -2029,8 +2040,9 @@ public class IntegrateNorm {
          double coefExp = coefNorm*parameters[ITINTENS];
          double coefx2=parameters[IVYY]*parameters[IVYY]/2/uu/uu; 
          double coefy2=parameters[IVXY]*parameters[IVXY]/2/uu/uu;
+         //Should be coefy2=(+parameters[IVYY]*parameters[IVYY]-uu)/2/uu/uu;
          double coefxy =-parameters[IVXY]*parameters[IVYY]/uu/uu;
-         double C =parameters[IVYY]/2/uu;
+         double C =parameters[IVYY]/2/uu;//*-1??
          
          double[] Res = new double[x.length];
          int k=0;
@@ -2115,10 +2127,12 @@ public class IntegrateNorm {
       {
          double uu = parameters[IVXX]*parameters[IVYY]-parameters[IVXY]*parameters[IVXY];
          double coefExp = coefNorm*parameters[ITINTENS];
-         double coefx2=parameters[IVXY]*parameters[IVXY]/2/uu/uu; 
+         double coefx2=parameters[IVXY]*parameters[IVXY]/2/uu/uu;
+         //should be  coefx2=(-uu+parameters[IVXX]*parameters[IVYY])/2/uu/uu;
          double coefy2=parameters[IVXX]*parameters[IVXX]/2/uu/uu;
+         
          double coefxy =-parameters[IVXY]*parameters[IVXX]/uu/uu;
-         double C =parameters[IVXX]/2/uu;
+         double C =parameters[IVXX]/2/uu;//*-1??
          
          double[] Res = new double[x.length];
          int k=0;
@@ -2203,10 +2217,10 @@ public class IntegrateNorm {
       {
          double uu = parameters[IVXX]*parameters[IVYY]-parameters[IVXY]*parameters[IVXY];
          double coefExp = coefNorm*parameters[ITINTENS];
-         double coefx2= parameters[IVYY]*parameters[IVXY]/uu/uu; 
-         double coefy2= parameters[IVXX]*parameters[IVXY]/uu/uu;
+         double coefx2= parameters[IVYY]*parameters[IVXY]/2/uu/uu; 
+         double coefy2= parameters[IVXX]*parameters[IVXY]/2/uu/uu;
          double coefxy =(uu+2*parameters[IVXY]*parameters[IVXY])/uu/uu;
-         double C =-parameters[IVXY]/uu;
+         double C =-parameters[IVXY]/uu;//pos
          
          double[] Res = new double[x.length];
          int k=0;
