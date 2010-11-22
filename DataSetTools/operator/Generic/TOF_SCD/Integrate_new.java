@@ -1275,8 +1275,7 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
          Operators.TOF_SCD.IntegrateNorm.IntegratePeak((Peak_new) peaks.elementAt(i) , 
                ds , 12, nBoundaryPixels ,my_buffer );
          
-         if ( (max_shoebox > 0 && peak.sigi() <= 0 ) ||
-               peak.inti() < peak.sigi() * max_shoebox )
+         if ( max_shoebox > 0 && ((IPeak)peaks.elementAt( i )).sigi() <= 0     )
          {
            my_method = SHOE_BOX; 
            IntegrateUtils.integrateShoebox( (IPeak)peaks.elementAt(i),
@@ -1347,8 +1346,13 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
          
         peak.seqnum(i+1); // renumber the peaks
         peaks.set(i,peak);
-        if( my_method .equals( FIT_PEAK ))
+        if( PeakAlg .equals( FIT_PEAK ))
+           
            if( peak.sigi()<=0 )
+              
+              peak.reflag(300);
+        
+           else if( peak.inti()/peak.sigi() < 3)
               
               peak.reflag(300);
         
