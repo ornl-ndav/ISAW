@@ -7,7 +7,9 @@
 #!  Fortran version: A. J. Schultz, July, 2009
 #!  Jython version: A. J. Schultz, March, 2010
 
-#  spectrum2 does not average over a +/- averageRange
+#  spectrum2 does not average over a +/- averageRange.
+#  This is because TOPAZ_spectrum now includes
+#  a Savitzky-Golay smoothing Filter.
 #  A. J. Schultz, September, 2010
 
 
