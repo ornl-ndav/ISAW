@@ -69,8 +69,8 @@ def absor_V_rod( angleH, angleV, wl):
     #                vanadium is b.c.c, a = 3.0282
     # V = 27.769, Z = 2
     # From lin_abs_coef in ISAW:
-    smu = 0.367  # linear absorption coeff. for total scattering in cm_1
-    amu = 0.366  # linear absorption coeff. for true absorption at 1.8 A in cm^-1
+    smu = 0.367     # linear absorption coeff. for total scattering in cm^-1
+    amu = 0.366     # linear absorption coeff. for true absorption at 1.8 A in cm^-1
     radius = 0.407  # radius of the vanadium rod used for TOPAZ
     
     mu = smu + (amu/1.8)*wl
@@ -204,10 +204,10 @@ class TOPAZ_spectrum(GenericTOF_SCD):
 
     def setDefaultParameters(self):
         self.super__clearParametersVector()
-        self.addParameter(DataDirPG("Raw data path:", "C:/Users/Arthur/Desktop/Topaz/spectrum/1268"))
+        self.addParameter(DataDirPG("Raw data path:", "C:/Users/Arthur/Desktop/Topaz/spectrum/stand_alone"))
         self.addParameter(StringPG("Run number of data file:", "1268"))
         self.addParameter(StringPG("Run number of background file:", "1270"))
-        self.addParameter(IntegerPG("Number of detectors:", 14))
+        # self.addParameter(IntegerPG("Number of detectors:", 14))
         self.addParameter(LoadFilePG("DetCal file:", "C:/ISAW/InstrumentInfo/SNS/TOPAZ/TOPAZ.DetCal"))
         self.addParameter(BooleanEnablePG("Apply Savitzky-Golay smoothing Filter?", "[1,3,0]"))
         self.addParameter(IntegerPG("Number of points to the left of center:", 20))
@@ -215,23 +215,54 @@ class TOPAZ_spectrum(GenericTOF_SCD):
         self.addParameter(IntegerPG("Degree of smoothing polynomial:", 3))
         self.addParameter(BooleanEnablePG("Is the spectrum from the vanadium rod?", "[1,0,1]"))
         self.addParameter(BooleanPG("Or is the spectrum from the V/Nb sphere?", "false"))
-        self.addParameter(DataDirPG("Directory for output spectrum file:", "C:/Users/Arthur/Desktop/Topaz/spectrum/1268"))
+        self.addParameter(DataDirPG("Directory for output spectrum and log files:", "C:/Users/Arthur/Desktop/Topaz/spectrum/stand_alone"))
         
     def getResult(self):
 
         path = self.getParameter(0).value
         runNum_1 = self.getParameter(1).value
         runNum_2 = self.getParameter(2).value
-        number_of_detectors = self.getParameter(3).value
-        DetCalFilename = self.getParameter(4).value
-        doSmoothing = self.getParameter(5).value
-        pointsLeft = self.getParameter(6).value
-        pointsRight = self.getParameter(7).value
-        polyDegree = self.getParameter(8).value
-        V_rod = self.getParameter(9).value
-        V_sphere = self.getParameter(10).value
-        outPath = self.getParameter(11).value
+        # number_of_detectors = self.getParameter(3).value
+        DetCalFilename = self.getParameter(3).value
+        doSmoothing = self.getParameter(4).value
+        pointsLeft = self.getParameter(5).value
+        pointsRight = self.getParameter(6).value
+        polyDegree = self.getParameter(7).value
+        V_rod = self.getParameter(8).value
+        V_sphere = self.getParameter(9).value
+        outPath = self.getParameter(10).value
         
+        # Write input instructions to the log file.
+        filename = outPath + 'Spectrum_' + runNum_1 + '_' + runNum_2 + '.log'
+        logFile = open( filename, 'w' )
+        logFile.write('\n********** TOPAZ_spectrum **********\n')
+        logFile.write('\nRaw data path: ' + path)
+        logFile.write('\nRun number of data file: ' + runNum_1)
+        logFile.write('\nRun number of background file: ' + runNum_2)
+        # logFile.write('\nNumber of detectors: %d' % number_of_detectors)
+        logFile.write('\nDetCal file: ' + DetCalFilename)
+        
+        if doSmoothing:
+            logFile.write('\n\nApply Savitzky-Golay smoothing Filter? Yes')
+            logFile.write('\n  Number of points to the left of center: %d' % pointsLeft)
+            logFile.write('\n  Number of points to the right of center: %d' % pointsRight)
+            logFile.write('\n  Degree of smoothing polynomial: %d' % polyDegree)
+        else:
+            logFile.write('\n\nApply Savitzky-Golay smoothing Filter? No')
+            
+        if V_rod:
+            logFile.write('\n\nIs the spectrum from the vanadium rod? Yes')
+            logFile.write('\n  Total scattering linear absorption coefficient: 0.367 cm^-1')
+            logFile.write('\n  True absorption linear absorption coefficient: 0.366 cm^-1')
+            logFile.write('\n  Radius of rod: 0.407 cm')
+        elif V_sphere:
+            logFile.write('\n\nIs the spectrum from the V/Nb sphere? Yes')
+            logFile.write('\n  Total scattering linear absorption coefficient: 0.367 cm^-1')
+            logFile.write('\n  True absorption linear absorption coefficient: 0.366 cm^-1')
+            logFile.write('\n  Radius of sphere: 0.15 cm')
+        
+        logFile.write('\n\nDirectory for output spectrum and log files: ' + outPath)
+                
         hom = 0.39559974    # Planck's constant divided by neutron mass
         
         # Open spectrum output file
@@ -263,12 +294,16 @@ class TOPAZ_spectrum(GenericTOF_SCD):
         protonCharge_2 = ds_2.getAttributeValue("proton_charge")
         
         scale = monitorSum1 / monitorSum2
-        print 'scale = %10.5f' % scale
+        print 'incident beam monitor detector scale = %10.5f' % scale
+        logFile.write('\n\nScale factor from incident beam monitor detector = %10.5f' % scale)
         scalePC = protonCharge_1 / protonCharge_2
         print 'proton_charge ratio = %10.5f' % scalePC
-        
+        logFile.write('\nScale factor from proton_charge = %10.5f' % scalePC)
+
         # Read the detector calibration file
         DetCalFile = open(DetCalFilename, 'r')
+        number_of_detectors = 0
+        DetNum = []
         DetD = []
         CenterX = []
         CenterY = []
@@ -283,10 +318,13 @@ class TOPAZ_spectrum(GenericTOF_SCD):
                     L1 = float( lineList[1] )
                     T0_shift = float( lineList[2] )
                 if lineList[0] == '5':
+                    DetNum.append( int( lineList[1] ) )
                     DetD.append( float( lineList[7] ) )
                     CenterX.append( float( lineList[8] ) )
                     CenterY.append( float( lineList[9] ) )
                     CenterZ.append( float( lineList[10] ) )
+                    number_of_detectors = number_of_detectors + 1
+        logFile.write('\n\nNumber of detectors = %d\n\n' % number_of_detectors)
         
         # Begin 'for' loop for each detector.
 
@@ -362,7 +400,8 @@ class TOPAZ_spectrum(GenericTOF_SCD):
             twoth = abs( acos( CenterZ[i] / DetD[i] ) )
             
             # loop through the spectrum to obtain corrected counts
-            outFile.write( 'Bank %d\n' % bank )
+            outFile.write( 'Bank %d     DetNum %d\n' % (bank, DetNum[i]) )
+            logFile.write( 'Bank %d     DetNum %d\n' % (bank, DetNum[i]) )
             for j in range(lenCounts):
                 wl = hom * time[j] / ( L1 + DetD[i] )  # wavelength
                 
@@ -380,7 +419,8 @@ class TOPAZ_spectrum(GenericTOF_SCD):
             ScriptUtil.send(newspec, IOBS)
             ScriptUtil.display(newspec, "Selected Graph View")
             
-            
+        outFile.close()    
+        logFile.close()
         print 'The End!'
             
         
