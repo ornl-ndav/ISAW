@@ -204,18 +204,18 @@ class TOPAZ_spectrum(GenericTOF_SCD):
 
     def setDefaultParameters(self):
         self.super__clearParametersVector()
-        self.addParameter(DataDirPG("Raw data path:", "C:/Users/Arthur/Desktop/Topaz/spectrum/stand_alone"))
-        self.addParameter(StringPG("Run number of data file:", "1268"))
-        self.addParameter(StringPG("Run number of background file:", "1270"))
+        self.addParameter(DataDirPG("Raw data path:", "/SNS/users/ajschultz/spectrum/TOPAZ_1789/"))
+        self.addParameter(StringPG("Run number of data file:", "1789"))
+        self.addParameter(StringPG("Run number of background file:", "1748"))
         # self.addParameter(IntegerPG("Number of detectors:", 14))
-        self.addParameter(LoadFilePG("DetCal file:", "C:/ISAW/InstrumentInfo/SNS/TOPAZ/TOPAZ.DetCal"))
+        self.addParameter(LoadFilePG("DetCal file:", "/SNS/users/ajschultz/spectrum/TOPAZ_1789/TOPAZ.DetCal"))
         self.addParameter(BooleanEnablePG("Apply Savitzky-Golay smoothing Filter?", "[1,3,0]"))
         self.addParameter(IntegerPG("Number of points to the left of center:", 20))
         self.addParameter(IntegerPG("Number of points to the right of center:", 20))
         self.addParameter(IntegerPG("Degree of smoothing polynomial:", 3))
-        self.addParameter(BooleanEnablePG("Is the spectrum from the vanadium rod?", "[1,0,1]"))
-        self.addParameter(BooleanPG("Or is the spectrum from the V/Nb sphere?", "false"))
-        self.addParameter(DataDirPG("Directory for output spectrum and log files:", "C:/Users/Arthur/Desktop/Topaz/spectrum/stand_alone"))
+        self.addParameter(BooleanEnablePG("Is the spectrum from the vanadium rod?", "[0,0,1]"))
+        self.addParameter(BooleanPG("Or is the spectrum from the V/Nb sphere?", "True"))
+        self.addParameter(DataDirPG("Directory for output spectrum and log files:", "/SNS/users/ajschultz/spectrum/TOPAZ_1789/"))
         
     def getResult(self):
 
@@ -330,11 +330,11 @@ class TOPAZ_spectrum(GenericTOF_SCD):
 
         for i in range(number_of_detectors):
             bank = i + 1
-            print 'Detector Bank = %d' % bank
+            print 'Detector Bank = %d     DetNum = %d' % (bank, DetNum[i])
             filename = path + 'TOPAZ_' + runNum_1 + '.nxs'
-            ds_1 = ScriptUtil.ExecuteCommand("OneDS",[filename, bank, ""] )
+            ds_1 = ScriptUtil.ExecuteCommand("OneDS",[filename, DetNum[i], ""] )
             filename = path + 'TOPAZ_' + runNum_2 + '.nxs'
-            ds_2 = ScriptUtil.ExecuteCommand("OneDS",[filename, bank, ""] )
+            ds_2 = ScriptUtil.ExecuteCommand("OneDS",[filename, DetNum[i], ""] )
 
             #
             #  Select the pixels that were requested
