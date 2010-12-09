@@ -209,6 +209,7 @@ import java.util.Vector;
 
 /** 
  * This is a ported version of A.J.Schultz's INTEGRATE program. 
+ * Integrate_new has a newer version of this. It uses the newer Peaks object
  */
 public class Integrate extends GenericTOF_SCD{
   private static final String       TITLE       = "Integrate";
