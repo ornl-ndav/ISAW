@@ -296,6 +296,9 @@ import Operators.TOF_SCD.*;
 import DataSetTools.operator.Generic.TOF_SCD.IPeak;
 /** 
  * This is a ported version of A.J.Schultz's INTEGRATE program. 
+ * 
+ * The newer integrate replacing integrate.java(Command SCDIntegrate_new)
+ *  in the old SCD wizard(command SCDIntegrate)
  */
 public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
   private static final String       TITLE       = "Integrate_new";
@@ -1277,10 +1280,15 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
          
          if ( max_shoebox > 0 && ((IPeak)peaks.elementAt( i )).sigi() <= 0     )
          {
-           my_method = SHOE_BOX; 
+           my_method = SHOE_BOX;
+           int[] colXrange1 = colXrange;
+           if( nBoundaryPixels >0)
+           {
+              colXrange1 = rowYrange;
+           }
            IntegrateUtils.integrateShoebox( (IPeak)peaks.elementAt(i),
                                              ds, ids,
-                                             colXrange, rowYrange, timeZrange,
+                                             colXrange1, rowYrange, timeZrange,
                                              my_buffer ); 
          }
       }
@@ -1341,20 +1349,20 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
       float h = peak1.h( );
       float k = peak1.k( );
       float l = peak1.l( );
-      peak=Util.centroid(peak1,ds,grid);
+       peak=Util.centroid(peak1,ds,grid);
       if(peak!=null){
          
         peak.seqnum(i+1); // renumber the peaks
         peaks.set(i,peak);
         if( PeakAlg .equals( FIT_PEAK ))
            
-           if( peak.sigi()<=0 )
+           if( peak.reflag()/100 ==1 )
               
-              peak.reflag(300);
+              {}//used the shoeBox so done
         
-           else if( peak.inti()/peak.sigi() < 3)
+          // else if( peak.inti()/peak.sigi() < 3)
               
-              peak.reflag(300);
+          //    peak.reflag(300);
         
            else if( (peak.reflag()%100) == 10)
               
