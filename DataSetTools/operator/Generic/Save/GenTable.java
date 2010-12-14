@@ -55,8 +55,9 @@ import  gov.anl.ipns.Util.Numeric.*;
 import DataSetTools.dataset.*;
 
 /**
- * This operator is a wrapper around the advanced table view. 
- * @see #calculate(DataSetTools.dataset.DataSet, java.util.Vector,gov.anl.ipns.SpecialStrings.MediaList,gov.anl.ipns.SpecialStrings.SaveFileString, java.lang.String,gov.anl.ipns.SpecialStrings.IntListString)
+ * This operator is a wrapper around the advanced table view.
+ * @see DataSetTools.operator.Generic.Save.GenTable#calculate(DataSet, Vector, MediaList, SaveFileString, String, IntListString) 
+ *
  *
  */
 
