@@ -41,10 +41,6 @@ public class NxEventDataStateInfo extends StateInfo
     *                       class
     *   @param  NxInstrumentNode An NxNode containing information on a NeXus  
     *                       NXinstrument class
-    *   @param  Params   a linked list of State information
-    *   @param startGroupID the default starting ID for the data blocks. This is
-    *                       used if there is NO int id field in the corresponding
-    *                       NXdetector 
     */
    public NxEventDataStateInfo(NxNode NxEventNode, NxNode NxInstrumentNode)
    {
