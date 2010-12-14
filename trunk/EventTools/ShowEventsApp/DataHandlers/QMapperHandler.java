@@ -589,7 +589,10 @@ public class QMapperHandler implements IReceiveMessage
         peak.seqnum( k );
         peak.ipkobs( q_peak.ipkobs() );
         peak.inti( i_sigi[0] );
-        peak.sigi( i_sigi[1] );
+        if ( i_sigi[1] != 0 )
+          peak.sigi( i_sigi[0]/i_sigi[1] );
+        else
+          peak.sigi(0f);
         new_peaks.add( peak );
       }
     }
