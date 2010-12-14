@@ -188,6 +188,12 @@ public class NxWriteDetector{
         distance[ i -startIndex ] = coords1[ 0 ];
         theta [ i-startIndex ] = coords1[  2 ];
         phi[i-startIndex] = coords1[1];
+        if( monitor)
+           if( Math.abs( coords1[1]) >3)
+           {
+              distance[i-startIndex]= -distance[i-startIndex];
+              phi[i-startIndex]=0;
+           }
         
       }else{
         distance[ i-startIndex ] = 0.0f;
