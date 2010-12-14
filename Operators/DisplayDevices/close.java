@@ -44,8 +44,7 @@ import Command.*;
 /**
  * This class has been dynamically created using the Method2OperatorWizard
  * and usually should not be edited.
- * This operator is a wrapper around 
-@see gov.anl.ipns.DisplayDevices.GraphicsDevice#close(gov.anl.ipns.DisplayDevices.GraphicsDevic)
+ * This operator is a wrapper around @see gov.anl.ipns.DisplayDevices.GraphicsDevice#close(gov.anl.ipns.DisplayDevices.GraphicsDevice) 
  */
 public class close extends GenericOperator{
 
