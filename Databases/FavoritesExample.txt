@@ -3,7 +3,8 @@
 # Each line of the file starts with
 #          #--Comment
 #          MENU= -- The name of menu if present( Favorites if not)
-#          OPERATOR= -- The "filename" of the operator
+#          OPERATOR= -- The "filename" of the operator. Macro Strings(${*****}) will be 
+#                         replaced by equate in IsawProps.dat
 #          PATH=     -- A comma delimited list of path/sub path/sub path names
 #                       where the previous operator will be placed
 #          TITLE=   --If present, the Title to represent the operator on the menu
@@ -35,7 +36,7 @@ OPERATOR=Operators.Generic.Load.LoadASCII
 PATH=File,Load
 #
 TITLE=Load Ascii
-OPERATOR=C:\ISAW\Scripts\TOF_SCD\anvred_py.py
+OPERATOR=${ISAW_HOME}\Scripts\TOF_SCD\anvred_py.py
 PATH=SCD,Reduce
 TITLE=Anvred
 #
