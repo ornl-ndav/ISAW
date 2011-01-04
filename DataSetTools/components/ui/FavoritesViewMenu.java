@@ -49,6 +49,7 @@ import DataSetTools.components.ParametersGUI.JParametersDialog;
 import DataSetTools.operator.PyScriptOperator;
 import DataSetTools.operator.Generic.GenericOperator;
 import DataSetTools.util.SharedData;
+import Operators.Generic.System.ParseStringMacroBase;
 
 /**
  * This class can produce a JMenu with submenu options for operators and menu
@@ -222,6 +223,7 @@ public class FavoritesViewMenu
       {
          SharedData.addmsg( "Error in Parsing Favorites File " + s );
          SharedData.addmsg( "line =" + line );
+         s.printStackTrace( );
          return null;
       }
 
@@ -274,7 +276,7 @@ public class FavoritesViewMenu
          for( c = fin.read( ) ; c >= 32 ; c = fin.read( ) )
             S += "" + ( char ) c;
 
-         return S;
+         return ParseStringMacroBase.parseMacroString( S);
 
       } catch( Exception s )
       {
