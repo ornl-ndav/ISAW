@@ -163,7 +163,9 @@ public class IntegrateNorm {
          System.out.println("Peak num #time channels="+Peak.seqnum( )+","+nTimeChans);
       try
       {
-         logBuffer.append( String.format("\nPeak,run,det=%3d %4d %3d\n",i+1,run,det));
+         logBuffer.append( String.format("\nPeak,run,det=%3d %4d %3d   col,row= %5.2f, %5.2f  hkl=%4d,%4d,%4d\n",
+                                                                  i+1,run,det,Peak.x(),Peak.y( ),
+                                                                  (int)Peak.h( ), (int)Peak.k( ), (int)Peak.k()));
          logBuffer.append(  String.format("   Pixel width %3dchan %4d,, chanMin %4d,chanMax %4d\n",
                         nPixels+1,Chan+1, Chan+1-(nTimes-1)/2, Chan+1+(nTimes-1)/2));
          logBuffer.append( "   ----------------Slices --------------------\n");
@@ -189,7 +191,8 @@ public class IntegrateNorm {
          
          OneSlice slice = new OneSlice(grid, chan,(int)(.5f+Peak.y()),
               (int)(.5f+Peak.x()), nPixels,nPixels,BadEdgeWidth);
-         
+      
+            
          double MaxErrChiSq = 0;
          double chiSqr =Double.NaN;
          double[] errs= new double[8];
@@ -209,7 +212,7 @@ public class IntegrateNorm {
             for( int ii = 0 ; ii < xs.length ; ii++ )
                xs[ii] = ii;
             
-            MaxErrChiSq = .00001 * slice.ncells( );
+            MaxErrChiSq = .05 /Math.max( slice.ncells() , slice.P[ITINTENS] ) ;
             MarquardtArrayFitter fitter = new MarquardtArrayFitter( slice , xs ,
                   ys , sigs , MaxErrChiSq , 200 );
             chiSqr = fitter.getChiSqr( );
@@ -227,8 +230,6 @@ public class IntegrateNorm {
             // boundaries
 
             DD = slice.getParameters( );
-            // AdjustDD( DD, slice.startRow, slice.nrows(),
-            // slice.startCol,slice.ncols() );
             GoodSlicec = ' ';
          
             if(!Double.isNaN( chiSqr )  && 
@@ -2029,7 +2030,7 @@ public class IntegrateNorm {
          double coefx2=parameters[IVYY]*parameters[IVYY]/2/uu/uu; 
          double coefy2=parameters[IVXY]*parameters[IVXY]/2/uu/uu;
          double coefxy =-parameters[IVXY]*parameters[IVYY]/uu/uu;
-         double C =parameters[IVYY]/2/uu;
+         double C =-parameters[IVYY]/2/uu;
          return get_dFdp(x,r,c,coefExp, C,coefx2, coefxy,
                coefy2);
       }
@@ -2042,7 +2043,7 @@ public class IntegrateNorm {
          double coefy2=parameters[IVXY]*parameters[IVXY]/2/uu/uu;
          //Should be coefy2=(+parameters[IVYY]*parameters[IVYY]-uu)/2/uu/uu;
          double coefxy =-parameters[IVXY]*parameters[IVYY]/uu/uu;
-         double C =parameters[IVYY]/2/uu;//*-1??
+         double C =-parameters[IVYY]/2/uu;
          
          double[] Res = new double[x.length];
          int k=0;
@@ -2066,7 +2067,7 @@ public class IntegrateNorm {
          double coefx2=parameters[IVYY]*parameters[IVYY]/2/uu/uu; 
          double coefy2=parameters[IVXY]*parameters[IVXY]/2/uu/uu;
          double coefxy =-parameters[IVXY]*parameters[IVYY]/uu/uu;
-         double C =parameters[IVYY]/2/uu;
+         double C =-parameters[IVYY]/2/uu;
          
          float[] Res = new float[x.length];
          int k=0;
@@ -2118,7 +2119,7 @@ public class IntegrateNorm {
          double coefx2=parameters[IVXY]*parameters[IVXY]/2/uu/uu; 
          double coefy2=parameters[IVXX]*parameters[IVXX]/2/uu/uu;
          double coefxy =-parameters[IVXY]*parameters[IVXX]/uu/uu;
-         double C =parameters[IVXX]/2/uu;
+         double C =-parameters[IVXX]/2/uu;
          return get_dFdp(x,r,c,coefExp, C,coefx2, coefxy,
                coefy2);
       }
@@ -2132,7 +2133,7 @@ public class IntegrateNorm {
          double coefy2=parameters[IVXX]*parameters[IVXX]/2/uu/uu;
          
          double coefxy =-parameters[IVXY]*parameters[IVXX]/uu/uu;
-         double C =parameters[IVXX]/2/uu;//*-1??
+         double C =-parameters[IVXX]/2/uu;//*-1??
          
          double[] Res = new double[x.length];
          int k=0;
@@ -2156,7 +2157,7 @@ public class IntegrateNorm {
          double coefx2=parameters[IVXY]*parameters[IVXY]/2/uu/uu; 
          double coefy2=parameters[IVXX]*parameters[IVXX]/2/uu/uu;
          double coefxy =-parameters[IVXY]*parameters[IVXX]/uu/uu;
-         double C =parameters[IVXX]/2/uu;
+         double C =-parameters[IVXX]/2/uu;
          
          float[] Res = new float[x.length];
          int k=0;
@@ -2205,10 +2206,10 @@ public class IntegrateNorm {
          int c = ((int)x) %Ncols;
          double uu = parameters[IVXX]*parameters[IVYY]-parameters[IVXY]*parameters[IVXY];
          double coefExp = coefNorm*parameters[ITINTENS];
-         double coefx2= parameters[IVYY]*parameters[IVXY]/uu/uu; 
-         double coefy2=  parameters[IVXX]*parameters[IVXY]/uu/uu;
+         double coefx2= -parameters[IVYY]*parameters[IVXY]/uu/uu; 
+         double coefy2=  -parameters[IVXX]*parameters[IVXY]/uu/uu;
          double coefxy =(uu+2*parameters[IVXY]*parameters[IVXY])/uu/uu;
-         double C =-parameters[IVXY]/uu;
+         double C = parameters[IVXY]/uu;
          return get_dFdp(x,r,c,coefExp, C,coefx2, coefxy,
                coefy2);
       }
@@ -2217,10 +2218,10 @@ public class IntegrateNorm {
       {
          double uu = parameters[IVXX]*parameters[IVYY]-parameters[IVXY]*parameters[IVXY];
          double coefExp = coefNorm*parameters[ITINTENS];
-         double coefx2= parameters[IVYY]*parameters[IVXY]/2/uu/uu; 
-         double coefy2= parameters[IVXX]*parameters[IVXY]/2/uu/uu;
+         double coefx2= -parameters[IVYY]*parameters[IVXY]/uu/uu; 
+         double coefy2=  -parameters[IVXX]*parameters[IVXY]/uu/uu;
          double coefxy =(uu+2*parameters[IVXY]*parameters[IVXY])/uu/uu;
-         double C =-parameters[IVXY]/uu;//pos
+         double C = parameters[IVXY]/uu;
          
          double[] Res = new double[x.length];
          int k=0;
@@ -2241,10 +2242,10 @@ public class IntegrateNorm {
       {
          double uu = parameters[IVXX]*parameters[IVYY]-parameters[IVXY]*parameters[IVXY];
          double coefExp = coefNorm*parameters[ITINTENS];
-         double coefx2=-parameters[IVYY]*parameters[IVXY]/uu/uu; 
-         double coefy2=-parameters[IVXX]*parameters[IVXY]/uu/uu;
-         double coefxy =2*(uu+parameters[IVXY]*parameters[IVXY])/uu/uu;
-         double C =-parameters[IVXY]/uu;
+         double coefx2= -parameters[IVYY]*parameters[IVXY]/uu/uu; 
+         double coefy2=  -parameters[IVXX]*parameters[IVXY]/uu/uu;
+         double coefxy =(uu+2*parameters[IVXY]*parameters[IVXY])/uu/uu;
+         double C = parameters[IVXY]/uu;
          
          float[] Res = new float[x.length];
          int k=0;
