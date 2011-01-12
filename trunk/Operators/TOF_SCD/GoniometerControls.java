@@ -103,7 +103,7 @@ public class GoniometerControls extends    JPanel
 
   /* --------------------------- receive ------------------------------- */
   /**
-   *  Accept and process a command message for this robot.
+   *  Accept and process a command message for this object.
    *
    *  @param message  The command message to be processed.
    *

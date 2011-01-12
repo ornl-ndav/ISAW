@@ -125,10 +125,10 @@ public class ControlledPeaks extends    Group
 
   /* -------------------------- connectTo --------------------------------- */
   /**
-   *  Add this robot as a receiver for messages from all of the relevant 
+   *  Add this as a receiver for messages from all of the relevant 
    *  queues on the specified message center.
    *
-   *  @param message_center  The message center the robot is to receive
+   *  @param message_center  The message center the is to receive
    *                         messages from.
    */
   public void connectTo( MessageCenter message_center )
@@ -145,10 +145,10 @@ public class ControlledPeaks extends    Group
 
   /* ----------------------- disconnectFrom ------------------------------ */
   /**
-   *  Remove this robot as a receiver for messages from all of the relevant 
+   *  Remove this as a receiver for messages from all of the relevant 
    *  queues on the specified message center.
    *
-   *  @param message_center  The message center the robot is to no longer
+   *  @param message_center  The message center the this is to no longer
    *                         receive messages from.
    */
   public void disconnectFrom( MessageCenter message_center )
@@ -161,11 +161,11 @@ public class ControlledPeaks extends    Group
 
   /* ----------------------- MakeListOfQueues ---------------------------- */
   /**
-   *  Convenience method to construct the list of queues that this robot
+   *  Convenience method to construct the list of queues that this
    *  should listen to.
    *
    *  @return  an array of Strings containing the queue names that this
-   *           robot receives messages from.
+   *           receives messages from.
    */
   private String[] MakeListOfQueues()
   {
@@ -181,7 +181,7 @@ public class ControlledPeaks extends    Group
 
   /* --------------------------- receive ------------------------------- */
   /**
-   *  Accept and process a command message for this robot.
+   *  Accept and process a command message for this list of peaks.
    *
    *  @param message  The command message to be processed.
    *
