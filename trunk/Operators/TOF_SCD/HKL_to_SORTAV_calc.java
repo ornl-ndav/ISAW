@@ -129,17 +129,16 @@ public class HKL_to_SORTAV_calc
   }
 
 
-  private static double[][] readOrientationMatrix( String directory,
-                                                   String matrix_file )
+  private static double[][] readOrientationMatrix( String matrix_file )
   {
                                  // NOTE: readOrient transposes the matrix 
                                  //       from the file, so it returns
                                  //       the actual orientation matrix
-    String fname = directory + "/" + matrix_file;
-    Object Res = Operators.TOF_SCD.IndexJ.readOrient( fname );
+    Object Res = Operators.TOF_SCD.IndexJ.readOrient( matrix_file );
 
     if ( Res == null || !(Res instanceof float[][]) )
-      throw new IllegalArgumentException( "Matrix file not loaded: " + fname ); 
+      throw new IllegalArgumentException( "Matrix file not loaded: " 
+                                          + matrix_file ); 
 
     float[][]  fmat  = (float[][])Res;
     double[][] ormat = new double[3][3];
@@ -259,13 +258,57 @@ public class HKL_to_SORTAV_calc
    *  @param matrix_file The name of the matrix file, in the specified
    *                     directory.
    *
-   */ 
+   */
   public static void HKL_to_SORTAV( String directory,
-                                    String exp_name,
-                                    String matrix_file )
+                                    String exp_name )
                      throws IOException
   {
-    double[][] basicUB = readOrientationMatrix( directory, matrix_file );
+    String integrate_file = directory + "/"   + exp_name + ".integrate";
+    String hkl_file       = directory + "/"   + exp_name + ".hkl";
+    String matrix_file    = directory + "/ls" + exp_name + ".mat";
+    String sortav_file    = directory + "/"   + exp_name + ".sortav";
+
+    HKL_to_SORTAV( hkl_file, integrate_file, matrix_file, sortav_file );
+  }
+
+
+  /**
+   *  This method will write a file of peak information with integrated 
+   *  intensities AND direction cosines for the incident and scattered
+   *  beams, in the form needed by SORTAV.  This requires three files as
+   *  input, a .integrate file and .mat file from ISAW and the .hkl file
+   *  produced by ANVRED.  The .integrate, .hkl and .mat files must ALL 
+   *  be in one specified directory.  The input files must follow the 
+   *  naming conventions:
+   *
+   *  Integrate file: <exp_name>.integrate
+   *  HKL file:       <exp_name>.hkl
+   *
+   *  The file created for the SORTAV program is saved in the specified
+   *  directory with the name:
+   *
+   *  Created file:  <exp_name>.sortav
+   *
+   *  The output file is written as a DOS text file with lines terminated
+   *  by a carriage return and line feed pair.  This is needed so that the
+   *  file can be read properly by WinGX on a windows machine.
+   *
+   *  @param directory   The name of the directory containing the input
+   *                     files and to which the resulting .sortav file
+   *                     will be written.
+   *  @param exp_name    The experiment name and base name for all files
+   *
+   *  @param matrix_file The name of the matrix file, in the specified
+   *                     directory.
+   *
+   */ 
+  public static void HKL_to_SORTAV( String hkl_file,
+                                    String integrate_file,
+                                    String matrix_file,
+                                    String sortav_file )
+                     throws IOException
+  {
+    double[][] basicUB = readOrientationMatrix( matrix_file );
     double[][] UB      = null;
     double[][] U       = null;
 
@@ -273,10 +316,6 @@ public class HKL_to_SORTAV_calc
     Vector3D_d minus_u0_comps = new Vector3D_d();
     Vector3D_d u1             = new Vector3D_d();
     Vector3D_d u1_comps       = new Vector3D_d();
-
-    String integrate_file = directory + "/" + exp_name + ".integrate";
-    String hkl_file       = directory + "/" + exp_name + ".hkl";
-    String sortav_file    = directory + "/" + exp_name + ".sortav";
 
     Vector<Peak_new> peaks = Peak_new_IO.ReadPeaks_new( integrate_file );
     
@@ -297,9 +336,11 @@ public class HKL_to_SORTAV_calc
       int    l       = getL( line );
       double fsq     = getFsq( line );
       double sig     = getSig( line );
-      double tbar    = getTbar( line );
       
       Peak_new peak = peaks.elementAt( seq_num - 1 );
+      double scale   = peak.monct() / 3600.0;
+      double wl      = peak.wl();
+
       if ( runnum != old_runnum )     // new goniometer settings
       {
         UB = getRotatedUB( peak, basicUB );             // NOTE: U, UB in IPNS
@@ -319,7 +360,8 @@ public class HKL_to_SORTAV_calc
 
       String result = String.format( "%5d%5d%5d%10.2f%10.2f%5d" +
                                      "%9.5f%9.5f%9.5f" +
-                                     "%9.5f%9.5f%9.5f" + "%9.3f\r\n",
+                                     "%9.5f%9.5f%9.5f" + 
+                                     "%9.3f  %10.6f\r\n",
                                       h,k,l, fsq, sig, histnum, 
                                       minus_u0_comps.getX(), 
                                       minus_u0_comps.getY(), 
@@ -327,7 +369,7 @@ public class HKL_to_SORTAV_calc
                                       u1_comps.getX(), 
                                       u1_comps.getY(), 
                                       u1_comps.getZ(),
-                                      tbar );
+                                      scale, wl );
       out.write( result );
       /*
       double cos_ang_1 = u1.dot( minus_u0 );
@@ -338,6 +380,16 @@ public class HKL_to_SORTAV_calc
       line = sc.nextLine();           // advance to the next peak, if any
       seq_num = getSeqnum( line );
     }
+
+    String result = String.format( "%5d%5d%5d%10.2f%10.2f%5d" +
+                                     "%9.5f%9.5f%9.5f" +
+                                     "%9.5f%9.5f%9.5f" +
+                                     "%9.3f  %10.6f\r\n",
+                                      0,0,0, 0.0, 0.0, 0,
+                                      0.0, 0.0, 0.0,
+                                      0.0, 0.0, 0.0,
+                                      0.0, 0.0 );
+    out.write( result );
     out.close();
 
   } 
@@ -345,14 +397,15 @@ public class HKL_to_SORTAV_calc
 
   public static void main( String args[] ) throws IOException
   {
-    // first test reading of .hkl file
+/*
     String directory   = "/usr2/TOPAZ_20/";
     String exp_name    = "newPeakFitBox6by6";
     String matrix_file = "lsnewPeakFitBox6by6.mat";
-
     String hkl_file    = directory + exp_name + ".hkl";
+*/
+/*
+    // first test reading of .hkl file
     Scanner sc = new Scanner( new File( hkl_file ) );
-
     int line_count = 0;
     int err_count  = 0;
     int seq_num    = 1;
@@ -383,10 +436,23 @@ public class HKL_to_SORTAV_calc
       seq_num = getSeqnum( line );
     }
     System.out.println("Lines Read = " + line_count + " ERRORS = " + err_count);
+*/
 
     // Now test writing the .sortav file
-    HKL_to_SORTAV( directory, exp_name, matrix_file );
 
+    String directory   = "/usr2/TOPAZ_21/";
+    String exp_name    = "natrolite";
+
+//  HKL_to_SORTAV( directory, exp_name );
+
+    String hkl_file       = directory + "/"   + exp_name + "Det.hkl";
+//  String hkl_file       = directory + "/"   + exp_name + ".hkl";
+    String integrate_file = directory + "/"   + exp_name + ".integrate";
+    String matrix_file    = directory + "/ls" + exp_name + ".mat";
+//  String sortav_file    = directory + "/"   + exp_name + ".sortav";
+    String sortav_file    = directory + "/"   + exp_name + "Det.sortav";
+
+    HKL_to_SORTAV( hkl_file, integrate_file, matrix_file, sortav_file );
   }
 
 }
