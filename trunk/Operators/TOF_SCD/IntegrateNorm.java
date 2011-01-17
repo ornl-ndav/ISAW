@@ -153,6 +153,8 @@ public class IntegrateNorm {
       {
       float TotIntensity =0;
       float TotVariance =0;
+      float TotIntensity1 =0;
+      float TotVariance1 =0;
       
       int i= Peak.seqnum( );
       int run = Peak.nrun( );
@@ -165,7 +167,7 @@ public class IntegrateNorm {
       {
          logBuffer.append( String.format("\nPeak,run,det=%3d %4d %3d   col,row= %5.2f, %5.2f  hkl=%4d,%4d,%4d\n",
                                                                   i+1,run,det,Peak.x(),Peak.y( ),
-                                                                  (int)Peak.h( ), (int)Peak.k( ), (int)Peak.k()));
+                                                                  (int)Peak.h( ), (int)Peak.k( ), (int)Peak.l()));
          logBuffer.append(  String.format("   Pixel width %3dchan %4d,, chanMin %4d,chanMax %4d\n",
                         nPixels+1,Chan+1, Chan+1-(nTimes-1)/2, Chan+1+(nTimes-1)/2));
          logBuffer.append( "   ----------------Slices --------------------\n");
@@ -208,13 +210,15 @@ public class IntegrateNorm {
             Arrays.fill( ys , 0 );
             Arrays.fill( sigs , 1 );
 
-            
+            if( i==379 && chan==460)
+                xs[0]=1;
             for( int ii = 0 ; ii < xs.length ; ii++ )
                xs[ii] = ii;
             
             MaxErrChiSq = .05 /Math.max( slice.ncells() , slice.P[ITINTENS] ) ;
             MarquardtArrayFitter fitter = new MarquardtArrayFitter( slice , xs ,
-                  ys , sigs , MaxErrChiSq , 200 );
+                  ys , sigs , MaxErrChiSq , 200,1 );
+            
             chiSqr = fitter.getChiSqr( );
 
             errs = fitter.getParameterSigmas( );// Use other for cases when
@@ -230,6 +234,7 @@ public class IntegrateNorm {
             // boundaries
 
             DD = slice.getParameters( );
+           
             GoodSlicec = ' ';
          
             if(!Double.isNaN( chiSqr )  && 
@@ -277,13 +282,21 @@ public class IntegrateNorm {
          if ( GoodSlicec=='x')
          {
             TotIntensity += DD[3];
+            TotIntensity1 +=(slice.getInitialTotIntensity( )-slice.getParameters( )[0]*
+                  slice.ncells( ));
+            
             double Err = Ierr;
             TotVariance += Err * Err * chiSqr / slice.ncells( );
+            
+            TotVariance1 +=I_bErr ;
+    
             
          }else if( chan < Chan)  
          {
             TotIntensity =0;
             TotVariance = 0;
+            TotIntensity1 =0;
+            TotVariance1 = 0;
             
          }else if( chan ==  Chan && TotIntensity >0 ) //to catch a time channel if off by one
             
@@ -315,8 +328,9 @@ public class IntegrateNorm {
       
       if ( !Float.isNaN( TotIntensity ) && !Float.isNaN( stDev ) )
       {
-         Peak.inti( ( float ) TotIntensity );
-         Peak.sigi( stDev );
+         Peak.inti( ( float ) TotIntensity1 );
+         //Peak.sigi( stDev );
+         Peak.sigi( (float)Math.sqrt(TotVariance1));
          
       }else
       {
