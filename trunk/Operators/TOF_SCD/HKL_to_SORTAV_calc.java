@@ -278,6 +278,7 @@ public class HKL_to_SORTAV_calc
    *
    *  Integrate file: <exp_name>.integrate
    *  HKL file:       <exp_name>.hkl
+   *  Matrix file:    ls<exp_name>.mat
    *
    *  The file created for the SORTAV program is saved in the specified
    *  directory with the name:
@@ -292,9 +293,6 @@ public class HKL_to_SORTAV_calc
    *                     files and to which the resulting .sortav file
    *                     will be written.
    *  @param exp_name    The experiment name and base name for all files
-   *
-   *  @param matrix_file The name of the matrix file, in the specified
-   *                     directory.
    *
    */
   public static void HKL_to_SORTAV( String directory,
