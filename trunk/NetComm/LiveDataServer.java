@@ -910,7 +910,8 @@ public class LiveDataServer extends    DataSetServer
 
   /**
    * Launches the Live Data Server.  
-   * @param    -U<port number>    
+   * @param   args   should contain a string specifying the UDP port number
+   *                 to use in the form:  -U<port number>  
    */
   public static void main(String args[])
   {
