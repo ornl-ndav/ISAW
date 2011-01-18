@@ -356,31 +356,32 @@ public class HKL_to_SORTAV_calc
     FileWriter     fstream = new FileWriter( sortav_file );
     BufferedWriter out     = new BufferedWriter(fstream);
 
-    int old_runnum = 0;
+    int old_runnum = -1;
     int seq_num    = getSeqnum( line );
     while ( seq_num != 0 )
     {
       int    histnum = getHstnum( line );
-      int    runnum  = getCurhst( line );
       int    h       = getH( line );
       int    k       = getK( line );
       int    l       = getL( line );
+      double tbar    = getTbar( line );
       double fsq     = getFsq( line );
       double sig     = getSig( line );
       
       Peak_new peak = peaks.elementAt( seq_num - 1 );
-      double scale   = peak.monct() / 3600.0;
-      double wl      = peak.wl();
+      double wl     = peak.wl();
+      int    runnum = peak.nrun();
+      int    detnum = peak.detnum(); 
 
-      if ( runnum != old_runnum )     // new goniometer settings
-      {
+      if ( runnum != old_runnum )                       // need new goniometer
+      {                                                 // settings
         UB = getRotatedUB( peak, basicUB );             // NOTE: U, UB in IPNS
         U  = lattice_calc.getU( UB );                   //       coordinates
         old_runnum = runnum;
 
         minus_u0_comps = getDirectionCosines( U, minus_u0 );
 /*
-        System.out.println("Run number = " + runnum );
+        System.out.println("runnum = " + runnum );
         System.out.println( "-u0 components = " + minus_u0_comps );
 */
       }
@@ -392,7 +393,7 @@ public class HKL_to_SORTAV_calc
       String result = String.format( "%5d%5d%5d%10.2f%10.2f%5d" +
                                      "%9.5f%9.5f%9.5f" +
                                      "%9.5f%9.5f%9.5f" + 
-                                     "%9.3f  %10.6f\r\n",
+                                     "%9.3f %8.4f %5d %4d\r\n",
                                       h,k,l, fsq, sig, histnum, 
                                       minus_u0_comps.getX(), 
                                       minus_u0_comps.getY(), 
@@ -400,7 +401,7 @@ public class HKL_to_SORTAV_calc
                                       u1_comps.getX(), 
                                       u1_comps.getY(), 
                                       u1_comps.getZ(),
-                                      scale, wl );
+                                      tbar, wl, runnum, detnum );
       out.write( result );
       /*
       double cos_ang_1 = u1.dot( minus_u0 );
@@ -415,14 +416,13 @@ public class HKL_to_SORTAV_calc
     String result = String.format( "%5d%5d%5d%10.2f%10.2f%5d" +
                                      "%9.5f%9.5f%9.5f" +
                                      "%9.5f%9.5f%9.5f" +
-                                     "%9.3f  %10.6f\r\n",
+                                     "%9.3f %8.4f %5d %4d\r\n",
                                       0,0,0, 0.0, 0.0, 0,
                                       0.0, 0.0, 0.0,
                                       0.0, 0.0, 0.0,
-                                      0.0, 0.0 );
+                                      0.0, 0.0, 0, 0 );
     out.write( result );
     out.close();
-
   } 
                                      
 
