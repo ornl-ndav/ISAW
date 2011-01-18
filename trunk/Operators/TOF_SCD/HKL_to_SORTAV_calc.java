@@ -1,3 +1,36 @@
+/* 
+ * File:  HKL_to_SORTAV_calc.java
+ *
+ * Copyright (C) 2011, Dennis Mikkelson
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
+ *           Department of Mathematics, Statistics and Computer Science
+ *           University of Wisconsin-Stout
+ *           Menomonie, WI 54751, USA
+ *
+ * This work was supported by the Spallation Neutron Source Division
+ * of Oak Ridge National Laboratory, Oak Ridge, TN, USA.
+ *
+ *  Last Modified:
+ * 
+ *  $Author$
+ *  $Date$            
+ *  $Revision$
+ */
 
 
 package Operators.TOF_SCD;
@@ -10,6 +43,12 @@ import DataSetTools.dataset.*;
 import gov.anl.ipns.MathTools.Geometry.*;
 import gov.anl.ipns.MathTools.*;
 
+/**
+ *  This class has static methods to calculate the directions in 
+ *  reciprocal lattice cyrstal coordinates of the incident beam and
+ *  of the scattered beam to each measured peak in a single crystal
+ *  neutron diffraction pattern.
+ */
 public class HKL_to_SORTAV_calc
 {
                       // The HKL file uses formatted write/read, so some of
@@ -51,7 +90,6 @@ public class HKL_to_SORTAV_calc
 
   public static final int DET_NUM_START  = TRANSM_START + TRANSM_LENGTH;
   public static final int DET_NUM_LENGTH = 4;
-
 
   
   private static int getInt( String line, int start, int length )
@@ -277,29 +315,22 @@ public class HKL_to_SORTAV_calc
    *  intensities AND direction cosines for the incident and scattered
    *  beams, in the form needed by SORTAV.  This requires three files as
    *  input, a .integrate file and .mat file from ISAW and the .hkl file
-   *  produced by ANVRED.  The .integrate, .hkl and .mat files must ALL 
-   *  be in one specified directory.  The input files must follow the 
-   *  naming conventions:
-   *
-   *  Integrate file: <exp_name>.integrate
-   *  HKL file:       <exp_name>.hkl
-   *
-   *  The file created for the SORTAV program is saved in the specified
-   *  directory with the name:
-   *
-   *  Created file:  <exp_name>.sortav
+   *  produced by ANVRED. 
    *
    *  The output file is written as a DOS text file with lines terminated
    *  by a carriage return and line feed pair.  This is needed so that the
    *  file can be read properly by WinGX on a windows machine.
    *
-   *  @param directory   The name of the directory containing the input
-   *                     files and to which the resulting .sortav file
-   *                     will be written.
-   *  @param exp_name    The experiment name and base name for all files
-   *
-   *  @param matrix_file The name of the matrix file, in the specified
-   *                     directory.
+   *  @param hkl_file        The fully qualified name of the hkl file produced
+   *                         by ANVRED 
+   *  @param integrate_file  The fully qualified name of the .integrate file
+   *                         produced by ISAW 
+   *  @param matrix_file     The fully qualified name of the matrix file, 
+   *                         used to index the peaks, as produced by the
+   *                         InitialPeaksWizard, or IsawEV.
+   *  @param sortav_file     The fully qualified name of the .sortav file
+   *                         that will be written out, containing the 
+   *                         beam and peak direction information. 
    *
    */ 
   public static void HKL_to_SORTAV( String hkl_file,
