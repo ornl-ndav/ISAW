@@ -434,7 +434,7 @@ public class HistogramHandler implements IReceiveMessage
         
         DEFAULT_RADIUS    = peak_radius;             // update radius used for
                                                      // selected point radius
-        float bkg_radius  = 2 * peak_radius;
+        float bkg_radius  = 1.5f * peak_radius;
         float[] radii = { peak_radius, bkg_radius };
 
         for ( int i = 0; i < peaks.size(); i++ )
@@ -716,7 +716,7 @@ public class HistogramHandler implements IReceiveMessage
     int page = z_binner.index( x, y, z );
     select_info_cmd.setHistPage( page );
 
-    float BACKGR_RADIUS  = 2 * DEFAULT_RADIUS;
+    float BACKGR_RADIUS  = 1.5f * DEFAULT_RADIUS;
     float[] radii = { DEFAULT_RADIUS, BACKGR_RADIUS };
 
     float[] result = getI_and_sigI( x, y, z, radii );
@@ -744,11 +744,24 @@ public class HistogramHandler implements IReceiveMessage
     if ( histogram == null )
       return null;
 
-    float center_val = histogram.valueAt( x, y, z );
-    if ( center_val <= 0 )                           // skip peaks with zero
-      return null;                                   // counts at center
+    float region_count = histogram.totalNear( x, y, z, 1 );
+    if ( region_count <= 0 )                         // skip peaks with zero
+      return null;                                   // counts in 27 bin region 
 
-    Vector result = histogram.sphereIntegrals( x, y, z, radii );
+    float cradius = radii[0] / 2;
+    Vector3D centroid = new Vector3D( x, y, z );
+    for ( int i = 0; i < 3; i++ )
+    {
+       centroid = histogram.centroid( centroid.getX(), 
+                                      centroid.getY(), 
+                                      centroid.getZ(), cradius );
+       if ( centroid == null )
+         centroid = new Vector3D( x, y, z );        // reset centroid
+    }
+
+    Vector result = histogram.sphereIntegrals( centroid.getX(), 
+                                               centroid.getY(),
+                                               centroid.getZ(), radii );
 
     if ( result == null )
       return null;
