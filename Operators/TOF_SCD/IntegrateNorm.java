@@ -217,7 +217,7 @@ public class IntegrateNorm {
             
             MaxErrChiSq = .05 /Math.max( slice.ncells() , slice.P[ITINTENS] ) ;
             MarquardtArrayFitter fitter = new MarquardtArrayFitter( slice , xs ,
-                  ys , sigs , MaxErrChiSq , 200,1 );
+                  ys , sigs , MaxErrChiSq , 200 );
             
             chiSqr = fitter.getChiSqr( );
 
