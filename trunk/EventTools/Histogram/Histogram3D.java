@@ -442,6 +442,44 @@ public class Histogram3D
   }
 
 
+  /**
+   *  Find the total of the histogram bins at the specified x,y,z location
+   *  plus or minus the specified number of bins in each direction.
+   *
+   *  @param  x      The x-coordinate of the center bin 
+   *  @param  y      The y-coordinate of the center bin 
+   *  @param  z      The z-coordinate of the center bin
+   *  @param  n_bins The number of bins on each side of the center bin that
+   *                 should be summed.  
+   *
+   *  @return The sum of the values in the histogram bins, around and 
+   *          including the bin containing (x,y,z).  If the full set of bins
+   *          is NOT included in the histogram, this functon will return 0.
+   */
+  public float totalNear( float x, float y, float z, int n_bins )
+  {
+    int z_index = z_binner.index(x,y,z);
+    if ( z_index < n_bins || z_index >= histogram.length - n_bins )
+      return 0;
+
+    int y_index = y_binner.index(x,y,z);
+    if ( y_index < n_bins || y_index >= histogram[0].length - n_bins )
+      return 0;
+
+    int x_index = x_binner.index(x,y,z);
+    if ( x_index < n_bins || x_index >= histogram[0][0].length - n_bins )
+      return 0;
+
+    float sum = 0;
+    for ( int x_i = x_index-n_bins; x_i <= x_index+n_bins; x_i++ )
+      for ( int y_i = y_index-n_bins; y_i <= y_index+n_bins; y_i++ )
+        for ( int z_i = z_index-n_bins; z_i <= z_index+n_bins; z_i++ )
+          sum += histogram[z_i][y_i][x_i];
+
+    return sum;
+  }
+
+
   /** Check whether or not the specified point (x,y,z) is in the region covered
    *  by the histogram.
    *
@@ -598,6 +636,220 @@ public class Histogram3D
     new_histogram.num_added = (long)new_histogram.sum;
 
     return new_histogram;
+  }
+
+
+  /**
+   * Find the centroid of a spherical region with the specified radius
+   * around the specified point.  Currently, the coordinates of the
+   * centroid will be the coordinates of the center of the bin that
+   * contains the centroid.
+   *
+   *  @param x      The x coodinate of the center of the sphere 
+   *  @param y      The y coodinate of the center of the sphere
+   *  @param z      The z coodinate of the center of the sphere 
+   *  @param radius Radius of the sphere
+   *
+   *  @return a Vector3D giving the location (real coordinates) of the 
+   *          centroid of the sphere.  If all counts are zero, or if 
+   *          the specified point is not in the histogram, 
+   *          this will return null. 
+   */
+  public Vector3D centroid( float x, float y, float z, float radius )
+  {
+    int[][] ranges = getIndexRanges( x, y, z, radius, -1, -1, -1 );
+    if ( ranges == null )
+      return null;
+
+    int min_x_index = ranges[0][0];
+    int max_x_index = ranges[0][1];
+
+    int min_y_index = ranges[1][0];
+    int max_y_index = ranges[1][1];
+
+    int min_z_index = ranges[2][0];
+    int max_z_index = ranges[2][1];
+
+    float  counts = 0;
+    float  total  = 0;
+    float  x_sum  = 0;
+    float  y_sum  = 0;
+    float  z_sum  = 0;
+    float  distance;
+
+    Vector3D diff_vec   = new Vector3D();
+    Vector3D center_vec = new Vector3D( x, y, z );
+
+    float[] bin_center_coords = new float[3];
+
+    for ( int x_index = min_x_index; x_index <= max_x_index; x_index++ )
+      for ( int y_index = min_y_index; y_index <= max_y_index; y_index++ )
+        for ( int z_index = min_z_index; z_index <= max_z_index; z_index++ )
+        {
+          ProjectionBinner3D.centerPoint( x_index, y_index, z_index,
+                                          x_edge_binner,
+                                          y_edge_binner,
+                                          z_edge_binner,
+                                          bin_center_coords );
+          diff_vec.set( bin_center_coords );
+          diff_vec.subtract( center_vec );
+          distance = diff_vec.length();
+
+          if ( distance < radius )
+          {
+            counts = histogram[z_index][y_index][x_index];
+            total += counts;
+            x_sum += x_index * counts;
+            y_sum += y_index * counts;
+            z_sum += z_index * counts;
+          }
+        }
+
+    if ( total == 0 )
+      return null;
+
+    float xmax_index = x_sum/total;
+    float ymax_index = y_sum/total;
+    float zmax_index = z_sum/total;
+
+    Vector3D vec = x_binner.Vec( xmax_index );
+    vec.add( y_binner.Vec( ymax_index ) );
+    vec.add( z_binner.Vec( zmax_index ) );
+    return vec;
+  }
+
+
+
+  /**
+   * Find the point in a cubical region for which the projections of the data 
+   * on the x, y and z axes are the largest.  The coordinates returned are
+   * the coordinates of the center of the bin contaning the point with maximum
+   * projected counts.
+   *
+   *  @param x      The x coodinate of the center of the region
+   *  @param y      The y coodinate of the center of the region
+   *  @param z      The z coodinate of the center of the region
+   *  @param radius Size of the cubical region that will be checked, expressed
+   *                as the radius of an inscribed spehere 
+   *
+   *  @return a Vector3D giving the location (real coordinates) of the point 
+   *          in the region for which the projections have the maximum counts.  
+   *          If several points have the maximum counts, then the point which
+   *          is closest to the specified x, y, z location is returned.  If
+   *          all counts are zero, or if the specified point is not in the
+   *          histogram, this will return null. 
+   */
+  public Vector3D maxPoint( float x, float y, float z, float radius )
+  {
+    int[][] ranges = getIndexRanges( x, y, z, radius, -1, -1, -1 );
+    if ( ranges == null )
+      return null;
+
+    int min_x_index = ranges[0][0];
+    int max_x_index = ranges[0][1];
+
+    int min_y_index = ranges[1][0];
+    int max_y_index = ranges[1][1];
+
+    int min_z_index = ranges[2][0];
+    int max_z_index = ranges[2][1];
+
+    float[] x_proj = new float[ max_x_index - min_x_index + 1 ];
+    float[] y_proj = new float[ max_y_index - min_y_index + 1 ];
+    float[] z_proj = new float[ max_z_index - min_z_index + 1 ];
+
+    float count;
+    for ( int x_index = min_x_index; x_index <= max_x_index; x_index++ )
+      for ( int y_index = min_y_index; y_index <= max_y_index; y_index++ )
+        for ( int z_index = min_z_index; z_index <= max_z_index; z_index++ )
+        {
+          count = histogram[z_index][y_index][x_index];
+          x_proj[x_index - min_x_index] += count;
+          y_proj[y_index - min_y_index] += count;
+          z_proj[z_index - min_z_index] += count;
+        }
+
+    int center_x_index = x_binner.index(x,y,z) - min_x_index;
+    int center_y_index = y_binner.index(x,y,z) - min_y_index;
+    int center_z_index = z_binner.index(x,y,z) - min_z_index;
+
+    int xmax_index = 0;
+    int ymax_index = 0;
+    int zmax_index = 0;
+
+    float xmax_count = x_proj[0];
+    int   distance   = center_x_index;
+    for ( int i = 1; i < x_proj.length; i++ )
+    {
+      count = x_proj[i];
+      if (   count  > xmax_count || 
+           ( count == xmax_count && (Math.abs(i-center_x_index) < distance) ) )
+      {
+        xmax_count  = count;
+        distance   = Math.abs(i-center_x_index);
+        xmax_index = i;
+      } 
+    }
+
+    float ymax_count = y_proj[0];
+    distance   = center_y_index;
+    for ( int i = 1; i < y_proj.length; i++ )
+    {
+      count = y_proj[i];
+      if (   count  > ymax_count || 
+           ( count == ymax_count && (Math.abs(i-center_y_index) < distance) ) )
+      {
+        ymax_count  = count;
+        distance   = Math.abs(i-center_y_index);
+        ymax_index = i;
+      }
+    }
+
+    float zmax_count = z_proj[0];
+    distance   = center_z_index;
+    for ( int i = 1; i < z_proj.length; i++ )
+    {
+      count = z_proj[i];
+      if (   count  > zmax_count ||
+           ( count == zmax_count && (Math.abs(i-center_z_index) < distance) ) )
+      {
+        zmax_count = count;
+        distance   = Math.abs(i-center_z_index);
+        zmax_index = i;
+      }
+    }
+
+    int n_x = x_proj.length; 
+    int n_y = y_proj.length; 
+    int n_z = z_proj.length; 
+    System.out.println( "nx, ny, nz = " + n_x + ", " + n_y + ", " + n_z + 
+                        " min x, y, z = " + 
+                         xmax_index + ", " + ymax_index + ", " + zmax_index +
+                        " proj_mx, proj_mx, proj_mz = " +
+                         xmax_count + ", " + ymax_count + ", " + zmax_count ); 
+
+    for ( int i = 0; i < x_proj.length; i++ )
+      System.out.printf("%5.1f ", x_proj[i] );
+    System.out.println();
+
+    for ( int i = 0; i < y_proj.length; i++ )
+      System.out.printf("%5.1f ", y_proj[i] );
+    System.out.println();
+
+    for ( int i = 0; i < z_proj.length; i++ )
+      System.out.printf("%5.1f ", z_proj[i] );
+    System.out.println();
+
+    xmax_index += min_x_index;
+    ymax_index += min_y_index;
+    zmax_index += min_z_index;
+
+    float[] coords = new float[3];
+    ProjectionBinner3D.centerPoint( xmax_index, ymax_index, zmax_index,
+                                    x_edge_binner, y_edge_binner, z_edge_binner,
+                                    coords );
+    Vector3D result = new Vector3D( coords );
+    return result;
   }
 
 

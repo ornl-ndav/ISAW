@@ -279,6 +279,48 @@ public class ProjectionBinner3D implements IProjectionBinner3D
 
 
   /**
+   * Convenience method to calculate the 3D point corresponding to an
+   * arbitrary fractional position in a bin in a 3D histogram.  
+   * The x_index_f, determines a vector in the 
+   * x_binner's direction, the y_index_f determines a vector in the 
+   * y_binner's direction, and the z_index_f determines a vector in the 
+   * z_binner's direction.  The array coords[] is filled with the 
+   * coordinates of the sum of these three vectors. 
+   *
+   * @param  x_index_f The fractional index of the bin in the direction of the 
+   *                   x edge binner
+   * @param  y_index_f The fractional index of the bin in the direction of the 
+                       y edge binner
+   * @param  z_index_f The index of the bin in the direction of the 
+                       z edge binner
+   * @param  x_binner  "Edge" Binner for the first basis direction, "x".
+   * @param  y_binner  "Edge" Binner for the second basis direction, "y".
+   * @param  z_binner  "Edge" Binner for the third basis direction, "z".
+   * @param  coords    Array with at least 3 positions, into which the sum
+   *                   of x*x_vec + y*y_vec + z*zvec will be stored.  The
+   *                   vectors, x_vec, y_vec and z_vec are the unit direction
+   *                   vectors of the x,z and z binners.  The values, x, y, z
+   *                   are distances along the direction vectors chosen so
+   *                   that the vector sum gives the specified point of the bin
+   *                   in a 3D histogram, with the specified fractional 
+   *                   indices and the the specified binners.
+   */
+  public static Vector3D Vec( double               x_index_f,
+                              double               y_index_f,
+                              double               z_index_f,
+                              IProjectionBinner3D  x_binner,
+                              IProjectionBinner3D  y_binner,
+                              IProjectionBinner3D  z_binner )
+  {
+    Vector3D vec = x_binner.Vec( x_index_f );
+    vec.add( y_binner.Vec( y_index_f ) );
+    vec.add( z_binner.Vec( z_index_f ) );
+    return vec;
+  }
+
+
+
+  /**
    * Method to construct three new projection binners, so that
    * 3D events can be mapped to three indices (ix, iy, iz)
    * that determine the correct 3D histogram bin by projecting
