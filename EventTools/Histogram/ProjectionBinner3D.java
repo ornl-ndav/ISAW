@@ -290,20 +290,15 @@ public class ProjectionBinner3D implements IProjectionBinner3D
    * @param  x_index_f The fractional index of the bin in the direction of the 
    *                   x edge binner
    * @param  y_index_f The fractional index of the bin in the direction of the 
-                       y edge binner
+   *                   y edge binner
    * @param  z_index_f The index of the bin in the direction of the 
-                       z edge binner
+   *                   z edge binner
    * @param  x_binner  "Edge" Binner for the first basis direction, "x".
    * @param  y_binner  "Edge" Binner for the second basis direction, "y".
    * @param  z_binner  "Edge" Binner for the third basis direction, "z".
-   * @param  coords    Array with at least 3 positions, into which the sum
-   *                   of x*x_vec + y*y_vec + z*zvec will be stored.  The
-   *                   vectors, x_vec, y_vec and z_vec are the unit direction
-   *                   vectors of the x,z and z binners.  The values, x, y, z
-   *                   are distances along the direction vectors chosen so
-   *                   that the vector sum gives the specified point of the bin
-   *                   in a 3D histogram, with the specified fractional 
-   *                   indices and the the specified binners.
+   *
+   * @return a Vector3D object containing the 3D real coordinates of the
+   *         point at the specified fractional bin position in the histogram.
    */
   public static Vector3D Vec( double               x_index_f,
                               double               y_index_f,
