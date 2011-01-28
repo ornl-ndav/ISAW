@@ -4,7 +4,10 @@ from DataSetTools.operator import Operator
 from DataSetTools.operator.Generic.Load import GenericLoad
 from gov.anl.ipns.Parameters import * # parameters
 from DataSetTools.operator.DataSet.Math.DataSet import *
+from DataSetTools.dataset import *
+from DataSetTools.operator.DataSet.Math.Scalar import *
 from Command import *
+from gov.anl.ipns.MathTools.Geometry  import *
 from gov.anl.ipns.Util.SpecialStrings import *
 from SNSlibs import *
 class SNAP_to_data(GenericLoad):
@@ -14,25 +17,35 @@ class SNAP_to_data(GenericLoad):
     VFile =2
     EmptyFile = 3
     Rotate =4
-    DetCal    =5
-    BankFile =6
-    MapFile =7
-    firstEvent=8
-    NEvents=9
-    mind=10
-    maxd=11
-    delta=12
-    pchargeScalar=13
-    BadPeakds=14
-    BadPeakWidth = 15
-    BadIntrvlReplace =16
-    BadNumChanAv  =17
-    FilterCutOff = 18
-    FilterOrder  =19
-    toTree=20
-    show=21
-    data =22
-    SeqNums =23
+    Groups =5
+    DetCal    =6
+    BankFile =7
+    MapFile =8
+    firstEvent=9
+    NEvents=10
+    mind=11
+    maxd=12
+    delta=13
+    pchargeScalar=14
+    BadPeakds=15
+    BadPeakWidth = 16
+    BadIntrvlReplace =17
+    BadNumChanAv  =18
+    FilterCutOff = 19
+    FilterOrder  =20
+    toTree=21
+    show=22
+    data =23
+    SeqNums =24
+    Group1 ="All in 1 Group"
+    Group2 ="Each Panel in 1 Group"
+    GroupC ="Each Column in 1 Group"
+    GroupP="Each Detector in 1 Group"
+    GroupingName = GroupP
+    Position =[]
+    GroupName=""
+    GroupList=[]
+    GroupIDs =[]
     
     def __init__(self):
         Operator.__init__(self, "SNAP_to_data")
@@ -53,7 +66,15 @@ class SNAP_to_data(GenericLoad):
         self.addParameter(IntegerPG("SNAP vanadium run number",733))
         self.addParameter(IntegerPG("SNAP Empty Run",-1))
         self.addParameter(BooleanPG("Rotate Detectors",1))
-      
+
+        V = Vector()
+
+        V.add( self.GroupP)
+        V.add( self.Group1)
+        V.add( self.Group2)
+        V.add( self.GroupC)
+
+        self.addParameter( ChoiceListPG("Detector Groups",V ))
         self.addParameter(LoadFilePG("DelCal file name(blank for default)",
                                     None))
         self.addParameter(LoadFilePG("TS Banking file name(Blank for default)",
@@ -97,14 +118,14 @@ class SNAP_to_data(GenericLoad):
 
     def getRuns(self):
         runsStr = self.getParamValue(0)
-        print runsStr
+      
         from gov.anl.ipns.Util.Numeric import IntList
         runs = IntList.ToArray(runsStr)
-        print runs
+       
         return runs
 
     def toGSASFilename(self, runnumber):
-        filename = str(runnumber) + ".gsa"
+        filename = "run_"+str(runnumber)+"_"+self.GroupingName + ".gsa"
         import os
         filename = os.path.join(self.outputDir, filename)
         return filename
@@ -118,14 +139,14 @@ class SNAP_to_data(GenericLoad):
     def processRun(self, sendData,showData,IOBS,instr,runnumber,DetCalFile,BankFile,
              MapFile,firstEv,NumEvents,d_min,d_max,log_param,scale):
 
-        print runnumber
+      
+        SampleDS =   Event2_GroupedTOF(instr, runnumber ,DetCalFile,BankFile,
+             MapFile,firstEv,NumEvents,d_min,d_max,self.GroupList,self.Position,self.GroupingName,
+             self.GroupIDs,log_param,scale)
 
-        SampleDS =  EventD_space2GSAS(sendData,showData,IOBS,instr,runnumber,DetCalFile,BankFile,
-             MapFile,firstEv,NumEvents,d_min,d_max,log_param,scale)
-
-       
+     
         SampleDS.setTitle("Sample"+str(runnumber))
-        self.send(SampleDS.clone(), 0, 1)
+        self.send(SampleDS.clone(), showData,sendData)
 
         import os
         filename = os.path.join(self.outputDir, "Sample"+str(runnumber)+".isd")
@@ -140,7 +161,7 @@ class SNAP_to_data(GenericLoad):
 
 
         SampleDS.setTitle("Normalized Sample"+str(runnumber))
-        self.send(SampleDS.clone(), 0, 1)
+        self.send(SampleDS.clone(), showData,sendData)
 
         import os
         filename = os.path.join(self.outputDir, "NormalizedSample"+str(runnumber)+".isd")
@@ -163,17 +184,18 @@ class SNAP_to_data(GenericLoad):
             if isinstance(X, ErrorString):
                return X
             SampleDS.setTitle("VNormalized Sample"+str(runnumber))
-            self.send(SampleDS.clone(), 0, 1)
+            self.send(SampleDS.clone(),showData,sendData)
 
             import os
             filename = os.path.join(self.outputDir, "VNormalizedSample"+str(runnumber)+".isd")
             ScriptUtil.save( filename,SampleDS) 
 
-            filename = str(runnumber)+".dat"
+            filename = "run_"+str(runnumber)+"_"+self.GroupingName+".dat"
             import os
             filename = os.path.join(self.outputDir, filename)
             X=ScriptUtil.ExecuteCommand("SaveFullProf",[SampleDS,filename, useSeqNumbering])
-
+           
+               
 
     def getResult(self):
 
@@ -192,6 +214,7 @@ class SNAP_to_data(GenericLoad):
         BankFile=self.getParamValue(self.BankFile)
         MapFile=self.getParamValue(self.MapFile)
         rotDetCal = self.getParamValue( self.Rotate)
+        GroupChoice = self.getParamValue( self.Groups)
         firstEv=self.getParamValue(self.firstEvent)
         NumEvents=self.getParamValue(self.NEvents)
         d_min=self.getParamValue(self.mind)
@@ -215,19 +238,47 @@ class SNAP_to_data(GenericLoad):
         if rotDetCal:
             DetCalFile = rotateDetectors(instr,Vanrunnum,DetCalFile)
 
-       
+        self.GroupList =[[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18]]
+        self.GroupName=[""]
+        self.GroupingName= "GroupAll"
+        self.GroupIDs=[100]
+        self.Position = [[5,14]]
+        if( GroupChoice == self.Group2):
+           self.GroupList=[[1,2,3,4,5,6,7,8,9],[10,11,12,13,14,15,16,17,18]]
+           self.GroupName = ["east","west"]
+           self.GroupingName= "GroupBanks"
+           self.Position = [[5],[4]]
+           self.GroupIDs =[200,300]
+        else:
+           if GroupChoice == self.GroupC:
+               self.GroupList =[[1,4,7],[2,5,8],[3,6,9],[10,13,16],[11,14,17],[12,15,18]]
+               self.GroupName =["east_high","east_mid","east_low","west_high","west_mid","west_low"]
+               self.GroupingName= "GroupCols"
+               self.GroupIDs =[230,220,210,330,320,310]
+               self.Position=[[4],[5],[6],[13],[14],[15]]
+           else:
+               if GroupChoice == self.GroupP:
+                    self.GroupList =[[1],[2],[3],[4],[5],[6],[7],[8],[9],[10],[11],[12],[13],[14],[15],[16],[17],[18]]
+                    self.GroupName=["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18"]
+                    self.GroupingName= "GroupDets"
+                    self.Position = [[1],[2],[3],[4],[5],[6],[7],[8],[9],[10],[11],[12],[13],[14],[15],[16],[17],[18]]
+                    self.GroupIDs = None
+
         BackgroundFile = self.getParamValue(1)
         if BackgroundFile is None or BackgroundFile <=0:
            BackgroundFile = None
 
         if BackgroundFile is not None:
 
-           self.BackgroundDS = EventD_space2GSAS(sendData,showData,IOBS,instr,Backrunnum,DetCalFile,BankFile,
-             MapFile,firstEv,NumEvents,d_min,d_max,log_param,scale)
+           self.BackgroundDS = Event2_GroupedTOF(instr,Backrunnum,DetCalFile,BankFile,
+             MapFile,firstEv,NumEvents,d_min,d_max,self.GroupList,self.Position,self.GroupingName,self.GroupIDs,log_param,scale)
+
+           if isinstance(self.BackgroundDS, ErrorString):
+               raise ErrorString.toString()
 
            self.BackgroundDS.setTitle("BackGround"+str(BackgroundFile))
-           self.send(self.BackgroundDS, 0, 1)
-
+           self.send( self.BackgroundDS, showData, sendData)
+          
            import os
            filename = os.path.join(self.outputDir, "BackGround"+str(BackgroundFile)+".isd")
            ScriptUtil.save( filename,self.BackgroundDS)
@@ -242,14 +293,22 @@ class SNAP_to_data(GenericLoad):
         if VanadiumFile is not None:
 
 
-           X =  FixVanadium( sendData,showData,IOBS,instr, VanadiumFile,DetCalFile,BankFile,
+           X =  FixVanadium(sendData,showData,IOBS,instr, VanadiumFile,DetCalFile,BankFile,
              MapFile,firstEv,NumEvents,d_min,d_max,log_param,scale,BadPeakFile,
              PeakWidth_bad,PeakInterval_bad,NChanAv_bad,CutOffFilter,OrderFilter)
 
-           self.VanadiumDS = X
+           
+           self.VanadiumDS = X.empty_clone()
+
+           for k in xrange( len(self.GroupList)):
+              pos = getPos( X, self.Position, k)
+              id = k+1
+              if self.GroupIDs is not None  and len(self.GroupIDs) == len(self.GroupList):
+                 id= self.GroupIDs[k]
+              G1 = sumGroups( X,self.VanadiumDS,self.GroupList[ k],id,DetPosAttribute(Attribute.DETECTOR_POS,pos))
            
            self.VanadiumDS.setTitle("Vanadium"+str(VanadiumFile))
-           self.send(self.VanadiumDS.clone(), 0, 1)
+           self.send(self.VanadiumDS.clone(), showData, sendData)
 
            import os
            filename = os.path.join(self.outputDir, "Vanadium"+str(VanadiumFile)+".isd")
@@ -263,18 +322,16 @@ class SNAP_to_data(GenericLoad):
       
         if EmptyFile is None or EmptyFile <=0:
            EmptyFile = None
-#FixVanadium( sendData,showData,IOBS,instr,runnum,DetCalFile,BankFile,
-#             MapFile,firstEvent,NumEvents,d_min,d_max,log_param,scale,BadPeakFile,
-#             PeakWidth_bad,PeakInterval_bad,NChanAv_bad,CutOffFilter,OrderFilter
                
         if EmptyFile is not None:
 
-           X = EventD_space2GSAS(sendData,showData,IOBS,instr, EmptyFile,DetCalFile,BankFile,
-             MapFile,firstEv,NumEvents,d_min,d_max,log_param,scale)
+           X =  Event2_GroupedTOF(instr, EmptyFile,DetCalFile,BankFile,
+             MapFile,firstEv,NumEvents,d_min,d_max,self.GroupList,self.Position,self.GroupingName,self.GroupIDs,log_param,scale)
+
            self.EmptyFileDS = X
 
            self.EmpytFileDS.setTitle("EmpytFile"+str(self.EmpytFile))
-           self.send(self.EmpytFileDS.clone(), 0, 1)
+           self.send(self.EmpytFileDS.clone(), showData, sendData)
 
            import os
            filename = os.path.join(self.outputDir, "EmpytFile"+str(EmpytFile)+".isd")
@@ -347,4 +404,128 @@ class SNAP_to_data(GenericLoad):
         Res.append("  several data sets that can be viewed with ISAW ")
      
         return Res.toString()  
+       
+
+def getPos(DS_d, Position,group):
+     
+           Det1 = Position[group]
         
+           nDet =0
+           position=[]
+           for detKey in xrange(len(Det1)):
+               D = DS_d.getData_entry_with_id(Det1[detKey])
+               if position is None:
+                  position.append( AttrUtil.getDetectorPosition(D))
+                  nDet +=1
+               else:
+                  position.append(AttrUtil.getDetectorPosition(D))
+                  nDet +=1
+           weight =[]
+          
+           for kk in range( nDet):
+               weight.append(1.0/nDet)
+         
+           pos = DetectorPosition.getAveragePosition( position, weight)
+           return pos
+
+        
+def Event2_GroupedTOF(instr,runnum,DetCalFile,BankFile,
+             MapFile,firstEvent,NumEvents,d_min,d_max,Group, Position,GroupingName,GroupIDs,log_param,scale):
+
+       DS_d = Event2d_DataSet(instr,runnum,DetCalFile,BankFile,
+             MapFile,firstEvent,NumEvents,d_min,d_max,log_param,scale)
+       DS_dGrouped = DS_d.empty_clone()
+      
+       for key in xrange(len(Group)):
+            pos = getPos( DS_d,Position,key)
+
+            id = key+1
+            if GroupIDs is not None  and len(GroupIDs) == len(Group):
+                 id= GroupIDs[key]
+             
+            sumGroups(DS_d, DS_dGrouped, Group[key], id , DetPosAttribute(Attribute.DETECTOR_POS,pos))
+
+# Should add something to data set log. Check
+       Res = Convert2Tof( DS_dGrouped,"Run"+str(runnum)+":"+GroupingName)
+       
+       fixUnits( Res )
+       removeZeros( Res )
+       return Res
+      
+ 
+def Event2d_DataSet(instr,runnum,DetCalFile,BankFile,
+             MapFile,firstEvent,NumEvents,d_min,d_max,log_param,scale):
+        
+        (eventFile, pcharge) = getRunStuff(instr,runnum)
+        
+        pcharge = getProtonsCharge( instr, runnum)
+        pcharge = pcharge/scale
+        print "scale = %.2f" % pcharge
+
+
+        log_param = log_param * d_min # log param
+        useLogBinning = 1
+        nbins =0
+        useD_spaceMapFile = 0
+        d_spaceMapFile =""
+        # do the initial load and time focus
+        import os
+
+#        if not os.path.exists(event):
+#            raise Error, "%s does not exist" % event
+        
+        args= [eventFile,DetCalFile,BankFile,MapFile,firstEvent,
+                                  NumEvents,d_min,d_max,useLogBinning,log_param,nbins,
+                                  0,"",0,"",0,0]
+        if  os.path.exists(eventFile):
+             panel_ds = Util.Make_d_DataSet( eventFile,DetCalFile,BankFile,MapFile,firstEvent,NumEvents,d_min,d_max,useLogBinning,log_param,nbins, 0,"",0,"",0,0)
+        else:
+             L = eventFile.split('_')
+             L[len(L)-2]="neutron0"
+             eventFile1 = ""
+             for i in range(0,len(L)-1):
+                eventFile1 += L[i]+'_'
+             eventFile1 += L[len(L)-1]
+             panel_ds1 = Util.Make_d_DataSet( eventFile1,DetCalFile,BankFile,MapFile,firstEvent,NumEvents,d_min,d_max,useLogBinning,log_param,nbins, 0,"",0,"",0,0)
+             eventFile2 =""
+             L[len(L)-2]="neutron1"
+             for i in range(0,len(L)-1):
+                eventFile2 += L[i]+'_'
+             eventFile2 += L[len(L)-1]
+             panel_ds2 = Util.Make_d_DataSet( eventFile2,DetCalFile,BankFile,MapFile,firstEvent,NumEvents,d_min,d_max,useLogBinning,log_param,nbins, 0,"",0,"",0,0)
+             panel_ds = DataSetMerge(panel_ds1,panel_ds2).getResult()     
+
+        
+       
+
+        panel_ds.setSqrtErrorsAtLeast_1()
+        if  isinstance(DataSetScalarDivide( panel_ds, pcharge,0).getResult(), ErrorString):
+           raise "Cannot divide by a scalar"
+        
+
+        return panel_ds
+
+def Convert2Tof( d_DataSet, title):
+
+        op = d_DataSet.getOperator("ToTof")
+        if op is None:
+            op = d_DataSet.getOperator("Convert d-Spacing to TOF")
+        tof_DataSet = op.getResult()
+        if isinstance(tof_DataSet, ErrorString): # error occured
+            return tof_DataSet
+        title = tof_DataSet.getTitle().replace("_d-spacing", " tof")
+        tof_DataSet.setTitle(title)
+       
+        return tof_DataSet
+
+def sumGroups( inds, outds, groups, newId, position):
+        data = inds.getData_entry_with_id(groups[0])
+        if data is None:
+            raise "Something went wrong with group id = %d" % groups[0]
+        for i in groups[1:]:
+            data = data.add(inds.getData_entry_with_id(i))
+            if data is None:
+                raise "Something went wrong with group id = %d" % i
+        data.setGroup_ID(newId)
+        data.setAttribute(position)
+        outds.addData_entry(data)
