@@ -51,7 +51,7 @@ public class EventToEventQ_calc
 
    /**
     * This method will load an SNS raw event file, map those events to
-    * reciprocal space, and then write the corresponding vector values
+    * reciprocal space, and then write the corresponding Q vector values
     * to a file.  The file can be in one of three formats, binary little
     * endian, binary big endian, or 3-column ASCII.  The values are written
     * in groups of 3 floats.  The first float is the component of Q in the
@@ -69,13 +69,13 @@ public class EventToEventQ_calc
     * @param event_filename    The name of the file with events
     * @param DetCal_filename   The name of the file with the detector
     *                          calibrations
-    * @param bank_filename     The name of the file with bank and pixelID(nex)
-    *                          info
+    * @param bank_filename     The name of the file with bank and pixelID
+    *                          (NeXus ID) info
     * @param mapping_filename  The name of the file that maps DAS pixel_id's
     *                          to NeXus pixel_id's
     * @param first_event       The first Event to load
     * @param num_events        The number of events to load
-    * @param out_filename      The name of the ASCII file that will be written
+    * @param output_filename   The name of the ASCII file that will be written
     * @param file_type         String specifying which type of file to write
     *                          "ASCII", 
     *                          "Binary_Little_Endian(PC)",
