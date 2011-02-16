@@ -424,6 +424,9 @@ public class HKL_to_SORTAV_calc
   } 
                                      
 
+  /**
+   *  Simple main program for testing
+   */
   public static void main( String args[] ) throws IOException
   {
 /*
