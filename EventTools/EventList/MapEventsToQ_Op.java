@@ -96,7 +96,16 @@ public class MapEventsToQ_Op implements IOperator
    */
   public Object getResult()
   {
-     return mapper.MapEventsToQ( tof_events, first, num_to_map); 
+     try
+     {
+       return mapper.MapEventsToQ( tof_events, first, num_to_map); 
+     }
+     catch ( Exception ex )
+     {
+       System.out.println("ERROR: Could not map events to Q");
+       System.out.println("       Check .DetCal, bank and map files");
+       return null; 
+     }
   }
 
   /**

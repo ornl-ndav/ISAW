@@ -247,18 +247,35 @@ public class QMapperHandler implements IReceiveMessage
 
        if ( obj != null && obj instanceof ITofEventList )
        {
-         
+         IEventList3D[] event_lists = null;
+         boolean lists_ok = true; 
          ITofEventList ev_list = (ITofEventList)obj;
-         IEventList3D[] event_lists = MapToQ( ev_list );
-
-         if ( event_lists != null )
+         try
          {
+           event_lists = MapToQ( ev_list );
+         }
+         catch (Exception ex)
+         {
+           lists_ok = false; 
+         }
+
+         if ( lists_ok )
            for ( int i = 0; i < event_lists.length; i++ )
-             message_center.send(new Message(Commands.ADD_EVENTS_TO_HISTOGRAMS,
+             if ( event_lists[i] == null )
+               lists_ok = false;
+
+         if ( lists_ok )
+           for ( int i = 0; i < event_lists.length; i++ )
+             message_center.send(new Message( Commands.ADD_EVENTS_TO_HISTOGRAMS,
                                               event_lists[i],
                                               false,
                                               true ));
-         }
+         else
+         {
+           Util.sendError("MapToQ failed, check .DetCal, bank and map files and restart IsawEV" );
+           message_center.send( new Message( Commands.LOAD_FAILED,
+                                              null, true, true ) );
+          }
        }
        
        return false;
