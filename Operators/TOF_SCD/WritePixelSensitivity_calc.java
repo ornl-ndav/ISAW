@@ -250,7 +250,7 @@ public class WritePixelSensitivity_calc
    *  corresponding pixel in that detector.  The "SIGI" value is also 
    *  multiplied by the same scale factor.
    *
-   *  @param  nx_filename    The name of the NeXus file containing the
+   *  @param  nx_file        The name of the NeXus file containing the
    *                         vanadium data.
    *  @param  peaks_file     The name of the peaks file whose intensities
    *                         are to be adjusted
