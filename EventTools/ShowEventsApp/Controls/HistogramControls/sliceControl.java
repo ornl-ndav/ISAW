@@ -141,7 +141,7 @@ public class sliceControl extends JPanel
    public static void main(String[] args)
    {
       MessageCenter mc = new MessageCenter("sliceControl MessageCenter");
-      TestReceiver tr = new TestReceiver("Test");
+      TestReceiver tr  = new TestReceiver("Test");
 
       mc.addReceiver(tr, Commands.SET_ORIENTATION_MATRIX);
       
