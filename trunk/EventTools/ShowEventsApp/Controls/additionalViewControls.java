@@ -94,11 +94,10 @@ public class additionalViewControls extends JPanel implements IReceiveMessage
       
       Box box = new Box( BoxLayout.Y_AXIS );
       box.add(buildGraphOptions());
-      box.add(buildSliceOptions());
+//      box.add(buildSliceOptions());
 
       viewMessageCenter.addReceiver(this, Commands.SHOW_D_GRAPH);
       viewMessageCenter.addReceiver(this, Commands.HIDE_D_GRAPH);
-
 
       viewMessageCenter.addReceiver(this, Commands.SHOW_Q_GRAPH);
       viewMessageCenter.addReceiver(this, Commands.HIDE_Q_GRAPH);
@@ -114,7 +113,7 @@ public class additionalViewControls extends JPanel implements IReceiveMessage
    private JPanel buildGraphOptions()
    {
       JPanel panel = new JPanel();
-      panel.setLayout(new GridLayout(1,3));
+      panel.setLayout(new GridLayout(3,1));
       panel.setBorder(new TitledBorder("Graph Views"));
       GraphListener = new graphListener();
       showQGraph = new JCheckBox("Show Q Graph");

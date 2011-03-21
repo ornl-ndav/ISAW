@@ -218,6 +218,21 @@ public class Commands
 
   public static final String CLEAR_OMITTED_DRANGE ="CLEAR_OMITTED_DRANGE";
      
+  /**
+   * Messages for Slice Selection and Export 
+   */
+  public static final String INIT_SLICES_HISTOGRAM =
+                                            "INIT_SLICES_HISTOGRAM";
+  public static final String FREE_SLICES_HISTOGRAM =
+                                            "FREE_SLICES_HISTOGRAM";
+  public static final String SLICES_HISTOGRAM_READY =
+                                            "SLICES_HISTOGRAM_READY";
+  public static final String ADDED_EVENTS_TO_SLICES_HISTOGRAM =
+                                            "ADDED_EVENTS_TO_SLICES_HISTOGRAM";
+  public static final String SLICES_HISTOGRAM_FREED =
+                                            "SLICES_HISTOGRAM_FREED";
+  public static final String SHOW_SLICES_HISTOGRAM =
+                                            "SHOW_SLICES_HISTOGRAM";
 
   /**
    * Messages for quick event integration.
