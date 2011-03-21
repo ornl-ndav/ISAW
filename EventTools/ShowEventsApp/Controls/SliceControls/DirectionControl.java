@@ -57,17 +57,22 @@ public class DirectionControl extends JPanel
   /**
    * Construct a DirectionControl object with the specified title and
    * and initial value for the the direction vector.
-   * @param  title        The title that will be displayed for the 
-   *                      vector
-   * @param  initial_vec  The initial value of the vector for this control
+   * @param  title         The title that will be displayed for the 
+   *                       vector
+   * @param  initial_vec   The initial value of the vector for this control
+   * @param  initial_step  String with the initial step size
+   * @param  initial_nbins String with the initial number of bins
    */
-  public DirectionControl( String title, Vector3D initial_vec )
+  public DirectionControl( String title, 
+                           Vector3D initial_vec,
+                           String   initial_step,
+                           String   initial_nbins )
   {
     this.title = title;
 
     VectorUI   = new Vector3D_UI( "", initial_vec );
-    StepSizeTF = new JTextField("0.04");
-    NumStepsTF = new JTextField("250");
+    StepSizeTF = new JTextField( initial_step );
+    NumStepsTF = new JTextField( initial_nbins);
 
     VectorUI.setHorizontalAlignment( JTextField.RIGHT );
     StepSizeTF.setHorizontalAlignment( JTextField.RIGHT );
@@ -158,7 +163,9 @@ public class DirectionControl extends JPanel
     
     Vector3D initial_vec = new Vector3D( 1, 0, 0 );
     DirectionControl control = new DirectionControl( "Direction ( 'slice' )",
-                                                      initial_vec );
+                                                      initial_vec, 
+                                                      "0.04",
+                                                      "250" );
     test_frame.add( control );
     test_frame.setVisible( true );
 

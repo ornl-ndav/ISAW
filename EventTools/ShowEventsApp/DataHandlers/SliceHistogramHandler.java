@@ -233,7 +233,7 @@ public class SliceHistogramHandler implements IReceiveMessage
       if ( events == null )
         return false;
 
-      AddEventsToHistogram( events, false );
+      AddEventsToHistogram( events, use_weights );
       Message added = new Message(Commands.ADDED_EVENTS_TO_SLICES_HISTOGRAM,
                                   null, true, true );
       message_center.send( added );
@@ -265,13 +265,15 @@ public class SliceHistogramHandler implements IReceiveMessage
     histogram = null;
 
                                    // make the corner vector from the center
-                                   // vector by subtractin 1/2 edge vectors
+                                   // vector by subtracting 1/2 edge vectors
+                                   // PLUS 1/2 step, to put corner on OUTER
+                                   // edge of the corner bin!
     Vector3D delta_1 = new Vector3D( dir_1 );
     Vector3D delta_2 = new Vector3D( dir_2 );
     Vector3D delta_3 = new Vector3D( dir_3 );
-    delta_1.multiply( (float)((num_1/2) * step_1) );
-    delta_2.multiply( (float)((num_2/2) * step_2) );
-    delta_3.multiply( (float)((num_3/2) * step_3) );
+    delta_1.multiply( (float)( ((num_1 / 2) + 0.5) * step_1) );
+    delta_2.multiply( (float)( ((num_2 / 2) + 0.5) * step_2) );
+    delta_3.multiply( (float)( ((num_3 / 2) + 0.5) * step_3) );
     Vector3D corner = new Vector3D( center );
     corner.subtract( delta_1 );
     corner.subtract( delta_2 );
