@@ -47,6 +47,7 @@ import MessageTools.*;
 import EventTools.ShowEventsApp.Command.*;
 import EventTools.ShowEventsApp.Controls.*;
 import EventTools.ShowEventsApp.Controls.Peaks.*;
+import EventTools.ShowEventsApp.Controls.SliceControls.*;
 import EventTools.ShowEventsApp.Controls.HistogramControls.*;
 
 /**
@@ -83,7 +84,7 @@ public class controlsPanel extends JPanel
    private JPanel                 scalarOrientPanel;
    private positionInfoPanel      positionPanel;
    private peaksStatPanel         peakInfoPanel;
-   private sliceControl           slicePanel;
+   private SliceSelectorPanel     slicePanel;
    private additionalViewControls sliceControlsPanel;
    private drawingOptions         drawoptions;
    private filterPeaksPanel       filterPeaks;
@@ -120,20 +121,20 @@ public class controlsPanel extends JPanel
     */
    private void buildPanels()
    {
-      filepanel = new filePanel( messageCenter );
-      peakPanel = new peakOptionsPanel( messageCenter );
-      indexPeakPanel    = new indexPeaksPanel( messageCenter );
-      scalarOrientPanel = (new ScalarHandlePanel( messageCenter)).
+      filepanel          = new filePanel( messageCenter );
+      peakPanel          = new peakOptionsPanel( messageCenter );
+      indexPeakPanel     = new indexPeaksPanel( messageCenter );
+      scalarOrientPanel  = (new ScalarHandlePanel( messageCenter)).
                               getPanel( );
-      positionPanel  = new positionInfoPanel( messageCenter );
-      peakInfoPanel  = new peaksStatPanel( messageCenter);
-      filterPeaks    = new filterPeaksPanel( messageCenter );
-      integratePeaks = new IntegratePeaksPanel( messageCenter );
+      positionPanel      = new positionInfoPanel( messageCenter );
+      peakInfoPanel      = new peaksStatPanel( messageCenter);
+      filterPeaks        = new filterPeaksPanel( messageCenter );
+      integratePeaks     = new IntegratePeaksPanel( messageCenter );
  
-      slicePanel = new sliceControl( messageCenter );
+      slicePanel         = new SliceSelectorPanel( messageCenter );
       sliceControlsPanel = new additionalViewControls( messageCenter,
                                                        viewMessageCenter );
-      drawoptions = new drawingOptions( messageCenter );
+      drawoptions        = new drawingOptions( messageCenter );
       
       //new DViewHandler( messageCenter );
       //new QViewHandler( messageCenter );
@@ -218,10 +219,10 @@ public class controlsPanel extends JPanel
       colorScaleBtn.setBackground( background_color );
       colorScaleBtn.addActionListener(new buttonListener());
       
-      planeBtn = new JButton("Histogram Orientation");
+      planeBtn = new JButton("Select Slices");
       planeBtn.setBackground( background_color );
       planeBtn.addActionListener(new buttonListener());
-      planeBtn.setEnabled(false);
+//      planeBtn.setEnabled(false);
       
       additionalViewsBtn = new JButton("Additional Views");
       additionalViewsBtn.setBackground( background_color );
@@ -232,7 +233,7 @@ public class controlsPanel extends JPanel
       drawOptions.addActionListener(new buttonListener());
       
       panel.add(selectedPoint);
-     // panel.add(orientationBtn);
+ //   panel.add(orientationBtn);
       panel.add( peakInfoBtn );
       panel.add(colorScaleBtn);
       panel.add(planeBtn);

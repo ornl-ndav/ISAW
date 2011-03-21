@@ -71,9 +71,8 @@ public class IsawEV
     MessageCenter view_message_center = 
                                    new MessageCenter("VIEW MESSAGE CENTER");
 
-    HistogramHandler histhand = 
-        new HistogramHandler( message_center, view_message_center, 
-                              REQUESTED_NUM_BINS );
+    new HistogramHandler( message_center, view_message_center, 
+                          REQUESTED_NUM_BINS );
 
     new multiPanel( message_center, view_message_center );
 
@@ -82,6 +81,8 @@ public class IsawEV
     new EventLoader( message_center );
 
     new QMapperHandler( message_center );
+
+    new SliceHistogramHandler( message_center ); 
 
     new QuickIntegrateHandler( message_center );
 
