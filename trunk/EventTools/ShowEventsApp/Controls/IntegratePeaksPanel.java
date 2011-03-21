@@ -68,9 +68,10 @@ public class IntegratePeaksPanel extends JPanel implements IReceiveMessage
 
                                             // Histogram integrate controls
 
-   private final String NO_HISTOGRAM    = "NO HISTOGRAM";
-   private final String HISTOGRAM_READY = "READY TO ADD EVENTS";
-   private final String EVENTS_ADDED_TO_HISTOGRAM = "EVENTS ADDED TO HISTOGRAM";
+   public static final String NO_HISTOGRAM    = "NOT ALLOCATED";
+   public static final String HISTOGRAM_READY = "READY TO ADD EVENTS";
+   public static final String EVENTS_ADDED    = "EVENTS ADDED TO HISTOGRAM";
+
    private String[] step_list = { "  2 Steps per Miller Index",
                                   "  3 Steps per Miller Index",
                                   "  4 Steps per Miller Index",
@@ -98,7 +99,7 @@ public class IntegratePeaksPanel extends JPanel implements IReceiveMessage
    private JComboBox   steps_selector = new JComboBox( step_list );
    private JTextField  hist_mem_txf   = new JTextField("0");
    private JButton init_hist_button   = new JButton("Initialize Histogram");
-   private JButton free_hist_button   = new JButton("Free Histogram Memory");
+   private JButton free_hist_button   = new JButton("Free Histogram");
    private JTextField hist_status_txf = new JTextField( NO_HISTOGRAM );
    private JButton hist_stats_button  = new JButton("Show Statistics");
    private JButton to_peaks_button    = new JButton("Update Peaks List");
@@ -186,7 +187,7 @@ public class IntegratePeaksPanel extends JPanel implements IReceiveMessage
         steps_selector.addItemListener( new StepsListener() );
         steps_selector.setSelectedIndex(3);
 
-      hist_panel.add( new JLabel("Required Histogram Size(MB)") );
+      hist_panel.add( new JLabel("Histogram Size (MB)") );
       hist_panel.add( hist_mem_txf );
         hist_mem_txf.setHorizontalAlignment( JTextField.RIGHT );
         hist_mem_txf.setEditable( false );
@@ -293,7 +294,7 @@ public class IntegratePeaksPanel extends JPanel implements IReceiveMessage
 
      else if ( message.getName().equals(
                                 Commands.ADDED_EVENTS_TO_INTEGRATE_HISTOGRAM))
-       hist_status_txf.setText( EVENTS_ADDED_TO_HISTOGRAM );
+       hist_status_txf.setText( EVENTS_ADDED );
 
      return false;
    }
