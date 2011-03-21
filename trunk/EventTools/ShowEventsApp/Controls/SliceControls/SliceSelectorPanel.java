@@ -54,8 +54,8 @@ public class SliceSelectorPanel extends JPanel
   private final String[]   event_choices = { "RAW Events", "WEIGHTED Events" };
   private JComboBox        event_selector;
 
-  private final String[]   coordinate_choices = { "HKL (UB MUST be set)", 
-                                                  "Lab Qxyz" };
+  private final String[]   coordinate_choices = { "HKL ( UB MUST be set )", 
+                                                  "Lab Qxyz ( |Q| = 1/d )" };
   private JComboBox        coordinate_selector;
 
   private Vector3D_UI      origin_UI;
@@ -63,12 +63,8 @@ public class SliceSelectorPanel extends JPanel
   private DirectionControl direction_2_UI;
   private DirectionControl direction_3_UI;
 
-  private JButton          size_button;
   private JLabel           histogram_size;
   private JLabel           histogram_status;
-
-  private JButton          init_histogram_btn;
-  private JButton          free_histogram_btn;
 
   private final String[] shape_choices = { "As Specified", 
                                            "Force Cols Perp. Rows",
@@ -110,12 +106,15 @@ public class SliceSelectorPanel extends JPanel
      origin_UI.setHorizontalAlignment( JTextField.RIGHT );
      origin_panel.add( origin_UI );
 
-     Vector3D dir_1  = new Vector3D( 1, 0, 0 );
+     Vector3D dir_1  = new Vector3D( 0, 0, 1 );
      Vector3D dir_2  = new Vector3D( 0, 1, 0 );
-     Vector3D dir_3  = new Vector3D( 0, 0, 1 );
-     direction_1_UI  = new DirectionControl( "Direction 1 (slice #)", dir_1 );
-     direction_2_UI  = new DirectionControl( "Direction 2 (row #)", dir_2 );
-     direction_3_UI  = new DirectionControl( "Direction 3 (col #)", dir_3 );
+     Vector3D dir_3  = new Vector3D( 1, 0, 0 );
+     direction_1_UI  = new DirectionControl( "Direction 1 (slice #)", 
+                                              dir_1, "0.04", "25" );
+     direction_2_UI  = new DirectionControl( "Direction 2 (row #)", 
+                                              dir_2, "0.04", "251" );
+     direction_3_UI  = new DirectionControl( "Direction 3 (col #)",
+                                              dir_3, "0.04", "251" );
 
      JPanel shape_panel = new JPanel();
      shape_panel.setLayout( new GridLayout( 1, 2 ) );
@@ -125,7 +124,7 @@ public class SliceSelectorPanel extends JPanel
 
      JPanel size_panel = new JPanel();
      size_panel.setLayout( new GridLayout( 1, 2 ) );
-     size_button = new JButton("Histogram Size (MB)");
+     JButton size_button = new JButton("Histogram Size (MB)");
      size_panel.add( size_button );
      size_button.addActionListener( new SizeListener() );
      histogram_size = new JLabel( "NOT KNOWN " );
@@ -141,9 +140,9 @@ public class SliceSelectorPanel extends JPanel
 
      JPanel init_panel = new JPanel();
      init_panel.setLayout( new GridLayout( 1, 2 ) );
-     init_histogram_btn = new JButton( "Initialize Histogram" );
+     JButton init_histogram_btn = new JButton( "Initialize Histogram" );
      init_histogram_btn.addActionListener( new InitListener() );
-     free_histogram_btn = new JButton( "Free Histogram" );
+     JButton free_histogram_btn = new JButton( "Free Histogram" );
      free_histogram_btn.addActionListener( new FreeListener() );
      init_panel.add( init_histogram_btn );
      init_panel.add( free_histogram_btn );
@@ -266,15 +265,26 @@ public class SliceSelectorPanel extends JPanel
         use_HKL = false;
 
       Vector3D center = origin_UI.getVector();
-      
+      double   step_1 = direction_1_UI.getStepSize();
+      double   step_2 = direction_2_UI.getStepSize();
+      double   step_3 = direction_3_UI.getStepSize();
+
+      if ( !use_HKL )                       // scale up by 2PI to get "real" Q
+      {
+        center.multiply( (float)(2*Math.PI) );
+        step_1 *= 2*Math.PI;
+        step_2 *= 2*Math.PI;
+        step_3 *= 2*Math.PI;
+      }
+ 
       HistogramEdge edge_1 = new HistogramEdge(direction_1_UI.getDirection(),
-                                               direction_1_UI.getStepSize(),
+                                               step_1,
                                                direction_1_UI.getNumSteps() );
       HistogramEdge edge_2 = new HistogramEdge(direction_2_UI.getDirection(),
-                                               direction_2_UI.getStepSize(),
+                                               step_2,
                                                direction_2_UI.getNumSteps() );
       HistogramEdge edge_3 = new HistogramEdge(direction_3_UI.getDirection(),
-                                               direction_3_UI.getStepSize(),
+                                               step_3,
                                                direction_3_UI.getNumSteps() );
 
       String shape = shape_selector.getSelectedItem().toString();
