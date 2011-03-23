@@ -39,6 +39,7 @@ import java.util.Arrays;
 
 import gov.anl.ipns.MathTools.LinearAlgebra;
 import gov.anl.ipns.MathTools.Geometry.Vector3D;
+import gov.anl.ipns.MathTools.Geometry.Tran3D;
 
 import MessageTools.IReceiveMessage;
 import MessageTools.Message;
@@ -116,16 +117,16 @@ public class SliceHistogramHandler implements IReceiveMessage
       Object val = message.getValue();
       if ( val == null || !( val instanceof Vector ) )
       {
-        System.out.println( "ERROR: NULL orientation matrix in command " +
-                             Commands.SET_ORIENTATION_MATRIX );
+        Util.sendError( "NULL orientation matrix in command " +
+                         Commands.SET_ORIENTATION_MATRIX );
         return false;
       }
 
       Vector vec = (Vector)val;
       if ( vec.size() < 1 || !( vec.elementAt(0) instanceof float[][] ) )
       {
-        System.out.println( "ERROR: NO orientation matrix in command " +
-                             Commands.SET_ORIENTATION_MATRIX );
+        Util.sendError( "NO orientation matrix in command " +
+                         Commands.SET_ORIENTATION_MATRIX );
         return false;
       }
 
@@ -157,12 +158,10 @@ public class SliceHistogramHandler implements IReceiveMessage
 
     else if ( message.getName().equals(Commands.INIT_SLICES_HISTOGRAM) )
     {
-      System.out.println("Data Handler got INIT_SLICES_HISTOGRAM" );
       boolean histogram_ok = false;
       Object obj = message.getValue();
       if ( obj != null && obj instanceof InitSlicesCmd )
       {
-        System.out.println("Data Handler processing INIT_SLICES_HISTOGRAM" );
         InitSlicesCmd cmd = (InitSlicesCmd)obj;
         this.use_weights = cmd.useWeights();
         boolean use_HKL  = cmd.useHKL();
@@ -182,7 +181,6 @@ public class SliceHistogramHandler implements IReceiveMessage
                                         dir_2, step_2, num_2,
                                         dir_3, step_3, num_3,
                                         shape );
-        System.out.println("histogram_ok = " + histogram_ok );
       }
     
       if ( histogram_ok )
@@ -202,8 +200,6 @@ public class SliceHistogramHandler implements IReceiveMessage
 
     else if ( message.getName().equals(Commands.FREE_SLICES_HISTOGRAM ))
     {
-      System.out.println("Slice Histogram Handler got message " +
-                         message.getName() );
       histogram = null;
       Message freed = new Message( Commands.SLICES_HISTOGRAM_FREED,
                                    null, true, true );
@@ -261,7 +257,22 @@ public class SliceHistogramHandler implements IReceiveMessage
                                    String   shape )
 
   {
-    System.out.println("Starting SetNewHistogram");
+    if ( use_HKL )
+    {
+      if ( orientation_matrix != null )
+      {
+        float[] steps = SwitchHKL_to_Q( center,
+                                        dir_1, step_1,
+                                        dir_2, step_2,
+                                        dir_3, step_3 );
+        step_1 = steps[0];
+        step_2 = steps[1];
+        step_3 = steps[2];
+      }
+      else
+        Util.sendError("NO ORIENTATION MATRIX, INTERPRETING REGION IN Q");
+    }
+
     histogram = null;
 
                                    // make the corner vector from the center
@@ -316,6 +327,48 @@ public class SliceHistogramHandler implements IReceiveMessage
     }
 
     return true;
+  }
+
+
+  private float[] SwitchHKL_to_Q( Vector3D center,
+                                  Vector3D dir_1,
+                                  double   step_1,
+                                  Vector3D dir_2,
+                                  double   step_2,
+                                  Vector3D dir_3,
+                                  double   step_3 )
+  { 
+    Tran3D or_tran = new Tran3D( orientation_matrix );
+
+    or_tran.apply_to( center, center );    // map center from HKL to Q
+
+    dir_1.normalize();                     // map dir vectors from HK to Q
+    dir_2.normalize();    
+    dir_3.normalize();    
+
+    Vector3D q1 = new Vector3D();
+    Vector3D q2 = new Vector3D();
+    Vector3D q3 = new Vector3D();
+
+    or_tran.apply_to( dir_1, q1 );
+    or_tran.apply_to( dir_2, q2 );
+    or_tran.apply_to( dir_3, q3 );
+
+    float new_step_1 = (float)(step_1 * q1.length()); 
+    float new_step_2 = (float)(step_2 * q2.length()); 
+    float new_step_3 = (float)(step_3 * q3.length()); 
+
+    q1.normalize();                        // make sure we have unit 
+    q2.normalize();                        // direction vectors 
+    q3.normalize();
+
+    dir_1.set( q1 );                       // now update direction vectors
+    dir_2.set( q2 );                       // to the unit vectors in Q
+    dir_3.set( q3 );
+
+    float[] new_steps = { new_step_1, new_step_2, new_step_3 }; 
+
+    return new_steps;                      // return the new step sizes
   }
 
 
