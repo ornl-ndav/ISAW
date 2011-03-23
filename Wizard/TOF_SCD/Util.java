@@ -181,8 +181,9 @@ public class Util {
 
     int[] ds_numbers = IntList.ToArray( dataSetNums );
 
-    if( !extension.startsWith( "." ) )
-       extension = "."+extension;
+// Don't force suffex to start with "." to allow _histo.nxs 
+//    if( !extension.startsWith( "." ) )
+//       extension = "."+extension;
 
     if( run_numbers == null || ds_numbers == null )
     {
@@ -737,8 +738,9 @@ public class Util {
 
       Vector<StringBuffer> LogInfo = new Vector<StringBuffer>();
       
-      if( !extension.startsWith( "." ) )
-         extension = "."+extension;
+// Don't force suffex to start with "." to allow _histo.nxs 
+//      if( !extension.startsWith( "." ) )
+//         extension = "."+extension;
       
       if( Runs == null || DSnums == null )
          return null;
@@ -2123,8 +2125,9 @@ public class Util {
       
       int[] ds_numbers = IntList.ToArray( DataSetNums );
       
-      if( !FileExt.startsWith( "."  ) )
-         FileExt = "." + FileExt;
+// Don't force suffex to start with "." to allow _histo.nxs 
+//      if( !FileExt.startsWith( "."  ) )
+//         FileExt = "." + FileExt;
       
       if( run_numbers == null || ds_numbers == null )
          return new ErrorString( "No Data Sets to process" );
@@ -2551,8 +2554,9 @@ public class Util {
       
       Vector<OperatorThread> operators = new Vector<OperatorThread>();
       
-      if( !FileExt.startsWith( "."  ) )
-         FileExt = "." + FileExt;
+// Don't force suffex to start with "." to allow _histo.nxs 
+//     if( !FileExt.startsWith( "."  ) )
+//        FileExt = "." + FileExt;
       
       if( Runs == null || DSnums == null )
          return new ErrorString( "No Data Sets to process" );
