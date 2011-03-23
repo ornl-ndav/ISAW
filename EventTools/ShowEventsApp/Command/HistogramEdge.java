@@ -51,7 +51,7 @@ public class HistogramEdge
    *  @param  edge_direction  Vector3D giving the direction of the edge
    *  @param  step_size       double specifying the width of each histogram
    *                          bin in the spedified direction
-   *  @param  num_binss       The number of bins to use in the specified
+   *  @param  num_bins        The number of bins to use in the specified
    *                          direction
    */ 
   public HistogramEdge( Vector3D edge_direction,
