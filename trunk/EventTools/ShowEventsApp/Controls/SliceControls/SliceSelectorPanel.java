@@ -120,6 +120,7 @@ public class SliceSelectorPanel extends JPanel
      shape_panel.setLayout( new GridLayout( 1, 2 ) );
      shape_panel.add( new JLabel("Region Shape:") );
      shape_selector = new JComboBox( shape_choices );
+     shape_selector.setEnabled( false );
      shape_panel.add( shape_selector );
 
      JPanel size_panel = new JPanel();
@@ -175,8 +176,6 @@ public class SliceSelectorPanel extends JPanel
 
   public boolean receive( Message message )
   {
-    System.out.println("SliceControl got message " + message.getName() );
-
     if ( message.getName().equals(Commands.SLICES_HISTOGRAM_READY) )
       histogram_status.setText( HISTOGRAM_READY );
 
@@ -244,7 +243,6 @@ public class SliceSelectorPanel extends JPanel
                                   collapse_messages,
                                   use_separate_thread );
       message_center.send(mess);
-      System.out.println("Sent Free histogram message");
     }
   }
 
@@ -304,9 +302,6 @@ public class SliceSelectorPanel extends JPanel
                                   collapse_messages,
                                   use_separate_thread );
       message_center.send(mess);
-
-      System.out.println("Sent INIT_SLICES_HISTOGRAM...........");
-//    System.out.println("Comand = " + cmd );
     }
   }
 
