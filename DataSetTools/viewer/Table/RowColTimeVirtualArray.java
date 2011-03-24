@@ -1110,6 +1110,7 @@ private  float[][][]  getHKLMinMax( IDataGrid grid, float minTime,float maxTime,
     float minTime = x_scale.getX( indx );
     float maxTime = x_scale.getX( indx+1 );
     
+   
     IDataGrid grid = Grid_util.getAreaGrid( DS , DetNum );
     if( grid == null)
        return null;
@@ -1130,13 +1131,17 @@ private  float[][][]  getHKLMinMax( IDataGrid grid, float minTime,float maxTime,
     if( sampOrient == null || OrientMat == null)
       return null;
     VecQToTOF Xlate = new VecQToTOF( DS, grid );
+    
     float initialPath = AttrUtil.getInitialPath( DS );
+   
+    if( minTime <=0) minTime =Math.min( 1000, maxTime/2);
+    
     float[][] invOrient = LinearAlgebra.getInverse( OrientMat);
     invOrient =Mult(  invOrient , 
                  sampOrient.getGoniometerRotationInverse().get() );
-    
     if( invOrient == null)
        return null; 
+    
       float[][] Phkl= new float[8][3];
       Phkl[0] = LinearAlgebra.mult( invOrient , tof_calc
                .DiffractometerVecQ( new DetectorPosition(grid.position( 1 , 1 )) , initialPath ,
