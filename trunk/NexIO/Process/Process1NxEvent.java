@@ -15,7 +15,15 @@ import NexIO.State.NxfileStateInfo;
 import NexIO.State.StateInfo;
 import NexIO.Util.ConvertDataTypes;
 import NexIO.Util.NexUtils;
+/*
+About the event NeXus field renaming. What they moved to:
+event_index - unchanged
+ event_pixel_id -> event_id
+ event_time_of_flight -> event_time_offset
+ pulse_time -> event_time_zero
 
+
+*/
 
 public class Process1NxEvent implements IProcessNxData
 {
@@ -79,8 +87,8 @@ public class Process1NxEvent implements IProcessNxData
            return true;
          }
      // long start = System.currentTimeMillis( );
-      int[] times = NexUtils.getIntArrayFieldValue( NxEventNode, "event_time_of_flight" );
-      int[] pixs = NexUtils.getIntArrayFieldValue( NxEventNode, "event_pixel_id" );
+      int[] times = NexUtils.getIntArrayFieldValue( NxEventNode, "event_time_offset" );
+      int[] pixs = NexUtils.getIntArrayFieldValue( NxEventNode, "event_id" );
       //System.out.println("   Time(milliseconds)="+(System.currentTimeMillis( )-start));
       if( times == null || pixs == null || times.length != pixs.length)
          {
@@ -101,7 +109,7 @@ public class Process1NxEvent implements IProcessNxData
       }
       double incrTimeUnit = 1;
       String units = NexUtils.getStringAttributeValue( 
-                 NxEventNode.getChildNode(  "event_time_of_flight" ) ,"units" );
+                 NxEventNode.getChildNode(  "event_time_offset" ) ,"units" );
       if( units != null)
          incrTimeUnit = ConvertDataTypes.getUnitMultiplier( units , "us" );
       
