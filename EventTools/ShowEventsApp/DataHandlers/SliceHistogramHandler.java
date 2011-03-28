@@ -48,6 +48,7 @@ import MessageTools.MessageCenter;
 import EventTools.Histogram.*;
 import EventTools.EventList.IEventList3D;
 import EventTools.EventList.FloatArrayEventList3D;
+import EventTools.ShowEventsApp.Controls.SliceControls.SliceSelectorPanel;
 import EventTools.ShowEventsApp.Command.Commands;
 import EventTools.ShowEventsApp.Command.PeakImagesCmd;
 import EventTools.ShowEventsApp.Command.InitSlicesCmd;
@@ -257,7 +258,7 @@ public class SliceHistogramHandler implements IReceiveMessage
                                    String   shape )
 
   {
-    if ( use_HKL )
+    if ( use_HKL )                        // map vectors and sizes to Q first
     {
       if ( orientation_matrix != null )
       {
@@ -273,8 +274,45 @@ public class SliceHistogramHandler implements IReceiveMessage
         Util.sendError("NO ORIENTATION MATRIX, INTERPRETING REGION IN Q");
     }
 
-    histogram = null;
+    if ( shape.equalsIgnoreCase( SliceSelectorPanel.SHAPE_COLS_PERP_ROWS ) ||
+         shape.equalsIgnoreCase( SliceSelectorPanel.SHAPE_ALL_PERP )  )
+    {
+                                            // Adjust dir_2 to be perpendicular
+                                            // to dir_3 if not already so
+      float component = dir_2.dot( dir_3 );
+      if ( component != 0 )     
+      {
+        Vector3D new_dir_2 = new Vector3D( dir_2 );
+        Vector3D temp      = new Vector3D( dir_3 );
+        temp.multiply( component );
+        new_dir_2.subtract( temp );  
+        new_dir_2.normalize();
+        float scale = dir_2.dot( new_dir_2 );    // adjust step along new_dir_2
+        step_2 *= scale;
+        dir_2 = new_dir_2;
+      }
+    }
 
+    if ( shape.equalsIgnoreCase( SliceSelectorPanel.SHAPE_ALL_PERP ) ) 
+    {
+                                         // also make dir_1 to be perpendicular
+                                         // to dir_2 AND dir_3 if not already 
+      Vector3D perp_vec = new Vector3D(); 
+      perp_vec.cross( dir_2, dir_3 );
+      perp_vec.normalize();
+
+      if ( perp_vec.dot( dir_1 ) < 0 )       // flip perp_vec to be in same
+        perp_vec.multiply( -1 );             // general direction as dir_1
+
+      if ( perp_vec.dot( dir_1 ) != 1.0f )   // need to adjust dir_1
+      {
+        float scale = perp_vec.dot( dir_1 ); // adjust step along new_dir_1
+        step_1 *= scale;
+        dir_1   = perp_vec;
+      }
+    } 
+
+    histogram = null;
                                    // make the corner vector from the center
                                    // vector by subtracting 1/2 edge vectors
                                    // PLUS 1/2 step, to put corner on OUTER
@@ -330,6 +368,12 @@ public class SliceHistogramHandler implements IReceiveMessage
   }
 
 
+  /**
+   *  Change the specified center and direction vectors to be in terms of
+   *  Q, rather than in terms of h,k,l.  These vector parameters are changed
+   *  by this method.  The new sizes required are returned in an array of
+   *  floats. 
+   */
   private float[] SwitchHKL_to_Q( Vector3D center,
                                   Vector3D dir_1,
                                   double   step_1,
@@ -422,7 +466,14 @@ public class SliceHistogramHandler implements IReceiveMessage
   }
 
 
-
+  /**
+   *  Add a list of events to the current histogram.
+   *
+   *  @param events      The list of events in reciprocal space
+   *  @param use_weights Flag indicating whether the events should be weighted
+   *                     using the weights determined from choices on the
+   *                     Load Data screen, or if each event should count 1.
+   */
   synchronized public void AddEventsToHistogram( IEventList3D events,
                                                  boolean      use_weights )
   {
