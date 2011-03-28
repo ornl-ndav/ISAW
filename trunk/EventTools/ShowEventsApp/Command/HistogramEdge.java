@@ -58,9 +58,21 @@ public class HistogramEdge
                         double   step_size,
                         int      num_bins )
   {
-    this.edge_direction = new Vector3D( edge_direction );
+    if ( edge_direction.length() == 0 )
+      throw new IllegalArgumentException("ERROR: Zero length Direction " +
+                                          edge_direction );
+
+    if ( step_size == 0 )
+      throw new IllegalArgumentException("ERROR: Step Size is zero");
+
+    if ( num_bins <= 0 )
+      throw new IllegalArgumentException(
+                                      "ERROR: Number of Bins is not positive");
+    
     this.step_size      = step_size;
     this.num_bins       = num_bins;
+    this.edge_direction = new Vector3D( edge_direction );
+    this.edge_direction.normalize();
   }
 
   /**

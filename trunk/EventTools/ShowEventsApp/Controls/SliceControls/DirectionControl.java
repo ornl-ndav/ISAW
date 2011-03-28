@@ -40,6 +40,8 @@ import javax.swing.*;
 import gov.anl.ipns.ViewTools.UI.Vector3D_UI;
 import gov.anl.ipns.MathTools.Geometry.Vector3D;
 
+import EventTools.ShowEventsApp.Command.Util;
+
 /**
  *  This class implements a simple control for specifying the direction
  *  and binning for an "edge" of a 3D histogram.  The control consists of
@@ -123,7 +125,7 @@ public class DirectionControl extends JPanel
     }
     catch ( Exception ex )
     {
-      System.out.println("ERROR parsing step size in " + title );
+      Util.sendError("ERROR parsing step size in " + title );
     }
     return value;
   }
@@ -142,7 +144,7 @@ public class DirectionControl extends JPanel
     }
     catch ( Exception ex )
     {
-      System.out.println("ERROR parsing num steps " + title );
+      Util.sendError("ERROR parsing num steps " + title );
     }
 
     if ( value < 0 )     // negative number of steps not allowed
