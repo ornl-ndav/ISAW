@@ -66,9 +66,13 @@ public class SliceSelectorPanel extends JPanel
   private JLabel           histogram_size;
   private JLabel           histogram_status;
 
-  private final String[] shape_choices = { "As Specified", 
-                                           "Force Cols Perp. Rows",
-                                           "Force All to be Perp." };
+  public static final String SHAPE_AS_SPECIFIED   = "As Specified";
+  public static final String SHAPE_COLS_PERP_ROWS = "Force Cols Perp. Rows";
+  public static final String SHAPE_ALL_PERP       = "Force All to be Perp.";
+
+  private final String[] shape_choices = { SHAPE_AS_SPECIFIED, 
+                                           SHAPE_COLS_PERP_ROWS,
+                                           SHAPE_ALL_PERP };
   private JComboBox        shape_selector;
 
   public final String NO_HISTOGRAM    = IntegratePeaksPanel.NO_HISTOGRAM;
@@ -120,7 +124,6 @@ public class SliceSelectorPanel extends JPanel
      shape_panel.setLayout( new GridLayout( 1, 2 ) );
      shape_panel.add( new JLabel("Region Shape:") );
      shape_selector = new JComboBox( shape_choices );
-     shape_selector.setEnabled( false );
      shape_panel.add( shape_selector );
 
      JPanel size_panel = new JPanel();
