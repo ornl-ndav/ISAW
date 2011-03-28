@@ -255,7 +255,10 @@ public class SliceSelectorPanel extends JPanel
     public void actionPerformed( ActionEvent ev )
     {
       if ( !UpdateSize() )
+      {
+        Util.sendError("ERROR: Illegal Number of Bins specified for SLICE");
         return;
+      }
 
       boolean use_weights = true;
       if ( event_selector.getSelectedIndex() == 0 )
@@ -278,15 +281,27 @@ public class SliceSelectorPanel extends JPanel
         step_3 *= 2*Math.PI;
       }
  
-      HistogramEdge edge_1 = new HistogramEdge(direction_1_UI.getDirection(),
-                                               step_1,
-                                               direction_1_UI.getNumSteps() );
-      HistogramEdge edge_2 = new HistogramEdge(direction_2_UI.getDirection(),
-                                               step_2,
-                                               direction_2_UI.getNumSteps() );
-      HistogramEdge edge_3 = new HistogramEdge(direction_3_UI.getDirection(),
-                                               step_3,
-                                               direction_3_UI.getNumSteps() );
+      HistogramEdge edge_1 = null;
+      HistogramEdge edge_2 = null;
+      HistogramEdge edge_3 = null;
+      try
+      {
+        edge_1 = new HistogramEdge( direction_1_UI.getDirection(),
+                                    step_1,
+                                    direction_1_UI.getNumSteps() );
+        edge_2 = new HistogramEdge( direction_2_UI.getDirection(),
+                                    step_2,
+                                    direction_2_UI.getNumSteps() );
+        edge_3 = new HistogramEdge( direction_3_UI.getDirection(),
+                                    step_3,
+                                    direction_3_UI.getNumSteps() );
+      }
+      catch ( Exception ex )
+      {
+        Util.sendError( "Invalid direction or binning specified for SLICE\n" +
+                         ex.getMessage() ); 
+        return;
+      }
 
       String shape = shape_selector.getSelectedItem().toString();
 
