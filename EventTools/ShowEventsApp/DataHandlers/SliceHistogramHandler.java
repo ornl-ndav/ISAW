@@ -328,6 +328,28 @@ public class SliceHistogramHandler implements IReceiveMessage
     corner.subtract( delta_2 );
     corner.subtract( delta_3 );
 
+                             // print corner bin's center vector for debugging
+    delta_1.normalize();
+    delta_1.multiply( (float)(0.5 * step_1) );
+    delta_2.normalize();
+    delta_2.multiply( (float)(0.5 * step_2) );
+    delta_3.normalize();
+    delta_3.multiply( (float)(0.5 * step_3) );
+    Vector3D corner_cent = new Vector3D( corner );
+    corner_cent.add( delta_1 );
+    corner_cent.add( delta_2 );
+    corner_cent.add( delta_3 );
+    
+    if ( use_HKL )
+    {
+      Vector3D hkl_corner_cent = new Vector3D();
+      Tran3D inv_tran = new Tran3D( orientation_matrix );
+      inv_tran.invert();
+      inv_tran.apply_to( corner_cent, hkl_corner_cent ); 
+      Util.sendInfo("Corner bin center(HKL) = " + hkl_corner_cent );
+    }
+    Util.sendInfo("Corner bin center(Q:2PI/d) = " + corner_cent );
+
                                     // get dual directions to use to determine 
                                     // coordinates along the direction vectors
     IProjectionBinner3D[] dual_binners = MakeDualBinners( dir_1, dir_2, dir_3 );
