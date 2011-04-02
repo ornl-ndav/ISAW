@@ -27,9 +27,9 @@
  *
  *  Last Modified:
  * 
- *  $Author: $
- *  $Date:  $            
- *  $Revision: $
+ *  $Author:$
+ *  $Date:$            
+ *  $Revision:$
  */
 
 package EventTools.ShowEventsApp.DataHandlers;
@@ -71,6 +71,12 @@ public class SliceHistogramHandler implements IReceiveMessage
   private Histogram3D   histogram = null;
 
   private boolean       use_weights = false;
+
+  private boolean   in_HKL       = false;
+  private Vector3D  origin       = null;
+  private Vector3D  dir_1_scaled = null;
+  private Vector3D  dir_2_scaled = null;
+  private Vector3D  dir_3_scaled = null;
 
 /**
  * Construct a SliceHistogramHandler that will use the specified message
@@ -140,10 +146,16 @@ public class SliceHistogramHandler implements IReceiveMessage
       System.out.println("SliceHistogramHandler, orientation_matrix = " );
       LinearAlgebra.print( orientation_matrix );
 */
-      histogram = null;
-      Message freed = new Message( Commands.SLICES_HISTOGRAM_FREED,
+      if ( histogram != null )
+      {
+        ClearHistogramConfiguration();
+        Util.sendInfo(
+             "CAUTION: Slices Histogram Freed Due to New Orientation Matrix!");
+
+        Message freed = new Message( Commands.SLICES_HISTOGRAM_FREED,
                                    null, true, true );
-      message_center.send( freed );
+        message_center.send( freed );
+      }
     }
 
     else if ( message.getName().equals(Commands.INIT_HISTOGRAM) )
@@ -163,6 +175,7 @@ public class SliceHistogramHandler implements IReceiveMessage
       Object obj = message.getValue();
       if ( obj != null && obj instanceof InitSlicesCmd )
       {
+        ClearHistogramConfiguration();
         InitSlicesCmd cmd = (InitSlicesCmd)obj;
         this.use_weights = cmd.useWeights();
         boolean use_HKL  = cmd.useHKL();
@@ -201,7 +214,7 @@ public class SliceHistogramHandler implements IReceiveMessage
 
     else if ( message.getName().equals(Commands.FREE_SLICES_HISTOGRAM ))
     {
-      histogram = null;
+      ClearHistogramConfiguration();
       Message freed = new Message( Commands.SLICES_HISTOGRAM_FREED,
                                    null, true, true );
       message_center.send( freed );
@@ -218,6 +231,30 @@ public class SliceHistogramHandler implements IReceiveMessage
         Message peak_images_message =
           new Message(Commands.SHOW_PEAK_IMAGES, peak_image_cmd, true, true);
         message_center.send( peak_images_message );
+
+        
+        String filename = "quartz_const_L.h5";
+        try
+        {
+          int num_slices = histogram.zEdgeBinner().numBins();
+          float[][][] slices = new float[num_slices][][];
+          for ( int i = 0; i < num_slices; i++ )
+            slices[i] = histogram.pageSlice( i );        
+
+          WriteSlicesToHDF_5.WriteFile( filename,
+                                        in_HKL,
+                                        orientation_matrix,
+                                        origin,
+                                        dir_1_scaled,
+                                        dir_2_scaled,
+                                        dir_3_scaled,
+                                        slices );
+        }
+        catch ( Exception ex )
+        {
+          Util.sendError("Failed to write slices to file: " + filename );
+          Util.sendError("" + ex.getMessage() );
+        }
       }
     }
 
@@ -237,6 +274,17 @@ public class SliceHistogramHandler implements IReceiveMessage
     }
 
     return false;
+  }
+
+
+  private void ClearHistogramConfiguration()
+  {
+    histogram    = null;
+    in_HKL       = false;
+    origin       = null;
+    dir_1_scaled = null;
+    dir_2_scaled = null;
+    dir_3_scaled = null;
   }
 
 
@@ -386,6 +434,21 @@ public class SliceHistogramHandler implements IReceiveMessage
       return false;
     }
 
+                                  // now record the information needed for ZODS
+    dir_1_scaled = new Vector3D( dir_1 );
+    dir_2_scaled = new Vector3D( dir_2 );
+    dir_3_scaled = new Vector3D( dir_3 );
+    dir_1_scaled.multiply( (float)step_1 );
+    dir_2_scaled.multiply( (float)step_2 );
+    dir_3_scaled.multiply( (float)step_3 );
+    origin = new Vector3D( corner_cent );
+    in_HKL = use_HKL;
+    if ( in_HKL )
+      MapFileVectorsToHKL( origin, 
+                           dir_1_scaled,
+                           dir_2_scaled,
+                           dir_3_scaled );
+    
     return true;
   }
 
@@ -435,6 +498,20 @@ public class SliceHistogramHandler implements IReceiveMessage
     float[] new_steps = { new_step_1, new_step_2, new_step_3 }; 
 
     return new_steps;                      // return the new step sizes
+  }
+
+
+  private void MapFileVectorsToHKL( Vector3D origin,
+                                    Vector3D dir_1_scaled,
+                                    Vector3D dir_2_scaled,
+                                    Vector3D dir_3_scaled )
+  {
+    Tran3D or_tran_inverse = new Tran3D( orientation_matrix ); 
+    or_tran_inverse.invert();
+    or_tran_inverse.apply_to( origin, origin );
+    or_tran_inverse.apply_to( dir_1_scaled, dir_1_scaled );
+    or_tran_inverse.apply_to( dir_2_scaled, dir_2_scaled );
+    or_tran_inverse.apply_to( dir_3_scaled, dir_3_scaled );
   }
 
 
