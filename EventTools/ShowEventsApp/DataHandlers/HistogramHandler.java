@@ -53,6 +53,7 @@ import MessageTools.MessageCenter;
 import EventTools.Histogram.*;
 
 import EventTools.EventList.IEventList3D;
+import EventTools.EventList.FloatArrayEventList3D;
 import EventTools.ShowEventsApp.Command.Commands;
 import EventTools.ShowEventsApp.Command.SelectionInfoCmd;
 import EventTools.ShowEventsApp.Command.SetNewInstrumentCmd;
@@ -169,9 +170,11 @@ public class HistogramHandler implements IReceiveMessage
 
 //    Util.sendInfo( "ADDED " + events.numEntries() + " to HISTOGRAM");
 
-      SetWeightsFromHistogram( events, histogram );
+      IEventList3D new_weighted_events =
+                   GetReWeightedListFromHistogram( events, histogram );
+
       Message add_to_view = new Message( Commands.ADD_EVENTS_TO_VIEW,
-                                         events,
+                                         new_weighted_events,
                                          false,
                                          true );
 //    Util.sendInfo( "SENDING MESSGE, ADD TO VIEW");
@@ -657,18 +660,19 @@ public class HistogramHandler implements IReceiveMessage
 
 
   /**
-   *  Set the weight value of the specified events to the value of
-   *  the histogram bin that contains the event.  The histogram bin
+   *  Get a new list of events with different weights set based on the
+   *  histogram bin that contains the event.  The histogram bin
    *  values are used to control the color map for the 3D event viewer.
+   *  The new event list SHARES THE XYZ array with the original event
+   *  list, since those values are not changed.  However the new event
+   *  list uses a new set of weights, so that the weights in the original
+   *  event list don't change!
    */
-  private void SetWeightsFromHistogram( IEventList3D events, 
-                                        Histogram3D histogram )
+  private IEventList3D GetReWeightedListFromHistogram( IEventList3D events, 
+                                                       Histogram3D histogram )
   {
-    int n_events = events.numEntries();
-
-    float[] weights = events.eventWeights();
-    if ( weights == null || weights.length != n_events )
-      weights = new float[ n_events ];
+    int     n_events = events.numEntries();
+    float[] weights  = new float[ n_events ];
 
     float[] xyz = events.eventVals();
 
@@ -684,6 +688,8 @@ public class HistogramHandler implements IReceiveMessage
       eventZ     = xyz[ index++ ];
       weights[i] = histogram.valueAt( eventX, eventY, eventZ );
     }
+
+    return new FloatArrayEventList3D( weights, xyz ); 
   }
 
   
