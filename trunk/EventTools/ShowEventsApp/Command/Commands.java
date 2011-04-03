@@ -64,8 +64,6 @@ public class Commands
 
   public static final String INIT_EVENTS_VIEW = "INIT_EVENTS_VIEW";
 
-  public static final String SET_WEIGHTS_FROM_HISTOGRAM = 
-                                              "SET_WEIGHTS_FROM_HISTOGRAM";
 
  /**
   *  When a new data file is about to be loaded, this message should
