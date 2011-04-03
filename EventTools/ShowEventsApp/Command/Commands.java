@@ -233,6 +233,8 @@ public class Commands
                                             "SLICES_HISTOGRAM_FREED";
   public static final String SHOW_SLICES_HISTOGRAM =
                                             "SHOW_SLICES_HISTOGRAM";
+  public static final String SAVE_SLICES_HISTOGRAM =
+                                            "SAVE_SLICES_HISTOGRAM";
 
   /**
    * Messages for quick event integration.

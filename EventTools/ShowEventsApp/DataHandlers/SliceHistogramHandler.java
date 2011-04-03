@@ -96,6 +96,7 @@ public class SliceHistogramHandler implements IReceiveMessage
     message_center.addReceiver( this, Commands.FREE_SLICES_HISTOGRAM );
     message_center.addReceiver( this, Commands.INIT_SLICES_HISTOGRAM );
     message_center.addReceiver( this, Commands.SHOW_SLICES_HISTOGRAM );
+    message_center.addReceiver( this, Commands.SAVE_SLICES_HISTOGRAM );
   }
 
 
@@ -231,15 +232,31 @@ public class SliceHistogramHandler implements IReceiveMessage
         Message peak_images_message =
           new Message(Commands.SHOW_PEAK_IMAGES, peak_image_cmd, true, true);
         message_center.send( peak_images_message );
+      }
+    }
 
-        
-        String filename = "quartz_const_L.h5";
+    else if ( message.getName().equals(Commands.SAVE_SLICES_HISTOGRAM ))
+    {
+      System.out.println("Command = " + message.getName() );
+      System.out.println("Value   = " + message.getValue() );
+      if ( histogram == null )
+        Util.sendError("ERROR: No Slices Histogram Created, CAN'T SAVE IT YET");
+      else
+      {
+        Object obj = message.getValue();
+        if ( (obj == null) || !(obj instanceof String) )
+        {
+          Util.sendError("ERROR: NO FILE NAME in SAVE_SLICES Command");
+          return false;
+        }
+
+        String filename = (String)(message.getValue());
         try
         {
           int num_slices = histogram.zEdgeBinner().numBins();
           float[][][] slices = new float[num_slices][][];
           for ( int i = 0; i < num_slices; i++ )
-            slices[i] = histogram.pageSlice( i );        
+            slices[i] = histogram.pageSlice( i );
 
           WriteSlicesToHDF_5.WriteFile( filename,
                                         in_HKL,
@@ -249,6 +266,7 @@ public class SliceHistogramHandler implements IReceiveMessage
                                         dir_2_scaled,
                                         dir_3_scaled,
                                         slices );
+          Util.sendInfo("Wrote HDF5 File: " + filename );
         }
         catch ( Exception ex )
         {
