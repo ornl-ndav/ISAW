@@ -119,7 +119,6 @@ public class HistogramHandler implements IReceiveMessage
     message_center.addReceiver( this, Commands.ADD_EVENTS_TO_HISTOGRAMS );
     message_center.addReceiver( this, Commands.INIT_HISTOGRAM );
     message_center.addReceiver( this, Commands.LOAD_CONFIG_INFO );
-    message_center.addReceiver( this, Commands.SET_WEIGHTS_FROM_HISTOGRAM );
     message_center.addReceiver( this, Commands.ADD_HISTOGRAM_INFO );
     message_center.addReceiver( this, Commands.GET_HISTOGRAM_MAX );
     message_center.addReceiver( this, Commands.FIND_PEAKS );
@@ -148,7 +147,6 @@ public class HistogramHandler implements IReceiveMessage
   *  Receive and process messages: 
   *      ADD_EVENTS_TO_HISTOGRAMS, 
   *      CLEAR_HISTOGRAM, 
-  *      SET_WEIGHTS_FROM_HISTOGRAM, 
   *      ADD_HISTOGRAM_INFO,
   *      GET_HISTOGRAM_MAX,
   *      FIND_PEAKS.
@@ -244,13 +242,6 @@ public class HistogramHandler implements IReceiveMessage
       else
         message_center.send( new Message( Commands.LOAD_FAILED,
                                           null, true, true ) );
-      return false;
-    }
-
-    else if ( message.getName().equals(Commands.SET_WEIGHTS_FROM_HISTOGRAM))
-    {
-      IEventList3D events = (IEventList3D)message.getValue();
-      SetWeightsFromHistogram( events, histogram );
       return false;
     }
 
