@@ -146,21 +146,30 @@ public class multiPanel implements IReceiveMessage, IhasWindowClosed
       JMenuItem SavePeaks = new JMenuItem( "Save Peaks " );
       JMenuItem SaveQGraph = new JMenuItem( "Save Q Graph" );
       JMenuItem SaveDGraph = new JMenuItem( "Save D Graph" );
+      JMenuItem SaveSlices = new JMenuItem( "Save Slices Histogram" );
+
       SaveOrient
             .addActionListener( new SaveInfoActionListener( 
-                 Commands.WRITE_ORIENTATION_MATRIX, messageCenter ) );
+                     Commands.WRITE_ORIENTATION_MATRIX, messageCenter ) );
       SavePeaks
-      .addActionListener( new SaveInfoActionListener( 
-           Commands.WRITE_PEAK_FILE,messageCenter ) );
+            .addActionListener( new SaveInfoActionListener( 
+                     Commands.WRITE_PEAK_FILE, messageCenter ) );
       SaveQGraph
             .addActionListener( new SaveActionListener( messageCenter , "Q" ) );
+
       SaveDGraph
             .addActionListener( new SaveActionListener( messageCenter , "D" ) );
 
-      FileMen.add(  SaveOrient );
+      SaveSlices
+            .addActionListener( new SaveInfoActionListener( 
+                     Commands.SAVE_SLICES_HISTOGRAM, messageCenter ) );
+
+      FileMen.add( SaveOrient );
       FileMen.add( SavePeaks );
       FileMen.add( SaveQGraph );
       FileMen.add( SaveDGraph );
+      FileMen.add( SaveSlices );
+
       JMenuItem closeMenItem = new JMenuItem( "Exit" );
       FileMen.add( closeMenItem );
       closeMenItem.addActionListener( new CloseAppActionListener( C , true ) );
