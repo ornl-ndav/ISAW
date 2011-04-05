@@ -460,13 +460,23 @@ public class SliceHistogramHandler implements IReceiveMessage
     dir_2_scaled.multiply( (float)step_2 );
     dir_3_scaled.multiply( (float)step_3 );
     origin = new Vector3D( corner_cent );
-    in_HKL = use_HKL;
-    if ( in_HKL )
+
+                                  // only specify origin and directions in
+                                  // terms of HKL if the user specified values
+                                  // were in HKL AND we did not adjust them
+                                  // to be perpendicular.
+    if ( use_HKL &&
+         shape.equalsIgnoreCase( SliceSelectorPanel.SHAPE_AS_SPECIFIED ) )
+    {
+      in_HKL = true;
       MapFileVectorsToHKL( origin, 
                            dir_1_scaled,
                            dir_2_scaled,
                            dir_3_scaled );
-    
+    }
+    else
+      in_HKL =  false;
+
     return true;
   }
 
