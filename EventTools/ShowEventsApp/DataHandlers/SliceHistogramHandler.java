@@ -418,7 +418,16 @@ public class SliceHistogramHandler implements IReceiveMessage
 
                                     // get dual directions to use to determine 
                                     // coordinates along the direction vectors
-    IProjectionBinner3D[] dual_binners = MakeDualBinners( dir_1, dir_2, dir_3 );
+    IProjectionBinner3D[] dual_binners = null;
+    try
+    {
+      dual_binners = MakeDualBinners(dir_1,dir_2,dir_3);
+    }
+    catch ( Exception ex )
+    {
+      Util.sendError( "ERROR: Direction Vectors Invalid!" );
+      return false;
+    }
     Vector3D dir_1_dual = dual_binners[0].directionVec();
     Vector3D dir_2_dual = dual_binners[1].directionVec();
     Vector3D dir_3_dual = dual_binners[2].directionVec();
