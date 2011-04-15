@@ -799,6 +799,7 @@ public class OrientMat extends Form implements ActionListener , IObserver ,
          int[] seq = PeakFilter.getOmittedSequenceNumbers();
          Vector V = (Vector) DataSetTools.operator.Utils.ToVec( seq );
          getParameter( OMITTED ).setValue( V );
+         Orient.SetOmittedPeaks( seq );
          return;
          
       }
