@@ -12,6 +12,9 @@
 
 #  Jython version:  A. J. Schultz, August 2010
 
+#  Added option to exclude border pixels.
+#  A. J. Schultz, April 2011
+
 from DataSetTools.operator.DataSet.Math.DataSet import *
 from DataSetTools.operator.DataSet.Math.Scalar import *
 from Command import *
@@ -207,7 +210,7 @@ class TOPAZ_spectrum(GenericTOF_SCD):
         self.addParameter(DataDirPG("Raw data path:", "/SNS/users/ajschultz/spectrum/TOPAZ_2503_2502_sphere/"))
         self.addParameter(StringPG("Run number of data file:", "2503"))
         self.addParameter(StringPG("Run number of background file:", "2502"))
-        # self.addParameter(IntegerPG("Number of detectors:", 14))
+        self.addParameter(IntegerPG("Number of border channels to exclude:", 16))
         self.addParameter(LoadFilePG("DetCal file:", "/SNS/users/ajschultz/DetCal/TOPAZ_2011_02_16.DetCal"))
         self.addParameter(BooleanEnablePG("Apply Savitzky-Golay smoothing Filter?", "[1,3,0]"))
         self.addParameter(IntegerPG("Number of points to the left of center:", 20))
@@ -222,15 +225,15 @@ class TOPAZ_spectrum(GenericTOF_SCD):
         path = self.getParameter(0).value
         runNum_1 = self.getParameter(1).value
         runNum_2 = self.getParameter(2).value
-        # number_of_detectors = self.getParameter(3).value
-        DetCalFilename = self.getParameter(3).value
-        doSmoothing = self.getParameter(4).value
-        pointsLeft = self.getParameter(5).value
-        pointsRight = self.getParameter(6).value
-        polyDegree = self.getParameter(7).value
-        V_rod = self.getParameter(8).value
-        V_sphere = self.getParameter(9).value
-        outPath = self.getParameter(10).value
+        nBorder = self.getParameter(3).value
+        DetCalFilename = self.getParameter(4).value
+        doSmoothing = self.getParameter(5).value
+        pointsLeft = self.getParameter(6).value
+        pointsRight = self.getParameter(7).value
+        polyDegree = self.getParameter(8).value
+        V_rod = self.getParameter(9).value
+        V_sphere = self.getParameter(10).value
+        outPath = self.getParameter(11).value
         
         # Write input instructions to the log file.
         filename = outPath + 'Spectrum_' + runNum_1 + '_' + runNum_2 + '.log'
@@ -263,7 +266,7 @@ class TOPAZ_spectrum(GenericTOF_SCD):
         
         logFile.write('\n\nDirectory for output spectrum and log files: ' + outPath)
                 
-        hom = 0.39559974    # Planck's constant divided by neutron mass
+        hom = 0.39559974    # h over m: Planck's constant divided by neutron mass
         
         # Open spectrum output file
         filename = outPath + 'Spectrum_' + runNum_1 + '_' + runNum_2 + '.dat'
@@ -304,6 +307,8 @@ class TOPAZ_spectrum(GenericTOF_SCD):
         DetCalFile = open(DetCalFilename, 'r')
         number_of_detectors = 0
         DetNum = []
+        nRows = []
+        nCols = []
         DetD = []
         CenterX = []
         CenterY = []
@@ -319,6 +324,8 @@ class TOPAZ_spectrum(GenericTOF_SCD):
                     T0_shift = float( lineList[2] )
                 if lineList[0] == '5':
                     DetNum.append( int( lineList[1] ) )
+                    nRows.append( int( lineList[2] ) )
+                    nCols.append( int( lineList[3] ) )
                     DetD.append( float( lineList[7] ) )
                     CenterX.append( float( lineList[8] ) )
                     CenterY.append( float( lineList[9] ) )
@@ -348,13 +355,25 @@ class TOPAZ_spectrum(GenericTOF_SCD):
             ClearSelect(ds_1).getResult()
             ClearSelect(ds_2).getResult()
             #
-            #  The select the pixels in the region, by index, since
-            # each detector's DataSet has indices from 0 to 65535, we
-            # don't need to worry about what pixel IDs are in what
-            # area detector.
             #
-            SelectByIndex(ds_1, "0:65535", "Set Selected").getResult()
-            SelectByIndex(ds_2, "0:65535", "Set Selected").getResult()
+            if nBorder == 0:
+                # all pixels are included in the spectrum
+                SelectByIndex(ds_1, "0:65535", "Set Selected").getResult()
+                SelectByIndex(ds_2, "0:65535", "Set Selected").getResult()
+            else:
+                # border channels are excluded
+                first_col = nBorder
+                last_col = nCols[i] - nBorder
+                first_row = nBorder
+                last_row = nRows[i] - nBorder
+                
+                for col in range(first_col,(last_col+1)):
+                    first_index = (col-1)*nCols[i] + first_row-1
+                    last_index  = (col-1)*nCols[i] + last_row-1
+                    range_string = str(first_index) + ':' + str(last_index)
+                    SelectByIndex( ds_1, range_string, "Set Selected" ).getResult()
+                    SelectByIndex( ds_2, range_string, "Set Selected" ).getResult()
+
             
             #  Sum up the spectra from the region and send the data
             #  to the Isaw tree
@@ -425,7 +444,8 @@ class TOPAZ_spectrum(GenericTOF_SCD):
             
         outFile.close()    
         logFile.close()
-        print 'The End!'
+        
+        return 'The End!'
             
         
     def getCategoryList( self):      
