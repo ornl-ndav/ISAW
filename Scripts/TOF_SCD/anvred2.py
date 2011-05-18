@@ -16,6 +16,13 @@
 # anvred2.py:
 #    This version reads one spectrum file containing spectra for
 #    each detector. The spectra are created by "TOPAZ_spectrum.py".
+#
+# Modfications by Xiaoping Wang, April 2011
+# Added Selection of neutron wavelengths limits wlMin, wlMax
+# Omit zero intensity peaks in integrate file XP Wang 03/21/2011
+# Changed to >=0 and used absolute value for minium I/sing(I) = 0  XP Wang 02/24/2011
+#
+#
 # 
 # Comments from Fortran source:
 # C**************************   ANVRED  ******************************
@@ -81,7 +88,6 @@ from readrefl_SNS import *
 from readSpecCoef import *
 from spectrumCalc import *
 from spectrum2 import *
-# from readSpectrum import *
 from absor_sphere import *
 
 class anvred2(GenericTOF_SCD):
@@ -89,25 +95,28 @@ class anvred2(GenericTOF_SCD):
     def setDefaultParameters(self):
     
         self.super__clearParametersVector()
-        self.addParameter(DataDirPG("Working directory", "C:/Users/Arthur/Desktop/Topaz/nickel/TOPAZ_1172_EV/test"))
-        self.addParameter(StringPG("Experiment name", "Ni1172_EV"))
-        self.addParameter(FloatPG("Total scattering linear abs coeff in cm^-1", 1.692))
-        self.addParameter(FloatPG("True absorption linear abs coeff in cm^-1", 0.411))
-        self.addParameter(FloatPG("Radius of spherical crystal in cm", 0.10))
+        self.addParameter(DataDirPG("Working directory", ""))
+        self.addParameter(StringPG("Experiment name", ""))
+        self.addParameter(FloatPG("Total scattering linear abs coeff in cm^-1", 1.000))
+        self.addParameter(FloatPG("True absorption linear abs coeff in cm^-1", 1.000))
+        self.addParameter(FloatPG("Radius of spherical crystal in cm", 0.1))
         self.addParameter(BooleanEnablePG("Is the incident spectrum fitted?","[False, 1, 1]"))
         self.addParameter(LoadFilePG("File with spectrum coefficients", \
-            "C:/SNS/Jython/anvred/spectrum.dat"))
+            ""))
         self.addParameter(LoadFilePG("File with the spectra for each detector", \
-            "C:/ISAW/InstrumentInfo/SNS/TOPAZ/Spectrum_1268_1270.dat"))
+            ""))
         # self.addParameter(IntegerPG("The initial detector bank number", 1))
         self.addParameter(FloatPG("Wavelength to normalize to in Angstroms", 1.0))
         self.addParameter(IntegerPG("The minimum I/sig(I)", 0))
-        self.addParameter(IntegerPG("Width of border (number of channels)", 5))
-        self.addParameter(IntegerPG("Minimum peak count", 50))
-        self.addParameter(FloatPG("Minimum d-spacing (Angstroms)", 0.3))
+        self.addParameter(IntegerPG("Width of border (number of channels)", 16))
+        self.addParameter(IntegerPG("Minimum peak count", 10))
+        self.addParameter(FloatPG("Minimum d-spacing (Angstroms)", 0.6))
         self.addParameter(IntegerPG("Assign scale factors (1) per setting or (2) per detector", 1))
-        self.addParameter(FloatPG("Multiply FSQ and sig(FSQ) by scaleFactor", 0.00001))
-        
+        self.addParameter(FloatPG("Multiply FSQ and sig(FSQ) by scaleFactor", 0.1))
+        # Set-up limits for neutron wavelentgh XP Wang 02/24/2011
+        self.addParameter(FloatPG("Minimum wavelength (Angstroms)", 0.7))
+        self.addParameter(FloatPG("Maximum wavelength (Angstroms)", 3.5))
+
     def getResult(self):
 
         directory_path = self.getParameter(0).value
@@ -125,9 +134,11 @@ class anvred2(GenericTOF_SCD):
         dMin = self.getParameter(12).value
         iIQ = self.getParameter(13).value
         scaleFactor = self.getParameter(14).value
+        wlMin = self.getParameter(15).value   # XP Wang 02/24/2011
+        wlMax = self.getParameter(16).value   # XP Wang 02/24/2011
         
         # open the anvred.log file in the working directory
-        fileName = directory_path + 'anvred.log'
+        fileName = directory_path + 'anvredsigma.log'
         logFile = open( fileName, 'w' )
         
         # open the hkl file in the working directory
@@ -210,7 +221,7 @@ class anvred2(GenericTOF_SCD):
             
             lineString = specInput.readline()   # read "Bank 1" line
             
-            for i in range( nod + 1 ):
+            for i in range( nod ):
                 # set arrays to zero
                 time = []
                 counts = []
@@ -219,7 +230,7 @@ class anvred2(GenericTOF_SCD):
                 while True:
                     lineString = specInput.readline()
                     lineList = lineString.split()
-                    if len(lineList) == 0:break
+                    if len(lineList) == 0: break
                     if lineList[0] == 'Bank': break
                     time.append( float( lineList[0] ) )
                     counts.append( float( lineList[1] ) )
@@ -253,8 +264,10 @@ class anvred2(GenericTOF_SCD):
                 
                 # spectra[id][0] are the times-of-flight
                 # spectra[id][1] are the counts
-                spect = spectrum2( wavelength, xtof[id], \
+                spectx = spectrum2( wavelength, xtof[id], \
                     one, spectra[id][0], spectra[id][1] )
+                spect = spectx[0]            # the spectral normalization parameter
+                relSigSpect = spectx[1]      # the relative sigma of spect
                 if spect == 0.0:
                     print '*** Wavelength for normalizing to spectrum is out of range.'
                 spect1.append(spect)
@@ -350,8 +363,15 @@ class anvred2(GenericTOF_SCD):
                 logFile.write('\n    H   K   L       FSQ     SIG     WL      INTI' + \
                     '    SIG   SPECT  SINSQT  ABTRANS   TBAR\n')
             # end of set-up for new run or detector
-                    
-            if minIsigI > 0 and inti < (minIsigI * sigi):
+           
+            # Omit zero intensity peaks from integrate file XP Wang 03/21/2011
+            # Changed to >=0 and absolute value  XP Wang 02/24/2011
+            if inti == 0.0 :
+                logFile.write(' %4d%4d%4d *** intI = 0.0 \n' \
+                    % (h, k, l))
+                continue  
+     
+            if minIsigI >= 0 and inti < abs(minIsigI * sigi):
                 logFile.write(' %4d%4d%4d *** inti < (minIsigI * sigi) \n' \
                     % (h, k, l))
                 continue
@@ -360,7 +380,18 @@ class anvred2(GenericTOF_SCD):
                 logFile.write(' %4d%4d%4d *** ipkobs < ipkMin \n' \
                     % (h, k, l))
                 continue
-            
+
+            # Set-up limits for neutron wavelentgh XP Wang 02/24/2011
+            if wl < wlMin:
+                logFile.write(' %4d%4d%4d *** wl < wlMin \n' \
+                    % (h, k, l))
+                continue
+
+            if wl > wlMax:
+                logFile.write(' %4d%4d%4d *** wl > wlMax \n' \
+                    % (h, k, l))
+                continue
+
             nRows = calibParam[4][id]
             nCols = calibParam[5][id]
             
@@ -398,9 +429,10 @@ class anvred2(GenericTOF_SCD):
                 spect = spect / spect1[id]
             
             if iSpec == 0:
-                spect = spectrum2( wl, xtof[id], \
+                spectx = spectrum2( wl, xtof[id], \
                   spect1[id], spectra[id][0], spectra[id][1] )
-            
+                spect = spectx[0]
+                relSigSpect = spectx[1]
             if spect == 0.0:
                 logFile.write(' %4d%4d%4d *** spect == 0.0 \n' \
                     % (h, k, l))
@@ -423,7 +455,11 @@ class anvred2(GenericTOF_SCD):
             correc = correc / trans[0]
             
             fsq = inti * correc
+
             sigfsq = sigi * correc
+            
+            # Add normalization error to sigma
+            sigfsq = sqrt( sigfsq**2 + (relSigSpect*fsq)**2 )  # not sure if last term is squared
             
             # tbar is the Coppen's tbar
             tbar = trans[1]
