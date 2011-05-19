@@ -169,7 +169,7 @@ public class IntegrateNorm {
          int det = Peak.detnum( );
          int Chan = ( int ) Peak.z( );
          int nTimes = nTimeChans;
-         
+         boolean UseIntErr = true;//System.getProperty( "SIGMA","" ).equals( "INTENSITY" );
          if ( IntegrateNorm.DEBUG )
             System.out.println( "Peak num #time channels=" + Peak.seqnum( )
                   + "," + nTimeChans );
@@ -206,18 +206,17 @@ public class IntegrateNorm {
          
          XScale xscl = D.getX_scale( );
          int BadEdgeWidth = NBoundaryPixels;
-         int xx=0;
-         if( i+1 == 4105)
-            xx=1;
          for( int chan = Math.max( 0 , Chan - ( nTimes - 1 ) / 2 ) ; !done
                && chan <= Math.min( Chan + ( nTimes - 1 ) / 2 ,
                      xscl.getNum_x( ) - 2 ) ; chan++ )
          {
 
+
+            
             OneSlice slice = new OneSlice( grid , chan , ( int ) ( .5f + Peak
                   .y( ) ) , ( int ) ( .5f + Peak.x( ) ) , nPixels , nPixels ,
                   BadEdgeWidth );
-
+            
             double MaxErrChiSq = 0;
             double chiSqr = Double.NaN;
             double[] errs = new double[ 8 ];
@@ -235,7 +234,7 @@ public class IntegrateNorm {
                double[] sigs = new double[ xs.length ];
                Arrays.fill( ys , 0 );
                Arrays.fill( sigs , 1 );
-               
+               //sigs = slice.getstDevs( );
                for( int xi=0; xi<xs.length; xi++)
                   xs[xi] = xi;
 
@@ -249,10 +248,11 @@ public class IntegrateNorm {
 
                errs = fitter.getParameterSigmas( );// Use other for cases when
                                                   // params near the boundary
+               //System.out.print( "("+(errs[IBACK]) +","+(errs[ITINTENS]) +")" );
                I_bErr = errs[IBACK];
                Ierr = errs[3];
                errs = fitter.getParameterSigmas_2( );
-
+               //System.out.print( "("+(errs[IBACK] ) +","+(errs[ITINTENS]) +")" );
                if ( Double.isNaN( Ierr ) )
                   Ierr = errs[3];
 
@@ -261,7 +261,8 @@ public class IntegrateNorm {
 
                Ierr = Math.min( Ierr , errs[3] );
                // boundaries
-
+               //errs=slice.getstDevs( );
+               //System.out.println( "("+errs[IBACK]+","+errs[ITINTENS]+")" );
                DD = slice.getAllParameters( );
 
                GoodSlicec = ' ';
@@ -279,11 +280,28 @@ public class IntegrateNorm {
             }
 
             // ----- Record info to log file -----------------
+            UseIntErr = true;
             try
             {
-
-               I_bErr = I_bErr * Math.sqrt( chiSqr * slice.ncells( ) );
-               I_bErr = I_bErr * I_bErr + slice.getInitialTotIntensity( );
+               if( UseIntErr)
+               {
+                  I_bErr= I_bErr*I_bErr*slice.getInitialTotIntensity( )/slice.ncells();
+                  I_bErr = slice.ncells()*slice.ncells()*I_bErr +slice.getInitialTotIntensity( );
+                  I_bErr +=slice.ncells()*DD[0];
+                  Ierr *= Math.sqrt(  slice.getInitialTotIntensity( )/slice.ncells() );
+                  
+               }else
+               {
+                  double IBackground =slice.ncells()*DD[0];
+                  double x = I_bErr;
+                  I_bErr = slice.getInitialTotIntensity( ) +IBackground;
+               
+                  I_bErr /= (1-IBackground/slice.getInitialTotIntensity() );
+                 // I_bErr += x*x*chiSqr / slice.ncells( );
+                  
+                  Ierr *= Math.sqrt( chiSqr / slice.ncells( ) );
+               }
+               
                logBuffer.append( String.format(
                     "%5d %7.3f %8.3f%c %8.3f %8.3f %8.3f %6d %10.2f %10.2f"
                            + " %13.3f %8.5f %9.5f %9.5f %9.5f %9.5f\n" ,
@@ -292,7 +310,7 @@ public class IntegrateNorm {
                      slice.ncells( ) , slice.getInitialTotIntensity( ) ,
                     ( slice.getInitialTotIntensity( ) - 
                           slice.getParameters( )[0] * slice.ncells( ) ) ,
-                     Ierr * Math.sqrt( chiSqr / slice.ncells( ) ) ,
+                     Ierr  ,
                      slice.getAvBackGroundLeft( ) , DD[4] , DD[5] ,
                      DD[6] , Math.sqrt( I_bErr ) ) );
                
@@ -846,7 +864,7 @@ public class IntegrateNorm {
       int S_y2 =10;
       int S_xy =11;
       int S_1 =12;
-      
+      boolean average= false;
       IDataGrid grid; 
       int row,col;
       int chan; 
@@ -921,6 +939,43 @@ public class IntegrateNorm {
       {
          return params;
         
+      }
+      
+      void showTestData()
+      {
+        System.out.println("Base_Values=");
+        for( int i=0; i<BaseValues.length; i++)
+           if( i != 1)
+              System.out.println( BaseValues[i]);
+        System.out.println("--------------------------------");
+        System.out.println("Parameters");
+        double[] PP = getAllParameters();
+        for( int i=0; i <PP.length; i++)
+           System.out.println(PP[i]);
+        System.out.println("--------------------------------");
+        System.out.println("Derivatives");
+        double[] x= new double[ncells()];
+        for( int j=0; j< x.length; j++)
+           x[j]=j;
+        for( int i=1; i<PP.length; i++)
+        {
+           double[] drv= derivativeRules[i].get_dFdp( x );
+          System.out.println( i+","+drv[0]+","+drv[(int)(ncells()/4)]+","
+                +drv[(int)(2*ncells()/4)]+","+drv[(int)(3*ncells()/4)]  );
+        }
+        System.out.println("startRow,Nrows="+startRow+","+Nrows);
+        System.out.println("startCol,Ncols="+startCol+","+Ncols);
+        double[]vals = getValues(x);
+        int j=0;
+        for( int r=0; r< Nrows; r++)
+           for( int c=0; c<Ncols;c++)
+           { 
+              vals[j]+= Intensity[r][c];
+              j++;
+           
+           }
+        System.out.println( "vals="+vals[0]+","+vals[(int)(ncells()/4)]+","
+              +vals[(int)(2*ncells()/4)]+","+vals[(int)(3*ncells()/4)]  );
       }
       /**
        * 
@@ -1154,6 +1209,14 @@ public class IntegrateNorm {
       }
       private void FinishIntensity( IDataGrid grid, int startRow, int startCol, int chan)
       {
+         if( !average )
+         {        
+            for(int i=0; i< stDevs.length; i++)
+               stDevs[i]= Math.max( .8,Math.sqrt(stDevs[i]));
+            
+            return;
+         }
+         
          Arrays.fill( BaseValues , 0 );
          int top,
              bottom, 
@@ -1481,6 +1544,11 @@ public class IntegrateNorm {
      
       }
       
+      public double[] getstDevs()
+      {
+         return stDevs;
+      }
+      
       private float[][] CreateClearfloatArray( int Nrows, int Ncols)
       {
          float[][] Res = new float[Nrows][Ncols];
@@ -1496,9 +1564,39 @@ public class IntegrateNorm {
          col = col-startCol;
          stDev = stDev*stDev;
          int x = row*Ncols+col;
-         for( int  x1=Math.max(x-1 , 0 ); x1<= Math.min( x+1 , stDevs.length-1 ); x1++)
+        /* for( int  x1=Math.max(x-1 , 0 ); x1<= Math.min( x+1 , stDevs.length-1 ); x1++)
             for( int x2 = Math.max( x1-Ncols , x1 );x2 <= Math.min( x1+Ncols , stDevs.length-1 );x2+=Ncols)
                stDevs[x2] += stDev;
+        */
+         stDevs[x] += intensity;
+         if( !average)
+         {
+            Intensity[row][col] +=intensity;
+            return;
+         }
+         if( x-Ncols >=0)
+            stDevs[x-Ncols] += intensity;
+         if( x+Ncols < stDevs.length)
+            stDevs[x+Ncols] += intensity;
+         if( col>0)//x-1 is at neg col which would wrap around
+         {
+            stDevs[x-1] +=intensity;
+
+            if( x-1-Ncols >=0)
+               stDevs[x-1-Ncols] += intensity;
+            if( x-1+Ncols < stDevs.length)
+               stDevs[x-1+Ncols] += intensity;
+         }
+         if( col+1 < Ncols)
+         {
+
+            stDevs[x+1] +=intensity;
+
+            if( x+1-Ncols >=0)
+               stDevs[x+1-Ncols] += intensity;
+            if( x+1+Ncols < stDevs.length)
+               stDevs[x+1+Ncols] += intensity;
+         }
          
          
          if( Intensity == null || Intensity.length < 1 ||
@@ -1523,6 +1621,40 @@ public class IntegrateNorm {
          System.arraycopy( P1,0,Res,0,4);
          System.arraycopy(P,4,Res,4,3);
          return Res;
+      }
+      
+      //Using Henri Gavin paper-Duke University
+      public double[] calcErrors()
+      {
+         double[] xs = new double[ ncells()];
+         for( int xi=0; xi<xs.length; xi++)
+            xs[xi] = xi;
+
+         double[][]JTWJ= new double[this.numParameters( )][this.numParameters( )];
+         for( int p=0; p<numParameters(); p++)
+         {  double[] deriv1= get_dFdai(xs , p);
+            double[] vals = getValues( xs);// in this case these are also the errs
+                                           // to generalize, must get predicted y vals
+            
+            Arrays.fill( JTWJ[p],0.);
+            for(int p2=p; p2< numParameters(); p2++)
+            {
+               double[] deriv2 = deriv1;
+               if( p2 > p )
+                  deriv2= get_dFdai(xs,p2);
+                for( int i=0; i< ncells();i++)
+                  JTWJ[p][p2] += vals[i]*vals[i]*deriv1[i]*deriv2[i];
+                JTWJ[p2][p]= JTWJ[p][p2];
+               
+            }
+         }
+         
+         double[][] invJTWJ= LinearAlgebra.getInverse( JTWJ );
+         
+         double[] Res = new double[numParameters()];
+         for( int i=0; i< numParameters(); i++)
+              Res[i] = Math.sqrt(  invJTWJ[i][i] /(ncells()-numParameters()+1));
+           return Res;
       }
     
       /**
