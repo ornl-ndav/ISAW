@@ -158,6 +158,8 @@ public class IntegrateUtils
      float ratio    = n_signal/n_border;
 
      float slice_total = 0;      // slice total on peak + background region
+     float slice_total_var =0;   // slice total variance for Peak + backgroun
+     float slice_back_var =0;    // slice total variance for background
      float p_sig_plus_back = 0;  // signal + background total for peak region
      float intensity;            // intensity at one voxel
      float border;               // total on border region only 
@@ -184,15 +186,24 @@ public class IntegrateUtils
        slice_peak_x = -1;
        slice_peak_y = -1;
        slice_total  =  0;
-       p_sig_plus_back = 0;
+       p_sig_plus_back = 0;  
+       slice_total_var =0;  
+       slice_back_var =0;   
+       float err;
        for(int i = first_x - 1; i <= last_x + 1;   i++)
          for(int j = first_y - 1; j <= last_y + 1; j++)
        {
          intensity = getObs( ds, ids[i][j], k );
+         err = getErrObs( ds, ids[i][j],k);
          slice_total += intensity;
+         slice_total_var += err*err;
          if ( i >= first_x  &&  i <= last_x &&    // check if pixel in peak 
               j >= first_y  &&  j <= last_y )     // region of this slice
            p_sig_plus_back += intensity;
+         else
+         {
+            slice_back_var += err*err;
+         }
 
          if ( intensity > slice_peak )
          {
@@ -209,10 +220,12 @@ public class IntegrateUtils
          border_peak = true;
        else
          border_peak = false;
-
+       slice_total_var -=slice_back_var;//Only interior points are used
        border = slice_total - p_sig_plus_back;    // total on border region only
        slice_I    = p_sig_plus_back - ratio * border;
-       slice_sigI = (float)Math.sqrt(p_sig_plus_back + ratio * ratio * border);
+       slice_sigI = (float)Math.sqrt(slice_total_var +ratio*ratio*slice_back_var);
+             //             p_sig_plus_back + ratio * ratio * border);
+       float x = (float)Math.sqrt(   p_sig_plus_back + ratio * ratio * border);
 
        totI += slice_I;
        totSigI = (float)Math.sqrt( slice_sigI * slice_sigI + totSigI * totSigI);
@@ -337,7 +350,9 @@ public class IntegrateUtils
       float n_border = n_total - n_signal;
       float ratio    = n_signal/n_border;
 
-      float slice_total = 0;      // slice total on peak + background region
+      float slice_total = 0;      // slice total on peak + background region  
+      float slice_total_var =0;   // slice total variance for Peak + backgroun
+      float slice_back_var =0;    // slice total variance for background
       float p_sig_plus_back = 0;  // signal + background total for peak region
       float intensity;            // intensity at one voxel
       float border;               // total on border region only 
@@ -366,14 +381,21 @@ public class IntegrateUtils
         slice_peak_y = -1;
         slice_total  =  0;
         p_sig_plus_back = 0;
+        slice_total_var =0;  
+        slice_back_var =0;   
+        float err;
         for(int i = first_x - 1; i <= last_x + 1;   i++)
           for(int j = first_y - 1; j <= last_y + 1; j++)
         {
           intensity = getObs( ds, ids.getData_entry(i,j), k );
+          err= getErrObs( ds, ids.getData_entry(i,j), k );
           slice_total += intensity;
+          slice_total_var +=err*err;
           if ( i >= first_x  &&  i <= last_x &&    // check if pixel in peak 
                j >= first_y  &&  j <= last_y )     // region of this slice
             p_sig_plus_back += intensity;
+          else
+             slice_back_var +=err*err;
 
           if ( intensity > slice_peak )
           {
@@ -389,11 +411,15 @@ public class IntegrateUtils
              slice_peak_y == last_y  + 1  )
           border_peak = true;
         else
+        {
           border_peak = false;
-
+        }
         border = slice_total - p_sig_plus_back;    // total on border region only
+        slice_total_var -= slice_back_var;//Only interior points are used
         slice_I    = p_sig_plus_back - ratio * border;
-        slice_sigI = (float)Math.sqrt(p_sig_plus_back + ratio * ratio * border);
+        slice_sigI = (float)Math.sqrt(slice_total_var +ratio*ratio*slice_back_var);
+        //             p_sig_plus_back + ratio * ratio * border);
+      
 
         if( slice_I >0)
         {
@@ -1909,6 +1935,23 @@ public class IntegrateUtils
        return 0f;
     return yValues[z];
   }
+  
+
+  /**
+   * Determine the observed intensity of the given id and time slice
+   * number.
+   */
+  public static float getErrObs(DataSet ds, int id, int z){
+    if( ds==null ) return 0f;
+
+    Data d=ds.getData_entry(id);
+    if(d==null) return 0f;
+    float[] errValues = d.getErrors( );
+    if( errValues == null || z < 0 || z >=errValues.length)
+       return 0f;
+    return errValues[z];
+  }
+  
   /**
    * Determine the observed intensity of the given id and time slice
    * number.
@@ -1925,6 +1968,24 @@ public class IntegrateUtils
 
     
   }
+  
+  /**
+   * Determine the observed intensity of the given id and time slice
+   * number.
+   */
+  public static float getErrObs(DataSet ds, Data id, int z){
+    if( ds==null ) return 0f;
+
+    
+    if(id==null) return 0f;
+    float[] errValues = id.getErrors( );
+    if( errValues == null || z < 0 || z >=errValues.length)
+       return 0f;
+    return errValues[z];
+
+    
+  }
+
 
 
   /**
