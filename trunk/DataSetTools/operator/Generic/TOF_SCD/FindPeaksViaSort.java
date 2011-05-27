@@ -685,6 +685,8 @@ public class FindPeaksViaSort
 
     if ( Float.isNaN( array_min_val )  || 
          Float.isNaN( array_max_val )  ||
+         array_min_val < 0             ||
+         array_max_val < 0             ||
          array_min_val >= array_max_val )   // must find min & max
     { 
       array_min_val = data_arr[0][0][0];
@@ -694,6 +696,13 @@ public class FindPeaksViaSort
           for ( int page = 0; page < n_pages; page++ )
           {
             value = data_arr[row][col][page];
+
+            if ( value < 0 )                       // clamp values that are 
+            {                                      // negative to be 0, so this
+              value = 0.0f;                        // can work with normalized
+              data_arr[row][col][page] = 0.0f;     // data.
+            }
+
             if ( value > array_max_val )
               array_max_val = value;
             else if ( value < array_min_val )
