@@ -30,6 +30,7 @@ import EventTools.ShowEventsApp.Command.IndexPeaksCmd;
 import EventTools.ShowEventsApp.Command.IndexARCS_PeaksCmd;
 import EventTools.ShowEventsApp.Command.IntegratePeaksCmd;
 import EventTools.ShowEventsApp.Command.SelectionInfoCmd;
+import EventTools.ShowEventsApp.Command.IndexAndRefineUBCmd;
 import EventTools.ShowEventsApp.Command.UBwTolCmd;
 import EventTools.ShowEventsApp.Command.Util;
 import EventTools.ShowEventsApp.Controls.ScalarHandlePanel;
@@ -65,6 +66,7 @@ public class PeakListHandler implements IReceiveMessage
     message_center.addReceiver( this, Commands.GET_PEAKS_TO_SPHERE_INTEGRATE );
     message_center.addReceiver( this, 
                                 Commands.INDEX_PEAKS_WITH_ORIENTATION_MATRIX);
+    message_center.addReceiver( this, Commands.LSQRS_REFINE_ORIENTATION_MATRIX);
   }
 
 
@@ -278,7 +280,9 @@ public class PeakListHandler implements IReceiveMessage
                                                   cmd.getRequiredFraction(),
                                                   cmd.getFixedPeakIndex() );
 
-        this.UB = getErrors( UB, Convert2IPeak(peakNew_list), tolerance ); 
+        this.UB = getErrorsAndSendMatrix( UB, 
+                                          Convert2IPeak(peakNew_list), 
+                                          tolerance ); 
 
         Util.sendInfo( "Finished Indexing" );
       }
@@ -338,7 +342,9 @@ public class PeakListHandler implements IReceiveMessage
       
          Util.sendInfo( "\n" + psiStr + uStr + vStr );
 
-         UB = getErrors( UB, Convert2IPeak(peakNew_list), tolerance );
+         UB = getErrorsAndSendMatrix( UB, 
+                                      Convert2IPeak(peakNew_list), 
+                                      tolerance );
 
          Util.sendInfo( "Finished Indexing" );
          this.UB = UB;
@@ -367,6 +373,90 @@ public class PeakListHandler implements IReceiveMessage
        message_center.send( mark_indexed ); 
        return false;
     } 
+
+    else if(message.getName().equals(Commands.LSQRS_REFINE_ORIENTATION_MATRIX))
+    {
+      Object obj = message.getValue();
+      if ( ! (obj instanceof IndexAndRefineUBCmd ) )
+      {
+        Util.sendError( "Wrong command type in " +
+                         Commands.LSQRS_REFINE_ORIENTATION_MATRIX );
+        return false;
+      } 
+
+      if ( peakNew_list == null ||  peakNew_list.size() == 0 )
+      {
+        Util.sendError( "NO PEAKS, can't refine Orientation matrix" );
+        return false;
+      }
+
+      IndexAndRefineUBCmd cmd = (IndexAndRefineUBCmd)obj;
+      float tol = cmd.getTolerance();
+      System.out.println( "Tolerance = " + tol );
+
+      double[][] newUB     = new double[3][3];
+      double[][] newUB_inv = new double[3][3];
+      double[][] oldUB     = cmd.getUB_double();
+
+      oldUB = LinearAlgebra.getTranspose( oldUB );
+
+      // Multiply oldUB by 2PI to conform to the convention used by OptimzeUB
+      for ( int row = 0; row < 3; row++ )
+        for ( int col = 0; col < 3; col++ )
+          oldUB[row][col] *= (2*Math.PI);
+      double[][] oldUB_inv = LinearAlgebra.copy( oldUB );
+      LinearAlgebra.invert( oldUB_inv );
+
+      System.out.println("Before OptimizeUB, old UB = " );
+      LinearAlgebra.print( oldUB );
+
+      Vector peaks = new Vector();
+      for ( int i = 0; i < peakNew_list.size(); i++ )
+        peaks.add( peakNew_list.elementAt(i) );
+
+      boolean failed = false;
+      try
+      {
+        double[][] hkls;
+        hkls = IndexPeaks_Calc.OptimizeUB( peaks, oldUB_inv, newUB_inv, tol );
+        if ( hkls == null )
+          failed = true;
+      }
+      catch ( Exception ex )
+      {
+        failed = true;
+      }
+      if ( failed )
+      {
+        Util.sendError("NOT Enough Data, failed to refine Orientation matrix");
+        return false;
+      }
+
+      newUB = LinearAlgebra.copy( newUB_inv );
+      LinearAlgebra.invert( newUB );
+      float[][] UB_float = new float[3][3];
+      
+      // Divide newUB by 2PI to conform to the convention used in IsawEV
+      for ( int row = 0; row < 3; row++ )
+        for ( int col = 0; col < 3; col++ )
+        {
+          UB_float[row][col] = (float)(newUB[row][col] / (2*Math.PI));
+          newUB[row][col]    = (float)(newUB[row][col] / (2*Math.PI));
+        }
+
+      this.UB = getErrorsAndSendMatrix( UB_float, 
+                                        Convert2IPeak(peakNew_list), 
+                                        tol );
+
+      Util.sendInfo( "Finished Refining UB" );
+
+      newUB = LinearAlgebra.getTranspose( newUB );
+      System.out.println("BACK FROM OptimizeUB, new UB = " );
+      LinearAlgebra.print( newUB );
+      System.out.println("Orientation Matrix's UB = " );
+      LinearAlgebra.print( this.UB );
+      return false;
+    }
 
     else if( message.getName().equals( Commands.INDEX_PEAKS_ROSS ))
     {
@@ -402,7 +492,7 @@ public class PeakListHandler implements IReceiveMessage
            return false;
        }
         
-       this.UB = getErrors( UB, Peaks, value[2]); 
+       this.UB = getErrorsAndSendMatrix( UB, Peaks, value[2]); 
     
        return false;
     }
@@ -496,7 +586,9 @@ public class PeakListHandler implements IReceiveMessage
   }
 
 
-  private float[][] getErrors(float[][] UB, Vector<IPeak>Peaks, float tolerance)
+  private float[][] getErrorsAndSendMatrix( float[][] UB, 
+                                            Vector<IPeak>Peaks, 
+                                            float tolerance )
   {
     float[][] UBT = null;
 

@@ -81,6 +81,8 @@ public class indexPeaksPanel extends    JPanel  implements IReceiveMessage
 
    private JButton              applyBtn;
 
+   private JButton              refineBtn;
+
    private JButton              MatFileBtn;
 
    private JTextField           MatFileName;
@@ -260,6 +262,12 @@ public class indexPeaksPanel extends    JPanel  implements IReceiveMessage
       applyBtn.setToolTipText( "<HTML><BODY>Will get Matrix and"+
                "<BR> apply it to the Peaks" );
       panel.add(applyBtn);
+
+      refineBtn = new JButton("Refine Current UB");
+      refineBtn.addActionListener(new refineListener());
+      refineBtn.setToolTipText( "<HTML><BODY>Apply Least Squares"+
+                                "<BR> to Refine Current UB" );
+      panel.add(refineBtn);
       
      /* 
       ViewMatBtn = new JButton("Show Matrix");
@@ -532,6 +540,22 @@ public class indexPeaksPanel extends    JPanel  implements IReceiveMessage
       }
       
       return false;
+   }
+
+
+   private class refineListener implements ActionListener
+   {
+     public void actionPerformed( ActionEvent e )
+     {
+       System.out.println("refineButton pressed");
+
+       float tolerance = getTolerance();
+       if ( Float.isNaN( tolerance ) )
+         return;
+
+       IndexAndRefineUBCmd cmd = new IndexAndRefineUBCmd( tolerance );
+       sendMessage( Commands.REFINE_ORIENTATION_MATRIX, cmd );
+     }
    }
 
 

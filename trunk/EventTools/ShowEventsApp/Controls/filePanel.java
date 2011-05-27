@@ -123,6 +123,8 @@ public class filePanel implements IReceiveMessage
    private long               num_to_show;
    private long               num_to_show_UDP;
    private int                num_threads;
+   private String             num_to_load_str;
+   private String             num_to_show_str;
 
    private boolean            use_manual_port;
    private int                udp_port;
@@ -175,10 +177,12 @@ public class filePanel implements IReceiveMessage
       auto_connect_port = 9000;
       inst_computer     = FileUtil.LoadSupportedSNS_InstrumentInfo();
 
-      numAvailable    = 10000000;
+      numAvailable    = 0;
       firstToLoad     = 1; 
-      num_to_load     = 25000000;
-      num_to_show     =  5000000;
+      num_to_load     = 200000000;
+      num_to_load_str = "200,000,000";
+      num_to_show     =  10000000;
+      num_to_show_str =  "10,000,000";
 
       udp_port        = 8002;
       num_to_show_UDP = 5000000;
@@ -283,11 +287,11 @@ public class filePanel implements IReceiveMessage
       firstEvent.setHorizontalAlignment(JTextField.RIGHT);
       
       JLabel numLoad = new JLabel("Number to Load: ");
-      eventsToLoad = new JTextField( ""+num_to_load );
+      eventsToLoad = new JTextField( num_to_load_str );
       eventsToLoad.setHorizontalAlignment(JTextField.RIGHT);
       
       JLabel maxEvents = new JLabel("Number to Show in 3D: ");
-      eventsToShow = new JTextField( ""+num_to_show );
+      eventsToShow = new JTextField( num_to_show_str );
       eventsToShow.setHorizontalAlignment(JTextField.RIGHT);
 
       protonsOnTarget = new JTextField( "0" );
@@ -754,13 +758,13 @@ public class filePanel implements IReceiveMessage
          availableEvents.setText(nf.getInstance().format(size));
          firstEvent.setText("1");
          
-         if (size > 25000000)
-            eventsToLoad.setText("25,000,000");
+         if (size > num_to_load)
+            eventsToLoad.setText(nf.getInstance().format(num_to_load));
          else
             eventsToLoad.setText(nf.getInstance().format(size));
       
-         if (size > 5000000)
-            eventsToShow.setText("5,000,000");
+         if (size > num_to_show)
+            eventsToShow.setText(nf.getInstance().format(num_to_show));
          else
             eventsToShow.setText(nf.getInstance().format(size));
 
@@ -1094,7 +1098,7 @@ public class filePanel implements IReceiveMessage
     */
    private int AutoGetUDP_Port( String instrument )
    {
-      inst_computer     = FileUtil.LoadSupportedSNS_InstrumentInfo();
+      inst_computer = FileUtil.LoadSupportedSNS_InstrumentInfo();
 
                                // first get the name of the instrument computer
       String node_name = "localhost";  

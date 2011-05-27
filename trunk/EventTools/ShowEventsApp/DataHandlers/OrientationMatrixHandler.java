@@ -56,6 +56,7 @@ import EventTools.ShowEventsApp.Command.ConfigLoadCmd;
 import EventTools.ShowEventsApp.Command.SelectionInfoCmd;
 import EventTools.ShowEventsApp.Command.UBwTolCmd;
 import EventTools.ShowEventsApp.Command.Util;
+import EventTools.ShowEventsApp.Command.IndexAndRefineUBCmd;
 
 /**
  *  This class maintains a copy of the orientation matrix in
@@ -97,6 +98,7 @@ public class OrientationMatrixHandler implements IReceiveMessage
     message_center.addReceiver( this, Commands.WRITE_ORIENTATION_MATRIX );
     message_center.addReceiver( this, Commands.LOAD_CONFIG_INFO );
     message_center.addReceiver( this, Commands.READ_ORIENTATION_MATRIX );
+    message_center.addReceiver( this, Commands.REFINE_ORIENTATION_MATRIX );
   }
 
 
@@ -165,7 +167,7 @@ public class OrientationMatrixHandler implements IReceiveMessage
           Util.sendError( "There is no Orientation matrix to save" );
           return false;
        }
-       float[][] UBo = UpdateUB(orientation_matrix,true);
+       float[][] UBo = ApplyGoniometerRotationToUB(orientation_matrix,true);
        float[][] UB = LinearAlgebra.getTranspose(UBo);
        double[] abc = DataSetTools.operator.Generic.TOF_SCD.Util.abc(
                LinearAlgebra.float2double( UB ));
@@ -201,8 +203,7 @@ public class OrientationMatrixHandler implements IReceiveMessage
           return false;
        }
        float[][] orMat = LinearAlgebra.getTranspose( (float[][]) Res );
-       orMat = UpdateUB(orMat,false);
-       //SetNewOrientationMatrix( orMat );
+       orMat = ApplyGoniometerRotationToUB(orMat,false);
        
        message_center.send( new Message( Commands.SET_ORIENTATION_MATRIX,
              Commands.MakeSET_ORIENTATION_MATRIX_arg( orMat,null),
@@ -212,6 +213,29 @@ public class OrientationMatrixHandler implements IReceiveMessage
        Util.sendInfo( "The Sample phi,chi and omega have been " +
                       "applied to this matrix" );
        IndexPeakWithOrientationMat( orMat, OffInt);
+    }
+
+    else if ( message.getName().equals(Commands.REFINE_ORIENTATION_MATRIX))
+    {
+       if( orientation_matrix == null )
+       {
+          Util.sendError( "NO Orientation Matrix so Can't Refine!" );
+          return false;
+       }
+       
+       Object obj = message.getValue();
+       if ( !(obj instanceof IndexAndRefineUBCmd) ) 
+       {
+         Util.sendError( "Wrong command type for " + message.getName() );
+         return false;
+       }
+
+       IndexAndRefineUBCmd cmd = (IndexAndRefineUBCmd)obj;
+       cmd.setUB( orientation_matrix );
+
+       Message mess = new Message( Commands.LSQRS_REFINE_ORIENTATION_MATRIX,
+                                   cmd, true );
+       message_center.send( mess );
     }
 
     else if ( message.getName().equals(Commands.ADD_ORIENTATION_MATRIX_INFO) )
@@ -273,6 +297,7 @@ public class OrientationMatrixHandler implements IReceiveMessage
      return true;
   }
   
+
   private boolean IndexPeakWithOrientationMat( float[][]UB, float offInt)
   { 
      // NOTE: we don't use a separate thread for setting the orientation matrix
@@ -454,7 +479,7 @@ public class OrientationMatrixHandler implements IReceiveMessage
     last_qxyz = new_qxyz;
   }
   
-  private float[][] UpdateUB( float[][] UBT, boolean to_out)
+  private float[][] ApplyGoniometerRotationToUB( float[][] UBT, boolean to_out)
   {
      SNS_SampleOrientation Sorient = new SNS_SampleOrientation( phi,chi,omega);
      float[][] mat ;

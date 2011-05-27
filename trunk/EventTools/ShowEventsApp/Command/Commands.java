@@ -164,6 +164,10 @@ public class Commands
    */
   public static final String READ_ORIENTATION_MATRIX = 
                                                   "READ_ORIENTATION_MATRIX";
+  public static final String REFINE_ORIENTATION_MATRIX = 
+                                                  "REFINE_ORIENTATION_MATRIX";
+  public static final String LSQRS_REFINE_ORIENTATION_MATRIX = 
+                                      "LSQRS_REFINE_ORIENTATION_MATRIX";
 
   public static final String INDEX_PEAKS = "INDEX_PEAKS";
 
