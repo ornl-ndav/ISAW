@@ -483,8 +483,12 @@ public class FindPeaksViaSort
 
   /**
    *  Find the peaks in the three dimension array of SCD data.  
-
+   *
    *  NOTE: We assume data stored as raw_data[row][col][channel] !
+   *  NOTE: This method will set any negative values in the data array
+   *        to zero, to allow it to be used with data where the background
+   *        has been subtracted.
+   *  
    *  
    *  @param  raw_data        The 3D array of data from one detector
    *  @param  do_smoothing    If true, the data will be smoothed by 
@@ -549,8 +553,11 @@ public class FindPeaksViaSort
    *  Find the peaks in the three dimension array of SCD data.  This form
    *  of the method allows the user to specify the min and max value in 
    *  the array, if known, to avoid one extra scan through the full array.
-
+   *
    *  NOTE: We assume data stored as raw_data[row][col][channel] !
+   *  NOTE: This method will set any negative values in the data array
+   *        to zero, to allow it to be used with data where the background
+   *        has been subtracted.
    *  
    *  @param  raw_data        The 3D array of data from one detector
    *  @param  do_smoothing    If true, the data will be smoothed by 
