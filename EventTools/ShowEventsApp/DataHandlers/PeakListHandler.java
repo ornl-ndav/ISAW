@@ -297,7 +297,7 @@ public class PeakListHandler implements IReceiveMessage
     else if( message.getName().equals( Commands.INDEX_PEAKS_ARCS) )
     {
       Object obj = message.getValue();
-      System.out.println("IndexPeaksCmd = \n " + obj );
+//      System.out.println("IndexPeaksCmd = \n " + obj );
       if ( obj == null || !(obj instanceof IndexARCS_PeaksCmd) )
       {
         Util.sendError("ERROR: wrong value object in INDEX_PEAKS command");
@@ -392,7 +392,7 @@ public class PeakListHandler implements IReceiveMessage
 
       IndexAndRefineUBCmd cmd = (IndexAndRefineUBCmd)obj;
       float tol = cmd.getTolerance();
-      System.out.println( "Tolerance = " + tol );
+//      System.out.println( "Tolerance = " + tol );
 
       double[][] newUB     = new double[3][3];
       double[][] newUB_inv = new double[3][3];
@@ -406,10 +406,10 @@ public class PeakListHandler implements IReceiveMessage
           oldUB[row][col] *= (2*Math.PI);
       double[][] oldUB_inv = LinearAlgebra.copy( oldUB );
       LinearAlgebra.invert( oldUB_inv );
-
+/*
       System.out.println("Before OptimizeUB, old UB = " );
       LinearAlgebra.print( oldUB );
-
+*/
       Vector peaks = new Vector();
       for ( int i = 0; i < peakNew_list.size(); i++ )
         peaks.add( peakNew_list.elementAt(i) );
@@ -444,6 +444,8 @@ public class PeakListHandler implements IReceiveMessage
           newUB[row][col]    = (float)(newUB[row][col] / (2*Math.PI));
         }
 
+      indexAllPeaks( peakNew_list, LinearAlgebra.getTranspose(UB_float), tol);
+
       this.UB = getErrorsAndSendMatrix( UB_float, 
                                         Convert2IPeak(peakNew_list), 
                                         tol );
@@ -451,10 +453,12 @@ public class PeakListHandler implements IReceiveMessage
       Util.sendInfo( "Finished Refining UB" );
 
       newUB = LinearAlgebra.getTranspose( newUB );
+/*
       System.out.println("BACK FROM OptimizeUB, new UB = " );
       LinearAlgebra.print( newUB );
       System.out.println("Orientation Matrix's UB = " );
       LinearAlgebra.print( this.UB );
+*/
       return false;
     }
 
@@ -595,12 +599,21 @@ public class PeakListHandler implements IReceiveMessage
     try
     {
       indexAllPeaks( peakNew_list, LinearAlgebra.getTranspose(UB), tolerance);
+
       double[][] UB2 = new double[3][3];
       double[] abc = new double[7];
       double[] sig_abc = new double[7];
-   
-      UB2= LinearAlgebra.float2double( ScalarHandlePanel.LSQRS( Peaks , 
-                                                                sig_abc ));
+/*
+      System.out.println("UB passed in to getErrorsAnd...");
+      LinearAlgebra.print( UB ); 
+*/   
+      UB2 = LinearAlgebra.float2double( ScalarHandlePanel.LSQRS( Peaks , 
+                                                                 sig_abc ));
+/*
+      System.out.println("UB back from ScalarHandlePanel..");
+      LinearAlgebra.print( UB2 ); 
+*/
+
       if(  UB2 == null || sig_abc[0] <= 0)
       {
          Util.sendError( "LeastSquares Error. No error estimates" );
