@@ -513,9 +513,9 @@ public class HistogramHandler implements IReceiveMessage
     SetNewInstrumentCmd cmd = (SetNewInstrumentCmd)obj;
 
     String inst  = cmd.getInstrumentName();
-    float  max_Q = cmd.getMaxQValue();
-    if ( max_Q < 0.5 )
-      max_Q = 0.5f;
+    max_Q = cmd.getMaxQValue();
+    if ( max_Q < 0.05 )
+      max_Q = 0.05f;
     if ( max_Q > MAX_Q_ALLOWED )
       max_Q = MAX_Q_ALLOWED;
 
@@ -607,7 +607,13 @@ public class HistogramHandler implements IReceiveMessage
     ProjectionBinner3D x_binner = new ProjectionBinner3D(x_bin1D, xVec);
     ProjectionBinner3D y_binner = new ProjectionBinner3D(y_bin1D, yVec);
     ProjectionBinner3D z_binner = new ProjectionBinner3D(z_bin1D, zVec);
-
+/*
+    System.out.println("Allocating histogram, max_Q = " + max_Q );
+    System.out.println("Binners are: ");
+    System.out.println( x_binner );
+    System.out.println( y_binner );
+    System.out.println( z_binner );
+*/
     if ( histogram == null || histogram.xEdgeBinner().numBins() != num_bins )
     {
       boolean allocated_OK = false;
