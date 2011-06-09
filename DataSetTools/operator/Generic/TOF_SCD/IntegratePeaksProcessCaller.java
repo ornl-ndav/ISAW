@@ -66,6 +66,9 @@ public class IntegratePeaksProcessCaller implements IOperator
   int      incr_time_amount;
 
   float    d_min;
+  float    maxUnitCellLength;
+  String   PixelRows;
+  String   PixelCols;
   int      log_Nth_peak;
   String   peak_algorithm;
 
@@ -80,6 +83,9 @@ public class IntegratePeaksProcessCaller implements IOperator
   /**
    *  Construct an object to integrate the peaks in the specified detector,
    *  using the specified parameters.
+ * @param maxUnitCellLength 
+ * @param pixelCols 
+ * @param pixelRows 
    */
   public IntegratePeaksProcessCaller( String   cmd_name,
                                       String   fin_name, 
@@ -98,6 +104,10 @@ public class IntegratePeaksProcessCaller implements IOperator
                                       int      incr_time_amount,
 
                                       float    d_min, 
+                                      float    maxUnitCellLength, 
+                                      
+                                      String pixelRows, 
+                                      String pixelCols,
                                       int      log_Nth_peak,
                                       String   peak_algorithm,
 
@@ -126,6 +136,9 @@ public class IntegratePeaksProcessCaller implements IOperator
     this.incr_time_amount   = incr_time_amount;
 
     this.d_min              = d_min;
+    this.maxUnitCellLength  = maxUnitCellLength;
+    this.PixelRows          = pixelRows;
+    this.PixelCols          = pixelCols;
     this.log_Nth_peak       = log_Nth_peak;
     this.peak_algorithm     = peak_algorithm;
 
@@ -180,6 +193,9 @@ public class IntegratePeaksProcessCaller implements IOperator
                 incr_time_amount       + " " +
 
                 d_min                  + " " +
+                maxUnitCellLength      + " " +
+                PixelRows              + " " +
+                PixelCols              + " " +
                 log_Nth_peak           + " " + 
                 peak_algorithm         + " " + 
 

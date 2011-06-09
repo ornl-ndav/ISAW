@@ -849,7 +849,7 @@ public class Util{
    *         </table>
    *     </td>
    * </tr></table><P>  <P>
-   * <U> dNChan = dTime/( length of time bin center)         
+   * <U> dNChan = dTime/( length of time bin center) </U>        
    */
   public static float dTChan( float dQ, float Q, float Time, float dT_Chan ){
      
@@ -865,89 +865,6 @@ public class Util{
    * @param grid  IDataGrid with references to the Data blocks for each
    *              column and row of an area detector.
    * @param MaxXtallength  The maximum length of a side in a unit cell
-   * <HR width="100%">
-   * <H1><Center>FORMULAS</center></H1><P>
-   * <table><tr>
-   *   <td> Q = </td>
-   *   <td> <table><tr><td> mv sin(scatAng/2)</td></tr>
-   *               <tr><td><hr width=100%></td></tr>
-   *               <tr><td align=CENTER> &pi; </td></tr>
-   *         </table> </td>
-   * </tr></table><P>
-   * 
-   * <table border = 1><CAPTION> Partial wrt ScatAngle</CAPTION><tr>
-   *    <td> dQ =</td>
-   *    <td> <table>
-   *            <tr><td> mv cos(scatAng/2) d ScatAng</td></tr>
-   *            <tr><td><hr width="100%"></td></tr>
-   *            <tr><td align = CENTER> 2&pi; </td></tr> 
-   *    
-   *         </table>
-   *    </td>
-   *   <td> =</td>
-   *   <td><table>
-   *         <tr><td align=center> Q dScatAng</td></tr>
-   *         <tr><td><hr width="100%"></td></tr>
-   *         <tr><td>  2 tan(ScatAng/2)</td></tr>
-   *   
-   *       </table>
-   *   </td>
-   * </tr></table><P>
-   * <table border=1><CAPTION> Solve for dScatAng</CAPTION><tr>
-   *   <td> dScatAng =</td>
-   *   <td> <table> 
-   *          <tr> <td align=center>2 tan(ScatAng/2) dQ</td></tr>
-   *            <tr><td><hr width="100%"></td></tr>
-   *          <tr> <td align=center> Q</td></tr>
-   *        </table>
-   *   </td><P>
-   *   
-   * 
-   * </tr></table><P>
-   * 
-   * <table border = 1><CAPTION> Partial wrt to time. v = path_lenTot/Time</CAPTION>
-   *    <tr>
-   *      <td> dQ =</td>
-   *      <td> 
-   *         <table> 
-   *            <tr><td>[-]m* sin(ScatAng/2)path_lenTot*dTime</td></tr>
-   *            <tr><td><hr width="100%"></td></tr>
-   *            <tr><td align=center> &pi; Time<sup>2</sup>
-   *         
-   *         </table>
-   *      </td>
-   *      <td> =</td>
-   *      <td><table>
-   *            <tr> <td>[-]Q*dTime</td></tr>
-   *            <tr><td><hr width="100%"></td></tr>
-   *            <tr><td align=center>  Time</td></tr>
-   *            
-   *      
-   *          </table>
-   *      </td>
-   * 
-   * </tr></table><P>
-   * 
-   * <table border=1><CAPTION> Solve for dTime</CAPTION><tr>
-   *    <td> dTime =</td>
-   *     <td><table>
-   *           <tr><td>[-] Time*dQ</td></tr>
-   *            <tr><td><hr width="100%"></td></tr>
-   *            <tr><td align=center> Q</td></tr>
-   *         </table>
-   *     </td>
-   * </tr></table><P>
-   * 
-   * <CENTER>Now transfer changed to dRow,dCol. </CENTER><P>
-   * <CENTER>Assume Span of peak well with in dQ*.3 where 
-   *               dQ=1/Max Crystal cell side</CENTER><P>
-   *               
-   * <U>dDist =  Dist*dScatAng</u> &nbsp; &nbsp; &nbsp; (s =r &theta; formula)<P>
-   * <U> dNrows = dDist/(height of center pixel)</u><P>
-   * <U> dNcols = dDist/(width of center pixel)</u><P>
-   * <U> dNChan = dTime/( length of time bin center) 
-   * 
-   * 
    */
   public static IPeak centroidA(IPeak peak, DataSet ds, IDataGrid grid,
             float MaxXtallength){
