@@ -60,7 +60,7 @@ public class DailyPeaksWizard_SNS extends Wizard
      ,{10,-1,-1,-1, 6}  //use Calib file
      ,{-1, 2,-1, 6,-1}  //RestrRuns ????
      ,{-1, 4,-1,-1,-1}  //Filename to save peaks to ??
-   
+     ,{17,-1,-1,-1,14}  //Max length unit cell
 
             };
 
