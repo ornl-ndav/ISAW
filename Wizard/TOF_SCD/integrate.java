@@ -77,6 +77,9 @@ public class integrate extends GenericOperator{
       addParameter( new PlaceHolderPG("Zmin/max",new int[0]));
       addParameter( new IntegerPG("Increment slice size",1));
       addParameter( new FloatPG("min d-spacing",0));
+      addParameter( new FloatPG("Max unit Cell Length",12));
+      addParameter( new IntArrayPG("Pixel Rows to keep(blank for all","1:300"));
+      addParameter( new IntArrayPG("Pixel Cols to keep","1,300"));
       addParameter( new IntegerPG("log every Nth peak",1));
         java.util.Vector V = new java.util.Vector();
         V.addElement( "MaxItoSigI"); V.addElement("Shoe Box"); V.addElement("MaxIToSigI-old");
@@ -120,6 +123,13 @@ public class integrate extends GenericOperator{
       S.append("The incremental amount to increase the slice size by.");
       S.append("@param   ");
       S.append("the minimum d-spacing allowed");
+      S.append("@param   ");
+      S.append("Maximum unit cell length in real space");
+      S.append("@param   ");
+      S.append("Rows to keep or blank for all. Currently all rows from ");
+      S.append( "  the minimum to the maximum in the list will be used" );
+      S.append("@param   ");
+      S.append("Maximum unit cell length in real space");
       S.append("@param   ");
       S.append("Log every nth peak");
       S.append("@param   ");
@@ -171,14 +181,18 @@ public class integrate extends GenericOperator{
          int[] timeZrange = (int[])(getParameter(2).getValue());
          int incrSlice = ((IntegerPG)(getParameter(3))).getintValue();
          float dmin = ((FloatPG)(getParameter(4))).getfloatValue();
-         int listNthPeak = ((IntegerPG)(getParameter(5))).getintValue();
-         java.lang.String PeakAlg = getParameter(6).getValue().toString();
-         int[] colXrange = (int[])(getParameter(7).getValue());
-         int[] rowYrange = (int[])(getParameter(8).getValue());
-         float max_shoebox = ((FloatPG)(getParameter(9))).getfloatValue();
-         float monCount = ((FloatPG)getParameter(10)).getfloatValue();
-         java.lang.Object logbuffer = (java.lang.Object)(getParameter(11).getValue());
-         java.lang.Object Xres=DataSetTools.operator.Generic.TOF_SCD.Integrate_new.integrate(ds,centering,timeZrange,incrSlice,dmin,listNthPeak,PeakAlg,colXrange,rowYrange,
+         float maxUnitCellLength = ((FloatPG)(getParameter(5))).getfloatValue();
+         int[] PixRows =((IntArrayPG)getParameter(6)).getArrayValue( );
+         int[] PixCols =((IntArrayPG)getParameter(7)).getArrayValue( );
+         int listNthPeak = ((IntegerPG)(getParameter(8))).getintValue();
+         java.lang.String PeakAlg = getParameter(9).getValue().toString();
+         int[] colXrange = (int[])(getParameter(10).getValue());
+         int[] rowYrange = (int[])(getParameter(11).getValue());
+         float max_shoebox = ((FloatPG)(getParameter(12))).getfloatValue();
+         float monCount = ((FloatPG)getParameter(13)).getfloatValue();
+         java.lang.Object logbuffer = (java.lang.Object)(getParameter(14).getValue());
+         java.lang.Object Xres=DataSetTools.operator.Generic.TOF_SCD.Integrate_new.integrate(ds,centering,timeZrange,incrSlice,dmin,
+                            maxUnitCellLength,PixRows,PixCols,listNthPeak,PeakAlg,colXrange,rowYrange,
                        max_shoebox,monCount,logbuffer );
          ds.removeAllOperators();
          ds.removeAll_data_entries();

@@ -2059,6 +2059,7 @@ public class Util {
     * @param inst                 Instrument name(Prefix after path for a file)
     * @param FileExt              Extension for filename
     * @param d_min                minimum d-spacing to consider
+    * @param maxUnitCellLength 
     * @param peak_algorithm       Peak Algorithm:MaxIToSigI,Shoe Box, 
     *                                MaxIToSigI-old,TOFINT,or EXPERIMENTAL
     * @param Xrange               Range of offsets around a peak's 
@@ -2090,7 +2091,10 @@ public class Util {
            String  inst,
            String  FileExt,
            float   d_min,
-
+           float maxUnitCellLength, 
+           String  PixelRows,
+           String  PixelCols,
+           
            String  peak_algorithm,
            String  Xrange,
            String  Yrange,
@@ -2232,6 +2236,10 @@ public class Util {
                                                     incr_time_amount,
 
                                                     d_min,
+                                                    maxUnitCellLength,
+
+                                                    PixelRows,
+                                                    PixelCols,
                                                     log_Nth_peak,
                                                     peak_algorithm,
                             
@@ -2322,11 +2330,29 @@ public class Util {
          int n_peaks = all_peaks.size();      // Only use peaks with 
                                               // reflag % 100 == 10
          Peak_new peak;
+
+         int[] rowsKeep = null;
+         int[] colsKeep = null;
+         if( PixelRows.trim().length( ) >0)
+            rowsKeep = IntList.ToArray( PixelRows );
+         if( PixelCols.trim( ).length() > 0)
+            colsKeep =IntList.ToArray( PixelCols );
+         if( rowsKeep.length <2)
+            rowsKeep = null;
+         if( colsKeep.length < 2)
+            colsKeep =null;
+  
          Vector filtered_peaks = new Vector();
          for (int i = 0; i < n_peaks; i++ )
          {
            peak = (Peak_new)all_peaks.elementAt(i);
            if ( peak.reflag() % 100 == 10 )
+
+              if( rowsKeep == null || 
+                    (peak.y()>=rowsKeep[0] && peak.y() <= rowsKeep[rowsKeep.length-1]))
+
+                 if( colsKeep == null || 
+                       (peak.x()>=colsKeep[0] && peak.x() <= colsKeep[colsKeep.length-1]))
              filtered_peaks.add( peak );
          }
 
@@ -2439,6 +2465,7 @@ public class Util {
     * @param inst                 Instrument name(Prefix after path for a file)
     * @param FileExt              Extension for filename
     * @param d_min                minimum d-spacing to consider
+    * @param maxUnitCellLength    maximum length of real unit cell
     * @param PeakAlg              Peak Algorithm:MaxIToSigI,Shoe Box, 
     *                                MaxIToSigI-old,TOFINT,or EXPERIMENTAL
     * @param Xrange               Range of offsets around a peak's 
@@ -2467,6 +2494,9 @@ public class Util {
            String  inst,
            String  FileExt,
            float   d_min,
+           float   maxUnitCellLength,
+           String  PixelRows,
+           String  PixelCols,
            String  PeakAlg,
            String  Xrange,
            String  Yrange,
@@ -2509,6 +2539,9 @@ public class Util {
            inst,
            FileExt,
            d_min,
+           maxUnitCellLength,
+           PixelRows,
+           PixelCols,
 
            PeakAlg,
            Xrange,
@@ -2621,7 +2654,8 @@ public class Util {
               StringBuffer sbuff = new StringBuffer();
               
               OperatorThread opThrd = getIntegOpThread( ds, centering,
-                       timeZrange, increase, d_min, 1, PeakAlg, colXrange,
+                       timeZrange, increase, d_min,maxUnitCellLength, 
+                       PixelRows,PixelCols,1, PeakAlg, colXrange,
                        rowYrange, max_shoebox, monCount, sbuff );
               
               opThrd.setName( filename + " ds num=" + DSnums[ dsIndx ] );//For error reporting
@@ -2691,10 +2725,27 @@ public class Util {
                                             // reflag % 100 == 10 
       Peak_new peak;
       Vector filtered_peaks = new Vector();
+      int[] rowsKeep = null;
+      int[] colsKeep = null;
+      if( PixelRows.trim().length( ) >0)
+         rowsKeep = IntList.ToArray( PixelRows );
+      if( PixelCols.trim( ).length() > 0)
+         colsKeep =IntList.ToArray( PixelCols );
+      if( rowsKeep == null || rowsKeep.length <2)
+         rowsKeep = null;
+      if( colsKeep == null ||colsKeep.length < 2)
+         colsKeep =null;
       for (int i = 0; i < n_peaks; i++ )
       {
         peak = (Peak_new)Peaks.elementAt(i);
+        IDataGrid grid = peak.getGrid( );
+           
         if ( peak.reflag() % 100 == 10 )
+           if( rowsKeep == null || 
+                 (peak.y()>=rowsKeep[0] && peak.y() <= rowsKeep[rowsKeep.length-1]))
+
+              if( colsKeep == null || 
+                    (peak.x()>=colsKeep[0] && peak.x() <= colsKeep[colsKeep.length-1]))
           filtered_peaks.add( peak );
       }
       Peaks = filtered_peaks;
@@ -2803,9 +2854,10 @@ public class Util {
    }
    //Sets up the operator thread
    private static OperatorThread getIntegOpThread( DataSet ds , int centering ,
-            int[] timeZrange , int increase , float d_min , int listNthPeak ,
-            String PeakAlg , int[] colXrange , int[] rowYrange , float max_shoebox,
-            float monCount , StringBuffer sbuff ) {
+            int[] timeZrange , int increase , float d_min ,float maxUnitCelllength,
+            String  PixelRows, String  PixelCols,int listNthPeak , String PeakAlg , 
+            int[] colXrange , int[] rowYrange , float max_shoebox,float monCount , 
+            StringBuffer sbuff ) {
 
       integrate Int = new integrate();
       Int.getParameter( 0 ).setValue( ds );
@@ -2813,13 +2865,16 @@ public class Util {
       Int.getParameter( 2 ).setValue( timeZrange );
       Int.getParameter( 3 ).setValue( increase );
       Int.getParameter( 4 ).setValue( d_min );
-      Int.getParameter( 5 ).setValue( listNthPeak );
-      Int.getParameter( 6 ).setValue( PeakAlg );
-      Int.getParameter( 7 ).setValue( colXrange );
-      Int.getParameter( 8 ).setValue( rowYrange );
-      Int.getParameter( 9 ).setValue( max_shoebox );
-      Int.getParameter( 10 ).setValue( monCount );
-      Int.getParameter( 11 ).setValue( sbuff );
+      Int.getParameter( 5 ).setValue(  maxUnitCelllength);
+      Int.getParameter( 6 ).setValue( PixelRows);
+      Int.getParameter( 7 ).setValue(  PixelCols);
+      Int.getParameter( 8 ).setValue( listNthPeak );
+      Int.getParameter( 9 ).setValue( PeakAlg );
+      Int.getParameter( 10 ).setValue( colXrange );
+      Int.getParameter( 11 ).setValue( rowYrange );
+      Int.getParameter( 12 ).setValue( max_shoebox );
+      Int.getParameter( 13 ).setValue( monCount );
+      Int.getParameter( 14 ).setValue( sbuff );
       OperatorThread Res = new OperatorThread( Int );
       
       return Res;

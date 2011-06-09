@@ -86,6 +86,9 @@ public class IntegrateMultipleRuns extends GenericOperator{
       addParameter( new StringPG("Instrument","SCD0"));
       addParameter( new StringPG("File extension",".run"));
       addParameter( new FloatPG("Minimum d-spacing",0));
+      addParameter( new FloatPG("Max Unit Cell Length",12));
+      addParameter( new IntArrayPG("Pixel Rows to keep(blank for all)","1,3000"));
+      addParameter( new IntArrayPG("Pixel Cols to keep(blank for all)","1:3000"));
       addParameter( new ChoiceListPG("Peak Algorithm",new String[]{"MaxIToSigI","Shoe Box", "MaxIToSigI-old","TOFINT",Integrate_new.FIT_PEAK,"EXPERIMENTAL"}));
       addParameter( new IntArrayPG("Box Delta x (col) Range","-2:2"));
       addParameter( new IntArrayPG("Box Delta y (row) Range","-2:2"));
@@ -142,6 +145,13 @@ public class IntegrateMultipleRuns extends GenericOperator{
       S.append("Extension for filename");
       S.append("@param   ");
       S.append("minimum d-spacing to consider");
+      S.append( "@param " );
+      S.append( "Maximum unit cell length in real space" );
+      S.append( "@param " );
+      S.append( "Pixel rows to keep or blank for all. Currently the range of" );
+      S.append( "   rows from min in list to max in list are kept" );
+      S.append( "@param " );
+      S.append( "Pixel cols to keep or blank for all" );
       S.append("@param   ");
       S.append("Peak Algorithm: MaxIToSigI, Shoe_Box, MaxIToSigI-old, TOFINT or EXPERIMENTAL");
       S.append("@param   ");
@@ -201,17 +211,20 @@ public class IntegrateMultipleRuns extends GenericOperator{
          java.lang.String instr = getParameter(11).getValue().toString();
          java.lang.String FileExt = getParameter(12).getValue().toString();
          float d_min = ((FloatPG)(getParameter(13))).getfloatValue();
-         java.lang.String PeakAlg = getParameter(14).getValue().toString();
-         java.lang.String Xrange = (java.lang.String)(getParameter(15).getValue());
-         java.lang.String Yrange = (java.lang.String)(getParameter(16).getValue());
-         float max_shoebox = ((FloatPG)(getParameter(17))).getfloatValue();
-         int MaxThreads = ((IntegerPG)(getParameter(18))).getintValue();
-         boolean ShowLog = ((BooleanPG)(getParameter(19))).getbooleanValue();
-         boolean ShowPeaks = ((BooleanPG)(getParameter(20))).getbooleanValue();
-         boolean append    =(( BooleanPG)(getParameter(21))).getbooleanValue( );
+         float MaxUnitCellLength = ((FloatPG)(getParameter(14))).getfloatValue();
+         java.lang.String PixRows = ((IntArrayPG)getParameter(15)).getStringValue( );
+         java.lang.String PixCols = ((IntArrayPG)getParameter(16)).getStringValue( );
+         java.lang.String PeakAlg = getParameter(17).getValue().toString();
+         java.lang.String Xrange = (java.lang.String)(getParameter(18).getValue());
+         java.lang.String Yrange = (java.lang.String)(getParameter(19).getValue());
+         float max_shoebox = ((FloatPG)(getParameter(20))).getfloatValue();
+         int MaxThreads = ((IntegerPG)(getParameter(21))).getintValue();
+         boolean ShowLog = ((BooleanPG)(getParameter(22))).getbooleanValue();
+         boolean ShowPeaks = ((BooleanPG)(getParameter(23))).getbooleanValue();
+         boolean append    =(( BooleanPG)(getParameter(24))).getbooleanValue( );
          java.lang.Object Xres=Wizard.TOF_SCD.Util.IntegrateMultipleRuns(path,outpath,run_numbers,DataSetNums,expName,
-                  centering,useCalibFile,calibfile,line2use,time_slcie_range,increase,instr,FileExt,d_min,PeakAlg,
-                  Xrange,Yrange,max_shoebox,MaxThreads,ShowLog, ShowPeaks, append );
+                  centering,useCalibFile,calibfile,line2use,time_slcie_range,increase,instr,FileExt,d_min,
+                  MaxUnitCellLength, PixRows,PixCols,PeakAlg,Xrange,Yrange,max_shoebox,MaxThreads,ShowLog, ShowPeaks, append );
 
          return Xres;
        }catch( Throwable XXX){
