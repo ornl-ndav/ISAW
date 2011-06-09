@@ -39,6 +39,7 @@ import DataSetTools.dataset.*;
 import DataSetTools.operator.Generic.TOF_SCD.Peak_new_IO;
 import DataSetTools.operator.DataSet.Attribute.LoadOrientation;
 
+import gov.anl.ipns.Util.Numeric.IntList;
 import gov.anl.ipns.Util.Sys.StringUtil;
 
 import java.util.*;
@@ -52,7 +53,7 @@ import java.io.*;
  *  Since this runs in a separate process, several of these can run 
  *  simultaneously on a multi-core machine or using slurm.  
  */
-public class IntegratePeaksProcess 
+public class IntegratePeaksProcess
 {
   public static final String LOG_SUFFIX       = "integrate.log";
   public static final String INTEGRATE_SUFFIX = ".integrate";
@@ -91,16 +92,16 @@ public class IntegratePeaksProcess
    *  args[ 9] - time slice increment amount 
    *
    *  args[10] - the minimum d spacing to use 
+   *  args[11] - The maximum unit Cell length in real space
+   *  args[12] - step between peaks that are logged
    *
-   *  args[11] - step between peaks that are logged
-   *
-   *  args[12] - name of the integration algorithm.  Must be one of
+   *  args[13] - name of the integration algorithm.  Must be one of
    *             "MaxItoSigI", "Shoe_Box", "MaxIToSigI-old", "TOFINT"
    *
-   *  args[13] - col slice offset in minus direction 
-   *  args[14] - col slice offset in plus direction 
+   *  args[14] - col slice offset in minus direction 
+   *  args[15] - col slice offset in plus direction 
    *
-   *  args[15] - col slice offset in minus direction 
+   *  args[16] - col slice offset in minus direction 
    *  args[16] - col slice offset in plus direction 
    */
   public static void main( String args[] )
@@ -132,17 +133,20 @@ public class IntegratePeaksProcess
     int     incr_time_amount   = Integer.parseInt( args[10] );
 
     float   d_min              = Float.parseFloat( args[11] );
-    int     log_Nth_peak       = Integer.parseInt( args[12] );
-    String  peak_algorithm     = args[13];
+    float   maxUnitCellLength  = Float.parseFloat(  args[12] );
+    int     log_Nth_peak       = Integer.parseInt( args[13] );
+    String  PixRows            = args[15];
+    String PixCols             = args[16];
+    String  peak_algorithm     = args[17];
     if (peak_algorithm.equalsIgnoreCase(Integrate_new.SHOE_BOX.substring(0,4)))
       peak_algorithm = Integrate_new.SHOE_BOX;
 
-    int     minus_col_offset   = Integer.parseInt( args[14] );
-    int     plus_col_offset    = Integer.parseInt( args[15] );
+    int     minus_col_offset   = Integer.parseInt( args[18] );
+    int     plus_col_offset    = Integer.parseInt( args[19] );
 
-    int     minus_row_offset   = Integer.parseInt( args[16] );
-    int     plus_row_offset    = Integer.parseInt( args[17] );
-    float   max_shoebox        = Float.parseFloat( args[18] );
+    int     minus_row_offset   = Integer.parseInt( args[20] );
+    int     plus_row_offset    = Integer.parseInt( args[21] );
+    float   max_shoebox        = Float.parseFloat( args[22] );
 
                                // get rid of any quotes that were placed around
                                // file names to allow names with spaces to be
@@ -168,6 +172,8 @@ public class IntegratePeaksProcess
     System.out.println( "incr_time_amount   = " + incr_time_amount );
 
     System.out.println( "d_min              = " + d_min );
+    System.out.println( "PixRows to keep    = " + PixRows );
+    System.out.println( "PixCols to keep    = " + PixCols );
 
     System.out.println( "log_Nth_peak       = " + log_Nth_peak );
 
@@ -283,12 +289,16 @@ public class IntegratePeaksProcess
     int[] time_range = { minus_time_offset, plus_time_offset };
     int[] col_range  = { minus_col_offset, plus_col_offset };
     int[] row_range  = { minus_row_offset, plus_row_offset };
-
+    int[] prows = IntList.ToArray( PixRows );
+    int[] pcols = IntList.ToArray( PixCols );
     Object result = Integrate_new.integrate( ds,
                                   centering,
                                   time_range,
                                   incr_time_amount,
                                   d_min,
+                                  maxUnitCellLength,
+                                  prows,
+                                  pcols,
                                   log_Nth_peak,
                                   peak_algorithm,
                                   col_range,

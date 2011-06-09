@@ -815,6 +815,53 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
                                   float   monCount,
                                   Object  logbuffer)
   {
+     return integrate(  ds,  centering,timeZrange,incrSlice, 
+           d_min, 12f, null,null,listNthPeak, PeakAlg, colXrange, 
+           rowYrange,max_shoebox, monCount, logbuffer) ;
+  }
+  /**
+   * Integrates one data set
+   * 
+   * @param ds          The data set with the information to integrate with 
+   *                    the orientation attribute set
+   * @param maxUnitCellLength   The maximum length of a unit cell in real space
+   * @param centering   integer 0->6 where primitive is 0, a centered is 1,
+   *                    b centered is 2,c centered is 3,[f]ace centered is 4,
+   *                    [i] body centered is 5, and [r]hombohedral centered is 6
+   * @param timeZrange  left and right offset around Peak time channel to 
+   *                    consider
+   * @param incrSlice   The incremental amount to increase the slice size by.
+   * @param d_min       the minimum d-spacing allowed
+ * @param pcols 
+ * @param prows 
+   * @param listNthPeak Log every nth peak
+   * @param PeakAlg     Peak Algorithm identifier. Use only the Strings below
+   *                    MaxItoSigI, Shoe Box, MaxIToSigI-old, TOFINT                  
+   * @param colXrange   left and   right offset around Peak column to consider. For
+   *                    FIT PEAK algorithm can be used to specify range of good columns.
+   * @param rowYrange   left and right offset around Peak row  to consider
+   * @param monCount    Monitor Count
+   * @param logbuffer   if this a non-null StringBuffer, the log information
+   *                    will be appended to it.
+   * @return            A Vector containing all peaks that were integrated,
+   *                    or an ErrorString if something went wrong.
+   */
+  public static Object integrate( DataSet ds, 
+                                  int     centering,
+                                  int[]   timeZrange, 
+                                  int     incrSlice, 
+                                  float   d_min, 
+                                  float   maxUnitCellLength,
+                                  int[] prows,
+                                  int[] pcols, 
+                                  int     listNthPeak,
+                                  String  PeakAlg, 
+                                  int[]   colXrange, 
+                                  int[]   rowYrange, 
+                                  float   max_shoebox,
+                                  float   monCount,
+                                  Object  logbuffer)
+  {
     float[][]    UB;
       
     // get list of detectors
@@ -865,10 +912,22 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
       System.out.println("Processing detector " + det_number[i] );
      
       innerPeaks=new Vector();
+      int nBadBoundaryRows =0;
+      int nBadBoundaryCols =0;
+      IDataGrid grid = Grid_util.getAreaGrid( ds , det_number[i] );
+      int nrows = grid.num_rows( );
+      int ncols = grid.num_cols( );
+      if( prows != null && prows.length > 1)
+         nBadBoundaryRows = Math.max( prows[0]-1,nrows+1-prows[prows.length-1]);
+      if( pcols != null && pcols.length > 1)
+         nBadBoundaryCols = Math.max( pcols[0]-1,ncols+1-pcols[pcols.length-1]);
       error=Integrate_new.integrateDetector(ds,
                                             innerPeaks,
                                             det_number[i],
                                             d_min,
+                                            maxUnitCellLength,
+                                            nBadBoundaryRows,
+                                            nBadBoundaryCols,
                                             listNthPeak,
                                             centering, 
                                             UB,
@@ -914,6 +973,34 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
                                         IntegratePt opIntPt,
                                         Object      logbuffer)
   {
+     return integrateDetector( ds, peaks, detnum, d_min,12f, 0,0,listNthPeak, 
+         centering,UB,PeakAlg,timeZrange,  colXrange,rowYrange, max_shoebox,
+        incrSlice,opIntPt,logbuffer);
+  } 
+  private static ErrorString integrateDetector(
+        DataSet     ds, 
+        Vector      peaks, 
+        int         detnum,
+        float       d_min,
+        float       maxUnitCellLength,
+        int         nBadBoundaryRows,
+        int         nBadBoundaryCols,
+        int         listNthPeak, 
+        int         centering,
+        float       UB[][],
+        String      PeakAlg,
+        int[]       timeZrange, 
+        int[]       colXrange,
+        int[]       rowYrange,
+        float       max_shoebox,
+        int         incrSlice,
+        IntegratePt opIntPt,
+        Object      logbuffer)
+{
+    if( nBadBoundaryRows < 0)
+       nBadBoundaryRows = 0;
+    if( nBadBoundaryCols < 0)
+       nBadBoundaryCols =0;
     if(DEBUG) System.out.println("Integrating detector new "+detnum);
     StringBuffer logBuffer = new StringBuffer();
     
@@ -1223,7 +1310,7 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
     // move peaks to the most intense point nearby
     
    for(int i=peaks.size()-1; i>=0; i--){
-      IPeak P1=(IPeak)(peaks.elementAt(i));
+      Peak_new P1=(Peak_new)(peaks.elementAt(i));
       IPeak P=IntegrateUtils.maxClosePeak(P1,ds,ids,dX,dY,dZ);
       P.sethkl( P1.h() , P1.k() , P1.l() );
       peaks.setElementAt( P , i );
@@ -1269,14 +1356,10 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
       else if( PeakAlg.equals( FIT_PEAK))
       {
          my_method = FIT_PEAK;                
-         int nBoundaryPixels = colXrange[1]-colXrange[0];
-         if( nBoundaryPixels > ((Peak_new)peaks.elementAt(i)).getGrid( ).num_cols( )/2)
-            nBoundaryPixels = colXrange[0]-1;
-         else
-            nBoundaryPixels =0;         
+         int nBoundaryPixels = Math.max( nBadBoundaryRows , nBadBoundaryCols );  
          
          Operators.TOF_SCD.IntegrateNorm.IntegratePeak((Peak_new) peaks.elementAt(i) , 
-               ds , 12, nBoundaryPixels ,my_buffer );
+               ds , maxUnitCellLength, nBoundaryPixels ,my_buffer );
          
          if ( max_shoebox > 0 && ((IPeak)peaks.elementAt( i )).sigi() <= 0     )
          {
