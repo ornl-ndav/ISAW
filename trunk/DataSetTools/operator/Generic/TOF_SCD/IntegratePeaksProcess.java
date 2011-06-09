@@ -134,19 +134,19 @@ public class IntegratePeaksProcess
 
     float   d_min              = Float.parseFloat( args[11] );
     float   maxUnitCellLength  = Float.parseFloat(  args[12] );
-    int     log_Nth_peak       = Integer.parseInt( args[13] );
-    String  PixRows            = args[15];
-    String PixCols             = args[16];
-    String  peak_algorithm     = args[17];
+    String  PixRows            = args[13];
+    String  PixCols            = args[14];
+    int     log_Nth_peak       = Integer.parseInt( args[15] );
+    String  peak_algorithm     = args[16];
     if (peak_algorithm.equalsIgnoreCase(Integrate_new.SHOE_BOX.substring(0,4)))
       peak_algorithm = Integrate_new.SHOE_BOX;
 
-    int     minus_col_offset   = Integer.parseInt( args[18] );
-    int     plus_col_offset    = Integer.parseInt( args[19] );
+    int     minus_col_offset   = Integer.parseInt( args[17] );
+    int     plus_col_offset    = Integer.parseInt( args[18] );
 
-    int     minus_row_offset   = Integer.parseInt( args[20] );
-    int     plus_row_offset    = Integer.parseInt( args[21] );
-    float   max_shoebox        = Float.parseFloat( args[22] );
+    int     minus_row_offset   = Integer.parseInt( args[19] );
+    int     plus_row_offset    = Integer.parseInt( args[20] );
+    float   max_shoebox        = Float.parseFloat( args[21] );
 
                                // get rid of any quotes that were placed around
                                // file names to allow names with spaces to be
