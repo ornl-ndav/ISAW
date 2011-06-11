@@ -674,16 +674,36 @@ public class IndexPeaks_Calc
        System.out.println("ERROR too few peaks indexed: " + hkl_vals.length );
        return null;    
      }
-
+/*
+     double[][] augmented_hkl_vals = new double[good_peaks.size()][4];
+     double[][] augmented_q_vals   = new double[good_peaks.size()][3];
+     double[][] augmented_UB       = new double[3][4];
+     for ( int index = 0; index < good_peaks.size(); index++ )
+     {
+       for ( int i = 0; i < 3; i++ )
+       {
+         augmented_hkl_vals[ index ][ i ] = hkl_vals[ index ][ i ];
+         augmented_q_vals  [ index ][ i ] = q_vals  [ index ][ i ];
+       }
+       augmented_hkl_vals[index][3] = 1;
+     }
+*/
      double residual = LinearAlgebra.BestFitMatrix( UB, hkl_vals, q_vals );
-//     System.out.println("RESIDUAL = " + residual );
+/*
+     System.out.println("RESIDUAL FROM UB = " + residual );
 
+     double residual2 = LinearAlgebra.BestFitMatrix( augmented_UB, 
+                                                     augmented_hkl_vals, 
+                                                     augmented_q_vals );
+     System.out.println("RESIDUAL 2 FROM Augmented UB = " + residual2 );
+*/
      if ( Double.isNaN(residual) )
        return null;
 
      for ( int row = 0; row < 3; row++ )
        for ( int col = 0; col < 3; col++ )
          newUBinverse[row][col] = UB[row][col];
+//       newUBinverse[row][col] = augmented_UB[row][col];
 
      LinearAlgebra.invert( newUBinverse );
 
