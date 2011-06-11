@@ -424,6 +424,8 @@ public class PeakListHandler implements IReceiveMessage
       }
       catch ( Exception ex )
       {
+//      System.out.println("Exception in OptimizeUB is: " + ex );
+//      ex.printStackTrace();
         failed = true;
       }
       if ( failed )
