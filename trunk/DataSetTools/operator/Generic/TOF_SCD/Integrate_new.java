@@ -275,9 +275,11 @@ import DataSetTools.parameter.*;
 import DataSetTools.operator.DataSet.Attribute.*;
 import DataSetTools.instruments.*;
 import DataSetTools.util.*;
+import DataSetTools.math.*;
 import DataSetTools.trial.*;
 import DataSetTools.retriever.RunfileRetriever;
 import gov.anl.ipns.MathTools.*;
+import gov.anl.ipns.MathTools.Geometry.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 import gov.anl.ipns.MathTools.Geometry.*;
 import gov.anl.ipns.Parameters.BooleanPG;
@@ -953,6 +955,53 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
   }
 
 
+  /**
+   *  This method will calculate the minimum time of flight for a detector
+   *  module, corresponding to a specified minimum d.  The time-of-flight
+   *  corresponding to the specified d is calculated at the positions of the
+   *  four corners of the detector.  The smallest of these times-of-flight
+   *  is returned as the minimum time-of-flight to use for that detector.
+   *  
+   *  @param initial_path  the initial path length.
+   *  @param grid          the IData grid representing the detector
+   *  @param d_min         the requested d_min value
+   *
+   *  @return the smallest time-of-flight corresponding to the specified 
+   *          d_min at the four corners of the detector.
+   */
+  public static float Min_Tof_of_D( float     initial_path, 
+                                    IDataGrid grid, 
+                                    float     d_min )
+  {
+    int n_rows = grid.num_rows();
+    int n_cols = grid.num_cols();
+    
+    int[] rows = { 1, n_rows };      // corner row & col indexes
+    int[] cols = { 1, n_cols };
+
+    DetectorPosition det_pos;
+    Vector3D position;
+    float    final_path;
+    float    tof;
+    float    min_tof       = 1e20f;     // find smallest time-of-flight 
+    float    angle_radians;             // corresponding to specified d_min
+    for ( int i = 0; i < 2; i++ )    
+      for ( int j = 0; j < 2; j++ )
+      {
+        position      = grid.position( rows[i], cols[j] ); 
+        final_path    = position.length(); 
+        det_pos       = new DetectorPosition( position );
+        angle_radians = det_pos.getScatteringAngle();
+        tof = tof_calc.TOFofDSpacing( angle_radians, 
+                                      initial_path + final_path,
+                                      d_min );
+        if ( tof < min_tof )
+          min_tof = tof; 
+      }
+    return min_tof;
+  }
+ 
+
   // ========== start of detector dependence
   //TODO eliminate UB, chi, phi, omega and opIntPt.
   //               Make public (for parallel)
@@ -997,6 +1046,12 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
         IntegratePt opIntPt,
         Object      logbuffer)
 {
+/*
+    System.out.println( "Integrate detector called with d_min = " + d_min );
+    System.out.println( "maxUnitCellLength = " + maxUnitCellLength );
+    System.out.println( "Time range min = " + timeZrange[0] );
+    System.out.println( "Time range max = " + timeZrange[1] );
+*/
     if( nBadBoundaryRows < 0)
        nBadBoundaryRows = 0;
     if( nBadBoundaryCols < 0)
@@ -1137,16 +1192,24 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
 
     float min_tof = x_scale.getStart_x();
     float max_tof = x_scale.getEnd_x();
+
     if ( min_tof < 1000 )
     {
       System.out.println("WARNING: setting min_tof to 1000, not " + min_tof );
       min_tof = 1000;
     }
-    if ( max_tof > 16666 )
+
+    float tof_of_d_min = Min_Tof_of_D( initial_path, grid, d_min );
+    System.out.println("Detector " + grid.ID() + 
+                       " tof_of_d_min = " + tof_of_d_min );
+    if ( min_tof < tof_of_d_min )
     {
-      System.out.println("WARNING: setting max_tof to 16666, not " + max_tof );
-      max_tof = 16666;
+      System.out.println("WARNING: setting min_tof to " + tof_of_d_min );
+      min_tof = tof_of_d_min;
     }
+
+    System.out.println("min_tof = " + min_tof );
+    System.out.println("max_tof = " + max_tof );
 
     Tran3D gonRot    = samp_or.getGoniometerRotation();
     Tran3D gonRotInv = samp_or.getGoniometerRotationInverse();
@@ -1158,6 +1221,9 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
                                         max_tof,
                                         gonRotInv,
                                         inv_orientation_tran );
+
+    System.out.println("MIN HKL = " + min_max_hkl[0] );
+    System.out.println("MAX HKL = " + min_max_hkl[1] );
 
     // TODO add another string buffer
     // System.out.println("MIN, MAX HKL FOR GRID ID " + grid.ID() );
