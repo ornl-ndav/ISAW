@@ -167,6 +167,9 @@ public class EventLoader implements IReceiveMessage
         n_threads++;     
       }
 
+      if ( n_threads > 4 )
+        n_threads = 4;
+
       long start_time = System.nanoTime();
 
       Object results;
@@ -197,6 +200,18 @@ public class EventLoader implements IReceiveMessage
                                             tof_evl,
                                             false,
                                             true );
+        int count = 0;
+        while (java.lang.Thread.activeCount() > 50 && count < 15)
+        try
+        {
+          java.lang.Thread.sleep(1000); 
+          count++;
+        }
+        catch ( Exception ex )
+        {
+          System.out.println("Exception sleeping in EventLoader");
+        }
+
         message_center.send( map_to_Q_cmd );
       }
 
