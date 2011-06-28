@@ -285,6 +285,7 @@ abstract public class GraphViewHandler implements IReceiveMessage,
          fvc.dataChanged( array);
          setGraphSettings( Vs);
          redraw = true;
+         CompareGraph = null;
       }
       
 
@@ -296,6 +297,7 @@ abstract public class GraphViewHandler implements IReceiveMessage,
          display_frame.repaint();
          fvc.paintComponents();
       }
+      CompareGraph = null;
    }
 
    private void StateChange( FunctionViewComponent fvc, ObjectState prevState)
@@ -555,12 +557,17 @@ abstract public class GraphViewHandler implements IReceiveMessage,
    {
       if( AddGraph == null || MenuName == null ||fvc == null)
           return;
+      
+      CompareGraph = null;
       int k = -1;
-      for( int i= AddGraph.getMenuComponentCount( )-1; i>=1; i--)
+      for( int i= AddGraph.getMenuComponentCount( )-1; i>=1 && k <0 ; i--)
       {
          if(AddGraph.getMenuComponent( i ) instanceof JMenuItem)
             if( MenuName.equals( ((JMenuItem)AddGraph.getMenuComponent(i)).getText( )))
+            {
                AddGraph.remove( i );
+               k = i;
+            }
          
       }
       
