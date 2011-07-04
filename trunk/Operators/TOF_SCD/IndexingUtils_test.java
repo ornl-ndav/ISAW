@@ -111,7 +111,7 @@ public class IndexingUtils_test
     float beta  = 90;
     float gamma = 90;
 
-    float required_tolerance = 0.10f;
+    float required_tolerance = 0.20f;
 
     Tran3D UB = new Tran3D();
     double error = IndexingUtils.BestFit_UB( UB, q_vectors, required_tolerance,
@@ -407,15 +407,29 @@ public class IndexingUtils_test
   public static void main( String[] args )
   {
     test_BestFit_UB_given_lattice_parameters();
+    System.out.println("Finished Test 1 ...........");    
+
     test_BestFit_UB();
+    System.out.println("Finished Test 2 ...........");    
+
     test_BestFit_Direction();
+    System.out.println("Finished Test 3 ...........");    
+
     test_ValidIndex();
+    System.out.println("Finished Test 4 ...........");    
     test_NumberIndexed();
+    System.out.println("Finished Test 5 ...........");    
     test_GetIndexedPeaks_1D();
+    System.out.println("Finished Test 6 ...........");    
+    
     test_GetIndexedPeaks_3D();
+    System.out.println("Finished Test 7 ...........");    
     test_MakeHemisphereDirections();
+    System.out.println("Finished Test 8 ...........");    
     test_MakeCircleDirections();
+    System.out.println("Finished Test 9 ...........");    
     test_SelectDirection();
+    System.out.println("Finished Test 10 ...........");    
     System.out.println("Tests Completed");
   }
 
