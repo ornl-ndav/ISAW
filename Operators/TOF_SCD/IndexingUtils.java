@@ -105,7 +105,7 @@ public static float BestFit_UB_1( Tran3D   UB,
                            // Make a hemisphere of possible direction for
                            // plane normals for the reciprocal space planes
                            // with normals in the direction of "a" in unit cell
-  int num_steps   = 360;
+  int num_steps   = 180;
   Vector dir_list = MakeHemisphereDirections(num_steps);
 
   float plane_distance = 1/a;
@@ -159,7 +159,7 @@ public static float BestFit_UB_1( Tran3D   UB,
   Vector directions = new Vector();
   while ( angle <= gamma + 0.5 )
   {
-    Vector extra_dir = MakeCircleDirections( num_steps, a_dir, angle );;
+    Vector extra_dir = MakeCircleDirections( num_steps, a_dir, angle );
     for ( int i = 0; i < extra_dir.size(); i++ )
       directions.add( extra_dir.elementAt(i) );
     angle += angle_step; 
@@ -371,15 +371,19 @@ public static float BestFit_UB( Tran3D            UB,
                                 float a, float b, float c,
                                 float alpha, float beta, float gamma)
 {
+                                    // First, sort the peaks in order of 
+                                    // increasing |Q| so that we can try to
+                                    // index the low |Q| peaks first.
   q_vectors = SortOnVectorMagnitude( q_vectors );
 
-  int num_initial = Math.min( 16, q_vectors.size() ); 
+  if ( num_initial > q_vectors.size() )
+    num_initial = q_vectors.size();
  
   Vector<Vector3D> some_qs = new Vector<Vector3D>();
   for ( int i = 0; i < num_initial; i++ ) 
     some_qs.add( q_vectors.elementAt(i) );
 
-  float degrees_per_step = 1.0f;
+  float degrees_per_step = 2.0f;
   Vector3D a_dir = new Vector3D();
   Vector3D b_dir = new Vector3D();
   Vector3D c_dir = new Vector3D();
@@ -387,7 +391,8 @@ public static float BestFit_UB( Tran3D            UB,
   float error = ScanFor_UB( a_dir, b_dir, c_dir,
                             a, b, c, alpha, beta, gamma,
                             some_qs,
-                            degrees_per_step );
+                            degrees_per_step,
+                            required_tolerance );
 
   float[][] UB_inv_arr = { { a_dir.getX(), a_dir.getY(), a_dir.getZ(), 0 },
                            { b_dir.getX(), b_dir.getY(), b_dir.getZ(), 0 },
@@ -414,6 +419,8 @@ public static float BestFit_UB( Tran3D            UB,
   Vector miller_ind = new Vector();
   Vector indexed_qs = new Vector();
 
+                                     // If we have enough q vectors, try to
+                                     // optimize the directions (ie. UB matrix)
   if ( some_qs.size() >= 3 )
   {
     try
@@ -443,7 +450,9 @@ public static float BestFit_UB( Tran3D            UB,
                          + some_qs.size() );
     }
   }
-
+                                     // now gradually bring in the remainging
+                                     // peaks and re-optimize the UB to index
+                                     // them as well
   int     count = 0;
   while ( num_initial < q_vectors.size() )
   {
@@ -462,6 +471,13 @@ public static float BestFit_UB( Tran3D            UB,
                                       indexed_qs,
                                       fit_error );
 
+    Tran3D temp = new Tran3D( UB );
+    temp.invert();
+    UB_inv_arr = temp.get();
+    a_dir.set( UB_inv_arr[0] );
+    b_dir.set( UB_inv_arr[1] );
+    c_dir.set( UB_inv_arr[2] );
+
     System.out.println("Number Indexed = " + num_indexed );
     fit_error[0] = BestFit_UB( UB, miller_ind, indexed_qs );
 
@@ -478,10 +494,52 @@ public static float BestFit_UB( Tran3D            UB,
     System.out.println( UB );
   }
 
+
+  if ( some_qs.size() >= 3 )    // do one more refinement
+  {
+    try
+    {
+      num_indexed = GetIndexedPeaks_3D( some_qs,
+                                        a_dir, b_dir, c_dir,
+                                        required_tolerance,
+                                        miller_ind,
+                                        indexed_qs,
+                                        fit_error );
+      fit_error[0] = BestFit_UB( UB, miller_ind, indexed_qs );
+
+      Tran3D temp = new Tran3D( UB );
+      temp.invert();
+      UB_inv_arr = temp.get();
+      a_dir.set( UB_inv_arr[0] );
+      b_dir.set( UB_inv_arr[1] );
+      c_dir.set( UB_inv_arr[2] );
+      System.out.println("AFTER ONE LAST CALL TO BestFit_UB");
+      System.out.println("abc_dir = " + a_dir + "  " + b_dir + ", " + c_dir );
+      System.out.println("UB = ");
+      System.out.println( UB );
+    }
+    catch ( Exception ex )
+    {
+      System.out.println("Could not refine initial UB using only "
+                         + some_qs.size() );
+    }
+  }
+
+
+
   return fit_error[0];
 }
 
 
+/**
+ * Sort the specified list of Vector3D objects in order of increasing magnitude
+ * and return a new Vector containing references to the original vectors, but in
+ * order of increasing magnitude.
+ *
+ * @ param Vector of Vector3D obejcts that are to be sorted
+ * @ return A new Vector containing references to the orginanl Vector3D objects, but
+ *          in increasing order.
+ */
 public static Vector<Vector3D> 
          SortOnVectorMagnitude( Vector<Vector3D> q_vectors )
 {
@@ -1007,13 +1065,14 @@ public static Vector MakeCircleDirections( int      n_steps,
                                            Vector3D axis,
                                            float    angle_degrees )
 {
-  axis = new Vector3D( axis );  // make copy of axis, so we don't change it!
-
   if ( n_steps <= 0 )
   {
     throw new IllegalArgumentException("n_steps must be greater than 0 " +
                                        "in make circle directions " + n_steps );
   }
+
+  axis = new Vector3D( axis );  // make copy of axis, so we don't change it!
+
                                // first get a vector perpendicular to axis
   float max_component = Math.abs( axis.getX() );
   float min_component = Math.abs( axis.getX() );
@@ -1061,9 +1120,9 @@ public static Vector MakeCircleDirections( int      n_steps,
   Vector directions = new Vector( n_steps );
   for ( int i = 0; i < n_steps; i++ )
   {
-    rotation.apply_to( vector_at_angle, vector_at_angle );
     Vector3D vec = new Vector3D( vector_at_angle );
     directions.add( vec );
+    rotation.apply_to( vector_at_angle, vector_at_angle );
   }
 
   return directions;
@@ -1124,7 +1183,7 @@ public static int SelectDirection( Vector3D best_direction,
         sum_sq_error += error * error;
       }
 
-      if ( sum_sq_error < min_sum_sq_error )
+      if ( sum_sq_error < min_sum_sq_error + 1.0e-50 )
       {
         min_sum_sq_error = sum_sq_error;
         best_direction.set( direction );
@@ -1239,15 +1298,27 @@ public static float SelectDirections( Vector3D a_dir,
 }
 
 
+/**
+ *  The method very simply scans across all possible direction and orientations for the
+ *  directions of the a, b and c vectors that will minimize the sum-squared deviations 
+ *  from integer values of the projections of the peaks on the a, b and c directions.
+ *  This method will always return precisely one set of a, b and c vectors that minimize
+ *  the sum-squared error.  If several directions and orientations produce the same 
+ *  minimum, this will return the first one that was encountered during the search 
+ *  through directions.  NOTE: This is an expensive calculation if the resolution of
+ *  the vectors searched is less than around 2 degrees per step tested.  This method
+ *  should be most useful if there are a small number of peaks, roughly 2-10 AND all
+ *  peaks belong to the same crystallite.
+ */
 public static float ScanFor_UB( Vector3D a_dir,
                                 Vector3D b_dir,
                                 Vector3D c_dir,
-                                float a,
-                                float b,
-                                float c,
-                                float alpha,
-                                float beta,
-                                float gamma,
+                                float    a,
+                                float    b,
+                                float    c,
+                                float    alpha,
+                                float    beta,
+                                float    gamma,
                                 Vector   q_vectors,
                                 float    degrees_per_step )
 {
@@ -1327,6 +1398,165 @@ public static float ScanFor_UB( Vector3D a_dir,
   System.out.println("ELAPSED TIME = " + (end_time-start_time)/1.0e9 );
   return min_error;
 }
+
+
+/**
+ *  The method uses two passes to scan across all possible directions and orientations 
+ *  for the direction and orientation that best fits the specified list of peaks.  On
+ *  the first pass, those only those sets of directions that index the most peaks are
+ *  kept.  On the second pass, the directions that minimize the sum-squared deviations
+ *  from integer indices are selected from that smaller set of directions.  This method
+ *  should be most useful if number of peaks is on the order of 10-20, and most of 
+ *  the peaks belong to the same crystallite.
+ */
+public static float ScanFor_UB( Vector3D a_dir,
+                                Vector3D b_dir,
+                                Vector3D c_dir,
+                                float    a,
+                                float    b,
+                                float    c,
+                                float    alpha,
+                                float    beta,
+                                float    gamma,
+                                Vector   q_vectors,
+                                float    degrees_per_step,
+                                float    required_tolerance )
+{
+  long start_time = System.nanoTime();
+
+  int num_a_steps = (int)Math.round( 90.0 / degrees_per_step );
+  double gamma_radians = gamma * Math.PI / 180.0;
+
+  int num_b_steps = (int)Math.round(4*Math.sin( gamma_radians ) * num_a_steps);
+
+  System.out.println("a, b, c = " + a + ", " + b + ", " + c );
+  System.out.println("alpha, beta, gamma = " +
+                       alpha + ", " + beta + ", " + gamma );
+  System.out.println("num_a_steps = " + num_a_steps );
+  System.out.println("num_b_steps = " + num_b_steps );
+
+  Vector a_dir_list = MakeHemisphereDirections( num_a_steps );
+
+  Vector b_dir_list;
+
+  Vector3D a_dir_temp;
+  Vector3D b_dir_temp;
+  Vector3D c_dir_temp;
+
+  float error;
+  float dot_prod;
+  int   nearest_int;
+  int   max_indexed = 0;
+  Vector3D q_vec = new Vector3D();
+                                                     // first select those directions
+                                                     // that index the most peaks
+  Vector<Vector3D> selected_a_dirs = new Vector<Vector3D>();
+  Vector<Vector3D> selected_b_dirs = new Vector<Vector3D>();
+  Vector<Vector3D> selected_c_dirs = new Vector<Vector3D>();
+                                                             
+  for ( int a_dir_num = 0; a_dir_num < a_dir_list.size(); a_dir_num++ )
+  {
+    a_dir_temp = (Vector3D)a_dir_list.elementAt( a_dir_num );
+    a_dir_temp = new Vector3D( a_dir_temp );
+    a_dir_temp.multiply( a );
+
+    b_dir_list = MakeCircleDirections( num_b_steps, a_dir_temp, gamma );
+
+    for ( int b_dir_num = 0; b_dir_num < b_dir_list.size(); b_dir_num++ )
+    {
+      b_dir_temp = (Vector3D)( b_dir_list.elementAt(b_dir_num) );
+      b_dir_temp = new Vector3D( b_dir_temp );
+      b_dir_temp.multiply( b );
+      c_dir_temp = Make_c_dir( a_dir_temp, b_dir_temp,
+                               c, alpha, beta, gamma );
+
+      int num_indexed = 0;
+      for ( int q_num = 0; q_num < q_vectors.size(); q_num++ )
+      {
+        boolean indexes_peak = true;
+        q_vec = (Vector3D)(q_vectors.elementAt( q_num ));
+        dot_prod = a_dir_temp.dot( q_vec );
+        nearest_int = Math.round( dot_prod );
+        error = Math.abs( dot_prod - nearest_int );
+        if ( error > required_tolerance )
+          indexes_peak = false;
+        else
+        {
+          dot_prod = b_dir_temp.dot( q_vec );
+          nearest_int = Math.round( dot_prod );
+          error = Math.abs( dot_prod - nearest_int );
+          if ( error > required_tolerance )
+            indexes_peak = false;
+          else
+          {
+            dot_prod = c_dir_temp.dot( q_vec );
+            nearest_int = Math.round( dot_prod );
+            error = Math.abs( dot_prod - nearest_int );
+            if ( error > required_tolerance )
+              indexes_peak = false;
+          }
+        }
+        if ( indexes_peak )
+          num_indexed++;
+      }
+
+      if ( num_indexed > max_indexed )
+      {
+        selected_a_dirs.clear();
+        selected_b_dirs.clear();
+        selected_c_dirs.clear();
+        max_indexed = num_indexed;
+      }
+      if ( num_indexed == max_indexed )
+      {
+        selected_a_dirs.add( a_dir_temp );
+        selected_b_dirs.add( b_dir_temp );
+        selected_c_dirs.add( c_dir_temp );
+      }
+    }
+  }
+
+  float min_error = 1e20f;
+  for ( int dir_num = 0; dir_num < selected_a_dirs.size(); dir_num++ )
+  {
+    a_dir_temp = (Vector3D)selected_a_dirs.elementAt( dir_num );
+    b_dir_temp = (Vector3D)selected_b_dirs.elementAt( dir_num );
+    c_dir_temp = (Vector3D)selected_c_dirs.elementAt( dir_num );
+
+      float sum_sq_error = 0;
+      for ( int q_num = 0; q_num < q_vectors.size(); q_num++ )
+      {
+        q_vec = (Vector3D)(q_vectors.elementAt( q_num ));
+        dot_prod = a_dir_temp.dot( q_vec );
+        nearest_int = Math.round( dot_prod );
+        error = dot_prod - nearest_int;
+        sum_sq_error += error * error;
+
+        dot_prod = b_dir_temp.dot( q_vec );
+        nearest_int = Math.round( dot_prod );
+        error = dot_prod - nearest_int;
+        sum_sq_error += error * error;
+
+        dot_prod = c_dir_temp.dot( q_vec );
+        nearest_int = Math.round( dot_prod );
+        error = dot_prod - nearest_int;
+        sum_sq_error += error * error;
+      }
+
+      if ( sum_sq_error < min_error )
+      {
+        min_error = sum_sq_error;
+        a_dir.set( a_dir_temp );
+        b_dir.set( b_dir_temp );
+        c_dir.set( c_dir_temp );
+      }
+  }
+
+  long end_time = System.nanoTime();
+  System.out.println("ELAPSED TIME = " + (end_time-start_time)/1.0e9 );
+  return min_error;
+}
+
 
 private static Vector3D Make_c_dir( Vector3D a_dir, Vector3D b_dir,
                                     float c,
