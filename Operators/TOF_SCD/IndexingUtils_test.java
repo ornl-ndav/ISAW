@@ -194,6 +194,67 @@ public class IndexingUtils_test
     TS_ASSERT_DELTA( best_vec.getZ(), -4.55145, 1e-4 );
   }
 
+  
+  private static void test_ScanFor_UB()
+  {
+    float[][] correct_UB = {{ -0.102576844f,  0.099972524f, -0.013635245f },
+                            {  0.123289640f,  0.014614862f, -0.085138650f },
+                            { -0.055154353f, -0.042763244f, -0.063078470f }};
+
+    Tran3D UB = new Tran3D();
+    int    degrees_per_step = 3;
+    float  required_tolerance = 0.2f;
+    float  a     = 6.6f;
+    float  b     = 9.7f;
+    float  c     = 9.9f;
+    float  alpha = 84;
+    float  beta  = 71;
+    float  gamma = 70;
+    Vector q_vectors = getNatroliteQs();
+    float error = IndexingUtils.ScanFor_UB( UB,
+                                            q_vectors,
+                                            a, b, c, alpha, beta, gamma,
+                                            degrees_per_step,
+                                            required_tolerance );
+
+    TS_ASSERT_DELTA( error, 0.14739889, 1.e-5 );
+
+    System.out.println("Error = " + error );
+    System.out.println("UB = " );
+    System.out.println( UB );
+    int num_indexed = IndexingUtils.NumberIndexed( UB, q_vectors, 0.2f );
+    System.out.println("Number indexed = " + num_indexed );
+
+    float[][] UB_returned = UB.get();
+    for ( int i = 0; i < 3; i++ )
+       for ( int j = 0; j < 3; j++ )
+         TS_ASSERT_DELTA( UB_returned[i][j], correct_UB[i][j], 1.e-5 );
+  }
+
+
+  private static void test_Make_c_dir()
+  {
+    Vector3D a_dir = new Vector3D(  1, 2, 3 );
+    Vector3D b_dir = new Vector3D( -3, 2, 1 );
+
+    float gamma    = IndexingUtils.angle( a_dir, b_dir );
+    float alpha    = 123;
+    float beta     = 74;
+    float c_length = 10;
+    Vector3D result = IndexingUtils.Make_c_dir( a_dir, b_dir, c_length, 
+                                                alpha, beta, gamma );
+
+    float alpha_calc = IndexingUtils.angle(result, b_dir);
+    float beta_calc  = IndexingUtils.angle(result, a_dir);
+
+    System.out.println( "" + gamma );
+    System.out.println( result );
+
+    TS_ASSERT_DELTA( result.length(), c_length, 1e-3 );
+    TS_ASSERT_DELTA( alpha_calc, alpha, 1e-3 );
+    TS_ASSERT_DELTA( beta_calc, beta, 1e-3 );
+  }
+
 
   private static void test_ValidIndex()
   {
@@ -248,8 +309,8 @@ public class IndexingUtils_test
     Vector index_vals = new Vector();
     Vector indexed_qs = new Vector();
 
-    int num_indexed = IndexingUtils.GetIndexedPeaks_1D( q_vectors,
-                                                        direction,
+    int num_indexed = IndexingUtils.GetIndexedPeaks_1D( direction,
+                                                        q_vectors,
                                                         required_tolerance,
                                                         index_vals,
                                                         indexed_qs,
@@ -283,19 +344,19 @@ public class IndexingUtils_test
 
     Vector q_vectors = getNatroliteQs();
 
-    Vector3D direction_1 = new Vector3D(-2.58222f,3.97345f,-4.55145f);
-    Vector3D direction_2 = new Vector3D(-16.6082f,-2.50165f,7.24628f);
-    Vector3D direction_3 = new Vector3D(2.7609f,14.5661f,11.3343f);
+    Vector3D direction_1 = new Vector3D( -2.5825930f,  3.9741700f, -4.5514810f);
+    Vector3D direction_2 = new Vector3D(-16.6087800f, -2.5005515f,  7.2465878f);
+    Vector3D direction_3 = new Vector3D(  2.7502847f, 14.5671910f, 11.3796620f);
 
     float required_tolerance = 0.1f;
     float[] fit_error = { 0 };
 
     Vector index_vals = new Vector();
     Vector indexed_qs = new Vector();
-    int num_indexed = IndexingUtils.GetIndexedPeaks_3D( q_vectors,
-                                                        direction_1,
+    int num_indexed = IndexingUtils.GetIndexedPeaks_3D( direction_1,
                                                         direction_2,
                                                         direction_3,
+                                                        q_vectors,
                                                         required_tolerance,
                                                         index_vals,
                                                         indexed_qs,
@@ -303,7 +364,62 @@ public class IndexingUtils_test
     TS_ASSERT_EQUALS( num_indexed, 12 );
     TS_ASSERT_EQUALS( index_vals.size(), 12 );
     TS_ASSERT_EQUALS( indexed_qs.size(), 12 );
-    TS_ASSERT_DELTA( fit_error[0], 0.0258739, 1e-5 );
+    TS_ASSERT_DELTA( fit_error[0], 0.023007052, 1e-5 );
+
+    for ( int i = 0; i < index_vals.size(); i++ )
+    {
+      Vector3D hkl     = (Vector3D)( index_vals.elementAt(i) );
+      Vector3D correct = (Vector3D)( correct_indices.elementAt(i) );
+      TS_ASSERT_EQUALS( hkl.getX(), correct.getX() );
+      TS_ASSERT_EQUALS( hkl.getY(), correct.getY() );
+      TS_ASSERT_EQUALS( hkl.getZ(), correct.getZ() );
+    }
+  }
+
+
+  private static void test_GetIndexedPeaks()   // ###########
+  {
+    float[][] correct_UB = { { -0.059660400f, -0.049648200f, 0.0077539105f },
+                             {  0.093009956f, -0.007510495f, 0.0419835400f },
+                             { -0.104643770f , 0.021613428f, 0.0322586300f } };
+
+    Tran3D UB = new Tran3D( correct_UB );
+    Tran3D UB_inverse = new Tran3D( UB );
+    UB_inverse.invert();
+    System.out.println( "UB_inverse = " );
+    System.out.println( UB_inverse );
+
+    Vector correct_indices = new Vector();
+    correct_indices.add( new Vector3D( 1,  9, -9) );
+    correct_indices.add( new Vector3D( 4, 20,-24) );
+    correct_indices.add( new Vector3D( 2, 18,-14) );
+    correct_indices.add( new Vector3D( 0, 12,-12) );
+    correct_indices.add( new Vector3D( 1, 19, -9) );
+    correct_indices.add( new Vector3D( 3, 31,-13) );
+    correct_indices.add( new Vector3D( 0, 20,-14) );
+    correct_indices.add( new Vector3D(-1,  3, -5) );
+    correct_indices.add( new Vector3D( 0, 16, -6) );
+    correct_indices.add( new Vector3D(-1, 11, -7) );
+    correct_indices.add( new Vector3D(-2, 20, -4) );
+    correct_indices.add( new Vector3D(-3, 13, -5) );
+
+    Vector q_vectors = getNatroliteQs();
+
+    float required_tolerance = 0.1f;
+    float[] fit_error = { 0 };
+
+    Vector index_vals = new Vector();
+    Vector indexed_qs = new Vector();
+    int num_indexed = IndexingUtils.GetIndexedPeaks( UB,
+                                                     q_vectors,
+                                                     required_tolerance,
+                                                     index_vals,
+                                                     indexed_qs,
+                                                     fit_error );
+    TS_ASSERT_EQUALS( num_indexed, 12 );
+    TS_ASSERT_EQUALS( index_vals.size(), 12 );
+    TS_ASSERT_EQUALS( indexed_qs.size(), 12 );
+    TS_ASSERT_DELTA( fit_error[0], 0.023007052, 1e-5 );
 
     for ( int i = 0; i < index_vals.size(); i++ )
     {
@@ -407,29 +523,44 @@ public class IndexingUtils_test
   public static void main( String[] args )
   {
     test_BestFit_UB_given_lattice_parameters();
-    System.out.println("Finished Test 1 ...........");    
+    System.out.println("Finished test_BestFit_UB_given_lattice_parameters...");
 
     test_BestFit_UB();
-    System.out.println("Finished Test 2 ...........");    
+    System.out.println("Finished test_BestFit_UB ...........................");
 
     test_BestFit_Direction();
-    System.out.println("Finished Test 3 ...........");    
+    System.out.println("Finished test_BestFit_Direction ....................");
+
+    test_ScanFor_UB();
+    System.out.println("Finished test_ScanFor_UB ....................");
+
+    test_Make_c_dir();
+    System.out.println("Finished test_Make_c_dir ...........................");
 
     test_ValidIndex();
-    System.out.println("Finished Test 4 ...........");    
+    System.out.println("Finished test_ValidIndex ...........................");
+
     test_NumberIndexed();
-    System.out.println("Finished Test 5 ...........");    
+    System.out.println("Finished test_NumberIndexed ........................");
+
     test_GetIndexedPeaks_1D();
-    System.out.println("Finished Test 6 ...........");    
-    
+    System.out.println("Finished test_GetIndexedPeaks_1D ...................");
+
     test_GetIndexedPeaks_3D();
-    System.out.println("Finished Test 7 ...........");    
+    System.out.println("Finished test_GetIndexedPeaks_3D ...................");
+
+    test_GetIndexedPeaks();
+    System.out.println("Finished test_GetIndexedPeaks() ....................");
+
     test_MakeHemisphereDirections();
-    System.out.println("Finished Test 8 ...........");    
+    System.out.println("Finished test_MakeHemisphereDirections .............");
+
     test_MakeCircleDirections();
-    System.out.println("Finished Test 9 ...........");    
+    System.out.println("Finished test_MakeCircleDirections .................");
+
     test_SelectDirection();
-    System.out.println("Finished Test 10 ...........");    
+    System.out.println("Finished test_SelectDirection ......................");
+
     System.out.println("Tests Completed");
   }
 

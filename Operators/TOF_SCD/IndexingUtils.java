@@ -41,7 +41,7 @@ import gov.anl.ipns.MathTools.*;
 public class IndexingUtils
 {
 
-private static float angle( Vector3D v1, Vector3D v2 )
+public static float angle( Vector3D v1, Vector3D v2 )
 {
   v1 = new Vector3D( v1 );
   v2 = new Vector3D( v2 );
@@ -132,8 +132,8 @@ public static float BestFit_UB_1( Tran3D   UB,
                      " magnitude = "+a_dir.length());
   for ( int i = 0; i < 5; i++ )
   {
-  num_indexed = GetIndexedPeaks_1D( q_vectors,
-                                    a_dir,
+  num_indexed = GetIndexedPeaks_1D( a_dir,
+                                    q_vectors,
                                     required_tolerance,
                                     index_vals,
                                     indexed_qs,
@@ -181,8 +181,8 @@ public static float BestFit_UB_1( Tran3D   UB,
   System.out.println("Gamma (selected) = " + angle(a_dir,b_dir) );
   for ( int i = 0; i < 5; i++ )
   {
-  num_indexed = GetIndexedPeaks_1D( q_vectors,
-                                    b_dir,
+  num_indexed = GetIndexedPeaks_1D( b_dir,
+                                    q_vectors,
                                     required_tolerance,
                                     index_vals,
                                     indexed_qs,
@@ -261,8 +261,8 @@ for ( int j = -4; j <= 4; j++ )
                      " magnitude = "+c_dir.length());
   for ( int i = 0; i < 7; i++ )
   {
-  num_indexed = GetIndexedPeaks_1D( q_vectors,
-                                    c_dir,
+  num_indexed = GetIndexedPeaks_1D( c_dir,
+                                    q_vectors,
                                     required_tolerance,
                                     index_vals,
                                     indexed_qs,
@@ -284,8 +284,8 @@ for ( int j = -4; j <= 4; j++ )
                             // discarding any peaks that are not indexed in 
                             // all three directions.
   Vector miller_ind = new Vector();
-  num_indexed = GetIndexedPeaks_3D( q_vectors,
-                                    a_dir, b_dir, c_dir,
+  num_indexed = GetIndexedPeaks_3D( a_dir, b_dir, c_dir,
+                                    q_vectors,
                                     required_tolerance,
                                     miller_ind,
                                     indexed_qs,
@@ -373,8 +373,8 @@ public static float BestFit_UB_2( Tran3D   UB,
   Vector miller_ind = new Vector();
   Vector indexed_qs = new Vector();
   float[] fit_error = new float[1];
-  int num_indexed = GetIndexedPeaks_3D( q_vectors,
-                                        a_dir, b_dir, c_dir,
+  int num_indexed = GetIndexedPeaks_3D( a_dir, b_dir, c_dir,
+                                        q_vectors,
                                         required_tolerance,
                                         miller_ind,
                                         indexed_qs,
@@ -444,9 +444,8 @@ public static float BestFit_UB( Tran3D            UB,
 
   float degrees_per_step = 2.0f;
 
-  float error = ScanFor_UB( UB,
+  float error = ScanFor_UB( UB, some_qs,
                             a, b, c, alpha, beta, gamma,
-                            some_qs,
                             degrees_per_step,
                             required_tolerance );
 
@@ -460,7 +459,7 @@ public static float BestFit_UB( Tran3D            UB,
   {
     try
     {
-      num_indexed = GetIndexedPeaks( some_qs, UB, required_tolerance,
+      num_indexed = GetIndexedPeaks( UB, some_qs, required_tolerance,
                                      miller_ind, indexed_qs, fit_error );
 
       fit_error[0] = BestFit_UB( UB, miller_ind, indexed_qs );
@@ -485,7 +484,7 @@ public static float BestFit_UB( Tran3D            UB,
     for ( int i = some_qs.size(); i < num_initial; i++ )
       some_qs.add( q_vectors.elementAt(i) );
 
-    num_indexed = GetIndexedPeaks( some_qs, UB, required_tolerance,
+    num_indexed = GetIndexedPeaks( UB, some_qs, required_tolerance,
                                    miller_ind, indexed_qs, fit_error );
 
     fit_error[0] = BestFit_UB( UB, miller_ind, indexed_qs );
@@ -496,7 +495,7 @@ public static float BestFit_UB( Tran3D            UB,
   {
     try
     {
-      num_indexed = GetIndexedPeaks( q_vectors, UB, required_tolerance,
+      num_indexed = GetIndexedPeaks( UB, q_vectors, required_tolerance,
                                      miller_ind, indexed_qs, fit_error );
       fit_error[0] = BestFit_UB( UB, miller_ind, indexed_qs );
     }
@@ -824,11 +823,11 @@ public static int NumberIndexed( Tran3D UB,
   dot product of a peak Qxyz with the direction vector will be an integer 
   if the peak lies on one of the planes.   
 
-  @param q_vectors           List of new Vector3D peaks in reciprocal space
   @param direction           Direction vector in the direction of the 
                              normal vector for a family of parallel planes
                              in reciprocal space.  The length of this vector 
                              must be the reciprocal of the plane spacing.
+  @param q_vectors           List of new Vector3D peaks in reciprocal space
   @param required_tolerance  The maximum allowed error (as a faction of
                              the corresponding Miller index) for a peak
                              q_vector to be counted as indexed.
@@ -844,8 +843,8 @@ public static int NumberIndexed( Tran3D UB,
           tolerance, in the specified direction.
 
  */
-public static int GetIndexedPeaks_1D( Vector    q_vectors,
-                                      Vector3D  direction,
+public static int GetIndexedPeaks_1D( Vector3D  direction,
+                                      Vector    q_vectors,
                                       float     required_tolerance,
                                       Vector    index_vals,
                                       Vector    indexed_qs,
@@ -890,13 +889,13 @@ public static int GetIndexedPeaks_1D( Vector    q_vectors,
   checks three directions simultaneously and requires that the peak lies
   on all three families of planes simultaneously and does NOT index as (0,0,0).
 
-  @param q_vectors           List of new Vector3D peaks in reciprocal space
   @param direction_1         Direction vector in the direction of the normal
                              vector for the first family of parallel planes.
   @param direction_2         Direction vector in the direction of the normal
                              vector for the second family of parallel planes.
   @param direction_3         Direction vector in the direction of the normal
                              vector for the third family of parallel planes.
+  @param q_vectors           List of new Vector3D peaks in reciprocal space
   @param required_tolerance  The maximum allowed error (as a faction of
                              the corresponding Miller index) for a peak
                              q_vector to be counted as indexed.
@@ -912,10 +911,10 @@ public static int GetIndexedPeaks_1D( Vector    q_vectors,
           tolerance, in the specified direction.
 
  */
-public static int GetIndexedPeaks_3D( Vector    q_vectors,
-                                      Vector3D  direction_1,
+public static int GetIndexedPeaks_3D( Vector3D  direction_1,
                                       Vector3D  direction_2,
                                       Vector3D  direction_3,
+                                      Vector    q_vectors,
                                       float     required_tolerance,
                                       Vector    miller_indices,
                                       Vector    indexed_qs,
@@ -993,8 +992,8 @@ public static int GetIndexedPeaks_3D( Vector    q_vectors,
   @return The number of q_vectors that are indexed to within the specified
           tolerance, by the specified UB matrix. 
  */
-public static int GetIndexedPeaks( Vector    q_vectors,
-                                   Tran3D    UB,
+public static int GetIndexedPeaks( Tran3D    UB,
+                                   Vector    q_vectors,
                                    float     required_tolerance,
                                    Vector    miller_indices,
                                    Vector    indexed_qs,
@@ -1002,6 +1001,7 @@ public static int GetIndexedPeaks( Vector    q_vectors,
 {
     float    error;
     int      num_indexed = 0;
+    Vector3D hkl_vec = new Vector3D();
 
     miller_indices.clear();
     indexed_qs.clear();
@@ -1010,7 +1010,6 @@ public static int GetIndexedPeaks( Vector    q_vectors,
     Tran3D UB_inverse = new Tran3D( UB );
     UB_inverse.invert();
 
-    Vector3D hkl_vec = new Vector3D();
     for ( int q_num = 0; q_num < q_vectors.size(); q_num++ )
     {
       Vector3D q_vec = (Vector3D)q_vectors.elementAt(q_num);
@@ -1348,16 +1347,43 @@ public static float SelectDirections( Vector3D a_dir,
 
 
 /**
- *  The method calls the version of ScanFor_UB that takes three lattice
- *  direction vectors, a_dir, b_dir and c_dir and a required tolerance.
- *  This method uses the three direction vectors to determine the UB 
- *  matrix.  It should be most useful if number of peaks is on the order 
- *  of 10-20, and most of the peaks belong to the same crystallite.
+ *  The method uses two passes to scan across all possible directions and 
+ *  orientations to find the direction and orientation for the unit cell
+ *  that best fits the specified list of peaks.  
+ *  On the first pass, only those sets of directions that index the 
+ *  most peaks are kept.  On the second pass, the directions that minimize 
+ *  the sum-squared deviations from integer indices are selected from that 
+ *  smaller set of directions.  This method should be most useful if number 
+ *  of peaks is on the order of 10-20, and most of the peaks belong to the 
+ *  same crystallite.
+ *  @param UB                 This will be set to the UB matrix that best
+ *                            indexes the supplied list of q_vectors.
+ *  @param q_vectors          List of locations of peaks in "Q".
+ *  @param a                  Lattice parameter "a".
+ *  @param b                  Lattice parameter "b".
+ *  @param c                  Lattice parameter "c".
+ *  @param alpha              Lattice parameter alpha.
+ *  @param beta               Lattice parameter beta.
+ *  @param gamma              Lattice parameter gamma.
+ *  @param degrees_per_step   The number of degrees per step used when 
+ *                            scanning through all possible directions and
+ *                            orientations for the unit cell. NOTE: The
+ *                            work required rises very rapidly as the number
+ *                            of degrees per step decreases. A value of 1
+ *                            degree leads to about 10 seconds of compute time.
+ *                            while a value of 2 only requires a bit more than
+ *                            1 sec.  The required time is O(n^3) where 
+ *                            n = 1/degrees_per_step.
+ *                             
+ *  @param required_tolerance The maximum distance from an integer that the
+ *                            calculated h,k,l values can have if a peak 
+ *                            is to be considered indexed.
  */
+
 public static float ScanFor_UB( Tran3D   UB,
+                                Vector   q_vectors,
                                 float    a,     float b,    float c,
                                 float    alpha, float beta, float gamma,
-                                Vector   q_vectors,
                                 float    degrees_per_step,
                                 float    required_tolerance )
 {
@@ -1366,8 +1392,8 @@ public static float ScanFor_UB( Tran3D   UB,
   Vector3D c_dir = new Vector3D();
 
   float error = ScanFor_UB( a_dir, b_dir, c_dir,
-                            a, b, c, alpha, beta, gamma,
                             q_vectors,
+                            a, b, c, alpha, beta, gamma,
                             degrees_per_step,
                             required_tolerance );
 
@@ -1400,13 +1426,13 @@ public static float ScanFor_UB( Tran3D   UB,
 public static float ScanFor_UB( Vector3D a_dir,
                                 Vector3D b_dir,
                                 Vector3D c_dir,
+                                Vector   q_vectors,
                                 float    a,
                                 float    b,
                                 float    c,
                                 float    alpha,
                                 float    beta,
                                 float    gamma,
-                                Vector   q_vectors,
                                 float    degrees_per_step )
 {
   long start_time = System.nanoTime();
@@ -1489,24 +1515,51 @@ public static float ScanFor_UB( Vector3D a_dir,
 
 /**
  *  The method uses two passes to scan across all possible directions and 
- *  orientations for the direction and orientation that best fits the
- *  specified list of peaks.  On the first pass, those only those sets of 
- *  directions that index the most peaks are kept.  On the second pass, 
- *  the directions that minimize the sum-squared deviations from integer 
- *  indices are selected from that smaller set of directions.  This method
- *  should be most useful if number of peaks is on the order of 10-20, 
- *  and most of the peaks belong to the same crystallite.
+ *  orientations to find the direction and orientation for the unit cell
+ *  that best fits the specified list of peaks.  
+ *  On the first pass, only those sets of directions that index the 
+ *  most peaks are kept.  On the second pass, the directions that minimize 
+ *  the sum-squared deviations from integer indices are selected from that 
+ *  smaller set of directions.  This method should be most useful if number 
+ *  of peaks is on the order of 10-20, and most of the peaks belong to the 
+ *  same crystallite.
+ *  @param a_dir              This will be set to a vector corresponding to
+ *                            side "a" in the rotated unit cell. 
+ *  @param b_dir              This will be set to a vector corresponding to
+ *                            side "b" in the rotated unit cell. 
+ *  @param c_dir              This will be set to a vector corresponding to
+ *                            side "a" in the rotated unit cell. 
+ *  @param q_vectors          List of locations of peaks in "Q".
+ *  @param a                  Lattice parameter "a".
+ *  @param b                  Lattice parameter "b".
+ *  @param c                  Lattice parameter "c".
+ *  @param alpha              Lattice parameter alpha.
+ *  @param beta               Lattice parameter beta.
+ *  @param gamma              Lattice parameter gamma.
+ *  @param degrees_per_step   The number of degrees per step used when 
+ *                            scanning through all possible directions and
+ *                            orientations for the unit cell. NOTE: The
+ *                            work required rises very rapidly as the number
+ *                            of degrees per step decreases. A value of 1
+ *                            degree leads to about 10 seconds of compute time.
+ *                            while a value of 2 only requires a bit more than
+ *                            1 sec.  The required time is O(n^3) where 
+ *                            n = 1/degrees_per_step.
+ *                             
+ *  @param required_tolerance The maximum distance from an integer that the
+ *                            calculated h,k,l values can have if a peak 
+ *                            is to be considered indexed.
  */
 public static float ScanFor_UB( Vector3D a_dir,
                                 Vector3D b_dir,
                                 Vector3D c_dir,
+                                Vector   q_vectors,
                                 float    a,
                                 float    b,
                                 float    c,
                                 float    alpha,
                                 float    beta,
                                 float    gamma,
-                                Vector   q_vectors,
                                 float    degrees_per_step,
                                 float    required_tolerance )
 {
@@ -1603,7 +1656,9 @@ public static float ScanFor_UB( Vector3D a_dir,
       }
     }
   }
-
+                                          // now, for each such direction, find
+                                          // the one that indexes closes to
+                                          // integer values
   float min_error = 1e20f;
   for ( int dir_num = 0; dir_num < selected_a_dirs.size(); dir_num++ )
   {
@@ -1645,14 +1700,23 @@ public static float ScanFor_UB( Vector3D a_dir,
   return min_error;
 }
 
-
 /**
- *  Calculate the vector in the direction of "c" given two vectors a_dir
- *  and b_dir in the directions of "a" and "b", with lengths a and b.
- *  The length "c" must be specified, along with the unit cell angles,
- *  alpha, beta, gamma.
+ *  For a rotated unit cell, calculate the vector in the direction of edge
+ *  "c" given two vectors a_dir and b_dir in the directions of edges "a" 
+ *  and "b", with lengths a and b, and the cell angles.
+ *  @param  a_dir   Vector3D object with length "a" in the direction of the  
+ *                  rotated cell edge "a"
+ *  @param  b_dir   Vector3D object with length "b" in the direction of the 
+ *                  rotated cell edge "b"
+ *  @param  c       The length of the third cell edge, c.
+ *  @param  alpha   angle between edges b and c. 
+ *  @param  beta    angle between edges c and a. 
+ *  @param  gamma   angle between edges a and b. 
+ *
+ *  @return A new Vector3D object with length "c", in the direction of the 
+ *          third rotated unit cell edge, "c".
  */
-private static Vector3D Make_c_dir( Vector3D a_dir, Vector3D b_dir,
+public static Vector3D Make_c_dir( Vector3D a_dir, Vector3D b_dir,
                                     float c,
                                     float alpha, float beta, float gamma )
 {
@@ -1773,8 +1837,8 @@ private static float GetPossibleDirectionList( Vector<Vector3D> q_vectors,
     dir_vec.set( sphere_dirs.elementAt(i) );
     dir_vec.multiply( length );
 
-    num_indexed = GetIndexedPeaks_1D( q_vectors,
-                                      dir_vec,
+    num_indexed = GetIndexedPeaks_1D( dir_vec,
+                                      q_vectors,
                                       required_tolerance,
                                       index_vals,
                                       indexed_qs,
@@ -1783,8 +1847,8 @@ private static float GetPossibleDirectionList( Vector<Vector3D> q_vectors,
     {
       fit_error[0] = BestFit_Direction( dir_vec, index_vals, indexed_qs );
 
-      num_indexed = GetIndexedPeaks_1D( q_vectors,
-                                        dir_vec,
+      num_indexed = GetIndexedPeaks_1D( dir_vec,
+                                        q_vectors,
                                         required_tolerance,
                                         index_vals,
                                         indexed_qs,
@@ -1847,8 +1911,8 @@ private static float GetPossibleDirectionList( Vector<Vector3D> q_vectors,
   {
     dir_vec.set( temp_list.elementAt(i) );
 
-    num_indexed = GetIndexedPeaks_1D( q_vectors,
-                                      dir_vec,
+    num_indexed = GetIndexedPeaks_1D( dir_vec,
+                                      q_vectors,
                                       required_tolerance,
                                       index_vals,
                                       indexed_qs,
@@ -1857,8 +1921,8 @@ private static float GetPossibleDirectionList( Vector<Vector3D> q_vectors,
     {
       fit_error[0] = BestFit_Direction( dir_vec, index_vals, indexed_qs );
 
-      num_indexed = GetIndexedPeaks_1D( q_vectors,
-                                        dir_vec,
+      num_indexed = GetIndexedPeaks_1D( dir_vec,
+                                        q_vectors,
                                         required_tolerance,
                                         index_vals,
                                         indexed_qs,
@@ -1948,8 +2012,9 @@ private static void test_ScanForUB( Vector<Vector3D> q_vectors,
   float gamma = lat_par[5];
 
   float fit_error = ScanFor_UB( a_dir, b_dir, c_dir, 
+                                q_vectors,
                                 a, b, c, alpha, beta, gamma,
-                                q_vectors, degrees_per_step );
+                                degrees_per_step );
 
   System.out.println("Resulting error " + fit_error );
   System.out.println("a_dir = " + a_dir );
