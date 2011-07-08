@@ -96,7 +96,10 @@ public class IndexingUtils_test
   }
 
 
-  private static void test_BestFit_UB_given_lattice_parameters()
+
+
+
+  private static void test_Find_UB_1()
   {
     double[][] correct_UB = { {-0.0596604,  0.04964820, -0.00775391 },
                               { 0.0930100,  0.00751049, -0.04198350 },
@@ -114,9 +117,10 @@ public class IndexingUtils_test
     float required_tolerance = 0.20f;
 
     Tran3D UB = new Tran3D();
-    double error = IndexingUtils.BestFit_UB( UB, q_vectors, required_tolerance,
-                                             a, b, c,
-                                             alpha, beta, gamma );
+    double error = IndexingUtils.Find_UB_1( UB, q_vectors, 
+                                            a, b, c,
+                                            alpha, beta, gamma,
+                                            required_tolerance );
     TS_ASSERT_DELTA( error, 0.000111616, 1e-5 );
 
     float[][] UB_arr = UB.get();
@@ -131,7 +135,46 @@ public class IndexingUtils_test
   }
 
 
-  private static void test_BestFit_UB()
+  private static void test_Find_UB_given_lattice_parameters()
+  {
+    Tran3D UB = new Tran3D();
+
+    double[][] correct_UB = { { -0.1015550,  0.0992964, -0.0155078 },
+                              {  0.1274830,  0.0150210, -0.0839671 },
+                              { -0.0507717, -0.0432269, -0.0645173 } };
+
+    Vector q_vectors = getNatroliteQs();
+    float  a     = 6.6f;
+    float  b     = 9.7f;
+    float  c     = 9.9f;
+    float  alpha = 84;
+    float  beta  = 71;
+    float  gamma = 70;
+
+    float  required_tolerance = 0.2f;
+    int    num_initial = 3;
+    float  degrees_per_step = 3;
+
+    float error = IndexingUtils.Find_UB( UB,
+                                         q_vectors,
+                                         a, b, c,
+                                         alpha, beta, gamma,
+                                         required_tolerance,
+                                         num_initial,
+                                         degrees_per_step );
+
+    float[][] UB_returned = UB.get();
+
+    for ( int i = 0; i < 3; i++ )
+      for ( int j = 0; j < 3; j++ )
+        TS_ASSERT_DELTA( UB_returned[i][j], correct_UB[i][j], 1.e-5 );
+
+    TS_ASSERT_DELTA( error, 0.00671575, 1e-5 );
+
+  }
+
+
+  private static void test_Find_UB()
   {
      float h_vals[]  = {  1f,  0,  0, -1,  0,  0, 1, 1 };
      float k_vals[]  = { .1f,  1,  0,  0, -1,  0, 1, 2 };
@@ -163,7 +206,7 @@ public class IndexingUtils_test
      }
 
      Tran3D UB = new Tran3D();
-     float sum_sq_error = IndexingUtils.BestFit_UB( UB, hkl_list, q_list );
+     float sum_sq_error = IndexingUtils.Find_UB( UB, hkl_list, q_list );
 
      float[][] UB_returned = UB.get();
 
@@ -175,7 +218,7 @@ public class IndexingUtils_test
   }
 
 
-  private static void test_BestFit_Direction()
+  private static void test_Find_Direction()
   {
     Vector index_values = new Vector();
     int correct_indices[] = { 1, 4, 2, 0, 1, 3, 0, -1, 0, -1, -2, -3 };
@@ -185,7 +228,7 @@ public class IndexingUtils_test
     Vector q_vectors = getNatroliteQs();
 
     Vector3D best_vec = new Vector3D();
-    double error = IndexingUtils.BestFit_Direction( best_vec, 
+    double error = IndexingUtils.Find_Direction( best_vec, 
                                                     index_values, 
                                                     q_vectors );
     TS_ASSERT_DELTA( error, 0.00218606, 1e-5 );
@@ -219,12 +262,6 @@ public class IndexingUtils_test
 
     TS_ASSERT_DELTA( error, 0.14739889, 1.e-5 );
 
-    System.out.println("Error = " + error );
-    System.out.println("UB = " );
-    System.out.println( UB );
-    int num_indexed = IndexingUtils.NumberIndexed( UB, q_vectors, 0.2f );
-    System.out.println("Number indexed = " + num_indexed );
-
     float[][] UB_returned = UB.get();
     for ( int i = 0; i < 3; i++ )
        for ( int j = 0; j < 3; j++ )
@@ -246,9 +283,6 @@ public class IndexingUtils_test
 
     float alpha_calc = IndexingUtils.angle(result, b_dir);
     float beta_calc  = IndexingUtils.angle(result, a_dir);
-
-    System.out.println( "" + gamma );
-    System.out.println( result );
 
     TS_ASSERT_DELTA( result.length(), c_length, 1e-3 );
     TS_ASSERT_DELTA( alpha_calc, alpha, 1e-3 );
@@ -377,17 +411,13 @@ public class IndexingUtils_test
   }
 
 
-  private static void test_GetIndexedPeaks()   // ###########
+  private static void test_GetIndexedPeaks()  
   {
     float[][] correct_UB = { { -0.059660400f, -0.049648200f, 0.0077539105f },
                              {  0.093009956f, -0.007510495f, 0.0419835400f },
                              { -0.104643770f , 0.021613428f, 0.0322586300f } };
 
     Tran3D UB = new Tran3D( correct_UB );
-    Tran3D UB_inverse = new Tran3D( UB );
-    UB_inverse.invert();
-    System.out.println( "UB_inverse = " );
-    System.out.println( UB_inverse );
 
     Vector correct_indices = new Vector();
     correct_indices.add( new Vector3D( 1,  9, -9) );
@@ -522,17 +552,20 @@ public class IndexingUtils_test
 
   public static void main( String[] args )
   {
-    test_BestFit_UB_given_lattice_parameters();
-    System.out.println("Finished test_BestFit_UB_given_lattice_parameters...");
+    test_Find_UB_given_lattice_parameters();
+    System.out.println("Finished test_Find_UB (given lattice parameters)....");
 
-    test_BestFit_UB();
-    System.out.println("Finished test_BestFit_UB ...........................");
+    test_Find_UB_1();
+    System.out.println("Finished test_Find_UB_1.............................");
 
-    test_BestFit_Direction();
-    System.out.println("Finished test_BestFit_Direction ....................");
+    test_Find_UB();
+    System.out.println("Finished test_Find_UB ..............................");
+
+    test_Find_Direction();
+    System.out.println("Finished test_Find_Direction .......................");
 
     test_ScanFor_UB();
-    System.out.println("Finished test_ScanFor_UB ....................");
+    System.out.println("Finished test_ScanFor_UB ...........................");
 
     test_Make_c_dir();
     System.out.println("Finished test_Make_c_dir ...........................");
