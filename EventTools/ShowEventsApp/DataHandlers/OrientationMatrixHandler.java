@@ -346,13 +346,15 @@ public class OrientationMatrixHandler implements IReceiveMessage
   }
 
 
-  private void ShowOrientationMatrix( float[][] matrix )
+  private void ShowOrientationMatrix( float[][] matrix1 )
   {
+    float[][] matrix = matrix1;
+    matrix = ApplyGoniometerRotationToUB(matrix1,true);
     String ShowText = subs.ShowOrientationInfo( 
                       null, 
                       LinearAlgebra.getTranspose( matrix ),
                       null, sig_abc, true );
-         
+   
     JFrame jf = new JFrame( "Orientation Matrix");
     jf.setSize( 500,200 );
     jf.getContentPane().add( new JEditorPane("text/html", ShowText) );
