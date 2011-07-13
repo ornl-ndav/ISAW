@@ -126,7 +126,7 @@ public class subs
       {
          
          Res += String.format( "%10.4f" , XtalParams[ i ] );
-         if( i < 5)
+         if( i < Math.max( XtalParams.length , 6 )-1)
             Res +=u.col();
          
       }
