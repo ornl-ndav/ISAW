@@ -105,13 +105,21 @@ public class indexPeaksPanel extends    JPanel  implements IReceiveMessage
 
    private final static int  AUTO_ROSS    = 1;
 
-   private final static int  FROM_FILE    = 2;  
+   private final static int  NEW_AUTO_WPARAMS = 2;
+
+   private final static int  NEW_AUTO     = 3;
+
+   private final static int  FROM_FILE    = 4;  
    
-   private final static int  FROM_UB      = 3;
+   private final static int  FROM_UB      = 5;
 
-   private final static int  ARCS_INDEX   = 4;
+   private final static int  ARCS_INDEX   = 6;
 
-   private ARCS_IndexPanel  arcs_panel;
+   private AutoWithParamsPanel auto_w_params_panel;
+
+   private AutoIndexingPanel   auto_indexing_panel;
+
+   private ARCS_IndexPanel     arcs_panel;
    
    private float[][]            UBT = null;
    private static String   NoOrientationText="<html><body> There is no "+
@@ -148,16 +156,21 @@ public class indexPeaksPanel extends    JPanel  implements IReceiveMessage
       panel.setLayout(  blayout );
       middlePanel = new JTabbedPane();
       
-      middlePanel.addTab( "AutoIndex(with Lattice Parameters)",
-                           buildCalcMatPanel());
-      
+      middlePanel.addTab( "AutoIndex ( with Lattice Parameters )",
+                           buildAutoWithLatParPanel());
 
-      middlePanel.addTab( "AutoIndex", buildCalcMat2Panel());
+      middlePanel.addTab( "AutoIndex", buildAutoIndexPanel() );
 
+      auto_w_params_panel = new AutoWithParamsPanel();
+      middlePanel.addTab( "NEW AutoIndex ( with Lattice Parameters )",
+                           auto_w_params_panel );
+
+      auto_indexing_panel = new AutoIndexingPanel();
+      middlePanel.addTab( "NEW AutoIndex", auto_indexing_panel );
 
       middlePanel.addTab( "Read UB From File", buildFromFilePanel() );
 
-      middlePanel.addTab( "Index Using Current UB" , buildCalcMat3Panel() );
+      middlePanel.addTab( "Index Using Current UB" , buildUseCurrentPanel() );
     
       arcs_panel = new ARCS_IndexPanel();
       middlePanel.addTab( "ARCS Index" , arcs_panel );
@@ -195,19 +208,6 @@ public class indexPeaksPanel extends    JPanel  implements IReceiveMessage
       
    }
    
-   /**
-    * Builds the panel to display information for auto indexing with Crystal
-    * parameters. These parameters and tolerances can be changed by the user.
-    * 
-    * @return panel
-    */
-   private JPanel buildCalcMatPanel()
-   {
-      JPanel panel = buildPanel1();
-      panel.setBorder(  new TitledBorder( new LineBorder(Color.black),
-               "Find Matrix Using Lattice Parameters") );
-      return panel;
-   }
    
    /**
     * Builds the panel to display information for auto indexing without Crystal
@@ -215,7 +215,7 @@ public class indexPeaksPanel extends    JPanel  implements IReceiveMessage
     * 
     * @return panel
     */
-   private JPanel buildCalcMat2Panel()
+   private JPanel buildAutoIndexPanel()
    {
       JPanel MainPanel = new JPanel();
       JPanel panel = new JPanel();
@@ -240,7 +240,7 @@ public class indexPeaksPanel extends    JPanel  implements IReceiveMessage
       
    }
    
-   private JTextArea buildCalcMat3Panel()
+   private JTextArea buildUseCurrentPanel()
    {
       OrientMatDispl = new JTextArea(20, 8);
       OrientMatDispl.setText( "No Matrix available" );
@@ -288,10 +288,10 @@ public class indexPeaksPanel extends    JPanel  implements IReceiveMessage
     * 
     * @return panel
     */
-   private JPanel buildPanel1()
+   private JPanel buildAutoWithLatParPanel()
    {
       JPanel panel = new JPanel();
-      panel.setLayout(new GridLayout(9, 2));
+      panel.setLayout(new GridLayout(8, 2));
       
       JLabel aLbl = new JLabel(" a");
       String defaultA = "4.913";
@@ -350,6 +350,9 @@ public class indexPeaksPanel extends    JPanel  implements IReceiveMessage
       panel.add(fixedPeakLbl);
       panel.add(fixedPeakTxt);
       
+      panel.setBorder(  new TitledBorder( new LineBorder(Color.black),
+                       "Find Matrix Using Lattice Parameters") );
+
       return panel;
    }
    
@@ -410,7 +413,7 @@ public class indexPeaksPanel extends    JPanel  implements IReceiveMessage
     *       pieces or is in the incorrect format.
     *       true otherwise.
     */
-   private boolean valid()
+   private boolean auto_w_params_valid()
    {
       try
       {
@@ -593,8 +596,12 @@ public class indexPeaksPanel extends    JPanel  implements IReceiveMessage
       
       public void actionPerformed( ActionEvent e )
       {
+         float tolerance = getTolerance();    // this will be NaN if invalid
+         if ( Float.isNaN( tolerance ) )
+           return;
 
          String cmd = e.getActionCommand();
+
          if( cmd.startsWith( "Index" ) )
          {
             if( middlePanel == null )
@@ -619,18 +626,18 @@ public class indexPeaksPanel extends    JPanel  implements IReceiveMessage
             }
             else if( middlePanel.getSelectedIndex() == AUTO_WPARAMS )
             {
-               if( valid() )
+               if( auto_w_params_valid() )
                {  
-                  IndexPeaksCmd indexCmd = new IndexPeaksCmd( Float
-                           .parseFloat( aTxt.getText() ) , Float
-                           .parseFloat( bTxt.getText() ) , Float
-                           .parseFloat( cTxt.getText() ) , Float
-                           .parseFloat( alphaTxt.getText() ) , Float
-                           .parseFloat( betaTxt.getText() ) , Float
-                           .parseFloat( gammaTxt.getText() ) , Float
-                           .parseFloat( toleranceTxt.getText() ) , Integer
-                           .parseInt( fixedPeakTxt.getText() ) , Float
-                           .parseFloat( requiredFractionTxt.getText() ) );
+                  IndexPeaksCmd indexCmd = new IndexPeaksCmd( 
+                       Float.parseFloat( aTxt.getText() ) ,
+                       Float.parseFloat( bTxt.getText() ) , 
+                       Float.parseFloat( cTxt.getText() ) , 
+                       Float.parseFloat( alphaTxt.getText() ) , 
+                       Float.parseFloat( betaTxt.getText() ) , 
+                       Float.parseFloat( gammaTxt.getText() ) , 
+                       Float.parseFloat( toleranceTxt.getText() ) , 
+                       Integer.parseInt( fixedPeakTxt.getText() ) , 
+                       Float.parseFloat( requiredFractionTxt.getText() ) );
 
                   sendMessage( Commands.INDEX_PEAKS , indexCmd );
                }
@@ -642,11 +649,17 @@ public class indexPeaksPanel extends    JPanel  implements IReceiveMessage
                                 toleranceTxt.getText());
                
             }
+            else if ( middlePanel.getSelectedIndex() == NEW_AUTO_WPARAMS )
+            {
+              auto_w_params_panel.DoIndexing( messageCenter, tolerance );
+            }
+            else if ( middlePanel.getSelectedIndex() == NEW_AUTO )
+            {
+              auto_indexing_panel.DoAutoIndexing(messageCenter, tolerance );
+            }
             else if( middlePanel.getSelectedIndex() == ARCS_INDEX )
             {
-              float tolerance = getTolerance();
-              if ( ! Float.isNaN( tolerance ) )
-                arcs_panel.DoARCS_Indexing( messageCenter, tolerance );
+              arcs_panel.DoARCS_Indexing( messageCenter, tolerance );
             }
             else if( middlePanel.getSelectedIndex() == FROM_UB)
             {

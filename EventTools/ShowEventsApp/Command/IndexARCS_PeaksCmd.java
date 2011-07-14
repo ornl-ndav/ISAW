@@ -42,7 +42,7 @@ public class IndexARCS_PeaksCmd extends IndexPeaksLatticeParams
    private Vector3D_d u_hkl;
    private Vector3D_d v_hkl;
    private int        initial_num;
-   
+   private float      required_fraction;   
    
    public IndexARCS_PeaksCmd( float a,     float b,    float c,
                               float alpha, float beta, float gamma, 
@@ -54,11 +54,12 @@ public class IndexARCS_PeaksCmd extends IndexPeaksLatticeParams
                               float        req_fraction
                               )
    {
-      super( a, b, c, alpha, beta, gamma, tolerance, req_fraction );
+      super( a, b, c, alpha, beta, gamma, tolerance );
       this.psi         = psi;
       this.u_hkl       = new Vector3D_d( u_hkl );
       this.v_hkl       = new Vector3D_d( v_hkl );
-      this.initial_num = initial_num;
+      this.initial_num       = initial_num;
+      this.required_fraction = req_fraction;
    }
 
 
@@ -85,11 +86,18 @@ public class IndexARCS_PeaksCmd extends IndexPeaksLatticeParams
       return initial_num;
    }
 
+
+   public float getRequiredFraction()
+   {
+      return required_fraction;
+   }
+
    
    public String toString()
    {
       return super.toString() + 
-             "\nInitial_num :" + getInitialNum() +
+             "\nInitial_num      : " + getInitialNum() +
+             "\nRequired fraction: " + getRequiredFraction() +
              "\nPSI angle : "  + getPSI() +
              "\nU hkl     : "  + getU_hkl() +
              "\nV hkl     : "  + getV_hkl();

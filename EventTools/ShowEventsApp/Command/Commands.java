@@ -174,6 +174,11 @@ public class Commands
   public static final String INDEX_PEAKS_WITH_ORIENTATION_MATRIX =
                                          "INDEX_PEAKS_WITH_ORIENTATION_MATRIX";
   
+  public static final String INDEX_PEAKS_WITH_PARAMS = 
+                                         "INDEX_PEAKS_WITH_PARAMS";
+
+  public static final String INDEX_PEAKS_AUTO = "INDEX_PEAKS_AUTO";
+
   public static final String INDEX_PEAKS_ROSS = "INDEX_PEAKS_ROSS";
 
   public static final String INDEX_PEAKS_ARCS = "INDEX_PEAKS_ARCS";
