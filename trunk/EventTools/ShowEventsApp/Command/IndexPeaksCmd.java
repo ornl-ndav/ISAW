@@ -7,6 +7,7 @@ package EventTools.ShowEventsApp.Command;
 public class IndexPeaksCmd extends IndexPeaksLatticeParams
 {
    private int   fixedPeakIndex;
+   private float required_fraction;
    
    public IndexPeaksCmd( float a,     float b,    float c, 
                          float alpha, float beta, float gamma, 
@@ -14,18 +15,25 @@ public class IndexPeaksCmd extends IndexPeaksLatticeParams
                          int   fixedPeakIndex, 
                          float requiredFraction )
    {
-      super( a, b, c, alpha, beta, gamma, tolerance, requiredFraction );
+      super( a, b, c, alpha, beta, gamma, tolerance );
       this.fixedPeakIndex = fixedPeakIndex;
+      this.required_fraction = requiredFraction;
    }
 
    public int getFixedPeakIndex()
    {
       return fixedPeakIndex;
    }
+
+   public float getRequiredFraction()
+   {
+      return required_fraction;
+   }
    
    public String toString()
    {
       return super.toString() + 
-             "\nFixed peak index: "  + getFixedPeakIndex();
+             "\nRequired fraction: "  + getRequiredFraction() +
+             "\nFixed peak index:  "  + getFixedPeakIndex();
    }
 }

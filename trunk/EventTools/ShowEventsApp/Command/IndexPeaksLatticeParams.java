@@ -14,11 +14,10 @@ public class IndexPeaksLatticeParams
    private float beta;
    private float gamma;
    private float tolerance;
-   private float requiredFraction;
    
    public IndexPeaksLatticeParams( float a,     float b,    float c, 
                                    float alpha, float beta, float gamma, 
-                                   float tolerance, float requiredFraction )
+                                   float tolerance )
    {
       this.a = a;
       this.b = b;
@@ -27,7 +26,6 @@ public class IndexPeaksLatticeParams
       this.beta = beta;
       this.gamma = gamma;
       this.tolerance = tolerance;
-      this.requiredFraction = requiredFraction;
    }
 
    public double[] getLatticeParameters()
@@ -71,11 +69,6 @@ public class IndexPeaksLatticeParams
       return tolerance;
    }
 
-   public float getRequiredFraction()
-   {
-      return requiredFraction;
-   }
-   
    public String toString()
    {
       return "\na,b,c " + 
@@ -83,8 +76,7 @@ public class IndexPeaksLatticeParams
                               getA(), getB(), getC()) +
              "\nalpha, beta, gamma " + String.format("%6.3f, %6.3f, %6.3f", 
                                           getAlpha(), getBeta(), getGamma()) +
-             "\nTolerance: "         + getTolerance()      + 
-             "\nRequired fraction: " + getRequiredFraction();
+             "\nTolerance: "         + getTolerance();
    }
 
 }

@@ -1134,7 +1134,7 @@ public class IndexPeaks_Calc
         float[][] floatUB = RNiglifyAndGetFloatUB_over2PI(UB, UBinverse );
 
                                         // NOTE: Now indexed with matrix after
-                                        //       usin blind to Niglify
+                                        //       using blind to Niglify
         Index( all_peaks, UBinverse, hkl_tol );
 
         System.out.println(return_msg);

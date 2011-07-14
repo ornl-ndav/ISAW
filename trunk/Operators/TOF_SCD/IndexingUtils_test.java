@@ -206,7 +206,7 @@ public class IndexingUtils_test
      }
 
      Tran3D UB = new Tran3D();
-     float sum_sq_error = IndexingUtils.Find_UB( UB, hkl_list, q_list );
+     float sum_sq_error = IndexingUtils.Find_UB_OLD( UB, hkl_list, q_list );
 
      float[][] UB_returned = UB.get();
 
@@ -228,7 +228,7 @@ public class IndexingUtils_test
     Vector q_vectors = getNatroliteQs();
 
     Vector3D best_vec = new Vector3D();
-    double error = IndexingUtils.Find_Direction( best_vec, 
+    double error = IndexingUtils.Find_Direction_OLD( best_vec, 
                                                     index_values, 
                                                     q_vectors );
     TS_ASSERT_DELTA( error, 0.00218606, 1e-5 );
@@ -254,6 +254,7 @@ public class IndexingUtils_test
     float  beta  = 71;
     float  gamma = 70;
     Vector q_vectors = getNatroliteQs();
+
     float error = IndexingUtils.ScanFor_UB( UB,
                                             q_vectors,
                                             a, b, c, alpha, beta, gamma,
@@ -266,6 +267,46 @@ public class IndexingUtils_test
     for ( int i = 0; i < 3; i++ )
        for ( int j = 0; j < 3; j++ )
          TS_ASSERT_DELTA( UB_returned[i][j], correct_UB[i][j], 1.e-5 );
+  }
+
+
+  private static void test_Find_UB_auto()
+  {
+    Tran3D UB = new Tran3D();
+    Vector q_vectors = getNatroliteQs();
+    float  d_min = 6;
+    float  d_max = 10;
+    float  required_tolerance = 0.08f;
+    int    num_initial = 12;
+    float  degrees_per_step = .5f;
+
+    IndexingUtils.Find_UB( UB,
+                           q_vectors,
+                           d_min, d_max,
+                           required_tolerance,
+                           num_initial,
+                           degrees_per_step );
+
+  }
+
+
+  private static void test_ScanFor_Directions()
+  {
+    Vector directions = new Vector();
+    Vector q_vectors = getNatroliteQs();
+    float  d_min = 6;
+    float  d_max = 10;
+    float  degrees_per_step = .5f;
+    float  required_tolerance = 0.08f;
+
+    for ( int i = 0; i < 5; i++ )
+      q_vectors.remove( 11-i );
+    IndexingUtils.ScanFor_Directions( directions,
+                                      q_vectors,
+                                      d_min, d_max,
+                                      degrees_per_step,
+                                      required_tolerance );
+
   }
 
 
@@ -552,6 +593,9 @@ public class IndexingUtils_test
 
   public static void main( String[] args )
   {
+    test_Find_UB_auto();
+    System.out.println("Finished test_Find_UB auto .........................");
+
     test_Find_UB_given_lattice_parameters();
     System.out.println("Finished test_Find_UB (given lattice parameters)....");
 
@@ -566,6 +610,9 @@ public class IndexingUtils_test
 
     test_ScanFor_UB();
     System.out.println("Finished test_ScanFor_UB ...........................");
+
+    test_ScanFor_Directions();
+    System.out.println("Finished test_ScanFor_Directions ...................");
 
     test_Make_c_dir();
     System.out.println("Finished test_Make_c_dir ...........................");

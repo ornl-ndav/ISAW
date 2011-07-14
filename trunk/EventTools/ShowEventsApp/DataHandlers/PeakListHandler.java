@@ -8,6 +8,7 @@ import javax.swing.JOptionPane;
 
 import gov.anl.ipns.MathTools.LinearAlgebra;
 import gov.anl.ipns.MathTools.Geometry.Vector3D;
+import gov.anl.ipns.MathTools.Geometry.Tran3D;
 import gov.anl.ipns.MathTools.Geometry.Vector3D_d;
 
 import DataSetTools.components.ui.Peaks.OrientMatrixControl;
@@ -15,6 +16,7 @@ import DataSetTools.instruments.SNS_SampleOrientation;
 import DataSetTools.operator.Generic.Special.ViewASCII;
 import DataSetTools.operator.Generic.TOF_SCD.*;
 
+import Operators.TOF_SCD.IndexingUtils;
 import Operators.TOF_SCD.IndexPeaks_Calc;
 import Operators.TOF_SCD.LsqrsJ_base;
 import Operators.TOF_SCD.ARCS_Index_Calc;
@@ -28,6 +30,8 @@ import EventTools.ShowEventsApp.Command.ConfigLoadCmd;
 import EventTools.ShowEventsApp.Command.PeaksCmd;
 import EventTools.ShowEventsApp.Command.IndexPeaksCmd;
 import EventTools.ShowEventsApp.Command.IndexARCS_PeaksCmd;
+import EventTools.ShowEventsApp.Command.IndexWithParamsCmd;
+import EventTools.ShowEventsApp.Command.IndexPeaksAutoCmd;
 import EventTools.ShowEventsApp.Command.IntegratePeaksCmd;
 import EventTools.ShowEventsApp.Command.SelectionInfoCmd;
 import EventTools.ShowEventsApp.Command.IndexAndRefineUBCmd;
@@ -62,6 +66,8 @@ public class PeakListHandler implements IReceiveMessage
     message_center.addReceiver( this, Commands.LOAD_CONFIG_INFO ); 
     message_center.addReceiver( this, Commands.INDEX_PEAKS );
     message_center.addReceiver( this, Commands.INDEX_PEAKS_ARCS );
+    message_center.addReceiver( this, Commands.INDEX_PEAKS_WITH_PARAMS );
+    message_center.addReceiver( this, Commands.INDEX_PEAKS_AUTO );
     message_center.addReceiver( this, Commands.INDEX_PEAKS_ROSS );
     message_center.addReceiver( this, Commands.GET_PEAKS_TO_SPHERE_INTEGRATE );
     message_center.addReceiver( this, 
@@ -268,6 +274,7 @@ public class PeakListHandler implements IReceiveMessage
       {
         tolerance = cmd.getTolerance();
         Util.sendInfo("Starting to index peaks, PLEASE WAIT...");
+
         UB = IndexPeaks_Calc.IndexPeaksWithOptimizer( 
                                                   peakNew_list,
                                                   cmd.getA(),
@@ -293,6 +300,117 @@ public class PeakListHandler implements IReceiveMessage
       } 
       return false;
     }
+
+    else if ( message.getName().equals(Commands.INDEX_PEAKS_WITH_PARAMS) )
+    {
+      Object obj = message.getValue();
+      if ( obj == null || !(obj instanceof IndexWithParamsCmd) )
+      {
+        Util.sendError("ERROR:wrong value object in INDEX_PEAKS_WITH_PARAMS command");
+        return false;
+      }
+
+      if ( peakNew_list == null || peakNew_list.size() <= 0 )
+      {
+        Util.sendError( "ERROR: No peaks found... can't index yet");
+        return false;
+      }
+
+      IndexWithParamsCmd cmd = (IndexWithParamsCmd)obj;
+      try
+      {
+        Tran3D UB_tran = new Tran3D();
+        Vector q_vectors = new Vector();
+        for ( int i = 0; i < peakNew_list.size(); i++ )
+        {
+          Vector3D q_vec = new Vector3D( peakNew_list.elementAt(i).getQ() );
+          q_vectors.add( q_vec );
+        }
+
+        IndexingUtils.Find_UB( UB_tran,          // WITH Lattice Parameters
+                               q_vectors,
+                               cmd.getA(), cmd.getB(), cmd.getC(),
+                               cmd.getAlpha(),cmd.getBeta(),cmd.getGamma(),
+                               cmd.getTolerance(),
+                               cmd.getNum_initial(),
+                               cmd.getAngle_step() );
+
+         float[][]UB = new float[3][3];
+         float[][] UB_tran_arr = UB_tran.get();
+         for ( int row = 0; row < 3; row++ )
+           for ( int col = 0; col < 3; col++ )
+             UB[row][col] = UB_tran_arr[row][col];
+
+        this.UB = getErrorsAndSendMatrix( UB,
+                                          Convert2IPeak(peakNew_list),
+                                          tolerance );
+
+        Util.sendInfo( "Finished Indexing" );
+      }
+      catch ( Exception ex )
+      {
+        Util.sendError( "ERROR: Failed to index Peaks " + ex);
+        return false;
+      }
+      return false;
+    }
+
+    else if ( message.getName().equals(Commands.INDEX_PEAKS_AUTO ) )
+    {
+      Object obj = message.getValue();
+      if ( obj == null || !(obj instanceof IndexPeaksAutoCmd) )
+      {
+        Util.sendError("ERROR:wrong value object in INDEX_PEAKS_AUTO command");
+        return false;
+      }
+
+      if ( peakNew_list == null || peakNew_list.size() <= 0 )
+      {
+        Util.sendError( "ERROR: No peaks found... can't index yet");
+        return false;
+      }
+
+      IndexPeaksAutoCmd cmd = (IndexPeaksAutoCmd)obj;
+      try
+      {
+        Util.sendInfo("Starting NEW auto indexing, PLEASE WAIT...");
+
+        Tran3D UB_tran = new Tran3D();
+        Vector q_vectors = new Vector();
+        for ( int i = 0; i < peakNew_list.size(); i++ )
+        {
+          Vector3D q_vec = new Vector3D( peakNew_list.elementAt(i).getQ() );
+          q_vectors.add( q_vec );
+        }
+
+        IndexingUtils.Find_UB( UB_tran,          // NO Lattice Parameters
+                               q_vectors,
+                               cmd.getD_min(),
+                               cmd.getD_max(),
+                               cmd.getTolerance(), 
+                               cmd.getNum_initial(),
+                               cmd.getAngle_step() );
+
+         float[][] UB = new float[3][3];
+         float[][] UB_tran_arr = UB_tran.get();
+         for ( int row = 0; row < 3; row++ )
+           for ( int col = 0; col < 3; col++ )
+             UB[row][col] = UB_tran_arr[row][col];
+
+        this.UB = getErrorsAndSendMatrix( UB,
+                                          Convert2IPeak(peakNew_list),
+                                          tolerance );
+
+        Util.sendInfo( "Finished Indexing" );
+      }
+      catch ( Exception ex )
+      {
+        Util.sendError( "ERROR: Failed to index Peaks " + ex);
+        return false;
+      }
+      return false;
+    }
+
 
     else if( message.getName().equals( Commands.INDEX_PEAKS_ARCS) )
     {
