@@ -306,7 +306,8 @@ public class PeakListHandler implements IReceiveMessage
       Object obj = message.getValue();
       if ( obj == null || !(obj instanceof IndexWithParamsCmd) )
       {
-        Util.sendError("ERROR:wrong value object in INDEX_PEAKS_WITH_PARAMS command");
+        Util.sendError("ERROR:wrong value object in " + 
+                       "INDEX_PEAKS_WITH_PARAMS command");
         return false;
       }
 
@@ -319,6 +320,9 @@ public class PeakListHandler implements IReceiveMessage
       IndexWithParamsCmd cmd = (IndexWithParamsCmd)obj;
       try
       {
+        tolerance = cmd.getTolerance();
+        Util.sendInfo("Starting NEW auto indexing with params, PLEASE WAIT..");
+
         Tran3D UB_tran = new Tran3D();
         Vector q_vectors = new Vector();
         for ( int i = 0; i < peakNew_list.size(); i++ )
@@ -373,6 +377,7 @@ public class PeakListHandler implements IReceiveMessage
       IndexPeaksAutoCmd cmd = (IndexPeaksAutoCmd)obj;
       try
       {
+        tolerance = cmd.getTolerance();
         Util.sendInfo("Starting NEW auto indexing, PLEASE WAIT...");
 
         Tran3D UB_tran = new Tran3D();
@@ -509,8 +514,8 @@ public class PeakListHandler implements IReceiveMessage
       }
 
       IndexAndRefineUBCmd cmd = (IndexAndRefineUBCmd)obj;
-      float tol = cmd.getTolerance();
-//      System.out.println( "Tolerance = " + tol );
+      tolerance = cmd.getTolerance();
+//      System.out.println( "Tolerance = " + tolerance );
 
       double[][] newUB     = new double[3][3];
       double[][] newUB_inv = new double[3][3];
@@ -536,7 +541,8 @@ public class PeakListHandler implements IReceiveMessage
       try
       {
         double[][] hkls;
-        hkls = IndexPeaks_Calc.OptimizeUB( peaks, oldUB_inv, newUB_inv, tol );
+        hkls = IndexPeaks_Calc.OptimizeUB( peaks, 
+                                           oldUB_inv, newUB_inv, tolerance );
         if ( hkls == null )
           failed = true;
       }
@@ -564,11 +570,13 @@ public class PeakListHandler implements IReceiveMessage
           newUB[row][col]    = (float)(newUB[row][col] / (2*Math.PI));
         }
 
-      indexAllPeaks( peakNew_list, LinearAlgebra.getTranspose(UB_float), tol);
+      indexAllPeaks( peakNew_list, 
+                     LinearAlgebra.getTranspose(UB_float), 
+                     tolerance);
 
       this.UB = getErrorsAndSendMatrix( UB_float, 
                                         Convert2IPeak(peakNew_list), 
-                                        tol );
+                                        tolerance );
 
       Util.sendInfo( "Finished Refining UB" );
 
@@ -718,21 +726,21 @@ public class PeakListHandler implements IReceiveMessage
 
     try
     {
-      indexAllPeaks( peakNew_list, LinearAlgebra.getTranspose(UB), tolerance);
+      indexAllPeaks( peakNew_list, LinearAlgebra.getTranspose(UB), tolerance );
 
       double[][] UB2 = new double[3][3];
       double[] abc = new double[7];
       double[] sig_abc = new double[7];
-/*
+
       System.out.println("UB passed in to getErrorsAnd...");
       LinearAlgebra.print( UB ); 
-*/   
+   
       UB2 = LinearAlgebra.float2double( ScalarHandlePanel.LSQRS( Peaks , 
                                                                  sig_abc ));
-/*
+
       System.out.println("UB back from ScalarHandlePanel..");
       LinearAlgebra.print( UB2 ); 
-*/
+
 
       if(  UB2 == null || sig_abc[0] <= 0)
       {
@@ -761,6 +769,7 @@ public class PeakListHandler implements IReceiveMessage
                                        true );
       message_center.send( set_peaks );
 
+      indexAllPeaks( peakNew_list, LinearAlgebra.getTranspose(UB), tolerance );
       Message mark_indexed  = new Message( Commands.MARK_INDEXED_PEAKS,
                                            peakNew_list,
                                            true,
@@ -809,9 +818,16 @@ public class PeakListHandler implements IReceiveMessage
                pk.sethkl( 0f , 0f , 0f );
                n++; 
             }
+            else if ( Math.round( pk.h() ) == 0 &&
+                      Math.round( pk.k() ) == 0 &&
+                      Math.round( pk.l() ) == 0 )
+            {
+               pk.sethkl( 0f , 0f , 0f );
+               n++;
+            }
          }
     }
-    n = Peaks.size() -n;
+    n = Peaks.size() - n;
     Util.sendInfo( "Indexed " + n + 
                    " out of " + Peaks.size() + 
                    " peaks to within "+tolerance );
