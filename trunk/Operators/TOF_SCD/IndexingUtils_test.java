@@ -206,7 +206,7 @@ public class IndexingUtils_test
      }
 
      Tran3D UB = new Tran3D();
-     float sum_sq_error = IndexingUtils.Find_UB_OLD( UB, hkl_list, q_list );
+     float sum_sq_error = IndexingUtils.Find_UB_3D( UB, hkl_list, q_list );
 
      float[][] UB_returned = UB.get();
 
@@ -228,7 +228,7 @@ public class IndexingUtils_test
     Vector q_vectors = getNatroliteQs();
 
     Vector3D best_vec = new Vector3D();
-    double error = IndexingUtils.Find_Direction_OLD( best_vec, 
+    double error = IndexingUtils.Find_Direction_3D( best_vec, 
                                                     index_values, 
                                                     q_vectors );
     TS_ASSERT_DELTA( error, 0.00218606, 1e-5 );
