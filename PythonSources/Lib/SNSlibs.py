@@ -151,6 +151,55 @@ def send( ds, showPlots, sendData,IOBS):
         if sendData and IOBS is not None:
             ScriptUtil.send(ds, IOBS)
 
+def EventD_space(sendData,showData,IOBS,instr,runnum,DetCalFile,BankFile,
+             MapFile,firstEvent,NumEvents,d_min,d_max,log_param,scale):
+        
+        (eventFile, pcharge) = getRunStuff(instr,runnum)
+        
+        pcharge = getProtonsCharge( instr, runnum)
+        pcharge = pcharge/scale
+        print "scale = %.2f" % pcharge
+
+
+        log_param = log_param * d_min # log param
+        useLogBinning = 1
+        nbins =0
+        useD_spaceMapFile = 0
+        d_spaceMapFile =""
+        # do the initial load and time focus
+        import os
+
+#        if not os.path.exists(event):
+#            raise Error, "%s does not exist" % event
+        
+        args= [eventFile,DetCalFile,BankFile,MapFile,firstEvent,
+                                  NumEvents,d_min,d_max,useLogBinning,log_param,nbins,
+                                  0,"",0,"",0,0]
+        if  os.path.exists(eventFile):
+             panel_ds = Util.Make_d_DataSet( eventFile,DetCalFile,BankFile,MapFile,firstEvent,NumEvents,d_min,d_max,useLogBinning,log_param,nbins, 0,"",0,"",0,0)
+        else:
+             L = eventFile.split('_')
+             L[len(L)-2]="neutron0"
+             eventFile1 = ""
+             for i in range(0,len(L)-1):
+                eventFile1 += L[i]+'_'
+             eventFile1 += L[len(L)-1]
+             panel_ds1 = Util.Make_d_DataSet( eventFile1,DetCalFile,BankFile,MapFile,firstEvent,NumEvents,d_min,d_max,useLogBinning,log_param,nbins, 0,"",0,"",0,0)
+             eventFile2 =""
+             L[len(L)-2]="neutron1"
+             for i in range(0,len(L)-1):
+                eventFile2 += L[i]+'_'
+             eventFile2 += L[len(L)-1]
+             panel_ds2 = Util.Make_d_DataSet( eventFile2,DetCalFile,BankFile,MapFile,firstEvent,NumEvents,d_min,d_max,useLogBinning,log_param,nbins, 0,"",0,"",0,0)
+             panel_ds = DataSetMerge(panel_ds1,panel_ds2).getResult()     
+
+        
+       
+        send(panel_ds, showData, sendData,IOBS)
+
+        panel_ds.setSqrtErrorsAtLeast_1()
+
+        return panel_ds
 
 def EventD_space2GSAS(sendData,showData,IOBS,instr,runnum,DetCalFile,BankFile,
              MapFile,firstEvent,NumEvents,d_min,d_max,log_param,scale):
@@ -228,6 +277,7 @@ def EventD_space2GSAS(sendData,showData,IOBS,instr,runnum,DetCalFile,BankFile,
 
         send( gsas_tof, showData,sendData,IOBS)
         return gsas_tof
+
 def run():
     print EventD_space2GSAS( 1,0,IOBS,"PG3",666,"/SNS/users/pf9/NEW_PG3.DetCal","/SNS/PG3/2010_2_11_CAL/calibrations/PG3_bank_2010_04_22.xml","/SNS/PG3/2009_2_11A_CAL/calibrations/PG3_TS_2009_04_17.dat",0,1E12,.2,5,2E-4,9.99E12)
 
