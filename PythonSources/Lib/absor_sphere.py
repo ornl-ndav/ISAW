@@ -84,7 +84,10 @@ def absor_sphere(smu, amu, radius, twoth, wl):
 	
 # !	Calculate TBAR as defined by Coppens.
 
-    tbar = -log(trans)/mu
+    if mu == 0.0:
+        tbar = 0.0
+    else:
+        tbar = -log(trans)/mu
 
     
     return trans, tbar
