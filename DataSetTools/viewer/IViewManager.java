@@ -105,6 +105,7 @@ public interface IViewManager extends IObserver
   public static final String DIFFERENCE_GRAPH= "Difference Graph View";
   public static final String TABLE           = "Table Generator";
   public static final String THREE_D         = "3D View";
+  public static final String THREE_D_RECT    = "3D Rectangle View";
   public static final String CONTOUR         = "Contour View";
   public static final String HKL_SLICE       = "HKL Slice View";
   public static final String PARALLEL_YofX   = "Parallel y(x)";
