@@ -45,7 +45,11 @@ def spectrum2( wavelength, xtof, spect1, xtime, xcounts ):
             spectx = xcounts[j-1] + deltaCounts*fraction # interpolate
             break
     
-    spect = spectx / spect1
+    if spect1 == 0.0:
+        spect, relSigSpect = 0.0
+        return spect, relSigSpect
+    else:
+        spect = spectx / spect1
     
     # relative sigma for spect
     # relSigSpect**2 = (sqrt(spectx)/spectx)**2 + (sqrt(spect1)/spect1)**2
