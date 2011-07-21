@@ -170,6 +170,7 @@ public class RowColTimeVirtualArray extends
   JCheckBoxMenuItem jmErr=null; 
   JCheckBoxMenuItem jmInd=null;
   public AnimationController acontrol= null ;
+  MyAnimationListener acontrolListener = null;
   XScaleChooserUI XScl= null;
   public float[] xvals1;
   public int TimeIndex = -1;
@@ -499,6 +500,13 @@ public class RowColTimeVirtualArray extends
 
   /**
    * Return controls needed by the component.
+   * The components are as follows
+   * [0] Row Range control( TextRangeUI)
+   * [1] Col Range control( TextRangeUI)
+   * ?[2] Detector choice control,if more than one detector in the data set
+   *           (LabelCombobox)
+   * [2/3]  XScale change control(XScaleChooserUI)
+   * [3/4]  Frame Control( AnimationController)
    */ 
   public JComponent[] getSharedControls()
     {
@@ -553,7 +561,8 @@ public class RowColTimeVirtualArray extends
      else if( TimeIndex >= xvals1.length)
         TimeIndex = x_scale.getNum_x()-1;
      acontrol.setFrameValue( xvals1[TimeIndex]);//<========Array out of bounds 0
-     acontrol.addActionListener( new MyAnimationListener());
+     acontrolListener = new MyAnimationListener();
+     acontrol.addActionListener( acontrolListener );
     
      Res[3+jcomps.length] =( acontrol);
    
@@ -905,7 +914,8 @@ public class RowColTimeVirtualArray extends
    if( x_scale.getI( time ) == x_scale.getI( Time ))
       return;
   	super.setTime(time);
-  	acontrol.setFrameValue( time);
+  	if( acontrol != null)
+  	  acontrol.setFrameValue( time);
 	notifyActionListeners( IArrayMaker.DATA_CHANGED);
   	
   }
@@ -2033,6 +2043,47 @@ private  float[][][]  getHKLMinMax( IDataGrid grid, float minTime,float maxTime,
        }
     }
 
+   /**
+    * Sets the new XScale.
+    * 
+    * @param x_scale1   The new XScale( approximately)
+    * @param notify     If true, all outside listeners will be notified with
+    *                  message -IArrayMaker.DATA_CHANGED. Otherwise there will
+    *                  be no notification.
+    */
+   public void setXScale( XScale x_scale1, boolean notify)
+   {
+      if( x_scale1 == null)
+         return;
+      
+      super.setXScale(x_scale1 );
+      
+      
+      //float[] xx = x_scale.getXs();
+      xvals1 = calcXvals(); 
+      float X = DS.getPointedAtX();
+      if( acontrol != null)
+         {
+         acontrol.removeActionListener(  acontrolListener );
+         acontrol.setFrame_values(xvals1);
+         if( Float.isNaN(X))
+            acontrol.setFrameNumber( 0);
+         else
+            acontrol.setFrameValue(  X );
+         SetTime( acontrol.getFrameValue());
+         acontrol.addActionListener(  acontrolListener );
+         }
+   
+     
+      state.set_int( ViewerState.TABLE_TS_CHAN , getPointedAtXindex( ));
+      state.set_float(ViewerState.TABLE_TS_TIMEMIN, xvals1[0]);
+      state.set_float(ViewerState.TABLE_TS_TIMEMAX ,xvals1[ xvals1.length - 1 ]);
+   
+      state.set_int(ViewerState.TABLE_TS_NSTEPS , x_scale.getNum_x());
+ 
+      if( notify)
+         notifyActionListeners( IArrayMaker.DATA_CHANGED);
+     } 
 
   // Listens for changes in the XScaleChooserUI and sets state variables
   // etc in response to these changes.
@@ -2051,6 +2102,7 @@ private  float[][][]  getHKLMinMax( IDataGrid grid, float minTime,float maxTime,
        
         //float[] xx = x_scale.getXs();
         xvals1 = calcXvals();
+       
         acontrol.setFrame_values(xvals1);
         float X = DS.getPointedAtX();
         if( Float.isNaN(X))
@@ -2058,6 +2110,7 @@ private  float[][][]  getHKLMinMax( IDataGrid grid, float minTime,float maxTime,
         else
            acontrol.setFrameValue(  X );
         SetTime( acontrol.getFrameValue());
+        acontrol.addActionListener( acontrolListener);
         state.set_int( ViewerState.TABLE_TS_CHAN , getPointedAtXindex( ));
         state.set_float(ViewerState.TABLE_TS_TIMEMIN, xvals1[0]);
         state.set_float(ViewerState.TABLE_TS_TIMEMAX ,xvals1[ xvals1.length - 1 ]);
