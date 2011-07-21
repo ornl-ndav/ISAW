@@ -240,20 +240,30 @@ public class Script extends Object{
 
     // first count the number of lines
     //while( index>=0 ){
+    if( this.script.length()>0 && this.script.charAt( 0 )=='\n')
+       linecount++;
+    
     while(true){
-      index=this.script.indexOf("\n",index+1);
-      if(index>=0)
-        linecount++;
-      else
+      int index1= this.script.indexOf("\n",index+1);
+      if(index1>=0)
+      {
+         index = index1;
+         linecount++;
+      }
+      else if( index+1 < this.script.length())
+      {
+         linecount++;
+         break;
+      }else
         break;
     }
-
+ 
     // then initialize all line_numbers to -1
     this.linenum=new int[linecount+1];
     if(fill_in){
       index=0;
       linenum[0]=0;
-      for( int i=1 ; i<=linecount ; i++ ){
+      for( int i=1 ; i<= linecount ; i++ ){
          if( script.charAt( linenum[i-1])=='\n')//blank line
          {
             this.linenum[i]=linenum[i-1]+1;
@@ -262,7 +272,7 @@ public class Script extends Object{
          else
          {
            index=this.script.indexOf("\n",index+1);
-           this.linenum[i]=index+1;
+           this.linenum[i]=index +1;
          }
       }
     }else{
