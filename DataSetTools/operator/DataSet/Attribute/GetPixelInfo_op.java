@@ -90,6 +90,7 @@ public class GetPixelInfo_op extends    DS_Attribute
                              implements IDataBlockInfo
 {
   private static final String TITLE = "Pixel Info";
+  public boolean ShowDetector = false;
 
  /* ------------------------ Default constructor ------------------------- */ 
  /**
@@ -208,6 +209,8 @@ public class GetPixelInfo_op extends    DS_Attribute
       return StringUtil.toString(O); 
 
     Vector V = (Vector)O;
+    if( ShowDetector)
+       return V.elementAt( 2 )+":("+V.elementAt(0)+","+V.elementAt(1)+")";
     return V.elementAt(0)+","+V.elementAt(1);
    }
 
@@ -217,6 +220,8 @@ public class GetPixelInfo_op extends    DS_Attribute
   */
   public String DataInfoLabel( int i )
   { 
+    if( ShowDetector )
+       return "Det:(Col,Row)";
     return "Col,Row";
   }
    
