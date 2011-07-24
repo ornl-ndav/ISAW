@@ -179,7 +179,7 @@ public class indexPeaksPanel extends    JPanel  implements IReceiveMessage
       panel.add( middlePanel );
       panel.add( buildTolerancePanel());
       this.add(panel );
-      panel.add( buildButtonsPanel(), BorderLayout.SOUTH );
+      panel.add( buildButtonsPanel() );
       return panel;
    }
    
