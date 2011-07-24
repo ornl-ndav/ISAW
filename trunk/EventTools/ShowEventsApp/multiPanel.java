@@ -1,5 +1,5 @@
 /* 
- * File: titleScreen.java
+ * File: MultiPanel.java
  *
  * Copyright (C) 2009, Paul Fischer
  *
@@ -60,7 +60,8 @@ import MessageTools.*;
  */
 public class multiPanel implements IReceiveMessage, IhasWindowClosed
 {
-   public static Rectangle    PANEL_BOUNDS = new Rectangle( 10, 10, 570, 510 );
+//   public static Rectangle    PANEL_BOUNDS = new Rectangle( 10, 10, 570, 510 );
+   public static Rectangle    PANEL_BOUNDS = new Rectangle( 10, 10, 570, 620 );
    private JFrame             mainView;
    private controlsPanel      controlpanel;
    private displayPanel       displayPanel;
@@ -113,9 +114,8 @@ public class multiPanel implements IReceiveMessage, IhasWindowClosed
 
       FinishJFrame StatusFrame = new FinishJFrame( " Messages" );
       StatusFrame.setDefaultCloseOperation( WindowConstants.DISPOSE_ON_CLOSE );
-      StatusFrame.setBounds( PANEL_BOUNDS.x , PANEL_BOUNDS.y
-            + PANEL_BOUNDS.height , PANEL_BOUNDS.width ,
-            PANEL_BOUNDS.height / 2 );
+      StatusFrame.setBounds( PANEL_BOUNDS.x , PANEL_BOUNDS.y + PANEL_BOUNDS.height , 
+                             PANEL_BOUNDS.width , PANEL_BOUNDS.height / 3 );
       StatusFrame.addWindowListener( 
                           new IndirectWindowCloseListener( this, "MESSAGE" ) );
 
