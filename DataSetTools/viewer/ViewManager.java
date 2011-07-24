@@ -700,6 +700,7 @@ public class ViewManager extends    JFrame
          IViewManager.GRX_Y,        
          IViewManager.INSTRUMENT_TABLE,
          IViewManager.THREE_D,
+         IViewManager.THREE_D_RECT,
          
          IViewManager.CONTOUR,
          IViewManager.TWO_D_VIEWER,
@@ -734,6 +735,8 @@ public class ViewManager extends    JFrame
           viewer = new GraphView( tempDataSet, state );
         else if ( view_type.equals( THREE_D ))
           viewer = new ThreeDView( tempDataSet, state );
+        else if ( view_type.equals( THREE_D_RECT ))
+           viewer = new ThreeDRectViewer( tempDataSet, state );
         else if ( view_type.equals( HKL_SLICE ) )
           viewer = new HKL_SliceView( tempDataSet, state );
         else if ( view_type.equals( SELECTED_GRAPHS ))             // Brent's 
