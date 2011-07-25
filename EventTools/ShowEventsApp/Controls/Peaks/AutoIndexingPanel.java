@@ -57,9 +57,9 @@ public class AutoIndexingPanel extends JPanel
                                            " Angle Step (degrees)", 
                                            " Number to Index Initially" };
 
-  private static final String[] defaults = { "2",
-                                             "12",
-                                             "2", "6" };
+  private static final String[] defaults = { "3",
+                                             "15",
+                                             "1.5", "15" };
   private Hashtable jtextf;
 
 

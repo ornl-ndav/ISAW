@@ -59,7 +59,7 @@ public class AutoWithParamsPanel extends JPanel
 
   private static final String[] defaults = { "4.91", "4.91", "5.40",
                                              "90", "90", "120",
-                                             "2", "6" };
+                                             "1.5", "15" };
   private Hashtable jtextf;
 
 
