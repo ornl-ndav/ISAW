@@ -448,12 +448,39 @@ public static float Find_UB( Tran3D             UB,
                              int                num_initial,
                              float              degrees_per_step )
 {
+  Vector<Vector3D> original_qs = new Vector<Vector3D>(q_vectors.size());
+  for ( int i = 0; i < q_vectors.size(); i++ )
+    original_qs.add( new Vector3D( q_vectors.elementAt(i) ) );
+
   if ( q_vectors.size() < 2 )
     throw new IllegalArgumentException("Need at least 2 q_vectors to find UB");
 
                                     // First, sort the peaks in order of 
                                     // increasing |Q| so that we can try to
                                     // index the low |Q| peaks first.
+
+  q_vectors = SortOnVectorMagnitude( q_vectors );
+
+                                    
+  if ( q_vectors.size() > 4 )       // shift to be centered on peak (we lose
+                                    // one peak that way.
+  {
+    Vector<Vector3D> shifted_qs = new Vector<Vector3D>();
+    int mid_ind = q_vectors.size()/3;
+    Vector3D mid_vec = q_vectors.elementAt( mid_ind );
+    for ( int i = 0; i < q_vectors.size(); i++ )
+    {
+      if ( i != mid_ind )
+      {
+        Vector3D shifted_vec = new Vector3D( q_vectors.elementAt(i) );
+        shifted_vec.subtract( mid_vec );
+        shifted_qs.add( shifted_vec );
+      }
+    }
+    q_vectors = shifted_qs; 
+  }
+
+
   q_vectors = SortOnVectorMagnitude( q_vectors );
 
   if ( num_initial > q_vectors.size() )
@@ -493,7 +520,8 @@ public static float Find_UB( Tran3D             UB,
     num_indexed = GetIndexedPeaks( UB, some_qs, required_tolerance,
                                    miller_ind, indexed_qs, fit_error );
 
-    fit_error[0] = Find_UB_3D( temp_UB, miller_ind, indexed_qs );
+//    fit_error[0] = Find_UB_3D( temp_UB, miller_ind, indexed_qs );
+    fit_error[0] = Find_UB_4D( temp_UB, miller_ind, indexed_qs );
 
     if ( !Float.isNaN( fit_error[0] ) )
       UB.set( temp_UB );
@@ -504,7 +532,8 @@ public static float Find_UB( Tran3D             UB,
     Tran3D temp_UB = new Tran3D( UB );
     num_indexed = GetIndexedPeaks( UB, q_vectors, required_tolerance,
                                    miller_ind, indexed_qs, fit_error );
-    fit_error[0] = Find_UB_3D( temp_UB, miller_ind, indexed_qs );
+//    fit_error[0] = Find_UB_3D( temp_UB, miller_ind, indexed_qs );
+    fit_error[0] = Find_UB_4D( temp_UB, miller_ind, indexed_qs );
     if ( !Float.isNaN( fit_error[0] ) )
       UB.set( temp_UB );
   }
@@ -513,6 +542,30 @@ public static float Find_UB( Tran3D             UB,
                                  // HKL space.
   num_indexed = GetIndexedPeaks( UB, q_vectors, required_tolerance,
                                  miller_ind, indexed_qs, fit_error ); 
+  System.out.println("Num indexed, shifted = " + num_indexed );
+  int num_to_print = Math.min( 5, indexed_qs.size() );
+  for ( int i = 0; i < num_to_print; i++ )
+    System.out.println("SHIFTED q = " + indexed_qs.elementAt(i) +
+                       "hkl = " + miller_ind.elementAt(i ) );
+                                 // now, get rid of shift and see how well 
+                                 // it works.
+  float[][] UB_array = UB.get();
+  for ( int i = 0; i < 3; i++ )
+  {
+    UB_array[3][i] = 0;
+    UB_array[i][3] = 0;
+  }
+  UB_array[3][3] = 1;
+  UB.set( UB_array );
+  num_indexed = GetIndexedPeaks( UB, original_qs, required_tolerance,
+                                 miller_ind, indexed_qs, fit_error );
+
+  System.out.println("Num indexed, raw = " + num_indexed );
+  num_to_print = Math.min( 5, indexed_qs.size() );
+  for ( int i = 0; i < num_to_print; i++ )
+    System.out.println("RAW q = " + indexed_qs.elementAt(i) +
+                       "hkl = " + miller_ind.elementAt(i ) );
+
   return fit_error[0];
 }
 
@@ -980,7 +1033,7 @@ public static float Find_UB_4D( Tran3D UB,
 
   double[][] Q = LinearAlgebra.QR_factorization( H_transpose );
 
-  float[][] augmented_UB_array = new float[3][4];
+  float[][] augmented_UB_array = new float[4][4];
 
   double[] b = new double[ q_vectors.size() ];
   for ( int row = 0; row < 3; row++ )
@@ -999,16 +1052,15 @@ public static float Find_UB_4D( Tran3D UB,
     sum_sq_error += error*error;
   }
 
-  float[][] UB_array = new float[3][3];
-  for ( int row = 0; row < 3; row++ )
-    for ( int col = 0; col < 3; col++ )
-      UB_array[row][col] = augmented_UB_array[row][col];
-/*
+  for ( int col = 0; col < 3; col++ )        // set last row to 0,0,0,1
+    augmented_UB_array[3][col] = 0;
+  augmented_UB_array[3][3] = 1;   
+
   System.out.println("Shift = " + augmented_UB_array[0][0] +
                            "  " + augmented_UB_array[0][1] +
                            "  " + augmented_UB_array[0][2] );
-*/
-  UB.set( UB_array );
+
+  UB.set( augmented_UB_array );
 
   return sum_sq_error;
 }
