@@ -50,16 +50,18 @@ public class AutoWithParamsPanel extends JPanel
   private static final String[] keys = { "a", "b", "c", 
                                          "alpha", "beta", "gamma",
                                          "angle_step",
+                                         "base_index",
                                          "num_initial" };
 
   private static final String[] labels = { " a", " b", " c",
                                            " alpha", " beta", " gamma",
                                            " Angle Step (degrees)", 
+                                           " Base Peak Seq Number",
                                            " Number to Index Initially" };
 
   private static final String[] defaults = { "4.91", "4.91", "5.40",
                                              "90", "90", "120",
-                                             "1.5", "15" };
+                                             "1.5", "-1", "15" };
   private Hashtable jtextf;
 
 
@@ -132,6 +134,7 @@ public class AutoWithParamsPanel extends JPanel
                                        (Float)hash.get("beta"),
                                        (Float)hash.get("gamma"),
                                        (Float)hash.get("angle_step"),
+                            Math.round((Float)hash.get("base_index"))-1,
                             Math.round((Float)hash.get("num_initial")),
                                        tolerance );
 

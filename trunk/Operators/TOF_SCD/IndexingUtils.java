@@ -445,6 +445,7 @@ public static float Find_UB( Tran3D             UB,
                              float a,     float b,    float c,
                              float alpha, float beta, float gamma,
                              float              required_tolerance,
+                             int                base_index,
                              int                num_initial,
                              float              degrees_per_step )
 {
@@ -455,18 +456,19 @@ public static float Find_UB( Tran3D             UB,
   if ( q_vectors.size() < 2 )
     throw new IllegalArgumentException("Need at least 2 q_vectors to find UB");
 
-                                    // First, sort the peaks in order of 
-                                    // increasing |Q| so that we can try to
-                                    // index the low |Q| peaks first.
-
-  q_vectors = SortOnVectorMagnitude( q_vectors );
-
-                                    
   if ( q_vectors.size() > 4 )       // shift to be centered on peak (we lose
                                     // one peak that way.
   {
     Vector<Vector3D> shifted_qs = new Vector<Vector3D>();
     int mid_ind = q_vectors.size()/3;
+                                    // either do an initial sort and use
+                                    // default base peak, or use the index
+                                    // specified by the input parameter
+    if ( base_index < 0 || base_index > q_vectors.size() )  
+      q_vectors = SortOnVectorMagnitude( q_vectors ); 
+    else  
+      mid_ind = base_index; 
+
     Vector3D mid_vec = q_vectors.elementAt( mid_ind );
     for ( int i = 0; i < q_vectors.size(); i++ )
     {

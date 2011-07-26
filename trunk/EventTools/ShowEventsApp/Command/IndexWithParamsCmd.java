@@ -36,18 +36,21 @@ package EventTools.ShowEventsApp.Command;
 
 public class IndexWithParamsCmd extends IndexPeaksLatticeParams
 {
+   private int        base_index;
    private int        num_initial;
    private float      angle_step;   
    
    public IndexWithParamsCmd( float a,     float b,    float c,
                               float alpha, float beta, float gamma, 
                               float        angle_step, 
+                              int          base_index,
                               int          num_initial,
                               float        tolerance
                               )
    {
       super( a, b, c, alpha, beta, gamma, tolerance );
       this.angle_step  = angle_step;
+      this.base_index  = base_index;
       this.num_initial = num_initial;
    }
 
@@ -55,6 +58,12 @@ public class IndexWithParamsCmd extends IndexPeaksLatticeParams
    public float getAngle_step()
    {
       return angle_step;
+   }
+
+
+   public int getBase_index()
+   {
+      return num_initial;
    }
 
 
@@ -67,6 +76,7 @@ public class IndexWithParamsCmd extends IndexPeaksLatticeParams
    public String toString()
    {
       return super.toString() + 
+             "\nBase index  : " + getBase_index()  +
              "\nNum_initial : " + getNum_initial() +
              "\nAngle step  : " + getAngle_step();
    }
