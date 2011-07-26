@@ -336,6 +336,7 @@ public class PeakListHandler implements IReceiveMessage
                                cmd.getA(), cmd.getB(), cmd.getC(),
                                cmd.getAlpha(),cmd.getBeta(),cmd.getGamma(),
                                cmd.getTolerance(),
+                               cmd.getBase_index(),
                                cmd.getNum_initial(),
                                cmd.getAngle_step() );
 
@@ -729,24 +730,26 @@ public class PeakListHandler implements IReceiveMessage
       indexAllPeaks( peakNew_list, LinearAlgebra.getTranspose(UB), tolerance );
 
       double[][] UB2 = new double[3][3];
-      double[] abc = new double[7];
       double[] sig_abc = new double[7];
 
       System.out.println("UB passed in to getErrorsAnd...");
       LinearAlgebra.print( UB ); 
    
-      UB2 = LinearAlgebra.float2double( ScalarHandlePanel.LSQRS( Peaks , 
-                                                                 sig_abc ));
+      if ( Peaks.size() > 2 )
+      {
+        UB2 = LinearAlgebra.float2double( ScalarHandlePanel.LSQRS( Peaks , 
+                                                                   sig_abc ));
 
-      System.out.println("UB back from ScalarHandlePanel..");
-      LinearAlgebra.print( UB2 ); 
-
+        System.out.println("UB back from ScalarHandlePanel..");
+        LinearAlgebra.print( UB2 ); 
+      }
+      else
+        UB2 = null;
 
       if(  UB2 == null || sig_abc[0] <= 0)
       {
          Util.sendError( "LeastSquares Error. No error estimates" );
          UB2 = LinearAlgebra.float2double( UB );
-         abc= sig_abc = null;
       }
      
       UBT = LinearAlgebra.double2float( LinearAlgebra.getTranspose( UB2 ) );

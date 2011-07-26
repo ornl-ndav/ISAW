@@ -152,6 +152,7 @@ public class IndexingUtils_test
     float  gamma = 70;
 
     float  required_tolerance = 0.2f;
+    int    base_index = -1;
     int    num_initial = 3;
     float  degrees_per_step = 3;
 
@@ -160,6 +161,7 @@ public class IndexingUtils_test
                                          a, b, c,
                                          alpha, beta, gamma,
                                          required_tolerance,
+                                         base_index,
                                          num_initial,
                                          degrees_per_step );
 
