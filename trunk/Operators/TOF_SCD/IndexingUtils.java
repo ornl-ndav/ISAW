@@ -144,7 +144,7 @@ public static float Find_UB_1( Tran3D   UB,
 
                             // Use the 1D indices and qs to optimize the 
                             // plane normal, a_dir.
-  fit_error[0] = Find_Direction_3D( a_dir, index_vals, indexed_qs );
+  fit_error[0] = Optimize_Direction_3D( a_dir, index_vals, indexed_qs );
 /*  System.out.println("Best a_dir = " + a_dir + 
                      " magnitude = " + a_dir.length() +
                      " num indexed = " + num_indexed  +
@@ -194,7 +194,7 @@ public static float Find_UB_1( Tran3D   UB,
                                     indexed_qs,
                                     fit_error  );
 
-  fit_error[0] = Find_Direction_3D( b_dir, index_vals, indexed_qs );
+  fit_error[0] = Optimize_Direction_3D( b_dir, index_vals, indexed_qs );
 /*
   System.out.println("Best b_dir = " + b_dir + 
                      " magnitude = " + b_dir.length() +
@@ -278,7 +278,7 @@ for ( int j = -4; j <= 4; j++ )
                                     indexed_qs,
                                     fit_error  );
 
-  fit_error[0] = Find_Direction_3D( c_dir, index_vals, indexed_qs );
+  fit_error[0] = Optimize_Direction_3D( c_dir, index_vals, indexed_qs );
 /*
   System.out.println("Best c_dir = " + c_dir + 
                      " magnitude = " + c_dir.length() +
@@ -307,7 +307,7 @@ for ( int j = -4; j <= 4; j++ )
                             // Finally, use the indexed peaks to get an 
                             // optimized UB that matches the indexing
                            
-  fit_error[0] = Find_UB_3D( UB, miller_ind, indexed_qs );
+  fit_error[0] = Optimize_UB_3D( UB, miller_ind, indexed_qs );
 /*
   System.out.println("Final Version Fit Error = " + fit_error[0] +
                      " Number indexed = " + num_indexed );
@@ -395,7 +395,7 @@ public static float Find_UB_2( Tran3D   UB,
                                         fit_error );
  
 
-  fit_error[0] = Find_UB_3D( UB, miller_ind, indexed_qs );
+  fit_error[0] = Optimize_UB_3D( UB, miller_ind, indexed_qs );
 /*
   System.out.println("Final Version Fit Error = " + fit_error[0] +
                      " Number indexed = " + num_indexed );
@@ -428,6 +428,18 @@ public static float Find_UB_2( Tran3D   UB,
     @param  gamma               third unit cell angle in degrees.
     @param  required_tolerance  The maximum allowed deviation of Miller indices
                                 from integer values for a peak to be indexed.
+    @param  base_index          The sequence number of the peak that should 
+                                be used as the central peak.  On the first
+                                scan for a UB matrix that fits the data,
+                                the remaining peaks in the list of q_vectors 
+                                will be shifted by -base_peak, where base_peak
+                                is the q_vector with the specified base index.
+                                If fewer than 4 peaks are specified in the
+                                q_vectors list, this parameter is ignored.
+                                If this parameter is -1, and there are at least
+                                four peaks in the q_vector list, then a base
+                                index will be calculated internally.  In most
+                                cases, it should suffice to set this to -1.
     @param  num_initial         The number of low |Q| peaks that are used
                                 when scanning for an initial indexing.
     @param  degrees_per_step    The number of degrees between directions that
@@ -522,8 +534,8 @@ public static float Find_UB( Tran3D             UB,
     num_indexed = GetIndexedPeaks( UB, some_qs, required_tolerance,
                                    miller_ind, indexed_qs, fit_error );
 
-//    fit_error[0] = Find_UB_3D( temp_UB, miller_ind, indexed_qs );
-    fit_error[0] = Find_UB_4D( temp_UB, miller_ind, indexed_qs );
+//    fit_error[0] = Optimize_UB_3D( temp_UB, miller_ind, indexed_qs );
+    fit_error[0] = Optimize_UB_4D( temp_UB, miller_ind, indexed_qs );
 
     if ( !Float.isNaN( fit_error[0] ) )
       UB.set( temp_UB );
@@ -534,8 +546,8 @@ public static float Find_UB( Tran3D             UB,
     Tran3D temp_UB = new Tran3D( UB );
     num_indexed = GetIndexedPeaks( UB, q_vectors, required_tolerance,
                                    miller_ind, indexed_qs, fit_error );
-//    fit_error[0] = Find_UB_3D( temp_UB, miller_ind, indexed_qs );
-    fit_error[0] = Find_UB_4D( temp_UB, miller_ind, indexed_qs );
+//    fit_error[0] = Optimize_UB_3D( temp_UB, miller_ind, indexed_qs );
+    fit_error[0] = Optimize_UB_4D( temp_UB, miller_ind, indexed_qs );
     if ( !Float.isNaN( fit_error[0] ) )
       UB.set( temp_UB );
   }
@@ -586,12 +598,12 @@ public static float Find_UB( Tran3D             UB,
                                     // First, sort the peaks in order of 
                                     // increasing |Q| so that we can try to
                                     // index the low |Q| peaks first.
-/*#########
+/*
   if ( q_vectors.size() > 4 )       // shift to be centered on peak (we lose
                                     // one peak that way.
   {
     Vector<Vector3D> shifted_qs = new Vector<Vector3D>();
-    int mid_ind = q_vectors.size()/2;
+    int mid_ind = q_vectors.size()/3;
     Vector3D mid_vec = q_vectors.elementAt( mid_ind );
     for ( int i = 0; i < q_vectors.size(); i++ )
     {
@@ -605,6 +617,7 @@ public static float Find_UB( Tran3D             UB,
     q_vectors = shifted_qs; 
   }
 */
+
   q_vectors = SortOnVectorMagnitude( q_vectors );
 
   if ( num_initial > q_vectors.size() )
@@ -691,19 +704,22 @@ public static float Find_UB( Tran3D             UB,
 
   Vector3D c_dir  = null;
   boolean c_found = false;
-  index = 1;
+
   Vector3D perp = new Vector3D();
   perp.cross( a_dir, b_dir );
   perp.normalize();
+/*
   while ( !c_found && index < directions.size() )
   {
     Vector3D vec = directions.elementAt(index);
     float alpha = angle( b_dir, vec );
     float beta  = angle( a_dir, vec );
+    float perp_ang = angle( perp, vec );
     if ( alpha >= min_deg && 
          beta  >= min_deg && 
          alpha <  90 + epsilon &&
-         beta  <  90 + epsilon )
+         beta  <  90 + epsilon && 
+         perp_ang < 80 ) 
     {
       c_dir = new Vector3D( vec );
       c_found = true;
@@ -714,10 +730,37 @@ public static float Find_UB( Tran3D             UB,
       c_dir.multiply(-1);
       alpha = angle( b_dir, c_dir );
       beta  = angle( a_dir, c_dir );
+      perp_ang = angle( perp, c_dir );
       if ( alpha >= min_deg && 
            beta  >= min_deg && 
            alpha < 90 + epsilon && 
-           beta  < 90 + epsilon )
+           beta  < 90 + epsilon &&
+           perp_ang < 80 ) 
+      {
+        c_found = true;
+      }
+    }
+
+    if ( ! c_found ) 
+      index++;
+  }
+*/
+
+  while ( !c_found && index < directions.size() )
+  {
+    Vector3D vec = directions.elementAt(index);
+    float perp_ang = angle( perp, vec );
+    if ( perp_ang < 80 ) 
+    {
+      c_dir = new Vector3D( vec );
+      c_found = true;
+    }
+    else 
+    {
+      c_dir = new Vector3D( vec );
+      c_dir.multiply(-1);
+      perp_ang = angle( perp, c_dir );
+      if ( perp_ang < 80 ) 
       {
         c_found = true;
       }
@@ -727,11 +770,14 @@ public static float Find_UB( Tran3D             UB,
       index++;
   }
 
+
+
   if ( c_found )
   {
      System.out.println("C_DIR = " + c_dir + "   length = " + c_dir.length());
      System.out.println("ALPHA = " + angle(b_dir, c_dir) );
      System.out.println("BETA  = " + angle(c_dir, a_dir) );
+     System.out.println("GAMMA = " + angle(a_dir, b_dir) );
   }
   else
   {
@@ -755,6 +801,10 @@ public static float Find_UB( Tran3D             UB,
                            { 0,            0,            0,            1 } };
 
   UB.set( UB_inv_arr );
+
+  System.out.println("********** UB inverse should be = ");
+  System.out.println( UB );
+
   UB.invert();
   System.out.println("UB = " + UB );
                                      // now gradually bring in the remaining
@@ -763,9 +813,42 @@ public static float Find_UB( Tran3D             UB,
 
   Vector<Vector3D> miller_ind = new Vector<Vector3D>();
   Vector<Vector3D> indexed_qs = new Vector<Vector3D>();
+  Vector           index_vals = new Vector();
+
   float[] fit_error = new float[1];
-  int     count = 0;
+
   int     num_indexed = 0;
+  num_indexed = GetIndexedPeaks_1D( a_dir, some_qs, required_tolerance,
+                        index_vals, indexed_qs, fit_error  );
+  System.out.println("***** USING A_DIR ONLY, NUM INDEXED = " + num_indexed );
+  for ( int i = 0; i < index_vals.size(); i++ )
+    System.out.println("Q = " + indexed_qs.elementAt(i) +
+                       " H = " + index_vals.elementAt(i) );
+
+  num_indexed = GetIndexedPeaks_1D( b_dir, some_qs, required_tolerance,
+                        index_vals, indexed_qs, fit_error  );
+  System.out.println("***** USING B_DIR ONLY, NUM INDEXED = " + num_indexed );
+  for ( int i = 0; i < index_vals.size(); i++ )
+    System.out.println("Q = " + indexed_qs.elementAt(i) +
+                       " K = " + index_vals.elementAt(i) );
+
+  num_indexed = GetIndexedPeaks_1D( c_dir, some_qs, required_tolerance,
+                        index_vals, indexed_qs, fit_error  );
+  System.out.println("***** USING C_DIR ONLY, NUM INDEXED = " + num_indexed );
+  for ( int i = 0; i < index_vals.size(); i++ )
+    System.out.println("Q = " + indexed_qs.elementAt(i) +
+                       " L = " + index_vals.elementAt(i) );
+
+  num_indexed = GetIndexedPeaks( UB, some_qs, required_tolerance,
+                                 miller_ind, indexed_qs, fit_error );
+
+  System.out.println("***** AFTER FORMING UB, NUM INDEXED = " + num_indexed );
+  for ( int i = 0; i < indexed_qs.size(); i++ )
+    System.out.println("Q = " + indexed_qs.elementAt(i) +
+                       " HKL = " + miller_ind.elementAt(i) );
+
+
+  int     count = 0;
   while ( num_initial < q_vectors.size() )
   {
     count++;
@@ -782,10 +865,10 @@ public static float Find_UB( Tran3D             UB,
     num_indexed = GetIndexedPeaks( UB, some_qs, required_tolerance,
                                    miller_ind, indexed_qs, fit_error );
 
-    System.out.println("Before Find_UB_3D Indexed " + num_indexed + 
+    System.out.println("Before Optimize_UB_3D Indexed " + num_indexed + 
                        " of " + num_initial );
-    fit_error[0] = Find_UB_3D( temp_UB, miller_ind, indexed_qs );
-    System.out.println("After Find_UB_3D Indexed " + num_indexed );
+    fit_error[0] = Optimize_UB_3D( temp_UB, miller_ind, indexed_qs );
+    System.out.println("After Optimize_UB_3D Indexed " + num_indexed );
 
     if ( !Float.isNaN( fit_error[0] ) )
     {
@@ -793,7 +876,7 @@ public static float Find_UB( Tran3D             UB,
       System.out.println("Indexed " + num_indexed + " of " + num_initial );
     }
     else
-      System.out.println("Find_UB_3D FAILED WITH " + num_initial + " peaks");
+      System.out.println("Optimize_UB_3D FAILED WITH "+ num_initial +" peaks");
   }
 
   if ( q_vectors.size() >= 3 )    // try one last refinement using all peaks
@@ -801,7 +884,7 @@ public static float Find_UB( Tran3D             UB,
     Tran3D temp_UB = new Tran3D( UB );
     num_indexed = GetIndexedPeaks( UB, q_vectors, required_tolerance,
                                    miller_ind, indexed_qs, fit_error );
-    fit_error[0] = Find_UB_3D( temp_UB, miller_ind, indexed_qs );
+    fit_error[0] = Optimize_UB_3D( temp_UB, miller_ind, indexed_qs );
     if ( !Float.isNaN( fit_error[0] ) )
       UB.set( temp_UB );
   }
@@ -924,7 +1007,7 @@ public static Vector<Vector3D>
 
 
 /** 
-    STATIC method Find_UB: Calculates the matrix that most nearly maps
+    STATIC method Optimize_UB: Calculates the matrix that most nearly maps
     the specified hkl_vectors to the specified q_vectors.  The calculated
     UB minimizes the sum squared differences between UB*(h,k,l) and the
     corresponding (qx,qy,qz) for all of the specified hkl and Q vectors.
@@ -949,7 +1032,7 @@ public static Vector<Vector3D>
                                    the UB matrix can't be calculated or if 
                                    UB is a singular matrix.
 */  
-public static float Find_UB_3D( Tran3D UB,
+public static float Optimize_UB_3D( Tran3D UB,
                                 Vector hkl_vectors, 
                                 Vector q_vectors )
 {
@@ -1004,9 +1087,9 @@ public static float Find_UB_3D( Tran3D UB,
 }
 
 
-public static float Find_UB_4D( Tran3D UB,
-                                Vector hkl_vectors,
-                                Vector q_vectors )
+public static float Optimize_UB_4D( Tran3D UB,
+                                    Vector hkl_vectors,
+                                    Vector q_vectors )
 {
   if ( hkl_vectors.size() < 3 )
   {
@@ -1069,16 +1152,16 @@ public static float Find_UB_4D( Tran3D UB,
 
 
 /** 
-    STATIC method Find_Direction: Calculates the vector for which the
+    STATIC method Optimize_Direction_3D: Calculates the vector for which the
     dot product of the the vector with each of the specified Qxyz vectors 
     is most nearly the corresponding integer index.  The calculated best_vec
     minimizes the sum squared differences between best_vec dot (qx,qy,z) 
     and the corresponding index for all of the specified Q vectors and 
     indices.  The sum of the squares of the residual errors is returned.
-    NOTE: This method is similar the Find_UB method, but this method only
+    NOTE: This method is similar the Optimize_UB method, but this method only
           optimizes the plane normal in one direction.  Also, this optimizes
           the mapping from (qx,qy,qz) to one index (Q to index), while the 
-          Find_UB method optimizes the mapping from three (h,k,l) to
+          Optimize_UB method optimizes the mapping from three (h,k,l) to
           (qx,qy,qz) (3 indices to Q).
   
     @param  best_vec     new Vector3D vector that will be set to a vector whose 
@@ -1103,9 +1186,9 @@ public static float Find_UB_4D( Tran3D UB,
                                    the best direction can't be calculated.
 */
 
-public static float Find_Direction_3D( Vector3D best_vec,
-                                       Vector   index_values,
-                                       Vector   q_vectors )
+public static float Optimize_Direction_3D( Vector3D best_vec,
+                                           Vector   index_values,
+                                           Vector   q_vectors )
 {
   if ( index_values.size() < 3 )
    throw new IllegalArgumentException("Three or more index values needed");
@@ -1139,9 +1222,9 @@ public static float Find_Direction_3D( Vector3D best_vec,
 }
 
 
-public static float Find_Direction_4D( Vector3D best_vec,
-                                       Vector   index_values,
-                                       Vector   q_vectors )
+public static float Optimize_Direction_4D( Vector3D best_vec,
+                                           Vector   index_values,
+                                           Vector   q_vectors )
 {
   if ( index_values.size() < 3 )
    throw new IllegalArgumentException("Three or more index values needed");
@@ -1171,7 +1254,7 @@ public static float Find_Direction_4D( Vector3D best_vec,
   float error = (float)LinearAlgebra.QR_solve( H_transpose, Q, b );
 /*
   if ( b.length > 3 )
-    System.out.println( "SHIFT = " + b[3] + " in Find_Direction_4D" );
+    System.out.println( "SHIFT = " + b[3] + " in Optimize_Direction_4D" );
 */ 
   best_vec.set( (float)b[0], (float)b[1], (float)b[2] );
 
@@ -1196,8 +1279,7 @@ public static boolean ValidIndex( Vector3D hkl, float tolerance )
   boolean valid_index = false;
 
   int h,k,l;
-                                        // since C++ lacks a round() we need
-                                        // to do it ourselves!
+
   h = Math.round( hkl.getX() );
   k = Math.round( hkl.getY() );
   l = Math.round( hkl.getZ() );
@@ -1451,6 +1533,9 @@ public static int GetIndexedPeaks( Tran3D    UB,
 
     Tran3D UB_inverse = new Tran3D( UB );
     UB_inverse.invert();
+
+    System.out.println("*********** in GetIndexedPeaks, UB_inverse = ");
+    System.out.println( UB_inverse );
 
     for ( int q_num = 0; q_num < q_vectors.size(); q_num++ )
     {
@@ -2202,7 +2287,7 @@ public static void ScanFor_Directions( Vector<Vector3D> directions,
         selected_dirs.clear();
         max_indexed = num_indexed;
       }
-      if ( num_indexed == max_indexed )
+      if ( num_indexed >= max_indexed )
       {
         selected_dirs.add( new Vector3D( dir_temp ) );
       }
@@ -2234,7 +2319,7 @@ public static void ScanFor_Directions( Vector<Vector3D> directions,
                         indexed_qs,
                         fit_error  );
 
-    Find_Direction_3D( current_dir, index_vals, indexed_qs );
+    Optimize_Direction_3D( current_dir, index_vals, indexed_qs );
 /*
     System.out.println(" dir_num = " + dir_num +
                        " Length = " + current_dir.length() +
@@ -2435,7 +2520,7 @@ private static float GetPossibleDirectionList( Vector<Vector3D> q_vectors,
                                       fit_error  );
     if ( num_indexed >= required_number )
     {
-      fit_error[0] = Find_Direction_3D( dir_vec, index_vals, indexed_qs );
+      fit_error[0] = Optimize_Direction_3D( dir_vec, index_vals, indexed_qs );
 
       num_indexed = GetIndexedPeaks_1D( dir_vec,
                                         q_vectors,
@@ -2444,7 +2529,7 @@ private static float GetPossibleDirectionList( Vector<Vector3D> q_vectors,
                                         indexed_qs,
                                         fit_error  );
 
-      fit_error[0] = Find_Direction_3D( dir_vec, index_vals, indexed_qs );
+      fit_error[0] = Optimize_Direction_3D( dir_vec, index_vals, indexed_qs );
 
       float vec_length = dir_vec.length();
       if ( Math.abs( length - vec_length ) < length_tolerance )
@@ -2509,7 +2594,7 @@ private static float GetPossibleDirectionList( Vector<Vector3D> q_vectors,
                                       fit_error  );
     if ( num_indexed >= 0.7 * max_indexed && fit_error[0] < 5 * min_error )
     {
-      fit_error[0] = Find_Direction_3D( dir_vec, index_vals, indexed_qs );
+      fit_error[0] = Optimize_Direction_3D( dir_vec, index_vals, indexed_qs );
 
       num_indexed = GetIndexedPeaks_1D( dir_vec,
                                         q_vectors,
@@ -2518,7 +2603,7 @@ private static float GetPossibleDirectionList( Vector<Vector3D> q_vectors,
                                         indexed_qs,
                                         fit_error  );
 
-      fit_error[0] = Find_Direction_3D( dir_vec, index_vals, indexed_qs );
+      fit_error[0] = Optimize_Direction_3D( dir_vec, index_vals, indexed_qs );
       boolean new_dir = true;
       int j = 0;
       while ( new_dir && j < edge_list.size() )
@@ -2651,7 +2736,7 @@ public static void main( String args[] ) throws Exception
     for ( int i = 0; i < hkls.size(); i++ )
       index_vals.add( Math.round(hkls.elementAt(i).get()[dim]) );
 
-    fit_error = Find_Direction_3D( dir_vec, index_vals, q_vectors );
+    fit_error = Optimize_Direction_3D( dir_vec, index_vals, q_vectors );
 /*
     System.out.println("Fit error = " + fit_error );
     System.out.println("Sigma = " + Math.sqrt(fit_error) / hkls.size() );
@@ -2665,7 +2750,7 @@ public static void main( String args[] ) throws Exception
 
 
   Tran3D UB = new Tran3D();
-  fit_error = Find_UB_3D( UB, hkls, q_vectors );
+  fit_error = Optimize_UB_3D( UB, hkls, q_vectors );
 //  System.out.println("fit_error in UB = " + fit_error ); 
 //  System.out.println("UB = \n" + UB ); 
   UB.invert();
