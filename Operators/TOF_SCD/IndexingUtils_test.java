@@ -173,10 +173,14 @@ public class IndexingUtils_test
 
     TS_ASSERT_DELTA( error, 0.00671575, 1e-5 );
 
+    int num_indexed = IndexingUtils.NumberIndexed( UB,
+                                                   q_vectors,
+                                                   required_tolerance );
+    TS_ASSERT_EQUALS( num_indexed, 12 );
   }
 
 
-  private static void test_Find_UB()
+  private static void test_Optimize_UB_3D()
   {
      float h_vals[]  = {  1f,  0,  0, -1,  0,  0, 1, 1 };
      float k_vals[]  = { .1f,  1,  0,  0, -1,  0, 1, 2 };
@@ -208,7 +212,7 @@ public class IndexingUtils_test
      }
 
      Tran3D UB = new Tran3D();
-     float sum_sq_error = IndexingUtils.Find_UB_3D( UB, hkl_list, q_list );
+     float sum_sq_error = IndexingUtils.Optimize_UB_3D( UB, hkl_list, q_list );
 
      float[][] UB_returned = UB.get();
 
@@ -220,7 +224,7 @@ public class IndexingUtils_test
   }
 
 
-  private static void test_Find_Direction()
+  private static void test_Optimize_Direction_3D()
   {
     Vector index_values = new Vector();
     int correct_indices[] = { 1, 4, 2, 0, 1, 3, 0, -1, 0, -1, -2, -3 };
@@ -230,9 +234,9 @@ public class IndexingUtils_test
     Vector q_vectors = getNatroliteQs();
 
     Vector3D best_vec = new Vector3D();
-    double error = IndexingUtils.Find_Direction_3D( best_vec, 
-                                                    index_values, 
-                                                    q_vectors );
+    double error = IndexingUtils.Optimize_Direction_3D( best_vec, 
+                                                        index_values, 
+                                                        q_vectors );
     TS_ASSERT_DELTA( error, 0.00218606, 1e-5 );
     TS_ASSERT_DELTA( best_vec.getX(), -2.58222, 1e-4 );
     TS_ASSERT_DELTA( best_vec.getY(),  3.97345, 1e-4 );
@@ -600,14 +604,14 @@ public class IndexingUtils_test
 
     test_Find_UB_given_lattice_parameters();
     System.out.println("Finished test_Find_UB (given lattice parameters)....");
-
+/*
     test_Find_UB_1();
     System.out.println("Finished test_Find_UB_1.............................");
 
-    test_Find_UB();
-    System.out.println("Finished test_Find_UB ..............................");
+    test_Optimize_UB_3D();
+    System.out.println("Finished test_Optimize_UB_3D .......................");
 
-    test_Find_Direction();
+    test_Optimize_Direction_3D();
     System.out.println("Finished test_Find_Direction .......................");
 
     test_ScanFor_UB();
@@ -642,7 +646,7 @@ public class IndexingUtils_test
 
     test_SelectDirection();
     System.out.println("Finished test_SelectDirection ......................");
-
+*/
     System.out.println("Tests Completed");
   }
 
