@@ -146,6 +146,7 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
    public static String    MAXABS_OS ="MAXABS_OS";
    public static String   AZIMUTH_OS="AZIMUTH_OS";
    public static String   ALT_OS="ALT_OS";
+   public static String   THREED__PANEL_OS ="THREED__PANEL_OS";
    float MinDis,MaxDis;
    
    
@@ -382,12 +383,13 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
         state.insert( ALT_OS ,45f  );
         state.insert( AZIMUTH_OS ,45f  );
      }
-     
+      state.insert( THREED__PANEL_OS ,  threeD_panel.getObjectState( isDefault ));
       return state;
    }
    
    public void setObjectState(ObjectState new_state)
    {
+      super.setObjectState( new_state );
       if( new_state == null)
          return;
      ViewerState vs =(ViewerState) new_state.get( VIEWER_STATE_OS );
@@ -432,6 +434,7 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
      setLogScale( value );
      
      setColorModel();
+     threeD_panel.setObjectState( (ObjectState)new_state.get( THREED__PANEL_OS ) );
      redraw(IObserver.POINTED_AT_CHANGED);
      
     
