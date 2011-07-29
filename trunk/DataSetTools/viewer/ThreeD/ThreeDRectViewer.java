@@ -239,10 +239,10 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
              
          }
       
-      threeD_panel.setObjects(  "Detectors" , Detector );
-      draw_axes( MaxDis/5);
-      draw_beam(  MaxDis);
-      draw_instrument(  MaxDis );
+      threeD_panel.setObjects( "Detectors" , Detector );
+      draw_axes( MaxDis/5 );
+      draw_beam( MaxDis );
+      draw_instrument( MaxDis );
 
       //-------------------- color_scale------------------------
       color_scale_image = new ColorScaleImage();
@@ -258,7 +258,6 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
 
       x_scale_ui.addActionListener( new XScaleListener() );
       XScale xscl = (XScale)x_scale_ui.getControlValue( );
- 
       
       
       //---------------------- AltAzController ------------------
@@ -276,7 +275,6 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
       frame_control.addActionListener( new FrameControlListener() );
      
       setNewXScale( xscl);
- 
       
       //---------------- DS Conversions ------------------------
       conv_table = new DataSetXConversionsTable( getDataSet() );
@@ -293,17 +291,14 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
        
        redraw( NEW_DATA_SET );
       
+       threeD_panel.addMouseMotionListener( new ViewMouseMotionAdapter() );
+       threeD_panel.addMouseListener( new ViewMouseAdapter() );
       
-      threeD_panel.addMouseMotionListener( new ViewMouseMotionAdapter() );
-      threeD_panel.addMouseListener( new ViewMouseAdapter() );
-      
-      OptionMenuHandler option_menu_handler = new OptionMenuHandler();
-      JMenu option_menu = menu_bar.getMenu( OPTION_MENU_ID );
-
+       OptionMenuHandler option_menu_handler = new OptionMenuHandler();
+       JMenu option_menu = menu_bar.getMenu( OPTION_MENU_ID );
                                                          // color options
-      JMenu color_menu = new ColorScaleMenu( option_menu_handler );
-      option_menu.add( color_menu );
-    
+       JMenu color_menu = new ColorScaleMenu( option_menu_handler );
+       option_menu.add( color_menu );
    }
 
    @Override
@@ -355,16 +350,14 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
           {
             pixel_point = threeD_panel.project( detector_location );
             threeD_panel.set_crosshair( pixel_point );
-           
           }
           
           last_pointed_at_index = ds.getPointedAtIndex();
           redraw_cursor = true;          //not used
           notify_ds_observers = true;    //not used fixed ViewControl
        }
-
-
    }
+
 
    public javax.swing.JComponent getDisplayComponent()
    {
@@ -433,7 +426,6 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
        state.set_float( ViewerState.V_AZIMUTH,  ((Float)new_state.get(AZIMUTH_OS)).floatValue() );
        state.set_float( ViewerState.V_ALTITUDE,  ((Float)new_state.get(ALT_OS)).floatValue());
        state.set_float( ViewerState.V_DISTANCE,  vs.get_float( ViewerState.V_DISTANCE ) );
-        
      }
      
      frame_control.setObjectState( (ObjectState) new_state.get( FRAME_CONTROL_OS ) );
@@ -460,8 +452,6 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
      setColorModel();
      threeD_panel.setObjectState( (ObjectState)new_state.get( THREED__PANEL_OS ) );
      redraw(IObserver.POINTED_AT_CHANGED);
-     
-    
    }
    
    
@@ -489,11 +479,10 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
          System.exit(0);
       }
       
-      
      ViewManager vm = (new ViewManager( (DataSet)Res, IViewManager.THREE_D_RECT));
-
    }
    
+
    private void initViewControl( float MinDist, float MaxDist)
    {
      
@@ -508,6 +497,7 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
       view_control.setDistance( distance );
       view_control.apply( true );
    }
+
   
   private void MakeGUI()
   {
@@ -542,8 +532,8 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
      add(  split_pane);
      
    // add( control_panel);
-
   }
+
   
   /* ------------------------------ draw_axes ----------------------------- */
 
@@ -567,11 +557,14 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
 
     threeD_panel.setObjects( AXES, objects );
   }
+
+
   /* --------------------------- draw_beam --------------------------- */
 
   private void draw_beam( float radius  )
   {
-    IThreeD_Object objects[] = new IThreeD_Object[ 15 ];
+    int N_STEPS = 50;
+    IThreeD_Object objects[] = new IThreeD_Object[ N_STEPS ];
     Vector3D points[] = new Vector3D[1];
 
     points[0] = new Vector3D( 0, 0, 0 );                    // sample
@@ -580,11 +573,11 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
     sample.setSize( 10 );
     objects[0] = sample; 
     
-    for ( int i = 1; i < 15; i++ )                          // beam is segmented
-    {                                                       // for depth sorting
+    for ( int i = 1; i < N_STEPS; i++ )                  // beam is segmented
+    {                                                    // for depth sorting
       points = new Vector3D[2];
-      points[0] = new Vector3D( -(i-1)*radius/3, 0, 0 );    // beam in 
-      points[1] = new Vector3D( -i*radius/3, 0, 0 );        // -x-axis direction
+      points[0] = new Vector3D( -(i-1)*radius/N_STEPS, 0, 0 );// beam is in 
+      points[1] = new Vector3D( -i*radius/N_STEPS, 0, 0 );    // -x-axis dir
       objects[i] = new Polyline( points, Color.red );
     }
 
