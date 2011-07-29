@@ -31,6 +31,7 @@
 
 package DataSetTools.viewer.ThreeD;
 
+import gov.anl.ipns.MathTools.Geometry.Position3D;
 import gov.anl.ipns.MathTools.Geometry.Vector3D;
 import gov.anl.ipns.Util.Messaging.IObserver;
 import gov.anl.ipns.Util.Numeric.ClosedInterval;
@@ -44,6 +45,7 @@ import gov.anl.ipns.ViewTools.Panels.ThreeD.AltAzController;
 import gov.anl.ipns.ViewTools.Panels.ThreeD.IThreeD_Object;
 import gov.anl.ipns.ViewTools.Panels.ThreeD.ImageRectangle;
 import gov.anl.ipns.ViewTools.Panels.ThreeD.Polyline;
+import gov.anl.ipns.ViewTools.Panels.ThreeD.Polymarker;
 import gov.anl.ipns.ViewTools.Panels.ThreeD.ThreeD_JPanel;
 import gov.anl.ipns.ViewTools.UI.ColorScaleImage;
 import gov.anl.ipns.ViewTools.UI.ColorScaleMenu;
@@ -53,6 +55,7 @@ import gov.anl.ipns.ViewTools.UI.SplitPaneWithState;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridLayout;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -74,6 +77,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import DataSetTools.components.ui.DataSetXConversionsTable;
+import DataSetTools.dataset.Attribute;
 import DataSetTools.dataset.Data;
 import DataSetTools.dataset.DataSet;
 import DataSetTools.dataset.Grid_util;
@@ -103,7 +107,7 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
    private static final long serialVersionUID = 1L;
    int[] gridIDs = null;
    ImageRectangle[]  Detector;
-   //private float   last_pointed_at_index = -1;
+   private float   last_pointed_at_index = -1;
    private boolean redraw_cursor       = true;
    private boolean notify_ds_observers = true;
 
@@ -132,8 +136,8 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
    
 
    private final Integer  AXES            = 200000000;
-   //private final Integer  BEAM            = 300000000;
-   //private final Integer  INSTRUMENT      = 400000000;
+   private final Integer  BEAM            = 300000000;
+  private final Integer  INSTRUMENT      = 400000000;
    
    // ----- ObjectState keys -------------------------
    public static String    VIEWER_STATE_OS="VIEWER_STATE_OS";
@@ -142,7 +146,8 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
    public static String    VIEW_CONTROL_MAXDIS_OS="VIEW_CONTROL_MAXDIS_OS";
    public static String    VIEW_CONTROL_DIS_OS="VIEW_CONTROL_DIS_OS";
    public static String    XSCALE_OS ="XSCALE_OS";
-   public static String   LASTPOINEDAT_OS="LASTPOINEDAT_OS";
+   public static String   LASTPOINTEDAT_OS="LASTPOINEDAT_OS";
+   public static String   LASTPOINTEDATDDAT_OS="LASTPOINEDATDAT_OS";
    public static String    MAXABS_OS ="MAXABS_OS";
    public static String   AZIMUTH_OS="AZIMUTH_OS";
    public static String   ALT_OS="ALT_OS";
@@ -236,6 +241,9 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
       
       threeD_panel.setObjects(  "Detectors" , Detector );
       draw_axes( MaxDis/5);
+      draw_beam(  MaxDis);
+      draw_instrument(  MaxDis );
+
       //-------------------- color_scale------------------------
       color_scale_image = new ColorScaleImage();
       color_scale_image.setNamedColorModel( 
@@ -315,17 +323,20 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
           DataSet ds = getDataSet();
          
           int index = ds.getPointedAtIndex();
-       
-          
-          
 
           if ( !Float.isNaN( ds.getPointedAtX() )   &&
                ds.getPointedAtX() != last_pointed_at_x )
           {
             
             last_pointed_at_x = ds.getPointedAtX();
+            
+            int frameNum = frame_control.getFrameNumber( );
             frame_control.setControlValue( last_pointed_at_x, false );
-            redraw_cursor = false;
+            if( frameNum != frame_control.getFrameNumber( ))
+               setNewData( last_pointed_at_x);
+            
+            //if( ds.getPointedAtIndex() == last_pointed_at_index)  ?? behaviour
+            //   redraw_cursor = false;
           }
           
           if (index != DataSet.INVALID_INDEX && ! Float.isNaN( last_pointed_at_x ))
@@ -335,11 +346,21 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
             conv_table.showConversions( last_pointed_at_x, y_val, index );
           }
 
-          notify_ds_observers = false;            // since we are setting the
-                                                  // frame controller by request,
-                                                  // don't notify ds observers
-
-          redraw_cursor = true;          // just skip drawing for one notification
+          notify_ds_observers = false;            
+          
+          
+          Vector3D detector_location = group_location( ds.getPointedAtIndex() );
+          Point   pixel_point;
+          if ( detector_location != null )//&& redraw_cursor )
+          {
+            pixel_point = threeD_panel.project( detector_location );
+            threeD_panel.set_crosshair( pixel_point );
+           
+          }
+          
+          last_pointed_at_index = ds.getPointedAtIndex();
+          redraw_cursor = true;          //not used
+          notify_ds_observers = true;    //not used fixed ViewControl
        }
 
 
@@ -363,7 +384,8 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
         state.insert(VIEW_CONTROL_MINDIS_OS,.2f*MinDis);
         state.insert( VIEW_CONTROL_MAXDIS_OS, 4f*MaxDis );
         state.insert(VIEW_CONTROL_DIS_OS, view_control.getDistance( ));
-        state.insert( LASTPOINEDAT_OS , last_pointed_at_x );
+        state.insert( LASTPOINTEDAT_OS , last_pointed_at_x );
+        state.insert( this.LASTPOINTEDATDDAT_OS , last_pointed_at_index);
         state.insert(  MAXABS_OS,MaxAbs );
         state.insert( ALT_OS , getState().get_float( ViewerState.V_ALTITUDE )  );
         state.insert( AZIMUTH_OS ,getState().get_float( ViewerState.V_AZIMUTH )  );
@@ -378,7 +400,8 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
         state.insert(VIEW_CONTROL_MINDIS_OS,MinDis);
         state.insert( VIEW_CONTROL_MAXDIS_OS,MaxDis );
         state.insert(VIEW_CONTROL_DIS_OS, view_control.getDistance( ));
-        state.insert( LASTPOINEDAT_OS , -1f);
+        state.insert( LASTPOINTEDAT_OS , -1f);
+        state.insert( LASTPOINTEDATDDAT_OS , -1);
         state.insert(  MAXABS_OS,MaxAbs);
         state.insert( ALT_OS ,45f  );
         state.insert( AZIMUTH_OS ,45f  );
@@ -422,7 +445,8 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
      
      initViewControl( MinDis,MaxDis);
      view_control.setDistance(  Dis );
-     last_pointed_at_x= ((Float)new_state.get( LASTPOINEDAT_OS )).floatValue( );
+     last_pointed_at_x= ((Float)new_state.get( LASTPOINTEDAT_OS )).floatValue( );
+     last_pointed_at_index = ((Number) new_state.get( LASTPOINTEDATDDAT_OS )).intValue( );
      MaxAbs =((Float)new_state.get( MAXABS_OS )).floatValue( );
 
      XScale xscl1 = (XScale)x_scale_ui.getControlValue( );
@@ -476,11 +500,11 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
       float altitude = getState().get_float( ViewerState.V_ALTITUDE );
       float azimuth  = getState().get_float( ViewerState.V_AZIMUTH );
       float distance = getState().get_float( ViewerState.V_DISTANCE );
-      distance = MaxDist;
+      distance = 3*MaxDist;
       view_control.setViewAngle( 45 );
       view_control.setAltitudeAngle( altitude );
       view_control.setAzimuthAngle( azimuth );
-      view_control.setDistanceRange( .2f*MinDist , 4*MaxDist );//If change rule change in getObjectState
+      view_control.setDistanceRange( .5f*MinDist , 5*MaxDist );//If change rule change in getObjectState
       view_control.setDistance( distance );
       view_control.apply( true );
    }
@@ -490,13 +514,13 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
      setLayout( new GridLayout(1,1));
     
      control_panel = new Box( BoxLayout.Y_AXIS );
-     control_panel.add( view_control);
      control_panel.add( x_scale_ui);
      control_panel.add(color_scale_image );
      control_panel.add( log_scale_slider );
+     control_panel.add( view_control);
      control_panel.add( frame_control);
-     control_panel.add(  Box.createVerticalGlue( ) );
      control_panel.add( conv_table.getTable());
+     control_panel.add(  Box.createVerticalGlue( ) );
      
     JPanel graph_container = new JPanel();
      graph_container.setLayout( new GridLayout(1,1) );
@@ -542,6 +566,91 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
     objects[3] = new Polyline( points, Color.red );
 
     threeD_panel.setObjects( AXES, objects );
+  }
+  /* --------------------------- draw_beam --------------------------- */
+
+  private void draw_beam( float radius  )
+  {
+    IThreeD_Object objects[] = new IThreeD_Object[ 15 ];
+    Vector3D points[] = new Vector3D[1];
+
+    points[0] = new Vector3D( 0, 0, 0 );                    // sample
+    Polymarker sample = new Polymarker( points, Color.red );
+    sample.setType( Polymarker.STAR );
+    sample.setSize( 10 );
+    objects[0] = sample; 
+    
+    for ( int i = 1; i < 15; i++ )                          // beam is segmented
+    {                                                       // for depth sorting
+      points = new Vector3D[2];
+      points[0] = new Vector3D( -(i-1)*radius/3, 0, 0 );    // beam in 
+      points[1] = new Vector3D( -i*radius/3, 0, 0 );        // -x-axis direction
+      objects[i] = new Polyline( points, Color.red );
+    }
+
+    threeD_panel.setObjects( BEAM, objects );
+  }
+
+
+  /* --------------------------- draw_instrument --------------------------- */
+
+  private void draw_instrument( float radius  )
+  {
+    final int N_PIECES = 180;
+    IThreeD_Object objects[] = new IThreeD_Object[ N_PIECES ];
+    Vector3D points[];
+                                                            // draw circle for
+                                                            // instrument 
+    float delta_angle = 2 * 3.14159265f / N_PIECES;
+    float angle = 0;
+    float x,
+          y;
+    for ( int i = 0; i < N_PIECES; i++ )                    // circle is segmented
+    {                                                       // for depth sorting
+      points = new Vector3D[2];
+      x = radius * (float)Math.cos( angle );
+      y = radius * (float)Math.sin( angle );
+      points[0] = new Vector3D( x, y, 0 );  
+
+      angle += delta_angle;
+      x = radius * (float)Math.cos( angle );
+      y = radius * (float)Math.sin( angle );
+      points[1] = new Vector3D( x, y, 0 );  
+      objects[i] = new Polyline( points, Color.black );
+    }
+
+    threeD_panel.setObjects( INSTRUMENT, objects );
+  }
+
+
+  /* ---------------------------- group_location --------------------------- */
+
+  private Vector3D group_location( int index )
+  {
+    DataSet ds = getDataSet();
+    int     n_data = ds.getNum_entries();
+
+    if ( index < 0 || index >= n_data )
+      return null;
+
+    Data d = ds.getData_entry(index);
+   
+    Position3D position= (Position3D)d.getAttributeValue( Attribute.DETECTOR_POS);
+   
+    if ( position == null )
+      return null;
+
+    float coords[] = position.getCartesianCoords();
+    for ( int i = 0; i < 3; i++ )
+      if ( Float.isNaN( coords[i] ) )
+      {
+       // group_NaN_count++;
+        return null;
+      }
+
+    Vector3D pt_3D = new Vector3D( coords[0], coords[1], coords[2] );
+
+    return pt_3D;
   }
 
 //New colormodel where 0 represents completely transparent. The
@@ -733,6 +842,20 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
    }
      
   }
+  
+  private void setNewData( float time )
+  {
+
+     for( int i=0; i< gridIDs.length; i++)
+
+     {  IDataGrid grid = Grid_util.getAreaGrid( getDataSet() , gridIDs[i] );
+        int[][] ColorIndicies = getColorIndices( grid, (XScale)x_scale_ui.getControlValue( ),
+                                   time);
+        Detector[i].setColorModel( ColorIndicies, colorModelwTransp);
+     }
+     threeD_panel.repaint();
+  }
+  
   class FrameControlListener implements ActionListener
   {
 
@@ -750,6 +873,9 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
           Detector[i].setColorModel( ColorIndicies, colorModelwTransp);
        }
        threeD_panel.repaint();
+       getDataSet().setPointedAtX( time  );
+       getDataSet().notifyIObservers( IObserver.POINTED_AT_CHANGED );
+       
       
    }
      
