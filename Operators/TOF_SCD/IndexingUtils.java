@@ -598,12 +598,13 @@ public static float Find_UB( Tran3D             UB,
                                     // First, sort the peaks in order of 
                                     // increasing |Q| so that we can try to
                                     // index the low |Q| peaks first.
-/*
+
   if ( q_vectors.size() > 4 )       // shift to be centered on peak (we lose
                                     // one peak that way.
   {
+    q_vectors = SortOnVectorMagnitude( q_vectors );
     Vector<Vector3D> shifted_qs = new Vector<Vector3D>();
-    int mid_ind = q_vectors.size()/3;
+    int mid_ind = q_vectors.size()/2;
     Vector3D mid_vec = q_vectors.elementAt( mid_ind );
     for ( int i = 0; i < q_vectors.size(); i++ )
     {
@@ -616,7 +617,7 @@ public static float Find_UB( Tran3D             UB,
     }
     q_vectors = shifted_qs; 
   }
-*/
+
 
   q_vectors = SortOnVectorMagnitude( q_vectors );
 
