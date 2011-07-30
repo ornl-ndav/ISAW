@@ -39,6 +39,7 @@ import gov.anl.ipns.MathTools.Geometry.*;
 import gov.anl.ipns.MathTools.*;
 
 import DataSetTools.components.ui.Peaks.subs;
+import DataSetTools.operator.Generic.TOF_SCD.IPeak;
 
 
 public class IndexingUtils
@@ -2801,4 +2802,69 @@ public static void main( String args[] ) throws Exception
     System.out.println( edge_list.elementAt(i) );
 }
 
+public static  Vector<Vector3D>  getPeakQVals( Vector Peaks)
+{
+   Vector<Vector3D > Res= new Vector<Vector3D>();
+   for( int i=0; i< Peaks.size( ); i++)
+   {
+      IPeak peak =(IPeak) Peaks.elementAt( i );
+      Vector3D V = new Vector3D( peak.getUnrotQ( ));
+      Res.add( V );
+   }
+   
+   return Res;
+}
+
+public static Tran3D Convert2Tran3D( Vector UB)
+{
+   if( UB== null || (UB.size()!=3 && UB.size()!=9))
+      throw new IllegalArgumentException("UB Matrix is the wrong size ");
+   float[] R = new float[16];
+   Arrays.fill( R, 0f);
+   R[15] = 1;
+   for( int r =0; r<3;r++)
+      for( int c=0; c<3;c++)
+      {
+         if( UB.size()==9)
+            R[r*3+c]= ((Number)UB.elementAt( r*3+c )).floatValue();
+         else
+            R[r*3+c] = ((Number)(((Vector)UB.elementAt( r )).elementAt(c))).floatValue( );
+      }
+   
+   return new Tran3D(R);
+}
+
+public static Vector Convert2Vector( Tran3D UB)
+{
+    if( UB== null )
+       throw new IllegalArgumentException("UB Matrix is null ");
+    
+    float[][] vals = UB.get( );
+    Vector Res = new Vector();
+    for( int r=0; r<3;r++)
+    {  Vector row = new Vector();
+       for( int c=0; c<3;c++)
+          row.add( vals[r][c] );
+       Res.add(row);
+    }
+    return Res;
+}
+
+
+public static float[][] Convert2floatArrayArray( Tran3D UB)
+{
+    if( UB== null )
+       throw new IllegalArgumentException("UB Matrix is null ");
+    
+    float[][] vals =UB.get( );
+    float[][] Res = new float[3][3];
+
+    for( int r=0; r<3;r++)
+    { 
+       for( int c=0; c<3;c++)
+         Res[r][c]= vals[r][c] ;
+       
+    }
+    return Res;
+}
 } // end of class
