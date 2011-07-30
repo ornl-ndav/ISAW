@@ -26,6 +26,8 @@
 #  @param     Seq         The list of sequence numbers to use. Eg 33:36,47
 
 #  @param     Max_dSpacing  Maximum d-Spacing
+#  @param     Min_dSpacing  Minimum d-Spacing
+#  @param     MinDegree_between_directions     Minimum degrees between initial searching directions
 #  @param     LatParams    The lattice parameters( angles are in degrees)
 #                          (For Auto w Lattice Params method)
 #  @param     file       The filename to store the orientation  matrix 
@@ -46,11 +48,14 @@ $Peaks   PlaceHolder                  Enter peaks
 
 $useFile  BooleanEnable([False,1,5])  Use Matrix From File
 $file1    LoadFile(${Data_Directory})       Input Orientation Matrix File ( .mat )    
-$method    ChoiceList(["Blind","Automatic","Auto w Lattice Params", "from Q Viewer"])  Method to use
+$method    ChoiceList(["Blind","Automatic","new Automatic","Auto w Lattice Params", "from Q Viewer"])  Method to use
 
 $Seq      IntArray               Sequence Numbers(Blind Method only)
 
 $Max_dSpacing  Float(12)         Maximum d-Spacing
+
+$Min_dSpacing  Float(1  )         Minimum d-Spacing
+$MinDegree_between_directions  Float(3)   Minimum degrees between directions
 $LatParams   Array([4.9,4.9, 5.4,90.,90.,120.0000 ])           Enter Lattice Parameters(Auto w Lat..)
 $file     String                 Output Orientation Matrix File ( .mat ) 
 
@@ -87,30 +92,60 @@ elseif method =="Automatic"
 
    X=GetUBMatrix( Peaks, MaxXtalLength, P)
    Status = ToVec(P)
-
+   Display X
 elseif method =="from Q Viewer"
    X = GetUBFrRecipLatPlanes( Peaks,MaxXTalLength,Status)
    
   WriteMatrix( file, X)
   
+  
 elseif method =="Auto w Lattice Params"
-   ClearFiles("xxx","peaks")
-   ClearFiles("xxx1","peaks")
-   PkFile =CreateExecFileName(getSysProp("user.home"),"ISAW/tmp/xxx.peaks")
-   WritePeaks_new(PkFile,Peaks,false)
-   Out1File =CreateExecFileName(getSysProp("user.home"),"ISAW/tmp/xxx1.peaks")
+#   ClearFiles("xxx","peaks")
+#   ClearFiles("xxx1","peaks")
+#   PkFile =CreateExecFileName(getSysProp("user.home"),"ISAW/tmp/xxx.peaks")
+#   WritePeaks_new(PkFile,Peaks,false)
+#   Out1File =CreateExecFileName(getSysProp("user.home"),"ISAW/tmp/xxx1.peaks")
     
-   Display "PeakFile"&PkFile
-   Display "Peak1File"&Out1File
-   Res =IndexPeaksWithOptimizer( PkFile,matPath,Out1File,LatParams[0],LatParams[1],LatParams[2],LatParams[3],LatParams[4],LatParams[5])
-   Display Res
-    X= readOrient( matPath )
+#   Display "PeakFile"&PkFile
+#   Display "Peak1File"&Out1File
+#   Res =IndexPeaksWithOptimizer( PkFile,matPath,Out1File,LatParams[0],LatParams[1],LatParams[2],LatParams[3],LatParams[4],LatParams[5])
+#   Display Res
+#    X= readOrient( matPath )
     
-    WriteMatrix( file, X)
+#    WriteMatrix( file, X)
    
-    if showLog
-       ViewASCII(file)
+#    if showLog
+#       ViewASCII(file)
+#    endif
+#              -------------------- new Auto with indexing -------------------
+   
+    Arg1 = Convert2Tran3D([1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0])
+    Qvecs =getPeakQVals(Peaks)
+    Seq1 =IntListToVector(Seq)
+    NN= ArrayLength(Seq1)
+    if NN > 0
+       NN= Seq1[0]
+    else
+       NN = -1
     endif
+   
+    RR = Find_UB(Arg1,Qvecs, LatParams[0],LatParams[1],LatParams[2],LatParams[3],LatParams[4],LatParams[5],.12,NN,15,MinDegree_between_directions)
+    
+    X = Convert2floatArrayArray(Arg1)
+    WriteMatrix( file, X)
+elseif  method =="new Automatic"
+    Arg1 = Convert2Tran3D([1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0])
+    Qvecs =getPeakQVals(Peaks)
+    Seq1 =IntListToVector(Seq)
+    NN= ArrayLength(Seq1)
+    if NN > 0
+       NN= Seq1[0]
+    else
+       NN = -1
+    endif
+    RR= Find_UB( Arg1,Qvecs,Min_dSpacing,Max_dSpacing,.12,NN,15,MinDegree_between_directions )
+    X = Convert2floatArrayArray(Arg1)
+    WriteMatrix( file, X)
 endif
 
 if method =="Blind"
