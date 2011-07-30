@@ -461,14 +461,14 @@ public static float Find_UB( Tran3D             UB,
                              int                num_initial,
                              float              degrees_per_step )
 {
+  if ( q_vectors.size() < 2 )
+    throw new IllegalArgumentException("Need at least 2 q_vectors to find UB");
+
   Vector<Vector3D> original_qs = new Vector<Vector3D>(q_vectors.size());
   for ( int i = 0; i < q_vectors.size(); i++ )
     original_qs.add( new Vector3D( q_vectors.elementAt(i) ) );
 
-  if ( q_vectors.size() < 2 )
-    throw new IllegalArgumentException("Need at least 2 q_vectors to find UB");
-
-  if ( q_vectors.size() > 4 )       // shift to be centered on peak (we lose
+  if ( q_vectors.size() > 5 )       // shift to be centered on peak (we lose
                                     // one peak that way.
   {
     Vector<Vector3D> shifted_qs = new Vector<Vector3D>();
@@ -541,16 +541,20 @@ public static float Find_UB( Tran3D             UB,
       UB.set( temp_UB );
   }
 
-  if ( q_vectors.size() >= 3 )    // try one last refinement using all peaks
+  System.out.println("Finished growing set of peaks...");
+
+  if ( original_qs.size() >= 5 )    // try one last refinement using all peaks
   {
     Tran3D temp_UB = new Tran3D( UB );
-    num_indexed = GetIndexedPeaks( UB, q_vectors, required_tolerance,
+    num_indexed = GetIndexedPeaks( UB, original_qs, required_tolerance,
                                    miller_ind, indexed_qs, fit_error );
 //    fit_error[0] = Optimize_UB_3D( temp_UB, miller_ind, indexed_qs );
     fit_error[0] = Optimize_UB_4D( temp_UB, miller_ind, indexed_qs );
     if ( !Float.isNaN( fit_error[0] ) )
       UB.set( temp_UB );
   }
+  System.out.println("Finished finished refining all peaks ...");
+
                                  // Regardless of how we got the UB, find the
                                  // sum-squared errors for the indexing in 
                                  // HKL space.
@@ -646,10 +650,14 @@ public static float Find_UB( Tran3D             UB,
   if ( q_vectors.size() < 3 )
     throw new IllegalArgumentException("Need at least 3 q_vectors to find UB");
 
+  Vector<Vector3D> original_qs = new Vector<Vector3D>(q_vectors.size());
+  for ( int i = 0; i < q_vectors.size(); i++ )
+    original_qs.add( new Vector3D( q_vectors.elementAt(i) ) );
+
                                     // First, sort the peaks in order of 
                                     // increasing |Q| so that we can try to
                                     // index the low |Q| peaks first.
-  if ( q_vectors.size() > 4 )       // shift to be centered on peak (we lose
+  if ( q_vectors.size() > 5 )       // shift to be centered on peak (we lose
                                     // one peak that way.
   {
     Vector<Vector3D> shifted_qs = new Vector<Vector3D>();
@@ -871,10 +879,10 @@ public static float Find_UB( Tran3D             UB,
       System.out.println("Optimize_UB_3D FAILED WITH "+ num_initial +" peaks");
   }
 
-  if ( q_vectors.size() >= 3 )    // try one last refinement using all peaks
+  if ( original_qs.size() >= 5 )   // try one last refinement using all peaks
   {
     Tran3D temp_UB = new Tran3D( UB );
-    num_indexed = GetIndexedPeaks( UB, q_vectors, required_tolerance,
+    num_indexed = GetIndexedPeaks( UB, original_qs, required_tolerance,
                                    miller_ind, indexed_qs, fit_error );
     fit_error[0] = Optimize_UB_3D( temp_UB, miller_ind, indexed_qs );
     if ( !Float.isNaN( fit_error[0] ) )
@@ -890,6 +898,18 @@ public static float Find_UB( Tran3D             UB,
   System.out.println("Indexed " + num_indexed + 
                      " average ^2 error = " + fit_error[0]/num_indexed );
 
+                                 // now, get rid of shift and see how well 
+                                 // it works.
+  float[][] UB_array = UB.get();
+  for ( int i = 0; i < 3; i++ )
+  {
+    UB_array[3][i] = 0;
+    UB_array[i][3] = 0;
+  }
+  UB_array[3][3] = 1;
+  UB.set( UB_array );
+  num_indexed = GetIndexedPeaks( UB, original_qs, required_tolerance,
+                                 miller_ind, indexed_qs, fit_error );
   try
   {
   float[][] floatUB_4 = UB.get();
@@ -906,8 +926,10 @@ public static float Find_UB( Tran3D             UB,
     System.out.println(ex);
     ex.printStackTrace();
   } 
+
   System.out.println("After subs.Nigglify UB = " + UB ); 
-  num_indexed = GetIndexedPeaks( UB, q_vectors, required_tolerance,
+
+  num_indexed = GetIndexedPeaks( UB, original_qs, required_tolerance,
                                  miller_ind, indexed_qs, fit_error );
   System.out.println("Indexed " + num_indexed +
                      " average ^2 error = " + fit_error[0]/num_indexed );

@@ -93,9 +93,6 @@ public class PeakListHandler implements IReceiveMessage
         for ( int i = 0; i < new_peaks.size(); i++ )
           peakNew_list.add( new_peaks.elementAt(i) );
 
-        if ( UB != null)
-          indexAllPeaks( new_peaks, UB, tolerance );
-
         if ( cmd.getShowImages() )
         {
           PeaksCmd new_cmd = new PeaksCmd( new_peaks,
@@ -116,10 +113,19 @@ public class PeakListHandler implements IReceiveMessage
          peakNew_list = new Vector<Peak_new>();
          for ( int i = 0; i < new_peaks.size(); i++ )
            peakNew_list.add( new_peaks.elementAt(i) );
-
-         if ( UB != null)
-           indexAllPeaks(new_peaks,UB,tolerance);
       }
+
+      if ( obj instanceof PeaksCmd  || obj instanceof Vector )
+        if ( UB != null )
+        {
+          indexAllPeaks( peakNew_list, UB, tolerance );
+          Message mark_indexed  = new Message( Commands.MARK_INDEXED_PEAKS,
+                                               peakNew_list,
+                                               true,
+                                               true );
+          message_center.send( mark_indexed );
+        }
+
     }
  
     else if ( message.getName().equals( Commands.MAKE_PEAK_IMAGES ) )

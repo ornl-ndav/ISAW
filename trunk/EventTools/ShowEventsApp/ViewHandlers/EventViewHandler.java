@@ -250,6 +250,7 @@ public class EventViewHandler implements IReceiveMessage, IhasWindowClosed
          if ( val instanceof Vector )         // this should always be true
          {
            events_panel.ClearIndexMarkers();
+           events_panel.updateDisplay();
            Vector<Peak_new> peaks = (Vector<Peak_new>)val;
            Vector indexed_peaks   = new Vector();
            for ( int i = 0; i < peaks.size(); i++ )
