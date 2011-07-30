@@ -60,7 +60,7 @@ public class AutoIndexingPanel extends JPanel
                                            " Number to Index Initially" };
 
   private static final String[] defaults = { "3", "15",
-                                             "1.5", "-1", "15" };
+                                             "1", "-1", "15" };
   private Hashtable jtextf;
 
 
