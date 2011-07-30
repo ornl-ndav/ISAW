@@ -283,6 +283,7 @@ public class IndexingUtils_test
     float  d_min = 6;
     float  d_max = 10;
     float  required_tolerance = 0.08f;
+    int    base_index  = -1;
     int    num_initial = 12;
     float  degrees_per_step = .5f;
 
@@ -290,9 +291,9 @@ public class IndexingUtils_test
                            q_vectors,
                            d_min, d_max,
                            required_tolerance,
+                           base_index,
                            num_initial,
                            degrees_per_step );
-
   }
 
 
