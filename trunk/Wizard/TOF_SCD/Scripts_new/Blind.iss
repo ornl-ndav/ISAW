@@ -69,7 +69,7 @@ $path     DataDirectoryString(${Data_Directory})    Output Data Path
 matPath=path&file
 if useFile
 
-  X= readOrient( file1 )
+  X = readOrient( file1 )
   WriteMatrix( file, X)
   if ShowLog
      ViewASCII( file)
@@ -85,18 +85,20 @@ MaxXtalLength = Max_dSpacing
 
 if method =="Blind"
 
-   X= JBlindB( Peaks, seq, file )
+   X = JBlindB( Peaks, seq, file )
+   WriteMatrix( file, X)
    
 elseif method =="Automatic"
    P= VectorTo_floatArray([1,2,3,4])
 
-   X=GetUBMatrix( Peaks, MaxXtalLength, P)
+   X = GetUBMatrix( Peaks, MaxXtalLength, P)
    Status = ToVec(P)
+   WriteMatrix( file, X )
  
 elseif method =="from Q Viewer"
+
    X = GetUBFrRecipLatPlanes( Peaks,MaxXTalLength,Status)
-   
-  WriteMatrix( file, X)
+   WriteMatrix( file, X)
   
   
 elseif method =="Auto w Lattice Params"
@@ -133,6 +135,7 @@ elseif method =="Auto w Lattice Params"
     
     X = Convert2floatArrayArray(Arg1)
     WriteMatrix( file, X)
+
 elseif  method =="new Automatic"
     Arg1 = Convert2Tran3D([1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0])
     Qvecs =getPeakQVals(Peaks)
@@ -145,14 +148,14 @@ elseif  method =="new Automatic"
     endif
     RR= Find_UB( Arg1,Qvecs,Min_dSpacing,Max_dSpacing,.12,NN,15,MinDegree_between_directions )
     X = Convert2floatArrayArray(Arg1)
-    WriteMatrix( file, X)
+    WriteMatrix( file, X )
+
 endif
 
 if method =="Blind"
   if ShowLog
   
       ViewASCII( path&"blind.log")
-  
    
   elseif method == "Blind"
       Display "the file blind.log has the log information"
@@ -161,6 +164,7 @@ if method =="Blind"
 else
   if showLog
     ViewASCII(file)
+
   endif
   if method == "Automatic" OR method=="from Q Viewer"
      Display "Fit Stats for Result"
