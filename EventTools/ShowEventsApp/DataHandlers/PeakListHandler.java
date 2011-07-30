@@ -394,6 +394,7 @@ public class PeakListHandler implements IReceiveMessage
                                cmd.getD_min(),
                                cmd.getD_max(),
                                cmd.getTolerance(), 
+                               cmd.getBase_index(),
                                cmd.getNum_initial(),
                                cmd.getAngle_step() );
 

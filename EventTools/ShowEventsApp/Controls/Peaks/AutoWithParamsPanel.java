@@ -125,7 +125,7 @@ public class AutoWithParamsPanel extends JPanel
         return;
       }
     }
-
+                                         // Note: sequence numbers start at 1
     IndexWithParamsCmd cmd = new IndexWithParamsCmd( 
                                        (Float)hash.get("a"), 
                                        (Float)hash.get("b"),

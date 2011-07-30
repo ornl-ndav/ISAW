@@ -493,8 +493,8 @@ public static float Find_UB( Tran3D             UB,
     }
     q_vectors = shifted_qs; 
   }
-
-
+                                    // now order the possibly modified
+                                    // q_vectors to be increasing in magnitude
   q_vectors = SortOnVectorMagnitude( q_vectors );
 
   if ( num_initial > q_vectors.size() )
@@ -584,27 +584,84 @@ public static float Find_UB( Tran3D             UB,
 }
 
 
+/** 
+    STATIC method Find_UB: This method will attempt to calculate the matrix 
+    that most nearly indexes the specified q_vectors, given a range of 
+    possible unit cell edge lengths.  
+
+    The sum of the squares of the residual errors is returned.
+  
+    @param  UB                  3x3 matrix that will be set to the UB matrix
+    @param  q_vectors           Vector of new Vector3D objects that contains 
+                                the list of q_vectors that are to be indexed
+                                NOTE: There must be at least 3 linearly 
+                                independent q_vectors.  If there are only 3
+                                q_vectors, no least squares optimization of
+                                the UB matrix will be done.
+    @param  min_d               Lower bound on shortest unit cell edge length.
+                                This does not have to be specified exactly but
+                                must be strictly less than the smallest edge
+                                length, in Angstroms.
+    @param  max_d               Upper bound on longest unit cell edge length.
+                                This does not have to be specified exactly but
+                                must be strictly more than the longest edge
+                                length in angstroms.
+    @param  required_tolerance  The maximum allowed deviation of Miller indices
+                                from integer values for a peak to be indexed.
+    @param  base_index          The sequence number of the peak that should 
+                                be used as the central peak.  On the first
+                                scan for directions representing plane normals
+                                in reciprocal space, the peaks in the list of 
+                                q_vectors will be shifted by -base_peak, where
+                                base_peak is the q_vector with the specified
+                                base index.
+                                If fewer than 4 peaks are specified in the
+                                q_vectors list, this parameter is ignored.
+                                If this parameter is -1, and there are at least
+                                four peaks in the q_vector list, then a base
+                                index will be calculated internally.  In most
+                                cases, it should suffice to set this to -1.
+    @param  num_initial         The number of low |Q| peaks that are used
+                                when scanning for an initial indexing.
+    @param  degrees_per_step    The number of degrees between directions that
+                                are checked while scanning for an initial 
+                                indexing of the peaks with lowest |Q|.
+
+    @return  This will return the sum of the squares of the residual errors.
+  
+    @throws  IllegalArgumentException if there are not at least 3 q vectors.
+   
+    @throws  std::runtime_error    exception if the UB matrix can't be found.
+*/
+
 public static float Find_UB( Tran3D             UB,
                              Vector<Vector3D>   q_vectors,
                              float              min_d,
                              float              max_d,
                              float              required_tolerance,
+                             int                base_index,
                              int                num_initial,
                              float              degrees_per_step )
 {
-  if ( q_vectors.size() < 4 )
-    throw new IllegalArgumentException("Need at least 4 q_vectors to find UB");
+  if ( q_vectors.size() < 3 )
+    throw new IllegalArgumentException("Need at least 3 q_vectors to find UB");
 
                                     // First, sort the peaks in order of 
                                     // increasing |Q| so that we can try to
                                     // index the low |Q| peaks first.
-
   if ( q_vectors.size() > 4 )       // shift to be centered on peak (we lose
                                     // one peak that way.
   {
-    q_vectors = SortOnVectorMagnitude( q_vectors );
     Vector<Vector3D> shifted_qs = new Vector<Vector3D>();
     int mid_ind = q_vectors.size()/2;
+                                    // either do an initial sort and use
+                                    // default base peak, or use the index
+                                    // specified by the input parameter
+    if ( base_index < 0 || base_index > q_vectors.size() )
+      q_vectors = SortOnVectorMagnitude( q_vectors );
+    else 
+      mid_ind = base_index;
+
     Vector3D mid_vec = q_vectors.elementAt( mid_ind );
     for ( int i = 0; i < q_vectors.size(); i++ )
     {
@@ -615,10 +672,10 @@ public static float Find_UB( Tran3D             UB,
         shifted_qs.add( shifted_vec );
       }
     }
-    q_vectors = shifted_qs; 
+    q_vectors = shifted_qs;
   }
-
-
+                                    // now order the possibly modified
+                                    // q_vectors to be increasing in magnitude
   q_vectors = SortOnVectorMagnitude( q_vectors );
 
   if ( num_initial > q_vectors.size() )
@@ -647,35 +704,7 @@ public static float Find_UB( Tran3D             UB,
   Vector3D a_dir = directions.elementAt( 0 );
   System.out.println("A_DIR = " + a_dir + "   length = " + a_dir.length() );
 
-/*
-  int   min_index = -1;
-  float min_dot = 1e20f;
-  for ( int i = 1; i < directions.size(); i++ )
-  {
-    if ( directions.elementAt(i).dot( a_dir ) < min_dot )
-    {
-      min_index = i;
-      min_dot   = directions.elementAt(i).dot( a_dir );
-    }
-  }
- 
-  Vector3D b_dir = directions.elementAt( min_index );
-  Vector3D perp_vec = new Vector3D();
-  perp_vec.cross( a_dir, b_dir );
 
-  int   max_index = -1;
-  float max_dot   =  0;
-  for ( int i = 1; i < directions.size(); i++ )
-  {
-    if ( Math.abs(directions.elementAt(i).dot( perp_vec )) > max_dot )
-    {
-      max_index = i;
-      max_dot   = Math.abs(directions.elementAt(i).dot( perp_vec ));
-    }
-  }
-
-  Vector3D c_dir = directions.elementAt( max_index );
-*/
   float min_deg = (float)((180/Math.PI) * Math.atan(2*min_d/max_d) );
   System.out.println("MIN DEG = " + min_deg );
 
@@ -709,43 +738,6 @@ public static float Find_UB( Tran3D             UB,
   Vector3D perp = new Vector3D();
   perp.cross( a_dir, b_dir );
   perp.normalize();
-/*
-  while ( !c_found && index < directions.size() )
-  {
-    Vector3D vec = directions.elementAt(index);
-    float alpha = angle( b_dir, vec );
-    float beta  = angle( a_dir, vec );
-    float perp_ang = angle( perp, vec );
-    if ( alpha >= min_deg && 
-         beta  >= min_deg && 
-         alpha <  90 + epsilon &&
-         beta  <  90 + epsilon && 
-         perp_ang < 80 ) 
-    {
-      c_dir = new Vector3D( vec );
-      c_found = true;
-    }
-    else 
-    {
-      c_dir = new Vector3D( vec );
-      c_dir.multiply(-1);
-      alpha = angle( b_dir, c_dir );
-      beta  = angle( a_dir, c_dir );
-      perp_ang = angle( perp, c_dir );
-      if ( alpha >= min_deg && 
-           beta  >= min_deg && 
-           alpha < 90 + epsilon && 
-           beta  < 90 + epsilon &&
-           perp_ang < 80 ) 
-      {
-        c_found = true;
-      }
-    }
-
-    if ( ! c_found ) 
-      index++;
-  }
-*/
 
   while ( !c_found && index < directions.size() )
   {
@@ -770,7 +762,6 @@ public static float Find_UB( Tran3D             UB,
     if ( ! c_found ) 
       index++;
   }
-
 
 
   if ( c_found )
@@ -921,11 +912,8 @@ public static float Find_UB( Tran3D             UB,
   System.out.println("Indexed " + num_indexed +
                      " average ^2 error = " + fit_error[0]/num_indexed );
 
-
   return fit_error[0];
 }
-
-
 
 
 /**
