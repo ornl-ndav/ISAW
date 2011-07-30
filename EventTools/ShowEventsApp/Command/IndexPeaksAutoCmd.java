@@ -9,18 +9,21 @@ public class IndexPeaksAutoCmd
    private float d_min;
    private float d_max;
    private float angle_step;
+   private int   base_index;
    private int   num_initial;
    private float tolerance;
    
    public IndexPeaksAutoCmd( float d_min,
                              float d_max, 
                              float angle_step, 
+                             int   base_index,
                              int   num_initial, 
                              float tolerance )
    {
       this.d_min = d_min;
       this.d_max = d_max;
       this.angle_step  = angle_step;
+      this.base_index  = base_index;
       this.num_initial = num_initial;
       this.tolerance   = tolerance;
    }
@@ -40,6 +43,11 @@ public class IndexPeaksAutoCmd
       return angle_step;
    } 
 
+   public int getBase_index()
+   {
+      return base_index;
+   }
+
    public int getNum_initial()
    {
       return num_initial;
@@ -55,6 +63,7 @@ public class IndexPeaksAutoCmd
       return "\nd_min : " + getD_min() +
              "\nd_max : " + getD_max() +
              "\nangle_step  : " + getAngle_step() +
+             "\nbase_index  : " + getBase_index() +
              "\nnum_initial : " + getNum_initial() +
              "\nTolerance   : " + getTolerance();
    }

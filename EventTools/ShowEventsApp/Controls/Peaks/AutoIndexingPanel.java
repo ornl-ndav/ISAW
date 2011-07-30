@@ -50,16 +50,17 @@ public class AutoIndexingPanel extends JPanel
   private static final String[] keys = { "d_min", 
                                          "d_max",
                                          "angle_step",
+                                         "base_index",
                                          "num_initial" };
 
   private static final String[] labels = { " Min Unit Cell Edge",
                                            " Max Unit Cell Edge",
                                            " Angle Step (degrees)", 
+                                           " Base Peak Seq Number",
                                            " Number to Index Initially" };
 
-  private static final String[] defaults = { "3",
-                                             "15",
-                                             "1.5", "15" };
+  private static final String[] defaults = { "3", "15",
+                                             "1.5", "-1", "15" };
   private Hashtable jtextf;
 
 
@@ -123,11 +124,12 @@ public class AutoIndexingPanel extends JPanel
         return;
       }
     }
-
+                                           // Note: sequence numbers start at 1
     IndexPeaksAutoCmd cmd = new IndexPeaksAutoCmd( 
                                                (Float)hash.get("d_min"),
                                                (Float)hash.get("d_max"),
                                                (Float)hash.get("angle_step"),
+                                    Math.round((Float)hash.get("base_index"))-1,
                                     Math.round((Float)hash.get("num_initial")),
                                                 tolerance );
 
