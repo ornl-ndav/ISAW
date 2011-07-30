@@ -92,7 +92,7 @@ elseif method =="Automatic"
 
    X=GetUBMatrix( Peaks, MaxXtalLength, P)
    Status = ToVec(P)
-   Display X
+ 
 elseif method =="from Q Viewer"
    X = GetUBFrRecipLatPlanes( Peaks,MaxXTalLength,Status)
    
@@ -158,17 +158,19 @@ if method =="Blind"
       Display "the file blind.log has the log information"
     
   endif
-elseif method <>"Auto w Lattice Params"
-  WriteMatrix(matPath, X )
-  Display "Fit Stats for Result"
-  n=ArrayLength(Status)-1
-  for i in [0:n] 
-     Display "Fraction within "&(10*(i+1))&"% of Planes="&Status[i]
-  
-  endfor
+else
   if showLog
     ViewASCII(file)
   endif
+  if method == "Automatic" OR method=="from Q Viewer"
+     Display "Fit Stats for Result"
+     n=ArrayLength(Status)-1
+     for i in [0:n] 
+        Display "Fraction within "&(10*(i+1))&"% of Planes="&Status[i]
+  
+     endfor
+  endif
+ 
 endif
 
 
