@@ -952,7 +952,7 @@ public static float Find_UB( Tran3D             UB,
  * and return a new Vector containing references to the original vectors, but in
  * order of increasing magnitude.
  *
- * @param  Vector of Vector3D obejcts that are to be sorted
+ * @param  q_vectors  a Vector of Vector3D obejcts that are to be sorted
  * @return A new Vector containing references to the orginal Vector3D 
  *          objects, but in increasing order.
  */
