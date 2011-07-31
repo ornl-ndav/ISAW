@@ -456,7 +456,7 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
    
    
    /**
-    * @param args
+    * @param Args
     */
    public static void main(String[] Args)
    {

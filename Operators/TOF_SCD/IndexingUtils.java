@@ -952,9 +952,9 @@ public static float Find_UB( Tran3D             UB,
  * and return a new Vector containing references to the original vectors, but in
  * order of increasing magnitude.
  *
- * @ param Vector of Vector3D obejcts that are to be sorted
- * @ return A new Vector containing references to the orginanl Vector3D objects, but
- *          in increasing order.
+ * @param  Vector of Vector3D obejcts that are to be sorted
+ * @return A new Vector containing references to the orginal Vector3D 
+ *          objects, but in increasing order.
  */
 public static Vector<Vector3D> 
          SortOnVectorMagnitude( Vector<Vector3D> q_vectors )
@@ -1441,7 +1441,7 @@ public static int GetIndexedPeaks_1D( Vector3D  direction,
   @param required_tolerance  The maximum allowed error (as a faction of
                              the corresponding Miller index) for a peak
                              q_vector to be counted as indexed.
-  @param index_vals          List of the Miller indices (h,k,l) of peaks
+  @param miller_indices      List of the Miller indices (h,k,l) of peaks
                              that were indexed in all specified directions.
   @param indexed_qs          List of Qxyz value for the peaks that were
                              indexed indexed in all specified directions.
@@ -1524,7 +1524,7 @@ public static int GetIndexedPeaks_3D( Vector3D  direction_1,
   @param required_tolerance  The maximum allowed error (as a faction of
                              the corresponding Miller index) for a peak
                              q_vector to be counted as indexed.
-  @param index_vals          List of the Miller indices (h,k,l) of peaks
+  @param miller_indices      List of the Miller indices (h,k,l) of peaks
                              that were indexed in all specified directions.
   @param indexed_qs          List of Qxyz value for the peaks that were
                              indexed indexed in all specified directions.
@@ -1648,9 +1648,13 @@ public static Vector MakeHemisphereDirections( int n_steps )
   Make a list of directions, uniformly distributed around a circle, all of
   which form the specified angle with the specified axis. 
 
-  @param n_steps   The number of vectors to generate around the circle. 
+  @param n_steps        The number of vectors to generate around the circle. 
+  @param axis           The axis perpendicular to the circle, through its 
+                        center.
+  @param angle_degrees  The angle between the axis vector and vectors from 
+                        the origin to points on the circle.
 
-  @retrun A Vector containing direction vectors forming the same angle
+  @return A Vector containing direction vectors forming the same angle
           with the axis.
  */
 public static Vector MakeCircleDirections( int      n_steps,
