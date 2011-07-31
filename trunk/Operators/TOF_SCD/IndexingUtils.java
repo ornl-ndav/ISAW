@@ -542,7 +542,7 @@ public static float Find_UB( Tran3D             UB,
       UB.set( temp_UB );
   }
 
-  System.out.println("Finished growing set of peaks...");
+//  System.out.println("Finished growing set of peaks...");
 
   if ( original_qs.size() >= 5 )    // try one last refinement using all peaks
   {
@@ -554,18 +554,20 @@ public static float Find_UB( Tran3D             UB,
     if ( !Float.isNaN( fit_error[0] ) )
       UB.set( temp_UB );
   }
-  System.out.println("Finished finished refining all peaks ...");
+//  System.out.println("Finished finished refining all peaks ...");
 
                                  // Regardless of how we got the UB, find the
                                  // sum-squared errors for the indexing in 
                                  // HKL space.
   num_indexed = GetIndexedPeaks( UB, q_vectors, required_tolerance,
                                  miller_ind, indexed_qs, fit_error ); 
+/*
   System.out.println("Num indexed, shifted = " + num_indexed );
   int num_to_print = Math.min( 5, indexed_qs.size() );
   for ( int i = 0; i < num_to_print; i++ )
     System.out.println("SHIFTED q = " + indexed_qs.elementAt(i) +
                        "hkl = " + miller_ind.elementAt(i ) );
+*/
                                  // now, get rid of shift and see how well 
                                  // it works.
   float[][] UB_array = UB.get();
@@ -578,13 +580,13 @@ public static float Find_UB( Tran3D             UB,
   UB.set( UB_array );
   num_indexed = GetIndexedPeaks( UB, original_qs, required_tolerance,
                                  miller_ind, indexed_qs, fit_error );
-
+/*
   System.out.println("Num indexed, raw = " + num_indexed );
   num_to_print = Math.min( 5, indexed_qs.size() );
   for ( int i = 0; i < num_to_print; i++ )
     System.out.println("RAW q = " + indexed_qs.elementAt(i) +
                        "hkl = " + miller_ind.elementAt(i ) );
-
+*/
   return fit_error[0];
 }
 
@@ -702,20 +704,21 @@ public static float Find_UB( Tran3D             UB,
                       required_tolerance );
 
   directions = SortOnVectorMagnitude( directions );
-
+/*
   for ( int i = 0; i < directions.size(); i++ )
   {
     System.out.printf("i = %2d  Length = %7.4f  dir = ",
                        i, directions.elementAt(i).length() );
     System.out.println( directions.elementAt(i) );
   }
+*/
 
   Vector3D a_dir = directions.elementAt( 0 );
-  System.out.println("A_DIR = " + a_dir + "   length = " + a_dir.length() );
+//  System.out.println("A_DIR = " + a_dir + "   length = " + a_dir.length() );
 
 
   float min_deg = (float)((180/Math.PI) * Math.atan(2*min_d/max_d) );
-  System.out.println("MIN DEG = " + min_deg );
+//  System.out.println("MIN DEG = " + min_deg );
 
   float epsilon = 5;                    //  tolerance on right angle (degrees)
   Vector3D b_dir  = null;
@@ -732,9 +735,9 @@ public static float Find_UB( Tran3D             UB,
         b_dir.multiply( -1 );
       b_found = true;
       directions.remove( vec );
-      System.out.println("index = " + index );
-      System.out.println("B_DIR = " + b_dir + "   length = " + b_dir.length());
-      System.out.println("GAMMA = " + angle(a_dir, b_dir) );
+//    System.out.println("index = " + index );
+//    System.out.println("B_DIR = " + b_dir + "   length = " + b_dir.length());
+//    System.out.println("GAMMA = " + angle(a_dir, b_dir) );
     }
 
     else
@@ -775,10 +778,12 @@ public static float Find_UB( Tran3D             UB,
 
   if ( c_found )
   {
+/*
      System.out.println("C_DIR = " + c_dir + "   length = " + c_dir.length());
      System.out.println("ALPHA = " + angle(b_dir, c_dir) );
      System.out.println("BETA  = " + angle(c_dir, a_dir) );
      System.out.println("GAMMA = " + angle(a_dir, b_dir) );
+*/
   }
   else
   {
@@ -802,12 +807,12 @@ public static float Find_UB( Tran3D             UB,
                            { 0,            0,            0,            1 } };
 
   UB.set( UB_inv_arr );
-
+/*
   System.out.println("********** UB inverse should be = ");
   System.out.println( UB );
-
+*/
   UB.invert();
-  System.out.println("UB = " + UB );
+//  System.out.println("UB = " + UB );
                                      // now gradually bring in the remaining
                                      // peaks and re-optimize the UB to index
                                      // them as well
@@ -819,6 +824,7 @@ public static float Find_UB( Tran3D             UB,
   float[] fit_error = new float[1];
 
   int     num_indexed = 0;
+/*
   num_indexed = GetIndexedPeaks_1D( a_dir, some_qs, required_tolerance,
                         index_vals, indexed_qs, fit_error  );
   System.out.println("***** USING A_DIR ONLY, NUM INDEXED = " + num_indexed );
@@ -847,7 +853,7 @@ public static float Find_UB( Tran3D             UB,
   for ( int i = 0; i < indexed_qs.size(); i++ )
     System.out.println("Q = " + indexed_qs.elementAt(i) +
                        " HKL = " + miller_ind.elementAt(i) );
-
+*/
 
   int     count = 0;
   while ( num_initial < q_vectors.size() )
@@ -865,11 +871,12 @@ public static float Find_UB( Tran3D             UB,
     Tran3D temp_UB = new Tran3D( UB );
     num_indexed = GetIndexedPeaks( UB, some_qs, required_tolerance,
                                    miller_ind, indexed_qs, fit_error );
-
+/*
     System.out.println("Before Optimize_UB_3D Indexed " + num_indexed + 
                        " of " + num_initial );
+*/
     fit_error[0] = Optimize_UB_3D( temp_UB, miller_ind, indexed_qs );
-    System.out.println("After Optimize_UB_3D Indexed " + num_indexed );
+//    System.out.println("After Optimize_UB_3D Indexed " + num_indexed );
 
     if ( !Float.isNaN( fit_error[0] ) )
     {
@@ -890,14 +897,14 @@ public static float Find_UB( Tran3D             UB,
       UB.set( temp_UB );
   }
 
-  System.out.println("Original UB = " + UB );
+//  System.out.println("Original UB = " + UB );
                                  // Regardless of how we got the UB, find the
                                  // sum-squared errors for the indexing in
                                  // HKL space.
   num_indexed = GetIndexedPeaks( UB, q_vectors, required_tolerance,
                                  miller_ind, indexed_qs, fit_error );
-  System.out.println("Indexed " + num_indexed + 
-                     " average ^2 error = " + fit_error[0]/num_indexed );
+//  System.out.println("Indexed " + num_indexed + 
+//                     " average ^2 error = " + fit_error[0]/num_indexed );
 
                                  // now, get rid of shift and see how well 
                                  // it works.
@@ -928,13 +935,14 @@ public static float Find_UB( Tran3D             UB,
     ex.printStackTrace();
   } 
 
+/*
   System.out.println("After subs.Nigglify UB = " + UB ); 
 
   num_indexed = GetIndexedPeaks( UB, original_qs, required_tolerance,
                                  miller_ind, indexed_qs, fit_error );
   System.out.println("Indexed " + num_indexed +
                      " average ^2 error = " + fit_error[0]/num_indexed );
-
+*/
   return fit_error[0];
 }
 
@@ -1152,11 +1160,11 @@ public static float Optimize_UB_4D( Tran3D UB,
   for ( int col = 0; col < 3; col++ )        // set last row to 0,0,0,1
     augmented_UB_array[3][col] = 0;
   augmented_UB_array[3][3] = 1;   
-
+/*
   System.out.println("Shift = " + augmented_UB_array[0][0] +
                            "  " + augmented_UB_array[0][1] +
                            "  " + augmented_UB_array[0][2] );
-
+*/
   UB.set( augmented_UB_array );
 
   return sum_sq_error;
@@ -1546,9 +1554,6 @@ public static int GetIndexedPeaks( Tran3D    UB,
     Tran3D UB_inverse = new Tran3D( UB );
     UB_inverse.invert();
 
-    System.out.println("*********** in GetIndexedPeaks, UB_inverse = ");
-    System.out.println( UB_inverse );
-
     for ( int q_num = 0; q_num < q_vectors.size(); q_num++ )
     {
       Vector3D q_vec = (Vector3D)q_vectors.elementAt(q_num);
@@ -1806,7 +1811,7 @@ public static float SelectDirections( Vector3D a_dir,
                                       Vector   q_vectors,
                                       float    degrees_per_step )
 {
-  long start_time = System.nanoTime();
+//  long start_time = System.nanoTime();
 
   int num_a_steps = (int)Math.round( 90.0 / degrees_per_step );
   double gamma_radians = gamma * Math.PI / 180.0;
@@ -1878,9 +1883,10 @@ public static float SelectDirections( Vector3D a_dir,
       }
     }
   }
-
+/*
   long end_time = System.nanoTime();
   System.out.println("ELAPSED TIME = " + (end_time-start_time)/1.0e9 );
+*/
   return min_error;
 }
 
@@ -1974,7 +1980,7 @@ public static float ScanFor_UB( Vector3D a_dir,
                                 float    gamma,
                                 float    degrees_per_step )
 {
-  long start_time = System.nanoTime();
+//  long start_time = System.nanoTime();
 
   int num_a_steps = (int)Math.round( 90.0 / degrees_per_step );
   double gamma_radians = gamma * Math.PI / 180.0;
@@ -2046,8 +2052,10 @@ public static float ScanFor_UB( Vector3D a_dir,
       }
     }
   }
+/*
   long end_time = System.nanoTime();
   System.out.println("ELAPSED TIME = " + (end_time-start_time)/1.0e9 );
+*/
   return min_error;
 }
 
@@ -2102,7 +2110,7 @@ public static float ScanFor_UB( Vector3D a_dir,
                                 float    degrees_per_step,
                                 float    required_tolerance )
 {
-  long start_time = System.nanoTime();
+// long start_time = System.nanoTime();
 
   int num_a_steps = (int)Math.round( 90.0 / degrees_per_step );
   double gamma_radians = gamma * Math.PI / 180.0;
@@ -2233,9 +2241,10 @@ public static float ScanFor_UB( Vector3D a_dir,
         c_dir.set( c_dir_temp );
       }
   }
-
+/*
   long end_time = System.nanoTime();
   System.out.println("ELAPSED TIME = " + (end_time-start_time)/1.0e9 );
+*/
   return min_error;
 }
 
@@ -2247,7 +2256,7 @@ public static void ScanFor_Directions( Vector<Vector3D> directions,
                                 float    degrees_per_step,
                                 float    required_tolerance )
 {
-  long start_time = System.nanoTime();
+//  long start_time = System.nanoTime();
 
   int num_steps = (int)Math.round( 90.0 / degrees_per_step );
 /*
@@ -2306,10 +2315,11 @@ public static void ScanFor_Directions( Vector<Vector3D> directions,
     }
   }
 
+/*
   System.out.println("After stage 1, number of directions = " + 
                       selected_dirs.size() );
   System.out.println("After stage 1, max_indexed = " + max_indexed );
-/*
+
   for ( int i = 0; i < selected_dirs.size(); i++ )
     System.out.println(" i = " + i +
                        " Length = " + selected_dirs.elementAt(i).length() +
@@ -2361,6 +2371,7 @@ public static void ScanFor_Directions( Vector<Vector3D> directions,
 
   }
 
+/*
   long end_time = System.nanoTime();
   System.out.println("ELAPSED TIME = " + (end_time-start_time)/1.0e9 );
 
@@ -2383,6 +2394,7 @@ public static void ScanFor_Directions( Vector<Vector3D> directions,
   }
 
   System.out.println("NUMBER OF Q_VECTORS = " + q_vectors.size() );
+*/
 }
 
 

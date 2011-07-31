@@ -738,17 +738,17 @@ public class PeakListHandler implements IReceiveMessage
 
       double[][] UB2 = new double[3][3];
       double[] sig_abc = new double[7];
-
+/*
       System.out.println("UB passed in to getErrorsAnd...");
       LinearAlgebra.print( UB ); 
-   
+*/   
       if ( Peaks.size() > 2 )
       {
         UB2 = LinearAlgebra.float2double( ScalarHandlePanel.LSQRS( Peaks , 
                                                                    sig_abc ));
 
-        System.out.println("UB back from ScalarHandlePanel..");
-        LinearAlgebra.print( UB2 ); 
+//        System.out.println("UB back from ScalarHandlePanel..");
+//        LinearAlgebra.print( UB2 ); 
       }
       else
         UB2 = null;
