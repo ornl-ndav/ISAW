@@ -470,13 +470,13 @@ public static float Find_UB( Tran3D             UB,
     original_qs.add( new Vector3D( q_vectors.elementAt(i) ) );
 
   if ( q_vectors.size() > 5 )       // shift to be centered on peak (we lose
-                                    // one peak that way.
+                                    // one peak that way.)
   {
     Vector<Vector3D> shifted_qs = new Vector<Vector3D>();
     int mid_ind = q_vectors.size()/3;
                                     // either do an initial sort and use
-                                    // default base peak, or use the index
-                                    // specified by the input parameter
+                                    // default mid index, or use the mid index
+                                    // specified by the base_peak parameter
     if ( base_index < 0 || base_index > q_vectors.size() )  
       q_vectors = SortOnVectorMagnitude( q_vectors ); 
     else  
@@ -504,11 +504,15 @@ public static float Find_UB( Tran3D             UB,
   Vector<Vector3D> some_qs = new Vector<Vector3D>();
   for ( int i = 0; i < num_initial; i++ ) 
     some_qs.add( q_vectors.elementAt(i) );
-
+/* ##########
   ScanFor_UB( UB, some_qs,
               a, b, c, alpha, beta, gamma,
               degrees_per_step,
               required_tolerance );
+*/
+  ScanFor_UB( UB, some_qs,
+              a, b, c, alpha, beta, gamma,
+              degrees_per_step );
 
   float[] fit_error = new float[1];
   int     num_indexed;
@@ -531,35 +535,50 @@ public static float Find_UB( Tran3D             UB,
     for ( int i = some_qs.size(); i < num_initial; i++ )
       some_qs.add( q_vectors.elementAt(i) );
 
-    Tran3D temp_UB = new Tran3D( UB );
-    num_indexed = GetIndexedPeaks( UB, some_qs, required_tolerance,
-                                   miller_ind, indexed_qs, fit_error );
+    try
+    {
+      Tran3D temp_UB = new Tran3D( UB );
+      num_indexed = GetIndexedPeaks( UB, some_qs, required_tolerance,
+                                     miller_ind, indexed_qs, fit_error );
 
-//    fit_error[0] = Optimize_UB_3D( temp_UB, miller_ind, indexed_qs );
-    fit_error[0] = Optimize_UB_4D( temp_UB, miller_ind, indexed_qs );
+      fit_error[0] = Optimize_UB_4D( temp_UB, miller_ind, indexed_qs );
 
-    if ( !Float.isNaN( fit_error[0] ) )
-      UB.set( temp_UB );
+      if ( !Float.isNaN( fit_error[0] ) )
+        UB.set( temp_UB );
+    }
+    catch ( Exception ex )
+    {
+      System.out.println( "Optimize failed with " + num_initial +" peaks " +
+                          "continuing ... " );
+    }
   }
 
 //  System.out.println("Finished growing set of peaks...");
 
-  if ( original_qs.size() >= 5 )    // try one last refinement using all peaks
-  {
-    Tran3D temp_UB = new Tran3D( UB );
-    num_indexed = GetIndexedPeaks( UB, original_qs, required_tolerance,
-                                   miller_ind, indexed_qs, fit_error );
+  if ( original_qs.size() >= 5 )    // try one last refinement using all 
+  {                                 // original peaks
+    try
+    {
+      Tran3D temp_UB = new Tran3D( UB );
+      num_indexed = GetIndexedPeaks( UB, original_qs, required_tolerance,
+                                     miller_ind, indexed_qs, fit_error );
 //    fit_error[0] = Optimize_UB_3D( temp_UB, miller_ind, indexed_qs );
-    fit_error[0] = Optimize_UB_4D( temp_UB, miller_ind, indexed_qs );
-    if ( !Float.isNaN( fit_error[0] ) )
-      UB.set( temp_UB );
+      fit_error[0] = Optimize_UB_4D( temp_UB, miller_ind, indexed_qs );
+      if ( !Float.isNaN( fit_error[0] ) )
+        UB.set( temp_UB );
+    }
+    catch ( Exception ex )
+    {
+      System.out.println( "Optimize failed using all original peaks, "+
+                          "continuing... " );
+    }
   }
 //  System.out.println("Finished finished refining all peaks ...");
 
                                  // Regardless of how we got the UB, find the
                                  // sum-squared errors for the indexing in 
                                  // HKL space.
-  num_indexed = GetIndexedPeaks( UB, q_vectors, required_tolerance,
+  num_indexed = GetIndexedPeaks( UB, original_qs, required_tolerance,
                                  miller_ind, indexed_qs, fit_error ); 
 /*
   System.out.println("Num indexed, shifted = " + num_indexed );
@@ -580,8 +599,8 @@ public static float Find_UB( Tran3D             UB,
   UB.set( UB_array );
   num_indexed = GetIndexedPeaks( UB, original_qs, required_tolerance,
                                  miller_ind, indexed_qs, fit_error );
-/*
   System.out.println("Num indexed, raw = " + num_indexed );
+/*
   num_to_print = Math.min( 5, indexed_qs.size() );
   for ( int i = 0; i < num_to_print; i++ )
     System.out.println("RAW q = " + indexed_qs.elementAt(i) +
@@ -996,7 +1015,8 @@ public static Vector<Vector3D>
        *  @param  peak_1   The first  peak
        *  @param  peak_2   The second peak 
        *
-       *  @return A positive integer if peak_1's run number is greater than
+       *  @return A positive integer if peak_1's |Q| is greater than peak_2's
+       *  |Q|
        */
        public int compare( Object peak_1, Object peak_2 )
        {
@@ -1955,6 +1975,66 @@ public static float ScanFor_UB( Tran3D   UB,
 
   return error;
 }
+
+
+/**
+ *  The method very simply scans across all possible directions and 
+ *  orientations for the  directions of the a, b and c vectors that will 
+ *  minimize the sum-squared deviations from integer values of the 
+ *  projections of the peaks on the a, b and c directions.  This method 
+ *  will always return precisely one UB matrix for which the a,b,c minimize
+ *  the sum-squared error.  If several directions and orientations produce 
+ *  the same  minimum, this will return the first one that was encountered 
+ *  during the search through directions.  NOTE: This is an expensive 
+ *  calculation if the resolution of the vectors searched is less than 
+ *  around 2 degrees per step tested.  This method should be most useful 
+ *  if there are a small number of peaks, roughly 2-10 AND all peaks belong 
+ *  to the same crystallite.
+ *  @param UB                 This will be set to the UB matrix that best
+ *                            indexes the supplied list of q_vectors.
+ *  @param q_vectors          List of locations of peaks in "Q".
+ *  @param a                  Lattice parameter "a".
+ *  @param b                  Lattice parameter "b".
+ *  @param c                  Lattice parameter "c".
+ *  @param alpha              Lattice parameter alpha.
+ *  @param beta               Lattice parameter beta.
+ *  @param gamma              Lattice parameter gamma.
+ *  @param degrees_per_step   The number of degrees per step used when 
+ *                            scanning through all possible directions and
+ *                            orientations for the unit cell. NOTE: The
+ *                            work required rises very rapidly as the number
+ *                            of degrees per step decreases. A value of 1
+ *                            degree leads to about 10 seconds of compute time.
+ *                            while a value of 2 only requires a bit more than
+ *                            1 sec.  The required time is O(n^3) where 
+ *                            n = 1/degrees_per_step.
+ */
+
+public static float ScanFor_UB( Tran3D   UB,
+                                Vector   q_vectors,
+                                float    a,     float b,    float c,
+                                float    alpha, float beta, float gamma,
+                                float    degrees_per_step )
+{
+  Vector3D a_dir = new Vector3D();
+  Vector3D b_dir = new Vector3D();
+  Vector3D c_dir = new Vector3D();
+
+  float error = ScanFor_UB( a_dir, b_dir, c_dir,
+                            q_vectors,
+                            a, b, c, alpha, beta, gamma,
+                            degrees_per_step );
+
+  float[][] UB_inv_arr = { { a_dir.getX(), a_dir.getY(), a_dir.getZ(), 0 },
+                           { b_dir.getX(), b_dir.getY(), b_dir.getZ(), 0 },
+                           { c_dir.getX(), c_dir.getY(), c_dir.getZ(), 0 },
+                           { 0,            0,            0,            1 } };
+  UB.set( UB_inv_arr );
+  UB.invert();
+
+  return error;
+}
+
 
 
 
