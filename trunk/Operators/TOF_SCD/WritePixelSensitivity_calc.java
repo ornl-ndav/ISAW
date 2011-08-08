@@ -590,9 +590,9 @@ public class WritePixelSensitivity_calc
     float  min_tof = 1000;
     float  max_tof = 16000;
     int    zero_border = 15;
-    int    half_width  = 2;
+    int    half_width  = 7;
     String peaks_filename = args[0];
-    String out_peaks_filename = peaks_filename + "_back_sensitivity_adjusted";
+    String out_peaks_filename = peaks_filename + "van-back_adjusted_15_7";
     AdjustPeaksForPixelSensitivity( van_filename,
                                     back_filename,
                                     peaks_filename,
