@@ -198,6 +198,7 @@ package DataSetTools.viewer.Image;
 import DataSetTools.dataset.*;
 import DataSetTools.viewer.*;
 import DataSetTools.viewer.util.*;
+import DataSetTools.util.SharedData;
 import gov.anl.ipns.Util.Messaging.*;
 import gov.anl.ipns.Util.Numeric.*;
 import gov.anl.ipns.Util.Sys.*;
@@ -232,12 +233,12 @@ public class ImageView extends    DataSetViewer
   private static final String HORIZONTAL_SCROLL  = "Horizontal Scroll";
   private static final String H_GRAPH_REBINNED   = "Graph Rebinned Data";
 
-  private static final String NO_MULTI_PLOT        = "Don't Graph Selected";
-  private static final String MULTI_PLOT_OVERLAY   = "Overlaid";
-  private static final String MULTI_PLOT_VERTICAL  = "Shift Vertically";
-  private static final String MULTI_PLOT_DIAGONAL  = "Shift Diagonally";
-  private static final String MULTI_PLOT_COLOR     = "Color Graphs";
-  private static final String MULTI_PLOT_HIDDEN_LINES = "Remove Hidden Lines";
+  public static final String NO_MULTI_PLOT        = "Don't Graph Selected";
+  public static final String MULTI_PLOT_OVERLAY   = "Overlaid";
+  public static final String MULTI_PLOT_VERTICAL  = "Shift Vertically";
+  public static final String MULTI_PLOT_DIAGONAL  = "Shift Diagonally";
+  public static final String MULTI_PLOT_COLOR     = "Color Graphs";
+  public static final String MULTI_PLOT_HIDDEN_LINES = "Remove Hidden Lines";
 
   private static final int LEFT_SPACER_SIZE = 8;
   Dimension MIN_TOP_BOX    = new Dimension( LEFT_SPACER_SIZE, 1  );
