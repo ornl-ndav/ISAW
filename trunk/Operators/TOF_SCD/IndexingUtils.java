@@ -477,7 +477,7 @@ public static float Find_UB( Tran3D             UB,
                                     // either do an initial sort and use
                                     // default mid index, or use the mid index
                                     // specified by the base_peak parameter
-    if ( base_index < 0 || base_index > q_vectors.size() )  
+    if ( base_index < 0 || base_index >= q_vectors.size() )  
       q_vectors = SortOnVectorMagnitude( q_vectors ); 
     else  
       mid_ind = base_index; 
@@ -504,15 +504,11 @@ public static float Find_UB( Tran3D             UB,
   Vector<Vector3D> some_qs = new Vector<Vector3D>();
   for ( int i = 0; i < num_initial; i++ ) 
     some_qs.add( q_vectors.elementAt(i) );
-/* ##########
+
   ScanFor_UB( UB, some_qs,
               a, b, c, alpha, beta, gamma,
               degrees_per_step,
               required_tolerance );
-*/
-  ScanFor_UB( UB, some_qs,
-              a, b, c, alpha, beta, gamma,
-              degrees_per_step );
 
   float[] fit_error = new float[1];
   int     num_indexed;
@@ -599,8 +595,8 @@ public static float Find_UB( Tran3D             UB,
   UB.set( UB_array );
   num_indexed = GetIndexedPeaks( UB, original_qs, required_tolerance,
                                  miller_ind, indexed_qs, fit_error );
-  System.out.println("Num indexed, raw = " + num_indexed );
 /*
+  System.out.println("Num indexed, raw = " + num_indexed );
   num_to_print = Math.min( 5, indexed_qs.size() );
   for ( int i = 0; i < num_to_print; i++ )
     System.out.println("RAW q = " + indexed_qs.elementAt(i) +
@@ -719,8 +715,8 @@ public static float Find_UB( Tran3D             UB,
   ScanFor_Directions( directions,
                       some_qs,
                       min_d, max_d,
-                      degrees_per_step,
-                      required_tolerance );
+                      required_tolerance,
+                      degrees_per_step );
 
   directions = SortOnVectorMagnitude( directions );
 /*
@@ -1051,7 +1047,8 @@ public static Vector<Vector3D>
     the specified hkl_vectors to the specified q_vectors.  The calculated
     UB minimizes the sum squared differences between UB*(h,k,l) and the
     corresponding (qx,qy,qz) for all of the specified hkl and Q vectors.
-    The sum of the squares of the residual errors is returned.
+    The sum of the squares of the residual errors is returned.  This method is
+    used to optimize the UB matrix once an initial indexing has been found.
   
     @param  UB           3x3 matrix that will be set to the UB matrix
     @param  hkl_vectors  Vector of new Vector3D objects that contains the 
@@ -2039,7 +2036,7 @@ public static float ScanFor_UB( Tran3D   UB,
 
 
 /**
- *  The method very simply scans across all possible directions and 
+ *  This method very simply scans across all possible directions and 
  *  orientations for the  directions of the a, b and c vectors that will 
  *  minimize the sum-squared deviations from integer values of the 
  *  projections of the peaks on the a, b and c directions.  This method 
@@ -2333,35 +2330,56 @@ public static float ScanFor_UB( Vector3D a_dir,
 }
 
 
+/**
+ * Get list of possible edge vectors for the real space unit cell.  This list
+ * will consist of vectors, V, for which V dot Q is essentially an integer for
+ * the most Q vectors.  The difference between V dot Q and an integer must be
+ * less than the required tolerance for it to count as an integer.
+    @param  directions          Vector that will be filled with the directions
+                                that may correspond to unit cell edges.
+    @param  q_vectors           Vector of new Vector3D objects that contains 
+                                the list of q_vectors that are to be indexed
+    @param  min_d               Lower bound on shortest unit cell edge length.
+                                This does not have to be specified exactly but
+                                must be strictly less than the smallest edge
+                                length, in Angstroms.
+    @param  max_d               Upper bound on longest unit cell edge length.
+                                This does not have to be specified exactly but
+                                must be strictly more than the longest edge
+                                length in angstroms.
+    @param  required_tolerance  The maximum allowed deviation of Miller indices
+                                from integer values for a peak to be indexed.
+    @param  degrees_per_step    The number of degrees between directions that
+                                are checked while scanning for an initial 
+                                indexing of the peaks with lowest |Q|.
+ */
+
 public static void ScanFor_Directions( Vector<Vector3D> directions,
-                                Vector   q_vectors,
-                                float    d_min,
-                                float    d_max,
-                                float    degrees_per_step,
-                                float    required_tolerance )
+                                       Vector   q_vectors,
+                                       float    min_d,
+                                       float    max_d,
+                                       float    required_tolerance,
+                                       float    degrees_per_step )
 {
-//  long start_time = System.nanoTime();
-
-  int num_steps = (int)Math.round( 90.0 / degrees_per_step );
-/*
-  System.out.println("num_steps = " + num_steps );
-*/
-  Vector<Vector3D> full_list = MakeHemisphereDirections( num_steps );
-
   float    error;
   float[]  fit_error = new float[1];
   float    dot_prod;
   int      nearest_int;
   int      max_indexed = 0;
   Vector3D q_vec = new Vector3D();
+                           // first, make hemisphere of possible directions 
+                           // with specified resolution.
+  int num_steps = (int)Math.round( 90.0 / degrees_per_step );
+  Vector<Vector3D> full_list = MakeHemisphereDirections( num_steps );
 
+                           // Now, look for possible real-space unit cell edges
+                           // by checking for vectors with length between 
+                           // min_d and max_d that would index the most peaks,
+                           // in some direction, keeping the shortest vector
+                           // for each direction where the max peaks are indexed
   float delta_d = 0.1f;
-  int n_steps = Math.round( 1 +(d_max - d_min)/delta_d );
-                                              // first select those directions
-                                              // that index the most peaks,
-                                              // scaled to right length, only
-                                              // keeping the longest one for
-                                              // each direction
+  int n_steps = Math.round( 1 +(max_d - min_d)/delta_d );
+
   Vector<Vector3D> selected_dirs = new Vector<Vector3D>();
   Vector3D dir_temp = new Vector3D();
 
@@ -2372,8 +2390,7 @@ public static void ScanFor_Directions( Vector<Vector3D> directions,
     for ( int step = 0; step <= n_steps; step++ )
     {
       dir_temp.set( current_dir );
-//      dir_temp.multiply( d_max - step * delta_d );    // decreasing size
-      dir_temp.multiply( d_min + step * delta_d );    // increasing size
+      dir_temp.multiply( min_d + step * delta_d );    // increasing size
       
       int num_indexed = 0;
       for ( int q_num = 0; q_num < q_vectors.size(); q_num++ )
@@ -2409,8 +2426,9 @@ public static void ScanFor_Directions( Vector<Vector3D> directions,
                        " Length = " + selected_dirs.elementAt(i).length() +
                        " Vector = " + selected_dirs.elementAt(i) );
 */
-                                          // now, for each such direction,
-                                          // optimize it and discard duplicates 
+                           // Now, optimize each direction and discard possible
+                           // unit cell edges that are duplicates, putting the
+                           // new smaller list in the vector "directions"
   Vector<Vector3D> index_vals = new Vector<Vector3D>();
   Vector<Vector3D> indexed_qs = new Vector<Vector3D>();
   directions.clear();
@@ -2419,40 +2437,35 @@ public static void ScanFor_Directions( Vector<Vector3D> directions,
     Vector3D current_dir = selected_dirs.elementAt( dir_num );
 
     int num_indexed = GetIndexedPeaks_1D( current_dir,
-                        q_vectors,
-                        required_tolerance,
-                        index_vals,
-                        indexed_qs,
-                        fit_error  );
+                                          q_vectors,
+                                          required_tolerance,
+                                          index_vals,
+                                          indexed_qs,
+                                          fit_error  );
 
     Optimize_Direction_3D( current_dir, index_vals, indexed_qs );
-/*
-    System.out.println(" dir_num = " + dir_num +
-                       " Length = " + current_dir.length() +
-                       " Vector = " + current_dir );
-*/
+
     float length = current_dir.length();
-    if ( length >= d_min && length <= d_max )   // only keep if within range
+    if ( length >= min_d && length <= max_d )   // only keep if within range
     {
       boolean duplicate = false;
       for ( int i = 0; i < directions.size(); i++ )
       {
         dir_temp = directions.elementAt(i);
-                                                // discard duplicate
-        if ( Math.abs(current_dir.getX() - dir_temp.getX())<0.001f && 
-             Math.abs(current_dir.getY() - dir_temp.getY())<0.001f && 
-             Math.abs(current_dir.getZ() - dir_temp.getZ())<0.001f )
+                                                // discard same direction  
+        if ( Math.abs(current_dir.getX() - dir_temp.getX()) < 0.001f && 
+             Math.abs(current_dir.getY() - dir_temp.getY()) < 0.001f && 
+             Math.abs(current_dir.getZ() - dir_temp.getZ()) < 0.001f )
           duplicate = true; 
-                                                // discard minus duplicate
-        if ( Math.abs(current_dir.getX() + dir_temp.getX())<0.001f &&
-             Math.abs(current_dir.getY() + dir_temp.getY())<0.001f &&
-             Math.abs(current_dir.getZ() + dir_temp.getZ())<0.001f )
+                                                // discard opposite direction 
+        if ( Math.abs(current_dir.getX() + dir_temp.getX()) < 0.001f &&
+             Math.abs(current_dir.getY() + dir_temp.getY()) < 0.001f &&
+             Math.abs(current_dir.getZ() + dir_temp.getZ()) < 0.001f )
           duplicate = true;
       }
       if (!duplicate)
         directions.add( current_dir );
     }
-
   }
 
 /*

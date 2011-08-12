@@ -306,21 +306,54 @@ public class IndexingUtils_test
 
   private static void test_ScanFor_Directions()
   {
+    double[][] vectors = { {  0.08445961, 9.26951000,  3.4138980 },
+                           { -2.58222370, 3.97345330, -4.5514464 },
+                           {  2.66668320, 5.29605670,  7.9653444 },
+                           {  7.01297300, 3.23755380, -5.8988633 },
+                           { -9.59519700, 0.73589927,  1.3474168 }  };
+
     Vector directions = new Vector();
     Vector q_vectors = getNatroliteQs();
     float  d_min = 6;
     float  d_max = 10;
-    float  degrees_per_step = .5f;
-    float  required_tolerance = 0.08f;
+    float  degrees_per_step = 1.0f;
+    float  required_tolerance = 0.12f;
 
-    for ( int i = 0; i < 5; i++ )
-      q_vectors.remove( 11-i );
     IndexingUtils.ScanFor_Directions( directions,
                                       q_vectors,
                                       d_min, d_max,
-                                      degrees_per_step,
-                                      required_tolerance );
+                                      required_tolerance,
+                                      degrees_per_step );
+/*
+    System.out.println("Number of Directions = " + directions.size() );
 
+    for ( int i = 0; i < directions.size(); i++ )
+    {
+      Vector3D vec = (Vector3D)directions.elementAt(i); 
+      System.out.println( vec + " length = " + vec.length() );
+    }
+
+    for ( int i = 0; i < directions.size()-1; i++ )
+    {
+      Vector3D vec_1 = (Vector3D)directions.elementAt(i);
+      for ( int j = i+1; j < directions.size(); j++ )
+      { 
+        Vector3D vec_2 = (Vector3D)directions.elementAt(j);
+        System.out.println("Angle between " + i + " and " + j +
+                           " is " + IndexingUtils.angle( vec_1, vec_2 ) );
+      }
+    }
+*/
+    TS_ASSERT_EQUALS( 5, directions.size() );
+
+    for ( int i = 0; i < 3; i++ )
+    {
+       float[] components = ((Vector3D)directions.elementAt(i)).get();
+       for ( int j = 0; j < 3; j++ )
+       {
+         TS_ASSERT_DELTA( vectors[i][j], components[j], 1.e-5 );
+       }
+     }
   }
 
 
@@ -627,10 +660,10 @@ public class IndexingUtils_test
 
     test_ScanFor_UB();
     System.out.println("Finished test_ScanFor_UB ...........................");
-
+*/
     test_ScanFor_Directions();
     System.out.println("Finished test_ScanFor_Directions ...................");
-
+/*
     test_Make_c_dir();
     System.out.println("Finished test_Make_c_dir ...........................");
 
