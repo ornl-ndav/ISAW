@@ -608,11 +608,27 @@ public static float Find_UB( Tran3D             UB,
 
 /** 
     STATIC method Find_UB: This method will attempt to calculate the matrix 
-    that most nearly indexes the specified q_vectors, given a range of 
-    possible unit cell edge lengths.  
+  that most nearly indexes the specified q_vectors, given only a range of 
+  possible unit cell edge lengths.  
 
-    The sum of the squares of the residual errors is returned.
-  
+     The resolution of the search through possible orientations is specified
+  by the degrees_per_step parameter.  Approximately 1-3 degrees_per_step is
+  usually adequate.  NOTE: This is an expensive calculation which takes 
+  approximately 1 second using 1 degree_per_step.  However, the execution 
+  time is O(n^3) so decreasing the resolution to 0.5 degree per step will take 
+  about 8 seconds, etc.  It should not be necessary to decrease this value 
+  below 1 degree per step, and users will have to be VERY patient, if it is
+  decreased much below 1 degree per step.
+    The number of peaks used to obtain an initial indexing is specified by
+  the "num_initial" parameter.  Good values for this are typically around 
+  15-25.  The specified q_vectors must correspond to a single crystal.  If
+  several crystallites are present or there are other sources of "noise" 
+  leading to invalid peaks, this method will not work well.  The method that
+  uses lattice parameters may be better in such cases.  Alternatively, adjust
+  the list of specified q_vectors so it does not include noise peaks or peaks
+  from more than one crystal, by increasing the threshold for what counts
+  as a peak, or by other methods.
+
     @param  UB                  3x3 matrix that will be set to the UB matrix
     @param  q_vectors           Vector of new Vector3D objects that contains 
                                 the list of q_vectors that are to be indexed
@@ -637,10 +653,10 @@ public static float Find_UB( Tran3D             UB,
                                 q_vectors will be shifted by -base_peak, where
                                 base_peak is the q_vector with the specified
                                 base index.
-                                If fewer than 4 peaks are specified in the
+                                If fewer than 6 peaks are specified in the
                                 q_vectors list, this parameter is ignored.
                                 If this parameter is -1, and there are at least
-                                four peaks in the q_vector list, then a base
+                                six peaks in the q_vector list, then a base
                                 index will be calculated internally.  In most
                                 cases, it should suffice to set this to -1.
     @param  num_initial         The number of low |Q| peaks that are used
@@ -652,8 +668,6 @@ public static float Find_UB( Tran3D             UB,
     @return  This will return the sum of the squares of the residual errors.
   
     @throws  IllegalArgumentException if there are not at least 3 q vectors.
-   
-    @throws  std::runtime_error    exception if the UB matrix can't be found.
 */
 
 public static float Find_UB( Tran3D             UB,
@@ -758,6 +772,8 @@ public static float Find_UB( Tran3D             UB,
     else
       index++;
   }
+  if ( ! b_found )
+   throw new IllegalArgumentException("Could not find independent b direction");
 
   Vector3D c_dir  = null;
   boolean c_found = false;
@@ -770,7 +786,7 @@ public static float Find_UB( Tran3D             UB,
   {
     Vector3D vec = directions.elementAt(index);
     float perp_ang = angle( perp, vec );
-    if ( perp_ang < 80 ) 
+    if ( perp_ang < 90 - epsilon ) 
     {
       c_dir = new Vector3D( vec );
       c_found = true;
@@ -780,7 +796,7 @@ public static float Find_UB( Tran3D             UB,
       c_dir = new Vector3D( vec );
       c_dir.multiply(-1);
       perp_ang = angle( perp, c_dir );
-      if ( perp_ang < 80 ) 
+      if ( perp_ang < 90 - epsilon ) 
       {
         c_found = true;
       }
@@ -790,22 +806,15 @@ public static float Find_UB( Tran3D             UB,
       index++;
   }
 
+  if ( ! c_found )
+   throw new IllegalArgumentException("Could not find independent c direction");
 
-  if ( c_found )
-  {
 /*
-     System.out.println("C_DIR = " + c_dir + "   length = " + c_dir.length());
-     System.out.println("ALPHA = " + angle(b_dir, c_dir) );
-     System.out.println("BETA  = " + angle(c_dir, a_dir) );
-     System.out.println("GAMMA = " + angle(a_dir, b_dir) );
+  System.out.println("C_DIR = " + c_dir + "   length = " + c_dir.length());
+  System.out.println("ALPHA = " + angle(b_dir, c_dir) );
+  System.out.println("BETA  = " + angle(c_dir, a_dir) );
+  System.out.println("GAMMA = " + angle(a_dir, b_dir) );
 */
-  }
-  else
-  {
-    System.out.println("ERROR NO C DIRECTION FOUND!!!!!!!!!!");
-    System.out.println("DEFAULTING TO LAST C_DIR !!!!!!!!!");
-    c_dir = directions.elementAt( directions.size()-1 );
-  }
 
   System.out.println("MIN D = " + min_d );
   System.out.println("MAX D = " + max_d );
@@ -816,16 +825,14 @@ public static float Find_UB( Tran3D             UB,
   System.out.println(" beta  = " + angle( c_dir, a_dir ) );
   System.out.println(" gamma = " + angle( a_dir, b_dir ) );
 
+                                   // now build the UB matrix from a,b,c       
+
   float[][] UB_inv_arr = { { a_dir.getX(), a_dir.getY(), a_dir.getZ(), 0 },
                            { b_dir.getX(), b_dir.getY(), b_dir.getZ(), 0 },
                            { c_dir.getX(), c_dir.getY(), c_dir.getZ(), 0 },
                            { 0,            0,            0,            1 } };
 
   UB.set( UB_inv_arr );
-/*
-  System.out.println("********** UB inverse should be = ");
-  System.out.println( UB );
-*/
   UB.invert();
 //  System.out.println("UB = " + UB );
                                      // now gradually bring in the remaining
@@ -834,12 +841,13 @@ public static float Find_UB( Tran3D             UB,
 
   Vector<Vector3D> miller_ind = new Vector<Vector3D>();
   Vector<Vector3D> indexed_qs = new Vector<Vector3D>();
-  Vector           index_vals = new Vector();
 
   float[] fit_error = new float[1];
 
   int     num_indexed = 0;
+
 /*
+  Vector           index_vals = new Vector();
   num_indexed = GetIndexedPeaks_1D( a_dir, some_qs, required_tolerance,
                         index_vals, indexed_qs, fit_error  );
   System.out.println("***** USING A_DIR ONLY, NUM INDEXED = " + num_indexed );
@@ -870,10 +878,8 @@ public static float Find_UB( Tran3D             UB,
                        " HKL = " + miller_ind.elementAt(i) );
 */
 
-  int     count = 0;
   while ( num_initial < q_vectors.size() )
   {
-    count++;
     num_initial = Math.round(1.5f * num_initial + 3);
                                              // add 3, in case we started with
                                              // a very small number of peaks!
@@ -886,20 +892,23 @@ public static float Find_UB( Tran3D             UB,
     Tran3D temp_UB = new Tran3D( UB );
     num_indexed = GetIndexedPeaks( UB, some_qs, required_tolerance,
                                    miller_ind, indexed_qs, fit_error );
-/*
-    System.out.println("Before Optimize_UB_3D Indexed " + num_indexed + 
-                       " of " + num_initial );
-*/
-    fit_error[0] = Optimize_UB_3D( temp_UB, miller_ind, indexed_qs );
-//    System.out.println("After Optimize_UB_3D Indexed " + num_indexed );
-
-    if ( !Float.isNaN( fit_error[0] ) )
+    try
     {
-      UB.set( temp_UB );
-      System.out.println("Indexed " + num_indexed + " of " + num_initial );
-    }
-    else
-      System.out.println("Optimize_UB_3D FAILED WITH "+ num_initial +" peaks");
+      fit_error[0] = Optimize_UB_3D( temp_UB, miller_ind, indexed_qs );
+
+      if ( !Float.isNaN( fit_error[0] ) )
+      {
+        UB.set( temp_UB );
+        System.out.println("Indexed " + num_indexed + " of " + num_initial );
+      }
+      else
+        System.out.println("Optimize_UB_3D FAILED WITH "+num_initial+" peaks");
+     }
+     catch ( Exception ex )
+     {
+       // failed to improve with these peaks, so continue with more peaks
+       // if possible 
+     }
   }
 
   if ( original_qs.size() >= 5 )   // try one last refinement using all peaks
@@ -923,6 +932,7 @@ public static float Find_UB( Tran3D             UB,
 
                                  // now, get rid of shift and see how well 
                                  // it works.
+// /* ########
   float[][] UB_array = UB.get();
   for ( int i = 0; i < 3; i++ )
   {
@@ -949,7 +959,7 @@ public static float Find_UB( Tran3D             UB,
     System.out.println(ex);
     ex.printStackTrace();
   } 
-
+//  ####### */
 /*
   System.out.println("After subs.Nigglify UB = " + UB ); 
 

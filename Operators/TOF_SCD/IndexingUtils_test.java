@@ -301,6 +301,8 @@ public class IndexingUtils_test
                            base_index,
                            num_initial,
                            degrees_per_step );
+
+    System.out.println("UB = " + UB );
   }
 
 
@@ -640,10 +642,8 @@ public class IndexingUtils_test
 
   public static void main( String[] args )
   {
-/*
     test_Find_UB_auto();
     System.out.println("Finished test_Find_UB auto .........................");
-*/
 
     test_Find_UB_given_lattice_parameters();
     System.out.println("Finished test_Find_UB (given lattice parameters)....");
