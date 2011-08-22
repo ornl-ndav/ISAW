@@ -109,7 +109,7 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
    ImageRectangle[]  Detector;
    private float   last_pointed_at_index = -1;
    private boolean redraw_cursor       = true;
-   private boolean notify_ds_observers = true;
+   private boolean notify_ds_observers = false;//true if comes from internal ds
 
    private ThreeD_JPanel            threeD_panel      = null; 
    private ImageJPanel              color_scale_image = null;
@@ -154,6 +154,7 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
    public static String   THREED__PANEL_OS ="THREED__PANEL_OS";
    float MinDis,MaxDis;
    
+   Point   pixel_point =null;
    
    public ThreeDRectViewer(DataSet dataSet)
    {
@@ -175,15 +176,24 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
          System.out.println("No Pixel Info Operator");
       else
          ((GetPixelInfo_op)op).ShowDetector = true;
-      ClosedInterval interval =dataSet.getYRange( );
-      MaxAbs = Math.abs( interval.getEnd_x( ) );
-      if( Math.abs(interval.getStart_x( ))>MaxAbs)
-         MaxAbs =Math.abs(interval.getStart_x( ));
+
+      gridIDs = Grid_util.getAreaGridIDs( dataSet );
+      
+      XScale x_scale1  = getDataSet().getData_entry(1).getX_scale();
+      UniformXScale x_scale= new UniformXScale( x_scale1.getStart_x(),
+    		   x_scale1.getEnd_x(), x_scale1.getNum_x());
+      MaxAbs =0;
+      setNewXScaleOnly(x_scale);
+      //ClosedInterval interval =dataSet.getYRange( );
+      //MaxAbs = Math.abs( interval.getEnd_x( ) );
+      //if( Math.abs(interval.getStart_x( ))>MaxAbs)
+      //   MaxAbs =Math.abs(interval.getStart_x( ));
       
       colorModel = IndexColorMaker.getDualColorModel( 
             getState().get_String( ViewerState.COLOR_SCALE ),
             NUM_POSITIVE_COLORS );
       colorModelwTransp = BuildAlphaColModel( colorModel);
+      
       //------------------threeD_panel--------------------------------
       if ( threeD_panel != null )          // get rid of old components first 
       {
@@ -215,9 +225,8 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
       if( log_scale== null)
          setLogScale( getState().get_int( ViewerState.BRIGHTNESS) );
       
-      gridIDs = Grid_util.getAreaGridIDs( dataSet );
    
-      UniformXScale x_scale  = getDataSet().getXRange();
+      
       Detector = new ImageRectangle[ gridIDs.length];
      
       MinDis = Float.MAX_VALUE;
@@ -272,9 +281,10 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
       frame_control.setBorderTitle( getDataSet().getX_label() );
       frame_control.setTextLabel( getDataSet().getX_units() );
       frame_control.setFrame_values(xscl.getXs());
+      frame_control.setFrameNumber(0);
       frame_control.addActionListener( new FrameControlListener() );
      
-      setNewXScale( xscl);
+      //setNewXScale( xscl);
       
       //---------------- DS Conversions ------------------------
       conv_table = new DataSetXConversionsTable( getDataSet() );
@@ -330,8 +340,8 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
             if( frameNum != frame_control.getFrameNumber( ))
                setNewData( last_pointed_at_x);
             
-            //if( ds.getPointedAtIndex() == last_pointed_at_index)  ?? behaviour
-            //   redraw_cursor = false;
+           // if( ds.getPointedAtIndex() == last_pointed_at_index)// ?? behaviour
+           //   redraw_cursor = false;
           }
           
           if (index != DataSet.INVALID_INDEX && ! Float.isNaN( last_pointed_at_x ))
@@ -340,21 +350,22 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
             float y_val = ds.getData_entry( index ).getY_value( last_pointed_at_x , 0 );
             conv_table.showConversions( last_pointed_at_x, y_val, index );
           }
-
-          notify_ds_observers = false;            
           
           
           Vector3D detector_location = group_location( ds.getPointedAtIndex() );
-          Point   pixel_point;
-          if ( detector_location != null )//&& redraw_cursor )
+         
+          if ( detector_location != null && redraw_cursor )
           {
             pixel_point = threeD_panel.project( detector_location );
-            threeD_panel.set_crosshair( pixel_point );
-          }
+         
+            if(!notify_ds_observers)
+            	threeD_panel.set_crosshair( pixel_point );           
+          }else 
+        	
           
           last_pointed_at_index = ds.getPointedAtIndex();
           redraw_cursor = true;          //not used
-          notify_ds_observers = true;    //not used fixed ViewControl
+          notify_ds_observers = false;    //not used fixed ViewControl
        }
    }
 
@@ -444,8 +455,10 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
      XScale xscl1 = (XScale)x_scale_ui.getControlValue( );
      if( xscl1.getStart_x( ) != xscl.getStart_x() || xscl1.getEnd_x( ) != xscl.getEnd_x()
               || xscl1.getNum_x( ) != xscl.getNum_x())
+     {
+    	   MaxAbs=0;
            setNewXScale((XScale)x_scale_ui.getControlValue());
-     
+     }
      int value = log_scale_slider.getValue();
      setLogScale( value );
      
@@ -712,14 +725,90 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
   
   public void setColorModel()
   {
+	 int Nprocessors = Runtime.getRuntime().availableProcessors()-1;
+	 DoSet1ColorModel[] RunList = new DoSet1ColorModel[Detector.length];
      for( int i=0; i< Detector.length; i++)
         {
         IDataGrid grid = Grid_util.getAreaGrid( getDataSet() , gridIDs[i] );
-        int[][] ColorIndicies = getColorIndices( grid, (XScale)x_scale_ui.getControlValue( ),
-                           ((Number)frame_control.getControlValue()).floatValue( ));
-            Detector[i].setColorModel( ColorIndicies, colorModelwTransp);
+        XScale xscl =(XScale)x_scale_ui.getControlValue( );
+
+        float time =((Number)frame_control.getControlValue()).floatValue( );
+        RunList[i]= new DoSet1ColorModel( grid,xscl,time, Detector[i]);
+        
+      //  int[][] ColorIndicies = getColorIndices( grid, (XScale)x_scale_ui.getControlValue( ),
+      //                     ((Number)frame_control.getControlValue()).floatValue( ));
+      //      Detector[i].setColorModel( ColorIndicies, colorModelwTransp);
+        
         }
+     int lastDetector = 0;
+     int nactive =0;
+     while( lastDetector < Detector.length ||(lastDetector >=Detector.length 
+    		  && nactive >0) )
+     {
+       
+       while( nactive < Nprocessors  &&  lastDetector < Detector.length)
+    	 {
+    	   
+    	 	RunList[lastDetector].start();
+    	 	lastDetector++;
+    	    nactive++;
+    	 }
+       if( lastDetector >= Detector.length)
+    	   lastDetector = Detector.length;
+       //System.out.println("lastDetector, nactive="+lastDetector+","+nactive);
+       for( int i=0; i<lastDetector; i++)
+       {
+    	   if( RunList[i] != null)
+    		   if( RunList[i].getState() == Thread.State.TERMINATED)
+    		   {
+    			   RunList[i] = null;
+    			  // System.out.println("Finished "+i);
+    			   nactive--;
+    		   }
+       }
+       if(nactive >=Nprocessors )
+		try {
+			//System.out.println("Sleep,lastDetector, nactive="+lastDetector+","+nactive);
+			Thread.sleep(10);
+		} catch (InterruptedException e) {
+			
+			e.printStackTrace();
+		}
+     }
+     
      threeD_panel.repaint( );
+  }
+  
+  class DoSet1ColorModel extends Thread
+  {
+	  IDataGrid grid;
+	  XScale xscl;
+	  float time;
+	  ImageRectangle Detector;
+	  
+	  public DoSet1ColorModel( IDataGrid grid, XScale xscl,float time,
+			             ImageRectangle Detector)
+	  {
+		  this.grid = grid;
+		  this.xscl = xscl;
+		  this.time = time;
+		  this.Detector = Detector;
+		  
+	  }
+	  
+	  public void run()
+	  {
+		  try
+		  {
+			  int[][] ColorIndicies = getColorIndices( grid, xscl, time );
+              Detector.setColorModel( ColorIndicies, colorModelwTransp);
+			  
+		  }catch(Exception s)
+		  {
+			  return;
+		  }
+		 
+	  }
   }
   
   private void setLogScale( double s )
@@ -740,12 +829,115 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
                      (scale * Math.log(1.0+((s-1.0)*i)/LOG_TABLE_SIZE));
   }
 
+  // increases this.MaxAbs if MaxAbs is more
+  private synchronized void setMaxAbs( float MaxAbs)
+  {
+	  if( MaxAbs > this.MaxAbs)
+	     this.MaxAbs = MaxAbs;
+  }
+  /**
+   * Rebins each pixel and sets MaxAbs
+   * @param xscl
+   */
+  private void setNewXScaleOnly( XScale xscl)
+  {
+	  int Nprocessors = Runtime.getRuntime().availableProcessors()-1;
+      MyRebin1[] RunList = new MyRebin1[gridIDs.length];
+	  for( int i=0; i< gridIDs.length; i++)
+	        {
+	        IDataGrid grid = Grid_util.getAreaGrid( getDataSet() , gridIDs[i] );
+	        
+	        
+	        RunList[i]= new MyRebin1( grid,xscl);
+	        
+	      }
+	     int lastDetector = 0;
+	     int nactive =0;
+	     while( lastDetector < gridIDs.length ||(lastDetector >=gridIDs.length
+	    		  && nactive >0) )
+	     {
+	       
+	       while( nactive < Nprocessors  &&  lastDetector< gridIDs.length)
+	    	 {
+	    	   
+	    	 	RunList[lastDetector].start();
+	    	 	lastDetector++;
+	    	    nactive++;
+	    	 }
+	       if( lastDetector >= gridIDs.length)
+	    	   lastDetector = gridIDs.length;
+	       //System.out.println("lastDetector, nactive="+lastDetector+","+nactive);
+	       for( int i=0; i<lastDetector; i++)
+	       {
+	    	   if( RunList[i] != null)
+	    		   if( RunList[i].getState() == Thread.State.TERMINATED)
+	    		   {
+	    			   RunList[i] = null;
+	    			  // System.out.println("Finished "+i);
+	    			   nactive--;
+	    		   }
+	       }
+	       if(nactive >=Nprocessors )
+			try {
+				//System.out.println("Sleep,lastDetector, nactive="+lastDetector+","+nactive);
+				Thread.sleep(155);
+			} catch (InterruptedException e) {
+				
+				e.printStackTrace();
+			}
+	     }
+	     
+
+	  
+  }
+  
+  class MyRebin1 extends Thread
+  {
+	  IDataGrid grid;
+	  XScale xscl;
+	  public MyRebin1( IDataGrid grid, XScale xscl)
+	  {
+		  this.grid = grid;
+		  this.xscl = xscl;
+	  }
+	  
+	  public void run()
+	  {
+		  MaxAbs =0;
+		     for( int row =1 ; row <= grid.num_rows(); row++)
+		    	 for( int col=1; col <= grid.num_cols(); col++)
+		     {
+		        Data Db = grid.getData_entry(row,col); 
+		        Db.resample(  xscl , 0 );
+		        float[] yVals = Db.getY_values( );
+		        if( yVals != null)
+		        for( int j=0; j<yVals.length; j++)
+		        {
+		           float val =Math.abs(yVals[j]);
+		           if( val > MaxAbs)
+		              MaxAbs=val;
+		        }
+		     }
+		     if( MaxAbs ==0) MaxAbs = 10;
+		     
+		     setMaxAbs( MaxAbs );
+	  }
+	  
+	  
+  }
+  
+  /**
+   * This rebins all the data sets and set frame controller and
+   * colors for all detector.
+   * 
+   * @param xscl
+   */
   private void setNewXScale( XScale xscl)
   {
      float time = frame_control.getFrameValue( );
      DataSet Ds = getDataSet();
      MaxAbs =0;
-     for( int i=0; i< Ds.getNum_entries( ); i++)
+   /*  for( int i=0; i< Ds.getNum_entries( ); i++)
      {
         Data Db = Ds.getData_entry( i); 
         Db.resample(  xscl , 0 );
@@ -758,11 +950,13 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
               MaxAbs=val;
         }
      }
+     */
+     setNewXScaleOnly( xscl);
      if( MaxAbs ==0) MaxAbs = 10;
      
      frame_control.setFrame_values( xscl.getXs());
      frame_control.setFrameValue(time );
-     for( int i=0; i< gridIDs.length;i++)
+    /* for( int i=0; i< gridIDs.length;i++)
         {
         IDataGrid grid = Grid_util.getAreaGrid( Ds , gridIDs[i] );
         int[][] ColorIndicies = getColorIndices( grid, xscl, time );
@@ -770,6 +964,8 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
         }
      
      threeD_panel.repaint( );
+     */
+     setColorModel();
   }
   
  
@@ -782,6 +978,7 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
       if( !e.getActionCommand().equals( XScaleController.XSCALE_CHANGED))
          return;
       XScale xscl =(XScale)x_scale_ui.getControlValue( );
+      MaxAbs =0;
       setNewXScale( xscl);
    }
      
@@ -802,7 +999,8 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
          setLogScale( value );
          getState().set_int( ViewerState.BRIGHTNESS, value );
          if( Detector != null)
-            for( int i=0; i< Detector.length;i++)
+        	 setColorModel();
+           /* for( int i=0; i< Detector.length;i++)
             {
                IDataGrid grid = Grid_util.getAreaGrid( getDataSet() , gridIDs[i] );
                int[][] ColorIndicies = getColorIndices( grid, (XScale)x_scale_ui.getControlValue( ),
@@ -810,6 +1008,7 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
                Detector[i].setColorModel( ColorIndicies, colorModelwTransp);
             }
          threeD_panel.repaint( );
+         */
        }
      
       
@@ -839,7 +1038,7 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
   private void setNewData( float time )
   {
 
-     for( int i=0; i< gridIDs.length; i++)
+    /* for( int i=0; i< gridIDs.length; i++)
 
      {  IDataGrid grid = Grid_util.getAreaGrid( getDataSet() , gridIDs[i] );
         int[][] ColorIndicies = getColorIndices( grid, (XScale)x_scale_ui.getControlValue( ),
@@ -847,6 +1046,8 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
         Detector[i].setColorModel( ColorIndicies, colorModelwTransp);
      }
      threeD_panel.repaint();
+     */
+	  setColorModel();
   }
   
   class FrameControlListener implements ActionListener
@@ -858,7 +1059,7 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
        if( !e.getActionCommand().equals( FrameController.FRAME_CHANGED ))
           return;
        float time = ((Float)frame_control.getControlValue()).floatValue( );
-       for( int i=0; i< gridIDs.length; i++)
+      /* for( int i=0; i< gridIDs.length; i++)
 
        {  IDataGrid grid = Grid_util.getAreaGrid( getDataSet() , gridIDs[i] );
           int[][] ColorIndicies = getColorIndices( grid, (XScale)x_scale_ui.getControlValue( ),
@@ -866,8 +1067,11 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
           Detector[i].setColorModel( ColorIndicies, colorModelwTransp);
        }
        threeD_panel.repaint();
+       */
+       setColorModel();
        getDataSet().setPointedAtX( time  );
        getDataSet().notifyIObservers( IObserver.POINTED_AT_CHANGED );
+       notify_ds_observers= true;
        
       
    }
@@ -916,10 +1120,8 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
      redraw_cursor = false;
      DS.setPointedAtX(time );
      DS.notifyIObservers( IObserver.POINTED_AT_CHANGED );
-     
-     
-     
-        return;
+     notify_ds_observers = true;
+     return;
      
   }
   class ViewMouseMotionAdapter  extends MouseMotionAdapter
