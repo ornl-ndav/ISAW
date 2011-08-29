@@ -667,7 +667,8 @@ public static float Find_UB( Tran3D             UB,
 
     @return  This will return the sum of the squares of the residual errors.
   
-    @throws  IllegalArgumentException if there are not at least 3 q vectors.
+    @throws  IllegalArgumentException if there are not at least 3 q vectors,
+                                      of if this routine fails to find a UB.
 */
 
 public static float Find_UB( Tran3D             UB,
@@ -724,196 +725,84 @@ public static float Find_UB( Tran3D             UB,
   Vector<Vector3D> some_qs = new Vector<Vector3D>();
   for ( int i = 0; i < num_initial; i++ )
     some_qs.add( q_vectors.elementAt(i) );
-
+/*
+  System.out.println("Some Qs = " + some_qs.size() );
+  for ( int i = 0; i < some_qs.size(); i++ )
+    System.out.println("" + some_qs.elementAt(i) +
+                       "  length = " + some_qs.elementAt(i).length() );
+*/
   Vector<Vector3D> directions = new Vector<Vector3D>();
-  ScanFor_Directions( directions,
-                      some_qs,
-                      min_d, max_d,
-                      required_tolerance,
-                      degrees_per_step );
+  int max_indexed = ScanFor_Directions( directions,
+                                        some_qs,
+                                        min_d, max_d,
+                                        required_tolerance,
+                                        degrees_per_step );
+
+  System.out.println("####### AFTER SCAN, MAX_INDEXED = " + max_indexed );
+  System.out.println("####### Found " + directions.size() + " directions");
 
   directions = SortOnVectorMagnitude( directions );
-/*
+
+  System.out.println("Number of directions = " + directions.size() );
   for ( int i = 0; i < directions.size(); i++ )
-  {
-    System.out.printf("i = %2d  Length = %7.4f  dir = ",
-                       i, directions.elementAt(i).length() );
-    System.out.println( directions.elementAt(i) );
-  }
-*/
+    System.out.println("" + directions.elementAt(i) + 
+                       "  length = " + directions.elementAt(i).length() );
 
-  Vector3D a_dir = directions.elementAt( 0 );
-//  System.out.println("A_DIR = " + a_dir + "   length = " + a_dir.length() );
+  if ( max_indexed == 0 )
+    throw new IllegalArgumentException("Could not find any a,b,c to index Qs");
 
+  if ( directions.size() < 3 )
+    throw new IllegalArgumentException("Could not find enough a,b,c vectors");
 
-  float min_deg = (float)((180/Math.PI) * Math.atan(2*min_d/max_d) );
-//  System.out.println("MIN DEG = " + min_deg );
-
-  float epsilon = 5;                    //  tolerance on right angle (degrees)
-  Vector3D b_dir  = null;
-  boolean b_found = false;
-  int index = 1;
-  while ( !b_found && index < directions.size() ) 
-  {
-    Vector3D vec = directions.elementAt(index);
-    float    gamma = angle( a_dir, vec );
-    if ( gamma >= min_deg && (180 - gamma) >= min_deg )
-    {
-      b_dir = new Vector3D( vec );
-      if ( gamma > 90 + epsilon )       // try for Nigli cell with angles <= 90
-        b_dir.multiply( -1 );
-      b_found = true;
-      directions.remove( vec );
-//    System.out.println("index = " + index );
-//    System.out.println("B_DIR = " + b_dir + "   length = " + b_dir.length());
-//    System.out.println("GAMMA = " + angle(a_dir, b_dir) );
-    }
-
-    else
-      index++;
-  }
-  if ( ! b_found )
-   throw new IllegalArgumentException("Could not find independent b direction");
-
-  Vector3D c_dir  = null;
-  boolean c_found = false;
-
-  Vector3D perp = new Vector3D();
-  perp.cross( a_dir, b_dir );
-  perp.normalize();
-
-  while ( !c_found && index < directions.size() )
-  {
-    Vector3D vec = directions.elementAt(index);
-    float perp_ang = angle( perp, vec );
-    if ( perp_ang < 90 - epsilon ) 
-    {
-      c_dir = new Vector3D( vec );
-      c_found = true;
-    }
-    else 
-    {
-      c_dir = new Vector3D( vec );
-      c_dir.multiply(-1);
-      perp_ang = angle( perp, c_dir );
-      if ( perp_ang < 90 - epsilon ) 
-      {
-        c_found = true;
-      }
-    }
-
-    if ( ! c_found ) 
-      index++;
-  }
-
-  if ( ! c_found )
-   throw new IllegalArgumentException("Could not find independent c direction");
-
-/*
-  System.out.println("C_DIR = " + c_dir + "   length = " + c_dir.length());
-  System.out.println("ALPHA = " + angle(b_dir, c_dir) );
-  System.out.println("BETA  = " + angle(c_dir, a_dir) );
-  System.out.println("GAMMA = " + angle(a_dir, b_dir) );
-*/
-
-  System.out.println("MIN D = " + min_d );
-  System.out.println("MAX D = " + max_d );
-  System.out.println(" a = " + a_dir.length() );
-  System.out.println(" b = " + b_dir.length() );
-  System.out.println(" c = " + c_dir.length() );
-  System.out.println(" alpha = " + angle( b_dir, c_dir ) );
-  System.out.println(" beta  = " + angle( c_dir, a_dir ) );
-  System.out.println(" gamma = " + angle( a_dir, b_dir ) );
-
-                                   // now build the UB matrix from a,b,c       
-
-  float[][] UB_inv_arr = { { a_dir.getX(), a_dir.getY(), a_dir.getZ(), 0 },
-                           { b_dir.getX(), b_dir.getY(), b_dir.getZ(), 0 },
-                           { c_dir.getX(), c_dir.getY(), c_dir.getZ(), 0 },
-                           { 0,            0,            0,            1 } };
-
-  UB.set( UB_inv_arr );
-  UB.invert();
-//  System.out.println("UB = " + UB );
-                                     // now gradually bring in the remaining
-                                     // peaks and re-optimize the UB to index
-                                     // them as well
-
-  Vector<Vector3D> miller_ind = new Vector<Vector3D>();
+  float[] fit_error   = new float[1];
+  Vector<Integer>  index_vals = new Vector<Integer>();
   Vector<Vector3D> indexed_qs = new Vector<Vector3D>();
 
-  float[] fit_error = new float[1];
+  max_indexed = GetIndexedPeaks_1D( directions.elementAt(0),
+                                    q_vectors,
+                                    required_tolerance,
+                                    index_vals,
+                                    indexed_qs,
+                                    fit_error );
 
   int     num_indexed = 0;
+  int     num_sets    = 0;
+  int     set_used    = -1;
+  float   min_error   = Float.POSITIVE_INFINITY;
 
-/*
-  Vector           index_vals = new Vector();
-  num_indexed = GetIndexedPeaks_1D( a_dir, some_qs, required_tolerance,
-                        index_vals, indexed_qs, fit_error  );
-  System.out.println("***** USING A_DIR ONLY, NUM INDEXED = " + num_indexed );
-  for ( int i = 0; i < index_vals.size(); i++ )
-    System.out.println("Q = " + indexed_qs.elementAt(i) +
-                       " H = " + index_vals.elementAt(i) );
-
-  num_indexed = GetIndexedPeaks_1D( b_dir, some_qs, required_tolerance,
-                        index_vals, indexed_qs, fit_error  );
-  System.out.println("***** USING B_DIR ONLY, NUM INDEXED = " + num_indexed );
-  for ( int i = 0; i < index_vals.size(); i++ )
-    System.out.println("Q = " + indexed_qs.elementAt(i) +
-                       " K = " + index_vals.elementAt(i) );
-
-  num_indexed = GetIndexedPeaks_1D( c_dir, some_qs, required_tolerance,
-                        index_vals, indexed_qs, fit_error  );
-  System.out.println("***** USING C_DIR ONLY, NUM INDEXED = " + num_indexed );
-  for ( int i = 0; i < index_vals.size(); i++ )
-    System.out.println("Q = " + indexed_qs.elementAt(i) +
-                       " L = " + index_vals.elementAt(i) );
-
-  num_indexed = GetIndexedPeaks( UB, some_qs, required_tolerance,
-                                 miller_ind, indexed_qs, fit_error );
-
-  System.out.println("***** AFTER FORMING UB, NUM INDEXED = " + num_indexed );
-  for ( int i = 0; i < indexed_qs.size(); i++ )
-    System.out.println("Q = " + indexed_qs.elementAt(i) +
-                       " HKL = " + miller_ind.elementAt(i) );
-*/
-
-  while ( num_initial < q_vectors.size() )
+  Tran3D temp_UB = new Tran3D();
+  for ( int i = 0; i < directions.size()-2; i++ )
   {
-    num_initial = Math.round(1.5f * num_initial + 3);
-                                             // add 3, in case we started with
-                                             // a very small number of peaks!
-    if ( num_initial >= q_vectors.size() )
-      num_initial = q_vectors.size();
-
-    for ( int i = some_qs.size(); i < num_initial; i++ )
-      some_qs.add( q_vectors.elementAt(i) );
-
-    Tran3D temp_UB = new Tran3D( UB );
-    num_indexed = GetIndexedPeaks( UB, some_qs, required_tolerance,
-                                   miller_ind, indexed_qs, fit_error );
-    try
+    if ( FormUB_From_abc_Vectors( temp_UB, directions, i, min_d, max_d ) )
     {
-      fit_error[0] = Optimize_UB_3D( temp_UB, miller_ind, indexed_qs );
-
-      if ( !Float.isNaN( fit_error[0] ) )
+      num_sets++;
+      num_indexed = ExpandSetOfIndexedPeaks( temp_UB, 
+                                             q_vectors, 
+                                             required_tolerance,
+                                             num_initial,
+                                             fit_error );
+      if ( num_indexed > 0.75*max_indexed && fit_error[0] < min_error )
       {
+        System.out.println("Num indexed = " + num_indexed );
+        
         UB.set( temp_UB );
-        System.out.println("Indexed " + num_indexed + " of " + num_initial );
+        min_error = fit_error[0];
+        set_used = i;
       }
-      else
-        System.out.println("Optimize_UB_3D FAILED WITH "+num_initial+" peaks");
-     }
-     catch ( Exception ex )
-     {
-       // failed to improve with these peaks, so continue with more peaks
-       // if possible 
-     }
+    }
   }
 
-  if ( original_qs.size() >= 5 )   // try one last refinement using all peaks
+  if ( set_used == -1 )
+    throw new IllegalArgumentException("Failed to find a UB matrix");
+  else
+    System.out.println("Used Set " + set_used + " of " + num_sets );
+
+  Vector<Vector3D> miller_ind = new Vector<Vector3D>();
+
+
+  if ( original_qs.size() >= 5 ) // try one last refinement using original peaks
   {
-    Tran3D temp_UB = new Tran3D( UB );
+    temp_UB = new Tran3D( UB );
     num_indexed = GetIndexedPeaks( UB, original_qs, required_tolerance,
                                    miller_ind, indexed_qs, fit_error );
     fit_error[0] = Optimize_UB_3D( temp_UB, miller_ind, indexed_qs );
@@ -930,8 +819,6 @@ public static float Find_UB( Tran3D             UB,
 //  System.out.println("Indexed " + num_indexed + 
 //                     " average ^2 error = " + fit_error[0]/num_indexed );
 
-                                 // now, get rid of shift and see how well 
-                                 // it works.
 // /* ########
   float[][] UB_array = UB.get();
   for ( int i = 0; i < 3; i++ )
@@ -959,7 +846,12 @@ public static float Find_UB( Tran3D             UB,
     System.out.println(ex);
     ex.printStackTrace();
   } 
-//  ####### */
+
+  float[] average_error = new float[1];
+  ExpandSetOfIndexedPeaks( UB, original_qs, required_tolerance, 
+                           original_qs.size(), average_error );
+
+// ####### */
 /*
   System.out.println("After subs.Nigglify UB = " + UB ); 
 
@@ -969,6 +861,220 @@ public static float Find_UB( Tran3D             UB,
                      " average ^2 error = " + fit_error[0]/num_indexed );
 */
   return fit_error[0];
+}
+
+/**
+ *  Form a UB matrix from the given list of possible directions, using the
+ *  direction at the specified index for the "a" direction.  The "b" and "c"
+ *  directions are chosen so that 
+ *   1) |a| < |b| < |c|, 
+ *   2) the angle between the a, b, c, vectors is at least a minimum 
+ *      angle based on min_d/max_d
+ *   3) c is not in the same plane as a and b.
+ *
+ *  @param UB           The calculated UB matrix will be returned in this 
+ *                      parameter
+ *  @param directions   List of possible vectors for a, b, c.  This list MUST
+ *                      be sorted in order of increasing magnitude.
+ *  @param a_index      The index to use for the a vector.  The b and c 
+ *                      vectors will be choosen from LATER positions in the
+ *                      directions list.
+ *  @param min_d        Minimum possible real space unit cell edge length.
+ *  @param max_d        Maximum possible real space unit cell edge length.
+ *
+ *  @return true if a UB matrix was set, and false if it not possible to
+ *          choose a,b,c (i.e. UB) from the list of directions, starting
+ *          with the specified a_index.
+ */
+private static boolean FormUB_From_abc_Vectors( Tran3D           UB, 
+                                                Vector<Vector3D> directions, 
+                                                int              a_index, 
+                                                float            min_d, 
+                                                float            max_d )
+{
+  int index = a_index;
+  Vector3D a_dir = directions.elementAt( index );
+  index++;
+
+  float min_deg = (float)((180/Math.PI) * Math.atan(2*min_d/max_d) );
+
+  float epsilon = 5;                    //  tolerance on right angle (degrees)
+  Vector3D b_dir  = null;
+  boolean b_found = false;
+  while ( !b_found && index < directions.size() )
+  {
+    Vector3D vec = directions.elementAt(index);
+    float    gamma = angle( a_dir, vec );
+    if ( gamma >= min_deg && (180 - gamma) >= min_deg )
+    {
+      b_dir = new Vector3D( vec );
+      if ( gamma > 90 + epsilon )       // try for Nigli cell with angles <= 90
+        b_dir.multiply( -1 );
+      b_found = true;
+      index++;
+    }
+    else
+      index++;
+  }
+
+  if ( ! b_found )
+    return false;
+
+  Vector3D c_dir  = new Vector3D();
+  boolean c_found = false;
+
+  Vector3D perp = new Vector3D();
+  perp.cross( a_dir, b_dir );
+  perp.normalize();
+  float perp_ang;
+  float alpha;
+  float beta;
+  while ( !c_found && index < directions.size() )
+  {
+    Vector3D vec = directions.elementAt(index);
+    int factor = 1;                      
+    while ( !c_found && factor >= -1 )    // try c in + or - direction
+    {
+      c_dir.set( vec );
+      c_dir.multiply( factor );
+      perp_ang = angle( perp, c_dir );
+      alpha    = angle( b_dir, c_dir );
+      beta     = angle( a_dir, c_dir );
+                                       // keep a,b,c right handed by choosing
+                                       // c in general directiion of a X b 
+      if ( perp_ang < 90 - epsilon                      &&  
+           alpha >= min_deg && (180 - alpha) >= min_deg &&
+           beta  >= min_deg && (180 - beta ) >= min_deg  )
+      {
+        c_found = true;
+      }
+      factor -= 2;
+    }
+
+    if ( ! c_found )
+      index++;
+  }
+
+  if ( ! c_found )
+    return false;
+
+  System.out.println("MIN D = " + min_d );
+  System.out.println("MAX D = " + max_d );
+  System.out.println(" a = " + a_dir.length() );
+  System.out.println(" b = " + b_dir.length() );
+  System.out.println(" c = " + c_dir.length() );
+  System.out.println(" alpha = " + angle( b_dir, c_dir ) );
+  System.out.println(" beta  = " + angle( c_dir, a_dir ) );
+  System.out.println(" gamma = " + angle( a_dir, b_dir ) );
+
+                                   // now build the UB matrix from a,b,c       
+
+  float[][] UB_inv_arr = { { a_dir.getX(), a_dir.getY(), a_dir.getZ(), 0 },
+                           { b_dir.getX(), b_dir.getY(), b_dir.getZ(), 0 },
+                           { c_dir.getX(), c_dir.getY(), c_dir.getZ(), 0 },
+                           { 0,            0,            0,            1 } };
+
+  UB.set( UB_inv_arr );
+  UB.invert();
+
+  return true;
+}
+
+
+/**
+ * Gradually use more of the specified peaks and re-optimize the UB to index
+ * them.
+ * @param  UB                  The initial UB matrix that should be refined to 
+ *                             index more of the peaks.
+ * @param  q_vectors           The list of peaks, preferably in order of 
+ *                             increasing magnitude.
+ * @param  required_tolerance  The tolerance for considering a peak to be
+ *                             indexed.
+ * @param  num_initial         The number of peaks that should be used 
+ *                             intially when refining UB.
+ * @param  average_error       The average fit error is returned in position
+ *                             zero of this array, if the number of peaks
+ *                             indexed is more than 0;
+ * @return The number of peaks indexed by the final refined UB.  If this is
+ *         zero, the indexing failed.
+ */
+public static int ExpandSetOfIndexedPeaks( Tran3D           UB, 
+                                           Vector<Vector3D> q_vectors, 
+                                           float            required_tolerance,
+                                           int              num_initial,
+                                           float[]          average_error )
+{
+  if ( q_vectors.size() < 3 ) 
+    throw new IllegalArgumentException("Need at least 3 q_vectors");
+
+  if ( num_initial < 3 )
+    num_initial = 3;
+ 
+  Vector<Vector3D> miller_ind = new Vector<Vector3D>();
+  Vector<Vector3D> indexed_qs = new Vector<Vector3D>();
+  Vector<Vector3D> some_qs    = new Vector<Vector3D>();
+
+  float[] fit_error = new float[1];
+
+  Tran3D  temp_UB = new Tran3D();
+  int     num_indexed = 0;
+  boolean done = false;
+  int     repeat_counter = 0;    // we do several extra refinements with all
+                                 // peaks to get the final result.
+  while ( !done )
+  {
+    if ( num_initial > q_vectors.size() )
+    {
+      num_initial = q_vectors.size();
+      repeat_counter++;
+      if ( repeat_counter > 3 )
+        done = true;
+    }
+
+    for ( int i = some_qs.size(); i < num_initial; i++ )
+      some_qs.add( q_vectors.elementAt(i) );
+
+    temp_UB.set( UB );
+    num_indexed = GetIndexedPeaks( UB, some_qs, required_tolerance,
+                                   miller_ind, indexed_qs, fit_error );
+    try
+    {
+      fit_error[0] = Optimize_UB_3D( temp_UB, miller_ind, indexed_qs );
+
+      if ( !Float.isNaN( fit_error[0] ) )
+      {
+        UB.set( temp_UB );
+//      System.out.println("Indexed " + num_indexed + " of " + num_initial );
+      }
+      else
+      {
+        System.out.println("Optimize_UB_3D Failed with "+num_initial+" peaks");
+        return 0;
+      }
+     }
+     catch ( Exception ex )
+     {
+       return 0;
+       // failed to improve with these peaks, so continue with more peaks
+       // if possible 
+     }
+
+    num_initial = Math.round(1.5f * num_initial + 2);
+                                  // include more peaks the next time through.
+                                  // add 2, in case we started with few peaks
+  }
+
+  num_indexed = GetIndexedPeaks( UB, some_qs, required_tolerance,
+                                 miller_ind, indexed_qs, fit_error );
+
+  average_error[0] = Float.POSITIVE_INFINITY;
+  if ( num_indexed > 0 )
+  {
+    average_error[0] = fit_error[0] / num_indexed;
+    System.out.println("Indexed " + num_indexed + 
+                       " average fit_error = " + average_error[0] );
+  }
+  return num_indexed;
 }
 
 
@@ -1004,8 +1110,8 @@ public static Vector<Vector3D>
      boolean decreasing;
 
      /**
-      *  Construct a comparator to sort a list of peaks in increasing or
-      *  decreasing order based on |Q|.
+      *  Construct a comparator to sort a list of Vector3Ds in increasing or
+      *  decreasing order based on |vector|.
       *
       *  @param  decreasing  Set true to sort from largest to smallest;
       *                      set false to sort from smallest to largest.
@@ -2414,9 +2520,11 @@ public static int  ScanFor_Directions( Vector<Vector3D> directions,
           num_indexed++;
       }
 
-      if ( num_indexed > max_indexed )     // only keep those directions that
-      {                                    // index the max number of peaks
-        selected_dirs.clear();
+//#### if ( num_indexed > max_indexed + 1 ) // discard previous directions if 
+//#### if ( num_indexed > max_indexed + 2 ) // discard previous directions if 
+      if ( num_indexed > max_indexed )     // discard previous directions if 
+      {                                    // we find a direction that indexes 
+        selected_dirs.clear();             // significantly more peaks
         max_indexed = num_indexed;
       }
       if ( num_indexed >= max_indexed )
