@@ -127,6 +127,7 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
    private float   last_pointed_at_index = -1;
    private boolean redraw_cursor       = true;
    private boolean notify_ds_observers = false;//true if comes from internal ds
+   private boolean findNewAbsMax = true; 
 
    private ThreeD_JPanel            threeD_panel      = null;
    private ThreeD_JPanel            threeD_Marker_panel      = null;  
@@ -208,8 +209,27 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
       XScale x_scale1  = getDataSet().getData_entry(1).getX_scale();
       UniformXScale x_scale= new UniformXScale( x_scale1.getStart_x(),
     		   x_scale1.getEnd_x(), x_scale1.getNum_x());
+      
+      //-------------------------XScale Chooser ----------------------------
+      String label = getDataSet().getX_units();
+      float x_min  = x_scale.getStart_x();
+      float x_max  = x_scale.getEnd_x();
+                                    // set n_steps to 0 to default to NO REBINNING
+      x_scale_ui = new XScaleController( "X Scale", label, x_min, x_max, x_scale.getNum_x( ) );
+
+      x_scale_ui.addActionListener( new XScaleListener() );
+      XScale xscl = (XScale)x_scale_ui.getControlValue( );
+      
+      //-------------Find MaxAbs ---------------------------
       MaxAbs =0;
-      setNewXScaleOnly(x_scale);
+     // setNewXScaleOnly(x_scale);
+     // for( int i=0; i< Grids.length; i++)
+      //   getColorIndices( Grids[i], x_scale, x_scale.getStart_x());
+      
+      findNewAbsMax = true;
+      this.setMaxAbs( );
+      
+      findNewAbsMax = false;
     
       colorModel = IndexColorMaker.getDualColorModel( 
             getState().get_String( ViewerState.COLOR_SCALE ),
@@ -233,6 +253,7 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
          threeD_Marker_panel.setBackground( new Color( 90, 90, 90, 0 ) );
          threeD_Marker_panel.setOpaque( false );
          threeD_Marker_panel.setCoordInfoSource(null);
+         threeD_panel.setFocusable( false );
          threeD_Marker_panel.addComponentListener(  new ComponentAdapter()
          {
             public void componentResized(ComponentEvent e)
@@ -290,7 +311,7 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
          UniformGrid grid = (UniformGrid)Grids[i] ;
          int[][] ColorIndicies = getColorIndices( grid, x_scale, x_scale.getStart_x());
          Detector[i] = new ImageRectangle( grid.position( ), grid.x_vec( ), grid.y_vec( ),
-                            grid.width( ), grid.height(), ColorIndicies,colorModelwTransp,
+                            grid.width( ), grid.height(), ColorIndicies, colorModelwTransp,
                            threeD_panel);
          float D = grid.position( ).length( );
          if( D< MinDis)
@@ -310,16 +331,7 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
       color_scale_image.setNamedColorModel( 
                   getState().get_String( ViewerState.COLOR_SCALE), true, true );
 
-      //-------------------------XScale Chooser ----------------------------
-      String label = getDataSet().getX_units();
-      float x_min  = x_scale.getStart_x();
-      float x_max  = x_scale.getEnd_x();
-                                    // set n_steps to 0 to default to NO REBINNING
-      x_scale_ui = new XScaleController( "X Scale", label, x_min, x_max, x_scale.getNum_x( ) );
-
-      x_scale_ui.addActionListener( new XScaleListener() );
-      XScale xscl = (XScale)x_scale_ui.getControlValue( );
-      
+    
       
       //---------------------- AltAzController ------------------
 
@@ -435,6 +447,10 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
           last_pointed_at_index = ds.getPointedAtIndex();
           redraw_cursor = true;          //not used
           notify_ds_observers = false;    //not used fixed ViewControl
+          
+          threeD_panel.repaint( );
+          if( threeD_Marker_panel != null)
+             threeD_Marker_panel.repaint( );
        }
    }
 
@@ -612,7 +628,10 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
               }
               
               if( ShowLattice)
-                 DoMarks();
+                 {
+                    DoMarks();
+                    threeD_Marker_panel.repaint( );
+                 }
               else
                  {
                   threeD_Marker_panel.removeObjects( "Lattice Marks" );
@@ -635,7 +654,11 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
      control_panel.add( conv_table.getTable());
      control_panel.add(  Box.createVerticalGlue( ) );
      
-    JPanel graph_container = new JPanel() ;
+    JPanel graph_container = new JPanel(){
+       public boolean isOptimizedDrawingEnabled() {
+          return false;
+        }
+      }  ;
    
     graph_container.setLayout( new GridLayout(1,1) );
     JPanel Graph1 = new JPanel();
@@ -705,14 +728,14 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
               control_panel.repaint();
               threeD_panel.repaint();
               threeD_Marker_panel.repaint();
-           }else if( act.equals(CoordJPanel.CURSOR_MOVED))
+           }else if( act.equals(CoordJPanel.CURSOR_MOVED) && !threeD_Marker_panel.isDoingBox( ))
            {
             Point P = threeD_Marker_panel.getCurrent_pixel_point( );
             threeD_panel.setCurrent_pixel_point( P );
             MouseEvent evtz = new MouseEvent( (Component)evt.getSource( ),MouseEvent.MOUSE_CLICKED,
                   100l,0,P.x,P.y,1,false) ;
             processMouseClickEvent( evtz   );
-            threeD_panel.stop_crosshair( P );
+            //threeD_panel.stop_crosshair( P );
            }
          
         }
@@ -875,26 +898,102 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
      
      return new IndexColorModel( nbits ,size+1,red,green,blue,alpha);
   }
+  
+  private float[] getTimeInfo( XScale SpectrXscale, float time1, float time2, XScale FxXscale,
+                          float[] itsValues)
+  {
+     if( FxXscale != null)
+     if( FxXscale == SpectrXscale)
+        return itsValues;
+
+     int frame1 = SpectrXscale.getI_GLB(time1 );
+     int frame2 = SpectrXscale.getI_GLB( time2 );
+     float alpha1 = (time1 - SpectrXscale.getX( frame1 ))/
+                           (SpectrXscale.getX( frame1 +1) - SpectrXscale.getX( frame1 ));
+     float alpha2 = (SpectrXscale.getX( frame2+1 )-time2)/
+                   (SpectrXscale.getX( frame2+1 )-SpectrXscale.getX( frame2 )) ;
+     float[] Res = new float[4];
+     Res[0]= frame1;
+     Res[1] = frame2;
+     Res[2] = alpha1;
+     Res[3] = alpha2;
+     
+     return Res;
+     
+  }
+  private void getMaxAbs( IDataGrid grid, XScale xscl)
+  {
+     XScale base = grid.getData_entry( 1,1 ).getX_scale( );
+     if( xscl.getNum_x( )==0)
+        xscl = base;
+     float MAbs = 0;
+    for( int i=0; i+1 < xscl.getNum_x( );i++)
+    {
+       float time1 =xscl.getX( i );
+       float time2 = xscl.getX( i+1 );
+       float[] R = getTimeInfo( base, time1, time2, null, null);
+      
+       for( int row=1; row <= grid.num_rows( ); row++)
+          for( int col =1 ; col <= grid.num_cols( ); col++)
+          {
+             Data D = grid.getData_entry(  row , col );
+             float[] inds = getTimeInfo( D.getX_scale( ), time1,time2, base, R);
+             float[] yvals = D.getY_values( );
+             float S = 0;
+             int k1 = Math.min( (int)inds[1],yvals.length-1);
+             for( int k= (int)inds[0]; k <=k1; k++)
+                S += Math.abs(yvals[k]);
+             S -= inds[2]*Math.abs(yvals[(int)inds[0]]);
+             
+             S -= inds[3]*Math.abs( yvals[k1]);
+             if( S > MAbs)
+                MAbs = S;
+          }
+    }
+    setMaxAbs(MAbs);
+  }
   private int[][]  getColorIndices( IDataGrid grid, XScale xscl,float time)
   {
+
+     XScale base = grid.getData_entry( 1,1 ).getX_scale( );
+     if( xscl.getNum_x( )==0)
+        xscl = base;
+     
      int frame = xscl.getI( time );
-     if( frame >= xscl.getNum_x( ))
-        frame = xscl.getNum_x( )-1;
+     
+     if( frame+1>= xscl.getNum_x( ))
+        frame = xscl.getNum_x( )-2;
+     float time1 = xscl.getX( frame );
+     float time2 =xscl.getX( frame+ 1 );
+     float[] orig = getTimeInfo(base, time1,time2, null, null);
+     
+     
      int[][] Colors = new int[grid.num_rows( )][grid.num_cols( )];
-     float scale_factor= log_scale.length/MaxAbs;
+     float scale_factor =log_scale.length/MaxAbs;
+     
      for( int row=0; row < grid.num_rows( ); row++)
         for( int col=0; col< grid.num_cols( ); col++)
         {
-           float[] yvals=grid.getData_entry( row+1 , col+1 ).getY_values();
+           Data D = grid.getData_entry(  row+1 , col+1 );
+           float[] yvals = D.getY_values();
            
-           float value =yvals[Math.min( frame, yvals.length-1)];
-           value *=scale_factor;
+           
+           float[] inds = getTimeInfo( D.getX_scale( ), time1,time2,base, orig);
+           float S = 0;
+
+           int k1 = Math.min( (int)inds[1],yvals.length-1);
+           for( int k= (int)inds[0]; k <= k1; k++)
+             S += yvals[k];
+           S -= inds[2]*(yvals[(int)inds[0]]);
+           S -= inds[3]*( yvals[k1]);
+           float value = S*scale_factor;
            int index =0;
            if( value >=0)
               index =(int)( ZERO_COLOR_INDEX+1 + log_scale[ Math.min( (int)value, log_scale.length-1)]);
            else
               index =(int)( ZERO_COLOR_INDEX+1 - log_scale[ Math.min( -(int)value, log_scale.length-1)]);
            Colors[row][col] = index;
+           
            
         }
      return Colors;
@@ -986,8 +1085,8 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
         alpha =0;
      
      float[] C = new float[3];
-     char[] spaces = new char[3*index+1];
-     Arrays.fill( spaces ,' ' );
+   //  char[] spaces = new char[3*index+1];
+    // Arrays.fill( spaces ,' ' );
      if( alpha >=-.05 && alpha <= 1.05)
      {  
        //System.out.print( spaces+"(" );
@@ -997,6 +1096,8 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
            //System.out.print( C[g]+"," );
         }
       //  System.out.println(")");
+        for( int g=0; g<=index;g++)
+           C[g]= (float)Math.floor(  C[g]+.01 );
         return C;
         
      }else
@@ -1111,7 +1212,6 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
                   pt++;
                }
             }
-            
             //-----------------now find k's; ----------------------------
             float mink= Integer.MAX_VALUE;
             float maxk = Integer.MIN_VALUE;
@@ -1140,6 +1240,7 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
                  }
                
                 int N= ConsthkPts.size();
+                java.util.Vector<float[]> internal = new java.util.Vector<float[]>();
                 for(  int i=0; i<N;i++)
                    for( int j=i+1;j<N;j++)
                    {
@@ -1156,8 +1257,19 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
                          p[0]=p1[0];
                          p[1] = p1[1];
                          p[2] = l;
-                    
-                         Res.add(p);
+                         boolean neww = true;
+                         for( int ll =0; ll<internal.size() && neww; ll++ )
+                         {
+                            float[] pp = internal.get( ll );
+                            if( pp[2]==p[2])
+                               neww = false;
+                            
+                         }
+                         if( neww)  
+                            {
+                             Res.add(p);
+                             internal.add(p);
+                            }
                       }
                       
                    }
@@ -1171,13 +1283,13 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
         for( int i= Res.size()-1; i>0 ;i--)
         {  
            boolean found=false;
-           for( int j=0; j<i && !found; j++)
+           int j=0;
+           for(  j=0; j<i && !found; j++)
            {
               float[] p1 = Res.get( i );
               float[]p2 = Res.get( j );
-              if( p1[0]==p2[0]) found = true;
-              if( p1[1]==p2[1]) found = true;
-              if( p1[2]==p2[2]) found = true;
+              if( p1[0]==p2[0]&&
+              p1[1]==p2[1]&&  p1[2]==p2[2]) found = true;
            }
            if( found)
               Res.remove( i );
@@ -1318,6 +1430,7 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
         Polymarker Marks = new Polymarker( vertices, Color.green);
         Marks.setType( Polymarker.PLUS );
         Marks.setSize( 10 );
+       // System.out.println(Positions.size()+" marks marked");
         IThreeD_Object[] objs = new IThreeD_Object[1];
         objs[0] = Marks;
         threeD_Marker_panel.setObjects( "Lattice Marks" ,objs);
@@ -1335,16 +1448,101 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
         threeD_panel.repaint( );
         threeD_Marker_panel.repaint( );        
      }
+     
      if( NReported >= Grids.length)
         SetMarkPositions( null, true);
   }
   
-  
+  public void setMaxAbs()
+   {
+
+      int Nprocessors = Runtime.getRuntime( ).availableProcessors( ) - 1;
+      DoSet1MaxAbs[] RunList = new DoSet1MaxAbs[ Grids.length ];
+      for( int i = 0 ; i < Grids.length ; i++ )
+      {
+         // IDataGrid grid1 = Grid_util.getAreaGrid( getDataSet() , Grids[i] );
+         UniformGrid grid = ( UniformGrid ) Grids[i];
+         XScale xscl = ( XScale ) x_scale_ui.getControlValue( );
+
+         RunList[i] = new DoSet1MaxAbs( grid , xscl );
+
+         // int[][] ColorIndicies = getColorIndices( grid,
+         // (XScale)x_scale_ui.getControlValue( ),
+         // ((Number)frame_control.getControlValue()).floatValue( ));
+         // Detector[i].setColorModel( ColorIndicies, colorModelwTransp);
+
+      }
+      int lastDetector = 0;
+      int nactive = 0;
+      while( lastDetector < Grids.length
+            || ( lastDetector >= Grids.length && nactive > 0 ) )
+      {
+
+         while( nactive < Nprocessors && lastDetector < Grids.length )
+         {
+
+            RunList[lastDetector].start( );
+            lastDetector++ ;
+            nactive++ ;
+         }
+         if ( lastDetector >= Grids.length )
+            lastDetector = Grids.length;
+         // System.out.println("lastDetector, nactive="+lastDetector+","+nactive);
+         for( int i = 0 ; i < lastDetector ; i++ )
+         {
+            if ( RunList[i] != null )
+               if ( RunList[i].getState( ) == Thread.State.TERMINATED )
+               {
+                  RunList[i] = null;
+                  // System.out.println("Finished "+i);
+                  nactive-- ;
+               }
+         }
+         if ( nactive >= Nprocessors )
+            try
+            {
+               // System.out.println("Sleep,lastDetector, nactive="+lastDetector+","+nactive);
+               Thread.sleep( 50 );
+            } catch( InterruptedException e )
+            {
+
+               e.printStackTrace( );
+            }
+      }
+
+   }
+  class DoSet1MaxAbs extends Thread
+  {
+      IDataGrid grid;
+      XScale xscl;
+      
+      public DoSet1MaxAbs( IDataGrid grid, XScale xscl)
+      {
+          this.grid = grid;
+          this.xscl = xscl;
+          
+      }
+      
+      public void run()
+      {
+          try
+          {
+            
+                getMaxAbs( grid, xscl);
+           
+          }catch(Exception s)
+          {
+              return;
+          }
+         
+      }
+  }   
+
   public void setColorModel()
   {
 	 int Nprocessors = Runtime.getRuntime().availableProcessors()-1;
-	 DoSet1ColorModel[] RunList = new DoSet1ColorModel[Detector.length];
-     for( int i=0; i< Detector.length; i++)
+	 DoSet1ColorModel[] RunList = new DoSet1ColorModel[Grids.length];
+     for( int i=0; i< Grids.length; i++)
         {
         //IDataGrid grid1 = Grid_util.getAreaGrid( getDataSet() , Grids[i] );
         UniformGrid grid = (UniformGrid)Grids[i];
@@ -1353,10 +1551,7 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
         float time =((Number)frame_control.getControlValue()).floatValue( );
         RunList[i]= new DoSet1ColorModel( grid,xscl,time, Detector[i]);
         
-      //  int[][] ColorIndicies = getColorIndices( grid, (XScale)x_scale_ui.getControlValue( ),
-      //                     ((Number)frame_control.getControlValue()).floatValue( ));
-      //      Detector[i].setColorModel( ColorIndicies, colorModelwTransp);
-        
+   
         }
      int lastDetector = 0;
      int nactive =0;
@@ -1373,7 +1568,7 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
     	 }
        if( lastDetector >= Detector.length)
     	   lastDetector = Detector.length;
-       //System.out.println("lastDetector, nactive="+lastDetector+","+nactive);
+     
        for( int i=0; i<lastDetector; i++)
        {
     	   if( RunList[i] != null)
@@ -1393,13 +1588,20 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
 			e.printStackTrace();
 		}
      }
-     
+     threeD_panel.repaint( );  
      DoMarks();
-     threeD_panel.repaint( );    
-     if( threeD_Marker_panel != null)
+     //control_panel.repaint( );    
+    
+     if( threeD_Marker_panel != null && ShowLattice)
        {
-        control_panel.repaint( );      
-        
+       // control_panel.repaint( ); 
+        try
+        {
+           Thread.sleep( 10*(Grids.length-1 ));
+        }catch(Exception s)
+        {
+           
+        }
         threeD_Marker_panel.repaint( );
        }
   }
@@ -1425,8 +1627,11 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
 	  {
 		  try
 		  {
+		     
 			  int[][] ColorIndicies = getColorIndices( grid, xscl, time );
-              Detector.setColorModel( ColorIndicies, colorModelwTransp);
+              if( ColorIndicies != null)
+                 Detector.setColorModel( ColorIndicies, colorModelwTransp);
+		    
 			  
 		  }catch(Exception s)
 		  {
@@ -1457,7 +1662,7 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
   // increases this.MaxAbs if MaxAbs is more
   private synchronized void setMaxAbs( float MaxAbs)
   {
-	  if( MaxAbs > this.MaxAbs)
+      if( MaxAbs > this.MaxAbs)
 	     this.MaxAbs = MaxAbs;
   }
   /**
@@ -1576,20 +1781,24 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
         }
      }
      */
-     setNewXScaleOnly( xscl);
+    // setNewXScaleOnly( xscl);
      if( MaxAbs ==0) MaxAbs = 10;
      
      frame_control.setFrame_values( xscl.getXs());
      frame_control.setFrameValue(time );
-    /* for( int i=0; i< Grids.length;i++)
-        {
-        IDataGrid grid = Grid_util.getAreaGrid( Ds , Grids[i] );
-        int[][] ColorIndicies = getColorIndices( grid, xscl, time );
-        Detector[i].setColorModel( ColorIndicies , colorModelwTransp );
-        }
-     
-     threeD_panel.repaint( );
-     */
+     findNewAbsMax = true;
+     MaxAbs = 0;
+     setMaxAbs();
+    // for( int i=0; i< Grids.length;i++)
+       // {
+       
+      //  int[][] ColorIndicies = getColorIndices( Grids[i], xscl, time );
+        //Detector[i].setColorModel( ColorIndicies , colorModelwTransp );
+      //  }
+
+     findNewAbsMax = false;
+    // threeD_panel.repaint( );
+   
      setColorModel();
   }
   public void processMouseClickEvent( MouseEvent e)
