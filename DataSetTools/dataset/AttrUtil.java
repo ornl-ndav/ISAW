@@ -1337,7 +1337,10 @@ public class AttrUtil
    {
      float matrix[][] = 
                     getFloatArray2DValue( Attribute.ORIENT_MATRIX, attr_list );
-
+     
+     if( matrix == null)
+        return null;
+     
      if ( matrix.length < 3 )
        return null;
 
