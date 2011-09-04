@@ -45,6 +45,10 @@
 package DataSetTools.viewer.util;
 
 
+import java.util.Vector;
+
+import gov.anl.ipns.Operator.IOperator;
+import gov.anl.ipns.Operator.Threads.ParallelExecutor;
 import DataSetTools.dataset.*;
 
 /**
@@ -143,13 +147,54 @@ public class Rebinner
     this.x_scale = x_scale;
     Data d;
     int n_data = ds.getNum_entries();
-    for ( int i = 0; i < n_data; i++ )
+    int nprocessors = Runtime.getRuntime().availableProcessors()-1;
+    Vector<IOperator> ops = new Vector<IOperator>();
+    int nDataperThread = (int)( n_data/(float)nprocessors+1);
+    int nProcesses=0;
+    for( int startIndex = 0; startIndex < n_data; startIndex +=nDataperThread)
     {
-      d = ds.getData_entry(i);
-      ys[i] = d.getY_values( x_scale, IData.SMOOTH_NONE );
+       ops.add(  new RebinPart(ds, startIndex, startIndex+nDataperThread) );
+       nProcesses++;
     }
+    
+    ParallelExecutor Pexec = new ParallelExecutor( ops, nprocessors, 5000);
+    java.util.Vector Res = Pexec.runOperators( );
+    if( Res == null || Res.size() < nProcesses)
+       System.out.println("Rebinning unsuccessful");
+   
   }
 
+  class RebinPart implements IOperator
+  {
+     DataSet DS;
+     int startIndex;
+     int endIndex;
+     public RebinPart( DataSet DS, int startIndex, int endIndex)
+     {
+        this.DS = DS;
+        this.startIndex = startIndex;
+        this.endIndex = endIndex;
+     }
+     
+     public Object getResult()
+     {
+        if( startIndex <0)
+           startIndex =0;
+        if( endIndex > DS.getNum_entries( ))
+           endIndex =DS.getNum_entries( ) ;
+        if( endIndex - startIndex <=0)
+           return null;
+        Data d;
+        float[][] yy= new float[endIndex-startIndex][];
+        for ( int i = startIndex; i <endIndex; i++ )
+        {
+          d = ds.getData_entry(i);
+          yy[i-startIndex] = d.getY_values( x_scale, IData.SMOOTH_NONE );
+        }
+        System.arraycopy( yy , 0 , ys , startIndex , yy.length );
+        return null;
+     }
+  }
 
  /**
   * Get the (possibly rebinned) y-value corresponding to the specified
