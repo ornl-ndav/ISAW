@@ -279,12 +279,13 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
       MinDis = Float.MAX_VALUE;
       MaxDis = Float.MIN_VALUE;
       last_pointed_at_x = x_scale.getStart_x();
+      float[] yvalsA = rebinner.getY_valuesAtX(x_scale.getStart_x() );
       for( int i=0; i< Grids.length; i++)
          {
              
        
          UniformGrid grid = (UniformGrid)Grids[i] ;
-         int[][] ColorIndicies = getColorIndices( grid, x_scale1, x_scale.getStart_x());
+         int[][] ColorIndicies = getColorIndices( grid, x_scale1, x_scale.getStart_x(), yvalsA);
          Detector[i] = new ImageRectangle( grid.position( ), grid.x_vec( ), grid.y_vec( ),
                             grid.width( ), grid.height(), ColorIndicies, colorModelwTransp,
                            threeD_panel);
@@ -602,18 +603,8 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
                  ShowLattice = false;
                  B.setText("Show Lattice Marks");
               }
-              
-              if( ShowLattice)
-                 {
-                    setColorModel();
-                 
-                 }
-              else
-                 {
-                
-                  control_panel.repaint( );
-                  threeD_panel.repaint( );
-                 }
+              setColorModel();
+            
            }
         }
         
@@ -847,7 +838,7 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
   }
   
 
-  private int[][]  getColorIndices( IDataGrid grid, XScale xscl,float time)
+  private int[][]  getColorIndices( IDataGrid grid, XScale xscl,float time, float[] yvalsA)
   {
 
      XScale base = xscl0;
@@ -867,24 +858,26 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
      float scale_factor =(log_scale.length-2)/MaxAbs;
      Integer DIndx = DetID2Index.get(grid.ID());
      int dIndex = -1;
-     if( DIndx != null && DIndx.intValue()>=0 && DIndx.intValue()< Grids.length )
+    
+     int[][] Indicies2 = null;
+    if( DIndx != null && DIndx.intValue()>=0 && DIndx.intValue()< Grids.length )
         dIndex = DIndx.intValue( );
      
-     float[] yvalsA = rebinner.getY_valuesAtX( time );
-     int[][] Indicies2 = null;
+      //yvalsA = rebinner.getY_valuesAtX( time );
+    
      if( dIndex >=0)
         Indicies2 = DRC2Index[dIndex];
-     
-     for( int row=0; row < grid.num_rows( ); row++)
+  
+     for(  int col=0; col< grid.num_cols( ); col++)
      {  int[] Indicies1 = null;
         if( Indicies2 != null)
-           Indicies1= Indicies2[row];
-        for( int col=0; col< grid.num_cols( ); col++)
+           Indicies1= Indicies2[col];
+        for(int row=0; row < grid.num_rows( ); row++)
     
         {
            float S = 0;
            if( dIndex >=0 )
-           {  int k =Indicies1[col];
+           {  int k =Indicies1[row];
               if( k >=0 )
                   S = yvalsA[ k ];
            }else
@@ -1014,8 +1007,8 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
      public int[][] Do1Mark( IDataGrid grid, XScale xscl, float time1, float L0, float[][] UB)
      {
         float[][][] CornerQs = new float[5][2][3];
-        int i1 =xscl.getI_GLB(time1)-1;
-        int i2 = i1+2;
+        int i1 =xscl.getI_GLB(time1)-2;
+        int i2 = i1+4;
         if( i1+1 >= xscl.getNum_x( ))
         {
            i1--;
@@ -1319,14 +1312,15 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
 
      float L0 = AttrUtil.getInitialPath( getDataSet() );
      float[][] UB = AttrUtil.getOrientMatrix( getDataSet() );
+     float time =((Number)frame_control.getControlValue()).floatValue( );
+     float[] yvalsA =rebinner.getY_valuesAtX( time );
      for( int i=0; i< Grids.length; i++)
         {
         //IDataGrid grid1 = Grid_util.getAreaGrid( getDataSet() , Grids[i] );
         UniformGrid grid = (UniformGrid)Grids[i];
-        XScale xscl =(XScale)x_scale_ui.getControlValue( );
-        
-        float time =((Number)frame_control.getControlValue()).floatValue( );
-        RunList[i]= new DoSet1ColorModel( grid,xscl,time, Detector[i], L0, UB);
+        XScale xscl =(XScale)x_scale_ui.getControlValue( );        
+       
+        RunList[i]= new DoSet1ColorModel( grid,xscl,time, Detector[i], L0, UB, yvalsA);
         
    
         }
@@ -1377,8 +1371,10 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
 	  ImageRectangle Detector;
 	  float L0;
 	  float[][]UB;
+	  float[] yvalsA;
 	  public DoSet1ColorModel( IDataGrid grid, XScale xscl,float time,
-			             ImageRectangle Detector, float L0, float[][]UB)
+			             ImageRectangle Detector, float L0, float[][]UB,
+			             float[] yvalsA)
 	  {
 		  this.grid = grid;
           if( xscl != null)
@@ -1389,6 +1385,7 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
 		  this.Detector = Detector;
 		  this.L0 = L0;
 		  this.UB = UB;
+		  this.yvalsA = yvalsA;
 		  
 	  }
 	  
@@ -1400,7 +1397,7 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
 		     if( ShowLattice)
 		        MarkedCells = Do1Mark( grid,xscl, time, L0, UB);
 		     
-			  int[][] ColorIndicies = getColorIndices( grid, xscl, time );
+			  int[][] ColorIndicies = getColorIndices( grid, xscl, time, yvalsA );
               if( ColorIndicies != null)
               {
                  if( MarkedCells != null && MarkerColorIndex >0)
@@ -1408,16 +1405,16 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
                     {
                        int row = MarkedCells[i][0];
                        int col = MarkedCells[i][1];
-                       for(int r= Math.max( row-8 , 0 ); r <= Math.min( row+8,grid.num_rows( )-1);r++ )
+                       for(int r= Math.max( row-10 , 0 ); r <= Math.min( row+10,grid.num_rows( )-1);r++ )
                        {
-                             if( col-8 >=0) ColorIndicies[r][col-8] =MarkerColorIndex; 
-                             if( col+8 <=grid.num_cols()-1) ColorIndicies[r][col+8] =MarkerColorIndex;   
+                             if( col-10 >=0) ColorIndicies[r][col-10] =MarkerColorIndex; 
+                             if( col+10 <=grid.num_cols()-1) ColorIndicies[r][col+10] =MarkerColorIndex;   
                        }
-                       for(int c= Math.max( col-8 , 0 ); c <= Math.min( col+8,grid.num_cols( )-1);c++ )
+                       for(int c= Math.max( col-10 , 0 ); c <= Math.min( col+10,grid.num_cols( )-1);c++ )
                        {
 
-                          if( row-8 >=0) ColorIndicies[row-8][c] =MarkerColorIndex; 
-                          if( row+8 <=grid.num_rows()-1) ColorIndicies[row+8][c] =MarkerColorIndex;   
+                          if( row-10 >=0) ColorIndicies[row-10][c] =MarkerColorIndex; 
+                          if( row+10 <=grid.num_rows()-1) ColorIndicies[row+10][c] =MarkerColorIndex;   
                        }
                        
                     }
@@ -1569,7 +1566,7 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
   private void SetUpDRC2Index( )
   {
     IDataGrid grid = Grids[0];
-    DRC2Index = new int[Grids.length][grid.num_rows( )][grid.num_cols( )];
+    DRC2Index = new int[Grids.length][grid.num_cols( )][grid.num_rows( )];
     java.util.Vector<IOperator> clears = new java.util.Vector<IOperator>();
     for( int i=0; i <Grids.length; i++)
        clears.add( new Clear1DRCIndex( i));
@@ -1643,7 +1640,7 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
                      Ind.intValue()< DRC2Index.length &&
                      row >=1 && col >=1
                      )
-                  DRC2Index[Ind.intValue()][row-1][col-1] = i;
+                  DRC2Index[Ind.intValue()][col-1][row-1] = i;
             }
          }
         return null; 
@@ -1661,8 +1658,8 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
        if( detIndex < 0 || detIndex >= DRC2Index.length)
           return null;
        
-       for( int r= 0; r< DRC2Index[detIndex].length; r++)
-          Arrays.fill( DRC2Index[detIndex][r] , -1 );
+       for( int c= 0; c< DRC2Index[detIndex].length; c++)
+          Arrays.fill( DRC2Index[detIndex][c] , -1 );
        
        return null;
        
