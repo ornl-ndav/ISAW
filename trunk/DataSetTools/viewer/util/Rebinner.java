@@ -111,7 +111,7 @@ public class Rebinner
   * Reset this rebinner to use the original XScales and y-values from
   * the DataSet.
   */
-  public void reset()
+  private void reset1()  //The old linear reset
   {
     Data d;
     int  n_data = ds.getNum_entries();
@@ -133,8 +133,76 @@ public class Rebinner
       i++;
     }
   }
+public void reset()
+{
 
+   int n_data = ds.getNum_entries();
+   int nprocessors = Runtime.getRuntime().availableProcessors()-1;
+   Vector<IOperator> ops = new Vector<IOperator>();
+   int nDataperThread = (int)( n_data/(float)nprocessors+1);
+   int nProcesses=0;
+   XScale xscl0 = ds.getData_entry(0).getX_scale( );
+   same_x_scale= true;
+   for( int startIndex = 0; startIndex < n_data; startIndex +=nDataperThread)
+   {
+      ops.add(  new ResetPart(ds, startIndex, startIndex+nDataperThread,xscl0) );
+      nProcesses++;
+   }
+   System.out.println("Using nprocesses ="+ nprocessors+","+nProcesses);
+   ParallelExecutor Pexec = new ParallelExecutor( ops, nprocessors, 5000);
+   java.util.Vector Res = Pexec.runOperators( );
+   if( Res == null || Res.size() < nProcesses)
+      System.out.println("Rebinning unsuccessful");
+}
+class ResetPart implements IOperator
+{
+   DataSet DS; 
+   int startIndex; 
+   int endIndex;
+   XScale xscl0;
+   public ResetPart( DataSet DS, int startIndex, int endIndex, XScale xscl0)
+   {
 
+      this.DS =    DS;
+      if( startIndex < 0) startIndex =0;
+      if( endIndex > DS.getNum_entries( ))
+         endIndex = DS.getNum_entries();
+      
+      this.startIndex =  startIndex; 
+      this.endIndex = endIndex;
+      this.xscl0 = xscl0;
+   }
+   
+   public Object getResult()
+   {
+      Data d;
+      for ( int i = startIndex; i < endIndex; i++ )
+      {
+        d = ds.getData_entry(i);
+        x_scales[i] = d.getX_scale();
+        ys[i]       = d.getY_values();
+       
+      }
+ 
+
+      boolean sameXScale = true;
+      for ( int i = startIndex; i < endIndex && sameXScale; i++ )
+      {
+       
+       if( x_scales[i] != xscl0)
+          sameXScale = false;
+       
+       
+      }
+      SetSameXScale( sameXScale);
+      return null;
+   }
+}
+
+private synchronized void  SetSameXScale( boolean same)
+{
+   same_x_scale = same_x_scale & same;
+}
  /**
   * Set one common XScale to be used for all the Data blocks.  The data will
   * be resampled using the specified XScale.
@@ -156,7 +224,7 @@ public class Rebinner
        ops.add(  new RebinPart(ds, startIndex, startIndex+nDataperThread) );
        nProcesses++;
     }
-    
+    System.out.println("Using nprocesses ="+ nprocessors+","+nProcesses);
     ParallelExecutor Pexec = new ParallelExecutor( ops, nprocessors, 5000);
     java.util.Vector Res = Pexec.runOperators( );
     if( Res == null || Res.size() < nProcesses)
