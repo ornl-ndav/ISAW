@@ -133,6 +133,7 @@ public class Rebinner
       i++;
     }
   }
+  
 public void reset()
 {
 
@@ -142,14 +143,15 @@ public void reset()
    int nDataperThread = (int)( n_data/(float)nprocessors+1);
    int nProcesses=0;
    XScale xscl0 = ds.getData_entry(0).getX_scale( );
+   x_scale = xscl0;
    same_x_scale= true;
    for( int startIndex = 0; startIndex < n_data; startIndex +=nDataperThread)
    {
       ops.add(  new ResetPart(ds, startIndex, startIndex+nDataperThread,xscl0) );
       nProcesses++;
    }
-   System.out.println("Using nprocesses ="+ nprocessors+","+nProcesses);
-   ParallelExecutor Pexec = new ParallelExecutor( ops, nprocessors, 5000);
+   
+   ParallelExecutor Pexec = new ParallelExecutor( ops, nprocessors, 5000*n_data/256/256/nprocessors);
    java.util.Vector Res = Pexec.runOperators( );
    if( Res == null || Res.size() < nProcesses)
       System.out.println("Rebinning unsuccessful");
@@ -224,8 +226,9 @@ private synchronized void  SetSameXScale( boolean same)
        ops.add(  new RebinPart(ds, startIndex, startIndex+nDataperThread) );
        nProcesses++;
     }
-    System.out.println("Using nprocesses ="+ nprocessors+","+nProcesses);
-    ParallelExecutor Pexec = new ParallelExecutor( ops, nprocessors, 5000);
+   
+    ParallelExecutor Pexec = new ParallelExecutor( ops, nprocessors,
+                                          n_data/nprocessors*2+1);
     java.util.Vector Res = Pexec.runOperators( );
     if( Res == null || Res.size() < nProcesses)
        System.out.println("Rebinning unsuccessful");
@@ -257,6 +260,7 @@ private synchronized void  SetSameXScale( boolean same)
         for ( int i = startIndex; i <endIndex; i++ )
         {
           d = ds.getData_entry(i);
+          //ys[i] = d.getY_values( x_scale, IData.SMOOTH_NONE );
           yy[i-startIndex] = d.getY_values( x_scale, IData.SMOOTH_NONE );
         }
         System.arraycopy( yy , 0 , ys , startIndex , yy.length );
