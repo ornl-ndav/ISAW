@@ -109,7 +109,8 @@ public class Peak_new_IO
      WritePeaksSorted( file_name, 
                        peaks, 
                        append, 
-                       new Peak_newBasicComparator() );
+                       new Peak_newBasicComparator(),
+                       true );
   }
 
 
@@ -136,9 +137,37 @@ public class Peak_new_IO
      WritePeaksSorted( file_name,
                        peaks, 
                        append, 
-                       new Peak_newComparator() );
+                       new Peak_newComparator(),
+                       true );
   }
 
+
+  /**
+   *  Write the specified Vector of peaks to the specified file in the 
+   *  new SNS peaks file format, with calibration information and
+   *  a table of detector position and orientation information at
+   *  the start of the file, PRESERVING THE CURRENT ORDER AND
+   *  SEQUENCE NUMBERS.  
+   *
+   *  @param  file_name  The name of the peaks file to be created.
+   *  @param  peaks      A Vector of Peak_new objects.  NOTE:
+   *                     The Vector must contain only Peak_new objects.
+   *  @param  append     Flag indicating whether or not to append to
+   *                     an existing peaks file (CURRENTLY NOT USED).
+   *
+   *  @throws an IOException if there is a problem writing the file.
+   */
+  public static void WritePeaksInSequence( String           file_name,
+                                           Vector<Peak_new> peaks,
+                                           boolean          append      )
+                     throws IOException
+  {
+     WritePeaksSorted( file_name,
+                       peaks,
+                       append,
+                       null,
+                       false );
+  }
 
   /**
    *  Write the specified Vector of peaks to the specified file in the 
@@ -152,13 +181,21 @@ public class Peak_new_IO
    *                     The Vector must contain only Peak_new objects.
    *  @param  append     Flag indicating whether or not to append to
    *                     an existing peaks file (CURRENTLY NOT USED).
-   *
+   *  @param  comparator The comparator that will be used to order 
+   *                     the peaks in the output file.  Pass in
+   *                     null if the order of the peaks should not
+   *                     be changed.
+   *  @param  set_seqn   If true, the sequence numbers of the peaks
+   *                     will be set based on the order the peaks were
+   *                     written.  If false, the original sequence 
+   *                     numbers (if any) will be written.
    *  @throws an IOException if there is a problem writing the file.
    */
   public static void WritePeaksSorted( String           file_name, 
                                        Vector<Peak_new> peaks, 
                                        boolean          append,
-                                       Comparator       comparator )
+                                       Comparator       comparator,
+                                       boolean          set_seqn )
                      throws IOException
   {
      if ( peaks == null || peaks.size() <= 0 )
@@ -180,6 +217,7 @@ public class Peak_new_IO
        grids.put( grid.ID(), grid );  
      }
                                                    // Sort the grids     
+
      Enumeration<IDataGrid > grid_enum = grids.elements();
      IDataGrid[] grid_array = new IDataGrid[ grids.size() ];
      int index = 0;
@@ -192,7 +230,8 @@ public class Peak_new_IO
      for ( int i = 0; i < peak_array.length; i++ )
         peak_array[i] = (Peak_new)(peaks.elementAt(i));
 
-     Arrays.sort( peak_array, comparator );
+     if ( comparator != null )
+       Arrays.sort( peak_array, comparator );
 
      out.println( VERSION_TITLE    + " " + "2.0" + "  " +
                   FACILITY_TITLE   + " " + peak_array[0].getFacility() + "  " +
@@ -224,11 +263,14 @@ public class Peak_new_IO
          previous_run = run;
        }
 
-       peak.seqnum(i+1);
+       if ( set_seqn )
+         peak.seqnum(i+1);
+
        out.println( PeakString( peak ) );
      }
      out.close();
   }
+
 
   /**
    * Writes typical header information that appears at the top of

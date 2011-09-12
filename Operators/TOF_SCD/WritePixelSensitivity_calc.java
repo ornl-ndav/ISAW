@@ -386,12 +386,21 @@ public class WritePixelSensitivity_calc
    *                         are to be adjusted
    *  @param  adjusted_file  The name of the new peaks file that should be
    *                         written containing the adjusted peak intensities.
+    *  @param  zero_border    The number of rows and columns around the edge
+   *                         of the detector that do not have any data, but
+   *                         are just zero.
+   *  @param  half_width     The distance from the center of a square 
+   *                         neighborhood to the edge of the neighborhood.
+   *                         Each square neighborhood has dimensions
+   *                         (2*zero_border + 1)^2.
    */
   public static void AdjustPeaksFile( String        peaks_file,
                                       String        adjusted_file,
                                       float[]       det_max,
                                       float[]       det_scale_max,
-                                      float[][][]   scale_fac )
+                                      float[][][]   scale_fac,
+                                      int           zero_border,
+                                      int           half_width  )
                       throws Exception
   {
                   // printout some general information for comparing detectors
@@ -402,6 +411,9 @@ public class WritePixelSensitivity_calc
             i,  det_max[i], det_scale_max[i] );
 
     Vector<Peak_new> peaks = Peak_new_IO.ReadPeaks_new( peaks_file );
+
+    Vector<Peak_new> adjusted_peaks = new Vector<Peak_new>();
+
     for ( int i = 0; i < peaks.size(); i++ )
     {
       Peak_new peak = peaks.elementAt(i);
@@ -413,14 +425,29 @@ public class WritePixelSensitivity_calc
         throw new IllegalArgumentException(
           "Invalid detector number in peaks file: " + det_num );
 
-      float scale = scale_fac[det_num][row][col];
-      float inti = peak.inti();
-      float sigi = peak.sigi();
-      peak.inti( inti * scale );
-      peak.sigi( sigi * scale );
+      int n_rows = scale_fac[det_num].length;
+      int n_cols = scale_fac[det_num][0].length;
+
+      int first_row = zero_border + half_width;
+      int last_row  = n_rows - 1 - zero_border - half_width;
+
+      int first_col = zero_border + half_width;
+      int last_col  = n_cols - 1 - zero_border - half_width;
+
+      if ( row >= first_row && row <= last_row &&
+           col >= first_col && col <= last_col  )
+      {
+        float scale = scale_fac[det_num][row][col];
+        float inti = peak.inti();
+        float sigi = peak.sigi();
+        peak.inti( inti * scale );
+        peak.sigi( sigi * scale );
+
+        adjusted_peaks.add( peak );
+      }
     }
 
-    Peak_new_IO.WritePeaks_new( adjusted_file, peaks, false );
+    Peak_new_IO.WritePeaksInSequence( adjusted_file, adjusted_peaks, false );
   }
 
 
@@ -491,7 +518,8 @@ public class WritePixelSensitivity_calc
                                     det_max, det_scale_max, scale_fac );
 
     AdjustPeaksFile( peaks_file, adjusted_file, 
-                     det_max, det_scale_max, scale_fac );
+                     det_max, det_scale_max, scale_fac,
+                     zero_border, half_width );
   }
 
 
@@ -522,7 +550,7 @@ public class WritePixelSensitivity_calc
    *  @param  back_file      The name of the NeXus file containing the
    *                         background data.
    *  @param  peaks_file     The name of the peaks file whose intensities
-   *                         are to be adjusted
+   *                         are to be adjusted.
    *  @param  adjusted_file  The name of the new peaks file that should be
    *                         written containing the adjusted peak intensities.
    *  @param  min_tof        The start of the interval of times-of-flight
@@ -537,7 +565,7 @@ public class WritePixelSensitivity_calc
    *                         Each square neighborhood has dimensions
    *                         (2*zero_border + 1)^2.
    **/
-  public static void AdjustPeaksForPixelSensitivity
+  public static void AdjustPeaksForPixelSensitivity_2
                             ( String van_file,
                               String back_file,
                               String peaks_file,
@@ -569,7 +597,8 @@ public class WritePixelSensitivity_calc
                                     net_max, net_scale_max, scale_fac );
 
     AdjustPeaksFile( peaks_file, adjusted_file,
-                     net_max, net_scale_max, scale_fac );
+                     net_max, net_scale_max, scale_fac,
+                     zero_border, half_width );
   }
 
 
@@ -593,14 +622,14 @@ public class WritePixelSensitivity_calc
     int    half_width  = 7;
     String peaks_filename = args[0];
     String out_peaks_filename = peaks_filename + "van-back_adjusted_15_7";
-    AdjustPeaksForPixelSensitivity( van_filename,
-                                    back_filename,
-                                    peaks_filename,
-                                    out_peaks_filename,
-                                    min_tof,
-                                    max_tof,
-                                    zero_border,
-                                    half_width );
+    AdjustPeaksForPixelSensitivity_2( van_filename,
+                                      back_filename,
+                                      peaks_filename,
+                                      out_peaks_filename,
+                                      min_tof,
+                                      max_tof,
+                                      zero_border,
+                                      half_width );
   }
 
 }
