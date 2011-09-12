@@ -799,7 +799,6 @@ private void  remove_groups()
 }
 
 
-
 /* ------------------------------ draw_detectors -------------------------- */
 
 private float draw_detectors()
@@ -991,7 +990,6 @@ private void draw_instrument( float radius  )
 
   threeD_panel.setObjects( INSTRUMENT, objects );
 }
-
 
 
 /* ---------------------------- make_detector --------------------------- */
@@ -1198,7 +1196,6 @@ private void init()
   border = new TitledBorder( LineBorder.createBlackLineBorder(), title);
   border.setTitleFont( FontUtil.BORDER_FONT );
   setBorder( border );
-            
                                      // Place the graph area inside of a
                                      // JPanel and make a titled border around
                                      // the JPanel graph area using the last 
@@ -1237,7 +1234,6 @@ private void init()
 
    private void processMouseClickEvent(MouseEvent e)
    {
-
       int index = threeD_panel.pickID( e.getX( ) , e.getY( ) , 15 );
       
       if ( index != last_index )
@@ -1255,7 +1251,6 @@ private void init()
                float y_val = rebinner.getY_valueAtX( index , frame_val );
                conv_table.showConversions( frame_val , y_val , index );
             }
-
          }
       }
    }
@@ -1267,11 +1262,9 @@ private void init()
  */
 private class ViewMouseAdapter extends MouseAdapter
 {
-
    @Override
    public void mouseClicked(MouseEvent e)
    {
-      
       processMouseClickEvent( e );
      /* int index = threeD_panel.pickID( e.getX(), e.getY(), 15 );
       if ( index != last_index )
@@ -1294,8 +1287,8 @@ private class ViewMouseAdapter extends MouseAdapter
       }
      */ 
    }
-   
 }
+
 
 /* ------------------------- ViewMouseMotionAdapter ----------------------- */
 /**
@@ -1304,11 +1297,8 @@ private class ViewMouseAdapter extends MouseAdapter
  */
 private class ViewMouseMotionAdapter extends MouseMotionAdapter
 {
-   
-
    public void mouseDragged( MouseEvent e )
    {
-     
       processMouseClickEvent( e );
      //System.out.println("Mouse moved at: " + e.getPoint() );
      /*int index = threeD_panel.pickID( e.getX(), e.getY(), 15 );
@@ -1327,7 +1317,6 @@ private class ViewMouseMotionAdapter extends MouseMotionAdapter
            float y_val = rebinner.getY_valueAtX( index, frame_val );
            conv_table.showConversions( frame_val, y_val, index );
          }
-         
        }
      }
      */
@@ -1456,6 +1445,7 @@ private class FrameControlListener implements ActionListener
     }
   }
 
+
 /* ------------------------ XScaleListener ----------------------------- */
 
   private class XScaleListener implements ActionListener,
@@ -1491,8 +1481,6 @@ private class FrameControlListener implements ActionListener
   private class AltAzControlListener implements ActionListener,
                                                 Serializable
   {
-   
-     
      public void actionPerformed(ActionEvent e)
      {                                             // just update the values
                                                    // in the state object
@@ -1503,23 +1491,18 @@ private class FrameControlListener implements ActionListener
        getState().set_float( ViewerState.V_AZIMUTH,  azimuth );
        getState().set_float( ViewerState.V_ALTITUDE, altitude );
        getState().set_float( ViewerState.V_DISTANCE, distance );
-      
        }
   }
 
    class ThreeDsetCrossHair extends Thread
    {
-
       Object        synchrObject = new Object();
       ThreeD_JPanel View3D;
-
       Point         pt;
-      
-      Point       done;
+      Point         done;
 
       public ThreeDsetCrossHair(ThreeD_JPanel View3D, Point pt)
       {
-
          this.View3D = View3D;
          this.pt = pt;
          done = null;
@@ -1547,9 +1530,7 @@ private class FrameControlListener implements ActionListener
          done = pt;
          pt = null;
         }
-
       }
-
    }
 
 }

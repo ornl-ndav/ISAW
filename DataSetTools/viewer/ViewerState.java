@@ -630,6 +630,4 @@ public class ViewerState  implements Serializable
 	   	}
 	return this;
    	}
-   	
 }
-
