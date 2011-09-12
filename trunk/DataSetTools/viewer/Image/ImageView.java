@@ -253,7 +253,7 @@ public class ImageView extends    DataSetViewer
   private int          max_num_rows_to_show;
   private int          rows_offset_from_scroll_top;
 
-  private String       current_multi_plot_mode = MULTI_PLOT_DIAGONAL;
+  private String       current_multi_plot_mode = MULTI_PLOT_OVERLAY;
   private final int    MAX_PLOTS = 16;
 
   JPanel image_container    = new JPanel();        // Panels to contain all
@@ -669,7 +669,7 @@ private void AddOptionsToMenu()
                                                  // remove_hidden_lines option 
   remove_hidden_lines = new JCheckBoxMenuItem( MULTI_PLOT_HIDDEN_LINES );
   remove_hidden_lines.addActionListener( multi_plot_menu_handler );
-  remove_hidden_lines.setState( true );
+  remove_hidden_lines.setState( false );
   multiplot_menu.add( remove_hidden_lines );
 
                                                    // multiplot color option
