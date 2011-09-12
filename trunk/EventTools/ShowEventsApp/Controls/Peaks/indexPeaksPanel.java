@@ -101,19 +101,19 @@ public class indexPeaksPanel extends    JPanel  implements IReceiveMessage
 
    //Tab pane indices for orientation matrix "calculation"
 
-   private final static int  AUTO_WPARAMS = 0;
+//   private final static int  AUTO_WPARAMS = 0;
 
-   private final static int  AUTO_ROSS    = 1;
+   private final static int  AUTO_ROSS    = 0;
 
-   private final static int  NEW_AUTO_WPARAMS = 2;
+   private final static int  NEW_AUTO_WPARAMS = 1;
 
-   private final static int  NEW_AUTO     = 3;
+   private final static int  NEW_AUTO     = 2;
 
-   private final static int  FROM_FILE    = 4;  
+   private final static int  FROM_FILE    = 3;  
    
-   private final static int  FROM_UB      = 5;
+   private final static int  FROM_UB      = 4;
 
-   private final static int  ARCS_INDEX   = 6;
+   private final static int  ARCS_INDEX   = 5;
 
    private AutoWithParamsPanel auto_w_params_panel;
 
@@ -155,10 +155,10 @@ public class indexPeaksPanel extends    JPanel  implements IReceiveMessage
       BoxLayout blayout = new BoxLayout( panel, BoxLayout.Y_AXIS );
       panel.setLayout(  blayout );
       middlePanel = new JTabbedPane();
-      
+/*      
       middlePanel.addTab( "AutoIndex ( with Lattice Parameters )",
                            buildAutoWithLatParPanel());
-
+*/
       middlePanel.addTab( "AutoIndex", buildAutoIndexPanel() );
 
       auto_w_params_panel = new AutoWithParamsPanel();
@@ -624,6 +624,7 @@ public class indexPeaksPanel extends    JPanel  implements IReceiveMessage
                   return;
                }
             }
+/*
             else if( middlePanel.getSelectedIndex() == AUTO_WPARAMS )
             {
                if( auto_w_params_valid() )
@@ -642,6 +643,7 @@ public class indexPeaksPanel extends    JPanel  implements IReceiveMessage
                   sendMessage( Commands.INDEX_PEAKS , indexCmd );
                }
             }
+*/
             else if( middlePanel.getSelectedIndex() == AUTO_ROSS )
             {
                ProcessAutoRoss( Dmin.getText(), 
