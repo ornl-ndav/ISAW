@@ -302,6 +302,7 @@ public class PeakListHandler implements IReceiveMessage
       catch ( Exception ex )
       {
         Util.sendError( "ERROR: Failed to index Peaks " + ex);
+        ex.printStackTrace();
         return false;
       } 
       return false;
@@ -361,6 +362,7 @@ public class PeakListHandler implements IReceiveMessage
       catch ( Exception ex )
       {
         Util.sendError( "ERROR: Failed to index Peaks " + ex);
+        ex.printStackTrace();
         return false;
       }
       return false;
@@ -419,6 +421,7 @@ public class PeakListHandler implements IReceiveMessage
       catch ( Exception ex )
       {
         Util.sendError( "ERROR: Failed to index Peaks " + ex);
+        ex.printStackTrace();
         return false;
       }
       return false;
@@ -452,6 +455,7 @@ public class PeakListHandler implements IReceiveMessage
        catch ( Exception ex )
        {
          Util.sendError( "ERROR: Failed to index Peaks " + ex);
+         ex.printStackTrace();
          return false;
        }                                        
   
