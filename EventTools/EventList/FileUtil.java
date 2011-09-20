@@ -396,6 +396,152 @@ public class FileUtil
   }
 
 
+ /** 
+  *  Save sensitivity factor file.  Write a binary file (in little-endian PC 
+  *  format) containing a scale factor that should multiply the data from
+  *  each pixel of a detector, to correct for varying sensitivity across the
+  *  face of the detector.
+  *
+  *  @param filename   The name of the file to write
+  *  @param sense_map  The pixel sensitivity map to be saved.
+  */
+  public static void SaveSensitivityFile( String               filename, 
+                                          PixelSensitivityMap  sense_map )
+  {
+    if ( filename == null || filename.trim().length() == 0 )
+      throw new IllegalArgumentException("Filename String is NULL");
+
+    int[] bank_ids = sense_map.getBankIDs();
+    float[][][] factors = sense_map.getFactors();
+
+    int num_values = (1 + bank_ids.length * 3);
+    for ( int i = 0; i < factors.length; i++ )
+      num_values += (factors[i].length * factors[i][0].length) * 4;
+
+    byte[] buffer = new byte[ 4 * num_values ];
+
+    int index = 0;
+    setInt_32( bank_ids.length, buffer, index );
+    index += 4;
+
+    int id,
+        n_rows,
+        n_cols;
+    for ( int i = 0; i < bank_ids.length; i++ )
+    {
+      id = bank_ids[i];
+
+      float[][] id_factors = factors[i];
+      n_rows = id_factors.length;
+      n_cols = id_factors[0].length;
+
+      setInt_32( id, buffer, index );
+      index += 4;
+
+      setInt_32( n_rows, buffer, index ); 
+      index += 4;
+
+      setInt_32( n_cols, buffer, index ); 
+      index += 4;
+
+      for ( int row = 0; row < n_rows; row++ )
+      {
+        float[] row_vals = id_factors[row];
+        for ( int col = 0; col < n_cols; col++ )
+        {
+          setFloat_32( row_vals[col], buffer, index );
+          index += 4;
+        }
+      }
+    }
+
+    try
+    {
+      RandomAccessFile r_file = new RandomAccessFile( filename, "rw" );
+      r_file.write( buffer );
+      r_file.close();
+    }
+    catch ( Exception ex )
+    {
+      System.out.println( ex );
+      ex.printStackTrace();
+      throw new IllegalArgumentException("Error writing file " + filename );
+    }
+  }
+
+
+ /** 
+  *  Load sensitivity factor file.  Read a binary file (in little-endian PC 
+  *  format) containing a scale factor that should multiply the data from
+  *  each pixel of a detector, to correct for varying sensitivity across the
+  *  face of the detector.
+  *
+  *  @param filename   The name of the file to read 
+  *  @return sense_map  The pixel sensitivity map.
+  */
+  public static PixelSensitivityMap LoadSensitivityFile( String filename )
+  {
+    if ( filename == null || filename.trim().length() == 0 )
+      throw new IllegalArgumentException("Filename String is NULL");
+
+    try
+    {
+      RandomAccessFile r_file = new RandomAccessFile( filename, "r" );
+
+      long num_bytes = r_file.length();
+
+      if ( num_bytes >= 4l * (long)(Integer.MAX_VALUE) )
+        throw new IllegalArgumentException("File has more than " +
+                       Integer.MAX_VALUE +
+                     " integer values and can't be loaded into an array" );
+
+      byte[] buffer = new byte[ (int)num_bytes ];
+      r_file.seek( 0 );
+      long bytes_read = r_file.read( buffer );
+      r_file.close();
+      if ( bytes_read != num_bytes )
+        throw new IllegalArgumentException("Failed to read " + filename );
+         
+      int index = 0;
+      int num_banks = getInt_32( buffer, index );
+      index += 4;
+      System.out.println("NUMBER OF BANKS = " + num_banks );
+
+      float[][][] factors = new float[ num_banks ][][];
+      int[] bank_ids = new int[ num_banks ];
+      int   n_rows,
+            n_cols;
+      for ( int i = 0; i < bank_ids.length; i++ )
+      {
+        bank_ids[i] = getInt_32( buffer, index );
+        index += 4;
+        n_rows = getInt_32( buffer, index );
+        index += 4; 
+        n_cols = getInt_32( buffer, index );
+        index += 4; 
+        System.out.println("id, n_rows, n_cols = " + bank_ids[i] + 
+                           ", " + n_rows + ", " + n_cols );
+        factors[i] = new float[n_rows][n_cols];
+        for ( int row = 0; row < n_rows; row++ )
+        {
+          float[] row_vals = factors[i][row];
+          for ( int col = 0; col < n_cols; col++ )
+          {
+            row_vals[ col ] = getFloat_32( buffer, index );
+            index += 4;
+          }    
+        }            
+      }
+      return new PixelSensitivityMap( bank_ids, factors ); 
+    }
+    catch ( Exception ex )
+    {
+      throw new IllegalArgumentException(
+                     "Failed to Load sensitivity map from file " + filename );
+    }
+  } 
+
+
   /**
    *  Get an array of integer values from a file of bytes.  The number of
    *  integers returned in the array is the integer part of filesize/4.
@@ -493,7 +639,7 @@ public class FileUtil
   public static void SaveIntFile( int[] list, String filename )
   {
     if ( list == null )
-      throw new IllegalArgumentException("Array of doubles is null");
+      throw new IllegalArgumentException("Array of ints is null");
 
     if ( filename == null )
       throw new IllegalArgumentException("Filename String is NULL");
@@ -1055,6 +1201,60 @@ public class FileUtil
    */
   public static void main(String[] args) throws Exception
   {
+    int[] bank_ids = { 37, 48, 59 };
+/*
+    float[][] map_0 = { { 2, 3, 4 },
+                        { 5, 6, 7 } };
+    float[][] map_1 = 
+*/
+    float[][][] factors = { { { 2, 3, 4 },
+                              { 5, 6, 7 } },
+                            { { 1, 2 },
+                              { 3, 4 } },
+                            { { 10, 20 },
+                              { 30, 40 },
+                              { 40, 50 } } };
+
+    PixelSensitivityMap sense_map = new PixelSensitivityMap(bank_ids,factors);
+
+    SaveSensitivityFile( "sensitivity_file_test.dat", sense_map );
+    Thread.sleep( 2000 );
+    PixelSensitivityMap sense_map_2 = 
+                        LoadSensitivityFile( "sensitivity_file_test.dat" );
+    int[] bank_ids_2 = sense_map_2.getBankIDs();
+    float[][][] factors_2 = sense_map_2.getFactors();
+
+    if ( bank_ids_2.length !=  bank_ids.length )
+      System.out.println( "WRONG Number of IDS " + bank_ids_2.length + 
+                          " != " + bank_ids.length );
+
+    for ( int i = 0; i < bank_ids.length; i++ )
+      if ( bank_ids_2[i] != bank_ids[i] )
+        System.out.println("WRONG IDS "+bank_ids_2[i]+" != "+bank_ids[i]); 
+
+    if ( factors_2.length != factors.length )
+      System.out.println("WRONG number of maps " + factors_2.length +
+                         " != " + factors.length );
+
+    for ( int i = 0; i < factors.length; i++ )
+    {
+      int n_rows   = factors[i].length;
+      int n_cols   = factors[i][0].length;
+      int n_rows_2 = factors_2[i].length;
+      int n_cols_2 = factors_2[i][0].length;
+      if ( n_rows_2 != n_rows )
+        System.out.println( "n_rows_2 = " + n_rows_2 + " != " +
+                            "n_rows = " + n_rows );
+      if ( n_cols_2 != n_cols )
+        System.out.println( "n_cols_2 = " + n_cols_2 + " != " +
+                            "n_cols = " + n_cols );
+
+      for ( int row = 0; row < n_rows; row++ )
+        for ( int col = 0; col < n_cols; col++ )
+          if ( factors_2[i][row][col] != factors[i][row][col] )
+            System.out.println("Factors don't match " + factors_2[i][row][col]
+                               + " != " + factors[i][row][col] );
+    }
 /*
     float[] vals = { 1, 2, 3, 1.1f, 2.2f, 3.3f };
     SaveFloatFile( vals, "test_float.dat" );
@@ -1160,7 +1360,7 @@ public class FileUtil
     }
 
 */
-///*
+/*
     int first_id = Integer.parseInt( args[0] );
     int last_id = Integer.parseInt( args[1] );
 
@@ -1191,7 +1391,7 @@ public class FileUtil
       }
       System.out.println();
     }   
-//*/
+*/
   }
 
 }
