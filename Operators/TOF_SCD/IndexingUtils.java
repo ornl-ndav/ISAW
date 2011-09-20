@@ -1175,9 +1175,11 @@ public static int ExpandSetOfIndexedPeaks( Tran3D           UB,
 /**
  *  Try to find a newUB that is equivalent to the original UB, but corresponds
  * to one or more shorter real space unit cell edges.
+ *
  * @param UB      The original UB 
  * @param newUB   Returns the newUB
- * @returns True if a possibly constructive change was made and newUB has been
+ *
+ * @return True if a possibly constructive change was made and newUB has been
  * set to a new matrix.  It returns false if no constructive change was found.
  */ 
 public static boolean MakePrimitiveUB( Tran3D UB, Tran3D newUB )
