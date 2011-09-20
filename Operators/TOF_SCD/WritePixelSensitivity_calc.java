@@ -6,6 +6,12 @@ import DataSetTools.retriever.*;
 import DataSetTools.dataset.*;
 import DataSetTools.viewer.*;
 import DataSetTools.operator.Generic.TOF_SCD.*;
+import EventTools.EventList.*;
+
+/**
+ * This class has various methods for calculating and saving or using
+ * the sensitivity of regions on the face of an Anger camera.
+ */
 
 public class WritePixelSensitivity_calc
 {
@@ -602,6 +608,242 @@ public class WritePixelSensitivity_calc
   }
 
 
+  /**
+   *  Write a file with per-pixel scale factors based on the summed pixel 
+   *  counts in a vanadium run file.  The first file must contain data from 
+   *  a uniform scatterer, such as vanadium.  The average sensitivity of 
+   *  pixels in a square neighborhood of each interior pixel is calculated.  
+   *  For all interior pixels, the average total
+   *  count over a square neighborhood of size (2*half-width+1)^2
+   *  is first calculated.  Based on these averages, the sensitivity scale 
+   *  factor for each pixel with a non-zero average total count is taken to 
+   *  be MAX_COUNT/ave_count, where MAX_COUNT is the maximum average total 
+   *  count for any interior pixel in the detector, and ave_count is
+   *  the average total count for that pixel.  If the ave_count is zero for
+   *  a pixel (as it will be for border pixels) the sensitivity scale 
+   *  factor is set to 1.  Therefore, this sensitivity scale factor
+   *  is >= 1 for all pixels.  The scale factor for each pixel of each
+   *  detector is written to a simple binary file in PC (little-endian) 
+   *  format.  The first entry in the file is an integer giving the
+   *  number of detector modules.  For each module the file contains
+   *  (in sequence) three integers giving the bank number, the number of
+   *  rows and the number of columns, followed by a list of 32-bit floats
+   *  giving the sensitivity scale factor for each pixel, in row major order.
+   *
+   *  @param  nx_file        The name of the NeXus file containing the
+   *                         vanadium data.
+   *  @param  sens_file      The name of the sensitivity file to write.
+   *  @param  min_tof        The start of the interval of times-of-flight
+   *                         that will be summed.
+   *  @param  max_tof        The end of the interval of times-of-flight
+   *                         that will be summed.
+   *  @param  zero_border    The number of rows and columns around the edge
+   *                         of the detector that do not have any data, but
+   *                         are just zero.
+   *  @param  half_width     The distance from the center of a square 
+   *                         neighborhood to the edge of the neighborhood.
+   *                         Each square neighborhood has dimensions
+   *                         (2*zero_border + 1)^2.
+   **/
+  public static void WritePixelSensitivity ( String nx_file,
+                                             String sens_file,
+                                             float  min_tof,
+                                             float  max_tof,
+                                             int    zero_border,
+                                             int    half_width )
+  {
+    WritePixelSensitivity_calc calc = new WritePixelSensitivity_calc();
+
+    NexusRetriever van_nr = new NexusRetriever( nx_file );
+    int n_data_sets = van_nr.numDataSets();
+                                         // allow extra space in these arrays
+                                         // in case detector ID's are much
+                                         // larger than DataSet numbers
+                                         // Unused positions in the 3D array
+                                         // will be null, so not much space 
+                                         // is wasted.
+    float[]     det_max       = new float[100 * n_data_sets];
+    float[]     det_scale_max = new float[100 * n_data_sets];
+    float[][][] scale_fac     = new float[100 * n_data_sets][][];
+
+    calc.CalculatePixelSensitivity( van_nr,
+                                    min_tof, max_tof,
+                                    zero_border, half_width,
+                                    det_max, det_scale_max, scale_fac );
+
+    int num_dets = 0;
+    for ( int i = 0; i < scale_fac.length; i++ )
+      if ( scale_fac[i] != null )
+        num_dets++;
+
+    System.out.println("There are " + num_dets + " detectors");
+
+    int index = 0;
+    int[] ids = new int[ num_dets ];
+    float[][][] factors = new float[ num_dets ][][];
+    for ( int i = 0; i < scale_fac.length; i++ )
+      if ( scale_fac[i] != null )
+      {
+        ids[index]     = i;
+        factors[index] = scale_fac[i];
+        System.out.println("index = " + index + " id = " + ids[index] + 
+                           " factors = " + factors[index] );
+        index++;
+      }
+
+    PixelSensitivityMap sense_map = new PixelSensitivityMap( ids, factors );
+    FileUtil.SaveSensitivityFile( sens_file, sense_map );
+  }
+
+
+  /**
+   *  Write a file with per-pixel scale factors based on the summed pixel 
+   *  counts in a vanadium run file minus the summed pixel counts from a
+   *  background run.  The average sensitivity of pixels in a square 
+   *  neighborhood of each interior pixel is calculated.  For all interior 
+   *  pixels, the average total count over a square neighborhood of size 
+   *  (2*half-width+1)^2 is first calculated for both the vanadium run and
+   *  the background run.  Based on the difference of these averages, the 
+   *  sensitivity scale factor for each pixel with a non-zero average is taken 
+   *  to be MAX_COUNT/ave_count, where MAX_COUNT is the maximum average 
+   *  count for any interior pixel in the detector, and ave_count is
+   *  the average count for that pixel.  If the ave_count is zero for
+   *  a pixel (as it will be for border pixels) the sensitivity scale 
+   *  factor is set to 1.  Therefore, this sensitivity scale factor
+   *  is >= 1 for all pixels.  The scale factor for each pixel of each
+   *  detector is written to a simple binary file in PC (little-endian) 
+   *  format.  The first entry in the file is an integer giving the
+   *  number of detector modules.  For each module the file contains
+   *  (in sequence) three integers giving the bank number, the number of
+   *  rows and the number of columns, followed by a list of 32-bit floats
+   *  giving the sensitivity scale factor for each pixel, in row major order.
+   *
+   *  @param  van_file       The name of the NeXus file containing the
+   *                         vanadium data.
+   *  @param  back_file      The name of the NeXus file containing the
+   *                         background data.
+   *  @param  sens_file      The name of the sensitivity file to write.
+   *  @param  min_tof        The start of the interval of times-of-flight
+   *                         that will be summed.
+   *  @param  max_tof        The end of the interval of times-of-flight
+   *                         that will be summed.
+   *  @param  zero_border    The number of rows and columns around the edge
+   *                         of the detector that do not have any data, but
+   *                         are just zero.
+   *  @param  half_width     The distance from the center of a square 
+   *                         neighborhood to the edge of the neighborhood.
+   *                         Each square neighborhood has dimensions
+   *                         (2*zero_border + 1)^2.
+   **/
+  public static void WritePixelSensitivity_2( String van_file,
+                                              String back_file,
+                                              String sens_file,
+                                              float  min_tof,
+                                              float  max_tof,
+                                              int    zero_border,
+                                              int    half_width )
+  {
+    WritePixelSensitivity_calc calc = new WritePixelSensitivity_calc();
+
+    NexusRetriever van_nr  = new NexusRetriever( van_file );
+    NexusRetriever back_nr = new NexusRetriever( back_file );
+
+    int n_data_sets = van_nr.numDataSets();
+    if ( back_nr.numDataSets() != n_data_sets )
+      throw new IllegalArgumentException("Number of Data sets different in " +
+                                          van_file + " and " + back_file );
+
+                                         // allow extra space in these arrays
+                                         // in case detector ID's are much
+                                         // larger than DataSet numbers
+                                         // Unused positions in the 3D array
+                                         // will be null, so not much space 
+                                         // is wasted.
+    float[]     net_max       = new float[100 * n_data_sets];
+    float[]     net_scale_max = new float[100 * n_data_sets];
+    float[][][] scale_fac     = new float[100 * n_data_sets][][];
+
+    calc.CalculatePixelSensitivity( van_nr,
+                                    back_nr,
+                                    min_tof, max_tof,
+                                    zero_border, half_width,
+                                    net_max, net_scale_max, scale_fac );
+    int num_dets = 0;
+    for ( int i = 0; i < scale_fac.length; i++ )
+      if ( scale_fac[i] != null )
+        num_dets++;
+
+    System.out.println("There are " + num_dets + " detectors");
+
+    int index = 0;
+    int[] ids = new int[ num_dets ];
+    float[][][] factors = new float[ num_dets ][][];
+    for ( int i = 0; i < scale_fac.length; i++ )
+      if ( scale_fac[i] != null )
+      {
+        ids[index]     = i;
+        factors[index] = scale_fac[i];
+        System.out.println("index = " + index + " id = " + ids[index] + 
+                           " factors = " + factors[index] );
+        index++;
+      }
+
+    PixelSensitivityMap sense_map = new PixelSensitivityMap( ids, factors );
+    FileUtil.SaveSensitivityFile( sens_file, sense_map );
+  }
+
+
+  /**
+   * Adjust the measured intensities in the specified DataSet using
+   * the pixel sensitivity factors stored in the specified pixel sensitivity
+   * map file.  The pixel sensitivity map file must be of the format written
+   * by WritePixelSensitivity or WritePixelSensitivity_2. 
+   *
+   * @param ds        The DataSet whose values are to be adjusted for
+   *                  the calculated pixel sensitivities.
+   * @param filename  The name of the file containing the pixel sensitivity
+   *                  map.
+   */
+  public static void AdjustDataSetForPixelSensitivity( DataSet ds,
+                                                       String filename )
+  {
+    PixelSensitivityMap sense_map = FileUtil.LoadSensitivityFile( filename );
+    int[] bank_ids      = sense_map.getBankIDs();
+    float[][][] factors = sense_map.getFactors();
+
+    int[] grid_ids = Grid_util.getAreaGridIDs( ds );    
+    for ( int i = 0; i < grid_ids.length; i++ )
+    {
+      IDataGrid grid = Grid_util.getAreaGrid( ds, grid_ids[i] );
+      System.out.println( "Info for GRID with ID " + grid.ID() + " ......");
+      System.out.println( grid );
+      System.out.println();
+
+      int index = -1;
+      for ( int j = 0; j < bank_ids.length; j++ )
+        if ( grid.ID() == bank_ids[j] )
+          index = j;
+
+      if ( index == -1 )
+        throw new IllegalArgumentException( "NO Sensitivity Info For Bank " +
+                                             grid.ID() );
+      int n_rows = grid.num_rows();
+      int n_cols = grid.num_cols();
+      for ( int row = 1; row <= n_rows; row++ )
+        for ( int col = 1; col <= n_cols; col++ )
+        {
+          IData data = grid.getData_entry( row, col ); 
+          if ( data == null )
+            throw new IllegalArgumentException( "No Data Entry Set for ID = " 
+                  + grid.ID() + " row = " + row + " col = " + col );
+
+          float   scale = factors[ index ][ row-1 ][ col-1 ];
+          float[] ys    = data.getY_values();
+          for ( int j = 0; j < ys.length; j++ )
+            ys[j] *= scale;
+        }
+    }
+  }
 
   /**
    *  Basic main program for testing
