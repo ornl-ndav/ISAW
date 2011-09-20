@@ -95,27 +95,27 @@ class anvred2(GenericTOF_SCD):
     def setDefaultParameters(self):
     
         self.super__clearParametersVector()
-        self.addParameter(DataDirPG("Working directory", ""))
-        self.addParameter(StringPG("Experiment name", ""))
-        self.addParameter(FloatPG("Total scattering linear abs coeff in cm^-1", 1.000))
-        self.addParameter(FloatPG("True absorption linear abs coeff in cm^-1", 1.000))
-        self.addParameter(FloatPG("Radius of spherical crystal in cm", 0.1))
+        self.addParameter(DataDirPG("Working directory", "C:/Users/Arthur/Desktop/Topaz/ext_corr"))
+        self.addParameter(StringPG("Experiment name", "Triphylite"))
+        self.addParameter(FloatPG("Total scattering linear abs coeff in cm^-1", 0.389))
+        self.addParameter(FloatPG("True absorption linear abs coeff in cm^-1", 1.001))
+        self.addParameter(FloatPG("Radius of spherical crystal in cm", 0.187))
         self.addParameter(BooleanEnablePG("Is the incident spectrum fitted?","[False, 1, 1]"))
         self.addParameter(LoadFilePG("File with spectrum coefficients", \
             ""))
         self.addParameter(LoadFilePG("File with the spectra for each detector", \
-            ""))
+            "C:/Users/Arthur/Desktop/Topaz/ext_corr/Spectrum_3023_3163.dat"))
         # self.addParameter(IntegerPG("The initial detector bank number", 1))
         self.addParameter(FloatPG("Wavelength to normalize to in Angstroms", 1.0))
-        self.addParameter(IntegerPG("The minimum I/sig(I)", 0))
-        self.addParameter(IntegerPG("Width of border (number of channels)", 16))
-        self.addParameter(IntegerPG("Minimum peak count", 10))
-        self.addParameter(FloatPG("Minimum d-spacing (Angstroms)", 0.6))
+        self.addParameter(IntegerPG("The minimum I/sig(I)", 2))
+        self.addParameter(IntegerPG("Width of border (number of channels)", 22))
+        self.addParameter(IntegerPG("Minimum peak count", 3))
+        self.addParameter(FloatPG("Minimum d-spacing (Angstroms)", 0.5))
         self.addParameter(IntegerPG("Assign scale factors (1) per setting or (2) per detector", 1))
-        self.addParameter(FloatPG("Multiply FSQ and sig(FSQ) by scaleFactor", 0.1))
+        self.addParameter(FloatPG("Multiply FSQ and sig(FSQ) by scaleFactor", 0.005))
         # Set-up limits for neutron wavelentgh XP Wang 02/24/2011
-        self.addParameter(FloatPG("Minimum wavelength (Angstroms)", 0.7))
-        self.addParameter(FloatPG("Maximum wavelength (Angstroms)", 3.5))
+        self.addParameter(FloatPG("Minimum wavelength (Angstroms)", 0.0))
+        self.addParameter(FloatPG("Maximum wavelength (Angstroms)", 5.0))
 
     def getResult(self):
 
@@ -138,7 +138,7 @@ class anvred2(GenericTOF_SCD):
         wlMax = self.getParameter(16).value   # XP Wang 02/24/2011
         
         # open the anvred.log file in the working directory
-        fileName = directory_path + 'anvredsigma.log'
+        fileName = directory_path + 'anvred2.log'
         logFile = open( fileName, 'w' )
         
         # open the hkl file in the working directory
@@ -177,6 +177,9 @@ class anvred2(GenericTOF_SCD):
         logFile.write('\nIQ: %i\n' % iIQ )
         
         logFile.write('\nMultiply FSQ and sig(FSQ) by: %f\n' % scaleFactor )
+        
+        logFile.write('\nMinimum wavelength: %f\n' % wlMin )
+        logFile.write('Maximum wavelength: %f\n' % wlMax )
         
         # C
         # C  CHECK ON THE EXISTANCE OF THE integrate FILE
@@ -470,8 +473,8 @@ class anvred2(GenericTOF_SCD):
             
             # hklFile.write('%4d%4d%4d%8.2f%8.2f%4d%8.4f%7.4f%7d%7d%7.4%4d\n' \
                 # % (h, k, l, fsq, sigfsq, hstnum, wl, tbar, curhst, seqnum, trans[0], dn))
-            hklFile.write('%4d%4d%4d%8.2f%8.2f%4d%8.4f%7.4f%7d%7d%7.4f%4d\n' \
-                % (h, k, l, fsq, sigfsq, hstnum, wl, tbar, curhst, seqnum, transmission, dn))
+            hklFile.write('%4d%4d%4d%8.2f%8.2f%4d%8.4f%7.4f%7d%7d%7.4f%4d%9.5f%9.4f\n' \
+                % (h, k, l, fsq, sigfsq, hstnum, wl, tbar, curhst, seqnum, transmission, dn, twoth, dsp))
                 
         print 'eof = %d' % eof
         print 'Minimum and maximum transmission = %6.4f, %6.4f' % (transmin, transmax)
