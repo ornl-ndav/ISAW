@@ -2883,7 +2883,7 @@ public class Util {
    
    private static int getCenterIndex( String centeringName ){
       
-      for( int i = 0 ; i < 6 ; i++ )
+      for( int i = 0 ; i <= 6 ; i++ )
          
          if( CenteringNames[ i ].equals( centeringName ) )
             return i;
