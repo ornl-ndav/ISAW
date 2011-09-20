@@ -1282,6 +1282,19 @@ private void DrawHGraph( int index, int graph_num, boolean pointed_at )
     y = data_block.getY_values();
   }
 
+  if ( x.length > y.length && y.length > 1 )       // resample as function
+  {
+    float[] x_function = new float[ y.length ];
+    float[] y_function = new float[ y.length ];
+    for ( int i = 0; i < x_function.length; i++ )
+    {
+      x_function[i] = (x[i] + x[i+1])/2;           // x = bin center
+      y_function[i] = y[i];
+    }
+    x = x_function;
+    y = y_function;
+  }
+
   Color color_list[] = { 
                          Color.red, 
                          Color.orange, 
