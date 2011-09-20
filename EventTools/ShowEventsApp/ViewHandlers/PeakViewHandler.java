@@ -150,10 +150,22 @@ public class PeakViewHandler implements IReceiveMessage,
     PeaksDisplayPanel ppanel = new PeaksDisplayPanel( peak_infos );
     ppanel.addActionListener( this );
 
+    JScrollPane scroll_pane = new JScrollPane( ppanel,
+                                   JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                                   JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED );
+
+    int n_rows = ppanel.numPanelRows();
+    int n_cols = ppanel.numPanelCols();
+    int width  = n_cols * 100;
+    int height = n_rows * 120;
+    
+    ppanel.setPreferredSize( new Dimension(width, height) );
+
     FinishJFrame frame = new FinishJFrame( "Peak Images" );
     frame.getContentPane().setLayout( new GridLayout(1,1) );
-    frame.getContentPane().add( ppanel );
-    frame.setSize(500,500);
+    frame.getContentPane().add( scroll_pane, BorderLayout.CENTER );
+//    frame.getContentPane().add( ppanel );
+    frame.setSize( width+20, height + 40);
     frame.setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
     frame.setVisible( true );
 
