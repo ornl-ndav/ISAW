@@ -815,10 +815,11 @@ public class WritePixelSensitivity_calc
     for ( int i = 0; i < grid_ids.length; i++ )
     {
       IDataGrid grid = Grid_util.getAreaGrid( ds, grid_ids[i] );
+      /*
       System.out.println( "Info for GRID with ID " + grid.ID() + " ......");
       System.out.println( grid );
       System.out.println();
-
+      */
       int index = -1;
       for ( int j = 0; j < bank_ids.length; j++ )
         if ( grid.ID() == bank_ids[j] )
