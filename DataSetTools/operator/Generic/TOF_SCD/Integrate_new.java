@@ -795,8 +795,9 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
    * @param listNthPeak Log every nth peak
    * @param PeakAlg     Peak Algorithm identifier. Use only the Strings below
    *                    MaxItoSigI, Shoe Box, MaxIToSigI-old, TOFINT                  
-   * @param colXrange   left and   right offset around Peak column to consider. For
-   *                    FIT PEAK algorithm can be used to specify range of good columns.
+   * @param colXrange   left and right offset around Peak column to consider. 
+   *                    For the FIT PEAK algorithm this can be used to specify
+   *                    a range of good columns.
    * @param rowYrange   left and right offset around Peak row  to consider
    * @param monCount    Monitor Count
    * @param logbuffer   if this a non-null StringBuffer, the log information
@@ -821,6 +822,7 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
            d_min, 12f, null,null,listNthPeak, PeakAlg, colXrange, 
            rowYrange,max_shoebox, monCount, logbuffer) ;
   }
+
   /**
    * Integrates one data set
    * 
@@ -834,13 +836,14 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
    *                    consider
    * @param incrSlice   The incremental amount to increase the slice size by.
    * @param d_min       the minimum d-spacing allowed
- * @param pcols 
- * @param prows 
+   * @param pcols 
+   * @param prows 
    * @param listNthPeak Log every nth peak
    * @param PeakAlg     Peak Algorithm identifier. Use only the Strings below
    *                    MaxItoSigI, Shoe Box, MaxIToSigI-old, TOFINT                  
-   * @param colXrange   left and   right offset around Peak column to consider. For
-   *                    FIT PEAK algorithm can be used to specify range of good columns.
+   * @param colXrange   left and right offset around Peak column to consider. 
+   *                    For the FIT PEAK algorithm this can be used to specify
+   *                    a range of good columns.
    * @param rowYrange   left and right offset around Peak row  to consider
    * @param monCount    Monitor Count
    * @param logbuffer   if this a non-null StringBuffer, the log information
@@ -854,8 +857,8 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
                                   int     incrSlice, 
                                   float   d_min, 
                                   float   maxUnitCellLength,
-                                  int[] prows,
-                                  int[] pcols, 
+                                  int[]   prows,
+                                  int[]   pcols, 
                                   int     listNthPeak,
                                   String  PeakAlg, 
                                   int[]   colXrange, 
@@ -1026,6 +1029,8 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
          centering,UB,PeakAlg,timeZrange,  colXrange,rowYrange, max_shoebox,
         incrSlice,opIntPt,logbuffer);
   } 
+
+
   private static ErrorString integrateDetector(
         DataSet     ds, 
         Vector      peaks, 
@@ -1108,6 +1113,24 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
                                            grid.num_cols() );
       ugrid.setData_entries( ds );
       grid = ugrid;
+    }
+
+    // adjust data values, if PixelSensitivity file is specified in IsawProps
+    String sense_file_name = SharedData.getProperty( "PIXEL_SENSITIVITY_FILE" );
+    if ( sense_file_name != null ) 
+    {
+      try
+      {
+        WritePixelSensitivity_calc.AdjustDataSetForPixelSensitivity( 
+                                                       ds, sense_file_name );
+        System.out.println("Adjusted Values Using " + sense_file_name );
+      }
+      catch ( Exception ex )
+      {
+        System.out.println("Failed to use " + sense_file_name + 
+                           "to correct intensities" );
+        System.out.println( ex );
+      }
     }
 
     // determine the min and max pixel-times

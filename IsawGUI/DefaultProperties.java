@@ -468,6 +468,9 @@ public class DefaultProperties{
         rs.append("#").append(eol);
         rs.append("WIZARD_WIDTH=700").append(eol);
         rs.append("WIZARD_HEIGHT=600").append(eol);
+        rs.append("#").append(eol);
+        rs.append("#PIXEL_SENSITIVITY_FILE=").append(eol);
+        rs.append("#").append(eol);
         rs.append("#NSavedFiles=0").append(eol);
         rs.append("#ShortSavedFilename=false").append(eol);
 
