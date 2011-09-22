@@ -261,7 +261,10 @@ public class IntegrateNorm {
          }else if( Chan+dir*ichan < 1 ||Chan+dir*ichan >=xscl.getNum_x()-2)
          {
             done = true;
-         }else
+         }else if( AllDataInBadArea(grid,PrevCentY,PrevCentX, nPixels , nPixels ,
+                  BadEdgeWidth ))
+                  done = true;
+         else
          {
 
             int chan = Chan+dir*ichan;
@@ -537,6 +540,29 @@ public class IntegrateNorm {
       return Res;
    }
    
+   private static boolean  AllDataInBadArea(IDataGrid grid,
+                                     float PrevCentY,
+                                     float PrevCentX, 
+                                     int nPixelsx , 
+                                     int nPixelsy ,
+                                     int BadEdgeWidth )
+   {
+      if( PrevCentY<1 || PrevCentX < 1)
+         return false;
+      if( PrevCentY > grid.num_rows( ) || PrevCentX > grid.num_cols( ))
+         return false;
+     float lowRow = Math.max( 1, PrevCentY-nPixelsy );
+     float lowCol = Math.max( 1, PrevCentX-nPixelsx );
+     float highRow = Math.max( grid.num_rows( ), PrevCentY+nPixelsy );
+     float highCol = Math.max( grid.num_cols( ), PrevCentX+nPixelsx );
+     if( highRow-lowRow+1 <=0)
+        return false;
+     if( highCol-lowCol+1 <=0)
+        return false;
+     
+      return true;
+      
+   }
    private static void ShowStat( StringBuffer logBuffer, Hashtable<String,Float>Stat)
    {
       int chan= Stat.get( CHANNEL ).intValue( );
@@ -1189,7 +1215,7 @@ public class IntegrateNorm {
                                         Math.max( BadEdgeRange+1,row-drows) +1;
          startRow= Math.max( BadEdgeRange+1,row-drows);
          startCol =Math.max( BadEdgeRange+1,col-dcols);
-
+   
          expVals = new double[Nrows*Ncols];
          Intensity = CreateClearfloatArray( Nrows,Ncols);
          
