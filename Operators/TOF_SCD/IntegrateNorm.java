@@ -548,19 +548,19 @@ public class IntegrateNorm {
                                      int BadEdgeWidth )
    {
       if( PrevCentY<1 || PrevCentX < 1)
-         return false;
+         return true;
       if( PrevCentY > grid.num_rows( ) || PrevCentX > grid.num_cols( ))
-         return false;
+         return true;
      float lowRow = Math.max( 1, PrevCentY-nPixelsy );
      float lowCol = Math.max( 1, PrevCentX-nPixelsx );
-     float highRow = Math.max( grid.num_rows( ), PrevCentY+nPixelsy );
-     float highCol = Math.max( grid.num_cols( ), PrevCentX+nPixelsx );
+     float highRow = Math.min( grid.num_rows( ), PrevCentY+nPixelsy );
+     float highCol = Math.min( grid.num_cols( ), PrevCentX+nPixelsx );
      if( highRow-lowRow+1 <=0)
-        return false;
+        return true;
      if( highCol-lowCol+1 <=0)
-        return false;
+        return true;
      
-      return true;
+      return false;
       
    }
    private static void ShowStat( StringBuffer logBuffer, Hashtable<String,Float>Stat)
