@@ -1078,8 +1078,18 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
     if(ids==null)
       return new ErrorString("Could not create pixel map for det "+detnum);
 
+    IDataGrid grid = Grid_util.getAreaGrid( ds, detnum ); 
     // determine the boundaries of the matrix
     int[] rcBound=IntegrateUtils.getBounds(ids);
+    nBadBoundaryRows = Math.min( grid.num_rows( )/3 , nBadBoundaryRows );
+    nBadBoundaryCols = Math.min( grid.num_cols( )/3 , nBadBoundaryCols );
+    rcBound[1] = Math.max( nBadBoundaryRows , rcBound[1] );
+
+    rcBound[0] = Math.max( nBadBoundaryCols , rcBound[0] );
+    rcBound[3] = Math.min( grid.num_rows( )-nBadBoundaryRows +1, rcBound[3] );
+
+    rcBound[2] = Math.min( grid.num_cols( )-nBadBoundaryCols +1, rcBound[2] );
+    
     for( int i=0 ; i<4 ; i++ ){
       if(rcBound[i]==-1)
         return new ErrorString("Bad boundaries on row column matrix");
@@ -1093,7 +1103,7 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
     // get the xscale from the data to give to the new peaks objects
     XScale times=data.getX_scale();
 
-    IDataGrid grid = Grid_util.getAreaGrid( ds, detnum ); 
+   
     if ( grid == null )
       throw new IllegalArgumentException(
                 "DataSet doesn't have detector grid in Integrate_new");
@@ -1414,6 +1424,7 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
 
     IntegrateUtils.RemovePeaksWithSmall_d( peaks, d_min, ds, detnum );
 
+    //TODO remove peaks too close to the edge
     /*
       System.out.println("NUMBER OF PEAKS TO INTEGRATE " + peaks.size() );
       peak = (Peak)peaks.elementAt(0);
