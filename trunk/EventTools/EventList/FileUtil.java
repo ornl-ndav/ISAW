@@ -519,8 +519,6 @@ public class FileUtil
         index += 4; 
         n_cols = getInt_32( buffer, index );
         index += 4; 
-        System.out.println("id, n_rows, n_cols = " + bank_ids[i] + 
-                           ", " + n_rows + ", " + n_cols );
         factors[i] = new float[n_rows][n_cols];
         for ( int row = 0; row < n_rows; row++ )
         {
