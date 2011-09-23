@@ -64,8 +64,8 @@ public class WritePixelSensitivity_calc
 
 
   /**
-   *  Set up the det_max, det_scale_max and scale_fac arrays for the
-   *  specified data set number from the specified retriever.
+   *  Calculate the time-of-flight sums and the averages of those sums over
+   *  the specified regions.
    *
    *  @param  nr           The data retriever for this run
    *  @param  ds_num       The number of the sample DataSet that should
@@ -81,7 +81,11 @@ public class WritePixelSensitivity_calc
    *                       neighborhood to the edge of the neighborhood.
    *                       Each square neighborhood has dimensions
    *                       (2*zero_border + 1)^2.
+   *  @param  tof_sums     The per-pixel sums of the bins in the specified
+   *                       time-of-flight range.
    *
+   *  @return A two-d array listing the average of the time-of-flight sums
+   *          over the specified neighborhood of each pixel.
    */
   private float[][] getDetectorAveSums( NexusRetriever nr,
                                         int            ds_num,
@@ -90,7 +94,7 @@ public class WritePixelSensitivity_calc
                                         int            zero_border,
                                         int            half_width,
                                         int[]          detector_id,
-                                        float[][][]    scale_fac )
+                                        float[][][]    tof_sums )
   {
     DataSet ds = nr.getDataSet( ds_num );
     // System.out.println("Loaded DataSet " + ds );
@@ -105,15 +109,15 @@ public class WritePixelSensitivity_calc
 
     detector_id[0] = det_id;
 
-    // System.out.println("**** GridID = " + det_id + " ds_num = " + ds_num );
-
     IDataGrid grid = Grid_util.getAreaGrid( ds, grid_ids[0] );
 
     int n_rows = grid.num_rows();
     int n_cols = grid.num_cols();
 
     float[][] sums = new float[n_rows][n_cols];
-
+    float     min_sum = Float.POSITIVE_INFINITY;
+    float     max_sum = 0;
+    
     for ( int col = 0; col < n_cols; col++ )
       for ( int row = 0; row < n_rows; row++ )
       {
@@ -134,10 +138,17 @@ public class WritePixelSensitivity_calc
           sum += ys[i];
 
         sums[row][col] = sum;
+        if ( sum < min_sum )
+          min_sum = sum;
+        if ( sum > max_sum )
+          max_sum = sum;
       }
+    System.out.printf("ID = %2d  MIN SUM = %8.0f  MAX SUM = %8.0f\n",
+                       det_id, min_sum, max_sum );
 
-    sums = averageSums( sums, zero_border, half_width );
-    return sums;
+    tof_sums[det_id] = sums;
+
+    return averageSums( sums, zero_border, half_width );
   }
 
 
@@ -145,32 +156,44 @@ public class WritePixelSensitivity_calc
                                                int            det_id,
                                                float[]        det_max,
                                                float[]        det_scale_max,
+                                               int            zero_border, 
+                                               int            half_width,
                                                float[][][]    scale_fac )
   {
     float max_sum = 0;
     int n_rows = sums.length;
     int n_cols = sums[0].length;
-    for ( int row = 0; row < n_rows; row++ )
-      for ( int col = 0; col < n_cols; col++ )
+
+    int first_row = zero_border + half_width;
+    int last_row  = n_rows - 1 - zero_border - half_width;
+
+    int first_col = zero_border + half_width;
+    int last_col  = n_cols - 1 - zero_border - half_width;
+
+    for ( int row = first_row; row <= last_row; row++ )
+      for ( int col = first_col; col <= last_col; col++ )
         if ( sums[row][col] > max_sum )
           max_sum = sums[row][col];
 
-    for ( int row = 0; row < n_rows; row++ )
-      for ( int col = 0; col < n_cols; col++ )
+    for ( int row = first_row; row <= last_row ; row++ )
+      for ( int col = first_col; col <= last_col; col++ )
         if ( sums[row][col] > 0 )
           sums[row][col] = max_sum / sums[row][col];
         else
           sums[row][col] = 1f;
 
     float max_scale = 0;
-    for ( int row = 0; row < n_rows; row++ )
-      for ( int col = 0; col < n_cols; col++ )
+    for ( int row = first_row; row <= last_row; row++ )
+      for ( int col = first_col; col <= last_col; col++ )
         if ( sums[row][col] > max_scale )
           max_scale = sums[row][col];
 
     det_max[det_id]       = max_sum;
     det_scale_max[det_id] = max_scale;
     scale_fac[det_id]     = sums;
+
+    System.out.printf("ID = %2d  MAX SUM = %8.0f  MAX SCALE_FACTOR = %8.4f\n",
+                       det_id, max_sum, max_scale );
 
     return sums;
 }
@@ -206,12 +229,8 @@ public class WritePixelSensitivity_calc
   {
     int n_data_sets = van_nr.numDataSets();
  
-                                         // allow extra space in these arrays
-                                         // in case detector ID's are much
-                                         // larger than DataSet numbers
-                                         // Unused positions in the 3D array
-                                         // will be null, so not much space 
-                                         // is wasted.
+    float[][][] tof_sums = new float[det_max.length][][];
+
     for ( int i = 1; i < n_data_sets; i++ )
     {
       String[] nx_info = van_nr.getDataSetInfo( i );
@@ -220,8 +239,8 @@ public class WritePixelSensitivity_calc
       String id_range  = nx_info[nx_info.length-1];
       if ( ds_type == Retriever.HISTOGRAM_DATA_SET )
       {
-        System.out.println( bank_name + " is type " + ds_type + 
-                            " id range = " + id_range );
+//        System.out.println( bank_name + " is type " + ds_type + 
+//                            " id range = " + id_range );
 
         int[] detector_id = new int[1];
 
@@ -229,13 +248,56 @@ public class WritePixelSensitivity_calc
                                                       min_tof, max_tof, 
                                                       zero_border, half_width,
                                                       detector_id,
-                                                      scale_fac );
+                                                      tof_sums );
 
         ConvertSumsToScaleFactors( vanadium_sums, detector_id[0],
-                                   det_max, det_scale_max, scale_fac );
+                                   det_max, det_scale_max, 
+                                   zero_border, half_width,
+                                   scale_fac );
+
+        int id = detector_id[0];
+        NormalizeScaleFactors( id, scale_fac[id], tof_sums[id],
+                               zero_border, half_width );
       }
     }
     van_nr.close();
+  }
+
+
+  private static void NormalizeScaleFactors( int       id,
+                                             float[][] scale_fac,
+                                             float[][] tof_sums,
+                                             int       zero_border,
+                                             int       half_width )
+  {
+    int n_rows = scale_fac.length;
+    int n_cols = scale_fac[0].length;
+
+    int first_row = zero_border + half_width;
+    int last_row  = n_rows - 1 - zero_border - half_width;
+
+    int first_col = zero_border + half_width;
+    int last_col  = n_cols - 1 - zero_border - half_width;
+
+    double original_sum = 0;
+    for ( int row = first_row; row <= last_row; row++ )
+      for ( int col = first_col; col <= last_col; col++ )
+        original_sum += tof_sums[row][col];
+
+    double new_sum = 0;
+    for ( int row = first_row; row <= last_row; row++ )
+      for ( int col = first_col; col <= last_col; col++ )
+        new_sum += tof_sums[row][col] * scale_fac[row][col];
+
+    float normalization = (float)(original_sum / new_sum);    
+
+    for ( int row = first_row; row <= last_row; row++ )
+      for ( int col = first_col; col <= last_col; col++ )
+        scale_fac[row][col] *= normalization;
+
+    System.out.printf("Normalization for ID %2d is %7.4f\n",id,normalization);
+    System.out.printf("Total counts in region = %9.0f\n", original_sum );
+//    System.out.printf("NEW Sum      = %9.0f\n", new_sum );
   }
 
 
@@ -276,6 +338,8 @@ public class WritePixelSensitivity_calc
     int   mon_id = 2;
                                      // First get the average sums for vandium
     float[][][] vanadium_sums = new float[ scale_fac.length ][][];
+    float[][][] van_tof_sums  = new float[ scale_fac.length ][][];
+    System.out.println("Calculating sums for Vanadium");
     for ( int i = 1; i < n_data_sets; i++ )
     {
       String[] nx_info = van_nr.getDataSetInfo( i );
@@ -284,14 +348,14 @@ public class WritePixelSensitivity_calc
       String id_range  = nx_info[nx_info.length-1];
       if ( ds_type == Retriever.HISTOGRAM_DATA_SET )
       {
-        System.out.println( bank_name + " is type " + ds_type +
-                            " id range = " + id_range );
+//        System.out.println( bank_name + " is type " + ds_type +
+//                            " id range = " + id_range );
 
         float[][] sums = getDetectorAveSums( van_nr, i,
                                              min_tof, max_tof,
                                              zero_border, half_width,
                                              detector_id,
-                                             scale_fac );
+                                             van_tof_sums );
         det_id = detector_id[0];
         vanadium_sums[ det_id ] = sums;
         det_ids.add( det_id );
@@ -302,7 +366,10 @@ public class WritePixelSensitivity_calc
     van_nr.close();
 
                                    // Next get the average sums for background 
-    float[][][] back_sums = new float[ scale_fac.length ][][];
+                                   //
+    float[][][] back_sums     = new float[ scale_fac.length ][][];
+    float[][][] back_tof_sums = new float[ scale_fac.length ][][];
+    System.out.println("Calculating sums for Background");
     for ( int i = 1; i < n_data_sets; i++ )
     {
       String[] nx_info = back_nr.getDataSetInfo( i );
@@ -311,31 +378,34 @@ public class WritePixelSensitivity_calc
       String id_range  = nx_info[nx_info.length-1];
       if ( ds_type == Retriever.HISTOGRAM_DATA_SET )
       {
-        System.out.println( bank_name + " is type " + ds_type +
-                            " id range = " + id_range );
+//      System.out.println( bank_name + " is type " + ds_type +
+//                         " id range = " + id_range );
 
         float[][] sums = getDetectorAveSums( back_nr, i,
                                              min_tof, max_tof,
                                              zero_border, half_width,
                                              detector_id,
-                                             scale_fac );
+                                             back_tof_sums );
         det_id = detector_id[0];
         back_sums[ det_id ] = sums;
       }
     }
     double back_mon_counts = getMonitorCounts( back_nr, mon_id );
     back_nr.close();
-                                  // now subtract the background.
-                                  // TODO: Should scale by monitor counts
                                
     float scale = (float)( van_mon_counts/back_mon_counts );
     System.out.println("Background to vanadium monitor scale factor = " + 
                         scale );
+ 
     for ( int i = 0; i < det_ids.size(); i++ )  
     {
       det_id = (int)det_ids.elementAt(i);
       float[][] van  = vanadium_sums[ det_id ];
       float[][] back = back_sums[ det_id ];
+
+      float[][] van_tof  = van_tof_sums[ det_id ];
+      float[][] back_tof = back_tof_sums[ det_id ];
+
       if ( van.length != back.length )
         throw new IllegalArgumentException( "Different number of rows in " +
                            " vanadium and background for det id " + det_id );
@@ -350,8 +420,19 @@ public class WritePixelSensitivity_calc
         for ( int col = 0; col < n_cols; col++ )   
           net_counts[row][col] = van[row][col] - back[row][col] * scale; 
 
+      float[][] net_tof_counts = new float[n_rows][n_cols];
+      for ( int row = 0; row < n_rows; row++ )
+        for ( int col = 0; col < n_cols; col++ )   
+          net_tof_counts[row][col] =  van_tof[row][col] - 
+                                     back_tof[row][col] * scale; 
+
       ConvertSumsToScaleFactors( net_counts, det_id,
-                                 det_max, det_scale_max, scale_fac );
+                                 det_max, det_scale_max, 
+                                 zero_border, half_width,
+                                 scale_fac );
+
+      NormalizeScaleFactors( det_id, scale_fac[det_id], net_tof_counts,
+                             zero_border, half_width );
     }
   }
 
@@ -392,7 +473,7 @@ public class WritePixelSensitivity_calc
    *                         are to be adjusted
    *  @param  adjusted_file  The name of the new peaks file that should be
    *                         written containing the adjusted peak intensities.
-    *  @param  zero_border    The number of rows and columns around the edge
+   *  @param  zero_border    The number of rows and columns around the edge
    *                         of the detector that do not have any data, but
    *                         are just zero.
    *  @param  half_width     The distance from the center of a square 
@@ -686,8 +767,6 @@ public class WritePixelSensitivity_calc
       {
         ids[index]     = i;
         factors[index] = scale_fac[i];
-        System.out.println("index = " + index + " id = " + ids[index] + 
-                           " factors = " + factors[index] );
         index++;
       }
 
