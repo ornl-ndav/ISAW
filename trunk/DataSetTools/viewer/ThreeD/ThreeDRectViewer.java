@@ -406,7 +406,7 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
           redraw_cursor = true;          //not used
           notify_ds_observers = false;    //not used fixed ViewControl
           
-          threeD_panel.repaint( );
+          threeD_panel.repaint();
        }
    }
 
@@ -1251,7 +1251,7 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
            e.printStackTrace();
          }
      }
-     threeD_panel.repaint( );  
+     threeD_panel.repaint();  
   }
   
   class DoSet1ColorModel extends Thread
@@ -1460,6 +1460,9 @@ public class ThreeDRectViewer extends DataSetViewer implements Serializable,
  
   private void SetUpDRC2Index( )
   {
+    if ( Grids == null || Grids.length == 0 )
+      throw new IllegalArgumentException( "NO AREA DETECTORS IN DATA SET" );
+
     IDataGrid grid = Grids[0];
     DRC2Index = new int[Grids.length][grid.num_cols( )][grid.num_rows( )];
     java.util.Vector<IOperator> clears = new java.util.Vector<IOperator>();
