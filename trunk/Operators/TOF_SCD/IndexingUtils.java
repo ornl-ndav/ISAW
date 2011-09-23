@@ -2722,6 +2722,29 @@ public static float ScanFor_UB( Vector3D a_dir,
 }
 
 
+/**
+ *  Get an array of values containing the magnitude of the FFT of the 
+ *  projections of the specified q_vectors on the specified direction.
+ *  The largest value in the magnitude FFT that occurs at index 5 or more
+ *  is returned as the value of the function.
+ *
+ *  @param FFT           The object containing pre-calculated values needed to
+ *                       find the FFT of a sequence with the same number of 
+ *                       entries as the projections array.
+ *  @param q_vectors     The list of Q vectors to project on the specified 
+ *                       direction.
+ *  @param current_dir   The direction the Q vectors will be projected on.
+ *  @param projections   Array to hold the projections of the Q vectors.  This
+ *                       must be long enough so that all projected values map
+ *                       map to a valid index, after they are multiplied by the
+ *                       index_factor.
+ *  @param index_factor  Factor that when multiplied by a projected Q vector 
+ *                       will give a valid index into the projections array.
+ *  @param magnitude_fft Array that will be filled out with the magnitude of
+ *                       the FFT of the projections.
+ *  @return The largest value in the magnitude_fft, that is store in position
+ *                      5 or more.
+ */
 static float GetMagFFT( RealFloatFFT_Radix2 FFT, 
                         Vector<Vector3D>    q_vectors,
                         Vector3D            current_dir, 
