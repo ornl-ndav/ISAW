@@ -811,7 +811,9 @@ public class ScalarHandlePanel implements IReceiveMessage
 
       String[] ScalarOptsStrings = new String[ ScalarOpts.size( ) ];
       for( int i = 0 ; i < ScalarOpts.size( ) ; i++ )
+      {
          ScalarOptsStrings[i] = MakeString( RCells[i] );
+      }
 
       viewer.setNewStringList( ScalarOptsStrings );
 
@@ -1186,7 +1188,25 @@ public class ScalarHandlePanel implements IReceiveMessage
       }
       
       Res += "Vol:"+ String.format("%8.3f",LatticeParams[6])+ut.eol();
-    
+      
+      Res += ut.eol();
+      Res += "Transformation Matrix";
+      
+      double[][] Transformation =getTransf( RedCell);
+      
+      Res += ut.table( );
+      for( int rw =0; rw < 3;rw++)
+        {
+         Res +=ut.row( );
+         for(int cl =0; cl<3;cl++)
+         {
+            Res += String.format( "%7.1f" , Transformation[rw][cl] );
+                   
+          }
+         Res +=ut.rowEnd( );
+        }
+      Res +=ut.tableEnd( );
+      
       return Res;
 
    }
