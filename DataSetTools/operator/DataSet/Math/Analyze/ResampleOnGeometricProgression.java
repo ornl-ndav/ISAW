@@ -45,6 +45,8 @@
 
 package DataSetTools.operator.DataSet.Math.Analyze;
 
+import gov.anl.ipns.Parameters.BooleanPG;
+import gov.anl.ipns.Parameters.FloatPG;
 import gov.anl.ipns.Parameters.IParameter;
 import gov.anl.ipns.Util.Messaging.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
@@ -211,7 +213,9 @@ public class ResampleOnGeometricProgression extends    AnalyzeOp
    }
 
 
- /* -------------------------- setDefaultParmeters ------------------------- */
+
+
+/* -------------------------- setDefaultParmeters ------------------------- */
  /**
   *  Set the parameters to default values.
   */
@@ -219,19 +223,19 @@ public class ResampleOnGeometricProgression extends    AnalyzeOp
   {
     parameters = new Vector();  // must do this to clear any old parameters
 
-    Parameter parameter;
+   // Parameter parameter;
 
-    parameter = new Parameter( "Min X", new Float(1000) );
-    addParameter( parameter );
+   // parameter = new Parameter( "Min X", new Float(1000) );
+    addParameter( new FloatPG( "Min X", 1000f ) );
 
-    parameter = new Parameter( "Max X", new Float(20000) );
-    addParameter( parameter );
+    //parameter = new Parameter( "Max X", new Float(20000) );
+    addParameter( new FloatPG( "Max X",(20000) ) );
 
-    parameter = new Parameter( "First interval length", new Float( 2.0f ) );
-    addParameter( parameter );
+   // parameter = new Parameter( "First interval length", new Float( 2.0f ) );
+    addParameter(  new FloatPG( "First interval length", ( 2.0f ) ) );
 
-    parameter = new Parameter( "Create new DataSet?", new Boolean(false) );
-    addParameter( parameter );
+   // parameter = new Parameter( "Create new DataSet?", new Boolean(false) );
+    addParameter( new BooleanPG( "Create new DataSet?", (false) ) );
   }
 
 

@@ -74,7 +74,9 @@
 package DataSetTools.operator.DataSet.Math.Analyze;
 
 import gov.anl.ipns.MathTools.Functions.*;
+import gov.anl.ipns.Parameters.FloatPG;
 import gov.anl.ipns.Parameters.IParameter;
+import gov.anl.ipns.Parameters.IntegerPG;
 import gov.anl.ipns.Util.Numeric.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
@@ -192,32 +194,38 @@ public class  FitPolynomialToGroup  extends    AnalyzeOp
   {
     parameters = new Vector();  // must do this to clear any old parameters
 
-    Parameter parameter = new Parameter("Group ID to fit polynomial to",
-                                         new Integer(0));
-    addParameter( parameter );
+   // Parameter parameter = new Parameter("Group ID to fit polynomial to",
+     //                                    new Integer(0));
+    addParameter( new IntegerPG("Group ID to fit polynomial to",
+          new Integer(0)) );
 
-    parameter = new Parameter("Start of interval to use for the fit", 
-                               new Float(0));
-    addParameter( parameter );
+    //parameter = new Parameter("Start of interval to use for the fit", 
+  //                            new Float(0));
+    addParameter( new FloatPG("Start of interval to use for the fit", 
+          new Float(0) ));
 
-    parameter = new Parameter("End of interval to use for the fit", 
-                               new Float(1000));
-    addParameter( parameter );
+   // parameter = new Parameter("End of interval to use for the fit", 
+    //                           new Float(1000));
+    addParameter(new FloatPG("End of interval to use for the fit", 
+          new Float(1000)) );
 
-    parameter = new Parameter("Degree of polynomial to fit", new Integer(1));
-    addParameter( parameter );
+  //  parameter = new Parameter("Degree of polynomial to fit", new Integer(1));
+    addParameter(new IntegerPG("Degree of polynomial to fit", new Integer(1)) );
 
-    parameter = new Parameter("Start of interval where fit is used",
-                               new Float(0));
-    addParameter( parameter );
+   // parameter = new Parameter("Start of interval where fit is used",
+   //                            new Float(0));
+    addParameter(new FloatPG("Start of interval where fit is used",
+                                  new Float(0)));
+ 
+    //parameter = new Parameter("End of interval where fit is used",
+     //                          new Float(1000));
+    addParameter( new FloatPG("End of interval where fit is used",
+          new Float(1000) ));
 
-    parameter = new Parameter("End of interval where fit is used",
-                               new Float(1000));
-    addParameter( parameter );
-
-    parameter = new Parameter("Number of points where fit is evaluated",
-                               new Integer(0));
-    addParameter( parameter );
+    //parameter = new Parameter("Number of points where fit is evaluated",
+    //                           new Integer(0));
+    addParameter( new IntegerPG("Number of points where fit is evaluated",
+          new Integer(0) ));
   }
 
 

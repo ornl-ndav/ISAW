@@ -60,7 +60,9 @@
 package DataSetTools.operator.DataSet.Math.Analyze;
 
 import gov.anl.ipns.MathTools.*;
+import gov.anl.ipns.Parameters.FloatPG;
 import gov.anl.ipns.Parameters.IParameter;
+import gov.anl.ipns.Parameters.IntegerPG;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
 import  java.io.*;
@@ -174,14 +176,14 @@ public class  IntegrateGroup  extends    AnalyzeOp
   {
     parameters = new Vector();  // must do this to clear any old parameters
 
-    Parameter parameter = new Parameter("Group ID to Integrate",new Integer(0));
-    addParameter( parameter );
+   // Parameter parameter = new Parameter("Group ID to Integrate",new Integer(0));
+    addParameter( new IntegerPG("Group ID to Integrate",new Integer(0)) );
 
-    parameter = new Parameter("Left end point (a)", new Float(0));
-    addParameter( parameter );
+  //  parameter = new Parameter("Left end point (a)", new Float(0));
+    addParameter( new FloatPG ("Left end point (a)", new Float(0)));
 
-    parameter = new Parameter("Right end point (b)", new Float(0));
-    addParameter( parameter );
+  //  parameter = new Parameter("Right end point (b)", new Float(0));
+    addParameter( new FloatPG("Right end point (b)", new Float(0)) );
   }
 
 

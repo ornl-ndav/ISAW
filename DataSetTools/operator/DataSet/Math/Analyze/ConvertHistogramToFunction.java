@@ -63,6 +63,7 @@
 
 package DataSetTools.operator.DataSet.Math.Analyze;
 
+import gov.anl.ipns.Parameters.BooleanPG;
 import gov.anl.ipns.Parameters.IParameter;
 import gov.anl.ipns.Util.Messaging.*;
 
@@ -179,12 +180,13 @@ public class ConvertHistogramToFunction extends    AnalyzeOp
   {
     parameters = new Vector();  // must do this to clear any old parameters
 
-    Parameter parameter = new Parameter("Divide by histogram bin width?",
-                                         new Boolean(true) );
-    addParameter( parameter );
+   // Parameter parameter = new Parameter("Divide by histogram bin width?",
+   //                                      new Boolean(true) );
+    addParameter( new BooleanPG("Divide by histogram bin width?",
+          new Boolean(true) ) );
 
-    parameter = new Parameter("Make new DataSet?", new Boolean(true) );
-    addParameter( parameter );
+   // parameter = new Parameter("Make new DataSet?", new Boolean(true) );
+    addParameter( new BooleanPG("Make new DataSet?", new Boolean(true) ));
   }
 
 

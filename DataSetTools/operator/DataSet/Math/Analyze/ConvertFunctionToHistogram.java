@@ -67,6 +67,8 @@
 
 package DataSetTools.operator.DataSet.Math.Analyze;
 
+import gov.anl.ipns.Parameters.BooleanPG;
+import gov.anl.ipns.Parameters.FloatPG;
 import gov.anl.ipns.Parameters.IParameter;
 import gov.anl.ipns.Util.Messaging.*;
 
@@ -207,15 +209,16 @@ public class ConvertFunctionToHistogram extends    AnalyzeOp
   {
     parameters = new Vector();  // must do this to clear any old parameters
 
-    Parameter parameter = new Parameter("Width of first bin", new Float(0) );
-    addParameter( parameter );
+    //Parameter parameter = new Parameter("Width of first bin", new Float(0) );
+    addParameter( new FloatPG("Width of first bin", new Float(0) ) );
 
-    parameter = new Parameter("Multiply by histogram bin width?",
-                               new Boolean(true) );
-    addParameter( parameter );
+  //  parameter = new Parameter("Multiply by histogram bin width?",
+   //                            new Boolean(true) );
+    addParameter( new BooleanPG("Multiply by histogram bin width?",
+          new Boolean(true) ) );
 
-    parameter = new Parameter("Make new DataSet?", new Boolean(true) );
-    addParameter( parameter );
+  //  parameter = new Parameter("Make new DataSet?", new Boolean(true) );
+    addParameter(new BooleanPG("Make new DataSet?", new Boolean(true) ) );
   }
 
 

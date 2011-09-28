@@ -74,7 +74,10 @@
 
 package DataSetTools.operator.DataSet.Math.Analyze;
 
+import gov.anl.ipns.Parameters.BooleanPG;
+import gov.anl.ipns.Parameters.FloatPG;
 import gov.anl.ipns.Parameters.IParameter;
+import gov.anl.ipns.Parameters.IntegerPG;
 import gov.anl.ipns.Util.Messaging.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
@@ -234,17 +237,17 @@ public class ResampleDataSet extends AnalyzeOp
 
     Parameter parameter;
 
-    parameter = new Parameter( "Min X", new Float(0) );
-    addParameter( parameter );
+   // parameter = new Parameter( "Min X", new Float(0) );
+    addParameter( new FloatPG( "Min X", 0 ));
 
-    parameter = new Parameter("Max X", new Float(1000) );
-    addParameter( parameter );
+  //  parameter = new Parameter("Max X", new Float(1000) );
+    addParameter( new FloatPG("Max X",1000 ));
 
-    parameter = new Parameter( "Num X", new Integer( 200 ) );
-    addParameter( parameter );
+   //parameter = new Parameter( "Num X", new Integer( 200 ) );
+    addParameter( new IntegerPG( "Num X", 200 ));
 
-    parameter = new Parameter( "Create new DataSet?", new Boolean(false) );
-    addParameter( parameter );
+   // parameter = new Parameter( "Create new DataSet?", new Boolean(false) );
+    addParameter( new BooleanPG( "Create new DataSet?", new Boolean(false) ));
   }
 
 
