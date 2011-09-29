@@ -35,6 +35,9 @@
 package Operators.TOF_SCD;
 
 import java.util.*;
+
+import jnt.FFT.*;
+
 import gov.anl.ipns.MathTools.Geometry.*;
 import gov.anl.ipns.MathTools.*;
 
@@ -358,6 +361,38 @@ public class IndexingUtils_test
      }
   }
 
+ 
+  private static void test_GetMagFFT()
+  {
+    int N_FFT_STEPS = 256;
+    
+    Vector3D         current_dir = new Vector3D( 1, 2, -3 );
+    Vector<Vector3D> q_vectors   = new Vector<Vector3D>();
+    current_dir.normalize();
+    for ( int i = 0; i < 16; i++ )
+    {
+      Vector3D vec = new Vector3D( current_dir );
+      vec.multiply( i + 0.5001f );
+      q_vectors.add( vec );
+    }
+    float max_q_magnitude = 16;
+
+    float[] projections = new float[ N_FFT_STEPS ];
+    float[] magnitude_fft = new float[ N_FFT_STEPS/2 ];
+
+    float index_factor = N_FFT_STEPS / max_q_magnitude;
+    
+    RealFloatFFT_Radix2 FFT = new RealFloatFFT_Radix2( N_FFT_STEPS );
+
+    float max_mag_fft = IndexingUtils.GetMagFFT( FFT, q_vectors, current_dir,
+                                   projections, index_factor, magnitude_fft );
+
+    for ( int i = 0; i < magnitude_fft.length; i++ )
+      System.out.printf( " i = %3d |FFT(i)| = %8.3f\n", i, magnitude_fft[i] );
+
+     System.out.println("Max mag FFT = " + max_mag_fft );
+  }
+
 
   private static void test_Make_c_dir()
   {
@@ -663,6 +698,9 @@ public class IndexingUtils_test
 */
     test_ScanFor_Directions();
     System.out.println("Finished test_ScanFor_Directions ...................");
+
+    test_GetMagFFT();
+    System.out.println("Finished test_GetMagFFT ............................");
 /*
     test_Make_c_dir();
     System.out.println("Finished test_Make_c_dir ...........................");
