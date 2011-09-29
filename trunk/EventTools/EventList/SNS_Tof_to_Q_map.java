@@ -1076,13 +1076,20 @@ public class SNS_Tof_to_Q_map
                                                  // allocate new arrays once 
      int ok_counter  = 0;
      int use_q_index = 0;
+/*
+     int neg_count = 0;
+     for ( int i = 0; i < num_mapped; i+=2 )
+       if ( my_events[i] < 0 )
+         neg_count++;
+     System.out.println("Negative time occurred " + neg_count + " times");
+*/
      for ( int i = 0; i < num_mapped; i++ )
      {
        tof_chan = my_events[ ev_index++ ] + t0; 
        id       = my_events[ ev_index++ ]; 
        if ( id >= 0 && id < tof_to_MagQ.length )
        {
-         if ( use_id[ id ] )
+         if ( use_id[ id ] && tof_chan > 0 )
          {
            magQ = tof_to_MagQ[id]/tof_chan;
            use_q_index = use_q_binner.index( magQ );
@@ -1104,7 +1111,7 @@ public class SNS_Tof_to_Q_map
      float[] Qxyz    = new float[ 3 * ok_counter ];
      float[] weights = new float[ ok_counter ];
 
-     ev_index = 0;                                // start over a start of
+     ev_index = 0;                                // start over at start of
                                                   // the part we're mapping
      for ( int i = 0; i < num_mapped; i++ )
      {
@@ -1120,7 +1127,7 @@ public class SNS_Tof_to_Q_map
        else if ( id >= tof_to_MagQ.length )
          large_id_count++;
 
-       else if ( use_id[ id ] )
+       else if ( use_id[ id ] && tof_chan > 0 )
        {
          magQ = tof_to_MagQ[id]/tof_chan;
          use_q_index = use_q_binner.index( magQ );
