@@ -750,7 +750,7 @@ public static float Find_UB( Tran3D             UB,
                                     // q_vectors to be increasing in magnitude
   q_vectors = SortOnVectorMagnitude( q_vectors );
 
-  boolean use_fft = false;
+  boolean use_fft = true;
 /*
   if ( num_initial > 25 || q_vectors.size() > 25 )
   {
@@ -2723,7 +2723,7 @@ public static float ScanFor_UB( Vector3D a_dir,
 
 
 /**
- *  Get an array of values containing the magnitude of the FFT of the 
+ *  Fill an array with the magnitude of the FFT of the 
  *  projections of the specified q_vectors on the specified direction.
  *  The largest value in the magnitude FFT that occurs at index 5 or more
  *  is returned as the value of the function.
@@ -2756,15 +2756,21 @@ static float GetMagFFT( RealFloatFFT_Radix2 FFT,
                                                       // project onto direction
     Vector3D q_vec;
     float    dot_prod;
+    int      index;
+    int      n = projections.length;
     for ( int q_num = 0; q_num < q_vectors.size(); q_num++ )
     {
       q_vec = (Vector3D)(q_vectors.elementAt( q_num ));
       dot_prod = current_dir.dot( q_vec );
-      projections[ (int)Math.abs((index_factor * dot_prod)) ] += 1;
+      index = (int)Math.abs((index_factor * dot_prod));
+      if ( index < n )
+        projections[ index ] += 1;
+      else
+        projections[ n-1 ] += 1;    // this should not happen except due to 
+                                    // round off error
     }
                                                       // get the |FFT|
     FFT.transform( projections, 0, 1 );
-    int n = projections.length;
     for ( int i = 1; i < magnitude_fft.length; i++ )
       magnitude_fft[i] =
         (float) Math.sqrt( projections[i]   * projections[i] +
@@ -2884,6 +2890,8 @@ public static int FFTScanFor_Directions( Vector<Vector3D> directions,
     if ( mag_Q > max_mag_Q )
       max_mag_Q = mag_Q;
   }
+  max_mag_Q *= 1.1f;      // allow for a little "headroom"
+
 //  System.out.println("Max Mag Q = " + max_mag_Q );
 
   int   dc_end;    
@@ -2897,7 +2905,9 @@ public static int FFTScanFor_Directions( Vector<Vector3D> directions,
   RealFloatFFT_Radix2 FFT = new RealFloatFFT_Radix2( N_FFT_STEPS );
 
 //  System.out.println("Start of loop across directions " + full_list.size() );
-  float index_factor = (N_FFT_STEPS - 1) / max_mag_Q; // maps |proj Q| to index 
+
+  float index_factor = N_FFT_STEPS / max_mag_Q;     // maps |proj Q| to index 
+
   for ( int dir_num = 0; dir_num < full_list.size(); dir_num++ )
   {
     Vector3D current_dir = full_list.elementAt( dir_num );
