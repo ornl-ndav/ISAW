@@ -332,21 +332,28 @@ public class MultiColoredPointList extends SimpleShape
 
     super.preRender( drawable );
 
-    gl.glPointSize( point_size );
+    try
+    {
+      gl.glPointSize( point_size );
 
-    gl.glEnableClientState( GL.GL_VERTEX_ARRAY );
-    gl.glVertexPointer( 3, GL.GL_FLOAT, 12, vertices_buffer );
+      gl.glEnableClientState( GL.GL_VERTEX_ARRAY );
+      gl.glVertexPointer( 3, GL.GL_FLOAT, 12, vertices_buffer );
 
-    gl.glEnableClientState( GL.GL_COLOR_ARRAY );
-    gl.glColorPointer( 4, GL.GL_UNSIGNED_BYTE, 0, color_buffer );
+      gl.glEnableClientState( GL.GL_COLOR_ARRAY );
+      gl.glColorPointer( 4, GL.GL_UNSIGNED_BYTE, 0, color_buffer );
 
-    gl.glDrawElements( GL.GL_POINTS,  
-                       element_count, 
-                       GL.GL_UNSIGNED_INT, 
-                       index_buffer);
+      gl.glDrawElements( GL.GL_POINTS,  
+                         element_count, 
+                         GL.GL_UNSIGNED_INT, 
+                         index_buffer);
 
-    gl.glDisableClientState( GL.GL_COLOR_ARRAY );
-    gl.glDisableClientState( GL.GL_VERTEX_ARRAY );
+      gl.glDisableClientState( GL.GL_COLOR_ARRAY );
+      gl.glDisableClientState( GL.GL_VERTEX_ARRAY );
+    }
+    catch ( Exception ex )
+    {
+      System.out.println("Failed to draw points... moved while drawing?");
+    }
 
     super.postRender( drawable );
 
