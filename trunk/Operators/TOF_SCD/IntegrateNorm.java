@@ -370,10 +370,15 @@ public class IntegrateNorm {
 
                if( true)
                {
-                  I_bErr= I_bErrSv*I_bErrSv*slice.getInitialTotIntensity( )/slice.ncells();
-                  I_bErr = slice.ncells()*slice.ncells()*I_bErr +slice.getInitialTotIntensity( );
-                  I_bErr +=slice.ncells()*DD[0];
-                  Ierr *= Math.sqrt(  slice.getInitialTotIntensity( )/slice.ncells() );
+                  double VarIntensities =0;
+                  double[] vars = slice.stDevs;
+                  for( int kk=0; kk< vars.length; kk++)
+                     VarIntensities +=(vars[kk]*vars[kk]);
+                 // VarIntensities = slice.getInitialTotIntensity( );
+                  I_bErr= I_bErrSv*I_bErrSv*VarIntensities/slice.ncells();
+                  I_bErr = slice.ncells()*slice.ncells()*I_bErr +VarIntensities;
+                  I_bErr +=slice.ncells()*DD[0];//assumes sqrt error for background
+                  Ierr *= Math.sqrt( VarIntensities/slice.ncells() );
                   
                }else
                {
