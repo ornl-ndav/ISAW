@@ -68,10 +68,10 @@ public class IntegrateTools
         float[] temp = getI_and_sigI( peak_count, peak_volume,
                                       bkg_count, bkg_volume );
         float net_signal = temp[0];
-        float I_sigI     = temp[1];
+        float sigI       = temp[1];
 
         peak.inti( net_signal );
-        peak.sigi( I_sigI );    
+        peak.sigi( sigI );    
         peak.reflag( 500 + peak.reflag() );
       }
     }
@@ -115,10 +115,10 @@ public class IntegrateTools
         float[] temp = getI_and_sigI( peak_count, peak_volume,
                                       bkg_count, bkg_volume );
         float net_signal = temp[0];
-        float I_sigI     = temp[1];
+        float sigI       = temp[1];
 
         peak.inti( net_signal );
-        peak.sigi( I_sigI );
+        peak.sigi( sigI );
         peak.reflag( 600 + peak.reflag() );
       }
     }
@@ -247,11 +247,10 @@ public class IntegrateTools
 
 
   /**
-   * Find I and I/sigI for the specified signal, background, sample
+   * Find I and sigI for the specified signal, background, sample
    * volume for the signal and sample volume for the background.  The
    * value "I" is the net, peak - background, counts in the peak region.
-   * The value I/sigI is the ratio of the net peak counts divided by the
-   * estimated standard deviation of the net peak counts.
+   * The value sigI is the estimated standard deviation of the net peak counts.
    *
    * @param raw_sig   The total raw counts in the region that belongs
    *                  to the peak.
@@ -261,7 +260,7 @@ public class IntegrateTools
    * @param back_vol  The volume of the region that belongs to the
    *                  background.
    *
-   * @return an array with I and I/sigI as the first two entries.
+   * @return an array with I and sigI as the first two entries.
    */
   public static float[] getI_and_sigI( float raw_sig,  float raw_vol,
                                        float back,     float back_vol )
@@ -276,9 +275,8 @@ public class IntegrateTools
     float signal = raw_sig - ratio * back;
 
     float sigma_signal = (float)Math.sqrt( raw_sig + ratio * ratio * back );
-    float I_by_sig_I   = signal / sigma_signal;
 
-    float[] result = { signal, I_by_sig_I };
+    float[] result = { signal, sigma_signal };
     return result;
   }
 
@@ -307,7 +305,7 @@ public class IntegrateTools
       float[] temp = getI_and_sigI( counts[i], volumes[i],
                                     shell_counts[i+1], shell_volumes[i+1] );
       net_signal[i] = temp[0];
-      I_sigI[i]     = temp[1];
+      I_sigI[i]     = temp[0] / temp[1];
     }
 
     float[] valid_xs = new float[ radii.length - 1 ];   // last I, and IsigI
