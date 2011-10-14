@@ -179,6 +179,8 @@ public class Commands
 
   public static final String INDEX_PEAKS_AUTO = "INDEX_PEAKS_AUTO";
 
+  public static final String INDEX_PEAKS_FFT  = "INDEX_PEAKS_FFT";
+
   public static final String INDEX_PEAKS_ROSS = "INDEX_PEAKS_ROSS";
 
   public static final String INDEX_PEAKS_ARCS = "INDEX_PEAKS_ARCS";

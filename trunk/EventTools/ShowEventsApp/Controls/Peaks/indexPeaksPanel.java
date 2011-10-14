@@ -101,27 +101,30 @@ public class indexPeaksPanel extends    JPanel  implements IReceiveMessage
 
    //Tab pane indices for orientation matrix "calculation"
 
-//   private final static int  AUTO_WPARAMS = 0;
-
    private final static int  AUTO_ROSS    = 0;
 
-   private final static int  NEW_AUTO_WPARAMS = 1;
+   private final static int  NEW_AUTO_FFT = 1;
 
    private final static int  NEW_AUTO     = 2;
 
-   private final static int  FROM_FILE    = 3;  
+   private final static int  NEW_AUTO_WPARAMS = 3;
+
+   private final static int  FROM_FILE    = 4;  
    
-   private final static int  FROM_UB      = 4;
+   private final static int  FROM_UB      = 5;
 
-   private final static int  ARCS_INDEX   = 5;
+   private final static int  ARCS_INDEX   = 6;
 
-   private AutoWithParamsPanel auto_w_params_panel;
+   private AutoWithParamsPanel   auto_w_params_panel;
 
-   private AutoIndexingPanel   auto_indexing_panel;
+   private AutoIndexingPanel_FFT auto_indexing_panel_fft;
 
-   private ARCS_IndexPanel     arcs_panel;
+   private AutoIndexingPanel     auto_indexing_panel;
+
+   private ARCS_IndexPanel       arcs_panel;
    
-   private float[][]            UBT = null;
+   private float[][]       UBT = null;
+
    private static String   NoOrientationText="<html><body> There is no "+
                   "Orientation matrix </body></html>";
    
@@ -155,27 +158,35 @@ public class indexPeaksPanel extends    JPanel  implements IReceiveMessage
       BoxLayout blayout = new BoxLayout( panel, BoxLayout.Y_AXIS );
       panel.setLayout(  blayout );
       middlePanel = new JTabbedPane();
-/*      
-      middlePanel.addTab( "AutoIndex ( with Lattice Parameters )",
-                           buildAutoWithLatParPanel());
-*/
+
+      // #0
       middlePanel.addTab( "AutoIndex", buildAutoIndexPanel() );
 
+      // #1
+      auto_indexing_panel_fft = new AutoIndexingPanel_FFT();
+      middlePanel.addTab( "AutoIndex ( using FFT )", auto_indexing_panel_fft );
+
+      // #2
+      auto_indexing_panel = new AutoIndexingPanel();
+      middlePanel.addTab( "NEW AutoIndex", auto_indexing_panel );
+
+      // #3
       auto_w_params_panel = new AutoWithParamsPanel();
       middlePanel.addTab( "NEW AutoIndex ( with Lattice Parameters )",
                            auto_w_params_panel );
 
-      auto_indexing_panel = new AutoIndexingPanel();
-      middlePanel.addTab( "NEW AutoIndex", auto_indexing_panel );
-
+      // #4
       middlePanel.addTab( "Read UB From File", buildFromFilePanel() );
 
+      // #5
       middlePanel.addTab( "Index Using Current UB" , buildUseCurrentPanel() );
     
+      // #6
       arcs_panel = new ARCS_IndexPanel();
       middlePanel.addTab( "ARCS Index" , arcs_panel );
    
-      middlePanel.setSelectedIndex( 1 );
+      middlePanel.setSelectedIndex( 0 );
+
       panel.add( middlePanel );
       panel.add( buildTolerancePanel());
       this.add(panel );
@@ -205,7 +216,6 @@ public class indexPeaksPanel extends    JPanel  implements IReceiveMessage
       MainPanel.setLayout(new BorderLayout()) ;
       MainPanel.add( panel , BorderLayout.NORTH);
       return MainPanel;
-      
    }
    
    
@@ -237,18 +247,19 @@ public class indexPeaksPanel extends    JPanel  implements IReceiveMessage
       MainPanel.add( panel , BorderLayout.NORTH);
       
       return MainPanel;
-      
    }
    
+
    private JTextArea buildUseCurrentPanel()
    {
       OrientMatDispl = new JTextArea(20, 8);
       OrientMatDispl.setText( "No Matrix available" );
       return OrientMatDispl;
    }
+
+
    /**
-    * Builds the panel with the index peaks,
-    * show matrix and write matrix buttons.
+    * Builds the panel with the Index and Refine buttons.
     * 
     * @return panel
     */
@@ -269,16 +280,6 @@ public class indexPeaksPanel extends    JPanel  implements IReceiveMessage
                                 "<BR> to Refine Current UB" );
       panel.add(refineBtn);
       
-     /* 
-      ViewMatBtn = new JButton("Show Matrix");
-      
-      WriteMatBtn = new JButton("Write Matrix");
-      WriteMatBtn.addActionListener( new buttonListener());
-      ViewMatBtn.addActionListener( new buttonListener());
-     
-      panel.add( WriteMatBtn );
-      panel.add( ViewMatBtn );
-      */
       return panel;
    }
 
@@ -373,6 +374,7 @@ public class indexPeaksPanel extends    JPanel  implements IReceiveMessage
       return panel;
    }
    
+
    /**
     * Sends a message to the message center
     * 
@@ -658,6 +660,10 @@ public class indexPeaksPanel extends    JPanel  implements IReceiveMessage
             else if ( middlePanel.getSelectedIndex() == NEW_AUTO )
             {
               auto_indexing_panel.DoAutoIndexing(messageCenter, tolerance );
+            }
+            else if ( middlePanel.getSelectedIndex() == NEW_AUTO_FFT )
+            {
+              auto_indexing_panel_fft.DoAutoIndexing(messageCenter, tolerance );
             }
             else if( middlePanel.getSelectedIndex() == ARCS_INDEX )
             {
