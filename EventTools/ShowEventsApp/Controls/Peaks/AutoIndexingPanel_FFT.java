@@ -1,5 +1,5 @@
 /* 
- * File: AutoIndexingPanel.java
+ * File: AutoIndexingPanel_FFT.java
  *
  * Copyright (C) 2011, Dennis Mikkelson
  *
@@ -45,31 +45,26 @@ import MessageTools.*;
 import EventTools.ShowEventsApp.Command.*;
 
 
-public class AutoIndexingPanel extends JPanel
+public class AutoIndexingPanel_FFT extends JPanel
 {
   private static final String[] keys = { "d_min", 
                                          "d_max",
-                                         "angle_step",
-                                         "base_index",
-                                         "num_initial" };
+                                         "angle_step" };
 
   private static final String[] labels = { " Min Unit Cell Edge",
                                            " Max Unit Cell Edge",
-                                           " Angle Step (degrees)", 
-                                           " Base Peak Seq Number",
-                                           " Number to Index Initially" };
+                                           " Angle Step (degrees)" };
 
-  private static final String[] defaults = { "3", "15",
-                                             "1", "-1", "15" };
+  private static final String[] defaults = { "3", "15", "1" };
   private Hashtable jtextf;
 
 
   /**
-   *  Build the panel displaying parameters needed by the new auto index
-   *  using min/max d, and keep the Text Fields so that the parameters 
+   *  Build the panel displaying parameters needed by the auto index
+   *  using the FFT method, and keep the Text Fields so that the parameters 
    *  can be placed in a command to carry out that indexing method.
    */
-  public AutoIndexingPanel()
+  public AutoIndexingPanel_FFT()
   {
     jtextf           = new Hashtable( keys.length );
     Hashtable jlabel = new Hashtable( keys.length );
@@ -92,15 +87,15 @@ public class AutoIndexingPanel extends JPanel
       add( (JTextField)jtextf.get(keys[i]) );
     }
 
-    this.setBorder(new TitledBorder("Auto Index in Range"));
+    this.setBorder(new TitledBorder("Auto Index Using FFT"));
   }
 
 
   /**
    * Use the current values from the text fields of this panel, and the
-   * specified tolerance to build an IndexPeaksAutoCmd and send that
-   * command message to the specified message_center, with the name
-   * INDEX_PEAKS_AUTO.
+   * specified tolerance to build an IndexPeaksAutoCmd with name 
+   * INDEX_PEAKS_FFT and send that command message to the specified 
+   * message_center.
    *
    * @param message_center  The Message Center that should receive the command
    * @param tolerance       The tolerance value to use when indexing peaks
@@ -126,15 +121,17 @@ public class AutoIndexingPanel extends JPanel
       }
     }
                                            // Note: sequence numbers start at 1
+                                           // Base index (-1) and number 
+                                           // initial(15) are NOT used!
     IndexPeaksAutoCmd cmd = new IndexPeaksAutoCmd( 
                                                (Float)hash.get("d_min"),
                                                (Float)hash.get("d_max"),
                                                (Float)hash.get("angle_step"),
-                                    Math.round((Float)hash.get("base_index"))-1,
-                                    Math.round((Float)hash.get("num_initial")),
+                                                 -1,
+                                                 15,
                                                 tolerance );
 
-    Message message = new Message( Commands.INDEX_PEAKS_AUTO, cmd, true );
+    Message message = new Message( Commands.INDEX_PEAKS_FFT, cmd, true );
 
     message_center.send( message );
   }
