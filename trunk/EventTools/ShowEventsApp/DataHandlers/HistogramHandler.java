@@ -750,7 +750,9 @@ public class HistogramHandler implements IReceiveMessage
     float region_count = histogram.totalNear( x, y, z, 1 );
     if ( region_count <= 0 )                         // skip peaks with zero
       return null;                                   // counts in 27 bin region 
-
+                                                     // PERHAPS WE SHOULD NOT
+                                                     // DO THIS, BUT CHECK IF
+                                                     // PEAK IS ON DETECTOR
     float cradius = radii[0] / 2;
     Vector3D centroid = new Vector3D( x, y, z );
     for ( int i = 0; i < 3; i++ )
