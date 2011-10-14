@@ -717,7 +717,7 @@ public static float Find_UB( Tran3D             UB,
   Vector<Vector3D> original_qs = new Vector<Vector3D>(q_vectors.size());
   for ( int i = 0; i < q_vectors.size(); i++ )
     original_qs.add( new Vector3D( q_vectors.elementAt(i) ) );
-
+/*
                                     // First, sort the peaks in order of 
                                     // increasing |Q| so that we can try to
                                     // index the low |Q| peaks first.
@@ -749,7 +749,7 @@ public static float Find_UB( Tran3D             UB,
                                     // now order the possibly modified
                                     // q_vectors to be increasing in magnitude
   q_vectors = SortOnVectorMagnitude( q_vectors );
-
+*/
   boolean use_fft = true;
 /*
   if ( num_initial > 25 || q_vectors.size() > 25 )
@@ -801,7 +801,7 @@ public static float Find_UB( Tran3D             UB,
 
   System.out.println("Number of directions = " + directions.size() );
   for ( int i = 0; i < directions.size(); i++ )
-    System.out.println("" + directions.elementAt(i) + 
+    System.out.println("" + i + "  " + directions.elementAt(i) + 
                        "  length = " + directions.elementAt(i).length() );
 
   if ( max_indexed == 0 )
@@ -956,6 +956,340 @@ public static float Find_UB( Tran3D             UB,
   return fit_error[0];
 }
 
+
+/**
+    STATIC method FindUB_UsingFFT: This method will attempt to calculate the 
+  matrix that most nearly indexes the specified q_vectors, given only a range 
+  of possible unit cell edge lengths, by examining the FFTs of the projections
+  of the Q-vectors on various directions.
+
+     The resolution of the search through possible orientations is specified
+  by the degrees_per_step parameter.  Approximately 1-3 degrees_per_step is
+  usually adequate.  NOTE: This is an expensive calculation which takes
+  approximately 1 second using 1 degree_per_step.  However, the execution
+  time is O(n^3) so decreasing the resolution to 0.5 degree per step will take
+  about 8 seconds, etc.  It should not be necessary to decrease this value
+  below 1 degree per step, and users will have to be VERY patient, if it is
+  decreased much below 1 degree per step.
+
+    @param  UB                  3x3 matrix that will be set to the UB matrix
+    @param  q_vectors           Vector of new Vector3D objects that contains
+                                the list of q_vectors that are to be indexed
+                                NOTE: There must be at least 3 linearly
+                                independent q_vectors.  If there are only 3
+                                q_vectors, no least squares optimization of
+                                the UB matrix will be done.
+    @param  min_d               Lower bound on shortest unit cell edge length.
+                                This does not have to be specified exactly but
+                                must be strictly less than the smallest edge
+                                length, in Angstroms.
+    @param  max_d               Upper bound on longest unit cell edge length.
+                                This does not have to be specified exactly but
+                                must be strictly more than the longest edge
+                                length in angstroms.
+    @param  required_tolerance  The maximum allowed deviation of Miller indices
+                                from integer values for a peak to be indexed.
+    @param  degrees_per_step    The number of degrees between directions that
+                                are checked while scanning for an initial
+                                indexing of the peaks with lowest |Q|.
+
+    @return  This will return the sum of the squares of the residual errors.
+
+    @throws  IllegalArgumentException if there are not at least 3 q vectors,
+                                      of if this routine fails to find a UB.
+*/
+public static float FindUB_UsingFFT( Tran3D             UB,
+                                     Vector<Vector3D>   q_vectors,
+                                     float              min_d,
+                                     float              max_d,
+                                     float              required_tolerance,
+                                     float              degrees_per_step ) 
+{
+  if ( q_vectors.size() < 3 )
+    throw new IllegalArgumentException("Need at least 3 q_vectors to find UB");
+
+  Vector<Vector3D> directions = new Vector<Vector3D>();
+
+  int max_indexed = FFTScanFor_Directions( directions, q_vectors,
+                                           min_d, max_d,
+                                           required_tolerance/2,
+                                           degrees_per_step );
+
+  System.out.println("####### AFTER FFT SCAN, MAX_INDEXED = " + max_indexed );
+  System.out.println("####### Found " + directions.size() + " directions");
+
+  directions = SortOnVectorMagnitude( directions );
+
+  System.out.println("Number of directions = " + directions.size() );
+  for ( int i = 0; i < directions.size(); i++ )
+    System.out.println("" + directions.elementAt(i) +
+                       "  length = " + directions.elementAt(i).length() );
+
+  if ( max_indexed == 0 )
+    throw new IllegalArgumentException("Could not find any a,b,c to index Qs");
+
+  if ( directions.size() < 3 )
+    throw new IllegalArgumentException("Could not find enough a,b,c vectors");
+
+  float[] fit_error   = new float[1];
+  Vector<Integer>  index_vals = new Vector<Integer>();
+  Vector<Vector3D> indexed_qs = new Vector<Vector3D>();
+
+  int     num_indexed = 0;
+  int     num_sets    = 0;
+  int     set_used    = -1;
+
+  max_indexed = 0;
+
+  Tran3D temp_UB = new Tran3D();
+  float min_vol = min_d * min_d * min_d / 10.0f;
+  if ( !FormUB_From_abc_Vectors( temp_UB, directions, q_vectors, 
+                                 required_tolerance, min_vol ) )
+    throw new IllegalArgumentException("Could NOT form UB matrix from abc's");
+  else
+     UB.set( temp_UB );
+/*
+  for ( int i = 0; i < directions.size()-2; i++ )
+  {
+    if ( FormUB_From_abc_Vectors( temp_UB, directions, i, min_d, max_d ) )
+    {
+      System.out.print("i = " + i );
+      try
+      {
+        ShowLatticeParameters( temp_UB );
+        num_indexed = NumberIndexed( temp_UB,
+                                     q_vectors,
+                                     required_tolerance );
+
+        System.out.println("i = " + i + " Num indexed = " + num_indexed );
+        num_sets++;
+        if ( num_indexed > 1.1 * max_indexed )
+        {
+          max_indexed = num_indexed;
+          UB.set( temp_UB );
+          set_used = i;
+        }
+      }
+      catch (Exception ex)
+      {
+        System.out.println("Exception forming UB for set " + i +
+                           " num_indexed = " + num_indexed + 
+                           " max_indexed = " + max_indexed );
+        System.out.println("Exception is " + ex );
+        // ignore any choices where the matrix was singluar.
+      }
+    }
+  }
+
+  System.out.println("Used Set " + set_used + " of " + num_sets );
+  if ( set_used == -1 )
+    throw new IllegalArgumentException("Failed to find a UB matrix");
+  else
+    ShowLatticeParameters( UB );
+*/
+
+  Vector<Vector3D> miller_ind = new Vector<Vector3D>();
+
+  if ( q_vectors.size() >= 5 )    // refine the matrix several times
+  {
+    temp_UB = new Tran3D( UB );
+    for ( int i = 0; i < 4; i++ )
+    {
+      try
+      {
+        num_indexed = GetIndexedPeaks( UB, q_vectors, required_tolerance,
+                                       miller_ind, indexed_qs, fit_error );
+        fit_error[0] = Optimize_UB_3D( temp_UB, miller_ind, indexed_qs );
+        if ( !Float.isNaN( fit_error[0] ) )
+          UB.set( temp_UB );
+      }
+      catch (Exception ex)
+      {
+        System.out.println("Failed to improve UB");
+      }
+    }
+  }
+ 
+  System.out.println("After trying to refine UB");
+  ShowLatticeParameters( UB );
+                                      // now call Nigglify, to get shortest abc
+  try
+  {
+  float[][] floatUB_4 = UB.get();
+  float[][] floatUB = new float[3][3];
+  for ( int i = 0; i < 3; i++ )
+    for ( int j = 0; j < 3; j++ )
+      floatUB[i][j] = floatUB_4[i][j];
+  floatUB = subs.Nigglify( floatUB );
+  UB.set( floatUB );
+  }
+  catch ( Exception ex )
+  {
+    System.out.println("Exception in subs.Nigglify " );
+    System.out.println(ex);
+    ex.printStackTrace();
+  }
+
+  System.out.println("After Nigglify UB");
+  ShowLatticeParameters( UB );
+/*
+  float[] average_error = new float[1];
+  ExpandSetOfIndexedPeaks( UB, q_vectors, required_tolerance,
+                           q_vectors.size(), average_error );
+*/
+
+  return fit_error[0];
+}
+
+
+private static boolean FormUB_From_abc_Vectors( Tran3D           UB,
+                                                Vector<Vector3D> directions,
+                                                Vector<Vector3D> q_vectors,
+                                                float            req_tolerance,
+                                                float            min_vol )
+{
+   int   max_indexed = 0;
+   float vol;
+   float    alpha, beta, gamma;
+   Vector3D a_dir, b_dir, c_dir,
+            a_temp, b_temp, c_temp;
+   Vector3D acrossb = new Vector3D();
+   a_dir = null;
+   b_dir = null;
+   c_dir = null;
+
+                                         // first find the maximum cell volume
+   float max_vol = 0;
+   for ( int i = 0; i < directions.size()-2; i++ )
+   {
+     a_temp = directions.elementAt( i );
+     for ( int j = i+1; j < directions.size()-1; j++ )
+     {
+       b_temp = directions.elementAt( j );
+       acrossb.cross( a_temp, b_temp );
+       for ( int k = j+1; k < directions.size(); k++ )
+       {
+         c_temp = directions.elementAt( k );
+         vol = Math.abs( acrossb.dot( c_temp ) );
+         if ( vol > max_vol )
+           max_vol = vol;
+       }
+     }
+   }
+/*
+                             // first find upper bound on maximum cell volume
+   float max_vol = 0;
+   float length;
+   for ( int i = 0; i < directions.size(); i++ )
+   {
+     length = directions[i].length();
+     vol = length * length * length;
+     if ( vol > max_vol )
+       max_vol = vol;
+   }
+*/
+
+
+// int     N_FFT_STEPS  = 128;
+// float   max_scale    = 1.1f * max_vol;
+// float   vol_to_index = N_FFT_STEPS / max_scale;
+
+   int     N_HIST_STEPS = 121;      // chosen to have indexes 0..120 which have
+                                    // factors of 2,3,5 so volumes tend to get
+                                    // integer indexes.
+   float   vol_to_index = (N_HIST_STEPS * .999f) / max_vol;
+   float[] vol_hist     = new float[N_HIST_STEPS];
+
+   for ( int i = 0; i < directions.size()-2; i++ )
+   {
+     a_temp = directions.elementAt( i );
+     for ( int j = i+1; j < directions.size()-1; j++ )
+     {
+       b_temp = directions.elementAt( j );
+       acrossb.cross( a_temp, b_temp );
+       for ( int k = j+1; k < directions.size(); k++ )
+       {
+         c_temp = directions.elementAt( k );
+         vol = Math.abs( acrossb.dot( c_temp ) );
+         if ( vol > min_vol )
+         {
+           vol_hist[ (int)(vol * vol_to_index) ] += 1.0f;
+
+           int n_tol = NumberIndexed_3D( a_temp, b_temp, c_temp, 
+                                         q_vectors, req_tolerance );
+           int n_tol_2 = NumberIndexed_3D( a_temp, b_temp, c_temp, 
+                                           q_vectors, req_tolerance/2 );
+           
+           alpha = angle( b_temp, c_temp );
+           beta  = angle( c_temp, a_temp );
+           gamma = angle( a_temp, b_temp );
+           System.out.printf( 
+                " %8.4f  %8.4f  %8.4f   %6.2f  %6.2f  %6.2f  %8.2f  %4d  %4d\n",
+                 a_temp.length(), b_temp.length(), c_temp.length(),
+                 alpha, beta, gamma, vol, n_tol, n_tol_2 ); 
+
+           if ( n_tol_2 > 1.05 * max_indexed )
+           {
+             max_indexed = n_tol_2;
+             a_dir = a_temp;
+             b_dir = b_temp;
+             c_dir = c_temp;
+           }
+         }
+       }
+     }
+  }
+
+/*
+  float[] data = new float[ vol_hist.length ];
+  System.arraycopy( vol_hist, 0, data, 0, vol_hist.length );
+
+  RealFloatFFT_Radix2 FFT = new RealFloatFFT_Radix2( N_FFT_STEPS );
+  float[] magnitude_fft = new float[ N_FFT_STEPS/2 ];
+  FFT.transform( data, 0, 1 );
+  int n = N_FFT_STEPS;
+  for ( int i = 1; i < magnitude_fft.length; i++ )
+    magnitude_fft[i] = (float) Math.sqrt( data[i]   * data[i] +
+                                          data[n-i] * data[n-i] );
+  magnitude_fft[0] = Math.abs( data[0] );
+*/
+
+  for ( int i = 0; i < vol_hist.length; i++ )
+    System.out.println( "i, num with vol(i) " + i + ",  " + vol_hist[i] );
+  
+  System.out.println( "vol_to_index = " + vol_to_index );
+  System.out.println( "index_to_vol = " + (1/vol_to_index) );
+  System.out.println( "Max volume   = " + max_vol );
+//  System.out.println( "Max scale    = " + max_scale );
+/*
+  for ( int i = 0; i < magnitude_fft.length; i++ )
+    System.out.println("i, magnitude_fft[i] = " + i + ", " + magnitude_fft[i]);
+*/
+  if ( a_dir == null )
+  {
+    System.out.println("********** NO abc FOUND **********");
+    return false;
+  }
+
+                                   // now build the UB matrix from a,b,c       
+
+  float[][] UB_inv_arr = { { a_dir.getX(), a_dir.getY(), a_dir.getZ(), 0 },
+                           { b_dir.getX(), b_dir.getY(), b_dir.getZ(), 0 },
+                           { c_dir.getX(), c_dir.getY(), c_dir.getZ(), 0 },
+                           { 0,            0,            0,            1 } };
+
+  UB.set( UB_inv_arr );
+  UB.invert();
+
+  System.out.println("Built UB from " + a_dir.length() + 
+                     ", " + b_dir.length() +
+                     ", " + c_dir.length() );
+  return true;
+}
+
+
+
+
 /**
  *  Form a UB matrix from the given list of possible directions, using the
  *  direction at the specified index for the "a" direction.  The "b" and "c"
@@ -990,6 +1324,7 @@ private static boolean FormUB_From_abc_Vectors( Tran3D           UB,
   index++;
 
   float min_deg = (float)((180/Math.PI) * Math.atan(2*min_d/max_d) );
+  min_deg = 40;  // ############### kluge to try !!!
 
   float epsilon = 5;                    //  tolerance on right angle (degrees)
   Vector3D b_dir  = null;
@@ -1004,10 +1339,8 @@ private static boolean FormUB_From_abc_Vectors( Tran3D           UB,
       if ( gamma > 90 + epsilon )       // try for Nigli cell with angles <= 90
         b_dir.multiply( -1 );
       b_found = true;
-      index++;
     }
-    else
-      index++;
+    index++;
   }
 
   if ( ! b_found )
@@ -1019,9 +1352,11 @@ private static boolean FormUB_From_abc_Vectors( Tran3D           UB,
   Vector3D perp = new Vector3D();
   perp.cross( a_dir, b_dir );
   perp.normalize();
+  System.out.println("Perp vector = " + perp );
   float perp_ang;
   float alpha;
   float beta;
+/*
   while ( !c_found && index < directions.size() )
   {
     Vector3D vec = directions.elementAt(index);
@@ -1047,7 +1382,43 @@ private static boolean FormUB_From_abc_Vectors( Tran3D           UB,
     if ( ! c_found )
       index++;
   }
+*/
+  float dot     = 0;
+  float max_dot = 0;
+  for ( int i = index; i < directions.size(); i++ )// find direction most nearly
+  {                                                // perpendicular to a,b plane
+    Vector3D vec  = directions.elementAt(i);
+    Vector3D temp = new Vector3D( vec );
+    temp.normalize();
+    dot = Math.abs( perp.dot( temp ) );
+    if ( dot > max_dot )
+    {
+      c_dir.set( vec );
+      max_dot = dot;
+      c_found = true;
+      System.out.println("Setting as c_dir, i, max_dot = " + i + 
+                         ", " + max_dot);
+    }
+  }
 
+  perp_ang = angle( perp, c_dir );
+  if ( perp_ang > 90 )                 // keep a,b,c right handed by choosing
+  {                                    // c in general directiion of a X b 
+    perp_ang = 180 - perp_ang;
+    c_dir.multiply( -1.0f );
+  }
+
+/*
+  alpha = angle( b_dir, c_dir );
+  beta  = angle( a_dir, c_dir );
+
+  if ( perp_ang < 90 - epsilon                      &&  
+       alpha >= min_deg && (180 - alpha) >= min_deg &&
+       beta  >= min_deg && (180 - beta ) >= min_deg  )
+  {
+    c_found = true;
+  }
+*/
   if ( ! c_found )
     return false;
 /*
@@ -1605,13 +1976,14 @@ public static float Optimize_UB_4D( Tran3D UB,
     NOTE: The number of index_values and q_vectors must be the same, and must
           be at least 3.
   
-    @return  This will return the sum of the squares of the residual errors.
+    @return  This will return the sum of the squares of the residual errors,
+             or Float.NaN if the optimization failed.
   
     @throws  IllegalArgumentException if there are not at least 3
                                    indices and q vectors, or if the numbers of
                                    indices and q vectors are not the same.
    
-    @throws  std::runtime_error    exception if the QR factorization fails or
+    @throws  IllegalArgumentException if the QR factorization fails or
                                    the best direction can't be calculated.
 */
 
@@ -1637,16 +2009,30 @@ public static float Optimize_Direction_3D( Vector3D best_vec,
     H_transpose[i][2] = q.getZ();
   }
 
-  double[][] Q = LinearAlgebra.QR_factorization( H_transpose );
+  float error = Float.NaN;
+  try
+  {
+    double[][] Q = LinearAlgebra.QR_factorization( H_transpose );
 
-  double[] b = new double[ index_values.size() ];
-  for ( int i = 0; i < index_values.size(); i++ )
-    b[i] = (Integer)( index_values.elementAt(i) ); 
+    double[] b = new double[ index_values.size() ];
+    for ( int i = 0; i < index_values.size(); i++ )
+      b[i] = (Integer)( index_values.elementAt(i) ); 
 
-  float error = (float)LinearAlgebra.QR_solve( H_transpose, Q, b );
+    error = (float)LinearAlgebra.QR_solve( H_transpose, Q, b );
 
-  best_vec.set( (float)b[0], (float)b[1], (float)b[2] );
-
+                                      // only change vector if solve worked
+    if ( ! Float.isNaN(error) )           
+    {
+      Vector3D temp_vec = new Vector3D((float)b[0], (float)b[1], (float)b[2]);
+      best_vec.set( temp_vec );
+      if ( temp_vec.length() == 0 )
+        System.out.println("Optimized Direction Was (0,0,0)" );
+    }
+  }
+  catch ( Exception ex )
+  {
+    // if optimization fails, just don't change anything
+  }
   return error*error;
 }
 
@@ -1726,28 +2112,116 @@ public static boolean ValidIndex( Vector3D hkl, float tolerance )
 
 
 /**
+   Calculate the number of Q vectors for which the dot product with the 
+   specified direction vector is an integer to within the specified
+   tolerance.  This give the number of peaks that would be indexed in the
+   given direction, if it were used as one of the unit cell edge vectors,
+   a,b,c.
+  
+   @param direction    A Vector3D representing a possible unit cell edge
+                       vector, a, b, c.
+   @param q_vectors    Vector of Vector3D objects that contains the list of 
+                       q_vectors that are indexed by the corresponding hkl
+                       vectors.
+   @param tolerance    The maximum allowed distance to an integer from the dot
+                       products of peaks with the specified direction.
+
+   @return A non-negative integer giving the number of peaks indexed in one
+           direction, by the specified vector. 
+ */
+public static int NumberIndexed_1D( Vector3D         direction,
+                                    Vector<Vector3D> q_vectors,
+                                    float            tolerance )
+{
+  if ( direction.length() == 0 )
+    return 0;
+
+  float proj_value;
+  float error;
+  int   nearest_int;
+  int   count = 0;
+  for ( int i = 0; i < q_vectors.size(); i++ )
+  {
+    proj_value  = direction.dot( q_vectors.elementAt(i) );
+    nearest_int = Math.round( proj_value );
+    error = Math.abs( proj_value - nearest_int );
+    if ( error < tolerance )
+      count++;
+  }
+  return count;
+}
+
+
+/**
+   Calculate the number of Q vectors for which the dot product with the 
+   specified direction vector is an integer to within the specified
+   tolerance.  This give the number of peaks that would be indexed by the
+   UB matrix formed from the specified three real space unit cell edge vectors.
+   NOTE: This method assumes that the three edge vectors are linearly 
+         independent and could be used to form a valid UB matrix.
+  
+   @param a_dir        A Vector3D representing unit cell edge vector a
+   @param b_dir        A Vector3D representing unit cell edge vector b
+   @param c_dir        A Vector3D representing unit cell edge vector c
+   @param q_vectors    Vector of Vector3D objects that contains the list of 
+                       q_vectors that are indexed by the corresponding hkl
+                       vectors.
+   @param tolerance    The maximum allowed distance to an integer from the dot
+                       products of peaks with the specified direction.
+
+   @return A non-negative integer giving the number of peaks simultaneously
+           indexed in all three directions by the specified direction vectors. 
+ */
+public static int NumberIndexed_3D( Vector3D         a_dir,
+                                    Vector3D         b_dir,
+                                    Vector3D         c_dir,
+                                    Vector<Vector3D> q_vectors,
+                                    float            tolerance )
+{
+  if ( a_dir.length() == 0 || b_dir.length() == 0 || c_dir.length() == 0 )
+    return 0;
+
+  float   proj_value;
+  int     count = 0;
+  float[] hkl = new float[3];
+  Vector3D hkl_vec = new Vector3D();
+  for ( int i = 0; i < q_vectors.size(); i++ )
+  {
+    hkl[0] = a_dir.dot( q_vectors.elementAt(i) );
+    hkl[1] = a_dir.dot( q_vectors.elementAt(i) );
+    hkl[2] = a_dir.dot( q_vectors.elementAt(i) );
+    hkl_vec.set( hkl );
+    if ( ValidIndex( hkl_vec, tolerance ) )
+      count++;
+  }
+  return count;
+}
+
+
+/**
    Calculate the number of Q vectors that are mapped to integer h,k,l 
    values by UB.  Each of the Miller indexes, h, k and l must be within
    the specified tolerance of an integer, in order to count the peak
    as indexed.  Also, if (h,k,l) = (0,0,0) the peak will NOT be counted
    as indexed, since (0,0,0) is not a valid index of any peak.
   
-   @param UB           A 3x3 matrix of doubles holding the UB matrix
-   @param q_vectors    Vector of new Vector3D objects that contains the list of 
+   @param UB           A 3x3 matrix of doubles holding the UB matrix.
+                       The UB matrix must not be singular.
+   @param q_vectors    Vector of Vector3D objects that contains the list of 
                        q_vectors that are indexed by the corresponding hkl
                        vectors.
    @param tolerance    The maximum allowed distance between each component
                        of UB*Q and the nearest integer value, required to
                        to count the peak as indexed by UB.
    @return A non-negative integer giving the number of peaks indexed by UB. 
+   @throws IllegalArgumentException if the UB matrix appears to be singular.
  */
 public static int NumberIndexed( Tran3D UB,
                                  Vector q_vectors,
                                  float tolerance )
 {
-  float determinant = UB.determinant();
-  if ( Math.abs( determinant ) < 1.0e-5 )
-    throw new IllegalArgumentException("UB is singular (det < 1e-5)");
+  if ( !CheckUB(UB) )
+    throw new IllegalArgumentException("UB not valid orientation matrix ");
 
   Tran3D UB_inverse = new Tran3D( UB );
   UB_inverse.invert();
@@ -1762,6 +2236,68 @@ public static int NumberIndexed( Tran3D UB,
   }
 
   return count;
+}
+
+
+/**
+  Check whether or not the specified matrix is reasonable for an orientation
+  matrix.  In particular, check that it is without any nan or infinite values
+  and that its determinant is within a reasonable range, for an 
+  orientation matrix.
+
+  @param UB  A Tran3D object holding the UB matrix
+
+  @return true if this could be a valid UB matrix. 
+ */
+
+public static boolean CheckUB( Tran3D UB )
+{
+  float[][] f_vals = UB.get();
+
+  for ( int row = 0; row < 3; row++ )
+    for ( int col = 0; col < 3; col++ )
+    {
+      if ( Float.isNaN( f_vals[row][col]) )
+        return false;
+
+      if ( Float.isInfinite( f_vals[row][col]) )
+        return false;
+    }
+                                         // use double precision for
+                                         // calculating the determinant
+  double[][] val  = new double[3][3];
+  for ( int row = 0; row < 3; row++ )
+    for ( int col = 0; col < 3; col++ )
+       val[row][col] = f_vals[row][col];
+
+  double det =   val[0][0] * ( val[1][1] * val[2][2] - val[1][2] * val[2][1] )
+               - val[0][1] * ( val[1][0] * val[2][2] - val[1][2] * val[2][0] )
+               + val[0][2] * ( val[1][0] * val[2][1] - val[1][1] * val[2][0] );
+
+  double abs_det = Math.abs(det);
+  if ( abs_det > 10 || abs_det < 1e-12 ) // UB not found correctly
+    return false;
+
+  return true;
+}
+
+
+private static void ShowLatticeParameters( Tran3D UB )
+{
+  float[][]  ub_arr = UB.get();
+  double[][] ub_mat = new double[3][3];
+  for ( int i = 0; i < 3; i++ )
+    for ( int j = 0; j < 3; j++ )
+      ub_mat[i][j] = ub_arr[i][j];
+
+//  System.out.println("UB = " + UB );
+  double[] l_par = lattice_calc.LatticeParamsOfUB( ub_mat );
+  if ( l_par != null )
+    System.out.printf(" %8.4f  %8.4f  %8.4f   %8.4f  %8.4f  %8.4f\n",
+                l_par[0], l_par[1], l_par[2], l_par[3], l_par[4], l_par[5] );
+  else
+    System.out.println("l_par NUL when showing lattice parameters for matrix:"
+                       + UB );
 }
 
 
@@ -1808,6 +2344,10 @@ public static int GetIndexedPeaks_1D( Vector3D  direction,
   index_vals.clear();
   indexed_qs.clear();
   fit_error[0] = 0;
+
+  if ( direction.length() == 0 )    // special case, zero vector will NOT
+    return 0;                       // index any peaks, even though dot product
+                                    // with Q vectors is always an integer!
 
   for ( int q_num = 0; q_num < q_vectors.size(); q_num++ )
   {
@@ -2742,7 +3282,7 @@ public static float ScanFor_UB( Vector3D a_dir,
  *                       will give a valid index into the projections array.
  *  @param magnitude_fft Array that will be filled out with the magnitude of
  *                       the FFT of the projections.
- *  @return The largest value in the magnitude_fft, that is store in position
+ *  @return The largest value in the magnitude_fft, that is stored in position
  *                      5 or more.
  */
 static float GetMagFFT( RealFloatFFT_Radix2 FFT, 
@@ -2788,6 +3328,17 @@ static float GetMagFFT( RealFloatFFT_Radix2 FFT,
 }
 
 
+/**
+ * Scan the FFT array for the first maximum that exceeds
+ * the specified threshold and is beyond the initial DC term/interval.
+ * @param magnitude_fft   The array containing the magnitude of the 
+ *                        FFT values.
+ * @param threshold       The required threshold for the first peak.  This
+ *                        must be positive.
+ * @return The centroid (index) where the first maximum occurs, or -1
+ *         if no point in the FFT (beyond the DC term) equals or exceeds 
+ *         the required threshold.
+ */
 static float GetFirstMaxIndex( float[] magnitude_fft, float threshold )
 {
                                      // find first local min below threshold
@@ -2819,11 +3370,16 @@ static float GetFirstMaxIndex( float[] magnitude_fft, float threshold )
       i++;
   }
 
-  if ( found_max )
-  {
+  if ( found_max )                  // find centroid of peak in FFT using
+  {                                 // one or two bins on either side of max
     float sum   = 0;
     float w_sum = 0;
-    for ( int j = i-2; j <= i+2; j++ )
+
+    int offset = 2; 
+    if ( i == N-2 )
+      offset = 1;
+
+    for ( int j = i-offset; j <= i+offset; j++ )
     {
       sum   += j * magnitude_fft[j];
       w_sum += magnitude_fft[j];
@@ -2880,8 +3436,8 @@ public static int FFTScanFor_Directions( Vector<Vector3D> directions,
   int num_steps = (int)Math.round( 90.0 / degrees_per_step );
   Vector<Vector3D> full_list = MakeHemisphereDirections( num_steps );
 
-                           // find the maximum magnitude of Q
-  float mag_Q;
+                           // find the maximum magnitude of Q to set range
+  float mag_Q;             // needed for FFT
   float max_mag_Q = 0;
   for ( int q_num = 1; q_num < q_vectors.size(); q_num++ )
   {
@@ -2890,24 +3446,19 @@ public static int FFTScanFor_Directions( Vector<Vector3D> directions,
     if ( mag_Q > max_mag_Q )
       max_mag_Q = mag_Q;
   }
-  max_mag_Q *= 1.1f;      // allow for a little "headroom"
+  max_mag_Q *= 1.1f;      // allow for a little "headroom" for FFT range
 
-//  System.out.println("Max Mag Q = " + max_mag_Q );
-
-  int   dc_end;    
-  float max_mag_fft;
+                          // now apply the FFT to each of the directions,
+                          // and keep track of their maximum magnitude past DC
+  float   max_mag_fft;
   float[] max_fft_val   = new float[ full_list.size() ];
-  float[] max_fft_copy  = new float[ full_list.size() ];
 
   float[] projections   = new float[ N_FFT_STEPS ];
   float[] magnitude_fft = new float[ N_FFT_STEPS/2 ];
 
-  RealFloatFFT_Radix2 FFT = new RealFloatFFT_Radix2( N_FFT_STEPS );
-
-//  System.out.println("Start of loop across directions " + full_list.size() );
-
   float index_factor = N_FFT_STEPS / max_mag_Q;     // maps |proj Q| to index 
 
+  RealFloatFFT_Radix2 FFT = new RealFloatFFT_Radix2( N_FFT_STEPS );
   for ( int dir_num = 0; dir_num < full_list.size(); dir_num++ )
   {
     Vector3D current_dir = full_list.elementAt( dir_num );
@@ -2918,31 +3469,40 @@ public static int FFTScanFor_Directions( Vector<Vector3D> directions,
 
     max_fft_val[ dir_num ] = max_mag_fft; 
   }
+
+                          // now find the directions with the N_TO_TRY
+                          // largest fft values, and add to temp_dirs vector
+  int N_TO_TRY = 200;
  
+  float[] max_fft_copy  = new float[ full_list.size() ];
   System.arraycopy( max_fft_val, 0, max_fft_copy, 0, max_fft_copy.length );
   Arrays.sort( max_fft_copy );
 
   int index = max_fft_copy.length - 1;
   max_mag_fft = max_fft_copy[ index ];
 
-//  System.out.println("max_mag_fft = " + max_mag_fft );
-
   float threshold = max_mag_fft;
-  while ( ( index > max_fft_copy.length - 70 ) && threshold >= max_mag_fft / 2)
+  while ( ( index > max_fft_copy.length - N_TO_TRY ) && 
+            threshold >= max_mag_fft / 2)
   {
     index--;
     threshold = max_fft_copy[ index ];
   }
-//  System.out.println("Threshold on max fft = " + threshold );
 
   Vector<Vector3D> temp_dirs = new Vector<Vector3D>();
   for ( int i = 0; i < max_fft_val.length; i++ )
     if ( max_fft_val[i] >= threshold )
     {
       temp_dirs.add( full_list.elementAt( i ) );
-//    System.out.println("Added direction " +i+ " max mag = "+max_fft_val[i]);
     }
 
+  System.out.println("max_mag_fft   = " + max_mag_fft );
+  System.out.println("threshold     = " + threshold );
+  System.out.println("Num dirs kept = " + temp_dirs.size() );
+
+                                  // now scan through temp_dirs and use the
+                                  // FFT to find the cell edge length that
+                                  // corresponds to the max_mag_fft
   int num_initial = temp_dirs.size();
   Vector3D temp;
   for ( int i = 0; i < num_initial; i++ )
@@ -2953,73 +3513,80 @@ public static int FFTScanFor_Directions( Vector<Vector3D> directions,
                              magnitude_fft );
 
     float position = GetFirstMaxIndex( magnitude_fft, threshold );
-    float q_val = max_mag_Q / position;
-    float d_val = 1 / q_val;
-//    System.out.println( "  position = " + position + 
-//                        "  q = " + q_val + 
-//                        "  d = " + d_val ); 
     if ( position > 0 )
     {
+      float q_val = max_mag_Q / position;
+      float d_val = 1 / q_val;
       temp_dirs.elementAt(i).multiply( d_val );
 
-      // since FFT sometimes finds a "harmonic", temporarily add 1/2 1/3 length
-      temp = new Vector3D( temp_dirs.elementAt(i) );
-      temp.multiply( 0.5f );
-      temp_dirs.add( temp );
-
-      temp = new Vector3D( temp_dirs.elementAt(i) );
-      temp.multiply( 0.33333333333f );
-      temp_dirs.add( temp );
-
-      temp = new Vector3D( temp_dirs.elementAt(i) );
-      temp.multiply( 0.25f );
-      temp_dirs.add( temp );
+      // since FFT sometimes finds a "harmonic" or "sub harmonic", add 1/2, 
+      // 1/3, 1/4 ... and 2, 3, 4... times length if they are not too short
+      for ( int multiple = 2; multiple <= 10; multiple++ )
+      {
+        if ( d_val * multiple <= max_d  &&
+             d_val * multiple >= min_d )
+        { 
+          temp = new Vector3D( temp_dirs.elementAt(i) );
+          temp.multiply( multiple );
+          temp_dirs.add( temp );
+        }
+        if ( d_val / multiple <= max_d  &&
+             d_val / multiple >= min_d )
+        {
+          temp = new Vector3D( temp_dirs.elementAt(i) );
+          temp.multiply( 1.0f/(float)multiple );
+          temp_dirs.add( temp );
+        }
+      }
     }
   }
-                                   // now refine and only keep those vectors
-                                   // that index about as many peaks as
-                                   // the best direction.
+               // remove any of the original directions that aren't in range
+               // NOTE: We keep any harmonics and sub-harmonics that might 
+               //       have been added in the previous block!
+  for ( int i = temp_dirs.size()-1; i >= 0; i-- )      
+  {
+    float length = temp_dirs.elementAt(i).length();
+    if ( length < min_d || length > max_d )
+      temp_dirs.remove( i );
+  }
+
+                                   // now refine the edges in "temp_dirs" and 
+                                   // find the max number of peaks indexed.
   Vector<Vector3D> index_vals = new Vector<Vector3D>();
   Vector<Vector3D> indexed_qs = new Vector<Vector3D>();
   Vector3D current_dir = new Vector3D();
 
-                                   // scan to find the max number indexed
-  max_indexed = 0;
+  Vector<Vector3D> sorted_dirs = SortOnVectorMagnitude( temp_dirs );
+
   int num_indexed;
-  Vector<Vector3D> selected_dirs = new Vector<Vector3D>();
-  for ( int dir_num = 0; dir_num < temp_dirs.size(); dir_num++ )
+                                   // look at how many peaks were indexed
+                                   // for each of the initial directions
+  System.out.println("BEFORE REFINING DIRECTIONS");
+  max_indexed = 0;
+  for ( int dir_num = 0; dir_num < sorted_dirs.size(); dir_num++ )
   {
-    current_dir = temp_dirs.elementAt( dir_num );
-
-    num_indexed = GetIndexedPeaks_1D( current_dir,
-                        q_vectors,
-                        required_tolerance,
-                        index_vals,
-                        indexed_qs,
-                        fit_error  );
-
-    try
-    {
-      num_indexed = 0;
-      Optimize_Direction_3D( current_dir, index_vals, indexed_qs );
- 
-      num_indexed = GetIndexedPeaks_1D( current_dir,
-                                        q_vectors,
-                                        required_tolerance,
-                                        index_vals,
-                                        indexed_qs,
-                                        fit_error  ); 
-      if ( num_indexed > max_indexed )
-        max_indexed = num_indexed;
-    }
-    catch ( Exception ex )
-    {
-//      System.out.println("Failed to optimize with num_indexed = " 
-//                          + num_indexed);
-    }
+    current_dir = sorted_dirs.elementAt( dir_num );
+    num_indexed = NumberIndexed_1D( current_dir, q_vectors, required_tolerance);
+    if ( num_indexed > max_indexed )
+      max_indexed = num_indexed;
+    System.out.println("" + dir_num + "  " + current_dir + 
+      "  " + current_dir.length() + "  " + num_indexed + "  " + max_indexed );
   }
-                                    // only keep directions that essentially
-                                    // index the max number of peaks
+
+                                    // only keep original peaks that index at
+                                    // least 60% of max num indexed
+  temp_dirs.clear();
+  for ( int dir_num = 0; dir_num < sorted_dirs.size(); dir_num++ )
+  {
+    current_dir = sorted_dirs.elementAt( dir_num );
+    num_indexed = NumberIndexed_1D( current_dir, q_vectors, required_tolerance);
+    if ( num_indexed >= 0.6 * max_indexed )
+      temp_dirs.add( current_dir );
+  }
+
+                                   // refine directions and again find the 
+                                   // max number indexed
+  max_indexed = 0;
   for ( int dir_num = 0; dir_num < temp_dirs.size(); dir_num++ )
   {
     current_dir = temp_dirs.elementAt( dir_num );
@@ -3032,26 +3599,108 @@ public static int FFTScanFor_Directions( Vector<Vector3D> directions,
                                       fit_error  );
     try
     {
-      num_indexed = 0;
-      Optimize_Direction_3D( current_dir, index_vals, indexed_qs );
-
-      num_indexed = GetIndexedPeaks_1D( current_dir,
-                                        q_vectors,
-                                        required_tolerance,
-                                        index_vals,
-                                        indexed_qs,
-                                        fit_error  );
-      if ( num_indexed > max_indexed * 0.9 )
-        selected_dirs.add( current_dir );
+      boolean failed = false;
+      int count = 0;
+      while ( count < 4 && !failed )     // 4 iterations should be enough for
+      {                                  // the optimization to stabilize
+        num_indexed = 0;
+        error = Optimize_Direction_3D( current_dir, index_vals, indexed_qs );
+ 
+        if ( Float.isNaN(error) )
+          failed = true;
+        else
+          num_indexed = GetIndexedPeaks_1D( current_dir,
+                                            q_vectors,
+                                            required_tolerance,
+                                            index_vals,
+                                            indexed_qs,
+                                            fit_error  ); 
+        count++;
+      }
+      if ( !failed && ( num_indexed > max_indexed ) )
+        max_indexed = num_indexed;
     }
     catch ( Exception ex )
-    {
-  //    System.out.println("Failed to optimize with num_indexed = " 
-  //                        + num_indexed);
+    { 
+       System.out.print  ("Failed to optimize direction # " + dir_num );
+       System.out.println(" Direction = " + current_dir );
+       // just don't count any direction that fails to optimize properly
     }
   }
-                                      // finally, optimize again and discard
-                                      // duplicates, and ones with bad length
+
+  System.out.println("MAX INDEXED = " + max_indexed );
+
+                                    // only keep directions that essentially
+                                    // index the max number of peaks
+  Vector<Vector3D> selected_dirs = new Vector<Vector3D>();
+
+  for ( int dir_num = 0; dir_num < temp_dirs.size(); dir_num++ )
+  {
+    current_dir = temp_dirs.elementAt( dir_num );
+
+    System.out.println("dir_num = " + dir_num + 
+                       " dir = " + current_dir + 
+                       ", " + current_dir.length() );
+    num_indexed = GetIndexedPeaks_1D( current_dir,
+                                      q_vectors,
+                                      required_tolerance,
+                                      index_vals,
+                                      indexed_qs,
+                                      fit_error  );
+
+    if ( num_indexed > max_indexed * 0.75 )
+    {
+      System.out.println("dir_num = " + dir_num + 
+                         " num_indexed = " + num_indexed +
+                         " adding " + current_dir + 
+                         ", " + current_dir.length() + 
+                         " indexed " + num_indexed );
+                        
+      selected_dirs.add( current_dir );
+    }
+  }
+
+  selected_dirs = SortOnVectorMagnitude( selected_dirs );
+  System.out.println( "DIRECTIONS INDEXING 75% " + selected_dirs.size() );
+  for ( int i = 0; i < selected_dirs.size(); i++ )
+  {
+    current_dir = selected_dirs.elementAt( i );
+    num_indexed = NumberIndexed_1D( current_dir, q_vectors, required_tolerance);
+    System.out.println( current_dir + ", " + current_dir.length() + 
+                        "   " + num_indexed );
+  }
+
+                                      // discard duplicates:
+  float len_tol = 0.1f;               // 10% tolerance for lengths
+  float ang_tol = 5;                  // 5 degree tolerance for angles
+  selected_dirs = DiscardDuplicates( selected_dirs,
+                                     q_vectors,
+                                     required_tolerance,
+                                     len_tol,
+                                     ang_tol );
+
+                                      // discard ones with length out of bounds
+                                      // and calculate the max number indexed
+  max_indexed = 0;
+  directions.clear();
+  for ( int i = 0; i < selected_dirs.size(); i++ )
+  {
+    current_dir = selected_dirs.elementAt( i );
+    float length = current_dir.length();
+    if ( length >= min_d && length <= max_d )   // only keep if within range
+    { 
+      directions.add( current_dir );
+      num_indexed = NumberIndexed_1D( current_dir, 
+                                      q_vectors, 
+                                      required_tolerance );
+      if ( num_indexed > max_indexed )
+        max_indexed = num_indexed; 
+    }
+  }
+  
+                                      // finally, discard duplicates, and 
+                                      // ones with length out of bounds
+/*
   directions.clear();
   Vector3D diff     = new Vector3D();
   Vector3D dir_temp = new Vector3D();
@@ -3067,8 +3716,6 @@ public static int FFTScanFor_Directions( Vector<Vector3D> directions,
                                       indexed_qs,
                                       fit_error  );
 
-    Optimize_Direction_3D( current_dir, index_vals, indexed_qs );
-
     float length = current_dir.length();
     if ( length >= min_d && length <= max_d )   // only keep if within range
     {
@@ -3079,7 +3726,7 @@ public static int FFTScanFor_Directions( Vector<Vector3D> directions,
         diff.set( current_dir );
         diff.subtract( dir_temp );
                                                 // discard same direction  
-        if ( diff.length() < 0.001f )
+        if ( diff.length() < 0.01f )
           duplicate = true;
                                                 // discard opposite direction 
         else 
@@ -3098,17 +3745,125 @@ public static int FFTScanFor_Directions( Vector<Vector3D> directions,
       }
     }
   }
+*/
 
   directions = SortOnVectorMagnitude( directions );
 
-//  System.out.println( "FFT KEPT DIRECTIONS " + directions.size() );
-//  for ( int i = 0; i < directions.size(); i++ )
-//  {
-//    current_dir = directions.elementAt( i );
-//    System.out.println( current_dir + ", " + current_dir.length() );
-//  }
+  System.out.println( "FFT KEPT DIRECTIONS " + directions.size() );
+  for ( int i = 0; i < directions.size(); i++ )
+  {
+    current_dir = directions.elementAt( i );
+    num_indexed = NumberIndexed_1D( current_dir,
+                                    q_vectors,
+                                    required_tolerance );
+
+    System.out.println( current_dir + ", " + current_dir.length() +
+                        " num_indexed = " + num_indexed );
+  }
 
   return max_indexed;
+}
+
+
+/**
+ *  Construct a sublist of the specified list of a,b,c directions, by removing
+ *  all directions that seem to be duplicates.  If several directions all have
+ *  the same length (within the specified length tolerance) and all have the
+ *  same direction (within the specified angle tolerange) then only one of 
+ *  those directions will be recorded in the sublist.  The one that indexes
+ *  the most peaks, within the specified tolerance will be kept.
+ *
+ *  @param  dirs                List of possible a,b,c directions
+ *  @param  q_vectors           List of q_vectors that should be indexed
+ *  @param  required_tolerance  The tolerance for indexing
+ *  @param  len_tol             The tolerance on the relative difference in 
+ *                              length for two directions to be considered
+ *                              equal.  Eg. if relative differences must be
+ *                              less than 5% for two lengths to be considered
+ *                              the same, pass in .05 for the len_tol.
+ *  @param  ang_tol             The tolerance for the difference in directions,
+ *                              specified in degrees.
+ *
+ *  @return a new list without duplicated directions.
+ */
+private static Vector<Vector3D> DiscardDuplicates( Vector<Vector3D> dirs,
+                                                   Vector<Vector3D> q_vectors,
+                                                   float    required_tolerance,
+                                                   float    len_tol,
+                                                   float    ang_tol )
+{
+  Vector<Vector3D> new_list = new Vector<Vector3D>();
+  Vector<Vector3D> temp     = new Vector<Vector3D>();
+  Vector3D current_dir,
+           next_dir;
+  Vector3D zero_vec = new Vector3D(0,0,0);
+  float    current_length,
+           next_length;
+  float    angle,
+           len_diff;
+  boolean  new_dir;
+  int      dir_num = 0;
+  int      check_index;
+  while ( dir_num < dirs.size() )
+  {                                          // put sequence of similar vectors
+    current_dir = dirs.elementAt( dir_num ); // in sub-list temp.
+    dir_num++;
+    current_length = current_dir.length();
+
+    if ( current_length > 0 )                 // skip any zero vectors
+    {
+      temp.clear();
+      temp.add( current_dir );
+      new_dir = false;
+      check_index = dir_num;
+      while ( check_index < dirs.size() && !new_dir )
+      {
+        next_dir = dirs.elementAt( check_index );
+        next_length = next_dir.length();
+        len_diff = Math.abs( next_dir.length() - current_length );
+        if ( next_length > 0 )
+        {
+          if ( ( len_diff/current_length ) < len_tol )  // continue scan
+          { 
+            angle = angle( current_dir, next_dir );
+            if ( (angle < ang_tol) || (angle > 180-ang_tol) )
+            {
+              temp.add( next_dir );
+              dirs.set( check_index, zero_vec );  // mark off this direction 
+            }                                     // since it was duplicate
+
+            check_index++;                    // keep checking all vectors with 
+          }                                   // essentially the same length   
+          else
+            new_dir = true;
+        }
+        else
+          check_index++;                     // just move on!
+      }
+                                             // now scan through temp list to
+      int max_indexed = 0;                   // find the one that indexes most
+      int num_indexed;
+      int max_i = -1;
+      for ( int i = 0; i < temp.size(); i++ )
+      {
+        num_indexed = NumberIndexed_1D( temp.elementAt(i), 
+                                        q_vectors, 
+                                        required_tolerance );
+        if ( num_indexed > max_indexed )
+        {
+          max_indexed = num_indexed;
+          max_i = i;
+        }
+      }
+   
+      if ( max_indexed > 0 )               // don't bother to add and direction
+      {                                    // that doesn't index anything
+        new_list.add( temp.elementAt( max_i ) );  
+      }
+    }
+  }
+
+  return new_list;
 }
 
 
