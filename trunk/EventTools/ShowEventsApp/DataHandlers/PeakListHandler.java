@@ -396,7 +396,7 @@ public class PeakListHandler implements IReceiveMessage
           Vector3D q_vec = new Vector3D( peakNew_list.elementAt(i).getQ() );
           q_vectors.add( q_vec );
         }
-
+/*
         IndexingUtils.Find_UB( UB_tran,          // NO Lattice Parameters
                                q_vectors,
                                cmd.getD_min(),
@@ -405,6 +405,13 @@ public class PeakListHandler implements IReceiveMessage
                                cmd.getBase_index(),
                                cmd.getNum_initial(),
                                cmd.getAngle_step() );
+*/
+         IndexingUtils.FindUB_UsingFFT( UB_tran,          // TEST FFT METHOD 
+                                        q_vectors,
+                                        cmd.getD_min(),
+                                        cmd.getD_max(),
+                                        cmd.getTolerance(), 
+                                        cmd.getAngle_step() );
 
          float[][] UB = new float[3][3];
          float[][] UB_tran_arr = UB_tran.get();
