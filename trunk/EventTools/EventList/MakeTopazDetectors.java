@@ -1,7 +1,7 @@
 /* 
  * File: MakeTopazDetectors.java
  *
- * Copyright (C) 2009, Dennis Mikkelson
+ * Copyright (C) 2009-2011, Dennis Mikkelson
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -43,12 +43,23 @@ import gov.anl.ipns.MathTools.Geometry.*;
 
 /**
  * Class to generate detector placement information for TOPAZ.
- * Currently, this just supports the initial configuration with
- * four detectors.  Detector numbering starts at 1. 
+ * This version supports arbitrary detector numbering and placement, as
+ * specified in arrays in the method getTOPAZ_Detectors.  The translation and
+ * rotations that position and orient a detector are specified in the IPNS 
+ * coordinate system.  The resulting detector information is converted to SNS 
+ * coordinates in the lower-level Peak_new_IO class. 
  */
 public class MakeTopazDetectors
 {
 
+  /**
+   *  Rotate the specified detector grid by the specified angle around
+   *  the specified axis.
+   *  @param grid   The detector grid being rotated 
+   *  @param angle  The rotation angle in degrees, following the right hand
+   *                rule
+   *  @param axis   The axis of rotation.
+   */ 
   private static void Rotate( UniformGrid grid, float angle, Vector3D axis )
   {
     Vector3D x_vec  = grid.x_vec(); 
@@ -67,6 +78,12 @@ public class MakeTopazDetectors
   }
 
 
+  /**
+   *  Shift the specified detector grid by the specified translation vector.
+   *  @param grid         The detector grid being shifted
+   *  @param translation  The vector describing the amount the detector will 
+   *                      be shifted.
+   */
   private static void Translate( UniformGrid grid, Vector3D translation )
   {
     Vector3D center = grid.position();
@@ -80,13 +97,19 @@ public class MakeTopazDetectors
   }
 
 
+  /**
+   *  Print out the information about each of the detector grids to the
+   *  specified file in the .DetCal format.
+   *  @param grids     Vector of detector grid objects.
+   *  @param filename  Name of DetCal file to write.
+   */
   private static void PrintGrids( Vector<UniformGrid> grids, String filename )
                throws IOException
   {
-    System.out.println("Printing " + grids.size() + " Grids" );
+    System.out.println("Printing " + grids.size() + 
+                       " Grids to File: " + filename);
 
-    String outfilename = filename + ".grids";
-    PrintStream out = new PrintStream( outfilename );
+    PrintStream out = new PrintStream( filename );
     out.println("# NEW CALIBRATION FILE FORMAT (in NeXus/SNS coordinates):");
     out.println("# Lengths are in centimeters.");
     out.println("# Base and up give directions of unit vectors for a local");
@@ -105,56 +128,12 @@ public class MakeTopazDetectors
 
 
 /**
+ * Get the list of detector grids for the TOPAZ configuration specified in
+ * the constants and arrays of this method.
  * NOTE: Internally, we need to use IPNS coordinates and the IO code
  * will translate this to SNS/NeXus coordinates. 
  */
-  private static Vector<UniformGrid> getGrids_version_1()
-  {
-    float DET_WIDTH  = 0.150f;
-    float DET_HEIGHT = 0.150f;
-    float DET_DEPTH  = 0.002f;
-    int   N_ROWS     = 256;
-    int   N_COLS     = 256;
-
-    Vector<UniformGrid> grids = new Vector<UniformGrid>();
-
-    Vector3D center    = new Vector3D(0,  0, 0);
-    Vector3D base_vec  = new Vector3D(0, -1, 0);
-    Vector3D up_vec    = new Vector3D(0,  0, 1);
-
-    Vector3D vertical_axis = new Vector3D( 0, 0, 1 ); 
-    Vector3D beam_axis     = new Vector3D( 1, 0, 0 ); 
-    Vector3D translation   = new Vector3D( 0.19f, 0, 0 );
-
-                                    // Note: zero pad at start of list
-    float[] theta  = { 0,  0,  0,  0, .785398f };
-    float[] phi    = { 0, -.785398f, -1.5708f, -2.35619f, -1.5708f };
-    for ( int ID = 1; ID <=4; ID++ )
-    {
-      UniformGrid grid = new UniformGrid( ID, "m",
-                                          center, base_vec, up_vec,
-                                          DET_WIDTH, DET_HEIGHT, DET_DEPTH,
-                                          N_ROWS, N_COLS );
-      Translate( grid, translation );
-
-      float phi_angle = (float)(phi[ID] * 180 / Math.PI);
-      Rotate( grid, phi_angle, vertical_axis );
-
-      float theta_angle = (float)(theta[ID] * 180 / Math.PI);
-      Rotate( grid, theta_angle, beam_axis );
-
-      grids.add( grid );
-    }
-
-    return grids;
-  }
-
-
-/**
- * NOTE: Internally, we need to use IPNS coordinates and the IO code
- * will translate this to SNS/NeXus coordinates. 
- */
-  private static Vector<UniformGrid> getGrids_version_2()
+  private static Vector<UniformGrid> getTOPAZ_Detectors()
   {
     float DET_WIDTH  = 0.15819f;
     float DET_HEIGHT = 0.15819f;
@@ -173,46 +152,60 @@ public class MakeTopazDetectors
     Vector3D horiz_perp_axis = new Vector3D( 0, 1, 0 );
     Vector3D translation;
 
-    float[] chi  = { 0f, -.279253f, -.558505f, -.558505f, -.279253f, 
-                     0f,  .279253f,  .558505f,  .558505f,  .279253f, 
-                         -.279253f,        0f,  .279253f,  0f };
-    float[] phi  = { -0.628319f, -0.942478f, -1.25664f, -1.88496f, -2.19911f,
-                     -2.51327f,  -2.19911f,  -1.88496f, -1.25664f,  1.57080f,
-                     -1.57080f,  -1.25664f,  -1.57080f, -1.88496f };
-    float[] dist = { 39.5f, 42.5f, 45.5f, 45.5f, 42.5f,
-                     39.5f, 42.5f, 45.5f, 45.5f, 42.5f,
-                     42.5f, 39.5f, 42.5f, 39.5f };
+    int[]   ids  = { 17, 18, 
+                     22, 23, 26, 27,
+                     33, 36, 37, 38, 39,
+                     46, 47, 48, 49,
+                     57, 58 };
+
+    // NOTE: The Omega angle called theta in the TOPAZ documentation
+    float[] omega = {-1.884960f, -1.25664f,
+                      1.570800f,  2.19911f, -2.199120f, -1.570800f,
+                      1.884960f, -2.51327f, -1.884960f, -1.256640f, -0.628319f,
+                     -2.199120f, -1.57080f, -0.942478f, -0.314159f,
+                     -1.884960f, -1.25664f };
+
+    float[] chi  = { 0.558505f,  0.558505f,
+                     0.279253f,  0.279253f,  0.279253f,  0.279253f,
+                     0,          0,          0,          0,         0, 
+                    -0.279253f, -0.279253f, -0.279253f, -0.279253f,
+                    -0.558505f, -0.558505f };
+
+    float[] dist = { 45.5f, 45.5f,
+                     42.5f, 42.5f, 42.5f, 42.5f,
+                     39.5f, 39.5f, 39.5f, 39.5f, 39.5f,
+                     42.5f, 42.5f, 42.5f, 42.5f,
+                     45.5f, 45.5f };
+
     
-    for ( int ID = 1; ID <= chi.length; ID++ )
+    for ( int i = 0; i < chi.length; i++ )
     {
-      UniformGrid grid = new UniformGrid( ID, "m",
+      UniformGrid grid = new UniformGrid( ids[i], "m",
                                           center, base_vec, up_vec,
                                           DET_WIDTH, DET_HEIGHT, DET_DEPTH,
                                           N_ROWS, N_COLS );
 
-      int index = ID - 1;
-
       // NOTES: 1. Grid radius must be in meters
-      //        2. Rotation by -45 degrees about placed 0,0 pixel at lower 
+      //        2. Rotation by -45 degrees about places 1,1 pixel at lower 
       //           corner of detector with x (column numbers) increasing up
       //           to the right from the point of view of the sample.
       //        3. Second rotation by chi about the horiz_perp_axis, "raises" 
       //           the detector above the plane and tilts the detector
       //           by the required amount.
-      //        4. Third rotation by phi, rotates about the vertical axis to
+      //        4. Third rotation by omega, rotates about the vertical axis to
       //           place the detector where it belongs.
       //        5. The rotations MUST be done in this order.
 
-      translation = new Vector3D( dist[index]/100, 0, 0 );
+      translation = new Vector3D( dist[i]/100, 0, 0 );
       Translate( grid, translation );
 
       Rotate( grid, -45, beam_axis );
 
-      float chi_angle = (float)(chi[index] * 180 / Math.PI);
+      float chi_angle = (float)(chi[i] * 180 / Math.PI);
       Rotate( grid, chi_angle, horiz_perp_axis );
 
-      float phi_angle = (float)(phi[index] * 180 / Math.PI);
-      Rotate( grid, phi_angle, vertical_axis );
+      float omega_angle = (float)(omega[i] * 180 / Math.PI);
+      Rotate( grid, omega_angle, vertical_axis );
 
       grids.add( grid );
     }
@@ -223,9 +216,9 @@ public class MakeTopazDetectors
 
   public static void main( String args[] ) throws IOException
   {
-    Vector<UniformGrid> grids = getGrids_version_2();
-    System.out.println("There are " + grids.size() + " Grids" );
-    PrintGrids( grids, "TOPAZ_Grids_2" );
+    Vector<UniformGrid> grids = getTOPAZ_Detectors();
+    System.out.println("There are " + grids.size() + " Detectors" );
+    PrintGrids( grids, "TOPAZ_Detectors.DetCal" );
   }
 
 
