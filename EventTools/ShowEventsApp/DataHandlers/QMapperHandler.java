@@ -402,7 +402,7 @@ public class QMapperHandler implements IReceiveMessage
           {
             level_counts[0]++;
             for ( int j = 1; j < levels.length; j++ )
-              if ( peak.sigi() > levels[j] )
+              if ( peak.sigi() > 0 && peak.inti() / peak.sigi() >= levels[j] )
                 level_counts[j]++;
           }
         }
