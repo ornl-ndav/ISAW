@@ -95,27 +95,26 @@ class anvred2(GenericTOF_SCD):
     def setDefaultParameters(self):
     
         self.super__clearParametersVector()
-        self.addParameter(DataDirPG("Working directory", "C:/Users/Arthur/Desktop/Topaz/ext_corr"))
-        self.addParameter(StringPG("Experiment name", "Triphylite"))
-        self.addParameter(FloatPG("Total scattering linear abs coeff in cm^-1", 0.389))
-        self.addParameter(FloatPG("True absorption linear abs coeff in cm^-1", 1.001))
-        self.addParameter(FloatPG("Radius of spherical crystal in cm", 0.187))
+        self.addParameter(DataDirPG("Working directory", ""))
+        self.addParameter(StringPG("Experiment name", ""))
+        self.addParameter(FloatPG("Total scattering linear abs coeff in cm^-1", 1.0))
+        self.addParameter(FloatPG("True absorption linear abs coeff in cm^-1", 1.0))
+        self.addParameter(FloatPG("Radius of spherical crystal in cm", 0.1))
         self.addParameter(BooleanEnablePG("Is the incident spectrum fitted?","[False, 1, 1]"))
         self.addParameter(LoadFilePG("File with spectrum coefficients", \
             ""))
         self.addParameter(LoadFilePG("File with the spectra for each detector", \
-            "C:/Users/Arthur/Desktop/Topaz/ext_corr/Spectrum_3023_3163.dat"))
-        # self.addParameter(IntegerPG("The initial detector bank number", 1))
+            ""))
         self.addParameter(FloatPG("Wavelength to normalize to in Angstroms", 1.0))
-        self.addParameter(IntegerPG("The minimum I/sig(I)", 2))
+        self.addParameter(FloatPG("The minimum I/sig(I)", 3))
         self.addParameter(IntegerPG("Width of border (number of channels)", 22))
-        self.addParameter(IntegerPG("Minimum peak count", 3))
+        self.addParameter(FloatPG("Minimum integrated intensity", 300))
         self.addParameter(FloatPG("Minimum d-spacing (Angstroms)", 0.5))
         self.addParameter(IntegerPG("Assign scale factors (1) per setting or (2) per detector", 1))
-        self.addParameter(FloatPG("Multiply FSQ and sig(FSQ) by scaleFactor", 0.005))
+        self.addParameter(FloatPG("Multiply FSQ and sig(FSQ) by scajleFactor", 0.001))
         # Set-up limits for neutron wavelentgh XP Wang 02/24/2011
-        self.addParameter(FloatPG("Minimum wavelength (Angstroms)", 0.0))
-        self.addParameter(FloatPG("Maximum wavelength (Angstroms)", 5.0))
+        self.addParameter(FloatPG("Minimum wavelength (Angstroms)", 0.5))
+        self.addParameter(FloatPG("Maximum wavelength (Angstroms)", 3.5))
 
     def getResult(self):
 
@@ -130,7 +129,7 @@ class anvred2(GenericTOF_SCD):
         normToWavelength = self.getParameter(8).value
         minIsigI = self.getParameter(9).value
         numBorderCh = self.getParameter(10).value
-        ipkMin = self.getParameter(11).value
+        intiMin = self.getParameter(11).value
         dMin = self.getParameter(12).value
         iIQ = self.getParameter(13).value
         scaleFactor = self.getParameter(14).value
@@ -168,7 +167,7 @@ class anvred2(GenericTOF_SCD):
         logFile.write('\nNormalize spectra to a wavelength of %4.2f' % normToWavelength)
         logFile.write('\nThe minimum I/sig(I) ratio: %i' % minIsigI )
         logFile.write('\nWidth of border: %i channels' % numBorderCh )
-        logFile.write('\nMinimum peak count: %i' % ipkMin )
+        logFile.write('\nMinimum integrated intensity: %i' % intiMin )
         logFile.write('\nMinimum d-spacing : %4.2f Angstroms\n' % dMin )
         
         logFile.write('\nScale factor identifier:' )
@@ -379,8 +378,8 @@ class anvred2(GenericTOF_SCD):
                     % (h, k, l))
                 continue
                 
-            if ipkobs < ipkMin:
-                logFile.write(' %4d%4d%4d *** ipkobs < ipkMin \n' \
+            if inti < intiMin:
+                logFile.write(' %4d%4d%4d *** inti < intiMin \n' \
                     % (h, k, l))
                 continue
 
@@ -417,9 +416,7 @@ class anvred2(GenericTOF_SCD):
                 logFile.write(' %4d%4d%4d *** row > (nRows - numBorderCh)\n' \
                     % (h, k, l))
                 continue
-                    
-            # if reflag == 0: continue
-            
+                                
             if dsp < dMin:
                 logFile.write(' %4d%4d%4d *** dsp < dMin \n' \
                     % (h, k, l))
@@ -471,8 +468,6 @@ class anvred2(GenericTOF_SCD):
             logFile.write(' %4d%4d%4d%10.2f%8.2f%7.3f%10.2f%8.2f%8.4f%8.4f%8.4f%8.4f\n' \
                 % (h, k, l, fsq, sigfsq, wl, inti, sigi, spect, sinsqt, trans[0], tbar))
             
-            # hklFile.write('%4d%4d%4d%8.2f%8.2f%4d%8.4f%7.4f%7d%7d%7.4%4d\n' \
-                # % (h, k, l, fsq, sigfsq, hstnum, wl, tbar, curhst, seqnum, trans[0], dn))
             hklFile.write('%4d%4d%4d%8.2f%8.2f%4d%8.4f%7.4f%7d%7d%7.4f%4d%9.5f%9.4f\n' \
                 % (h, k, l, fsq, sigfsq, hstnum, wl, tbar, curhst, seqnum, transmission, dn, twoth, dsp))
                 
@@ -506,10 +501,9 @@ class anvred2(GenericTOF_SCD):
         S.append("@param  iSpec: If 1, the incident spectrum is fitted. If 2, use the raw spectrum.")
         S.append("@param  specCoeffFile: If iSpec = 1, the file containing the fitted coefficients.")
         S.append("@param  initBankNo: If iSpec = 2, the number of the first detector bank.")
-        # S.append("@param  averageRange: If iSpec = 2, the +/- range of data points in the spectrum for averaging.")
         S.append("@param  minIsigI: I/sigI threshold for saving a peak.")
         S.append("@param  numBorderCh: width of border. Peaks in border are rejected.")
-        S.append("@param  ipkMin: minimum peak count at peak max.")
+        S.append("@param  intiMin: minimum integrated intensity.")
         S.append("@param  dMin: The minimum d-spacing in Angstrom units.")
         S.append("@param  iIQ: If iIQ = 1, a scale factor for each crystal setting. If iIQ = 2, a scale factor for each detector of each crystal setting.")
         S.append("@param  scaleFactor: multiply Fsq and sigFsq by this factor.")
