@@ -46,8 +46,13 @@ def spectrum2( wavelength, xtof, spect1, xtime, xcounts ):
             break
     
     if spect1 == 0.0:
-        spect, relSigSpect = 0.0
+        spect = 0.0
+        relSigSpect = 0.0
         return spect, relSigSpect
+    elif spectx <= 0.0:
+        spect = 0.0
+        relSigSpect = 0.0
+        return spect, relSigSpect    
     else:
         spect = spectx / spect1
     
