@@ -367,7 +367,7 @@ public class Matrix2_App extends GenericOperator
          {
             JOptionPane.showMessageDialog( null ,
                   "Peak file did not read. Restart" );
-            System.exit( 0 );
+            return;
             
          } else
          {
@@ -880,8 +880,11 @@ public class Matrix2_App extends GenericOperator
             }
 
          } else if ( command.equals( "Exit" ) )
-         {
-            System.exit( 0 );
+         { 
+            parent.removeAll();
+           
+            parent.dispose( );
+            parent = null;
 
          } else if ( command.equals( "Peaks File" ) )
          {
@@ -1221,6 +1224,7 @@ public class Matrix2_App extends GenericOperator
    {
 
       Matrix2_App.Matrix2( null );
+      System.exit( 0);
 
    }
 
