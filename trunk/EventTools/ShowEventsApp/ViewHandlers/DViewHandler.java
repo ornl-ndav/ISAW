@@ -65,6 +65,7 @@ public class DViewHandler extends GraphViewHandler
       this.messageCenter.addReceiver(this, Commands.SHOW_D_GRAPH);
       this.messageCenter.addReceiver(this, Commands.HIDE_D_GRAPH);
       this.messageCenter.addReceiver(this, Commands.SET_D_VALUES);
+      this.messageCenter.addReceiver(this, Commands.INIT_DQ);
       Menu_listener = new MenuListener();
       frame_title = "d-spacing View";
       title       = "d-spacing";
@@ -110,6 +111,12 @@ public class DViewHandler extends GraphViewHandler
          return false;
       }
       
+      
+      if (message.getName().equals(Commands.INIT_DQ))
+         {
+            deleteAddedGraphs=true;
+            System.out.println("In DviewHandler initDQ");
+         }
       return false;
    }
    

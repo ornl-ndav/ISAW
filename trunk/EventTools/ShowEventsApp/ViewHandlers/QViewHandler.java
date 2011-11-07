@@ -66,6 +66,7 @@ public class QViewHandler extends GraphViewHandler
       this.messageCenter.addReceiver(this, Commands.SHOW_Q_GRAPH);
       this.messageCenter.addReceiver(this, Commands.HIDE_Q_GRAPH);
       this.messageCenter.addReceiver(this, Commands.SET_Q_VALUES);
+      this.messageCenter.addReceiver(this, Commands.INIT_DQ);
       Menu_listener =new MenuListener();
       frame_title = "Q-values View";
       title       = "Magnitude Q";
@@ -109,7 +110,11 @@ public class QViewHandler extends GraphViewHandler
 
          return false;
       }
+  
+      if (message.getName().equals(Commands.INIT_DQ))
+         deleteAddedGraphs=true;
       return false;
+   
    }
    
    

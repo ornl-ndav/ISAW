@@ -86,6 +86,7 @@ abstract public class GraphViewHandler implements IReceiveMessage,
    protected  boolean      useOtherFile;
    private   JPanel        place_holder_panel;
    private   JFrame        display_frame;
+   protected boolean       deleteAddedGraphs;
    private   Dimension     size = new Dimension( 900, 300 );
    private   Point         location = new Point( 200, 300 );
    private   FunctionViewComponent  fvc;
@@ -112,6 +113,7 @@ abstract public class GraphViewHandler implements IReceiveMessage,
       normalize= false;
 
       useOtherFile = false;
+      deleteAddedGraphs = false;//only do this if 
    }
 
    public abstract void WindowClose( String ID);
@@ -175,7 +177,7 @@ abstract public class GraphViewHandler implements IReceiveMessage,
          opts.add(PrintComponentActionListener.getActiveMenuItem( "Print Image" , displPanel ) );
       }
      
-      if( AddGraph == null)
+      if( AddGraph == null || deleteAddedGraphs)
       {
          AddGraph = new JMenu("Add Graph");
          JMenuItem Load = new JMenuItem("New Graph");
@@ -183,6 +185,7 @@ abstract public class GraphViewHandler implements IReceiveMessage,
          mmm.setJMenu(  AddGraph);
          Load.addActionListener( mmm );
          AddGraph.add( Load );
+         deleteAddedGraphs = false;
         
       }
       
@@ -461,6 +464,25 @@ abstract public class GraphViewHandler implements IReceiveMessage,
    {
      Thread set_info_thread = new setInfoThread( values );
      SwingUtilities.invokeLater( set_info_thread );
+     if( deleteAddedGraphs)
+     {
+        deleteAddedGraphs = false;
+        if( AddGraph != null)
+        {
+           String D_Q ="D";
+           
+           if( frame_title.indexOf( "Q" )>=0)
+              D_Q="Q";
+           AddGraph.removeAll( );
+
+           JMenuItem Load = new JMenuItem("New Graph");
+           MenuListener mmm=  new MenuListener( this ,D_Q);
+           mmm.setJMenu(  AddGraph);
+           Load.addActionListener( mmm );
+           AddGraph.add( Load );
+        }
+        
+     }
    }
 
 
