@@ -534,6 +534,7 @@ public class DQDataHandler implements IReceiveMessage
                                             true,
                                             true );
         messageCenter.send( init_dq_done );
+        viewMessageCenter.send(  new Message(Commands.INIT_DQ, cmd, true,true) );
       }
       
       if (message.getName().equals(Commands.GET_D_VALUES))
@@ -587,7 +588,7 @@ public class DQDataHandler implements IReceiveMessage
             Q_values[1] = qn_values;
          else
             Q_values[1] = q_values[1];
-         
+         sendViewMessage(Commands.INIT_DQ, null);
          sendViewMessage(Commands.SET_Q_VALUES, Scale(Q_values, normalizeQ, Q_list));
          
          return true;
@@ -601,7 +602,8 @@ public class DQDataHandler implements IReceiveMessage
             D_values[1] = dn_values;
          else
             D_values[1] = d_values[1];
-         
+
+         sendViewMessage(Commands.INIT_DQ, null);
          sendViewMessage(Commands.SET_D_VALUES, Scale(D_values, normalizeD, D_list));
          
          return true;         
@@ -616,7 +618,8 @@ public class DQDataHandler implements IReceiveMessage
             
             if( normalizeD)
                D_values[1] = dn_values;
-            
+
+            sendViewMessage(Commands.INIT_DQ, null);
             sendViewMessage(Commands.SET_D_VALUES, Scale(D_values, normalizeD, D_list));
             return true;
          }
@@ -625,7 +628,9 @@ public class DQDataHandler implements IReceiveMessage
         
         if( D_list != null)
         {
-           D_values[1] = d_values[1];        
+           D_values[1] = d_values[1]; 
+
+           sendViewMessage(Commands.INIT_DQ, null);
            sendViewMessage(Commands.SET_D_VALUES, Scale(D_values, normalizeD, D_list));
         }
         
@@ -639,6 +644,8 @@ public class DQDataHandler implements IReceiveMessage
             Q_list = null;
             if( normalizeQ)
                Q_values[1] = qn_values;
+
+            sendViewMessage(Commands.INIT_DQ, null);
             sendViewMessage(Commands.SET_D_VALUES, Scale(D_values, normalizeD, D_list));
             return true;
          }
@@ -647,7 +654,9 @@ public class DQDataHandler implements IReceiveMessage
          
          if( Q_list != null)
          {
-            Q_values[1] = q_values[1];        
+            Q_values[1] = q_values[1]; 
+
+            sendViewMessage(Commands.INIT_DQ, null);
             sendViewMessage(Commands.SET_Q_VALUES, Scale(Q_values, normalizeQ, Q_list));
          }
          
