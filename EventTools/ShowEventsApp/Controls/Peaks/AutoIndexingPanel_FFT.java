@@ -55,7 +55,7 @@ public class AutoIndexingPanel_FFT extends JPanel
                                            " Max Unit Cell Edge",
                                            " Angle Step (degrees)" };
 
-  private static final String[] defaults = { "3", "15", "1" };
+  private static final String[] defaults = { "3", "15", "1.5" };
   private Hashtable jtextf;
 
 
