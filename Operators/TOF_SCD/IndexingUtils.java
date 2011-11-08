@@ -750,8 +750,8 @@ public static float Find_UB( Tran3D             UB,
                                     // q_vectors to be increasing in magnitude
   q_vectors = SortOnVectorMagnitude( q_vectors );
 */
-  boolean use_fft = true;
 /*
+  boolean use_fft = true;
   if ( num_initial > 25 || q_vectors.size() > 25 )
   {
     System.out.println("USING FFT........");
@@ -776,7 +776,7 @@ public static float Find_UB( Tran3D             UB,
   Vector<Vector3D> directions = new Vector<Vector3D>();
 
   int max_indexed = 0;
-
+/*
   if ( use_fft )
   {
     max_indexed = FFTScanFor_Directions( directions, original_qs,
@@ -787,20 +787,22 @@ public static float Find_UB( Tran3D             UB,
   }
   else
   {
+*/
     max_indexed = ScanFor_Directions( directions,
                                       some_qs,
                                       min_d, max_d,
                                       required_tolerance,
                                       degrees_per_step );
-  }
+//  }
 
   System.out.println("####### AFTER SCAN, MAX_INDEXED = " + max_indexed );
   System.out.println("####### Found " + directions.size() + " directions");
+  System.out.println("First few directions are: ");
 
   directions = SortOnVectorMagnitude( directions );
 
-  System.out.println("Number of directions = " + directions.size() );
-  for ( int i = 0; i < directions.size(); i++ )
+  int num_to_print = Math.min( 10, directions.size() );
+  for ( int i = 0; i < num_to_print; i++ )
     System.out.println("" + i + "  " + directions.elementAt(i) + 
                        "  length = " + directions.elementAt(i).length() );
 
@@ -828,9 +830,10 @@ public static float Find_UB( Tran3D             UB,
                                     fit_error );
 
   Tran3D temp_UB = new Tran3D();
+  float min_deg  = 40;        
   for ( int i = 0; i < directions.size()-2; i++ )
   {
-    if ( FormUB_From_abc_Vectors( temp_UB, directions, i, min_d, max_d ) )
+    if ( FormUB_From_abc_Vectors( temp_UB, directions, i, min_deg ) )
     {
       num_sets++;
       num_indexed = ExpandSetOfIndexedPeaks( temp_UB, 
@@ -841,7 +844,7 @@ public static float Find_UB( Tran3D             UB,
 //#########
       if ( num_indexed > 0.25*max_indexed && fit_error[0] < min_error )
       {
-        System.out.println("Num indexed = " + num_indexed );
+//        System.out.println("Num indexed = " + num_indexed );
         
         UB.set( temp_UB );
         min_error = fit_error[0];
@@ -1017,13 +1020,16 @@ public static float FindUB_UsingFFT( Tran3D             UB,
 
   System.out.println("####### AFTER FFT SCAN, MAX_INDEXED = " + max_indexed );
   System.out.println("####### Found " + directions.size() + " directions");
+  System.out.println("First few directions are: ");
 
   directions = SortOnVectorMagnitude( directions );
 
-  System.out.println("Number of directions = " + directions.size() );
-  for ( int i = 0; i < directions.size(); i++ )
-    System.out.println("" + directions.elementAt(i) +
+  int num_to_print = Math.min( 10, directions.size() );
+  for ( int i = 0; i < num_to_print; i++ )
+    System.out.println("" + i + "  " + directions.elementAt(i) +
                        "  length = " + directions.elementAt(i).length() );
+
+  directions = SortOnVectorMagnitude( directions );
 
   if ( max_indexed == 0 )
     throw new IllegalArgumentException("Could not find any a,b,c to index Qs");
@@ -1039,54 +1045,61 @@ public static float FindUB_UsingFFT( Tran3D             UB,
   int     num_sets    = 0;
   int     set_used    = -1;
 
-  max_indexed = 0;
+//  max_indexed = 0;
 
   Tran3D temp_UB = new Tran3D();
+
+/*
   float min_vol = min_d * min_d * min_d / 10.0f;
   if ( !FormUB_From_abc_Vectors( temp_UB, directions, q_vectors, 
                                  required_tolerance, min_vol ) )
     throw new IllegalArgumentException("Could NOT form UB matrix from abc's");
   else
      UB.set( temp_UB );
-/*
-  for ( int i = 0; i < directions.size()-2; i++ )
-  {
-    if ( FormUB_From_abc_Vectors( temp_UB, directions, i, min_d, max_d ) )
-    {
-      System.out.print("i = " + i );
-      try
-      {
-        ShowLatticeParameters( temp_UB );
-        num_indexed = NumberIndexed( temp_UB,
-                                     q_vectors,
-                                     required_tolerance );
+*/
 
-        System.out.println("i = " + i + " Num indexed = " + num_indexed );
-        num_sets++;
-        if ( num_indexed > 1.1 * max_indexed )
-        {
-          max_indexed = num_indexed;
-          UB.set( temp_UB );
-          set_used = i;
-        }
-      }
-      catch (Exception ex)
+  float min_deg   = 40;
+  float min_error = Float.POSITIVE_INFINITY;
+  Tran3D UB_inv;
+  Vector3D a_dir = new Vector3D();
+  Vector3D b_dir = new Vector3D();
+  Vector3D c_dir = new Vector3D();
+  int index = 0; 
+  boolean done = false;
+  while ( index < directions.size() && !done )
+//  for ( int i = 0; i < directions.size()-2; i++ )
+  {
+    if ( FormUB_From_abc_Vectors( temp_UB, directions, index, min_deg ) )
+    {
+      UB_inv = new Tran3D( temp_UB );
+      UB_inv.invert();
+      float[][] UB_inv_arr = UB_inv.get();
+      a_dir.set( UB_inv_arr[0][0], UB_inv_arr[0][1], UB_inv_arr[0][2] );
+      b_dir.set( UB_inv_arr[1][0], UB_inv_arr[1][1], UB_inv_arr[1][2] );
+      c_dir.set( UB_inv_arr[2][0], UB_inv_arr[2][1], UB_inv_arr[2][2] );
+      num_sets++;
+      num_indexed = NumberIndexed_3D( a_dir,
+                                      b_dir,
+                                      c_dir,
+                                      q_vectors,
+                                      required_tolerance,
+                                      fit_error );
+//#########
+      if ( num_indexed > 0.75*max_indexed )
       {
-        System.out.println("Exception forming UB for set " + i +
-                           " num_indexed = " + num_indexed + 
-                           " max_indexed = " + max_indexed );
-        System.out.println("Exception is " + ex );
-        // ignore any choices where the matrix was singluar.
+/*
+       System.out.println("i = " + index + "Num indexed = " + num_indexed +
+                           "error = " + fit_error[0] );
+*/
+        UB.set( temp_UB );
+        set_used = index;
+        done = true;
       }
     }
+    index++;
   }
 
-  System.out.println("Used Set " + set_used + " of " + num_sets );
-  if ( set_used == -1 )
-    throw new IllegalArgumentException("Failed to find a UB matrix");
-  else
-    ShowLatticeParameters( UB );
-*/
+
 
   Vector<Vector3D> miller_ind = new Vector<Vector3D>();
 
@@ -1110,8 +1123,10 @@ public static float FindUB_UsingFFT( Tran3D             UB,
     }
   }
  
+/*
   System.out.println("After trying to refine UB");
   ShowLatticeParameters( UB );
+*/
                                       // now call Nigglify, to get shortest abc
   try
   {
@@ -1130,14 +1145,10 @@ public static float FindUB_UsingFFT( Tran3D             UB,
     ex.printStackTrace();
   }
 
+/*
   System.out.println("After Nigglify UB");
   ShowLatticeParameters( UB );
-/*
-  float[] average_error = new float[1];
-  ExpandSetOfIndexedPeaks( UB, q_vectors, required_tolerance,
-                           q_vectors.size(), average_error );
 */
-
   return fit_error[0];
 }
 
@@ -1176,19 +1187,6 @@ private static boolean FormUB_From_abc_Vectors( Tran3D           UB,
        }
      }
    }
-/*
-                             // first find upper bound on maximum cell volume
-   float max_vol = 0;
-   float length;
-   for ( int i = 0; i < directions.size(); i++ )
-   {
-     length = directions[i].length();
-     vol = length * length * length;
-     if ( vol > max_vol )
-       max_vol = vol;
-   }
-*/
-
 
 // int     N_FFT_STEPS  = 128;
 // float   max_scale    = 1.1f * max_vol;
@@ -1199,6 +1197,8 @@ private static boolean FormUB_From_abc_Vectors( Tran3D           UB,
                                     // integer indexes.
    float   vol_to_index = (N_HIST_STEPS * .999f) / max_vol;
    float[] vol_hist     = new float[N_HIST_STEPS];
+   float[] ave_2_error  = new float[1];
+   float   min_error    = Float.POSITIVE_INFINITY;
 
    for ( int i = 0; i < directions.size()-2; i++ )
    {
@@ -1216,21 +1216,30 @@ private static boolean FormUB_From_abc_Vectors( Tran3D           UB,
            vol_hist[ (int)(vol * vol_to_index) ] += 1.0f;
 
            int n_tol = NumberIndexed_3D( a_temp, b_temp, c_temp, 
-                                         q_vectors, req_tolerance );
+                                         q_vectors, req_tolerance, 
+                                         ave_2_error );
+
            int n_tol_2 = NumberIndexed_3D( a_temp, b_temp, c_temp, 
-                                           q_vectors, req_tolerance/2 );
+                                           q_vectors, req_tolerance/2,
+                                           ave_2_error );
            
            alpha = angle( b_temp, c_temp );
            beta  = angle( c_temp, a_temp );
            gamma = angle( a_temp, b_temp );
+/*
            System.out.printf( 
                 " %8.4f  %8.4f  %8.4f   %6.2f  %6.2f  %6.2f  %8.2f  %4d  %4d\n",
                  a_temp.length(), b_temp.length(), c_temp.length(),
                  alpha, beta, gamma, vol, n_tol, n_tol_2 ); 
-
-           if ( n_tol_2 > 1.05 * max_indexed )
+*/
+           // We need to use a higher tolerance here to get better
+           // noise immunity.  Also, requiring 20% more indexed with longer
+           // edge lengths, favors the smaller unit cells.
+           if ( (n_tol_2 >  1.20 * max_indexed)  ||
+                 n_tol_2 >= max_indexed && ave_2_error[0] < min_error )
            {
              max_indexed = n_tol_2;
+             min_error = ave_2_error[0];
              a_dir = a_temp;
              b_dir = b_temp;
              c_dir = c_temp;
@@ -1240,31 +1249,15 @@ private static boolean FormUB_From_abc_Vectors( Tran3D           UB,
      }
   }
 
-/*
-  float[] data = new float[ vol_hist.length ];
-  System.arraycopy( vol_hist, 0, data, 0, vol_hist.length );
-
-  RealFloatFFT_Radix2 FFT = new RealFloatFFT_Radix2( N_FFT_STEPS );
-  float[] magnitude_fft = new float[ N_FFT_STEPS/2 ];
-  FFT.transform( data, 0, 1 );
-  int n = N_FFT_STEPS;
-  for ( int i = 1; i < magnitude_fft.length; i++ )
-    magnitude_fft[i] = (float) Math.sqrt( data[i]   * data[i] +
-                                          data[n-i] * data[n-i] );
-  magnitude_fft[0] = Math.abs( data[0] );
-*/
-
+/* 
   for ( int i = 0; i < vol_hist.length; i++ )
     System.out.println( "i, num with vol(i) " + i + ",  " + vol_hist[i] );
+*/
   
   System.out.println( "vol_to_index = " + vol_to_index );
   System.out.println( "index_to_vol = " + (1/vol_to_index) );
   System.out.println( "Max volume   = " + max_vol );
-//  System.out.println( "Max scale    = " + max_scale );
-/*
-  for ( int i = 0; i < magnitude_fft.length; i++ )
-    System.out.println("i, magnitude_fft[i] = " + i + ", " + magnitude_fft[i]);
-*/
+
   if ( a_dir == null )
   {
     System.out.println("********** NO abc FOUND **********");
@@ -1295,8 +1288,8 @@ private static boolean FormUB_From_abc_Vectors( Tran3D           UB,
  *  direction at the specified index for the "a" direction.  The "b" and "c"
  *  directions are chosen so that 
  *   1) |a| < |b| < |c|, 
- *   2) the angle between the a, b, c, vectors is at least a minimum 
- *      angle based on min_d/max_d
+ *   2) the angle between the a, b, c, vectors is at least the minimum 
+ *      angle specified
  *   3) c is not in the same plane as a and b.
  *
  *  @param UB           The calculated UB matrix will be returned in this 
@@ -1306,8 +1299,8 @@ private static boolean FormUB_From_abc_Vectors( Tran3D           UB,
  *  @param a_index      The index to use for the a vector.  The b and c 
  *                      vectors will be choosen from LATER positions in the
  *                      directions list.
- *  @param min_d        Minimum possible real space unit cell edge length.
- *  @param max_d        Maximum possible real space unit cell edge length.
+ *  @param min_deg      Minimum allowable angle between real space unit cell
+ *                      edges.
  *
  *  @return true if a UB matrix was set, and false if it not possible to
  *          choose a,b,c (i.e. UB) from the list of directions, starting
@@ -1316,15 +1309,11 @@ private static boolean FormUB_From_abc_Vectors( Tran3D           UB,
 private static boolean FormUB_From_abc_Vectors( Tran3D           UB, 
                                                 Vector<Vector3D> directions, 
                                                 int              a_index, 
-                                                float            min_d, 
-                                                float            max_d )
+                                                float            min_deg  )
 {
   int index = a_index;
   Vector3D a_dir = directions.elementAt( index );
   index++;
-
-  float min_deg = (float)((180/Math.PI) * Math.atan(2*min_d/max_d) );
-  min_deg = 40;  // ############### kluge to try !!!
 
   float epsilon = 5;                    //  tolerance on right angle (degrees)
   Vector3D b_dir  = null;
@@ -1352,11 +1341,11 @@ private static boolean FormUB_From_abc_Vectors( Tran3D           UB,
   Vector3D perp = new Vector3D();
   perp.cross( a_dir, b_dir );
   perp.normalize();
-  System.out.println("Perp vector = " + perp );
+//  System.out.println("Perp vector = " + perp );
   float perp_ang;
   float alpha;
   float beta;
-/*
+
   while ( !c_found && index < directions.size() )
   {
     Vector3D vec = directions.elementAt(index);
@@ -1382,7 +1371,7 @@ private static boolean FormUB_From_abc_Vectors( Tran3D           UB,
     if ( ! c_found )
       index++;
   }
-*/
+/*
   float dot     = 0;
   float max_dot = 0;
   for ( int i = index; i < directions.size(); i++ )// find direction most nearly
@@ -1407,6 +1396,7 @@ private static boolean FormUB_From_abc_Vectors( Tran3D           UB,
     perp_ang = 180 - perp_ang;
     c_dir.multiply( -1.0f );
   }
+*/
 
 /*
   alpha = angle( b_dir, c_dir );
@@ -2168,6 +2158,9 @@ public static int NumberIndexed_1D( Vector3D         direction,
                        vectors.
    @param tolerance    The maximum allowed distance to an integer from the dot
                        products of peaks with the specified direction.
+   @param ave_2_error  The average sum_squared_error for the indexed peaks
+                       is returned in the zeroth position of this array, if
+                       any peaks were indexed.
 
    @return A non-negative integer giving the number of peaks simultaneously
            indexed in all three directions by the specified direction vectors. 
@@ -2176,15 +2169,18 @@ public static int NumberIndexed_3D( Vector3D         a_dir,
                                     Vector3D         b_dir,
                                     Vector3D         c_dir,
                                     Vector<Vector3D> q_vectors,
-                                    float            tolerance )
+                                    float            tolerance,
+                                    float[]          ave_2_error )
 {
   if ( a_dir.length() == 0 || b_dir.length() == 0 || c_dir.length() == 0 )
     return 0;
 
-  float   proj_value;
-  int     count = 0;
-  float[] hkl = new float[3];
   Vector3D hkl_vec = new Vector3D();
+  int     count    = 0;
+  float[] hkl      = new float[3];
+  float   error_2  = 0;
+  float   dh, dk, dl;
+
   for ( int i = 0; i < q_vectors.size(); i++ )
   {
     hkl[0] = a_dir.dot( q_vectors.elementAt(i) );
@@ -2192,8 +2188,20 @@ public static int NumberIndexed_3D( Vector3D         a_dir,
     hkl[2] = a_dir.dot( q_vectors.elementAt(i) );
     hkl_vec.set( hkl );
     if ( ValidIndex( hkl_vec, tolerance ) )
+    {
       count++;
+      dh = hkl[0] - Math.round( hkl[0] );
+      dk = hkl[1] - Math.round( hkl[1] );
+      dl = hkl[2] - Math.round( hkl[2] );
+      error_2 += dh * dh + dk * dk + dl * dl;    
+    }
   }
+
+  if ( count > 0 )
+    ave_2_error[0] = error_2 / count;
+  else
+    ave_2_error[0] = Float.POSITIVE_INFINITY;
+
   return count;
 }
 
@@ -3472,7 +3480,7 @@ public static int FFTScanFor_Directions( Vector<Vector3D> directions,
 
                           // now find the directions with the N_TO_TRY
                           // largest fft values, and add to temp_dirs vector
-  int N_TO_TRY = 200;
+  int N_TO_TRY = 500;
  
   float[] max_fft_copy  = new float[ full_list.size() ];
   System.arraycopy( max_fft_val, 0, max_fft_copy, 0, max_fft_copy.length );
@@ -3496,10 +3504,11 @@ public static int FFTScanFor_Directions( Vector<Vector3D> directions,
       temp_dirs.add( full_list.elementAt( i ) );
     }
 
+/*
   System.out.println("max_mag_fft   = " + max_mag_fft );
   System.out.println("threshold     = " + threshold );
   System.out.println("Num dirs kept = " + temp_dirs.size() );
-
+*/
                                   // now scan through temp_dirs and use the
                                   // FFT to find the cell edge length that
                                   // corresponds to the max_mag_fft
@@ -3518,40 +3527,9 @@ public static int FFTScanFor_Directions( Vector<Vector3D> directions,
       float q_val = max_mag_Q / position;
       float d_val = 1 / q_val;
       temp_dirs.elementAt(i).multiply( d_val );
-
-      // since FFT sometimes finds a "harmonic" or "sub harmonic", add 1/2, 
-      // 1/3, 1/4 ... and 2, 3, 4... times length if they are not too short
-      for ( int multiple = 2; multiple <= 10; multiple++ )
-      {
-        if ( d_val * multiple <= max_d  &&
-             d_val * multiple >= min_d )
-        { 
-          temp = new Vector3D( temp_dirs.elementAt(i) );
-          temp.multiply( multiple );
-          temp_dirs.add( temp );
-        }
-        if ( d_val / multiple <= max_d  &&
-             d_val / multiple >= min_d )
-        {
-          temp = new Vector3D( temp_dirs.elementAt(i) );
-          temp.multiply( 1.0f/(float)multiple );
-          temp_dirs.add( temp );
-        }
-      }
     }
   }
-               // remove any of the original directions that aren't in range
-               // NOTE: We keep any harmonics and sub-harmonics that might 
-               //       have been added in the previous block!
-  for ( int i = temp_dirs.size()-1; i >= 0; i-- )      
-  {
-    float length = temp_dirs.elementAt(i).length();
-    if ( length < min_d || length > max_d )
-      temp_dirs.remove( i );
-  }
 
-                                   // now refine the edges in "temp_dirs" and 
-                                   // find the max number of peaks indexed.
   Vector<Vector3D> index_vals = new Vector<Vector3D>();
   Vector<Vector3D> indexed_qs = new Vector<Vector3D>();
   Vector3D current_dir = new Vector3D();
@@ -3561,7 +3539,6 @@ public static int FFTScanFor_Directions( Vector<Vector3D> directions,
   int num_indexed;
                                    // look at how many peaks were indexed
                                    // for each of the initial directions
-  System.out.println("BEFORE REFINING DIRECTIONS");
   max_indexed = 0;
   for ( int dir_num = 0; dir_num < sorted_dirs.size(); dir_num++ )
   {
@@ -3569,18 +3546,23 @@ public static int FFTScanFor_Directions( Vector<Vector3D> directions,
     num_indexed = NumberIndexed_1D( current_dir, q_vectors, required_tolerance);
     if ( num_indexed > max_indexed )
       max_indexed = num_indexed;
-    System.out.println("" + dir_num + "  " + current_dir + 
-      "  " + current_dir.length() + "  " + num_indexed + "  " + max_indexed );
   }
 
-                                    // only keep original peaks that index at
-                                    // least 60% of max num indexed
+/*
+  System.out.println("ALL DIRECTIONS IDENTIFIED BY FFT:");
+  for ( int i = 0; i < sorted_dirs.size(); i++ )
+    System.out.println("i = " + i + " dir = " + sorted_dirs.elementAt(i) +
+                       " length = " + sorted_dirs.elementAt(i).length() );
+*/
+
+                                    // only keep original directions that index
+                                    // at least 10% of max num indexed
   temp_dirs.clear();
   for ( int dir_num = 0; dir_num < sorted_dirs.size(); dir_num++ )
   {
     current_dir = sorted_dirs.elementAt( dir_num );
     num_indexed = NumberIndexed_1D( current_dir, q_vectors, required_tolerance);
-    if ( num_indexed >= 0.6 * max_indexed )
+    if ( num_indexed >= 0.10 * max_indexed )
       temp_dirs.add( current_dir );
   }
 
@@ -3601,7 +3583,7 @@ public static int FFTScanFor_Directions( Vector<Vector3D> directions,
     {
       boolean failed = false;
       int count = 0;
-      while ( count < 4 && !failed )     // 4 iterations should be enough for
+      while ( count < 5 && !failed )     // 5 iterations should be enough for
       {                                  // the optimization to stabilize
         num_indexed = 0;
         error = Optimize_Direction_3D( current_dir, index_vals, indexed_qs );
@@ -3623,24 +3605,43 @@ public static int FFTScanFor_Directions( Vector<Vector3D> directions,
     catch ( Exception ex )
     { 
        System.out.print  ("Failed to optimize direction # " + dir_num );
-       System.out.println(" Direction = " + current_dir );
+       System.out.println(" Direction = " + current_dir + 
+                          " length = " + current_dir.length() );
        // just don't count any direction that fails to optimize properly
     }
   }
 
-  System.out.println("MAX INDEXED = " + max_indexed );
+//System.out.println("AFTER REFINING DIRECTIONS MAX INDEXED = " + max_indexed );
 
-                                    // only keep directions that essentially
-                                    // index the max number of peaks
+                                      // discard ones with length out of bounds
+                                      // and calculate the max number indexed
+  int old_max_indexed = max_indexed;
+  max_indexed = 0;
+  directions.clear();
+  for ( int i = 0; i < temp_dirs.size(); i++ )
+  {
+    current_dir = temp_dirs.elementAt( i );
+    float length = current_dir.length();
+    num_indexed = NumberIndexed_1D( current_dir,
+                                    q_vectors,
+                                    required_tolerance );
+    if ( length >= min_d && length <= max_d &&
+         num_indexed > 0.5 * old_max_indexed )   // only keep if within range
+    {
+      directions.add( current_dir );
+      if ( num_indexed > max_indexed )
+        max_indexed = num_indexed;
+    }
+  }
+
+                                    // only keep directions that index at 
+                                    // least 75% of the max number of peaks
   Vector<Vector3D> selected_dirs = new Vector<Vector3D>();
 
-  for ( int dir_num = 0; dir_num < temp_dirs.size(); dir_num++ )
+  for ( int dir_num = 0; dir_num < directions.size(); dir_num++ )
   {
-    current_dir = temp_dirs.elementAt( dir_num );
+    current_dir = directions.elementAt( dir_num );
 
-    System.out.println("dir_num = " + dir_num + 
-                       " dir = " + current_dir + 
-                       ", " + current_dir.length() );
     num_indexed = GetIndexedPeaks_1D( current_dir,
                                       q_vectors,
                                       required_tolerance,
@@ -3650,26 +3651,23 @@ public static int FFTScanFor_Directions( Vector<Vector3D> directions,
 
     if ( num_indexed > max_indexed * 0.75 )
     {
-      System.out.println("dir_num = " + dir_num + 
-                         " num_indexed = " + num_indexed +
-                         " adding " + current_dir + 
-                         ", " + current_dir.length() + 
-                         " indexed " + num_indexed );
-                        
       selected_dirs.add( current_dir );
     }
   }
 
   selected_dirs = SortOnVectorMagnitude( selected_dirs );
-  System.out.println( "DIRECTIONS INDEXING 75% " + selected_dirs.size() );
   for ( int i = 0; i < selected_dirs.size(); i++ )
   {
     current_dir = selected_dirs.elementAt( i );
     num_indexed = NumberIndexed_1D( current_dir, q_vectors, required_tolerance);
-    System.out.println( current_dir + ", " + current_dir.length() + 
-                        "   " + num_indexed );
   }
 
+/*
+  System.out.println("BEFORE REMOVING DUPLICATES");
+  for ( int i = 0; i < selected_dirs.size(); i++ )
+    System.out.println("i = " + i + " dir = " + selected_dirs.elementAt(i) +
+                       " length = " + selected_dirs.elementAt(i).length() );
+*/
                                       // discard duplicates:
   float len_tol = 0.1f;               // 10% tolerance for lengths
   float ang_tol = 5;                  // 5 degree tolerance for angles
@@ -3679,6 +3677,12 @@ public static int FFTScanFor_Directions( Vector<Vector3D> directions,
                                      len_tol,
                                      ang_tol );
 
+/*
+  System.out.println("AFTER REMOVING DUPLICATES");
+  for ( int i = 0; i < selected_dirs.size(); i++ )
+    System.out.println("i = " + i + " dir = " + selected_dirs.elementAt(i) +
+                       " length = " + selected_dirs.elementAt(i).length() );
+*/
                                       // discard ones with length out of bounds
                                       // and calculate the max number indexed
   max_indexed = 0;
@@ -3698,68 +3702,7 @@ public static int FFTScanFor_Directions( Vector<Vector3D> directions,
     }
   }
   
-                                      // finally, discard duplicates, and 
-                                      // ones with length out of bounds
-/*
-  directions.clear();
-  Vector3D diff     = new Vector3D();
-  Vector3D dir_temp = new Vector3D();
-  max_indexed = 0;
-  for ( int dir_num = 0; dir_num < selected_dirs.size(); dir_num++ )
-  {
-    current_dir = selected_dirs.elementAt( dir_num );
-
-    num_indexed = GetIndexedPeaks_1D( current_dir, 
-                                      q_vectors,
-                                      required_tolerance,
-                                      index_vals, 
-                                      indexed_qs,
-                                      fit_error  );
-
-    float length = current_dir.length();
-    if ( length >= min_d && length <= max_d )   // only keep if within range
-    {
-      boolean duplicate = false;
-      for ( int i = 0; i < directions.size(); i++ )
-      {
-        dir_temp = directions.elementAt(i);
-        diff.set( current_dir );
-        diff.subtract( dir_temp );
-                                                // discard same direction  
-        if ( diff.length() < 0.01f )
-          duplicate = true;
-                                                // discard opposite direction 
-        else 
-        {
-          diff.set( current_dir );
-          diff.add( dir_temp );
-          if ( diff.length() < 0.001f )
-            duplicate = true;
-        }
-      }
-      if (!duplicate)
-      {
-        directions.add( current_dir );
-        if ( num_indexed > max_indexed )         // find max indexed for 
-          max_indexed = num_indexed;             // directions in range.
-      }
-    }
-  }
-*/
-
   directions = SortOnVectorMagnitude( directions );
-
-  System.out.println( "FFT KEPT DIRECTIONS " + directions.size() );
-  for ( int i = 0; i < directions.size(); i++ )
-  {
-    current_dir = directions.elementAt( i );
-    num_indexed = NumberIndexed_1D( current_dir,
-                                    q_vectors,
-                                    required_tolerance );
-
-    System.out.println( current_dir + ", " + current_dir.length() +
-                        " num_indexed = " + num_indexed );
-  }
 
   return max_indexed;
 }
@@ -3768,7 +3711,7 @@ public static int FFTScanFor_Directions( Vector<Vector3D> directions,
 /**
  *  Construct a sublist of the specified list of a,b,c directions, by removing
  *  all directions that seem to be duplicates.  If several directions all have
- *  the same length (within the specified length tolerance) and all have the
+ *  the same length (within the specified length tolerance) and have the
  *  same direction (within the specified angle tolerange) then only one of 
  *  those directions will be recorded in the sublist.  The one that indexes
  *  the most peaks, within the specified tolerance will be kept.
