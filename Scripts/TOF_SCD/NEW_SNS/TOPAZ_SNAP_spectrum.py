@@ -223,6 +223,8 @@ class TOPAZ_SNAP_spectrum(GenericTOF_SCD):
         self.addParameter(BooleanPG("Or is the spectrum from the V/Nb sphere?", "True"))
         self.addParameter(FloatPG("Radius in cm (TOPAZ rod=0.407, sphere=0.15, SNAP rod=0.15):", "0.15"))
         self.addParameter(DataDirPG("Directory for output spectrum and log files:", "/SNS/users/ajschultz/TOPAZ_spectrum/"))
+        self.addParameter(BooleanEnablePG("Omit any spectrum with all zeros?", "True"))
+
         
     def getResult(self):
 
@@ -241,6 +243,7 @@ class TOPAZ_SNAP_spectrum(GenericTOF_SCD):
         V_sphere = self.getParameter(12).value
         radius = self.getParameter(13).value
         outPath = self.getParameter(14).value
+        omitZeros = self.getParameter(15).value
         
         # Write input instructions to the log file.
         filename = outPath + 'Spectrum_' + runNum_1 + '_' + runNum_2 + '.log'
@@ -427,6 +430,16 @@ class TOPAZ_SNAP_spectrum(GenericTOF_SCD):
             time = D.getX_scale().getXs()
             counts = D.getY_values()
             lenCounts = len( counts )
+            
+            # Check for all zeros
+            sumTotal = 0.0
+            for j in range(lenCounts):
+                sumTotal = sumTotal + counts[j]
+            if sumTotal == 0.0:
+                print '***Bank %d  DetNum %d is all zeros and is not written to the spectrum file\n' % (bank, DetNum[i])
+                print
+                logFile.write( 'Bank %d     DetNum %d is all zeros and is not written to the spectrum file\n' % (bank, DetNum[i]) )
+                if omitZeros: continue
             
             # Calculate detector horizontal and vertical angles
             diagonal = sqrt( CenterX[i]**2 + CenterZ[i]**2 )
