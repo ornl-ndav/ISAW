@@ -353,12 +353,13 @@ class TOPAZ_SNAP_spectrum(GenericTOF_SCD):
             filename = path + filename_prefix + runNum_1 + filename_suffix
             ds_1 = ScriptUtil.ExecuteCommand("OneDS",[filename, bank, ""] )
             
-            local_name = GetDSAttribute(ds_1, AttributeNameString("local name")).getResult()
-            local_detector_number = int( local_name[4:] )
-            if local_detector_number != DetNum[i]:
-                print
-                print '***** Detector numbers in calibration file and nxs file do not match *****'
-                return
+            if filename_prefix == 'TOPAZ_':
+                local_name = GetDSAttribute(ds_1, AttributeNameString("local name")).getResult()
+                local_detector_number = int( local_name[4:] )
+                if local_detector_number != DetNum[i]:
+                    print
+                    print '***** Detector numbers in calibration file and nxs file do not match *****'
+                    return
             
             
             filename = path + filename_prefix + runNum_2 + filename_suffix
