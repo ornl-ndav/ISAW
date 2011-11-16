@@ -686,9 +686,9 @@ public class FindPeaksViaSort
 
     // find histogram of values present in 3D array
 
-    int   HISTOGRAM_SIZE = 20000;
-    int[] histogram      = new int[ HISTOGRAM_SIZE ];
-    float value;
+    int    HISTOGRAM_SIZE = 20000;
+    long[] histogram      = new long[ HISTOGRAM_SIZE ];
+    float  value;
 
     if ( Float.isNaN( array_min_val )  || 
          Float.isNaN( array_max_val )  ||
