@@ -95,7 +95,7 @@ public class Histogram3D
   private float[][][] histogram;
   private int         n_threads  = 4;
   private int         n_segments = 4;
-  private int         max_time   = 60000;
+  private int         max_time   = 6000000;
 
   private int[] page_1 = new int[n_segments];
   private int[] page_2 = new int[n_segments];
