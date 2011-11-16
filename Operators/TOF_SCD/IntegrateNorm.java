@@ -195,10 +195,17 @@ public class IntegrateNorm {
          int i = Peak.seqnum( );
          int run = Peak.nrun( );
          int det = Peak.detnum( );
-         int Chan = ( int ) Peak.z( );
          int nTimes = nTimeChans;
-         boolean UseShoeBox = false;//System.getProperty( "ShoeBoxSlice","" ).equals( "YES" );
-                                    //Shoe box on a "bad" slice usually failed
+         IDataGrid grid = Peak.getGrid( );
+         Data D = grid.getData_entry( ( int ) ( .5f + Peak.y( ) ) ,
+               ( int ) ( .5f + Peak.x( ) ) );
+         
+         XScale xscl = D.getX_scale( );
+         int Chan = FindMaxChannel( Peak, nTimes,  xscl, nPixels,  grid, NBoundaryPixels); 
+         
+         if( Chan <=0)
+            Chan = ( int ) Peak.z( );
+       
          if ( IntegrateNorm.DEBUG )
             System.out.println( "Peak num #time channels=" + Peak.seqnum( )
                   + "," + nTimeChans );
@@ -229,12 +236,8 @@ public class IntegrateNorm {
          
          boolean done = false;
          // last y values is at xscl.getNum_x( )-2 on a histogram
-         IDataGrid grid = Peak.getGrid( );
 
-         Data D = grid.getData_entry( ( int ) ( .5f + Peak.y( ) ) ,
-               ( int ) ( .5f + Peak.x( ) ) );
-         
-         XScale xscl = D.getX_scale( );
+       
          int BadEdgeWidth = NBoundaryPixels;
          double I_bErrSv = 0;
 
@@ -242,17 +245,16 @@ public class IntegrateNorm {
          int PrevCentY=(int)(.5+Peak.y());
          int PrevCentX0=(int)(.5+Peak.x());
          int PrevCentY0=(int)(.5+Peak.y());
-         float time;
-         int nPixelsx, nPixelsy;
+         float time, 
+               time0 = Float.NaN;
+         int nPixelsx=-1,
+             nPixelsy=-1;
          boolean firstChanGood = true;
          for( int dir =1; dir >=-1; dir -= 2)
          {  
             done = false;
-            for( int ichan =0; ichan <=( nTimes - 1 ) / 2 &&!done; ichan++)
-         
-        // for( int chan = Math.max( 0 , Chan - ( nTimes - 1 ) / 2 ) ; !done
-       //        && chan <= Math.min( Chan + ( nTimes - 1 ) / 2 ,
-       //              xscl.getNum_x( ) - 2 ) ; chan++ )
+            for( int ichan =0; ichan <=( nTimes - 1 ) / 2 &&!done; ichan++)         
+     
          if( ichan==0 && dir < 0)
          {   
             done = false;
@@ -268,28 +270,44 @@ public class IntegrateNorm {
          {
 
             int chan = Chan+dir*ichan;
-            OneSlice slice = new OneSlice( grid , chan , PrevCentY,PrevCentX, nPixels , nPixels ,
+            int pixWidth = nPixels;
+            int pixHeight = nPixels;
+            if(nPixelsx > 0 && nPixelsy > 0)
+            {
+               pixWidth = nPixelsx;
+               pixHeight = nPixelsy;
+            }
+            OneSlice slice = new OneSlice( grid , chan , PrevCentY,PrevCentX, pixHeight, pixWidth  ,
                   BadEdgeWidth );
             
             double[] params = slice.getAllParameters();
-
-            double Vx = params[IVXX];
-            double Vy = params[IVYY];
-            nPixelsx =(int)( Math.sqrt(Vx)*2.355);
-            nPixelsy =(int)( Math.sqrt(Vy)*2.355);
-            float intens =(float)slice.getInitialTotIntensity( );
-        
-            if( intens/4/nPixelsx/nPixelsy*2.355*2.355 >3)
+ 
+            if(nPixelsx <= 0 || nPixelsy <= 0)
             {
-            //  System.out.println("     Using nPixelsy&nPixelsx,hkl="+Peak.h()+","+
-             //           Peak.k()+","+Peak.l());
-           // Rarely done and uniformly nPixelsx and nPixelsy were a lot less than nPixels
-            nPixelsx = Math.max(nPixelsx, 6) ;
-            nPixelsy = Math.max(nPixelsy, 6) ;  
+              double Vx = params[IVXX];
+              double Vy = params[IVYY];
+              nPixelsx =(int)( Math.sqrt(Vx)*3);
+              nPixelsy =(int)( Math.sqrt(Vy)*3);
+              nPixelsx = Math.max(nPixelsx, 6) ;
+              nPixelsy = Math.max(nPixelsy, 6) ; 
+              nPixelsx = Math.min(nPixelsx, 36) ;
+              nPixelsy = Math.min(nPixelsy, 36) ;   
+            }
             
+            float intens =(float)slice.getInitialTotIntensity( );
+            float Cx;
+            float Cy ; 
+            Cx= (float)params[IXMEAN];
+            Cy =(float)params[IYMEAN];
+            if( dir ==1 && ichan==0)
+            {
+               PrevCentX0=(int)(.5+Cx);
+               PrevCentY0=(int)(.5+Cy);
+            }
+            if( intens/4/nPixelsx/nPixelsy*2.355*2.355 >2)
+            {
             
-            float Cx= (float)params[IXMEAN];
-            float Cy =(float)params[IYMEAN];
+           
             slice = new OneSlice( grid , chan , ( int ) ( .5f+ Cy
                             ) , ( int ) ( .5f + Cx
                             ) , nPixelsy ,
@@ -299,26 +317,40 @@ public class IntegrateNorm {
             params = slice.getAllParameters();
             PrevCentX= (int)params[IXMEAN];
             PrevCentY =(int)params[IYMEAN];
-           
-          /*  Vx = params[IVXX];
-            Vy = params[IVYY];
-            nPixelsx =(int)( Math.sqrt(Vx)*2.355);
-            nPixelsy =(int)( Math.sqrt(Vy)*2.355);
+            if( dir==1 && ichan ==0)//first time only
+            {
+               double Vx = params[IVXX];
+               double Vy = params[IVYY];
+               nPixelsx =(int)( Math.sqrt(Vx)*3);
+               nPixelsy =(int)( Math.sqrt(Vy)*3);
+               nPixelsx = Math.max(nPixelsx, 6) ;
+               nPixelsy = Math.max(nPixelsy, 6) ; 
+               nPixelsx = Math.min(nPixelsx, 36) ;
+               nPixelsy = Math.min(nPixelsy, 36) ;  
 
-            nPixelsx = Math.max(nPixelsx, 6) ;
-            nPixelsy = Math.max(nPixelsy, 6) ;
-            */  
+               slice = new OneSlice( grid , chan , ( int ) ( .5f+ Cy
+                               ) , ( int ) ( .5f + Cx
+                               ) , nPixelsy ,
+                         nPixelsx , BadEdgeWidth );
+            }
+        
            }else
            {
-              nPixelsx = nPixels;
-              nPixelsy = nPixels;
+
+              slice = new OneSlice( grid , chan , ( int ) ( .5f+ Cy
+                              ) , ( int ) ( .5f + Cx
+                              ) , nPixelsy ,
+                        nPixelsx , BadEdgeWidth );
            }
             float time1 = xscl.getX( chan);
             float time2 =time1;
+            
             if( chan + 1 < xscl.getNum_x( ))
                time2 = xscl.getX( chan+1);
-            time = (time1+time2)/2;
             
+            time = (time1+time2)/2;
+            if( dir ==1 && ichan==0)
+               time0=time;
             double MaxErrChiSq = 0;
             double chiSqr = Double.NaN;
             double[] errs = new double[ 8 ];
@@ -350,11 +382,11 @@ public class IntegrateNorm {
 
                errs = fitter.getParameterSigmas( );// Use other for cases when
                                                   // params near the boundary
-               //System.out.print( "("+(errs[IBACK]) +","+(errs[ITINTENS]) +")" );
+             
                I_bErrSv = errs[IBACK];
                Ierr = errs[3];
                errs = fitter.getParameterSigmas_2( );
-               //System.out.print( "("+(errs[IBACK] ) +","+(errs[ITINTENS]) +")" );
+            
                if ( Double.isNaN( Ierr ) )
                   {
                    Ierr = errs[3];
@@ -365,35 +397,25 @@ public class IntegrateNorm {
 
                Ierr = Math.min( Ierr , errs[3] );
                errs[3] = Ierr;
-              
+
                DD = slice.getAllParameters( );
 
-               if( true)
-               {
-                  double VarIntensities =0;
-                  double[] vars = slice.stDevs;
-                  for( int kk=0; kk< vars.length; kk++)
-                     VarIntensities +=(vars[kk]*vars[kk]);
-                 // VarIntensities = slice.getInitialTotIntensity( );
-                  I_bErr= I_bErrSv*I_bErrSv*VarIntensities/slice.ncells();
-                  I_bErr = slice.ncells()*slice.ncells()*I_bErr +VarIntensities;
-                  I_bErr +=slice.ncells()*DD[0];//assumes sqrt error for background
-                  Ierr *= Math.sqrt( VarIntensities/slice.ncells() );
-                  
-               }else
-               {
-                  double IBackground =slice.ncells()*DD[0];
-                  double x = I_bErr;
-                  I_bErr = slice.getInitialTotIntensity( ) +IBackground;
-               
-                  I_bErr /= (1-IBackground/slice.getInitialTotIntensity() );
-                 // I_bErr += x*x*chiSqr / slice.ncells( );
-                  
-                  Ierr *= Math.sqrt( chiSqr / slice.ncells( ) );
-               }
-               
-               GoodSlicec = ' ';
-               if ( !Double.isNaN( chiSqr ) &&
+               double VarIntensities = 0;
+               double[] vars = slice.stDevs;
+               for( int kk = 0 ; kk < vars.length ; kk++ )
+                   VarIntensities += ( vars[kk] * vars[kk] );
+
+               I_bErr = I_bErrSv * I_bErrSv * VarIntensities
+                                  / slice.ncells( );
+               I_bErr = 2 * slice.ncells( ) * slice.ncells( ) * I_bErr
+                           + VarIntensities;
+                     // I_bErr +=slice.ncells()*DD[0];//assumes sqrt error for
+                     // background
+              Ierr *= Math.sqrt( VarIntensities / slice.ncells( ) );
+
+              GoodSlicec = ' ';
+              if ( !Double.isNaN( chiSqr )
+                           &&
                       GoodSlice( DD , 
                                  Math.sqrt(I_bErr), //Ierr* Math.sqrt( chiSqr / slice.ncells( ) ) , 
                                  nPixelsx ,
@@ -407,7 +429,7 @@ public class IntegrateNorm {
             }
 
             // ----- Record info to log file -----------------
-            boolean shoeBoxGood = false;
+            
             try
             {
                
@@ -447,13 +469,21 @@ public class IntegrateNorm {
             else if ( GoodSlicec == 'x' )
             {
                TotIntensity += DD[3];
-               TotIntensity1 += ( slice.getInitialTotIntensity( ) - 
+ //---------------------------------
+            TotIntensity1 += ( slice.getInitialTotIntensity( ) - 
                            slice.getParameters( )[0] * slice.ncells( ) );
 
+               TotVariance1 += I_bErr;
+   //-----------------------------------  ShoeBox calculation vvvv--------     
+               
+/*                 double[] peakData = getPeakData( slice);//ShoeBox formula on
+               TotIntensity1 += peakData[0];
+               TotVariance1 += peakData[1];
+*/  
+   //------------------------------------------       
                double Err = Ierr;
                TotVariance += Err * Err * chiSqr / slice.ncells( );
 
-               TotVariance1 += I_bErr;
  
                
 
@@ -508,6 +538,8 @@ public class IntegrateNorm {
             Peak.inti( ( float ) TotIntensity1 );
             // Peak.sigi( stDev );
             Peak.sigi( stDev1 );
+            // Quick Centroid
+           // Peak.changePeakPostion( PrevCentX0 , PrevCentY0 , Chan , time0 );
 
          } else
          {
@@ -545,6 +577,107 @@ public class IntegrateNorm {
       return Res;
    }
    
+   /**
+    * Calculates the shoebox inti and sigi given the slice bounds. ASSUMES Poisson.(Can be fixed to work
+    * with non-Poisson data using slice.stDevs)
+    * @param slice  The slice an all stats
+    * @return   An array of two doubles. The first element is inti and the second is sigi
+    */
+   private static double[] getPeakData( OneSlice slice)
+   {
+      double[] Res = new double[2];
+      Res[0]=Res[1]=0;
+      
+      if( slice == null)
+         return Res;
+      
+      double TotBack = slice.TotBack;
+      int nBack = slice.nback;
+      Res[0] = slice.getInitialTotIntensity( )- TotBack/nBack*slice.ncells( ) ;
+      Res[1] = slice.getInitialTotIntensity( ) + TotBack/nBack/nBack*slice.ncells()*slice.ncells( );
+    
+      return Res;
+   }
+   private static int FindMaxChannel( IPeak Peak, int nTimes, XScale xscl, int nPixels, IDataGrid grid, int BadEdgeWidth)
+   {
+      
+      int Chan= (int)(.5+Peak.z());
+      int PrevCentX=(int)(.5+Peak.x());
+      int PrevCentY=(int)(.5+Peak.y());
+      int PrevCentX0=(int)(.5+Peak.x());
+      int PrevCentY0=(int)(.5+Peak.y());
+    
+      int nPixelsx=nPixels,
+          nPixelsy=nPixels;
+      boolean done;
+      int iMax = -1;
+      double MaxIntensity = Double.MIN_VALUE;
+      for( int dir =1; dir >=-1; dir -= 2)
+      { 
+         done = false;
+         for( int ichan =0; ichan <=( nTimes - 1 ) / 2 &&!done; ichan++)         
+  
+      if( ichan==0 && dir < 0)
+      {   
+         done = false;
+         PrevCentX=PrevCentX0;
+         PrevCentY=PrevCentY0;
+      }else if( Chan+dir*ichan < 1 ||Chan+dir*ichan >=xscl.getNum_x()-2)
+      {
+         done = true;
+      }else if( AllDataInBadArea(grid,PrevCentY,PrevCentX, nPixels , nPixels ,
+               BadEdgeWidth ))
+               done = true;
+      else
+      {
+
+         int chan = Chan+dir*ichan;
+         int pixWidth = nPixels;
+         int pixHeight = nPixels;
+         if(nPixelsx > 0 && nPixelsy > 0)
+         {
+            pixWidth = nPixelsx;
+            pixHeight = nPixelsy;
+         }
+         OneSlice slice = new OneSlice( grid , chan , PrevCentY,PrevCentX, pixHeight, pixWidth  ,
+               BadEdgeWidth );
+         
+         double[] params = slice.getAllParameters();
+
+       
+         float intens =(float)slice.getInitialTotIntensity( );
+         
+         //if( intens/4/nPixelsx/nPixelsy*2.355*2.355 >2)
+         {
+         
+         float Cx= (float)params[IXMEAN];
+         float Cy =(float)params[IYMEAN];
+         slice = new OneSlice( grid , chan , ( int ) ( .5f+ Cy
+                         ) , ( int ) ( .5f + Cx
+                         ) , nPixelsy ,
+                   nPixelsx , BadEdgeWidth );
+         
+         // Update box sizes with fitted parameters 
+         params = slice.getAllParameters();
+         PrevCentX= (int)params[IXMEAN];
+         PrevCentY =(int)params[IYMEAN];
+         }
+         if( slice.getInitialTotIntensity( )> MaxIntensity)
+         {
+            iMax =chan;
+            MaxIntensity = slice.getInitialTotIntensity();
+         }else if(  slice.getInitialTotIntensity( )== MaxIntensity  && Math.abs( iMax-Chan )> Math.abs( chan-Chan ) )
+         {
+
+            iMax =chan;
+            MaxIntensity = slice.getInitialTotIntensity();
+         }
+      }
+      }
+     
+     return iMax;
+   }
+  
    private static boolean  AllDataInBadArea(IDataGrid grid,
                                      float PrevCentY,
                                      float PrevCentX, 
@@ -695,13 +828,13 @@ public class IntegrateNorm {
          return;
       }
       DEBUG = true;
-      int currentRun = -1;// in prep for more runs
-      int currentds = -1;
-      NexusRetriever nret = null;
+      //int currentRun = -1;// in prep for more runs
+      //int currentds = -1;
+      //NexusRetriever nret = null;
       DataSet DS = null;
       XScale xscl = null;
-      int nTimeChan = -1;
-      int[][] ids = null;
+      //int nTimeChan = -1;
+      //int[][] ids = null;
       float dQ = 1f / MaxCellEdge / 6f;
       FileOutputStream fout = null;
       NexusRetriever ret = new NexusRetriever( NeXusFile );
@@ -1345,7 +1478,7 @@ public class IntegrateNorm {
          Hashtable<String,Float> Res = new Hashtable<String,Float> ();
          Res.put( TIME , time );
          float errMult = (float)Math.sqrt( chiSq/ncells() );
-         float errMult1 = (float)Math.sqrt( getInitialTotIntensity()/ncells() );
+         //float errMult1 = (float)Math.sqrt( getInitialTotIntensity()/ncells() );
          Res.put( CHANNEL , (float)chan );
          Res.put( BACKGROUND , (float)P[IBACK] );
          Res.put(BACKGROUND_ERROR, (float)(errBack*errMult));
@@ -1517,7 +1650,7 @@ public class IntegrateNorm {
          if( startCol+ Intensity[0].length -1 >= grid.num_cols( ))
             right =0;
          
-         boolean show = false;
+         //boolean show = false;
          
          int lastRow = Intensity.length-1;
          
@@ -2073,7 +2206,7 @@ public class IntegrateNorm {
       }
       
       //Not used
-      private double[] RangeFix( double[] parameters)
+    /*  private double[] RangeFix( double[] parameters)
       {
          double[] Res = new double[7];
          System.arraycopy(  parameters, 0, Res,0,7);
@@ -2104,11 +2237,11 @@ public class IntegrateNorm {
          
          return Res;
       }
-
+    */
       public void Test()
       {
          double x = (row-startRow)*Ncols +(col-startCol);
-         double[] pp = getParameters();
+         //double[] pp = getParameters();
          P[IBACK]=0;
          P[ITINTENS]=0;
          
@@ -2246,7 +2379,7 @@ public class IntegrateNorm {
          P[IVXY]= Sxy;
       }
       
-      private void setSigmas1(double[] parameters)
+     /* private void setSigmas1(double[] parameters)
       {
          double Sxx =0;
          double Syy = 0;
@@ -2320,7 +2453,7 @@ public class IntegrateNorm {
          P[IVXY]= Sxy;
       }
 
-      
+      */
       public double[] get_dFdai( double x[], int i )
       {
          
@@ -3030,46 +3163,3 @@ public class IntegrateNorm {
       
    }
 }
-/*
-{
-if( !shoeBoxGood || !UseShoeBox)
-{
-  TotIntensity = 0;
-  TotVariance = 0;
-  TotIntensity1 = 0;
-  TotVariance1 = 0;
-  Res.clear( );
-}else
-{
-   TotIntensity1 += ( slice.getInitialTotIntensity( ) - 
-         slice.getParameters( )[0] * slice.ncells( ) );
-   TotVariance1 += I_bErr;
-   
-}
-
-} else if ( chan <= Chan+2 && TotIntensity > 0 ) // to catch a time
-                                            // channel if off by
-{                                               //two
-if( !shoeBoxGood || !UseShoeBox)
-     done = true;
-else
-{
-
-   TotIntensity1 += ( slice.getInitialTotIntensity( ) - 
-         slice.getParameters( )[0] * slice.ncells( ) );
-   TotVariance1 += I_bErr;
-}
-
-}else if ( chan > Chan +2) // only go one extra channel over Chan
-{
-if( !shoeBoxGood || !UseShoeBox)
-   done = true;
-else
-{
-
- TotIntensity1 += ( slice.getInitialTotIntensity( ) - 
-       slice.getParameters( )[0] * slice.ncells( ) );
- TotVariance1 += I_bErr;
-}
-}
-*/
