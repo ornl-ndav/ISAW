@@ -1015,7 +1015,7 @@ public static float FindUB_UsingFFT( Tran3D             UB,
 
   int max_indexed = FFTScanFor_Directions( directions, q_vectors,
                                            min_d, max_d,
-                                           required_tolerance/2,
+                                           0.75f * required_tolerance,
                                            degrees_per_step );
 
   System.out.println("####### AFTER FFT SCAN, MAX_INDEXED = " + max_indexed );
@@ -1028,8 +1028,6 @@ public static float FindUB_UsingFFT( Tran3D             UB,
   for ( int i = 0; i < num_to_print; i++ )
     System.out.println("" + i + "  " + directions.elementAt(i) +
                        "  length = " + directions.elementAt(i).length() );
-
-  directions = SortOnVectorMagnitude( directions );
 
   if ( max_indexed == 0 )
     throw new IllegalArgumentException("Could not find any a,b,c to index Qs");
@@ -1066,6 +1064,7 @@ public static float FindUB_UsingFFT( Tran3D             UB,
   Vector3D c_dir = new Vector3D();
   int index = 0; 
   boolean done = false;
+  max_indexed = 0;
   while ( index < directions.size() && !done )
 //  for ( int i = 0; i < directions.size()-2; i++ )
   {
@@ -1085,8 +1084,10 @@ public static float FindUB_UsingFFT( Tran3D             UB,
                                       required_tolerance,
                                       fit_error );
 //#########
-      if ( num_indexed > 0.75*max_indexed )
+      System.out.println("Number indexed = " + num_indexed );
+      if ( num_indexed > max_indexed )
       {
+        max_indexed = num_indexed;
 /*
        System.out.println("i = " + index + "Num indexed = " + num_indexed +
                            "error = " + fit_error[0] );
@@ -1099,7 +1100,11 @@ public static float FindUB_UsingFFT( Tran3D             UB,
     index++;
   }
 
-
+  if ( !done )
+  {
+    System.out.println("Failed to find any suitable UB");
+    return -1;
+  }
 
   Vector<Vector3D> miller_ind = new Vector<Vector3D>();
 
@@ -1414,13 +1419,14 @@ private static boolean FormUB_From_abc_Vectors( Tran3D           UB,
 /*
   System.out.println("MIN D = " + min_d );
   System.out.println("MAX D = " + max_d );
+*/
+  System.out.println("Trying UB formed from: ");
   System.out.println(" a = " + a_dir.length() );
   System.out.println(" b = " + b_dir.length() );
   System.out.println(" c = " + c_dir.length() );
   System.out.println(" alpha = " + angle( b_dir, c_dir ) );
   System.out.println(" beta  = " + angle( c_dir, a_dir ) );
   System.out.println(" gamma = " + angle( a_dir, b_dir ) );
-*/
                                    // now build the UB matrix from a,b,c       
 
   float[][] UB_inv_arr = { { a_dir.getX(), a_dir.getY(), a_dir.getZ(), 0 },
@@ -2184,8 +2190,8 @@ public static int NumberIndexed_3D( Vector3D         a_dir,
   for ( int i = 0; i < q_vectors.size(); i++ )
   {
     hkl[0] = a_dir.dot( q_vectors.elementAt(i) );
-    hkl[1] = a_dir.dot( q_vectors.elementAt(i) );
-    hkl[2] = a_dir.dot( q_vectors.elementAt(i) );
+    hkl[1] = b_dir.dot( q_vectors.elementAt(i) );
+    hkl[2] = c_dir.dot( q_vectors.elementAt(i) );
     hkl_vec.set( hkl );
     if ( ValidIndex( hkl_vec, tolerance ) )
     {
@@ -3697,6 +3703,9 @@ public static int FFTScanFor_Directions( Vector<Vector3D> directions,
       num_indexed = NumberIndexed_1D( current_dir, 
                                       q_vectors, 
                                       required_tolerance );
+      System.out.println("Dir = " + current_dir +
+                         "  length = " + current_dir.length() + 
+                         "  num_indexed = " + num_indexed );
       if ( num_indexed > max_indexed )
         max_indexed = num_indexed; 
     }
@@ -3799,7 +3808,7 @@ private static Vector<Vector3D> DiscardDuplicates( Vector<Vector3D> dirs,
         }
       }
    
-      if ( max_indexed > 0 )               // don't bother to add and direction
+      if ( max_indexed > 0 )               // don't bother to add any direction
       {                                    // that doesn't index anything
         new_list.add( temp.elementAt( max_i ) );  
       }
