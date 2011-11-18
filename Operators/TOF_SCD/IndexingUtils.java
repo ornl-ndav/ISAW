@@ -950,36 +950,26 @@ public static float FindUB_UsingFFT( Tran3D             UB,
   if ( directions.size() < 3 )
     throw new IllegalArgumentException("Could not find enough a,b,c vectors");
 
-  float[] fit_error   = new float[1];
-  Vector<Integer>  index_vals = new Vector<Integer>();
-  Vector<Vector3D> indexed_qs = new Vector<Vector3D>();
-
-  int     num_indexed = 0;
-  int     num_sets    = 0;
-  int     set_used    = -1;
-
-  max_indexed = 0;
-
   Tran3D temp_UB = new Tran3D();
-
-  float min_vol = min_d * min_d * min_d / 4.0f;
-  if ( !FormUB_From_abc_Vectors( temp_UB, directions, q_vectors, 
+  float  min_vol = min_d * min_d * min_d / 4.0f;
+  if ( !FormUB_From_abc_Vectors( temp_UB, directions, q_vectors,
                                  required_tolerance, min_vol ) )
     throw new IllegalArgumentException("Could NOT form UB matrix from abc's");
   else
      UB.set( temp_UB );
 
-  Vector<Vector3D> miller_ind = new Vector<Vector3D>();
+  float[] fit_error = new float[1];
 
   if ( q_vectors.size() >= 5 )    // refine the matrix several times
   {
-    temp_UB = new Tran3D( UB );
+    Vector<Vector3D> indexed_qs = new Vector<Vector3D>( q_vectors.size() );
+    Vector<Vector3D> miller_ind = new Vector<Vector3D>();
     for ( int i = 0; i < 4; i++ )
     {
       try
       {
-        num_indexed = GetIndexedPeaks( UB, q_vectors, required_tolerance,
-                                       miller_ind, indexed_qs, fit_error );
+        int num_indexed = GetIndexedPeaks( UB, q_vectors, required_tolerance,
+                                           miller_ind, indexed_qs, fit_error );
         fit_error[0] = Optimize_UB_3D( temp_UB, miller_ind, indexed_qs );
         if ( !Float.isNaN( fit_error[0] ) )
           UB.set( temp_UB );
@@ -1050,12 +1040,13 @@ private static boolean FormUB_From_abc_Vectors( Tran3D           UB,
    float    alpha = 0, 
             beta  = 0, 
             gamma = 0;
-   Vector3D a_dir, b_dir, c_dir,
-            a_temp, b_temp, c_temp;
+   Vector3D a_dir = null, 
+            b_dir = null, 
+            c_dir = null,
+            a_temp, 
+            b_temp, 
+            c_temp;
    Vector3D acrossb = new Vector3D();
-   a_dir = null;
-   b_dir = null;
-   c_dir = null;
 
    float[] ave_2_error  = new float[1];
 
@@ -3291,8 +3282,8 @@ public static int FFTScanFor_Directions( Vector<Vector3D> directions,
   }
   max_mag_Q *= 1.1f;      // allow for a little "headroom" for FFT range
 
-                          // now apply the FFT to each of the directions,
-                          // and keep track of their maximum magnitude past DC
+                          // apply the FFT to each of the directions, and
+                          // keep track of their maximum magnitude past DC
   float   max_mag_fft;
   float[] max_fft_val   = new float[ full_list.size() ];
 
@@ -3312,9 +3303,8 @@ public static int FFTScanFor_Directions( Vector<Vector3D> directions,
 
     max_fft_val[ dir_num ] = max_mag_fft; 
   }
-
-                          // now find the directions with the 500 
-                          // largest fft values, and add to temp_dirs vector
+                          // find the directions with the 500 largest
+                          // fft values, and place them in temp_dirs vector
   int N_TO_TRY = 500;
  
   float[] max_fft_copy  = new float[ full_list.size() ];
@@ -3338,18 +3328,14 @@ public static int FFTScanFor_Directions( Vector<Vector3D> directions,
     {
       temp_dirs.add( full_list.elementAt( i ) );
     }
-
-/*
-  System.out.println("max_mag_fft   = " + max_mag_fft );
-  System.out.println("threshold     = " + threshold );
-  System.out.println("Num dirs kept = " + temp_dirs.size() );
-*/
                                   // now scan through temp_dirs and use the
                                   // FFT to find the cell edge length that
-                                  // corresponds to the max_mag_fft
-  int num_initial = temp_dirs.size();
+                                  // corresponds to the max_mag_fft.  Only keep
+                                  // directions with length nearly in bounds
   Vector3D temp;
-  for ( int i = 0; i < num_initial; i++ )
+  Vector<Vector3D> temp_dirs_2 = new Vector<Vector3D>( temp_dirs.size() );
+
+  for ( int i = 0; i < temp_dirs.size(); i++ )
   {
     max_mag_fft = GetMagFFT( FFT, q_vectors, temp_dirs.elementAt(i),
                              projections,
@@ -3361,49 +3347,42 @@ public static int FFTScanFor_Directions( Vector<Vector3D> directions,
     {
       float q_val = max_mag_Q / position;
       float d_val = 1 / q_val;
-      temp_dirs.elementAt(i).multiply( d_val );
+      if ( d_val >= 0.8 * min_d && d_val <= 1.2 * max_d )
+      {
+        temp = temp_dirs.elementAt(i);
+        temp.multiply( d_val );
+        temp_dirs_2.add( temp );
+      }
     }
   }
-
-  Vector<Vector3D> index_vals = new Vector<Vector3D>();
-  Vector<Vector3D> indexed_qs = new Vector<Vector3D>();
-  Vector3D current_dir = new Vector3D();
-
-  Vector<Vector3D> sorted_dirs = SortOnVectorMagnitude( temp_dirs );
-
-  int num_indexed;
                                    // look at how many peaks were indexed
                                    // for each of the initial directions
   max_indexed = 0;
-  for ( int dir_num = 0; dir_num < sorted_dirs.size(); dir_num++ )
+  int      num_indexed;
+  Vector3D current_dir = new Vector3D();
+  for ( int dir_num = 0; dir_num < temp_dirs_2.size(); dir_num++ )
   {
-    current_dir = sorted_dirs.elementAt( dir_num );
+    current_dir = temp_dirs_2.elementAt( dir_num );
     num_indexed = NumberIndexed_1D( current_dir, q_vectors, required_tolerance);
     if ( num_indexed > max_indexed )
       max_indexed = num_indexed;
   }
-
-/*
-  System.out.println("ALL DIRECTIONS IDENTIFIED BY FFT:");
-  for ( int i = 0; i < sorted_dirs.size(); i++ )
-    System.out.println("i = " + i + " dir = " + sorted_dirs.elementAt(i) +
-                       " length = " + sorted_dirs.elementAt(i).length() );
-*/
-
                                     // only keep original directions that index
-                                    // at least 10% of max num indexed
+                                    // at least 50% of max num indexed
   temp_dirs.clear();
-  for ( int dir_num = 0; dir_num < sorted_dirs.size(); dir_num++ )
+  for ( int dir_num = 0; dir_num < temp_dirs_2.size(); dir_num++ )
   {
-    current_dir = sorted_dirs.elementAt( dir_num );
+    current_dir = temp_dirs_2.elementAt( dir_num );
     num_indexed = NumberIndexed_1D( current_dir, q_vectors, required_tolerance);
-    if ( num_indexed >= 0.10 * max_indexed )
+    if ( num_indexed >= 0.50 * max_indexed )
       temp_dirs.add( current_dir );
   }
-
                                    // refine directions and again find the 
-                                   // max number indexed
+                                   // max number indexed, for the optimized
+                                   // directions
   max_indexed = 0;
+  Vector<Vector3D> index_vals = new Vector<Vector3D>();
+  Vector<Vector3D> indexed_qs = new Vector<Vector3D>();
   for ( int dir_num = 0; dir_num < temp_dirs.size(); dir_num++ )
   {
     current_dir = temp_dirs.elementAt( dir_num );
@@ -3439,43 +3418,25 @@ public static int FFTScanFor_Directions( Vector<Vector3D> directions,
     }
     catch ( Exception ex )
     { 
-//       System.out.print  ("Failed to optimize direction # " + dir_num );
-//       System.out.println(" Direction = " + current_dir + 
-//                          " length = " + current_dir.length() );
-       // just don't count any direction that fails to optimize properly
+      // System.out.print  ("Failed to optimize direction # " + dir_num );
+      // just don't count any direction that fails to optimize properly
     }
   }
-
-//System.out.println("AFTER REFINING DIRECTIONS MAX INDEXED = " + max_indexed );
-
                                       // discard ones with length out of bounds
-                                      // and calculate the max number indexed
-  int old_max_indexed = max_indexed;
-  max_indexed = 0;
-  directions.clear();
+  temp_dirs_2.clear();
   for ( int i = 0; i < temp_dirs.size(); i++ )
   {
     current_dir = temp_dirs.elementAt( i );
     float length = current_dir.length();
-    num_indexed = NumberIndexed_1D( current_dir,
-                                    q_vectors,
-                                    required_tolerance );
-    if ( length >= min_d && length <= max_d &&
-         num_indexed > 0.5 * old_max_indexed )   // only keep if within range
-    {
-      directions.add( current_dir );
-      if ( num_indexed > max_indexed )
-        max_indexed = num_indexed;
-    }
+    if ( length >= min_d && length <= max_d )
+      temp_dirs_2.add( current_dir );
   }
-
                                     // only keep directions that index at 
                                     // least 75% of the max number of peaks
-  Vector<Vector3D> selected_dirs = new Vector<Vector3D>();
-
-  for ( int dir_num = 0; dir_num < directions.size(); dir_num++ )
+  temp_dirs.clear();
+  for ( int dir_num = 0; dir_num < temp_dirs_2.size(); dir_num++ )
   {
-    current_dir = directions.elementAt( dir_num );
+    current_dir = temp_dirs_2.elementAt( dir_num );
 
     num_indexed = GetIndexedPeaks_1D( current_dir,
                                       q_vectors,
@@ -3485,65 +3446,29 @@ public static int FFTScanFor_Directions( Vector<Vector3D> directions,
                                       fit_error  );
 
     if ( num_indexed > max_indexed * 0.75 )
-    {
-      selected_dirs.add( current_dir );
-    }
+      temp_dirs.add( current_dir );
   }
 
-  selected_dirs = SortOnVectorMagnitude( selected_dirs );
-  for ( int i = 0; i < selected_dirs.size(); i++ )
-  {
-    current_dir = selected_dirs.elementAt( i );
-    num_indexed = NumberIndexed_1D( current_dir, q_vectors, required_tolerance);
-  }
+  temp_dirs = SortOnVectorMagnitude( temp_dirs );
 
-/*
-  System.out.println("BEFORE REMOVING DUPLICATES");
-  for ( int i = 0; i < selected_dirs.size(); i++ )
-    System.out.println("i = " + i + " dir = " + selected_dirs.elementAt(i) +
-                       " length = " + selected_dirs.elementAt(i).length() );
-*/
                                       // discard duplicates:
   float len_tol = 0.1f;               // 10% tolerance for lengths
   float ang_tol = 5;                  // 5 degree tolerance for angles
-  selected_dirs = DiscardDuplicates( selected_dirs,
-                                     q_vectors,
-                                     required_tolerance,
-                                     len_tol,
-                                     ang_tol );
+  temp_dirs = DiscardDuplicates( temp_dirs,
+                                 q_vectors,
+                                 required_tolerance,
+                                 len_tol,
+                                 ang_tol );
 
-/*
-  System.out.println("AFTER REMOVING DUPLICATES");
-  for ( int i = 0; i < selected_dirs.size(); i++ )
-    System.out.println("i = " + i + " dir = " + selected_dirs.elementAt(i) +
-                       " length = " + selected_dirs.elementAt(i).length() );
-*/
-                                      // discard ones with length out of bounds
-                                      // and calculate the max number indexed
-  max_indexed = 0;
+                                      // recalculate the max number indexed
+                                      // and put list into directions vector
   directions.clear();
-  for ( int i = 0; i < selected_dirs.size(); i++ )
+  for ( int i = 0; i < temp_dirs.size(); i++ )
   {
-    current_dir = selected_dirs.elementAt( i );
-    float length = current_dir.length();
-    if ( length >= min_d && length <= max_d )   // only keep if within range
-    { 
-      directions.add( current_dir );
-      num_indexed = NumberIndexed_1D( current_dir, 
-                                      q_vectors, 
-                                      required_tolerance );
-/*
-      System.out.println("Dir = " + current_dir +
-                         "  length = " + current_dir.length() + 
-                         "  num_indexed = " + num_indexed );
-*/
-      if ( num_indexed > max_indexed )
-        max_indexed = num_indexed; 
-    }
+    current_dir = temp_dirs.elementAt( i );
+    directions.add( current_dir );
   }
   
-  directions = SortOnVectorMagnitude( directions );
-
   return max_indexed;
 }
 
