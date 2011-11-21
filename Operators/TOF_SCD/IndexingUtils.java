@@ -1239,7 +1239,6 @@ private static boolean FormUB_From_abc_Vectors( Tran3D           UB,
 /*
   System.out.println("MIN D = " + min_d );
   System.out.println("MAX D = " + max_d );
-*/
   System.out.println("Trying UB formed from: ");
   System.out.println(" a = " + a_dir.length() );
   System.out.println(" b = " + b_dir.length() );
@@ -1247,6 +1246,7 @@ private static boolean FormUB_From_abc_Vectors( Tran3D           UB,
   System.out.println(" alpha = " + angle( b_dir, c_dir ) );
   System.out.println(" beta  = " + angle( c_dir, a_dir ) );
   System.out.println(" gamma = " + angle( a_dir, b_dir ) );
+*/
                                    // now build the UB matrix from a,b,c       
 
   float[][] UB_inv_arr = { { a_dir.getX(), a_dir.getY(), a_dir.getZ(), 0 },
@@ -3437,14 +3437,7 @@ public static int FFTScanFor_Directions( Vector<Vector3D> directions,
   for ( int dir_num = 0; dir_num < temp_dirs_2.size(); dir_num++ )
   {
     current_dir = temp_dirs_2.elementAt( dir_num );
-
-    num_indexed = GetIndexedPeaks_1D( current_dir,
-                                      q_vectors,
-                                      required_tolerance,
-                                      index_vals,
-                                      indexed_qs,
-                                      fit_error  );
-
+    num_indexed = NumberIndexed_1D(current_dir, q_vectors, required_tolerance);
     if ( num_indexed > max_indexed * 0.75 )
       temp_dirs.add( current_dir );
   }
