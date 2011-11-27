@@ -896,10 +896,10 @@ public static float Find_UB( Tran3D             UB,
     @param  UB                  3x3 matrix that will be set to the UB matrix
     @param  q_vectors           Vector of new Vector3D objects that contains
                                 the list of q_vectors that are to be indexed
-                                NOTE: There must be at least 3 linearly
-                                independent q_vectors.  If there are only 3
-                                q_vectors, no least squares optimization of
-                                the UB matrix will be done.
+                                NOTE: There must be at least 4 q_vectors and it
+                                really should have at least 10 or more 
+                                peaks for this to work quite consistently.
+
     @param  min_d               Lower bound on shortest unit cell edge length.
                                 This does not have to be specified exactly but
                                 must be strictly less than the smallest edge
@@ -926,8 +926,17 @@ public static float FindUB_UsingFFT( Tran3D             UB,
                                      float              required_tolerance,
                                      float              degrees_per_step ) 
 {
-  if ( q_vectors.size() < 3 )
-    throw new IllegalArgumentException("Need at least 3 q_vectors to find UB");
+  if ( q_vectors.size() < 4 )
+    throw new IllegalArgumentException("Need at least 4 q_vectors to find UB");
+
+  if ( min_d >= max_d || min_d <= 0 )
+    throw new IllegalArgumentException("Need 0 < min_d < max_d");
+
+  if ( required_tolerance <= 0 )
+    throw new IllegalArgumentException("required_tolerance must be positive");
+  
+  if ( degrees_per_step <= 0 )
+    throw new IllegalArgumentException("degrees_per_step must be positive");
 
   Vector<Vector3D> directions = new Vector<Vector3D>();
 
@@ -942,13 +951,13 @@ public static float FindUB_UsingFFT( Tran3D             UB,
   System.out.println("####### AFTER FFT SCAN, MAX_INDEXED = " + max_indexed );
   System.out.println("####### Found " + directions.size() + " directions");
 
-  directions = SortOnVectorMagnitude( directions );
-
   if ( max_indexed == 0 )
     throw new IllegalArgumentException("Could not find any a,b,c to index Qs");
 
   if ( directions.size() < 3 )
     throw new IllegalArgumentException("Could not find enough a,b,c vectors");
+
+  directions = SortOnVectorMagnitude( directions );
 
   Tran3D temp_UB = new Tran3D();
   float  min_vol = min_d * min_d * min_d / 4.0f;
@@ -1969,10 +1978,11 @@ public static int NumberIndexed_1D( Vector3D         direction,
 
 
 /**
-   Calculate the number of Q vectors for which the dot product with the 
-   specified direction vector is an integer to within the specified
-   tolerance.  This give the number of peaks that would be indexed by the
-   UB matrix formed from the specified three real space unit cell edge vectors.
+   Calculate the number of Q vectors for which the dot product with three
+   specified direction vectors is an integer triple, NOT equal to (0,0,0) to
+   within the specified tolerance.  This give the number of peaks that would 
+   be indexed by the UB matrix formed from the specified those three real 
+   space unit cell edge vectors.
    NOTE: This method assumes that the three edge vectors are linearly 
          independent and could be used to form a valid UB matrix.
   
@@ -3261,8 +3271,6 @@ public static int FFTScanFor_Directions( Vector<Vector3D> directions,
   final    int N_FFT_STEPS = 512;
   float    error;
   float[]  fit_error = new float[1];
-  float    dot_prod;
-  int      nearest_int;
   int      max_indexed = 0;
   Vector3D q_vec = new Vector3D();
                            // first, make hemisphere of possible directions 
@@ -3395,8 +3403,8 @@ public static int FFTScanFor_Directions( Vector<Vector3D> directions,
                                       fit_error  );
     try
     {
+      int     count  = 0;
       boolean failed = false;
-      int count = 0;
       while ( count < 5 && !failed )     // 5 iterations should be enough for
       {                                  // the optimization to stabilize
         num_indexed = 0;
@@ -3405,23 +3413,27 @@ public static int FFTScanFor_Directions( Vector<Vector3D> directions,
         if ( Float.isNaN(error) )
           failed = true;
         else
+        {
           num_indexed = GetIndexedPeaks_1D( current_dir,
                                             q_vectors,
                                             required_tolerance,
                                             index_vals,
                                             indexed_qs,
                                             fit_error  ); 
-        count++;
+          if ( num_indexed > max_indexed )
+            max_indexed = num_indexed;
+
+          count++;
+        }
       }
-      if ( !failed && ( num_indexed > max_indexed ) )
-        max_indexed = num_indexed;
     }
     catch ( Exception ex )
     { 
       // System.out.print  ("Failed to optimize direction # " + dir_num );
-      // just don't count any direction that fails to optimize properly
+      // don't continue to refine if the direction fails to optimize properly
     }
   }
+
                                       // discard ones with length out of bounds
   temp_dirs_2.clear();
   for ( int i = 0; i < temp_dirs.size(); i++ )
@@ -3474,7 +3486,9 @@ public static int FFTScanFor_Directions( Vector<Vector3D> directions,
  *  those directions will be recorded in the sublist.  The one that indexes
  *  the most peaks, within the specified tolerance will be kept.
  *
- *  @param  dirs                List of possible a,b,c directions
+ *  @param  dirs                List of possible a,b,c directions, sorted in
+ *                              order of increasing length.  This list will be
+ *                              cleared by this method.
  *  @param  q_vectors           List of q_vectors that should be indexed
  *  @param  required_tolerance  The tolerance for indexing
  *  @param  len_tol             The tolerance on the relative difference in 
@@ -3521,13 +3535,13 @@ private static Vector<Vector3D> DiscardDuplicates( Vector<Vector3D> dirs,
       {
         next_dir = dirs.elementAt( check_index );
         next_length = next_dir.length();
-        len_diff = Math.abs( next_dir.length() - current_length );
         if ( next_length > 0 )
         {
+          len_diff = Math.abs( next_dir.length() - current_length );
           if ( ( len_diff/current_length ) < len_tol )  // continue scan
           { 
             angle = angle( current_dir, next_dir );
-            if ( (angle < ang_tol) || (angle > 180-ang_tol) )
+            if ( (angle < ang_tol) || (angle > (180-ang_tol)) )
             {
               temp.add( next_dir );
               dirs.set( check_index, zero_vec );  // mark off this direction 
@@ -3536,8 +3550,10 @@ private static Vector<Vector3D> DiscardDuplicates( Vector<Vector3D> dirs,
             check_index++;                    // keep checking all vectors with 
           }                                   // essentially the same length   
           else
-            new_dir = true;
-        }
+            new_dir = true;                   // we only know we have a new
+                                              // direction if the length is 
+                                              // different, since list is 
+        }                                     // sorted by length !
         else
           check_index++;                     // just move on!
       }
@@ -3564,6 +3580,7 @@ private static Vector<Vector3D> DiscardDuplicates( Vector<Vector3D> dirs,
     }
   }
 
+  dirs.clear();
   return new_list;
 }
 
