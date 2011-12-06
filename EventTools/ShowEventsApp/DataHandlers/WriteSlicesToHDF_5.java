@@ -197,7 +197,7 @@ public class WriteSlicesToHDF_5
       AddVectorAttribute( p_group, le_double_type,"direction_3", dir_3_scaled );
 
       /* Code to write as 1D array
-      */
+      
       int      data_size = n_rows * n_cols;
       long[]   data_dims = { data_size };
       double[] data_1D   = new double[n_rows * n_cols];
@@ -216,9 +216,11 @@ public class WriteSlicesToHDF_5
                                                  data_dims, null, null, 
                                                  gzip_level, 
                                                  data_1D );
-      /* */
+      */
+      /* End 1D array code */
 
       /* Code to write as 2D array, so it can be viewed as an image in hdfview
+      */
       long[] two_D_dims  = { n_rows, n_cols };
       double[][] data_2D = new double[n_rows][n_cols];
       for ( int row = 0; row < n_rows; row++ )
@@ -231,7 +233,7 @@ public class WriteSlicesToHDF_5
                                 two_D_dims, null, null,
                                 gzip_level,
                                 data_2D );
-      */
+      /* End 2D array code */
 
       slice_origin.add( dir_1_scaled );   // update origin for next slice
     }
@@ -240,6 +242,10 @@ public class WriteSlicesToHDF_5
   }
 
 
+  /**
+   *  This main program provides a simple unit test for writing a sequence
+   *  of slices in the ZODS hdf5 file format.
+   */
   public static void main( String args[] ) throws Exception
   {
     if ( args.length < 1 )
