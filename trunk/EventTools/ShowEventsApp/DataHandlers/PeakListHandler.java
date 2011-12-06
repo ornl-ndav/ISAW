@@ -329,7 +329,8 @@ public class PeakListHandler implements IReceiveMessage
       try
       {
         tolerance = cmd.getTolerance();
-        Util.sendInfo("Starting NEW auto indexing with params, PLEASE WAIT..");
+        Util.sendInfo("Starting Auto Indexing using Lattice Parameters," +
+                      " PLEASE WAIT..");
 
         Tran3D UB_tran = new Tran3D();
         Vector q_vectors = new Vector();
@@ -388,7 +389,7 @@ public class PeakListHandler implements IReceiveMessage
       try
       {
         tolerance = cmd.getTolerance();
-        Util.sendInfo("Starting NEW auto indexing, PLEASE WAIT...");
+        Util.sendInfo("Starting Min,Max d Auto Indexing, PLEASE WAIT...");
 
         Tran3D UB_tran = new Tran3D();
         Vector q_vectors = new Vector();
@@ -448,7 +449,7 @@ public class PeakListHandler implements IReceiveMessage
       try
       {
         tolerance = cmd.getTolerance();
-        Util.sendInfo("Starting NEW auto indexing, PLEASE WAIT...");
+        Util.sendInfo("Starting FFT Auto Indexing, PLEASE WAIT...");
 
         Tran3D UB_tran = new Tran3D();
         Vector q_vectors = new Vector();
