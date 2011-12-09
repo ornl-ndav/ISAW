@@ -941,7 +941,7 @@ public class subs
               sgn = -1;
            boolean ok = false;
            if( Tensor[i][i] == Tensor[i+1][i+1] && 
-                 sgn*Tensor[(i+2)%3][i+1] <= sgn*Tensor[(i+2)%3][i] )
+                 Math.abs( Tensor[(i+2)%3][i+1]) <= Math.abs( Tensor[(i+2)%3][i]) )
                  ok = true;
            if( !ok)//Xchg row i and row i+1
            { 
@@ -1022,10 +1022,12 @@ public class subs
                
                if( oth ==j)
                   oth = (oth+1)%3;
+               if( oth ==0)
+                  oth =1;
                
                if(  Tensor[i][i]/2 < sgn*Tensor[i][j] ||
-                        (Tensor[i][i]/2 == Tensor[i][j] &&   //must be pos.
-                           Tensor[oth][i] > 2*Tensor[oth][j] //
+                        (Tensor[i][i]/2 == sgn*Tensor[i][j] &&  sgn>0 && //must be pos.
+                           Math.abs(Tensor[oth][i]) > 2*Math.abs(Tensor[oth][j]) //
                            ))
                {
                   changed = true;
@@ -1038,7 +1040,7 @@ public class subs
                   Tensor = LinearAlgebra.mult( Tensor, ident);
                   
                   ident[i][j]=0;
-               } else if( Tensor[i][i]/2 == -Tensor[i][j] && Tensor[j][oth] !=0)
+               } else if( Tensor[i][i]/2 == -Tensor[i][j] && Tensor[0][oth] !=0 && sgn<0)
                {
                   //replace c by c+b(for exampe) --> positive case
                   int oth1= oth;
@@ -1054,6 +1056,7 @@ public class subs
                   ident[oth][j] = 0;
                   changed = true;
                }
+               
             }
          
          if( !isRightHanded( UB1 ))
@@ -1068,7 +1071,7 @@ public class subs
          done = !changed;
          if( !changed )// Currently Assumes no two are equal.
          {
-            int c=0;
+            /*int c=0;
             if( Tensor[0][1]<= 0)c++;
             if( Tensor[0][2]<= 0)c++;
             if( Tensor[1][2] <= 0)c++;
@@ -1091,9 +1094,12 @@ public class subs
                ident[(kk+2)%3][(kk+2)%3] = 1;
                changed = true;
                //showNig( Tensor, UB1, NiggReal);
-            }  
+              */
+            changed = AllPosNeg( Tensor, UB1, ident);
+               
             
-           
+            
+            
             // now check for C -a-b
             
             float sgn = 1;
@@ -1126,7 +1132,7 @@ public class subs
                   
            
             }else if (  x == .5*(Tensor[0][0]+ Tensor[1][1]) && sgn < 0 &&
-                  Tensor[0][0]>(2*Tensor[0][2]+ Tensor[0][1]))
+                  Tensor[0][0]>2*sgn*Tensor[0][2]+ sgn*Tensor[0][1])
             {
                //may be circular if get into this case NOPE just barely
                ident[2][0]=ident[2][1] = 1;
@@ -1145,15 +1151,83 @@ public class subs
             //!changed
          }
          done =done && !changed;
-         done = done && !Sortt(Tensor, UB1, NiggReal);
+         boolean x =!Sortt(Tensor, UB1, NiggReal);
+         done = done && x;
+         x=!AllPosNeg( Tensor, UB1,ident);
+         done = done && x;
+      
+            
       }//while not done
       if( Sortt( Tensor, UB1, NiggReal))
          showNig( Tensor, UB1, NiggReal);
-      
+     
       
       return UB1;
    }
+
+private static boolean  AllPosNeg(float[][] Tensor,float[][]UB1, float[][] ident)
+{
+   int c=0;
+   int z=0;
+   if( Tensor[0][1]< 0)c++;
+   if( Tensor[0][2]< 0)c++;
+   if( Tensor[1][2] < 0)c++;
+   if( Tensor[0][1]== 0)z++;
+   if( Tensor[0][2]== 0)z++;
+   if( Tensor[1][2] == 0)z++;
+   c +=z;
    
+   if( c >0 && c <3)
+   {
+      int sgn =1;
+      if( c == 2)
+         sgn = -1;//more negatives
+      
+         
+      int kk=-1; //The one that is Different
+      if( sgn* Tensor[0][1] < 0)kk = 2; 
+      if( sgn*Tensor[0][2] < 0) kk = 1;
+      if( sgn*Tensor[1][2] < 0)kk = 0;
+      if( z >= 2)// zeroes cannot change sign
+         kk = (kk+1)%3;
+      else if( z==1 )
+        if( Tensor[0][1] ==0 )if(c==1) kk=2; else if( c==2) if( kk==1)kk=0;else kk=1;
+        else if( Tensor[0][2] ==0 )if(c==1) kk=1; else if( c==2) if( kk==2) kk=0;else kk= 2;
+        else if( Tensor[1][2] ==0 )if(c==1) kk=0; else if( c==2)if(kk==2) kk=1;else kk=2;
+           
+      
+      if( kk < 0 )
+         if( c==1)//1 zero and 2 positives
+         {
+
+            if( sgn* Tensor[0][1] <= 0)kk = 2; 
+            if( sgn*Tensor[0][2] <= 0) kk = 1;
+            if( sgn*Tensor[1][2] <= 0)kk = 0;
+         }
+         else if( c==2)//2 zeroes and 1 positive. Declare one zero as positive
+            {
+              if( Tensor[0][1]==0 ) kk=2;
+              if( Tensor[0][2]==0 ) if( kk < 0)kk=1;              
+              if( Tensor[1][2]==0) if( kk < 0) kk=0;
+       
+            }
+            
+            
+      // off sign. change common of the two with same signs
+      ident[(kk+1)%3][(kk+1)%3] = -1;
+      ident[(kk+2)%3][(kk+2)%3] = -1;
+      UB1 =LinearAlgebra.mult( UB1,ident);
+      float[][] Tensor1 = LinearAlgebra.mult( ident , Tensor );
+      Tensor1=  LinearAlgebra.mult( Tensor1, ident );
+      LinearAlgebra.copy( Tensor1 , Tensor );
+      ident[(kk+1)%3][(kk+1)%3] = 1;
+      ident[(kk+2)%3][(kk+2)%3] = 1;
+     return true;
+      //showNig( Tensor, UB1, NiggReal);
+   }  
+   return false;
+   
+}
    
    public static void main1( String[] args )
    {
