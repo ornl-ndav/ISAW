@@ -849,30 +849,15 @@ public static float Find_UB( Tran3D             UB,
   System.out.print("Before Nigglify: ");
   ShowLatticeParameters( UB );
 
-  try
-  {
-  float[][] floatUB_4 = UB.get();
-  float[][] floatUB = new float[3][3];
-  for ( int i = 0; i < 3; i++ )
-    for ( int j = 0; j < 3; j++ )
-      floatUB[i][j] = floatUB_4[i][j];
-  floatUB = subs.Nigglify( floatUB );
-  UB.set( floatUB );
-  }
-  catch ( Exception ex )
-  {
-    System.out.println("Exception in subs.Nigglify " );
-    System.out.println(ex);
-    ex.printStackTrace();
-  } 
+  Tran3D  Niggli_UB = new Tran3D(UB);
+  boolean niggli_ok = MakeNiggliUB( UB, Niggli_UB );
 
-/*
-  float[] average_error = new float[1];
-  ExpandSetOfIndexedPeaks( UB, original_qs, required_tolerance, 
-                           original_qs.size(), average_error );
-*/
-  System.out.print("After  Nigglify: ");
-  ShowLatticeParameters( UB );
+  if ( niggli_ok )
+  {
+    UB.set( Niggli_UB );
+    System.out.print("After  Nigglify: ");
+    ShowLatticeParameters( UB );
+  }
 
   return fit_error[0];
 }
@@ -1002,64 +987,17 @@ public static float FindUB_UsingFFT( Tran3D             UB,
     throw new IllegalArgumentException("CheckUB says UB_IS_INVALID");
   }
 
-  Tran3D denUB = new Tran3D(UB);
-  Tran3D denN_UB = new Tran3D(UB);
-//  MakePrimitiveUB( UB, denUB );
   
                                       // now call Nigglify, to get shortest abc
-  long start_time;
-  long end_time;
+  Tran3D  Niggli_UB = new Tran3D(UB);
+  boolean niggli_ok = MakeNiggliUB( UB, Niggli_UB );
 
-  start_time = System.nanoTime();
-  try
+  if ( niggli_ok )
   {
-  float[][] floatUB_4 = UB.get();
-  float[][] floatUB = new float[3][3];
-  for ( int i = 0; i < 3; i++ )
-    for ( int j = 0; j < 3; j++ )
-      floatUB[i][j] = floatUB_4[i][j];
-  floatUB = subs.Nigglify( floatUB );
-  UB.set( floatUB );
+    UB.set( Niggli_UB );
+    System.out.print("After  Nigglify: ");
+    ShowLatticeParameters( UB );
   }
-  catch ( Exception ex )
-  {
-    System.out.println("Exception in subs.Nigglify " );
-    System.out.println(ex);
-    ex.printStackTrace();
-  }
-  end_time = System.nanoTime();
-  System.out.println("Ruth_Nigglify_Time = " + (end_time-start_time)/1e6 );
-//  System.out.print("Save_R Nigglify: ");
-//  ShowLatticeParameters( UB );
-
-  boolean nig_ok = false;
-  start_time = System.nanoTime();
-  nig_ok = FindShortestEdgesForUB( denUB, denN_UB, q_vectors,
-                                   required_tolerance );
-  end_time = System.nanoTime();
-  System.out.println("Den__Nigglify_Time = " + (end_time-start_time)/1e6 );
-/*
-  if ( nig_ok )
-    System.out.print("Save_D Nigglify: ");
-  else
-    System.out.print("DenBAD Nigglify: ");
-
-  ShowLatticeParameters( denN_UB );
-*/
-  denUB.set( denN_UB );
-
-  System.out.print("RESULT: Ruth Nig ");
-  ShowLatticeParameters( UB );
-  System.out.print("RESULT: Denn Nig ");
-  ShowLatticeParameters( denN_UB );
-//  ShowLatticeParametersDiffer( UB, denN_UB );
-
-  if ( nig_ok )                          // use Dennis' UB, else Ruths
-    UB.set( denN_UB );
-/* 
-  System.out.println("LEFT HANDED CELLS ................... ");
-  ShowShortestEdgesForUB_LEFT_HAND( denUB, q_vectors, required_tolerance );
-*/
 
   return fit_error[0];
 }
@@ -1420,19 +1358,18 @@ public static int ExpandSetOfIndexedPeaks( Tran3D           UB,
 
 
 /**
- *  Try to find a newUB that is equivalent to the original UB, but corresponds
- * to one or more shorter real space unit cell edges.
+ *  Try to find a UB that is equivalent to the original UB, but corresponds
+ * to a Niggli reduced cell with the smallest sum of edge lengths and 
+ * with angles most different from 90 degrees.
  *
  * @param UB      The original UB 
  * @param newUB   Returns the newUB
  *
  * @return True if a possibly constructive change was made and newUB has been
- * set to a new matrix.  It returns false if no constructive change was found.
+ * set to a new matrix.  It returns false if no constructive change was found
+ * and newUB is just set to the original UB.
  */
-public static boolean FindShortestEdgesForUB( Tran3D UB, 
-                                              Tran3D newUB,
-                                              Vector<Vector3D> q_vectors,
-                                              float tolerance )
+public static boolean MakeNiggliUB( Tran3D UB, Tran3D newUB )
 {
    Vector3D a = new Vector3D();
    Vector3D b = new Vector3D();
@@ -1450,12 +1387,13 @@ public static boolean FindShortestEdgesForUB( Tran3D UB,
    Vector3D v1 = new Vector3D();
    Vector3D v2 = new Vector3D();
    Vector3D v3 = new Vector3D();
-
+                                  // first make a list of linear combinations
+                                  // of vectors a,b,c with coefficient up to 5
    Vector<Vector3D> directions = new Vector<Vector3D>();
-   int N_off = 5;
-   for ( int i = -N_off; i <= N_off; i++ )
-     for ( int j = -N_off; j <= N_off; j++ )
-       for ( int k = -N_off; k <= N_off; k++ )
+   int N_coeff = 5;
+   for ( int i = -N_coeff; i <= N_coeff; i++ )
+     for ( int j = -N_coeff; j <= N_coeff; j++ )
+       for ( int k = -N_coeff; k <= N_coeff; k++ )
          if ( i != 0 || j != 0 || k != 0 )
          {
             v1.set(a); 
@@ -1469,58 +1407,65 @@ public static boolean FindShortestEdgesForUB( Tran3D UB,
             Vector3D sum = new Vector3D( v1 );
             directions.add( sum );
          }
+
+                                // next sort the list of linear combinations
+                                // in order of increasing length
   directions = SortOnVectorMagnitude( directions );
 
-/*
-  for ( int i = 0; i < Math.min(50,directions.size()); i++ )
-    System.out.println( "" + directions.elementAt(i) + ": length = " +
-                             directions.elementAt(i).length() );
-*/
+                                // next form a list of possible UB matrices
+                                // using sides from the list of linear 
+                                // combinations, using shorter directions first.
+                                // Keep trying more until 16 UBs are found.
+                                // Only keep UBs corresponding to cells with
+                                // at least a minimum cell volume
   Vector<Tran3D> UB_list = new Vector<Tran3D>();
 
+  int num_needed = 16;
   int max_to_try = 5;
-  while ( UB_list.size() < 16 && max_to_try < directions.size() )
+  while ( UB_list.size() < num_needed && max_to_try < directions.size() )
   {
-  max_to_try *= 2;
-  int num_to_try = Math.min( max_to_try, directions.size() );
-  Vector3D acrossb = new Vector3D();
-  float vol     = 0;
-  float min_vol = .1f;   // ########### what should this be? 
-  for ( int i = 0; i < num_to_try-2; i++ )
-  {
-    a.set( directions.elementAt(i) );
-    for ( int j = i+1; j < num_to_try-1; j++ )
+    max_to_try *= 2;
+    int num_to_try = Math.min( max_to_try, directions.size() );
+    Vector3D acrossb = new Vector3D();
+    float vol     = 0;
+    float min_vol = .1f;      // what should this be? 0.1 works OK, but...?
+    for ( int i = 0; i < num_to_try-2; i++ )
     {
-      b.set( directions.elementAt(j) );
-      acrossb.cross(a,b);
-      for ( int k = j+1; k < num_to_try; k++ )
+      a.set( directions.elementAt(i) );
+      for ( int j = i+1; j < num_to_try-1; j++ )
       {
-        c.set( directions.elementAt(k) );
-        vol = acrossb.dot( c );
-        if ( vol > min_vol && hasNiggliAngles(a,b,c) )
+        b.set( directions.elementAt(j) );
+        acrossb.cross(a,b);
+        for ( int k = j+1; k < num_to_try; k++ )
         {
-          Tran3D new_tran = new Tran3D();
-          getUB( new_tran, a, b, c );
-          UB_list.add( new_tran );
+          c.set( directions.elementAt(k) );
+          vol = acrossb.dot( c );
+          if ( vol > min_vol && hasNiggliAngles(a,b,c) )
+          {
+            Tran3D new_tran = new Tran3D();
+            getUB( new_tran, a, b, c );
+            UB_list.add( new_tran );
+          }
         }
       }
-    }
-  }    
+    }    
   }
+                                // if no valid UBs could be formed, return
+                                // false and the original UB
   if ( UB_list.size() <= 0 )
-    System.out.println("FIND_ERROR: Initial UB List Empty....!");
-
+  {
+    newUB.set( UB );
+    return false;
+  }
+                                // now sort the UB's in order of increasing
+                                // total side length |a|+|b|+|c|
   UB_list = SortOn_abc_Magnitude( UB_list );
 
-/*
-  int num_to_print = Math.min( 20, UB_list.size() );
-  System.out.println("First at most 20 Niggli UBs are");
-  for ( int i = 0; i < num_to_print; i++ )
-    ShowAllUB_INFO( UB_list.elementAt(i), q_vectors, tolerance );    
-*/
-
+                                // keep only those UB's with total side length
+                                // within .2% of the first one.
+  float length_tol = 0.002f;
   if ( UB_list.size() > 0 )         
-  {                            // first keep those with small sums
+  {
     Vector<Tran3D> short_list = new Vector<Tran3D>();
     short_list.add( UB_list.elementAt(0) );
     getABC( short_list.elementAt(0), a, b, c );
@@ -1532,114 +1477,21 @@ public static boolean FindShortestEdgesForUB( Tran3D UB,
       Tran3D nextUB = UB_list.elementAt(i);
       getABC( nextUB, v1, v2, v3 );
       float next_length = v1.length() + v2.length() + v3.length();
-      if ( Math.abs(next_length - total_length)/total_length < 0.002 )
+      if ( Math.abs(next_length - total_length)/total_length < length_tol )
         short_list.add( UB_list.elementAt(i) );
       else
         got_short_list = true; 
       i++;
     }
 
-    UB_list = short_list;  // now only use this shorter list
+    UB_list = short_list;       // now only use this shorter list
   }
-
-/*
-  System.out.println("SHORTER Niggli UBs (within .2%) are:");
-  for ( int i = 0; i < UB_list.size(); i++ )
-    ShowAllUB_INFO( UB_list.elementAt(i), q_vectors, tolerance );
-*/
-  if ( UB_list.size() > 0 )
-  {
-    UB_list = SortOn_abc_DiffFrom90( UB_list );
-    newUB.set( UB_list.elementAt(0) );
-  }
-  else
-    newUB.set( UB );
-
-/*
-  System.out.println("Sorted by angle sum:");
-  for ( int i = 0; i < UB_list.size(); i++ )
-    ShowAllUB_INFO( UB_list.elementAt(i), q_vectors, tolerance );
-*/
-
-  if ( UB_list.size() > 0 )
-    return true;
-
-  return false;
-}
-
-
-public static boolean ShowShortestEdgesForUB_LEFT_HAND( 
-                                              Tran3D UB,
-                                              Vector<Vector3D> q_vectors,
-                                              float tolerance )
-{
-   Tran3D tempUB = new Tran3D( UB );
-   tempUB.invert();
-
-   float[][] abc = tempUB.get();
-   Vector3D a = new Vector3D( abc[0][0], abc[0][1], abc[0][2] );
-   Vector3D b = new Vector3D( abc[1][0], abc[1][1], abc[1][2] );
-   Vector3D c = new Vector3D( abc[2][0], abc[2][1], abc[2][2] );
-
-   Vector3D v1 = new Vector3D();
-   Vector3D v2 = new Vector3D();
-   Vector3D v3 = new Vector3D();
-
-   Vector<Vector3D> directions = new Vector<Vector3D>();
-   for ( int i = -3; i <= 3; i++ )
-     for ( int j = -3; j <= 3; j++ )
-       for ( int k = -3; k <= 3; k++ )
-         if ( i != 0 || j != 0 || k != 0 )
-         {
-            v1.set(a);
-            v2.set(b);
-            v3.set(c);
-            v1.multiply( i );
-            v2.multiply( j );
-            v3.multiply( k );
-            v1.add(v2);
-            v1.add(v3);
-            Vector3D sum = new Vector3D( v1 );
-/*
-            if ( sum.length() > 0.5 )    // discard any really short vectors
-*/
-              directions.add( sum );
-         }
-  directions = SortOnVectorMagnitude( directions );
-
-  Vector<Tran3D> UB_list = new Vector<Tran3D>();
-  int num_to_try = Math.min( 25, directions.size() );
-  Vector3D acrossb = new Vector3D();
-  float vol     = 0;
-  float min_vol = 1;   // ########### fix this
-  for ( int i = 0; i < num_to_try-2; i++ )
-  {
-    a.set( directions.elementAt(i) );
-    for ( int j = i+1; j < num_to_try-1; j++ )
-    {
-      b.set( directions.elementAt(j) );
-      acrossb.cross(a,b);
-      for ( int k = j+1; k < num_to_try; k++ )
-      {
-        c.set( directions.elementAt(k) );
-        vol = acrossb.dot( c );
-        if ( vol < -min_vol && hasNiggliAngles(a,b,c) )// keep left handed ones
-        {
-          Tran3D new_tran = new Tran3D();
-          getUB( new_tran, a, b, c );
-          UB_list.add( new_tran );
-        }
-      }
-    }
-  }
-
-  UB_list = SortOn_abc_Magnitude( UB_list );
-
-  System.out.println("First 20 Niggli UBs are");
-  for ( int i = 0; i < 20; i++ )
-    ShowAllUB_INFO( UB_list.elementAt(i), q_vectors, tolerance );
-
-  return false;
+                                // sort the UB_list in decreasing order of total
+                                // difference of angles from 90 degrees and
+                                // return the one with largest difference.
+  UB_list = SortOn_abc_DiffFrom90( UB_list );
+  newUB.set( UB_list.elementAt(0) );
+  return true;
 }
 
 
@@ -1875,6 +1727,29 @@ public static boolean RuthNigglify( Tran3D UB )
     for ( int i = 0; i < 3; i++ )
       for ( int j = 0; j < 3; j++ )
         floatUB[i][j] = floatUB_4[i][j];
+    floatUB = subs.OLD_Nigglify( floatUB );
+    UB.set( floatUB );
+  }
+  catch ( Exception ex )
+  {
+    System.out.println("Exception in subs.Nigglify " );
+    System.out.println(ex);
+    ex.printStackTrace();
+    return false;
+  }
+  return true;
+}
+
+
+public static boolean NewNigglify( Tran3D UB )
+{
+  try
+  {
+    float[][] floatUB_4 = UB.get();
+    float[][] floatUB = new float[3][3];
+    for ( int i = 0; i < 3; i++ )
+      for ( int j = 0; j < 3; j++ )
+        floatUB[i][j] = floatUB_4[i][j];
     floatUB = subs.Nigglify( floatUB );
     UB.set( floatUB );
   }
@@ -1885,8 +1760,6 @@ public static boolean RuthNigglify( Tran3D UB )
     ex.printStackTrace();
     return false;
   }
-  System.out.print("Ruth's Nigglify: ");
-  ShowLatticeParameters( UB );
   return true;
 }
 
