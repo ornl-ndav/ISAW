@@ -846,7 +846,7 @@ public static float Find_UB( Tran3D             UB,
     }
   }
 
-  System.out.println("Before Nigglify UB");
+  System.out.print("Before Nigglify: ");
   ShowLatticeParameters( UB );
 
   try
@@ -871,7 +871,7 @@ public static float Find_UB( Tran3D             UB,
   ExpandSetOfIndexedPeaks( UB, original_qs, required_tolerance, 
                            original_qs.size(), average_error );
 */
-  System.out.println("After Nigglify UB");
+  System.out.print("After  Nigglify: ");
   ShowLatticeParameters( UB );
 
   return fit_error[0];
@@ -990,9 +990,27 @@ public static float FindUB_UsingFFT( Tran3D             UB,
     }
   }
  
-  System.out.println("Before Nigglify UB");
+  System.out.print("Before Nigglify: ");
   ShowLatticeParameters( UB );
+
+  if ( !CheckUB( UB ) )
+  {
+    System.out.println("CheckUB says UB_IS_INVALID" );
+    System.out.println("UB = ");
+    System.out.println( UB );
+    System.out.println();
+    throw new IllegalArgumentException("CheckUB says UB_IS_INVALID");
+  }
+
+  Tran3D denUB = new Tran3D(UB);
+  Tran3D denN_UB = new Tran3D(UB);
+//  MakePrimitiveUB( UB, denUB );
+  
                                       // now call Nigglify, to get shortest abc
+  long start_time;
+  long end_time;
+
+  start_time = System.nanoTime();
   try
   {
   float[][] floatUB_4 = UB.get();
@@ -1009,9 +1027,39 @@ public static float FindUB_UsingFFT( Tran3D             UB,
     System.out.println(ex);
     ex.printStackTrace();
   }
+  end_time = System.nanoTime();
+  System.out.println("Ruth_Nigglify_Time = " + (end_time-start_time)/1e6 );
+//  System.out.print("Save_R Nigglify: ");
+//  ShowLatticeParameters( UB );
 
-  System.out.println("After Nigglify UB");
+  boolean nig_ok = false;
+  start_time = System.nanoTime();
+  nig_ok = FindShortestEdgesForUB( denUB, denN_UB, q_vectors,
+                                   required_tolerance );
+  end_time = System.nanoTime();
+  System.out.println("Den__Nigglify_Time = " + (end_time-start_time)/1e6 );
+/*
+  if ( nig_ok )
+    System.out.print("Save_D Nigglify: ");
+  else
+    System.out.print("DenBAD Nigglify: ");
+
+  ShowLatticeParameters( denN_UB );
+*/
+  denUB.set( denN_UB );
+
+  System.out.print("RESULT: Ruth Nig ");
   ShowLatticeParameters( UB );
+  System.out.print("RESULT: Denn Nig ");
+  ShowLatticeParameters( denN_UB );
+//  ShowLatticeParametersDiffer( UB, denN_UB );
+
+  if ( nig_ok )                          // use Dennis' UB, else Ruths
+    UB.set( denN_UB );
+/* 
+  System.out.println("LEFT HANDED CELLS ................... ");
+  ShowShortestEdgesForUB_LEFT_HAND( denUB, q_vectors, required_tolerance );
+*/
 
   return fit_error[0];
 }
@@ -1052,9 +1100,9 @@ private static boolean FormUB_From_abc_Vectors( Tran3D           UB,
    Vector3D a_dir = null, 
             b_dir = null, 
             c_dir = null,
-            a_temp, 
-            b_temp, 
-            c_temp;
+            a_temp = null,
+            b_temp = null, 
+            c_temp = null;
    Vector3D acrossb = new Vector3D();
 
    float[] ave_2_error  = new float[1];
@@ -1099,6 +1147,9 @@ private static boolean FormUB_From_abc_Vectors( Tran3D           UB,
     return false;
   }
                                    // now build the UB matrix from a,b,c       
+                                   //
+  if ( ! isRightHanded( a_dir, b_dir, c_dir ) )
+    c_dir.multiply( -1 );
 
   float[][] UB_inv_arr = { { a_dir.getX(), a_dir.getY(), a_dir.getZ(), 0 },
                            { b_dir.getX(), b_dir.getY(), b_dir.getZ(), 0 },
@@ -1377,6 +1428,478 @@ public static int ExpandSetOfIndexedPeaks( Tran3D           UB,
  *
  * @return True if a possibly constructive change was made and newUB has been
  * set to a new matrix.  It returns false if no constructive change was found.
+ */
+public static boolean FindShortestEdgesForUB( Tran3D UB, 
+                                              Tran3D newUB,
+                                              Vector<Vector3D> q_vectors,
+                                              float tolerance )
+{
+   Vector3D a = new Vector3D();
+   Vector3D b = new Vector3D();
+   Vector3D c = new Vector3D();
+
+   boolean ok = getABC( UB, a, b, c );
+   if ( !ok )
+   {
+     System.out.println("ERROR COULD NOT GET a,b,c From UB" );
+     System.out.println( UB );
+     newUB.set( UB );
+     return false;
+   }
+
+   Vector3D v1 = new Vector3D();
+   Vector3D v2 = new Vector3D();
+   Vector3D v3 = new Vector3D();
+
+   Vector<Vector3D> directions = new Vector<Vector3D>();
+   int N_off = 5;
+   for ( int i = -N_off; i <= N_off; i++ )
+     for ( int j = -N_off; j <= N_off; j++ )
+       for ( int k = -N_off; k <= N_off; k++ )
+         if ( i != 0 || j != 0 || k != 0 )
+         {
+            v1.set(a); 
+            v2.set(b); 
+            v3.set(c); 
+            v1.multiply( i );
+            v2.multiply( j );
+            v3.multiply( k );
+            v1.add(v2);
+            v1.add(v3);
+            Vector3D sum = new Vector3D( v1 );
+            directions.add( sum );
+         }
+  directions = SortOnVectorMagnitude( directions );
+
+/*
+  for ( int i = 0; i < Math.min(50,directions.size()); i++ )
+    System.out.println( "" + directions.elementAt(i) + ": length = " +
+                             directions.elementAt(i).length() );
+*/
+  Vector<Tran3D> UB_list = new Vector<Tran3D>();
+
+  int max_to_try = 5;
+  while ( UB_list.size() < 16 && max_to_try < directions.size() )
+  {
+  max_to_try *= 2;
+  int num_to_try = Math.min( max_to_try, directions.size() );
+  Vector3D acrossb = new Vector3D();
+  float vol     = 0;
+  float min_vol = .1f;   // ########### what should this be? 
+  for ( int i = 0; i < num_to_try-2; i++ )
+  {
+    a.set( directions.elementAt(i) );
+    for ( int j = i+1; j < num_to_try-1; j++ )
+    {
+      b.set( directions.elementAt(j) );
+      acrossb.cross(a,b);
+      for ( int k = j+1; k < num_to_try; k++ )
+      {
+        c.set( directions.elementAt(k) );
+        vol = acrossb.dot( c );
+        if ( vol > min_vol && hasNiggliAngles(a,b,c) )
+        {
+          Tran3D new_tran = new Tran3D();
+          getUB( new_tran, a, b, c );
+          UB_list.add( new_tran );
+        }
+      }
+    }
+  }    
+  }
+  if ( UB_list.size() <= 0 )
+    System.out.println("FIND_ERROR: Initial UB List Empty....!");
+
+  UB_list = SortOn_abc_Magnitude( UB_list );
+
+/*
+  int num_to_print = Math.min( 20, UB_list.size() );
+  System.out.println("First at most 20 Niggli UBs are");
+  for ( int i = 0; i < num_to_print; i++ )
+    ShowAllUB_INFO( UB_list.elementAt(i), q_vectors, tolerance );    
+*/
+
+  if ( UB_list.size() > 0 )         
+  {                            // first keep those with small sums
+    Vector<Tran3D> short_list = new Vector<Tran3D>();
+    short_list.add( UB_list.elementAt(0) );
+    getABC( short_list.elementAt(0), a, b, c );
+    float total_length = a.length() + b.length() + c.length();
+    boolean got_short_list = false;
+    int i = 1;
+    while ( i < UB_list.size() && !got_short_list )
+    {
+      Tran3D nextUB = UB_list.elementAt(i);
+      getABC( nextUB, v1, v2, v3 );
+      float next_length = v1.length() + v2.length() + v3.length();
+      if ( Math.abs(next_length - total_length)/total_length < 0.002 )
+        short_list.add( UB_list.elementAt(i) );
+      else
+        got_short_list = true; 
+      i++;
+    }
+
+    UB_list = short_list;  // now only use this shorter list
+  }
+
+/*
+  System.out.println("SHORTER Niggli UBs (within .2%) are:");
+  for ( int i = 0; i < UB_list.size(); i++ )
+    ShowAllUB_INFO( UB_list.elementAt(i), q_vectors, tolerance );
+*/
+  if ( UB_list.size() > 0 )
+  {
+    UB_list = SortOn_abc_DiffFrom90( UB_list );
+    newUB.set( UB_list.elementAt(0) );
+  }
+  else
+    newUB.set( UB );
+
+/*
+  System.out.println("Sorted by angle sum:");
+  for ( int i = 0; i < UB_list.size(); i++ )
+    ShowAllUB_INFO( UB_list.elementAt(i), q_vectors, tolerance );
+*/
+
+  if ( UB_list.size() > 0 )
+    return true;
+
+  return false;
+}
+
+
+public static boolean ShowShortestEdgesForUB_LEFT_HAND( 
+                                              Tran3D UB,
+                                              Vector<Vector3D> q_vectors,
+                                              float tolerance )
+{
+   Tran3D tempUB = new Tran3D( UB );
+   tempUB.invert();
+
+   float[][] abc = tempUB.get();
+   Vector3D a = new Vector3D( abc[0][0], abc[0][1], abc[0][2] );
+   Vector3D b = new Vector3D( abc[1][0], abc[1][1], abc[1][2] );
+   Vector3D c = new Vector3D( abc[2][0], abc[2][1], abc[2][2] );
+
+   Vector3D v1 = new Vector3D();
+   Vector3D v2 = new Vector3D();
+   Vector3D v3 = new Vector3D();
+
+   Vector<Vector3D> directions = new Vector<Vector3D>();
+   for ( int i = -3; i <= 3; i++ )
+     for ( int j = -3; j <= 3; j++ )
+       for ( int k = -3; k <= 3; k++ )
+         if ( i != 0 || j != 0 || k != 0 )
+         {
+            v1.set(a);
+            v2.set(b);
+            v3.set(c);
+            v1.multiply( i );
+            v2.multiply( j );
+            v3.multiply( k );
+            v1.add(v2);
+            v1.add(v3);
+            Vector3D sum = new Vector3D( v1 );
+/*
+            if ( sum.length() > 0.5 )    // discard any really short vectors
+*/
+              directions.add( sum );
+         }
+  directions = SortOnVectorMagnitude( directions );
+
+  Vector<Tran3D> UB_list = new Vector<Tran3D>();
+  int num_to_try = Math.min( 25, directions.size() );
+  Vector3D acrossb = new Vector3D();
+  float vol     = 0;
+  float min_vol = 1;   // ########### fix this
+  for ( int i = 0; i < num_to_try-2; i++ )
+  {
+    a.set( directions.elementAt(i) );
+    for ( int j = i+1; j < num_to_try-1; j++ )
+    {
+      b.set( directions.elementAt(j) );
+      acrossb.cross(a,b);
+      for ( int k = j+1; k < num_to_try; k++ )
+      {
+        c.set( directions.elementAt(k) );
+        vol = acrossb.dot( c );
+        if ( vol < -min_vol && hasNiggliAngles(a,b,c) )// keep left handed ones
+        {
+          Tran3D new_tran = new Tran3D();
+          getUB( new_tran, a, b, c );
+          UB_list.add( new_tran );
+        }
+      }
+    }
+  }
+
+  UB_list = SortOn_abc_Magnitude( UB_list );
+
+  System.out.println("First 20 Niggli UBs are");
+  for ( int i = 0; i < 20; i++ )
+    ShowAllUB_INFO( UB_list.elementAt(i), q_vectors, tolerance );
+
+  return false;
+}
+
+
+/**
+ *  Given a UB corresponding to the three shortest a,b,c vectors ( a Brugger
+ *  cell ) form a newUB corresponding to a,b,c that satisfy the Niggli cell 
+ *  conditions.
+ *
+ * @param UB      The original UB 
+ * @param newUB   Returns the newUB
+ *
+ * @return true if newUB was set to the UB corresponding to a Niggli cell.
+ */
+public static boolean ChooseNiggliUB( Tran3D UB, Tran3D newUB )
+{
+                                         // INCOMPLETE
+  newUB.set( UB );
+
+  Tran3D tempUB = new Tran3D( UB );
+  tempUB.invert();
+
+  float[][] abc = tempUB.get();
+  Vector3D a = new Vector3D( abc[0][0], abc[0][1], abc[0][2] );
+  Vector3D b = new Vector3D( abc[1][0], abc[1][1], abc[1][2] );
+  Vector3D c = new Vector3D( abc[2][0], abc[2][1], abc[2][2] );
+
+                                              // first, put the three sides
+                                              // in order
+  Vector<Vector3D> directions = new Vector<Vector3D>();
+  directions.add(a);
+  directions.add(b);
+  directions.add(c);
+  directions = SortOnVectorMagnitude( directions );
+  a.set( directions.elementAt(0) );
+  b.set( directions.elementAt(1) );
+  c.set( directions.elementAt(2) );
+                                             // the make them right handed
+  if ( ! isRightHanded(a,b,c) )
+    c.multiply(-1);
+
+  Vector3D[][] abcs = new Vector3D[4][3];    // each "row" is a set of a,b,c
+  
+  abcs[0][0] = a;
+  abcs[0][1] = b;
+  abcs[0][2] = c;
+
+  int[][] signs = { {  1,  1,  1 },
+                    { -1, -1,  1 },
+                    {  1, -1, -1 },
+                    { -1,  1, -1 } };
+
+  for ( int row = 1; row < signs.length; row++ )
+    for ( int col = 0; col < 3; col++ )
+    {
+      abcs[row][col] = new Vector3D( abcs[0][col] );
+      abcs[row][col].multiply( signs[row][col] );
+    }
+/*
+  for ( int row = 0; row < signs.length; row++ )
+    ShowLatticeParameters( abcs[row][0], abcs[row][1], abcs[row][2] );
+*/
+  for ( int row = 0; row < signs.length; row++ )
+    if ( hasNiggliAngles( abcs[row][0], abcs[row][1], abcs[row][2] ) )
+    {
+      for ( int i = 0; i < 3; i++ )
+        abc[ i ] = abcs[row][i].get();
+      newUB.set( abc ); 
+      newUB.invert();
+      return true;
+    }
+
+  return false;
+}
+
+
+/**
+ *  Given a UB corresponding to the three shortest a,b,c vectors ( a Brugger
+ *  cell ), not necessarily strictly in order of increasing side length,
+ *  form a newUB corresponding to a,b,c for which all angles, alpha, beta,
+ *  gamma are >= 90 degrees, or all are < 90 degrees. 
+ *
+ * @param UB      The original UB 
+ * @param newUB   Returns the newUB
+ *
+ * @return true if newUB was set to the UB corresponding to a cell with
+ *         angles that satisfy the Niggi conditions.
+ */
+public static boolean ChooseUB_WithNiggliAngles( Tran3D UB, Tran3D newUB )
+{
+                                         // INCOMPLETE
+  newUB.set( UB );
+
+  Vector3D a = new Vector3D();
+  Vector3D b = new Vector3D();
+  Vector3D c = new Vector3D();
+  getABC( UB, a, b, c );
+                                             // make them right handed
+  if ( ! isRightHanded(a,b,c) )
+    c.multiply(-1);
+
+  Vector3D[][] abcs = new Vector3D[4][3];    // each "row" is a set of a,b,c
+ 
+  abcs[0][0] = a;
+  abcs[0][1] = b;
+  abcs[0][2] = c;
+
+  int[][] signs = { {  1,  1,  1 },
+                    { -1, -1,  1 },
+                    {  1, -1, -1 },
+                    { -1,  1, -1 } };
+
+  for ( int row = 1; row < signs.length; row++ )
+    for ( int col = 0; col < 3; col++ )
+    {
+      abcs[row][col] = new Vector3D( abcs[0][col] );
+      abcs[row][col].multiply( signs[row][col] );
+    }
+
+  for ( int row = 0; row < abcs.length; row++ )
+    if ( hasNiggliAngles( abcs[row][0], abcs[row][1], abcs[row][2] ) )
+    {
+      getUB( newUB, a, b, c );
+      return true;
+    }
+
+  return false;
+}
+
+
+/**
+ * Get the UB matrix corresponding to the real space edge vectors a,b,c,
+ *
+ * @return true if the calculation succeeded and UB is set to the UB matrix 
+ *              corresponding to a, b, c.  Return false otherwise.
+ */
+public static boolean getUB( Tran3D UB, Vector3D a, Vector3D b, Vector3D c )
+{
+  float[][] abc = new float[3][];
+  abc[0] = a.get();
+  abc[1] = b.get();
+  abc[2] = c.get();
+ 
+  Tran3D tempUB = new Tran3D( abc );
+  try
+  {
+    tempUB.invert();
+  }
+  catch ( Exception ex )
+  {
+    return false;
+  }
+
+  UB.set( tempUB );
+  return true;
+}
+
+
+public static float getDiffFrom90_Sum( Tran3D UB )
+{
+  Vector3D a = new Vector3D();
+  Vector3D b = new Vector3D();
+  Vector3D c = new Vector3D();
+
+  if ( !getABC( UB, a, b, c ) )
+    return -1;
+
+  float alpha = angle( b, c );
+  float beta  = angle( c, a );
+  float gamma = angle( a, b );
+
+  float sum = Math.abs( alpha - 90f ) +  
+              Math.abs( beta  - 90f ) +  
+              Math.abs( gamma - 90f );
+
+  return sum;
+}
+
+
+/**
+ * Get the real space edge vectors a,b,c corresponding to the given UB.
+ *
+ * @return true if the calculation succeeded and a, b and c are set to
+ *         the corresponding real space vectors.  Return false otherwise.
+ */
+public static boolean getABC( Tran3D UB, Vector3D a, Vector3D b, Vector3D c )
+{
+  Tran3D tempUB = new Tran3D( UB );
+  try
+  {
+    tempUB.invert();
+  }
+  catch ( Exception ex )
+  {
+    return false;
+  }
+
+  float[][] abc = tempUB.get();
+  a.set( abc[0][0], abc[0][1], abc[0][2] );
+  b.set( abc[1][0], abc[1][1], abc[1][2] );
+  c.set( abc[2][0], abc[2][1], abc[2][2] );
+
+  return true;
+}
+
+
+public static boolean hasNiggliAngles( Vector3D a, Vector3D b, Vector3D c )
+{
+/*
+  if ( a.length() > b.length() || b.length() > c.length() )
+    return false;
+*/
+  float alpha = angle( b, c ); 
+  float beta  = angle( c, a ); 
+  float gamma = angle( a, b ); 
+  float eps   = 0;
+
+  if ( alpha < 90+eps && beta < 90+eps && gamma < 90+eps )
+    return true;
+
+  if ( alpha >= 90-eps && beta >= 90-eps && gamma >= 90-eps )
+    return true;
+
+  return false;
+}
+
+
+public static boolean RuthNigglify( Tran3D UB )
+{
+  try
+  {
+    float[][] floatUB_4 = UB.get();
+    float[][] floatUB = new float[3][3];
+    for ( int i = 0; i < 3; i++ )
+      for ( int j = 0; j < 3; j++ )
+        floatUB[i][j] = floatUB_4[i][j];
+    floatUB = subs.Nigglify( floatUB );
+    UB.set( floatUB );
+  }
+  catch ( Exception ex )
+  {
+    System.out.println("Exception in subs.Nigglify " );
+    System.out.println(ex);
+    ex.printStackTrace();
+    return false;
+  }
+  System.out.print("Ruth's Nigglify: ");
+  ShowLatticeParameters( UB );
+  return true;
+}
+
+
+/**
+ *  Try to find a newUB that is equivalent to the original UB, but corresponds
+ * to one or more shorter real space unit cell edges.
+ *
+ * @param UB      The original UB 
+ * @param newUB   Returns the newUB
+ *
+ * @return True if a possibly constructive change was made and newUB has been
+ * set to a new matrix.  It returns false if no constructive change was found.
  */ 
 public static boolean MakePrimitiveUB( Tran3D UB, Tran3D newUB )
 {
@@ -1594,13 +2117,13 @@ public static Vector<Vector3D>
      }
 
      /**
-       *  Compare two IPeakQ objects based on the magnitude of their Q value.
+       *  Compare two Vector3D objects based on their magnitude.
        *
        *  @param  peak_1   The first  peak
        *  @param  peak_2   The second peak 
        *
-       *  @return A positive integer if peak_1's |Q| is greater than peak_2's
-       *  |Q|
+       *  @return A positive integer if peak_1's magnitude is greater than 
+       *          peak_2's magnitude
        */
        public int compare( Object peak_1, Object peak_2 )
        {
@@ -1628,6 +2151,225 @@ public static Vector<Vector3D>
          return 0;
        }
    }
+
+
+/**
+ * Sort the specified list of UB matrices in order of increasing total length
+ * of the corresponding real space a, b, c vectors and return a new Vector 
+ * containing references to the original matrices, but in order of increasing 
+ * |a|+|b|+|c|..
+ *
+ * @param  UB_matrices  a Vector of Tran3D objects that are to be sorted
+ * @return A new Vector containing references to the orginal Tran3D 
+ *          objects, but in increasing order.
+ */
+public static Vector<Tran3D>
+         SortOn_abc_Magnitude( Vector<Tran3D> UB_matrices )
+{
+  Tran3D list[] = new Tran3D[ UB_matrices.size() ];
+  for ( int i = 0; i < list.length; i++ )
+    list[i] = UB_matrices.elementAt(i);
+
+  boolean decreasing = false;
+  Arrays.sort( list, new Tran3D_ABC_Comparator(decreasing) );
+
+  Vector<Tran3D> sorted_UBs = new Vector<Tran3D>( list.length );
+  for ( int i = 0; i < list.length; i++ )
+    sorted_UBs.add( list[i] );
+
+  return sorted_UBs;
+}
+
+
+   private static class Tran3D_ABC_Comparator implements Comparator
+   {
+     boolean decreasing;
+
+     /**
+      *  Construct a comparator to sort a list of Tran3Ds in increasing or
+      *  decreasing order based on |a|+|b|+|c|.
+      *
+      *  @param  decreasing  Set true to sort from largest to smallest;
+      *                      set false to sort from smallest to largest.
+      */
+     public Tran3D_ABC_Comparator( boolean decreasing )
+     {
+       this.decreasing = decreasing;
+     }
+
+     /**
+       *  Compare two Tran3Ds based on the sum |a|+|b|+|c|.
+       *
+       *  @param  UB_1   The first  UB
+       *  @param  UB_2   The second UB 
+       *
+       *  @return A positive integer if UB_1's |a|+|b|+|c| is greater than 
+       *          UB_2's |a|+|b|+|c|. 
+       */
+       public int compare( Object UB_1, Object UB_2 )
+       {
+         Vector3D a1 = new Vector3D();
+         Vector3D b1 = new Vector3D();
+         Vector3D c1 = new Vector3D();
+
+         Vector3D a2 = new Vector3D();
+         Vector3D b2 = new Vector3D();
+         Vector3D c2 = new Vector3D();
+
+         getABC( (Tran3D)UB_1, a1, b1, c1 );
+         getABC( (Tran3D)UB_2, a2, b2, c2 );
+
+         float sum_1 = a1.length() + b1.length() + c1.length();
+         float sum_2 = a2.length() + b2.length() + c2.length();
+
+         if ( decreasing )
+         {
+           if ( sum_1 < sum_2 )
+             return 1;
+           else if  ( sum_1 > sum_2 )
+             return -1;
+         }
+         else
+         {
+           if ( sum_1 < sum_2 )
+             return -1;
+           else if  ( sum_1 > sum_2 )
+             return 1;
+         }
+
+         return 0;
+       }
+   }
+
+
+/**
+ * Sort the specified list of UB matrices in order of increasing total length
+ * of the corresponding real space a, b, c vectors and return a new Vector 
+ * containing references to the original matrices, but in order of increasing 
+ * |a|+|b|+|c|..
+ *
+ * @param  UB_matrices  a Vector of Tran3D objects that are to be sorted
+ * @return A new Vector containing references to the orginal Tran3D 
+ *          objects, but in increasing order.
+ */
+public static Vector<Tran3D> SortOn_abc_DiffFrom90( Vector<Tran3D> UB_matrices )
+{
+  Tran3D list[] = new Tran3D[ UB_matrices.size() ];
+  for ( int i = 0; i < list.length; i++ )
+    list[i] = UB_matrices.elementAt(i);
+
+  boolean decreasing = true;
+  Arrays.sort( list, new Tran3D_DiffFrom90_Comparator(decreasing) );
+
+  Vector<Tran3D> sorted_UBs = new Vector<Tran3D>( list.length );
+  for ( int i = 0; i < list.length; i++ )
+    sorted_UBs.add( list[i] );
+
+  return sorted_UBs;
+}
+
+
+   private static class Tran3D_DiffFrom90_Comparator implements Comparator
+   {
+     boolean decreasing;
+
+     /**
+      *  Construct a comparator to sort a list of Tran3Ds in increasing or
+      *  decreasing order based on |alpha-90| + |beta-90| + |gamma-90|.
+      *
+      *  @param  decreasing  Set true to sort from largest to smallest;
+      *                      set false to sort from smallest to largest.
+      */
+     public Tran3D_DiffFrom90_Comparator( boolean decreasing )
+     {
+       this.decreasing = decreasing;
+     }
+
+     /**
+       *  Compare two Tran3Ds based on the sum |a|+|b|+|c|.
+       *
+       *  @param  UB_1   The first  UB
+       *  @param  UB_2   The second UB 
+       *
+       *  @return A positive integer if UB_1's |a|+|b|+|c| is greater than 
+       *          UB_2's |a|+|b|+|c|. 
+       */
+       public int compare( Object UB_1, Object UB_2 )
+       {
+         float sum_1 = getDiffFrom90_Sum( (Tran3D)UB_1 );
+         float sum_2 = getDiffFrom90_Sum( (Tran3D)UB_2 );
+
+         if ( decreasing )
+         {
+           if ( sum_1 < sum_2 )
+             return 1;
+           else if  ( sum_1 > sum_2 )
+             return -1;
+         }
+         else
+         {
+           if ( sum_1 < sum_2 )
+             return -1;
+           else if  ( sum_1 > sum_2 )
+             return 1;
+         }
+
+         return 0;
+       }
+   }
+
+
+/**
+ * Optimize the specified UB matrix by repeatedly using it to index 
+ * the given peaks within the specified tolerance, then solving
+ * the resulting over-determined system of equations to obtain 
+ * a new UB matrix.
+ *
+ * @param UB        This must be initially set to a UB matrix that indexes
+ *                  the given peaks fairly well.  On return, if the
+ *                  optimization was successful, it will be set to an
+ *                  optimized version of the original UB.
+ * @param q_vectors List of q_vectors that should be indexed by the 
+ *                  given UB.
+ * @param tolerance Maximum allowed offset in h,k,l for a peak to count
+ *                  as indexed.
+ * @return The remaining error in the indexing of the peaks, or zero if
+ *         the optimization failed.
+ */
+public static float Optimize_UB( Tran3D UB, Vector<Vector3D> q_vectors, float tolerance )
+{
+   Tran3D temp_UB = new Tran3D( UB );
+
+   float[] fit_error = new float[1];
+   Vector<Vector3D> miller_ind  = new Vector<Vector3D>();
+   Vector<Vector3D> indexed_qs  = new Vector<Vector3D>();
+   for ( int i = 0; i < 5; i++ )
+   {
+     int num_indexed = GetIndexedPeaks( UB, q_vectors, tolerance,
+                                    miller_ind, indexed_qs, fit_error );
+     try
+     {
+       fit_error[0] = Optimize_UB_3D( temp_UB, miller_ind, indexed_qs );
+
+       if ( !Float.isNaN( fit_error[0] ) )
+       {
+         UB.set( temp_UB );
+       }
+       else
+       {
+//       System.out.println("Optimize_UB_3D Failed with "+q_vectors.size()+" peaks");
+         return 0;
+       }
+     }
+     catch ( Exception ex )
+     {
+       return 0;
+        // failed to improve with these peaks, so continue with more peaks
+        // if possible 
+     }
+  }
+  return fit_error[0];
+}
 
 
 /** 
@@ -1793,7 +2535,8 @@ public static float Optimize_UB_4D( Tran3D UB,
                          direction most nearly corresponds to the plane
                          normal direction and whose magnitude is d.  The 
                          corresponding plane spacing in reciprocal space 
-                         is 1/d.
+                         is 1/d.  This will only be changed 
+                         if the returned float value is NOT NaN.
     @param  index_values Vector of ints that contains the list of indices 
     @param  q_vectors    Vector of new Vector3D objects that contains the list  
                          of q_vectors that are indexed in one direction by the 
@@ -1849,9 +2592,13 @@ public static float Optimize_Direction_3D( Vector3D best_vec,
     if ( ! Float.isNaN(error) )           
     {
       Vector3D temp_vec = new Vector3D((float)b[0], (float)b[1], (float)b[2]);
-      best_vec.set( temp_vec );
       if ( temp_vec.length() == 0 )
+      {
         System.out.println("Optimized Direction Was (0,0,0)" );
+        error = Float.NaN;
+      }
+      else
+        best_vec.set( temp_vec );
     }
   }
   catch ( Exception ex )
@@ -2055,7 +2802,7 @@ public static int NumberIndexed_3D( Vector3D         a_dir,
                        q_vectors that are indexed by the corresponding hkl
                        vectors.
    @param tolerance    The maximum allowed distance between each component
-                       of UB*Q and the nearest integer value, required to
+                       of UB^-1*Q and the nearest integer value, required to
                        to count the peak as indexed by UB.
    @return A non-negative integer giving the number of peaks indexed by UB. 
    @throws IllegalArgumentException if the UB matrix appears to be singular.
@@ -2080,6 +2827,60 @@ public static int NumberIndexed( Tran3D UB,
   }
 
   return count;
+}
+
+
+/**
+   Calculate the estimated standard deviation between miller indices that 
+   would be assigned using UB-inverse and the fractional miller indices
+   (UB-inverse*Q) for peaks that index with valid Miller indices within the
+   specified tolerance.
+  
+   @param UB           A 3x3 matrix of doubles holding the UB matrix.
+                       The UB matrix must not be singular.
+   @param q_vectors    Vector of Vector3D objects that contains the list of 
+                       q_vectors that are indexed by the corresponding hkl
+                       vectors.
+   @param tolerance    The maximum allowed distance between each component
+                       of UB^-1*Q and the nearest integer value, required to
+                       to count the peak as indexed by UB.
+   @return The  
+   @throws IllegalArgumentException if the UB matrix appears to be singular.
+ */
+public static float IndexingStdDev( Tran3D UB,
+                                    Vector q_vectors,
+                                    float tolerance )
+{
+  if ( !CheckUB(UB) )
+    throw new IllegalArgumentException("UB not valid orientation matrix ");
+
+  Tran3D UB_inverse = new Tran3D( UB );
+  UB_inverse.invert();
+
+  Vector3D hkl = new Vector3D();
+  int   count = 0;
+  float sum_sq_err = 0;
+  float err;
+  for ( int i = 0; i < q_vectors.size(); i++ )
+  {
+    UB_inverse.apply_to( (Vector3D)(q_vectors.elementAt(i)), hkl );
+    if ( ValidIndex( hkl, tolerance ) )
+    {
+      count++;
+      err = Math.round(hkl.getX()) - hkl.getX();
+      sum_sq_err += err*err;
+      err = Math.round(hkl.getY()) - hkl.getY();
+      sum_sq_err += err*err;
+      err = Math.round(hkl.getZ()) - hkl.getZ();
+      sum_sq_err += err*err;
+    }
+  }
+
+  float std_dev = 0;
+  if ( count > 0 )
+    std_dev = (float)Math.sqrt( sum_sq_err / (3 * count) );
+
+  return std_dev;
 }
 
 
@@ -2125,8 +2926,65 @@ public static boolean CheckUB( Tran3D UB )
   return true;
 }
 
+private static void ShowAllUB_INFO( Tran3D           UB,
+                                    Vector<Vector3D> q_vectors,
+                                    float            tolerance )
+{
 
-private static void ShowLatticeParameters( Tran3D UB )
+  Vector3D a = new Vector3D();
+  Vector3D b = new Vector3D();
+  Vector3D c = new Vector3D();
+  getABC( UB, a, b, c );
+
+  float alpha = angle(b,c);
+  float beta  = angle(c,a);
+  float gamma = angle(a,b);
+
+  float tot_length = a.length() + b.length() + c.length();
+  double tot_diff  = Math.abs( 90.0f - alpha ) + 
+                     Math.abs( 90.0f - beta  ) +
+                     Math.abs( 90.0f - gamma );
+
+  alpha *= (float)( Math.PI/180.0);
+  beta  *= (float)( Math.PI/180.0);
+  gamma *= (float)( Math.PI/180.0);
+
+  double tot_cos = Math.abs( Math.cos(alpha) ) +
+                   Math.abs( Math.cos(beta)  ) +
+                   Math.abs( Math.cos(gamma) );
+
+  double tot_prod = Math.abs( Math.cos(alpha) ) * 
+                    Math.abs( Math.cos(beta)  ) *
+                    Math.abs( Math.cos(gamma) );
+
+  int   num_indexed = NumberIndexed( UB, q_vectors, tolerance );
+  float error       = IndexingStdDev( UB, q_vectors, tolerance );
+
+  float[][]  ub_arr = UB.get();
+  double[][] ub_mat = new double[3][3];
+  for ( int i = 0; i < 3; i++ )
+    for ( int j = 0; j < 3; j++ )
+      ub_mat[i][j] = ub_arr[i][j];
+
+//  System.out.println("UB = " + UB );
+  double[] l_par = lattice_calc.LatticeParamsOfUB( ub_mat );
+  if ( l_par != null )
+  {
+    System.out.printf("%8.4f %8.4f %8.4f  %8.4f %8.4f %8.4f  %8.4f",
+        l_par[0], l_par[1], l_par[2], l_par[3], l_par[4], l_par[5], l_par[6] );
+
+    System.out.print(" RH = " + isRightHanded( UB ) );
+
+    System.out.printf( "   %8.4f  %8.4f  %8.6f  %8.6f  %4d  %9.7f\n",
+             tot_length, tot_diff, tot_cos, tot_prod, num_indexed, error );
+  }
+  else
+    System.out.println("l_par NULL when showing lattice parameters for matrix:"
+                       + UB );
+}
+
+
+public static void ShowLatticeParameters( Tran3D UB )
 {
   float[][]  ub_arr = UB.get();
   double[][] ub_mat = new double[3][3];
@@ -2137,11 +2995,86 @@ private static void ShowLatticeParameters( Tran3D UB )
 //  System.out.println("UB = " + UB );
   double[] l_par = lattice_calc.LatticeParamsOfUB( ub_mat );
   if ( l_par != null )
-    System.out.printf(" %8.4f  %8.4f  %8.4f   %8.4f  %8.4f  %8.4f\n",
-                l_par[0], l_par[1], l_par[2], l_par[3], l_par[4], l_par[5] );
+  {
+    System.out.printf("%8.4f %8.4f %8.4f  %8.4f %8.4f %8.4f  %8.4f",
+        l_par[0], l_par[1], l_par[2], l_par[3], l_par[4], l_par[5], l_par[6] );
+
+    System.out.println(" RH = " + isRightHanded( UB ) );
+  }
   else
-    System.out.println("l_par NUL when showing lattice parameters for matrix:"
+    System.out.println("l_par NULL when showing lattice parameters for matrix:"
                        + UB );
+}
+
+
+private static void ShowLatticeParametersDiffer( Tran3D UB_1, Tran3D UB_2 )
+{
+  Vector3D a = new Vector3D();
+  Vector3D b = new Vector3D();
+  Vector3D c = new Vector3D();
+  getABC( UB_1, a, b, c );
+  float[] LatPar_1 = { a.length(), b.length(), c.length(),
+                       angle(b,c), angle(c,a), angle(a,b) };
+
+  getABC( UB_2, a, b, c );
+  float[] LatPar_2 = { a.length(), b.length(), c.length(),
+                       angle(b,c), angle(c,a), angle(a,b) };
+
+  for ( int i = 0; i < LatPar_1.length; i++ )
+    if ( Math.abs((LatPar_1[i] - LatPar_2[i]) / LatPar_1[i]) > .01 )
+    {
+      System.out.println("RESULT: LAT_PAR_DIFFERENT");
+      return;
+    }
+}
+
+
+
+private static void ShowLatticeParameters( Vector3D a, Vector3D b, Vector3D c )
+{
+  float[] l_par = new float[7];
+  l_par[0] = a.length();
+  l_par[1] = b.length();
+  l_par[2] = c.length();
+  l_par[3] = angle(b,c);
+  l_par[4] = angle(c,a);
+  l_par[5] = angle(a,b);
+  
+  Vector3D acrossb = new Vector3D();
+  acrossb.cross( a, b );
+
+  l_par[6] = Math.abs( acrossb.dot( c ) );
+
+  System.out.printf("Nigg:           "+
+                    " %8.4f %8.4f %8.4f  %8.4f %8.4f %8.4f  %8.4f",
+        l_par[0], l_par[1], l_par[2], l_par[3], l_par[4], l_par[5], l_par[6] );
+
+  System.out.println(" RH = " + isRightHanded( a, b, c ) );
+}
+
+
+private static boolean isRightHanded( Vector3D a, Vector3D b, Vector3D c )
+{
+  Vector3D acrossb = new Vector3D();
+  acrossb.cross( a, b );
+  if ( acrossb.dot( c ) > 0 )
+    return true;
+  else
+    return false;
+}
+
+
+public static boolean isRightHanded( Tran3D UB )
+{
+  Tran3D tempUB = new Tran3D( UB );
+  tempUB.invert();
+
+  float[][] abc = tempUB.get();
+  Vector3D a = new Vector3D( abc[0][0], abc[0][1], abc[0][2] );
+  Vector3D b = new Vector3D( abc[1][0], abc[1][1], abc[1][2] );
+  Vector3D c = new Vector3D( abc[2][0], abc[2][1], abc[2][2] );
+
+  return isRightHanded( a, b, c );
 }
 
 
@@ -4175,7 +5108,7 @@ public static void main( String args[] ) throws Exception
     System.out.println( edge_list.elementAt(i) );
 }
 
-public static  Vector<Vector3D>  getPeakQVals( Vector Peaks)
+public static  Vector<Vector3D>  getPeakQVals( Vector Peaks )
 {
    Vector<Vector3D > Res= new Vector<Vector3D>();
    for( int i=0; i< Peaks.size( ); i++)
@@ -4188,7 +5121,8 @@ public static  Vector<Vector3D>  getPeakQVals( Vector Peaks)
    return Res;
 }
 
-public static Tran3D Convert2Tran3D( Vector UB)
+
+public static Tran3D Convert2Tran3D( Vector UB )
 {
    if( UB== null || (UB.size()!=3 && UB.size()!=9))
       throw new IllegalArgumentException("UB Matrix is the wrong size ");
@@ -4201,13 +5135,14 @@ public static Tran3D Convert2Tran3D( Vector UB)
          if( UB.size()==9)
             R[r*3+c]= ((Number)UB.elementAt( r*3+c )).floatValue();
          else
-            R[r*3+c] = ((Number)(((Vector)UB.elementAt( r )).elementAt(c))).floatValue( );
+            R[r*3+c] = 
+            ((Number)(((Vector)UB.elementAt( r )).elementAt(c))).floatValue( );
       }
    
    return new Tran3D(R);
 }
 
-public static Vector Convert2Vector( Tran3D UB)
+public static Vector Convert2Vector( Tran3D UB )
 {
     if( UB== null )
        throw new IllegalArgumentException("UB Matrix is null ");
@@ -4224,7 +5159,7 @@ public static Vector Convert2Vector( Tran3D UB)
 }
 
 
-public static float[][] Convert2floatArrayArray( Tran3D UB)
+public static float[][] Convert2floatArrayArray( Tran3D UB )
 {
     if( UB== null )
        throw new IllegalArgumentException("UB Matrix is null ");
@@ -4240,4 +5175,5 @@ public static float[][] Convert2floatArrayArray( Tran3D UB)
     }
     return Res;
 }
+
 } // end of class
