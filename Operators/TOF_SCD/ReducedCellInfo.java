@@ -34,8 +34,11 @@
 
 package Operators.TOF_SCD;
 
+import java.util.*;
+
 import gov.anl.ipns.MathTools.LinearAlgebra;
 import gov.anl.ipns.MathTools.lattice_calc;
+import gov.anl.ipns.MathTools.Geometry.*;
 
 /**
  *  Instances of this class represent information about reduced cell types
@@ -888,13 +891,13 @@ public class ReducedCellInfo
    *  This method calculates cell parameters for a transformed cell
    *  using the specified tranformation.
    */
-  private static double[] modifyLatticeParameters( double a,
-                                                   double b,
-                                                   double c,
-                                                   double alpha,
-                                                   double beta,
-                                                   double gamma,
-                                                   double[][] T )
+  public static double[] modifyLatticeParameters( double a,
+                                                  double b,
+                                                  double c,
+                                                  double alpha,
+                                                  double beta,
+                                                  double gamma,
+                                                  double[][] T )
   {
     double[] lattice_params = { a, b, c, alpha, beta, gamma };
     double[][] G = lattice_calc.G_matrix( lattice_params );
@@ -937,8 +940,10 @@ public class ReducedCellInfo
        if ( list[i].weighted_distance(list[0]) < cutoff )
        {
          
-         line = String.format("%2d  %9.6f  %-14s  %-14s",
-                               i, list[i].weighted_distance(list[0]),
+         line = String.format("%2d  %9.6f  %9.6f  %-14s  %-14s",
+                               i, 
+                               list[i].weighted_distance(list[0]),
+                               list[i].distance(list[0]),
                                list[i].cell_type,
                                list[i].centering );
          result.append( line );
@@ -954,6 +959,115 @@ public class ReducedCellInfo
   }
 
 
+/**
+ *  Construct a list of ReducedCellInfo objects corresponding to all
+ *  44 lines of the table, using the specified lattice parameters.
+ */
+  public static ReducedCellInfo[] Table( double a, double b, double c,
+                                     double alpha, double beta, double gamma )
+  {
+    ReducedCellInfo[] list = new ReducedCellInfo[NUM_CELL_TYPES + 1];
+    for ( int i = 0; i < list.length; i++ )
+     list[i] = new ReducedCellInfo( i, a, b, c, alpha, beta, gamma );
+
+    return list;
+  }
+
+
+/**
+ *  Get the index of the entry in the reduced cell info list corresponding
+ *  to the form that is closest to entry 0, and has the correct cell type
+ *  and the correct centering type.  If none of the entries in the list
+ *  have the correct cell type and centering, this will return -1.
+ *  @param list       The complete list of forms for the current crystal,
+ *                    as constructed by the Table() method.
+ *  @param cell_type  String specifying the cell type, Cubic, Tetragonal, etc.
+ *                    If cell_type is passed in as null, then any cell_type
+ *                    will be acceptable.
+ *  @param centering  One character long string specifying the centering, 
+ *                    F, C, I, etc.  If centering is passed in as null,
+ *                    then any centering will be acceptable.
+ *  @return the index of the best matching ReducedCellInfo object that 
+ *          that has the required type and centering, or -1, if none
+ *          matches.
+ */
+  public static int BestMatch( ReducedCellInfo[] list,
+                               String cell_type,
+                               String centering )
+  {
+    int     best_form  = -1;
+    double  best_error = 100000;
+    double  current_error; 
+    boolean centering_OK;
+    boolean cell_type_OK;
+
+    for ( int i = 1; i < list.length; i++ )
+    {
+      if ( centering == null || list[i].centering.startsWith( centering ) )
+        centering_OK = true;
+      else
+        centering_OK = false;
+
+      if ( cell_type == null || list[i].cell_type.equalsIgnoreCase(cell_type))
+        cell_type_OK = true;
+      else
+        cell_type_OK = false;
+
+      if ( centering_OK && cell_type_OK )
+      {
+        current_error = list[i].weighted_distance(list[0]);
+        if ( current_error < best_error )
+        {
+          best_error = current_error;
+          best_form  = i;
+        }
+      }
+    }
+
+    return best_form;
+  }
+
+
+  public static float showModifiedUBs( String type, 
+                                       String cent,
+                                       double cutoff,
+                                       Tran3D UB )
+  {
+     Vector3D a_vec = new Vector3D();
+     Vector3D b_vec = new Vector3D();
+     Vector3D c_vec = new Vector3D();
+     IndexingUtils.getABC( UB, a_vec, b_vec, c_vec );
+     double a = a_vec.length();
+     double b = b_vec.length();
+     double c = c_vec.length();
+     double alpha = IndexingUtils.angle( b_vec, c_vec );
+     double beta  = IndexingUtils.angle( c_vec, a_vec );
+     double gamma = IndexingUtils.angle( a_vec, b_vec );
+
+
+     ReducedCellInfo[] list = Table( a, b, c, alpha, beta, gamma );
+
+     int    best_form = BestMatch( list, type, cent );
+     double best_error = 100000;
+
+     if ( best_form > 0 )
+     {
+       System.out.printf("RESULT: %2d  %9.6f  %9.6f  %-14s  %-14s",
+                          best_form,
+                          list[best_form].weighted_distance(list[0]),
+                          list[best_form].distance(list[0]),
+                          list[best_form].cell_type,
+                          list[best_form].centering );
+       double[] lpar = modifyLatticeParameters( a, b, c, alpha, beta, gamma,
+                                         list[best_form].getTransformation());
+       System.out.printf("  %6.3f  %6.3f  %6.3f   %8.2f  %8.2f  %8.2f\n",
+                       lpar[0], lpar[1], lpar[2], lpar[3], lpar[4], lpar[5] );
+       best_error = list[best_form].weighted_distance(list[0]);
+    }
+    return (float)best_error;
+  }
+
+  
   /**
    * Basic test of constructor and toString method.
    */
@@ -994,7 +1108,7 @@ public class ReducedCellInfo
 
      String out = makeCompareString(list, cutoff, a, b, c, alpha, beta, gamma);
      System.out.println( out );
-
+/*
      // try changing two angles to their supplementary values.
      double d_alpha = Math.abs(90 - alpha);
      double d_beta  = Math.abs(90 - beta );
@@ -1024,7 +1138,51 @@ public class ReducedCellInfo
 
      out = makeCompareString(list, cutoff, a, b, c, alpha, beta, gamma);
      System.out.println( out );
+*/
 
+     double save_alpha = alpha;
+     double save_beta  = beta;
+     double save_gamma = gamma;
+
+     alpha = 180 - alpha;
+     beta  = 180 - beta;
+     System.out.println("\n\n After reflecting a and b .................. \n");
+     for ( int i = 0; i < list.length; i++ )
+       list[i] = new ReducedCellInfo( i, a, b, c, alpha, beta, gamma );
+
+     System.out.printf("%5.3f  %5.3f  %5.3f   %7.2f  %7.2f  %7.2f\n",
+                           a,    b,    c, alpha, beta, gamma );
+
+     out = makeCompareString(list, cutoff, a, b, c, alpha, beta, gamma);
+     System.out.println( out );
+
+     alpha = save_alpha;
+     beta  = save_beta;
+     beta  = 180 - beta;
+     gamma = 180 - gamma;
+     System.out.println("\n\n After reflecting b and c .................. \n");
+     for ( int i = 0; i < list.length; i++ )
+       list[i] = new ReducedCellInfo( i, a, b, c, alpha, beta, gamma );
+
+     System.out.printf("%5.3f  %5.3f  %5.3f   %7.2f  %7.2f  %7.2f\n",
+                           a,    b,    c, alpha, beta, gamma );
+
+     out = makeCompareString(list, cutoff, a, b, c, alpha, beta, gamma);
+     System.out.println( out );
+
+     beta  = save_beta;
+     gamma = save_gamma;
+     alpha = 180 - alpha;
+     gamma = 180 - gamma;
+     System.out.println("\n\n After reflecting a and c .................. \n");
+     for ( int i = 0; i < list.length; i++ )
+       list[i] = new ReducedCellInfo( i, a, b, c, alpha, beta, gamma );
+
+     System.out.printf("%5.3f  %5.3f  %5.3f   %7.2f  %7.2f  %7.2f\n",
+                           a,    b,    c, alpha, beta, gamma );
+
+     out = makeCompareString(list, cutoff, a, b, c, alpha, beta, gamma);
+     System.out.println( out );
   }
 
 }
