@@ -40,6 +40,7 @@ import java.util.Vector;
 import javax.swing.*;
 
 import DataSetTools.operator.Generic.TOF_SCD.*;
+import Operators.TOF_SCD.IndexingUtils;
 import IPNSSrc.blind;
 import gov.anl.ipns.MathTools.*;
 import gov.anl.ipns.MathTools.Geometry.*;
@@ -982,6 +983,7 @@ public class subs
      
   }
   
+
   /**
    * Returns a new matrix whose columns are the basis with minimum length
    * and form a RIGHT HANDED SYSTEM
@@ -991,7 +993,34 @@ public class subs
    * @return  a new matrix whose columns are the basis with minimum length
    * and form a RIGHT HANDED SYSTEM
    */
-   public static float[][] Nigglify( float[][]UB)
+   public static float[][] Nigglify( float[][]UB )
+   {
+     Tran3D UB_tran   = new Tran3D( UB );
+     Tran3D Niggli_UB = new Tran3D( UB );
+
+     if ( !IndexingUtils.MakeNiggliUB( UB_tran, Niggli_UB ) )
+       Niggli_UB.set( UB_tran );
+
+     float[][] Niggli_UB_array = Niggli_UB.get();
+     float[][] result = new float[3][3];
+     for ( int row = 0; row < 3; row++ )
+       for ( int col = 0; col < 3; col++ )
+         result[row][col] = Niggli_UB_array[row][col];
+
+     return result;
+   }
+
+
+  /**
+   * Obsolete method to return a new matrix whose columns are the basis with 
+   * minimum length and form a RIGHT HANDED SYSTEM
+   * 
+   * @param UB  A UB matrix, whose columns form a basis in 3D
+   * 
+   * @return  a new matrix whose columns are the basis with minimum length
+   * and form a RIGHT HANDED SYSTEM
+   */
+   public static float[][] OLD_Nigglify( float[][] UB )
    {
        boolean NiggReal = true;
       
@@ -1056,7 +1085,6 @@ public class subs
                   ident[oth][j] = 0;
                   changed = true;
                }
-               
             }
          
          if( !isRightHanded( UB1 ))
@@ -1098,8 +1126,6 @@ public class subs
             changed = AllPosNeg( Tensor, UB1, ident);
                
             
-            
-            
             // now check for C -a-b
             
             float sgn = 1;
@@ -1113,7 +1139,6 @@ public class subs
                  if( Tensor[0][0] <=2*(sgn*Tensor[0][2] +sgn*Tensor[0][1] ) 
                                                        || sgn > 0 ) {
                     xchanged = false;
-                   
                  }
                 
                 if( xchanged)
@@ -1144,8 +1169,6 @@ public class subs
                Tensor = LinearAlgebra.mult( Tensor , ident );
                ident[0][2] = ident[1][2] = 0;
                changed = true;
-               
-               
             }
             
             //!changed
