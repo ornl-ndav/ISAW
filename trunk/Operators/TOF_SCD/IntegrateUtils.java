@@ -1386,17 +1386,20 @@ public class IntegrateUtils
     int maxX=x;
     int maxY=y;
     int maxZ=z;
+    int dCent=dx+dy;
 
     float point=0f;
     for( int i=x-dx ; i<=x+dx ; i++ ){
       for( int j=y-dy ; j<=y+dy ; j++ ){
         for( int k=z-dz ; k<=z+dz ; k++ ){
           point=getObs(ds,ids[i][j],k);
-          if(point>maxP){
+          int ddCent =Math.abs( x-i )+Math.abs( j-y );
+          if(point>maxP  ||(point==maxP && ddCent < dCent)){
             maxP=(int)Math.round(point);
             maxX=i;
             maxY=j;
             maxZ=k;
+            dCent= Math.abs( x-i )+Math.abs( j-y );
           }
           point=0f;
         }
