@@ -45,12 +45,35 @@ public class ScalarUtils
 {
   public static final float NO_CELL_FOUND = 100000;
 
-
-  public static float getConventionalCellUB( Tran3D UB, 
-                                             String cell_type, 
-                                             String centering, 
-                                             Tran3D new_UB )
+  /**
+   * Get the best fitting conventional cell, if any, with the specified
+   * cell_type and centering type, using only the lattice parameters from
+   * the specified UB matrix.  No related cell parameters are tested.
+   *
+   *  @param UB               The UB transform corresponding to a Niggli 
+   *                          reduced cell for the lattice.
+   *  @param cell_type        String specifiying the cell type: Cubic, 
+   *                          Rhombohedral, Tetragonal, Orthorhombic,
+   *                          Monoclinic, Hexagonal or Triclinic.
+   *  @param centering        String specifying the centering: F, I, C, P, R 
+   *  @param new_UB           This is set to the new UB matrix, if the 
+   *                          function returns an error less than
+   *                          ScalarUtils.NO_CELL_FOUND, and is just set to
+   *                          the input UB otherwise.
+   *
+   *  @return The error in the cell scalars if a new UB matrix is found, 
+   *          or the value SclaraUtils.NO_CELL_FOUND, if there was no
+   *          match for the specified cell type and centering..
+   *
+   * @see getBestConventionalCellUB
+   */
+  private static float getConventionalCellUB( Tran3D UB, 
+                                              String cell_type, 
+                                              String centering, 
+                                              Tran3D new_UB )
   {
+    new_UB.set(UB);
+
     Vector3D a_vec = new Vector3D();
     Vector3D b_vec = new Vector3D();
     Vector3D c_vec = new Vector3D();
@@ -64,7 +87,6 @@ public class ScalarUtils
 
     ReducedCellInfo[] list = ReducedCellInfo.Table(a, b, c, alpha, beta, gamma);
 
-    new_UB.set(UB);
     int best_form = ReducedCellInfo.BestMatch( list, cell_type, centering );
     if ( best_form > 0 )
     {
@@ -86,72 +108,6 @@ public class ScalarUtils
       return (float)list[best_form].weighted_distance(list[0]);
     }
     return NO_CELL_FOUND;
-  }
-
-
-  public static float getBestConventionalCellUB_PERMUTE( Tran3D UB,
-                                                         String cell_type,
-                                                         String centering,
-                                                         Tran3D new_UB )
-  {
-    Vector3D a = new Vector3D();
-    Vector3D b = new Vector3D();
-    Vector3D c = new Vector3D();
-
-    Vector3D a_vec = new Vector3D();
-    Vector3D b_vec = new Vector3D();
-    Vector3D c_vec = new Vector3D();
-    
-    IndexingUtils.getABC( UB, a_vec, b_vec, c_vec );
-  
-    Vector3D minus_a = new Vector3D( a_vec );
-    Vector3D minus_b = new Vector3D( b_vec );
-    Vector3D minus_c = new Vector3D( c_vec );
-    
-    minus_a.multiply( -1 );
-    minus_b.multiply( -1 );
-    minus_c.multiply( -1 );
-
-    Vector3D[][] permutations = { {   a_vec,   b_vec,   c_vec },
-                                  { minus_a,   c_vec,   b_vec },
-                                  {   b_vec,   c_vec,   a_vec }, 
-                                  { minus_b,   a_vec,   c_vec }, 
-                                  {   c_vec,   a_vec,   b_vec }, 
-                                  { minus_c,   b_vec,   a_vec } };
-    float min_error = NO_CELL_FOUND;
-    float error;
-    float factor = 1.05f;
-    for ( int row = 0; row < 6; row++ )
-    {
-      a.set( permutations[row][0] );
-      b.set( permutations[row][1] );
-      c.set( permutations[row][2] );
-      if ( a.length() < factor * b.length() &&
-           b.length() < factor * c.length() )   // could be Niggli
-      {
-        Tran3D temp_UB   = new Tran3D();
-        Tran3D niggli_UB = new Tran3D();
-        Tran3D conv_UB   = new Tran3D();
-        IndexingUtils.getUB( temp_UB, a, b, c );
-        System.out.print("TRYING ");
-        IndexingUtils.ShowLatticeParameters( temp_UB ); 
-        if ( IndexingUtils.ChooseUB_WithNiggliAngles( temp_UB, niggli_UB ) )
-        {
-          System.out.print("NIGGLI ");
-          IndexingUtils.ShowLatticeParameters( niggli_UB ); 
-          error = getConventionalCellUB( niggli_UB, 
-                                         cell_type, centering, conv_UB );
-          if ( error < min_error )
-          {
-            min_error = error;
-            new_UB.set( conv_UB );
-            System.out.print("KEEP   ");
-            IndexingUtils.ShowLatticeParameters( new_UB ); 
-          }
-        }
-      }
-    }
-    return min_error;
   }
 
 
@@ -180,10 +136,16 @@ public class ScalarUtils
    *                          Rhombohedral, Tetragonal, Orthorhombic,
    *                          Monoclinic, Hexagonal or Triclinic.
    *  @param centering        String specifying the centering: F, I, C, P, R 
-   *  @param angle_tolerance
-   *  @param new_UB
+   *  @param angle_tolerance  This parameter specifies the tolerance on an
+   *                          angle to be considered about 90 degrees.  If a
+   *                          cell angle is within this tolerance of 90 degrees
+   *                          a cell with the corresponding sides negated will
+   *                          also be tested.
+   *  @param new_UB           This is set to the new UB matrix, if the 
+   *                          function returns true, and is just set to UB if
+   *                          this function returns false.
    *
-   *  @return
+   *  @return true if a new UB matrix is found, false otherwise.
    */
   public static float getBestConventionalCellUB( Tran3D UB,
                                                  String cell_type,
@@ -191,6 +153,8 @@ public class ScalarUtils
                                                  float  angle_tolerance,
                                                  Tran3D new_UB )
   {
+    new_UB.set( UB );
+
     Vector3D a = new Vector3D();
     Vector3D b = new Vector3D();
     Vector3D c = new Vector3D();
@@ -224,6 +188,7 @@ public class ScalarUtils
     float min_error = NO_CELL_FOUND;
     Tran3D temp_UB  = new Tran3D();
     Tran3D conv_UB  = new Tran3D();
+
     for ( int row = 0; row < reflections.length; row++ )
     {
       if ( Math.abs(angles[row] - 90) < angle_tolerance )
@@ -233,13 +198,23 @@ public class ScalarUtils
         c.set( reflections[row][2] );
 
         IndexingUtils.getUB( temp_UB, a, b, c );
+
         error = getConventionalCellUB(temp_UB, cell_type, centering, conv_UB);
+
         if ( error < min_error )
         {
           min_error = error;
           new_UB.set( conv_UB );
-//          System.out.print("KEEP   ");
-//          IndexingUtils.ShowLatticeParameters( new_UB );
+
+          if ( ReducedCellInfo.ORTHORHOMBIC.startsWith( cell_type ) )
+            SetSidesIncreasing( new_UB );
+
+          else if ( ReducedCellInfo.TETRAGONAL.startsWith( cell_type ) )
+            StandardizeTetragonal( new_UB );
+
+          else if ( ReducedCellInfo.HEXAGONAL.startsWith( cell_type ) ||
+                    ReducedCellInfo.RHOMBOHEDRAL.startsWith( cell_type ) )
+            StandardizeHexagonal( new_UB );
         }
       }
     }
@@ -247,10 +222,266 @@ public class ScalarUtils
   }
 
 
+  /**
+   *  Change UB to a new matrix corresponding to a unit cell with the sides
+   *  in increasing order of magnitude.  This is used to arrange the UB matrix
+   *  for an orthorhombic cell into a standard order.
+   *  @param UB on input this should correspond to an orthorhombic cell. 
+   *            On output, it will correspond to an orthorhombic cell with
+   *            sides in increasing order.
+   */
+  private static void SetSidesIncreasing( Tran3D UB )
+  {
+    Vector3D a = new Vector3D();
+    Vector3D b = new Vector3D();
+    Vector3D c = new Vector3D();
+    IndexingUtils.getABC( UB, a, b, c );
+    Vector<Vector3D> edges = new Vector<Vector3D>();
+    edges.add( a );
+    edges.add( b );
+    edges.add( c );
+    edges = IndexingUtils.SortOnVectorMagnitude( edges ); 
+    
+    a = edges.elementAt(0);
+    b = edges.elementAt(1);
+    c = edges.elementAt(2);
 
-  public static float getReflectedConventionalCellUB( Tran3D UB, 
-                                                      String cell_type, 
-                                                      String centering, 
+    Vector3D cross = new Vector3D();
+    cross.cross( a, b );
+    if ( cross.dot( c ) < 0 )     // if left handed, reflect the c vector
+      c.multiply(-1);
+
+    IndexingUtils.getUB( UB, a, b, c );   
+  }
+
+
+  /**
+   *  Change UB to a new matrix corresponding to a unit cell with the first 
+   *  two sides approximately equal in magnitude.  This is used to arrange 
+   *  the UB matrix for a tetragonal cell into a standard order.
+   *
+   *  @param UB on input this should correspond to a tetragonal cell.  
+   *            On output, it will correspond to a tetragonal cell with the 
+   *            first two sides, a and b, set to the two sides that are most
+   *            nearly equal in length. 
+   */
+  private static void StandardizeTetragonal( Tran3D UB )
+  {
+    Vector3D a = new Vector3D();
+    Vector3D b = new Vector3D();
+    Vector3D c = new Vector3D();
+    IndexingUtils.getABC( UB, a, b, c );
+
+    float a_b_diff = Math.abs( a.length() - b.length() ) / 
+                     Math.min( a.length(), b.length() );
+
+    float a_c_diff = Math.abs( a.length() - c.length() ) / 
+                     Math.min( a.length(), c.length() );
+
+    float b_c_diff = Math.abs( b.length() - c.length() ) / 
+                     Math.min( b.length(), c.length() );
+
+                          // if needed, change UB to have the two most nearly
+                          // equal sides first.
+    if ( a_c_diff <= a_b_diff && a_c_diff <= b_c_diff )  
+      IndexingUtils.getUB( UB, c, a, b );
+    else if ( b_c_diff <= a_b_diff && b_c_diff <= a_c_diff )
+      IndexingUtils.getUB( UB, b, c, a );
+  }
+
+
+  /**
+   *  Change UB to a new matrix corresponding to a hexagonal unit cell 
+   *  angles approximately 90, 90, 120.  This is used to arrange 
+   *  the UB matrix for a hexagonal or rhombohedral cell into a standard order.
+   *
+   *  @param UB on input this should correspond to a hexagonal or rhombohedral
+   *            On output, it will correspond to a hexagonal cell with angles
+   *            approximately 90, 90, 120.
+   */
+  private static void StandardizeHexagonal( Tran3D UB )
+  {
+    Vector3D a = new Vector3D();
+    Vector3D b = new Vector3D();
+    Vector3D c = new Vector3D();
+    IndexingUtils.getABC( UB, a, b, c );
+
+    float alpha = IndexingUtils.angle( b, c );
+    float beta  = IndexingUtils.angle( c, a );
+                                                // first, make the non 90 
+                                                // degree angle last
+    if ( Math.abs(alpha-90) > 20 )
+      IndexingUtils.getUB( UB, b, c, a );
+    else if ( Math.abs(beta-90) > 20 )
+      IndexingUtils.getUB( UB, c, a, b );
+
+                                                // if the non 90 degree angle
+                                                // is about 60 degrees, make
+                                                // it about 120 degrees.
+    IndexingUtils.getABC( UB, a, b, c );
+    float gamma = IndexingUtils.angle( a, b );
+    if ( Math.abs( gamma - 60 ) < 10 )
+    {
+      a.multiply( -1 );                         // reflect a and c to change
+      c.multiply( -1 );                         // alpha and gamma to their
+      IndexingUtils.getUB( UB, a, b, c );       // supplementary angle
+    }
+  }
+
+
+  /**
+   *  Get a list of all the UB matrices corresponding to possible conventional 
+   *  cells for the specified UB, for which the error computed in the 
+   *  ReducedCellInfo class is less than the specified cutoff value.  Each
+   *  possible cell type and centering is passed in to the 
+   *  getConventionalCellUB method and the resulting matrix is kept if the
+   *  error returned is less than the cutoff value.
+   *
+   *  @param UB      The original UB matrix that corresponds to a Niggli
+   *                 reduced cell. 
+   *  @param cutoff  The error in the cell scalars must not exceed this
+   *                 cutoff value.
+   *  @param angle_tolerance  If a cell angle is within this tolerance of
+   *                          90 degrees, a related cell, with the 
+   *                          corresponding sides negated will also be
+   *                          tested.
+   *
+   *  @return A Vector of Tran3D objects that holds the list of conventional
+   *          cell UB matrices.
+   */
+  public static Vector<Tran3D>getConventionalCellUB_List(Tran3D UB, 
+                                                         float cutoff,
+                                                         float angle_tolerance)
+  {
+    Vector<Tran3D> UBs = new Vector<Tran3D>();
+
+    String[] types = { ReducedCellInfo.CUBIC,
+                       ReducedCellInfo.HEXAGONAL,
+                       ReducedCellInfo.RHOMBOHEDRAL,
+                       ReducedCellInfo.TETRAGONAL,
+                       ReducedCellInfo.ORTHORHOMBIC,
+                       ReducedCellInfo.MONOCLINIC,
+                       ReducedCellInfo.TRICLINIC };
+
+    String[] centerings = { ReducedCellInfo.F_CENTERED,
+                            ReducedCellInfo.I_CENTERED,
+                            ReducedCellInfo.C_CENTERED,
+                            ReducedCellInfo.P_CENTERED,
+                            ReducedCellInfo.R_CENTERED };
+
+    System.out.println();
+    float error;
+    for ( int i = 0; i < types.length; i++ )
+      for ( int j = 0; j < centerings.length; j++ )
+      {
+        Tran3D new_tran = new Tran3D();
+
+        error = getBestConventionalCellUB( UB,
+                                           types[i],
+                                           centerings[j],
+                                           angle_tolerance,
+                                           new_tran );
+        if ( error < cutoff )
+        {
+          UBs.add( new_tran );
+          System.out.printf( "%-13s %10s %6.4f  ", 
+                             types[i], centerings[j], error );
+          IndexingUtils.ShowLatticeParameters( new_tran );
+        }
+    }
+
+    System.out.println();
+
+    return UBs;
+  }
+
+
+  /**
+   *  Get the UB matrix corresponding to a unit cell with the highest symmetry
+   *  with cell scalars that match the specified unit cell within the given
+   *  cutoff.
+   *
+   *  @param UB       The original UB matrix that corresponds to a Niggli 
+   *                  reduced cell. 
+   *  @param cutoff   Maximum allowed error in the cell scalars. 
+   *  @param new_UB   This will be set to the new UB matrix if the
+   *                  returned error is less than NO_CELL_FOUND.
+   *
+   *  @return The error in the cell parameters, or ScalarUtils.NO_CELL_FOUND
+   *          if no match was obtained.
+   */
+  public static float getConventionalCellUB(Tran3D UB,
+                                            float  cutoff,
+                                            Tran3D new_UB )
+  {
+    new_UB.set(UB);
+
+    String[] types = { ReducedCellInfo.CUBIC,
+                       ReducedCellInfo.HEXAGONAL,
+                       ReducedCellInfo.RHOMBOHEDRAL,
+                       ReducedCellInfo.TETRAGONAL,
+                       ReducedCellInfo.ORTHORHOMBIC,
+                       ReducedCellInfo.MONOCLINIC,
+                       ReducedCellInfo.TRICLINIC };
+
+    String[] centerings = { ReducedCellInfo.F_CENTERED,
+                            ReducedCellInfo.I_CENTERED,
+                            ReducedCellInfo.C_CENTERED,
+                            ReducedCellInfo.P_CENTERED,
+                            ReducedCellInfo.R_CENTERED };
+
+    String type      = null;
+    String centering = null;
+
+    float  error;
+    float  min_error = NO_CELL_FOUND;
+    float  angle_tol = 1;
+    Tran3D temp_UB   = new Tran3D();
+
+    boolean done = false; 
+    int i = 0;
+    while ( !done && i < types.length )  
+    {
+      for ( int j = 0; j < centerings.length; j++ )
+      {
+        error = getBestConventionalCellUB( UB,
+                                           types[i],
+                                           centerings[j],
+                                           angle_tol,
+                                           temp_UB );
+        if ( error < min_error )
+        {
+          min_error = error;
+          new_UB.set( temp_UB );
+          type      = types[i];
+          centering = centerings[j];
+        }
+      }
+      i++; 
+      if ( min_error < cutoff )
+        done = true;
+    }
+
+    if ( min_error < NO_CELL_FOUND )
+    {
+      System.out.printf( "%-13s %10s %6.4f  ",
+                          type, centering, min_error );
+      IndexingUtils.ShowLatticeParameters( new_UB );
+      System.out.println();
+    }
+
+    return min_error;
+  }
+
+
+
+/**
+ * THE FOLLOWING METHOD IS JUST EXPERIMENTAL, NOT COMPLETE OR CORRECT.
+ */
+
+  public static float getReflectedConventionalCellUB( Tran3D UB,
+                                                      String cell_type,
+                                                      String centering,
                                                       Tran3D new_UB )
   {
     float min_error = NO_CELL_FOUND;
@@ -295,6 +526,9 @@ public class ScalarUtils
   }
 
 
+/**
+ * THE FOLLOWING METHOD IS JUST EXPERIMENTAL, NOT COMPLETE OR CORRECT.
+ */
   public static float getSwappedConventionalCellUB( Tran3D UB,
                                                     String cell_type,
                                                     String centering,
@@ -351,74 +585,78 @@ public class ScalarUtils
   }
 
 
-  /**
-   *  Get a list of all the UB matrices corresponding to possible conventional 
-   *  cells for the specified UB, for which the error computed in the 
-   *  ReducedCellInfo class is less than the specified cutoff value.  Each
-   *  possible cell type and centering is passed in to the 
-   *  getConventionalCellUB method and the resulting matrix is kept if the
-   *  error returned is less than the cutoff value.
-   *
-   *  @param UB      The original UB matrix that corresponds to a Niggli
-   *                 reduced cell. 
-   *  @param cutoff  The error in the cell scalars must not exceed this
-   *                 cutoff value.
-   *  @param angle_tolerance  If a cell angle is within this tolerance of
-   *                          90 degrees, a related cell, with the 
-   *                          corresponding sides negated will also be
-   *                          tested.
-   *
-   *  @return A Vector of Tran3D objects that holds the list of conventional
-   *          cell UB matrices.
-   */
-  public static Vector<Tran3D>getConventionalCellUBs( Tran3D UB, 
-                                                      float cutoff,
-                                                      float angle_tolerance )
+/**
+ * THE FOLLOWING METHOD IS JUST EXPERIMENTAL, NOT COMPLETE OR CORRECT.
+ */
+  public static float getBestConventionalCellUB_PERMUTE( Tran3D UB,
+                                                         String cell_type,
+                                                         String centering,
+                                                         Tran3D new_UB )
   {
-    Vector<Tran3D> UBs = new Vector<Tran3D>();
+    Vector3D a = new Vector3D();
+    Vector3D b = new Vector3D();
+    Vector3D c = new Vector3D();
 
-    String[] types = { ReducedCellInfo.CUBIC,
-                       ReducedCellInfo.RHOMBOHEDRAL,
-                       ReducedCellInfo.TETRAGONAL,
-                       ReducedCellInfo.ORTHORHOMBIC,
-                       ReducedCellInfo.MONOCLINIC,
-                       ReducedCellInfo.HEXAGONAL,
-                       ReducedCellInfo.TRICLINIC };
+    Vector3D a_vec = new Vector3D();
+    Vector3D b_vec = new Vector3D();
+    Vector3D c_vec = new Vector3D();
 
-    String[] centerings = { ReducedCellInfo.F_CENTERED,
-                            ReducedCellInfo.I_CENTERED,
-                            ReducedCellInfo.C_CENTERED,
-                            ReducedCellInfo.P_CENTERED,
-                            ReducedCellInfo.R_CENTERED };
+    IndexingUtils.getABC( UB, a_vec, b_vec, c_vec );
 
-    System.out.println();
+    Vector3D minus_a = new Vector3D( a_vec );
+    Vector3D minus_b = new Vector3D( b_vec );
+    Vector3D minus_c = new Vector3D( c_vec );
+
+    minus_a.multiply( -1 );
+    minus_b.multiply( -1 );
+    minus_c.multiply( -1 );
+
+    Vector3D[][] permutations = { {   a_vec,   b_vec,   c_vec },
+                                  { minus_a,   c_vec,   b_vec },
+                                  {   b_vec,   c_vec,   a_vec },
+                                  { minus_b,   a_vec,   c_vec },
+                                  {   c_vec,   a_vec,   b_vec },
+                                  { minus_c,   b_vec,   a_vec } };
+    float min_error = NO_CELL_FOUND;
     float error;
-    for ( int i = 0; i < types.length; i++ )
-      for ( int j = 0; j < centerings.length; j++ )
+    float factor = 1.05f;
+    for ( int row = 0; row < 6; row++ )
+    {
+      a.set( permutations[row][0] );
+      b.set( permutations[row][1] );
+      c.set( permutations[row][2] );
+      if ( a.length() < factor * b.length() &&
+           b.length() < factor * c.length() )   // could be Niggli
       {
-        Tran3D new_tran = new Tran3D();
-
-        error = getBestConventionalCellUB( UB,
-                                           types[i],
-                                           centerings[j],
-                                           angle_tolerance,
-                                           new_tran );
-        if ( error < cutoff )
+        Tran3D temp_UB   = new Tran3D();
+        Tran3D niggli_UB = new Tran3D();
+        Tran3D conv_UB   = new Tran3D();
+        IndexingUtils.getUB( temp_UB, a, b, c );
+        System.out.print("TRYING ");
+        IndexingUtils.ShowLatticeParameters( temp_UB );
+        if ( IndexingUtils.ChooseUB_WithNiggliAngles( temp_UB, niggli_UB ) )
         {
-          UBs.add( new_tran );
-          System.out.printf( "%-13s %10s %6.4f  ", 
-                             types[i], centerings[j], error );
-          IndexingUtils.ShowLatticeParameters( new_tran );
+          System.out.print("NIGGLI ");
+          IndexingUtils.ShowLatticeParameters( niggli_UB );
+          error = getConventionalCellUB( niggli_UB,
+                                         cell_type, centering, conv_UB );
+          if ( error < min_error )
+          {
+            min_error = error;
+            new_UB.set( conv_UB );
+            System.out.print("KEEP   ");
+            IndexingUtils.ShowLatticeParameters( new_UB );
+          }
         }
+      }
     }
-
-    System.out.println();
-
-    return UBs;
+    return min_error;
   }
 
 
+
   /**
+   *  THE FOLLOWING METHOD IS JUST EXPERIMENTAL, NOT COMPLETE OR CORRECT.
    *  Get a list of all the UB matrices corresponding to conventional cells
    *  obtained from permutations and reflections of real-space cell edge 
    *  vectors for the specified UB that are right-handed.   Each possible 
@@ -440,11 +678,11 @@ public class ScalarUtils
     Vector<Tran3D> UBs = new Vector<Tran3D>();
 
     String[] types = { ReducedCellInfo.CUBIC,
+                       ReducedCellInfo.HEXAGONAL,
                        ReducedCellInfo.RHOMBOHEDRAL,
                        ReducedCellInfo.TETRAGONAL,
                        ReducedCellInfo.ORTHORHOMBIC,
                        ReducedCellInfo.MONOCLINIC,
-                       ReducedCellInfo.HEXAGONAL,
                        ReducedCellInfo.TRICLINIC };
 
     String[] centerings = { ReducedCellInfo.F_CENTERED,
