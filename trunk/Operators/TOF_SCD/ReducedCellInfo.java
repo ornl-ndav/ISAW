@@ -317,7 +317,7 @@ public class ReducedCellInfo
     gamma = gamma * Math.PI / 180;
     init( form_num,
           a*a, b*b, c*c, 
-          b*c*Math.cos( alpha), a*c*Math.cos(beta), a*b*Math.cos(gamma) );
+          b*c*Math.cos(alpha), a*c*Math.cos(beta), a*b*Math.cos(gamma) );
   }
 
 
@@ -846,6 +846,7 @@ public class ReducedCellInfo
       if ( debug )
         System.out.printf( "weighted difference %d = %8.5f\n",
                             i, difference );
+
       if ( difference > max )
         max = difference;
     }
@@ -865,24 +866,19 @@ public class ReducedCellInfo
     double[] vals = new double[6];
 
     double a = Math.sqrt( info.scalars[0] );
-    double b = Math.sqrt( info.scalars[1] );
-    double c = Math.sqrt( info.scalars[2] );
+    double b = Math.sqrt( info.scalars[1] ); 
+    double c = Math.sqrt( info.scalars[2] ); 
 
-                // Use the side lengths themselves, instead of squares of sides.
+                // Use the side lengths themselves, instead of squares of sides
+                // so errors correspond to errors in lattice positions
     vals[0] = a;
     vals[1] = b; 
     vals[2] = c;
-                // Since b.c = b c cos(alpha) changes in b.c correspond to 
-                // changes in alpha via the arccos() function.  If the side
-                // lengths are assumed to be correct, since changes in position
-                // vary as s = r * theta, we scale this by the average of 
-                // the sides affected (b+c)/2.
-                // Each of the dot products, b.c, a.c and a.b are treated
-                // analogously.
-    vals[3] = Math.acos( info.scalars[3] / ( b * c ) ) * ( b + c ) / 2;
-    vals[4] = Math.acos( info.scalars[4] / ( a * c ) ) * ( a + c ) / 2;
-    vals[5] = Math.acos( info.scalars[5] / ( a * b ) ) * ( a + b ) / 2;
-
+                // Use law of cosines to interpret errors in dot products
+                // interms of errors in lattice positions. 
+    vals[3] = Math.sqrt( ( b*b + c*c - 2 * info.scalars[3] ) );
+    vals[4] = Math.sqrt( ( a*a + c*c - 2 * info.scalars[4] ) );
+    vals[5] = Math.sqrt( ( a*a + b*b - 2 * info.scalars[5] ) ); 
     return vals;
   }
 
