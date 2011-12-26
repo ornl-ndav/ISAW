@@ -2857,6 +2857,24 @@ private static void ShowAllUB_INFO( Tran3D           UB,
 }
 
 
+public static float[] getLatticeParameters( Tran3D UB )
+{
+  Vector3D a = new Vector3D();
+  Vector3D b = new Vector3D();
+  Vector3D c = new Vector3D();
+  getABC( UB, a, b, c );
+
+  Vector3D cross = new Vector3D();
+  cross.cross( a, b );
+  float vol = cross.dot( c );
+
+  float[] lat_par = { a.length(), b.length(), c.length(),
+                      angle(b,c), angle(c,a), angle(a,b),
+                      vol };
+  return lat_par;
+ }
+
+
 public static void ShowLatticeParameters( Tran3D UB )
 {
   float[][]  ub_arr = UB.get();
