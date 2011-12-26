@@ -90,24 +90,168 @@ public class ScalarUtils
     int best_form = ReducedCellInfo.BestMatch( list, cell_type, centering );
     if ( best_form > 0 )
     {
-      double[][] cell_tran = list[best_form].getTransformation();
-      float[][]  cell_tran_f = new float[3][3];
-      for ( int i = 0; i < 3; i++ )
-        for ( int j = 0; j < 3; j++ )
-          cell_tran_f[i][j] = (float)cell_tran[i][j];
-      Tran3D new_tran = new Tran3D( cell_tran_f );
-      new_tran.invert();
-      new_UB.multiply_by( new_tran );
-      if ( !IndexingUtils.isRightHanded( new_UB ) )
-      {
-        IndexingUtils.getABC( new_UB, a_vec, b_vec, c_vec );
-        Vector3D minus_c = new Vector3D( c_vec );
-        minus_c.multiply( -1 );
-        IndexingUtils.getUB ( new_UB, a_vec, b_vec, minus_c );
-      }
-      return (float)list[best_form].weighted_distance(list[0]);
+      ConventionalCellInfo cell_info = 
+              new ConventionalCellInfo( UB, list[0], list[best_form] );
+      new_UB.set( cell_info.getNewUB() );
+      return cell_info.getError();
     }
     return NO_CELL_FOUND;
+  }
+
+
+  private static Vector<ConventionalCellInfo>
+                     getConventionalCellUB_List( Tran3D UB,
+                                                 String cell_type,
+                                                 String centering )
+  {
+    Vector<ConventionalCellInfo> result = new Vector<ConventionalCellInfo>();
+
+    Vector3D a_vec = new Vector3D();
+    Vector3D b_vec = new Vector3D();
+    Vector3D c_vec = new Vector3D();
+    IndexingUtils.getABC( UB, a_vec, b_vec, c_vec );
+    double a = a_vec.length();
+    double b = b_vec.length();
+    double c = c_vec.length();
+    double alpha = IndexingUtils.angle( b_vec, c_vec );
+    double beta  = IndexingUtils.angle( c_vec, a_vec );
+    double gamma = IndexingUtils.angle( a_vec, b_vec );
+
+    ReducedCellInfo[] list = ReducedCellInfo.Table(a, b, c, alpha, beta, gamma);
+
+    boolean centering_OK;
+    boolean cell_type_OK;
+    for ( int i = 1; i < list.length; i++ )
+    {
+      if ( centering == null || list[i].getCentering().startsWith( centering ))
+        centering_OK = true;
+      else
+        centering_OK = false;
+
+      if ( cell_type == null || 
+           list[i].getCellType().equalsIgnoreCase(cell_type))
+        cell_type_OK = true;
+      else
+        cell_type_OK = false;
+
+      if ( centering_OK && cell_type_OK )
+      {
+        ConventionalCellInfo cell_info =
+                            new ConventionalCellInfo( UB, list[0], list[i] );
+        result.add( cell_info );
+      }
+    }
+
+    return result;
+  }
+
+
+  /**
+   *  Add the conventional cell info record to the list if there is not
+   *  already an entry with the same form number, or replace the entry
+   *  that has the same form number with the specified cell info, if
+   *  the specified cell info has a smaller error.
+   *
+   *  @param list   The initial list of cell info objects.
+   *  @param info   The new cell info object that might be added to the list.
+   */
+  private static void addIfBest( Vector<ConventionalCellInfo> list, 
+                                 ConventionalCellInfo         info )
+  {
+    int     form_num  = info.getFormNum();
+    float   new_error = info.getError();
+    boolean done = false;
+    int     i = 0;
+    while ( !done && i < list.size() )
+    {
+      ConventionalCellInfo list_info = list.elementAt(i);
+      if ( list_info.getFormNum() == form_num )  // if found, replace if better
+      {                  
+        done = true;
+        if ( list_info.getError() > new_error )
+          list.set( i, info );
+      }
+      else
+        i++;
+    }
+
+    if ( !done )                          // if never found, add to end of list
+      list.add( info );
+  }
+
+  
+  /**
+   *  Remove any forms from the list that have errors that are too large. 
+   *  If the minimum error in the list is positive, an error is considered
+   *  to be too large if it is at least 20 times larger than the minimum
+   *  error.  If the minimum error in the list is zero, then an error is
+   *  considered to be too large if it is more than max_error/10000. If
+   *  the max error is zero, the list will not be altered.
+   */
+  public static void removeBadForms( Vector<ConventionalCellInfo> list )
+  {
+    if ( list.size() <= 0 )
+      return;
+
+    float error;
+    float min_error = list.elementAt(0).getError();
+    float max_error = min_error;
+
+    for ( int i = 0; i < list.size(); i++ )
+    {
+      error = list.elementAt(i).getError();
+      if ( error < min_error )
+        min_error = error;
+      else if ( error > max_error )
+        max_error = error;
+    }
+
+    if ( max_error <= 0 )
+      return;
+
+    float threshold;
+    if ( min_error > 0 )
+      threshold = 20 * min_error;
+    else
+      threshold = max_error/10000;
+
+    Vector<ConventionalCellInfo> new_list = new Vector<ConventionalCellInfo>();
+    for ( int i = 0; i < list.size(); i++ )
+      if ( list.elementAt(i).getError() <= threshold )
+        new_list.add( list.elementAt(i) );
+
+    list.clear();
+    for ( int i = 0; i < new_list.size(); i++ )
+      list.add( new_list.elementAt(i) );
+  }
+
+
+  /**
+   * Get the cell info object that has the shortest sum of sides |a|+|b|+|c|
+   * of any of the cells in the list.  If the list is empty, this returns null. 
+   */
+  public static ConventionalCellInfo getCellWithShortestSides( 
+                                     Vector<ConventionalCellInfo> list )
+  {
+    if ( list == null || list.size() == 0 )
+      return null;
+
+    if ( list.size() == 1 )
+      return list.elementAt(0);
+
+    ConventionalCellInfo best_cell = list.elementAt(0);
+    float min_sum = best_cell.getSumOfSides();
+
+    for ( int i = 1; i < list.size(); i++ )
+    {
+      float sum = list.elementAt(i).getSumOfSides();
+      if ( sum < min_sum )
+      {
+        min_sum   = sum;
+        best_cell = list.elementAt(i);
+      }
+    }
+    return best_cell; 
   }
 
 
@@ -219,6 +363,80 @@ public class ScalarUtils
       }
     }
     return min_error;
+  }
+
+
+  public static ConventionalCellInfo 
+    getBestConventionalCellInfo( Tran3D UB, String cell_type, String centering )
+  {
+    float tol = 2;
+    Vector<ConventionalCellInfo> list =
+                 getConventionalCellInfo_List( UB, cell_type, centering, tol );
+
+    removeBadForms( list );
+
+    return getCellWithShortestSides( list );
+  }
+
+
+/**
+ *  only add best of each form
+ */
+  public static Vector<ConventionalCellInfo>
+                     getConventionalCellInfo_List( Tran3D UB,
+                                                   String cell_type,
+                                                   String centering,
+                                                   float  angle_tolerance  )
+  {
+    Vector<ConventionalCellInfo> result = new Vector<ConventionalCellInfo>();
+    Vector<ConventionalCellInfo> temp   = new Vector<ConventionalCellInfo>();
+
+    Vector3D a = new Vector3D();
+    Vector3D b = new Vector3D();
+    Vector3D c = new Vector3D();
+
+    Vector3D a_vec = new Vector3D();
+    Vector3D b_vec = new Vector3D();
+    Vector3D c_vec = new Vector3D();
+
+    IndexingUtils.getABC( UB, a_vec, b_vec, c_vec );
+
+    Vector3D minus_a = new Vector3D( a_vec );
+    Vector3D minus_b = new Vector3D( b_vec );
+    Vector3D minus_c = new Vector3D( c_vec );
+
+    minus_a.multiply( -1 );
+    minus_b.multiply( -1 );
+    minus_c.multiply( -1 );
+
+    Vector3D[][] reflections = { {   a_vec,   b_vec,   c_vec },
+                                 { minus_a, minus_b,   c_vec },
+                                 { minus_a,   b_vec, minus_c },
+                                 {   a_vec, minus_b, minus_c } };
+
+    float alpha = IndexingUtils.angle( b_vec, c_vec );
+    float beta  = IndexingUtils.angle( c_vec, a_vec );
+    float gamma = IndexingUtils.angle( a_vec, b_vec );
+
+    float[] angles = { 90, gamma, beta, alpha };
+
+    Tran3D temp_UB = new Tran3D();
+    for ( int row = 0; row < reflections.length; row++ )
+    {
+      if ( Math.abs(angles[row] - 90) < angle_tolerance )
+      {
+        a.set( reflections[row][0] );
+        b.set( reflections[row][1] );
+        c.set( reflections[row][2] );
+
+        IndexingUtils.getUB( temp_UB, a, b, c );
+
+        temp = getConventionalCellUB_List( temp_UB, cell_type, centering );
+        for ( int i = 0; i < temp.size(); i++ )
+          addIfBest( result, temp.elementAt(i) );
+      }
+    }
+    return result;
   }
 
 
@@ -384,7 +602,7 @@ public class ScalarUtils
         if ( error < cutoff )
         {
           UBs.add( new_tran );
-          System.out.printf( "%-13s %10s %6.4f  ", 
+          System.out.printf( "%-13s %10s %9.7f  ", 
                              types[i], centerings[j], error );
           IndexingUtils.ShowLatticeParameters( new_tran );
         }
@@ -464,7 +682,7 @@ public class ScalarUtils
 
     if ( min_error < NO_CELL_FOUND )
     {
-      System.out.printf( "%-13s %10s %6.4f  ",
+      System.out.printf( "%-13s %10s %9.7f  ",
                           type, centering, min_error );
       IndexingUtils.ShowLatticeParameters( new_UB );
       System.out.println();
