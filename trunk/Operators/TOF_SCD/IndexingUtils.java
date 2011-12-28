@@ -68,7 +68,6 @@ public static float angle( Vector3D v1, Vector3D v2 )
 }
 
 
-
 /** 
     STATIC method Find_UB_1: First attempt at calculating the matrix that 
     most nearly indexes the specified q_vectors, given the lattice parameters.  
@@ -604,34 +603,6 @@ public static float Find_UB( Tran3D             UB,
   for ( int i = 0; i < num_to_print; i++ )
     System.out.println("RAW q = " + indexed_qs.elementAt(i) +
                        "hkl = " + miller_ind.elementAt(i ) );
-*/
-/*
-  // ********** temporary test
-  float[][]  ub_arr = UB.get();
-  double[][] ub_mat = new double[3][3];
-  for ( int i = 0; i < 3; i++ )
-    for ( int j = 0; j < 3; j++ )
-      ub_mat[i][j] = ub_arr[i][j];
-
-  System.out.println("Original UB = " + UB );
-  double[] l_par = lattice_calc.LatticeParamsOfUB( ub_mat );
-  System.out.printf(" %8.4f  %8.4f  %8.4f   %8.4f  %8.4f  %8.4f\n",
-                l_par[0], l_par[1], l_par[2], l_par[3], l_par[4], l_par[5] );
-
-  Tran3D newUB = new Tran3D();
-  boolean changed = MakePrimitiveUB( UB, newUB );
-  System.out.println("After make primitive UB, newUB = " + newUB );
-  System.out.println("After make primitive UB, changed = " + changed );
-  ub_arr = newUB.get();
-  ub_mat = new double[3][3];
-  for ( int i = 0; i < 3; i++ )
-    for ( int j = 0; j < 3; j++ )
-      ub_mat[i][j] = ub_arr[i][j];
-
-  l_par = lattice_calc.LatticeParamsOfUB( ub_mat );
-  System.out.printf(" %8.4f  %8.4f  %8.4f   %8.4f  %8.4f  %8.4f\n",
-                l_par[0], l_par[1], l_par[2], l_par[3], l_par[4], l_par[5] );
-  // ********** end temporary test
 */
   return fit_error[0];
 }
@@ -1411,7 +1382,13 @@ public static boolean MakeNiggliUB( Tran3D UB, Tran3D newUB )
                                 // next sort the list of linear combinations
                                 // in order of increasing length
   directions = SortOnVectorMagnitude( directions );
-
+/*
+  int num_to_show = Math.min( 60, directions.size() );
+  System.out.println("Sorted directions = " );
+  for ( int i = 0; i < num_to_show; i++ )
+    System.out.printf( "%2d  %50s  %10.5f \n",
+      i, directions.elementAt(i).toString(), directions.elementAt(i).length() );
+*/
                                 // next form a list of possible UB matrices
                                 // using sides from the list of linear 
                                 // combinations, using shorter directions first.
@@ -1420,12 +1397,15 @@ public static boolean MakeNiggliUB( Tran3D UB, Tran3D newUB )
                                 // at least a minimum cell volume
   Vector<Tran3D> UB_list = new Vector<Tran3D>();
 
-  int num_needed = 16;
+  int num_needed = 25;
   int max_to_try = 5;
   while ( UB_list.size() < num_needed && max_to_try < directions.size() )
   {
     max_to_try *= 2;
     int num_to_try = Math.min( max_to_try, directions.size() );
+
+//    System.out.println("num_to_try = " + max_to_try );
+
     Vector3D acrossb = new Vector3D();
     float vol     = 0;
     float min_vol = .1f;      // what should this be? 0.1 works OK, but...?
@@ -1449,7 +1429,10 @@ public static boolean MakeNiggliUB( Tran3D UB, Tran3D newUB )
         }
       }
     }    
+
+//  System.out.println("UB list size = " + UB_list.size() );
   }
+
                                 // if no valid UBs could be formed, return
                                 // false and the original UB
   if ( UB_list.size() <= 0 )
@@ -1460,10 +1443,17 @@ public static boolean MakeNiggliUB( Tran3D UB, Tran3D newUB )
                                 // now sort the UB's in order of increasing
                                 // total side length |a|+|b|+|c|
   UB_list = SortOn_abc_Magnitude( UB_list );
-
+/*
+  int num_to_print = Math.min( 10, UB_list.size() );
+  System.out.println("First at most 10 possible Niggli UBs are");
+  for ( int i = 0; i < num_to_print; i++ )
+    ShowLatticeParameters( UB_list.elementAt(i) );
+*/
                                 // keep only those UB's with total side length
-                                // within .2% of the first one.
-  float length_tol = 0.002f;
+                                // within .1% of the first one.  This can't
+                                // be much larger or "bad" UBs are made for
+                                // some tests with 5% noise
+  float length_tol = 0.001f;
   if ( UB_list.size() > 0 )         
   {
     Vector<Tran3D> short_list = new Vector<Tran3D>();
@@ -1486,6 +1476,13 @@ public static boolean MakeNiggliUB( Tran3D UB, Tran3D newUB )
 
     UB_list = short_list;       // now only use this shorter list
   }
+
+/*
+  num_to_print = Math.min( 20, UB_list.size() );
+  System.out.println("Niggli UBs with similar total side length:");
+  for ( int i = 0; i < num_to_print; i++ )
+    ShowLatticeParameters( UB_list.elementAt(i) );
+*/
                                 // sort the UB_list in decreasing order of total
                                 // difference of angles from 90 degrees and
                                 // return the one with largest difference.
@@ -1699,14 +1696,11 @@ public static boolean getABC( Tran3D UB, Vector3D a, Vector3D b, Vector3D c )
 
 public static boolean hasNiggliAngles( Vector3D a, Vector3D b, Vector3D c )
 {
-/*
-  if ( a.length() > b.length() || b.length() > c.length() )
-    return false;
-*/
   float alpha = angle( b, c ); 
   float beta  = angle( c, a ); 
   float gamma = angle( a, b ); 
-  float eps   = 0;
+  float eps   = 0.01f;          // Some tolerance needed or sometimes a Niggli
+                                // cell is missed in the tests.
 
   if ( alpha < 90+eps && beta < 90+eps && gamma < 90+eps )
     return true;
@@ -1761,151 +1755,6 @@ public static boolean NewNigglify( Tran3D UB )
     return false;
   }
   return true;
-}
-
-
-/**
- *  Try to find a newUB that is equivalent to the original UB, but corresponds
- * to one or more shorter real space unit cell edges.
- *
- * @param UB      The original UB 
- * @param newUB   Returns the newUB
- *
- * @return True if a possibly constructive change was made and newUB has been
- * set to a new matrix.  It returns false if no constructive change was found.
- */ 
-public static boolean MakePrimitiveUB( Tran3D UB, Tran3D newUB )
-{
-   newUB.set( UB );
-
-   Tran3D tempUB = new Tran3D( UB );
-   tempUB.invert();
-
-   float[][] abc = tempUB.get();
-   Vector3D a = new Vector3D( abc[0][0], abc[0][1], abc[0][2] );
-   Vector3D b = new Vector3D( abc[1][0], abc[1][1], abc[1][2] );
-   Vector3D c = new Vector3D( abc[2][0], abc[2][1], abc[2][2] );
-
-   Vector3D temp_b = new Vector3D();
-   Vector3D temp_c = new Vector3D();
-
-   int     count       = 0;
-   boolean changed     = false;
-   boolean good_change = false;
- 
-   while ( changed && count < 100 )
-   {
-     temp_c.set(c);                         // try c + a
-     temp_c.add(a);
-     if ( temp_c.length() < c.length() );
-     {
-       c.set( temp_c );
-       sort_abc( a, b, c );
-       changed = true; 
-     }
-
-     temp_c.set(c);                         // try c - a
-     temp_c.subtract(a);
-     if ( temp_c.length() < c.length() );
-     {
-       c.set( temp_c );
-       sort_abc( a, b, c );
-       changed = true;
-     }
-
-     temp_c.set(c);                         // try c + b
-     temp_c.add(b);
-     if ( temp_c.length() < c.length() );
-     {
-       c.set( temp_c );
-       sort_abc( a, b, c );
-       changed = true;
-     }
-
-     temp_c.set(c);                         // try c - b
-     temp_c.subtract(b);
-     if ( temp_c.length() < c.length() );
-     {
-       c.set( temp_c );
-       sort_abc( a, b, c );
-       changed = true;
-     }
-
-     temp_b.set(b);                        // try b + a
-     temp_b.add(a);
-     if ( temp_b.length() < b.length() )
-     {
-       b.set( temp_b );
-       sort_abc( a, b, c );
-       changed = true;
-     }  
-
-     temp_b.set(b);                        // try b - a
-     temp_b.subtract(a);
-     if ( temp_b.length() < b.length() )
-     {
-       b.set( temp_b );
-       sort_abc( a, b, c );
-       changed = true;
-     }
-
-     temp_c.set(c);                         // try c + a + b
-     temp_c.add(a);
-     temp_c.add(b);
-     if ( temp_c.length() < c.length() );
-     {
-       c.set( temp_c );
-       sort_abc( a, b, c );
-       changed = true;
-     }
-
-     temp_c.set(c);                         // try c + a - b
-     temp_c.add(a);
-     temp_c.subtract(b);
-     if ( temp_c.length() < c.length() );
-     {
-       c.set( temp_c );
-       sort_abc( a, b, c );
-       changed = true;
-     }
-
-     temp_c.set(c);                         // try c - a + b
-     temp_c.subtract(a);
-     temp_c.add(b);
-     if ( temp_c.length() < c.length() );
-     {
-       c.set( temp_c );
-       sort_abc( a, b, c );
-       changed = true;
-     }
-
-     temp_c.set(c);                         // try c - a - b
-     temp_c.subtract(a);
-     temp_c.subtract(b);
-     if ( temp_c.length() < c.length() );
-     {
-       c.set( temp_c );
-       sort_abc( a, b, c );
-       changed = true;
-     }
-
-     if ( changed )
-       good_change = true;
-
-     count++;
-   }
-
-   if ( good_change )
-   {
-     System.out.println("REPEAT COUNT = " + count );
-     float[][] UB_inv_array = { { a.getX(), a.getY(), a.getZ() },
-                                { b.getX(), b.getY(), b.getZ() },
-                                { c.getX(), c.getY(), c.getZ() } };
-   
-     newUB.set( UB_inv_array );
-     newUB.invert();
-   }
-   return good_change;
 }
 
 
@@ -2273,8 +2122,8 @@ public static float Optimize_UB( Tran3D UB, Vector<Vector3D> q_vectors, float to
                                    UB is a singular matrix.
 */  
 public static float Optimize_UB_3D( Tran3D UB,
-                                Vector hkl_vectors, 
-                                Vector q_vectors )
+                                    Vector hkl_vectors, 
+                                    Vector q_vectors )
 {
   if ( hkl_vectors.size() < 3 ) 
   {
@@ -4281,8 +4130,8 @@ public static int FFTScanFor_Directions( Vector<Vector3D> directions,
   temp_dirs = SortOnVectorMagnitude( temp_dirs );
 
                                       // discard duplicates:
-  float len_tol = 0.1f;               // 10% tolerance for lengths
-  float ang_tol = 5;                  // 5 degree tolerance for angles
+  float len_tol = 0.01f;              // 1% tolerance for lengths
+  float ang_tol = 1;                  // 1 degree tolerance for angles
   temp_dirs = DiscardDuplicates( temp_dirs,
                                  q_vectors,
                                  required_tolerance,
@@ -5062,7 +4911,6 @@ public static float[][] Convert2floatArrayArray( Tran3D UB )
     { 
        for( int c=0; c<3;c++)
          Res[r][c]= vals[r][c] ;
-       
     }
     return Res;
 }
