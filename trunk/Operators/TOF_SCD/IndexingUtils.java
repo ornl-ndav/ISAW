@@ -4129,9 +4129,32 @@ public static int FFTScanFor_Directions( Vector<Vector3D> directions,
 
   temp_dirs = SortOnVectorMagnitude( temp_dirs );
 
-                                      // discard duplicates:
-  float len_tol = 0.01f;              // 1% tolerance for lengths
-  float ang_tol = 1;                  // 1 degree tolerance for angles
+                                      // discard duplicates.  The tolerances
+                                      // do not seem to be critical, but a 
+                                      // looser tolerance discards more vectors
+                                      // and improves performance.  Too loose
+                                      // must eventually cause missed directions
+/*
+  float ang_tol =  20;                // 20 degree tolerance for angles is
+  float len_tol = .35f;               // equiv to 35% tolerance for lengths
+*/
+  float ang_tol =  10;                // 10 degree tolerance for angles is
+  float len_tol = .17f;               // equiv to 17% tolerance for lengths
+/*
+  float ang_tol =  5;                 // 5 degree tolerance for angles is
+  float len_tol = .087f;              // equiv to 8.7% tolerance for lengths
+
+  float ang_tol =  2;                 // 2 degree tolerance for angles is 
+  float len_tol = .035f;              // equiv to 3.5% tolerance for lengths
+
+  float ang_tol =  1;                 // 1 degree tolerance for angles is
+  float len_tol = .017f;              // equiv to 1.7% tolerance for lengths
+
+  float ang_tol =  .5f;               // 1/2 degree tolerance for angles is
+  float len_tol = .01f;               // equiv .87% tolerance for lengths
+*/
+//  System.out.println("Test ang_tol = " + ang_tol + " len_tol = " + len_tol);
+
   temp_dirs = DiscardDuplicates( temp_dirs,
                                  q_vectors,
                                  required_tolerance,
@@ -4180,6 +4203,10 @@ private static Vector<Vector3D> DiscardDuplicates( Vector<Vector3D> dirs,
                                                    float    len_tol,
                                                    float    ang_tol )
 {
+/*
+  System.out.println("Before discarding duplicates, list size = " + 
+                      dirs.size() );
+*/
   Vector<Vector3D> new_list = new Vector<Vector3D>();
   Vector<Vector3D> temp     = new Vector<Vector3D>();
   Vector3D current_dir,
@@ -4234,10 +4261,11 @@ private static Vector<Vector3D> DiscardDuplicates( Vector<Vector3D> dirs,
       int max_indexed = 0;                   // find the one that indexes most
       int num_indexed;
       int max_i = -1;
+
       for ( int i = 0; i < temp.size(); i++ )
       {
-        num_indexed = NumberIndexed_1D( temp.elementAt(i), 
-                                        q_vectors, 
+        num_indexed = NumberIndexed_1D( temp.elementAt(i),
+                                        q_vectors,
                                         required_tolerance );
         if ( num_indexed > max_indexed )
         {
@@ -4245,15 +4273,18 @@ private static Vector<Vector3D> DiscardDuplicates( Vector<Vector3D> dirs,
           max_i = i;
         }
       }
-   
+
       if ( max_indexed > 0 )               // don't bother to add any direction
       {                                    // that doesn't index anything
-        new_list.add( temp.elementAt( max_i ) );  
+        new_list.add( temp.elementAt( max_i ) );
       }
     }
   }
 
   dirs.clear();
+/*  System.out.println("After  discarding duplicates, list size = " + 
+                      new_list.size() );
+*/
   return new_list;
 }
 
