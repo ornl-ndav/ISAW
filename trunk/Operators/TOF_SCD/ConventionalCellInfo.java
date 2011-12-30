@@ -8,7 +8,6 @@ public class ConventionalCellInfo
 {
   private int    form_num;
   private float  scalars_error;
-  private float  scalars_error_2;
   private String cell_type;
   private String centering;
   private Tran3D original_UB;
@@ -20,7 +19,6 @@ public class ConventionalCellInfo
   {
     form_num = form_i.getFormNum();
     scalars_error = (float)form_0.weighted_distance( form_i );
-    scalars_error_2 = (float)form_0.distance( form_i );
     cell_type = form_i.getCellType();
     centering = form_i.getCentering();
     original_UB = new Tran3D( UB );
@@ -202,9 +200,9 @@ public class ConventionalCellInfo
 
   public String toString()
   {
-    String result = String.format( "Form # %2d  %-13s %10s %9.7f %10.7f ",
-                  getFormNum(), getCellType(), getCentering(), getError(),
-                  scalars_error_2 );
+    String result = String.format( "Form # %2d  %-13s %10s %11.7f ",
+                  getFormNum(), getCellType(), getCentering(), getError() );
+                  
 
     float[] l_par = IndexingUtils.getLatticeParameters( adjusted_UB ); 
     result += String.format("%8.4f %8.4f %8.4f  %8.4f %8.4f %8.4f  %8.4f",
