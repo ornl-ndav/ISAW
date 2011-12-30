@@ -40,18 +40,100 @@ import gov.anl.ipns.MathTools.Geometry.*;
 /**
  * This class contains static methods that use the ReducedCellInfo class
  * to help deterimine Conventional cells corresponding to Niggli reduced cells.
+ *
+ * Possible public methods to get:
+ *
+ * getCells(UB,ty,ce)        - all cells, with specified type and centering,   
+ *                             for all reflections, best per form, with
+ *                             error < cutoff
+ *
+ * getCellsUB_Only(UB,ty,ce) - all cells, with specified type and centering,
+ *                             for UB only (no reflections), best per form 
+ *                             error < cutoff
+ *
+ * getCells(UB,flag)         - all cells, optionally including triclinic
+ *                             for all reflections, best per form, with
+ *                             error < cutoff
+ *
+ * removeBadForms            - remove cells in list that don't match well
+ *
+ * removeHighErrorForms      - remove cells in list that have error > cutoff
+ *
+ * getCellForForm            - one cell, for specified form,    
+ *                             for all reflections, best per form, no cutoff
+ *
+ * getCellBestNonTri ?       - one cell, any non-triclinic type 
+ *                             for all reflections, best error
+ *
+ * getCellHighestSym ?       - one cell,  
+ *                             for all reflections, highest symmetry,      
+ *
+ * getCellShortestSides(l)   - one cell, shortest sum of sides, 
+ *                             for all reflections 
+ *
  */
 public class ScalarUtils
 {
   public static final float NO_CELL_FOUND = 100000;
+
+  public static final String[] BRAVAIS_TYPE = 
+                                {
+                                  ReducedCellInfo.CUBIC,         // F
+                                  ReducedCellInfo.CUBIC,         // I
+                                  ReducedCellInfo.CUBIC,         // P
+
+                                  ReducedCellInfo.HEXAGONAL,     // P
+
+                                  ReducedCellInfo.RHOMBOHEDRAL,  // R
+
+                                  ReducedCellInfo.TETRAGONAL,    // I
+                                  ReducedCellInfo.TETRAGONAL,    // P
+
+                                  ReducedCellInfo.ORTHORHOMBIC,  // F
+                                  ReducedCellInfo.ORTHORHOMBIC,  // I
+                                  ReducedCellInfo.ORTHORHOMBIC,  // C
+                                  ReducedCellInfo.ORTHORHOMBIC,  // P
+
+                                  ReducedCellInfo.MONOCLINIC,    // C
+                                  ReducedCellInfo.MONOCLINIC,    // I
+                                  ReducedCellInfo.MONOCLINIC,    // P
+
+                                  ReducedCellInfo.TRICLINIC      // P
+                                };
+
+   public static final String[] BRAVAIS_CENTERING = 
+                                 {
+                                   ReducedCellInfo.F_CENTERED,  // cubic
+                                   ReducedCellInfo.I_CENTERED,  // cubic
+                                   ReducedCellInfo.P_CENTERED,  // cubic
+
+                                   ReducedCellInfo.P_CENTERED,  // hexagonal
+
+                                   ReducedCellInfo.R_CENTERED,  // rhombohedral 
+
+                                   ReducedCellInfo.I_CENTERED,  // tetragonal
+                                   ReducedCellInfo.P_CENTERED,  // tetragonal
+
+                                   ReducedCellInfo.F_CENTERED,  // orthorhombic
+                                   ReducedCellInfo.I_CENTERED,  // orthorhombic
+                                   ReducedCellInfo.C_CENTERED,  // orthorhombic
+                                   ReducedCellInfo.P_CENTERED,  // orthorhombic
+
+                                   ReducedCellInfo.C_CENTERED,  // monoclinic 
+                                   ReducedCellInfo.I_CENTERED,  // monoclinic 
+                                   ReducedCellInfo.P_CENTERED,  // monoclinic 
+
+                                   ReducedCellInfo.P_CENTERED   // triclinic
+                                 };
+
 
   /**
    *  Get a list of cell info objects, corresponding to all forms that match
    *  the specified UB, or related UBs, with pairs of edges reflected.  If the
    *  same form number matches several times when different pairs of edges are
    *  reflected, only the one with the smallest error value will be included.
-   *  A pair of edges will be reflected if the angle between the edges is within
-   *  the specified angle tolerance of 90 degrees.  This is needed to take care
+   *  A pair of edges will be reflected if the angle between the edges 
+   *  is within 2 degrees of 90 degrees.  This is needed to take care
    *  of the case where a positive Niggli cell was found, but due to errors in
    *  the data, a negative Niggli cell should have been found, and visa-versa. 
    *
@@ -62,137 +144,74 @@ public class ScalarUtils
    *                    ReducedCellInfo class.
    *  @param centering  String specifying the centering, as listed in the
    *                    ReducedCellInfo class.
-   *  @param tolerance  This specifies how close (in degrees) a cell angle 
-   *                    must be to 90 degrees, to also include matching forms
-   *                    for the cell using the supplementary angles of the
-   *                    other two cell angles.
    *  @return a vector of conventional cell info objects, corresponding to the
    *          best matching forms for UB and cells related to UB by reflections
    *          of pairs of cell edges.
    */
-  public static Vector<ConventionalCellInfo>
-                             getConventionalCells( Tran3D UB,
-                                                   String cell_type,
-                                                   String centering,
-                                                   float  angle_tolerance  )
+  public static Vector<ConventionalCellInfo> getCells( Tran3D UB,
+                                                       String cell_type,
+                                                       String centering )
   {
+    float angle_tolerance = 2.0f;
+
     Vector<ConventionalCellInfo> result = new Vector<ConventionalCellInfo>();
     Vector<ConventionalCellInfo> temp   = new Vector<ConventionalCellInfo>();
 
-    Vector3D a = new Vector3D();
-    Vector3D b = new Vector3D();
-    Vector3D c = new Vector3D();
+    Vector<Tran3D> UB_list = getSignRelatedUBs( UB, angle_tolerance );
 
-    Vector3D a_vec = new Vector3D();
-    Vector3D b_vec = new Vector3D();
-    Vector3D c_vec = new Vector3D();
-
-    Vector3D a_temp = new Vector3D();
-    Vector3D b_temp = new Vector3D();
-    Vector3D c_temp = new Vector3D();
-
-    Vector3D m_a_temp = new Vector3D();
-    Vector3D m_b_temp = new Vector3D();
-    Vector3D m_c_temp = new Vector3D();
-
-    IndexingUtils.getABC( UB, a_vec, b_vec, c_vec );
-
-    Vector3D minus_a = new Vector3D( a_vec );
-    Vector3D minus_b = new Vector3D( b_vec );
-    Vector3D minus_c = new Vector3D( c_vec );
-
-    minus_a.multiply( -1 );
-    minus_b.multiply( -1 );
-    minus_c.multiply( -1 );
-
-    Vector3D[][] reflections = { {   a_vec,   b_vec,   c_vec },
-                                 { minus_a, minus_b,   c_vec },
-                                 { minus_a,   b_vec, minus_c },
-                                 {   a_vec, minus_b, minus_c } };
-
-    float alpha = IndexingUtils.angle( b_vec, c_vec );
-    float beta  = IndexingUtils.angle( c_vec, a_vec );
-    float gamma = IndexingUtils.angle( a_vec, b_vec );
-
-    float[] angles = { 90, gamma, beta, alpha };
-
-    Tran3D temp_UB = new Tran3D();
-    for ( int row = 0; row < reflections.length; row++ )
+    for ( int k = 0; k < UB_list.size(); k++ )
     {
-      if ( Math.abs(angles[row] - 90) < angle_tolerance )
-      {
-        a_temp.set( reflections[row][0] );
-        b_temp.set( reflections[row][1] );
-        c_temp.set( reflections[row][2] );
+      temp = getCellsUB_Only( UB_list.elementAt(k), cell_type, centering );
 
-        m_a_temp.set( a_temp );
-        m_b_temp.set( b_temp );
-        m_c_temp.set( c_temp );
-
-        m_a_temp.multiply( -1 );
-        m_b_temp.multiply( -1 );
-        m_c_temp.multiply( -1 );
-
-        Vector3D[][] permutations = { {   a_temp,   b_temp,   c_temp },
-                                      { m_a_temp,   c_temp,   b_temp },
-                                      {   b_temp,   c_temp,   a_temp },
-                                      { m_b_temp,   a_temp,   c_temp },
-                                      {   c_temp,   a_temp,   b_temp },
-                                      { m_c_temp,   b_temp,   a_temp } };
-        float factor = 1.05f;
-        for ( int perm = 0; perm < 6; perm++ )
-        {
-          a.set( permutations[perm][0] );
-          b.set( permutations[perm][1] );
-          c.set( permutations[perm][2] );
-          if ( a.length() < factor * b.length() &&
-               b.length() < factor * c.length() )   // could be Niggli
-          {
-            IndexingUtils.getUB( temp_UB, a, b, c );
-
-            temp = getCells( temp_UB, cell_type, centering );
-            for ( int i = 0; i < temp.size(); i++ )
-              addIfBest( result, temp.elementAt(i) );
-          }
-        }
-      }
+      for ( int i = 0; i < temp.size(); i++ )
+        addIfBest( result, temp.elementAt(i) );
     }
     return result;
   }
 
 
   /**
-   * Only includes NON-Triclinic !
+   *  Get a list of cell info objects, corresponding to all forms that match
+   *  the specified UB, or related UBs, with pairs of edges reflected.  If the
+   *  same form number matches several times when different pairs of edges are
+   *  reflected, only the one with the smallest error value will be included.
+   *  A pair of edges will be reflected if the angle between the edges 
+   *  is within 2 degrees of 90 degrees.  This is needed to take care
+   *  of the case where a positive Niggli cell was found, but due to errors in
+   *  the data, a negative Niggli cell should have been found, and visa-versa. 
+   *
+   *  @param UB         The lattice parameters for this UB matrix and matrices
+   *                    related to it by reflecting pairs of sides, are 
+   *                    used to form the list of possible conventional cells.
+   *  @param triclinic  Flag indicating whether or not to include triclinic 
+   *                    cells.  Set true to include triclinic cells and false
+   *                    to omit triclinic cells.
+   *  @return a vector of conventional cell info objects, corresponding to the
+   *          best matching forms for UB and cells related to UB by reflections
+   *          of pairs of cell edges.
    */
-  public static Vector<ConventionalCellInfo> getConventionalCells( Tran3D UB )
+
+  public static Vector<ConventionalCellInfo> getCells( Tran3D  UB,
+                                                       boolean triclinic )
   {
     Vector<ConventionalCellInfo> list = new Vector<ConventionalCellInfo>();
 
-    String[] types = { ReducedCellInfo.CUBIC,
-                       ReducedCellInfo.HEXAGONAL,
-                       ReducedCellInfo.RHOMBOHEDRAL,
-                       ReducedCellInfo.TETRAGONAL,
-                       ReducedCellInfo.ORTHORHOMBIC,
-                       ReducedCellInfo.MONOCLINIC };
-
-    String[] centerings = { ReducedCellInfo.F_CENTERED,
-                            ReducedCellInfo.I_CENTERED,
-                            ReducedCellInfo.C_CENTERED,
-                            ReducedCellInfo.P_CENTERED,
-                            ReducedCellInfo.R_CENTERED };
-
-    float tol = 20;
     Vector<ConventionalCellInfo> temp = new Vector<ConventionalCellInfo>();
-    for ( int i = 0; i < types.length; i++ )
-      for ( int j = 0; j < centerings.length; j++ )
-      {
-        temp = getConventionalCells( UB, types[i], centerings[j], tol );
-        if ( temp != null )
-          for ( int k = 0; k < temp.size(); k++ )
-            addIfBest( list, temp.elementAt(k) );
-      }
 
-    removeBadForms( list );
+    int num_lattices;
+    if ( triclinic )
+      num_lattices = BRAVAIS_TYPE.length;
+    else
+      num_lattices = BRAVAIS_TYPE.length - 1;
+
+    for ( int i = 0; i < num_lattices; i++ )
+    {
+      temp = getCells( UB, BRAVAIS_TYPE[i], BRAVAIS_CENTERING[i] );
+      if ( temp != null )
+        for ( int k = 0; k < temp.size(); k++ )
+          addIfBest( list, temp.elementAt(k) );
+    }
+
     return list;
   }
 
@@ -216,9 +235,10 @@ public class ScalarUtils
    *  @param centering  String specifying the centering, as listed in the
    *                    ReducedCellInfo class.
    */
-  public static Vector<ConventionalCellInfo> getCells( Tran3D UB,
-                                                       String cell_type,
-                                                       String centering )
+  public static Vector<ConventionalCellInfo> getCellsUB_Only
+                                                         ( Tran3D UB,
+                                                           String cell_type,
+                                                           String centering )
   {
     Vector<ConventionalCellInfo> result = new Vector<ConventionalCellInfo>();
 
@@ -298,27 +318,27 @@ public class ScalarUtils
   
   /**
    *  Remove any forms from the list that have errors that are too large. 
-   *  If the minimum error in the list is positive, an error is considered
-   *  to be too large if it is at least 20 times larger than the minimum
-   *  error.  If the minimum error in the list is zero, then an error is
-   *  considered to be too large if it is more than max_error/10000. If
-   *  the max error is zero, the list will not be altered.
+   *  An error is considered to be too large if it is at least 50 times 
+   *  larger than the minimum positive error in the list.  If the max
+   *  error is zero, the list will not be altered.
    */
   public static void removeBadForms( Vector<ConventionalCellInfo> list )
   {
     if ( list.size() <= 0 )
       return;
-
-    float error;
-    float min_error = list.elementAt(0).getError();
-    float max_error = min_error;
+    
+    String type;
+    float  error;
+    float  min_error = Float.POSITIVE_INFINITY;
+    float  max_error = 0;
 
     for ( int i = 0; i < list.size(); i++ )
     {
       error = list.elementAt(i).getError();
-      if ( error < min_error )
+      type  = list.elementAt(i).getCellType();
+      if ( !type.equals(ReducedCellInfo.TRICLINIC) && error < min_error )
         min_error = error;
-      else if ( error > max_error )
+      if ( error > max_error )
         max_error = error;
     }
 
@@ -326,10 +346,7 @@ public class ScalarUtils
       return;
 
     float threshold;
-    if ( min_error > 0 )
-      threshold = 20 * min_error;
-    else
-      threshold = max_error/10000;
+    threshold = 50 * min_error;
 
     Vector<ConventionalCellInfo> new_list = new Vector<ConventionalCellInfo>();
     for ( int i = 0; i < list.size(); i++ )
@@ -350,7 +367,7 @@ public class ScalarUtils
    *
    * @return The entry in the list with the shortest sum of sides.
    */
-  public static ConventionalCellInfo getCellWithShortestSides( 
+  public static ConventionalCellInfo getCellShortestSides( 
                                             Vector<ConventionalCellInfo> list )
   {
     if ( list == null || list.size() == 0 )
@@ -408,7 +425,7 @@ public class ScalarUtils
       }
 
     removeBadForms( list );
-    return getCellWithShortestSides( list );
+    return getCellShortestSides( list );
   }
 
   
@@ -442,13 +459,256 @@ public class ScalarUtils
                                                          String centering,
                                                          float  tol )
   {
-    Vector<ConventionalCellInfo> list =
-                     getConventionalCells( UB, cell_type, centering, tol );
+    Vector<ConventionalCellInfo> list = getCells( UB, cell_type, centering );
 
     removeBadForms( list );
 
-    return getCellWithShortestSides( list );
+    return getCellShortestSides( list );
   }
 
+
+
+  /**
+   *  Get a list of UB matrices that are related to the specified UB.
+   *  The related UBs are generated by both permuting the corresponding unit
+   *  cell side vectors a,b,c and reflecting pairs of the sides.  A 
+   *  permutation of the sides is used provided they are still "essentially"
+   *  in increasing order.  The specified factor provides a tolerance to
+   *  relax the restriction that |a|<=|b|<=|c|.  As long as a side is 
+   *  less than or equal to the following side times the specified factor,
+   *  it is considered less than or equal to the following side, for purposes
+   *  of checking whether or not the list of sides could form a Niggli cell. 
+   *  Two sides will be reflected across the origin if the angle between
+   *  them is within the specified angle_tolerance of 90 degrees.  This will
+   *  help find the correct Niggli cell for cases where the angle is near
+   *  90 degrees.  In particular, if a positive Niggli cell was found with
+   *  an angle near 90 degrees, due to errors in the data, it possibly should
+   *  have been a negative Niggli cell.  Adding the cases with reflected sides
+   *  for angles near 90 degrees will include the opposite sign Niggli cell
+   *  so it is also checked.
+   *
+   *  @param UB               The original matrix (should be for Niggli cell)
+   *  @param factor           Tolerance for lengths to be considered increasing
+   *  @param angle_tolerance  Tolerance for angles near 90 degree. 
+   *
+   *  @return  A vector of UB matrices related to the original UB matrix
+   *           by reflections and permuations of the side vectors a, b, c.
+   */
+  private static Vector<Tran3D> getRelatedUBs( Tran3D UB,
+                                               float  factor,
+                                               float  angle_tolerance )
+  {
+    Vector<Tran3D> result = new Vector<Tran3D>();
+
+    Vector3D a = new Vector3D();
+    Vector3D b = new Vector3D();
+    Vector3D c = new Vector3D();
+
+    Vector3D a_temp = new Vector3D();
+    Vector3D b_temp = new Vector3D();
+    Vector3D c_temp = new Vector3D();
+
+    Vector3D m_a_temp = new Vector3D();
+    Vector3D m_b_temp = new Vector3D();
+    Vector3D m_c_temp = new Vector3D();
+
+    Vector3D a_vec = new Vector3D();
+    Vector3D b_vec = new Vector3D();
+    Vector3D c_vec = new Vector3D();
+
+    IndexingUtils.getABC( UB, a_vec, b_vec, c_vec );
+
+    Vector3D m_a_vec = new Vector3D( a_vec );
+    Vector3D m_b_vec = new Vector3D( b_vec );
+    Vector3D m_c_vec = new Vector3D( c_vec );
+
+    m_a_vec.multiply( -1 );
+    m_b_vec.multiply( -1 );
+    m_c_vec.multiply( -1 );
+
+    Vector3D[][] reflections = { {   a_vec,   b_vec,   c_vec },
+                                 { m_a_vec, m_b_vec,   c_vec },
+                                 { m_a_vec,   b_vec, m_c_vec },
+                                 {   a_vec, m_b_vec, m_c_vec } };
+
+    float alpha = IndexingUtils.angle( b_vec, c_vec );
+    float beta  = IndexingUtils.angle( c_vec, a_vec );
+    float gamma = IndexingUtils.angle( a_vec, b_vec );
+
+    float[] angles = { 90, gamma, beta, alpha };
+
+    for ( int row = 0; row < reflections.length; row++ )
+    {
+      if ( Math.abs(angles[row] - 90) < angle_tolerance )
+      {
+        a_temp.set( reflections[row][0] );
+        b_temp.set( reflections[row][1] );
+        c_temp.set( reflections[row][2] );
+
+        m_a_temp.set( a_temp );
+        m_b_temp.set( b_temp );
+        m_c_temp.set( c_temp );
+
+        m_a_temp.multiply( -1 );
+        m_b_temp.multiply( -1 );
+        m_c_temp.multiply( -1 );
+
+        Vector3D[][] permutations = { {   a_temp,   b_temp,   c_temp },
+                                      { m_a_temp,   c_temp,   b_temp },
+                                      {   b_temp,   c_temp,   a_temp },
+                                      { m_b_temp,   a_temp,   c_temp },
+                                      {   c_temp,   a_temp,   b_temp },
+                                      { m_c_temp,   b_temp,   a_temp } };
+        for ( int perm = 0; perm < 6; perm++ )
+        {
+          a.set( permutations[perm][0] );
+          b.set( permutations[perm][1] );
+          c.set( permutations[perm][2] );
+          if ( a.length() <= factor * b.length() &&
+               b.length() <= factor * c.length() )   // could be Niggli
+          {
+            Tran3D temp_UB = new Tran3D();
+            IndexingUtils.getUB( temp_UB, a, b, c );
+            result.add( temp_UB );
+          }
+        }
+      }
+    }
+    return result;
+  }
+
+  /**
+   *  Get a list of UB matrices that are related to the specified UB
+   *  by reflecting pairs of the unit cell side vectors, a, b, c. 
+   *  Two sides will be reflected across the origin if the angle between
+   *  them is within the specified angle_tolerance of 90 degrees.  This will
+   *  help find the correct Niggli cell for cases where the angle is near
+   *  90 degrees.  In particular, if a positive Niggli cell was found with
+   *  an angle near 90 degrees, due to errors in the data, it possibly should
+   *  have been a negative Niggli cell.  Adding the cases with reflected sides
+   *  for angles near 90 degrees will include the opposite sign Niggli cell
+   *  so it is also checked.
+   *
+   *  @param UB               The original matrix (should be for Niggli cell)
+   *  @param angle_tolerance  Tolerance for angles near 90 degree. 
+   *
+   *  @return  A vector of UB matrices related to the original UB matrix
+   *           by reflections and permuations of the side vectors a, b, c.
+   */
+
+  private static Vector<Tran3D> getSignRelatedUBs( Tran3D UB,
+                                                  float  angle_tolerance )
+  {
+    Vector<Tran3D> result = new Vector<Tran3D>();
+
+    Vector3D a = new Vector3D();
+    Vector3D b = new Vector3D();
+    Vector3D c = new Vector3D();
+
+    Vector3D a_vec = new Vector3D();
+    Vector3D b_vec = new Vector3D();
+    Vector3D c_vec = new Vector3D();
+
+    IndexingUtils.getABC( UB, a_vec, b_vec, c_vec );
+
+    Vector3D m_a_vec = new Vector3D( a_vec );
+    Vector3D m_b_vec = new Vector3D( b_vec );
+    Vector3D m_c_vec = new Vector3D( c_vec );
+
+    m_a_vec.multiply( -1 );
+    m_b_vec.multiply( -1 );
+    m_c_vec.multiply( -1 );
+
+    Vector3D[][] reflections = { {   a_vec,   b_vec,   c_vec },
+                                 { m_a_vec, m_b_vec,   c_vec },
+                                 { m_a_vec,   b_vec, m_c_vec },
+                                 {   a_vec, m_b_vec, m_c_vec } };
+
+    float alpha = IndexingUtils.angle( b_vec, c_vec );
+    float beta  = IndexingUtils.angle( c_vec, a_vec );
+    float gamma = IndexingUtils.angle( a_vec, b_vec );
+
+    float[] angles = { 90, gamma, beta, alpha };
+
+    for ( int row = 0; row < reflections.length; row++ )
+    {
+      if ( Math.abs(angles[row] - 90) < angle_tolerance )
+      {
+        a.set( reflections[row][0] );
+        b.set( reflections[row][1] );
+        c.set( reflections[row][2] );
+
+        Tran3D temp_UB = new Tran3D();
+        IndexingUtils.getUB( temp_UB, a, b, c );
+        result.add( temp_UB );
+      }
+    }
+  return result;
+  }
+
+  /**
+   *  Get a list of UB matrices that are related to the specified UB
+   *  by permuting the corresponding unit cell side vectors a,b,c. 
+   *  A permutation of the sides is used provided they are still "essentially"
+   *  in increasing order.  The specified factor provides a tolerance to
+   *  relax the restriction that |a|<=|b|<=|c|.  As long as a side is 
+   *  less than or equal to the following side times the specified factor,
+   *  it is considered less than or equal to the following side, for purposes
+   *  of checking whether or not the list of sides could form a Niggli cell. 
+   *
+   *  @param UB               The original matrix (should be for Niggli cell)
+   *  @param factor           Tolerance for lengths to be considered increasing
+   *
+   *  @return  A vector of UB matrices related to the original UB matrix
+   *           by reflections and permuations of the side vectors a, b, c.
+   */
+  private static Vector<Tran3D> getPermuteRelatedUBs( Tran3D UB,
+                                                      float  factor )
+  {
+    Vector<Tran3D> result = new Vector<Tran3D>();
+
+    Vector3D a = new Vector3D();
+    Vector3D b = new Vector3D();
+    Vector3D c = new Vector3D();
+
+    Vector3D a_temp = new Vector3D();
+    Vector3D b_temp = new Vector3D();
+    Vector3D c_temp = new Vector3D();
+
+    Vector3D m_a_temp = new Vector3D();
+    Vector3D m_b_temp = new Vector3D();
+    Vector3D m_c_temp = new Vector3D();
+
+    IndexingUtils.getABC( UB, a_temp, b_temp, c_temp );
+
+    m_a_temp.set( a_temp );
+    m_b_temp.set( b_temp );
+    m_c_temp.set( c_temp );
+
+    m_a_temp.multiply( -1 );
+    m_b_temp.multiply( -1 );
+    m_c_temp.multiply( -1 );
+
+    Vector3D[][] permutations = { {   a_temp,   b_temp,   c_temp },
+                                  { m_a_temp,   c_temp,   b_temp },
+                                  {   b_temp,   c_temp,   a_temp },
+                                  { m_b_temp,   a_temp,   c_temp },
+                                  {   c_temp,   a_temp,   b_temp },
+                                  { m_c_temp,   b_temp,   a_temp } };
+    for ( int perm = 0; perm < 6; perm++ )
+    {
+      a.set( permutations[perm][0] );
+      b.set( permutations[perm][1] );
+      c.set( permutations[perm][2] );
+      if ( a.length() <= factor * b.length() &&
+           b.length() <= factor * c.length() )   // could be Niggli
+      {
+        Tran3D temp_UB = new Tran3D();
+        IndexingUtils.getUB( temp_UB, a, b, c );
+        result.add( temp_UB );
+      }
+    }
+    return result;
+  }
 
 }
