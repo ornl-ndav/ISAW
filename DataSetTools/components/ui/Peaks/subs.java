@@ -998,9 +998,16 @@ public class subs
      Tran3D UB_tran   = new Tran3D( UB );
      Tran3D Niggli_UB = new Tran3D( UB );
 
-     if ( !IndexingUtils.MakeNiggliUB( UB_tran, Niggli_UB ) )
-       Niggli_UB.set( UB_tran );
-
+     try
+     {
+       if ( !IndexingUtils.MakeNiggliUB( UB_tran, Niggli_UB ) )
+         Niggli_UB.set( UB_tran );
+     }
+     catch ( Exception ex )
+     {
+       System.out.println("Warning: Find Niggli reduced cell failed, " +
+                          "UB matrix not changed");
+     }
      float[][] Niggli_UB_array = Niggli_UB.get();
      float[][] result = new float[3][3];
      for ( int row = 0; row < 3; row++ )
