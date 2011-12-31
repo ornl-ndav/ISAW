@@ -68,6 +68,9 @@ public class filePanel implements IReceiveMessage
    private static final long  serialVersionUID = 1L;
    public  static final int   MAX_ALLOWED_BINS = 2048;
 
+   private static final int DEFAULT_NUM_TO_LOAD = 200000000;
+   private static final int DEFAULT_NUM_TO_SHOW =  10000000;
+
    private MessageCenter      message_center;
    private JPanel             panel;
    private JTabbedPane        tabPane;
@@ -123,8 +126,6 @@ public class filePanel implements IReceiveMessage
    private long               num_to_show;
    private long               num_to_show_UDP;
    private int                num_threads;
-   private String             num_to_load_str;
-   private String             num_to_show_str;
 
    private boolean            use_manual_port;
    private int                udp_port;
@@ -179,10 +180,8 @@ public class filePanel implements IReceiveMessage
 
       numAvailable    = 0;
       firstToLoad     = 1; 
-      num_to_load     = 200000000;
-      num_to_load_str = "200,000,000";
-      num_to_show     =  10000000;
-      num_to_show_str =  "10,000,000";
+      num_to_load     = DEFAULT_NUM_TO_LOAD;
+      num_to_show     = DEFAULT_NUM_TO_SHOW;
 
       udp_port        = 8002;
       num_to_show_UDP = 5000000;
@@ -286,13 +285,16 @@ public class filePanel implements IReceiveMessage
       firstEvent = new JTextField( default_firstEvent );
       firstEvent.setHorizontalAlignment(JTextField.RIGHT);
       
+      NumberFormat nf = NumberFormat.getInstance();
       JLabel numLoad = new JLabel("Number to Load: ");
-      eventsToLoad = new JTextField( num_to_load_str );
+      eventsToLoad = new JTextField();
       eventsToLoad.setHorizontalAlignment(JTextField.RIGHT);
+      eventsToLoad.setText( nf.getInstance().format(num_to_load) );
       
       JLabel maxEvents = new JLabel("Number to Show in 3D: ");
-      eventsToShow = new JTextField( num_to_show_str );
+      eventsToShow = new JTextField();
       eventsToShow.setHorizontalAlignment(JTextField.RIGHT);
+      eventsToShow.setText( nf.getInstance().format(num_to_show) );
 
       protonsOnTarget = new JTextField( "0" );
       protonsOnTarget.setHorizontalAlignment(JTextField.RIGHT);
@@ -677,17 +679,17 @@ public class filePanel implements IReceiveMessage
    }
    
    /**
-    * Takes the pathname of a file and 
-    * calls setEventData(file) to set the
-    * information on the panel according to 
-    * the file.
+    * Takes the pathname of a file and calls setEventData(file,reset) to set
+    * the information on the panel according to the file.
     * 
     * @param inFile Path name for the event file to load.
+    * @param reset  If true, the number of events to load and show
+    *               will be reset to their defaults.
     */
-   public boolean setEventFile(String inFile)
+   private boolean setEventFile(String inFile, boolean reset )
    {
       File file = new File(inFile);
-      return setEventData(file);
+      return setEventData(file,reset);
    }
    
    /**
@@ -740,12 +742,13 @@ public class filePanel implements IReceiveMessage
    /**
     * Takes a file and populates the information pertaining to it
     * such as how many events in the file, and how many events to
-    * load as well a show unless the number to show is more than 
-    * 5,000,000 it defaults to that.
+    * load as well as show.
     * 
     * @param inFile File of the event file to get information from.
+    * @param reset  If true, the number of events to load and show
+    *               will be reset to their defaults.
     */
-   private boolean setEventData(File inFile)
+   private boolean setEventData(File inFile, boolean reset )
    {
       NumberFormat nf = NumberFormat.getInstance();
       
@@ -758,15 +761,19 @@ public class filePanel implements IReceiveMessage
          availableEvents.setText(nf.getInstance().format(size));
          firstEvent.setText("1");
          
-         if (size > num_to_load)
-            eventsToLoad.setText(nf.getInstance().format(num_to_load));
+         if ( reset )
+         {
+           num_to_load = Math.min( size, DEFAULT_NUM_TO_LOAD );
+           num_to_show = Math.min( size, DEFAULT_NUM_TO_SHOW );
+         }
          else
-            eventsToLoad.setText(nf.getInstance().format(size));
-      
-         if (size > num_to_show)
-            eventsToShow.setText(nf.getInstance().format(num_to_show));
-         else
-            eventsToShow.setText(nf.getInstance().format(size));
+         {
+           num_to_load = Math.min( size, num_to_load );
+           num_to_show = Math.min( size, num_to_show );
+         }
+
+         eventsToLoad.setText(nf.getInstance().format(num_to_load));
+         eventsToShow.setText(nf.getInstance().format(num_to_show));
 
          return true;
       }
@@ -1011,7 +1018,7 @@ public class filePanel implements IReceiveMessage
         {
           if ( !name.equals(Datafilename) )    // update file size info
           {
-            if ( setEventFile(name) )
+            if ( setEventFile(name, false) )
               Datafilename = name;
             else
               return false;
@@ -1446,7 +1453,7 @@ public class filePanel implements IReceiveMessage
        {
          String name = evFileName.getText().trim();
          if ( CheckFileExists( name, "Can't Read Specified Event File : " ) )
-           if ( setEventFile( name ) )
+           if ( setEventFile( name, true ) )
              Datafilename = name;
        }
      }
@@ -1537,7 +1544,7 @@ public class filePanel implements IReceiveMessage
                }
                else
                {
-                  setEventData(file);
+                  setEventData(file,true);
                   Datafilename = file.getPath();
                }
             }
