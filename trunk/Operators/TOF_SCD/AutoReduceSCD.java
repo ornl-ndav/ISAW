@@ -75,6 +75,9 @@ public class AutoReduceSCD
    *                     The name determines which default instrument geometry
    *                     files (.DetCal, bank and mapping files) from the
    *                     ISAW distribution will be used.
+   *  @param DetCal_file The .DetCal file to use for this data reduction.
+   *                     If null is passed in, the default .DetCal file
+   *                     will be used.
    *  @param num_bins    The number of steps in each direction to use for the
    *                     underlying 3D histogram in reciprocal space.  The 
    *                     required storage is 4*num_bins^3.  A num_bins = 768
@@ -98,6 +101,7 @@ public class AutoReduceSCD
    *                          peaks.
    */
   public AutoReduceSCD( String instrument, 
+                        String DetCal_file,
                         int    num_bins, 
                         float  max_Q,
                         float  wavelength_power ) 
@@ -147,7 +151,7 @@ public class AutoReduceSCD
     float radius = 0;        // NOT DOING ANVRED CORRECTIONS HERE 
     float smu    = 1;
     float amu    = 1;
-    mapper    = new SNS_Tof_to_Q_map( instrument, null, null, null, null,
+    mapper    = new SNS_Tof_to_Q_map( instrument, DetCal_file, null, null, null,
                                       wavelength_power, radius, smu, amu );
     mapper.setMinQ( 0 );
     mapper.setMaxQ( max_Q );
@@ -556,6 +560,9 @@ public class AutoReduceSCD
    *                          instrument geometry files (.DetCal, bank and 
    *                          mapping files) from the ISAW distribution will 
    *                          be used.
+   *  @param DetCal_file      The .DetCal file to use for this data reduction.
+   *                          If null is passed in, the default .DetCal file
+   *                          will be used.
    *  @param num_bins         The number of steps in each direction to use for
    *                          the underlying 3D histogram in reciprocal space.
    *                          The required storage is 4*num_bins^3.  A num_bins
@@ -613,6 +620,7 @@ public class AutoReduceSCD
    *                          be read or written.
    */
   public static void reduce( String  instrument,
+                             String  DetCal_file,
                              int     num_bins,
                              float   max_Q,
                              float   wavelength_power,
@@ -635,6 +643,7 @@ public class AutoReduceSCD
                       throws Exception
   {
     AutoReduceSCD reducer = new AutoReduceSCD( instrument,
+                                               DetCal_file,
                                                num_bins,
                                                max_Q,
                                                wavelength_power );
@@ -675,6 +684,7 @@ public class AutoReduceSCD
   public static void main( String[] args ) throws Exception
   {
     String  instrument       = "TOPAZ";
+    String  DetCal_file      = "TOPAZ.DetCal";
     int     num_bins         =  768;
     float   max_Q            = 14.0f;
     float   wavelength_power =  2.4f;
@@ -700,7 +710,7 @@ public class AutoReduceSCD
     boolean integrate_all         = false;
     String  integrated_peaks_file = "demo.integrate";
 
-    reduce( instrument, num_bins, max_Q, wavelength_power,
+    reduce( instrument, DetCal_file, num_bins, max_Q, wavelength_power,
             event_file, 
             num_to_find, threshold, peaks_file,
             a, b, c, alpha, beta, gamma, tolerance, indexed_peaks_file,
