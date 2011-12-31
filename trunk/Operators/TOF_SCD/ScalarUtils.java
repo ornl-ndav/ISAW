@@ -41,40 +41,44 @@ import gov.anl.ipns.MathTools.Geometry.*;
  * This class contains static methods that use the ReducedCellInfo class
  * to help deterimine Conventional cells corresponding to Niggli reduced cells.
  *
- * Possible public methods to get:
+ * public methods:
  *
- * getCells(UB,ty,ce)        - all cells, with specified type and centering,   
- *                             for all reflections, best per form, with
- *                             error < cutoff
+ * getCells(UB,ty,ce)        - get list of all cells, with specified type and 
+ *                             centering, for all reflections, best per form
  *
- * getCellsUB_Only(UB,ty,ce) - all cells, with specified type and centering,
- *                             for UB only (no reflections), best per form 
- *                             error < cutoff
+ * getCellsUB_Only(UB,ty,ce) - get list of all cells, with specified type and 
+ *                             centering, for UB only (no reflections), best 
+ *                             per form 
  *
- * getCells(UB,flag)         - all cells, optionally including triclinic
- *                             for all reflections, best per form, with
- *                             error < cutoff
+ * getCells(UB,flag)         - get list of all cells, optionally including 
+ *                             triclinic, for all reflections, best per form
  *
- * removeBadForms            - remove cells in list that don't match well
+ * removeBadForms(l,f)       - remove cells in list that have error > f*min_err
  *
- * removeHighErrorForms      - remove cells in list that have error > cutoff
+ * removeHighErrorForms(l,c) - remove cells in list that have error > cutoff
  *
- * getCellForForm            - one cell, for specified form,    
+ * getCellForForm(form)      - one cell, for specified form,    
  *                             for all reflections, best per form, no cutoff
  *
- * getCellBestNonTri ?       - one cell, any non-triclinic type 
- *                             for all reflections, best error
+ * getCellBestError(l,flag)  - one cell, minimum error in list.  If flag is
+ *                             false, triclinic cells will not be included,
+ *                             unless all cells in the list are triclinic.
  *
- * getCellHighestSym ?       - one cell,  
- *                             for all reflections, highest symmetry,      
+ * getCellHighestSym(l)      - one cell, highest symmetry in list
  *
- * getCellShortestSides(l)   - one cell, shortest sum of sides, 
- *                             for all reflections 
+ * getCellShortestSides(l)   - one cell, shortest sum of sides in list 
  *
  */
 public class ScalarUtils
 {
   public static final float NO_CELL_FOUND = 100000;
+
+  public static final String[] LATTICE_TYPES = { ReducedCellInfo.CUBIC,
+                                                 ReducedCellInfo.HEXAGONAL,
+                                                 ReducedCellInfo.RHOMBOHEDRAL,
+                                                 ReducedCellInfo.TETRAGONAL,
+                                                 ReducedCellInfo.ORTHORHOMBIC,
+                                                 ReducedCellInfo.MONOCLINIC };
 
   public static final String[] BRAVAIS_TYPE = 
                                 {
@@ -283,46 +287,20 @@ public class ScalarUtils
 
 
   /**
-   *  Add the conventional cell info record to the list if there is not
-   *  already an entry with the same form number, or replace the entry
-   *  that has the same form number with the specified cell info, if
-   *  the specified cell info has a smaller error.
-   *
-   *  @param list   The initial list of cell info objects.
-   *  @param info   The new cell info object that might be added to the list.
-   */
-  public static void addIfBest( Vector<ConventionalCellInfo> list, 
-                                ConventionalCellInfo         info )
-  {
-    int     form_num  = info.getFormNum();
-    float   new_error = info.getError();
-    boolean done = false;
-    int     i = 0;
-    while ( !done && i < list.size() )
-    {
-      ConventionalCellInfo list_info = list.elementAt(i);
-      if ( list_info.getFormNum() == form_num )  // if found, replace if better
-      {                  
-        done = true;
-        if ( list_info.getError() > new_error )
-          list.set( i, info );
-      }
-      else
-        i++;
-    }
-
-    if ( !done )                          // if never found, add to end of list
-      list.add( info );
-  }
-
-  
-  /**
    *  Remove any forms from the list that have errors that are too large. 
-   *  An error is considered to be too large if it is at least 50 times 
-   *  larger than the minimum positive error in the list.  If the max
-   *  error is zero, the list will not be altered.
+   *  An error is considered to be too large if it is at least the specified
+   *  factor times larger than the minimum error in the list for all 
+   *  non-triclinic forms in the list.  If the error is zero for any form
+   *  in the list, the list will not be altered.
+   *
+   *  @param list   The list of conventional cell objects to be cleaned up.
+   *  @param factor This specifies a tolerance above the minimum error, for
+   *                entries to remain in the list.  For example, if factor
+   *                is 50, then forms in the list will be kept if their error
+   *                is no more than 50 times the minimum error.
    */
-  public static void removeBadForms( Vector<ConventionalCellInfo> list )
+  public static void removeBadForms( Vector<ConventionalCellInfo> list,
+                                     float                        factor )
   {
     if ( list.size() <= 0 )
       return;
@@ -330,7 +308,6 @@ public class ScalarUtils
     String type;
     float  error;
     float  min_error = Float.POSITIVE_INFINITY;
-    float  max_error = 0;
 
     for ( int i = 0; i < list.size(); i++ )
     {
@@ -338,15 +315,10 @@ public class ScalarUtils
       type  = list.elementAt(i).getCellType();
       if ( !type.equals(ReducedCellInfo.TRICLINIC) && error < min_error )
         min_error = error;
-      if ( error > max_error )
-        max_error = error;
     }
 
-    if ( max_error <= 0 )
-      return;
-
     float threshold;
-    threshold = 50 * min_error;
+    threshold = factor * min_error;
 
     Vector<ConventionalCellInfo> new_list = new Vector<ConventionalCellInfo>();
     for ( int i = 0; i < list.size(); i++ )
@@ -356,6 +328,167 @@ public class ScalarUtils
     list.clear();
     for ( int i = 0; i < new_list.size(); i++ )
       list.add( new_list.elementAt(i) );
+  }
+
+
+  /**
+   *  Remove any forms from the list that have errors that are above the
+   *  specified level.
+   *
+   *  @param list   The list of conventional cell objects to be cleaned up.
+   *  @param level  This specifies the maximum error for cells that will 
+   *                not be discarded from the list.
+   */
+  public static void removeHighErrorForms( Vector<ConventionalCellInfo> list,
+                                           float                        level )
+  {
+    if ( list.size() <= 0 )
+      return;
+
+    String type;
+    float  error;
+
+    Vector<ConventionalCellInfo> new_list = new Vector<ConventionalCellInfo>();
+    for ( int i = 0; i < list.size(); i++ )
+      if ( list.elementAt(i).getError() <= level )
+        new_list.add( list.elementAt(i) );
+
+    list.clear();
+    for ( int i = 0; i < new_list.size(); i++ )
+      list.add( new_list.elementAt(i) );
+  }
+
+
+  /**
+   *  Get one cell, for specified UB and form, by trying different reflections
+   *  of a,b,c and forming the ConventionalCellInfo object corresponding to
+   *  the smallest form error. 
+   *
+   *  @param UB    Orientation transformation corresponding to a Niggli 
+   *               reduced cell.
+   *  @param num   The form number to use.
+   *
+   *  @return A ConventionalCellInfo object corresponding to the specified 
+   *          form number and UB (or a related matrix) with the smallest
+   *          error of any related matrix.
+   */
+  public static ConventionalCellInfo getCellForForm( Tran3D UB, int num )
+  {
+    float                angle_tolerance = 2.0f;
+    ReducedCellInfo      form_0;
+    ReducedCellInfo      form;
+    ConventionalCellInfo info = null;
+
+    float error;
+    float min_error = Float.POSITIVE_INFINITY;
+
+    Vector<Tran3D>  UB_list = getSignRelatedUBs( UB, angle_tolerance );
+    for ( int i = 0; i < UB_list.size(); i++ )
+    {
+      float[] l_params = 
+                   IndexingUtils.getLatticeParameters( UB_list.elementAt(i) ); 
+
+      form_0 = new ReducedCellInfo( 0, l_params[0], l_params[1], l_params[2],
+                                       l_params[3], l_params[4], l_params[5] );
+
+      form = new ReducedCellInfo( num, l_params[0], l_params[1], l_params[2],
+                                       l_params[3], l_params[4], l_params[5] );
+
+      error = (float)form_0.weighted_distance( form );
+      if ( error < min_error )
+      {
+        info = new ConventionalCellInfo( UB_list.elementAt(i), form_0, form );
+        min_error = error;
+      }
+    }
+    return info; 
+  }
+
+
+  /**
+   * Get the cell info object that has the smallest error of any of the 
+   * cells in the list.  If use_triclinc is false, this will skip triclinic
+   * cells in the list, and return the non-triclinic cell with the smallest
+   * error of all non-triclinic cells.  If there is no such cell, this will
+   * return null.  Also, if the list is empty, this returns null. 
+   *
+   * @param list           The list of conventional cell info objects.
+   * @param use_triclinic  If false, skip any triclinic cells in the
+   *                       list when checking for smallest error.
+   *
+   * @return The entry in the list with the smallest error.
+   */
+
+  public static ConventionalCellInfo getCellBestError( 
+                                           Vector<ConventionalCellInfo> list,
+                                           boolean use_triclinic )
+  {
+    if ( list == null || list.size() <= 0 )
+      return null;
+
+    ConventionalCellInfo info      = list.elementAt(0);
+    float                min_error = info.getError();
+    float                error;
+    String               type;
+
+    for ( int i = 0; i < list.size(); i++ )
+    {
+      type  = list.elementAt(i).getCellType();
+      error = list.elementAt(i).getError();
+      if ( ( use_triclinic || !type.equals(ReducedCellInfo.TRICLINIC)) && 
+           error < min_error ) 
+      {
+        info      = list.elementAt(i);
+        min_error = error;
+      }
+    }
+    return info; 
+  }
+
+
+  /**
+   * Get the cell info object that has the highest symmetry of any of the 
+   * cells in the list.  If there are several cells with the same symmetry,
+   * the cell of that type, with the smallest error will be returned.
+   * Also, if the list is empty, this returns null. 
+   *
+   * @param list           The list of conventional cell info objects.
+   *
+   * @return The entry in the list with the smallest error.
+   */
+
+  public static ConventionalCellInfo getCellHighestSym(
+                                           Vector<ConventionalCellInfo> list )
+  {
+    if ( list == null || list.size() <= 0 )
+      return null;
+
+    ConventionalCellInfo info = null;
+
+    float   min_error = Float.POSITIVE_INFINITY;
+    float   error;
+    String  type;
+
+    boolean done = false;
+    int     t    = 0;
+    while ( !done && t < LATTICE_TYPES.length )
+    { 
+      type = LATTICE_TYPES[t];
+      
+      for ( int i = 0; i < list.size(); i++ )
+      {
+        error = list.elementAt(i).getError();
+        if (type.equals(list.elementAt(i).getCellType()) && error < min_error)
+        {
+          info     = list.elementAt(i);
+          min_error = error;
+        }
+      }
+      if ( info != null )
+        done = true;
+      t++;
+    }
+    return info;
   }
 
 
@@ -393,79 +526,37 @@ public class ScalarUtils
 
 
   /**
-   */
-  public static ConventionalCellInfo getBestConventionalCellInfo( Tran3D UB )
-  {
-    Vector<ConventionalCellInfo> list = new Vector<ConventionalCellInfo>();
-
-    String[] types = { ReducedCellInfo.CUBIC,
-                       ReducedCellInfo.HEXAGONAL,
-                       ReducedCellInfo.RHOMBOHEDRAL,
-                       ReducedCellInfo.TETRAGONAL,
-                       ReducedCellInfo.ORTHORHOMBIC,
-                       ReducedCellInfo.MONOCLINIC };
-
-    String[] centerings = { ReducedCellInfo.F_CENTERED,
-                            ReducedCellInfo.I_CENTERED,
-                            ReducedCellInfo.C_CENTERED,
-                            ReducedCellInfo.P_CENTERED,
-                            ReducedCellInfo.R_CENTERED };
-
-    float tol = 2;
-    ConventionalCellInfo cell;
-    for ( int i = 0; i < types.length; i++ )
-      for ( int j = 0; j < centerings.length; j++ )
-      {
-        cell = getBestConventionalCellInfo( UB, 
-                                            types[i], 
-                                            centerings[j],
-                                            tol );
-        if ( cell != null )
-          list.add( cell );
-      }
-
-    removeBadForms( list );
-    return getCellShortestSides( list );
-  }
-
-  
-  /**
-   *  Get the best matching conventional cell of the specified type, with
-   *  the shortest total cell edge sum.  This method first calls the
-   *  getConventionalCellInfo_List method to get all cells that match, at 
-   *  least to some extent.  The cells with larger errors are then removed
-   *  from the list by calling the removeBadForms() method.  There can
-   *  still be several matching forms with essentially the same error in 
-   *  the scalars, so to resolve this ambiguity, the remaining cell with
-   *  the shortest sum a+b+c.
+   *  Add the conventional cell info record to the list if there is not
+   *  already an entry with the same form number, or replace the entry
+   *  that has the same form number with the specified cell info, if
+   *  the specified cell info has a smaller error.
    *
-   *  @param UB         The lattice parameters for this UB matrix are 
-   *                    used to form the list of possible conventional cells.
-   *  @param cell_type  String specifying the cell type, as listed in the
-   *                    ReducedCellInfo class.
-   *  @param centering  String specifying the centering, as listed in the
-   *                    ReducedCellInfo class.
-   *  @param tol        This specifies how close (in degrees) a cell angle 
-   *                    must be to 90 degrees, to also include matching forms
-   *                    for the cell using the supplementary angles of the
-   *                    other two cell angles.
-   *  @return conventional cell info object, corresponding to the best 
-   *          matching form for UB and cells related to UB by reflections
-   *          of pairs of cell edges. If no form matches, this returns null.
+   *  @param list   The initial list of cell info objects.
+   *  @param info   The new cell info object that might be added to the list.
    */
-  public static ConventionalCellInfo 
-                            getBestConventionalCellInfo( Tran3D UB, 
-                                                         String cell_type, 
-                                                         String centering,
-                                                         float  tol )
+  private static void addIfBest( Vector<ConventionalCellInfo> list,
+                                 ConventionalCellInfo         info )
   {
-    Vector<ConventionalCellInfo> list = getCells( UB, cell_type, centering );
+    int     form_num  = info.getFormNum();
+    float   new_error = info.getError();
+    boolean done = false;
+    int     i = 0;
+    while ( !done && i < list.size() )
+    {
+      ConventionalCellInfo list_info = list.elementAt(i);
+      if ( list_info.getFormNum() == form_num )  // if found, replace if better
+      {
+        done = true;
+        if ( list_info.getError() > new_error )
+          list.set( i, info );
+      }
+      else
+        i++;
+    }
 
-    removeBadForms( list );
-
-    return getCellShortestSides( list );
+    if ( !done )                          // if never found, add to end of list
+      list.add( info );
   }
-
 
 
   /**
