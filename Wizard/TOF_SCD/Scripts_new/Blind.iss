@@ -131,7 +131,7 @@ elseif method =="Auto w Lattice Params"
        NN = -1
     endif
    
-    RR = Find_UB(Arg1,Qvecs, LatParams[0],LatParams[1],LatParams[2],LatParams[3],LatParams[4],LatParams[5],.12,NN,15,MinDegree_between_directions)
+    RR = FindUB_UsingFFT(Arg1,Qvecs, LatParams[0],LatParams[1],LatParams[2],LatParams[3],LatParams[4],LatParams[5],.12,NN,15,MinDegree_between_directions)
     
     X = Convert2floatArrayArray(Arg1)
     WriteMatrix( file, X)
@@ -146,7 +146,7 @@ elseif  method =="new Automatic"
     else
        NN = -1
     endif
-    RR= Find_UB( Arg1,Qvecs,Min_dSpacing,Max_dSpacing,.12,NN,15,MinDegree_between_directions )
+    RR= Find_UB( Arg1,Qvecs,Min_dSpacing,Max_dSpacing,.12,MinDegree_between_directions )
     X = Convert2floatArrayArray(Arg1)
     WriteMatrix( file, X )
 
