@@ -578,7 +578,7 @@ public class AutoReduceSCD
    *                          applied in ANVRED, so this parameter is only a
    *                          fudge factor to even out the data for finding
    *                          peaks.
-   *  @param eventfilename    The name of an SNS raw neutron_event.dat file.
+   *  @param event_file       The name of an SNS raw neutron_event.dat file.
    *  @param num_to_find      The maximum number of peaks to look for in the
    *                          histogram.
    *  @param threshold        The minimum histogram value that will be 
