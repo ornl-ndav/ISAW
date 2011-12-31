@@ -31,6 +31,8 @@ public class MakeScalarTest
    float alpha; float beta; float gamma;
    float[][] conventionalUB;
    float[][] NiggliUB;
+   Random rndd= new Random( 1035);
+   float[][]U;
    float[][] Rhomb2Hex ={{1f/3,-1f/3,-1f/3},{-2f/3,-1f/3,-1f/3},{1f/3,2f/3,-1f/3}};
    Random nxt;
    /**
@@ -54,8 +56,9 @@ public class MakeScalarTest
       this.a = a; this.b = b;
       this.c = c; this.error = error; this.Center = Center;this.type = type; 
       this.alpha = alpha; this.beta = beta; this.gamma =gamma ;
-      
-      conventionalUB = CalcConventionalUB( this.a,this.b,this.c,this.alpha,this.beta,this.gamma, type);
+      U=calcU();
+      float[][]X= CalcConventionalUB( this.a,this.b,this.c,this.alpha,this.beta,this.gamma, type);
+      conventionalUB =LinearAlgebra.mult( U , X );
       NiggliUB = CalcNiggliUB(this.a,this.b,this.c,this.alpha,this.beta,this.gamma, type, Center);
    }
    
@@ -102,6 +105,17 @@ public class MakeScalarTest
      //No Chi,phi,omega  assume =0
      float[] hkl= new float[3];
      Vector<Peak_new> Res = new Vector<Peak_new>();
+     float MinAbsQ = Float.MAX_VALUE;
+     float UBi;
+     for( int ii=0; ii<3;ii++)
+        for( int jj=ii; jj<3;jj++)
+     { 
+         UBi = NiggliUB[ii][jj];
+        if( Math.abs( UBi ) < MinAbsQ && UBi !=0)
+           MinAbsQ =  Math.abs(UBi );
+     
+     }
+     float Error = error*MinAbsQ;
      for(Enumeration<UniformGrid> Values = Dets.elements( );Values.hasMoreElements( );
                                         )
      {
@@ -109,22 +123,18 @@ public class MakeScalarTest
         
         Arrays.fill( hkl ,0 );
         int npeaks =0;
-        while( npeaks<NpeaksPerDetector && Math.abs( hkl[0] )<20  && Math.abs( hkl[1] )<20 &&
-                  Math.abs( hkl[2] )<20)
+        while( npeaks<NpeaksPerDetector && (Math.abs( hkl[0] )<20  || Math.abs( hkl[1] )<20 ||
+                  Math.abs( hkl[2] )<20))
         {
+          
            float[] Qs = LinearAlgebra.mult( NiggliUB , hkl );
-           float MaxAbsQ = 0;
-           for( int ii=0; ii<3;ii++)
-           { 
-              Qs[ii] *=2*(float)Math.PI;
-              if( Math.abs( Qs[ii] ) > MaxAbsQ)
-                 MaxAbsQ =  Math.abs( Qs[ii] );
-           
-           }
-           float Error = error * MaxAbsQ;
-           Qs[0] = Perturb( Qs[0] , Error ); 
-           Qs[1] = Perturb( Qs[1] , Error ); 
-           Qs[2] = Perturb( Qs[2] , Error ); 
+           for( int qs=0; qs< 3;qs++)
+          {
+              Qs[qs] = Perturb(Qs[qs],Error);
+              Qs[qs] = 2*(float)Math.PI*Qs[qs];      
+          }
+          
+          
            
            if( Qs != null && Qs[0] < 0)
            {
@@ -154,8 +164,12 @@ public class MakeScalarTest
                       time+T0,L0,T0 );
                 PP.reflag(10);
                 PP.ipkobs( 12 );
-                //PP.UB( NiggliUB);
-              
+                PP.setFacility( "SNS" );
+                PP.setInstrument( "TOPAZ" );
+               // PP.UB( NiggliUB);
+               // int x=1;
+               // if( x==1)
+               //    x=1;
                 Res.add( PP );
                 npeaks++;
              }
@@ -167,6 +181,39 @@ public class MakeScalarTest
      return Res;
    }
    
+   private float[][] calcU()
+   {
+      float[][] Res = new float[3][3];
+      for( int i=0;i<2;i++)
+         for( int j=0;j<3;j++)
+            Res[i][j]= 3*rndd.nextFloat();
+      Vector3D C0= new Vector3D(Res[0]);
+      C0.normalize( );
+      Res[0][0]=C0.getX( );
+      Res[0][1]=C0.getY( );
+      Res[0][2]=C0.getZ( );
+      
+      Vector3D C2= (new Vector3D(C0));
+      C2.cross( new Vector3D(Res[1]) );
+      C2.normalize( );
+      Res[1][0]=C2.getX( );
+      Res[1][1]=C2.getY( );
+      Res[1][2]=C2.getZ( );
+      
+      Vector3D C3=new Vector3D(C0);
+      C3.cross( C2 );
+      C3.normalize( );
+      Res[2][0]= C3.getX( );
+      Res[2][1]= C3.getY( );
+      Res[2][2]= C3.getZ( );
+      
+      if( Math.abs( LinearAlgebra.determinant( Res )) <.1)
+         return calcU();
+      
+    //  LinearAlgebra.print( LinearAlgebra.mult( Res , LinearAlgebra.getTranspose( Res ) ) );
+      return Res;
+      
+   }
    public void Next( float[]hkl)
    {
       int S = (int)(Math.abs( hkl[0])+Math.abs( hkl[1])+Math.abs( hkl[2]));
@@ -227,12 +274,58 @@ public class MakeScalarTest
          Res = LinearAlgebra.getInverse( Res );
       }else //Monoclinic a,b, c at angle on a with angle alpha
       {
+         if( alpha <= 90)
+            return null;
         Res[0][0] = a;
         Res[1][1] = b;
         float Alpha = (float)(alpha*Math.PI/180f);
         Res[2][0] = c*(float)Math.cos( Alpha);
         Res[2][2] = c*(float) Math.sin(Alpha);
-
+        int n =0;
+        float YY=0;
+        if( a <=c)
+        {   n = (int)(-Res[2][0]/a);
+            YY= Res[2][0] +n*a;
+        }  
+        else
+        {
+           n= (int)(-a*Res[2][0]/(c*c)-.5);
+           YY=n*Res[2][0]+a;
+        }
+        
+        float sgn=1;
+        if( a <= c)
+         {
+            if ( Math.abs( YY + a ) < Math.abs( YY ) && a <= c )
+            {
+               YY += a;
+               sgn = -1;
+               n++ ;
+            }
+         }
+        else if( (YY+Res[2][0])*(YY+Res[2][0])+(n+1)*(n+1)*Res[2][2]*Res[2][2] < a*a)
+        {
+           YY+=Res[2][0];
+           n++;
+           sgn = -1;
+           
+        }
+        
+        if( n>0 )
+          if( a <= c)
+          {
+             Res[2][0]= sgn*YY;
+             Res[2][2] *=sgn;
+          }else
+          {
+             if( YY*Res[2][0]+n*Res[2][2]*Res[2][2] > 0)
+                sgn =-1;
+             else
+                sgn = 1;
+             Res[0][0]= sgn*YY;
+             Res[0][2] =sgn*n*Res[2][2];
+          }
+        
         Res = LinearAlgebra.getInverse( Res );
         
       }
@@ -252,8 +345,11 @@ public class MakeScalarTest
       Arrays.fill( Res[0] , 0f );
       Arrays.fill( Res[1] , 0f );
       Arrays.fill( Res[2] , 0f );
+      float[][] ConvUB = getConventionalUB();
+      if( ConvUB== null)
+         return null;
       
-      float[][]ResP = LinearAlgebra.getInverse( getConventionalUB());
+      float[][]ResP = LinearAlgebra.getInverse( ConvUB);
   
       if( type=='H' && Center =='I')
          Center ='R';
@@ -295,14 +391,27 @@ public class MakeScalarTest
       }
       else if( Center =='A' || Center=='B'|| Center=='C')
       {
-         if( type =='H')
+         if( type =='H' )
+            return null;
+         if( type =='M' && Center== 'B')
             return null;
          
          int r=2;
          if( Center =='A') 
-            r=1;
-         else if( Center =='B')
+            {
             r=0;
+            if( b==c && type=='O')
+               return null;
+            }
+         else if( Center =='B')
+         {
+            r=1;
+            if( a==c&& type=='O')
+               return null;
+            
+         }else if( a==b && type=='O')
+            return null;
+         
          int k=0;
          Res[r]= ResP[r];
          for( int i=1; i<3; i++)
@@ -340,7 +449,8 @@ public class MakeScalarTest
          Res[2][1] =(float)(a*Res[1][0] -Res[2][0]*Res[1][0])/Res[1][1];
          Res[2][2] =(float)Math.sqrt( a*a- Res[2][1]*Res[2][1]-Res[2][0]*Res[2][0]);
         
-         Res = LinearAlgebra.getTranspose( Res );
+         float[][]X = LinearAlgebra.getTranspose( Res );
+         Res = LinearAlgebra.mult( U , X );
          conventionalUB = LinearAlgebra.mult( Res , Rhomb2Hex );
        
       }
@@ -359,61 +469,73 @@ public class MakeScalarTest
    
    public static void main( String[]args)
    {
+      float startA = 2;
       float[] side1Ratios ={1f,1.2f,3f,8f};
       float[] alphas ={20,50,80,110,140};
       char[] Centerings={'P','I','F','C','A','B'};
-      float error = 0;
-      String dirName = "C:/Isaw/SampleRuns/SNS/TOPAZ/WSF/ExtGsasRuns/Dennis/tests/Err0/";
+      float error = .30f;
+      String dirName = "C:/Isaw/SampleRuns/SNS/TOPAZ/WSF/ExtGsasRuns/Dennis/tests/Err30/";
       //orthorhombic cases
       float[] sigs = new float[7];
       Arrays.fill( sigs , 0f );
-     for( int i=0; i<side1Ratios.length; i++)
+      for( int i=0; i<side1Ratios.length; i++)
          for( int j=i;j<side1Ratios.length;j++)
          {
-            float a=1;
+            float a=startA;
             float b= a*side1Ratios[i];
             float c =a*side1Ratios[j];
+            String Type="orth0";
+            if( a==b || b==c)
+               if( b==c && a==b)
+                  Type ="cub";
+               else
+                  Type ="tetr";
+            if( b <700 && a < 700)
             for(int cent=0; cent<Centerings.length;cent++)
             {
                char Center = Centerings[cent];
                MakeScalarTest mt = new MakeScalarTest( a,b,c,error,Center,'O',90f,90f,90f);
                float[][] UBn=mt.getNigglyUB( );
+               if( UBn != null)
+               {
                float[] abcn = LinearAlgebra.double2float( Util.abc( LinearAlgebra.float2double( UBn) ));
                float[][] UBc = mt.getConventionalUB( );
              
                float[] abcc = LinearAlgebra.double2float( Util.abc( LinearAlgebra.float2double( UBc )));
-               Util.writeMatrix( dirName+"Orth1"+i+j+Center+"NigOrient.mat" , UBn , abcn , sigs);
-               Util.writeMatrix( dirName+"Orth1"+i+j+Center+"ConvOrient.mat" , UBn , abcn , sigs );
+               Util.writeMatrix( dirName+Type+i+""+j+Center+"nigorient.mat" , UBn , abcn , sigs);
+               Util.writeMatrix( dirName+Type+i+""+j+Center+"convorient.mat" , UBc , abcc , sigs );
                String DetCalFileName = "C:/ISAW/InstrumentInfo/SNS/TOPAZ/TOPAZ_2010_09_22.DetCal";
                Vector<Peak_new> Peaks = mt.getPeaks( DetCalFileName , 20, 135222 , 18000 );
                try
                {
-                   Peak_new_IO.WritePeaks_new( dirName+"Orth1"+i+j+Center+".peaks", Peaks ,false);
+                   Peak_new_IO.WritePeaks_new( dirName+Type+i+""+j+Center+".peaks", Peaks ,false);
                }catch(Exception s)
                {
-                 System.out.println("Cannot create Peaks file "+dirName+"Orth1"+i+j+Center+".peaks") ;
+                 System.out.println("Cannot create Peaks file "+dirName+"orth1"+i+""+j+Center+".peaks") ;
                  System.out.println("    Error="+ s);
                  System.out.println("  Stack trace");
                  s.printStackTrace( );
                }
                
             }
+            }
          }
-     
+   
       
       //Monoclininc cases
       
       for( int i=0; i<side1Ratios.length; i++)
          for( int j=i;j<side1Ratios.length;j++)
          {
-            float[] sides = {1,side1Ratios[i],side1Ratios[j]};
+            float[] sides = {startA,side1Ratios[i]*startA,side1Ratios[j]*startA};
+            if( sides[2] < 700)
             for( int i1=0; i1<3;i1++)
                for( int i2a=1;i2a<3;i2a++)
             {
-               
+
+               int i1q =i1;
                int i2q = (i1+i2a)%3;
                int i3q=(i2q+1)%3;
-               int i1q =i1;
                if( i1q==i3q) i3q = (i3q+1)%3;
                float a = sides[i1q];
                float b = sides[ i2q];
@@ -430,8 +552,13 @@ public class MakeScalarTest
                {
                   float angle = alphas[ang];
                   for(int cent=0; cent<Centerings.length;cent++)
+                  if( cent <5 )
                   {
                      char Center = Centerings[cent];
+                     if( ii1==0 && i2==0 && i3==3)
+                     {
+                        int x=1;
+                     }
                      MakeScalarTest mt = new MakeScalarTest( a,b,c,error,Center,'M',angle,90f,90f);
                      float[][] UBn=mt.getNigglyUB( );
                      if ( UBn != null )
@@ -442,10 +569,10 @@ public class MakeScalarTest
                      
                         float[] abcc = LinearAlgebra.double2float( Util
                               .abc( LinearAlgebra.float2double( UBc ) ) );
-                        Util.writeMatrix( dirName + "Mon"+ii1+""+ i2+"" + i3+""+ang + Center
-                              + "NigOrient.mat" , UBn , abcn , sigs );
-                        Util.writeMatrix( dirName + "Mon"+ii1+""+ i2+"" + i3+""+ang + Center
-                              + "ConvOrient.mat" , UBc , abcc , sigs );
+                        Util.writeMatrix( dirName + "mon"+ii1+""+ i2+"" + i3+""+ang + Center
+                              + "nigorient.mat" , UBn , abcn , sigs );
+                        Util.writeMatrix( dirName + "mon"+ii1+""+ i2+"" + i3+""+ang + Center
+                              + "convorient.mat" , UBc , abcc , sigs );
                         String DetCalFileName = "C:/ISAW/InstrumentInfo/SNS/TOPAZ/TOPAZ_2010_09_22.DetCal";
                         Vector< Peak_new > Peaks = mt.getPeaks( DetCalFileName ,
                               20 , 135222 , 18000 );
@@ -455,12 +582,12 @@ public class MakeScalarTest
                         }else
                         try
                         {
-                           Peak_new_IO.WritePeaks_new( dirName + "Mon"+ii1+""+ i2+"" + i3+""+ang  +
+                           Peak_new_IO.WritePeaks_new( dirName + "mon"+ii1+""+ i2+"" + i3+""+ang  +
                                  Center + ".peaks" , Peaks , false );
                         } catch( Exception s )
                         {
                            System.out.println( "Cannot create Peaks file "
-                                 + dirName + "Orth1" + i + j + Center
+                                 + dirName + "orth1" + i + j + Center
                                  + ".peaks" );
                            System.out.println( "    Error=" + s );
                            System.out.println( "  Stack trace" );
@@ -483,13 +610,14 @@ public class MakeScalarTest
       
       for( int i=0; i<side1Ratios.length; i++)
       {
-         float a = 1;
+         float a = startA;
          float b = a;
          float c = a*side1Ratios[i];
          MakeScalarTest mt = new MakeScalarTest( a,b,c,error, 'P','H',90,90,90);
          float[][] convCell = mt.getConventionalUB( );
        
          float[][] NigCel = mt.getNigglyUB( );
+         if( NigCel != null)
          for(int v=0; v<3;v++)//Vert axis z(2),y(1),x(0)
          {
             float[][] ident={{1f,0f,0f},{0f,1f,0f},{0f,0f,1f}};
@@ -507,10 +635,12 @@ public class MakeScalarTest
             mt.setConventionalUB( convCell );
             float[] abcn = LinearAlgebra.double2float( Util
                   .abc( LinearAlgebra.float2double( NigCel ) ) );
-            Util.writeMatrix( dirName + "Hex"+i+""+v
-                  + "NigOrient.mat" , NigCel , abcn , sigs );
-            Util.writeMatrix( dirName +"Hex"+i+""+v
-                  + "ConvOrient.mat" , convCell , abcn , sigs );
+            Util.writeMatrix( dirName + "hex"+i+""+v
+                  + "nigorient.mat" , NigCel , abcn , sigs );
+            float[] abcc = LinearAlgebra.double2float( Util
+                  .abc( LinearAlgebra.float2double(convCell ) ) );
+            Util.writeMatrix( dirName +"hex"+i+""+v
+                  + "convorient.mat" , convCell , abcc , sigs );
             String DetCalFileName = "C:/ISAW/InstrumentInfo/SNS/TOPAZ/TOPAZ_2010_09_22.DetCal";
             Vector< Peak_new > Peaks = mt.getPeaks( DetCalFileName ,
                   20 , 135222 , 18000 );
@@ -520,11 +650,11 @@ public class MakeScalarTest
             }else
             try
             {
-               Peak_new_IO.WritePeaks_new( dirName + "Hex"+i+""+v+".peaks" , Peaks , false );
+               Peak_new_IO.WritePeaks_new( dirName + "hex"+i+""+v+".peaks" , Peaks , false );
             } catch( Exception s )
             {
                System.out.println( "Cannot create Peaks file "
-                     + dirName +"Hex"+i+""+v
+                     + dirName +"hex"+i+""+v
                      + ".peaks" );
                System.out.println( "    Error=" + s );
                System.out.println( "  Stack trace" );
@@ -537,7 +667,7 @@ public class MakeScalarTest
       
       for( int ang=0; ang < alphas.length; ang++)
       {
-         float a=1;
+         float a=startA;
          float angle = alphas[ang];
          MakeScalarTest mt = new MakeScalarTest( a,a,a,error,'R','H',angle,angle,angle);
          float[][] convCell = mt.getConventionalUB( );
@@ -549,9 +679,9 @@ public class MakeScalarTest
                   .float2double( NigCel ) ) );
             float[] abcC = LinearAlgebra.double2float( Util.abc( LinearAlgebra
                   .float2double( convCell ) ) );
-            Util.writeMatrix( dirName + "Rho" + ang + "NigOrient.mat" , NigCel ,
+            Util.writeMatrix( dirName + "rho" + ang + "nigorient.mat" , NigCel ,
                   abcn , sigs );
-            Util.writeMatrix( dirName + "Rho" + ang + "ConvOrient.mat" ,
+            Util.writeMatrix( dirName + "rho" + ang + "convorient.mat" ,
                   convCell , abcC , sigs );
             String DetCalFileName = "C:/ISAW/InstrumentInfo/SNS/TOPAZ/TOPAZ_2010_09_22.DetCal";
             Vector< Peak_new > Peaks = mt.getPeaks( DetCalFileName , 20 ,
@@ -562,12 +692,12 @@ public class MakeScalarTest
             } else
                try
                {
-                  Peak_new_IO.WritePeaks_new( dirName + "Rho" + ang + ".peaks" ,
+                  Peak_new_IO.WritePeaks_new( dirName + "rho" + ang + ".peaks" ,
                         Peaks , false );
                } catch( Exception s )
                {
                   System.out.println( "Cannot create Peaks file " + dirName
-                        + "Rho" + ang + ".peaks" );
+                        + "rho" + ang + ".peaks" );
                   System.out.println( "    Error=" + s );
                   System.out.println( "  Stack trace" );
                   s.printStackTrace( );
@@ -582,14 +712,14 @@ public class MakeScalarTest
    public static void main1(String[] args)
    {
     JTextField A, B, C, Alph, Bet, Gam, Type, Cent;
-    A = new JTextField("2");
-    B = new JTextField("3");
-    C = new JTextField("4");
-    Alph = new JTextField("60");
+    A = new JTextField("2.4");
+    B = new JTextField("16");
+    C = new JTextField("2.0");
+    Alph = new JTextField("140");
     Bet = new JTextField("90");
     Gam = new JTextField("90");
-    Type = new JTextField("H");
-    Cent = new JTextField("R");
+    Type = new JTextField("M");
+    Cent = new JTextField("I");
 
     
     JPanel panel = new JPanel();
