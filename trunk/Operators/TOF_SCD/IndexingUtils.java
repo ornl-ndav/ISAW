@@ -872,7 +872,7 @@ public static float Find_UB( Tran3D             UB,
 
     @return  This will return the sum of the squares of the residual errors.
 
-    @throws  IllegalArgumentException if there are not at least 3 q vectors,
+    @throws  IllegalArgumentException if there are not at least 4 q vectors,
                                       of if this routine fails to find a UB.
 */
 public static float FindUB_UsingFFT( Tran3D             UB,
@@ -957,7 +957,6 @@ public static float FindUB_UsingFFT( Tran3D             UB,
     System.out.println();
     throw new IllegalArgumentException("CheckUB says UB_IS_INVALID");
   }
-
   
                                       // now call Nigglify, to get shortest abc
   Tran3D  Niggli_UB = new Tran3D(UB);
@@ -966,7 +965,7 @@ public static float FindUB_UsingFFT( Tran3D             UB,
   if ( niggli_ok )
   {
     UB.set( Niggli_UB );
-    System.out.print("After  Nigglify: ");
+    System.out.print("Niggli Reduced Cell: ");
     ShowLatticeParameters( UB );
   }
 
