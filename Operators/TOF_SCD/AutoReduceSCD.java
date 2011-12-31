@@ -619,27 +619,27 @@ public class AutoReduceSCD
    *                          fails at some point, or if specified files cannot
    *                          be read or written.
    */
-  public static void reduce( String  instrument,
-                             String  DetCal_file,
-                             int     num_bins,
-                             float   max_Q,
-                             float   wavelength_power,
-                             String  event_file,
-                             int     num_to_find,
-                             float   threshold,
-                             String  peaks_file,
-                             float   a,
-                             float   b,
-                             float   c,
-                             float   alpha,
-                             float   beta,
-                             float   gamma,
-                             float   tolerance,
-                             String  indexed_file,
-                             String  matrix_file,
-                             float   radius,
-                             boolean integrate_all,
-                             String  integrate_file )
+  public static void ReduceSCD( String  instrument,
+                                String  DetCal_file,
+                                int     num_bins,
+                                float   max_Q,
+                                float   wavelength_power,
+                                String  event_file,
+                                int     num_to_find,
+                                float   threshold,
+                                String  peaks_file,
+                                float   a,
+                                float   b,
+                                float   c,
+                                float   alpha,
+                                float   beta,
+                                float   gamma,
+                                float   tolerance,
+                                String  indexed_file,
+                                String  matrix_file,
+                                float   radius,
+                                boolean integrate_all,
+                                String  integrate_file )
                       throws Exception
   {
     AutoReduceSCD reducer = new AutoReduceSCD( instrument,
@@ -710,12 +710,12 @@ public class AutoReduceSCD
     boolean integrate_all         = false;
     String  integrated_peaks_file = "demo.integrate";
 
-    reduce( instrument, DetCal_file, num_bins, max_Q, wavelength_power,
-            event_file, 
-            num_to_find, threshold, peaks_file,
-            a, b, c, alpha, beta, gamma, tolerance, indexed_peaks_file,
-            matrix_file,
-            integration_radius, integrate_all, integrated_peaks_file );
+    ReduceSCD( instrument, DetCal_file, num_bins, max_Q, wavelength_power,
+               event_file, 
+               num_to_find, threshold, peaks_file,
+               a, b, c, alpha, beta, gamma, tolerance, indexed_peaks_file,
+               matrix_file,
+               integration_radius, integrate_all, integrated_peaks_file );
   }
 }
 
