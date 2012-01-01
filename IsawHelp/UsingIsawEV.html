@@ -366,23 +366,54 @@ must be specified BEFORE finding peaks.
 <BR>
 <BR>
 Once peaks have been found, they can be indexed.  In particular,
-two basic methods to get an initial orientation matrix and indexing 
+several methods to get an initial orientation matrix and indexing 
 are currently supported in IsawEV.  
-One method requires good estimates of all six lattice parameters. 
-This method is quite robust.  The other method attempts to index the 
-peaks automatically.  The automatic method often produces better results
-if reasonable estimates of the min and max for primitive cell edge lengths
-are specified.  For example if the crystal should be cubic with a=b=c=5,
-entering a min of 4 and a max of 6 should work well.  The auto-indexing
-method produces a (possibly long) list of orientation matrices to choose from.
+<BR>
+<BR>
+The recommended method is the "AutoIndex (using FFT)" method.  This uses
+an indexing technique similar to that of Rossmann ("The Rossmann 
+Fourier autoindexing algorithm in MOSFLM, Acta Crystallographica, 
+Section D, 1999).  Fourier transforms of projections of the peaks on
+multiple directions are used to identify directions in which there is
+a strong regular pattern.  These directions are then processed and three
+of the shortest direction vectors that are linearly independent
+are used to form an initial UB matrix. This method is both fast and 
+quite robust.
+<BR>
+<BR>
+A second method, "AutoIndex" carries out a similar calculation using
+autocorrellation, but leaves it to the user to choose one of many 
+possible UB matrices formed from sets of three directions.  This is 
+very versatile, but somewhat slower and more cumbersome to use. 
+<BR>
+<BR>
+Both of these methods require the user to provide loose bounds on 
+the largest and smallest real cell edge lengths.  For example if the
+lattice parameters are 4.9, 4.9 and 5.4, bounds such as min = 3,
+max = 10, should work well.  These bounds should usually not be 
+specified too tightly, but the cell parameters must lie within
+the specified range.
+<BR>
+<BR>
+The third method, "NEW AutoIndex(with Lattice Parameters" requires 
+good estimates of all six lattice parameters. 
+<BR>
+<BR>
 If an orientation matrix is available in a file, the peaks can also be
-indexed using that matrix.  For any of the indexing methods the 
+indexed using that matrix.  
+For any of the indexing methods the 
 quality of the indexing can be assessed by looking at the Peaks Info panel.
 This panel shows how many peaks were indexed, and provides histograms
 showing deviations of the indexed peaks from integer h, k and l values.
 The list of peaks can also be displayed from this panel.  This information
 can be written to a file using the "Write Peaks File" button on the 
 "Find Peaks" panel.
+<BR>
+<BR>
+NOTE: In order to provide additional testing and feedback for new code for 
+determining a conventional cell, a list of possible conventional cells
+corresponding to the UB matrix, is listed on the terminal from which
+IsawEV was launched.
 </P>
 
 <P>
@@ -409,7 +440,8 @@ using the new orientation matrix.  The "Apply Displayed Cell" button should
 only be pushed one time after finding peaks.  The current orientation matrix
 will be altered to one corresponding to the selected conventional cell.  In
 most cases this new cell will NOT be a reduced cell.  Consequently, the 
-options displayed will NOT be meaningful, after pressing the "Apply Displayed Cell" button.  Valid options will be presented if the peaks are first re-indexed.
+options displayed will NOT be meaningful, after pressing the "Apply Displayed Cell" button. 
+Valid options will be presented if the peaks are first re-indexed.
 </P>
 
 <P>
@@ -473,8 +505,38 @@ It will be necessary to step through these slices to move into the region
 of reciprocal space that was measured.  Choosing 5 steps per Miller index
 will give a fairly coarse histogram and images, but choosing 25 steps per
 Miller index will give a nice high resolution set of images.
-
-
+</P>
+<BR>
+<P>
+<FONT size=+1>Extracting Slices</FONT>
+<BR>
+<BR>
+An option to extract slices from reciprocal space is provided on the
+"Select Slices" form.   The slices are re-calculated from the raw
+events, so after setting up the slice information, the events must be
+reloaded from the "Load Data" form.  After reloading the event data,
+the slices can be viewed by pressing the "Show Slice Images" button.
+If the region is specified in
+terms of H,K,L, an orientation matrix must have been previously found.
+A whole family of slices can be constructed at one time, and then 
+reviewed by rapidly stepping through the slices, like a movie.  The
+total amount of memory required can get large if many high resolution
+slices are requested.  The amount of memory required for the slices
+is displayed on the "Select Slices" form, and this plus the memory
+required for the main histogram must be kept well within the available
+memory on the system.
+<BR>
+<BR>
+Once the slices have been constructed (by reloading the events), the
+data can be exported to an hdf5 file using the File menu option:
+"Save Slices Histogram".  The slices are saved as a sequence of 2D
+double arrays, in a form that is compatible with the ZODS software,
+developed as a joint project between a group at the University of Zurich
+and the SNS.  In order to export the slices, the HDF5 JAVA bindings
+as shipped with hdfview, must be available and configured on your 
+system.
+<BR>
+<BR>
 <P>
 <FONT size=+1>Example Files</FONT>
 <BR>
