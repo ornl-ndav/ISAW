@@ -214,11 +214,84 @@ public class MakeTopazDetectors
   }
 
 
+  private static Vector<UniformGrid> getTOPAZ_Detectors( String file_name )
+          throws IOException
+  {
+    Scanner sc = new Scanner( new File(file_name) );
+    float  width;
+    float  height;
+    float  depth;
+    int    n_rows;
+    int    n_cols;
+    int    id;
+    float  omega;
+    float  chi;
+    float  dist;
+    Vector<UniformGrid> grids = new Vector<UniformGrid>();
+
+    Vector3D center    = new Vector3D(0,  0, 0);
+    Vector3D base_vec  = new Vector3D(0, -1, 0);
+    Vector3D up_vec    = new Vector3D(0,  0, 1);
+
+    Vector3D vertical_axis   = new Vector3D( 0, 0, 1 );
+    Vector3D beam_axis       = new Vector3D( 1, 0, 0 );
+    Vector3D horiz_perp_axis = new Vector3D( 0, 1, 0 );
+    Vector3D translation;
+
+    String token;
+    while ( sc.hasNext() )
+    {
+      token = sc.next();
+      if ( token.equalsIgnoreCase("Det") )
+      {
+        id     = sc.nextInt();
+        width  = sc.nextFloat();
+        height = sc.nextFloat();
+        depth  = sc.nextFloat();
+        n_rows = sc.nextInt();
+        n_cols = sc.nextInt();
+        omega  = sc.nextFloat();
+        chi    = sc.nextFloat(); 
+        dist   = sc.nextFloat();
+        UniformGrid grid = new UniformGrid( id, "m",
+                                          center, base_vec, up_vec,
+                                          width, height, depth,
+                                          n_rows, n_cols );
+        translation = new Vector3D( dist/100, 0, 0 );
+        Translate( grid, translation );
+
+        Rotate( grid, -45, beam_axis );
+
+        float chi_angle = (float)(chi * 180 / Math.PI);
+        Rotate( grid, chi_angle, horiz_perp_axis );
+
+        float omega_angle = (float)(omega * 180 / Math.PI);
+        Rotate( grid, omega_angle, vertical_axis );
+
+        grids.add( grid );
+      }
+    }
+    return grids;
+  }
+
+  public static String MakeIntialTopazDetCal( String det_data_file, 
+                                              String det_cal_file )
+         throws IOException
+  {
+    Vector<UniformGrid> grids = getTOPAZ_Detectors( det_data_file);
+    System.out.println("There are " + grids.size() + " Detectors" );
+    PrintGrids( grids, det_cal_file );
+    return "Wrote file: " + det_cal_file;
+  }
+
   public static void main( String args[] ) throws IOException
   {
     Vector<UniformGrid> grids = getTOPAZ_Detectors();
     System.out.println("There are " + grids.size() + " Detectors" );
     PrintGrids( grids, "TOPAZ_Detectors.DetCal" );
+
+    System.out.println( MakeIntialTopazDetCal( "/home/dennis/SNS_ISAW/ISAW_ALL/Operators/TOF_SCD/SAMPLE_TOPAZ_DETECTOR_DATA.txt",
+                            "TOPAZ_from_file.DetCal") );
   }
 
 
