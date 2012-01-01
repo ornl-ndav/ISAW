@@ -208,7 +208,7 @@ public class ConventionalCellInfo
     result += String.format("%8.4f %8.4f %8.4f  %8.4f %8.4f %8.4f  %8.4f",
         l_par[0], l_par[1], l_par[2], l_par[3], l_par[4], l_par[5], l_par[6] );
 
-    result += " RH = " + IndexingUtils.isRightHanded( adjusted_UB );
+//  result += " RH = " + IndexingUtils.isRightHanded( adjusted_UB );
     return result; 
   }
 

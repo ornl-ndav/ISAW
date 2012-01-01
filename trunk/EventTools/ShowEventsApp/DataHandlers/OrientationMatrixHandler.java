@@ -43,9 +43,13 @@ import gov.anl.ipns.Util.SpecialStrings.ErrorString;
 import gov.anl.ipns.Util.Sys.WindowShower;
 import gov.anl.ipns.MathTools.LinearAlgebra;
 import gov.anl.ipns.MathTools.Geometry.Vector3D;
+import gov.anl.ipns.MathTools.Geometry.Tran3D;
 
 import DataSetTools.components.ui.Peaks.subs;
 import DataSetTools.instruments.SNS_SampleOrientation;
+
+import Operators.TOF_SCD.ConventionalCellInfo;
+import Operators.TOF_SCD.ScalarUtils;
 
 import MessageTools.IReceiveMessage;
 import MessageTools.Message;
@@ -384,6 +388,19 @@ public class OrientationMatrixHandler implements IReceiveMessage
             abc[0], abc[1], abc[2], abc[3], abc[4], abc[5], abc[6] );
         
        Util.sendInfo( lat_con );
+       
+       // As a quick test of new conventional cell code, dump
+       // out list of cells to the terminal
+       Tran3D UB = new Tran3D( matrix );
+       UB.transpose();
+       Vector<ConventionalCellInfo> list;
+       list = ScalarUtils.getCells( UB, false );
+       ScalarUtils.removeBadForms( list, 50 );
+       System.out.println();
+       System.out.printf("%9s  %-13s %-12s %-11s\n","","Type","Centering","Error");
+       for ( int i = 0; i < list.size(); i++ )
+         System.out.println( list.elementAt(i) );
+       System.out.println();
      }
      else
        Util.sendInfo( "NO LATTICE PARAMETERS CALCULATED" );
