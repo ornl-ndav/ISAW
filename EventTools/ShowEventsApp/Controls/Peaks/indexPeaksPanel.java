@@ -185,7 +185,7 @@ public class indexPeaksPanel extends    JPanel  implements IReceiveMessage
       arcs_panel = new ARCS_IndexPanel();
       middlePanel.addTab( "ARCS Index" , arcs_panel );
    
-      middlePanel.setSelectedIndex( 0 );
+      middlePanel.setSelectedIndex( 1 );
 
       panel.add( middlePanel );
       panel.add( buildTolerancePanel());
