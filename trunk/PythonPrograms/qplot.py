@@ -9,10 +9,12 @@
 # from math import *
 # from numpy import *
 # from numpy.linalg import *
-from crystal import *
-from pylab import *
-from sys import exit
+# from crystal import *
+# from sys import exit
+import pylab
 import struct
+import math
+import numpy
 
 # input = open('Qxyz.dat', 'r')
 input = open('EventsToQ.bin', 'rb')
@@ -25,12 +27,12 @@ l = -4.0
 print '\nhkl =', h,k,l, '\n'
 Qpeak = [-5.40603101, -4.34890569,  0.33904078]   # units of 2pi/d
 print 'Qpeak = ', Qpeak, '\n'
-lenQpeak = sqrt( dot(Qpeak, Qpeak) )
+lenQpeak = math.sqrt( numpy.dot(Qpeak, Qpeak) )
 
-d = 2.0 * pi / lenQpeak
+d = 2.0 * math.pi / lenQpeak
 print 'd = ', d, '\n'
 
-deltaQ = 0.005
+deltaQ = 0.01
 print 'deltaQ = ', deltaQ, '\n'
 
 lenQpeakInt = int(lenQpeak * 100)
@@ -68,13 +70,13 @@ while True:
     if abs( Qpeak[2] - Qz ) > 0.3: continue
     
     Qdata = [ Qx, Qy, Qz ]                # data point Q vector
-    lenQdata = sqrt( dot(Qdata, Qdata) )  # length of data point Q vector
+    lenQdata = math.sqrt( numpy.dot(Qdata, Qdata) )  # length of data point Q vector
     
-    cosAng = dot(Qpeak, Qdata) / (lenQpeak * lenQdata)
+    cosAng = numpy.dot(Qpeak, Qdata) / (lenQpeak * lenQdata)
     
     # define a cylinder
-    angle = acos( cosAng )
-    lenPerpendicular = lenQdata * sin(angle)
+    angle = math.acos( cosAng )
+    lenPerpendicular = lenQdata * math.sin(angle)
     if lenPerpendicular > radiusQ: continue
     lenOnQpeak = lenQdata * cosAng
     if abs(lenQpeak - lenOnQpeak) > 0.5*rangeQ: continue
@@ -90,18 +92,18 @@ for i in range(numSteps):
 
 print 'num = ', num  
 
-plot( x, y )
+pylab.plot( x, y )
 # xlim( xmin = 6.8, xmax = 7.1 )
-xlabel('Q, 2pi/d')
-ylabel('Counts')
+pylab.xlabel('Q, 2pi/d')
+pylab.ylabel('Counts')
 plotTitle = 'Peak profile vs. Q, Sapphire Run 3681'
-title( plotTitle )
+pylab.title( plotTitle )
 s1 = 'hkl = %d %d %d\ndeltaQ = %5.3f\ncyl length = %5.3f\ncyl radius = %5.3f' % \
     (h,k,l, deltaQ, rangeQ, radiusQ)
-figtext(0.65, 0.7, s1)
-grid(True)
-savefig( 'Qprofile' )   # plot saved
-show()    
+pylab.figtext(0.65, 0.7, s1)
+pylab.grid(True)
+pylab.savefig( 'Qprofile' )   # plot saved
+pylab.show()    
     
   
     
