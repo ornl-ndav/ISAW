@@ -11,9 +11,11 @@
 # from numpy.linalg import *
 from crystal import *
 from pylab import *
+from sys import exit
+import struct
 
-
-input = open('Qxyz.dat', 'r')
+# input = open('Qxyz.dat', 'r')
+input = open('EventsToQ.bin', 'rb')
 output = open('qplot.dat', 'w')
 
 # Q vector for the 3 -5 -4 peak.
@@ -49,11 +51,16 @@ for i in range(numSteps):
 
 num = 0
 
-for line in input:
-    lineList = line.split()
-    Qx = float( lineList[0] )   # Q in units of 2pi/d
-    Qy = float( lineList[1] )
-    Qz = float( lineList[2] )
+# for line in input:
+while True:
+    lineString = input.read(12)
+    if lineString == "": break
+    Qx, Qy, Qz = struct.unpack('fff', lineString)
+
+    # lineList = line.split()
+    # Qx = float( lineList[0] )   # Q in units of 2pi/d
+    # Qy = float( lineList[1] )
+    # Qz = float( lineList[2] )
     
     # do initial test for event within 0.5 of the peak
     if abs( Qpeak[0] - Qx ) > 0.3: continue
@@ -77,7 +84,6 @@ for line in input:
         if x[i] > lenOnQpeak:
             y[i] = y[i] + 1
             break
-
 
 for i in range(numSteps):
     output.write( '%8.3f %8d\n' % (x[i], y[i]) )    
