@@ -78,7 +78,8 @@ public class ScalarUtils
                                                  ReducedCellInfo.RHOMBOHEDRAL,
                                                  ReducedCellInfo.TETRAGONAL,
                                                  ReducedCellInfo.ORTHORHOMBIC,
-                                                 ReducedCellInfo.MONOCLINIC };
+                                                 ReducedCellInfo.MONOCLINIC,
+                                                 ReducedCellInfo.TRICLINIC };
 
   public static final String[] BRAVAIS_TYPE = 
                                 {
@@ -238,6 +239,9 @@ public class ScalarUtils
    *                    ReducedCellInfo class.
    *  @param centering  String specifying the centering, as listed in the
    *                    ReducedCellInfo class.
+   *
+   *  @return a list of conventional cells for the specified UB, of the
+   *          specified type and centering.
    */
   public static Vector<ConventionalCellInfo> getCellsUB_Only
                                                          ( Tran3D UB,
@@ -276,8 +280,7 @@ public class ScalarUtils
 
       if ( centering_OK && cell_type_OK )
       {
-        ConventionalCellInfo cell_info =
-                            new ConventionalCellInfo( UB, list[0], list[i] );
+        ConventionalCellInfo cell_info = new ConventionalCellInfo( UB, i );
         result.add( cell_info );
       }
     }
@@ -397,7 +400,7 @@ public class ScalarUtils
       error = (float)form_0.weighted_distance( form );
       if ( error < min_error )
       {
-        info = new ConventionalCellInfo( UB_list.elementAt(i), form_0, form );
+        info = new ConventionalCellInfo( UB_list.elementAt(i), i );
         min_error = error;
       }
     }
@@ -480,7 +483,7 @@ public class ScalarUtils
         error = list.elementAt(i).getError();
         if (type.equals(list.elementAt(i).getCellType()) && error < min_error)
         {
-          info     = list.elementAt(i);
+          info      = list.elementAt(i);
           min_error = error;
         }
       }
