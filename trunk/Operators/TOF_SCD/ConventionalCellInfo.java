@@ -1,9 +1,47 @@
+/* File: ConventionalCellInfo.java 
+ *
+ * Copyright (C) 2011, Dennis Mikkelson
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
+ *           Department of Mathematics, Statistics and Computer Science
+ *           University of Wisconsin-Stout
+ *           Menomonie, WI 54751, USA
+ *
+ * This work was supported by the Spallation Neutron Source Division
+ * of Oak Ridge National Laboratory, Oak Ridge, TN, USA.
+ *
+ *  Last Modified:
+ * 
+ *  $Author$
+ *  $Date$            
+ *  $Revision$
+ */
+
+
 package Operators.TOF_SCD;
 
 import java.util.*;
 import gov.anl.ipns.MathTools.Geometry.*;
 
-
+/**
+ *  This class is a convenience class to hold information about a 
+ *  selected conventional cell, such as the cell type, centering, form
+ *  number, transformation, etc.
+ */
 public class ConventionalCellInfo
 {
   private int    form_num;
@@ -13,9 +51,49 @@ public class ConventionalCellInfo
   private Tran3D original_UB;
   private Tran3D adjusted_UB;
 
-  public ConventionalCellInfo( Tran3D          UB, 
-                               ReducedCellInfo form_0, 
-                               ReducedCellInfo form_i )
+  /**
+   *  Construct a conventional cell info object corresponding to the 
+   *  specified UB matrix and form number.
+   *
+   *  @param UB       The orientation transformation used when the 
+   *                  conventional cell was selected.  NOTE: This might
+   *                  not be the original matrix corresponding to a Niggli
+   *                  cell, but might correspond to a related cell with two
+   *                  edges of the Niggli cell reflected.
+   *
+   *  @param form_num The number of the form corresponding to the
+   *                  desired conventional cell.
+   */
+  public ConventionalCellInfo( Tran3D UB, int form_number )
+  {
+    float[] lat_par = IndexingUtils.getLatticeParameters( UB );
+    ReducedCellInfo form_0 = new ReducedCellInfo( 0,
+                                          lat_par[0], lat_par[1], lat_par[2],
+                                          lat_par[3], lat_par[4], lat_par[5] );
+    ReducedCellInfo form_i = new ReducedCellInfo( form_number,
+                                          lat_par[0], lat_par[1], lat_par[2],
+                                          lat_par[3], lat_par[4], lat_par[5] );
+    init( UB, form_0, form_i );
+  }
+
+
+  /**
+   *  Initialize this conventional cell info object using the 
+   *  specified UB matrix, base form (form_0) and selected form (form_i).
+   *
+   *  @param UB      The orientation transformation used when the 
+   *                 conventional cell was selected.  NOTE: This might
+   *                 not be the original matrix corresponding to a Niggli
+   *                 cell, but might correspond to a related cell with two
+   *                 edges of the Niggli cell reflected.
+   *  @param form_0  The 0th form used for comparison, constructed from the
+   *                 lattice parameters of UB.
+   *  @param form_i  The form corresponding to the selected conventional cell.
+   *
+   */
+  private void init( Tran3D          UB, 
+                     ReducedCellInfo form_0, 
+                     ReducedCellInfo form_i )
   {
     form_num = form_i.getFormNum();
     scalars_error = (float)form_0.weighted_distance( form_i );
@@ -33,6 +111,9 @@ public class ConventionalCellInfo
     Tran3D new_tran = new Tran3D( cell_tran_f );
     new_tran.invert();
     adjusted_UB.multiply_by( new_tran );
+
+/*                             // Force UB to right-handed.  This should not
+ *                             // be necessary.
     if ( !IndexingUtils.isRightHanded( adjusted_UB ) )
     {
       Vector3D a_vec = new Vector3D();
@@ -43,7 +124,7 @@ public class ConventionalCellInfo
       minus_c.multiply( -1 );
       IndexingUtils.getUB ( adjusted_UB, a_vec, b_vec, minus_c );
     }
-
+*/
     if ( ReducedCellInfo.ORTHORHOMBIC.startsWith( cell_type ) )
       SetSidesIncreasing( adjusted_UB );
 
@@ -60,6 +141,7 @@ public class ConventionalCellInfo
    *  Change UB to a new matrix corresponding to a unit cell with the sides
    *  in increasing order of magnitude.  This is used to arrange the UB matrix
    *  for an orthorhombic cell into a standard order.
+   *
    *  @param UB on input this should correspond to an orthorhombic cell. 
    *            On output, it will correspond to an orthorhombic cell with
    *            sides in increasing order.
@@ -124,7 +206,7 @@ public class ConventionalCellInfo
 
 
   /**
-   *  Change UB to a new matrix corresponding to a hexagonal unit cell 
+   *  Change UB to a new matrix corresponding to a hexagonal unit cell with
    *  angles approximately 90, 90, 120.  This is used to arrange 
    *  the UB matrix for a hexagonal or rhombohedral cell into a standard order.
    *
@@ -162,36 +244,68 @@ public class ConventionalCellInfo
   }
 
 
+  /**
+   * Get the form number specified when this was constructed.
+   * @return the form number
+   */
   public int getFormNum()
   {
     return form_num;
   }
 
+  /**
+   * Get the measure of error for the scalars for this cell.
+   *
+   * @return the error in the scalars for this form
+   */
   public float getError()
   {
     return scalars_error;
   }
 
+  /**
+   *  Get the cell type for this conventional cell.
+   */
   public String getCellType()
   {
     return cell_type;
   }
 
+  /**
+   *  Get the centering for this conventional cell.
+   */
   public String getCentering()
   {
     return centering;
   }
 
+
+  /**
+   *  Get a copy of the orientation matrix used to construct this conventional
+   *  cell.
+   *  @return a copy of the original orientation matrix.
+   */
   public Tran3D getOriginalUB()
   {
     return new Tran3D( original_UB );
   }
 
+  /**
+   *  Get a copy of the new orientation matrix that will index the
+   *  peaks, corresponding to the specified conventional cell (form number).
+   *  @return a copy of the original orientation matrix.
+   */
   public Tran3D getNewUB()
   {
     return new Tran3D( adjusted_UB );
   }
 
+
+  /**
+   *  Get the sum of the sides, |a|+|b|+|c| of the conventional cell.
+   *
+   *  @return The sum of the sides of the conventional cell.
+   */
   public float getSumOfSides()
   {
     float[] l_par = IndexingUtils.getLatticeParameters( adjusted_UB );
