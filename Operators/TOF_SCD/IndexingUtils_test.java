@@ -43,7 +43,7 @@ import gov.anl.ipns.MathTools.*;
 
 public class IndexingUtils_test
 {
-  private static boolean TS_ASSERT_EQUALS( boolean val_1, boolean val_2 )
+  public static boolean TS_ASSERT_EQUALS( boolean val_1, boolean val_2 )
   {
     if ( val_1 == val_2 )
       return true;
@@ -55,7 +55,7 @@ public class IndexingUtils_test
   }
 
 
-  private static boolean TS_ASSERT_EQUALS( double val_1, double val_2 )
+  public static boolean TS_ASSERT_EQUALS( double val_1, double val_2 )
   {
     if ( val_1 == val_2 )
       return true;
@@ -66,7 +66,8 @@ public class IndexingUtils_test
     }
   }
 
-  private static boolean TS_ASSERT_DELTA(double val_1, double val_2, double tol)
+
+  public static boolean TS_ASSERT_DELTA(double val_1, double val_2, double tol)
   {
     if ( Math.abs( val_1 - val_2 ) <= tol )
       return true;
@@ -75,6 +76,27 @@ public class IndexingUtils_test
       System.out.println("FAILED: " + val_1 + " - " + val_2 + " exceeds "+tol);
       return false;
     }
+  }
+
+
+  private static Tran3D getSiliconUB()
+  {
+     float[][] UB_arr = { { -0.147196f, -0.141218f,  0.304286f },
+                          {  0.106642f,  0.120341f,  0.090518f },
+                          { -0.261273f,  0.258426f, -0.006190f } };
+    Tran3D UB = new Tran3D( UB_arr );
+    return UB;
+  }
+
+
+  private static Tran3D getNatroliteUB()
+  {
+    float[][] UB_arr = { { -0.059660400f, -0.049648200f, 0.0077539105f },
+                         {  0.093009956f, -0.007510495f, 0.0419835400f },
+                         { -0.104643770f , 0.021613428f, 0.0322586300f } };
+
+    Tran3D UB = new Tran3D( UB_arr );
+    return UB;
   }
 
 
@@ -97,9 +119,6 @@ public class IndexingUtils_test
 
     return q_vectors;
   }
-
-
-
 
 
   private static void test_Find_UB_1()
@@ -730,6 +749,56 @@ public class IndexingUtils_test
   }
 
 
+  private static void test_UB_to_from_V3D()
+  {
+    Vector3D a = new Vector3D( 1, 0, 0 );
+    Vector3D b = new Vector3D( 0, 2, 0 );
+    Vector3D c = new Vector3D( 0, 0, 3 );
+
+    Tran3D UB = new Tran3D();
+
+    IndexingUtils.getUB( UB, a, b, c );
+
+    System.out.println( "UB = " + UB );
+
+    IndexingUtils.getABC( UB, a, b, c );
+    System.out.println( "a = " + a );
+    System.out.println( "b = " + b );
+    System.out.println( "c = " + c );
+  }
+
+  private static void test_MakeNiggliUB()
+  {
+    Tran3D UB = getSiliconUB();
+    Tran3D newUB = new Tran3D();
+
+    IndexingUtils.MakeNiggliUB( UB, newUB );
+  }
+
+  private static void test_ReducedCellInfo()
+  {
+    ReducedCellInfo  form_0 = new ReducedCellInfo( 0, 3.85, 3.85, 3.85,
+                                                      60, 60, 60 );
+    for ( int i = 0; i <= 44; i++ )
+    {
+      ReducedCellInfo  form_i = new ReducedCellInfo( i, 3.85, 3.85, 3.85,
+                                                      60, 60, 60 );
+
+      System.out.printf( "%8.5f,", form_0.weighted_distance( form_i ) );
+    }
+  }
+
+
+  private static void test_getLatticeParameters()
+  {
+    Tran3D natrolite_UB = getNatroliteUB();
+    float[] lat_par = IndexingUtils.getLatticeParameters( natrolite_UB );
+    for ( int i = 0; i < lat_par.length; i++ )
+      System.out.printf( "%10.4f  ", lat_par[i] );
+    System.out.println();
+  }
+
+
   public static void main( String[] args )
   {
 /*
@@ -753,11 +822,10 @@ public class IndexingUtils_test
 
     test_ScanFor_Directions();
     System.out.println("Finished test_ScanFor_Directions ...................");
-*/
 
     test_FFTScanFor_Directions();
     System.out.println("Finished test_FFTScanFor_Directions ................");
-/*
+
     test_GetMagFFT();
     System.out.println("Finished test_GetMagFFT ............................");
     test_Make_c_dir();
@@ -786,7 +854,21 @@ public class IndexingUtils_test
 
     test_SelectDirection();
     System.out.println("Finished test_SelectDirection ......................");
+
+    test_UB_to_from_V3D();
+    System.out.println("Finished test_UB_to_from_V3D ......................");
+
+    test_MakeNiggliUB();
+    System.out.println("Finished test_MakeNiggliUB ......................");
+
+    test_ReducedCellInfo();
+    System.out.println("Finished test_ReducedCellInfo ....................");
 */
+
+    test_getLatticeParameters();
+    System.out.println("Finished test_getLatticeParameters .................");
+
+
     System.out.println("Tests Completed");
   }
 
