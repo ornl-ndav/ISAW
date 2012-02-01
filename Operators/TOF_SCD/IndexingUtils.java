@@ -1377,21 +1377,14 @@ public static boolean MakeNiggliUB( Tran3D UB, Tran3D newUB )
             Vector3D sum = new Vector3D( v1 );
             directions.add( sum );
          }
-
                                 // next sort the list of linear combinations
                                 // in order of increasing length
   directions = SortOnVectorMagnitude( directions );
-/*
-  int num_to_show = Math.min( 60, directions.size() );
-  System.out.println("Sorted directions = " );
-  for ( int i = 0; i < num_to_show; i++ )
-    System.out.printf( "%2d  %50s  %10.5f \n",
-      i, directions.elementAt(i).toString(), directions.elementAt(i).length() );
-*/
+
                                 // next form a list of possible UB matrices
                                 // using sides from the list of linear 
                                 // combinations, using shorter directions first.
-                                // Keep trying more until 16 UBs are found.
+                                // Keep trying more until 25 UBs are found.
                                 // Only keep UBs corresponding to cells with
                                 // at least a minimum cell volume
   Vector<Tran3D> UB_list = new Vector<Tran3D>();
@@ -1402,8 +1395,6 @@ public static boolean MakeNiggliUB( Tran3D UB, Tran3D newUB )
   {
     max_to_try *= 2;
     int num_to_try = Math.min( max_to_try, directions.size() );
-
-//    System.out.println("num_to_try = " + max_to_try );
 
     Vector3D acrossb = new Vector3D();
     float vol     = 0;
@@ -1428,10 +1419,7 @@ public static boolean MakeNiggliUB( Tran3D UB, Tran3D newUB )
         }
       }
     }    
-
-//  System.out.println("UB list size = " + UB_list.size() );
   }
-
                                 // if no valid UBs could be formed, return
                                 // false and the original UB
   if ( UB_list.size() <= 0 )
@@ -1442,6 +1430,7 @@ public static boolean MakeNiggliUB( Tran3D UB, Tran3D newUB )
                                 // now sort the UB's in order of increasing
                                 // total side length |a|+|b|+|c|
   UB_list = SortOn_abc_Magnitude( UB_list );
+
 /*
   int num_to_print = Math.min( 10, UB_list.size() );
   System.out.println("First at most 10 possible Niggli UBs are");
@@ -1453,40 +1442,34 @@ public static boolean MakeNiggliUB( Tran3D UB, Tran3D newUB )
                                 // be much larger or "bad" UBs are made for
                                 // some tests with 5% noise
   float length_tol = 0.001f;
-  if ( UB_list.size() > 0 )         
-  {
-    Vector<Tran3D> short_list = new Vector<Tran3D>();
-    short_list.add( UB_list.elementAt(0) );
-    getABC( short_list.elementAt(0), a, b, c );
-    float total_length = a.length() + b.length() + c.length();
-    boolean got_short_list = false;
-    int i = 1;
-    while ( i < UB_list.size() && !got_short_list )
-    {
-      Tran3D nextUB = UB_list.elementAt(i);
-      getABC( nextUB, v1, v2, v3 );
-      float next_length = v1.length() + v2.length() + v3.length();
-      if ( Math.abs(next_length - total_length)/total_length < length_tol )
-        short_list.add( UB_list.elementAt(i) );
-      else
-        got_short_list = true; 
-      i++;
-    }
 
-    UB_list = short_list;       // now only use this shorter list
+  Vector<Tran3D> short_list = new Vector<Tran3D>();
+  short_list.add( UB_list.elementAt(0) );
+  getABC( short_list.elementAt(0), a, b, c );
+  float total_length = a.length() + b.length() + c.length();
+  boolean got_short_list = false;
+  int i = 1;
+  while ( i < UB_list.size() && !got_short_list )
+  {
+    Tran3D nextUB = UB_list.elementAt(i);
+    getABC( nextUB, v1, v2, v3 );
+    float next_length = v1.length() + v2.length() + v3.length();
+    if ( Math.abs(next_length - total_length)/total_length < length_tol )
+      short_list.add( UB_list.elementAt(i) );
+    else
+      got_short_list = true; 
+    i++;
   }
 
-/*
-  num_to_print = Math.min( 20, UB_list.size() );
-  System.out.println("Niggli UBs with similar total side length:");
-  for ( int i = 0; i < num_to_print; i++ )
-    ShowLatticeParameters( UB_list.elementAt(i) );
-*/
+   UB_list = short_list;       // now only use this shorter list
+
                                 // sort the UB_list in decreasing order of total
                                 // difference of angles from 90 degrees and
                                 // return the one with largest difference.
   UB_list = SortOn_abc_DiffFrom90( UB_list );
+
   newUB.set( UB_list.elementAt(0) );
+
   return true;
 }
 
