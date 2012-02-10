@@ -27,7 +27,6 @@
 # !	      = 7 --> variable values: L1    T0_SHIFT
 #
 
-from jarray import *
 
 def readrefl_header(input):
     "Returns the detector calibration info from the header of a peaks or integrate file."
@@ -38,23 +37,23 @@ def readrefl_header(input):
     
     nod = 0     # number of detectors
     
-# define arrays for up to 100 detectors
-    detNum = zeros(100, 'i')
-    nRows = zeros(100, 'i')
-    nCols = zeros(100, 'i')
-    width = zeros(100, 'f')
-    height = zeros(100, 'f')
-    depth = zeros(100, 'f')
-    detD = zeros(100, 'f')
-    centerX = zeros(100, 'f')
-    centerY = zeros(100, 'f')
-    centerZ = zeros(100, 'f')
-    baseX = zeros(100, 'f')
-    baseY = zeros(100, 'f')
-    baseZ = zeros(100, 'f')
-    upX = zeros(100, 'f')
-    upY = zeros(100, 'f')
-    upZ = zeros(100, 'f')
+# define lists
+    detNum = []
+    nRows = []
+    nCols = []
+    width = []
+    height = []
+    depth = []
+    detD = []
+    centerX = []
+    centerY = []
+    centerZ = []
+    baseX = []
+    baseY = []
+    baseZ = []
+    upX = []
+    upY = []
+    upZ = []
     
 # begin reading the peaks or integrate file
     while True:
@@ -73,22 +72,22 @@ def readrefl_header(input):
         elif formatFlag == 5:
             nod = nod + 1
             i = nod - 1                     # array index starts at 0
-            detNum[i] = int(lineList[1])    # store parameters in arrays
-            nRows[i] = int(lineList[2])
-            nCols[i] = int(lineList[3])
-            width[i] = float(lineList[4])
-            height[i] = float(lineList[5])
-            depth[i] = float(lineList[6])
-            detD[i] = float(lineList[7])
-            centerX[i] = float(lineList[8])
-            centerY[i] = float(lineList[9])
-            centerZ[i] = float(lineList[10])
-            baseX[i] = float(lineList[11])
-            baseY[i] = float(lineList[12])
-            baseZ[i] = float(lineList[13])
-            upX[i] = float(lineList[14])
-            upY[i] = float(lineList[15])
-            upZ[i] = float(lineList[16])
+            detNum.append(int(lineList[1]))    # store parameters in arrays
+            nRows.append(int(lineList[2]))
+            nCols.append(int(lineList[3]))
+            width.append(float(lineList[4]))
+            height.append(float(lineList[5]))
+            depth.append(float(lineList[6]))
+            detD.append(float(lineList[7]))
+            centerX.append(float(lineList[8]))
+            centerY.append(float(lineList[9]))
+            centerZ.append(float(lineList[10]))
+            baseX.append(float(lineList[11]))
+            baseY.append(float(lineList[12]))
+            baseZ.append(float(lineList[13]))
+            upX.append(float(lineList[14]))
+            upY.append(float(lineList[15]))
+            upZ.append(float(lineList[16]))
 
 # finished
     # return L1, t0_shift, nod,       \ i = 0, 1, 2
