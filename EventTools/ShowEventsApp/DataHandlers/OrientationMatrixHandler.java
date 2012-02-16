@@ -394,7 +394,7 @@ public class OrientationMatrixHandler implements IReceiveMessage
        Tran3D UB = new Tran3D( matrix );
        UB.transpose();
        Vector<ConventionalCellInfo> list;
-       list = ScalarUtils.getCells( UB, false );
+       list = ScalarUtils.getCells( UB, true, false );
        ScalarUtils.removeBadForms( list, 50 );
        System.out.println();
        System.out.printf("%9s  %-13s %-12s %-11s\n","","Type","Centering","Error");

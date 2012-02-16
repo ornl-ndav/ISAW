@@ -50,8 +50,10 @@ import gov.anl.ipns.MathTools.Geometry.*;
  *                             centering, for UB only (no reflections), best 
  *                             per form 
  *
- * getCells(UB,flag)         - get list of all cells, optionally including 
- *                             triclinic, for all reflections, best per form
+ * getCells(UB,b_flag,t_flag)- get list of all cells, optionally including 
+ *                             triclinic(t_flag), for all reflections, best 
+ *                             per form.  If b_flag is true, only include the
+ *                             best cell for each Bravais lattice.
  *
  * removeBadForms(l,f)       - remove cells in list that have error > f*min_err
  *
@@ -60,7 +62,7 @@ import gov.anl.ipns.MathTools.Geometry.*;
  * getCellForForm(form)      - one cell, for specified form,    
  *                             for all reflections, best per form, no cutoff
  *
- * getCellBestError(l,flag)  - one cell, minimum error in list.  If flag is
+ * getCellBestError(l,t_flag)- one cell, minimum error in list.  If t_flag is
  *                             false, triclinic cells will not be included,
  *                             unless all cells in the list are triclinic.
  *
@@ -188,6 +190,8 @@ public class ScalarUtils
    *  @param UB         The lattice parameters for this UB matrix and matrices
    *                    related to it by reflecting pairs of sides, are 
    *                    used to form the list of possible conventional cells.
+   *  @param best_only  If true, only include the best form for each Bravais
+   *                    lattice.
    *  @param triclinic  Flag indicating whether or not to include triclinic 
    *                    cells.  Set true to include triclinic cells and false
    *                    to omit triclinic cells.
@@ -197,6 +201,7 @@ public class ScalarUtils
    */
 
   public static Vector<ConventionalCellInfo> getCells( Tran3D  UB,
+                                                       boolean best_only,
                                                        boolean triclinic )
   {
     Vector<ConventionalCellInfo> list = new Vector<ConventionalCellInfo>();
@@ -213,13 +218,46 @@ public class ScalarUtils
     {
       temp = getCells( UB, BRAVAIS_TYPE[i], BRAVAIS_CENTERING[i] );
       if ( temp != null )
+      {
+        if ( best_only )
+        {
+          ConventionalCellInfo info = getCellBestError( temp, true );
+          temp.clear();
+          temp.add( info );
+        }
+        for ( int k = 0; k < temp.size(); k++ )
+          addIfBest( list, temp.elementAt(k) );
+      }
+    }
+
+    return list;
+  }
+
+/*
+  public static Vector<ConventionalCellInfo> getCells_UB_ONLY( Tran3D  UB,
+                                                       boolean triclinic )
+  {
+    Vector<ConventionalCellInfo> list = new Vector<ConventionalCellInfo>();
+
+    Vector<ConventionalCellInfo> temp = new Vector<ConventionalCellInfo>();
+
+    int num_lattices;
+    if ( triclinic )
+      num_lattices = BRAVAIS_TYPE.length;
+    else
+      num_lattices = BRAVAIS_TYPE.length - 1;
+
+    for ( int i = 0; i < num_lattices; i++ )
+    {
+      temp = getCellsUB_Only( UB, BRAVAIS_TYPE[i], BRAVAIS_CENTERING[i] );
+      if ( temp != null )
         for ( int k = 0; k < temp.size(); k++ )
           addIfBest( list, temp.elementAt(k) );
     }
 
     return list;
   }
-
+*/
 
   /**
    *  Get a list of cell info objects that correspond to the specific given
@@ -348,9 +386,6 @@ public class ScalarUtils
     if ( list.size() <= 0 )
       return;
 
-    String type;
-    float  error;
-
     Vector<ConventionalCellInfo> new_list = new Vector<ConventionalCellInfo>();
     for ( int i = 0; i < list.size(); i++ )
       if ( list.elementAt(i).getError() <= level )
@@ -400,7 +435,7 @@ public class ScalarUtils
       error = (float)form_0.weighted_distance( form );
       if ( error < min_error )
       {
-        info = new ConventionalCellInfo( UB_list.elementAt(i), i );
+        info = new ConventionalCellInfo( UB_list.elementAt(i), num );
         min_error = error;
       }
     }
@@ -429,8 +464,8 @@ public class ScalarUtils
     if ( list == null || list.size() <= 0 )
       return null;
 
-    ConventionalCellInfo info      = list.elementAt(0);
-    float                min_error = info.getError();
+    ConventionalCellInfo info      = null;
+    float                min_error = Float.POSITIVE_INFINITY;
     float                error;
     String               type;
 
@@ -532,7 +567,10 @@ public class ScalarUtils
    *  Add the conventional cell info record to the list if there is not
    *  already an entry with the same form number, or replace the entry
    *  that has the same form number with the specified cell info, if
-   *  the specified cell info has a smaller error.
+   *  the specified cell info has a smaller error.  NOTE: The list must 
+   *  initially contain at most one entry with the same form number as the
+   *  specified ConventionalCellInfo object.  That list property will be 
+   *  maintained by this method. 
    *
    *  @param list   The initial list of cell info objects.
    *  @param info   The new cell info object that might be added to the list.
@@ -687,10 +725,10 @@ public class ScalarUtils
    *  @param angle_tolerance  Tolerance for angles near 90 degree. 
    *
    *  @return  A vector of UB matrices related to the original UB matrix
-   *           by reflections and permuations of the side vectors a, b, c.
+   *           by reflections of pairs of the side vectors a, b, c.
    */
 
-  private static Vector<Tran3D> getSignRelatedUBs( Tran3D UB,
+  public static Vector<Tran3D> getSignRelatedUBs( Tran3D UB,
                                                   float  angle_tolerance )
   {
     Vector<Tran3D> result = new Vector<Tran3D>();
@@ -712,12 +750,21 @@ public class ScalarUtils
     m_a_vec.multiply( -1 );
     m_b_vec.multiply( -1 );
     m_c_vec.multiply( -1 );
-
+                                   // make list of reflections of all pairs
+                                   // of sides.  NOTE: These preserve the 
+                                   // ordering of magnitudes: |a|<=|b|<=|c|
     Vector3D[][] reflections = { {   a_vec,   b_vec,   c_vec },
                                  { m_a_vec, m_b_vec,   c_vec },
                                  { m_a_vec,   b_vec, m_c_vec },
                                  {   a_vec, m_b_vec, m_c_vec } };
 
+                                    // make list of the angles that are not
+                                    // changed by each of the reflections.  IF
+                                    // that angle is close to 90 degrees, then
+                                    // we may need to switch between all angles
+                                    // >= 90 and all angles < 90.  An angle 
+                                    // near 90 degrees may be mis-categorized
+                                    // due to errors in the data.
     float alpha = IndexingUtils.angle( b_vec, c_vec );
     float beta  = IndexingUtils.angle( c_vec, a_vec );
     float gamma = IndexingUtils.angle( a_vec, b_vec );
@@ -726,9 +773,9 @@ public class ScalarUtils
 
     for ( int row = 0; row < reflections.length; row++ )
     {
-      if ( Math.abs(angles[row] - 90) < angle_tolerance )
-      {
-        a.set( reflections[row][0] );
+      if ( Math.abs(angles[row] - 90) < angle_tolerance )   // if nearly 90,
+      {                                                     // try related cell
+        a.set( reflections[row][0] );                       // +cell <-> -cell
         b.set( reflections[row][1] );
         c.set( reflections[row][2] );
 
@@ -754,7 +801,8 @@ public class ScalarUtils
    *  @param factor           Tolerance for lengths to be considered increasing
    *
    *  @return  A vector of UB matrices related to the original UB matrix
-   *           by reflections and permuations of the side vectors a, b, c.
+   *           by permuations of the side vectors a, b, c that still 
+   *           essentially keep the side lengths increasing.
    */
   private static Vector<Tran3D> getPermuteRelatedUBs( Tran3D UB,
                                                       float  factor )
