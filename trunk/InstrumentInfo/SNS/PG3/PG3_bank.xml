@@ -2,131 +2,212 @@
 <banking xmlns='http://neutrons.ornl.gov/SNS/ASG/Banking'>
   <facility>SNS</facility>
   <instrument>PG3</instrument>
-  <date>2010-03-11</date>
+  <date>2011-02-25</date>
+  <bank>
+    <number>22</number>
+    <x_size>154</x_size>
+    <y_size>7</y_size>
+    <continuous_list>
+      <start>27500</start>
+      <stop>28577</stop>
+    </continuous_list>
+  </bank>
+  <bank>
+    <number>42</number>
+    <x_size>154</x_size>
+    <y_size>7</y_size>
+    <continuous_list>
+      <start>52500</start>
+      <stop>53577</stop>
+    </continuous_list>
+  </bank>
+  <bank>
+    <number>62</number>
+    <x_size>154</x_size>
+    <y_size>7</y_size>
+    <continuous_list>
+      <start>77500</start>
+      <stop>78577</stop>
+    </continuous_list>
+  </bank>
+  <bank>
+    <number>82</number>
+    <x_size>154</x_size>
+    <y_size>7</y_size>
+    <continuous_list>
+      <start>102500</start>
+      <stop>103577</stop>
+    </continuous_list>
+  </bank>
+  <bank>
+    <number>102</number>
+    <x_size>154</x_size>
+    <y_size>7</y_size>
+    <continuous_list>
+      <start>127500</start>
+      <stop>128577</stop>
+    </continuous_list>
+  </bank>
+  <bank>
+    <number>23</number>
+    <x_size>154</x_size>
+    <y_size>7</y_size>
+    <continuous_list>
+      <start>28750</start>
+      <stop>29827</stop>
+    </continuous_list>
+  </bank>
   <bank>
     <number>43</number>
     <x_size>154</x_size>
-    <y_size>8</y_size>
+    <y_size>7</y_size>
     <continuous_list>
       <start>53750</start>
-      <stop>54981</stop>
-    </continuous_list>
-  </bank>
-  <bank>
-    <number>44</number>
-    <x_size>154</x_size>
-    <y_size>8</y_size>
-    <continuous_list>
-      <start>55000</start>
-      <stop>56231</stop>
-    </continuous_list>
-  </bank>
-  <bank>
-    <number>45</number>
-    <x_size>154</x_size>
-    <y_size>8</y_size>
-    <continuous_list>
-      <start>56250</start>
-      <stop>57481</stop>
-    </continuous_list>
-  </bank>
-  <bank>
-    <number>46</number>
-    <x_size>154</x_size>
-    <y_size>8</y_size>
-    <continuous_list>
-      <start>57500</start>
-      <stop>58731</stop>
+      <stop>54827</stop>
     </continuous_list>
   </bank>
   <bank>
     <number>63</number>
     <x_size>154</x_size>
-    <y_size>8</y_size>
+    <y_size>7</y_size>
     <continuous_list>
       <start>78750</start>
-      <stop>79981</stop>
+      <stop>79827</stop>
+    </continuous_list>
+  </bank>
+  <bank>
+    <number>83</number>
+    <x_size>154</x_size>
+    <y_size>7</y_size>
+    <continuous_list>
+      <start>103750</start>
+      <stop>104827</stop>
+    </continuous_list>
+  </bank>
+  <bank>
+    <number>103</number>
+    <x_size>154</x_size>
+    <y_size>7</y_size>
+    <continuous_list>
+      <start>128750</start>
+      <stop>129827</stop>
+    </continuous_list>
+  </bank>
+  <bank>
+    <number>123</number>
+    <x_size>154</x_size>
+    <y_size>7</y_size>
+    <continuous_list>
+      <start>153750</start>
+      <stop>154827</stop>
+    </continuous_list>
+  </bank>
+  <bank>
+    <number>143</number>
+    <x_size>154</x_size>
+    <y_size>7</y_size>
+    <continuous_list>
+      <start>178750</start>
+      <stop>179827</stop>
+    </continuous_list>
+  </bank>
+  <bank>
+    <number>24</number>
+    <x_size>154</x_size>
+    <y_size>7</y_size>
+    <continuous_list>
+      <start>30000</start>
+      <stop>31077</stop>
+    </continuous_list>
+  </bank>
+  <bank>
+    <number>44</number>
+    <x_size>154</x_size>
+    <y_size>7</y_size>
+    <continuous_list>
+      <start>55000</start>
+      <stop>56077</stop>
     </continuous_list>
   </bank>
   <bank>
     <number>64</number>
     <x_size>154</x_size>
-    <y_size>8</y_size>
+    <y_size>7</y_size>
     <continuous_list>
       <start>80000</start>
-      <stop>81231</stop>
-    </continuous_list>
-  </bank>
-  <bank>
-    <number>65</number>
-    <x_size>154</x_size>
-    <y_size>8</y_size>
-    <continuous_list>
-      <start>81250</start>
-      <stop>82481</stop>
-    </continuous_list>
-  </bank>
-  <bank>
-    <number>66</number>
-    <x_size>154</x_size>
-    <y_size>8</y_size>
-    <continuous_list>
-      <start>82500</start>
-      <stop>83731</stop>
+      <stop>81077</stop>
     </continuous_list>
   </bank>
   <bank>
     <number>84</number>
     <x_size>154</x_size>
-    <y_size>8</y_size>
+    <y_size>7</y_size>
     <continuous_list>
       <start>105000</start>
-      <stop>106231</stop>
+      <stop>106077</stop>
     </continuous_list>
   </bank>
   <bank>
     <number>104</number>
     <x_size>154</x_size>
-    <y_size>8</y_size>
+    <y_size>7</y_size>
     <continuous_list>
       <start>130000</start>
-      <stop>131231</stop>
+      <stop>131077</stop>
     </continuous_list>
   </bank>
   <bank>
     <number>124</number>
     <x_size>154</x_size>
-    <y_size>8</y_size>
+    <y_size>7</y_size>
     <continuous_list>
       <start>155000</start>
-      <stop>156231</stop>
+      <stop>156077</stop>
     </continuous_list>
   </bank>
   <bank>
     <number>144</number>
     <x_size>154</x_size>
-    <y_size>8</y_size>
+    <y_size>7</y_size>
     <continuous_list>
       <start>180000</start>
-      <stop>181231</stop>
+      <stop>181077</stop>
     </continuous_list>
   </bank>
   <bank>
     <number>164</number>
     <x_size>154</x_size>
-    <y_size>8</y_size>
+    <y_size>7</y_size>
     <continuous_list>
       <start>205000</start>
-      <stop>206231</stop>
+      <stop>206077</stop>
     </continuous_list>
   </bank>
   <bank>
     <number>184</number>
     <x_size>154</x_size>
-    <y_size>8</y_size>
+    <y_size>7</y_size>
     <continuous_list>
       <start>230000</start>
-      <stop>231231</stop>
+      <stop>231077</stop>
+    </continuous_list>
+  </bank>
+  <bank>
+    <number>105</number>
+    <x_size>154</x_size>
+    <y_size>7</y_size>
+    <continuous_list>
+      <start>131250</start>
+      <stop>132327</stop>
+    </continuous_list>
+  </bank>
+  <bank>
+    <number>106</number>
+    <x_size>154</x_size>
+    <y_size>7</y_size>
+    <continuous_list>
+      <start>132500</start>
+      <stop>133577</stop>
     </continuous_list>
   </bank>
   <total_pixel_number>300000</total_pixel_number>
