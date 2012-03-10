@@ -225,10 +225,10 @@ for i in range(num_radii):
 peak_cts = np.zeros((numOfPeaks, num_radii))
 background_cts = np.zeros((numOfPeaks, num_radii))
 print ''
-# for i in range(numberOfEvents):
-for i in range(100000):
+for i in range(numberOfEvents):
+# for i in range(100000):
     
-    if (i % 100000) == 0: print '\r Event', i,
+    if (i % 100000) == 0: print '\r Event %.3e' % i,
     
     qxyz = np.zeros(3)
     qxyz[0] = QEvent[i][0] / (2.0 * math.pi)
@@ -260,9 +260,12 @@ for i in range(100000):
     for j in range(num_radii):
         if Qdist < pkRadius[j]:
             peak_cts[pki][j] = peak_cts[pki][j] + 1
-        if Qdist > bgRadius1[j] and Qdist < bgRadius2[j]:
+            continue
+        if Qdist < bgRadius2[j]:
             background_cts[pki][j] = background_cts[pki][j] + 1
- 
+        # if Qdist > bgRadius1[j] and Qdist < bgRadius2[j]:
+            # background_cts[pki][j] = background_cts[pki][j] + 1
+        
     
     continue
 
@@ -284,7 +287,7 @@ for i in range(dc.nod):
                       % (nrun, dc.detNum[i], chi, phi, omega, moncnt))
     output_refl.write('2   SEQN    H    K    L     COL     ROW    CHAN' + 
                       '       L2  2_THETA       AZ        WL        D' + 
-                      '   IPK      INTI   SIGI RFLG\n')
+                      '   IPK      INTI   SIGI RFLG     I/sigI  Peak_Cts   Bkg_Cts   PkCts/V  BkgCts/V \n')
 
     # Step through the list of peaks
     for j in range(numOfPeaks):
@@ -292,14 +295,23 @@ for i in range(dc.nod):
             seqn = seqn + 1
             
             for jj in range(num_radii):
-                intI = peak_cts[j][jj] - background_cts[j][jj]
-                sigI = math.sqrt(peak_cts[j][jj] + background_cts[j][jj])
-            
+                intI = peak_cts[j][jj] - (background_cts[j][jj] / 7.0)
+                sigI = math.sqrt(peak_cts[j][jj] + (49.0 *  background_cts[j][jj]))
+                
+                if sigI == 0.0:
+                    ratio = -1.0
+                else:
+                    ratio = intI / sigI
+                
+                volume = (4. / 3.) * math.pi * (pkRadius[jj]**3)
+                scaledPeak = peak_cts[j][jj] / volume
+                scaledBackgd = background_cts[j][jj] / volume
+                
                 output_refl.write(
-                    '3 %6d %4d %4d %4d %7.2f %7.2f %7.2f %8.3f %8.5f %8.5f %9.6f %8.4f %5d %9.2f %6.2f %4d\n' 
+                    '3 %6d %4d %4d %4d %7.2f %7.2f %7.2f %8.3f %8.5f %8.5f %9.6f %8.4f %5d %9.2f %6.2f %4d %10.2f %10.2f %10.2f %10.2e %10.2e\n' 
                     % (seqn, peaks[j][0], peaks[j][1], peaks[j][2], peaks[j][3], peaks[j][4], peaks[j][5], 
                     peaks[j][6], peaks[j][7], peaks[j][8], peaks[j][9], peaks[j][10], peaks[j][11], 
-                    intI, sigI, jj))
+                    intI, sigI, jj, ratio, peak_cts[j][jj], background_cts[j][jj], scaledPeak, scaledBackgd))
 
 
 end = clock()
