@@ -1,5 +1,5 @@
 #-----------------------------------
-#           qsphere_maxIsigI.py
+#           qsphere_maxIsigI_v2.py
 #-----------------------------------
 
 # Program to integrate spheres in q space of a peak
@@ -7,6 +7,8 @@
 # by maximizing I/sig(I).
 
 # A. J. Schultz    March, 2012
+
+# Version 2: Reads binary Q events but does not first store all events in memory.
 
 import struct
 import math
@@ -100,18 +102,18 @@ print lineString.strip('\n')
 # End of reading and printing matrix file
 
 # Read the events from binary file into memory
-input = open(events_fname, 'rb')
-QEvent = []
-numberOfEvents = 0
+# input = open(events_fname, 'rb')
+# QEvent = []
+# numberOfEvents = 0
 
-while True:
-    lineString = input.read(12)
-    if lineString == "": break
-    Qx, Qy, Qz = struct.unpack('fff', lineString)  # unpack binary data
-    QEvent.append([Qx, Qy, Qz])                    # store events in QEvent array
-    numberOfEvents = numberOfEvents + 1
+# while True:
+    # lineString = input.read(12)
+    # if lineString == "": break
+    # Qx, Qy, Qz = struct.unpack('fff', lineString)  # unpack binary data
+    # QEvent.append([Qx, Qy, Qz])                    # store events in QEvent array
+    # numberOfEvents = numberOfEvents + 1
 
-print '\nnumberOfEvents = ', numberOfEvents
+# print '\nnumberOfEvents = ', numberOfEvents
 # End of reading events
 
 hmax = int(a/dmin) + 1    # maximum h index
@@ -224,15 +226,34 @@ peak_cts = np.zeros((numOfPeaks, num_radii))
 background_cts = np.zeros((numOfPeaks, num_radii))
 
 print ''
-for i in range(numberOfEvents):
+
+# Read the events from binary file into memory
+input = open(events_fname, 'rb')
+# QEvent = []
+numberOfEvents = 0
+
+while True:
+    lineString = input.read(12)
+    if lineString == "": break
+    Qx, Qy, Qz = struct.unpack('fff', lineString)  # unpack binary data
+    # QEvent.append([Qx, Qy, Qz])                    # store events in QEvent array
+    numberOfEvents = numberOfEvents + 1
+
+
+# for i in range(numberOfEvents):
 # for i in range(500000):
     
-    if (i % 100000) == 0: print '\r Event %.3e' % i,
+    # if (i % 100000) == 0: print '\r Event %.3e' % i,
+    if (numberOfEvents % 100000) == 0: print '\rEvent %.3e' % numberOfEvents,
+    # if numberOfEvents == 500000: break
     
     qxyz = np.zeros(3)
-    qxyz[0] = QEvent[i][0] / (2.0 * math.pi)
-    qxyz[1] = QEvent[i][1] / (2.0 * math.pi)
-    qxyz[2] = QEvent[i][2] / (2.0 * math.pi)
+    # qxyz[0] = QEvent[i][0] / (2.0 * math.pi)
+    # qxyz[1] = QEvent[i][1] / (2.0 * math.pi)
+    # qxyz[2] = QEvent[i][2] / (2.0 * math.pi)
+    qxyz[0] = Qx / (2.0 * math.pi)
+    qxyz[1] = Qy / (2.0 * math.pi)
+    qxyz[2] = Qz / (2.0 * math.pi)
     
     hklEV = np.dot(qxyz, UBinv)
     
@@ -267,6 +288,8 @@ for i in range(numberOfEvents):
         
     
     continue
+print ''
+print '\nnumberOfEvents = ', numberOfEvents
 
 # Begin writing peaks to the integrate file.
 chi = 0.0
@@ -274,8 +297,6 @@ phi = 0.0
 omega = 0.0
 moncnt = 10000
 seqn = 0
-
-print ''
 
 # Step through each detector
 for i in range(dc.nod):
