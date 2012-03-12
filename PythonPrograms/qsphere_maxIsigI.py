@@ -1,5 +1,5 @@
 #-----------------------------------
-#           qsphere_maxIsigI.py
+#           qsphere_maxIsigI_v2.py
 #-----------------------------------
 
 # Program to integrate spheres in q space of a peak
@@ -7,6 +7,8 @@
 # by maximizing I/sig(I).
 
 # A. J. Schultz    March, 2012
+
+# Version 2: Reads binary Q events but does not first store all events in memory.
 
 import struct
 import math
@@ -50,15 +52,15 @@ wlmax = float(user_param[7])
 radiusQ = float(user_param[8])
 delta_radius = float(user_param[9])
 num_radii = int(user_param[10])
-verbose = int(user_param[11])
+write_log = int(user_param[11])
 
 
 # Read and write the instrument calibration parameters.
 detcal_input = open(detcal_fname, 'r')
 filename = expname + '.integrate'
 output_refl = open(filename, 'w')
-filename = expname + '_all.integrate'
-output_refl_all = open(filename, 'w')
+filename = expname + '_intg.log'
+output_log = open(filename, 'w')
 dc = ReadDetCal()
 first_line = '# qplot integrate file'
 dc.read_detcal(detcal_input, output_refl, first_line)
@@ -99,21 +101,7 @@ lineString = UBinput.readline()   # read sigmas
 print lineString.strip('\n')
 # End of reading and printing matrix file
 
-# Read the events from binary file into memory
-input = open(events_fname, 'rb')
-QEvent = []
-numberOfEvents = 0
-
-while True:
-    lineString = input.read(12)
-    if lineString == "": break
-    Qx, Qy, Qz = struct.unpack('fff', lineString)  # unpack binary data
-    QEvent.append([Qx, Qy, Qz])                    # store events in QEvent array
-    numberOfEvents = numberOfEvents + 1
-
-print '\nnumberOfEvents = ', numberOfEvents
-# End of reading events
-
+# Begin determining and storing peaks
 hmax = int(a/dmin) + 1    # maximum h index
 kmax = int(b/dmin) + 1    # maximum k index
 lmax = int(c/dmin) + 1    # maximum l index
@@ -121,9 +109,6 @@ nh = 2 * hmax + 1
 nk = 2 * kmax + 1
 nl = 2 * lmax + 1
 hklArray = np.zeros((nh, nk, nl))
-
-
-# Begin determining and storing peaks
 peaks = []
 seqn = 0
 ipk = 0
@@ -224,15 +209,25 @@ peak_cts = np.zeros((numOfPeaks, num_radii))
 background_cts = np.zeros((numOfPeaks, num_radii))
 
 print ''
-for i in range(numberOfEvents):
-# for i in range(500000):
-    
-    if (i % 100000) == 0: print '\r Event %.3e' % i,
+
+# Read the events from binary file
+input = open(events_fname, 'rb')
+numberOfEvents = 0
+while True:
+    lineString = input.read(12)
+    if lineString == "": break
+    Qx, Qy, Qz = struct.unpack('fff', lineString)  # unpack binary data
+    numberOfEvents = numberOfEvents + 1
+    if (numberOfEvents % 100000) == 0: print '\rEvent %.3e' % numberOfEvents,
+    # if numberOfEvents == 500000: break
     
     qxyz = np.zeros(3)
-    qxyz[0] = QEvent[i][0] / (2.0 * math.pi)
-    qxyz[1] = QEvent[i][1] / (2.0 * math.pi)
-    qxyz[2] = QEvent[i][2] / (2.0 * math.pi)
+    # qxyz[0] = QEvent[i][0] / (2.0 * math.pi)
+    # qxyz[1] = QEvent[i][1] / (2.0 * math.pi)
+    # qxyz[2] = QEvent[i][2] / (2.0 * math.pi)
+    qxyz[0] = Qx / (2.0 * math.pi)
+    qxyz[1] = Qy / (2.0 * math.pi)
+    qxyz[2] = Qz / (2.0 * math.pi)
     
     hklEV = np.dot(qxyz, UBinv)
     
@@ -267,6 +262,8 @@ for i in range(numberOfEvents):
         
     
     continue
+print ''
+print '\nnumberOfEvents = ', numberOfEvents
 
 # Begin writing peaks to the integrate file.
 chi = 0.0
@@ -274,8 +271,6 @@ phi = 0.0
 omega = 0.0
 moncnt = 10000
 seqn = 0
-
-print ''
 
 # Step through each detector
 for i in range(dc.nod):
@@ -286,10 +281,10 @@ for i in range(dc.nod):
     output_refl.write('2   SEQN    H    K    L     COL     ROW    CHAN' + 
                       '       L2  2_THETA       AZ        WL        D' + 
                       '   IPK      INTI   SIGI RFLG\n')
-    output_refl_all.write('0 NRUN DETNUM    CHI    PHI  OMEGA MONCNT\n')
-    output_refl_all.write('1 %4d %6d %6.2f %6.2f %6.2f %d\n' 
+    output_log.write('0 NRUN DETNUM    CHI    PHI  OMEGA MONCNT\n')
+    output_log.write('1 %4d %6d %6.2f %6.2f %6.2f %d\n' 
                       % (nrun, dc.detNum[i], chi, phi, omega, moncnt))
-    output_refl_all.write('2   SEQN    H    K    L     COL     ROW    CHAN' + 
+    output_log.write('2   SEQN    H    K    L     COL     ROW    CHAN' + 
                       '       L2  2_THETA       AZ        WL        D' + 
                       '   IPK      INTI   SIGI RFLG     I/sigI   Peak_Cts    Bkg_Cts    PkCts/V   BkgCts/V \n')
                       
@@ -316,12 +311,12 @@ for i in range(dc.nod):
                     maxIsigI = ratio
                     maxjj = jj
                     
-                if verbose:      
+                if write_log:      
                     volume = (4. / 3.) * math.pi * (pkRadius[jj]**3)
                     scaledPeak = peak_cts[j][jj] / volume
                     scaledBackgd = background_cts[j][jj] / volume
                     
-                    output_refl_all.write(
+                    output_log.write(
                         '3 %6d %4d %4d %4d %7.2f %7.2f %7.2f %8.3f %8.5f %8.5f %9.6f %8.4f %5d %9.2f %6.2f %4d %10.2f %10.2f %10.2f %10.2e %10.2e\n' 
                         % (seqn, peaks[j][0], peaks[j][1], peaks[j][2], peaks[j][3], peaks[j][4], peaks[j][5], 
                         peaks[j][6], peaks[j][7], peaks[j][8], peaks[j][9], peaks[j][10], peaks[j][11], 
