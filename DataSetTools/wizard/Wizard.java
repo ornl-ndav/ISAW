@@ -1343,11 +1343,21 @@ public class Wizard implements PropertyChangeListener, Serializable {
 
       //now convert the xml to usable data
       convertXMLtoParameters( s );
-    } catch( IOException ioe ) {
+    } 
+    catch( IOException ioe ) 
+    {
       frontEnd.displayAndSaveErrorMessage( ioe, "loadWizard", message );
-    } catch( StringIndexOutOfBoundsException sioe ) {
+    } 
+    catch( StringIndexOutOfBoundsException sioe ) 
+    {
       frontEnd.displayAndSaveErrorMessage( sioe, "loadWizard", message );
-    } finally {
+    } 
+    catch( Exception ex ) 
+    {
+      frontEnd.displayAndSaveErrorMessage( ex, "loadWizard", message );
+    } 
+    finally 
+    {
       //now we want to return to a state where the Wizard can listen to
       //property changes
       this.setIgnorePropertyChanges( false );
