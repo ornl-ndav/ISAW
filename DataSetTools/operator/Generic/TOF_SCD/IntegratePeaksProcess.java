@@ -83,9 +83,10 @@ public class IntegratePeaksProcess
    *             1 = a centered 
    *             2 = b centered 
    *             3 = c centered 
-   *             4 = face centered 
-   *             5 = body centered 
-   *             6 = rhombohedral centered 
+   *             4 = [f]ace centered 
+   *             5 = [i] body centered 
+   *             6 = [r]hombohedral(obverse) 
+   *             7 = [r]hombohedral(reverse) 
    *
    *  args[ 7] - time slice offset in minus direction 
    *  args[ 8] - time slice offset in plus direction 

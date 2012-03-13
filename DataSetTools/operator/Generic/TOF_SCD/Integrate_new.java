@@ -785,9 +785,10 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
    * 
    * @param ds          The data set with the information to integrate with 
    *                    the orientation attribute set
-   * @param centering   integer 0->6 where primitive is 0, a centered is 1,
+   * @param centering   integer 0->7 where primitive is 0, a centered is 1,
    *                    b centered is 2,c centered is 3,[f]ace centered is 4,
-   *                    [i] body centered is 5, and [r]hombohedral centered is 6
+   *                    [i] body centered is 5, [r]hombohedral(obverse) centered 
+   *                    is 6 and [r]hombohedral(reverse) centered is 7.
    * @param timeZrange  left and right offset around Peak time channel to 
    *                    consider
    * @param incrSlice   The incremental amount to increase the slice size by.
@@ -829,9 +830,10 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
    * @param ds          The data set with the information to integrate with 
    *                    the orientation attribute set
    * @param maxUnitCellLength   The maximum length of a unit cell in real space
-   * @param centering   integer 0->6 where primitive is 0, a centered is 1,
+   * @param centering   integer 0->7 where primitive is 0, a centered is 1,
    *                    b centered is 2,c centered is 3,[f]ace centered is 4,
-   *                    [i] body centered is 5, and [r]hombohedral centered is 6
+   *                    [i] body centered is 5, [r]hombohedral(obverse) centered 
+   *                    is 6 and [r]hombohedral(reverse) centered is 7.
    * @param timeZrange  left and right offset around Peak time channel to 
    *                    consider
    * @param incrSlice   The incremental amount to increase the slice size by.
@@ -1595,13 +1597,8 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
    */
   private void init_choices(){
     choices=new Vector();
-    choices.add("primitive");               // 0 
-    choices.add("a centered");              // 1
-    choices.add("b centered");              // 2
-    choices.add("c centered");              // 3
-    choices.add("[f]ace centered");         // 4
-    choices.add("[i] body centered");       // 5
-    choices.add("[r]hombohedral centered"); // 6
+    for ( int i = 0; i < IntegrateUtils.CenteringNames.length; i++ )
+      choices.add( IntegrateUtils.CenteringNames[i] );
   }
 
   /**

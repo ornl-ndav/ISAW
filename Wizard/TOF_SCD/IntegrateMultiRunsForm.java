@@ -663,12 +663,7 @@ public class IntegrateMultiRunsForm extends Form {
    */
   private void init_choices(  ) {
     choices = new Vector(  );
-    choices.add( "primitive" );  // 0 
-    choices.add( "a centered" );  // 1
-    choices.add( "b centered" );  // 2
-    choices.add( "c centered" );  // 3
-    choices.add( "[f]ace centered" );  // 4
-    choices.add( "[i] body centered" );  // 5
-    choices.add( "[r]hombohedral centered" );  // 6
+    for ( int i = 0; i < IntegrateUtils.CenteringNames.length; i++)
+      choices.add(IntegrateUtils.CenteringNames[i]);
   }
 }

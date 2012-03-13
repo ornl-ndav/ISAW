@@ -40,6 +40,8 @@ import DataSetTools.parameter.*;
 import java.util.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
+import Operators.TOF_SCD.IntegrateUtils;
+
 import Command.*;
 
 /**
@@ -77,7 +79,7 @@ public class IntegrateMultipleRuns extends GenericOperator{
       addParameter( new ArrayPG("run numbers","[]"));
       addParameter( new IntArrayPG("Data set nums","[0]"));
       addParameter( new StringPG("experiment name",""));
-      addParameter( new ChoiceListPG("Centering Type",new String[]{"primitive","a centered", "b centered","c centered", "[f]ace centered", "[i] body centered","[r]hombohedral centered"}));
+      addParameter( new ChoiceListPG("Centering Type", IntegrateUtils.CenteringNames ) );
       addParameter( new BooleanPG("Calibrate the data sets(yes/no)",new Boolean(false)));
       addParameter( new LoadFilePG("Calibration file",null));
       addParameter( new IntegerPG("line or mode",-1));
@@ -126,9 +128,9 @@ public class IntegrateMultipleRuns extends GenericOperator{
       S.append("@param   ");
       S.append("The name of the experiment");
       S.append("@param   ");
-      S.append("he centering type:primitive,a centered,");
-      S.append(" b centered,c centered, [f]ace centered,");
-      S.append(" [i] body centered,[r]hombohedral centered");
+      S.append("Centering type: \n");
+      for ( int i = 0; i < IntegrateUtils.CenteringNames.length; i++ )
+        S.append(IntegrateUtils.CenteringNames[i] + "\n" );
       S.append("@param   ");
       S.append("Calibrate the data sets(yes/no)");
       S.append("@param   ");
