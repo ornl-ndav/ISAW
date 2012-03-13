@@ -15,7 +15,7 @@ $ path                DataDirectoryString    Raw Data Path
 $ outpath             DataDirectoryString    Output Data Path
 $ run_numbers         Array                  Run Number
 $ expname             String                 Experiment Name
-$ centering           Choice(["primitive","a centered","b centered","c centered", "[f]ace centered","[i] body centered","[r]hombohedral centered" ])      Centering type
+$ centering           Choice(["primitive","a centered","b centered","c centered", "[f]ace centered","[i] body centered","[r]hombohedral(obverse)","[r]hombohedral(reverse)" ])      Centering type
 $ calibfile           LoadFileString         SCD Calibration File
 $ time_slice_range    String(-1:3)           Time-slice range
 $ increase            Integer(1)             Increase slice size by

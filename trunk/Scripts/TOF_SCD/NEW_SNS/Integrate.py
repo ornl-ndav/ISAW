@@ -12,7 +12,7 @@ class Integrate(GenericTOF_SCD):
       self.addParameter(  IntArrayPG("Data set nums","[]"))
       self.addParameter(  StringPG("experiment name",""))
 
-      Choices =array( ["primitive","a centered","b centered","c centered","[f]ace centered"," body centered","[r]hombohedral centered"],String)
+      Choices =array( ["primitive","a centered","b centered","c centered","[f]ace centered","[i] body centered","[r]hombohedral(obverse)","[r]hombohedral(reverse)"],String)
       self.addParameter(  ChoiceListPG("Centering Type",Choices))
       V = Vector();
       V.addElement( Boolean(0))
@@ -96,7 +96,7 @@ class Integrate(GenericTOF_SCD):
       S.append("@param   ")
       S.append("The centering type:primitive,a centered,")
       S.append(" b centered,c centered, [f]ace centered,")
-      S.append(" [i] body centered,[r]hombohedral centered")
+      S.append(" [i] body centered,[r]hombohedral(obverse),[r]hombohedral(reverse)")
       S.append("@param   ")
       S.append("Calibrate the data sets(yes/no)")
       S.append("@param   ")

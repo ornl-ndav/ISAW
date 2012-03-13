@@ -69,7 +69,27 @@ import Operators.TOF_SCD.SCD_LogUtils;
  */
 public class IntegrateUtils 
 {
+  public static final String[] CenteringNames = {"primitive", 
+                                                 "a centered",
+                                                 "b centered", 
+                                                 "c centered", 
+                                                 "[f]ace centered",
+                                                 "[i] body centered", 
+                                                 "[r]hombohedral(obverse)",
+                                                 "[r]hombohedral(reverse)" };
+
   public static boolean DEBUG = false; 
+
+
+  public static int getCenterIndex( String centeringName )
+  {
+    for( int i = 0; i < CenteringNames.length; i++ )
+      if( CenteringNames[ i ].equalsIgnoreCase( centeringName ) )
+        return i;
+
+    return 0;
+  }
+
 
   /**
    * This method integrates the peak by looking at a rectangular "shoebox"
@@ -1763,9 +1783,10 @@ public class IntegrateUtils
    * Checks the allowed indices of hkl given the centering type.
    *
    * @param type the type of centering operation. Acceptable values
-   * are primitive (1), a-centered (2), b-centered (3), c-centered
-   * (4), [f]ace-centered (5), [i] body-centered (6), or
-   * [r]hombohedral-centered (7)
+   * are primitive (0), a-centered (1), b-centered (2), c-centered
+   * (3), [f]ace-centered (4), [i] body-centered (5), 
+   * [r]hombohedral-centered(obverse) (6)
+   * [r]hombohedral-centered(reverse) (7)
    *
    * @return true if the hkl is allowed false otherwise
    */
@@ -1789,8 +1810,11 @@ public class IntegrateUtils
     }else if(type==5){ // [i] body-centered
       int hkl=(int)Math.abs(h+k+l);
       return ( (hkl%2)==0 );
-    }else if(type==6){ // [r]hombohedral-centered
+    }else if(type==6){ // rhombohedral-centered(obverse)
       int hkl=Math.abs(-h+k+l);
+      return ( (hkl%3)==0 );
+    }else if(type==7){ // rhombohedral-centered(reverse)
+      int hkl=Math.abs(h-k+l);
       return ( (hkl%3)==0 );
     }
 

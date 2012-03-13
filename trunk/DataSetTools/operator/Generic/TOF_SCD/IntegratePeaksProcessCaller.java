@@ -119,6 +119,7 @@ public class IntegratePeaksProcessCaller implements IOperator
                                       float    max_shoebox
                                     )
   {
+    System.out.println("PROCESS CALLER centering = " + centering );
     this.cmd_name           = cmd_name;
     this.fin_name           = fin_name;
     this.fout_base          = fout_base;

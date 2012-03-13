@@ -37,7 +37,7 @@ import DataSetTools.operator.Generic.*;
 import DataSetTools.operator.Generic.TOF_SCD.Integrate_new;
 import gov.anl.ipns.Parameters.*;
 import DataSetTools.parameter.*;
-
+import Operators.TOF_SCD.IntegrateUtils;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
 import Command.*;
@@ -73,7 +73,7 @@ public class integrate extends GenericOperator{
    public void setDefaultParameters(){
       clearParametersVector();
       addParameter( new DataSetPG("Data Set",DataSetTools.dataset.DataSet.EMPTY_DATA_SET));
-      addParameter( new IntegerPG("Centring(0..6)",0));
+      addParameter( new IntegerPG("Centering(0..7)",0));
       addParameter( new PlaceHolderPG("Zmin/max",new int[0]));
       addParameter( new IntegerPG("Increment slice size",1));
       addParameter( new FloatPG("min d-spacing",0));
@@ -111,12 +111,9 @@ public class integrate extends GenericOperator{
       S.append("@param   ");
       S.append("The Data Set to to find peaks to integrate");
       S.append("@param   ");
-      S.append("Centering type:where primitive is 0, a centered is 1,");
-      S.append(" b centered is 2,");
-      S.append(" c centered is 3,");
-      S.append(" [f]ace centered is 4,");
-      S.append(" [i] body centered is 5, and");
-      S.append(" [r]hombohedral centered is 6");
+      S.append("Centering type, where: \n");
+      for ( int i = 0; i < IntegrateUtils.CenteringNames.length; i++ )
+        S.append(IntegrateUtils.CenteringNames[i] + " is at " + i +"\n" );
       S.append("@param   ");
       S.append("left and right offset around Peak time channel to consider");
       S.append("@param   ");

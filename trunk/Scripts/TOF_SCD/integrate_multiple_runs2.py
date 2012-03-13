@@ -71,7 +71,8 @@ class integrate_multiple_runs2( GenericTOF_SCD ):
         choices.addItem( "c centered" );
         choices.addItem( "[f]ace centered" );
         choices.addItem( "[i] body centered" );
-        choices.addItem( "[r]hombohedral centered" );
+        choices.addItem( "[r]hombohedral(obverse)" );
+        choices.addItem( "[r]hombohedral(reverse)" );
         self.addParameter( choices )
         self.addParameter( LoadFilePG( "SCD Calibration File", "" ) )
         self.addParameter( StringPG( "Time Slice Range", "-1:3" ) )

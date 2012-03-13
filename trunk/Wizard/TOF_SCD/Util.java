@@ -43,6 +43,7 @@ import DataSetTools.operator.Generic.Special.*;
 import DataSetTools.retriever.*;
 
 import Operators.Special.Calib;
+import Operators.TOF_SCD.IntegrateUtils;
 
 import java.io.*;
 import java.util.*;
@@ -69,10 +70,6 @@ public class Util {
                               File.separator+"tmp"+
                               File.separator;
    public static final String SLURM_RETURN_SUFFIX = "_returned.txt";
-
-   public static final String[] CenteringNames = {"primitive" , "a centered" ,
-              "b centered" , "c centered" , "[f]ace centered",
-            "[i] body centered" , "[r]hombohedral centered"};
 
    /**
     *  FindCentroidedPeaks method uses separate processes to find and centroid
@@ -2048,7 +2045,8 @@ public class Util {
     * @param expname              The name of the experiment
     * @param centeringName        The centering type:primitive,a centered,
     *                                b centered,c centered, [f]ace centered,
-    *                                [i] body centered,[r]hombohedral centered
+    *                                [i] body centered,[r]hombohedral(obverse),
+    *                                [r]hombohedral(reverse)
     * @param use_calib_file       Calibrate the data sets(yes/no)
     * @param calib_file           The calibration file used to calibrate the 
     *                               data sets
@@ -2139,7 +2137,7 @@ public class Util {
       int[] timeZrange = getMaxMin( time_slice_range );
       int[] colXrange  = getMaxMin( Xrange );
       int[] rowYrange =  getMaxMin( Yrange );
-      int centering = getCenterIndex( centeringName );
+      int centering = IntegrateUtils.getCenterIndex( centeringName );
 
       if( timeZrange == null || colXrange == null || rowYrange == null )
          return new ErrorString( "x,y, or time offsets not set" );
@@ -2455,7 +2453,8 @@ public class Util {
     * @param expname              The name of the experiment
     * @param centeringName        The centering type:primitive,a centered,
     *                                b centered,c centered, [f]ace centered,
-    *                                [i] body centered,[r]hombohedral centered
+    *                                [i] body centered,[r]hombohedral(obverse),
+    *                                [r]hombohedral(reverse) 
     * @param useCalibFile         Calibrate the data sets(yes/no)
     * @param calibfile            The calibration file used to calibrate the 
     *                               data sets
@@ -2598,7 +2597,7 @@ public class Util {
       int[] timeZrange = getMaxMin( time_slice_range );
       int[] colXrange  = getMaxMin( Xrange );
       int[] rowYrange =  getMaxMin( Yrange );
-      int centering = getCenterIndex( centeringName );
+      int centering = IntegrateUtils.getCenterIndex( centeringName );
       
       if( timeZrange == null || colXrange == null || rowYrange == null )
          return new ErrorString( "x,y, or time offsets not set" );
@@ -2878,17 +2877,6 @@ public class Util {
       OperatorThread Res = new OperatorThread( Int );
       
       return Res;
-   }
-   
-   
-   private static int getCenterIndex( String centeringName ){
-      
-      for( int i = 0 ; i <= 6 ; i++ )
-         
-         if( CenteringNames[ i ].equals( centeringName ) )
-            return i;
-      
-      return 0;
    }
    
    
