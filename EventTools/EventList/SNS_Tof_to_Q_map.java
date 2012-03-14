@@ -609,6 +609,19 @@ public class SNS_Tof_to_Q_map
 
 
  /**
+  * Get the current value of maximum |Q| that this mapper is set to map.
+  *
+  * @return  The maximum magnitude that the Q value of an event can
+  *          have to be mapped to Q. 
+  */
+  public float getMaxQ()
+  {
+    return max_q_to_map;
+  }
+
+
+
+ /**
   * Set the "q filter" to discard events with |Q| less than the
   * specified min_q.
   *
@@ -622,6 +635,18 @@ public class SNS_Tof_to_Q_map
       min_q = 0;
 
     min_q_to_map = min_q;
+  }
+
+
+ /**
+  * Get the current value of minimum |Q| that this mapper is set to map.
+  *
+  * @return  The minimum magnitude that the Q value of an event can
+  *          have to be mapped to Q. 
+  */
+  public float getMinQ()
+  {
+    return min_q_to_map;
   }
 
 

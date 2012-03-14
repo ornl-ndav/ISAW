@@ -39,8 +39,8 @@ import java.util.Vector;
 import gov.anl.ipns.Operator.IOperator;
 import gov.anl.ipns.Operator.Threads.ParallelExecutor;
 import gov.anl.ipns.Operator.Threads.ExecFailException;
-//import gov.anl.ipns.MathTools.Geometry.DetectorPosition;
 import gov.anl.ipns.MathTools.Geometry.Vector3D;
+import gov.anl.ipns.MathTools.LinearAlgebra;
 
 import MessageTools.IReceiveMessage;
 import MessageTools.Message;
@@ -69,6 +69,8 @@ public class QMapperHandler implements IReceiveMessage
   private MessageCenter    message_center;
   private String           instrument_name;
   private SNS_Tof_to_Q_map mapper;
+  private float[][]        orientation_matrix;      // local copy of 
+                                                    // or_mat * 2PI
   private Vector           omit_pixels_info  = null;
   private Vector           omit_q_range_info = null;
   private float[][]        omit_peaks_array  = null; // array with six columns
@@ -85,6 +87,8 @@ public class QMapperHandler implements IReceiveMessage
     message_center.addReceiver( this, Commands.SET_PEAK_Q_LIST );
     message_center.addReceiver( this, Commands.SET_INTEGRATED_PEAKS_LIST );
     message_center.addReceiver( this, Commands.REVERSE_WEIGHT_INTEGRALS );
+    message_center.addReceiver( this, Commands.GET_PEAKS_TO_SPHERE_INTEGRATE );
+    message_center.addReceiver( this, Commands.SET_ORIENTATION_MATRIX );
 
     message_center.addReceiver( this, Commands.CLEAR_OMITTED_PIXELS );
     message_center.addReceiver( this, Commands.APPLY_OMITTED_PIXELS );
@@ -308,6 +312,47 @@ public class QMapperHandler implements IReceiveMessage
         message_center.send( peak_new_message );
       }
     }
+
+    else if ( message.getName().equals(Commands.SET_ORIENTATION_MATRIX) )
+    {
+      Object val = message.getValue();
+      if ( val == null || !( val instanceof Vector ) )
+        return false;
+
+      Vector vec = (Vector)val;
+      if ( vec.size() < 1 || !( vec.elementAt(0) instanceof float[][] ) )
+        return false;
+
+      float[][] UBT = (float[][]) vec.elementAt(0);
+      orientation_matrix = LinearAlgebra.getTranspose( UBT );
+      for ( int row = 0; row < 3; row++ )
+        for ( int col = 0; col < 3; col++ )
+           orientation_matrix[row][col] *= (float)(2*Math.PI);
+    }
+
+    else if ( message.getName().equals(Commands.GET_PEAKS_TO_SPHERE_INTEGRATE))
+    {                                           // this only handles the case
+                                                // of integrating ALL possible
+                                                // peaks.
+       Object value = message.getValue();
+       if ( value instanceof IntegratePeaksCmd )
+       {
+         IntegratePeaksCmd cmd = (IntegratePeaksCmd)value;
+         if ( !cmd.getCurrent_peaks_only() &&
+              orientation_matrix != null     )  
+         {
+           Vector peaks = getPeakQsToIntegrate( orientation_matrix );
+           cmd = new IntegratePeaksCmd( peaks,
+                                        cmd.getSphere_radius(),
+                                        cmd.getCurrent_peaks_only(),
+                                        cmd.getRecord_as_peaks_list() );
+           Message integrate = new Message( Commands.SPHERE_INTEGRATE_PEAKS,
+                                            cmd, true, true );
+           message_center.send( integrate );
+         }
+       }
+    }
+
 
     else if ( message.getName().equals(Commands.SET_INTEGRATED_PEAKS_LIST ) )
     {
@@ -560,6 +605,57 @@ public class QMapperHandler implements IReceiveMessage
      return tof_calc.Energy( path_length , time );
   }
   
+
+  private Vector<PeakQ> getPeakQsToIntegrate( float[][] orientation_matrix )
+  {
+    Vector peakQs = new Vector();
+    if ( orientation_matrix != null )
+    {
+      Vector3D[] basis_vecs =
+            QuickIntegrateHandler.getLatticeBasisVectors( orientation_matrix );
+
+      Vector3D   h_vec = basis_vecs[0];
+      Vector3D   k_vec = basis_vecs[1];
+      Vector3D   l_vec = basis_vecs[2];
+
+      float max_Q = mapper.getMaxQ();
+      float min_Q = mapper.getMinQ();
+
+      int max_h = (int)( max_Q / h_vec.length() );
+      int max_k = (int)( max_Q / k_vec.length() );
+      int max_l = (int)( max_Q / l_vec.length() );
+
+      float  two_PI = (float)(2 * Math.PI);
+
+      for ( int h = -max_h; h <= max_h; h++ )    
+        for ( int k = -max_k; k <= max_k; k++ )
+          for ( int l = -max_l; l <= max_l; l++ )
+          {
+            Vector3D q_vec =
+                QuickIntegrateHandler.q_vector( h, k, l, h_vec, k_vec, l_vec );
+
+            float abs_Q = q_vec.length();
+            if ( abs_Q >= min_Q && abs_Q <= max_Q )
+            { 
+              float[] row_col_tof = mapper.QtoRowColTOF_ID( q_vec.getX(),
+                                                            q_vec.getY(),
+                                                            q_vec.getZ() );
+
+              if ( row_col_tof != null )       // this hkl is on a detector
+              {
+                PeakQ peak = new PeakQ( q_vec.getX() / two_PI,
+                                        q_vec.getY() / two_PI,
+                                        q_vec.getZ() / two_PI,
+                                        0 );
+                peak.sethkl( h, k, l );
+                peakQs.add( peak );
+              }
+            }
+          }
+    }
+    return peakQs;
+  }
+
 
   public static Vector<Peak_new>ConvertPeakQToPeakNew(SNS_Tof_to_Q_map mapper,
                                                       Vector<PeakQ>  q_peaks )
