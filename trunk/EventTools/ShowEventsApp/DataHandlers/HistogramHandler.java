@@ -415,6 +415,7 @@ public class HistogramHandler implements IReceiveMessage
                                        i_isigi_vec,
                                        cmd.getSphere_radius(),
                                        cmd.getCurrent_peaks_only(),
+                                       cmd.getCentering_code(),
                                        cmd.getRecord_as_peaks_list() );
           Message request = new Message( Commands.REVERSE_WEIGHT_INTEGRALS, 
                                          cmd, true, true );

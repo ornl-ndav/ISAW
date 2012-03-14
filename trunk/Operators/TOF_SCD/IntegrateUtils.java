@@ -1787,6 +1787,7 @@ public class IntegrateUtils
    * (3), [f]ace-centered (4), [i] body-centered (5), 
    * [r]hombohedral-centered(obverse) (6)
    * [r]hombohedral-centered(reverse) (7)
+   * as defined in the IntegrateUtils.CenteringNames[] array.
    *
    * @return true if the hkl is allowed false otherwise
    */

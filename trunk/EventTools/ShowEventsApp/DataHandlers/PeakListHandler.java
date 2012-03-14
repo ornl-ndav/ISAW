@@ -716,6 +716,7 @@ public class PeakListHandler implements IReceiveMessage
            cmd = new IntegratePeaksCmd( peakNew_list,
                                         cmd.getSphere_radius(),
                                         cmd.getCurrent_peaks_only(),
+                                        cmd.getCentering_code(),
                                         cmd.getRecord_as_peaks_list() );
            Message integrate = new Message( Commands.SPHERE_INTEGRATE_PEAKS,
                                             cmd, true, true );

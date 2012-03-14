@@ -52,6 +52,7 @@ import MessageTools.Message;
 import MessageTools.MessageCenter;
 
 import gov.anl.ipns.ViewTools.UI.FontUtil;
+import Operators.TOF_SCD.IntegrateUtils;
 
 
 public class IntegratePeaksPanel extends JPanel implements IReceiveMessage
@@ -96,8 +97,10 @@ public class IntegratePeaksPanel extends JPanel implements IReceiveMessage
                                   " 23 Steps per Miller Index",
                                   " 24 Steps per Miller Index",
                                   " 25 Steps per Miller Index" };
-   private JComboBox   steps_selector = new JComboBox( step_list );
-   private JTextField  hist_mem_txf   = new JTextField("0");
+   private JComboBox  steps_selector     = new JComboBox( step_list );
+   private JComboBox  centering_selector = 
+                               new JComboBox( IntegrateUtils.CenteringNames );
+   private JTextField hist_mem_txf   = new JTextField("0");
    private JButton init_hist_button   = new JButton("Initialize Histogram");
    private JButton free_hist_button   = new JButton("Free Histogram");
    private JTextField hist_status_txf = new JTextField( NO_HISTOGRAM );
@@ -162,10 +165,13 @@ public class IntegratePeaksPanel extends JPanel implements IReceiveMessage
       group.add( found_peaks_ckb );
       group.add( all_peaks_ckb ); 
 
+      sphere_panel.add( new JLabel(" Centering ( primitive = all )") ); 
+      sphere_panel.add( centering_selector );
+
       sphere_panel.add( sphere_stats_button );
       sphere_panel.add( set_in_peaks_button );
 
-      for ( int i = 0; i < 4; i++ )                  // add filler panels
+      for ( int i = 0; i < 2; i++ )                 // more filler panels
         sphere_panel.add( new JPanel() );
 
       SphereButtonListener listener = new SphereButtonListener();
@@ -366,9 +372,13 @@ public class IntegratePeaksPanel extends JPanel implements IReceiveMessage
        if ( a_event.getSource() == set_in_peaks_button )
          record_as_peaks_list = true;
 
+       int centering_code = centering_selector.getSelectedIndex();
+       System.out.println( "Centering Code = " + centering_code );
+
        IntegratePeaksCmd cmd = new IntegratePeaksCmd( null, 
                                                       sphere_radius,
                                                       current_peaks_only,
+                                                      centering_code,
                                                       record_as_peaks_list );
        sendMessage( Commands.GET_PEAKS_TO_SPHERE_INTEGRATE, cmd );
      }

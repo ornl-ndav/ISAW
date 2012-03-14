@@ -64,6 +64,8 @@ import DataSetTools.operator.Generic.TOF_SCD.Peak_new;
 import DataSetTools.operator.Generic.TOF_SCD.IPeakQ;
 import DataSetTools.operator.Generic.TOF_SCD.PeakQ;
 
+import Operators.TOF_SCD.IntegrateUtils;
+
 public class QMapperHandler implements IReceiveMessage
 {
   private MessageCenter    message_center;
@@ -338,17 +340,26 @@ public class QMapperHandler implements IReceiveMessage
        if ( value instanceof IntegratePeaksCmd )
        {
          IntegratePeaksCmd cmd = (IntegratePeaksCmd)value;
-         if ( !cmd.getCurrent_peaks_only() &&
-              orientation_matrix != null     )  
+         if ( !cmd.getCurrent_peaks_only() )
          {
-           Vector peaks = getPeakQsToIntegrate( orientation_matrix );
-           cmd = new IntegratePeaksCmd( peaks,
-                                        cmd.getSphere_radius(),
-                                        cmd.getCurrent_peaks_only(),
-                                        cmd.getRecord_as_peaks_list() );
-           Message integrate = new Message( Commands.SPHERE_INTEGRATE_PEAKS,
-                                            cmd, true, true );
-           message_center.send( integrate );
+           if ( orientation_matrix == null )  
+             Util.sendError( "ERROR: no orientation matrix specifed yet.\n" +
+                   "   Orientation matrix needed to predict possible peaks." );
+
+           else
+           {
+             int centering = cmd.getCentering_code();
+             Vector peaks = getPeakQsToIntegrate( orientation_matrix, 
+                                                  centering );
+             cmd = new IntegratePeaksCmd( peaks,
+                                          cmd.getSphere_radius(),
+                                          cmd.getCurrent_peaks_only(),
+                                          cmd.getCentering_code(),
+                                          cmd.getRecord_as_peaks_list() );
+             Message integrate = new Message( Commands.SPHERE_INTEGRATE_PEAKS,
+                                              cmd, true, true );
+             message_center.send( integrate );
+           }
          }
        }
     }
@@ -606,7 +617,8 @@ public class QMapperHandler implements IReceiveMessage
   }
   
 
-  private Vector<PeakQ> getPeakQsToIntegrate( float[][] orientation_matrix )
+  private Vector<PeakQ> getPeakQsToIntegrate( float[][] orientation_matrix,
+                                              int       centering )
   {
     Vector peakQs = new Vector();
     if ( orientation_matrix != null )
@@ -630,27 +642,28 @@ public class QMapperHandler implements IReceiveMessage
       for ( int h = -max_h; h <= max_h; h++ )    
         for ( int k = -max_k; k <= max_k; k++ )
           for ( int l = -max_l; l <= max_l; l++ )
-          {
-            Vector3D q_vec =
+            if ( IntegrateUtils.checkCenter( h, k, l, centering ) )
+            {
+              Vector3D q_vec =
                 QuickIntegrateHandler.q_vector( h, k, l, h_vec, k_vec, l_vec );
 
-            float abs_Q = q_vec.length();
-            if ( abs_Q >= min_Q && abs_Q <= max_Q )
-            { 
-              float[] row_col_tof = mapper.QtoRowColTOF_ID( q_vec.getX(),
-                                                            q_vec.getY(),
-                                                            q_vec.getZ() );
+              float abs_Q = q_vec.length();
+              if ( abs_Q >= min_Q && abs_Q <= max_Q )
+              { 
+                float[] row_col_tof = mapper.QtoRowColTOF_ID( q_vec.getX(),
+                                                              q_vec.getY(),
+                                                              q_vec.getZ() );
 
-              if ( row_col_tof != null )       // this hkl is on a detector
-              {
-                PeakQ peak = new PeakQ( q_vec.getX() / two_PI,
-                                        q_vec.getY() / two_PI,
-                                        q_vec.getZ() / two_PI,
-                                        0 );
-                peak.sethkl( h, k, l );
-                peakQs.add( peak );
+                if ( row_col_tof != null )       // this hkl is on a detector
+                {
+                  PeakQ peak = new PeakQ( q_vec.getX() / two_PI,
+                                          q_vec.getY() / two_PI,
+                                          q_vec.getZ() / two_PI,
+                                          0 );
+                  peak.sethkl( h, k, l );
+                  peakQs.add( peak );
+                }
               }
-            }
           }
     }
     return peakQs;
