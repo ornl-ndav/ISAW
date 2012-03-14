@@ -702,6 +702,9 @@ public class PeakListHandler implements IReceiveMessage
 
     else if ( message.getName().equals(Commands.GET_PEAKS_TO_SPHERE_INTEGRATE))
     {
+                                            // this ONLY handles the case of
+                                            // integrating peaks in the current
+                                            // peaks list.
        Object value = message.getValue();
        if ( value instanceof IntegratePeaksCmd )
        {
