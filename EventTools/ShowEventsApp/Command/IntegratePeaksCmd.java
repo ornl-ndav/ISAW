@@ -47,6 +47,7 @@ public class IntegratePeaksCmd
    private Vector   i_isigi_vec = null;
    private float    sphere_radius;
    private boolean  current_peaks_only;
+   private int      centering_code;
    private boolean  record_as_peaks_list;
    
    /**
@@ -60,6 +61,8 @@ public class IntegratePeaksCmd
     *                             specified in inverse Angstroms.
     * @param current_peaks_only   If true, only peaks in the current list of
     *                             peaks should be integrated. 
+    * @param centering_code       Integer 0..7, as defined in IntegrateUtils,
+    *                             CenteringNames[] and checkCenter().
     * @param record_as_peaks_list If true, the integrated peaks should be 
     *                             recorded by the PeakListHandler as the
     *                             current list of peaks.
@@ -67,11 +70,13 @@ public class IntegratePeaksCmd
    public IntegratePeaksCmd( Vector  peaks, 
                              float   sphere_radius,
                              boolean current_peaks_only, 
+                             int     centering_code,
                              boolean record_as_peaks_list )
    {
      this.peaks                = peaks;
      this.sphere_radius        = sphere_radius;
      this.current_peaks_only   = current_peaks_only;
+     this.centering_code       = centering_code;
      this.record_as_peaks_list = record_as_peaks_list; 
    }
 
@@ -92,6 +97,8 @@ public class IntegratePeaksCmd
     *                             specified in inverse Angstroms.
     * @param current_peaks_only   If true, only peaks in the current list of
     *                             peaks should be integrated. 
+    * @param centering_code       Integer 0..7, as defined in IntegrateUtils,
+    *                             CenteringNames[] and checkCenter().
     * @param record_as_peaks_list If true, the integrated peaks should be 
     *                             recorded by the PeakListHandler as the
     *                             current list of peaks.
@@ -100,12 +107,14 @@ public class IntegratePeaksCmd
                              Vector  i_isigi_vec,
                              float   sphere_radius,
                              boolean current_peaks_only,
+                             int     centering_code,
                              boolean record_as_peaks_list )
    {
      this.peaks                = peaks;
      this.i_isigi_vec          = i_isigi_vec;
      this.sphere_radius        = sphere_radius;
      this.current_peaks_only   = current_peaks_only;
+     this.centering_code       = centering_code;
      this.record_as_peaks_list = record_as_peaks_list;
    }
 
@@ -141,6 +150,18 @@ public class IntegratePeaksCmd
    public boolean getCurrent_peaks_only()
    {
       return current_peaks_only;
+   }
+
+
+   /**
+    *  Get the centering_code value 
+    *
+    *  @return An integer code for the centering type,
+    *          as defined in IntegrateUtils.
+    */
+   public int getCentering_code()
+   {
+      return centering_code;
    }
 
 
@@ -202,6 +223,7 @@ public class IntegratePeaksCmd
  
       result += "\nSphere Radius             : " + getSphere_radius() +
                 "\nCurrent Peaks Only Flag   : " + getCurrent_peaks_only() +
+                "\nCentering Code            : " + getCentering_code() +
                 "\nRecord as Peaks List Flag : " + getRecord_as_peaks_list();
 
       return result;
