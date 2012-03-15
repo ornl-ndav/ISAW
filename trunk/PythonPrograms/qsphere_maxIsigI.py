@@ -52,7 +52,9 @@ wlmax = float(user_param[7])
 radiusQ = float(user_param[8])
 delta_radius = float(user_param[9])
 num_radii = int(user_param[10])
-write_log = int(user_param[11])
+bgRadius1 = float(user_param[11])
+bgRadius2 = float(user_param[12])
+write_log = int(user_param[13])
 
 
 # Read and write the instrument calibration parameters.
@@ -195,15 +197,19 @@ UBinv = linalg.inv(UB_IPNS)
 
 # Begin testing 3 radii
 pkRadius = []
-bgRadius1 = []
-bgRadius2 = []
-cubeRoot7 = 7.0**(1./3.)
+bgRadius1 = bgRadius1 / (2.0 * math.pi)
+bgRadius2 = bgRadius2 / (2.0 * math.pi)
+bgVol = (4./ 3.) * math.pi * (bgRadius2**3 - bgRadius1**3)
+pkVol = []
+bgToPeakRatio = []
+bgTPRsq = []
+
 for i in range(num_radii):
     pkRadius.append((radiusQ + (i * delta_radius)) / (2.0 * math.pi))
-    # Calculate min and max background radii so that background volume
-    # equals peak volume.
-    bgRadius1.append(pkRadius[i] * cubeRoot7)
-    bgRadius2.append(pkRadius[i] * 2.0)
+    pkVol.append((4./3.) * math.pi * pkRadius[i]**3)
+    bgToPeakRatio.append(pkVol[i] / bgVol)
+    bgTPRsq.append(bgToPeakRatio[i] * bgToPeakRatio[i])
+
 
 peak_cts = np.zeros((numOfPeaks, num_radii))
 background_cts = np.zeros((numOfPeaks, num_radii))
@@ -239,7 +245,7 @@ while True:
     if abs(il) > lmax: continue
     
     iIndex = ih + hmax
-    kIndex = ik + hmax
+    kIndex = ik + kmax
     lIndex = il + lmax
     peaknum = hklArray[iIndex][kIndex][lIndex]
     if peaknum == 0: continue   # no hkl peak nearby
@@ -249,17 +255,14 @@ while True:
     # Test for event within 2 times the maximum sphere radius
     Qpeak = [peaks[pki][16][0], peaks[pki][16][1], peaks[pki][16][2]]
     Qdist = distance(Qpeak, qxyz)
-    if Qdist > (bgRadius2[num_radii - 1]): continue
+    if Qdist > bgRadius2: continue
     
     for j in range(num_radii):
         if Qdist < pkRadius[j]:
             peak_cts[pki][j] = peak_cts[pki][j] + 1
             continue
-        if Qdist < bgRadius2[j]:
-            background_cts[pki][j] = background_cts[pki][j] + 1
-        # if Qdist > bgRadius1[j] and Qdist < bgRadius2[j]:
-            # background_cts[pki][j] = background_cts[pki][j] + 1
-        
+        if Qdist > bgRadius1:
+            background_cts[pki][j] = background_cts[pki][j] + 1        
     
     continue
 print ''
@@ -299,8 +302,8 @@ for i in range(dc.nod):
             sigI = []
             
             for jj in range(num_radii):
-                intI.append(peak_cts[j][jj] - (background_cts[j][jj] / 7.0))
-                sigI.append(math.sqrt(peak_cts[j][jj] + (49.0 *  background_cts[j][jj])))
+                intI.append(peak_cts[j][jj] - (bgToPeakRatio[jj] * background_cts[j][jj]))
+                sigI.append(math.sqrt(peak_cts[j][jj] + (bgTPRsq[jj] * background_cts[j][jj])))
                 
                 if sigI[jj] == 0.0:
                     ratio = -1.0
@@ -312,9 +315,8 @@ for i in range(dc.nod):
                     maxjj = jj
                     
                 if write_log:      
-                    volume = (4. / 3.) * math.pi * (pkRadius[jj]**3)
-                    scaledPeak = peak_cts[j][jj] / volume
-                    scaledBackgd = background_cts[j][jj] / volume
+                    scaledPeak = peak_cts[j][jj] / pkVol[jj]
+                    scaledBackgd = background_cts[j][jj] / bgVol
                     
                     output_log.write(
                         '3 %6d %4d %4d %4d %7.2f %7.2f %7.2f %8.3f %8.5f %8.5f %9.6f %8.4f %5d %9.2f %6.2f %4d %10.2f %10.2f %10.2f %10.2e %10.2e\n' 
