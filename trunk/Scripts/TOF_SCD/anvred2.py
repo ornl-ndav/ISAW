@@ -22,7 +22,8 @@
 # Omit zero intensity peaks in integrate file XP Wang 03/21/2011
 # Changed to >=0 and used absolute value for minium I/sing(I) = 0  XP Wang 02/24/2011
 #
-#
+# Correct for slant pathlength in scintillator glass
+# March, 2012
 # 
 # Comments from Fortran source:
 # C**************************   ANVRED  ******************************
@@ -97,8 +98,8 @@ class anvred2(GenericTOF_SCD):
         self.super__clearParametersVector()
         self.addParameter(DataDirPG("Working directory", ""))
         self.addParameter(StringPG("Experiment name", ""))
-        self.addParameter(FloatPG("Total scattering linear abs coeff in cm^-1", 1.0))
-        self.addParameter(FloatPG("True absorption linear abs coeff in cm^-1", 1.0))
+        self.addParameter(FloatPG("Total scattering linear abs coeff in cm^-1", 0.0))
+        self.addParameter(FloatPG("True absorption linear abs coeff in cm^-1", 0.0))
         self.addParameter(FloatPG("Radius of spherical crystal in cm", 0.1))
         self.addParameter(BooleanEnablePG("Is the incident spectrum fitted?","[False, 1, 1]"))
         self.addParameter(LoadFilePG("File with spectrum coefficients", \
@@ -107,14 +108,15 @@ class anvred2(GenericTOF_SCD):
             ""))
         self.addParameter(FloatPG("Wavelength to normalize to in Angstroms", 1.0))
         self.addParameter(FloatPG("The minimum I/sig(I)", 3))
-        self.addParameter(IntegerPG("Width of border (number of channels)", 22))
-        self.addParameter(FloatPG("Minimum integrated intensity", 300))
+        self.addParameter(IntegerPG("Width of border (number of channels)", 24))
+        self.addParameter(FloatPG("Minimum integrated intensity", 100))
         self.addParameter(FloatPG("Minimum d-spacing (Angstroms)", 0.5))
         self.addParameter(IntegerPG("Assign scale factors (1) per setting or (2) per detector", 1))
         self.addParameter(FloatPG("Multiply FSQ and sig(FSQ) by scajleFactor", 0.001))
         # Set-up limits for neutron wavelentgh XP Wang 02/24/2011
         self.addParameter(FloatPG("Minimum wavelength (Angstroms)", 0.5))
         self.addParameter(FloatPG("Maximum wavelength (Angstroms)", 3.5))
+        self.addParameter(BooleanPG("Include rejected peaks in the log file output", False))
 
     def getResult(self):
 
@@ -135,6 +137,7 @@ class anvred2(GenericTOF_SCD):
         scaleFactor = self.getParameter(14).value
         wlMin = self.getParameter(15).value   # XP Wang 02/24/2011
         wlMax = self.getParameter(16).value   # XP Wang 02/24/2011
+        reducedLogFile = self.getParameter(17).value
         
         # open the anvred.log file in the working directory
         fileName = directory_path + 'anvred2.log'
@@ -363,34 +366,34 @@ class anvred2(GenericTOF_SCD):
                 logFile.write('CORREC = SCALEFACTOR * CMONX * SINSQT /' + \
                     '( SPECT * (DET EFF) * WL4 * ABTRANS )\n')
                 logFile.write('\n    H   K   L       FSQ     SIG     WL      INTI' + \
-                    '    SIG   SPECT  SINSQT  ABTRANS   TBAR\n')
+                    '    SIG   SPECT  SINSQT  ABTRANS   TBAR SL_RATIO\n')
             # end of set-up for new run or detector
            
             # Omit zero intensity peaks from integrate file XP Wang 03/21/2011
             # Changed to >=0 and absolute value  XP Wang 02/24/2011
             if inti == 0.0 :
-                logFile.write(' %4d%4d%4d *** intI = 0.0 \n' \
+                if reducedLogFile: logFile.write(' %4d%4d%4d *** intI = 0.0 \n' \
                     % (h, k, l))
                 continue  
      
             if minIsigI >= 0 and inti < abs(minIsigI * sigi):
-                logFile.write(' %4d%4d%4d *** inti < (minIsigI * sigi) \n' \
+                if reducedLogFile: logFile.write(' %4d%4d%4d *** inti < (minIsigI * sigi) \n' \
                     % (h, k, l))
                 continue
                 
             if inti < intiMin:
-                logFile.write(' %4d%4d%4d *** inti < intiMin \n' \
+                if reducedLogFile: logFile.write(' %4d%4d%4d *** inti < intiMin \n' \
                     % (h, k, l))
                 continue
 
             # Set-up limits for neutron wavelentgh XP Wang 02/24/2011
             if wl < wlMin:
-                logFile.write(' %4d%4d%4d *** wl < wlMin \n' \
+                if reducedLogFile: logFile.write(' %4d%4d%4d *** wl < wlMin \n' \
                     % (h, k, l))
                 continue
 
             if wl > wlMax:
-                logFile.write(' %4d%4d%4d *** wl > wlMax \n' \
+                if reducedLogFile: logFile.write(' %4d%4d%4d *** wl > wlMax \n' \
                     % (h, k, l))
                 continue
 
@@ -398,27 +401,27 @@ class anvred2(GenericTOF_SCD):
             nCols = calibParam[5][id]
             
             if col < numBorderCh:
-                logFile.write(' %4d%4d%4d *** col < numBorderCh \n' \
+                if reducedLogFile: logFile.write(' %4d%4d%4d *** col < numBorderCh \n' \
                     % (h, k, l))
                 continue
                 
             if col > (nCols - numBorderCh):
-                logFile.write(' %4d%4d%4d *** col > (nCols - numBorderCh)\n' \
+                if reducedLogFile: logFile.write(' %4d%4d%4d *** col > (nCols - numBorderCh)\n' \
                     % (h, k, l))
                 continue
                 
             if row < numBorderCh:
-                logFile.write(' %4d%4d%4d *** row < numBorderCh \n' \
+                if reducedLogFile: logFile.write(' %4d%4d%4d *** row < numBorderCh \n' \
                     % (h, k, l))
                 continue
                 
             if row > (nRows - numBorderCh):
-                logFile.write(' %4d%4d%4d *** row > (nRows - numBorderCh)\n' \
+                if reducedLogFile: logFile.write(' %4d%4d%4d *** row > (nRows - numBorderCh)\n' \
                     % (h, k, l))
                 continue
                                 
             if dsp < dMin:
-                logFile.write(' %4d%4d%4d *** dsp < dMin \n' \
+                if reducedLogFile: logFile.write(' %4d%4d%4d *** dsp < dMin \n' \
                     % (h, k, l))
                 continue
             
@@ -433,15 +436,25 @@ class anvred2(GenericTOF_SCD):
                   spect1[id], spectra[id][0], spectra[id][1] )
                 spect = spectx[0]
                 relSigSpect = spectx[1]
+                
             if spect == 0.0:
-                logFile.write(' %4d%4d%4d *** spect == 0.0 \n' \
+                if reducedLogFile: logFile.write(' %4d%4d%4d *** spect == 0.0 \n' \
                     % (h, k, l))
                 continue
+            
+            # correct for the slant path throught the scintillator glass
+            mu = (9.614 * wl) + 0.266    # mu for GS20 glass
+            depth = calibParam[8][id]
+            eff_center = 1.0 - exp(-mu * depth)  # efficiency at center of detector
+            cosA = dist[id] / L2
+            pathlength = depth / cosA
+            eff_R = 1.0 - exp(-mu * pathlength)   # efficiency at point R
+            sp_ratio = eff_center / eff_R  # slant path efficiency ratio
             
             sinsqt = ( wl / (2.0*dsp) )**2
             wl4 = wl**4
                 
-            correc = scaleFactor * (sinsqt * cmonx ) / (wl4 * spect )
+            correc = scaleFactor * sinsqt * cmonx * sp_ratio / (wl4 * spect )
                 
             # absorption correction
             # trans[0] is the transmission
@@ -465,8 +478,8 @@ class anvred2(GenericTOF_SCD):
             tbar = trans[1]
             
             # output reflection to log file and to hkl file
-            logFile.write(' %4d%4d%4d%10.2f%8.2f%7.3f%10.2f%8.2f%8.4f%8.4f%8.4f%8.4f\n' \
-                % (h, k, l, fsq, sigfsq, wl, inti, sigi, spect, sinsqt, trans[0], tbar))
+            logFile.write(' %4d%4d%4d%10.2f%8.2f%7.3f%10.2f%8.2f%8.4f%8.4f%8.4f%8.4f%8.4f\n' \
+                % (h, k, l, fsq, sigfsq, wl, inti, sigi, spect, sinsqt, trans[0], tbar, sp_ratio))
             
             hklFile.write('%4d%4d%4d%8.2f%8.2f%4d%8.4f%7.4f%7d%7d%7.4f%4d%9.5f%9.4f\n' \
                 % (h, k, l, fsq, sigfsq, hstnum, wl, tbar, curhst, seqnum, transmission, dn, twoth, dsp))
