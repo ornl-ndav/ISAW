@@ -58,20 +58,29 @@ public class SCD_Multiple_Scattering_Util
                                                  int              max_l )
   {
     Peak_new fixed_peak = peaks.elementAt(seq_num - 1);
-    System.out.println("Peak " + seq_num );
-    System.out.println( Peak_new_IO.PeakString(fixed_peak) );
-
     float new_wl;
     float     wl   = fixed_peak.wl();
     float     row  = fixed_peak.y();
     float     col  = fixed_peak.x();
     IDataGrid grid = fixed_peak.getGrid();
     Vector3D sec_beam_dir = grid.position( row, col );
-    System.out.println("Secondary beam direction = " + sec_beam_dir );
-
     float max_wl = wl * ( 1 + bandwidth/200 );
     float min_wl = wl * ( 1 - bandwidth/200 );
-    System.out.println("min, max wl = " + min_wl + ", " + max_wl );
+
+//  System.out.println( Peak_new_IO.PeakString(fixed_peak) );
+    System.out.println("Possible secondary scattering from peak #" + seq_num );
+    System.out.printf( "h,k,l =  %3.0f %3.0f %3.0f  ", 
+                       fixed_peak.h(), fixed_peak.k(), fixed_peak.l() );
+    System.out.printf( "wl = %8.6f\n", wl );
+    System.out.printf( "Secondary beam direction (IPNS lab x,y,z) " +
+                       "%8.6f  %8.6f  %8.6f\n", 
+                       sec_beam_dir.getX(),   
+                       sec_beam_dir.getY(),   
+                       sec_beam_dir.getZ() );
+
+    System.out.printf(
+          "wl tolerance(percent) = %4.1f, min wl = %8.6f max wl = %8.6f\n", 
+           bandwidth, min_wl, max_wl );
 
                                          // put orientation matrix into lab
                                          // coordinates, so peaks are predicted
@@ -83,7 +92,7 @@ public class SCD_Multiple_Scattering_Util
     Vector3D shift_vec = new Vector3D( sec_beam_dir );
     shift_vec.multiply( 1/wl );
     Tran3D toQ = new Tran3D( or_mat );
-    System.out.println( toQ );    
+//    System.out.println( toQ );    
     int discard_count = 0;
     int found_count = 0;
     Vector3D q_vec = new Vector3D();
@@ -99,8 +108,8 @@ public class SCD_Multiple_Scattering_Util
              new_wl = 1/q_vec.length();
              if ( min_wl < new_wl && new_wl < max_wl )
              {
-               System.out.print  ( "wl match at " + h + ", " + k + ", " + l );
-               System.out.println( "  wl = " + new_wl );
+               System.out.printf( "wl match at hkl: %3d %3d %3d  ", h,k,l );
+               System.out.printf( "  wl = %8.6f\n", new_wl );
                found_count++;
              }
            }
@@ -108,8 +117,8 @@ public class SCD_Multiple_Scattering_Util
              discard_count++;
         }
   
-    System.out.println("Discarded " + discard_count );
-    System.out.println("found " + found_count );
+    System.out.println("Discarded " + discard_count + " possible hkls");
+    System.out.println("Kept " + found_count + " within wavelength range" );
   
     if ( found_count > max_found )
       max_found = found_count;
@@ -159,14 +168,14 @@ public class SCD_Multiple_Scattering_Util
   {
     String peaks_filename  = "/home/dennis/TOPAZ_3680.peaks";
     String or_mat_filename = "/home/dennis/TOPAZ_3680.mat";
-//  int    seq_num = 1;
-    int    seq_num = 2;
+    int    seq_num = 1;
+//  int    seq_num = 2;
 
   /*
     String peaks_filename  = "/home/dennis/TOPAZ_3680_EV.peaks";
     String or_mat_filename = "/home/dennis/TOPAZ_3680_EV.mat";
-//  int    seq_num = 2;
-    int    seq_num = 4;
+    int    seq_num = 2;
+//  int    seq_num = 4;
   */
 
 
