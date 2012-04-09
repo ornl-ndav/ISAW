@@ -112,9 +112,9 @@ public class SCD_Multiple_Scattering_Util
                System.out.printf( "  wl = %8.6f\n", new_wl );
                found_count++;
              }
+             else
+               discard_count++;
            }
-           else
-             discard_count++;
         }
   
     System.out.println("Discarded " + discard_count + " possible hkls");
@@ -182,8 +182,8 @@ public class SCD_Multiple_Scattering_Util
     Vector<Peak_new> peaks = Peak_new_IO.ReadPeaks_new( peaks_filename );
     Tran3D           or_mat = LoadOrientationMatrix( or_mat_filename );
     
-    FindSecondaryReflections( peaks, or_mat, 1.0f, seq_num, 25, 25, 25 );
-//    FindSecondaryReflections( peaks, or_mat, 1.0f, 25, 25, 25 );
+//    FindSecondaryReflections( peaks, or_mat, 1.0f, seq_num, 25, 25, 25 );
+    FindSecondaryReflections( peaks, or_mat, 1.0f, 25, 25, 25 );
 
     System.out.println("Min found = " + min_found );
     System.out.println("Max found = " + max_found );
