@@ -977,18 +977,21 @@ public class Histogram3D
     int center_z_index = z_binner.index(x,y,z);
     if ( center_z_index < 0 || center_z_index >= histogram.length )
     {
+/*
       System.out.println("ERROR: center_z_index invalid : " + center_z_index );
       System.out.println("Point coordinates, x, y, z " +x+ ", " +y+ ", " +z );
       System.out.println("Histogram size, (x,y,z) : " +
                          histogram[0][0].length + ", " +
                          histogram[0].length + ", " +
                          histogram.length ); 
+*/
       return null;
     }
 
     int center_y_index = y_binner.index(x,y,z);
     if ( center_y_index < 0 || center_y_index >= histogram[0].length )
     {
+/*
       System.out.println("ERROR: center_y_index invalid : " + center_y_index );
       System.out.println("       center_z_index was :     " + center_z_index );
       System.out.println("Point coordinates, x, y, z " +x+ ", " +y+ ", " +z );
@@ -996,12 +999,14 @@ public class Histogram3D
                          histogram[0][0].length + ", " +
                          histogram[0].length + ", " +
                          histogram.length ); 
+*/
       return null;
     }
 
     int center_x_index = x_binner.index(x,y,z);
     if ( center_x_index < 0 || center_x_index >= histogram[0][0].length )
     {
+/*
       System.out.println("ERROR: center_x_index invalid : " + center_x_index );
       System.out.println("       center_y_index was :     " + center_y_index );
       System.out.println("       center_z_index was :     " + center_z_index );
@@ -1010,6 +1015,7 @@ public class Histogram3D
                          histogram[0][0].length + ", " +
                          histogram[0].length + ", " +
                          histogram.length ); 
+*/
       return null;
     }
 

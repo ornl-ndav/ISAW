@@ -732,9 +732,10 @@ public class HistogramHandler implements IReceiveMessage
 
     if ( result == null )
     {
-      System.out.println("Null sphereIntegrals, x, y, x = " 
+/*    System.out.println("Null sphereIntegrals, x, y, x = " 
                          + x + ", " + y + ", " + z +
                          "  centroid = " + centroid );
+*/
       return null;
     }
     
