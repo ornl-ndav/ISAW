@@ -17,7 +17,93 @@ public class SCD_Multiple_Scattering_Util
   static int max_found = 0;
   static int total_found = 0;
   static int num_with_zero = 0;
+
+  /**
+   *  Get a list of the possible secondary reflections that could be generated
+   *  by neutrons travelling in the specified direction with the specified
+   *  wavelength.  This method returns a Vector containing sets of three 
+   *  objects containint the following information.  
+   *    First entry:  Vector3D holding h,k,l of first secondary scattering peak
+   *    Second entry: Direction vector in real space for first secondary
+   *                  scattering peak. 
+   *    Third entry:  The wavelength for the first secondary scattering peak.
+   *
+   *  @param incident_dir   Vector3D in direction of travel for some 
+   *                        incident neutron beam. 
+   *  @param wl             The wavelength of the neutrons.
+   *  @param bandwidth      Tolerance band around the specified wavelength
+   *                        expressed as a total percent variation.  That is,
+   *                        the min and max wavelengths are within 
+   *                        +- bandwidth/2 percent of the specified wavelength.
+   *  @param or_mat         The orientation transform, rotated by the 
+   *                        goniometer angles, so that the predicted Q vectors
+   *                        are in a reciprocal space coordinate system 
+   *                        aligned with the lab coordinate system.
+   *  @param max_h          Peaks with h values between -max_h and + max_h
+   *                        will be tested.
+   *  @param max_k          Peaks with k values between -max_k and + max_k
+   *                        will be tested.
+   *  @param max_l          Peaks with l values between -max_l and + max_l
+   *                        will be tested.
+   * @return a Vector containing hkl, real-space direction and wavelength 
+   *         for peaks that could scatter neutrons travelling along the 
+   *         specified direction with the specified wavelength.
+   */
+  public static Vector FindSecondaryReflections( Vector3D  incident_dir, 
+                                                 float     wl,
+                                                 float     bandwidth,
+                                                 Tran3D    or_mat,
+                                                 int       max_h,
+                                                 int       max_k,
+                                                 int       max_l )
+  {
+    System.out.println("\nStarting new FindSecondaryReflections\n");
+    Vector result = new Vector();
+    float max_wl = wl * ( 1 + bandwidth/200 );
+    float min_wl = wl * ( 1 - bandwidth/200 );
+    float new_wl;
+
+    incident_dir.normalize();
+
+    int found_count = 0;
+    Vector3D q_vec = new Vector3D();
+                                            // try "all" h,k,l values
+    for ( int h = -max_h; h <= max_h; h++ )
+      for ( int k = -max_k; k <= max_k; k++ )
+        for ( int l = -max_l; l <= max_l; l++ )
+        {
+           Vector3D hkl = new Vector3D( h, k, l );
+
+           or_mat.apply_to( hkl, q_vec );   // make the q_vector in lab coords
+
+           if ( q_vec.dot( incident_dir ) < 0 )
+           {                                // find the wavelength at which the
+                                            // q_vec will scatter.  That is,
+                                            // solve: |Q+t*V|=t where t = 1/wl
+                                            // V is unit vector in direction of
+                                            // incident beam and Q = q_vec.
+             new_wl = -(2*q_vec.dot(incident_dir) )/q_vec.dot(q_vec);
+             if ( min_wl < new_wl && new_wl < max_wl )
+             {
+               found_count++;
+
+               Vector3D real_vec  = new Vector3D( q_vec );
+               Vector3D shift_vec = new Vector3D( incident_dir );
+               shift_vec.multiply( 1/new_wl );
+               real_vec.add( shift_vec );
+               real_vec.normalize();
+
+               result.add ( new Vector3D( h, k, l ) );
+               result.add ( new Vector3D( real_vec ) );
+               result.add ( new_wl );
+             }
+           }
+        }
+    System.out.println("\nEnding new FindSecondaryReflections\n");
+    return result;
+  }
  
+
   public static Vector FindSecondaryReflections( Vector<Peak_new> peaks,
                                                  Tran3D           or_mat,
                                                  float            bandwidth,
@@ -59,13 +145,20 @@ public class SCD_Multiple_Scattering_Util
   {
     Peak_new fixed_peak = peaks.elementAt(seq_num - 1);
     float new_wl;
-    float     wl   = fixed_peak.wl();
-    float     row  = fixed_peak.y();
-    float     col  = fixed_peak.x();
-    IDataGrid grid = fixed_peak.getGrid();
+    float     wl     = fixed_peak.wl();
+    float     max_wl = wl * ( 1 + bandwidth/200 );
+    float     min_wl = wl * ( 1 - bandwidth/200 );
+    float     row    = fixed_peak.y();
+    float     col    = fixed_peak.x();
+    System.out.println("row, col = " + row + ", " + col );
+    IDataGrid grid   = fixed_peak.getGrid();
+
     Vector3D sec_beam_dir = grid.position( row, col );
-    float max_wl = wl * ( 1 + bandwidth/200 );
-    float min_wl = wl * ( 1 - bandwidth/200 );
+    sec_beam_dir.normalize();
+
+    Vector3D x_dir = new Vector3D( 1, 0, 0 );
+    float dot_prod = x_dir.dot( sec_beam_dir );
+    System.out.println("Two theta = " + Math.acos( dot_prod ) );
 
 //  System.out.println( Peak_new_IO.PeakString(fixed_peak) );
     System.out.println("Possible secondary scattering from peak #" + seq_num );
@@ -87,12 +180,35 @@ public class SCD_Multiple_Scattering_Util
                                          // in lab coordinates.
     or_mat = ApplyGoniometerRotationToUB( fixed_peak, or_mat ); 
 
- // sec_beam_dir.set( 1, 0 , 0 );        // quick hack to test code for 
+
+                                         // quick hack to test code for 
                                          // finding h,k,l with wl and that dir
-    Vector3D shift_vec = new Vector3D( sec_beam_dir );
+    Vector3D initial_beam_dir = new Vector3D( 1, 0, 0 );
+    Vector3D shift_vec = new Vector3D( initial_beam_dir );
     shift_vec.multiply( 1/wl );
-    Tran3D toQ = new Tran3D( or_mat );
-//    System.out.println( toQ );    
+
+    Vector3D alt_beam_dir = new Vector3D( fixed_peak.h(), 
+                                          fixed_peak.k(), 
+                                          fixed_peak.l() );
+    or_mat.apply_to( alt_beam_dir, alt_beam_dir );
+    System.out.println("alt_beam_dir length = " + alt_beam_dir.length() );
+    alt_beam_dir.add( shift_vec );
+    alt_beam_dir.normalize();
+    System.out.printf( "Alternately calculated beam direction " +
+                       "%8.6f  %8.6f  %8.6f\n",
+                       alt_beam_dir.getX(),
+                       alt_beam_dir.getY(),
+                       alt_beam_dir.getZ() );
+    dot_prod = x_dir.dot( alt_beam_dir );
+    System.out.println("Two theta = " + Math.acos( dot_prod ) );
+
+    shift_vec.set( sec_beam_dir );
+    shift_vec.multiply( 1/wl );
+    System.out.println("OR_MAT = " + or_mat );
+    System.out.println("Incident Vector = " + sec_beam_dir );
+    System.out.println("Shift Vector = " + shift_vec );
+    System.out.println("Min, max wl = " + min_wl + ", " + max_wl );
+
     int discard_count = 0;
     int found_count = 0;
     Vector3D q_vec = new Vector3D();
@@ -131,6 +247,28 @@ public class SCD_Multiple_Scattering_Util
     if ( found_count == 0 )
       num_with_zero++;
 
+//    sec_beam_dir.set( 1, 0, 0 );
+    Vector result = FindSecondaryReflections( sec_beam_dir, wl, bandwidth,
+                                              or_mat,
+                                              max_h, max_k, max_l );
+    System.out.println("Reflections returned in vector:");
+    for ( int i = 0; i < result.size(); i+=3 )
+    {
+      Vector3D hkl          = (Vector3D)result.elementAt(i);
+      Vector3D new_beam_dir = (Vector3D)result.elementAt(i+1);
+      int new_h = Math.round( hkl.getX() );
+      int new_k = Math.round( hkl.getY() );
+      int new_l = Math.round( hkl.getZ() );
+          new_wl = (Float)result.elementAt(i+2);
+      System.out.printf( "wl match at hkl: %3d %3d %3d  ", new_h,new_k,new_l );
+      System.out.printf( "  refl dir = %9.6f  %9.6f  %9.6f",
+                            new_beam_dir.getX(),
+                            new_beam_dir.getY(),
+                            new_beam_dir.getZ() );
+      System.out.printf( "  wl = %8.6f\n", new_wl );
+    }
+    System.out.println("New method found " + result.size()/3 );
+
     return null;
   }
 
@@ -166,24 +304,28 @@ public class SCD_Multiple_Scattering_Util
 
   public static void main(String args[]) throws Exception
   {
+  /*
+    String peaks_filename  = "/home/dennis/TOPAZ_3134_EV.peaks";
+    String or_mat_filename = "/home/dennis/TOPAZ_3134_EV.mat";
+    int    seq_num = 474;
+//  int    seq_num = 475;
+*/
     String peaks_filename  = "/home/dennis/TOPAZ_3680.peaks";
     String or_mat_filename = "/home/dennis/TOPAZ_3680.mat";
     int    seq_num = 1;
 //  int    seq_num = 2;
-
-  /*
+/*
     String peaks_filename  = "/home/dennis/TOPAZ_3680_EV.peaks";
     String or_mat_filename = "/home/dennis/TOPAZ_3680_EV.mat";
     int    seq_num = 2;
 //  int    seq_num = 4;
-  */
-
+*/
 
     Vector<Peak_new> peaks = Peak_new_IO.ReadPeaks_new( peaks_filename );
     Tran3D           or_mat = LoadOrientationMatrix( or_mat_filename );
     
-//    FindSecondaryReflections( peaks, or_mat, 1.0f, seq_num, 25, 25, 25 );
-    FindSecondaryReflections( peaks, or_mat, 1.0f, 25, 25, 25 );
+    FindSecondaryReflections( peaks, or_mat, 1.0f, seq_num, 25, 25, 25 );
+//    FindSecondaryReflections( peaks, or_mat, 1.0f, 25, 25, 25 );
 
     System.out.println("Min found = " + min_found );
     System.out.println("Max found = " + max_found );
