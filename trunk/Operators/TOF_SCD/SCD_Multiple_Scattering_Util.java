@@ -193,7 +193,7 @@ public class SCD_Multiple_Scattering_Util
              Math.round(hkl.getZ()) == l_target  )
 */      
         Vector3D last_ref_dir = (Vector3D)second_reflections.elementAt( j+1 );
-        if ( last_ref_dir.dot( target_dir ) > 0.9999 )
+        if ( last_ref_dir.dot( target_dir ) > 0.999938 )
         {
           reflections.add( first_reflections.elementAt(i) );
           reflections.add( first_reflections.elementAt(i+1) );
@@ -427,16 +427,16 @@ public class SCD_Multiple_Scattering_Util
 
   public static void main(String args[]) throws Exception
   {
-  /*
     String peaks_filename  = "/home/dennis/TOPAZ_3134_EV.peaks";
     String or_mat_filename = "/home/dennis/TOPAZ_3134_EV.mat";
     int    seq_num = 474;
 //  int    seq_num = 475;
-*/
+/*
     String peaks_filename  = "/home/dennis/TOPAZ_3680.peaks";
     String or_mat_filename = "/home/dennis/TOPAZ_3680.mat";
     int    seq_num = 1;
 //  int    seq_num = 2;
+*/
 /*
     String peaks_filename  = "/home/dennis/TOPAZ_3680_EV.peaks";
     String or_mat_filename = "/home/dennis/TOPAZ_3680_EV.mat";
@@ -476,8 +476,8 @@ public class SCD_Multiple_Scattering_Util
                            
         ShowReflections( result ); 
         count_additive++;
-        if ( result.size() / 3  > max_additive )
-          max_additive = result.size() / 3;
+        if ( result.size() / 6  > max_additive )
+          max_additive = result.size() / 6;
       }
     }
     if ( max_additive == 0 )
@@ -485,6 +485,7 @@ public class SCD_Multiple_Scattering_Util
     else
       System.out.println("FOUND UP TO " + max_additive + 
                          " FOR " + count_additive + " REFLECTIONS" );
+    System.out.println("OUT OF " + peaks.size() + " PEAKS IN PEAKS FILE");
    
   }
 
