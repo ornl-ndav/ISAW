@@ -127,6 +127,10 @@ public class SCD_Multiple_Scattering_Util
    *                        expressed as a total percent variation.  That is,
    *                        the min and max wavelengths are within 
    *                        +- bandwidth/2 percent of the specified wavelength.
+   *  @param angle_tol      Tolerance on how closely the last reflection in
+   *                        a pair of reflections should match the primary
+   *                        reflection.  The tolerance must be specified in
+   *                        degrees.
    *  @param or_mat         The orientation transform, rotated by the 
    *                        goniometer angles, so that the predicted Q vectors
    *                        are in a reciprocal space coordinate system 
@@ -150,6 +154,7 @@ public class SCD_Multiple_Scattering_Util
   public static Vector FindAdditiveReflections( Vector3D  incident_dir,
                                                 float     wl,
                                                 float     bandwidth,
+                                                float     angle_tol,
                                                 Tran3D    or_mat,
                                                 int       h_target,
                                                 int       k_target,
@@ -165,6 +170,7 @@ public class SCD_Multiple_Scattering_Util
       return new Vector();
                                          
     Vector reflections = new Vector();
+    double dot_product_tol = Math.cos( angle_tol * Math.PI/180.0 );
     
                                          // first find all peaks that scatter
                                          // at the required wavelength and
@@ -193,7 +199,7 @@ public class SCD_Multiple_Scattering_Util
              Math.round(hkl.getZ()) == l_target  )
 */      
         Vector3D last_ref_dir = (Vector3D)second_reflections.elementAt( j+1 );
-        if ( last_ref_dir.dot( target_dir ) > 0.999938 )
+        if ( last_ref_dir.dot( target_dir ) > dot_product_tol )
         {
           reflections.add( first_reflections.elementAt(i) );
           reflections.add( first_reflections.elementAt(i+1) );
@@ -309,6 +315,7 @@ public class SCD_Multiple_Scattering_Util
   public static Vector FindAdditiveReflections( Vector<Peak_new> peaks,
                                                 Tran3D           or_mat,
                                                 float            bandwidth,
+                                                float            angle_tol,
                                                 int              seq_num,
                                                 int              max_h,
                                                 int              max_k,
@@ -332,7 +339,7 @@ public class SCD_Multiple_Scattering_Util
     Vector3D incident_dir = new Vector3D( 1, 0, 0 );
 
     Vector result = FindAdditiveReflections( 
-                             incident_dir, wl, bandwidth,
+                             incident_dir, wl, bandwidth, angle_tol,
                              or_mat,
                              Math.round(fixed_peak.h()), 
                              Math.round(fixed_peak.k()), 
@@ -425,13 +432,111 @@ public class SCD_Multiple_Scattering_Util
   }
 
 
+  public static void AnalyzeNickelRuns( int target_h, 
+                                        int target_k, 
+                                        int target_l,
+                                        boolean show_reflections ) 
+                     throws Exception
+  {
+    String directory  = "/usr2/TOPAZ_NICKEL_MULTIPLE_SCATT";
+    String peaks_file = directory + "/Ni2ndScan.integrate";
+    String mat_prefix = directory + "/lsNi2ndScan";
+    int first_run = 4796;
+    int last_run  = 4848;
+
+    float bandwidth = 1.0f;
+    float angle_tol = 0.5f;
+
+    int   max_h    = 15;
+    int   max_k    = 15;
+    int   max_l    = 15;
+
+    System.out.println("Additive reflections for peak " + target_h + 
+                       ", " + target_k +
+                       ", " + target_l );
+    System.out.println("Wavelength tolerance = " + bandwidth + "%" );
+    System.out.println("Angle tolerance      = " + angle_tol + "degrees" );
+    System.out.printf(" RUN    N_ADDITIVE\n");
+
+    Vector3D         incident_dir = new Vector3D( 1, 0, 0 );
+    Vector           result;
+    Vector<Peak_new> peaks = Peak_new_IO.ReadPeaks_new( peaks_file );
+    for ( int i = 0; i < peaks.size(); i++ )
+    {
+      Peak_new peak = peaks.elementAt(i);
+//      System.out.println( peak );
+
+      if ( Math.round(peak.h()) == target_h &&
+           Math.round(peak.k()) == target_k &&
+           Math.round(peak.l()) == target_l  )
+      {
+        int runnum = peak.nrun();
+        Tran3D or_mat = LoadOrientationMatrix( mat_prefix + runnum + ".mat" );
+        or_mat = ApplyGoniometerRotationToUB( peak, or_mat );
+
+        float wl = peak.wl();
+
+        result = FindAdditiveReflections( incident_dir, wl,
+                                          bandwidth, angle_tol,
+                                          or_mat,
+                                          target_h, target_k, target_l,
+                                          max_h, max_k, max_l );
+
+        int n_additive_refl = result.size() / 6;
+        System.out.printf("%4d     %2d\n", runnum, n_additive_refl );
+        if ( show_reflections )
+          ShowReflections(result);
+      }
+    }
+
+
+    System.out.println("Secondary reflections for peak " + target_h + 
+                       ", " + target_k +
+                       ", " + target_l );
+    System.out.println("Wavelength tolerance = " + bandwidth + "%" );
+    System.out.printf(" RUN    N_SUBTRACTIVE\n");
+
+    for ( int i = 0; i < peaks.size(); i++ )
+    {
+      Peak_new peak = peaks.elementAt(i);
+//      System.out.println( peak );
+
+      if ( Math.round(peak.h()) == target_h &&
+           Math.round(peak.k()) == target_k &&
+           Math.round(peak.l()) == target_l  )
+      {
+        int runnum = peak.nrun();
+        Tran3D or_mat = LoadOrientationMatrix( mat_prefix + runnum + ".mat" );
+        or_mat = ApplyGoniometerRotationToUB( peak, or_mat );
+
+        float wl = peak.wl();
+        Vector3D hkl = new Vector3D( target_h, target_k, target_l );
+        Vector3D reflection_dir = ReflectionDirection( incident_dir, wl,
+                                                       or_mat, hkl );
+
+        result = FindSecondaryReflections( reflection_dir, wl,
+                                           bandwidth,
+                                           or_mat,
+                                           max_h, max_k, max_l );
+
+        int n_subtractive_refl = result.size() / 3;
+        System.out.printf("%4d     %2d\n", runnum, n_subtractive_refl );
+        if ( show_reflections )
+          ShowReflections(result);
+      }
+    }
+ 
+  }
+
+
   public static void main(String args[]) throws Exception
   {
+    AnalyzeNickelRuns( -1, -1, -1, true );
+/*
     String peaks_filename  = "/home/dennis/TOPAZ_3134_EV.peaks";
     String or_mat_filename = "/home/dennis/TOPAZ_3134_EV.mat";
     int    seq_num = 474;
 //  int    seq_num = 475;
-/*
     String peaks_filename  = "/home/dennis/TOPAZ_3680.peaks";
     String or_mat_filename = "/home/dennis/TOPAZ_3680.mat";
     int    seq_num = 1;
@@ -443,16 +548,21 @@ public class SCD_Multiple_Scattering_Util
     int    seq_num = 2;
 //  int    seq_num = 4;
 */
-
+/*
     Vector<Peak_new> peaks = Peak_new_IO.ReadPeaks_new( peaks_filename );
     Tran3D           or_mat = LoadOrientationMatrix( or_mat_filename );
     
-//  FindSecondaryReflections( peaks, or_mat, 1.0f, seq_num, 25, 25, 25 );
-//  FindSecondaryReflections( peaks, or_mat, 1.0f, 25, 25, 25 );
-//  Vector result = FindAdditiveReflections( peaks, or_mat, 
-//                                           1.0f, seq_num, 25, 25, 25 );
-//  ShowReflections( result );
-
+  FindSecondaryReflections( peaks, or_mat, 1.0f, seq_num, 25, 25, 25 );
+*/
+/*  
+  FindSecondaryReflections( peaks, or_mat, 1.0f, 25, 25, 25 );
+*/
+/*
+  Vector result = FindAdditiveReflections( peaks, or_mat, 1.0f, 0.5f,
+                                           seq_num, 25, 25, 25 );
+    ShowReflections( result );
+*/
+/*
     System.out.println("Min found = " + min_found );
     System.out.println("Max found = " + max_found );
     System.out.println("Total found = " + total_found );
@@ -486,7 +596,7 @@ public class SCD_Multiple_Scattering_Util
       System.out.println("FOUND UP TO " + max_additive + 
                          " FOR " + count_additive + " REFLECTIONS" );
     System.out.println("OUT OF " + peaks.size() + " PEAKS IN PEAKS FILE");
-   
+*/   
   }
 
 }
