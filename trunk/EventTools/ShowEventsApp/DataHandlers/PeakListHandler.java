@@ -20,6 +20,7 @@ import Operators.TOF_SCD.IndexingUtils;
 import Operators.TOF_SCD.IndexPeaks_Calc;
 import Operators.TOF_SCD.LsqrsJ_base;
 import Operators.TOF_SCD.ARCS_Index_Calc;
+import Operators.TOF_SCD.SampleOffset_Calc;
 
 import MessageTools.IReceiveMessage;
 import MessageTools.Message;
@@ -852,6 +853,16 @@ public class PeakListHandler implements IReceiveMessage
                                            true,
                                            true );
       message_center.send( mark_indexed );
+
+      Vector3D offset = new Vector3D();
+      SampleOffset_Calc.EstimateOffset( peakNew_list, tolerance, offset );
+      System.out.println("Estimated Sample Offsets(mm)");
+      System.out.printf( "Along Beam Direction: %12.3f\n", 
+                          offset.getX()*1000 );
+      System.out.printf( "In Horizontal Plane:  %12.3f\n", 
+                          offset.getY()*1000 );
+      System.out.printf( "Vertical Direction:   %12.3f\n", 
+                          offset.getZ()*1000 );
     }
     catch ( Exception ex )
     {

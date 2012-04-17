@@ -346,10 +346,25 @@ public static float VelocityFromWavelength( float wavelength_A )
 
 public static float Wavelength( float path_len_m, float time_us )
 {
-                                 /* convert time in microseconds to time    */
-                                 /* in seconds.  Calculate the wavelength   */
-                                 /* in meters and then convert to Angstroms */
   return (float)(ANGST_PER_US_PER_M * time_us / path_len_m );
+}
+
+
+/* ---------------------------- PathLength ------------------------------ */
+/**
+ *   Calculate the distance traveled by a neutron in meters, given the 
+ *   wavelength and the time it took to travel that distance.
+ *
+ *   @param wl          The wavelength of the neutron in Angstroms.
+ *   @param time_us     The time in microseconds for the neutron to travel 
+ *                      the distance.
+ *   
+ *   @return  The distance traveled in meters.
+ */
+
+public static float PathLength( float wl, float time_us )
+{
+  return (float)(ANGST_PER_US_PER_M * time_us / wl );
 }
 
 
