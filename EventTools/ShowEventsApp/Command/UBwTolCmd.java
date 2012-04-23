@@ -36,7 +36,7 @@ package EventTools.ShowEventsApp.Command;
 
 
 /**
- * This command structure holds a UB matrix and the tolerance from and
+ * This command structure holds a UB matrix and the tolerance from an
  * integer that is allowed for a peak to be indexed successfully.
  * @author ruth
  *
@@ -52,7 +52,8 @@ public class UBwTolCmd
     * @param UBT  The transpose of the UB matrix.
     * @param OffIntMax  The max distance(absolute values) from and
     *                   integer an h,k, AND l value of the peak must
-    *                   be to be successfully indexed.
+    *                   be to be successfully indexed.  Specify -1
+    *                   if a default tolerance should be used.
     */
    public UBwTolCmd( float[][]UBT,  float OffIntMax)
    {
@@ -73,8 +74,9 @@ public class UBwTolCmd
    /**
     *  
     * @return The max distance(absolute values) from and
-    *                   integer an h,k, AND l value of the peak must
-    *                   be to be successfully indexed.
+    *         integer an h,k, AND l value of the peak must
+    *         be to be successfully indexed.  Use a default
+    *         tolerance if this is less than or equal to zero.
     */
    public float getOffIntMax()
    {
