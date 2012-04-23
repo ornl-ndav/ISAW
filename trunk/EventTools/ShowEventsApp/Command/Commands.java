@@ -184,6 +184,8 @@ public class Commands
   public static final String INDEX_PEAKS_ROSS = "INDEX_PEAKS_ROSS";
 
   public static final String INDEX_PEAKS_ARCS = "INDEX_PEAKS_ARCS";
+
+  public static final String TRANSFORM_HKL = "TRANSFORM_HKL";
   
   public static final String INIT_DQ = "INIT_DQ";
   

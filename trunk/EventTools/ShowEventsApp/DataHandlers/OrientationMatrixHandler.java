@@ -82,9 +82,8 @@ public class OrientationMatrixHandler implements IReceiveMessage
   private Vector3D      last_qxyz = null;          // last choice of qxyz
                                                    // "near" horizontal plane
                                                    // for ARCS
-
-  int runNumber =0;
-  int nbins =0;
+  int   runNumber =0;
+  int   nbins =0;
   float phi=0;
   float chi=0;
   float omega =0;
@@ -95,6 +94,7 @@ public class OrientationMatrixHandler implements IReceiveMessage
     this.message_center = message_center;
     message_center.addReceiver( this, Commands.SET_ORIENTATION_MATRIX );
     message_center.addReceiver( this, Commands.GET_ORIENTATION_MATRIX );
+    message_center.addReceiver( this, Commands.TRANSFORM_HKL );
 
     message_center.addReceiver( this, Commands.ADD_ORIENTATION_MATRIX_INFO );
 
@@ -152,14 +152,63 @@ public class OrientationMatrixHandler implements IReceiveMessage
       message_center.send( mat_message );
     } 
 
+    else if ( message.getName().equals(Commands.TRANSFORM_HKL) )
+    {
+      if ( orientation_matrix == null )
+      {
+        Util.sendError( "There is no Orientation matrix, can't transform hkl" );
+        return false; 
+      }
+      Object value = message.getValue();
+      if ( value == null || !(value instanceof double[][] ) )
+      {
+        Util.sendError( "Null or wrong type matrix, can't transform hkl" );
+        return false;
+      }
+
+      double[][] hkl_tran = (double[][])value;
+      double[][] hkl_tran_inv = null;
+      try
+      {
+        hkl_tran_inv = LinearAlgebra.getInverse(hkl_tran);
+      }
+      catch ( Exception ex )
+      {
+        Util.sendError("Transform matrix NOT invertible, can't transform hkl");
+        return false;
+      }
+      double determinant = LinearAlgebra.determinant( hkl_tran );
+      if ( determinant < 0 )
+        Util.sendInfo("WARNING: Transform matrix has determinant < 0");
+
+      double[][] UB = new double[3][3];       // get actual UB (not transposed)
+      for ( int row = 0; row < 3; row++ )
+        for ( int col = 0; col < 3; col++ )
+          UB[row][col] = orientation_matrix[col][row];
+
+                                              // now adjust for hkl tranform
+      double[][] new_UB = LinearAlgebra.mult( UB, hkl_tran_inv );
+
+      float[][] orMat = new float[3][3];      // now get transpose to broadcast
+      for ( int row = 0; row < 3; row++ )
+        for ( int col = 0; col < 3; col++ )
+          orMat[row][col] = (float)new_UB[col][row];
+
+       message_center.send( 
+         new Message( Commands.SET_ORIENTATION_MATRIX,
+                      Commands.MakeSET_ORIENTATION_MATRIX_arg( orMat, sig_abc),
+                      true, false ));
+
+       Util.sendInfo( "The orientation matrix has been modified." );
+       IndexPeakWithOrientationMat( orMat, -1 );
+    }
+
     else if ( message.getName().equals(Commands.SHOW_ORIENTATION_MATRIX))
     {
        if ( orientation_matrix != null )
-          
          ShowOrientationMatrix( orientation_matrix );
        
        else
-          
          Util.sendError( "There is no Orientation matrix to Show" );
     }
 
@@ -209,9 +258,10 @@ public class OrientationMatrixHandler implements IReceiveMessage
        float[][] orMat = LinearAlgebra.getTranspose( (float[][]) Res );
        orMat = ApplyGoniometerRotationToUB(orMat,false);
        
-       message_center.send( new Message( Commands.SET_ORIENTATION_MATRIX,
-             Commands.MakeSET_ORIENTATION_MATRIX_arg( orMat,null),
-             true ));//Must broadcast this orientation matrix
+       message_center.send( 
+             new Message( Commands.SET_ORIENTATION_MATRIX,
+                          Commands.MakeSET_ORIENTATION_MATRIX_arg( orMat,null),
+                          true, false ));
        
        Util.sendInfo( "The orientation matrix has been read in " );
        Util.sendInfo( "The Sample phi,chi and omega have been " +
@@ -313,7 +363,6 @@ public class OrientationMatrixHandler implements IReceiveMessage
                            new UBwTolCmd(UB, offInt),
                            false,
                            true ) );
-
      return true;
   }
 

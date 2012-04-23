@@ -67,6 +67,7 @@ public class controlsPanel extends JPanel
    private JButton                filterPeaksBtn;
    private JButton                indexPeaksBtn;
    private JButton                scalarOrientBtn;
+   private JButton                transformHKL_Btn;
    private JButton                integrateBtn;
    
    private JButton                selectedPoint;
@@ -77,18 +78,19 @@ public class controlsPanel extends JPanel
    private JButton                additionalViewsBtn;
    private JButton                drawOptions;
    
+   private filterPeaksPanel       filterPeaks;
    private filePanel              filepanel;
-   private displayColorEditor     colorEditPanel;
    private peakOptionsPanel       peakPanel;
    private indexPeaksPanel        indexPeakPanel;
    private JPanel                 scalarOrientPanel;
+   private TransformHKL_Panel     transformHKL_Panel;
+   private IntegratePeaksPanel    integratePeaks;
    private positionInfoPanel      positionPanel;
    private peaksStatPanel         peakInfoPanel;
+   private displayColorEditor     colorEditPanel;
    private SliceSelectorPanel     slicePanel;
    private additionalViewControls sliceControlsPanel;
    private drawingOptions         drawoptions;
-   private filterPeaksPanel       filterPeaks;
-   private IntegratePeaksPanel    integratePeaks;
 
    
 // private final Color background_color = new Color( 221, 232, 243 );
@@ -126,6 +128,7 @@ public class controlsPanel extends JPanel
       indexPeakPanel     = new indexPeaksPanel( messageCenter );
       scalarOrientPanel  = (new ScalarHandlePanel( messageCenter)).
                               getPanel( );
+      transformHKL_Panel = new TransformHKL_Panel( messageCenter );
       positionPanel      = new positionInfoPanel( messageCenter );
       peakInfoPanel      = new peaksStatPanel( messageCenter);
       filterPeaks        = new filterPeaksPanel( messageCenter );
@@ -153,7 +156,7 @@ public class controlsPanel extends JPanel
    {
       JPanel panel = new JPanel();
       panel.setBorder(new TitledBorder("Operations"));
-      panel.setLayout(new GridLayout(6,1));
+      panel.setLayout(new GridLayout(7,1));
       
       loadFileBtn = new JButton("Load Data");
       loadFileBtn.setBackground( background_color );
@@ -174,6 +177,10 @@ public class controlsPanel extends JPanel
       scalarOrientBtn = new JButton("Cell Type");
       scalarOrientBtn.setBackground( background_color );
       scalarOrientBtn.addActionListener(new buttonListener());
+
+      transformHKL_Btn = new JButton("Transform HKL");
+      transformHKL_Btn.setBackground( background_color );
+      transformHKL_Btn.addActionListener(new buttonListener());
       
       integrateBtn = new JButton("Integrate");
       integrateBtn.setBackground( background_color );
@@ -185,6 +192,7 @@ public class controlsPanel extends JPanel
       panel.add(findPeaksBtn);
       panel.add(indexPeaksBtn);
       panel.add(scalarOrientBtn);
+      panel.add(transformHKL_Btn);
       panel.add(integrateBtn);
       
       return panel;
@@ -270,6 +278,9 @@ public class controlsPanel extends JPanel
          if (e.getSource().equals(scalarOrientBtn))
             value = scalarOrientPanel;
          
+         if (e.getSource().equals(transformHKL_Btn))
+            value = transformHKL_Panel;
+
          if (e.getSource().equals(integrateBtn))
             value = integratePeaks;
          

@@ -553,12 +553,17 @@ public class PeakListHandler implements IReceiveMessage
     {
        UBwTolCmd UBB = (UBwTolCmd)message.getValue();
        
-       indexAllPeaks( peakNew_list, UBB.getUB(), UBB.getOffIntMax());
+                                           // don't use the specified 
+                                           // if it is not valid
+       float temp_tol = UBB.getOffIntMax();
+       if ( temp_tol > 0 )
+         tolerance = UBB.getOffIntMax( );
+ 
+       indexAllPeaks( peakNew_list, UBB.getUB(), tolerance );
        Message set_peaks = new Message( Commands.PEAK_LIST_CHANGED,
                                         peakNew_list,
                                         true );
        this.UB = UBB.getUB( );
-       tolerance = UBB.getOffIntMax( );
        message_center.send( set_peaks );
        
        Message mark_indexed  = new Message( Commands.MARK_INDEXED_PEAKS,
