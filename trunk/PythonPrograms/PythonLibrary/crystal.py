@@ -327,7 +327,6 @@ def rotation_matrix(omega, chi, phi):
 #  SNS:
 #     col2  col3  col1
 #--------------------------------------------------------
-
 def UB_IPNS_2_SNS(UB_IPNS):
     "Transform the IPNS UB matrix to the SNS matrix."
 
@@ -339,4 +338,57 @@ def UB_IPNS_2_SNS(UB_IPNS):
     
     return UB_SNS
 
+
+#--------------------------------------------------------
+#               function center
+#--------------------------------------------------------
+#  Test for centering.
+#  Return True if peak is allowed.
+#  Return False if peaks is not allowed.
+#--------------------------------------------------------
+def center(h, k, l, center_type):
+    """ Function to test for allowed (True) and not allowed (False)
+    peaks due to centering."""
+    
+    if center_type == 'P':
+        return True
+    
+    if center_type == 'A':
+        sum = k + l
+        if (sum % 2) == 0: return True
+        return False
+        
+    if center_type == 'B':
+        sum = h + l
+        if (sum % 2) == 0: return True
+        return False
+        
+    if center_type == 'C':
+        sum = h + k
+        if (sum % 2) == 0: return True
+        return False
+        
+    if center_type == 'F':
+        sum = h + k
+        if (sum % 2) != 0: return False
+        sum = h + l
+        if (sum % 2) != 0: return False
+        sum = k + l
+        if (sum % 2) != 0: return False
+        return True
+        
+    if center_type == 'I':
+        sum = h + k + l
+        if (sum % 2) != 0: return False
+        return True
+        
+    if center_type == 'R':
+        sum = -h + k + l
+        if (sum % 3) != 0: return False
+        return True
+        
+    print 'Centering type not P, A, B, C, F, I or R.'
+    
+
+        
 
