@@ -2,6 +2,8 @@
 """
 Fit gaussian to peak profile.
 A. J. Schultz, April 2012
+
+This version reads the output from qplot5.py to obtain the counts.
 """
 
 from scipy.optimize import curve_fit
@@ -15,7 +17,7 @@ def gaussian(x, a, sig, mu, b, c):
     f = (a / (sig * sqrt2pi) * pylab.exp(-0.5 * (x - mu)**2 / sig**2)) + (b * x) + c
     return f
 
-# Open output file of ghe Gaussian coefficients.
+# Open output file of the Gaussian coefficients.
 output = open( 'gaussian_coefficients.dat', 'w' )
 
 # Make a ./plots subdirectory for the profile plot files.
@@ -60,6 +62,12 @@ while True:
     p0[0] = max(yobs) * 2.5 * sqrt2pi
     p0[1] = 2.5
     p0[2] = 0.5 * len(yobs)
+    
+    if h == 4 and k == -8 and l == -3:
+        print h, k, l
+        print x
+        print yobs
+        print p0
     popt, pcov = curve_fit(gaussian, x, yobs, p0)
     
     a = popt[0]
