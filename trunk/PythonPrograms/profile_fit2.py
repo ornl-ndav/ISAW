@@ -269,7 +269,7 @@ for i in range(numberOfEvents):
     lenPerpendicular = lenQdata * math.sin(angle)
     if lenPerpendicular > radiusQ: continue
     lenOnQpeak = lenQdata * cosAng   # projection of event on the Q vector
-    Qdiff = lenQpeak - lenOnQpeak
+    Qdiff = lenOnQpeak - lenQpeak    # corrected sign of Qdiff, 5/3/2012
     if abs(Qdiff) > (0.5 * rangeQ): continue
 	
 	# add event to appropriate y channel
@@ -316,7 +316,7 @@ for i in range(numOfPeaks):
         a_gauss = 0.0
         
 
-    if a_gauss == 0.0:
+    if a_gauss == 0.0 or pcov[0][0] < 0.0:
         siga_gauss = math.sqrt(sum(yobs))
         if siga_gauss == 0.0: siga_gauss = 99.0
         print 'siga_gauss = %f' % siga_gauss
@@ -346,7 +346,7 @@ for i in range(numOfPeaks):
         ycalc.append(gaussian(xcalc[i], a_gauss, sig_gauss, mu_gauss, b_gauss, c_gauss))
     
     pylab.plot(xcalc, ycalc)
-    pylab.plot(x, yobs, '+')
+    pylab.plot(x, yobs, 'g^')
     pylab.xlabel('Q channel, 2pi/d')
     pylab.ylabel('Counts')
 
