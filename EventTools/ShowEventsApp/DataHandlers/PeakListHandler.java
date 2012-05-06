@@ -860,7 +860,9 @@ public class PeakListHandler implements IReceiveMessage
       message_center.send( mark_indexed );
 
       Vector3D offset = new Vector3D();
-      SampleOffset_Calc.EstimateOffset( peakNew_list, tolerance, offset );
+      Tran3D   testUB = new Tran3D();
+      SampleOffset_Calc.EstimateOffset( peakNew_list, tolerance, 
+                                        offset, testUB );
       System.out.println("Estimated Sample Offsets(mm)");
       System.out.printf( "Along Beam Direction: %12.3f\n", 
                           offset.getX()*1000 );
