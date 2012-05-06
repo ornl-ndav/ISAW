@@ -61,8 +61,8 @@ public class ConventionalCellInfo
    *                  cell, but might correspond to a related cell with two
    *                  edges of the Niggli cell reflected.
    *
-   *  @param form_num The number of the form corresponding to the
-   *                  desired conventional cell.
+   *  @param form_number The number of the form corresponding to the
+   *                     desired conventional cell.
    */
   public ConventionalCellInfo( Tran3D UB, int form_number )
   {
