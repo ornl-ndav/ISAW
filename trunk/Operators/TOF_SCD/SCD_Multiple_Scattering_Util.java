@@ -131,10 +131,11 @@ public class SCD_Multiple_Scattering_Util
    *                        a pair of reflections should match the primary
    *                        reflection.  The tolerance must be specified in
    *                        degrees.
-   *  @param or_mat         The orientation transform, rotated by the 
-   *                        goniometer angles, so that the predicted Q vectors
-   *                        are in a reciprocal space coordinate system 
-   *                        aligned with the lab coordinate system.
+   *  @param or_mat         The orientation transform, which was already 
+   *                        rotated by the goniometer angles, so that the 
+   *                        predicted Q vectors are in a reciprocal space 
+   *                        coordinate system aligned with the lab coordinate
+   *                        system.
    *  @param h_target       Miller index for peak to check for additive
    *                        two stage scattering.
    *  @param k_target       Miller index for peak to check for additive
@@ -217,26 +218,6 @@ public class SCD_Multiple_Scattering_Util
   }
 
  
-
-  public static Vector FindSecondaryReflections( Vector<Peak_new> peaks,
-                                                 Tran3D           or_mat,
-                                                 float            bandwidth,
-                                                 int              max_h,
-                                                 int              max_k,
-                                                 int              max_l )
-  {
-    for (int i = 0; i < peaks.size(); i++ )
-    {
-      Peak_new peak = peaks.elementAt(i);
-      int seq_num = peak.seqnum();
-      FindSecondaryReflections( peaks, or_mat, bandwidth, seq_num,
-                                max_h, max_k, max_l );      
-    }
-  
-    return null;
-  }
-
-
   /**
    *  Get a list of the possible secondary reflections that could be generated
    *  by the the specified peak in the list of peaks.  This method returns a 
@@ -259,7 +240,7 @@ public class SCD_Multiple_Scattering_Util
                                                  int              max_l )
   {
     Peak_new fixed_peak = peaks.elementAt(seq_num - 1);
-    float new_wl;
+    float     new_wl;
     float     wl     = fixed_peak.wl();
     float     max_wl = wl * ( 1 + bandwidth/200 );
     float     min_wl = wl * ( 1 - bandwidth/200 );
@@ -311,7 +292,54 @@ public class SCD_Multiple_Scattering_Util
     return result;
   }
 
-
+  /**
+   *  Get a list of the possible pairs of reflections that could lead to 
+   *  an increased number of counts in a peak.  Specifically, all possible
+   *  reflections are first obtained for the wavelength of the given peak.
+   *  For each of these reflections, all possible reflections are checked
+   *  to see if any of them reflect back into the original peak.
+   *  This method returns a Vector containing sets of six 
+   *  objects with the following information.  
+   *
+   *    First entry:  Vector3D holding h,k,l of first secondary scattering peak
+   *    Second entry: Direction vector in real space for first secondary
+   *                  scattering peak. 
+   *    Third entry:  The wavelength for the first secondary scattering peak.
+   *    Fourth entry: Vector3D holding h,k,l of secondary scattering peak that
+   *                  reflected back to the original peak
+   *    Fifth entry:  Direction vector in real space for the secondary  
+   *                  scattering peak.           
+   *    Sixth entry:  The wavelength for the secondary scattering peak.
+   *
+   *  The incident direction is assumed to be (1,0,0).  The wavelength is
+   *  obtained from the peak object.
+   *
+   *  @param peaks          List of peaks from which one is selected to 
+   *                        process.
+   *  @param or_mat         The orientation transform, that will be rotated 
+   *                        by the goniometer angles from the peak, so that 
+   *                        the predicted Q vectors are in a reciprocal space
+   *                        coordinate system aligned with the lab coordinate 
+   *                        system.
+   *  @param bandwidth      Tolerance band around the specified wavelength
+   *                        expressed as a total percent variation.  That is,
+   *                        the min and max wavelengths are within 
+   *                        +- bandwidth/2 percent of the specified wavelength.
+   *  @param angle_tol      Tolerance on how closely the last reflection in
+   *                        a pair of reflections should match the primary
+   *                        reflection.  The tolerance must be specified in
+   *                        degrees.
+   *  @param seq_num        The peak sequence number for the peak to process.
+   *  @param max_h          Peaks with h values between -max_h and + max_h
+   *                        will be tested.
+   *  @param max_k          Peaks with k values between -max_k and + max_k
+   *                        will be tested.
+   *  @param max_l          Peaks with l values between -max_l and + max_l
+   *                        will be tested.
+   * @return a Vector containing hkl, real-space direction and wavelength 
+   *         for peaks that could scatter neutrons travelling along the 
+   *         specified direction with the specified wavelength.
+   */
   public static Vector FindAdditiveReflections( Vector<Peak_new> peaks,
                                                 Tran3D           or_mat,
                                                 float            bandwidth,
@@ -321,8 +349,8 @@ public class SCD_Multiple_Scattering_Util
                                                 int              max_k,
                                                 int              max_l )
   {
-    Peak_new fixed_peak = peaks.elementAt(seq_num - 1);
-    float new_wl;
+    Peak_new  fixed_peak = peaks.elementAt(seq_num - 1);
+    float     new_wl;
     float     wl     = fixed_peak.wl();
     float     max_wl = wl * ( 1 + bandwidth/200 );
     float     min_wl = wl * ( 1 - bandwidth/200 );
@@ -350,6 +378,16 @@ public class SCD_Multiple_Scattering_Util
   }
 
 
+/**
+ *  Get a Vector3D pointing in the direction of the position of the detector
+ *  pixel for the peak in real space.  Note: this gives the actual direction
+ *  of the reflected beam, in real space.
+ *
+ *  @param peak   The peak object containing information about the peak
+ *
+ *  @return A unit vector pointing toward the detector pixel for the the
+ *          peak in real space.
+ */
   public static Vector3D ReflectionDirection( Peak_new peak )
   {
     float     row    = peak.y();
@@ -362,6 +400,19 @@ public class SCD_Multiple_Scattering_Util
   }
 
 
+/**
+ *  Calculate the Vector3D pointing in the direction of the position of the
+ *  detector pixel in real space for a specified h,k,l.  Note: this gives 
+ *  the actual direction of the reflected beam, in real space.
+ *
+ *  @param  incident_dir  The incident beam direction.
+ *  @param  wl            The wavelength of the reflection.
+ *  @param  or_mat        The orientation matrix.
+ *  @param  hkl           The hkl vector.
+ *
+ *  @return A unit vector pointing toward the detector pixel for the the
+ *          peak in real space.
+ */
   public static Vector3D ReflectionDirection( Vector3D incident_dir, 
                                               float    wl, 
                                               Tran3D   or_mat, 
@@ -383,16 +434,28 @@ public class SCD_Multiple_Scattering_Util
     return real_vec;
   }
 
+
+/**
+ * Print out the reflections list from the specified result vector, in
+ * a nicely formatted list.
+ *
+ * @param result  List of reflections stored as triples in a vector.
+ *                The first entry in a triple is the hkl vector, the second
+ *                is the real-space reflection direction for that hkl and
+ *                the third is the wavelength for that reflection.
+ */
   public static void ShowReflections( Vector result )
   {
     for ( int i = 0; i < result.size(); i+=3 )
     {
       Vector3D hkl          = (Vector3D)result.elementAt(i);
       Vector3D new_beam_dir = (Vector3D)result.elementAt(i+1);
+      float    new_wl       = (Float)result.elementAt(i+2);
+
       int   new_h  = Math.round( hkl.getX() );
       int   new_k  = Math.round( hkl.getY() );
       int   new_l  = Math.round( hkl.getZ() );
-      float new_wl = (Float)result.elementAt(i+2);
+
       System.out.printf( "wl match at hkl: %3d %3d %3d  ", new_h,new_k,new_l );
       System.out.printf( "  refl dir = %9.6f  %9.6f  %9.6f",
                             new_beam_dir.getX(),
@@ -404,8 +467,15 @@ public class SCD_Multiple_Scattering_Util
 
  
   /**
-   *  Apply rotation to the orientation matrix, so the predicted peaks are
-   *  in lab coordinates.
+   *  Get a new orientation matrix by applying the goniometer rotation 
+   *  to the specified orientation matrix.  The new orientation
+   *  matrix can be used directly to predicted peak positions in lab 
+   *  coordinates.
+   *
+   *  @param  peak    The peak from which goniometer angles are 
+   *                  obtained.
+   *  @param  or_mat  The orientation matrix to which the goniometer
+   *                  rotation is applied.
    */ 
   public static Tran3D ApplyGoniometerRotationToUB( Peak_new peak, 
                                                     Tran3D   or_mat )
@@ -417,6 +487,14 @@ public class SCD_Multiple_Scattering_Util
   }
 
 
+/**
+ *  Load an orientation matrix from the specified file.
+ * 
+ *  @param  filename  The fully qualified file name for the matrix file.
+ *
+ *  @return A Tran3D object with the orientation matrix, transposed, so
+ *          it can be applied to column vectors.
+ */
   public static Tran3D LoadOrientationMatrix( String filename )
                 throws Exception
   {
@@ -432,6 +510,10 @@ public class SCD_Multiple_Scattering_Util
   }
 
 
+/**
+ *  Simple demo method that calculates possible multiple scattering
+ *  directions for a specified h,k,l in a particular sequence of runs.
+ */
   public static void AnalyzeNickelRuns( int target_h, 
                                         int target_k, 
                                         int target_l,
