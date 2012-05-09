@@ -33,6 +33,7 @@
 package Operators.TOF_SCD;
 
 import java.util.*;
+import java.io.*;
 
 import gov.anl.ipns.MathTools.Geometry.Tran3D;
 import gov.anl.ipns.MathTools.Geometry.Vector3D;
@@ -49,24 +50,26 @@ public class SampleOffset_Calc
 {
 
 /**
- *  Calculate the indexing error that would occur for the specified peaks, if the 
- *  sample was shifted by the specified amount.  That is, assuming the sample was
- *  actually at a shifted position, then several instrument parameters would change,
- *  including the detector positions (relative to the sample), L1 and the incident
- *  beam direction.  The indexing error is obtained as follows.  First the Q-vectors
- *  are changed, based on the specified sample shift, then a UB matrix corresponding
- *  to the current peak indexing with the new Q-vectors is calculated and the 
- *  total sumsquared error is obtained.
+ *  Calculate the indexing error that would occur for the specified peaks, 
+ *  if the sample was shifted by the specified amount.  That is, assuming 
+ *  the sample was actually at a shifted position, then several instrument 
+ *  parameters would change, including the detector positions (relative 
+ *  to the sample), L1 and the incident beam direction.  The indexing error 
+ *  is obtained as follows.  First the Q-vectors are changed, based on the 
+ *  specified sample shift, then a UB matrix corresponding to the current 
+ *  peak indexing with the new Q-vectors is calculated and the total 
+ *  sumsquared error is obtained.
  *  
  *  @param peaks         List of indexed peak objects
- *  @param sample_shift  Vector3D specifying the displacement of the sample from the
- *                       origin in meters.
- *  @param tolerance     Required tolerance for a peak to be considered to be indexed
- *  @param UB            The new UB matrix, corresponding to the shifted sample, is
- *                       returned in this matrix.
- *  @return This method returns Math.sqrt(sum_sq_error)/hkl_vectors.size()), where
- *          sum_sq_error is the sum of (UB*hkl - Q)^2 across all indexed peaks, or
- *          10^10 if there were not at least 4 indexed peaks.
+ *  @param sample_shift  Vector3D specifying the displacement of the sample 
+ *                       from the origin in meters.
+ *  @param tolerance     Required tolerance for a peak to be considered to 
+ *                       be indexed
+ *  @param UB            The new UB matrix, corresponding to the shifted 
+ *                       sample, is returned in this matrix.
+ *  @return This method returns Math.sqrt(sum_sq_error)/hkl_vectors.size()),
+ *          where sum_sq_error is the sum of (UB*hkl - Q)^2 across all 
+ *          indexed peaks, or 10^10 if there were not at least 4 indexed peaks.
  */
   public static double IndexingError( Vector<Peak_new> peaks, 
                                       Vector3D         sample_shift,
@@ -92,7 +95,9 @@ public class SampleOffset_Calc
 
         tofs.add( peak.time() );
 
-        hkl.set( Math.round(peak.h()), Math.round(peak.k()), Math.round(peak.l()) );
+        hkl.set( Math.round(peak.h()), 
+                 Math.round(peak.k()), 
+                 Math.round(peak.l()) );
         hkl_vectors.add( hkl );
       }
     }
@@ -120,13 +125,14 @@ public class SampleOffset_Calc
  *  each indexed peak, assuming the beam direction is (1,0,0).
  *
  *  @param peaks       List of indexed peaks objects
- *  @param tolerance   Required tolerance for a peak to be considered to be indexed
- *  @param det_errors  Vector that will be filled with the detector position errors
- *                     for each indexed peak.  The position errors are returned as
- *                     x,y,z components in the local coordinate system on the face
- *                     of the detector.
- *  @param indexes     Vector that records the index of the peak in the list of peaks,
- *                     for each error stored in det_errors.
+ *  @param tolerance   Required tolerance for a peak to be considered to be
+ *                     indexed
+ *  @param det_errors  Vector that will be filled with the detector position 
+ *                     errors for each indexed peak.  The position errors 
+ *                     are returned as x,y,z components in the local 
+ *                     coordinate system on the face of the detector.
+ *  @param indexes     Vector that records the index of the peak in the 
+ *                     list of peaks, for each error stored in det_errors.
  */
   public static void GetPathAndDetErrors( Vector<Peak_new> peaks,
                                           float            tolerance,
@@ -138,7 +144,11 @@ public class SampleOffset_Calc
 
     det_errors.clear();
     indexes.clear();
+
     Vector3D beam_dir = new Vector3D( 1, 0, 0 );
+                                               // pointed down .25 degrees 
+//  Vector3D beam_dir = new Vector3D( 0.9999905f, 0, -0.00436335f ); 
+
     float    L1       = peaks.elementAt(0).L1();
 
     for ( int i = 0; i < peaks.size(); i++ )
@@ -362,7 +372,8 @@ public class SampleOffset_Calc
  *  from the current offset by +-5 times the specified step size in the
  *  specified direction.
  *
- *  @param peaks      List of peak objects.  These MUST already have been indexed.
+ *  @param peaks      List of peak objects.  These MUST already have been 
+ *                    indexed.
  *  @param tolerance  The required tolerance for a peak to count as indexed.
  *  @param direction  The direction in which the search for max should occur.
  *  @param step       The size of the steps to take in the specified direction.
@@ -407,7 +418,8 @@ public class SampleOffset_Calc
  *  extending +-50mm in each direction is searched with an ending resolution 
  *  of about 1 micron.
  *
- *  @param peaks      List of peak objects.  These MUST already have been indexed.
+ *  @param peaks      List of peak objects.  These MUST already have been 
+ *                    indexed.
  *  @param tolerance  The required tolerance for a peak to count as indexed.
  *  @param offset     The estimated sample offset is returned in this vector.
  *  @param UB         The new UB matrix, corresponding to the shifted sample, is
@@ -442,13 +454,15 @@ public class SampleOffset_Calc
 
 
 /**
- *  Estimate the offset of the sample, by searching over a 3D volume and gradually 
- *  decreasing the size of the region use used and increasing the resolution of the
- *  search.  This method search over a small range of sample positions, and is quite
- *  slow.  Currently a region extending +-10mm in each direction is searched with an
- *  ending resolution of about 10 microns.
+ *  Estimate the offset of the sample, by searching over a 3D volume and 
+ *  gradually decreasing the size of the region use used and increasing the
+ *  resolution of the search.  This method searches over a small range of 
+ *  sample positions, and is quite slow.  Currently a region extending +-10mm
+ *  in each direction is searched with an ending resolution of about 
+ *  10 microns.
  *
- *  @param peaks      List of peak objects.  These MUST already have been indexed.
+ *  @param peaks      List of peak objects.  These MUST already have been 
+ *                    indexed.
  *  @param tolerance  The required tolerance for a peak to count as indexed.
  *  @param offset     The estimated sample offset is returned in this vector.
  *  @param UB         The new UB matrix, corresponding to the shifted sample, is
@@ -493,15 +507,16 @@ public class SampleOffset_Calc
 
 
 /**
- *  Caluclate the UB matrix, given a list of indexed peaks, and return the standard
- *  deviation of the q-vectors relative to the predicted q-vectors.
+ *  Caluclate the UB matrix, given a list of indexed peaks, and return the 
+ *  standard deviation of the q-vectors relative to the predicted q-vectors.
  *
  *  @param peaks      List of indexed peaks objects
  *  @param tolerance  The required tolerance to consider a peak indexed
- *  @param UB         The calculated UB matrix will be returned in this parameter
+ *  @param UB         The calculated UB matrix will be returned in this 
+ *                    parameter
  *
- *  @return The standard deviation of the q-vectors, or 10^10 if there were not at
- *          least 4 indexed peaks. 
+ *  @return The standard deviation of the q-vectors, or 10^10 if there were 
+ *          not at least 4 indexed peaks. 
  */
   public static float FindUB_FromIndexedPeaks( Vector<Peak_new> peaks, 
                                                float            tolerance,
@@ -519,12 +534,14 @@ public class SampleOffset_Calc
         Vector3D q = new Vector3D( peak.getQ() );
         q_vectors.add( q );
 
-        hkl.set( Math.round(peak.h()), Math.round(peak.k()), Math.round(peak.l()) );
+        hkl.set( Math.round(peak.h()), 
+                 Math.round(peak.k()), 
+                 Math.round(peak.l()) );
         hkl_vectors.add( hkl );
       }
     }
 
-    if ( hkl_vectors.size() < 4 )           // not enough properly indexed peaks
+    if ( hkl_vectors.size() < 4 )         // not enough properly indexed peaks
       return 1.0e10f;
 
     double sqr_err = IndexingUtils.Optimize_UB_3D( UB, hkl_vectors, q_vectors );
@@ -537,47 +554,77 @@ public class SampleOffset_Calc
  *  Print out a formatted string showing the average indexing error, the offset
  *  vector and the lattice parameters.
  *
- *  @param error    The standard deviation of the predicted q-vectors vs measured
- *                  q-vectors.
+ *  @param error    The standard deviation of the predicted q-vectors vs 
+ *                  measured q-vectors.
  *  @param offset   The sample offset vector
  *  @param UB       The UB matrix from which the lattice parameters are obtained
  */
-  public static void ShowInfo( double error, Vector3D offset, Tran3D UB )
+  public static String MakeInfoString( double error, Vector3D offset, Tran3D UB )
   {
-    System.out.printf( "Err: %12.8f ", error );
-    System.out.printf( "Offset(mm): %6.3f  %6.3f  %6.3f ",  
-                        1000*offset.getX(), 1000*offset.getY(),1000*offset.getZ() );
+    StringBuffer buffer = new StringBuffer();
+    buffer.append( String.format( 
+               "Sample Offsets(mm):\n" +
+               "Along Beam Direction %8.3f\n" +
+               "In Horizontal Plane  %8.3f\n" +
+               "Vertical Direction   %8.3f\n",  
+                1000*offset.getX(), 1000*offset.getY(),1000*offset.getZ() ));
+    buffer.append( String.format(
+        "Standard Deviation of Measured Q-vectors(|Q|=1/d): %12.8f\n", error ) );
     float[] l_par = IndexingUtils.getLatticeParameters( UB );
-    System.out.printf(" LPAR: %8.4f %8.4f %8.4f  %8.4f %8.4f %8.4f  %8.4f\n",
-        l_par[0], l_par[1], l_par[2], l_par[3], l_par[4], l_par[5], l_par[6] );
-
+    buffer.append( String.format(
+        "Adjusted Lattice Params: %8.4f %8.4f %8.4f  %8.4f %8.4f %8.4f  %8.4f\n",
+        l_par[0], l_par[1], l_par[2], l_par[3], l_par[4], l_par[5], l_par[6] ));
+    return new String(buffer);
   }
 
-  public static void ShowPathAndDetErrors( Vector<Peak_new>  peaks, 
-                                           Vector<Vector3D>  det_errors, 
-                                           Vector<Integer>   indexes )
+
+/**
+ * Make a multi-line string showing the estimated errors in
+ * real space for a list of indexed peaks, as computed by
+ * the GetPathAndDetErrors() method. 
+ * @param peaks       The list of indexed peak objects
+ * @param det_errors  The list of errors on the detector face
+ * @param indexes     The list of indexes of peaks for which 
+ *                    the errors were calculated
+ * @return A multiline String showing the sequence number,
+ *         wavelength, d, and computed erros and the average
+ *         error for each detector module.
+ */
+  public static String MakePathAndDetErrorString( 
+                                       Vector<Peak_new>  peaks,
+                                       Vector<Vector3D>  det_errors,
+                                       Vector<Integer>   indexes )
   {
+    StringBuffer buffer = new StringBuffer();
+
+    if ( peaks.size() == 0 )
+      return new String(buffer);
+
     int   det_id  = -1;
     int   n_peaks = 0;
     float sum_x   = 0;
     float sum_y   = 0;
     float sum_z   = 0;
-   
-    System.out.println("--------------------------------------------------------");
+
+    Peak_new peak = peaks.elementAt( 0 );
+    det_id = peak.getGrid().ID();
+    buffer.append("DET_ID = " + det_id + "\n" );
+    buffer.append("SEQ NUM        WL         D     dX(mm)    dY(mm)    dL(mm)\n");
     for ( int i = 0; i < indexes.size(); i++ )
     {
       int index = indexes.elementAt(i);
-      Peak_new peak = peaks.elementAt( index );
+      peak = peaks.elementAt( index );
       if ( peak.getGrid().ID() != det_id )
       {
-        if ( det_id != -1 )                // print summary
+        if ( det_id != -1 && n_peaks > 0 )           // print summary
         {
-          System.out.println();
-          System.out.printf(" DET_ID: %2d  Ave_dx: %8.3f  Ave_dy: %8.3f  Ave_dz: %8.3f\n",
-                              det_id, 
-                              1000*sum_x/n_peaks, 1000*sum_y/n_peaks, 1000*sum_z/n_peaks );
-           System.out.println();
-           System.out.println("--------------------------------------------------------");
+          buffer.append("\n");
+          buffer.append( String.format(
+         "DET_ID: %2d  Ave_dx: %8.3f  Ave_dy: %8.3f  Ave_dL: %8.3f\n",
+          det_id, 1000*sum_x/n_peaks, 1000*sum_y/n_peaks, 1000*sum_z/n_peaks));
+          buffer.append("\n");
+          buffer.append("DET_ID = " + peak.getGrid().ID() + "\n");
+          buffer.append("SEQ NUM        WL         D     dX(mm)    dY(mm)    dL(mm)\n");
         }
         sum_x = 0;
         sum_y = 0;
@@ -586,56 +633,75 @@ public class SampleOffset_Calc
         det_id = peak.getGrid().ID();
       }
       Vector3D err = det_errors.elementAt( i );
-      System.out.printf(" SQ_NUM: %2d      dx: %8.3f      dy: %8.3f      dz: %8.3f\n",
-                              (index+1), 
-                              1000*err.getX(), 1000*err.getY(), 1000*err.getZ() );
+      buffer.append( String.format( "%7d  %8.5f  %8.5f   %8.3f  %8.3f  %8.3f\n",
+                    (index+1), peak.wl(), peak.d(), 
+                    1000*err.getX(), 1000*err.getY(), 1000*err.getZ()));
       sum_x += err.getX();
       sum_y += err.getY();
       sum_z += err.getZ();
       n_peaks++;
     }
-    System.out.println();
-    System.out.printf(" DET_ID: %2d  Ave_dx: %8.3f  Ave_dy: %8.3f  Ave_dz: %8.3f\n",
-                        det_id,                     
-                        1000*sum_x/n_peaks, 1000*sum_y/n_peaks, 1000*sum_z/n_peaks );
-    System.out.println("--------------------------------------------------------");
+    if ( n_peaks > 0 )
+    {
+      buffer.append("\n");
+      buffer.append( String.format(
+      "DET_ID: %2d  Ave_dx: %8.3f  Ave_dy: %8.3f  Ave_dL: %8.3f\n",
+        det_id, 1000*sum_x/n_peaks, 1000*sum_y/n_peaks, 1000*sum_z/n_peaks) );
+    }
+    return new String(buffer);
   }
 
 
-  public static void main( String args[] ) throws Exception
+  public static void AnalyzePeakPositions( String peaks_file_name,
+                                           boolean save_to_file,
+                                           String file_name )
+                     throws Exception
   {
-//    String peaks_file_name = "/home/dennis/natrolite_very_noisy_indexed.peaks"; 
-//    String peaks_file_name = "/home/dennis/TOPAZ_3131.peaks"; 
-//    String peaks_file_name = "/home/dennis/TOPAZ_3131_EV.peaks"; 
-//    String peaks_file_name = "/home/dennis/TOPAZ_3680_EV.peaks"; 
-//    String peaks_file_name = "/home/dennis/TOPAZ_3680_calibrated.peaks"; 
-//    String peaks_file_name = "/home/dennis/snap_natrolite_7413.peaks";
-    String peaks_file_name = args[0];
-
     Vector<Peak_new> peaks = Peak_new_IO.ReadPeaks_new( peaks_file_name );
- 
-    double   err       = 0;
+
     float    tolerance = 0.12f;
     Tran3D   UB        = new Tran3D();
     Vector3D offset    = new Vector3D();
 
-    err = FindUB_FromIndexedPeaks( peaks, tolerance, UB );
-    ShowInfo( err, offset, UB );
+    double err = IndexingError( peaks, offset, tolerance, UB );
+    String result = "With no sample offset:\n" +
+                    MakeInfoString( err, offset, UB );
 
-    err = IndexingError( peaks, offset, tolerance, UB );
-    ShowInfo( err, offset, UB );
+    err = EstimateOffset( peaks, tolerance, offset, UB );
 
-    err = EstimateOffset( peaks, tolerance, offset, UB ); 
-    ShowInfo( err, offset, UB );
-
-//  err = EstimateOffset3D( peaks, tolerance, offset, UB ); 
-//  ShowInfo( err, offset, UB );
+    result += "\nWith Estimated sample offset:\n" +
+              MakeInfoString( err, offset, UB );
 
     peaks = Peak_new_IO.ReadPeaks_new( peaks_file_name );
 
     Vector<Vector3D> det_errors = new Vector<Vector3D>();
     Vector<Integer>  indexes    = new Vector<Integer>();
     GetPathAndDetErrors( peaks, tolerance, det_errors, indexes );
-    ShowPathAndDetErrors( peaks, det_errors, indexes );
+    result += "\nAnalysis of Errors, per Peak and per Detector\n"
+           + MakePathAndDetErrorString(peaks, det_errors, indexes);
+
+    if ( save_to_file )
+    {
+      PrintStream out = new PrintStream( file_name );
+      out.println( result );
+      out.close();
+    }
+    else
+      System.out.println( result );
+  }
+
+
+  public static void main( String args[] ) throws Exception
+  {
+//  String peaks_file_name = "/home/dennis/natrolite_very_noisy_indexed.peaks"; 
+//  String peaks_file_name = "/home/dennis/TOPAZ_3131.peaks"; 
+//  String peaks_file_name = "/home/dennis/TOPAZ_3131_EV.peaks"; 
+//  String peaks_file_name = "/home/dennis/TOPAZ_3680_EV.peaks"; 
+//  String peaks_file_name = "/home/dennis/TOPAZ_3680_calibrated.peaks"; 
+//  String peaks_file_name = "/home/dennis/snap_natrolite_7413.peaks";
+    String peaks_file_name = args[0];
+    String out_file_name = "/home/dennis/AnalyzedPeaks.txt";
+
+    AnalyzePeakPositions( peaks_file_name, true, out_file_name );
   }
 }
