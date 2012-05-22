@@ -122,7 +122,7 @@ print '\ndeltaQ = ', deltaQ, '\n'
 deltaQ = deltaQ / (2.0 * math.pi)
 # rangeQ = length of cylinder in units of 2pi/d
 rangeQ = rangeQ / (2.0 * math.pi)
-numSteps = int(rangeQ / deltaQ)
+numSteps = int(rangeQ / deltaQ) + 1
 print 'numSteps = ', numSteps, '\n'
 # radius of cylinder in units of 2pi/d
 print 'radiusQ = ', radiusQ
