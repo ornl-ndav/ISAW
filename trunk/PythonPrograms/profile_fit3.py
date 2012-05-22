@@ -315,30 +315,22 @@ for i in range(numOfPeaks):
         c_gauss = popt[4]
     except RuntimeError:
         print 'RuntimeError for peak %d %d %d' % (h, k, l)
-        continue
-        # a_gauss = 0.0
-        # sig_gauss = 0.0
-        # mu_gauss = 0.0
-        # b_gauss = 0.0
-        # c_gauss = 0.0
-
+        continue        
+        
     if a_gauss == 0.0:
         print 'No counts for peak %d %d %d' % (h, k, l)
         continue
-        # siga_gauss = math.sqrt(sum(yobs))
-        # if siga_gauss == 0.0: siga_gauss = 99.0
-        # print 'siga_gauss = %f' % siga_gauss
-        # sigsig_gauss = 99.0
-        # sigmu_gauss = 99.0
-        # sigb_gauss = 99.0
-        # sigc_gauss = 99.0
     else:
         siga_gauss = math.sqrt(pcov[0][0])
         sigsig_gauss = math.sqrt(pcov[1][1])
         sigmu_gauss = math.sqrt(pcov[2][2])
         sigb_gauss = math.sqrt(pcov[3][3])
         sigc_gauss = math.sqrt(pcov[4][4])
-        
+
+    if sigsig_gauss > sig_gauss:
+        print 'Sig error greater than sig for peak %d %d %d' % (h, k, l)
+        continue
+    
     peaks[i][12] = a_gauss
     peaks[i][13] = siga_gauss
     
@@ -355,6 +347,7 @@ for i in range(numOfPeaks):
     
     pylab.plot(xcalc, ycalc)
     pylab.plot(x, yobs, 'g^')
+    
     pylab.xlabel('Q channel, 2pi/d')
     pylab.ylabel('Counts')
 
@@ -373,13 +366,11 @@ for i in range(numOfPeaks):
     # if h == -12 and k == -12 and l == 2:
         # print filename
         # continue
-    try:
-        pylab.savefig(filename)
-        pylab.close()
-    except RuntimeError:
-        print 'RuntimeError in matplotlib for peak %d %d %d' % (h, k, l)
-        continue
- 
+            
+    pylab.savefig(filename)
+    pylab.clf()
+    # pylab.close()
+
 
 # Begin writing peaks to the integrate file.
 chi = 0.0
