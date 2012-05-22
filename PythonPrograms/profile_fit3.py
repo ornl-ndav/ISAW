@@ -220,7 +220,7 @@ input = open(events_fname, 'rb')
 QEvent = []
 numberOfEvents = 0
 while True:
-    if numberOfEvents == 5e06: break
+    # if numberOfEvents == 5e06: break
     
     lineString = input.read(12)
     if lineString == "": break
@@ -251,7 +251,7 @@ while True:
     
     pki = int(peaknum - 1)
 		
-	# Do initial test for event within 0.3 of the peak
+	# Do initial test
     Qpeak = [peaks[pki][16][0], peaks[pki][16][1], peaks[pki][16][2]]
     if abs(Qpeak[0] - qxyz[0]) > first_test_dist: continue
     if abs(Qpeak[1] - qxyz[1]) > first_test_dist: continue
@@ -281,10 +281,6 @@ print '\nnumberOfEvents = ', numberOfEvents
 
 print ''
 
-peakMin = 10   # for 40 channels, start of peak
-peakMax = 29   # end of peak
-bkgMin = 0     # start of background
-bkgMax = 39    # end of background
 # x = range(40)
 sqrt2pi = 2.506628   # sqrt(2.0 * pi)
 
@@ -302,48 +298,48 @@ for i in range(numOfPeaks):
     # popt is an array of the optimized parameters
     # pcov is the covariance matrix
     p0 = pylab.zeros(5)                 # initial values of parameters
-    p0[0] = max(yobs) * 2.5 * sqrt2pi   # initial value of a_gauss
-    p0[1] = 2.5                         # initial value of sig_gauss
-    p0[2] = 0.5 * len(yobs)             # initial value of mu_gauss, middle of x range
+    p0[0] = max(yobs) * 2.5 * sqrt2pi   # initial value of aG
+    p0[1] = 2.5                         # initial value of sigG
+    p0[2] = 0.5 * len(yobs)             # initial value of muG, middle of x range
         
     try:
         popt, pcov = curve_fit(gaussian, x, yobs, p0)
-        a_gauss = popt[0]
-        sig_gauss = popt[1]
-        mu_gauss = popt[2]
-        b_gauss = popt[3]
-        c_gauss = popt[4]
+        aG = popt[0]
+        sigG = popt[1]
+        muG = popt[2]
+        bG = popt[3]
+        cG = popt[4]
     except RuntimeError:
         print 'RuntimeError for peak %d %d %d' % (h, k, l)
         continue        
         
-    if a_gauss == 0.0:
+    if aG == 0.0:
         print 'No counts for peak %d %d %d' % (h, k, l)
         continue
     else:
-        siga_gauss = math.sqrt(pcov[0][0])
-        sigsig_gauss = math.sqrt(pcov[1][1])
-        sigmu_gauss = math.sqrt(pcov[2][2])
-        sigb_gauss = math.sqrt(pcov[3][3])
-        sigc_gauss = math.sqrt(pcov[4][4])
+        sig_aG = math.sqrt(pcov[0][0])
+        sig_sigG = math.sqrt(pcov[1][1])
+        sig_muG = math.sqrt(pcov[2][2])
+        sig_bG = math.sqrt(pcov[3][3])
+        sig_cG = math.sqrt(pcov[4][4])
 
-    if sigsig_gauss > sig_gauss:
-        print 'Sig error greater than sig for peak %d %d %d' % (h, k, l)
-        continue
-    
-    peaks[i][12] = a_gauss
-    peaks[i][13] = siga_gauss
-    
-    output.write('%4d %4d %4d %12.4f  %12.4f  %12.4f  %12.4f  %12.4f %12.4f  %12.4f  %12.4f  %12.4f  %12.4f\n' 
-        %  (h, k, l, a_gauss, sig_gauss, mu_gauss, b_gauss, c_gauss, siga_gauss, sigsig_gauss, sigmu_gauss, 
-        sigb_gauss, sigc_gauss))
-    print '%4d %4d %4d %12.4f' % (h, k, l, a_gauss)
+    if sig_sigG > sigG:
+        print 'Rejected: sig error greater than sig for peak %d %d %d' % (h, k, l)
+        # continue
+    else:
+        peaks[i][12] = aG
+        peaks[i][13] = sig_aG
+        
+        output.write('%4d %4d %4d %12.4f  %12.4f  %12.4f  %12.4f  %12.4f %12.4f  %12.4f  %12.4f  %12.4f  %12.4f\n' 
+            %  (h, k, l, aG, sigG, muG, bG, cG, sig_aG, sig_sigG, sig_muG, 
+            sig_bG, sig_cG))
+        print '%4d %4d %4d %12.4f' % (h, k, l, aG)
 
     xcalc = []
     ycalc = []
     for i in range(100 * len(yobs)):
         xcalc.append(float(i)/100.0)
-        ycalc.append(gaussian(xcalc[i], a_gauss, sig_gauss, mu_gauss, b_gauss, c_gauss))
+        ycalc.append(gaussian(xcalc[i], aG, sigG, muG, bG, cG))
     
     pylab.plot(xcalc, ycalc)
     pylab.plot(x, yobs, 'g^')
@@ -358,18 +354,17 @@ for i in range(numOfPeaks):
     pylab.figtext(0.5, 0.85, textString, horizontalalignment='center', fontsize='small')
 
     textString = 'a = %.2f(%.2f)\nsig = %.2f(%.2f)\nmu = %.2f(%.2f)\nb = %.2f(%.2f)\nc = %.2f(%.2f)\n' % (
-        a_gauss, siga_gauss, sig_gauss, sigsig_gauss, mu_gauss, sigmu_gauss, b_gauss, sigb_gauss, c_gauss, 
-        sigc_gauss)
+        aG, sig_aG, sigG, sig_sigG, muG, sig_muG, bG, sig_bG, cG, 
+        sig_cG)
     pylab.figtext(0.65, 0.65, textString, family='monospace')
     
-    filename = './plots/Profile_fit_%d_%d_%d' % (h, k, l)
-    # if h == -12 and k == -12 and l == 2:
-        # print filename
-        # continue
+    if sig_sigG > sigG:
+        filename = './plots/Rejected_%d_%d_%d' % (h, k, l)
+    else:
+        filename = './plots/Profile_fit_%d_%d_%d' % (h, k, l)
             
     pylab.savefig(filename)
     pylab.clf()
-    # pylab.close()
 
 
 # Begin writing peaks to the integrate file.
