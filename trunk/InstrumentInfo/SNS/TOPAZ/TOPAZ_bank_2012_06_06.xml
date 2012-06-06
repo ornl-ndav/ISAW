@@ -58,6 +58,15 @@
     </continuous_list>
   </bank>
   <bank>
+    <number>33</number>
+    <x_size>256</x_size>
+    <y_size>256</y_size>
+    <continuous_list>
+      <start>2162688</start>
+      <stop>2228223</stop>
+    </continuous_list>
+  </bank>
+  <bank>
     <number>36</number>
     <x_size>256</x_size>
     <y_size>256</y_size>
@@ -94,15 +103,6 @@
     </continuous_list>
   </bank>
   <bank>
-    <number>46</number>
-    <x_size>256</x_size>
-    <y_size>256</y_size>
-    <continuous_list>
-      <start>3014656</start>
-      <stop>3080191</stop>
-    </continuous_list>
-  </bank>
-  <bank>
     <number>47</number>
     <x_size>256</x_size>
     <y_size>256</y_size>
@@ -111,41 +111,5 @@
       <stop>3145727</stop>
     </continuous_list>
   </bank>
-  <bank>
-    <number>48</number>
-    <x_size>256</x_size>
-    <y_size>256</y_size>
-    <continuous_list>
-      <start>3145728</start>
-      <stop>3211263</stop>
-    </continuous_list>
-  </bank>
-  <bank>
-    <number>49</number>
-    <x_size>256</x_size>
-    <y_size>256</y_size>
-    <continuous_list>
-      <start>3211264</start>
-      <stop>3276799</stop>
-    </continuous_list>
-  </bank>
-  <bank>
-    <number>57</number>
-    <x_size>256</x_size>
-    <y_size>256</y_size>
-    <continuous_list>
-      <start>3735552</start>
-      <stop>3801087</stop>
-    </continuous_list>
-  </bank>
-  <bank>
-    <number>58</number>
-    <x_size>256</x_size>
-    <y_size>256</y_size>
-    <continuous_list>
-      <start>3801088</start>
-      <stop>3866623</stop>
-    </continuous_list>
-  </bank>
-  <total_pixel_number>3866624</total_pixel_number>
+  <total_pixel_number>3145728</total_pixel_number>
 </banking>
