@@ -269,21 +269,30 @@ def det_coord(q, wl, deta1, deta2, detd, det_rot_ang):
 
     return dc
 
-    
+#---------------------------------------------
+#           function Gmatrix
+#---------------------------------------------
+# Calculate the metric tensor G
+# from the lattice constants.
+#---------------------------------------------
+
 def Gmatrix(a, b, c, alpha, beta, gamma):
     """Create the G real space metric tensor."""
-    G = zeros((3, 3))     # real metric tensor
+    G = numpy.zeros((3, 3))     # real metric tensor
     
     alpha = math.radians(alpha)
     beta = math.radians(beta)
     gamma = math.radians(gamma)
-    
+
     G[0][0] = a * a
     G[0][1] = a * b * math.cos(gamma)
+    if G[0][1] < 1.0e-10: G[0][1] = 0.0
     G[0][2] = a * c * math.cos(beta)
+    if G[0][2] < 1.0e-10: G[0][2] = 0.0
     G[1][0] = G[0][1]
     G[1][1] = b * b
     G[1][2] = b * c * math.cos(alpha)
+    if G[1][2] < 1.0e-10: G[1][2] = 0.0
     G[2][0] = G[0][2]
     G[2][1] = G[1][2]
     G[2][2] = c * c
