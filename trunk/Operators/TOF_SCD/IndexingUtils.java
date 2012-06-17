@@ -2040,7 +2040,9 @@ public static Vector<Tran3D> SortOn_abc_DiffFrom90( Vector<Tran3D> UB_matrices )
  * @return The remaining error in the indexing of the peaks, or zero if
  *         the optimization failed.
  */
-public static float Optimize_UB( Tran3D UB, Vector<Vector3D> q_vectors, float tolerance )
+public static float Optimize_UB( Tran3D           UB, 
+                                 Vector<Vector3D> q_vectors, 
+                                 float            tolerance )
 {
    Tran3D temp_UB = new Tran3D( UB );
 
@@ -2074,6 +2076,93 @@ public static float Optimize_UB( Tran3D UB, Vector<Vector3D> q_vectors, float to
   }
   return fit_error[0];
 }
+
+
+/**
+ * Optimize the specified UB matrix by repeatedly using it to index 
+ * the given peaks within the specified tolerance, then solving
+ * the resulting over-determined system of equations to obtain 
+ * a new UB matrix, using gradually expanding spherical shell regions
+ * in Q.
+ * @param UB        This must be initially set to a UB matrix that indexes
+ *                  the given peaks fairly well.  On return, if the
+ *                  optimization was successful, it will be set to an
+ *                  optimized version of the original UB.
+ * @param q_vectors List of q_vectors that should be indexed by the 
+ *                  given UB.
+ * @param tolerance Maximum allowed offset in h,k,l for a peak to count
+ *                  as indexed.
+ * @return The remaining error in the indexing of the peaks, or zero if
+ *         the optimization failed.
+ */
+public static float Optimize_UB_ByGrowingShells( Tran3D           UB,
+                                                 Vector<Vector3D> q_vectors, 
+                                                 float            tolerance )
+{
+   q_vectors = SortOnVectorMagnitude( q_vectors );
+   Tran3D temp_UB = new Tran3D( UB );
+
+   float[] fit_error = new float[1];
+   Vector<Vector3D> miller_ind  = new Vector<Vector3D>();
+   Vector<Vector3D> indexed_qs  = new Vector<Vector3D>();
+
+   int first_index = 0;
+   int last_index;
+
+   for ( int count = 0; count < 5; count++ )
+   {
+     int num_indexed = GetIndexedPeaks( UB, q_vectors, tolerance,
+                                        miller_ind, indexed_qs, fit_error );
+
+     if ( num_indexed < 5 )        // not enough indexed peaks to optimize
+     {
+       System.out.println("Too few peaks indexed to optimize:" + num_indexed );
+       return 0;
+     }
+
+     int num_to_use = num_indexed/4;
+     if ( num_to_use < 5 )
+       num_to_use = 5;
+
+     Vector<Vector3D> used_miller_ind  = new Vector<Vector3D>();
+     Vector<Vector3D> used_indexed_qs  = new Vector<Vector3D>();
+
+     if ( first_index + num_to_use >= num_indexed )
+       first_index = num_indexed - num_to_use;
+
+     last_index  = first_index + num_to_use - 1;
+
+     for ( int i = first_index; i <= last_index; i++ )
+     {
+       used_miller_ind.add( miller_ind.elementAt(i) );
+       used_indexed_qs.add( indexed_qs.elementAt(i) );
+     }
+
+     try
+     {
+       fit_error[0] = Optimize_UB_3D(temp_UB, used_miller_ind, used_indexed_qs);
+
+       if ( !Float.isNaN( fit_error[0] ) )
+       {
+         UB.set( temp_UB );
+       }
+       else
+       {
+//       System.out.println("Optimize_UB_3D Failed with "
+//                           + q_vectors.size() + " peaks");
+         return 0;
+       }
+     }
+     catch ( Exception ex )
+     {
+       return 0;
+        // failed to improve with these peaks, so continue with more peaks
+        // if possible 
+     }
+  }
+  return fit_error[0];
+}
+
 
 
 /** 
