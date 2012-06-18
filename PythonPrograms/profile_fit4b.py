@@ -22,17 +22,17 @@ Includes the GSAS profile function 1.
 June 8, 2012
 """
 
-
 import pylab
 import math
 import os
 import scipy.special
-from numpy import linalg
+import scipy.integrate
+# from numpy import linalg
 from time import clock
 from read_detcal import *
 from scipy.optimize import curve_fit
 
-import crystal as xl
+# import crystal as xl
 
 def gaussian(x, a, sig, mu, b, c):
     """ Gaussian function on a linear background."""
@@ -40,19 +40,16 @@ def gaussian(x, a, sig, mu, b, c):
     f = (a / (sig * sqrt2pi) * pylab.exp(-0.5 * (x - mu)**2 / sig**2)) + (b * x) + c
     return f
 
-def function_1(x, scale, mu1, mu2, alpha, sigma, slope, constant):
-    """ Based on GSAS TOF profile funtion 1.
-    Only one exponential."""
+def function_1(x, scale, mu, alpha, sigma, slope, constant):
+    """ Based on GSAS TOF profile funtion 1, but with only one exponential."""
     
-    # N = alpha * beta / (2.0 * (alpha + beta))
-    u = (alpha / 2.0) * (alpha * sigma**2 + 2.0 * (x - mu1))
-    y = (alpha * sigma**2 + (x - mu2)) / math.sqrt(2.0 * sigma**2)
+    u = (alpha / 2.0) * (alpha * sigma**2 + 2.0 * (x - mu))
+    y = (alpha * sigma**2 + (x - mu)) / math.sqrt(2.0 * sigma**2)
     
     a = pylab.exp(u)
     b = scipy.special.erfc(y)
     
-    H = scale * a * b + slope * x + constant
-    # H = N * math.exp(u) * math.erfc(y)
+    H = (scale * a * b) + (slope * x) + constant
     return H
 
 # Begin.................................................
@@ -100,6 +97,7 @@ numLines = int(numSteps/10)
 
 numOfPeaks = 0
 
+# Begin reading and fitting the profiles.
 while True:
 
     lineString = input.readline()    
@@ -160,6 +158,13 @@ while True:
             muG = popt[2]
             bG = popt[3]
             cG = popt[4]
+            
+            # intI, sigI = scipy.integrate.quad(gaussian, 0, 39, 
+                # args=(aG, sigG, muG, 0.0, 0.0))
+                
+            # print intI, sigI
+
+            
         except RuntimeError:
             print 'RuntimeError for peak %d %d %d' % (h, k, l)
             continue        
@@ -191,19 +196,17 @@ while True:
 
         # popt is an array of the optimized parameters
         # pcov is the covariance matrix
-        p0 = pylab.zeros(7)                 # initial values of parameters
+        p0 = pylab.zeros(6)                 # initial values of parameters
         ymax = float(max(yobs))
         p0[0] = ymax                        # initial value of scale
-        p0[1] = 0.5 * len(yobs)             # initial value of mu1 for exponential decay
-        p0[2] = 0.5 * len(yobs)             # initial value of mu2 for Gaussian
-        p0[3] = 1.0                         # initial value of alpha
-        p0[4] = 1.0                         # initial value sigma
-        p0[5] = 1.0                         # initial value of background slope
-        p0[6] = 0.0                         # initial value of background constants
+        p0[1] = 0.5 * len(yobs)             # initial value of mu for exponential decay
+        p0[2] = 1.0                         # initial value of alpha
+        p0[3] = 1.0                         # initial value sigma
+        p0[4] = 0.0                         # initial value of background slope
+        p0[5] = 0.0                         # initial value of background constants
         
         sig_scale = 0.0
-        sig_mu1 = 0.0
-        sig_mu2 = 0.0
+        sig_mu = 0.0
         sig_alpha = 0.0
         sig_sigma = 0.0
         sig_slope = 0.0
@@ -212,24 +215,28 @@ while True:
         try:
             popt, pcov = curve_fit(function_1, x, yobs, p0)
             scale = popt[0]
-            mu1 = popt[1]
-            mu2 = popt[2]
-            alpha = popt[3]
-            sigma = popt[4]
-            slope = popt[5]
-            constant = popt[6]
-            print '%4d %4d %4d %12.4f %12.4f %12.4f %12.4f %12.4f' % (h, k, l, scale, mu1, mu2, alpha, sigma)
+            mu = popt[1]
+            alpha = popt[2]
+            sigma = popt[3]
+            slope = popt[4]
+            constant = popt[5]
+            
+            intI, sigI = scipy.integrate.quad(function_1, 0, 39, 
+                args=(scale, mu, alpha, sigma, 0.0, 0.0))
+            peaks[numOfPeaks-1][12] = intI
+            peaks[numOfPeaks-1][13] = math.sqrt(abs(intI))
+                            
+            print '%4d %4d %4d %12.4f %12.4f %12.4f %12.4f' % (h, k, l, scale, mu, alpha, sigma)
             # if scale > 0.0:
-            try:
-                if pcov[0][0] > 0.0: sig_scale = math.sqrt(pcov[0][0])
-                if pcov[1][1] > 0.0: sig_mu1 = math.sqrt(pcov[1][1])
-                if pcov[2][2] > 0.0: sig_mu2 = math.sqrt(pcov[2][2])
-                if pcov[3][3] > 0.0: sig_alpha = math.sqrt(pcov[3][3])
-                if pcov[4][4] > 0.0: sig_sigma = math.sqrt(pcov[4][4])
-                if pcov[5][5] > 0.0: sig_slope = math.sqrt(pcov[5][5])
-                if pcov[6][6] > 0.0: sig_constant = math.sqrt(pcov[6][6])
-                print '                %12.4f' % sig_scale
-            except: continue
+            # try:
+                # if pcov[0][0] > 0.0: sig_scale = math.sqrt(pcov[0][0])
+                # if pcov[1][1] > 0.0: sig_mu = math.sqrt(pcov[1][1])
+                # if pcov[3][3] > 0.0: sig_alpha = math.sqrt(pcov[2][2])
+                # if pcov[4][4] > 0.0: sig_sigma = math.sqrt(pcov[3][3])
+                # if pcov[5][5] > 0.0: sig_slope = math.sqrt(pcov[4][4])
+                # if pcov[6][6] > 0.0: sig_constant = math.sqrt(pcov[5][5])
+                # print '                %12.4f' % sig_scale
+            # except: continue
             # print popt
         except RuntimeError:
             print 'RuntimeError for peak %d %d %d' % (h, k, l)
@@ -243,7 +250,7 @@ while True:
         if profile_function == 0:
             ycalc.append(gaussian(xcalc[i], aG, sigG, muG, bG, cG))
         if profile_function == 1:
-            ycalc.append(function_1(xcalc[i], scale, mu1, mu2, alpha, sigma, slope, constant))
+            ycalc.append(function_1(xcalc[i], scale, mu, alpha, sigma, slope, constant))
     
     # print xcalc
     pylab.plot(xcalc, ycalc)
@@ -252,6 +259,7 @@ while True:
     
     pylab.xlabel('Q channel, 2pi/d')
     pylab.ylabel('Counts')
+    pylab.grid(True)
 
     plotTitle = '%d %d %d' % (h, k, l)
     pylab.title(plotTitle)
@@ -273,13 +281,13 @@ while True:
             
     if profile_function == 1:
 
-        textString = 'f = scale * exp(u) * erfc(y) + slope * x + constant '
+        textString = 'Convolution of Gaussian and an exponential decay.'
         pylab.figtext(0.5, 0.85, textString, horizontalalignment='center', fontsize='small')
 
         if scale > 0.0:
-            textString = 'scale = %f(%f)\nmu1 = %.2f(%.2f)\nmu2 = %.2f(%.2f)\nalpha = %.2f(%.2f)\nsigma = %.2f(%.2f)\n' % (
-                scale, sig_scale, mu1, sig_mu1, mu2, sig_mu2, alpha, sig_alpha, sigma, 
-                sig_sigma)
+            textString = 'scale = %.2f(%.2f)\nmu = %.2f(%.2f)\nalpha = %.2f(%.2f)\nsigma = %.2f(%.2f)\nintI = %.2f' % (
+                scale, sig_scale, mu, sig_mu, alpha, sig_alpha, sigma, 
+                sig_sigma, intI)
             pylab.figtext(0.65, 0.65, textString, family='monospace')
 
         filename = './plots/Profile_fit_%d_%d_%d' % (h, k, l)
