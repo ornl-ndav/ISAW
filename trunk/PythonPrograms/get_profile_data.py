@@ -21,7 +21,7 @@ import crystal as xl
 start = clock()
 
 # Open and read the user input file
-user_input = open('profile_fit3.inp', 'r')
+user_input = open('get_profile_data.inp', 'r')
 user_param = []
 while True:
     lineString = user_input.readline()
@@ -185,7 +185,7 @@ for h in range(-hmax, hmax+1):
 
 numOfPeaks = len(peaks)
 print '\nnumOfPeaks = ', numOfPeaks
-peak_profile = pylab.zeros((numOfPeaks, 40))  # array to store 1D peak profiles
+peak_profile = pylab.zeros((numOfPeaks, numSteps))  # array to store 1D peak profiles
 
 UBinv = linalg.inv(UB_IPNS)
 first_test_dist = (rangeQ / 2.0) * 1.2
@@ -249,8 +249,8 @@ while True:
     if abs(Qdiff) > (0.5 * rangeQ): continue
 	
 	# add event to appropriate y channel
-    xchannel = int(round((Qdiff / deltaQ))) + 20
-    if xchannel < 0 or xchannel > 39: continue
+    xchannel = int(round((Qdiff / deltaQ))) + (numSteps / 2)
+    if xchannel < 0 or xchannel > (numSteps - 1): continue
     peak_profile[pki][xchannel] = peak_profile[pki][xchannel] + 1
         
     continue
@@ -260,13 +260,15 @@ print ''
 
 for i in range(numOfPeaks):
 
-    h = peaks[i][0]
-    k = peaks[i][1]
-    l = peaks[i][2]
-    
-    output.write('0 %4d %4d %4d' % (h, k, l))
+    seqn = i + 1
+    output.write(
+        '3 %6d %4d %4d %4d %7.2f %7.2f %7.2f %8.3f %8.5f %8.5f %9.6f %8.4f %5d %9.2f %6.2f %4d %4d\n' 
+        % (seqn, peaks[i][0], peaks[i][1], peaks[i][2], peaks[i][3], peaks[i][4], peaks[i][5], 
+        peaks[i][6], peaks[i][7], peaks[i][8], peaks[i][9], peaks[i][10], peaks[i][11], 
+        peaks[i][12], peaks[i][13], peaks[i][14], peaks[i][15]))
+
     for j in range(numSteps):
-        if j%10 == 0: output.write('\n1')
+        if j != 0 and j%10 == 0: output.write('\n')
         output.write(' %8d' % peak_profile[i][j])
     output.write('\n')
 
