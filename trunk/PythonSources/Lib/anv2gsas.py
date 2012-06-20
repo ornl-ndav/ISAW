@@ -119,7 +119,7 @@ class Reflection:
         return True
 
     #------------------------------------------------------------------
-    def write_to_binary(self, fileobj):
+    def write_to_binary(self, fileobj,pad2EOF):
         """Write out the binary data to the .S01, etc. file(s).
 
         Parameters:
@@ -132,7 +132,7 @@ class Reflection:
 	ndiff = 0
 	mul = 0
 	icode = 11111
-	incdnt = 0
+	incdnt = 8782348
 	fotsq = 0.0
 	fcsq = 0.0
 	fctsq = 0.0
@@ -175,12 +175,14 @@ class Reflection:
         values += [0.0, 0.0, 0.0]
         values += [0.0, 0.0, 0.0]
         #And pad to 36 * 4 bytes by padding 6 more empty ints in there
-        format += 'iiiiii'
-        values += [0,0,0, 0,0,0]
+        if pad2EOF:
+           format += 'iiiiii'
+           values += [0,0,0, 0,0,0]
 
         #Use struct to make a binary string
         #'>' means big endian order
         # < means little endian
+        #print values
         s = struct.pack('<' + format, *values)
         #Write out that string (which is actually binary data)
         fileobj.write(s)
@@ -388,10 +390,10 @@ def convert_anvred_to_gsas(exp_filename, hkl_filename, P=0, K=0, used_integrate=
                     #If this is the 2nd record or later, make sure we write out
                     # the previous entry to the EXP file.
                     if last_histogram > 0:
-                        write_exp(exp_out, ref.histogram_number, hkl_filename, nref, dmin)
+                        write_exp(exp_out, last_histogram, hkl_filename, nref, dmin)
                     
                     #Create the file
-                    binary_out = open(expname + ".s%02d" % ref.histogram_number, "w")
+                    binary_out = open(expname + ".s%02d" % ref.histogram_number, "wb")
                     myfiles[ref.histogram_number]  = binary_out
                     #Reset nref
                     nref = 0
@@ -400,7 +402,7 @@ def convert_anvred_to_gsas(exp_filename, hkl_filename, P=0, K=0, used_integrate=
                 last_histogram = ref.histogram_number
                 
             #Write out the binary record
-            ref.write_to_binary(binary_out)
+            ref.write_to_binary(binary_out, 1)
             #Count the reflections
             nref += 1
 
@@ -411,10 +413,14 @@ def convert_anvred_to_gsas(exp_filename, hkl_filename, P=0, K=0, used_integrate=
     exp_out.write(' EXPR  NHST %5d\n' % ref.histogram_number)
     #This seems to write out the type of histogram. Not sure about the details, simply copied from FORTRAN
     I = ref.histogram_number/12 + 1
-    for j in xrange(1, I + 1):
+    for j in xrange(1, I+1 ):
         if j < I: N = 12
         if j == I: N = ref.histogram_number - 12 * (I-1)
-        exp_out.write(' EXPR  HTYP%1d  %4s\n' % (j, htyp))
+   #     exp_out.write(' EXPR  HTYP%1d  %4s\n' % (j, htyp))
+        exp_out.write(' EXPR  HTYP%1d  ' % (j))
+        for kk in xrange(1,N + 1):
+            exp_out.write('%4s ' % ( htyp))
+        exp_out.write('\n')
 
             
     #Close all files
@@ -422,6 +428,7 @@ def convert_anvred_to_gsas(exp_filename, hkl_filename, P=0, K=0, used_integrate=
         print "Output file written: %s" % value.name
         value.close()
     print "EXP file written: %s" % exp_out.name
+    print "Rename(eliminate _out) to use with gsas"
     exp_out.close()
 
 
