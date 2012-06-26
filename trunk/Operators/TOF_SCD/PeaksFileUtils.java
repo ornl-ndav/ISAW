@@ -828,6 +828,78 @@ public class PeaksFileUtils
   }
 
 
+/**
+ * Change the indexes in a peaks file by applying a specified tranformation
+ * to the HKL values.
+ *
+ * @param peaks              The peaks file to re-index using the specified
+ *                           transformation.
+ * @param arr_vals           Comma separated list of the nine entries for the
+ *                           3x3 transformation that will be applied to the
+ *                           HKL values in the file.
+ *  @param remove_unindexed  Flag that selects whether or not to remove any
+ *                           peaks from the file that were originally not
+ *                           indexed.
+ * @param out_file           Name of the new file to write.  If this is 
+ *                           blank or a zero length string, the updated list 
+ *                           of peaks will be written back to the input file.
+ */
+  public static void ChangeHKLs( String  peaks_file, 
+                                 Vector  arr_vals,
+                                 boolean remove_unindexed,
+                                 String  out_file )
+                     throws Exception
+  {
+    if ( arr_vals.size() != 9 )
+      throw new IllegalArgumentException("Nine floats required for matrix");
+
+    for ( int i = 0; i < arr_vals.size(); i++ )
+      System.out.println( "entry is " + arr_vals.elementAt(i) + 
+                          " of type " + arr_vals.elementAt(i).getClass() );
+
+    float[][] tran_arr = new float[3][3];
+    int index = 0;
+    try
+    {
+      for ( int row = 0; row < 3; row++ )
+        for ( int col = 0; col < 3; col++ )
+        {
+          if ( arr_vals.elementAt(index) instanceof Float )
+            tran_arr[row][col] = (Float)(arr_vals.elementAt(index));
+          else if ( arr_vals.elementAt(index) instanceof Integer )
+            tran_arr[row][col] = (Integer)(arr_vals.elementAt(index));
+          else if ( arr_vals.elementAt(index) instanceof String )
+            tran_arr[row][col] = 
+                  Float.parseFloat((String)(arr_vals.elementAt(index)));
+          else
+            throw new IllegalArgumentException("Could not convert " 
+                  + arr_vals.elementAt(index) + " to float");
+          index++;
+        }
+    }
+    catch ( Exception ex )
+    {
+      throw new IllegalArgumentException("Could not convert " 
+                  + arr_vals.elementAt(index) + " to float");
+    }
+
+    Tran3D hkl_tran = new Tran3D( tran_arr );
+
+    Vector<Peak_new> peaks = Peak_new_IO.ReadPeaks_new( peaks_file );
+
+    ChangeHKLs( peaks, hkl_tran );
+
+    if ( remove_unindexed )
+      peaks = RemoveUnindexedPeaks( peaks );
+
+    out_file = out_file.trim();
+    if ( out_file.length() == 0 )
+      Peak_new_IO.WritePeaks_new( peaks_file, peaks, false );
+    else
+      Peak_new_IO.WritePeaks_new( out_file, peaks, false );
+  }
+  
+
   public static void main( String args[] ) throws Exception
   {
     RemoveDetector( args[0], Integer.parseInt(args[1]), args[2] );
