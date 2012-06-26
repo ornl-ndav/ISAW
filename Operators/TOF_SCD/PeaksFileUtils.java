@@ -656,6 +656,178 @@ public class PeaksFileUtils
   }
 
 
+/**
+ *  Get a new list of peaks containing all of those peaks from the input
+ *  peaks list, that do NOT have index (0,0,0).
+ *
+ *  @param peaks      Vector of peaks, some of which are indexed.
+ *
+ *  @return A new list of peaks with the peaks from the original list that
+ *          have been indexed.
+ */
+  public static  Vector<Peak_new> RemoveUnindexedPeaks(Vector<Peak_new> peaks)
+  {
+    Vector<Peak_new> indexed_peaks = new  Vector<Peak_new>( peaks.size() );
+    Peak_new peak;
+    for ( int i = 0; i < peaks.size(); i++ )
+    {
+      peak = peaks.elementAt(i);
+      if ( peak.h() != 0 || peak.k() != 0 || peak.l() != 0 )
+        indexed_peaks.add( peak );
+    }
+    return indexed_peaks;
+  }
+
+
+/**
+ *  Change the Miller indices on the specified list of peaks, by multiplying
+ *  them by the specified tranformation.
+ *
+ *  @param peaks     The list of peaks to re-index
+ *  @param hkl_tran  The tranformation to apply to the HKL values.
+ */
+  public static void ChangeHKLs( Vector<Peak_new> peaks, Tran3D hkl_tran )
+  {
+    Vector3D hkl = new Vector3D();
+    Peak_new peak;
+    for ( int i = 0; i < peaks.size(); i++ )
+    {
+      peak = peaks.elementAt(i);
+      hkl.set( Math.round( peak.h() ), 
+               Math.round( peak.k() ), 
+               Math.round( peak.l() ) );
+      hkl_tran.apply_to( hkl, hkl );
+      peak.sethkl( Math.round( hkl.getX() ), 
+                   Math.round( hkl.getY() ), 
+                   Math.round( hkl.getZ() ) );
+    }
+  }
+
+
+/**
+ *  Re-index the peaks in the specified list of peaks, so that the Miller
+ *  indicies correspond to the specified conventional cell type and centering.
+ *  The original indexing MUST correspond to a Niggli reduced cell.  The
+ *  re-indexed peaks are returned in place in the original list.  This 
+ *  just updates the indices by multiplying by the 3x3 transformation that
+ *  maps to the conventional cell, so all peaks that were originally indexed
+ *  will also be indexed according to the conventional cell.
+ *
+ *  @param peaks             The list of peaks to re-index
+ *  @param cell_type         The requested cell_type for the new conventional
+ *                           cell
+ *  @param centering         The requested centering for the new conventional
+ *                           cell
+ *  @param remove_unindexed  Flag that selects whether or not to remove any
+ *                           peaks from the list that were originally not
+ *                           indexed.
+ */
+  public static void ConvertToConventionalCell( 
+                                            Vector<Peak_new> peaks,
+                                            String           cell_type,
+                                            String           centering,
+                                            boolean          remove_unindexed )
+  {
+    Vector<Peak_new> indexed_peaks = RemoveUnindexedPeaks( peaks );
+
+    float tolerance = 1;               // accept ALL previously indexed peaks
+
+    Vector miller_ind = new Vector();
+    Vector indexed_qs = new Vector();
+    int n_indexed = IndexingUtils.GetIndexedPeaks( indexed_peaks,
+                                                   tolerance,
+                                                   miller_ind,
+                                                   indexed_qs );
+
+    System.out.println("Number of peaks previously indexed: " + n_indexed );
+
+    Tran3D newUB = new Tran3D();
+    float fit_error;
+    fit_error = IndexingUtils.Optimize_UB_3D( newUB, miller_ind, indexed_qs );
+
+    System.out.println("Original average UB:");
+    System.out.println( newUB );
+    IndexingUtils.ShowLatticeParameters( newUB );
+
+    Vector<ConventionalCellInfo> possible_list;
+    possible_list = ScalarUtils.getCells( newUB, true, false );
+    ScalarUtils.removeBadForms( possible_list, 50 );
+    System.out.println();
+    System.out.printf("%9s  %-13s %-12s %-11s\n","","Type","Centering","Error");
+    for ( int i = 0; i < possible_list.size(); i++ )
+      System.out.println( possible_list.elementAt(i) );
+    System.out.println();
+
+    Vector<ConventionalCellInfo> requested_list;
+    requested_list = ScalarUtils.getCells( newUB, cell_type, centering );
+    ConventionalCellInfo best_cell = requested_list.elementAt(0);
+    for ( int i = 1; i < requested_list.size(); i++ )
+      if ( requested_list.elementAt(i).getError() < best_cell.getError() )
+        best_cell = requested_list.elementAt(i);
+
+    Tran3D conventional_cell_UB = best_cell.getNewUB();
+    System.out.println("Conventional cell average UB:");
+    System.out.println( conventional_cell_UB );
+    IndexingUtils.ShowLatticeParameters( conventional_cell_UB );
+
+    System.out.println();
+    Tran3D hkl_tran = best_cell.getHKL_Tran();
+    System.out.println( "HKL Tranformation = " );
+    System.out.println( hkl_tran );
+    System.out.println();
+ 
+    if ( remove_unindexed )           // clear the original list and copy only
+    {                                 // the indexed peaks, back into it.
+      peaks.clear();
+      for ( int i = 0; i < indexed_peaks.size(); i++ )
+        peaks.add( indexed_peaks.elementAt(i) );
+    }
+
+    ChangeHKLs( peaks, hkl_tran );
+  }
+
+
+/**
+ *  Re-index the peaks in the specified file of peaks, so that the Miller
+ *  indicies correspond to the specified conventional cell type and centering.
+ *  The original indexing MUST correspond to a Niggli reduced cell.  The
+ *  re-indexed peaks can be written back to the original file or to a new
+ *  peaks file.  This operator just updates the indices by multiplying by 
+ *  the 3x3 transformation that maps to the conventional cell, so all peaks 
+ *  that were originally indexed will also be indexed according to the 
+ *  conventional cell.
+ *
+ *  @param peaks             The peaks file to re-index
+ *  @param cell_type         The requested cell_type for the new conventional
+ *                           cell
+ *  @param centering         The requested centering for the new conventional
+ *                           cell
+ *  @param remove_unindexed  Flag that selects whether or not to remove any
+ *                           peaks from the file that were originally not
+ *                           indexed.
+ * @param  out_file          Name of the new file to write.  If this is 
+ *                           blank or a zero length string, the updated list 
+ *                           of peaks will be written back to the input file.
+ */
+  public static void ConvertToConventionalCell( String  peaks_file,
+                                                String  cell_type,
+                                                String  centering,
+                                                boolean remove_unindexed,
+                                                String  out_file )
+                     throws Exception
+  {
+    Vector<Peak_new> peaks = Peak_new_IO.ReadPeaks_new( peaks_file );
+
+    ConvertToConventionalCell( peaks, cell_type, centering, remove_unindexed );
+
+    out_file = out_file.trim();
+    if ( out_file.length() == 0 )
+      Peak_new_IO.WritePeaks_new( peaks_file, peaks, false );
+    else
+      Peak_new_IO.WritePeaks_new( out_file, peaks, false );
+  }
+
+
   public static void main( String args[] ) throws Exception
   {
     RemoveDetector( args[0], Integer.parseInt(args[1]), args[2] );
