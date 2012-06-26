@@ -50,6 +50,7 @@ public class ConventionalCellInfo
   private String centering;
   private Tran3D original_UB;
   private Tran3D adjusted_UB;
+  private Tran3D hkl_tran;
 
   /**
    *  Construct a conventional cell info object corresponding to the 
@@ -108,9 +109,10 @@ public class ConventionalCellInfo
       for ( int j = 0; j < 3; j++ )
         cell_tran_f[i][j] = (float)cell_tran[i][j];
 
-    Tran3D new_tran = new Tran3D( cell_tran_f );
-    new_tran.invert();
-    adjusted_UB.multiply_by( new_tran );
+    hkl_tran = new Tran3D( cell_tran_f );
+    Tran3D UB_tran = new Tran3D( hkl_tran );
+    UB_tran.invert();
+    adjusted_UB.multiply_by( UB_tran );
 
 /*                             // Force UB to right-handed.  This should not
  *                             // be necessary.
@@ -298,6 +300,20 @@ public class ConventionalCellInfo
   public Tran3D getNewUB()
   {
     return new Tran3D( adjusted_UB );
+  }
+
+
+  /**
+   * Get a copy of the transformation matrix that maps the old hkl values
+   * to the new hkl values.
+   *
+   * @return A Tran3D object that can multiply an old hkl value to 
+   *         get the new hkl value corresponding to the conventional cell.
+   */
+  public Tran3D getHKL_Tran()
+  {
+    
+    return new Tran3D( hkl_tran );
   }
 
 
