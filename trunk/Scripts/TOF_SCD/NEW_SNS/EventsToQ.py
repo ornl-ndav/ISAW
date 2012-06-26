@@ -18,9 +18,9 @@ class EventsToQ(GenericTOF_SCD):
         self.addParameter(FloatPG("First event:", "1.0"))
         self.addParameter(FloatPG("Number of events:", "1.0E08"))
         self.addParameter(LoadFilePG("Output file:", ""))
-        choicelist = ChoiceListPG("Output file type:", "ASCII")
-        choicelist.addItem("Binary_Little_Endian")
-        choicelist.addItem("Binary_Big_Endian")
+        choicelist = ChoiceListPG("Output file type:", "Binary_Little_Endian(PC)")
+        choicelist.addItem("Binary_Big_Endian(Java)")
+        choicelist.addItem("ASCII")
         self.addParameter(choicelist)
 
     def getResult(self):
