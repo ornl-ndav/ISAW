@@ -524,7 +524,7 @@ public class AutoReduceSCD
 
 
   /**
-   *  Write the current list of peaks to the specified file.
+   *  Write the current UB matrix to the specified file.
    *
    *  @param filename   The name of the file to write.
    *  @throws An IOException will be thrown if the file cannot be written.

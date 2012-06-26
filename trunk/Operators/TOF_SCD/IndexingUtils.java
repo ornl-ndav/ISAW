@@ -43,7 +43,7 @@ import gov.anl.ipns.MathTools.*;
 
 import DataSetTools.components.ui.Peaks.subs;
 import DataSetTools.operator.Generic.TOF_SCD.IPeak;
-
+import DataSetTools.operator.Generic.TOF_SCD.Peak_new;
 
 public class IndexingUtils
 {
@@ -3062,9 +3062,9 @@ public static int GetIndexedPeaks_3D( Vector3D  direction_1,
                              the corresponding Miller index) for a peak
                              q_vector to be counted as indexed.
   @param miller_indices      List of the Miller indices (h,k,l) of peaks
-                             that were indexed in all specified directions.
+                             that were indexed within the specified tolerance.
   @param indexed_qs          List of Qxyz value for the peaks that were
-                             indexed indexed in all specified directions.
+                             indexed within the specified tolerance.
   @param fit_error           The sum of the squares of the distances from
                              integer values for the UB*Q for the specified
                              UB matrix and the specified q_vectors.
@@ -3118,6 +3118,57 @@ public static int GetIndexedPeaks( Tran3D    UB,
 
   return num_indexed;
 }
+
+
+/**
+  Given a list of peak objects, get the list of Miller indices and 
+  corresponding peak positions for the peaks that currently have
+  valid Miller indices to within the specified tolerance.
+
+  @param peaks               List of peak objects 
+  @param required_tolerance  The maximum allowed error (as a faction of
+                             the corresponding Miller index) for a peak
+                             q_vector to be counted as indexed.
+  @param miller_indices      List of the Miller indices (h,k,l) of peaks
+                             that were indexed within the specified tolerance.
+  @param indexed_qs          List of Unrotated Qxyz values for the peaks that
+                             were indexed within the specified tolerance..
+
+  @return The number peaks that are indexed to within the specified tolerance.
+ */
+public static int GetIndexedPeaks( Vector<Peak_new> peaks, 
+                                   float            required_tolerance,
+                                   Vector           miller_indices,
+                                   Vector           indexed_qs )
+{
+    float    error;
+    int      num_indexed = 0;
+
+    miller_indices.clear();
+    indexed_qs.clear();
+    Peak_new peak;
+    Vector3D hkl = new Vector3D();
+    for ( int peak_num = 0; peak_num < peaks.size(); peak_num++ )
+    {
+      peak = peaks.elementAt( peak_num ); 
+      hkl.set( peak.h(), peak.k(), peak.l() );
+
+      if ( ValidIndex( hkl, required_tolerance ) )
+      {
+        indexed_qs.add( new Vector3D( peak.getUnrotQ() ) );
+
+        Vector3D miller_ind = new Vector3D( Math.round(hkl.getX()),
+                                            Math.round(hkl.getY()),
+                                            Math.round(hkl.getZ()) );
+        miller_indices.add( miller_ind );
+
+        num_indexed++;
+      }
+    }
+
+  return num_indexed;
+}
+
 
 
 /**
