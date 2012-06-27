@@ -74,10 +74,10 @@ public class MergeRuns extends GenericOperator{
     */
    public void setDefaultParameters(){
       clearParametersVector();
-      addParameter( new DataDirPG("Director With Peaks Files",""));
+      addParameter( new DataDirPG("Directory With Peaks Files",""));
       addParameter( new StringPG("Base Name of Peaks Files","TOPAZ_"));
       addParameter( new StringPG("Peaks File Suffix",".peaks"));
-      addParameter( new ChoiceListPG("List of Run Numbers","5637:5644"));
+      addParameter( new IntArrayPG("List of Run Numbers","5637:5644"));
       addParameter( new SaveFilePG("Fully Qualified Output File Name",""));
    }
 
@@ -119,6 +119,7 @@ public class MergeRuns extends GenericOperator{
       S.append("@param   ");
       S.append("List of run numbers for the peaks files to");
       S.append(" be merged, specified as a comma separated list.");
+      S.append(" Ranges of integers can be specified with a colon separator.");
       S.append(" A range of consecutive run numbers can be");
       S.append(" specified with a colon separator.");
       S.append("@param   ");
@@ -157,7 +158,7 @@ public class MergeRuns extends GenericOperator{
          java.lang.String directory = getParameter(0).getValue().toString();
          java.lang.String base_name = getParameter(1).getValue().toString();
          java.lang.String suffix = getParameter(2).getValue().toString();
-         java.lang.String run_list = getParameter(3).getValue().toString();
+         java.lang.String run_list = (java.lang.String)(getParameter(3).getValue());
          java.lang.String out_file = getParameter(4).getValue().toString();
          Operators.TOF_SCD.PeaksFileUtils.MergeRuns(directory,base_name,suffix,run_list,out_file );
 
