@@ -820,7 +820,7 @@ public class PeaksFileUtils
  *  that were originally indexed will also be indexed according to the 
  *  conventional cell.
  *
- *  @param peaks             The peaks file to re-index
+ *  @param peaks_file        The peaks file to re-index
  *  @param cell_type         The requested cell_type for the new conventional
  *                           cell
  *  @param centering         The requested centering for the new conventional
@@ -859,7 +859,7 @@ public class PeaksFileUtils
  * Change the indexes in a peaks file by applying a specified tranformation
  * to the HKL values.
  *
- * @param peaks              The peaks file to re-index using the specified
+ * @param peaks_file         The peaks file to re-index using the specified
  *                           transformation.
  * @param arr_vals           Comma separated list of the nine entries for the
  *                           3x3 transformation that will be applied to the
@@ -1170,12 +1170,12 @@ public class PeaksFileUtils
  *  goniometer is already quite well oriented, so there is no general trend
  *  in the data that can be used to estimate the tilt angles.
  *  
- *  @param peaks      File of indexed peaks from mulitple runs with different
- *                    goniometer settings.
- *  @param max_angle  The maximum tilt angle to try for any of the 
- *                    goniometer "tilts" Rx, Ry, Rz, in degrees.
- *  @param tolerance  The tolerance on Miller indices for a peak to be
- *                    considered indexed
+ *  @param peaks_file  File of indexed peaks from mulitple runs with different
+ *                     goniometer settings.
+ *  @param max_angle   The maximum tilt angle to try for any of the 
+ *                     goniometer "tilts" Rx, Ry, Rz, in degrees.
+ *  @param tolerance   The tolerance on Miller indices for a peak to be
+ *                     considered indexed
  */
   public static Vector FindGoniometerError( String  peaks_file,
                                             float   max_angle,
