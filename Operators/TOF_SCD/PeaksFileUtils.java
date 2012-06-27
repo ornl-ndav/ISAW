@@ -883,10 +883,6 @@ public class PeaksFileUtils
     if ( arr_vals.size() != 9 )
       throw new IllegalArgumentException("Nine floats required for matrix");
 
-    for ( int i = 0; i < arr_vals.size(); i++ )
-      System.out.println( "entry is " + arr_vals.elementAt(i) + 
-                          " of type " + arr_vals.elementAt(i).getClass() );
-
     float[][] tran_arr = new float[3][3];
     int index = 0;
     try
