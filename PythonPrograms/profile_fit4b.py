@@ -159,7 +159,7 @@ while True:
             bG = popt[3]
             cG = popt[4]
             
-            # intI, sigI = scipy.integrate.quad(gaussian, 0, 39, 
+            # intI, sigI = scipy.integrate.quad(gaussian, 0, numSteps-1, 
                 # args=(aG, sigG, muG, 0.0, 0.0))
                 
             # print intI, sigI
@@ -221,7 +221,7 @@ while True:
             slope = popt[4]
             constant = popt[5]
             
-            intI, sigI = scipy.integrate.quad(function_1, 0, 39, 
+            intI, sigI = scipy.integrate.quad(function_1, 0, numSteps-1, 
                 args=(scale, mu, alpha, sigma, 0.0, 0.0))
             peaks[numOfPeaks-1][12] = intI
             peaks[numOfPeaks-1][13] = math.sqrt(abs(intI))
