@@ -78,8 +78,8 @@ public class AddRunInfo extends GenericOperator{
       addParameter( new BooleanEnablePG("Set Run Number",true));
       addParameter( new IntegerPG("Run Number",0));
       addParameter( new BooleanEnablePG("Set Goniometer Angles",true));
-      addParameter( new FloatPG("Chi Angle",135));
       addParameter( new FloatPG("Phi Angle",0));
+      addParameter( new FloatPG("Chi Angle",135));
       addParameter( new FloatPG("Omega Angle",0));
       addParameter( new BooleanEnablePG("Set Monitor Counts",true));
       addParameter( new FloatPG("Monitor Counts",100000));
@@ -130,9 +130,9 @@ public class AddRunInfo extends GenericOperator{
       S.append("Flag indicating whether or not new goniometer");
       S.append(" angles should be set.");
       S.append("@param   ");
-      S.append("New chi angle");
-      S.append("@param   ");
       S.append("New phi angle");
+      S.append("@param   ");
+      S.append("New chi angle");
       S.append("@param   ");
       S.append("New omega angle");
       S.append("@param   ");
@@ -179,13 +179,13 @@ public class AddRunInfo extends GenericOperator{
          boolean set_run_num = ((BooleanEnablePG)(getParameter(1))).getbooleanValue();
          int run_num = ((IntegerPG)(getParameter(2))).getintValue();
          boolean set_gonio_angles = ((BooleanEnablePG)(getParameter(3))).getbooleanValue();
-         float chi = ((FloatPG)(getParameter(4))).getfloatValue();
-         float phi = ((FloatPG)(getParameter(5))).getfloatValue();
+         float phi = ((FloatPG)(getParameter(4))).getfloatValue();
+         float chi = ((FloatPG)(getParameter(5))).getfloatValue();
          float omega = ((FloatPG)(getParameter(6))).getfloatValue();
          boolean set_mon_count = ((BooleanEnablePG)(getParameter(7))).getbooleanValue();
          float mon_count = ((FloatPG)(getParameter(8))).getfloatValue();
          java.lang.String out_file = getParameter(9).getValue().toString();
-         Operators.TOF_SCD.PeaksFileUtils.AddRunInfo(peaks_file,set_run_num,run_num,set_gonio_angles,chi,phi,omega,set_mon_count,mon_count,out_file );
+         Operators.TOF_SCD.PeaksFileUtils.AddRunInfo(peaks_file,set_run_num,run_num,set_gonio_angles,phi,chi,omega,set_mon_count,mon_count,out_file );
 
          return "Success";
       }catch(java.lang.Exception S0){

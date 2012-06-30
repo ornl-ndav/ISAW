@@ -346,6 +346,61 @@ public class AutoReduceSCD
     return num_indexed;
   }
 
+
+  /**
+   *  After peaks have been found, this method will try to find an orientation
+   *  matrix that would index the peaks to within the specified tolerance on
+   *  h,k,l, using the FFT indexing algorithm.
+   *
+   *  @param min_d     A lower bound for the length of any real space cell 
+   *                   edge.
+   *  @param max_d     An upper bound for the length of any real space cell 
+   *                   edge.
+   *  @param tolerance The required tolerance on h,k and l for a peak to
+   *                   be considered to be indexed.  If a peak is not indexed
+   *                   the h,k,l values are recorded as 0,0,0
+   *  @return the number of peaks that were successfully indexed.
+   */
+  public int FindUB_AndIndexPeaks( float min_d,
+                                   float max_d,
+                                   float tolerance )
+  {
+    UB = new Tran3D();
+    Vector<Vector3D> q_vectors = new Vector<Vector3D>();
+    for ( int i = 0; i < peak_list.size(); i++ )
+    {
+      Vector3D q_vec = new Vector3D( peak_list.elementAt(i).getQ() );
+      q_vectors.add( q_vec );
+    }
+
+    int   base_index  = -1;
+    int   num_initial = 35;
+    float angle_step  = 1.0f;
+    IndexingUtils.FindUB_UsingFFT( UB,
+                                   q_vectors,
+                                   min_d, max_d,
+                                   tolerance,
+                                   angle_step );
+
+    Tran3D UB_inv = new Tran3D( UB );
+    UB_inv.invert();
+    Vector3D hkl = new Vector3D();
+    int num_indexed = 0;
+    for ( int i = 0; i < peak_list.size(); i++ )
+    {
+      UB_inv.apply_to( q_vectors.elementAt(i), hkl );
+      if ( IndexingUtils.ValidIndex( hkl, tolerance ) )
+      {
+        peak_list.elementAt(i).sethkl( hkl.getX(), hkl.getY(), hkl.getZ() );
+        num_indexed++;
+      }
+      else
+        peak_list.elementAt(i).sethkl( 0, 0, 0 );
+    }
+
+    return num_indexed;
+  }
+
  
   /**
    * This method will carry out a rough integration of the peaks by summing 
@@ -677,6 +732,134 @@ public class AutoReduceSCD
   }
 
 
+
+  /**
+   *  Carry out all of the initial SCD data reduction steps on ONE event
+   *  file, producing a file of integrated intensities.
+   *  @param instrument       Instrument name, such as TOPAZ or SNAP.  This 
+   *                          must be the name of a supported instrument at 
+   *                          the SNS.  The name determines which default 
+   *                          instrument geometry files (.DetCal, bank and 
+   *                          mapping files) from the ISAW distribution will 
+   *                          be used.
+   *  @param DetCal_file      The .DetCal file to use for this data reduction.
+   *                          If null is passed in, the default .DetCal file
+   *                          will be used.
+   *  @param num_bins         The number of steps in each direction to use for
+   *                          the underlying 3D histogram in reciprocal space.
+   *                          The required storage is 4*num_bins^3.  A num_bins
+   *                          value of 768 requires 1.8 Gb of memory and is a 
+   *                          reasonable compromize between resolution and 
+   *                          memory size and compute time.  
+   *  @param max_Q            The maximum |Q| to use for the histogram region
+   *                          and for events loaded from the raw event file.  
+   *                          NOTE: the value for max_Q is specified here using
+   *                                the physics convention that Q = 2*PI/d,
+   *                                NOT the crystallographic conventions that 
+   *                                Q = 1/d.
+   *  @param wavelength_power The power on the wavelength term in the Lorentz
+   *                          correction factor.  Theoretically, this should 
+   *                          be 4, but a value of 2.4 works better for finding
+   *                          peaks in small molecule data and a value of 1
+   *                          works better for large molecules, such as 
+   *                          protiens.  The Lorentz correction is "backed out"
+   *                          before writing the .integrate file, since it is
+   *                          applied in ANVRED, so this parameter is only a
+   *                          fudge factor to even out the data for finding
+   *                          peaks.
+   *  @param event_file       The name of an SNS raw neutron_event.dat file.
+   *  @param num_to_find      The maximum number of peaks to look for in the
+   *                          histogram.
+   *  @param threshold        The minimum histogram value that will be 
+   *                          considered for a possible peak.
+   *  @param run_number       The run number for this run.
+   *  @param phi              The PHI angle setting for this run.
+   *  @param chi              The CHI angle setting for this run.
+   *  @param omega            The OMEGA angle setting for this run.
+   *  @param mon_count        The monitor counts for this run.
+   *  @param min_d            A lower bound for the length of any real space 
+   *                          cell edge.
+   *  @param max_d            An upper bound for the length of any real space
+   *                          cell edge.
+   *  @param tolerance        The required tolerance on h,k and l for a peak to
+   *                          be considered to be indexed.  If a peak is not 
+   *                          indexed the h,k,l values are recorded as 0,0,0.
+   *  @param matrix_file      The name of the file to which the orientation
+   *                          matrix will be written.
+   *  @param radius           The radius of the peak region to integrate, 
+   *                          specified in Q, using the physics convention.
+   *  @param integrate_all    If true, predict peak positions from the UB 
+   *                          matrix and integrate all predicted peak 
+   *                          positions. (THIS IS NOT CURRENTLY IMPLEMENTED). 
+   *                          If false, just integrate the peaks that were 
+   *                          actually found. 
+   *
+   *  @param integrate_file   The name of the .integrate file that will be
+   *                          written, containing the integrated intensities.
+   *  @throws Exceptions      Exceptions will be thrown if the calculation 
+   *                          fails at some point, or if specified files cannot
+   *                          be read or written.
+   */
+  public static void ReduceSCD2( String  instrument,
+                                 String  DetCal_file,
+                                 int     num_bins,
+                                 float   max_Q,
+                                 float   wavelength_power,
+                                 String  event_file,
+                                 int     num_to_find,
+                                 float   threshold,
+                                 int     run_number,
+                                 float   phi,
+                                 float   chi,
+                                 float   omega,
+                                 float   mon_count,
+                                 float   min_d,
+                                 float   max_d,
+                                 float   tolerance,
+                                 String  matrix_file,
+                                 float   radius,
+                                 boolean integrate_all,
+                                 String  integrate_file )
+                      throws Exception
+  {
+    AutoReduceSCD reducer = new AutoReduceSCD( instrument,
+                                               DetCal_file,
+                                               num_bins,
+                                               max_Q,
+                                               wavelength_power );
+
+    long n_loaded = reducer.LoadHistogram( event_file );
+    System.out.println("Number added to histogram = " + n_loaded );
+
+    int n_found = reducer.FindPeaks( num_to_find, threshold );
+    System.out.println("Number of peaks found = " + n_found );
+
+    String log_file = "AutoReducePeaks.log";
+    reducer.SavePeaks( log_file );
+    System.out.println("Wrote basic peaks to " + log_file );
+
+    int n_indexed = reducer.FindUB_AndIndexPeaks( min_d, max_d,
+                                                  tolerance );
+    System.out.println("Number of peaks indexed = " + n_indexed );
+    reducer.SavePeaks( log_file );
+    System.out.println("Wrote indexed peaks to " + log_file );
+
+    reducer.SaveUB( matrix_file );
+    System.out.println("Saved UB to matrix file " + matrix_file );
+
+    int n_integrated = reducer.IntegratePeaks( radius,
+                                               integrate_all );
+    System.out.println( "Number of peaks integrated = " + n_integrated );
+
+    reducer.peak_list = PeaksFileUtils.AddRunInfo( reducer.peak_list,
+                                                   true, run_number,
+                                                   true, phi, chi, omega,
+                                                   true, mon_count );
+    reducer.SavePeaks( integrate_file );
+    System.out.println("Wrote integrated peaks to "+ integrate_file);
+  }
+
+
   /**
    *  Main program can be invoked from command line.  This can be modified
    *  to pass any/all of the parameters on the command line.
@@ -691,8 +874,8 @@ public class AutoReduceSCD
 
     String  event_file = "/usr2/TOPAZ_SAPPHIRE/TOPAZ_2480_neutron_event.dat";
 
-    int     num_to_find = 100;
-    float   threshold   = 5;
+    int     num_to_find = 400;
+    float   threshold   = 1;
     String  peaks_file = "demo.peaks";
 
     float   a = 4.75f;
@@ -710,12 +893,31 @@ public class AutoReduceSCD
     boolean integrate_all         = false;
     String  integrated_peaks_file = "demo.integrate";
 
+    // test original version:
     ReduceSCD( instrument, DetCal_file, num_bins, max_Q, wavelength_power,
                event_file, 
                num_to_find, threshold, peaks_file,
                a, b, c, alpha, beta, gamma, tolerance, indexed_peaks_file,
                matrix_file,
                integration_radius, integrate_all, integrated_peaks_file );
+
+    // test new version:
+    int   run_number = 2480;
+    float chi   = 135.0f;
+    float phi   = 135.0f;
+    float omega =  56.005f;
+    float mon_count = 17041708;
+    float min_d = 3;
+    float max_d = 8;
+    String integrate_file = "FFT_demo.integrate";
+    ReduceSCD2( instrument, DetCal_file, num_bins, max_Q, wavelength_power,
+                event_file,
+                num_to_find,
+                threshold,
+                run_number, phi, chi, omega, mon_count,
+                min_d, max_d, tolerance,
+                matrix_file,
+                integration_radius, integrate_all, integrate_file );
   }
 }
 

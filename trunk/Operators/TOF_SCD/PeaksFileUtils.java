@@ -208,10 +208,8 @@ public class PeaksFileUtils
     int n_indexed = IndexingUtils.GetIndexedPeaks( UB, q_vectors, tolerance,
                                            miller_ind, indexed_qs, fit_error );
 
-    System.out.println("FIRST UB:");
-    System.out.println("Indexed " + n_indexed );
-    System.out.println("Std Dev " + std_dev );
-    System.out.println("Fit Err " + fit_error[0] );
+    System.out.printf("First UB Indexed %5d with std dev %6.4f\n",
+                       n_indexed, std_dev );
 
     Tran3D newUB = new Tran3D();
 
@@ -222,10 +220,8 @@ public class PeaksFileUtils
       std_dev = IndexingUtils.IndexingStdDev( newUB, q_vectors, tolerance );
       n_indexed = IndexingUtils.GetIndexedPeaks( newUB, q_vectors, tolerance,
                                           miller_ind, indexed_qs, fit_error );
-      System.out.println("NEXT UB:");
-      System.out.println("Indexed " + n_indexed );
-      System.out.println("Std Dev " + std_dev );
-      System.out.println("Fit Err " + fit_error[0] );
+      System.out.printf("Next  UB Indexed %5d with std dev %6.4f\n",
+                         n_indexed, std_dev );
    }
 
     Tran3D newUB_inverse = new Tran3D( newUB );
@@ -315,8 +311,8 @@ public class PeaksFileUtils
  * @param  run_num          New run number
  * @param  set_gonio_angles Flag indicating whether or not new goniometer 
  *                          angles should be set.
- * @param  chi              New chi angle
  * @param  phi              New phi angle
+ * @param  chi              New chi angle
  * @param  omega            New omega angle
  * @param  set_mon_count    Flag indicating whether or not a new monitor 
  *                          count should be set.
@@ -327,8 +323,8 @@ public class PeaksFileUtils
                                              boolean          set_run_num,
                                              int              run_num,
                                              boolean          set_gonio_angles,
-                                             float            chi,
                                              float            phi,
+                                             float            chi,
                                              float            omega,
                                              boolean          set_mon_count,
                                              float            mon_count )
@@ -405,8 +401,8 @@ public class PeaksFileUtils
  * @param  run_num          New run number
  * @param  set_gonio_angles Flag indicating whether or not new goniometer 
  *                          angles should be set.
- * @param  chi              New chi angle
  * @param  phi              New phi angle
+ * @param  chi              New chi angle
  * @param  omega            New omega angle
  * @param  set_mon_count    Flag indicating whether or not a new monitor 
  *                          count should be set.
@@ -419,8 +415,8 @@ public class PeaksFileUtils
                                  boolean  set_run_num,
                                  int      run_num,
                                  boolean  set_gonio_angles,
-                                 float    chi,
                                  float    phi,
+                                 float    chi,
                                  float    omega,
                                  boolean  set_mon_count,
                                  float    mon_count,
@@ -433,7 +429,7 @@ public class PeaksFileUtils
     Vector<Peak_new> peaks     = Peak_new_IO.ReadPeaks_new( peaks_file );
     Vector<Peak_new> new_peaks = AddRunInfo( peaks, 
                                              set_run_num, run_num,
-                                             set_gonio_angles, chi, phi, omega,
+                                             set_gonio_angles, phi, chi, omega,
                                              set_mon_count, mon_count );
 
     out_file = out_file.trim();
@@ -526,53 +522,51 @@ public class PeaksFileUtils
                                         Vector<Peak_new> reindexed_peaks,
                                         Vector<Tran3D>   UB_matrices )
   {
-    float angle_step = 1;
 
     Vector<Peak_new> first_peaks = GetFirstRunPeaks( peaks );
     int current_run = first_peaks.elementAt(0).nrun();
 
-    Tran3D firstUB = FindUB(first_peaks, min_d, max_d, tolerance, angle_step);
-    System.out.println("RUN NUMBER: " + current_run );
-//    System.out.println("UB from FFT:\n" + firstUB );
+    Tran3D firstUB = null;  // Fail if we can't find a UB!
+
+    if ( use_fft )          // Find UB with FFT indexing of ALL RUNS
+    {
+      float angle_step = 1;
+      firstUB = FindUB(peaks, min_d, max_d, tolerance, angle_step);
+      System.out.print("\nLattice Parameters for ALL peaks: " );
+    }
+    else                    // Find UB from initial indexing of FIRST RUN
+    {
+      firstUB = FindUB_FromIndexing( first_peaks, tolerance );
+      System.out.println("Lattice Parameters from First Run Indexes:\n");
+    }
+
     IndexingUtils.ShowLatticeParameters( firstUB );
     System.out.println();
 
-    if ( !use_fft )                         // Find UB from initial indexing
-    {
-      firstUB = FindUB_FromIndexing( first_peaks, tolerance );
-      System.out.println("UB from supplied indexes:\n" + firstUB );
-      IndexingUtils.ShowLatticeParameters( firstUB );
-      System.out.println();
-    }
-
     reindexed_peaks.clear();
     UB_matrices.clear();
-    firstUB = OptimizeUB_AndIndexPeaks( first_peaks, firstUB, tolerance );
-    for ( int i = 0; i < first_peaks.size(); i++ )
-      reindexed_peaks.add( first_peaks.elementAt(i) );
-    UB_matrices.add( firstUB );
 
-    Tran3D nextUB;
+    Tran3D nextUB = null;
+    Vector<Peak_new> next_peaks = first_peaks;
+
     boolean done = false;
     while ( !done )
     {
-      Vector<Peak_new> next_peaks = GetNextRunPeaks( current_run, peaks );
       if ( next_peaks.size() == 0 )
         done = true;
       else
       {
         current_run = next_peaks.elementAt(0).nrun();
-        System.out.println("RUN NUMBER: " + current_run );
-
+        System.out.println("\nRUN NUMBER: " + current_run );
         nextUB = OptimizeUB_AndIndexPeaks( next_peaks, firstUB, tolerance );
-//      System.out.println("Optimized UB:\n" + nextUB );
+        System.out.print( "Resulting Lattice Parameters: " );
         IndexingUtils.ShowLatticeParameters( nextUB );
-        System.out.println();
 
         for ( int i = 0; i < next_peaks.size(); i++ )
           reindexed_peaks.add( next_peaks.elementAt(i) );
          UB_matrices.add( nextUB );
       }
+      next_peaks = GetNextRunPeaks( current_run, peaks );
     }
   }  
 
