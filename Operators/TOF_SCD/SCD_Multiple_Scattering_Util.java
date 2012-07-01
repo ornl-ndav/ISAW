@@ -220,7 +220,7 @@ public class SCD_Multiple_Scattering_Util
  
   /**
    *  Get a list of the possible secondary reflections that could be generated
-   *  by the the specified peak in the list of peaks.  This method returns a 
+   *  by the specified peak in the list of peaks.  This method returns a 
    *  Vector containing sets of three objects with the following information.  
    *    First entry:  Vector3D holding h,k,l of first secondary scattering peak
    *    Second entry: Direction vector in real space for first secondary
@@ -269,6 +269,13 @@ public class SCD_Multiple_Scattering_Util
                                          // coordinates, so peaks are predicted
                                          // in lab coordinates.
     or_mat = ApplyGoniometerRotationToUB( fixed_peak, or_mat ); 
+
+    System.out.println("UN-Rotated UB:");
+    System.out.println( or_mat );
+    Tran3D calcUB = new Tran3D();
+    SampleOffset_Calc.FindUB_FromIndexedPeaks( peaks, .12f, calcUB );
+    System.out.println("Calculated UB:");
+    System.out.println( calcUB );
 
     Vector result = FindSecondaryReflections( sec_beam_dir, wl, bandwidth,
                                               or_mat,
@@ -385,7 +392,7 @@ public class SCD_Multiple_Scattering_Util
  *
  *  @param peak   The peak object containing information about the peak
  *
- *  @return A unit vector pointing toward the detector pixel for the the
+ *  @return A unit vector pointing toward the detector pixel for the
  *          peak in real space.
  */
   public static Vector3D ReflectionDirection( Peak_new peak )
@@ -410,7 +417,7 @@ public class SCD_Multiple_Scattering_Util
  *  @param  or_mat        The orientation matrix.
  *  @param  hkl           The hkl vector.
  *
- *  @return A unit vector pointing toward the detector pixel for the the
+ *  @return A unit vector pointing toward the detector pixel for the
  *          peak in real space.
  */
   public static Vector3D ReflectionDirection( Vector3D incident_dir, 
@@ -446,6 +453,33 @@ public class SCD_Multiple_Scattering_Util
  */
   public static void ShowReflections( Vector result )
   {
+    System.out.println( GetReflectionsString( result, 1 ) );
+  }
+
+
+/**
+ * Get a multiline String showing the reflections stored in the specified 
+ * result vector, in tabular form. The reflections are stored as triples in
+ * the specified vector.  The first entry in a triple is the hkl vector, the 
+ * second is the real-space reflection direction for that hkl and the third
+ * is the wavelength for that reflection.  If these are sets of double 
+ * reflections, a blank line will be included between pairs of reflections.
+ *
+ * @param result  Vector containing triples, hkl, beam_dir, and wavelength.
+ * @param stride  The number of triples that should be grouped, and
+ *                separated with a blank line.
+ *
+ * @return a multi-line string with the table of reflections.
+ */
+  public static String GetReflectionsString( Vector result, int stride )
+  {
+    StringBuffer buffer = new StringBuffer();
+    if ( result.size() <= 0 )
+      return new String(buffer);
+/*
+    buffer.append(
+        "   H    K    L        refX       refY       refZ        wl\n");
+*/
     for ( int i = 0; i < result.size(); i+=3 )
     {
       Vector3D hkl          = (Vector3D)result.elementAt(i);
@@ -456,13 +490,16 @@ public class SCD_Multiple_Scattering_Util
       int   new_k  = Math.round( hkl.getY() );
       int   new_l  = Math.round( hkl.getZ() );
 
-      System.out.printf( "wl match at hkl: %3d %3d %3d  ", new_h,new_k,new_l );
-      System.out.printf( "  refl dir = %9.6f  %9.6f  %9.6f",
-                            new_beam_dir.getX(),
-                            new_beam_dir.getY(),
-                            new_beam_dir.getZ() );
-      System.out.printf( "  wl = %8.6f\n", new_wl );
+      buffer.append( String.format( "%4d %4d %4d ", new_h,new_k,new_l ));
+      buffer.append( String.format( "  %9.6f  %9.6f  %9.6f",
+                                     new_beam_dir.getX(),
+                                     new_beam_dir.getY(),
+                                     new_beam_dir.getZ() ));
+      buffer.append( String.format( "  %8.6f\n", new_wl ));
+      if ( i > 0 && i%2 == (stride-1) )
+        buffer.append("\n");
     }
+    return new String(buffer);
   }
 
  
@@ -565,9 +602,12 @@ public class SCD_Multiple_Scattering_Util
                                           max_h, max_k, max_l );
 
         int n_additive_refl = result.size() / 6;
-        System.out.printf("%4d     %2d\n", runnum, n_additive_refl );
-        if ( show_reflections )
-          ShowReflections(result);
+        if ( n_additive_refl > 0 )
+        {
+          System.out.printf("%4d     %2d\n", runnum, n_additive_refl );
+          if ( show_reflections )
+            System.out.println( GetReflectionsString( result, 2 ) ); 
+        }
       }
     }
 
@@ -614,6 +654,7 @@ public class SCD_Multiple_Scattering_Util
   public static void main(String args[]) throws Exception
   {
     AnalyzeNickelRuns( -1, -1, -1, true );
+  
 /*
     String peaks_filename  = "/home/dennis/TOPAZ_3134_EV.peaks";
     String or_mat_filename = "/home/dennis/TOPAZ_3134_EV.mat";
@@ -630,12 +671,13 @@ public class SCD_Multiple_Scattering_Util
     int    seq_num = 2;
 //  int    seq_num = 4;
 */
-/*
-    Vector<Peak_new> peaks = Peak_new_IO.ReadPeaks_new( peaks_filename );
+    String peaks_filename   = "/home/dennis/sapphire.peaks";
+    String or_mat_filename  = "/home/dennis/lssapphire3680.mat";
+    Vector<Peak_new> peaks  = Peak_new_IO.ReadPeaks_new( peaks_filename );
     Tran3D           or_mat = LoadOrientationMatrix( or_mat_filename );
-    
-  FindSecondaryReflections( peaks, or_mat, 1.0f, seq_num, 25, 25, 25 );
-*/
+    int             seq_num = 2;
+    FindSecondaryReflections( peaks, or_mat, 1.0f, seq_num, 25, 25, 25 );
+
 /*  
   FindSecondaryReflections( peaks, or_mat, 1.0f, 25, 25, 25 );
 */
