@@ -834,15 +834,15 @@ public class AutoReduceSCD
     int n_found = reducer.FindPeaks( num_to_find, threshold );
     System.out.println("Number of peaks found = " + n_found );
 
-    String log_file = "AutoReducePeaks.log";
-    reducer.SavePeaks( log_file );
-    System.out.println("Wrote basic peaks to " + log_file );
+//    String log_file = "AutoReducePeaks.log";
+//    reducer.SavePeaks( log_file );
+//    System.out.println("Wrote basic peaks to " + log_file );
 
     int n_indexed = reducer.FindUB_AndIndexPeaks( min_d, max_d,
                                                   tolerance );
-    System.out.println("Number of peaks indexed = " + n_indexed );
-    reducer.SavePeaks( log_file );
-    System.out.println("Wrote indexed peaks to " + log_file );
+//    System.out.println("Number of peaks indexed = " + n_indexed );
+//    reducer.SavePeaks( log_file );
+//    System.out.println("Wrote indexed peaks to " + log_file );
 
     reducer.SaveUB( matrix_file );
     System.out.println("Saved UB to matrix file " + matrix_file );
