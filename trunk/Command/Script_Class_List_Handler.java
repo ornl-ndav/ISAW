@@ -1172,17 +1172,24 @@ public class Script_Class_List_Handler  implements OperatorHandler{
     }
 
     static private  void ProcessDirectory( File Dir, Vector opList ){
-        File F[];
-        F = new File[0];
-        F = Dir.listFiles();
+        File[] F = Dir.listFiles();
+
+        if ( F == null )
+          return;
         
         for( int i = 0; i < F.length; i++){
-            if( F[i].isDirectory()){
+           if ( !(F[i].isHidden()) )
+           {
+             if( F[i].isDirectory())
+             {
                 ProcessDirectory( F[i], opList );
-            }else if( F[i].isFile() ){
-                if( isFileExtension(F[i]))
+             }
+             else if( F[i].isFile() )
+             {
+                if( isFileExtension(F[i]) )
                     ProcessFile( F[i], opList );
-            }
+             }
+           }
         }
     }
 
