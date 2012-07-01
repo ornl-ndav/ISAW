@@ -7,8 +7,15 @@
 #  merged into one file.  This merged file is then indexed consistently, using
 #  a Niggli reduced cell.  If requested, a second .integrate file with indices
 #  corresponding to a conventional cell will also be produced. 
-#   This script reduces each run in a separate process, using SLURM, so the
-#  SLURM queue to use must be specified.  
+#   This script reduces each run in a separate process, using SLURM, or local
+#  processors.  If SLURM is used, the SLURM queue to use must be specified. 
+#  Care must be taken with specifying the amount of memory used for each
+#  process, and the number of simultaneous processors. If too many simultaneous
+#  processes are used the system will get very slow and the total execution
+#  time will rise dramatically.  If the number of simultaneous processes 
+#  times the memory per process exceeds the available memory, the system
+#  will swap, which will also prevent proper execution. Roughly 3,000 Mb
+#  of memory is needed per process, if a 768x768x768 histogram is used. 
 #
 $Category=Macros, Instrument Type, TOF_NSCD
 
@@ -21,8 +28,8 @@ $ Instrument        String("TOPAZ")                              Instrument Name
 $ RunNums           IntList("5637:5644")                         List of Run Numbers
 $ Phi               Array(-.02,-.02,-.02,-.02,-.02,-.02,45,60)   List of Phi Angles for Each Run
 $ Chi               Array(135,135,135,135,135,135,135,135)       List of Chi Angles for Each Run
-$ Omega             Array(0,60,120,180,-120,-60,0,20 )           List of Omega Angles for Each Run
-#$ Omega             Array(-2.473,57.27,117.27,177.27,-122.73,-62.73,-2.73,17.27 )           List of Omega Angles for Each Run
+#$ Omega             Array(0,60,120,180,-120,-60,0,20 )           List of Omega Angles for Each Run
+$ Omega             Array(-2.473,57.527,117.527,177.527,-122.473,-62.473,-2.473,17.527 )           List of Omega Angles for Each Run
 $ Monct             Array(100,100,100,100,100,100,100,100)       List of Monitor Counts for Each Run
 $ HistSize          Integer(768)                                 Histogram Subdivisions in One Direction
 
@@ -43,9 +50,10 @@ $ RemoveUnindexed   Boolean(true)                                Remove Unindexe
 $ IntegRadius       Float(0.18)                                  Radius of Integration Sphere
 $ PredictPeaks      Boolean(false)                               Integrate ALL Predicted Peak Positions
 
-$ mem_per_process             Integer(4000)                      Megabytes per process
+$ mem_per_process             Integer(3000)                      Megabytes per process
+$ use_slurm                   BooleanEnable(false,1,0)           Use Slurm Instead of Local Processes
 $ queue                       String("mikkcomp2")                SLURM queue name
-$ max_simultaneous_processes  Integer(20)                        Max number of cores to use
+$ max_simultaneous_processes  Integer(2)                         Max number of cores to use
 $ max_time                    Integer(600)                       Max run time in seconds
 
 #
@@ -76,9 +84,13 @@ for i in [0:n_runs-1]
 endfor
 
 #
-# Call srunOps to use SLURM to run the commands in parallel
+# Call srunOps to use SLURM to run the commands in parallel, either using SLURM or Local Processes
 #
-srunOps( queue, max_simultaneous_processes, max_time, mem_per_process, commands )
+if use_slurm
+  srunOps( queue, max_simultaneous_processes, max_time, mem_per_process, commands )
+else
+  srunOps( "", max_simultaneous_processes, max_time, mem_per_process, commands )
+endif
 
 #
 # Now pull the results together into one Merged file
