@@ -16,7 +16,9 @@
 #  times the memory per process exceeds the available memory, the system
 #  will swap, which will also prevent proper execution. Roughly 3,000 Mb
 #  of memory is needed per process, if a 768x768x768 histogram is used. 
-#
+#  Since each process in turn launches multiple threads, the number of 
+#  processes used should be substantially lower than the number of cores
+#  in the system, if possible.
 $Category=Macros, Instrument Type, TOF_NSCD
 
 $ ExpName           String("Sapphire")                           Experiment Name (Prefix for File Names)
@@ -48,13 +50,13 @@ $ Centering         ChoiceList(["F Centered", "I Centered", "C Centered", "P Cen
 $ RemoveUnindexed   Boolean(true)                                Remove Unindexed Peaks
 
 $ IntegRadius       Float(0.18)                                  Radius of Integration Sphere
-$ PredictPeaks      Boolean(false)                               Integrate ALL Predicted Peak Positions
+$ PredictPeaks      Boolean(false)                               Integrate ALL Predicted Peak Positions (NOT IMPLEMENTED)
 
-$ mem_per_process             Integer(3000)                      Megabytes per process
+$ mem_per_process             Integer(4000)                      Megabytes per process
 $ use_slurm                   BooleanEnable(false,1,0)           Use Slurm Instead of Local Processes
 $ queue                       String("mikkcomp2")                SLURM queue name
-$ max_simultaneous_processes  Integer(2)                         Max number of cores to use
-$ max_time                    Integer(600)                       Max run time in seconds
+$ max_simultaneous_processes  Integer(3)                         Max number of Processes to Use
+
 
 #
 # First build the parmeters needed for processing each run
@@ -85,7 +87,10 @@ endfor
 
 #
 # Call srunOps to use SLURM to run the commands in parallel, either using SLURM or Local Processes
+# NOTE: max_time is essentially infinite, since this system cannot kill the processes after a specified
+# amount of time has elapsed anyway.  
 #
+max_time = 1000000
 if use_slurm
   srunOps( queue, max_simultaneous_processes, max_time, mem_per_process, commands )
 else
