@@ -43,8 +43,11 @@ import DataSetTools.operator.Generic.TOF_SCD.BasicPeakInfo;
 import DataSetTools.operator.Generic.TOF_SCD.FindPeaksViaSort;
 import DataSetTools.operator.Generic.TOF_SCD.Peak_new;
 import DataSetTools.operator.Generic.TOF_SCD.Peak_new_IO;
+import DataSetTools.operator.Generic.TOF_SCD.Peak_newIntiComparator;
+import DataSetTools.operator.Generic.TOF_SCD.Peak_newDistToQ_Comparator;
 import DataSetTools.operator.Generic.TOF_SCD.PeakQ;
 import DataSetTools.operator.Generic.TOF_SCD.Util;
+import DataSetTools.instruments.*;
 
 import gov.anl.ipns.MathTools.Geometry.*;
 
@@ -67,6 +70,7 @@ public class AutoReduceSCD
   SNS_Tof_to_Q_map  mapper;
   Vector<Peak_new>  peak_list;
   Tran3D            UB;
+  float             max_Q;
 
   /**
    *  Construct an AutoReduceSCD object for the specified instrument.
@@ -151,6 +155,8 @@ public class AutoReduceSCD
     float radius = 0;        // NOT DOING ANVRED CORRECTIONS HERE 
     float smu    = 1;
     float amu    = 1;
+    this.max_Q   = max_Q;
+
     mapper    = new SNS_Tof_to_Q_map( instrument, DetCal_file, null, null, null,
                                       wavelength_power, radius, smu, amu );
     mapper.setMinQ( 0 );
@@ -401,6 +407,203 @@ public class AutoReduceSCD
     return num_indexed;
   }
 
+
+/**
+ * Adjust the predicted position, qxyz, using the list of found peaks.
+ * In particular if the hkl is in the list of found peaks, qxyz will be set
+ * to the qxyz of that peak.  If qxyz is NOT in the list, a UB will be
+ * generated using the nearest Q vectors and that local UB will be used to
+ * predict the peak position.  The Q vectors are in lab coordinates, for
+ * this method.
+ *
+ *
+ * @return true if the peak position was altered.
+ */
+  private boolean RefinePrediction( Vector3D    qxyz, 
+                                    Vector3D    hkl, 
+                                    Peak_new[]  sorted_peaks )
+ {
+   float qx = qxyz.getX();
+   float qy = qxyz.getY();
+   float qz = qxyz.getZ();
+
+   Peak_newDistToQ_Comparator comp = 
+                              new Peak_newDistToQ_Comparator( qx, qy, qz );
+   Arrays.sort( sorted_peaks, comp );
+   int h = Math.round( hkl.getX() );
+   int k = Math.round( hkl.getY() );
+   int l = Math.round( hkl.getZ() );
+
+                                         // check if this hkl is the hkl of
+                                         // a found peak.  If so, set the
+                                         // qxyz to the position of the found
+                                         // peak.
+   if ( h == Math.round( sorted_peaks[0].h() ) &&
+        k == Math.round( sorted_peaks[0].k() ) &&
+        l == Math.round( sorted_peaks[0].l() )  )
+   {
+     qxyz.set( sorted_peaks[0].getQ() );
+     return true;
+   }
+   else                                   // base prediction on UB from nearby
+   {                                      // peaks
+      int n_to_try = 20;
+      Vector<Peak_new> near_peaks = new Vector<Peak_new>( n_to_try );
+
+      int peak_num = 0;
+      int n_found  = 0;
+      while ( peak_num < sorted_peaks.length && n_found < n_to_try )
+      {
+        Peak_new peak = sorted_peaks[ peak_num ];
+        float peak_h = Math.round( peak.h() );
+        float peak_k = Math.round( peak.k() );
+        float peak_l = Math.round( peak.l() );
+        Vector3D peak_hkl = new Vector3D( peak_h, peak_k, peak_l );
+        if ( IndexingUtils.ValidIndex( peak_hkl, 0.12f ) )
+        {
+          near_peaks.add( peak );
+          n_found++;
+        }
+        peak_num++;
+      }    
+
+      try                                // now find UB based on near peaks and
+      {                                  // use it to get a refined qxyz
+        Tran3D nearUB = PeaksFileUtils.FindUB_FromIndexing(near_peaks, 0.12f);
+        nearUB.apply_to( hkl, qxyz );
+        return true;
+      }
+      catch ( Exception ex )
+      {
+        System.out.println("Exception while finding a local UB !! " );
+        return false;    // can't get local approximation
+      }
+   }
+ }
+
+
+/**
+ * Get a list of predicted peak positions, using the current Mapper,
+ * UB and peak list.  This must only be called AFTER peaks have been found
+ * and indexed!  THE LIST OF PEAKS MUST COME FROM ONLY ONE RUN!
+ */
+  private Vector<Peak_new> PredictPeaks()
+  {
+                            // Set the range on h,k and l to cover a sphere 
+                            // of radius max_Q. NOTE: The columns of UB are
+                            // vectors pointing to the (1,0,0), (0,1,0) and 
+                            // (0,0,1) peaks in reciprocal space. 
+    float[][] UB_arr = UB.get();
+
+                            // qh, qk, ql are basis vectors for the lattice
+    Vector3D qh = new Vector3D( UB_arr[0][0], UB_arr[1][0], UB_arr[2][0] ); 
+    Vector3D qk = new Vector3D( UB_arr[0][1], UB_arr[1][1], UB_arr[2][1] ); 
+    Vector3D ql = new Vector3D( UB_arr[0][2], UB_arr[1][2], UB_arr[2][2] ); 
+
+    Vector3D uh = new Vector3D( qh );
+    Vector3D uk = new Vector3D( qk );
+    Vector3D ul = new Vector3D( ql );
+
+    uh.normalize();
+    uk.normalize();
+    ul.normalize();
+
+    Vector3D cross_prod = new Vector3D();
+
+    cross_prod.cross(uk,ul);
+    cross_prod.normalize();
+    float h_scale = Math.abs( 1/(uh.dot( cross_prod )) );
+     
+    cross_prod.cross(ul,uh);
+    cross_prod.normalize();
+    float k_scale = Math.abs( 1/(uk.dot( cross_prod )) );
+
+    cross_prod.cross(uh,uk);
+    cross_prod.normalize();
+    float l_scale = Math.abs( 1/(ul.dot( cross_prod )) );
+
+    System.out.println("SCALE FACTORS = " + h_scale + ", " + k_scale + ", " + l_scale );
+
+                            // qh, qk, ql are in terms of |Q|=1/d, but max_Q
+                            // is in terms of |Q|=2pi/d
+    int max_h = (int) Math.round( h_scale *  max_Q/( qh.length() * 2 * Math.PI ) );
+    int max_k = (int) Math.round( k_scale *  max_Q/( qk.length() * 2 * Math.PI ) );
+    int max_l = (int) Math.round( l_scale *  max_Q/( ql.length() * 2 * Math.PI ) );
+    int min_h = -max_h;
+    int min_k = -max_k;
+    int min_l = -max_l;
+
+    Peak_new peak = peak_list.elementAt(0);
+    String facility = peak.getFacility();
+    SampleOrientation samp_or  = peak.getSampleOrientation();
+    Tran3D            samp_rot = samp_or.getGoniometerRotation();
+    Vector3D qxyz = new Vector3D();
+    Vector3D hkl  = new Vector3D();
+
+    float[] run_info = new float[4];
+    run_info[0] = peak.nrun();
+    run_info[1] = peak.phi();
+    run_info[2] = peak.chi();
+    run_info[3] = peak.omega();
+    System.out.printf("run info = %5d  ", (int)run_info[0] );
+    for ( int i = 1; i < run_info.length; i++ )
+      System.out.printf( " %6.2f ", run_info[i] );
+    System.out.println();
+                                             // keep an array of peaks sorted
+                                             // based on distance to a currentQ
+    Peak_new[] sorted_peaks = new Peak_new[ peak_list.size() ];
+    for ( int i = 0; i < peak_list.size(); i++ )
+      sorted_peaks[i] = peak_list.elementAt(i); 
+
+                                             // Now add a peak for each hkl
+                                             // that hits a detector
+    Vector<Peak_new> predicted_peaks = new Vector<Peak_new>();
+
+    System.out.println("H range: " + min_h + " : " + max_h ); 
+    System.out.println("K range: " + min_k + " : " + max_k ); 
+    System.out.println("L range: " + min_l + " : " + max_l ); 
+    int n_peaks = (max_h-min_h+1) * (max_k-min_k+1) * (max_l-min_l+1); 
+    int ipkobs;
+    float two_pi = (float)( 2 * Math.PI );
+    System.out.println("Predicting Peaks : " + n_peaks );
+    for ( int h = min_h; h <= max_h; h++ )
+      for ( int k = min_k; k <= max_k; k++ )
+        for ( int l = min_l; l <= max_l; l++ )
+        {
+          hkl.set( h, k, l );
+          UB.apply_to( hkl, qxyz );
+
+          if ( qxyz.length() < max_Q )
+          {
+            samp_rot.apply_to( qxyz, qxyz );  // This only has an effect if
+                                              // goniometer angles are set
+
+            peak = mapper.GetPeak( qxyz.getX(), qxyz.getY(), qxyz.getZ(), 
+                                   run_info );
+
+            if ( peak != null )    // predicted peak is on the detector
+            {
+              if ( RefinePrediction( qxyz, hkl, sorted_peaks ) )
+                peak = mapper.GetPeak( qxyz.getX(), qxyz.getY(), qxyz.getZ(), 
+                                       run_info );
+              if ( peak != null )  // refined prediction is on detector             
+              {
+                ipkobs = (int)histogram.valueAt( two_pi * qxyz.getX(), 
+                                                 two_pi * qxyz.getY(), 
+                                                 two_pi * qxyz.getZ() );
+                peak.ipkobs( ipkobs );
+                peak.setFacility( facility );
+                peak.sethkl(h,k,l);
+                predicted_peaks.add( peak );
+              }
+            }
+          }
+        }
+
+     System.out.println("PREDICTED PEAKS SIZE = " + predicted_peaks.size() );
+     return predicted_peaks;
+  }
+
  
   /**
    * This method will carry out a rough integration of the peaks by summing 
@@ -424,10 +627,12 @@ public class AutoReduceSCD
    */
   public int IntegratePeaks( float radius, boolean integrate_all )
   {
-    Vector<Peak_new> peaks = peak_list;    // eventually, if integrate_all is
-                                           // true we will generate predicted 
-                                           // peak positions.  For now just 
-                                           // use the peaks that were found.
+    Vector<Peak_new> peaks = null;
+    if ( integrate_all )
+      peaks = PredictPeaks();
+    else
+      peaks = peak_list;  
+
     Vector<float[]> i_sigi_vec = new Vector<float[]>();
     Vector<Peak_new> peaks_kept = new Vector<Peak_new>();
     float bkg_radius  = 1.5f * radius;
@@ -488,12 +693,14 @@ public class AutoReduceSCD
     if ( histogram == null )
       return null;
 
-    float region_count = histogram.totalNear( x, y, z, 1 );
-    if ( region_count <= 0 )                         // skip peaks with zero
-      return null;                                   // counts in 27 bin region 
+    float region_count = histogram.totalNear( x, y, z, 2 );
+    if ( region_count <= 0 )                        // skip peaks with zero
+      return null;                                  // counts in 125 bin region 
 
-    float cradius = radii[0] / 2;
     Vector3D centroid = new Vector3D( x, y, z );
+/*
+//    float cradius = radii[0] / 2;
+    float cradius = radii[0];
     for ( int i = 0; i < 3; i++ )
     {
        centroid = histogram.centroid( centroid.getX(),
@@ -502,7 +709,7 @@ public class AutoReduceSCD
        if ( centroid == null )
          centroid = new Vector3D( x, y, z );        // reset centroid
     }
-
+*/
     Vector result = histogram.sphereIntegrals( centroid.getX(),
                                                centroid.getY(),
                                                centroid.getZ(), radii );
@@ -574,7 +781,10 @@ public class AutoReduceSCD
   {
     if ( peak_list == null )
       throw new IOException("Peak list is NULL, can't write " + filename );
-    Peak_new_IO.WritePeaks_new( filename, peak_list, false );
+//  Peak_new_IO.WritePeaks_new( filename, peak_list, false );
+//  Peak_new_IO.WritePeaksSortedHKL( filename, peak_list, false );
+    Peak_new_IO.WritePeaksSorted( filename, peak_list, false,
+                                  new Peak_newIntiComparator(), true );
   }
 
 
