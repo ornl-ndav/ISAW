@@ -50,7 +50,7 @@ $ Centering         ChoiceList(["F Centered", "I Centered", "C Centered", "P Cen
 $ RemoveUnindexed   Boolean(true)                                Remove Unindexed Peaks
 
 $ IntegRadius       Float(0.18)                                  Radius of Integration Sphere
-$ PredictPeaks      Boolean(false)                               Integrate ALL Predicted Peak Positions (NOT IMPLEMENTED)
+$ PredictPeaks      Boolean(false)                               Integrate Predicted Peak Positions
 
 $ mem_per_process             Integer(4000)                      Megabytes per process
 $ use_slurm                   BooleanEnable(false,1,0)           Use Slurm Instead of Local Processes
