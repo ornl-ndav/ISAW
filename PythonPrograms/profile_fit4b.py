@@ -72,7 +72,10 @@ nrun = int(user_param[0])
 expname = user_param[1]
 detcal_fname = user_param[2]
 numSteps = int(user_param[3])
-profile_function = int(user_param[4]) # 0 = Gaussian, 1 = convolution
+profile_length = float(user_param[4])
+step_size = profile_length / numSteps
+print 'step_size = ', step_size
+profile_function = int(user_param[5]) # 0 = Gaussian, 1 = convolution
 
 # Read and write the instrument calibration parameters.
 detcal_input = open(detcal_fname, 'r')
@@ -149,7 +152,12 @@ while True:
         ymax = float(max(yobs))
         p0[0] = ymax * 2.5 * sqrt2pi   # initial value of aG
         p0[1] = 2.5                         # initial value of sigG
-        p0[2] = 0.5 * len(yobs)             # initial value of muG, middle of x range
+        # p0[2] = 0.5 * len(yobs)             # initial value of muG, middle of x range
+        # for i in range(numSteps):
+            # if yobs[i] == ymax:
+                # p0[2] = i
+                # break
+        p0[2] = yobs.argmax()
             
         try:
             popt, pcov = curve_fit(gaussian, x, yobs, p0)
@@ -199,7 +207,8 @@ while True:
         p0 = pylab.zeros(6)                 # initial values of parameters
         ymax = float(max(yobs))
         p0[0] = ymax                        # initial value of scale
-        p0[1] = 0.5 * len(yobs)             # initial value of mu for exponential decay
+        # p0[1] = 0.5 * len(yobs)             # initial value of mu for exponential decay
+        p0[1] = yobs.argmax()             # initial value of mu for exponential decay
         p0[2] = 1.0                         # initial value of alpha
         p0[3] = 1.0                         # initial value sigma
         p0[4] = 0.0                         # initial value of background slope
@@ -285,10 +294,21 @@ while True:
         pylab.figtext(0.5, 0.85, textString, horizontalalignment='center', fontsize='small')
 
         if scale > 0.0:
-            textString = 'scale = %.2f(%.2f)\nmu = %.2f(%.2f)\nalpha = %.2f(%.2f)\nsigma = %.2f(%.2f)\nintI = %.2f' % (
+            textString = 'scale = %.2f(%.2f)\nmu = %.2f(%.2f)\nalpha = %.2f(%.2f)\nsigma = %.2f(%.2f)\n\nintI = %.2f' % (
                 scale, sig_scale, mu, sig_mu, alpha, sig_alpha, sigma, 
-                sig_sigma, intI)
+                sig_sigma, intI)            
             pylab.figtext(0.65, 0.65, textString, family='monospace')
+            
+            Q_calc = 2.0 * math.pi / dsp
+            delta_Q = (mu - (0.5 * numSteps)) * step_size
+            Q_obs = Q_calc + delta_Q
+            dsp_obs = 2.0 * math.pi / Q_obs
+            delta_d = dsp - dsp_obs
+            textString = 'dsp calc = %.4f\ndelta_d = %.4f' % (dsp, delta_d)
+            pylab.figtext(0.65, 0.55, textString, family='monospace')
+            
+        textString = 'detector = %d' % dn
+        pylab.figtext(0.65, 0.50, textString, family='monospace')
 
         filename = './plots/Profile_fit_%d_%d_%d' % (h, k, l)
             
