@@ -74,7 +74,6 @@ detcal_fname = user_param[2]
 numSteps = int(user_param[3])
 profile_length = float(user_param[4])
 step_size = profile_length / numSteps
-print 'step_size = ', step_size
 profile_function = int(user_param[5]) # 0 = Gaussian, 1 = convolution
 
 # Read and write the instrument calibration parameters.
@@ -235,7 +234,7 @@ while True:
             peaks[numOfPeaks-1][12] = intI
             peaks[numOfPeaks-1][13] = math.sqrt(abs(intI))
                             
-            print '%4d %4d %4d %12.4f %12.4f %12.4f %12.4f' % (h, k, l, scale, mu, alpha, sigma)
+            print '%4d %4d %4d %12.4f' % (h, k, l, intI)
             # if scale > 0.0:
             # try:
                 # if pcov[0][0] > 0.0: sig_scale = math.sqrt(pcov[0][0])
@@ -261,7 +260,6 @@ while True:
         if profile_function == 1:
             ycalc.append(function_1(xcalc[i], scale, mu, alpha, sigma, slope, constant))
     
-    # print xcalc
     pylab.plot(xcalc, ycalc)
     
     pylab.plot(x, yobs, 'g^')
