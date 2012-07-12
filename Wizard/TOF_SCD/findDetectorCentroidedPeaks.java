@@ -77,8 +77,8 @@ public class findDetectorCentroidedPeaks extends GenericOperator{
       addParameter( new IntegerPG("min Peak intensity",0));
       addParameter( new IntegerPG("min_time_chan",0));
       addParameter( new IntegerPG("max_time_chan",50000));
-      addParameter( new ChoiceListPG("Rows to keep",""));
-      addParameter( new ChoiceListPG("Cols to keep",""));
+      addParameter( new StringPG("Rows to keep",""));
+      addParameter( new StringPG("Cols to keep",""));
       addParameter( new IntegerPG("monitor count",10000));
       addParameter( new FloatPG("Max d-spacing",12f));
       addParameter( new BooleanEnablePG("Use new FindPeaks",
