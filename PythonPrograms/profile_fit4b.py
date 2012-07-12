@@ -74,7 +74,8 @@ detcal_fname = user_param[2]
 numSteps = int(user_param[3])
 profile_length = float(user_param[4])
 step_size = profile_length / numSteps
-profile_function = int(user_param[5]) # 0 = Gaussian, 1 = convolution
+moncnt = int(user_param[5])
+profile_function = int(user_param[6]) # 0 = Gaussian, 1 = convolution
 
 # Read and write the instrument calibration parameters.
 detcal_input = open(detcal_fname, 'r')
@@ -305,8 +306,8 @@ while True:
             textString = 'dsp calc = %.4f\ndelta_d = %.4f' % (dsp, delta_d)
             pylab.figtext(0.65, 0.55, textString, family='monospace')
             
-        textString = 'detector = %d' % dn
-        pylab.figtext(0.65, 0.50, textString, family='monospace')
+        textString = 'run = %d\ndetector = %d' % (nrun, dn)
+        pylab.figtext(0.65, 0.45, textString, family='monospace')
 
         filename = './plots/Profile_fit_%d_%d_%d' % (h, k, l)
             
@@ -318,7 +319,6 @@ while True:
 chi = 0.0
 phi = 0.0
 omega = 0.0
-moncnt = 10000
 seqn = 0
 
 # Step through each detector
