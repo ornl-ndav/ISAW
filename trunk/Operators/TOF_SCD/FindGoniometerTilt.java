@@ -163,7 +163,7 @@ public class FindGoniometerTilt extends GenericOperator{
          java.lang.String peaks_file = getParameter(0).getValue().toString();
          float max_angle = ((FloatPG)(getParameter(1))).getfloatValue();
          float tolerance = ((FloatPG)(getParameter(2))).getfloatValue();
-         java.util.Vector Xres=Operators.TOF_SCD.PeaksFileUtils.FindGoniometerError(peaks_file,max_angle,tolerance );
+         java.util.Vector Xres=Operators.TOF_SCD.PeaksFileUtils.FindGoniometerTilt(peaks_file,max_angle,tolerance );
 
          return Xres;
        }catch(java.lang.Exception S0){

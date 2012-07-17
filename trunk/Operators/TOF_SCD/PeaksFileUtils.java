@@ -940,6 +940,10 @@ public class PeaksFileUtils
  *                   existing indexes.
  *  @param x_rot     Rotation of the entire goniometer assembly  about the 
  *                   X-axis.
+ *  @param y_rot     Rotation of the entire goniometer assembly  about the 
+ *                   Y-axis.
+ *  @param z_rot     Rotation of the entire goniometer assembly  about the 
+ *                   Z-axis.
  */
   public static float[] NumIndexed( Vector<Peak_new> peaks,
                                     float            tolerance,
@@ -1002,6 +1006,68 @@ public class PeaksFileUtils
 
 
 /**
+ *  Calculate the number of peaks that would be indexed by the specified UB 
+ *  matrix, if the goniometer angles were set to the specified angles. NOTE:
+ *  This assumes the goniomater angles follow the SNS goniometer conventions.
+ *
+ *  @param UB        UB that will be used to index the peaks.
+ *
+ *  @param peaks     Vector of peaks from one run.
+ *  @param tolerance The tolerance on h,k,l for a peak to be considered 
+ *                   indexed by the combined average UB based on the 
+ *                   existing indexes.
+ *  @param phi       New phi angle.
+ *  @param chi       New chi angle.
+ *  @param omega     New omege angle.
+ */
+  public static float[] NumIndexed( Tran3D           UB,
+                                    Vector<Peak_new> peaks,
+                                    float            tolerance,
+                                    float            phi,
+                                    float            chi,
+                                    float            omega )
+  {
+    Tran3D UB_inv = new Tran3D( UB );
+    UB_inv.invert();
+
+    SNS_SampleOrientation samp_or = new SNS_SampleOrientation(phi, chi, omega);
+    Tran3D sample_inv_rotation = samp_or.getGoniometerRotationInverse();
+
+    int      n_indexed  = 0;
+    Vector3D hkl        = new Vector3D();
+    Vector3D f_hkl      = new Vector3D();
+    Vector3D q_error    = new Vector3D();
+    float    error      = 0;
+    float    sum_sq_err = 0;
+    for ( int i = 0; i < peaks.size(); i++ )
+    {
+      Vector3D q_vec = new Vector3D( peaks.elementAt(i).getQ() );
+      sample_inv_rotation.apply_to( q_vec, q_vec );
+
+      UB_inv.apply_to( q_vec, f_hkl );
+      if ( IndexingUtils.ValidIndex( f_hkl, tolerance ) )
+      { 
+        n_indexed++;
+        hkl.set( Math.round( f_hkl.getX() ),
+                 Math.round( f_hkl.getY() ),
+                 Math.round( f_hkl.getZ() ) );
+        UB.apply_to( hkl, q_error );
+        q_error.subtract( q_vec );
+        error = q_error.length();
+        sum_sq_err += error * error; 
+      }
+    }
+
+    float[] results = new float[2];
+
+    results[0] = n_indexed;
+    results[1] = sum_sq_err;
+    return results;
+  }
+
+
+
+/**
  *  Do a brute force search for the goniometer tilt angles that maximize
  *  the number of peaks indexed by ONE UB.  The list of peaks should include
  *  peaks from runs with several different goniometer settings.  The peaks
@@ -1023,9 +1089,9 @@ public class PeaksFileUtils
  *  @param tolerance  The tolerance on Miller indices for a peak to be
  *                    considered indexed
  */
-  public static Vector FindGoniometerError( Vector<Peak_new> peaks,
-                                            float            max_angle,
-                                            float            tolerance )
+  public static Vector FindGoniometerTilt( Vector<Peak_new> peaks,
+                                           float            max_angle,
+                                           float            tolerance )
   {
     int N_TRIES = 5;    // Try four different subdivisions of each region.
                         // If results are not consistent, we appear to be
@@ -1042,9 +1108,9 @@ public class PeaksFileUtils
     float[] results = NumIndexed( peaks, tolerance, x_rot, y_rot, z_rot );
     int   n_indexed = (int)results[0];
     float error     = results[1];
-    System.out.printf( "NO Goniometer correction indexed = %6d " + 
+    System.out.printf( "NO Goniometer correction indexed = %6d Err = %7.5f " + 
                        " Rx: %6.4f  Ry: %6.4f  Rz: %6.4f\n",
-                        n_indexed, x_rot, y_rot, z_rot );
+                        n_indexed, error, x_rot, y_rot, z_rot );
 
     int    max_indexed = 0;
     for ( int range = 1; range <= N_TRIES; range++ )
@@ -1130,8 +1196,9 @@ public class PeaksFileUtils
     if ( agree )
     {
       System.out.print("\nESTIMATED GONIOMETER TILT:");
-      System.out.printf("Max Indexed = %6d Rx: %6.3f  Ry: %6.3f  Rz: %6.3f\n",
-                         max_indexed, ave_x, ave_y, ave_z );
+      System.out.printf(
+                     "Max Indexed = %6d Rx: %6.3f  Ry: %6.3f  Rz: %6.3f\n\n",
+                      max_indexed, ave_x, ave_y, ave_z );
       
       result.add( (float)max_indexed );
       result.add( ave_x );
@@ -1144,6 +1211,7 @@ public class PeaksFileUtils
 
     return result;
   }
+
 
 /**
  *  Do a brute force search for the goniometer tilt angles that maximize
@@ -1167,22 +1235,251 @@ public class PeaksFileUtils
  *  @param tolerance   The tolerance on Miller indices for a peak to be
  *                     considered indexed
  */
-  public static Vector FindGoniometerError( String  peaks_file,
-                                            float   max_angle,
-                                            float   tolerance )
+  public static Vector FindGoniometerTilt( String  peaks_file,
+                                           float   max_angle,
+                                           float   tolerance )
                        throws Exception
   {
     peaks_file = peaks_file.trim();
 
     Vector<Peak_new> peaks = Peak_new_IO.ReadPeaks_new( peaks_file );
 
-    return FindGoniometerError( peaks, max_angle, tolerance );
+    return FindGoniometerTilt( peaks, max_angle, tolerance );
   }
 
 
+/**
+ *  Do a brute force search for the goniometer rotation angles that maximize
+ *  the number of peaks indexed by the specified UB.  The list of peaks must
+ *  have peaks from ONLY ONE RUN.  The goniometer angles for the peaks must
+ *  be specified.  Deviations from the specified goniometer angles up to
+ *  +- max_angle will be tried, seaching for the gonomater angles that 
+ *  maximize the number of peaks indexed and minimize the total indexing
+ *  error.
+ *  
+ *  @param UB         The "average UB matrix that indexes several runs 
+ *                    reasonalbly well.
+ *  @param peaks      List of peaks from one run.
+ *  @param max_angle  The maximum change in angle to try for any of the 
+ *                    goniometer angles, phi, chi and omega, in degrees.
+ *  @param tolerance  The tolerance on Miller indices for a peak to be
+ *                    considered indexed
+ */
+  public static Vector FindGoniometerAngles( Tran3D UB,
+                                             Vector<Peak_new> peaks,
+                                             float            max_angle,
+                                             float            tolerance )
+  {
+    int N_TRIES = 5;    // Try four different subdivisions of each region.
+                        // If results are not consistent, we appear to be
+                        // falling into local mins, so the method fails.
+
+    float[] phi_angles   = new float[ N_TRIES ];
+    float[] chi_angles   = new float[ N_TRIES ];
+    float[] omega_angles = new float[ N_TRIES ];
+    float[] max_ind  = new float[ N_TRIES ];
+
+    float phi   = peaks.elementAt(0).phi();
+    float chi   = peaks.elementAt(0).chi();
+    float omega = peaks.elementAt(0).omega();
+    float[] results = NumIndexed( UB, peaks, tolerance, phi, chi, omega );
+    int   n_indexed = (int)results[0];
+    float error     = results[1];
+    System.out.printf( "Initial Goniometer setting indexed = %6d Err = %7.5f " +
+                       " Phi: %6.4f  Chi: %6.4f  Omega: %6.4f\n",
+                        n_indexed, error, phi, chi, omega );
+
+    int    max_indexed = 0;
+    for ( int range = 1; range <= N_TRIES; range++ )
+    {
+      double max_quality  = 0;
+      float  phi_offset   = phi;
+      float  chi_offset   = chi;
+      float  omega_offset = omega;
+      float  best_phi   = 0;
+      float  best_chi   = 0;
+      float  best_omega = 0;
+      double quality;
+      max_indexed = 0;
+
+      float step = max_angle/range;
+      while ( step > 0.0007071 )        // keep trying smaller steps down to
+      {                                // about 0.001 degrees
+        for ( int i = -range; i <= range; i++ )
+          for ( int j = -range; j <= range; j++ )
+            for ( int k = -range; k <= range; k++ )
+            {
+              phi   = phi_offset + i * step;
+              chi   = chi_offset + j * step;
+              omega = omega_offset + k * step;
+              results = NumIndexed( UB, peaks, tolerance, phi, chi, omega );
+              quality = (double)results[0] -
+                        (0.1 * results[1]) /(double)results[0];
+              if ( quality > max_quality )
+              {
+                max_quality = quality;
+                max_indexed = (int)results[0];
+                error = results[1];
+
+                best_phi   = phi;
+                best_chi   = chi;
+                best_omega = omega;
+              }
+            }
+        phi_offset   = best_phi;
+        chi_offset   = best_chi;
+        omega_offset = best_omega;
+
+        step = step * .7071f;
+      }
+      phi_angles[ range-1 ]   = best_phi;
+      chi_angles[ range-1 ]   = best_chi;
+      omega_angles[ range-1 ] = best_omega;
+      max_ind [ range-1 ]     = max_indexed;
+
+      System.out.print(" RANGE FACTOR = " + range + "  ");
+      System.out.printf(
+       "Max Indexed = %6d Err = %7.5f  Phi: %6.3f  Chi: %6.3f  Omega: %6.3f\n",
+                           max_indexed, error, best_phi, best_chi, best_omega );
+    }
+
+    float ave_phi   = 0;
+    float ave_chi   = 0;
+    float ave_omega = 0;
+    for ( int i = 0; i < N_TRIES; i++ )
+    {
+      ave_phi   += phi_angles[i];
+      ave_chi   += chi_angles[i];
+      ave_omega += omega_angles[i];
+    }
+    ave_phi   /= N_TRIES;
+    ave_chi   /= N_TRIES;
+    ave_omega /= N_TRIES;
+                                          // check for reasonable agreement
+                                          // in results for different samplings
+    boolean agree = true;
+    for ( int i = 0; i < N_TRIES; i++ )
+    {
+      if ( Math.abs(phi_angles[i]   - ave_phi) > 0.5 )
+        agree = false;
+      if ( Math.abs(chi_angles[i]   - ave_chi) > 0.5 )
+        agree = false;
+      if ( Math.abs(omega_angles[i] - ave_omega) > 0.5 )
+        agree = false;
+    }
+
+    Vector result = new Vector();
+    if ( agree )
+    {
+      System.out.print("\nESTIMATED GONIOMETER ANGLES:");
+      System.out.printf(
+                  "Max Indexed = %6d Phi: %6.3f  Chi: %6.3f  Omega: %6.3f\n\n",
+                   max_indexed, ave_phi, ave_chi, ave_omega );
+
+      result.add( (float)max_indexed );
+      result.add( ave_phi );
+      result.add( ave_chi );
+      result.add( ave_omega );
+    }
+    else
+      System.out.println(
+           "\nFAILED TO ESTIMATE GONIOMETER ANGLES (May be Accurate)");
+
+    return result;
+  }
+
+
+/**
+ *  Do a brute force search for the goniometer rotation angles that maximize
+ *  the number of peaks in each run that are indexed by one "average" UB for
+ *  all runs.  The list of peaks must have peaks from MULTIPLE RUNS.  
+ *  The goniometer angles for the peaks must already be specified, with 
+ *  reasonable accuracy.  Deviations from the specified goniometer angles up
+ *  to +- max_angle will be tried, for each run, seaching for the gonomater 
+ *  angles that maximize the number of peaks indexed and minimize the total 
+ *  indexing error, in each run.
+ *  
+ *  @param peaks      List of peaks from mulitple runs with different
+ *                    goniometer settings.
+ *  @param min_d      Lower bound on a, b, c
+ *  @param max_d      Upper bound on a, b, c
+ *  @param max_angle  The maximum change in angle to try for any of the 
+ *                    goniometer angles, phi, chi and omega, in degrees.
+ *  @param tolerance  The tolerance on Miller indices for a peak to be
+ *                    considered indexed
+ *  @param change_angles  Set true if the goniometer settings should be
+ *                        updated on the list of peaks.
+ */
+  public static void   FindGoniometerAngles( Vector<Peak_new> peaks,
+                                             float            min_d,
+                                             float            max_d,
+                                             float            max_angle,
+                                             float            tolerance,
+                                             boolean          change_angles )
+  {
+    float angle_step = 1.0f;
+
+    Tran3D UB = FindUB( peaks, min_d, max_d, tolerance, angle_step );
+
+    boolean done = false;
+
+    Vector<Peak_new> run_peaks = GetFirstRunPeaks( peaks );
+    if ( run_peaks.size() <= 0 )
+      done = true;
+
+    while (!done )
+    {
+      int current_run = run_peaks.elementAt(0).nrun();
+
+      Vector results = FindGoniometerAngles( UB, run_peaks, max_angle, 
+                                             tolerance );
+      if ( results.size() > 0 )
+        System.out.println("FOUND NEW GONIOMETER ANGLES " + current_run);
+      else
+        System.out.println("FAILED TO FIND NEW GONIOMETER ANGLES " +
+                            current_run);
+
+      run_peaks = GetNextRunPeaks( current_run, peaks );
+      if ( run_peaks.size() == 0 )
+        done = true;
+    } 
+  }
+
+
+  public static void  FindGoniometerAngles( String  peaks_file,
+                                            float   min_d,
+                                            float   max_d,
+                                            float   max_angle,
+                                            float   tolerance,
+                                            boolean change_angles )
+                      throws Exception
+  {
+    peaks_file = peaks_file.trim();
+
+    Vector<Peak_new> peaks = Peak_new_IO.ReadPeaks_new( peaks_file );
+
+    FindGoniometerAngles( peaks, 
+                          min_d, max_d, 
+                          max_angle, tolerance,
+                          change_angles );
+  }
+
+
+/**
+ * Main program for testing purposes. 
+ */
   public static void main( String[] args ) throws Exception
   {
-    Vector result = FindGoniometerError( args[0], 5, 0.12f );
+    float min_d = 3;
+    float max_d = 7;
+    float max_angle = 5;
+    float tolerance = 0.12f;
+    boolean change_angles = false;
+    FindGoniometerAngles( args[0], min_d, max_d, max_angle, tolerance,
+                          change_angles );
+
+/*
+    Vector result = FindGoniometerTilt( args[0], 5, 0.12f );
     if ( result.size() == 4 )
     {
       System.out.printf(
@@ -1193,6 +1490,7 @@ public class PeaksFileUtils
     else
       System.out.println(
                     "FAILED TO ESTIMATE GONIOMETER ROTATION(May be Small)");
+*/
   }
 
 }
