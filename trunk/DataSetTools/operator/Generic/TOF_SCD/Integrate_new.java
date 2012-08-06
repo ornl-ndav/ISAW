@@ -1534,7 +1534,7 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
       float h = peak1.h( );
       float k = peak1.k( );
       float l = peak1.l( );
-       peak=Util.centroid(peak1,ds,grid);
+      peak=Util.centroid(peak1,ds,grid);
       if(peak!=null){
          
         peak.seqnum(i+1); // renumber the peaks
@@ -1553,7 +1553,7 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
               
               peak.reflag(310);
         
-           else
+           else  if( UB != null)
            {
               peak.sethkl( 0 , 0 , 0 );
               peak.UB(UB);
@@ -1570,7 +1570,8 @@ public class Integrate_new extends GenericTOF_SCD implements HiddenOperator{
               peak.UB(null);
               peak.sethkl( h , k , l );
               
-           }
+           }else
+              peak.reflag(330);
       }else{
         peaks.remove(i);
         i--;

@@ -227,11 +227,13 @@ import DataSetTools.util.*;
 import DataSetTools.retriever.RunfileRetriever;
 
 import gov.anl.ipns.Parameters.BooleanPG;
+import gov.anl.ipns.Parameters.ChoiceListPG;
 import gov.anl.ipns.Parameters.IntArrayPG;
 import gov.anl.ipns.Parameters.IntegerPG;
 import gov.anl.ipns.Parameters.FloatPG;
 import gov.anl.ipns.Parameters.LoadFilePG;
 import gov.anl.ipns.Parameters.SaveFilePG;
+import gov.anl.ipns.Parameters.StringPG;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
 import java.io.*;
@@ -404,6 +406,20 @@ public class IntegratePeakFile extends GenericTOF_SCD  {
 
     // parameter(10)
     addParameter(new FloatPG("max for shoebox integration",0));
+
+    // parameter(11)
+    ChoiceListPG clPG = new ChoiceListPG( "Integrate 1 peak method",
+          Integrate_new.NEW_INTEGRATE);
+    clPG.addItem(Integrate_new.SHOE_BOX);
+    clPG.addItem(Integrate_new.OLD_INTEGRATE);
+
+    clPG.addItem(Integrate_new.FIT_PEAK);
+
+     addParameter(clPG);
+  // parameter(12)
+     addParameter( new IntegerPG("# Bad boundary pixels", 10));
+  // parameter(13)
+     addParameter( new FloatPG("Max unit cell length ", 12.0f));
   }
   
   /**
@@ -431,7 +447,7 @@ public class IntegratePeakFile extends GenericTOF_SCD  {
     sb.append("and integrates the peaks.  Finally it writes the integrated ");
     sb.append("peaks file.\n");
     // parameters
-    sb.append("@param ds DataSet to integrate.\n");
+    sb.append("@param ds DataSet(calibrated with UB loaded[opt]) to integrate.\n");
     sb.append("@param peakfile The file containing the peaks to integrate.\n");
     sb.append("@param intfile The integrate file to write to.\n");
     sb.append("@param timeSlice The time slice range to use.\n");
@@ -446,6 +462,8 @@ public class IntegratePeakFile extends GenericTOF_SCD  {
     sb.append("position");
     sb.append("@param box_y_range The range of y (delta row) values to use around the peak ");
     sb.append("position");
+    sb.append("@param NBadBoundaryCells Number of bad boundary cells on detectors" );
+    sb.append( "@param MaxUnitCellLength the length of the longest primitive unit cell length" );
     // return
     sb.append("@return The name of the file that the integrated intensities ");
     sb.append("are written to.\n");
@@ -538,7 +556,9 @@ public class IntegratePeakFile extends GenericTOF_SCD  {
 
     // then whether to just use a "shoebox" instead of maximizing I/sigI
     boolean use_shoebox=((BooleanPG)getParameter(7)).getbooleanValue();
-
+    String PeakAlg = getParameter(11).getValue().toString();
+    if( use_shoebox)
+       PeakAlg =Integrate_new.SHOE_BOX;
     // then the x range
     {
       int[] myXrange=((IntArrayPG)getParameter(8)).getArrayValue();
@@ -648,10 +668,10 @@ public class IntegratePeakFile extends GenericTOF_SCD  {
                               innerPeaks, 
                               nrun, 
                               det_number[i], 
-                              use_shoebox);
+                              PeakAlg);
       if(DEBUG) System.out.println("ERR="+error);
       if(error!=null) return error;
-      if(DEBUG) System.out.println("integrated "+innerPeaks.size()+" peaks");
+      System.out.println("integrated "+innerPeaks.size()+" peaks in det " +det_number[i]);
       if(innerPeaks!=null && innerPeaks.size()>0)
         peaks.addAll(innerPeaks);
     }
@@ -666,10 +686,28 @@ public class IntegratePeakFile extends GenericTOF_SCD  {
     String errmsg=this.writeLog(logfile,append);
     if(errmsg!=null)
       SharedData.addmsg(errmsg);
-
+    Vector file_peaks = null;
+    if( append)
+    {
+       Operator read_peaks = new ReadPeaks( integfile);
+       
+       Object result = read_peaks.getResult();
+       if ( !(result instanceof ErrorString ))   
+       { file_peaks = (Vector)result;
+         file_peaks.addAll(  peaks );
+         peaks= file_peaks;
+       }
+    }
     // write out the peaks
-    WritePeaks writer=new WritePeaks(integfile,peaks,new Boolean(append));
-    return writer.getResult();
+   // WritePeaks writer=new WritePeaks(integfile,peaks,new Boolean(append));
+    try
+    {
+    Peak_new_IO.WritePeaks_new(integfile,peaks,new Boolean(false));
+    }catch( IOException ss)
+    {
+       return new ErrorString( "cannot write new peaks file:"+ ss.getMessage( ));
+    }
+    return "saved result to "+integfile;
   }
 // ========== start of detector dependence
 
@@ -678,12 +716,13 @@ public class IntegratePeakFile extends GenericTOF_SCD  {
                                         Vector      peaks, 
                                         int         nrun,
                                         int         detnum,
-                                        boolean     use_shoebox )
+                                        String     PeakAlg )
   {
     if(DEBUG) System.out.println("Integrating detector "+detnum);
 
     // create the lookup table
     int[][] ids=Util.createIdMap(ds,detnum);
+    IDataGrid grid = Grid_util.getAreaGrid( ds , detnum );
     if(ids==null)
       return new ErrorString("Could not create pixel map for det "+detnum);
 
@@ -701,9 +740,9 @@ public class IntegratePeakFile extends GenericTOF_SCD  {
 
     // get the calibration for this
     
-    float[] calib=(float[])data.getAttributeValue(Attribute.SCD_CALIB);
-    if(calib==null)
-     return new ErrorString("Could not find calibration for detector " +detnum);
+   // float[] calib=(float[])data.getAttributeValue(Attribute.SCD_CALIB);
+   // if(calib==null)
+  //   return new ErrorString("Could not find calibration for detector " +detnum);
 
     // determine the detector postion
     float detA=Util.detector_angle(ds,detnum);
@@ -728,11 +767,11 @@ public class IntegratePeakFile extends GenericTOF_SCD  {
     logBuffer.append("listing information about every "+listNthPeak+" peak\n");
 
     boolean printPeak=DEBUG||false; // REMOVE
-    Peak peak=null;
+    IPeak peak=null;
     int seqnum=1;
 
     Operator read_peaks = new ReadPeaks( peaksfile );
-
+                      
     Object result = read_peaks.getResult();
     if ( result instanceof ErrorString )
       return (ErrorString)result;
@@ -741,12 +780,12 @@ public class IntegratePeakFile extends GenericTOF_SCD  {
 
     for ( int pk_num = 0; pk_num < file_peaks.size(); pk_num++ )
     {
-      peak = (Peak)file_peaks.elementAt( pk_num );
+      peak = (IPeak)file_peaks.elementAt( pk_num );
 
       if ( printPeak ) 
         System.out.print(peak.toString()); 
 
-      peak.nearedge(rcBound[0],rcBound[2],rcBound[1],rcBound[3], zmin,zmax);
+      peak.nearedge();//rcBound[0],rcBound[2],rcBound[1],rcBound[3], zmin,zmax);
 
       if ( peak.nearedge() >= 2f )
       {
@@ -771,9 +810,9 @@ public class IntegratePeakFile extends GenericTOF_SCD  {
     }
 
     // move peaks to the most intense point nearby
-    for( int i=peaks.size()-1 ; i>=0 ; i-- ){
-      IntegrateUtils.movePeak((Peak)peaks.elementAt(i),ds,ids,dX,dY,dZ);
-      peak=(Peak)peaks.elementAt(i);
+ /*   for( int i=peaks.size()-1 ; i>=0 ; i-- ){
+      IntegrateUtils.movePeak((IPeak)peaks.elementAt(i),ds,ids,dX,dY,dZ);
+      peak=(IPeak)peaks.elementAt(i);
       for( int j=i+1 ; j<peaks.size() ; j++ ){ // remove peak if it gets
         if( peak.equals(peaks.elementAt(j)) ){ // shifted on top of another
           peaks.remove(j);
@@ -781,41 +820,57 @@ public class IntegratePeakFile extends GenericTOF_SCD  {
         }
       }
     }
-
+    */// Assume when peaks file was created they were moved
+    int NBadBoundaryPixels =((IntegerPG)getParameter(12)).getintValue( );
+    float MaxUnitCellLength = ((FloatPG)getParameter(13)).getfloatValue( );
     // integrate the peaks
     for( int i=peaks.size()-1 ; i>=0 ; i-- )
     {
       if( i%listNthPeak == 0 )                   // integrate with logging
       {
-        if ( use_shoebox )
-          IntegrateUtils.integrateShoebox( (Peak)peaks.elementAt(i),
+        if ( PeakAlg.equals( Integrate_new.SHOE_BOX) )
+          IntegrateUtils.integrateShoebox( (IPeak)peaks.elementAt(i),
                                             ds, ids,
                                             colXrange, rowYrange, timeZrange,
                                             logBuffer ); 
+        else if( PeakAlg.equals( Integrate_new.FIT_PEAK))
+           IntegrateNorm.IntegratePeak((Peak_new) peaks.elementAt(i) , ds , MaxUnitCellLength  ,
+                 NBadBoundaryPixels , logBuffer );
         else
-          IntegrateUtils.integratePeak( (Peak)peaks.elementAt(i),
+          IntegrateUtils.integratePeak( (IPeak)peaks.elementAt(i),
                                         ds, ids,
                                         timeZrange, incrSlice,
                                         logBuffer);
       }
       else                                      // integrate but don't log
       {
-        if ( use_shoebox )
-          IntegrateUtils.integrateShoebox( (Peak)peaks.elementAt(i),
-                                            ds, ids,
-                                            colXrange, rowYrange, timeZrange,
-                                            null );
-        else
-          IntegrateUtils.integratePeak( (Peak)peaks.elementAt(i),
-                                        ds, ids,
-                                        timeZrange, incrSlice,
-                                        null);
+         if ( PeakAlg.equals(Integrate_new.SHOE_BOX) )
+            IntegrateUtils.integrateShoebox( (IPeak)peaks.elementAt(i),
+                                              ds, ids,
+                                              colXrange, rowYrange, timeZrange,
+                                              null ); 
+          else if( PeakAlg.equals( Integrate_new.FIT_PEAK))
+          { 
+             Peak_new pk = (Peak_new) peaks.elementAt(i);
+             IntegrateNorm.IntegratePeak(pk , ds , MaxUnitCellLength  ,
+                   NBadBoundaryPixels , new StringBuffer() );
+             if( pk.inti() > 0 && pk.sigi( ) >0)
+                pk.reflag(310);
+             else
+                pk.reflag(300);
+          }
+          else
+            IntegrateUtils.integratePeak( (IPeak)peaks.elementAt(i),
+                                          ds, ids,
+                                          timeZrange, incrSlice,
+                                         null);
       }
     }
 
-    // centroid the peaks
+  /*  // centroid the peaks  create another operator to centroid and
+     // Check that hkl close enuf( another operator)
     for( int i=0 ; i<peaks.size() ; i++ ){
-      peak=Util.centroid((Peak)peaks.elementAt(i),ds,ids);
+      peak=Util.centroid((IPeak)peaks.elementAt(i),ds,grid);
       if(peak!=null){
         peak.seqnum(i+1); // renumber the peaks
         peaks.set(i,peak);
@@ -824,7 +879,7 @@ public class IntegratePeakFile extends GenericTOF_SCD  {
         i--;
       }
     }
-
+*/
     // things went well so return null
     return null;
   }

@@ -328,7 +328,35 @@ public class Peak_new implements IPeak_IPNS_out
   {
     return sample_orientation.getOmega();
   }
- 
+ public void changePeakPostion( float x, float y, float z, float tof)
+ {
+    this.col           = x;
+    this.row           = y;
+    this.chan          = z;
+    float l2=0;
+    if ( grid == null )
+       throw new IllegalArgumentException("ERROR: Grid null in Peak_new");
+     else
+     {
+       Vector3D position = grid.position( row, col );
+       if ( position == null )
+         throw new IllegalArgumentException("ERROR: row, col invalid in " +
+                         "Peak_new " + row + ", " + col );
+       else 
+         l2 = position.length();
+     }
+
+     float wavelength = tof_calc.Wavelength( this.l1+l2, tof );
+     this.wl            = wavelength;
+     Vector3D vec_q = tof_calc.DiffractometerVecQ( grid.position( row, col ), 
+                                                       this.l1, tof );
+    
+     this.qx = (float)(vec_q.getX()/Math.PI/2);
+     this.qy = (float)(vec_q.getY()/Math.PI/2);
+     this.qz = (float)(vec_q.getZ()/Math.PI/2);
+     
+     
+ }
 
   @Override   
   public IPeak createNewPeakxyz( float x, float y, float z, float tof )
