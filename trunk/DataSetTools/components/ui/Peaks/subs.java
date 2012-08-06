@@ -985,6 +985,7 @@ public class subs
   
 
   /**
+   
    * Returns a new matrix whose columns are the basis with minimum length
    * and form a RIGHT HANDED SYSTEM
    * 
@@ -1019,6 +1020,7 @@ public class subs
 
 
   /**
+   * **$$$$$$$$$$$$$$$$$$$$$$ Messed up somehow $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
    * Obsolete method to return a new matrix whose columns are the basis with 
    * minimum length and form a RIGHT HANDED SYSTEM
    * 
@@ -1041,6 +1043,8 @@ public class subs
          Tensor = LinearAlgebra.getInverse(  Tensor  );
          invSgn=-1;
       }
+      if( Tensor== null)
+         return null;
       float[][] ident = new float[][]{{1f,0f,0f},{0f,1f,0f},{0f,0f,1f}};
       boolean done = false;
       while( !done)
