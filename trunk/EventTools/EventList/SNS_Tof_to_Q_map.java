@@ -194,6 +194,9 @@ public class SNS_Tof_to_Q_map
                                          // collection of histograms from 
                                          // the raw events 
 
+  private float[]      das_to_row;       // row and column in terms of the DAS
+  private float[]      das_to_col;       // pixel ID.
+
   private int[]        das_to_nex_id;    // Array giving the mapping from a
                                          // DAS pixel id to a NeXus pixel ID.
                                          // NOTE: For some instruments this is
@@ -1065,8 +1068,9 @@ public class SNS_Tof_to_Q_map
    *
    *  @param num_to_map  The number of events to map to Q
    *
-   *  @return an array of floats containing values (Qx,Qy,Qz) for each
-   *          event, interleaved in the array.
+   *  @return FloatArrayEventList3D object containing an array of floats 
+   *          with (Qx,Qy,Qz) for each event, and the list of weights for
+   *          each event.
    */
   public FloatArrayEventList3D MapEventsToQ( ITofEventList event_list,
                                              long  first,
@@ -1218,6 +1222,138 @@ public class SNS_Tof_to_Q_map
 */
      return new FloatArrayEventList3D( weights, Qxyz );
   }
+
+
+  /**
+   * Map the specified sub-list of time-of-flight events to a packed array
+   * of floats containing eight values for each event.  The eight values are 
+   * qx, qy, qz, gridID, row, column, time-of-flight and wavelength for that
+   * event.
+   *
+   *  NOTE: Since eight values for each event are packed in a one-dimensional
+   *        array, at most (2^31-1)/32 = 67.1 million events can be processed
+   *        in one batch by this method.
+   *
+   *  @param event_list  List of (tof,id) specifying detected neutrons.
+   *
+   *  @param first       The index of the first event to process
+   *
+   *  @param num_to_map  The number of events to process 
+   *
+   *  @return an array of floats containing eight values 
+   *          (Qx,Qy,Qz,gridID,row,col,tof,lamda) for each event, interleaved
+   *          in the array.
+   */
+
+  public float[]  MapEventsTo_Q_ID_Row_Col( ITofEventList event_list,
+                                             long  first,
+                                             long  num_to_map )
+  {
+     int num_mapped = CheckAndGetNumToMap( event_list, first, num_to_map );
+
+     int     id;
+     int     id_offset;
+     int     index;
+     int     mapped_index;
+     float   tof_chan;
+     float   tof;
+     float   magQ;
+     float   qx,qy,qz;
+     int     minus_id_count = 0;
+     int     large_id_count = 0;
+     float   lamda;
+     int     lamda_index;
+     float   transinv = 1.0f;
+                                                 // get the sublist of all of
+                                                 // the events we need to map
+     int[] my_events = event_list.rawEvents( first, num_mapped );
+     int ev_index = 0;
+     mapped_index = 0;
+                                                 // First scan for how many
+                                                 // events pass the filters
+                                                 // so we only need to  
+                                                 // allocate new arrays once 
+     int ok_counter  = 0;
+     int use_q_index = 0;
+     for ( int i = 0; i < num_mapped; i++ )
+     {
+       tof_chan = my_events[ ev_index++ ] + t0;
+       id       = my_events[ ev_index++ ];
+       if ( id >= 0 && id < tof_to_MagQ.length )
+       {
+         if ( use_id[ id ] && tof_chan > 0 )
+         {
+           magQ = tof_to_MagQ[id]/tof_chan;
+           use_q_index = use_q_binner.index( magQ );
+           if ( magQ >= min_q_to_map         &&
+                magQ <= max_q_to_map         &&
+                use_q_index >= 0             &&
+                use_q_index < NUM_USE_Q_BINS &&
+                use_q[ use_q_index ]  )
+           {
+             if ( num_peaks_discarded <= 0  ||
+                 !EventInDiscardedPeak( id, magQ ) )
+               ok_counter++;
+           }
+         }
+       }
+     }
+                                                  // Now allocate right-size
+                                                  // arrays and process events
+     float[] result = new float[ 8 * ok_counter ];
+
+     ev_index = 0;                                // start over at start of
+                                                  // the part we're mapping
+     for ( int i = 0; i < num_mapped; i++ )
+     {
+       tof_chan = my_events[ ev_index++ ] + t0;
+       tof      = tof_chan/10.0f;
+
+       id       = my_events[ ev_index++ ];
+       if ( id < 0 )
+         minus_id_count++;
+
+       else if ( id >= tof_to_MagQ.length )
+         large_id_count++;
+
+       else if ( use_id[ id ] && tof_chan > 0 )
+       {
+         magQ = tof_to_MagQ[id]/tof_chan;
+         use_q_index = use_q_binner.index( magQ );
+         if ( magQ >= min_q_to_map         &&
+              magQ <= max_q_to_map         &&
+              use_q_index >= 0             &&
+              use_q_index < NUM_USE_Q_BINS &&
+              use_q[ use_q_index ]  )
+         {
+           if ( num_peaks_discarded <= 0  ||
+               !EventInDiscardedPeak( id, magQ ) )
+           {
+             id_offset = 3*id;
+             qx = magQ * QUxyz[id_offset++];
+             qy = magQ * QUxyz[id_offset++];
+             qz = magQ * QUxyz[id_offset  ];
+
+             index = mapped_index * 8;
+             result[index++] = qx;
+             result[index++] = qy;
+             result[index++] = qz;
+             result[index++] = bank_num[id];
+             result[index++] = das_to_row[id];
+             result[index++] = das_to_col[id];
+             result[index++] = tof;
+             result[index  ] = tof * tof_to_lamda[id];
+
+             mapped_index++;
+           }
+         }
+       }
+
+     }
+     return result; 
+  }
+
+
 
 
  /**
@@ -2657,7 +2793,10 @@ public class SNS_Tof_to_Q_map
    *  nex_to_das_id[],
    *  use_id[],
    *  bank_num[],
-   *  all_bank_infos[]
+   *  das_to_row[],
+   *  das_to_col[]
+   *  all_bank_infos[],
+   *
    *  This version requires the information from .DetCal, mapping and bank
    *  files for SNS instruemnts.
    */
@@ -2767,7 +2906,6 @@ public class SNS_Tof_to_Q_map
         first_id,
         last_id,
         id;
-    int missing_grid_count = 0;
     for ( int k = 0; k < bank_info.length; k++ )
     {
       int bank_id = bank_info[k].ID();
@@ -2812,6 +2950,8 @@ public class SNS_Tof_to_Q_map
     pix_weight    = new float  [ pix_count ]; 
     use_id        = new boolean[ pix_count ];
     bank_num      = new int    [ pix_count ]; 
+    das_to_row    = new float  [ pix_count ];
+    das_to_col    = new float  [ pix_count ];
 
     float     part = (float)(10 * 4 * Math.PI / tof_calc.ANGST_PER_US_PER_M);
                                                    // partial constant
@@ -2837,6 +2977,10 @@ public class SNS_Tof_to_Q_map
 
       if ( grid_ID >= 0 )
       {
+        bank_num     [ das_i ] = grid_ID;
+        das_to_row   [ das_i ] = row;
+        das_to_col   [ das_i ] = col;
+
         grid       = all_grids[ grid_ID ];
 
         pix_pos    = grid.position( row, col );
@@ -2868,7 +3012,6 @@ public class SNS_Tof_to_Q_map
 
         use_id        [das_i] = true;            // initially assume all pixels
                                                  // will be used.
-        bank_num      [das_i] = grid_ID;
       }
     }
                                                  // now make the reverse table
