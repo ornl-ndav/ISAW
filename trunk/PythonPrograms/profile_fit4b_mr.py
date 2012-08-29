@@ -226,20 +226,19 @@ while True:
             slope = popt[4]
             constant = popt[5]
             
-            intI, sigI = scipy.integrate.quad(function_1, 0, numSteps-1, 
+            intI, sig_intI = scipy.integrate.quad(function_1, 0, numSteps-1, 
                 args=(scale, mu, alpha, sigma, 0.0, 0.0))
-            sigI = math.sqrt(abs(intI))
-                            
+                                        
+            # Get background counts
+            background_total = 0.0
+            for istep in range(numSteps):
+                yc = function_1(x[istep], scale, mu, alpha, sigma, slope, constant)
+                background = slope * x[istep] + constant
+                if yc > background:
+                    background_total = background_total + background
+            sigI = math.sqrt(abs(intI) + background_total)
             print '%4d %4d %4d %12.4f' % (h, k, l, intI)
-            # if scale > 0.0:
-                # if pcov[0][0] > 0.0: sig_scale = math.sqrt(pcov[0][0])
-                # if pcov[1][1] > 0.0: sig_mu = math.sqrt(pcov[1][1])
-                # if pcov[2][2] > 0.0: sig_alpha = math.sqrt(pcov[2][2])
-                # if pcov[3][3] > 0.0: sig_sigma = math.sqrt(pcov[3][3])
-                # if pcov[4][4] > 0.0: sig_slope = math.sqrt(pcov[4][4])
-                # if pcov[5][5] > 0.0: sig_constant = math.sqrt(pcov[5][5])
-            # print popt
-            # print sig_scale, sig_mu, sig_alpha, sig_sigma, sig_slope, sig_constant
+                    
         except RuntimeError:
             print 'RuntimeError for peak %d %d %d' % (h, k, l)
             continue        
@@ -249,7 +248,7 @@ while True:
         '3 %6d %4d %4d %4d %7.2f %7.2f %7.2f %8.3f %8.5f %8.5f %9.6f %8.4f %5d %9.2f %6.2f %4d\n' 
         % (numOfPeaks, h, k, l, col, row, chan, L2, two_theta, az, wl, dsp, ipk, intI, sigI, rflg))
 
-            
+    # Begin plot        
     xcalc = []
     ycalc = []
     for i in range(100 * len(yobs)):
