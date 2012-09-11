@@ -201,6 +201,7 @@ public class PeakEventList
     return max_mag_Q;
   }
 
+
 /**
  * Get a 3D histogram of events for this peak, using a circle of the
  * specified radius (in row and column number) and spiltting the Q-range
@@ -240,7 +241,7 @@ public class PeakEventList
                                               // proper centered histogram from
                                               // selected events 
 
-    EventInfo[] saved_list = ev_list;         // save list the put the 
+    EventInfo[] saved_list = ev_list;         // save list then put the 
                                               // selected events in ev_list
     ev_list = new EventInfo[ num_selected ];
     for ( int i = 0; i < num_selected; i++ )
@@ -252,6 +253,53 @@ public class PeakEventList
 
     return result;   
   }
+
+
+/**
+ * Get a 3D histogram of events for this peak, using a square with the
+ * specified size (in row and column number) and spiltting the Q-range
+ * for this peak into the specified number of steps.
+ *
+ * @param size         Width and height of the square on the detector face,
+ *                     centered on the peaks for which events falling in
+ *                     that square will be included in the histogram.
+ * @param num_q_steps  Number of steps in |Q| in the histogram
+ */
+  public Histogram3D getCenteredSquareHistogram( float size,
+                                                 int num_q_steps )
+  {
+    EventInfo[] selected_events = new EventInfo[ ev_list.length ];
+    int num_selected = 0;
+    float size_by_2 = size/2;
+    float d_row,
+          d_col;
+    for ( int i = 0; i < ev_list.length; i++ )
+    {
+      d_row = Math.abs(ev_list[i].Row() - center_row);
+      d_col = Math.abs(ev_list[i].Col() - center_col);
+      if ( d_row <= size_by_2 && d_col <= size_by_2 )
+      {
+        selected_events[ num_selected ] = ev_list[i];
+        num_selected++;
+      }
+    }
+                                              // quick hack... need to make
+                                              // proper centered histogram from
+                                              // selected events 
+
+    EventInfo[] saved_list = ev_list;         // save list then put the 
+                                              // selected events in ev_list
+    ev_list = new EventInfo[ num_selected ];
+    for ( int i = 0; i < num_selected; i++ )
+      ev_list[i] = selected_events[i]; 
+
+    Histogram3D result = getFullHistogram( num_q_steps );
+
+    ev_list = saved_list;                     // restore ev_list
+
+    return result;  
+  }
+
 
 
 /**
@@ -306,7 +354,7 @@ public class PeakEventList
  *                    pixels on the detector face that will be used to
  *                    determine the center of mass.
  */
-  public void SetCenterRowColToCenterOfMass( float rc_radius )
+  public void setCenterRowColToCenterOfMass( float rc_radius )
   {
     Histogram3D sum_histo =  getCenteredCircleHistogram( rc_radius, 3 );
     float[][] sum_image = sum_histo.getHistogramArray()[1];
@@ -347,7 +395,7 @@ public class PeakEventList
  *                    pixels on the detector face that will be used to
  *                    determine the center of mass.
  */
-  public void SetCenterRowColToMax( float rc_radius )
+  public void setCenterRowColToMax( float rc_radius )
   {
     Histogram3D sum_histo =  getCenteredCircleHistogram( rc_radius, 3 );
     float[][] sum_image = sum_histo.getHistogramArray()[1];
@@ -378,6 +426,48 @@ public class PeakEventList
 //  System.out.println("Center col = " + center_col + " min_col = " + min_col );
 //  System.out.println("Center row = " + center_row + " min_row = " + min_row );
   }
+
+
+/*
+ *  Get an estimate of the standard deviation of the peak from the peak
+ *  center.  NOTE: This assumes that the peak's center has already been
+ *  set to center of mass.  The standard deviation of the difference in 
+ *  row number and the difference in column number from the center is 
+ *  calculated for events that are within a square of the specified size
+ *  centered on the peak.  This method then returns the square root of the
+ *  sum of the squares of the standard deviations in the x and y directions.
+ *
+ *  @param size       The width and height in row and column number of a
+ *                    square of pixels on the detector face that will 
+ *                    be used to estimate the standard deviation.
+ */
+  public float getStandardDeviation( float size )
+  {
+    int   count = 0;
+    float size_by_2 = size/2;
+    float d_row,
+          d_col;
+    float sum_sq_row = 0;
+    float sum_sq_col = 0;
+    for ( int i = 0; i < ev_list.length; i++ )
+    {
+      d_row = Math.abs(ev_list[i].Row() - center_row);
+      d_col = Math.abs(ev_list[i].Col() - center_col);
+      if ( d_row <= size_by_2 && d_col <= size_by_2 )
+      {
+        sum_sq_row += d_row * d_row;
+        sum_sq_col += d_col * d_col;
+        count ++;
+      }
+    }
+
+    float stdev = 0;
+    if ( count > 1 )
+      stdev = (float)Math.sqrt(( sum_sq_row + sum_sq_col ) / (count - 1));
+
+    return stdev; 
+  }
+
 
 /**
  *  Find the first position in the array where the maximum value occurs.
