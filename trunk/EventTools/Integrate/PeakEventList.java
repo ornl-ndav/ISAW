@@ -237,21 +237,27 @@ public class PeakEventList
         num_selected++;
       }
     }
-                                              // quick hack... need to make
-                                              // proper centered histogram from
-                                              // selected events 
 
-    EventInfo[] saved_list = ev_list;         // save list then put the 
-                                              // selected events in ev_list
-    ev_list = new EventInfo[ num_selected ];
-    for ( int i = 0; i < num_selected; i++ )
-      ev_list[i] = selected_events[i];  
+    int min_x = (int)Math.floor(center_col - rc_radius);
+    int max_x = (int)Math.ceil (center_col + rc_radius);
+    int n_x   = max_x - min_x;
 
-    Histogram3D result = getFullHistogram( num_q_steps );
+    int min_y = (int)Math.floor(center_row - rc_radius);
+    int max_y = (int)Math.ceil (center_row + rc_radius);
+    int n_y   = max_y - min_y;
 
-    ev_list = saved_list;                     // restore ev_list
 
-    return result;   
+    Histogram3D peak_histo = getEmptyHistogram( min_x, max_x, n_x,
+                                                min_y, max_y, n_y,
+                                                min_mag_Q, max_mag_Q,
+                                                num_q_steps );
+
+    FloatArrayEventList3D ev_list_3D = getColRowMagQList( selected_events,
+                                                          num_selected );
+    
+    peak_histo.addEvents( ev_list_3D, false );
+
+    return peak_histo;
   }
 
 
@@ -283,21 +289,26 @@ public class PeakEventList
         num_selected++;
       }
     }
-                                              // quick hack... need to make
-                                              // proper centered histogram from
-                                              // selected events 
 
-    EventInfo[] saved_list = ev_list;         // save list then put the 
-                                              // selected events in ev_list
-    ev_list = new EventInfo[ num_selected ];
-    for ( int i = 0; i < num_selected; i++ )
-      ev_list[i] = selected_events[i]; 
+    int min_x = (int)Math.floor(center_col - size/2);
+    int max_x = (int)Math.ceil (center_col + size/2);
+    int n_x   = max_x - min_x;
 
-    Histogram3D result = getFullHistogram( num_q_steps );
+    int min_y = (int)Math.floor(center_row - size/2);
+    int max_y = (int)Math.ceil (center_row + size/2);
+    int n_y   = max_y - min_y;
 
-    ev_list = saved_list;                     // restore ev_list
+    Histogram3D peak_histo = getEmptyHistogram( min_x, max_x, n_x,
+                                                min_y, max_y, n_y,
+                                                min_mag_Q, max_mag_Q,
+                                                num_q_steps );
 
-    return result;  
+    FloatArrayEventList3D ev_list_3D = getColRowMagQList( selected_events,
+                                                          num_selected );
+
+    peak_histo.addEvents( ev_list_3D, false );
+
+    return peak_histo;
   }
 
 
@@ -310,33 +321,16 @@ public class PeakEventList
  */
   public Histogram3D getFullHistogram( int num_q_steps )
   {
-    float[] xyz_vals = new float[ 3 * ev_list.length ];
-    int index = 0;
-    for ( int i = 0; i < ev_list.length; i++ )
-    {
-      xyz_vals[index++] = ev_list[i].Col();            // col
-      xyz_vals[index++] = ev_list[i].Row();            // row
-      xyz_vals[index++] = ev_list[i].MagQ_over_2PI();
-    }
+    Histogram3D peak_histo = getEmptyHistogram( min_col, max_col+1,
+                                                max_col+1 - min_col,
+                                                min_row, max_row+1,
+                                                max_row+1 - min_row,
+                                                min_mag_Q, max_mag_Q, 
+                                                num_q_steps           );
 
-    FloatArrayEventList3D ev_list_3D = 
-                           new FloatArrayEventList3D( null, xyz_vals );
+    FloatArrayEventList3D ev_list_3D = getColRowMagQList( ev_list, 
+                                                          ev_list.length );
 
-    Vector3D x_bin_dir = new Vector3D( 1, 0, 0 );
-    Vector3D y_bin_dir = new Vector3D( 0, 1, 0 );
-    Vector3D z_bin_dir = new Vector3D( 0, 0, 1 );
-
-    UniformEventBinner x_bin = new UniformEventBinner( min_col, max_col+1,
-                                                       max_col+1 - min_col );
-    UniformEventBinner y_bin = new UniformEventBinner( min_row, max_row+1,
-                                                       max_row+1 - min_row );
-    UniformEventBinner z_bin = new UniformEventBinner( min_mag_Q, max_mag_Q, 
-                                                       num_q_steps );
-    ProjectionBinner3D x_vec_bin = new ProjectionBinner3D( x_bin, x_bin_dir );
-    ProjectionBinner3D y_vec_bin = new ProjectionBinner3D( y_bin, y_bin_dir );
-    ProjectionBinner3D z_vec_bin = new ProjectionBinner3D( z_bin, z_bin_dir );
-
-    Histogram3D peak_histo = new Histogram3D(x_vec_bin, y_vec_bin, z_vec_bin);
     peak_histo.addEvents( ev_list_3D, false );
 
     return peak_histo;
@@ -374,8 +368,8 @@ public class PeakEventList
         x_mass     += col * counts;
         y_mass     += row * counts;
       }
-    center_col = x_mass/total_mass + min_col;
-    center_row = y_mass/total_mass + min_row;
+    center_col = x_mass/total_mass + (float)sum_histo.xEdgeBinner().axisMin();
+    center_row = y_mass/total_mass + (float)sum_histo.yEdgeBinner().axisMin();
 
 //  System.out.println("Center col = " + center_col + " min_col = " + min_col );
 //  System.out.println("Center row = " + center_row + " min_row = " + min_row );
@@ -411,7 +405,8 @@ public class PeakEventList
         sum += sum_image[row][col];
       col_sum[col] = sum;
     }
-    center_col = MaxPosition( col_sum ) + min_col;
+    center_col = MaxPosition( col_sum ) + 
+                 (float)sum_histo.xEdgeBinner().axisMin();
 
     float[] row_sum = new float[ n_rows ];
     for ( int row = 0; row < n_rows; row++ )
@@ -421,7 +416,8 @@ public class PeakEventList
         sum += sum_image[row][col];
       row_sum[row] = sum;
     }
-    center_row = MaxPosition( row_sum ) + min_row;
+    center_row = MaxPosition( row_sum ) + 
+                 (float)sum_histo.yEdgeBinner().axisMin();
 
 //  System.out.println("Center col = " + center_col + " min_col = " + min_col );
 //  System.out.println("Center row = " + center_row + " min_row = " + min_row );
@@ -484,6 +480,61 @@ public class PeakEventList
         max = array[i];
       } 
     return max_index;
+  }
+
+
+/**
+ * Get the events in this peak, in the form of a FloatArrayEventList3D
+ * object, with components col, row and |Q|/2PI. 
+ *
+ * @param  list   A partially filled array of EventInfo objects
+ * @param  num    The number of EventInfo objects in the list
+ *
+ * @return a FloatArrayEventlist3D containing col, row, |Q| info about
+ *         each of the events in the current event list.
+ */
+  private FloatArrayEventList3D getColRowMagQList( EventInfo[] list, int num )
+  {
+    float[] xyz_vals = new float[ 3 * num ];
+    int index = 0;
+    for ( int i = 0; i < num; i++ )
+    {
+      xyz_vals[index++] = list[i].Col();            // col
+      xyz_vals[index++] = list[i].Row();            // row
+      xyz_vals[index++] = list[i].MagQ_over_2PI();
+    }
+
+    FloatArrayEventList3D ev_list_3D =
+                           new FloatArrayEventList3D( null, xyz_vals );
+
+    return ev_list_3D;
+  }
+
+
+/**
+ *  Get an empty Histogram3D covering the specified ranges in x, y, z, 
+ *  with the specified number of steps in each of those directions.
+ *
+ *  @return an empty Histogram3D object covering the required range.
+ */
+  private Histogram3D getEmptyHistogram( float min_x, float max_x, int n_x,
+                                         float min_y, float max_y, int n_y,
+                                         float min_z, float max_z, int n_z )
+  {
+    Vector3D x_bin_dir = new Vector3D( 1, 0, 0 );
+    Vector3D y_bin_dir = new Vector3D( 0, 1, 0 );
+    Vector3D z_bin_dir = new Vector3D( 0, 0, 1 );
+
+    UniformEventBinner x_bin = new UniformEventBinner( min_x, max_x, n_x );
+    UniformEventBinner y_bin = new UniformEventBinner( min_y, max_y, n_y );
+    UniformEventBinner z_bin = new UniformEventBinner( min_z, max_z, n_z );
+
+    ProjectionBinner3D x_vec_bin = new ProjectionBinner3D( x_bin, x_bin_dir );
+    ProjectionBinner3D y_vec_bin = new ProjectionBinner3D( y_bin, y_bin_dir );
+    ProjectionBinner3D z_vec_bin = new ProjectionBinner3D( z_bin, z_bin_dir );
+
+    Histogram3D peak_histo = new Histogram3D(x_vec_bin, y_vec_bin, z_vec_bin);
+    return peak_histo;
   }
 
 }
