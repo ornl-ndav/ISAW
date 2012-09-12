@@ -141,7 +141,8 @@ public class EV_IntegrateUtils
  *                          PeakEventList object.
  *  @return  A PeakEventList object containing the specified peak object and
  *           the list of events associated with this peak, in a row,col,|Q|
- *           aligned region around the peak.
+ *           aligned region around the peak.  If fewer than 5 events are in 
+ *           the region this returns null.
  */
   public static PeakEventList GetPeakEventList( 
                                            Peak_new          peak,
@@ -171,6 +172,9 @@ public class EV_IntegrateUtils
     float max_mag_Q = -10000;
     Vector3D q_vec;
     Vector3D hkl = new Vector3D();
+
+    int event_count = 0; 
+
     for ( int i_count = 0; i_count < ev_list_for_det.size(); i_count++ )
     {
       EventInfo info = ev_list_for_det.elementAt(i_count);
@@ -181,6 +185,7 @@ public class EV_IntegrateUtils
       hkl.subtract( target_hkl );
       if ( hkl.length() < tolerance )
       {
+        event_count++;
         int   row   = info.Row();
         int   col   = info.Col();
         float mag_Q = info.MagQ_over_2PI();
@@ -198,6 +203,9 @@ public class EV_IntegrateUtils
           min_mag_Q = mag_Q;
       }
     }
+
+    if ( event_count < 5 )
+      return null;
 
     // HACK: Expand range down to make room for the "tail" toward
     // smaller Q values.
@@ -234,9 +242,10 @@ public class EV_IntegrateUtils
 
 
 /**
- *  Get I and sigI by integrating the data in the histo_array.  The 
- *  histo_array is assume to ONLY contain events that should be included
- *  when finding the total integrated intensity and background.
+ *  Get I and sigI by integrating the data in the histo_array using 5 disks,
+ *  centered on the peak.  The total counts on the first and last disk 
+ *  provide the background estimate and the total counts in the middle three
+ *  disks provide the peak + background estimate. 
  */
   public static float[] Integrate( float[][][] histo_array )
   {
@@ -280,5 +289,133 @@ public class EV_IntegrateUtils
     float[] result = { signal, sigma_signal };
     return result;
   } 
+
+
+/**
+ *  Get I and sigI by integrating the data in the histo_array using 5 disks,
+ *  centered on the peak.  The total counts on the first and last disk 
+ *  provide the background estimate and the total counts in the middle three
+ *  disks provide the peak + background estimate. 
+ *  
+ * @param pev_list   The peak event list with the peak events to integrate
+ * @param radius     The radius of the disks on the detector face that will
+ *                   be used
+ */
+  public static float[] Integrate( PeakEventList pev_list,
+                                   float         radius    )
+  {
+    int n_pages = 5;
+    Histogram3D peak_histo = 
+                       pev_list.getCenteredCircleHistogram( radius, n_pages );
+
+    float[][][] histo_array = peak_histo.getHistogramArray();
+
+    float[] sums = new float[ n_pages ];
+    for ( int page = 0; page < n_pages; page++ )
+    {
+      sums[page] = 0;
+      float[][] arr = histo_array[page];
+      for ( int row = 0; row < histo_array[0].length; row++ )
+        for ( int col = 0; col < histo_array[0][0].length; col++ )
+          sums[page] += arr[row][col];
+    }
+
+    float back     = sums[0] + sums[4];
+    int   back_vol = 2;
+
+    float raw_signal = sums[1] + sums[2] + sums[3];
+    int   raw_vol    = 3;
+
+    float ratio  = (float)raw_vol/(float)back_vol;
+    float signal = raw_signal - ratio * back;
+
+    float sigma_signal = (float)Math.sqrt( raw_signal + ratio * ratio * back );
+
+    float[] result = { signal, sigma_signal };
+    return result;
+  }
+
+
+/**
+ * Get a PeakDisplayInfo object for the specified peak.
+ *
+ * @param pev_list   The PeakEventList object containing most information
+ *                   about this peak.
+ * @param radius     The radius of a disk on the detector surface for which 
+ *                   data will be included in the PeakDisplayInfo object
+ * @param seq_num    (Possibly) new sequence number to use in the label for 
+ *                   the peak.
+ */
+  public static PeakDisplayInfo GetPeakDisplayInfo( PeakEventList pev_list, 
+                                                    float         radius,
+                                                    int           seq_num )
+  {
+     Histogram3D peak_histo = pev_list.getCenteredCircleHistogram( radius, 5 );
+     float[][][] histo_array = peak_histo.getHistogramArray();
+
+     // flip the rows to fix the row readout values
+
+     int n_pages = histo_array.length;
+     for ( int page = 0; page < n_pages; page++ )
+     {
+       float[][] array_2D = histo_array[page];
+       int n_rows  = array_2D.length;
+       int n_cols  = array_2D[0].length;
+       float[] temp;
+       for ( int row = 0; row < n_rows/2; row++ )
+       {
+         temp = array_2D[row];
+         array_2D[row] = array_2D[n_rows-row-1];
+         array_2D[n_rows-row-1] = temp;
+       }
+     }
+
+     int min_row = (int)peak_histo.yEdgeBinner().axisMin();
+     int min_col = (int)peak_histo.xEdgeBinner().axisMin();;
+
+     Peak_new peak = pev_list.getPeak();
+     String key = "" + Math.round( peak.h() ) + "," +
+                       Math.round( peak.k() ) + "," +
+                       Math.round( peak.l() );
+
+     String title = "" + seq_num + ": " + key;
+     PeakDisplayInfo peak_info = new PeakDisplayInfo( title, histo_array,
+                                                   min_row, min_col, 0, true );
+     return peak_info;
+  }
+                                           
+
+
+/**
+ *  Display images of peaks from multiple detectors from one run.
+ *
+ *  @param run_num              The run number for the peaks
+ *  @param id_with_peak_infos   Vector containing two entries for
+ *                              each detector.  The first entry is the
+ *                              detector ID.  The second entry is a Vector
+ *                              of PeakDisplayInfo objects.
+ */
+  public static void ShowPeakImages( int run_num, Vector id_with_peak_infos )
+  {
+     PeakArrayPanels peaks_display = new PeakArrayPanels(
+                                  "Integrated Peaks For Run " + run_num );
+     
+     Vector<PeakDisplayInfo> peak_infos = null;
+
+     for ( int i = 0; i < id_with_peak_infos.size(); i+=2 )
+     {
+       int id = (Integer)id_with_peak_infos.elementAt(i);
+       peak_infos = (Vector<PeakDisplayInfo>)id_with_peak_infos.elementAt(i+1);
+
+       PeakDisplayInfo[] infos_for_det = new PeakDisplayInfo[peak_infos.size()];
+       for ( int k = 0; k < infos_for_det.length; k++ )
+          infos_for_det[k] = peak_infos.elementAt(k);
+
+       PeaksDisplayPanel ppanel = new PeaksDisplayPanel( infos_for_det );
+       peaks_display.addPanel( ppanel, "", ""+id );
+     }
+
+     peaks_display.display( "Detector", "ID" );
+  }
 
 }
