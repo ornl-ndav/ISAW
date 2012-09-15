@@ -42,7 +42,8 @@ public class EV_IntegrateUtils
      for ( int i = 0; i < ev_info_list.length; i+= 8 ) 
      {
        id = Math.round( ev_info_list[ i + 3 ] );
-       list.elementAt(id).add( new EventInfo( ev_info_list, i ) );
+       if ( id < max_id )
+         list.elementAt(id).add( new EventInfo( ev_info_list, i ) );
      }
      return list;
   }
@@ -337,6 +338,340 @@ public class EV_IntegrateUtils
 
 
 /**
+ * Integrate and edge or corner peak.  NOTE: The peak center should be set
+ * to the MAX rather than to the center of mass, before calling this 
+ * method.  If the peak is an edge peak, the sums will be formed using only
+ * the half of the peak that is away from the edge, and the results will be
+ * doubled.  If the peak is a corner peak, the sums will be formed using 
+ * only the quarter of the peak that is interior to the detector, and the
+ * result will be multiplied by four.
+ *
+ * @param pev_list   The peak event list with the peak events to integrate
+ * @param radius     The radius of the disks on the detector face that will
+ *                   be used
+ */
+  public static float[] IntegrateEdge( PeakEventList pev_list,
+                                       float         radius,
+                                       PeakEventList.PeakType type )
+  {
+    int n_pages = 5;
+    Histogram3D peak_histo =
+                       pev_list.getCenteredCircleHistogram( radius, n_pages );
+
+    float[][][] histo_array = peak_histo.getHistogramArray();
+ 
+    int n_rows = histo_array[0].length;
+    int n_cols = histo_array[0][0].length;
+
+    boolean odd_num_rows = (n_rows % 2 == 1 );
+    boolean odd_num_cols = (n_cols % 2 == 1 );
+
+    float[] ll_sums = new float[ n_pages ];
+    float[] lr_sums = new float[ n_pages ];
+    float[] ul_sums = new float[ n_pages ];
+    float[] ur_sums = new float[ n_pages ];
+    float[] sums    = new float[ n_pages ];
+
+    for ( int page = 0; page < n_pages; page++ )
+    {
+      float[][] arr = histo_array[page];
+                                               // sum over lower left quadrant
+      ll_sums[page] = 0;
+      for ( int row = 0; row < n_rows/2; row++ )
+        for ( int col = 0; col < n_cols/2; col++ )
+          ll_sums[page] += arr[row][col];
+       
+      if ( odd_num_rows )                      // use half of center row
+        for ( int col = 0; col < n_cols/2; col++ )
+          ll_sums[page] += arr[n_rows/2][col] / 2;
+
+      if ( odd_num_cols )                      // use half of center col 
+        for ( int row = 0; row < n_rows/2; row++ )
+          ll_sums[page] += arr[row][n_cols/2] / 2;
+
+      if ( odd_num_rows && odd_num_cols )      // use 1/4 of center pixel
+        ll_sums[page] += arr[n_rows/2][n_cols/2] / 4;
+
+                                               // sum over lower right quadrant
+      lr_sums[page] = 0;
+      for ( int row = 0; row < n_rows/2; row++ )
+        for ( int col = n_cols/2; col < n_cols; col++ )
+          lr_sums[page] += arr[row][col];
+
+      if ( odd_num_rows )                      // use half of center row
+        for ( int col = n_cols/2; col < n_cols; col++ )
+          lr_sums[page] += arr[n_rows/2][col] / 2;
+
+      if ( odd_num_cols )                      // remove half of center col 
+        for ( int row = 0; row < n_rows/2; row++ )
+          lr_sums[page] -= arr[row][n_cols/2] / 2;
+
+      if ( odd_num_rows && odd_num_cols )      // remove 1/4 of center pixel
+        lr_sums[page] -= arr[n_rows/2][n_cols/2] / 4;
+
+                                                // sum over upper left quadrant
+      ul_sums[page] = 0;
+      for ( int row = n_rows/2; row < n_rows; row++ )
+        for ( int col = 0; col < n_cols/2; col++ )
+          ul_sums[page] += arr[row][col];
+
+      if ( odd_num_rows )                      //remove half of center row
+        for ( int col = 0; col < n_cols/2; col++ )
+          ul_sums[page] -= arr[n_rows/2][col] / 2;
+
+      if ( odd_num_cols )                      // use half of center col 
+        for ( int row = n_rows/2; row < n_rows; row++ )
+          ul_sums[page] += arr[row][n_cols/2] / 2;
+
+      if ( odd_num_rows && odd_num_cols )      // remove 1/4 of center pixel
+        ul_sums[page] -= arr[n_rows/2][n_cols/2] / 4;
+
+                                              // sum over upper right quadrant
+      ur_sums[page] = 0;
+      for ( int row = n_rows/2; row < n_rows; row++ )
+        for ( int col = n_cols/2; col < n_cols; col++ )
+          ur_sums[page] += arr[row][col];
+        
+      if ( odd_num_rows )                      //remove half of center row
+        for ( int col = n_cols/2; col < n_cols; col++ )
+          ur_sums[page] -= arr[n_rows/2][col] / 2;
+
+      if ( odd_num_cols )                      // remove half of center col 
+        for ( int row = n_rows/2; row < n_rows; row++ )
+          ur_sums[page] -= arr[row][n_cols/2] / 2;
+
+      if ( odd_num_rows && odd_num_cols )      // use 1/4 of center pixel
+        ur_sums[page] += arr[n_rows/2][n_cols/2] / 4;
+
+/*                                               // sum over all quadrants
+      sums[page] = 0;
+      for ( int row = 0; row < histo_array[0].length; row++ )
+        for ( int col = 0; col < histo_array[0][0].length; col++ )
+          sums[page] += arr[row][col];
+
+      System.out.println("PAGE = " + page );
+      System.out.println("ll, lr, ul, ur, total = " + 
+                          ll_sums[page] + ", " +
+                          lr_sums[page] + ", " +
+                          ul_sums[page] + ", " +
+                          ur_sums[page] + ", " +
+                          sums[page] );
+*/
+    }
+
+    for ( int page = 0; page < n_pages; page++ )
+    {
+      if ( type == PeakEventList.PeakType.INTERIOR )
+        sums[page] = ul_sums[page] + ur_sums[page] +
+                     ll_sums[page] + lr_sums[page];
+
+      else if ( type == PeakEventList.PeakType.LEFT_EDGE )
+        sums[page] = 2 * ( ul_sums[page] +
+                           ll_sums[page] );
+
+      else if ( type == PeakEventList.PeakType.RIGHT_EDGE )
+        sums[page] = 2 * (            ur_sums[page] +
+                                      lr_sums[page] );
+
+      else if ( type == PeakEventList.PeakType.BOTTOM_EDGE )
+        sums[page] = 2 * (
+                           ll_sums[page] + lr_sums[page] );
+
+      else if ( type == PeakEventList.PeakType.TOP_EDGE )
+        sums[page] = 2 * ( ul_sums[page] + ur_sums[page] );
+
+      else if ( type == PeakEventList.PeakType.TOP_LEFT )
+        sums[page] = 4 * ( ul_sums[page] );
+
+      else if ( type == PeakEventList.PeakType.TOP_RIGHT )
+        sums[page] = 4 * (                 ur_sums[page] );
+
+      else if ( type == PeakEventList.PeakType.BOTTOM_LEFT )
+        sums[page] = 4 * (
+                           ll_sums[page] );
+
+      else if ( type == PeakEventList.PeakType.BOTTOM_RIGHT )
+        sums[page] = 4 * ( 
+                                     lr_sums[page] );
+    }
+
+    float back     = sums[0] + sums[4];
+    int   back_vol = 2;
+
+    float raw_signal = sums[1] + sums[2] + sums[3];
+    int   raw_vol    = 3;
+
+    float ratio  = (float)raw_vol/(float)back_vol;
+    float signal = raw_signal - ratio * back;
+
+    float sigma_signal = (float)Math.sqrt( raw_signal + ratio * ratio * back );
+
+    float[] result = { signal, sigma_signal };
+    return result;
+  }
+
+/**
+ * Integrate and edge or corner peak.  NOTE: The peak center should be set
+ * to the MAX rather than to the center of mass, before calling this 
+ * method.  If the peak is an edge peak, the sums will be formed using only
+ * the half of the peak that is away from the edge, and the results will be
+ * doubled.  If the peak is a corner peak, the sums will be formed using 
+ * only the quarter of the peak that is interior to the detector, and the
+ * result will be multiplied by four.
+ *
+ * @param pev_list   The peak event list with the peak events to integrate
+ * @param radius     The radius of the disks on the detector face that will
+ *                   be used
+ */
+  public static float[] IntegrateRefEdge( PeakEventList pev_list,
+                                          float         radius,
+                                          int           border,
+                                          PeakEventList.PeakType type )
+  {
+                                     // center row, col in detector coordinates
+    int center_row = (int)pev_list.getCenterRow();
+    int center_col = (int)pev_list.getCenterCol();
+    int n_pages    = 5;
+
+    Histogram3D peak_histo =
+                       pev_list.getCenteredCircleHistogram( radius, n_pages );
+
+    float[][][] histo_array = peak_histo.getHistogramArray();
+    int n_rows  = histo_array[0].length;
+    int n_cols  = histo_array[0][0].length;
+
+    int min_row = (int)peak_histo.yEdgeBinner().axisMin();
+    int min_col = (int)peak_histo.xEdgeBinner().axisMin();
+    int max_row = (int)peak_histo.yEdgeBinner().axisMax();
+    int max_col = (int)peak_histo.xEdgeBinner().axisMax();
+/*
+    System.out.println("Min, Max Row = " + min_row + ", " + max_row );
+    System.out.println("Min, Max Col = " + min_col + ", " + max_col );
+    System.out.println("Center Col, Row = " + center_col + ", " + center_row );
+    System.out.println("ORIGINAL PAGE.....");
+
+    for ( int row = n_rows-1; row >= 0; row-- )
+    {
+      float arr[] = histo_array[2][row];
+      for (int col = 0; col < n_cols; col++ )
+        System.out.printf( "%3d ", Math.round(arr[col]) );
+      System.out.println();
+    }
+*/
+                                       // Reflect across left edge, if needed
+    if ( type == PeakEventList.PeakType.LEFT_EDGE   ||
+         type == PeakEventList.PeakType.BOTTOM_LEFT ||
+         type == PeakEventList.PeakType.TOP_LEFT  )
+    {
+      int last_bad = n_cols/2 - (center_col - border);
+      if ( last_bad > n_cols/2 )
+        last_bad = n_cols/2;
+      for ( int page = 0; page < n_pages; page++ )
+      {
+        for ( int row = 0; row < n_rows; row++ )
+        {                                           // copy data from other
+          float[] arr = histo_array[page][row];     // side to missing positons
+          for ( int col = 0; col <= last_bad; col++ )   
+            arr[col] = arr[n_cols - 1 - col];
+        }  
+      }
+    }
+                                       // Reflect across right edge, if needed
+    if ( type == PeakEventList.PeakType.RIGHT_EDGE   ||
+         type == PeakEventList.PeakType.BOTTOM_RIGHT ||
+         type == PeakEventList.PeakType.TOP_RIGHT  )
+    {
+      int first_bad = 256 - border - center_col + (n_cols+1) / 2;
+      if ( first_bad <= (n_cols+1)/2 )
+        first_bad = (n_cols+1)/2 + 1;
+      for ( int page = 0; page < n_pages; page++ )
+      {
+        for ( int row = 0; row < n_rows; row++ )
+        {                                           // copy data from other
+          float[] arr = histo_array[page][row];     // side to missing positons
+          for ( int col = first_bad; col < n_cols; col++ )   
+            arr[col] = arr[n_cols - 1 - col];
+        } 
+      }
+    }
+
+                                    // Reflect across bottom edge, if needed
+    if ( type == PeakEventList.PeakType.BOTTOM_EDGE  ||
+         type == PeakEventList.PeakType.BOTTOM_LEFT  ||
+         type == PeakEventList.PeakType.BOTTOM_RIGHT  )
+    {
+      int last_bad = n_rows/2 - (center_row - border);
+      if ( last_bad > n_rows/2 )
+        last_bad = n_rows/2;
+      for ( int page = 0; page < n_pages; page++ )
+      {
+        float[][] arr = histo_array[page];
+        for ( int col = 0; col < n_cols; col++ )
+        {                                           // copy data from other
+                                                    // side to missing positons
+          for ( int row = 0; row <= last_bad; row++ )   
+            arr[row][col] = arr[n_rows - 1 - row][col];
+        } 
+      }
+    }
+     
+                                      // Reflect across top edge, if needed
+    if ( type == PeakEventList.PeakType.TOP_EDGE  ||
+         type == PeakEventList.PeakType.TOP_LEFT  ||
+         type == PeakEventList.PeakType.TOP_RIGHT  )
+    { 
+      int first_bad = 256 - border - center_row + (n_rows+1) / 2;
+      if ( first_bad <= (n_rows+1)/2 )
+        first_bad = (n_rows+1)/2 + 1;
+      for ( int page = 0; page < n_pages; page++ )
+      { 
+        float[][] arr = histo_array[page];
+        for ( int col = 0; col < n_cols; col++ )
+        {                                           // copy data from other
+                                                    // side to missing positons
+          for ( int row = first_bad; row < n_rows; row++ ) 
+            arr[row][col] = arr[n_rows - 1 - row][col];
+        }
+      }
+    }
+/*
+    System.out.println("FIXED PAGE.....");
+    for ( int row = n_rows-1; row >= 0; row-- )
+    {
+      float arr[] = histo_array[2][row];
+      for (int col = 0; col < n_cols; col++ )
+        System.out.printf( "%3d ", Math.round(arr[col]) );
+      System.out.println();
+    }
+    System.out.println();
+*/
+    float[] sums = new float[ n_pages ];
+    for ( int page = 0; page < n_pages; page++ )
+    {
+      sums[page] = 0;
+      float[][] arr = histo_array[page];
+      for ( int row = 0; row < histo_array[0].length; row++ )
+        for ( int col = 0; col < histo_array[0][0].length; col++ )
+          sums[page] += arr[row][col];
+    }
+
+    float back     = sums[0] + sums[4];
+    int   back_vol = 2;
+
+    float raw_signal = sums[1] + sums[2] + sums[3];
+    int   raw_vol    = 3;
+
+    float ratio  = (float)raw_vol/(float)back_vol;
+    float signal = raw_signal - ratio * back;
+
+    float sigma_signal = (float)Math.sqrt( raw_signal + ratio * ratio * back );
+
+    float[] result = { signal, sigma_signal };
+    return result;
+  }
+
+
+/**
  * Get a PeakDisplayInfo object for the specified peak.
  *
  * @param pev_list   The PeakEventList object containing most information
@@ -371,7 +706,7 @@ public class EV_IntegrateUtils
      }
 
      int min_row = (int)peak_histo.yEdgeBinner().axisMin();
-     int min_col = (int)peak_histo.xEdgeBinner().axisMin();;
+     int min_col = (int)peak_histo.xEdgeBinner().axisMin();
 
      Peak_new peak = pev_list.getPeak();
      String key = "" + Math.round( peak.h() ) + "," +
@@ -383,7 +718,6 @@ public class EV_IntegrateUtils
                                                    min_row, min_col, 0, true );
      return peak_info;
   }
-                                           
 
 
 /**

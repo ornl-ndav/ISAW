@@ -50,6 +50,10 @@ import DataSetTools.operator.Generic.TOF_SCD.Peak_new;
  */
 public class PeakEventList 
 {
+  public enum PeakType { INTERIOR, 
+                         LEFT_EDGE, RIGHT_EDGE, BOTTOM_EDGE, TOP_EDGE,
+                         BOTTOM_LEFT, BOTTOM_RIGHT, TOP_LEFT, TOP_RIGHT };
+
   private Peak_new     peak    = null;
   private EventInfo[]  ev_list = null;
   private int          min_row;
@@ -99,6 +103,72 @@ public class PeakEventList
     for ( int i = 0; i < ev_list.length; i++ )
       ev_list[i] = events.elementAt(i);
   }
+
+
+/**
+ * Get the PeakType for this peak, based on the specified minimum allowed
+ * distance to an edge and the specified border width of bad pixels.
+ *
+ * @param min_dist   The minimum allowed distance between the peak center and 
+ *                   the border of the detector, for a peak to be considered
+ *                   an interior peak, in pixels.
+ * @param border     The width of the border of bad or dead pixels on each 
+ *                   edge of the detecor.
+ *
+ * @return a PeakType code indicating the position of this peak relative to
+ *         the edges and corners.
+ */
+  public PeakType GetPeakType( float min_dist, int border )
+  {
+    int n_rows =  peak.getGrid().num_rows(); 
+    int n_cols =  peak.getGrid().num_cols(); 
+
+    boolean near_left   = false;
+    boolean near_right  = false;
+    boolean near_top    = false;
+    boolean near_bottom = false;
+                                                // assume rows and columns
+                                                // are numbered starting at 1
+    if ( center_col - 1 < border + min_dist )
+      near_left = true;
+
+    if ( center_col > n_cols - border - min_dist )
+      near_right = true;
+
+    if ( center_row - 1 < border + min_dist )
+      near_bottom = true;
+
+    if ( center_row > n_rows - border - min_dist )
+      near_top = true;
+                                                  // check corners
+    if ( near_bottom && near_left )
+      return PeakType.BOTTOM_LEFT;
+
+    if ( near_bottom && near_right )
+      return PeakType.BOTTOM_RIGHT;
+
+    if ( near_top && near_left  )
+      return PeakType.TOP_LEFT;
+
+    if ( near_top && near_right )
+      return PeakType.TOP_RIGHT;
+                                                  // check edges
+    if ( near_left )
+      return PeakType.LEFT_EDGE;
+
+    if ( near_right )
+      return PeakType.RIGHT_EDGE;
+
+    if ( near_top  )
+      return PeakType.TOP_EDGE;
+
+    if ( near_bottom )
+      return PeakType.BOTTOM_EDGE;
+                                                  // if we got here it must
+                                                  // be an interior peak
+    return PeakType.INTERIOR;       
+  }
+
 
 
 /**
@@ -255,7 +325,8 @@ public class PeakEventList
     FloatArrayEventList3D ev_list_3D = getColRowMagQList( selected_events,
                                                           num_selected );
     
-    peak_histo.addEvents( ev_list_3D, false );
+    if ( ev_list_3D != null )
+      peak_histo.addEvents( ev_list_3D, false );
 
     return peak_histo;
   }
@@ -306,7 +377,8 @@ public class PeakEventList
     FloatArrayEventList3D ev_list_3D = getColRowMagQList( selected_events,
                                                           num_selected );
 
-    peak_histo.addEvents( ev_list_3D, false );
+    if ( ev_list_3D != null )
+      peak_histo.addEvents( ev_list_3D, false );
 
     return peak_histo;
   }
@@ -331,7 +403,8 @@ public class PeakEventList
     FloatArrayEventList3D ev_list_3D = getColRowMagQList( ev_list, 
                                                           ev_list.length );
 
-    peak_histo.addEvents( ev_list_3D, false );
+    if ( ev_list_3D != null )
+      peak_histo.addEvents( ev_list_3D, false );
 
     return peak_histo;
   }
@@ -342,7 +415,9 @@ public class PeakEventList
  *  of the peak.  A histogram from a disk of pixels centered on the current 
  *  center coordinates with 3 slices in the |Q| direction is obtained, and
  *  the center of mass of the center slice is used for calculating the 
- *  the new row and column coordinates of the peak center.
+ *  the new row and column coordinates of the peak center.  NOTE: The
+ *  center of mass is only changed if there are at least 5 counts in the
+ *  region.
  *
  *  @param rc_radius  The radius (in row and column number) of a disk of
  *                    pixels on the detector face that will be used to
@@ -368,8 +443,13 @@ public class PeakEventList
         x_mass     += col * counts;
         y_mass     += row * counts;
       }
-    center_col = x_mass/total_mass + (float)sum_histo.xEdgeBinner().axisMin();
-    center_row = y_mass/total_mass + (float)sum_histo.yEdgeBinner().axisMin();
+                                            // only change center if enough
+                                            // counts are present
+    if ( x_mass > 0 && y_mass > 0 && total_mass > 4 )
+    {
+      center_col = x_mass/total_mass + (float)sum_histo.xEdgeBinner().axisMin();
+      center_row = y_mass/total_mass + (float)sum_histo.yEdgeBinner().axisMin();
+    }
 
 //  System.out.println("Center col = " + center_col + " min_col = " + min_col );
 //  System.out.println("Center row = " + center_row + " min_row = " + min_row );
@@ -383,7 +463,10 @@ public class PeakEventList
  *  the current center coordinates with 3 slices in the |Q| direction is 
  *  obtained, and the positions of the maximum values in the projections
  *  in the row and column directions is used for the new coordinates of 
- *  the peak center.
+ *  the peak center.  NOTE: A coordinate of the center is only changed if 
+ *  the maximum value of the projection occurs after position 0 in the 
+ *  projected array.  This will avoid moving the center if there are no counts
+ *  in the projection.
  *
  *  @param rc_radius  The radius (in row and column number) of a disk of
  *                    pixels on the detector face that will be used to
@@ -405,8 +488,12 @@ public class PeakEventList
         sum += sum_image[row][col];
       col_sum[col] = sum;
     }
-    center_col = MaxPosition( col_sum ) + 
-                 (float)sum_histo.xEdgeBinner().axisMin();
+   
+    int max_pos = MaxPosition( col_sum );
+
+                              // only change center if max is after position 0
+    if ( max_pos > 0 )
+      center_col = max_pos + (float)sum_histo.xEdgeBinner().axisMin();
 
     float[] row_sum = new float[ n_rows ];
     for ( int row = 0; row < n_rows; row++ )
@@ -416,8 +503,10 @@ public class PeakEventList
         sum += sum_image[row][col];
       row_sum[row] = sum;
     }
-    center_row = MaxPosition( row_sum ) + 
-                 (float)sum_histo.yEdgeBinner().axisMin();
+                              // only change center if max is after position 0
+    max_pos = MaxPosition( row_sum );
+    if ( max_pos > 0 )
+      center_row = max_pos + (float)sum_histo.yEdgeBinner().axisMin();
 
 //  System.out.println("Center col = " + center_col + " min_col = " + min_col );
 //  System.out.println("Center row = " + center_row + " min_row = " + min_row );
@@ -491,10 +580,14 @@ public class PeakEventList
  * @param  num    The number of EventInfo objects in the list
  *
  * @return a FloatArrayEventlist3D containing col, row, |Q| info about
- *         each of the events in the current event list.
+ *         each of the events in the current event list.  If the list
+ *         is empty, this will return null.
  */
   private FloatArrayEventList3D getColRowMagQList( EventInfo[] list, int num )
   {
+    if ( num == 0 || list == null || list.length == 0 )
+      return null;
+
     float[] xyz_vals = new float[ 3 * num ];
     int index = 0;
     for ( int i = 0; i < num; i++ )
@@ -504,7 +597,7 @@ public class PeakEventList
       xyz_vals[index++] = list[i].MagQ_over_2PI();
     }
 
-    FloatArrayEventList3D ev_list_3D =
+    FloatArrayEventList3D ev_list_3D = 
                            new FloatArrayEventList3D( null, xyz_vals );
 
     return ev_list_3D;
