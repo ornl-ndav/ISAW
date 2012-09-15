@@ -387,6 +387,9 @@ public class Histogram3D
    */
   public double addEvents( IEventList3D events, boolean use_weights )
   {
+    if ( events == null || events.numEntries() == 0 )    // empty list
+      return 0;                                          // so just return 0
+
     synchronized(histogram)
     {
       SplitPages();
