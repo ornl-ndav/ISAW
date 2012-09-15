@@ -33,9 +33,13 @@ public class TestTofToInfo
 
     String ev_file    = dir + "TOPAZ_" + run_number + "_neutron_event.dat";
     String peaks_file = input_dir + run_number + "_Niggli.integrate";
+//    String peaks_file = input_dir + run_number + "_EDGES_Niggli.integrate";
 //    String peaks_file = input_dir + run_number + "_fixed_Niggli.integrate";
 //    String peaks_file = dir + "/NEW_MANTID_SCRIPT/TEST_5/TEST_" + run_number + "_Niggli.integrate";
-    String out_file   = output_dir + "SAPPHIRE_Cylinder_4_Sigma_Radius_Recenter_CenterOfMass_" + run_number + ".integrate";
+    String out_file   = output_dir + "SAPPHIRE_Cylinder_30_Radius_Mixed_Recenter_REFL_EDGE_" + 
+                        run_number + ".integrate";
+
+    Vector<Peak_new> integrated_peaks = new Vector<Peak_new>();
 
     Vector<Peak_new> peaks = Peak_new_IO.ReadPeaks_new( peaks_file );
     int max_id = -1;
@@ -88,7 +92,7 @@ public class TestTofToInfo
         System.out.println("ID: " + i + "  Num Events: " + 
           lists_by_id.elementAt(i).size() );
 
-//   int n_tested = 80;
+//  int n_tested = 20;
     int n_tested = peaks.size();
 
     Vector<EventInfo> ev_list_for_det = null;
@@ -142,28 +146,65 @@ public class TestTofToInfo
       }
 
       peak_count++;
-      float rc_radius = 30;
+      float rc_radius = 30; 
+//      float rc_radius = 12;            // ################### fix this
+      int   border    = 5;
  
-      for ( int repeat = 0; repeat < 3; repeat++ ) 
-        pev_list.setCenterRowColToCenterOfMass( rc_radius );
+//      for ( int repeat = 0; repeat < 2; repeat++ ) 
+//        pev_list.setCenterRowColToMax( rc_radius );
+//      pev_list.setCenterRowColToCenterOfMass( rc_radius );
 
-      float sigma = pev_list.getStandardDeviation( rc_radius );
-      if ( sigma <= 5 )
-        sigma = 5;  
+//      float sigma = pev_list.getStandardDeviation( rc_radius );
+//      if ( sigma <= 5 )
+//        sigma = 5;  
 
-      float[] IsigI = EV_IntegrateUtils.Integrate( pev_list, 4.0f*sigma );
+      peak.seqnum( peak_count+1 );
+
+//      PeakEventList.PeakType type = pev_list.GetPeakType( 2*sigma, border );
+      PeakEventList.PeakType type = pev_list.GetPeakType( rc_radius/2, border );
+                                 // treat as edge peak if within 15 of
+                                 // border
+      float[] IsigI = null;
+      if ( type == PeakEventList.PeakType.INTERIOR )
+      {
+        pev_list.setCenterRowColToCenterOfMass( 4 );
+        IsigI = EV_IntegrateUtils.Integrate( pev_list, rc_radius );
+//        IsigI = EV_IntegrateUtils.Integrate( pev_list, 4.0f*sigma );
+      }
+      else
+      {
+        pev_list.setCenterRowColToMax( rc_radius/4 );
+        pev_list.setCenterRowColToCenterOfMass( 4 );
+//        IsigI = EV_IntegrateUtils.IntegrateEdge( pev_list, 4.0f*sigma, type );
+//        IsigI = EV_IntegrateUtils.IntegrateEdge( pev_list, rc_radius, type );
+        IsigI = EV_IntegrateUtils.IntegrateRefEdge( pev_list, rc_radius, border, type );
+      }
       peak.inti( IsigI[0] );
       peak.sigi( IsigI[1] );
       System.out.println("Current peak: " + peak );
+
+      if ( type != PeakEventList.PeakType.INTERIOR )
+        System.out.println( "" + type +  " IntI = " + IsigI[0] + ",  sigI = " + IsigI[1] );
+
+      if ( type == PeakEventList.PeakType.INTERIOR )  // keep truly interior peaks
+        integrated_peaks.add( peak );
+      else                                            // or peaks at least 5 pixels away
+      {                                               // from border that are stronger
+        type = pev_list.GetPeakType( 5, border ); 
+        if ( type == PeakEventList.PeakType.INTERIOR && IsigI[0] > 200 )
+          integrated_peaks.add( peak );
+      }
+
+      System.out.println("");      
  
       PeakDisplayInfo peak_info = 
                       EV_IntegrateUtils.GetPeakDisplayInfo( pev_list, 
-                                                            4.0f*sigma, 
+                                                            rc_radius, 
                                                             peak_count+1 );
       peak_infos.add( peak_info );
     }
 
-    Peak_new_IO.WritePeaks_new( out_file, peaks, false );
+    Peak_new_IO.WritePeaks_new( out_file, integrated_peaks, false );
 
     int run_num = peaks.elementAt(0).nrun();
     EV_IntegrateUtils.ShowPeakImages( run_num, id_with_peak_infos );
