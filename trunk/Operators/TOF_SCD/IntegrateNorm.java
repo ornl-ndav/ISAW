@@ -71,7 +71,7 @@ public class IntegrateNorm {
    public static int IVXX =4;
    public static int IVYY = 5;
    public static int IVXY =6;
-   public static boolean DEBUG = false;
+   public static boolean DEBUG = true;
    public static float NSIGMA =4.1f;//# of sigma around center to use
    
    public static String  TIME ="Time";
@@ -94,6 +94,9 @@ public class IntegrateNorm {
    public static String ISAWINTENSITY_ERROR="ISAWIntensity Error";
    public static String USE_SHOE_BOX="Use Shoe Box";
    public static String USED_PEAK="Used Peak";
+   public static int HH=-2;
+   public static int KK=-6;
+   public static int LL = 10;
 
    /**
     * Integrates the peak by fitting the data to background + Intensity* Normal. The Marquardt
@@ -173,7 +176,8 @@ public class IntegrateNorm {
     *                    
     * @param logBuffer  The buffer that will contain the log information.
     *                    
-    * @return null(for now) or an error string, Also the Peak object has the inti and sigi fields set.
+    * @return A vector of log info for the time slices used or an error string, Also the Peak object has the inti and sigi fields set.
+    *          
     */
    public static Object IntegratePeak( Peak_new     Peak, 
                                        DataSet      DS, 
@@ -218,7 +222,9 @@ public class IntegrateNorm {
          if ( IntegrateNorm.DEBUG )
             System.out.println( "Peak num #time channels=" + Peak.seqnum( )
                   + "," + nTimeChans );
-         
+        int x=0;
+        if( Peak.h()==HH && Peak.k()== KK && Peak.l()==LL)
+           x=1;
          try
          {
             logBuffer.append( String.format(
@@ -266,7 +272,8 @@ public class IntegrateNorm {
    
          boolean MergedLast = false;
          boolean case4 = false;//Merged chan=0 and chan = 1 (dir ==1)
-         
+         if( DEBUG)
+            System.out.print("    "+ "("+Peak.h()+","+Peak.k()+","+Peak.l()+"):");
          for( int dir =1; dir >=-1; dir -= 2)
          {  
             done = false;
@@ -469,7 +476,8 @@ public class IntegrateNorm {
                     nPixelsy , 
                     grid , 
                     BadEdgeWidth ,slice);
-         
+              if( DEBUG)
+                 System.out.print(GoodSlicec);
               if ( Double.isNaN( chiSqr )  
                    )
                   GoodSlicec = 'g';
@@ -491,9 +499,9 @@ public class IntegrateNorm {
                
                Stat.put( USE_SHOE_BOX,(float)0.0);
                
-               if( GoodSlicec =='x')
+             if( GoodSlicec =='x')
                {
-                  Stat.put( USED_PEAK , (float)1.0 );
+                  Stat.put( USED_PEAK , (float)(int)GoodSlicec );
                   if( dir >0 || Res.size() < 1)
                      Res.add(Stat);
                   else
@@ -502,8 +510,9 @@ public class IntegrateNorm {
                }else
                {                 
                 
-                  Stat.put( USED_PEAK , (float)0.0 );
+                  Stat.put( USED_PEAK , (float)(int)GoodSlicec );
                }
+               
                            
                if( MergedLast && SavLog.size() > 0 && 
                      (GoodSlicec == 'x' || (SavLog.size()==1&& SavLog.elementAt(0).get(USED_PEAK)==0)))//last if all at center
@@ -605,7 +614,11 @@ public class IntegrateNorm {
             ShowStat(logBuffer, SavLog.elementAt( kk ));
          
          SavLog.clear( );
-         
+         if( DEBUG)
+         {
+            System.out.println( );
+            System.out.println( "old inti="+Peak.inti()+", new inti="+TotIntensity);
+         }
          float stDev = ( float ) Math.sqrt( TotVariance );
          float stDev1 = ( float ) Math.sqrt( TotVariance1 );
 
@@ -1003,14 +1016,15 @@ public class IntegrateNorm {
    private static void ShowStat( StringBuffer logBuffer, Hashtable<String,Float>Stat)
    {
       float chan= Stat.get( CHANNEL ).floatValue( );
-      char GoodSlicec =' ';
-      if( Stat.get( USE_SHOE_BOX ) > 0)
+      char GoodSlicec = (char)Stat.get( USED_PEAK ).intValue( );
+     /* if( Stat.get( USE_SHOE_BOX ) > 0)
          if( Stat.get( USED_PEAK )> 0)
             GoodSlicec ='S';
          else
             GoodSlicec='s';
       else if( Stat.get(USED_PEAK) > 0)
          GoodSlicec ='x';
+         */
       float AvBackGroundLeft = Stat.get( TOTAL_EDGE_INTENSITY )/Stat.get( N_EDGE_CELLS )
                                    -Stat.get(BACKGROUND);
       
@@ -1428,36 +1442,36 @@ public class IntegrateNorm {
       
       for( int i=0; i<errs.length; i++)
          if( Double.isNaN( errs[i] )|| Double.isInfinite( errs[i] ))
-            return 'o';
+            return 'a';
       
           
       double errI = errs[ITINTENS]*sigma;
       if( parameters ==null)
-         return 'p';
+         return 'b';
       
       if( Double.isNaN( parameters[ITINTENS]  ) || Double.isNaN(  errI ))
-         return 'i';
+         return 'c';
       
      double IsawIntensity = CalcSliceIntensity( slice);
      double IsawIntensityVariance = CalcSliceIntensityVariance( slice, errI, errs[IBACK]*sigma);
     
      if( IsawIntensity*IsawIntensity/IsawIntensityVariance < 9)       
-           return 'j';
+           return 'h';
      
      if( parameters[ITINTENS]/errI < 3  )
-        return 'k';
+        return 'j';
      
      if( ( ExperimentalIntensity < 0)  || 
-           (parameters[ITINTENS]>0 && Math.abs(ExperimentalIntensity/parameters[ITINTENS]-1)>25))
+           (parameters[ITINTENS]>0 && Math.abs(ExperimentalIntensity/parameters[ITINTENS]-1)>.25))
            if( !isEdge)
-              return 'l';
+              return '8';
      //  Peak too close to edge
      if( parameters[IXMEAN] <= BadEdgeRange || parameters[IYMEAN] <= BadEdgeRange)
-        return 'e';
+        return '3';
      
      if( parameters[IXMEAN] >=  grid.num_cols()-BadEdgeRange||
            parameters[IYMEAN] >= grid.num_rows()- BadEdgeRange)
-        return 'j';
+        return '3';
      
      if( parameters.length <IVXX+1)
         return 'x';
@@ -1466,20 +1480,20 @@ public class IntegrateNorm {
      if( isEdge) factor=2;
      
      if( errs[IYMEAN]*sigma >5*factor)
-        return 'r';
+        return 'd';
      
      if( errs[IXMEAN]*sigma > 5*factor)
-        return 'c';
+        return 'e';
      
      if( isEdge)factor=1.5;
      
      if( errs.length>=7)
      if( errs[IVXX]*sigma/parameters[IVXX] >.5*factor)
-        return 's';
+        return 'f';
      
      if( errs.length>=7)
      if( errs[IVYY]*sigma/parameters[IVYY] >.5*factor)
-        return 's';
+        return 'g';
      //------------- eliminate flat theoretical cases-----------------------------
      //     --- Av Height(-back) less than 20% of MaxHeight(-back)------
      double XX = parameters[IVXX]*parameters[IVYY]-parameters[IVXY]*parameters[IVXY];
@@ -1489,12 +1503,16 @@ public class IntegrateNorm {
      AvHeight -= parameters[IBACK];
     
      if( AvHeight <=0 || MaxPeakHeight <=0|| AvHeight > MaxPeakHeight)
-        return 's';
+        return 'A';
      
      
      
-     if( MaxPeakHeight < 5*AvHeight)
-        return '3';
+     if( MaxPeakHeight < 2*AvHeight)
+        return 'B';
+     
+     if( MaxPeakHeight <1 && (parameters[IVYY] >slice.nrows( )*slice.nrows()/9 ||
+           parameters[IVXX] >slice.ncols( )*slice.ncols()/9 ))
+        return 'C';
      //--------------------------------------------------------------------
      // Eliminate minor case where theoretical intensity falls to .3 of
      //  max height(-back) when 1 pixel away from max(i.e. if fit row/col non integers may
@@ -1502,7 +1520,7 @@ public class IntegrateNorm {
      if( parameters[IVXX]+parameters[IVYY] > 
           2.6*(parameters[IVXX]*parameters[IVYY]-parameters[IVXY]*parameters[IVXY]))
      {
-        return '1';
+        return 'B';
      }
      
      return 'x';
