@@ -62,6 +62,7 @@ import DataSetTools.retriever.NexusRetriever;
  * @author ruth
  *
  */
+
 public class IntegrateNorm {
   
    public static int IBACK = 0;
@@ -71,7 +72,7 @@ public class IntegrateNorm {
    public static int IVXX =4;
    public static int IVYY = 5;
    public static int IVXY =6;
-   public static boolean DEBUG = true;
+   public static boolean DEBUG = false;
    public static float NSIGMA =4.1f;//# of sigma around center to use
    
    public static String  TIME ="Time";
@@ -125,7 +126,8 @@ public class IntegrateNorm {
       float dQ = 1f / MaxCellEdge / 6f;
       IDataGrid grid1 = Peak.getGrid();
       Vector3D pos = grid1.position(Peak.y(), Peak.x());
-      
+      if( Peak.h()==5 && Peak.k()==-7 && Peak.l()==4)
+    	  System.out.println("Hi There");
       float Q = (new Vector3D(Peak.getUnrotQ( ))).length( );
       float D = pos.length();
       float scatAng = (new DetectorPosition(pos)).getScatteringAngle();
@@ -1551,7 +1553,8 @@ public class IntegrateNorm {
       int S_1 =12;
       boolean average= false;
       IDataGrid grid; 
-      int row,col;
+      int row;
+	  int col;
       int chan; 
       int nchans;
       int drows;
