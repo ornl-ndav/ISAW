@@ -1,11 +1,41 @@
+/* File: FindGonAnglesFromPHI_Rotation.java 
+ *
+ * Copyright (C) 2012, Dennis Mikkelson
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
+ *           Department of Mathematics, Statistics and Computer Science
+ *           University of Wisconsin-Stout
+ *           Menomonie, WI 54751, USA
+ *
+ * This work was supported by the Spallation Neutron Source Division
+ * of Oak Ridge National Laboratory, Oak Ridge, TN, USA.
+ *
+ *  Last Modified:
+ * 
+ *  $Author$
+ *  $Date$            
+ *  $Revision$
+ */
 package Operators.TOF_SCD;
-
 
 import java.util.*;
 import gov.anl.ipns.MathTools.Geometry.*;
 import DataSetTools.operator.Generic.TOF_SCD.*;
 import DataSetTools.instruments.*;
-
 
 public class FindGonAnglesFromPHI_Rotation
 {
@@ -421,6 +451,10 @@ public class FindGonAnglesFromPHI_Rotation
 /**
  *  Estimate the goniometer angles from two sets of peaks, that were 
  *  measured at the same Chi and Omega angles, but different Phi angles.
+ *  NOTE: This will occasionally fail by finding other rotations that index
+ *  a large number of peaks that are symmetry equivalent to the correctly
+ *  rotated peaks.  It should be possible to avoid this problem by choosing
+ *  a different PHI rotation. 
  *  This method first finds a UB corresponding to the first set of
  *  peaks using the FFT based method.  It then tests a large number of
  *  rotations by the specified Phi angle, about different axes, applied to UB,
@@ -440,7 +474,7 @@ public class FindGonAnglesFromPHI_Rotation
  *
  *  @return a Vector with three floats, the estimated Phi, Chi and Omega values.
  */
-  public static Vector<Float> GoniometerAnglesFromPeaks( 
+  public static Vector<Float> GoniometerAnglesFromPhiRotation( 
                                                  Vector<Peak_new> peaks_1,
                                                  Vector<Peak_new> peaks_2,
                                                  float            phi,
@@ -465,6 +499,10 @@ public class FindGonAnglesFromPHI_Rotation
 /**
  *  Estimate the goniometer angles from two peaks files, that were 
  *  measured at the same Chi and Omega angles, but different Phi angles.
+ *  NOTE: This will occasionally fail by finding other rotations that index
+ *  a large number of peaks that are symmetry equivalent to the correctly
+ *  rotated peaks.  It should be possible to avoid this problem by choosing
+ *  a different PHI rotation. 
  *  This method first finds a UB corresponding to the first set of
  *  peaks using the FFT based method.  It then tests a large number of
  *  rotations by the specified Phi angle, about different axes, applied to UB,
@@ -484,7 +522,7 @@ public class FindGonAnglesFromPHI_Rotation
  *
  *  @return a Vector with three floats, the estimated Phi, Chi and Omega values.
  */
-  public static Vector<Float> GoniometerAnglesFromPeaksFiles(
+  public static Vector<Float> GoniometerAnglesFromPhiRotation(
                                                           String  file_1,
                                                           String  file_2,
                                                           float   phi,
@@ -496,8 +534,8 @@ public class FindGonAnglesFromPHI_Rotation
     Vector<Peak_new> peaks_1 = Peak_new_IO.ReadPeaks_new( file_1 );
     Vector<Peak_new> peaks_2 = Peak_new_IO.ReadPeaks_new( file_2 );
 
-    return GoniometerAnglesFromPeaks( peaks_1, peaks_2, phi,
-                                      min_d, max_d, tolerance );
+    return GoniometerAnglesFromPhiRotation( peaks_1, peaks_2, phi,
+                                            min_d, max_d, tolerance );
   }
 
 
@@ -527,7 +565,7 @@ public class FindGonAnglesFromPHI_Rotation
     Vector<Peak_new> peaks_2 = Peak_new_IO.ReadPeaks_new( file_2 );
     System.out.println("Loaded " + peaks_1.size() + " and " + peaks_2.size());
 
-    float phi = 60;
+    float phi       = 15;
     float min_d     =  4.0f;
     float max_d     =  8.0f;
     float tolerance = 0.12f;
@@ -549,19 +587,19 @@ public class FindGonAnglesFromPHI_Rotation
                        ", " + angles.elementAt(2) + "\n");
 
     System.out.println("\nUSING UB_2 FROM SEARCH OF ROTATIONS ON PEAKS");
-    angles = GoniometerAnglesFromPeaks( peaks_1, peaks_2,
-                                        phi,
-                                        min_d, max_d,
-                                        tolerance );
+    angles = GoniometerAnglesFromPhiRotation( peaks_1, peaks_2,
+                                              phi,
+                                              min_d, max_d,
+                                              tolerance );
     System.out.println("\nANGLES = " + angles.elementAt(0) +
                        ", " + angles.elementAt(1) +
                        ", " + angles.elementAt(2) + "\n");
 
     System.out.println("\nUSING UB_2 FROM SEARCH OF ROTATIONS ON PEAKS FILES");
-    angles = GoniometerAnglesFromPeaksFiles( file_1, file_2,
-                                             phi,
-                                             min_d, max_d,
-                                             tolerance );
+    angles = GoniometerAnglesFromPhiRotation( file_1, file_2,
+                                              phi,
+                                              min_d, max_d,
+                                              tolerance );
 
     System.out.println("\nANGLES = " + angles.elementAt(0) +
                        ", " + angles.elementAt(1) +
