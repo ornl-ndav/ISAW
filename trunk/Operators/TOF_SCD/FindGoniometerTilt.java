@@ -46,7 +46,7 @@ import Command.*;
  * This class has been dynamically created using the Method2OperatorWizard
  * and usually should not be edited.
  * This operator is a wrapper around 
-@see Operators.TOF_SCD.PeaksFileUtils#FindGoniometerError(java.lang.String,float,float)
+@see Operators.TOF_SCD.PeaksFileUtils#FindGoniometerTilt(java.lang.String,float,float)
  */
 public class FindGoniometerTilt extends GenericOperator{
 
