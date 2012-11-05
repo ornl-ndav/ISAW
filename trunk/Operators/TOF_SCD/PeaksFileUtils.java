@@ -1,6 +1,7 @@
 package Operators.TOF_SCD;
 
 import java.util.*;
+import java.io.*;
 
 import gov.anl.ipns.Util.Numeric.IntList;
 import gov.anl.ipns.MathTools.Geometry.*;
@@ -690,6 +691,219 @@ public class PeaksFileUtils
         indexed_peaks.add( peak );
     }
     return indexed_peaks;
+  }
+
+
+/**
+ *  Get a new list of peaks containing all of those peaks from the input
+ *  peaks file, that do NOT have index (0,0,0).  If no output file is
+ *  specified, the new list of peaks will be written back to the original
+ *  peaks file, otherwise the new list of peaks will be written to the
+ *  output file.
+ *
+ *  @param peaks_file  File of peaks, some of which are indexed.
+ *  @param out_file    File where only those peaks that are indexed
+ *                     will be written.  If blank, the peaks are written
+ *                     back to the input file.
+ */
+  public static void RemoveUnindexedPeaks( String  peaks_file,
+                                           String  out_file )
+                     throws Exception
+  {
+    peaks_file = peaks_file.trim();
+    out_file   = out_file.trim();
+
+    Vector<Peak_new> peaks = Peak_new_IO.ReadPeaks_new( peaks_file );
+
+    Vector<Peak_new> indexed_peaks = RemoveUnindexedPeaks( peaks );
+
+    if ( out_file.length() == 0 )
+      Peak_new_IO.WritePeaks_new( peaks_file, indexed_peaks, false );
+    else
+      Peak_new_IO.WritePeaks_new( out_file, indexed_peaks, false );
+  }
+
+
+/**
+ *  Get a new list of peaks containing only those peaks whose wavelength
+ *  is NOT in the specified range of wavelengths.
+ *
+ *  @param peaks    Original list of peaks.
+ *  @param min_wl   Lower bound on range of wavelengths that will be
+ *                  discarded.  Only peaks with wavelength less than
+ *                  this value or more than max_wl will be kept.
+ *  @param max_wl   Upper bound on range of wavelengths that will be
+ *                  discarded.  Only peaks with wavelength greater than
+ *                  this value or less than min_wl will be kept.
+ *
+ *  @return A new list of peaks from which peaks in the specified range
+ *          of wavelengths have been removed.
+ */
+  public static Vector<Peak_new> RemovePeaksInWLRange( Vector<Peak_new> peaks,
+                                                       float min_wl,
+                                                       float max_wl )
+  {
+    Vector<Peak_new> restricted_peaks = new Vector<Peak_new>();
+
+    Peak_new peak;
+    float    wl;
+    for ( int i = 0; i < peaks.size(); i++ )
+    {
+      peak = peaks.elementAt(i);
+      wl = peak.wl();
+      if ( wl < min_wl || wl > max_wl )
+        restricted_peaks.add( peak );
+    }
+
+    return restricted_peaks;
+  }
+
+
+/**
+ *  Get a new list of peaks containing only those peaks whose wavelength
+ *  is NOT in the specified range of wavelengths.  If no output file is
+ *  specified, the new list of peaks will be written back to the original
+ *  peaks file, otherwise the new list of peaks will be written to the
+ *  output file.
+ *
+ *  @param peaks_file  File of peaks.
+ *  @param min_wl      Lower bound on range of wavelengths that will be
+ *                     discarded.  Only peaks with wavelength less than
+ *                     this value or more than max_wl will be kept.
+ *  @param max_wl      Upper bound on range of wavelengths that will be
+ *                     discarded.  Only peaks with wavelength greater than
+ *                     this value or less than min_wl will be kept.
+ *  @param out_file    File where only those peaks whose wavelength is
+ *                     outside of the specified range will be written.  
+ *                     If blank, the peaks are written back to the input file.
+ */
+   public static void RemovePeaksInWLRange( String peaks_file,
+                                            float  min_wl,
+                                            float  max_wl,
+                                            String out_file )
+                                   throws Exception
+  {
+    peaks_file = peaks_file.trim();
+    out_file   = out_file.trim();
+
+    Vector<Peak_new> peaks = Peak_new_IO.ReadPeaks_new( peaks_file );
+
+    Vector<Peak_new> restricted_peaks = RemovePeaksInWLRange( peaks,
+                                                              min_wl, max_wl );
+
+    if ( out_file.length() == 0 )
+      Peak_new_IO.WritePeaks_new( peaks_file, restricted_peaks, false );
+    else
+      Peak_new_IO.WritePeaks_new( out_file, restricted_peaks, false );
+  }
+
+
+/**
+ *  Multiply the intI and sigI values of the peaks by a weight based on
+ *  the detector number.
+ *
+ *  @param peaks    Original list of peaks.
+ *  @param ids      Vector of detector ID numbers.
+ *  @param weights  Vector of weights.  The integrated intensity of peaks 
+ *                  with detector number id[k] will be multiplied by
+ *                  weight[k].
+ */
+  public static void WeightPeaksByDetector( Vector<Peak_new> peaks,
+                                            Vector<Integer>  ids,
+                                            Vector<Float>    weights )
+                     throws Exception
+  {
+    if ( ids.size() <= 0 )
+      throw new IllegalArgumentException("No Detector IDs in list");
+
+    if ( ids.size() != weights.size() )
+      throw new IllegalArgumentException(
+        "Number of detector IDs " + ids.size() + 
+        " doesn't match number of weights " + weights.size() );
+
+    Peak_new peak;
+    for ( int k = 0; k < ids.size(); k++ )      // for each id and weight
+    {
+      int   id     = ids.elementAt(k);
+      float weight = weights.elementAt(k);
+      for ( int i = 0; i < peaks.size(); i++ )  // weight peaks with the id
+      {
+        peak = peaks.elementAt(i);
+        if ( peak.detnum() == id )
+        {
+          peak.inti( weight * peak.inti() );
+          peak.sigi( weight * peak.sigi() );
+        }
+      }
+    }
+  }
+
+
+/**
+ *  Multiply the intI and sigI values of the peaks by a weight based on
+ *  the detector number. If no output file is
+ *  specified, the new list of peaks will be written back to the original
+ *  peaks file, otherwise the new list of peaks will be written to the
+ *  output file.
+ *
+ *  @param peaks_file  File of peaks.
+ *  @param weight_file Text file containing the list of ids and corresponding
+ *                     weights.  Each line must contain an id the the 
+ *                     weight for that id.
+ *  @param out_file    File where only those peaks whose wavelength is
+ *                     outside of the specified range will be written.  
+ *                     If blank, the peaks are written back to the input file.
+ */
+   public static void WeightPeaksByDetector( String  peaks_file,
+                                             String  weight_file,
+                                             String  out_file )
+                                   throws Exception
+  {
+    peaks_file  = peaks_file.trim();
+    weight_file = weight_file.trim();
+    out_file    = out_file.trim();
+
+    Vector<Integer> ids     = new Vector<Integer>();
+    Vector<Float>   weights = new Vector<Float>();
+
+    LoadWeights( weight_file, ids, weights ); 
+
+    Vector<Peak_new> peaks = Peak_new_IO.ReadPeaks_new( peaks_file );
+
+    WeightPeaksByDetector( peaks, ids, weights );
+
+    if ( out_file.length() == 0 )
+      Peak_new_IO.WritePeaks_new( peaks_file, peaks, false );
+    else
+      Peak_new_IO.WritePeaks_new( out_file, peaks, false );
+  }
+
+
+/**
+ *  Load list of ids and weights from the specified file
+ */
+  private static void LoadWeights( String          weight_file, 
+                                   Vector<Integer> ids,
+                                   Vector<Float>   weights )
+                      throws Exception
+  {
+    FileReader     f_in        = new FileReader( weight_file );
+    BufferedReader buff_reader = new BufferedReader( f_in );
+    Scanner        sc          = new Scanner( buff_reader );
+
+    while (sc.hasNext())
+    {
+      String line = sc.nextLine();
+      line = line.trim();
+      if ( !line.startsWith("#") )
+      {
+        Scanner line_sc = new Scanner( line );
+        ids.add( line_sc.nextInt() );
+        weights.add( line_sc.nextFloat() );
+        line_sc.close();
+      }
+    }
+    sc.close();
   }
 
 
