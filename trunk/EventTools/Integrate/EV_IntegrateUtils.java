@@ -208,8 +208,17 @@ public class EV_IntegrateUtils
     if ( event_count < 5 )
       return null;
 
-    // HACK: Expand range down to make room for the "tail" toward
-    // smaller Q values.
+    // Adjust the row and column range to be centered on the peak's row 
+    // and column.
+    float row_radius =  (max_row - min_row + 1f) / 2;
+    max_row = (int)Math.ceil ( peak.y() + row_radius );    
+    min_row = (int)Math.floor( peak.y() - row_radius );    
+
+    float col_radius =  (max_col - min_col + 1f) / 2;
+    max_col = (int)Math.ceil ( peak.x() + col_radius );
+    min_col = (int)Math.floor( peak.x() - col_radius );
+
+    // Expand range down to make room for the "tail" toward smaller Q values.
     float q_range = max_mag_Q - min_mag_Q;
     max_mag_Q += q_range/5;
     min_mag_Q -= 2*q_range/5;
@@ -243,12 +252,14 @@ public class EV_IntegrateUtils
 
 
 /**
- *  Get I and sigI by integrating the data in the histo_array using 5 disks,
- *  centered on the peak.  The total counts on the first and last disk 
- *  provide the background estimate and the total counts in the middle three
- *  disks provide the peak + background estimate. 
+ *  Get I and sigI by integrating the data in the histo_array using 25 slices,
+ *  centered on the peak.  This assumes that the histogram array came from 
+ *  the PeakEventList.get*Histogram() method, using 25 slices to cover the 
+ *  full range of data in the |Q|/tof direction.  The total counts on the
+ *  first 5 and last 5 disks provide the background estimate and the total
+ *  counts in the middle three slices provide the peak + background estimate. 
  */
-  public static float[] Integrate( float[][][] histo_array )
+  public static float[] SumIntegrateHistogram_25( float[][][] histo_array )
   {
     int n_pages = histo_array.length;
     float[] sums = new float[ n_pages ];
@@ -302,8 +313,8 @@ public class EV_IntegrateUtils
  * @param radius     The radius of the disks on the detector face that will
  *                   be used
  */
-  public static float[] Integrate( PeakEventList pev_list,
-                                   float         radius    )
+  public static float[] CylinderIntegrate_5( PeakEventList pev_list,
+                                             float         radius    )
   {
     int n_pages = 5;
     Histogram3D peak_histo = 
@@ -338,7 +349,128 @@ public class EV_IntegrateUtils
 
 
 /**
- * Integrate and edge or corner peak.  NOTE: The peak center should be set
+ *  Find the total counts inside and outside of a circle of the specified
+ *  radius, centered on the specified row and column.  Also find the number
+ *  of pixels inside and outside of the circle. 
+ *
+ *  @param page       2-D array containing one "page" of a 3D histogram
+ *  @param radius     The radius (in row, col number) of the circle that
+ *                    contains the peak.
+ *  @param center_row The row number at the center of the peak.
+ *  @param center_col The column number at the center of the peak.
+ *
+ *  @return an array of floats with four entries: the peak counts, the number
+ *          of peak pixels, the background counts and the number of background
+ *          pixels.
+ */
+  public static float[] IntegrateSlice( float[][] page,   float radius,
+                                        float center_row, float center_col )
+  {
+    float radius_2 = radius * radius;
+    float peak     = 0;
+    float back     = 0;
+    float peak_vol = 0;   
+    float back_vol = 0;   
+    for ( int row = 0; row < page.length; row++ )
+      for ( int col = 0; col < page[0].length; col++ )
+      {
+        float d_row = row - center_row;
+        float d_col = col - center_col;
+        float d_sqrd = d_row * d_row + d_col * d_col;
+        if ( d_sqrd <= radius_2 )
+        {
+          peak     += page[row][col];
+          peak_vol += 1;
+        }
+        else
+        {
+          back     += page[row][col];
+          back_vol += 1;
+        }
+      } 
+      
+     float[] result = { peak, peak_vol, back, back_vol };
+     return result;
+  }
+
+
+  public static float[] IntegrateSlices( PeakEventList pev_list,
+                                         float         radius    )
+  {
+    int n_pages = 5;
+//    float[] radii_scale = { .3f, .6f, 1.0f, .4f, .1f };
+    float[] radii_scale = { 1, 1, 1, 1, 1 };
+
+    boolean debug = false;
+    Peak_new peak = pev_list.getPeak();
+    if ( Math.round(peak.h()) == 17  &&
+         Math.round(peak.k()) == 10  &&
+         Math.round(peak.l()) == 15  )
+      debug = true;
+
+    Histogram3D peak_histo = pev_list.getFullHistogram( n_pages );
+    float[][][] histo_array = peak_histo.getHistogramArray();
+
+                                         // bound the radius to be at most
+                                         // half the number of rows and columns
+    int n_rows = histo_array[0].length;
+    int n_cols = histo_array[0][0].length;
+    if ( radius >= n_rows/2 )
+      radius = n_rows/2;
+    if ( radius >= n_cols/2 )
+      radius = n_cols/2;
+
+    float center_row = pev_list.getCenterRow() - pev_list.getMinRow();
+    float center_col = pev_list.getCenterCol() - pev_list.getMinCol();
+    float back       = 0;
+    float back_vol   = 0;
+    float raw_signal = 0;
+    float raw_vol    = 0;
+    for ( int page = 0; page < n_pages; page++ )
+    {
+      float[][] arr = histo_array[page];
+      float[] slice_info = IntegrateSlice( arr, radius*radii_scale[page], 
+                                           center_row, center_col );
+      raw_signal += slice_info[0];
+      raw_vol    += slice_info[1];
+      back       += slice_info[2];
+      back_vol   += slice_info[3];
+    }
+
+    float ratio  = (float)raw_vol/(float)back_vol;
+    float signal = raw_signal - ratio * back;
+
+    float sigma_signal = (float)Math.sqrt( raw_signal + ratio * ratio * back );
+
+    float[] result = { signal, sigma_signal };
+
+    if ( debug )
+    {
+      System.out.println( "Num Rows       = " + histo_array[0].length );
+      System.out.println( "Num Cols       = " + histo_array[0][0].length );
+      System.out.println( "pev min_row    = " + pev_list.getMinRow() );
+      System.out.println( "pev max_row    = " + pev_list.getMaxRow() );
+      System.out.println( "pev center row = " + pev_list.getCenterRow() );
+      System.out.println( "pev min_col    = " + pev_list.getMinCol() );
+      System.out.println( "pev max_col    = " + pev_list.getMaxCol() );
+      System.out.println( "pev center col = " + pev_list.getCenterCol() );
+      System.out.println( "center_row     = " + center_row );
+      System.out.println( "center_col     = " + center_col );
+      System.out.println( "raw signal     = " + raw_signal );
+      System.out.println( "raw vol        = " + raw_vol );
+      System.out.println( "back           = " + back );
+      System.out.println( "back vol       = " + back_vol );
+      System.out.println( "ratio          = " + ratio );
+      System.out.println( "signal         = " + signal );
+      System.out.println( "sgima_signal   = " + sigma_signal );
+    }
+    return result;
+  }
+
+
+
+/**
+ * Integrate an edge or corner peak.  NOTE: The peak center should be set
  * to the MAX rather than to the center of mass, before calling this 
  * method.  If the peak is an edge peak, the sums will be formed using only
  * the half of the peak that is away from the edge, and the results will be
@@ -350,9 +482,9 @@ public class EV_IntegrateUtils
  * @param radius     The radius of the disks on the detector face that will
  *                   be used
  */
-  public static float[] IntegrateEdge( PeakEventList pev_list,
-                                       float         radius,
-                                       PeakEventList.PeakType type )
+  public static float[] CylinderIntegrateEdge_5( PeakEventList pev_list,
+                                                 float         radius,
+                                                 PeakEventList.PeakType type )
   {
     int n_pages = 5;
     Histogram3D peak_histo =
@@ -523,7 +655,8 @@ public class EV_IntegrateUtils
  * @param radius     The radius of the disks on the detector face that will
  *                   be used
  */
-  public static float[] IntegrateRefEdge( PeakEventList pev_list,
+  public static float[] CylinderIntegrateRefEdge_5( 
+                                          PeakEventList pev_list,
                                           float         radius,
                                           int           border,
                                           PeakEventList.PeakType type )

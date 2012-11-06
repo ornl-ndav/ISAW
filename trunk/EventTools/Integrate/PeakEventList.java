@@ -334,7 +334,7 @@ public class PeakEventList
 
 /**
  * Get a 3D histogram of events for this peak, using a square with the
- * specified size (in row and column number) and spiltting the Q-range
+ * specified size (in row and column number) and splitting the Q-range
  * for this peak into the specified number of steps.
  *
  * @param size         Width and height of the square on the detector face,
