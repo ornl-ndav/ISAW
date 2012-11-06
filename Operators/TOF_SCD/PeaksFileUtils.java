@@ -818,8 +818,8 @@ public class PeaksFileUtils
 
     if ( ids.size() != weights.size() )
       throw new IllegalArgumentException(
-        "Number of detector IDs " + ids.size() + 
-        " doesn't match number of weights " + weights.size() );
+        "Number of detector IDs, " + ids.size() + 
+        " doesn't match number of weights, " + weights.size() );
 
     Peak_new peak;
     for ( int k = 0; k < ids.size(); k++ )      // for each id and weight
@@ -850,8 +850,7 @@ public class PeaksFileUtils
  *  @param weight_file Text file containing the list of ids and corresponding
  *                     weights.  Each line must contain an id the the 
  *                     weight for that id.
- *  @param out_file    File where only those peaks whose wavelength is
- *                     outside of the specified range will be written.  
+ *  @param out_file    File where the new weighted peaks will be written.
  *                     If blank, the peaks are written back to the input file.
  */
    public static void WeightPeaksByDetector( String  peaks_file,
@@ -871,6 +870,86 @@ public class PeaksFileUtils
     Vector<Peak_new> peaks = Peak_new_IO.ReadPeaks_new( peaks_file );
 
     WeightPeaksByDetector( peaks, ids, weights );
+
+    if ( out_file.length() == 0 )
+      Peak_new_IO.WritePeaks_new( peaks_file, peaks, false );
+    else
+      Peak_new_IO.WritePeaks_new( out_file, peaks, false );
+  }
+
+
+/**
+ *  Multiply the intI and sigI values of the peaks by a weight based on
+ *  the run number.
+ *
+ *  @param peaks    Original list of peaks.
+ *  @param runnums  Vector of run numbers.
+ *  @param weights  Vector of weights.  The integrated intensity of peaks 
+ *                  with run number runnums[k] will be multiplied by
+ *                  weight[k].
+ */
+  public static void WeightPeaksByRunNums( Vector<Peak_new> peaks,
+                                           Vector<Integer>  runnums,
+                                           Vector<Float>    weights )
+                     throws Exception
+  {
+    if ( runnums.size() <= 0 )
+      throw new IllegalArgumentException("No run numbers in list");
+
+    if ( runnums.size() != weights.size() )
+      throw new IllegalArgumentException(
+        "Number of run numbers, " + runnums.size() +
+        " doesn't match number of weights, " + weights.size() );
+
+    Peak_new peak;
+    for ( int k = 0; k < runnums.size(); k++ ) //for each run number and weight
+    {
+      int   runnum = runnums.elementAt(k);
+      float weight = weights.elementAt(k);
+      for ( int i = 0; i < peaks.size(); i++ )  // weight peaks from the run 
+      {
+        peak = peaks.elementAt(i);
+        if ( peak.nrun() == runnum )
+        {
+          peak.inti( weight * peak.inti() );
+          peak.sigi( weight * peak.sigi() );
+        }
+      }
+    }
+  }
+
+
+/**
+ *  Multiply the intI and sigI values of the peaks by a weight based on
+ *  the run number. If no output file is
+ *  specified, the new list of peaks will be written back to the original
+ *  peaks file, otherwise the new list of peaks will be written to the
+ *  output file.
+ *
+ *  @param peaks_file  File of peaks.
+ *  @param weight_file Text file containing the list of run numbers
+ *                     and corresponding weights.  Each line must contain
+ *                     a run number and the weight for that run number.
+ *  @param out_file    File where the new weighted peaks will be written.
+ *                     If blank, the peaks are written back to the input file.
+ */
+   public static void WeightPeaksByRunNums( String  peaks_file,
+                                            String  weight_file,
+                                            String  out_file )
+                                   throws Exception
+  {
+    peaks_file  = peaks_file.trim();
+    weight_file = weight_file.trim();
+    out_file    = out_file.trim();
+
+    Vector<Integer> runnums = new Vector<Integer>();
+    Vector<Float>   weights = new Vector<Float>();
+
+    LoadWeights( weight_file, runnums, weights );
+
+    Vector<Peak_new> peaks = Peak_new_IO.ReadPeaks_new( peaks_file );
+
+    WeightPeaksByRunNums( peaks, runnums, weights );
 
     if ( out_file.length() == 0 )
       Peak_new_IO.WritePeaks_new( peaks_file, peaks, false );
