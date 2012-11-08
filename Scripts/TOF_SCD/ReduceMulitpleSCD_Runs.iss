@@ -30,8 +30,8 @@ $ Instrument        String("TOPAZ")                              Instrument Name
 $ RunNums           IntList("5637:5644")                         List of Run Numbers
 $ Phi               Array(-.02,-.02,-.02,-.02,-.02,-.02,45,60)   List of Phi Angles for Each Run
 $ Chi               Array(135,135,135,135,135,135,135,135)       List of Chi Angles for Each Run
-#$ Omega             Array(0,60,120,180,-120,-60,0,20 )           List of Omega Angles for Each Run
-$ Omega             Array(-2.473,57.527,117.527,177.527,-122.473,-62.473,-2.473,17.527 )           List of Omega Angles for Each Run
+$ Omega             Array(0,60,120,180,-120,-60,0,20 )           List of Omega Angles for Each Run
+$ Omega_corr        Float(-2.473)                                Correction to add to each omega angle
 $ Monct             Array(100,100,100,100,100,100,100,100)       List of Monitor Counts for Each Run
 $ HistSize          Integer(768)                                 Histogram Subdivisions in One Direction
 
@@ -50,19 +50,22 @@ $ Centering         ChoiceList(["F Centered", "I Centered", "C Centered", "P Cen
 $ RemoveUnindexed   Boolean(true)                                Remove Unindexed Peaks
 
 $ IntegRadius       Float(0.18)                                  Radius of Integration Sphere
-$ PredictPeaks      Boolean(false)                               Integrate Predicted Peak Positions
+$ PredictPeaks      Boolean(false)                               Integrate ALL Predicted Peak Positions
 
-$ mem_per_process             Integer(4000)                      Megabytes per process
+$ mem_per_process             Integer(5000)                      Megabytes per process
 $ use_slurm                   BooleanEnable(false,1,0)           Use Slurm Instead of Local Processes
 $ queue                       String("mikkcomp2")                SLURM queue name
-$ max_simultaneous_processes  Integer(3)                         Max number of Processes to Use
-
+$ max_simultaneous_processes  Integer(2)                         Max number of processes to use
 
 #
 # First build the parmeters needed for processing each run
 #
 RunNumList = IntListToVector( RunNums )
 n_runs = ArrayLength( RunNumList )
+
+for i in [0:n_runs-1]
+  Omega[i] = Omega[i] + Omega_corr
+endfor
 
 base_file = DataDir & "/" & Instrument & "_"
 suffix = "_neutron_event.dat"
