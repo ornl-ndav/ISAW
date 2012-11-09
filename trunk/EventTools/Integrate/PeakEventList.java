@@ -28,7 +28,7 @@
  *  Last Modified:
  * 
  *  $Author: dennis $
- *  $Date: 2012/09/07 15:40:55 $            
+ *  $Date: 2012/11/09 15:40:55 $            
  *  $Revision: 1.2 $
  */
 
@@ -445,7 +445,7 @@ public class PeakEventList
       }
                                             // only change center if enough
                                             // counts are present
-    if ( x_mass > 0 && y_mass > 0 && total_mass > 4 )
+    if ( x_mass > 0 && y_mass > 0 && total_mass > 50 )
     {
       center_col = x_mass/total_mass + (float)sum_histo.xEdgeBinner().axisMin();
       center_row = y_mass/total_mass + (float)sum_histo.yEdgeBinner().axisMin();
@@ -518,27 +518,28 @@ public class PeakEventList
  *  center.  NOTE: This assumes that the peak's center has already been
  *  set to center of mass.  The standard deviation of the difference in 
  *  row number and the difference in column number from the center is 
- *  calculated for events that are within a square of the specified size
+ *  calculated for events that are within a circle of the specified radius 
  *  centered on the peak.  This method then returns the square root of the
  *  sum of the squares of the standard deviations in the x and y directions.
  *
- *  @param size       The width and height in row and column number of a
- *                    square of pixels on the detector face that will 
+ *  @param size       The radius in row and column number of a
+ *                    circle of pixels on the detector face that will 
  *                    be used to estimate the standard deviation.
  */
-  public float getStandardDeviation( float size )
+  public float getStandardDeviation( float radius )
   {
     int   count = 0;
-    float size_by_2 = size/2;
     float d_row,
           d_col;
     float sum_sq_row = 0;
     float sum_sq_col = 0;
+    float radius_2   = radius * radius;
+
     for ( int i = 0; i < ev_list.length; i++ )
     {
       d_row = Math.abs(ev_list[i].Row() - center_row);
       d_col = Math.abs(ev_list[i].Col() - center_col);
-      if ( d_row <= size_by_2 && d_col <= size_by_2 )
+      if ( d_row * d_row + d_col * d_col <= radius_2 )
       {
         sum_sq_row += d_row * d_row;
         sum_sq_col += d_col * d_col;
