@@ -1,3 +1,36 @@
+/* 
+ * File: EV_IntegrateUtils.java
+ *
+ * Copyright (C) 2012, Dennis Mikkelson
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
+ *           Department of Mathematics, Statistics and Computer Science
+ *           University of Wisconsin-Stout
+ *           Menomonie, WI 54751, USA
+ *
+ * This work was supported by the Spallation Neutron Source Division
+ * of Oak Ridge National Laboratory, Oak Ridge, TN, USA.
+ *
+ *  Last Modified:
+ * 
+ *  $Author: dennis $
+ *  $Date: 2012/11/09 15:40:55 $            
+ *  $Revision: 1.2 $
+ */
 package EventTools.Integrate;
 
 import java.awt.*;
@@ -397,16 +430,19 @@ public class EV_IntegrateUtils
   public static float[] IntegrateSlices( PeakEventList pev_list,
                                          float         radius    )
   {
-    int n_pages = 5;
-//    float[] radii_scale = { .3f, .6f, 1.0f, .4f, .1f };
-    float[] radii_scale = { 1, 1, 1, 1, 1 };
+    int n_pages = 7;
+//  float[] radii_scale = {  .4f,  .6f,  .8f, 1.0f,  .8f,  .6f,  .4f }; // cone in
+    float[] radii_scale = { 1.6f, 1.4f, 1.2f, 1.0f, 1.2f, 1.4f, 1.6f }; // cone out 
+//  float[] radii_scale = { 1, 1, 1, 1, 1, 1, 1 };                      // cylinder
 
     boolean debug = false;
+/*
     Peak_new peak = pev_list.getPeak();
     if ( Math.round(peak.h()) == 17  &&
          Math.round(peak.k()) == 10  &&
          Math.round(peak.l()) == 15  )
-      debug = true;
+      debug = false;
+*/
 
     Histogram3D peak_histo = pev_list.getFullHistogram( n_pages );
     float[][][] histo_array = peak_histo.getHistogramArray();
@@ -462,7 +498,7 @@ public class EV_IntegrateUtils
       System.out.println( "back vol       = " + back_vol );
       System.out.println( "ratio          = " + ratio );
       System.out.println( "signal         = " + signal );
-      System.out.println( "sgima_signal   = " + sigma_signal );
+      System.out.println( "sigma_signal   = " + sigma_signal );
     }
     return result;
   }

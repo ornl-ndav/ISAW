@@ -1,5 +1,5 @@
 /* 
- * File: TestTofToInfo.java
+ * File: IntegrateRun.java
  *
  * Copyright (C) 2012, Dennis Mikkelson
  *
@@ -53,34 +53,41 @@ import gov.anl.ipns.MathTools.Geometry.*;
 import DataSetTools.operator.Generic.TOF_SCD.*;
 import DataSetTools.instruments.*;
 
-/**
- *  Rough test tool for event based integration concepts.
- */
-public class TestTofToInfo
+public class IntegrateRun 
 {
 
-  public static void main( String[] args ) throws Exception
+/**
+ *  Integrate the peaks in specified peaks file, using data from the 
+ *  specified SNS raw event file.
+ *
+ *  @param ev_file      Fully qualified event file name
+ *  @param peaks_file   File of peaks to integrate
+ *  @param out_file     Name of file where the integrated peaks are
+ *                      written.
+ */
+  public static void IntegrateRun( String ev_file, 
+                                   String peaks_file, 
+                                   String out_file ) throws Exception
   {
-    String dir        = "/usr2/TOPAZ_SAPPHIRE_JUNE_2012/";
-    String input_dir  = dir + "/NEW_MANTID_SCRIPT/TEST_5/FOUND/";
-//    String input_dir  = dir + "/NEW_MANTID_SCRIPT/TEST_5/PREDICTED/";
-    String output_dir = "/home/dennis/NEW_EV_INTEGRATE_RESULTS/";
-
-    String run_number = args[0];
-
-    String ev_file    = dir + "TOPAZ_" + run_number + "_neutron_event.dat";
-    String peaks_file = input_dir + run_number + "_Niggli.integrate";
-//    String peaks_file = input_dir + run_number + "_EDGES_Niggli.integrate";
-//    String peaks_file = input_dir + run_number + "_fixed_Niggli.integrate";
-//    String peaks_file = dir + "/NEW_MANTID_SCRIPT/TEST_5/TEST_" + run_number + "_Niggli.integrate";
-    String out_file   = output_dir + "SAPPH_Slice_Cylinder_30_Radius_NO_Recenter_NO_Edge_" + 
-                        run_number + ".integrate";
-
-    Vector<Peak_new> integrated_peaks = new Vector<Peak_new>();
-
     Vector<Peak_new> peaks = Peak_new_IO.ReadPeaks_new( peaks_file );
-    int max_id = -1;
 
+    IntegrateRun( ev_file, peaks );
+
+    Peak_new_IO.WritePeaks_new( out_file, peaks, false );
+  }
+
+
+/**
+ *  Integrate the specified list of peaks, using data from the specified
+ *  SNS raw event file.
+ *
+ *  @param ev_file      Fully qualified event file name
+ *  @param peaks        Vector of peaks to integrate
+ */
+  public static void IntegrateRun( String ev_file, Vector<Peak_new> peaks )
+                     throws Exception
+  {
+    int max_id = -1;
                                                 // remove un-indexed peaks and
                                                 // scan for the maximum det ID
     for ( int i = peaks.size()-1; i >= 0; i-- )
@@ -93,7 +100,6 @@ public class TestTofToInfo
           max_id = peak.detnum();
     }
 
-
     SampleOrientation samp_or = peaks.elementAt(0).getSampleOrientation();
     Tran3D gonio_inv = samp_or.getGoniometerRotationInverse();
 
@@ -105,43 +111,35 @@ public class TestTofToInfo
 
     String instrument = FileIO.getSNSInstrumentName( ev_file );
 
-    String DetCal_filename  = "";
-    String bank_filename    = "";
-    String mapping_filename = "";
+    String DetCal_file  = "";
+    String bank_file    = "";
+    String mapping_file = "";
     SNS_Tof_to_Q_map mapper = new SNS_Tof_to_Q_map( instrument,
-                                                    DetCal_filename,
-                                                    bank_filename,
-                                                    mapping_filename,
+                                                    DetCal_file,
+                                                    bank_file,
+                                                    mapping_file,
                                                     null );
 
     SNS_TofEventList tof_evl = new SNS_TofEventList( ev_file );
 
-    int num_events = 1000000000;
+    int num_events = 2000000000;
     float[] info_list = mapper.MapEventsTo_Q_ID_Row_Col(tof_evl, 0, num_events); 
-    System.out.println("Requested  " + num_events + " events");
-    System.out.println("I Size/8 = " + info_list.length/8 );
-    num_events = info_list.length/8;
+    num_events        = info_list.length/8;
 
                                         // get separate lists of event objects
                                         // for each different detector ID
     Vector<Vector<EventInfo>> lists_by_id = 
                        EV_IntegrateUtils.SplitEventsByID( max_id+1, info_list );
 
-    for ( int i = 0; i < lists_by_id.size(); i++ )
-      if ( lists_by_id.elementAt(i).size() > 0 )
-        System.out.println("ID: " + i + "  Num Events: " + 
-          lists_by_id.elementAt(i).size() );
-
-//  int n_tested = 20;
     int n_tested = peaks.size();
 
     Vector<EventInfo> ev_list_for_det = null;
     Hashtable         table           = null;
     int last_det_id = -1;
 
-    Vector<PeakDisplayInfo> peak_infos = null;
-    Vector id_with_peak_infos = new Vector(); 
     int    peak_count = 0;
+    Vector<Peak_new> integrated_peaks = new Vector<Peak_new>();
+
     for ( int peak_index = 0; peak_index < n_tested; peak_index++ )
     {
       Peak_new peak = peaks.elementAt( peak_index );
@@ -152,10 +150,6 @@ public class TestTofToInfo
       int det_id = peak.detnum();
       if ( det_id != last_det_id )
       {
-        peak_infos = new Vector<PeakDisplayInfo>();
-        id_with_peak_infos.add( det_id );
-        id_with_peak_infos.add( peak_infos );
-
         ev_list_for_det = lists_by_id.elementAt( det_id );
         table = EV_IntegrateUtils.SplitEventsByHKL( UB_inverse, 
                                                     gonio_inv, 
@@ -172,6 +166,7 @@ public class TestTofToInfo
       Vector3D target_hkl = new Vector3D( Math.round(peak.h()),
                                           Math.round(peak.k()),
                                           Math.round(peak.l()) );
+
       String key = "" + Math.round( target_hkl.getX() ) + "," +
                         Math.round( target_hkl.getY() ) + "," +
                         Math.round( target_hkl.getZ() );
@@ -190,76 +185,57 @@ public class TestTofToInfo
         continue;
       }
 
-      peak_count++;
-      float rc_radius = 30; 
-//      float rc_radius = 12;            // ################### fix this
+      float rc_radius = 20; 
       int   border    = 5;
  
-//      for ( int repeat = 0; repeat < 2; repeat++ ) 
-//        pev_list.setCenterRowColToMax( rc_radius );
-//      pev_list.setCenterRowColToCenterOfMass( rc_radius );
-
-//      float sigma = pev_list.getStandardDeviation( rc_radius );
-//      if ( sigma <= 5 )
-//        sigma = 5;  
-
       peak.seqnum( peak_count+1 );
 
-//      PeakEventList.PeakType type = pev_list.GetPeakType( 2*sigma, border );
+      for ( int repeat = 0; repeat < 2; repeat++ )
+        pev_list.setCenterRowColToCenterOfMass( rc_radius/2 );
+
+      float sigma = pev_list.getStandardDeviation( rc_radius );
+      if ( sigma <= 5 )
+        sigma = 5; 
+      else if ( sigma > 20 )
+        sigma = 20;
+
       PeakEventList.PeakType type = pev_list.GetPeakType( rc_radius/2, border );
-                                 // treat as edge peak if within 15 of
-                                 // border
-      float[] IsigI = null;
-      IsigI = EV_IntegrateUtils.IntegrateSlices( pev_list, rc_radius );
-/*
+                                 // treat as edge peak if within 15 of border
+                 
       if ( type == PeakEventList.PeakType.INTERIOR )
-      {
-        pev_list.setCenterRowColToCenterOfMass( 4 );
-        IsigI = EV_IntegrateUtils.CylinderIntegrate_5( pev_list, rc_radius );
-//        IsigI = EV_IntegrateUtils.Integrate( pev_list, 4.0f*sigma );
-      }
-      else
-      {
-        pev_list.setCenterRowColToMax( rc_radius/4 );
-        pev_list.setCenterRowColToCenterOfMass( 4 );
-//        IsigI = EV_IntegrateUtils.IntegrateEdge( pev_list, 4.0f*sigma, type );
-//        IsigI = EV_IntegrateUtils.IntegrateEdge( pev_list, rc_radius, type );
-        IsigI = EV_IntegrateUtils.CylinderIntegrateRefEdge_5( pev_list, rc_radius, border, type );
-      }
-*/
-      peak.inti( IsigI[0] );
-      peak.sigi( IsigI[1] );
-      if ( type == PeakEventList.PeakType.INTERIOR )
-        integrated_peaks.add( peak );
+      { 
+        float[] IsigI = EV_IntegrateUtils.IntegrateSlices( pev_list, 3*sigma );
 
-      System.out.println("Current peak: " + peak );
-/*
-      if ( type != PeakEventList.PeakType.INTERIOR )
-        System.out.println( "" + type +  " IntI = " + IsigI[0] + ",  sigI = " + IsigI[1] );
+        peak_count++;
 
-      if ( type == PeakEventList.PeakType.INTERIOR )  // keep truly interior peaks
+        peak.inti( IsigI[0] );
+        peak.sigi( IsigI[1] );
         integrated_peaks.add( peak );
-      else                                            // or peaks at least 5 pixels away
-      {                                               // from border that are stronger
-        type = pev_list.GetPeakType( 5, border ); 
-        if ( type == PeakEventList.PeakType.INTERIOR && IsigI[0] > 200 )
-          integrated_peaks.add( peak );
+        System.out.println("Peak NUM " + peak_count + " sigma = " + sigma + " intI = " + IsigI[0]);
       }
-*/
-      System.out.println("");      
-/* 
-      PeakDisplayInfo peak_info = 
-                      EV_IntegrateUtils.GetPeakDisplayInfo( pev_list, 
-                                                            rc_radius, 
-                                                            peak_count+1 );
-      peak_infos.add( peak_info );
-*/
     }
 
-    Peak_new_IO.WritePeaks_new( out_file, integrated_peaks, false );
-/*
-    int run_num = peaks.elementAt(0).nrun();
-    EV_IntegrateUtils.ShowPeakImages( run_num, id_with_peak_infos );
-*/
+                                // now copy the integrated peaks back to 
+    peaks.clear();              // the original list
+    for ( int i = 0; i < integrated_peaks.size(); i++ )
+      peaks.add( integrated_peaks.elementAt(i) );
   }
+
+
+  public static void main( String args[] ) throws Exception
+  {
+    String dir        = "/usr2/TOPAZ_SAPPHIRE_JUNE_2012/";
+    String input_dir  = dir + "/NEW_MANTID_SCRIPT/TEST_5/FOUND/";
+    String output_dir = "/home/dennis/NEW_EV_INTEGRATE_RESULTS/";
+
+    String run_number = args[0];
+
+    String ev_file    = dir + "TOPAZ_" + run_number + "_neutron_event.dat";
+    String peaks_file = input_dir + run_number + "_Niggli.integrate";
+    String out_file   = output_dir + "SAPPH_Slice_Cylinder_30_Radius_NO_Recenter_NO_Edge_" +
+                        run_number + ".integrate";
+
+    IntegrateRun( ev_file, peaks_file, out_file );
+  }
+
 }
