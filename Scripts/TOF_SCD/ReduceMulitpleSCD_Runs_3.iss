@@ -49,8 +49,12 @@ $ CellType          ChoiceList(["Cubic","Rhombohedral","Tetragonal","Orthorhombi
 $ Centering         ChoiceList(["F Centered", "I Centered", "C Centered", "P Centered", "R Centered"])                     Conventional Cell Centering
 $ RemoveUnindexed   Boolean(true)                                Remove Unindexed Peaks
 
-$ IntegRadius       Float(0.18)                                  Radius of Integration Sphere
+$ IntegMethod       ChoiceList(["DET_X_Y_Q","SPHERE"])           Integration Method 
+$ IntegRadius       Float(0.18)                                  Sphere Radius (for Sphere Integration) 
 $ PredictPeaks      Boolean(false)                               Integrate ALL Predicted Peak Positions
+
+$ DetCorr           BooleanEnable(false,1,0)                                      Apply Per-Detector Weight Factors
+$ DetCorrFile       LoadFile("/usr2/TOPAZ_SAPPHIRE_JUNE_2012/WeightByGSAS.dat")   Per-Detector Weight File              
 
 $ mem_per_process             Integer(8000)                      Megabytes per process
 $ use_slurm                   BooleanEnable(false,1,0)           Use Slurm Instead of Local Processes
@@ -83,9 +87,10 @@ endfor
 # Form a command line for each run that will be processed
 #
 for i in [0:n_runs-1]
-  commands[i]="ReduceSCD2 " & Instrument & " " & DetCal & " " & HistSize & " " & MaxQ & " " & LamdaPower & " " & runfile[i]
+  commands[i]="ReduceSCD3 " & Instrument & " " & DetCal & " " & HistSize & " " & MaxQ & " " & LamdaPower & " " & runfile[i]
   commands[i]=commands[i] & " " & NPeaks & " " & Threshold & " " &  RunNumList[i] & " " & Phi[i] & " " & Chi[i] & " " & Omega[i] & " " & Monct[i] 
-  commands[i]=commands[i] & " " & MinD & " " & MaxD & " " & Tolerance & " " & mat_file[i] & " " & IntegRadius & " " & PredictPeaks & " " & integ_file[i]
+  commands[i]=commands[i] & " " & MinD & " " & MaxD & " " & Tolerance & " " & mat_file[i] 
+  commands[i]=commands[i] & " " & IntegMethod & " " & IntegRadius & " " & PredictPeaks & " " & integ_file[i]
 endfor
 
 #
@@ -105,6 +110,12 @@ endif
 #
 MergedFile = OutputDir & "/" & ExpName & "_Merged.integrate"
 MergeRuns( OutputDir, ExpName & "_", ".integrate", RunNums, MergedFile )
+
+#
+# Now do the per detector weight corrections, if requested
+#
+if DetCorr
+  WeightPeaksByDetector( MergedFile, DetCorrFile, MergedFile )
 
 #
 # Now index the merged file consistently and convert to the conventional cell if requested
