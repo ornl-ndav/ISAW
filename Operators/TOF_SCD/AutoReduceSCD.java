@@ -66,6 +66,9 @@ import Operators.TOF_SCD.IndexingUtils;
  */
 public class AutoReduceSCD
 {
+  public static final String SPHERE    = "SPHERE";
+  public static final String DET_X_Y_Q = "DET_X_Y_Q";
+
   Histogram3D       histogram;
   SNS_Tof_to_Q_map  mapper;
   Vector<Peak_new>  peak_list;
@@ -409,6 +412,18 @@ public class AutoReduceSCD
 
 
 /**
+ * Get a copy of the current UB matrix.
+ */
+  public Tran3D getUB()
+  {
+    if ( UB == null )
+      return null;
+
+    return new Tran3D( UB );
+  }
+
+
+/**
  * Adjust the predicted position, qxyz, using the list of found peaks.
  * In particular if the hkl is in the list of found peaks, qxyz will be set
  * to the qxyz of that peak.  If qxyz is NOT in the list, a UB will be
@@ -635,7 +650,8 @@ public class AutoReduceSCD
 
     Vector<float[]> i_sigi_vec = new Vector<float[]>();
     Vector<Peak_new> peaks_kept = new Vector<Peak_new>();
-    float bkg_radius  = 1.5f * radius;
+//    float bkg_radius  = 1.5 * radius;
+    float bkg_radius  = 1.25992f * radius;
     float[] radii = { radius, bkg_radius };
 
     for ( int i = 0; i < peaks.size(); i++ )
@@ -668,6 +684,39 @@ public class AutoReduceSCD
     }
 
     peak_list = peaks_kept;
+    return peak_list.size();
+  }
+
+
+  /**
+   * This method will integrate the peaks using the event based integration
+   * from EventTools.Integrate.IntegrateRun.
+   * The net integrated intensity ( intensity - background )
+   * and an estimate of the standard deviation of the integrated intensity
+   * is recorded in the list of peaks, for each peak that is successfully
+   * integrated.
+   *
+   * @param ev_file        The raw event file for the run to be integrated.
+   * @param integrate_all  If true, predict peak positions from the UB matrix
+   *                       and integrate all predicted peak positions.
+   *                       (THIS IS NOT CURRENTLY IMPLEMENTED).  If false,
+   *                       just integrate the peaks that were actually found. 
+   *
+   * @return the number of peaks that were integrated, and stored in the
+   *         current peaks file. 
+   */
+  public int IntegratePeaks_NEW( String ev_file, boolean integrate_all )
+             throws Exception
+  {
+    Vector<Peak_new> peaks = null;
+    if ( integrate_all )
+      peaks = PredictPeaks();
+    else
+      peaks = peak_list;
+
+    IntegrateRun.IntegrateRun( ev_file, peaks );
+
+    peak_list = peaks;
     return peak_list.size();
   }
 
@@ -781,10 +830,10 @@ public class AutoReduceSCD
   {
     if ( peak_list == null )
       throw new IOException("Peak list is NULL, can't write " + filename );
-//  Peak_new_IO.WritePeaks_new( filename, peak_list, false );
+    Peak_new_IO.WritePeaks_new( filename, peak_list, false );
 //  Peak_new_IO.WritePeaksSortedHKL( filename, peak_list, false );
-    Peak_new_IO.WritePeaksSorted( filename, peak_list, false,
-                                  new Peak_newIntiComparator(), true );
+//  Peak_new_IO.WritePeaksSorted( filename, peak_list, false,
+//                                new Peak_newIntiComparator(), true );
   }
 
 
@@ -818,7 +867,10 @@ public class AutoReduceSCD
 
   /**
    *  Carry out all of the initial SCD data reduction steps on ONE event
-   *  file, producing a file of integrated intensities.
+   *  file, producing a file of integrated intensities.  This version
+   *  uses the lattice parameters to find the UB matrix, and uses sphere
+   *  integration for the integration method. This method is DEPRECATED!
+   *
    *  @param instrument       Instrument name, such as TOPAZ or SNAP.  This 
    *                          must be the name of a supported instrument at 
    *                          the SNS.  The name determines which default 
@@ -942,10 +994,12 @@ public class AutoReduceSCD
   }
 
 
-
   /**
    *  Carry out all of the initial SCD data reduction steps on ONE event
-   *  file, producing a file of integrated intensities.
+   *  file, producing a file of integrated intensities.  This version uses
+   *  the FFT based method to find a reduced (Niggli) UB, and uses the
+   *  sphere integration to integrate the peaks, relative to the reduced
+   *  cell.
    *  @param instrument       Instrument name, such as TOPAZ or SNAP.  This 
    *                          must be the name of a supported instrument at 
    *                          the SNS.  The name determines which default 
@@ -1044,23 +1098,18 @@ public class AutoReduceSCD
     int n_found = reducer.FindPeaks( num_to_find, threshold );
     System.out.println("Number of peaks found = " + n_found );
 
-//    String log_file = "AutoReducePeaks.log";
-//    reducer.SavePeaks( log_file );
-//    System.out.println("Wrote basic peaks to " + log_file );
-
     int n_indexed = reducer.FindUB_AndIndexPeaks( min_d, max_d,
                                                   tolerance );
-//    System.out.println("Number of peaks indexed = " + n_indexed );
-//    reducer.SavePeaks( log_file );
-//    System.out.println("Wrote indexed peaks to " + log_file );
-
     reducer.SaveUB( matrix_file );
     System.out.println("Saved UB to matrix file " + matrix_file );
 
     int n_integrated = reducer.IntegratePeaks( radius,
                                                integrate_all );
+
     System.out.println( "Number of peaks integrated = " + n_integrated );
 
+    System.out.println("AddRunInfo " + run_number + " " +
+                        phi + " " + chi + " " + omega + " " + mon_count );
     reducer.peak_list = PeaksFileUtils.AddRunInfo( reducer.peak_list,
                                                    true, run_number,
                                                    true, phi, chi, omega,
@@ -1068,6 +1117,145 @@ public class AutoReduceSCD
     reducer.SavePeaks( integrate_file );
     System.out.println("Wrote integrated peaks to "+ integrate_file);
   }
+
+  /**
+   *  Carry out all of the initial SCD data reduction steps on ONE event
+   *  file, producing a file of integrated intensities.  This version uses
+   *  the FFT based method to find a reduced (Niggli) UB, and can use 
+   *  either the sphere based method in Q space or an event based method 
+   *  in detector, |Q| space to integrate the peaks, relative to the 
+   *  reduced cell. 
+   *
+   *  @param instrument       Instrument name, such as TOPAZ or SNAP.  This 
+   *                          must be the name of a supported instrument at 
+   *                          the SNS.  The name determines which default 
+   *                          instrument geometry files (.DetCal, bank and 
+   *                          mapping files) from the ISAW distribution will 
+   *                          be used.
+   *  @param DetCal_file      The .DetCal file to use for this data reduction.
+   *                          If null is passed in, the default .DetCal file
+   *                          will be used.
+   *  @param num_bins         The number of steps in each direction to use for
+   *                          the underlying 3D histogram in reciprocal space.
+   *                          The required storage is 4*num_bins^3.  A num_bins
+   *                          value of 768 requires 1.8 Gb of memory and is a 
+   *                          reasonable compromize between resolution and 
+   *                          memory size and compute time.  
+   *  @param max_Q            The maximum |Q| to use for the histogram region
+   *                          and for events loaded from the raw event file.  
+   *                          NOTE: the value for max_Q is specified here using
+   *                                the physics convention that Q = 2*PI/d,
+   *                                NOT the crystallographic conventions that 
+   *                                Q = 1/d.
+   *  @param wavelength_power The power on the wavelength term in the Lorentz
+   *                          correction factor.  Theoretically, this should 
+   *                          be 4, but a value of 2.4 works better for finding
+   *                          peaks in small molecule data and a value of 1
+   *                          works better for large molecules, such as 
+   *                          protiens.  The Lorentz correction is "backed out"
+   *                          before writing the .integrate file, since it is
+   *                          applied in ANVRED, so this parameter is only a
+   *                          fudge factor to even out the data for finding
+   *                          peaks.
+   *  @param event_file       The name of an SNS raw neutron_event.dat file.
+   *  @param num_to_find      The maximum number of peaks to look for in the
+   *                          histogram.
+   *  @param threshold        The minimum histogram value that will be 
+   *                          considered for a possible peak.
+   *  @param run_number       The run number for this run.
+   *  @param phi              The PHI angle setting for this run.
+   *  @param chi              The CHI angle setting for this run.
+   *  @param omega            The OMEGA angle setting for this run.
+   *  @param mon_count        The monitor counts for this run.
+   *  @param min_d            A lower bound for the length of any real space 
+   *                          cell edge.
+   *  @param max_d            An upper bound for the length of any real space
+   *                          cell edge.
+   *  @param tolerance        The required tolerance on h,k and l for a peak to
+   *                          be considered to be indexed.  If a peak is not 
+   *                          indexed the h,k,l values are recorded as 0,0,0.
+   *  @param matrix_file      The name of the file to which the orientation
+   *                          matrix will be written.
+   *  @param int_method       String specifying which integration method to
+   *                          use. Currently the supported methods are either
+   *                          SPHERE or DET_X_Y_Q.
+   *  @param radius           The radius of the peak region to integrate, 
+   *                          specified in Q, using the physics convention.
+   *                          This is used by the sphere integration option.
+   *  @param integrate_all    If true, predict peak positions from the UB 
+   *                          matrix and integrate all predicted peak 
+   *                          positions. 
+   *                          If false, just integrate the peaks that were 
+   *                          actually found. 
+   *
+   *  @param integrate_file   The name of the .integrate file that will be
+   *                          written, containing the integrated intensities.
+   *  @throws Exceptions      Exceptions will be thrown if the calculation 
+   *                          fails at some point, or if specified files cannot
+   *                          be read or written.
+   */
+  public static void ReduceSCD3( String  instrument,
+                                 String  DetCal_file,
+                                 int     num_bins,
+                                 float   max_Q,
+                                 float   wavelength_power,
+                                 String  event_file,
+                                 int     num_to_find,
+                                 float   threshold,
+                                 int     run_number,
+                                 float   phi,
+                                 float   chi,
+                                 float   omega,
+                                 float   mon_count,
+                                 float   min_d,
+                                 float   max_d,
+                                 float   tolerance,
+                                 String  matrix_file,
+                                 String  int_method,
+                                 float   radius,
+                                 boolean integrate_all,
+                                 String  integrate_file )
+                      throws Exception
+  {
+    AutoReduceSCD reducer = new AutoReduceSCD( instrument,
+                                               DetCal_file,
+                                               num_bins,
+                                               max_Q,
+                                               wavelength_power );
+
+    long n_loaded = reducer.LoadHistogram( event_file );
+    System.out.println("Number added to histogram = " + n_loaded );
+
+    int n_found = reducer.FindPeaks( num_to_find, threshold );
+    System.out.println("Number of peaks found = " + n_found );
+
+    int n_indexed = reducer.FindUB_AndIndexPeaks( min_d, max_d,
+                                                  tolerance );
+    reducer.SaveUB( matrix_file );
+    System.out.println("Saved UB to matrix file " + matrix_file );
+
+    int n_integrated = 0;
+
+    if ( int_method.equalsIgnoreCase( SPHERE ) )
+      n_integrated = reducer.IntegratePeaks( radius, integrate_all );
+    else if ( int_method.equalsIgnoreCase( DET_X_Y_Q ) )
+      n_integrated = reducer.IntegratePeaks_NEW( event_file, integrate_all );
+    else
+      throw new IllegalArgumentException( "ERROR: " + int_method + 
+                                 " is not a supported integration method.");
+
+    System.out.println( "Number of peaks integrated = " + n_integrated );
+
+    System.out.println("AddRunInfo " + run_number + " " +
+                        phi + " " + chi + " " + omega + " " + mon_count );
+    reducer.peak_list = PeaksFileUtils.AddRunInfo( reducer.peak_list,
+                                                   true, run_number,
+                                                   true, phi, chi, omega,
+                                                   true, mon_count );
+    reducer.SavePeaks( integrate_file );
+    System.out.println("Wrote integrated peaks to "+ integrate_file);
+  }
+
 
 
   /**
