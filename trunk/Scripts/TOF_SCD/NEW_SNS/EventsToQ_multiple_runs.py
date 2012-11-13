@@ -9,7 +9,7 @@ from Command import *
 from time import clock
 
 
-class EventsToQ(GenericTOF_SCD):
+class EventsToQ_multiple_runs(GenericTOF_SCD):
 
     def setDefaultParameters(self):
         self.super__clearParametersVector()
@@ -60,5 +60,5 @@ class EventsToQ(GenericTOF_SCD):
         return ["Macros","Single Crystal"] 
         
     def __init__(self):
-        Operator.__init__(self,"EventsToQ")
+        Operator.__init__(self,"EventsToQ_multiple_runs")
         
