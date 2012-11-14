@@ -221,7 +221,7 @@ while True:
     if abs(il) > lmax: continue
     
     hIndex = ih + hmax
-    kIndex = ik + hmax
+    kIndex = ik + kmax
     lIndex = il + lmax
     peaknum = hklArray[hIndex][kIndex][lIndex]
     if peaknum == 0: continue   # no hkl peak nearby
