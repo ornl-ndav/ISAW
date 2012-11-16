@@ -49,6 +49,9 @@ import DataSetTools.operator.Generic.TOF_SCD.PeakQ;
 import DataSetTools.operator.Generic.TOF_SCD.Util;
 import DataSetTools.instruments.*;
 
+import DataSetTools.dataset.*;
+import DataSetTools.viewer.*;
+
 import gov.anl.ipns.MathTools.Geometry.*;
 
 import Operators.TOF_SCD.IndexingUtils;
@@ -865,6 +868,43 @@ public class AutoReduceSCD
   }
 
 
+/**
+ *  Show an ImageView of a DataSet containing the histograms of voxel
+ *  intensities for voxels in the neighborhood of each peak.
+ */
+  public void ShowPeakQHistograms()
+  {
+    DataSet ds = new DataSet( "Pixel Intensity Histograms",
+                               new OperationLog(),
+                               "Pixel",
+                               "N",
+                               "Counts",
+                               "N" );
+
+    float radius = 0.20f;
+    for ( int i = 0; i < peak_list.size(); i++ )
+    {
+      Vector3D q_vec = new Vector3D( peak_list.elementAt(i).getQ() );
+      q_vec.multiply( 6.2832f );
+      float[] list = histogram.OneDIntensityHistogram( q_vec.getX(),
+                                                       q_vec.getY(),
+                                                       q_vec.getZ(), radius );
+      for ( int k = 0; k < list.length/2; k++ )
+      {
+        float temp    = list[k];
+        list[k]       = list[ list.length - k - 1 ];
+        list[ list.length - k - 1 ] = temp;
+      }
+      XScale x_scale = new UniformXScale( 0, list.length, list.length );
+      HistogramTable data = new HistogramTable( x_scale, list, i ); 
+      data.setAttribute( new FloatAttribute("|Q|", q_vec.length()) );
+      ds.addData_entry( data );
+    }
+
+    ViewManager viewer = new ViewManager( ds, "Image View" );
+  }
+
+
   /**
    *  Carry out all of the initial SCD data reduction steps on ONE event
    *  file, producing a file of integrated intensities.  This version
@@ -1254,6 +1294,8 @@ public class AutoReduceSCD
                                                    true, mon_count );
     reducer.SavePeaks( integrate_file );
     System.out.println("Wrote integrated peaks to "+ integrate_file);
+
+    reducer.ShowPeakQHistograms();
   }
 
 
@@ -1292,13 +1334,14 @@ public class AutoReduceSCD
     String  integrated_peaks_file = "demo.integrate";
 
     // test original version:
+/*
     ReduceSCD( instrument, DetCal_file, num_bins, max_Q, wavelength_power,
                event_file, 
                num_to_find, threshold, peaks_file,
                a, b, c, alpha, beta, gamma, tolerance, indexed_peaks_file,
                matrix_file,
                integration_radius, integrate_all, integrated_peaks_file );
-
+*/
     // test new version:
     int   run_number = 2480;
     float chi   = 135.0f;
@@ -1308,6 +1351,7 @@ public class AutoReduceSCD
     float min_d = 3;
     float max_d = 8;
     String integrate_file = "FFT_demo.integrate";
+/*
     ReduceSCD2( instrument, DetCal_file, num_bins, max_Q, wavelength_power,
                 event_file,
                 num_to_find,
@@ -1315,6 +1359,19 @@ public class AutoReduceSCD
                 run_number, phi, chi, omega, mon_count,
                 min_d, max_d, tolerance,
                 matrix_file,
+                integration_radius, integrate_all, integrate_file );
+*/
+    // test third version
+    String int_method = "SPHERE";
+    integrate_file = "Reduce3.integrate";
+    ReduceSCD3( instrument, DetCal_file, num_bins, max_Q, wavelength_power,
+                event_file,
+                num_to_find,
+                threshold,
+                run_number, phi, chi, omega, mon_count,
+                min_d, max_d, tolerance,
+                matrix_file,
+                int_method,
                 integration_radius, integrate_all, integrate_file );
   }
 }

@@ -211,7 +211,9 @@ public class IntegrateRun
         peak.inti( IsigI[0] );
         peak.sigi( IsigI[1] );
         integrated_peaks.add( peak );
-        System.out.println("Peak NUM " + peak_count + " sigma = " + sigma + " intI = " + IsigI[0]);
+//      System.out.println("Peak NUM " + peak_count + 
+//                         " sigma = " + sigma + 
+//                         " intI = " + IsigI[0]);
       }
     }
 
