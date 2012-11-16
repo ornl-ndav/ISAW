@@ -825,6 +825,7 @@ public class Histogram3D
     int n_x = x_proj.length; 
     int n_y = y_proj.length; 
     int n_z = z_proj.length; 
+/*
     System.out.println( "nx, ny, nz = " + n_x + ", " + n_y + ", " + n_z + 
                         " min x, y, z = " + 
                          xmax_index + ", " + ymax_index + ", " + zmax_index +
@@ -842,7 +843,7 @@ public class Histogram3D
     for ( int i = 0; i < z_proj.length; i++ )
       System.out.printf("%5.1f ", z_proj[i] );
     System.out.println();
-
+*/
     xmax_index += min_x_index;
     ymax_index += min_y_index;
     zmax_index += min_z_index;
@@ -853,6 +854,44 @@ public class Histogram3D
                                     coords );
     Vector3D result = new Vector3D( coords );
     return result;
+  }
+
+
+/**
+ *  Get 1D histogram of voxel intensities in the specified region
+ */
+  public float[] OneDIntensityHistogram( float x, float y, float z, 
+                                         float radius )
+  {
+    int[][] ranges = getIndexRanges( x, y, z, radius, -1, -1, -1 );
+    if ( ranges == null )
+      return null;
+
+    int min_x_index = ranges[0][0];
+    int max_x_index = ranges[0][1];
+
+    int min_y_index = ranges[1][0];
+    int max_y_index = ranges[1][1];
+
+    int min_z_index = ranges[2][0];
+    int max_z_index = ranges[2][1];
+
+    int size = ( max_x_index - min_x_index + 1 ) *
+               ( max_y_index - min_y_index + 1 ) *
+               ( max_z_index - min_z_index + 1 );
+
+    float[] list = new float[size];
+    int index = 0;
+    for ( int x_index = min_x_index; x_index <= max_x_index; x_index++ )
+      for ( int y_index = min_y_index; y_index <= max_y_index; y_index++ )
+        for ( int z_index = min_z_index; z_index <= max_z_index; z_index++ )
+        {
+          list[index]  = histogram[z_index][y_index][x_index];
+          index++;
+        }
+
+    Arrays.sort( list );
+    return list;
   }
 
 

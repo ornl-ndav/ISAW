@@ -53,8 +53,8 @@ $ IntegMethod       ChoiceList(["DET_X_Y_Q","SPHERE"])           Integration Met
 $ IntegRadius       Float(0.18)                                  Sphere Radius (for Sphere Integration) 
 $ PredictPeaks      Boolean(false)                               Integrate ALL Predicted Peak Positions
 
-$ DetCorr           BooleanEnable(false,1,0)                                      Apply Per-Detector Weight Factors
-$ DetCorrFile       LoadFile("/usr2/TOPAZ_SAPPHIRE_JUNE_2012/WeightByGSAS.dat")   Per-Detector Weight File              
+$ DetCorr           BooleanEnable(false,1,0)                     Apply Per-Detector Weight Factors
+$ DetCorrFile       LoadFile("/usr2/TOPAZ_SAPPHIRE_JUNE_2012/WeightByGSAS.dat")   Per-Detector Weight File 
 
 $ mem_per_process             Integer(8000)                      Megabytes per process
 $ use_slurm                   BooleanEnable(false,1,0)           Use Slurm Instead of Local Processes
@@ -124,6 +124,9 @@ NiggliFile = ExpName & "_Niggli.integrate"
 IndexMultipleRuns( MergedFile, true, MinD, MaxD, Tolerance, OutputDir, NiggliFile, ExpName ) 
 if ConvertToConv
   NiggliFile = OutputDir & "/" & NiggliFile
-  ConventionalFile =OutputDir & "/" &  ExpName & "_" & CellType & ".integrate"
+  ConventionalFile = OutputDir & "/" &  ExpName & "_" & CellType & ".integrate"
   ConvertToConventionalCell( NiggliFile, CellType, Centering, RemoveUnindexed, ConventionalFile )
 endif
+
+return "Success"
+
