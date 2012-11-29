@@ -4,6 +4,7 @@ Get profile data and output to a profile file.
 A. J. Schultz, 2012
 
 This version can process multiple runs.
+It replace get_profile_data.py and get_profile_data_multiple_runs.py.
 """
 
 
