@@ -86,6 +86,7 @@
 # !	4/13/09	Number of possible spectra increased from 2 to 100.
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+import os
 
 from readrefl_header import *
 from readrefl_SNS import *
@@ -126,8 +127,8 @@ fileName = directory_path + 'anvred2.log'
 logFile = open( fileName, 'w' )
 
 # open the hkl file in the working directory
-fileName = directory_path + expName + '.hkl'
-hklFile = open( fileName, 'w' )
+hklFileName = directory_path + expName + '.hkl'
+hklFile = open( hklFileName, 'w' )
 
 # echo the input in the log file
 logFile.write('\n********** anvred **********\n')
@@ -158,6 +159,7 @@ logFile.write('\nMinimum d-spacing : %4.2f Angstroms\n' % dMin )
 logFile.write('\nScale factor identifier:' )
 logFile.write('\n     IQ = 1. Scale factor per crystal setting.' )
 logFile.write('\n     IQ = 2. Scale factor for each detector in each setting.')
+logFile.write('\n     IQ = 3. Scale factor for each detector for all settings.')
 logFile.write('\nIQ: %i\n' % iIQ )
 
 logFile.write('\nMultiply FSQ and sig(FSQ) by: %f\n' % scaleFactor )
@@ -239,6 +241,7 @@ one = 1.0       # denominator in spectrum to calculate spect1
 
 for id in range(nod):
 
+
     if iSpec == 1:  # The spectrum is calculated from coefficients
         
         spect = spectrumCalc(wavelength, calibParam, pj, id)
@@ -318,7 +321,7 @@ while True:
     if nrun != curhst or dn != idet:
         if nrun != curhst:
             curhst = nrun
-            if iIQ == 1: hstnum = hstnum + 1
+            if iIQ != 2: hstnum = hstnum + 1
             
         idet = dn  #IDET and DN is the arbitrary detector number.
                    #ID is a sequential number in the order they are listed.
@@ -423,10 +426,19 @@ while True:
             % (h, k, l))
         continue
     
+    # correct for the slant path throught the scintillator glass
+    mu = (9.614 * wl) + 0.266    # mu for GS20 glass
+    depth = calibParam[8][id]
+    eff_center = 1.0 - exp(-mu * depth)  # efficiency at center of detector
+    cosA = dist[id] / L2
+    pathlength = depth / cosA
+    eff_R = 1.0 - exp(-mu * pathlength)   # efficiency at point R
+    sp_ratio = eff_center / eff_R  # slant path efficiency ratio
+    
     sinsqt = ( wl / (2.0*dsp) )**2
     wl4 = wl**4
         
-    correc = scaleFactor * (sinsqt * cmonx ) / (wl4 * spect )
+    correc = scaleFactor * sinsqt * cmonx * sp_ratio / (wl4 * spect )
         
     # absorption correction
     # trans[0] is the transmission
@@ -470,6 +482,46 @@ hklFile.write(' %3d %3d %3d %7.2f %7.2f %3d %7.4f %6.4f %6d %6d %6.4f %3d\n' \
 # C-----------------------------------------------------------------------
 logFile.close()
 hklFile.close()
+
+# Set scale ID equal to detector number.
+# This code is from scale_by_detnum.py.
+if iIQ == 3:
+    hklFileName1 = hklFileName + '1'
+    os.rename(hklFileName, hklFileName1)
+    hkl_output = open(hklFileName, 'w')
+    
+    for i in range(nod):
+        hkl_input = open(hklFileName1, 'r')
+        detNum = calibParam[3][i]
+
+        while True:
+            lineString = hkl_input.readline()
+            lineList = lineString.split()
+            if len(lineList) == 0: break
+            
+            h = int(lineString[0:5])
+            k = int(lineString[4:8])
+            l = int(lineString[8:12])
+            fsq = float(lineString[12:20])
+            sigfsq = float(lineString[20:28])
+            hstnum = int(lineString[28:32])
+            wl = float(lineString[32:40])
+            tbar = float(lineString[40:47])
+            curhst = int(lineString[47:54])
+            seqnum = int(lineString[54:61])
+            transmission = float(lineString[61:68])
+            dn = int(lineString[68:72])
+            
+            if dn == detNum:
+                iScale = i + 1
+                hkl_output.write('%4d%4d%4d%8.2f%8.2f%4d%8.4f%7.4f%7d%7d%7.4f%4d\n' \
+                % (h, k, l, fsq, sigfsq, iScale, wl, tbar, curhst, seqnum, transmission, dn))
+
+        hkl_input.close()
+        
+    # last record all zeros for shelx
+    hkl_output.write(' %3d %3d %3d %7.2f %7.2f %3d %7.4f %6.4f %6d %6d %6.4f %3d\n' \
+        % ( zero, zero, zero, zero, zero, zero, zero, zero, zero, zero, zero, zero ))
 
 print 'All done!'
 
