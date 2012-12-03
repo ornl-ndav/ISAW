@@ -1,17 +1,17 @@
-C:\Users\Arthur\Desktop\GADDSS\anvred2x_test\   # Working directory
-3681qplot   # Experiment name
-0.369       # Total scattering linear absorptio coefficent in units of cm^-1
-0.011       # True absorption linear absorption coefficent in units of cm^-1
-0.1         # Radius of spherical crystal in units of cm
+C:\Users\Arthur\Desktop\ANVREDtest\anvred2x\   # Working directory
+ReIndex   # Experiment name
+0.389       # Total scattering linear absorptio coefficent in units of cm^-1
+1.001       # True absorption linear absorption coefficent in units of cm^-1
+0.198         # Radius of spherical crystal in units of cm
 0           # iSpec = 0 read spectrum from a file; 1 spectrum fitted to GSAS Type 2 function
 -           # If iSpec = 1, name of coefficients file
-Spectrum_3676_3686.dat   # If iSpec = 0, anme of spectrum file
+Spectrum_3023_3163.dat   # If iSpec = 0, name of spectrum file
 1.0         # Normalize spectra to this wavelength
 3.0         # Mininum I/sig(I) ratio
-22          # Width of border in which peaks are rejected
-100.0       # Minimum integrated intensity
-0.5         # Minimum d-spacing
-1           # IQ = 1, scale factor per crystal setting; 2, scale factor for each detector in each setting
-0.001       # Multiply FSQ and sig(FSQ) by this factor
+24          # Width of border in which peaks are rejected
+80.0       # Minimum integrated intensity
+0.45         # Minimum d-spacing
+3           # IQ = 1, scale factor per crystal setting; 2, scale factor for each detector in each setting; 3, scale factor per detector
+0.005       # Multiply FSQ and sig(FSQ) by this factor
 0.5         # Minimum wavelength
 3.5         # Maximum wavelength
