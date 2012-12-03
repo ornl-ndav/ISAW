@@ -84,6 +84,7 @@
 # !	4/13/09	Number of possible spectra increased from 2 to 100.
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+import os
 from readrefl_header import *
 from readrefl_SNS import *
 from readSpecCoef import *
@@ -111,7 +112,7 @@ class anvred2(GenericTOF_SCD):
         self.addParameter(IntegerPG("Width of border (number of channels)", 24))
         self.addParameter(FloatPG("Minimum integrated intensity", 100))
         self.addParameter(FloatPG("Minimum d-spacing (Angstroms)", 0.5))
-        self.addParameter(IntegerPG("Assign scale factors (1) per setting or (2) per detector", 1))
+        self.addParameter(IntegerPG("Assign scale factors (1) per setting,(2) per detector per setting, (3) per detector", 1))
         self.addParameter(FloatPG("Multiply FSQ and sig(FSQ) by scajleFactor", 0.001))
         # Set-up limits for neutron wavelentgh XP Wang 02/24/2011
         self.addParameter(FloatPG("Minimum wavelength (Angstroms)", 0.5))
@@ -144,8 +145,8 @@ class anvred2(GenericTOF_SCD):
         logFile = open( fileName, 'w' )
         
         # open the hkl file in the working directory
-        fileName = directory_path + expName + '.hkl'
-        hklFile = open( fileName, 'w' )
+        hklFileName = directory_path + expName + '.hkl'
+        hklFile = open( hklFileName, 'w' )
         
         # echo the input in the log file
         logFile.write('\n********** anvred **********\n')
@@ -176,6 +177,7 @@ class anvred2(GenericTOF_SCD):
         logFile.write('\nScale factor identifier:' )
         logFile.write('\n     IQ = 1. Scale factor per crystal setting.' )
         logFile.write('\n     IQ = 2. Scale factor for each detector in each setting.')
+        logFile.write('\n     IQ = 3. Scale factor for each detector for all settings.')
         logFile.write('\nIQ: %i\n' % iIQ )
         
         logFile.write('\nMultiply FSQ and sig(FSQ) by: %f\n' % scaleFactor )
@@ -336,7 +338,7 @@ class anvred2(GenericTOF_SCD):
             if nrun != curhst or dn != idet:
                 if nrun != curhst:
                     curhst = nrun
-                    if iIQ == 1: hstnum = hstnum + 1
+                    if iIQ != 1: hstnum = hstnum + 1
                     
                 idet = dn  #IDET and DN is the arbitrary detector number.
                            #ID is a sequential number in the order they are listed.
@@ -499,6 +501,46 @@ class anvred2(GenericTOF_SCD):
         logFile.close()
         hklFile.close()
         
+        # Set scale ID equal to detector number.
+        # This code is from scale_by_detnum.py.
+        if iIQ == 3:
+            hklFileName1 = hklFileName + '1'
+            os.rename(hklFileName, hklFileName1)
+            hkl_output = open(hklFileName, 'w')
+            
+            for i in range(nod):
+                hkl_input = open(hklFileName1, 'r')
+                detNum = calibParam[3][i]
+
+                while True:
+                    lineString = hkl_input.readline()
+                    lineList = lineString.split()
+                    if len(lineList) == 0: break
+                    
+                    h = int(lineString[0:5])
+                    k = int(lineString[4:8])
+                    l = int(lineString[8:12])
+                    fsq = float(lineString[12:20])
+                    sigfsq = float(lineString[20:28])
+                    hstnum = int(lineString[28:32])
+                    wl = float(lineString[32:40])
+                    tbar = float(lineString[40:47])
+                    curhst = int(lineString[47:54])
+                    seqnum = int(lineString[54:61])
+                    transmission = float(lineString[61:68])
+                    dn = int(lineString[68:72])
+                    
+                    if dn == detNum:
+                        iScale = i + 1
+                        hkl_output.write('%4d%4d%4d%8.2f%8.2f%4d%8.4f%7.4f%7d%7d%7.4f%4d\n' \
+                        % (h, k, l, fsq, sigfsq, iScale, wl, tbar, curhst, seqnum, transmission, dn))
+
+                hkl_input.close()
+                
+            # last record all zeros for shelx
+            hkl_output.write(' %3d %3d %3d %7.2f %7.2f %3d %7.4f %6.4f %6d %6d %6.4f %3d\n' \
+                % ( zero, zero, zero, zero, zero, zero, zero, zero, zero, zero, zero, zero ))
+        
         return 'All done!'
 
         
@@ -518,7 +560,7 @@ class anvred2(GenericTOF_SCD):
         S.append("@param  numBorderCh: width of border. Peaks in border are rejected.")
         S.append("@param  intiMin: minimum integrated intensity.")
         S.append("@param  dMin: The minimum d-spacing in Angstrom units.")
-        S.append("@param  iIQ: If iIQ = 1, a scale factor for each crystal setting. If iIQ = 2, a scale factor for each detector of each crystal setting.")
+        S.append("@param  iIQ: If iIQ = 1, a scale factor for each crystal setting. If iIQ = 2, a scale factor for each detector of each crystal setting. If iIq = 3, a scale factor for each detector.")
         S.append("@param  scaleFactor: multiply Fsq and sigFsq by this factor.")
         
         S.append("@return the number of peaks processed.")
