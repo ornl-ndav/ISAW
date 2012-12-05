@@ -41,17 +41,21 @@ def center(h, k, l, center_type):
         
     print 'Centering type not P, A, B, C, F, I or R.'
     
-# test  
-# h = 1
-# k = 5
-# l = 3
-# center_type = 'F'
+# test
+if __name__ == '__main__':
+    h = 1
+    k = 5
+    l = 3
+    print h,k,l
 
-# x = center(h, k, l, center_type)
+    center_type = 'F'
+    print center_type
 
-# if x == True:
-    # print 'x is True'
-# if x == False:
-    # print 'x is False'
+    x = center(h, k, l, center_type)
+
+    if x == True:
+        print 'x is True'
+    if x == False:
+        print 'x is False'
 
         
