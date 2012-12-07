@@ -27,9 +27,12 @@ start = clock()
 #sys.path.append("/opt/Mantid/bin")
 sys.path.append("C:/MantidInstall/bin")
 
+from mantid.simpleapi import *
 from MantidFramework import mtd
 mtd.initialise()
-from mantidsimple import *
+# from mantidsimple import *
+
+
 
 #
 # Get the config file name and the run number to process from the command line
@@ -59,26 +62,8 @@ num_peaks_to_find         = params_dictionary[ "num_peaks_to_find" ]
 min_d                     = params_dictionary[ "min_d" ]
 max_d                     = params_dictionary[ "max_d" ]
 tolerance                 = params_dictionary[ "tolerance" ]
-integrate_predicted_peaks = params_dictionary[ "integrate_predicted_peaks" ]
-min_pred_wl               = params_dictionary[ "min_pred_wl" ]
-max_pred_wl               = params_dictionary[ "max_pred_wl" ]
-min_pred_dspacing         = params_dictionary[ "min_pred_dspacing" ]
-max_pred_dspacing         = params_dictionary[ "max_pred_dspacing" ]
-use_sphere_integration    = params_dictionary[ "use_sphere_integration" ]
-use_fit_peaks_integration = params_dictionary[ "use_fit_peaks_integration" ]
-peak_radius               = params_dictionary[ "peak_radius" ]
-bkg_inner_radius          = params_dictionary[ "bkg_inner_radius" ]
-bkg_outer_radius          = params_dictionary[ "bkg_outer_radius" ]
-integrate_if_edge_peak    = params_dictionary[ "integrate_if_edge_peak" ]
-rebin_step                = params_dictionary[ "rebin_step" ]
-preserve_events           = params_dictionary[ "preserve_events" ] 
-use_ikeda_carpenter       = params_dictionary[ "use_ikeda_carpenter" ]
-n_bad_edge_pixels         = params_dictionary[ "n_bad_edge_pixels" ]
 apply_transform_to_hkl    = params_dictionary[ "apply_transform_to_hkl" ]
 HKL_Transform_matrix      = params_dictionary[ "HKL_Transform_matrix" ]
-
-
-rebin_params = min_tof + "," + rebin_step + "," + max_tof
 
 #
 # Get the fully qualified input run file name, either from a specified data 
@@ -116,8 +101,10 @@ run_niggli_integrate_file = output_directory + "/" + run + "_Niggli.integrate"
 #
 # Load the run data and find the total monitor counts
 #
-LoadEventNexus( Filename=full_name, OutputWorkspace=event_ws, 
+event_ws = LoadEventNexus( Filename=full_name, 
                 FilterByTofMin=min_tof, FilterByTofMax=max_tof )
+
+                
 LoadNexusMonitors( Filename=full_name, OutputWorkspace=monitor_ws )
 Integration( InputWorkspace=monitor_ws, OutputWorkspace=integrated_monitor_ws, 
              RangeLower=min_tof, RangeUpper=max_tof, 
@@ -125,8 +112,16 @@ Integration( InputWorkspace=monitor_ws, OutputWorkspace=integrated_monitor_ws,
 
 monitor_count = mtd[integrated_monitor_ws].dataY(0)[0]
 print "\n", run, " has calculated monitor count", monitor_count, "\n"
-monitorFile = open('monitorCtsPerRun.dat', 'a')
-monitorFile.write('%s   %d\n' % (run, monitor_count))
+
+omega_deg = event_ws.run()['omega'].value[0]
+chi_deg = event_ws.run()['chi'].value[0]
+phi_deg = event_ws.run()['phi'].value[0]
+print 'omega = %f deg' % omega_deg
+print 'chi = %f deg' % chi_deg
+print 'phi = %f deg\n' % phi_deg
+
+monitorFile = open('monitorCtsAndAngles.dat', 'a')
+monitorFile.write('%s   %d   %f   %f   %f\n' % (run, monitor_count, omega_deg, chi_deg, phi_deg))
 monitorFile.close()
 
 #
