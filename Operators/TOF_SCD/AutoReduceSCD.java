@@ -69,8 +69,10 @@ import Operators.TOF_SCD.IndexingUtils;
  */
 public class AutoReduceSCD
 {
-  public static final String SPHERE    = "SPHERE";
-  public static final String DET_X_Y_Q = "DET_X_Y_Q";
+  public static final String SPHERE        = "SPHERE";
+  public static final String DET_X_Y_Q     = IntegrateRun.DET_X_Y_Q;
+  public static final String THRESHOLD_Q   = "THRESHOLD_Q";
+  public static final String THRESHOLD_XYT = IntegrateRun.THRESHOLD_XYT;
 
   Histogram3D       histogram;
   SNS_Tof_to_Q_map  mapper;
@@ -637,11 +639,11 @@ public class AutoReduceSCD
    *                       Q = 2*PI/d.
    * @param integrate_all  If true, predict peak positions from the UB matrix
    *                       and integrate all predicted peak positions.
-   *                       (THIS IS NOT CURRENTLY IMPLEMENTED).  If false,
-   *                       just integrate the peaks that were actually found. 
+   *                       If false, just integrate the peaks that were 
+   *                       actually found. 
    *
    * @return the number of peaks that were integrated, and stored in the
-   *         current peaks file. 
+   *         current list of peaks. 
    */
   public int IntegratePeaks( float radius, boolean integrate_all )
   {
@@ -691,6 +693,179 @@ public class AutoReduceSCD
   }
 
 
+/**
+ *  Calculate the number of neighbors of a specified position in an array
+ *  that have a value greater than or equal to the specified cutoff.
+ *
+ *  @param arr     3D array of values
+ *  @param page    The specified page
+ *  @param row     The specified row
+ *  @param col     The specified col
+ *  @param cutoff  The minimum value for one of the 27 neighbors to be counted.
+ *
+ *  @return The number of neighboring array elements that have a value >= cutoff.
+ */
+  public static int N_neighbors( float[][][] arr, 
+                                 int page, int row, int col, float cutoff )
+  {
+    int count = 0;
+    int n_pages = arr.length;
+    int n_rows  = arr[0].length;
+    int n_cols  = arr[0][0].length;
+    for ( int i = Math.max(0,page-1); i <= Math.min(n_pages-1,page+1); i++ )
+      for ( int j = Math.max(0,row-1); j <= Math.min(n_rows-1,row+1); j++ )
+        for ( int k = Math.max(0,col-1); k <= Math.min(n_cols-1,col+1); k++ )
+          if ( arr[i][j][k] >= cutoff )
+            count++;
+
+    if ( arr[page][row][col] >= cutoff )
+      count--;
+
+    return count;
+  }
+
+  /**
+   * This method will carry out a rough integration of the peaks as follows.
+   * First, the list of values in a rectangular box containing a sphere with
+   * radius 1.25992 times the specified radius, is obtained from the underlying
+   * histogram.  This list of values is sorted and the mean and variance of all
+   * initial sublists are calculated.  The values where variance > mean are 
+   * assumed to belong to the peak and all other values are assumed to belong
+   * to the background.
+   *
+   * @param radius         The radius of the peak region to integrate, 
+   *                       specified in Q, using the physics convention that
+   *                       Q = 2*PI/d.
+   * @param integrate_all  If true, predict peak positions from the UB matrix
+   *                       and integrate all predicted peak positions.
+   *                       If false, just integrate the peaks that were 
+   *                       actually found. 
+   *
+   * @return the number of peaks that were integrated, and stored in the
+   *         current list of peaks. 
+   */
+  public int IntegratePeaksUsingThreshold_Q(float radius, boolean integrate_all)
+  {
+    Vector<Peak_new> peaks = null;
+    if ( integrate_all )
+      peaks = PredictPeaks();
+    else
+      peaks = peak_list;
+
+    Vector<float[]> i_sigi_vec = new Vector<float[]>();
+    Vector<Peak_new> peaks_kept = new Vector<Peak_new>();
+//    float bkg_radius  = 1.5 * radius;
+    float bkg_radius  = 1.25992f * radius;
+    float[] radii = { radius, bkg_radius };
+
+    for ( int i = 0; i < peaks.size(); i++ )
+    {
+      float[] q_arr = peaks.elementAt(i).getUnrotQ();
+      float qx = (float)(q_arr[0] * 2 * Math.PI);
+      float qy = (float)(q_arr[1] * 2 * Math.PI);
+      float qz = (float)(q_arr[2] * 2 * Math.PI);
+
+      float[] vals = histogram.OneDIntensityList( qx, qy, qz, bkg_radius );
+      Arrays.sort( vals );
+
+      float[][] sublist_stats = EV_IntegrateUtils.SublistStats( vals );
+                                            // Work BACKWARDS through list
+                                            // of values to find the last
+                                            // one where variance > avg
+      int k = sublist_stats[0].length - 1;
+      while ( k >= 0 &&
+             (sublist_stats[1][k] > sublist_stats[0][k]) )
+      {
+        k--;
+      }
+      k++;
+ 
+      float cutoff = 0;
+      if ( k >= vals.length )
+      {
+        cutoff = vals[vals.length-1];
+        k = vals.length-1;
+      }
+      else
+        cutoff = vals[k];
+
+      float signal     = 0;
+      float signal_vol = 0;
+      float back       = 0;
+      float back_vol   = 0;
+/*
+      for ( int j = 0; j < k; j++ )
+      {
+        back += vals[j];
+        back_vol += 1;
+      }
+
+      for ( int j = k; j < vals.length; j++ )
+      {
+        signal += vals[j];
+        signal_vol += 1;
+      }
+*/
+      Histogram3D sub_hist = histogram.getSubHistogram( qx, qy, qz, 
+                                                        bkg_radius, -1, -1, -1 );
+      float[][][] arr = sub_hist.getHistogramArray();
+      int n_pages = arr.length;
+      int n_rows  = arr[0].length;
+      int n_cols  = arr[0][0].length;
+
+      for ( int page = 0; page < n_pages; page++ )
+      {
+        float[][] page_arr = arr[page];
+        for ( int row = 0; row < n_rows; row++ )
+        {
+          float[] row_arr = page_arr[row];
+          for ( int col = 0; col < n_cols; col++ )
+          {
+            float val = row_arr[ col ];
+            if ( val >= cutoff || N_neighbors( arr, page, row, col, cutoff ) > 9 )
+            {
+              signal += val;
+              signal_vol += 1;
+            }
+            else
+            {
+              back += val;
+              back_vol += 1;
+            }
+          }
+        }       
+      }
+
+      float ratio = signal_vol/back_vol;
+      float intI  = signal - ratio * back;
+      float sigI = (float)Math.sqrt( signal + ratio * ratio * back );
+
+      float[] i_sigi = { intI, sigI };
+
+      peaks_kept.add( peaks.elementAt(i) );
+      i_sigi_vec.add( i_sigi );
+    }
+
+    if ( peaks_kept.size() == 0 )         // no peaks were integrated
+      return 0;
+                                          // reverse weight the peaks and set
+                                          // the I and SIGI values
+    float[] i_sigi;
+    for ( int i = peaks_kept.size()-1; i >= 0; i-- )
+    {
+      Peak_new peak = peaks_kept.elementAt( i );
+      i_sigi = i_sigi_vec.elementAt(i);
+      peak.inti( i_sigi[0] );
+      peak.sigi( i_sigi[1] );
+
+      ReverseWeightIntegral( peak );
+    }
+
+    peak_list = peaks_kept;
+    return peak_list.size();
+  }
+
+
   /**
    * This method will integrate the peaks using the event based integration
    * from EventTools.Integrate.IntegrateRun.
@@ -700,15 +875,18 @@ public class AutoReduceSCD
    * integrated.
    *
    * @param ev_file        The raw event file for the run to be integrated.
+   * @param int_method     Method to use: DET_X_Y_Q or THRESHOLD_XYT.
    * @param integrate_all  If true, predict peak positions from the UB matrix
    *                       and integrate all predicted peak positions.
-   *                       (THIS IS NOT CURRENTLY IMPLEMENTED).  If false,
-   *                       just integrate the peaks that were actually found. 
+   *                       If false, just integrate the peaks that were 
+   *                       actually found. 
    *
    * @return the number of peaks that were integrated, and stored in the
-   *         current peaks file. 
+   *         current list of peaks. 
    */
-  public int IntegratePeaks_NEW( String ev_file, boolean integrate_all )
+  public int IntegratePeaks_NEW( String ev_file, 
+                                 String int_method,
+                                 boolean integrate_all )
              throws Exception
   {
     Vector<Peak_new> peaks = null;
@@ -717,7 +895,7 @@ public class AutoReduceSCD
     else
       peaks = peak_list;
 
-    IntegrateRun.IntegrateRun( ev_file, peaks );
+    IntegrateRun.IntegrateRun( ev_file, peaks, int_method );
 
     peak_list = peaks;
     return peak_list.size();
@@ -778,7 +956,7 @@ public class AutoReduceSCD
     float bkg_volume  = volumes[1] - peak_volume;
 
     float[] i_sigi = IntegrateTools.getI_and_sigI( peak_count, peak_volume,
-                                                    bkg_count, bkg_volume );
+                                                   bkg_count, bkg_volume );
     return i_sigi;
   }
 
@@ -886,9 +1064,10 @@ public class AutoReduceSCD
     {
       Vector3D q_vec = new Vector3D( peak_list.elementAt(i).getQ() );
       q_vec.multiply( 6.2832f );
-      float[] list = histogram.OneDIntensityHistogram( q_vec.getX(),
-                                                       q_vec.getY(),
-                                                       q_vec.getZ(), radius );
+      float[] list = histogram.OneDIntensityList( q_vec.getX(),
+                                                  q_vec.getY(),
+                                                  q_vec.getZ(), radius );
+      Arrays.sort( list );
       for ( int k = 0; k < list.length/2; k++ )
       {
         float temp    = list[k];
@@ -1218,7 +1397,7 @@ public class AutoReduceSCD
    *                          matrix will be written.
    *  @param int_method       String specifying which integration method to
    *                          use. Currently the supported methods are either
-   *                          SPHERE or DET_X_Y_Q.
+   *                          SPHERE, DET_X_Y_Q, THRESHOLD_Q, or THRESHOLD_XYT.
    *  @param radius           The radius of the peak region to integrate, 
    *                          specified in Q, using the physics convention.
    *                          This is used by the sphere integration option.
@@ -1278,8 +1457,13 @@ public class AutoReduceSCD
 
     if ( int_method.equalsIgnoreCase( SPHERE ) )
       n_integrated = reducer.IntegratePeaks( radius, integrate_all );
-    else if ( int_method.equalsIgnoreCase( DET_X_Y_Q ) )
-      n_integrated = reducer.IntegratePeaks_NEW( event_file, integrate_all );
+    else if ( int_method.equalsIgnoreCase( DET_X_Y_Q ) || 
+              int_method.equalsIgnoreCase( THRESHOLD_XYT ) )
+      n_integrated = reducer.IntegratePeaks_NEW( 
+                                        event_file, int_method, integrate_all );
+    else if ( int_method.equalsIgnoreCase( THRESHOLD_Q ) )
+      n_integrated = reducer.IntegratePeaksUsingThreshold_Q(
+                                                         radius, integrate_all);
     else
       throw new IllegalArgumentException( "ERROR: " + int_method + 
                                  " is not a supported integration method.");

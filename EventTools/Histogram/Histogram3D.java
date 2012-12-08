@@ -541,11 +541,11 @@ public class Histogram3D
 
   /**
    * Get a new Histogram3D with values in a neighborhood of the specified 
-   * point.  The histogram size is set to include centers of bins in
-   * a sphere of the specified radius around the specified point,
-   * BUT will be restricted to lie within the bounds of this histogram,
-   * and to include bins that are not further away from the center bin by
-   * more than the specified offsets.
+   * point.  The histogram size is set to be a rectangular box that includes
+   * the centers of bins in a sphere of the specified radius around the 
+   * specified point, BUT will be restricted to lie within the bounds of 
+   * this histogram, and to include bins that are not further away from 
+   * the center bin by more than the specified offsets.
    * NOTE: In general, the returned histogram will not have equal sizes in
    *       all dimensions. Also, in general the new histogram will correspond
    *       to a parallelopiped in 3D space, since the binner directions may
@@ -858,10 +858,14 @@ public class Histogram3D
 
 
 /**
- *  Get 1D histogram of voxel intensities in the specified region
+ *  Get list of voxel intensities in a rectangular box region containing
+ *  a sphere of the specified radius about the specified point.
+ *  The intensities are listed in the order they are found in the histogram
+ *  at h[z][y][x], stepping through the z index in the outer most loop and
+ *  the x index in the inner most loop. 
  */
-  public float[] OneDIntensityHistogram( float x, float y, float z, 
-                                         float radius )
+  public float[] OneDIntensityList( float x, float y, float z, 
+                                    float radius )
   {
     int[][] ranges = getIndexRanges( x, y, z, radius, -1, -1, -1 );
     if ( ranges == null )
@@ -882,15 +886,14 @@ public class Histogram3D
 
     float[] list = new float[size];
     int index = 0;
-    for ( int x_index = min_x_index; x_index <= max_x_index; x_index++ )
+    for ( int z_index = min_z_index; z_index <= max_z_index; z_index++ )
       for ( int y_index = min_y_index; y_index <= max_y_index; y_index++ )
-        for ( int z_index = min_z_index; z_index <= max_z_index; z_index++ )
+        for ( int x_index = min_x_index; x_index <= max_x_index; x_index++ )
         {
           list[index]  = histogram[z_index][y_index][x_index];
           index++;
         }
 
-    Arrays.sort( list );
     return list;
   }
 

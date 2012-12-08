@@ -62,6 +62,8 @@ public class PeakEventList
   private int          max_col;
   private float        min_mag_Q;
   private float        max_mag_Q;
+  private float        min_tof;
+  private float        max_tof;
   private float        center_row;
   private float        center_col;
 
@@ -96,12 +98,24 @@ public class PeakEventList
     this.max_col   = max_col;
     this.min_mag_Q = min_mag_Q;
     this.max_mag_Q = max_mag_Q;
+    this.min_tof   = (float)(1.0e20);
+    this.max_tof   = -1;
     this.center_row = (int)peak.y()-1;      // initialize with the row and col
     this.center_col = (int)peak.x()-1;      // from the peak object
 
+    float     tof;
+    EventInfo event;
     ev_list = new EventInfo[ events.size() ];
     for ( int i = 0; i < ev_list.length; i++ )
-      ev_list[i] = events.elementAt(i);
+    {
+      event      = events.elementAt(i);
+      ev_list[i] = event;
+      tof        = event.Tof();
+      if ( tof < min_tof )
+        min_tof = tof;
+      if ( tof > max_tof )
+        max_tof = tof;
+    }
   }
 
 
@@ -181,6 +195,51 @@ public class PeakEventList
   {
     return ev_list;
   }
+
+
+/**
+ *  Get the list of the (qx,qy,qz) values for events for this peak that 
+ *  are within the specified radius of the peak position AND have been
+ *  shifted so that they are centered around (0,0,0).
+ *
+ *  @param radius  The maximum distance from the peak center for (qx,qy,qz)
+ *                 to be included in the list of event Qs.
+ *
+ *  @return A list of the Qs vectors for the events that are within the
+ *  specified radius of the peak center and have had the peak center subtracted
+ *  from the event Q vector.
+ */
+  public Vector3D[] GetZeroCenteredEventQs( float radius )
+  {
+    float center_x, center_y, center_z;
+    float qx, qy, qz;
+    float radius_2 = radius * radius;
+
+    float[] center = peak.getQ();
+    for ( int i = 0; i < 3; i++ )
+      center[i] = (float)(center[i] * Math.PI * 2.0);
+ 
+    Vector<Vector3D> vectors = new Vector<Vector3D>( ev_list.length );
+    for ( int i = 0; i < ev_list.length; i++ )
+    {
+      EventInfo ev_info = ev_list[i];
+      qx = ev_info.Qx() - center[0];
+      qy = ev_info.Qy() - center[1];
+      qz = ev_info.Qz() - center[2];
+      if ( qx*qx + qy*qy + qz*qz <= radius_2 )
+        vectors.add( new Vector3D( qx, qy, qz ) );
+    }
+
+    Vector3D[] result = new Vector3D[ vectors.size() ];
+    for ( int i = 0; i < result.length; i++ )
+      result[i] = vectors.elementAt(i);
+
+    System.out.println("Number of events for peak " + peak );
+    System.out.println(" = " + result.length );
+
+    return result;
+  }
+
 
 /**
  *  Get a reference to the Peak_new object for this peak.
@@ -269,6 +328,24 @@ public class PeakEventList
   public float getMaxMagQ()
   {
     return max_mag_Q;
+  }
+
+
+/**
+ * Get the minimum tof for events associated with this peak
+ */
+  public float getMinTof()
+  {
+    return min_tof;
+  }
+
+
+/**
+ * Get the maximum tof for events associated with this peak
+ */
+  public float getMaxTof()
+  {
+    return max_tof;
   }
 
 
@@ -384,7 +461,6 @@ public class PeakEventList
   }
 
 
-
 /**
  * Get a 3D histogram of events for this peak, covering the full range
  * of rows and columns and |Q| for the events associated with this peak.
@@ -404,6 +480,66 @@ public class PeakEventList
                                                           ev_list.length );
 
     if ( ev_list_3D != null )
+      peak_histo.addEvents( ev_list_3D, false );
+
+    return peak_histo;
+  }
+
+
+/**
+ * Restrict the specified value to be in the closed interval
+ * [min,max].
+ */
+  public static int Bound( int val, int min, int max )
+  {
+    if ( val <= min )
+      return min;
+    else if ( val >= max )
+      return max;
+
+    return val;
+  }
+
+
+/**
+ * Get a 3D histogram for this event list, restricted
+ * to lie within the specifed border on the the detector face,
+ * with the specified number of rows, columns and slices.
+ * The slices can be uniform |Q| or uniform TOF silces.
+ */
+  public Histogram3D getBoundedRebinnedHistogram( int border,
+                                                  int num_rows,
+                                                  int num_cols,
+                                                  int num_slices,
+                                                  boolean use_Q )
+  {
+    int restricted_min_row = Bound( min_row,   0 + border, 255 - border ); 
+    int restricted_max_row = Bound( max_row+1, 0 + border, 255 - border ); 
+    int restricted_min_col = Bound( min_col,   0 + border, 255 - border ); 
+    int restricted_max_col = Bound( max_col+1, 0 + border, 255 - border ); 
+      
+    FloatArrayEventList3D ev_list_3D = null;
+    Histogram3D           peak_histo = null;
+    if ( use_Q )
+    {
+      peak_histo = getEmptyHistogram( 
+                         restricted_min_col, restricted_max_col, num_cols,
+                         restricted_min_row, restricted_max_row, num_rows,
+                         min_mag_Q,          max_mag_Q,          num_slices );
+
+      ev_list_3D = getColRowMagQList( ev_list, ev_list.length );
+    }
+    else
+    {
+      peak_histo = getEmptyHistogram(
+                         restricted_min_col, restricted_max_col, num_cols,
+                         restricted_min_row, restricted_max_row, num_rows,
+                         min_tof,            max_tof,          num_slices );
+
+      ev_list_3D = getColRowTOFList( ev_list, ev_list.length );
+    }
+
+    if ( ev_list_3D != null && peak_histo != null )
       peak_histo.addEvents( ev_list_3D, false );
 
     return peak_histo;
@@ -599,6 +735,48 @@ public class PeakEventList
     }
 
     FloatArrayEventList3D ev_list_3D = 
+                           new FloatArrayEventList3D( null, xyz_vals );
+
+    return ev_list_3D;
+  }
+
+
+/*
+ * Get the events in this peak, in the form of a FloatArrayEventList3D
+ * object, with components col, row and time-of-flight. 
+ *
+ * @param  list   A partially filled array of EventInfo objects
+ * @param  num    The number of EventInfo objects in the list
+ *
+ * @return a FloatArrayEventlist3D containing col, row, TOF info about
+ *         each of the events in the current event list.  If the list
+ *         is empty, this will return null.
+ */
+  private FloatArrayEventList3D getColRowTOFList( EventInfo[] list, int num )
+  {
+    if ( num == 0 || list == null || list.length == 0 )
+      return null;
+
+    float[] xyz_vals = new float[ 3 * num ];
+    int index = 0;
+    for ( int i = 0; i < num; i++ )
+    {
+      float col = list[i].Col();
+      float row = list[i].Row();
+      float tof = list[i].Tof();
+      if ( Float.isNaN( col ) || Float.isNaN( row ) || Float.isNaN( tof ) )
+        System.out.println( "NaN col = " + col + 
+                               " row = " + row + 
+                               " tof = " + tof );
+      else
+      {
+        xyz_vals[index++] = list[i].Col();            // col
+        xyz_vals[index++] = list[i].Row();            // row
+        xyz_vals[index++] = list[i].Tof();
+      }
+    }
+
+    FloatArrayEventList3D ev_list_3D =
                            new FloatArrayEventList3D( null, xyz_vals );
 
     return ev_list_3D;

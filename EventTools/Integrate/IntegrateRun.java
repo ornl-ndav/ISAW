@@ -56,6 +56,9 @@ import DataSetTools.instruments.*;
 public class IntegrateRun 
 {
 
+public static final String DET_X_Y_Q     = "DET_X_Y_Q";
+public static final String THRESHOLD_XYT = "THRESHOLD_XYT";
+
 /**
  *  Integrate the peaks in specified peaks file, using data from the 
  *  specified SNS raw event file.
@@ -71,7 +74,7 @@ public class IntegrateRun
   {
     Vector<Peak_new> peaks = Peak_new_IO.ReadPeaks_new( peaks_file );
 
-    IntegrateRun( ev_file, peaks );
+    IntegrateRun( ev_file, peaks, DET_X_Y_Q );
 
     Peak_new_IO.WritePeaks_new( out_file, peaks, false );
   }
@@ -84,7 +87,9 @@ public class IntegrateRun
  *  @param ev_file      Fully qualified event file name
  *  @param peaks        Vector of peaks to integrate
  */
-  public static void IntegrateRun( String ev_file, Vector<Peak_new> peaks )
+  public static void IntegrateRun( String           ev_file, 
+                                   Vector<Peak_new> peaks,
+                                   String           int_method )
                      throws Exception
   {
     int max_id = -1;
@@ -176,7 +181,15 @@ public class IntegrateRun
         continue;
 
       float tol = 0.30f;
-      PeakEventList pev_list = EV_IntegrateUtils.GetPeakEventList( 
+      PeakEventList pev_list = null;
+
+      if ( int_method.equalsIgnoreCase(DET_X_Y_Q) )
+        pev_list = EV_IntegrateUtils.GetPeakEventList_Q_Aligned( 
+                                           peak, tol, UB_inverse,
+                                           ev_list_for_hkl, ev_list_for_det );
+
+      else if ( int_method.equalsIgnoreCase(THRESHOLD_XYT) )
+        pev_list = EV_IntegrateUtils.GetPeakEventList_TOF_Aligned(
                                            peak, tol, UB_inverse,
                                            ev_list_for_hkl, ev_list_for_det );
       if ( pev_list == null )
@@ -202,18 +215,36 @@ public class IntegrateRun
       PeakEventList.PeakType type = pev_list.GetPeakType( rc_radius/2, border );
                                  // treat as edge peak if within 15 of border
                  
-      if ( type == PeakEventList.PeakType.INTERIOR )
+//      if ( type == PeakEventList.PeakType.INTERIOR )
       { 
         float[] IsigI = EV_IntegrateUtils.IntegrateSlices( pev_list, 3*sigma );
 
+//        float[] newIsigI = EV_IntegrateUtils.IntegrateRegion( pev_list,
+//                                                       5, 25, 25, 25, false );
+        float[] newIsigI = EV_IntegrateUtils.EllipseIntegrate( pev_list, 0.5f);
         peak_count++;
 
-        peak.inti( IsigI[0] );
-        peak.sigi( IsigI[1] );
+        if ( int_method.equalsIgnoreCase(DET_X_Y_Q) )
+        {
+          peak.inti( IsigI[0] );
+          peak.sigi( IsigI[1] );
+        }
+        else
+        {
+          peak.inti( newIsigI[0] );
+          peak.sigi( newIsigI[1] );
+        }
+
         integrated_peaks.add( peak );
-//      System.out.println("Peak NUM " + peak_count + 
-//                         " sigma = " + sigma + 
-//                         " intI = " + IsigI[0]);
+        System.out.printf("%6.0f  %6.0f  %6.0f\n",peak.h(),peak.k(),peak.l());
+//        System.out.printf("SeqNum: %4d  Radius = %6.1f  intI = %8.1f\n", 
+//                          peak_count, sigma, IsigI[0]);
+
+        System.out.printf("  %4d   IntI = %10.2f  sigI = %8.1f\n", 
+                           peak_count, IsigI[0], IsigI[1] );
+
+        System.out.printf("         IntI = %10.2f  sigI = %8.1f\n", 
+                           newIsigI[0], newIsigI[1] );
       }
     }
 
@@ -234,8 +265,8 @@ public class IntegrateRun
 
     String ev_file    = dir + "TOPAZ_" + run_number + "_neutron_event.dat";
     String peaks_file = input_dir + run_number + "_Niggli.integrate";
-    String out_file   = output_dir + "SAPPH_Slice_Cylinder_30_Radius_NO_Recenter_NO_Edge_" +
-                        run_number + ".integrate";
+//    String peaks_file = "/home/dennis/TEST_SCRIPT/Sapph_Poisson_25_25_11_NotFilled_NotWeighted_Rhombohedral.integrate";
+    String out_file   = output_dir + "EigenEllipse_"+run_number+".integrate";
 
     IntegrateRun( ev_file, peaks_file, out_file );
   }

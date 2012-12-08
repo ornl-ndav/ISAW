@@ -96,6 +96,8 @@ public class ReduceSCD3 extends GenericOperator{
       Vector choices = new Vector();
       choices.add( "SPHERE" );
       choices.add( "DET_X_Y_Q" );
+      choices.add( "THRESHOLD_Q" );
+      choices.add( "THRESHOLD_XYT" );
       ChoiceListPG choice_list_pg = new ChoiceListPG("Integration Method",choices);
       addParameter( choice_list_pg );
 
@@ -199,8 +201,8 @@ public class ReduceSCD3 extends GenericOperator{
       S.append(" matrix will be written.");
       S.append("@param   ");
       S.append("String specifying which integration method to");
-      S.append(" use.  Currently the supported methods are either");
-      S.append(" SPHERE or DET_X_Y_Q.");
+      S.append(" use.  Currently the supported methods are ");
+      S.append(" SPHERE, DET_X_Y_Q, THRESHOLD_Q and THRESHOLD_XYT.");
       S.append("@param   ");
       S.append("The radius of the peak region to integrate,");
       S.append(" specified in Q, using the physics convention.");

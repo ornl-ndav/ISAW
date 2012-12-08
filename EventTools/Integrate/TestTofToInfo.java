@@ -181,7 +181,7 @@ public class TestTofToInfo
         continue;
 
       float tol = 0.30f;
-      PeakEventList pev_list = EV_IntegrateUtils.GetPeakEventList( 
+      PeakEventList pev_list = EV_IntegrateUtils.GetPeakEventList_Q_Aligned( 
                                            peak, tol, UB_inverse,
                                            ev_list_for_hkl, ev_list_for_det );
       if ( pev_list == null )
