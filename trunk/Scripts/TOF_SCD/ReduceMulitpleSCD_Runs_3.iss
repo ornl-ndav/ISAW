@@ -44,12 +44,12 @@ $ Threshold         Float(5)                                     Threshold to Co
 $ MinD              Float(3)                                     Min d (Less than a, b or c)
 $ MaxD              Float(7)                                     Max d (More than a, b or c)
 $ Tolerance         Float(0.12)                                  Tolerance for Indexing
-$ ConvertToConv     BooleanEnable(false,3,0)                     Convert to Conventional Cell
+$ ConvertToConv     BooleanEnable(false,2,0)                     Convert to Conventional Cell
 $ CellType          ChoiceList(["Cubic","Rhombohedral","Tetragonal","Orthorhombic","Monoclinic","Hexagonal","Triclinic"])  Conventional Cell Type 
 $ Centering         ChoiceList(["F Centered", "I Centered", "C Centered", "P Centered", "R Centered"])                     Conventional Cell Centering
 $ RemoveUnindexed   Boolean(true)                                Remove Unindexed Peaks
 
-$ IntegMethod       ChoiceList(["DET_X_Y_Q","SPHERE"])           Integration Method 
+$ IntegMethod       ChoiceList(["DET_X_Y_Q","SPHERE","THRESHOLD_Q","THRESHOLD_XYT"])   Integration Method 
 $ IntegRadius       Float(0.18)                                  Sphere Radius (for Sphere Integration) 
 $ PredictPeaks      Boolean(false)                               Integrate ALL Predicted Peak Positions
 
@@ -116,6 +116,7 @@ MergeRuns( OutputDir, ExpName & "_", ".integrate", RunNums, MergedFile )
 #
 if DetCorr
   WeightPeaksByDetector( MergedFile, DetCorrFile, MergedFile )
+endif
 
 #
 # Now index the merged file consistently and convert to the conventional cell if requested

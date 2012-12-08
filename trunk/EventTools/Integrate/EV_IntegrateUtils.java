@@ -37,6 +37,8 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 
+import Jama.*;
+
 import gov.anl.ipns.Util.Sys.FinishJFrame;
 import gov.anl.ipns.ViewTools.Panels.PeakArrayPanel.PeakDisplayInfo;
 import gov.anl.ipns.ViewTools.Panels.PeakArrayPanel.PeaksDisplayPanel;
@@ -147,8 +149,8 @@ public class EV_IntegrateUtils
 
 
 /**
- *  Get a list of events in a detector row and column aligned block, that
- *  correspond to the specified peak, considering the specified tolerance.
+ *  Get a list of events in a detector row, column and |Q| aligned block, 
+ *  corresponding to the specified peak, considering the specified tolerance.
  *  First, the preliminary event list for the specified peak is scanned 
  *  to find the min & max of row, col and |Q| for all events whose hkl is 
  *  within the specified tolerance of that hkl.  Then ALL the events for 
@@ -178,7 +180,7 @@ public class EV_IntegrateUtils
  *           aligned region around the peak.  If fewer than 5 events are in 
  *           the region this returns null.
  */
-  public static PeakEventList GetPeakEventList( 
+  public static PeakEventList GetPeakEventList_Q_Aligned( 
                                            Peak_new          peak,
                                            float             tolerance,
                                            Tran3D            UB_inverse,
@@ -272,6 +274,156 @@ public class EV_IntegrateUtils
       {
          float mag_Q = info.MagQ_over_2PI();
          if ( mag_Q >= min_mag_Q  &&  mag_Q <= max_mag_Q   )
+           ev_list.add( info );
+      }
+    }
+
+    PeakEventList result = new PeakEventList( peak, ev_list,
+                                              min_row, max_row,
+                                              min_col, max_col,
+                                              min_mag_Q, max_mag_Q );
+    return result;
+  }
+
+
+/**
+ *  Get a list of events in a detector row, column and TOF aligned block, 
+ *  corresponding to the specified peak, considering the specified tolerance.
+ *  First, the preliminary event list for the specified peak is scanned 
+ *  to find the min & max of row, col and TOF for all events whose hkl is 
+ *  within the specified tolerance of that hkl.  Then ALL the events for 
+ *  the detector are scanned to find events that are within that range of 
+ *  row, col and TOF values.  Events passing this requirement are added to 
+ *  the list of EventInfo objects included in the PeakEventList object that
+ *  is returned by this method.  
+ *  NOTE: The tolerance on hkl should be no larger than 1/2.
+ *
+ *  @param peak             A Peak_new object with information about this
+ *                          peak, including h,k,l and the sample orientation
+ *  @param tolerance        Tolerance on h,k,l to use when determining the
+ *                          range of row,col,|Q| for events to be associated
+ *                          with this peak (i.e. be included in the 
+ *                          PeakEventList that is returned).
+ *  @param UB_inverse       The matrix that maps Q/(2PI) to HKL
+ *  @param ev_list_for_hkl  List of events that are closer to this peak's hkl
+ *                          than to any other hkl.  These events are the only
+ *                          events checked when scanning for events within
+ *                          the specified tolerance on hkl.  
+ *  @param ev_list_for_det  List of ALL events for this detector module.  This
+ *                          list is used to obtain the final row, col, |Q| 
+ *                          aligned list of events that is returned in the
+ *                          PeakEventList object.
+ *  @return  A PeakEventList object containing the specified peak object and
+ *           the list of events associated with this peak, in a row,col,|Q|
+ *           aligned region around the peak.  If fewer than 5 events are in 
+ *           the region this returns null.
+ */
+  public static PeakEventList GetPeakEventList_TOF_Aligned(
+                                           Peak_new          peak,
+                                           float             tolerance,
+                                           Tran3D            UB_inverse,
+                                           Vector<EventInfo> ev_list_for_hkl,
+                                           Vector<EventInfo> ev_list_for_det )
+  {
+    Vector3D target_hkl = new Vector3D( Math.round(peak.h()),
+                                        Math.round(peak.k()),
+                                        Math.round(peak.l()) );
+    SampleOrientation samp_or = peak.getSampleOrientation();
+    Tran3D gonio_inverse = samp_or.getGoniometerRotationInverse();
+
+    //
+    // first, find the row, col and |Q| extent of the peak, based on a subset
+    // of the event list for the specified hkl ONLY.
+    //
+    Tran3D to_hkl = new Tran3D( UB_inverse );
+    to_hkl.multiply_by( gonio_inverse );
+
+    int   min_row   =  10000;
+    int   max_row   = -10000;
+    int   min_col   =  10000;
+    int   max_col   = -10000;
+    float min_mag_Q =  10000;
+    float max_mag_Q = -10000;
+    float min_tof   =  (float)1.0e20;
+    float max_tof   = -1;
+    Vector3D q_vec;
+    Vector3D hkl = new Vector3D();
+
+    int event_count = 0;
+
+    for ( int i_count = 0; i_count < ev_list_for_det.size(); i_count++ )
+    {
+      EventInfo info = ev_list_for_det.elementAt(i_count);
+
+      q_vec = info.VecQ_over_2PI();
+      to_hkl.apply_to( q_vec, hkl );
+
+      hkl.subtract( target_hkl );
+      if ( hkl.length() < tolerance )
+      {
+        event_count++;
+        int   row   = info.Row();
+        int   col   = info.Col();
+        float mag_Q = info.MagQ_over_2PI();
+        float tof   = info.Tof();
+        if ( row < min_row )
+          min_row = row;
+        if ( row > max_row )
+          max_row = row;
+        if ( col < min_col )
+          min_col = col;
+        if ( col > max_col )
+          max_col = col;
+        if ( mag_Q > max_mag_Q )
+          max_mag_Q = mag_Q;
+        if ( mag_Q < min_mag_Q )
+          min_mag_Q = mag_Q;
+        if ( tof > max_tof )
+          max_tof = tof;
+        if ( tof < min_tof )
+          min_tof = tof;
+      }
+    }
+
+    if ( event_count < 5 )
+      return null;
+
+    // Adjust the row and column range to be centered on the peak's row 
+    // and column.
+    float row_radius =  (max_row - min_row + 1f) / 2;
+    max_row = (int)Math.ceil ( peak.y() + row_radius );
+    min_row = (int)Math.floor( peak.y() - row_radius );
+
+    float col_radius =  (max_col - min_col + 1f) / 2;
+    max_col = (int)Math.ceil ( peak.x() + col_radius );
+    min_col = (int)Math.floor( peak.x() - col_radius );
+
+    // Expand range down to make room for the "tail" toward smaller Q values.
+    float q_range = max_mag_Q - min_mag_Q;
+    max_mag_Q +=   q_range/5;
+    min_mag_Q -= 2*q_range/5;
+
+    // Expand TOF range upward to make room for the "tail".
+    float tof_range = max_tof - min_tof;
+    min_tof -=   tof_range/5;
+    max_tof += 2*tof_range/5;
+
+    //
+    // Now scan through all events in the list of events for the whole 
+    // detector, and only keep those that are within the specified ranges
+    // of row, col and mag_Q.
+    //
+    Vector<EventInfo> ev_list = new Vector<EventInfo>();
+    for ( int i_count = 0; i_count < ev_list_for_det.size(); i_count++ )
+    {
+      EventInfo info = ev_list_for_det.elementAt(i_count);
+      int row     = info.Row();
+      int col     = info.Col();
+      if ( row   >= min_row    &&  row   <= max_row  &&
+           col   >= min_col    &&  col   <= max_col   )
+      {
+         float tof = info.Tof();
+         if ( tof >= min_tof  &&  tof <= max_tof )
            ev_list.add( info );
       }
     }
@@ -503,6 +655,193 @@ public class EV_IntegrateUtils
     return result;
   }
 
+
+/**
+ * Calculate some basic statistics for a list of values stored
+ * in increasing order.  Currently, the average and variance are
+ * calculated and returned as the first two entries in the
+ * returned array.
+ */
+  public static float[] Stats( float[] vals, float fraction )
+  {
+    if ( vals.length <= 0 )
+      return new float[2];
+
+    if ( fraction > 1 )
+      fraction = 1;
+    else if ( fraction < 0 )
+      fraction = 0;
+
+    int N = (int)(vals.length * fraction);
+    if ( N < 1 )
+      N = 1;
+
+    float sum    = 0;
+    float sum_sq = 0;
+    float val;
+    for ( int i = 0; i < N; i++ )
+    {
+      val     = vals[i];
+      sum    += val;
+      sum_sq += val * val;
+    }
+
+    float avg      = sum / N;
+    float variance = sum_sq/N - avg * avg;
+    float[] result = { avg, variance };
+    return result;
+  }
+
+
+/**
+ * Calculate some basic statistics for all initial sublists for 
+ * a list of values stored in increasing order.  Currently, 
+ * the average of the first k+1 values is returned in 
+ * result[0][k] and variance of the first k+1 values is returned in
+ * result[1][k].
+ */
+  public static float[][] SublistStats( float[] vals )
+  {
+    if ( vals.length <= 0 )
+      return new float[2][0];
+
+    float[][] result = new float[2][vals.length];
+
+    float sum    = 0;
+    float sum_sq = 0;
+    float val;
+    float avg;
+    float variance;
+    for ( int i = 0; i < vals.length; i++ )
+    {
+      val     = vals[i];
+      sum    += val;
+      sum_sq += val * val;
+      avg      = sum / vals.length;
+      variance = sum_sq/vals.length - avg * avg;
+      result[0][i] = avg;
+      result[1][i] = variance;
+    }
+
+    return result;
+  }
+
+
+  public static float[] IntegrateRegion( PeakEventList pev_list,
+                                         int border, 
+                                         int num_rows, int num_cols, 
+                                         int num_slices,
+                                         boolean use_Q )
+  {
+    Histogram3D peak_histo = pev_list.getBoundedRebinnedHistogram( 
+                                             border, 
+                                             num_rows, num_cols, num_slices,
+                                             use_Q );
+
+    float[][][] histo_array = peak_histo.getHistogramArray();
+    int n_rows = histo_array[0].length;
+    int n_cols = histo_array[0][0].length;
+    int n_bins = num_slices * n_rows * n_cols;
+    float[] vals = new float[ n_bins ];
+
+    int index = 0;
+    for ( int page = 0; page < num_slices; page++ )
+    {
+      float[][] arr = histo_array[page];
+      for ( int row = 0; row < n_rows; row++ )
+      {
+        float[] row_arr = arr[row];
+         for ( int col = 0; col < n_cols; col++ )
+           vals[index++] = row_arr[col];
+      }
+    }
+
+    float[] points = new float[12];
+    float power_2 = 0.5f;
+    for ( int i = 0; i < points.length-1; i++ )
+    {
+      points[i] = 1 - power_2;
+      power_2 /= 2;
+    }
+    points[points.length-1] = 1;
+
+    Arrays.sort( vals );
+    System.out.printf("n_rows, cols = %4d %4d %7d\n", n_rows, n_cols, n_bins );
+
+    float[] threshold = new float[points.length];
+    float[] average   = new float[points.length];
+    float[] variance  = new float[points.length];
+
+    float[][] sublist_stats = SublistStats(vals);
+
+    for ( int i = 0; i < points.length; i++ )
+      System.out.printf("%8.6f ", points[i] );
+    System.out.println();
+
+    for ( int i = 0; i < points.length; i++ )
+    {
+      index = (int)(points[i]*(n_bins-1));
+      threshold[i] = vals[ index ];
+      average[i]   = sublist_stats[0][index];
+      variance[i]  = sublist_stats[1][index];
+    }
+
+    for ( int i = 0; i < points.length; i++ )
+      System.out.printf("%8.0f ", threshold[i] );
+    System.out.println();
+
+    for ( int i = 0; i < points.length; i++ )
+      System.out.printf("%8.3f ", average[i] );
+    System.out.println();
+
+    for ( int i = 0; i < points.length; i++ )
+      System.out.printf("%8.3f ", variance[i] );
+    System.out.println();
+                                            // Work BACKWARDS through list
+                                            // of values to find the last
+                                            // one where variance > avg
+    int k = sublist_stats[0].length - 1;       
+    while ( k >= 0 && 
+           (sublist_stats[1][k] > sublist_stats[0][k]) )
+      k--;
+
+    k++;
+ 
+    float cutoff = 0;
+    if ( k >= vals.length )
+    {
+      cutoff = vals[vals.length-1];
+      k = vals.length-1;
+    }
+    else
+      cutoff = vals[k];
+
+    System.out.println("Cutoff = " + cutoff + " at position " + k );
+
+    float signal     = 0;
+    float signal_vol = 0;
+    float back       = 0;
+    float back_vol   = 0;
+
+    for ( int i = 0; i < k; i++ )
+    {
+      back += vals[i];
+      back_vol += 1;
+    }
+
+    for ( int i = k; i < vals.length; i++ )
+    {
+      signal += vals[i];
+      signal_vol += 1;
+    }
+
+    float ratio = signal_vol/back_vol;
+    float intI  = signal - ratio * back;
+    float sigI = (float)Math.sqrt( signal + ratio * ratio * back );
+
+    float[] result = { intI, sigI };
+    return result;
+  }
 
 
 /**
@@ -837,6 +1176,229 @@ public class EV_IntegrateUtils
 
     float[] result = { signal, sigma_signal };
     return result;
+  }
+
+
+/**
+ *  Given an array of 3D events, uniformly distributed about the origin,
+ *  create the 3x3 matrix X * X_transpose and use JAMA to create the 
+ *  EigenvalueDecomposition of that 3x3 matrix.  The eigenvectors of
+ *  that matrix, which form the principal axes of the set of events,
+ *  can be obtained from the EigenvalueDecomposition.
+ *
+ *  @param  ev_arr   List of events, centered around 0,0,0
+ *  @param  radius   Maxium distance from 0,0,0 of any event that
+ *                   will be considered.  To reduce the effect of
+ *                   background events in determining the principal
+ *                   axes, the radius should not be larger than the
+ *                   main peak region.
+ */
+  public static EigenvalueDecomposition GetEigenDecomp( Vector3D[] ev_arr,
+                                                        float      radius )
+  {
+    double[][] A_arr = new double[3][3];
+    for ( int row = 0; row < 3; row++ )
+      for ( int col = 0; col < 3; col++ )
+      {
+        double sum = 0;
+        for ( int i = 0; i < ev_arr.length; i++ )
+        {
+          if ( ev_arr[i].length() <= radius )
+          {
+            float[] v = ev_arr[i].get();
+            sum += v[row] * v[col];
+          }
+        }
+        A_arr[row][col] = sum;
+      }
+/*
+    System.out.println( "XX_transpose array:" );
+    for ( int row = 0; row < 3; row++ )
+      System.out.printf( "%12.6f    %12.6f   %12.6f\n",
+                         A_arr[row][0], A_arr[row][1], A_arr[row][2] );
+*/
+    Matrix A = new Matrix( A_arr );
+    return new EigenvalueDecomposition( A );
+  }
+
+
+/**
+ *  Calculate the standard deviation of the given list of 3D events in
+ *  the direction of the specified vector.  Only events that are within
+ *  the specified radius of 0,0,0 will be considered.
+ *  @param  ev_arr      List of 3D events centered at 0,0,0
+ *  @param  direction   The direction vector on which the 3D events 
+ *                      will be projected.
+ *  @param  radius      Maximun size of event vectors that will be used
+ *                      in calculating the standard deviation. 
+ */
+  public static float sigma( Vector3D[] ev_arr,
+                             Vector3D   direction,
+                             float      radius )
+  {
+    float sum    = 0;
+    float sum_sq = 0;
+    float dot_prod;
+    int   count = 0;
+    for ( int i = 0; i < ev_arr.length; i++ )
+    {
+      if ( ev_arr[i].length() <= radius )
+      {
+        dot_prod = ev_arr[i].dot( direction );
+        sum += dot_prod;
+        sum_sq += dot_prod * dot_prod;
+        count++;
+      }
+    }
+    float ave   = 0;
+    float stdev = 0;
+    if ( count > 0 )
+    {
+      ave = sum / count;
+      stdev = (float)Math.sqrt( sum_sq/count - ave*ave );
+    }
+/*
+    System.out.println( "Ave    = " + ave );
+    System.out.println( "StdDev = " + stdev );
+*/
+    return stdev;
+  }
+
+
+/**
+ * Calculate the number of events in an ellipsoid centered at 0,0,0 with 
+ * the three specified axes and the three specified sizes in the direction 
+ * of those axes.  Only events that are within the specified radius of the
+ * origin will be counted.
+ *
+ * @param  ev_arr      List of 3D events centered at 0,0,0
+ * @param  directions  List of 3 orthonormal directions for the axes of
+ *                     the ellipsoid.
+ * @param  sizes       List of three values a,b,c giving half the length
+ *                     of the three axes of the ellisoid.
+ * @return Then number of events that are in or on the specified ellipsoid.
+ */
+  public static int NumInEllipsoid( Vector3D[] ev_arr,
+                                    Vector3D[] directions,
+                                    float[]    sizes )
+  {
+    int   count = 0;
+    float comp;
+    float sum;
+    for ( int i = 0; i < ev_arr.length; i++ )
+    {
+      sum = 0;
+      for ( int k = 0; k < 3; k++ )
+      {
+        comp = ev_arr[i].dot( directions[k] ) / sizes[k];
+        sum += comp * comp;
+      }
+      if ( sum <= 1 )
+        count++;
+    }
+
+    return count;
+  }
+
+/**
+ * Integrate the specified events by counting the number of events in
+ * an ellipsoid with the specifed axes, and sizes, and subtracting a
+ * background estimate based on a larger ellipsoidal shell.
+ *
+ * @param  directions  List of 3 orthonormal directions giving the axes of
+ *                     the ellipsoid.
+ * @param  sigmas      Estimates of the standard deviations in the directions
+ *                     of the axes of the ellipsoid.  Unless constrained
+ *                     by the radius, the ellipsoid for the peak region will
+ *                     have axis half lengths, a, b, c equal to 3 times the
+ *                     corresponding sigma.  The background region is the
+ *                     ellipsoidal shell between the peak region and an
+ *                     ellipsoid with axis half lenghts equal to 4 times the
+ *                     corresponding sigma.  If 4 times the largest sigma is
+ *                     more than the specified radius, the scale factor 3 and
+ *                     4 will be scaled back so that the background ellipsoid
+ *                     is contained within a sphere of the specified radius.
+ * @param  radius      The maximum distance from the origin for an
+ *                     event to be counted.  This should be roughly twice
+ *                     the radius of the peak region.
+ * @return an array with two values, the net integrated intensity, intI and
+ *         sigI, the estimated standard deviation for intI.
+ */
+  public static float[] Integrate( Vector3D[] ev_arr,
+                                   Vector3D[] directions,
+                                   float[]    sigmas,
+                                   float      radius )
+  {
+    float r1 = 3;
+    float r2 = 3;
+    float r3 = 4;
+
+    float max_sigma = sigmas[0];
+    for ( int i = 1; i < 2; i++ )
+      if ( sigmas[i] > max_sigma )
+        max_sigma = sigmas[i];
+
+    if ( r3 * max_sigma > radius )
+    {
+      r3 = radius/max_sigma;
+      r2 = r3 * 0.75f;
+      r1 = r2;
+      System.out.println("Reduced sizes to " + r1 + ", " + r2 + ", " + r3);
+    }
+
+    float[] new_sigmas = new float[3];
+
+    for (int i = 0; i < 3; i++ )
+      new_sigmas[i] = r1*sigmas[i];
+    float peak_w_back = NumInEllipsoid( ev_arr, directions, new_sigmas );
+
+    for (int i = 0; i < 3; i++ )
+      new_sigmas[i] = r2*sigmas[i];
+    float back1 = NumInEllipsoid( ev_arr, directions, new_sigmas );
+
+    for (int i = 0; i < 3; i++ )
+      new_sigmas[i] = r3*sigmas[i];
+    float back2 = NumInEllipsoid( ev_arr, directions, new_sigmas );
+
+    float backgrd = back2 - back1;
+
+    float ratio = (float)(Math.pow(r1,3) / (Math.pow(r3,3) - Math.pow(r2,3)));
+
+    float intI = peak_w_back - ratio * backgrd;
+    float sigI = (float)Math.sqrt( peak_w_back + ratio * ratio * backgrd );
+
+    float[] result = { intI, sigI };
+
+    System.out.println( "backgrd = " + backgrd + "  ratio = " + ratio +
+                        "   peak_w_back = " + peak_w_back );
+
+    return result;
+  }
+
+
+  public static float[] EllipseIntegrate( PeakEventList pevl, float radius )
+  {
+    Vector3D[] ev_arr = pevl.GetZeroCenteredEventQs( radius );
+
+    EigenvalueDecomposition EV_Decomp = GetEigenDecomp( ev_arr, radius/2 );
+
+    Matrix V = EV_Decomp.getV();
+    double[][] V_arr = V.getArray();
+
+    float[] sigmas        = new float[3];
+    Vector3D[] directions = new Vector3D[3];
+    for ( int k = 0; k < 3; k++ )
+    {
+      Vector3D direction = new Vector3D( (float)(V_arr[0][k]),
+                                         (float)(V_arr[1][k]),
+                                         (float)(V_arr[2][k])  );
+      float stdev = sigma( ev_arr, direction, radius*0.75f );
+      sigmas[k]      = stdev;
+      directions[k] = direction;
+      System.out.println("\nFor Direction " + k + " stdev = " + stdev );
+    }
+
+    return Integrate( ev_arr, directions, sigmas, radius );
   }
 
 
