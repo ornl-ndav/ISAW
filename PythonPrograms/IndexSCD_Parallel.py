@@ -22,8 +22,7 @@ import threading
 import time
 import ReduceDictionary
 
-from time import clock
-start = clock()
+start = time.time()
 
 #sys.path.append("/opt/mantidnightly/bin")
 #sys.path.append("/opt/Mantid/bin")
@@ -121,6 +120,6 @@ while not all_done:
     all_done = True
 
 
-end = clock()
+end = time.time()
 elapsed = end - start
 print '\nElapsed time is %f seconds.' % elapsed
