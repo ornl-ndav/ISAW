@@ -20,12 +20,12 @@ import sys
 import shutil
 import ReduceDictionary
 
-from time import clock
-start = clock()
+from time import time
+start = time()
 
 # sys.path.append("/opt/mantidnightly/bin")
-#sys.path.append("/opt/Mantid/bin")
-sys.path.append("C:/MantidInstall/bin")
+sys.path.append("/opt/Mantid/bin")
+#sys.path.append("C:/MantidInstall/bin")
 
 from mantid.simpleapi import *
 from MantidFramework import mtd
@@ -172,6 +172,6 @@ if apply_transform_to_hkl is True:
   SaveIsawUB( InputWorkspace=peaks_ws, Filename=run_conventional_matrix_file )
 
   
-end = clock()
+end = time()
 elapsed = end - start
 print '\nElapsed time is %f seconds.' % elapsed
