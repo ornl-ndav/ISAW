@@ -1334,7 +1334,7 @@ public class EV_IntegrateUtils
     float r3 = 4;
 
     float max_sigma = sigmas[0];
-    for ( int i = 1; i < 2; i++ )
+    for ( int i = 1; i < 3; i++ )
       if ( sigmas[i] > max_sigma )
         max_sigma = sigmas[i];
 
