@@ -45,12 +45,12 @@ mtd.initialise()
 #
 # Get the config file name and the run number to process from the command line
 #
-if (len(sys.argv) < 2):
+if (len(sys.argv) < 3):
   print "You MUST give the config file name and run number on the command line"
   exit(0)
 
-config_file_name = 'IndexOneSCD_Run.inp'
-run              = sys.argv[1]
+config_file_name = sys.argv[1]
+run              = sys.argv[2]
 
 #
 # Load the parameter names and values from the specified configuration file 
