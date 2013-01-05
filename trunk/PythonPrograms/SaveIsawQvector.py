@@ -4,14 +4,24 @@ import sys
 
 try:
     sys.path.append("/opt/mantidnightly/bin")
-    #sys.path.append("/opt/Mantid/bin")
+    #sys.path.append("/opt/Mantid/bin")         # Linux cluster
     #sys.path.append('/opt/mantidunstable/bin')
 except:
-    sys.path.append("C:/MantidInstall/bin")     # Windows
+    sys.path.append("C:/MantidInstall/bin")     # Windows PC
 
 
 # import mantid
 from mantid.simpleapi import *
+
+user_input = open('SaveIsawQvector.inp', 'r')
+
+lineString = user_input.readline()
+lineList = lineString.split()
+data_directory = lineList[0]
+
+lineString = user_input.readline()
+lineList = lineString.split()
+output_directory = lineList[0]
 
 input_run_nums = open('monitorCtsAndAngles.dat', 'r')
 
@@ -28,15 +38,15 @@ while True:
     if len(lineList) == 0: break
     run_num = lineList[0]
     print run_num
-    full_name = '/SNS/TOPAZ/2012_1_12_SCI/data/TOPAZ_' + run_num + '_event.nxs'
+    full_name = data_directory + run_num + '_event.nxs'
 
     event_ws = 'TOPAZ_' + run_num
 
     LoadEventNexus( Filename = full_name, OutputWorkspace = event_ws,
-        FilterByTofMin=min_tof, FilterByTofMax=max_tof,
+        FilterByTofMin = min_tof, FilterByTofMax = max_tof,
         FilterByTimeStart = start_time, FilterByTimeStop = stop_time )
 
-    outputFile = '/SNS/users/ajschultz/profile_fit5/Ni_5678/TOPAZ_' + run_num + '_SaveIsawQvector.bin'
+    outputFile = output_directory + run_num + '_SaveIsawQvector.bin'
 
     SaveIsawQvector(InputWorkspace = event_ws, 
         Filename = outputFile)
