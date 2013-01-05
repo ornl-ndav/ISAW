@@ -44,15 +44,15 @@ qvec(twoth, az, wl)
     Input the two-theta and azimuthal angles (rad) and the wavelength.
     Return the q vector.
     
-rotate_matrix(UB, omega, chi, phi)
+rotate_matrix(UB, omega, chi, phi, SNS_or_IPNS)
     Input the UB matrix and the omega, chi and phi angles (deg).
     Return a rotated orientation matrix.
     
-rotate_vector(q, omega, chi, phi)
+rotate_vector(q, omega, chi, phi, SNS_or_IPNS)
     Input q vector and 3 rotation angles (deg).
     Return a rotated q vector.
     
-rotation_matrix(omega, chi, phi):
+rotation_matrix(omega, chi, phi, SNS_or_IPNS):
     Input rotation angles.
     Return the rotation matrix.
     
@@ -376,10 +376,10 @@ def qvec(twoth, az, wl):
 #C   A 3X3 MATRIX FOR WHICH ALL ANGLES ARE NON ZERO. SEE W.
 #C   C. HAMILTON, INT. TABLES. IV, PP 275-281
 #--------------------------------------------------------
-def rotate_matrix(UB, omega, chi, phi):
+def rotate_matrix(UB, omega, chi, phi, SNS_or_IPNS):
     "Rotates UB matrix by setting angles"
 
-    fmat = rotation_matrix(omega, chi, phi)
+    fmat = rotation_matrix(omega, chi, phi, SNS_or_IPNS)
 
     newmat = numpy.zeros((3,3))
     newmat = numpy.dot(UB, fmat)
@@ -394,7 +394,7 @@ def rotate_matrix(UB, omega, chi, phi):
 def rotate_vector(q, omega, chi, phi):
     "Rotates q-vector by setting angles"
 
-    fmat = rotation_matrix(omega, chi, phi)
+    fmat = rotation_matrix(omega, chi, phi, SNS_or_IPNS)
     
     newq = numpy.zeros((3))
     newq = numpy.dot(q, fmat)
@@ -406,7 +406,7 @@ def rotate_vector(q, omega, chi, phi):
 #---------------------------------------------
 # Calculate rotation matrix for omega, chi and phi angles
 #---------------------------------------------
-def rotation_matrix(omega, chi, phi):
+def rotation_matrix(omega, chi, phi, SNS_or_IPNS):
     "Returns rotation matrix from setting angles"
 
     rad = 180. / math.pi
@@ -431,7 +431,10 @@ def rotation_matrix(omega, chi, phi):
     R_chi[2,1] = -sc
     R_chi[2,2] = cc
 
-    om = -omega / rad
+    if SNS_or_IPNS == 'IPNS':
+        om = -omega / rad   # for IPNS data set omega to -omega
+    if SNS_or_IPNS == 'SNS':
+        om = omega / rad      # for SNS data
     co = math.cos(om)
     so = math.sin(om)
     R_om = numpy.zeros((3,3))
@@ -470,4 +473,34 @@ def UB_IPNS_2_SNS(UB_IPNS):
     
     return UB_SNS
 
+#################################################################
+# test
+if __name__ == '__main__':
+
+    # nickel 5678_Niggle.mat
+    UB = numpy.zeros((3,3))
+    UB[0,] = [ 0.28403938,  0.01181680, -0.00120478 ]
+    UB[1.] = [ 0.01218532, -0.28391245,  0.00737687 ]
+    UB[2,] = [ 0.00095225, -0.00789868, -0.28362876 ]
+    print '\nUB:'
+    print UB
     
+    omega = 144.0
+    chi = 134.8
+    phi = -0.02
+    SNS_or_IPNS = 'SNS'
+    newmat = rotate_matrix(UB, omega, chi, phi, SNS_or_IPNS)
+    print '\nnewmat:'
+    print newmat
+    
+    UBinv = linalg.inv(UB)
+    print '\nUBinv:'
+    print UBinv
+    
+    fmat = numpy.dot(UBinv, newmat)
+    print '\nfmat:'
+    print fmat
+    
+    
+
+        
