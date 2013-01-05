@@ -18,14 +18,22 @@
 import os
 import sys
 import shutil
-import ReduceDictionary
+
 
 from time import time
 start = time()
 
-# sys.path.append("/opt/mantidnightly/bin")
-sys.path.append("/opt/Mantid/bin")
-#sys.path.append("C:/MantidInstall/bin")
+try:
+    sys.path.append('/SNS/TOPAZ/shared/PythonPrograms/PythonLibrary')
+except:
+    sys.path.append('C:\ISAW_repo\PythonPrograms\PythonLibrary')
+import ReduceDictionary
+
+try:
+    sys.path.append("/opt/Mantid/bin")
+    # sys.path.append("/opt/mantidnightly/bin")
+except:
+    sys.path.append("C:/MantidInstall/bin")
 
 from mantid.simpleapi import *
 from MantidFramework import mtd
@@ -37,12 +45,12 @@ mtd.initialise()
 #
 # Get the config file name and the run number to process from the command line
 #
-if (len(sys.argv) < 3):
+if (len(sys.argv) < 2):
   print "You MUST give the config file name and run number on the command line"
   exit(0)
 
-config_file_name = sys.argv[1]
-run              = sys.argv[2]
+config_file_name = 'IndexOneSCD_Run.inp'
+run              = sys.argv[1]
 
 #
 # Load the parameter names and values from the specified configuration file 
@@ -121,7 +129,7 @@ print 'chi = %f deg' % chi_deg
 print 'phi = %f deg\n' % phi_deg
 
 monitorFile = open('monitorCtsAndAngles.dat', 'a')
-monitorFile.write('%s   %d   %f   %f   %f\n' % (run, monitor_count, omega_deg, chi_deg, phi_deg))
+monitorFile.write('%s   %8d   %12.6f   %12.6f   %12.6f\n' % (run, monitor_count, omega_deg, chi_deg, phi_deg))
 monitorFile.close()
 
 #
@@ -152,6 +160,7 @@ IndexPeaks( PeaksWorkspace=peaks_ws, Tolerance=tolerance )
 # see these partial results
 #
 SaveIsawUB( InputWorkspace=peaks_ws,Filename=run_niggli_matrix_file )
+sys.stdout.flush()
 
 #
 # If requested, also switch to the specified conventional cell and save the
@@ -164,12 +173,14 @@ if (not cell_type is None) and (not centering is None) :
                     CellType=cell_type, Centering=centering, 
                     Apply=True, Tolerance=tolerance )
   SaveIsawUB( InputWorkspace=peaks_ws, Filename=run_conventional_matrix_file )
+  sys.stdout.flush()
   
 if apply_transform_to_hkl is True:
   TransformHKL( PeaksWorkspace = peaks_ws,
                 Tolerance = tolerance,
                 HKL_Transform = HKL_Transform_matrix )
   SaveIsawUB( InputWorkspace=peaks_ws, Filename=run_conventional_matrix_file )
+  sys.stdout.flush()
 
   
 end = time()
