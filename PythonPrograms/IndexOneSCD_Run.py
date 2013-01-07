@@ -19,20 +19,19 @@ import os
 import sys
 import shutil
 
-
 from time import time
 start = time()
 
-try:
+if os.path.exists('/SNS/TOPAZ/shared/PythonPrograms/PythonLibrary'):
     sys.path.append('/SNS/TOPAZ/shared/PythonPrograms/PythonLibrary')
-except:
+else:
     sys.path.append('C:\ISAW_repo\PythonPrograms\PythonLibrary')
 import ReduceDictionary
 
-try:
+if os.path.exists("/opt/Mantid/bin"):
     sys.path.append("/opt/Mantid/bin")
     # sys.path.append("/opt/mantidnightly/bin")
-except:
+else:
     sys.path.append("C:/MantidInstall/bin")
 
 from mantid.simpleapi import *
