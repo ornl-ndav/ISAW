@@ -1,14 +1,14 @@
-# test SaveIsawQvector
+# SaveIsawQvector
 
 import sys
+import os
 
-try:
+if os.path.exists("/opt/Mantid/bin"):
     sys.path.append("/opt/mantidnightly/bin")
     #sys.path.append("/opt/Mantid/bin")         # Linux cluster
     #sys.path.append('/opt/mantidunstable/bin')
-except:
+else:
     sys.path.append("C:/MantidInstall/bin")     # Windows PC
-
 
 # import mantid
 from mantid.simpleapi import *
@@ -51,6 +51,6 @@ while True:
     SaveIsawQvector(InputWorkspace = event_ws, 
         Filename = outputFile)
         
-    #DeleteWorkspace(InputWorkspace = event_ws)
+    DeleteWorkspace(Workspace = event_ws)
 
 print 'All done!'
