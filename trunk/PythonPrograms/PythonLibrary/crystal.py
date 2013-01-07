@@ -391,7 +391,7 @@ def rotate_matrix(UB, omega, chi, phi, SNS_or_IPNS):
 #---------------------------------------------
 # Rotate q vector by angles omega, chi and phi
 #---------------------------------------------    
-def rotate_vector(q, omega, chi, phi):
+def rotate_vector(q, omega, chi, phi, SNS_or_IPNS):
     "Rotates q-vector by setting angles"
 
     fmat = rotation_matrix(omega, chi, phi, SNS_or_IPNS)
@@ -488,18 +488,13 @@ if __name__ == '__main__':
     omega = 144.0
     chi = 134.8
     phi = -0.02
+    
     SNS_or_IPNS = 'SNS'
+    
     newmat = rotate_matrix(UB, omega, chi, phi, SNS_or_IPNS)
     print '\nnewmat:'
     print newmat
     
-    UBinv = linalg.inv(UB)
-    print '\nUBinv:'
-    print UBinv
-    
-    fmat = numpy.dot(UBinv, newmat)
-    print '\nfmat:'
-    print fmat
     
     
 
