@@ -318,6 +318,8 @@ while True:
             continue        
 
     # Write to the integrate file
+    if abs(intI) < 0.001: continue     # skip if intI == 0.0
+    
     output.write(
         '3 %6d %4d %4d %4d %7.2f %7.2f %7.2f %8.3f %8.5f %8.5f %9.6f %8.4f %5d %9.2f %6.2f %4d\n' 
         % (numOfPeaks, h, k, l, col, row, chan, L2, two_theta, az, wl, dsp, ipk, intI, sigI, rflg))
