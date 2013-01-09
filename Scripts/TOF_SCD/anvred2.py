@@ -338,7 +338,7 @@ class anvred2(GenericTOF_SCD):
             if nrun != curhst or dn != idet:
                 if nrun != curhst:
                     curhst = nrun
-                    if iIQ != 1: hstnum = hstnum + 1
+                    if iIQ != 2: hstnum = hstnum + 1
                     
                 idet = dn  #IDET and DN is the arbitrary detector number.
                            #ID is a sequential number in the order they are listed.
