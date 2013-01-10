@@ -217,11 +217,15 @@ while True:
             print 'No counts for peak %d %d %d' % (h, k, l)
             continue
         else:
-            sig_aG = math.sqrt(pcov[0][0])
-            sig_sigG = math.sqrt(pcov[1][1])
-            sig_muG = math.sqrt(pcov[2][2])
-            sig_bG = math.sqrt(pcov[3][3])
-            sig_cG = math.sqrt(pcov[4][4])
+            try:
+                sig_aG = math.sqrt(pcov[0][0])
+                sig_sigG = math.sqrt(pcov[1][1])
+                sig_muG = math.sqrt(pcov[2][2])
+                sig_bG = math.sqrt(pcov[3][3])
+                sig_cG = math.sqrt(pcov[4][4])
+            except:
+                print 'Negative covalence matrix element for peak %d %d %d' % (h, k, l)
+                continue
 
         if sig_sigG > sigG:
             print 'Rejected: sig error greater than sig for peak %d %d %d' % (h, k, l)
