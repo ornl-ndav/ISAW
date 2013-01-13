@@ -230,9 +230,6 @@ while True:
         if sig_sigG > sigG:
             print 'Rejected: sig error greater than sig for peak %d %d %d' % (h, k, l)
         else:
-            # output.write('%4d %4d %4d %12.4f  %12.4f  %12.4f  %12.4f  %12.4f %12.4f  %12.4f  %12.4f  %12.4f  %12.4f\n' 
-                # %  (h, k, l, aG, sigG, muG, bG, cG, sig_aG, sig_sigG, sig_muG, 
-                # sig_bG, sig_cG))
             print '%4d %4d %4d %12.4f' % (h, k, l, aG)
  
         intI = aG
@@ -415,6 +412,8 @@ while True:
     pylab.savefig(filename)
     pylab.clf()
 
+output.flush()
+output.close()
 print '\nNumber of peaks = %d' % numOfPeaks 
 end = clock()
 elapsed = end - start
