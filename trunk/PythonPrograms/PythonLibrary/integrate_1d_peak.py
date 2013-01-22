@@ -7,9 +7,7 @@ def integrate_1d_peak( y, peakMin, peakMax, bkgMin, bkgMax):
     peak = 0.0                # peak counts
     bkg = 0.0                 # background counts
     numPeakCh = peakMax - peakMin + 1            # number of peak channels
-    print numPeakCh
     numBkgCh =(bkgMax - bkgMin + 1) - numPeakCh  # number of background channels
-    print numBkgCh
             
     for i in range(bkgMin, peakMin):
         bkg = bkg + y[i]
