@@ -1,0 +1,17 @@
+START    # begin list of run numbers, monitor counts and omega, chi, phi angles
+3131     289954       0.000000     135.000000       0.007690
+END
+triphylite                      # experiment name
+C:\Users\Arthur\Desktop\Triphylite_3131_3145\TOPAZ_3131_IsawEV.DetCal     # calibration file
+C:\data\TOPAZ\Triphylite\      # Directory location of EventsToQ.bin files
+_Orthorhombic_P.mat                    # orientation matrix prefix after run number
+0       # binary file type: 0 if Binary_Little_Endian(PC), 1 if Binary_Big_Endian(Java)
+P       # P, A, B, C, F, I or R centering
+0.5     # dmin
+0.3     # wlmin
+3.4     # wlmax
+0.004   # delta Q in units of 2pi/d
+0.4     # length of cylinder in units of 2pi/d
+0.1     # radius of cylinder in units of 2pi/d
+20.0    # for no fit integration, percent background bkg (bkg peak bkg)
+

@@ -18,12 +18,13 @@ import math
 from numpy import linalg
 import time
 import sys
+import os
 
-try:
+if os.path.exists('/SNS/TOPAZ/shared/PythonPrograms/PythonLibrary'):
     sys.path.append('/SNS/TOPAZ/shared/PythonPrograms/PythonLibrary')
-except:
-    sys.path.append('C:\ISAW_repo\PythonPrograms\PythonLibrary')
-
+else:
+    sys.path.append('C:/ISAW_repo/PythonPrograms/PythonLibrary')
+from integrate_1d_peak import *
 from read_detcal import *
 import crystal as xl
 
@@ -62,7 +63,8 @@ P       # P, A, B, C, F, I or R centering
 3.4     # wlmax
 0.004   # delta Q in units of 2pi/d
 0.4     # length of cylinder in units of 2pi/d
-0.1     # radius of cylinder in units of 2pi/d"""
+0.1     # radius of cylinder in units of 2pi/d
+"""
 
 user_input = open('get_profile_data3.inp', 'r')
 user_param = []
@@ -103,6 +105,7 @@ wlmax = float(user_param[8])
 deltaQ = float(user_param[9])
 rangeQ = float(user_param[10])
 radiusQ = float(user_param[11])
+percentOneBackground = float(user_param[12])
 
 # delta Q in units of 2pi/d
 print '\ndeltaQ = ', deltaQ, '\n'
@@ -110,6 +113,12 @@ deltaQ = deltaQ / (2.0 * math.pi)
 # rangeQ = length of cylinder in units of 2pi/d
 rangeQ = rangeQ / (2.0 * math.pi)
 numSteps = int(rangeQ / deltaQ) + 1
+
+bkgMin = 0
+peakMin = int(numSteps * percentOneBackground / 100)
+peakMax = int(numSteps - peakMin - 1)
+bkgMax = numSteps - 1
+
 print 'numSteps = ', numSteps, '\n'
 # radius of cylinder in units of 2pi/d
 print 'radiusQ = ', radiusQ
@@ -267,14 +276,14 @@ for n in range(number_of_runs):
     print ''
 
     # Read the events from binary file--------------------------------
-    events_fname = events_directory + 'TOPAZ_' + srun + '_SaveIsawQvector.bin'
+    events_fname = events_directory + srun + '_SaveIsawQvector.bin'
     input = open(events_fname, 'rb')
     print 'The EventsToQ.bin file is ' + events_fname
     print ''
     numberOfEvents = 0
     two_pi = 2.0 * math.pi
     while True:
-        #if numberOfEvents == 1e06: break
+        # if numberOfEvents == 1e06: break
         
         lineString = input.read(12)
         if lineString == "": break
@@ -354,12 +363,14 @@ for n in range(number_of_runs):
         # Step through the list of peaks
         for j in range(numOfPeaks):
             if peaks[j][15] == dc.detNum[i]:
+                if sum(peak_profile[j]) == 0: continue    # skip peak with all zero counts
                 seqn = seqn + 1
+                intI, sigI = integrate_1d_peak(peak_profile[j], peakMin, peakMax, bkgMin, bkgMax)
                 output.write(
                     '3 %6d %4d %4d %4d %7.2f %7.2f %7.2f %8.3f %8.5f %8.5f %9.6f %8.4f %5d %9.2f %6.2f %4d\n' 
                     % (seqn, peaks[j][0], peaks[j][1], peaks[j][2], peaks[j][3], peaks[j][4], peaks[j][5], 
                     peaks[j][6], peaks[j][7], peaks[j][8], peaks[j][9], peaks[j][10], peaks[j][11], 
-                    peaks[j][12], peaks[j][13], peaks[j][14]))
+                    intI, sigI, peaks[j][14]))
                 output.write('8')
                 for jj in range(numSteps):
                     if jj != 0 and jj%10 == 0: output.write('\n8')
