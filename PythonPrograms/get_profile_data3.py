@@ -24,6 +24,7 @@ if os.path.exists('/SNS/TOPAZ/shared/PythonPrograms/PythonLibrary'):
     sys.path.append('/SNS/TOPAZ/shared/PythonPrograms/PythonLibrary')
 else:
     sys.path.append('C:/ISAW_repo/PythonPrograms/PythonLibrary')
+    
 from integrate_1d_peak import *
 from read_detcal import *
 import crystal as xl
