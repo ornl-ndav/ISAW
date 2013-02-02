@@ -237,6 +237,7 @@ for n in range(number_of_runs):
                     # First check if scattering vector is within 16 deg if center of detector
                     cosAngle = (numpy.dot(det_center[i], nvecQ)) / (dc.detD[i] * (1.0 / wl))
                     if cosAngle > 1.0: cosAngle = 1.0
+                    if cosAngle < -1.0: cosAngle = -1.0
                     angle = math.degrees(math.acos(cosAngle))
                     if angle < 16.0:
                         factor = numpy.dot(det_center[i], normal[i]) / numpy.dot(nvecQ, normal[i])
