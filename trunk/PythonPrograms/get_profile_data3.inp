@@ -1,12 +1,31 @@
 START    # begin list of run numbers, monitor counts and omega, chi, phi angles
-3131     289954       0.000000     135.000000       0.007690
+6347   14619111      -0.000500     135.000000      -0.010986
+6348   14624343      60.000000     135.000000      -0.010986
+6349   14619067     120.000504     135.000000      -0.010986
+6350   14625238     180.000000     135.000000      -0.010986
+6351   14621147     180.000000     135.000000      30.000374
+6352   14624146    -120.000000     135.000000      -0.009888
+6353   14617259     -60.000500     135.000000      -0.009888
+6354   14616187       0.000000     135.000000      30.000374
+6355   14619539    -141.609497     135.000000       9.119753
+6356   14615765     139.059998     135.000000    -121.015533
+6357   14622822    -120.139999     135.000000     104.767845
+6358   14625662     149.169998     135.000000     160.060959
+6359   14625208    -109.910004     135.000000      67.188004
+6360   14622708      17.160000     135.000000     135.680084
+6361   14627284     146.570007     135.000000     -50.387707
+6362   14617758    -133.800003     135.000000     117.181305
+6363   14623878     154.259995     135.000000    -105.358910
+6364   14618760     143.240005     135.000000      88.007103
+6365   14621254     136.929993     135.000000     -11.746585
+6366   14615105      89.879501     135.000000      98.358421
 END
-triphylite                      # experiment name
-C:\Users\Arthur\Desktop\Triphylite_3131_3145\TOPAZ_3131_IsawEV.DetCal     # calibration file
-C:\data\TOPAZ\Triphylite\      # Directory location of EventsToQ.bin files
-_Orthorhombic_P.mat                    # orientation matrix prefix after run number
+sapphire_6347-6366                      # experiment name
+/SNS/users/ajschultz/sapphire_6347-6366/TOPAZ01Feb2013.DetCal     # calibration file
+/SNS/users/ajschultz/sapphire_6347-6366/      # Directory location of EventsToQ.bin files
+_Rhombohedral_R.mat                    # orientation matrix prefix after run number
 0       # binary file type: 0 if Binary_Little_Endian(PC), 1 if Binary_Big_Endian(Java)
-P       # P, A, B, C, F, I or R centering
+R       # P, A, B, C, F, I or R centering
 0.5     # dmin
 0.3     # wlmin
 3.4     # wlmax
