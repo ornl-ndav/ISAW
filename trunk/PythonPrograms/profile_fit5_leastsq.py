@@ -53,9 +53,6 @@ else:
     sys.path.append('C:/ISAW_repo/PythonPrograms/PythonLibrary')
 from read_write_refl_header import *
 
-
-# import crystal as xl
-
 def gaussian(x, a, sig, mu, b, c):
     """ Gaussian function on a linear background."""
     sqrt2pi = 2.506628   # sqrt(2.0 * pi)
@@ -223,8 +220,7 @@ while True:
         p0[2] = yobs.argmax()
             
         try:
-            #popt, pcov = curve_fit(gaussian, x, yobs, p0)
-            popt, pcov = leastsq(residuals_func0, p0, args=(yobs, x))
+            popt, success = leastsq(residuals_func0, p0, args=(yobs, x))
             intI = popt[0]
             sigmaG = popt[1]
             mu = popt[2]
@@ -265,7 +261,7 @@ while True:
         p0[5] = 0.0                         # initial value of background constants
         
         try:
-            popt, pcov = leastsq(residuals_func1, p0, args=(yobs, x))
+            popt, success = leastsq(residuals_func1, p0, args=(yobs, x))
             scale = popt[0]
             mu = popt[1]
             alpha = popt[2]
@@ -307,7 +303,7 @@ while True:
         p0[6] = 0.0                         # initial value of background constants
         
         try:
-            popt, pcov = leastsq(residuals_func2, p0, args=(yobs, x))
+            popt, success = leastsq(residuals_func2, p0, args=(yobs, x))
             scale = popt[0]
             mu = popt[1]
             alpha = popt[2]
@@ -318,6 +314,8 @@ while True:
             
             intI, sig_intI = scipy.integrate.quad(gauss_2_exps, 0, numSteps-1, 
                 args=(scale, mu, alpha, beta, sigma, 0.0, 0.0))
+                
+            if intI < 0.0: continue
                                         
             # Get background counts
             background_total = 0.0
@@ -326,7 +324,8 @@ while True:
                 background = slope * x[istep] + constant
                 if yc > background:
                     background_total = background_total + background
-            sigI = math.sqrt(abs(intI) + background_total)
+            if background_total < 0.0: continue
+            sigI = math.sqrt(intI + background_total)
             print '%4d %4d %4d %12.4f' % (h, k, l, intI)
                     
         except RuntimeError:
