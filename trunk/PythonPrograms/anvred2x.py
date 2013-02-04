@@ -87,7 +87,12 @@
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 import os
-
+import sys
+if os.path.exists('/SNS/TOPAZ/shared/PythonPrograms/PythonLibrary'):
+    sys.path.append('/SNS/TOPAZ/shared/PythonPrograms/PythonLibrary')
+    sys.path.append('/SNS/software/ISAW/PythonSources/Lib')
+else:
+    sys.path.append('C:\ISAW_repo\PythonPrograms\PythonLibrary')
 from readrefl_header import *
 from readrefl_SNS import *
 from readSpecCoef import *
@@ -178,6 +183,7 @@ calibParam = readrefl_header( integFile )
 L1 = float(calibParam[0])       # initial flight path length in cm
 t0_shift = float(calibParam[1]) # t-zero offest in microseconds
 nod = int(calibParam[2])    # number of detectors
+print '********** nod = ', nod
 
 logFile.write('\nInitial flight path length: %10.4f cm' % L1 )
 logFile.write('\nT-zero offset: %8.3f microseconds' % t0_shift )
@@ -202,6 +208,7 @@ if iSpec == 0:
     
     for i in range(8):   # skip the first 8 lines
         lineString = specInput.readline()
+        print lineString
     
     # "spectra" is an array spectra[i][j] where i is the number
     # of the detector bank starting at zero, and j = 0 for
