@@ -8,6 +8,8 @@
 #   Script to rewrite a fcf file (LIST 4) to an hkl file (HKLF 4).
 #   First run SHELX with MERG 0, HKLF 2 and LIST 4.
 
+#   Ignore this comment
+
 
 print ''
 print 'Script to rewrite a fcf file (LIST 4) to an hkl file (HKLF 4).'
