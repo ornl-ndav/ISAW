@@ -48,6 +48,7 @@ if (len(sys.argv) < 3):
 
 config_file_name = sys.argv[1]
 run              = sys.argv[2]
+nrun = int(run)
 
 #
 # Load the parameter names and values from the specified configuration file 
@@ -86,7 +87,7 @@ while True:
 monitorAngles_input.close()
 
 # delta Q in units of 2pi/d
-print '\ndeltaQ = ', deltaQ, '\n'
+print '\ndeltaQ = ', deltaQ
 deltaQ = deltaQ / (2.0 * math.pi)
 # rangeQ = length of cylinder in units of 2pi/d
 rangeQ = rangeQ / (2.0 * math.pi)
@@ -97,14 +98,14 @@ peakMin = int(numSteps * percentOneBackground / 100)
 peakMax = int(numSteps - peakMin - 1)
 bkgMax = numSteps - 1
 
-print 'numSteps = ', numSteps, '\n'
+print 'numSteps = ', numSteps
 # radius of cylinder in units of 2pi/d
 print 'radiusQ = ', radiusQ
 radiusQ = radiusQ / (2.0 * math.pi)
 
 # Read the instrument calibration parameters.
 detcal_input = open(detcal_fname, 'r')
-filename = expname + '.profiles'
+filename = expname + '_' + run + '.profiles'
 output = open(filename, 'w')
 dc = ReadDetCal()
 first_line = '# get_profile_data file'
@@ -265,8 +266,8 @@ while True:
     numberOfEvents = numberOfEvents + 1
     
     if (numberOfEvents % 100000) == 0:
-        millionEvents = float(numberOfEvents) / 1000000,
-        print '\r%.1f million events' % millionEvents,
+        millionEvents = float(numberOfEvents) / 1000000
+        print '\r%.1f million events in run %s' % (millionEvents, run),
         sys.stdout.flush()
     
     qxyz = numpy.zeros(3)
@@ -328,7 +329,6 @@ seqn = 0
 # output.write('\n')
 for i in range(dc.nod):
     output.write('0 NRUN DETNUM    CHI    PHI  OMEGA MONCNT\n')
-    nrun = int(run)
     output.write('1 %4d %6d %6.2f %6.2f %6.2f %d\n' 
                       % (nrun, dc.detNum[i], chi_deg, phi_deg, omega_deg, monitor_counts))
     output.write('2   SEQN    H    K    L     COL     ROW    CHAN' + 
@@ -357,7 +357,7 @@ output.close()
 end = time.time()
 elapsed = end - start
 print '\nElapsed time is %f seconds.' % elapsed
-print '\nAll done!' 
+print '\nRun ' + run + ' all done!' 
 
 
 
