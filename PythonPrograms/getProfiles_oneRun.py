@@ -181,7 +181,7 @@ for h in range(-hmax, hmax+1):
             Qpeak = xl.huq(h, k, l, UB_rotated)  # units of 1/d
             
             if Qpeak[0] > 0.0: continue   # x pointing downstream
-            if Qpeak[1] > 0.0: continue   # only detectors on -y side
+            # if Qpeak[1] > 0.0: continue   # only detectors on -y side
             
             lenQpeak = math.sqrt(numpy.dot(Qpeak, Qpeak))   # magnitude or length of Qpeak
             
@@ -267,7 +267,7 @@ while True:
     
     if (numberOfEvents % 100000) == 0:
         millionEvents = float(numberOfEvents) / 1000000
-        print '\r%.1f million events in run %s' % (millionEvents, run),
+        print '\r%5.1f million events in run %s' % (millionEvents, run),
         sys.stdout.flush()
     
     qxyz = numpy.zeros(3)
