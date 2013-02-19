@@ -49,6 +49,7 @@ def readrefl_SNS(input, eof, nrun, dn, chi, phi, omega, moncnt):
             return nrun, dn, chi, phi, omega, moncnt, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, eof
        
         isent = int( lineList[0] )          # test for line type
+        if isent == 8: continue             # skip line if profile data
         
         if isent == 1:
             nrun = int( lineList[1] )
