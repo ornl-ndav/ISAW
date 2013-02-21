@@ -1,4 +1,5 @@
-sapphire                        # Experiment name
+sapphire                   # Experiment name
 100                        # number of profile steps
 0.4                        # length of profile in units of 2pi/d
 2                          # 0 = Gaussian, 1 = conv. Gaussian and 1 exp, 2 = conv. Gaussian and 2 exps
+0                          # 0 = no weights, 1 = use weights
