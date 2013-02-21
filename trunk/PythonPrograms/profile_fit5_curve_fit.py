@@ -31,6 +31,9 @@ Includes all features of profile_fit4b_mr.py plus the option of the
 full GSAS profile function 1 which is a convolution of two
 back-to-back exponentials with a Gaussian.
 August, 2012
+
+Added an option to weight the counts in each step.
+February, 2013
 """
 
 import pylab
@@ -118,7 +121,8 @@ step_size = profile_length / numSteps
 #    0 = Gaussian
 #    1 = convolution of one exponential with Gaussian
 #    2 = convolution of two back-to-back exponentials with a Gaussian
-profile_function = int(user_param[3]) 
+profile_function = int(user_param[3])
+weights = int(user_param[4])    # False if 0, True if nonzero
 
 # Read and write the instrument calibration parameters.
 input_fname = expname + '.profiles'
@@ -183,6 +187,14 @@ while True:
             peak_profile.append(int(lineList[j+1]))
     
     yobs = pylab.array(peak_profile)
+    if weights:
+        sig_yobs = pylab.zeros(numSteps)
+        for i in range(numSteps):
+            if yobs[i] == 0:
+                sig_yobs[i] = 100.0
+            else:
+                sig_yobs[i] = math.sqrt(yobs[i])
+            
 
     # Gaussian profile
     if profile_function == 0:
@@ -196,7 +208,10 @@ while True:
         p0[2] = yobs.argmax()
             
         try:
-            popt, pcov = curve_fit(gaussian, x, yobs, p0)
+            if weights:
+                popt, pcov = curve_fit(gaussian, x, yobs, p0, sig_yobs)
+            else:
+                popt, pcov = curve_fit(gaussian, x, yobs, p0)
             aG = popt[0]
             sigG = popt[1]
             muG = popt[2]
@@ -250,7 +265,10 @@ while True:
         p0[5] = 0.0                         # initial value of background constants
         
         try:
-            popt, pcov = curve_fit(gauss_1_exp, x, yobs, p0)
+            if weights:
+                popt, pcov = curve_fit(gauss_1_exp, x, yobs, p0, sig_yobs)
+            else:
+                popt, pcov = curve_fit(gauss_1_exp, x, yobs, p0)
             scale = popt[0]
             mu = popt[1]
             alpha = popt[2]
@@ -292,7 +310,10 @@ while True:
         p0[6] = 0.0                         # initial value of background constants
         
         try:
-            popt, pcov = curve_fit(gauss_2_exps, x, yobs, p0)
+            if weights:
+                popt, pcov = curve_fit(gauss_2_exps, x, yobs, p0, sig_yobs)
+            else:
+                popt, pcov = curve_fit(gauss_2_exps, x, yobs, p0)
             scale = popt[0]
             mu = popt[1]
             alpha = popt[2]
@@ -407,8 +428,9 @@ while True:
         textString = 'run = %d\ndetector = %d' % (nrun, dn)
         pylab.figtext(0.65, 0.45, textString, family='monospace')
 
-        filename = './plots/Profile_fit_%d_%d_%d' % (h, k, l)
-            
+        filename = './plots/Profile_fit_%d_%d_%d_%d' % (h, k, l, nrun)
+    
+    
     pylab.savefig(filename)
     pylab.clf()
 
