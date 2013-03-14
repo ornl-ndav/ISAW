@@ -23,15 +23,18 @@ import time
 
 if os.path.exists('/SNS/TOPAZ/shared/PythonPrograms/PythonLibrary'):
     sys.path.append('/SNS/TOPAZ/shared/PythonPrograms/PythonLibrary')
+elif os.path.exists("/home/ajschultz/PythonPrograms"):
+    sys.path.append("/home/ajschultz/PythonPrograms/PythonLibrary")
 else:
     sys.path.append('C:\ISAW_repo\PythonPrograms\PythonLibrary')
+
 import ReduceDictionary
 
 start = time.time()
 
 if os.path.exists("/opt/Mantid/bin"):
-    # sys.path.append("/opt/Mantid/bin")
-    sys.path.append("/opt/mantidnightly/bin")
+    sys.path.append("/opt/Mantid/bin")
+    # sys.path.append("/opt/mantidnightly/bin")
 else:
     sys.path.append("C:/MantidInstall/bin")
 
