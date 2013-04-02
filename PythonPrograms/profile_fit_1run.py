@@ -34,6 +34,9 @@ August, 2012
 
 Added an option to weight the counts in each step.
 February, 2013
+
+Added an option to use curve_fit or leastsq.
+April, 2013
 """
 
 import pylab
@@ -42,10 +45,7 @@ import os
 import sys
 import scipy.special
 import scipy.integrate
-# from numpy import linalg
 from time import clock
-# from read_detcal import *
-from scipy.optimize import curve_fit
 
 if os.path.exists('/SNS/TOPAZ/shared/PythonPrograms/PythonLibrary'):
     sys.path.append('/SNS/TOPAZ/shared/PythonPrograms/PythonLibrary')
@@ -61,7 +61,6 @@ from read_write_refl_header import *
 
 import warnings
 warnings.filterwarnings('ignore')
-
 
 # import crystal as xl
 
@@ -111,6 +110,26 @@ def gauss_2_exps(x, scale, mu, alpha, beta, sigma, slope, constant):
     
     return H
 
+# The following 3 functions are required for the leastsq optimize function.
+def residuals_func0(p, yobs, x):
+    a, sig, mu, b, c = p
+    ycalc = gaussian(x, a, sig, mu, b, c)
+    err = yobs - ycalc
+    return err
+        
+def residuals_func1(p, yobs, x):
+    scale, mu, alpha, sigma, slope, constant = p
+    ycalc = gauss_1_exp(x, scale, mu, alpha, sigma, slope, constant)
+    err = yobs - ycalc
+    return err
+        
+def residuals_func2(p, yobs, x):
+    scale, mu, alpha, beta, sigma, slope, constant = p
+    ycalc = gauss_2_exps(x, scale, mu, alpha, beta, sigma, slope, constant)
+    err = yobs - ycalc
+    return err
+
+    
 # Begin.................................................
 
 start = clock()
@@ -136,8 +155,19 @@ expname                     = params_dictionary[ "expname" ]
 numSteps                    = int( params_dictionary[ "numSteps" ] )
 profile_length              = float( params_dictionary[ "profile_length" ] )
 profile_function            = int( params_dictionary[ "profile_function" ] )
+optimize_function           = int( params_dictionary[ "optimize_function" ] )
 weights                     = int( params_dictionary[ "weights" ] )
+reject_intI_zero            = bool( params_dictionary[ "reject_intI_zero" ] )
+delta_x                     = float( params_dictionary[ "delta_x" ] )
+reject_Gaussian_sigma_zero  = bool( params_dictionary[ "reject_Gaussian_sigma_zero" ] )
 
+if optimize_function == 0:
+    from scipy.optimize import curve_fit
+    opt_name = 'curve_fit'
+else:
+    from scipy.optimize import leastsq
+    opt_name = 'leastsq'
+    
 step_size = profile_length / numSteps
 
 # Make a ./plots subdirectory for the profile plot files.
@@ -196,6 +226,11 @@ while True:
     intI = float(lineList[14])
     sigI = float(lineList[15])
     rflg = int(lineList[16])
+    
+    # rflg is 10 if using curve_fit, 20 if using leastsq
+    rflg = (optimize_function + 1) * 10
+    # add 1, 2 or 3 for the profile function type
+    rflg = rflg + profile_function + 1
         
     x = range(numSteps)
     x = pylab.array(x)
@@ -229,48 +264,39 @@ while True:
         p0[2] = yobs.argmax()
             
         try:
-            if weights:
-                popt, pcov = curve_fit(gaussian, x, yobs, p0, sig_yobs)
-            else:
-                popt, pcov = curve_fit(gaussian, x, yobs, p0)
-            aG = popt[0]
-            sigG = popt[1]
-            muG = popt[2]
-            bG = popt[3]
-            cG = popt[4]
+            if optimize_function == 0:       # curve_fit
+                if weights:
+                    popt, pcov = curve_fit(gaussian, x, yobs, p0, sig_yobs)
+                else:
+                    popt, pcov = curve_fit(gaussian, x, yobs, p0)
+            else:                            # leastsq
+                popt, success = leastsq(residuals_func0, p0, args=(yobs, x))
             
-            # intI, sigI = scipy.integrate.quad(gaussian, 0, numSteps-1, 
-                # args=(aG, sigG, muG, 0.0, 0.0))
-                
-            # print intI, sigI
+            intI = popt[0]
+            sigmaG = popt[1]
+            mu = popt[2]
+            slope = popt[3]
+            constant = popt[4]
 
+            # Get background counts
+            background_total = 0.0
+            for istep in range(numSteps):
+                yc = gaussian(x[istep], intI, sigmaG, mu, slope, constant)
+                background = slope * x[istep] + constant
+                if yc > background:
+                    background_total = background_total + background
+            sigI = math.sqrt(abs(intI) + background_total)
+            # print '%4d %4d %4d %12.4f %12.4f' % (h, k, l, intI, sigI)
             
         except RuntimeError:
             # print 'RuntimeError for peak %d %d %d' % (h, k, l)
             continue        
             
-        if aG == 0.0:
-            # print 'No counts for peak %d %d %d' % (h, k, l)
+        if intI == 0.0:
+            print 'No counts for peak %d %d %d' % (h, k, l)
             continue
-        else:
-            try:
-                sig_aG = math.sqrt(pcov[0][0])
-                sig_sigG = math.sqrt(pcov[1][1])
-                sig_muG = math.sqrt(pcov[2][2])
-                sig_bG = math.sqrt(pcov[3][3])
-                sig_cG = math.sqrt(pcov[4][4])
-            except:
-                # print 'Negative covalence matrix element for peak %d %d %d' % (h, k, l)
-                continue
 
-        # if sig_sigG > sigG:
-            # print 'Rejected: sig error greater than sig for peak %d %d %d' % (h, k, l)
-        # else:
-            # print '%4d %4d %4d %12.4f' % (h, k, l, aG)
- 
-        intI = aG
-        sigI = sig_aG
- 
+
     # Convolution of Gaussian and one exponential
     if profile_function == 1:
 
@@ -286,10 +312,14 @@ while True:
         p0[5] = 0.0                         # initial value of background constants
         
         try:
-            if weights:
-                popt, pcov = curve_fit(gauss_1_exp, x, yobs, p0, sig_yobs)
+            if optimize_function == 0:
+                if weights:
+                    popt, pcov = curve_fit(gauss_1_exp, x, yobs, p0, sig_yobs)
+                else:
+                    popt, pcov = curve_fit(gauss_1_exp, x, yobs, p0)
             else:
-                popt, pcov = curve_fit(gauss_1_exp, x, yobs, p0)
+                popt, success = leastsq(residuals_func1, p0, args=(yobs, x))
+                
             scale = popt[0]
             mu = popt[1]
             alpha = popt[2]
@@ -331,10 +361,14 @@ while True:
         p0[6] = 0.0                         # initial value of background constants
         
         try:
-            if weights:
-                popt, pcov = curve_fit(gauss_2_exps, x, yobs, p0, sig_yobs)
+            if optimize_function == 0:
+                if weights:
+                    popt, pcov = curve_fit(gauss_2_exps, x, yobs, p0, sig_yobs)
+                else:
+                    popt, pcov = curve_fit(gauss_2_exps, x, yobs, p0)
             else:
-                popt, pcov = curve_fit(gauss_2_exps, x, yobs, p0)
+                popt, success = leastsq(residuals_func2, p0, args=(yobs, x))
+                    
             scale = popt[0]
             mu = popt[1]
             alpha = popt[2]
@@ -345,7 +379,9 @@ while True:
             
             intI, sig_intI = scipy.integrate.quad(gauss_2_exps, 0, numSteps-1, 
                 args=(scale, mu, alpha, beta, sigma, 0.0, 0.0))
-                                        
+                                     
+            if intI < 0.0: continue
+                                     
             # Get background counts
             background_total = 0.0
             for istep in range(numSteps):
@@ -361,7 +397,12 @@ while True:
             continue        
 
     # Write to the integrate file
-    if abs(intI) < 0.001: continue     # skip if intI == 0.0
+    # First check for rejections
+    if reject_intI_zero:
+        if intI <= 0.0: continue              # skip if intI == 0.0 or negative
+    if abs(mu - 50.0) >= delta_x: continue    # skip if peak is far from center
+    if reject_Gaussian_sigma_zero:
+        if sigma  <= 0.01: continue               # skip of Gaussian sigma <= 0
     
     output.write(
         '3 %6d %4d %4d %4d %7.2f %7.2f %7.2f %8.3f %8.5f %8.5f %9.6f %8.4f %5d %9.2f %6.2f %4d\n' 
@@ -373,7 +414,7 @@ while True:
     for i in range(100 * len(yobs)):
         xcalc.append(float(i)/100.0)
         if profile_function == 0:
-            ycalc.append(gaussian(xcalc[i], aG, sigG, muG, bG, cG))
+            ycalc.append(gaussian(xcalc[i], intI, sigmaG, mu, slope, constant))
         if profile_function == 1:
             ycalc.append(gauss_1_exp(xcalc[i], scale, mu, alpha, sigma, slope, constant))
         if profile_function == 2:
@@ -389,21 +430,20 @@ while True:
 
     plotTitle = '%d %d %d' % (h, k, l)
     pylab.title(plotTitle)
+    filename = './plots/Profile_fit_%d_%d_%d_%d' % (h, k, l, nrun)
     
     if profile_function == 0:
 
         textString = 'f = (a/(sig * sqrt(2*pi)) * exp(-0.5 * (x - mu)**2 / sig**2)) + (b * x) + c'
         pylab.figtext(0.5, 0.85, textString, horizontalalignment='center', fontsize='small')
 
-        textString = 'a = %.2f(%.2f)\nsig = %.2f(%.2f)\nmu = %.2f(%.2f)\nb = %.2f(%.2f)\nc = %.2f(%.2f)\n' % (
-            aG, sig_aG, sigG, sig_sigG, muG, sig_muG, bG, sig_bG, cG, 
-            sig_cG)
-        pylab.figtext(0.65, 0.65, textString, family='monospace')
+        textString = 'a = %.2f(%.2f)\nsig = %.2f\nmu = %.2f\nb = %.2f\nc = %.2f\n' % (
+            intI, sigI, sigmaG, mu, slope, constant)
+        pylab.figtext(0.65, 0.65, textString, fontsize='small', family='monospace')
         
-        if sig_sigG > sigG:
-            filename = './plots/Rejected_%d_%d_%d' % (h, k, l)
-        else:
-            filename = './plots/Profile_fit_%d_%d_%d' % (h, k, l)
+        textString = 'run = %d\ndetector = %d\nopt_fun = %s' % (nrun, dn, opt_name)
+        pylab.figtext(0.65, 0.45, textString, fontsize='small', family='monospace')
+        
             
     if profile_function == 1:
 
@@ -413,7 +453,7 @@ while True:
         if scale > 0.0:
             textString = 'scale = %.2f\nmu = %.2f\nalpha = %.2f\nsigma = %.2f\n\nintI = %.2f\nsigI = %.2f' % (
                 scale, mu, alpha, sigma, intI, sigI)            
-            pylab.figtext(0.65, 0.65, textString, family='monospace')
+            pylab.figtext(0.65, 0.65, textString, fontsize='small', family='monospace')
             
             Q_calc = 2.0 * math.pi / dsp
             delta_Q = (mu - (0.5 * numSteps)) * step_size
@@ -423,10 +463,9 @@ while True:
             textString = 'dsp calc = %.4f\ndelta_d = %.4f' % (dsp, delta_d)
             pylab.figtext(0.65, 0.55, textString, family='monospace')
             
-        textString = 'run = %d\ndetector = %d' % (nrun, dn)
-        pylab.figtext(0.65, 0.45, textString, family='monospace')
+        textString = 'run = %d\ndetector = %d\nopt_fun = %s' % (nrun, dn, opt_name)
+        pylab.figtext(0.65, 0.45, textString, fontsize='small', family='monospace')
 
-        filename = './plots/Profile_fit_%d_%d_%d' % (h, k, l)
         
     if profile_function == 2:
 
@@ -436,7 +475,7 @@ while True:
         if scale > 0.0:
             textString = 'scale = %.2f\nmu = %.2f\nalpha = %.2f\nbeta = %.2f\nsigma = %.2f\n\nintI = %.2f\nsigI = %.2f' % (
                 scale, mu, alpha, beta, sigma, intI, sigI)            
-            pylab.figtext(0.65, 0.65, textString, family='monospace')
+            pylab.figtext(0.65, 0.65, textString, fontsize='small', family='monospace')
             
             Q_calc = 2.0 * math.pi / dsp
             delta_Q = (mu - (0.5 * numSteps)) * step_size
@@ -444,12 +483,10 @@ while True:
             dsp_obs = 2.0 * math.pi / Q_obs
             delta_d = dsp - dsp_obs
             textString = 'dsp calc = %.4f\ndelta_d = %.4f' % (dsp, delta_d)
-            pylab.figtext(0.65, 0.55, textString, family='monospace')
+            pylab.figtext(0.65, 0.55, textString, fontsize='small', family='monospace')
             
-        textString = 'run = %d\ndetector = %d' % (nrun, dn)
-        pylab.figtext(0.65, 0.45, textString, family='monospace')
-
-        filename = './plots/Profile_fit_%d_%d_%d_%d' % (h, k, l, nrun)
+        textString = 'run = %d\ndetector = %d\nopt_fun = %s' % (nrun, dn, opt_name)
+        pylab.figtext(0.65, 0.40, textString, fontsize='small', family='monospace')
     
     
     pylab.savefig(filename)
