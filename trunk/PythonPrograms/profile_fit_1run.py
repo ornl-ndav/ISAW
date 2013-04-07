@@ -59,15 +59,12 @@ else:
 import ReduceDictionary    
 from read_write_refl_header import *
 
-import warnings
-warnings.filterwarnings('ignore')
-
 # import crystal as xl
 
-def gaussian(x, a, sig, mu, b, c):
+def gaussian(x, a, sigma, mu, b, c):
     """ Gaussian function on a linear background."""
     sqrt2pi = 2.506628   # sqrt(2.0 * pi)
-    f = (a / (sig * sqrt2pi) * pylab.exp(-0.5 * (x - mu)**2 / sig**2)) + (b * x) + c
+    f = (a / (sigma * sqrt2pi) * pylab.exp(-0.5 * (x - mu)**2 / sigma**2)) + (b * x) + c
     return f
 
 def gauss_1_exp(x, scale, mu, alpha, sigma, slope, constant):
@@ -112,8 +109,8 @@ def gauss_2_exps(x, scale, mu, alpha, beta, sigma, slope, constant):
 
 # The following 3 functions are required for the leastsq optimize function.
 def residuals_func0(p, yobs, x):
-    a, sig, mu, b, c = p
-    ycalc = gaussian(x, a, sig, mu, b, c)
+    a, sigma, mu, b, c = p
+    ycalc = gaussian(x, a, sigma, mu, b, c)
     err = yobs - ycalc
     return err
         
@@ -160,6 +157,11 @@ weights                     = int( params_dictionary[ "weights" ] )
 reject_intI_zero            = bool( params_dictionary[ "reject_intI_zero" ] )
 delta_x                     = float( params_dictionary[ "delta_x" ] )
 reject_Gaussian_sigma_zero  = bool( params_dictionary[ "reject_Gaussian_sigma_zero" ] )
+verbose                     = bool( params_dictionary[ "verbose" ] )
+
+if verbose != True:
+    import warnings
+    warnings.filterwarnings('ignore')
 
 if optimize_function == 0:
     from scipy.optimize import curve_fit
@@ -180,6 +182,19 @@ input = open(input_fname, 'r')
 output_fname = expname + '_' + run + '.integrate'
 output = open(output_fname, 'w')
 calibParam = read_write_refl_header(input, output)
+
+# If verbose is True, write additional output to profile_fit.dat
+if verbose:
+    verbose_out = open('profile_fit_verbose_output.dat', 'w')
+    verbose_out.write('  SEQN    H    K    L     COL     ROW    CHAN'
+                    + '       L2  2_THETA       AZ        WL        D'
+                    + '   IPK      INTI   SIGI RFLG    NRUN DETN')
+    if profile_function == 0:
+        verbose_out.write('     sigma        mu     slope  constant')
+    if profile_function == 1:
+        verbose_out.write('       scale        mu     alpha     sigma     slope  constant')
+    if profile_function == 2:
+        verbose_out.write('       scale        mu     alpha      beta     sigma     slope  constant')
 
 print ''
 sqrt2pi = 2.506628   # sqrt(2.0 * pi)
@@ -260,7 +275,7 @@ while True:
         p0 = pylab.zeros(5)                 # initial values of parameters
         ymax = float(max(yobs))
         p0[0] = ymax * 2.5 * sqrt2pi   # initial value of aG
-        p0[1] = 2.5                         # initial value of sigG
+        p0[1] = 2.5                         # initial value of Gaussian sigma
         p0[2] = yobs.argmax()
             
         try:
@@ -273,15 +288,15 @@ while True:
                 popt, success = leastsq(residuals_func0, p0, args=(yobs, x))
             
             intI = popt[0]
-            sigmaG = popt[1]
+            sigma = popt[1]
             mu = popt[2]
             slope = popt[3]
             constant = popt[4]
-
+            
             # Get background counts
             background_total = 0.0
             for istep in range(numSteps):
-                yc = gaussian(x[istep], intI, sigmaG, mu, slope, constant)
+                yc = gaussian(x[istep], intI, sigma, mu, slope, constant)
                 background = slope * x[istep] + constant
                 if yc > background:
                     background_total = background_total + background
@@ -289,13 +304,21 @@ while True:
             # print '%4d %4d %4d %12.4f %12.4f' % (h, k, l, intI, sigI)
             
         except RuntimeError:
-            # print 'RuntimeError for peak %d %d %d' % (h, k, l)
+            if verbose:
+                verbose_out.write('RuntimeError %d %d %d  intI = %.2f  sigma = %.2f' % (h, k, l, intI, sigma))
             continue        
             
         if intI == 0.0:
             print 'No counts for peak %d %d %d' % (h, k, l)
             continue
-
+            
+        if verbose:
+            print ' %3d %3d %3d %10.2f' % (h, k, l, intI)
+            verbose_out.write(
+                '\n%6d %4d %4d %4d %7.2f %7.2f %7.2f %8.3f %8.5f %8.5f %9.6f %8.4f %5d %9.2f %6.2f %4d' 
+                % (numOfPeaks, h, k, l, col, row, chan, L2, two_theta, az, wl, dsp, ipk, intI, sigI, rflg))
+            verbose_out.write('  %6d  %3d  %8.2f  %8.2f  %8.2f  %8.2f'
+                % (nrun, dn, sigma, mu, slope, constant))
 
     # Convolution of Gaussian and one exponential
     if profile_function == 1:
@@ -341,9 +364,19 @@ while True:
             # print '%4d %4d %4d %12.4f' % (h, k, l, intI)
                     
         except RuntimeError:
-            # print 'RuntimeError for peak %d %d %d' % (h, k, l)
+            if verbose:
+                verbose_out.write('RuntimeError %d %d %d  intI = %.2f  sigma = %.2f' % (h, k, l, intI, sigma))
             continue   
  
+        if verbose:
+            print ' %3d %3d %3d %10.2f' % (h, k, l, intI)
+            
+            verbose_out.write(
+                '\n%6d %4d %4d %4d %7.2f %7.2f %7.2f %8.3f %8.5f %8.5f %9.6f %8.4f %5d %9.2f %6.2f %4d' 
+                % (numOfPeaks, h, k, l, col, row, chan, L2, two_theta, az, wl, dsp, ipk, intI, sigI, rflg))
+            
+            verbose_out.write('  %6d  %3d  %10.2f  %8.2f  %8.2f  %8.2f  %8.2f  %8.2f'
+                % (nrun, dn, scale, mu, alpha, sigma, slope, constant))
  
     # Convolution of Gaussian and two back-to-back exponentials
     if profile_function == 2:
@@ -393,28 +426,52 @@ while True:
             # print '%4d %4d %4d %12.4f' % (h, k, l, intI)
                     
         except RuntimeError:
-            # print 'RuntimeError for peak %d %d %d' % (h, k, l)
+            if verbose:
+                verbose_out.write('RuntimeError %d %d %d  intI = %.2f  sigma = %.2f' % (h, k, l, intI, sigma))
             continue        
 
-    # Write to the integrate file
+        if verbose:
+            print ' %3d %3d %3d %10.2f' % (h, k, l, intI)
+            
+            verbose_out.write(
+                '\n%6d %4d %4d %4d %7.2f %7.2f %7.2f %8.3f %8.5f %8.5f %9.6f %8.4f %5d %9.2f %6.2f %4d' 
+                % (numOfPeaks, h, k, l, col, row, chan, L2, two_theta, az, wl, dsp, ipk, intI, sigI, rflg))
+
+            verbose_out.write('  %6d  %3d  %10.2f  %8.2f  %8.2f  %8.2f  %8.2f  %8.2f  %8.2f'
+                % (nrun, dn, scale, mu, alpha, beta, sigma, slope, constant))
+            
+    #       
+    # Write to the integrate file ----------------------------------
+    #
     # First check for rejections
     if reject_intI_zero:
-        if intI <= 0.0: continue              # skip if intI == 0.0 or negative
-    if abs(mu - 50.0) >= delta_x: continue    # skip if peak is far from center
+        if intI <= 0.0:
+            if verbose:
+                verbose_out.write('  ***Rejected intI <= 0.0')
+            continue              # skip if intI == 0.0 or negative
+    if abs(mu - 50.0) >= delta_x:
+        if verbose:
+            verbose_out.write('  ***Rejected abs(mu-50.0) >= delta_x')
+        continue    # skip if peak is far from center
     if reject_Gaussian_sigma_zero:
-        if sigma  <= 0.01: continue               # skip of Gaussian sigma <= 0
+        if sigma  <= 0.01:
+            if verbose:
+                verbose_out.write('  ***Rejected sigma <= 0.01')
+            continue               # skip of Gaussian sigma <= 0
     
     output.write(
         '3 %6d %4d %4d %4d %7.2f %7.2f %7.2f %8.3f %8.5f %8.5f %9.6f %8.4f %5d %9.2f %6.2f %4d\n' 
         % (numOfPeaks, h, k, l, col, row, chan, L2, two_theta, az, wl, dsp, ipk, intI, sigI, rflg))
 
-    # Begin plot        
+    #
+    # Begin plot -------------------------------
+    #    
     xcalc = []
     ycalc = []
     for i in range(100 * len(yobs)):
         xcalc.append(float(i)/100.0)
         if profile_function == 0:
-            ycalc.append(gaussian(xcalc[i], intI, sigmaG, mu, slope, constant))
+            ycalc.append(gaussian(xcalc[i], intI, sigma, mu, slope, constant))
         if profile_function == 1:
             ycalc.append(gauss_1_exp(xcalc[i], scale, mu, alpha, sigma, slope, constant))
         if profile_function == 2:
@@ -438,7 +495,7 @@ while True:
         pylab.figtext(0.5, 0.85, textString, horizontalalignment='center', fontsize='small')
 
         textString = 'a = %.2f(%.2f)\nsig = %.2f\nmu = %.2f\nb = %.2f\nc = %.2f\n' % (
-            intI, sigI, sigmaG, mu, slope, constant)
+            intI, sigI, sigma, mu, slope, constant)
         pylab.figtext(0.65, 0.65, textString, fontsize='small', family='monospace')
         
         textString = 'run = %d\ndetector = %d\nopt_fun = %s' % (nrun, dn, opt_name)
