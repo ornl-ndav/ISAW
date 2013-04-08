@@ -499,6 +499,9 @@ while True:
             
     textString = 'run = %d\ndetector = %d\nopt_fun = %s' % (nrun, dn, opt_name)
     pylab.figtext(0.65, 0.45, textString, fontsize='small', family='monospace')
+    
+    textString = 'col = %6.2f\nrow = %6.2f' % (col, row)
+    pylab.figtext(0.65, 0.35, textString, fontsize='small', family='monospace')
 
     if profile_function == 0:
 
@@ -508,54 +511,27 @@ while True:
         textString = 'a = %.2f(%.2f)\nsig = %.2f\nmu = %.2f\nb = %.2f\nc = %.2f\n' % (
             intI, sigI, sigma, mu, slope, constant)
         pylab.figtext(0.65, 0.65, textString, fontsize='small', family='monospace')
-        
-        # textString = 'run = %d\ndetector = %d\nopt_fun = %s' % (nrun, dn, opt_name)
-        # pylab.figtext(0.65, 0.45, textString, fontsize='small', family='monospace')
-        
+                
             
     if profile_function == 1:
 
         textString = 'Convolution of one \nexponential with a Gaussian.'
         pylab.figtext(0.15, 0.80, textString, fontsize='small')
 
-        # if scale > 0.0:
         textString = 'scale = %.2f\nmu = %.2f\nalpha = %.2f\nsigma = %.2f\n\nintI = %.2f\nsigI = %.2f' % (
             scale, mu, alpha, sigma, intI, sigI)            
         pylab.figtext(0.65, 0.65, textString, fontsize='small', family='monospace')
             
-            # Q_calc = 2.0 * math.pi / dsp
-            # delta_Q = (mu - (0.5 * numSteps)) * step_size
-            # Q_obs = Q_calc + delta_Q
-            # dsp_obs = 2.0 * math.pi / Q_obs
-            # delta_d = dsp - dsp_obs
-            # textString = 'dsp calc = %.4f\ndelta_d = %.4f' % (dsp, delta_d)
-            # pylab.figtext(0.65, 0.55, textString, family='monospace')
-            
-        # textString = 'run = %d\ndetector = %d\nopt_fun = %s' % (nrun, dn, opt_name)
-        # pylab.figtext(0.65, 0.45, textString, fontsize='small', family='monospace')
-
         
     if profile_function == 2:
 
         textString = 'Convolution of two back-to-back \nexponentials with a Gaussian.'
         pylab.figtext(0.15, 0.80, textString, fontsize='small')
 
-        # if scale > 0.0:
         textString = 'scale = %.2f\nmu = %.2f\nalpha = %.2f\nbeta = %.2f\nsigma = %.2f\n\nintI = %.2f\nsigI = %.2f' % (
             scale, mu, alpha, beta, sigma, intI, sigI)            
         pylab.figtext(0.65, 0.65, textString, fontsize='small', family='monospace')
             
-            # Q_calc = 2.0 * math.pi / dsp
-            # delta_Q = (mu - (0.5 * numSteps)) * step_size
-            # Q_obs = Q_calc + delta_Q
-            # dsp_obs = 2.0 * math.pi / Q_obs
-            # delta_d = dsp - dsp_obs
-            # textString = 'dsp calc = %.4f\ndelta_d = %.4f' % (dsp, delta_d)
-            # pylab.figtext(0.65, 0.55, textString, fontsize='small', family='monospace')
-            
-        # textString = 'run = %d\ndetector = %d\nopt_fun = %s' % (nrun, dn, opt_name)
-        # pylab.figtext(0.65, 0.40, textString, fontsize='small', family='monospace')
-    
     
     pylab.savefig(filename)
     pylab.clf()
