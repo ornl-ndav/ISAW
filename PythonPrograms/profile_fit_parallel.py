@@ -17,6 +17,7 @@
 # how the the list of runs will be processed in parallel. 
 #
 import os
+from os import path
 import sys
 import threading
 import time
@@ -142,6 +143,32 @@ for r_num in run_nums[1:]:
         output.write(line)
     input.close()
     os.remove(filename)
+
+if path.isfile('profile_fit_verbose_output_' + run_nums[0] + '.dat'):
+    filename = 'profile_fit_verbose_output.dat'
+    output = open(filename, 'w')
+    
+# Read and write the first verbose outpu file with header.
+    r_num = run_nums[0]
+    filename = 'profile_fit_verbose_output_' + r_num + '.dat'
+    input = open(filename, 'r')
+    file_all_lines = input.read()
+    output.write(file_all_lines)
+    input.close()
+    os.remove(filename)
+
+# Read and write the rest of the runs without the header.
+    for r_num in run_nums[1:]:
+        filename = 'profile_fit_verbose_output_' + r_num + '.dat'
+        input = open(filename, 'r')
+        for line in input:
+            if line[2] == 'S': break
+        output.write(line)
+        for line in input:
+            output.write(line)
+        input.close()
+        os.remove(filename)
+
 
 end = time.time()
 elapsed = end - start
