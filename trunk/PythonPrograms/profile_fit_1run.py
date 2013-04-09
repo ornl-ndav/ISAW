@@ -185,7 +185,7 @@ calibParam = read_write_refl_header(input, output)
 
 # If verbose is True, write additional output to profile_fit.dat
 if verbose:
-    verbose_out = open('profile_fit_verbose_output.dat', 'w')
+    verbose_out = open('profile_fit_verbose_output_' + run + '.dat', 'w')
     verbose_out.write('  SEQN    H    K    L     COL     ROW    CHAN'
                     + '       L2  2_THETA       AZ        WL        D'
                     + '   IPK      INTI   SIGI RFLG    NRUN DETN')
