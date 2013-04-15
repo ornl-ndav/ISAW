@@ -17,6 +17,7 @@ ARCS     arcs2.sns.gov
 BSS      bac2.sns.gov
 CNCS     cncs2.sns.gov
 EQSANS   eqsans.sns.gov
+MANDI    mandi.sns.gov
 PG3      powgen.sns.gov
 REF_L    lrac.sns.gov
 REF_M    mrac.sns.gov
