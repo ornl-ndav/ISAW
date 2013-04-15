@@ -1,0 +1,469 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<instrumentgeometry xmlns='http://neutrons.ornl.gov/SNS/ASG/GeometryInput'>
+  <version>2013-03-15</version>
+  <entry name='MANDI'>
+    <!--MONITORS-->
+    <component type='NXmonitor' name='monitor1'>
+      <parameterList>
+        <helper>ParameterCopy</helper>
+        <variable>
+          <paramName>distance</paramName>
+          <varName>mon1dis</varName>
+        </variable>
+      </parameterList>
+    </component>
+    <component type='NXmonitor' name='monitor2'>
+      <parameterList>
+        <helper>ParameterCopy</helper>
+        <variable>
+          <paramName>distance</paramName>
+          <varName>mon2dis</varName>
+        </variable>
+      </parameterList>
+    </component>
+    <component type='NXmonitor' name='monitor3'>
+      <parameterList>
+        <helper>ParameterCopy</helper>
+        <variable>
+          <paramName>distance</paramName>
+          <varName>mon3dis</varName>
+        </variable>
+      </parameterList>
+    </component>
+    <!-- SAMPLE -->
+    <component type='NXsample' name='sample'>
+      <parameterList>
+        <helper>Goiniometer</helper>
+        <variable>
+          <paramName>phi</paramName>
+          <varName>real_phi</varName>
+        </variable>
+        <variable>
+          <paramName>chi</paramName>
+          <varName>default_chi</varName>
+        </variable>
+        <variable>
+          <paramName>omega</paramName>
+          <varName>real_omega</varName>
+        </variable>
+      </parameterList>
+    </component>
+    <!-- INSTRUMENT -->
+    <instrument name='instrument'>
+      <!-- SOURCE -->
+      <component type='NXsource' name='SNS'>
+        <parameterList>
+          <helper>SNSfacility</helper>
+        </parameterList>
+      </component>
+      <!--MODERATOR-->
+      <component type='NXmoderator' name='moderator'>
+        <parameterList>
+          <helper>SNSmoderator</helper>
+          <parameter name='beamline'>
+            <intvalue>11</intvalue>
+          </parameter>
+          <variable>
+            <paramName>distance</paramName>
+            <varName>mod_dis</varName>
+          </variable>
+        </parameterList>
+      </component>
+      <!--CHOPPERS-->
+      <component type='NXchopper' name='chopper1'>
+        <parameterList>
+          <helper>ParameterCopy</helper>
+          <variable>
+            <paramName>distance</paramName>
+            <varName>chop1dis</varName>
+          </variable>
+        </parameterList>
+      </component>
+      <component type='NXchopper' name='chopper2'>
+        <parameterList>
+          <helper>ParameterCopy</helper>
+          <variable>
+            <paramName>distance</paramName>
+            <varName>chop2dis</varName>
+          </variable>
+        </parameterList>
+      </component>
+      <component type='NXchopper' name='chopper3'>
+        <parameterList>
+          <helper>ParameterCopy</helper>
+          <variable>
+            <paramName>distance</paramName>
+            <varName>chop3dis</varName>
+          </variable>
+        </parameterList>
+      </component>
+      <!--APERTURES-->
+      <component type='NXaperture' name='slitu'>
+        <parameterList>
+          <helper>CenteredRectangle</helper>
+          <variable>
+            <paramName>cenDistance</paramName>
+            <varName>s1sam</varName>
+          </variable>
+          <variable>
+            <paramName>xExtent</paramName>
+            <varName>s1width</varName>
+          </variable>
+          <variable>
+            <paramName>yExtent</paramName>
+            <varName>s1height</varName>
+          </variable>
+        </parameterList>
+      </component>
+      <!--APERTURES-->
+      <component type='NXaperture' name='slitud'>
+        <parameterList>
+          <helper>CenteredRectangle</helper>
+          <variable>
+            <paramName>cenDistance</paramName>
+            <varName>s2sam</varName>
+          </variable>
+          <variable>
+            <paramName>xExtent</paramName>
+            <varName>s2width</varName>
+          </variable>
+          <variable>
+            <paramName>yExtent</paramName>
+            <varName>s2height</varName>
+          </variable>
+        </parameterList>
+      </component>
+      <component type='NXdetector' name='bank14'>
+        <annotation>
+          <![CDATA[<local_name>A4</local_name>]]>
+        </annotation>
+        <parameterList>
+          <recipe>detector</recipe>
+          <parameter name='cenDistance'>
+            <units>centimetre</units>
+            <floatvalue>45.5</floatvalue>
+          </parameter>
+          <parameter name='cenPolar'>
+            <units>radian</units>
+            <floatvalue>2.32688817406</floatvalue>
+          </parameter>
+          <parameter name='cenAzimuthal'>
+            <units>radian</units>
+            <floatvalue>-0.815966328309</floatvalue>
+          </parameter>
+          <parameter name='phi'>
+            <units>radian</units>
+            <floatvalue>-2.41785753447</floatvalue>
+          </parameter>
+          <parameter name='chi'>
+            <units>radian</units>
+            <floatvalue>0.927719282206</floatvalue>
+          </parameter>
+          <parameter name='omega'>
+            <units>radian</units>
+            <floatvalue>-1.1156179617</floatvalue>
+          </parameter>
+        </parameterList>
+      </component>
+      <component type='NXdetector' name='bank20'>
+        <annotation>
+          <![CDATA[<local_name>B0</local_name>]]>
+        </annotation>
+        <parameterList>
+          <recipe>detector</recipe>
+          <parameter name='cenDistance'>
+            <units>centimetre</units>
+            <floatvalue>42.5</floatvalue>
+          </parameter>
+          <parameter name='cenPolar'>
+            <units>radian</units>
+            <floatvalue>0.417231819946</floatvalue>
+          </parameter>
+          <parameter name='cenAzimuthal'>
+            <units>radian</units>
+            <floatvalue>-0.748033196976</floatvalue>
+          </parameter>
+          <parameter name='phi'>
+            <units>radian</units>
+            <floatvalue>-2.75633698735</floatvalue>
+          </parameter>
+          <parameter name='chi'>
+            <units>radian</units>
+            <floatvalue>0.823422866187</floatvalue>
+          </parameter>
+          <parameter name='omega'>
+            <units>radian</units>
+            <floatvalue>-3.09639259811</floatvalue>
+          </parameter>
+        </parameterList>
+      </component>
+      <component type='NXdetector' name='bank22'>
+        <annotation>
+          <![CDATA[<local_name>B2</local_name>]]>
+        </annotation>
+        <parameterList>
+          <recipe>detector</recipe>
+          <parameter name='cenDistance'>
+            <units>centimetre</units>
+            <floatvalue>42.5</floatvalue>
+          </parameter>
+          <parameter name='cenPolar'>
+            <units>radian</units>
+            <floatvalue>1.57079985771</floatvalue>
+          </parameter>
+          <parameter name='cenAzimuthal'>
+            <units>radian</units>
+            <floatvalue>-0.279253000002</floatvalue>
+          </parameter>
+          <parameter name='phi'>
+            <units>radian</units>
+            <floatvalue>-2.75633698735</floatvalue>
+          </parameter>
+          <parameter name='chi'>
+            <units>radian</units>
+            <floatvalue>0.823422866187</floatvalue>
+          </parameter>
+          <parameter name='omega'>
+            <units>radian</units>
+            <floatvalue>-1.83975159811</floatvalue>
+          </parameter>
+        </parameterList>
+      </component>
+      <component type='NXdetector' name='bank31'>
+        <annotation>
+          <![CDATA[<local_name>C1</local_name>]]>
+        </annotation>
+        <parameterList>
+          <recipe>detector</recipe>
+          <parameter name='cenDistance'>
+            <units>centimetre</units>
+            <floatvalue>39.5</floatvalue>
+          </parameter>
+          <parameter name='cenPolar'>
+            <units>radian</units>
+            <floatvalue>0.628319</floatvalue>
+          </parameter>
+          <parameter name='cenAzimuthal'>
+            <units>radian</units>
+            <floatvalue>0.0</floatvalue>
+          </parameter>
+          <parameter name='phi'>
+            <units>radian</units>
+            <floatvalue>3.14159265359</floatvalue>
+          </parameter>
+          <parameter name='chi'>
+            <units>radian</units>
+            <floatvalue>0.7853981634</floatvalue>
+          </parameter>
+          <parameter name='omega'>
+            <units>radian</units>
+            <floatvalue>-2.51327365359</floatvalue>
+          </parameter>
+        </parameterList>
+      </component>
+      <component type='NXdetector' name='bank32'>
+        <annotation>
+          <![CDATA[<local_name>C2</local_name>]]>
+        </annotation>
+        <parameterList>
+          <recipe>detector</recipe>
+          <parameter name='cenDistance'>
+            <units>centimetre</units>
+            <floatvalue>39.5</floatvalue>
+          </parameter>
+          <parameter name='cenPolar'>
+            <units>radian</units>
+            <floatvalue>1.25664</floatvalue>
+          </parameter>
+          <parameter name='cenAzimuthal'>
+            <units>radian</units>
+            <floatvalue>0.0</floatvalue>
+          </parameter>
+          <parameter name='phi'>
+            <units>radian</units>
+            <floatvalue>3.14159265359</floatvalue>
+          </parameter>
+          <parameter name='chi'>
+            <units>radian</units>
+            <floatvalue>0.7853981634</floatvalue>
+          </parameter>
+          <parameter name='omega'>
+            <units>radian</units>
+            <floatvalue>-1.88495265359</floatvalue>
+          </parameter>
+        </parameterList>
+      </component>
+      <component type='NXdetector' name='bank33'>
+        <annotation>
+          <![CDATA[<local_name>C3</local_name>]]>
+        </annotation>
+        <parameterList>
+          <recipe>detector</recipe>
+          <parameter name='cenDistance'>
+            <units>centimetre</units>
+            <floatvalue>39.5</floatvalue>
+          </parameter>
+          <parameter name='cenPolar'>
+            <units>radian</units>
+            <floatvalue>1.88496</floatvalue>
+          </parameter>
+          <parameter name='cenAzimuthal'>
+            <units>radian</units>
+            <floatvalue>0.0</floatvalue>
+          </parameter>
+          <parameter name='phi'>
+            <units>radian</units>
+            <floatvalue>3.14159265359</floatvalue>
+          </parameter>
+          <parameter name='chi'>
+            <units>radian</units>
+            <floatvalue>0.7853981634</floatvalue>
+          </parameter>
+          <parameter name='omega'>
+            <units>radian</units>
+            <floatvalue>-1.25663265359</floatvalue>
+          </parameter>
+        </parameterList>
+      </component>
+    </instrument>
+  </entry>
+  <!-- RECIPES -->
+  <recipes>
+    <recipe>
+      <name>detector</name>
+      <parameterList>
+        <helper>Rectangle</helper>
+        <parameter name='xNumPixel'>
+          <intvalue>256</intvalue>
+        </parameter>
+        <parameter name='yNumPixel'>
+          <intvalue>256</intvalue>
+        </parameter>
+        <parameter name='flip'>
+          <intvalue>1</intvalue>
+        </parameter>
+        <variable>
+          <paramName>xExtent</paramName>
+          <varName>extent</varName>
+        </variable>
+        <variable>
+          <paramName>yExtent</paramName>
+          <varName>extent</varName>
+        </variable>
+        <variable>
+          <paramName>xOffset</paramName>
+          <varName>0</varName>
+        </variable>
+        <variable>
+          <paramName>yOffset</paramName>
+          <varName>0</varName>
+        </variable>
+      </parameterList>
+    </recipe>
+  </recipes>
+  <!-- MATH -->
+  <math>
+    <definitions>
+      <parameter name='extent'>
+        <units>millimetre</units>
+        <floatvalue>158.19</floatvalue>
+      </parameter>
+      <parameter name='L1'>
+        <units>metre</units>
+        <floatvalue>30.0</floatvalue>
+      </parameter>
+      <parameter name='chop1mod_distance'>
+        <units>metre</units>
+        <floatvalue>7.2</floatvalue>
+      </parameter>
+      <parameter name='chop2mod_distance'>
+        <units>metre</units>
+        <floatvalue>8.27</floatvalue>
+      </parameter>
+      <parameter name='chop3mod_distance'>
+        <units>metre</units>
+        <floatvalue>10.5</floatvalue>
+      </parameter>
+      <parameter name='mon1mod_distance'>
+        <units>metre</units>
+        <floatvalue>27.065</floatvalue>
+      </parameter>
+      <parameter name='mon2mod_distance'>
+        <units>metre</units>
+        <floatvalue>29.102</floatvalue>
+      </parameter>
+      <parameter name='mon3mod_distance'>
+        <units>metre</units>
+        <floatvalue>31.042</floatvalue>
+      </parameter>
+      <parameter name='s1mod_distance'>
+        <units>metre</units>
+        <floatvalue>27.04</floatvalue>
+      </parameter>
+      <parameter name='s2mod_distance'>
+        <units>metre</units>
+        <floatvalue>29.53</floatvalue>
+      </parameter>
+      <parameter name='default_chi'>
+        <units>degree</units>
+        <floatvalue>-45.0</floatvalue>
+      </parameter>
+    </definitions>
+    <inputs>
+      <parameter type='length' name='SUHWidth'/>
+      <parameter type='length' name='SUVHeight'/>
+      <parameter type='length' name='sdHxGap'/>
+      <parameter type='length' name='sdVertGap'/>
+      <parameter type='angle' name='phi'/>
+      <parameter type='angle' name='omega'/>
+    </inputs>
+    <equations>
+      <equation>mod_dis = -1 * L1</equation>
+      <equation>chop1dis = chop1mod_distance - L1</equation>
+      <equation>chop2dis = chop2mod_distance - L1</equation>
+      <equation>chop3dis = chop3mod_distance - L1</equation>
+      <equation>mon1dis = mon1mod_distance - L1</equation>
+      <equation>mon2dis = mon2mod_distance - L1</equation>
+      <equation>mon3dis = mon3mod_distance - L1</equation>
+      <equation>s1sam = s1mod_distance - L1</equation>
+      <equation>s2sam = s2mod_distance - L1</equation>
+      <equation>try:
+  s1width = SUHWidth
+except:
+  pass</equation>
+      <equation>try:
+  s1height = SUVHeight
+except:
+  pass</equation>
+      <equation>try:
+  s2width = sdHxGap
+except:
+  pass</equation>
+      <equation>try:
+  s2height = sdVertGap
+except:
+  pass</equation>
+      <equation>real_phi = phi</equation>
+      <equation>real_omega = omega</equation>
+    </equations>
+    <outputs>
+      <parameter type='length' name='extent'/>
+      <parameter type='length' name='mod_dis'/>
+      <parameter type='length' name='chop1dis'/>
+      <parameter type='length' name='chop2dis'/>
+      <parameter type='length' name='chop3dis'/>
+      <parameter type='length' name='mon1dis'/>
+      <parameter type='length' name='mon2dis'/>
+      <parameter type='length' name='mon3dis'/>
+      <parameter type='length' name='s1sam'/>
+      <parameter type='length' name='s2sam'/>
+      <parameter type='length' name='s1width'/>
+      <parameter type='length' name='s1height'/>
+      <parameter type='length' name='s2width'/>
+      <parameter type='length' name='s2height'/>
+      <parameter type='angle' name='real_phi'/>
+      <parameter type='angle' name='real_omega'/>
+      <parameter type='angle' name='default_chi'/>
+    </outputs>
+  </math>
+</instrumentgeometry>
