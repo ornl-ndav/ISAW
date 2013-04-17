@@ -29,9 +29,9 @@ for i in range(8):   # skip the first 8 lines
 
 lineString = specInput.readline()   # read "Bank 1" line
 
-nod = 14     # the number of detectors
+i = 0
+while True:
 
-for i in range( nod ):
     # set arrays to zero
     wavelength = []
     counts = []
@@ -63,6 +63,9 @@ for i in range( nod ):
     # if DetNum == '37': plot( wavelength, counts, label=DetNum )
     # if DetNum == '38': plot( wavelength, counts, label=DetNum )
     # if DetNum == '39': plot( wavelength, counts, label=DetNum )
+
+    if len(lineList) == 0: break     # check for the end-of-file
+    i = i + 1
         
 specInput.close()
 
