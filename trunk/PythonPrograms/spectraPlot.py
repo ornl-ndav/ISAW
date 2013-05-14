@@ -7,21 +7,27 @@ A. J. Schultz, April 2011
 from pylab import *
 from Tkinter import *
 import tkFileDialog
+import tkSimpleDialog
+
+ion() # enables interactive mode
 
 root = Tk()
 root.withdraw()
 
 print
-print 'Select the spectrum file.'
+print '*** Select the spectrum file to plot. ***'
 print
 filename = tkFileDialog.askopenfilename( title = 'FILE NAME OF THE SPECTRUM FILE')
-print filename
 print
 
 # open spectrum file
 specInput = open( filename, 'r' )
 
-plotTitle = raw_input('Input the plot title: ')
+print '*** Input the plot title, which will also be the saved file name prefix. ***'
+# plotTitle = raw_input('Input the plot title: ')
+plotTitle = tkSimpleDialog.askstring(title = 'Plot Title', 
+    prompt = 'Input plot title',
+    initialvalue = 'Spectra')
 print
 
 for i in range(8):   # skip the first 8 lines
@@ -81,3 +87,6 @@ grid(True)
 savefig( plotTitle )   # plot saved
 
 show()
+
+raw_input('Type RETURN to exit.')
+exit()
