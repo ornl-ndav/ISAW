@@ -1,0 +1,14 @@
+path                C:\data\TOPAZ\vanadium\5671\       # Raw data path
+runNum_1            5671                               # Run number of data file
+runNum_2            5676                               # Run number of background file
+filename_prefix     TOPAZ_                             # File name prefix before the run number, e.g. TOPAZ_
+filename_suffix     _event.nxs                         # File name suffix after the run number
+nBorder             16                                 # Number of border channels to exclude
+DetCalFilename      TOPAZ_2012_06_15.DetCal            # ISAW DetCal file
+doSmoothing         False                              # Apply Savitzky-Golay smoothing filter
+numPoints           3                                  # If doSmoothing, number of points to average
+V_rod               False                              # Is the spectrum from the vanadium rod
+V_sphere            True                               # Or is the spectrum from the V/Nb sphere
+radius              0.15                               # Radius in cm: TOPAZ rod = 0.407, sphere = 0.15, SNAP rod = 0.15
+outPath             C:\Users\Arthur\Desktop\Mantid\spectrum\   # Directory for output spectrum and log files
+omitZeros           True                               # Omit any spectrum with all zeros
