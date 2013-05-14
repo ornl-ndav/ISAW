@@ -395,8 +395,8 @@ print '\nwksp_1 = %s\n' % wksp_1
 wksp_1 = SmoothNeighbours(InputWorkspace = wksp_1, OutputWorkspace = 'SmoothNeighbors_1',
     SumPixelsX=256, SumPixelsY=256, ZeroEdgePixels = nBorder)
 print '\nwksp_1 = %s\n' % wksp_1
-wksp_1 = Rebin(InputWorkspace = wksp_1, OutputWorkspace = "Rebin_1", Params = "395,10,16655")
-# wksp_1 = Rebin(InputWorkspace = wksp_1, OutputWorkspace = "Rebin_1", Params = "399.202,-0.004,16600")
+# wksp_1 = Rebin(InputWorkspace = wksp_1, OutputWorkspace = "Rebin_1", Params = "395,10,16655")
+wksp_1 = Rebin(InputWorkspace = wksp_1, OutputWorkspace = "Rebin_1", Params = "400,-0.004,16600")
 print '\nwksp_1 = %s\n' % wksp_1
 full_filename = outPath + 'vanadium_raw.dat'    
 SaveAscii(InputWorkspace = wksp_1, Filename = full_filename,
@@ -417,8 +417,8 @@ print '\nwksp_2 = %s\n' % wksp_2
 wksp_2 = SmoothNeighbours(InputWorkspace = wksp_2, OutputWorkspace = 'SmoothNeighbors_2',
     SumPixelsX = 256, SumPixelsY = 256, ZeroEdgePixels = nBorder)
 print '\nwksp_2 = %s\n' % wksp_2
-wksp_2 = Rebin(InputWorkspace = wksp_2, OutputWorkspace = "Rebin_2", Params = "395,10,16655")
-# wksp_2 = Rebin(InputWorkspace = wksp_2, OutputWorkspace = "Rebin_2", Params = "399.202,-0.004,16600")
+# wksp_2 = Rebin(InputWorkspace = wksp_2, OutputWorkspace = "Rebin_2", Params = "395,10,16655")
+wksp_2 = Rebin(InputWorkspace = wksp_2, OutputWorkspace = "Rebin_2", Params = "400,-0.004,16600")
 print '\nwksp_2 = %s\n' % wksp_2
 full_filename = outPath + 'background_raw.dat'    
 SaveAscii(InputWorkspace = wksp_2, Filename = full_filename,
