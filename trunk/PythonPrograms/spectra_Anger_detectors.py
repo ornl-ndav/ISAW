@@ -244,6 +244,7 @@ runNum_1                  = params_dictionary[ "runNum_1" ]
 runNum_2                  = params_dictionary[ "runNum_2" ]
 filename_prefix           = params_dictionary[ "filename_prefix" ]
 filename_suffix           = params_dictionary[ "filename_suffix" ]
+beam_monitor              = int( params_dictionary[ "beam_monitor" ] )
 nBorder                   = int( params_dictionary[ "nBorder" ] )
 DetCalFilename            = params_dictionary[ "DetCalFilename" ]
 doSmoothing               = params_dictionary[ "doSmoothing" ]
@@ -257,6 +258,7 @@ min_tof                   = params_dictionary[ "min_tof" ]
 max_tof                   = params_dictionary[ "max_tof" ]
 rebin_step                = params_dictionary[ "rebin_step" ]
 
+beam_monitor_index = beam_monitor - 1
 rebin_parameters = min_tof + "," + rebin_step + "," + max_tof
 
 print ''
@@ -313,8 +315,8 @@ integrated_monitor_ws_1 = 'integrated_monitor_' + runNum_1
 LoadNexusMonitors( Filename = full_name, OutputWorkspace = monitor_ws_1 )
 # LoadNexusMonitorsDialog()
 Integration( InputWorkspace = monitor_ws_1, OutputWorkspace = integrated_monitor_ws_1,
-             RangeLower = 500, RangeUpper = 16500, 
-             StartWorkspaceIndex = 0, EndWorkspaceIndex = 0 )
+             RangeLower = min_tof, RangeUpper = max_tof, 
+             StartWorkspaceIndex = beam_monitor_index, EndWorkspaceIndex = beam_monitor_index )
 monitor_count_1 = mtd[integrated_monitor_ws_1].dataY(0)[0]
 print '\nMonitor counts for ' + runNum_1 + ' are ' + locale.format( '%d', monitor_count_1, grouping = True )
 print ''
@@ -328,8 +330,8 @@ monitor_ws_2 = 'monitor_' + runNum_2
 integrated_monitor_ws_2 = 'integrated_monitor_' + runNum_2
 LoadNexusMonitors( Filename = full_name, OutputWorkspace = monitor_ws_2 )
 Integration( InputWorkspace = monitor_ws_2, OutputWorkspace = integrated_monitor_ws_2,
-             RangeLower = 500, RangeUpper = 16500, 
-             StartWorkspaceIndex = 0, EndWorkspaceIndex = 0 )
+             RangeLower = min_tof, RangeUpper = max_tof, 
+             StartWorkspaceIndex = beam_monitor_index, EndWorkspaceIndex = beam_monitor_index )
 monitor_count_2 = mtd[integrated_monitor_ws_2].dataY(0)[0]
 print '\nMonitor counts for ' + runNum_2 + ' are ' + locale.format( '%d', monitor_count_2, grouping = True )
 print ''
