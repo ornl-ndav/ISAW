@@ -233,51 +233,39 @@ def absor_V_sphere(twoth, wl, radius):
     
     return trans
     
-# Reader user input parameters
-user_input = open('spectra_Anger_detectors.inp', 'r')
-parameters = []
-while True:
-    lineString = user_input.readline()
-    lineList = lineString.split()
-    if len(lineList) == 0: break
-    parameters.append(lineList[1])
+#
+# Load the parameter names and values from the specified configuration file 
+# into a dictionary and set all the required parameters from the dictionary.
+#
+params_dictionary = ReduceDictionary.LoadDictionary( 'spectra_Anger_detectors.config' )
 
-path = parameters[0]
-runNum_1 = parameters[1]
-runNum_2 = parameters[2]
-filename_prefix = parameters[3]
-filename_suffix = parameters[4]
-nBorder = int(parameters[5])
-DetCalFilename = parameters[6]
+raw_data_path             = params_dictionary[ "raw_data_path" ]
+runNum_1                  = params_dictionary[ "runNum_1" ]
+runNum_2                  = params_dictionary[ "runNum_2" ]
+filename_prefix           = params_dictionary[ "filename_prefix" ]
+filename_suffix           = params_dictionary[ "filename_suffix" ]
+nBorder                   = int( params_dictionary[ "nBorder" ] )
+DetCalFilename            = params_dictionary[ "DetCalFilename" ]
+doSmoothing               = params_dictionary[ "doSmoothing" ]
+numPoints                 = int( params_dictionary[ "numPoints" ] )
+V_rod                     = params_dictionary[ "V_rod" ]
+V_sphere                  = params_dictionary[ "V_sphere" ]
+radius                    = float( params_dictionary[ "radius" ] )
+outPath                   = params_dictionary[ "outPath" ]
+omitZeros                 = params_dictionary[ "omitZeros" ]
+min_tof                   = params_dictionary[ "min_tof" ]
+max_tof                   = params_dictionary[ "max_tof" ]
+rebin_step                = params_dictionary[ "rebin_step" ]
 
-doSmoothing_str = parameters[7]
-if doSmoothing_str == 'False': doSmoothing = False
-if doSmoothing_str == 'True': doSmoothing = True
-
-numPoints = int(parameters[8])
-
-V_rod_str = parameters[9]
-if V_rod_str == 'False': V_rod = False
-if V_rod_str == 'True': V_rod = True
-
-V_sphere_str = parameters[10]
-if V_sphere_str == 'False': V_sphere = False
-if V_sphere_str == 'True': V_sphere = True
-
-radius = float(parameters[11])
-outPath = parameters[12]
-
-omitZeros_str = parameters[13]
-if omitZeros_str == 'False': omitZeros = False
-if omitZeros_str == 'True': omitZeros = True
+rebin_parameters = min_tof + "," + rebin_step + "," + max_tof
 
 print ''
     
 # Write input instructions to the log file.
 filename = outPath + 'Spectrum_' + runNum_1 + '_' + runNum_2 + '.log'
 logFile = open( filename, 'w' )
-logFile.write('\n********** TOPAZ_SNAP_spectrum **********\n')
-logFile.write('\nRaw data path: ' + path)
+logFile.write('\n********** spectrum_Anger_detectors **********\n')
+logFile.write('\nRaw data path: ' + raw_data_path)
 logFile.write('\nRun number of data file: ' + runNum_1)
 logFile.write('\nRun number of background file: ' + runNum_2)
 logFile.write('\nDetCal file: ' + DetCalFilename)
@@ -319,10 +307,11 @@ outFile.write('#\n')
 # Load the run data and find the total monitor counts
 #
 # First load the vanadium data run file beam monitor spectrum
-full_name = path + filename_prefix + runNum_1 + filename_suffix 
+full_name = raw_data_path + filename_prefix + runNum_1 + filename_suffix 
 monitor_ws_1 = 'monitor_' + runNum_1
 integrated_monitor_ws_1 = 'integrated_monitor_' + runNum_1
 LoadNexusMonitors( Filename = full_name, OutputWorkspace = monitor_ws_1 )
+# LoadNexusMonitorsDialog()
 Integration( InputWorkspace = monitor_ws_1, OutputWorkspace = integrated_monitor_ws_1,
              RangeLower = 500, RangeUpper = 16500, 
              StartWorkspaceIndex = 0, EndWorkspaceIndex = 0 )
@@ -334,7 +323,7 @@ DeleteWorkspace(integrated_monitor_ws_1)
 
 
 # Then load the no-sample background run file beam monitory spectrum
-full_name = path + filename_prefix + runNum_2 + filename_suffix
+full_name = raw_data_path + filename_prefix + runNum_2 + filename_suffix
 monitor_ws_2 = 'monitor_' + runNum_2
 integrated_monitor_ws_2 = 'integrated_monitor_' + runNum_2
 LoadNexusMonitors( Filename = full_name, OutputWorkspace = monitor_ws_2 )
@@ -383,11 +372,11 @@ logFile.write('\n\nNumber of detectors = %d\n\n' % number_of_detectors)
 
 # Load, sum and rebin the vanadium data
 #
-filename = path + filename_prefix + runNum_1 + filename_suffix
+filename = raw_data_path + filename_prefix + runNum_1 + filename_suffix
 event_ws1 = filename_prefix + runNum_1 + '_event'
 
 wksp_1 = Load(Filename = filename, OutputWorkspace = event_ws1,
-    FilterByTofMin = 400, FilterByTofMax = 16650)
+    FilterByTofMin = min_tof, FilterByTofMax = max_tof)
     # FilterByTofMin = 400, FilterByTofMax = 16650, BankName = bank_name)
     # FilterByTofMin = 400, FilterByTofMax = 16600, FilterByTimeStop = 3600, BankName = bank)
 print '\nwksp_1 = %s\n' % wksp_1
@@ -395,34 +384,32 @@ print '\nwksp_1 = %s\n' % wksp_1
 wksp_1 = SmoothNeighbours(InputWorkspace = wksp_1, OutputWorkspace = 'SmoothNeighbors_1',
     SumPixelsX=256, SumPixelsY=256, ZeroEdgePixels = nBorder)
 print '\nwksp_1 = %s\n' % wksp_1
-# wksp_1 = Rebin(InputWorkspace = wksp_1, OutputWorkspace = "Rebin_1", Params = "395,10,16655")
-wksp_1 = Rebin(InputWorkspace = wksp_1, OutputWorkspace = "Rebin_1", Params = "400,-0.004,16600")
+wksp_1 = Rebin(InputWorkspace = wksp_1, OutputWorkspace = "Rebin_1", Params = rebin_parameters)
 print '\nwksp_1 = %s\n' % wksp_1
-full_filename = outPath + 'vanadium_raw.dat'    
-SaveAscii(InputWorkspace = wksp_1, Filename = full_filename,
-    Separator = "Space", ColumnHeader = False)
+# full_filename = outPath + 'vanadium_raw.dat'    
+# SaveAscii(InputWorkspace = wksp_1, Filename = full_filename,
+    # Separator = "Space", ColumnHeader = False)
 DeleteWorkspace(event_ws1)
 DeleteWorkspace('SmoothNeighbors_1')
 
         
 # Load, sum and rebin the no-sample background data
 #
-filename = path + filename_prefix + runNum_2 + filename_suffix 
+filename = raw_data_path + filename_prefix + runNum_2 + filename_suffix 
 event_ws2 = filename_prefix + runNum_2 + '_event'
 wksp_2 = Load(Filename = filename, OutputWorkspace = event_ws2,
-    FilterByTofMin = 400, FilterByTofMax = 16650)
+    FilterByTofMin = min_tof, FilterByTofMax = max_tof)
     # FilterByTofMin = 400, FilterByTofMax = 16650, BankName = bank_name)
 print '\nwksp_2 = %s\n' % wksp_2
 # SmoothNeighbors will sum the time slice
 wksp_2 = SmoothNeighbours(InputWorkspace = wksp_2, OutputWorkspace = 'SmoothNeighbors_2',
     SumPixelsX = 256, SumPixelsY = 256, ZeroEdgePixels = nBorder)
 print '\nwksp_2 = %s\n' % wksp_2
-# wksp_2 = Rebin(InputWorkspace = wksp_2, OutputWorkspace = "Rebin_2", Params = "395,10,16655")
-wksp_2 = Rebin(InputWorkspace = wksp_2, OutputWorkspace = "Rebin_2", Params = "400,-0.004,16600")
+wksp_2 = Rebin(InputWorkspace = wksp_2, OutputWorkspace = "Rebin_2", Params = rebin_parameters)
 print '\nwksp_2 = %s\n' % wksp_2
-full_filename = outPath + 'background_raw.dat'    
-SaveAscii(InputWorkspace = wksp_2, Filename = full_filename,
-    Separator = "Space", ColumnHeader = False)
+# full_filename = outPath + 'background_raw.dat'    
+# SaveAscii(InputWorkspace = wksp_2, Filename = full_filename,
+    # Separator = "Space", ColumnHeader = False)
 DeleteWorkspace(event_ws2)
 DeleteWorkspace('SmoothNeighbors_2')
 
@@ -461,7 +448,7 @@ full_filename = outPath + 'spectrum_no_abs.dat'
 SaveAscii(InputWorkspace = "Spectrum", Filename = full_filename,
     Separator = "Space", ColumnHeader = False)
 
-print '\nBegin absorption correction.'
+print '\nBegin absorption correction.\n'
 for i in range(number_of_detectors):
     bank = i + 1
     tof = []
@@ -516,8 +503,8 @@ for i in range(number_of_detectors):
 
 
 print '\nEnd of absorption correction.\n'  
-# DeleteWorkspace(Workspace = event_ws1)
-# os.remove( full_filename )
+
+os.remove( full_filename )
     
 outFile.close()    
 logFile.close()
