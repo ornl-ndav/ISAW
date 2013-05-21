@@ -360,6 +360,10 @@ while True:
         logFile.write('\n    H   K   L       FSQ     SIG     WL      INTI' + \
             '    SIG   SPECT  SINSQT  ABTRANS   TBAR\n')
     # end of set-up for new run or detector
+    
+    # Skip peaks which are not indexed
+    if h == 0 and k == 0 and l == 0:
+        continue
    
     # Omit zero intensity peaks from integrate file XP Wang 03/21/2011
     # Changed to >=0 and absolute value  XP Wang 02/24/2011
@@ -368,6 +372,7 @@ while True:
             % (h, k, l))
         continue  
 
+        
     if minIsigI >= 0 and inti < abs(minIsigI * sigi):
         logFile.write(' %4d%4d%4d *** inti < (minIsigI * sigi) \n' \
             % (h, k, l))
