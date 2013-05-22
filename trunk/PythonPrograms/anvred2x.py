@@ -88,11 +88,16 @@
 
 import os
 import sys
+
 if os.path.exists('/SNS/TOPAZ/shared/PythonPrograms/PythonLibrary'):
     sys.path.append('/SNS/TOPAZ/shared/PythonPrograms/PythonLibrary')
     sys.path.append('/SNS/software/ISAW/PythonSources/Lib')
+elif os.path.exists('/SNS/MANDI/shared/PythonPrograms/PythonLibrary'):
+    sys.path.append('/SNS/MANDI/shared/PythonPrograms/PythonLibrary')
+    sys.path.append('/SNS/software/ISAW/PythonSources/Lib')
 else:
     sys.path.append('C:\ISAW_repo\PythonPrograms\PythonLibrary')
+    
 from readrefl_header import *
 from readrefl_SNS import *
 from readSpecCoef import *
@@ -183,7 +188,7 @@ calibParam = readrefl_header( integFile )
 L1 = float(calibParam[0])       # initial flight path length in cm
 t0_shift = float(calibParam[1]) # t-zero offest in microseconds
 nod = int(calibParam[2])    # number of detectors
-print '********** nod = ', nod
+print '********** nod = ', nod, '\n'
 
 logFile.write('\nInitial flight path length: %10.4f cm' % L1 )
 logFile.write('\nT-zero offset: %8.3f microseconds' % t0_shift )
@@ -208,7 +213,6 @@ if iSpec == 0:
     
     for i in range(8):   # skip the first 8 lines
         lineString = specInput.readline()
-        print lineString
     
     # "spectra" is an array spectra[i][j] where i is the number
     # of the detector bank starting at zero, and j = 0 for
@@ -222,7 +226,7 @@ if iSpec == 0:
         time = []
         counts = []
         
-        print 'Reading spectrum for ' + lineString
+        print 'Reading spectrum for ' + lineString,
         while True:
             lineString = specInput.readline()
             lineList = lineString.split()
@@ -295,9 +299,7 @@ while True:
 
     peak = readrefl_SNS( integFile, eof, nrun, dn, chi, phi, omega,\
         moncnt)
-    # print peak
     eof = peak[22]
-    # print eof
     if eof == 0: break
     
     nrun = peak[0]
@@ -360,10 +362,6 @@ while True:
         logFile.write('\n    H   K   L       FSQ     SIG     WL      INTI' + \
             '    SIG   SPECT  SINSQT  ABTRANS   TBAR\n')
     # end of set-up for new run or detector
-    
-    # Skip peaks which are not indexed
-    if h == 0 and k == 0 and l == 0:
-        continue
    
     # Omit zero intensity peaks from integrate file XP Wang 03/21/2011
     # Changed to >=0 and absolute value  XP Wang 02/24/2011
@@ -372,7 +370,6 @@ while True:
             % (h, k, l))
         continue  
 
-        
     if minIsigI >= 0 and inti < abs(minIsigI * sigi):
         logFile.write(' %4d%4d%4d *** inti < (minIsigI * sigi) \n' \
             % (h, k, l))
@@ -480,8 +477,7 @@ while True:
     hklFile.write('%4d%4d%4d%8.2f%8.2f%4d%8.4f%7.4f%7d%7d%7.4f%4d%9.5f%9.4f\n' \
         % (h, k, l, fsq, sigfsq, hstnum, wl, tbar, curhst, seqnum, transmission, dn, twoth, dsp))
         
-print 'eof = %d' % eof
-print 'Minimum and maximum transmission = %6.4f, %6.4f' % (transmin, transmax)
+print '\nMinimum and maximum transmission = %6.4f, %6.4f\n' % (transmin, transmax)
 
 logFile.write('\n\n***** Minimum and maximum transmission = %6.4f, %6.4f' \
     % (transmin, transmax))
