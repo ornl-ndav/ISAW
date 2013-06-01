@@ -183,7 +183,7 @@ for i in range(num_radius_steps):
 
     input.close()
                    
-                   
+os.remove( temp_integrate_file )                 
 output.close()
 end_time = time.time()
 print '\nReduced run ' + str(run) + ' in ' + str(end_time - start_time) + ' sec'
@@ -217,12 +217,12 @@ for line in input:
     y5.append( int( lineList[4] ) )
     y10.append( int( lineList[5] ) )
 
-pylab.plot( x, y2, label = '2sig' )
-pylab.plot( x, y3, label = '3sig' )
-pylab.plot( x, y5, label = '5sig' )
-pylab.plot( x, y10, label = '10sig' )
+pylab.plot( x, y2, marker = '^', linestyle = '-', label = '2sig' )
+pylab.plot( x, y3, marker = '^', linestyle = '-', label = '3sig' )
+pylab.plot( x, y5, marker = '^', linestyle = '-', label = '5sig' )
+pylab.plot( x, y10, marker = '^', linestyle = '-', label = '10sig' )
 
-pylab.legend( loc = 4 )
+pylab.legend( loc = 4 )     # locate the legend in the lower right
 
 pylab.xlabel('Radius')
 pylab.ylabel('Number of peaks')
