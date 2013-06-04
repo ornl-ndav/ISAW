@@ -751,8 +751,8 @@ public class ScalarUtils
    *           by reflections of pairs of the side vectors a, b, c.
    */
 
-  public static Vector<Tran3D> getSignRelatedUBs( Tran3D UB,
-                                                  float  angle_tolerance )
+  private static Vector<Tran3D> getSignRelatedUBs( Tran3D UB,
+                                                   float  angle_tolerance )
   {
     Vector<Tran3D> result = new Vector<Tran3D>();
 

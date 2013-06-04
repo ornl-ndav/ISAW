@@ -1329,9 +1329,12 @@ public class EV_IntegrateUtils
                                    float[]    sigmas,
                                    float      radius )
   {
-    float r1 = 3;
-    float r2 = 3;
-    float r3 = 4;
+    float r1 = 3;          // rk is the multiple of the sigma value that
+    float r2 = 3;          // will be used for the half-axis size of an 
+    float r3 = 4;          // ellipse.  r1 is for the peak, r2 is for
+                           // the inner surface of the background shell
+                           // and r3 is for the outer surface of the
+                           // background shell.
 
     float max_sigma = sigmas[0];
     for ( int i = 1; i < 3; i++ )
