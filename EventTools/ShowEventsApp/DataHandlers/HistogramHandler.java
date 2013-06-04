@@ -498,8 +498,9 @@ public class HistogramHandler implements IReceiveMessage
    */
   synchronized private void Set_Histogram( String instrument )
   {
-    if ( instrument.equals("SNAP") ||
-         instrument.equals("TOPAZ") )
+    if ( instrument.equals("SNAP")  ||
+         instrument.equals("TOPAZ") ||
+         instrument.equals("MANDI")   )
       Set_Histogram(num_bins, max_Q, -40.0f, 0, -25.0f, 25.0f, -25.0f, 25.0f);
 
     else if ( instrument.equals("ARCS") ||
