@@ -46,14 +46,14 @@ import gov.anl.ipns.MathTools.Geometry.*;
  * getCells(UB,ty,ce)        - get list of all cells, with specified type and 
  *                             centering, for all reflections, best per form
  *
- * getCellsUB_Only(UB,ty,ce) - get list of all cells, with specified type and 
- *                             centering, for UB only (no reflections), best 
- *                             per form 
- *
  * getCells(UB,b_flag,t_flag)- get list of all cells, optionally including 
  *                             triclinic(t_flag), for all reflections, best 
  *                             per form.  If b_flag is true, only include the
  *                             best cell for each Bravais lattice.
+ *
+ * getCellsUB_Only(UB,ty,ce) - get list of all cells, with specified type and 
+ *                             centering, for UB only (no reflections), best 
+ *                             per form 
  *
  * removeBadForms(l,f)       - remove cells in list that have error > f*min_err
  *
@@ -69,6 +69,26 @@ import gov.anl.ipns.MathTools.Geometry.*;
  * getCellHighestSym(l)      - one cell, highest symmetry in list
  *
  * getCellShortestSides(l)   - one cell, shortest sum of sides in list 
+ *
+ * ====== private methods
+ *
+ * addIfBest(l, info)        - Add the conventional cell info to list l if 
+ *                             it would be the best cell of that type and
+ *                             centering in list l
+ *
+ * getRelatedUBs(UB,fact,tol)- Get list of UBs, related to UB by reflecting
+ *                             pairs of sides and/or permuting sides in ways
+ *                             that keep a<=b<=c to within the specified
+ *                             factor. Pairs of sides are reflected only if
+ *                             the included angle is within the specified
+ *                             tolerance of 90 degrees.
+ *
+ * getSignRelatedUBs(UB,tol) - Get list of UBs, related to UB by reflecting
+ *                             pairs of sides if the included angle is within
+ *                             the specified tolerance of 90 degrees.
+ *
+ * getPermuteRelatedUBs(UB,fact) - Get list of UBs, related to UB by permuting 
+ *                                 pairs of sides in ways that keep a<=b<=c.
  *
  */
 public class ScalarUtils
@@ -160,11 +180,12 @@ public class ScalarUtils
                                                        String centering )
   {
     float angle_tolerance = 2.0f;
+    float length_factor   = 1.05f;
 
     Vector<ConventionalCellInfo> result = new Vector<ConventionalCellInfo>();
     Vector<ConventionalCellInfo> temp   = new Vector<ConventionalCellInfo>();
 
-    Vector<Tran3D> UB_list = getSignRelatedUBs( UB, angle_tolerance );
+    Vector<Tran3D> UB_list = getRelatedUBs(UB, length_factor, angle_tolerance);
 
     for ( int k = 0; k < UB_list.size(); k++ )
     {
@@ -413,6 +434,8 @@ public class ScalarUtils
   public static ConventionalCellInfo getCellForForm( Tran3D UB, int num )
   {
     float                angle_tolerance = 2.0f;
+    float                length_factor   = 1.05f;
+
     ReducedCellInfo      form_0;
     ReducedCellInfo      form;
     ConventionalCellInfo info = null;
@@ -420,7 +443,7 @@ public class ScalarUtils
     float error;
     float min_error = Float.POSITIVE_INFINITY;
 
-    Vector<Tran3D>  UB_list = getSignRelatedUBs( UB, angle_tolerance );
+    Vector<Tran3D> UB_list = getRelatedUBs(UB, length_factor, angle_tolerance);
     for ( int i = 0; i < UB_list.size(); i++ )
     {
       float[] l_params = 
