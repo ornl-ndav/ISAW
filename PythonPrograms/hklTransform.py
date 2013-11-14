@@ -8,13 +8,13 @@
 #   Script to transform the hkl's in hkl file.
 
 #######################
-inputFile = 'input.hkl'   # change to the name of your input file
+inputFile = 'CuT_monoc.hkl'   # change to the name of your input file
 #######################
 
 hkl_input = open(inputFile, 'r')
 
 #######################
-outputFile = 'output.hkl'   # change to the name of your output file
+outputFile = 'CuT74D_P21a.hkl'   # change to the name of your output file
 #######################
 
 hkl_output = open(outputFile, 'w')
@@ -23,26 +23,27 @@ hkl_output = open(outputFile, 'w')
 for lineString in hkl_input:
     lineList = lineString.split()
     
-    h = int(lineString[0:5])
+    h = int(lineString[0:4])
     k = int(lineString[4:8])
     l = int(lineString[8:12])
     if h == 0 and k == 0 and l == 0: break
     fsq = float(lineString[12:20])
     sigfsq = float(lineString[20:28])
-    hstnum = int(lineString[28:32])
+    iScale = int(lineString[28:32])
     wl = float(lineString[32:40])
-    tbar = float(lineString[40:47])
-    curhst = int(lineString[47:54])
-    seqnum = int(lineString[54:61])
-    transmission = float(lineString[61:68])
-    dn = int(lineString[68:72])
-    twoth = float(lineString[72:81])
-    dsp = float(lineString[81:90])
+    tbar = float(lineString[40:48])
+    curhst = int(lineString[48:55])
+    seqnum = int(lineString[55:62])
+    transmission = float(lineString[62:69])
+    dn = int(lineString[69:73])
+    twoth = float(lineString[73:82])
+    dsp = float(lineString[82:91])
     
     #######################
     # transform the hkl's
     htemp = h
-    h = -l
+    h = l
+    k = -k
     l = htemp
     #######################
 
