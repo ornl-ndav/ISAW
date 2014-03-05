@@ -30,6 +30,13 @@ plotTitle = tkSimpleDialog.askstring(title = 'Plot Title',
     initialvalue = 'Spectra')
 print
 
+wl_max = tkSimpleDialog.askfloat(title = 'Maximum wavelength', 
+    prompt = 'Input maximum wavelength',
+    initialvalue = 4.0)
+xlim( xmax = wl_max )     # set xmax to 4.0 Angstroms
+# ylim( ymin=200 )     # turn on or off the ymin value
+
+
 for i in range(8):   # skip the first 8 lines
     lineString = specInput.readline()
 
@@ -74,9 +81,6 @@ while True:
     i = i + 1
         
 specInput.close()
-
-xlim( xmax=4.0 )     # set xmax to 4.0 Angstroms
-# ylim( ymin=200 )     # turn on or off the ymin value
 
 legend()
 
