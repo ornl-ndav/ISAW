@@ -1,17 +1,17 @@
-C:\Users\Arthur\Desktop\ANVREDtest\anvred2x\   # Working directory
-ReIndex   # Experiment name
-0.389       # Total scattering linear absorptio coefficent in units of cm^-1
-1.001       # True absorption linear absorption coefficent in units of cm^-1
-0.198         # Radius of spherical crystal in units of cm
-0           # iSpec = 0 read spectrum from a file; 1 spectrum fitted to GSAS Type 2 function
--           # If iSpec = 1, name of coefficients file
-Spectrum_3023_3163.dat   # If iSpec = 0, name of spectrum file
-1.0         # Normalize spectra to this wavelength
-3.0         # Mininum I/sig(I) ratio
-24          # Width of border in which peaks are rejected
-80.0       # Minimum integrated intensity
-0.45         # Minimum d-spacing
-3           # IQ = 1, scale factor per crystal setting; 2, scale factor for each detector in each setting; 3, scale factor per detector
-0.005       # Multiply FSQ and sig(FSQ) by this factor
-0.5         # Minimum wavelength
-3.5         # Maximum wavelength
+C:\Users\Arthur\Desktop\det_map\no_border\    # working directory
+sapphire_sphere    # experiment name
+0.369        # Total scattering linear absorptio coefficent in units of cm^-1
+0.011        # True absorption linear absorption coefficent in units of cm^-1
+0.05         # Radius of spherical crystal in units of cm
+0            # iSpec = 0 read spectrum from a file; 1 spectrum fitted to GSAS Type 2 function; 2 read beam monitor2 spectrum from file
+-            # If iSpec = 1, name of coefficients file
+C:\Users\Arthur\Desktop\sapphire\Spectrum_6663_6665.dat   # If iSpec = 0, name of spectrum file
+1.0          # Normalize spectra to this wavelength
+1.0          # Mininum I/sig(I) ratio
+0           # Width of border in which peaks are rejected
+15.0         # Minimum integrated intensity
+0.40         # Minimum d-spacing
+3            # IQ = 1, scale factor per crystal setting; 2, scale factor for each detector in each setting; 3, scale factor per detector
+0.1          # Multiply FSQ and sig(FSQ) by this factor
+0.4          # Minimum wavelength
+3.5          # Maximum wavelength
