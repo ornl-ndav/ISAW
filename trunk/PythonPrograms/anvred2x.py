@@ -1,6 +1,9 @@
 #--------------------------------------------------------------------
 #                             anvred2x.py
 #
+# Outputs col and row to the hkl file.
+#   A. J. Schultz, April 2014
+#
 # Does not run from Isaw. User input read from anvred2x.inp file.
 #   A. J. Schultz, February 2012
 #--------------------------------------------------------------------
@@ -24,6 +27,7 @@
 # Added Selection of neutron wavelengths limits wlMin, wlMax
 # Omit zero intensity peaks in integrate file XP Wang 03/21/2011
 # Changed to >=0 and used absolute value for minium I/sing(I) = 0  XP Wang 02/24/2011
+# Added detector scale factors for vanadium/niobium spectrum XP Wang 09/24/2013
 #
 #
 # 
@@ -89,6 +93,13 @@
 import os
 import sys
 
+<<<<<<< .mine
+if os.path.exists('/SNS/TOPAZ/shared/PythonPrograms/PythonLibrary'):
+    sys.path.append('/SNS/TOPAZ/shared/PythonPrograms/PythonLibrary')
+    sys.path.append('/SNS/software/ISAW/PythonSources/Lib')
+else:
+    sys.path.append('C:\ISAW_repo\PythonPrograms\PythonLibrary')
+=======
 if os.path.exists('/SNS/TOPAZ/shared/PythonPrograms/PythonLibrary'):
     sys.path.append('/SNS/TOPAZ/shared/PythonPrograms/PythonLibrary')
     sys.path.append('/SNS/software/ISAW/PythonSources/Lib')
@@ -98,6 +109,7 @@ elif os.path.exists('/SNS/MANDI/shared/PythonPrograms/PythonLibrary'):
 else:
     sys.path.append('C:\ISAW_repo\PythonPrograms\PythonLibrary')
     
+>>>>>>> .r21637
 from readrefl_header import *
 from readrefl_SNS import *
 from readSpecCoef import *
@@ -129,9 +141,15 @@ intiMin = float(parameters[11])
 dMin = float(parameters[12])
 iIQ = int(parameters[13])
 scaleFactor = float(parameters[14])
-wlMin = float(parameters[15])   # XP Wang 02/24/2011
-wlMax = float(parameters[16])   # XP Wang 02/24/2011
-
+wlMin = float(parameters[15])   # XP Wang Feb. 11, 2011
+wlMax = float(parameters[16])   # XP Wang Feb. 11, 2011
+# Detector scale factors for vanadium/niobium spectrum
+#Scolecite 2013B, XP Wang Sept 23, 2013 
+detScale = {17:1.115862021,18:0.87451341,\
+      22:1.079102931,26:1.087379072,27:1.064563992,28:0.878683269, \
+      36:1.15493377,37:1.010047685,38:1.046416037,39:0.83264528, \
+      47:1.06806776,48:0.872542083,\
+      58:0.915242691}
 # open the anvred.log file in the working directory
 fileName = directory_path + 'anvred2.log'
 logFile = open( fileName, 'w' )
@@ -188,7 +206,11 @@ calibParam = readrefl_header( integFile )
 L1 = float(calibParam[0])       # initial flight path length in cm
 t0_shift = float(calibParam[1]) # t-zero offest in microseconds
 nod = int(calibParam[2])    # number of detectors
+<<<<<<< .mine
+print '********** nod = ', nod
+=======
 print '********** nod = ', nod, '\n'
+>>>>>>> .r21637
 
 logFile.write('\nInitial flight path length: %10.4f cm' % L1 )
 logFile.write('\nT-zero offset: %8.3f microseconds' % t0_shift )
@@ -213,6 +235,7 @@ if iSpec == 0:
     
     for i in range(8):   # skip the first 8 lines
         lineString = specInput.readline()
+        print lineString
     
     # "spectra" is an array spectra[i][j] where i is the number
     # of the detector bank starting at zero, and j = 0 for
@@ -291,7 +314,7 @@ phi = 0.0
 omega = 0.0
 moncnt = 1000000.
 eof = 999
-
+hkllists =[]   # List of reflections, XP Wang, May 3013
 # C
 # C   SET UP LOOP TO PROCESS THE REFLECTION DATA
 # C
@@ -365,6 +388,12 @@ while True:
    
     # Omit zero intensity peaks from integrate file XP Wang 03/21/2011
     # Changed to >=0 and absolute value  XP Wang 02/24/2011
+
+    # Omit peaks not indexed XP Wang, March, 2013
+    if (h==0 and k==0 and l==0):
+        logFile.write(' %4d *** Peak not indexed for run %4d det %4d   \n' \
+            % (seqnum,nrun,dn))        
+        continue  
     if inti == 0.0 :
         logFile.write(' %4d%4d%4d *** intI = 0.0 \n' \
             % (h, k, l))
@@ -447,7 +476,11 @@ while True:
     sinsqt = ( wl / (2.0*dsp) )**2
     wl4 = wl**4
         
+<<<<<<< .mine
+    correc = scaleFactor * sinsqt * cmonx * sp_ratio / (wl4 * spect ) * detScale[detNum]
+=======
     correc = scaleFactor * sinsqt * cmonx * sp_ratio / (wl4 * spect )
+>>>>>>> .r21637
         
     # absorption correction
     # trans[0] is the transmission
@@ -464,8 +497,9 @@ while True:
 
     sigfsq = sigi * correc
     
-    # Add normalization error to sigma
-    sigfsq = sqrt( sigfsq**2 + (relSigSpect*fsq)**2 )  # not sure if last term is squared
+    #sigfsq = sqrt( sigfsq**2 + (relSigSpect*fsq)**2)  # not sure if last term is squared
+    # Add instrument background constant to sigma, XP WAng June 2013
+    sigfsq = sqrt( sigfsq**2 + (relSigSpect*fsq)**2 + 12.28/cmonx*scaleFactor)
     
     # tbar is the Coppen's tbar
     tbar = trans[1]
@@ -474,8 +508,12 @@ while True:
     logFile.write(' %4d%4d%4d%10.2f%8.2f%7.3f%10.2f%8.2f%8.4f%8.4f%8.4f%8.4f\n' \
         % (h, k, l, fsq, sigfsq, wl, inti, sigi, spect, sinsqt, trans[0], tbar))
     
-    hklFile.write('%4d%4d%4d%8.2f%8.2f%4d%8.4f%7.4f%7d%7d%7.4f%4d%9.5f%9.4f\n' \
-        % (h, k, l, fsq, sigfsq, hstnum, wl, tbar, curhst, seqnum, transmission, dn, twoth, dsp))
+    hklFile.write('%4d%4d%4d%8.2f%8.2f%4d%8.5f%8.5f%7d%7d%7.4f%4d%9.5f%9.4f%7.2f%7.2f\n'
+        % (h, k, l, fsq, sigfsq, hstnum, wl, tbar, curhst, seqnum, 
+        transmission, dn, twoth, dsp, col, row))
+    #Add to hkl list XP Wang May 2013
+    hkllists.append([h, k, l, fsq, sigfsq, hstnum, wl, tbar, curhst, seqnum, 
+        transmission, dn, twoth, dsp, col, row])   
         
 print '\nMinimum and maximum transmission = %6.4f, %6.4f\n' % (transmin, transmax)
 
@@ -484,13 +522,87 @@ logFile.write('\n\n***** Minimum and maximum transmission = %6.4f, %6.4f' \
 
 # last record all zeros for shelx
 zero = 0
-hklFile.write(' %3d %3d %3d %7.2f %7.2f %3d %7.4f %6.4f %6d %6d %6.4f %3d\n' \
-    % ( zero, zero, zero, zero, zero, zero, zero, zero, zero, zero, zero, zero ))
+
+hklFile.write('   0   0   0    0.00    0.00   0  0.00000 0.0000      0      0 0.0000   0  0.00000   0.0000 \n')
 
 # C-----------------------------------------------------------------------
 logFile.close()
 hklFile.close()
 
+<<<<<<< .mine
+
+# Set scale ID equal to detector number.
+# This code is from scale_by_detnum.py.
+# Save reflections by DetNum  XP Wang May, 2013
+from operator import itemgetter
+from itertools import groupby
+
+if iIQ == 3:
+    hklFileName1 = hklFileName + '1'
+    #os.rename(hklFileName, hklFileName1)
+    hkl_output = open(hklFileName1, 'w')
+    
+    #Sort and save the result per module, XP Wang, March 2013
+    #hkllists.sort(key=itemgetter(5,0,1,2,11)) # sort by run number and group the hkl by indices
+    hkllists.sort(key=itemgetter(11,0,1,2,5))  # sort by detector number
+    nDet = 0
+    for iDet, iGroup in groupby(hkllists, itemgetter(11)):
+        nDet = nDet + 1
+        #print "nDet ", nDet
+        for iHKL in iGroup:
+            iHKL[5] = nDet                
+            #print iHKL
+            # output reflection sorted by detector number to hkl file                
+            hkl_output.write('%4d%4d%4d%8.2f%8.2f%4d%8.5f%8.5f%7d%7d%7.4f%4d%9.5f%9.4f\n' \
+                % (iHKL[0],iHKL[1],iHKL[2],iHKL[3],iHKL[4],iHKL[5],iHKL[6],iHKL[7],iHKL[8],iHKL[9],iHKL[10],iHKL[11],iHKL[12],iHKL[13]))
+        
+# last record all zeros for shelx
+hkl_output.write('   0   0   0    0.00    0.00   0  0.00000 0.0000      0      0 0.0000   0  0.00000   0.0000 \n')
+
+
+
+hkl_output.close()
+
+##
+##if iIQ == 3:
+##    hklFileName1 = hklFileName + '1'
+##    os.rename(hklFileName, hklFileName1)
+##    hkl_output = open(hklFileName, 'w')
+##    
+##    for i in range(nod):
+##        hkl_input = open(hklFileName1, 'r')
+##        detNum = calibParam[3][i]
+##
+##        while True:
+##            lineString = hkl_input.readline()
+##            lineList = lineString.split()
+##            if len(lineList) == 0: break
+##            
+##            h = int(lineString[0:5])
+##            k = int(lineString[4:8])
+##            l = int(lineString[8:12])
+##            fsq = float(lineString[12:20])
+##            sigfsq = float(lineString[20:28])
+##            hstnum = int(lineString[28:32])
+##            wl = float(lineString[32:40])
+##            tbar = float(lineString[40:47])
+##            curhst = int(lineString[47:54])
+##            seqnum = int(lineString[54:61])
+##            transmission = float(lineString[61:68])
+##            dn = int(lineString[68:72])
+##            
+##            if dn == detNum:
+##                iScale = i + 1
+##                hkl_output.write('%4d%4d%4d%8.2f%8.2f%4d%8.4f%7.4f%7d%7d%7.4f%4d\n' \
+##                % (h, k, l, fsq, sigfsq, iScale, wl, tbar, curhst, seqnum, transmission, dn))
+##
+##        hkl_input.close()
+##        
+##    # last record all zeros for shelx
+##    hkl_output.write(' %3d %3d %3d %7.2f %7.2f %3d %7.4f %6.4f %6d %6d %6.4f %3d\n' \
+##        % ( zero, zero, zero, zero, zero, zero, zero, zero, zero, zero, zero, zero ))
+##
+=======
 # Set scale ID equal to detector number.
 # This code is from scale_by_detnum.py.
 if iIQ == 3:
@@ -531,6 +643,7 @@ if iIQ == 3:
     hkl_output.write(' %3d %3d %3d %7.2f %7.2f %3d %7.4f %6.4f %6d %6d %6.4f %3d\n' \
         % ( zero, zero, zero, zero, zero, zero, zero, zero, zero, zero, zero, zero ))
 
+>>>>>>> .r21637
 print 'All done!'
 
         
