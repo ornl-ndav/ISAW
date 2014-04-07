@@ -15,10 +15,7 @@
 # Jython version:
 # A. J. Schultz --  November, 2009
 
-# Additional statistical values added by:
-# Mads Joergensen -- November, 2012
-
-class intensity_stats2(GenericTOF_SCD):
+class intensity_stats(GenericTOF_SCD):
 
     def setDefaultParameters(self):
     
@@ -34,12 +31,11 @@ class intensity_stats2(GenericTOF_SCD):
         expname = self.getParameter(1).value    # experiment name, as in expname.integrate
         dmin = self.getParameter(2).value       # minimum d-spacing
 
-        sumTotal = sig3Total = sig5Total = sig10Total = 0 # Values for each run
-        sum = sig3 = sig5 = sig10 = 0 # Values for all runs
-        sumAll = nobs = 0      # total number of peaks in the file
+        sumTotal = sig3Total = sig5Total = sig10Total = 0
+        sum = sig3 = sig5 = sig10 = 0
+        sumAll = 0      # total number of peaks in the file
         nrun = nrunCurrent = 0
         dminObs = 999.0
-        sumInt = sumSig = sumISig = sumSqrtI = 0 # Total values for all runs
         
         inFilename = in_path + expname + '.integrate'
         input = open(inFilename, 'r')
@@ -94,13 +90,8 @@ class intensity_stats2(GenericTOF_SCD):
                     if intI > (3.0 * sigI): sig3 = sig3 + 1
                     if intI > (5.0 * sigI): sig5 = sig5 + 1
                     if intI > (10.0 * sigI): sig10 = sig10 + 1
+            
 
-        # Calculation of new statistical values (for all runs)
-                    sumInt = sumInt + intI # sum all intensities
-                    sumSig = sumSig + sigI # sum all esd's
-                    if sigI > 0 : sumISig = ( intI / sigI ) + sumISig # sum all I/sigma(I)
-                    if intI > 0 : sumSqrtI = (intI ** 0.5) + sumSqrtI # sum all sqrt(I) if I > 0
-                    if intI > 0 : nobs = nobs +1
         # end reading the integrate file
 
 
@@ -115,11 +106,6 @@ class intensity_stats2(GenericTOF_SCD):
         sig5Total = sig5Total + sig5
         sig10Total = sig10Total + sig10
 
-        #calculation of final values
-        aveISig = sumISig / nobs
-        aveIaveSig = sumInt / sumSig
-        aveIaveSqrtI = sumInt / sumSqrtI
-
         # totals
         print '\n TOTALS'
         print '%10d'*4 % (sumTotal, sig3Total, sig5Total, sig10Total)
@@ -130,23 +116,18 @@ class intensity_stats2(GenericTOF_SCD):
         output.write('%10d'*4 % (sumTotal, sig3Total, sig5Total, sig10Total))
         output.write('\n\nTotal number of peaks with dmin of %5.3f is %d.'\
         % (dminObs, sumAll))
-        output.write('\n')
-        output.write('\nAverage I / sigma(I), <I/sig(I)>: %10.3f.' % aveISig)
-        output.write('\nAverage I / average sigma(I), <I>/<sig(I)>: %10.3f.' % aveIaveSig)
-        output.write('\nAverage I / average sqrt(I), <I>/<sqrt(I)>: %10.3f.' % aveIaveSqrtI)
-
-
+        
         input.close()
         output.close()
         
-        return sumTotal, sig3Total, sig5Total, sig10Total #,aveISig, aveIaveSig, aveIaveSqrtI
+        return sumTotal, sig3Total, sig5Total, sig10Total
 
     def  getDocumentation( self):
         S =StringBuffer()
         S.append("Program prints a summary of the intensity statistics.\n")
         S.append("@param  dmin  The minimum d-spacing for an accepted peak.")
         S.append("@return an integer array with 4 entries: sumTotal, sig3Total,\
-        sig5Total, sig10TOtal")
+        sig5Total and sig10TOtal")
         return S.toString()
 
     def getCategoryList( self):
@@ -154,6 +135,6 @@ class intensity_stats2(GenericTOF_SCD):
         return ["Macros","Single Crystal"]
         
     def __init__(self):
-        Operator.__init__(self,"intensity_stats2")
+        Operator.__init__(self,"intensity_stats")
 
 
