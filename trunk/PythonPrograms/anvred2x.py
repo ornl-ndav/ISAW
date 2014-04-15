@@ -93,23 +93,11 @@
 import os
 import sys
 
-<<<<<<< .mine
 if os.path.exists('/SNS/TOPAZ/shared/PythonPrograms/PythonLibrary'):
     sys.path.append('/SNS/TOPAZ/shared/PythonPrograms/PythonLibrary')
     sys.path.append('/SNS/software/ISAW/PythonSources/Lib')
 else:
     sys.path.append('C:\ISAW_repo\PythonPrograms\PythonLibrary')
-=======
-if os.path.exists('/SNS/TOPAZ/shared/PythonPrograms/PythonLibrary'):
-    sys.path.append('/SNS/TOPAZ/shared/PythonPrograms/PythonLibrary')
-    sys.path.append('/SNS/software/ISAW/PythonSources/Lib')
-elif os.path.exists('/SNS/MANDI/shared/PythonPrograms/PythonLibrary'):
-    sys.path.append('/SNS/MANDI/shared/PythonPrograms/PythonLibrary')
-    sys.path.append('/SNS/software/ISAW/PythonSources/Lib')
-else:
-    sys.path.append('C:\ISAW_repo\PythonPrograms\PythonLibrary')
-    
->>>>>>> .r21637
 from readrefl_header import *
 from readrefl_SNS import *
 from readSpecCoef import *
@@ -206,12 +194,8 @@ calibParam = readrefl_header( integFile )
 L1 = float(calibParam[0])       # initial flight path length in cm
 t0_shift = float(calibParam[1]) # t-zero offest in microseconds
 nod = int(calibParam[2])    # number of detectors
-<<<<<<< .mine
-print '********** nod = ', nod
-=======
-print '********** nod = ', nod, '\n'
->>>>>>> .r21637
-
+print '********** nod =', nod
+print ''
 logFile.write('\nInitial flight path length: %10.4f cm' % L1 )
 logFile.write('\nT-zero offset: %8.3f microseconds' % t0_shift )
 logFile.write('\nNumber of detectors: %i' % nod )
@@ -235,7 +219,6 @@ if iSpec == 0:
     
     for i in range(8):   # skip the first 8 lines
         lineString = specInput.readline()
-        print lineString
     
     # "spectra" is an array spectra[i][j] where i is the number
     # of the detector bank starting at zero, and j = 0 for
@@ -249,7 +232,7 @@ if iSpec == 0:
         time = []
         counts = []
         
-        print 'Reading spectrum for ' + lineString,
+        print 'Reading spectrum for ' + lineString[:-1]
         while True:
             lineString = specInput.readline()
             lineList = lineString.split()
@@ -322,7 +305,9 @@ while True:
 
     peak = readrefl_SNS( integFile, eof, nrun, dn, chi, phi, omega,\
         moncnt)
+    # print peak
     eof = peak[22]
+    # print eof
     if eof == 0: break
     
     nrun = peak[0]
@@ -476,11 +461,7 @@ while True:
     sinsqt = ( wl / (2.0*dsp) )**2
     wl4 = wl**4
         
-<<<<<<< .mine
     correc = scaleFactor * sinsqt * cmonx * sp_ratio / (wl4 * spect ) * detScale[detNum]
-=======
-    correc = scaleFactor * sinsqt * cmonx * sp_ratio / (wl4 * spect )
->>>>>>> .r21637
         
     # absorption correction
     # trans[0] is the transmission
@@ -515,7 +496,7 @@ while True:
     hkllists.append([h, k, l, fsq, sigfsq, hstnum, wl, tbar, curhst, seqnum, 
         transmission, dn, twoth, dsp, col, row])   
         
-print '\nMinimum and maximum transmission = %6.4f, %6.4f\n' % (transmin, transmax)
+print '\nMinimum and maximum transmission = %6.4f, %6.4f' % (transmin, transmax)
 
 logFile.write('\n\n***** Minimum and maximum transmission = %6.4f, %6.4f' \
     % (transmin, transmax))
@@ -529,7 +510,6 @@ hklFile.write('   0   0   0    0.00    0.00   0  0.00000 0.0000      0      0 0.
 logFile.close()
 hklFile.close()
 
-<<<<<<< .mine
 
 # Set scale ID equal to detector number.
 # This code is from scale_by_detnum.py.
@@ -563,88 +543,7 @@ hkl_output.write('   0   0   0    0.00    0.00   0  0.00000 0.0000      0      0
 
 hkl_output.close()
 
-##
-##if iIQ == 3:
-##    hklFileName1 = hklFileName + '1'
-##    os.rename(hklFileName, hklFileName1)
-##    hkl_output = open(hklFileName, 'w')
-##    
-##    for i in range(nod):
-##        hkl_input = open(hklFileName1, 'r')
-##        detNum = calibParam[3][i]
-##
-##        while True:
-##            lineString = hkl_input.readline()
-##            lineList = lineString.split()
-##            if len(lineList) == 0: break
-##            
-##            h = int(lineString[0:5])
-##            k = int(lineString[4:8])
-##            l = int(lineString[8:12])
-##            fsq = float(lineString[12:20])
-##            sigfsq = float(lineString[20:28])
-##            hstnum = int(lineString[28:32])
-##            wl = float(lineString[32:40])
-##            tbar = float(lineString[40:47])
-##            curhst = int(lineString[47:54])
-##            seqnum = int(lineString[54:61])
-##            transmission = float(lineString[61:68])
-##            dn = int(lineString[68:72])
-##            
-##            if dn == detNum:
-##                iScale = i + 1
-##                hkl_output.write('%4d%4d%4d%8.2f%8.2f%4d%8.4f%7.4f%7d%7d%7.4f%4d\n' \
-##                % (h, k, l, fsq, sigfsq, iScale, wl, tbar, curhst, seqnum, transmission, dn))
-##
-##        hkl_input.close()
-##        
-##    # last record all zeros for shelx
-##    hkl_output.write(' %3d %3d %3d %7.2f %7.2f %3d %7.4f %6.4f %6d %6d %6.4f %3d\n' \
-##        % ( zero, zero, zero, zero, zero, zero, zero, zero, zero, zero, zero, zero ))
-##
-=======
-# Set scale ID equal to detector number.
-# This code is from scale_by_detnum.py.
-if iIQ == 3:
-    hklFileName1 = hklFileName + '1'
-    os.rename(hklFileName, hklFileName1)
-    hkl_output = open(hklFileName, 'w')
-    
-    for i in range(nod):
-        hkl_input = open(hklFileName1, 'r')
-        detNum = calibParam[3][i]
-
-        while True:
-            lineString = hkl_input.readline()
-            lineList = lineString.split()
-            if len(lineList) == 0: break
-            
-            h = int(lineString[0:5])
-            k = int(lineString[4:8])
-            l = int(lineString[8:12])
-            fsq = float(lineString[12:20])
-            sigfsq = float(lineString[20:28])
-            hstnum = int(lineString[28:32])
-            wl = float(lineString[32:40])
-            tbar = float(lineString[40:47])
-            curhst = int(lineString[47:54])
-            seqnum = int(lineString[54:61])
-            transmission = float(lineString[61:68])
-            dn = int(lineString[68:72])
-            
-            if dn == detNum:
-                iScale = i + 1
-                hkl_output.write('%4d%4d%4d%8.2f%8.2f%4d%8.4f%7.4f%7d%7d%7.4f%4d\n' \
-                % (h, k, l, fsq, sigfsq, iScale, wl, tbar, curhst, seqnum, transmission, dn))
-
-        hkl_input.close()
-        
-    # last record all zeros for shelx
-    hkl_output.write(' %3d %3d %3d %7.2f %7.2f %3d %7.4f %6.4f %6d %6d %6.4f %3d\n' \
-        % ( zero, zero, zero, zero, zero, zero, zero, zero, zero, zero, zero, zero ))
-
->>>>>>> .r21637
-print 'All done!'
+print '\nAll done!'
 
         
 
