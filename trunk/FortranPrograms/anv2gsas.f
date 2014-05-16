@@ -28,8 +28,11 @@ C
 !	Version 6:  May, 2005
 !	Sets P = 0.0 instead of 0.04
 
-!	Last modification:  February 5, 2007
+!	February 5, 2007
 !		Input format error that did not effect output.
+
+!       April, 2014
+!       Write col, row, run, seqnum, detnum to the GSAS reflection file.
 
 	DIMENSION HKL(3),SCR1(3),SCR2(3),REL(6),REC(6),realVal(3)
 	REAL LAM
